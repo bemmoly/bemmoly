@@ -1,23 +1,18 @@
 import { mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { z } from 'zod';
+import {
+  MAINTENANCE_FILE,
+  maintenanceStateSchema,
+  type MaintenanceState,
+} from '@bemmoly/shared';
+
+export { MAINTENANCE_FILE, maintenanceStateSchema, type MaintenanceState };
 
 /**
  * Maintenance mode is a file in the data folder, not a database row: during a restore
  * the database is being replaced, and the updater (another container) shares the same
  * folder and serves the same message while the app is down.
  */
-export const MAINTENANCE_FILE = 'maintenance.json';
-
-export const maintenanceStateSchema = z.object({
-  reason: z.enum(['restore', 'update', 'rollback']),
-  message: z.string(),
-  step: z.string().nullable(),
-  startedAt: z.iso.datetime(),
-});
-
-export type MaintenanceState = z.infer<typeof maintenanceStateSchema>;
-
 const fileIn = (dataDir: string) => path.join(dataDir, MAINTENANCE_FILE);
 
 export async function readMaintenance(dataDir: string): Promise<MaintenanceState | null> {
