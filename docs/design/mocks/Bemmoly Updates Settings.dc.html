@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>html,body{margin:0;height:100%;background:#f4f5f7;font-family:'IBM Plex Sans',system-ui,sans-serif;color:#1b2430;font-size:13px}*{box-sizing:border-box}a{color:#2456c9;text-decoration:none}a:hover{color:#183d94}input[type=text]{font:inherit}</style>
+</helmet>
+<div data-screen-label="Workspace settings · Updates" style="height:{{ rootH }};min-width:1440px;display:flex;flex-direction:column;overflow:hidden;background:#f4f5f7;position:relative">
+  <div style="height:48px;background:#fff;border-bottom:1px solid #e2e5ea;display:flex;align-items:center;padding:0 12px 0 16px;gap:4px;flex-shrink:0">
+    <a href="Bemmoly Home.dc.html" style="display:flex;align-items:center;gap:9px;padding-right:14px;margin-right:6px;border-right:1px solid #e2e5ea;height:28px;color:#1b2430">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="24" height="24" aria-hidden="true" style="display:block;flex:none"><path fill="#2356C9" d="M100.850,252.884 C99.937,252.731 96.849,251.842 93.988,250.909 C83.521,247.494 74.358,239.397 69.391,229.173 C64.880,219.889 64.970,221.175 64.970,165.865 C64.970,118.454 65.034,115.763 66.278,110.899 C70.229,95.453 82.126,82.880 97.860,77.523 C103.001,75.773 103.866,75.693 124.106,75.108 C153.824,74.249 209.378,74.942 215.468,76.248 C230.155,79.397 240.904,90.645 243.478,105.556 C244.272,110.163 244.398,120.617 244.217,167.107 C244.013,219.273 243.915,223.360 242.782,226.764 C238.369,240.016 229.331,248.808 216.835,252.004 C211.782,253.296 209.716,253.339 157.057,253.252 C127.057,253.202 101.764,253.036 100.850,252.884 Z"/><path fill="#2356C9" d="M99.854,454.909 C97.296,454.369 92.661,452.708 89.555,451.218 C84.943,449.007 82.865,447.460 78.226,442.786 C71.722,436.233 68.353,430.476 66.280,422.372 C65.026,417.468 64.970,414.803 64.970,359.987 C64.970,305.572 65.034,302.475 66.254,297.705 C70.074,282.770 79.940,272.007 94.545,266.846 L99.854,264.970 154.775,264.782 C215.517,264.574 215.042,264.547 223.629,268.757 C229.651,271.710 236.732,278.753 239.563,284.607 C243.803,293.373 243.687,291.273 243.698,359.699 C243.704,400.955 243.469,423.195 242.997,425.812 C241.093,436.386 233.160,446.953 223.593,451.661 C214.746,456.014 215.257,455.982 156.997,455.934 C113.335,455.899 103.723,455.726 99.854,454.909 Z"/><path fill="#9A85EA" d="M344.581,244.650 C330.698,243.710 295.296,237.973 288.186,235.511 C268.278,228.616 256.332,213.228 256.332,194.477 C256.332,189.465 270.523,90.474 272.616,80.888 C275.977,65.490 287.355,56.000 302.453,56.000 C309.329,56.000 349.807,63.883 372.279,69.598 C394.814,75.329 408.807,82.412 421.205,94.364 C428.596,101.489 432.673,106.855 436.967,115.111 C444.178,128.977 446.699,139.360 446.650,155.003 C446.621,164.534 446.389,166.882 444.876,172.973 C438.508,198.599 423.826,218.471 401.224,232.055 C391.026,238.184 374.541,243.551 363.381,244.375 C360.600,244.580 356.980,244.844 355.336,244.962 C353.691,245.079 348.851,244.939 344.581,244.650 Z"/><path fill="#5B7BE5" d="M283.094,455.019 C270.966,452.315 261.158,442.916 257.955,430.928 C256.790,426.567 256.704,400.704 257.629,332.744 C258.063,300.907 258.317,294.261 259.225,291.045 C262.982,277.735 272.950,268.338 286.233,265.583 C293.514,264.073 360.494,264.563 367.855,266.180 C387.225,270.437 400.033,277.210 412.511,289.795 C427.175,304.584 436.351,323.468 439.362,345.051 C442.341,366.413 438.262,387.529 427.426,406.836 C413.714,431.266 391.226,447.881 363.441,454.109 C357.345,455.475 355.114,455.564 322.113,455.747 C294.229,455.903 286.399,455.756 283.094,455.019 Z"/></svg>
+      <div style="font-weight:600;font-size:14px;letter-spacing:-.01em">Bemmoly</div>
+    </a>
+    <div style="display:flex;gap:2px;font-size:13.5px">
+      <a href="Bemmoly Home.dc.html" style="padding:6px 10px;color:#3b4454">Your work <span style="color:#8a93a3;font-size:10px">▾</span></a>
+      <a href="Bemmoly Board.dc.html" style="padding:6px 10px;color:#3b4454">Projects <span style="color:#8a93a3;font-size:10px">▾</span></a>
+      <a href="Bemmoly Docs.dc.html" style="padding:6px 10px;color:#3b4454">Docs <span style="color:#8a93a3;font-size:10px">▾</span></a>
+      <a href="Bemmoly Backlog.dc.html" style="padding:6px 10px;color:#3b4454">Filters <span style="color:#8a93a3;font-size:10px">▾</span></a>
+      <a href="Bemmoly Roadmap.dc.html" style="padding:6px 10px;color:#3b4454">Dashboards <span style="color:#8a93a3;font-size:10px">▾</span></a>
+      <a href="Bemmoly People.dc.html" style="padding:6px 10px;color:#3b4454">Teams <span style="color:#8a93a3;font-size:10px">▾</span></a>
+    </div>
+    <div style="margin-left:6px;padding:6px 14px;border-radius:6px;background:#2456c9;color:#fff;font-weight:500">Create</div>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+      <a href="Bemmoly Command.dc.html" style="width:300px;height:32px;border:1px solid #d5dae2;border-radius:6px;display:flex;align-items:center;padding:0 10px;gap:8px;color:#8a93a3;background:#f9fafb"><span style="font-size:14px">⌕</span><span>Search issues, docs, people</span></a>
+      <div style="width:30px;height:30px;border-radius:50%;background:#d7e3fb;color:#2456c9;font-weight:600;font-size:12px;display:flex;align-items:center;justify-content:center;margin-left:4px">RS</div>
+    </div>
+  </div>
+
+  <div style="flex:1;display:flex;min-height:0">
+    <div style="width:240px;background:#fff;border-right:1px solid #e2e5ea;padding:16px 8px;display:flex;flex-direction:column;gap:14px;flex-shrink:0;overflow:auto">
+      <div style="padding:0 10px 4px;font-weight:600;font-size:14px">Workspace settings</div>
+      <div style="display:flex;flex-direction:column;gap:1px">
+        <div style="padding:4px 10px 6px;font:500 11px 'IBM Plex Sans';color:#8a93a3;letter-spacing:.07em;text-transform:uppercase">General</div>
+        <div style="padding:7px 10px;border-radius:6px;color:#3b4454">Workspace details</div>
+        <a href="Bemmoly Appearance Settings.dc.html" style="padding:7px 10px;border-radius:6px;color:#3b4454">Appearance</a>
+        <div style="padding:7px 10px;border-radius:6px;color:#3b4454">Email and notifications</div>
+        <div style="padding:7px 10px;border-radius:6px;color:#3b4454">AI and models</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:1px">
+        <div style="padding:4px 10px 6px;font:500 11px 'IBM Plex Sans';color:#8a93a3;letter-spacing:.07em;text-transform:uppercase">People</div>
+        <a href="Bemmoly People.dc.html" style="padding:7px 10px;border-radius:6px;color:#3b4454">Users <span style="float:right;font:500 11px 'IBM Plex Mono';color:#8a93a3">42</span></a>
+        <a href="Bemmoly People.dc.html" style="padding:7px 10px;border-radius:6px;color:#3b4454">Teams</a>
+        <a href="Bemmoly People.dc.html" style="padding:7px 10px;border-radius:6px;color:#3b4454">Roles and permissions</a>
+        <a href="Bemmoly People.dc.html" style="padding:7px 10px;border-radius:6px;color:#3b4454">Authentication (SSO)</a>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:1px">
+        <div style="padding:4px 10px 6px;font:500 11px 'IBM Plex Sans';color:#8a93a3;letter-spacing:.07em;text-transform:uppercase">Work</div>
+        <a href="Bemmoly Workflow.dc.html" style="padding:7px 10px;border-radius:6px;color:#3b4454">Issue types and fields</a>
+        <a href="Bemmoly Workflow.dc.html" style="padding:7px 10px;border-radius:6px;color:#3b4454">Workflows</a>
+        <div style="padding:7px 10px;border-radius:6px;color:#3b4454">Automation</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:1px">
+        <div style="padding:4px 10px 6px;font:500 11px 'IBM Plex Sans';color:#8a93a3;letter-spacing:.07em;text-transform:uppercase">System</div>
+        <a href="Bemmoly Modules Settings.dc.html" style="padding:7px 10px;border-radius:6px;color:#3b4454">Modules</a>
+        <a href="Bemmoly Backups Settings.dc.html" style="padding:7px 10px;border-radius:6px;color:#3b4454">Storage and backups</a>
+        <div style="padding:7px 10px;border-radius:6px;background:#eef3fe;color:#2456c9;font-weight:500">Updates</div>
+        <div style="padding:7px 10px;border-radius:6px;color:#3b4454">Audit log</div>
+      </div>
+    </div>
+
+    <div style="flex:1;overflow:auto;min-width:0">
+      <div style="max-width:1120px;padding:28px 40px 48px;display:flex;flex-direction:column;gap:28px">
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div style="font-size:12.5px;color:#6b7483">Workspace settings / Updates</div>
+          <div style="display:flex;align-items:center;gap:16px">
+            <div style="font-weight:600;font-size:22px;letter-spacing:-.015em">Updates</div>
+            <div style="margin-left:auto;display:flex;gap:8px">
+              <div style="height:32px;padding:0 12px;border:1px solid #d5dae2;background:#fff;border-radius:6px;display:flex;align-items:center;font-weight:500;color:#3b4454">Upload release bundle</div>
+              <div style="height:32px;padding:0 12px;border:1px solid #d5dae2;background:#fff;border-radius:6px;display:flex;align-items:center;font-weight:500;color:#3b4454">Check now</div>
+            </div>
+          </div>
+          <div style="color:#6b7483;font-size:13px;max-width:640px;line-height:1.5">Bemmoly updates in place from signed releases. A full backup is taken before every update, and the previous version is kept for 7 days so you can roll back.</div>
+        </div>
+        <div style="background:#fff;border:1px solid #e2e5ea;border-radius:8px;overflow:hidden">
+          <div style="padding:12px 16px;border-bottom:1px solid #e9ecf0;font-weight:600">This server</div>
+          <div style="padding:6px 16px;display:flex;flex-direction:column">
+            <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #eceef2"><span style="width:160px;flex-shrink:0;font-weight:500">Version</span><span style="font:500 13px 'IBM Plex Mono'">{{ current }}</span><span style="color:#8a93a3;font-size:12px">{{ currentWhen }}</span></div>
+            <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #eceef2"><span style="width:160px;flex-shrink:0;font-weight:500">Channel</span><div style="width:200px"><div style="display:flex;background:#eef0f4;border-radius:6px;padding:2px"><sc-for list="{{ channels }}" as="m" hint-placeholder-count="2"><div onClick="{{ m.pick }}" style="flex:1;text-align:center;padding:6px 10px;border-radius:5px;background:{{ m.bg }};font-weight:500;color:{{ m.fg }};box-shadow:{{ m.sh }};cursor:pointer;white-space:nowrap">{{ m.name }}</div></sc-for></div></div><span style="color:#8a93a3;font-size:12px">{{ channelHint }}</span></div>
+            <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #eceef2"><span style="width:160px;flex-shrink:0;font-weight:500">Install</span><span style="color:#4b5565">Docker Compose with the in-app updater</span><span style="margin-left:auto;color:#2456c9;font-weight:500">Show CLI command</span></div>
+            <div style="display:flex;align-items:center;gap:12px;padding:10px 0"><span style="width:160px;flex-shrink:0;font-weight:500">Updater</span><span style="display:inline-flex;align-items:center;gap:7px;color:#4b5565"><span style="width:7px;height:7px;border-radius:50%;background:#2b9b5a;flex-shrink:0"></span>{{ updaterStatus }}</span></div>
+          </div>
+        </div>
+
+        <sc-if value="{{ hasRelease }}" hint-placeholder-val="{{ true }}">
+          <div style="background:#fff;border:1px solid #e2e5ea;border-radius:8px;overflow:hidden">
+            <div style="padding:12px 16px;border-bottom:1px solid #e9ecf0;display:flex;align-items:center;gap:10px"><span style="font-weight:600">{{ rel.title }}</span><span style="font-size:11px;padding:2px 7px;border-radius:3px;font-weight:600;background:{{ rel.chBg }};color:{{ rel.chFg }}">{{ rel.channel }}</span><span style="color:#8a93a3;font-size:12px">{{ rel.date }}</span><span style="margin-left:auto;color:#2456c9;font-weight:500">Full release notes</span></div>
+            <div style="padding:16px;display:flex;flex-direction:column;gap:16px">
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <div style="font-weight:500">What changes</div>
+                <div style="display:flex;flex-direction:column;gap:6px;color:#4b5565;line-height:1.5"><sc-for list="{{ rel.notes }}" as="n" hint-placeholder-count="3"><div style="display:flex;gap:8px"><span style="color:#a2aab8">•</span><span>{{ n }}</span></div></sc-for></div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <div style="font-weight:500">Schema changes to flag <span style="font-weight:400;color:#8a93a3;font-size:12px">{{ rel.quiet }}</span></div>
+                <div style="border:1px solid #e2e5ea;border-radius:7px;overflow:hidden">
+                  <sc-for list="{{ rel.flagged }}" as="f" hint-placeholder-count="2">
+                    <div style="display:grid;grid-template-columns:56px minmax(0,1fr) 240px;gap:12px;padding:9px 12px;border-bottom:1px solid #eceef2;align-items:center;font-size:12.5px">
+                      <span style="font:500 11.5px 'IBM Plex Mono';color:#6b7483">{{ f.module }}</span>
+                      <div style="display:flex;flex-direction:column;gap:1px;min-width:0"><span style="font-weight:500">{{ f.desc }}</span><span style="font:500 11px 'IBM Plex Mono';color:#8a93a3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ f.id }}</span></div>
+                      <div style="display:flex;align-items:center;gap:8px;justify-content:flex-end"><span style="color:#6b7483;font-size:12px">{{ f.note }}</span><span style="font-size:11px;padding:2px 7px;border-radius:3px;font-weight:600;background:{{ f.bg }};color:{{ f.fg }}">{{ f.flag }}</span></div>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+              <div style="display:flex;gap:10px;align-items:center;padding:10px 12px;background:{{ rel.calloutBg }};border:1px solid {{ rel.calloutBr }};border-radius:7px;font-size:12.5px;line-height:1.5"><span style="width:7px;height:7px;border-radius:50%;background:{{ rel.calloutDot }};flex-shrink:0"></span><span style="color:#2c3545">{{ rel.callout }}</span></div>
+              <div style="display:flex;gap:10px;align-items:center"><span onClick="{{ doUpdate }}" style="height:32px;padding:0 14px;border-radius:6px;background:#2456c9;color:#fff;display:flex;align-items:center;font-weight:500;cursor:pointer">{{ rel.button }}</span><span style="color:#8a93a3;font-size:12px;max-width:620px;line-height:1.5">A full backup is taken first and the image signature is checked. If the new version is not healthy within 3 minutes, Bemmoly goes back to {{ current }} on its own. Usual downtime: {{ rel.downtime }}.</span></div>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ upToDate }}" hint-placeholder-val="{{ false }}">
+          <div style="background:#fff;border:1px solid #e2e5ea;border-radius:8px;overflow:hidden;padding:14px 16px;display:flex;align-items:center;gap:10px"><span style="width:16px;height:16px;border-radius:50%;background:#2b9b5a;color:#fff;font-size:10px;display:flex;align-items:center;justify-content:center">✓</span><span style="font-weight:500">{{ current }} is the latest stable release.</span><span style="color:#8a93a3;font-size:12px">Switch the channel to beta to get releases a week or two earlier.</span></div>
+        </sc-if>
+
+        <sc-if value="{{ updated }}" hint-placeholder-val="{{ false }}">
+          <div style="background:#fff;border:1px solid #e2e5ea;border-radius:8px;overflow:hidden">
+            <div style="padding:12px 16px;border-bottom:1px solid #e9ecf0;display:flex;align-items:center;gap:10px"><span style="font-weight:600">Roll back</span><span style="color:#8a93a3;font-size:12px">Updated to 0.1.3 two hours ago, at 09:02 today. Possible until 15 October.</span></div>
+            <div style="padding:16px;display:flex;flex-direction:column;gap:12px">
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <sc-for list="{{ modes }}" as="m" hint-placeholder-count="2">
+                  <div onClick="{{ m.pick }}" style="border:1px solid {{ m.border }};box-shadow:{{ m.shadow }};border-radius:8px;padding:12px 14px;display:flex;gap:12px;align-items:flex-start;cursor:pointer;background:#fff">
+                    <span style="width:16px;height:16px;border-radius:50%;border:1.5px solid {{ m.ring }};display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px"><span style="width:8px;height:8px;border-radius:50%;background:{{ m.dot }}"></span></span>
+                    <div style="flex:1;display:flex;flex-direction:column;gap:3px"><div style="display:flex;align-items:center;gap:8px"><span style="font-weight:600">{{ m.name }}</span><sc-if value="{{ m.tag }}" hint-placeholder-val="{{ false }}"><span style="font-size:11px;padding:2px 7px;border-radius:3px;font-weight:600;background:{{ m.tagBg }};color:{{ m.tagFg }}">{{ m.tag }}</span></sc-if></div><span style="color:#4b5565;font-size:12.5px;line-height:1.5">{{ m.desc }}</span><sc-if value="{{ m.link }}" hint-placeholder-val="{{ false }}"><span style="color:#2456c9;font-weight:500;font-size:12.5px">{{ m.link }}</span></sc-if></div>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="display:flex;gap:10px;align-items:center"><span style="height:32px;padding:0 14px;border:1px solid {{ rbBr }};background:#fff;border-radius:6px;display:flex;align-items:center;font-weight:500;color:{{ rbFg }};cursor:pointer">{{ rbLabel }}</span><span style="color:#8a93a3;font-size:12px">{{ rbHint }}</span></div>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { channel: 'stable', phase: 'available', mode: 'code' };
+  renderVals() {
+    const rootH = this.props.height ?? '100vh';
+    const s = this.state, on = '#2456c9';
+    const seg = (list, key) => list.map(([v, name]) => ({ name, bg: s[key] === v ? '#fff' : 'transparent', fg: s[key] === v ? '#1b2430' : '#6b7483', sh: s[key] === v ? '0 1px 1px rgba(0,0,0,.06)' : 'none', pick: () => this.setState({ [key]: v }) }));
+    const slow = ['SLOW', '#fdf3dc', '#8a6210'], irreversible = ['IRREVERSIBLE', '#fdeee3', '#b4470f'];
+    const fl = (module, id, desc, note, [flag, bg, fg]) => ({ module, id, desc, note, flag, bg, fg });
+    const releases = {
+      stable: {
+        title: 'Bemmoly 0.1.3 is available', channel: 'STABLE', chBg: '#e3f4ea', chFg: '#1f7a44', date: 'released 6 October 2026', button: 'Update to 0.1.3', downtime: 'about 5 minutes, most of it the two slow changes below',
+        notes: ['Sprint reports open in under a second on projects with more than 10,000 issues.', 'Docs: page history shows who changed each block, and restores a single block.', 'Fixes invite links that expired after 24 hours instead of 7 days.'],
+        quiet: '9 changesets in total; 7 are quick',
+        flagged: [fl('work', 'work/2026-10-02-backfill-issue-search', 'Backfill search vectors for existing issues', 'about 4 min per million issues', slow), fl('core', 'core/2026-10-01-index-audit-actor', 'Index the audit log by actor', 'about 1 min per million rows', slow)],
+        callout: 'Nothing in 0.1.3 is irreversible, so a roll back keeps everything people do after the update.', calloutBg: '#f6f8fe', calloutBr: '#d9e1f5', calloutDot: on
+      },
+      beta: {
+        title: 'Bemmoly 0.2.0-beta.1 is available', channel: 'BETA', chBg: '#eef3fe', chFg: on, date: 'released 7 October 2026', button: 'Update to 0.2.0-beta.1', downtime: 'about 2 minutes',
+        notes: ['Saved filters can be shared with a team and pinned to its sidebar.', 'Docs: tables can be sorted and filtered while reading.', 'Beta: for a test server, not the one your team works in.'],
+        quiet: '14 changesets in total; 13 are quick',
+        flagged: [fl('docs', 'docs/2026-10-05-drop-legacy-page-body', 'Drop the unused legacy page body column', 'cannot be undone', irreversible)],
+        callout: 'This release contains an irreversible change. Rolling back after it means restoring the pre-update backup, which discards anything written after the update.', calloutBg: '#fdf3dc', calloutBr: '#fdf3dc', calloutDot: '#d49a1a'
+      }
+    };
+    const updated = s.phase === 'updated';
+    const rel = s.channel === 'beta' ? releases.beta : (updated ? null : releases.stable);
+    const sel = is => ({ border: is ? on : '#e2e5ea', shadow: is ? '0 0 0 2px #cdd8f3' : 'none', ring: is ? on : '#c8ced8', dot: is ? on : 'transparent' });
+    const restore = s.mode === 'restore';
+    return {
+      rootH,
+      current: updated ? '0.1.3' : '0.1.2',
+      currentWhen: updated ? 'updated today at 09:02 · stable' : 'installed 3 October 2026 · stable',
+      channels: seg([['stable', 'Stable'], ['beta', 'Beta']], 'channel'),
+      channelHint: s.channel === 'beta' ? 'Pre-releases, named -beta.N. Best on a test server.' : 'Monthly releases and patches as needed.',
+      updaterStatus: 'Ready · signed release list checked today at 06:00 · next check tomorrow at 06:00',
+      hasRelease: !!rel, rel: rel || releases.stable, upToDate: !rel,
+      doUpdate: () => { if (s.channel === 'stable') this.setState({ phase: 'updated', mode: 'code' }); },
+      updated,
+      modes: [
+        { id: 'code', name: 'Code roll back', tag: 'KEEPS ALL DATA', tagBg: '#e3f4ea', tagFg: '#1f7a44', desc: 'Swaps back to the 0.1.2 image and leaves the database as it is. Everything people did since the update stays; 0.1.3’s new columns sit unused until you update again. Takes about as long as a restart.', link: null },
+        { id: 'restore', name: 'Restore the pre-update backup', tag: 'DISCARDS 142 CHANGES', tagBg: '#fdeee3', tagFg: '#b4470f', desc: 'Restores the backup taken at 09:02 today and points 0.1.2 at it. The 142 changes 11 people made since then are discarded; the current database is kept for 7 days as bemmoly_db_rolledback_0902.', link: 'Export those 142 changes and their attachments first' }
+      ].map(m => ({ ...m, ...sel(s.mode === m.id), pick: () => this.setState({ mode: m.id }) })),
+      rbLabel: restore ? 'Roll back to 0.1.2 and discard 142 changes since 09:02' : 'Roll back to 0.1.2, keep all data',
+      rbFg: restore ? '#c42d2d' : '#3b4454', rbBr: '#d5dae2',
+      rbHint: restore ? 'You will confirm on the next screen. Takes the restore time, about 6 minutes.' : 'You will confirm on the next screen. Both modes are audited and also run from the CLI.'
+    };
+  }
+}
+</script>
+</body>
+</html>
