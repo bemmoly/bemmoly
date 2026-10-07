@@ -1,0 +1,105 @@
+@import 'tailwindcss' source('../');
+@import '@bemmoly/ui/tailwind.css';
+@import '@bemmoly/ui/theme.css';
+@import '@bemmoly/ui/fonts.css';
+
+/* `dark:` styles the Ocean version, enabled only by data-theme="dark" on the root element. */
+@custom-variant dark (&:where(html[data-theme='dark'], html[data-theme='dark'] *));
+
+/* The UI package scans its own components; the site uses none of them. */
+@source not '../../../../packages/ui/src';
+
+/*
+ * Landing-only scale steps, measured from docs/design/mocks/Bemmoly Landing.dc.html. The
+ * product mocks never use them, so they are not in @bemmoly/ui's scales. Colours stay in the
+ * package; the two shadows are the mock's rgba(16,24,40,a) built from the --scrim token
+ * (rgba(16,24,40,.45)) so no literal colour lives here.
+ */
+@theme {
+  --text-14h: 14.5px;
+  --text-14h--line-height: normal;
+  --text-17: 17px;
+  --text-17--line-height: normal;
+  --text-19: 19px;
+  --text-19--line-height: normal;
+  --text-32: 32px;
+  --text-32--line-height: normal;
+  --text-58: 58px;
+  --text-58--line-height: normal;
+  --leading-hero: 1.08;
+  --leading-heading: 1.15;
+  --tracking-hero: -0.03em;
+  --radius-window: 10px;
+  --radius-shot: 14px;
+}
+
+@theme inline {
+  --shadow-shot:
+    var(--shadow-card), 0 24px 60px color-mix(in srgb, var(--scrim) 26.667%, transparent);
+  --shadow-shot-sm: 0 16px 40px color-mix(in srgb, var(--scrim) 22.222%, transparent);
+  --color-glass: color-mix(in srgb, var(--sf) 92%, transparent);
+  /* Dark mode (Ocean) depth: everything is the accent at low alpha, never a grey. */
+  --color-edge-ac: color-mix(in srgb, var(--ac) 35%, transparent);
+  --shadow-glow:
+    0 0 0 1px color-mix(in srgb, var(--ac) 8%, transparent),
+    0 24px 80px -12px color-mix(in srgb, var(--ac) 24%, transparent);
+  --shadow-glow-sm: 0 16px 48px -12px color-mix(in srgb, var(--ac) 20%, transparent);
+}
+
+/*
+ * Ocean only: a soft accent light behind the hero. A pseudo-element far larger than the hero
+ * (160% x 150%, centred) whose gradient is fully transparent by 60%, well inside its box, so no
+ * edge can show. Static: no animation, no layout. The body clips horizontal overflow (clip, not
+ * hidden, so the sticky header still works) because the glow is wider than narrow viewports.
+ */
+@utility hero-glow {
+  html[data-theme='dark'] &::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    z-index: -1;
+    width: 160%;
+    height: 150%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    background: radial-gradient(
+      ellipse at center,
+      color-mix(in oklab, var(--ac) 18%, transparent) 0%,
+      transparent 60%
+    );
+  }
+}
+
+/* Unlayered, like @bemmoly/ui's base.css: the Landing mock's page is white (sf), not bg. */
+html,
+body {
+  background: var(--sf);
+}
+
+body {
+  font-size: var(--text-15);
+  overflow-x: clip;
+}
+
+/* In the Ocean version the page is the deepest navy and raised surfaces use sf. */
+html[data-theme='dark'],
+html[data-theme='dark'] body {
+  background: var(--bg);
+}
+
+@layer base {
+  a {
+    color: var(--ac);
+    text-decoration: none;
+  }
+
+  a:hover {
+    color: var(--ac-d);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--ac);
+    outline-offset: 2px;
+  }
+}
