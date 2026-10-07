@@ -10,6 +10,27 @@ export * from './services/modules/index.ts';
 export * from './services/realtime/index.ts';
 export * from './services/settings/index.ts';
 export * from './services/storage/index.ts';
+export type { EmailNotificationRouteDependencies } from './routes/email-notifications.routes.ts';
+export {
+  createEmailService,
+  createMemoryMailbox,
+  EMAIL_SEND_JOB,
+  EMAIL_SETTING_DEFINITIONS,
+  type EmailService,
+  type EmailServiceDependencies,
+  type MailboxStore,
+} from './services/email/index.ts';
+export {
+  createNotificationsService,
+  DIGEST_JOB,
+  NOTIFICATIONS_REALTIME_KIND,
+  registerNotificationJobs,
+  subscribeNotificationEvents,
+  wireEmailNotifications,
+  type EmailNotifications,
+  type EmailNotificationsWiring,
+  type NotificationsService,
+} from './services/notifications/index.ts';
 export {
   checkReadiness,
   type DatabaseProbe,

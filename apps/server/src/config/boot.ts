@@ -1,10 +1,14 @@
 import {
+  authenticateRequest,
   createEnabledModuleCatalog,
   createJobQueueHandle,
   createLocalEventBus,
   createRealtimeService,
   createSettingsReaderHandle,
+  createUserDirectory,
+  EMAIL_SETTING_DEFINITIONS,
   loadModules,
+  wireEmailNotifications,
   type BemmolyModule,
 } from '@bemmoly/core';
 import { createLogger, type Env } from '@bemmoly/core/config';
@@ -71,6 +75,7 @@ export async function bootApplication(options: BootOptions): Promise<Booted> {
           realtime,
           jobQueue,
           identity,
+          settingDefinitions: EMAIL_SETTING_DEFINITIONS,
           logger,
         })
       : undefined;
@@ -89,13 +94,30 @@ export async function bootApplication(options: BootOptions): Promise<Booted> {
           publicUrl: env.BEMMOLY_PUBLIC_URL,
         })
       : undefined;
+  const mail =
+    database && kernel
+      ? wireEmailNotifications({
+          env,
+          sql: database.sql,
+          settings: kernel.settings,
+          jobs: kernel.jobs,
+          realtime: kernel.realtime,
+          events: kernel.events,
+          users: createUserDirectory(database.db),
+          authorize: identity.authorize,
+          authenticate: authenticateRequest,
+          logger,
+        })
+      : undefined;
   const app = await buildApp({
     env,
     modules,
     ...(options.webRoot ? { webRoot: options.webRoot } : {}),
     ...(options.logger !== undefined ? { logger: options.logger } : {}),
     ...(database ? { database: database.probe } : {}),
-    ...(kernel ? { kernel: kernel.routes } : {}),
+    ...(kernel
+      ? { kernel: { ...kernel.routes, ...(mail ? { emailNotifications: mail.routes } : {}) } }
+      : {}),
     ...(people ? { identity: people } : {}),
   });
   return { app, ...(database ? { database } : {}), ...(kernel ? { kernel } : {}) };

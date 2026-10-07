@@ -21,6 +21,10 @@ import type { SettingsAdmin } from '../services/settings/index.ts';
 import type { DatabaseProbe } from '../services/system/index.ts';
 import { auditRoutes } from './audit.routes.ts';
 import { authzRoutes } from './authz.routes.ts';
+import {
+  emailNotificationRoutes,
+  type EmailNotificationRouteDependencies,
+} from './email-notifications.routes.ts';
 import { healthRoutes } from './health.routes.ts';
 import { identityRoutes } from './identity.routes.ts';
 import { adminModulesRoutes, moduleResourceRoutes, modulesRoutes } from './modules.routes.ts';
@@ -52,6 +56,8 @@ export interface KernelRouteDependencies {
   realtimeMetrics?: RealtimeMetricsHook;
   /** Identity, authorization and audit routes; mounted only when a database is configured. */
   identity?: IdentityDependencies;
+  /** Mounted when the host wires email and notifications. */
+  emailNotifications?: EmailNotificationRouteDependencies;
 }
 
 function identityAndAccessRoutes(deps: IdentityDependencies): FastifyPluginAsync {
@@ -106,6 +112,9 @@ export function kernelRoutes(deps: KernelRouteDependencies): FastifyPluginAsync 
         }
         if (deps.settings) {
           await api.register(adminSettingsRoutes(createSettingsController(deps.settings, actorOf)));
+        }
+        if (deps.emailNotifications) {
+          await api.register(emailNotificationRoutes(deps.emailNotifications));
         }
         await api.register(moduleResourceRoutes(deps.modules, gate));
       },
