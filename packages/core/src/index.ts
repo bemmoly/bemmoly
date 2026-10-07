@@ -10,7 +10,11 @@ export * from './services/modules/index.ts';
 export * from './services/realtime/index.ts';
 export * from './services/settings/index.ts';
 export * from './services/storage/index.ts';
+export * from './services/system/index.ts';
 export type { EmailNotificationRouteDependencies } from './routes/email-notifications.routes.ts';
+export type { SystemControllerDependencies } from './controllers/system.controller.ts';
+export { maintenanceHook } from './middlewares/maintenance.ts';
+export { backups, type BackupRow } from './models/backups.ts';
 export {
   createEmailService,
   createMemoryMailbox,
@@ -31,11 +35,6 @@ export {
   type EmailNotificationsWiring,
   type NotificationsService,
 } from './services/notifications/index.ts';
-export {
-  checkReadiness,
-  type DatabaseProbe,
-  type ReadinessDependencies,
-} from './services/system/index.ts';
 export {
   createAuditService,
   type AuditEntryInput,

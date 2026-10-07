@@ -1,0 +1,15 @@
+{
+  "name": "@bemmoly/deploy",
+  "version": "0.0.0",
+  "private": true,
+  "license": "MIT",
+  "description": "Installer, Compose stack, bemmoly CLI and release scripts",
+  "scripts": {
+    "lint": "sh scripts/lint-shell.sh",
+    "test": "bats tests/unit",
+    "bundle": "sh scripts/bundle-installer.sh"
+  },
+  "devDependencies": {
+    "bats": "1.13.0"
+  }
+}

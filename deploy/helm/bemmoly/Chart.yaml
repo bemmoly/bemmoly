@@ -1,0 +1,13 @@
+apiVersion: v2
+name: bemmoly
+description: Bemmoly, self-hosted issues and docs. Your work. Your platform.
+type: application
+# Both are replaced by the release workflow: helm package --version X --app-version X
+version: 0.0.0
+appVersion: '0.0.0'
+home: https://bemmoly.com
+sources:
+  - https://github.com/bemmoly/bemmoly
+keywords: [issues, docs, self-hosted]
+annotations:
+  artifacthub.io/license: MIT

@@ -1,0 +1,51 @@
+import type { UpdaterStatus } from '@bemmoly/shared';
+
+const escape = (value: string) => value.replace(/[&<>"']/g, (char) => `&#${char.charCodeAt(0)};`);
+
+const STEP_LABELS: Record<string, string> = {
+  backup: 'Backing up',
+  pull: 'Downloading the new version',
+  verify: 'Checking the signature',
+  tag: 'Marking the database',
+  swap: 'Starting the new version',
+  health: 'Waiting for it to answer',
+  rollback: 'Rolling back',
+  restore: 'Restoring the backup',
+  done: 'Done',
+};
+
+/**
+ * What the proxy shows while the app container is down during an update or rollback.
+ * It reveals nothing beyond the step and refreshes until the app answers again.
+ */
+export function renderProgressPage(state: UpdaterStatus): string {
+  const step = state.step ? (STEP_LABELS[state.step] ?? state.step) : 'Starting';
+  const target = state.operation === 'rollback' ? 'Rolling back' : 'Updating';
+  return `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="refresh" content="5">
+<title>Bemmoly is updating</title>
+<style>
+  :root { color-scheme: light dark; --bg: #f7f8fa; --fg: #1d2330; --muted: #6b7483; --accent: #2456c9; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #14171d; --fg: #e8eaee; --muted: #9aa3b2; --accent: #7aa2ff; } }
+  body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: var(--bg); color: var(--fg);
+    font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 440px; padding: 32px 16px; text-align: center; }
+  h1 { font-size: 20px; margin: 0 0 8px; }
+  p { margin: 0 0 8px; color: var(--muted); }
+  .step { color: var(--accent); font-weight: 500; }
+</style>
+</head>
+<body>
+<main>
+  <h1>${escape(target)} Bemmoly</h1>
+  <p class="step">${escape(step)}</p>
+  <p>This usually takes under a minute. The page reloads by itself when Bemmoly is back.</p>
+</main>
+</body>
+</html>
+`;
+}

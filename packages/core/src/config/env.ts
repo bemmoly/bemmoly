@@ -53,6 +53,11 @@ export const envSchema = z.object({
   BEMMOLY_BACKUP_PASSPHRASE: z.string().min(16).optional(),
   BEMMOLY_DB_AUTO_MIGRATE: z.stringbool().default(true),
   BEMMOLY_DB_CONTEXTS: contextList,
+  BEMMOLY_BACKUP_DIR: z.string().min(1).default('/var/bemmoly/backups'),
+  BEMMOLY_VERSION: z.string().min(1).default('0.0.0-dev'),
+  BEMMOLY_UPDATER_URL: z.url({ protocol: /^https?$/ }).optional(),
+  UPDATER_TOKEN: z.string().min(32).optional(),
+  BEMMOLY_PG_BIN_DIR: z.string().min(1).default('/usr/lib/postgresql/18/bin'),
 });
 
 export type Env = z.output<typeof envSchema>;

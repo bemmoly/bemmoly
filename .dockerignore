@@ -1,0 +1,15 @@
+# Applies to every image built from the repository root. Each Dockerfile under
+# deploy/docker has its own, narrower ignore file as well (BuildKit).
+**/.env
+**/.env.*
+!**/.env.example
+**/node_modules
+**/.turbo
+**/coverage
+**/storybook-static
+**/playwright-report
+**/test-results
+**/*.log
+.git
+.claude
+var

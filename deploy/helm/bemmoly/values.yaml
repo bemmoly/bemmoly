@@ -1,0 +1,42 @@
+# Bemmoly on Kubernetes: external Postgres 18 (with pgvector), the app as one Deployment
+# (role all) or split into api and worker. This chart is a starting point for 0.1.0.
+
+image:
+  repository: ghcr.io/bemmoly/bemmoly
+  # Defaults to the chart's appVersion.
+  tag: ''
+  pullPolicy: IfNotPresent
+
+# all: one Deployment does everything. split: an api Deployment and a worker Deployment.
+mode: all
+replicas:
+  api: 1
+  worker: 1
+
+# A Secret you create with DATABASE_URL, BEMMOLY_SECRET_KEY and BEMMOLY_BACKUP_PASSPHRASE
+# (and BEMMOLY_METRICS_TOKEN if Prometheus scrapes /metrics). Keep a copy outside the cluster.
+existingSecret: bemmoly
+
+publicUrl: https://bemmoly.example.com
+modules: ''
+# Changesets run at boot by default; set false when a pre-upgrade job runs them.
+autoMigrate: true
+
+persistence:
+  enabled: true
+  size: 20Gi
+  storageClass: ''
+
+service:
+  port: 80
+
+ingress:
+  enabled: false
+  className: ''
+  host: bemmoly.example.com
+  annotations: {}
+  tlsSecret: ''
+
+resources:
+  requests: { cpu: 250m, memory: 512Mi }
+  limits: { memory: 1Gi }

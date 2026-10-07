@@ -1,0 +1,88 @@
+#!/usr/bin/env bash
+# bemmoly: run and look after a Bemmoly install without learning its Compose layout.
+# Installed to /usr/local/bin by the installer; run `bemmoly help` for the commands.
+set -euo pipefail
+
+self=$(readlink -f "${BASH_SOURCE[0]}")
+if [[ -f "$(dirname "${self}")/lib/stack.sh" ]]; then
+  # Running from a checkout: deploy/cli/bemmoly
+  CLI_LIB="$(dirname "${self}")/lib"
+  SHARED_LIB="$(dirname "${self}")/../installer/lib"
+  CLI_PREFIX=''
+else
+  CLI_LIB=/usr/local/lib/bemmoly
+  SHARED_LIB=/usr/local/lib/bemmoly
+  CLI_PREFIX='cli-'
+fi
+# shellcheck source=../installer/lib/common.sh
+. "${SHARED_LIB}/common.sh"
+# shellcheck source=../installer/lib/preflight.sh
+. "${SHARED_LIB}/preflight.sh"
+for part in stack backups updates; do
+  # shellcheck source=/dev/null
+  . "${CLI_LIB}/${CLI_PREFIX}${part}.sh"
+done
+
+if [[ -r /etc/default/bemmoly ]]; then
+  # shellcheck source=/dev/null
+  . /etc/default/bemmoly
+fi
+BEMMOLY_DIR="${BEMMOLY_DIR:-/var/bemmoly}"
+BEMMOLY_LOG=$(mktemp /tmp/bemmoly-cli.XXXXXX)
+trap 'rm -f "${BEMMOLY_LOG}"' EXIT
+export BEMMOLY_DIR BEMMOLY_LOG
+
+usage() {
+  cat <<'EOF'
+Usage: bemmoly <command> [options]
+
+  status                      containers, version, database size, queue, last backup, certificate
+  doctor                      re-run the installer's checks and the app's health checks, with fixes
+  logs [service] [-f]         recent logs (bemmoly, db, proxy, updater)
+  shell [service]             a shell in a container; `bemmoly shell db` opens psql
+  start | stop | restart      the whole stack
+  config get KEY              print a setting from .env (secrets are masked)
+  config set KEY VALUE        change a setting in .env and restart what uses it
+  backup [--if-older-than 36h]
+  backups [list]              every backup with version, size and verification
+  verify <backup> [--drill]   check checksums, or restore into a temporary database
+  restore <backup|file|s3-url> [--yes]
+  restore --mount <backup>    attach a backup read-only as a second database
+  restore --unmount <database>
+  upgrade [version] [--yes]   backup, pull, verify, swap, health check; rolls back on failure
+  rollback [--prefer-restore] [--yes]
+  db <command>                the changelog runner: status, validate, plan, history, tag
+  update-channel [stable|beta]
+EOF
+}
+
+main() {
+  local command="${1:-help}"
+  if [[ "${command}" != help && "${command}" != --help && "${command}" != -h && "$(id -u)" -ne 0 ]]; then
+    exec sudo --preserve-env=BEMMOLY_DIR "${self}" "$@"
+  fi
+  [[ $# -gt 0 ]] && shift
+  case "${command}" in
+    status) cmd_status "$@" ;;
+    doctor) cmd_doctor "$@" ;;
+    logs) cmd_logs "$@" ;;
+    shell) cmd_shell "$@" ;;
+    start | stop | restart) cmd_lifecycle "${command}" "$@" ;;
+    config) cmd_config "$@" ;;
+    backup) cmd_backup "$@" ;;
+    backups) cmd_backups "$@" ;;
+    verify) cmd_verify "$@" ;;
+    restore) cmd_restore "$@" ;;
+    upgrade) cmd_upgrade "$@" ;;
+    rollback) cmd_rollback "$@" ;;
+    db) cmd_db "$@" ;;
+    update-channel) cmd_update_channel "$@" ;;
+    help | --help | -h) usage ;;
+    *)
+      usage >&2
+      die "Unknown command: ${command}" "Run: bemmoly help"
+      ;;
+  esac
+}
+
+main "$@"

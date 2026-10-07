@@ -1,0 +1,100 @@
+#!/bin/sh
+# Starts the Bemmoly server: waits for Postgres, creates the extensions, runs pending
+# changesets (unless BEMMOLY_DB_AUTO_MIGRATE=false), then replaces itself with the
+# image's command (node … apps/server/src/server.ts). Any other command runs as given,
+# e.g. `docker run … bemmoly-system status`.
+set -eu
+
+log() {
+  printf '%s bemmoly-entrypoint: %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$*" >&2
+}
+
+wait_for_database() {
+  if [ -z "${DATABASE_URL:-}" ]; then
+    log "DATABASE_URL is not set; starting without a database (/readyz reports degraded)"
+    return 1
+  fi
+  waited=0
+  until "${BEMMOLY_PG_BIN_DIR}/pg_isready" --quiet --dbname="${DATABASE_URL}" --timeout=3; do
+    waited=$((waited + 2))
+    if [ "${waited}" -ge 120 ]; then
+      log "Postgres did not answer within 120 s; check the db container (bemmoly logs db)"
+      exit 1
+    fi
+    sleep 2
+  done
+  return 0
+}
+
+create_extensions() {
+  # The bundled database user owns the database; on an external database the
+  # extensions may need a superuser, so a failure is a warning, not a stop.
+  if ! "${BEMMOLY_PG_BIN_DIR}/psql" --dbname="${DATABASE_URL}" --quiet --no-psqlrc \
+    --set ON_ERROR_STOP=1 \
+    --command 'create extension if not exists pg_trgm' \
+    --command 'create extension if not exists vector' >/dev/null 2>&1; then
+    log "could not create the pg_trgm and vector extensions; semantic search stays off until a superuser runs: create extension vector"
+  fi
+}
+
+run_changesets() {
+  case "${BEMMOLY_DB_AUTO_MIGRATE:-true}" in
+    false | 0 | no | off)
+      log "BEMMOLY_DB_AUTO_MIGRATE=false: not running changesets"
+      return 0
+      ;;
+  esac
+  status=0
+  bemmoly-db update || status=$?
+  if [ "${status}" -eq 127 ]; then
+    log "the changelog runner is not in this image; applying the system changesets only"
+    bemmoly-system schema apply --json >/dev/null
+  elif [ "${status}" -ne 0 ]; then
+    log "changesets failed (exit ${status}); not starting. See the lines above, then: bemmoly db status"
+    exit "${status}"
+  fi
+}
+
+demo() {
+  log "--demo (an embedded Postgres with sample data) is not built into this image yet."
+  log "Try Bemmoly locally with the Compose quickstart instead: https://bemmoly.com/docs/try-locally"
+  exit 64
+}
+
+# The telemetry preload ships with the observability package; an image built without
+# it starts the server without the preload rather than not at all.
+without_missing_preload() {
+  preload_ok=1
+  node --input-type=module --eval "import.meta.resolve('@bemmoly/core/telemetry/preload')" \
+    >/dev/null 2>&1 || preload_ok=0
+  skip_next=0
+  for arg in "$@"; do
+    shift
+    if [ "${skip_next}" -eq 1 ]; then
+      skip_next=0
+      continue
+    fi
+    if [ "${preload_ok}" -eq 0 ] && [ "${arg}" = --import ] && [ "${1:-}" = @bemmoly/core/telemetry/preload ]; then
+      log "telemetry preload not in this image; starting without it"
+      skip_next=1
+      continue
+    fi
+    set -- "$@" "${arg}"
+  done
+  exec "$@"
+}
+
+case "${1:-}" in
+  --demo) demo ;;
+  serve | '') set -- node --import @bemmoly/core/telemetry/preload apps/server/src/server.ts ;;
+  node) ;;
+  *) exec "$@" ;;
+esac
+
+if wait_for_database; then
+  create_extensions
+  run_changesets
+fi
+log "starting Bemmoly ${BEMMOLY_VERSION:-} (role ${BEMMOLY_ROLE:-all})"
+cd /app
+without_missing_preload "$@"

@@ -11,6 +11,10 @@ import {
 import { createPeopleController } from '../controllers/people.controller.ts';
 import { createRealtimeController } from '../controllers/realtime.controller.ts';
 import { createSettingsController } from '../controllers/settings.controller.ts';
+import {
+  createSystemController,
+  type SystemControllerDependencies,
+} from '../controllers/system.controller.ts';
 import type { ModuleAccessResolver } from '../contracts/module-access.ts';
 import type { SessionResolver } from '../contracts/session-resolver.ts';
 import { createActorResolver, type ActorResolver } from '../middlewares/actor.ts';
@@ -33,6 +37,7 @@ import { metricsRoutes } from './metrics.routes.ts';
 import { adminModulesRoutes, moduleResourceRoutes, modulesRoutes } from './modules.routes.ts';
 import { realtimeRoutes } from './realtime.routes.ts';
 import { adminSettingsRoutes } from './settings.routes.ts';
+import { systemRoutes } from './system.routes.ts';
 
 export const API_PREFIX = '/api/v1';
 
@@ -63,6 +68,8 @@ export interface KernelRouteDependencies {
   emailNotifications?: EmailNotificationRouteDependencies;
   /** Serves /metrics when given; the route answers 404 until a token is configured. */
   metrics?: ScrapeDependencies;
+  /** Backups, updates and system health; mounted when the host wires the system service. */
+  system?: SystemControllerDependencies;
 }
 
 function identityAndAccessRoutes(deps: IdentityDependencies): FastifyPluginAsync {
@@ -123,6 +130,7 @@ export function kernelRoutes(deps: KernelRouteDependencies): FastifyPluginAsync 
         if (deps.emailNotifications) {
           await api.register(emailNotificationRoutes(deps.emailNotifications));
         }
+        if (deps.system) await api.register(systemRoutes(createSystemController(deps.system)));
         await api.register(moduleResourceRoutes(deps.modules, gate));
       },
       { prefix: API_PREFIX },

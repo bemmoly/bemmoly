@@ -1,0 +1,10 @@
+#!/bin/sh
+# The changelog runner (`bemmoly db …` on the host): status, validate, plan, update,
+# history, tag, rollback; every command takes --json. Exits 127 when the image was built
+# without it, so callers can tell "absent" from "failed".
+cli=/app/apps/server/src/cli.ts
+if [ ! -f "${cli}" ]; then
+  echo "bemmoly-db: the changelog runner is not in this image" >&2
+  exit 127
+fi
+cd /app && exec node "${cli}" db "$@"

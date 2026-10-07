@@ -1,0 +1,62 @@
+{{- $roles := ternary (list "api" "worker") (list "all") (eq .Values.mode "split") -}}
+{{- range $role := $roles }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "bemmoly.name" $ }}-{{ $role }}
+  labels:
+    {{- include "bemmoly.labels" $ | nindent 4 }}
+    app.kubernetes.io/component: {{ $role }}
+spec:
+  replicas: {{ ternary $.Values.replicas.worker $.Values.replicas.api (eq $role "worker") }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: {{ $.Release.Name }}
+      app.kubernetes.io/component: {{ $role }}
+  template:
+    metadata:
+      labels:
+        {{- include "bemmoly.labels" $ | nindent 8 }}
+        app.kubernetes.io/component: {{ $role }}
+    spec:
+      securityContext:
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+      containers:
+        - name: bemmoly
+          image: {{ include "bemmoly.image" $ }}
+          imagePullPolicy: {{ $.Values.image.pullPolicy }}
+          envFrom:
+            - secretRef:
+                name: {{ $.Values.existingSecret }}
+          env:
+            - { name: BEMMOLY_ROLE, value: {{ $role | quote }} }
+            - { name: BEMMOLY_PUBLIC_URL, value: {{ $.Values.publicUrl | quote }} }
+            - { name: BEMMOLY_MODULES, value: {{ $.Values.modules | quote }} }
+            - { name: BEMMOLY_DB_AUTO_MIGRATE, value: {{ $.Values.autoMigrate | quote }} }
+            - { name: BEMMOLY_TRUST_PROXY, value: "true" }
+          ports:
+            - { name: http, containerPort: 8080 }
+          readinessProbe:
+            httpGet: { path: /readyz, port: http }
+            periodSeconds: 10
+          livenessProbe:
+            httpGet: { path: /healthz, port: http }
+            initialDelaySeconds: 60
+            periodSeconds: 20
+          resources:
+            {{- toYaml $.Values.resources | nindent 12 }}
+          volumeMounts:
+            - { name: data, mountPath: /var/bemmoly/data }
+            - { name: data, mountPath: /var/bemmoly/backups, subPath: backups }
+      volumes:
+        - name: data
+          {{- if $.Values.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ include "bemmoly.name" $ }}-data
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+{{- end }}

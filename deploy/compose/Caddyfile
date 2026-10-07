@@ -1,0 +1,39 @@
+# Bemmoly behind Caddy: automatic HTTPS for BEMMOLY_DOMAIN, HTTP/2 and HTTP/3,
+# compression, and the updater's progress page while the app restarts.
+#
+# BEMMOLY_TLS_MODE is "auto" when the domain already pointed here at install time, and
+# "internal" when it did not: Caddy then still tries a real certificate first and falls
+# back to a self-signed one, trying again at each renewal, so the real certificate
+# arrives soon after DNS does (`sudo bemmoly doctor` switches the mode back to auto).
+
+(tls-auto) {
+}
+
+(tls-internal) {
+	tls {
+		issuer acme
+		issuer internal
+	}
+}
+
+{$BEMMOLY_DOMAIN} {
+	import tls-{$BEMMOLY_TLS_MODE}
+	encode zstd gzip
+
+	reverse_proxy bemmoly:8080 {
+		header_up X-Bemmoly-Tls {$BEMMOLY_TLS_MODE}
+	}
+
+	# The app is down during an update or a rollback: show the progress page.
+	handle_errors 502 503 504 {
+		rewrite * /progress
+		reverse_proxy updater:8090 {
+			fail_duration 1s
+		}
+	}
+
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		-Server
+	}
+}
