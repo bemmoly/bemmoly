@@ -12,6 +12,8 @@
   "scripts": {
     "build": "turbo run build",
     "typecheck": "turbo run typecheck",
+    "lint": "turbo run lint //#lint:root",
+    "lint:root": "eslint --max-warnings 0 --no-error-on-unmatched-pattern eslint.config.js scripts",
     "test": "turbo run test",
     "test:integration": "turbo run test:integration",
     "test:e2e": "turbo run test:e2e",
@@ -20,9 +22,16 @@
     "format:check": "prettier --check ."
   },
   "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@bemmoly/eslint-plugin": "workspace:*",
     "@types/node": "26.6.4",
+    "eslint": "10.12.0",
+    "eslint-config-prettier": "10.1.8",
+    "eslint-plugin-react-hooks": "7.1.1",
+    "globals": "17.13.0",
     "prettier": "3.9.9",
     "turbo": "2.11.7",
-    "typescript": "7.0.2"
+    "typescript": "7.0.2",
+    "typescript-eslint": "8.71.1"
   }
 }
