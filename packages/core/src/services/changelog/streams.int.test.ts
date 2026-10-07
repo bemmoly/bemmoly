@@ -5,7 +5,7 @@ import { createChangelogRunner } from './runner.ts';
 import { freshDatabase, tableExists, type Fresh } from './test-support.ts';
 import { structuralProblems } from './validate.ts';
 
-const IDENTITY_AND_EMAIL_TABLES = [
+const LATER_STREAM_TABLES = [
   'users',
   'sessions',
   'roles',
@@ -16,6 +16,7 @@ const IDENTITY_AND_EMAIL_TABLES = [
   'email_outbox',
   'notifications',
   'notification_preferences',
+  'backups',
 ];
 
 describe('changelog runner: every kernel stream together', () => {
@@ -39,16 +40,16 @@ describe('changelog runner: every kernel stream together', () => {
       appVersion: '0.1.0',
     });
 
-  it('treats the three streams as one valid ordered changelog', async () => {
+  it('treats the kernel streams as one valid ordered changelog', async () => {
     const kernel = await loadKernelChangelog();
     expect(structuralProblems('core', kernel).filter((p) => p.problem !== 'missing_down')).toEqual(
       [],
     );
     const prefixes = new Set(kernel.map((changeset) => changeset.id.slice(0, 2)));
-    expect([...prefixes]).toEqual(['00', '01', '02']);
+    expect([...prefixes]).toEqual(['00', '01', '02', '03']);
   });
 
-  it('applies 00xx, then 01xx, then 02xx from empty, and nothing on a second run', async (ctx) => {
+  it('applies 00xx, 01xx, 02xx then 03xx from empty, and nothing on a second run', async (ctx) => {
     if (!fresh) return ctx.skip(server.available ? 'no database' : server.reason);
     const kernel = await loadKernelChangelog();
     const runner = await runnerOn(fresh);
@@ -56,7 +57,7 @@ describe('changelog runner: every kernel stream together', () => {
     const ids = applied.map((entry) => entry.id);
     expect(ids).toEqual(kernel.map((changeset) => changeset.id));
     expect(ids.indexOf('0101-identity-users')).toBeLessThan(ids.indexOf('0201-notifications'));
-    for (const table of ['settings', 'modules', ...IDENTITY_AND_EMAIL_TABLES]) {
+    for (const table of ['settings', 'modules', ...LATER_STREAM_TABLES]) {
       expect(await tableExists(fresh.sql, table)).toBe(true);
     }
     expect(await runner.update({ contexts: ['production'] })).toEqual([]);
@@ -78,7 +79,8 @@ describe('changelog runner: every kernel stream together', () => {
       select rc.capability, r.key, rc.allowed from role_capabilities rc
       join roles r on r.id = rc.role_id
       where rc.capability in ('ai.actions.run', 'workspace.settings.manage',
-                              'workspace.modules.manage', 'workspace.email.manage')
+                              'workspace.modules.manage', 'workspace.email.manage',
+                              'workspace.system.manage')
       order by rc.capability, r.key`;
     const allowed = (capability: string) =>
       cells.filter((c) => c.capability === capability && c.allowed).map((c) => c.key);
@@ -87,6 +89,7 @@ describe('changelog runner: every kernel stream together', () => {
       'workspace.settings.manage',
       'workspace.modules.manage',
       'workspace.email.manage',
+      'workspace.system.manage',
     ]) {
       expect(allowed(capability)).toEqual(['org_admin']);
     }
@@ -103,17 +106,17 @@ describe('changelog runner: every kernel stream together', () => {
     await expect(sql`delete from audit_log`).rejects.toThrow(/append-only/);
   });
 
-  it('rolls the identity and email changesets back and applies them again', async (ctx) => {
+  it('rolls the identity, email and backups changesets back and applies them again', async (ctx) => {
     if (!fresh) return ctx.skip(server.available ? 'no database' : server.reason);
     const runner = await runnerOn(fresh);
     await runner.rollback('core', { toId: '0003-idempotency-keys' });
-    for (const table of IDENTITY_AND_EMAIL_TABLES) {
+    for (const table of LATER_STREAM_TABLES) {
       expect(await tableExists(fresh.sql, table)).toBe(false);
     }
     expect(await tableExists(fresh.sql, 'settings')).toBe(true);
     const reapplied = await runner.update({ contexts: ['production'] });
     expect(reapplied.map((entry) => entry.id.slice(0, 2))).not.toContain('00');
-    for (const table of IDENTITY_AND_EMAIL_TABLES) {
+    for (const table of LATER_STREAM_TABLES) {
       expect(await tableExists(fresh.sql, table)).toBe(true);
     }
   });

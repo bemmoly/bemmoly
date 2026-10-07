@@ -59,6 +59,13 @@ const KERNEL: ReadonlyArray<
     ONLY_ORG_ADMIN,
   ],
   [
+    'workspace.system.manage',
+    'Manage backups and updates',
+    'Back up, restore, update and roll back',
+    'Workspace',
+    ONLY_ORG_ADMIN,
+  ],
+  [
     'workspace.email.manage',
     'Manage email delivery',
     'SMTP settings, test sends, the dev mailbox',
