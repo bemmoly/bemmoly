@@ -1,0 +1,28 @@
+---
+/** Every other way to run Bemmoly, as situation cards, with the chooser above them. */
+import { PATHS } from '../../data/paths.ts';
+import Chooser from './Chooser.astro';
+import PathCard from './PathCard.astro';
+---
+
+<section
+  id="other-paths"
+  aria-labelledby="other-paths-title"
+  class="flex scroll-mt-20 flex-col gap-6"
+>
+  <div class="flex max-w-190 flex-col gap-2">
+    <h2 id="other-paths-title" class="text-22 leading-title font-semibold tracking-title text-tx">
+      Or start from what you already have
+    </h2>
+    <p class="text-15 leading-desc text-tx3">
+      Each card starts with the situation it is for. The image, the upgrades and the backups are the
+      same on all of them.
+    </p>
+  </div>
+  <Chooser />
+  <ul class="grid gap-4 md:grid-cols-2">
+    {PATHS.map((path) => (
+      <PathCard path={path} />
+    ))}
+  </ul>
+</section>
