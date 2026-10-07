@@ -54,14 +54,16 @@ env_get() {
   sed -n "s/^$2=//p" "$1" 2>/dev/null | tail -n 1
 }
 
-# env_set FILE KEY VALUE  replaces or appends KEY=VALUE, keeping mode 600
+# env_set FILE KEY VALUE  replaces or appends KEY=VALUE, keeping mode 600.
+# POSIX sh has no `local`: helpers here use prefixed names so they never clobber a
+# caller's variables (a caller's $tmp was once overwritten here).
 env_set() {
   if grep -q "^$2=" "$1" 2>/dev/null; then
-    tmp="$1.tmp.$$"
+    _env_set_next="$1.next.$$"
     awk -v key="$2" -v value="$3" 'BEGIN { FS = OFS = "=" }
-      $1 == key { print key "=" value; next } { print }' "$1" >"${tmp}"
-    chmod 600 "${tmp}"
-    mv "${tmp}" "$1"
+      $1 == key { print key "=" value; next } { print }' "$1" >"${_env_set_next}"
+    chmod 600 "${_env_set_next}"
+    mv "${_env_set_next}" "$1"
   else
     printf '%s=%s\n' "$2" "$3" >>"$1"
   fi

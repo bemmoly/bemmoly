@@ -112,6 +112,35 @@ setup() {
   [ "$(wc -l <"${file}" | tr -d ' ')" = 4 ]
 }
 
+@test "env_set leaves the caller's variables alone (a re-run once emptied .env)" {
+  tmp="${BATS_TEST_TMPDIR}/kept.env"
+  printf 'VERSION=1.0.0\nPOSTGRES_PASSWORD=secret\nUPDATER_TOKEN=abc\n' >"${tmp}"
+  env_set "${tmp}" VERSION 1.1.0
+  env_set "${tmp}" COMPOSE_PROFILES db,proxy
+  [ "${tmp}" = "${BATS_TEST_TMPDIR}/kept.env" ]
+  [ "$(env_get "${tmp}" VERSION)" = 1.1.0 ]
+  [ "$(env_get "${tmp}" POSTGRES_PASSWORD)" = secret ]
+  [ "$(env_get "${tmp}" UPDATER_TOKEN)" = abc ]
+  [ "$(env_get "${tmp}" COMPOSE_PROFILES)" = db,proxy ]
+}
+
+@test "a re-run keeps every secret and changes only what the flags say" {
+  parse_args --domain bemmoly.acme.dev --version 1.2.0 --dir "${BATS_TEST_TMPDIR}/install"
+  mkdir -p "${INSTALL_DIR}"
+  MEM_MB=4096 tune_postgres
+  TLS_MODE=auto
+  new_env_file
+  before=$(env_get "${INSTALL_DIR}/.env" BEMMOLY_SECRET_KEY)
+  parse_args --version 1.3.0 --no-in-app-updates --dir "${INSTALL_DIR}"
+  update_env_file
+  env="${INSTALL_DIR}/.env"
+  [ "$(env_get "${env}" BEMMOLY_SECRET_KEY)" = "${before}" ]
+  [ -n "$(env_get "${env}" POSTGRES_PASSWORD)" ]
+  [ "$(env_get "${env}" VERSION)" = 1.3.0 ]
+  [ "$(env_get "${env}" COMPOSE_PROFILES)" = db,proxy ]
+  [ "$(env_get "${env}" BEMMOLY_DOMAIN)" = bemmoly.acme.dev ]
+}
+
 @test "a new .env has every key, fresh secrets and mode 600" {
   parse_args --domain bemmoly.acme.dev --modules work --version 1.2.0 --dir "${BATS_TEST_TMPDIR}/install"
   mkdir -p "${INSTALL_DIR}"

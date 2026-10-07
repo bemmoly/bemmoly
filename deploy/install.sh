@@ -50,9 +50,10 @@ main() {
   note "Detected $(describe_machine)"
   ensure_docker
   configure
+  # Before start-up, so the fixes printed on a failure (`bemmoly logs …`) work.
+  install_cli
   start_stack
   request_certificate
-  install_cli
   schedule_backups
   final_message
   as_root install -m 600 "${BEMMOLY_LOG}" "${INSTALL_DIR}/install.log"

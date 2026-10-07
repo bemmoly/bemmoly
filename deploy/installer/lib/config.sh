@@ -97,8 +97,12 @@ update_env_file() {
 
 write_install_files() {
   as_root install -d -m 755 "${INSTALL_DIR}"
-  as_root install -d -m 750 -o "${APP_UID}" -g "${APP_UID}" "${INSTALL_DIR}/data" "${INSTALL_DIR}/backups"
-  as_root install -d -m 700 "${INSTALL_DIR}/pg" "${INSTALL_DIR}/caddy" "${INSTALL_DIR}/caddy/data" "${INSTALL_DIR}/caddy/config"
+  # The app runs as uid 10001 inside its container; no such user exists on the host.
+  as_root install -d -m 750 "${INSTALL_DIR}/data" "${INSTALL_DIR}/backups"
+  as_root chown "${APP_UID}:${APP_UID}" "${INSTALL_DIR}/data" "${INSTALL_DIR}/backups"
+  # The Postgres image's own user must traverse pg/; its entrypoint locks down the data folder.
+  as_root install -d -m 755 "${INSTALL_DIR}/pg"
+  as_root install -d -m 700 "${INSTALL_DIR}/caddy" "${INSTALL_DIR}/caddy/data" "${INSTALL_DIR}/caddy/config"
   asset docker-compose.yml | root_write "${INSTALL_DIR}/docker-compose.yml" 644
   asset Caddyfile | root_write "${INSTALL_DIR}/Caddyfile" 644
   if as_root test -f "${INSTALL_DIR}/.env"; then
