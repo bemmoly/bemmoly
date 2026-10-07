@@ -29,18 +29,11 @@ declare module '../../contracts/settings.ts' {
 }
 
 /**
- * Where the newest release manifest of each channel lives. Stable is the latest GitHub
- * release's asset; beta needs a stable address for pre-releases (see the report).
+ * The newest full release's manifest on GitHub Releases. The beta channel also reads
+ * the newest pre-release's, found through the GitHub API at check time.
  */
-export const DEFAULT_MANIFEST_URLS = {
-  stable: 'https://github.com/bemmoly/bemmoly/releases/latest/download/release-manifest.json',
-  beta: 'https://get.bemmoly.dev/releases/beta/release-manifest.json',
-} as const;
-
-/** The manifest URL for a channel; an admin-set URL (an internal mirror) wins. */
-export function manifestUrlFor(channel: 'stable' | 'beta', override: string | null): string {
-  return override ?? DEFAULT_MANIFEST_URLS[channel];
-}
+export const STABLE_MANIFEST_URL =
+  'https://github.com/bemmoly/bemmoly/releases/latest/download/release-manifest.json';
 
 const SYSTEM_DEFAULTS = {
   'system.backups.schedule': backupScheduleSettingsSchema.parse({}),

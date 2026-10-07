@@ -16,7 +16,7 @@ export {
   type UpdateAvailablePayload,
 } from './events.ts';
 export { SYSTEM_JOBS, systemJobs } from './jobs.ts';
-export { DEFAULT_MANIFEST_URLS, manifestUrlFor, SYSTEM_SETTINGS } from './settings.ts';
+export { STABLE_MANIFEST_URL, SYSTEM_SETTINGS } from './settings.ts';
 
 export {
   getBackup,

@@ -1,21 +1,24 @@
 import { releaseManifestSchema, type ReleaseChannel, type ReleaseManifest } from '@bemmoly/shared';
 import semver from 'semver';
-import { fetchReleaseManifest } from '../../../clients/release-manifest.ts';
+import {
+  fetchReleaseManifest,
+  latestPrereleaseManifestUrl,
+} from '../../../clients/release-manifest.ts';
 import type { SystemDependencies } from '../deps.ts';
 import { publishSystemEvent } from '../events.ts';
-import { DEFAULT_MANIFEST_URLS, readSetting } from '../settings.ts';
+import { readSetting, STABLE_MANIFEST_URL } from '../settings.ts';
 import { selectAvailable } from './select.ts';
 import { readUpdateCheckState, writeUpdateCheckState, type UpdateCheckState } from './state.ts';
 
 export const UPDATE_CHECK_JOB = 'system.update-check';
 export const UPDATE_CHECK_CRON = '17 4 * * *';
 
-/** The beta channel also sees stable releases; an admin-set URL replaces both. */
-function manifestUrls(channel: ReleaseChannel, override: string | null): string[] {
+/** The beta channel also sees stable releases; an admin-set URL (a mirror) replaces both. */
+async function manifestUrls(channel: ReleaseChannel, override: string | null): Promise<string[]> {
   if (override) return [override];
-  return channel === 'stable'
-    ? [DEFAULT_MANIFEST_URLS.stable]
-    : [DEFAULT_MANIFEST_URLS.beta, DEFAULT_MANIFEST_URLS.stable];
+  if (channel === 'stable') return [STABLE_MANIFEST_URL];
+  const prerelease = await latestPrereleaseManifestUrl().catch(() => null);
+  return prerelease ? [prerelease, STABLE_MANIFEST_URL] : [STABLE_MANIFEST_URL];
 }
 
 /** The newest release offered across the channel's manifests; fails only if every fetch does. */
@@ -62,7 +65,7 @@ export async function checkForUpdates(
   let state: UpdateCheckState;
   try {
     const available = await newestAvailable(
-      manifestUrls(channel, override),
+      await manifestUrls(channel, override),
       channel,
       deps.config.appVersion,
     );
