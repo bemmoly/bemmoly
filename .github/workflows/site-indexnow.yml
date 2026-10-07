@@ -1,0 +1,31 @@
+name: Site IndexNow
+
+# Tells the IndexNow engines to recrawl bemmoly.com after a change to the site lands on main.
+# Coolify deploys from the same push; IndexNow only queues the URLs, so an early ping is fine.
+on:
+  push:
+    branches: [main]
+    paths: ['apps/site/**']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  submit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+      # Waits for the deploy, then retries so a slow build does not lose the ping.
+      - name: Submit the sitemap to IndexNow
+        run: |
+          sleep 300
+          for attempt in 1 2 3 4 5 6; do
+            node apps/site/scripts/indexnow.ts && exit 0
+            sleep 120
+          done
+          exit 1

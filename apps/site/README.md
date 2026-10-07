@@ -14,8 +14,9 @@ source of truth.
 | `/community`    | GitHub, the Discord placeholder, contributing                  |
 | `/install.sh`   | `public/install.sh`, a copy of `deploy/install.sh` (see below) |
 
-`robots.txt`, `sitemap-index.xml` (`@astrojs/sitemap`), `site.webmanifest`, the favicons and the
-Open Graph image are generated or taken from `@bemmoly/ui/brand`.
+`robots.txt`, `sitemap-index.xml` (`@astrojs/sitemap`), `llms.txt`, the IndexNow key file,
+`site.webmanifest`, the favicons and the Open Graph image are generated or taken from
+`@bemmoly/ui/brand`.
 
 ## Commands
 
@@ -36,6 +37,29 @@ From the root, `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm build` and `pnp
 the site. Turborepo builds the site before its `lint` and `test` (both read `dist/`), and its
 build does not wait for the design system's Storybook build because it reads the package's
 source directly.
+
+## Indexing
+
+Everything on the site is public and meant to be found, by search engines and by AI assistants.
+
+- `robots.txt` (`src/pages/robots.txt.ts`) allows everything for `*` and names each crawler in
+  `src/data/crawlers.ts`: search engines, AI assistants and answer engines, training crawls and
+  link previews. Excluding one later is an edit to that list.
+- `sitemap-index.xml` lists every page except 404 with a `lastmod` of the build time; every page
+  carries `<link rel="sitemap">`, a canonical URL, `<meta name="robots">` (`noindex` on 404 only),
+  Open Graph and Twitter cards, and JSON-LD for the organisation, the website, the software and
+  the page. The JSON-LD block is data, not a script, so the CSP does not need a hash for it.
+- `llms.txt` (`src/pages/llms.txt.ts`, the llmstxt.org shape) summarises the product and lists
+  every page from `src/data/pages.ts` and the landing copy, so it cannot drift from the pages.
+- IndexNow: `src/lib/indexnow.ts` holds the key, served at `/<key>.txt`;
+  `pnpm --filter @bemmoly/site indexnow` submits every sitemap URL to api.indexnow.org, which
+  feeds Bing, Yandex, Naver, Seznam, Yep and DuckDuckGo within hours. The `Site IndexNow`
+  workflow runs it after a change to `apps/site` lands on `main` (five minutes after the push,
+  with retries, to let Coolify deploy first).
+- Google ignores IndexNow. Once, by hand: add `bemmoly.com` as a domain property in Google Search
+  Console (DNS TXT verification), submit `https://bemmoly.com/sitemap-index.xml`, and request
+  indexing of `/` from the URL inspection tool; the rest of the pages follow from the sitemap
+  within a day. Bing Webmaster Tools can import the Search Console property in one click.
 
 ## Design rules
 

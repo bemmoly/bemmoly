@@ -13,7 +13,14 @@ export default defineConfig({
     // Pages are small; inlining the stylesheet removes the only render-blocking request.
     inlineStylesheets: 'always',
   },
-  integrations: [sitemap()],
+  integrations: [
+    sitemap({
+      // The 404 page is served but is not a destination.
+      filter: (page) => !page.endsWith('/404'),
+      lastmod: new Date(),
+      changefreq: 'weekly',
+    }),
+  ],
   devToolbar: { enabled: false },
   vite: {
     plugins: [tailwindcss()],
