@@ -21,9 +21,11 @@
     "test:e2e": "turbo run test:e2e",
     "size": "turbo run size",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "changeset": "changeset"
   },
   "devDependencies": {
+    "@changesets/cli": "3.0.3",
     "@eslint/js": "10.0.1",
     "@bemmoly/eslint-plugin": "workspace:*",
     "@types/node": "26.6.4",
