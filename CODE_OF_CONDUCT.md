@@ -60,9 +60,11 @@ representative at an online or offline event.
 
 Instances of abusive, harassing, or otherwise unacceptable behavior may be
 reported to the community leaders responsible for enforcement at
-**conduct@bemmoly.example** (placeholder: the project's address will replace it
-before the first release).
-All complaints will be reviewed and investigated promptly and fairly.
+**conduct@bemmoly.example**.
+
+> **Placeholder.** `conduct@bemmoly.example` is not a working address. See "Setting the
+> contact address" at the end of this file.
+> All complaints will be reviewed and investigated promptly and fairly.
 
 All community leaders are obligated to respect the privacy and security of the
 reporter of any incident.
@@ -131,3 +133,10 @@ For answers to common questions about this code of conduct, see the FAQ at
 [Mozilla CoC]: https://github.com/mozilla/diversity
 [FAQ]: https://www.contributor-covenant.org/faq
 [translations]: https://www.contributor-covenant.org/translations
+
+## Setting the contact address
+
+For maintainers, before the first public release: replace `conduct@bemmoly.example` above with
+a mailbox that at least two maintainers read and that is not a personal address (a group
+alias works). Search the repository for `bemmoly.example` to find every placeholder; SECURITY.md
+has its own. Remove the placeholder notice in the same change.
