@@ -1,7 +1,7 @@
 import { randomBytes } from 'node:crypto';
 import { defineConfig, devices } from '@playwright/test';
 
-const PORT = 4310;
+const PORT = 4318;
 const baseURL = `http://127.0.0.1:${PORT}`;
 
 /** The server serves the built shell, as in production; run `pnpm build` first. */

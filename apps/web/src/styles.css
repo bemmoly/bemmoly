@@ -2,3 +2,24 @@
 @import '@bemmoly/ui/tailwind.css';
 @import '@bemmoly/ui/fonts.css';
 @import '@bemmoly/ui/theme.css';
+
+@source '../../../packages/core-web/src';
+
+/* Base element styles from the mocks; in the base layer so utilities always win. */
+@layer base {
+  a {
+    color: var(--ac);
+    text-decoration: none;
+  }
+
+  a:hover {
+    color: var(--ac-d);
+  }
+
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+  }
+}
