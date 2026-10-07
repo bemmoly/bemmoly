@@ -1,0 +1,179 @@
+---
+import CodeBlock from '../components/site/CodeBlock.astro';
+import Section from '../components/site/Section.astro';
+import Page from '../layouts/Page.astro';
+import { RELEASE } from '../data/landing.ts';
+import {
+  BACKUP,
+  CLI,
+  COMPOSE,
+  DEMO,
+  INSTALL_BLOCK,
+  INSTALL_FLAGS,
+  SIZING,
+  UPGRADE,
+} from '../data/self-hosting.ts';
+import { REPO_URL } from '../lib/links.ts';
+---
+
+<Page
+  title="Self-hosting"
+  description="Run Bemmoly on one VM with one command, or with Docker Compose, Helm, Terraform or an air-gapped bundle. Upgrades, rollback and backups are built in."
+  lede="Bemmoly is one container next to one Postgres. One command sets it up on a fresh VM, and the same image runs under Docker Compose, on Kubernetes and in networks with no internet access."
+>
+  <p class="rounded-card border border-br bg-sf2 px-4 dark:bg-sf py-3 text-14h leading-desc text-tx3">
+    Version {RELEASE.version} is still being built. This page describes how it installs; the
+    installer and images are published with the release. Follow progress on
+    <a href={REPO_URL}>GitHub</a>.
+  </p>
+
+  <Section title="Install with one command" id="install">
+    <CodeBlock code={INSTALL_BLOCK} label="On a fresh VM, as root or with sudo" />
+    <p>The installer checks the machine first and prints the fix for anything missing. Then it:</p>
+    <ul>
+      <li>installs Docker and the Compose plugin if they are not there;</li>
+      <li>asks for your domain, and uses a temporary certificate until DNS points at the VM;</li>
+      <li>
+        writes everything to <code>/var/bemmoly</code>: the Compose file, the proxy config, an
+        <code>.env</code> with generated secrets, and folders for data and backups;
+      </li>
+      <li>starts the stack, waits for Postgres, applies the schema and prints the URL.</li>
+    </ul>
+    <p>
+      Open the URL to run the six-step setup wizard and create the first admin. Flags skip the
+      questions or leave parts out:
+    </p>
+    <CodeBlock code={INSTALL_FLAGS} />
+  </Section>
+
+  <Section title="Requirements" id="requirements">
+    <ul>
+      <li>Ubuntu, Debian, Fedora or Amazon Linux, with root or sudo.</li>
+      <li>2 GB of memory and 10 GB of disk at minimum.</li>
+      <li>Ports 80 and 443 free and reachable, and outbound DNS.</li>
+      <li>Postgres 18 is installed for you. To bring your own, see Docker Compose below.</li>
+    </ul>
+    <div class="overflow-x-auto rounded-card border border-br">
+      <table class="w-full border-collapse text-left text-14">
+        <thead class="bg-sf2 dark:bg-sf text-12 font-semibold tracking-caps text-tx4 uppercase">
+          <tr>
+            <th class="px-3.5 py-2.5 font-semibold">Team</th>
+            <th class="px-3.5 py-2.5 font-semibold">VM</th>
+            <th class="px-3.5 py-2.5 font-semibold">What to expect</th>
+          </tr>
+        </thead>
+        <tbody>
+          {SIZING.map((row) => (
+            <tr class="border-t border-br-row">
+              <td class="px-3.5 py-2.5 font-medium text-tx">{row.team}</td>
+              <td class="px-3.5 py-2.5 whitespace-nowrap">{row.vm}</td>
+              <td class="px-3.5 py-2.5">{row.note}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </Section>
+
+  <Section title="Docker Compose" id="compose">
+    <p>
+      The installer writes a plain Compose file, so you can also run it by hand. Four services, two
+      of them optional:
+    </p>
+    <CodeBlock code={COMPOSE} label="/var/bemmoly/docker-compose.yml (shortened)" />
+    <p>
+      To use a Postgres you already run, set <code>DATABASE_URL</code> in <code>.env</code> and drop
+      the <code>db</code> service. Postgres 18 is recommended; 17 works with a warning. Without the
+      pgvector extension everything works except semantic search, and the health page says so.
+    </p>
+    <p>To look around on your laptop first, the demo mode starts with sample data:</p>
+    <CodeBlock code={DEMO} />
+  </Section>
+
+  <Section title="Kubernetes with Helm" id="helm">
+    <p>
+      The Helm chart runs the same image as separate api and worker deployments with autoscaling,
+      stores files on a volume or in an S3-compatible bucket, connects to your Postgres or brings
+      one as a subchart, and sets up Ingress with cert-manager. When an update is available, the
+      Updates page shows the exact <code>helm upgrade</code> command.
+    </p>
+  </Section>
+
+  <Section title="Terraform" id="terraform">
+    <p>
+      Modules for AWS (EC2 with RDS), GCP (Compute Engine with Cloud SQL) and Hetzner (one VM)
+      create the machines and run the installer through cloud-init.
+    </p>
+  </Section>
+
+  <Section title="Air-gapped installs" id="air-gapped">
+    <p>
+      Each release ships a bundle with the images, the installer and offline docs. Copy it to the
+      machine and run the installer from it; it notices there is no internet and loads the images
+      from the bundle. Later updates work the same way: upload the new bundle on the Updates page.
+      For AI, point Bemmoly at a model server on the same network.
+    </p>
+  </Section>
+
+  <Section title="Upgrades and rollback" id="upgrades">
+    <CodeBlock code={UPGRADE} />
+    <p>
+      An upgrade takes a backup, pulls the new image and checks its signature, applies schema
+      changes, restarts and waits for the health check. If the new version is not healthy within
+      three minutes, it goes back to the previous one on its own. The Update button in the app runs
+      the same steps; install with <code>--no-in-app-updates</code> to keep upgrades on the command
+      line only.
+    </p>
+    <p>
+      Rollback stays available for seven days after an upgrade, and it tells you what it keeps
+      before it runs:
+    </p>
+    <ul>
+      <li>
+        <strong>Code rollback</strong>, the usual case: the previous image starts against the same
+        database. Nothing is lost, because every release works with the previous minor's schema.
+      </li>
+      <li>
+        <strong>Schema rollback</strong>: schema changes are undone first. Fields added since the
+        upgrade are removed, and you see the list before confirming.
+      </li>
+      <li>
+        <strong>Restore rollback</strong>, only when a release made a change that cannot be undone:
+        the backup from before the upgrade is restored. You see how many changes would be discarded,
+        and can export them first.
+      </li>
+    </ul>
+  </Section>
+
+  <Section title="Backups" id="backups">
+    <p>
+      Backups are part of the app. Choose the schedule, retention and destinations in Settings,
+      under Storage and backups. By default a backup runs daily at 02:00 and keeps 7 daily, 4 weekly
+      and 3 monthly copies on local disk; add any S3-compatible bucket as a second copy, encrypted
+      before it leaves the machine.
+    </p>
+    <p>
+      Each backup holds a database dump, the attachments added since the last one, and a manifest.
+      Every dump is checked when written, and a weekly test restore proves the backups work.
+    </p>
+    <p>
+      <strong>
+        Keep a copy of <code>/var/bemmoly/.env</code> somewhere safe.
+      </strong>{' '}
+      It holds the key that decrypts stored provider keys and passwords, and it is not part of the
+      backup. To move to a new machine: run the installer, copy <code>.env</code> and a backup
+      across, and restore.
+    </p>
+    <CodeBlock code={BACKUP} />
+  </Section>
+
+  <Section title="Day to day" id="cli">
+    <ul>
+      {CLI.map(([command, what]) => (
+        <li>
+          <code>{command}</code>: {what}
+        </li>
+      ))}
+    </ul>
+  </Section>
+</Page>
