@@ -1,0 +1,10 @@
+---
+/**
+ * Styles rendered Markdown with the same type as the text pages: 36px page title, 22px section
+ * titles, 15px/1.6 body in tx3, accent links.
+ */
+---
+
+<div class="flex flex-col gap-4 text-15 leading-desc text-tx3 [&_code]:font-mono [&_code]:text-13h [&_code]:text-tx [&_h1]:mb-4 [&_h1]:text-36 [&_h1]:leading-heading [&_h1]:font-semibold [&_h1]:tracking-display [&_h1]:text-tx [&_h2]:mt-8 [&_h2]:text-22 [&_h2]:leading-title [&_h2]:font-semibold [&_h2]:tracking-title [&_h2]:text-tx [&_strong]:font-semibold [&_strong]:text-tx [&_ul]:flex [&_ul]:list-disc [&_ul]:flex-col [&_ul]:gap-1.5 [&_ul]:pl-5">
+  <slot />
+</div>

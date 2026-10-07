@@ -1,0 +1,35 @@
+---
+/**
+ * A command or file in the Landing mock's terminal style (Dark preset, 13px/1.7 mono,
+ * 10px radius, 16px padding). Lines starting with "$ " get the dimmed prompt.
+ */
+interface Props {
+  code: string;
+  label?: string;
+}
+
+const { code, label } = Astro.props;
+const lines = code.replace(/\n$/, '').split('\n');
+---
+
+<figure
+  data-theme="dark"
+  class="m-0 overflow-hidden rounded-window border border-br bg-bg text-tx2"
+>
+  {label && (
+    <figcaption class="border-b border-br px-3 py-2.5 font-mono text-11h text-tx5">
+      {label}
+    </figcaption>
+  )}
+  <code class="block overflow-x-auto p-4 font-mono text-13 leading-prose">
+    {lines.map((line) =>
+      line.startsWith('$ ') ? (
+        <span class="block">
+          <span class="text-tx5">$</span> <span class="whitespace-pre" set:text={line.slice(2)} />
+        </span>
+      ) : (
+        <span class="block whitespace-pre" set:text={line || ' '} />
+      ),
+    )}
+  </code>
+</figure>

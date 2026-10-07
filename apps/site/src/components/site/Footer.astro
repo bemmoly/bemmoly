@@ -1,0 +1,31 @@
+---
+/**
+ * The Landing mock's closing block: a top border, an optional call to action (the slot) and
+ * the footer row. Pages without a call to action get the row's 40px back as top padding.
+ */
+import { FOOTER } from '../../lib/links.ts';
+
+interface Props {
+  cta?: boolean;
+}
+
+const { cta = false } = Astro.props;
+---
+
+<footer class="border-t border-br-row dark:border-br dark:bg-sf">
+  <slot />
+  <div
+    class:list={[
+      'mx-auto flex max-w-290 flex-wrap items-center gap-x-6 gap-y-3 px-4 pb-10 text-13 text-tx5 sm:px-6 dark:text-tx4 lg:px-12',
+      { 'pt-10': !cta },
+    ]}
+  >
+    <span class="font-semibold text-tx">Bemmoly</span>
+    {FOOTER.map((link) => (
+      <a href={link.href} class="text-tx5 hover:text-tx2 dark:text-tx4">
+        {link.label}
+      </a>
+    ))}
+    <span class="lg:ml-auto">Made by people who've run work tools for too long.</span>
+  </div>
+</footer>

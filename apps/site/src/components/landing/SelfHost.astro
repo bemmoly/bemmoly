@@ -1,0 +1,63 @@
+---
+/**
+ * The dark band. The mock paints it with the Dark preset's neutrals, so it takes
+ * data-theme="dark" and uses the same token names as the rest of the page.
+ */
+import { INSTALL, INSTALL_PATHS, STATS, TRANSCRIPT } from '../../data/landing.ts';
+---
+
+<section data-theme="dark" class="bg-bg text-tx dark:bg-bg2">
+  <div class="mx-auto grid max-w-290 items-start gap-16 px-4 py-20 sm:px-6 lg:grid-cols-2 lg:px-12">
+    <div class="flex flex-col gap-4">
+      <h2 class="text-36 leading-heading font-semibold tracking-display">
+        Self-host on one VM. Really.
+      </h2>
+      <p class="text-16 leading-doc text-pretty text-tx3">
+        One container, one Postgres. 2 vCPU and 4 GB runs a 200-person company. Nightly backups,
+        HTTPS, SSO, and one-command upgrades are built in, not add-ons.
+      </p>
+      <dl class="grid grid-cols-2 gap-3 text-14">
+        {STATS.map((stat) => (
+          <div class="flex flex-col-reverse justify-end gap-1 rounded-card border border-br p-3.5 dark:bg-sf">
+            <dt class="text-tx4">{stat.label}</dt>
+            <dd class="font-mono text-22 font-semibold text-on-solid dark:text-tx">{stat.value}</dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+    <div class="flex min-w-0 flex-col gap-3">
+      <figure class="overflow-hidden rounded-window border border-br bg-bg">
+        <div class="flex gap-1.5 border-b border-br px-3 py-2.5" aria-hidden="true">
+          <span class="size-2.5 rounded-full bg-br3"></span>
+          <span class="size-2.5 rounded-full bg-br3"></span>
+          <span class="size-2.5 rounded-full bg-br3"></span>
+          <span class="ml-auto font-mono text-11h text-tx5">ubuntu@vm</span>
+        </div>
+        <div class="flex flex-col overflow-x-auto p-4 font-mono text-13 leading-prose text-tx2">
+          <span class="whitespace-nowrap">
+            <span class="text-tx5">$</span> {INSTALL}
+          </span>
+          {TRANSCRIPT.map((line) => (
+            <span
+              class:list={['whitespace-pre', line.tone === 'done' ? 'text-ok-fg' : 'text-tx4']}
+              set:text={line.text}
+            />
+          ))}
+          <span>
+            <span class="text-tx5">$</span>
+            <span class="inline-block h-3.5 w-2 bg-tx2 align-middle" aria-hidden="true"></span>
+          </span>
+        </div>
+        <figcaption class="sr-only">What the installer prints on a fresh VM</figcaption>
+      </figure>
+      <ul class="flex flex-wrap gap-4 text-13 text-tx4" aria-label="Other ways to install">
+        {INSTALL_PATHS.map((path, i) => (
+          <>
+            {i > 0 && <li aria-hidden="true">·</li>}
+            <li>{path}</li>
+          </>
+        ))}
+      </ul>
+    </div>
+  </div>
+</section>

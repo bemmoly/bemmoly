@@ -1,0 +1,21 @@
+---
+/**
+ * One titled block of a text page. Body copy uses the Landing mock's feature text
+ * (14.5px/1.6, tx3); headings use its 17px feature title. Paragraph and list rhythm is set
+ * here so pages stay plain markup.
+ */
+interface Props {
+  title: string;
+  id?: string;
+}
+
+const { title, id } = Astro.props;
+---
+
+<section
+  id={id}
+  class="flex scroll-mt-20 flex-col gap-3 text-15 leading-desc text-tx3 [&_code]:font-mono [&_code]:text-13h [&_code]:text-tx [&_li]:pl-1 [&_strong]:font-semibold [&_strong]:text-tx [&_ul]:flex [&_ul]:list-disc [&_ul]:flex-col [&_ul]:gap-1.5 [&_ul]:pl-5"
+>
+  <h2 class="text-22 leading-title font-semibold tracking-title text-tx">{title}</h2>
+  <slot />
+</section>
