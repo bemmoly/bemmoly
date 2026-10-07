@@ -15,7 +15,7 @@ describe('query-count assertion', () => {
   it('fails with every statement listed when the operation runs more', async () => {
     const counter = createQueryCounter();
     const run = expectMaxQueries(counter, 1, async () => {
-      for (const id of [1, 2, 3]) counter.record(`select * from issues where id = ${id}`);
+      for (let id = 1; id <= 3; id += 1) counter.record('select * from issues where id = $1');
     });
     await expect(run).rejects.toBeInstanceOf(QueryBudgetExceededError);
     await expect(

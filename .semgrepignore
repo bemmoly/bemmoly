@@ -1,0 +1,12 @@
+# Paths Semgrep never scans in CI. Rule-specific exemptions live in each rule's `paths`.
+node_modules/
+**/dist/
+**/storybook-static/
+**/coverage/
+**/playwright-report/
+**/test-results/
+**/.turbo/
+docs/
+# Rule fixtures contain the violations on purpose; `semgrep --test` checks them.
+tools/semgrep/
+pnpm-lock.yaml

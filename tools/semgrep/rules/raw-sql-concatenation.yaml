@@ -1,0 +1,34 @@
+rules:
+  - id: bemmoly-raw-sql-concatenation
+    languages: [typescript, javascript]
+    severity: ERROR
+    message: >-
+      SQL is being built from strings. Use the `sql` tagged template (postgres.js) or the
+      ORM's query builder so every value is sent as a parameter. For identifiers, use
+      `sql(name)`; never splice user input into statement text. (AGENTS.md §2, Data)
+    metadata:
+      category: security
+      cwe: 'CWE-89: SQL Injection'
+      references:
+        - docs/tech-design.html#security
+    paths:
+      exclude:
+        - /tools/semgrep/**
+    pattern-either:
+      # Statement text concatenated with anything.
+      - patterns:
+          - pattern-either:
+              - pattern: '"$TEXT" + $VALUE'
+              - pattern: "'$TEXT' + $VALUE"
+              - pattern: '$VALUE + "$TEXT"'
+          - metavariable-regex:
+              metavariable: $TEXT
+              regex: (?i)^\s*(select\s.*\bfrom\s+[\w."]+\s*($|where\b|join\b|order\b|group\b|limit\b)|select\s+\*\s|insert\s+into\b|update\s+[\w."]+\s+set\b|delete\s+from\b|(alter|create|drop|truncate)\s+(table|index|schema|view|extension|type)\b|grant\s)
+      # Untagged template literals that interpolate into statement text. Tagged
+      # templates (sql`...`, sql<Row[]>`...`) are parameterised and do not match.
+      - pattern-regex: (?<![\w.)\]>])`(?=[^`]*\$\{)\s*(?i:select\b[^`]*\bfrom\s+(?:\$\{[^}]*\}|[\w."]+)\s*(?:$|`|;|\)|,|\$\{|(?:where|join|left|inner|order|group|limit|offset|as|on|union|returning|for)\b)|insert\s+into\b|update\s+[\w."]+\s+set\b|delete\s+from\b|with\s+\w+\s+as\s*\(|(?:alter|create|drop|truncate)\s+(?:table|index|schema|view|extension|type)\b)
+      # unsafe() and sql.raw() with a computed statement.
+      - pattern: $DB.unsafe($A + $B, ...)
+      - pattern: $DB.unsafe(`...${$X}...`, ...)
+      - pattern: sql.raw($A + $B)
+      - pattern: sql.raw(`...${$X}...`)

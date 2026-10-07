@@ -1,0 +1,27 @@
+rules:
+  - id: bemmoly-raw-fetch-outside-clients
+    languages: [typescript, javascript]
+    severity: ERROR
+    message: >-
+      HTTP calls go through a client: `clients/` on the server (with an explicit timeout on
+      every call) or `packages/api-client` in the web app. Move this call there.
+      (AGENTS.md §2, External calls and Frontend)
+    paths:
+      exclude:
+        - '**/clients/**'
+        - /packages/api-client/**
+        - '**/*.test.ts'
+        - '**/*.test.tsx'
+        - '**/*.int.test.ts'
+        - '**/e2e/**'
+        - /scripts/**
+        - /tools/k6/**
+        - /tools/semgrep/**
+    pattern-either:
+      - pattern: fetch(...)
+      - pattern: globalThis.fetch(...)
+      - pattern: window.fetch(...)
+      - pattern: self.fetch(...)
+      - pattern: $UNDICI.request(...)
+      - pattern: axios(...)
+      - pattern: axios.$METHOD(...)
