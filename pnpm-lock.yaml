@@ -44,6 +44,19 @@ importers:
         specifier: 8.71.1
         version: 8.71.1(eslint@10.12.0(jiti@2.7.0))
 
+  modules/sample:
+    dependencies:
+      '@bemmoly/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@bemmoly/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
+    devDependencies:
+      vitest:
+        specifier: 5.0.3
+        version: 5.0.3(@types/node@26.6.4)(vite@8.3.3(@types/node@26.6.4)(jiti@2.7.0)(yaml@2.9.1))
+
   packages/core:
     dependencies:
       '@bemmoly/shared':
