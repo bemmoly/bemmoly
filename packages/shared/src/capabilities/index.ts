@@ -15,6 +15,7 @@ export const KERNEL_CAPABILITIES = [
   'ai.assist.use',
   'ai.actions.run',
   'ai.models.configure',
+  'workspace.system.manage',
 ] as const;
 
 export type KernelCapability = (typeof KERNEL_CAPABILITIES)[number];
