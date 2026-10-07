@@ -1,0 +1,6 @@
+#!/bin/sh
+# Container healthcheck for the updater service.
+exec node --input-type=module --eval "
+const response = await fetch('http://127.0.0.1:${UPDATER_PORT:-8090}/healthz', { signal: AbortSignal.timeout(4000) }).catch(() => null);
+process.exit(response && response.ok ? 0 : 1);
+"

@@ -1,0 +1,121 @@
+name: Security
+
+# Job names are required status checks for main; see .github/CI.md before renaming one.
+
+on:
+  pull_request:
+  merge_group:
+  push:
+    branches: [main]
+  schedule:
+    # Weekly, so a new advisory against an unchanged lockfile or image still surfaces.
+    - cron: '17 4 * * 1'
+
+concurrency:
+  group: security-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  SEMGREP_IMAGE: semgrep/semgrep:1.178.0
+  GITLEAKS_IMAGE: ghcr.io/gitleaks/gitleaks:v8.30.1
+  TRIVY_VERSION: v0.75.0
+  # TODO(deploy): the application image's Dockerfile, owned by deploy/. The scan skips
+  # with a notice until this file exists; update the path here if it lands elsewhere.
+  APP_DOCKERFILE: deploy/docker/Dockerfile
+
+jobs:
+  scans:
+    name: Security scans
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Secret scan of the working tree
+        run: docker run --rm -v "$PWD:/repo" "$GITLEAKS_IMAGE" dir /repo --no-banner --redact
+
+      - name: Secret scan of the new commits
+        env:
+          EVENT: ${{ github.event_name }}
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD: ${{ github.event.pull_request.head.sha }}
+          PUSH_BEFORE: ${{ github.event.before }}
+          SHA: ${{ github.sha }}
+        run: |
+          case "$EVENT" in
+            pull_request) range="$PR_BASE..$PR_HEAD" ;;
+            push) range="$PUSH_BEFORE..$SHA" ;;
+            *) range="" ;;
+          esac
+          if [ -z "$range" ] || [ "${range%%..*}" = "0000000000000000000000000000000000000000" ]; then
+            range="$SHA"
+          fi
+          docker run --rm -v "$PWD:/repo" "$GITLEAKS_IMAGE" \
+            git /repo --no-banner --redact --log-opts="$range"
+
+      - uses: ./.github/actions/setup
+        with:
+          install: 'false'
+
+      - name: Dependency audit (fails on high or critical)
+        run: pnpm audit --audit-level=high
+
+      - name: Semgrep rule tests
+        run: docker run --rm -v "$PWD:/src" -w /src "$SEMGREP_IMAGE" semgrep --test --metrics=off tools/semgrep/rules
+
+      - name: Semgrep scan (raw SQL, raw fetch, process.env, console)
+        run: >-
+          docker run --rm -v "$PWD:/src" -w /src "$SEMGREP_IMAGE"
+          semgrep scan --config tools/semgrep/rules --metrics=off --error --disable-version-check .
+
+  image:
+    name: Image scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Look for the application Dockerfile
+        id: dockerfile
+        run: |
+          if [ -f "$APP_DOCKERFILE" ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "::notice title=Image scan skipped::$APP_DOCKERFILE does not exist yet. The Trivy scan runs as soon as deploy/ adds it."
+          fi
+
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+        if: steps.dockerfile.outputs.present == 'true'
+
+      - name: Build the image
+        if: steps.dockerfile.outputs.present == 'true'
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          file: ${{ env.APP_DOCKERFILE }}
+          load: true
+          push: false
+          tags: bemmoly:scan
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Trivy (fails on fixable high or critical)
+        if: steps.dockerfile.outputs.present == 'true'
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          version: ${{ env.TRIVY_VERSION }}
+          image-ref: bemmoly:scan
+          scanners: vuln,secret
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: '1'
+          format: table

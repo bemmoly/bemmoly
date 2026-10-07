@@ -1,7 +1,18 @@
+import { readFileSync } from 'node:fs';
 import { Writable } from 'node:stream';
 import { pino } from 'pino';
 import { describe, expect, it } from 'vitest';
-import { createLoggerOptions, REDACTED } from './logger.ts';
+import { createLoggerOptions, hashUserId, REDACTED } from './logger.ts';
+
+const SECRET_KEY = Buffer.alloc(32, 7).toString('base64');
+
+interface Fixture {
+  events: Array<Record<string, unknown> & { msg: string }>;
+}
+
+const fixture = JSON.parse(
+  readFileSync(new URL('./fixtures/log-events.json', import.meta.url), 'utf8'),
+) as Fixture;
 
 function capture() {
   const lines: string[] = [];
@@ -14,20 +25,52 @@ function capture() {
   return { lines, stream };
 }
 
+function logFixture(secretKey?: string) {
+  const { lines, stream } = capture();
+  const options = createLoggerOptions({
+    LOG_LEVEL: 'info',
+    LOG_FORMAT: 'json',
+    ...(secretKey ? { BEMMOLY_SECRET_KEY: secretKey } : {}),
+  });
+  const logger = pino(options, stream);
+  for (const { msg, ...event } of fixture.events) logger.info(event, msg);
+  return lines.map((line) => JSON.parse(line) as Record<string, unknown>);
+}
+
 describe('logger', () => {
-  it('redacts cookies, authorization, API keys, tokens and passwords', () => {
-    const { lines, stream } = capture();
-    const options = createLoggerOptions({ LOG_LEVEL: 'info', LOG_FORMAT: 'json' });
-    const logger = pino(options, stream);
-    logger.info({
-      req: { headers: { cookie: 'sid=abc', authorization: 'Bearer xyz', 'x-api-key': 'k1' } },
-      user: { password: 'hunter2', apiKey: 'k2' },
-      smtp: { auth: { password: 'p3' } },
-      token: 't4',
+  it('never writes a fixture value marked LEAK, and keeps the ones marked KEEP', () => {
+    const output = logFixture(SECRET_KEY).map((line) => JSON.stringify(line));
+    expect(output).toHaveLength(fixture.events.length);
+    const all = output.join('\n');
+    expect(all).not.toMatch(/LEAK/);
+    for (const kept of ['KEEP-smtp', 'KEEP-recipient', 'KEEP-subject', 'KEEP-standard']) {
+      expect(all).toContain(kept);
+    }
+  });
+
+  it('redacts cookies, authorization, API keys, passwords, email bodies and prompt text', () => {
+    const [request, smtp, email, ai] = logFixture(SECRET_KEY);
+    // The req serializer keeps method and url only; headers and body never reach a line.
+    expect(request?.['req']).toMatchObject({ method: 'POST', url: '/api/v1/sessions' });
+    expect(request?.['req']).not.toHaveProperty('headers');
+    expect(request?.['req']).not.toHaveProperty('body');
+    expect(request).toMatchObject({ res: { headers: { 'set-cookie': REDACTED } } });
+    expect(smtp).toMatchObject({ smtp: { auth: { password: REDACTED } } });
+    expect(email).toMatchObject({ email: { html: REDACTED, text: REDACTED, body: REDACTED } });
+    expect(ai).toMatchObject({
+      ai: { prompt: REDACTED, messages: REDACTED, usage: { inputTokens: 1200 } },
+      provider: { apiKey: REDACTED },
     });
-    const line = JSON.parse(lines[0] ?? '{}') as Record<string, unknown>;
-    expect(JSON.stringify(line)).not.toMatch(/abc|xyz|k1|hunter2|k2|p3|t4/);
-    expect(line).toMatchObject({ token: REDACTED, user: { password: REDACTED, apiKey: REDACTED } });
+  });
+
+  it('writes user ids hashed, keyed with the install secret', () => {
+    const rawUser = '0199b1a2-7c3d-7e4f-8a5b-6c7d8e9f0a1b';
+    const [, smtp, , ai] = logFixture(SECRET_KEY);
+    expect(smtp?.['userId']).toBe(hashUserId(rawUser, SECRET_KEY));
+    expect(smtp?.['userId']).toMatch(/^u_[0-9a-f]{16}$/);
+    expect(ai?.['actorId']).toMatch(/^u_[0-9a-f]{16}$/);
+    expect(hashUserId(rawUser, SECRET_KEY)).not.toBe(hashUserId(rawUser));
+    expect(hashUserId(rawUser)).toBe(hashUserId(rawUser));
   });
 
   it('uses a pretty transport only when asked', () => {

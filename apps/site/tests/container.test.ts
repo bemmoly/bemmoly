@@ -3,8 +3,9 @@
  * Build the image, then run `pnpm --filter @bemmoly/site test:container`
  * (SITE_IMAGE defaults to bemmoly-site:dev).
  */
-import { execFileSync, spawnSync } from 'node:child_process';
+import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
 import { request } from 'node:http';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
@@ -72,9 +73,8 @@ describe('installer', () => {
   it('serves the script at the root of get.bemmoly.com', async () => {
     const response = await asHost('get.bemmoly.com', '/');
     expect(response.headers.get('content-type')).toBe('text/plain; charset=utf-8');
-    const run = spawnSync('sh', { input: response.body, encoding: 'utf8' });
-    expect(run.status).toBe(1);
-    expect(run.stderr).toContain('The Bemmoly installer is not published yet');
+    const installer = readFileSync(new URL('../../../deploy/install.sh', import.meta.url), 'utf8');
+    expect(response.body).toBe(installer);
   });
 
   it('sends other paths on get.bemmoly.com to the site', async () => {

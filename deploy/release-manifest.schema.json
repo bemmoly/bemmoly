@@ -1,0 +1,130 @@
+{
+  "$id": "https://get.bemmoly.com/releases/release-manifest.schema.json",
+  "title": "Bemmoly release manifest",
+  "description": "One release, written by tools/release and published as release-manifest.json on the GitHub release, signed keyless with a detached release-manifest.json.sigstore.json bundle. Generated from releaseManifestSchema in packages/shared.",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "version": {
+      "type": "string",
+      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(-[0-9A-Za-z-]+(\\.[0-9A-Za-z-]+)*)?(\\+[0-9A-Za-z-]+(\\.[0-9A-Za-z-]+)*)?$"
+    },
+    "channel": {
+      "type": "string",
+      "enum": ["stable", "beta"]
+    },
+    "publishedAt": {
+      "type": "string",
+      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+    },
+    "notesUrl": {
+      "type": "string"
+    },
+    "images": {
+      "type": "object",
+      "properties": {
+        "app": {
+          "type": "object",
+          "properties": {
+            "ref": {
+              "type": "string",
+              "minLength": 1
+            },
+            "digest": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^sha256:[0-9a-f]{64}$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": ["ref", "digest"]
+        },
+        "updater": {
+          "type": "object",
+          "properties": {
+            "ref": {
+              "type": "string",
+              "minLength": 1
+            },
+            "digest": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^sha256:[0-9a-f]{64}$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": ["ref", "digest"]
+        }
+      },
+      "required": ["app", "updater"]
+    },
+    "rollback": {
+      "type": "string",
+      "enum": ["code", "restore"]
+    },
+    "schemaChangesets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "module": {
+            "type": "string",
+            "minLength": 1
+          },
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": {
+            "type": "string"
+          },
+          "slow": {
+            "type": "boolean"
+          },
+          "irreversible": {
+            "type": "boolean"
+          }
+        },
+        "required": ["module", "id", "description", "slow", "irreversible"]
+      }
+    },
+    "configChanges": {
+      "type": "object",
+      "properties": {
+        "added": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "removed": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": ["added", "removed"]
+    }
+  },
+  "required": [
+    "version",
+    "channel",
+    "publishedAt",
+    "notesUrl",
+    "images",
+    "rollback",
+    "schemaChangesets",
+    "configChanges"
+  ]
+}

@@ -29,6 +29,8 @@ export async function registerWebApp(app: FastifyInstance, root: string): Promis
     root,
     prefix: '/',
     index: ['index.html'],
+    /** The web build ships .br and .gz beside each asset; serve those to clients that accept them. */
+    preCompressed: true,
     setHeaders(res, filePath) {
       res.header('cache-control', filePath.includes('/assets/') ? IMMUTABLE : REVALIDATE);
     },

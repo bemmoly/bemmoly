@@ -35,9 +35,11 @@ export function PageHeader({
   return (
     <header className={cx('flex flex-col', settings ? 'gap-1.5' : 'gap-3', className)}>
       {breadcrumbs && <Breadcrumbs items={breadcrumbs} {...(linkAs ? { linkAs } : {})} />}
-      <div className={cx('flex gap-4', settings ? 'items-center' : 'items-start')}>
+      <div
+        className={cx('flex flex-wrap gap-x-4 gap-y-2', settings ? 'items-center' : 'items-start')}
+      >
         <div className="flex min-w-0 flex-col gap-1">
-          <h1 className="m-0 text-22 font-semibold tracking-title whitespace-nowrap">{title}</h1>
+          <h1 className="m-0 text-22 font-semibold tracking-title text-balance">{title}</h1>
           {meta && meta.length > 0 && (
             <div className="flex flex-wrap items-center gap-2 text-12h text-tx4">
               {meta.map((item, index) => (

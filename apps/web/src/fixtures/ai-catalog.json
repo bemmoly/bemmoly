@@ -1,0 +1,247 @@
+{
+  "source": "bundled",
+  "version": "0.1.0",
+  "popular": ["openai", "anthropic", "amazon-bedrock", "azure", "google-vertex", "openrouter"],
+  "providers": [
+    {
+      "id": "openai",
+      "name": "OpenAI",
+      "env": ["OPENAI_API_KEY"],
+      "api": null,
+      "doc": "https://platform.openai.com/docs/models",
+      "npm": "@ai-sdk/openai"
+    },
+    {
+      "id": "anthropic",
+      "name": "Anthropic",
+      "env": ["ANTHROPIC_API_KEY"],
+      "api": null,
+      "doc": "https://docs.anthropic.com/en/docs/about-claude/models",
+      "npm": "@ai-sdk/anthropic"
+    },
+    {
+      "id": "amazon-bedrock",
+      "name": "Amazon Bedrock",
+      "env": ["AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", "AWS_REGION"],
+      "api": null,
+      "doc": "https://docs.aws.amazon.com/bedrock/latest/userguide/models-supported.html",
+      "npm": "@ai-sdk/amazon-bedrock"
+    },
+    {
+      "id": "azure",
+      "name": "Azure",
+      "env": ["AZURE_RESOURCE_NAME", "AZURE_API_KEY"],
+      "api": null,
+      "doc": "https://learn.microsoft.com/en-us/azure/ai-services/openai/concepts/models",
+      "npm": "@ai-sdk/azure"
+    },
+    {
+      "id": "google-vertex",
+      "name": "Vertex",
+      "env": ["GOOGLE_VERTEX_PROJECT", "GOOGLE_VERTEX_LOCATION", "GOOGLE_APPLICATION_CREDENTIALS"],
+      "api": null,
+      "doc": "https://cloud.google.com/vertex-ai/generative-ai/docs/models",
+      "npm": "@ai-sdk/google-vertex"
+    },
+    {
+      "id": "openrouter",
+      "name": "OpenRouter",
+      "env": ["OPENROUTER_API_KEY"],
+      "api": "https://openrouter.ai/api/v1",
+      "doc": "https://openrouter.ai/models",
+      "npm": "@openrouter/ai-sdk-provider"
+    },
+    {
+      "id": "google",
+      "name": "Google",
+      "env": ["GOOGLE_GENERATIVE_AI_API_KEY"],
+      "api": null,
+      "doc": "https://ai.google.dev/gemini-api/docs/models",
+      "npm": "@ai-sdk/google"
+    },
+    {
+      "id": "mistral",
+      "name": "Mistral",
+      "env": ["MISTRAL_API_KEY"],
+      "api": null,
+      "doc": "https://docs.mistral.ai/getting-started/models/",
+      "npm": "@ai-sdk/mistral"
+    },
+    {
+      "id": "groq",
+      "name": "Groq",
+      "env": ["GROQ_API_KEY"],
+      "api": null,
+      "doc": "https://console.groq.com/docs/models",
+      "npm": "@ai-sdk/groq"
+    },
+    {
+      "id": "deepseek",
+      "name": "DeepSeek",
+      "env": ["DEEPSEEK_API_KEY"],
+      "api": "https://api.deepseek.com",
+      "doc": "https://api-docs.deepseek.com/quick_start/pricing",
+      "npm": "@ai-sdk/deepseek"
+    },
+    {
+      "id": "xai",
+      "name": "xAI",
+      "env": ["XAI_API_KEY"],
+      "api": null,
+      "doc": "https://docs.x.ai/docs/models",
+      "npm": "@ai-sdk/xai"
+    },
+    {
+      "id": "togetherai",
+      "name": "Together AI",
+      "env": ["TOGETHER_API_KEY"],
+      "api": null,
+      "doc": "https://docs.together.ai/docs/serverless-models",
+      "npm": "@ai-sdk/togetherai"
+    },
+    {
+      "id": "fireworks-ai",
+      "name": "Fireworks AI",
+      "env": ["FIREWORKS_API_KEY"],
+      "api": "https://api.fireworks.ai/inference/v1/",
+      "doc": "https://fireworks.ai/docs/",
+      "npm": "@ai-sdk/fireworks"
+    },
+    {
+      "id": "cerebras",
+      "name": "Cerebras",
+      "env": ["CEREBRAS_API_KEY"],
+      "api": null,
+      "doc": "https://inference-docs.cerebras.ai/models/overview",
+      "npm": "@ai-sdk/cerebras"
+    },
+    {
+      "id": "perplexity",
+      "name": "Perplexity",
+      "env": ["PERPLEXITY_API_KEY"],
+      "api": null,
+      "doc": "https://docs.perplexity.ai",
+      "npm": "@ai-sdk/perplexity"
+    },
+    {
+      "id": "cohere",
+      "name": "Cohere",
+      "env": ["COHERE_API_KEY"],
+      "api": null,
+      "doc": "https://docs.cohere.com/docs/models",
+      "npm": "@ai-sdk/cohere"
+    },
+    {
+      "id": "huggingface",
+      "name": "Hugging Face",
+      "env": ["HF_TOKEN"],
+      "api": "https://router.huggingface.co/v1",
+      "doc": "https://huggingface.co/docs/inference-providers",
+      "npm": "@ai-sdk/openai-compatible"
+    },
+    {
+      "id": "nvidia",
+      "name": "Nvidia",
+      "env": ["NVIDIA_API_KEY"],
+      "api": "https://integrate.api.nvidia.com/v1",
+      "doc": "https://docs.api.nvidia.com/nim/",
+      "npm": "@ai-sdk/openai-compatible"
+    },
+    {
+      "id": "deepinfra",
+      "name": "Deep Infra",
+      "env": ["DEEPINFRA_API_KEY"],
+      "api": null,
+      "doc": "https://deepinfra.com/models",
+      "npm": "@ai-sdk/deepinfra"
+    },
+    {
+      "id": "github-models",
+      "name": "GitHub Models",
+      "env": ["GITHUB_TOKEN"],
+      "api": "https://models.github.ai/inference",
+      "doc": "https://docs.github.com/en/github-models",
+      "npm": "@ai-sdk/openai-compatible"
+    },
+    {
+      "id": "vercel",
+      "name": "Vercel AI Gateway",
+      "env": ["AI_GATEWAY_API_KEY"],
+      "api": null,
+      "doc": "https://vercel.com/docs/ai-gateway",
+      "npm": "@ai-sdk/gateway"
+    },
+    {
+      "id": "cloudflare-workers-ai",
+      "name": "Cloudflare Workers AI",
+      "env": ["CLOUDFLARE_ACCOUNT_ID", "CLOUDFLARE_API_KEY"],
+      "api": "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/ai/v1",
+      "doc": "https://developers.cloudflare.com/workers-ai/models/",
+      "npm": "@ai-sdk/openai-compatible"
+    },
+    {
+      "id": "alibaba",
+      "name": "Alibaba",
+      "env": ["DASHSCOPE_API_KEY"],
+      "api": "https://dashscope-intl.aliyuncs.com/compatible-mode/v1",
+      "doc": "https://www.alibabacloud.com/help/en/model-studio/models",
+      "npm": "@ai-sdk/openai-compatible"
+    },
+    {
+      "id": "moonshotai",
+      "name": "Moonshot AI",
+      "env": ["MOONSHOT_API_KEY"],
+      "api": "https://api.moonshot.ai/v1",
+      "doc": "https://platform.moonshot.ai/docs/api/chat",
+      "npm": "@ai-sdk/openai-compatible"
+    },
+    {
+      "id": "zhipuai",
+      "name": "Zhipu AI",
+      "env": ["ZHIPU_API_KEY"],
+      "api": "https://open.bigmodel.cn/api/paas/v4",
+      "doc": "https://docs.bigmodel.cn/cn/guide/start/model-overview",
+      "npm": "@ai-sdk/openai-compatible"
+    },
+    {
+      "id": "venice",
+      "name": "Venice AI",
+      "env": ["VENICE_API_KEY"],
+      "api": "https://api.venice.ai/api/v1",
+      "doc": "https://docs.venice.ai",
+      "npm": "@ai-sdk/openai-compatible"
+    },
+    {
+      "id": "baseten",
+      "name": "Baseten",
+      "env": ["BASETEN_API_KEY"],
+      "api": "https://inference.baseten.co/v1",
+      "doc": "https://docs.baseten.co/development/model-apis/overview",
+      "npm": "@ai-sdk/openai-compatible"
+    },
+    {
+      "id": "inception",
+      "name": "Inception",
+      "env": ["INCEPTION_API_KEY"],
+      "api": "https://api.inceptionlabs.ai/v1/",
+      "doc": "https://platform.inceptionlabs.ai/docs",
+      "npm": "@ai-sdk/openai-compatible"
+    },
+    {
+      "id": "upstage",
+      "name": "Upstage",
+      "env": ["UPSTAGE_API_KEY"],
+      "api": "https://api.upstage.ai",
+      "doc": "https://developers.upstage.ai/docs/apis/chat",
+      "npm": "@ai-sdk/openai-compatible"
+    },
+    {
+      "id": "requesty",
+      "name": "Requesty",
+      "env": ["REQUESTY_API_KEY"],
+      "api": "https://router.requesty.ai/v1",
+      "doc": "https://requesty.ai/solution/llm-routing/models",
+      "npm": "@ai-sdk/openai-compatible"
+    }
+  ]
+}

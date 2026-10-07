@@ -1,0 +1,3 @@
+#!/bin/sh
+# Backups, restore, rollback planning and health; see `bemmoly-system --help`.
+exec node /app/apps/server/bin/system.ts "$@"

@@ -12,6 +12,7 @@ export const ERROR_CODES = [
   'payload_too_large',
   'rate_limited',
   'provider_error',
+  'maintenance',
   'internal_error',
 ] as const;
 

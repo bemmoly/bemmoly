@@ -1,0 +1,19 @@
+# The updater needs the lockfile, the shared package and its own folder; nothing secret.
+**/.env
+**/.env.*
+**/node_modules
+**/.turbo
+**/coverage
+.git
+.claude
+var
+docs
+apps
+modules
+tools
+packages/core
+packages/ui
+deploy/compose
+deploy/installer
+deploy/cli
+deploy/tests

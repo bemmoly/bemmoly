@@ -1,0 +1,165 @@
+name: Nightly
+
+# The install gate and the load budgets of tech design §22. Failures open (or update) an
+# issue, because nobody watches a scheduled run.
+
+on:
+  schedule:
+    - cron: '30 2 * * *'
+  workflow_dispatch:
+    inputs:
+      image-tag:
+        description: Published image tag to install (latest, beta or X.Y.Z)
+        default: latest
+
+concurrency:
+  group: nightly
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  IMAGE: ghcr.io/bemmoly/bemmoly
+  IMAGE_TAG: ${{ inputs.image-tag || 'latest' }}
+  K6_IMAGE: grafana/k6:2.3.0
+  # Scripts owned by deploy/. The smoke test completes the wizard through the API, backs up
+  # and restores; with --upgrade-to it also upgrades and rolls back.
+  INSTALLER: deploy/install.sh
+  SMOKE_TEST: deploy/scripts/smoke-test.sh
+
+jobs:
+  install:
+    name: Fresh VM install
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Is the image published?
+        id: image
+        run: |
+          if docker manifest inspect "$IMAGE:$IMAGE_TAG" > /dev/null 2>&1; then
+            echo "published=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "published=false" >> "$GITHUB_OUTPUT"
+            echo "::notice title=No image::$IMAGE:$IMAGE_TAG is not published yet; the stack test is skipped."
+          fi
+
+      - name: Start Postgres 18 and the published image
+        if: steps.image.outputs.published == 'true'
+        run: |
+          docker network create bemmoly
+          docker run -d --name db --network bemmoly \
+            -e POSTGRES_USER=bemmoly -e POSTGRES_PASSWORD=bemmoly -e POSTGRES_DB=bemmoly_db \
+            --health-cmd 'pg_isready -U bemmoly -d bemmoly_db' --health-interval 2s \
+            pgvector/pgvector:pg18
+          until [ "$(docker inspect -f '{{.State.Health.Status}}' db)" = healthy ]; do sleep 2; done
+          docker run -d --name app --network bemmoly -p 8080:8080 \
+            -e DATABASE_URL=postgres://bemmoly:bemmoly@db:5432/bemmoly_db \
+            -e BEMMOLY_SECRET_KEY="$(openssl rand -base64 32)" \
+            -e BEMMOLY_PUBLIC_URL=http://localhost:8080 \
+            "$IMAGE:$IMAGE_TAG"
+
+      - name: Wait for readiness and probe the API
+        if: steps.image.outputs.published == 'true'
+        run: |
+          for _ in $(seq 1 90); do
+            if curl -fsS http://localhost:8080/readyz | grep -q '"status":"ready"'; then break; fi
+            sleep 2
+          done
+          curl -fsS http://localhost:8080/readyz
+          curl -fsS http://localhost:8080/api/v1/modules
+
+      - name: Container logs
+        if: failure() && steps.image.outputs.published == 'true'
+        run: docker logs app
+
+      - name: Stop the probe containers
+        if: steps.image.outputs.published == 'true'
+        run: |
+          docker rm -f app db
+          docker network rm bemmoly
+
+      - name: Run the installer on this fresh VM
+        run: sudo bash "$INSTALLER" --yes --domain localhost --version "$IMAGE_TAG"
+
+      - name: Wizard through the API, backup and restore
+        run: sudo bash "$SMOKE_TEST" --base-url https://localhost --version "$IMAGE_TAG"
+
+      - name: Report the failure
+        if: failure()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: bash .github/scripts/report-nightly-failure.sh 'Nightly install test failed' release-blocker
+
+  load:
+    name: Load budgets (k6)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      issues: write
+    services:
+      postgres:
+        image: pgvector/pgvector:pg18
+        env:
+          POSTGRES_USER: bemmoly
+          POSTGRES_PASSWORD: bemmoly
+          POSTGRES_DB: bemmoly_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U bemmoly -d bemmoly_db"
+          --health-interval 2s
+          --health-timeout 3s
+          --health-retries 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: ./.github/actions/setup
+
+      - name: Start the server
+        env:
+          DATABASE_URL: postgres://bemmoly:bemmoly@localhost:5432/bemmoly_db
+          BEMMOLY_PUBLIC_URL: http://127.0.0.1:8080
+          LOG_LEVEL: warn
+        run: |
+          BEMMOLY_SECRET_KEY="$(openssl rand -base64 32)" nohup node apps/server/src/server.ts > server.log 2>&1 &
+          for _ in $(seq 1 60); do
+            if curl -fsS http://127.0.0.1:8080/healthz > /dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat server.log
+          exit 1
+
+      - name: k6 against the budgets
+        run: >-
+          docker run --rm --network host -v "$PWD/tools/k6:/scripts:ro" -v "$PWD:/out"
+          "$K6_IMAGE" run -e BASE_URL=http://127.0.0.1:8080
+          --summary-export /out/k6-summary.json /scripts/budgets.js
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: k6-summary
+          path: |
+            k6-summary.json
+            server.log
+          retention-days: 30
+          if-no-files-found: ignore
+
+      - name: Report the regression
+        if: failure()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: bash .github/scripts/report-nightly-failure.sh 'Nightly load budgets regressed' performance

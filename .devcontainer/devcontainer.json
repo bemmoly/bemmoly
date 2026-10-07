@@ -1,0 +1,34 @@
+{
+  "name": "Bemmoly",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "workspace",
+  "workspaceFolder": "/workspaces/bemmoly",
+  "shutdownAction": "stopCompose",
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+  },
+  "containerEnv": {
+    "COREPACK_ENABLE_DOWNLOAD_PROMPT": "0",
+    "BEMMOLY_TEST_DATABASE_URL": "postgres://bemmoly:bemmoly@localhost:5432/bemmoly_test"
+  },
+  "postCreateCommand": "sudo corepack enable pnpm && pnpm install --frozen-lockfile",
+  "forwardPorts": [5173, 8080, 6006, 5432],
+  "portsAttributes": {
+    "5173": { "label": "Web (Vite)", "onAutoForward": "openBrowser" },
+    "8080": { "label": "Server" },
+    "6006": { "label": "Storybook" },
+    "5432": { "label": "Postgres", "onAutoForward": "silent" }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "vitest.explorer",
+        "ms-playwright.playwright",
+        "github.vscode-github-actions"
+      ]
+    }
+  },
+  "remoteUser": "node"
+}

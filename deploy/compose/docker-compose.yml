@@ -1,0 +1,109 @@
+# Bemmoly on one machine. The installer writes this file to /var/bemmoly with .env
+# beside it; every value below comes from .env. To run it by hand: copy env.template to
+# .env, fill it in, then `docker compose up -d` in the same folder.
+#
+# Optional services are Compose profiles, listed in COMPOSE_PROFILES in .env:
+#   db       the bundled Postgres 18 (omit it and set DATABASE_URL for an external one)
+#   proxy    Caddy with automatic HTTPS (omitted with --no-proxy)
+#   updater  in-app updates (omitted with --no-in-app-updates; the CLI still works)
+name: bemmoly
+
+services:
+  bemmoly:
+    image: ${BEMMOLY_IMAGE:-ghcr.io/bemmoly/bemmoly}:${VERSION:?VERSION is not set in .env}
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      BEMMOLY_DATA_DIR: /var/bemmoly/data
+      BEMMOLY_BACKUP_DIR: /var/bemmoly/backups
+    volumes:
+      - ./data:/var/bemmoly/data
+      - ./backups:/var/bemmoly/backups
+    # Loopback only behind the proxy; the installer opens it with --no-proxy.
+    ports:
+      - ${BEMMOLY_HTTP_BIND:-127.0.0.1:8080}:8080
+    depends_on:
+      db:
+        condition: service_healthy
+        required: false
+    healthcheck:
+      test: ['CMD', 'bemmoly-health']
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 120s
+    stop_grace_period: 30s
+    networks: [internal]
+
+  db:
+    image: pgvector/pgvector:pg18
+    profiles: [db]
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: bemmoly
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is not set in .env}
+      POSTGRES_DB: bemmoly_db
+    # Tuned by the installer from this machine's memory.
+    command:
+      - postgres
+      - -c
+      - shared_buffers=${PG_SHARED_BUFFERS:-512MB}
+      - -c
+      - effective_cache_size=${PG_EFFECTIVE_CACHE_SIZE:-1536MB}
+    shm_size: 256mb
+    volumes:
+      # Postgres 18 images keep data under /var/lib/postgresql/18/docker.
+      - ./pg:/var/lib/postgresql
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U bemmoly -d bemmoly_db']
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 10s
+    stop_grace_period: 60s
+    networks: [internal]
+
+  proxy:
+    image: caddy:2.11
+    profiles: [proxy]
+    restart: unless-stopped
+    environment:
+      BEMMOLY_DOMAIN: ${BEMMOLY_DOMAIN:?BEMMOLY_DOMAIN is not set in .env}
+      BEMMOLY_TLS_MODE: ${BEMMOLY_TLS_MODE:-auto}
+    ports:
+      - 80:80
+      - 443:443
+      - 443:443/udp
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./caddy/data:/data
+      - ./caddy/config:/config
+    depends_on: [bemmoly]
+    networks: [internal]
+
+  updater:
+    image: ${UPDATER_IMAGE:-ghcr.io/bemmoly/updater}:${UPDATER_VERSION:-${VERSION}}
+    profiles: [updater]
+    restart: unless-stopped
+    # The Docker socket is root-equivalent: no published port, read-only, token only.
+    environment:
+      UPDATER_TOKEN: ${UPDATER_TOKEN:?UPDATER_TOKEN is not set in .env}
+      BEMMOLY_DIR: ${BEMMOLY_DIR:-/var/bemmoly}
+      COMPOSE_PROJECT: bemmoly
+      APP_SERVICE: bemmoly
+      BEMMOLY_IMAGE: ${BEMMOLY_IMAGE:-ghcr.io/bemmoly/bemmoly}
+      BEMMOLY_ALLOW_UNSIGNED_UPDATES: ${BEMMOLY_ALLOW_UNSIGNED_UPDATES:-false}
+      BEMMOLY_UPDATER_LOCAL_IMAGES: ${BEMMOLY_UPDATER_LOCAL_IMAGES:-false}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ${BEMMOLY_DIR:-/var/bemmoly}:${BEMMOLY_DIR:-/var/bemmoly}
+    read_only: true
+    tmpfs: [/tmp]
+    security_opt: ['no-new-privileges:true']
+    networks: [internal]
+
+# One network for the stack. It is not marked `internal: true` because the app reaches
+# AI providers and SMTP, and the updater verifies signatures; nothing on it is published
+# except the proxy's 80 and 443 (and the app on loopback).
+networks:
+  internal: {}

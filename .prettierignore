@@ -9,5 +9,7 @@ docs/
 coverage/
 packages/ui/src/theme.css
 packages/ui/src/tailwind.css
+# Go templates rendered by Helm, not YAML until rendered.
+deploy/helm/**/templates/
 AGENTS.md
 CLAUDE.md

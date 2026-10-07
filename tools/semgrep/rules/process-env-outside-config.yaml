@@ -1,0 +1,23 @@
+rules:
+  - id: bemmoly-process-env-outside-config
+    languages: [typescript, javascript]
+    severity: ERROR
+    message: >-
+      The environment is parsed once, with zod, in config/env.ts. Read the parsed `Env`
+      value instead of `process.env`, and add any new key to the schema and to
+      .env.example in the same change. (AGENTS.md §2, Configuration)
+    paths:
+      # The same exemptions as the ESLint no-restricted-properties rule.
+      exclude:
+        - '**/config/env.ts'
+        - '**/*.test.ts'
+        - '**/*.test.js'
+        - '**/*.config.ts'
+        - '**/*.config.js'
+        - /packages/core/src/testing/**
+        - /scripts/**
+        - /tools/**
+    pattern-either:
+      - pattern: process.env
+      - pattern: process.env.$KEY
+      - pattern: process.env[$KEY]

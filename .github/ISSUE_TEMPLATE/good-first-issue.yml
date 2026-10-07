@@ -1,0 +1,35 @@
+name: Good first issue (maintainers)
+description: A small, well-described task curated for a first contribution.
+labels: [good first issue]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        For maintainers. Good first issues are curated, never auto-labelled: each one is small,
+        has one obvious place to start, and links what a newcomer needs to read.
+  - type: textarea
+    id: task
+    attributes:
+      label: The task
+      description: One change, stated as the outcome.
+    validations:
+      required: true
+  - type: textarea
+    id: start-here
+    attributes:
+      label: Where to start
+      description: Files, the section of the tech design or AGENTS.md, and the mock if it is UI.
+    validations:
+      required: true
+  - type: textarea
+    id: done
+    attributes:
+      label: Done when
+      description: Tests to add or run, and what a reviewer will check.
+    validations:
+      required: true
+  - type: input
+    id: mentor
+    attributes:
+      label: Who can help
+      description: A maintainer who will answer questions on this issue.

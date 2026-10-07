@@ -1,5 +1,7 @@
+import type { SqlClient } from '../clients/postgres.ts';
 import type { Changelog } from '../contracts/changelog.ts';
 import type { EventBus } from '../contracts/event-bus.ts';
+import type { RealtimePublisher } from '../contracts/realtime.ts';
 import type {
   AiRegistry,
   CapabilityRegistry,
@@ -19,6 +21,8 @@ export type ModuleDefaultAccess = 'everyone' | 'teams' | 'none';
 export interface BemmolyModule {
   /** Stable, lowercase, used in config, URLs and the changelog table. */
   id: 'work' | 'docs' | (string & {});
+  /** What Settings › Modules calls it, e.g. "Work"; the id, capitalised, when absent. */
+  name?: string;
   /** The app version it shipped in. */
   version: string;
   /** Semver range of the kernel API it was built against. */
@@ -47,6 +51,10 @@ export interface ModuleContext {
   editor?: EditorRegistry;
   importers: ImporterRegistry;
   settings: SettingsRegistry;
+  /** Invalidation messages for WebSocket clients; a no-op without a database. */
+  realtime: RealtimePublisher;
+  /** The kernel's Postgres pool for the module's own tables; absent without DATABASE_URL. */
+  database?: SqlClient;
 }
 
 /** Identity helper so a module manifest is checked against the contract. */

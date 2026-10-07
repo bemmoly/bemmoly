@@ -21,6 +21,18 @@ const moduleList = z
   )
   .pipe(z.array(moduleIdSchema));
 
+/** Changelog contexts this install runs: production, demo, test (comma separated). */
+const contextList = z
+  .string()
+  .default('production')
+  .transform((value) =>
+    value
+      .split(',')
+      .map((context) => context.trim())
+      .filter((context) => context.length > 0),
+  )
+  .pipe(z.array(z.string().regex(/^[a-z][a-z0-9-]*$/)).min(1));
+
 export const envSchema = z.object({
   DATABASE_URL: z.url({ protocol: /^postgres(ql)?$/ }).optional(),
   BEMMOLY_SECRET_KEY: base64Key,
@@ -34,8 +46,23 @@ export const envSchema = z.object({
   BEMMOLY_TRUST_PROXY: z.stringbool().default(false),
   BEMMOLY_ALLOW_PRIVATE_URLS: z.stringbool().default(false),
   OTEL_EXPORTER_OTLP_ENDPOINT: z.url().optional(),
+  BEMMOLY_METRICS_TOKEN: z
+    .string()
+    .min(32, 'must be at least 32 characters (generate with: openssl rand -hex 32)')
+    .optional(),
   BEMMOLY_BACKUP_PASSPHRASE: z.string().min(16).optional(),
   BEMMOLY_DB_AUTO_MIGRATE: z.stringbool().default(true),
+  BEMMOLY_DB_CONTEXTS: contextList,
+  BEMMOLY_BACKUP_DIR: z.string().min(1).default('/var/bemmoly/backups'),
+  /** The release this image is; unset or empty means the server package's own version. */
+  BEMMOLY_VERSION: z
+    .string()
+    .trim()
+    .optional()
+    .transform((value) => value || undefined),
+  BEMMOLY_UPDATER_URL: z.url({ protocol: /^https?$/ }).optional(),
+  UPDATER_TOKEN: z.string().min(32).optional(),
+  BEMMOLY_PG_BIN_DIR: z.string().min(1).default('/usr/lib/postgresql/18/bin'),
 });
 
 export type Env = z.output<typeof envSchema>;
@@ -66,6 +93,36 @@ export function parseEnv(source: EnvSource): Env {
   throw new EnvError(
     result.error.issues.map((issue) => `${issue.path.join('.') || '(root)'}: ${issue.message}`),
   );
+}
+
+/** What `bemmoly-db` needs: enough to reach the database, nothing secret. */
+export const databaseEnvSchema = envSchema
+  .pick({ BEMMOLY_MODULES: true, BEMMOLY_DB_CONTEXTS: true, BEMMOLY_VERSION: true })
+  .extend({ DATABASE_URL: z.url({ protocol: /^postgres(ql)?$/ }) });
+
+export type DatabaseEnv = z.output<typeof databaseEnvSchema>;
+
+function parseWith<S extends z.ZodType>(schema: S, source: EnvSource): z.output<S> {
+  const result = schema.safeParse(withoutEmptyValues(source));
+  if (result.success) return result.data;
+  throw new EnvError(
+    result.error.issues.map((issue) => `${issue.path.join('.') || '(root)'}: ${issue.message}`),
+  );
+}
+
+export function parseDatabaseEnv(source: EnvSource): DatabaseEnv {
+  return parseWith(databaseEnvSchema, source);
+}
+
+/** The environment for database commands. Exits on a bad key. */
+export function loadDatabaseEnv(): DatabaseEnv {
+  try {
+    return parseDatabaseEnv(process.env);
+  } catch (error) {
+    if (!(error instanceof EnvError)) throw error;
+    process.stderr.write(`${error.message}\n`);
+    process.exit(1);
+  }
 }
 
 /** The only place the process environment is read. Exits on a bad key. */
