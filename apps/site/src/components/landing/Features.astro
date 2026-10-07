@@ -1,0 +1,20 @@
+---
+import { FEATURES } from '../../data/landing.ts';
+---
+
+<section id="product" aria-label="Product" class="border-y border-br bg-bg dark:bg-sf">
+  <ul class="mx-auto grid max-w-290 gap-x-12 gap-y-10 px-4 py-18 sm:grid-cols-2 sm:px-6 lg:grid-cols-3 lg:px-12">
+    {FEATURES.map((feature) => (
+      <li class="flex flex-col gap-2.5">
+        <span
+          aria-hidden="true"
+          class="flex size-9 items-center justify-center rounded-card border border-br bg-sf font-mono dark:bg-bg text-13 font-semibold text-ac"
+        >
+          {feature.g}
+        </span>
+        <h2 class="text-17 font-semibold tracking-brand">{feature.title}</h2>
+        <p class="text-14h leading-desc text-pretty text-tx3">{feature.body}</p>
+      </li>
+    ))}
+  </ul>
+</section>

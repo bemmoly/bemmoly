@@ -1,0 +1,33 @@
+---
+import { RELEASES } from '../data/changelog.ts';
+import Page from '../layouts/Page.astro';
+import { REPO_URL } from '../lib/links.ts';
+---
+
+<Page
+  title="Changelog"
+  description="What changed in each Bemmoly release."
+  lede="Every release, newest first. Each one says what changed, and calls out configuration and schema changes an admin should know about before updating."
+>
+  <ol class="flex flex-col gap-10">
+    {RELEASES.map((release) => (
+      <li class="flex flex-col gap-3 border-t border-br-row pt-6">
+        <div class="flex items-center gap-3">
+          <h2 class="font-mono text-22 font-semibold text-tx">{release.version}</h2>
+          <span class="rounded-full bg-ok-bg px-2 py-0.5 text-11h font-semibold text-ok-fg">
+            {release.date ?? 'in progress'}
+          </span>
+        </div>
+        <p class="text-15 leading-desc text-tx3">{release.summary}</p>
+        <ul class="flex list-disc flex-col gap-1.5 pl-5 text-15 leading-desc text-tx3">
+          {release.notes.map((note) => (
+            <li class="pl-1">{note}</li>
+          ))}
+        </ul>
+      </li>
+    ))}
+  </ol>
+  <p class="text-14h text-tx4">
+    Work in progress is visible on <a href={REPO_URL}>GitHub</a>.
+  </p>
+</Page>

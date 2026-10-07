@@ -1,0 +1,36 @@
+---
+import boardOcean from '../assets/screens/board-ocean.png';
+import board from '../assets/screens/board.png';
+import AiSection from '../components/landing/AiSection.astro';
+import Configure from '../components/landing/Configure.astro';
+import Cta from '../components/landing/Cta.astro';
+import Features from '../components/landing/Features.astro';
+import Hero from '../components/landing/Hero.astro';
+import SelfHost from '../components/landing/SelfHost.astro';
+import Shot from '../components/landing/Shot.astro';
+import Base from '../layouts/Base.astro';
+---
+
+<Base
+  title="Bemmoly"
+  description="Open source, self-hosted, AI-first issues and docs for your whole company. One container, one Postgres, no per-seat pricing."
+  cta
+>
+  <Hero />
+  <div class="mx-auto w-full max-w-320 px-4 pb-20 sm:px-6 lg:px-12">
+    <Shot
+      src={board}
+      dark={boardOcean}
+      frame="wide"
+      width={1184}
+      sizes="(min-width: 1280px) 1184px, calc(100vw - 32px)"
+      eager
+      alt="A sprint board in Bemmoly with an AI sprint-risk note, swimlanes by epic and an issue open beside the board."
+    />
+  </div>
+  <Features />
+  <AiSection />
+  <SelfHost />
+  <Configure />
+  <Cta slot="cta" />
+</Base>

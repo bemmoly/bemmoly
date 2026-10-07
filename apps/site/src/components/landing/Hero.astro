@@ -1,0 +1,36 @@
+---
+import { PROOF_POINTS, RELEASE } from '../../data/landing.ts';
+import Button from '../site/Button.astro';
+import Soon from '../site/Soon.astro';
+import InstallCommand from './InstallCommand.astro';
+---
+
+<section class="hero-glow relative isolate mx-auto flex max-w-290 flex-col items-center gap-7 px-4 pt-16 pb-14 text-center sm:px-6 lg:px-12 lg:pt-22">
+  <p class="inline-flex items-center gap-2 rounded-full border border-br bg-sf2 py-1.25 dark:bg-sf pr-3 pl-1.5 text-13 text-tx3">
+    <span class="rounded-full bg-ok-bg px-2 py-0.5 text-11h font-semibold text-ok-fg">
+      {RELEASE.version}
+    </span>
+    {RELEASE.note}
+  </p>
+  <h1 class="max-w-225 text-36 leading-hero font-semibold tracking-hero text-balance md:text-58">
+    Your work. Your platform.
+  </h1>
+  <p class="max-w-175 text-19 leading-brief text-pretty text-tx3">
+    Issues and docs for your whole company in a single self-hosted, AI-first app your team can run
+    on a $20 server. No per-seat pricing. No usage caps. Your data stays on your hardware.
+  </p>
+  <div class="flex flex-wrap items-center justify-center gap-3">
+    <Button variant="primary" href="/self-hosting">
+      Deploy in 5 minutes
+    </Button>
+    <Button variant="secondary">
+      Try the live demo <Soon />
+    </Button>
+  </div>
+  <InstallCommand />
+  <ul class="flex flex-wrap justify-center gap-x-7 gap-y-2 text-13 text-tx4">
+    {PROOF_POINTS.map((point) => (
+      <li>{point}</li>
+    ))}
+  </ul>
+</section>

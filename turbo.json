@@ -16,13 +16,24 @@
       "dependsOn": ["^build"],
       "outputs": ["dist/**", "storybook-static/**"]
     },
+    "@bemmoly/site#build": {
+      "dependsOn": [],
+      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/SECURITY.md"],
+      "outputs": ["dist/**"]
+    },
     "typecheck": {
       "dependsOn": ["^typecheck"]
     },
     "lint": {},
+    "@bemmoly/site#lint": {
+      "dependsOn": ["@bemmoly/site#build"]
+    },
     "//#lint:root": {},
     "test": {
       "outputs": ["coverage/**"]
+    },
+    "@bemmoly/site#test": {
+      "dependsOn": ["@bemmoly/site#build"]
     },
     "test:integration": {
       "cache": false,

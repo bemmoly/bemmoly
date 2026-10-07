@@ -1,0 +1,40 @@
+{
+  "name": "@bemmoly/site",
+  "version": "0.0.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "typecheck": "astro check",
+    "lint": "eslint --max-warnings 0 . && html-validate dist",
+    "test": "vitest run",
+    "size": "node scripts/size.ts",
+    "screens": "node scripts/capture-screens.ts",
+    "test:container": "vitest run tests/container.test.ts",
+    "docker:build": "docker build -f Dockerfile -t bemmoly-site:dev ../.."
+  },
+  "devDependencies": {
+    "@astrojs/check": "0.9.10",
+    "@astrojs/sitemap": "3.7.0",
+    "@bemmoly/ui": "workspace:*",
+    "@fontsource/ibm-plex-sans": "5.3.0",
+    "@playwright/test": "1.63.0",
+    "@tailwindcss/vite": "4.3.3",
+    "@types/node": "26.6.4",
+    "astro": "5.18.2",
+    "eslint": "10.12.0",
+    "eslint-plugin-astro": "3.2.1",
+    "globals": "17.13.0",
+    "html-validate": "11.16.2",
+    "prettier": "3.9.9",
+    "prettier-plugin-astro": "1.1.0",
+    "sharp": "0.34.5",
+    "tailwindcss": "4.3.3",
+    "typescript": "npm:@typescript/typescript6@6.0.2",
+    "vite": "6.4.4",
+    "vitest": "5.0.3"
+  }
+}
