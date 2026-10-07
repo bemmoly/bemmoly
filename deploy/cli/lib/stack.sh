@@ -10,6 +10,19 @@ compose() {
   docker compose --project-directory "${BEMMOLY_DIR}" "$@"
 }
 
+# The updater holds this file for a whole update or rollback. Its swapped-out container
+# keeps the Compose labels, so `compose up|stop|restart` would act on it too, and a
+# restore or backup would race the swap. Two hours old, it is a crash's leftover.
+updater_lock_held() {
+  [[ -n "$(find "${BEMMOLY_DIR}/data/updater/lock" -mmin -120 2>/dev/null)" ]]
+}
+
+refuse_during_update() {
+  updater_lock_held || return 0
+  die "An update or rollback is in progress; bemmoly $1 would interfere with it" \
+    "Wait until it finishes (sudo bemmoly status shows the app again), then run the command again."
+}
+
 app_running() {
   [[ "$(docker inspect --format '{{.State.Running}}' bemmoly-bemmoly-1 2>/dev/null)" == true ]]
 }
@@ -109,6 +122,7 @@ cmd_shell() {
 }
 
 cmd_lifecycle() {
+  refuse_during_update "$1"
   case "$1" in
     start) compose up -d ;;
     stop) compose stop ;;
@@ -127,6 +141,7 @@ cmd_config() {
       ;;
     set)
       [[ $# -ge 3 ]] || die "config set needs a value" "Run: bemmoly config set ${key} VALUE"
+      refuse_during_update 'config set'
       if [[ "${key}" == BEMMOLY_SECRET_KEY || "${key}" == POSTGRES_PASSWORD ]]; then
         die "${key} cannot be changed here" "Changing it would lock you out of stored credentials or the database; see https://bemmoly.com/docs/rotate-secrets"
       fi
