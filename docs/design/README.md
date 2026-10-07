@@ -15,3 +15,5 @@ Changes the tech design has queued for the mocks (the design is otherwise follow
 - People screen: a Modules column and a per-module access editor.
 - Settings: Modules page, Updates page with roll back, Storage and backups page,
   AI settings catalog status line and upload control.
+
+Domains: the product site is bemmoly.com, the installer one-liner is served from get.bemmoly.com, and release manifests are GitHub release assets.

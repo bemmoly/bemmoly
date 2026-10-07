@@ -23,3 +23,6 @@ test-results/
 .idea/
 .vscode/*
 !.vscode/extensions.json
+
+# local tool configuration
+.claude/
