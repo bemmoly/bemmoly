@@ -1,6 +1,9 @@
 export {
+  capabilityForSettingKey,
   createSettingsAdmin,
   MANAGE_SETTINGS,
+  SETTING_GROUP_CAPABILITIES,
+  SETTINGS_READERS,
   type SettingsAdmin,
   type SettingsAdminDeps,
 } from './admin.ts';

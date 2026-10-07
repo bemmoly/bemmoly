@@ -67,7 +67,7 @@ export function useEmailTest() {
 /** Settings › Email and notifications: the relay, the sender, digests, the test send, the outbox. */
 export function useEmailSettings() {
   const me = useMe();
-  const canManage = me.can('workspace.email.manage') || me.can('workspace.settings.manage');
+  const canManage = me.can('workspace.email.manage');
   const settings = useSettings(EMAIL_KEYS, 'Email settings saved');
   const draft = useDraft<EmailForm>(settings.reads && emailFormFrom(settings.reads));
   const [errors, setErrors] = useState<FieldErrors>({});

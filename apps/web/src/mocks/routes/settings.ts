@@ -3,22 +3,29 @@ import {
   type SettingKey,
   type UpdateNotificationPreferencesRequest,
 } from '@bemmoly/shared';
-import { audit, can, emit, type MockDb } from '../db.ts';
+import { audit, can, capabilitiesOf, currentUser, emit, type MockDb } from '../db.ts';
 import { SECRET_KEYS } from '../seed/workspace.ts';
 import { bodyOf, fail, invalid, notFound, ok, page, type MockRoute } from '../types.ts';
 import { capture } from './session.ts';
 
 const isKey = (key: string): key is SettingKey => key in SETTING_SCHEMAS;
 
-/**
- * The data kernel gates every key with workspace.settings.manage; the email
- * stream also lets workspace.email.manage holders change email keys.
- */
+const GROUP_CAPABILITIES: Record<string, string> = {
+  appearance: 'workspace.appearance.manage',
+  email: 'workspace.email.manage',
+  system: 'workspace.system.manage',
+};
+
+/** As the data kernel: each key needs the capability that owns its group, else settings.manage. */
 function allowed(db: MockDb, key: SettingKey): boolean {
-  if (can(db, 'workspace.settings.manage')) return true;
-  if (key.startsWith('appearance.')) return can(db, 'workspace.appearance.manage');
-  if (key.startsWith('system.')) return can(db, 'workspace.system.manage');
-  return key.startsWith('email.') && can(db, 'workspace.email.manage');
+  return can(db, GROUP_CAPABILITIES[key.split('.')[0] ?? ''] ?? 'workspace.settings.manage');
+}
+
+/** Any workspace.*.manage capability reads the list the settings pages are built from. */
+function canRead(db: MockDb): boolean {
+  return capabilitiesOf(db, currentUser(db)).some((name) =>
+    /^workspace\.[a-z]+\.manage$/.test(name),
+  );
 }
 
 /** The data kernel's setting body: secrets report `isSet` and never a value. */
@@ -76,8 +83,8 @@ export const settingsRoutes: MockRoute[] = [
     method: 'GET',
     pattern: '/api/v1/admin/settings',
     handle: (_, db) => {
-      const keys = (Object.keys(SETTING_SCHEMAS) as SettingKey[]).filter((key) => allowed(db, key));
-      if (keys.length === 0) return forbidden();
+      if (!canRead(db)) return forbidden();
+      const keys = Object.keys(SETTING_SCHEMAS) as SettingKey[];
       return ok({ items: keys.map((key) => envelope(db, key)) });
     },
   },
@@ -87,7 +94,7 @@ export const settingsRoutes: MockRoute[] = [
     handle: (request, db) => {
       const key = request.params['key'] ?? '';
       if (!isKey(key)) return notFound(`Setting ${key}`);
-      return allowed(db, key) ? ok(envelope(db, key)) : forbidden();
+      return canRead(db) ? ok(envelope(db, key)) : forbidden();
     },
   },
   {

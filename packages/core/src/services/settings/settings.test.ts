@@ -5,7 +5,7 @@ import { z } from 'zod';
 import type { Actor, Authorize } from '../../contracts/authz.ts';
 import type { SettingDefinition } from '../../contracts/settings.ts';
 import type { SettingRow } from '../../models/settings.ts';
-import { createSettingsAdmin } from './admin.ts';
+import { capabilityForSettingKey, createSettingsAdmin } from './admin.ts';
 import { EMAIL_SETTING_DEFINITIONS } from '../email/index.ts';
 import { SYSTEM_SETTINGS } from '../system/index.ts';
 import { createSettingsCatalog } from './catalog.ts';
@@ -47,12 +47,12 @@ const definitions: SettingDefinition[] = [
   { key: 'email.smtp.password', schema: z.string().min(1), default: '', secret: true },
 ];
 
-function setup() {
+function setup(extra: readonly SettingDefinition[] = []) {
   const store = memoryStore();
   const realtime = { publish: vi.fn(async () => undefined) };
   const settings = createSettingsService({
     store,
-    catalog: createSettingsCatalog(undefined, definitions),
+    catalog: createSettingsCatalog(undefined, [...definitions, ...extra]),
     secrets: createSecretBox(KEY),
     realtime,
     logger: pino({ level: 'silent' }),
@@ -141,6 +141,67 @@ describe('settings admin', () => {
       'email.smtp.password',
       'workspace.name',
     ]);
+  });
+});
+
+describe('settings admin by key group', () => {
+  /** An authorize that grants exactly these workspace capabilities. */
+  const holding =
+    (...held: string[]): Authorize =>
+    async (_actor, capability) => {
+      if (!held.includes(capability)) throw new ForbiddenError();
+    };
+
+  it('maps each key group to the capability that owns it', () => {
+    expect(capabilityForSettingKey('appearance.theme')).toBe('workspace.appearance.manage');
+    expect(capabilityForSettingKey('email.smtp.host')).toBe('workspace.email.manage');
+    expect(capabilityForSettingKey('system.backups.schedule')).toBe('workspace.system.manage');
+    expect(capabilityForSettingKey('workspace.name')).toBe('workspace.settings.manage');
+    expect(capabilityForSettingKey('auth.passwordLogin')).toBe('workspace.settings.manage');
+  });
+
+  it('lets an appearance manager read the list and save appearance, and nothing else', async () => {
+    const { settings } = setup([
+      { key: 'appearance.theme', schema: z.string(), default: 'classic' },
+    ]);
+    const designer = createSettingsAdmin({
+      settings,
+      authorize: holding('workspace.appearance.manage'),
+    });
+    expect((await designer.list(admin)).map((item) => item.key)).toContain('appearance.theme');
+    expect((await designer.put(admin, 'appearance.theme', 'midnight')).value).toBe('midnight');
+    await designer.reset(admin, 'appearance.theme');
+    await expect(designer.put(admin, 'workspace.name', 'X')).rejects.toBeInstanceOf(ForbiddenError);
+    await expect(designer.put(admin, 'email.smtp.password', 'x')).rejects.toBeInstanceOf(
+      ForbiddenError,
+    );
+  });
+
+  it('keeps general settings to settings managers and the list from people with no manage capability', async () => {
+    const { settings } = setup([
+      { key: 'appearance.theme', schema: z.string(), default: 'classic' },
+    ]);
+    const general = createSettingsAdmin({
+      settings,
+      authorize: holding('workspace.settings.manage'),
+    });
+    expect((await general.put(admin, 'workspace.name', 'X')).value).toBe('X');
+    await expect(general.put(admin, 'appearance.theme', 'warm')).rejects.toBeInstanceOf(
+      ForbiddenError,
+    );
+    const auditor = createSettingsAdmin({ settings, authorize: holding('workspace.audit.view') });
+    await expect(auditor.list(admin)).rejects.toBeInstanceOf(ForbiddenError);
+  });
+
+  it('passes on errors that are not refusals', async () => {
+    const { settings } = setup();
+    const broken = createSettingsAdmin({
+      settings,
+      authorize: async () => {
+        throw new Error('database down');
+      },
+    });
+    await expect(broken.list(admin)).rejects.toThrow('database down');
   });
 });
 
