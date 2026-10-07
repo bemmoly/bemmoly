@@ -11,11 +11,13 @@ export interface PreviewInput {
   /** The -color lockup with its colours resolved. */
   lockup: string;
   colors: Record<'bg' | 'sf' | 'br' | 'tx' | 'tx2' | 'tx3' | 'ac', string>;
+  /** The Board capture to frame; the light one unless a preset has its own. */
+  board?: URL;
 }
 
-const HEADLINE = 'Your work. Your platform.';
-const LINE = 'Open source, self-hosted, AI-first issues and docs for your whole company.';
-const COMMAND = 'curl -fsSL https://get.bemmoly.com | sh';
+export const HEADLINE = 'Your work. Your platform.';
+export const LINE = 'Open source, self-hosted, AI-first issues and docs for your whole company.';
+export const COMMAND = 'curl -fsSL https://get.bemmoly.com | sh';
 const FOOTER = 'bemmoly.com  ·  MIT licensed';
 
 const headline: TextStyle = { family: 'ibm-plex-sans', weight: 600, size: 64, tracking: -0.02 };
@@ -23,8 +25,12 @@ const body: TextStyle = { family: 'ibm-plex-sans', weight: 400, size: 26 };
 const code: TextStyle = { family: 'ibm-plex-mono', weight: 400, size: 20 };
 const footer: TextStyle = { family: 'ibm-plex-sans', weight: 400, size: 20 };
 
-/** The Board shot the landing page shows (2x, light theme), recaptured from the mocks. */
-const BOARD = new URL('../../../apps/site/src/assets/screens/board.png', import.meta.url);
+/** The Board shots the landing page shows (2x), recaptured from the mocks. */
+export const BOARD = new URL('../../../apps/site/src/assets/screens/board.png', import.meta.url);
+export const BOARD_OCEAN = new URL(
+  '../../../apps/site/src/assets/screens/board-ocean.png',
+  import.meta.url,
+);
 const BOARD_SIZE = { width: 2364, height: 1372 };
 const MARGIN = 72;
 const LOCKUP_HEIGHT = 56;
@@ -32,7 +38,7 @@ const LOCKUP_HEIGHT = 56;
 const px = (value: string) => Number.parseFloat(value);
 
 /** `0 1px 2px rgba(16,24,40,.05)` as an SVG drop shadow. */
-function shadowFilter(id: string): string {
+export function shadowFilter(id: string): string {
   const [x = '0', y = '0', blur = '0', ...rest] = SHADOWS.card.split(' ');
   const rgba = /rgba\(([^)]+)\)/.exec(rest.join(' '))?.[1]?.split(',') ?? [];
   const [r = '0', g = '0', b = '0', a = '1'] = rgba.map((part) => part.trim());
@@ -74,20 +80,27 @@ function copyBlock(input: PreviewInput, x: number, top: number, width: number) {
   return { svg: parts.join(''), height: y - top };
 }
 
-/** A framed slice of the Board: the image is larger than the frame, which clips it. */
-function boardFrame(
-  input: PreviewInput,
+/**
+ * A framed slice of the Board: the image is larger than the frame, which clips it. `from` is
+ * the capture's pixel that lands on the frame's top-left corner, for a slice that skips the
+ * capture's own top-left corner.
+ */
+export function boardFrame(
+  input: Pick<PreviewInput, 'colors' | 'board'>,
   frame: { x: number; y: number; w: number; h: number },
   scale: number,
+  from = { x: 0, y: 0 },
 ) {
-  const image = readFileSync(BOARD).toString('base64');
+  const image = readFileSync(input.board ?? BOARD).toString('base64');
   const radius = px(RADII.dialog);
   const w = BOARD_SIZE.width * scale;
   const h = BOARD_SIZE.height * scale;
+  const x = frame.x - from.x * scale;
+  const y = frame.y - from.y * scale;
   return [
     `<clipPath id="board"><rect x="${frame.x}" y="${frame.y}" width="${frame.w}" height="${frame.h}" rx="${radius}"/></clipPath>`,
     `<rect x="${frame.x}" y="${frame.y}" width="${frame.w}" height="${frame.h}" rx="${radius}" fill="${input.colors.sf}" filter="url(#shadow)"/>`,
-    `<image clip-path="url(#board)" x="${frame.x}" y="${frame.y}" width="${w}" height="${h}" href="data:image/png;base64,${image}"/>`,
+    `<image clip-path="url(#board)" x="${x}" y="${y}" width="${w}" height="${h}" href="data:image/png;base64,${image}"/>`,
     `<rect x="${frame.x + 0.5}" y="${frame.y + 0.5}" width="${frame.w - 1}" height="${frame.h - 1}" rx="${radius}" fill="none" stroke="${input.colors.br}"/>`,
   ].join('');
 }
@@ -110,18 +123,23 @@ function canvas(input: PreviewInput, width: number, height: number, content: str
   ].join('');
 }
 
-/** 1200 x 630: brand and copy on the left, the Board bleeding off the right and bottom. */
-export function wideCard(input: PreviewInput): string {
-  const column = 620 - MARGIN - 48;
-  const footerBaseline = 630 - MARGIN + 14;
+/**
+ * 1200 x 630 (Open Graph), or 1280 x 640 (GitHub's social preview): brand and copy on the
+ * left, the Board bleeding off the right and bottom by 40. The frame keeps its width and
+ * the copy column takes what a wider card adds.
+ */
+export function wideCard(input: PreviewInput, width = 1200, height = 630): string {
+  const left = width - 580;
+  const column = left - MARGIN - 48;
+  const footerBaseline = height - MARGIN + 14;
   const space = { top: MARGIN + LOCKUP_HEIGHT, bottom: footerBaseline - 20 };
   const probe = copyBlock(input, MARGIN, 0, column);
   const top = space.top + (space.bottom - space.top - probe.height) / 2;
-  return canvas(input, 1200, 630, [
+  return canvas(input, width, height, [
     lockupAt(input, MARGIN, MARGIN),
     copyBlock(input, MARGIN, top, column).svg,
     `<path fill="${input.colors.tx3}" d="${outline(FOOTER, footer, MARGIN, footerBaseline)}"/>`,
-    boardFrame(input, { x: 620, y: 150, w: 620, h: 520 }, 0.42),
+    boardFrame(input, { x: left, y: 150, w: width - left + 40, h: height - 110 }, 0.42),
   ]);
 }
 

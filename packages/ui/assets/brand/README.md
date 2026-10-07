@@ -70,3 +70,70 @@ preset surface and the designed blue:
 | `social-preview-square.png`                      | 1080 x 1080 | The same elements stacked (lockup, copy, Board) for platforms that crop square                                                                                                                                                                                          |
 
 The app imports them through the package export `@bemmoly/ui/brand/generated/<file>`.
+
+## Banners
+
+Profile banners, the README hero and the repository social preview, composed by
+`scripts/brand-banners.ts` from the same parts as the social preview: the tagline, the line
+about the product, the install command in a pill, the Board shot in a card frame bleeding off
+the right edge and the accent glow, with every colour from the tokens and the text outlined
+from the self-hosted IBM Plex. Each is rendered in the Classic light preset (the approved
+look) and in Ocean with the Ocean Board capture (`-ocean`, for comparison).
+
+The banners carry **no mark and no wordmark**: each platform shows the mark as the profile
+picture beside the banner, so the only name on them is "bemmoly.com", small, in a corner. The
+README hero and the repository social preview are shown with no avatar beside them, so those
+two keep the lockup.
+
+Regenerate after changing the copy, a capture or a token:
+
+```sh
+pnpm --filter @bemmoly/ui brand:banners      # banners only
+pnpm --filter @bemmoly/ui brand:icons        # icons, social preview and banners
+pnpm --filter @bemmoly/ui brand:banners --debug /tmp/banners   # also writes review copies
+```
+
+`--debug` writes copies with the safe zone dashed, the covered areas shaded and each text box
+traced. They are for review only; do not commit them. The script refuses to render a banner
+whose text leaves its safe zone, sits under a covered area or runs into the Board frame, so a
+copy or size change that breaks a rule fails the build instead of shipping.
+
+| File                                           | Size                    | Where it goes                                                     |
+| ---------------------------------------------- | ----------------------- | ----------------------------------------------------------------- |
+| `banner-x-1500x500.png`, `@2x`                 | 1500 x 500, 3000 x 1000 | X profile header                                                  |
+| `banner-linkedin-company-1128x191.png`         | 1128 x 191              | LinkedIn company page cover                                       |
+| `banner-linkedin-personal-1584x396.png`, `@2x` | 1584 x 396, 3168 x 792  | LinkedIn personal profile background                              |
+| `banner-buymeacoffee-1600x400.png`             | 1600 x 400              | Buy Me a Coffee page cover                                        |
+| `readme-hero.png`                              | 1280 x 400              | Top of the repository README (light; `-ocean` under dark mode)    |
+| `github-social-preview-1280x640.png`           | 1280 x 640              | Repository Settings › General › Social preview (uploaded by hand) |
+
+Each has a `-ocean` twin (`banner-x-1500x500-ocean.png`, `banner-x-1500x500-ocean@2x.png`, and
+so on). The 2x files are for X and LinkedIn personal, which downscale a larger upload.
+
+### Safe zones
+
+All text sits inside the safe zone; only the glow and the Board frame reach the edges.
+
+- **X header (1500 x 500).** Phones crop the top and bottom, so text stays in the central
+  1500 x 360 band (y 70 to 430). On desktop the avatar overlaps the bottom-left 420 x 420, so
+  the copy starts at x 480. "bemmoly.com" is top-right, above the frame.
+- **LinkedIn company cover (1128 x 191).** The page logo overlaps about 270 x 140 at the
+  bottom-left and phones show only the middle, so text stays in the right two-thirds (from x
+  376), vertically centred: the tagline at 48px on one line and the line at 18px on two. The
+  **install pill is dropped**: under the tagline and the line it would push the block past the
+  191px height, and putting the line on one row to make room would squeeze the Board to a
+  sliver. The Board is cropped to its top bar and the first column, starting at the Projects tab.
+- **LinkedIn personal banner (1584 x 396).** The profile photo overlaps about 400 x 300 at
+  the bottom-left, so text stays right of x 480.
+- **Buy Me a Coffee cover (1600 x 400).** Size from Buy Me a Coffee's help page,
+  [How to set up your Buy Me a Coffee page](https://help.buymeacoffee.com/en/articles/10184401-how-to-set-up-your-buy-me-a-coffee-page)
+  ("1600px wide by 400px tall"). The page does not document overlaps, so they were measured on
+  a live creator page: on phones (up to about 960px wide) the whole cover is shown with the
+  round avatar centred over its bottom, covering x 587 to 1014 from y 157; on desktop there is
+  no avatar on the cover, but the page's cards cover it from about y 270 at the narrowest
+  desktop width. So text stays above y 260, and left of the avatar column below y 150: the
+  tagline runs on one line across the top and the line and the pill sit at the left.
+- **README hero (1280 x 400).** GitHub shows it about 900px wide, so the type is sized for
+  0.7x: the 60px tagline, 24px line and 20px command read as about 42, 17 and 14px.
+- **Repository social preview (1280 x 640).** The 1200 x 630 social preview's composition at
+  GitHub's 2:1 size; the frame keeps its width and the copy column takes the extra.
