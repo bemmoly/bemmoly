@@ -8,5 +8,9 @@
   "ignore": [],
   "fixed": [["@bemmoly/*"]],
   "linked": [],
-  "updateInternalDependencies": "patch"
+  "updateInternalDependencies": "patch",
+  "privatePackages": {
+    "version": true,
+    "tag": false
+  }
 }
