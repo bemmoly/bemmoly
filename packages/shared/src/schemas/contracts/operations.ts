@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { idSchema, pageQuerySchema, pageSchema, timestampSchema } from './common.ts';
+import { idSchema, pageSchema, timestampSchema } from './common.ts';
 import { healthCheckSchema } from './setup.ts';
 import { updateChannelSchema } from './settings.ts';
 
@@ -86,35 +86,8 @@ export const systemStatusSchema = z.object({
   aiSpend: z.object({ monthToDateUsd: z.number(), budgetUsd: z.number().nullable() }).nullable(),
 });
 
-export const auditActorKindSchema = z.enum(['user', 'ai_plan', 'system', 'api_token']);
-
-export const auditEntrySchema = z.object({
-  id: idSchema,
-  at: timestampSchema,
-  actor: z.object({ kind: auditActorKindSchema, id: idSchema.nullable(), name: z.string() }),
-  action: z.string(),
-  targetKind: z.string().nullable(),
-  targetId: z.string().nullable(),
-  targetLabel: z.string().nullable(),
-  ip: z.string().nullable(),
-  requestId: z.string().nullable(),
-});
-
-export const auditQuerySchema = pageQuerySchema.extend({
-  actorId: idSchema.optional(),
-  action: z.string().min(1).optional(),
-  targetKind: z.string().min(1).optional(),
-  from: timestampSchema.optional(),
-  to: timestampSchema.optional(),
-});
-
-export const auditPageSchema = pageSchema(auditEntrySchema);
-
 export type Backup = z.infer<typeof backupSchema>;
 export type BackupsPage = z.infer<typeof backupsPageSchema>;
 export type RollbackMode = z.infer<typeof rollbackModeSchema>;
 export type UpdateStatus = z.infer<typeof updateStatusSchema>;
 export type SystemStatus = z.infer<typeof systemStatusSchema>;
-export type AuditActorKind = z.infer<typeof auditActorKindSchema>;
-export type AuditEntry = z.infer<typeof auditEntrySchema>;
-export type AuditQuery = z.infer<typeof auditQuerySchema>;

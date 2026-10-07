@@ -1,83 +1,20 @@
 import { z } from 'zod';
-import { hexColorSchema, timestampSchema } from './common.ts';
-
-/** Keys under /api/v1/admin/settings/:key that the web shell reads and writes. */
-export const SETTING_KEYS = {
-  workspace: 'workspace',
-  appearance: 'appearance',
-  smtp: 'email.smtp',
-  aiProvider: 'ai.provider',
-  backups: 'backups.schedule',
-  updates: 'updates',
-} as const;
-
-export type SettingKey = (typeof SETTING_KEYS)[keyof typeof SETTING_KEYS];
-
-export function settingSchema<T extends z.ZodType>(value: T) {
-  return z.object({ key: z.string(), value, updatedAt: timestampSchema.nullable() });
-}
-
-export const workspaceSettingsSchema = z.object({
-  name: z.string().trim().min(1, 'Name the workspace').max(80),
-  url: z.string().trim().min(1),
-  locale: z.string().min(2),
-  timezone: z.string().min(1),
-});
+import { hexColorSchema } from './common.ts';
 
 export const themeFontSchema = z.enum(['plex', 'inter', 'source', 'geist']);
 export const themeModeSchema = z.enum(['light', 'dark']);
 export const surfaceToneSchema = z.enum(['neutral', 'tinted']);
+export const smtpSecuritySchema = z.enum(['starttls', 'tls', 'none']);
+export const updateChannelSchema = z.enum(['stable', 'beta']);
+export const backupFrequencySchema = z.enum(['hourly', 'every_6_hours', 'daily', 'weekly']);
 
+/** The custom builder's inputs; buildTheme turns them into the full token set. */
 export const customThemeSchema = z.object({
   brandColor: hexColorSchema,
   mode: themeModeSchema,
   surfaces: surfaceToneSchema,
   font: themeFontSchema,
 });
-
-/** `preset` is a preset id from @bemmoly/ui tokens, or "custom" to use `custom`. */
-export const appearanceSchema = z.object({
-  preset: z.string().min(1),
-  custom: customThemeSchema.nullable(),
-  logoUrl: z.string().nullable(),
-  policy: z.object({
-    memberModeSwitch: z.boolean(),
-    personalThemes: z.boolean(),
-  }),
-});
-
-export const smtpSecuritySchema = z.enum(['starttls', 'tls', 'none']);
-
-/** What the server returns: secrets are write-only, so only whether one is set. */
-export const smtpSettingsSchema = z.object({
-  host: z.string(),
-  port: z.number().int().min(1).max(65535),
-  security: smtpSecuritySchema,
-  username: z.string(),
-  passwordSet: z.boolean(),
-  fromAddress: z.string(),
-  replyTo: z.string().nullable(),
-});
-
-/** What the form sends: omit `password` to keep the stored one. */
-export const smtpSettingsUpdateSchema = z.object({
-  host: z.string().trim().min(1, 'Enter the SMTP host'),
-  port: z.number().int().min(1).max(65535),
-  security: smtpSecuritySchema,
-  username: z.string().trim(),
-  password: z.string().min(1).optional(),
-  fromAddress: z.email('Enter the address mail is sent from'),
-  replyTo: z.email().nullable(),
-});
-
-/** The setup wizard's AI step: which catalog provider was chosen, and the privacy toggles. */
-export const aiProviderChoiceSchema = z.object({
-  providerId: z.string().min(1).nullable(),
-  shareContent: z.boolean(),
-  allowActions: z.boolean(),
-});
-
-export const backupFrequencySchema = z.enum(['hourly', 'every_6_hours', 'daily', 'weekly']);
 
 export const backupScheduleSchema = z.object({
   frequency: backupFrequencySchema,
@@ -91,51 +28,74 @@ export const backupScheduleSchema = z.object({
   }),
   localPath: z.string().min(1),
   s3: z
-    .object({
-      endpoint: z.string(),
-      bucket: z.string(),
-      region: z.string(),
-      prefix: z.string(),
-      accessKeyIdSet: z.boolean(),
-      secretSet: z.boolean(),
-    })
+    .object({ endpoint: z.string(), bucket: z.string(), region: z.string(), prefix: z.string() })
     .nullable(),
   encryption: z.boolean(),
   verification: z.enum(['weekly', 'daily', 'off']),
 });
 
-export const backupScheduleUpdateSchema = backupScheduleSchema.extend({
-  s3: z
-    .object({
-      endpoint: z.string().trim().min(1),
-      bucket: z.string().trim().min(1),
-      region: z.string().trim(),
-      prefix: z.string().trim(),
-      accessKeyId: z.string().min(1).optional(),
-      secretAccessKey: z.string().min(1).optional(),
-    })
-    .nullable(),
+/**
+ * Keys under /api/v1/admin/settings/:key and the value each holds. The email
+ * and appearance keys are confirmed by the email stream; the rest are the web
+ * shell's request to the data kernel stream and are marked so.
+ */
+export const SETTING_SCHEMAS = {
+  'email.provider': z.enum(['smtp', 'log']),
+  'email.smtp.host': z.string(),
+  'email.smtp.port': z.number().int().min(1).max(65535),
+  'email.smtp.security': smtpSecuritySchema,
+  'email.smtp.username': z.string(),
+  /** Secret: write-only; reads say only whether it is set. */
+  'email.smtp.password': z.string(),
+  'email.from': z.string(),
+  'email.replyTo': z.string().nullable(),
+  'email.digestMinutes': z.number().int().min(1).max(1440),
+  /** A preset id from @bemmoly/ui tokens, or "custom". */
+  'appearance.theme': z.string().min(1),
+  'appearance.brandColor': hexColorSchema.nullable(),
+  'appearance.font': themeFontSchema,
+  'appearance.logoKey': z.string().nullable(),
+  /** Assumed: the custom builder's mode and surface tone, and the member policy. */
+  'appearance.mode': themeModeSchema,
+  'appearance.surfaces': surfaceToneSchema,
+  'appearance.memberModeSwitch': z.boolean(),
+  'appearance.personalThemes': z.boolean(),
+  /** Assumed: workspace details. */
+  'workspace.name': z.string().trim().min(1).max(100),
+  'workspace.url': z.string(),
+  'workspace.locale': z.string().min(2),
+  'workspace.timezone': z.string().min(1),
+  /** Assumed: the wizard's AI step until the AI runtime owns its tables. */
+  'ai.providerId': z.string().nullable(),
+  'ai.shareContent': z.boolean(),
+  'ai.allowActions': z.boolean(),
+  /** Assumed: Settings › Storage and backups and Settings › Updates. */
+  'backups.schedule': backupScheduleSchema,
+  /** Assumed secrets for the S3 destination: write-only. */
+  'backups.s3.accessKeyId': z.string(),
+  'backups.s3.secretAccessKey': z.string(),
+  'updates.channel': updateChannelSchema,
+  'updates.checkForUpdates': z.boolean(),
+  /** Assumed: set by the wizard's last step; the shell resumes the wizard until it exists. */
+  'setup.completedAt': z.string().nullable(),
+} as const;
+
+export type SettingKey = keyof typeof SETTING_SCHEMAS;
+export type SettingValue<K extends SettingKey> = z.infer<(typeof SETTING_SCHEMAS)[K]>;
+
+/** Lenient envelope: secrets come back without a value and with `isSet`. */
+export const settingEnvelopeSchema = z.looseObject({
+  key: z.string(),
+  value: z.unknown().optional(),
+  isSet: z.boolean().optional(),
+  updatedAt: z.string().nullable().optional(),
 });
 
-export const updateChannelSchema = z.enum(['stable', 'beta']);
-
-export const updatePreferencesSchema = z.object({
-  channel: updateChannelSchema,
-  checkForUpdates: z.boolean(),
-});
-
-export type WorkspaceSettings = z.infer<typeof workspaceSettingsSchema>;
 export type ThemeFont = z.infer<typeof themeFontSchema>;
 export type ThemeMode = z.infer<typeof themeModeSchema>;
 export type SurfaceTone = z.infer<typeof surfaceToneSchema>;
 export type CustomTheme = z.infer<typeof customThemeSchema>;
-export type Appearance = z.infer<typeof appearanceSchema>;
 export type SmtpSecurity = z.infer<typeof smtpSecuritySchema>;
-export type SmtpSettings = z.infer<typeof smtpSettingsSchema>;
-export type SmtpSettingsUpdate = z.infer<typeof smtpSettingsUpdateSchema>;
-export type AiProviderChoice = z.infer<typeof aiProviderChoiceSchema>;
+export type UpdateChannel = z.infer<typeof updateChannelSchema>;
 export type BackupFrequency = z.infer<typeof backupFrequencySchema>;
 export type BackupSchedule = z.infer<typeof backupScheduleSchema>;
-export type BackupScheduleUpdate = z.infer<typeof backupScheduleUpdateSchema>;
-export type UpdateChannel = z.infer<typeof updateChannelSchema>;
-export type UpdatePreferences = z.infer<typeof updatePreferencesSchema>;

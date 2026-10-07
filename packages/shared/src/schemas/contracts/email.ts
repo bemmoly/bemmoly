@@ -1,57 +1,82 @@
 import { z } from 'zod';
-import { idSchema, pageQuerySchema, pageSchema, timestampSchema } from './common.ts';
 
-export const emailTestRequestSchema = z.object({ to: z.email('Enter a valid email address') });
+/** Shapes confirmed by the email and notifications stream. */
+export const emailTestRequestSchema = z.object({
+  to: z.email('Enter a valid email address').optional(),
+});
 
-const dnsCheckSchema = z.enum(['pass', 'missing', 'fail', 'unknown']);
+/** A DNS verdict; the server may send a word or an object with the record to add. */
+const dnsVerdictSchema = z.union([
+  z.string(),
+  z.looseObject({
+    status: z.string().optional(),
+    record: z.string().nullable().optional(),
+    expected: z.string().nullable().optional(),
+  }),
+]);
 
-/** `message` is the SMTP conversation's reason in plain words, success or failure. */
+/** 200 even when sending failed: `failure` says which stage and why, in plain words. */
 export const emailTestResultSchema = z.object({
-  ok: z.boolean(),
-  message: z.string(),
-  dns: z
-    .object({ spf: dnsCheckSchema, dmarc: dnsCheckSchema, records: z.array(z.string()) })
+  sent: z.boolean(),
+  provider: z.string(),
+  to: z.string(),
+  messageId: z.string().nullable(),
+  failure: z
+    .object({ stage: z.string(), message: z.string(), serverResponse: z.string().nullable() })
+    .nullable(),
+  deliverability: z
+    .object({ domain: z.string(), spf: dnsVerdictSchema, dmarc: dnsVerdictSchema })
     .nullable(),
 });
 
-export const outboxStatusSchema = z.enum(['queued', 'sent', 'failed']);
-
-export const outboxEmailSchema = z.object({
-  id: idSchema,
-  to: z.string(),
-  subject: z.string(),
-  status: outboxStatusSchema,
-  attempts: z.number().int().nonnegative(),
-  lastError: z.string().nullable(),
-  createdAt: timestampSchema,
-  sentAt: timestampSchema.nullable(),
-});
-
-export const outboxQuerySchema = pageQuerySchema.extend({ status: outboxStatusSchema.optional() });
-
-export const outboxPageSchema = pageSchema(outboxEmailSchema).extend({
-  failedCount: z.number().int().nonnegative(),
-  failedSince: timestampSchema.nullable(),
-});
-
-/** Development only: what the `log` email sender captured. */
-export const devMailboxSchema = z.object({
-  enabled: z.boolean(),
-  items: z.array(
-    z.object({
-      id: idSchema,
-      to: z.string(),
-      subject: z.string(),
-      text: z.string(),
-      html: z.string().nullable(),
-      createdAt: timestampSchema,
+export const outboxSummarySchema = z.object({
+  counts: z.record(z.string(), z.number()),
+  failures: z
+    .object({
+      count: z.number().int(),
+      since: z.string().nullable(),
+      topReason: z.string().nullable(),
+    })
+    .nullable(),
+  recentFailures: z.array(
+    z.looseObject({
+      id: z.string().optional(),
+      to: z.string().optional(),
+      subject: z.string().optional(),
+      lastError: z.string().nullable().optional(),
+      attempts: z.number().optional(),
+      failedAt: z.string().nullable().optional(),
+      createdAt: z.string().optional(),
     }),
   ),
 });
 
+/** 404 unless the `log` provider is in use; needs workspace.email.manage. */
+export const devMailboxSchema = z.object({
+  items: z.array(
+    z.object({
+      id: z.string(),
+      to: z.string(),
+      from: z.string(),
+      subject: z.string(),
+      html: z.string().nullable(),
+      text: z.string().nullable(),
+      headers: z.record(z.string(), z.unknown()).nullable().optional(),
+      capturedAt: z.string(),
+    }),
+  ),
+});
+
+/** Anonymous, from the link in every notification email. */
+export const unsubscriptionPreviewSchema = z.object({
+  scope: z.string(),
+  label: z.string(),
+  emailEnabled: z.boolean(),
+});
+
 export const searchResultSchema = z.object({
   kind: z.string().min(1),
-  id: idSchema,
+  id: z.string().min(1),
   title: z.string(),
   subtitle: z.string().nullable(),
   href: z.string(),
@@ -67,9 +92,8 @@ export const searchResponseSchema = z.object({ items: z.array(searchResultSchema
 
 export type EmailTestRequest = z.infer<typeof emailTestRequestSchema>;
 export type EmailTestResult = z.infer<typeof emailTestResultSchema>;
-export type OutboxStatus = z.infer<typeof outboxStatusSchema>;
-export type OutboxEmail = z.infer<typeof outboxEmailSchema>;
-export type OutboxPage = z.infer<typeof outboxPageSchema>;
+export type OutboxSummary = z.infer<typeof outboxSummarySchema>;
 export type DevMailbox = z.infer<typeof devMailboxSchema>;
+export type UnsubscriptionPreview = z.infer<typeof unsubscriptionPreviewSchema>;
 export type SearchResult = z.infer<typeof searchResultSchema>;
 export type SearchQuery = z.infer<typeof searchQuerySchema>;
