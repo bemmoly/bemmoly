@@ -54,7 +54,11 @@ async function main(): Promise<number> {
     process.stdout.write(`${USAGE}\n`);
     return values.help ? 0 : 2;
   }
-  const runtime = await createRuntime();
+  // The host CLI runs this through `compose exec -T`, so stderr is not a terminal even when
+  // a person is reading: without --json, the caller is a person either way.
+  const runtime = await createRuntime({
+    humanLogs: Boolean(process.stderr.isTTY) || !values.json,
+  });
   try {
     const result = await command(runtime, {
       args,
