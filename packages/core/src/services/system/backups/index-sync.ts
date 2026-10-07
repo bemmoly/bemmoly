@@ -5,7 +5,8 @@ import { resolveDestinations } from './destinations/index.ts';
 import { MANIFEST_FILE, manifestSize, parseManifest, type BackupManifest } from './manifest.ts';
 
 /**
- * Adds rows for complete sets found in the destinations that the database does not
+ * JSON and timestamps are bound as text: the pool is wrapped by Drizzle
+ * (clients/postgres.ts). Adds rows for complete sets found in the destinations that the database does not
  * know: after a restore (the restored table predates later backups) and on a new
  * machine whose backups folder was copied over. Returns the set names added.
  */
@@ -44,18 +45,20 @@ export async function syncBackupIndex(
     if (known.get(setName) === 'running') {
       // A restored database is a snapshot taken while this backup was still writing.
       await deps.sql`
-        update backups set status = 'succeeded', locations = ${deps.sql.json(locations as never)},
-          manifest = ${deps.sql.json(manifest as never)}, attachment_mode = ${manifest.attachments.mode},
+        update backups set status = 'succeeded', locations = ${JSON.stringify(locations)}::jsonb,
+          manifest = ${JSON.stringify(manifest)}::jsonb, attachment_mode = ${manifest.attachments.mode},
           encrypted = ${manifest.encryption !== null}, size_bytes = ${manifestSize(manifest)},
           database_bytes = ${manifest.database.sizeBytes},
           attachments_bytes = ${manifest.attachments.archive?.sizeBytes ?? 0},
-          verification_state = 'listed', completed_at = ${new Date(manifest.createdAt)}, updated_at = now()
+          verification_state = 'listed',
+          completed_at = ${new Date(manifest.createdAt).toISOString()}::timestamptz,
+          updated_at = now()
         where set_name = ${setName} and status = 'running'`;
       added.push(setName);
       continue;
     }
     if (known.has(setName)) continue;
-    const created = new Date(manifest.createdAt);
+    const created = new Date(manifest.createdAt).toISOString();
     const result = await deps.sql`
       insert into backups (id, kind, status, set_name, app_version, changelog_tag, attachment_mode,
         encrypted, size_bytes, database_bytes, attachments_bytes, locations, manifest,
@@ -63,8 +66,9 @@ export async function syncBackupIndex(
       values (${manifest.id}, ${manifest.kind}, 'succeeded', ${setName}, ${manifest.appVersion},
         ${manifest.changelogTag}, ${manifest.attachments.mode}, ${manifest.encryption !== null},
         ${manifestSize(manifest)}, ${manifest.database.sizeBytes},
-        ${manifest.attachments.archive?.sizeBytes ?? 0}, ${deps.sql.json(locations as never)},
-        ${deps.sql.json(manifest as never)}, 'pending', ${created}, ${created})
+        ${manifest.attachments.archive?.sizeBytes ?? 0}, ${JSON.stringify(locations)}::jsonb,
+        ${JSON.stringify(manifest)}::jsonb, 'pending', ${created}::timestamptz,
+        ${created}::timestamptz)
       on conflict do nothing`;
     if (result.count > 0) added.push(setName);
   }
@@ -73,7 +77,8 @@ export async function syncBackupIndex(
     await deps.sql`
       update backups set status = 'failed', error = 'Interrupted: the database was restored while it ran',
         completed_at = now(), updated_at = now()
-      where status = 'running' and created_at < ${options.interruptedBefore}`;
+      where status = 'running'
+        and created_at < ${options.interruptedBefore.toISOString()}::timestamptz`;
   }
   return added;
 }

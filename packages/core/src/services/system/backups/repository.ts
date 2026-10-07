@@ -31,6 +31,21 @@ export interface BackupRecord {
   completedAt: Date | null;
 }
 
+/**
+ * The pool is wrapped by Drizzle (clients/postgres.ts): timestamps arrive as
+ * strings and must be bound as text, and JSON is bound as text cast to jsonb.
+ */
+type Timestamp = string | Date;
+
+const at = (value: Date | null) => (value === null ? null : value.toISOString());
+const jsonb = (value: unknown) => JSON.stringify(value);
+
+export function toDate(value: Timestamp): Date;
+export function toDate(value: Timestamp | null): Date | null;
+export function toDate(value: Timestamp | null): Date | null {
+  return value === null ? null : new Date(value);
+}
+
 interface Row {
   id: string;
   kind: BackupKind;
@@ -38,7 +53,7 @@ interface Row {
   set_name: string;
   app_version: string;
   changelog_tag: string | null;
-  scheduled_for: Date | null;
+  scheduled_for: Timestamp | null;
   attachment_mode: 'full' | 'incremental';
   base_backup_id: string | null;
   encrypted: boolean;
@@ -47,11 +62,11 @@ interface Row {
   manifest: BackupManifest | null;
   verification_state: BackupVerificationState;
   verification_message: string | null;
-  verified_at: Date | null;
-  drilled_at: Date | null;
+  verified_at: Timestamp | null;
+  drilled_at: Timestamp | null;
   error: string | null;
-  created_at: Date;
-  completed_at: Date | null;
+  created_at: Timestamp;
+  completed_at: Timestamp | null;
 }
 
 function toRecord(row: Row): BackupRecord {
@@ -62,7 +77,7 @@ function toRecord(row: Row): BackupRecord {
     setName: row.set_name,
     appVersion: row.app_version,
     changelogTag: row.changelog_tag,
-    scheduledFor: row.scheduled_for,
+    scheduledFor: toDate(row.scheduled_for),
     attachmentMode: row.attachment_mode,
     baseBackupId: row.base_backup_id,
     encrypted: row.encrypted,
@@ -71,11 +86,11 @@ function toRecord(row: Row): BackupRecord {
     manifest: row.manifest,
     verificationState: row.verification_state,
     verificationMessage: row.verification_message,
-    verifiedAt: row.verified_at,
-    drilledAt: row.drilled_at,
+    verifiedAt: toDate(row.verified_at),
+    drilledAt: toDate(row.drilled_at),
     error: row.error,
-    createdAt: row.created_at,
-    completedAt: row.completed_at,
+    createdAt: toDate(row.created_at),
+    completedAt: toDate(row.completed_at),
   };
 }
 
@@ -120,8 +135,8 @@ export function createBackupRepository(sql: SqlClient) {
       const [row] = await sql<Row[]>`
         insert into backups (id, kind, set_name, app_version, changelog_tag, scheduled_for, created_by, created_at)
         values (coalesce(${input.id ?? null}::uuid, uuidv7()), ${input.kind}, ${input.setName},
-          ${input.appVersion}, ${input.changelogTag}, ${input.scheduledFor}, ${input.createdBy},
-          ${input.createdAt})
+          ${input.appVersion}, ${input.changelogTag}, ${at(input.scheduledFor)}::timestamptz,
+          ${input.createdBy}, ${at(input.createdAt)}::timestamptz)
         returning *`;
       if (!row) throw new Error('insert into backups returned no row');
       return toRecord(row);
@@ -142,30 +157,33 @@ export function createBackupRepository(sql: SqlClient) {
       },
     ): Promise<void> {
       await sql`
-        update backups set status = 'succeeded', manifest = ${sql.json(values.manifest as never)},
-          locations = ${sql.json(values.locations as never)}, attachment_mode = ${values.attachmentMode},
+        update backups set status = 'succeeded', manifest = ${jsonb(values.manifest)}::jsonb,
+          locations = ${jsonb(values.locations)}::jsonb, attachment_mode = ${values.attachmentMode},
           base_backup_id = ${values.baseBackupId}, encrypted = ${values.encrypted},
           size_bytes = ${values.sizeBytes}, database_bytes = ${values.databaseBytes},
           attachments_bytes = ${values.attachmentsBytes}, verification_state = 'listed',
-          verified_at = ${values.verifiedAt}, completed_at = ${values.completedAt}, updated_at = now()
+          verified_at = ${at(values.verifiedAt)}::timestamptz,
+          completed_at = ${at(values.completedAt)}::timestamptz, updated_at = now()
         where id = ${id}`;
     },
-    async markFailed(id: string, error: string, at: Date): Promise<void> {
+    async markFailed(id: string, error: string, failedAt: Date): Promise<void> {
       await sql`
         update backups set status = 'failed', error = ${error.slice(0, 2_000)},
-          completed_at = ${at}, updated_at = now()
+          completed_at = ${failedAt.toISOString()}::timestamptz, updated_at = now()
         where id = ${id}`;
     },
     async setVerification(
       id: string,
       state: BackupVerificationState,
       message: string | null,
-      at: Date,
+      checkedAt: Date,
       drilled: boolean,
     ): Promise<void> {
+      const when = checkedAt.toISOString();
       await sql`
         update backups set verification_state = ${state}, verification_message = ${message},
-          verified_at = ${at}, drilled_at = case when ${drilled} then ${at}::timestamptz else drilled_at end,
+          verified_at = ${when}::timestamptz,
+          drilled_at = case when ${drilled} then ${when}::timestamptz else drilled_at end,
           updated_at = now()
         where id = ${id}`;
     },
@@ -214,9 +232,9 @@ export function createBackupRepository(sql: SqlClient) {
       return row ? toRecord(row) : null;
     },
     async lastScheduledFor(): Promise<Date | null> {
-      const [row] = await sql<{ slot: Date | null }[]>`
+      const [row] = await sql<{ slot: Timestamp | null }[]>`
         select max(scheduled_for) as slot from backups where status <> 'failed'`;
-      return row?.slot ?? null;
+      return toDate(row?.slot ?? null);
     },
   };
 }
