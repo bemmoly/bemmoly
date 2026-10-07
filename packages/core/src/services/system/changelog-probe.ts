@@ -33,9 +33,9 @@ export function createRunnerChangelogProbe(options: RunnerChangelogProbeOptions)
     },
     async latestTag() {
       const tagged = (await runner.history())
-        .filter((row) => row.tag)
+        .filter((row) => row.tags.length > 0)
         .sort((a, b) => b.orderExecuted - a.orderExecuted);
-      return tagged[0]?.tag ?? null;
+      return tagged[0]?.tags.at(-1) ?? null;
     },
     async update() {
       const applied = await runner.update({

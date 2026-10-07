@@ -48,7 +48,8 @@ export function selectTargets(
     }
     return candidates.slice(0, index);
   }
-  const tagged = history.find((row) => row.tag === target.toTag);
+  // Any of a row's tags names it; a name used twice means its newest use.
+  const tagged = history.findLast((row) => row.tags.includes(target.toTag));
   if (!tagged)
     throw new ChangelogError('unknown_target', `No changeset is tagged "${target.toTag}"`);
   return candidates.filter((row) => row.orderExecuted > tagged.orderExecuted);

@@ -87,19 +87,19 @@ it, and backup manifests and Settings › System show the same value.
 loads `apps/server/.env`. Exit codes: 0 success, 1 a problem was found or a
 command failed, 2 usage. Every command takes `--json`.
 
-| Command                                                                            | What it does                                                                             |
-| ---------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| `db status [--contexts a,b]`                                                       | Pending changesets per module (kernel and enabled modules), flagged slow or irreversible |
-| `db validate`                                                                      | Ids, order, duplicates, missing `down`, checksums against what ran; exit 1 on errors     |
-| `db plan [--contexts a,b]`                                                         | The SQL `update` would run, without running it, in a read-only transaction               |
-| `db update [--contexts a,b] [--retry-started]`                                     | Apply pending changesets                                                                 |
-| `db history [--module id\|*]`                                                      | Every recorded row in execution order                                                    |
-| `db tag <name>`                                                                    | Tag the latest applied changeset, e.g. the version being left before an upgrade          |
-| `db rollback --to <id> \| --count <n> \| --to-tag <tag> [--module id] [--dry-run]` | Run `down` newest first; `--dry-run` lists the steps and exits 1 if one is irreversible  |
-| `modules list`                                                                     | Every module in the image with its state and pending changesets                          |
-| `modules enable <id>`                                                              | Run its changelog, enable it; running servers follow within a second                     |
-| `modules disable <id>`                                                             | Hide it; its data stays                                                                  |
-| `modules remove-data <id> --confirm <id>`                                          | After a backup, run its `down` changesets (module must be disabled)                      |
+| Command                                                                            | What it does                                                                                                                                              |
+| ---------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `db status [--contexts a,b]`                                                       | Pending changesets per module (kernel and enabled modules), flagged slow or irreversible                                                                  |
+| `db validate`                                                                      | Ids, order, duplicates, missing `down`, checksums against what ran; exit 1 on errors                                                                      |
+| `db plan [--contexts a,b]`                                                         | The SQL `update` would run, without running it, in a read-only transaction                                                                                |
+| `db update [--contexts a,b] [--retry-started]`                                     | Apply pending changesets                                                                                                                                  |
+| `db history [--module id\|*]`                                                      | Every recorded row in execution order                                                                                                                     |
+| `db tag <name>`                                                                    | Tag the latest applied changeset, e.g. the version being left before an upgrade; a changeset keeps every tag it is given, so `--to-tag` finds any of them |
+| `db rollback --to <id> \| --count <n> \| --to-tag <tag> [--module id] [--dry-run]` | Run `down` newest first; `--dry-run` lists the steps and exits 1 if one is irreversible                                                                   |
+| `modules list`                                                                     | Every module in the image with its state and pending changesets                                                                                           |
+| `modules enable <id>`                                                              | Run its changelog, enable it; running servers follow within a second                                                                                      |
+| `modules disable <id>`                                                             | Hide it; its data stays                                                                                                                                   |
+| `modules remove-data <id> --confirm <id>`                                          | After a backup, run its `down` changesets (module must be disabled)                                                                                       |
 
 `modules …` acts as a system actor and is refused while `BEMMOLY_MODULES` pins
 the set. `remove-data` refuses until the backup hook is wired.

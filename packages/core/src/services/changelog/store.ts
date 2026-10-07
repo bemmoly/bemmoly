@@ -6,7 +6,10 @@ export type Connection = postgres.Sql;
 
 export interface HistoryRow extends ChangelogEntry {
   description: string;
+  /** The newest of `tags`, kept for readers from before a row could carry several. */
   tag: string | null;
+  /** Every tag on this row, oldest first: upgrades with no new changeset tag the same row. */
+  tags: string[];
   progress: Record<string, unknown>;
   slow: boolean;
   irreversible: boolean;
@@ -25,6 +28,7 @@ interface RawRow {
   contexts: string[];
   state: ChangesetState;
   tag: string | null;
+  tags: string[];
   progress: Record<string, unknown>;
   slow: boolean;
   irreversible: boolean;
@@ -61,6 +65,10 @@ export async function ensureChangelogTable(sql: Connection): Promise<void> {
   await sql`ALTER TABLE schema_changelog ADD COLUMN IF NOT EXISTS slow boolean NOT NULL DEFAULT false`;
   await sql`
     ALTER TABLE schema_changelog ADD COLUMN IF NOT EXISTS irreversible boolean NOT NULL DEFAULT false`;
+  await sql`ALTER TABLE schema_changelog ADD COLUMN IF NOT EXISTS tags text[] NOT NULL DEFAULT '{}'`;
+  await sql`
+    UPDATE schema_changelog SET tags = ARRAY[tag]
+    WHERE tag IS NOT NULL AND cardinality(tags) = 0`;
 }
 
 export async function changelogTableExists(sql: Connection): Promise<boolean> {
@@ -83,6 +91,7 @@ function toEntry(row: RawRow): HistoryRow {
     contexts: row.contexts,
     state: row.state,
     tag: row.tag,
+    tags: row.tags,
     progress: row.progress,
     slow: row.slow,
     irreversible: row.irreversible,
@@ -128,7 +137,7 @@ export async function recordChangeset(sql: Connection, input: RecordInput): Prom
       author = excluded.author, description = excluded.description, checksum = excluded.checksum,
       executed_at = excluded.executed_at, execution_ms = excluded.execution_ms,
       order_executed = excluded.order_executed, app_version = excluded.app_version,
-      contexts = excluded.contexts, state = excluded.state, tag = null,
+      contexts = excluded.contexts, state = excluded.state, tag = null, tags = '{}',
       slow = excluded.slow, irreversible = excluded.irreversible,
       progress = case when schema_changelog.state = 'started' then schema_changelog.progress
                       else '{}'::jsonb end,
@@ -182,10 +191,15 @@ export async function saveProgress(
     where module = ${key.module} and id = ${key.id}`;
 }
 
-/** Tags the most recently executed row; returns it, or undefined on an empty changelog. */
+/**
+ * Adds a tag to the most recently executed row, keeping the tags it has (re-tagging with
+ * the same name moves it to the end); returns the row, or undefined on an empty changelog.
+ */
 export async function tagLatest(sql: Connection, tag: string): Promise<HistoryRow | undefined> {
   const [row] = await sql<RawRow[]>`
-    update schema_changelog set tag = ${tag}, updated_at = now()
+    update schema_changelog
+    set tag = ${tag}, tags = array_append(array_remove(tags, ${tag}::text), ${tag}::text),
+      updated_at = now()
     where (module, id) = (
       select module, id from schema_changelog
       where state in ('ran', 'marked_ran') order by order_executed desc limit 1)

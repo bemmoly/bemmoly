@@ -27,6 +27,7 @@ function row(overrides: Partial<HistoryRow>): HistoryRow {
     contexts: ['*'],
     state: 'ran',
     tag: null,
+    tags: [],
     progress: {},
     slow: false,
     irreversible: false,
@@ -85,7 +86,7 @@ describe('selectSources', () => {
 
 describe('selectTargets', () => {
   const history = [
-    row({ id: '0001-a', orderExecuted: 1, tag: 'v1' }),
+    row({ id: '0001-a', orderExecuted: 1, tag: 'v2', tags: ['v1', 'v2'] }),
     row({ id: '0002-b', orderExecuted: 2 }),
     row({ module: 'work', id: '0001-w', orderExecuted: 3 }),
   ];
@@ -93,10 +94,10 @@ describe('selectTargets', () => {
   it('selects by count, id and tag, newest first', () => {
     expect(selectTargets(history, 'core', { count: 1 }).map((r) => r.id)).toEqual(['0002-b']);
     expect(selectTargets(history, 'core', { toId: '0001-a' }).map((r) => r.id)).toEqual(['0002-b']);
-    expect(selectTargets(history, '*', { toTag: 'v1' }).map((r) => r.id)).toEqual([
-      '0001-w',
-      '0002-b',
-    ]);
+    // A row tagged by two upgrades answers to either tag.
+    for (const toTag of ['v1', 'v2']) {
+      expect(selectTargets(history, '*', { toTag }).map((r) => r.id)).toEqual(['0001-w', '0002-b']);
+    }
     expect(() => selectTargets(history, 'core', { toTag: 'v9' })).toThrow(/tagged/);
   });
 });
