@@ -15,7 +15,7 @@
 <section id="turn3" style="padding:56px;display:flex;flex-direction:column;gap:36px">
   <div style="display:flex;flex-direction:column;gap:8px;max-width:960px">
     <div style="font:500 12px 'IBM Plex Mono';color:#6b7483;letter-spacing:.06em">BEMMOLY · TURN 3 · THE WHOLE APP</div>
-    <div style="font:600 34px/1.15 'IBM Plex Sans';letter-spacing:-.02em">14 screens, one system, wired together</div>
+    <div style="font:600 34px/1.15 'IBM Plex Sans';letter-spacing:-.02em">17 screens, one system, wired together</div>
     <div style="font-size:16px;line-height:1.55;color:#4b5565;text-wrap:pretty">Every screen below is live and linked: click the top nav, sidebars, issue keys and doc titles to move between them. Classic light theme; switch themes on the Board or in Appearance settings. Click a frame's title to open it full size.</div>
   </div>
   <div style="display:flex;flex-direction:column;gap:16px">
@@ -108,6 +108,24 @@
           <div style="position:absolute;inset:0;transform-origin:0 0;transform:scale(0.5);width:1440px;height:900px"><dc-import name="Bemmoly Appearance Settings" height="900px" hint-size="100%,100%" style="width:100%;height:100%"></dc-import></div>
         </div>
       </div>
+      <div id="3o" style="display:flex;flex-direction:column;gap:10px;width:720px">
+        <a href="Bemmoly Modules Settings.dc.html" style="display:flex;align-items:center;gap:10px;color:#1b2430"><span style="font:600 12px 'IBM Plex Mono';background:#1b2430;color:#fff;padding:4px 8px;border-radius:5px">3o</span><span style="font-weight:600;font-size:15px">Modules</span><span style="color:#6b7483;font-size:13px">enable, disable, remove data</span><span style="margin-left:auto;color:#2456c9;font-size:13px;font-weight:500">Open ↗</span></a>
+        <div style="width:720px;height:450px;border-radius:10px;overflow:hidden;box-shadow:0 1px 2px rgba(0,0,0,.08),0 16px 48px rgba(0,0,0,.14);background:#f4f5f7;position:relative">
+          <div style="position:absolute;inset:0;transform-origin:0 0;transform:scale(0.5);width:1440px;height:900px"><dc-import name="Bemmoly Modules Settings" height="900px" hint-size="100%,100%" style="width:100%;height:100%"></dc-import></div>
+        </div>
+      </div>
+      <div id="3p" style="display:flex;flex-direction:column;gap:10px;width:720px">
+        <a href="Bemmoly Updates Settings.dc.html" style="display:flex;align-items:center;gap:10px;color:#1b2430"><span style="font:600 12px 'IBM Plex Mono';background:#1b2430;color:#fff;padding:4px 8px;border-radius:5px">3p</span><span style="font-weight:600;font-size:15px">Updates</span><span style="color:#6b7483;font-size:13px">channel, release notes, roll back</span><span style="margin-left:auto;color:#2456c9;font-size:13px;font-weight:500">Open ↗</span></a>
+        <div style="width:720px;height:450px;border-radius:10px;overflow:hidden;box-shadow:0 1px 2px rgba(0,0,0,.08),0 16px 48px rgba(0,0,0,.14);background:#f4f5f7;position:relative">
+          <div style="position:absolute;inset:0;transform-origin:0 0;transform:scale(0.5);width:1440px;height:900px"><dc-import name="Bemmoly Updates Settings" height="900px" hint-size="100%,100%" style="width:100%;height:100%"></dc-import></div>
+        </div>
+      </div>
+      <div id="3q" style="display:flex;flex-direction:column;gap:10px;width:720px">
+        <a href="Bemmoly Backups Settings.dc.html" style="display:flex;align-items:center;gap:10px;color:#1b2430"><span style="font:600 12px 'IBM Plex Mono';background:#1b2430;color:#fff;padding:4px 8px;border-radius:5px">3q</span><span style="font-weight:600;font-size:15px">Storage and backups</span><span style="color:#6b7483;font-size:13px">schedule, retention, restore</span><span style="margin-left:auto;color:#2456c9;font-size:13px;font-weight:500">Open ↗</span></a>
+        <div style="width:720px;height:450px;border-radius:10px;overflow:hidden;box-shadow:0 1px 2px rgba(0,0,0,.08),0 16px 48px rgba(0,0,0,.14);background:#f4f5f7;position:relative">
+          <div style="position:absolute;inset:0;transform-origin:0 0;transform:scale(0.5);width:1440px;height:900px"><dc-import name="Bemmoly Backups Settings" height="900px" hint-size="100%,100%" style="width:100%;height:100%"></dc-import></div>
+        </div>
+      </div>
     </div>
   </div>
   <div style="display:flex;flex-direction:column;gap:16px">
@@ -138,7 +156,7 @@ class Component extends DCLogic {
       { name: 'Work', sub: 'issues, planning, delivery', screens: [S('3a', 'Home', 'Bemmoly Home', 'brief, my work, inbox'), S('3b', 'Board', 'Bemmoly Board', 'Scrum / Kanban, themes'), S('3c', 'Backlog', 'Bemmoly Backlog', 'sprint planning, epics'), S('3d', 'Issue', 'Bemmoly Issue', 'full page'), S('3e', 'Roadmap', 'Bemmoly Roadmap', 'timeline, forecast')] },
       { name: 'Docs', sub: 'spaces, pages, editor', screens: [S('3f', 'Docs home', 'Bemmoly Docs', 'spaces, ask your docs'), S('3g', 'Doc editor', 'Bemmoly Doc Editor', 'live issue embeds, copilot')] },
       { name: 'AI', sub: 'command bar', screens: [S('3h', 'Command palette', 'Bemmoly Command', '⌘K: search, ask, act')] },
-      { name: 'Configuration and admin', sub: 'org and project level, role-gated', screens: [S('3i', 'Board settings', 'Bemmoly Board Settings', 'columns, lanes, cards, perms'), S('3j', 'Issue types and workflow', 'Bemmoly Workflow', 'fields, visual workflow'), S('3k', 'Users, teams, roles', 'Bemmoly People', 'matrix with org locks, SSO'), S('3l', 'Appearance', 'Bemmoly Appearance Settings', 'presets, custom brand theme')] },
+      { name: 'Configuration and admin', sub: 'org and project level, role-gated', screens: [S('3i', 'Board settings', 'Bemmoly Board Settings', 'columns, lanes, cards, perms'), S('3j', 'Issue types and workflow', 'Bemmoly Workflow', 'fields, visual workflow'), S('3k', 'Users, teams, roles', 'Bemmoly People', 'matrix with org locks, SSO'), S('3l', 'Appearance', 'Bemmoly Appearance Settings', 'presets, custom brand theme'), S('3o', 'Modules', 'Bemmoly Modules Settings', 'enable, disable, remove data'), S('3p', 'Updates', 'Bemmoly Updates Settings', 'channel, release notes, roll back'), S('3q', 'Storage and backups', 'Bemmoly Backups Settings', 'schedule, retention, restore')] },
       { name: 'Getting in', sub: 'website and first run', screens: [S('3m', 'Landing page', 'Bemmoly Landing', 'self-host pitch', true), S('3n', 'First-run setup', 'Bemmoly Setup', '6 steps, import, SSO, AI')] }
     ] };
   }
