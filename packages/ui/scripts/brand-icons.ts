@@ -6,8 +6,8 @@
  */
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { Resvg } from '@resvg/resvg-js';
-import opentype from 'opentype.js';
 import { themeById } from '../src/tokens.ts';
+import { squareCard, wideCard } from './social-preview.ts';
 
 const brand = new URL('../assets/brand/', import.meta.url);
 const out = new URL('generated/', brand);
@@ -56,52 +56,6 @@ function plate(mark: string, scale: number, fill: string, radius: number): strin
   ].join('');
 }
 
-function outlineText(
-  text: string,
-  size: number,
-  x: number,
-  baseline: number,
-  weight: 400 | 600,
-): string {
-  const file = new URL(
-    `../node_modules/@fontsource/ibm-plex-sans/files/ibm-plex-sans-latin-${weight}-normal.woff`,
-    import.meta.url,
-  );
-  const buffer = readFileSync(file);
-  const font = opentype.parse(
-    buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength) as ArrayBuffer,
-  );
-  const width = [...text].reduce(
-    (sum, ch) => sum + (font.charToGlyph(ch).advanceWidth / font.unitsPerEm) * size,
-    0,
-  );
-  let cursor = x - width / 2;
-  return [...text]
-    .map((ch) => {
-      const glyph = font.charToGlyph(ch);
-      const d = glyph.getPath(cursor, baseline, size).toPathData(2);
-      cursor += (glyph.advanceWidth / font.unitsPerEm) * size;
-      return d;
-    })
-    .join('');
-}
-
-/** 1200 x 630: the lockup and the tagline on the Classic page background. */
-function socialPreview(): string {
-  const lockup = resolveColors(read('lockup-color.svg'), classic.tx);
-  const [, , w = 94, h = 24] = viewBox(lockup);
-  const scale = 4;
-  const x = (1200 - w * scale) / 2;
-  const tagline = outlineText('Your work. Your platform.', 34, 600, 355, 400);
-  return [
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630">',
-    `<rect width="1200" height="630" fill="${classic.bg}"/>`,
-    `<g transform="translate(${x} ${270 - h * scale}) scale(${scale})">${inner(lockup)}</g>`,
-    `<path fill="${classic.tx4}" d="${tagline}"/>`,
-    '</svg>',
-  ].join('');
-}
-
 /** The mark at 72% on a white plate; Android masks it, browsers show the rounded corners. */
 const ICON_SCALE = 0.72;
 const ICON_RADIUS = 0.225;
@@ -114,6 +68,7 @@ const source = read('mark-color.svg');
 const favicon = resolveColors(source, classic.tx);
 const icon = plate(favicon, ICON_SCALE, classic.sf, ICON_RADIUS);
 const maskable = plate(onAccent(source), MASKABLE_SCALE, ACCENT, 0);
+const preview = { lockup: resolveColors(read('lockup-color.svg'), classic.tx), colors: classic };
 const files: Record<string, string | Buffer> = {
   'favicon.svg': favicon,
   'favicon-32.png': png(icon, 32),
@@ -123,6 +78,7 @@ const files: Record<string, string | Buffer> = {
   'icon-512.png': png(icon, 512),
   'icon-maskable-192.png': png(maskable, 192),
   'icon-maskable-512.png': png(maskable, 512),
-  'social-preview.png': png(socialPreview(), 1200),
+  'social-preview.png': png(wideCard(preview), 1200),
+  'social-preview-square.png': png(squareCard(preview), 1080),
 };
 for (const [name, data] of Object.entries(files)) writeFileSync(new URL(name, out), data);
