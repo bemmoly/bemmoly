@@ -14,8 +14,8 @@
 <div data-screen-label="First-run setup" style="height:{{ rootH }};min-width:1200px;display:flex;flex-direction:column;background:#f4f5f7;overflow:auto">
   <div style="height:56px;display:flex;align-items:center;padding:0 32px;gap:12px;border-bottom:1px solid #e2e5ea;background:#fff">
     <div style="width:26px;height:26px;border-radius:7px;background:#2456c9;display:grid;grid-template-columns:1fr 1fr;gap:2px;padding:5px"><span style="background:#fff;border-radius:1px"></span><span style="background:#fff;border-radius:1px;opacity:.55"></span><span style="background:#fff;border-radius:1px;opacity:.55"></span><span style="background:#fff;border-radius:1px"></span></div>
-    <span style="font-weight:600;font-size:15px">Lattice</span><span style="color:#8a93a3">Setup</span>
-    <span style="margin-left:auto;font:500 12px 'IBM Plex Mono';color:#6b7483">lattice.acmelabs.internal · v1.2.0 · self-hosted</span>
+    <span style="font-weight:600;font-size:15px">Bemmoly</span><span style="color:#8a93a3">Setup</span>
+    <span style="margin-left:auto;font:500 12px 'IBM Plex Mono';color:#6b7483">bemmoly.acmelabs.internal · v1.2.0 · self-hosted</span>
   </div>
   <div style="flex:1;display:grid;grid-template-columns:300px minmax(0,1fr);max-width:1240px;width:100%;margin:0 auto;padding:40px 32px 80px;gap:48px;align-items:start">
     <div style="display:flex;flex-direction:column;gap:4px;position:sticky;top:24px">
@@ -30,13 +30,13 @@
 
     <div style="display:flex;flex-direction:column;gap:20px;max-width:720px">
       <sc-if value="{{ is1 }}" hint-placeholder-val="{{ true }}">
-        <div style="display:flex;flex-direction:column;gap:6px"><div style="font-weight:600;font-size:26px;letter-spacing:-.02em">Your server is up</div><div style="color:#6b7483;font-size:14px;line-height:1.55">Lattice found a healthy Postgres and 38 GB free. Create the first admin account; it owns this workspace.</div></div>
+        <div style="display:flex;flex-direction:column;gap:6px"><div style="font-weight:600;font-size:26px;letter-spacing:-.02em">Your server is up</div><div style="color:#6b7483;font-size:14px;line-height:1.55">Bemmoly found a healthy Postgres and 38 GB free. Create the first admin account; it owns this workspace.</div></div>
         <div style="background:#fff;border:1px solid #e2e5ea;border-radius:8px;padding:6px 16px;display:flex;flex-direction:column">
           <sc-for list="{{ checks }}" as="c" hint-placeholder-count="5"><div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #eceef2;font-size:12.5px"><span style="width:16px;height:16px;border-radius:50%;background:{{ c.bg }};color:#fff;font-size:10px;display:flex;align-items:center;justify-content:center">{{ c.g }}</span><span style="font-weight:500;width:200px">{{ c.name }}</span><span style="color:#6b7483;font-family:'IBM Plex Mono';font-size:12px">{{ c.val }}</span><sc-if value="{{ c.fix }}" hint-placeholder-val="{{ false }}"><span style="margin-left:auto;color:#2456c9;font-weight:500">{{ c.fix }}</span></sc-if></div></sc-for>
         </div>
         <div style="background:#fff;border:1px solid #e2e5ea;border-radius:8px;padding:20px;display:grid;grid-template-columns:1fr 1fr;gap:14px">
           <div style="display:flex;flex-direction:column;gap:6px"><span style="font-weight:500">Workspace name</span><div style="height:36px;border:1px solid #d5dae2;border-radius:6px;display:flex;align-items:center;padding:0 12px;background:#fff">Acme Labs</div></div>
-          <div style="display:flex;flex-direction:column;gap:6px"><span style="font-weight:500">URL</span><div style="height:36px;border:1px solid #d5dae2;border-radius:6px;display:flex;align-items:center;padding:0 12px;background:#fafbfc;font-family:'IBM Plex Mono';font-size:12.5px;color:#4b5565">lattice.acmelabs.internal</div></div>
+          <div style="display:flex;flex-direction:column;gap:6px"><span style="font-weight:500">URL</span><div style="height:36px;border:1px solid #d5dae2;border-radius:6px;display:flex;align-items:center;padding:0 12px;background:#fafbfc;font-family:'IBM Plex Mono';font-size:12.5px;color:#4b5565">bemmoly.acmelabs.internal</div></div>
           <div style="display:flex;flex-direction:column;gap:6px"><span style="font-weight:500">Your name</span><div style="height:36px;border:1px solid #d5dae2;border-radius:6px;display:flex;align-items:center;padding:0 12px;background:#fff">Rohan S.</div></div>
           <div style="display:flex;flex-direction:column;gap:6px"><span style="font-weight:500">Email</span><div style="height:36px;border:1px solid #d5dae2;border-radius:6px;display:flex;align-items:center;padding:0 12px;background:#fff">rohan@acmelabs.dev</div></div>
           <div style="display:flex;flex-direction:column;gap:6px;grid-column:1 / -1"><span style="font-weight:500">Password</span><div style="height:36px;border:1px solid #d5dae2;border-radius:6px;display:flex;align-items:center;padding:0 12px;background:#fff;letter-spacing:3px;color:#4b5565">••••••••••••</div><span style="font-size:12px;color:#8a93a3">You can switch to SSO in step 3 and keep this as the break-glass login.</span></div>
@@ -81,7 +81,7 @@
       </sc-if>
 
       <sc-if value="{{ is4 }}" hint-placeholder-val="{{ false }}">
-        <div style="display:flex;flex-direction:column;gap:6px"><div style="font-weight:600;font-size:26px;letter-spacing:-.02em">AI, on your terms</div><div style="color:#6b7483;font-size:14px;line-height:1.55">Lattice works fully without AI. Connect a provider to get summaries, planning help, doc Q&amp;A and the command bar. Nothing is sent anywhere until you do.</div></div>
+        <div style="display:flex;flex-direction:column;gap:6px"><div style="font-weight:600;font-size:26px;letter-spacing:-.02em">AI, on your terms</div><div style="color:#6b7483;font-size:14px;line-height:1.55">Bemmoly works fully without AI. Connect a provider to get summaries, planning help, doc Q&amp;A and the command bar. Nothing is sent anywhere until you do.</div></div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
           <sc-for list="{{ ai }}" as="a" hint-placeholder-count="4">
             <div onClick="{{ a.pick }}" style="background:#fff;border:1px solid {{ a.border }};box-shadow:{{ a.shadow }};border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:8px;cursor:pointer">
@@ -107,15 +107,15 @@
             </div>
           </sc-for>
         </div>
-        <a href="Lattice Appearance Settings.dc.html" style="font-weight:500">Build a custom theme with your brand color instead →</a>
+        <a href="Bemmoly Appearance Settings.dc.html" style="font-weight:500">Build a custom theme with your brand color instead →</a>
       </sc-if>
 
       <sc-if value="{{ is6 }}" hint-placeholder-val="{{ false }}">
-        <div style="display:flex;flex-direction:column;gap:6px"><div style="font-weight:600;font-size:26px;letter-spacing:-.02em">Ready</div><div style="color:#6b7483;font-size:14px;line-height:1.55">Here's what we set up. Lattice created a sample project and a starter doc space so the team lands somewhere useful.</div></div>
+        <div style="display:flex;flex-direction:column;gap:6px"><div style="font-weight:600;font-size:26px;letter-spacing:-.02em">Ready</div><div style="color:#6b7483;font-size:14px;line-height:1.55">Here's what we set up. Bemmoly created a sample project and a starter doc space so the team lands somewhere useful.</div></div>
         <div style="background:#fff;border:1px solid #e2e5ea;border-radius:8px;padding:6px 16px;display:flex;flex-direction:column;font-size:12.5px">
           <sc-for list="{{ summary }}" as="sm" hint-placeholder-count="6"><div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #eceef2"><span style="width:16px;height:16px;border-radius:50%;background:#2b9b5a;color:#fff;font-size:10px;display:flex;align-items:center;justify-content:center">✓</span><span style="font-weight:500;width:160px">{{ sm.k }}</span><span style="color:#4b5565">{{ sm.v }}</span></div></sc-for>
         </div>
-        <div style="display:flex;gap:10px"><a href="Lattice Home.dc.html" style="height:38px;padding:0 18px;border-radius:6px;background:#2456c9;color:#fff;display:inline-flex;align-items:center;font-weight:500;font-size:14px">Open Lattice</a><a href="Lattice Board.dc.html" style="height:38px;padding:0 14px;border:1px solid #d5dae2;border-radius:6px;background:#fff;display:inline-flex;align-items:center;font-weight:500;color:#3b4454">Go to Platform Core board</a></div>
+        <div style="display:flex;gap:10px"><a href="Bemmoly Home.dc.html" style="height:38px;padding:0 18px;border-radius:6px;background:#2456c9;color:#fff;display:inline-flex;align-items:center;font-weight:500;font-size:14px">Open Bemmoly</a><a href="Bemmoly Board.dc.html" style="height:38px;padding:0 14px;border:1px solid #d5dae2;border-radius:6px;background:#fff;display:inline-flex;align-items:center;font-weight:500;color:#3b4454">Go to Platform Core board</a></div>
       </sc-if>
 
       <sc-if value="{{ notLast }}" hint-placeholder-val="{{ true }}">
@@ -139,13 +139,13 @@ class Component extends DCLogic {
       is1: s.step === 1, is2: s.step === 2, is3: s.step === 3, is4: s.step === 4, is5: s.step === 5, is6: s.step === 6, notLast: s.step < 6, stepN: s.step,
       nextLabel: ['Create admin and continue', 'Start import in background', 'Continue', 'Save AI settings', 'Finish setup'][s.step - 1], canSkip: s.step >= 2 && s.step <= 5,
       next: () => this.setState({ step: Math.min(6, s.step + 1) }),
-      checks: [{ name: 'Postgres 16', val: 'localhost:5432 · 12 ms', bg: '#2b9b5a', g: '✓' }, { name: 'Disk', val: '38 GB free of 80 GB', bg: '#2b9b5a', g: '✓' }, { name: 'Memory', val: '4 GB · 2 vCPU', bg: '#2b9b5a', g: '✓' }, { name: 'Outbound email (SMTP)', val: 'not configured', bg: '#d49a1a', g: '!', fix: 'Configure' }, { name: 'HTTPS', val: 'Let\'s Encrypt · auto-renew', bg: '#2b9b5a', g: '✓' }, { name: 'Backups', val: 'nightly → /var/lattice/backups', bg: '#2b9b5a', g: '✓' }],
-      imports: [['jira', 'JC', 'Jira Cloud or Server', 'Projects, issues, sprints, boards, workflows, custom fields, attachments.'], ['confluence', 'CF', 'Confluence', 'Spaces, page trees, versions, comments, attachments. Jira macros become live issue links.'], ['csv', 'CSV', 'CSV or Linear / Trello / Asana export', 'Map columns to fields. Good for lighter tools.'], ['clean', '—', 'Start clean', 'Lattice creates one sample project and doc space you can delete.']].map(([id, ini, name, desc]) => ({ ini, name, desc, ...sel(s.imp === id), pick: () => this.setState({ imp: id }) })),
+      checks: [{ name: 'Postgres 16', val: 'localhost:5432 · 12 ms', bg: '#2b9b5a', g: '✓' }, { name: 'Disk', val: '38 GB free of 80 GB', bg: '#2b9b5a', g: '✓' }, { name: 'Memory', val: '4 GB · 2 vCPU', bg: '#2b9b5a', g: '✓' }, { name: 'Outbound email (SMTP)', val: 'not configured', bg: '#d49a1a', g: '!', fix: 'Configure' }, { name: 'HTTPS', val: 'Let\'s Encrypt · auto-renew', bg: '#2b9b5a', g: '✓' }, { name: 'Backups', val: 'nightly → /var/bemmoly/backups', bg: '#2b9b5a', g: '✓' }],
+      imports: [['jira', 'JC', 'Jira Cloud or Server', 'Projects, issues, sprints, boards, workflows, custom fields, attachments.'], ['confluence', 'CF', 'Confluence', 'Spaces, page trees, versions, comments, attachments. Jira macros become live issue links.'], ['csv', 'CSV', 'CSV or Linear / Trello / Asana export', 'Map columns to fields. Good for lighter tools.'], ['clean', '—', 'Start clean', 'Bemmoly creates one sample project and doc space you can delete.']].map(([id, ini, name, desc]) => ({ ini, name, desc, ...sel(s.imp === id), pick: () => this.setState({ imp: id }) })),
       importJira: s.imp === 'jira',
       jiraProjects: [{ key: 'PLT', name: 'Platform', meta: '1,284 issues · 14 sprints', tick: '✓', bg: on, br: on, map: 'SCRUM', mBg: '#eef3fe', mFg: '#2456c9' }, { key: 'MOB', name: 'Mobile', meta: '612 issues · Kanban board', tick: '✓', bg: on, br: on, map: 'KANBAN', mBg: '#eef3fe', mFg: '#2456c9' }, { key: 'OLD', name: 'Legacy portal', meta: '3,410 issues · archived 2024', tick: '', bg: '#fff', br: '#c8ced8', map: 'SKIP', mBg: '#eef0f4', mFg: '#4b5565' }],
       ai: [['anthropic', 'AN', 'Anthropic', 'Claude via API key. Best quality for planning and long docs.', 'RECOMMENDED'], ['openai', 'OA', 'OpenAI or Azure OpenAI', 'GPT models via API key or Azure endpoint.', ''], ['local', 'LL', 'Local model (Ollama, vLLM)', 'Runs on your hardware. Nothing leaves the network. Needs a GPU for good speed.', 'AIR-GAPPED'], ['none', '—', 'No AI for now', 'Everything else works. You can connect a provider any time.', '']].map(([id, ini, name, desc, tag]) => ({ ini, name, desc, tag: tag || null, ...sel(s.ai === id), pick: () => this.setState({ ai: id }) })),
       themes: [['light', 'Classic', '#f4f5f7', '#fff', '#2456c9', '#d5dae2'], ['dark', 'Dark', '#0f1217', '#1a1f29', '#5b8def', '#262c38'], ['slate', 'Slate', '#eef1f4', '#fff', '#0f766e', '#c8d0da'], ['warm', 'Warm', '#f6f3ee', '#fffdf9', '#b4530f', '#d8d0c3'], ['midnight', 'Midnight', '#0b0a14', '#171428', '#a78bfa', '#2a2542'], ['forest', 'Forest', '#f1f4f1', '#fff', '#1f7a44', '#c9d3cb'], ['ocean', 'Ocean', '#07111c', '#101e30', '#38bdf8', '#1e3047'], ['rose', 'Rose', '#f7f3f4', '#fff', '#be123c', '#d9ccd1']].map(([id, name, bg, sf, ac, br]) => ({ name, bg, sf, ac, br, ...sel(s.theme === id), pick: () => this.setState({ theme: id }) })),
-      summary: [{ k: 'Workspace', v: 'Acme Labs · lattice.acmelabs.internal' }, { k: 'Admin', v: 'rohan@acmelabs.dev (break-glass password set)' }, { k: 'Import', v: 'Jira: PLT, MOB running in background · ~12 min' }, { k: 'Sign-in', v: 'Google Workspace SSO · 3 invites sent' }, { k: 'AI', v: 'Anthropic · content sharing on · actions require confirmation' }, { k: 'Theme', v: 'Classic light · members may switch light/dark' }]
+      summary: [{ k: 'Workspace', v: 'Acme Labs · bemmoly.acmelabs.internal' }, { k: 'Admin', v: 'rohan@acmelabs.dev (break-glass password set)' }, { k: 'Import', v: 'Jira: PLT, MOB running in background · ~12 min' }, { k: 'Sign-in', v: 'Google Workspace SSO · 3 invites sent' }, { k: 'AI', v: 'Anthropic · content sharing on · actions require confirmation' }, { k: 'Theme', v: 'Classic light · members may switch light/dark' }]
     };
   }
 }

@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Lattice Technical Design</title>
-<meta name="description" content="Technical design for Lattice, an open source, self-hosted, AI-first alternative to Jira and Confluence.">
+<title>Bemmoly Technical Design</title>
+<meta name="description" content="Technical design for Bemmoly, an open source, self-hosted, AI-first alternative to Jira and Confluence.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -102,7 +102,7 @@ svg .mono{font-family:'IBM Plex Mono',monospace}
 <button class="themebtn" onclick="(function(){var r=document.documentElement;var cur=r.getAttribute('data-theme');var dark=cur?cur==='dark':matchMedia('(prefers-color-scheme: dark)').matches;r.setAttribute('data-theme',dark?'light':'dark')})()">Toggle theme</button>
 <div class="layout">
 <nav class="toc">
-  <div class="brand"><div class="logo">L</div><div><div style="font-weight:600">Lattice</div><div style="font-size:11.5px;color:var(--tx3)">Technical design · v0.10</div></div></div>
+  <div class="brand"><div class="logo">L</div><div><div style="font-weight:600">Bemmoly</div><div style="font-size:11.5px;color:var(--tx3)">Technical design · v0.10</div></div></div>
   <div class="sec">Foundations</div>
   <a href="#summary">1. Summary and promises</a>
   <a href="#scope">2. Product scope</a>
@@ -135,7 +135,7 @@ svg .mono{font-family:'IBM Plex Mono',monospace}
   <a href="#decisions">25. Open decisions</a>
 </nav>
 <main>
-<h1>Lattice: technical design</h1>
+<h1>Bemmoly: technical design</h1>
 <p class="small" style="font-size:16px;color:var(--tx2)">An open source, self-hosted, AI-first replacement for Jira and Confluence. One app image, one Postgres, deployed in five minutes, free forever.</p>
 <div class="meta">
   <span class="badge warn">Draft v0.10</span>
@@ -146,7 +146,7 @@ svg .mono{font-family:'IBM Plex Mono',monospace}
 
 <!-- ===================================================== 1 -->
 <h2 id="summary">1. Summary and the eight promises</h2>
-<p>Lattice is two products in one deployable, the way Jira and Confluence are two products in one Atlassian account: <strong>Work</strong> (projects, issues, boards, sprints, roadmap, workflows) and <strong>Docs</strong> (spaces, pages, a collaborative editor), joined by a single <strong>AI layer</strong> that reads both and acts through the same permissions a person has. The design mocks fix the experience; this document fixes how it is built.</p>
+<p>Bemmoly is two products in one deployable, the way Jira and Confluence are two products in one Atlassian account: <strong>Work</strong> (projects, issues, boards, sprints, roadmap, workflows) and <strong>Docs</strong> (spaces, pages, a collaborative editor), joined by a single <strong>AI layer</strong> that reads both and acts through the same permissions a person has. The design mocks fix the experience; this document fixes how it is built.</p>
 <p>Every technical decision below was tested against eight promises taken straight from the landing page and the setup wizard. If a decision breaks a promise, the decision loses.</p>
 <div class="grid c4">
   <div class="card"><div class="k">Promise 1</div><div class="stat">5 min</div><div class="small">curl to first login on a fresh VM. The installer owns Docker, Postgres, HTTPS, backups and upgrades.</div></div>
@@ -168,9 +168,9 @@ svg .mono{font-family:'IBM Plex Mono',monospace}
   <tr><td>Frontend</td><td>React 19 + Vite SPA served by the same process. TanStack Query + Zustand. Tiptap editor on Yjs.</td><td>The app lives behind login; SSR buys nothing. A SPA with prefetching and optimistic updates is how Linear feels instant.</td></tr>
   <tr><td>Database</td><td>PostgreSQL 18 only, with <code>pgvector</code> and <code>pg_trgm</code>. Drizzle ORM. Schema changes as a Liquibase-style changelog of tracked, checksummed changesets, one changelog per module.</td><td>Relational data, transactions, full text search, vectors, queue and pub/sub all in the one dependency we already require. See §7 for why not Mongo.</td></tr>
   <tr><td>Queue and realtime</td><td>Postgres-backed job queue (pg-boss) and <code>LISTEN/NOTIFY</code> fan-out to WebSockets.</td><td>Removes Redis entirely at the scale we target.</td></tr>
-  <tr><td>AI</td><td>Exactly one integration in code, the AI SDK (<code>ai</code> 7, Apache-2.0). The models.dev catalog supplies the providers, their packages, credentials forms, models, capabilities, prices and logos at runtime. Admins pick any of 226 providers and any model per role (<code>fast</code>, <code>standard</code>, <code>strong</code>, <code>embedding</code>). Prompts versioned in the repo, overridable in the database.</td><td>No vendor-specific code to maintain; a new provider or model appears without a Lattice release. A thin facade is the only place the SDK is imported.</td></tr>
+  <tr><td>AI</td><td>Exactly one integration in code, the AI SDK (<code>ai</code> 7, Apache-2.0). The models.dev catalog supplies the providers, their packages, credentials forms, models, capabilities, prices and logos at runtime. Admins pick any of 226 providers and any model per role (<code>fast</code>, <code>standard</code>, <code>strong</code>, <code>embedding</code>). Prompts versioned in the repo, overridable in the database.</td><td>No vendor-specific code to maintain; a new provider or model appears without a Bemmoly release. A thin facade is the only place the SDK is imported.</td></tr>
   <tr><td>Email</td><td>SMTP through an outbox table and a worker; digest batching; one <code>EmailSender</code> interface.</td><td>SMTP is the universal self-host answer. Outbox makes sending retryable and auditable.</td></tr>
-  <tr><td>Deploy and updates</td><td><code>curl | sh</code> installer writes a Compose stack (app, Postgres, Caddy, updater) and a <code>lattice</code> CLI. Updates run from inside the app with one click, with automatic backup and rollback. Also Docker Compose by hand, Helm, Terraform, air-gapped bundle.</td><td>The wizard in the mocks already assumes the server is up with HTTPS and backups scheduled; the installer is what makes that true.</td></tr>
+  <tr><td>Deploy and updates</td><td><code>curl | sh</code> installer writes a Compose stack (app, Postgres, Caddy, updater) and a <code>bemmoly</code> CLI. Updates run from inside the app with one click, with automatic backup and rollback. Also Docker Compose by hand, Helm, Terraform, air-gapped bundle.</td><td>The wizard in the mocks already assumes the server is up with HTTPS and backups scheduled; the installer is what makes that true.</td></tr>
 </table>
 
 <!-- ===================================================== 2 -->
@@ -197,9 +197,9 @@ svg .mono{font-family:'IBM Plex Mono',monospace}
 
 <!-- ===================================================== 3 -->
 <h2 id="architecture">3. Architecture</h2>
-<p>Lattice is a <strong>modular monolith</strong>. One Node process serves the API, the WebSocket endpoint, the collaborative-editing endpoint, the static SPA and the background workers. The same image can be started with <code>LATTICE_ROLE=api</code> or <code>LATTICE_ROLE=worker</code> to split it across machines when a deployment outgrows one box. Nothing in the code knows or cares which mode it is in.</p>
+<p>Bemmoly is a <strong>modular monolith</strong>. One Node process serves the API, the WebSocket endpoint, the collaborative-editing endpoint, the static SPA and the background workers. The same image can be started with <code>BEMMOLY_ROLE=api</code> or <code>BEMMOLY_ROLE=worker</code> to split it across machines when a deployment outgrows one box. Nothing in the code knows or cares which mode it is in.</p>
 <figure>
-<svg viewBox="0 0 1040 520" width="100%" style="max-width:1040px;display:block" role="img" aria-label="Lattice runtime architecture">
+<svg viewBox="0 0 1040 520" width="100%" style="max-width:1040px;display:block" role="img" aria-label="Bemmoly runtime architecture">
   <defs><marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="the 0.1 foundation release,0 L8,4 L0,8 z" fill="var(--tx3)"/></marker></defs>
   <!-- clients -->
   <rect x="20" y="30" width="170" height="64" rx="10" fill="var(--sf2)" stroke="var(--br)"/>
@@ -213,9 +213,9 @@ svg .mono{font-family:'IBM Plex Mono',monospace}
   <text x="315" y="92" text-anchor="middle" font-size="13" font-weight="600" fill="var(--tx)">Caddy</text>
   <text x="315" y="110" text-anchor="middle" font-size="11.5" fill="var(--tx3)">auto TLS, HTTP/2</text>
   <text x="315" y="126" text-anchor="middle" font-size="11.5" fill="var(--tx3)">optional</text>
-  <!-- lattice box -->
+  <!-- bemmoly box -->
   <rect x="430" y="20" width="380" height="330" rx="14" fill="var(--ac-bg)" stroke="var(--ac-br)"/>
-  <text x="450" y="46" font-size="13" font-weight="600" fill="var(--ac)">lattice image · one Node process</text>
+  <text x="450" y="46" font-size="13" font-weight="600" fill="var(--ac)">bemmoly image · one Node process</text>
   <g font-size="12" fill="var(--tx)">
     <rect x="450" y="60" width="165" height="50" rx="8" fill="var(--sf)" stroke="var(--br)"/><text x="532" y="81" text-anchor="middle" font-weight="600">HTTP API</text><text x="532" y="98" text-anchor="middle" font-size="11" fill="var(--tx3)">Fastify · zod · routes→controllers→services</text>
     <rect x="625" y="60" width="165" height="50" rx="8" fill="var(--sf)" stroke="var(--br)"/><text x="707" y="81" text-anchor="middle" font-weight="600">Static SPA</text><text x="707" y="98" text-anchor="middle" font-size="11" fill="var(--tx3)">React + Vite build, Brotli</text>
@@ -240,7 +240,7 @@ svg .mono{font-family:'IBM Plex Mono',monospace}
     <rect x="562" y="400" width="118" height="54" rx="8" fill="var(--sf2)" stroke="var(--br)" stroke-dasharray="4 3"/><text x="621" y="422" text-anchor="middle" font-weight="600" fill="var(--tx)">SMTP relay</text><text x="621" y="440" text-anchor="middle">your mail server</text>
     <rect x="694" y="400" width="118" height="54" rx="8" fill="var(--sf2)" stroke="var(--br)" stroke-dasharray="4 3"/><text x="753" y="422" text-anchor="middle" font-weight="600" fill="var(--tx)">Identity provider</text><text x="753" y="440" text-anchor="middle">OIDC · SAML · SCIM</text>
     <rect x="826" y="400" width="118" height="54" rx="8" fill="var(--sf2)" stroke="var(--br)" stroke-dasharray="4 3"/><text x="885" y="422" text-anchor="middle" font-weight="600" fill="var(--tx)">GitHub / GitLab</text><text x="885" y="440" text-anchor="middle">PR and branch links</text>
-    <rect x="250" y="400" width="130" height="54" rx="8" fill="var(--sf2)" stroke="var(--br)"/><text x="315" y="422" text-anchor="middle" font-weight="600" fill="var(--tx)">/var/lattice</text><text x="315" y="440" text-anchor="middle">attachments · backups</text>
+    <rect x="250" y="400" width="130" height="54" rx="8" fill="var(--sf2)" stroke="var(--br)"/><text x="315" y="422" text-anchor="middle" font-weight="600" fill="var(--tx)">/var/bemmoly</text><text x="315" y="440" text-anchor="middle">attachments · backups</text>
   </g>
   <!-- arrows -->
   <g stroke="var(--tx3)" stroke-width="1.4" fill="none" marker-end="url(#arr)">
@@ -262,7 +262,7 @@ svg .mono{font-family:'IBM Plex Mono',monospace}
 <h2 id="modules">4. Modules</h2>
 <div class="decision">
   <div class="k">Question asked</div><div>Can Work and Docs be separate modules, so a team can install only Docs, only the board, or any mix, and so future capabilities can be added the same way?</div>
-  <div class="k">Decision</div><div><strong>Yes. Lattice is a small core kernel plus installable modules.</strong> Every product capability (<code>work</code>, <code>docs</code>, and anything that comes later) is a module that plugs into the kernel through a fixed contract. Modules ship inside the one application image and are switched on per install; the image stays one artifact so the five-minute install and one-click update promises hold.</div>
+  <div class="k">Decision</div><div><strong>Yes. Bemmoly is a small core kernel plus installable modules.</strong> Every product capability (<code>work</code>, <code>docs</code>, and anything that comes later) is a module that plugs into the kernel through a fixed contract. Modules ship inside the one application image and are switched on per install; the image stays one artifact so the five-minute install and one-click update promises hold.</div>
   <div class="k">Why one image</div><div>Downloading module code at runtime means a version-compatibility matrix, signature checks, a plugin loader and a second update path, all before 1.0 ships. Shipping every module in the image and enabling by configuration gives the install-only-Docs experience today and keeps the door open for separately distributed modules later, because the contract below is the same either way. GitLab works this way: one version, many optional features.</div>
 </div>
 
@@ -312,7 +312,7 @@ svg .mono{font-family:'IBM Plex Mono',monospace}
 <h3>The module contract</h3>
 <p>A module is a package that exports one manifest. The kernel loads enabled modules in dependency order at boot and asks each one to register what it provides. Nothing else in the kernel knows a module's name.</p>
 <pre><code>// packages/core/src/modules/contract.ts
-export interface LatticeModule {
+export interface BemmolyModule {
   id: 'work' | 'docs' | string;        // stable, lowercase, used in config, URLs and the changelog table
   version: string;                     // the app version it shipped in
   coreApi: string;                     // semver range of the kernel API it was built against
@@ -360,10 +360,10 @@ export interface ModuleContext {
 <h3>Choosing modules at install and after</h3>
 <table>
   <tr><th style="width:220px">Where</th><th>How</th></tr>
-  <tr><td>Installer</td><td><code>curl -fsSL https://get.lattice.dev | sh -s -- --modules docs</code>. Without the flag, the wizard asks.</td></tr>
-  <tr><td>Setup wizard</td><td>A new first question, "What will you use Lattice for?", with Work, Docs and both. AI remains a provider choice in step 4 and lights up the AI features of whichever modules are on.</td></tr>
+  <tr><td>Installer</td><td><code>curl -fsSL https://get.bemmoly.dev | sh -s -- --modules docs</code>. Without the flag, the wizard asks.</td></tr>
+  <tr><td>Setup wizard</td><td>A new first question, "What will you use Bemmoly for?", with Work, Docs and both. AI remains a provider choice in step 4 and lights up the AI features of whichever modules are on.</td></tr>
   <tr><td>Settings › Modules</td><td>Lists every module in the image with its state, version, data size and changelog status. Enable runs its changelog and seeds a sample; disable hides it and keeps data; remove data is separate and confirmed.</td></tr>
-  <tr><td>Env (for automation)</td><td><code>LATTICE_MODULES=work,docs</code> pins the set; the Settings page becomes read-only for modules when the env is set, so Helm and Terraform deployments cannot drift.</td></tr>
+  <tr><td>Env (for automation)</td><td><code>BEMMOLY_MODULES=work,docs</code> pins the set; the Settings page becomes read-only for modules when the env is set, so Helm and Terraform deployments cannot drift.</td></tr>
   <tr><td>Web app</td><td>Boots from <code>GET /api/v1/modules</code>, which returns only the modules that are enabled <em>and</em> granted to this person, and lazy-loads one JavaScript chunk per module under its path (<code>/work</code>, <code>/docs</code>, <code>/time</code>). A Docs-only install never downloads the board code. The kernel chunk stays under the 250 KB budget on its own.</td></tr>
 </table>
 
@@ -394,14 +394,14 @@ export interface ModuleContext {
   <tr><td>Versioning</td><td>One release train with optional modules, the GitLab model. Enterprises validate one version.</td><td>N products, N release notes, N upgrade windows.</td></tr>
 </table>
 <h4>Mobile</h4>
-<p>Same answer for the same reasons: one app named Lattice, not one per module. It reads the module manifest from the server and shows only the modules the person can access, so a Docs-only workspace gets what looks like a docs app. One store listing, one login, one push-notification registration, deep links that cross modules (<code>lattice://work/PLT-204</code>). Sequencing: the SPA ships as an installable PWA with web push for 1.0, which covers inbox, approvals, comments and timesheet entry on a phone; a native shell (Expo) follows after 1.0 and loads module screens by manifest, so adding a module never means shipping a new app. Separate apps per module is listed in §25 as the rejected alternative.</p>
+<p>Same answer for the same reasons: one app named Bemmoly, not one per module. It reads the module manifest from the server and shows only the modules the person can access, so a Docs-only workspace gets what looks like a docs app. One store listing, one login, one push-notification registration, deep links that cross modules (<code>bemmoly://work/PLT-204</code>). Sequencing: the SPA ships as an installable PWA with web push for 1.0, which covers inbox, approvals, comments and timesheet entry on a phone; a native shell (Expo) follows after 1.0 and loads module screens by manifest, so adding a module never means shipping a new app. Separate apps per module is listed in §25 as the rejected alternative.</p>
 
 <h3>Versioning</h3>
 <p>For 1.x every module ships in the image and carries the application's version, so an update moves everything together and there is exactly one compatibility question: does this image's kernel support the database it finds. Module manifests already declare the kernel API range they need, and changesets are tracked per module, so the 2.0 question of separately distributed, separately versioned modules (a community module installed from a registry, signed and sandboxed) is a packaging and trust problem, not an architecture change. It is listed in §25 rather than promised.</p>
 
 <!-- ===================================================== 5 -->
 <h2 id="stack">5. Stack decisions</h2>
-<p>Each row names what was chosen, what it was weighed against, and the reason that settled it. Licences are listed because Lattice itself is MIT and cannot depend on anything that would stop a company from self-hosting it.</p>
+<p>Each row names what was chosen, what it was weighed against, and the reason that settled it. Licences are listed because Bemmoly itself is MIT and cannot depend on anything that would stop a company from self-hosting it.</p>
 <table>
   <tr><th style="width:150px">Concern</th><th style="width:220px">Choice</th><th>Weighed against</th><th>Deciding reason</th></tr>
   <tr><td>Runtime</td><td>Node 24 LTS (moving to 26 LTS at the end of October 2026), TypeScript 7 strict, ESM</td><td>Go, Bun, Deno</td><td>Go would give a smaller binary but splits the codebase into two languages and halves the contributor pool for the editor, importers and AI tooling. Bun is not yet boring enough for a product people run their company on. TypeScript 7 is the Go-native compiler, so typechecking the monorepo is no longer a CI bottleneck.</td></tr>
@@ -416,9 +416,9 @@ export interface ModuleContext {
   <tr><td>Frontend</td><td>React 19, Vite 8, TanStack Router 1 + Query 5 + Virtual, Zustand, Tailwind 4 with tokens from <code>packages/ui</code></td><td>Next.js, Remix, SvelteKit</td><td>No SSR need behind login; a static build keeps the single image. TanStack Router gives type-safe routes and route-level prefetching. Tailwind consumes the one token file so the eight presets plus custom themes are CSS variables, not rebuilds.</td></tr>
   <tr><td>Auth</td><td>Own session layer (Postgres sessions), argon2id, <code>openid-client</code> for OIDC, <code>samlify</code> for SAML, SCIM 2.0 server</td><td>Auth.js, Lucia, Keycloak sidecar</td><td>Keycloak violates the one-image promise. Auth.js is tuned for Next. The surface is small enough to own and must be audited anyway.</td></tr>
   <tr><td>Email</td><td>nodemailer over SMTP, templates with <code>react-email</code></td><td>Resend/Postmark SDKs</td><td>SMTP is what every self-hoster has. Provider SDKs can be added as a second <code>EmailSender</code> implementation when someone needs one.</td></tr>
-  <tr><td>AI providers</td><td>AI SDK 7 as the single integration, provider packages loaded by name from the models.dev catalog, behind the facade in §11.1</td><td>Own two-protocol implementation, LangChain, LiteLLM proxy</td><td>The SDK is the provider abstraction the contract asks for, already written and maintained, with middleware and OpenTelemetry. LangChain brings an agent framework Lattice does not want. LiteLLM is a Python proxy, which breaks the one-image promise.</td></tr>
+  <tr><td>AI providers</td><td>AI SDK 7 as the single integration, provider packages loaded by name from the models.dev catalog, behind the facade in §11.1</td><td>Own two-protocol implementation, LangChain, LiteLLM proxy</td><td>The SDK is the provider abstraction the contract asks for, already written and maintained, with middleware and OpenTelemetry. LangChain brings an agent framework Bemmoly does not want. LiteLLM is a Python proxy, which breaks the one-image promise.</td></tr>
   <tr><td>Search</td><td>Postgres full text + <code>pg_trgm</code> + <code>pgvector</code> 0.8</td><td>Meilisearch, Typesense, Elasticsearch</td><td>Good enough for hundreds of thousands of issues and pages; zero extra services. Semantic search degrades to keyword search when pgvector or an embedding provider is absent.</td></tr>
-  <tr><td>Files</td><td>Local disk under <code>/var/lattice/data</code>; S3-compatible as the second <code>ObjectStore</code> implementation</td><td>S3 only</td><td>Disk is the five-minute path. S3 is one config switch for teams that want it.</td></tr>
+  <tr><td>Files</td><td>Local disk under <code>/var/bemmoly/data</code>; S3-compatible as the second <code>ObjectStore</code> implementation</td><td>S3 only</td><td>Disk is the five-minute path. S3 is one config switch for teams that want it.</td></tr>
   <tr><td>TLS</td><td>Caddy 2.11 in the Compose stack, optional</td><td>ACME inside the app, Traefik, nginx + certbot</td><td>Caddy does automatic certificates with zero config and is one line to drop when the user already has a load balancer.</td></tr>
   <tr><td>Logging</td><td>pino JSON, request id on every line, redaction configured once</td><td>winston</td><td>Fastify's native logger; fastest structured logger in Node.</td></tr>
   <tr><td>Tests</td><td>Vitest, Testcontainers Postgres for integration, Playwright for end to end, k6 for load, Lighthouse CI for budgets</td><td>Jest</td><td>Vitest shares the Vite config and is several times faster. Integration tests run against real Postgres because the queue, search and NOTIFY cannot be mocked honestly.</td></tr>
@@ -428,7 +428,7 @@ export interface ModuleContext {
 <!-- ===================================================== 5 -->
 <h2 id="repo">6. Repository and layering</h2>
 <p>The layout follows the engineering-standards contract at two levels. The kernel and every module each have the same eight-folder backend shape with thin routes and controllers, behaviour in <code>services/</code>, and the changelog as a sibling of the source. The host application in <code>apps/server</code> only composes them. Shared code sits in packages so the web app and the server never duplicate a type or a schema.</p>
-<pre class="tree"><code>lattice/
+<pre class="tree"><code>bemmoly/
 ├── apps/
 │   ├── server/                      <span class="c">the host: boots the kernel, loads enabled modules, serves the SPA. One deployable.</span>
 │   │   ├── src/
@@ -458,12 +458,12 @@ export interface ModuleContext {
 │   │   ├── server/src/{routes,controllers,services,models}/   <span class="c">same layering rules as the kernel</span>
 │   │   ├── web/src/{components,hooks,services,pages}/         <span class="c">built as one lazy chunk</span>
 │   │   ├── shared/                  <span class="c">this module's zod schemas and types</span>
-│   │   └── module.ts                <span class="c">the LatticeModule manifest: register() wires everything above</span>
+│   │   └── module.ts                <span class="c">the BemmolyModule manifest: register() wires everything above</span>
 │   └── docs/
 │       └── (same shape)
 ├── deploy/
-│   ├── install.sh                   <span class="c">what get.lattice.dev serves; --modules flag</span>
-│   ├── compose/                     <span class="c">docker-compose.yml, Caddyfile, lattice CLI, updater</span>
+│   ├── install.sh                   <span class="c">what get.bemmoly.dev serves; --modules flag</span>
+│   ├── compose/                     <span class="c">docker-compose.yml, Caddyfile, bemmoly CLI, updater</span>
 │   ├── helm/  terraform/{aws,gcp,hetzner}/  airgap/
 ├── docs/                            <span class="c">this document, ADRs, design mocks</span>
 └── .devcontainer/</code></pre>
@@ -471,7 +471,7 @@ export interface ModuleContext {
 <h3>Rules that keep it clean</h3>
 <ul>
   <li><strong>Services never import routes or controllers.</strong> Enforced by an ESLint <code>import/no-restricted-paths</code> rule, so a violation fails CI rather than code review.</li>
-  <li><strong>Modules talk through the kernel.</strong> A module imports <code>@lattice/core</code> and nothing under <code>modules/</code>. Inside the kernel, each service folder exposes an <code>index.ts</code> and internal files are private.</li>
+  <li><strong>Modules talk through the kernel.</strong> A module imports <code>@bemmoly/core</code> and nothing under <code>modules/</code>. Inside the kernel, each service folder exposes an <code>index.ts</code> and internal files are private.</li>
   <li><strong>Every file is 300 lines or fewer.</strong> A lint rule, not a guideline.</li>
   <li><strong>One schema, one place.</strong> A request body's zod schema lives in <code>packages/shared</code>, is used by the controller to validate and by the web form to validate, and generates the OpenAPI document. Nobody writes the shape twice.</li>
   <li><strong>Typed errors only.</strong> <code>NotFoundError</code>, <code>ForbiddenError</code>, <code>ValidationError</code>, <code>ConflictError</code>, <code>RateLimitedError</code>, <code>ProviderError</code>. The error handler in <code>middlewares/error-handler.ts</code> owns the mapping to status codes; no controller writes a status code by hand.</li>
@@ -482,7 +482,7 @@ export interface ModuleContext {
 <h2 id="database">7. Database</h2>
 <div class="decision">
   <div class="k">Question asked</div><div>Postgres or Mongo? Can we give users the option?</div>
-  <div class="k">Decision</div><div><strong>PostgreSQL only.</strong> The option Lattice gives users is <em>where</em> Postgres runs, not <em>which</em> database it is.</div>
+  <div class="k">Decision</div><div><strong>PostgreSQL only.</strong> The option Bemmoly gives users is <em>where</em> Postgres runs, not <em>which</em> database it is.</div>
   <div class="k">Why</div><div>
     <ul style="margin:0">
       <li>The data is relational to its core: issues ↔ sprints ↔ epics ↔ workflows ↔ boards ↔ pages, with foreign keys, uniqueness (one issue key per project), and transactions (moving an issue updates its status, history, sprint counters and the search index together).</li>
@@ -500,7 +500,7 @@ export interface ModuleContext {
 
 <h3>Conventions</h3>
 <ul>
-  <li>Database name <code>lattice_db</code>. Tables snake_case plural, columns snake_case. API layer maps to camelCase in the shared schemas.</li>
+  <li>Database name <code>bemmoly_db</code>. Tables snake_case plural, columns snake_case. API layer maps to camelCase in the shared schemas.</li>
   <li>Primary keys are <strong>UUIDv7</strong>, generated by Postgres 18's built-in <code>uuidv7()</code> as the column default (time-ordered, so B-tree inserts are sequential and pagination by id is chronological). Issue <em>keys</em> like <code>PLT-204</code> are a separate unique column allocated from a per-project counter row locked with <code>SELECT … FOR UPDATE</code>.</li>
   <li>Every table has <code>created_at</code>, <code>updated_at</code>. Soft delete (<code>deleted_at</code>) only on issues, pages and comments, because users expect a trash; everything else hard-deletes with cascading foreign keys.</li>
   <li>Indexes are declared in the Drizzle schema and land in the same changeset as the table. Partial indexes for the hot paths (open issues per project, pages per space not deleted).</li>
@@ -510,9 +510,9 @@ export interface ModuleContext {
 
 
 <h3 id="changelog">7.1 Schema changelog, Liquibase-style</h3>
-<p>A folder of numbered SQL files is enough for one app with one schema. Lattice has a kernel and several modules, each owning tables, each enabled at different times, and contributors who need to ship data backfills as well as DDL. That is the problem Liquibase and Mongock solve, so Lattice adopts their model: an ordered <strong>changelog</strong> of <strong>changesets</strong>, each with a stable id, an author, a checksum, optional preconditions and an optional rollback, tracked in a table the runner owns. The runner is a small kernel service in TypeScript, not the Liquibase binary, for the reasons in the stack table.</p>
+<p>A folder of numbered SQL files is enough for one app with one schema. Bemmoly has a kernel and several modules, each owning tables, each enabled at different times, and contributors who need to ship data backfills as well as DDL. That is the problem Liquibase and Mongock solve, so Bemmoly adopts their model: an ordered <strong>changelog</strong> of <strong>changesets</strong>, each with a stable id, an author, a checksum, optional preconditions and an optional rollback, tracked in a table the runner owns. The runner is a small kernel service in TypeScript, not the Liquibase binary, for the reasons in the stack table.</p>
 <pre><code>// modules/work/changelog/0007-issue-rank.ts
-import { changeset, sql } from '@lattice/core/changelog';
+import { changeset, sql } from '@bemmoly/core/changelog';
 
 export default changeset({
   id: '0007-issue-rank',                 // stable; the file name must match
@@ -536,24 +536,24 @@ export default changeset({
   },
 });</code></pre>
 <table>
-  <tr><th style="width:210px">Liquibase or Mongock concept</th><th>Lattice equivalent</th></tr>
+  <tr><th style="width:210px">Liquibase or Mongock concept</th><th>Bemmoly equivalent</th></tr>
   <tr><td>Changelog file with changesets</td><td>One <code>changelog/</code> folder per module (and one for the kernel), one TypeScript file per changeset, ordered by the numeric prefix. The module manifest points at it, which is Liquibase's <code>include</code>.</td></tr>
   <tr><td><code>DATABASECHANGELOG</code></td><td><code>schema_changelog</code>: <code>module</code>, <code>id</code>, <code>author</code>, <code>checksum</code>, <code>executed_at</code>, <code>execution_ms</code>, <code>order_executed</code>, <code>app_version</code>, <code>contexts</code>, <code>state</code> (ran, marked_ran, rolled_back). Rows are never deleted.</td></tr>
   <tr><td><code>DATABASECHANGELOGLOCK</code></td><td>A Postgres advisory lock held for the whole run, so replicas starting together cannot race.</td></tr>
   <tr><td>Checksum validation</td><td>The runner hashes each changeset's source. A changed checksum on an already-run changeset fails boot with the file name and both hashes, exactly like Liquibase, unless the author explicitly lists the old hash in <code>validChecksums</code> with a reason.</td></tr>
   <tr><td>Preconditions</td><td><code>tableExists</code>, <code>columnExists</code>, <code>indexExists</code>, <code>rowCount</code>, <code>sqlCheck</code>, with <code>onFail: halt | markRan | skip | warn</code>. The <code>markRan</code> case is what lets upgraded installs and fresh installs converge on one changelog.</td></tr>
   <tr><td>Contexts and labels</td><td><code>contexts</code> on a changeset; the runner starts with the install's contexts (<code>production</code>, <code>demo</code>, <code>test</code>). The Acme Labs sample data is a set of changesets in the <code>demo</code> context.</td></tr>
-  <tr><td>Rollback</td><td><code>down</code> on a changeset; <code>lattice db rollback --to &lt;id&gt;</code> or <code>--count n</code>. Production rollback after an upgrade still restores the pre-upgrade backup, because a <code>down</code> that drops a column cannot bring the data back. <code>down</code> exists for development and for reversing a bad deploy before data has changed.</td></tr>
+  <tr><td>Rollback</td><td><code>down</code> on a changeset; <code>bemmoly db rollback --to &lt;id&gt;</code> or <code>--count n</code>. Production rollback after an upgrade still restores the pre-upgrade backup, because a <code>down</code> that drops a column cannot bring the data back. <code>down</code> exists for development and for reversing a bad deploy before data has changed.</td></tr>
   <tr><td>Code changesets (Mongock)</td><td><code>up</code> is TypeScript. It can run SQL, call <code>ctx.backfill</code> for batched, resumable data transforms with progress logged on the changelog row, or call a kernel service through <code>ctx.services</code> for cases such as re-extracting page text after an editor schema change.</td></tr>
   <tr><td><code>runAlways</code>, <code>runOnChange</code></td><td>Supported for the rare changeset that maintains a view or a function body from source; the checksum rule is relaxed only for those.</td></tr>
-  <tr><td><code>validate</code>, <code>status</code>, <code>updateSQL</code>, <code>history</code>, <code>tag</code></td><td><code>lattice db validate</code> (checksums, duplicate ids, missing <code>down</code> on DDL-only changesets), <code>lattice db status</code> (pending per module), <code>lattice db plan</code> (prints the SQL without running it, for review and DBAs), <code>lattice db history</code>, <code>lattice db tag &lt;name&gt;</code> for the pre-upgrade point.</td></tr>
+  <tr><td><code>validate</code>, <code>status</code>, <code>updateSQL</code>, <code>history</code>, <code>tag</code></td><td><code>bemmoly db validate</code> (checksums, duplicate ids, missing <code>down</code> on DDL-only changesets), <code>bemmoly db status</code> (pending per module), <code>bemmoly db plan</code> (prints the SQL without running it, for review and DBAs), <code>bemmoly db history</code>, <code>bemmoly db tag &lt;name&gt;</code> for the pre-upgrade point.</td></tr>
   <tr><td>Generating changes</td><td>Contributors edit the Drizzle schema, run <code>pnpm db:diff</code>, and Drizzle Kit writes the DDL into a new changeset file with the next prefix. They add author, description, preconditions and <code>down</code>, then review the SQL. Nothing is generated at runtime.</td></tr>
   <tr><td>Safety linting</td><td><code>squawk</code> runs on the generated SQL in CI and blocks a full-table rewrite, a non-concurrent index on a large table, or a <code>NOT NULL</code> added without a default. The release manifest lists any changeset the lint flagged as slow so admins see it before clicking Update.</td></tr>
 </table>
 <h4>Runner rules</h4>
 <ul>
   <li><strong>Order</strong>: kernel changelog first, then enabled modules in dependency order. Inside a changelog, by numeric prefix; a gap or duplicate fails validation.</li>
-  <li><strong>Boot behaviour</strong>: in the default install the app runs pending changesets at boot before it answers <code>/readyz</code>. In Helm deployments a pre-upgrade hook job runs them so pods never start against an old schema; <code>LATTICE_DB_AUTO_MIGRATE=false</code> turns the boot run off for operators who prefer that.</li>
+  <li><strong>Boot behaviour</strong>: in the default install the app runs pending changesets at boot before it answers <code>/readyz</code>. In Helm deployments a pre-upgrade hook job runs them so pods never start against an old schema; <code>BEMMOLY_DB_AUTO_MIGRATE=false</code> turns the boot run off for operators who prefer that.</li>
   <li><strong>Transactions</strong>: each changeset runs in its own transaction unless it declares <code>transactional: false</code>, in which case the runner writes a "started" row first so a crash mid-way is visible as such rather than as "pending".</li>
   <li><strong>Compatibility window</strong>: a changeset must be compatible with the previous minor release's code (expand first, contract in a later release), so an updater swap or a rolling Helm upgrade never runs old code against a removed column.</li>
   <li><strong>Module enable and disable</strong>: enabling runs that module's changelog from its first pending changeset. Disabling runs nothing. "Remove data" runs the module's <code>down</code> changesets in reverse after a backup, or drops the module's tables where a changeset is irreversible, and records it in the changelog and the audit log.</li>
@@ -640,7 +640,7 @@ export default changeset({
   <tr><td><code>versions</code>, <code>components</code></td><td>Fix versions (with release date and status) and components, as in Jira.</td></tr>
   <tr><td><code>sprints</code></td><td><code>project_id</code>, <code>name</code>, <code>goal</code>, <code>starts_at</code>, <code>ends_at</code>, <code>state</code> (future, active, closed), <code>capacity_points</code>, <code>completed_snapshot</code> JSONB written on close for velocity reports.</td></tr>
   <tr><td><code>boards</code></td><td><code>project_id</code>, <code>name</code>, <code>config</code> JSONB: columns (each mapping status ids, WIP limit), lanes (field or saved query), card fields, card colour rules, estimation unit, sprint cadence, working days. One row per board; the org default board scheme is a row with <code>project_id</code> null.</td></tr>
-  <tr><td><code>saved_filters</code></td><td><code>owner_id</code>, <code>name</code>, <code>query</code> (the Lattice query language, see §16), <code>shared_with</code>.</td></tr>
+  <tr><td><code>saved_filters</code></td><td><code>owner_id</code>, <code>name</code>, <code>query</code> (the Bemmoly query language, see §16), <code>shared_with</code>.</td></tr>
   <tr><td><code>comments</code></td><td>Polymorphic: <code>target_kind</code> (issue), <code>target_id</code>, <code>body</code> JSONB and <code>body_text</code>, <code>parent_id</code> for threads, <code>reactions</code> JSONB, <code>ai_run_id</code> when drafted by AI.</td></tr>
   <tr><td><code>issue_history</code></td><td>Append-only field changes: <code>field</code>, <code>from</code>, <code>to</code>, <code>actor_id</code>, <code>ai_plan_id</code> when caused by an AI plan. Feeds the History tab, time-in-status metrics and the morning brief.</td></tr>
   <tr><td><code>work_logs</code></td><td>Time spent per issue per user.</td></tr>
@@ -687,7 +687,7 @@ export default changeset({
   <tr><td><code>webhooks</code>, <code>webhook_deliveries</code></td><td>Outgoing webhooks with HMAC secret, event filter, and a delivery log with response status and retries.</td></tr>
   <tr><td><code>integrations</code></td><td>GitHub and GitLab apps: installation id, repos, encrypted credentials, webhook secret.</td></tr>
   <tr><td><code>code_links</code></td><td>PRs, branches and commits linked to issues by key detection: <code>issue_id</code>, <code>kind</code>, <code>external_id</code>, <code>title</code>, <code>state</code>, <code>url</code>.</td></tr>
-  <tr><td><code>import_jobs</code>, <code>import_mappings</code></td><td>Importer runs with progress and log; mappings from external ids to Lattice ids so a re-run updates rather than duplicates.</td></tr>
+  <tr><td><code>import_jobs</code>, <code>import_mappings</code></td><td>Importer runs with progress and log; mappings from external ids to Bemmoly ids so a re-run updates rather than duplicates.</td></tr>
   <tr><td><code>audit_log</code></td><td>Append-only: <code>actor_id</code>, <code>actor_kind</code> (user, ai_plan, system, api_token), <code>action</code>, <code>target_kind</code>, <code>target_id</code>, <code>before</code>, <code>after</code>, <code>ip</code>, <code>request_id</code>, <code>ai_plan_id</code>. Exportable as CSV from Settings › Audit log.</td></tr>
   <tr><td><code>schema_changelog</code></td><td>The changelog runner's own table (§7.1): <code>module</code>, <code>id</code>, <code>author</code>, <code>checksum</code>, <code>executed_at</code>, <code>execution_ms</code>, <code>order_executed</code>, <code>app_version</code>, <code>contexts</code>, <code>state</code>. One table, per-module rows, so enabling a module later knows exactly where to start.</td></tr>
   <tr><td><code>backups</code></td><td>Each backup: <code>kind</code> (scheduled, pre_upgrade, manual), <code>tier</code> (hourly, daily, weekly, monthly), destination and path, sizes, duration, checksums, <code>app_version</code>, <code>changelog_tag</code>, <code>verified_at</code>, <code>status</code> and <code>error</code>.</td></tr>
@@ -696,13 +696,13 @@ export default changeset({
 <!-- ===================================================== 8 -->
 <h2 id="api">9. API, realtime and webhooks</h2>
 <p>There is one API. The web app uses it, the CLI uses it, integrations use it and the MCP server wraps it. Nothing the UI can do is unavailable to a script, which is the only way a self-hosted tool stays automatable.</p>
-<div class="callout"><div class="k">Note on the base path</div>The standards contract prescribes <code>/&lt;domain&gt;/api</code> so a gateway can route between services. Lattice is one deployable, so the domain segment is dropped and the API is mounted at <code>/api/v1</code>. Resources are still plural nouns, methods are the verbs, and the action exception (<code>POST …/:id/transition</code>) is used only where there is genuinely no noun.</div>
+<div class="callout"><div class="k">Note on the base path</div>The standards contract prescribes <code>/&lt;domain&gt;/api</code> so a gateway can route between services. Bemmoly is one deployable, so the domain segment is dropped and the API is mounted at <code>/api/v1</code>. Resources are still plural nouns, methods are the verbs, and the action exception (<code>POST …/:id/transition</code>) is used only where there is genuinely no noun.</div>
 <table>
   <tr><th style="width:300px">Resource</th><th>Endpoints</th></tr>
   <tr><td><code>/api/v1/session</code>, <code>/auth/*</code></td><td>Login, logout, OIDC and SAML callbacks, password reset, invitation accept. Anonymous by design, IP rate limited.</td></tr>
   <tr><td><code>/api/v1/users</code>, <code>/teams</code>, <code>/roles</code></td><td>CRUD plus <code>GET /roles/:id/capabilities</code>, <code>PUT /roles/:id/capabilities</code>.</td></tr>
   <tr><td><code>/api/v1/projects</code></td><td>CRUD; nested one level: <code>/projects/:id/issues</code>, <code>/sprints</code>, <code>/boards</code>, <code>/workflows</code>, <code>/members</code>, <code>/versions</code>, <code>/labels</code>.</td></tr>
-  <tr><td><code>/api/v1/issues</code></td><td><code>GET</code> with <code>?q=</code> (Lattice query language), <code>sort</code>, keyset <code>cursor</code>, <code>limit</code>; <code>POST</code>, <code>GET /:key</code>, <code>PATCH /:key</code>, <code>DELETE /:key</code>; actions: <code>POST /:key/transition</code>, <code>/rank</code>, <code>/watch</code>; sub-resources <code>/comments</code>, <code>/links</code>, <code>/attachments</code>, <code>/history</code>, <code>/worklogs</code>, <code>/subtasks</code>.</td></tr>
+  <tr><td><code>/api/v1/issues</code></td><td><code>GET</code> with <code>?q=</code> (Bemmoly query language), <code>sort</code>, keyset <code>cursor</code>, <code>limit</code>; <code>POST</code>, <code>GET /:key</code>, <code>PATCH /:key</code>, <code>DELETE /:key</code>; actions: <code>POST /:key/transition</code>, <code>/rank</code>, <code>/watch</code>; sub-resources <code>/comments</code>, <code>/links</code>, <code>/attachments</code>, <code>/history</code>, <code>/worklogs</code>, <code>/subtasks</code>.</td></tr>
   <tr><td><code>/api/v1/boards/:id/view</code></td><td>One call returns columns, lanes, cards with the fields the board config asks for, counts and WIP state. The board never makes N requests.</td></tr>
   <tr><td><code>/api/v1/sprints</code></td><td>CRUD, <code>POST /:id/start</code>, <code>POST /:id/complete</code> (moves unfinished issues per the chosen option), <code>GET /:id/report</code>.</td></tr>
   <tr><td><code>/api/v1/spaces</code>, <code>/pages</code></td><td>CRUD; <code>GET /spaces/:id/tree</code>; <code>GET /pages/:id</code> returns snapshot and metadata; <code>POST /pages/:id/publish</code>, <code>/move</code>; <code>/comments</code>, <code>/revisions</code>, <code>/backlinks</code>; <code>GET /pages/:id/export?format=md|pdf|html</code>.</td></tr>
@@ -713,7 +713,7 @@ export default changeset({
   <tr><td><code>/api/v1/webhooks</code></td><td>Outgoing webhook management.</td></tr>
   <tr><td><code>/hooks/github</code>, <code>/hooks/gitlab</code></td><td>Incoming, signature verified before parsing. Anonymous by design.</td></tr>
   <tr><td><code>/scim/v2/*</code></td><td>SCIM 2.0 Users and Groups for IdP provisioning, bearer token auth.</td></tr>
-  <tr><td><code>/mcp</code></td><td>Streamable-HTTP MCP server exposing search, issue and page tools under a personal token, so Claude, Cursor or any MCP client can work inside Lattice with that user's permissions.</td></tr>
+  <tr><td><code>/mcp</code></td><td>Streamable-HTTP MCP server exposing search, issue and page tools under a personal token, so Claude, Cursor or any MCP client can work inside Bemmoly with that user's permissions.</td></tr>
   <tr><td><code>/healthz</code>, <code>/readyz</code>, <code>/metrics</code></td><td>Liveness, readiness (DB reachable, changelog current), Prometheus metrics. Metrics endpoint protected by a token.</td></tr>
   <tr><td><code>/ws</code>, <code>/collab</code></td><td>WebSocket hub for invalidations and presence; Hocuspocus endpoint for Yjs documents. Both authenticate with the session cookie on upgrade.</td></tr>
 </table>
@@ -726,7 +726,7 @@ export default changeset({
   <li>Idempotency keys on <code>POST</code> endpoints that create (header <code>Idempotency-Key</code>), stored for 24 hours, so retries from flaky networks never double-create.</li>
 </ul>
 <h3>Realtime</h3>
-<p>Every mutation in a service ends with <code>realtime.publish({ kind, ids, projectId | spaceId })</code>. The publisher writes a <code>NOTIFY lattice_events</code> with that small payload. Every process (api or worker) listens on the channel and forwards to WebSocket subscribers whose subscriptions match (a board subscribes to its project, a page to itself). The client responds by invalidating the matching TanStack Query keys, so the data path is always the authenticated REST API and realtime never bypasses authorization. Presence and cursors for docs ride on Yjs awareness over the collab socket.</p>
+<p>Every mutation in a service ends with <code>realtime.publish({ kind, ids, projectId | spaceId })</code>. The publisher writes a <code>NOTIFY bemmoly_events</code> with that small payload. Every process (api or worker) listens on the channel and forwards to WebSocket subscribers whose subscriptions match (a board subscribes to its project, a page to itself). The client responds by invalidating the matching TanStack Query keys, so the data path is always the authenticated REST API and realtime never bypasses authorization. Presence and cursors for docs ride on Yjs awareness over the collab socket.</p>
 <h3>Webhooks out</h3>
 <p>Events (<code>issue.created</code>, <code>issue.transitioned</code>, <code>page.published</code>, <code>sprint.completed</code>, …) are queued per webhook as jobs, signed with HMAC-SHA256, retried with backoff five times, and logged. A built-in "Slack / Teams incoming webhook" template formats the payload for chat tools without a dedicated integration.</p>
 
@@ -759,7 +759,7 @@ export default changeset({
   <tr><td>Rate limiting</td><td><code>@fastify/rate-limit</code> backed by Postgres (not memory) so it holds across replicas: global per user, strict per IP on <code>/auth/*</code> and webhooks, separate budget for AI endpoints.</td></tr>
   <tr><td>CSRF</td><td>SameSite cookies plus an <code>Origin</code> check on every state-changing request. API tokens are never sent as cookies.</td></tr>
   <tr><td>Headers</td><td><code>@fastify/helmet</code>: strict CSP (self plus the configured AI provider is never contacted from the browser), HSTS, no framing.</td></tr>
-  <tr><td>Secrets at rest</td><td>API keys, SMTP passwords, OIDC client secrets and integration credentials are encrypted with AES-256-GCM under <code>LATTICE_SECRET_KEY</code> before they touch the database. The key never leaves the host and is generated by the installer.</td></tr>
+  <tr><td>Secrets at rest</td><td>API keys, SMTP passwords, OIDC client secrets and integration credentials are encrypted with AES-256-GCM under <code>BEMMOLY_SECRET_KEY</code> before they touch the database. The key never leaves the host and is generated by the installer.</td></tr>
   <tr><td>Uploads</td><td>Size limits, MIME sniffing, served with <code>Content-Disposition: attachment</code> and a separate origin path to defeat stored XSS; image thumbnails generated by a worker with <code>sharp</code>.</td></tr>
   <tr><td>Webhooks in</td><td>HMAC verified against the raw body before parsing, replay window of five minutes.</td></tr>
   <tr><td>SSRF</td><td>Admin-entered URLs (AI base URL, SMTP host, webhook targets) are resolved and checked against private ranges unless the admin explicitly allows local networks (needed for Ollama).</td></tr>
@@ -774,12 +774,12 @@ export default changeset({
 
 <h3>11.1 One integration: the AI SDK, driven by the models.dev catalog</h3>
 <div class="decision">
-  <div class="k">Principle</div><div><strong>Lattice has exactly one AI integration in its code: the AI SDK.</strong> No file in the repository knows what Anthropic, OpenAI or OpenRouter is. Which provider package to load, which fields to ask the admin for, which base URL to call and which models exist all come from the <a href="https://models.dev">models.dev</a> catalog at runtime. "Popular providers" is a UI ordering, not code.</div>
+  <div class="k">Principle</div><div><strong>Bemmoly has exactly one AI integration in its code: the AI SDK.</strong> No file in the repository knows what Anthropic, OpenAI or OpenRouter is. Which provider package to load, which fields to ask the admin for, which base URL to call and which models exist all come from the <a href="https://models.dev">models.dev</a> catalog at runtime. "Popular providers" is a UI ordering, not code.</div>
   <div class="k">Why</div><div>
     <ul style="margin:0">
       <li>The AI SDK (npm <code>ai</code>, version 7, Apache-2.0) already is the pluggable-capability pattern the standards contract asks for: one <code>LanguageModel</code> and <code>EmbeddingModel</code> specification, a provider package per vendor, a registry addressing any model as <code>provider:model</code>, middleware, structured output on zod, tool calling, streaming and OpenTelemetry.</li>
-      <li>models.dev is an MIT, community-maintained catalog (SST, used by OpenCode) of 226 providers and roughly 8,400 models. Each provider entry names its AI SDK package, its API key variables, its base URL, docs and logo; each model entry carries capabilities, limits, prices and status. It is the data the UI and the runtime need, so Lattice maintains none of it.</li>
-      <li>Adding a provider therefore means nothing in Lattice. A new catalog entry appears in the picker on the next refresh. A new vendor-specific package is one dependency bump.</li>
+      <li>models.dev is an MIT, community-maintained catalog (SST, used by OpenCode) of 226 providers and roughly 8,400 models. Each provider entry names its AI SDK package, its API key variables, its base URL, docs and logo; each model entry carries capabilities, limits, prices and status. It is the data the UI and the runtime need, so Bemmoly maintains none of it.</li>
+      <li>Adding a provider therefore means nothing in Bemmoly. A new catalog entry appears in the picker on the next refresh. A new vendor-specific package is one dependency bump.</li>
       <li>The one cost is churn: the SDK ships a major version roughly yearly. A thin facade in <code>services/ai/runtime</code> is the only code that imports it, so a major upgrade is a one-folder change.</li>
     </ul>
   </div>
@@ -806,12 +806,12 @@ export default changeset({
 <ol>
   <li><strong>Pick a provider.</strong> The picker shows the catalog with logos. A "Popular" row at the top (an ordered list of catalog ids in <code>overrides.ts</code>, shown with the catalog's own names and logos: OpenAI, Anthropic, Amazon Bedrock, Azure, Vertex and OpenRouter, plus "Local server") makes the common case one click; these six are the providers enterprises most often already have contracts and keys for, and OpenRouter covers everyone else with one key. Below it, every provider in the catalog is listed in full, searchable and sorted by name, with the same logo treatment. The long list is the product, not a fallback hidden behind a link.</li>
   <li><strong>Enter what the provider needs.</strong> The form is generated from the catalog entry's <code>env</code> list: one secret field per key it expects (an API key for most; resource name plus key for Azure; access key, secret, region for Bedrock), the base URL from <code>api</code> pre-filled and editable, a link to the provider's docs. Values are encrypted with the install's secret key before they reach the database and are write-only afterwards.</li>
-  <li><strong>Test the connection.</strong> Lattice loads the package named in <code>npm</code>, builds the provider with those values, and makes one cheap call. Success or failure is reported in plain words with the provider's own error message.</li>
+  <li><strong>Test the connection.</strong> Bemmoly loads the package named in <code>npm</code>, builds the provider with those values, and makes one cheap call. Success or failure is reported in plain words with the provider's own error message.</li>
   <li><strong>Pick models per role.</strong> For <code>fast</code>, <code>standard</code>, <code>strong</code> and <code>embedding</code>, the picker lists that provider's models from the catalog with capability badges, context size, price per million tokens and release date, filtered to models that qualify for the role (planning needs tool calling) and with the suggested default pre-selected. Any provider's model can fill any role, so a local model for <code>fast</code> and a hosted one for <code>strong</code> is one screen.</li>
   <li><strong>Use.</strong> Services call the facade with a role and a purpose. The facade resolves the role to a registry id, wraps the model in the middleware stack, runs the call through the SDK, validates structured output and records the <code>ai_runs</code> row with cost from the catalog's prices.</li>
 </ol>
 <table>
-  <tr><th style="width:220px">Catalog field</th><th>What Lattice does with it</th></tr>
+  <tr><th style="width:220px">Catalog field</th><th>What Bemmoly does with it</th></tr>
   <tr><td><code>provider.npm</code></td><td>Names the AI SDK package to load. Every official <code>@ai-sdk/*</code> package and <code>@openrouter/ai-sdk-provider</code> ship in the image as an allow-list; 185 of the 226 providers use <code>@ai-sdk/openai-compatible</code>. The nine providers whose package is third-party fall back to the OpenAI-compatible client over their listed base URL, and the UI says so.</td></tr>
   <tr><td><code>provider.env</code>, <code>provider.api</code>, <code>provider.doc</code></td><td>Generate the connection form. The same keys can be pre-seeded from the environment for infrastructure-as-code deployments.</td></tr>
   <tr><td><code>logos/{provider}.svg</code></td><td>Provider logos in the picker and on the AI settings page, bundled with the snapshot so they render offline.</td></tr>
@@ -825,17 +825,17 @@ export default changeset({
 <p>Ollama, vLLM, llama.cpp and corporate gateways are not in the catalog because their models are whatever the operator loaded. "Local server" in the picker takes a protocol (OpenAI-compatible or Anthropic-compatible), a base URL on the private network and an optional key, discovers models from the server's own model list, probes tool calling and structured output with one request each, and stores the result as a private catalog entry so the same role picker works. Embedding models are thin in the catalog, so a small curated list in <code>overrides.ts</code> fills that role.</p>
 
 <h4>Live catalog first, bundled list as the fallback</h4>
-<p>New models should appear in the picker the day they exist, with no Lattice release and no admin action. So the catalog is <strong>live by default</strong>, and the copy baked into the image is only what Lattice uses when the live source cannot be reached. Resolution order, every time the picker or a provider form opens:</p>
+<p>New models should appear in the picker the day they exist, with no Bemmoly release and no admin action. So the catalog is <strong>live by default</strong>, and the copy baked into the image is only what Bemmoly uses when the live source cannot be reached. Resolution order, every time the picker or a provider form opens:</p>
 <ol>
-  <li><strong>Live.</strong> The Lattice server (never the browser) fetches <code>models.dev/api.json</code> with the stored ETag and a two-second timeout. A <code>304</code> or a fresh body refreshes the stored snapshot; a fresh body within the last hour is reused without a request. Logos are fetched the same way on demand and cached.</li>
+  <li><strong>Live.</strong> The Bemmoly server (never the browser) fetches <code>models.dev/api.json</code> with the stored ETag and a two-second timeout. A <code>304</code> or a fresh body refreshes the stored snapshot; a fresh body within the last hour is reused without a request. Logos are fetched the same way on demand and cached.</li>
   <li><strong>Last good snapshot.</strong> If the fetch fails or times out, the most recent snapshot in <code>ai_catalog_snapshots</code> is used, whether it came from an earlier live fetch or an admin upload.</li>
-  <li><strong>Bundled.</strong> If no snapshot has ever been stored, the JSON and logos baked into the image at build time are used. Every Lattice release refreshes that copy.</li>
+  <li><strong>Bundled.</strong> If no snapshot has ever been stored, the JSON and logos baked into the image at build time are used. Every Bemmoly release refreshes that copy.</li>
 </ol>
 <ul>
   <li><strong>The UI always says which it is.</strong> A status line on the picker and on Settings › AI reads "Live · models.dev · updated 4 minutes ago", or "Offline · last fetched 2 October 2026", or "Offline · bundled with 1.2.0". An admin can upload a newer catalog file from any machine that can reach the site, and the air-gapped bundle includes the current one.</li>
   <li><strong>AI calls never depend on the catalog being reachable.</strong> Role assignments store the model id and a capabilities snapshot; the facade reads those from the database. A blocked VPC or a models.dev outage affects only how fresh the picker is, never whether summaries, plans or search work.</li>
   <li><strong>The daily job stays</strong>, now as a background warmer: it refreshes the snapshot even when nobody opens the picker, and flags configured models the catalog has marked deprecated, suggesting the successor from the same family.</li>
-  <li><strong>Privacy.</strong> A live fetch is an outbound request from the server to models.dev that carries no workspace data beyond the request itself. It is on by default because it is what keeps the picker current, and an admin can turn it off, in which case Lattice behaves as permanently offline for the catalog and relies on uploads and releases.</li>
+  <li><strong>Privacy.</strong> A live fetch is an outbound request from the server to models.dev that carries no workspace data beyond the request itself. It is on by default because it is what keeps the picker current, and an admin can turn it off, in which case Bemmoly behaves as permanently offline for the catalog and relies on uploads and releases.</li>
   <li><strong>If the provider itself is also unreachable</strong> in such a network, that is a separate matter, and what the Local server path and the None option exist for.</li>
 </ul>
 <p>Two small mock changes follow from this: the wizard's AI step shows the popular row plus the full, searchable, logo-bearing catalog beneath it rather than four cards, and Settings › AI gains the catalog status line and upload control.</p>
@@ -875,7 +875,7 @@ export default changeset({
     <rect x="910" y="30" width="120" height="70" rx="10" fill="var(--sf2)" stroke="var(--br)"/><text x="970" y="58" text-anchor="middle" font-weight="600">6. Audit</text><text x="970" y="78" text-anchor="middle" font-size="11" fill="var(--tx3)">history + audit_log</text>
   </g>
   <g stroke="var(--tx3)" stroke-width="1.3" fill="none" marker-end="url(#arr3)"><path d="M160,65 L190,65"/><path d="M340,65 L370,65"/><path d="M520,65 L550,65"/><path d="M700,65 L730,65"/><path d="M880,65 L910,65"/></g>
-  <text x="10" y="135" font-size="11.5" fill="var(--tx3)">The model never holds a write capability. It emits proposed tool calls; Lattice turns them into a plan; only a person's confirmation executes them, as that person.</text>
+  <text x="10" y="135" font-size="11.5" fill="var(--tx3)">The model never holds a write capability. It emits proposed tool calls; Bemmoly turns them into a plan; only a person's confirmation executes them, as that person.</text>
 </svg>
 </figure>
 <ul>
@@ -883,7 +883,7 @@ export default changeset({
   <li>Read tools (search, get issue, list sprint) execute during planning so the model can look things up. Write tools are recorded, not executed, and become plan steps.</li>
   <li>Each step is checked with <code>authorize()</code> as the requesting user and marked ALLOWED or DENIED. A plan with a denied step can still run its allowed steps if the person chooses.</li>
   <li>Execution is a job so a 40-step plan survives a page refresh; progress streams back over the WebSocket. Steps are idempotent via the plan id and step index.</li>
-  <li>Comments written by a plan are attributed "via Lattice for Rohan", the AI accent colour is used wherever the model produced content, and the audit row links to the plan.</li>
+  <li>Comments written by a plan are attributed "via Bemmoly for Rohan", the AI accent colour is used wherever the model produced content, and the audit row links to the plan.</li>
   <li>"Let AI actions change data" off (Settings › AI) turns the palette into a read-only assistant that still answers and still drafts, but never produces a runnable plan.</li>
 </ul>
 
@@ -901,7 +901,7 @@ export default changeset({
 </ul>
 <!-- ===================================================== 11 -->
 <h2 id="email">12. Email, notifications and pinging</h2>
-<p>"Pinging" in Lattice means three channels fed by one event stream: the in-app inbox, email, and outgoing webhooks (including chat tools). A notification service turns domain events into per-user notifications according to preferences, then each channel delivers on its own schedule.</p>
+<p>"Pinging" in Bemmoly means three channels fed by one event stream: the in-app inbox, email, and outgoing webhooks (including chat tools). A notification service turns domain events into per-user notifications according to preferences, then each channel delivers on its own schedule.</p>
 <figure>
 <svg viewBox="0 0 1040 170" width="100%" style="max-width:1040px;display:block" role="img" aria-label="Notification flow">
   <defs><marker id="arr4" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="the 0.1 foundation release,0 L8,4 L0,8 z" fill="var(--tx3)"/></marker></defs>
@@ -933,7 +933,7 @@ export default changeset({
 
 <!-- ===================================================== 12 -->
 <h2 id="jobs">13. Background jobs and realtime without Redis</h2>
-<p>Everything slow or external runs as a job. In the default install the worker loop runs inside the single process with a concurrency cap; <code>LATTICE_ROLE=worker</code> starts a process that only runs jobs.</p>
+<p>Everything slow or external runs as a job. In the default install the worker loop runs inside the single process with a concurrency cap; <code>BEMMOLY_ROLE=worker</code> starts a process that only runs jobs.</p>
 <table>
   <tr><th style="width:230px">Job</th><th>Trigger</th><th>Notes</th></tr>
   <tr><td><code>email.send</code></td><td>Outbox rows</td><td>Batched, retried, singleton per outbox row.</td></tr>
@@ -981,7 +981,7 @@ export default changeset({
 <ul>
   <li><strong>Keyword</strong>: <code>search_vector</code> on issues and pages with weights (title A, labels and keys B, body D), GIN indexed, plus <code>pg_trgm</code> on titles and issue keys for prefix and typo tolerance in the ⌘K palette. Results are filtered by the actor's project and space access before ranking.</li>
   <li><strong>Semantic</strong>: chunks of pages and issue descriptions embedded via the <code>embedding</code> role, HNSW index in <code>pgvector</code>, queried with cosine distance and merged with keyword results by reciprocal rank fusion. Absent pgvector or an embedding model, the mode is simply not offered and the UI copy says so.</li>
-  <li><strong>Lattice Query Language</strong> (LQL), a small JQL-like grammar: <code>project = PLT AND status != Done AND assignee = me AND "spec doc" IS EMPTY ORDER BY updated DESC</code>. Parsed in <code>packages/shared</code> (so the web app can validate and autocomplete) and compiled to parameterised SQL in <code>services/search/lql/</code>. Saved filters, swimlane queries, issue tables in docs and automation conditions all use it. The AI writes LQL from plain English and shows it before running.</li>
+  <li><strong>Bemmoly Query Language</strong> (LQL), a small JQL-like grammar: <code>project = PLT AND status != Done AND assignee = me AND "spec doc" IS EMPTY ORDER BY updated DESC</code>. Parsed in <code>packages/shared</code> (so the web app can validate and autocomplete) and compiled to parameterised SQL in <code>services/search/lql/</code>. Saved filters, swimlane queries, issue tables in docs and automation conditions all use it. The AI writes LQL from plain English and shows it before running.</li>
   <li><strong>Autocomplete</strong> in the palette is a single trigram query across issues, pages and users with a 100 ms budget; results are cached per session for repeated prefixes.</li>
 </ul>
 
@@ -1001,55 +1001,55 @@ export default changeset({
 <!-- ===================================================== 17 -->
 <h2 id="deploy">18. Deploy in 5 minutes</h2>
 <p>The landing page shows the whole experience: one command, six lines of progress, a URL. Everything below exists to make those six lines true on a fresh Ubuntu, Debian, Fedora or Amazon Linux VM with ports 80 and 443 open.</p>
-<pre><code>$ curl -fsSL https://get.lattice.dev | sh
+<pre><code>$ curl -fsSL https://get.bemmoly.dev | sh
 → Detected Ubuntu 24.04, 2 vCPU, 4 GB
 → Installing Docker … done
 → Installing Postgres 18 (pgvector) … done
-→ Pulling lattice:1.2.0 … done
-→ Requesting certificate for lattice.acmelabs.dev … done
-→ Nightly backup scheduled 02:00 → /var/lattice/backups
-✓ Lattice is running at https://lattice.acmelabs.dev
+→ Pulling bemmoly:1.2.0 … done
+→ Requesting certificate for bemmoly.acmelabs.dev … done
+→ Nightly backup scheduled 02:00 → /var/bemmoly/backups
+✓ Bemmoly is running at https://bemmoly.acmelabs.dev
   Open it to create the first admin.</code></pre>
 <ol class="steps">
   <li><strong>Preflight.</strong> Root or sudo, supported OS, 2 GB RAM minimum, 10 GB disk, ports 80 and 443 free, outbound DNS. Each failure prints the fix, not a stack trace.</li>
   <li><strong>Docker.</strong> Installs Docker Engine and Compose plugin from the official repository if absent; otherwise uses what is there.</li>
   <li><strong>Domain.</strong> Asks for the hostname (or <code>--domain</code>). If DNS does not resolve to this machine yet it continues with a self-signed cert and prints what to do; Caddy picks up a real certificate the moment DNS lands.</li>
-  <li><strong>Files.</strong> Writes <code>/var/lattice/docker-compose.yml</code>, <code>Caddyfile</code>, <code>.env</code> (generated <code>LATTICE_SECRET_KEY</code>, <code>POSTGRES_PASSWORD</code>, <code>UPDATER_TOKEN</code>, and <code>LATTICE_MODULES</code> when <code>--modules</code> was given), <code>data/</code>, <code>backups/</code>, and <code>/usr/local/bin/lattice</code>.</li>
+  <li><strong>Files.</strong> Writes <code>/var/bemmoly/docker-compose.yml</code>, <code>Caddyfile</code>, <code>.env</code> (generated <code>BEMMOLY_SECRET_KEY</code>, <code>POSTGRES_PASSWORD</code>, <code>UPDATER_TOKEN</code>, and <code>BEMMOLY_MODULES</code> when <code>--modules</code> was given), <code>data/</code>, <code>backups/</code>, and <code>/usr/local/bin/bemmoly</code>.</li>
   <li><strong>Start.</strong> <code>docker compose up -d</code>. The app container waits for Postgres, creates the extensions, runs pending changesets under an advisory lock, starts.</li>
-  <li><strong>Schedule.</strong> The app schedules backups itself from Settings (daily 02:00 by default). A systemd timer calls <code>lattice backup</code> only if the app has not run one in 36 hours, as a safety net.</li>
+  <li><strong>Schedule.</strong> The app schedules backups itself from Settings (daily 02:00 by default). A systemd timer calls <code>bemmoly backup</code> only if the app has not run one in 36 hours, as a safety net.</li>
   <li><strong>Hand-off.</strong> Prints the URL. The first request to the app shows the six-step wizard from the mocks; the health checks on step 1 are the same probes the installer ran.</li>
 </ol>
 <div class="grid c2">
   <div class="card"><h3>The Compose stack</h3>
 <pre style="margin:8px 0 0"><code>services:
-  lattice:
-    image: ghcr.io/lattice-dev/lattice:1.2.0
+  bemmoly:
+    image: ghcr.io/bemmoly-dev/bemmoly:1.2.0
     env_file: .env
-    volumes: [./data:/var/lattice/data]
+    volumes: [./data:/var/bemmoly/data]
     depends_on: { db: { condition: service_healthy } }
-    healthcheck: { test: ["CMD","lattice-health"], interval: 10s }
+    healthcheck: { test: ["CMD","bemmoly-health"], interval: 10s }
   db:
     image: pgvector/pgvector:pg18
     volumes: [./pg:/var/lib/postgresql/data]
     command: postgres -c shared_buffers=512MB -c effective_cache_size=1536MB
-  proxy:            # omitted when --no-proxy or DATABASE_URL/LATTICE_TLS=off
+  proxy:            # omitted when --no-proxy or DATABASE_URL/BEMMOLY_TLS=off
     image: caddy:2
     ports: ["80:80","443:443"]
     volumes: [./Caddyfile:/etc/caddy/Caddyfile, ./caddy:/data]
   updater:          # omitted with --no-in-app-updates; the CLI still works
-    image: ghcr.io/lattice-dev/updater:1
-    volumes: [/var/run/docker.sock:/var/run/docker.sock, ./:/var/lattice]
+    image: ghcr.io/bemmoly-dev/updater:1
+    volumes: [/var/run/docker.sock:/var/run/docker.sock, ./:/var/bemmoly]
     environment: { UPDATER_TOKEN: "${UPDATER_TOKEN}" }
     networks: [internal]</code></pre>
   <p class="small" style="margin-top:8px">Four containers, two of them optional. The Postgres tuning line is generated from detected RAM.</p></div>
-  <div class="card"><h3>The <code>lattice</code> CLI</h3>
+  <div class="card"><h3>The <code>bemmoly</code> CLI</h3>
 <table style="margin:8px 0 0">
-  <tr><td><code>lattice status</code></td><td>Containers, version, DB size, queue depth, last backup, cert expiry.</td></tr>
-  <tr><td><code>lattice upgrade [version]</code></td><td>Backup → pull → migrate → restart → health check. Rolls back automatically if health fails. The same steps the in-app Update button runs.</td></tr>
-  <tr><td><code>lattice rollback</code></td><td>Code, schema or restore rollback as the changelog dictates, with a confirmation that names the mode and exactly what will be lost. See "Rolling back after an update".</td></tr>
-  <tr><td><code>lattice backup</code> / <code>restore &lt;file|s3-url&gt;</code> / <code>backups list</code> / <code>restore --mount</code></td><td>Manual backup, full restore, listing, and read-only mount of a backup as a second database. Restore to a fresh VM is the documented disaster-recovery test.</td></tr>
-  <tr><td><code>lattice doctor</code></td><td>Re-runs preflight and the in-app health checks; prints fixes.</td></tr>
-  <tr><td><code>lattice logs</code>, <code>lattice shell</code>, <code>lattice config set KEY VALUE</code></td><td>Convenience wrappers so nobody needs to learn the Compose layout.</td></tr>
+  <tr><td><code>bemmoly status</code></td><td>Containers, version, DB size, queue depth, last backup, cert expiry.</td></tr>
+  <tr><td><code>bemmoly upgrade [version]</code></td><td>Backup → pull → migrate → restart → health check. Rolls back automatically if health fails. The same steps the in-app Update button runs.</td></tr>
+  <tr><td><code>bemmoly rollback</code></td><td>Code, schema or restore rollback as the changelog dictates, with a confirmation that names the mode and exactly what will be lost. See "Rolling back after an update".</td></tr>
+  <tr><td><code>bemmoly backup</code> / <code>restore &lt;file|s3-url&gt;</code> / <code>backups list</code> / <code>restore --mount</code></td><td>Manual backup, full restore, listing, and read-only mount of a backup as a second database. Restore to a fresh VM is the documented disaster-recovery test.</td></tr>
+  <tr><td><code>bemmoly doctor</code></td><td>Re-runs preflight and the in-app health checks; prints fixes.</td></tr>
+  <tr><td><code>bemmoly logs</code>, <code>bemmoly shell</code>, <code>bemmoly config set KEY VALUE</code></td><td>Convenience wrappers so nobody needs to learn the Compose layout.</td></tr>
 </table></div>
 </div>
 
@@ -1088,7 +1088,7 @@ export default changeset({
   <li><strong>Database</strong>: <code>pg_dump</code> in custom format, compressed, taken in a single consistent snapshot. The app image ships the Postgres 18 client tools so this works against bundled or external databases.</li>
   <li><strong>Attachments</strong>: only the files added since the previous backup in the same chain. Attachments are content-addressed by SHA-256 and written to storage before their database row exists, so dumping the database first and copying files second guarantees every referenced file is present. Monthly runs take a full copy so a chain never grows unbounded.</li>
   <li><strong>Manifest</strong>: app version, changelog tag, enabled modules, sizes and checksums of every part, and the restore instructions.</li>
-  <li><strong>Not included, and said out loud</strong>: the install's <code>.env</code>, which holds the secret key that decrypts provider keys, SMTP passwords and SSO secrets stored in the database. A backup without it restores a workspace whose integrations must be re-entered. The installer's final message and the backup settings page both say to keep a copy of <code>/var/lattice/.env</code> somewhere safe.</li>
+  <li><strong>Not included, and said out loud</strong>: the install's <code>.env</code>, which holds the secret key that decrypts provider keys, SMTP passwords and SSO secrets stored in the database. A backup without it restores a workspace whose integrations must be re-entered. The installer's final message and the backup settings page both say to keep a copy of <code>/var/bemmoly/.env</code> somewhere safe.</li>
 </ul>
 <h4>Schedule and retention, chosen in Settings › Storage and backups</h4>
 <table>
@@ -1096,7 +1096,7 @@ export default changeset({
   <tr><td>Frequency</td><td>Hourly · every 6 hours · daily · weekly, with time of day and timezone</td><td>Daily at 02:00 in the workspace timezone</td></tr>
   <tr><td>Retention</td><td>Grandfather-father-son: keep the last <em>N</em> hourly, <em>N</em> daily, <em>N</em> weekly, <em>N</em> monthly, each a number the admin sets. Pre-upgrade backups follow their own seven-day retention.</td><td>7 daily · 4 weekly · 3 monthly</td></tr>
   <tr><td>Continuous (point-in-time)</td><td>WAL archiving on the bundled Postgres with a weekly base backup, restorable to any minute within retention. For external managed Postgres the page links to the provider's point-in-time recovery and keeps the dumps as the portable copy.</td><td>Off; recommended when the workspace exceeds a few hundred users or the admin asks for an RPO under an hour</td></tr>
-  <tr><td>Destinations</td><td>Local disk under <code>/var/lattice/backups</code>, plus any S3-compatible bucket (AWS S3, Cloudflare R2, MinIO, Backblaze B2, GCS interop) as a second destination. Local-only is flagged on the page as "one disk" with a one-line explanation.</td><td>Local</td></tr>
+  <tr><td>Destinations</td><td>Local disk under <code>/var/bemmoly/backups</code>, plus any S3-compatible bucket (AWS S3, Cloudflare R2, MinIO, Backblaze B2, GCS interop) as a second destination. Local-only is flagged on the page as "one disk" with a one-line explanation.</td><td>Local</td></tr>
   <tr><td>Encryption</td><td>AES-256-GCM with a backup passphrase generated by the installer and stored only in <code>.env</code>, applied before anything leaves the machine. Required for off-box destinations, optional for local.</td><td>On for S3, off for local</td></tr>
   <tr><td>Verification</td><td>Every dump validated with <code>pg_restore --list</code> on write. Weekly test restore into a temporary database with row-count checks on issues, pages, users and the changelog, if disk allows. A "Restore drill" button runs the same check on demand.</td><td>Weekly</td></tr>
   <tr><td>Alerts</td><td>Email to admins and an in-app banner on a failed run, a skipped run, a verification failure, or the disk-space guard refusing to start (less than twice the previous backup's size free). The age of the last good backup is a Prometheus metric and a line on the System page.</td><td>On</td></tr>
@@ -1104,18 +1104,18 @@ export default changeset({
 <h4>Restore</h4>
 <ul>
   <li><strong>To the same machine</strong>: Settings › Storage and backups lists every backup with version, size and verification status. Restore puts the app into maintenance mode (a page served by the updater), restores into a fresh database, swaps, and runs any pending changesets if the backup is from an older version, so a restore can also be a controlled upgrade. The replaced database is kept for the retention window.</li>
-  <li><strong>To a new machine</strong>, the disaster-recovery path: run the installer, copy <code>.env</code> and the backup over (or point at the bucket), run <code>lattice restore &lt;backup&gt;</code>. This is tested nightly in CI on a fresh VM.</li>
+  <li><strong>To a new machine</strong>, the disaster-recovery path: run the installer, copy <code>.env</code> and the backup over (or point at the bucket), run <code>bemmoly restore &lt;backup&gt;</code>. This is tested nightly in CI on a fresh VM.</li>
   <li><strong>Partial restore</strong>: a backup can be mounted read-only as a second database for forensic queries or to recover one deleted page or project through the CLI, without replacing the live workspace.</li>
   <li><strong>Download</strong>: any backup can be downloaded from the settings page for an off-site copy by hand.</li>
 </ul>
-<p>Backups run as the <code>system.backup</code> job on the worker role, scheduled by pg-boss from the saved settings; the installer's systemd timer is only a safety net that calls <code>lattice backup</code> if the app's own scheduler has not run in 36 hours.</p>
+<p>Backups run as the <code>system.backup</code> job on the worker role, scheduled by pg-boss from the saved settings; the installer's systemd timer is only a safety net that calls <code>bemmoly backup</code> if the app's own scheduler has not run in 36 hours.</p>
 
 <h3>Rolling back after an update</h3>
 <p>The health check after a swap catches a version that will not start. It does not catch a bug people find an hour later. Rollback therefore has to work after the update "succeeded", after users have written data, and it has to be honest about what it keeps.</p>
 <h4>What is saved before every update</h4>
 <ul>
-  <li>A full <code>pg_dump</code> in custom format and a tarball of attachments, with checksums verified and the dump validated with <code>pg_restore --list</code>. Written to <code>/var/lattice/backups</code> and flagged <code>pre_upgrade</code> in the <code>backups</code> table; pushed to S3 too when configured.</li>
-  <li>A changelog tag with the version being left (<code>lattice db tag 1.2.4</code>).</li>
+  <li>A full <code>pg_dump</code> in custom format and a tarball of attachments, with checksums verified and the dump validated with <code>pg_restore --list</code>. Written to <code>/var/bemmoly/backups</code> and flagged <code>pre_upgrade</code> in the <code>backups</code> table; pushed to S3 too when configured.</li>
+  <li>A changelog tag with the version being left (<code>bemmoly db tag 1.2.4</code>).</li>
   <li>The previous image, kept locally. Pre-upgrade backups and the previous image are retained for seven days by default (a setting), so a rollback is possible for a week without re-downloading anything.</li>
 </ul>
 <h4>Two modes, chosen by the changelog</h4>
@@ -1123,13 +1123,13 @@ export default changeset({
   <tr><th style="width:230px">Mode</th><th>When it applies</th><th>What happens</th><th>What is lost</th></tr>
   <tr><td><strong>Code rollback</strong> (default)</td><td>Every changeset the new version ran is compatible with the previous minor's code, which the compatibility-window rule in §7.1 requires: add columns and tables in this release, remove them in a later one.</td><td>Swap back to the previous image. No database change. The new columns and tables sit unused until the next upgrade; because their changesets are already recorded, upgrading again runs nothing twice.</td><td>Nothing. Everything users did since the update stays.</td></tr>
   <tr><td><strong>Schema rollback</strong></td><td>The new version ran DDL-only changesets the previous code cannot tolerate (possible when several minors are skipped at once), and each has a <code>down</code>.</td><td>Run the <code>down</code> changesets in reverse under the advisory lock, then swap the image.</td><td>Nothing that existed before; new fields written since the update are dropped with their columns, and the UI lists them.</td></tr>
-  <tr><td><strong>Restore rollback</strong></td><td>A changeset in the release is marked irreversible (dropped a column, rewrote a data format), or the admin explicitly wants the pre-update state.</td><td>Restore the pre-upgrade backup into a fresh database, verify it, point the previous image at it, swap. The current database is kept as <code>lattice_db_rolledback_&lt;time&gt;</code> for the retention window.</td><td>Everything written since the backup. The UI computes it from the audit log before asking: "Restoring 1.2.4 will discard 142 changes made since 09:02 today by 11 people" and offers an export of those audit rows and attachments first.</td></tr>
+  <tr><td><strong>Restore rollback</strong></td><td>A changeset in the release is marked irreversible (dropped a column, rewrote a data format), or the admin explicitly wants the pre-update state.</td><td>Restore the pre-upgrade backup into a fresh database, verify it, point the previous image at it, swap. The current database is kept as <code>bemmoly_db_rolledback_&lt;time&gt;</code> for the retention window.</td><td>Everything written since the backup. The UI computes it from the audit log before asking: "Restoring 1.2.4 will discard 142 changes made since 09:02 today by 11 people" and offers an export of those audit rows and attachments first.</td></tr>
 </table>
 <h4>What the admin sees</h4>
 <ul>
   <li>Settings › Updates shows "Updated to 1.3.0 two hours ago" with a <strong>Roll back to 1.2.4</strong> button. The button's copy names the mode that applies and, for a restore, the discard count and the export link. Nothing runs until confirmed.</li>
   <li>Code rollback takes about as long as a container restart. Restore rollback takes the restore time, shown as a progress page served by the updater.</li>
-  <li>Both are audited, both work from the CLI (<code>lattice rollback</code>, which prints the same mode and discard summary), and both are available for seven days after the update.</li>
+  <li>Both are audited, both work from the CLI (<code>bemmoly rollback</code>, which prints the same mode and discard summary), and both are available for seven days after the update.</li>
   <li>On Kubernetes the page shows the <code>helm rollback</code> command and the restore job command for the matching backup, since the pod cannot swap itself.</li>
   <li>If a user-visible bug is found after the retention window, the answer is a patch release forward, not a rollback, and the release notes say which changesets each version contains so the admin can judge.</li>
 </ul>
@@ -1139,11 +1139,11 @@ export default changeset({
 <table>
   <tr><th style="width:200px">Path</th><th>What it is for</th></tr>
   <tr><td>Docker Compose by hand</td><td>The same file, documented line by line, for people who already run Compose.</td></tr>
-  <tr><td>Try it locally</td><td><code>docker run -p 8080:8080 ghcr.io/lattice-dev/lattice:latest --demo</code> starts an embedded Postgres inside the container with the Acme Labs sample data. Demo only; not for production.</td></tr>
+  <tr><td>Try it locally</td><td><code>docker run -p 8080:8080 ghcr.io/bemmoly-dev/bemmoly:latest --demo</code> starts an embedded Postgres inside the container with the Acme Labs sample data. Demo only; not for production.</td></tr>
   <tr><td>External Postgres</td><td>Set <code>DATABASE_URL</code>; installer skips the <code>db</code> service. Postgres 17 is accepted with a warning (the <code>uuidv7()</code> default falls back to an application-side generator); 18 is recommended. Health check tells you if <code>pgvector</code> is missing and what you lose (semantic search) if you cannot add it.</td></tr>
   <tr><td>Helm chart</td><td>Deployment with <code>api</code> and <code>worker</code> roles, HPA, PVC or S3 for files, external Postgres or the Bitnami/CloudNativePG subchart, Ingress with cert-manager.</td></tr>
   <tr><td>Terraform</td><td>Modules for AWS (EC2 + RDS), GCP (Compute + Cloud SQL) and Hetzner (one VM) that run the installer via cloud-init.</td></tr>
-  <tr><td>Air-gapped</td><td><code>lattice-airgap-1.2.0.tar.gz</code> with images, installer and offline docs. The installer detects no internet and loads images from the bundle. AI via Ollama on the same network.</td></tr>
+  <tr><td>Air-gapped</td><td><code>bemmoly-airgap-1.2.0.tar.gz</code> with images, installer and offline docs. The installer detects no internet and loads images from the bundle. AI via Ollama on the same network.</td></tr>
   <tr><td>Upgrades</td><td>Semantic versions; changesets are forward-only in shared environments and compatible with the previous minor so <code>api</code> and <code>worker</code> replicas can roll one at a time. Release notes list any migration that takes more than a few seconds on large tables.</td></tr>
 </table>
 <h3>Sizing</h3>
@@ -1161,21 +1161,21 @@ export default changeset({
 <div class="grid c2">
   <div class="card"><h3>Env (parsed once by zod in <code>config/env.ts</code>; boot fails loudly on a bad key)</h3>
 <pre style="margin:8px 0 0"><code># apps/server/.env.example
-DATABASE_URL=postgres://lattice:change-me@db:5432/lattice_db
-LATTICE_SECRET_KEY=            # 32 bytes base64, generated by installer
-LATTICE_BACKUP_PASSPHRASE=     # generated by installer; encrypts off-box backups; keep with .env
-LATTICE_PUBLIC_URL=https://lattice.example.com
-LATTICE_ROLE=all               # all | api | worker
-LATTICE_MODULES=               # empty = chosen in the wizard / Settings; or pin: work,docs
-LATTICE_DATA_DIR=/var/lattice/data
+DATABASE_URL=postgres://bemmoly:change-me@db:5432/bemmoly_db
+BEMMOLY_SECRET_KEY=            # 32 bytes base64, generated by installer
+BEMMOLY_BACKUP_PASSPHRASE=     # generated by installer; encrypts off-box backups; keep with .env
+BEMMOLY_PUBLIC_URL=https://bemmoly.example.com
+BEMMOLY_ROLE=all               # all | api | worker
+BEMMOLY_MODULES=               # empty = chosen in the wizard / Settings; or pin: work,docs
+BEMMOLY_DATA_DIR=/var/bemmoly/data
 PORT=8080
 LOG_LEVEL=info                 # fatal|error|warn|info|debug
-LATTICE_TRUST_PROXY=true
-LATTICE_ALLOW_PRIVATE_URLS=false   # true to let AI/SMTP targets be on LAN (Ollama)
+BEMMOLY_TRUST_PROXY=true
+BEMMOLY_ALLOW_PRIVATE_URLS=false   # true to let AI/SMTP targets be on LAN (Ollama)
 OTEL_EXPORTER_OTLP_ENDPOINT=   # optional traces
 # Optional: pre-seed secrets instead of entering them in the UI
-LATTICE_AI_ANTHROPIC_API_KEY=
-LATTICE_SMTP_URL=</code></pre></div>
+BEMMOLY_AI_ANTHROPIC_API_KEY=
+BEMMOLY_SMTP_URL=</code></pre></div>
   <div class="card"><h3>Settings (database, edited in the UI, encrypted where secret)</h3>
     <ul style="margin:8px 0 0">
       <li>Workspace name, URL, locale, timezone.</li>
@@ -1261,7 +1261,7 @@ LATTICE_SMTP_URL=</code></pre></div>
   <div class="card"><h3>Decisions are written</h3><p>ADRs in <code>docs/adr/</code>, one per decision in this document and every future one. A PR that changes an ADR'd behaviour links the ADR. This document becomes ADR-0001.</p></div>
   <div class="card"><h3>Reviews</h3><p>Conventional commits, one approval, CI green, visual check noted in the PR for UI changes. Maintainers triage weekly; <code>good first issue</code> and <code>help wanted</code> are curated, not auto-labelled.</p></div>
   <div class="card"><h3>Releases</h3><p>Monthly minor, patch as needed. Release PR generated by the changesets release tool; image, Helm chart, air-gap bundle and installer tag published together; release notes list schema changesets and config changes.</p></div>
-  <div class="card"><h3>Community</h3><p>GitHub Discussions for questions, Discord for chat, a public roadmap board that is itself a Lattice instance (the live demo), security address in <code>SECURITY.md</code>.</p></div>
+  <div class="card"><h3>Community</h3><p>GitHub Discussions for questions, Discord for chat, a public roadmap board that is itself a Bemmoly instance (the live demo), security address in <code>SECURITY.md</code>.</p></div>
 </div>
 
 <!-- ===================================================== 23 -->
@@ -1269,7 +1269,7 @@ LATTICE_SMTP_URL=</code></pre></div>
 <p>Six releases to 1.0, numbered as versions rather than milestones. Each ends with a deployable image, so the installer and upgrade path are exercised from the first month, not bolted on at the end.</p>
 <table>
   <tr><th style="width:170px">Release</th><th>Scope</th><th style="width:230px">Exit criterion</th></tr>
-  <tr><td><strong>0.1 Foundation</strong><br><span class="small">weeks 1–4</span></td><td>Monorepo, standards lint rules, Fastify host, the kernel with the module contract, registry, loader and the Liquibase-style changelog runner with its CLI (proven with a throwaway sample module), Drizzle schema and changesets for identity and system, sessions and password auth, roles and capability matrix, settings, pg-boss, NOTIFY hub, email outbox and SMTP, audit log, design tokens and the eight presets in <code>packages/ui</code>, Storybook, installer v0 with Compose, Caddy and the updater, in-app update flow, <code>lattice</code> CLI, backups, CI gates.</td><td>Fresh VM to login page in under 5 minutes; in-app update and rollback work; a sample module can be enabled and disabled from Settings; People and Appearance screens match mocks.</td></tr>
+  <tr><td><strong>0.1 Foundation</strong><br><span class="small">weeks 1–4</span></td><td>Monorepo, standards lint rules, Fastify host, the kernel with the module contract, registry, loader and the Liquibase-style changelog runner with its CLI (proven with a throwaway sample module), Drizzle schema and changesets for identity and system, sessions and password auth, roles and capability matrix, settings, pg-boss, NOTIFY hub, email outbox and SMTP, audit log, design tokens and the eight presets in <code>packages/ui</code>, Storybook, installer v0 with Compose, Caddy and the updater, in-app update flow, <code>bemmoly</code> CLI, backups, CI gates.</td><td>Fresh VM to login page in under 5 minutes; in-app update and rollback work; a sample module can be enabled and disabled from Settings; People and Appearance screens match mocks.</td></tr>
   <tr><td><strong>0.2 Work module</strong><br><span class="small">weeks 5–10</span></td><td>Built as <code>modules/work</code> against the contract. Projects, issue types, fields, workflows with the visual editor, issues with history, comments, attachments, links, labels, versions, board (Scrum and Kanban) with settings, backlog and sprints, LQL and saved filters, keyword search, notifications inbox and email, realtime invalidation, home "my work".</td><td>Board, Backlog, Issue, Board settings and Workflow screens match mocks; board p95 budget met.</td></tr>
   <tr><td><strong>0.3 Docs module</strong><br><span class="small">weeks 11–14</span></td><td>Built as <code>modules/docs</code>; must boot and pass its tests with Work disabled. Spaces, page tree, Tiptap editor with custom nodes, Yjs collaboration and persistence, revisions, inline comments, templates, links graph with backlinks and "referenced in", exports.</td><td>Docs home and Doc editor match mocks; two browsers edit one page without conflict.</td></tr>
   <tr><td><strong>0.4 AI</strong><br><span class="small">weeks 15–18</span></td><td>AI SDK facade, package loader, registry and middleware stack, the models.dev catalog resolved live with snapshot and bundled fallbacks, the provider picker and connection forms generated from the catalog, model roles, prompt files and overrides, context builders, insights cache, issue summary, page TL;DR, sprint pulse, morning brief, ask-your-docs with embeddings and citations, ⌘K palette with plans, ghost text and <code>/ai</code> commands, consistency checks, AI settings with privacy and budget, evals.</td><td>Home, Command palette and the AI panels across screens match mocks; evals pass; "none" mode hides every AI surface.</td></tr>
@@ -1285,13 +1285,13 @@ LATTICE_SMTP_URL=</code></pre></div>
   <tr><td>Postgres only vs database options</td><td>Postgres only; options are where it runs.</td><td>Adding Mongo doubles every data-layer cost permanently and removes the queue, search and vector consolidation that makes the one-container promise possible.</td></tr>
   <tr><td>SPA (Vite) vs Next.js</td><td>SPA served by the app process.</td><td>Next.js adds a second Node server or forces the API into Next; gains SSR nobody behind a login needs. The marketing site uses Astro separately.</td></tr>
   <tr><td>Caddy as a third container</td><td>Include, optional.</td><td>ACME inside the app keeps "one container" literally true but means owning certificate code. Could be revisited after 1.0.</td></tr>
-  <tr><td>Name, domain and org</td><td><code>lattice</code>, <code>get.lattice.dev</code>, <code>ghcr.io/lattice-dev</code> as placeholders.</td><td>Trademark and domain availability need checking before the 0.1 foundation release publishes anything.</td></tr>
+  <tr><td>Name, domain and org</td><td><code>bemmoly</code>, <code>get.bemmoly.dev</code>, <code>ghcr.io/bemmoly-dev</code> as placeholders.</td><td>Trademark and domain availability need checking before the 0.1 foundation release publishes anything.</td></tr>
   <tr><td>Licence</td><td>MIT, as the mocks state.</td><td>AGPL protects against hosted forks but deters some companies; Apache-2 adds a patent grant. MIT is the most adoption-friendly.</td></tr>
   <tr><td>Multi-workspace per install</td><td>One workspace per install for 1.0.</td><td>Multi-tenant adds a tenant column to every table and a tenant check to every query. Cheap now, expensive later, but it is not what self-hosters ask for.</td></tr>
   <tr><td>One website vs one site per module</td><td>One website, path-routed modules, optional vanity hosts via the proxy (§4).</td><td>Separate sites give independent deploys and natural branding at the cost of SSO complexity, duplicated shell, cross-service calls for every cross-module feature and a multi-host install.</td></tr>
   <tr><td>One mobile app vs one per module</td><td>One app reading the module manifest; PWA first, native shell after 1.0.</td><td>Per-module apps mean several store listings, several logins and no cross-module deep links. The only gain is smaller individual binaries, which lazy module bundles also give.</td></tr>
   <tr><td>Modules in one image vs downloadable modules</td><td>One image, enabled per install (§4).</td><td>Separately distributed modules need signing, a compatibility matrix and a plugin sandbox. The contract supports it; 2.0 scope.</td></tr>
-  <tr><td>models.dev as the model catalog</td><td>Use it live by default, last snapshot then bundled copy as fallbacks (§11.1).</td><td>Maintaining our own provider and model list means a Lattice release for every new model. The dependency is a 300 KB JSON file we can fork if the project ever stalls.</td></tr>
+  <tr><td>models.dev as the model catalog</td><td>Use it live by default, last snapshot then bundled copy as fallbacks (§11.1).</td><td>Maintaining our own provider and model list means a Bemmoly release for every new model. The dependency is a 300 KB JSON file we can fork if the project ever stalls.</td></tr>
   <tr><td>AI SDK as the only integration vs own provider code</td><td>AI SDK 7 behind a facade, providers resolved from the catalog (§11.1).</td><td>Own code avoids the SDK's yearly major-version churn but means re-implementing streaming, tool calling and structured output per vendor. The facade limits the churn to one folder.</td></tr>
   <tr><td>Updater sidecar with Docker socket</td><td>Install by default, opt out with a flag.</td><td>No sidecar means updates are CLI-only and the "Update" button can only show instructions. Some security teams will choose that; the flag exists for them.</td></tr>
   <tr><td>Sync engine (local replica) for the client</td><td>Not in 1.0; TanStack Query with prefetch and optimistic updates.</td><td>A Linear-style local database makes every navigation instant and offline-tolerant at the cost of a large, subtle subsystem. Candidate for 1.x once the API is stable.</td></tr>

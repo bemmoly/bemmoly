@@ -1,7 +1,7 @@
 # Design mocks
 
-`mocks/` holds the 14 product screens that are the pixel source of truth for Lattice.
-Open `mocks/Lattice App.dc.html` in a browser; it links to every other screen.
+`mocks/` holds the 14 product screens that are the pixel source of truth for Bemmoly.
+Open `mocks/Bemmoly App.dc.html` in a browser; it links to every other screen.
 Each file is self-contained HTML plus `support.js`; the data behind a screen lives in a
 `class Component extends DCLogic` block near the end of the file.
 

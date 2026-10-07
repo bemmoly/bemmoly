@@ -1,6 +1,6 @@
-# Contributing to Lattice
+# Contributing to Bemmoly
 
-Lattice is an open source (MIT), self-hosted, AI-first alternative to Jira and Confluence.
+Bemmoly is an open source (MIT), self-hosted, AI-first alternative to Jira and Confluence.
 This file is the contract for anyone changing the repository, whether a person or an AI agent.
 It is deliberately specific. When it conflicts with a tool's default behaviour, this file wins.
 
@@ -25,7 +25,7 @@ packages/ui       design tokens, theme presets, components, Storybook
 packages/editor   Tiptap schema and base nodes
 packages/api-client  typed client generated from the OpenAPI document
 modules/<id>      one installable module per folder: changelog/, server/, web/, shared/, module.ts
-deploy/           installer, compose, updater, lattice CLI, helm, terraform, air-gap bundle
+deploy/           installer, compose, updater, bemmoly CLI, helm, terraform, air-gap bundle
 docs/             design, tech design, plans, ADRs
 ```
 
@@ -43,7 +43,7 @@ logic lives only in `services/`. Models are schema only. Dependencies point one 
 routes → controllers → services → clients and models. A service never imports a route or a
 controller.
 
-**Modules.** A module imports `@lattice/core` and nothing under `modules/`. Cross-module
+**Modules.** A module imports `@bemmoly/core` and nothing under `modules/`. Cross-module
 behaviour goes through kernel registries and events. The kernel never imports a module.
 Inside the kernel, each service folder exposes `index.ts`; other files are private.
 
@@ -75,7 +75,7 @@ the route as anonymous by design. Authorization is checked in the service, with
 settings encrypted with the install's secret key, never in source or in client payloads.
 Webhooks verify signatures before parsing. Rate limits are always on.
 
-**Data.** Postgres only. Database `lattice_db`; tables snake_case plural; columns snake_case;
+**Data.** Postgres only. Database `bemmoly_db`; tables snake_case plural; columns snake_case;
 primary keys UUIDv7 with `uuidv7()` as the default. Every schema change is a changeset in the
 owning package's `changelog/` folder: stable id, author, description, optional preconditions,
 `up`, and `down` where the change is reversible. Changesets must stay compatible with the
@@ -174,7 +174,7 @@ build(deploy): pin the Postgres image to pgvector pg18
   user-visible PR adds one entry stating the change in plain language, the version bump it
   needs, and any configuration or schema change an admin should know about.
 - A release is one tag `vX.Y.Z` that produces, together: the application image
-  `ghcr.io/<org>/lattice:X.Y.Z`, the updater image, the Helm chart, the air-gap bundle, the
+  `ghcr.io/<org>/bemmoly:X.Y.Z`, the updater image, the Helm chart, the air-gap bundle, the
   installer, and notes that list schema changesets (flagging any that are slow or irreversible)
   and configuration changes.
 - Channels: `stable` and `beta`. The in-app updater follows the workspace's channel.
