@@ -1,0 +1,83 @@
+[
+  { "name": "bug", "color": "d73a4a", "description": "Something does not work as designed" },
+  { "name": "feature", "color": "0e8a16", "description": "New behaviour the design describes" },
+  {
+    "name": "docs",
+    "color": "0075ca",
+    "description": "Documentation, ADRs or the contributor contract"
+  },
+  { "name": "question", "color": "d876e3", "description": "Better asked in Discussions" },
+  { "name": "needs-triage", "color": "ededed", "description": "Not yet looked at by a maintainer" },
+  {
+    "name": "good first issue",
+    "color": "7057ff",
+    "description": "Curated: small, well described, with a pointer to where to start"
+  },
+  {
+    "name": "help wanted",
+    "color": "008672",
+    "description": "Curated: maintainers would welcome a pull request"
+  },
+  {
+    "name": "security",
+    "color": "b60205",
+    "description": "Hardening work; report vulnerabilities privately per SECURITY.md"
+  },
+  {
+    "name": "performance",
+    "color": "fbca04",
+    "description": "A budget from the tech design is at risk or missed"
+  },
+  {
+    "name": "release-blocker",
+    "color": "b60205",
+    "description": "Must be fixed before the next release"
+  },
+  {
+    "name": "breaking-change",
+    "color": "e11d21",
+    "description": "Changes behaviour or the API in a way that needs a note"
+  },
+  { "name": "schema-change", "color": "5319e7", "description": "Adds a database changeset" },
+  {
+    "name": "config-change",
+    "color": "5319e7",
+    "description": "Adds or changes an environment key"
+  },
+  { "name": "dependencies", "color": "0366d6", "description": "Dependency updates" },
+  { "name": "ci", "color": "c5def5", "description": "Workflows and quality gates" },
+  { "name": "ui", "color": "f9d0c4", "description": "Needs a screenshot beside the mock" },
+  { "name": "duplicate", "color": "cfd3d7", "description": "Already reported" },
+  { "name": "wontfix", "color": "ffffff", "description": "Out of scope for the design" },
+  {
+    "name": "area: kernel",
+    "color": "bfd4f2",
+    "description": "Changelog, modules, settings, jobs, realtime, storage"
+  },
+  {
+    "name": "area: identity",
+    "color": "bfd4f2",
+    "description": "Users, sessions, roles, capabilities, audit"
+  },
+  {
+    "name": "area: notifications",
+    "color": "bfd4f2",
+    "description": "Email, outbox, inbox, preferences"
+  },
+  {
+    "name": "area: design system",
+    "color": "bfd4f2",
+    "description": "Tokens, themes, components, Storybook"
+  },
+  { "name": "area: web", "color": "bfd4f2", "description": "Web shell, wizard and settings pages" },
+  {
+    "name": "area: deploy",
+    "color": "bfd4f2",
+    "description": "Image, installer, updater, CLI, backups"
+  },
+  {
+    "name": "area: quality",
+    "color": "bfd4f2",
+    "description": "Observability, CI, release, contributor docs"
+  }
+]
