@@ -36,7 +36,7 @@ export {
   type ClientErrorCode,
 } from './errors.ts';
 export { buildQuery, createHttp, type Http, type HttpOptions, type Query } from './http.ts';
-export type { AuditFilter } from './endpoints/operations.ts';
+export type { AuditFilter, BackupsFilter } from './endpoints/operations.ts';
 export type { UsersFilter } from './endpoints/people.ts';
 export type { SettingRead } from './endpoints/settings.ts';
 export { keysForEvent, queryKeys, type QueryKey } from './keys.ts';

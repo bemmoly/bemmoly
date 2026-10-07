@@ -82,7 +82,7 @@ describe('api client', () => {
       ),
     );
     const error = await createApiClient({ fetch: absolute })
-      .system.status()
+      .system.health()
       .catch((caught: unknown) => caught);
     expect(error).toMatchObject({ status: 502, code: 'provider_error', requestId: 'r-9' });
   });

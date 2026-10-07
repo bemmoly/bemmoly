@@ -1,12 +1,18 @@
 import { z } from 'zod';
+import {
+  backupEncryptionSettingsSchema,
+  backupRetentionSettingsSchema,
+  backupS3SettingsSchema,
+  backupScheduleSettingsSchema,
+  backupVerificationSettingsSchema,
+} from '../system/backups.ts';
+import { releaseChannelSchema } from '../system/release-manifest.ts';
 import { hexColorSchema } from './common.ts';
 
 export const themeFontSchema = z.enum(['plex', 'inter', 'source', 'geist']);
 export const themeModeSchema = z.enum(['light', 'dark']);
 export const surfaceToneSchema = z.enum(['neutral', 'tinted']);
 export const smtpSecuritySchema = z.enum(['starttls', 'tls', 'none']);
-export const updateChannelSchema = z.enum(['stable', 'beta']);
-export const backupFrequencySchema = z.enum(['hourly', 'every_6_hours', 'daily', 'weekly']);
 
 /** The custom builder's inputs; buildTheme turns them into the full token set. */
 export const customThemeSchema = z.object({
@@ -16,28 +22,10 @@ export const customThemeSchema = z.object({
   font: themeFontSchema,
 });
 
-export const backupScheduleSchema = z.object({
-  frequency: backupFrequencySchema,
-  timeOfDay: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Use HH:MM'),
-  timezone: z.string().min(1),
-  retention: z.object({
-    hourly: z.number().int().min(0).max(168),
-    daily: z.number().int().min(0).max(365),
-    weekly: z.number().int().min(0).max(104),
-    monthly: z.number().int().min(0).max(120),
-  }),
-  localPath: z.string().min(1),
-  s3: z
-    .object({ endpoint: z.string(), bucket: z.string(), region: z.string(), prefix: z.string() })
-    .nullable(),
-  encryption: z.boolean(),
-  verification: z.enum(['weekly', 'daily', 'off']),
-});
-
 /**
- * Keys under /api/v1/admin/settings/:key and the value each holds. Kernel keys
- * (workspace, appearance) and email keys are confirmed; the rest are the web
- * shell's request to the data kernel stream and are marked so.
+ * Keys under /api/v1/admin/settings/:key and the value each holds. Kernel
+ * (workspace, appearance), email and system keys are confirmed by their
+ * streams; the rest are the web shell's request and are marked as assumed.
  */
 export const SETTING_SCHEMAS = {
   'email.provider': z.enum(['smtp', 'log']),
@@ -69,13 +57,15 @@ export const SETTING_SCHEMAS = {
   'ai.providerId': z.string().nullable(),
   'ai.shareContent': z.boolean(),
   'ai.allowActions': z.boolean(),
-  /** Assumed: Settings › Storage and backups and Settings › Updates. */
-  'backups.schedule': backupScheduleSchema,
-  /** Assumed secrets for the S3 destination: write-only. */
-  'backups.s3.accessKeyId': z.string(),
-  'backups.s3.secretAccessKey': z.string(),
-  'updates.channel': updateChannelSchema,
-  'updates.checkForUpdates': z.boolean(),
+  /** The operations stream's keys for Storage and backups and Updates. */
+  'system.backups.schedule': backupScheduleSettingsSchema,
+  'system.backups.retention': backupRetentionSettingsSchema,
+  /** Secret: the whole S3 destination is one write-only value. */
+  'system.backups.s3': backupS3SettingsSchema.nullable(),
+  'system.backups.encryption': backupEncryptionSettingsSchema,
+  'system.backups.verification': backupVerificationSettingsSchema,
+  'system.updates.channel': releaseChannelSchema,
+  'system.updates.check': z.boolean(),
   /** Assumed: set by the wizard's last step; the shell resumes the wizard until it exists. */
   'setup.completedAt': z.string().nullable(),
 } as const;
@@ -88,6 +78,3 @@ export type ThemeMode = z.infer<typeof themeModeSchema>;
 export type SurfaceTone = z.infer<typeof surfaceToneSchema>;
 export type CustomTheme = z.infer<typeof customThemeSchema>;
 export type SmtpSecurity = z.infer<typeof smtpSecuritySchema>;
-export type UpdateChannel = z.infer<typeof updateChannelSchema>;
-export type BackupFrequency = z.infer<typeof backupFrequencySchema>;
-export type BackupSchedule = z.infer<typeof backupScheduleSchema>;

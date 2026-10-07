@@ -1,5 +1,5 @@
 import type { NotificationsQuery, SettingKey } from '@bemmoly/shared';
-import type { AuditFilter } from './endpoints/operations.ts';
+import type { AuditFilter, BackupsFilter } from './endpoints/operations.ts';
 import type { UsersFilter } from './endpoints/people.ts';
 
 /**
@@ -40,7 +40,10 @@ export const queryKeys = {
     outbox: () => ['email', 'outbox'] as const,
     devMailbox: () => ['email', 'dev-mailbox'] as const,
   },
-  backups: () => ['backups'] as const,
+  backups: {
+    all: () => ['backups'] as const,
+    list: (filter: BackupsFilter = {}) => ['backups', 'list', filter] as const,
+  },
   updates: () => ['updates'] as const,
   system: () => ['system'] as const,
   audit: {
@@ -69,7 +72,10 @@ const EVENT_KEYS: ReadonlyArray<[match: (kind: string) => boolean, keys: () => Q
     () => [queryKeys.modules(), queryKeys.adminModules(), queryKeys.moduleGrants()],
   ],
   [(kind) => kind.startsWith('setting'), () => [queryKeys.settings.all()]],
-  [(kind) => kind.startsWith('backup.'), () => [queryKeys.backups(), queryKeys.system()]],
+  [
+    (kind) => kind.startsWith('backup') || kind === 'system.backup',
+    () => [queryKeys.backups.all(), queryKeys.system()],
+  ],
   [(kind) => kind.startsWith('update.'), () => [queryKeys.updates(), queryKeys.system()]],
   [(kind) => kind.startsWith('email.'), () => [['email']]],
 ];

@@ -1,7 +1,10 @@
 import { apiErrorBodySchema, type ErrorCode } from '@bemmoly/shared';
 
-/** Client-side failures that never come from the server's error body. */
-export type ClientErrorCode = 'network_error' | 'invalid_response';
+/**
+ * Codes outside the shared enum: no server, an unexpected body, and the
+ * operations stream's 503 while a restore, update or rollback runs.
+ */
+export type ClientErrorCode = 'network_error' | 'invalid_response' | 'maintenance';
 
 export type ApiErrorCode = ErrorCode | ClientErrorCode;
 
@@ -52,6 +55,13 @@ export function hasErrorCode(value: unknown, code: ApiErrorCode): boolean {
 /** Builds the error for a non-2xx response, preferring the server's own body. */
 export function errorFromResponse(response: Response, body: unknown): ApiError {
   const headerId = response.headers.get('x-request-id') ?? undefined;
+  const loose = body as { code?: unknown; message?: unknown; requestId?: unknown } | undefined;
+  if (response.status === 503 && loose?.code === 'maintenance') {
+    const message =
+      typeof loose.message === 'string' ? loose.message : 'Bemmoly is in maintenance.';
+    const requestId = typeof loose.requestId === 'string' ? loose.requestId : headerId;
+    return new ApiError(503, 'maintenance', message, { details: body, requestId });
+  }
   const parsed = apiErrorBodySchema.safeParse(body);
   if (parsed.success) {
     return new ApiError(response.status, parsed.data.code, parsed.data.message, {

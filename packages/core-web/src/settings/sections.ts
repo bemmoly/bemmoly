@@ -31,6 +31,7 @@ const item = (
 
 const PEOPLE = 'workspace.roles.manage';
 const SETTINGS = 'workspace.settings.manage';
+const SYSTEM = 'workspace.system.manage';
 
 /**
  * The kernel's settings pages, in the order of the People and Appearance mocks'
@@ -74,9 +75,9 @@ export const KERNEL_SETTINGS: readonly SettingsGroup[] = [
     label: 'System',
     items: [
       item('modules', 'Modules', '/settings/modules', 'workspace.modules.manage'),
-      item('backups', 'Storage and backups', '/settings/backups', SETTINGS),
-      item('updates', 'Updates', '/settings/updates', SETTINGS),
-      item('system', 'System status', '/settings/system', SETTINGS),
+      item('backups', 'Storage and backups', '/settings/backups', SYSTEM),
+      item('updates', 'Updates', '/settings/updates', SYSTEM),
+      item('system', 'System status', '/settings/system', SYSTEM),
       item('audit-log', 'Audit log', '/settings/audit-log', 'workspace.audit.view'),
     ],
   },

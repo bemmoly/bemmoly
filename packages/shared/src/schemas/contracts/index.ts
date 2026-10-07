@@ -6,6 +6,5 @@
 export * from './common.ts';
 export * from './email.ts';
 export * from './notifications.ts';
-export * from './operations.ts';
 export * from './settings.ts';
 export * from './setup.ts';

@@ -17,6 +17,8 @@ export interface RequestOptions {
   query?: Query;
   body?: unknown;
   signal?: AbortSignal;
+  /** A file sent as the raw request body instead of JSON. */
+  raw?: Blob;
   /** POSTs that create may retry safely with the same key (stored for 24 hours server-side). */
   idempotent?: boolean;
 }
@@ -28,6 +30,12 @@ export interface Http {
     options?: RequestOptions,
   ): Promise<z.output<S>>;
   send(path: string, options?: RequestOptions): Promise<void>;
+  upload<S extends z.ZodType>(
+    path: string,
+    schema: S,
+    file: Blob,
+    query?: Query,
+  ): Promise<z.output<S>>;
   url(path: string, query?: Query): string;
 }
 
@@ -74,7 +82,8 @@ export function createHttp(options: HttpOptions = {}): Http {
 
   async function call(path: string, init: RequestOptions): Promise<unknown> {
     const headers: Record<string, string> = { accept: 'application/json' };
-    if (init.body !== undefined) headers['content-type'] = 'application/json';
+    if (init.raw) headers['content-type'] = 'application/octet-stream';
+    else if (init.body !== undefined) headers['content-type'] = 'application/json';
     if (init.idempotent) headers['idempotency-key'] = crypto.randomUUID();
     let response: Response;
     try {
@@ -82,7 +91,11 @@ export function createHttp(options: HttpOptions = {}): Http {
         method: init.method ?? 'GET',
         headers,
         credentials: 'include',
-        ...(init.body === undefined ? {} : { body: JSON.stringify(init.body) }),
+        ...(init.raw
+          ? { body: init.raw }
+          : init.body === undefined
+            ? {}
+            : { body: JSON.stringify(init.body) }),
         ...(init.signal ? { signal: init.signal } : {}),
       });
     } catch (cause) {
@@ -112,6 +125,9 @@ export function createHttp(options: HttpOptions = {}): Http {
     },
     async send(path, init = {}) {
       await call(path, init);
+    },
+    async upload(path, schema, file, query) {
+      return this.request(path, schema, { method: 'POST', raw: file, ...(query ? { query } : {}) });
     },
   };
 }
