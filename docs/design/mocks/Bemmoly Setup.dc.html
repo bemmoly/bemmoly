@@ -82,13 +82,26 @@
 
       <sc-if value="{{ is4 }}" hint-placeholder-val="{{ false }}">
         <div style="display:flex;flex-direction:column;gap:6px"><div style="font-weight:600;font-size:26px;letter-spacing:-.02em">AI, on your terms</div><div style="color:#6b7483;font-size:14px;line-height:1.55">Bemmoly works fully without AI. Connect a provider to get summaries, planning help, doc Q&amp;A and the command bar. Nothing is sent anywhere until you do.</div></div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-          <sc-for list="{{ ai }}" as="a" hint-placeholder-count="4">
-            <div onClick="{{ a.pick }}" style="background:#fff;border:1px solid {{ a.border }};box-shadow:{{ a.shadow }};border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:8px;cursor:pointer">
-              <div style="display:flex;align-items:center;gap:10px"><span style="width:32px;height:32px;border-radius:7px;background:#eef0f4;color:#3b4454;font-weight:600;font-size:12px;display:flex;align-items:center;justify-content:center">{{ a.ini }}</span><span style="font-weight:600;font-size:14px">{{ a.name }}</span><sc-if value="{{ a.tag }}" hint-placeholder-val="{{ false }}"><span style="margin-left:auto;font-size:11px;padding:2px 7px;border-radius:3px;background:#eef3fe;color:#2456c9;font-weight:600">{{ a.tag }}</span></sc-if></div>
-              <div style="color:#6b7483;font-size:12.5px;line-height:1.5">{{ a.desc }}</div>
-            </div>
-          </sc-for>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;align-items:baseline;gap:8px"><span style="font-weight:600">Popular</span><span style="color:#8a93a3;font-size:12px">The providers most teams already have a contract or key for</span></div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
+            <sc-for list="{{ popular }}" as="a" hint-placeholder-count="8">
+              <div onClick="{{ a.pick }}" style="background:#fff;border:1px solid {{ a.border }};box-shadow:{{ a.shadow }};border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:10px;cursor:pointer">
+                <div style="display:flex;align-items:center;gap:8px"><span style="width:32px;height:32px;border-radius:7px;background:#eef0f4;color:#3b4454;font-weight:600;font-size:12px;display:flex;align-items:center;justify-content:center">{{ a.ini }}</span><sc-if value="{{ a.tag }}" hint-placeholder-val="{{ false }}"><span style="margin-left:auto;font-size:11px;padding:2px 7px;border-radius:3px;background:#eef3fe;color:#2456c9;font-weight:600">{{ a.tag }}</span></sc-if></div>
+                <div style="display:flex;flex-direction:column;gap:2px"><span style="font-weight:600;font-size:14px">{{ a.name }}</span><span style="color:#6b7483;font-size:12px;line-height:1.45">{{ a.desc }}</span></div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+        <div style="background:#fff;border:1px solid #e2e5ea;border-radius:8px;overflow:hidden">
+          <div style="padding:12px 16px;border-bottom:1px solid #e9ecf0;display:flex;align-items:center;gap:8px"><span style="font-weight:600">All providers</span><span style="color:#8a93a3;font-size:12px">{{ catalogCount }}</span><span style="margin-left:auto;display:flex;align-items:center;gap:6px;font-size:12px;color:#6b7483"><span style="width:7px;height:7px;border-radius:50%;background:#2b9b5a"></span>{{ catalogStatus }}</span></div>
+          <div style="padding:12px 16px"><div style="height:32px;border:1px solid #d5dae2;border-radius:6px;display:flex;align-items:center;padding:0 10px;gap:8px;background:#fff"><span style="color:#8a93a3;font-size:14px">⌕</span><input type="text" value="{{ q }}" onChange="{{ onQ }}" placeholder="Search 226 providers…" style="flex:1;min-width:0;border:0;outline:0;background:transparent;color:#1b2430"></div></div>
+          <div style="max-height:296px;overflow:auto">
+            <sc-for list="{{ catalog }}" as="c" hint-placeholder-count="8">
+              <div onClick="{{ c.pick }}" style="display:flex;align-items:center;gap:10px;padding:8px 16px;border-top:1px solid #eceef2;background:{{ c.bg }};cursor:pointer"><span style="width:24px;height:24px;border-radius:6px;background:#eef0f4;color:#3b4454;font-weight:600;font-size:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0">{{ c.ini }}</span><span style="font-weight:500;flex:1;color:{{ c.fg }}">{{ c.name }}</span><span style="font:500 11px 'IBM Plex Mono';color:#8a93a3">{{ c.models }}</span></div>
+            </sc-for>
+            <sc-if value="{{ noMatch }}" hint-placeholder-val="{{ false }}"><div style="padding:12px 16px;border-top:1px solid #eceef2;color:#6b7483;font-size:12.5px;line-height:1.5">No provider in the catalog matches that name. For a model server on your own network, choose Local server above.</div></sc-if>
+          </div>
         </div>
         <div style="background:#fff;border:1px solid #e2e5ea;border-radius:8px;padding:6px 16px;display:flex;flex-direction:column">
           <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #eceef2"><div style="flex:1;display:flex;flex-direction:column;gap:2px"><span style="font-weight:500">Send issue and doc content to the provider</span><span style="color:#8a93a3;font-size:12px">Required for summaries and Q&amp;A. Off means AI only sees titles and metadata.</span></div><div style="width:34px;height:20px;border-radius:10px;background:#2456c9;position:relative"><span style="position:absolute;top:2px;right:2px;width:16px;height:16px;border-radius:50%;background:#fff"></span></div></div>
@@ -127,11 +140,14 @@
 </x-dc>
 <script type="text/x-dc" data-dc-script>
 class Component extends DCLogic {
-  state = { step: 1, imp: 'jira', ai: 'anthropic', theme: 'light' };
+  state = { step: 1, imp: 'jira', ai: 'anthropic', q: '', theme: 'light' };
   renderVals() {
     const rootH = this.props.height ?? '100vh';
     const s = this.state, on = '#2456c9';
     const sel = is => ({ border: is ? on : '#e2e5ea', shadow: is ? '0 0 0 2px #cdd8f3' : 'none' });
+    const allProviders = [['alibaba', 'AL', 'Alibaba', 41], ['amazon-bedrock', 'AB', 'Amazon Bedrock', 96], ['anthropic', 'AN', 'Anthropic', 21], ['azure', 'AZ', 'Azure', 74], ['baseten', 'BT', 'Baseten', 9], ['cerebras', 'CB', 'Cerebras', 6], ['cloudflare-workers-ai', 'CF', 'Cloudflare Workers AI', 38], ['deepinfra', 'DI', 'DeepInfra', 27], ['deepseek', 'DS', 'DeepSeek', 2], ['fireworks-ai', 'FW', 'Fireworks AI', 24], ['google', 'GO', 'Google', 28], ['groq', 'GQ', 'Groq', 19], ['huggingface', 'HF', 'Hugging Face', 17], ['mistral', 'MI', 'Mistral', 25], ['moonshotai', 'MS', 'Moonshot AI', 6], ['nebius', 'NB', 'Nebius', 30], ['openai', 'OA', 'OpenAI', 41], ['openrouter', 'OR', 'OpenRouter', 312], ['perplexity', 'PX', 'Perplexity', 4], ['togetherai', 'TA', 'Together AI', 33], ['google-vertex', 'VX', 'Vertex', 46], ['xai', 'XA', 'xAI', 18]];
+    const needle = s.q.trim().toLowerCase();
+    const catalog = allProviders.filter(p => !needle || p[2].toLowerCase().includes(needle));
     const stepDefs = [['Server and admin', 'Health checks, first account'], ['Import', 'Jira, Confluence, CSV, or clean'], ['People', 'SSO or invites'], ['AI provider', 'Optional, private by default'], ['Appearance', 'Theme and logo'], ['Done', 'Summary']];
     return {
       rootH,
@@ -139,11 +155,16 @@ class Component extends DCLogic {
       is1: s.step === 1, is2: s.step === 2, is3: s.step === 3, is4: s.step === 4, is5: s.step === 5, is6: s.step === 6, notLast: s.step < 6, stepN: s.step,
       nextLabel: ['Create admin and continue', 'Start import in background', 'Continue', 'Save AI settings', 'Finish setup'][s.step - 1], canSkip: s.step >= 2 && s.step <= 5,
       next: () => this.setState({ step: Math.min(6, s.step + 1) }),
-      checks: [{ name: 'Postgres 16', val: 'localhost:5432 · 12 ms', bg: '#2b9b5a', g: '✓' }, { name: 'Disk', val: '38 GB free of 80 GB', bg: '#2b9b5a', g: '✓' }, { name: 'Memory', val: '4 GB · 2 vCPU', bg: '#2b9b5a', g: '✓' }, { name: 'Outbound email (SMTP)', val: 'not configured', bg: '#d49a1a', g: '!', fix: 'Configure' }, { name: 'HTTPS', val: 'Let\'s Encrypt · auto-renew', bg: '#2b9b5a', g: '✓' }, { name: 'Backups', val: 'nightly → /var/bemmoly/backups', bg: '#2b9b5a', g: '✓' }],
+      checks: [{ name: 'Postgres 18', val: 'localhost:5432 · 12 ms', bg: '#2b9b5a', g: '✓' }, { name: 'Disk', val: '38 GB free of 80 GB', bg: '#2b9b5a', g: '✓' }, { name: 'Memory', val: '4 GB · 2 vCPU', bg: '#2b9b5a', g: '✓' }, { name: 'Outbound email (SMTP)', val: 'not configured', bg: '#d49a1a', g: '!', fix: 'Configure' }, { name: 'HTTPS', val: 'Let\'s Encrypt · auto-renew', bg: '#2b9b5a', g: '✓' }, { name: 'Backups', val: 'nightly → /var/bemmoly/backups', bg: '#2b9b5a', g: '✓' }],
       imports: [['jira', 'JC', 'Jira Cloud or Server', 'Projects, issues, sprints, boards, workflows, custom fields, attachments.'], ['confluence', 'CF', 'Confluence', 'Spaces, page trees, versions, comments, attachments. Jira macros become live issue links.'], ['csv', 'CSV', 'CSV or Linear / Trello / Asana export', 'Map columns to fields. Good for lighter tools.'], ['clean', '—', 'Start clean', 'Bemmoly creates one sample project and doc space you can delete.']].map(([id, ini, name, desc]) => ({ ini, name, desc, ...sel(s.imp === id), pick: () => this.setState({ imp: id }) })),
       importJira: s.imp === 'jira',
       jiraProjects: [{ key: 'PLT', name: 'Platform', meta: '1,284 issues · 14 sprints', tick: '✓', bg: on, br: on, map: 'SCRUM', mBg: '#eef3fe', mFg: '#2456c9' }, { key: 'MOB', name: 'Mobile', meta: '612 issues · Kanban board', tick: '✓', bg: on, br: on, map: 'KANBAN', mBg: '#eef3fe', mFg: '#2456c9' }, { key: 'OLD', name: 'Legacy portal', meta: '3,410 issues · archived 2024', tick: '', bg: '#fff', br: '#c8ced8', map: 'SKIP', mBg: '#eef0f4', mFg: '#4b5565' }],
-      ai: [['anthropic', 'AN', 'Anthropic', 'Claude via API key. Best quality for planning and long docs.', 'RECOMMENDED'], ['openai', 'OA', 'OpenAI or Azure OpenAI', 'GPT models via API key or Azure endpoint.', ''], ['local', 'LL', 'Local model (Ollama, vLLM)', 'Runs on your hardware. Nothing leaves the network. Needs a GPU for good speed.', 'AIR-GAPPED'], ['none', '—', 'No AI for now', 'Everything else works. You can connect a provider any time.', '']].map(([id, ini, name, desc, tag]) => ({ ini, name, desc, tag: tag || null, ...sel(s.ai === id), pick: () => this.setState({ ai: id }) })),
+      popular: [['openai', 'OA', 'OpenAI', 'API key', ''], ['anthropic', 'AN', 'Anthropic', 'API key', ''], ['amazon-bedrock', 'AB', 'Amazon Bedrock', 'Access key, secret and region', ''], ['azure', 'AZ', 'Azure', 'Resource name and key', ''], ['google-vertex', 'VX', 'Vertex', 'Project, location and credentials', ''], ['openrouter', 'OR', 'OpenRouter', 'One key for many providers', ''], ['local', 'LS', 'Local server', 'A model server on your network. Nothing leaves it.', 'AIR-GAPPED'], ['none', '—', 'No AI for now', 'Everything else works. Connect a provider any time.', '']].map(([id, ini, name, desc, tag]) => ({ ini, name, desc, tag: tag || null, ...sel(s.ai === id), pick: () => this.setState({ ai: id }) })),
+      q: s.q, onQ: e => this.setState({ q: e.target.value }),
+      catalogStatus: 'Live · models.dev · updated 4 minutes ago',
+      catalogCount: s.q.trim() ? `${catalog.length} of 226 · sorted by name` : '226 · sorted by name',
+      catalog: catalog.map(([id, ini, name, models]) => ({ ini, name, models: models + ' models', bg: s.ai === id ? '#f6f8fe' : '#fff', fg: s.ai === id ? '#2456c9' : '#1b2430', pick: () => this.setState({ ai: id }) })),
+      noMatch: catalog.length === 0,
       themes: [['light', 'Classic', '#f4f5f7', '#fff', '#2456c9', '#d5dae2'], ['dark', 'Dark', '#0f1217', '#1a1f29', '#5b8def', '#262c38'], ['slate', 'Slate', '#eef1f4', '#fff', '#0f766e', '#c8d0da'], ['warm', 'Warm', '#f6f3ee', '#fffdf9', '#b4530f', '#d8d0c3'], ['midnight', 'Midnight', '#0b0a14', '#171428', '#a78bfa', '#2a2542'], ['forest', 'Forest', '#f1f4f1', '#fff', '#1f7a44', '#c9d3cb'], ['ocean', 'Ocean', '#07111c', '#101e30', '#38bdf8', '#1e3047'], ['rose', 'Rose', '#f7f3f4', '#fff', '#be123c', '#d9ccd1']].map(([id, name, bg, sf, ac, br]) => ({ name, bg, sf, ac, br, ...sel(s.theme === id), pick: () => this.setState({ theme: id }) })),
       summary: [{ k: 'Workspace', v: 'Acme Labs · bemmoly.acmelabs.internal' }, { k: 'Admin', v: 'rohan@acmelabs.dev (break-glass password set)' }, { k: 'Import', v: 'Jira: PLT, MOB running in background · ~12 min' }, { k: 'Sign-in', v: 'Google Workspace SSO · 3 invites sent' }, { k: 'AI', v: 'Anthropic · content sharing on · actions require confirmation' }, { k: 'Theme', v: 'Classic light · members may switch light/dark' }]
     };
