@@ -5,4 +5,4 @@ export {
   type SqlClient,
   type SqlClientOptions,
 } from './postgres.ts';
-export { createDatabase, type Database } from './drizzle.ts';
+export { createDatabase, createTransactionDatabase, type Database } from './drizzle.ts';

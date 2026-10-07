@@ -1,4 +1,4 @@
-import { createDatabase, type Database } from '../../clients/drizzle.ts';
+import { createTransactionDatabase, type Database } from '../../clients/drizzle.ts';
 import type { SqlClient } from '../../clients/postgres.ts';
 import type { SqlExecutor } from '../../contracts/sql.ts';
 
@@ -13,7 +13,7 @@ export async function inSharedTransaction<T>(
   work: (tx: Database, executor: SqlExecutor) => Promise<T>,
 ): Promise<T> {
   const result = await sql.begin(async (executor) =>
-    work(createDatabase(executor as unknown as SqlClient), executor),
+    work(createTransactionDatabase(sql, executor), executor),
   );
   return result as T;
 }
