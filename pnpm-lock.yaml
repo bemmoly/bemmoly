@@ -44,6 +44,16 @@ importers:
         specifier: 8.71.1
         version: 8.71.1(eslint@10.12.0)
 
+  packages/shared:
+    dependencies:
+      zod:
+        specifier: 4.6.5
+        version: 4.6.5
+    devDependencies:
+      vitest:
+        specifier: 5.0.3
+        version: 5.0.3(@types/node@26.6.4)(vite@8.3.3(@types/node@26.6.4))
+
   tools/eslint-plugin:
     devDependencies:
       eslint:
