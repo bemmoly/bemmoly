@@ -1,4 +1,5 @@
 import {
+  createEnabledModuleCatalog,
   createJobQueueHandle,
   createLocalEventBus,
   createRealtimeService,
@@ -10,14 +11,13 @@ import { createLogger, type Env } from '@bemmoly/core/config';
 import type { FastifyInstance } from 'fastify';
 import { buildApp, type BuildAppOptions } from '../app.ts';
 import { connectDatabase, type DatabaseConnection } from './database.ts';
-import type { IdentityWiring } from './identity.ts';
+import { identityRoutes, identityWiring } from './identity.ts';
 import { createDataKernel, type DataKernel } from './kernel.ts';
 
 export interface BootOptions {
   env: Env;
   /** Every module package in the image. */
   available: readonly BemmolyModule[];
-  identity: IdentityWiring;
   webRoot?: string;
   logger?: BuildAppOptions['logger'];
 }
@@ -29,15 +29,20 @@ export interface Booted {
 }
 
 /**
- * Connects, applies changesets, loads modules and builds the app. With a
- * database every module in the image is registered and the modules table
- * decides which are enabled, live; without one, BEMMOLY_MODULES does.
+ * Connects, wires identity, applies changesets, loads modules and builds the
+ * app. With a database every module in the image is registered and the
+ * modules table decides which are enabled, live; without one, BEMMOLY_MODULES
+ * does and only health and the module list are served.
  */
 export async function bootApplication(options: BootOptions): Promise<Booted> {
-  const { env, identity } = options;
+  const { env } = options;
   const logger = createLogger(env);
   if (options.logger === false) logger.level = 'silent';
   const database = connectDatabase(env);
+  const catalog = createEnabledModuleCatalog();
+  const identity = identityWiring(
+    database ? { db: database.db, modules: catalog, publicUrl: env.BEMMOLY_PUBLIC_URL } : undefined,
+  );
   const realtime = database
     ? createRealtimeService({
         sql: database.sql,
@@ -56,6 +61,7 @@ export async function bootApplication(options: BootOptions): Promise<Booted> {
     ...(realtime ? { realtime: realtime.publisher } : {}),
     ...(database ? { database: database.sql } : {}),
   });
+  catalog.bindRegistry(modules);
   const kernel =
     database && realtime && env.DATABASE_URL
       ? await createDataKernel({
@@ -68,7 +74,21 @@ export async function bootApplication(options: BootOptions): Promise<Booted> {
           logger,
         })
       : undefined;
-  if (kernel) settingsReader.bind(kernel.settings);
+  if (kernel) {
+    settingsReader.bind(kernel.settings);
+    catalog.bindState(kernel.moduleState);
+  }
+  const people =
+    database && kernel
+      ? identityRoutes({
+          db: database.db,
+          sql: database.sql,
+          modules: catalog,
+          events: kernel.events,
+          settings: kernel.settings,
+          publicUrl: env.BEMMOLY_PUBLIC_URL,
+        })
+      : undefined;
   const app = await buildApp({
     env,
     modules,
@@ -76,6 +96,7 @@ export async function bootApplication(options: BootOptions): Promise<Booted> {
     ...(options.logger !== undefined ? { logger: options.logger } : {}),
     ...(database ? { database: database.probe } : {}),
     ...(kernel ? { kernel: kernel.routes } : {}),
+    ...(people ? { identity: people } : {}),
   });
   return { app, ...(database ? { database } : {}), ...(kernel ? { kernel } : {}) };
 }

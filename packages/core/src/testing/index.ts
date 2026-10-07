@@ -6,3 +6,10 @@ export {
   QueryBudgetExceededError,
   type QueryCounter,
 } from './query-count.ts';
+export {
+  applyIdentityChangesets,
+  IDENTITY_CHANGESETS,
+  resetIdentityData,
+  revertIdentityChangesets,
+} from './identity-changelog.ts';
+export { createMemorySettings } from './memory-settings.ts';

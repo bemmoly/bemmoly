@@ -1,7 +1,6 @@
 import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import type { Actor } from '@bemmoly/core';
 import { parseEnv } from '@bemmoly/core/config';
 import {
   createIsolatedDatabase,
@@ -9,16 +8,18 @@ import {
   type IsolatedDatabase,
   type TestDatabase,
 } from '@bemmoly/core/testing';
+import type { FastifyInstance, InjectOptions } from 'fastify';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { bootApplication, type Booted } from './config/boot.ts';
 import { importAvailableModules } from './config/modules.ts';
 
-const admin: Actor = { kind: 'user', id: 'admin' };
+const ORIGIN = 'http://localhost:8080';
 
 describe('the host boots the data kernel with the sample module', () => {
   let server: TestDatabase;
   let database: IsolatedDatabase | undefined;
   const booted: Booted[] = [];
+  let cookie: string | undefined;
 
   beforeAll(async () => {
     server = await startTestDatabase();
@@ -40,7 +41,7 @@ describe('the host boots the data kernel with the sample module', () => {
     const env = parseEnv({
       DATABASE_URL: database.url,
       BEMMOLY_SECRET_KEY: Buffer.alloc(32, 8).toString('base64'),
-      BEMMOLY_PUBLIC_URL: 'http://localhost:8080',
+      BEMMOLY_PUBLIC_URL: ORIGIN,
       BEMMOLY_DATA_DIR: mkdtempSync(join(tmpdir(), 'bemmoly-data-')),
       BEMMOLY_DB_CONTEXTS: 'test',
       BEMMOLY_MODULES: pinned,
@@ -49,12 +50,12 @@ describe('the host boots the data kernel with the sample module', () => {
     const instance = await bootApplication({
       env,
       available: await importAvailableModules(),
-      identity: { authenticate: async () => admin, authorize: async () => undefined },
       logger: false,
     });
     booted.push(instance);
     await instance.kernel?.start();
-    return instance.app;
+    cookie ??= await createFirstAdmin(instance.app);
+    return signedIn(instance.app, cookie);
   }
 
   it('serves the enabled sample end to end: route, setting, realtime, job', async (ctx) => {
@@ -134,3 +135,33 @@ describe('the host boots the data kernel with the sample module', () => {
     expect(refused.statusCode).toBe(409);
   });
 });
+
+/** The first admin, created through the setup wizard's endpoint; returns its session cookie. */
+async function createFirstAdmin(app: FastifyInstance): Promise<string> {
+  const response = await app.inject({
+    method: 'POST',
+    url: '/api/v1/setup/admin',
+    headers: { origin: ORIGIN },
+    payload: {
+      workspaceName: 'Acme Labs',
+      workspaceUrl: 'https://bemmoly.acmelabs.internal',
+      name: 'Rohan S.',
+      email: 'rohan@acmelabs.dev',
+      password: 'correct horse battery',
+    },
+  });
+  const header = response.headers['set-cookie'];
+  const pair = (Array.isArray(header) ? header : [header ?? ''])
+    .find((value) => value.startsWith('bemmoly_session='))
+    ?.split(';')[0];
+  if (response.statusCode !== 201 || !pair) throw new Error(`setup failed: ${response.body}`);
+  return pair;
+}
+
+/** The app as the signed-in admin's browser calls it: same origin, with the session cookie. */
+function signedIn(app: FastifyInstance, session: string) {
+  return {
+    inject: (options: InjectOptions) =>
+      app.inject({ ...options, headers: { origin: ORIGIN, cookie: session, ...options.headers } }),
+  };
+}

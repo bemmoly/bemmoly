@@ -14,6 +14,8 @@ export const KERNEL_CAPABILITIES = [
   'workspace.appearance.manage',
   'workspace.settings.manage',
   'workspace.modules.manage',
+  'workspace.email.manage',
+  'workspace.audit.view',
   'ai.assist.use',
   'ai.actions.run',
   'ai.models.configure',

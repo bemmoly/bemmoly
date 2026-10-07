@@ -4,6 +4,7 @@ export {
   type ModuleAdmin,
   type ModuleAdminDeps,
 } from './admin.ts';
+export { createEnabledModuleCatalog, type EnabledModuleCatalog } from './catalog.ts';
 export { MODULES_USAGE, runModulesCommand, type ModulesCommandDeps } from './commands.ts';
 export { listModuleManifests, type VisibleModulesOptions } from './list.ts';
 export {

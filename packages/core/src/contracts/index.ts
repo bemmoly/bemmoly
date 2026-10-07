@@ -1,3 +1,4 @@
+export type * from './authn.ts';
 export type * from './authz.ts';
 export type * from './email-sender.ts';
 export type * from './event-bus.ts';
@@ -9,6 +10,7 @@ export type * from './realtime.ts';
 export type * from './session-resolver.ts';
 export type * from './settings.ts';
 export type * from './sql.ts';
+export type * from './users.ts';
 export type {
   BackfillOptions,
   BackfillRow,

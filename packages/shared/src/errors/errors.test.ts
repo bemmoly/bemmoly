@@ -6,6 +6,7 @@ import {
   NotFoundError,
   ProviderError,
   RateLimitedError,
+  UnauthenticatedError,
   ValidationError,
 } from './errors.ts';
 import { errorCodeSchema } from './codes.ts';
@@ -18,6 +19,7 @@ describe('typed errors', () => {
     [new ConflictError(), 'conflict', 'ConflictError'],
     [new RateLimitedError(), 'rate_limited', 'RateLimitedError'],
     [new ProviderError(), 'provider_error', 'ProviderError'],
+    [new UnauthenticatedError(), 'unauthenticated', 'UnauthenticatedError'],
   ])('%o carries its default code and name', (error, code, name) => {
     expect(error.code).toBe(code);
     expect(error.name).toBe(name);
