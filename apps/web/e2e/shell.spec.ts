@@ -22,6 +22,36 @@ test('the shell boots after the session and lazy-loads a module chunk', async ({
   await expect(page.locator('[data-module="sample"]')).toBeVisible();
 });
 
+test('the boot frame paints before the app runs and leaves once a page renders', async ({
+  page,
+}) => {
+  await useMockBackend(page, 'ready');
+  let release = () => {};
+  const held = new Promise<void>((resolve) => (release = resolve));
+  await page.route(/\/assets\/mount-[\w-]+\.js$/, async (route) => {
+    await held;
+    await route.continue();
+  });
+  await page.goto('/', { waitUntil: 'commit' });
+
+  const boot = page.locator('#boot');
+  await expect(boot.locator('svg')).toBeVisible();
+  const tile = boot.locator('.brand-mark-bg');
+  const accent = await page.evaluate(() =>
+    getComputedStyle(document.documentElement).getPropertyValue('--ac-fill').trim(),
+  );
+  await expect(tile).toHaveCSS('fill', hexToRgb(accent));
+
+  release();
+  await expect(page.getByRole('heading', { name: /, Rohan$/ })).toBeVisible();
+  await expect(boot).toHaveCount(0);
+});
+
+function hexToRgb(hex: string): string {
+  const [r, g, b] = [1, 3, 5].map((at) => Number.parseInt(hex.slice(at, at + 2), 16));
+  return `rgb(${r}, ${g}, ${b})`;
+}
+
 test('a deep link to a module route loads the shell', async ({ page }) => {
   await useMockBackend(page, 'ready');
   await page.goto('/sample');

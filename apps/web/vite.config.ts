@@ -2,16 +2,25 @@ import { fileURLToPath } from 'node:url';
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
+import { bootFrame } from './boot-frame.ts';
 import { brandAssets } from './brand-assets.ts';
 import { precompress } from './precompress.ts';
 
 const server = 'http://localhost:8080';
-const generatedBrand = fileURLToPath(
-  new URL('../../packages/ui/assets/brand/generated', import.meta.url),
-);
+const brand = (path: string) =>
+  fileURLToPath(new URL(`../../packages/ui/assets/brand/${path}`, import.meta.url));
 
 export default defineConfig(({ command }) => ({
-  plugins: [react(), tailwindcss(), brandAssets(generatedBrand), precompress()],
+  plugins: [
+    react(),
+    tailwindcss(),
+    brandAssets(brand('generated')),
+    bootFrame({
+      logo: brand('lockup-color.svg'),
+      app: fileURLToPath(new URL('./src/mount.tsx', import.meta.url)),
+    }),
+    precompress(),
+  ],
   define: {
     /** The in-memory mock backend runs under the dev server only and is compiled out of builds. */
     __MOCK_API__: JSON.stringify(command === 'serve'),

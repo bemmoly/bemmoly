@@ -13,6 +13,16 @@
   </head>
   <body>
     <div id="root"></div>
+    <!-- The first paint: the top bar's frame and the logo, drawn by the stylesheet alone (boot-frame.ts). -->
+    <div id="boot" class="fixed inset-0 z-50 bg-bg" aria-hidden="true">
+      <div class="flex h-topbar items-center border-b border-br bg-sf pr-3 pl-4">
+        <span
+          class="inline-flex h-6 shrink-0 text-tx [&_.brand-mark-bg]:fill-ac-fill [&_.brand-mark-fg]:fill-on-ac [&>svg]:h-full [&>svg]:w-auto"
+        >
+          <!-- boot:logo -->
+        </span>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
