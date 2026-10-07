@@ -1,0 +1,22 @@
+# dependencies and build output
+node_modules/
+dist/
+build/
+.turbo/
+coverage/
+*.tsbuildinfo
+
+# environment and secrets
+.env
+.env.*
+!.env.example
+
+# local data
+/var/
+*.local
+.DS_Store
+
+# editors
+.idea/
+.vscode/*
+!.vscode/extensions.json

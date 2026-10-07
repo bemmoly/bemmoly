@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>html,body{margin:0;height:100%;background:#f4f5f7;font-family:'IBM Plex Sans',system-ui,sans-serif;color:#1b2430;font-size:13px}*{box-sizing:border-box}a{color:#2456c9;text-decoration:none}a:hover{color:#183d94}</style>
+</helmet>
+<div data-screen-label="Users, teams and roles" style="height:{{ rootH }};min-width:1440px;display:flex;flex-direction:column;overflow:hidden;background:#f4f5f7">
+  <div style="height:48px;background:#fff;border-bottom:1px solid #e2e5ea;display:flex;align-items:center;padding:0 12px 0 16px;gap:4px;flex-shrink:0">
+    <a href="Lattice Home.dc.html" style="display:flex;align-items:center;gap:9px;padding-right:14px;margin-right:6px;border-right:1px solid #e2e5ea;height:28px;color:#1b2430"><div style="width:24px;height:24px;border-radius:6px;background:#2456c9;display:grid;grid-template-columns:1fr 1fr;gap:2px;padding:5px"><span style="background:#fff;border-radius:1px"></span><span style="background:#fff;border-radius:1px;opacity:.55"></span><span style="background:#fff;border-radius:1px;opacity:.55"></span><span style="background:#fff;border-radius:1px"></span></div><div style="font-weight:600;font-size:14px;letter-spacing:-.01em">Lattice</div></a>
+    <div style="display:flex;gap:2px;font-size:13.5px">
+      <a href="Lattice Home.dc.html" style="padding:6px 10px;color:#3b4454">Your work <span style="color:#8a93a3;font-size:10px">▾</span></a>
+      <a href="Lattice Board.dc.html" style="padding:6px 10px;color:#3b4454">Projects <span style="color:#8a93a3;font-size:10px">▾</span></a>
+      <a href="Lattice Docs.dc.html" style="padding:6px 10px;color:#3b4454">Docs <span style="color:#8a93a3;font-size:10px">▾</span></a>
+      <a href="Lattice Backlog.dc.html" style="padding:6px 10px;color:#3b4454">Filters <span style="color:#8a93a3;font-size:10px">▾</span></a>
+      <a href="Lattice Roadmap.dc.html" style="padding:6px 10px;color:#3b4454">Dashboards <span style="color:#8a93a3;font-size:10px">▾</span></a>
+      <a href="Lattice People.dc.html" style="padding:6px 10px;color:#1b2430;font-weight:500;box-shadow:inset 0 -2px 0 #2456c9">Teams <span style="color:#8a93a3;font-size:10px">▾</span></a>
+    </div>
+    <div style="margin-left:6px;padding:6px 14px;border-radius:6px;background:#2456c9;color:#fff;font-weight:500">Create</div>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+      <a href="Lattice Command.dc.html" style="width:300px;height:32px;border:1px solid #d5dae2;border-radius:6px;display:flex;align-items:center;padding:0 10px;gap:8px;color:#8a93a3;background:#f9fafb"><span style="font-size:14px">⌕</span><span>Search issues, docs, people</span></a>
+      <a href="Lattice Command.dc.html" style="height:32px;padding:0 12px;border:1px solid #cdd8f3;background:#eef3fe;border-radius:6px;display:flex;align-items:center;gap:7px;color:#2456c9;font-weight:500"><span style="width:8px;height:8px;border-radius:50%;background:#2456c9"></span>Ask Lattice</a>
+      <div style="width:30px;height:30px;border-radius:50%;background:#d7e3fb;color:#2456c9;font-weight:600;font-size:12px;display:flex;align-items:center;justify-content:center;margin-left:4px">RS</div>
+    </div>
+  </div>
+  <div style="flex:1;display:flex;min-height:0">
+    <div style="width:240px;background:#fff;border-right:1px solid #e2e5ea;padding:16px 8px;display:flex;flex-direction:column;gap:14px;flex-shrink:0;overflow:auto">
+      <div style="padding:0 10px 4px;font-weight:600;font-size:14px">Workspace settings</div>
+      <div style="display:flex;flex-direction:column;gap:1px">
+        <div style="padding:4px 10px 6px;font:500 11px 'IBM Plex Sans';color:#8a93a3;letter-spacing:.07em;text-transform:uppercase">General</div>
+        <div style="padding:7px 10px;border-radius:6px;color:#3b4454">Workspace details</div>
+        <a href="Lattice Appearance Settings.dc.html" style="padding:7px 10px;border-radius:6px;color:#3b4454">Appearance</a>
+        <div style="padding:7px 10px;border-radius:6px;color:#3b4454">AI and models</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:1px">
+        <div style="padding:4px 10px 6px;font:500 11px 'IBM Plex Sans';color:#8a93a3;letter-spacing:.07em;text-transform:uppercase">People</div>
+        <sc-for list="{{ nav }}" as="n" hint-placeholder-count="4"><div onClick="{{ n.pick }}" style="padding:7px 10px;border-radius:6px;background:{{ n.bg }};color:{{ n.fg }};font-weight:{{ n.w }};cursor:pointer;display:flex;justify-content:space-between">{{ n.name }}<sc-if value="{{ n.count }}" hint-placeholder-val="{{ false }}"><span style="font:500 11px 'IBM Plex Mono';color:#8a93a3">{{ n.count }}</span></sc-if></div></sc-for>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:1px">
+        <div style="padding:4px 10px 6px;font:500 11px 'IBM Plex Sans';color:#8a93a3;letter-spacing:.07em;text-transform:uppercase">Work</div>
+        <a href="Lattice Workflow.dc.html" style="padding:7px 10px;border-radius:6px;color:#3b4454">Issue types and fields</a>
+        <a href="Lattice Workflow.dc.html" style="padding:7px 10px;border-radius:6px;color:#3b4454">Workflows</a>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:1px">
+        <div style="padding:4px 10px 6px;font:500 11px 'IBM Plex Sans';color:#8a93a3;letter-spacing:.07em;text-transform:uppercase">System</div>
+        <a href="Lattice Setup.dc.html" style="padding:7px 10px;border-radius:6px;color:#3b4454">Storage and backups</a>
+        <div style="padding:7px 10px;border-radius:6px;color:#3b4454">Updates</div>
+        <div style="padding:7px 10px;border-radius:6px;color:#3b4454">Audit log</div>
+      </div>
+    </div>
+    <div style="flex:1;overflow:auto;min-width:0">
+      <div style="max-width:1120px;padding:28px 40px 60px;display:flex;flex-direction:column;gap:20px">
+
+        <sc-if value="{{ isUsers }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;align-items:center;gap:16px"><div style="display:flex;flex-direction:column;gap:4px"><div style="font-weight:600;font-size:22px;letter-spacing:-.015em">Users</div><div style="color:#6b7483">42 active · 3 invited · 2 deactivated · no seat limit, self-hosted</div></div><div style="margin-left:auto;display:flex;gap:8px"><span style="height:32px;padding:0 12px;border:1px solid #d5dae2;background:#fff;border-radius:6px;display:flex;align-items:center;font-weight:500;color:#3b4454">Import CSV</span><span style="height:32px;padding:0 12px;border:1px solid #d5dae2;background:#fff;border-radius:6px;display:flex;align-items:center;font-weight:500;color:#3b4454">Sync from SSO</span><span style="height:32px;padding:0 14px;border-radius:6px;background:#2456c9;color:#fff;display:flex;align-items:center;font-weight:500">Invite people</span></div></div>
+          <div style="display:flex;gap:8px;align-items:center"><div style="width:260px;height:32px;border:1px solid #d5dae2;border-radius:6px;background:#fff;display:flex;align-items:center;padding:0 10px;gap:8px;color:#8a93a3"><span>⌕</span>Search by name or email</div><div style="height:32px;padding:0 10px;border:1px solid #d5dae2;background:#fff;border-radius:6px;display:flex;align-items:center;gap:6px;color:#3b4454">Role <span style="color:#8a93a3;font-size:10px">▾</span></div><div style="height:32px;padding:0 10px;border:1px solid #d5dae2;background:#fff;border-radius:6px;display:flex;align-items:center;gap:6px;color:#3b4454">Team <span style="color:#8a93a3;font-size:10px">▾</span></div><div style="height:32px;padding:0 10px;border:1px solid #d5dae2;background:#fff;border-radius:6px;display:flex;align-items:center;gap:6px;color:#3b4454">Status <span style="color:#8a93a3;font-size:10px">▾</span></div></div>
+          <div style="background:#fff;border:1px solid #e2e5ea;border-radius:8px;overflow:hidden">
+            <div style="display:grid;grid-template-columns:minmax(0,1.4fr) 150px minmax(0,1fr) 110px 110px 28px;gap:12px;padding:9px 16px;background:#fafbfc;border-bottom:1px solid #e9ecf0;font:500 11px 'IBM Plex Sans';color:#8a93a3;letter-spacing:.06em;text-transform:uppercase"><span>Person</span><span>Org role</span><span>Teams</span><span>Auth</span><span>Last active</span><span></span></div>
+            <sc-for list="{{ users }}" as="u" hint-placeholder-count="8">
+              <div style="display:grid;grid-template-columns:minmax(0,1.4fr) 150px minmax(0,1fr) 110px 110px 28px;gap:12px;padding:10px 16px;border-bottom:1px solid #eceef2;align-items:center">
+                <div style="display:flex;align-items:center;gap:10px;min-width:0"><span style="width:30px;height:30px;border-radius:50%;background:{{ u.bg }};color:{{ u.fg }};font-weight:600;font-size:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0">{{ u.ini }}</span><div style="display:flex;flex-direction:column;gap:1px;min-width:0"><span style="font-weight:500">{{ u.name }}</span><span style="color:#8a93a3;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ u.email }}</span></div></div>
+                <span style="display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 9px;border:1px solid #d5dae2;border-radius:5px;background:#fff;font-weight:500;justify-self:start;font-size:12.5px">{{ u.role }} <span style="color:#8a93a3;font-size:10px">▾</span></span>
+                <div style="display:flex;gap:4px;flex-wrap:wrap"><sc-for list="{{ u.teams }}" as="t" hint-placeholder-count="2"><span style="font-size:11.5px;padding:2px 7px;border-radius:3px;background:#eef0f4;color:#3b4454">{{ t }}</span></sc-for></div>
+                <span style="font-size:12px;color:#4b5565">{{ u.auth }}</span>
+                <span style="font-size:12px;color:{{ u.lastC }}">{{ u.last }}</span>
+                <span style="color:#a2aab8;text-align:center">···</span>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isTeams }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;align-items:center;gap:16px"><div style="display:flex;flex-direction:column;gap:4px"><div style="font-weight:600;font-size:22px;letter-spacing:-.015em">Teams</div><div style="color:#6b7483">Teams own projects and doc spaces. A person can be in several.</div></div><div style="margin-left:auto"><span style="height:32px;padding:0 14px;border-radius:6px;background:#2456c9;color:#fff;display:flex;align-items:center;font-weight:500">Create team</span></div></div>
+          <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px">
+            <sc-for list="{{ teams }}" as="t" hint-placeholder-count="4">
+              <div style="background:#fff;border:1px solid #e2e5ea;border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:12px">
+                <div style="display:flex;align-items:center;gap:10px"><span style="width:34px;height:34px;border-radius:7px;background:{{ t.color }};color:#fff;font-weight:600;display:flex;align-items:center;justify-content:center">{{ t.ini }}</span><div style="display:flex;flex-direction:column;gap:2px"><span style="font-weight:600;font-size:14px">{{ t.name }}</span><span style="color:#8a93a3;font-size:12px">Lead: {{ t.lead }} · {{ t.count }} members</span></div><span style="margin-left:auto;color:#a2aab8">···</span></div>
+                <div style="display:flex;flex-direction:column;gap:6px;font-size:12.5px"><div style="display:flex;gap:8px"><span style="color:#8a93a3;width:70px">Projects</span><span style="display:flex;gap:4px;flex-wrap:wrap"><sc-for list="{{ t.projects }}" as="p" hint-placeholder-count="2"><a href="Lattice Board.dc.html" style="padding:2px 7px;border-radius:3px;background:#eef3fe;color:#2456c9;font-weight:500">{{ p }}</a></sc-for></span></div><div style="display:flex;gap:8px"><span style="color:#8a93a3;width:70px">Spaces</span><span style="display:flex;gap:4px;flex-wrap:wrap"><sc-for list="{{ t.spaces }}" as="sp" hint-placeholder-count="2"><a href="Lattice Docs.dc.html" style="padding:2px 7px;border-radius:3px;background:#eef0f4;color:#3b4454">{{ sp }}</a></sc-for></span></div><div style="display:flex;gap:8px"><span style="color:#8a93a3;width:70px">Default role</span><span style="font-weight:500">{{ t.role }}</span></div></div>
+                <div style="display:flex;margin-top:auto"><sc-for list="{{ t.people }}" as="pp" hint-placeholder-count="4"><span style="width:26px;height:26px;border-radius:50%;background:{{ pp.bg }};color:{{ pp.fg }};font-weight:600;font-size:10px;display:flex;align-items:center;justify-content:center;margin-left:-6px;border:2px solid #fff">{{ pp.i }}</span></sc-for><span style="margin-left:8px;align-self:center;color:#2456c9;font-weight:500;font-size:12.5px">Manage</span></div>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isRoles }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;align-items:center;gap:16px"><div style="display:flex;flex-direction:column;gap:4px"><div style="font-weight:600;font-size:22px;letter-spacing:-.015em">Roles and permissions</div><div style="color:#6b7483;max-width:720px;line-height:1.5">Org roles set the ceiling. Project admins can grant less than this to their members, never more. Rows you lock can't be changed at project level.</div></div><div style="margin-left:auto;display:flex;gap:8px"><span style="height:32px;padding:0 12px;border:1px solid #d5dae2;background:#fff;border-radius:6px;display:flex;align-items:center;font-weight:500;color:#3b4454">Create custom role</span><span style="height:32px;padding:0 14px;border-radius:6px;background:#2456c9;color:#fff;display:flex;align-items:center;font-weight:500">Save</span></div></div>
+          <div style="background:#fff;border:1px solid #e2e5ea;border-radius:8px;overflow:hidden">
+            <div style="display:grid;grid-template-columns:minmax(0,1fr) 110px 110px 110px 110px 110px 70px;padding:10px 16px;border-bottom:1px solid #e9ecf0;background:#fafbfc;font:500 11px 'IBM Plex Sans';color:#8a93a3;letter-spacing:.06em;text-transform:uppercase;align-items:end"><span>Capability</span><span style="text-align:center">Org admin</span><span style="text-align:center">Project admin</span><span style="text-align:center">Member</span><span style="text-align:center">Viewer</span><span style="text-align:center;color:#2456c9">Contractor<br><span style="font-weight:400;text-transform:none;letter-spacing:0">custom</span></span><span style="text-align:center">Lock</span></div>
+            <sc-for list="{{ permGroups }}" as="g" hint-placeholder-count="4">
+              <div style="padding:8px 16px;background:#f9fafb;border-bottom:1px solid #eceef2;font-weight:600;font-size:12px;color:#4b5565">{{ g.name }}</div>
+              <sc-for list="{{ g.rows }}" as="r" hint-placeholder-count="4">
+                <div style="display:grid;grid-template-columns:minmax(0,1fr) 110px 110px 110px 110px 110px 70px;padding:9px 16px;border-bottom:1px solid #eceef2;align-items:center">
+                  <div style="display:flex;flex-direction:column;gap:1px"><span style="font-weight:500">{{ r.name }}</span><sc-if value="{{ r.desc }}" hint-placeholder-val="{{ false }}"><span style="color:#8a93a3;font-size:12px">{{ r.desc }}</span></sc-if></div>
+                  <sc-for list="{{ r.cells }}" as="c" hint-placeholder-count="5"><div style="display:flex;justify-content:center"><div onClick="{{ c.toggle }}" style="width:18px;height:18px;border-radius:4px;border:1.5px solid {{ c.br }};background:{{ c.bg }};color:#fff;font-size:11px;display:flex;align-items:center;justify-content:center;cursor:{{ c.cursor }};opacity:{{ c.op }}">{{ c.tick }}</div></div></sc-for>
+                  <div style="display:flex;justify-content:center"><div onClick="{{ r.toggleLock }}" style="width:30px;height:18px;border-radius:9px;background:{{ r.lockBg }};position:relative;cursor:pointer"><span style="position:absolute;top:2px;left:{{ r.lockKnob }};width:14px;height:14px;border-radius:50%;background:#fff;transition:left .15s"></span></div></div>
+                </div>
+              </sc-for>
+            </sc-for>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isSso }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:4px"><div style="font-weight:600;font-size:22px;letter-spacing:-.015em">Authentication</div><div style="color:#6b7483">How people sign in to this workspace.</div></div>
+          <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px">
+            <sc-for list="{{ sso }}" as="p" hint-placeholder-count="4">
+              <div style="background:#fff;border:1px solid {{ p.border }};border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:10px">
+                <div style="display:flex;align-items:center;gap:10px"><span style="width:32px;height:32px;border-radius:7px;background:#eef0f4;color:#3b4454;font-weight:600;font-size:12px;display:flex;align-items:center;justify-content:center">{{ p.ini }}</span><span style="font-weight:600;font-size:14px">{{ p.name }}</span><span style="margin-left:auto;font-size:11px;padding:2px 7px;border-radius:3px;background:{{ p.sBg }};color:{{ p.sFg }};font-weight:600">{{ p.status }}</span></div>
+                <div style="color:#6b7483;font-size:12.5px;line-height:1.5">{{ p.desc }}</div>
+                <div style="display:flex;gap:8px;margin-top:auto"><span style="height:30px;padding:0 10px;border:1px solid #d5dae2;border-radius:5px;background:#fff;display:flex;align-items:center;font-weight:500;color:#3b4454">{{ p.action }}</span></div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="background:#fff;border:1px solid #e2e5ea;border-radius:8px;padding:6px 16px;display:flex;flex-direction:column">
+            <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #eceef2"><div style="flex:1;display:flex;flex-direction:column;gap:2px"><span style="font-weight:500">Require SSO for everyone</span><span style="color:#8a93a3;font-size:12px">Password login disabled except for break-glass admins.</span></div><div style="width:34px;height:20px;border-radius:10px;background:#2456c9;position:relative"><span style="position:absolute;top:2px;right:2px;width:16px;height:16px;border-radius:50%;background:#fff"></span></div></div>
+            <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #eceef2"><div style="flex:1;display:flex;flex-direction:column;gap:2px"><span style="font-weight:500">Auto-provision users on first login</span><span style="color:#8a93a3;font-size:12px">New SSO users get the Member role and no teams.</span></div><div style="width:34px;height:20px;border-radius:10px;background:#2456c9;position:relative"><span style="position:absolute;top:2px;right:2px;width:16px;height:16px;border-radius:50%;background:#fff"></span></div></div>
+            <div style="display:flex;align-items:center;gap:12px;padding:10px 0"><div style="flex:1;display:flex;flex-direction:column;gap:2px"><span style="font-weight:500">Map IdP groups to teams</span><span style="color:#8a93a3;font-size:12px">eng-platform → Platform, eng-mobile → Mobile. 2 mappings.</span></div><span style="color:#2456c9;font-weight:500">Edit</span></div>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { view: 'users', perms: {}, locks: { 'Manage billing and license': true, 'Delete workspace': true, 'Configure SSO': true, 'Manage org roles': true } };
+  renderVals() {
+    const rootH = this.props.height ?? '100vh';
+    const s = this.state, on = '#2456c9', off = '#cfd4dc';
+    const pal = { PN: ['#d7f0e0', '#1f7a44'], AK: ['#fde2cf', '#9a4a16'], JM: ['#e4dcfa', '#5a3cae'], RS: ['#d7e3fb', '#2456c9'], LT: ['#fbe3ee', '#a0245f'], MK: ['#fdf3dc', '#8a6210'], DV: ['#e0f2fe', '#075985'], SR: ['#eef0f4', '#4b5565'] };
+    const av = ks => ks.map(k => ({ i: k, bg: pal[k][0], fg: pal[k][1] }));
+    const users = [['RS', 'Rohan S.', 'rohan@acmelabs.dev', 'Org admin', ['Platform', 'Growth'], 'Google SSO', 'now', 0], ['PN', 'Priya N.', 'priya@acmelabs.dev', 'Project admin', ['Platform'], 'Google SSO', '2h ago', 0], ['AK', 'Aisha K.', 'aisha@acmelabs.dev', 'Member', ['Platform'], 'Google SSO', '3h ago', 0], ['JM', 'Jonas M.', 'jonas@acmelabs.dev', 'Member', ['Platform', 'Mobile'], 'Okta', 'yesterday', 0], ['LT', 'Lena T.', 'lena@acmelabs.dev', 'Member', ['Growth', 'Design'], 'Google SSO', 'yesterday', 0], ['MK', 'Maya K.', 'maya@acmelabs.dev', 'Member', ['People ops'], 'Password', 'Friday', 0], ['DV', 'Dev P.', 'dev@contractor.io', 'Contractor', ['Mobile'], 'Password', '12 days ago', 1], ['SR', 'Sam R.', 'sam@acmelabs.dev', 'Viewer', [], 'Invited', 'Never', 1]];
+    const permGroups = [
+      { name: 'Workspace', rows: [['Manage billing and license', '', [1, 0, 0, 0, 0]], ['Delete workspace', '', [1, 0, 0, 0, 0]], ['Configure SSO', '', [1, 0, 0, 0, 0]], ['Manage org roles', 'Create roles, edit this page', [1, 0, 0, 0, 0]], ['Set appearance and themes', '', [1, 0, 0, 0, 0]]] },
+      { name: 'Projects', rows: [['Create projects', '', [1, 1, 0, 0, 0]], ['Configure project', 'Board, workflow, fields, members', [1, 1, 0, 0, 0]], ['Create and edit issues', '', [1, 1, 1, 0, 1]], ['Delete issues', 'Soft delete, 30-day recovery', [1, 1, 0, 0, 0]], ['View issues', '', [1, 1, 1, 1, 1]]] },
+      { name: 'Docs', rows: [['Create spaces', '', [1, 1, 0, 0, 0]], ['Edit pages', '', [1, 1, 1, 0, 1]], ['Publish and restrict pages', '', [1, 1, 1, 0, 0]], ['Export space', '', [1, 1, 0, 0, 0]]] },
+      { name: 'AI', rows: [['Use AI assist', 'Summaries, drafting, search', [1, 1, 1, 1, 0]], ['Run AI actions that change data', 'Bulk moves, auto-created issues', [1, 1, 1, 0, 0]], ['Configure models and data policy', '', [1, 0, 0, 0, 0]]] }
+    ];
+    return {
+      rootH,
+      nav: [['users', 'Users', 42], ['teams', 'Teams', 6], ['roles', 'Roles and permissions', 0], ['sso', 'Authentication (SSO)', 0]].map(([id, name, count]) => ({ name, count: count || null, bg: s.view === id ? '#eef3fe' : 'transparent', fg: s.view === id ? '#2456c9' : '#3b4454', w: s.view === id ? 500 : 400, pick: () => this.setState({ view: id }) })),
+      isUsers: s.view === 'users', isTeams: s.view === 'teams', isRoles: s.view === 'roles', isSso: s.view === 'sso',
+      users: users.map(([ini, name, email, role, teams, auth, last, dim]) => ({ ini, name, email, role, teams, auth, last, bg: pal[ini][0], fg: pal[ini][1], lastC: dim ? '#b4470f' : '#6b7483' })),
+      teams: [{ ini: 'PL', name: 'Platform', color: '#2456c9', lead: 'Priya N.', count: 14, projects: ['Platform Core'], spaces: ['Engineering', 'Platform Core'], role: 'Member', people: av(['PN', 'AK', 'JM', 'RS']) }, { ini: 'MB', name: 'Mobile', color: '#1f7a44', lead: 'Jonas M.', count: 6, projects: ['Mobile'], spaces: ['Engineering'], role: 'Member', people: av(['JM', 'DV']) }, { ini: 'GR', name: 'Growth', color: '#b4530f', lead: 'Rohan S.', count: 5, projects: ['Growth'], spaces: ['Product'], role: 'Member', people: av(['RS', 'LT']) }, { ini: 'DS', name: 'Design', color: '#be123c', lead: 'Lena T.', count: 4, projects: ['Growth', 'Mobile'], spaces: ['Design'], role: 'Member', people: av(['LT']) }, { ini: 'PO', name: 'People ops', color: '#8b5cf6', lead: 'Maya K.', count: 3, projects: [], spaces: ['Company handbook'], role: 'Member', people: av(['MK']) }, { ini: 'LD', name: 'Leadership', color: '#64748b', lead: 'Rohan S.', count: 4, projects: [], spaces: ['Company handbook', 'Product'], role: 'Viewer', people: av(['RS', 'PN', 'MK']) }],
+      permGroups: permGroups.map(g => ({ name: g.name, rows: g.rows.map(([name, desc, d]) => { const locked = !!s.locks[name]; return { name, desc: desc || null, lockBg: locked ? on : off, lockKnob: locked ? '14px' : '2px', toggleLock: () => this.setState({ locks: { ...s.locks, [name]: !locked } }), cells: d.map((v0, c) => { const k = name + ':' + c, v = s.perms[k] ?? !!v0, fixed = c === 0; return { tick: v ? '✓' : '', bg: v ? on : '#fff', br: v ? on : '#c8ced8', cursor: fixed ? 'default' : 'pointer', op: fixed ? 0.55 : 1, toggle: () => { if (!fixed) this.setState({ perms: { ...s.perms, [k]: !v } }); } }; }) }; }) })),
+      sso: [{ ini: 'G', name: 'Google Workspace', status: 'CONNECTED', sBg: '#e3f4ea', sFg: '#1f7a44', border: '#cdd8f3', desc: 'OIDC · acmelabs.dev domain · 36 users signed in this way.', action: 'Configure' }, { ini: 'OK', name: 'Okta', status: 'CONNECTED', sBg: '#e3f4ea', sFg: '#1f7a44', border: '#cdd8f3', desc: 'SAML 2.0 · SCIM provisioning on · 4 users.', action: 'Configure' }, { ini: 'MS', name: 'Microsoft Entra ID', status: 'NOT SET UP', sBg: '#eef0f4', sFg: '#4b5565', border: '#e2e5ea', desc: 'SAML or OIDC. Needed if part of your org uses Microsoft 365.', action: 'Set up' }, { ini: 'ID', name: 'Generic OIDC / LDAP', status: 'NOT SET UP', sBg: '#eef0f4', sFg: '#4b5565', border: '#e2e5ea', desc: 'Keycloak, Authentik, Active Directory and anything else standards-based.', action: 'Set up' }]
+    };
+  }
+}
+</script>
+</body>
+</html>

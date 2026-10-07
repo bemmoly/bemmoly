@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>html,body{margin:0;height:100%;background:#f4f5f7;font-family:'IBM Plex Sans',system-ui,sans-serif;color:#1b2430;font-size:13px}*{box-sizing:border-box}a{color:#2456c9;text-decoration:none}a:hover{color:#183d94}</style>
+</helmet>
+<div data-screen-label="Issue types and workflow" style="height:{{ rootH }};min-width:1440px;display:flex;flex-direction:column;overflow:hidden;background:#f4f5f7">
+  <div style="height:48px;background:#fff;border-bottom:1px solid #e2e5ea;display:flex;align-items:center;padding:0 12px 0 16px;gap:4px;flex-shrink:0">
+    <a href="Lattice Home.dc.html" style="display:flex;align-items:center;gap:9px;padding-right:14px;margin-right:6px;border-right:1px solid #e2e5ea;height:28px;color:#1b2430"><div style="width:24px;height:24px;border-radius:6px;background:#2456c9;display:grid;grid-template-columns:1fr 1fr;gap:2px;padding:5px"><span style="background:#fff;border-radius:1px"></span><span style="background:#fff;border-radius:1px;opacity:.55"></span><span style="background:#fff;border-radius:1px;opacity:.55"></span><span style="background:#fff;border-radius:1px"></span></div><div style="font-weight:600;font-size:14px;letter-spacing:-.01em">Lattice</div></a>
+    <div style="display:flex;gap:2px;font-size:13.5px">
+      <a href="Lattice Home.dc.html" style="padding:6px 10px;color:#3b4454">Your work <span style="color:#8a93a3;font-size:10px">▾</span></a>
+      <a href="Lattice Board.dc.html" style="padding:6px 10px;color:#1b2430;font-weight:500;box-shadow:inset 0 -2px 0 #2456c9">Projects <span style="color:#8a93a3;font-size:10px">▾</span></a>
+      <a href="Lattice Docs.dc.html" style="padding:6px 10px;color:#3b4454">Docs <span style="color:#8a93a3;font-size:10px">▾</span></a>
+      <a href="Lattice Backlog.dc.html" style="padding:6px 10px;color:#3b4454">Filters <span style="color:#8a93a3;font-size:10px">▾</span></a>
+      <a href="Lattice Roadmap.dc.html" style="padding:6px 10px;color:#3b4454">Dashboards <span style="color:#8a93a3;font-size:10px">▾</span></a>
+      <a href="Lattice People.dc.html" style="padding:6px 10px;color:#3b4454">Teams <span style="color:#8a93a3;font-size:10px">▾</span></a>
+    </div>
+    <div style="margin-left:6px;padding:6px 14px;border-radius:6px;background:#2456c9;color:#fff;font-weight:500">Create</div>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+      <a href="Lattice Command.dc.html" style="width:300px;height:32px;border:1px solid #d5dae2;border-radius:6px;display:flex;align-items:center;padding:0 10px;gap:8px;color:#8a93a3;background:#f9fafb"><span style="font-size:14px">⌕</span><span>Search issues, docs, people</span></a>
+      <a href="Lattice Command.dc.html" style="height:32px;padding:0 12px;border:1px solid #cdd8f3;background:#eef3fe;border-radius:6px;display:flex;align-items:center;gap:7px;color:#2456c9;font-weight:500"><span style="width:8px;height:8px;border-radius:50%;background:#2456c9"></span>Ask Lattice</a>
+      <div style="width:30px;height:30px;border-radius:50%;background:#d7e3fb;color:#2456c9;font-weight:600;font-size:12px;display:flex;align-items:center;justify-content:center;margin-left:4px">RS</div>
+    </div>
+  </div>
+  <div style="flex:1;display:flex;min-height:0">
+    <div style="width:240px;background:#fff;border-right:1px solid #e2e5ea;display:flex;flex-direction:column;flex-shrink:0;overflow:auto">
+      <div style="padding:16px 16px 12px;display:flex;align-items:center;gap:10px"><div style="width:32px;height:32px;border-radius:7px;background:linear-gradient(135deg,#2456c9,#6a8fe8);color:#fff;font-weight:600;display:flex;align-items:center;justify-content:center">PC</div><div style="display:flex;flex-direction:column;gap:1px"><div style="font-weight:600;font-size:13.5px">Platform Core</div><div style="color:#6b7483;font-size:12px">Project settings</div></div></div>
+      <div style="padding:4px 8px;display:flex;flex-direction:column;gap:14px">
+        <div style="display:flex;flex-direction:column;gap:1px">
+          <div style="padding:4px 10px 6px;font:500 11px 'IBM Plex Sans';color:#8a93a3;letter-spacing:.07em;text-transform:uppercase">Project</div>
+          <div style="padding:7px 10px;border-radius:6px;color:#3b4454">Details</div><a href="Lattice People.dc.html" style="padding:7px 10px;border-radius:6px;color:#3b4454">Access</a><div style="padding:7px 10px;border-radius:6px;color:#3b4454">Notifications</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:1px">
+          <div style="padding:4px 10px 6px;font:500 11px 'IBM Plex Sans';color:#8a93a3;letter-spacing:.07em;text-transform:uppercase">Work</div>
+          <div onClick="{{ goTypes }}" style="padding:7px 10px;border-radius:6px;background:{{ typesBg }};color:{{ typesFg }};font-weight:{{ typesW }};cursor:pointer">Issue types and fields</div>
+          <div onClick="{{ goFlow }}" style="padding:7px 10px;border-radius:6px;background:{{ flowBg }};color:{{ flowFg }};font-weight:{{ flowW }};cursor:pointer">Workflow</div>
+          <a href="Lattice Board Settings.dc.html" style="padding:7px 10px;border-radius:6px;color:#3b4454">Board</a>
+          <div style="padding:7px 10px;border-radius:6px;color:#3b4454">Automation</div>
+        </div>
+      </div>
+      <div style="margin-top:auto;padding:12px 16px;border-top:1px solid #e9ecf0;font-size:12px;color:#6b7483;line-height:1.5">Inherits <b style="color:#1b2430">Software (Scrum)</b> scheme from the org. Changes here apply to Platform Core only.</div>
+    </div>
+
+    <!-- ISSUE TYPES -->
+    <sc-if value="{{ isTypes }}" hint-placeholder-val="{{ true }}">
+      <div style="flex:1;display:flex;min-width:0;min-height:0">
+        <div style="width:300px;border-right:1px solid #e2e5ea;background:#fff;display:flex;flex-direction:column;flex-shrink:0;overflow:auto">
+          <div style="padding:14px 16px;border-bottom:1px solid #e9ecf0;display:flex;align-items:center;font-weight:600">Issue types<span style="margin-left:auto;color:#2456c9;font-weight:500;font-size:12.5px">+ Add</span></div>
+          <div style="padding:8px;display:flex;flex-direction:column;gap:2px">
+            <sc-for list="{{ types }}" as="t" hint-placeholder-count="5">
+              <div onClick="{{ t.pick }}" style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:6px;background:{{ t.bg }};cursor:pointer">
+                <span style="width:18px;height:18px;border-radius:{{ t.r }};background:{{ t.c }};color:#fff;font:600 10px 'IBM Plex Sans';display:flex;align-items:center;justify-content:center">{{ t.g }}</span>
+                <div style="display:flex;flex-direction:column;gap:1px;flex:1;min-width:0"><span style="font-weight:600">{{ t.name }}</span><span style="font-size:11.5px;color:#8a93a3">{{ t.meta }}</span></div>
+                <sc-if value="{{ t.custom }}" hint-placeholder-val="{{ false }}"><span style="font-size:10.5px;padding:1px 6px;border-radius:3px;background:#eef3fe;color:#2456c9;font-weight:600">PROJECT</span></sc-if>
+              </div>
+            </sc-for>
+          </div>
+          <div style="padding:12px 16px;border-top:1px solid #e9ecf0;margin-top:auto;font-size:12px;color:#6b7483;line-height:1.5">Hierarchy: <b>Epic</b> › Story / Bug / Task / Incident › <b>Subtask</b>. Edit in <a href="#">Workspace › Issue types</a>.</div>
+        </div>
+        <div style="flex:1;overflow:auto;min-width:0">
+          <div style="max-width:900px;padding:28px 36px 60px;display:flex;flex-direction:column;gap:20px">
+            <div style="display:flex;align-items:center;gap:14px">
+              <span style="width:36px;height:36px;border-radius:{{ sel.r }};background:{{ sel.c }};color:#fff;font:600 16px 'IBM Plex Sans';display:flex;align-items:center;justify-content:center">{{ sel.g }}</span>
+              <div style="display:flex;flex-direction:column;gap:2px"><div style="font-weight:600;font-size:22px;letter-spacing:-.015em">{{ sel.name }}</div><div style="color:#6b7483">{{ sel.desc }}</div></div>
+              <div style="margin-left:auto;display:flex;gap:8px"><span style="height:32px;padding:0 12px;border:1px solid #d5dae2;background:#fff;border-radius:6px;display:flex;align-items:center;font-weight:500;color:#3b4454">Preview create form</span><span style="height:32px;padding:0 14px;border-radius:6px;background:#2456c9;color:#fff;display:flex;align-items:center;font-weight:500">Save</span></div>
+            </div>
+            <div style="display:flex;gap:2px;border-bottom:1px solid #e2e5ea"><span style="padding:9px 14px;font-weight:500;color:#1b2430;box-shadow:inset 0 -2px 0 #2456c9">Fields</span><span style="padding:9px 14px;font-weight:500;color:#6b7483">Create form layout</span><span style="padding:9px 14px;font-weight:500;color:#6b7483">Templates</span><span style="padding:9px 14px;font-weight:500;color:#6b7483">Automation</span></div>
+            <div style="display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;align-items:start">
+              <div style="background:#fff;border:1px solid #e2e5ea;border-radius:8px;overflow:hidden">
+                <div style="display:grid;grid-template-columns:16px minmax(0,1fr) 110px 90px 90px 28px;gap:10px;padding:9px 14px;background:#fafbfc;border-bottom:1px solid #e9ecf0;font:500 11px 'IBM Plex Sans';color:#8a93a3;letter-spacing:.06em;text-transform:uppercase"><span></span><span>Field</span><span>Type</span><span>Required</span><span>On card</span><span></span></div>
+                <sc-for list="{{ fields }}" as="f" hint-placeholder-count="10">
+                  <div style="display:grid;grid-template-columns:16px minmax(0,1fr) 110px 90px 90px 28px;gap:10px;padding:9px 14px;border-bottom:1px solid #eceef2;align-items:center;opacity:{{ f.op }}">
+                    <span style="color:#c4cad3;cursor:grab;letter-spacing:-2px">⋮⋮</span>
+                    <div style="display:flex;flex-direction:column;gap:1px;min-width:0"><span style="font-weight:500;display:flex;gap:6px;align-items:center">{{ f.name }}<sc-if value="{{ f.tag }}" hint-placeholder-val="{{ false }}"><span style="font-size:10.5px;padding:1px 6px;border-radius:3px;background:{{ f.tagBg }};color:{{ f.tagFg }};font-weight:600">{{ f.tag }}</span></sc-if></span><sc-if value="{{ f.help }}" hint-placeholder-val="{{ false }}"><span style="font-size:11.5px;color:#8a93a3">{{ f.help }}</span></sc-if></div>
+                    <span style="font-size:12px;color:#4b5565;font-family:'IBM Plex Mono'">{{ f.type }}</span>
+                    <div onClick="{{ f.toggleReq }}" style="width:34px;height:20px;border-radius:10px;background:{{ f.reqBg }};position:relative;cursor:pointer"><span style="position:absolute;top:2px;left:{{ f.reqKnob }};width:16px;height:16px;border-radius:50%;background:#fff;transition:left .15s"></span></div>
+                    <div onClick="{{ f.toggleCard }}" style="width:34px;height:20px;border-radius:10px;background:{{ f.cardBg }};position:relative;cursor:pointer"><span style="position:absolute;top:2px;left:{{ f.cardKnob }};width:16px;height:16px;border-radius:50%;background:#fff;transition:left .15s"></span></div>
+                    <span style="color:#a2aab8;text-align:center">···</span>
+                  </div>
+                </sc-for>
+                <div style="padding:10px 14px;display:flex;gap:14px;font-weight:500;color:#2456c9;font-size:12.5px"><span>+ Add existing field</span><span>+ Create custom field</span></div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:12px">
+                <div style="background:#fff;border:1px solid #e2e5ea;border-radius:8px;overflow:hidden">
+                  <div style="padding:10px 14px;border-bottom:1px solid #e9ecf0;font-weight:600;font-size:12.5px">Create form preview</div>
+                  <div style="padding:12px 14px;display:flex;flex-direction:column;gap:10px;font-size:12px">
+                    <sc-for list="{{ formPreview }}" as="fp" hint-placeholder-count="5"><div style="display:flex;flex-direction:column;gap:4px"><span style="font-weight:500;color:#3b4454">{{ fp.name }}<sc-if value="{{ fp.req }}" hint-placeholder-val="{{ false }}"><span style="color:#d93838"> *</span></sc-if></span><div style="height:{{ fp.h }};border:1px solid #d5dae2;border-radius:5px;background:#fafbfc"></div></div></sc-for>
+                    <div style="height:30px;border-radius:5px;background:#2456c9;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:500;margin-top:4px">Create {{ sel.name }}</div>
+                  </div>
+                </div>
+                <div style="padding:10px 12px;background:#f6f8fe;border:1px solid #d9e1f5;border-radius:7px;font-size:12px;line-height:1.5;display:flex;gap:8px"><span style="width:7px;height:7px;border-radius:50%;background:#2456c9;flex-shrink:0;margin-top:5px"></span><span>Fields marked <b>AI-filled</b> get a suggested value from the title and description; people can override.</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- WORKFLOW -->
+    <sc-if value="{{ isFlow }}" hint-placeholder-val="{{ false }}">
+      <div style="flex:1;display:flex;flex-direction:column;min-width:0;min-height:0">
+        <div style="padding:14px 24px 12px;display:flex;flex-direction:column;gap:12px;flex-shrink:0">
+          <div style="font-size:12.5px;color:#6b7483">Projects / Platform Core / Settings / <span style="color:#1b2430">Workflow</span></div>
+          <div style="display:flex;align-items:center;gap:16px">
+            <div style="font-weight:600;font-size:22px;letter-spacing:-.015em">Software workflow</div>
+            <span style="font-size:11px;padding:2px 7px;border-radius:3px;background:#eef3fe;color:#2456c9;font-weight:600">PROJECT COPY</span>
+            <span style="color:#6b7483;font-size:12.5px">Applies to Story, Bug, Task · Epic and Subtask use simplified flows</span>
+            <div style="margin-left:auto;display:flex;gap:8px"><span style="height:32px;padding:0 12px;border:1px solid #d5dae2;background:#fff;border-radius:6px;display:flex;align-items:center;font-weight:500;color:#3b4454">Validate</span><span style="height:32px;padding:0 12px;border:1px solid #d5dae2;background:#fff;border-radius:6px;display:flex;align-items:center;font-weight:500;color:#3b4454">Add status</span><span style="height:32px;padding:0 14px;border-radius:6px;background:#2456c9;color:#fff;display:flex;align-items:center;font-weight:500">Publish</span></div>
+          </div>
+        </div>
+        <div style="flex:1;display:flex;min-height:0">
+          <div style="flex:1;overflow:auto;padding:0 24px 24px;min-width:0">
+            <div style="background:#fff;border:1px solid #e2e5ea;border-radius:8px;position:relative;height:560px;min-width:1000px;background-image:radial-gradient(#e2e5ea 1px,transparent 1px);background-size:20px 20px;overflow:hidden">
+              <svg style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none" viewBox="0 0 1000 560" preserveAspectRatio="none">
+                <defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#8a93a3"></path></marker><marker id="arb" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#2456c9"></path></marker></defs>
+                <sc-for list="{{ edges }}" as="e" hint-placeholder-count="8"><path d="{{ e.d }}" fill="none" stroke="{{ e.stroke }}" stroke-width="{{ e.w }}" stroke-dasharray="{{ e.dash }}" marker-end="{{ e.marker }}"></path></sc-for>
+              </svg>
+              <sc-for list="{{ nodes }}" as="n" hint-placeholder-count="7">
+                <div onClick="{{ n.pick }}" style="position:absolute;left:{{ n.x }};top:{{ n.y }};width:150px;transform:translate(-50%,-50%);background:#fff;border:1.5px solid {{ n.border }};box-shadow:{{ n.shadow }};border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:4px;cursor:pointer">
+                  <div style="display:flex;align-items:center;gap:7px"><span style="width:9px;height:9px;border-radius:50%;background:{{ n.color }}"></span><span style="font-weight:600;font-size:12.5px">{{ n.name }}</span></div>
+                  <div style="font-size:11px;color:#8a93a3">{{ n.cat }} · {{ n.count }} issues</div>
+                </div>
+              </sc-for>
+              <sc-for list="{{ edgeLabels }}" as="l" hint-placeholder-count="4"><div style="position:absolute;left:{{ l.x }};top:{{ l.y }};transform:translate(-50%,-50%);font-size:11px;padding:2px 7px;border-radius:4px;background:#fff;border:1px solid {{ l.br }};color:{{ l.fg }};white-space:nowrap">{{ l.text }}</div></sc-for>
+              <div style="position:absolute;left:16px;bottom:14px;display:flex;gap:14px;font-size:11.5px;color:#6b7483;align-items:center"><span style="display:flex;gap:6px;align-items:center"><span style="width:20px;height:0;border-top:1.5px solid #8a93a3"></span>transition</span><span style="display:flex;gap:6px;align-items:center"><span style="width:20px;height:0;border-top:1.5px dashed #8a93a3"></span>any status</span><span style="display:flex;gap:6px;align-items:center"><span style="width:9px;height:9px;border-radius:50%;background:#8a93a3"></span>To do</span><span style="display:flex;gap:6px;align-items:center"><span style="width:9px;height:9px;border-radius:50%;background:#2456c9"></span>In progress</span><span style="display:flex;gap:6px;align-items:center"><span style="width:9px;height:9px;border-radius:50%;background:#2b9b5a"></span>Done</span></div>
+            </div>
+          </div>
+          <div style="width:340px;border-left:1px solid #e2e5ea;background:#fff;display:flex;flex-direction:column;flex-shrink:0;overflow:auto">
+            <div style="padding:14px 16px;border-bottom:1px solid #e9ecf0;display:flex;align-items:center;gap:8px"><span style="width:10px;height:10px;border-radius:50%;background:{{ selNode.color }}"></span><span style="font-weight:600;font-size:14px">{{ selNode.name }}</span><span style="margin-left:auto;font-size:11px;padding:2px 7px;border-radius:3px;background:#eef0f4;color:#4b5565;font-weight:600">{{ selNode.catU }}</span></div>
+            <div style="padding:14px 16px;display:flex;flex-direction:column;gap:16px;font-size:12.5px">
+              <div style="display:flex;flex-direction:column;gap:8px"><span style="font-weight:600">Transitions out</span><sc-for list="{{ selNode.outs }}" as="o" hint-placeholder-count="2"><div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid #e2e5ea;border-radius:6px"><span style="color:#8a93a3">→</span><span style="font-weight:500;flex:1">{{ o }}</span><span style="color:#a2aab8">···</span></div></sc-for><span style="color:#2456c9;font-weight:500">+ Add transition</span></div>
+              <div style="display:flex;flex-direction:column;gap:8px"><span style="font-weight:600">Rules when entering</span>
+                <sc-for list="{{ selNode.rules }}" as="r" hint-placeholder-count="2"><div style="display:flex;gap:8px;padding:8px 10px;border:1px solid #e2e5ea;border-radius:6px;align-items:flex-start"><span style="font-size:10.5px;padding:1px 6px;border-radius:3px;background:{{ r.bg }};color:{{ r.fg }};font-weight:600;margin-top:1px;flex-shrink:0">{{ r.kind }}</span><span style="line-height:1.45">{{ r.text }}</span></div></sc-for>
+                <span style="color:#2456c9;font-weight:500">+ Add condition, validator or post-action</span>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:8px"><span style="font-weight:600">Who can move issues here</span><div style="display:flex;gap:6px;flex-wrap:wrap"><span style="padding:4px 9px;border-radius:12px;background:#eef3fe;color:#2456c9;font-weight:500">Project admin</span><span style="padding:4px 9px;border-radius:12px;background:#eef3fe;color:#2456c9;font-weight:500">Member</span><span style="padding:4px 9px;border-radius:12px;border:1px dashed #d5dae2;color:#8a93a3">+ role</span></div></div>
+              <div style="padding:10px 12px;background:#f6f8fe;border:1px solid #d9e1f5;border-radius:7px;line-height:1.5;display:flex;gap:8px"><span style="width:7px;height:7px;border-radius:50%;background:#2456c9;flex-shrink:0;margin-top:5px"></span><span>Issues average <b>{{ selNode.avg }}</b> in this status. {{ selNode.aiNote }}</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { view: 'types', type: 'story', node: 'Code review', req: {}, card: {} };
+  renderVals() {
+    const rootH = this.props.height ?? '100vh';
+    const s = this.state, on = '#2456c9', off = '#cfd4dc';
+    const typeDefs = [
+      ['epic', 'Epic', '#8b5cf6', '3px', '◆', 'Large body of work spanning sprints', 'Parent of stories, bugs, tasks', false],
+      ['story', 'Story', '#2b9b5a', '3px', '▮', 'User-facing functionality, estimated in points', '142 issues', false],
+      ['bug', 'Bug', '#d93838', '50%', '●', 'A defect in shipped behavior', '38 issues', false],
+      ['task', 'Task', '#2456c9', '3px', '✓', 'Technical or operational work', '96 issues', false],
+      ['incident', 'Incident', '#e0632a', '50%', '!', 'Production incident with severity and timeline', '4 issues', true],
+      ['subtask', 'Subtask', '#6b7483', '3px', '–', 'Child of any standard issue', 'Inherits parent fields', false]
+    ];
+    const sel = typeDefs.find(t => t[0] === s.type);
+    const fieldSets = {
+      common: [['Summary', 'text', 1, 0, 0, 'SYSTEM'], ['Description', 'rich text', 0, 0, 0, 'SYSTEM'], ['Assignee', 'user', 0, 1, 0, ''], ['Priority', 'select', 1, 1, 0, ''], ['Labels', 'multi-select', 0, 1, 0, ''], ['Epic', 'parent link', 0, 0, 0, ''], ['Sprint', 'sprint', 0, 0, 0, ''], ['Fix version', 'version', 0, 0, 0, ''], ['Linked docs', 'doc link', 0, 1, 0, 'AI-FILLED', 'Suggests related pages from the description']],
+      story: [['Story points', 'number', 0, 1, 0, 'AI-FILLED', 'Suggests from similar past issues'], ['Acceptance criteria', 'rich text', 1, 0, 0, ''], ['Design link', 'url', 0, 0, 0, '']],
+      bug: [['Severity', 'select', 1, 1, 0, ''], ['Environment', 'select', 1, 0, 0, ''], ['Steps to reproduce', 'rich text', 1, 0, 0, ''], ['Affected version', 'version', 0, 0, 0, '']],
+      task: [['Story points', 'number', 0, 1, 0, 'AI-FILLED', 'Suggests from similar past issues'], ['Due date', 'date', 0, 1, 0, '']],
+      epic: [['Target date', 'date', 1, 0, 0, ''], ['Owner', 'user', 1, 0, 0, ''], ['Objective', 'select', 0, 0, 0, '', 'Links to company OKRs']],
+      incident: [['Severity', 'select', 1, 1, 0, 'PROJECT'], ['Started at', 'datetime', 1, 0, 0, 'PROJECT'], ['Customer impact', 'rich text', 1, 0, 0, 'PROJECT'], ['Postmortem doc', 'doc link', 0, 1, 0, 'PROJECT']],
+      subtask: [['Estimate', 'number', 0, 1, 0, '']]
+    };
+    const raw = [...fieldSets.common, ...fieldSets[s.type]];
+    const fields = raw.map(([name, type, req, card, _, tag, help], i) => {
+      const k = s.type + ':' + name, r = s.req[k] ?? !!req, c = s.card[k] ?? !!card, sys = tag === 'SYSTEM';
+      const tagBg = tag === 'AI-FILLED' ? '#eef3fe' : tag === 'PROJECT' ? '#eef3fe' : '#eef0f4', tagFg = tag === 'AI-FILLED' || tag === 'PROJECT' ? '#2456c9' : '#4b5565';
+      return { name, type, help: help || null, tag: tag || null, tagBg, tagFg, op: 1, reqBg: r ? on : off, reqKnob: r ? '16px' : '2px', cardBg: c ? on : off, cardKnob: c ? '16px' : '2px', toggleReq: () => { if (!sys) this.setState({ req: { ...s.req, [k]: !r } }); }, toggleCard: () => this.setState({ card: { ...s.card, [k]: !c } }) };
+    });
+    const formPreview = fields.slice(0, 6).map(f => ({ name: f.name, req: f.reqBg === on, h: f.type.includes('rich') ? '54px' : '28px' }));
+    const N = { 'Backlog': [110, 120, '#8a93a3', 'To do', 42], 'Selected': [300, 120, '#8a93a3', 'To do', 9], 'In progress': [490, 120, '#2456c9', 'In progress', 4], 'Code review': [680, 120, '#8b5cf6', 'In progress', 2], 'Testing': [680, 300, '#d49a1a', 'In progress', 2], 'Done': [870, 300, '#2b9b5a', 'Done', 9], "Won't do": [300, 420, '#8a93a3', 'Done', 3] };
+    const E = [['Backlog', 'Selected', 'Select for sprint', 0], ['Selected', 'In progress', 'Start work', 0], ['In progress', 'Code review', 'Open PR', 0], ['Code review', 'Testing', 'Approve', 0], ['Code review', 'In progress', 'Request changes', 0], ['Testing', 'Done', 'Pass QA', 0], ['Testing', 'In progress', 'Fail QA', 0], ['*', "Won't do", 'Close', 1]];
+    const px = v => (v / 1000 * 100) + '%', py = v => (v / 560 * 100) + '%';
+    const nodes = Object.entries(N).map(([name, [x, y, color, cat, count]]) => ({ name, x: px(x), y: py(y), color, cat, count, border: s.node === name ? '#2456c9' : '#d5dae2', shadow: s.node === name ? '0 0 0 3px #cdd8f3' : '0 1px 2px rgba(16,24,40,.06)', pick: () => this.setState({ node: name }) }));
+    const edges = [], edgeLabels = [];
+    for (const [a, b, label, any] of E) {
+      const hi = s.node === a;
+      if (any) { const [bx, by] = N[b]; edges.push({ d: `M${bx - 140} ${by - 60} Q ${bx - 110} ${by - 60} ${bx - 78} ${by - 10}`, stroke: '#8a93a3', w: 1.5, dash: '4 4', marker: 'url(#ar)' }); edgeLabels.push({ x: px(bx - 160), y: py(by - 62), text: 'Any → Close', br: '#e2e5ea', fg: '#6b7483' }); continue; }
+      const [ax, ay] = N[a], [bx, by] = N[b];
+      let d;
+      if (ay === by) { const back = bx < ax; d = back ? `M${ax} ${ay + 28} C ${ax} ${ay + 70}, ${bx} ${by + 70}, ${bx} ${by + 28}` : `M${ax + 75} ${ay} L ${bx - 75} ${by}`; if (back) edgeLabels.push({ x: px((ax + bx) / 2), y: py(ay + 60), text: label, br: hi ? '#cdd8f3' : '#e2e5ea', fg: hi ? '#2456c9' : '#6b7483' }); else edgeLabels.push({ x: px((ax + bx) / 2), y: py(ay - 16), text: label, br: hi ? '#cdd8f3' : '#e2e5ea', fg: hi ? '#2456c9' : '#6b7483' }); }
+      else if (ax === bx) { d = `M${ax} ${ay + 28} L ${bx} ${by - 28}`; edgeLabels.push({ x: px(ax + 60), y: py((ay + by) / 2), text: label, br: hi ? '#cdd8f3' : '#e2e5ea', fg: hi ? '#2456c9' : '#6b7483' }); }
+      else { d = `M${ax - 75} ${ay} C ${ax - 150} ${ay}, ${bx + 20} ${by - 120}, ${bx + 30} ${by - 28}`; edgeLabels.push({ x: px((ax + bx) / 2 - 40), y: py((ay + by) / 2 - 20), text: label, br: hi ? '#cdd8f3' : '#e2e5ea', fg: hi ? '#2456c9' : '#6b7483' }); }
+      edges.push({ d, stroke: hi ? '#2456c9' : '#8a93a3', w: hi ? 2 : 1.5, dash: '0', marker: hi ? 'url(#arb)' : 'url(#ar)' });
+    }
+    const info = { 'Code review': { outs: ['Testing (Approve)', 'In progress (Request changes)'], rules: [{ kind: 'CONDITION', bg: '#eef0f4', fg: '#4b5565', text: 'A pull request must be linked' }, { kind: 'VALIDATOR', bg: '#fdf3dc', fg: '#8a6210', text: 'Reviewer field is not empty' }, { kind: 'POST', bg: '#e3f4ea', fg: '#1f7a44', text: 'Notify reviewers; start review timer' }], avg: '2.1 days', aiNote: 'PLT-204 has been here 3 days; 92% of issues leave within 2.' } };
+    const d = info[s.node] || { outs: E.filter(e => e[0] === s.node).map(e => `${e[1]} (${e[2]})`), rules: [{ kind: 'POST', bg: '#e3f4ea', fg: '#1f7a44', text: 'Record status change in history' }], avg: '1.4 days', aiNote: 'No bottleneck detected.' };
+    const nd = N[s.node];
+    return {
+      rootH,
+      isTypes: s.view === 'types', isFlow: s.view === 'flow', goTypes: () => this.setState({ view: 'types' }), goFlow: () => this.setState({ view: 'flow' }),
+      typesBg: s.view === 'types' ? '#eef3fe' : 'transparent', typesFg: s.view === 'types' ? '#2456c9' : '#3b4454', typesW: s.view === 'types' ? 500 : 400,
+      flowBg: s.view === 'flow' ? '#eef3fe' : 'transparent', flowFg: s.view === 'flow' ? '#2456c9' : '#3b4454', flowW: s.view === 'flow' ? 500 : 400,
+      types: typeDefs.map(([id, name, c, r, g, desc, meta, custom]) => ({ id, name, c, r, g, meta, custom, bg: s.type === id ? '#eef3fe' : 'transparent', pick: () => this.setState({ type: id }) })),
+      sel: { name: sel[1], c: sel[2], r: sel[3], g: sel[4], desc: sel[5] }, fields, formPreview,
+      nodes, edges, edgeLabels, selNode: { name: s.node, color: nd[2], catU: nd[3].toUpperCase(), ...d }
+    };
+  }
+}
+</script>
+</body>
+</html>

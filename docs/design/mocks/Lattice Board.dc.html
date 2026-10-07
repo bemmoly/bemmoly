@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Inter+Tight:wght@400;500;600&family=Source+Sans+3:wght@400;500;600&family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
+<style>html,body{margin:0;height:100%;background:#f4f5f7;font-family:'IBM Plex Sans',system-ui,sans-serif;color:#1b2430;font-size:13px}:root{--ac:#2456c9;--ac-d:#183d94;--ac-l:#6a8fe8;--ac-bg:#eef3fe;--ac-bg2:#f6f8fe;--ac-br:#cdd8f3;--ac-av:#d7e3fb;--ac-mute:#7a93d9;--bg:#f4f5f7;--bg2:#f9fafb;--sf:#fff;--br:#e2e5ea;--br2:#e9ecf0;--br3:#d5dae2;--trk:#e5e8ee;--chip:#eef0f4;--tx:#1b2430;--tx2:#3b4454;--tx3:#4b5565;--tx4:#6b7483;--tx5:#8a93a3;--tx6:#a2aab8}*{box-sizing:border-box}a{color:#2456c9;text-decoration:none}a:hover{color:#183d94}::-webkit-scrollbar{width:10px;height:10px}::-webkit-scrollbar-thumb{background:#cfd4dc;border-radius:6px;border:2px solid #f4f5f7}</style>
+</helmet>
+<div data-screen-label="Board" style="{{ rootStyle }}">
+
+  <!-- Top bar -->
+  <div style="height:48px;background:var(--sf);border-bottom:1px solid var(--br);display:flex;align-items:center;padding:0 12px 0 16px;gap:4px;flex-shrink:0">
+    <div style="display:flex;align-items:center;gap:9px;padding-right:14px;margin-right:6px;border-right:1px solid var(--br);height:28px">
+      <div style="width:24px;height:24px;border-radius:6px;background:var(--ac);display:grid;grid-template-columns:1fr 1fr;gap:2px;padding:5px"><span style="background:#fff;border-radius:1px"></span><span style="background:#fff;border-radius:1px;opacity:.55"></span><span style="background:#fff;border-radius:1px;opacity:.55"></span><span style="background:#fff;border-radius:1px"></span></div>
+      <div style="font-weight:600;font-size:14px;letter-spacing:-.01em">Lattice</div>
+    </div>
+    <div style="display:flex;gap:2px;font-size:13.5px">
+      <a href="Lattice Home.dc.html" style="padding:6px 10px;border-radius:6px;color:var(--tx2)">Your work <span style="color:var(--tx5);font-size:10px">▾</span></a>
+      <div style="padding:6px 10px;border-radius:6px;color:var(--tx);font-weight:500;box-shadow:inset 0 -2px 0 var(--ac);border-radius:0">Projects <span style="color:var(--tx5);font-size:10px">▾</span></div>
+      <a href="Lattice Docs.dc.html" style="padding:6px 10px;border-radius:6px;color:var(--tx2)">Docs <span style="color:var(--tx5);font-size:10px">▾</span></a>
+      <a href="Lattice Backlog.dc.html" style="padding:6px 10px;border-radius:6px;color:var(--tx2)">Filters <span style="color:var(--tx5);font-size:10px">▾</span></a>
+      <a href="Lattice Roadmap.dc.html" style="padding:6px 10px;border-radius:6px;color:var(--tx2)">Dashboards <span style="color:var(--tx5);font-size:10px">▾</span></a>
+      <a href="Lattice People.dc.html" style="padding:6px 10px;border-radius:6px;color:var(--tx2)">Teams <span style="color:var(--tx5);font-size:10px">▾</span></a>
+    </div>
+    <div style="margin-left:6px;padding:6px 14px;border-radius:6px;background:var(--ac);color:#fff;font-weight:500">Create</div>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+      <div style="width:300px;height:32px;border:1px solid var(--br3);border-radius:6px;display:flex;align-items:center;padding:0 10px;gap:8px;color:var(--tx5);background:var(--bg2)"><span style="font-size:14px">⌕</span><span>Search issues, docs, people</span><span style="margin-left:auto;font:500 11px 'IBM Plex Mono';color:var(--tx6)">/</span></div>
+      <a href="Lattice Command.dc.html" style="height:32px;padding:0 12px;border:1px solid var(--ac-br);background:var(--ac-bg);border-radius:6px;display:flex;align-items:center;gap:7px;color:var(--ac);font-weight:500"><span style="width:8px;height:8px;border-radius:50%;background:var(--ac)"></span>Ask Lattice<span style="font:500 11px 'IBM Plex Mono';color:var(--ac-mute)">⌘K</span></a>
+      <div style="width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;position:relative;color:var(--tx2)"><span style="width:14px;height:14px;border:1.5px solid currentColor;border-radius:4px 4px 7px 7px"></span><span style="position:absolute;top:5px;right:6px;min-width:14px;height:14px;border-radius:7px;background:#d93838;color:#fff;font:600 10px 'IBM Plex Sans';display:flex;align-items:center;justify-content:center;padding:0 3px">4</span></div>
+      <div style="width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;color:var(--tx2);font-weight:600;font-size:14px">?</div>
+      <div style="width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;color:var(--tx2)"><span style="width:14px;height:14px;border:1.5px solid currentColor;border-radius:50%;box-shadow:inset 0 0 0 3px var(--sf),inset 0 0 0 4.5px currentColor"></span></div>
+      <div style="width:30px;height:30px;border-radius:50%;background:var(--ac-av);color:var(--ac);font-weight:600;font-size:12px;display:flex;align-items:center;justify-content:center;margin-left:4px">RS</div>
+    </div>
+  </div>
+
+  <div style="flex:1;display:flex;min-height:0">
+    <!-- Project sidebar -->
+    <div style="width:240px;background:var(--sf);border-right:1px solid var(--br);display:flex;flex-direction:column;flex-shrink:0;overflow:auto">
+      <div style="padding:16px 16px 12px;display:flex;align-items:center;gap:10px">
+        <div style="width:32px;height:32px;border-radius:7px;background:linear-gradient(135deg,var(--ac),var(--ac-l));color:var(--sf);font-weight:600;display:flex;align-items:center;justify-content:center">PC</div>
+        <div style="display:flex;flex-direction:column;gap:1px"><div style="font-weight:600;font-size:13.5px">Platform Core</div><div style="color:var(--tx4);font-size:12px">Software project</div></div>
+      </div>
+      <div style="padding:4px 8px;display:flex;flex-direction:column;gap:14px">
+        <div style="display:flex;flex-direction:column;gap:1px">
+          <div style="padding:4px 10px 6px;font:500 11px 'IBM Plex Sans';color:var(--tx5);letter-spacing:.07em;text-transform:uppercase">Planning</div>
+          <a href="Lattice Roadmap.dc.html" style="padding:7px 10px;border-radius:6px;color:var(--tx2);display:flex;gap:10px;align-items:center"><span style="width:14px;height:10px;border:1.5px solid var(--tx4);border-radius:2px;background:linear-gradient(90deg,var(--tx4) 40%,transparent 40%)"></span>Roadmap</a>
+          <a href="Lattice Backlog.dc.html" style="padding:7px 10px;border-radius:6px;color:var(--tx2);display:flex;gap:10px;align-items:center"><span style="width:14px;height:12px;border-top:1.5px solid var(--tx4);border-bottom:1.5px solid var(--tx4);box-shadow:inset 0 5px 0 -3.5px var(--tx4)"></span>Backlog</a>
+          <div style="padding:7px 10px;border-radius:6px;background:var(--ac-bg);color:var(--ac);font-weight:500;display:flex;gap:10px;align-items:center"><span style="width:14px;height:12px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px"><span style="background:var(--ac)"></span><span style="background:var(--ac);height:70%"></span><span style="background:var(--ac);height:45%"></span></span>Board</div>
+          <div style="padding:7px 10px;border-radius:6px;color:var(--tx2);display:flex;gap:10px;align-items:center"><span style="width:12px;height:12px;border:1.5px solid var(--tx4);border-radius:50%;border-right-color:transparent"></span>{{ sprintsNav }}</div>
+          <div style="padding:7px 10px;border-radius:6px;color:var(--tx2);display:flex;gap:10px;align-items:center"><span style="width:14px;height:12px;display:flex;align-items:flex-end;gap:2px"><span style="flex:1;height:50%;background:var(--tx4)"></span><span style="flex:1;height:100%;background:var(--tx4)"></span><span style="flex:1;height:70%;background:var(--tx4)"></span></span>Reports</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:1px">
+          <div style="padding:4px 10px 6px;font:500 11px 'IBM Plex Sans';color:var(--tx5);letter-spacing:.07em;text-transform:uppercase">Docs</div>
+          <a href="Lattice Docs.dc.html" style="padding:7px 10px;border-radius:6px;color:var(--tx2);display:flex;gap:10px;align-items:center"><span style="width:11px;height:13px;border:1.5px solid var(--tx4);border-radius:2px"></span>Project space</a>
+          <div style="padding:7px 10px;border-radius:6px;color:var(--tx2);display:flex;gap:10px;align-items:center;justify-content:space-between"><span style="display:flex;gap:10px;align-items:center"><span style="width:13px;height:13px;border:1.5px solid var(--tx4);border-radius:50%"></span>Linked pages</span><span style="font:500 11px 'IBM Plex Mono';color:var(--tx5)">12</span></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:1px">
+          <div style="padding:4px 10px 6px;font:500 11px 'IBM Plex Sans';color:var(--tx5);letter-spacing:.07em;text-transform:uppercase">Development</div>
+          <div style="padding:7px 10px;border-radius:6px;color:var(--tx2);display:flex;gap:10px;align-items:center"><span style="font:500 12px 'IBM Plex Mono';color:var(--tx4)">&lt;/&gt;</span>Code</div>
+          <div style="padding:7px 10px;border-radius:6px;color:var(--tx2);display:flex;gap:10px;align-items:center"><span style="width:12px;height:12px;border:1.5px solid var(--tx4);border-radius:3px;transform:rotate(45deg) scale(.85)"></span>Releases</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:1px;border-top:1px solid var(--br2);padding-top:10px">
+          <a href="Lattice Board Settings.dc.html" style="padding:7px 10px;border-radius:6px;color:var(--tx2);display:flex;gap:10px;align-items:center"><span style="width:12px;height:12px;border:1.5px solid var(--tx4);border-radius:50%;box-shadow:inset 0 0 0 2.5px var(--sf),inset 0 0 0 4px var(--tx4)"></span>Project settings</a>
+          <div style="padding:7px 10px;border-radius:6px;color:var(--tx2);display:flex;gap:10px;align-items:center"><span style="width:12px;height:12px;border:1.5px solid var(--tx4);border-radius:50%"></span>Members <span style="margin-left:auto;font:500 11px 'IBM Plex Mono';color:var(--tx5)">14</span></div>
+        </div>
+      </div>
+      <div style="margin-top:auto;padding:14px 16px;border-top:1px solid var(--br2);color:var(--tx4);font-size:12px;display:flex;justify-content:space-between"><span>Self-hosted · v1.2.0</span><span style="color:var(--ac)">Update</span></div>
+    </div>
+
+    <!-- Main -->
+    <div style="flex:1;display:flex;flex-direction:column;min-width:0;min-height:0">
+      <div style="padding:14px 24px 0;background:var(--bg);flex-shrink:0;display:flex;flex-direction:column;gap:12px">
+        <div style="font-size:12.5px;color:var(--tx4);display:flex;gap:6px"><span>Projects</span><span>/</span><span>Platform Core</span><span>/</span><span style="color:var(--tx)">PLT board</span></div>
+        <div style="display:flex;align-items:flex-start;gap:16px">
+          <sc-if value="{{ isSprint }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;flex-direction:column;gap:4px;min-width:0"><div style="font-weight:600;font-size:22px;letter-spacing:-.015em;white-space:nowrap">PLT Sprint 14</div>
+          <div style="display:flex;align-items:center;gap:8px;color:var(--tx4);font-size:12.5px;flex-wrap:wrap"><span>Sep 23 – Oct 7</span><span>·</span><span style="color:var(--tx);font-weight:500">2 days remaining</span><span>·</span><span>Goal: Auth service in production behind flag</span></div></div>
+          </sc-if>
+          <sc-if value="{{ isKanban }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:4px;min-width:0"><div style="font-weight:600;font-size:22px;letter-spacing:-.015em;white-space:nowrap">Platform Core board</div>
+          <div style="display:flex;align-items:center;gap:8px;color:var(--tx4);font-size:12.5px;flex-wrap:wrap"><span>Continuous flow</span><span>·</span><span style="color:var(--tx);font-weight:500">{{ inFlight }} in flight</span><span>·</span><span>Avg cycle time 3.4 days</span><span>·</span><span>Throughput 11 / week</span></div></div>
+          </sc-if>
+          <div style="margin-left:auto;display:flex;gap:8px;align-items:center;flex-shrink:0;white-space:nowrap">
+            <sc-if value="{{ isSprint }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;align-items:center;gap:8px;padding:0 10px;height:32px;border:1px solid var(--br3);background:var(--sf);border-radius:6px;font-size:12.5px"><span style="color:var(--tx4)">Velocity</span><span style="font:500 12px 'IBM Plex Mono'">{{ donePts }}/{{ totalPts }} pts</span><span style="width:80px;height:6px;background:var(--trk);border-radius:3px;overflow:hidden"><span style="display:block;height:100%;width:{{ pctW }};background:#2b9b5a"></span></span></div>
+            </sc-if>
+            <sc-if value="{{ isKanban }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;align-items:center;gap:8px;padding:0 10px;height:32px;border:1px solid var(--br3);background:var(--sf);border-radius:6px;font-size:12.5px"><span style="color:var(--tx4)">Flow</span><span style="display:flex;align-items:flex-end;gap:2px;height:14px"><span style="width:4px;height:50%;background:var(--ac-mute)"></span><span style="width:4px;height:70%;background:var(--ac-mute)"></span><span style="width:4px;height:45%;background:var(--ac-mute)"></span><span style="width:4px;height:85%;background:var(--ac-mute)"></span><span style="width:4px;height:100%;background:var(--ac)"></span><span style="width:4px;height:65%;background:var(--ac)"></span><span style="width:4px;height:80%;background:var(--ac)"></span></span><span style="font:500 12px 'IBM Plex Mono';color:#2b9b5a">▲ 18%</span></div>
+            </sc-if>
+            <div style="height:32px;padding:0 12px;border:1px solid var(--br3);background:var(--sf);border-radius:6px;display:flex;align-items:center;font-weight:500">Insights</div>
+            <sc-if value="{{ isSprint }}" hint-placeholder-val="{{ true }}"><div style="height:32px;padding:0 12px;border:1px solid var(--br3);background:var(--sf);border-radius:6px;display:flex;align-items:center;font-weight:500">Complete sprint</div></sc-if>
+            <sc-if value="{{ isKanban }}" hint-placeholder-val="{{ false }}"><div style="height:32px;padding:0 12px;border:1px solid var(--br3);background:var(--sf);border-radius:6px;display:flex;align-items:center;font-weight:500">Release</div></sc-if>
+            <div style="height:32px;width:32px;border:1px solid var(--br3);background:var(--sf);border-radius:6px;display:flex;align-items:center;justify-content:center;font-weight:600;letter-spacing:1px">···</div>
+          </div>
+        </div>
+        <sc-if value="{{ showAi }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;align-items:center;gap:12px;padding:9px 12px 9px 14px;background:var(--sf);border:1px solid var(--ac-br);border-left:3px solid var(--ac);border-radius:6px;font-size:12.5px">
+            <span style="font-weight:600;color:var(--ac);display:flex;gap:7px;align-items:center;white-space:nowrap;flex-shrink:0"><span style="width:7px;height:7px;border-radius:50%;background:var(--ac)"></span>{{ aiTitle }}</span>
+            <span style="color:var(--tx2);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ aiText }}</span>
+            <div style="margin-left:auto;display:flex;gap:6px;flex-shrink:0;white-space:nowrap">
+              <div style="padding:5px 10px;border:1px solid var(--br3);border-radius:5px;font-weight:500;background:var(--sf)">Nudge reviewer</div>
+              <div style="padding:5px 10px;border:1px solid var(--br3);border-radius:5px;font-weight:500;background:var(--sf)">{{ aiAction2 }}</div>
+              <div onClick="{{ hideAi }}" style="padding:5px 8px;color:var(--tx5);font-weight:600;cursor:pointer">✕</div>
+            </div>
+          </div>
+        </sc-if>
+        <div style="display:flex;align-items:center;gap:8px;row-gap:10px;padding-bottom:12px;flex-wrap:wrap">
+          <div style="width:220px;flex-shrink:0;height:32px;border:1px solid var(--br3);border-radius:6px;background:var(--sf);display:flex;align-items:center;padding:0 10px;gap:8px;color:var(--tx5);white-space:nowrap"><span style="font-size:14px">⌕</span>Search this board</div>
+          <div style="display:flex;margin-left:4px">
+            <sc-for list="{{ people }}" as="p" hint-placeholder-count="5">
+              <div onClick="{{ p.toggle }}" title="{{ p.name }}" style="width:30px;height:30px;border-radius:50%;background:{{ p.bg }};color:{{ p.fg }};font-weight:600;font-size:11px;display:flex;align-items:center;justify-content:center;margin-left:-6px;border:2px solid {{ p.ring }};cursor:pointer;box-shadow:0 0 0 1px var(--bg)">{{ p.ini }}</div>
+            </sc-for>
+            <div style="width:30px;height:30px;border-radius:50%;background:var(--trk);color:var(--tx2);font-weight:600;font-size:11px;display:flex;align-items:center;justify-content:center;margin-left:-6px;border:2px solid var(--bg)">+9</div>
+          </div>
+          <div style="height:32px;padding:0 10px;border:1px solid var(--br3);background:var(--sf);border-radius:6px;display:flex;align-items:center;gap:6px;color:var(--tx2)">Epic <span style="color:var(--tx5);font-size:10px">▾</span></div>
+          <div style="height:32px;padding:0 10px;border:1px solid var(--br3);background:var(--sf);border-radius:6px;display:flex;align-items:center;gap:6px;color:var(--tx2)">Type <span style="color:var(--tx5);font-size:10px">▾</span></div>
+          <div style="height:32px;padding:0 10px;border:1px solid var(--br3);background:var(--sf);border-radius:6px;display:flex;align-items:center;gap:6px;color:var(--tx2)">Label <span style="color:var(--tx5);font-size:10px">▾</span></div>
+          <div style="width:1px;height:20px;background:var(--br3);margin:0 4px"></div>
+          <sc-for list="{{ quick }}" as="q" hint-placeholder-count="3">
+            <div onClick="{{ q.toggle }}" style="height:28px;padding:0 10px;border-radius:14px;border:1px solid {{ q.border }};background:{{ q.bg }};color:{{ q.fg }};display:flex;align-items:center;font-weight:500;font-size:12.5px;cursor:pointer;white-space:nowrap">{{ q.name }}</div>
+          </sc-for>
+          <div style="margin-left:auto;display:flex;align-items:center;gap:8px;color:var(--tx4);font-size:12.5px">
+            <span>Group by</span>
+            <div onClick="{{ toggleGroup }}" style="height:32px;padding:0 10px;border:1px solid var(--br3);background:var(--sf);border-radius:6px;display:flex;align-items:center;gap:6px;color:var(--tx);font-weight:500;cursor:pointer">{{ groupLabel }} <span style="color:var(--tx5);font-size:10px">▾</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Board -->
+      <div style="flex:1;overflow:auto;padding:0 24px 24px;min-height:0">
+        <div style="min-width:1260px;display:flex;flex-direction:column">
+        <div style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;position:sticky;top:0;background:var(--bg);padding:2px 11px 10px;z-index:2">
+          <sc-for list="{{ columns }}" as="c" hint-placeholder-count="5">
+            <div style="display:flex;align-items:center;gap:8px;padding:0 6px;height:24px">
+              <span style="font:600 11.5px 'IBM Plex Sans';letter-spacing:.07em;text-transform:uppercase;color:var(--tx3)">{{ c.name }}</span>
+              <span style="font:500 11.5px 'IBM Plex Mono';color:{{ c.countColor }}">{{ c.countLabel }}</span>
+              <sc-if value="{{ c.over }}" hint-placeholder-val="{{ false }}"><span style="font:500 10.5px 'IBM Plex Sans';color:#b4470f;background:#fdeee3;padding:1px 6px;border-radius:3px">WIP limit</span></sc-if>
+              <span style="margin-left:auto;color:var(--tx6);font-weight:600">+</span>
+            </div>
+          </sc-for>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <sc-for list="{{ lanes }}" as="lane" hint-placeholder-count="3">
+            <div style="background:var(--sf);border:1px solid var(--br);border-radius:8px;overflow:hidden">
+              <div onClick="{{ lane.toggle }}" style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-bottom:1px solid var(--br2);cursor:pointer;background:var(--bg2)">
+                <span style="color:var(--tx5);font-size:10px;width:10px;display:inline-block;transform:{{ lane.chev }}">▶</span>
+                <span style="width:10px;height:10px;border-radius:3px;background:{{ lane.color }}"></span>
+                <span style="font-weight:600">{{ lane.name }}</span>
+                <span style="font:500 12px 'IBM Plex Mono';color:var(--tx4)">{{ lane.key }}</span>
+                <span style="color:var(--tx4);font-size:12px">{{ lane.meta }}</span>
+                <span style="width:120px;height:5px;background:var(--trk);border-radius:3px;overflow:hidden;margin-left:6px"><span style="display:block;height:100%;width:{{ lane.pct }};background:{{ lane.color }}"></span></span>
+                <span style="margin-left:auto;color:var(--tx4);font-size:12px">{{ lane.due }}</span>
+              </div>
+              <sc-if value="{{ lane.open }}" hint-placeholder-val="{{ true }}">
+                <div style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;padding:10px;background:var(--bg2)">
+                  <sc-for list="{{ lane.cells }}" as="cell" hint-placeholder-count="5">
+                    <div style="display:flex;flex-direction:column;gap:8px;min-height:44px;border-radius:6px;background:{{ cell.bg }}">
+                      <sc-for list="{{ cell.items }}" as="it" hint-placeholder-count="2">
+                        <div onClick="{{ it.select }}" style="background:var(--sf);border:1px solid {{ it.border }};box-shadow:{{ it.shadow }};border-radius:6px;padding:10px 10px 8px;display:flex;flex-direction:column;gap:8px;cursor:pointer;opacity:{{ it.op }}">
+                          <sc-if value="{{ it.blocked }}" hint-placeholder-val="{{ false }}"><div style="display:flex;align-items:center;gap:6px;font:500 11px 'IBM Plex Sans';color:#b4470f;background:#fdeee3;padding:3px 7px;border-radius:4px;align-self:flex-start"><span style="width:7px;height:7px;border-radius:50%;background:#e0632a"></span>Blocked by {{ it.blocked }}</div></sc-if>
+                          <div style="font-size:13px;line-height:1.4;text-wrap:pretty;color:var(--tx)">{{ it.title }}</div>
+                          <sc-if value="{{ it.labels }}" hint-placeholder-val="{{ false }}">
+                            <div style="display:flex;gap:4px;flex-wrap:wrap">
+                              <sc-for list="{{ it.labels }}" as="lb" hint-placeholder-count="1"><span style="font-size:11px;padding:2px 6px;border-radius:3px;background:var(--chip);color:var(--tx2)">{{ lb }}</span></sc-for>
+                            </div>
+                          </sc-if>
+                          <div style="display:flex;align-items:center;gap:6px;padding-top:2px">
+                            <span title="{{ it.typeName }}" style="width:14px;height:14px;border-radius:{{ it.typeR }};background:{{ it.typeC }};color:#fff;font:600 9px 'IBM Plex Sans';display:flex;align-items:center;justify-content:center">{{ it.typeG }}</span>
+                            <span style="font:500 11.5px 'IBM Plex Mono';color:var(--tx4)">{{ it.id }}</span>
+                            <span title="{{ it.priName }}" style="font:600 12px 'IBM Plex Mono';color:{{ it.priC }}">{{ it.priG }}</span>
+                            <sc-if value="{{ it.doc }}" hint-placeholder-val="{{ false }}"><span style="font-size:11px;color:var(--ac);display:flex;gap:3px;align-items:center"><span style="width:8px;height:10px;border:1.5px solid currentColor;border-radius:1px"></span>{{ it.doc }}</span></sc-if>
+                            <sc-if value="{{ it.sub }}" hint-placeholder-val="{{ false }}"><span style="font:400 11px 'IBM Plex Mono';color:var(--tx4)">☑ {{ it.sub }}</span></sc-if>
+                            <span style="margin-left:auto;display:flex;align-items:center;gap:6px">
+                              <sc-if value="{{ isSprint }}" hint-placeholder-val="{{ true }}"><span style="font:500 11px 'IBM Plex Mono';background:var(--chip);color:var(--tx2);padding:1px 6px;border-radius:9px;min-width:20px;text-align:center">{{ it.pts }}</span></sc-if><sc-if value="{{ isKanban }}" hint-placeholder-val="{{ false }}"><span title="Time in column" style="font:500 11px 'IBM Plex Mono';color:{{ it.ageC }}">{{ it.age }}</span></sc-if>
+                              <span style="width:22px;height:22px;border-radius:50%;background:{{ it.avBg }};color:{{ it.avFg }};font-weight:600;font-size:10px;display:flex;align-items:center;justify-content:center">{{ it.who }}</span>
+                            </span>
+                          </div>
+                        </div>
+                      </sc-for>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-if>
+            </div>
+          </sc-for>
+        </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Issue detail panel -->
+    <sc-if value="{{ sel }}" hint-placeholder-val="{{ true }}">
+      <div style="width:400px;background:var(--sf);border-left:1px solid var(--br);display:flex;flex-direction:column;flex-shrink:0;min-height:0">
+        <div style="padding:12px 16px;border-bottom:1px solid var(--br2);display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--tx4)">
+          <span style="width:10px;height:10px;border-radius:3px;background:{{ sel.laneColor }}"></span><span>{{ sel.lane }}</span><span>/</span>
+          <span style="width:14px;height:14px;border-radius:{{ sel.typeR }};background:{{ sel.typeC }};color:#fff;font:600 9px 'IBM Plex Sans';display:flex;align-items:center;justify-content:center">{{ sel.typeG }}</span><span style="font:500 12px 'IBM Plex Mono';color:var(--tx2)">{{ sel.id }}</span>
+          <div style="margin-left:auto;display:flex;gap:4px;color:var(--tx2);font-weight:600">
+            <a href="Lattice Issue.dc.html" title="Open full page" style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:5px;color:inherit">⤢</a>
+            <span style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:5px;letter-spacing:1px">···</span>
+            <span onClick="{{ close }}" style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:5px;cursor:pointer">✕</span>
+          </div>
+        </div>
+        <div style="flex:1;overflow:auto;padding:16px 20px 24px;display:flex;flex-direction:column;gap:18px">
+          <div style="font-weight:600;font-size:18px;line-height:1.3;letter-spacing:-.01em;text-wrap:pretty">{{ sel.title }}</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <div style="height:30px;padding:0 10px;border-radius:5px;background:{{ sel.statusBg }};color:{{ sel.statusFg }};font-weight:600;font-size:12px;display:flex;align-items:center;gap:6px;text-transform:uppercase;letter-spacing:.04em">{{ sel.status }} <span style="font-size:9px">▾</span></div>
+            <div style="height:30px;padding:0 10px;border-radius:5px;border:1px solid var(--br3);display:flex;align-items:center;gap:6px;font-weight:500">Attach</div>
+            <div style="height:30px;padding:0 10px;border-radius:5px;border:1px solid var(--br3);display:flex;align-items:center;gap:6px;font-weight:500">Link doc</div>
+            <div style="height:30px;padding:0 10px;border-radius:5px;border:1px solid var(--br3);display:flex;align-items:center;gap:6px;font-weight:500">Subtask</div>
+          </div>
+          <div style="border:1px solid var(--ac-br);background:var(--ac-bg2);border-radius:7px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;font-size:12.5px;line-height:1.5">
+            <div style="display:flex;align-items:center;gap:7px;font-weight:600;color:var(--ac)"><span style="width:7px;height:7px;border-radius:50%;background:var(--ac)"></span>Summary<span style="margin-left:auto;font-weight:400;color:var(--ac-mute);font-size:11.5px">from 14 comments, 2 PRs</span></div>
+            <div style="color:var(--tx)">{{ sel.ai }}</div>
+            <div style="display:flex;gap:6px;padding-top:2px"><span style="padding:4px 9px;border-radius:4px;background:var(--sf);border:1px solid var(--ac-br);font-weight:500;color:var(--ac)">{{ sel.aiAction }}</span><span style="padding:4px 9px;border-radius:4px;color:var(--tx4)">Not useful</span></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div style="font-weight:600">Description</div>
+            <div style="font-size:13px;line-height:1.6;color:var(--tx2)">{{ sel.desc }}</div>
+          </div>
+          <div style="border:1px solid var(--br);border-radius:7px;overflow:hidden">
+            <div style="padding:9px 12px;background:var(--bg2);border-bottom:1px solid var(--br2);font-weight:600;display:flex;justify-content:space-between"><span>Details</span><span style="color:var(--tx5);font-size:10px">▴</span></div>
+            <div style="padding:6px 12px;display:grid;grid-template-columns:110px 1fr;row-gap:2px;font-size:12.5px;align-items:center">
+              <div style="color:var(--tx4);padding:6px 0">Assignee</div><div style="display:flex;align-items:center;gap:7px;padding:6px 0"><span style="width:20px;height:20px;border-radius:50%;background:{{ sel.avBg }};color:{{ sel.avFg }};font-weight:600;font-size:9.5px;display:flex;align-items:center;justify-content:center">{{ sel.who }}</span>{{ sel.whoName }}</div>
+              <div style="color:var(--tx4);padding:6px 0">Reporter</div><div style="padding:6px 0">Rohan S.</div>
+              <div style="color:var(--tx4);padding:6px 0">Priority</div><div style="padding:6px 0;display:flex;gap:6px;align-items:center"><span style="font:600 12px 'IBM Plex Mono';color:{{ sel.priC }}">{{ sel.priG }}</span>{{ sel.priName }}</div>
+              <div style="color:var(--tx4);padding:6px 0">{{ sizeLabel }}</div><div style="padding:6px 0;font-family:'IBM Plex Mono'">{{ sel.size }}</div>
+              <div style="color:var(--tx4);padding:6px 0">{{ cycleLabel }}</div><div style="padding:6px 0;color:var(--ac)">{{ cycleValue }}</div>
+              <div style="color:var(--tx4);padding:6px 0">Epic</div><div style="padding:6px 0;display:flex;gap:6px;align-items:center"><span style="width:9px;height:9px;border-radius:2px;background:{{ sel.laneColor }}"></span>{{ sel.lane }}</div>
+              <div style="color:var(--tx4);padding:6px 0">Labels</div><div style="padding:6px 0;display:flex;gap:4px;flex-wrap:wrap"><sc-for list="{{ sel.labelList }}" as="lb" hint-placeholder-count="2"><span style="font-size:11px;padding:2px 6px;border-radius:3px;background:var(--chip)">{{ lb }}</span></sc-for></div>
+              <div style="color:var(--tx4);padding:6px 0">Fix version</div><div style="padding:6px 0">v1.3.0</div>
+              <div style="color:var(--tx4);padding:6px 0">Linked docs</div><div style="padding:6px 0;display:flex;flex-direction:column;gap:3px"><span style="color:var(--ac)">Auth service RFC</span><span style="color:var(--ac)">Session migration runbook</span></div>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div style="font-weight:600;display:flex;justify-content:space-between"><span>Subtasks</span><span style="color:var(--tx4);font-weight:400;font-size:12px">2 of 4 done</span></div>
+            <div style="height:4px;background:var(--trk);border-radius:2px;overflow:hidden"><div style="width:50%;height:100%;background:#2b9b5a"></div></div>
+            <div style="display:flex;flex-direction:column;border:1px solid var(--br);border-radius:7px;overflow:hidden;font-size:12.5px">
+              <div style="display:flex;gap:10px;align-items:center;padding:8px 12px;border-bottom:1px solid var(--br2)"><span style="width:12px;height:12px;border-radius:3px;background:#2b9b5a;color:#fff;font-size:9px;display:flex;align-items:center;justify-content:center">✓</span><span style="font:500 11.5px 'IBM Plex Mono';color:var(--tx4)">PLT-204a</span><span style="text-decoration:line-through;color:var(--tx5)">Schema for sessions table</span><span style="margin-left:auto;font-size:11px;padding:2px 6px;border-radius:3px;background:#e3f4ea;color:#1f7a44;font-weight:600">DONE</span></div>
+              <div style="display:flex;gap:10px;align-items:center;padding:8px 12px;border-bottom:1px solid var(--br2)"><span style="width:12px;height:12px;border-radius:3px;background:#2b9b5a;color:#fff;font-size:9px;display:flex;align-items:center;justify-content:center">✓</span><span style="font:500 11.5px 'IBM Plex Mono';color:var(--tx4)">PLT-204b</span><span style="text-decoration:line-through;color:var(--tx5)">Dual-write path</span><span style="margin-left:auto;font-size:11px;padding:2px 6px;border-radius:3px;background:#e3f4ea;color:#1f7a44;font-weight:600">DONE</span></div>
+              <div style="display:flex;gap:10px;align-items:center;padding:8px 12px;border-bottom:1px solid var(--br2)"><span style="width:12px;height:12px;border-radius:3px;background:var(--ac);color:#fff;font-size:9px;display:flex;align-items:center;justify-content:center">✓</span><span style="font:500 11.5px 'IBM Plex Mono';color:var(--tx4)">PLT-204c</span><span>Backfill job + verification</span><span style="margin-left:auto;font-size:11px;padding:2px 6px;border-radius:3px;background:var(--ac-bg);color:var(--ac);font-weight:600">IN REVIEW</span></div>
+              <div style="display:flex;gap:10px;align-items:center;padding:8px 12px"><span style="width:12px;height:12px;border-radius:3px;background:var(--ac);color:#fff;font-size:9px;display:flex;align-items:center;justify-content:center">✓</span><span style="font:500 11.5px 'IBM Plex Mono';color:var(--tx4)">PLT-204d</span><span>Remove Redis fallback</span><span style="margin-left:auto;font-size:11px;padding:2px 6px;border-radius:3px;background:var(--chip);color:var(--tx3);font-weight:600">TO DO</span></div>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <div style="display:flex;align-items:center;gap:10px"><span style="font-weight:600">Activity</span><div style="margin-left:auto;display:flex;background:var(--chip);border-radius:5px;padding:2px;font-size:12px"><span style="padding:3px 9px;border-radius:4px;background:var(--sf);font-weight:500;box-shadow:0 1px 1px rgba(0,0,0,.06)">Comments</span><span style="padding:3px 9px;color:var(--tx4)">History</span><span style="padding:3px 9px;color:var(--tx4)">Work log</span></div></div>
+            <div style="display:flex;gap:10px"><span style="width:28px;height:28px;border-radius:50%;background:#fde2cf;color:#9a4a16;font-weight:600;font-size:10.5px;display:flex;align-items:center;justify-content:center;flex-shrink:0">AK</span><div style="display:flex;flex-direction:column;gap:4px;font-size:12.5px;line-height:1.5"><div><span style="font-weight:600">Aisha K.</span> <span style="color:var(--tx5)">· 3 hours ago</span></div><div>Backfill finished on staging, 0 mismatches across 2.1M rows. Ready for a second pair of eyes on <span style="color:var(--ac)">#4821</span>.</div><div style="display:flex;gap:10px;color:var(--tx4);font-size:12px"><span>Reply</span><span>React</span></div></div></div>
+            <div style="display:flex;gap:10px"><span style="width:28px;height:28px;border-radius:50%;background:#e4dcfa;color:#5a3cae;font-weight:600;font-size:10.5px;display:flex;align-items:center;justify-content:center;flex-shrink:0">JM</span><div style="display:flex;flex-direction:column;gap:4px;font-size:12.5px;line-height:1.5"><div><span style="font-weight:600">Jonas M.</span> <span style="color:var(--tx5)">· yesterday</span></div><div>Flagging: PLT-211 and PLT-219 can't start until this merges.</div><div style="display:flex;gap:10px;color:var(--tx4);font-size:12px"><span>Reply</span><span>React</span></div></div></div>
+            <div style="display:flex;gap:10px"><span style="width:28px;height:28px;border-radius:50%;background:var(--ac-av);color:var(--ac);font-weight:600;font-size:10.5px;display:flex;align-items:center;justify-content:center;flex-shrink:0">RS</span><div style="flex:1;border:1px solid var(--br3);border-radius:7px;padding:10px 12px;display:flex;flex-direction:column;gap:10px"><div style="color:var(--tx5)">Add a comment… <span style="font:500 11px 'IBM Plex Mono'">M</span></div><div style="display:flex;gap:10px;font-size:12px;color:var(--tx4);align-items:center"><span style="font-weight:600">B</span><span style="font-style:italic">I</span><span>@</span><span>Link</span><span style="margin-left:auto;color:var(--ac);font-weight:500">Draft reply with AI</span></div></div></div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;,&quot;slate&quot;,&quot;warm&quot;,&quot;midnight&quot;,&quot;forest&quot;,&quot;ocean&quot;,&quot;rose&quot;,&quot;custom&quot;],&quot;default&quot;:&quot;light&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Appearance&quot;},&quot;brandColor&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;options&quot;:[&quot;#f97316&quot;,&quot;#2456c9&quot;,&quot;#0f766e&quot;,&quot;#7c3aed&quot;],&quot;default&quot;:&quot;#f97316&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Custom theme&quot;},&quot;customMode&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;default&quot;:&quot;light&quot;,&quot;tsType&quot;:&quot;'light' | 'dark'&quot;,&quot;section&quot;:&quot;Custom theme&quot;},&quot;surfaceTone&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;neutral&quot;,&quot;tinted&quot;],&quot;default&quot;:&quot;neutral&quot;,&quot;tsType&quot;:&quot;'neutral' | 'tinted'&quot;,&quot;section&quot;:&quot;Custom theme&quot;},&quot;customFont&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;plex&quot;,&quot;inter&quot;,&quot;source&quot;,&quot;geist&quot;],&quot;default&quot;:&quot;plex&quot;,&quot;tsType&quot;:&quot;'plex' | 'inter' | 'source' | 'geist'&quot;,&quot;section&quot;:&quot;Custom theme&quot;},&quot;boardMode&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;scrum&quot;,&quot;kanban&quot;],&quot;default&quot;:&quot;scrum&quot;,&quot;tsType&quot;:&quot;'scrum' | 'kanban'&quot;,&quot;section&quot;:&quot;Board&quot;},&quot;showAiInsights&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;AI&quot;}}">
+class Component extends DCLogic {
+  state = { sel: 'PLT-204', showAi: true, group: 'epic', filters: {}, people: {}, closed: {} };
+  renderVals() {
+    const P = this.props, s = this.state;
+    const mode = P.boardMode ?? 'scrum', isSprint = mode === 'scrum', isKanban = !isSprint;
+    const theme = P.theme ?? 'light';
+    const mix = (c, p, base) => `color-mix(in oklab, ${c} ${p}%, ${base})`;
+    const presetsLightNeutral = { bg: '#f4f5f7', bg2: '#f9fafb', sf: '#fff', br: '#e2e5ea', br2: '#e9ecf0', br3: '#d5dae2', trk: '#e5e8ee', chip: '#eef0f4', tx: '#1b2430', tx2: '#3b4454', tx3: '#4b5565', tx4: '#6b7483', tx5: '#8a93a3', tx6: '#a2aab8' };
+    const presets = {
+      light:    { dark: false, ac: ['#2456c9','#183d94','#6a8fe8'], n: { bg: '#f4f5f7', bg2: '#f9fafb', sf: '#fff', br: '#e2e5ea', br2: '#e9ecf0', br3: '#d5dae2', trk: '#e5e8ee', chip: '#eef0f4', tx: '#1b2430', tx2: '#3b4454', tx3: '#4b5565', tx4: '#6b7483', tx5: '#8a93a3', tx6: '#a2aab8' }, font: "'IBM Plex Sans', system-ui, sans-serif" },
+      dark:     { dark: true,  ac: ['#5b8def','#3b6fd6','#8db0f5'], n: { bg: '#0f1217', bg2: '#141821', sf: '#1a1f29', br: '#262c38', br2: '#222834', br3: '#323a48', trk: '#2a3140', chip: '#262c38', tx: '#e9edf3', tx2: '#c3c9d4', tx3: '#aab2bf', tx4: '#8b94a3', tx5: '#6c7585', tx6: '#566070' }, font: "'IBM Plex Sans', system-ui, sans-serif" },
+      slate:    { dark: false, ac: ['#0f766e','#115e59','#5eb8b0'], n: { bg: '#eef1f4', bg2: '#f5f7f9', sf: '#fff', br: '#d9dfe6', br2: '#e3e8ed', br3: '#c8d0da', trk: '#dde3ea', chip: '#e6ebf0', tx: '#0f1a24', tx2: '#2e3d4d', tx3: '#42505f', tx4: '#5f6d7c', tx5: '#7f8b99', tx6: '#9aa5b1' }, font: "'Inter Tight', 'IBM Plex Sans', system-ui, sans-serif" },
+      warm:     { dark: false, ac: ['#b4530f','#8f3f08','#d98b52'], n: { bg: '#f6f3ee', bg2: '#faf8f4', sf: '#fffdf9', br: '#e6e0d6', br2: '#ece7de', br3: '#d8d0c3', trk: '#e8e2d8', chip: '#efeae1', tx: '#241f19', tx2: '#453c32', tx3: '#564c41', tx4: '#726657', tx5: '#92877a', tx6: '#ada397' }, font: "'Source Sans 3', 'IBM Plex Sans', system-ui, sans-serif" },
+      midnight: { dark: true,  ac: ['#a78bfa','#8b5cf6','#c4b5fd'], n: { bg: '#0b0a14', bg2: '#110f1d', sf: '#171428', br: '#2a2542', br2: '#241f3a', br3: '#3a3356', trk: '#2a2542', chip: '#241f3a', tx: '#ecebf5', tx2: '#c8c5db', tx3: '#aeaac6', tx4: '#8d88a8', tx5: '#6e6989', tx6: '#56516f' }, font: "'Geist', 'IBM Plex Sans', system-ui, sans-serif" },
+      forest:   { dark: false, ac: ['#1f7a44','#155a32','#5fb582'], n: { bg: '#f1f4f1', bg2: '#f6f8f6', sf: '#fff', br: '#dbe2dc', br2: '#e4eae5', br3: '#c9d3cb', trk: '#dfe6e0', chip: '#e7ede8', tx: '#14201a', tx2: '#2f3f36', tx3: '#415249', tx4: '#5f6f66', tx5: '#808f86', tx6: '#9ba8a0' }, font: "'IBM Plex Sans', system-ui, sans-serif" },
+      ocean:    { dark: true,  ac: ['#38bdf8','#0ea5e9','#7dd3fc'], n: { bg: '#07111c', bg2: '#0b1726', sf: '#101e30', br: '#1e3047', br2: '#182a40', br3: '#2b4160', trk: '#1e3047', chip: '#182a40', tx: '#e6f0fa', tx2: '#bfd0e2', tx3: '#a3b7cd', tx4: '#8197b0', tx5: '#637a94', tx6: '#4d617a' }, font: "'Inter Tight', 'IBM Plex Sans', system-ui, sans-serif" },
+      rose:     { dark: false, ac: ['#be123c','#9f1239','#e05a7a'], n: { bg: '#f7f3f4', bg2: '#faf7f8', sf: '#fff', br: '#e8dfe2', br2: '#eee6e8', br3: '#d9ccd1', trk: '#e9e0e3', chip: '#f0e8eb', tx: '#231a1d', tx2: '#443539', tx3: '#564549', tx4: '#72606a', tx5: '#92838a', tx6: '#ac9fa5' }, font: "'Source Sans 3', 'IBM Plex Sans', system-ui, sans-serif" },
+      custom:   { dark: false, ac: ['#b4530f','#8f3f08','#d98b52'], n: presetsLightNeutral, font: "'IBM Plex Sans', system-ui, sans-serif" }
+    };
+    if (theme === 'custom') {
+      const brand = P.brandColor || '#f97316', cd = (P.customMode ?? 'light') === 'dark', tone = P.surfaceTone ?? 'neutral';
+      const tint = p => mix(brand, p, cd ? '#0f1217' : '#f4f5f7');
+      const toned = tone === 'tinted';
+      presets.custom = { dark: cd, ac: [brand, mix(brand, 75, '#000'), mix(brand, 55, '#fff')], font: ({ plex: "'IBM Plex Sans', system-ui, sans-serif", inter: "'Inter Tight', system-ui, sans-serif", source: "'Source Sans 3', system-ui, sans-serif", geist: "'Geist', system-ui, sans-serif" })[P.customFont ?? 'plex'],
+        n: cd ? { ...presets.dark.n, bg: toned ? tint(6) : '#0f1217', bg2: toned ? tint(8) : '#141821', sf: toned ? tint(10) : '#1a1f29' } : { ...presetsLightNeutral, bg: toned ? tint(5) : '#f4f5f7', bg2: toned ? tint(3) : '#f9fafb' } };
+    }
+    const pre = presets[theme] || presets.light, dark = pre.dark;
+    const accents = { blue: ['#2456c9','#183d94','#6a8fe8'], indigo: ['#4f46e5','#3730a3','#8b86f0'], teal: ['#0f766e','#115e59','#5eb8b0'], orange: ['#b4530f','#8f3f08','#d98b52'], violet: ['#7c3aed','#5b21b6','#a78bfa'], graphite: ['#1f2937','#111827','#6b7280'] };
+    const [ac, acD, acL] = P.accent ? (accents[P.accent] || pre.ac) : pre.ac;
+    const base = dark ? pre.n.sf : '#fff';
+    const V = Object.assign({ ac, 'ac-d': acD, 'ac-l': acL, 'ac-bg': mix(ac, dark ? 18 : 9, base), 'ac-bg2': mix(ac, dark ? 10 : 5, base), 'ac-br': mix(ac, dark ? 35 : 22, base), 'ac-av': mix(ac, dark ? 30 : 18, base), 'ac-mute': mix(ac, 55, base) }, pre.n);
+    const rootStyle = Object.assign({ height: P.height ?? '100vh', minWidth: '1440px', display: 'flex', flexDirection: 'column', overflow: 'hidden', background: V.bg, color: V.tx, fontFamily: pre.font, colorScheme: dark ? 'dark' : 'light' }, ...Object.keys(V).map(k => ({ ['--' + k]: V[k] })));
+    const people = {
+      PN: { name: 'Priya N.', bg: '#d7f0e0', fg: '#1f7a44' }, AK: { name: 'Aisha K.', bg: '#fde2cf', fg: '#9a4a16' },
+      JM: { name: 'Jonas M.', bg: '#e4dcfa', fg: '#5a3cae' }, RS: { name: 'Rohan S.', bg: 'var(--ac-av)', fg: 'var(--ac)' }, LT: { name: 'Lena T.', bg: '#fbe3ee', fg: '#a0245f' }
+    };
+    if (dark) { for (const k in people) { people[k] = { ...people[k], bg: mix(people[k].fg, 30, pre.n.sf), fg: mix(people[k].fg, 60, '#fff') }; } }
+    const types = { story: ['Story', '#2b9b5a', '3px', '▮'], bug: ['Bug', '#d93838', '50%', '●'], task: ['Task', 'var(--ac)', '3px', '✓'] };
+    const pris = { highest: ['Highest', '#c42d2d', '⇈'], high: ['High', '#e0632a', '↑'], medium: ['Medium', '#d49a1a', '='], low: ['Low', '#2b9b5a', '↓'] };
+    const cols = ['To do', 'In progress', 'In review', 'QA', 'Done'];
+    const colBg = ['', '', '', '', ''];
+    const epics = [
+      { key: 'PLT-180', name: 'Auth service', color: 'var(--ac)', due: 'Due Oct 7' },
+      { key: 'PLT-150', name: 'Billing v2', color: '#8b5cf6', due: 'Due Oct 21' },
+      { key: '', name: 'No epic', color: 'var(--tx6)', due: '' }
+    ];
+    const I = (id, e, c, t, pri, title, who, pts, x = {}) => ({ id, e, c, t, pri, title, who, pts, ...x });
+    const issues = [
+      I('PLT-222', 0, 0, 'task', 'medium', 'Rate-limit token refresh endpoint', 'AK', 3, { labels: ['api'], doc: 'RFC' }),
+      I('PLT-219', 0, 0, 'task', 'low', 'Remove legacy cookie path from monolith', 'JM', 2, { blocked: 'PLT-204' }),
+      I('PLT-211', 0, 0, 'story', 'medium', 'Session cleanup background job', 'JM', 3, { blocked: 'PLT-204', labels: ['infra'] }),
+      I('PLT-218', 0, 1, 'story', 'highest', 'Rotate service tokens on every deploy', 'PN', 5, { labels: ['auth', 'security'], doc: 'RFC', sub: '1/3' }),
+      I('PLT-226', 0, 1, 'bug', 'high', 'Refresh token reused after logout on Safari', 'LT', 2, { labels: ['security'] }),
+      I('PLT-204', 0, 2, 'story', 'highest', 'Session store migration to Postgres', 'AK', 5, { labels: ['auth', 'infra'], doc: 'RFC', sub: '2/4' }),
+      I('PLT-209', 0, 3, 'task', 'medium', 'Health checks and alerting for auth service', 'RS', 1, { labels: ['ops'] }),
+      I('PLT-198', 0, 4, 'story', 'high', 'SSO with Google Workspace and Okta', 'PN', 3, { labels: ['auth'] }),
+      I('PLT-197', 0, 4, 'task', 'low', 'Auth service CI pipeline', 'RS', 2),
+      I('PLT-230', 1, 0, 'story', 'high', 'Usage-based invoice line items', 'LT', 5, { labels: ['billing'], doc: 'Spec' }),
+      I('PLT-231', 1, 0, 'task', 'medium', 'Proration when switching plans mid-cycle', 'LT', 3, { labels: ['billing'] }),
+      I('PLT-228', 1, 1, 'story', 'high', 'Stripe webhook idempotency', 'RS', 3, { labels: ['billing', 'api'], sub: '0/2' }),
+      I('PLT-224', 1, 2, 'bug', 'highest', 'Invoice PDF shows wrong tax for EU customers', 'JM', 2, { labels: ['billing', 'bug-bash'] }),
+      I('PLT-215', 1, 3, 'task', 'medium', 'Dunning email sequence', 'LT', 2),
+      I('PLT-201', 1, 4, 'task', 'low', 'Billing settings copy cleanup', 'JM', 1),
+      I('PLT-233', 2, 0, 'bug', 'medium', 'Board filter state lost on refresh', 'JM', 1, { labels: ['ux'] }),
+      I('PLT-227', 2, 1, 'task', 'low', 'Upgrade Postgres client to 16.x', 'RS', 2, { labels: ['infra'] }),
+      I('PLT-212', 2, 4, 'bug', 'high', 'Avatar upload fails over 2 MB', 'AK', 1),
+      I('PLT-205', 2, 4, 'task', 'medium', 'Docker compose quick-start docs', 'PN', 2, { doc: 'Guide' })
+    ];
+    const f = s.filters, mine = !!f.mine, blocked = !!f.blocked, recent = !!f.recent;
+    const activePeople = Object.keys(s.people).filter(k => s.people[k]);
+    const recentIds = new Set(['PLT-204', 'PLT-218', 'PLT-226', 'PLT-224', 'PLT-228']);
+    const visible = it => (!mine || it.who === 'RS') && (!blocked || it.blocked) && (!recent || recentIds.has(it.id)) && (!activePeople.length || activePeople.includes(it.who));
+    const deco = it => {
+      const [typeName, typeC, typeR, typeG] = types[it.t], [priName, priC, priG] = pris[it.pri], pp = people[it.who], on = s.sel === it.id, v = visible(it);
+      const ageD = ({ 0: 1, 1: 2, 2: 3, 3: 1, 4: 0 })[it.c] + (it.id.charCodeAt(5) % 4), ageSlow = it.c > 0 && it.c < 4 && ageD >= 4;
+      return { ...it, typeName, typeC, typeR, typeG, age: it.c === 4 ? '✓' : ageD + 'd', ageC: ageSlow ? '#b4470f' : V.tx5, size: isSprint ? it.pts : ({1:'XS',2:'S',3:'M',5:'L'})[it.pts] || 'M', priName, priC, priG, avBg: pp.bg, avFg: pp.fg, whoName: pp.name, labels: it.labels && it.labels.length ? it.labels : null, labelList: it.labels || [],
+        border: on ? 'var(--ac)' : 'var(--br)', shadow: on ? '0 0 0 2px var(--ac-br)' : '0 1px 2px rgba(16,24,40,.05)', op: v ? 1 : 0.28, select: () => this.setState({ sel: it.id }) };
+    };
+    const all = issues.map(deco);
+    const grouped = s.group === 'epic';
+    const laneDefs = grouped ? epics.map((e, i) => ({ ...e, i })) : [{ key: '', name: 'All issues', color: 'var(--ac)', due: '', i: -1 }];
+    const lanes = laneDefs.map(L => {
+      const mine = all.filter(it => L.i < 0 || it.e === L.i);
+      const pts = mine.reduce((a, b) => a + b.pts, 0), done = mine.filter(it => it.c === 4).reduce((a, b) => a + b.pts, 0);
+      const open = !s.closed[L.name];
+      const meta = isSprint ? `${mine.length} issues · ${pts} pts` : `${mine.length} issues · ${mine.filter(it => it.c > 0 && it.c < 4).length} in flight`;
+      return { ...L, meta, count: mine.length, pts, pct: (pts ? Math.round(done / pts * 100) : 0) + '%', open, chev: open ? 'rotate(90deg)' : 'rotate(0deg)',
+        toggle: () => this.setState(st => ({ closed: { ...st.closed, [L.name]: open } })),
+        cells: cols.map((_, c) => ({ bg: colBg[c], items: mine.filter(it => it.c === c) })) };
+    });
+    const wip = isKanban ? [null, 4, 3, 2, null] : [null, 4, null, null, null];
+    const columns = cols.map((name, c) => { const n = all.filter(it => it.c === c).length, over = wip[c] && n > wip[c]; return { name, countLabel: wip[c] ? `${n}/${wip[c]}` : String(n), countColor: over ? '#b4470f' : 'var(--tx5)', over }; });
+    const selRaw = all.find(it => it.id === s.sel);
+    const statusMap = [['var(--chip)', 'var(--tx3)'], ['var(--ac-bg)', 'var(--ac)'], ['#efe9fd', '#5a3cae'], ['#fdf3dc', '#8a6210'], ['#e3f4ea', '#1f7a44']];
+    const sel = selRaw && { ...selRaw, lane: epics[selRaw.e].name, laneColor: epics[selRaw.e].color, status: cols[selRaw.c], statusBg: statusMap[selRaw.c][0], statusFg: statusMap[selRaw.c][1],
+      ai: selRaw.id === 'PLT-204' ? 'Backfill verified on staging with zero mismatches. The only open item is review of PR #4821, waiting on Jonas since Thursday. Two downstream issues (PLT-211, PLT-219) are blocked on this merge.' : 'No blockers reported. Last activity was a status change; no open review threads.',
+      aiAction: selRaw.id === 'PLT-204' ? 'Ping Jonas about #4821' : 'Draft status update',
+      desc: selRaw.id === 'PLT-204' ? 'Move session storage from the Redis cluster to Postgres so sessions survive cache evictions and can be queried for audit. Dual-write during migration, then cut reads over behind the auth_pg_sessions flag. Rollback is flipping the flag; Redis stays warm for 7 days.' : 'See linked RFC for scope and acceptance criteria. Acceptance: tests green, feature flag documented, runbook updated.' };
+    const totalPts = all.reduce((a, b) => a + b.pts, 0), donePts = all.filter(it => it.c === 4).reduce((a, b) => a + b.pts, 0);
+    const chip = (k, name) => ({ name, border: f[k] ? 'var(--ac)' : 'var(--br3)', bg: f[k] ? 'var(--ac-bg)' : 'var(--sf)', fg: f[k] ? 'var(--ac)' : 'var(--tx2)', toggle: () => this.setState(st => ({ filters: { ...st.filters, [k]: !st.filters[k] } })) });
+    const inFlight = all.filter(it => it.c > 0 && it.c < 4).length;
+    return {
+      rootStyle, isSprint, isKanban, inFlight, sprintsNav: isSprint ? 'Sprints' : 'Cycle time',
+      aiTitle: isSprint ? 'Sprint risk' : 'Flow risk',
+      aiText: isSprint ? 'PLT-204 has been in review 3 days and blocks 2 issues (5 pts). At current pace the sprint lands at 19/23 pts.' : 'In review is over its WIP limit and PLT-204 has sat there 5 days, double your average. Two issues are blocked behind it.',
+      aiAction2: isSprint ? 'Move blocked to Sprint 15' : 'Pause pulling new work',
+      cycleLabel: isSprint ? 'Sprint' : 'Cycle time', cycleValue: isSprint ? 'PLT Sprint 14' : '5d in review · 9d total', sizeLabel: isSprint ? 'Story points' : 'Size',
+      lanes, columns, sel, totalPts, donePts, pctW: Math.round(donePts / totalPts * 100) + '%',
+      showAi: (P.showAiInsights ?? true) && s.showAi, hideAi: () => this.setState({ showAi: false }),
+      close: () => this.setState({ sel: null }),
+      groupLabel: grouped ? 'Epic' : 'None', toggleGroup: () => this.setState({ group: grouped ? 'none' : 'epic' }),
+      quick: [chip('mine', 'Only my issues'), chip('recent', 'Recently updated'), chip('blocked', 'Blocked')],
+      people: Object.keys(people).map(k => ({ ini: k, name: people[k].name, bg: people[k].bg, fg: people[k].fg, ring: s.people[k] ? 'var(--ac)' : 'var(--sf)', toggle: () => this.setState(st => ({ people: { ...st.people, [k]: !st.people[k] } })) }))
+    };
+  }
+}
+</script>
+</body>
+</html>

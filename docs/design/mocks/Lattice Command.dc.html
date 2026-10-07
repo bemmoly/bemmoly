@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>html,body{margin:0;height:100%;background:#f4f5f7;font-family:'IBM Plex Sans',system-ui,sans-serif;color:#1b2430;font-size:13px}*{box-sizing:border-box}a{color:#2456c9;text-decoration:none}a:hover{color:#183d94}input{font:inherit}</style>
+</helmet>
+<div data-screen-label="Command palette" style="height:{{ rootH }};min-width:1440px;position:relative;overflow:hidden;background:#f4f5f7">
+  <div style="position:absolute;inset:0;filter:blur(1.5px);opacity:.9;pointer-events:none"><dc-import name="Lattice Board" height="100vh" show-ai-insights="{{ false }}" hint-size="100%,100%" style="width:100%;height:100%"></dc-import></div>
+  <div style="position:absolute;inset:0;background:rgba(16,24,40,.45)"></div>
+  <div style="position:absolute;left:50%;top:96px;transform:translateX(-50%);width:760px;background:#fff;border-radius:12px;box-shadow:0 24px 64px rgba(16,24,40,.35),0 0 0 1px rgba(16,24,40,.08);overflow:hidden;display:flex;flex-direction:column">
+    <div style="display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid #e9ecf0">
+      <span style="width:9px;height:9px;border-radius:50%;background:#2456c9"></span>
+      <input value="{{ q }}" onChange="{{ onQ }}" placeholder="Search, or tell Lattice what to do…" style="flex:1;border:0;outline:0;font-size:16px;color:#1b2430;background:transparent">
+      <span style="font:500 11px 'IBM Plex Mono';color:#8a93a3;border:1px solid #e2e5ea;padding:2px 6px;border-radius:4px">esc</span>
+    </div>
+    <div style="display:flex;gap:6px;padding:10px 16px;border-bottom:1px solid #e9ecf0;font-size:12px">
+      <sc-for list="{{ scopes }}" as="sc" hint-placeholder-count="5"><span onClick="{{ sc.pick }}" style="padding:4px 10px;border-radius:12px;border:1px solid {{ sc.br }};background:{{ sc.bg }};color:{{ sc.fg }};font-weight:500;cursor:pointer">{{ sc.name }}</span></sc-for>
+      <span style="margin-left:auto;color:#8a93a3;align-self:center">in Platform Core · <span style="color:#2456c9">everywhere</span></span>
+    </div>
+    <sc-if value="{{ isCommand }}" hint-placeholder-val="{{ true }}">
+      <div style="padding:14px 16px;display:flex;flex-direction:column;gap:12px;border-bottom:1px solid #e9ecf0;background:#f6f8fe">
+        <div style="display:flex;align-items:center;gap:8px;font-weight:600;color:#2456c9;font-size:12.5px"><span style="width:7px;height:7px;border-radius:50%;background:#2456c9"></span>Plan<span style="font-weight:400;color:#7a93d9">nothing happens until you confirm</span></div>
+        <div style="font-size:13.5px;line-height:1.55;color:#1b2430">Move the 2 issues blocked by <b>PLT-204</b> from Sprint 14 to Sprint 15, and post a note in each explaining why.</div>
+        <div style="background:#fff;border:1px solid #d9e1f5;border-radius:7px;overflow:hidden;font-size:12.5px">
+          <div style="display:grid;grid-template-columns:90px minmax(0,1fr) 150px 90px;gap:10px;padding:7px 12px;background:#fafbfc;border-bottom:1px solid #e9ecf0;font:500 11px 'IBM Plex Sans';color:#8a93a3;letter-spacing:.06em;text-transform:uppercase"><span>Issue</span><span>Change</span><span>Field</span><span></span></div>
+          <div style="display:grid;grid-template-columns:90px minmax(0,1fr) 150px 90px;gap:10px;padding:9px 12px;border-bottom:1px solid #eceef2;align-items:center"><span style="font:500 11.5px 'IBM Plex Mono';color:#6b7483">PLT-211</span><span>Session cleanup background job</span><span style="color:#4b5565">Sprint 14 → <b>Sprint 15</b></span><span style="font-size:11px;color:#1f7a44;font-weight:600;text-align:right">ALLOWED</span></div>
+          <div style="display:grid;grid-template-columns:90px minmax(0,1fr) 150px 90px;gap:10px;padding:9px 12px;border-bottom:1px solid #eceef2;align-items:center"><span style="font:500 11.5px 'IBM Plex Mono';color:#6b7483">PLT-219</span><span>Remove legacy cookie path from monolith</span><span style="color:#4b5565">Sprint 14 → <b>Sprint 15</b></span><span style="font-size:11px;color:#1f7a44;font-weight:600;text-align:right">ALLOWED</span></div>
+          <div style="display:grid;grid-template-columns:90px minmax(0,1fr) 150px 90px;gap:10px;padding:9px 12px;align-items:center"><span style="font:500 11.5px 'IBM Plex Mono';color:#6b7483">both</span><span style="color:#4b5565">Comment: "Moved to Sprint 15: blocked by PLT-204 (in review). — via Lattice for Rohan"</span><span style="color:#4b5565">Comment</span><span style="font-size:11px;color:#1f7a44;font-weight:600;text-align:right">ALLOWED</span></div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center"><span style="height:32px;padding:0 14px;border-radius:6px;background:#2456c9;color:#fff;display:flex;align-items:center;font-weight:500">Run 3 changes <span style="margin-left:8px;font:500 11px 'IBM Plex Mono';opacity:.75">⏎</span></span><span style="height:32px;padding:0 12px;border:1px solid #d5dae2;border-radius:6px;background:#fff;display:flex;align-items:center;font-weight:500;color:#3b4454">Edit plan</span><span style="color:#8a93a3;font-size:12px;margin-left:auto">Uses your permissions. Logged in the audit trail.</span></div>
+      </div>
+    </sc-if>
+    <sc-if value="{{ isSearch }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;max-height:420px;overflow:auto">
+        <sc-for list="{{ groups }}" as="g" hint-placeholder-count="3">
+          <div style="padding:10px 16px 4px;font:500 11px 'IBM Plex Sans';color:#8a93a3;letter-spacing:.06em;text-transform:uppercase">{{ g.name }}</div>
+          <sc-for list="{{ g.items }}" as="it" hint-placeholder-count="3">
+            <a href="{{ it.href }}" style="display:flex;align-items:center;gap:10px;padding:8px 16px;background:{{ it.bg }};color:#1b2430"><span style="width:16px;height:16px;border-radius:{{ it.r }};background:{{ it.c }};color:#fff;font:600 9px 'IBM Plex Sans';display:flex;align-items:center;justify-content:center">{{ it.g }}</span><sc-if value="{{ it.id }}" hint-placeholder-val="{{ false }}"><span style="font:500 11.5px 'IBM Plex Mono';color:#6b7483">{{ it.id }}</span></sc-if><span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ it.title }}</span><span style="font-size:12px;color:#8a93a3">{{ it.meta }}</span></a>
+          </sc-for>
+        </sc-for>
+      </div>
+    </sc-if>
+    <div style="padding:10px 16px;background:#fafbfc;border-top:1px solid #e9ecf0;display:flex;gap:14px;font-size:12px;color:#8a93a3;align-items:center">
+      <span><b style="font:500 11px 'IBM Plex Mono';color:#6b7483;border:1px solid #e2e5ea;padding:1px 5px;border-radius:3px;background:#fff">↑↓</b> navigate</span><span><b style="font:500 11px 'IBM Plex Mono';color:#6b7483;border:1px solid #e2e5ea;padding:1px 5px;border-radius:3px;background:#fff">⏎</b> open</span><span><b style="font:500 11px 'IBM Plex Mono';color:#6b7483;border:1px solid #e2e5ea;padding:1px 5px;border-radius:3px;background:#fff">⌘⏎</b> run</span>
+      <span style="margin-left:auto">Try: <span onClick="{{ ex1 }}" style="color:#2456c9;cursor:pointer">"issues without a spec doc"</span> · <span onClick="{{ ex2 }}" style="color:#2456c9;cursor:pointer">"what changed in auth this week"</span></span>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { q: 'move everything blocked by PLT-204 to next sprint', scope: 'all' };
+  renderVals() {
+    const rootH = this.props.height ?? '100vh';
+    const s = this.state, q = s.q.trim().toLowerCase();
+    const isCommand = /^(move|assign|create|close|set|change|reopen|add|remove|rename)\b/.test(q) || q === '';
+    const groups = [
+      { name: 'Issues', items: [['PLT-204', 'Session store migration to Postgres', 'In review · Aisha', '#2b9b5a', '3px', '▮', 'Lattice Issue.dc.html'], ['PLT-218', 'Rotate service tokens on every deploy', 'In progress · Priya', '#2b9b5a', '3px', '▮', 'Lattice Issue.dc.html'], ['PLT-226', 'Refresh token reused after logout on Safari', 'In progress · Lena', '#d93838', '50%', '●', 'Lattice Issue.dc.html']] },
+      { name: 'Docs', items: [['', 'Auth service RFC', 'Engineering · edited 2h ago', '#6b7483', '2px', '≡', 'Lattice Doc Editor.dc.html'], ['', 'Session migration runbook', 'Runbooks', '#6b7483', '2px', '≡', 'Lattice Doc Editor.dc.html']] },
+      { name: 'Actions', items: [['', 'Ask: what changed in auth this week?', 'AI answer with citations', '#2456c9', '50%', '●', 'Lattice Command.dc.html'], ['', 'Create issue in Platform Core', '⌘ N', '#2456c9', '3px', '+', 'Lattice Issue.dc.html'], ['', 'Open board settings', 'Project admin', '#6b7483', '3px', '⚙', 'Lattice Board Settings.dc.html']] }
+    ];
+    return {
+      rootH,
+      q: s.q, onQ: e => this.setState({ q: e.target.value }), isCommand, isSearch: !isCommand,
+      scopes: [['all', 'All'], ['issues', 'Issues'], ['docs', 'Docs'], ['people', 'People'], ['actions', 'Actions']].map(([id, name]) => ({ name, br: s.scope === id ? '#2456c9' : '#e2e5ea', bg: s.scope === id ? '#eef3fe' : '#fff', fg: s.scope === id ? '#2456c9' : '#3b4454', pick: () => this.setState({ scope: id }) })),
+      groups: groups.filter(g => s.scope === 'all' || g.name.toLowerCase() === s.scope).map((g, gi) => ({ name: g.name, items: g.items.map(([id, title, meta, c, r, gl, href], i) => ({ id: id || null, title, meta, c, r, g: gl, href, bg: gi === 0 && i === 0 ? '#eef3fe' : '#fff' })) })),
+      ex1: () => this.setState({ q: 'issues without a spec doc' }), ex2: () => this.setState({ q: 'what changed in auth this week' })
+    };
+  }
+}
+</script>
+</body>
+</html>

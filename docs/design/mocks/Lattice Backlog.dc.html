@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>html,body{margin:0;height:100%;background:#f4f5f7;font-family:'IBM Plex Sans',system-ui,sans-serif;color:#1b2430;font-size:13px}*{box-sizing:border-box}a{color:#2456c9;text-decoration:none}a:hover{color:#183d94}</style>
+</helmet>
+<div data-screen-label="Backlog" style="height:{{ rootH }};min-width:1440px;display:flex;flex-direction:column;overflow:hidden;background:#f4f5f7">
+  <div style="height:48px;background:#fff;border-bottom:1px solid #e2e5ea;display:flex;align-items:center;padding:0 12px 0 16px;gap:4px;flex-shrink:0">
+    <a href="Lattice Home.dc.html" style="display:flex;align-items:center;gap:9px;padding-right:14px;margin-right:6px;border-right:1px solid #e2e5ea;height:28px;color:#1b2430"><div style="width:24px;height:24px;border-radius:6px;background:#2456c9;display:grid;grid-template-columns:1fr 1fr;gap:2px;padding:5px"><span style="background:#fff;border-radius:1px"></span><span style="background:#fff;border-radius:1px;opacity:.55"></span><span style="background:#fff;border-radius:1px;opacity:.55"></span><span style="background:#fff;border-radius:1px"></span></div><div style="font-weight:600;font-size:14px;letter-spacing:-.01em">Lattice</div></a>
+    <div style="display:flex;gap:2px;font-size:13.5px">
+      <a href="Lattice Home.dc.html" style="padding:6px 10px;color:#3b4454">Your work <span style="color:#8a93a3;font-size:10px">▾</span></a>
+      <a href="Lattice Board.dc.html" style="padding:6px 10px;color:#1b2430;font-weight:500;box-shadow:inset 0 -2px 0 #2456c9">Projects <span style="color:#8a93a3;font-size:10px">▾</span></a>
+      <a href="Lattice Docs.dc.html" style="padding:6px 10px;color:#3b4454">Docs <span style="color:#8a93a3;font-size:10px">▾</span></a>
+      <a href="Lattice Backlog.dc.html" style="padding:6px 10px;color:#3b4454">Filters <span style="color:#8a93a3;font-size:10px">▾</span></a>
+      <a href="Lattice Roadmap.dc.html" style="padding:6px 10px;color:#3b4454">Dashboards <span style="color:#8a93a3;font-size:10px">▾</span></a>
+      <a href="Lattice People.dc.html" style="padding:6px 10px;color:#3b4454">Teams <span style="color:#8a93a3;font-size:10px">▾</span></a>
+    </div>
+    <div style="margin-left:6px;padding:6px 14px;border-radius:6px;background:#2456c9;color:#fff;font-weight:500">Create</div>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+      <a href="Lattice Command.dc.html" style="width:300px;height:32px;border:1px solid #d5dae2;border-radius:6px;display:flex;align-items:center;padding:0 10px;gap:8px;color:#8a93a3;background:#f9fafb"><span style="font-size:14px">⌕</span><span>Search issues, docs, people</span></a>
+      <a href="Lattice Command.dc.html" style="height:32px;padding:0 12px;border:1px solid #cdd8f3;background:#eef3fe;border-radius:6px;display:flex;align-items:center;gap:7px;color:#2456c9;font-weight:500"><span style="width:8px;height:8px;border-radius:50%;background:#2456c9"></span>Ask Lattice</a>
+      <div style="width:30px;height:30px;border-radius:50%;background:#d7e3fb;color:#2456c9;font-weight:600;font-size:12px;display:flex;align-items:center;justify-content:center;margin-left:4px">RS</div>
+    </div>
+  </div>
+  <div style="flex:1;display:flex;min-height:0">
+    <div style="width:240px;background:#fff;border-right:1px solid #e2e5ea;display:flex;flex-direction:column;flex-shrink:0;overflow:auto">
+      <div style="padding:16px 16px 12px;display:flex;align-items:center;gap:10px"><div style="width:32px;height:32px;border-radius:7px;background:linear-gradient(135deg,#2456c9,#6a8fe8);color:#fff;font-weight:600;display:flex;align-items:center;justify-content:center">PC</div><div style="display:flex;flex-direction:column;gap:1px"><div style="font-weight:600;font-size:13.5px">Platform Core</div><div style="color:#6b7483;font-size:12px">Software project</div></div></div>
+      <div style="padding:4px 8px;display:flex;flex-direction:column;gap:14px">
+        <div style="display:flex;flex-direction:column;gap:1px">
+          <div style="padding:4px 10px 6px;font:500 11px 'IBM Plex Sans';color:#8a93a3;letter-spacing:.07em;text-transform:uppercase">Planning</div>
+          <a href="Lattice Roadmap.dc.html" style="padding:7px 10px;border-radius:6px;color:#3b4454">Roadmap</a>
+          <a href="Lattice Backlog.dc.html" style="padding:7px 10px;border-radius:6px;background:#eef3fe;color:#2456c9;font-weight:500">Backlog</a>
+          <a href="Lattice Board.dc.html" style="padding:7px 10px;border-radius:6px;color:#3b4454">Board</a>
+          <a href="Lattice Backlog.dc.html" style="padding:7px 10px;border-radius:6px;color:#3b4454">Sprints</a>
+          <a href="Lattice Roadmap.dc.html" style="padding:7px 10px;border-radius:6px;color:#3b4454">Reports</a>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:1px">
+          <div style="padding:4px 10px 6px;font:500 11px 'IBM Plex Sans';color:#8a93a3;letter-spacing:.07em;text-transform:uppercase">Docs</div>
+          <a href="Lattice Docs.dc.html" style="padding:7px 10px;border-radius:6px;color:#3b4454">Project space</a>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:1px;border-top:1px solid #e9ecf0;padding-top:10px">
+          <a href="Lattice Board Settings.dc.html" style="padding:7px 10px;border-radius:6px;color:#3b4454">Project settings</a>
+          <a href="Lattice People.dc.html" style="padding:7px 10px;border-radius:6px;color:#3b4454">Members</a>
+        </div>
+      </div>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;min-width:0;min-height:0">
+      <div style="padding:14px 24px 12px;display:flex;flex-direction:column;gap:12px;flex-shrink:0">
+        <div style="font-size:12.5px;color:#6b7483">Projects / Platform Core / <span style="color:#1b2430">Backlog</span></div>
+        <div style="display:flex;align-items:center;gap:16px">
+          <div style="font-weight:600;font-size:22px;letter-spacing:-.015em">Backlog</div>
+          <div style="margin-left:auto;display:flex;gap:8px">
+            <div style="height:32px;padding:0 12px;border:1px solid #d5dae2;background:#fff;border-radius:6px;display:flex;align-items:center;font-weight:500">Insights</div>
+            <div style="height:32px;padding:0 12px;border:1px solid #d5dae2;background:#fff;border-radius:6px;display:flex;align-items:center;font-weight:500">Create sprint</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="width:220px;height:32px;border:1px solid #d5dae2;border-radius:6px;background:#fff;display:flex;align-items:center;padding:0 10px;gap:8px;color:#8a93a3"><span style="font-size:14px">⌕</span>Search backlog</div>
+          <div style="height:32px;padding:0 10px;border:1px solid #d5dae2;background:#fff;border-radius:6px;display:flex;align-items:center;gap:6px;color:#3b4454">Epic <span style="color:#8a93a3;font-size:10px">▾</span></div>
+          <div style="height:32px;padding:0 10px;border:1px solid #d5dae2;background:#fff;border-radius:6px;display:flex;align-items:center;gap:6px;color:#3b4454">Type <span style="color:#8a93a3;font-size:10px">▾</span></div>
+          <div style="height:32px;padding:0 10px;border:1px solid #d5dae2;background:#fff;border-radius:6px;display:flex;align-items:center;gap:6px;color:#3b4454">Assignee <span style="color:#8a93a3;font-size:10px">▾</span></div>
+          <div style="margin-left:auto;display:flex;align-items:center;gap:8px;color:#6b7483;font-size:12.5px"><span>Show epics panel</span><div onClick="{{ toggleEpics }}" style="width:34px;height:20px;border-radius:10px;background:{{ epicsBg }};position:relative;cursor:pointer"><span style="position:absolute;top:2px;left:{{ epicsKnob }};width:16px;height:16px;border-radius:50%;background:#fff;transition:left .15s"></span></div></div>
+        </div>
+      </div>
+      <div style="flex:1;display:flex;min-height:0">
+        <sc-if value="{{ showEpics }}" hint-placeholder-val="{{ true }}">
+          <div style="width:260px;border-right:1px solid #e2e5ea;background:#fff;display:flex;flex-direction:column;flex-shrink:0;overflow:auto">
+            <div style="padding:12px 14px;font-weight:600;border-bottom:1px solid #e9ecf0;display:flex;align-items:center">Epics<span style="margin-left:auto;color:#2456c9;font-weight:500;font-size:12.5px">+ Create</span></div>
+            <sc-for list="{{ epics }}" as="e" hint-placeholder-count="4">
+              <div onClick="{{ e.pick }}" style="padding:10px 14px;border-bottom:1px solid #eceef2;display:flex;flex-direction:column;gap:6px;cursor:pointer;background:{{ e.bg }}">
+                <div style="display:flex;align-items:center;gap:8px"><span style="width:10px;height:10px;border-radius:3px;background:{{ e.color }}"></span><span style="font-weight:600;flex:1">{{ e.name }}</span><span style="font:500 11px 'IBM Plex Mono';color:#8a93a3">{{ e.key }}</span></div>
+                <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:#6b7483"><span style="flex:1;height:5px;background:#e5e8ee;border-radius:3px;overflow:hidden"><span style="display:block;height:100%;width:{{ e.pct }};background:{{ e.color }}"></span></span><span>{{ e.pct }}</span></div>
+                <div style="font-size:12px;color:#8a93a3">{{ e.meta }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+        <div style="flex:1;overflow:auto;min-width:0;padding:0 24px 40px">
+          <sc-for list="{{ groups }}" as="g" hint-placeholder-count="3">
+            <div style="margin-top:16px;background:#fff;border:1px solid {{ g.border }};border-radius:8px;overflow:hidden">
+              <div onClick="{{ g.toggle }}" style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:#fafbfc;border-bottom:1px solid #eceef2;cursor:pointer">
+                <span style="color:#8a93a3;font-size:10px;width:10px;transform:{{ g.chev }}">▶</span>
+                <span style="font-weight:600;font-size:13.5px">{{ g.name }}</span>
+                <sc-if value="{{ g.dates }}" hint-placeholder-val="{{ false }}"><span style="color:#6b7483;font-size:12.5px">{{ g.dates }}</span></sc-if>
+                <sc-if value="{{ g.active }}" hint-placeholder-val="{{ false }}"><span style="font-size:11px;padding:2px 7px;border-radius:4px;background:#e3f4ea;color:#1f7a44;font-weight:600">ACTIVE</span></sc-if>
+                <span style="color:#8a93a3;font-size:12.5px">{{ g.count }} issues</span>
+                <span style="margin-left:auto;display:flex;gap:6px;align-items:center">
+                  <span title="To do" style="font:500 11px 'IBM Plex Mono';padding:2px 7px;border-radius:9px;background:#eef0f4;color:#4b5565">{{ g.todo }}</span>
+                  <span title="In progress" style="font:500 11px 'IBM Plex Mono';padding:2px 7px;border-radius:9px;background:#e8eefc;color:#2456c9">{{ g.doing }}</span>
+                  <span title="Done" style="font:500 11px 'IBM Plex Mono';padding:2px 7px;border-radius:9px;background:#e3f4ea;color:#1f7a44">{{ g.done }}</span>
+                  <sc-if value="{{ g.cap }}" hint-placeholder-val="{{ false }}"><span style="margin-left:6px;font-size:12px;color:{{ g.capC }}">{{ g.cap }}</span></sc-if>
+                  <span style="margin-left:8px;height:28px;padding:0 10px;border:1px solid #d5dae2;border-radius:5px;display:flex;align-items:center;font-weight:500;font-size:12.5px;background:#fff">{{ g.action }}</span>
+                  <span style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:600;letter-spacing:1px;color:#6b7483">···</span>
+                </span>
+              </div>
+              <sc-if value="{{ g.aiTip }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;align-items:center;gap:10px;padding:8px 14px;background:#f6f8fe;border-bottom:1px solid #e9ecf0;font-size:12.5px"><span style="width:7px;height:7px;border-radius:50%;background:#2456c9"></span><span style="color:#2c3545;flex:1">{{ g.aiTip }}</span><span style="padding:4px 9px;border:1px solid #cdd8f3;border-radius:4px;background:#fff;color:#2456c9;font-weight:500">Apply</span><span style="color:#8a93a3">Dismiss</span></div>
+              </sc-if>
+              <sc-if value="{{ g.open }}" hint-placeholder-val="{{ true }}">
+                <div style="display:flex;flex-direction:column">
+                  <sc-for list="{{ g.items }}" as="it" hint-placeholder-count="4">
+                    <div onClick="{{ it.select }}" style="display:grid;grid-template-columns:16px 20px 84px minmax(0,1fr) 110px 120px 60px 40px 28px;gap:10px;align-items:center;padding:8px 14px;border-bottom:1px solid #eceef2;background:{{ it.bg }};cursor:pointer">
+                      <span style="color:#c4cad3;cursor:grab;letter-spacing:-2px">⋮⋮</span>
+                      <span style="width:14px;height:14px;border-radius:{{ it.typeR }};background:{{ it.typeC }};color:#fff;font:600 9px 'IBM Plex Sans';display:flex;align-items:center;justify-content:center">{{ it.typeG }}</span>
+                      <span style="font:500 11.5px 'IBM Plex Mono';color:#6b7483">{{ it.id }}</span>
+                      <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:flex;gap:8px;align-items:center;min-width:0"><span style="overflow:hidden;text-overflow:ellipsis">{{ it.title }}</span><sc-if value="{{ it.doc }}" hint-placeholder-val="{{ false }}"><span style="font-size:11px;color:#2456c9;flex-shrink:0">↗ {{ it.doc }}</span></sc-if></span>
+                      <span style="display:flex;align-items:center;gap:6px;font-size:12px;color:#4b5565;overflow:hidden;white-space:nowrap"><span style="width:8px;height:8px;border-radius:2px;background:{{ it.epicC }};flex-shrink:0"></span><span style="overflow:hidden;text-overflow:ellipsis">{{ it.epic }}</span></span>
+                      <span style="font-size:11px;padding:3px 7px;border-radius:4px;background:{{ it.sBg }};color:{{ it.sFg }};font-weight:600;text-transform:uppercase;letter-spacing:.04em;justify-self:start;white-space:nowrap">{{ it.status }}</span>
+                      <span style="font:600 12px 'IBM Plex Mono';color:{{ it.priC }}">{{ it.priG }}</span>
+                      <span style="font:500 11px 'IBM Plex Mono';background:#eef0f4;color:#3b4454;padding:1px 6px;border-radius:9px;text-align:center">{{ it.pts }}</span>
+                      <span style="width:22px;height:22px;border-radius:50%;background:{{ it.avBg }};color:{{ it.avFg }};font-weight:600;font-size:10px;display:flex;align-items:center;justify-content:center">{{ it.who }}</span>
+                    </div>
+                  </sc-for>
+                  <div style="padding:9px 14px 9px 50px;color:#8a93a3;font-size:12.5px">+ Create issue</div>
+                </div>
+              </sc-if>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { showEpics: true, epic: null, closed: {}, sel: null };
+  renderVals() {
+    const rootH = this.props.height ?? '100vh';
+    const s = this.state;
+    const types = { story: ['#2b9b5a', '3px', '▮'], bug: ['#d93838', '50%', '●'], task: ['#2456c9', '3px', '✓'] };
+    const pri = { highest: ['#c42d2d', '⇈'], high: ['#e0632a', '↑'], medium: ['#d49a1a', '='], low: ['#2b9b5a', '↓'] };
+    const st = { 'To do': ['#eef0f4', '#4b5565'], 'In progress': ['#e8eefc', '#2456c9'], 'In review': ['#efe9fd', '#5a3cae'], 'QA': ['#fdf3dc', '#8a6210'], 'Done': ['#e3f4ea', '#1f7a44'] };
+    const people = { PN: ['#d7f0e0', '#1f7a44'], AK: ['#fde2cf', '#9a4a16'], JM: ['#e4dcfa', '#5a3cae'], RS: ['#d7e3fb', '#2456c9'], LT: ['#fbe3ee', '#a0245f'], '': ['#eef0f4', '#8a93a3'] };
+    const epicsRaw = [['PLT-180', 'Auth service', '#2456c9', '61%', '9 issues · due Oct 7'], ['PLT-150', 'Billing v2', '#8b5cf6', '34%', '12 issues · due Oct 21'], ['PLT-240', 'Observability', '#0f766e', '0%', '6 issues · not started'], ['PLT-160', 'Self-serve onboarding', '#b4530f', '85%', '8 issues · due Oct 10']];
+    const E = Object.fromEntries(epicsRaw.map(e => [e[1], e[2]]));
+    const I = (id, t, title, epic, status, p, pts, who, doc) => ({ id, t, title, epic, status, p, pts, who, doc });
+    const groups = [
+      { name: 'PLT Sprint 14', dates: 'Sep 23 – Oct 7', active: true, action: 'Complete sprint', cap: '23 pts · 14 done', capC: '#6b7483', items: [
+        I('PLT-204', 'story', 'Session store migration to Postgres', 'Auth service', 'In review', 'highest', 5, 'AK', 'RFC'), I('PLT-218', 'story', 'Rotate service tokens on every deploy', 'Auth service', 'In progress', 'highest', 5, 'PN', 'RFC'), I('PLT-226', 'bug', 'Refresh token reused after logout on Safari', 'Auth service', 'In progress', 'high', 2, 'LT'), I('PLT-211', 'story', 'Session cleanup background job', 'Auth service', 'To do', 'medium', 3, 'JM'), I('PLT-219', 'task', 'Remove legacy cookie path from monolith', 'Auth service', 'To do', 'low', 2, 'JM'), I('PLT-228', 'story', 'Stripe webhook idempotency', 'Billing v2', 'In progress', 'high', 3, 'RS'), I('PLT-224', 'bug', 'Invoice PDF shows wrong tax for EU customers', 'Billing v2', 'In review', 'highest', 2, 'JM') ],
+        aiTip: 'PLT-211 and PLT-219 are blocked by PLT-204 and unlikely to finish by Oct 7. Move both to Sprint 15 and the sprint lands at 18/18.' },
+      { name: 'PLT Sprint 15', dates: 'Oct 7 – Oct 21', active: false, action: 'Start sprint', cap: '19 of ~22 pts capacity', capC: '#1f7a44', items: [
+        I('PLT-222', 'task', 'Rate-limit token refresh endpoint', 'Auth service', 'To do', 'medium', 3, 'AK', 'RFC'), I('PLT-230', 'story', 'Usage-based invoice line items', 'Billing v2', 'To do', 'high', 5, 'LT', 'Spec'), I('PLT-231', 'task', 'Proration when switching plans mid-cycle', 'Billing v2', 'To do', 'medium', 3, 'LT'), I('PLT-225', 'task', 'Audit log export to S3', 'Observability', 'To do', 'medium', 5, 'RS'), I('PLT-241', 'story', 'Structured logging across services', 'Observability', 'To do', 'high', 3, '') ] },
+      { name: 'Backlog', dates: '', active: false, action: 'Create sprint', cap: '', items: [
+        I('PLT-242', 'story', 'Trace IDs in HTTP responses', 'Observability', 'To do', 'medium', 2, ''), I('PLT-243', 'task', 'Grafana dashboards for auth service', 'Observability', 'To do', 'low', 3, ''), I('PLT-233', 'bug', 'Board filter state lost on refresh', 'Self-serve onboarding', 'To do', 'medium', 1, 'JM'), I('PLT-235', 'story', 'Invite teammates during setup', 'Self-serve onboarding', 'To do', 'high', 3, ''), I('PLT-236', 'task', 'Import from Jira CSV', 'Self-serve onboarding', 'To do', 'high', 5, ''), I('PLT-237', 'task', 'Import from Confluence export', 'Self-serve onboarding', 'To do', 'medium', 5, ''), I('PLT-244', 'bug', 'Dark theme: low contrast on QA badge', 'Self-serve onboarding', 'To do', 'low', 1, ''), I('PLT-245', 'story', 'Webhooks for issue events', 'Observability', 'To do', 'medium', 3, '') ] }
+    ];
+    const out = groups.map((g, gi) => {
+      const items = g.items.filter(it => !s.epic || it.epic === s.epic).map(it => ({ ...it, typeC: types[it.t][0], typeR: types[it.t][1], typeG: types[it.t][2], epicC: E[it.epic], sBg: st[it.status][0], sFg: st[it.status][1], priC: pri[it.p][0], priG: pri[it.p][1], avBg: people[it.who][0], avFg: people[it.who][1], who: it.who || '?', bg: s.sel === it.id ? '#eef3fe' : '#fff', select: () => this.setState({ sel: it.id }) }));
+      const open = !s.closed[g.name];
+      return { ...g, items, open, count: items.length, todo: items.filter(i => i.status === 'To do').length, doing: items.filter(i => i.status !== 'To do' && i.status !== 'Done').length, done: items.filter(i => i.status === 'Done').length, chev: open ? 'rotate(90deg)' : 'rotate(0deg)', border: g.active ? '#cdd8f3' : '#e2e5ea', toggle: () => this.setState({ closed: { ...s.closed, [g.name]: open } }) };
+    });
+    return {
+      rootH,
+      groups: out, showEpics: s.showEpics, epicsBg: s.showEpics ? '#2456c9' : '#cfd4dc', epicsKnob: s.showEpics ? '16px' : '2px', toggleEpics: () => this.setState({ showEpics: !s.showEpics }),
+      epics: epicsRaw.map(([key, name, color, pct, meta]) => ({ key, name, color, pct, meta, bg: s.epic === name ? '#eef3fe' : '#fff', pick: () => this.setState({ epic: s.epic === name ? null : name }) }))
+    };
+  }
+}
+</script>
+</body>
+</html>

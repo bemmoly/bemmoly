@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>html,body{margin:0;height:100%;background:#f4f5f7;font-family:'IBM Plex Sans',system-ui,sans-serif;color:#1b2430;font-size:13px}*{box-sizing:border-box}a{color:#2456c9}a:hover{color:#183d94}input{font:inherit}</style>
+</helmet>
+<div data-screen-label="Board settings" style="height:{{ rootH }};min-width:1440px;display:flex;flex-direction:column;overflow:hidden;background:#f4f5f7">
+  <div style="height:48px;background:#fff;border-bottom:1px solid #e2e5ea;display:flex;align-items:center;padding:0 12px 0 16px;gap:4px;flex-shrink:0">
+    <div style="display:flex;align-items:center;gap:9px;padding-right:14px;margin-right:6px;border-right:1px solid #e2e5ea;height:28px">
+      <div style="width:24px;height:24px;border-radius:6px;background:#2456c9;display:grid;grid-template-columns:1fr 1fr;gap:2px;padding:5px"><span style="background:#fff;border-radius:1px"></span><span style="background:#fff;border-radius:1px;opacity:.55"></span><span style="background:#fff;border-radius:1px;opacity:.55"></span><span style="background:#fff;border-radius:1px"></span></div>
+      <div style="font-weight:600;font-size:14px;letter-spacing:-.01em">Lattice</div>
+    </div>
+    <div style="display:flex;gap:2px;font-size:13.5px">
+      <div style="padding:6px 10px;color:#3b4454">Your work <span style="color:#8a93a3;font-size:10px">▾</span></div>
+      <div style="padding:6px 10px;color:#1b2430;font-weight:500;box-shadow:inset 0 -2px 0 #2456c9">Projects <span style="color:#8a93a3;font-size:10px">▾</span></div>
+      <div style="padding:6px 10px;color:#3b4454">Docs <span style="color:#8a93a3;font-size:10px">▾</span></div>
+      <div style="padding:6px 10px;color:#3b4454">Filters <span style="color:#8a93a3;font-size:10px">▾</span></div>
+      <div style="padding:6px 10px;color:#3b4454">Dashboards <span style="color:#8a93a3;font-size:10px">▾</span></div>
+      <div style="padding:6px 10px;color:#3b4454">Teams <span style="color:#8a93a3;font-size:10px">▾</span></div>
+    </div>
+    <div style="margin-left:6px;padding:6px 14px;border-radius:6px;background:#2456c9;color:#fff;font-weight:500">Create</div>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+      <div style="width:300px;height:32px;border:1px solid #d5dae2;border-radius:6px;display:flex;align-items:center;padding:0 10px;gap:8px;color:#8a93a3;background:#f9fafb"><span style="font-size:14px">⌕</span><span>Search issues, docs, people</span></div>
+      <div style="height:32px;padding:0 12px;border:1px solid #cdd8f3;background:#eef3fe;border-radius:6px;display:flex;align-items:center;gap:7px;color:#2456c9;font-weight:500"><span style="width:8px;height:8px;border-radius:50%;background:#2456c9"></span>Ask Lattice</div>
+      <div style="width:30px;height:30px;border-radius:50%;background:#d7e3fb;color:#2456c9;font-weight:600;font-size:12px;display:flex;align-items:center;justify-content:center;margin-left:4px">RS</div>
+    </div>
+  </div>
+
+  <div style="flex:1;display:flex;min-height:0">
+    <div style="width:240px;background:#fff;border-right:1px solid #e2e5ea;display:flex;flex-direction:column;flex-shrink:0;overflow:auto">
+      <div style="padding:16px 16px 12px;display:flex;align-items:center;gap:10px">
+        <div style="width:32px;height:32px;border-radius:7px;background:linear-gradient(135deg,#2456c9,#6a8fe8);color:#fff;font-weight:600;display:flex;align-items:center;justify-content:center">PC</div>
+        <div style="display:flex;flex-direction:column;gap:1px"><div style="font-weight:600;font-size:13.5px">Platform Core</div><div style="color:#6b7483;font-size:12px">Project settings</div></div>
+      </div>
+      <div style="padding:4px 8px;display:flex;flex-direction:column;gap:14px">
+        <div style="display:flex;flex-direction:column;gap:1px">
+          <div style="padding:4px 10px 6px;font:500 11px 'IBM Plex Sans';color:#8a93a3;letter-spacing:.07em;text-transform:uppercase">Project</div>
+          <div style="padding:7px 10px;border-radius:6px;color:#3b4454">Details</div>
+          <div style="padding:7px 10px;border-radius:6px;color:#3b4454">Access <span style="float:right;font:500 11px 'IBM Plex Mono';color:#8a93a3">14</span></div>
+          <div style="padding:7px 10px;border-radius:6px;color:#3b4454">Notifications</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:1px">
+          <div style="padding:4px 10px 6px;font:500 11px 'IBM Plex Sans';color:#8a93a3;letter-spacing:.07em;text-transform:uppercase">Work</div>
+          <div style="padding:7px 10px;border-radius:6px;color:#3b4454">Issue types <span style="float:right;font-size:11px;color:#8a93a3">Org default</span></div>
+          <div style="padding:7px 10px;border-radius:6px;color:#3b4454">Fields <span style="float:right;font-size:11px;color:#2456c9">Overridden</span></div>
+          <div style="padding:7px 10px;border-radius:6px;color:#3b4454">Workflow <span style="float:right;font-size:11px;color:#8a93a3">Org default</span></div>
+          <div style="padding:7px 10px;border-radius:6px;background:#eef3fe;color:#2456c9;font-weight:500">Board</div>
+          <div style="padding:7px 10px;border-radius:6px;color:#3b4454">Sprints and estimation</div>
+          <div style="padding:7px 10px;border-radius:6px;color:#3b4454">Automation</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:1px">
+          <div style="padding:4px 10px 6px;font:500 11px 'IBM Plex Sans';color:#8a93a3;letter-spacing:.07em;text-transform:uppercase">Docs</div>
+          <div style="padding:7px 10px;border-radius:6px;color:#3b4454">Project space</div>
+          <div style="padding:7px 10px;border-radius:6px;color:#3b4454">Templates</div>
+        </div>
+      </div>
+      <div style="margin-top:auto;padding:12px 16px;border-top:1px solid #e9ecf0;display:flex;flex-direction:column;gap:6px;font-size:12px;color:#6b7483"><span>You're a <b style="color:#1b2430">Project admin</b>.</span><span>Org-level defaults are set in <a href="Lattice Appearance Settings.dc.html">Workspace settings</a>.</span></div>
+    </div>
+
+    <div style="flex:1;display:flex;min-width:0;min-height:0">
+      <div style="flex:1;overflow:auto;min-width:0">
+        <div style="max-width:960px;padding:28px 32px 60px;display:flex;flex-direction:column;gap:24px">
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <div style="font-size:12.5px;color:#6b7483">Projects / Platform Core / Settings / Board</div>
+            <div style="display:flex;align-items:center;gap:16px">
+              <div style="font-weight:600;font-size:22px;letter-spacing:-.015em">Board</div>
+              <div style="margin-left:auto;display:flex;gap:8px">
+                <div style="height:32px;padding:0 12px;border:1px solid #d5dae2;background:#fff;border-radius:6px;display:flex;align-items:center;font-weight:500;color:#3b4454">Reset to org default</div>
+                <div style="height:32px;padding:0 14px;border-radius:6px;background:#2456c9;color:#fff;display:flex;align-items:center;font-weight:500">Save changes</div>
+              </div>
+            </div>
+            <div style="color:#6b7483;max-width:620px;line-height:1.5">How the PLT board looks for everyone on the project. Members can still apply their own filters and swimlane view; those are personal and don't change this page.</div>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:#fff;border:1px solid #e2e5ea;border-radius:7px">
+            <span style="font-weight:600">Inherits from</span>
+            <div style="display:flex;align-items:center;gap:8px;padding:5px 10px;border:1px solid #d5dae2;border-radius:6px;background:#f9fafb"><span style="width:8px;height:8px;border-radius:2px;background:#6b7483"></span>Org default: Software (Scrum) <span style="color:#8a93a3;font-size:10px">▾</span></div>
+            <span style="color:#6b7483">{{ overrideCount }} settings overridden on this project</span>
+            <span style="margin-left:auto;color:#2456c9;font-weight:500">View diff</span>
+          </div>
+
+          <div style="display:flex;gap:2px;border-bottom:1px solid #e2e5ea">
+            <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="5">
+              <div onClick="{{ t.pick }}" style="padding:9px 14px;font-weight:500;color:{{ t.fg }};box-shadow:{{ t.sh }};cursor:pointer;display:flex;gap:7px;align-items:center">{{ t.name }}<sc-if value="{{ t.badge }}" hint-placeholder-val="{{ false }}"><span style="font:500 10.5px 'IBM Plex Mono';background:#eef3fe;color:#2456c9;padding:1px 6px;border-radius:9px">{{ t.badge }}</span></sc-if></div>
+            </sc-for>
+          </div>
+
+          <!-- COLUMNS -->
+          <sc-if value="{{ isColumns }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;flex-direction:column;gap:16px">
+              <div style="display:flex;align-items:flex-start;gap:16px">
+                <div style="display:flex;flex-direction:column;gap:4px;flex:1"><div style="font-weight:600;font-size:15px">Columns</div><div style="color:#6b7483;line-height:1.5">Drag to reorder. Each column maps one or more workflow statuses; every status must live in exactly one column. Unmapped statuses stay off the board.</div></div>
+                <div onClick="{{ addColumn }}" style="height:32px;padding:0 12px;border:1px solid #d5dae2;background:#fff;border-radius:6px;display:flex;align-items:center;font-weight:500;cursor:pointer;white-space:nowrap">+ Add column</div>
+              </div>
+              <div style="overflow-x:auto;padding-bottom:6px"><div style="display:grid;grid-template-columns:repeat({{ colCount }},minmax(190px,1fr));gap:10px">
+                <sc-for list="{{ columns }}" as="c" hint-placeholder-count="5">
+                  <div style="background:#fff;border:1px solid #e2e5ea;border-radius:8px;display:flex;flex-direction:column;overflow:hidden;min-height:260px">
+                    <div style="padding:10px 10px 8px;border-bottom:1px solid #eceef2;display:flex;flex-direction:column;gap:8px;background:#fafbfc">
+                      <div style="display:flex;align-items:center;gap:6px"><span style="color:#a2aab8;cursor:grab;letter-spacing:-2px">⋮⋮</span><input value="{{ c.name }}" onChange="{{ c.rename }}" style="flex:1;min-width:0;border:1px solid transparent;border-radius:4px;padding:3px 6px;font-weight:600;font-size:12.5px;background:transparent;outline:0"><span onClick="{{ c.remove }}" style="color:#a2aab8;cursor:pointer;padding:0 4px">✕</span></div>
+                      <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#6b7483;flex-wrap:wrap"><span style="white-space:nowrap">WIP limit</span><input value="{{ c.wipStr }}" onChange="{{ c.setWip }}" placeholder="–" style="width:40px;border:1px solid #d5dae2;border-radius:4px;padding:3px 6px;font:500 12px 'IBM Plex Mono';text-align:center;outline:0"><sc-if value="{{ c.isDone }}" hint-placeholder-val="{{ false }}"><span style="margin-left:auto;font-size:11px;padding:2px 6px;border-radius:3px;background:#e3f4ea;color:#1f7a44;font-weight:600">RESOLVES</span></sc-if></div>
+                    </div>
+                    <div style="padding:8px;display:flex;flex-direction:column;gap:6px;flex:1">
+                      <sc-for list="{{ c.statuses }}" as="st" hint-placeholder-count="1">
+                        <div style="display:flex;align-items:center;gap:8px;padding:7px 9px;border:1px solid #e2e5ea;border-radius:6px;background:#fff;font-size:12.5px"><span style="width:8px;height:8px;border-radius:50%;background:{{ st.color }}"></span><span style="flex:1">{{ st.name }}</span><span style="font:400 11px 'IBM Plex Mono';color:#8a93a3">{{ st.count }}</span></div>
+                      </sc-for>
+                      <div style="border:1px dashed #d5dae2;border-radius:6px;padding:8px;color:#8a93a3;text-align:center;font-size:12px;margin-top:auto">Drop status here</div>
+                    </div>
+                  </div>
+                </sc-for>
+              </div></div>
+              <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border:1px solid #e2e5ea;border-radius:7px;background:#fff">
+                <span style="font-weight:600">Unmapped statuses</span>
+                <span style="display:flex;align-items:center;gap:6px;padding:4px 9px;border:1px solid #e2e5ea;border-radius:6px;font-size:12.5px"><span style="width:8px;height:8px;border-radius:50%;background:#8a93a3"></span>Won't do</span>
+                <span style="display:flex;align-items:center;gap:6px;padding:4px 9px;border:1px solid #e2e5ea;border-radius:6px;font-size:12.5px"><span style="width:8px;height:8px;border-radius:50%;background:#8a93a3"></span>Duplicate</span>
+                <span style="margin-left:auto;color:#6b7483;font-size:12px">Edit statuses in <a href="#">Workflow</a></span>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:2px;background:#fff;border:1px solid #e2e5ea;border-radius:8px;padding:6px 16px">
+                <sc-for list="{{ colToggles }}" as="tg" hint-placeholder-count="3">
+                  <div onClick="{{ tg.toggle }}" style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid {{ tg.line }};cursor:pointer"><div style="flex:1;display:flex;flex-direction:column;gap:2px"><span style="font-weight:500">{{ tg.name }}</span><span style="color:#8a93a3;font-size:12px">{{ tg.desc }}</span></div><div style="width:34px;height:20px;border-radius:10px;background:{{ tg.bg }};position:relative;flex-shrink:0"><span style="position:absolute;top:2px;left:{{ tg.knob }};width:16px;height:16px;border-radius:50%;background:#fff;transition:left .15s"></span></div></div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+
+          <!-- SWIMLANES -->
+          <sc-if value="{{ isLanes }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;flex-direction:column;gap:16px">
+              <div style="display:flex;flex-direction:column;gap:4px"><div style="font-weight:600;font-size:15px">Default swimlanes</div><div style="color:#6b7483;line-height:1.5">What the board is grouped by when someone opens it. Members can change this for themselves from the Group by menu.</div></div>
+              <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+                <sc-for list="{{ laneOpts }}" as="lo" hint-placeholder-count="6">
+                  <div onClick="{{ lo.pick }}" style="background:#fff;border:1px solid {{ lo.border }};box-shadow:{{ lo.shadow }};border-radius:8px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;cursor:pointer">
+                    <div style="display:flex;flex-direction:column;gap:3px;height:34px">
+                      <div style="height:6px;border-radius:2px;background:{{ lo.barA }};width:{{ lo.wA }}"></div>
+                      <div style="height:6px;border-radius:2px;background:{{ lo.barB }};width:{{ lo.wB }}"></div>
+                      <div style="height:6px;border-radius:2px;background:{{ lo.barC }};width:{{ lo.wC }}"></div>
+                    </div>
+                    <div style="font-weight:600">{{ lo.name }}</div>
+                    <div style="color:#6b7483;font-size:12px;line-height:1.45">{{ lo.desc }}</div>
+                  </div>
+                </sc-for>
+              </div>
+              <sc-if value="{{ isQueryLane }}" hint-placeholder-val="{{ false }}">
+                <div style="background:#fff;border:1px solid #e2e5ea;border-radius:8px;overflow:hidden">
+                  <div style="padding:12px 16px;border-bottom:1px solid #e9ecf0;font-weight:600;display:flex;align-items:center">Custom lanes<span onClick="{{ addLane }}" style="margin-left:auto;color:#2456c9;font-weight:500;cursor:pointer">+ Add lane</span></div>
+                  <div style="padding:6px 16px;display:flex;flex-direction:column">
+                    <sc-for list="{{ queryLanes }}" as="ql" hint-placeholder-count="3">
+                      <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #eceef2"><span style="color:#a2aab8;cursor:grab;letter-spacing:-2px">⋮⋮</span><input value="{{ ql.name }}" style="width:160px;border:1px solid #d5dae2;border-radius:5px;padding:5px 8px;outline:0;font-weight:500"><input value="{{ ql.q }}" style="flex:1;border:1px solid #d5dae2;border-radius:5px;padding:5px 8px;outline:0;font:400 12px 'IBM Plex Mono';color:#3b4454"><span style="color:#a2aab8;cursor:pointer">✕</span></div>
+                    </sc-for>
+                    <div style="padding:10px 0;color:#6b7483;font-size:12px">Issues matching no lane fall into "Everything else". Queries use the same language as Filters; <span style="color:#2456c9">ask Lattice</span> to write one in plain English.</div>
+                  </div>
+                </div>
+              </sc-if>
+              <div style="display:flex;flex-direction:column;gap:2px;background:#fff;border:1px solid #e2e5ea;border-radius:8px;padding:6px 16px">
+                <sc-for list="{{ laneToggles }}" as="tg" hint-placeholder-count="3">
+                  <div onClick="{{ tg.toggle }}" style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid {{ tg.line }};cursor:pointer"><div style="flex:1;display:flex;flex-direction:column;gap:2px"><span style="font-weight:500">{{ tg.name }}</span><span style="color:#8a93a3;font-size:12px">{{ tg.desc }}</span></div><div style="width:34px;height:20px;border-radius:10px;background:{{ tg.bg }};position:relative;flex-shrink:0"><span style="position:absolute;top:2px;left:{{ tg.knob }};width:16px;height:16px;border-radius:50%;background:#fff;transition:left .15s"></span></div></div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+
+          <!-- CARDS -->
+          <sc-if value="{{ isCards }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;flex-direction:column;gap:16px">
+              <div style="display:flex;flex-direction:column;gap:4px"><div style="font-weight:600;font-size:15px">Card layout</div><div style="color:#6b7483;line-height:1.5">Choose which fields appear on cards. Up to 3 extra fields show in the footer; the rest are visible on hover and in the detail panel.</div></div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start">
+                <div style="background:#fff;border:1px solid #e2e5ea;border-radius:8px;padding:6px 16px;display:flex;flex-direction:column">
+                  <sc-for list="{{ cardFields }}" as="cf" hint-placeholder-count="8">
+                    <div onClick="{{ cf.toggle }}" style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid {{ cf.line }};cursor:pointer"><span style="color:#a2aab8;cursor:grab;letter-spacing:-2px">⋮⋮</span><div style="width:16px;height:16px;border-radius:4px;border:1.5px solid {{ cf.boxBr }};background:{{ cf.boxBg }};color:#fff;font-size:10px;display:flex;align-items:center;justify-content:center">{{ cf.tick }}</div><span style="flex:1;font-weight:500">{{ cf.name }}</span><span style="color:#8a93a3;font-size:12px">{{ cf.kind }}</span></div>
+                  </sc-for>
+                  <div style="padding:10px 0;color:#2456c9;font-weight:500">+ Add custom field to cards</div>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:10px">
+                  <div style="font-size:12px;color:#8a93a3;font-weight:500;letter-spacing:.06em;text-transform:uppercase">Preview</div>
+                  <div style="background:#fff;border:1px solid #e2e5ea;box-shadow:0 1px 2px rgba(16,24,40,.05);border-radius:6px;padding:10px 10px 8px;display:flex;flex-direction:column;gap:8px;width:280px;border-left:{{ cardAccent }}">
+                    <sc-if value="{{ f.blocked }}" hint-placeholder-val="{{ true }}"><div style="display:flex;align-items:center;gap:6px;font:500 11px 'IBM Plex Sans';color:#b4470f;background:#fdeee3;padding:3px 7px;border-radius:4px;align-self:flex-start"><span style="width:7px;height:7px;border-radius:50%;background:#e0632a"></span>Blocked by PLT-204</div></sc-if>
+                    <div style="font-size:13px;line-height:1.4">Session cleanup background job</div>
+                    <sc-if value="{{ f.labels }}" hint-placeholder-val="{{ true }}"><div style="display:flex;gap:4px"><span style="font-size:11px;padding:2px 6px;border-radius:3px;background:#eef0f4;color:#3b4454">infra</span><span style="font-size:11px;padding:2px 6px;border-radius:3px;background:#eef0f4;color:#3b4454">auth</span></div></sc-if>
+                    <div style="display:flex;align-items:center;gap:6px;padding-top:2px">
+                      <sc-if value="{{ f.type }}" hint-placeholder-val="{{ true }}"><span style="width:14px;height:14px;border-radius:3px;background:#2b9b5a;color:#fff;font:600 9px 'IBM Plex Sans';display:flex;align-items:center;justify-content:center">▮</span></sc-if>
+                      <sc-if value="{{ f.key }}" hint-placeholder-val="{{ true }}"><span style="font:500 11.5px 'IBM Plex Mono';color:#6b7483">PLT-211</span></sc-if>
+                      <sc-if value="{{ f.priority }}" hint-placeholder-val="{{ true }}"><span style="font:600 12px 'IBM Plex Mono';color:#d49a1a">=</span></sc-if>
+                      <sc-if value="{{ f.docs }}" hint-placeholder-val="{{ true }}"><span style="font-size:11px;color:#2456c9;display:flex;gap:3px;align-items:center"><span style="width:8px;height:10px;border:1.5px solid currentColor;border-radius:1px"></span>RFC</span></sc-if>
+                      <sc-if value="{{ f.due }}" hint-placeholder-val="{{ false }}"><span style="font-size:11px;color:#b4470f">Oct 6</span></sc-if>
+                      <span style="margin-left:auto;display:flex;align-items:center;gap:6px">
+                        <sc-if value="{{ f.estimate }}" hint-placeholder-val="{{ true }}"><span style="font:500 11px 'IBM Plex Mono';background:#eef0f4;color:#3b4454;padding:1px 6px;border-radius:9px">3</span></sc-if>
+                        <sc-if value="{{ f.assignee }}" hint-placeholder-val="{{ true }}"><span style="width:22px;height:22px;border-radius:50%;background:#e4dcfa;color:#5a3cae;font-weight:600;font-size:10px;display:flex;align-items:center;justify-content:center">JM</span></sc-if>
+                      </span>
+                    </div>
+                  </div>
+                  <div style="background:#fff;border:1px solid #e2e5ea;border-radius:8px;overflow:hidden">
+                    <div style="padding:10px 14px;border-bottom:1px solid #e9ecf0;font-weight:600;font-size:12.5px">Card color</div>
+                    <div style="padding:10px 14px;display:flex;flex-direction:column;gap:8px">
+                      <sc-for list="{{ colorRules }}" as="cr" hint-placeholder-count="4">
+                        <div onClick="{{ cr.pick }}" style="display:flex;align-items:center;gap:9px;cursor:pointer"><span style="width:14px;height:14px;border-radius:50%;border:1.5px solid {{ cr.ringC }};background:{{ cr.dotBg }};box-shadow:{{ cr.inner }}"></span><span style="font-weight:500">{{ cr.name }}</span><span style="color:#8a93a3;font-size:12px">{{ cr.desc }}</span></div>
+                      </sc-for>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </sc-if>
+
+          <!-- ESTIMATION -->
+          <sc-if value="{{ isEst }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;flex-direction:column;gap:16px">
+              <div style="display:flex;flex-direction:column;gap:4px"><div style="font-weight:600;font-size:15px">Method</div><div style="color:#6b7483;line-height:1.5">Scrum runs in time-boxed sprints with a backlog and velocity. Kanban is continuous flow with WIP limits and cycle time. You can switch later; history is kept.</div></div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                <sc-for list="{{ methods }}" as="m" hint-placeholder-count="2">
+                  <div onClick="{{ m.pick }}" style="background:#fff;border:1px solid {{ m.border }};box-shadow:{{ m.shadow }};border-radius:8px;padding:14px 16px;display:flex;gap:12px;cursor:pointer"><span style="width:16px;height:16px;border-radius:50%;border:1.5px solid {{ m.ringC }};box-shadow:{{ m.inner }};flex-shrink:0;margin-top:1px"></span><div style="display:flex;flex-direction:column;gap:3px"><span style="font-weight:600">{{ m.name }}</span><span style="color:#6b7483;font-size:12.5px;line-height:1.45">{{ m.desc }}</span></div></div>
+                </sc-for>
+              </div>
+              <sc-if value="{{ isScrum }}" hint-placeholder-val="{{ true }}">
+                <div style="background:#fff;border:1px solid #e2e5ea;border-radius:8px;overflow:hidden">
+                  <div style="padding:12px 16px;border-bottom:1px solid #e9ecf0;font-weight:600">Sprints</div>
+                  <div style="padding:14px 16px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px">
+                    <div style="display:flex;flex-direction:column;gap:6px"><span style="font-weight:500">Length</span><div style="display:flex;background:#eef0f4;border-radius:6px;padding:2px"><span style="flex:1;text-align:center;padding:6px 0;color:#6b7483">1 wk</span><span style="flex:1;text-align:center;padding:6px 0;border-radius:5px;background:#fff;font-weight:500;box-shadow:0 1px 1px rgba(0,0,0,.06)">2 wk</span><span style="flex:1;text-align:center;padding:6px 0;color:#6b7483">3 wk</span><span style="flex:1;text-align:center;padding:6px 0;color:#6b7483">4 wk</span></div></div>
+                    <div style="display:flex;flex-direction:column;gap:6px"><span style="font-weight:500">Starts on</span><div style="height:32px;border:1px solid #d5dae2;border-radius:6px;display:flex;align-items:center;padding:0 10px;background:#fff">Tuesday <span style="margin-left:auto;color:#8a93a3;font-size:10px">▾</span></div></div>
+                    <div style="display:flex;flex-direction:column;gap:6px"><span style="font-weight:500">Working days</span><div style="display:flex;gap:4px"><span style="flex:1;text-align:center;padding:6px 0;border-radius:5px;background:#eef3fe;color:#2456c9;font-weight:600;font-size:12px">M</span><span style="flex:1;text-align:center;padding:6px 0;border-radius:5px;background:#eef3fe;color:#2456c9;font-weight:600;font-size:12px">T</span><span style="flex:1;text-align:center;padding:6px 0;border-radius:5px;background:#eef3fe;color:#2456c9;font-weight:600;font-size:12px">W</span><span style="flex:1;text-align:center;padding:6px 0;border-radius:5px;background:#eef3fe;color:#2456c9;font-weight:600;font-size:12px">T</span><span style="flex:1;text-align:center;padding:6px 0;border-radius:5px;background:#eef3fe;color:#2456c9;font-weight:600;font-size:12px">F</span><span style="flex:1;text-align:center;padding:6px 0;border-radius:5px;background:#eef0f4;color:#8a93a3;font-weight:600;font-size:12px">S</span><span style="flex:1;text-align:center;padding:6px 0;border-radius:5px;background:#eef0f4;color:#8a93a3;font-weight:600;font-size:12px">S</span></div></div>
+                  </div>
+                </div>
+              </sc-if>
+              <div style="display:flex;flex-direction:column;gap:4px"><div style="font-weight:600;font-size:15px">Estimation</div><div style="color:#6b7483;line-height:1.5">What shows in the card badge and what velocity and burndown are measured in.</div></div>
+              <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
+                <sc-for list="{{ estimates }}" as="e" hint-placeholder-count="4">
+                  <div onClick="{{ e.pick }}" style="background:#fff;border:1px solid {{ e.border }};box-shadow:{{ e.shadow }};border-radius:8px;padding:12px 14px;display:flex;flex-direction:column;gap:6px;cursor:pointer"><span style="font:500 14px 'IBM Plex Mono';background:#eef0f4;color:#3b4454;padding:2px 8px;border-radius:9px;align-self:flex-start">{{ e.sample }}</span><span style="font-weight:600">{{ e.name }}</span><span style="color:#6b7483;font-size:12px;line-height:1.45">{{ e.desc }}</span></div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+
+          <!-- PERMISSIONS -->
+          <sc-if value="{{ isPerms }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;flex-direction:column;gap:16px">
+              <div style="display:flex;flex-direction:column;gap:4px"><div style="font-weight:600;font-size:15px">Who can do what on this board</div><div style="color:#6b7483;line-height:1.5">Roles come from the org. Org admins can lock any row so projects can't change it; locked rows show a padlock.</div></div>
+              <div style="background:#fff;border:1px solid #e2e5ea;border-radius:8px;overflow:hidden">
+                <div style="display:grid;grid-template-columns:1fr 110px 110px 110px 110px;padding:10px 16px;border-bottom:1px solid #e9ecf0;background:#fafbfc;font:500 11px 'IBM Plex Sans';color:#8a93a3;letter-spacing:.06em;text-transform:uppercase"><span>Capability</span><span style="text-align:center">Org admin</span><span style="text-align:center">Project admin</span><span style="text-align:center">Member</span><span style="text-align:center">Viewer</span></div>
+                <sc-for list="{{ perms }}" as="pr" hint-placeholder-count="8">
+                  <div style="display:grid;grid-template-columns:1fr 110px 110px 110px 110px;padding:10px 16px;border-bottom:1px solid #eceef2;align-items:center">
+                    <div style="display:flex;flex-direction:column;gap:2px"><span style="font-weight:500;display:flex;align-items:center;gap:6px">{{ pr.name }}<sc-if value="{{ pr.locked }}" hint-placeholder-val="{{ false }}"><span title="Locked by org admin" style="font-size:11px;color:#8a93a3;border:1px solid #d5dae2;border-radius:3px;padding:0 5px">locked</span></sc-if></span><span style="color:#8a93a3;font-size:12px">{{ pr.desc }}</span></div>
+                    <sc-for list="{{ pr.cells }}" as="cell" hint-placeholder-count="4">
+                      <div style="display:flex;justify-content:center"><div onClick="{{ cell.toggle }}" style="width:18px;height:18px;border-radius:4px;border:1.5px solid {{ cell.br }};background:{{ cell.bg }};color:#fff;font-size:11px;display:flex;align-items:center;justify-content:center;cursor:{{ cell.cursor }};opacity:{{ cell.op }}">{{ cell.tick }}</div></div>
+                    </sc-for>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:#f6f8fe;border:1px solid #d9e1f5;border-radius:7px;font-size:12.5px;line-height:1.45"><span style="width:7px;height:7px;border-radius:50%;background:#2456c9;flex-shrink:0"></span><span>3 members in this project have no team. They get the <b>Member</b> row. Manage org roles in <a href="#">Workspace › Roles and permissions</a>.</span></div>
+            </div>
+          </sc-if>
+        </div>
+      </div>
+
+      <!-- Live preview rail -->
+      <div style="width:340px;border-left:1px solid #e2e5ea;background:#fff;display:flex;flex-direction:column;flex-shrink:0;min-height:0">
+        <div style="padding:12px 16px;border-bottom:1px solid #e9ecf0;display:flex;align-items:center;gap:8px;font-weight:600">Preview<span style="font-weight:400;color:#8a93a3;font-size:12px">updates as you edit</span><span style="margin-left:auto;font-size:12px;color:#2456c9;font-weight:500">Open board</span></div>
+        <div style="padding:14px;display:flex;flex-direction:column;gap:12px;overflow:auto">
+          <div style="display:grid;grid-template-columns:repeat({{ colCount }},minmax(0,1fr));gap:5px;font:600 9px 'IBM Plex Sans';letter-spacing:.06em;text-transform:uppercase;color:#4b5565">
+            <sc-for list="{{ columns }}" as="c" hint-placeholder-count="5"><div style="padding:0 2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ c.name }} <span style="color:#8a93a3;font-weight:500">{{ c.wipStr }}</span></div></sc-for>
+          </div>
+          <sc-for list="{{ previewLanes }}" as="pl" hint-placeholder-count="2">
+            <div style="border:1px solid #e2e5ea;border-radius:6px;overflow:hidden">
+              <div style="display:flex;align-items:center;gap:6px;padding:5px 8px;background:#fafbfc;border-bottom:1px solid #eceef2;font-size:11px;font-weight:600"><span style="width:7px;height:7px;border-radius:2px;background:{{ pl.color }}"></span>{{ pl.name }}</div>
+              <div style="display:grid;grid-template-columns:repeat({{ colCount }},minmax(0,1fr));gap:5px;padding:6px;background:#f9fafb">
+                <sc-for list="{{ pl.cells }}" as="cell" hint-placeholder-count="5">
+                  <div style="display:flex;flex-direction:column;gap:4px;min-height:26px">
+                    <sc-for list="{{ cell.items }}" as="n" hint-placeholder-count="1">
+                      <div style="background:#fff;border:1px solid #e2e5ea;border-radius:4px;padding:5px;display:flex;flex-direction:column;gap:3px;border-left:{{ n.accent }}"><div style="height:4px;border-radius:2px;background:#d5dae2;width:{{ n.w }}"></div><div style="display:flex;gap:3px;align-items:center"><sc-if value="{{ f.type }}" hint-placeholder-val="{{ true }}"><span style="width:6px;height:6px;border-radius:1px;background:{{ n.tc }}"></span></sc-if><sc-if value="{{ f.key }}" hint-placeholder-val="{{ true }}"><span style="height:4px;width:16px;border-radius:2px;background:#e5e8ee"></span></sc-if><span style="margin-left:auto;display:flex;gap:3px;align-items:center"><sc-if value="{{ f.estimate }}" hint-placeholder-val="{{ true }}"><span style="width:10px;height:7px;border-radius:4px;background:#eef0f4"></span></sc-if><sc-if value="{{ f.assignee }}" hint-placeholder-val="{{ true }}"><span style="width:8px;height:8px;border-radius:50%;background:{{ n.av }}"></span></sc-if></span></div></div>
+                    </sc-for>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-for>
+          <div style="font-size:12px;color:#6b7483;line-height:1.5;padding-top:4px">{{ previewNote }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = {
+    tab: 'columns',
+    columns: [
+      { name: 'To do', wip: null, statuses: [['Backlog', '#8a93a3', 42], ['Selected', '#8a93a3', 9]] },
+      { name: 'In progress', wip: 4, statuses: [['In progress', '#2456c9', 4]] },
+      { name: 'In review', wip: null, statuses: [['Code review', '#8b5cf6', 2], ['Design review', '#8b5cf6', 0]] },
+      { name: 'QA', wip: null, statuses: [['Testing', '#d49a1a', 2]] },
+      { name: 'Done', wip: null, statuses: [['Done', '#2b9b5a', 9]], done: true }
+    ],
+    colToggles: { collapse: true, count: true, unassigned: false },
+    lane: 'epic', queryLanes: [['Expedite', 'priority = Highest'], ['Customer bugs', 'type = Bug AND label = customer'], ['Tech debt', 'label = tech-debt']],
+    laneToggles: { empty: false, collapse: true, totals: true },
+    fields: { type: true, key: true, priority: true, labels: true, estimate: true, assignee: true, docs: true, blocked: true, due: false, subtasks: false, reporter: false, created: false },
+    colorRule: 'none', method: 'scrum', estimate: 'points',
+    perms: {}
+  };
+  renderVals() {
+    const rootH = this.props.height ?? '100vh';
+    const s = this.state, on = '#2456c9', off = '#cfd4dc';
+    const sel = (is) => ({ border: is ? on : '#e2e5ea', shadow: is ? '0 0 0 2px #cdd8f3' : 'none' });
+    const radio = (is) => ({ ringC: is ? on : '#c8ced8', inner: is ? `inset 0 0 0 4px #fff, inset 0 0 0 9px ${on}` : 'none' });
+    const set = (patch) => this.setState(patch);
+    const tabs = [['columns', 'Columns', null], ['lanes', 'Swimlanes', null], ['cards', 'Cards', null], ['est', 'Method and estimation', null], ['perms', 'Permissions', '2 locked']].map(([id, name, badge]) => ({ id, name, badge, fg: s.tab === id ? '#1b2430' : '#6b7483', sh: s.tab === id ? 'inset 0 -2px 0 #2456c9' : 'none', pick: () => set({ tab: id }) }));
+    const columns = s.columns.map((c, i) => ({
+      name: c.name, wipStr: c.wip ? String(c.wip) : '', isDone: !!c.done,
+      statuses: c.statuses.map(([name, color, count]) => ({ name, color, count })),
+      rename: e => { const cols = s.columns.map((x, j) => j === i ? { ...x, name: e.target.value } : x); set({ columns: cols }); },
+      setWip: e => { const v = parseInt(e.target.value, 10); const cols = s.columns.map((x, j) => j === i ? { ...x, wip: isNaN(v) ? null : v } : x); set({ columns: cols }); },
+      remove: () => { if (s.columns.length > 2) set({ columns: s.columns.filter((_, j) => j !== i) }); }
+    }));
+    const toggles = (obj, key, defs) => defs.map(([k, name, desc], i) => ({ name, desc, bg: obj[k] ? on : off, knob: obj[k] ? '16px' : '2px', line: i === defs.length - 1 ? 'transparent' : '#eceef2', toggle: () => set({ [key]: { ...obj, [k]: !obj[k] } }) }));
+    const laneDefs = [
+      ['none', 'None', 'One flat board.', ['#d5dae2', '#d5dae2', '#d5dae2'], ['100%', '100%', '100%']],
+      ['epic', 'Epic', 'Group by parent epic. Shows epic progress per lane.', ['#2456c9', '#8b5cf6', '#9aa3b2'], ['70%', '55%', '40%']],
+      ['assignee', 'Assignee', 'One lane per person, unassigned at the bottom.', ['#1f7a44', '#9a4a16', '#5a3cae'], ['60%', '60%', '60%']],
+      ['priority', 'Priority', 'Highest at top so urgent work is seen first.', ['#c42d2d', '#e0632a', '#d49a1a'], ['30%', '55%', '85%']],
+      ['type', 'Issue type', 'Stories, bugs and tasks in separate lanes.', ['#2b9b5a', '#d93838', '#2456c9'], ['65%', '45%', '70%']],
+      ['query', 'Custom queries', 'Define lanes with filter queries, e.g. "Expedite".', ['#2456c9', '#2456c9', '#2456c9'], ['45%', '80%', '30%']]
+    ];
+    const laneOpts = laneDefs.map(([id, name, desc, bars, ws]) => ({ id, name, desc, barA: bars[0], barB: bars[1], barC: bars[2], wA: ws[0], wB: ws[1], wC: ws[2], ...sel(s.lane === id), pick: () => set({ lane: id }) }));
+    const fieldDefs = [['type', 'Issue type', 'icon'], ['key', 'Issue key', 'PLT-211'], ['priority', 'Priority', 'icon'], ['labels', 'Labels', 'chips'], ['estimate', 'Estimate', 'badge'], ['assignee', 'Assignee', 'avatar'], ['docs', 'Linked docs', 'link'], ['blocked', 'Blocked banner', 'banner'], ['due', 'Due date', 'text'], ['subtasks', 'Subtask progress', 'text'], ['reporter', 'Reporter', 'avatar'], ['created', 'Created', 'text']];
+    const cardFields = fieldDefs.map(([k, name, kind], i) => ({ name, kind, tick: s.fields[k] ? '✓' : '', boxBg: s.fields[k] ? on : '#fff', boxBr: s.fields[k] ? on : '#c8ced8', line: i === fieldDefs.length - 1 ? 'transparent' : '#eceef2', toggle: () => set({ fields: { ...s.fields, [k]: !s.fields[k] } }) }));
+    const colorDefs = [['none', 'None', ''], ['priority', 'By priority', 'red to green stripe'], ['type', 'By issue type', 'story / bug / task'], ['epic', 'By epic', 'matches lane color']];
+    const colorRules = colorDefs.map(([id, name, desc]) => ({ id, name, desc, dotBg: '#fff', ...radio(s.colorRule === id), pick: () => set({ colorRule: id }) }));
+    const accentFor = (kind) => ({ none: '1px solid #e2e5ea', priority: '3px solid #d49a1a', type: '3px solid #2b9b5a', epic: '3px solid #2456c9' })[s.colorRule];
+    const methods = [['scrum', 'Scrum', 'Sprints, backlog, velocity and burndown. Best when the team plans in fixed cycles.'], ['kanban', 'Kanban', 'Continuous flow, WIP limits, cycle time. Best for support, ops and steady-stream work.']].map(([id, name, desc]) => ({ id, name, desc, ...sel(s.method === id), ...radio(s.method === id), pick: () => set({ method: id }) }));
+    const estimates = [['points', 'Story points', '5', 'Relative sizing. Fibonacci by default.'], ['hours', 'Hours', '6h', 'Time-based. Enables work logging.'], ['tshirt', 'T-shirt', 'M', 'XS to XL. Quick, low-ceremony.'], ['none', 'No estimation', '–', 'Count issues only.']].map(([id, name, sample, desc]) => ({ id, name, sample, desc, ...sel(s.estimate === id), pick: () => set({ estimate: id }) }));
+    const permDefs = [
+      ['Configure board', 'Columns, lanes, cards, this page', [1, 1, 0, 0], true],
+      ['Change method', 'Switch Scrum and Kanban', [1, 1, 0, 0], true],
+      ['Start and complete sprints', '', [1, 1, 1, 0], false],
+      ['Create issues', '', [1, 1, 1, 0], false],
+      ['Move issues between columns', 'Status transitions follow the workflow', [1, 1, 1, 0], false],
+      ['Edit WIP limits', 'Without opening settings', [1, 1, 0, 0], false],
+      ['Delete issues', 'Soft delete, 30-day recovery', [1, 1, 0, 0], false],
+      ['Use AI actions', 'Summaries, suggested moves, drafting', [1, 1, 1, 1], false]
+    ];
+    const perms = permDefs.map(([name, desc, defaults, locked], r) => ({ name, desc, locked, cells: defaults.map((d, c) => { const k = r + ':' + c, v = s.perms[k] ?? !!d, fixed = locked || c === 0; return { tick: v ? '✓' : '', bg: v ? on : '#fff', br: v ? on : '#c8ced8', cursor: fixed ? 'default' : 'pointer', op: fixed ? 0.55 : 1, toggle: () => { if (!fixed) set({ perms: { ...s.perms, [k]: !v } }); } }; }) }));
+    const laneNames = { none: [['All issues', '#2456c9']], epic: [['Auth service', '#2456c9'], ['Billing v2', '#8b5cf6']], assignee: [['Priya N.', '#1f7a44'], ['Aisha K.', '#9a4a16']], priority: [['Highest', '#c42d2d'], ['High', '#e0632a']], type: [['Story', '#2b9b5a'], ['Bug', '#d93838']], query: [['Expedite', '#2456c9'], ['Customer bugs', '#2456c9']] }[s.lane];
+    const n = s.columns.length, tcs = ['#2b9b5a', '#d93838', '#2456c9'], avs = ['#d7f0e0', '#fde2cf', '#e4dcfa', '#d7e3fb'];
+    const previewLanes = laneNames.map(([name, color], li) => ({ name, color, cells: Array.from({ length: n }, (_, ci) => ({ items: Array.from({ length: ((li + ci) % 3 === 0 ? 2 : 1) - (ci === n - 1 && li ? 1 : 0) }, (_, k) => ({ w: (55 + ((ci * 17 + k * 23 + li * 11) % 40)) + '%', tc: tcs[(ci + k) % 3], av: avs[(ci + li + k) % 4], accent: accentFor() })) })) }));
+    const overrideCount = (s.columns.length !== 5 ? 1 : 0) + (s.lane !== 'epic' ? 1 : 0) + (s.colorRule !== 'none' ? 1 : 0) + (s.estimate !== 'points' ? 1 : 0) + (s.method !== 'scrum' ? 1 : 0) + 2;
+    return {
+      rootH,
+      tabs, isColumns: s.tab === 'columns', isLanes: s.tab === 'lanes', isCards: s.tab === 'cards', isEst: s.tab === 'est', isPerms: s.tab === 'perms',
+      columns, colCount: n, addColumn: () => set({ columns: [...s.columns.slice(0, -1), { name: 'New column', wip: null, statuses: [] }, s.columns[s.columns.length - 1]] }),
+      colToggles: toggles(s.colToggles, 'colToggles', [['collapse', 'Let members collapse columns', 'Personal, not shared.'], ['count', 'Show issue count in column header', ''], ['unassigned', 'Highlight unassigned issues', 'Dashed border on cards with no assignee.']]),
+      laneOpts, isQueryLane: s.lane === 'query', queryLanes: s.queryLanes.map(([name, q]) => ({ name, q })), addLane: () => set({ queryLanes: [...s.queryLanes, ['New lane', '']] }),
+      laneToggles: toggles(s.laneToggles, 'laneToggles', [['empty', 'Show empty lanes', 'Otherwise lanes with no issues are hidden.'], ['collapse', 'Lanes start collapsed when more than 6', ''], ['totals', 'Show lane totals and progress', 'Issue count, points and a progress bar in the lane header.']]),
+      cardFields, f: s.fields, cardAccent: accentFor(), colorRules,
+      methods, isScrum: s.method === 'scrum', estimates, perms, previewLanes, overrideCount,
+      previewNote: `${n} columns · lanes by ${laneDefs.find(l => l[0] === s.lane)[1].toLowerCase()} · ${s.method === 'scrum' ? 'Scrum' : 'Kanban'} · ${estimates.find(e => e.id === s.estimate).name.toLowerCase()}`
+    };
+  }
+}
+</script>
+</body>
+</html>

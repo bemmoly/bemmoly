@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>html,body{margin:0;height:100%;background:#f4f5f7;font-family:'IBM Plex Sans',system-ui,sans-serif;color:#1b2430;font-size:13px}*{box-sizing:border-box}a{color:#2456c9}a:hover{color:#183d94}input[type=text]{font:inherit}</style>
+</helmet>
+<div data-screen-label="Workspace settings · Appearance" style="height:{{ rootH }};min-width:1440px;display:flex;flex-direction:column;overflow:hidden;background:#f4f5f7">
+  <div style="height:48px;background:#fff;border-bottom:1px solid #e2e5ea;display:flex;align-items:center;padding:0 12px 0 16px;gap:4px;flex-shrink:0">
+    <div style="display:flex;align-items:center;gap:9px;padding-right:14px;margin-right:6px;border-right:1px solid #e2e5ea;height:28px">
+      <div style="width:24px;height:24px;border-radius:6px;background:{{ brand }};display:grid;grid-template-columns:1fr 1fr;gap:2px;padding:5px"><span style="background:#fff;border-radius:1px"></span><span style="background:#fff;border-radius:1px;opacity:.55"></span><span style="background:#fff;border-radius:1px;opacity:.55"></span><span style="background:#fff;border-radius:1px"></span></div>
+      <div style="font-weight:600;font-size:14px;letter-spacing:-.01em">Lattice</div>
+    </div>
+    <div style="display:flex;gap:2px;font-size:13.5px">
+      <div style="padding:6px 10px;color:#3b4454">Your work <span style="color:#8a93a3;font-size:10px">▾</span></div>
+      <div style="padding:6px 10px;color:#3b4454">Projects <span style="color:#8a93a3;font-size:10px">▾</span></div>
+      <div style="padding:6px 10px;color:#3b4454">Docs <span style="color:#8a93a3;font-size:10px">▾</span></div>
+      <div style="padding:6px 10px;color:#3b4454">Filters <span style="color:#8a93a3;font-size:10px">▾</span></div>
+      <div style="padding:6px 10px;color:#3b4454">Dashboards <span style="color:#8a93a3;font-size:10px">▾</span></div>
+      <div style="padding:6px 10px;color:#3b4454">Teams <span style="color:#8a93a3;font-size:10px">▾</span></div>
+    </div>
+    <div style="margin-left:6px;padding:6px 14px;border-radius:6px;background:{{ brand }};color:#fff;font-weight:500">Create</div>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+      <div style="width:300px;height:32px;border:1px solid #d5dae2;border-radius:6px;display:flex;align-items:center;padding:0 10px;gap:8px;color:#8a93a3;background:#f9fafb"><span style="font-size:14px">⌕</span><span>Search issues, docs, people</span></div>
+      <div style="width:30px;height:30px;border-radius:50%;background:#d7e3fb;color:#2456c9;font-weight:600;font-size:12px;display:flex;align-items:center;justify-content:center;margin-left:4px">RS</div>
+    </div>
+  </div>
+
+  <div style="flex:1;display:flex;min-height:0">
+    <div style="width:240px;background:#fff;border-right:1px solid #e2e5ea;padding:16px 8px;display:flex;flex-direction:column;gap:14px;flex-shrink:0;overflow:auto">
+      <div style="padding:0 10px 4px;font-weight:600;font-size:14px">Workspace settings</div>
+      <div style="display:flex;flex-direction:column;gap:1px">
+        <div style="padding:4px 10px 6px;font:500 11px 'IBM Plex Sans';color:#8a93a3;letter-spacing:.07em;text-transform:uppercase">General</div>
+        <div style="padding:7px 10px;border-radius:6px;color:#3b4454">Workspace details</div>
+        <div style="padding:7px 10px;border-radius:6px;background:#eef3fe;color:#2456c9;font-weight:500">Appearance</div>
+        <div style="padding:7px 10px;border-radius:6px;color:#3b4454">Email and notifications</div>
+        <div style="padding:7px 10px;border-radius:6px;color:#3b4454">AI and models</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:1px">
+        <div style="padding:4px 10px 6px;font:500 11px 'IBM Plex Sans';color:#8a93a3;letter-spacing:.07em;text-transform:uppercase">People</div>
+        <div style="padding:7px 10px;border-radius:6px;color:#3b4454">Users <span style="float:right;font:500 11px 'IBM Plex Mono';color:#8a93a3">42</span></div>
+        <div style="padding:7px 10px;border-radius:6px;color:#3b4454">Teams</div>
+        <div style="padding:7px 10px;border-radius:6px;color:#3b4454">Roles and permissions</div>
+        <div style="padding:7px 10px;border-radius:6px;color:#3b4454">Authentication (SSO)</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:1px">
+        <div style="padding:4px 10px 6px;font:500 11px 'IBM Plex Sans';color:#8a93a3;letter-spacing:.07em;text-transform:uppercase">Work</div>
+        <div style="padding:7px 10px;border-radius:6px;color:#3b4454">Issue types and fields</div>
+        <div style="padding:7px 10px;border-radius:6px;color:#3b4454">Workflows</div>
+        <div style="padding:7px 10px;border-radius:6px;color:#3b4454">Automation</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:1px">
+        <div style="padding:4px 10px 6px;font:500 11px 'IBM Plex Sans';color:#8a93a3;letter-spacing:.07em;text-transform:uppercase">System</div>
+        <div style="padding:7px 10px;border-radius:6px;color:#3b4454">Storage and backups</div>
+        <div style="padding:7px 10px;border-radius:6px;color:#3b4454">Updates</div>
+        <div style="padding:7px 10px;border-radius:6px;color:#3b4454">Audit log</div>
+      </div>
+    </div>
+
+    <div style="flex:1;overflow:auto;min-width:0">
+      <div style="max-width:1120px;padding:28px 40px 48px;display:flex;flex-direction:column;gap:28px">
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div style="font-size:12.5px;color:#6b7483">Workspace settings / Appearance</div>
+          <div style="display:flex;align-items:center;gap:16px">
+            <div style="font-weight:600;font-size:22px;letter-spacing:-.015em">Appearance</div>
+            <div style="margin-left:auto;display:flex;gap:8px">
+              <div style="height:32px;padding:0 12px;border:1px solid #d5dae2;background:#fff;border-radius:6px;display:flex;align-items:center;font-weight:500;color:#3b4454">Discard</div>
+              <div style="height:32px;padding:0 14px;border-radius:6px;background:{{ brand }};color:#fff;display:flex;align-items:center;font-weight:500">Save for workspace</div>
+            </div>
+          </div>
+          <div style="color:#6b7483;font-size:13px;max-width:640px;line-height:1.5">Sets the default look for everyone in Acme Labs. People can still choose light or dark for themselves in their profile.</div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:400px 612px;gap:28px;align-items:start">
+          <div style="display:flex;flex-direction:column;gap:20px">
+            <div style="background:#fff;border:1px solid #e2e5ea;border-radius:8px;overflow:hidden">
+              <div style="padding:12px 16px;border-bottom:1px solid #e9ecf0;font-weight:600">Theme</div>
+              <div style="padding:14px 16px;display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                <sc-for list="{{ presets }}" as="p" hint-placeholder-count="8">
+                  <div onClick="{{ p.pick }}" style="border:1px solid {{ p.border }};box-shadow:{{ p.shadow }};border-radius:7px;padding:8px;display:flex;flex-direction:column;gap:8px;cursor:pointer;background:#fff">
+                    <div style="height:54px;border-radius:5px;background:{{ p.bg }};border:1px solid {{ p.br }};display:flex;gap:4px;padding:6px;overflow:hidden">
+                      <div style="width:22px;border-radius:3px;background:{{ p.sf }}"></div>
+                      <div style="flex:1;display:flex;flex-direction:column;gap:4px"><div style="height:7px;width:40%;border-radius:2px;background:{{ p.ac }}"></div><div style="height:12px;border-radius:3px;background:{{ p.sf }}"></div><div style="height:12px;border-radius:3px;background:{{ p.sf }}"></div></div>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:500"><span style="width:10px;height:10px;border-radius:50%;background:{{ p.ac }}"></span>{{ p.name }}<span style="margin-left:auto;color:#8a93a3;font-weight:400;font-size:11.5px">{{ p.mode }}</span></div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+
+            <div style="background:#fff;border:1px solid #e2e5ea;border-radius:8px;overflow:hidden;opacity:{{ customOp }}">
+              <div style="padding:12px 16px;border-bottom:1px solid #e9ecf0;font-weight:600;display:flex;align-items:center;gap:8px">Custom theme<span style="font-weight:400;color:#8a93a3;font-size:12px">{{ customHint }}</span></div>
+              <div style="padding:16px;display:flex;flex-direction:column;gap:16px">
+                <div style="display:flex;flex-direction:column;gap:8px">
+                  <div style="font-weight:500">Brand color</div>
+                  <div style="display:flex;gap:8px;align-items:center">
+                    <sc-for list="{{ swatches }}" as="sw" hint-placeholder-count="6"><div onClick="{{ sw.pick }}" style="width:28px;height:28px;border-radius:50%;background:{{ sw.c }};box-shadow:{{ sw.ring }};cursor:pointer"></div></sc-for>
+                    <div style="margin-left:auto;display:flex;align-items:center;gap:6px;height:30px;padding:0 8px 0 6px;border:1px solid #d5dae2;border-radius:6px"><span style="width:16px;height:16px;border-radius:4px;background:{{ brand }}"></span><input type="text" value="{{ brand }}" onChange="{{ onHex }}" style="width:70px;border:0;outline:0;font:500 12px 'IBM Plex Mono';color:#1b2430;background:transparent"></div>
+                  </div>
+                  <div style="font-size:12px;color:#8a93a3">Used for primary buttons, links, selection and your logo tile. We derive hover, tint and dark variants automatically.</div>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+                  <div style="display:flex;flex-direction:column;gap:8px"><div style="font-weight:500">Mode</div><div style="display:flex;background:#eef0f4;border-radius:6px;padding:2px"><sc-for list="{{ modes }}" as="m" hint-placeholder-count="2"><div onClick="{{ m.pick }}" style="flex:1;text-align:center;padding:6px 0;border-radius:5px;background:{{ m.bg }};font-weight:500;color:{{ m.fg }};box-shadow:{{ m.sh }};cursor:pointer">{{ m.name }}</div></sc-for></div></div>
+                  <div style="display:flex;flex-direction:column;gap:8px"><div style="font-weight:500">Surfaces</div><div style="display:flex;background:#eef0f4;border-radius:6px;padding:2px"><sc-for list="{{ tones }}" as="m" hint-placeholder-count="2"><div onClick="{{ m.pick }}" style="flex:1;text-align:center;padding:6px 0;border-radius:5px;background:{{ m.bg }};font-weight:500;color:{{ m.fg }};box-shadow:{{ m.sh }};cursor:pointer">{{ m.name }}</div></sc-for></div></div>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:8px"><div style="font-weight:500">Typeface</div><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px"><sc-for list="{{ fonts }}" as="ft" hint-placeholder-count="4"><div onClick="{{ ft.pick }}" style="border:1px solid {{ ft.border }};box-shadow:{{ ft.shadow }};border-radius:6px;padding:8px 10px;cursor:pointer;display:flex;flex-direction:column;gap:2px"><span style="font:600 16px {{ ft.family }}">Ag</span><span style="font-size:11.5px;color:#6b7483">{{ ft.name }}</span></div></sc-for></div></div>
+                <div style="display:flex;flex-direction:column;gap:8px">
+                  <div style="font-weight:500">Logo</div>
+                  <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border:1px dashed #cfd4dc;border-radius:7px;background:#fafbfc"><div style="width:36px;height:36px;border-radius:7px;background:{{ brand }};color:#fff;font-weight:600;display:flex;align-items:center;justify-content:center;font-size:15px">A</div><div style="display:flex;flex-direction:column;gap:2px"><span style="font-weight:500">Upload SVG or PNG</span><span style="color:#8a93a3;font-size:12px">Shown in the top bar and login page. Square, 128px minimum.</span></div></div>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:#f6f8fe;border:1px solid #d9e1f5;border-radius:7px;font-size:12.5px;line-height:1.45">
+                  <span style="width:7px;height:7px;border-radius:50%;background:{{ brand }};flex-shrink:0"></span><span style="color:#2c3545">{{ contrastMsg }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div style="background:#fff;border:1px solid #e2e5ea;border-radius:8px;overflow:hidden">
+              <div style="padding:12px 16px;border-bottom:1px solid #e9ecf0;font-weight:600">Policy</div>
+              <div style="padding:6px 16px;display:flex;flex-direction:column">
+                <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #eceef2"><div style="flex:1;display:flex;flex-direction:column;gap:2px"><span style="font-weight:500">Let members switch light / dark</span><span style="color:#8a93a3;font-size:12px">Brand color and typeface stay fixed.</span></div><div style="width:34px;height:20px;border-radius:10px;background:{{ brand }};position:relative"><span style="position:absolute;top:2px;right:2px;width:16px;height:16px;border-radius:50%;background:#fff"></span></div></div>
+                <div style="display:flex;align-items:center;gap:12px;padding:10px 0"><div style="flex:1;display:flex;flex-direction:column;gap:2px"><span style="font-weight:500">Allow personal themes</span><span style="color:#8a93a3;font-size:12px">Members can pick any preset for themselves.</span></div><div style="width:34px;height:20px;border-radius:10px;background:#cfd4dc;position:relative"><span style="position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff"></span></div></div>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:10px;position:sticky;top:0">
+            <div style="display:flex;align-items:center;gap:10px;font-weight:600">Live preview<span style="font-weight:400;color:#8a93a3;font-size:12px">{{ previewLabel }}</span><div style="margin-left:auto;display:flex;background:#eef0f4;border-radius:6px;padding:2px;font-size:12px"><span style="padding:3px 9px;border-radius:4px;background:#fff;font-weight:500;box-shadow:0 1px 1px rgba(0,0,0,.06)">Board</span><span style="padding:3px 9px;color:#6b7483">Doc</span><span style="padding:3px 9px;color:#6b7483">Login</span></div></div>
+            <div style="border:1px solid #e2e5ea;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 2px rgba(16,24,40,.05);width:100%;aspect-ratio:1440/900;position:relative">
+              <div style="position:absolute;inset:0;transform-origin:0 0;transform:scale(0.425);width:1440px;height:900px">
+                <dc-import name="Lattice Board" theme="{{ themeProp }}" brand-color="{{ brand }}" custom-mode="{{ mode }}" surface-tone="{{ tone }}" custom-font="{{ font }}" height="900px" show-ai-insights="{{ true }}" hint-size="1440px,900px" style="width:1440px;height:900px"></dc-import>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { theme: 'custom', brand: '#f97316', mode: 'light', tone: 'neutral', font: 'plex' };
+  renderVals() {
+    const rootH = this.props.height ?? '100vh';
+    const s = this.state, sel = (on) => ({ border: on ? s.brand : '#e2e5ea', shadow: on ? `0 0 0 2px color-mix(in oklab, ${s.brand} 30%, #fff)` : 'none' });
+    const P = [
+      ['light', 'Classic', 'Light', '#f4f5f7', '#fff', '#2456c9', '#d5dae2'], ['dark', 'Dark', 'Dark', '#0f1217', '#1a1f29', '#5b8def', '#262c38'],
+      ['slate', 'Slate', 'Light', '#eef1f4', '#fff', '#0f766e', '#c8d0da'], ['warm', 'Warm', 'Light', '#f6f3ee', '#fffdf9', '#b4530f', '#d8d0c3'],
+      ['midnight', 'Midnight', 'Dark', '#0b0a14', '#171428', '#a78bfa', '#2a2542'], ['forest', 'Forest', 'Light', '#f1f4f1', '#fff', '#1f7a44', '#c9d3cb'],
+      ['ocean', 'Ocean', 'Dark', '#07111c', '#101e30', '#38bdf8', '#1e3047'], ['rose', 'Rose', 'Light', '#f7f3f4', '#fff', '#be123c', '#d9ccd1'],
+      ['custom', 'Custom', s.mode === 'dark' ? 'Dark' : 'Light', s.mode === 'dark' ? '#0f1217' : '#f4f5f7', s.mode === 'dark' ? '#1a1f29' : '#fff', s.brand, s.mode === 'dark' ? '#262c38' : '#d5dae2']
+    ];
+    const isCustom = s.theme === 'custom';
+    const brand = isCustom ? s.brand : (P.find(p => p[0] === s.theme) || P[0])[5];
+    const seg = (list, key) => list.map(([v, name]) => ({ name, bg: s[key] === v ? '#fff' : 'transparent', fg: s[key] === v ? '#1b2430' : '#6b7483', sh: s[key] === v ? '0 1px 1px rgba(0,0,0,.06)' : 'none', pick: () => this.setState({ [key]: v }) }));
+    const lum = hex => { const h = hex.replace('#', ''); if (h.length !== 6) return 0.5; const [r, g, b] = [0, 2, 4].map(i => { const c = parseInt(h.slice(i, i + 2), 16) / 255; return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); }); return 0.2126 * r + 0.7152 * g + 0.0722 * b; };
+    const ratio = ((1.05) / (lum(s.brand) + 0.05)).toFixed(1);
+    return {
+      rootH,
+      brand, themeProp: s.theme, mode: s.mode, tone: s.tone, font: s.font, customOp: isCustom ? 1 : 0.5, customHint: isCustom ? 'Acme Labs brand' : 'Select "Custom" above to edit',
+      previewLabel: isCustom ? `Custom · ${s.brand} · ${s.mode}` : (P.find(p => p[0] === s.theme) || P[0])[1] + ' preset',
+      contrastMsg: ratio >= 4.5 ? `White text on ${s.brand} is ${ratio}:1. Passes for buttons and labels.` : ratio >= 3 ? `White text on ${s.brand} is ${ratio}:1. We'll darken it for button text so it stays readable.` : `${s.brand} is too light for white text (${ratio}:1). We'll use dark text on buttons and a darker shade for links.`,
+      presets: P.map(([id, name, mode, bg, sf, ac, br]) => ({ id, name, mode, bg, sf, ac, br, ...sel(s.theme === id), pick: () => this.setState({ theme: id }) })),
+      swatches: ['#f97316', '#e11d48', '#7c3aed', '#2456c9', '#0f766e', '#111827'].map(c => ({ c, ring: s.brand === c ? `0 0 0 2px #fff, 0 0 0 4px ${c}` : 'inset 0 0 0 1px rgba(0,0,0,.08)', pick: () => this.setState({ brand: c, theme: 'custom' }) })),
+      onHex: e => { const v = e.target.value.trim(); if (/^#[0-9a-fA-F]{6}$/.test(v)) this.setState({ brand: v, theme: 'custom' }); },
+      modes: seg([['light', 'Light'], ['dark', 'Dark']], 'mode'), tones: seg([['neutral', 'Neutral grey'], ['tinted', 'Brand-tinted']], 'tone'),
+      fonts: [['plex', 'IBM Plex Sans', "'IBM Plex Sans'"], ['inter', 'Inter Tight', "'Inter Tight'"], ['source', 'Source Sans 3', "'Source Sans 3'"], ['geist', 'Geist', "'Geist'"]].map(([id, name, family]) => ({ id, name, family, ...sel(s.font === id), pick: () => this.setState({ font: id }) }))
+    };
+  }
+}
+</script>
+</body>
+</html>

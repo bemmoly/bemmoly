@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>html,body{margin:0;height:100%;background:#f4f5f7;font-family:'IBM Plex Sans',system-ui,sans-serif;color:#1b2430;font-size:13px}*{box-sizing:border-box}a{color:#2456c9;text-decoration:none}a:hover{color:#183d94}</style>
+</helmet>
+<div data-screen-label="Issue PLT-204" style="height:{{ rootH }};min-width:1440px;display:flex;flex-direction:column;overflow:hidden;background:#f4f5f7">
+  <div style="height:48px;background:#fff;border-bottom:1px solid #e2e5ea;display:flex;align-items:center;padding:0 12px 0 16px;gap:4px;flex-shrink:0">
+    <a href="Lattice Home.dc.html" style="display:flex;align-items:center;gap:9px;padding-right:14px;margin-right:6px;border-right:1px solid #e2e5ea;height:28px;color:#1b2430"><div style="width:24px;height:24px;border-radius:6px;background:#2456c9;display:grid;grid-template-columns:1fr 1fr;gap:2px;padding:5px"><span style="background:#fff;border-radius:1px"></span><span style="background:#fff;border-radius:1px;opacity:.55"></span><span style="background:#fff;border-radius:1px;opacity:.55"></span><span style="background:#fff;border-radius:1px"></span></div><div style="font-weight:600;font-size:14px;letter-spacing:-.01em">Lattice</div></a>
+    <div style="display:flex;gap:2px;font-size:13.5px">
+      <a href="Lattice Home.dc.html" style="padding:6px 10px;color:#3b4454">Your work <span style="color:#8a93a3;font-size:10px">▾</span></a>
+      <a href="Lattice Board.dc.html" style="padding:6px 10px;color:#1b2430;font-weight:500;box-shadow:inset 0 -2px 0 #2456c9">Projects <span style="color:#8a93a3;font-size:10px">▾</span></a>
+      <a href="Lattice Docs.dc.html" style="padding:6px 10px;color:#3b4454">Docs <span style="color:#8a93a3;font-size:10px">▾</span></a>
+      <a href="Lattice Backlog.dc.html" style="padding:6px 10px;color:#3b4454">Filters <span style="color:#8a93a3;font-size:10px">▾</span></a>
+      <a href="Lattice Roadmap.dc.html" style="padding:6px 10px;color:#3b4454">Dashboards <span style="color:#8a93a3;font-size:10px">▾</span></a>
+      <a href="Lattice People.dc.html" style="padding:6px 10px;color:#3b4454">Teams <span style="color:#8a93a3;font-size:10px">▾</span></a>
+    </div>
+    <div style="margin-left:6px;padding:6px 14px;border-radius:6px;background:#2456c9;color:#fff;font-weight:500">Create</div>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+      <a href="Lattice Command.dc.html" style="width:300px;height:32px;border:1px solid #d5dae2;border-radius:6px;display:flex;align-items:center;padding:0 10px;gap:8px;color:#8a93a3;background:#f9fafb"><span style="font-size:14px">⌕</span><span>Search issues, docs, people</span></a>
+      <a href="Lattice Command.dc.html" style="height:32px;padding:0 12px;border:1px solid #cdd8f3;background:#eef3fe;border-radius:6px;display:flex;align-items:center;gap:7px;color:#2456c9;font-weight:500"><span style="width:8px;height:8px;border-radius:50%;background:#2456c9"></span>Ask Lattice</a>
+      <div style="width:30px;height:30px;border-radius:50%;background:#d7e3fb;color:#2456c9;font-weight:600;font-size:12px;display:flex;align-items:center;justify-content:center;margin-left:4px">RS</div>
+    </div>
+  </div>
+  <div style="flex:1;overflow:auto;min-height:0">
+    <div style="max-width:1240px;margin:0 auto;padding:20px 40px 60px;display:flex;flex-direction:column;gap:16px">
+      <div style="display:flex;align-items:center;gap:6px;font-size:12.5px;color:#6b7483"><a href="Lattice Board.dc.html">Platform Core</a><span>/</span><span style="display:flex;align-items:center;gap:5px"><span style="width:9px;height:9px;border-radius:2px;background:#2456c9"></span>Auth service</span><span>/</span><span style="width:14px;height:14px;border-radius:3px;background:#2b9b5a;color:#fff;font:600 9px 'IBM Plex Sans';display:flex;align-items:center;justify-content:center">▮</span><span style="font:500 12px 'IBM Plex Mono';color:#3b4454">PLT-204</span>
+        <div style="margin-left:auto;display:flex;gap:6px;color:#3b4454;font-weight:500"><span style="height:30px;padding:0 10px;border:1px solid #d5dae2;border-radius:5px;background:#fff;display:flex;align-items:center;gap:6px">Watch <span style="font:500 11px 'IBM Plex Mono';color:#8a93a3">6</span></span><span style="height:30px;padding:0 10px;border:1px solid #d5dae2;border-radius:5px;background:#fff;display:flex;align-items:center">Share</span><span style="height:30px;width:30px;border:1px solid #d5dae2;border-radius:5px;background:#fff;display:flex;align-items:center;justify-content:center;letter-spacing:1px;font-weight:600">···</span></div>
+      </div>
+      <div style="display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:24px;align-items:start">
+        <div style="display:flex;flex-direction:column;gap:20px;min-width:0">
+          <div style="font-weight:600;font-size:24px;line-height:1.3;letter-spacing:-.015em;text-wrap:pretty">Session store migration to Postgres</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <div style="height:32px;padding:0 12px;border-radius:5px;background:#efe9fd;color:#5a3cae;font-weight:600;font-size:12px;display:flex;align-items:center;gap:6px;text-transform:uppercase;letter-spacing:.04em">In review <span style="font-size:9px">▾</span></div>
+            <div style="height:32px;padding:0 12px;border-radius:5px;border:1px solid #d5dae2;background:#fff;display:flex;align-items:center;font-weight:500">Attach</div>
+            <div style="height:32px;padding:0 12px;border-radius:5px;border:1px solid #d5dae2;background:#fff;display:flex;align-items:center;font-weight:500">Link doc</div>
+            <div style="height:32px;padding:0 12px;border-radius:5px;border:1px solid #d5dae2;background:#fff;display:flex;align-items:center;font-weight:500">Create subtask</div>
+            <div style="height:32px;padding:0 12px;border-radius:5px;border:1px solid #d5dae2;background:#fff;display:flex;align-items:center;font-weight:500">Link issue</div>
+          </div>
+          <div style="border:1px solid #d9e1f5;background:#f6f8fe;border-radius:8px;padding:14px 16px;display:flex;flex-direction:column;gap:8px;line-height:1.55">
+            <div style="display:flex;align-items:center;gap:7px;font-weight:600;color:#2456c9"><span style="width:7px;height:7px;border-radius:50%;background:#2456c9"></span>Summary<span style="margin-left:auto;font-weight:400;color:#7a93d9;font-size:11.5px">from 14 comments, 2 PRs, 1 doc</span></div>
+            <div style="color:#1b2430">Backfill verified on staging with zero mismatches across 2.1M rows. The only open item is review of PR #4821, waiting on Jonas since Thursday. Two downstream issues (PLT-211, PLT-219) are blocked on this merge. The RFC's rollback section still disagrees with the flag TTL (15 vs 30 min).</div>
+            <div style="display:flex;gap:6px;padding-top:2px"><span style="padding:5px 10px;border-radius:4px;background:#fff;border:1px solid #cdd8f3;font-weight:500;color:#2456c9">Ping Jonas about #4821</span><span style="padding:5px 10px;border-radius:4px;background:#fff;border:1px solid #cdd8f3;font-weight:500;color:#2456c9">Fix RFC inconsistency</span><span style="padding:5px 10px;border-radius:4px;color:#6b7483">Not useful</span></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div style="font-weight:600;font-size:14px">Description</div>
+            <div style="font-size:14px;line-height:1.65;color:#2c3545;display:flex;flex-direction:column;gap:10px">
+              <p style="margin:0">Move session storage from the Redis cluster to Postgres so sessions survive cache evictions and can be queried for audit. Dual-write during migration, then cut reads over behind the <code style="font:500 12.5px 'IBM Plex Mono';background:#eef0f4;padding:1px 5px;border-radius:3px">auth_pg_sessions</code> flag.</p>
+              <p style="margin:0"><b>Acceptance criteria</b></p>
+              <ul style="margin:0;padding-left:20px;display:flex;flex-direction:column;gap:4px"><li>Zero session loss during cutover (verified by synthetic login monitor)</li><li>p95 session read under 8 ms from Postgres</li><li>Rollback is a flag flip; Redis stays warm for 7 days</li><li>Runbook updated: <a href="Lattice Doc Editor.dc.html">Session migration runbook</a></li></ul>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div style="font-weight:600;font-size:14px;display:flex;justify-content:space-between;align-items:center">Subtasks<span style="color:#6b7483;font-weight:400;font-size:12px">2 of 4 done</span></div>
+            <div style="height:4px;background:#e5e8ee;border-radius:2px;overflow:hidden"><div style="width:50%;height:100%;background:#2b9b5a"></div></div>
+            <div style="display:flex;flex-direction:column;border:1px solid #e2e5ea;border-radius:7px;overflow:hidden;background:#fff">
+              <sc-for list="{{ subtasks }}" as="t" hint-placeholder-count="4">
+                <div style="display:flex;gap:10px;align-items:center;padding:9px 12px;border-bottom:1px solid #eceef2"><span style="width:14px;height:14px;border-radius:3px;background:#2456c9;color:#fff;font:600 9px 'IBM Plex Sans';display:flex;align-items:center;justify-content:center">✓</span><span style="font:500 11.5px 'IBM Plex Mono';color:#6b7483">{{ t.id }}</span><span style="flex:1;text-decoration:{{ t.deco }};color:{{ t.color }}">{{ t.title }}</span><span style="width:22px;height:22px;border-radius:50%;background:{{ t.avBg }};color:{{ t.avFg }};font-weight:600;font-size:10px;display:flex;align-items:center;justify-content:center">{{ t.who }}</span><span style="font-size:11px;padding:2px 7px;border-radius:3px;background:{{ t.sBg }};color:{{ t.sFg }};font-weight:600;min-width:70px;text-align:center">{{ t.status }}</span></div>
+              </sc-for>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div style="font-weight:600;font-size:14px">Linked issues</div>
+            <div style="display:flex;flex-direction:column;border:1px solid #e2e5ea;border-radius:7px;overflow:hidden;background:#fff">
+              <div style="padding:7px 12px;background:#fafbfc;border-bottom:1px solid #eceef2;font-size:12px;font-weight:500;color:#6b7483">blocks</div>
+              <a href="Lattice Issue.dc.html" style="display:flex;gap:10px;align-items:center;padding:9px 12px;border-bottom:1px solid #eceef2;color:#1b2430"><span style="width:14px;height:14px;border-radius:3px;background:#2b9b5a;color:#fff;font:600 9px 'IBM Plex Sans';display:flex;align-items:center;justify-content:center">▮</span><span style="font:500 11.5px 'IBM Plex Mono';color:#6b7483">PLT-211</span><span style="flex:1">Session cleanup background job</span><span style="font-size:11px;padding:2px 7px;border-radius:3px;background:#eef0f4;color:#4b5565;font-weight:600">TO DO</span></a>
+              <a href="Lattice Issue.dc.html" style="display:flex;gap:10px;align-items:center;padding:9px 12px;border-bottom:1px solid #eceef2;color:#1b2430"><span style="width:14px;height:14px;border-radius:3px;background:#2456c9;color:#fff;font:600 9px 'IBM Plex Sans';display:flex;align-items:center;justify-content:center">✓</span><span style="font:500 11.5px 'IBM Plex Mono';color:#6b7483">PLT-219</span><span style="flex:1">Remove legacy cookie path from monolith</span><span style="font-size:11px;padding:2px 7px;border-radius:3px;background:#eef0f4;color:#4b5565;font-weight:600">TO DO</span></a>
+              <div style="padding:7px 12px;background:#fafbfc;border-bottom:1px solid #eceef2;font-size:12px;font-weight:500;color:#6b7483">relates to</div>
+              <a href="Lattice Issue.dc.html" style="display:flex;gap:10px;align-items:center;padding:9px 12px;color:#1b2430"><span style="width:14px;height:14px;border-radius:3px;background:#2b9b5a;color:#fff;font:600 9px 'IBM Plex Sans';display:flex;align-items:center;justify-content:center">▮</span><span style="font:500 11.5px 'IBM Plex Mono';color:#6b7483">PLT-218</span><span style="flex:1">Rotate service tokens on every deploy</span><span style="font-size:11px;padding:2px 7px;border-radius:3px;background:#e8eefc;color:#2456c9;font-weight:600">IN PROGRESS</span></a>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <div style="display:flex;align-items:center;gap:10px"><span style="font-weight:600;font-size:14px">Activity</span><div style="margin-left:auto;display:flex;background:#eef0f4;border-radius:5px;padding:2px;font-size:12px"><sc-for list="{{ actTabs }}" as="a" hint-placeholder-count="4"><span onClick="{{ a.pick }}" style="padding:3px 9px;border-radius:4px;background:{{ a.bg }};font-weight:{{ a.w }};box-shadow:{{ a.sh }};color:{{ a.fg }};cursor:pointer">{{ a.name }}</span></sc-for></div></div>
+            <div style="display:flex;gap:10px"><span style="width:28px;height:28px;border-radius:50%;background:#d7e3fb;color:#2456c9;font-weight:600;font-size:10.5px;display:flex;align-items:center;justify-content:center;flex-shrink:0">RS</span><div style="flex:1;border:1px solid #d5dae2;border-radius:7px;padding:10px 12px;display:flex;flex-direction:column;gap:10px;background:#fff"><div style="color:#8a93a3">Add a comment… <span style="font:500 11px 'IBM Plex Mono'">M</span></div><div style="display:flex;gap:10px;font-size:12px;color:#6b7483;align-items:center"><span style="font-weight:600">B</span><span style="font-style:italic">I</span><span>@</span><span>Link</span><span>Code</span><span style="margin-left:auto;color:#2456c9;font-weight:500">Draft reply with AI</span></div></div></div>
+            <sc-for list="{{ activity }}" as="c" hint-placeholder-count="4">
+              <div style="display:flex;gap:10px"><span style="width:28px;height:28px;border-radius:50%;background:{{ c.avBg }};color:{{ c.avFg }};font-weight:600;font-size:10.5px;display:flex;align-items:center;justify-content:center;flex-shrink:0">{{ c.who }}</span><div style="display:flex;flex-direction:column;gap:4px;font-size:13px;line-height:1.55;min-width:0;flex:1"><div><span style="font-weight:600">{{ c.name }}</span> <span style="color:#8a93a3">{{ c.verb }} · {{ c.when }}</span></div><sc-if value="{{ c.body }}" hint-placeholder-val="{{ true }}"><div style="color:#2c3545">{{ c.body }}</div></sc-if><sc-if value="{{ c.isComment }}" hint-placeholder-val="{{ true }}"><div style="display:flex;gap:10px;color:#6b7483;font-size:12px"><span>Reply</span><span>React</span><span>Create issue from this</span></div></sc-if></div></div>
+            </sc-for>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:14px;position:sticky;top:0">
+          <div style="background:#fff;border:1px solid #e2e5ea;border-radius:8px;overflow:hidden">
+            <div style="padding:10px 14px;background:#fafbfc;border-bottom:1px solid #e9ecf0;font-weight:600;display:flex;justify-content:space-between"><span>Details</span><span style="color:#8a93a3;font-size:10px">▴</span></div>
+            <div style="padding:6px 14px;display:grid;grid-template-columns:110px 1fr;row-gap:2px;font-size:12.5px;align-items:center">
+              <div style="color:#6b7483;padding:7px 0">Assignee</div><div style="display:flex;align-items:center;gap:7px;padding:7px 0"><span style="width:20px;height:20px;border-radius:50%;background:#fde2cf;color:#9a4a16;font-weight:600;font-size:9.5px;display:flex;align-items:center;justify-content:center">AK</span>Aisha K.</div>
+              <div style="color:#6b7483;padding:7px 0">Reporter</div><div style="display:flex;align-items:center;gap:7px;padding:7px 0"><span style="width:20px;height:20px;border-radius:50%;background:#d7e3fb;color:#2456c9;font-weight:600;font-size:9.5px;display:flex;align-items:center;justify-content:center">RS</span>Rohan S.</div>
+              <div style="color:#6b7483;padding:7px 0">Reviewers</div><div style="display:flex;align-items:center;gap:4px;padding:7px 0"><span style="width:20px;height:20px;border-radius:50%;background:#e4dcfa;color:#5a3cae;font-weight:600;font-size:9.5px;display:flex;align-items:center;justify-content:center">JM</span><span style="width:20px;height:20px;border-radius:50%;background:#d7e3fb;color:#2456c9;font-weight:600;font-size:9.5px;display:flex;align-items:center;justify-content:center">RS</span></div>
+              <div style="color:#6b7483;padding:7px 0">Priority</div><div style="padding:7px 0;display:flex;gap:6px;align-items:center"><span style="font:600 12px 'IBM Plex Mono';color:#c42d2d">⇈</span>Highest</div>
+              <div style="color:#6b7483;padding:7px 0">Story points</div><div style="padding:7px 0;font-family:'IBM Plex Mono'">5</div>
+              <div style="color:#6b7483;padding:7px 0">Sprint</div><div style="padding:7px 0"><a href="Lattice Board.dc.html">PLT Sprint 14</a></div>
+              <div style="color:#6b7483;padding:7px 0">Epic</div><div style="padding:7px 0;display:flex;gap:6px;align-items:center"><span style="width:9px;height:9px;border-radius:2px;background:#2456c9"></span>Auth service</div>
+              <div style="color:#6b7483;padding:7px 0">Labels</div><div style="padding:7px 0;display:flex;gap:4px;flex-wrap:wrap"><span style="font-size:11px;padding:2px 6px;border-radius:3px;background:#eef0f4">auth</span><span style="font-size:11px;padding:2px 6px;border-radius:3px;background:#eef0f4">infra</span></div>
+              <div style="color:#6b7483;padding:7px 0">Fix version</div><div style="padding:7px 0">v1.3.0</div>
+              <div style="color:#6b7483;padding:7px 0">Due date</div><div style="padding:7px 0;color:#b4470f">Oct 7, 2026</div>
+              <div style="color:#6b7483;padding:7px 0">Environment</div><div style="padding:7px 0">Production</div>
+            </div>
+          </div>
+          <div style="background:#fff;border:1px solid #e2e5ea;border-radius:8px;overflow:hidden">
+            <div style="padding:10px 14px;background:#fafbfc;border-bottom:1px solid #e9ecf0;font-weight:600">Docs</div>
+            <div style="padding:6px 14px;display:flex;flex-direction:column">
+              <a href="Lattice Doc Editor.dc.html" style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #eceef2;color:#1b2430"><span style="width:10px;height:12px;border:1.5px solid #6b7483;border-radius:1px"></span><span style="flex:1">Auth service RFC</span><span style="font-size:11px;color:#8a93a3">Engineering</span></a>
+              <a href="Lattice Doc Editor.dc.html" style="display:flex;align-items:center;gap:8px;padding:8px 0;color:#1b2430"><span style="width:10px;height:12px;border:1.5px solid #6b7483;border-radius:1px"></span><span style="flex:1">Session migration runbook</span><span style="font-size:11px;color:#8a93a3">Runbooks</span></a>
+            </div>
+          </div>
+          <div style="background:#fff;border:1px solid #e2e5ea;border-radius:8px;overflow:hidden">
+            <div style="padding:10px 14px;background:#fafbfc;border-bottom:1px solid #e9ecf0;font-weight:600">Development</div>
+            <div style="padding:6px 14px;display:flex;flex-direction:column;font-size:12.5px">
+              <div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #eceef2"><span style="font:500 12px 'IBM Plex Mono';color:#6b7483">PR</span><span style="flex:1">#4821 Session store to Postgres</span><span style="font-size:11px;padding:2px 7px;border-radius:3px;background:#fdf3dc;color:#8a6210;font-weight:600">REVIEW</span></div>
+              <div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #eceef2"><span style="font:500 12px 'IBM Plex Mono';color:#6b7483">PR</span><span style="flex:1">#4790 Dual-write sessions</span><span style="font-size:11px;padding:2px 7px;border-radius:3px;background:#e3f4ea;color:#1f7a44;font-weight:600">MERGED</span></div>
+              <div style="display:flex;align-items:center;gap:8px;padding:8px 0"><span style="font:500 12px 'IBM Plex Mono';color:#6b7483">BR</span><span style="flex:1;font-family:'IBM Plex Mono';font-size:12px">feat/plt-204-pg-sessions</span></div>
+            </div>
+          </div>
+          <div style="font-size:12px;color:#8a93a3;padding:0 4px;display:flex;flex-direction:column;gap:3px"><span>Created Sep 18 by Rohan S.</span><span>Updated 3 hours ago</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { act: 'all' };
+  renderVals() {
+    const rootH = this.props.height ?? '100vh';
+    const s = this.state;
+    const P = { AK: ['#fde2cf', '#9a4a16', 'Aisha K.'], JM: ['#e4dcfa', '#5a3cae', 'Jonas M.'], PN: ['#d7f0e0', '#1f7a44', 'Priya N.'], RS: ['#d7e3fb', '#2456c9', 'Rohan S.'], AI: ['#eef3fe', '#2456c9', 'Lattice'] };
+    const all = [
+      ['AK', 'commented', '3 hours ago', 'Backfill finished on staging, 0 mismatches across 2.1M rows. Ready for a second pair of eyes on #4821.', 'c'],
+      ['JM', 'commented', 'yesterday', 'Flagging: PLT-211 and PLT-219 can\'t start until this merges.', 'c'],
+      ['AI', 'linked PR #4821 from GitHub', 'Thursday', '', 'h'],
+      ['AK', 'changed status In progress → In review', 'Thursday', '', 'h'],
+      ['PN', 'commented', 'Wednesday', 'Flag TTL in the RFC says 15 min, the code says 30. Can we align before cutover?', 'c'],
+      ['AK', 'logged 4h', 'Wednesday', '', 'w'],
+      ['RS', 'changed priority High → Highest', 'Sep 29', '', 'h'],
+      ['AK', 'logged 6h', 'Sep 28', '', 'w']
+    ];
+    const f = { all: () => true, comments: a => a[4] === 'c', history: a => a[4] === 'h', work: a => a[4] === 'w' }[s.act];
+    return {
+      rootH,
+      actTabs: [['all', 'All'], ['comments', 'Comments'], ['history', 'History'], ['work', 'Work log']].map(([id, name]) => ({ name, bg: s.act === id ? '#fff' : 'transparent', w: s.act === id ? 500 : 400, sh: s.act === id ? '0 1px 1px rgba(0,0,0,.06)' : 'none', fg: s.act === id ? '#1b2430' : '#6b7483', pick: () => this.setState({ act: id }) })),
+      activity: all.filter(f).map(([who, verb, when, body, k]) => ({ who, name: P[who][2], avBg: P[who][0], avFg: P[who][1], verb, when, body, isComment: k === 'c' })),
+      subtasks: [['PLT-204a', 'Schema for sessions table', 'AK', 'DONE'], ['PLT-204b', 'Dual-write path', 'AK', 'DONE'], ['PLT-204c', 'Backfill job + verification', 'AK', 'IN REVIEW'], ['PLT-204d', 'Remove Redis fallback', 'JM', 'TO DO']].map(([id, title, who, status]) => ({ id, title, who, status, avBg: P[who][0], avFg: P[who][1], deco: status === 'DONE' ? 'line-through' : 'none', color: status === 'DONE' ? '#8a93a3' : '#1b2430', sBg: { DONE: '#e3f4ea', 'IN REVIEW': '#efe9fd', 'TO DO': '#eef0f4' }[status], sFg: { DONE: '#1f7a44', 'IN REVIEW': '#5a3cae', 'TO DO': '#4b5565' }[status] }))
+    };
+  }
+}
+</script>
+</body>
+</html>

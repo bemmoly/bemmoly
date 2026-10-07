@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>html,body{margin:0;height:100%;background:#f4f5f7;font-family:'IBM Plex Sans',system-ui,sans-serif;color:#1b2430;font-size:13px}*{box-sizing:border-box}a{color:#2456c9;text-decoration:none}a:hover{color:#183d94}</style>
+</helmet>
+<div data-screen-label="Doc editor" style="height:{{ rootH }};min-width:1440px;display:flex;flex-direction:column;overflow:hidden;background:#f4f5f7">
+  <div style="height:48px;background:#fff;border-bottom:1px solid #e2e5ea;display:flex;align-items:center;padding:0 12px 0 16px;gap:4px;flex-shrink:0">
+    <a href="Lattice Home.dc.html" style="display:flex;align-items:center;gap:9px;padding-right:14px;margin-right:6px;border-right:1px solid #e2e5ea;height:28px;color:#1b2430"><div style="width:24px;height:24px;border-radius:6px;background:#2456c9;display:grid;grid-template-columns:1fr 1fr;gap:2px;padding:5px"><span style="background:#fff;border-radius:1px"></span><span style="background:#fff;border-radius:1px;opacity:.55"></span><span style="background:#fff;border-radius:1px;opacity:.55"></span><span style="background:#fff;border-radius:1px"></span></div><div style="font-weight:600;font-size:14px;letter-spacing:-.01em">Lattice</div></a>
+    <div style="display:flex;gap:2px;font-size:13.5px">
+      <a href="Lattice Home.dc.html" style="padding:6px 10px;color:#3b4454">Your work <span style="color:#8a93a3;font-size:10px">▾</span></a>
+      <a href="Lattice Board.dc.html" style="padding:6px 10px;color:#3b4454">Projects <span style="color:#8a93a3;font-size:10px">▾</span></a>
+      <a href="Lattice Docs.dc.html" style="padding:6px 10px;color:#1b2430;font-weight:500;box-shadow:inset 0 -2px 0 #2456c9">Docs <span style="color:#8a93a3;font-size:10px">▾</span></a>
+      <a href="Lattice Backlog.dc.html" style="padding:6px 10px;color:#3b4454">Filters <span style="color:#8a93a3;font-size:10px">▾</span></a>
+      <a href="Lattice Roadmap.dc.html" style="padding:6px 10px;color:#3b4454">Dashboards <span style="color:#8a93a3;font-size:10px">▾</span></a>
+      <a href="Lattice People.dc.html" style="padding:6px 10px;color:#3b4454">Teams <span style="color:#8a93a3;font-size:10px">▾</span></a>
+    </div>
+    <div style="margin-left:6px;padding:6px 14px;border-radius:6px;background:#2456c9;color:#fff;font-weight:500">Create</div>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+      <a href="Lattice Command.dc.html" style="width:300px;height:32px;border:1px solid #d5dae2;border-radius:6px;display:flex;align-items:center;padding:0 10px;gap:8px;color:#8a93a3;background:#f9fafb"><span style="font-size:14px">⌕</span><span>Search issues, docs, people</span></a>
+      <a href="Lattice Command.dc.html" style="height:32px;padding:0 12px;border:1px solid #cdd8f3;background:#eef3fe;border-radius:6px;display:flex;align-items:center;gap:7px;color:#2456c9;font-weight:500"><span style="width:8px;height:8px;border-radius:50%;background:#2456c9"></span>Ask Lattice</a>
+      <div style="width:30px;height:30px;border-radius:50%;background:#d7e3fb;color:#2456c9;font-weight:600;font-size:12px;display:flex;align-items:center;justify-content:center;margin-left:4px">RS</div>
+    </div>
+  </div>
+  <div style="flex:1;display:flex;min-height:0">
+    <div style="width:260px;background:#fff;border-right:1px solid #e2e5ea;display:flex;flex-direction:column;flex-shrink:0;overflow:auto">
+      <div style="padding:16px 16px 10px;display:flex;align-items:center;gap:10px"><span style="width:30px;height:30px;border-radius:7px;background:#2456c9;color:#fff;font-weight:600;display:flex;align-items:center;justify-content:center;font-size:12px">EN</span><div style="display:flex;flex-direction:column;gap:1px"><span style="font-weight:600;font-size:13.5px">Engineering</span><span style="color:#6b7483;font-size:12px">184 pages</span></div></div>
+      <div style="padding:0 12px 10px"><div style="height:30px;border:1px solid #d5dae2;border-radius:6px;display:flex;align-items:center;padding:0 9px;gap:7px;color:#8a93a3;background:#f9fafb;font-size:12.5px"><span>⌕</span>Search this space</div></div>
+      <div style="padding:0 8px;display:flex;flex-direction:column;gap:1px;font-size:13px">
+        <sc-for list="{{ tree }}" as="n" hint-placeholder-count="10"><div style="padding:6px 10px 6px {{ n.pad }};border-radius:6px;display:flex;align-items:center;gap:7px;background:{{ n.bg }};color:{{ n.fg }};font-weight:{{ n.w }}"><span style="color:#a2aab8;font-size:9px;width:9px;transform:{{ n.chev }}">{{ n.arrow }}</span><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ n.name }}</span></div></sc-for>
+      </div>
+      <div style="margin-top:auto;padding:12px 16px;border-top:1px solid #e9ecf0;color:#2456c9;font-weight:500;font-size:12.5px">+ New page</div>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;min-width:0;min-height:0">
+      <div style="height:44px;background:#fff;border-bottom:1px solid #e2e5ea;display:flex;align-items:center;padding:0 20px;gap:10px;flex-shrink:0;font-size:12.5px;color:#6b7483">
+        <a href="Lattice Docs.dc.html">Engineering</a><span>/</span><span>Architecture</span><span>/</span><span style="color:#1b2430;font-weight:500">Auth service RFC</span>
+        <span style="margin-left:14px;font-size:11px;padding:2px 7px;border-radius:3px;background:#fdf3dc;color:#8a6210;font-weight:600">IN REVIEW</span>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+          <span style="font-size:12px;color:#8a93a3">Saved · Priya is editing</span>
+          <div style="display:flex"><span style="width:24px;height:24px;border-radius:50%;background:#d7f0e0;color:#1f7a44;font-weight:600;font-size:9.5px;display:flex;align-items:center;justify-content:center;border:2px solid #fff">PN</span><span style="width:24px;height:24px;border-radius:50%;background:#d7e3fb;color:#2456c9;font-weight:600;font-size:9.5px;display:flex;align-items:center;justify-content:center;border:2px solid #fff;margin-left:-6px">RS</span></div>
+          <span style="height:30px;padding:0 10px;border:1px solid #d5dae2;border-radius:5px;background:#fff;display:flex;align-items:center;font-weight:500;color:#3b4454">Share</span>
+          <span onClick="{{ togglePanel }}" style="height:30px;padding:0 10px;border:1px solid #cdd8f3;background:{{ panelBtnBg }};border-radius:5px;display:flex;align-items:center;gap:6px;font-weight:500;color:#2456c9;cursor:pointer"><span style="width:7px;height:7px;border-radius:50%;background:#2456c9"></span>Copilot</span>
+          <span style="height:30px;width:30px;border:1px solid #d5dae2;border-radius:5px;background:#fff;display:flex;align-items:center;justify-content:center;letter-spacing:1px;font-weight:600;color:#3b4454">···</span>
+        </div>
+      </div>
+      <div style="flex:1;display:flex;min-height:0">
+        <div style="flex:1;overflow:auto;min-width:0;background:#fff">
+          <div style="max-width:720px;margin:0 auto;padding:48px 40px 120px;display:flex;flex-direction:column;gap:18px;font-size:15.5px;line-height:1.7;color:#2c3545">
+            <div style="display:flex;gap:6px;font-size:12px;color:#6b7483;flex-wrap:wrap"><span style="padding:3px 8px;background:#eef0f4;border-radius:4px">RFC</span><span style="padding:3px 8px;background:#eef0f4;border-radius:4px">Owner: Priya N.</span><span style="padding:3px 8px;background:#eef0f4;border-radius:4px">Reviewers: Rohan, Jonas</span><span style="padding:3px 8px;background:#eef0f4;border-radius:4px">Target: Oct 7</span></div>
+            <div style="font:600 36px/1.15 'IBM Plex Sans';letter-spacing:-.02em;color:#1b2430">Auth service RFC</div>
+            <div style="display:flex;gap:14px;align-items:center;font-size:12.5px;color:#8a93a3;padding-bottom:6px;border-bottom:1px solid #eceef2;flex-wrap:wrap"><span>Priya N. · Created Sep 12 · Edited 2h ago</span><span>·</span><span>6 min read</span><span>·</span><span style="color:#2456c9">Linked: PLT-204, PLT-218, PLT-222</span></div>
+            <div style="border:1px solid #d9e1f5;background:#f6f8fe;border-radius:8px;padding:12px 16px;font-size:13.5px;line-height:1.55;display:flex;flex-direction:column;gap:6px"><div style="display:flex;align-items:center;gap:7px;font-weight:600;color:#2456c9;font-size:12.5px"><span style="width:7px;height:7px;border-radius:50%;background:#2456c9"></span>TL;DR<span style="margin-left:auto;font-weight:400;color:#7a93d9;font-size:11.5px">generated · updates with the doc</span></div><div>Move sessions from Redis to Postgres behind a flag; dual-write, cut reads, keep Redis warm 7 days. Rollback is a flag flip. Open question: flag TTL (15 vs 30 min).</div></div>
+            <h2 style="margin:10px 0 0;font:600 22px 'IBM Plex Sans';color:#1b2430;letter-spacing:-.01em">Context</h2>
+            <p style="margin:0">We're moving session handling out of the monolith into a standalone auth service. Sessions currently live in a Redis cluster with no durability guarantee; evictions under memory pressure have logged users out twice this quarter (see <a href="#">Postmortem: Sep 29 login outage</a>).</p>
+            <h2 style="margin:10px 0 0;font:600 22px 'IBM Plex Sans';color:#1b2430;letter-spacing:-.01em">Migration order</h2>
+            <ol style="margin:0;padding-left:22px;display:flex;flex-direction:column;gap:6px">
+              <li>Dual-write sessions to Redis and Postgres <a href="Lattice Issue.dc.html" style="display:inline-flex;align-items:center;gap:5px;padding:1px 7px;border:1px solid #d5dae2;border-radius:4px;font:500 12px 'IBM Plex Mono';background:#fff;vertical-align:middle;color:#1b2430"><span style="width:8px;height:8px;border-radius:2px;background:#2b9b5a"></span>PLT-204<span style="font:600 10px 'IBM Plex Sans';color:#5a3cae;background:#efe9fd;padding:0 5px;border-radius:3px">IN REVIEW</span></a></li>
+              <li>Switch reads behind <code style="font:500 13.5px 'IBM Plex Mono';background:#eef0f4;padding:1px 5px;border-radius:3px">auth_pg_sessions</code> <a href="Lattice Issue.dc.html" style="display:inline-flex;align-items:center;gap:5px;padding:1px 7px;border:1px solid #d5dae2;border-radius:4px;font:500 12px 'IBM Plex Mono';background:#fff;vertical-align:middle;color:#1b2430"><span style="width:8px;height:8px;border-radius:2px;background:#2b9b5a"></span>PLT-218<span style="font:600 10px 'IBM Plex Sans';color:#2456c9;background:#e8eefc;padding:0 5px;border-radius:3px">IN PROGRESS</span></a></li>
+              <li>Rate-limit the refresh endpoint before GA <a href="Lattice Issue.dc.html" style="display:inline-flex;align-items:center;gap:5px;padding:1px 7px;border:1px solid #d5dae2;border-radius:4px;font:500 12px 'IBM Plex Mono';background:#fff;vertical-align:middle;color:#1b2430"><span style="width:8px;height:8px;border-radius:2px;background:#2456c9"></span>PLT-222<span style="font:600 10px 'IBM Plex Sans';color:#4b5565;background:#eef0f4;padding:0 5px;border-radius:3px">TO DO</span></a></li>
+              <li>Remove the legacy cookie path <span style="display:inline-flex;align-items:center;gap:5px;padding:1px 7px;border:1px dashed #cdd8f3;border-radius:4px;font:500 12px 'IBM Plex Sans';color:#2456c9;background:#f6f8fe;vertical-align:middle;cursor:pointer">+ Create issue from this line</span></li>
+            </ol>
+            <h2 style="margin:10px 0 0;font:600 22px 'IBM Plex Sans';color:#1b2430;letter-spacing:-.01em">Rollback</h2>
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <p style="margin:0;background:#fdf3dc;box-shadow:0 0 0 2px #fdf3dc;border-radius:2px">If error rates exceed 0.5% after cutover, flip <code style="font:500 13.5px 'IBM Plex Mono';background:#f3e4b8;padding:1px 5px;border-radius:3px">auth_pg_sessions</code> off. Sessions issued by the new service stay valid for 15 minutes, so users aren't logged out.</p>
+              <div style="background:#fff;border:1px solid #e2e5ea;border-radius:8px;box-shadow:0 2px 8px rgba(16,24,40,.06);padding:12px;display:flex;flex-direction:column;gap:8px;font-size:12.5px;line-height:1.5;max-width:520px">
+                <div style="display:flex;align-items:center;gap:8px"><span style="width:22px;height:22px;border-radius:50%;background:#e4dcfa;color:#5a3cae;font-weight:600;font-size:9.5px;display:flex;align-items:center;justify-content:center">JM</span><span style="font-weight:600">Jonas M.</span><span style="color:#8a93a3">yesterday · on "15 minutes"</span></div>
+                <div>Rollback says 15 min but the flag TTL in code is 30. Which is it?</div>
+                <div style="display:flex;align-items:center;gap:8px;padding:8px;background:#f6f8fe;border:1px solid #d9e1f5;border-radius:6px"><span style="width:7px;height:7px;border-radius:50%;background:#2456c9;flex-shrink:0"></span><span style="color:#2c3545">Code says 30 (<span style="font-family:'IBM Plex Mono';font-size:11.5px">auth/flags.go:41</span>). Update the doc to 30 minutes?</span></div>
+                <div style="display:flex;gap:10px;font-weight:500"><span style="color:#2456c9">Apply fix</span><span style="color:#6b7483">Reply</span><span style="color:#6b7483;margin-left:auto">Resolve</span></div>
+              </div>
+            </div>
+            <p style="margin:0">Redis stays warm for 7 days after cutover. On-call follows the <a href="#">Session migration runbook</a>.<span style="color:#a2aab8"> Once the flag has been off for 24 hours with error rates back under 0.1%, re-run the backfill job to reconcile any sessions written only to Postgres.</span></p>
+            <div style="display:flex;gap:8px;align-items:center;font-size:12px;color:#8a93a3"><span style="padding:2px 7px;border:1px solid #d5dae2;border-radius:4px;background:#fff;font:500 11px 'IBM Plex Mono'">Tab</span>accept<span style="padding:2px 7px;border:1px solid #d5dae2;border-radius:4px;background:#fff;font:500 11px 'IBM Plex Mono';margin-left:6px">Esc</span>dismiss<span style="margin-left:6px">· suggested continuation</span></div>
+            <h2 style="margin:10px 0 0;font:600 22px 'IBM Plex Sans';color:#1b2430;letter-spacing:-.01em">Open questions</h2>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <p style="margin:0;color:#a2aab8">Type <span style="font:500 13px 'IBM Plex Mono';color:#6b7483;background:#eef0f4;padding:1px 5px;border-radius:3px">/</span> for blocks, <span style="font:500 13px 'IBM Plex Mono';color:#6b7483;background:#eef0f4;padding:1px 5px;border-radius:3px">/ai</span> for help…</p>
+              <div style="width:320px;background:#fff;border:1px solid #e2e5ea;border-radius:8px;box-shadow:0 8px 24px rgba(16,24,40,.12);padding:6px;font-size:13px">
+                <div style="padding:6px 10px;font:500 11px 'IBM Plex Sans';color:#8a93a3;letter-spacing:.06em">AI</div>
+                <div style="padding:8px 10px;background:#eef3fe;border-radius:5px;color:#2456c9;font-weight:500">Continue writing</div>
+                <div style="padding:8px 10px">Summarize open questions from comments</div>
+                <div style="padding:8px 10px">Create issues from this section</div>
+                <div style="padding:8px 10px">Check consistency with linked issues</div>
+                <div style="padding:6px 10px;font:500 11px 'IBM Plex Sans';color:#8a93a3;letter-spacing:.06em;border-top:1px solid #eceef2;margin-top:4px">BLOCKS</div>
+                <div style="padding:8px 10px">Issue table from filter</div>
+                <div style="padding:8px 10px">Decision</div>
+                <div style="padding:8px 10px">Code block</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <sc-if value="{{ panel }}" hint-placeholder-val="{{ true }}">
+          <div style="width:340px;border-left:1px solid #e2e5ea;background:#fff;display:flex;flex-direction:column;flex-shrink:0;min-height:0">
+            <div style="height:44px;border-bottom:1px solid #e9ecf0;display:flex;align-items:center;padding:0 14px;gap:2px;font-size:12.5px;flex-shrink:0"><sc-for list="{{ ptabs }}" as="t" hint-placeholder-count="3"><span onClick="{{ t.pick }}" style="padding:12px 10px;font-weight:500;color:{{ t.fg }};box-shadow:{{ t.sh }};cursor:pointer">{{ t.name }}</span></sc-for></div>
+            <sc-if value="{{ isCopilot }}" hint-placeholder-val="{{ true }}">
+              <div style="flex:1;overflow:auto;padding:14px;display:flex;flex-direction:column;gap:12px;font-size:12.5px;line-height:1.55">
+                <div style="font:500 11px 'IBM Plex Sans';color:#8a93a3;letter-spacing:.06em">ABOUT THIS PAGE</div>
+                <div style="padding:10px 12px;border:1px solid #e2e5ea;border-radius:7px;display:flex;flex-direction:column;gap:6px"><span><b>1 inconsistency</b> with linked issues: flag TTL 15 vs 30 min.</span><span><b>Rollback</b> has no owner. PLT-204's assignee is Aisha.</span><span><b>Step 4</b> has no tracking issue.</span></div>
+                <div style="font:500 11px 'IBM Plex Sans';color:#8a93a3;letter-spacing:.06em;margin-top:4px">SUGGESTED</div>
+                <div style="display:flex;flex-direction:column;gap:6px"><span style="padding:9px 11px;border:1px solid #e2e5ea;border-radius:7px">Create PLT issue for "Remove legacy cookie path"</span><span style="padding:9px 11px;border:1px solid #e2e5ea;border-radius:7px">Draft "Testing plan" from PLT-204 acceptance criteria</span><span style="padding:9px 11px;border:1px solid #e2e5ea;border-radius:7px">Summarize for #eng-announcements</span></div>
+                <div style="margin-top:auto;border:1px solid #d5dae2;border-radius:8px;padding:10px 12px;color:#8a93a3;display:flex;align-items:center">Ask about this doc…<span style="margin-left:auto;font:500 11px 'IBM Plex Mono';color:#a2aab8">⏎</span></div>
+              </div>
+            </sc-if>
+            <sc-if value="{{ isComments }}" hint-placeholder-val="{{ false }}">
+              <div style="flex:1;overflow:auto;padding:14px;display:flex;flex-direction:column;gap:10px;font-size:12.5px;line-height:1.5">
+                <sc-for list="{{ comments }}" as="c" hint-placeholder-count="3"><div style="padding:10px 12px;border:1px solid #e2e5ea;border-radius:7px;display:flex;flex-direction:column;gap:6px;background:{{ c.bg }}"><div style="display:flex;align-items:center;gap:8px"><span style="width:20px;height:20px;border-radius:50%;background:{{ c.avBg }};color:{{ c.avFg }};font-weight:600;font-size:9px;display:flex;align-items:center;justify-content:center">{{ c.who }}</span><span style="font-weight:600">{{ c.name }}</span><span style="color:#8a93a3">{{ c.when }}</span></div><div style="color:#8a93a3;font-size:11.5px;border-left:2px solid #d5dae2;padding-left:8px">{{ c.quote }}</div><div>{{ c.body }}</div></div></sc-for>
+              </div>
+            </sc-if>
+            <sc-if value="{{ isLinked }}" hint-placeholder-val="{{ false }}">
+              <div style="flex:1;overflow:auto;padding:14px;display:flex;flex-direction:column;gap:10px;font-size:12.5px">
+                <div style="font:500 11px 'IBM Plex Sans';color:#8a93a3;letter-spacing:.06em">ISSUES REFERENCED</div>
+                <sc-for list="{{ linked }}" as="l" hint-placeholder-count="3"><a href="Lattice Issue.dc.html" style="padding:10px 12px;border:1px solid #e2e5ea;border-radius:7px;display:flex;flex-direction:column;gap:4px;color:#1b2430"><div style="display:flex;align-items:center;gap:8px"><span style="font:500 11.5px 'IBM Plex Mono';color:#6b7483">{{ l.id }}</span><span style="font-size:10.5px;padding:1px 6px;border-radius:3px;background:{{ l.sBg }};color:{{ l.sFg }};font-weight:600">{{ l.status }}</span></div><div>{{ l.title }}</div></a></sc-for>
+                <div style="font:500 11px 'IBM Plex Sans';color:#8a93a3;letter-spacing:.06em;margin-top:6px">BACKLINKS</div>
+                <div style="padding:8px 12px;border:1px solid #e2e5ea;border-radius:7px">Services map</div><div style="padding:8px 12px;border:1px solid #e2e5ea;border-radius:7px">Session migration runbook</div><div style="padding:8px 12px;border:1px solid #e2e5ea;border-radius:7px">Q4 platform plan</div>
+              </div>
+            </sc-if>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { panel: true, ptab: 'copilot' };
+  renderVals() {
+    const rootH = this.props.height ?? '100vh';
+    const s = this.state;
+    const tree = [['Onboarding', 0, 1, 0], ['Architecture', 0, 1, 1], ['Services map', 1, 0, 0], ['Auth service RFC', 1, 0, 0, true], ['Data retention', 1, 0, 0], ['Event bus design', 1, 0, 0], ['Runbooks', 0, 1, 0], ['Postmortems', 0, 1, 0], ['Security', 0, 1, 0], ['Decision log', 0, 0, 0]];
+    return {
+      rootH,
+      tree: tree.map(([name, depth, hasKids, open, active]) => ({ name, pad: (10 + depth * 16) + 'px', arrow: hasKids ? '▶' : '', chev: open ? 'rotate(90deg)' : 'rotate(0deg)', bg: active ? '#eef3fe' : 'transparent', fg: active ? '#2456c9' : '#3b4454', w: active ? 500 : 400 })),
+      panel: s.panel, togglePanel: () => this.setState({ panel: !s.panel }), panelBtnBg: s.panel ? '#eef3fe' : '#fff',
+      ptabs: [['copilot', 'Copilot'], ['comments', 'Comments (3)'], ['linked', 'Linked work']].map(([id, name]) => ({ name, fg: s.ptab === id ? '#1b2430' : '#6b7483', sh: s.ptab === id ? 'inset 0 -2px 0 #2456c9' : 'none', pick: () => this.setState({ ptab: id }) })),
+      isCopilot: s.ptab === 'copilot', isComments: s.ptab === 'comments', isLinked: s.ptab === 'linked',
+      comments: [{ who: 'JM', name: 'Jonas M.', avBg: '#e4dcfa', avFg: '#5a3cae', when: 'yesterday', quote: 'stay valid for 15 minutes', body: 'Rollback says 15 min but the flag TTL in code is 30. Which is it?', bg: '#fdf8ec' }, { who: 'JM', name: 'Jonas M.', avBg: '#e4dcfa', avFg: '#5a3cae', when: 'yesterday', quote: 'Remove the legacy cookie path', body: 'This needs an issue; nobody owns it.', bg: '#fff' }, { who: 'AK', name: 'Aisha K.', avBg: '#fde2cf', avFg: '#9a4a16', when: 'Thursday', quote: 'Dual-write sessions', body: 'Done on staging, backfill verified.', bg: '#fff' }],
+      linked: [{ id: 'PLT-204', title: 'Session store migration to Postgres', status: 'IN REVIEW', sBg: '#efe9fd', sFg: '#5a3cae' }, { id: 'PLT-218', title: 'Rotate service tokens on every deploy', status: 'IN PROGRESS', sBg: '#e8eefc', sFg: '#2456c9' }, { id: 'PLT-222', title: 'Rate-limit token refresh endpoint', status: 'TO DO', sBg: '#eef0f4', sFg: '#4b5565' }]
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,1307 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lattice Technical Design</title>
+<meta name="description" content="Technical design for Lattice, an open source, self-hosted, AI-first alternative to Jira and Confluence.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f4f5f7;--sf:#fff;--sf2:#f9fafb;--tx:#1b2430;--tx2:#4b5565;--tx3:#6b7483;--br:#e2e5ea;--chip:#eef0f4;
+  --ac:#2456c9;--ac-bg:#eef3fe;--ac-br:#cdd8f3;--ac-d:#183d94;
+  --ai:#7c3aed;--ai-bg:#f3eefe;--ai-br:#ddd0fb;
+  --ok:#2b9b5a;--ok-bg:#e8f6ee;--warn:#d49a1a;--warn-bg:#fdf5e4;--bad:#c2410c;--bad-bg:#fdeee6;
+  --code-bg:#0f1217;--code-tx:#e6e9ef;
+  --radius:10px;--shadow:0 1px 2px rgba(0,0,0,.05),0 8px 24px rgba(0,0,0,.05);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f1217;--sf:#1a1f29;--sf2:#151a22;--tx:#e6e9ef;--tx2:#b4bcc9;--tx3:#8690a0;--br:#262c38;--chip:#222836;
+    --ac:#5b8def;--ac-bg:#172238;--ac-br:#2a3d63;--ac-d:#9db9f7;
+    --ai:#a78bfa;--ai-bg:#221b38;--ai-br:#3b2f63;
+    --ok:#4cc27a;--ok-bg:#132619;--warn:#e2b04a;--warn-bg:#2a2311;--bad:#f0865e;--bad-bg:#2d1a12;
+    --code-bg:#0b0e13;--code-tx:#dfe3ea;--shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.35);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f1217;--sf:#1a1f29;--sf2:#151a22;--tx:#e6e9ef;--tx2:#b4bcc9;--tx3:#8690a0;--br:#262c38;--chip:#222836;
+  --ac:#5b8def;--ac-bg:#172238;--ac-br:#2a3d63;--ac-d:#9db9f7;
+  --ai:#a78bfa;--ai-bg:#221b38;--ai-br:#3b2f63;
+  --ok:#4cc27a;--ok-bg:#132619;--warn:#e2b04a;--warn-bg:#2a2311;--bad:#f0865e;--bad-bg:#2d1a12;
+  --code-bg:#0b0e13;--code-tx:#dfe3ea;--shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.6 'IBM Plex Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:var(--ac);text-decoration:none}a:hover{text-decoration:underline}
+code,pre,kbd,.mono{font-family:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,monospace}
+code{font-size:.88em;background:var(--chip);padding:1px 5px;border-radius:4px}
+pre{background:var(--code-bg);color:var(--code-tx);padding:16px 18px;border-radius:var(--radius);overflow:auto;font-size:12.5px;line-height:1.55;margin:14px 0}
+pre code{background:none;padding:0;font-size:inherit;color:inherit}
+h1{font-size:34px;line-height:1.15;letter-spacing:-.02em;margin:0 0 8px;font-weight:600}
+h2{font-size:24px;line-height:1.25;letter-spacing:-.015em;margin:56px 0 12px;font-weight:600;padding-top:8px;border-top:1px solid var(--br)}
+h3{font-size:17px;margin:28px 0 8px;font-weight:600}
+h4{font-size:14.5px;margin:18px 0 6px;font-weight:600;color:var(--tx2);text-transform:uppercase;letter-spacing:.04em}
+p{margin:10px 0}
+ul,ol{padding-left:22px;margin:8px 0}li{margin:4px 0}
+.layout{display:grid;grid-template-columns:240px minmax(0,1fr);gap:40px;max-width:1280px;margin:0 auto;padding:32px 24px 96px}
+nav.toc{position:sticky;top:24px;align-self:start;font-size:13px;max-height:calc(100vh - 48px);overflow:auto;padding-right:8px}
+nav.toc .brand{display:flex;align-items:center;gap:10px;margin-bottom:18px}
+nav.toc .logo{width:28px;height:28px;border-radius:7px;background:var(--ac);color:#fff;display:grid;place-items:center;font-weight:700;font-size:15px}
+nav.toc a{display:block;color:var(--tx2);padding:4px 8px;border-radius:6px;line-height:1.4}
+nav.toc a:hover{background:var(--chip);text-decoration:none;color:var(--tx)}
+nav.toc .sec{margin-top:10px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--tx3);padding:0 8px}
+main{min-width:0}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 24px;font-size:13px;color:var(--tx3)}
+.badge{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:500;border:1px solid var(--br);background:var(--sf);color:var(--tx2)}
+.badge.ac{background:var(--ac-bg);border-color:var(--ac-br);color:var(--ac)}
+.badge.ai{background:var(--ai-bg);border-color:var(--ai-br);color:var(--ai)}
+.badge.ok{background:var(--ok-bg);border-color:transparent;color:var(--ok)}
+.badge.warn{background:var(--warn-bg);border-color:transparent;color:var(--warn)}
+.badge.bad{background:var(--bad-bg);border-color:transparent;color:var(--bad)}
+.card{background:var(--sf);border:1px solid var(--br);border-radius:var(--radius);padding:18px 20px;margin:14px 0;box-shadow:var(--shadow)}
+.grid{display:grid;gap:14px}
+.grid.c2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.grid.c3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.grid.c4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.grid .card{margin:0}
+.card h3{margin-top:0}
+.k{font-size:12px;color:var(--tx3);text-transform:uppercase;letter-spacing:.05em;font-weight:500}
+.stat{font-size:26px;font-weight:600;letter-spacing:-.02em;line-height:1.1;margin:4px 0}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:12px 0;background:var(--sf);border:1px solid var(--br);border-radius:var(--radius);overflow:hidden}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--br);vertical-align:top}
+th{background:var(--sf2);font-weight:600;font-size:12.5px;color:var(--tx2)}
+tr:last-child td{border-bottom:0}
+td code{white-space:nowrap}
+.callout{border-left:3px solid var(--ac);background:var(--ac-bg);padding:12px 16px;border-radius:0 var(--radius) var(--radius) 0;margin:14px 0}
+.callout.ai{border-color:var(--ai);background:var(--ai-bg)}
+.callout.warn{border-color:var(--warn);background:var(--warn-bg)}
+.callout .k{margin-bottom:4px}
+.decision{display:grid;grid-template-columns:150px 1fr;gap:10px 18px;padding:14px 18px;background:var(--sf);border:1px solid var(--br);border-radius:var(--radius);margin:12px 0}
+.decision .k{padding-top:3px}
+figure{margin:18px 0;background:var(--sf);border:1px solid var(--br);border-radius:var(--radius);padding:16px;overflow:auto}
+figcaption{font-size:12.5px;color:var(--tx3);margin-top:8px}
+svg text{font-family:'IBM Plex Sans',system-ui,sans-serif}
+svg .mono{font-family:'IBM Plex Mono',monospace}
+.hr{height:1px;background:var(--br);margin:24px 0}
+.small{font-size:13px;color:var(--tx2)}
+.tree{font-size:12.5px;line-height:1.5}
+.tree .c{color:#8aa0c8}
+.tag{display:inline-block;font-size:11px;padding:1px 6px;border-radius:4px;background:var(--chip);color:var(--tx2);margin-left:6px;vertical-align:middle}
+.steps{counter-reset:s;list-style:none;padding:0}
+.steps li{counter-increment:s;position:relative;padding-left:40px;margin:10px 0}
+.steps li::before{content:counter(s);position:absolute;left:0;top:2px;width:26px;height:26px;border-radius:50%;background:var(--ac);color:#fff;display:grid;place-items:center;font-size:12.5px;font-weight:600}
+.themebtn{position:fixed;right:18px;top:18px;font-size:12px;background:var(--sf);border:1px solid var(--br);border-radius:999px;padding:6px 12px;color:var(--tx2);cursor:pointer;z-index:9}
+@media (max-width: 980px){.layout{grid-template-columns:1fr;padding:20px 16px 64px}nav.toc{position:static;max-height:none;display:flex;flex-wrap:wrap;gap:2px}nav.toc .sec{width:100%}nav.toc .brand{width:100%}.grid.c2,.grid.c3,.grid.c4{grid-template-columns:1fr}.decision{grid-template-columns:1fr}h1{font-size:28px}}
+@media print{nav.toc,.themebtn{display:none}.layout{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<button class="themebtn" onclick="(function(){var r=document.documentElement;var cur=r.getAttribute('data-theme');var dark=cur?cur==='dark':matchMedia('(prefers-color-scheme: dark)').matches;r.setAttribute('data-theme',dark?'light':'dark')})()">Toggle theme</button>
+<div class="layout">
+<nav class="toc">
+  <div class="brand"><div class="logo">L</div><div><div style="font-weight:600">Lattice</div><div style="font-size:11.5px;color:var(--tx3)">Technical design · v0.10</div></div></div>
+  <div class="sec">Foundations</div>
+  <a href="#summary">1. Summary and promises</a>
+  <a href="#scope">2. Product scope</a>
+  <a href="#architecture">3. Architecture</a>
+  <a href="#modules">4. Modules</a>
+  <a href="#stack">5. Stack decisions</a>
+  <a href="#repo">6. Repository and layering</a>
+  <div class="sec">Data and API</div>
+  <a href="#database">7. Database</a>
+  <a href="#changelog" style="padding-left:20px">7.1 Schema changelog</a>
+  <a href="#schema">8. Schema</a>
+  <a href="#api">9. API, realtime, webhooks</a>
+  <a href="#security">10. Auth and security</a>
+  <div class="sec">Subsystems</div>
+  <a href="#ai">11. AI subsystem</a>
+  <a href="#email">12. Email and notifications</a>
+  <a href="#jobs">13. Jobs and realtime without Redis</a>
+  <a href="#work">14. Work engine</a>
+  <a href="#docs">15. Docs engine</a>
+  <a href="#search">16. Search</a>
+  <a href="#import">17. Importers and integrations</a>
+  <div class="sec">Operations</div>
+  <a href="#deploy">18. Deploy in 5 minutes</a>
+  <a href="#config">19. Configuration model</a>
+  <a href="#performance">20. Performance</a>
+  <a href="#observability">21. Observability</a>
+  <a href="#quality">22. Quality gates</a>
+  <a href="#contributing">23. Contributing</a>
+  <a href="#roadmap">24. Milestones</a>
+  <a href="#decisions">25. Open decisions</a>
+</nav>
+<main>
+<h1>Lattice: technical design</h1>
+<p class="small" style="font-size:16px;color:var(--tx2)">An open source, self-hosted, AI-first replacement for Jira and Confluence. One app image, one Postgres, deployed in five minutes, free forever.</p>
+<div class="meta">
+  <span class="badge warn">Draft v0.10</span>
+  <span class="badge">7 October 2026</span>
+  <span class="badge">Source of truth for product scope: <code>docs/design/*.dc.html</code> (14 screens)</span>
+  <span class="badge">Engineering contract: <code>engineering-standards</code></span>
+</div>
+
+<!-- ===================================================== 1 -->
+<h2 id="summary">1. Summary and the eight promises</h2>
+<p>Lattice is two products in one deployable, the way Jira and Confluence are two products in one Atlassian account: <strong>Work</strong> (projects, issues, boards, sprints, roadmap, workflows) and <strong>Docs</strong> (spaces, pages, a collaborative editor), joined by a single <strong>AI layer</strong> that reads both and acts through the same permissions a person has. The design mocks fix the experience; this document fixes how it is built.</p>
+<p>Every technical decision below was tested against eight promises taken straight from the landing page and the setup wizard. If a decision breaks a promise, the decision loses.</p>
+<div class="grid c4">
+  <div class="card"><div class="k">Promise 1</div><div class="stat">5 min</div><div class="small">curl to first login on a fresh VM. The installer owns Docker, Postgres, HTTPS, backups and upgrades.</div></div>
+  <div class="card"><div class="k">Promise 2</div><div class="stat">1 + 1</div><div class="small">One application image plus one Postgres. No Redis, no Elasticsearch, no message broker, no object store required.</div></div>
+  <div class="card"><div class="k">Promise 3</div><div class="stat">2 vCPU · 4 GB</div><div class="small">Runs a 200-person company. Every subsystem is sized for this box first and scales out second.</div></div>
+  <div class="card"><div class="k">Promise 4</div><div class="stat">$0 / seat</div><div class="small">MIT licence, no seat limits, no feature gating, no phone-home unless the admin opts in to update checks.</div></div>
+  <div class="card"><div class="k">Promise 5</div><div class="stat">Any AI, or none</div><div class="small">Anthropic, OpenAI, Azure, OpenRouter, Ollama, vLLM. Nothing leaves the server until a provider is connected.</div></div>
+  <div class="card"><div class="k">Promise 6</div><div class="stat">Plan → confirm → run</div><div class="small">AI never mutates data silently. It proposes a plan, a person confirms, it runs under their permissions and lands in the audit log.</div></div>
+  <div class="card"><div class="k">Promise 7</div><div class="stat">1 cmd</div><div class="small">Upgrade and rollback are single commands. A backup is taken automatically before every upgrade.</div></div>
+  <div class="card"><div class="k">Promise 8</div><div class="stat">Imports</div><div class="small">Jira and Confluence imports keep keys, history, comments, attachments and page trees so migration is a background job, not a project.</div></div>
+</div>
+
+<h3>Headline decisions</h3>
+<table>
+  <tr><th style="width:190px">Area</th><th>Decision</th><th style="width:36%">Why in one line</th></tr>
+  <tr><td>Language</td><td>TypeScript 7 end to end. Node 24 LTS (26 when it enters LTS on 28 October 2026).</td><td>One language for server, web, editor, installer tooling and shared types. Lowest barrier for contributors.</td></tr>
+  <tr><td>Modules</td><td>A small core kernel plus installable modules: <code>work</code>, <code>docs</code>, and future ones. Any combination can be enabled per install; adding one later runs its changelog from Settings.</td><td>"Install only Docs" has to be a first-class path, and future capabilities have to land as modules, not as edits to the core.</td></tr>
+  <tr><td>Backend</td><td>Fastify, modular monolith, one process that can be split into <code>api</code> and <code>worker</code> roles by env.</td><td>Fastest mainstream Node framework; one process keeps the single-container promise.</td></tr>
+  <tr><td>Frontend</td><td>React 19 + Vite SPA served by the same process. TanStack Query + Zustand. Tiptap editor on Yjs.</td><td>The app lives behind login; SSR buys nothing. A SPA with prefetching and optimistic updates is how Linear feels instant.</td></tr>
+  <tr><td>Database</td><td>PostgreSQL 18 only, with <code>pgvector</code> and <code>pg_trgm</code>. Drizzle ORM. Schema changes as a Liquibase-style changelog of tracked, checksummed changesets, one changelog per module.</td><td>Relational data, transactions, full text search, vectors, queue and pub/sub all in the one dependency we already require. See §7 for why not Mongo.</td></tr>
+  <tr><td>Queue and realtime</td><td>Postgres-backed job queue (pg-boss) and <code>LISTEN/NOTIFY</code> fan-out to WebSockets.</td><td>Removes Redis entirely at the scale we target.</td></tr>
+  <tr><td>AI</td><td>Exactly one integration in code, the AI SDK (<code>ai</code> 7, Apache-2.0). The models.dev catalog supplies the providers, their packages, credentials forms, models, capabilities, prices and logos at runtime. Admins pick any of 226 providers and any model per role (<code>fast</code>, <code>standard</code>, <code>strong</code>, <code>embedding</code>). Prompts versioned in the repo, overridable in the database.</td><td>No vendor-specific code to maintain; a new provider or model appears without a Lattice release. A thin facade is the only place the SDK is imported.</td></tr>
+  <tr><td>Email</td><td>SMTP through an outbox table and a worker; digest batching; one <code>EmailSender</code> interface.</td><td>SMTP is the universal self-host answer. Outbox makes sending retryable and auditable.</td></tr>
+  <tr><td>Deploy and updates</td><td><code>curl | sh</code> installer writes a Compose stack (app, Postgres, Caddy, updater) and a <code>lattice</code> CLI. Updates run from inside the app with one click, with automatic backup and rollback. Also Docker Compose by hand, Helm, Terraform, air-gapped bundle.</td><td>The wizard in the mocks already assumes the server is up with HTTPS and backups scheduled; the installer is what makes that true.</td></tr>
+</table>
+
+<!-- ===================================================== 2 -->
+<h2 id="scope">2. Product scope, read from the mocks</h2>
+<p>The 14 design screens define what version 1.0 must do. The table maps each screen to the capabilities the backend has to provide, which is how the schema in §8 and the milestones in §24 were derived.</p>
+<table>
+  <tr><th style="width:200px">Screen</th><th>Capabilities the design requires</th><th style="width:120px">Area</th></tr>
+  <tr><td>Home</td><td>AI morning brief built from activity since last visit, with citations and actions; "my work" lists; inbox; recent docs; project progress.</td><td><span class="badge ai">AI</span> <span class="badge">Work</span></td></tr>
+  <tr><td>Board</td><td>Scrum and Kanban modes; columns mapping to workflow statuses; WIP limits; swimlanes by epic, assignee, priority or custom query; card field layout; quick filters; velocity and flow metrics; AI sprint pulse with one-click actions; slide-over issue detail with AI summary.</td><td><span class="badge">Work</span></td></tr>
+  <tr><td>Backlog</td><td>Sprint containers with drag and drop; epic panel; capacity vs committed points; AI planning tips ("Apply / Dismiss").</td><td><span class="badge">Work</span></td></tr>
+  <tr><td>Issue</td><td>Full page: description, acceptance criteria, subtasks, linked issues (blocks, relates), comments with reactions, history, work log, watchers, custom fields, fix version, linked docs, linked PRs and branches, AI summary citing comments, PRs and docs; "create issue from this comment".</td><td><span class="badge">Work</span> <span class="badge ai">AI</span></td></tr>
+  <tr><td>Roadmap</td><td>Epic timeline by month/quarter, progress and lateness, dependencies, AI forecast with scenarios.</td><td><span class="badge">Work</span> <span class="badge ai">AI</span></td></tr>
+  <tr><td>Docs home</td><td>Spaces, page trees, templates, recent and starred pages, "ask your docs" with cited answers, "needs attention" (open comments, stale pages, AI-detected conflicts across pages).</td><td><span class="badge">Docs</span> <span class="badge ai">AI</span></td></tr>
+  <tr><td>Doc editor</td><td>Live collaborative editing with presence; page status and metadata; generated TL;DR that updates with the doc; live issue embeds with status; inline comments anchored to text; ghost-text continuation; <code>/ai</code> block commands; consistency checks against linked issues; backlinks; versions.</td><td><span class="badge">Docs</span> <span class="badge ai">AI</span></td></tr>
+  <tr><td>Command palette</td><td>⌘K: search across issues, docs and people; natural-language commands rendered as a plan table (issue, change, field, permission check) before "Run"; executed under the user's permissions; logged.</td><td><span class="badge ai">AI</span></td></tr>
+  <tr><td>Board settings</td><td>Org default schemes with project overrides and a diff; columns, lanes, card layout, card colour rules, method (Scrum/Kanban), sprint cadence, estimation unit, capability matrix with org locks.</td><td><span class="badge">Admin</span></td></tr>
+  <tr><td>Issue types and workflow</td><td>Type hierarchy (Epic › Story/Bug/Task/Incident › Subtask), fields per type with create-form layout, AI-filled fields, visual workflow editor with transitions, conditions, validators, post-actions and per-status permissions; validate and publish.</td><td><span class="badge">Admin</span></td></tr>
+  <tr><td>People</td><td>Users, invites, CSV import, SSO sync, teams owning projects and spaces, custom roles, capability matrix with org locks, authentication providers, SCIM-style group mapping. Per-module access (which people, teams or roles can see Work, Docs, Timesheets) is a design addition the mock does not show yet.</td><td><span class="badge">Admin</span></td></tr>
+  <tr><td>Appearance</td><td>Eight preset themes plus a custom builder (brand colour, mode, surface tone, typeface, logo) with contrast checking; policy for member overrides.</td><td><span class="badge">Admin</span></td></tr>
+  <tr><td>Setup wizard</td><td>Server health checks (Postgres, disk, memory, SMTP, HTTPS, backups); first admin; import from Jira, Confluence, CSV or clean start; SSO or invites; AI provider (popular row: OpenAI, Anthropic, Amazon Bedrock, Azure, Vertex, OpenRouter; the full catalog beneath; local server; none) with privacy toggles; theme; summary.</td><td><span class="badge">Setup</span></td></tr>
+  <tr><td>Landing</td><td>Marketing site. Separate static site, out of scope for the app image.</td><td><span class="badge">Site</span></td></tr>
+</table>
+<div class="callout"><div class="k">Explicit non-goals for 1.0</div>Multi-tenant SaaS hosting (one workspace per install), native mobile apps (the responsive SPA ships as a PWA; one native shell app comes after 1.0, see §4), Jira-API compatibility shim, marketplace plugins with arbitrary code execution (modules are first-party code in the image for 1.0, see §4), service desk and portals. Each is listed in §25 so it is a decision, not an accident.</div>
+
+<!-- ===================================================== 3 -->
+<h2 id="architecture">3. Architecture</h2>
+<p>Lattice is a <strong>modular monolith</strong>. One Node process serves the API, the WebSocket endpoint, the collaborative-editing endpoint, the static SPA and the background workers. The same image can be started with <code>LATTICE_ROLE=api</code> or <code>LATTICE_ROLE=worker</code> to split it across machines when a deployment outgrows one box. Nothing in the code knows or cares which mode it is in.</p>
+<figure>
+<svg viewBox="0 0 1040 520" width="100%" style="max-width:1040px;display:block" role="img" aria-label="Lattice runtime architecture">
+  <defs><marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="var(--tx3)"/></marker></defs>
+  <!-- clients -->
+  <rect x="20" y="30" width="170" height="64" rx="10" fill="var(--sf2)" stroke="var(--br)"/>
+  <text x="105" y="56" text-anchor="middle" font-size="13" font-weight="600" fill="var(--tx)">Browser (SPA)</text>
+  <text x="105" y="76" text-anchor="middle" font-size="11.5" fill="var(--tx3)">HTTPS · WebSocket · Yjs</text>
+  <rect x="20" y="110" width="170" height="64" rx="10" fill="var(--sf2)" stroke="var(--br)"/>
+  <text x="105" y="136" text-anchor="middle" font-size="13" font-weight="600" fill="var(--tx)">Integrations</text>
+  <text x="105" y="156" text-anchor="middle" font-size="11.5" fill="var(--tx3)">REST · MCP · webhooks in</text>
+  <!-- caddy -->
+  <rect x="250" y="60" width="130" height="84" rx="10" fill="var(--sf2)" stroke="var(--br)"/>
+  <text x="315" y="92" text-anchor="middle" font-size="13" font-weight="600" fill="var(--tx)">Caddy</text>
+  <text x="315" y="110" text-anchor="middle" font-size="11.5" fill="var(--tx3)">auto TLS, HTTP/2</text>
+  <text x="315" y="126" text-anchor="middle" font-size="11.5" fill="var(--tx3)">optional</text>
+  <!-- lattice box -->
+  <rect x="430" y="20" width="380" height="330" rx="14" fill="var(--ac-bg)" stroke="var(--ac-br)"/>
+  <text x="450" y="46" font-size="13" font-weight="600" fill="var(--ac)">lattice image · one Node process</text>
+  <g font-size="12" fill="var(--tx)">
+    <rect x="450" y="60" width="165" height="50" rx="8" fill="var(--sf)" stroke="var(--br)"/><text x="532" y="81" text-anchor="middle" font-weight="600">HTTP API</text><text x="532" y="98" text-anchor="middle" font-size="11" fill="var(--tx3)">Fastify · zod · routes→controllers→services</text>
+    <rect x="625" y="60" width="165" height="50" rx="8" fill="var(--sf)" stroke="var(--br)"/><text x="707" y="81" text-anchor="middle" font-weight="600">Static SPA</text><text x="707" y="98" text-anchor="middle" font-size="11" fill="var(--tx3)">React + Vite build, Brotli</text>
+    <rect x="450" y="120" width="165" height="50" rx="8" fill="var(--sf)" stroke="var(--br)"/><text x="532" y="141" text-anchor="middle" font-weight="600">Realtime</text><text x="532" y="158" text-anchor="middle" font-size="11" fill="var(--tx3)">WebSocket + Yjs (Hocuspocus)</text>
+    <rect x="625" y="120" width="165" height="50" rx="8" fill="var(--sf)" stroke="var(--br)"/><text x="707" y="141" text-anchor="middle" font-weight="600">Workers</text><text x="707" y="158" text-anchor="middle" font-size="11" fill="var(--tx3)">pg-boss: email, AI, import, index</text>
+    <rect x="450" y="180" width="340" height="50" rx="8" fill="var(--sf)" stroke="var(--br)"/><text x="620" y="201" text-anchor="middle" font-weight="600">core kernel + enabled modules (work · docs · …)</text><text x="620" y="218" text-anchor="middle" font-size="11" fill="var(--tx3)">each module: routes → controllers → services → models, plugged into core registries</text>
+    <rect x="450" y="240" width="108" height="46" rx="8" fill="var(--ai-bg)" stroke="var(--ai-br)"/><text x="504" y="259" text-anchor="middle" font-weight="600" fill="var(--ai)">ai/providers</text><text x="504" y="275" text-anchor="middle" font-size="10.5" fill="var(--tx3)">anthropic · openai-compat</text>
+    <rect x="566" y="240" width="108" height="46" rx="8" fill="var(--sf)" stroke="var(--br)"/><text x="620" y="259" text-anchor="middle" font-weight="600">email/providers</text><text x="620" y="275" text-anchor="middle" font-size="10.5" fill="var(--tx3)">smtp · log</text>
+    <rect x="682" y="240" width="108" height="46" rx="8" fill="var(--sf)" stroke="var(--br)"/><text x="736" y="259" text-anchor="middle" font-weight="600">storage/providers</text><text x="736" y="275" text-anchor="middle" font-size="10.5" fill="var(--tx3)">disk · s3</text>
+    <rect x="450" y="296" width="340" height="40" rx="8" fill="var(--sf)" stroke="var(--br)"/><text x="620" y="321" text-anchor="middle" font-size="11.5" fill="var(--tx2)">clients/ · config/ · models/ (Drizzle schema) · middlewares/ · utils/</text>
+  </g>
+  <!-- postgres -->
+  <rect x="860" y="60" width="160" height="200" rx="12" fill="var(--sf2)" stroke="var(--br)"/>
+  <text x="940" y="88" text-anchor="middle" font-size="13" font-weight="600" fill="var(--tx)">PostgreSQL 18</text>
+  <g font-size="11.5" fill="var(--tx2)" text-anchor="middle">
+    <text x="940" y="112">tables + JSONB</text><text x="940" y="130">tsvector · pg_trgm</text><text x="940" y="148">pgvector embeddings</text><text x="940" y="166">pg-boss job queue</text><text x="940" y="184">LISTEN / NOTIFY</text><text x="940" y="202">Yjs document updates</text><text x="940" y="220">sessions · audit log</text>
+    <text x="940" y="246" fill="var(--tx3)" font-size="10.5">bundled or external</text>
+  </g>
+  <!-- external -->
+  <g font-size="11.5" fill="var(--tx2)">
+    <rect x="430" y="400" width="118" height="54" rx="8" fill="var(--sf2)" stroke="var(--br)" stroke-dasharray="4 3"/><text x="489" y="422" text-anchor="middle" font-weight="600" fill="var(--tx)">AI provider</text><text x="489" y="440" text-anchor="middle">only if connected</text>
+    <rect x="562" y="400" width="118" height="54" rx="8" fill="var(--sf2)" stroke="var(--br)" stroke-dasharray="4 3"/><text x="621" y="422" text-anchor="middle" font-weight="600" fill="var(--tx)">SMTP relay</text><text x="621" y="440" text-anchor="middle">your mail server</text>
+    <rect x="694" y="400" width="118" height="54" rx="8" fill="var(--sf2)" stroke="var(--br)" stroke-dasharray="4 3"/><text x="753" y="422" text-anchor="middle" font-weight="600" fill="var(--tx)">Identity provider</text><text x="753" y="440" text-anchor="middle">OIDC · SAML · SCIM</text>
+    <rect x="826" y="400" width="118" height="54" rx="8" fill="var(--sf2)" stroke="var(--br)" stroke-dasharray="4 3"/><text x="885" y="422" text-anchor="middle" font-weight="600" fill="var(--tx)">GitHub / GitLab</text><text x="885" y="440" text-anchor="middle">PR and branch links</text>
+    <rect x="250" y="400" width="130" height="54" rx="8" fill="var(--sf2)" stroke="var(--br)"/><text x="315" y="422" text-anchor="middle" font-weight="600" fill="var(--tx)">/var/lattice</text><text x="315" y="440" text-anchor="middle">attachments · backups</text>
+  </g>
+  <!-- arrows -->
+  <g stroke="var(--tx3)" stroke-width="1.4" fill="none" marker-end="url(#arr)">
+    <path d="M190,62 L250,90"/><path d="M190,142 L250,110"/><path d="M380,102 L430,102"/>
+    <path d="M810,160 L860,160"/>
+    <path d="M620,350 L620,400"/><path d="M500,350 L489,400"/><path d="M740,350 L753,400"/><path d="M790,340 L885,400"/>
+    <path d="M430,330 L380,415"/>
+  </g>
+  <text x="20" y="500" font-size="11.5" fill="var(--tx3)">Dashed boxes are optional external systems. Everything solid ships in the default install.</text>
+</svg>
+<figcaption>Runtime topology. The dashed boxes are optional external systems; the solid ones are the default install.</figcaption>
+</figure>
+
+<h3>Request path</h3>
+<p>A request enters through Caddy, hits a Fastify route that does nothing but name a controller, the controller validates input with a zod schema from the shared package and calls one service function, the service checks authorization and does the work through Drizzle, and a single error handler maps typed errors to status codes. Anything slow goes to the job table instead of the request. Any change that other clients should see is published on a Postgres channel and fanned out to WebSocket subscribers, who invalidate their query cache rather than receiving the data itself.</p>
+<div class="callout"><div class="k">Why a monolith and not services</div>A 200-person company on a 4 GB VM cannot afford the memory of six processes, the operational surface of a service mesh, or the network hops. Module boundaries inside <code>services/</code> are enforced by lint rules (no cross-module imports except through each module's <code>index.ts</code>), which gives the maintainability benefit without the deployment cost. If a module ever needs its own process, it already has a clean seam.</div>
+
+<!-- ===================================================== 4 -->
+<h2 id="modules">4. Modules</h2>
+<div class="decision">
+  <div class="k">Question asked</div><div>Can Work and Docs be separate modules, so a team can install only Docs, only the board, or any mix, and so future capabilities can be added the same way?</div>
+  <div class="k">Decision</div><div><strong>Yes. Lattice is a small core kernel plus installable modules.</strong> Every product capability (<code>work</code>, <code>docs</code>, and anything that comes later) is a module that plugs into the kernel through a fixed contract. Modules ship inside the one application image and are switched on per install; the image stays one artifact so the five-minute install and one-click update promises hold.</div>
+  <div class="k">Why one image</div><div>Downloading module code at runtime means a version-compatibility matrix, signature checks, a plugin loader and a second update path, all before 1.0 ships. Shipping every module in the image and enabling by configuration gives the install-only-Docs experience today and keeps the door open for separately distributed modules later, because the contract below is the same either way. GitLab works this way: one version, many optional features.</div>
+</div>
+
+<figure>
+<svg viewBox="0 0 1040 330" width="100%" style="max-width:1040px;display:block" role="img" aria-label="Core kernel and modules">
+  <defs><marker id="arrm" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="var(--tx3)"/></marker></defs>
+  <g font-size="12" fill="var(--tx)">
+    <rect x="20" y="20" width="235" height="120" rx="12" fill="var(--ac-bg)" stroke="var(--ac-br)"/>
+    <text x="137" y="46" text-anchor="middle" font-weight="600" fill="var(--ac)">work</text>
+    <text x="137" y="66" text-anchor="middle" font-size="11" fill="var(--tx2)">projects · issues · boards · sprints</text>
+    <text x="137" y="82" text-anchor="middle" font-size="11" fill="var(--tx2)">workflows · fields · roadmap · automation</text>
+    <text x="137" y="104" text-anchor="middle" font-size="10.5" fill="var(--tx3)">registers: entity "issue", routes, nav,</text>
+    <text x="137" y="118" text-anchor="middle" font-size="10.5" fill="var(--tx3)">capabilities, jobs, indexers, AI tools</text>
+    <rect x="275" y="20" width="235" height="120" rx="12" fill="var(--ok-bg)" stroke="var(--br)"/>
+    <text x="392" y="46" text-anchor="middle" font-weight="600" fill="var(--ok)">docs</text>
+    <text x="392" y="66" text-anchor="middle" font-size="11" fill="var(--tx2)">spaces · pages · editor · collab</text>
+    <text x="392" y="82" text-anchor="middle" font-size="11" fill="var(--tx2)">comments · revisions · templates</text>
+    <text x="392" y="104" text-anchor="middle" font-size="10.5" fill="var(--tx3)">registers: entity "page", editor nodes,</text>
+    <text x="392" y="118" text-anchor="middle" font-size="10.5" fill="var(--tx3)">routes, nav, capabilities, AI insights</text>
+    <rect x="530" y="20" width="235" height="120" rx="12" fill="var(--sf2)" stroke="var(--br)" stroke-dasharray="5 4"/>
+    <text x="647" y="46" text-anchor="middle" font-weight="600" fill="var(--tx2)">future modules</text>
+    <text x="647" y="66" text-anchor="middle" font-size="11" fill="var(--tx2)">service desk · goals · test plans</text>
+    <text x="647" y="82" text-anchor="middle" font-size="11" fill="var(--tx2)">time tracking · whiteboards …</text>
+    <text x="647" y="104" text-anchor="middle" font-size="10.5" fill="var(--tx3)">same contract; may declare</text>
+    <text x="647" y="118" text-anchor="middle" font-size="10.5" fill="var(--tx3)">dependsOn: ["work"]</text>
+    <rect x="785" y="20" width="235" height="120" rx="12" fill="var(--sf2)" stroke="var(--br)"/>
+    <text x="902" y="46" text-anchor="middle" font-weight="600">web shell</text>
+    <text x="902" y="66" text-anchor="middle" font-size="11" fill="var(--tx2)">reads GET /modules at boot</text>
+    <text x="902" y="82" text-anchor="middle" font-size="11" fill="var(--tx2)">lazy-loads one chunk per enabled module</text>
+    <text x="902" y="104" text-anchor="middle" font-size="10.5" fill="var(--tx3)">nav, routes, ⌘K groups and settings</text>
+    <text x="902" y="118" text-anchor="middle" font-size="10.5" fill="var(--tx3)">panels come from module manifests</text>
+
+    <rect x="20" y="190" width="1000" height="110" rx="12" fill="var(--sf2)" stroke="var(--br)"/>
+    <text x="40" y="216" font-weight="600">core kernel (always installed)</text>
+    <g font-size="11" fill="var(--tx2)">
+      <text x="40" y="240">identity · sessions · SSO · SCIM</text><text x="260" y="240">roles + capability matrix</text><text x="470" y="240">settings · appearance · setup wizard</text><text x="760" y="240">notifications · email outbox · webhooks</text>
+      <text x="40" y="260">jobs (pg-boss) · realtime hub</text><text x="260" y="260">search index + LQL engine</text><text x="470" y="260">AI runtime: providers, prompts, plans</text><text x="760" y="260">storage · attachments · audit log</text>
+      <text x="40" y="280">entity + link registry</text><text x="260" y="280">module registry + changelog runner</text><text x="470" y="280">admin shell · health · backups · updater</text><text x="760" y="280">importers framework · MCP server</text>
+    </g>
+  </g>
+  <g stroke="var(--tx3)" stroke-width="1.3" fill="none" marker-end="url(#arrm)"><path d="M137,140 L137,190"/><path d="M392,140 L392,190"/><path d="M647,140 L647,190"/><path d="M902,140 L902,190"/></g>
+  <text x="20" y="322" font-size="11.5" fill="var(--tx3)">Arrows point one way. Modules depend on the kernel; the kernel never imports a module; modules never import each other.</text>
+</svg>
+<figcaption>Kernel and modules. Work and Docs talk to each other only through the kernel's entity and link registries, which is what lets either run alone.</figcaption>
+</figure>
+
+<h3>The module contract</h3>
+<p>A module is a package that exports one manifest. The kernel loads enabled modules in dependency order at boot and asks each one to register what it provides. Nothing else in the kernel knows a module's name.</p>
+<pre><code>// packages/core/src/modules/contract.ts
+export interface LatticeModule {
+  id: 'work' | 'docs' | string;        // stable, lowercase, used in config, URLs and the changelog table
+  version: string;                     // the app version it shipped in
+  coreApi: string;                     // semver range of the kernel API it was built against
+  dependsOn?: string[];                // hard dependencies on other modules (a future service-desk needs work)
+  defaultAccess: 'everyone' | 'teams' | 'none';  // initial module_grants row when enabled (§4, who can see a module)
+  changelog: Changelog;                // this module's ordered changesets, tracked per module in schema_changelog
+  register(ctx: ModuleContext): void;  // everything below happens here, at boot
+}
+
+export interface ModuleContext {
+  routes: RouteRegistry;               // mounts under /api/v1/&lt;resource&gt;, same route→controller→service layering
+  entities: EntityRegistry;            // declares entity kinds ("issue", "page") with a resolver, a renderer id, a search document builder, an ACL check
+  links: LinkRegistry;                 // link kinds this entity participates in (mention, embed, blocks)
+  capabilities: CapabilityRegistry;    // capability names for the roles matrix, with defaults per system role
+  navigation: NavRegistry;             // top-nav entries, settings panels, ⌘K groups, create-menu items
+  jobs: JobRegistry;                   // job handlers and schedules
+  events: EventBus;                    // publishes domain events; other modules may subscribe by kind, never by import
+  search: SearchRegistry;              // indexers and LQL fields
+  ai: AiRegistry;                      // tools, context builders, insight generators, prompt files
+  editor?: EditorRegistry;             // nodes and slash commands, when the docs module is enabled
+  importers: ImporterRegistry;         // importer implementations
+  settings: SettingsRegistry;          // module-scoped settings schema (zod) and defaults
+}</code></pre>
+<table>
+  <tr><th style="width:200px">Registry</th><th>What a module contributes</th><th>Who consumes it</th></tr>
+  <tr><td>Entities and links</td><td>Work registers <code>issue</code>; Docs registers <code>page</code>. Each gives the kernel a resolver by id or key, a search document builder, an ACL check and a renderer name.</td><td>The kernel's <code>links</code> table, backlinks, ⌘K search, the editor's embed node, notifications and audit all work on entity kinds, not on tables.</td></tr>
+  <tr><td>Routes</td><td>Resource routes under <code>/api/v1</code>, following the same layering and validation rules.</td><td>OpenAPI document is composed from enabled modules only; disabled modules' routes return <code>404</code> with a code that says the module is off.</td></tr>
+  <tr><td>Capabilities</td><td>Names for the roles matrix (<code>issue.transition</code>, <code>page.publish</code>) and defaults per system role.</td><td>The People screen groups the matrix by module; the authz service treats them uniformly.</td></tr>
+  <tr><td>Navigation</td><td>Top-nav entries, project and space sidebars, settings panels, create-menu items, ⌘K groups.</td><td>The web shell renders only what enabled modules registered, which is why a Docs-only install has no "Projects" menu.</td></tr>
+  <tr><td>Events</td><td>Typed domain events (<code>issue.transitioned</code>, <code>page.published</code>).</td><td>Notifications, webhooks, automation, AI insight triggers and other modules subscribe by event kind.</td></tr>
+  <tr><td>AI</td><td>Tools for plans, context builders, insight generators, prompt files.</td><td>The kernel's AI runtime (providers, roles, budget, audit) is shared; a module adds what the model can see and do.</td></tr>
+  <tr><td>Editor</td><td>Docs owns the editor; Work contributes the <code>issueEmbed</code> and <code>issueTable</code> nodes through the registry when both are enabled.</td><td>When Work is off, the editor has no issue nodes and existing embeds render as a labelled placeholder with the stored key, never as broken content.</td></tr>
+  <tr><td>Changelog</td><td>Ordered changesets inside the module's <code>changelog/</code> folder (§7.1).</td><td>The kernel's changelog runner applies core first, then modules in dependency order, recording <code>(module, id, author, checksum)</code>.</td></tr>
+</table>
+
+<h3>Rules that make modules real</h3>
+<ul>
+  <li><strong>No module imports another module.</strong> Enforced by the same ESLint boundary rule as the layering. Cross-module behaviour goes through kernel registries and events. The test that proves it: the integration suite boots the server three times, with <code>work</code> only, <code>docs</code> only, and both, and runs each module's tests in the configurations where it is enabled.</li>
+  <li><strong>A module owns its tables.</strong> Core tables carry no module-specific columns. Where the kernel needs to reference module data (links, notifications, audit, search), it stores <code>entity_kind</code> plus <code>entity_id</code> and asks the registry.</li>
+  <li><strong>Shared behaviour lives in the kernel, not in the first module that needed it.</strong> Comments, attachments, reactions, watchers and labels are kernel services keyed by entity kind, so a future module gets them for free.</li>
+  <li><strong>Optional dependencies degrade visibly.</strong> Docs' "Linked issues" panel, Work's "Linked docs" panel and the AI consistency check exist only when both modules are enabled; the UI says what is missing and how to enable it.</li>
+  <li><strong>The kernel is the only thing with a global changelog run.</strong> Enabling a module later runs its changelog under the same advisory lock; disabling a module unregisters it but keeps its tables until an admin explicitly chooses "remove data", which is a confirmed, backed-up, audited action.</li>
+</ul>
+
+<h3>Choosing modules at install and after</h3>
+<table>
+  <tr><th style="width:220px">Where</th><th>How</th></tr>
+  <tr><td>Installer</td><td><code>curl -fsSL https://get.lattice.dev | sh -s -- --modules docs</code>. Without the flag, the wizard asks.</td></tr>
+  <tr><td>Setup wizard</td><td>A new first question, "What will you use Lattice for?", with Work, Docs and both. AI remains a provider choice in step 4 and lights up the AI features of whichever modules are on.</td></tr>
+  <tr><td>Settings › Modules</td><td>Lists every module in the image with its state, version, data size and changelog status. Enable runs its changelog and seeds a sample; disable hides it and keeps data; remove data is separate and confirmed.</td></tr>
+  <tr><td>Env (for automation)</td><td><code>LATTICE_MODULES=work,docs</code> pins the set; the Settings page becomes read-only for modules when the env is set, so Helm and Terraform deployments cannot drift.</td></tr>
+  <tr><td>Web app</td><td>Boots from <code>GET /api/v1/modules</code>, which returns only the modules that are enabled <em>and</em> granted to this person, and lazy-loads one JavaScript chunk per module under its path (<code>/work</code>, <code>/docs</code>, <code>/time</code>). A Docs-only install never downloads the board code. The kernel chunk stays under the 250 KB budget on its own.</td></tr>
+</table>
+
+
+<h3>Who can see a module</h3>
+<p>Enabling a module for the workspace and letting a person use it are two different decisions. Engineering may have Work, everyone may have Timesheets, and a contractor may have only the Docs space they were invited to. So authorization has three layers, evaluated in this order by the authz service:</p>
+<table>
+  <tr><th style="width:200px">Layer</th><th>Question</th><th>Where it is set</th></tr>
+  <tr><td>1. Module access</td><td>May this person see the module at all: its navigation, routes, search results, mentions, notifications and AI context.</td><td><code>module_grants</code>: a grant to <em>everyone</em>, a team, a role or a person. Each module declares its default (Timesheet: everyone; Work and Docs: teams the admin picks). SSO group mapping reaches it through teams, so provisioning a person into the engineering group gives them Work on first login.</td></tr>
+  <tr><td>2. Container membership</td><td>Are they a member of this project or space, and with which role.</td><td><code>project_members</code>, <code>space_members</code>. Inviting someone to a project they lack module access for prompts the inviter to grant it, or to ask an admin, rather than silently failing.</td></tr>
+  <tr><td>3. Capability</td><td>May they do this specific thing here.</td><td>The roles matrix with org locks and project or space overrides, as in §10.</td></tr>
+</table>
+<p>A person without module access gets a product that simply does not have that module: no menu entry, no ⌘K group, no results, and an <code>@mention</code> of an issue renders as "restricted". The API answers <code>403</code> with the code <code>module_access_denied</code> so clients can distinguish it from a missing record. The People screen gains a "Modules" column and a per-module access editor, which is one more small change to the mocks.</p>
+
+<h3>One app, not one site per module</h3>
+<div class="decision">
+  <div class="k">Question asked</div><div>As modules grow (Work, Docs, Timesheets, and whatever comes next), should each be its own website on its own subdomain, with its own mobile app, or should everything live in one website and one mobile app?</div>
+  <div class="k">Decision</div><div><strong>One website and one mobile app.</strong> Modules are sections of a single shell, routed by path (<code>/work</code>, <code>/docs</code>, <code>/time</code>), shown only to people with access. Optional vanity hosts such as <code>docs.acme.com</code> are proxy rewrites to the path, not separate deployments.</div>
+</div>
+<table>
+  <tr><th style="width:220px">Concern</th><th>One app with modules (chosen)</th><th>One site per module</th></tr>
+  <tr><td>Sign-in and session</td><td>One session cookie, one SSO flow, one CSRF model.</td><td>Cookies scoped to a parent domain, cross-origin auth forwarding for every cross-module call, and three places to get it wrong.</td></tr>
+  <tr><td>Cross-module features</td><td>Issue embeds in pages, time entries on issues, one search, one ⌘K, one inbox, one morning brief, one AI with one permission model: all in-process.</td><td>Each becomes a cross-service API with identity propagation and partial failures. This is the pain Atlassian's separate Jira and Confluence URLs are known for.</td></tr>
+  <tr><td>Install and operations</td><td>One host, one certificate, one container, one update.</td><td>DNS and certificates per module, more hosts for enterprise IT to allow-list, a compatibility matrix between module versions.</td></tr>
+  <tr><td>Performance as modules grow</td><td>The shell stays under its 250 KB budget; each module is a lazy chunk loaded on first use. Forty modules cost nothing until opened.</td><td>Each site is fast on its own, but every switch is a full page load and a cold cache.</td></tr>
+  <tr><td>Team autonomy and blast radius</td><td>Module boundaries are enforced in the monorepo with code ownership per module and error boundaries per module in the shell. A module that outgrows the process already has a clean seam.</td><td>Independent deploys, at the price of everything above.</td></tr>
+  <tr><td>Branding and URLs</td><td>Path routes by default; vanity hosts per module through the proxy for enterprises that want <code>docs.acme.com</code>.</td><td>Natural, but the only real advantage.</td></tr>
+  <tr><td>Versioning</td><td>One release train with optional modules, the GitLab model. Enterprises validate one version.</td><td>N products, N release notes, N upgrade windows.</td></tr>
+</table>
+<h4>Mobile</h4>
+<p>Same answer for the same reasons: one app named Lattice, not one per module. It reads the module manifest from the server and shows only the modules the person can access, so a Docs-only workspace gets what looks like a docs app. One store listing, one login, one push-notification registration, deep links that cross modules (<code>lattice://work/PLT-204</code>). Sequencing: the SPA ships as an installable PWA with web push for 1.0, which covers inbox, approvals, comments and timesheet entry on a phone; a native shell (Expo) follows after 1.0 and loads module screens by manifest, so adding a module never means shipping a new app. Separate apps per module is listed in §25 as the rejected alternative.</p>
+
+<h3>Versioning</h3>
+<p>For 1.x every module ships in the image and carries the application's version, so an update moves everything together and there is exactly one compatibility question: does this image's kernel support the database it finds. Module manifests already declare the kernel API range they need, and changesets are tracked per module, so the 2.0 question of separately distributed, separately versioned modules (a community module installed from a registry, signed and sandboxed) is a packaging and trust problem, not an architecture change. It is listed in §25 rather than promised.</p>
+
+<!-- ===================================================== 5 -->
+<h2 id="stack">5. Stack decisions</h2>
+<p>Each row names what was chosen, what it was weighed against, and the reason that settled it. Licences are listed because Lattice itself is MIT and cannot depend on anything that would stop a company from self-hosting it.</p>
+<table>
+  <tr><th style="width:150px">Concern</th><th style="width:220px">Choice</th><th>Weighed against</th><th>Deciding reason</th></tr>
+  <tr><td>Runtime</td><td>Node 24 LTS (moving to 26 LTS at the end of October 2026), TypeScript 7 strict, ESM</td><td>Go, Bun, Deno</td><td>Go would give a smaller binary but splits the codebase into two languages and halves the contributor pool for the editor, importers and AI tooling. Bun is not yet boring enough for a product people run their company on. TypeScript 7 is the Go-native compiler, so typechecking the monorepo is no longer a CI bottleneck.</td></tr>
+  <tr><td>HTTP</td><td>Fastify 5 (6 is in alpha; we move when it is stable)</td><td>Express, Hono, NestJS</td><td>Two to three times Express throughput, schema-driven serialization, first-class plugins for WebSocket, rate limiting and static files. NestJS adds a DI layer the standards contract already replaces with plain modules.</td></tr>
+  <tr><td>Validation</td><td>zod 4, schemas in <code>packages/shared</code></td><td>TypeBox, Valibot</td><td>Shared between server (request validation) and web (form validation) so one schema is one source of truth. One validation library per project is a contract rule.</td></tr>
+  <tr><td>ORM</td><td>Drizzle ORM 1.0 (release candidate today; 0.45 is the stable line until it lands) + <code>postgres.js</code> driver</td><td>Prisma, Kysely, Knex</td><td>Schema in TypeScript, SQL-shaped queries you can read, no query engine binary, and Drizzle Kit diffs the schema to generate the SQL for a new changeset. Prisma's engine and schema DSL fight the "models are schema only" rule and cost memory.</td></tr>
+  <tr><td>Schema changes</td><td>Liquibase-style changelog runner in the kernel, TypeScript changesets, Drizzle Kit for DDL generation, <code>squawk</code> for SQL safety linting</td><td>Liquibase, Flyway, Atlas, node-pg-migrate, Umzug, Drizzle Kit alone</td><td>Liquibase and Flyway need a JVM in the image and XML or YAML changelogs TypeScript contributors would not maintain. Atlas is a good Go binary but gates features behind a paid tier and would be shelled out to at boot. The model Liquibase and Mongock got right (tracked ids, checksums, preconditions, contexts, rollback, code changesets) is small enough to own in TypeScript on top of the driver we already have. Details in §7.1.</td></tr>
+  <tr><td>Typography</td><td>IBM Plex Sans for UI, IBM Plex Mono for keys and code (Classic theme); Inter Tight, Source Sans 3 and Geist as workspace-selectable alternatives, self-hosted in the image</td><td>Inter, system fonts</td><td>Taken from the mocks: Plex reads well at board density and has a matching mono for issue keys. Fonts are bundled so air-gapped installs render identically.</td></tr>
+  <tr><td>Jobs</td><td>pg-boss 12</td><td>BullMQ (needs Redis), Graphile Worker, hand-rolled SKIP LOCKED</td><td>Mature Postgres-only queue with retries, scheduling, singleton jobs and archive. Removes Redis from the install.</td></tr>
+  <tr><td>Realtime</td><td><code>@fastify/websocket</code> + Postgres <code>LISTEN/NOTIFY</code></td><td>Socket.IO, Redis pub/sub, SSE</td><td>Payloads are tiny invalidation messages, so NOTIFY's 8 KB limit is never approached. Works across replicas with no extra service.</td></tr>
+  <tr><td>Collab editing</td><td>Tiptap 3 (ProseMirror) + Yjs + Hocuspocus 4 with a Postgres persistence extension</td><td>Lexical, Slate, Plate, BlockNote</td><td>Only ProseMirror has a decade of production use for exactly this: Confluence-class documents with custom nodes (issue embeds, decision blocks, issue tables). Yjs gives conflict-free offline-tolerant collaboration; Hocuspocus is MIT.</td></tr>
+  <tr><td>Frontend</td><td>React 19, Vite 8, TanStack Router 1 + Query 5 + Virtual, Zustand, Tailwind 4 with tokens from <code>packages/ui</code></td><td>Next.js, Remix, SvelteKit</td><td>No SSR need behind login; a static build keeps the single image. TanStack Router gives type-safe routes and route-level prefetching. Tailwind consumes the one token file so the eight presets plus custom themes are CSS variables, not rebuilds.</td></tr>
+  <tr><td>Auth</td><td>Own session layer (Postgres sessions), argon2id, <code>openid-client</code> for OIDC, <code>samlify</code> for SAML, SCIM 2.0 server</td><td>Auth.js, Lucia, Keycloak sidecar</td><td>Keycloak violates the one-image promise. Auth.js is tuned for Next. The surface is small enough to own and must be audited anyway.</td></tr>
+  <tr><td>Email</td><td>nodemailer over SMTP, templates with <code>react-email</code></td><td>Resend/Postmark SDKs</td><td>SMTP is what every self-hoster has. Provider SDKs can be added as a second <code>EmailSender</code> implementation when someone needs one.</td></tr>
+  <tr><td>AI providers</td><td>AI SDK 7 as the single integration, provider packages loaded by name from the models.dev catalog, behind the facade in §11.1</td><td>Own two-protocol implementation, LangChain, LiteLLM proxy</td><td>The SDK is the provider abstraction the contract asks for, already written and maintained, with middleware and OpenTelemetry. LangChain brings an agent framework Lattice does not want. LiteLLM is a Python proxy, which breaks the one-image promise.</td></tr>
+  <tr><td>Search</td><td>Postgres full text + <code>pg_trgm</code> + <code>pgvector</code> 0.8</td><td>Meilisearch, Typesense, Elasticsearch</td><td>Good enough for hundreds of thousands of issues and pages; zero extra services. Semantic search degrades to keyword search when pgvector or an embedding provider is absent.</td></tr>
+  <tr><td>Files</td><td>Local disk under <code>/var/lattice/data</code>; S3-compatible as the second <code>ObjectStore</code> implementation</td><td>S3 only</td><td>Disk is the five-minute path. S3 is one config switch for teams that want it.</td></tr>
+  <tr><td>TLS</td><td>Caddy 2.11 in the Compose stack, optional</td><td>ACME inside the app, Traefik, nginx + certbot</td><td>Caddy does automatic certificates with zero config and is one line to drop when the user already has a load balancer.</td></tr>
+  <tr><td>Logging</td><td>pino JSON, request id on every line, redaction configured once</td><td>winston</td><td>Fastify's native logger; fastest structured logger in Node.</td></tr>
+  <tr><td>Tests</td><td>Vitest, Testcontainers Postgres for integration, Playwright for end to end, k6 for load, Lighthouse CI for budgets</td><td>Jest</td><td>Vitest shares the Vite config and is several times faster. Integration tests run against real Postgres because the queue, search and NOTIFY cannot be mocked honestly.</td></tr>
+  <tr><td>Monorepo</td><td>pnpm workspaces + Turborepo</td><td>Nx, Lerna</td><td>Minimal config, remote cache optional, task graph for CI.</td></tr>
+</table>
+
+<!-- ===================================================== 5 -->
+<h2 id="repo">6. Repository and layering</h2>
+<p>The layout follows the engineering-standards contract at two levels. The kernel and every module each have the same eight-folder backend shape with thin routes and controllers, behaviour in <code>services/</code>, and the changelog as a sibling of the source. The host application in <code>apps/server</code> only composes them. Shared code sits in packages so the web app and the server never duplicate a type or a schema.</p>
+<pre class="tree"><code>lattice/
+├── apps/
+│   ├── server/                      <span class="c">the host: boots the kernel, loads enabled modules, serves the SPA. One deployable.</span>
+│   │   ├── src/
+│   │   │   ├── config/              <span class="c">env.ts (zod, fails fast), db.ts, queue.ts, logger.ts, modules.ts (which are enabled)</span>
+│   │   │   ├── middlewares/         <span class="c">auth, rate limit, request id, CORS, the one error handler</span>
+│   │   │   └── server.ts            <span class="c">buildApp(), loadModules(), connect, listen. Calls only.</span>
+│   │   └── .env.example
+│   ├── web/                         <span class="c">React + Vite shell: auth, nav, settings frame, ⌘K; loads module chunks on demand</span>
+│   │   └── src/{components,hooks,services,store,pages}/
+│   └── site/                        <span class="c">marketing + docs site (Astro). Not in the app image.</span>
+├── packages/
+│   ├── core/                        <span class="c">THE KERNEL. Same eight-folder layout as any backend service:</span>
+│   │   ├── changelog/               <span class="c">core changesets only</span>
+│   │   └── src/
+│   │       ├── routes/ controllers/ services/ clients/ models/ utils/
+│   │       ├── services/            <span class="c">identity · authz · settings · notifications · email · storage · search · jobs</span>
+│   │       │                        <span class="c">realtime · ai (runtime, providers, prompts, plans) · entities · links · audit · system · import</span>
+│   │       └── modules/             <span class="c">contract.ts, registry.ts, loader.ts, changelog-runner.ts</span>
+│   ├── core-web/                    <span class="c">kernel UI: shell, settings panels, inbox, search, AI panel chrome, module-chunk loader</span>
+│   ├── shared/                      <span class="c">zod schemas, API types, enums, capability names, error codes, LQL parser</span>
+│   ├── ui/                          <span class="c">design tokens, theme presets, components, Storybook</span>
+│   ├── editor/                      <span class="c">Tiptap schema + base nodes; module nodes register into it</span>
+│   └── api-client/                  <span class="c">typed client generated from the composed OpenAPI spec</span>
+├── modules/                         <span class="c">one folder per installable module, each a self-contained slice</span>
+│   ├── work/
+│   │   ├── changelog/               <span class="c">work changesets only, tracked as (module, id)</span>
+│   │   ├── server/src/{routes,controllers,services,models}/   <span class="c">same layering rules as the kernel</span>
+│   │   ├── web/src/{components,hooks,services,pages}/         <span class="c">built as one lazy chunk</span>
+│   │   ├── shared/                  <span class="c">this module's zod schemas and types</span>
+│   │   └── module.ts                <span class="c">the LatticeModule manifest: register() wires everything above</span>
+│   └── docs/
+│       └── (same shape)
+├── deploy/
+│   ├── install.sh                   <span class="c">what get.lattice.dev serves; --modules flag</span>
+│   ├── compose/                     <span class="c">docker-compose.yml, Caddyfile, lattice CLI, updater</span>
+│   ├── helm/  terraform/{aws,gcp,hetzner}/  airgap/
+├── docs/                            <span class="c">this document, ADRs, design mocks</span>
+└── .devcontainer/</code></pre>
+
+<h3>Rules that keep it clean</h3>
+<ul>
+  <li><strong>Services never import routes or controllers.</strong> Enforced by an ESLint <code>import/no-restricted-paths</code> rule, so a violation fails CI rather than code review.</li>
+  <li><strong>Modules talk through the kernel.</strong> A module imports <code>@lattice/core</code> and nothing under <code>modules/</code>. Inside the kernel, each service folder exposes an <code>index.ts</code> and internal files are private.</li>
+  <li><strong>Every file is 300 lines or fewer.</strong> A lint rule, not a guideline.</li>
+  <li><strong>One schema, one place.</strong> A request body's zod schema lives in <code>packages/shared</code>, is used by the controller to validate and by the web form to validate, and generates the OpenAPI document. Nobody writes the shape twice.</li>
+  <li><strong>Typed errors only.</strong> <code>NotFoundError</code>, <code>ForbiddenError</code>, <code>ValidationError</code>, <code>ConflictError</code>, <code>RateLimitedError</code>, <code>ProviderError</code>. The error handler in <code>middlewares/error-handler.ts</code> owns the mapping to status codes; no controller writes a status code by hand.</li>
+  <li><strong>Pluggable capabilities</strong> (AI, email, storage, importers, SSO, automation actions) always use interface + factory + one file per implementation. Adding a provider is one file plus one registry line plus config.</li>
+</ul>
+
+<!-- ===================================================== 6 -->
+<h2 id="database">7. Database</h2>
+<div class="decision">
+  <div class="k">Question asked</div><div>Postgres or Mongo? Can we give users the option?</div>
+  <div class="k">Decision</div><div><strong>PostgreSQL only.</strong> The option Lattice gives users is <em>where</em> Postgres runs, not <em>which</em> database it is.</div>
+  <div class="k">Why</div><div>
+    <ul style="margin:0">
+      <li>The data is relational to its core: issues ↔ sprints ↔ epics ↔ workflows ↔ boards ↔ pages, with foreign keys, uniqueness (one issue key per project), and transactions (moving an issue updates its status, history, sprint counters and the search index together).</li>
+      <li>Postgres replaces four other services: full text search (<code>tsvector</code>), vectors (<code>pgvector</code>), job queue (pg-boss) and pub/sub (<code>NOTIFY</code>). That is what makes "one container, one Postgres" possible. Mongo cannot do that.</li>
+      <li>Supporting two databases means two migration sets, two query layers, two test matrices and two sets of bugs, forever. It is the single most expensive thing an open source project can take on, and the mocks' landing page already promises "Postgres only".</li>
+      <li>Mongo's one genuine strength, schemaless documents, is covered by JSONB columns for custom fields and editor content, with indexes on the paths we query.</li>
+    </ul>
+  </div>
+  <div class="k">Options we do give</div><div>
+    <strong>Bundled</strong> (installer runs <code>pgvector/pgvector:pg18</code> next to the app; default) ·
+    <strong>External</strong> (RDS, Cloud SQL, Neon, Supabase, your own cluster: set <code>DATABASE_URL</code>, the installer skips the bundled one) ·
+    <strong>Air-gapped</strong> (bundled image inside the offline tarball). The setup wizard's health check reports which one it found, version, latency and whether <code>pgvector</code> and <code>pg_trgm</code> are available.
+  </div>
+</div>
+
+<h3>Conventions</h3>
+<ul>
+  <li>Database name <code>lattice_db</code>. Tables snake_case plural, columns snake_case. API layer maps to camelCase in the shared schemas.</li>
+  <li>Primary keys are <strong>UUIDv7</strong>, generated by Postgres 18's built-in <code>uuidv7()</code> as the column default (time-ordered, so B-tree inserts are sequential and pagination by id is chronological). Issue <em>keys</em> like <code>PLT-204</code> are a separate unique column allocated from a per-project counter row locked with <code>SELECT … FOR UPDATE</code>.</li>
+  <li>Every table has <code>created_at</code>, <code>updated_at</code>. Soft delete (<code>deleted_at</code>) only on issues, pages and comments, because users expect a trash; everything else hard-deletes with cascading foreign keys.</li>
+  <li>Indexes are declared in the Drizzle schema and land in the same changeset as the table. Partial indexes for the hot paths (open issues per project, pages per space not deleted).</li>
+  <li>Schema changes are changesets in a per-module changelog, applied at boot under a Postgres advisory lock so multiple replicas starting at once cannot race. The model and the runner are described in §7.1 below.</li>
+  <li>Editor content is stored three ways on purpose: the Yjs update log (truth for collaboration), a ProseMirror JSON snapshot (for rendering, embeds and exports), and extracted plain text (for search). The snapshot and text are derived and rebuilt by a job if ever missing.</li>
+</ul>
+
+
+<h3 id="changelog">7.1 Schema changelog, Liquibase-style</h3>
+<p>A folder of numbered SQL files is enough for one app with one schema. Lattice has a kernel and several modules, each owning tables, each enabled at different times, and contributors who need to ship data backfills as well as DDL. That is the problem Liquibase and Mongock solve, so Lattice adopts their model: an ordered <strong>changelog</strong> of <strong>changesets</strong>, each with a stable id, an author, a checksum, optional preconditions and an optional rollback, tracked in a table the runner owns. The runner is a small kernel service in TypeScript, not the Liquibase binary, for the reasons in the stack table.</p>
+<pre><code>// modules/work/changelog/0007-issue-rank.ts
+import { changeset, sql } from '@lattice/core/changelog';
+
+export default changeset({
+  id: '0007-issue-rank',                 // stable; the file name must match
+  author: 'priya',
+  description: 'Replace integer position with a lexorank string for board ordering',
+  preconditions: [
+    { columnExists: { table: 'issues', column: 'position' }, onFail: 'markRan' },   // already migrated on this install
+  ],
+  contexts: ['*'],                       // or ['demo', 'test'] for seed data that production never runs
+  transactional: true,                   // false for CREATE INDEX CONCURRENTLY, which cannot run in a transaction
+  up: async (ctx) =&gt; {
+    await ctx.exec(sql`ALTER TABLE issues ADD COLUMN rank text`);
+    await ctx.backfill('issues', { batch: 5000 }, async (rows) =&gt;      // code changeset: batched and resumable
+      ctx.exec(sql`UPDATE issues SET rank = ${lexorankFrom(rows)} WHERE id = ANY(${rows.map(r =&gt; r.id)})`));
+    await ctx.exec(sql`ALTER TABLE issues DROP COLUMN position`);
+    await ctx.exec(sql`CREATE INDEX issues_board_rank_idx ON issues (project_id, rank) WHERE deleted_at IS NULL`);
+  },
+  down: async (ctx) =&gt; {                 // required for DDL-only changesets; optional, and marked irreversible, when data is lost
+    await ctx.exec(sql`ALTER TABLE issues ADD COLUMN position integer`);
+    await ctx.exec(sql`ALTER TABLE issues DROP COLUMN rank`);
+  },
+});</code></pre>
+<table>
+  <tr><th style="width:210px">Liquibase or Mongock concept</th><th>Lattice equivalent</th></tr>
+  <tr><td>Changelog file with changesets</td><td>One <code>changelog/</code> folder per module (and one for the kernel), one TypeScript file per changeset, ordered by the numeric prefix. The module manifest points at it, which is Liquibase's <code>include</code>.</td></tr>
+  <tr><td><code>DATABASECHANGELOG</code></td><td><code>schema_changelog</code>: <code>module</code>, <code>id</code>, <code>author</code>, <code>checksum</code>, <code>executed_at</code>, <code>execution_ms</code>, <code>order_executed</code>, <code>app_version</code>, <code>contexts</code>, <code>state</code> (ran, marked_ran, rolled_back). Rows are never deleted.</td></tr>
+  <tr><td><code>DATABASECHANGELOGLOCK</code></td><td>A Postgres advisory lock held for the whole run, so replicas starting together cannot race.</td></tr>
+  <tr><td>Checksum validation</td><td>The runner hashes each changeset's source. A changed checksum on an already-run changeset fails boot with the file name and both hashes, exactly like Liquibase, unless the author explicitly lists the old hash in <code>validChecksums</code> with a reason.</td></tr>
+  <tr><td>Preconditions</td><td><code>tableExists</code>, <code>columnExists</code>, <code>indexExists</code>, <code>rowCount</code>, <code>sqlCheck</code>, with <code>onFail: halt | markRan | skip | warn</code>. The <code>markRan</code> case is what lets upgraded installs and fresh installs converge on one changelog.</td></tr>
+  <tr><td>Contexts and labels</td><td><code>contexts</code> on a changeset; the runner starts with the install's contexts (<code>production</code>, <code>demo</code>, <code>test</code>). The Acme Labs sample data is a set of changesets in the <code>demo</code> context.</td></tr>
+  <tr><td>Rollback</td><td><code>down</code> on a changeset; <code>lattice db rollback --to &lt;id&gt;</code> or <code>--count n</code>. Production rollback after an upgrade still restores the pre-upgrade backup, because a <code>down</code> that drops a column cannot bring the data back. <code>down</code> exists for development and for reversing a bad deploy before data has changed.</td></tr>
+  <tr><td>Code changesets (Mongock)</td><td><code>up</code> is TypeScript. It can run SQL, call <code>ctx.backfill</code> for batched, resumable data transforms with progress logged on the changelog row, or call a kernel service through <code>ctx.services</code> for cases such as re-extracting page text after an editor schema change.</td></tr>
+  <tr><td><code>runAlways</code>, <code>runOnChange</code></td><td>Supported for the rare changeset that maintains a view or a function body from source; the checksum rule is relaxed only for those.</td></tr>
+  <tr><td><code>validate</code>, <code>status</code>, <code>updateSQL</code>, <code>history</code>, <code>tag</code></td><td><code>lattice db validate</code> (checksums, duplicate ids, missing <code>down</code> on DDL-only changesets), <code>lattice db status</code> (pending per module), <code>lattice db plan</code> (prints the SQL without running it, for review and DBAs), <code>lattice db history</code>, <code>lattice db tag &lt;name&gt;</code> for the pre-upgrade point.</td></tr>
+  <tr><td>Generating changes</td><td>Contributors edit the Drizzle schema, run <code>pnpm db:diff</code>, and Drizzle Kit writes the DDL into a new changeset file with the next prefix. They add author, description, preconditions and <code>down</code>, then review the SQL. Nothing is generated at runtime.</td></tr>
+  <tr><td>Safety linting</td><td><code>squawk</code> runs on the generated SQL in CI and blocks a full-table rewrite, a non-concurrent index on a large table, or a <code>NOT NULL</code> added without a default. The release manifest lists any changeset the lint flagged as slow so admins see it before clicking Update.</td></tr>
+</table>
+<h4>Runner rules</h4>
+<ul>
+  <li><strong>Order</strong>: kernel changelog first, then enabled modules in dependency order. Inside a changelog, by numeric prefix; a gap or duplicate fails validation.</li>
+  <li><strong>Boot behaviour</strong>: in the default install the app runs pending changesets at boot before it answers <code>/readyz</code>. In Helm deployments a pre-upgrade hook job runs them so pods never start against an old schema; <code>LATTICE_DB_AUTO_MIGRATE=false</code> turns the boot run off for operators who prefer that.</li>
+  <li><strong>Transactions</strong>: each changeset runs in its own transaction unless it declares <code>transactional: false</code>, in which case the runner writes a "started" row first so a crash mid-way is visible as such rather than as "pending".</li>
+  <li><strong>Compatibility window</strong>: a changeset must be compatible with the previous minor release's code (expand first, contract in a later release), so an updater swap or a rolling Helm upgrade never runs old code against a removed column.</li>
+  <li><strong>Module enable and disable</strong>: enabling runs that module's changelog from its first pending changeset. Disabling runs nothing. "Remove data" runs the module's <code>down</code> changesets in reverse after a backup, or drops the module's tables where a changeset is irreversible, and records it in the changelog and the audit log.</li>
+  <li><strong>Tests</strong>: the integration suite applies every changelog from empty, validates checksums, runs each <code>down</code> and then <code>up</code> again, and applies the changelog on top of a database restored from the previous release's fixture. A changeset without a passing round trip does not merge.</li>
+</ul>
+
+<!-- ===================================================== 7 -->
+<h2 id="schema">8. Schema</h2>
+<p>The full catalogue is below, grouped by module. Column lists show what shapes the design, not every timestamp.</p>
+<figure>
+<svg viewBox="0 0 1040 430" width="100%" style="max-width:1040px;display:block" role="img" aria-label="Core entity relationships">
+  <defs><marker id="arr2" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="var(--tx3)"/></marker></defs>
+  <g font-size="12" fill="var(--tx)">
+    <rect x="20" y="30" width="140" height="44" rx="8" fill="var(--sf2)" stroke="var(--br)"/><text x="90" y="57" text-anchor="middle" font-weight="600" class="mono">users</text>
+    <rect x="20" y="110" width="140" height="44" rx="8" fill="var(--sf2)" stroke="var(--br)"/><text x="90" y="137" text-anchor="middle" font-weight="600" class="mono">teams</text>
+    <rect x="20" y="190" width="140" height="44" rx="8" fill="var(--sf2)" stroke="var(--br)"/><text x="90" y="217" text-anchor="middle" font-weight="600" class="mono">roles</text>
+
+    <rect x="240" y="30" width="150" height="44" rx="8" fill="var(--ac-bg)" stroke="var(--ac-br)"/><text x="315" y="57" text-anchor="middle" font-weight="600" class="mono">projects</text>
+    <rect x="240" y="110" width="150" height="44" rx="8" fill="var(--ac-bg)" stroke="var(--ac-br)"/><text x="315" y="137" text-anchor="middle" font-weight="600" class="mono">workflows</text>
+    <rect x="240" y="190" width="150" height="44" rx="8" fill="var(--ac-bg)" stroke="var(--ac-br)"/><text x="315" y="217" text-anchor="middle" font-weight="600" class="mono">boards</text>
+    <rect x="240" y="270" width="150" height="44" rx="8" fill="var(--ac-bg)" stroke="var(--ac-br)"/><text x="315" y="297" text-anchor="middle" font-weight="600" class="mono">sprints</text>
+    <rect x="240" y="350" width="150" height="44" rx="8" fill="var(--ac-bg)" stroke="var(--ac-br)"/><text x="315" y="377" text-anchor="middle" font-weight="600" class="mono">fields</text>
+
+    <rect x="470" y="150" width="160" height="60" rx="10" fill="var(--ac)" stroke="var(--ac-d)"/><text x="550" y="177" text-anchor="middle" font-weight="700" fill="#fff" class="mono">issues</text><text x="550" y="196" text-anchor="middle" font-size="10.5" fill="#fff" opacity=".85">key · status · custom_fields jsonb</text>
+    <rect x="470" y="30" width="160" height="44" rx="8" fill="var(--sf2)" stroke="var(--br)"/><text x="550" y="57" text-anchor="middle" font-weight="600" class="mono">comments</text>
+    <rect x="470" y="270" width="160" height="44" rx="8" fill="var(--sf2)" stroke="var(--br)"/><text x="550" y="297" text-anchor="middle" font-weight="600" class="mono">issue_links</text>
+    <rect x="470" y="350" width="160" height="44" rx="8" fill="var(--sf2)" stroke="var(--br)"/><text x="550" y="377" text-anchor="middle" font-weight="600" class="mono">issue_history</text>
+
+    <rect x="720" y="30" width="150" height="44" rx="8" fill="var(--ok-bg)" stroke="var(--br)"/><text x="795" y="57" text-anchor="middle" font-weight="600" class="mono">spaces</text>
+    <rect x="720" y="150" width="150" height="60" rx="10" fill="var(--ok)" stroke="var(--ok)"/><text x="795" y="177" text-anchor="middle" font-weight="700" fill="#fff" class="mono">pages</text><text x="795" y="196" text-anchor="middle" font-size="10.5" fill="#fff" opacity=".9">tree · yjs · snapshot · text</text>
+    <rect x="720" y="270" width="150" height="44" rx="8" fill="var(--ok-bg)" stroke="var(--br)"/><text x="795" y="297" text-anchor="middle" font-weight="600" class="mono">page_comments</text>
+    <rect x="720" y="350" width="150" height="44" rx="8" fill="var(--ok-bg)" stroke="var(--br)"/><text x="795" y="377" text-anchor="middle" font-weight="600" class="mono">page_revisions</text>
+
+    <rect x="640" y="90" width="110" height="40" rx="8" fill="var(--sf2)" stroke="var(--br)"/><text x="695" y="114" text-anchor="middle" font-weight="600" class="mono" font-size="11">links</text>
+
+    <rect x="900" y="150" width="130" height="60" rx="10" fill="var(--ai-bg)" stroke="var(--ai-br)"/><text x="965" y="177" text-anchor="middle" font-weight="600" fill="var(--ai)" class="mono">ai_runs</text><text x="965" y="196" text-anchor="middle" font-size="10.5" fill="var(--tx3)">ai_plans · ai_insights</text>
+    <rect x="900" y="270" width="130" height="44" rx="8" fill="var(--ai-bg)" stroke="var(--ai-br)"/><text x="965" y="297" text-anchor="middle" font-weight="600" fill="var(--ai)" class="mono">embeddings</text>
+    <rect x="900" y="30" width="130" height="44" rx="8" fill="var(--sf2)" stroke="var(--br)"/><text x="965" y="57" text-anchor="middle" font-weight="600" class="mono">audit_log</text>
+  </g>
+  <g stroke="var(--tx3)" stroke-width="1.3" fill="none" marker-end="url(#arr2)">
+    <path d="M160,52 L240,52"/><path d="M160,132 L240,132"/>
+    <path d="M390,52 L470,160"/><path d="M390,132 L470,170"/><path d="M390,212 L470,190"/><path d="M390,292 L470,200"/><path d="M390,372 L470,205"/>
+    <path d="M550,74 L550,150"/><path d="M550,270 L550,210"/><path d="M550,350 L550,210"/>
+    <path d="M795,74 L795,150"/><path d="M795,270 L795,210"/><path d="M795,350 L795,210"/>
+    <path d="M630,165 L640,130"/><path d="M720,165 L750,130"/>
+    <path d="M870,180 L900,180"/><path d="M870,290 L900,290"/><path d="M630,200 L900,295"/>
+    <path d="M160,60 L470,50"/>
+  </g>
+  <text x="20" y="415" font-size="11.5" fill="var(--tx3)">Blue: Work · Green: Docs · Purple: AI. The links table joins any issue or page to any issue or page, which is how embeds, "referenced in" and backlinks are one query.</text>
+</svg>
+<figcaption>Core entities. Every arrow is a foreign key.</figcaption>
+</figure>
+
+<h3>Identity and access</h3>
+<table>
+  <tr><th style="width:230px">Table</th><th>Purpose and notable columns</th></tr>
+  <tr><td><code>users</code></td><td><code>email</code> unique, <code>name</code>, <code>avatar_key</code>, <code>status</code> (active, invited, deactivated), <code>is_break_glass</code>, <code>theme_pref</code>, <code>locale</code>, <code>timezone</code>.</td></tr>
+  <tr><td><code>auth_identities</code></td><td>One row per login method: <code>provider_id</code>, <code>subject</code>, <code>password_hash</code> (argon2id, only for the password provider). A user can have several.</td></tr>
+  <tr><td><code>auth_providers</code></td><td>Configured sign-in methods: <code>kind</code> (password, oidc, saml), <code>display_name</code>, <code>config_encrypted</code>, <code>auto_provision</code>, <code>default_role_id</code>, <code>group_mappings</code> JSONB (IdP group → team).</td></tr>
+  <tr><td><code>sessions</code></td><td><code>token_hash</code>, <code>user_id</code>, <code>expires_at</code>, <code>last_seen_at</code>, <code>ip</code>, <code>user_agent</code>. Cookie holds the random token; only the hash is stored.</td></tr>
+  <tr><td><code>api_tokens</code></td><td>Personal access tokens and integration tokens: <code>token_hash</code>, <code>scopes</code>, <code>last_used_at</code>.</td></tr>
+  <tr><td><code>invitations</code></td><td><code>email</code>, <code>role_id</code>, <code>team_id</code>, <code>token_hash</code>, <code>expires_at</code>, <code>accepted_at</code>.</td></tr>
+  <tr><td><code>teams</code>, <code>team_members</code></td><td>Teams own projects and spaces; <code>lead_user_id</code>, <code>default_role_id</code>.</td></tr>
+  <tr><td><code>roles</code></td><td>Org roles including custom ones: <code>key</code>, <code>name</code>, <code>is_system</code>.</td></tr>
+  <tr><td><code>role_capabilities</code></td><td>The matrix: <code>role_id</code>, <code>capability</code> (enum from shared package, e.g. <code>issue.transition</code>, <code>board.configure</code>, <code>page.publish</code>), <code>allowed</code>, <code>locked_by_org</code>.</td></tr>
+  <tr><td><code>project_role_capabilities</code>, <code>space_role_capabilities</code></td><td>Project and space level overrides. The authz service only lets these <em>narrow</em> the org row and refuses to touch a locked row.</td></tr>
+  <tr><td><code>project_members</code>, <code>space_members</code></td><td>Membership with the role that applies inside that container.</td></tr>
+  <tr><td><code>module_grants</code></td><td>Module access (§4): <code>module_id</code>, <code>subject_kind</code> (everyone, team, role, user), <code>subject_id</code>, <code>granted_by</code>. Resolved per request into the actor's module set and cached with the capability set.</td></tr>
+</table>
+
+<h3>Work</h3>
+<table>
+  <tr><th style="width:230px">Table</th><th>Purpose and notable columns</th></tr>
+  <tr><td><code>projects</code></td><td><code>key</code> unique (PLT), <code>name</code>, <code>team_id</code>, <code>method</code> (scrum, kanban), <code>issue_counter</code>, <code>scheme_overrides</code> JSONB (which org defaults this project overrides, feeding the "view diff" UI), <code>default_space_id</code>.</td></tr>
+  <tr><td><code>issue_types</code></td><td><code>key</code>, <code>name</code>, <code>icon</code>, <code>level</code> (epic, standard, subtask), <code>project_id</code> null for org defaults.</td></tr>
+  <tr><td><code>fields</code></td><td>Custom field definitions: <code>key</code>, <code>name</code>, <code>kind</code> (text, number, select, multiselect, user, date, url, doc), <code>options</code> JSONB, <code>filterable</code>, <code>ai_fill</code> (model suggests a value from title and description).</td></tr>
+  <tr><td><code>issue_type_fields</code></td><td>Create-form layout per type: <code>required</code>, <code>on_card</code>, <code>position</code>.</td></tr>
+  <tr><td><code>workflows</code></td><td><code>name</code>, <code>project_id</code> null for org default, <code>published_version</code>, <code>draft</code> JSONB (editor state before publish).</td></tr>
+  <tr><td><code>workflow_statuses</code></td><td><code>name</code>, <code>category</code> (todo, in_progress, done), <code>position</code>, <code>allowed_role_ids</code>.</td></tr>
+  <tr><td><code>workflow_transitions</code></td><td><code>from_status_id</code> null for "any", <code>to_status_id</code>, <code>name</code>, <code>rules</code> JSONB: conditions, validators, post-actions evaluated by the rules registry in <code>services/work/workflow/rules/</code>.</td></tr>
+  <tr><td><code>issues</code></td><td><code>project_id</code>, <code>number</code>, <code>key</code> (generated, unique), <code>type_id</code>, <code>title</code>, <code>description</code> JSONB (ProseMirror), <code>description_text</code>, <code>status_id</code>, <code>priority</code>, <code>assignee_id</code>, <code>reporter_id</code>, <code>parent_id</code> (subtask → parent, standard → epic), <code>sprint_id</code>, <code>estimate</code> numeric, <code>due_at</code>, <code>fix_version_id</code>, <code>custom_fields</code> JSONB (GIN indexed), <code>rank</code> (lexorank string for board and backlog ordering), <code>search_vector</code> tsvector, <code>status_changed_at</code> (feeds age and cycle time), <code>deleted_at</code>.</td></tr>
+  <tr><td><code>issue_links</code></td><td><code>source_id</code>, <code>target_id</code>, <code>kind</code> (blocks, relates, duplicates). "Blocked by" badges on cards are the inverse of <code>blocks</code>.</td></tr>
+  <tr><td><code>labels</code>, <code>issue_labels</code></td><td>Project-scoped labels with colour.</td></tr>
+  <tr><td><code>versions</code>, <code>components</code></td><td>Fix versions (with release date and status) and components, as in Jira.</td></tr>
+  <tr><td><code>sprints</code></td><td><code>project_id</code>, <code>name</code>, <code>goal</code>, <code>starts_at</code>, <code>ends_at</code>, <code>state</code> (future, active, closed), <code>capacity_points</code>, <code>completed_snapshot</code> JSONB written on close for velocity reports.</td></tr>
+  <tr><td><code>boards</code></td><td><code>project_id</code>, <code>name</code>, <code>config</code> JSONB: columns (each mapping status ids, WIP limit), lanes (field or saved query), card fields, card colour rules, estimation unit, sprint cadence, working days. One row per board; the org default board scheme is a row with <code>project_id</code> null.</td></tr>
+  <tr><td><code>saved_filters</code></td><td><code>owner_id</code>, <code>name</code>, <code>query</code> (the Lattice query language, see §16), <code>shared_with</code>.</td></tr>
+  <tr><td><code>comments</code></td><td>Polymorphic: <code>target_kind</code> (issue), <code>target_id</code>, <code>body</code> JSONB and <code>body_text</code>, <code>parent_id</code> for threads, <code>reactions</code> JSONB, <code>ai_run_id</code> when drafted by AI.</td></tr>
+  <tr><td><code>issue_history</code></td><td>Append-only field changes: <code>field</code>, <code>from</code>, <code>to</code>, <code>actor_id</code>, <code>ai_plan_id</code> when caused by an AI plan. Feeds the History tab, time-in-status metrics and the morning brief.</td></tr>
+  <tr><td><code>work_logs</code></td><td>Time spent per issue per user.</td></tr>
+  <tr><td><code>watchers</code></td><td>Issue or page subscriptions.</td></tr>
+  <tr><td><code>attachments</code></td><td>Polymorphic: <code>storage_key</code>, <code>filename</code>, <code>mime</code>, <code>size</code>, <code>sha256</code>, <code>uploaded_by</code>. Bytes live in the object store.</td></tr>
+  <tr><td><code>automation_rules</code>, <code>automation_runs</code></td><td>Trigger, conditions and actions as JSONB evaluated by the registry; each run logs input, result and duration. AI can author a rule from plain English; it lands here as a draft.</td></tr>
+  <tr><td><code>project_counters</code></td><td>One row per project, locked to allocate the next issue number without gaps or duplicates.</td></tr>
+</table>
+
+<h3>Docs</h3>
+<table>
+  <tr><th style="width:230px">Table</th><th>Purpose and notable columns</th></tr>
+  <tr><td><code>spaces</code></td><td><code>key</code>, <code>name</code>, <code>team_id</code>, <code>project_id</code> null unless it is a project space, <code>ai_excluded</code> (never sent to a provider), <code>home_page_id</code>.</td></tr>
+  <tr><td><code>pages</code></td><td><code>space_id</code>, <code>parent_id</code>, <code>position</code>, <code>path</code> (materialized ltree-style path for subtree queries), <code>title</code>, <code>status</code> (draft, in_review, published, archived), <code>owner_id</code>, <code>reviewers</code>, <code>template_id</code>, <code>snapshot</code> JSONB, <code>text</code>, <code>search_vector</code>, <code>tldr</code> (AI-generated, with <code>tldr_source_hash</code> so it regenerates only when content changes), <code>word_count</code>, <code>deleted_at</code>.</td></tr>
+  <tr><td><code>page_updates</code></td><td>Yjs update log: <code>page_id</code>, <code>seq</code>, <code>update</code> bytea. Compacted into <code>page_state</code> (<code>page_id</code>, <code>state</code> bytea) by a job once the log passes a threshold.</td></tr>
+  <tr><td><code>page_revisions</code></td><td>Named or periodic snapshots for the version history and "compare with" UI: <code>snapshot</code>, <code>author_ids</code>, <code>label</code>.</td></tr>
+  <tr><td><code>page_comments</code></td><td>Inline and page-level comments: <code>anchor</code> JSONB (Yjs relative position plus quoted text so it survives edits), <code>resolved_at</code>, threads via <code>parent_id</code>, <code>ai_suggestion</code> JSONB when AI proposes a fix (the "Apply fix" button).</td></tr>
+  <tr><td><code>links</code></td><td>The cross-product graph: <code>source_kind</code>, <code>source_id</code>, <code>target_kind</code>, <code>target_id</code>, <code>kind</code> (mention, embed, linked). Written by the editor and issue services whenever content changes. Powers "Referenced in", backlinks, "Linked docs" and consistency checks.</td></tr>
+  <tr><td><code>templates</code></td><td>Page templates (RFC, meeting notes, postmortem, product spec, runbook, decision log) with a ProseMirror snapshot and metadata fields.</td></tr>
+  <tr><td><code>page_labels</code>, <code>page_stars</code></td><td>Labels and per-user starred pages.</td></tr>
+</table>
+
+<h3>AI</h3>
+<table>
+  <tr><th style="width:230px">Table</th><th>Purpose and notable columns</th></tr>
+  <tr><td><code>ai_providers</code></td><td><code>catalog_id</code> (a models.dev provider id, or <code>custom</code>), <code>protocol</code> for custom endpoints, <code>name</code>, <code>base_url</code>, <code>api_key_encrypted</code>, <code>headers_encrypted</code>, <code>models</code> JSONB (discovered or entered), <code>is_default</code>, <code>status</code> and <code>last_checked_at</code> from the connection test.</td></tr>
+  <tr><td><code>ai_model_roles</code></td><td>Maps a role to a provider and model: <code>role</code> (fast, standard, strong, embedding), <code>provider_id</code>, <code>model</code>, <code>reasoning_effort</code>, <code>max_output_tokens</code>, <code>temperature</code>, plus a <code>capabilities</code> snapshot copied from the catalog at assignment time so a catalog refresh cannot silently change behaviour.</td></tr>
+  <tr><td><code>ai_catalog_snapshots</code></td><td>Trimmed models.dev catalog: <code>source</code> (live, uploaded, bundled), <code>etag</code>, <code>fetched_at</code>, <code>data</code> JSONB, <code>is_current</code>. The live fetch is attempted first whenever the picker opens (§11.1); this table holds the last good copy. Custom endpoints add their discovered models as private entries in <code>ai_providers.models</code>.</td></tr>
+  <tr><td><code>ai_settings</code></td><td>Singleton: <code>share_content</code> (off means titles and metadata only), <code>allow_actions</code>, <code>monthly_budget_usd</code>, <code>redact_emails</code>, <code>per_user_opt_out_allowed</code>.</td></tr>
+  <tr><td><code>ai_prompt_overrides</code></td><td><code>prompt_id</code>, <code>template</code>, <code>updated_by</code>. Repo prompts are the default; an override row wins. Diff shown in Settings › AI.</td></tr>
+  <tr><td><code>ai_runs</code></td><td>Every model call: <code>purpose</code> (summary, brief, qa, plan, autocomplete, consistency, fill_field, embed), <code>provider_id</code>, <code>model</code>, <code>prompt_id</code>, <code>prompt_version</code>, <code>input_hash</code>, <code>input_tokens</code>, <code>output_tokens</code>, <code>cost_usd</code>, <code>latency_ms</code>, <code>status</code>, <code>error</code>, <code>user_id</code>, <code>request_id</code>. Raw prompt and completion are stored only when debug logging is on, and are purged after seven days.</td></tr>
+  <tr><td><code>ai_insights</code></td><td>Cached generated content keyed by target and input hash: <code>target_kind</code>, <code>target_id</code>, <code>kind</code> (issue_summary, page_tldr, sprint_pulse, forecast, consistency, needs_attention), <code>content</code> JSONB with citations, <code>input_hash</code>, <code>run_id</code>, <code>feedback</code> (useful, not useful). Regenerated only when the hash changes.</td></tr>
+  <tr><td><code>ai_plans</code></td><td>Command palette plans: <code>request_text</code>, <code>steps</code> JSONB (tool, args, permission check result), <code>status</code> (proposed, approved, running, done, failed, cancelled), <code>approved_by</code>, <code>results</code>. Each executed step writes <code>issue_history</code> and <code>audit_log</code> rows that point back here.</td></tr>
+  <tr><td><code>embeddings</code></td><td><code>target_kind</code>, <code>target_id</code>, <code>chunk_index</code>, <code>text</code>, <code>embedding</code> vector(<em>n</em>), <code>provider_id</code>, <code>model</code>, <code>space_id</code> or <code>project_id</code> for ACL filtering. HNSW index. Dimension is fixed per embedding model; switching models triggers a reindex job.</td></tr>
+</table>
+
+<h3>System</h3>
+<table>
+  <tr><th style="width:230px">Table</th><th>Purpose and notable columns</th></tr>
+  <tr><td><code>settings</code></td><td>Key/value JSONB for product-level configuration an admin edits in the UI: workspace name and URL, appearance (preset or custom theme tokens, logo key, policy), SMTP (secrets encrypted), update-check opt-in, backup schedule, retention.</td></tr>
+  <tr><td><code>notifications</code></td><td>Inbox rows: <code>user_id</code>, <code>kind</code>, <code>actor_id</code>, <code>target_kind</code>, <code>target_id</code>, <code>body</code>, <code>read_at</code>, <code>emailed_at</code>.</td></tr>
+  <tr><td><code>notification_preferences</code></td><td>Per user per kind: in-app, email immediate, email digest, off.</td></tr>
+  <tr><td><code>email_outbox</code></td><td><code>to</code>, <code>subject</code>, <code>html</code>, <code>text</code>, <code>status</code>, <code>attempts</code>, <code>last_error</code>, <code>sent_at</code>, <code>dedupe_key</code>.</td></tr>
+  <tr><td><code>webhooks</code>, <code>webhook_deliveries</code></td><td>Outgoing webhooks with HMAC secret, event filter, and a delivery log with response status and retries.</td></tr>
+  <tr><td><code>integrations</code></td><td>GitHub and GitLab apps: installation id, repos, encrypted credentials, webhook secret.</td></tr>
+  <tr><td><code>code_links</code></td><td>PRs, branches and commits linked to issues by key detection: <code>issue_id</code>, <code>kind</code>, <code>external_id</code>, <code>title</code>, <code>state</code>, <code>url</code>.</td></tr>
+  <tr><td><code>import_jobs</code>, <code>import_mappings</code></td><td>Importer runs with progress and log; mappings from external ids to Lattice ids so a re-run updates rather than duplicates.</td></tr>
+  <tr><td><code>audit_log</code></td><td>Append-only: <code>actor_id</code>, <code>actor_kind</code> (user, ai_plan, system, api_token), <code>action</code>, <code>target_kind</code>, <code>target_id</code>, <code>before</code>, <code>after</code>, <code>ip</code>, <code>request_id</code>, <code>ai_plan_id</code>. Exportable as CSV from Settings › Audit log.</td></tr>
+  <tr><td><code>schema_changelog</code></td><td>The changelog runner's own table (§7.1): <code>module</code>, <code>id</code>, <code>author</code>, <code>checksum</code>, <code>executed_at</code>, <code>execution_ms</code>, <code>order_executed</code>, <code>app_version</code>, <code>contexts</code>, <code>state</code>. One table, per-module rows, so enabling a module later knows exactly where to start.</td></tr>
+  <tr><td><code>backups</code></td><td>Each backup: <code>kind</code> (scheduled, pre_upgrade, manual), <code>tier</code> (hourly, daily, weekly, monthly), destination and path, sizes, duration, checksums, <code>app_version</code>, <code>changelog_tag</code>, <code>verified_at</code>, <code>status</code> and <code>error</code>.</td></tr>
+  <tr><td><code>pgboss.*</code></td><td>pg-boss owns its own schema for jobs, schedules and archive.</td></tr>
+</table>
+<!-- ===================================================== 8 -->
+<h2 id="api">9. API, realtime and webhooks</h2>
+<p>There is one API. The web app uses it, the CLI uses it, integrations use it and the MCP server wraps it. Nothing the UI can do is unavailable to a script, which is the only way a self-hosted tool stays automatable.</p>
+<div class="callout"><div class="k">Note on the base path</div>The standards contract prescribes <code>/&lt;domain&gt;/api</code> so a gateway can route between services. Lattice is one deployable, so the domain segment is dropped and the API is mounted at <code>/api/v1</code>. Resources are still plural nouns, methods are the verbs, and the action exception (<code>POST …/:id/transition</code>) is used only where there is genuinely no noun.</div>
+<table>
+  <tr><th style="width:300px">Resource</th><th>Endpoints</th></tr>
+  <tr><td><code>/api/v1/session</code>, <code>/auth/*</code></td><td>Login, logout, OIDC and SAML callbacks, password reset, invitation accept. Anonymous by design, IP rate limited.</td></tr>
+  <tr><td><code>/api/v1/users</code>, <code>/teams</code>, <code>/roles</code></td><td>CRUD plus <code>GET /roles/:id/capabilities</code>, <code>PUT /roles/:id/capabilities</code>.</td></tr>
+  <tr><td><code>/api/v1/projects</code></td><td>CRUD; nested one level: <code>/projects/:id/issues</code>, <code>/sprints</code>, <code>/boards</code>, <code>/workflows</code>, <code>/members</code>, <code>/versions</code>, <code>/labels</code>.</td></tr>
+  <tr><td><code>/api/v1/issues</code></td><td><code>GET</code> with <code>?q=</code> (Lattice query language), <code>sort</code>, keyset <code>cursor</code>, <code>limit</code>; <code>POST</code>, <code>GET /:key</code>, <code>PATCH /:key</code>, <code>DELETE /:key</code>; actions: <code>POST /:key/transition</code>, <code>/rank</code>, <code>/watch</code>; sub-resources <code>/comments</code>, <code>/links</code>, <code>/attachments</code>, <code>/history</code>, <code>/worklogs</code>, <code>/subtasks</code>.</td></tr>
+  <tr><td><code>/api/v1/boards/:id/view</code></td><td>One call returns columns, lanes, cards with the fields the board config asks for, counts and WIP state. The board never makes N requests.</td></tr>
+  <tr><td><code>/api/v1/sprints</code></td><td>CRUD, <code>POST /:id/start</code>, <code>POST /:id/complete</code> (moves unfinished issues per the chosen option), <code>GET /:id/report</code>.</td></tr>
+  <tr><td><code>/api/v1/spaces</code>, <code>/pages</code></td><td>CRUD; <code>GET /spaces/:id/tree</code>; <code>GET /pages/:id</code> returns snapshot and metadata; <code>POST /pages/:id/publish</code>, <code>/move</code>; <code>/comments</code>, <code>/revisions</code>, <code>/backlinks</code>; <code>GET /pages/:id/export?format=md|pdf|html</code>.</td></tr>
+  <tr><td><code>/api/v1/search</code></td><td><code>GET ?q=&amp;kinds=issue,page,user</code>, keyword by default, <code>mode=semantic</code> when embeddings exist.</td></tr>
+  <tr><td><code>/api/v1/ai/*</code></td><td><code>POST /ai/ask</code> (streams, cites sources), <code>POST /ai/plans</code> (returns a plan), <code>POST /ai/plans/:id/run</code>, <code>GET /ai/insights?target=</code>, <code>POST /ai/insights/:id/feedback</code>, <code>POST /ai/complete</code> (editor ghost text, short timeout).</td></tr>
+  <tr><td><code>/api/v1/notifications</code></td><td>List, <code>POST /read-all</code>, <code>PATCH /:id</code>; <code>/notification-preferences</code>.</td></tr>
+  <tr><td><code>/api/v1/admin/*</code></td><td>Settings, appearance, SMTP (<code>POST /admin/smtp/test</code>), AI providers (<code>POST /admin/ai/providers/:id/test</code>), auth providers, backups (<code>POST /admin/backups</code>), updates, audit log export, import jobs.</td></tr>
+  <tr><td><code>/api/v1/webhooks</code></td><td>Outgoing webhook management.</td></tr>
+  <tr><td><code>/hooks/github</code>, <code>/hooks/gitlab</code></td><td>Incoming, signature verified before parsing. Anonymous by design.</td></tr>
+  <tr><td><code>/scim/v2/*</code></td><td>SCIM 2.0 Users and Groups for IdP provisioning, bearer token auth.</td></tr>
+  <tr><td><code>/mcp</code></td><td>Streamable-HTTP MCP server exposing search, issue and page tools under a personal token, so Claude, Cursor or any MCP client can work inside Lattice with that user's permissions.</td></tr>
+  <tr><td><code>/healthz</code>, <code>/readyz</code>, <code>/metrics</code></td><td>Liveness, readiness (DB reachable, changelog current), Prometheus metrics. Metrics endpoint protected by a token.</td></tr>
+  <tr><td><code>/ws</code>, <code>/collab</code></td><td>WebSocket hub for invalidations and presence; Hocuspocus endpoint for Yjs documents. Both authenticate with the session cookie on upgrade.</td></tr>
+</table>
+<h3>Conventions</h3>
+<ul>
+  <li>OpenAPI 3.1 document generated from the zod schemas at build time and served at <code>/api/v1/openapi.json</code>; <code>packages/api-client</code> is generated from it.</li>
+  <li>Keyset pagination everywhere (<code>cursor</code> + <code>limit</code>, max 200). Offset pagination is not offered because it degrades on large backlogs.</li>
+  <li>Responses carry <code>ETag</code>; writes accept <code>If-Match</code> so two people editing the same issue get a <code>409</code> instead of silent overwrite.</li>
+  <li>Errors are one shape: <code>{ code, message, details?, requestId }</code>. Codes come from the shared enum so the web app can map them to copy. Routes of a module the actor cannot access answer <code>403 module_access_denied</code>; routes of a module that is not enabled answer <code>404 module_not_enabled</code>.</li>
+  <li>Idempotency keys on <code>POST</code> endpoints that create (header <code>Idempotency-Key</code>), stored for 24 hours, so retries from flaky networks never double-create.</li>
+</ul>
+<h3>Realtime</h3>
+<p>Every mutation in a service ends with <code>realtime.publish({ kind, ids, projectId | spaceId })</code>. The publisher writes a <code>NOTIFY lattice_events</code> with that small payload. Every process (api or worker) listens on the channel and forwards to WebSocket subscribers whose subscriptions match (a board subscribes to its project, a page to itself). The client responds by invalidating the matching TanStack Query keys, so the data path is always the authenticated REST API and realtime never bypasses authorization. Presence and cursors for docs ride on Yjs awareness over the collab socket.</p>
+<h3>Webhooks out</h3>
+<p>Events (<code>issue.created</code>, <code>issue.transitioned</code>, <code>page.published</code>, <code>sprint.completed</code>, …) are queued per webhook as jobs, signed with HMAC-SHA256, retried with backoff five times, and logged. A built-in "Slack / Teams incoming webhook" template formats the payload for chat tools without a dedicated integration.</p>
+
+<!-- ===================================================== 9 -->
+<h2 id="security">10. Authentication, authorization and security</h2>
+<div class="grid c2">
+  <div class="card"><h3>Authentication</h3>
+    <ul>
+      <li>Password login with argon2id, breached-password check offline against a bundled k-anonymity list is out of scope; minimum length and rate limiting are in.</li>
+      <li>OIDC via <code>openid-client</code>: Google Workspace, Okta, Entra ID and any generic provider share one implementation with per-provider config. SAML via <code>samlify</code> for enterprises that have nothing else.</li>
+      <li>Auto-provision on first SSO login with a default role; IdP groups map to teams; SCIM keeps users and groups in sync and deactivates leavers.</li>
+      <li>"Require SSO for everyone" disables password login except for accounts flagged break-glass, exactly as the People screen shows.</li>
+      <li>Sessions are opaque random tokens in an <code>httpOnly</code>, <code>Secure</code>, <code>SameSite=Lax</code> cookie, hashed at rest, rotated on privilege change, 30-day sliding expiry.</li>
+      <li>Personal API tokens with scopes for scripts and the MCP server; shown once, hashed at rest.</li>
+    </ul>
+  </div>
+  <div class="card"><h3>Authorization</h3>
+    <ul>
+      <li>Module access is checked first (§4): a person without a grant for a module gets <code>module_access_denied</code> before any capability is considered.</li>
+      <li>Capabilities are a closed enum in the shared package. Roles grant capabilities; org admins can lock a row; project and space admins can only remove capabilities below the org ceiling.</li>
+      <li>One function, <code>authorize(actor, capability, resource)</code>, in <code>services/authz</code>, called by the service that does the work, never only by the route. The resolved capability set per actor per container is cached in-process for the request.</li>
+      <li>AI plans run through the same services with the requesting user as actor, so every step is checked individually and shown as ALLOWED or DENIED in the plan table before anything runs.</li>
+      <li>Search and the ask-your-docs retrieval filter by container membership <em>before</em> ranking, so a user never sees a snippet from a space they cannot open.</li>
+    </ul>
+  </div>
+</div>
+<h3>Hardening checklist, built in</h3>
+<table>
+  <tr><th style="width:220px">Control</th><th>Implementation</th></tr>
+  <tr><td>Rate limiting</td><td><code>@fastify/rate-limit</code> backed by Postgres (not memory) so it holds across replicas: global per user, strict per IP on <code>/auth/*</code> and webhooks, separate budget for AI endpoints.</td></tr>
+  <tr><td>CSRF</td><td>SameSite cookies plus an <code>Origin</code> check on every state-changing request. API tokens are never sent as cookies.</td></tr>
+  <tr><td>Headers</td><td><code>@fastify/helmet</code>: strict CSP (self plus the configured AI provider is never contacted from the browser), HSTS, no framing.</td></tr>
+  <tr><td>Secrets at rest</td><td>API keys, SMTP passwords, OIDC client secrets and integration credentials are encrypted with AES-256-GCM under <code>LATTICE_SECRET_KEY</code> before they touch the database. The key never leaves the host and is generated by the installer.</td></tr>
+  <tr><td>Uploads</td><td>Size limits, MIME sniffing, served with <code>Content-Disposition: attachment</code> and a separate origin path to defeat stored XSS; image thumbnails generated by a worker with <code>sharp</code>.</td></tr>
+  <tr><td>Webhooks in</td><td>HMAC verified against the raw body before parsing, replay window of five minutes.</td></tr>
+  <tr><td>SSRF</td><td>Admin-entered URLs (AI base URL, SMTP host, webhook targets) are resolved and checked against private ranges unless the admin explicitly allows local networks (needed for Ollama).</td></tr>
+  <tr><td>Audit</td><td>Every mutation by a user, token, AI plan or system job writes an <code>audit_log</code> row with before and after.</td></tr>
+  <tr><td>Supply chain</td><td>Lockfile pinned, Dependabot, <code>npm audit</code> gate in CI, image signed with cosign, SBOM published per release.</td></tr>
+  <tr><td>Disclosure</td><td><code>SECURITY.md</code> with a private reporting address and a 90-day disclosure policy.</td></tr>
+</table>
+
+<!-- ===================================================== 10 -->
+<h2 id="ai">11. AI subsystem</h2>
+<p>The AI layer is the product's differentiator and its biggest trust risk, so it follows four rules before any feature: <strong>off by default</strong>, <strong>reads through the same permissions as the user</strong>, <strong>never writes without a confirmed plan</strong>, and <strong>every call is logged with its cost</strong>. The design mocks show AI in three forms, a ⌘K palette, inline suggestions and side-panel insights, and all three sit on the same small set of services.</p>
+
+<h3>11.1 One integration: the AI SDK, driven by the models.dev catalog</h3>
+<div class="decision">
+  <div class="k">Principle</div><div><strong>Lattice has exactly one AI integration in its code: the AI SDK.</strong> No file in the repository knows what Anthropic, OpenAI or OpenRouter is. Which provider package to load, which fields to ask the admin for, which base URL to call and which models exist all come from the <a href="https://models.dev">models.dev</a> catalog at runtime. "Popular providers" is a UI ordering, not code.</div>
+  <div class="k">Why</div><div>
+    <ul style="margin:0">
+      <li>The AI SDK (npm <code>ai</code>, version 7, Apache-2.0) already is the pluggable-capability pattern the standards contract asks for: one <code>LanguageModel</code> and <code>EmbeddingModel</code> specification, a provider package per vendor, a registry addressing any model as <code>provider:model</code>, middleware, structured output on zod, tool calling, streaming and OpenTelemetry.</li>
+      <li>models.dev is an MIT, community-maintained catalog (SST, used by OpenCode) of 226 providers and roughly 8,400 models. Each provider entry names its AI SDK package, its API key variables, its base URL, docs and logo; each model entry carries capabilities, limits, prices and status. It is the data the UI and the runtime need, so Lattice maintains none of it.</li>
+      <li>Adding a provider therefore means nothing in Lattice. A new catalog entry appears in the picker on the next refresh. A new vendor-specific package is one dependency bump.</li>
+      <li>The one cost is churn: the SDK ships a major version roughly yearly. A thin facade in <code>services/ai/runtime</code> is the only code that imports it, so a major upgrade is a one-folder change.</li>
+    </ul>
+  </div>
+</div>
+<pre><code>services/ai/
+  runtime/
+    facade.ts          ai.generate({ role, purpose, prompt, schema?, tools?, signal }) · ai.stream(...) · ai.embed(...)
+                       the ONLY entry point services use; resolves role → model, applies policy, records ai_runs
+    registry.ts        builds the AI SDK provider registry from ai_providers + ai_model_roles; models addressed as "&lt;provider&gt;:&lt;model&gt;"
+    loader.ts          loads the provider package named by the catalog's npm field from the bundled allow-list and calls its
+                       create…() factory with the stored credentials and base URL. One code path for all 226 providers.
+    middleware/        wrapLanguageModel layers: budget guard, privacy redaction, retry + timeout, usage and cost logging,
+                       prompt-version tagging, structured-output repair (one retry with the validation error)
+    catalog/           bundled models.dev snapshot, loader, refresh job, upload handler, and overrides.ts (featured list for the UI,
+                       suggested defaults per role, curated embedding models, protocols for custom local endpoints)
+  prompts/             *.md with frontmatter (id, version, role, variables, output schema)
+  context/             builders that turn an issue, sprint, page or activity window into bounded, cited context
+  tools/               AI SDK tool definitions generated from the same zod schemas as the API (move_issue, add_comment, create_issue, …)
+  plans/               plan generation, permission check per step, execution, audit
+  insights/            summary, tldr, sprint pulse, forecast, consistency, needs-attention generators + cache
+</code></pre>
+
+<h4>How a provider connects, end to end</h4>
+<ol>
+  <li><strong>Pick a provider.</strong> The picker shows the catalog with logos. A "Popular" row at the top (an ordered list of catalog ids in <code>overrides.ts</code>, shown with the catalog's own names and logos: OpenAI, Anthropic, Amazon Bedrock, Azure, Vertex and OpenRouter, plus "Local server") makes the common case one click; these six are the providers enterprises most often already have contracts and keys for, and OpenRouter covers everyone else with one key. Below it, every provider in the catalog is listed in full, searchable and sorted by name, with the same logo treatment. The long list is the product, not a fallback hidden behind a link.</li>
+  <li><strong>Enter what the provider needs.</strong> The form is generated from the catalog entry's <code>env</code> list: one secret field per key it expects (an API key for most; resource name plus key for Azure; access key, secret, region for Bedrock), the base URL from <code>api</code> pre-filled and editable, a link to the provider's docs. Values are encrypted with the install's secret key before they reach the database and are write-only afterwards.</li>
+  <li><strong>Test the connection.</strong> Lattice loads the package named in <code>npm</code>, builds the provider with those values, and makes one cheap call. Success or failure is reported in plain words with the provider's own error message.</li>
+  <li><strong>Pick models per role.</strong> For <code>fast</code>, <code>standard</code>, <code>strong</code> and <code>embedding</code>, the picker lists that provider's models from the catalog with capability badges, context size, price per million tokens and release date, filtered to models that qualify for the role (planning needs tool calling) and with the suggested default pre-selected. Any provider's model can fill any role, so a local model for <code>fast</code> and a hosted one for <code>strong</code> is one screen.</li>
+  <li><strong>Use.</strong> Services call the facade with a role and a purpose. The facade resolves the role to a registry id, wraps the model in the middleware stack, runs the call through the SDK, validates structured output and records the <code>ai_runs</code> row with cost from the catalog's prices.</li>
+</ol>
+<table>
+  <tr><th style="width:220px">Catalog field</th><th>What Lattice does with it</th></tr>
+  <tr><td><code>provider.npm</code></td><td>Names the AI SDK package to load. Every official <code>@ai-sdk/*</code> package and <code>@openrouter/ai-sdk-provider</code> ship in the image as an allow-list; 185 of the 226 providers use <code>@ai-sdk/openai-compatible</code>. The nine providers whose package is third-party fall back to the OpenAI-compatible client over their listed base URL, and the UI says so.</td></tr>
+  <tr><td><code>provider.env</code>, <code>provider.api</code>, <code>provider.doc</code></td><td>Generate the connection form. The same keys can be pre-seeded from the environment for infrastructure-as-code deployments.</td></tr>
+  <tr><td><code>logos/{provider}.svg</code></td><td>Provider logos in the picker and on the AI settings page, bundled with the snapshot so they render offline.</td></tr>
+  <tr><td><code>model.tool_call</code>, <code>structured_output</code>, <code>reasoning</code></td><td>Role eligibility and the effort setting on a role.</td></tr>
+  <tr><td><code>model.cost</code> (input, output, cache read, cache write)</td><td>Cost per <code>ai_runs</code> row and the monthly budget, including prompt-cache savings.</td></tr>
+  <tr><td><code>model.limit</code>, <code>modalities</code>, <code>attachment</code></td><td>Context sizing, safe output limits, whether image attachments can be included.</td></tr>
+  <tr><td><code>model.status</code>, <code>release_date</code></td><td>Deprecation warnings with the suggested successor from the same family; new models appear the day the catalog has them.</td></tr>
+</table>
+
+<h4>Custom endpoints: what the catalog does not list</h4>
+<p>Ollama, vLLM, llama.cpp and corporate gateways are not in the catalog because their models are whatever the operator loaded. "Local server" in the picker takes a protocol (OpenAI-compatible or Anthropic-compatible), a base URL on the private network and an optional key, discovers models from the server's own model list, probes tool calling and structured output with one request each, and stores the result as a private catalog entry so the same role picker works. Embedding models are thin in the catalog, so a small curated list in <code>overrides.ts</code> fills that role.</p>
+
+<h4>Live catalog first, bundled list as the fallback</h4>
+<p>New models should appear in the picker the day they exist, with no Lattice release and no admin action. So the catalog is <strong>live by default</strong>, and the copy baked into the image is only what Lattice uses when the live source cannot be reached. Resolution order, every time the picker or a provider form opens:</p>
+<ol>
+  <li><strong>Live.</strong> The Lattice server (never the browser) fetches <code>models.dev/api.json</code> with the stored ETag and a two-second timeout. A <code>304</code> or a fresh body refreshes the stored snapshot; a fresh body within the last hour is reused without a request. Logos are fetched the same way on demand and cached.</li>
+  <li><strong>Last good snapshot.</strong> If the fetch fails or times out, the most recent snapshot in <code>ai_catalog_snapshots</code> is used, whether it came from an earlier live fetch or an admin upload.</li>
+  <li><strong>Bundled.</strong> If no snapshot has ever been stored, the JSON and logos baked into the image at build time are used. Every Lattice release refreshes that copy.</li>
+</ol>
+<ul>
+  <li><strong>The UI always says which it is.</strong> A status line on the picker and on Settings › AI reads "Live · models.dev · updated 4 minutes ago", or "Offline · last fetched 2 October 2026", or "Offline · bundled with 1.2.0". An admin can upload a newer catalog file from any machine that can reach the site, and the air-gapped bundle includes the current one.</li>
+  <li><strong>AI calls never depend on the catalog being reachable.</strong> Role assignments store the model id and a capabilities snapshot; the facade reads those from the database. A blocked VPC or a models.dev outage affects only how fresh the picker is, never whether summaries, plans or search work.</li>
+  <li><strong>The daily job stays</strong>, now as a background warmer: it refreshes the snapshot even when nobody opens the picker, and flags configured models the catalog has marked deprecated, suggesting the successor from the same family.</li>
+  <li><strong>Privacy.</strong> A live fetch is an outbound request from the server to models.dev that carries no workspace data beyond the request itself. It is on by default because it is what keeps the picker current, and an admin can turn it off, in which case Lattice behaves as permanently offline for the catalog and relies on uploads and releases.</li>
+  <li><strong>If the provider itself is also unreachable</strong> in such a network, that is a separate matter, and what the Local server path and the None option exist for.</li>
+</ul>
+<p>Two small mock changes follow from this: the wizard's AI step shows the popular row plus the full, searchable, logo-bearing catalog beneath it rather than four cards, and Settings › AI gains the catalog status line and upload control.</p>
+<div class="callout ai"><div class="k">Model roles, not one model</div>Tasks differ by an order of magnitude in cost and latency need. <code>fast</code> handles ghost text, field suggestions, classification and title cleanup where 300 ms matters. <code>standard</code> handles summaries, briefs and Q&amp;A. <code>strong</code> handles plans for the command palette, forecasts and drafting whole sections. Admins map each role to a provider and model in Settings › AI, and can mix vendors: a local model for <code>fast</code>, Anthropic for <code>strong</code>.</div>
+
+<h3>11.2 Prompt management</h3>
+<ul>
+  <li>Prompts are Markdown files in the repo with frontmatter: <code>id</code>, <code>version</code>, <code>role</code>, <code>variables</code>, <code>output_schema</code> (zod id) and a short description. They are loaded at boot, validated (every variable used must be declared) and exposed read-only in Settings › AI › Prompts, where an admin can override one; the override is stored in <code>ai_prompt_overrides</code> with a diff view and a "reset to default".</li>
+  <li>Every <code>ai_runs</code> row records <code>prompt_id</code>, <code>prompt_version</code> and the hash of the rendered input, so a bad output can be reproduced and a prompt change can be measured against the feedback column.</li>
+  <li>Structured output everywhere: insights, plans and field suggestions ask for JSON matching a zod schema, validated on return; one repair attempt, then a typed failure. The UI never renders unvalidated model text as data.</li>
+  <li>The system prompt is stable per purpose, the volatile context goes in the user turn, which is what makes Anthropic prompt caching effective.</li>
+  <li>Evals live in <code>apps/server/test/ai/</code>: a fixture dataset (the Acme Labs sample from the mocks) and golden checks per prompt (summary cites at least one source, plan touches only issues named, consistency check finds the planted 15-versus-30-minute conflict). They run in CI against a recorded provider and nightly against a live one.</li>
+</ul>
+
+<h3>11.3 Context builders and citations</h3>
+<p>No feature hands a model raw database rows. Each builder in <code>services/ai/context/</code> produces a bounded, ordered context with stable citation ids:</p>
+<table>
+  <tr><th style="width:200px">Builder</th><th>Includes</th><th>Feeds</th></tr>
+  <tr><td><code>issueContext</code></td><td>Title, description text, fields, last N comments, history since last summary, linked PRs with state, linked page TL;DRs, blockers.</td><td>Issue summary, "draft reply", "create issue from this comment".</td></tr>
+  <tr><td><code>sprintContext</code></td><td>Goal, dates, per-issue status and age, points done vs committed, blockers graph, review wait times.</td><td>Sprint pulse, backlog planning tips, "complete sprint" suggestions.</td></tr>
+  <tr><td><code>pageContext</code></td><td>Page text by heading, embedded issue states, open comments, backlinks' TL;DRs.</td><td>TL;DR, continuation, section commands, consistency checks.</td></tr>
+  <tr><td><code>activityContext</code></td><td>Everything that changed for this user's projects and spaces since their last visit, grouped by object.</td><td>Morning brief, "what changed in auth this week".</td></tr>
+  <tr><td><code>retrievalContext</code></td><td>Top-k chunks from <code>embeddings</code> filtered by the user's access, plus keyword hits merged by reciprocal rank fusion.</td><td>Ask your docs, ⌘K questions.</td></tr>
+</table>
+<p>Every chunk carries a citation token like <code>[c3]</code> mapped to an object and location. The model is instructed to cite; the UI renders citations as links (the mocks' "from 14 comments, 2 PRs, 1 doc"). Outputs without citations for factual claims are shown with a visible "unsourced" marker rather than hidden.</p>
+
+<h3>11.4 Plan → confirm → run</h3>
+<figure>
+<svg viewBox="0 0 1040 150" width="100%" style="max-width:1040px;display:block" role="img" aria-label="AI plan lifecycle">
+  <defs><marker id="arr3" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="var(--tx3)"/></marker></defs>
+  <g font-size="12" fill="var(--tx)">
+    <rect x="10" y="30" width="150" height="70" rx="10" fill="var(--sf2)" stroke="var(--br)"/><text x="85" y="58" text-anchor="middle" font-weight="600">1. Request</text><text x="85" y="78" text-anchor="middle" font-size="11" fill="var(--tx3)">"move issues blocked by PLT-204"</text>
+    <rect x="190" y="30" width="150" height="70" rx="10" fill="var(--ai-bg)" stroke="var(--ai-br)"/><text x="265" y="58" text-anchor="middle" font-weight="600" fill="var(--ai)">2. strong model</text><text x="265" y="78" text-anchor="middle" font-size="11" fill="var(--tx3)">tools = read-only + proposals</text>
+    <rect x="370" y="30" width="150" height="70" rx="10" fill="var(--sf2)" stroke="var(--br)"/><text x="445" y="58" text-anchor="middle" font-weight="600">3. Plan rows</text><text x="445" y="78" text-anchor="middle" font-size="11" fill="var(--tx3)">authorize() per step</text>
+    <rect x="550" y="30" width="150" height="70" rx="10" fill="var(--sf2)" stroke="var(--br)"/><text x="625" y="58" text-anchor="middle" font-weight="600">4. Person confirms</text><text x="625" y="78" text-anchor="middle" font-size="11" fill="var(--tx3)">edit, run, or cancel</text>
+    <rect x="730" y="30" width="150" height="70" rx="10" fill="var(--sf2)" stroke="var(--br)"/><text x="805" y="58" text-anchor="middle" font-weight="600">5. Services run</text><text x="805" y="78" text-anchor="middle" font-size="11" fill="var(--tx3)">same code the UI calls</text>
+    <rect x="910" y="30" width="120" height="70" rx="10" fill="var(--sf2)" stroke="var(--br)"/><text x="970" y="58" text-anchor="middle" font-weight="600">6. Audit</text><text x="970" y="78" text-anchor="middle" font-size="11" fill="var(--tx3)">history + audit_log</text>
+  </g>
+  <g stroke="var(--tx3)" stroke-width="1.3" fill="none" marker-end="url(#arr3)"><path d="M160,65 L190,65"/><path d="M340,65 L370,65"/><path d="M520,65 L550,65"/><path d="M700,65 L730,65"/><path d="M880,65 L910,65"/></g>
+  <text x="10" y="135" font-size="11.5" fill="var(--tx3)">The model never holds a write capability. It emits proposed tool calls; Lattice turns them into a plan; only a person's confirmation executes them, as that person.</text>
+</svg>
+</figure>
+<ul>
+  <li>Tool definitions in <code>services/ai/tools/</code> are generated from the same zod schemas as the API, so the model's arguments are validated exactly like a request body.</li>
+  <li>Read tools (search, get issue, list sprint) execute during planning so the model can look things up. Write tools are recorded, not executed, and become plan steps.</li>
+  <li>Each step is checked with <code>authorize()</code> as the requesting user and marked ALLOWED or DENIED. A plan with a denied step can still run its allowed steps if the person chooses.</li>
+  <li>Execution is a job so a 40-step plan survives a page refresh; progress streams back over the WebSocket. Steps are idempotent via the plan id and step index.</li>
+  <li>Comments written by a plan are attributed "via Lattice for Rohan", the AI accent colour is used wherever the model produced content, and the audit row links to the plan.</li>
+  <li>"Let AI actions change data" off (Settings › AI) turns the palette into a read-only assistant that still answers and still drafts, but never produces a runnable plan.</li>
+</ul>
+
+<h3>11.5 Insight caching and triggers</h3>
+<p>Summaries and briefs are expensive if regenerated on every view. The <code>ai_insights</code> cache keys on target plus a hash of the inputs the builder used. On view, the service compares hashes; if unchanged, it returns the cached content in under 10 ms. If changed, it returns the stale content immediately with a "refreshing" state and enqueues a regeneration job, which publishes a realtime event when done. Background triggers keep caches warm where it matters: the sprint pulse refreshes after a quiet period of five minutes following any change in the sprint; the morning brief is built by a scheduled job per user at their local 6 a.m.; consistency checks run after a page is published or a linked issue changes.</p>
+
+<h3>11.6 Privacy, cost and failure</h3>
+<ul>
+  <li><strong>Share content</strong> off means builders include titles, keys, statuses and field values but no description, comment or page body. Every builder honours it; a test asserts no body text escapes when it is off.</li>
+  <li><strong>Excluded spaces and projects</strong> are filtered at the builder and at indexing time, so excluded content is never embedded either.</li>
+  <li>Optional email and name redaction replaces addresses with stable placeholders before sending and restores them in the output.</li>
+  <li>A monthly budget in USD computed from <code>ai_runs</code> and a per-model price table in <code>presets.ts</code>. At 80% a warning goes to admins; at 100% the <code>standard</code> and <code>strong</code> roles pause and the UI explains why in plain words.</li>
+  <li>Provider failures (the SDK's typed API call errors, normalised by the facade into <code>ProviderError</code>) surface as honest copy ("Anthropic returned a rate limit; I'll retry in 30 seconds") and never block the non-AI path of the screen.</li>
+  <li>Per-user opt-out, when the admin allows it, hides AI surfaces for that user and excludes their authored content from being sent for summaries that other users request, except titles.</li>
+</ul>
+<!-- ===================================================== 11 -->
+<h2 id="email">12. Email, notifications and pinging</h2>
+<p>"Pinging" in Lattice means three channels fed by one event stream: the in-app inbox, email, and outgoing webhooks (including chat tools). A notification service turns domain events into per-user notifications according to preferences, then each channel delivers on its own schedule.</p>
+<figure>
+<svg viewBox="0 0 1040 170" width="100%" style="max-width:1040px;display:block" role="img" aria-label="Notification flow">
+  <defs><marker id="arr4" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="var(--tx3)"/></marker></defs>
+  <g font-size="12" fill="var(--tx)">
+    <rect x="10" y="40" width="150" height="60" rx="10" fill="var(--sf2)" stroke="var(--br)"/><text x="85" y="66" text-anchor="middle" font-weight="600">Domain event</text><text x="85" y="84" text-anchor="middle" font-size="11" fill="var(--tx3)">issue.assigned, mention…</text>
+    <rect x="200" y="40" width="170" height="60" rx="10" fill="var(--sf2)" stroke="var(--br)"/><text x="285" y="66" text-anchor="middle" font-weight="600">notifications service</text><text x="285" y="84" text-anchor="middle" font-size="11" fill="var(--tx3)">recipients × preferences</text>
+    <rect x="430" y="10" width="160" height="44" rx="8" fill="var(--sf2)" stroke="var(--br)"/><text x="510" y="37" text-anchor="middle" font-weight="600">Inbox + WebSocket</text>
+    <rect x="430" y="64" width="160" height="44" rx="8" fill="var(--sf2)" stroke="var(--br)"/><text x="510" y="91" text-anchor="middle" font-weight="600">email_outbox</text>
+    <rect x="430" y="118" width="160" height="44" rx="8" fill="var(--sf2)" stroke="var(--br)"/><text x="510" y="145" text-anchor="middle" font-weight="600">webhook jobs</text>
+    <rect x="650" y="64" width="160" height="44" rx="8" fill="var(--sf2)" stroke="var(--br)"/><text x="730" y="85" text-anchor="middle" font-weight="600">email worker</text><text x="730" y="100" text-anchor="middle" font-size="10.5" fill="var(--tx3)">immediate or 10-min digest</text>
+    <rect x="870" y="64" width="150" height="44" rx="8" fill="var(--sf2)" stroke="var(--br)" stroke-dasharray="4 3"/><text x="945" y="85" text-anchor="middle" font-weight="600">SMTP relay</text><text x="945" y="100" text-anchor="middle" font-size="10.5" fill="var(--tx3)">EmailSender provider</text>
+    <rect x="650" y="118" width="160" height="44" rx="8" fill="var(--sf2)" stroke="var(--br)" stroke-dasharray="4 3"/><text x="730" y="145" text-anchor="middle" font-weight="600">Slack · Teams · custom</text>
+  </g>
+  <g stroke="var(--tx3)" stroke-width="1.3" fill="none" marker-end="url(#arr4)"><path d="M160,70 L200,70"/><path d="M370,60 L430,32"/><path d="M370,70 L430,86"/><path d="M370,80 L430,140"/><path d="M590,86 L650,86"/><path d="M810,86 L870,86"/><path d="M590,140 L650,140"/></g>
+</svg>
+</figure>
+<h3>Email</h3>
+<ul>
+  <li><strong>Configuration</strong> lives in <code>settings</code> (host, port, security, username, encrypted password, from address, reply-to) and is edited in Settings › Email and notifications or the setup wizard's health check "Configure" action. A "send test email" button is mandatory; it reports the SMTP conversation's failure reason in plain words.</li>
+  <li><strong>Provider pattern</strong>: <code>EmailSender</code> interface with <code>smtp</code> (nodemailer) and <code>log</code> (development, writes to the logger and a local mailbox page at <code>/dev/mailbox</code>). SES, Resend or Postmark become one file each if a user needs them.</li>
+  <li><strong>Outbox</strong>: services never send; they insert into <code>email_outbox</code> inside the same transaction as the change that caused the mail. A worker drains the table, retries with backoff, and marks failures so admins see "12 emails failed since Tuesday: authentication rejected" instead of silence.</li>
+  <li><strong>Templates</strong> are <code>react-email</code> components in <code>services/email/templates/</code>, rendered to HTML and text, themed with the workspace brand colour and logo. Every email has a one-line reason ("You're receiving this because you watch PLT-204") and a per-kind unsubscribe link that updates preferences without login.</li>
+  <li><strong>Digests</strong>: mentions, assignments and review requests go immediately; everything else is batched per user every ten minutes into one email, and optionally into a daily summary at the user's chosen hour.</li>
+  <li><strong>Deliverability</strong>: the SMTP test checks SPF and DMARC for the from-domain and shows a warning with the DNS records to add. <code>List-Unsubscribe</code> headers on every notification.</li>
+  <li><strong>Inbound email</strong> (reply to comment) is a later milestone; the outbox and template layers are designed so it slots in as a job polling IMAP.</li>
+</ul>
+<h3>In-app inbox</h3>
+<p>Notification rows are written in the same transaction as the event and pushed over the WebSocket; the inbox badge in the top bar is a query key invalidated by that event. Grouping ("Aisha and 2 others commented on PLT-204") is done at read time so writes stay simple.</p>
+
+<!-- ===================================================== 12 -->
+<h2 id="jobs">13. Background jobs and realtime without Redis</h2>
+<p>Everything slow or external runs as a job. In the default install the worker loop runs inside the single process with a concurrency cap; <code>LATTICE_ROLE=worker</code> starts a process that only runs jobs.</p>
+<table>
+  <tr><th style="width:230px">Job</th><th>Trigger</th><th>Notes</th></tr>
+  <tr><td><code>email.send</code></td><td>Outbox rows</td><td>Batched, retried, singleton per outbox row.</td></tr>
+  <tr><td><code>ai.insight</code></td><td>Hash change on view, quiet-period timers, publish events</td><td>Debounced per target; one in flight per target.</td></tr>
+  <tr><td><code>ai.plan.run</code></td><td>Plan approval</td><td>Idempotent per step; progress events.</td></tr>
+  <tr><td><code>ai.brief</code></td><td>Schedule per user, local 6 a.m.</td><td>Skips users with no activity.</td></tr>
+  <tr><td><code>search.index</code>, <code>search.embed</code></td><td>Any content change</td><td>Debounced 2 s per object; embeddings chunk by heading; full reindex job for provider change.</td></tr>
+  <tr><td><code>docs.compact</code></td><td>Yjs update count threshold</td><td>Folds <code>page_updates</code> into <code>page_state</code>, writes a revision.</td></tr>
+  <tr><td><code>import.run</code></td><td>Wizard or Settings</td><td>Resumable, progress in <code>import_jobs</code>, mapping table makes re-runs safe.</td></tr>
+  <tr><td><code>webhook.deliver</code></td><td>Domain events</td><td>Signed, five retries with backoff, logged.</td></tr>
+  <tr><td><code>automation.run</code></td><td>Domain events matching a rule</td><td>Rules evaluated in-process; actions queued.</td></tr>
+  <tr><td><code>system.backup</code></td><td>Admin-chosen schedule (hourly to weekly; daily 02:00 by default), plus pre-upgrade and manual</td><td>Consistent <code>pg_dump</code>, incremental attachments, manifest, encryption for off-box destinations, GFS retention, verification. See §18, Backups.</td></tr>
+  <tr><td><code>system.update-check</code></td><td>Daily, opt-in</td><td>Fetches the release manifest; shows the "Update" badge from the mocks.</td></tr>
+  <tr><td><code>system.catalog-refresh</code></td><td>Daily, on by default, admin can disable</td><td>Background warmer for the live catalog: fetches models.dev by ETag, stores a snapshot when changed, flags deprecated models in use.</td></tr>
+  <tr><td><code>system.housekeeping</code></td><td>Hourly</td><td>Expired sessions, old idempotency keys, debug prompt logs, trash older than 30 days.</td></tr>
+</table>
+<p>Jobs are idempotent and carry a key, so pg-boss's singleton option collapses duplicates. Job handlers are thin: they parse the payload and call a service, the same layering rule as a route.</p>
+
+<!-- ===================================================== 13 -->
+<h2 id="work">14. Work engine</h2>
+<div class="grid c2">
+  <div class="card"><h3>Schemes and overrides</h3><p>Issue types, fields, workflows and board config exist at org level as defaults and can be overridden per project. An override is a full copy with a pointer to its origin, which is what the "Reset to org default" and "View diff" controls act on. Org locks are rows in the capability matrix, not special cases in the code.</p></div>
+  <div class="card"><h3>Workflow engine</h3><p>A transition is allowed if the actor's role is in the target status's allowed roles, every condition passes (field set, subtasks done, linked issues resolved, custom query), and every validator accepts the submitted fields. Post-actions run after commit (assign to reporter, clear sprint, set resolution, fire automation). Conditions, validators and post-actions are entries in a registry keyed by name, so contributors add one by adding a file.</p></div>
+  <div class="card"><h3>Ordering</h3><p>Board columns and backlog use a lexorank string column so a drag writes one row, not a renumbering of the list. Rebalancing is a housekeeping job when ranks grow long.</p></div>
+  <div class="card"><h3>Sprints and metrics</h3><p>Velocity, burndown, cycle time and throughput are computed from <code>issue_history</code> and the sprint's completion snapshot, cached in <code>ai_insights</code>-style rows keyed by sprint, and recomputed by the quiet-period job. No nightly rollups that are stale by morning.</p></div>
+  <div class="card"><h3>Custom fields</h3><p>Definitions in <code>fields</code>, values in <code>issues.custom_fields</code> JSONB. Marking a field filterable creates an expression index in a migration generated by the service. The query language resolves field keys to JSONB paths with the right cast.</p></div>
+  <div class="card"><h3>Automation</h3><p>Trigger (event or schedule), conditions (query language), actions (registry: transition, assign, comment, set field, notify, webhook, create subtask, ask AI to draft). Rules run in-process synchronously for conditions and queue their actions. The AI can write a rule from a sentence; it is shown as a draft rule the admin saves.</p></div>
+</div>
+<h3>Roadmap and forecast</h3>
+<p>Epics carry target dates and dependencies (<code>issue_links.kind = blocks</code> at epic level). The forecast insight feeds the <code>strong</code> model with epic progress, velocity history and dependency graph and asks for a structured answer: projected finish, days late, two or three options with the issues each would move. Scenarios are plans, so "pull Lena from Observability" is a runnable, confirmable set of reassignments.</p>
+
+<!-- ===================================================== 14 -->
+<h2 id="docs">15. Docs engine</h2>
+<div class="grid c2">
+  <div class="card"><h3>Editor</h3><p>Tiptap 3 on ProseMirror with a schema in <code>packages/editor</code> shared by the web app (editing) and the server (rendering exports, extracting text, resolving embeds). Custom nodes: <code>issueEmbed</code> (renders live status from the API), <code>issueTable</code> (a saved query rendered as a table), <code>decision</code>, <code>callout</code>, <code>pageLink</code>, <code>mention</code>, <code>codeBlock</code> with highlighting, <code>table</code>, <code>image</code>, <code>toc</code>. Slash commands, <code>/ai</code> commands and ghost-text continuation are editor extensions that call the AI service with a 1.5 s timeout for <code>fast</code>.</p></div>
+  <div class="card"><h3>Collaboration</h3><p>Yjs document per page, served by Hocuspocus mounted on the same Fastify server at <code>/collab</code>. Persistence extension writes updates to <code>page_updates</code> and loads <code>page_state</code>; a debounced hook (2 s after the last change) extracts the ProseMirror snapshot and plain text into <code>pages</code>, rewrites <code>links</code> and queues indexing. Awareness carries presence and cursors. Offline edits merge when the client reconnects.</p></div>
+  <div class="card"><h3>Versions</h3><p>A revision is written on publish, on explicit "save version", and automatically every 30 minutes of active editing. The history view diffs snapshots structurally (ProseMirror JSON), not as text, so a moved paragraph shows as moved.</p></div>
+  <div class="card"><h3>Comments</h3><p>Inline comments anchor to a Yjs relative position plus the quoted text. If the anchor is lost after heavy editing, the comment falls back to the quote and is marked "text changed". AI suggestions on a comment thread (the "Apply fix" button) are a diff against the current snapshot applied through the editor transaction, never a raw write.</p></div>
+  <div class="card"><h3>Consistency checks</h3><p>On publish and on linked-issue change, the <code>pageContext</code> builder pairs each embedded or mentioned issue with the surrounding paragraph and asks the <code>standard</code> model for contradictions with a strict schema (claim, page location, issue field, confidence). Results land in <code>ai_insights</code> as <code>consistency</code> and feed "About this page" and Docs home's "Needs attention".</p></div>
+  <div class="card"><h3>Exports and imports</h3><p>Markdown, HTML and PDF export (PDF via headless Chromium in a worker, optional). Confluence storage format and Markdown import map to the schema through <code>packages/editor/convert/</code>; unknown macros become a labelled placeholder block so nothing is silently dropped.</p></div>
+</div>
+
+<!-- ===================================================== 15 -->
+<h2 id="search">16. Search and the query language</h2>
+<ul>
+  <li><strong>Keyword</strong>: <code>search_vector</code> on issues and pages with weights (title A, labels and keys B, body D), GIN indexed, plus <code>pg_trgm</code> on titles and issue keys for prefix and typo tolerance in the ⌘K palette. Results are filtered by the actor's project and space access before ranking.</li>
+  <li><strong>Semantic</strong>: chunks of pages and issue descriptions embedded via the <code>embedding</code> role, HNSW index in <code>pgvector</code>, queried with cosine distance and merged with keyword results by reciprocal rank fusion. Absent pgvector or an embedding model, the mode is simply not offered and the UI copy says so.</li>
+  <li><strong>Lattice Query Language</strong> (LQL), a small JQL-like grammar: <code>project = PLT AND status != Done AND assignee = me AND "spec doc" IS EMPTY ORDER BY updated DESC</code>. Parsed in <code>packages/shared</code> (so the web app can validate and autocomplete) and compiled to parameterised SQL in <code>services/search/lql/</code>. Saved filters, swimlane queries, issue tables in docs and automation conditions all use it. The AI writes LQL from plain English and shows it before running.</li>
+  <li><strong>Autocomplete</strong> in the palette is a single trigram query across issues, pages and users with a 100 ms budget; results are cached per session for repeated prefixes.</li>
+</ul>
+
+<!-- ===================================================== 16 -->
+<h2 id="import">17. Importers and integrations</h2>
+<table>
+  <tr><th style="width:200px">Importer</th><th>Source</th><th>Maps</th></tr>
+  <tr><td>Jira Cloud and Server</td><td>REST API v3 with API token, or a Jira backup zip for air-gapped</td><td>Projects, issue types, custom fields (auto-matched by name, unmatched created as project fields with a review step), workflows and statuses, issues with keys and numbering preserved, comments, history, attachments, sprints, boards, epics, links, users (matched by email, created as invited). Confluence macro links become live issue embeds.</td></tr>
+  <tr><td>Confluence</td><td>REST API or space export</td><td>Spaces, page trees, versions, comments, attachments, labels; storage format converted to the editor schema.</td></tr>
+  <tr><td>CSV</td><td>Linear, Trello, Asana, GitHub Issues exports or any CSV</td><td>Column-to-field mapping UI with preview and AI-suggested mapping.</td></tr>
+  <tr><td>Markdown folder</td><td>Zip of .md files</td><td>Page tree from folders; front matter to metadata.</td></tr>
+</table>
+<p>Every importer implements <code>Importer { discover(config), plan(selection), run(plan, progress) }</code>, runs as a resumable job, writes <code>import_mappings</code>, and is re-runnable for a second project without duplicating the first. The wizard's step 2 is the same UI as Settings › Import.</p>
+<h3>Code integrations</h3>
+<p>GitHub (App) and GitLab (webhook plus token) deliver push, branch and PR events; the integration service detects issue keys in branch names, commit messages and PR titles and writes <code>code_links</code>, which render in the issue's Development panel with live state. Transition-on-merge is an automation rule template.</p>
+
+<!-- ===================================================== 17 -->
+<h2 id="deploy">18. Deploy in 5 minutes</h2>
+<p>The landing page shows the whole experience: one command, six lines of progress, a URL. Everything below exists to make those six lines true on a fresh Ubuntu, Debian, Fedora or Amazon Linux VM with ports 80 and 443 open.</p>
+<pre><code>$ curl -fsSL https://get.lattice.dev | sh
+→ Detected Ubuntu 24.04, 2 vCPU, 4 GB
+→ Installing Docker … done
+→ Installing Postgres 18 (pgvector) … done
+→ Pulling lattice:1.2.0 … done
+→ Requesting certificate for lattice.acmelabs.dev … done
+→ Nightly backup scheduled 02:00 → /var/lattice/backups
+✓ Lattice is running at https://lattice.acmelabs.dev
+  Open it to create the first admin.</code></pre>
+<ol class="steps">
+  <li><strong>Preflight.</strong> Root or sudo, supported OS, 2 GB RAM minimum, 10 GB disk, ports 80 and 443 free, outbound DNS. Each failure prints the fix, not a stack trace.</li>
+  <li><strong>Docker.</strong> Installs Docker Engine and Compose plugin from the official repository if absent; otherwise uses what is there.</li>
+  <li><strong>Domain.</strong> Asks for the hostname (or <code>--domain</code>). If DNS does not resolve to this machine yet it continues with a self-signed cert and prints what to do; Caddy picks up a real certificate the moment DNS lands.</li>
+  <li><strong>Files.</strong> Writes <code>/var/lattice/docker-compose.yml</code>, <code>Caddyfile</code>, <code>.env</code> (generated <code>LATTICE_SECRET_KEY</code>, <code>POSTGRES_PASSWORD</code>, <code>UPDATER_TOKEN</code>, and <code>LATTICE_MODULES</code> when <code>--modules</code> was given), <code>data/</code>, <code>backups/</code>, and <code>/usr/local/bin/lattice</code>.</li>
+  <li><strong>Start.</strong> <code>docker compose up -d</code>. The app container waits for Postgres, creates the extensions, runs pending changesets under an advisory lock, starts.</li>
+  <li><strong>Schedule.</strong> The app schedules backups itself from Settings (daily 02:00 by default). A systemd timer calls <code>lattice backup</code> only if the app has not run one in 36 hours, as a safety net.</li>
+  <li><strong>Hand-off.</strong> Prints the URL. The first request to the app shows the six-step wizard from the mocks; the health checks on step 1 are the same probes the installer ran.</li>
+</ol>
+<div class="grid c2">
+  <div class="card"><h3>The Compose stack</h3>
+<pre style="margin:8px 0 0"><code>services:
+  lattice:
+    image: ghcr.io/lattice-dev/lattice:1.2.0
+    env_file: .env
+    volumes: [./data:/var/lattice/data]
+    depends_on: { db: { condition: service_healthy } }
+    healthcheck: { test: ["CMD","lattice-health"], interval: 10s }
+  db:
+    image: pgvector/pgvector:pg18
+    volumes: [./pg:/var/lib/postgresql/data]
+    command: postgres -c shared_buffers=512MB -c effective_cache_size=1536MB
+  proxy:            # omitted when --no-proxy or DATABASE_URL/LATTICE_TLS=off
+    image: caddy:2
+    ports: ["80:80","443:443"]
+    volumes: [./Caddyfile:/etc/caddy/Caddyfile, ./caddy:/data]
+  updater:          # omitted with --no-in-app-updates; the CLI still works
+    image: ghcr.io/lattice-dev/updater:1
+    volumes: [/var/run/docker.sock:/var/run/docker.sock, ./:/var/lattice]
+    environment: { UPDATER_TOKEN: "${UPDATER_TOKEN}" }
+    networks: [internal]</code></pre>
+  <p class="small" style="margin-top:8px">Four containers, two of them optional. The Postgres tuning line is generated from detected RAM.</p></div>
+  <div class="card"><h3>The <code>lattice</code> CLI</h3>
+<table style="margin:8px 0 0">
+  <tr><td><code>lattice status</code></td><td>Containers, version, DB size, queue depth, last backup, cert expiry.</td></tr>
+  <tr><td><code>lattice upgrade [version]</code></td><td>Backup → pull → migrate → restart → health check. Rolls back automatically if health fails. The same steps the in-app Update button runs.</td></tr>
+  <tr><td><code>lattice rollback</code></td><td>Code, schema or restore rollback as the changelog dictates, with a confirmation that names the mode and exactly what will be lost. See "Rolling back after an update".</td></tr>
+  <tr><td><code>lattice backup</code> / <code>restore &lt;file|s3-url&gt;</code> / <code>backups list</code> / <code>restore --mount</code></td><td>Manual backup, full restore, listing, and read-only mount of a backup as a second database. Restore to a fresh VM is the documented disaster-recovery test.</td></tr>
+  <tr><td><code>lattice doctor</code></td><td>Re-runs preflight and the in-app health checks; prints fixes.</td></tr>
+  <tr><td><code>lattice logs</code>, <code>lattice shell</code>, <code>lattice config set KEY VALUE</code></td><td>Convenience wrappers so nobody needs to learn the Compose layout.</td></tr>
+</table></div>
+</div>
+
+<h3>Updating from inside the app</h3>
+<p>The sidebar badge in the mocks says "Update". Clicking it has to actually update the server, and a container cannot replace its own image. So the installer adds a small <strong>updater</strong> container that holds the Docker socket and does nothing except a fixed set of actions on request from the app.</p>
+<figure>
+<svg viewBox="0 0 1040 160" width="100%" style="max-width:1040px;display:block" role="img" aria-label="In-app update flow">
+  <defs><marker id="arru" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="var(--tx3)"/></marker></defs>
+  <g font-size="12" fill="var(--tx)">
+    <rect x="10" y="30" width="140" height="70" rx="10" fill="var(--sf2)" stroke="var(--br)"/><text x="80" y="58" text-anchor="middle" font-weight="600">1. Admin clicks</text><text x="80" y="78" text-anchor="middle" font-size="11" fill="var(--tx3)">release notes shown first</text>
+    <rect x="180" y="30" width="140" height="70" rx="10" fill="var(--sf2)" stroke="var(--br)"/><text x="250" y="58" text-anchor="middle" font-weight="600">2. App → updater</text><text x="250" y="78" text-anchor="middle" font-size="11" fill="var(--tx3)">internal network, shared token</text>
+    <rect x="350" y="30" width="140" height="70" rx="10" fill="var(--sf2)" stroke="var(--br)"/><text x="420" y="58" text-anchor="middle" font-weight="600">3. Backup</text><text x="420" y="78" text-anchor="middle" font-size="11" fill="var(--tx3)">pg_dump + files, flagged pre-upgrade</text>
+    <rect x="520" y="30" width="140" height="70" rx="10" fill="var(--sf2)" stroke="var(--br)"/><text x="590" y="58" text-anchor="middle" font-weight="600">4. Pull + verify</text><text x="590" y="78" text-anchor="middle" font-size="11" fill="var(--tx3)">cosign signature, official registry only</text>
+    <rect x="690" y="30" width="140" height="70" rx="10" fill="var(--sf2)" stroke="var(--br)"/><text x="760" y="58" text-anchor="middle" font-weight="600">5. Swap + migrate</text><text x="760" y="78" text-anchor="middle" font-size="11" fill="var(--tx3)">new container runs pending changesets</text>
+    <rect x="860" y="30" width="170" height="70" rx="10" fill="var(--sf2)" stroke="var(--br)"/><text x="945" y="58" text-anchor="middle" font-weight="600">6. Health or rollback</text><text x="945" y="78" text-anchor="middle" font-size="11" fill="var(--tx3)">/readyz within 3 min, else previous tag + restore</text>
+  </g>
+  <g stroke="var(--tx3)" stroke-width="1.3" fill="none" marker-end="url(#arru)"><path d="M150,65 L180,65"/><path d="M320,65 L350,65"/><path d="M490,65 L520,65"/><path d="M660,65 L690,65"/><path d="M830,65 L860,65"/></g>
+  <text x="10" y="140" font-size="11.5" fill="var(--tx3)">The browser shows a progress page served by the updater during the swap, then reloads when the new version answers. Typical downtime is the migration time, usually under 30 seconds.</text>
+</svg>
+</figure>
+<ul>
+  <li><strong>Availability</strong>: the opt-in daily job fetches a signed release manifest with versions, channels (stable, beta), release notes and a list of changesets that take long on large tables. The badge appears only when a newer version in the chosen channel exists.</li>
+  <li><strong>Security of the updater</strong>: holding the Docker socket is root-equivalent on the host, so the updater is deliberately dumb. It accepts only <code>update(tag)</code>, <code>rollback()</code> and <code>status()</code>, only from the app over the internal Compose network with a token generated by the installer, only for tags from the official registry that pass signature verification. It has no inbound port. Admins who do not want it run the installer with <code>--no-in-app-updates</code>; the button then shows the CLI command instead.</li>
+  <li><strong>Modules and updates</strong>: because all modules ship in the image, one update moves the kernel and every enabled module together. Disabled modules' changesets do not run until they are enabled, so a Docs-only install never pays for Work's schema changes.</li>
+  <li><strong>Kubernetes</strong>: the button shows the new version, the release notes and the exact <code>helm upgrade</code> command. Patching the Deployment from inside the pod needs a cluster role most operators will not grant; an optional operator can come later.</li>
+  <li><strong>Air-gapped</strong>: the Updates page accepts an uploaded release bundle; the updater loads the images from it and runs the same flow.</li>
+  <li><strong>Downgrades</strong>: see "Rolling back after an update" below. The short version: within one minor, rollback keeps your data; only an irreversible changeset forces a restore, and the UI says which applies before you confirm.</li>
+</ul>
+
+
+
+<h3>Backups</h3>
+<p>Backups are a kernel feature with a schedule the admin chooses, not a cron line in the installer. The same machinery produces the automatic pre-upgrade backup, the scheduled ones and the manual "Back up now".</p>
+<h4>What a backup contains</h4>
+<ul>
+  <li><strong>Database</strong>: <code>pg_dump</code> in custom format, compressed, taken in a single consistent snapshot. The app image ships the Postgres 18 client tools so this works against bundled or external databases.</li>
+  <li><strong>Attachments</strong>: only the files added since the previous backup in the same chain. Attachments are content-addressed by SHA-256 and written to storage before their database row exists, so dumping the database first and copying files second guarantees every referenced file is present. Monthly runs take a full copy so a chain never grows unbounded.</li>
+  <li><strong>Manifest</strong>: app version, changelog tag, enabled modules, sizes and checksums of every part, and the restore instructions.</li>
+  <li><strong>Not included, and said out loud</strong>: the install's <code>.env</code>, which holds the secret key that decrypts provider keys, SMTP passwords and SSO secrets stored in the database. A backup without it restores a workspace whose integrations must be re-entered. The installer's final message and the backup settings page both say to keep a copy of <code>/var/lattice/.env</code> somewhere safe.</li>
+</ul>
+<h4>Schedule and retention, chosen in Settings › Storage and backups</h4>
+<table>
+  <tr><th style="width:200px">Setting</th><th>Options</th><th>Default</th></tr>
+  <tr><td>Frequency</td><td>Hourly · every 6 hours · daily · weekly, with time of day and timezone</td><td>Daily at 02:00 in the workspace timezone</td></tr>
+  <tr><td>Retention</td><td>Grandfather-father-son: keep the last <em>N</em> hourly, <em>N</em> daily, <em>N</em> weekly, <em>N</em> monthly, each a number the admin sets. Pre-upgrade backups follow their own seven-day retention.</td><td>7 daily · 4 weekly · 3 monthly</td></tr>
+  <tr><td>Continuous (point-in-time)</td><td>WAL archiving on the bundled Postgres with a weekly base backup, restorable to any minute within retention. For external managed Postgres the page links to the provider's point-in-time recovery and keeps the dumps as the portable copy.</td><td>Off; recommended when the workspace exceeds a few hundred users or the admin asks for an RPO under an hour</td></tr>
+  <tr><td>Destinations</td><td>Local disk under <code>/var/lattice/backups</code>, plus any S3-compatible bucket (AWS S3, Cloudflare R2, MinIO, Backblaze B2, GCS interop) as a second destination. Local-only is flagged on the page as "one disk" with a one-line explanation.</td><td>Local</td></tr>
+  <tr><td>Encryption</td><td>AES-256-GCM with a backup passphrase generated by the installer and stored only in <code>.env</code>, applied before anything leaves the machine. Required for off-box destinations, optional for local.</td><td>On for S3, off for local</td></tr>
+  <tr><td>Verification</td><td>Every dump validated with <code>pg_restore --list</code> on write. Weekly test restore into a temporary database with row-count checks on issues, pages, users and the changelog, if disk allows. A "Restore drill" button runs the same check on demand.</td><td>Weekly</td></tr>
+  <tr><td>Alerts</td><td>Email to admins and an in-app banner on a failed run, a skipped run, a verification failure, or the disk-space guard refusing to start (less than twice the previous backup's size free). The age of the last good backup is a Prometheus metric and a line on the System page.</td><td>On</td></tr>
+</table>
+<h4>Restore</h4>
+<ul>
+  <li><strong>To the same machine</strong>: Settings › Storage and backups lists every backup with version, size and verification status. Restore puts the app into maintenance mode (a page served by the updater), restores into a fresh database, swaps, and runs any pending changesets if the backup is from an older version, so a restore can also be a controlled upgrade. The replaced database is kept for the retention window.</li>
+  <li><strong>To a new machine</strong>, the disaster-recovery path: run the installer, copy <code>.env</code> and the backup over (or point at the bucket), run <code>lattice restore &lt;backup&gt;</code>. This is tested nightly in CI on a fresh VM.</li>
+  <li><strong>Partial restore</strong>: a backup can be mounted read-only as a second database for forensic queries or to recover one deleted page or project through the CLI, without replacing the live workspace.</li>
+  <li><strong>Download</strong>: any backup can be downloaded from the settings page for an off-site copy by hand.</li>
+</ul>
+<p>Backups run as the <code>system.backup</code> job on the worker role, scheduled by pg-boss from the saved settings; the installer's systemd timer is only a safety net that calls <code>lattice backup</code> if the app's own scheduler has not run in 36 hours.</p>
+
+<h3>Rolling back after an update</h3>
+<p>The health check after a swap catches a version that will not start. It does not catch a bug people find an hour later. Rollback therefore has to work after the update "succeeded", after users have written data, and it has to be honest about what it keeps.</p>
+<h4>What is saved before every update</h4>
+<ul>
+  <li>A full <code>pg_dump</code> in custom format and a tarball of attachments, with checksums verified and the dump validated with <code>pg_restore --list</code>. Written to <code>/var/lattice/backups</code> and flagged <code>pre_upgrade</code> in the <code>backups</code> table; pushed to S3 too when configured.</li>
+  <li>A changelog tag with the version being left (<code>lattice db tag 1.2.4</code>).</li>
+  <li>The previous image, kept locally. Pre-upgrade backups and the previous image are retained for seven days by default (a setting), so a rollback is possible for a week without re-downloading anything.</li>
+</ul>
+<h4>Two modes, chosen by the changelog</h4>
+<table>
+  <tr><th style="width:230px">Mode</th><th>When it applies</th><th>What happens</th><th>What is lost</th></tr>
+  <tr><td><strong>Code rollback</strong> (default)</td><td>Every changeset the new version ran is compatible with the previous minor's code, which the compatibility-window rule in §7.1 requires: add columns and tables in this release, remove them in a later one.</td><td>Swap back to the previous image. No database change. The new columns and tables sit unused until the next upgrade; because their changesets are already recorded, upgrading again runs nothing twice.</td><td>Nothing. Everything users did since the update stays.</td></tr>
+  <tr><td><strong>Schema rollback</strong></td><td>The new version ran DDL-only changesets the previous code cannot tolerate (possible when several minors are skipped at once), and each has a <code>down</code>.</td><td>Run the <code>down</code> changesets in reverse under the advisory lock, then swap the image.</td><td>Nothing that existed before; new fields written since the update are dropped with their columns, and the UI lists them.</td></tr>
+  <tr><td><strong>Restore rollback</strong></td><td>A changeset in the release is marked irreversible (dropped a column, rewrote a data format), or the admin explicitly wants the pre-update state.</td><td>Restore the pre-upgrade backup into a fresh database, verify it, point the previous image at it, swap. The current database is kept as <code>lattice_db_rolledback_&lt;time&gt;</code> for the retention window.</td><td>Everything written since the backup. The UI computes it from the audit log before asking: "Restoring 1.2.4 will discard 142 changes made since 09:02 today by 11 people" and offers an export of those audit rows and attachments first.</td></tr>
+</table>
+<h4>What the admin sees</h4>
+<ul>
+  <li>Settings › Updates shows "Updated to 1.3.0 two hours ago" with a <strong>Roll back to 1.2.4</strong> button. The button's copy names the mode that applies and, for a restore, the discard count and the export link. Nothing runs until confirmed.</li>
+  <li>Code rollback takes about as long as a container restart. Restore rollback takes the restore time, shown as a progress page served by the updater.</li>
+  <li>Both are audited, both work from the CLI (<code>lattice rollback</code>, which prints the same mode and discard summary), and both are available for seven days after the update.</li>
+  <li>On Kubernetes the page shows the <code>helm rollback</code> command and the restore job command for the matching backup, since the pod cannot swap itself.</li>
+  <li>If a user-visible bug is found after the retention window, the answer is a patch release forward, not a rollback, and the release notes say which changesets each version contains so the admin can judge.</li>
+</ul>
+<p>Release discipline makes the default mode the common one: a release that contains an irreversible changeset is called out in its notes and in the Update dialog before the admin clicks, so "rollback would need a restore" is known going in, not discovered afterwards.</p>
+
+<h3>Other paths, same image</h3>
+<table>
+  <tr><th style="width:200px">Path</th><th>What it is for</th></tr>
+  <tr><td>Docker Compose by hand</td><td>The same file, documented line by line, for people who already run Compose.</td></tr>
+  <tr><td>Try it locally</td><td><code>docker run -p 8080:8080 ghcr.io/lattice-dev/lattice:latest --demo</code> starts an embedded Postgres inside the container with the Acme Labs sample data. Demo only; not for production.</td></tr>
+  <tr><td>External Postgres</td><td>Set <code>DATABASE_URL</code>; installer skips the <code>db</code> service. Postgres 17 is accepted with a warning (the <code>uuidv7()</code> default falls back to an application-side generator); 18 is recommended. Health check tells you if <code>pgvector</code> is missing and what you lose (semantic search) if you cannot add it.</td></tr>
+  <tr><td>Helm chart</td><td>Deployment with <code>api</code> and <code>worker</code> roles, HPA, PVC or S3 for files, external Postgres or the Bitnami/CloudNativePG subchart, Ingress with cert-manager.</td></tr>
+  <tr><td>Terraform</td><td>Modules for AWS (EC2 + RDS), GCP (Compute + Cloud SQL) and Hetzner (one VM) that run the installer via cloud-init.</td></tr>
+  <tr><td>Air-gapped</td><td><code>lattice-airgap-1.2.0.tar.gz</code> with images, installer and offline docs. The installer detects no internet and loads images from the bundle. AI via Ollama on the same network.</td></tr>
+  <tr><td>Upgrades</td><td>Semantic versions; changesets are forward-only in shared environments and compatible with the previous minor so <code>api</code> and <code>worker</code> replicas can roll one at a time. Release notes list any migration that takes more than a few seconds on large tables.</td></tr>
+</table>
+<h3>Sizing</h3>
+<table>
+  <tr><th>Team</th><th>VM</th><th>Expected</th></tr>
+  <tr><td>Up to 50</td><td>1 vCPU, 2 GB</td><td>Comfortable; AI jobs serialised.</td></tr>
+  <tr><td>Up to 200</td><td>2 vCPU, 4 GB</td><td>The promise. Node ~400 MB, Postgres ~1 GB, headroom for imports. Postgres 18's asynchronous I/O helps most on exactly this class of small VM.</td></tr>
+  <tr><td>Up to 1,000</td><td>4 vCPU, 8 GB, or split <code>api</code> and <code>worker</code></td><td>Postgres on its own box recommended; S3 for attachments.</td></tr>
+  <tr><td>Beyond</td><td>Helm, several replicas, managed Postgres with read replica</td><td>NOTIFY fan-out scales per replica; the queue is Postgres-bound and comfortable to tens of jobs per second.</td></tr>
+</table>
+
+<!-- ===================================================== 18 -->
+<h2 id="config">19. Configuration model</h2>
+<p>Two layers, with a hard rule for which goes where: <strong>env</strong> holds what the process needs before it can reach the database or what the host operator owns; <strong>settings</strong> in the database hold everything a workspace admin should be able to change from the UI without SSH. The wizard and Settings screens only ever write the second layer.</p>
+<div class="grid c2">
+  <div class="card"><h3>Env (parsed once by zod in <code>config/env.ts</code>; boot fails loudly on a bad key)</h3>
+<pre style="margin:8px 0 0"><code># apps/server/.env.example
+DATABASE_URL=postgres://lattice:change-me@db:5432/lattice_db
+LATTICE_SECRET_KEY=            # 32 bytes base64, generated by installer
+LATTICE_BACKUP_PASSPHRASE=     # generated by installer; encrypts off-box backups; keep with .env
+LATTICE_PUBLIC_URL=https://lattice.example.com
+LATTICE_ROLE=all               # all | api | worker
+LATTICE_MODULES=               # empty = chosen in the wizard / Settings; or pin: work,docs
+LATTICE_DATA_DIR=/var/lattice/data
+PORT=8080
+LOG_LEVEL=info                 # fatal|error|warn|info|debug
+LATTICE_TRUST_PROXY=true
+LATTICE_ALLOW_PRIVATE_URLS=false   # true to let AI/SMTP targets be on LAN (Ollama)
+OTEL_EXPORTER_OTLP_ENDPOINT=   # optional traces
+# Optional: pre-seed secrets instead of entering them in the UI
+LATTICE_AI_ANTHROPIC_API_KEY=
+LATTICE_SMTP_URL=</code></pre></div>
+  <div class="card"><h3>Settings (database, edited in the UI, encrypted where secret)</h3>
+    <ul style="margin:8px 0 0">
+      <li>Workspace name, URL, locale, timezone.</li>
+      <li>Appearance: preset or custom tokens, logo, member policy.</li>
+      <li>Email: SMTP connection, from address, digest cadence.</li>
+      <li>AI: providers, model roles, prompt overrides, privacy toggles, budget, live catalog on or off, uploaded catalog.</li>
+      <li>Authentication: providers, SSO enforcement, provisioning, group mappings.</li>
+      <li>Work defaults: org issue types, fields, workflows, board scheme.</li>
+      <li>System: enabled modules, backup frequency, retention, destinations, encryption and verification, update channel and checks, audit retention, storage backend.</li>
+    </ul>
+    <p class="small">Secret values are write-only in the API: the UI shows "set" and a replace field, never the value.</p>
+  </div>
+</div>
+<p>No code path branches on an environment name. Differences between development, demo and production are values: the <code>log</code> email provider in dev is a setting, the demo flag enables the embedded Postgres, and that is the whole list.</p>
+
+<!-- ===================================================== 19 -->
+<h2 id="performance">20. Performance</h2>
+<p>Budgets first, techniques second. The budgets are enforced in CI on the sample dataset (3 projects, 5,000 issues, 400 pages) and in a nightly k6 run on the 2 vCPU reference VM.</p>
+<table>
+  <tr><th style="width:280px">Budget</th><th>Target</th><th>Measured by</th></tr>
+  <tr><td>Board view API, 500 issues</td><td>p95 &lt; 80 ms</td><td>k6, reference VM</td></tr>
+  <tr><td>Issue detail API</td><td>p95 &lt; 40 ms</td><td>k6</td></tr>
+  <tr><td>Search autocomplete</td><td>p95 &lt; 100 ms</td><td>k6</td></tr>
+  <tr><td>Page open (collab connect + snapshot)</td><td>p95 &lt; 150 ms</td><td>Playwright trace</td></tr>
+  <tr><td>First contentful paint, cold, 4G</td><td>&lt; 1.2 s</td><td>Lighthouse CI</td></tr>
+  <tr><td>Route change, warm</td><td>&lt; 100 ms to content</td><td>Playwright, prefetch on hover</td></tr>
+  <tr><td>Drag card to column</td><td>Visible in the same frame; server confirms after</td><td>Optimistic update tests</td></tr>
+  <tr><td>Initial JS, gzip</td><td>&lt; 250 KB for the shell; editor and settings lazy</td><td>size-limit in CI</td></tr>
+  <tr><td>Memory, steady, 200 users</td><td>Node &lt; 512 MB</td><td>Nightly soak</td></tr>
+</table>
+<div class="grid c2">
+  <div class="card"><h3>Server</h3><ul>
+    <li>Fastify with JSON-schema serialisation for the hot responses (board view, issue, page), which is several times faster than <code>JSON.stringify</code> on untyped objects.</li>
+    <li>Board view is one SQL statement with CTEs and <code>json_agg</code>, returning cards already grouped; no N+1 anywhere, enforced by a query-count assertion in integration tests.</li>
+    <li>Covering and partial indexes for every list endpoint, verified with <code>EXPLAIN</code> in a test that fails on a sequential scan over <code>issues</code> or <code>pages</code>.</li>
+    <li>Prepared statements through <code>postgres.js</code>, pool sized to CPU count × 2, statement timeout 10 s, idle transaction timeout.</li>
+    <li>ETags on reads, Brotli for static assets with immutable cache headers, HTTP/2 via Caddy.</li>
+    <li>AI and import work never touches the request path.</li>
+  </ul></div>
+  <div class="card"><h3>Client</h3><ul>
+    <li>Route-level code splitting with TanStack Router; data for a route is prefetched when its link is hovered or focused, so clicks land on warm cache.</li>
+    <li>TanStack Query holds server state with stale-while-revalidate; WebSocket invalidation replaces polling; mutations are optimistic with rollback on error.</li>
+    <li>Backlog and long lists are virtualised with TanStack Virtual; the board virtualises columns past 200 cards.</li>
+    <li>Fonts self-hosted and preloaded; theme tokens are CSS variables so switching themes is a class change, not a re-render.</li>
+    <li>Editor loads only on doc routes; Yjs state is cached in IndexedDB so a reopened page renders before the socket connects.</li>
+    <li>Web Vitals are reported to <code>/metrics</code> (opt-in) so admins see real user performance in Settings › System.</li>
+  </ul></div>
+</div>
+
+<!-- ===================================================== 20 -->
+<h2 id="observability">21. Observability</h2>
+<ul>
+  <li><strong>Logs</strong>: pino JSON; every line has <code>requestId</code>, <code>userId</code> (hashed in logs), route and duration. Redaction list configured once: cookies, authorization, API keys, email bodies, prompt text.</li>
+  <li><strong>Metrics</strong>: Prometheus at <code>/metrics</code>: request latency histograms per route, queue depth and job latency per job, AI tokens and cost per role, WebSocket connections, DB pool stats, cache hit rate for insights.</li>
+  <li><strong>Traces</strong>: OpenTelemetry auto-instrumentation for Fastify, pg and outbound HTTP, plus the AI SDK's own spans (model, provider, tokens, cached tokens, tool executions) with input and output recording off by default, exported only when <code>OTEL_EXPORTER_OTLP_ENDPOINT</code> is set.</li>
+  <li><strong>In-product</strong>: Settings › System shows health checks, version, queue, last backup, AI spend this month, slowest endpoints today. Most admins will never run Grafana; the product has to tell them what is wrong.</li>
+  <li><strong>Errors</strong>: typed errors carry a code; unexpected exceptions are logged with the request id that the user sees in the error toast, so a bug report has a handle.</li>
+</ul>
+
+<!-- ===================================================== 21 -->
+<h2 id="quality">22. Quality gates and definition of done</h2>
+<table>
+  <tr><th style="width:220px">Gate</th><th>What runs</th><th>Blocks merge?</th></tr>
+  <tr><td>Typecheck and lint</td><td><code>tsc --noEmit</code> strict, ESLint with the layering, file-size and import-boundary rules, Prettier</td><td>Yes</td></tr>
+  <tr><td>Unit</td><td>Vitest across packages and services, 80% line coverage on <code>services/</code></td><td>Yes</td></tr>
+  <tr><td>Integration</td><td>Vitest against Testcontainers Postgres: changelog round trips, services, queue, NOTIFY, search, authz matrix</td><td>Yes</td></tr>
+  <tr><td>API contract</td><td>OpenAPI generated and diffed; breaking changes need a version bump label</td><td>Yes</td></tr>
+  <tr><td>End to end</td><td>Playwright on the built image with the sample dataset: wizard, board, issue, doc collab with two browsers, palette plan, import from fixture</td><td>Yes</td></tr>
+  <tr><td>Visual</td><td>Playwright screenshots of the 14 screens against the mocks per theme; diff threshold 0.1%</td><td>Yes for the screens in the PR's area</td></tr>
+  <tr><td>Performance</td><td>size-limit, Lighthouse CI budgets, query-count assertions</td><td>Yes</td></tr>
+  <tr><td>Security</td><td><code>npm audit</code>, Semgrep rules for raw SQL and raw fetch, secret scanning, Trivy on the image</td><td>Yes</td></tr>
+  <tr><td>AI evals</td><td>Recorded-provider evals on every PR touching <code>services/ai</code>; live nightly</td><td>Yes for recorded; nightly reports</td></tr>
+  <tr><td>Load and soak</td><td>k6 nightly on the reference VM; 24-hour soak weekly</td><td>Reports; regressions open an issue automatically</td></tr>
+  <tr><td>Install</td><td>Nightly: fresh Ubuntu, Debian and Fedora VMs run <code>install.sh</code>, complete the wizard via API, upgrade from the previous release, restore a backup</td><td>Release blocker</td></tr>
+</table>
+<p><strong>Done</strong> for any task means: gates green, the service boots clean, new UI verified in a running browser against the mock, changesets written, validated and applied where the schema changed, <code>.env.example</code> current, no secrets in the diff, docs updated where behaviour changed, and the standards contract holds for every touched file.</p>
+
+<!-- ===================================================== 22 -->
+<h2 id="contributing">23. Contributing model</h2>
+<div class="grid c3">
+  <div class="card"><h3>Ten-minute start</h3><p><code>git clone</code>, <code>pnpm i</code>, <code>pnpm dev</code>. That starts Postgres in Docker, runs the changelog with the <code>demo</code> context so the Acme Labs sample data from the mocks is loaded, starts server and web with hot reload, and opens the app with a logged-in admin. A devcontainer and Codespaces config do the same in the browser.</p></div>
+  <div class="card"><h3>Extension points</h3><p>Every pluggable capability has a <code>CONTRIBUTING</code> section with a template: AI provider, email sender, object store, importer, SSO provider, workflow rule, automation action, editor node, theme preset. Each is one file plus one registry line.</p></div>
+  <div class="card"><h3>Decisions are written</h3><p>ADRs in <code>docs/adr/</code>, one per decision in this document and every future one. A PR that changes an ADR'd behaviour links the ADR. This document becomes ADR-0001.</p></div>
+  <div class="card"><h3>Reviews</h3><p>Conventional commits, one approval, CI green, visual check noted in the PR for UI changes. Maintainers triage weekly; <code>good first issue</code> and <code>help wanted</code> are curated, not auto-labelled.</p></div>
+  <div class="card"><h3>Releases</h3><p>Monthly minor, patch as needed. Release PR generated by the changesets release tool; image, Helm chart, air-gap bundle and installer tag published together; release notes list schema changesets and config changes.</p></div>
+  <div class="card"><h3>Community</h3><p>GitHub Discussions for questions, Discord for chat, a public roadmap board that is itself a Lattice instance (the live demo), security address in <code>SECURITY.md</code>.</p></div>
+</div>
+
+<!-- ===================================================== 23 -->
+<h2 id="roadmap">24. Milestones</h2>
+<p>Six milestones to 1.0. Each ends with a deployable image, so the installer and upgrade path are exercised from the first month, not bolted on at the end.</p>
+<table>
+  <tr><th style="width:170px">Milestone</th><th>Scope</th><th style="width:230px">Exit criterion</th></tr>
+  <tr><td><strong>M0 Foundation</strong><br><span class="small">weeks 1–4</span></td><td>Monorepo, standards lint rules, Fastify host, the kernel with the module contract, registry, loader and the Liquibase-style changelog runner with its CLI (proven with a throwaway sample module), Drizzle schema and changesets for identity and system, sessions and password auth, roles and capability matrix, settings, pg-boss, NOTIFY hub, email outbox and SMTP, audit log, design tokens and the eight presets in <code>packages/ui</code>, Storybook, installer v0 with Compose, Caddy and the updater, in-app update flow, <code>lattice</code> CLI, backups, CI gates.</td><td>Fresh VM to login page in under 5 minutes; in-app update and rollback work; a sample module can be enabled and disabled from Settings; People and Appearance screens match mocks.</td></tr>
+  <tr><td><strong>M1 Work module</strong><br><span class="small">weeks 5–10</span></td><td>Built as <code>modules/work</code> against the contract. Projects, issue types, fields, workflows with the visual editor, issues with history, comments, attachments, links, labels, versions, board (Scrum and Kanban) with settings, backlog and sprints, LQL and saved filters, keyword search, notifications inbox and email, realtime invalidation, home "my work".</td><td>Board, Backlog, Issue, Board settings and Workflow screens match mocks; board p95 budget met.</td></tr>
+  <tr><td><strong>M2 Docs module</strong><br><span class="small">weeks 11–14</span></td><td>Built as <code>modules/docs</code>; must boot and pass its tests with Work disabled. Spaces, page tree, Tiptap editor with custom nodes, Yjs collaboration and persistence, revisions, inline comments, templates, links graph with backlinks and "referenced in", exports.</td><td>Docs home and Doc editor match mocks; two browsers edit one page without conflict.</td></tr>
+  <tr><td><strong>M3 AI</strong><br><span class="small">weeks 15–18</span></td><td>AI SDK facade, package loader, registry and middleware stack, the models.dev catalog resolved live with snapshot and bundled fallbacks, the provider picker and connection forms generated from the catalog, model roles, prompt files and overrides, context builders, insights cache, issue summary, page TL;DR, sprint pulse, morning brief, ask-your-docs with embeddings and citations, ⌘K palette with plans, ghost text and <code>/ai</code> commands, consistency checks, AI settings with privacy and budget, evals.</td><td>Home, Command palette and the AI panels across screens match mocks; evals pass; "none" mode hides every AI surface.</td></tr>
+  <tr><td><strong>M4 Import and integrations</strong><br><span class="small">weeks 19–22</span></td><td>Jira, Confluence, CSV and Markdown importers; OIDC and SAML SSO; SCIM; GitHub and GitLab code links; outgoing webhooks and chat templates; automation rules; roadmap with forecast; MCP server; setup wizard complete.</td><td>Setup wizard and Roadmap match mocks; a real Jira site with 10k issues imports in under 30 minutes on the reference VM.</td></tr>
+  <tr><td><strong>M5 Launch</strong><br><span class="small">weeks 23–26</span></td><td>Helm chart, Terraform modules, air-gap bundle, docs site and landing page, live demo instance, installable PWA with web push, accessibility pass (WCAG 2.2 AA), i18n scaffolding, security review, load and soak sign-off, 1.0 release.</td><td>All gates green; external security review closed; three design-partner companies on 1.0.</td></tr>
+</table>
+
+<!-- ===================================================== 24 -->
+<h2 id="decisions">25. Open decisions that need your call</h2>
+<p>Everything above is a recommendation with the reasoning attached. These are the ones where a different answer would change the build materially, listed with the default that will be taken if nothing is said.</p>
+<table>
+  <tr><th style="width:260px">Decision</th><th>Recommendation (default)</th><th>Alternative and what it costs</th></tr>
+  <tr><td>Postgres only vs database options</td><td>Postgres only; options are where it runs.</td><td>Adding Mongo doubles every data-layer cost permanently and removes the queue, search and vector consolidation that makes the one-container promise possible.</td></tr>
+  <tr><td>SPA (Vite) vs Next.js</td><td>SPA served by the app process.</td><td>Next.js adds a second Node server or forces the API into Next; gains SSR nobody behind a login needs. The marketing site uses Astro separately.</td></tr>
+  <tr><td>Caddy as a third container</td><td>Include, optional.</td><td>ACME inside the app keeps "one container" literally true but means owning certificate code. Could be revisited after 1.0.</td></tr>
+  <tr><td>Name, domain and org</td><td><code>lattice</code>, <code>get.lattice.dev</code>, <code>ghcr.io/lattice-dev</code> as placeholders.</td><td>Trademark and domain availability need checking before M0 publishes anything.</td></tr>
+  <tr><td>Licence</td><td>MIT, as the mocks state.</td><td>AGPL protects against hosted forks but deters some companies; Apache-2 adds a patent grant. MIT is the most adoption-friendly.</td></tr>
+  <tr><td>Multi-workspace per install</td><td>One workspace per install for 1.0.</td><td>Multi-tenant adds a tenant column to every table and a tenant check to every query. Cheap now, expensive later, but it is not what self-hosters ask for.</td></tr>
+  <tr><td>One website vs one site per module</td><td>One website, path-routed modules, optional vanity hosts via the proxy (§4).</td><td>Separate sites give independent deploys and natural branding at the cost of SSO complexity, duplicated shell, cross-service calls for every cross-module feature and a multi-host install.</td></tr>
+  <tr><td>One mobile app vs one per module</td><td>One app reading the module manifest; PWA first, native shell after 1.0.</td><td>Per-module apps mean several store listings, several logins and no cross-module deep links. The only gain is smaller individual binaries, which lazy module bundles also give.</td></tr>
+  <tr><td>Modules in one image vs downloadable modules</td><td>One image, enabled per install (§4).</td><td>Separately distributed modules need signing, a compatibility matrix and a plugin sandbox. The contract supports it; 2.0 scope.</td></tr>
+  <tr><td>models.dev as the model catalog</td><td>Use it live by default, last snapshot then bundled copy as fallbacks (§11.1).</td><td>Maintaining our own provider and model list means a Lattice release for every new model. The dependency is a 300 KB JSON file we can fork if the project ever stalls.</td></tr>
+  <tr><td>AI SDK as the only integration vs own provider code</td><td>AI SDK 7 behind a facade, providers resolved from the catalog (§11.1).</td><td>Own code avoids the SDK's yearly major-version churn but means re-implementing streaming, tool calling and structured output per vendor. The facade limits the churn to one folder.</td></tr>
+  <tr><td>Updater sidecar with Docker socket</td><td>Install by default, opt out with a flag.</td><td>No sidecar means updates are CLI-only and the "Update" button can only show instructions. Some security teams will choose that; the flag exists for them.</td></tr>
+  <tr><td>Sync engine (local replica) for the client</td><td>Not in 1.0; TanStack Query with prefetch and optimistic updates.</td><td>A Linear-style local database makes every navigation instant and offline-tolerant at the cost of a large, subtle subsystem. Candidate for 1.x once the API is stable.</td></tr>
+  <tr><td>Inbound email and service desk</td><td>Post 1.0.</td><td>Both are frequent asks from Jira users; both are large.</td></tr>
+  <tr><td>Telemetry</td><td>None by default; an opt-in anonymous ping with version and counts, shown and explained in the wizard.</td><td>No telemetry at all leaves maintainers blind to which features matter.</td></tr>
+</table>
+
+<div class="hr"></div>
+<p class="small">Next step after sign-off: convert this into ADR-0001, scaffold the monorepo per §6, and start M0 with the installer and the identity module, because every later milestone is verified through them.</p>
+</main>
+</div>
+</body>
+</html>
