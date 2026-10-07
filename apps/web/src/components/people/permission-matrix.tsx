@@ -5,9 +5,26 @@ import type { useRolesMatrix } from '../../hooks/use-roles.ts';
 
 type Matrix = ReturnType<typeof useRolesMatrix>;
 
+const CAPABILITY_MIN = 200;
+const ROLE_COLUMN = 110;
+const LOCK_COLUMN = 70;
+/** px-4 on both sides of every row. */
+const ROW_PADDING = 32;
+
 /** Capability, one 110px column per role, then the 70px lock column, as in the mock. */
 function gridOf(roles: readonly Role[]): CSSProperties {
-  return { gridTemplateColumns: `minmax(0,1fr) ${roles.map(() => '110px').join(' ')} 70px` };
+  const columns = roles.map(() => `${ROLE_COLUMN}px`).join(' ');
+  return { gridTemplateColumns: `minmax(${CAPABILITY_MIN}px,1fr) ${columns} ${LOCK_COLUMN}px` };
+}
+
+/**
+ * Below this width the card scrolls sideways instead of squeezing the capability
+ * column under the role headers.
+ */
+function minWidthOf(roles: readonly Role[]): CSSProperties {
+  return {
+    minWidth: CAPABILITY_MIN + roles.length * ROLE_COLUMN + LOCK_COLUMN + ROW_PADDING,
+  };
 }
 
 function Header({ roles, grid }: { roles: readonly Role[]; grid: CSSProperties }) {
@@ -42,8 +59,8 @@ export function PermissionMatrix({ matrix }: { matrix: Matrix }) {
   const { roles, groups, canManage } = matrix;
   const grid = gridOf(roles);
   return (
-    <Card>
-      <div role="table" aria-label="Roles and permissions" className="overflow-x-auto">
+    <Card className="overflow-x-auto">
+      <div role="table" aria-label="Roles and permissions" style={minWidthOf(roles)}>
         <Header roles={roles} grid={grid} />
         {groups.map((group) => (
           <div key={group.name} role="rowgroup">

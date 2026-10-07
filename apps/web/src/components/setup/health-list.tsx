@@ -25,28 +25,31 @@ export function StatusCircle({ status }: { status: HealthRowStatus }) {
   );
 }
 
-/** Step 1's check list: status, name, the measured value, and a fix link when there is one. */
+/**
+ * Step 1's check list: status, name, the measured value, and a fix link when there is one. A
+ * hint is a sentence, so it gets its own line under the name rather than crowding the column.
+ */
 export function HealthList({ rows }: { rows: readonly HealthRow[] }) {
   return (
     <Card aria-label="Server checks" className="flex flex-col px-4 py-1.5">
       {rows.map((row) => (
         <div
           key={row.id}
-          className="flex items-center gap-2.5 border-b border-br-row py-2.5 text-12h last:border-b-0"
+          className="flex flex-wrap items-center gap-x-2.5 gap-y-1 border-b border-br-row py-2.5 text-12h last:border-b-0"
         >
           <StatusCircle status={row.status} />
           <span
-            className={`w-50 shrink-0 font-medium ${row.status === 'pending' ? 'text-tx4' : 'text-tx'}`}
+            className={`w-50 min-w-24 shrink font-medium ${row.status === 'pending' ? 'text-tx4' : 'text-tx'}`}
           >
             {row.name}
           </span>
-          <span className="min-w-0 truncate font-mono text-12 text-tx4">{row.detail}</span>
+          <span className="min-w-0 flex-1 truncate font-mono text-12 text-tx4">{row.detail}</span>
           {row.fix ? (
-            <RouterLink href={row.fix.href} className="ml-auto shrink-0 font-medium text-ac">
+            <RouterLink href={row.fix.href} className="shrink-0 font-medium text-ac">
               {row.fix.label}
             </RouterLink>
           ) : row.hint ? (
-            <span className="ml-auto shrink-0 text-12 text-tx5">{row.hint}</span>
+            <span className="basis-full pl-6.5 text-12 leading-body text-tx5">{row.hint}</span>
           ) : null}
         </div>
       ))}
