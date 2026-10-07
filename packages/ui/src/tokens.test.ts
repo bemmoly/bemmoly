@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
+import { formattedCssFiles } from '../scripts/format-css.ts';
 import { renderCssFiles, renderTailwindCss } from './css.ts';
 import { channelDistance, mixCss, resolveHex } from './theme/color.ts';
 import {
@@ -153,9 +154,9 @@ describe('design tokens', () => {
 });
 
 describe('generated CSS', () => {
-  it('every generated file is in sync with tokens.ts', () => {
+  it('every generated file is in sync with tokens.ts', async () => {
     const normalise = (css: string) => css.replace(/\s+/g, ' ').trim();
-    for (const [path, css] of Object.entries(renderCssFiles())) {
+    for (const [path, css] of Object.entries(await formattedCssFiles())) {
       const onDisk = readFileSync(join(dirname(fileURLToPath(import.meta.url)), path), 'utf8');
       expect(normalise(onDisk), path).toBe(normalise(css));
     }

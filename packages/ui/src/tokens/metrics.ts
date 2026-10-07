@@ -71,6 +71,7 @@ export const TRACKING = {
   caps: '.06em',
   label: '.07em',
   dots: '1px',
+  grip: '-2px',
 } as const;
 
 /** Shadows from the mocks. `ring` is the selected-card ring (0 0 0 2px of the accent border). */
@@ -82,6 +83,12 @@ export const SHADOWS = {
   modal: '0 24px 64px rgba(16,24,40,.35),0 0 0 1px rgba(16,24,40,.08)',
   ring: '0 0 0 2px var(--ac-br)',
   'ring-ac': '0 0 0 2px var(--ac)',
+  /** Active tab and top bar item underline. */
+  tab: 'inset 0 -2px 0 var(--ac)',
+  /** Selected radio: white gap, then the accent dot (Board Settings). */
+  radio: 'inset 0 0 0 4px var(--sf), inset 0 0 0 9px var(--ac-fill)',
+  /** Board filter avatars: a 1px page-coloured halo outside the 2px ring. */
+  halo: '0 0 0 1px var(--bg)',
 } as const;
 
 /** The mocks animate only the switch knob, at .15s. */

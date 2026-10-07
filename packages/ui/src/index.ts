@@ -3,5 +3,5 @@ export {
   buttonClassName,
   type ButtonProps,
   type ButtonVariant,
-} from './components/button.tsx';
+} from './components/button/button.tsx';
 export * from './tokens.ts';

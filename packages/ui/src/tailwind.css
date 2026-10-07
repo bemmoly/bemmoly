@@ -74,6 +74,7 @@
   --tracking-caps: 0.06em;
   --tracking-label: 0.07em;
   --tracking-dots: 1px;
+  --tracking-grip: -2px;
 }
 
 @theme inline {
@@ -165,6 +166,9 @@
   --shadow-modal: var(--shadow-modal);
   --shadow-ring: var(--shadow-ring);
   --shadow-ring-ac: var(--shadow-ring-ac);
+  --shadow-tab: var(--shadow-tab);
+  --shadow-radio: var(--shadow-radio);
+  --shadow-halo: var(--shadow-halo);
   --radius-control: var(--radius-control);
   --spacing-control: var(--size-control);
   --spacing-topbar: var(--size-topbar);

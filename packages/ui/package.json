@@ -8,9 +8,11 @@
     ".": "./src/index.ts",
     "./tokens": "./src/tokens.ts",
     "./theme": "./src/theme/index.ts",
+    "./icons": "./src/icons/index.ts",
     "./theme.css": "./src/theme.css",
     "./tailwind.css": "./src/tailwind.css",
-    "./fonts.css": "./src/fonts.css"
+    "./fonts.css": "./src/fonts.css",
+    "./brand/*": "./assets/brand/*"
   },
   "scripts": {
     "build": "storybook build --quiet --output-dir storybook-static",
@@ -18,7 +20,8 @@
     "tokens:css": "node scripts/generate-css.ts",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "lint": "eslint --max-warnings 0 .",
-    "test": "vitest run"
+    "test": "vitest run",
+    "brand:icons": "node scripts/brand-icons.ts"
   },
   "dependencies": {
     "@fontsource/geist": "5.3.0",
@@ -31,6 +34,7 @@
     "react": "19.3.0"
   },
   "devDependencies": {
+    "@resvg/resvg-js": "2.6.2",
     "@storybook/react-vite": "10.6.1",
     "@tailwindcss/vite": "4.3.3",
     "@testing-library/dom": "10.4.2",
@@ -41,6 +45,8 @@
     "@types/react-dom": "19.3.0",
     "axe-core": "4.14.0",
     "jsdom": "30.1.2",
+    "opentype.js": "2.0.0",
+    "prettier": "3.9.9",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "storybook": "10.6.1",
