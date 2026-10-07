@@ -25,7 +25,10 @@ describe('setup, sign-in and sessions against a real database', () => {
   it('creates the first admin exactly once and reports setup status', async (ctx) => {
     if (!harness) return ctx.skip(skipReason);
     const { app } = harness;
-    expect((await call(app, 'GET', '/setup/status')).json()).toEqual({ initialized: false });
+    expect((await call(app, 'GET', '/setup/status')).json()).toEqual({
+      initialized: false,
+      completedAt: null,
+    });
 
     const created = await call(app, 'POST', '/setup/admin', {
       body: { workspaceName: 'Acme', workspaceUrl: 'https://a.test', name: 'Rohan', ...ADMIN },
@@ -36,7 +39,10 @@ describe('setup, sign-in and sessions against a real database', () => {
     expect(setCookie).toMatch(/HttpOnly/);
     expect(setCookie).toMatch(/SameSite=Lax/);
     expect(setCookie).toMatch(/Max-Age=25919\d\d|Max-Age=2592000/);
-    expect((await call(app, 'GET', '/setup/status')).json()).toEqual({ initialized: true });
+    expect((await call(app, 'GET', '/setup/status')).json()).toEqual({
+      initialized: true,
+      completedAt: null,
+    });
 
     const again = await call(app, 'POST', '/setup/admin', {
       body: { workspaceName: 'X', workspaceUrl: 'https://x.test', name: 'Eve', ...ADMIN },
