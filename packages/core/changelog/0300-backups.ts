@@ -5,7 +5,6 @@ export default changeset({
   id: '0300-backups',
   author: 'bemmoly',
   description: 'Add the backups table that indexes scheduled, manual and pre-upgrade backups',
-  preconditions: [{ tableExists: { table: 'backups' }, onFail: 'markRan' }],
   contexts: ['*'],
   up: async (ctx) => {
     await ctx.exec(sql`
