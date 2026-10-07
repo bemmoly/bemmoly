@@ -1,4 +1,4 @@
-import type { BackupSchedule } from '@bemmoly/shared';
+import type { BackupSchedule, UpdateStatus } from '@bemmoly/shared';
 import { audit, can, emit, type MockDb } from '../db.ts';
 import { bodyOf, fail, notFound, ok, page, type MockRoute } from '../types.ts';
 
@@ -139,17 +139,24 @@ export const operationsRoutes: MockRoute[] = [
     handle: adminOnly((request, db) => {
       const entry = db.backups.find((backup) => backup.id === request.params['id']);
       if (!entry) return notFound('That backup');
+      if (bodyOf<{ confirm: string }>(request).confirm !== entry.id) {
+        return fail(400, 'validation_failed', `Type ${entry.id} to confirm.`);
+      }
       audit(db, 'backup.restored', 'backup', entry.id);
       return { status: 202 };
     }),
   },
-  { method: 'GET', pattern: '/api/v1/admin/updates', handle: adminOnly((_, db) => ok(db.updates)) },
+  {
+    method: 'GET',
+    pattern: '/api/v1/admin/updates',
+    handle: adminOnly((_, db) => ok(updateStatus(db, true))),
+  },
   {
     method: 'POST',
     pattern: '/api/v1/admin/updates/check',
     handle: adminOnly((_, db) => {
       db.updates.lastCheckedAt = new Date().toISOString();
-      return ok(db.updates);
+      return ok(updateStatus(db, false));
     }),
   },
   {
@@ -207,4 +214,43 @@ export const operationsRoutes: MockRoute[] = [
 
 function schedule(db: MockDb): BackupSchedule {
   return db.settings['backups.schedule'] as BackupSchedule;
+}
+
+/**
+ * The channel follows the `updates.channel` setting. A running job finishes on
+ * the next poll, so the page shows the updater's progress and then its result.
+ */
+function updateStatus(db: MockDb, advance: boolean): UpdateStatus {
+  const updates = db.updates;
+  updates.channel = (db.settings['updates.channel'] as UpdateStatus['channel']) ?? updates.channel;
+  if (!advance || updates.job?.state !== 'running') return updates;
+  const now = new Date().toISOString();
+  if (updates.job.action === 'update' && updates.latest) {
+    const from = updates.currentVersion;
+    updates.currentVersion = updates.latest.version;
+    updates.previous = {
+      version: from,
+      updatedAt: now,
+      availableUntil: new Date(Date.now() + 7 * 86_400_000).toISOString(),
+      rollbackMode: updates.latest.irreversible ? 'restore' : 'code',
+      discardCount: updates.latest.irreversible ? 0 : null,
+      droppedFields: [],
+    };
+    updates.latest = null;
+    updates.job = {
+      action: 'update',
+      state: 'succeeded',
+      message: `Updated to ${updates.currentVersion}.`,
+    };
+  } else if (updates.job.action === 'rollback' && updates.previous) {
+    updates.currentVersion = updates.previous.version;
+    updates.previous = null;
+    updates.job = {
+      action: 'rollback',
+      state: 'succeeded',
+      message: `Rolled back to ${updates.currentVersion}.`,
+    };
+  }
+  db.system.version = updates.currentVersion;
+  return updates;
 }
