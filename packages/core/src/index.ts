@@ -3,9 +3,8 @@ export type * from './contracts/index.ts';
 export { changeset } from './contracts/changelog.ts';
 export * from './modules/index.ts';
 export { API_PREFIX, kernelRoutes, type KernelRouteDependencies } from './routes/index.ts';
-export {
-  checkReadiness,
-  type DatabaseProbe,
-  type ReadinessDependencies,
-} from './services/system/index.ts';
+export * from './services/system/index.ts';
+export type { SystemControllerDependencies } from './controllers/system.controller.ts';
+export { maintenanceHook } from './middlewares/maintenance.ts';
+export { backups, type BackupRow } from './models/backups.ts';
 export { listModuleManifests } from './services/modules/index.ts';
