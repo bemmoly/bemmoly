@@ -22,7 +22,8 @@
     "lint": "eslint --max-warnings 0 .",
     "test": "vitest run",
     "brand:marks": "node scripts/brand-marks.ts",
-    "brand:icons": "node scripts/brand-icons.ts"
+    "brand:icons": "node scripts/brand-icons.ts",
+    "brand:banners": "node scripts/brand-banners.ts"
   },
   "dependencies": {
     "@fontsource/geist": "5.3.0",

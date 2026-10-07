@@ -1,5 +1,6 @@
 /**
- * Generates favicons, PWA icons and the social preview from the brand files in assets/brand.
+ * Generates favicons, PWA icons and the social preview from the brand files in assets/brand,
+ * then the banners (brand-banners.ts).
  * Run `pnpm --filter @bemmoly/ui brand:icons` after replacing a brand file; the output in
  * assets/brand/generated is committed. The mark keeps its designed colours; the plates behind
  * it come from the Classic preset in tokens.ts.
@@ -7,6 +8,7 @@
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { Resvg } from '@resvg/resvg-js';
 import { themeById } from '../src/tokens.ts';
+import { writeBanners } from './brand-banners.ts';
 import { squareCard, wideCard } from './social-preview.ts';
 
 const brand = new URL('../assets/brand/', import.meta.url);
@@ -82,3 +84,4 @@ const files: Record<string, string | Buffer> = {
   'social-preview-square.png': png(squareCard(preview), 1080),
 };
 for (const [name, data] of Object.entries(files)) writeFileSync(new URL(name, out), data);
+writeBanners();
