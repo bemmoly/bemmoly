@@ -1,4 +1,4 @@
 {
   "extends": "../../tsconfig.base.json",
-  "include": ["*.ts", "server", "shared"]
+  "include": ["*.ts", "changelog", "server", "shared"]
 }

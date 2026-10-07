@@ -14,7 +14,9 @@
   },
   "dependencies": {
     "@bemmoly/core": "workspace:*",
-    "@bemmoly/shared": "workspace:*"
+    "@bemmoly/shared": "workspace:*",
+    "fastify": "5.12.5",
+    "zod": "4.6.5"
   },
   "devDependencies": {
     "vitest": "5.0.3"
