@@ -249,13 +249,14 @@ describe('email outbox against Postgres', () => {
   it('round-trips its changesets', async () => {
     const runner = await kernelChangelogRunner(harness.sql);
     const reverted = await runner.rollback('core', { toId: '0108-identity-seed' });
-    expect(reverted.map((entry) => entry.id).sort()).toEqual(EMAIL_CHANGESET_IDS);
+    // Later blocks (03xx) roll back too, since they were applied after 0108.
+    expect(reverted.map((entry) => entry.id)).toEqual(expect.arrayContaining(EMAIL_CHANGESET_IDS));
     const [gone] = await harness.sql<{ n: number }[]>`
       select count(*)::int as n from information_schema.tables
        where table_name in ('email_outbox', 'notifications', 'notification_preferences',
                             'notification_schedules')`;
     expect(gone?.n).toBe(0);
     const applied = await runner.update({ contexts: ['test'] });
-    expect(applied.map((entry) => entry.id)).toEqual(EMAIL_CHANGESET_IDS);
+    expect(applied.map((entry) => entry.id)).toEqual(expect.arrayContaining(EMAIL_CHANGESET_IDS));
   });
 });
