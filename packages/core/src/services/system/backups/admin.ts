@@ -9,6 +9,7 @@ import type { Actor } from '../../../contracts/authz.ts';
 import type { RequestMeta } from '../../audit/index.ts';
 import type { SystemDependencies } from '../deps.ts';
 import { SYSTEM_CAPABILITY } from '../authorize.ts';
+import { assertNoUpdaterOperation } from '../maintenance/updater-lock.ts';
 import { recordBackupAudit, withBackupAudit, type BackupAudit } from './audit.ts';
 import { BACKUP_JOB } from './jobs.ts';
 import { setNameFor } from './manifest.ts';
@@ -117,6 +118,8 @@ export async function requestRestore(
   const record = await createBackupRepository(deps.sql).get(id);
   if (!record || record.status !== 'succeeded')
     throw new NotFoundError(`No completed backup ${id}`);
+  // Checked here as well so the request gets the 409, not a failure in the logs.
+  await assertNoUpdaterOperation(deps.config.dataDir);
   deps.logger.warn({ backupId: id, actor: actor.id }, 'restore requested');
   const audit = auditOf(actor, meta);
   // The restore replaces the database, audit log included, so its row is written

@@ -1,5 +1,7 @@
 import {
   MAINTENANCE_FILE,
+  UPDATER_LOCK_FILE,
+  UPDATER_LOCK_STALE_MS,
   updaterStatusSchema,
   type MaintenanceState,
   type UpdaterHistoryEntry,
@@ -14,7 +16,7 @@ export function statePaths(bemmolyDir: string) {
   return {
     data,
     state: path.join(data, 'updater', 'state.json'),
-    lock: path.join(data, 'updater', 'lock'),
+    lock: path.join(data, UPDATER_LOCK_FILE),
     maintenance: path.join(data, MAINTENANCE_FILE),
     env: path.join(bemmolyDir, '.env'),
   };
@@ -75,9 +77,10 @@ export async function writeVersion(bemmolyDir: string, version: string): Promise
   await writeAtomic(file, lines.join('\n'), 0o600);
 }
 
-const STALE_LOCK_MS = 2 * 3_600_000;
-
-/** One operation at a time across the service and the one-shot CLI. */
+/**
+ * One operation at a time across the service and the one-shot CLI. The host CLI, the
+ * backup timer and the app's restore read the same file and wait while it is held.
+ */
 export async function acquireLock(bemmolyDir: string): Promise<() => Promise<void>> {
   const file = statePaths(bemmolyDir).lock;
   await mkdir(path.dirname(file), { recursive: true });
@@ -88,7 +91,7 @@ export async function acquireLock(bemmolyDir: string): Promise<() => Promise<voi
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code !== 'EEXIST') throw error;
     const age = Date.now() - (await stat(file)).mtimeMs;
-    if (age < STALE_LOCK_MS) {
+    if (age < UPDATER_LOCK_STALE_MS) {
       throw new Error('Another update or rollback is running; see `bemmoly status`', {
         cause: error,
       });

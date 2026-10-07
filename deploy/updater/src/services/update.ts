@@ -96,6 +96,7 @@ async function rollBackFailedUpdate(
           'restore',
           attempt.backupSet,
           '--json',
+          '--as-updater',
         ]),
       );
     }
