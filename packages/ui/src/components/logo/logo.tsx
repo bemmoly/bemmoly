@@ -37,7 +37,11 @@ export function Logo({
   return (
     <span
       {...a11y}
-      className={cx('inline-flex shrink-0 text-tx [&>svg]:h-full [&>svg]:w-auto', className)}
+      className={cx(
+        'inline-flex shrink-0 text-tx [&>svg]:h-full [&>svg]:w-auto',
+        '[&_.brand-mark-bg]:fill-(--brand-mark-bg) [&_.brand-mark-fg]:fill-(--brand-mark-fg)',
+        className,
+      )}
       style={{ ...THEME_VARS, height: size }}
       dangerouslySetInnerHTML={{ __html: decorative(svg) }}
     />

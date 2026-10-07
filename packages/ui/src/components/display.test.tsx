@@ -68,7 +68,11 @@ describe('display components', () => {
     const logo = screen.getByRole('img', { name: 'Bemmoly' });
     expect(logo.querySelector('svg')?.getAttribute('aria-hidden')).toBe('true');
     expect(logo.getAttribute('style')).toContain('--brand-mark-bg: var(--ac-fill)');
-    expect(logo.innerHTML).toContain('var(--brand-mark-bg');
+    // The CSP refuses inline style attributes, so the themed fills arrive as classes.
+    expect(logo.innerHTML).not.toContain('style=');
+    expect(logo.querySelector('.brand-mark-bg')).not.toBeNull();
+    expect(logo.querySelector('.brand-mark-fg')).not.toBeNull();
+    expect(logo.className).toContain('[&_.brand-mark-bg]:fill-(--brand-mark-bg)');
     render(<WorkspaceMark name="Acme Labs" />);
     expect(screen.getByRole('img', { name: 'Acme Labs' }).textContent).toBe('A');
   });
