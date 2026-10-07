@@ -1,8 +1,19 @@
 import { readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { buttonClassName } from './components/button.tsx';
-import { renderTailwindCss, renderThemeCss } from './css.ts';
-import { PRESET_IDS, themeById, THEMES } from './tokens.ts';
+import { formattedCssFiles } from '../scripts/format-css.ts';
+import { renderCssFiles, renderTailwindCss } from './css.ts';
+import { channelDistance, mixCss, resolveHex } from './theme/color.ts';
+import {
+  accentTints,
+  AI_TOKENS,
+  COLOR_TOKENS,
+  PRESET_IDS,
+  PRESETS,
+  themeById,
+  THEMES,
+} from './tokens.ts';
 
 /** Copied verbatim from the `P` array in the Appearance Settings mock. */
 const APPEARANCE_PRESETS = [
@@ -42,6 +53,31 @@ const BOARD_ROOT = {
   tx6: '#a2aab8',
 };
 
+/** Literals the other mocks use, which Classic must equal exactly. */
+const MOCK_LITERALS = {
+  'ac-br2': '#d9e1f5',
+  sf2: '#fafbfc',
+  'br-row': '#eceef2',
+  'br-ctl': '#c8ced8',
+  'br-off': '#cfd4dc',
+  'tx-body': '#2c3545',
+  ok: '#2b9b5a',
+  'ok-fg': '#1f7a44',
+  'ok-bg': '#e3f4ea',
+  danger: '#d93838',
+  'danger-hi': '#c42d2d',
+  warn: '#e0632a',
+  'warn-fg': '#b4470f',
+  'warn-bg': '#fdeee3',
+  caution: '#d49a1a',
+  'st-rev-bg': '#efe9fd',
+  'st-rev-fg': '#5a3cae',
+  'st-qa-bg': '#fdf3dc',
+  'st-qa-fg': '#8a6210',
+  'violet-bg': '#e4dcfa',
+  'sky-fg': '#075985',
+};
+
 describe('design tokens', () => {
   it('has the eight presets of the Setup and Appearance mocks, in order', () => {
     expect(PRESET_IDS).toEqual(APPEARANCE_PRESETS.map(([id]) => id));
@@ -60,14 +96,53 @@ describe('design tokens', () => {
     },
   );
 
-  it('Classic equals the Board mock :root variables exactly', () => {
-    expect(themeById('light').colors).toMatchObject(BOARD_ROOT);
+  it('Classic equals the Board mock :root variables and the other mocks literals exactly', () => {
+    expect(themeById('light').colors).toMatchObject({ ...BOARD_ROOT, ...MOCK_LITERALS });
     expect(themeById('light').fontUi.startsWith("'IBM Plex Sans'")).toBe(true);
+  });
+
+  it('keeps Classic as exact hex because the Board formula does not reproduce it', () => {
+    const formula = accentTints('#2456c9', 'light', '#fff');
+    const exact = PRESETS[0].exact.tints;
+    for (const token of Object.keys(formula) as (keyof typeof formula)[]) {
+      const steps = channelDistance(formula[token], exact[token]);
+      expect(steps).toBeGreaterThan(0);
+      expect(steps).toBeLessThanOrEqual(17);
+    }
   });
 
   it('derives tints for the other presets with the Board mock formula', () => {
     expect(themeById('dark').colors['ac-bg']).toBe('color-mix(in oklab, #5b8def 18%, #1a1f29)');
     expect(themeById('slate').colors['ac-bg']).toBe('color-mix(in oklab, #0f766e 9%, #fff)');
+  });
+
+  it('derives dark status and avatar pairs with the Board mock people remap', () => {
+    const dark = themeById('dark').colors;
+    expect(dark['st-rev-bg']).toBe(mixCss('#5a3cae', 30, '#1a1f29'));
+    expect(dark['st-rev-fg']).toBe(mixCss('#5a3cae', 60, '#fff'));
+    expect(dark['orange-bg']).toBe(mixCss('#9a4a16', 30, '#1a1f29'));
+  });
+
+  it('defines every colour token in every preset, each resolvable to a colour', () => {
+    for (const theme of THEMES) {
+      for (const token of COLOR_TOKENS) {
+        const value = theme.colors[token];
+        expect(value, `${theme.id} ${token}`).toBeTruthy();
+        if (!value.startsWith('rgba(')) expect(resolveHex(value)).toMatch(/^#[0-9a-f]{6}$/);
+      }
+    }
+  });
+
+  it('reserves the AI tokens and starts them on the accent family the mocks use for AI', () => {
+    expect(AI_TOKENS).toEqual(['ai', 'ai-mute', 'ai-bg', 'ai-tint', 'ai-br', 'ai-br2', 'ai-tx']);
+    for (const { colors } of THEMES) {
+      expect(colors.ai).toBe(colors.ac);
+      expect(colors['ai-bg']).toBe(colors['ac-bg2']);
+      expect(colors['ai-tint']).toBe(colors['ac-bg']);
+      expect(colors['ai-br']).toBe(colors['ac-br']);
+      expect(colors['ai-br2']).toBe(colors['ac-br2']);
+      expect(colors['ai-mute']).toBe(colors['ac-mute']);
+    }
   });
 
   it('gives every font stack real fallbacks', () => {
@@ -79,27 +154,26 @@ describe('design tokens', () => {
 });
 
 describe('generated CSS', () => {
-  it('theme.css and tailwind.css are in sync with tokens.ts', () => {
-    const read = (name: string) => readFileSync(new URL(name, import.meta.url), 'utf8');
+  it('every generated file is in sync with tokens.ts', async () => {
     const normalise = (css: string) => css.replace(/\s+/g, ' ').trim();
-    expect(normalise(read('./theme.css'))).toBe(normalise(renderThemeCss()));
-    expect(normalise(read('./tailwind.css'))).toBe(normalise(renderTailwindCss()));
-  });
-
-  it('declares every preset and removes the default Tailwind palette', () => {
-    const css = renderThemeCss();
-    for (const id of PRESET_IDS) expect(css).toContain(`[data-theme='${id}']`);
-    expect(renderTailwindCss()).toContain('--color-*: initial;');
-  });
-});
-
-describe('Button', () => {
-  it('uses token utilities only, never literal colours', () => {
-    for (const variant of ['primary', 'secondary'] as const) {
-      const classes = buttonClassName(variant);
-      expect(classes).not.toMatch(/#[0-9a-f]{3,8}|rgb\(|\[/i);
+    for (const [path, css] of Object.entries(await formattedCssFiles())) {
+      const onDisk = readFileSync(join(dirname(fileURLToPath(import.meta.url)), path), 'utf8');
+      expect(normalise(onDisk), path).toBe(normalise(css));
     }
-    expect(buttonClassName('primary')).toContain('bg-ac');
-    expect(buttonClassName('secondary', 'w-full')).toContain('border-br3');
+  });
+
+  it('declares every preset and removes the default Tailwind palette and scales', () => {
+    const files = renderCssFiles();
+    for (const id of PRESET_IDS)
+      expect(files[`styles/presets/${id}.css`]).toContain(`[data-theme='${id}']`);
+    for (const reset of ['--color-*', '--text-*', '--radius-*', '--shadow-*']) {
+      expect(renderTailwindCss()).toContain(`${reset}: initial;`);
+    }
+  });
+
+  it('stops animation and transitions under prefers-reduced-motion', () => {
+    expect(renderCssFiles()['styles/base.css']).toMatch(
+      /prefers-reduced-motion: reduce[\s\S]*transition-duration: 0\.01ms !important/,
+    );
   });
 });
