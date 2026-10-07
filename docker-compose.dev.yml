@@ -1,0 +1,24 @@
+# Local development database. `pnpm dev` starts it and waits for it to be healthy.
+name: bemmoly-dev
+
+services:
+  db:
+    image: pgvector/pgvector:pg18
+    environment:
+      POSTGRES_USER: bemmoly
+      POSTGRES_PASSWORD: bemmoly
+      POSTGRES_DB: bemmoly_db
+    ports:
+      - '127.0.0.1:5432:5432'
+    volumes:
+      # Postgres 18 images keep data under /var/lib/postgresql/18/docker.
+      - bemmoly-db:/var/lib/postgresql
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U bemmoly -d bemmoly_db']
+      interval: 2s
+      timeout: 3s
+      retries: 30
+      start_period: 5s
+
+volumes:
+  bemmoly-db:

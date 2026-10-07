@@ -10,8 +10,10 @@
     "node": ">=24.0.0 <25.0.0"
   },
   "scripts": {
+    "dev": "node scripts/dev.ts",
     "build": "turbo run build",
-    "typecheck": "turbo run typecheck",
+    "typecheck": "turbo run typecheck //#typecheck:root",
+    "typecheck:root": "tsc --noEmit -p scripts/tsconfig.json",
     "lint": "turbo run lint //#lint:root",
     "lint:root": "eslint --max-warnings 0 --no-error-on-unmatched-pattern eslint.config.js scripts",
     "test": "turbo run test",
