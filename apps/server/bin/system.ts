@@ -16,7 +16,9 @@ const USAGE = `Usage: bemmoly-system <command> [options]
   backup [--kind manual|pre_upgrade|scheduled] [--if-older-than 36h]
   backups [--limit 50]                 list backups, newest first
   verify <set|id> [--drill]            checksums and pg_restore --list; --drill restores into a temp db
-  restore <set|id|/path|s3://url>      replace the live database (maintenance mode while it runs)
+  restore <set|id|/path|s3://url>      replace the live database (maintenance mode while it runs);
+                                       refused during an update or rollback (--as-updater: the
+                                       updater's own restore, from inside its lock)
   mount <set|id|/path|s3://url>        attach a backup read-only as a second database
   unmount <database>
   rollback-plan [--prefer-restore]     the mode a rollback would use and what it discards
@@ -40,6 +42,7 @@ async function main(): Promise<number> {
       limit: { type: 'string' },
       drill: { type: 'boolean' },
       'prefer-restore': { type: 'boolean' },
+      'as-updater': { type: 'boolean' },
       tls: { type: 'string' },
       step: { type: 'string' },
       help: { type: 'boolean', short: 'h' },

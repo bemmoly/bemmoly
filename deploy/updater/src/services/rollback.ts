@@ -102,6 +102,7 @@ export async function runRollback(
           'restore',
           plan.backupId,
           '--json',
+          '--as-updater',
         ]),
       );
     });

@@ -111,6 +111,7 @@ export const COMMANDS: Record<string, Command> = {
     restoreBackup(
       runtime.deps,
       required(input.args, 0, 'a backup (set name, id, folder or s3:// URL)'),
+      { asUpdater: Boolean(input.flags['as-updater']) },
     ),
   mount: (runtime, input) =>
     mountBackup(runtime.deps, required(input.args, 0, 'a backup to mount')),

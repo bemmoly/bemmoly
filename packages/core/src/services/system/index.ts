@@ -70,6 +70,7 @@ export { getSystemHealth } from './health/system-health.ts';
 export type { HttpsSignal } from './health/checks.ts';
 
 export {
+  assertNoUpdaterOperation,
   createMaintenanceReader,
   enterMaintenance,
   exitMaintenance,

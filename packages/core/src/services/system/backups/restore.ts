@@ -3,6 +3,7 @@ import { rm } from 'node:fs/promises';
 import path from 'node:path';
 import type { SystemDependencies } from '../deps.ts';
 import { enterMaintenance, exitMaintenance } from '../maintenance/state.ts';
+import { assertNoUpdaterOperation } from '../maintenance/updater-lock.ts';
 import { resolveSetSource, readSetManifest } from './fetch-set.ts';
 import { syncBackupIndex } from './index-sync.ts';
 import {
@@ -50,8 +51,16 @@ async function runPendingChangesets(deps: SystemDependencies): Promise<number | 
  * into a fresh database, verify row counts, restore attachments, swap by rename, run
  * pending changesets when the backup is older, leave maintenance. The replaced database
  * is kept as <db>_rolledback_<time>.
+ *
+ * Refused while the updater holds its lock, unless the updater itself asks (`asUpdater`):
+ * a rollback restores the pre-upgrade backup from inside that lock.
  */
-export async function restoreBackup(deps: SystemDependencies, ref: string): Promise<RestoreResult> {
+export async function restoreBackup(
+  deps: SystemDependencies,
+  ref: string,
+  options: { asUpdater?: boolean } = {},
+): Promise<RestoreResult> {
+  if (!options.asUpdater) await assertNoUpdaterOperation(deps.config.dataDir);
   const source = await resolveSetSource(deps, ref);
   const manifest = await readSetManifest(source);
   const now = deps.now?.() ?? new Date();

@@ -1,4 +1,5 @@
 export { renderMaintenancePage } from './page.ts';
+export { assertNoUpdaterOperation, updaterOperationRunning } from './updater-lock.ts';
 export {
   createMaintenanceReader,
   enterMaintenance,
