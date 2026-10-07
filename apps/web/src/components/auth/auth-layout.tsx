@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Logo } from '../../ui.ts';
+import { Logo } from '@bemmoly/ui';
 
 /**
  * Sign-in pages: the Setup mock's 56px header, the Landing mock's tagline
@@ -22,10 +22,10 @@ export function AuthLayout({
       <main className="flex flex-1 flex-col items-center px-8 pt-16 pb-20">
         <div className="flex w-100 max-w-full flex-col gap-6">
           <div className="flex flex-col gap-2 text-center">
-            <p className="m-0 text-display leading-[1.08] font-semibold tracking-[-.03em] text-balance">
+            <p className="m-0 text-26 leading-title font-semibold tracking-display text-balance">
               Your work. Your platform.
             </p>
-            <p className="m-0 text-brand leading-[1.55] text-tx4">
+            <p className="m-0 text-brand leading-brief text-tx4">
               Issues and docs for your whole company, on your own server.
             </p>
           </div>
@@ -34,12 +34,10 @@ export function AuthLayout({
             aria-labelledby="auth-title"
           >
             <div className="flex flex-col gap-1">
-              <h1 id="auth-title" className="m-0 text-wordmark font-semibold">
+              <h1 id="auth-title" className="m-0 text-15 font-semibold">
                 {title}
               </h1>
-              {subtitle ? (
-                <div className="text-small leading-normal text-tx4">{subtitle}</div>
-              ) : null}
+              {subtitle ? <div className="text-12h leading-body text-tx4">{subtitle}</div> : null}
             </div>
             {children}
           </section>

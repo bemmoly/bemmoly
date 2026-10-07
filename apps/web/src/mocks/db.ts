@@ -66,6 +66,8 @@ export interface MockDb {
   cells: Cells;
   grants: ModuleGrant[];
   adminModules: AdminModule[];
+  /** BEMMOLY_MODULES is set: the module set is read-only. */
+  modulesPinned: boolean;
   manifests: ModuleManifest[];
   notifications: Notification[];
   preferences: NotificationPreferences;
@@ -76,8 +78,8 @@ export interface MockDb {
   system: SystemStatus;
   audit: AuditEntry[];
   apiTokens: ApiToken[];
-  /** Realtime events waiting for the socket bridge: [kind, scope, ids]. */
-  outbound: Array<[string, string, string[]]>;
+  /** Realtime invalidations waiting for the socket bridge: [kind, userId, ids]. */
+  outbound: Array<[string, string | null, string[]]>;
 }
 
 export const INVITE_TOKEN = 'invite-sam-0123456789abcdef';
@@ -123,6 +125,7 @@ export function createMockDb(scenario: MockScenario = 'ready'): MockDb {
     cells,
     grants: seedGrants(),
     adminModules: seedAdminModules(),
+    modulesPinned: false,
     manifests: seedManifests(),
     notifications: fresh ? [] : seedNotifications(),
     preferences: seedPreferences(),
@@ -158,10 +161,9 @@ export function can(db: MockDb, capability: string): boolean {
   return capabilitiesOf(db, currentUser(db)).includes(capability);
 }
 
-/** Queues a realtime event for the signed-in person's scope. */
+/** Queues a realtime invalidation addressed to the signed-in person. */
 export function emit(db: MockDb, kind: string, ids: string[]): void {
-  const scope = db.signedInAs ? `user:${db.signedInAs}` : 'workspace';
-  db.outbound.push([kind, scope, ids]);
+  db.outbound.push([kind, db.signedInAs, ids]);
 }
 
 export function audit(

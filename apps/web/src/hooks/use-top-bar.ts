@@ -1,68 +1,73 @@
-import type { NavEntry } from '@bemmoly/shared';
-import { THEMES } from '@bemmoly/ui/tokens';
-import { useNavigate } from '@tanstack/react-router';
-import type { DropdownItem } from '../ui.ts';
+import type { TopBarNavItem } from '@bemmoly/ui';
+import { PRESETS } from '@bemmoly/ui/tokens';
+import { useNavigate, useRouterState } from '@tanstack/react-router';
+import { useState } from 'react';
 import { useThemeStore } from '../store/theme.ts';
 import { useUiStore } from '../store/ui.ts';
 import { useDevMailbox } from './use-dev-mailbox.ts';
 import { useNavEntries } from './use-modules.ts';
+import { useInbox } from './use-notifications.ts';
 import { useMe, useSignOut } from './use-session.ts';
 import { useWorkspace } from './use-workspace.ts';
 
-export const PEOPLE_PATHS = [
+export interface MenuEntry {
+  id: string;
+  label: string;
+  hint?: string;
+  onSelect: () => void;
+}
+
+const PEOPLE_PATHS = [
   '/settings/users',
   '/settings/teams',
   '/settings/roles',
   '/settings/authentication',
 ];
 
-/** Everything the top bar shows, derived from the manifest, the session and the policy. */
+/**
+ * Everything the top bar shows, derived from the module manifest, the
+ * session, the inbox and the appearance policy. "Create" opens ⌘K on its
+ * Actions, where the create entries live; "Teams" goes to the People pages.
+ */
 export function useTopBar() {
   const me = useMe();
   const navigate = useNavigate();
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
   const go = (to: string) => () => void navigate({ to });
   const topEntries = useNavEntries('top');
-  const createEntries = useNavEntries('create');
-  const requestInvite = useUiStore((state) => state.requestInvite);
+  const openPalette = useUiStore((state) => state.openPalette);
+  const setInboxOpen = useUiStore((state) => state.setInboxOpen);
+  const inboxOpen = useUiStore((state) => state.inboxOpen);
+  const { unreadCount } = useInbox();
   const signOut = useSignOut();
   const devMailbox = useDevMailbox(me.can('workspace.email.manage'));
   const { mode, preset, setMode, setPreset } = useThemeStore();
   const workspace = useWorkspace();
+  const [accountOpen, setAccountOpen] = useState(false);
   const policy = workspace.appearance.policy;
-  const admin = me.isAdmin;
-  const people = me.can('workspace.roles.manage');
 
-  const peopleItems: DropdownItem[] = people
-    ? [
-        { id: 'users', label: 'Users', onSelect: go('/settings/users') },
-        { id: 'teams', label: 'Teams', onSelect: go('/settings/teams') },
-        { id: 'roles', label: 'Roles and permissions', onSelect: go('/settings/roles') },
-      ]
-    : [];
-
-  const createItems: DropdownItem[] = [
-    ...createEntries.map((entry: NavEntry) => ({
+  const nav: TopBarNavItem[] = [
+    { id: 'your-work', label: 'Your work', href: '/', active: pathname === '/' },
+    ...topEntries.map((entry) => ({
       id: entry.id,
       label: entry.label,
-      onSelect: go(entry.path),
+      href: entry.path,
+      active: pathname === entry.path || pathname.startsWith(`${entry.path}/`),
     })),
-    ...(people
+    ...(me.can('workspace.roles.manage')
       ? [
           {
-            id: 'invite',
-            label: 'Invite people',
-            onSelect: () => {
-              requestInvite(true);
-              void navigate({ to: '/settings/users' });
-            },
+            id: 'teams',
+            label: 'Teams',
+            href: '/settings/teams',
+            active: PEOPLE_PATHS.some((path) => pathname.startsWith(path)),
           },
-          { id: 'team', label: 'Team', onSelect: go('/settings/teams') },
         ]
       : []),
   ];
 
   const tick = (on: boolean) => (on ? '✓' : undefined);
-  const themeItems: DropdownItem[] = [
+  const themeItems: MenuEntry[] = [
     ...(policy.memberModeSwitch
       ? (['system', 'light', 'dark'] as const).map((value) => ({
           id: `mode-${value}`,
@@ -75,11 +80,11 @@ export function useTopBar() {
         }))
       : []),
     ...(policy.personalThemes
-      ? THEMES.map((theme) => ({
-          id: `preset-${theme.id}`,
-          label: theme.name,
-          hint: tick(preset === theme.id),
-          onSelect: () => setPreset(theme.id),
+      ? PRESETS.map((entry) => ({
+          id: `preset-${entry.id}`,
+          label: entry.name,
+          hint: tick(preset === entry.id),
+          onSelect: () => setPreset(entry.id),
         }))
       : []),
     ...(me.can('workspace.appearance.manage')
@@ -87,18 +92,35 @@ export function useTopBar() {
       : []),
   ];
 
-  const accountItems: DropdownItem[] = [
-    { id: 'settings', label: admin ? 'Workspace settings' : 'Settings', onSelect: go('/settings') },
+  const accountItems: MenuEntry[] = [
+    {
+      id: 'settings',
+      label: me.isAdmin ? 'Workspace settings' : 'Settings',
+      onSelect: go('/settings'),
+    },
     {
       id: 'notifications',
       label: 'Notification preferences',
       onSelect: go('/settings/notifications'),
     },
+    { id: 'inbox', label: 'Inbox', onSelect: go('/inbox') },
     ...(devMailbox.enabled
       ? [{ id: 'mailbox', label: 'Dev mailbox', onSelect: go('/dev/mailbox') }]
       : []),
     { id: 'sign-out', label: 'Sign out', onSelect: () => signOut.mutate() },
   ];
 
-  return { me, workspace, topEntries, peopleItems, createItems, themeItems, accountItems };
+  return {
+    me,
+    workspace,
+    nav,
+    themeItems,
+    accountItems,
+    unreadCount,
+    accountOpen,
+    setAccountOpen,
+    onCreate: () => openPalette('actions'),
+    onSearch: () => openPalette('all'),
+    onInbox: () => setInboxOpen(!inboxOpen),
+  };
 }

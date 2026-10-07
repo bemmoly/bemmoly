@@ -1,7 +1,6 @@
 import { ErrorBoundary } from '@bemmoly/core-web';
 import { Outlet, useRouterState } from '@tanstack/react-router';
 import { lazy, Suspense } from 'react';
-import { useMe } from '../../hooks/use-session.ts';
 import { useGlobalHotkeys, useRealtimeSync } from '../../hooks/use-shell-effects.ts';
 import { useUiStore } from '../../store/ui.ts';
 import { PageFailure } from '../page-failure.tsx';
@@ -12,10 +11,9 @@ const CommandPaletteHost = lazy(() => import('../command/command-palette-host.ts
 
 /** The authenticated frame: top bar, routed page, and the overlays the top bar opens. */
 export function AppShell() {
-  const me = useMe();
   const pathname = useRouterState({ select: (state) => state.location.pathname });
   const paletteOpen = useUiStore((state) => state.paletteOpen);
-  useRealtimeSync(me.user.id);
+  useRealtimeSync(true);
   useGlobalHotkeys();
   return (
     <div className="flex h-screen min-w-0 flex-col bg-bg text-tx">

@@ -1,10 +1,9 @@
 import { Link } from '@tanstack/react-router';
 import { useFragmentToken } from '../../hooks/use-fragment-token.ts';
 import { AuthLayout } from '../../components/auth/auth-layout.tsx';
-import { BUTTON } from '../../components/button-sizes.ts';
-import { Field, FormError, Notice } from '../../components/form.tsx';
+import { FormError, Notice } from '../../components/form.tsx';
 import { useResetPasswordForm } from '../../hooks/use-auth-forms.ts';
-import { Button, Input } from '../../ui.ts';
+import { Button, Input, Field } from '@bemmoly/ui';
 
 export function ResetPasswordPage() {
   const token = useFragmentToken();
@@ -12,8 +11,10 @@ export function ResetPasswordPage() {
   if (!token) {
     return (
       <AuthLayout title="This link is incomplete">
-        <Notice tone="warn">Open the link from the reset email again, or ask for a new one.</Notice>
-        <Link to="/forgot-password" className="self-center text-small font-medium">
+        <Notice tone="caution">
+          Open the link from the reset email again, or ask for a new one.
+        </Notice>
+        <Link to="/forgot-password" className="self-center text-12h font-medium">
           Ask for a new link
         </Link>
       </AuthLayout>
@@ -27,6 +28,7 @@ export function ResetPasswordPage() {
       <form className="flex flex-col gap-3.5" onSubmit={form.submit} noValidate>
         <Field label="New password" error={form.errors['password']}>
           <Input
+            size="lg"
             type="password"
             autoComplete="new-password"
             autoFocus
@@ -36,6 +38,7 @@ export function ResetPasswordPage() {
         </Field>
         <Field label="Type it again" error={form.errors['confirm']}>
           <Input
+            size="lg"
             type="password"
             autoComplete="new-password"
             value={form.values.confirm}
@@ -43,12 +46,7 @@ export function ResetPasswordPage() {
           />
         </Field>
         <FormError error={form.mutation.error} />
-        <Button
-          type="submit"
-          variant="primary"
-          className={BUTTON.block}
-          disabled={form.mutation.isPending}
-        >
+        <Button type="submit" variant="primary" size="lg" block disabled={form.mutation.isPending}>
           Save password and sign in
         </Button>
       </form>

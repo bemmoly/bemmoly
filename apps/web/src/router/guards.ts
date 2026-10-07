@@ -30,7 +30,7 @@ export async function wizardPending(queryClient: QueryClient, me: MeResponse): P
   if (!isOrgAdmin(me)) return false;
   try {
     const read = await queryClient.ensureQueryData({
-      queryKey: queryKeys.settings.many(['setup.completedAt']),
+      queryKey: [...queryKeys.settings.many(['setup.completedAt']), 'single'],
       queryFn: () => api.settings.get('setup.completedAt'),
     });
     return read.value === null;

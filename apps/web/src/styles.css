@@ -2,12 +2,8 @@
 @import '@bemmoly/ui/tailwind.css';
 @import '@bemmoly/ui/fonts.css';
 @import '@bemmoly/ui/theme.css';
-@import './components/placeholders/tokens.css';
 
 @source '../../../packages/core-web/src';
-
-/* `dark:` follows the resolved theme mode, not the OS, so custom and preset themes agree. */
-@custom-variant dark (&:where([data-mode='dark'], [data-mode='dark'] *));
 
 /* Base element styles from the mocks; in the base layer so utilities always win. */
 @layer base {

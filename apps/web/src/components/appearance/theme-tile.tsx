@@ -39,13 +39,13 @@ export function ThemeTile({ name, mode, colors, selected, onSelect }: ThemeTileP
       role="radio"
       aria-checked={selected}
       onClick={onSelect}
-      className={`flex cursor-pointer flex-col gap-2 rounded-tile border bg-sf p-2 text-left font-sans ${
-        selected ? 'border-ac shadow-select' : 'border-br'
+      className={`flex cursor-pointer flex-col gap-2 rounded-panel border bg-sf p-2 text-left font-sans ${
+        selected ? 'border-ac shadow-ring' : 'border-br'
       }`}
     >
       <span
         aria-hidden="true"
-        className="flex h-13.5 gap-1 overflow-hidden rounded-small border p-1.5"
+        className="flex h-13.5 gap-1 overflow-hidden rounded-sm border p-1.5"
         style={{ background: colors.bg, borderColor: colors.br }}
       >
         <span className="w-5.5 rounded-chip" style={{ background: colors.sf }} />
@@ -55,10 +55,14 @@ export function ThemeTile({ name, mode, colors, selected, onSelect }: ThemeTileP
           <span className="h-3 rounded-chip" style={{ background: colors.sf }} />
         </span>
       </span>
-      <span className="flex items-center gap-1.5 text-small font-medium text-tx">
-        <span aria-hidden="true" className="size-2.5 rounded-full" style={{ background: colors.ac }} />
+      <span className="flex items-center gap-1.5 text-12h font-medium text-tx">
+        <span
+          aria-hidden="true"
+          className="size-2.5 rounded-full"
+          style={{ background: colors.ac }}
+        />
         {name}
-        {mode ? <span className="ml-auto text-meta font-normal text-tx5">{mode}</span> : null}
+        {mode ? <span className="ml-auto text-11h font-normal text-tx5">{mode}</span> : null}
       </span>
     </button>
   );

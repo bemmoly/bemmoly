@@ -2,29 +2,32 @@ import type { BackupSchedule } from '@bemmoly/shared';
 import { audit, can, emit, type MockDb } from '../db.ts';
 import { bodyOf, fail, notFound, ok, page, type MockRoute } from '../types.ts';
 
+/** Settings-like pages (backups, updates, system) are assumed to need workspace.settings.manage. */
 const adminOnly =
-  (handle: MockRoute['handle']): MockRoute['handle'] =>
+  (handle: MockRoute['handle'], capability = 'workspace.settings.manage'): MockRoute['handle'] =>
   (request, db) =>
-    can(db, 'workspace.delete')
-      ? handle(request, db)
-      : fail(403, 'forbidden', 'Only org admins can do that.');
+    can(db, capability) ? handle(request, db) : fail(403, 'forbidden', 'You cannot do that.');
 
-function setModuleState(db: MockDb, id: string, state: 'enabled' | 'disabled') {
+const MODULES = 'workspace.modules.manage';
+const PINNED = 'BEMMOLY_MODULES pins the module set on this install.';
+
+function setModuleState(db: MockDb, id: string, enabled: boolean) {
   const module = db.adminModules.find((entry) => entry.id === id);
   if (!module) return notFound(`Module ${id}`);
-  if (module.pinnedByEnv)
-    return fail(409, 'conflict', 'BEMMOLY_MODULES pins the module set on this install.');
-  module.state = state;
-  if (state === 'disabled') db.manifests = db.manifests.filter((entry) => entry.id !== id);
+  if (db.modulesPinned) return fail(409, 'conflict', PINNED);
+  module.enabled = enabled;
+  module.enabledAt = enabled ? new Date().toISOString() : null;
+  if (!enabled) db.manifests = db.manifests.filter((entry) => entry.id !== id);
   else if (!db.manifests.some((entry) => entry.id === id)) {
+    const label = id.charAt(0).toUpperCase() + id.slice(1);
     db.manifests.push({
       id,
       version: module.version,
-      navigation: [{ id, label: module.name, path: `/${id}`, placement: 'top' }],
+      navigation: [{ id, label, path: `/${id}`, placement: 'top' }],
     });
   }
-  audit(db, `module.${state}`, 'module', id);
-  emit(db, `module.${state}`, [id]);
+  audit(db, enabled ? 'module.enabled' : 'module.disabled', 'module', id);
+  emit(db, 'modules.changed', [id]);
   return ok();
 }
 
@@ -32,17 +35,23 @@ export const operationsRoutes: MockRoute[] = [
   {
     method: 'GET',
     pattern: '/api/v1/admin/modules',
-    handle: adminOnly((_, db) => ok({ items: db.adminModules })),
+    handle: adminOnly((_, db) => ok({ items: db.adminModules, pinned: db.modulesPinned }), MODULES),
   },
   {
     method: 'POST',
     pattern: '/api/v1/admin/modules/:id/enable',
-    handle: adminOnly((request, db) => setModuleState(db, request.params['id'] ?? '', 'enabled')),
+    handle: adminOnly(
+      (request, db) => setModuleState(db, request.params['id'] ?? '', true),
+      MODULES,
+    ),
   },
   {
     method: 'POST',
     pattern: '/api/v1/admin/modules/:id/disable',
-    handle: adminOnly((request, db) => setModuleState(db, request.params['id'] ?? '', 'disabled')),
+    handle: adminOnly(
+      (request, db) => setModuleState(db, request.params['id'] ?? '', false),
+      MODULES,
+    ),
   },
   {
     method: 'POST',
@@ -50,16 +59,17 @@ export const operationsRoutes: MockRoute[] = [
     handle: adminOnly((request, db) => {
       const module = db.adminModules.find((entry) => entry.id === request.params['id']);
       if (!module) return notFound('That module');
-      if (module.state === 'enabled')
+      if (db.modulesPinned) return fail(409, 'conflict', PINNED);
+      if (module.enabled)
         return fail(409, 'conflict', 'Disable the module before removing its data.');
       if (bodyOf<{ confirm: string }>(request).confirm !== module.id) {
         return fail(400, 'validation_failed', `Type ${module.id} to confirm.`);
       }
-      module.hasData = false;
-      module.dataSizeBytes = 0;
+      module.changelogState = 'removed';
+      module.versionInstalled = null;
       audit(db, 'module.data_removed', 'module', module.id);
       return ok();
-    }),
+    }, MODULES),
   },
   {
     method: 'GET',

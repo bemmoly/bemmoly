@@ -23,6 +23,9 @@ export const APPEARANCE_KEYS = [
 export type AppearanceKey = (typeof APPEARANCE_KEYS)[number];
 type Reads = { [K in AppearanceKey]?: { value: SettingValue<K> | undefined } };
 
+/** The data kernel names the Classic preset "classic"; the design tokens call it "light". */
+export const SERVER_CLASSIC = 'classic';
+
 export const DEFAULT_APPEARANCE: Appearance = {
   preset: 'light',
   custom: null,
@@ -31,7 +34,8 @@ export const DEFAULT_APPEARANCE: Appearance = {
 };
 
 export function appearanceFrom(reads: Reads): Appearance {
-  const preset = reads['appearance.theme']?.value ?? DEFAULT_APPEARANCE.preset;
+  const stored = reads['appearance.theme']?.value ?? DEFAULT_APPEARANCE.preset;
+  const preset = stored === SERVER_CLASSIC ? 'light' : stored;
   const brandColor = reads['appearance.brandColor']?.value ?? null;
   return {
     preset,
@@ -56,7 +60,7 @@ export function appearanceFrom(reads: Reads): Appearance {
 export function appearanceWrites(appearance: Appearance, presetFont: string) {
   const custom = appearance.custom;
   return [
-    ['appearance.theme', appearance.preset],
+    ['appearance.theme', appearance.preset === 'light' ? SERVER_CLASSIC : appearance.preset],
     ['appearance.brandColor', custom?.brandColor ?? null],
     ['appearance.font', custom?.font ?? presetFont],
     ['appearance.mode', custom?.mode ?? 'light'],

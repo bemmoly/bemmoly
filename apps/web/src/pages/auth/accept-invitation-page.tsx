@@ -1,11 +1,10 @@
 import { Link } from '@tanstack/react-router';
 import { useFragmentToken } from '../../hooks/use-fragment-token.ts';
 import { AuthLayout } from '../../components/auth/auth-layout.tsx';
-import { BUTTON } from '../../components/button-sizes.ts';
-import { Field, FormError, Notice } from '../../components/form.tsx';
+import { FormError, Notice, Loading } from '../../components/form.tsx';
 import { useAcceptInvitation } from '../../hooks/use-auth-forms.ts';
 import { describeError } from '../../lib/errors.ts';
-import { Button, Input, Skeleton } from '../../ui.ts';
+import { Button, Input, Field } from '@bemmoly/ui';
 
 export function AcceptInvitationPage() {
   const token = useFragmentToken();
@@ -14,7 +13,7 @@ export function AcceptInvitationPage() {
   if (token && isPending)
     return (
       <AuthLayout title="Checking your invitation">
-        <Skeleton rows={3} />
+        <Loading lines={3} />
       </AuthLayout>
     );
   if (!invitation) {
@@ -23,11 +22,11 @@ export function AcceptInvitationPage() {
       : 'This link is incomplete. Open it from the invitation email again.';
     return (
       <AuthLayout title="This invitation cannot be used">
-        <Notice tone="warn">{reason} Ask the person who invited you to send a new one.</Notice>
+        <Notice tone="caution">{reason} Ask the person who invited you to send a new one.</Notice>
         <Link
           to="/login"
           search={{ redirect: undefined }}
-          className="self-center text-small font-medium"
+          className="self-center text-12h font-medium"
         >
           Go to sign in
         </Link>
@@ -47,6 +46,7 @@ export function AcceptInvitationPage() {
       <form className="flex flex-col gap-3.5" onSubmit={form.submit} noValidate>
         <Field label="Your name" error={form.errors['name']}>
           <Input
+            size="lg"
             autoComplete="name"
             autoFocus
             value={form.values.name}
@@ -55,6 +55,7 @@ export function AcceptInvitationPage() {
         </Field>
         <Field label="Password" hint="At least 12 characters." error={form.errors['password']}>
           <Input
+            size="lg"
             type="password"
             autoComplete="new-password"
             value={form.values.password}
@@ -63,6 +64,7 @@ export function AcceptInvitationPage() {
         </Field>
         <Field label="Type it again" error={form.errors['confirm']}>
           <Input
+            size="lg"
             type="password"
             autoComplete="new-password"
             value={form.values.confirm}
@@ -70,12 +72,7 @@ export function AcceptInvitationPage() {
           />
         </Field>
         <FormError error={form.mutation.error} />
-        <Button
-          type="submit"
-          variant="primary"
-          className={BUTTON.block}
-          disabled={form.mutation.isPending}
-        >
+        <Button type="submit" variant="primary" size="lg" block disabled={form.mutation.isPending}>
           Create account and join
         </Button>
       </form>

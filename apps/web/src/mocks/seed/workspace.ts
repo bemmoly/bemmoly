@@ -38,10 +38,10 @@ export function seedSettings(complete: boolean): Partial<Record<SettingKey, unkn
     'email.smtp.port': 587,
     'email.smtp.security': 'starttls',
     'email.digestMinutes': 10,
-    'appearance.theme': 'light',
+    'appearance.theme': 'classic',
     'appearance.font': 'plex',
-    'appearance.brandColor': null,
-    'appearance.logoKey': null,
+    'appearance.brandColor': '#2456c9',
+    'appearance.logoKey': '',
     'appearance.mode': 'light',
     'appearance.surfaces': 'neutral',
     'appearance.memberModeSwitch': true,
@@ -75,16 +75,15 @@ export function seedAdminModules(): AdminModule[] {
   return [
     {
       id: 'sample',
-      name: 'Sample',
-      description:
-        'A throwaway module that proves the module contract: a route, a nav entry, a capability, a job and a changeset.',
       version: '0.1.0',
-      state: 'enabled',
-      dataSizeBytes: 48_000,
-      changelog: { applied: 1, pending: 0, status: 'current' },
-      hasData: true,
-      pinnedByEnv: false,
+      enabled: true,
+      enabledAt: ago(60 * 24 * 9),
+      versionInstalled: '0.1.0',
+      changelogState: 'current',
+      pendingChangesets: 0,
       dependsOn: [],
+      defaultAccess: 'everyone',
+      restartRequired: false,
     },
   ];
 }

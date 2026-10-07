@@ -12,7 +12,9 @@ import { meQuery } from '../hooks/use-session.ts';
 import { api } from '../lib/api.ts';
 
 export function testQueryClient(): QueryClient {
-  return new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
+  return new QueryClient({
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  });
 }
 
 /** A QueryClient with the signed-in person already loaded, as the authenticated layout leaves it. */

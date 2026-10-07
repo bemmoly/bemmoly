@@ -1,9 +1,8 @@
 import { Link, useSearch } from '@tanstack/react-router';
 import { AuthLayout } from '../../components/auth/auth-layout.tsx';
-import { BUTTON } from '../../components/button-sizes.ts';
-import { Field, FormError } from '../../components/form.tsx';
+import { FormError } from '../../components/form.tsx';
 import { useLoginForm } from '../../hooks/use-auth-forms.ts';
-import { Button, Input } from '../../ui.ts';
+import { Button, Input, Field } from '@bemmoly/ui';
 
 export function LoginPage() {
   const { redirect } = useSearch({ from: '/login' });
@@ -13,6 +12,7 @@ export function LoginPage() {
       <form className="flex flex-col gap-3.5" onSubmit={form.submit} noValidate>
         <Field label="Email" error={form.errors['email']}>
           <Input
+            size="lg"
             type="email"
             autoComplete="username"
             autoFocus
@@ -22,6 +22,7 @@ export function LoginPage() {
         </Field>
         <Field label="Password" error={form.errors['password']}>
           <Input
+            size="lg"
             type="password"
             autoComplete="current-password"
             value={form.values.password}
@@ -29,15 +30,10 @@ export function LoginPage() {
           />
         </Field>
         <FormError error={form.mutation.error} />
-        <Button
-          type="submit"
-          variant="primary"
-          className={BUTTON.block}
-          disabled={form.mutation.isPending}
-        >
+        <Button type="submit" variant="primary" size="lg" block disabled={form.mutation.isPending}>
           {form.mutation.isPending ? 'Signing in…' : 'Sign in'}
         </Button>
-        <Link to="/forgot-password" className="self-center text-small font-medium">
+        <Link to="/forgot-password" className="self-center text-12h font-medium">
           Forgot your password?
         </Link>
       </form>

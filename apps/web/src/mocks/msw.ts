@@ -38,8 +38,9 @@ const realtime = ws.link(/\/ws$/);
 
 /** Sends queued realtime events to every open socket. */
 export function flushRealtime(api: MockApi): void {
-  for (const [kind, scope, ids] of api.db.outbound.splice(0)) {
-    realtime.broadcast(JSON.stringify({ type: 'event', kind, scope, ids }));
+  for (const [kind, userId, ids] of api.db.outbound.splice(0)) {
+    const message = { kind, ids, ...(userId ? { userId } : {}) };
+    realtime.broadcast(JSON.stringify({ type: 'invalidate', message }));
   }
 }
 
@@ -72,7 +73,7 @@ export function mswHandlers(api: MockApi, options: MswOptions): AnyHandler[] {
       client.addEventListener('message', (event) => {
         const data = typeof event.data === 'string' ? JSON.parse(event.data) : null;
         if (data?.type === 'subscribe') {
-          client.send(JSON.stringify({ type: 'subscribed', scopes: data.scopes }));
+          client.send(JSON.stringify({ type: 'subscribed', scope: data.scope }));
         }
       });
     }),

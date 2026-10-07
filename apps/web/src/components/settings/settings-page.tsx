@@ -1,40 +1,43 @@
+import { PageHeader, SettingsContent } from '@bemmoly/ui';
+import { Link } from '@tanstack/react-router';
 import type { ReactNode } from 'react';
-import { Breadcrumbs, PageHeader, Skeleton } from '../../ui.ts';
+import { Loading } from '../form.tsx';
 import { PageFailure } from '../page-failure.tsx';
 
 interface SettingsPageProps {
   title: string;
-  subtitle?: ReactNode;
+  description?: ReactNode;
   actions?: ReactNode;
   /** The Appearance mock shows "Workspace settings / <page>" above the title. */
   breadcrumb?: boolean;
-  /** 20px between blocks on People pages, 28px on Appearance. */
-  gap?: 'md' | 'lg';
   loading?: boolean;
   error?: unknown;
   children?: ReactNode;
 }
 
-/** The content column of a settings page: 1120px max, 28px 40px 60px padding. */
+/** A settings page inside the frame: the settings header, then the page's blocks. */
 export function SettingsPage({
   title,
-  subtitle,
+  description,
   actions,
   breadcrumb,
-  gap = 'md',
   loading,
   error,
   children,
 }: SettingsPageProps) {
   return (
-    <div className={`flex max-w-280 flex-col px-10 pt-7 pb-15 ${gap === 'md' ? 'gap-5' : 'gap-7'}`}>
+    <SettingsContent>
       <PageHeader
+        variant="settings"
         title={title}
-        subtitle={subtitle}
+        description={description}
         actions={actions}
-        breadcrumb={breadcrumb ? <Breadcrumbs items={['Workspace settings', title]} /> : undefined}
+        linkAs={Link}
+        {...(breadcrumb
+          ? { breadcrumbs: [{ label: 'Workspace settings', href: '/settings' }, { label: title }] }
+          : {})}
       />
-      {error ? <PageFailure error={error} /> : loading ? <Skeleton rows={5} /> : children}
-    </div>
+      {error ? <PageFailure error={error} /> : loading ? <Loading lines={5} /> : children}
+    </SettingsContent>
   );
 }

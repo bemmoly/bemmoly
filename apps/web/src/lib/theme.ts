@@ -1,6 +1,6 @@
 import type { Appearance } from './appearance.ts';
 import { PRESETS, type PresetId } from '@bemmoly/ui/tokens';
-import { buildTheme, type BuiltTheme } from '../components/placeholders/theme.ts';
+import { buildTheme, type BuiltTheme } from '@bemmoly/ui/theme';
 
 export type PersonalMode = 'system' | 'light' | 'dark';
 
@@ -21,7 +21,7 @@ function fromPreset(id: string, mode?: 'light' | 'dark'): ResolvedAppearance {
   if (preset.id === 'light' || preset.id === 'dark')
     return fromPreset(mode === 'dark' ? 'dark' : 'light');
   const theme = buildTheme({
-    brandColor: preset.accent[0],
+    brand: preset.accent[0],
     mode,
     surfaces: 'neutral',
     font: preset.font,
@@ -49,7 +49,13 @@ export function resolveAppearance(
     appearance.policy.memberModeSwitch && personal.mode !== 'system' ? personal.mode : undefined;
   if (appearance.preset === 'custom' && appearance.custom) {
     const custom = { ...appearance.custom, mode: override ?? appearance.custom.mode };
-    return { kind: 'custom', theme: buildTheme(custom), mode: custom.mode };
+    const theme = buildTheme({
+      brand: custom.brandColor,
+      mode: custom.mode,
+      surfaces: custom.surfaces,
+      font: custom.font,
+    });
+    return { kind: 'custom', theme, mode: custom.mode };
   }
   return fromPreset(appearance.preset, override);
 }

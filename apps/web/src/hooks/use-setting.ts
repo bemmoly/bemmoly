@@ -4,7 +4,7 @@ import { queryOptions, useMutation, useQuery, useQueryClient } from '@tanstack/r
 import { useState } from 'react';
 import { api } from '../lib/api.ts';
 import { describeError } from '../lib/errors.ts';
-import { toast } from '../ui.ts';
+import { toast } from '../lib/toast.ts';
 
 export type SettingReads<K extends SettingKey> = { [P in K]: SettingRead<P> };
 export type SettingValues<K extends SettingKey> = { [P in K]?: SettingValue<P> };

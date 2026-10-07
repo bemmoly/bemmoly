@@ -9,18 +9,29 @@ import { bodyOf, fail, invalid, notFound, ok, page, type MockRoute } from '../ty
 import { capture } from './session.ts';
 
 const isKey = (key: string): key is SettingKey => key in SETTING_SCHEMAS;
-const ADMIN = 'workspace.delete';
 
-/** Which capability writes a key: email and appearance have their own, the rest need an org admin. */
-function writer(key: SettingKey): string {
-  if (key.startsWith('email.')) return 'workspace.email.manage';
-  if (key.startsWith('appearance.')) return 'workspace.appearance.manage';
-  if (key.startsWith('ai.')) return 'ai.models.configure';
-  return ADMIN;
+/**
+ * The data kernel gates every key with workspace.settings.manage; the email
+ * stream also lets workspace.email.manage holders change email keys.
+ */
+function allowed(db: MockDb, key: SettingKey): boolean {
+  if (can(db, 'workspace.settings.manage')) return true;
+  return key.startsWith('email.') && can(db, 'workspace.email.manage');
 }
 
-/** Members may read the look and the name of the workspace; everything else needs the writer's capability. */
-const PUBLIC_READ = (key: SettingKey) => key.startsWith('appearance.') || key === 'workspace.name';
+/** The data kernel's setting body: secrets report `isSet` and never a value. */
+function envelope(db: MockDb, key: SettingKey) {
+  const stored = db.settings[key];
+  const secret = SECRET_KEYS.has(key);
+  return {
+    key,
+    secret,
+    isSet: stored !== undefined && stored !== null && stored !== '',
+    isDefault: stored === undefined,
+    ...(secret || stored === undefined ? {} : { value: stored }),
+    updatedAt: null,
+  };
+}
 
 function emailTest(db: MockDb, to: string) {
   const host = String(db.settings['email.smtp.host'] ?? '');
@@ -56,17 +67,26 @@ function emailTest(db: MockDb, to: string) {
   };
 }
 
+const forbidden = () => fail(403, 'forbidden', 'You need "Manage workspace settings" to do that.');
+
 export const settingsRoutes: MockRoute[] = [
+  {
+    method: 'GET',
+    pattern: '/api/v1/admin/settings',
+    handle: (_, db) => {
+      if (!can(db, 'workspace.settings.manage') && !can(db, 'workspace.email.manage'))
+        return forbidden();
+      const keys = (Object.keys(SETTING_SCHEMAS) as SettingKey[]).filter((key) => allowed(db, key));
+      return ok({ items: keys.map((key) => envelope(db, key)) });
+    },
+  },
   {
     method: 'GET',
     pattern: '/api/v1/admin/settings/:key',
     handle: (request, db) => {
       const key = request.params['key'] ?? '';
       if (!isKey(key)) return notFound(`Setting ${key}`);
-      if (!PUBLIC_READ(key) && !can(db, writer(key)))
-        return fail(403, 'forbidden', 'You cannot read this setting.');
-      if (SECRET_KEYS.has(key)) return ok({ key, isSet: db.settings[key] !== undefined });
-      return ok({ key, value: db.settings[key] ?? null, updatedAt: null });
+      return allowed(db, key) ? ok(envelope(db, key)) : forbidden();
     },
   },
   {
@@ -75,13 +95,25 @@ export const settingsRoutes: MockRoute[] = [
     handle: (request, db) => {
       const key = request.params['key'] ?? '';
       if (!isKey(key)) return notFound(`Setting ${key}`);
-      if (!can(db, writer(key))) return fail(403, 'forbidden', 'You cannot change this setting.');
+      if (!allowed(db, key)) return forbidden();
       const parsed = SETTING_SCHEMAS[key].safeParse(bodyOf<{ value: unknown }>(request).value);
       if (!parsed.success)
         return invalid('value', parsed.error.issues[0]?.message ?? 'Invalid value');
       db.settings[key] = parsed.data;
       audit(db, 'setting.updated', 'setting', key);
-      emit(db, 'setting.updated', [key]);
+      emit(db, 'settings.changed', [key]);
+      return ok(envelope(db, key));
+    },
+  },
+  {
+    method: 'DELETE',
+    pattern: '/api/v1/admin/settings/:key',
+    handle: (request, db) => {
+      const key = request.params['key'] ?? '';
+      if (!isKey(key)) return notFound(`Setting ${key}`);
+      if (!allowed(db, key)) return forbidden();
+      delete db.settings[key];
+      emit(db, 'settings.changed', [key]);
       return ok();
     },
   },

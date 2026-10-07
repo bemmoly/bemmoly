@@ -11,13 +11,22 @@ import {
 export interface WorkspaceLook {
   name: string;
   appearance: Appearance;
+  /** An AI provider is chosen: the top bar shows "Ask Bemmoly". */
+  aiEnabled: boolean;
 }
 
-const KEYS = ['workspace.name', ...APPEARANCE_KEYS] as const;
+const KEYS = ['workspace.name', 'ai.providerId', ...APPEARANCE_KEYS] as const;
+
+const FALLBACK: WorkspaceLook = {
+  name: 'Bemmoly',
+  appearance: DEFAULT_APPEARANCE,
+  aiEnabled: false,
+};
 
 /**
- * The workspace name and look for everyone signed in. A key the server does
- * not share with this person reads as the default rather than failing the shell.
+ * The workspace name and look for everyone signed in. Settings are read
+ * through the admin API, so people without settings access see the defaults
+ * rather than a failing shell; a public appearance read is an open request.
  */
 export const workspaceQuery = queryOptions({
   queryKey: queryKeys.settings.many(KEYS),
@@ -25,12 +34,12 @@ export const workspaceQuery = queryOptions({
     try {
       const reads = await api.settings.getMany(KEYS);
       return {
-        name: reads['workspace.name'].value ?? 'Bemmoly',
+        name: reads['workspace.name'].value ?? FALLBACK.name,
         appearance: appearanceFrom(reads),
+        aiEnabled: Boolean(reads['ai.providerId'].value),
       };
     } catch (error) {
-      if (hasErrorCode(error, 'forbidden'))
-        return { name: 'Bemmoly', appearance: DEFAULT_APPEARANCE };
+      if (hasErrorCode(error, 'forbidden')) return FALLBACK;
       throw error;
     }
   },
@@ -39,5 +48,5 @@ export const workspaceQuery = queryOptions({
 
 export function useWorkspace(): WorkspaceLook {
   const { data } = useQuery(workspaceQuery);
-  return data ?? { name: 'Bemmoly', appearance: DEFAULT_APPEARANCE };
+  return data ?? FALLBACK;
 }

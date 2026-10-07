@@ -1,8 +1,6 @@
-import { BUTTON } from '../../components/button-sizes.ts';
-import { Field } from '../../components/form.tsx';
 import { SettingsPage } from '../../components/settings/settings-page.tsx';
 import { LOCALES, TIMEZONES, useWorkspaceSettings } from '../../hooks/use-workspace-settings.ts';
-import { Button, Card, Input, Select } from '../../ui.ts';
+import { Button, Card, Field, Input, Select } from '@bemmoly/ui';
 
 export function WorkspacePage() {
   const { settings, draft, errors, submit } = useWorkspaceSettings();
@@ -10,22 +8,16 @@ export function WorkspacePage() {
   return (
     <SettingsPage
       title="Workspace details"
-      subtitle="The name and address everyone sees, and the defaults for dates and times."
+      description="The name and address everyone sees, and the defaults for dates and times."
       loading={settings.isPending}
       error={settings.error}
       actions={
         <>
-          <Button
-            variant="secondary"
-            className={BUTTON.secondary}
-            disabled={!draft.dirty}
-            onClick={draft.discard}
-          >
+          <Button variant="secondary" disabled={!draft.dirty} onClick={draft.discard}>
             Discard
           </Button>
           <Button
             variant="primary"
-            className={BUTTON.primary}
             type="submit"
             form="workspace-form"
             disabled={!draft.dirty || settings.save.isPending}
@@ -40,6 +32,7 @@ export function WorkspacePage() {
           <Card className="grid grid-cols-2 gap-3.5 p-5">
             <Field label="Workspace name" error={errors['name']}>
               <Input
+                size="lg"
                 value={value.name}
                 onChange={(event) => draft.update({ name: event.target.value })}
               />
@@ -49,7 +42,7 @@ export function WorkspacePage() {
               hint="Set by BEMMOLY_PUBLIC_URL on the server."
               error={errors['url']}
             >
-              <Input mono readOnly value={value.url} />
+              <Input size="lg" mono readOnly value={value.url} />
             </Field>
             <Field label="Language" error={errors['locale']}>
               <Select

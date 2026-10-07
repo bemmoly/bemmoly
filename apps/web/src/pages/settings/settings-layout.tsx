@@ -1,4 +1,5 @@
-import { buildSettingsNav, SettingsFrame } from '@bemmoly/core-web';
+import { buildSettingsNav } from '@bemmoly/core-web';
+import { SettingsFrame, SettingsNav, SettingsNavItem, SettingsNavSection } from '@bemmoly/ui';
 import { Link, Outlet, useRouterState } from '@tanstack/react-router';
 import { useDirectory } from '../../hooks/use-directory.ts';
 import { useModules } from '../../hooks/use-modules.ts';
@@ -17,17 +18,28 @@ export function SettingsLayout() {
     viewerOf(me),
     people && isSuccess ? { users: directory.counts.active } : {},
   );
+  const nav = (
+    <SettingsNav title={me.isAdmin ? 'Workspace settings' : 'Settings'} label="Settings">
+      {groups.map((group) => (
+        <SettingsNavSection key={group.id} label={group.label}>
+          {group.items.map((item) => (
+            <SettingsNavItem
+              key={item.id}
+              href={item.path}
+              linkAs={Link}
+              linkProps={{ to: item.path }}
+              active={pathname === item.path || pathname.startsWith(`${item.path}/`)}
+              {...(item.count === undefined ? {} : { count: item.count })}
+            >
+              {item.label}
+            </SettingsNavItem>
+          ))}
+        </SettingsNavSection>
+      ))}
+    </SettingsNav>
+  );
   return (
-    <SettingsFrame
-      title={me.isAdmin ? 'Workspace settings' : 'Settings'}
-      groups={groups}
-      activePath={pathname}
-      renderLink={({ item, className, children, active }) => (
-        <Link to={item.path} className={className} aria-current={active ? 'page' : undefined}>
-          {children}
-        </Link>
-      )}
-    >
+    <SettingsFrame nav={nav}>
       <Outlet />
     </SettingsFrame>
   );

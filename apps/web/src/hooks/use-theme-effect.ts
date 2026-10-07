@@ -1,6 +1,6 @@
+import { applyTheme, clearTheme } from '@bemmoly/ui/theme';
 import { useQuery } from '@tanstack/react-query';
-import { useEffect, useState } from 'react';
-import { themeVariables } from '../components/placeholders/theme.ts';
+import { useEffect, useMemo, useState } from 'react';
 import { resolveAppearance } from '../lib/theme.ts';
 import { useThemeStore } from '../store/theme.ts';
 import { workspaceQuery } from './use-workspace.ts';
@@ -19,28 +19,25 @@ function usePrefersDark(): boolean {
 }
 
 /**
- * Applies the resolved look to <html>: `data-theme` picks a preset's CSS
- * variables; a custom theme sets them inline. `data-mode` drives the status
- * tints. Reads the session from the cache only; it never fetches.
+ * Applies the resolved look to <html>: a preset through `data-theme`, a custom
+ * theme as inline tokens. `data-mode` records light or dark for anything that
+ * needs to know. Reads the workspace look from the cache only; it never fetches.
  */
 export function useThemeEffect(): void {
   const { data: workspace } = useQuery({ ...workspaceQuery, enabled: false });
   const mode = useThemeStore((state) => state.mode);
   const preset = useThemeStore((state) => state.preset);
   const prefersDark = usePrefersDark();
-  const resolved = resolveAppearance(workspace?.appearance, { mode, preset }, prefersDark);
-  const theme = resolved.kind === 'preset' ? resolved.id : 'custom';
-  const vars = resolved.kind === 'custom' ? JSON.stringify(themeVariables(resolved.theme)) : '';
-  const resolvedMode = resolved.mode;
+  const appearance = workspace?.appearance;
+  const resolved = useMemo(
+    () => resolveAppearance(appearance, { mode, preset }, prefersDark),
+    [appearance, mode, preset, prefersDark],
+  );
 
   useEffect(() => {
     const root = document.documentElement;
-    root.dataset['mode'] = resolvedMode;
-    root.dataset['theme'] = theme;
-    root.removeAttribute('style');
-    if (!vars) return;
-    for (const [name, value] of Object.entries(JSON.parse(vars) as Record<string, string>)) {
-      root.style.setProperty(name, value);
-    }
-  }, [theme, vars, resolvedMode]);
+    root.dataset['mode'] = resolved.mode;
+    if (resolved.kind === 'preset') clearTheme(root, resolved.id);
+    else applyTheme(root, resolved.theme);
+  }, [resolved]);
 }
