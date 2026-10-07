@@ -5,7 +5,7 @@
 
 ## Context
 
-Lattice's architecture was settled before code was written, in one document:
+Bemmoly's architecture was settled before code was written, in one document:
 [docs/tech-design.html](../tech-design.html). It covers the module system, stack, repository
 layering, database and schema changelog, API, security, AI, deployment, configuration,
 performance and quality gates, and the eight promises every decision is checked against.
