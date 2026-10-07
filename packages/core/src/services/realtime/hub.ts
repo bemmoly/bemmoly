@@ -7,6 +7,7 @@ import type { Logger } from '../../config/logger.ts';
 import type { Actor } from '../../contracts/authz.ts';
 import type { ModuleAccessResolver } from '../../contracts/module-access.ts';
 import type { RealtimeMessage } from '../../contracts/realtime.ts';
+import type { RealtimeMetrics } from '../../contracts/telemetry.ts';
 
 /** The part of a WebSocket the hub needs; `ws` sockets satisfy it. */
 export interface HubSocket {
@@ -14,11 +15,8 @@ export interface HubSocket {
   close(code?: number, reason?: string): void;
 }
 
-/** Same names as the observability service's `getMetrics().realtime`. */
-export interface RealtimeMetricsHook {
-  connectionOpened(): void;
-  connectionClosed(): void;
-}
+/** The observability service's `getMetrics().realtime`, which the host passes. */
+export type RealtimeMetricsHook = RealtimeMetrics;
 
 /** Decides whether an actor may subscribe to a scope. */
 export type SubscriptionAuthorizer = (actor: Actor, scope: RealtimeScope) => Promise<boolean>;

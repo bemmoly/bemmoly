@@ -14,7 +14,7 @@ export {
   type HousekeepingResult,
   type HousekeepingTask,
 } from './housekeeping.ts';
-export { noJobMetrics, type JobMetricsHook, type JobRunOutcome } from './metrics.ts';
+export { noJobMetrics, type JobMetricsHook } from './metrics.ts';
 export {
   createJobsService,
   type JobsService,

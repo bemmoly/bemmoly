@@ -1,16 +1,10 @@
-/**
- * The job metrics the jobs service reports to. Same method names and shapes
- * as the observability service's `getMetrics().jobs`, which the host passes;
- * kept local so the jobs service does not depend on the metrics backend.
- */
-export type JobRunOutcome = 'completed' | 'failed' | 'retried' | 'expired';
+import type { JobMetrics } from '../../contracts/telemetry.ts';
 
-export interface JobMetricsHook {
-  observeQueueDepth(
-    source: () => Readonly<Record<string, number>> | Promise<Readonly<Record<string, number>>>,
-  ): void;
-  startJob(queue: string): (outcome: JobRunOutcome) => void;
-}
+/**
+ * The part of the observability service's job metrics (`getMetrics().jobs`,
+ * which the host passes) that the jobs service reports to.
+ */
+export type JobMetricsHook = Pick<JobMetrics, 'observeQueueDepth' | 'startJob'>;
 
 export const noJobMetrics: JobMetricsHook = {
   observeQueueDepth: () => undefined,
