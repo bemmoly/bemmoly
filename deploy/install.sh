@@ -1,18 +1,71 @@
 #!/bin/sh
 # Bemmoly installer. Your work. Your platform.
 #
-#   curl -fsSL https://get.bemmoly.dev | sh
-#   curl -fsSL https://get.bemmoly.dev | sh -s -- --domain bemmoly.example.com --yes
+#   curl -fsSL https://get.bemmoly.com | sh
+#   curl -fsSL https://get.bemmoly.com | sh -s -- --domain bemmoly.example.com --yes
 #
-# From a checkout this file sources deploy/installer/lib; the published installer is the
-# same code in one file, built by deploy/scripts/bundle-installer.sh. Run with --help
-# for the options. MIT licensed.
+# Three ways this file runs:
+#   - from a checkout (sudo sh deploy/install.sh): it sources deploy/installer/lib;
+#   - served by get.bemmoly.com and piped into sh: it fetches the bundled installer of the
+#     matching GitHub release (bemmoly-installer.sh, which carries that release's Compose
+#     file and Caddyfile), checks its SHA-256 and runs it with the same options;
+#   - as part of that bundle (BEMMOLY_BUNDLED=1), built by deploy/scripts/bundle-installer.sh.
+# Run with --help for the options. MIT licensed.
 set -eu
 
 BEMMOLY_BUNDLED="${BEMMOLY_BUNDLED:-}"
+RELEASES=https://github.com/bemmoly/bemmoly/releases
+
+bootstrap_fail() {
+  printf '\n✗ %s\n  Fix: %s\n' "$1" "$2" >&2
+  exit 1
+}
+
+latest_prerelease_tag() {
+  curl -fsSL -H 'Accept: application/vnd.github+json' \
+    'https://api.github.com/repos/bemmoly/bemmoly/releases?per_page=20' |
+    awk -F'"' '/"tag_name":/ { tag = $4 } /"prerelease": *true/ && tag != "" { print tag; exit }'
+}
+
+# The release the options ask for: --version X.Y.Z, latest (default) or the beta channel.
+bootstrap() {
+  want_version=""
+  want_channel=stable
+  previous=''
+  for arg in "$@"; do
+    case "${previous}" in --version) want_version="${arg#v}" ;; --channel) want_channel="${arg}" ;; esac
+    case "${arg}" in
+      --version=*) want_version="${arg#--version=}" && want_version="${want_version#v}" ;;
+      --channel=*) want_channel="${arg#--channel=}" ;;
+    esac
+    previous="${arg}"
+  done
+  if [ "${want_version}" = beta ] || { [ -z "${want_version}" ] && [ "${want_channel}" = beta ]; }; then
+    tag=$(latest_prerelease_tag) || tag=''
+    [ -n "${tag}" ] || bootstrap_fail 'No beta release was found' 'Install a numbered version with --version X.Y.Z.'
+    base="${RELEASES}/download/${tag}"
+  elif [ -z "${want_version}" ] || [ "${want_version}" = latest ]; then
+    base="${RELEASES}/latest/download"
+  else
+    base="${RELEASES}/download/v${want_version}"
+  fi
+  command -v curl >/dev/null 2>&1 || bootstrap_fail 'curl is not installed' 'Install curl, then run the installer again.'
+  work=$(mktemp -d)
+  if ! curl -fsSL -o "${work}/bemmoly-installer.sh" "${base}/bemmoly-installer.sh" ||
+    ! curl -fsSL -o "${work}/bemmoly-installer.sh.sha256" "${base}/bemmoly-installer.sh.sha256"; then
+    bootstrap_fail "Could not download the installer from ${base}" \
+      'Check the version exists (https://github.com/bemmoly/bemmoly/releases) and outbound HTTPS to github.com.'
+  fi
+  expected=$(awk '{ print $1; exit }' "${work}/bemmoly-installer.sh.sha256")
+  actual=$(sha256sum "${work}/bemmoly-installer.sh" | awk '{ print $1 }')
+  [ -n "${expected}" ] && [ "${expected}" = "${actual}" ] ||
+    bootstrap_fail 'The downloaded installer does not match its checksum' 'Run the command again; if it repeats, report it.'
+  exec sh "${work}/bemmoly-installer.sh" "$@"
+}
 
 if [ -z "${BEMMOLY_BUNDLED}" ]; then
-  DEPLOY_DIR=$(cd "$(dirname "$0")" && pwd)
+  case "$0" in */*) DEPLOY_DIR=$(cd "$(dirname "$0")" && pwd) ;; *) DEPLOY_DIR='' ;; esac
+  [ -n "${DEPLOY_DIR}" ] && [ -f "${DEPLOY_DIR}/installer/lib/common.sh" ] || bootstrap "$@"
   for lib in common args preflight docker config start; do
     # shellcheck source=/dev/null
     . "${DEPLOY_DIR}/installer/lib/${lib}.sh"

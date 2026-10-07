@@ -5,7 +5,7 @@ usage() {
   cat <<'EOF'
 Install Bemmoly on this machine.
 
-  curl -fsSL https://get.bemmoly.dev | sh -s -- [options]
+  curl -fsSL https://get.bemmoly.com | sh -s -- [options]
 
 Options:
   --domain NAME          the hostname people will use (asked when omitted)

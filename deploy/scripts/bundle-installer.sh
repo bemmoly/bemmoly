@@ -1,5 +1,5 @@
 #!/bin/sh
-# Builds the one-file installer that get.bemmoly.dev serves and each release attaches:
+# Builds the one-file installer that get.bemmoly.com serves and each release attaches:
 # the installer libraries, then every file it writes (Compose file, Caddyfile, .env
 # template, the bemmoly CLI, completion, systemd units) as heredocs, then the entry.
 #
@@ -34,8 +34,8 @@ cat <<EOF
 #!/bin/sh
 # Bemmoly installer, bundled from deploy/ in https://github.com/bemmoly/bemmoly (MIT).
 #
-#   curl -fsSL https://get.bemmoly.dev | sh
-#   curl -fsSL https://get.bemmoly.dev | sh -s -- --help
+#   curl -fsSL https://get.bemmoly.com | sh
+#   curl -fsSL https://get.bemmoly.com | sh -s -- --help
 set -eu
 BEMMOLY_BUNDLED=1
 BEMMOLY_DEFAULT_VERSION='${DEFAULT_VERSION}'

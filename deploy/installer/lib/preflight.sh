@@ -7,7 +7,7 @@ MIN_DISK_GB=10
 
 detect_os() {
   [ -r /etc/os-release ] || die "Cannot tell which Linux this is (/etc/os-release is missing)" \
-    "Bemmoly's installer supports Ubuntu, Debian, Fedora and Amazon Linux; elsewhere use Docker Compose by hand: https://bemmoly.dev/docs/compose"
+    "Bemmoly's installer supports Ubuntu, Debian, Fedora and Amazon Linux; elsewhere use Docker Compose by hand: https://bemmoly.com/docs/compose"
   # shellcheck disable=SC1091
   OS_ID=$(. /etc/os-release && printf '%s' "${ID:-}")
   OS_LIKE=$(. /etc/os-release && printf '%s' "${ID_LIKE:-}")
@@ -20,7 +20,7 @@ detect_os() {
         *" ubuntu "* | *" debian "*) OS_FAMILY=debian ;;
         *" fedora "*) OS_FAMILY=fedora ;;
         *) die "${OS_NAME} is not supported by the installer" \
-          "Use Ubuntu 22.04+, Debian 12+, Fedora 40+ or Amazon Linux 2023, or run Docker Compose by hand: https://bemmoly.dev/docs/compose" ;;
+          "Use Ubuntu 22.04+, Debian 12+, Fedora 40+ or Amazon Linux 2023, or run Docker Compose by hand: https://bemmoly.com/docs/compose" ;;
       esac
       ;;
   esac
@@ -38,9 +38,9 @@ describe_machine() {
 
 check_privileges() {
   if [ "$(id -u)" -eq 0 ]; then return 0; fi
-  have sudo || die "The installer needs root" "Run it as root, or install sudo: curl -fsSL https://get.bemmoly.dev | sudo sh"
+  have sudo || die "The installer needs root" "Run it as root, or install sudo: curl -fsSL https://get.bemmoly.com | sudo sh"
   sudo -v 2>/dev/null ||
-    die "sudo did not grant root" "Run it as root: curl -fsSL https://get.bemmoly.dev | sudo sh"
+    die "sudo did not grant root" "Run it as root: curl -fsSL https://get.bemmoly.com | sudo sh"
 }
 
 check_memory() {

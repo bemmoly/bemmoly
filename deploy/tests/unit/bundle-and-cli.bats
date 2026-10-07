@@ -17,7 +17,7 @@ setup() {
   done
   run sh "${bundle}" --help
   [ "${status}" -eq 0 ]
-  [[ "${output}" == *"curl -fsSL https://get.bemmoly.dev | sh"* ]]
+  [[ "${output}" == *"curl -fsSL https://get.bemmoly.com | sh"* ]]
 }
 
 @test "bundled assets are byte-identical to their sources" {
@@ -26,6 +26,20 @@ setup() {
   extracted="${BATS_TEST_TMPDIR}/compose.yml"
   sed -n "/^    docker-compose.yml)$/,/^BEMMOLY_ASSET_END$/p" "${bundle}" | sed '1,2d;$d' >"${extracted}"
   cmp "${extracted}" "${DEPLOY_DIR}/compose/docker-compose.yml"
+}
+
+@test "piped into sh, install.sh fetches the matching release's installer" {
+  bin="${BATS_TEST_TMPDIR}/bin"
+  mkdir -p "${bin}"
+  printf '#!/bin/sh\nfor a in "$@"; do last="$a"; done\necho "$last" >>"%s/urls"\nexit 22\n' \
+    "${BATS_TEST_TMPDIR}" >"${bin}/curl"
+  chmod +x "${bin}/curl"
+  run env PATH="${bin}:${PATH}" sh -s -- --version 1.2.0 --yes <"${DEPLOY_DIR}/install.sh"
+  [ "${status}" -eq 1 ]
+  [[ "${output}" == *"Could not download the installer"* && "${output}" == *"Fix:"* ]]
+  grep -qx 'https://github.com/bemmoly/bemmoly/releases/download/v1.2.0/bemmoly-installer.sh' "${BATS_TEST_TMPDIR}/urls"
+  run env PATH="${bin}:${PATH}" sh -s -- --yes <"${DEPLOY_DIR}/install.sh"
+  grep -qx 'https://github.com/bemmoly/bemmoly/releases/latest/download/bemmoly-installer.sh' "${BATS_TEST_TMPDIR}/urls"
 }
 
 @test "the CLI prints its commands without root" {

@@ -9,7 +9,7 @@ import { releaseManifestJsonSchema } from '../src/schemas/system/release-manifes
 
 const target = new URL('../../../deploy/release-manifest.schema.json', import.meta.url);
 const document = {
-  $id: 'https://get.bemmoly.dev/releases/release-manifest.schema.json',
+  $id: 'https://get.bemmoly.com/releases/release-manifest.schema.json',
   title: 'Bemmoly release manifest',
   description:
     'One release, written by tools/release and published as release-manifest.json on the GitHub release, signed keyless with a detached release-manifest.json.sigstore.json bundle. Generated from releaseManifestSchema in packages/shared.',

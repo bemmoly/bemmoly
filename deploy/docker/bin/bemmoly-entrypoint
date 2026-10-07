@@ -57,7 +57,7 @@ run_changesets() {
 
 demo() {
   log "--demo (an embedded Postgres with sample data) is not built into this image yet."
-  log "Try Bemmoly locally with the Compose quickstart instead: https://bemmoly.dev/docs/try-locally"
+  log "Try Bemmoly locally with the Compose quickstart instead: https://bemmoly.com/docs/try-locally"
   exit 64
 }
 

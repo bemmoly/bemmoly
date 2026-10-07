@@ -6,7 +6,7 @@ env_value() { env_get "$(env_file)" "$1"; }
 
 compose() {
   [[ -f "${BEMMOLY_DIR}/docker-compose.yml" ]] ||
-    die "No Bemmoly install in ${BEMMOLY_DIR}" "Install it with: curl -fsSL https://get.bemmoly.dev | sh (or set BEMMOLY_DIR)."
+    die "No Bemmoly install in ${BEMMOLY_DIR}" "Install it with: curl -fsSL https://get.bemmoly.com | sh (or set BEMMOLY_DIR)."
   docker compose --project-directory "${BEMMOLY_DIR}" "$@"
 }
 
@@ -128,7 +128,7 @@ cmd_config() {
     set)
       [[ $# -ge 3 ]] || die "config set needs a value" "Run: bemmoly config set ${key} VALUE"
       if [[ "${key}" == BEMMOLY_SECRET_KEY || "${key}" == POSTGRES_PASSWORD ]]; then
-        die "${key} cannot be changed here" "Changing it would lock you out of stored credentials or the database; see https://bemmoly.dev/docs/rotate-secrets"
+        die "${key} cannot be changed here" "Changing it would lock you out of stored credentials or the database; see https://bemmoly.com/docs/rotate-secrets"
       fi
       cp "$(env_file)" "$(env_file).bak"
       env_set "$(env_file)" "${key}" "$3"

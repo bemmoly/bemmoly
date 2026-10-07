@@ -62,7 +62,7 @@ export function taskSpec(
     Image: image,
     Cmd: cmd,
     Env: base.Env ?? [],
-    Labels: { 'dev.bemmoly.updater.task': 'true' },
+    Labels: { 'com.bemmoly.updater.task': 'true' },
     HostConfig: {
       Binds: container.HostConfig.Binds ?? [],
       Mounts: container.HostConfig.Mounts ?? [],
