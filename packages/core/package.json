@@ -8,6 +8,7 @@
     ".": "./src/index.ts",
     "./changelog": "./src/changelog.ts",
     "./config": "./src/config/index.ts",
+    "./models": "./src/models/index.ts",
     "./testing": "./src/testing/index.ts"
   },
   "scripts": {
