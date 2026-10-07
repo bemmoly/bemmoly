@@ -46,7 +46,17 @@ export function AiSummary({
         {source && <span className="ml-auto text-11h font-normal text-ai-mute">{source}</span>}
       </div>
       <div className="text-tx">{children}</div>
-      {actions && <div className="flex flex-wrap gap-1.5 pt-0.5">{actions}</div>}
+      {actions && (
+        // The mock's action chips inherit the card's line height (1.5 panel, 1.55 page).
+        <div
+          className={cx(
+            'flex flex-wrap gap-1.5 pt-0.5',
+            panel ? '[&>button]:leading-body' : '[&>button]:leading-brief',
+          )}
+        >
+          {actions}
+        </div>
+      )}
     </section>
   );
 }

@@ -106,7 +106,7 @@ export function SettingsNavItem({
         onClick={onClick}
         aria-current={active ? 'page' : undefined}
         className={cx(
-          'flex w-full cursor-pointer items-center justify-between gap-2 rounded-control border-0 px-2.5 py-1.75 text-left font-sans text-13 no-underline',
+          'flex w-full cursor-pointer items-start justify-between gap-2 rounded-control border-0 px-2.5 py-1.75 text-left font-sans text-13 no-underline',
           active ? 'bg-ac-bg font-medium text-ac' : 'bg-transparent text-tx2 hover:bg-bg2',
           focusRing,
         )}

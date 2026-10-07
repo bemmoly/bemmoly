@@ -26,6 +26,8 @@ export interface MenuProps {
   trigger: (props: MenuTriggerProps) => ReactNode;
   children: ReactNode;
   align?: 'start' | 'end';
+  /** Start open, e.g. to show the menu in a story or a screenshot. */
+  defaultOpen?: boolean;
   /** Tailwind width class; the Doc Editor menu is 320px (w-80). */
   widthClassName?: string;
   className?: string;
@@ -43,9 +45,10 @@ export function Menu({
   children,
   align = 'start',
   widthClassName = 'w-80',
+  defaultOpen = false,
   className,
 }: MenuProps) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(defaultOpen);
   const [focusLast, setFocusLast] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);

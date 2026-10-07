@@ -3,6 +3,7 @@ import {
   useContext,
   useId,
   useLayoutEffect,
+  useRef,
   useState,
   type InputHTMLAttributes,
   type KeyboardEvent,
@@ -22,6 +23,8 @@ export interface CommandPaletteProps {
   onClose: () => void;
   label?: string;
   children: ReactNode;
+  /** Render in place instead of as a modal: for stories, docs and screenshots. */
+  inline?: boolean;
 }
 
 const OPTION = '[role="option"]';
@@ -35,13 +38,16 @@ export function CommandPalette({
   onClose,
   label = 'Command palette',
   children,
+  inline = false,
 }: CommandPaletteProps) {
-  const { ref, onBackdropClick } = useDialog(open, onClose);
+  const { ref, onBackdropClick } = useDialog(open && !inline, onClose);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const host = (): HTMLElement | null => (inline ? panelRef.current : ref.current);
   const listId = useId();
   const [active, setActive] = useState(0);
 
   useLayoutEffect(() => {
-    const dialog = ref.current;
+    const dialog = host();
     if (!dialog) return;
     const options = [...dialog.querySelectorAll<HTMLElement>(OPTION)];
     const index = Math.min(active, Math.max(options.length - 1, 0));
@@ -55,14 +61,16 @@ export function CommandPalette({
     current?.scrollIntoView?.({ block: 'nearest' });
   });
 
-  const count = () => ref.current?.querySelectorAll(OPTION).length ?? 0;
+  const count = () => host()?.querySelectorAll(OPTION).length ?? 0;
   const onKeyDown = (event: KeyboardEvent) => {
     if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
       event.preventDefault();
       const n = count();
       if (n) setActive((a) => (Math.min(a, n - 1) + (event.key === 'ArrowDown' ? 1 : n - 1)) % n);
+    } else if (event.key === 'Escape' && inline) {
+      onClose();
     } else if (event.key === 'Enter' && !event.metaKey && !event.ctrlKey) {
-      const option = ref.current?.querySelectorAll<HTMLElement>(OPTION)[active];
+      const option = host()?.querySelectorAll<HTMLElement>(OPTION)[active];
       if (option) {
         event.preventDefault();
         option.click();
@@ -71,12 +79,30 @@ export function CommandPalette({
   };
   const onPointerMove = (event: PointerEvent) => {
     const option = (event.target as HTMLElement).closest(OPTION);
-    if (!option || !ref.current) return;
-    const index = [...ref.current.querySelectorAll(OPTION)].indexOf(option);
+    const container = host();
+    if (!option || !container) return;
+    const index = [...container.querySelectorAll(OPTION)].indexOf(option);
     if (index >= 0 && index !== active) setActive(index);
   };
 
   if (!open) return null;
+  const panel =
+    'w-190 max-w-[calc(100vw-32px)] flex-col overflow-hidden rounded-dialog border-0 bg-sf p-0 text-13 text-tx shadow-modal';
+  const content = <CommandContext.Provider value={{ listId }}>{children}</CommandContext.Provider>;
+  if (inline) {
+    return (
+      <div
+        ref={panelRef}
+        role="dialog"
+        aria-label={label}
+        onKeyDown={onKeyDown}
+        onPointerMove={onPointerMove}
+        className={cx('flex', panel)}
+      >
+        {content}
+      </div>
+    );
+  }
   return (
     <dialog
       ref={ref}
@@ -85,11 +111,12 @@ export function CommandPalette({
       onKeyDown={onKeyDown}
       onPointerMove={onPointerMove}
       className={cx(
-        'fixed top-24 left-1/2 m-0 w-190 max-w-[calc(100vw-32px)] -translate-x-1/2 flex-col overflow-hidden rounded-dialog border-0 bg-sf p-0 text-13 text-tx shadow-modal open:flex',
+        'fixed top-24 left-1/2 m-0 -translate-x-1/2 open:flex',
         'backdrop:bg-scrim backdrop:backdrop-blur-[1.5px]',
+        panel,
       )}
     >
-      <CommandContext.Provider value={{ listId }}>{children}</CommandContext.Provider>
+      {content}
     </dialog>
   );
 }
@@ -120,7 +147,7 @@ export function CommandInput({
         value={value}
         onChange={(event) => onValueChange(event.target.value)}
         placeholder={placeholder}
-        className="min-w-0 flex-1 border-0 bg-transparent p-0 font-sans text-16 text-tx outline-0 placeholder:text-tx5"
+        className="min-w-0 flex-1 border-0 bg-transparent px-0.5 py-px font-sans text-16 text-tx outline-0 placeholder:text-tx5"
         {...rest}
       />
       <kbd className="rounded-xs border border-br px-1.5 py-0.5 font-mono text-11 font-medium text-tx5">

@@ -59,6 +59,8 @@ export function renderBaseCss(): string {
       'color: var(--tx);',
       'font-family: var(--font-ui);',
       'font-size: var(--text-base);',
+      // The mocks use the browser's normal line height; Tailwind's preflight would set 1.5.
+      'line-height: normal;',
     ]),
     block('*,\n::before,\n::after', ['box-sizing: border-box;']),
     block('::-webkit-scrollbar', ['width: 10px;', 'height: 10px;']),

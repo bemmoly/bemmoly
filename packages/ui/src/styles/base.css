@@ -26,6 +26,7 @@ body {
   color: var(--tx);
   font-family: var(--font-ui);
   font-size: var(--text-base);
+  line-height: normal;
 }
 
 *,
