@@ -1,12 +1,23 @@
 /**
- * The site is light (Classic, which theme.css puts on :root) for every visitor. A dark version
- * in the Ocean preset is built here from the tokens and applies only when the root element has
- * data-theme="dark"; nothing sets it yet, so it is ready for a later toggle. Under it, the
- * [data-theme='dark'] islands (the self-host band, the install pill, code blocks) take Ocean
- * too, so the whole page is one material.
+ * The theme variables the site needs, built from @bemmoly/ui's tokens at build time and
+ * inlined in every page. It is the same output as @bemmoly/ui/theme.css, limited to the three
+ * presets the site uses, so visitors do not download the other six.
+ *
+ * - Classic on :root: the site is light for every visitor.
+ * - Dark on [data-theme='dark']: the Landing mock's dark band and install pill.
+ * - Ocean on html[data-theme='dark'] and its dark islands: a dark version of the whole page,
+ *   ready for a later toggle; nothing sets the attribute yet.
  */
 import { contrastCheck } from '@bemmoly/ui/theme';
-import { COLOR_TOKENS, themeById, type ColorToken } from '@bemmoly/ui/tokens';
+import {
+  COLOR_TOKENS,
+  METRICS,
+  MOTION,
+  SHADOWS,
+  themeById,
+  type ColorToken,
+  type ResolvedTheme,
+} from '@bemmoly/ui/tokens';
 
 export const DARK_PRESET = 'ocean';
 
@@ -21,15 +32,26 @@ export function darkColors(): Record<ColorToken, string> {
   return { ...ocean, tx3: ocean.tx2, 'on-ac': onAccent };
 }
 
-export function darkSchemeCss(): string {
-  const theme = themeById(DARK_PRESET);
-  const colors = darkColors();
-  const lines = [
+const vars = (prefix: string, scale: Readonly<Record<string, string>>) =>
+  Object.entries(scale).map(([name, value]) => `--${prefix}${name}:${value};`);
+
+function declarations(theme: ResolvedTheme, colors: Record<ColorToken, string>): string {
+  return [
     ...COLOR_TOKENS.map((token) => `--${token}:${colors[token]};`),
     `--font-ui:${theme.fontUi};`,
     `--font-code:${theme.fontCode};`,
-    'color-scheme:dark;',
-  ];
-  const selector = "html[data-theme='dark'],html[data-theme='dark'] [data-theme='dark']";
-  return `${selector}{${lines.join('')}}`;
+    `color-scheme:${theme.mode};`,
+  ].join('');
+}
+
+export function themeCss(): string {
+  const classic = themeById('light');
+  const dark = themeById('dark');
+  const ocean = themeById(DARK_PRESET);
+  const base = [...vars('', METRICS), ...vars('shadow-', SHADOWS), ...vars('duration-', MOTION)];
+  return [
+    `:root{${base.join('')}${declarations(classic, classic.colors)}}`,
+    `[data-theme='dark']{${declarations(dark, dark.colors)}}`,
+    `html[data-theme='dark'],html[data-theme='dark'] [data-theme='dark']{${declarations(ocean, darkColors())}}`,
+  ].join('');
 }

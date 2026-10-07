@@ -1,7 +1,7 @@
 @import 'tailwindcss' source('../');
 @import '@bemmoly/ui/tailwind.css';
-@import '@bemmoly/ui/theme.css';
 @import '@bemmoly/ui/fonts.css';
+/* The theme variables are inlined per page from the tokens (src/lib/theme.ts). */
 
 /* `dark:` styles the Ocean version, enabled only by data-theme="dark" on the root element. */
 @custom-variant dark (&:where(html[data-theme='dark'], html[data-theme='dark'] *));
@@ -71,15 +71,30 @@
   }
 }
 
-/* Unlayered, like @bemmoly/ui's base.css: the Landing mock's page is white (sf), not bg. */
+/* @bemmoly/ui's base rules, except that the Landing mock's page is white (sf), not bg. */
 html,
 body {
   background: var(--sf);
 }
 
 body {
+  margin: 0;
+  color: var(--tx);
+  font-family: var(--font-ui);
   font-size: var(--text-15);
+  line-height: normal;
   overflow-x: clip;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* In the Ocean version the page is the deepest navy and raised surfaces use sf. */
@@ -96,6 +111,12 @@ html[data-theme='dark'] body {
 
   a:hover {
     color: var(--ac-d);
+  }
+
+  /* Links inside running text are underlined so they do not rely on colour alone. */
+  main :is(p, li) a {
+    text-decoration: underline;
+    text-underline-offset: 2px;
   }
 
   :focus-visible {

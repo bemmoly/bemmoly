@@ -9,7 +9,7 @@ import plexSans600 from '@fontsource/ibm-plex-sans/files/ibm-plex-sans-latin-600
 import { themeById } from '@bemmoly/ui/tokens';
 import Footer from '../components/site/Footer.astro';
 import Nav from '../components/site/Nav.astro';
-import { darkSchemeCss } from '../lib/theme.ts';
+import { themeCss } from '../lib/theme.ts';
 
 interface Props {
   title: string;
@@ -58,7 +58,7 @@ const preloads = [plexSans400, plexSans600];
     <meta name="twitter:title" content={fullTitle} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={image} />
-    <style is:inline set:html={darkSchemeCss()}></style>
+    <style is:inline set:html={themeCss()}></style>
   </head>
   <body class="flex min-h-screen flex-col">
     <Nav />
