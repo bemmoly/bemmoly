@@ -1,0 +1,58 @@
+/* Generated from src/tokens.ts by `pnpm --filter @bemmoly/ui tokens:css`. Do not edit. */
+:root {
+  --text-base: 13px;
+  --text-nav: 13.5px;
+  --text-brand: 14px;
+  --text-mono: 11px;
+  --radius-control: 6px;
+  --size-control: 32px;
+  --size-topbar: 48px;
+  --shadow-card: 0 1px 2px rgba(16, 24, 40, 0.05);
+  --shadow-seg: 0 1px 1px rgba(0, 0, 0, 0.06);
+  --shadow-pop: 0 2px 8px rgba(16, 24, 40, 0.06);
+  --shadow-menu: 0 8px 24px rgba(16, 24, 40, 0.12);
+  --shadow-modal: 0 24px 64px rgba(16, 24, 40, 0.35), 0 0 0 1px rgba(16, 24, 40, 0.08);
+  --shadow-ring: 0 0 0 2px var(--ac-br);
+  --shadow-ring-ac: 0 0 0 2px var(--ac);
+  --shadow-tab: inset 0 -2px 0 var(--ac);
+  --shadow-radio: inset 0 0 0 4px var(--sf), inset 0 0 0 9px var(--ac-fill);
+  --shadow-halo: 0 0 0 1px var(--bg);
+  --duration-fast: 150ms;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--tx);
+  font-family: var(--font-ui);
+  font-size: var(--text-base);
+  line-height: normal;
+}
+
+*,
+::before,
+::after {
+  box-sizing: border-box;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--br-off);
+  border-radius: 6px;
+  border: 2px solid var(--bg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -1,5 +1,10 @@
-import { writeFileSync } from 'node:fs';
-import { renderTailwindCss, renderThemeCss } from '../src/css.ts';
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { formattedCssFiles } from './format-css.ts';
 
-writeFileSync(new URL('../src/theme.css', import.meta.url), renderThemeCss());
-writeFileSync(new URL('../src/tailwind.css', import.meta.url), renderTailwindCss());
+for (const [path, css] of Object.entries(await formattedCssFiles())) {
+  const file = fileURLToPath(new URL(`../src/${path}`, import.meta.url));
+  mkdirSync(dirname(file), { recursive: true });
+  writeFileSync(file, css);
+}
