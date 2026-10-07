@@ -64,7 +64,8 @@ start_stack() {
     wait_healthy bemmoly-db-1 180 || die "Postgres is not healthy after 3 minutes" "Run: sudo bemmoly logs db"
     step_done
   fi
-  step "Pulling bemmoly:${VERSION}"
+  # The bundle already loaded the images: nothing is pulled.
+  if [ -n "${IMAGE_ARCHIVE}" ]; then step "Starting bemmoly:${VERSION}"; else step "Pulling bemmoly:${VERSION}"; fi
   services='bemmoly'
   has_profile proxy && services="${services} proxy"
   has_profile updater && services="${services} updater"
@@ -144,12 +145,22 @@ install_cli() {
   fi
 }
 
+# A re-run after the first admin exists: the app answers on loopback in every layout.
+setup_done() {
+  curl -fsS --max-time 5 http://127.0.0.1:8080/api/v1/setup/status 2>/dev/null | grep -q '"initialized":true'
+}
+
 final_message() {
   url=$(as_root cat "${INSTALL_DIR}/.env" | env_get /dev/stdin BEMMOLY_PUBLIC_URL)
   success "Bemmoly is running at ${url}"
-  say "  Open it to create the first admin."
+  if setup_done; then say "  Open it to sign in."; else say "  Open it to create the first admin."; fi
   if [ -n "${SELF_SIGNED:-}" ]; then
-    say "  The certificate is self-signed until ${DOMAIN} points at this machine; a real one follows by itself."
+    if local_only_name "${DOMAIN}"; then
+      say "  ${DOMAIN} is a local-only name, so its certificate stays self-signed and browsers warn."
+      say "  For a trusted one, re-run with --domain set to a public name that points at this machine."
+    else
+      say "  The certificate is self-signed until ${DOMAIN} points at this machine; a real one follows by itself."
+    fi
   fi
   say ''
   say "  Keep a copy of ${INSTALL_DIR}/.env somewhere safe. It holds the key that decrypts"
