@@ -12,6 +12,8 @@ export const KERNEL_CAPABILITIES = [
   'workspace.sso.configure',
   'workspace.roles.manage',
   'workspace.appearance.manage',
+  'workspace.settings.manage',
+  'workspace.modules.manage',
   'ai.assist.use',
   'ai.actions.run',
   'ai.models.configure',

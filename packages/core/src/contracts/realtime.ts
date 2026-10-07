@@ -4,6 +4,8 @@ export interface RealtimeMessage {
   ids: readonly string[];
   projectId?: string;
   spaceId?: string;
+  /** Scope for module-level changes (enable, disable, module settings). */
+  moduleId?: string;
 }
 
 export interface RealtimePublisher {
