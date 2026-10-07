@@ -45,7 +45,7 @@ export class UsageError extends Error {
  * are the workspace's own (their changes reach the server through NOTIFY), and
  * the changelog is read through the runner, as in the server.
  */
-export async function createRuntime(): Promise<Runtime> {
+export async function createRuntime(options: { humanLogs: boolean }): Promise<Runtime> {
   const env = loadEnv();
   const databaseUrl = env.DATABASE_URL;
   if (!databaseUrl) throw new UsageError('DATABASE_URL is not set in /var/bemmoly/.env');
@@ -54,10 +54,10 @@ export async function createRuntime(): Promise<Runtime> {
     maxConnections: 4,
     statementTimeoutMs: 0,
   });
-  const logger = createStderrLogger({
-    LOG_LEVEL: env.LOG_LEVEL === 'debug' ? 'debug' : 'warn',
-    LOG_FORMAT: 'json',
-  });
+  const logger = createStderrLogger(
+    { LOG_LEVEL: env.LOG_LEVEL === 'debug' ? 'debug' : 'warn', LOG_FORMAT: 'json' },
+    { human: options.humanLogs },
+  );
   const registry = loadModules({ available: await importAvailableModules() });
   const enabled =
     env.BEMMOLY_MODULES.length > 0 ? env.BEMMOLY_MODULES : await readEnabledModuleIds(sql);
