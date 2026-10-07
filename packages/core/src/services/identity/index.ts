@@ -10,8 +10,10 @@ export { appLink, createIdentityDependencies, type IdentityDependencies } from '
 export {
   INVITATION_CREATED,
   INVITATION_TTL_MS,
+  invitationPath,
   PASSWORD_RESET_REQUESTED,
   PASSWORD_RESET_TTL_MS,
+  passwordResetPath,
   type InvitationCreatedPayload,
   type PasswordResetRequestedPayload,
 } from './events.ts';
@@ -50,3 +52,5 @@ export {
   updateTeam,
 } from './teams.ts';
 export { deactivateUser, getMe, getUser, listUsers, reactivateUser, updateUser } from './users.ts';
+export { inSharedTransaction } from './transaction.ts';
+export { createUserDirectory } from './user-directory.ts';

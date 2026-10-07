@@ -14,10 +14,16 @@ import { recordAudit, type RequestMeta } from '../audit/index.ts';
 import type { RequestContext } from '../authz/index.ts';
 import { assertMayAssignRole, createAccount, findRole } from './accounts.ts';
 import { appLink, nowOf, type IdentityDependencies } from './deps.ts';
-import { INVITATION_CREATED, INVITATION_TTL_MS, type InvitationCreatedPayload } from './events.ts';
+import {
+  INVITATION_CREATED,
+  INVITATION_TTL_MS,
+  invitationPath,
+  type InvitationCreatedPayload,
+} from './events.ts';
 import { loadUser, presentInvitation } from './presenters.ts';
 import { generateSecret, hashSecret } from './secrets.ts';
 import { createSession, type ClientInfo, type IssuedSession } from './sessions.ts';
+import { inSharedTransaction } from './transaction.ts';
 
 const MANAGE = 'workspace.roles.manage' as const;
 const pending = and(isNull(invitations.acceptedAt), isNull(invitations.revokedAt));
@@ -56,12 +62,15 @@ export async function createInvitations(
   const now = nowOf(deps);
   const expiresAt = new Date(now.getTime() + INVITATION_TTL_MS);
   const inviterId = ctx.actor.kind === 'user' ? ctx.actor.id : (ctx.actor.userId ?? null);
-  const issued = await deps.db.transaction(async (tx) => {
+  const [inviter] = inviterId
+    ? await deps.db.select({ name: users.name }).from(users).where(eq(users.id, inviterId))
+    : [];
+  const issued = await inSharedTransaction(deps.sql, async (tx, executor) => {
     await tx
       .update(invitations)
       .set({ revokedAt: now, updatedAt: now })
       .where(and(pending, inArray(sql`lower(${invitations.email})`, emails)));
-    const created: { row: typeof invitations.$inferSelect; token: string }[] = [];
+    const created: (typeof invitations.$inferSelect)[] = [];
     for (const email of emails) {
       const token = generateSecret();
       const [row] = await tx
@@ -76,7 +85,7 @@ export async function createInvitations(
         })
         .returning();
       if (!row) throw new Error('Invitation insert returned no row');
-      created.push({ row, token });
+      created.push(row);
       await recordAudit(tx, {
         actor: ctx.actor,
         action: 'invitation.created',
@@ -84,35 +93,26 @@ export async function createInvitations(
         after: presentInvitation(row),
         meta: ctx,
       });
+      const payload: InvitationCreatedPayload = {
+        invitationId: row.id,
+        email: row.email,
+        inviterName: inviter?.name ?? 'An administrator',
+        acceptUrl: appLink(deps.publicUrl, invitationPath(token)),
+        expiresAt: row.expiresAt,
+        ...(input.message ? { message: input.message } : {}),
+      };
+      await deps.events.publish({
+        kind: INVITATION_CREATED,
+        occurredAt: now,
+        actor: ctx.actor,
+        entity: { kind: 'invitation', id: row.id },
+        payload,
+        transaction: executor,
+      });
     }
     return created;
   });
-  const [inviter] = inviterId
-    ? await deps.db.select().from(users).where(eq(users.id, inviterId)).limit(1)
-    : [];
-  const workspaceName = await deps.settings.get('workspace.name');
-  for (const { row, token } of issued) {
-    const payload: InvitationCreatedPayload = {
-      invitationId: row.id,
-      email: row.email,
-      roleId: role.id,
-      roleName: role.name,
-      teamId: team?.id ?? null,
-      teamName: team?.name ?? null,
-      invitedBy: inviter ? { id: inviter.id, name: inviter.name, email: inviter.email } : null,
-      workspaceName,
-      acceptUrl: appLink(deps.publicUrl, `/accept-invitation#token=${token}`),
-      expiresAt: row.expiresAt.toISOString(),
-    };
-    await deps.events.publish({
-      kind: INVITATION_CREATED,
-      occurredAt: now,
-      actor: ctx.actor,
-      entity: { kind: 'invitation', id: row.id },
-      payload,
-    });
-  }
-  return issued.map(({ row }) => presentInvitation(row));
+  return issued.map(presentInvitation);
 }
 
 /** Pending invitations, newest first, including expired ones the admin may resend. */

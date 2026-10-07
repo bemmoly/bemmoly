@@ -13,6 +13,8 @@ declare module '../../contracts/settings.ts' {
 
 export interface IdentityDependencies {
   db: Database;
+  /** The pool behind `db`; transactions that publish events run on it (see transaction.ts). */
+  sql: SqlClient;
   events: EventBus;
   settings: SettingsService;
   modules: ModuleCatalog;
@@ -34,7 +36,7 @@ export function appLink(publicUrl: string, path: string): string {
 
 /** Builds the identity dependencies the host passes to the routes and middlewares. */
 export function createIdentityDependencies(
-  options: Omit<IdentityDependencies, 'db'> & { sql: SqlClient },
-): IdentityDependencies & { sql: SqlClient } {
+  options: Omit<IdentityDependencies, 'db'>,
+): IdentityDependencies {
   return { ...options, db: createDatabase(options.sql) };
 }

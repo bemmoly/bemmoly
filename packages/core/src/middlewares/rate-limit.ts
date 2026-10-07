@@ -16,7 +16,7 @@ export interface RateLimitingOptions {
   sql: SqlClient;
   /** Every API request, keyed by person (or by IP when anonymous). */
   perActor?: RateLimitBudget;
-  /** Sign-in, password reset, invitation and setup routes, keyed by IP, per route. */
+  /** Sign-in, password reset, invitation, setup and unsubscribe routes, keyed by IP, per route. */
   strictPerIp?: RateLimitBudget;
   apiPrefix?: string;
   /** Share of calls that also delete expired buckets. */
@@ -78,7 +78,8 @@ function storeClass(sql: SqlClient, sweepProbability: number): FastifyRateLimitS
   } as unknown as FastifyRateLimitStoreCtor;
 }
 
-const STRICT_PATHS = ['/auth/', '/setup/'];
+/** Anonymous by design, so budgeted per IP: sign-in, setup and email unsubscribe links. */
+const STRICT_PATHS = ['/auth/', '/setup/', '/email-unsubscriptions'];
 
 function actorKey(request: FastifyRequest): string {
   const actor = request.actor ?? null;

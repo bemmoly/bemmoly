@@ -3,6 +3,7 @@ import {
   createLocalEventBus,
   createSqlClient,
   type DomainEvent,
+  type EventBus,
   type IdentityDependencies,
   type ModuleRegistry,
   type SqlClient,
@@ -23,8 +24,9 @@ export const ADMIN = { email: 'rohan@acmelabs.dev', password: 'correct horse bat
 export interface Harness {
   sql: SqlClient;
   modules: ModuleRegistry;
-  identity: IdentityDependencies & { sql: SqlClient };
+  identity: IdentityDependencies;
   events: DomainEvent[];
+  bus: EventBus;
   app: FastifyInstance;
   /** A second app on the same database, as a second replica would be. */
   newApp(): Promise<FastifyInstance>;
@@ -70,6 +72,7 @@ export async function startHarness(): Promise<HarnessResult> {
       modules,
       identity,
       events,
+      bus,
       app,
       newApp,
       reset: async () => {
@@ -167,11 +170,16 @@ export async function addPerson(
   const event = events.findLast(
     (item) => (item.payload as { email: string }).email === person.email,
   );
-  const token = new URL((event?.payload as { acceptUrl: string }).acceptUrl).hash.slice(7);
+  const token = linkToken((event?.payload as { acceptUrl: string }).acceptUrl);
   const accepted = await call(app, 'POST', `/auth/invitations/${token}/accept`, {
     body: { name: person.email.split('@')[0], password: 'a long enough password' },
   });
   const cookie = sessionCookie(accepted);
   if (accepted.statusCode !== 201 || !cookie) throw new Error(`accept failed: ${accepted.body}`);
   return { cookie, userId: (accepted.json() as { user: { id: string } }).user.id };
+}
+
+/** The token at the end of an emailed link such as `/invitations/<token>`. */
+export function linkToken(url: string): string {
+  return new URL(url).pathname.split('/').pop() ?? '';
 }

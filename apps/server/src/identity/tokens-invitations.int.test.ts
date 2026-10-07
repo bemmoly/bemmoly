@@ -4,13 +4,12 @@ import {
   addPerson,
   call,
   createFirstAdmin,
+  linkToken,
   roleId,
   sessionCookie,
   startHarness,
   type Harness,
 } from './harness.ts';
-
-const fragmentToken = (url: string) => new URL(url).hash.replace('#token=', '');
 
 describe('API tokens, invitations and password reset against a real database', () => {
   let harness: Harness | undefined;
@@ -105,14 +104,18 @@ describe('API tokens, invitations and password reset against a real database', (
     expect(events).toHaveLength(2);
     const payload = events[0]?.payload as Record<string, string>;
     expect(events[0]?.kind).toBe('invitation.created');
-    expect(payload).toMatchObject({
-      email: 'sam@acmelabs.dev',
-      roleName: 'Viewer',
-      teamName: 'Platform',
-      workspaceName: 'Acme Labs',
-    });
-    expect(payload['acceptUrl']).toMatch(/^http:\/\/localhost:8080\/accept-invitation#token=/);
-    const token = fragmentToken(payload['acceptUrl'] ?? '');
+    expect(Object.keys(payload).sort()).toEqual([
+      'acceptUrl',
+      'email',
+      'expiresAt',
+      'invitationId',
+      'inviterName',
+    ]);
+    expect(payload).toMatchObject({ email: 'sam@acmelabs.dev', inviterName: 'Rohan S.' });
+    expect(payload['expiresAt']).toBeInstanceOf(Date);
+    expect(payload['acceptUrl']).toMatch(/^http:\/\/localhost:8080\/invitations\/[\w-]{43}$/);
+    expect(events[0]?.transaction).toBeDefined();
+    const token = linkToken(payload['acceptUrl'] ?? '');
 
     const preview = await call(app, 'GET', `/auth/invitations/${token}`);
     expect(preview.json()).toMatchObject({ email: 'sam@acmelabs.dev', roleName: 'Viewer' });
@@ -166,7 +169,18 @@ describe('API tokens, invitations and password reset against a real database', (
     const known = await call(app, 'POST', '/auth/password-reset', { body: { email: ADMIN.email } });
     expect(known.statusCode).toBe(202);
     expect(events[0]?.kind).toBe('password_reset.requested');
-    const token = fragmentToken((events[0]?.payload as { resetUrl: string }).resetUrl);
+    const reset = events[0]?.payload as Record<string, unknown>;
+    expect(Object.keys(reset).sort()).toEqual([
+      'email',
+      'expiresAt',
+      'name',
+      'resetId',
+      'resetUrl',
+      'userId',
+    ]);
+    expect(reset['resetUrl']).toMatch(/^http:\/\/localhost:8080\/password-reset\/[\w-]{43}$/);
+    expect(events[0]?.transaction).toBeDefined();
+    const token = linkToken(String(reset['resetUrl']));
 
     const done = await call(app, 'POST', '/auth/password-reset/complete', {
       body: { token, password: 'a brand new passphrase' },

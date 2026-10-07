@@ -6,6 +6,8 @@ export const createInvitationsSchema = z.object({
   emails: z.array(emailSchema).min(1).max(100),
   roleId: z.uuid(),
   teamId: z.uuid().optional(),
+  /** Optional note from the inviter, quoted in the email. */
+  message: z.string().trim().min(1).max(1000).optional(),
 });
 
 export const invitationSchema = z.object({

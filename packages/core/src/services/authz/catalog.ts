@@ -44,6 +44,13 @@ const KERNEL: ReadonlyArray<
     ONLY_ORG_ADMIN,
   ],
   ['workspace.appearance.manage', 'Set appearance and themes', null, 'Workspace', ONLY_ORG_ADMIN],
+  [
+    'workspace.email.manage',
+    'Manage email delivery',
+    'SMTP settings, test sends, the dev mailbox',
+    'Workspace',
+    ONLY_ORG_ADMIN,
+  ],
   ['workspace.audit.view', 'View the audit log', null, 'Workspace', ONLY_ORG_ADMIN],
   [
     'ai.assist.use',

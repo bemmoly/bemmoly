@@ -2,6 +2,7 @@ import { ForbiddenError, UnauthenticatedError, type ApiTokenScope } from '@bemmo
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import fp from 'fastify-plugin';
 import type { Database } from '../clients/drizzle.ts';
+import type { AuthenticateRequest } from '../contracts/authn.ts';
 import type { Actor } from '../contracts/authz.ts';
 import {
   createRequestAuthorization,
@@ -41,17 +42,39 @@ export interface AuthenticationOptions {
   publicUrl: string;
   /** Requests under this prefix are authenticated unless the route is anonymous. */
   apiPrefix?: string;
+  /**
+   * Paths under the prefix that are anonymous by design but registered without
+   * `config.anonymous`; defaults to the email unsubscribe links.
+   */
+  anonymousPaths?: readonly string[];
   now?: () => Date;
 }
 
 const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
 const BEARER = /^Bearer\s+(\S+)$/i;
 
-function requiresActor(request: FastifyRequest, apiPrefix: string): boolean {
+/** Signed links in emails carry their own token instead of a session. */
+export const DEFAULT_ANONYMOUS_PATHS: readonly string[] = ['/email-unsubscriptions'];
+
+function requiresActor(
+  request: FastifyRequest,
+  apiPrefix: string,
+  anonymousPaths: readonly string[],
+): boolean {
   const path = request.url.split('?')[0] ?? '';
   const underApi = path === apiPrefix || path.startsWith(`${apiPrefix}/`);
-  return underApi && request.routeOptions.config?.anonymous !== true;
+  if (!underApi || request.routeOptions.config?.anonymous === true) return false;
+  return !anonymousPaths.some((anonymous) => path === `${apiPrefix}${anonymous}`);
 }
+
+/**
+ * The actor the authentication middleware resolved, or a 401. For routes that
+ * authenticate explicitly; needs `authentication` registered on the app.
+ */
+export const authenticateRequest: AuthenticateRequest = async (request) => {
+  if (request.actor) return request.actor;
+  throw new UnauthenticatedError();
+};
 
 async function fromBearer(
   request: FastifyRequest,
@@ -104,6 +127,7 @@ export const authentication = fp<AuthenticationOptions>(
   async (app, options) => {
     const policy = cookiePolicyFor(options.publicUrl);
     const apiPrefix = options.apiPrefix ?? '/api/v1';
+    const anonymousPaths = options.anonymousPaths ?? DEFAULT_ANONYMOUS_PATHS;
     app.decorateRequest('actor', null);
     app.decorateRequest('authz', null);
     app.decorateRequest('sessionId', null);
@@ -115,7 +139,7 @@ export const authentication = fp<AuthenticationOptions>(
       const cookie = readCookie(request.headers.cookie, SESSION_COOKIE);
       if (header !== undefined) await fromBearer(request, header, options, now);
       else if (cookie) await fromCookie(request, reply, cookie, options, policy, now);
-      if (!request.actor && requiresActor(request, apiPrefix)) {
+      if (!request.actor && requiresActor(request, apiPrefix, anonymousPaths)) {
         throw new UnauthenticatedError();
       }
     });

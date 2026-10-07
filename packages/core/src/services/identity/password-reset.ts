@@ -11,12 +11,14 @@ import { appLink, nowOf, type IdentityDependencies } from './deps.ts';
 import {
   PASSWORD_RESET_REQUESTED,
   PASSWORD_RESET_TTL_MS,
+  passwordResetPath,
   type PasswordResetRequestedPayload,
 } from './events.ts';
 import { findPasswordAccount } from './login.ts';
 import { hashPassword } from './passwords.ts';
 import { generateSecret, hashSecret } from './secrets.ts';
 import { revokeUserSessions } from './sessions.ts';
+import { inSharedTransaction } from './transaction.ts';
 
 /** Anonymous requests are attributed to the system in the audit log. */
 const ANONYMOUS: Actor = { kind: 'system', id: 'anonymous' };
@@ -36,7 +38,7 @@ export async function requestPasswordReset(
   const now = nowOf(deps);
   const token = generateSecret();
   const expiresAt = new Date(now.getTime() + PASSWORD_RESET_TTL_MS);
-  await deps.db.transaction(async (tx) => {
+  await inSharedTransaction(deps.sql, async (tx, executor) => {
     await tx
       .update(passwordResetTokens)
       .set({ usedAt: now, updatedAt: now })
@@ -59,19 +61,22 @@ export async function requestPasswordReset(
       after: { resetId: row?.id ?? null },
       meta,
     });
-  });
-  const payload: PasswordResetRequestedPayload = {
-    userId: account.userId,
-    email: account.email,
-    name: account.name,
-    resetUrl: appLink(deps.publicUrl, `/reset-password#token=${token}`),
-    expiresAt: expiresAt.toISOString(),
-  };
-  await deps.events.publish({
-    kind: PASSWORD_RESET_REQUESTED,
-    occurredAt: now,
-    entity: { kind: 'user', id: account.userId },
-    payload,
+    if (!row) throw new Error('Password reset insert returned no row');
+    const payload: PasswordResetRequestedPayload = {
+      resetId: row.id,
+      userId: account.userId,
+      email: account.email,
+      name: account.name,
+      resetUrl: appLink(deps.publicUrl, passwordResetPath(token)),
+      expiresAt,
+    };
+    await deps.events.publish({
+      kind: PASSWORD_RESET_REQUESTED,
+      occurredAt: now,
+      entity: { kind: 'user', id: account.userId },
+      payload,
+      transaction: executor,
+    });
   });
 }
 

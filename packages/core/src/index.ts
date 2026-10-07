@@ -25,6 +25,7 @@ export {
 export {
   createIdentityDependencies,
   createSessionResolver,
+  createUserDirectory,
   INVITATION_CREATED,
   PASSWORD_RESET_REQUESTED,
   type IdentityDependencies,
