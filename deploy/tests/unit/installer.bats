@@ -163,3 +163,33 @@ setup() {
   password=$(env_get "${env}" POSTGRES_PASSWORD)
   [ "$(env_get "${env}" DATABASE_URL)" = "postgres://bemmoly:${password}@db:5432/bemmoly_db" ]
 }
+
+# HTTPS answers only with -k (a self-signed certificate); each curl and sleep is logged.
+fake_self_signed_https() {
+  CALLS="${BATS_TEST_TMPDIR}/calls"
+  : >"${CALLS}"
+  curl() {
+    printf 'curl %s\n' "$*" >>"${CALLS}"
+    case " $* " in *" -k "*) return 0 ;; *) return 7 ;; esac
+  }
+  sleep() { printf 'sleep\n' >>"${CALLS}"; }
+}
+
+@test "an internal name takes its self-signed certificate without the ACME wait" {
+  fake_self_signed_https
+  DOMAIN=bemmoly.test NO_PROXY='' TLS_MODE=internal
+  request_certificate >"${BATS_TEST_TMPDIR}/out"
+  [ "$(cat "${BATS_TEST_TMPDIR}/out")" = "→ Issuing a self-signed certificate for bemmoly.test … done" ]
+  [ "${SELF_SIGNED}" = 1 ]
+  [ "$(cat "${CALLS}")" = "curl -fsS -k --max-time 5 --resolve bemmoly.test:443:127.0.0.1 https://bemmoly.test/healthz" ]
+}
+
+@test "an auto name polls for a trusted certificate before falling back to self-signed" {
+  fake_self_signed_https
+  DOMAIN=bemmoly.acme.dev NO_PROXY='' TLS_MODE=auto
+  request_certificate >"${BATS_TEST_TMPDIR}/out"
+  [ "$(cat "${BATS_TEST_TMPDIR}/out")" = "→ Requesting certificate for bemmoly.acme.dev … self-signed for now" ]
+  [ "${SELF_SIGNED}" = 1 ]
+  [ "$(grep -c '^sleep$' "${CALLS}")" = 30 ]
+  [ "$(grep -c -- ' -k ' "${CALLS}")" = 1 ]
+}
