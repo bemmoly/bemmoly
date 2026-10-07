@@ -23,7 +23,7 @@ import { loadEnv, type Env } from '@bemmoly/core/config';
 import { systemOnlyAuthorize } from '../../src/config/identity.ts';
 import { importAvailableModules } from '../../src/config/modules.ts';
 import { systemDependencies } from '../../src/config/system.ts';
-import { APP_VERSION } from '../../src/config/version.ts';
+import { appVersionOf } from '../../src/config/version.ts';
 
 export interface Runtime {
   env: Env;
@@ -76,7 +76,7 @@ export async function createRuntime(): Promise<Runtime> {
     sql,
     kernel: await loadKernelChangelog(),
     modules: sourcesFromRegistry(registry),
-    appVersion: APP_VERSION,
+    appVersion: appVersionOf(env),
   });
   const deps = systemDependencies({
     env: { ...env, DATABASE_URL: databaseUrl },

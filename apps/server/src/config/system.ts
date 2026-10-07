@@ -17,6 +17,7 @@ import {
 } from '@bemmoly/core';
 import type { Env, Logger } from '@bemmoly/core/config';
 import { getMetrics } from '@bemmoly/core/telemetry';
+import { appVersionOf } from './version.ts';
 
 export interface SystemWiringInput {
   env: Env & { DATABASE_URL: string };
@@ -46,7 +47,7 @@ export function systemDependencies(input: SystemWiringInput): SystemDependencies
       databaseUrl: env.DATABASE_URL,
       dataDir: env.BEMMOLY_DATA_DIR,
       backupDir: env.BEMMOLY_BACKUP_DIR,
-      appVersion: env.BEMMOLY_VERSION,
+      appVersion: appVersionOf(env),
       role: env.BEMMOLY_ROLE,
       publicUrl: env.BEMMOLY_PUBLIC_URL,
       ...(env.BEMMOLY_BACKUP_PASSPHRASE ? { backupPassphrase: env.BEMMOLY_BACKUP_PASSPHRASE } : {}),

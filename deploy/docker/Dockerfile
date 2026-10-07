@@ -44,12 +44,13 @@ RUN --mount=type=cache,id=bemmoly-pnpm,target=/pnpm/store \
  && ln -s ../../packages/core node_modules/@bemmoly/core
 
 FROM ${NODE_IMAGE} AS runtime
-ARG BEMMOLY_VERSION=0.0.0-dev
+# Empty unless the release names the version; the server then reports its package version.
+ARG BEMMOLY_VERSION=
 ARG REVISION=unknown
 ARG CREATED=unknown
 LABEL org.opencontainers.image.title="Bemmoly" \
       org.opencontainers.image.description="Your work. Your platform. Self-hosted issues and docs." \
-      org.opencontainers.image.version="${BEMMOLY_VERSION}" \
+      org.opencontainers.image.version="${BEMMOLY_VERSION:-unreleased}" \
       org.opencontainers.image.revision="${REVISION}" \
       org.opencontainers.image.created="${CREATED}" \
       org.opencontainers.image.source="https://github.com/bemmoly/bemmoly" \

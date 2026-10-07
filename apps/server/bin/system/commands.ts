@@ -17,6 +17,7 @@ import {
   verifyBackup,
 } from '@bemmoly/core';
 import { backupKindSchema } from '@bemmoly/shared';
+import { appVersionOf } from '../../src/config/version.ts';
 import { CLI_ACTOR, UsageError, type Runtime } from './runtime.ts';
 
 export interface CommandInput {
@@ -69,7 +70,7 @@ async function status(runtime: Runtime) {
   const repository = createBackupRepository(runtime.sql);
   const latest = await repository.latest({ status: 'succeeded' }).catch(() => null);
   return {
-    version: runtime.env.BEMMOLY_VERSION,
+    version: appVersionOf(runtime.env),
     role: runtime.env.BEMMOLY_ROLE,
     databaseBytes: Number(size?.bytes ?? 0),
     queueDepth: queue?.depth === null || queue?.depth === undefined ? null : Number(queue.depth),

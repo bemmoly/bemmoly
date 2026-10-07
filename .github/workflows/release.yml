@@ -172,6 +172,8 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           provenance: mode=max
+          build-args: |
+            BEMMOLY_VERSION=${{ needs.plan.outputs.version }}
           tags: ${{ steps.tags.outputs.list }}
           labels: |
             org.opencontainers.image.title=${{ matrix.image }}

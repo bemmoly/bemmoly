@@ -21,6 +21,12 @@ describe('parseEnv', () => {
     expect(env.DATABASE_URL).toBeUndefined();
   });
 
+  it('leaves the release version unset unless one is named', () => {
+    expect(parseEnv(minimal).BEMMOLY_VERSION).toBeUndefined();
+    expect(parseEnv({ ...minimal, BEMMOLY_VERSION: '' }).BEMMOLY_VERSION).toBeUndefined();
+    expect(parseEnv({ ...minimal, BEMMOLY_VERSION: ' 0.1.0 ' }).BEMMOLY_VERSION).toBe('0.1.0');
+  });
+
   it('parses lists, booleans and numbers, treating empty values as unset', () => {
     const env = parseEnv({
       ...minimal,

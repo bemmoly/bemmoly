@@ -54,7 +54,12 @@ export const envSchema = z.object({
   BEMMOLY_DB_AUTO_MIGRATE: z.stringbool().default(true),
   BEMMOLY_DB_CONTEXTS: contextList,
   BEMMOLY_BACKUP_DIR: z.string().min(1).default('/var/bemmoly/backups'),
-  BEMMOLY_VERSION: z.string().min(1).default('0.0.0-dev'),
+  /** The release this image is; unset or empty means the server package's own version. */
+  BEMMOLY_VERSION: z
+    .string()
+    .trim()
+    .optional()
+    .transform((value) => value || undefined),
   BEMMOLY_UPDATER_URL: z.url({ protocol: /^https?$/ }).optional(),
   UPDATER_TOKEN: z.string().min(32).optional(),
   BEMMOLY_PG_BIN_DIR: z.string().min(1).default('/usr/lib/postgresql/18/bin'),
@@ -92,7 +97,7 @@ export function parseEnv(source: EnvSource): Env {
 
 /** What `bemmoly-db` needs: enough to reach the database, nothing secret. */
 export const databaseEnvSchema = envSchema
-  .pick({ BEMMOLY_MODULES: true, BEMMOLY_DB_CONTEXTS: true })
+  .pick({ BEMMOLY_MODULES: true, BEMMOLY_DB_CONTEXTS: true, BEMMOLY_VERSION: true })
   .extend({ DATABASE_URL: z.url({ protocol: /^postgres(ql)?$/ }) });
 
 export type DatabaseEnv = z.output<typeof databaseEnvSchema>;

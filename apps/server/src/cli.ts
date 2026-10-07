@@ -26,7 +26,7 @@ import {
 import { createLogger, loadDatabaseEnv } from '@bemmoly/core/config';
 import { systemOnlyAuthorize } from './config/identity.ts';
 import { importAvailableModules } from './config/modules.ts';
-import { APP_VERSION } from './config/version.ts';
+import { appVersionOf } from './config/version.ts';
 
 const argv = process.argv.slice(2);
 if (argv.length === 0 || argv[0] === '--help') {
@@ -46,7 +46,7 @@ const runner = createChangelogRunner({
   sql,
   kernel: await loadKernelChangelog(),
   modules: sourcesFromRegistry(registry),
-  appVersion: APP_VERSION,
+  appVersion: appVersionOf(env),
 });
 const contexts = env.BEMMOLY_DB_CONTEXTS;
 

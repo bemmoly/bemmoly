@@ -32,7 +32,7 @@ import {
 } from '@bemmoly/core';
 import type { Env, Logger } from '@bemmoly/core/config';
 import type { IdentityWiring } from './identity.ts';
-import { APP_VERSION } from './version.ts';
+import { appVersionOf } from './version.ts';
 
 export interface DataKernelInput {
   env: Pick<
@@ -43,6 +43,7 @@ export interface DataKernelInput {
     | 'BEMMOLY_DATA_DIR'
     | 'BEMMOLY_DB_AUTO_MIGRATE'
     | 'BEMMOLY_DB_CONTEXTS'
+    | 'BEMMOLY_VERSION'
   > & { DATABASE_URL: string };
   sql: SqlClient;
   /** Every module in the image, registered with the realtime event bus and job queue. */
@@ -83,7 +84,7 @@ export async function createDataKernel(input: DataKernelInput): Promise<DataKern
     sql,
     kernel: await loadKernelChangelog(),
     modules: sourcesFromRegistry(modules),
-    appVersion: APP_VERSION,
+    appVersion: appVersionOf(env),
     logger: logger.child({ component: 'changelog' }),
   });
   if (env.BEMMOLY_DB_AUTO_MIGRATE) await runner.update({ contexts, modules: [] });

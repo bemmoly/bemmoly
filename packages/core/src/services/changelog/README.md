@@ -69,6 +69,16 @@ runs pending changesets at boot unless `BEMMOLY_DB_AUTO_MIGRATE=false`, with
 the contexts in `BEMMOLY_DB_CONTEXTS` (default `production`). Enabling a module
 runs its changelog under the same lock.
 
+## Which version a row records
+
+Every row's `app_version` is the release that applied it, from one source:
+`BEMMOLY_VERSION` when it is set (the release image sets it from the tag),
+otherwise the version in `apps/server/package.json`. Every workspace package
+carries the same version, so a source checkout records the release it is
+building towards. `appVersionOf` in `apps/server/src/config/version.ts` is the
+only place that decides; the server, `bemmoly-db` and `bemmoly-system` all use
+it, and backup manifests and Settings › System show the same value.
+
 ## bemmoly-db
 
 `node apps/server/src/cli.ts <scope> <command>` (the `bemmoly-db` bin of
