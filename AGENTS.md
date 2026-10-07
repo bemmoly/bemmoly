@@ -7,7 +7,7 @@ It is deliberately specific. When it conflicts with a tool's default behaviour, 
 Read first:
 
 - `docs/tech-design.html`: the architecture. Decisions there are settled unless an ADR changes them.
-- `docs/design/mocks/`: fourteen product screens. They are the pixel source of truth.
+- `docs/design/mocks/`: seventeen product screens. They are the pixel source of truth.
 - `docs/plan/foundation.md`: what the first release (0.1.0) contains and how the work is split.
 - `docs/adr/`: one record per decision that changed after the tech design.
 
