@@ -67,8 +67,19 @@ describe('display components', () => {
     render(<Logo variant="lockup" />);
     const logo = screen.getByRole('img', { name: 'Bemmoly' });
     expect(logo.querySelector('svg')?.getAttribute('aria-hidden')).toBe('true');
-    expect(logo.getAttribute('style')).toContain('--brand-mark-bg: var(--ac-fill)');
-    expect(logo.innerHTML).toContain('var(--brand-mark-bg');
+    // The CSP refuses inline style attributes: each tile carries its designed colour as a fill
+    // and a class that a custom brand theme recolours.
+    expect(logo.innerHTML).not.toContain('style=');
+    const fills = (name: string) =>
+      [...logo.querySelectorAll(`.${name}`)].map((tile) => tile.getAttribute('fill'));
+    expect(fills('brand-mark-bg')).toEqual(['#2356C9', '#2356C9']);
+    expect(fills('brand-mark-mid')).toEqual(['#5B7BE5']);
+    expect(fills('brand-mark-fg')).toEqual(['#9A85EA']);
+    expect(logo.getAttribute('style')).toContain('--brand-mark-bg: var(--ac)');
+    expect(logo.getAttribute('style')).toContain('--brand-mark-mid: var(--ac-l)');
+    expect(logo.className).toContain(
+      'in-data-[theme=custom]:[&_.brand-mark-bg]:fill-(--brand-mark-bg)',
+    );
     render(<WorkspaceMark name="Acme Labs" />);
     expect(screen.getByRole('img', { name: 'Acme Labs' }).textContent).toBe('A');
   });

@@ -1,0 +1,11 @@
+[Unit]
+Description=Check every 6 hours that Bemmoly has a recent backup
+
+[Timer]
+OnBootSec=30min
+OnUnitActiveSec=6h
+Persistent=true
+RandomizedDelaySec=10min
+
+[Install]
+WantedBy=timers.target

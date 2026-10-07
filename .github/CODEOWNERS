@@ -1,0 +1,62 @@
+# One approving review from a code owner of each touched folder (AGENTS.md §5).
+# The last matching line wins, so the general rule comes first.
+#
+# The teams are placeholders under the @bemmoly organisation. Create them (or replace them
+# with people) before turning on "Require review from Code Owners" in branch protection;
+# GitHub ignores lines whose owners do not exist. See .github/CI.md.
+
+*                                             @bemmoly/maintainers
+
+# Contributor contract and architecture: maintainers decide.
+/AGENTS.md                                    @bemmoly/maintainers
+/docs/tech-design.html                        @bemmoly/maintainers
+/docs/design/                                 @bemmoly/maintainers
+/docs/plan/                                   @bemmoly/maintainers
+
+# Data kernel
+/packages/core/src/services/changelog/        @bemmoly/kernel
+/packages/core/src/services/modules/          @bemmoly/kernel
+/packages/core/src/services/settings/         @bemmoly/kernel
+/packages/core/src/services/realtime/         @bemmoly/kernel
+/packages/core/src/services/jobs/             @bemmoly/kernel
+/packages/core/src/services/storage/          @bemmoly/kernel
+/packages/core/src/models/                    @bemmoly/kernel
+/packages/core/changelog/                     @bemmoly/kernel
+/modules/sample/                              @bemmoly/kernel
+
+# Identity and access
+/packages/core/src/services/identity/         @bemmoly/identity
+/packages/core/src/services/authz/            @bemmoly/identity
+/packages/core/src/services/audit/            @bemmoly/identity
+
+# Email and notifications
+/packages/core/src/services/email/            @bemmoly/notifications
+/packages/core/src/services/notifications/    @bemmoly/notifications
+
+# Design system
+/packages/ui/                                 @bemmoly/design-system
+
+# Web shell and settings
+/apps/web/                                    @bemmoly/web
+/packages/core-web/                           @bemmoly/web
+/packages/api-client/                         @bemmoly/web
+
+# Deploy and operations
+/deploy/                                      @bemmoly/deploy
+/packages/core/src/services/system/           @bemmoly/deploy
+
+# Observability and quality
+/.github/                                     @bemmoly/quality
+/.devcontainer/                               @bemmoly/quality
+/docs/adr/                                    @bemmoly/quality @bemmoly/maintainers
+/tools/                                       @bemmoly/quality
+/packages/core/src/config/logger.ts           @bemmoly/quality
+/packages/core/src/services/telemetry/        @bemmoly/quality
+/eslint.config.js                             @bemmoly/quality
+/CONTRIBUTING.md                              @bemmoly/quality
+/SECURITY.md                                  @bemmoly/quality @bemmoly/maintainers
+/CODE_OF_CONDUCT.md                           @bemmoly/maintainers
+
+# Shared contracts: every stream codes against them, so maintainers review changes.
+/packages/shared/                             @bemmoly/maintainers
+/packages/core/src/contracts/                 @bemmoly/maintainers

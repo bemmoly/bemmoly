@@ -21,6 +21,15 @@ export abstract class BemmolyError<C extends ErrorCode = ErrorCode> extends Erro
   }
 }
 
+/** No credentials, or credentials that do not identify anyone (session, API token, scrape token). */
+export class UnauthenticatedError extends BemmolyError<'unauthenticated'> {
+  override readonly name = 'UnauthenticatedError';
+
+  constructor(message = 'Sign in to continue', options?: BemmolyErrorOptions<'unauthenticated'>) {
+    super(message, 'unauthenticated', options);
+  }
+}
+
 export class NotFoundError extends BemmolyError<'not_found' | 'module_not_enabled'> {
   override readonly name = 'NotFoundError';
 
@@ -75,6 +84,21 @@ export class RateLimitedError extends BemmolyError<'rate_limited'> {
 
   constructor(message = 'Too many requests', options: RateLimitedErrorOptions = {}) {
     super(message, 'rate_limited', options);
+    this.retryAfterSeconds = options.retryAfterSeconds;
+  }
+}
+
+export interface MaintenanceErrorOptions extends BemmolyErrorOptions<'maintenance'> {
+  retryAfterSeconds?: number;
+}
+
+/** A restore, update or rollback is running; writes wait until it ends. Mapped to 503. */
+export class MaintenanceError extends BemmolyError<'maintenance'> {
+  override readonly name = 'MaintenanceError';
+  readonly retryAfterSeconds: number | undefined;
+
+  constructor(message = 'Bemmoly is under maintenance', options: MaintenanceErrorOptions = {}) {
+    super(message, 'maintenance', options);
     this.retryAfterSeconds = options.retryAfterSeconds;
   }
 }

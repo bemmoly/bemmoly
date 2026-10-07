@@ -1,0 +1,4 @@
+#!/bin/sh
+# The changelog runner (`bemmoly db …` on the host): status, validate, plan, update,
+# history, tag, rollback; every command takes --json.
+cd /app && exec node /app/apps/server/src/cli.ts db "$@"

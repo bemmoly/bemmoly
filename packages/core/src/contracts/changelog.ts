@@ -10,7 +10,8 @@ export type PreconditionCheck =
   | { columnExists: { table: string; column: string } }
   | { indexExists: { index: string; table?: string } }
   | { rowCount: { table: string; where?: SQL; expected: number | { min?: number; max?: number } } }
-  | { sqlCheck: { query: SQL; expected: string | number | boolean | null } };
+  | { sqlCheck: { query: SQL; expected: string | number | boolean | null } }
+  | { not: PreconditionCheck };
 
 export type Precondition = PreconditionCheck & {
   onFail: PreconditionFailAction;
@@ -58,12 +59,25 @@ export interface Changeset {
   /** Required for DDL-only changesets; omit and set `irreversible` when data is lost. */
   down?(ctx: ChangesetContext): Promise<void>;
   irreversible?: boolean;
+  /**
+   * Takes more than a few seconds on a large workspace (a table rewrite, an index on a big
+   * table). Release notes and the Update dialog list it. Backfills and non-transactional
+   * changesets are treated as slow without it.
+   */
+  slow?: boolean;
   /** Old checksums accepted for an already-run changeset, each with the reason it changed. */
   validChecksums?: readonly ValidChecksum[];
   /** Re-run on every boot, e.g. a view maintained from source. */
   runAlways?: boolean;
   /** Re-run when the checksum changes instead of failing validation. */
   runOnChange?: boolean;
+  /** Set by the folder loader: the file it came from and the sha256 of its source. */
+  source?: ChangesetSource;
+}
+
+export interface ChangesetSource {
+  file: string;
+  checksum: string;
 }
 
 /** Ordered changesets of one module (or the kernel), ordered by numeric id prefix. */
@@ -92,21 +106,35 @@ export interface ChangelogEntry {
 export interface PendingChangeset {
   module: string;
   id: string;
+  /** Declared slow, or not transactional: release notes and `db status` flag it. */
+  slow?: boolean;
+  /** Has no `down`: rolling back past it needs a backup. */
+  irreversible?: boolean;
 }
 
 export interface ChangelogValidationProblem {
   module: string;
   id: string;
-  problem: 'checksum_mismatch' | 'duplicate_id' | 'gap_in_order' | 'missing_down';
+  problem:
+    | 'checksum_mismatch'
+    | 'duplicate_id'
+    | 'gap_in_order'
+    | 'missing_down'
+    | 'invalid_id'
+    | 'unknown_changeset';
   message: string;
+  /** Errors fail `db validate` and boot; warnings are reported only. Defaults to error. */
+  severity?: 'error' | 'warning';
 }
 
 export interface ChangelogRunOptions {
   contexts: readonly ChangesetContextName[];
   modules?: readonly string[];
+  /** Re-run a non-transactional changeset left in state "started" by a crash. */
+  retryStarted?: boolean;
 }
 
-export type ChangelogRollbackTarget = { toId: string } | { count: number };
+export type ChangelogRollbackTarget = { toId: string } | { count: number } | { toTag: string };
 
 /** The kernel's changelog runner, applied under one advisory lock per run. */
 export interface ChangelogRunner {

@@ -1,0 +1,9 @@
+Bemmoly {{ .Chart.AppVersion }} is starting ({{ .Values.mode }} mode).
+
+Open {{ .Values.publicUrl }} to create the first admin.
+
+Keep a copy of the {{ .Values.existingSecret }} Secret outside the cluster: it holds the key
+that decrypts stored credentials and the backup passphrase.
+
+Updates on Kubernetes: Settings › Updates shows the version, the notes and the command:
+  helm upgrade {{ .Release.Name }} <chart> --version <new> --reuse-values

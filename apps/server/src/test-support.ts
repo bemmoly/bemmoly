@@ -5,6 +5,7 @@ export const TEST_ENV = {
   BEMMOLY_TRUST_PROXY: false,
   LOG_LEVEL: 'info',
   LOG_FORMAT: 'json',
+  BEMMOLY_PUBLIC_URL: 'http://localhost:8080',
 } as const;
 
 export async function shippedModules(): Promise<ModuleRegistry> {

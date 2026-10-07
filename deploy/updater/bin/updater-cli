@@ -1,0 +1,3 @@
+#!/bin/sh
+# One-shot updates for `bemmoly upgrade` and `bemmoly rollback`; see src/cli.ts.
+exec node /app/deploy/updater/src/cli.ts "$@"

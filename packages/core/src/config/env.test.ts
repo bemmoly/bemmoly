@@ -21,6 +21,12 @@ describe('parseEnv', () => {
     expect(env.DATABASE_URL).toBeUndefined();
   });
 
+  it('leaves the release version unset unless one is named', () => {
+    expect(parseEnv(minimal).BEMMOLY_VERSION).toBeUndefined();
+    expect(parseEnv({ ...minimal, BEMMOLY_VERSION: '' }).BEMMOLY_VERSION).toBeUndefined();
+    expect(parseEnv({ ...minimal, BEMMOLY_VERSION: ' 0.1.0 ' }).BEMMOLY_VERSION).toBe('0.1.0');
+  });
+
   it('parses lists, booleans and numbers, treating empty values as unset', () => {
     const env = parseEnv({
       ...minimal,
@@ -36,6 +42,17 @@ describe('parseEnv', () => {
     expect(env.BEMMOLY_DB_AUTO_MIGRATE).toBe(false);
     expect(env.PORT).toBe(9090);
     expect(env.OTEL_EXPORTER_OTLP_ENDPOINT).toBeUndefined();
+  });
+
+  it('keeps /metrics off without a token and rejects a short one', () => {
+    expect(parseEnv(minimal).BEMMOLY_METRICS_TOKEN).toBeUndefined();
+    const token = 'a'.repeat(64);
+    expect(parseEnv({ ...minimal, BEMMOLY_METRICS_TOKEN: token }).BEMMOLY_METRICS_TOKEN).toBe(
+      token,
+    );
+    expect(() => parseEnv({ ...minimal, BEMMOLY_METRICS_TOKEN: 'short' })).toThrow(
+      /BEMMOLY_METRICS_TOKEN/,
+    );
   });
 
   it('fails fast naming every bad key without echoing values', () => {

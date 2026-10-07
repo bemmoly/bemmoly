@@ -20,7 +20,10 @@ interface Props {
 
 const { title, description, cta = false } = Astro.props;
 const fullTitle = title === 'Bemmoly' ? 'Bemmoly: Your work. Your platform.' : `${title} · Bemmoly`;
-const canonical = new URL(Astro.url.pathname, Astro.site).href;
+// With build.format 'file', Astro 7 reports the built file (/docs.html, /index.html); the
+// canonical address is the clean one Caddy serves (/docs, /).
+const path = Astro.url.pathname.replace(/(\/index)?\.html$/, '') || '/';
+const canonical = new URL(path, Astro.site).href;
 const image = new URL(socialPreview.src, Astro.site).href;
 const themeColor = themeById('light').colors.sf;
 // The two IBM Plex Sans faces above the fold; the rest load on demand.

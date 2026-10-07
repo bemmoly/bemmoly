@@ -1,6 +1,7 @@
 # Contributing to Bemmoly
 
-Bemmoly is an open source (MIT), self-hosted, AI-first alternative to Jira and Confluence.
+Bemmoly is an open source (MIT), self-hosted, AI-first platform for issues and docs: your work,
+your platform.
 This file is the contract for anyone changing the repository, whether a person or an AI agent.
 It is deliberately specific. When it conflicts with a tool's default behaviour, this file wins.
 
@@ -155,7 +156,8 @@ build(deploy): pin the Postgres image to pgvector pg18
   larger work into a sequence of PRs that each leave `main` working.
 - Title follows the commit format and becomes the squash commit. The description says what
   changed, why, how it was tested, and for UI includes a screenshot beside the mock.
-- Required before review: typecheck, lint, unit and integration tests green; `.env.example`
+- Required before review: the required status checks green (listed in `.github/CI.md`:
+  typecheck, lint, unit and integration tests among them); `.env.example`
   current; changesets written for any schema change; a release note entry (section 6) for
   user-visible changes; docs updated where behaviour changed.
 - One approving review from a code owner of the touched folder. Authors do not merge their own
@@ -196,8 +198,8 @@ database. AI code is tested against a recorded provider; live evals run nightly.
 ## 8. Security
 
 Report vulnerabilities privately as described in `SECURITY.md`. Never open a public issue for a
-security bug. Dependencies are pinned by lockfile; `npm audit`, secret scanning and image scanning
-run in CI and block merges.
+security bug. Dependencies are pinned by lockfile. The dependency audit (`pnpm audit`, failing on
+high), the Semgrep rules, secret scanning and image scanning run in CI and block merges.
 
 ## 9. Working as an AI agent in this repository
 

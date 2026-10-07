@@ -1,0 +1,8 @@
+[Unit]
+Description=Bemmoly backup safety net (only when the app has not backed up for 36 hours)
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/bemmoly backup --if-older-than 36h

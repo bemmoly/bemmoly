@@ -1,0 +1,295 @@
+name: Release
+
+# One tag vX.Y.Z publishes, together: the application and updater images (multi-arch,
+# signed, with SBOMs), the release notes, the signed release manifest, and the installer,
+# Compose file, Helm chart and air-gap bundle from deploy/ (AGENTS.md §6, tech design §18).
+#
+# On main, the changesets action keeps a "version packages" pull request open; merging it
+# bumps the versions, and the next run tags the release and publishes it. Pushing a tag by
+# hand (for example v0.4.0-beta.1 on the beta channel) publishes that tag.
+
+on:
+  push:
+    branches: [main]
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+      - 'v[0-9]+.[0-9]+.[0-9]+-beta.[0-9]+'
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  IMAGE_NAMESPACE: ghcr.io/bemmoly
+  # Paths owned by deploy/.
+  INSTALLER: deploy/install.sh
+  RELEASE_INSTALLER_SCRIPT: deploy/scripts/release-installer.sh
+  COMPOSE_FILE: deploy/compose/docker-compose.yml
+  HELM_CHART: deploy/helm/bemmoly
+  AIRGAP_SCRIPT: deploy/scripts/airgap-bundle.sh
+  MANIFEST_SCHEMA: deploy/release-manifest.schema.json
+
+jobs:
+  version:
+    name: Version pull request or tag
+    if: github.ref_type == 'branch'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    outputs:
+      published: ${{ steps.changesets.outputs.published }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - uses: ./.github/actions/setup
+
+      - name: Configure the release author
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+
+      - id: changesets
+        uses: changesets/action@ae32849d5ba541f9ae29e40e22a623bc13562f51 # v2.1.2
+        with:
+          version-script: pnpm changeset version
+          publish-script: node tools/release/src/cli.ts tag
+          commit-message: 'chore(release): version packages'
+          pr-title: 'chore(release): version packages'
+          create-github-releases: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  plan:
+    name: Plan the release
+    needs: version
+    if: ${{ !cancelled() && (github.ref_type == 'tag' || needs.version.outputs.published == 'true') }}
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.plan.outputs.version }}
+      tag: ${{ steps.plan.outputs.tag }}
+      channel: ${{ steps.plan.outputs.channel }}
+      prerelease: ${{ steps.plan.outputs.prerelease }}
+      minor: ${{ steps.plan.outputs.minor }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: ./.github/actions/setup
+        with:
+          install: 'false'
+
+      - id: plan
+        env:
+          REF_TYPE: ${{ github.ref_type }}
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          if [ "$REF_TYPE" = tag ]; then
+            node tools/release/src/cli.ts plan --tag "$REF_NAME" >> "$GITHUB_OUTPUT"
+          else
+            node tools/release/src/cli.ts plan >> "$GITHUB_OUTPUT"
+          fi
+
+  images:
+    name: Image (${{ matrix.name }})
+    needs: plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          # TODO(deploy): the Dockerfiles deploy/ will add.
+          - name: app
+            image: bemmoly
+            dockerfile: deploy/docker/Dockerfile
+          - name: updater
+            image: updater
+            dockerfile: deploy/updater/Dockerfile
+    env:
+      IMAGE: ghcr.io/bemmoly/${{ matrix.image }}
+      DOCKERFILE: ${{ matrix.dockerfile }}
+      VERSION: ${{ needs.plan.outputs.version }}
+      MINOR: ${{ needs.plan.outputs.minor }}
+      PRERELEASE: ${{ needs.plan.outputs.prerelease }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.plan.outputs.tag }}
+          persist-credentials: false
+
+      - name: Look for the Dockerfile
+        id: dockerfile
+        run: |
+          if [ -f "$DOCKERFILE" ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "::notice title=${IMAGE} not built::$DOCKERFILE does not exist yet."
+          fi
+
+      - name: Image tags
+        id: tags
+        if: steps.dockerfile.outputs.present == 'true'
+        run: |
+          {
+            echo 'list<<EOF'
+            echo "$IMAGE:$VERSION"
+            if [ "$PRERELEASE" = true ]; then echo "$IMAGE:beta"; else echo "$IMAGE:$MINOR"; echo "$IMAGE:latest"; fi
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
+
+      - uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1 # v4.4.0
+        if: steps.dockerfile.outputs.present == 'true'
+
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+        if: steps.dockerfile.outputs.present == 'true'
+
+      - uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        if: steps.dockerfile.outputs.present == 'true'
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push (linux/amd64, linux/arm64)
+        id: build
+        if: steps.dockerfile.outputs.present == 'true'
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          file: ${{ matrix.dockerfile }}
+          platforms: linux/amd64,linux/arm64
+          push: true
+          provenance: mode=max
+          build-args: |
+            BEMMOLY_VERSION=${{ needs.plan.outputs.version }}
+          tags: ${{ steps.tags.outputs.list }}
+          labels: |
+            org.opencontainers.image.title=${{ matrix.image }}
+            org.opencontainers.image.version=${{ needs.plan.outputs.version }}
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.licenses=MIT
+          cache-from: type=gha,scope=${{ matrix.name }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.name }}
+
+      - uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
+        if: steps.dockerfile.outputs.present == 'true'
+
+      - name: Sign the image (keyless)
+        if: steps.dockerfile.outputs.present == 'true'
+        env:
+          DIGEST: ${{ steps.build.outputs.digest }}
+        run: cosign sign --yes "$IMAGE@$DIGEST"
+
+      - name: SBOM (syft, SPDX)
+        if: steps.dockerfile.outputs.present == 'true'
+        uses: anchore/sbom-action@66cbf4bc1f1c0d2edc94016e65bc221b6bb0ad6c # v0.24.3
+        with:
+          image: ${{ env.IMAGE }}@${{ steps.build.outputs.digest }}
+          format: spdx-json
+          output-file: release/sbom-${{ matrix.name }}.spdx.json
+          upload-artifact: false
+          upload-release-assets: false
+
+      - name: Attest the SBOM and record the digest
+        if: steps.dockerfile.outputs.present == 'true'
+        env:
+          DIGEST: ${{ steps.build.outputs.digest }}
+          NAME: ${{ matrix.name }}
+        run: |
+          cosign attest --yes --type spdxjson --predicate "release/sbom-$NAME.spdx.json" "$IMAGE@$DIGEST"
+          echo "$DIGEST" > "release/digest-$NAME.txt"
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: steps.dockerfile.outputs.present == 'true'
+        with:
+          name: release-${{ matrix.name }}
+          path: release/
+          retention-days: 7
+
+  publish:
+    name: Publish the release
+    needs: [plan, images]
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+      id-token: write
+    env:
+      VERSION: ${{ needs.plan.outputs.version }}
+      TAG: ${{ needs.plan.outputs.tag }}
+      PRERELEASE: ${{ needs.plan.outputs.prerelease }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.plan.outputs.tag }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: ./.github/actions/setup
+        with:
+          install: 'false'
+
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: release-*
+          path: release
+          merge-multiple: true
+
+      - name: Release notes and manifest
+        env:
+          REPOSITORY: ${{ github.repository }}
+          SERVER_URL: ${{ github.server_url }}
+        run: |
+          mkdir -p release assets
+          node tools/release/src/cli.ts notes --version "$VERSION" \
+            --image "$IMAGE_NAMESPACE/bemmoly" --repository "$REPOSITORY" --out release/notes.md
+          set -- --version "$VERSION" --notes-url "$SERVER_URL/$REPOSITORY/releases/tag/$TAG" \
+            --app-image "$IMAGE_NAMESPACE/bemmoly" --updater-image "$IMAGE_NAMESPACE/updater"
+          if [ -f release/digest-app.txt ]; then set -- "$@" --app-digest "$(cat release/digest-app.txt)"; fi
+          if [ -f release/digest-updater.txt ]; then set -- "$@" --updater-digest "$(cat release/digest-updater.txt)"; fi
+          node tools/release/src/cli.ts manifest "$@" --out assets/release-manifest.json
+          cat release/notes.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Validate the manifest against deploy's schema
+        run: |
+          if [ -f "$MANIFEST_SCHEMA" ]; then
+            pnpm dlx ajv-cli@5.0.0 validate --spec=draft2020 -s "$MANIFEST_SCHEMA" -d assets/release-manifest.json
+          else
+            echo "::notice title=Manifest not validated::$MANIFEST_SCHEMA does not exist yet."
+          fi
+
+      - uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
+
+      - name: Sign the manifest (keyless)
+        run: cosign sign-blob --yes --bundle assets/release-manifest.json.sigstore.json assets/release-manifest.json
+
+      - name: Collect the deploy assets
+        env:
+          BEMMOLY_AIRGAP_PLATFORMS: linux/amd64 linux/arm64
+        run: |
+          cp release/sbom-*.spdx.json assets/ 2>/dev/null || echo "::notice::No SBOMs: no image was built."
+          cp "$INSTALLER" assets/install.sh
+          sh "$RELEASE_INSTALLER_SCRIPT" "$VERSION" assets
+          cp "$COMPOSE_FILE" assets/docker-compose.yml
+          helm package "$HELM_CHART" --version "$VERSION" --app-version "$VERSION" --destination assets
+          bash "$AIRGAP_SCRIPT" "$VERSION" assets
+
+      - name: Create the GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -- "$TAG" --title "Bemmoly $VERSION" --notes-file release/notes.md --verify-tag
+          if [ "$PRERELEASE" = true ]; then set -- "$@" --prerelease; else set -- "$@" --latest; fi
+          gh release create "$@" assets/*

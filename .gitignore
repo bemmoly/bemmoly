@@ -8,6 +8,9 @@ storybook-static/
 .astro/
 playwright-report/
 test-results/
+.lighthouseci/
+.screenshots/
+k6-summary.json
 *.tsbuildinfo
 
 # environment and secrets

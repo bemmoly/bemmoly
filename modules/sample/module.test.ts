@@ -14,4 +14,16 @@ describe('sample module', () => {
     });
     expect(registry.capabilities().map((capability) => capability.name)).toEqual(['sample.view']);
   });
+
+  it('contributes a changeset, a job, a setting and a route through the kernel', () => {
+    const registry = loadModules({ available: [sample] });
+    const [loaded] = registry.list();
+    expect(sample.changelog.map((changeset) => changeset.id)).toEqual(['0001-sample-items']);
+    expect(sample.changelog[0]?.source?.checksum).toMatch(/^[0-9a-f]{64}$/);
+    expect(loaded?.contributions.jobs.map((job) => job.name)).toEqual(['sample.ping']);
+    expect(loaded?.contributions.settings.map((setting) => setting.key)).toEqual([
+      'sample.greeting',
+    ]);
+    expect(registry.routes().map((route) => route.prefix)).toEqual(['/sample']);
+  });
 });

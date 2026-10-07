@@ -1,0 +1,22 @@
+# Nothing secret or machine-local enters an image.
+**/.env
+**/.env.*
+!**/.env.example
+**/node_modules
+**/dist
+**/.turbo
+**/coverage
+**/storybook-static
+**/playwright-report
+**/test-results
+**/*.log
+.git
+.github
+.claude
+var
+docs
+deploy/compose
+deploy/installer
+deploy/cli
+deploy/tests
+deploy/updater

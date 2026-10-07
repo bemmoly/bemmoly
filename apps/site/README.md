@@ -4,15 +4,15 @@ The marketing site at https://bemmoly.com: an Astro static site, not part of the
 The landing page is ported from `docs/design/mocks/Bemmoly Landing.dc.html`, which is its pixel
 source of truth.
 
-| Page            | Source                                                   |
-| --------------- | -------------------------------------------------------- |
-| `/`             | The Landing mock, section by section                     |
-| `/self-hosting` | Tech design §18 in plain words                           |
-| `/security`     | Renders the repository's `SECURITY.md`                   |
-| `/changelog`    | `src/data/changelog.ts` (see below)                      |
-| `/docs`         | Placeholder pointing at the README and the tech design   |
-| `/community`    | GitHub, the Discord placeholder, contributing            |
-| `/install.sh`   | `public/install.sh`, a placeholder installer (see below) |
+| Page            | Source                                                         |
+| --------------- | -------------------------------------------------------------- |
+| `/`             | The Landing mock, section by section                           |
+| `/self-hosting` | Tech design §18 in plain words                                 |
+| `/security`     | Renders the repository's `SECURITY.md`                         |
+| `/changelog`    | `src/data/changelog.ts` (see below)                            |
+| `/docs`         | Placeholder pointing at the README and the tech design         |
+| `/community`    | GitHub, the Discord placeholder, contributing                  |
+| `/install.sh`   | `public/install.sh`, a copy of `deploy/install.sh` (see below) |
 
 `robots.txt`, `sitemap-index.xml` (`@astrojs/sitemap`), `site.webmanifest`, the favicons and the
 Open Graph image are generated or taken from `@bemmoly/ui/brand`.
@@ -82,8 +82,8 @@ them as AVIF and WebP at 400, 800, 1184 and full width. Run `pnpm screens` after
 - Contrast (WCAG AA): footer text uses `tx4` instead of the mock's `tx5` (3.1:1 on white), the
   terminal's `ubuntu@vm` label uses `tx4`, the "soon" chips use `tx3`, and links inside running
   text on the text pages are underlined.
-- The product shots are pictures of the mocks, so they show the mocks' own top bar (grid mark,
-  "v1.2.0").
+- The product shots are pictures of the mocks, so they show the mocks' own top bar (the designed
+  four-tile mark, "v1.2.0"); recapture them with `pnpm screens` whenever a mock changes.
 - Below 1100px (the mock's minimum width) the layout stacks; at 1280 it matches the mock.
 
 ## Deployment (Coolify)
@@ -119,9 +119,10 @@ build output out of the context without a root `.dockerignore`.
 
 ## Hand-offs
 
-- **Installer.** `public/install.sh` prints "The Bemmoly installer is not published yet; follow
-  github.com/bemmoly/bemmoly" and exits 1. When `deploy/install.sh` is released, replace this
-  file with it (or copy it in during the image build); Caddy already serves it at both hosts.
+- **Installer.** `public/install.sh` is a copy of `deploy/install.sh`, which, piped into `sh`,
+  fetches the matching GitHub release's bundled installer. Copy it again whenever
+  `deploy/install.sh` changes; the site tests fail when the two differ. Until the first release
+  is published there is no bundled installer for the one-liner to download.
 - **Changelog.** `/changelog` reads `src/data/changelog.ts`, which lists 0.1.0 as in progress.
   Once the changesets tool writes release notes, render them here instead.
 - **Discord.** `/community#discord` says the invite is not published; add the link there and in
