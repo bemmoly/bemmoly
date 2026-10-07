@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>html,body{margin:0;height:100%;background:#f4f5f7;font-family:'IBM Plex Sans',system-ui,sans-serif;color:#1b2430;font-size:13px}*{box-sizing:border-box}a{color:#2456c9;text-decoration:none}a:hover{color:#183d94}input[type=text]{font:inherit}</style>
+</helmet>
+<div data-screen-label="Workspace settings · Modules" style="height:{{ rootH }};min-width:1440px;display:flex;flex-direction:column;overflow:hidden;background:#f4f5f7;position:relative">
+  <div style="height:48px;background:#fff;border-bottom:1px solid #e2e5ea;display:flex;align-items:center;padding:0 12px 0 16px;gap:4px;flex-shrink:0">
+    <a href="Bemmoly Home.dc.html" style="display:flex;align-items:center;gap:9px;padding-right:14px;margin-right:6px;border-right:1px solid #e2e5ea;height:28px;color:#1b2430">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="24" height="24" aria-hidden="true" style="display:block;flex:none"><path fill="#2356C9" d="M100.850,252.884 C99.937,252.731 96.849,251.842 93.988,250.909 C83.521,247.494 74.358,239.397 69.391,229.173 C64.880,219.889 64.970,221.175 64.970,165.865 C64.970,118.454 65.034,115.763 66.278,110.899 C70.229,95.453 82.126,82.880 97.860,77.523 C103.001,75.773 103.866,75.693 124.106,75.108 C153.824,74.249 209.378,74.942 215.468,76.248 C230.155,79.397 240.904,90.645 243.478,105.556 C244.272,110.163 244.398,120.617 244.217,167.107 C244.013,219.273 243.915,223.360 242.782,226.764 C238.369,240.016 229.331,248.808 216.835,252.004 C211.782,253.296 209.716,253.339 157.057,253.252 C127.057,253.202 101.764,253.036 100.850,252.884 Z"/><path fill="#2356C9" d="M99.854,454.909 C97.296,454.369 92.661,452.708 89.555,451.218 C84.943,449.007 82.865,447.460 78.226,442.786 C71.722,436.233 68.353,430.476 66.280,422.372 C65.026,417.468 64.970,414.803 64.970,359.987 C64.970,305.572 65.034,302.475 66.254,297.705 C70.074,282.770 79.940,272.007 94.545,266.846 L99.854,264.970 154.775,264.782 C215.517,264.574 215.042,264.547 223.629,268.757 C229.651,271.710 236.732,278.753 239.563,284.607 C243.803,293.373 243.687,291.273 243.698,359.699 C243.704,400.955 243.469,423.195 242.997,425.812 C241.093,436.386 233.160,446.953 223.593,451.661 C214.746,456.014 215.257,455.982 156.997,455.934 C113.335,455.899 103.723,455.726 99.854,454.909 Z"/><path fill="#9A85EA" d="M344.581,244.650 C330.698,243.710 295.296,237.973 288.186,235.511 C268.278,228.616 256.332,213.228 256.332,194.477 C256.332,189.465 270.523,90.474 272.616,80.888 C275.977,65.490 287.355,56.000 302.453,56.000 C309.329,56.000 349.807,63.883 372.279,69.598 C394.814,75.329 408.807,82.412 421.205,94.364 C428.596,101.489 432.673,106.855 436.967,115.111 C444.178,128.977 446.699,139.360 446.650,155.003 C446.621,164.534 446.389,166.882 444.876,172.973 C438.508,198.599 423.826,218.471 401.224,232.055 C391.026,238.184 374.541,243.551 363.381,244.375 C360.600,244.580 356.980,244.844 355.336,244.962 C353.691,245.079 348.851,244.939 344.581,244.650 Z"/><path fill="#5B7BE5" d="M283.094,455.019 C270.966,452.315 261.158,442.916 257.955,430.928 C256.790,426.567 256.704,400.704 257.629,332.744 C258.063,300.907 258.317,294.261 259.225,291.045 C262.982,277.735 272.950,268.338 286.233,265.583 C293.514,264.073 360.494,264.563 367.855,266.180 C387.225,270.437 400.033,277.210 412.511,289.795 C427.175,304.584 436.351,323.468 439.362,345.051 C442.341,366.413 438.262,387.529 427.426,406.836 C413.714,431.266 391.226,447.881 363.441,454.109 C357.345,455.475 355.114,455.564 322.113,455.747 C294.229,455.903 286.399,455.756 283.094,455.019 Z"/></svg>
+      <div style="font-weight:600;font-size:14px;letter-spacing:-.01em">Bemmoly</div>
+    </a>
+    <div style="display:flex;gap:2px;font-size:13.5px">
+      <a href="Bemmoly Home.dc.html" style="padding:6px 10px;color:#3b4454">Your work <span style="color:#8a93a3;font-size:10px">▾</span></a>
+      <a href="Bemmoly Board.dc.html" style="padding:6px 10px;color:#3b4454">Projects <span style="color:#8a93a3;font-size:10px">▾</span></a>
+      <a href="Bemmoly Docs.dc.html" style="padding:6px 10px;color:#3b4454">Docs <span style="color:#8a93a3;font-size:10px">▾</span></a>
+      <a href="Bemmoly Backlog.dc.html" style="padding:6px 10px;color:#3b4454">Filters <span style="color:#8a93a3;font-size:10px">▾</span></a>
+      <a href="Bemmoly Roadmap.dc.html" style="padding:6px 10px;color:#3b4454">Dashboards <span style="color:#8a93a3;font-size:10px">▾</span></a>
+      <a href="Bemmoly People.dc.html" style="padding:6px 10px;color:#3b4454">Teams <span style="color:#8a93a3;font-size:10px">▾</span></a>
+    </div>
+    <div style="margin-left:6px;padding:6px 14px;border-radius:6px;background:#2456c9;color:#fff;font-weight:500">Create</div>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+      <a href="Bemmoly Command.dc.html" style="width:300px;height:32px;border:1px solid #d5dae2;border-radius:6px;display:flex;align-items:center;padding:0 10px;gap:8px;color:#8a93a3;background:#f9fafb"><span style="font-size:14px">⌕</span><span>Search issues, docs, people</span></a>
+      <div style="width:30px;height:30px;border-radius:50%;background:#d7e3fb;color:#2456c9;font-weight:600;font-size:12px;display:flex;align-items:center;justify-content:center;margin-left:4px">RS</div>
+    </div>
+  </div>
+
+  <div style="flex:1;display:flex;min-height:0">
+    <div style="width:240px;background:#fff;border-right:1px solid #e2e5ea;padding:16px 8px;display:flex;flex-direction:column;gap:14px;flex-shrink:0;overflow:auto">
+      <div style="padding:0 10px 4px;font-weight:600;font-size:14px">Workspace settings</div>
+      <div style="display:flex;flex-direction:column;gap:1px">
+        <div style="padding:4px 10px 6px;font:500 11px 'IBM Plex Sans';color:#8a93a3;letter-spacing:.07em;text-transform:uppercase">General</div>
+        <div style="padding:7px 10px;border-radius:6px;color:#3b4454">Workspace details</div>
+        <a href="Bemmoly Appearance Settings.dc.html" style="padding:7px 10px;border-radius:6px;color:#3b4454">Appearance</a>
+        <div style="padding:7px 10px;border-radius:6px;color:#3b4454">Email and notifications</div>
+        <div style="padding:7px 10px;border-radius:6px;color:#3b4454">AI and models</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:1px">
+        <div style="padding:4px 10px 6px;font:500 11px 'IBM Plex Sans';color:#8a93a3;letter-spacing:.07em;text-transform:uppercase">People</div>
+        <a href="Bemmoly People.dc.html" style="padding:7px 10px;border-radius:6px;color:#3b4454">Users <span style="float:right;font:500 11px 'IBM Plex Mono';color:#8a93a3">42</span></a>
+        <a href="Bemmoly People.dc.html" style="padding:7px 10px;border-radius:6px;color:#3b4454">Teams</a>
+        <a href="Bemmoly People.dc.html" style="padding:7px 10px;border-radius:6px;color:#3b4454">Roles and permissions</a>
+        <a href="Bemmoly People.dc.html" style="padding:7px 10px;border-radius:6px;color:#3b4454">Authentication (SSO)</a>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:1px">
+        <div style="padding:4px 10px 6px;font:500 11px 'IBM Plex Sans';color:#8a93a3;letter-spacing:.07em;text-transform:uppercase">Work</div>
+        <a href="Bemmoly Workflow.dc.html" style="padding:7px 10px;border-radius:6px;color:#3b4454">Issue types and fields</a>
+        <a href="Bemmoly Workflow.dc.html" style="padding:7px 10px;border-radius:6px;color:#3b4454">Workflows</a>
+        <div style="padding:7px 10px;border-radius:6px;color:#3b4454">Automation</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:1px">
+        <div style="padding:4px 10px 6px;font:500 11px 'IBM Plex Sans';color:#8a93a3;letter-spacing:.07em;text-transform:uppercase">System</div>
+        <div style="padding:7px 10px;border-radius:6px;background:#eef3fe;color:#2456c9;font-weight:500">Modules</div>
+        <a href="Bemmoly Backups Settings.dc.html" style="padding:7px 10px;border-radius:6px;color:#3b4454">Storage and backups</a>
+        <a href="Bemmoly Updates Settings.dc.html" style="padding:7px 10px;border-radius:6px;color:#3b4454">Updates</a>
+        <div style="padding:7px 10px;border-radius:6px;color:#3b4454">Audit log</div>
+      </div>
+    </div>
+
+    <div style="flex:1;overflow:auto;min-width:0">
+      <div style="max-width:1120px;padding:28px 40px 48px;display:flex;flex-direction:column;gap:28px">
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div style="font-size:12.5px;color:#6b7483">Workspace settings / Modules</div>
+          <div style="display:flex;align-items:center;gap:16px">
+            <div style="font-weight:600;font-size:22px;letter-spacing:-.015em">Modules</div>
+            <div style="margin-left:auto;display:flex;gap:8px">
+
+            </div>
+          </div>
+          <div style="color:#6b7483;font-size:13px;max-width:640px;line-height:1.5">The parts of Bemmoly this workspace runs. Turning a module off hides it for everyone and keeps its data; removing data is a separate, confirmed step.</div>
+        </div>
+        <sc-if value="{{ pinned }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;gap:10px;align-items:center;padding:10px 12px;background:#f6f8fe;border:1px solid #d9e1f5;border-radius:7px;font-size:12.5px;line-height:1.5"><span style="width:7px;height:7px;border-radius:50%;background:#2456c9;flex-shrink:0"></span><span style="color:#2c3545">This list is pinned by <span style="font:500 12px 'IBM Plex Mono'">BEMMOLY_MODULES=work,docs</span> in the server environment, so it is read-only here and automated deployments cannot drift. To change it, edit the variable and restart Bemmoly.</span></div>
+        </sc-if>
+        <div style="background:#fff;border:1px solid #e2e5ea;border-radius:8px;overflow:hidden">
+          <div style="display:grid;grid-template-columns:minmax(0,1fr) 160px 76px 80px 180px 190px;gap:12px;padding:9px 16px;background:#fafbfc;border-bottom:1px solid #e9ecf0;font:500 11px 'IBM Plex Sans';color:#8a93a3;letter-spacing:.06em;text-transform:uppercase"><span>Module</span><span>State</span><span>Version</span><span>Data</span><span>Schema changes</span><span></span></div>
+          <sc-for list="{{ mods }}" as="m" hint-placeholder-count="2">
+            <div style="display:grid;grid-template-columns:minmax(0,1fr) 160px 76px 80px 180px 190px;gap:12px;padding:12px 16px;border-bottom:1px solid #eceef2;align-items:center">
+              <div style="display:flex;align-items:center;gap:10px;min-width:0"><span style="width:32px;height:32px;border-radius:7px;background:#eef0f4;color:#3b4454;font-weight:600;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0">{{ m.ini }}</span><div style="display:flex;flex-direction:column;gap:1px;min-width:0"><span style="font-weight:600;font-size:14px">{{ m.name }}</span><span style="color:#8a93a3;font-size:12px">{{ m.desc }}</span></div></div>
+              <span style="display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:500;color:#1b2430"><span style="width:7px;height:7px;border-radius:50%;background:{{ m.dot }};flex-shrink:0"></span>{{ m.state }}</span>
+              <span style="font:500 12px 'IBM Plex Mono';color:#4b5565">{{ m.version }}</span>
+              <span style="font:500 12px 'IBM Plex Mono';color:#4b5565">{{ m.size }}</span>
+              <span style="font-size:12.5px;color:#4b5565">{{ m.log }}</span>
+              <div style="display:flex;gap:6px;justify-content:flex-end;opacity:{{ actOp }}">
+                <sc-if value="{{ m.canRemove }}" hint-placeholder-val="{{ false }}"><span onClick="{{ m.remove }}" style="height:30px;padding:0 10px;border:1px solid #d5dae2;border-radius:5px;background:#fff;display:inline-flex;align-items:center;font-weight:500;color:#c42d2d;cursor:{{ actCur }}">Remove data</span></sc-if>
+                <span onClick="{{ m.toggle }}" style="height:30px;padding:0 10px;border:1px solid {{ m.btnBr }};border-radius:5px;background:{{ m.btnBg }};color:{{ m.btnFg }};display:inline-flex;align-items:center;font-weight:500;cursor:{{ actCur }}">{{ m.action }}</span>
+              </div>
+            </div>
+          </sc-for>
+          <div style="padding:10px 16px;background:#fafbfc;color:#6b7483;font-size:12px;line-height:1.5">Every module ships in the image. Enabling one runs its schema changes and adds a sample; disabling hides it and keeps its data. Who can see an enabled module is set in <a href="Bemmoly People.dc.html" style="font-weight:500;white-space:nowrap">Teams › Module access</a>.</div>
+        </div>
+        <sc-if value="{{ degrade }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;gap:10px;align-items:center;padding:10px 12px;background:#fdf3dc;border:1px solid #fdf3dc;border-radius:7px;font-size:12.5px;line-height:1.5;margin-top:-12px"><span style="width:7px;height:7px;border-radius:50%;background:#d49a1a;flex-shrink:0"></span><span style="color:#2c3545">{{ degrade }}</span></div>
+        </sc-if>
+        <div style="background:#fff;border:1px solid #e2e5ea;border-radius:8px;overflow:hidden">
+          <div style="padding:12px 16px;border-bottom:1px solid #e9ecf0;font-weight:600">Set by the environment</div>
+          <div onClick="{{ togglePin }}" style="padding:12px 16px;display:flex;align-items:center;gap:12px;cursor:pointer">
+            <div style="flex:1;display:flex;flex-direction:column;gap:2px"><span style="font:500 12.5px 'IBM Plex Mono'">{{ pinVar }}</span><span style="color:#8a93a3;font-size:12px">{{ pinSub }}</span></div>
+            <span style="font-size:11px;padding:2px 7px;border-radius:3px;font-weight:600;background:{{ pinBg }};color:{{ pinFg }}">{{ pinChip }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <sc-if value="{{ confirming }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ cancel }}" style="position:absolute;inset:0;background:rgba(16,24,40,.45)"></div>
+    <div style="position:absolute;left:50%;top:150px;transform:translateX(-50%);width:480px;background:#fff;border-radius:12px;box-shadow:0 24px 64px rgba(16,24,40,.35),0 0 0 1px rgba(16,24,40,.08);overflow:hidden;display:flex;flex-direction:column">
+      <div style="padding:20px 20px 0;display:flex;flex-direction:column;gap:8px">
+        <div style="font-weight:600;font-size:16px">Remove {{ cName }} data</div>
+        <div style="color:#4b5565;line-height:1.55">This deletes {{ cWhat }}: {{ cSize }} across {{ cTables }} tables. Bemmoly takes a backup first and records the removal in the audit log. Enabling {{ cName }} again later starts it empty.</div>
+      </div>
+      <div style="padding:16px 20px 20px;display:flex;flex-direction:column;gap:6px">
+        <span style="font-weight:500">Type <span style="font:500 12.5px 'IBM Plex Mono';padding:1px 5px;border-radius:3px;background:#eef0f4">{{ cId }}</span> to confirm</span>
+        <div style="height:32px;border:1px solid #d5dae2;border-radius:6px;display:flex;align-items:center;padding:0 10px;background:#fff"><input type="text" value="{{ typed }}" onChange="{{ onTyped }}" placeholder="{{ cId }}" style="flex:1;min-width:0;border:0;outline:0;background:transparent;font:500 12.5px 'IBM Plex Mono';color:#1b2430"></div>
+      </div>
+      <div style="padding:12px 20px;border-top:1px solid #e9ecf0;background:#fafbfc;display:flex;gap:8px;justify-content:flex-end">
+        <span onClick="{{ cancel }}" style="height:32px;padding:0 12px;border:1px solid #d5dae2;background:#fff;border-radius:6px;display:flex;align-items:center;font-weight:500;color:#3b4454;cursor:pointer">Cancel</span>
+        <span onClick="{{ doRemove }}" style="height:32px;padding:0 14px;border-radius:6px;background:#c42d2d;color:#fff;display:flex;align-items:center;font-weight:500;opacity:{{ cOp }};cursor:{{ cCur }}">Back up and remove data</span>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { mods: { work: 'on', docs: 'on' }, pinned: false, confirm: null, typed: '' };
+  renderVals() {
+    const rootH = this.props.height ?? '100vh';
+    const s = this.state, locked = s.pinned;
+    const defs = [
+      { id: 'work', ini: 'WK', name: 'Work', desc: 'Issues, boards, sprints, roadmap', version: '0.1.2', size: '1.8 GB', tables: 23, changes: 48, what: 'every project, issue, sprint and board' },
+      { id: 'docs', ini: 'DC', name: 'Docs', desc: 'Spaces, pages, comments, history', version: '0.1.2', size: '2.4 GB', tables: 14, changes: 31, what: 'every space, page, revision and comment' }
+    ];
+    const setMod = (id, v) => { if (!locked) this.setState({ mods: { ...s.mods, [id]: v } }); };
+    const view = { on: ['Enabled', '#2b9b5a'], off: ['Disabled · data kept', '#d49a1a'], none: ['Not enabled', '#c8ced8'] };
+    const c = defs.find(d => d.id === s.confirm);
+    const typedOk = !!c && s.typed.trim().toLowerCase() === c.id;
+    const on = id => s.mods[id] === 'on';
+    const degrade = on('work') && !on('docs') ? 'Docs is off. Work keeps running; the Linked docs panel on issues and the doc consistency check stay hidden until Docs is on again.'
+      : on('docs') && !on('work') ? 'Work is off. Docs keeps running; issue embeds in pages show their stored key as a placeholder and the Linked issues panel is hidden.'
+      : !on('docs') && !on('work') ? 'No module is on. People can still sign in, but there is nothing to work in until you enable one.' : null;
+    return {
+      rootH, pinned: s.pinned, degrade,
+      actOp: locked ? 0.45 : 1, actCur: locked ? 'default' : 'pointer',
+      mods: defs.map(d => {
+        const st = s.mods[d.id], [state, dot] = view[st], isOn = st === 'on';
+        return {
+          ini: d.ini, name: d.name, desc: d.desc, state, dot,
+          version: d.version, size: st === 'none' ? '—' : d.size,
+          log: st === 'on' ? d.changes + ' applied · up to date' : st === 'off' ? 'Paused · runs when enabled' : d.changes + ' to run on enable',
+          action: isOn ? 'Disable' : 'Enable', btnBg: isOn ? '#fff' : '#2456c9', btnFg: isOn ? '#3b4454' : '#fff', btnBr: isOn ? '#d5dae2' : '#2456c9',
+          toggle: () => setMod(d.id, isOn ? 'off' : 'on'),
+          canRemove: st === 'off',
+          remove: () => { if (!locked) this.setState({ confirm: d.id, typed: '' }); }
+        };
+      }),
+      pinVar: s.pinned ? 'BEMMOLY_MODULES=work,docs' : 'BEMMOLY_MODULES is not set',
+      pinSub: s.pinned ? 'Modules are pinned for this server. Enable, disable and remove data are off on this page.' : 'Modules are chosen on this page. Set the variable, for example to work,docs, to pin the list for Helm or Terraform deployments.',
+      pinChip: s.pinned ? 'PINNED' : 'NOT PINNED', pinBg: s.pinned ? '#eef3fe' : '#eef0f4', pinFg: s.pinned ? '#2456c9' : '#4b5565',
+      togglePin: () => this.setState({ pinned: !s.pinned, confirm: null }),
+      confirming: !!c, cName: c ? c.name : '', cId: c ? c.id : '', cWhat: c ? c.what : '', cSize: c ? c.size : '', cTables: c ? c.tables : 0,
+      typed: s.typed, onTyped: e => this.setState({ typed: e.target.value }),
+      cOp: typedOk ? 1 : 0.45, cCur: typedOk ? 'pointer' : 'default',
+      cancel: () => this.setState({ confirm: null, typed: '' }),
+      doRemove: () => { if (typedOk) this.setState({ confirm: null, typed: '', mods: { ...s.mods, [c.id]: 'none' } }); }
+    };
+  }
+}
+</script>
+</body>
+</html>
