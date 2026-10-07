@@ -27,10 +27,16 @@ const frameClass =
     ? 'aspect-[1480/860] rounded-shot bg-bg shadow-shot dark:shadow-glow'
     : 'aspect-[760/520] rounded-dialog bg-sf shadow-shot-sm dark:shadow-glow-sm';
 
+/** Phone, 2x phone, the 1280 layout and the full 2x capture. */
+const widths = (image: ImageMetadata) =>
+  [...new Set([400, 800, width, image.width])]
+    .filter((w) => w <= image.width)
+    .sort((a, b) => a - b);
+
 async function sources(image: ImageMetadata) {
   const [avif, webp, fallback] = await Promise.all([
-    getImage({ src: image, format: 'avif', widths: [width, image.width] }),
-    getImage({ src: image, format: 'webp', widths: [width, image.width] }),
+    getImage({ src: image, format: 'avif', widths: widths(image) }),
+    getImage({ src: image, format: 'webp', widths: widths(image) }),
     getImage({ src: image, format: 'webp', width }),
   ]);
   return { avif: avif.srcSet.attribute, webp: webp.srcSet.attribute, fallback: fallback.src };

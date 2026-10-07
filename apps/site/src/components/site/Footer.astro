@@ -16,13 +16,13 @@ const { cta = false } = Astro.props;
   <slot />
   <div
     class:list={[
-      'mx-auto flex max-w-290 flex-wrap items-center gap-x-6 gap-y-3 px-4 pb-10 text-13 text-tx5 sm:px-6 dark:text-tx4 lg:px-12',
+      'mx-auto flex max-w-290 flex-wrap items-center gap-x-6 gap-y-3 px-4 pb-10 text-13 text-tx4 sm:px-6 lg:px-12',
       { 'pt-10': !cta },
     ]}
   >
     <span class="font-semibold text-tx">Bemmoly</span>
     {FOOTER.map((link) => (
-      <a href={link.href} class="text-tx5 hover:text-tx2 dark:text-tx4">
+      <a href={link.href} class="text-tx4 hover:text-tx2">
         {link.label}
       </a>
     ))}

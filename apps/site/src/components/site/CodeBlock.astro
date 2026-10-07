@@ -17,7 +17,7 @@ const lines = code.replace(/\n$/, '').split('\n');
   class="m-0 overflow-hidden rounded-window border border-br bg-bg text-tx2"
 >
   {label && (
-    <figcaption class="border-b border-br px-3 py-2.5 font-mono text-11h text-tx5">
+    <figcaption class="border-b border-br px-3 py-2.5 font-mono text-11h text-tx4">
       {label}
     </figcaption>
   )}
@@ -25,7 +25,10 @@ const lines = code.replace(/\n$/, '').split('\n');
     {lines.map((line) =>
       line.startsWith('$ ') ? (
         <span class="block">
-          <span class="text-tx5">$</span> <span class="whitespace-pre" set:text={line.slice(2)} />
+          <span class="text-tx5" aria-hidden="true">
+            $
+          </span>{' '}
+          <span class="whitespace-pre" set:text={line.slice(2)} />
         </span>
       ) : (
         <span class="block whitespace-pre" set:text={line || ' '} />
