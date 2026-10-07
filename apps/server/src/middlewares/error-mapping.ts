@@ -6,6 +6,7 @@ import {
   ProviderError,
   RateLimitedError,
   toValidationIssues,
+  UnauthenticatedError,
   ValidationError,
   type ApiErrorBody,
   type ErrorCode,
@@ -20,6 +21,7 @@ export interface HttpError {
 }
 
 const STATUS_BY_ERROR: ReadonlyArray<[abstract new (...args: never[]) => BemmolyError, number]> = [
+  [UnauthenticatedError, 401],
   [NotFoundError, 404],
   [ForbiddenError, 403],
   [ValidationError, 400],
