@@ -38,6 +38,17 @@ describe('parseEnv', () => {
     expect(env.OTEL_EXPORTER_OTLP_ENDPOINT).toBeUndefined();
   });
 
+  it('keeps /metrics off without a token and rejects a short one', () => {
+    expect(parseEnv(minimal).BEMMOLY_METRICS_TOKEN).toBeUndefined();
+    const token = 'a'.repeat(64);
+    expect(parseEnv({ ...minimal, BEMMOLY_METRICS_TOKEN: token }).BEMMOLY_METRICS_TOKEN).toBe(
+      token,
+    );
+    expect(() => parseEnv({ ...minimal, BEMMOLY_METRICS_TOKEN: 'short' })).toThrow(
+      /BEMMOLY_METRICS_TOKEN/,
+    );
+  });
+
   it('fails fast naming every bad key without echoing values', () => {
     const bad = {
       BEMMOLY_SECRET_KEY: 'c2hvcnQ=',

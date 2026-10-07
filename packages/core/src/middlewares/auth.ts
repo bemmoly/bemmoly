@@ -76,6 +76,16 @@ export const authenticateRequest: AuthenticateRequest = async (request) => {
   throw new UnauthenticatedError();
 };
 
+/**
+ * The person behind the request's actor (the user of a session, or the owner
+ * of an API token), for the request summary log line; undefined when anonymous.
+ */
+export function requestUserId(request: FastifyRequest): string | undefined {
+  const actor = request.actor;
+  if (!actor) return undefined;
+  return actor.kind === 'user' ? actor.id : actor.userId;
+}
+
 async function fromBearer(
   request: FastifyRequest,
   header: string,

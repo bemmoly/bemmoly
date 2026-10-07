@@ -46,6 +46,10 @@ export const envSchema = z.object({
   BEMMOLY_TRUST_PROXY: z.stringbool().default(false),
   BEMMOLY_ALLOW_PRIVATE_URLS: z.stringbool().default(false),
   OTEL_EXPORTER_OTLP_ENDPOINT: z.url().optional(),
+  BEMMOLY_METRICS_TOKEN: z
+    .string()
+    .min(32, 'must be at least 32 characters (generate with: openssl rand -hex 32)')
+    .optional(),
   BEMMOLY_BACKUP_PASSPHRASE: z.string().min(16).optional(),
   BEMMOLY_DB_AUTO_MIGRATE: z.stringbool().default(true),
   BEMMOLY_DB_CONTEXTS: contextList,

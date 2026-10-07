@@ -9,7 +9,9 @@
     "./changelog": "./src/changelog.ts",
     "./config": "./src/config/index.ts",
     "./models": "./src/models/index.ts",
-    "./testing": "./src/testing/index.ts"
+    "./testing": "./src/testing/index.ts",
+    "./telemetry": "./src/services/telemetry/index.ts",
+    "./telemetry/preload": "./src/services/telemetry/preload.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit -p tsconfig.json",
@@ -21,9 +23,18 @@
     "@bemmoly/shared": "workspace:*",
     "@bemmoly/ui": "workspace:*",
     "@fastify/helmet": "13.1.1",
+    "@fastify/otel": "0.21.1",
     "@fastify/rate-limit": "11.2.0",
     "@fastify/websocket": "11.3.3",
     "@node-rs/argon2": "2.2.2",
+    "@opentelemetry/api": "1.9.1",
+    "@opentelemetry/exporter-trace-otlp-http": "0.223.0",
+    "@opentelemetry/instrumentation": "0.223.0",
+    "@opentelemetry/instrumentation-http": "0.223.0",
+    "@opentelemetry/instrumentation-undici": "0.33.0",
+    "@opentelemetry/resources": "2.12.0",
+    "@opentelemetry/sdk-node": "0.223.0",
+    "@opentelemetry/semantic-conventions": "1.43.0",
     "drizzle-orm": "1.0.0-rc.4",
     "fastify": "5.12.5",
     "fastify-plugin": "6.0.0",
@@ -32,6 +43,7 @@
     "pino": "10.4.0",
     "pino-pretty": "13.2.0",
     "postgres": "3.4.9",
+    "prom-client": "15.1.3",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "react-email": "6.11.0",
@@ -40,6 +52,7 @@
     "zod": "4.6.5"
   },
   "devDependencies": {
+    "@opentelemetry/sdk-trace-base": "2.12.0",
     "@testcontainers/postgresql": "12.2.0",
     "@types/node": "26.6.4",
     "@types/react": "19.3.0",

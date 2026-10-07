@@ -12,6 +12,7 @@ import {
   type BemmolyModule,
 } from '@bemmoly/core';
 import { createLogger, type Env } from '@bemmoly/core/config';
+import { getMetrics } from '@bemmoly/core/telemetry';
 import type { FastifyInstance } from 'fastify';
 import { buildApp, type BuildAppOptions } from '../app.ts';
 import { connectDatabase, type DatabaseConnection } from './database.ts';
@@ -76,6 +77,7 @@ export async function bootApplication(options: BootOptions): Promise<Booted> {
           jobQueue,
           identity,
           settingDefinitions: EMAIL_SETTING_DEFINITIONS,
+          metrics: { jobs: getMetrics().jobs, realtime: getMetrics().realtime },
           logger,
         })
       : undefined;

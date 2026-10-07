@@ -1,0 +1,19 @@
+rules:
+  - id: bemmoly-console-log
+    languages: [typescript, javascript]
+    severity: ERROR
+    message: >-
+      No console output in committed code. On the server, log at a boundary with the
+      request's pino logger (`request.log`) so the line carries the request id and passes
+      through redaction. In the web app, surface the error to the person instead.
+      (AGENTS.md §2, Logging)
+    paths:
+      exclude:
+        - /scripts/**
+        - /tools/**
+    pattern-either:
+      - pattern: console.log(...)
+      - pattern: console.debug(...)
+      - pattern: console.info(...)
+      - pattern: console.trace(...)
+      - pattern: console.dir(...)

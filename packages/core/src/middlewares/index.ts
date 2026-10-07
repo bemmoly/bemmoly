@@ -2,6 +2,7 @@ export {
   authenticateRequest,
   authentication,
   DEFAULT_ANONYMOUS_PATHS,
+  requestUserId,
   type AuthenticationOptions,
 } from './auth.ts';
 export { csrfProtection, type CsrfOptions } from './csrf.ts';

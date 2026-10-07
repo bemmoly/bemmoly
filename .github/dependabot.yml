@@ -1,0 +1,56 @@
+# Weekly dependency updates, grouped so a week is a handful of pull requests, each with
+# its lockfile change. Majors arrive one per pull request because they need reading.
+version: 2
+
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: '04:00'
+      timezone: Etc/UTC
+    versioning-strategy: increase
+    open-pull-requests-limit: 10
+    labels: [dependencies]
+    commit-message:
+      prefix: build
+    groups:
+      opentelemetry:
+        patterns: ['@opentelemetry/*', '@fastify/otel']
+      typescript:
+        patterns: ['typescript', 'typescript-eslint', '@typescript/*', '@types/*']
+      lint-and-format:
+        patterns: ['eslint', 'eslint-*', '@eslint/*', 'prettier', 'globals']
+      test:
+        patterns: ['vitest', '@vitest/*', '@playwright/*', 'testcontainers', '@testcontainers/*']
+      storybook:
+        patterns: ['storybook', '@storybook/*']
+      minor-and-patch:
+        patterns: ['*']
+        update-types: [minor, patch]
+
+  - package-ecosystem: github-actions
+    directories: [/, /.github/actions/*]
+    schedule:
+      interval: weekly
+      day: monday
+      time: '04:00'
+      timezone: Etc/UTC
+    labels: [dependencies, ci]
+    commit-message:
+      prefix: ci
+    groups:
+      actions:
+        patterns: ['*']
+
+  - package-ecosystem: devcontainers
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: '04:00'
+      timezone: Etc/UTC
+    labels: [dependencies]
+    commit-message:
+      prefix: build

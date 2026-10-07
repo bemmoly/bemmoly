@@ -21,7 +21,7 @@ export abstract class BemmolyError<C extends ErrorCode = ErrorCode> extends Erro
   }
 }
 
-/** No valid session or token was presented; the client should sign in. */
+/** No credentials, or credentials that do not identify anyone (session, API token, scrape token). */
 export class UnauthenticatedError extends BemmolyError<'unauthenticated'> {
   override readonly name = 'UnauthenticatedError';
 

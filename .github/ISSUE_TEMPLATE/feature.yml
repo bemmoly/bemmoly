@@ -1,0 +1,40 @@
+name: Feature request
+description: A change in behaviour, described as the problem it solves.
+labels: [feature, needs-triage]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Bemmoly is built from a technical design and a set of screen mocks. Requests that fit
+        them are easiest to take on; ones that change them need an ADR first (docs/adr).
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: Who runs into it, and what they are trying to get done.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What you would like to happen
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: What you do today instead
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Issues and boards
+        - Docs
+        - AI
+        - Settings and administration
+        - Install, update and backups
+        - API and integrations
+        - Something else
+    validations:
+      required: true

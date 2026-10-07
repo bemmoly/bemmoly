@@ -71,11 +71,13 @@ export function toHttpError(error: unknown, requestId: string): HttpError {
     };
     return { status: 400, body, headers: {} };
   }
-  const framework = error as FrameworkError;
+  // Anything can be thrown, including null; non-objects fall through to internal_error.
+  const framework: Partial<FrameworkError> =
+    typeof error === 'object' && error !== null ? (error as FrameworkError) : {};
   if (framework.validation !== undefined) {
     const body = {
       code: 'validation_failed' as const,
-      message: framework.message,
+      message: framework.message ?? 'The request is not valid',
       details: framework.validation,
       requestId,
     };
@@ -84,7 +86,8 @@ export function toHttpError(error: unknown, requestId: string): HttpError {
   const status = framework.statusCode;
   if (status !== undefined && status >= 400 && status < 500) {
     const code = CLIENT_ERROR_CODES[status] ?? 'bad_request';
-    return { status, body: { code, message: framework.message, requestId }, headers: {} };
+    const message = framework.message ?? 'The request could not be handled';
+    return { status, body: { code, message, requestId }, headers: {} };
   }
   return {
     status: 500,

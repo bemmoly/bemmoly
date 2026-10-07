@@ -13,3 +13,9 @@ export {
   type ProviderErrorOptions,
   type RateLimitedErrorOptions,
 } from './errors.ts';
+export {
+  ERROR_REFERENCE_LABEL,
+  REQUEST_ID_HEADER,
+  toErrorSurface,
+  type ErrorSurface,
+} from './surface.ts';

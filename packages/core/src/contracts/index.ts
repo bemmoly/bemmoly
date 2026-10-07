@@ -10,6 +10,7 @@ export type * from './realtime.ts';
 export type * from './session-resolver.ts';
 export type * from './settings.ts';
 export type * from './sql.ts';
+export type * from './telemetry.ts';
 export type * from './users.ts';
 export type {
   BackfillOptions,

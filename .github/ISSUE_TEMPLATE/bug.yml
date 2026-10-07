@@ -1,0 +1,58 @@
+name: Bug report
+description: Something does not work as designed.
+labels: [bug, needs-triage]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. Security problems go to the private address in SECURITY.md,
+        not here. Remove secrets, tokens and personal data from anything you paste.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you did, what you expected, and what you saw instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open Settings › People
+        2. Invite someone with an address that has a plus sign
+        3. ...
+    validations:
+      required: true
+  - type: input
+    id: reference
+    attributes:
+      label: Reference from the error message
+      description: Error messages show a reference (the request id). It finds the server log line.
+      placeholder: 0199b1a2-7c3d-7e4f-8a5b-6c7d8e9f0a1b
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Shown in Settings › System, or by `bemmoly status`.
+      placeholder: 0.1.0
+    validations:
+      required: true
+  - type: dropdown
+    id: install
+    attributes:
+      label: How Bemmoly is installed
+      options:
+        - Installer (Compose with Caddy)
+        - Docker Compose by hand
+        - Helm
+        - Air-gapped bundle
+        - Running from source (pnpm dev)
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log lines
+      description: From `bemmoly logs`, filtered by the reference if you have one.
+      render: shell

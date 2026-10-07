@@ -6,6 +6,7 @@
 import { spawn, spawnSync } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { connect } from 'node:net';
 import { fileURLToPath } from 'node:url';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
@@ -39,7 +40,25 @@ function writeEnvFile(): void {
   log('wrote apps/server/.env with a generated secret key (git-ignored)');
 }
 
-function startDatabase(): void {
+/** True when something already accepts connections on the dev database port. */
+function databaseAnswers(): Promise<boolean> {
+  return new Promise((resolve) => {
+    const socket = connect({ host: '127.0.0.1', port: 5432, timeout: 500 });
+    const done = (answers: boolean) => {
+      socket.destroy();
+      resolve(answers);
+    };
+    socket.once('connect', () => done(true));
+    socket.once('timeout', () => done(false));
+    socket.once('error', () => done(false));
+  });
+}
+
+async function startDatabase(): Promise<void> {
+  if (await databaseAnswers()) {
+    log('Postgres already answers on localhost:5432 (devcontainer or running stack); using it');
+    return;
+  }
   const daemon = spawnSync('docker', ['info'], { stdio: 'ignore' });
   if (daemon.status !== 0) {
     log('no Docker daemon found: starting without Postgres (/readyz will report it)');
@@ -62,7 +81,7 @@ function startDatabase(): void {
 }
 
 writeEnvFile();
-startDatabase();
+await startDatabase();
 
 const turbo = spawn(
   'pnpm',

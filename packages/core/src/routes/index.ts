@@ -2,14 +2,15 @@ import type { FastifyPluginAsync } from 'fastify';
 import { createAuditController } from '../controllers/audit.controller.ts';
 import { createAuthzController } from '../controllers/authz.controller.ts';
 import { createHealthController } from '../controllers/health.controller.ts';
+import { createIdentityController } from '../controllers/identity.controller.ts';
+import { createMetricsController } from '../controllers/metrics.controller.ts';
 import {
   createModuleAdminController,
   createModulesController,
 } from '../controllers/modules.controller.ts';
+import { createPeopleController } from '../controllers/people.controller.ts';
 import { createRealtimeController } from '../controllers/realtime.controller.ts';
 import { createSettingsController } from '../controllers/settings.controller.ts';
-import { createIdentityController } from '../controllers/identity.controller.ts';
-import { createPeopleController } from '../controllers/people.controller.ts';
 import type { ModuleAccessResolver } from '../contracts/module-access.ts';
 import type { SessionResolver } from '../contracts/session-resolver.ts';
 import { createActorResolver, type ActorResolver } from '../middlewares/actor.ts';
@@ -19,6 +20,7 @@ import type { ModuleAdmin, ModuleState } from '../services/modules/index.ts';
 import type { RealtimeHub, RealtimeMetricsHook } from '../services/realtime/index.ts';
 import type { SettingsAdmin } from '../services/settings/index.ts';
 import type { DatabaseProbe } from '../services/system/index.ts';
+import type { ScrapeDependencies } from '../services/telemetry/index.ts';
 import { auditRoutes } from './audit.routes.ts';
 import { authzRoutes } from './authz.routes.ts';
 import {
@@ -27,6 +29,7 @@ import {
 } from './email-notifications.routes.ts';
 import { healthRoutes } from './health.routes.ts';
 import { identityRoutes } from './identity.routes.ts';
+import { metricsRoutes } from './metrics.routes.ts';
 import { adminModulesRoutes, moduleResourceRoutes, modulesRoutes } from './modules.routes.ts';
 import { realtimeRoutes } from './realtime.routes.ts';
 import { adminSettingsRoutes } from './settings.routes.ts';
@@ -58,6 +61,8 @@ export interface KernelRouteDependencies {
   identity?: IdentityDependencies;
   /** Mounted when the host wires email and notifications. */
   emailNotifications?: EmailNotificationRouteDependencies;
+  /** Serves /metrics when given; the route answers 404 until a token is configured. */
+  metrics?: ScrapeDependencies;
 }
 
 function identityAndAccessRoutes(deps: IdentityDependencies): FastifyPluginAsync {
@@ -72,9 +77,10 @@ function identityAndAccessRoutes(deps: IdentityDependencies): FastifyPluginAsync
   };
 }
 
-/** Health probes at the root, /ws, and kernel and module resources under /api/v1. */
+/** Health probes, /metrics and /ws at the root; kernel and module resources under /api/v1. */
 export function kernelRoutes(deps: KernelRouteDependencies): FastifyPluginAsync {
   const health = createHealthController(deps.database ? { database: deps.database } : {});
+  const metrics = deps.metrics ? createMetricsController(deps.metrics) : undefined;
   const actorOf = deps.authenticate ?? createActorResolver(deps.sessions);
   const identified = Boolean(deps.authenticate ?? deps.sessions);
   const state = deps.moduleState;
@@ -90,6 +96,7 @@ export function kernelRoutes(deps: KernelRouteDependencies): FastifyPluginAsync 
   };
   return async (app) => {
     await app.register(healthRoutes(health));
+    if (metrics) await app.register(metricsRoutes(metrics));
     if (deps.realtime) {
       await app.register(
         realtimeRoutes(
