@@ -3,5 +3,5 @@
   "singleQuote": true,
   "trailingComma": "all",
   "semi": true,
-  "plugins": ["prettier-plugin-astro"]
+  "plugins": ["./node_modules/prettier-plugin-astro/dist/index.js"]
 }

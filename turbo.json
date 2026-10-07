@@ -13,44 +13,38 @@
       "persistent": true
     },
     "build": {
-      "dependsOn": [
-        "^build"
-      ],
-      "outputs": [
-        "dist/**",
-        "storybook-static/**"
-      ]
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**", "storybook-static/**"]
+    },
+    "@bemmoly/site#build": {
+      "dependsOn": [],
+      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/SECURITY.md"],
+      "outputs": ["dist/**"]
     },
     "typecheck": {
-      "dependsOn": [
-        "^typecheck"
-      ]
+      "dependsOn": ["^typecheck"]
     },
     "lint": {},
+    "@bemmoly/site#lint": {
+      "dependsOn": ["@bemmoly/site#build"]
+    },
     "//#lint:root": {},
     "test": {
-      "outputs": [
-        "coverage/**"
-      ]
+      "outputs": ["coverage/**"]
+    },
+    "@bemmoly/site#test": {
+      "dependsOn": ["@bemmoly/site#build"]
     },
     "test:integration": {
       "cache": false,
-      "env": [
-        "BEMMOLY_TEST_DATABASE_URL",
-        "DOCKER_HOST",
-        "TESTCONTAINERS_*"
-      ]
+      "env": ["BEMMOLY_TEST_DATABASE_URL", "DOCKER_HOST", "TESTCONTAINERS_*"]
     },
     "test:e2e": {
-      "dependsOn": [
-        "build"
-      ],
+      "dependsOn": ["build"],
       "cache": false
     },
     "size": {
-      "dependsOn": [
-        "build"
-      ]
+      "dependsOn": ["build"]
     },
     "//#format": {
       "cache": false
