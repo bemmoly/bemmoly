@@ -9,6 +9,7 @@ import {
   ScheduleCard,
 } from '../../components/backups/schedule-cards.tsx';
 import { SettingsPage } from '../../components/settings/settings-page.tsx';
+import { MaintenanceNotice } from '../../components/system/maintenance-notice.tsx';
 import { PageBlock } from '../../components/system/page-block.tsx';
 import { useBackupSchedule } from '../../hooks/use-backups-schedule.ts';
 import { statusLine, useBackups } from '../../hooks/use-backups.ts';
@@ -17,8 +18,14 @@ import { TIMEZONES } from '../../hooks/use-workspace-settings.ts';
 export function BackupsPage() {
   const list = useBackups();
   const form = useBackupSchedule();
-  const schedule = form.schedule;
+  const policy = form.policy;
   const dialog = list.restoreDialog;
+  const paused = list.maintenance.active;
+  const offBox = form.s3Configured;
+  const localPath =
+    list.backups[0]?.locations.find((location) => location.destination === 'local')?.location ??
+    null;
+  const busyId = list.verify.isPending ? (list.verify.variables?.id ?? null) : null;
   return (
     <SettingsPage
       title="Storage and backups"
@@ -26,16 +33,19 @@ export function BackupsPage() {
       loading={list.isPending || form.settings.isPending}
       error={list.error ?? form.settings.error}
       actions={
-        <Button variant="primary" loading={list.run.isPending} onClick={() => list.run.mutate()}>
+        <Button
+          variant="primary"
+          disabled={paused}
+          loading={list.run.isPending}
+          onClick={() => list.run.mutate()}
+        >
           Back up now
         </Button>
       }
     >
-      <BackupStatus
-        parts={statusLine(list.summary, list.backups, schedule?.timezone ?? 'UTC')}
-        oneDisk={list.summary?.oneDisk ?? false}
-      />
-      {schedule ? (
+      <MaintenanceNotice active={paused} message={list.maintenance.message} />
+      <BackupStatus parts={statusLine(list.backups, policy?.schedule, offBox)} oneDisk={!offBox} />
+      {policy ? (
         <form
           id="backup-settings"
           className="flex flex-col gap-4"
@@ -43,22 +53,23 @@ export function BackupsPage() {
           noValidate
         >
           <ScheduleCard
-            schedule={schedule}
+            policy={policy}
             update={form.update}
             errors={form.errors}
             timezones={TIMEZONES}
           />
-          <RetentionCard schedule={schedule} update={form.update} errors={form.errors} />
+          <RetentionCard policy={policy} update={form.update} errors={form.errors} />
           <DestinationsCard
-            schedule={schedule}
-            update={form.update}
-            setBucket={form.setBucket}
-            secrets={form.secrets}
-            stored={form.stored}
-            setSecret={form.setSecret}
+            localPath={localPath}
+            configured={form.s3Configured}
+            s3={form.s3}
             errors={form.errors}
+            onStart={form.startS3}
+            onEdit={form.editS3}
+            onRemove={form.removeS3}
+            onKeep={form.keepS3}
           />
-          <ProtectionCard schedule={schedule} update={form.update} />
+          <ProtectionCard policy={policy} update={form.update} />
           <div className="flex justify-end gap-2">
             <Button disabled={!form.dirty} onClick={form.discard}>
               Discard
@@ -66,7 +77,7 @@ export function BackupsPage() {
             <Button
               variant="primary"
               type="submit"
-              disabled={!form.dirty}
+              disabled={!form.dirty || paused}
               loading={form.settings.save.isPending}
             >
               Save
@@ -80,8 +91,10 @@ export function BackupsPage() {
           hasMore={list.hasNextPage}
           loadingMore={list.isFetchingNextPage}
           onLoadMore={() => void list.fetchNextPage()}
-          drillingId={list.verify.isPending ? (list.verify.variables ?? null) : null}
-          onDrill={(id) => list.verify.mutate(id)}
+          busyId={busyId}
+          paused={paused}
+          onCheck={(id) => list.verify.mutate({ id, depth: 'list' })}
+          onDrill={(id) => list.verify.mutate({ id, depth: 'restore' })}
           onRestore={dialog.open}
           downloadUrl={list.downloadUrl}
         />

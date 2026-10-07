@@ -1,13 +1,16 @@
 import { queryKeys } from '@bemmoly/api-client';
 import { formatRelative } from '@bemmoly/core-web';
-import type { Backup, BackupsPage } from '@bemmoly/shared';
+import type { Backup, BackupScheduleSettings } from '@bemmoly/shared';
 import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { api } from '../lib/api.ts';
 import { describeError } from '../lib/errors.ts';
 import { toast } from '../lib/toast.ts';
+import { useSystemMaintenance } from './use-system-maintenance.ts';
+import { VERIFICATION_WORDS } from './use-system.ts';
 
-export const backupsListKey = [...queryKeys.backups(), 'list'] as const;
+const PAGE = 25;
+const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
 export interface StatusPart {
   text: string;
@@ -15,61 +18,55 @@ export interface StatusPart {
   caution?: boolean;
 }
 
-/** "02:00 UTC" in the schedule's own timezone, as the admin chose it. */
-export function clockIn(iso: string, timeZone: string): string {
-  const time = new Date(iso).toLocaleTimeString('en-GB', {
-    hour: '2-digit',
-    minute: '2-digit',
-    hourCycle: 'h23',
-    timeZone,
-  });
-  return `${time} ${timeZone}`;
+/** When the schedule runs next, in the schedule's own words and timezone. */
+export function nextRunLabel(schedule: BackupScheduleSettings): string {
+  const at = `${schedule.time} ${schedule.timezone}`;
+  if (schedule.frequency === 'hourly') return 'runs every hour';
+  if (schedule.frequency === '6h') return `runs every 6 hours from ${at}`;
+  if (schedule.frequency === 'weekly') return `next run ${WEEKDAYS[schedule.weekday]} ${at}`;
+  return `next run ${at}`;
 }
 
 /** "Last good backup 7h ago · verified · next run 02:00 UTC · one disk". */
 export function statusLine(
-  summary: BackupsPage['summary'] | undefined,
   backups: readonly Backup[],
-  timeZone: string,
+  schedule: BackupScheduleSettings | undefined,
+  offBox: boolean,
 ): StatusPart[] {
-  if (!summary) return [];
   const parts: StatusPart[] = [];
   const lastGood = backups.find((backup) => backup.status === 'succeeded');
-  if (summary.lastGoodAt) {
-    parts.push({ text: `Last good backup ${formatRelative(summary.lastGoodAt)}` });
-    if (lastGood) {
-      const verification = lastGood.verification.replace('_', ' ');
-      parts.push({ text: verification, caution: lastGood.verification === 'failed' });
-    }
+  if (lastGood) {
+    const state = lastGood.verification.state;
+    parts.push({
+      text: `Last good backup ${formatRelative(lastGood.completedAt ?? lastGood.createdAt)}`,
+    });
+    parts.push({ text: VERIFICATION_WORDS[state], caution: state === 'failed' });
   } else {
     parts.push({ text: 'No good backup yet', caution: true });
   }
-  if (summary.nextRunAt) parts.push({ text: `next run ${clockIn(summary.nextRunAt, timeZone)}` });
-  if (summary.oneDisk) parts.push({ text: 'one disk', caution: true });
+  if (schedule) parts.push({ text: nextRunLabel(schedule) });
+  if (!offBox) parts.push({ text: 'one disk', caution: true });
   return parts;
 }
 
 /**
- * The backups list with its summary, "Back up now", the restore drill, and a
- * restore confirmed by typing the backup id back.
+ * The backups list, "Back up now", the archive check and restore drill, and a
+ * restore the admin confirms by typing the backup id back.
  */
 export function useBackups() {
   const queryClient = useQueryClient();
-  const query = useInfiniteQuery({
-    queryKey: backupsListKey,
-    queryFn: ({ pageParam }) => api.backups.list(pageParam),
-    initialPageParam: undefined as string | undefined,
-    getNextPageParam: (last) => last.nextCursor ?? undefined,
-  });
   const [restoreId, setRestoreId] = useState<string | null>(null);
   const [typed, setTyped] = useState('');
 
   const refresh = () =>
     Promise.all([
-      queryClient.invalidateQueries({ queryKey: queryKeys.backups() }),
+      queryClient.invalidateQueries({ queryKey: queryKeys.backups.all() }),
       queryClient.invalidateQueries({ queryKey: queryKeys.system() }),
     ]);
-  const onError = (error: unknown) => toast(describeError(error).message, 'danger');
+  const onError = (error: unknown) => {
+    toast(describeError(error).message, 'danger');
+    void refresh();
+  };
 
   const run = useMutation({
     mutationFn: () => api.backups.run(),
@@ -81,33 +78,41 @@ export function useBackups() {
   });
 
   const verify = useMutation({
-    mutationFn: (id: string) => api.backups.verify(id),
-    onSuccess: async (backup) => {
+    mutationFn: ({ id, depth }: { id: string; depth: 'list' | 'restore' }) =>
+      api.backups.verify(id, depth),
+    onSuccess: async (_, { depth }) => {
       await refresh();
-      if (backup.verification === 'verified') toast(`Restore drill passed for ${backup.id}`);
-      else if (backup.verification === 'failed')
-        toast(`Restore drill failed for ${backup.id}`, 'danger');
-      else toast(`Restore drill started for ${backup.id}`, 'info');
+      toast(depth === 'list' ? 'Archive checked' : 'Restore drill started', 'info');
     },
     onError,
   });
 
   const restore = useMutation({
     mutationFn: (id: string) => api.backups.restore(id),
-    onSuccess: () => {
+    onSuccess: async () => {
       setRestoreId(null);
-      toast('Restore started. Bemmoly is in maintenance mode until it finishes.', 'info');
+      await refresh();
     },
+    onError: () => void refresh(),
   });
 
-  const pages = query.data?.pages ?? [];
-  const backups = pages.flatMap((page) => page.items);
+  const maintenance = useSystemMaintenance([run.error, verify.error, restore.error]);
+  const query = useInfiniteQuery({
+    queryKey: queryKeys.backups.list({ limit: PAGE }),
+    queryFn: ({ pageParam }) =>
+      api.backups.list({ limit: PAGE, ...(pageParam ? { cursor: pageParam } : {}) }),
+    initialPageParam: '',
+    getNextPageParam: (last) => last.nextCursor ?? undefined,
+    refetchInterval: maintenance.poll,
+  });
+
+  const backups = query.data?.pages.flatMap((page) => page.items) ?? [];
   const restoreTarget = backups.find((backup) => backup.id === restoreId) ?? null;
 
   return {
     ...query,
     backups,
-    summary: pages[0]?.summary,
+    maintenance,
     run,
     verify,
     restore,

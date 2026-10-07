@@ -12,10 +12,10 @@ import type {
   OutboxSummary,
   Role,
   SettingKey,
-  SystemStatus,
+  SystemHealthResponse,
   Team,
   TeamMember,
-  UpdateStatus,
+  UpdatesOverview,
   User,
 } from '@bemmoly/shared';
 import { seedCapabilities, type CapabilityRow, type Cells } from './seed/capabilities.ts';
@@ -74,8 +74,8 @@ export interface MockDb {
   outbox: OutboxSummary;
   mailbox: DevMailbox['items'];
   backups: Backup[];
-  updates: UpdateStatus;
-  system: SystemStatus;
+  updates: UpdatesOverview;
+  system: SystemHealthResponse;
   audit: AuditEntry[];
   apiTokens: ApiToken[];
   /** Realtime invalidations waiting for the socket bridge: [kind, userId, ids]. */
@@ -133,7 +133,7 @@ export function createMockDb(scenario: MockScenario = 'ready'): MockDb {
     mailbox: [],
     backups,
     updates: seedUpdates(),
-    system: seedSystem(backups[0] ?? null),
+    system: seedSystem(),
     audit: fresh ? [] : seedAudit(),
     apiTokens: [],
     outbound: [],

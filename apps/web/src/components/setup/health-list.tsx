@@ -45,6 +45,8 @@ export function HealthList({ rows }: { rows: readonly HealthRow[] }) {
             <RouterLink href={row.fix.href} className="ml-auto shrink-0 font-medium text-ac">
               {row.fix.label}
             </RouterLink>
+          ) : row.hint ? (
+            <span className="ml-auto shrink-0 text-12 text-tx5">{row.hint}</span>
           ) : null}
         </div>
       ))}

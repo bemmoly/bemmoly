@@ -1,15 +1,23 @@
-import type { BackupSchedule, UpdateStatus } from '@bemmoly/shared';
+import type { RollbackMode } from '@bemmoly/shared';
 import { audit, can, emit, type MockDb } from '../db.ts';
 import { bodyOf, fail, notFound, ok, page, type MockRoute } from '../types.ts';
+import {
+  enterMaintenance,
+  findBackup,
+  overview,
+  readTick,
+  runBackup,
+  writable,
+} from './operations-state.ts';
 
-/** Settings-like pages (backups, updates, system) are assumed to need workspace.settings.manage. */
-const adminOnly =
-  (handle: MockRoute['handle'], capability = 'workspace.settings.manage'): MockRoute['handle'] =>
-  (request, db) =>
-    can(db, capability) ? handle(request, db) : fail(403, 'forbidden', 'You cannot do that.');
-
+const SYSTEM = 'workspace.system.manage';
 const MODULES = 'workspace.modules.manage';
 const PINNED = 'BEMMOLY_MODULES pins the module set on this install.';
+
+const adminOnly =
+  (handle: MockRoute['handle'], capability = SYSTEM): MockRoute['handle'] =>
+  (request, db) =>
+    can(db, capability) ? handle(request, db) : fail(403, 'forbidden', 'You cannot do that.');
 
 function setModuleState(db: MockDb, id: string, enabled: boolean) {
   const module = db.adminModules.find((entry) => entry.id === id);
@@ -72,125 +80,148 @@ export const operationsRoutes: MockRoute[] = [
     }, MODULES),
   },
   {
+    // Anonymous until the first admin exists, so the wizard's first step can read it.
+    method: 'GET',
+    pattern: '/api/v1/admin/system',
+    anonymous: true,
+    handle: (_, db) => {
+      if (db.initialized && !can(db, SYSTEM)) {
+        return db.signedInAs
+          ? fail(403, 'forbidden', 'You cannot do that.')
+          : fail(401, 'unauthenticated', 'Sign in to continue.');
+      }
+      readTick(db);
+      return ok(db.system);
+    },
+  },
+  {
     method: 'GET',
     pattern: '/api/v1/admin/backups',
     handle: adminOnly((request, db) => {
-      const lastGood = db.backups.find((entry) => entry.status === 'succeeded');
-      const next = new Date();
-      next.setUTCHours(
-        Number(schedule(db).timeOfDay.slice(0, 2)),
-        Number(schedule(db).timeOfDay.slice(3)),
-        0,
-        0,
+      readTick(db);
+      const kind = request.query.get('kind');
+      return ok(
+        page(
+          db.backups.filter((entry) => !kind || entry.kind === kind),
+          request,
+          25,
+        ),
       );
-      if (next.getTime() < Date.now()) next.setUTCDate(next.getUTCDate() + 1);
-      return ok({
-        ...page(db.backups, request),
-        summary: {
-          lastGoodAt: lastGood?.finishedAt ?? null,
-          nextRunAt: next.toISOString(),
-          oneDisk: schedule(db).s3 === null,
-        },
-      });
+    }),
+  },
+  {
+    method: 'GET',
+    pattern: '/api/v1/admin/backups/:id',
+    handle: adminOnly((request, db) => {
+      const entry = findBackup(db, request.params['id']);
+      return entry ? ok(entry) : notFound('That backup');
     }),
   },
   {
     method: 'POST',
     pattern: '/api/v1/admin/backups',
-    handle: adminOnly((_, db) => {
-      const now = new Date().toISOString();
-      const entry = {
-        id: `bk-${String(db.backups.length + 1).padStart(4, '0')}-${Date.now() % 1000}`,
-        kind: 'manual' as const,
-        tier: null,
-        status: 'succeeded' as const,
-        startedAt: now,
-        finishedAt: now,
-        sizeBytes: 413_000_000,
-        appVersion: db.updates.currentVersion,
-        destination: schedule(db).localPath,
-        verification: 'verified' as const,
-        verifiedAt: now,
-        error: null,
-      };
-      db.backups.unshift(entry);
-      db.system.lastBackup = entry;
-      audit(db, 'backup.completed', 'backup', entry.id);
-      emit(db, 'backup.completed', [entry.id]);
-      return ok(entry, 201);
-    }),
+    handle: adminOnly(writable((_, db) => runBackup(db))),
   },
   {
     method: 'POST',
     pattern: '/api/v1/admin/backups/:id/verify',
-    handle: adminOnly((request, db) => {
-      const entry = db.backups.find((backup) => backup.id === request.params['id']);
-      if (!entry) return notFound('That backup');
-      if (entry.status !== 'succeeded')
-        return fail(409, 'conflict', 'Only a finished backup can be drilled.');
-      entry.verification = 'verified';
-      entry.verifiedAt = new Date().toISOString();
-      return ok(entry);
-    }),
+    handle: adminOnly(
+      writable((request, db) => {
+        const entry = findBackup(db, request.params['id']);
+        if (!entry) return notFound('That backup');
+        if (entry.status !== 'succeeded')
+          return fail(409, 'conflict', 'Only a finished backup can be checked.');
+        const depth = bodyOf<{ depth: 'list' | 'restore' }>(request).depth ?? 'restore';
+        const checkedAt = new Date().toISOString();
+        entry.verification = {
+          state: depth === 'list' ? 'listed' : 'restored',
+          checkedAt,
+          message: depth === 'list' ? null : 'Row counts match on issues, pages, users.',
+        };
+        return depth === 'list' ? ok(entry) : { status: 202 };
+      }),
+    ),
   },
   {
     method: 'POST',
     pattern: '/api/v1/admin/backups/:id/restore',
-    handle: adminOnly((request, db) => {
-      const entry = db.backups.find((backup) => backup.id === request.params['id']);
-      if (!entry) return notFound('That backup');
-      if (bodyOf<{ confirm: string }>(request).confirm !== entry.id) {
-        return fail(400, 'validation_failed', `Type ${entry.id} to confirm.`);
-      }
-      audit(db, 'backup.restored', 'backup', entry.id);
-      return { status: 202 };
-    }),
+    handle: adminOnly(
+      writable((request, db) => {
+        const entry = findBackup(db, request.params['id']);
+        if (!entry) return notFound('That backup');
+        if (bodyOf<{ confirm: boolean }>(request).confirm !== true) {
+          return fail(400, 'validation_failed', 'Confirm the restore.');
+        }
+        audit(db, 'backup.restored', 'backup', entry.id);
+        enterMaintenance(db, `Restoring the backup from ${entry.createdAt.slice(0, 10)}…`);
+        return { status: 202 };
+      }),
+    ),
   },
   {
     method: 'GET',
     pattern: '/api/v1/admin/updates',
-    handle: adminOnly((_, db) => ok(updateStatus(db, true))),
-  },
-  {
-    method: 'POST',
-    pattern: '/api/v1/admin/updates/check',
-    handle: adminOnly((_, db) => {
-      db.updates.lastCheckedAt = new Date().toISOString();
-      return ok(updateStatus(db, false));
-    }),
+    handle: adminOnly((_, db) => ok(overview(db))),
   },
   {
     method: 'POST',
     pattern: '/api/v1/admin/updates/apply',
-    handle: adminOnly((request, db) => {
-      const version = bodyOf<{ version: string }>(request).version ?? '';
-      if (db.updates.latest?.version !== version)
-        return fail(409, 'conflict', `${version} is not the latest release on this channel.`);
-      db.updates.job = {
-        action: 'update',
-        state: 'running',
-        message: `Backing up, then updating to ${version}…`,
-      };
-      audit(db, 'update.started', 'system', version);
-      return ok(db.updates);
-    }),
+    handle: adminOnly(
+      writable((request, db) => {
+        const version = bodyOf<{ version: string }>(request).version ?? '';
+        const { available, updater } = db.updates;
+        if (available?.version !== version)
+          return fail(409, 'conflict', `${version} is not the latest release on this channel.`);
+        if (updater.mode === 'cli') {
+          const command = `sudo bemmoly upgrade ${version}`;
+          return fail(
+            409,
+            'conflict',
+            'This install has no updater. Run the command on the server.',
+            {
+              command,
+            },
+          );
+        }
+        db.updates.updater = { ...updater, state: 'running', step: 'backup' };
+        enterMaintenance(db, `Backing up, then updating to ${version}…`);
+        audit(db, 'update.started', 'system', version);
+        return ok({ accepted: true, operation: 'update', target: version }, 202);
+      }),
+    ),
   },
   {
     method: 'POST',
     pattern: '/api/v1/admin/updates/rollback',
-    handle: adminOnly((_, db) => {
-      if (!db.updates.previous)
-        return fail(409, 'conflict', 'There is no earlier version to roll back to.');
-      db.updates.job = {
-        action: 'rollback',
-        state: 'running',
-        message: `Rolling back to ${db.updates.previous.version}…`,
-      };
-      audit(db, 'update.rollback_started', 'system', db.updates.previous.version);
-      return ok(db.updates);
-    }),
+    handle: adminOnly(
+      writable((request, db) => {
+        const plan = db.updates.rollback;
+        if (!plan) return fail(409, 'conflict', 'There is no earlier version to roll back to.');
+        if (bodyOf<{ expectedMode: RollbackMode }>(request).expectedMode !== plan.mode) {
+          return fail(409, 'conflict', 'The rollback plan changed. Review it and confirm again.');
+        }
+        db.updates.updater = { ...db.updates.updater, state: 'running', step: 'rollback' };
+        enterMaintenance(db, `Rolling back to ${plan.toVersion}…`);
+        audit(db, 'update.rollback_started', 'system', plan.toVersion);
+        return ok({ accepted: true, operation: 'rollback', target: plan.toVersion }, 202);
+      }),
+    ),
   },
-  { method: 'GET', pattern: '/api/v1/admin/system', handle: adminOnly((_, db) => ok(db.system)) },
+  {
+    method: 'POST',
+    pattern: '/api/v1/admin/updates/catalog-upload',
+    handle: adminOnly(
+      writable((request) => {
+        const filename = request.query.get('filename') ?? '';
+        if (!/^bemmoly-airgap-[0-9A-Za-z.+-]+\.tar(\.gz)?$/.test(filename)) {
+          return fail(400, 'validation_failed', 'Upload a bemmoly-airgap-<version>.tar.gz bundle.');
+        }
+        const sizeBytes = request.body instanceof Blob ? request.body.size : 0;
+        const storedAt = new Date().toISOString();
+        return ok({ filename, sizeBytes, sha256: '0'.repeat(64), storedAt }, 201);
+      }),
+    ),
+  },
   {
     method: 'GET',
     pattern: '/api/v1/audit-log',
@@ -211,46 +242,3 @@ export const operationsRoutes: MockRoute[] = [
     },
   },
 ];
-
-function schedule(db: MockDb): BackupSchedule {
-  return db.settings['backups.schedule'] as BackupSchedule;
-}
-
-/**
- * The channel follows the `updates.channel` setting. A running job finishes on
- * the next poll, so the page shows the updater's progress and then its result.
- */
-function updateStatus(db: MockDb, advance: boolean): UpdateStatus {
-  const updates = db.updates;
-  updates.channel = (db.settings['updates.channel'] as UpdateStatus['channel']) ?? updates.channel;
-  if (!advance || updates.job?.state !== 'running') return updates;
-  const now = new Date().toISOString();
-  if (updates.job.action === 'update' && updates.latest) {
-    const from = updates.currentVersion;
-    updates.currentVersion = updates.latest.version;
-    updates.previous = {
-      version: from,
-      updatedAt: now,
-      availableUntil: new Date(Date.now() + 7 * 86_400_000).toISOString(),
-      rollbackMode: updates.latest.irreversible ? 'restore' : 'code',
-      discardCount: updates.latest.irreversible ? 0 : null,
-      droppedFields: [],
-    };
-    updates.latest = null;
-    updates.job = {
-      action: 'update',
-      state: 'succeeded',
-      message: `Updated to ${updates.currentVersion}.`,
-    };
-  } else if (updates.job.action === 'rollback' && updates.previous) {
-    updates.currentVersion = updates.previous.version;
-    updates.previous = null;
-    updates.job = {
-      action: 'rollback',
-      state: 'succeeded',
-      message: `Rolled back to ${updates.currentVersion}.`,
-    };
-  }
-  db.system.version = updates.currentVersion;
-  return updates;
-}

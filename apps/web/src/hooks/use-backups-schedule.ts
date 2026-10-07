@@ -1,117 +1,158 @@
 import { queryKeys } from '@bemmoly/api-client';
-import { backupScheduleSchema, type BackupSchedule } from '@bemmoly/shared';
+import {
+  backupEncryptionSettingsSchema,
+  backupRetentionSettingsSchema,
+  backupS3SettingsSchema,
+  backupScheduleSettingsSchema,
+  backupVerificationSettingsSchema,
+  type BackupEncryptionSettings,
+  type BackupRetentionSettings,
+  type BackupS3Settings,
+  type BackupScheduleSettings,
+  type BackupVerificationSettings,
+} from '@bemmoly/shared';
 import { useQueryClient } from '@tanstack/react-query';
 import { useState, type FormEvent } from 'react';
+import type { z } from 'zod';
 import { validateForm, type FieldErrors } from '../lib/errors.ts';
 import { useDraft, useSettings, type SettingValues } from './use-setting.ts';
 
-const KEYS = ['backups.schedule', 'backups.s3.accessKeyId', 'backups.s3.secretAccessKey'] as const;
+const KEYS = [
+  'system.backups.schedule',
+  'system.backups.retention',
+  'system.backups.s3',
+  'system.backups.encryption',
+  'system.backups.verification',
+] as const;
 type Key = (typeof KEYS)[number];
 
-/** The tech design's defaults: daily at 02:00, 7 daily · 4 weekly · 3 monthly, local, weekly drill. */
-export const DEFAULT_SCHEDULE: BackupSchedule = {
-  frequency: 'daily',
-  timeOfDay: '02:00',
-  timezone: 'UTC',
-  retention: { hourly: 0, daily: 7, weekly: 4, monthly: 3 },
-  localPath: '/var/bemmoly/backups',
-  s3: null,
-  encryption: false,
-  verification: 'weekly',
+export interface BackupPolicy {
+  schedule: BackupScheduleSettings;
+  retention: BackupRetentionSettings;
+  encryption: BackupEncryptionSettings;
+  verification: BackupVerificationSettings;
+}
+
+/** The schemas' own defaults: daily at 02:00 UTC, 24 · 7 · 4 · 3, local unencrypted, weekly drill. */
+export const DEFAULT_POLICY: BackupPolicy = {
+  schedule: backupScheduleSettingsSchema.parse({}),
+  retention: backupRetentionSettingsSchema.parse({}),
+  encryption: backupEncryptionSettingsSchema.parse({}),
+  verification: backupVerificationSettingsSchema.parse({}),
 };
 
-export const EMPTY_BUCKET = { endpoint: '', bucket: '', region: '', prefix: 'bemmoly/' };
-
-/** Write-only S3 credentials: null keeps the stored one; a string is what the admin typed. */
-export interface S3Secrets {
-  accessKeyId: string | null;
-  secretAccessKey: string | null;
+/** The S3 destination form; it always replaces the stored destination as a whole. */
+export interface S3Form {
+  endpoint: string;
+  region: string;
+  bucket: string;
+  prefix: string;
+  accessKeyId: string;
+  secretAccessKey: string;
+  forcePathStyle: boolean;
 }
 
-const NO_SECRETS: S3Secrets = { accessKeyId: null, secretAccessKey: null };
+export const EMPTY_S3: S3Form = {
+  endpoint: '',
+  region: 'us-east-1',
+  bucket: '',
+  prefix: 'bemmoly/',
+  accessKeyId: '',
+  secretAccessKey: '',
+  forcePathStyle: false,
+};
 
-/**
- * What a save writes. Secrets go only when the admin typed one, so a blank
- * field keeps the stored key. Off-box copies are always encrypted.
- */
-export function backupSaveValues(schedule: BackupSchedule, secrets: S3Secrets): SettingValues<Key> {
-  const values: SettingValues<Key> = {
-    'backups.schedule': schedule.s3 ? { ...schedule, encryption: true } : schedule,
+/** keep: the stored destination stays. replace: the form is written. remove: it is cleared. */
+export type S3Edit = { mode: 'keep' } | { mode: 'replace'; form: S3Form } | { mode: 'remove' };
+
+export const toS3Setting = (form: S3Form): BackupS3Settings => ({
+  enabled: true,
+  ...(form.endpoint.trim() ? { endpoint: form.endpoint.trim() } : {}),
+  region: form.region.trim(),
+  bucket: form.bucket.trim(),
+  prefix: form.prefix.trim(),
+  accessKeyId: form.accessKeyId.trim(),
+  secretAccessKey: form.secretAccessKey,
+  forcePathStyle: form.forcePathStyle,
+});
+
+/** What a save writes. The secret S3 value goes only when the admin replaced or removed it. */
+export function backupSaveValues(policy: BackupPolicy, s3: S3Edit): SettingValues<Key> {
+  return {
+    'system.backups.schedule': policy.schedule,
+    'system.backups.retention': policy.retention,
+    'system.backups.encryption': policy.encryption,
+    'system.backups.verification': policy.verification,
+    ...(s3.mode === 'replace' ? { 'system.backups.s3': toS3Setting(s3.form) } : {}),
+    ...(s3.mode === 'remove' ? { 'system.backups.s3': null } : {}),
   };
-  const keyId = secrets.accessKeyId?.trim();
-  if (schedule.s3 && keyId) values['backups.s3.accessKeyId'] = keyId;
-  if (schedule.s3 && secrets.secretAccessKey) {
-    values['backups.s3.secretAccessKey'] = secrets.secretAccessKey;
-  }
-  return values;
 }
 
-/** Schema errors plus what a bucket destination needs before it can work. */
-export function scheduleErrors(
-  schedule: BackupSchedule,
-  secrets: S3Secrets,
-  stored: { accessKeyId: boolean; secretAccessKey: boolean },
-): FieldErrors {
-  const result = validateForm(backupScheduleSchema, schedule);
-  const errors: FieldErrors = { ...(result.errors ?? {}) };
-  if (schedule.s3) {
-    if (!schedule.s3.bucket.trim()) errors['s3.bucket'] = 'Name the bucket backups go to.';
-    if (!stored.accessKeyId && !secrets.accessKeyId?.trim())
-      errors['accessKeyId'] = 'Enter the access key id for this bucket.';
-    if (!stored.secretAccessKey && !secrets.secretAccessKey)
-      errors['secretAccessKey'] = 'Enter the secret access key for this bucket.';
-  }
-  return errors;
+function errorsOf(prefix: string, schema: z.ZodType, value: unknown): FieldErrors {
+  const errors = validateForm(schema, value).errors ?? {};
+  return Object.fromEntries(
+    Object.entries(errors).map(([path, text]) => [`${prefix}.${path}`, text]),
+  );
 }
 
-/** Settings › Storage and backups: schedule, retention, destinations, encryption, verification. */
+/** Field messages keyed "schedule.time", "retention.daily", "s3.bucket". */
+export function policyErrors(policy: BackupPolicy, s3: S3Edit): FieldErrors {
+  return {
+    ...errorsOf('schedule', backupScheduleSettingsSchema, policy.schedule),
+    ...errorsOf('retention', backupRetentionSettingsSchema, policy.retention),
+    ...(s3.mode === 'replace' ? errorsOf('s3', backupS3SettingsSchema, toS3Setting(s3.form)) : {}),
+  };
+}
+
+/** Settings › Storage and backups: schedule, retention, the S3 destination, encryption, drills. */
 export function useBackupSchedule() {
   const queryClient = useQueryClient();
   const settings = useSettings(KEYS, 'Backup settings saved');
-  const draft = useDraft<BackupSchedule>(
-    settings.reads ? (settings.reads['backups.schedule'].value ?? DEFAULT_SCHEDULE) : undefined,
+  const reads = settings.reads;
+  const draft = useDraft<BackupPolicy>(
+    reads && {
+      schedule: reads['system.backups.schedule'].value ?? DEFAULT_POLICY.schedule,
+      retention: reads['system.backups.retention'].value ?? DEFAULT_POLICY.retention,
+      encryption: reads['system.backups.encryption'].value ?? DEFAULT_POLICY.encryption,
+      verification: reads['system.backups.verification'].value ?? DEFAULT_POLICY.verification,
+    },
   );
-  const [secrets, setSecrets] = useState<S3Secrets>(NO_SECRETS);
+  const [s3, setS3] = useState<S3Edit>({ mode: 'keep' });
   const [errors, setErrors] = useState<FieldErrors>({});
-  const stored = {
-    accessKeyId: settings.reads?.['backups.s3.accessKeyId'].isSet ?? false,
-    secretAccessKey: settings.reads?.['backups.s3.secretAccessKey'].isSet ?? false,
-  };
-  const typedSecret = Boolean(secrets.accessKeyId || secrets.secretAccessKey);
-
-  const setBucket = (on: boolean) =>
-    draft.update(on ? { s3: draft.value?.s3 ?? EMPTY_BUCKET, encryption: true } : { s3: null });
 
   const discard = () => {
     draft.discard();
-    setSecrets(NO_SECRETS);
+    setS3({ mode: 'keep' });
     setErrors({});
   };
 
   const submit = (event: FormEvent) => {
     event.preventDefault();
     if (!draft.value) return;
-    const found = scheduleErrors(draft.value, secrets, stored);
+    const found = policyErrors(draft.value, s3);
     setErrors(found);
     if (Object.keys(found).length) return;
-    settings.save.mutate(backupSaveValues(draft.value, secrets), {
+    settings.save.mutate(backupSaveValues(draft.value, s3), {
       onSuccess: () => {
         discard();
-        // The summary's "one disk" and next run follow the saved schedule.
-        void queryClient.invalidateQueries({ queryKey: queryKeys.backups() });
+        // "One disk" and the next run in the status line follow the saved settings.
+        void queryClient.invalidateQueries({ queryKey: queryKeys.backups.all() });
       },
     });
   };
 
   return {
     settings,
-    schedule: draft.value,
+    policy: draft.value,
     update: draft.update,
-    dirty: draft.dirty || typedSecret,
-    secrets,
-    stored,
-    setSecret: (patch: Partial<S3Secrets>) => setSecrets({ ...secrets, ...patch }),
-    setBucket,
+    dirty: draft.dirty || s3.mode !== 'keep',
+    /** Whether an S3 destination is stored; the value itself is never read back. */
+    s3Configured: reads?.['system.backups.s3'].isSet ?? false,
+    s3,
+    editS3: (form: S3Form) => setS3({ mode: 'replace', form }),
+    startS3: () => setS3({ mode: 'replace', form: EMPTY_S3 }),
+    removeS3: () => setS3({ mode: 'remove' }),
+    keepS3: () => setS3({ mode: 'keep' }),
     errors,
     submit,
     discard,

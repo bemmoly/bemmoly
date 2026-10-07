@@ -64,18 +64,21 @@ export function UsersPage() {
             onChange={(event) => users.setSearch(event.target.value)}
           />
           <Select
+            className="[field-sizing:content]"
             aria-label="Filter by role"
             options={users.roleFilterOptions}
             value={filters.roleId}
             onChange={(event) => users.setRoleId(event.target.value)}
           />
           <Select
+            className="[field-sizing:content]"
             aria-label="Filter by team"
             options={users.teamFilterOptions}
             value={filters.teamId}
             onChange={(event) => users.setTeamId(event.target.value)}
           />
           <Select
+            className="[field-sizing:content]"
             aria-label="Filter by status"
             options={STATUS_OPTIONS}
             value={filters.status}

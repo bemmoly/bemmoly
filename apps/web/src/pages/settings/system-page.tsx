@@ -1,51 +1,67 @@
 import { SettingsPage } from '../../components/settings/settings-page.tsx';
 import { CheckList } from '../../components/system/check-list.tsx';
+import { MaintenanceNotice } from '../../components/system/maintenance-notice.tsx';
 import { PageBlock } from '../../components/system/page-block.tsx';
-import { QueueStats } from '../../components/system/queue-stats.tsx';
-import { healthTone, useSystem } from '../../hooks/use-system.ts';
+import { checkTone, formatUptime, ROLE_WORDS, useSystem } from '../../hooks/use-system.ts';
 
 export function SystemPage() {
-  const { status, lastBackup, isPending, error } = useSystem();
+  const { status, lastBackup, maintenance, isPending, error } = useSystem();
   return (
     <SettingsPage
       title="System status"
-      description="What the server checks about itself, the background job queue, and the last backup. Refreshes every 30 seconds."
+      description="What the server checks about itself, what it is running, and the last backup. Refreshes every 30 seconds."
       loading={isPending}
       error={error}
     >
       {status ? (
         <>
+          <MaintenanceNotice active={maintenance.active} message={maintenance.message} />
           <PageBlock id="system-health" title="Health">
             <CheckList
               label="Health checks"
-              rows={status.health.map((check) => ({
+              rows={status.checks.map((check) => ({
                 id: check.id,
                 name: check.name,
-                value: check.detail,
-                tone: healthTone(check.status),
-                ...(check.fix ? { link: check.fix } : {}),
+                value: check.value,
+                tone: checkTone(check.status),
+                ...(check.fix?.href
+                  ? { link: { label: check.fix.label, href: check.fix.href } }
+                  : check.fix
+                    ? { hint: check.fix.hint }
+                    : {}),
               }))}
             />
           </PageBlock>
-          <PageBlock id="system-queue" title="Background jobs">
-            <QueueStats queue={status.queue} />
-          </PageBlock>
-          <PageBlock id="system-operations" title="Operations">
+          <PageBlock id="system-server" title="Server">
             <CheckList
-              label="Operations"
+              label="Server"
               rows={[
-                {
-                  id: 'backup',
-                  name: 'Last backup',
-                  value: lastBackup?.text ?? '',
-                  ...(lastBackup ? { tone: lastBackup.tone } : {}),
-                  link: { label: 'Backups', href: '/settings/backups' },
-                },
                 {
                   id: 'version',
                   name: 'Version',
                   value: status.version,
                   link: { label: 'Updates', href: '/settings/updates' },
+                },
+                { id: 'role', name: 'Role', value: ROLE_WORDS[status.role], prose: true },
+                {
+                  id: 'uptime',
+                  name: 'Uptime',
+                  value: formatUptime(status.uptimeSeconds),
+                  prose: true,
+                },
+                {
+                  id: 'maintenance',
+                  name: 'Maintenance',
+                  value: status.maintenance.active ? (status.maintenance.reason ?? 'On') : 'Off',
+                  tone: status.maintenance.active ? 'caution' : 'ok',
+                  prose: true,
+                },
+                {
+                  id: 'backup',
+                  name: 'Last backup',
+                  value: lastBackup?.text ?? 'Checking…',
+                  ...(lastBackup ? { tone: lastBackup.tone } : {}),
+                  link: { label: 'Backups', href: '/settings/backups' },
                 },
                 {
                   id: 'ai-spend',
@@ -55,6 +71,9 @@ export function SystemPage() {
                 },
               ]}
             />
+            <p className="m-0 text-12h text-tx5">
+              Job queue figures arrive with the jobs dashboard.
+            </p>
           </PageBlock>
         </>
       ) : null}

@@ -1,64 +1,86 @@
-import type { BackupSchedule } from '@bemmoly/shared';
+import type { BackupScheduleSettings } from '@bemmoly/shared';
 import { Field, Input, Select, SettingsRow, SettingsSection, Switch } from '@bemmoly/ui';
+import type { BackupPolicy } from '../../hooks/use-backups-schedule.ts';
 import type { FieldErrors } from '../../lib/errors.ts';
 
 const FREQUENCIES = [
   { value: 'hourly', label: 'Every hour' },
-  { value: 'every_6_hours', label: 'Every 6 hours' },
+  { value: '6h', label: 'Every 6 hours' },
   { value: 'daily', label: 'Daily' },
   { value: 'weekly', label: 'Weekly' },
 ];
 
-const VERIFICATION = [
-  { value: 'weekly', label: 'Weekly test restore' },
-  { value: 'daily', label: 'Daily test restore' },
-  { value: 'off', label: 'Off' },
-];
+const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].map(
+  (label, day) => ({ value: String(day), label }),
+);
 
 const TIERS = [
-  { key: 'hourly', label: 'Hourly', max: 168 },
-  { key: 'daily', label: 'Daily', max: 365 },
-  { key: 'weekly', label: 'Weekly', max: 104 },
-  { key: 'monthly', label: 'Monthly', max: 120 },
+  { key: 'hourly', label: 'Hourly', min: 0, max: 168 },
+  { key: 'daily', label: 'Daily', min: 0, max: 365 },
+  { key: 'weekly', label: 'Weekly', min: 0, max: 104 },
+  { key: 'monthly', label: 'Monthly', min: 0, max: 120 },
+  { key: 'preUpgradeDays', label: 'Pre-update, days', min: 1, max: 90 },
 ] as const;
 
-export interface ScheduleCardProps {
-  schedule: BackupSchedule;
-  update: (patch: Partial<BackupSchedule>) => void;
+export interface PolicyCardProps {
+  policy: BackupPolicy;
+  update: (patch: Partial<BackupPolicy>) => void;
   errors: FieldErrors;
 }
 
+const wholeNumber = (value: string) => Math.max(0, Math.trunc(Number(value) || 0));
+
 export function ScheduleCard({
-  schedule,
+  policy,
   update,
   errors,
   timezones,
-}: ScheduleCardProps & { timezones: readonly string[] }) {
+}: PolicyCardProps & { timezones: readonly string[] }) {
+  const schedule = policy.schedule;
+  const set = (patch: Partial<BackupScheduleSettings>) =>
+    update({ schedule: { ...schedule, ...patch } });
+  const hourly = schedule.frequency === 'hourly';
   return (
-    <SettingsSection title="Schedule" hint="Backups also run before every update">
-      <div className="grid grid-cols-3 gap-3.5">
+    <SettingsSection title="Schedule" hint="Bemmoly also backs up before every update">
+      <div
+        className={`grid gap-3.5 ${schedule.frequency === 'weekly' ? 'grid-cols-4' : 'grid-cols-3'}`}
+      >
         <Field label="Frequency">
           <Select
             options={FREQUENCIES}
             value={schedule.frequency}
             onChange={(event) =>
-              update({ frequency: event.target.value as BackupSchedule['frequency'] })
+              set({ frequency: event.target.value as BackupScheduleSettings['frequency'] })
             }
           />
         </Field>
-        <Field label="Time" error={errors['timeOfDay']}>
+        {schedule.frequency === 'weekly' ? (
+          <Field label="Day">
+            <Select
+              options={WEEKDAYS}
+              value={String(schedule.weekday)}
+              onChange={(event) => set({ weekday: Number(event.target.value) })}
+            />
+          </Field>
+        ) : null}
+        <Field
+          label="Time"
+          hint={hourly ? 'Not used for hourly backups.' : undefined}
+          error={errors['schedule.time']}
+        >
           <Input
             type="time"
             mono
-            value={schedule.timeOfDay}
-            onChange={(event) => update({ timeOfDay: event.target.value })}
+            disabled={hourly}
+            value={schedule.time}
+            onChange={(event) => set({ time: event.target.value })}
           />
         </Field>
-        <Field label="Timezone" error={errors['timezone']}>
+        <Field label="Timezone" error={errors['schedule.timezone']}>
           <Select
             options={timezones.map((zone) => ({ value: zone, label: zone }))}
             value={schedule.timezone}
-            onChange={(event) => update({ timezone: event.target.value })}
+            onChange={(event) => set({ timezone: event.target.value })}
           />
         </Field>
       </div>
@@ -66,33 +88,21 @@ export function ScheduleCard({
   );
 }
 
-export function RetentionCard({ schedule, update, errors }: ScheduleCardProps) {
+export function RetentionCard({ policy, update, errors }: PolicyCardProps) {
+  const retention = policy.retention;
   return (
-    <SettingsSection
-      title="Retention"
-      hint="How many of each to keep; pre-update backups are kept for seven days"
-    >
-      <div className="grid grid-cols-4 gap-3.5">
+    <SettingsSection title="Retention" hint="How many of each to keep">
+      <div className="grid grid-cols-5 gap-3.5">
         {TIERS.map((tier) => (
-          <Field
-            key={tier.key}
-            label={tier.label}
-            error={errors[`retention.${tier.key}`]}
-            hint={schedule.retention[tier.key] === 0 ? 'None kept' : undefined}
-          >
+          <Field key={tier.key} label={tier.label} error={errors[`retention.${tier.key}`]}>
             <Input
               type="number"
               mono
-              min={0}
+              min={tier.min}
               max={tier.max}
-              value={String(schedule.retention[tier.key])}
+              value={String(retention[tier.key])}
               onChange={(event) =>
-                update({
-                  retention: {
-                    ...schedule.retention,
-                    [tier.key]: Math.max(0, Math.trunc(Number(event.target.value) || 0)),
-                  },
-                })
+                update({ retention: { ...retention, [tier.key]: wholeNumber(event.target.value) } })
               }
             />
           </Field>
@@ -102,37 +112,29 @@ export function RetentionCard({ schedule, update, errors }: ScheduleCardProps) {
   );
 }
 
-export function ProtectionCard({ schedule, update }: Omit<ScheduleCardProps, 'errors'>) {
-  const offBox = schedule.s3 !== null;
+export function ProtectionCard({ policy, update }: Omit<PolicyCardProps, 'errors'>) {
   return (
     <SettingsSection title="Encryption and verification" layout="rows">
       <SettingsRow
-        title="Encrypt backups"
-        description={
-          offBox
-            ? 'Required while a bucket is a destination. AES-256-GCM with the passphrase in .env.'
-            : 'AES-256-GCM with the backup passphrase the installer wrote to .env.'
-        }
+        title="Encrypt the local copy"
+        description="AES-256-GCM with the backup passphrase in .env. Copies sent to a bucket are always encrypted."
         control={
           <Switch
-            aria-label="Encrypt backups"
-            checked={offBox || schedule.encryption}
-            disabled={offBox}
-            onCheckedChange={(encryption) => update({ encryption })}
+            aria-label="Encrypt the local copy"
+            checked={policy.encryption.local}
+            onCheckedChange={(local) => update({ encryption: { local } })}
           />
         }
       />
       <SettingsRow
-        title="Verification"
-        description="Every dump is checked on write. A test restore also compares row counts in a temporary database."
+        title="Weekly test restore"
+        description="Every dump is checked on write. The test restore also compares row counts in a temporary database."
         control={
-          <Select
-            aria-label="Verification"
-            wrapperClassName="w-52"
-            options={VERIFICATION}
-            value={schedule.verification}
-            onChange={(event) =>
-              update({ verification: event.target.value as BackupSchedule['verification'] })
+          <Switch
+            aria-label="Weekly test restore"
+            checked={policy.verification.testRestore === 'weekly'}
+            onCheckedChange={(on) =>
+              update({ verification: { testRestore: on ? 'weekly' : 'off' } })
             }
           />
         }

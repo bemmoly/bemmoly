@@ -56,12 +56,16 @@ export function appearanceFrom(reads: Reads): Appearance {
   };
 }
 
-/** The keys and values to write for an appearance; the font follows the preset unless custom. */
+/**
+ * The keys and values to write for an appearance; the font follows the preset
+ * unless custom. A preset writes no brand colour (the key holds hex only), so
+ * the last custom brand is still there when someone returns to Custom.
+ */
 export function appearanceWrites(appearance: Appearance, presetFont: string) {
   const custom = appearance.custom;
   return [
     ['appearance.theme', appearance.preset === 'light' ? SERVER_CLASSIC : appearance.preset],
-    ['appearance.brandColor', custom?.brandColor ?? null],
+    ...(custom ? ([['appearance.brandColor', custom.brandColor]] as const) : []),
     ['appearance.font', custom?.font ?? presetFont],
     ['appearance.mode', custom?.mode ?? 'light'],
     ['appearance.surfaces', custom?.surfaces ?? 'neutral'],

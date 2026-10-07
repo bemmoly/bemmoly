@@ -31,8 +31,8 @@ export function RestoreModal({
       open
       onClose={onClose}
       width="lg"
-      title={`Restore ${backup.id}?`}
-      description={`Taken ${formatDateTime(backup.startedAt)} on version ${backup.appVersion}.`}
+      title={`Restore the backup from ${formatDateTime(backup.createdAt)}?`}
+      description={`Taken on version ${backup.appVersion}. This replaces the live workspace.`}
       footer={
         <>
           <Button onClick={onClose}>Cancel</Button>
@@ -55,7 +55,7 @@ export function RestoreModal({
           </li>
           <li>
             The backup is restored into a fresh database and swapped in. Everything written since{' '}
-            {formatDateTime(backup.startedAt)} is no longer in the live workspace.
+            {formatDateTime(backup.createdAt)} is no longer in the live workspace.
           </li>
           <li>
             The database it replaces is kept for the retention window, so you can go back to it.
@@ -65,7 +65,10 @@ export function RestoreModal({
             changesets after the restore, bringing the data up to date.
           </li>
         </ul>
-        <Field label={`Type ${backup.id} to confirm`}>
+        <p className="m-0 text-12h text-tx4">
+          Backup id <span className="font-mono text-12 text-tx2 select-all">{backup.id}</span>
+        </p>
+        <Field label="Type the backup id to confirm">
           <Input
             mono
             autoComplete="off"

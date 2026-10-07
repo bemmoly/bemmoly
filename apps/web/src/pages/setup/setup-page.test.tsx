@@ -24,7 +24,7 @@ describe('SetupPage', () => {
     ).toBeTruthy();
     const checks = screen.getByLabelText('Server checks');
     expect(within(checks).getByText('Postgres 18')).toBeTruthy();
-    expect(await within(checks).findByText('12 ms')).toBeTruthy();
+    expect(await within(checks).findByText('localhost:5432 · 12 ms')).toBeTruthy();
     expect(screen.getByLabelText('Workspace name')).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Create admin and continue' })).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Skip for now' })).toBeNull();

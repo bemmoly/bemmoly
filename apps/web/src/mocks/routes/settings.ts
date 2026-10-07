@@ -16,6 +16,8 @@ const isKey = (key: string): key is SettingKey => key in SETTING_SCHEMAS;
  */
 function allowed(db: MockDb, key: SettingKey): boolean {
   if (can(db, 'workspace.settings.manage')) return true;
+  if (key.startsWith('appearance.')) return can(db, 'workspace.appearance.manage');
+  if (key.startsWith('system.')) return can(db, 'workspace.system.manage');
   return key.startsWith('email.') && can(db, 'workspace.email.manage');
 }
 
@@ -74,9 +76,8 @@ export const settingsRoutes: MockRoute[] = [
     method: 'GET',
     pattern: '/api/v1/admin/settings',
     handle: (_, db) => {
-      if (!can(db, 'workspace.settings.manage') && !can(db, 'workspace.email.manage'))
-        return forbidden();
       const keys = (Object.keys(SETTING_SCHEMAS) as SettingKey[]).filter((key) => allowed(db, key));
+      if (keys.length === 0) return forbidden();
       return ok({ items: keys.map((key) => envelope(db, key)) });
     },
   },

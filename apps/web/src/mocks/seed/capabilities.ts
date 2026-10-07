@@ -42,6 +42,7 @@ const GROUPS: Array<{ group: string; moduleId: string | null; rows: Seed[] }> = 
         [1, 0, 0, 0, 0],
       ],
       ['workspace.modules.manage', 'Enable and disable modules', null, [1, 0, 0, 0, 0]],
+      ['workspace.system.manage', 'Run backups, updates and restores', null, [1, 0, 0, 0, 0]],
     ],
   },
   {

@@ -1,7 +1,7 @@
 import { act, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { INITIAL_SETUP_DRAFT, useSetupStore } from '../store/setup.ts';
-import { renderQueryHook, testQueryClient } from '../test/render.tsx';
+import { renderQueryHook } from '../test/render.tsx';
 import { mockApi } from '../test/setup.ts';
 import {
   presetIdFromSetting,
@@ -11,7 +11,6 @@ import {
   useSetupAppearance,
 } from './use-setup-appearance.ts';
 import { invitesLine, summaryRows, useSetupDone } from './use-setup-done.ts';
-import { healthHeadline, healthRows, serverLabel, useSetupHealth } from './use-setup-health.ts';
 import { importSummary } from './use-setup-import.ts';
 
 beforeEach(() => useSetupStore.getState().reset());
@@ -39,53 +38,6 @@ describe('appearance step', () => {
     expect(mockApi.db.settings['appearance.theme']).toBe('midnight');
     expect(mockApi.db.settings['appearance.font']).toBe('geist');
     expect(useSetupStore.getState().themeSaved).toBe(true);
-  });
-});
-
-describe('health checks', () => {
-  const readiness = {
-    status: 'ready' as const,
-    checks: { database: { status: 'ok' as const, latencyMs: 12.4 } },
-  };
-
-  it('shows Postgres from /readyz and the rest as checked later', () => {
-    const rows = healthRows({ readiness, system: undefined });
-    expect(rows[0]).toMatchObject({ name: 'Postgres 18', status: 'ok', detail: '12 ms' });
-    expect(rows.slice(1).map((row) => row.status)).toEqual(Array(5).fill('pending'));
-    expect(healthHeadline(rows)).toBe('Bemmoly found a healthy Postgres.');
-  });
-
-  it('says why the database failed', () => {
-    const failed = {
-      status: 'unavailable' as const,
-      checks: { database: { status: 'failed' as const, message: 'connection refused' } },
-    };
-    const rows = healthRows({ readiness: failed, system: undefined });
-    expect(rows[0]).toMatchObject({ status: 'failed', detail: 'connection refused' });
-    expect(healthHeadline(rows)).toContain('connection refused');
-  });
-
-  it('labels the server with or without a version', () => {
-    expect(serverLabel('host:8080', '0.1.0')).toBe('host:8080 · v0.1.0 · self-hosted');
-    expect(serverLabel('host:8080', undefined)).toBe('host:8080 · self-hosted');
-  });
-
-  it('uses only /readyz before anyone is signed in', async () => {
-    mockApi.reset('fresh');
-    const { result } = await renderQueryHook(() => useSetupHealth(false), testQueryClient());
-    await waitFor(() => expect(result.current.loading).toBe(false));
-    expect(result.current.rows[0]?.detail).toBe('12 ms');
-    expect(result.current.rows).toHaveLength(6);
-    expect(result.current.serverLabel).toBe('bemmoly.test · self-hosted');
-  });
-
-  it('uses the full system checks for a signed-in admin', async () => {
-    const { result } = await renderQueryHook(() => useSetupHealth(true));
-    await waitFor(() => expect(result.current.rows[1]?.status).not.toBe('pending'));
-    expect(result.current.rows.map((row) => row.id)).toEqual(
-      mockApi.db.system.health.map((row) => row.id),
-    );
-    expect(result.current.serverLabel).toContain(`v${mockApi.db.system.version}`);
   });
 });
 

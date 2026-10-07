@@ -1,91 +1,125 @@
-import type { UpdateStatus } from '@bemmoly/shared';
+import type { RollbackPlan, UpdatesOverview } from '@bemmoly/shared';
 import { Button, Modal } from '@bemmoly/ui';
 import { rollbackCopy, updateModeCopy } from '../../hooks/use-updates-copy.ts';
 import { LINK_ACTION } from '../actions.ts';
 import { FormError, Notice } from '../form.tsx';
+import { CommandBlock, NotesLink, ReleaseWarnings } from './release-card.tsx';
 
-interface DialogProps {
-  status: UpdateStatus;
+interface UpdateModalProps {
+  overview: UpdatesOverview;
   busy: boolean;
   error: unknown;
+  /** The server has no updater after all: run this instead. */
+  cliCommand: string | null;
   onClose: () => void;
   onConfirm: () => void;
 }
 
-export function UpdateModal({ status, busy, error, onClose, onConfirm }: DialogProps) {
-  const release = status.latest;
+export function UpdateModal({
+  overview,
+  busy,
+  error,
+  cliCommand,
+  onClose,
+  onConfirm,
+}: UpdateModalProps) {
+  const release = overview.available;
   if (!release) return null;
   return (
     <Modal
       open
       onClose={onClose}
+      width="lg"
       title={`Update to ${release.version}?`}
-      description={`From ${status.currentVersion}, on the ${status.channel} channel.`}
+      description={`From ${overview.current.version}, on the ${overview.current.channel} channel.`}
       footer={
         <>
-          <Button onClick={onClose}>Cancel</Button>
-          <Button variant="primary" loading={busy} onClick={onConfirm}>
-            Update to {release.version}
-          </Button>
+          <Button onClick={onClose}>{cliCommand ? 'Close' : 'Cancel'}</Button>
+          {cliCommand ? null : (
+            <Button variant="primary" loading={busy} onClick={onConfirm}>
+              Update to {release.version}
+            </Button>
+          )}
         </>
       }
     >
       <div className="flex flex-col gap-3.5">
-        <p className="m-0 text-13 leading-body text-tx-body">{updateModeCopy(status.mode)}</p>
-        {release.irreversible ? (
-          <Notice tone="caution">
-            Rolling back from {release.version} would need a restore of the pre-update backup.
-          </Notice>
-        ) : null}
+        <NotesLink release={release} />
+        <ReleaseWarnings release={release} />
+        {cliCommand ? (
+          <>
+            <p className="m-0 text-13 leading-body text-tx-body">{updateModeCopy('cli')}</p>
+            <CommandBlock command={cliCommand} />
+          </>
+        ) : (
+          <p className="m-0 text-13 leading-body text-tx-body">{updateModeCopy('in_app')}</p>
+        )}
         <FormError error={error} />
       </div>
     </Modal>
   );
 }
 
-interface RollbackModalProps extends DialogProps {
+interface RollbackModalProps {
+  plan: RollbackPlan;
+  busy: boolean;
+  error: unknown;
+  planChanged: boolean;
   /** The CSV of audit rows a restore rollback would discard. */
   exportUrl: (since: string) => string;
+  onClose: () => void;
+  onConfirm: () => void;
 }
 
 export function RollbackModal({
-  status,
+  plan,
   busy,
   error,
+  planChanged,
+  exportUrl,
   onClose,
   onConfirm,
-  exportUrl,
 }: RollbackModalProps) {
-  const previous = status.previous;
-  if (!previous) return null;
-  const copy = rollbackCopy(previous);
+  const copy = rollbackCopy(plan);
   return (
     <Modal
       open
       onClose={onClose}
-      title={`Roll back to ${previous.version}?`}
+      width="lg"
+      title={`Roll back to ${plan.toVersion}?`}
       description={copy.mode}
       footer={
         <>
           <Button onClick={onClose}>Cancel</Button>
           <Button
-            variant={copy.exportSince ? 'danger' : 'primary'}
+            variant={plan.mode === 'restore' ? 'danger' : 'primary'}
             loading={busy}
             onClick={onConfirm}
           >
-            Roll back to {previous.version}
+            Roll back to {plan.toVersion}
           </Button>
         </>
       }
     >
       <div className="flex flex-col gap-3.5">
-        <p className="m-0 text-13 leading-body text-tx-body">{copy.body}</p>
+        {planChanged ? (
+          <Notice tone="caution">
+            The rollback plan changed since this dialog opened. Read the new plan below, then
+            confirm again.
+          </Notice>
+        ) : null}
+        <p className="m-0 text-13 leading-body text-tx-body">{copy.summary}</p>
+        <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5 text-13 leading-body text-tx-body">
+          {copy.details.map((line) => (
+            <li key={line}>{line}</li>
+          ))}
+        </ul>
         {copy.exportSince ? (
           <a className={`text-13 ${LINK_ACTION}`} href={exportUrl(copy.exportSince)} download>
             Export the audit rows for those changes first
           </a>
         ) : null}
-        <FormError error={error} />
+        {planChanged ? null : <FormError error={error} />}
       </div>
     </Modal>
   );

@@ -1,43 +1,45 @@
 import { formatDateTime, formatRelative } from '@bemmoly/core-web';
-import type { UpdateStatus } from '@bemmoly/shared';
+import type { RollbackPlan, UpdatesOverview } from '@bemmoly/shared';
 import { Button, SettingsRow, SettingsSection } from '@bemmoly/ui';
 import { rollbackCopy } from '../../hooks/use-updates-copy.ts';
-
-type Previous = NonNullable<UpdateStatus['previous']>;
+import { CommandBlock } from './release-card.tsx';
 
 interface RollbackCardProps {
-  status: UpdateStatus;
-  previous: Previous;
+  overview: UpdatesOverview;
+  plan: RollbackPlan;
   busy: boolean;
   onRollback: () => void;
 }
 
-export function RollbackCard({ status, previous, busy, onRollback }: RollbackCardProps) {
-  const copy = rollbackCopy(previous);
+export function RollbackCard({ overview, plan, busy, onRollback }: RollbackCardProps) {
+  const copy = rollbackCopy(plan);
+  const { current, updater } = overview;
+  const updated = current.updatedAt ? ` ${formatRelative(current.updatedAt)}` : '';
   return (
     <SettingsSection
       title="Roll back"
-      hint={`available until ${formatDateTime(previous.availableUntil)}`}
+      {...(plan.expiresAt ? { hint: `available until ${formatDateTime(plan.expiresAt)}` } : {})}
       layout="rows"
     >
       <SettingsRow
-        title={`Updated to ${status.currentVersion} ${formatRelative(previous.updatedAt)}`}
-        description={`${copy.mode}: ${copy.body}`}
+        title={`Updated to ${plan.fromVersion}${updated}`}
+        description={`${copy.mode}: ${copy.summary}`}
         control={
-          status.mode === 'in_app' ? (
-            <Button disabled={busy} onClick={onRollback}>
-              Roll back to {previous.version}
+          updater.mode === 'in_app' ? (
+            <Button disabled={busy || updater.state === 'unreachable'} onClick={onRollback}>
+              Roll back to {plan.toVersion}
             </Button>
           ) : null
         }
       />
-      {status.mode === 'in_app' ? null : (
-        <p className="m-0 py-2.5 text-12h leading-body text-tx4">
-          Run the rollback where you installed Bemmoly:{' '}
-          <span className="font-mono text-12">bemmoly rollback</span> on the server, or{' '}
-          <span className="font-mono text-12">helm rollback</span> on Kubernetes. Both print the
-          same mode and what it loses before they ask you to confirm.
-        </p>
+      {updater.mode === 'in_app' ? null : (
+        <div className="flex flex-col gap-2 py-2.5">
+          <p className="m-0 text-12h leading-body text-tx4">
+            Run this on the server. It prints the same mode and what it loses, then asks you to
+            confirm.
+          </p>
+          <CommandBlock command="sudo bemmoly rollback" />
+        </div>
       )}
     </SettingsSection>
   );

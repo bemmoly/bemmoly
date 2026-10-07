@@ -74,6 +74,7 @@ export function UsersTable({
       render: (user) => (
         <Select
           size="sm"
+          className="[field-sizing:content]"
           aria-label={`Org role for ${user.name}`}
           options={roleOptions}
           value={user.roleId}

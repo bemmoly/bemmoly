@@ -69,15 +69,10 @@ export function toAppearance(draft: AppearanceDraft): Appearance {
   };
 }
 
-/**
- * The settings to write. A preset writes no brand colour (the key holds hex
- * only), so the last custom brand is still there when someone returns to Custom.
- */
+/** The settings to write for the draft. */
 export function draftWrites(draft: AppearanceDraft): SettingValues<AppearanceKey> {
   const presetFont = PRESETS.find((preset) => preset.id === draft.preset)?.font ?? draft.font;
-  const writes = appearanceWrites(toAppearance(draft), presetFont).filter(
-    ([, value]) => value !== null,
-  );
+  const writes = appearanceWrites(toAppearance(draft), presetFont);
   return Object.fromEntries(writes) as SettingValues<AppearanceKey>;
 }
 

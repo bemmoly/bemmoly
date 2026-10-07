@@ -49,26 +49,20 @@ export function seedSettings(complete: boolean): Partial<Record<SettingKey, unkn
     'ai.providerId': null,
     'ai.shareContent': true,
     'ai.allowActions': true,
-    'updates.channel': 'stable',
-    'updates.checkForUpdates': true,
-    'backups.schedule': {
-      frequency: 'daily',
-      timeOfDay: '02:00',
-      timezone: 'UTC',
-      retention: { hourly: 0, daily: 7, weekly: 4, monthly: 3 },
-      localPath: '/var/bemmoly/backups',
-      s3: null,
-      encryption: false,
-      verification: 'weekly',
-    },
+    'system.updates.channel': 'stable',
+    'system.updates.check': true,
+    'system.backups.schedule': { frequency: 'daily', time: '02:00', timezone: 'UTC', weekday: 0 },
+    'system.backups.retention': { hourly: 24, daily: 7, weekly: 4, monthly: 3, preUpgradeDays: 7 },
+    'system.backups.s3': null,
+    'system.backups.encryption': { local: false },
+    'system.backups.verification': { testRestore: 'weekly' },
     'setup.completedAt': complete ? ago(60 * 24 * 9) : null,
   };
 }
 
 export const SECRET_KEYS: ReadonlySet<SettingKey> = new Set([
   'email.smtp.password',
-  'backups.s3.accessKeyId',
-  'backups.s3.secretAccessKey',
+  'system.backups.s3',
 ]);
 
 export function seedAdminModules(): AdminModule[] {

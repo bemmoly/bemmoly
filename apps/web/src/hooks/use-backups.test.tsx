@@ -1,96 +1,98 @@
-import type { BackupSchedule } from '@bemmoly/shared';
 import { act, screen, waitFor } from '@testing-library/react';
 import type { FormEvent } from 'react';
 import { describe, expect, it } from 'vitest';
+import { BACKUP_IDS } from '../mocks/seed/operations.ts';
 import { BackupsPage } from '../pages/settings/backups-page.tsx';
 import { renderPage, renderQueryHook } from '../test/render.tsx';
 import { mockApi } from '../test/setup.ts';
 import {
   backupSaveValues,
-  DEFAULT_SCHEDULE,
-  EMPTY_BUCKET,
-  scheduleErrors,
+  DEFAULT_POLICY,
+  EMPTY_S3,
+  policyErrors,
   useBackupSchedule,
 } from './use-backups-schedule.ts';
-import { statusLine, useBackups } from './use-backups.ts';
+import { nextRunLabel, statusLine, useBackups } from './use-backups.ts';
 
 const submitEvent = { preventDefault: () => undefined } as FormEvent;
-const withBucket: BackupSchedule = {
-  ...DEFAULT_SCHEDULE,
-  s3: { ...EMPTY_BUCKET, bucket: 'acme-backups' },
-};
+const bucket = { ...EMPTY_S3, bucket: 'acme-backups', accessKeyId: 'AKIA1', secretAccessKey: 's' };
 
-describe('backup schedule', () => {
-  it('writes secrets only when the admin typed them, and only with a bucket', () => {
+describe('backup settings', () => {
+  it('writes the S3 secret only when it is replaced or removed', () => {
+    const keep = backupSaveValues(DEFAULT_POLICY, { mode: 'keep' });
+    expect(keep).not.toHaveProperty('system.backups.s3');
+    expect(keep['system.backups.schedule']).toEqual(DEFAULT_POLICY.schedule);
+    expect(backupSaveValues(DEFAULT_POLICY, { mode: 'remove' })['system.backups.s3']).toBeNull();
     expect(
-      backupSaveValues(DEFAULT_SCHEDULE, { accessKeyId: 'AKIA', secretAccessKey: 's' }),
-    ).toEqual({ 'backups.schedule': DEFAULT_SCHEDULE });
-    expect(backupSaveValues(withBucket, { accessKeyId: null, secretAccessKey: '' })).toEqual({
-      'backups.schedule': { ...withBucket, encryption: true },
+      backupSaveValues(DEFAULT_POLICY, { mode: 'replace', form: { ...bucket, endpoint: ' ' } })[
+        'system.backups.s3'
+      ],
+    ).toEqual({
+      enabled: true,
+      region: 'us-east-1',
+      bucket: 'acme-backups',
+      prefix: 'bemmoly/',
+      accessKeyId: 'AKIA1',
+      secretAccessKey: 's',
+      forcePathStyle: false,
     });
-    expect(backupSaveValues(withBucket, { accessKeyId: ' AKIA ', secretAccessKey: 'shh' })).toEqual(
+  });
+
+  it('checks the schedule, retention and a new destination', () => {
+    const errors = policyErrors(
       {
-        'backups.schedule': { ...withBucket, encryption: true },
-        'backups.s3.accessKeyId': 'AKIA',
-        'backups.s3.secretAccessKey': 'shh',
+        ...DEFAULT_POLICY,
+        schedule: { ...DEFAULT_POLICY.schedule, time: '25:00' },
+        retention: { ...DEFAULT_POLICY.retention, preUpgradeDays: 0 },
       },
+      { mode: 'replace', form: EMPTY_S3 },
     );
+    expect(Object.keys(errors).sort()).toEqual([
+      'retention.preUpgradeDays',
+      's3.accessKeyId',
+      's3.bucket',
+      's3.secretAccessKey',
+      'schedule.time',
+    ]);
+    expect(policyErrors(DEFAULT_POLICY, { mode: 'replace', form: bucket })).toEqual({});
   });
 
-  it('asks for a bucket and credentials that are not stored yet', () => {
-    const none = { accessKeyId: null, secretAccessKey: null };
-    const errors = scheduleErrors({ ...withBucket, s3: EMPTY_BUCKET }, none, {
-      accessKeyId: false,
-      secretAccessKey: false,
-    });
-    expect(Object.keys(errors).sort()).toEqual(['accessKeyId', 's3.bucket', 'secretAccessKey']);
-    expect(scheduleErrors(withBucket, none, { accessKeyId: true, secretAccessKey: true })).toEqual(
-      {},
+  it('says when the next run is, in the schedule’s timezone', () => {
+    const schedule = DEFAULT_POLICY.schedule;
+    expect(nextRunLabel(schedule)).toBe('next run 02:00 UTC');
+    expect(nextRunLabel({ ...schedule, frequency: 'weekly', weekday: 1 })).toBe(
+      'next run Monday 02:00 UTC',
     );
-    expect(
-      scheduleErrors({ ...DEFAULT_SCHEDULE, timeOfDay: '25:00' }, none, {
-        accessKeyId: false,
-        secretAccessKey: false,
-      }),
-    ).toHaveProperty('timeOfDay');
+    expect(nextRunLabel({ ...schedule, frequency: 'hourly' })).toBe('runs every hour');
   });
 
-  it('saves the schedule and keeps stored secrets when the fields stay blank', async () => {
-    mockApi.db.settings['backups.s3.secretAccessKey'] = 'stored-secret';
-    mockApi.db.settings['backups.s3.accessKeyId'] = 'stored-id';
+  it('saves the schedule and keeps the stored destination untouched', async () => {
+    mockApi.db.settings['system.backups.s3'] = { ...bucket, enabled: true };
     const { result } = await renderQueryHook(() => useBackupSchedule());
-    await waitFor(() => expect(result.current.schedule).toBeDefined());
-    act(() => result.current.update({ frequency: 'every_6_hours', timeOfDay: '03:30' }));
-    act(() => result.current.setBucket(true));
-    act(() =>
-      result.current.update({ s3: { ...EMPTY_BUCKET, bucket: 'acme-backups', region: 'eu' } }),
-    );
+    await waitFor(() => expect(result.current.policy).toBeDefined());
+    expect(result.current.s3Configured).toBe(true);
+    const policy = result.current.policy ?? DEFAULT_POLICY;
+    act(() => result.current.update({ schedule: { ...policy.schedule, frequency: '6h' } }));
     expect(result.current.dirty).toBe(true);
     act(() => result.current.submit(submitEvent));
     await waitFor(() => expect(result.current.settings.save.isSuccess).toBe(true));
-    const saved = mockApi.db.settings['backups.schedule'] as BackupSchedule;
-    expect(saved).toMatchObject({
-      frequency: 'every_6_hours',
-      timeOfDay: '03:30',
-      encryption: true,
-    });
-    expect(saved.s3?.bucket).toBe('acme-backups');
-    expect(mockApi.db.settings['backups.s3.secretAccessKey']).toBe('stored-secret');
-    expect(mockApi.db.settings['backups.s3.accessKeyId']).toBe('stored-id');
+    expect(mockApi.db.settings['system.backups.schedule']).toMatchObject({ frequency: '6h' });
+    expect(mockApi.db.settings['system.backups.s3']).toMatchObject({ bucket: 'acme-backups' });
   });
 
-  it('writes a typed secret', async () => {
+  it('writes a new destination as one secret value', async () => {
     const { result } = await renderQueryHook(() => useBackupSchedule());
-    await waitFor(() => expect(result.current.schedule).toBeDefined());
-    act(() => result.current.setBucket(true));
-    act(() => result.current.update({ s3: { ...EMPTY_BUCKET, bucket: 'b' } }));
-    act(() => result.current.setSecret({ accessKeyId: 'AKIA1' }));
-    act(() => result.current.setSecret({ secretAccessKey: 'new-secret' }));
+    await waitFor(() => expect(result.current.policy).toBeDefined());
+    expect(result.current.s3Configured).toBe(false);
+    act(() => result.current.startS3());
+    act(() => result.current.editS3({ ...bucket, bucket: 'new-bucket' }));
     act(() => result.current.submit(submitEvent));
     await waitFor(() => expect(result.current.settings.save.isSuccess).toBe(true));
-    expect(mockApi.db.settings['backups.s3.accessKeyId']).toBe('AKIA1');
-    expect(mockApi.db.settings['backups.s3.secretAccessKey']).toBe('new-secret');
-    expect(result.current.secrets).toEqual({ accessKeyId: null, secretAccessKey: null });
+    expect(mockApi.db.settings['system.backups.s3']).toMatchObject({
+      bucket: 'new-bucket',
+      secretAccessKey: 's',
+    });
+    expect(result.current.s3).toEqual({ mode: 'keep' });
   });
 });
 
@@ -98,37 +100,42 @@ describe('backups list', () => {
   it('summarises the last good backup, the next run and one disk', async () => {
     const { result } = await renderQueryHook(() => useBackups());
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    const parts = statusLine(result.current.summary, result.current.backups, 'UTC');
+    const parts = statusLine(result.current.backups, DEFAULT_POLICY.schedule, false);
     expect(parts[0]?.text).toMatch(/^Last good backup (\d+h ago|yesterday)$/);
     expect(parts.slice(1).map((part) => part.text)).toEqual([
       'verified',
       'next run 02:00 UTC',
       'one disk',
     ]);
-    expect(parts.find((part) => part.text === 'one disk')?.caution).toBe(true);
+    expect(statusLine(result.current.backups, undefined, true).map((p) => p.text)).not.toContain(
+      'one disk',
+    );
   });
 
-  it('restores only after the backup id is typed back', async () => {
+  it('restores after the typed id, then shows maintenance and pauses writes', async () => {
     const { result } = await renderQueryHook(() => useBackups());
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    act(() => result.current.restoreDialog.open('bk-0007'));
+    act(() => result.current.restoreDialog.open(BACKUP_IDS.latest));
     expect(result.current.restoreDialog.canRestore).toBe(false);
-    act(() => result.current.restoreDialog.setTyped('bk-0007'));
+    act(() => result.current.restoreDialog.setTyped(BACKUP_IDS.latest));
     expect(result.current.restoreDialog.canRestore).toBe(true);
-    act(() => result.current.restore.mutate('bk-0007'));
+    act(() => result.current.restore.mutate(BACKUP_IDS.latest));
     await waitFor(() => expect(result.current.restore.isSuccess).toBe(true));
     expect(mockApi.db.audit[0]?.action).toBe('backup.restored');
+    await waitFor(() => expect(result.current.maintenance.active).toBe(true));
+    expect(result.current.maintenance.message).toMatch(/^Restoring the backup/);
+    act(() => result.current.run.mutate());
+    await waitFor(() => expect(result.current.run.isError).toBe(true));
+    expect(result.current.run.error).toMatchObject({ code: 'maintenance' });
   });
 
-  it('renders the page with the status line, the .env warning and the list', async () => {
-    await renderPage(() => <BackupsPage />);
-    expect(await screen.findByText('one disk')).toBeTruthy();
-    expect(screen.getByText(/One disk: backups sit on the same disk/)).toBeTruthy();
-    expect(screen.getByText('/var/bemmoly/.env')).toBeTruthy();
-    expect(screen.getByRole('table', { name: 'Backups' })).toBeTruthy();
-    expect(screen.getByRole('link', { name: 'Download bk-0007' }).getAttribute('href')).toBe(
-      '/api/v1/admin/backups/bk-0007/download',
-    );
+  it('checks an archive and runs a restore drill', async () => {
+    const { result } = await renderQueryHook(() => useBackups());
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    act(() => result.current.verify.mutate({ id: BACKUP_IDS.older, depth: 'list' }));
+    await waitFor(() => expect(result.current.backups[3]?.verification.state).toBe('listed'));
+    act(() => result.current.verify.mutate({ id: BACKUP_IDS.older, depth: 'restore' }));
+    await waitFor(() => expect(result.current.backups[3]?.verification.state).toBe('restored'));
   });
 
   it('backs up now and lists the new backup first', async () => {
@@ -137,5 +144,18 @@ describe('backups list', () => {
     act(() => result.current.run.mutate());
     await waitFor(() => expect(result.current.backups).toHaveLength(7));
     expect(result.current.backups[0]?.kind).toBe('manual');
+  });
+
+  it('renders the status line, the .env warning and the list', async () => {
+    await renderPage(() => <BackupsPage />);
+    expect(await screen.findByText('one disk')).toBeTruthy();
+    expect(screen.getByText(/One disk: backups sit on the same disk/)).toBeTruthy();
+    expect(screen.getByText('/var/bemmoly/.env')).toBeTruthy();
+    expect(screen.getByText('NOT CONFIGURED')).toBeTruthy();
+    expect(screen.getByRole('table', { name: 'Backups' })).toBeTruthy();
+    const download = screen.getAllByRole('link', { name: /^Download the backup/ })[0];
+    expect(download?.getAttribute('href')).toBe(
+      `/api/v1/admin/backups/${BACKUP_IDS.latest}/download`,
+    );
   });
 });

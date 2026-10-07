@@ -2,85 +2,150 @@ import type {
   AuditEntry,
   Backup,
   OutboxSummary,
-  SystemStatus,
-  UpdateStatus,
+  SystemHealthResponse,
+  UpdatesOverview,
 } from '@bemmoly/shared';
 import { USER_IDS } from './people.ts';
-import { seedChecks } from './workspace.ts';
 import { ago, ahead, uid } from './time.ts';
+
+/** Backup ids are UUIDs on the server; these name the seeded ones. */
+export const BACKUP_IDS = {
+  latest: uid(307),
+  yesterday: uid(306),
+  preUpgrade: uid(305),
+  older: uid(304),
+  failed: uid(303),
+  weekly: uid(302),
+} as const;
+
+export const LOCAL_BACKUPS = '/var/bemmoly/backups';
 
 const backup = (
   id: string,
   hoursAgo: number,
   kind: Backup['kind'],
-  tier: Backup['tier'],
   size: number,
+  verification: Backup['verification']['state'],
 ): Backup => ({
   id,
   kind,
-  tier,
   status: 'succeeded',
-  startedAt: ago(hoursAgo * 60),
-  finishedAt: ago(hoursAgo * 60 - 2),
-  sizeBytes: size,
+  createdAt: ago(hoursAgo * 60),
+  completedAt: ago(hoursAgo * 60 - 2),
   appVersion: '0.1.1',
-  destination: '/var/bemmoly/backups',
-  verification: hoursAgo > 30 ? 'pending' : 'verified',
-  verifiedAt: hoursAgo > 30 ? null : ago(hoursAgo * 60 - 4),
+  changelogTag: '0.1.1',
+  sizeBytes: size,
+  attachmentMode: kind === 'scheduled' && hoursAgo < 100 ? 'incremental' : 'full',
+  baseBackupId: null,
+  encrypted: false,
+  locations: [{ destination: 'local', location: `${LOCAL_BACKUPS}/${id}` }],
+  verification: {
+    state: verification,
+    checkedAt: verification === 'pending' ? null : ago(hoursAgo * 60 - 4),
+    message: null,
+  },
   error: null,
 });
 
 export function seedBackups(): Backup[] {
   return [
-    backup('bk-0007', 7, 'scheduled', 'daily', 412_000_000),
-    backup('bk-0006', 31, 'scheduled', 'daily', 409_000_000),
-    { ...backup('bk-0005', 52, 'pre_upgrade', null, 405_000_000), appVersion: '0.1.0' },
-    backup('bk-0004', 55, 'scheduled', 'daily', 404_000_000),
+    backup(BACKUP_IDS.latest, 7, 'scheduled', 412_000_000, 'restored'),
+    backup(BACKUP_IDS.yesterday, 31, 'scheduled', 409_000_000, 'listed'),
     {
-      ...backup('bk-0003', 79, 'scheduled', 'daily', 0),
+      ...backup(BACKUP_IDS.preUpgrade, 52, 'pre_upgrade', 405_000_000, 'listed'),
+      appVersion: '0.1.0',
+      changelogTag: '0.1.0',
+    },
+    backup(BACKUP_IDS.older, 55, 'scheduled', 404_000_000, 'pending'),
+    {
+      ...backup(BACKUP_IDS.failed, 79, 'scheduled', 0, 'pending'),
       status: 'failed',
-      sizeBytes: null,
-      verification: 'not_run',
+      completedAt: null,
+      locations: [],
       error: 'Disk-space guard: 0.6 GB free, needs 0.8 GB (twice the last backup).',
     },
-    backup('bk-0002', 24 * 7, 'scheduled', 'weekly', 398_000_000),
+    backup(BACKUP_IDS.weekly, 24 * 7, 'scheduled', 398_000_000, 'restored'),
   ];
 }
 
-export function seedUpdates(): UpdateStatus {
+export function seedUpdates(): UpdatesOverview {
   return {
-    currentVersion: '0.1.1',
-    channel: 'stable',
-    mode: 'in_app',
-    command: null,
-    lastCheckedAt: ago(42),
-    latest: {
+    current: { version: '0.1.1', channel: 'stable', updatedAt: ago(120), previousVersion: '0.1.0' },
+    checks: { enabled: true, lastCheckedAt: ago(42), manifest: 'unverified', error: null },
+    available: {
       version: '0.1.2',
       publishedAt: ago(60 * 20),
-      notes:
-        'Fixes the invite email link when BEMMOLY_PUBLIC_URL has a trailing slash.\nBackups: the restore drill now reports row counts per table.\nNo schema changes.',
-      irreversible: false,
-      slowChangesets: [],
+      notesUrl: 'https://github.com/bemmoly/bemmoly/releases/tag/v0.1.2',
+      rollback: 'code',
+      slowChangesets: [
+        {
+          module: 'kernel',
+          id: '0014-audit-log-actor-index',
+          description: 'Adds an index on the audit log by actor',
+          slow: true,
+          irreversible: false,
+        },
+      ],
+      irreversibleChangesets: [],
+      configChanges: { added: ['BEMMOLY_BACKUP_PARALLELISM'], removed: [] },
     },
-    previous: {
-      version: '0.1.0',
-      updatedAt: ago(120),
-      availableUntil: ahead(60 * 24 * 7 - 120),
-      rollbackMode: 'code',
-      discardCount: null,
-      droppedFields: [],
+    rollback: {
+      fromVersion: '0.1.1',
+      toVersion: '0.1.0',
+      mode: 'code',
+      summary: 'Swaps back to the 0.1.0 image. Nothing is lost.',
+      reason: 'Every changeset in 0.1.1 is compatible with 0.1.0.',
+      schemaChangesets: [],
+      discard: null,
+      backupId: BACKUP_IDS.preUpgrade,
+      expiresAt: ahead(60 * 24 * 7 - 120),
     },
-    job: null,
+    updater: {
+      mode: 'in_app',
+      command: 'sudo bemmoly upgrade 0.1.2',
+      state: 'idle',
+      step: null,
+    },
   };
 }
 
-export function seedSystem(lastBackup: Backup | null): SystemStatus {
+/** The Setup mock's first step, with Postgres 18 as the tech design queues. */
+export function seedSystem(): SystemHealthResponse {
   return {
     version: '0.1.1',
-    health: seedChecks(),
-    queue: { queued: 0, active: 1, failed: 0, scheduled: 3 },
-    lastBackup,
-    aiSpend: null,
+    role: 'all',
+    uptimeSeconds: 3 * 86_400 + 4 * 3_600,
+    maintenance: { active: false, reason: null },
+    checks: [
+      {
+        id: 'postgres',
+        name: 'Postgres 18',
+        status: 'ok',
+        value: 'localhost:5432 · 12 ms',
+        fix: null,
+      },
+      { id: 'disk', name: 'Disk', status: 'ok', value: '38 GB free of 80 GB', fix: null },
+      { id: 'memory', name: 'Memory', status: 'ok', value: '4 GB · 2 vCPU', fix: null },
+      {
+        id: 'smtp',
+        name: 'Outbound email (SMTP)',
+        status: 'warn',
+        value: 'not configured',
+        fix: {
+          label: 'Configure',
+          hint: 'Set an SMTP server so invites and password resets reach people.',
+          href: '/settings/email',
+        },
+      },
+      { id: 'https', name: 'HTTPS', status: 'ok', value: "Let's Encrypt · auto-renew", fix: null },
+      {
+        id: 'backups',
+        name: 'Backups',
+        status: 'ok',
+        value: `nightly → ${LOCAL_BACKUPS}`,
+        fix: null,
+      },
+    ],
   };
 }
 
@@ -111,13 +176,13 @@ type AuditRow = [AuditEntry['actorKind'], string | null, string, string, string 
 const AUDIT: AuditRow[] = [
   ['user', USER_IDS.rohan, 'role.capabilities_updated', 'role', 'Contractor', 35],
   ['user', USER_IDS.rohan, 'update.applied', 'system', '0.1.1', 120],
-  ['system', null, 'backup.completed', 'backup', 'bk-0007', 60 * 7],
+  ['system', null, 'backup.completed', 'backup', BACKUP_IDS.latest, 60 * 7],
   ['user', USER_IDS.priya, 'team.member_added', 'team', 'Platform', 60 * 30],
   ['user', USER_IDS.rohan, 'user.invited', 'invitation', 'sam@acmelabs.dev', 60 * 50],
-  ['system', null, 'backup.completed', 'backup', 'bk-0005', 60 * 52],
+  ['system', null, 'backup.completed', 'backup', BACKUP_IDS.preUpgrade, 60 * 52],
   ['user', USER_IDS.rohan, 'setting.updated', 'setting', 'appearance.theme', 60 * 60],
   ['api_token', uid(80), 'module.enabled', 'module', 'sample', 60 * 72],
-  ['system', null, 'backup.failed', 'backup', 'bk-0003', 60 * 79],
+  ['system', null, 'backup.failed', 'backup', BACKUP_IDS.failed, 60 * 79],
   ['user', USER_IDS.rohan, 'user.role_changed', 'user', 'Dev P.', 60 * 80],
   ['user', USER_IDS.maya, 'session.created', 'session', null, 60 * 96],
   ['user', USER_IDS.rohan, 'workspace.created', 'workspace', 'Acme Labs', 60 * 24 * 9],

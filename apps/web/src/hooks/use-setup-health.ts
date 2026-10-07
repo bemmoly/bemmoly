@@ -1,23 +1,27 @@
-import { hasErrorCode, queryKeys } from '@bemmoly/api-client';
-import type { HealthCheck, ReadinessResponse, SystemStatus } from '@bemmoly/shared';
+import { queryKeys } from '@bemmoly/api-client';
+import type { ReadinessResponse, SystemCheck, SystemHealthResponse } from '@bemmoly/shared';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../lib/api.ts';
 
-/** "pending" is a probe that only runs for a signed-in admin. */
-export type HealthRowStatus = HealthCheck['status'] | 'pending';
+/** "pending" is a probe that has not answered (or could not be asked). */
+export type HealthRowStatus = 'ok' | 'warning' | 'failed' | 'pending';
 
 export interface HealthRow {
   id: string;
   name: string;
   status: HealthRowStatus;
   detail: string;
+  /** A settings page that fixes it. */
   fix?: { label: string; href: string };
+  /** A fix with no page to open, in words. */
+  hint?: string;
 }
 
-export const PENDING_DETAIL = 'Checked after the admin account is created';
+export const PENDING_DETAIL = 'Not checked: the server did not answer';
 
-/** The rows the Setup mock lists after Postgres, in its order. */
-const LATER_CHECKS: ReadonlyArray<Pick<HealthRow, 'id' | 'name'>> = [
+/** The rows the Setup mock lists, in its order, for when the full check cannot run. */
+const ROWS: ReadonlyArray<Pick<HealthRow, 'id' | 'name'>> = [
+  { id: 'postgres', name: 'Postgres 18' },
   { id: 'disk', name: 'Disk' },
   { id: 'memory', name: 'Memory' },
   { id: 'smtp', name: 'Outbound email (SMTP)' },
@@ -25,7 +29,25 @@ const LATER_CHECKS: ReadonlyArray<Pick<HealthRow, 'id' | 'name'>> = [
   { id: 'backups', name: 'Backups' },
 ];
 
-/** The anonymous /readyz answer as the Postgres row. */
+const STATUS: Record<SystemCheck['status'], HealthRowStatus> = {
+  ok: 'ok',
+  warn: 'warning',
+  fail: 'failed',
+};
+
+/** One server check as a step-1 row. */
+export function checkRow(check: SystemCheck): HealthRow {
+  return {
+    id: check.id,
+    name: check.name,
+    status: STATUS[check.status],
+    detail: check.value,
+    ...(check.fix?.href ? { fix: { label: check.fix.label, href: check.fix.href } } : {}),
+    ...(check.fix && !check.fix.href ? { hint: check.fix.hint } : {}),
+  };
+}
+
+/** The anonymous /readyz answer as the Postgres row, when the full check failed. */
 export function databaseRow(
   readiness: ReadinessResponse | undefined,
   failure?: unknown,
@@ -46,23 +68,22 @@ export function databaseRow(
 }
 
 /**
- * Health rows for step 1. The full list needs a signed-in admin; before that,
- * or when the server refuses it, Postgres comes from /readyz and the rest say
- * when they will be checked.
+ * Step 1's rows. GET /admin/system answers before any admin exists, so it is
+ * the source; only when it fails does Postgres fall back to /readyz.
  */
 export function healthRows(input: {
-  readiness: ReadinessResponse | undefined;
+  system: SystemHealthResponse | undefined;
+  systemError?: unknown;
+  readiness?: ReadinessResponse | undefined;
   readinessError?: unknown;
-  system: SystemStatus | undefined;
 }): HealthRow[] {
-  if (input.system?.health.length) return input.system.health;
+  if (input.system) return input.system.checks.map(checkRow);
+  if (!input.systemError) {
+    return ROWS.map((row) => ({ ...row, status: 'pending' as const, detail: 'Checking…' }));
+  }
   return [
     databaseRow(input.readiness, input.readinessError),
-    ...LATER_CHECKS.map((check) => ({
-      ...check,
-      status: 'pending' as const,
-      detail: PENDING_DETAIL,
-    })),
+    ...ROWS.slice(1).map((row) => ({ ...row, status: 'pending' as const, detail: PENDING_DETAIL })),
   ];
 }
 
@@ -79,34 +100,33 @@ export function serverLabel(host: string, version: string | undefined): string {
   return [host, version ? `v${version}` : null, 'self-hosted'].filter(Boolean).join(' · ');
 }
 
-/** Step 1's health checks and the header's server line. */
+/** Step 1's health checks and the header's server line; signing in asks again. */
 export function useSetupHealth(signedIn: boolean) {
+  const system = useQuery({
+    queryKey: [...queryKeys.system(), { signedIn }],
+    queryFn: () => api.system.health(),
+    retry: false,
+  });
   const readiness = useQuery({
     queryKey: queryKeys.readiness(),
     queryFn: () => api.setup.readiness(),
+    enabled: system.isError,
     retry: false,
   });
-  const system = useQuery({
-    queryKey: queryKeys.system(),
-    queryFn: () => api.system.status(),
-    enabled: signedIn,
-    retry: false,
-  });
-  const refused =
-    hasErrorCode(system.error, 'forbidden') || hasErrorCode(system.error, 'not_found');
   const rows = healthRows({
+    system: system.data,
+    systemError: system.error,
     readiness: readiness.data,
     readinessError: readiness.error,
-    system: refused ? undefined : system.data,
   });
   return {
     rows,
     headline: healthHeadline(rows),
     serverLabel: serverLabel(window.location.host, system.data?.version),
-    loading: readiness.isPending,
+    loading: system.isPending || (system.isError && readiness.isPending),
     refetch: () => {
-      void readiness.refetch();
-      if (signedIn) void system.refetch();
+      void system.refetch();
+      if (system.isError) void readiness.refetch();
     },
   };
 }

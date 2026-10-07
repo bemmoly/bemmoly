@@ -1,10 +1,9 @@
 import { formatRelative } from '@bemmoly/core-web';
-import type { UpdateStatus } from '@bemmoly/shared';
+import type { AvailableUpdate, UpdatesOverview } from '@bemmoly/shared';
 import { Button, Card, CardBody, CardHeader } from '@bemmoly/ui';
-import { updateModeCopy } from '../../hooks/use-updates-copy.ts';
+import { releaseWarnings, updateModeCopy } from '../../hooks/use-updates-copy.ts';
+import { LINK_ACTION } from '../actions.ts';
 import { Notice } from '../form.tsx';
-
-type Release = NonNullable<UpdateStatus['latest']>;
 
 /** A command the admin runs by hand, in the mono face of the Setup mock's URL field. */
 export function CommandBlock({ command }: { command: string }) {
@@ -15,45 +14,73 @@ export function CommandBlock({ command }: { command: string }) {
   );
 }
 
+export function NotesLink({ release }: { release: AvailableUpdate }) {
+  return (
+    <a
+      className={`text-13 ${LINK_ACTION}`}
+      href={release.notesUrl}
+      target="_blank"
+      rel="noreferrer"
+    >
+      Release notes for {release.version}
+    </a>
+  );
+}
+
+/** Slow and irreversible changesets and config changes, each as a caution note with its list. */
+export function ReleaseWarnings({ release }: { release: AvailableUpdate }) {
+  return releaseWarnings(release).map((warning) => (
+    <Notice key={warning.title} tone="caution">
+      {warning.title}
+      <span className="mt-1 block font-mono text-12 whitespace-pre-line">
+        {warning.items.join('\n')}
+      </span>
+    </Notice>
+  ));
+}
+
 interface ReleaseCardProps {
-  status: UpdateStatus;
-  release: Release;
+  overview: UpdatesOverview;
+  release: AvailableUpdate;
   busy: boolean;
   onUpdate: () => void;
 }
 
-export function ReleaseCard({ status, release, busy, onUpdate }: ReleaseCardProps) {
+export function ReleaseCard({ overview, release, busy, onUpdate }: ReleaseCardProps) {
+  const updater = overview.updater;
   return (
     <Card>
       <CardHeader
         title={`Bemmoly ${release.version}`}
-        hint={`released ${formatRelative(release.publishedAt)} on ${status.channel}`}
+        hint={`released ${formatRelative(release.publishedAt)} on ${overview.current.channel}`}
+        actions={<NotesLink release={release} />}
       />
-      <CardBody className="flex flex-col gap-4">
-        <p className="m-0 text-13 leading-body whitespace-pre-line text-tx-body">{release.notes}</p>
-        {release.irreversible ? (
-          <Notice tone="caution">
-            This release has a change that cannot be reversed in place. Rolling back from it would
-            restore the backup taken just before the update and discard what was written since.
-          </Notice>
-        ) : null}
-        {release.slowChangesets.length ? (
-          <Notice tone="caution">
-            These changes take longer on large tables, so expect more downtime than usual:{' '}
-            <span className="font-mono text-12">{release.slowChangesets.join(', ')}</span>
-          </Notice>
-        ) : null}
+      <CardBody className="flex flex-col gap-3">
+        {release.rollback === 'restore' ? (
+          <p className="m-0 text-13 leading-body text-tx-body">
+            Rolling back from this release would need a restore of the pre-update backup.
+          </p>
+        ) : (
+          <p className="m-0 text-13 leading-body text-tx-body">
+            Rolling back from this release keeps your data: it swaps back to the current image.
+          </p>
+        )}
+        <ReleaseWarnings release={release} />
         <div className="flex flex-col gap-2.5 border-t border-br-row pt-4">
-          <p className="m-0 text-12h leading-body text-tx4">{updateModeCopy(status.mode)}</p>
-          {status.mode === 'in_app' ? (
+          <p className="m-0 text-12h leading-body text-tx4">{updateModeCopy(updater.mode)}</p>
+          {updater.mode === 'in_app' ? (
             <div>
-              <Button variant="primary" disabled={busy} onClick={onUpdate}>
+              <Button
+                variant="primary"
+                disabled={busy || updater.state === 'unreachable'}
+                onClick={onUpdate}
+              >
                 Update to {release.version}
               </Button>
             </div>
-          ) : status.command ? (
-            <CommandBlock command={status.command} />
-          ) : null}
+          ) : (
+            <CommandBlock command={updater.command} />
+          )}
         </div>
       </CardBody>
     </Card>

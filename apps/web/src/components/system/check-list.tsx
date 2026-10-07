@@ -13,6 +13,8 @@ export interface CheckRow {
   /** Plain copy instead of the mono value, for sentences. */
   prose?: boolean;
   link?: { label: string; href: string };
+  /** A fix with no settings page to open: what to do, in words. */
+  hint?: string;
 }
 
 /**
@@ -39,6 +41,10 @@ export function CheckList({ label, rows }: { label: string; rows: readonly Check
               <RouterLink href={row.link.href} className={`ml-auto ${LINK_ACTION}`}>
                 {row.link.label}
               </RouterLink>
+            ) : row.hint ? (
+              <span className="ml-auto max-w-80 shrink-0 text-right text-12 text-tx5">
+                {row.hint}
+              </span>
             ) : null}
           </li>
         ))}
