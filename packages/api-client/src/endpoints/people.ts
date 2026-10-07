@@ -1,65 +1,92 @@
 import {
-  apiTokenSchema,
-  createApiTokenRequestSchema,
-  createApiTokenResponseSchema,
-  createInvitationsRequestSchema,
-  createInvitationsResponseSchema,
-  createTeamRequestSchema,
-  listSchema,
+  apiTokensResponseSchema,
+  createApiTokenSchema,
+  createdApiTokenSchema,
+  createInvitationsSchema,
+  createTeamSchema,
+  invitationsResponseSchema,
+  listUsersQuerySchema,
+  teamMembersResponseSchema,
   teamSchema,
-  updateUserRequestSchema,
+  teamsResponseSchema,
+  updateTeamSchema,
+  updateUserSchema,
   userSchema,
   usersPageSchema,
-  usersQuerySchema,
-  type CreateApiTokenRequest,
-  type CreateInvitationsRequest,
-  type CreateTeamRequest,
-  type UpdateUserRequest,
-  type UsersQuery,
+  type CreateApiTokenInput,
+  type CreateInvitationsInput,
+  type CreateTeamInput,
+  type UpdateTeamInput,
+  type UpdateUserInput,
+  type UserStatus,
 } from '@bemmoly/shared';
 import type { Http } from '../http.ts';
 import { enc, validated } from './validate.ts';
 
-const teamsSchema = listSchema(teamSchema);
-const apiTokensSchema = listSchema(apiTokenSchema);
+export interface UsersFilter {
+  cursor?: string;
+  limit?: number;
+  status?: UserStatus;
+  q?: string;
+}
 
 export function peopleEndpoints(http: Http) {
   return {
     users: {
-      list: async (query: UsersQuery = {}) =>
+      list: async (filter: UsersFilter = {}) =>
         http.request('/api/v1/users', usersPageSchema, {
-          query: validated(usersQuerySchema, query),
+          query: validated(listUsersQuerySchema, filter),
         }),
-      update: async (id: string, body: UpdateUserRequest) =>
+      get: async (id: string) => http.request(`/api/v1/users/${enc(id)}`, userSchema),
+      update: async (id: string, body: UpdateUserInput) =>
         http.request(`/api/v1/users/${enc(id)}`, userSchema, {
           method: 'PATCH',
-          body: validated(updateUserRequestSchema, body),
+          body: validated(updateUserSchema, body),
         }),
+      deactivate: async (id: string) =>
+        http.request(`/api/v1/users/${enc(id)}/deactivate`, userSchema, { method: 'POST' }),
+      reactivate: async (id: string) =>
+        http.request(`/api/v1/users/${enc(id)}/reactivate`, userSchema, { method: 'POST' }),
     },
     invitations: {
-      create: async (body: CreateInvitationsRequest) =>
-        http.request('/api/v1/invitations', createInvitationsResponseSchema, {
+      list: async () => http.request('/api/v1/invitations', invitationsResponseSchema),
+      create: async (body: CreateInvitationsInput) =>
+        http.request('/api/v1/invitations', invitationsResponseSchema, {
           method: 'POST',
-          body: validated(createInvitationsRequestSchema, body),
+          body: validated(createInvitationsSchema, body),
           idempotent: true,
         }),
+      revoke: async (id: string) =>
+        http.send(`/api/v1/invitations/${enc(id)}`, { method: 'DELETE' }),
     },
     teams: {
-      list: async () => http.request('/api/v1/teams', teamsSchema),
-      create: async (body: CreateTeamRequest) =>
+      list: async () => http.request('/api/v1/teams', teamsResponseSchema),
+      create: async (body: CreateTeamInput) =>
         http.request('/api/v1/teams', teamSchema, {
           method: 'POST',
-          body: validated(createTeamRequestSchema, body),
+          body: validated(createTeamSchema, body),
           idempotent: true,
         }),
+      update: async (id: string, body: UpdateTeamInput) =>
+        http.request(`/api/v1/teams/${enc(id)}`, teamSchema, {
+          method: 'PATCH',
+          body: validated(updateTeamSchema, body),
+        }),
+      remove: async (id: string) => http.send(`/api/v1/teams/${enc(id)}`, { method: 'DELETE' }),
+      members: async (id: string) =>
+        http.request(`/api/v1/teams/${enc(id)}/members`, teamMembersResponseSchema),
+      addMember: async (id: string, userId: string) =>
+        http.send(`/api/v1/teams/${enc(id)}/members/${enc(userId)}`, { method: 'PUT' }),
+      removeMember: async (id: string, userId: string) =>
+        http.send(`/api/v1/teams/${enc(id)}/members/${enc(userId)}`, { method: 'DELETE' }),
     },
     apiTokens: {
-      list: async () => http.request('/api/v1/api-tokens', apiTokensSchema),
-      create: async (body: CreateApiTokenRequest) =>
-        http.request('/api/v1/api-tokens', createApiTokenResponseSchema, {
+      list: async () => http.request('/api/v1/api-tokens', apiTokensResponseSchema),
+      /** The secret is in this response only. */
+      create: async (body: CreateApiTokenInput) =>
+        http.request('/api/v1/api-tokens', createdApiTokenSchema, {
           method: 'POST',
-          body: validated(createApiTokenRequestSchema, body),
-          idempotent: true,
+          body: validated(createApiTokenSchema, body),
         }),
       revoke: async (id: string) =>
         http.send(`/api/v1/api-tokens/${enc(id)}`, { method: 'DELETE' }),

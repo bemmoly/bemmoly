@@ -2,17 +2,17 @@ import {
   devMailboxSchema,
   emailTestRequestSchema,
   emailTestResultSchema,
+  markNotificationResponseSchema,
   notificationPreferencesSchema,
-  notificationSchema,
   notificationsPageSchema,
   notificationsQuerySchema,
-  outboxPageSchema,
-  outboxQuerySchema,
+  outboxSummarySchema,
+  readAllResponseSchema,
   searchQuerySchema,
   searchResponseSchema,
+  unsubscriptionPreviewSchema,
   updateNotificationPreferencesRequestSchema,
   type NotificationsQuery,
-  type OutboxStatus,
   type SearchQuery,
   type UpdateNotificationPreferencesRequest,
 } from '@bemmoly/shared';
@@ -26,12 +26,13 @@ export function messagingEndpoints(http: Http) {
         http.request('/api/v1/notifications', notificationsPageSchema, {
           query: validated(notificationsQuerySchema, query),
         }),
-      markRead: async (id: string) =>
-        http.request(`/api/v1/notifications/${enc(id)}`, notificationSchema, {
+      setRead: async (id: string, read = true) =>
+        http.request(`/api/v1/notifications/${enc(id)}`, markNotificationResponseSchema, {
           method: 'PATCH',
-          body: { read: true },
+          body: { read },
         }),
-      readAll: async () => http.send('/api/v1/notifications/read-all', { method: 'POST' }),
+      readAll: async () =>
+        http.request('/api/v1/notifications/read-all', readAllResponseSchema, { method: 'POST' }),
       preferences: async () =>
         http.request('/api/v1/notification-preferences', notificationPreferencesSchema),
       savePreferences: async (body: UpdateNotificationPreferencesRequest) =>
@@ -41,17 +42,25 @@ export function messagingEndpoints(http: Http) {
         }),
     },
     email: {
-      test: async (to: string) =>
+      /** 200 even when sending fails; `failure` explains it. Omit `to` to send to yourself. */
+      test: async (to?: string) =>
         http.request('/api/v1/admin/email/test', emailTestResultSchema, {
           method: 'POST',
-          body: validated(emailTestRequestSchema, { to }),
+          body: validated(emailTestRequestSchema, to ? { to } : {}),
         }),
-      outbox: async (status?: OutboxStatus, cursor?: string) =>
-        http.request('/api/v1/admin/email/outbox', outboxPageSchema, {
-          query: validated(outboxQuerySchema, { status, cursor }),
-        }),
-      /** Development only; answers 404 when the log sender is not in use. */
+      outbox: async (limit = 20) =>
+        http.request('/api/v1/admin/email/outbox', outboxSummarySchema, { query: { limit } }),
+      /** 404 unless the server uses the `log` email provider. */
       devMailbox: async () => http.request('/api/v1/dev/mailbox', devMailboxSchema),
+      clearDevMailbox: async () => http.send('/api/v1/dev/mailbox', { method: 'DELETE' }),
+    },
+    unsubscriptions: {
+      preview: async (token: string) =>
+        http.request('/api/v1/email-unsubscriptions', unsubscriptionPreviewSchema, {
+          query: { token },
+        }),
+      confirm: async (token: string) =>
+        http.send('/api/v1/email-unsubscriptions', { method: 'POST', body: { token } }),
     },
     search: async (query: SearchQuery) =>
       http.request('/api/v1/search', searchResponseSchema, {

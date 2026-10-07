@@ -1,60 +1,68 @@
 import {
   adminModuleSchema,
-  capabilityInfoSchema,
-  createModuleGrantRequestSchema,
-  createRoleRequestSchema,
+  capabilityMatrixSchema,
+  createModuleGrantSchema,
+  createRoleSchema,
   listSchema,
   moduleGrantSchema,
+  moduleGrantsResponseSchema,
   modulesResponseSchema,
+  putRoleCapabilitiesSchema,
   removeModuleDataRequestSchema,
-  roleCapabilitiesSchema,
+  roleCapabilitiesResponseSchema,
   roleSchema,
-  type CreateModuleGrantRequest,
-  type CreateRoleRequest,
-  type RoleCapability,
+  rolesResponseSchema,
+  updateRoleSchema,
+  type CreateModuleGrantInput,
+  type CreateRoleInput,
+  type PutRoleCapabilitiesInput,
 } from '@bemmoly/shared';
 import type { Http } from '../http.ts';
 import { enc, validated } from './validate.ts';
 
-const rolesSchema = listSchema(roleSchema);
-const capabilitiesSchema = listSchema(capabilityInfoSchema);
-const grantsSchema = listSchema(moduleGrantSchema);
 const adminModulesSchema = listSchema(adminModuleSchema);
 
 export function accessEndpoints(http: Http) {
   return {
     roles: {
-      list: async () => http.request('/api/v1/roles', rolesSchema),
-      create: async (body: CreateRoleRequest) =>
+      list: async () => http.request('/api/v1/roles', rolesResponseSchema),
+      create: async (body: CreateRoleInput) =>
         http.request('/api/v1/roles', roleSchema, {
           method: 'POST',
-          body: validated(createRoleRequestSchema, body),
+          body: validated(createRoleSchema, body),
           idempotent: true,
         }),
-      capabilities: async (roleId: string) =>
-        http.request(`/api/v1/roles/${enc(roleId)}/capabilities`, roleCapabilitiesSchema),
-      saveCapabilities: async (roleId: string, items: readonly RoleCapability[]) =>
-        http.request(`/api/v1/roles/${enc(roleId)}/capabilities`, roleCapabilitiesSchema, {
+      rename: async (id: string, name: string) =>
+        http.request(`/api/v1/roles/${enc(id)}`, roleSchema, {
+          method: 'PATCH',
+          body: validated(updateRoleSchema, { name }),
+        }),
+      remove: async (id: string) => http.send(`/api/v1/roles/${enc(id)}`, { method: 'DELETE' }),
+      capabilities: async (id: string) =>
+        http.request(`/api/v1/roles/${enc(id)}/capabilities`, roleCapabilitiesResponseSchema),
+      /** Upserts the listed rows; rows not listed keep their value. */
+      saveCapabilities: async (id: string, items: PutRoleCapabilitiesInput['items']) =>
+        http.request(`/api/v1/roles/${enc(id)}/capabilities`, roleCapabilitiesResponseSchema, {
           method: 'PUT',
-          body: validated(roleCapabilitiesSchema, { items }),
+          body: validated(putRoleCapabilitiesSchema, { items }),
         }),
     },
-    capabilities: {
-      list: async () => http.request('/api/v1/capabilities', capabilitiesSchema),
-    },
+    /** The whole roles matrix in one call. */
+    capabilities: async () => http.request('/api/v1/capabilities', capabilityMatrixSchema),
     moduleGrants: {
-      list: async () => http.request('/api/v1/module-grants', grantsSchema),
-      create: async (body: CreateModuleGrantRequest) =>
+      list: async (moduleId?: string) =>
+        http.request('/api/v1/module-grants', moduleGrantsResponseSchema, { query: { moduleId } }),
+      create: async (body: CreateModuleGrantInput) =>
         http.request('/api/v1/module-grants', moduleGrantSchema, {
           method: 'POST',
-          body: validated(createModuleGrantRequestSchema, body),
+          body: validated(createModuleGrantSchema, body),
           idempotent: true,
         }),
       remove: async (id: string) =>
         http.send(`/api/v1/module-grants/${enc(id)}`, { method: 'DELETE' }),
     },
     modules: {
-      /** Enabled and granted to this person; the shell boots from it. */
+      /** Enabled and granted to this person; the shell fetches it after /me. */
       list: async () => (await http.request('/api/v1/modules', modulesResponseSchema)).items,
     },
     adminModules: {

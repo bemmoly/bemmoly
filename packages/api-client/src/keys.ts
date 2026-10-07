@@ -1,5 +1,6 @@
-import type { AuditQuery, NotificationsQuery, OutboxStatus, UsersQuery } from '@bemmoly/shared';
-import type { SettingName } from './endpoints/settings.ts';
+import type { NotificationsQuery, SettingKey } from '@bemmoly/shared';
+import type { AuditFilter } from './endpoints/operations.ts';
+import type { UsersFilter } from './endpoints/people.ts';
 
 /**
  * TanStack Query keys, one factory so invalidation is never a guess. Each
@@ -8,24 +9,27 @@ import type { SettingName } from './endpoints/settings.ts';
  */
 export const queryKeys = {
   setupStatus: () => ['setup', 'status'] as const,
+  readiness: () => ['setup', 'readiness'] as const,
   me: () => ['session', 'me'] as const,
+  sessions: () => ['session', 'list'] as const,
   modules: () => ['modules'] as const,
   adminModules: () => ['admin-modules'] as const,
   users: {
     all: () => ['users'] as const,
-    list: (query: UsersQuery = {}) => ['users', 'list', query] as const,
+    list: (filter: UsersFilter = {}) => ['users', 'list', filter] as const,
   },
-  teams: () => ['teams'] as const,
-  roles: {
-    all: () => ['roles'] as const,
-    capabilities: (roleId: string) => ['roles', roleId, 'capabilities'] as const,
+  invitations: () => ['invitations'] as const,
+  teams: {
+    all: () => ['teams'] as const,
+    members: (teamId: string) => ['teams', teamId, 'members'] as const,
   },
+  roles: () => ['roles'] as const,
   capabilities: () => ['capabilities'] as const,
   moduleGrants: () => ['module-grants'] as const,
   apiTokens: () => ['api-tokens'] as const,
   settings: {
     all: () => ['settings'] as const,
-    one: (name: SettingName) => ['settings', name] as const,
+    many: (keys: readonly SettingKey[]) => ['settings', ...keys] as const,
   },
   notifications: {
     all: () => ['notifications'] as const,
@@ -33,7 +37,7 @@ export const queryKeys = {
     preferences: () => ['notifications', 'preferences'] as const,
   },
   email: {
-    outbox: (status?: OutboxStatus) => ['email', 'outbox', status ?? 'all'] as const,
+    outbox: () => ['email', 'outbox'] as const,
     devMailbox: () => ['email', 'dev-mailbox'] as const,
   },
   backups: () => ['backups'] as const,
@@ -41,26 +45,36 @@ export const queryKeys = {
   system: () => ['system'] as const,
   audit: {
     all: () => ['audit'] as const,
-    list: (query: AuditQuery = {}) => ['audit', 'list', query] as const,
+    list: (filter: AuditFilter = {}) => ['audit', 'list', filter] as const,
   },
   search: (q: string, kinds: readonly string[] = []) => ['search', q, kinds] as const,
 } as const;
 
 export type QueryKey = readonly unknown[];
 
-const EVENT_PREFIXES: ReadonlyArray<[prefix: string, keys: () => QueryKey[]]> = [
-  ['notification.', () => [queryKeys.notifications.all()]],
-  ['user.', () => [queryKeys.users.all(), queryKeys.me()]],
-  ['team.', () => [queryKeys.teams(), queryKeys.users.all()]],
-  ['role.', () => [queryKeys.roles.all(), queryKeys.me()]],
-  ['module.', () => [queryKeys.modules(), queryKeys.adminModules(), queryKeys.moduleGrants()]],
-  ['setting.', () => [queryKeys.settings.all(), queryKeys.me()]],
-  ['backup.', () => [queryKeys.backups(), queryKeys.system()]],
-  ['update.', () => [queryKeys.updates(), queryKeys.system()]],
-  ['email.', () => [['email']]],
+/** Kinds the realtime hub sends; `notifications` is confirmed, the rest are prefixes. */
+const EVENT_KEYS: ReadonlyArray<[match: (kind: string) => boolean, keys: () => QueryKey[]]> = [
+  [
+    (kind) => kind === 'notifications' || kind.startsWith('notification.'),
+    () => [queryKeys.notifications.all()],
+  ],
+  [(kind) => kind.startsWith('user.'), () => [queryKeys.users.all(), queryKeys.me()]],
+  [(kind) => kind.startsWith('team.'), () => [queryKeys.teams.all(), queryKeys.users.all()]],
+  [
+    (kind) => kind.startsWith('role.'),
+    () => [queryKeys.roles(), queryKeys.capabilities(), queryKeys.me()],
+  ],
+  [
+    (kind) => kind.startsWith('module.'),
+    () => [queryKeys.modules(), queryKeys.adminModules(), queryKeys.moduleGrants()],
+  ],
+  [(kind) => kind.startsWith('setting.'), () => [queryKeys.settings.all()]],
+  [(kind) => kind.startsWith('backup.'), () => [queryKeys.backups(), queryKeys.system()]],
+  [(kind) => kind.startsWith('update.'), () => [queryKeys.updates(), queryKeys.system()]],
+  [(kind) => kind.startsWith('email.'), () => [['email']]],
 ];
 
 /** Which cached queries a realtime event makes stale. Unknown kinds invalidate nothing. */
 export function keysForEvent(kind: string): QueryKey[] {
-  return EVENT_PREFIXES.filter(([prefix]) => kind.startsWith(prefix)).flatMap(([, keys]) => keys());
+  return EVENT_KEYS.filter(([match]) => match(kind)).flatMap(([, keys]) => keys());
 }

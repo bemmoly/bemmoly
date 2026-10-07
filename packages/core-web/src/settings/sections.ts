@@ -1,12 +1,13 @@
 import type { ModuleManifest } from '@bemmoly/shared';
 
+/** A capability name, "admin" (org admins only), or null (everyone signed in). */
+export type SettingsRequirement = string | 'admin' | null;
+
 export interface SettingsItem {
   id: string;
   label: string;
   path: string;
-  /** Shown only to org admins, or to people holding `capability`. */
-  adminOnly: boolean;
-  capability?: string;
+  requires: SettingsRequirement;
   count?: number;
 }
 
@@ -20,59 +21,62 @@ const item = (
   id: string,
   label: string,
   path: string,
-  options: Partial<Pick<SettingsItem, 'adminOnly' | 'capability'>> = {},
-): SettingsItem => ({ id, label, path, adminOnly: options.adminOnly ?? true, ...options });
+  requires: SettingsRequirement,
+): SettingsItem => ({
+  id,
+  label,
+  path,
+  requires,
+});
+
+const PEOPLE = 'workspace.roles.manage';
 
 /**
  * The kernel's settings pages, in the order of the People and Appearance mocks'
  * sidebar. Modules, Storage and backups, Updates and System status are the
  * queued additions to the System group; Personal is where anyone manages their
- * own notifications. Module groups (Work's issue types, workflows, automation)
- * are inserted before System from the manifests.
+ * own notifications. Module groups are inserted before System from manifests.
  */
 export const KERNEL_SETTINGS: readonly SettingsGroup[] = [
   {
     id: 'personal',
     label: 'Personal',
-    items: [
-      item('notifications', 'Notifications', '/settings/notifications', { adminOnly: false }),
-    ],
+    items: [item('notifications', 'Notifications', '/settings/notifications', null)],
   },
   {
     id: 'general',
     label: 'General',
     items: [
-      item('workspace', 'Workspace details', '/settings/workspace'),
-      item('appearance', 'Appearance', '/settings/appearance', {
-        capability: 'workspace.appearance.manage',
-      }),
-      item('email', 'Email and notifications', '/settings/email'),
-      item('ai', 'AI and models', '/settings/ai', { capability: 'ai.models.configure' }),
+      item('workspace', 'Workspace details', '/settings/workspace', 'admin'),
+      item('appearance', 'Appearance', '/settings/appearance', 'workspace.appearance.manage'),
+      item('email', 'Email and notifications', '/settings/email', 'workspace.email.manage'),
+      item('ai', 'AI and models', '/settings/ai', 'ai.models.configure'),
     ],
   },
   {
     id: 'people',
     label: 'People',
     items: [
-      item('users', 'Users', '/settings/users'),
-      item('teams', 'Teams', '/settings/teams'),
-      item('roles', 'Roles and permissions', '/settings/roles', {
-        capability: 'workspace.roles.manage',
-      }),
-      item('authentication', 'Authentication (SSO)', '/settings/authentication', {
-        capability: 'workspace.sso.configure',
-      }),
+      item('users', 'Users', '/settings/users', PEOPLE),
+      item('teams', 'Teams', '/settings/teams', PEOPLE),
+      item('roles', 'Roles and permissions', '/settings/roles', PEOPLE),
+      item(
+        'authentication',
+        'Authentication (SSO)',
+        '/settings/authentication',
+        'workspace.sso.configure',
+      ),
     ],
   },
   {
     id: 'system',
     label: 'System',
     items: [
-      item('modules', 'Modules', '/settings/modules'),
-      item('backups', 'Storage and backups', '/settings/backups'),
-      item('updates', 'Updates', '/settings/updates'),
-      item('system', 'System status', '/settings/system'),
-      item('audit-log', 'Audit log', '/settings/audit-log'),
+      item('modules', 'Modules', '/settings/modules', 'admin'),
+      item('backups', 'Storage and backups', '/settings/backups', 'admin'),
+      item('updates', 'Updates', '/settings/updates', 'admin'),
+      item('system', 'System status', '/settings/system', 'admin'),
+      item('audit-log', 'Audit log', '/settings/audit-log', 'workspace.audit.view'),
     ],
   },
 ];
@@ -82,9 +86,10 @@ export interface SettingsViewer {
   capabilities: readonly string[];
 }
 
-function visible(entry: SettingsItem, viewer: SettingsViewer): boolean {
-  if (!entry.adminOnly || viewer.isAdmin) return true;
-  return entry.capability !== undefined && viewer.capabilities.includes(entry.capability);
+export function canOpen(requires: SettingsRequirement, viewer: SettingsViewer): boolean {
+  if (requires === null || viewer.isAdmin) return true;
+  if (requires === 'admin') return false;
+  return viewer.capabilities.includes(requires);
 }
 
 function moduleGroups(manifests: readonly ModuleManifest[]): SettingsGroup[] {
@@ -97,7 +102,7 @@ function moduleGroups(manifests: readonly ModuleManifest[]): SettingsGroup[] {
       {
         id: `module:${manifest.id}`,
         label,
-        items: entries.map((entry) => item(entry.id, entry.label, entry.path)),
+        items: entries.map((entry) => item(entry.id, entry.label, entry.path, 'admin')),
       },
     ];
   });
@@ -115,9 +120,7 @@ export function buildSettingsNav(
     .map((group) => ({
       ...group,
       items: group.items
-        .filter((entry) =>
-          group.id.startsWith('module:') ? viewer.isAdmin : visible(entry, viewer),
-        )
+        .filter((entry) => canOpen(entry.requires, viewer))
         .map((entry) =>
           counts[entry.id] === undefined ? entry : { ...entry, count: counts[entry.id] },
         ),

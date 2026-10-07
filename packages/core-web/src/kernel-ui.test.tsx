@@ -1,11 +1,11 @@
-import type { ModuleManifest, Notification } from '@bemmoly/shared';
+import type { ModuleManifest } from '@bemmoly/shared';
 import { act, renderHook } from '@testing-library/react';
 import type { KeyboardEvent } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { groupItems, rankItems, type CommandItem } from './command/rank.ts';
 import { useListNavigation } from './command/use-list-navigation.ts';
 import { formatBytes, formatRelative, initials } from './format.ts';
-import { actorLabel, groupNotifications } from './inbox/group.ts';
+import { actorLabel } from './inbox/group.ts';
 import { buildSettingsNav, flattenSettings } from './settings/sections.ts';
 
 const items: CommandItem[] = [
@@ -95,27 +95,12 @@ describe('settings navigation', () => {
   });
 });
 
-describe('inbox grouping', () => {
-  const note = (id: string, actor: string, read = false): Notification => ({
-    id,
-    kind: 'comment',
-    actor: { id: actor, name: actor },
-    verb: 'commented on',
-    target: { kind: 'issue', id: 'PLT-204', label: 'PLT-204', href: null },
-    body: null,
-    createdAt: '2026-10-07T09:00:00Z',
-    readAt: read ? '2026-10-07T10:00:00Z' : null,
-  });
-
-  it('collapses the same verb on the same target and names the actors', () => {
-    const [group] = groupNotifications([
-      note('1', 'Aisha K.'),
-      note('2', 'Jonas M.', true),
-      note('3', 'Lena T.'),
-    ]);
-    expect(group?.ids).toEqual(['1', '2', '3']);
-    expect(group?.unread).toBe(true);
-    expect(actorLabel(group?.actors ?? [])).toBe('Aisha K. and 2 others');
+describe('inbox wording', () => {
+  it('names the actors the server grouped', () => {
+    expect(actorLabel(['Aisha K.'], 1)).toBe('Aisha K.');
+    expect(actorLabel(['Aisha K.', 'Jonas M.'], 2)).toBe('Aisha K. and Jonas M.');
+    expect(actorLabel(['Aisha K.', 'Jonas M.'], 3)).toBe('Aisha K. and 2 others');
+    expect(actorLabel([], 0)).toBe('Bemmoly');
   });
 });
 

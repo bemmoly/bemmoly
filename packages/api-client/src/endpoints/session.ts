@@ -1,32 +1,35 @@
 import {
-  acceptInvitationRequestSchema,
-  createAdminRequestSchema,
+  acceptInvitationSchema,
+  authUserResponseSchema,
+  createFirstAdminSchema,
   invitationPreviewSchema,
   loginRequestSchema,
-  meSchema,
-  passwordResetConfirmSchema,
+  meResponseSchema,
+  passwordResetCompleteSchema,
   passwordResetRequestSchema,
-  sessionResponseSchema,
-  setupStatusSchema,
-  type AcceptInvitationRequest,
-  type CreateAdminRequest,
+  readinessResponseSchema,
+  sessionsResponseSchema,
+  setupStatusResponseSchema,
+  type AcceptInvitationInput,
+  type CreateFirstAdminInput,
   type LoginRequest,
-  type PasswordResetConfirm,
+  type PasswordResetComplete,
   type PasswordResetRequest,
 } from '@bemmoly/shared';
 import type { Http } from '../http.ts';
 import { enc, validated } from './validate.ts';
 
-/** First-run wizard. `status` is anonymous by design. */
+/** First-run wizard. Anonymous by design. */
 export function setupEndpoints(http: Http) {
   return {
-    status: async () => http.request('/api/v1/setup/status', setupStatusSchema),
-    createAdmin: async (body: CreateAdminRequest) =>
-      http.request('/api/v1/setup/admin', sessionResponseSchema, {
+    status: async () => http.request('/api/v1/setup/status', setupStatusResponseSchema),
+    createAdmin: async (body: CreateFirstAdminInput) =>
+      http.request('/api/v1/setup/admin', authUserResponseSchema, {
         method: 'POST',
-        body: validated(createAdminRequestSchema, body),
+        body: validated(createFirstAdminSchema, body),
       }),
-    complete: async () => http.send('/api/v1/setup/complete', { method: 'POST' }),
+    /** Anonymous readiness probe; the wizard's first health row before an admin exists. */
+    readiness: async () => http.request('/readyz', readinessResponseSchema),
   };
 }
 
@@ -34,28 +37,32 @@ export function setupEndpoints(http: Http) {
 export function authEndpoints(http: Http) {
   return {
     login: async (body: LoginRequest) =>
-      http.request('/api/v1/auth/login', sessionResponseSchema, {
+      http.request('/api/v1/auth/login', authUserResponseSchema, {
         method: 'POST',
         body: validated(loginRequestSchema, body),
       }),
-    logout: async () => http.send('/api/v1/auth/logout', { method: 'POST' }),
+    logout: async (everywhere = false) =>
+      http.send('/api/v1/auth/logout', { method: 'POST', body: everywhere ? { everywhere } : {} }),
     requestPasswordReset: async (body: PasswordResetRequest) =>
       http.send('/api/v1/auth/password-reset', {
         method: 'POST',
         body: validated(passwordResetRequestSchema, body),
       }),
-    confirmPasswordReset: async (body: PasswordResetConfirm) =>
-      http.send('/api/v1/auth/password-reset/confirm', {
+    completePasswordReset: async (body: PasswordResetComplete) =>
+      http.send('/api/v1/auth/password-reset/complete', {
         method: 'POST',
-        body: validated(passwordResetConfirmSchema, body),
+        body: validated(passwordResetCompleteSchema, body),
       }),
     invitation: async (token: string) =>
       http.request(`/api/v1/auth/invitations/${enc(token)}`, invitationPreviewSchema),
-    acceptInvitation: async (token: string, body: AcceptInvitationRequest) =>
-      http.request(`/api/v1/auth/invitations/${enc(token)}/accept`, sessionResponseSchema, {
+    acceptInvitation: async (token: string, body: AcceptInvitationInput) =>
+      http.request(`/api/v1/auth/invitations/${enc(token)}/accept`, authUserResponseSchema, {
         method: 'POST',
-        body: validated(acceptInvitationRequestSchema, body),
+        body: validated(acceptInvitationSchema, body),
       }),
-    me: async () => http.request('/api/v1/me', meSchema),
+    me: async () => http.request('/api/v1/me', meResponseSchema),
+    sessions: async () => http.request('/api/v1/sessions', sessionsResponseSchema),
+    revokeSession: async (id: string) =>
+      http.send(`/api/v1/sessions/${enc(id)}`, { method: 'DELETE' }),
   };
 }

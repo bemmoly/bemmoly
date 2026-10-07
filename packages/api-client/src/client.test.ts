@@ -7,23 +7,20 @@ const BASE = 'http://bemmoly.test';
 const server = setupServer();
 const absolute = (input: RequestInfo | URL, init?: RequestInit) =>
   fetch(new URL(String(input), BASE), init);
+const ROLE = '018f0000-0000-7000-8000-000000000003';
+const TEAM = '018f0000-0000-7000-8000-000000000010';
 
 beforeAll(() => server.listen({ onUnhandledFrame: 'error' }));
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
-const status = {
-  state: 'needs_admin',
-  version: '0.1.0',
-  workspace: null,
-  checks: [{ id: 'postgres', name: 'Postgres 18', status: 'ok', detail: 'localhost:5432 · 3 ms' }],
-};
-
 describe('api client', () => {
   it('parses a successful response with the shared schema', async () => {
-    server.use(route.get(`${BASE}/api/v1/setup/status`, () => HttpResponse.json(status)));
+    server.use(
+      route.get(`${BASE}/api/v1/setup/status`, () => HttpResponse.json({ initialized: false })),
+    );
     const api = createApiClient({ fetch: absolute });
-    await expect(api.setup.status()).resolves.toEqual(status);
+    await expect(api.setup.status()).resolves.toEqual({ initialized: false });
   });
 
   it('sends the session cookie, JSON and an idempotency key on creates', async () => {
@@ -33,12 +30,14 @@ describe('api client', () => {
         seen(request.headers.get('idempotency-key'), await request.json());
         return HttpResponse.json(
           {
-            id: 't1',
+            id: TEAM,
             name: 'Platform',
-            lead: null,
+            color: null,
+            leadUserId: null,
+            defaultRoleId: ROLE,
             memberCount: 0,
-            members: [],
-            defaultRole: { id: 'r', key: 'member', name: 'Member' },
+            createdAt: '2026-10-07T09:00:00Z',
+            updatedAt: '2026-10-07T09:00:00Z',
           },
           { status: 201 },
         );
@@ -50,11 +49,11 @@ describe('api client', () => {
       return absolute(input, init);
     };
     const api = createApiClient({ fetch: recording });
-    await api.teams.create({ name: 'Platform', defaultRoleId: 'r' });
+    await api.teams.create({ name: 'Platform', defaultRoleId: ROLE });
     const [key, body] = seen.mock.calls[0] ?? [];
     expect(inits[0]?.credentials).toBe('include');
     expect(key).toMatch(/^[0-9a-f-]{36}$/);
-    expect(body).toEqual({ name: 'Platform', defaultRoleId: 'r' });
+    expect(body).toEqual({ name: 'Platform', defaultRoleId: ROLE });
   });
 
   it('normalises the error body and surfaces the request id', async () => {
@@ -110,24 +109,35 @@ describe('api client', () => {
     expect(() => api.http.url('//evil.example/x')).toThrow(TypeError);
   });
 
-  it('builds the audit export URL from filters, without paging', () => {
+  it('builds the audit CSV link from filters, without paging', () => {
     const api = createApiClient();
     expect(api.audit.exportUrl({ action: 'user.invited', limit: 50 })).toBe(
-      '/api/v1/audit-log/export?action=user.invited&format=csv',
+      '/api/v1/audit-log?action=user.invited&format=csv',
     );
   });
 
-  it('wraps settings values and checks them against the write schema', async () => {
+  it('reads and writes one settings key, checking the value against its schema', async () => {
+    let stored: unknown = 'Acme Labs';
     server.use(
-      route.put(`${BASE}/api/v1/admin/settings/workspace`, async ({ request }) => {
-        const { value } = (await request.json()) as { value: unknown };
-        return HttpResponse.json({ key: 'workspace', value, updatedAt: null });
+      route.get(`${BASE}/api/v1/admin/settings/workspace.name`, () =>
+        HttpResponse.json({ key: 'workspace.name', value: stored }),
+      ),
+      route.put(`${BASE}/api/v1/admin/settings/workspace.name`, async ({ request }) => {
+        stored = ((await request.json()) as { value: unknown }).value;
+        return new HttpResponse(null, { status: 204 });
       }),
+      route.get(`${BASE}/api/v1/admin/settings/email.smtp.password`, () =>
+        HttpResponse.json({ key: 'email.smtp.password', isSet: true }),
+      ),
     );
     const api = createApiClient({ fetch: absolute });
-    const value = { name: 'Acme Labs', url: 'acme.test', locale: 'en', timezone: 'UTC' };
-    await expect(api.settings.put('workspace', value)).resolves.toMatchObject({ value });
-    await expect(api.settings.put('workspace', { ...value, name: '' })).rejects.toMatchObject({
+    await api.settings.put('workspace.name', 'Acme');
+    await expect(api.settings.get('workspace.name')).resolves.toMatchObject({ value: 'Acme' });
+    await expect(api.settings.get('email.smtp.password')).resolves.toMatchObject({
+      value: undefined,
+      isSet: true,
+    });
+    await expect(api.settings.put('workspace.name', '')).rejects.toMatchObject({
       code: 'validation_failed',
     });
   });
@@ -135,7 +145,7 @@ describe('api client', () => {
 
 describe('query keys', () => {
   it('maps realtime events to the queries they make stale', () => {
-    expect(keysForEvent('notification.created')).toEqual([queryKeys.notifications.all()]);
+    expect(keysForEvent('notifications')).toEqual([queryKeys.notifications.all()]);
     expect(keysForEvent('module.enabled')).toContainEqual(queryKeys.modules());
     expect(keysForEvent('something.else')).toEqual([]);
   });

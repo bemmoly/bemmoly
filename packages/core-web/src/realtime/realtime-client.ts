@@ -1,7 +1,7 @@
-import { realtimeServerMessageSchema, type RealtimeServerMessage } from '@bemmoly/shared';
+import { realtimeEventSchema, type RealtimeEventMessage } from '@bemmoly/shared';
 
 export type RealtimeStatus = 'connecting' | 'open' | 'closed';
-export type RealtimeEvent = Extract<RealtimeServerMessage, { type: 'event' }>;
+export type RealtimeEvent = RealtimeEventMessage;
 
 export interface BackoffOptions {
   initialMs: number;
@@ -103,8 +103,8 @@ export class RealtimeClient {
     } catch {
       return;
     }
-    const parsed = realtimeServerMessageSchema.safeParse(json);
-    if (parsed.success && parsed.data.type === 'event') this.options.onEvent(parsed.data);
+    const parsed = realtimeEventSchema.safeParse(json);
+    if (parsed.success) this.options.onEvent(parsed.data);
   }
 
   private scheduleReconnect(): void {

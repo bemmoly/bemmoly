@@ -1,62 +1,63 @@
 import {
-  aiProviderChoiceSchema,
-  appearanceSchema,
-  backupScheduleSchema,
-  backupScheduleUpdateSchema,
-  settingSchema,
-  SETTING_KEYS,
-  smtpSettingsSchema,
-  smtpSettingsUpdateSchema,
-  updatePreferencesSchema,
-  workspaceSettingsSchema,
+  SETTING_SCHEMAS,
+  settingEnvelopeSchema,
   type SettingKey,
+  type SettingValue,
 } from '@bemmoly/shared';
-import type { z } from 'zod';
+import { ApiError } from '../errors.ts';
 import type { Http } from '../http.ts';
 import { enc, validated } from './validate.ts';
 
-interface SettingDefinition<Read extends z.ZodType, Write extends z.ZodType> {
-  key: SettingKey;
-  read: Read;
-  write: Write;
+export interface SettingRead<K extends SettingKey> {
+  key: K;
+  /** Undefined for a secret, or a key with no stored value yet. */
+  value: SettingValue<K> | undefined;
+  /** Secrets: whether one is stored. */
+  isSet: boolean;
 }
 
-const define = <Read extends z.ZodType, Write extends z.ZodType>(
-  key: SettingKey,
-  read: Read,
-  write: Write,
-): SettingDefinition<Read, Write> => ({ key, read, write });
-
-/** Each key pairs the shape the server returns with the shape the form sends. */
-export const SETTINGS = {
-  workspace: define(SETTING_KEYS.workspace, workspaceSettingsSchema, workspaceSettingsSchema),
-  appearance: define(SETTING_KEYS.appearance, appearanceSchema, appearanceSchema),
-  smtp: define(SETTING_KEYS.smtp, smtpSettingsSchema, smtpSettingsUpdateSchema),
-  aiProvider: define(SETTING_KEYS.aiProvider, aiProviderChoiceSchema, aiProviderChoiceSchema),
-  backups: define(SETTING_KEYS.backups, backupScheduleSchema, backupScheduleUpdateSchema),
-  updates: define(SETTING_KEYS.updates, updatePreferencesSchema, updatePreferencesSchema),
-} as const;
-
-export type SettingName = keyof typeof SETTINGS;
-export type SettingValue<N extends SettingName> = z.output<(typeof SETTINGS)[N]['read']>;
-export type SettingInput<N extends SettingName> = z.input<(typeof SETTINGS)[N]['write']>;
-
+/** One key per call on /api/v1/admin/settings/:key; values are checked per key. */
 export function settingsEndpoints(http: Http) {
+  async function get<K extends SettingKey>(key: K): Promise<SettingRead<K>> {
+    const envelope = await http.request(
+      `/api/v1/admin/settings/${enc(key)}`,
+      settingEnvelopeSchema,
+    );
+    if (envelope.value === undefined || envelope.value === null) {
+      return {
+        key,
+        value: envelope.value as SettingValue<K> | undefined,
+        isSet: envelope.isSet ?? false,
+      };
+    }
+    const parsed = SETTING_SCHEMAS[key].safeParse(envelope.value);
+    if (!parsed.success) {
+      throw new ApiError(200, 'invalid_response', `Unexpected value for setting ${key}`);
+    }
+    return { key, value: parsed.data as SettingValue<K>, isSet: true };
+  }
   return {
-    get: async <N extends SettingName>(name: N) => {
-      const definition = SETTINGS[name];
-      return http.request(
-        `/api/v1/admin/settings/${enc(definition.key)}`,
-        settingSchema(definition.read),
-      ) as Promise<{ key: string; value: SettingValue<N>; updatedAt: string | null }>;
+    get,
+    /** Reads several keys in parallel; a key the server does not know yet reads as unset. */
+    getMany: async <K extends SettingKey>(keys: readonly K[]) => {
+      const entries = await Promise.all(
+        keys.map(async (key) => {
+          try {
+            return [key, await get(key)] as const;
+          } catch (error) {
+            if (error instanceof ApiError && error.code === 'not_found') {
+              return [key, { key, value: undefined, isSet: false }] as const;
+            }
+            throw error;
+          }
+        }),
+      );
+      return Object.fromEntries(entries) as { [P in K]: SettingRead<P> };
     },
-    put: async <N extends SettingName>(name: N, value: SettingInput<N>) => {
-      const definition = SETTINGS[name];
-      return http.request(
-        `/api/v1/admin/settings/${enc(definition.key)}`,
-        settingSchema(definition.read),
-        { method: 'PUT', body: { value: validated(definition.write, value) } },
-      ) as Promise<{ key: string; value: SettingValue<N>; updatedAt: string | null }>;
-    },
+    put: async <K extends SettingKey>(key: K, value: SettingValue<K>) =>
+      http.send(`/api/v1/admin/settings/${enc(key)}`, {
+        method: 'PUT',
+        body: { value: validated(SETTING_SCHEMAS[key], value) },
+      }),
   };
 }

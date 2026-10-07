@@ -1,13 +1,13 @@
 import {
   applyUpdateRequestSchema,
-  auditPageSchema,
-  auditQuerySchema,
+  auditLogPageSchema,
+  listAuditLogQuerySchema,
   backupSchema,
   backupsPageSchema,
   restoreBackupRequestSchema,
   systemStatusSchema,
   updateStatusSchema,
-  type AuditQuery,
+  type ListAuditLogQuery,
 } from '@bemmoly/shared';
 import type { Http } from '../http.ts';
 import { enc, validated } from './validate.ts';
@@ -45,21 +45,23 @@ export function operationsEndpoints(http: Http) {
       status: async () => http.request('/api/v1/admin/system', systemStatusSchema),
     },
     audit: {
-      list: async (query: AuditQuery = {}) =>
-        http.request('/api/v1/audit-log', auditPageSchema, {
-          query: validated(auditQuerySchema, query),
+      list: async (query: AuditFilter = {}) =>
+        http.request('/api/v1/audit-log', auditLogPageSchema, {
+          query: validated(listAuditLogQuerySchema, { ...query, format: 'json' }),
         }),
-      exportUrl: (query: AuditQuery = {}) => {
-        const filters = validated(auditQuerySchema, query);
-        return http.url('/api/v1/audit-log/export', {
-          actorId: filters.actorId,
-          action: filters.action,
-          targetKind: filters.targetKind,
-          from: filters.from,
-          to: filters.to,
+      /** The same endpoint with format=csv, for a download link; no paging. */
+      exportUrl: (query: AuditFilter = {}) =>
+        http.url('/api/v1/audit-log', {
+          action: query.action,
+          actorId: query.actorId,
+          targetKind: query.targetKind,
+          targetId: query.targetId,
+          since: query.since,
+          until: query.until,
           format: 'csv',
-        });
-      },
+        }),
     },
   };
 }
+
+export type AuditFilter = Partial<Omit<ListAuditLogQuery, 'format'>>;
