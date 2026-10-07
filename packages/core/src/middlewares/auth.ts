@@ -56,15 +56,22 @@ const BEARER = /^Bearer\s+(\S+)$/i;
 /** Signed links in emails carry their own token instead of a session. */
 export const DEFAULT_ANONYMOUS_PATHS: readonly string[] = ['/email-unsubscriptions'];
 
+const pathOf = (request: FastifyRequest) => request.url.split('?')[0] ?? '';
+
+function isUnderApi(request: FastifyRequest, apiPrefix: string): boolean {
+  const path = pathOf(request);
+  return path === apiPrefix || path.startsWith(`${apiPrefix}/`);
+}
+
 function requiresActor(
   request: FastifyRequest,
   apiPrefix: string,
   anonymousPaths: readonly string[],
 ): boolean {
-  const path = request.url.split('?')[0] ?? '';
-  const underApi = path === apiPrefix || path.startsWith(`${apiPrefix}/`);
-  if (!underApi || request.routeOptions.config?.anonymous === true) return false;
-  return !anonymousPaths.some((anonymous) => path === `${apiPrefix}${anonymous}`);
+  if (!isUnderApi(request, apiPrefix) || request.routeOptions.config?.anonymous === true) {
+    return false;
+  }
+  return !anonymousPaths.some((anonymous) => pathOf(request) === `${apiPrefix}${anonymous}`);
 }
 
 /**
@@ -145,7 +152,9 @@ export const authentication = fp<AuthenticationOptions>(
     app.addHook('onRequest', async (request, reply) => {
       const now = options.now ? options.now() : new Date();
       request.authz = createRequestAuthorization({ db: options.db, modules: options.modules });
-      const header = request.headers.authorization;
+      // Outside the API prefix a Bearer header belongs to that route's own
+      // scheme (the /metrics scrape token), never to an API token.
+      const header = isUnderApi(request, apiPrefix) ? request.headers.authorization : undefined;
       const cookie = readCookie(request.headers.cookie, SESSION_COOKIE);
       if (header !== undefined) await fromBearer(request, header, options, now);
       else if (cookie) await fromCookie(request, reply, cookie, options, policy, now);

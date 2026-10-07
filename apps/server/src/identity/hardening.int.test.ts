@@ -1,4 +1,6 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { buildApp } from '../app.ts';
+import { TEST_ENV } from '../test-support.ts';
 import { ADMIN, addPerson, call, createFirstAdmin, startHarness, type Harness } from './harness.ts';
 
 describe('CSRF, headers, rate limits and the audit log against a real database', () => {
@@ -135,5 +137,27 @@ describe('CSRF, headers, rate limits and the audit log against a real database',
     expect(lines).toHaveLength(2);
     expect(exported.body).toContain('""name"":""=HYPERLINK(');
     expect(exported.body).not.toMatch(/(^|,)"?=/m);
+  });
+
+  it('leaves the /metrics bearer token to the scrape route, not API token auth', async (ctx) => {
+    if (!harness) return ctx.skip(skipReason);
+    const token = 'm'.repeat(40);
+    const app = await buildApp({
+      env: { ...TEST_ENV, BEMMOLY_METRICS_TOKEN: token },
+      modules: harness.modules,
+      identity: harness.identity,
+      logger: false,
+    });
+    try {
+      const scrape = (authorization: string) =>
+        app.inject({ url: '/metrics', headers: { authorization } });
+      expect((await scrape(`Bearer ${token}`)).statusCode).toBe(200);
+      expect((await scrape('Bearer wrong')).statusCode).toBe(401);
+      const api = await call(app, 'GET', '/me', { token });
+      expect(api.statusCode).toBe(401);
+      expect(api.json().message).toMatch(/API token/);
+    } finally {
+      await app.close();
+    }
   });
 });
