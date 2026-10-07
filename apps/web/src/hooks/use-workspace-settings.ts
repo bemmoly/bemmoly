@@ -4,7 +4,11 @@ import { z } from 'zod';
 import { validateForm, type FieldErrors } from '../lib/errors.ts';
 import { useDraft, useSettings, valuesOf } from './use-setting.ts';
 
-export const TIMEZONES = Intl.supportedValuesOf('timeZone');
+/** IANA zones, with UTC first: the default for schedules, and absent from the browser's list. */
+export const TIMEZONES = [
+  'UTC',
+  ...Intl.supportedValuesOf('timeZone').filter((zone) => zone !== 'UTC'),
+];
 
 export const LOCALES = [
   { value: 'en', label: 'English' },
