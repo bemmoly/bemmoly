@@ -12,8 +12,8 @@
 /*
  * Landing-only scale steps, measured from docs/design/mocks/Bemmoly Landing.dc.html. The
  * product mocks never use them, so they are not in @bemmoly/ui's scales. Colours stay in the
- * package; the two shadows are the mock's rgba(16,24,40,a) built from the --scrim token
- * (rgba(16,24,40,.45)) so no literal colour lives here.
+ * package; the two shadows use the mock's alphas (.12 and .10) of the --scrim token's colour,
+ * so no literal colour lives here.
  */
 @theme {
   --text-14h: 14.5px;

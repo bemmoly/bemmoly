@@ -73,8 +73,8 @@ them as AVIF and WebP at 400, 800, 1184 and full width. Run `pnpm screens` after
 - GitHub has no star count. "Live demo", "Try the live demo" and the configuration cards are
   marked as coming soon (the cards say "See it in the live demo, soon").
 - The release pill reads "0.1.0 · In progress: setup wizard, eight themes, one-command upgrades";
-  the mock's "v1.2 · Custom themes, workflow editor, Confluence importer" describes features
-  0.1.0 does not ship. The transcript pulls `bemmoly:0.1.0` and installs Postgres 18.
+  the mock's "v1.2" pill lists features (the workflow editor, an importer) that 0.1.0 does not
+  ship. The transcript pulls `bemmoly:0.1.0` and installs Postgres 18.
 - The installer host is `get.bemmoly.com`; the AI bullet reads "Bring your own provider, or a
   local model. Or none." because no file names an AI vendor.
 - The terminal background is the Dark preset's `bg` (#0f1217), not the mock's #0c0f14, and the
