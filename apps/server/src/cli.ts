@@ -6,7 +6,9 @@
  * The deploy CLI's `bemmoly db …` runs this inside the app container.
  */
 import {
+  createApplyModuleDefaultAccess,
   createChangelogRunner,
+  createDatabase,
   createModuleAdmin,
   createModuleState,
   createModuleStateStore,
@@ -67,6 +69,7 @@ async function modulesCommand() {
     runner,
     contexts,
     authorize: systemOnlyAuthorize,
+    applyDefaultAccess: createApplyModuleDefaultAccess(createDatabase(sql)),
   });
   return runModulesCommand(argv, { admin, actor: { kind: 'system', id: 'bemmoly-db' } });
 }
