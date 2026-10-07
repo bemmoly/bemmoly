@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { DockerClient } from '../clients/docker.ts';
+import type Docker from 'dockerode';
+import { liveContainer, type DockerClient } from '../clients/docker.ts';
 import { updaterEnvSchema } from '../config/env.ts';
 import type { UpdaterContext } from './context.ts';
 import { revertSwap } from './swap.ts';
@@ -51,5 +52,27 @@ describe('revertSwap', () => {
   it('still fails when the container cannot start', async () => {
     const { ctx } = fakeDocker(dockerError(500, 'no such image'));
     await expect(revertSwap(ctx, handle)).rejects.toThrow(/no such image/);
+  });
+});
+
+describe('liveContainer', () => {
+  const summary = (Id: string, name: string, State: string) =>
+    ({ Id, Names: [`/${name}`], State }) as Docker.ContainerInfo;
+
+  it('never picks the container a swap set aside, even when it is the one running', () => {
+    const list = [
+      summary('old', 'bemmoly-bemmoly-1-previous', 'running'),
+      summary('new', 'bemmoly-bemmoly-1', 'created'),
+    ];
+    expect(liveContainer(list)?.Id).toBe('new');
+    expect(liveContainer([list[0]!])).toBeUndefined();
+  });
+
+  it('prefers the running container of the service', () => {
+    const list = [
+      summary('a', 'bemmoly-bemmoly-1', 'exited'),
+      summary('b', 'bemmoly-bemmoly-2', 'running'),
+    ];
+    expect(liveContainer(list)?.Id).toBe('b');
   });
 });

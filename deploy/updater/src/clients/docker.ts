@@ -31,6 +31,16 @@ export async function startContainer(container: Pick<Docker.Container, 'start'>)
   }
 }
 
+/**
+ * The service's live container among those carrying its Compose labels. A swap keeps the
+ * replaced container as <name>-previous with the same labels (Docker cannot change them),
+ * so it is never the one to act on.
+ */
+export function liveContainer(list: Docker.ContainerInfo[]): Docker.ContainerInfo | undefined {
+  const live = list.filter((item) => !item.Names.some((name) => name.endsWith('-previous')));
+  return live.find((item) => item.State === 'running') ?? live[0];
+}
+
 /** The few Docker Engine calls the updater makes, over the mounted socket. */
 export function createDockerClient(socketPath = '/var/run/docker.sock') {
   const docker = new Docker({ socketPath, timeout: 60_000 });
@@ -43,8 +53,8 @@ export function createDockerClient(socketPath = '/var/run/docker.sock') {
           label: [`com.docker.compose.project=${project}`, `com.docker.compose.service=${service}`],
         },
       });
-      const running = list.find((item) => item.State === 'running') ?? list[0];
-      return running ? docker.getContainer(running.Id).inspect() : null;
+      const live = liveContainer(list);
+      return live ? docker.getContainer(live.Id).inspect() : null;
     },
     inspect: (id: string) => docker.getContainer(id).inspect(),
     async imageInfo(reference: string): Promise<ImageInfo | null> {
