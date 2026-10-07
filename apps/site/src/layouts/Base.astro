@@ -9,6 +9,7 @@ import plexSans600 from '@fontsource/ibm-plex-sans/files/ibm-plex-sans-latin-600
 import { themeById } from '@bemmoly/ui/tokens';
 import Footer from '../components/site/Footer.astro';
 import Nav from '../components/site/Nav.astro';
+import { LICENSE_URL, REPO_URL } from '../lib/links.ts';
 import { themeCss } from '../lib/theme.ts';
 
 interface Props {
@@ -16,9 +17,11 @@ interface Props {
   description: string;
   /** The landing page puts its closing call to action inside the footer block. */
   cta?: boolean;
+  /** Error pages are served but must not be indexed. */
+  noindex?: boolean;
 }
 
-const { title, description, cta = false } = Astro.props;
+const { title, description, cta = false, noindex = false } = Astro.props;
 const fullTitle = title === 'Bemmoly' ? 'Bemmoly: Your work. Your platform.' : `${title} · Bemmoly`;
 // With build.format 'file', Astro 7 reports the built file (/docs.html, /index.html); the
 // canonical address is the clean one Caddy serves (/docs, /).
@@ -28,6 +31,51 @@ const image = new URL(socialPreview.src, Astro.site).href;
 const themeColor = themeById('light').colors.sf;
 // The two IBM Plex Sans faces above the fold; the rest load on demand.
 const preloads = [plexSans400, plexSans600];
+const robots = noindex
+  ? 'noindex, follow'
+  : 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1';
+// Structured data for search engines and assistants. Not a script: the CSP leaves it alone.
+const organization = {
+  '@type': 'Organization',
+  '@id': `${Astro.site}#organization`,
+  name: 'Bemmoly',
+  url: Astro.site?.href,
+  logo: image,
+  sameAs: [REPO_URL],
+};
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    organization,
+    {
+      '@type': 'WebSite',
+      '@id': `${Astro.site}#website`,
+      name: 'Bemmoly',
+      url: Astro.site?.href,
+      publisher: { '@id': organization['@id'] },
+    },
+    {
+      '@type': 'SoftwareApplication',
+      name: 'Bemmoly',
+      applicationCategory: 'BusinessApplication',
+      operatingSystem: 'Linux, Docker, Kubernetes',
+      url: Astro.site?.href,
+      description: 'Open source, self-hosted, AI-first issues and docs for your whole company.',
+      license: LICENSE_URL,
+      isAccessibleForFree: true,
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+      author: { '@id': organization['@id'] },
+    },
+    {
+      '@type': 'WebPage',
+      '@id': canonical,
+      url: canonical,
+      name: fullTitle,
+      description,
+      isPartOf: { '@id': `${Astro.site}#website` },
+    },
+  ],
+};
 ---
 
 <!doctype html>
@@ -38,6 +86,7 @@ const preloads = [plexSans400, plexSans600];
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
+    <meta name="robots" content={robots} />
     {preloads.map((href) => (
       <link rel="preload" href={href} as="font" type="font/woff2" crossorigin />
     ))}
@@ -62,6 +111,7 @@ const preloads = [plexSans400, plexSans600];
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={image} />
     <style is:inline set:html={themeCss()}></style>
+    <script is:inline type="application/ld+json" set:html={JSON.stringify(structuredData)} />
   </head>
   <body class="flex min-h-screen flex-col">
     <Nav />

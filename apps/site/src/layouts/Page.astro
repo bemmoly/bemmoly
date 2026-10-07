@@ -11,12 +11,13 @@ interface Props {
   description: string;
   lede: string;
   wide?: boolean;
+  noindex?: boolean;
 }
 
-const { title, description, lede, wide = false } = Astro.props;
+const { title, description, lede, wide = false, noindex = false } = Astro.props;
 ---
 
-<Base title={title} description={description}>
+<Base title={title} description={description} noindex={noindex}>
   <article
     class:list={[
       'mx-auto flex w-full flex-col gap-12 px-4 pt-16 pb-20 sm:px-6 lg:pt-20',
