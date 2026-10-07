@@ -21,6 +21,6 @@ for (const page of readdirSync(dist).filter((file) => file.endsWith('.html'))) {
   const size = [...inline, ...external].length === 0 ? 0 : bytes;
   const ok = size <= BUDGET;
   failed ||= !ok;
-  console.log(`${ok ? 'ok  ' : 'FAIL'} ${page.padEnd(20)} ${(size / 1024).toFixed(2)} KB gzip JS`);
+  process.stdout.write(`${ok ? 'ok  ' : 'FAIL'} ${page.padEnd(20)} ${(size / 1024).toFixed(2)} KB gzip JS\n`);
 }
 if (failed) process.exit(1);

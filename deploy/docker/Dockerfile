@@ -77,6 +77,11 @@ RUN apt-get update \
  && apt-get purge --yes --auto-remove curl gnupg \
  && rm -rf /var/lib/apt/lists/*
 
+# The runtime needs node alone. npm, npx and corepack ship inside the base image with their
+# own dependency tree, which the image scan audits; nothing here runs them.
+RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/corepack \
+ && rm -f /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack
+
 RUN groupadd --system --gid 10001 bemmoly \
  && useradd --system --uid 10001 --gid bemmoly --home-dir /app --shell /usr/sbin/nologin bemmoly \
  && install -d -o bemmoly -g bemmoly /var/bemmoly/data /var/bemmoly/backups
