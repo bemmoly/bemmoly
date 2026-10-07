@@ -3,6 +3,7 @@ packages:
   - packages/*
   - modules/*
   - tools/*
+  - deploy/updater
 
 allowBuilds:
   cpu-features: false
