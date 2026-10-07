@@ -32,6 +32,8 @@ FROM pnpm AS server
 COPY apps/server ./apps/server
 COPY packages/core ./packages/core
 COPY packages/shared ./packages/shared
+# The email templates read the theme tokens from the design system at runtime.
+COPY packages/ui ./packages/ui
 COPY modules ./modules
 RUN --mount=type=cache,id=bemmoly-pnpm,target=/pnpm/store \
     rm -rf node_modules \
