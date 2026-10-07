@@ -63,22 +63,6 @@ export const updateNotificationPreferencesRequestSchema = z.object({
   digest: digestSettingsSchema.optional(),
 });
 
-/** WebSocket /ws: the client subscribes to scopes such as "user:<id>". */
-export const realtimeClientMessageSchema = z.object({
-  type: z.enum(['subscribe', 'unsubscribe']),
-  scopes: z.array(z.string().min(1)).min(1),
-});
-
-/**
- * Any server message naming a `kind` is an invalidation hint ("notifications",
- * "module.enabled", …); data always comes back through the REST API.
- */
-export const realtimeEventSchema = z.looseObject({
-  kind: z.string().min(1),
-  scope: z.string().optional(),
-  ids: z.array(z.string()).optional(),
-});
-
 export type Notification = z.infer<typeof notificationSchema>;
 export type NotificationsQuery = z.infer<typeof notificationsQuerySchema>;
 export type NotificationsPage = z.infer<typeof notificationsPageSchema>;
@@ -87,5 +71,3 @@ export type NotificationPreferences = z.infer<typeof notificationPreferencesSche
 export type UpdateNotificationPreferencesRequest = z.infer<
   typeof updateNotificationPreferencesRequestSchema
 >;
-export type RealtimeClientMessage = z.infer<typeof realtimeClientMessageSchema>;
-export type RealtimeEventMessage = z.infer<typeof realtimeEventSchema>;

@@ -35,8 +35,8 @@ export const backupScheduleSchema = z.object({
 });
 
 /**
- * Keys under /api/v1/admin/settings/:key and the value each holds. The email
- * and appearance keys are confirmed by the email stream; the rest are the web
+ * Keys under /api/v1/admin/settings/:key and the value each holds. Kernel keys
+ * (workspace, appearance) and email keys are confirmed; the rest are the web
  * shell's request to the data kernel stream and are marked so.
  */
 export const SETTING_SCHEMAS = {
@@ -50,19 +50,19 @@ export const SETTING_SCHEMAS = {
   'email.from': z.string(),
   'email.replyTo': z.string().nullable(),
   'email.digestMinutes': z.number().int().min(1).max(1440),
-  /** A preset id from @bemmoly/ui tokens, or "custom". */
+  /** A preset id (the server calls Classic "classic"), or "custom". */
   'appearance.theme': z.string().min(1),
-  'appearance.brandColor': hexColorSchema.nullable(),
+  'appearance.brandColor': hexColorSchema,
   'appearance.font': themeFontSchema,
-  'appearance.logoKey': z.string().nullable(),
+  'appearance.logoKey': z.string().max(512),
   /** Assumed: the custom builder's mode and surface tone, and the member policy. */
   'appearance.mode': themeModeSchema,
   'appearance.surfaces': surfaceToneSchema,
   'appearance.memberModeSwitch': z.boolean(),
   'appearance.personalThemes': z.boolean(),
-  /** Assumed: workspace details. */
-  'workspace.name': z.string().trim().min(1).max(100),
-  'workspace.url': z.string(),
+  /** Name and URL are the data kernel's; locale and timezone are assumed. */
+  'workspace.name': z.string().trim().min(1).max(80),
+  'workspace.url': z.union([z.literal(''), z.url()]),
   'workspace.locale': z.string().min(2),
   'workspace.timezone': z.string().min(1),
   /** Assumed: the wizard's AI step until the AI runtime owns its tables. */
@@ -82,14 +82,6 @@ export const SETTING_SCHEMAS = {
 
 export type SettingKey = keyof typeof SETTING_SCHEMAS;
 export type SettingValue<K extends SettingKey> = z.infer<(typeof SETTING_SCHEMAS)[K]>;
-
-/** Lenient envelope: secrets come back without a value and with `isSet`. */
-export const settingEnvelopeSchema = z.looseObject({
-  key: z.string(),
-  value: z.unknown().optional(),
-  isSet: z.boolean().optional(),
-  updatedAt: z.string().nullable().optional(),
-});
 
 export type ThemeFont = z.infer<typeof themeFontSchema>;
 export type ThemeMode = z.infer<typeof themeModeSchema>;
