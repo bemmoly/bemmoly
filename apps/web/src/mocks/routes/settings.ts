@@ -130,7 +130,16 @@ export const settingsRoutes: MockRoute[] = [
       return ok(emailTest(db, to));
     },
   },
-  { method: 'GET', pattern: '/api/v1/admin/email/outbox', handle: (_, db) => ok(db.outbox) },
+  {
+    method: 'GET',
+    pattern: '/api/v1/admin/email/outbox',
+    handle: (request, db) => {
+      if (!can(db, 'workspace.email.manage'))
+        return fail(403, 'forbidden', 'You need "Manage email delivery" to see the outbox.');
+      const limit = Number(request.query.get('limit') ?? 20) || 20;
+      return ok({ ...db.outbox, recentFailures: db.outbox.recentFailures.slice(0, limit) });
+    },
+  },
   {
     method: 'GET',
     pattern: '/api/v1/dev/mailbox',
