@@ -117,20 +117,20 @@ export function TopBar({
           {createLabel}
         </Button>
       )}
-      <div className="ml-auto flex items-center gap-2">
+      <div className="ml-auto flex min-w-0 items-center gap-2">
         {onSearch && (
           <button
             type="button"
             onClick={onSearch}
             aria-keyshortcuts="/"
             className={cx(
-              'flex h-control w-75 cursor-pointer items-center gap-2 rounded-control border border-br3 bg-bg2 px-2.5 font-sans text-13 text-tx5',
+              'flex h-control w-75 min-w-20 shrink cursor-pointer items-center gap-2 rounded-control border border-br3 bg-bg2 px-2.5 font-sans text-13 text-tx5',
               focusRing,
             )}
           >
             <Icon name="search" />
-            <span>{searchPlaceholder}</span>
-            <kbd className="ml-auto font-mono text-11 font-medium text-tx6">/</kbd>
+            <span className="truncate">{searchPlaceholder}</span>
+            <kbd className="ml-auto shrink-0 font-mono text-11 font-medium text-tx6">/</kbd>
           </button>
         )}
         {onAsk && <AiAskButton shortcut="⌘K" onClick={onAsk} />}
