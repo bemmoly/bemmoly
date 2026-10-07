@@ -2,6 +2,7 @@ import {
   ConflictError,
   ForbiddenError,
   isBemmolyError,
+  MaintenanceError,
   NotFoundError,
   ProviderError,
   RateLimitedError,
@@ -28,6 +29,7 @@ const STATUS_BY_ERROR: ReadonlyArray<[abstract new (...args: never[]) => Bemmoly
   [ConflictError, 409],
   [RateLimitedError, 429],
   [ProviderError, 502],
+  [MaintenanceError, 503],
 ];
 
 const CLIENT_ERROR_CODES: Readonly<Record<number, ErrorCode>> = {
@@ -51,7 +53,10 @@ interface FrameworkError {
 function fromBemmolyError(error: BemmolyError, requestId: string): HttpError {
   const status = STATUS_BY_ERROR.find(([type]) => error instanceof type)?.[1] ?? 500;
   const headers: Record<string, string> = {};
-  if (error instanceof RateLimitedError && error.retryAfterSeconds !== undefined) {
+  if (
+    (error instanceof RateLimitedError || error instanceof MaintenanceError) &&
+    error.retryAfterSeconds !== undefined
+  ) {
     headers['retry-after'] = String(error.retryAfterSeconds);
   }
   const body: ApiErrorBody = { code: error.code, message: error.message, requestId };

@@ -1,7 +1,9 @@
+import { MaintenanceError } from '@bemmoly/shared';
 import type { onRequestAsyncHookHandler } from 'fastify';
 import { renderMaintenancePage, type MaintenanceState } from '../services/system/index.ts';
 
 const READ_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
+const RETRY_AFTER_SECONDS = 10;
 const ALWAYS_OPEN = ['/healthz', '/readyz', '/api/v1/admin/system', '/api/v1/admin/updates'];
 
 /**
@@ -19,15 +21,9 @@ export function maintenanceHook(
     if (ALWAYS_OPEN.some((open) => path === open || path.startsWith(`${open}/`))) return;
     const api = path.startsWith('/api/');
     if (api && READ_METHODS.has(request.method)) return;
-    reply.code(503).header('retry-after', '10');
-    if (api) {
-      await reply.send({
-        code: 'maintenance',
-        message: state.message,
-        requestId: String(request.id),
-      });
-      return;
-    }
+    // API writes get the shared error body from the one error handler.
+    if (api) throw new MaintenanceError(state.message, { retryAfterSeconds: RETRY_AFTER_SECONDS });
+    reply.code(503).header('retry-after', String(RETRY_AFTER_SECONDS));
     await reply.type('text/html; charset=utf-8').send(renderMaintenancePage(state));
   };
 }

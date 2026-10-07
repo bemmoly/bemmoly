@@ -88,6 +88,21 @@ export class RateLimitedError extends BemmolyError<'rate_limited'> {
   }
 }
 
+export interface MaintenanceErrorOptions extends BemmolyErrorOptions<'maintenance'> {
+  retryAfterSeconds?: number;
+}
+
+/** A restore, update or rollback is running; writes wait until it ends. Mapped to 503. */
+export class MaintenanceError extends BemmolyError<'maintenance'> {
+  override readonly name = 'MaintenanceError';
+  readonly retryAfterSeconds: number | undefined;
+
+  constructor(message = 'Bemmoly is under maintenance', options: MaintenanceErrorOptions = {}) {
+    super(message, 'maintenance', options);
+    this.retryAfterSeconds = options.retryAfterSeconds;
+  }
+}
+
 export interface ProviderErrorOptions extends BemmolyErrorOptions<'provider_error'> {
   provider?: string;
 }
