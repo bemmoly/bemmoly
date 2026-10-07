@@ -2,9 +2,9 @@
 # The Bemmoly application image: one Node 24 process (api, worker or both) plus the
 # Postgres 18 client tools that backups need. Build from the repository root:
 #
-#   docker build -f deploy/docker/app.Dockerfile -t ghcr.io/bemmoly/bemmoly:dev .
+#   docker build -f deploy/docker/Dockerfile -t ghcr.io/bemmoly/bemmoly:dev .
 #
-# No secret is ever copied in: app.Dockerfile.dockerignore keeps .env files, local data
+# No secret is ever copied in: Dockerfile.dockerignore keeps .env files, local data
 # and dependencies out of the build context.
 
 ARG NODE_IMAGE=node:24-trixie-slim
@@ -37,7 +37,9 @@ RUN --mount=type=cache,id=bemmoly-pnpm,target=/pnpm/store \
     rm -rf node_modules \
  && pnpm install --offline --frozen-lockfile --prod --store-dir "$PNPM_STORE" --filter "@bemmoly/server..." \
  && find apps packages modules -name '*.test.ts' -delete \
- && rm -rf packages/core/src/testing
+ && rm -rf packages/core/src/testing \
+ && mkdir -p node_modules/@bemmoly \
+ && ln -s ../../packages/core node_modules/@bemmoly/core
 
 FROM ${NODE_IMAGE} AS runtime
 ARG BEMMOLY_VERSION=0.0.0-dev
@@ -90,5 +92,7 @@ ENV BEMMOLY_VERSION=${BEMMOLY_VERSION} \
 USER bemmoly
 EXPOSE 8080
 HEALTHCHECK --interval=10s --timeout=5s --start-period=90s --retries=6 CMD ["bemmoly-health"]
+# The entrypoint prepares the database, then runs this command. The preload starts
+# OpenTelemetry only when OTEL_EXPORTER_OTLP_ENDPOINT is set.
 ENTRYPOINT ["tini", "--", "bemmoly-entrypoint"]
-CMD ["serve"]
+CMD ["node", "--import", "@bemmoly/core/telemetry/preload", "apps/server/src/server.ts"]

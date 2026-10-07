@@ -27,11 +27,13 @@ export const rollbackPlanSchema = z.object({
 export const availableUpdateSchema = z.object({
   version: semverSchema,
   publishedAt: z.iso.datetime(),
-  notes: z.string(),
-  notesUrl: z.url().optional(),
+  /** The release notes page; the Update dialog links it before the admin confirms. */
+  notesUrl: z.url(),
+  /** What a rollback of this release alone would need. */
+  rollback: z.enum(['code', 'restore']),
   slowChangesets: z.array(releaseChangesetSchema),
   irreversibleChangesets: z.array(releaseChangesetSchema),
-  configChanges: z.array(z.string()),
+  configChanges: z.object({ added: z.array(z.string()), removed: z.array(z.string()) }),
 });
 
 export const updatesOverviewSchema = z.object({
@@ -44,6 +46,10 @@ export const updatesOverviewSchema = z.object({
   checks: z.object({
     enabled: z.boolean(),
     lastCheckedAt: z.iso.datetime().nullable(),
+    /**
+     * The manifest's keyless signature is not checked in the app yet; the images it names
+     * are, by the updater, before anything is installed.
+     */
     manifest: z.enum(['verified', 'unverified']).nullable(),
     error: z.string().nullable(),
   }),

@@ -188,6 +188,7 @@ export async function runBackup(
       verifiedAt: completedAt,
       completedAt,
     });
+    deps.onGoodBackup?.(completedAt);
     deps.logger.info(
       { backupId: record.id, set: record.setName, kind: record.kind, mode: plan.mode },
       'backup succeeded',

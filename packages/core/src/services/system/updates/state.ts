@@ -1,4 +1,4 @@
-import { releaseSchema, updaterStatusSchema, type UpdaterStatus } from '@bemmoly/shared';
+import { releaseManifestSchema, updaterStatusSchema, type UpdaterStatus } from '@bemmoly/shared';
 import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { z } from 'zod';
@@ -11,7 +11,7 @@ export const updateCheckStateSchema = z.object({
   checkedAt: z.iso.datetime(),
   manifest: z.enum(['verified', 'unverified']).nullable(),
   error: z.string().nullable(),
-  available: releaseSchema.nullable(),
+  available: releaseManifestSchema.nullable(),
   /** The version update.available was last published for, so it is announced once. */
   announced: z.string().nullable(),
 });

@@ -1,38 +1,51 @@
-import { releaseManifestSchema } from '@bemmoly/shared';
-import { readFile } from 'node:fs/promises';
+import { releaseManifestSchema, type ReleaseChannel, type ReleaseManifest } from '@bemmoly/shared';
+import semver from 'semver';
 import { fetchReleaseManifest } from '../../../clients/release-manifest.ts';
 import type { SystemDependencies } from '../deps.ts';
 import { publishSystemEvent } from '../events.ts';
-import { readSetting } from '../settings.ts';
-import { verifyManifestSignature } from './manifest-signature.ts';
+import { DEFAULT_MANIFEST_URLS, readSetting } from '../settings.ts';
 import { selectAvailable } from './select.ts';
 import { readUpdateCheckState, writeUpdateCheckState, type UpdateCheckState } from './state.ts';
 
 export const UPDATE_CHECK_JOB = 'system.update-check';
 export const UPDATE_CHECK_CRON = '17 4 * * *';
 
-export class ManifestSignatureError extends Error {
-  override readonly name = 'ManifestSignatureError';
+/** The beta channel also sees stable releases; an admin-set URL replaces both. */
+function manifestUrls(channel: ReleaseChannel, override: string | null): string[] {
+  if (override) return [override];
+  return channel === 'stable'
+    ? [DEFAULT_MANIFEST_URLS.stable]
+    : [DEFAULT_MANIFEST_URLS.beta, DEFAULT_MANIFEST_URLS.stable];
 }
 
-async function verification(
-  deps: SystemDependencies,
-  raw: unknown,
-): Promise<'verified' | 'unverified'> {
-  if (!deps.config.releaseKeyFile) return 'unverified';
-  const key = await readFile(deps.config.releaseKeyFile, 'utf8');
-  if (!verifyManifestSignature(raw, key)) {
-    throw new ManifestSignatureError(
-      'The release manifest signature does not verify; no update is offered',
-    );
+/** The newest release offered across the channel's manifests; fails only if every fetch does. */
+async function newestAvailable(
+  urls: readonly string[],
+  channel: ReleaseChannel,
+  current: string,
+): Promise<ReleaseManifest | null> {
+  const results = await Promise.allSettled(
+    urls.map(async (url) => releaseManifestSchema.parse(await fetchReleaseManifest(url))),
+  );
+  const fetched = results.flatMap((result) =>
+    result.status === 'fulfilled' ? [result.value] : [],
+  );
+  if (fetched.length === 0) {
+    const first = results.find((result) => result.status === 'rejected');
+    throw first?.status === 'rejected' ? first.reason : new Error('No release manifest');
   }
-  return 'verified';
+  return (
+    fetched
+      .map((manifest) => selectAvailable(manifest, channel, current))
+      .filter((manifest): manifest is ReleaseManifest => manifest !== null)
+      .sort((a, b) => semver.rcompare(a.version, b.version))[0] ?? null
+  );
 }
 
 /**
- * The daily, opt-in system.update-check: fetch the release manifest, verify its
- * signature when the image carries the release key, and publish update.available
- * once per new version in the workspace's channel.
+ * The daily, opt-in system.update-check: fetch the newest release manifest of the
+ * workspace's channel and publish update.available once per new version. The images it
+ * names are verified by the updater (cosign, keyless) before anything is installed.
  */
 export async function checkForUpdates(
   deps: SystemDependencies,
@@ -40,7 +53,7 @@ export async function checkForUpdates(
 ): Promise<UpdateCheckState | null> {
   const enabled = await readSetting(deps.settings, 'system.updates.check');
   if (!enabled && !options.force) return null;
-  const [url, channel] = await Promise.all([
+  const [override, channel] = await Promise.all([
     readSetting(deps.settings, 'system.updates.manifest_url'),
     readSetting(deps.settings, 'system.updates.channel'),
   ]);
@@ -48,13 +61,14 @@ export async function checkForUpdates(
   const checkedAt = (deps.now?.() ?? new Date()).toISOString();
   let state: UpdateCheckState;
   try {
-    const raw = await fetchReleaseManifest(url);
-    const manifestState = await verification(deps, raw);
-    const manifest = releaseManifestSchema.parse(raw);
-    const available = selectAvailable(manifest, channel, deps.config.appVersion);
+    const available = await newestAvailable(
+      manifestUrls(channel, override),
+      channel,
+      deps.config.appVersion,
+    );
     state = {
       checkedAt,
-      manifest: manifestState,
+      manifest: 'unverified',
       error: null,
       available,
       announced: previous?.announced ?? null,
@@ -68,10 +82,8 @@ export async function checkForUpdates(
           version: available.version,
           channel,
           publishedAt: available.publishedAt,
-          notesUrl: available.notesUrl ?? null,
-          hasIrreversibleChangesets: available.changesets.some(
-            (changeset) => changeset.irreversible,
-          ),
+          notesUrl: available.notesUrl,
+          hasIrreversibleChangesets: available.rollback === 'restore',
         },
         available.version,
       );

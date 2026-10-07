@@ -14,7 +14,7 @@ export {
   type UpdateAvailablePayload,
 } from './events.ts';
 export { SYSTEM_JOBS, systemJobs } from './jobs.ts';
-export { DEFAULT_MANIFEST_URL, SYSTEM_SETTINGS } from './settings.ts';
+export { DEFAULT_MANIFEST_URLS, manifestUrlFor, SYSTEM_SETTINGS } from './settings.ts';
 
 export {
   getBackup,
@@ -73,11 +73,6 @@ export { applyUpdate, getUpdatesOverview, requestRollback } from './updates/admi
 export { createSqlAuditActivity } from './updates/audit-activity.ts';
 export { storeCatalogUpload, MAX_BUNDLE_BYTES } from './updates/catalog.ts';
 export { checkForUpdates } from './updates/check.ts';
-export {
-  canonicalJson,
-  signManifest,
-  verifyManifestSignature,
-} from './updates/manifest-signature.ts';
 export { computeRollbackPlan, PRE_UPGRADE_TAG_PREFIX } from './updates/rollback-plan.ts';
 export {
   decideRollbackMode,

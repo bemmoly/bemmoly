@@ -1,7 +1,8 @@
 #!/bin/sh
 # Starts the Bemmoly server: waits for Postgres, creates the extensions, runs pending
-# changesets (unless BEMMOLY_DB_AUTO_MIGRATE=false), then replaces itself with Node.
-# Any other command runs as given, e.g. `docker run … bemmoly-system status`.
+# changesets (unless BEMMOLY_DB_AUTO_MIGRATE=false), then replaces itself with the
+# image's command (node … apps/server/src/server.ts). Any other command runs as given,
+# e.g. `docker run … bemmoly-system status`.
 set -eu
 
 log() {
@@ -60,9 +61,33 @@ demo() {
   exit 64
 }
 
-case "${1:-serve}" in
+# The telemetry preload ships with the observability package; an image built without
+# it starts the server without the preload rather than not at all.
+without_missing_preload() {
+  preload_ok=1
+  node --input-type=module --eval "import.meta.resolve('@bemmoly/core/telemetry/preload')" \
+    >/dev/null 2>&1 || preload_ok=0
+  skip_next=0
+  for arg in "$@"; do
+    shift
+    if [ "${skip_next}" -eq 1 ]; then
+      skip_next=0
+      continue
+    fi
+    if [ "${preload_ok}" -eq 0 ] && [ "${arg}" = --import ] && [ "${1:-}" = @bemmoly/core/telemetry/preload ]; then
+      log "telemetry preload not in this image; starting without it"
+      skip_next=1
+      continue
+    fi
+    set -- "$@" "${arg}"
+  done
+  exec "$@"
+}
+
+case "${1:-}" in
   --demo) demo ;;
-  serve) ;;
+  serve | '') set -- node --import @bemmoly/core/telemetry/preload apps/server/src/server.ts ;;
+  node) ;;
   *) exec "$@" ;;
 esac
 
@@ -71,4 +96,5 @@ if wait_for_database; then
   run_changesets
 fi
 log "starting Bemmoly ${BEMMOLY_VERSION:-} (role ${BEMMOLY_ROLE:-all})"
-exec node /app/apps/server/src/server.ts
+cd /app
+without_missing_preload "$@"

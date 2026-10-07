@@ -21,7 +21,6 @@ export interface SystemConfig {
   publicUrl: string;
   /** Encrypts off-box copies; absent means off-box destinations are refused. */
   backupPassphrase?: string;
-  releaseKeyFile?: string;
 }
 
 /** Counts audit rows since an instant, for the restore rollback's discard summary. */
@@ -62,6 +61,11 @@ export interface SystemDependencies {
   updater?: UpdaterClient;
   /** Builds the S3 client; tests replace it with a fake object store. */
   s3?: (config: S3BucketConfig) => S3Bucket;
+  /**
+   * Called when a backup passes verification. The host wires it to the telemetry
+   * metric: getMetrics().backups.recordGoodBackup(finishedAt).
+   */
+  onGoodBackup?: (finishedAt: Date) => void;
   /** Replaces every destination; tests pass a fake object store. */
   destinations?: () => Promise<BackupDestination[]>;
   now?: () => Date;

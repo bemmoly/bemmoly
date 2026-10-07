@@ -24,11 +24,23 @@ declare module '../../contracts/settings.ts' {
     'system.backups.verification': BackupVerificationSettings;
     'system.updates.channel': ReleaseChannel;
     'system.updates.check': boolean;
-    'system.updates.manifest_url': string;
+    'system.updates.manifest_url': string | null;
   }
 }
 
-export const DEFAULT_MANIFEST_URL = 'https://get.bemmoly.dev/releases/manifest.json';
+/**
+ * Where the newest release manifest of each channel lives. Stable is the latest GitHub
+ * release's asset; beta needs a stable address for pre-releases (see the report).
+ */
+export const DEFAULT_MANIFEST_URLS = {
+  stable: 'https://github.com/bemmoly/bemmoly/releases/latest/download/release-manifest.json',
+  beta: 'https://get.bemmoly.dev/releases/beta/release-manifest.json',
+} as const;
+
+/** The manifest URL for a channel; an admin-set URL (an internal mirror) wins. */
+export function manifestUrlFor(channel: 'stable' | 'beta', override: string | null): string {
+  return override ?? DEFAULT_MANIFEST_URLS[channel];
+}
 
 const SYSTEM_DEFAULTS = {
   'system.backups.schedule': backupScheduleSettingsSchema.parse({}),
@@ -38,7 +50,7 @@ const SYSTEM_DEFAULTS = {
   'system.backups.verification': backupVerificationSettingsSchema.parse({}),
   'system.updates.channel': 'stable',
   'system.updates.check': false,
-  'system.updates.manifest_url': DEFAULT_MANIFEST_URL,
+  'system.updates.manifest_url': null,
 } as const satisfies {
   [Key in SystemSettingKey]: unknown;
 };
@@ -86,7 +98,7 @@ export const SYSTEM_SETTINGS: readonly SettingDefinition[] = [
   },
   { key: 'system.updates.channel', schema: releaseChannelSchema, default: 'stable' },
   { key: 'system.updates.check', schema: z.boolean(), default: false },
-  { key: 'system.updates.manifest_url', schema: z.url(), default: DEFAULT_MANIFEST_URL },
+  { key: 'system.updates.manifest_url', schema: z.url().nullable(), default: null },
 ];
 
 /** Reads a system setting; the documented default when no settings service is wired. */

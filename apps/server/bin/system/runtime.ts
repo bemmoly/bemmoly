@@ -57,7 +57,6 @@ export async function createRuntime(): Promise<Runtime> {
       role: env.BEMMOLY_ROLE,
       publicUrl: env.BEMMOLY_PUBLIC_URL,
       ...(env.BEMMOLY_BACKUP_PASSPHRASE ? { backupPassphrase: env.BEMMOLY_BACKUP_PASSPHRASE } : {}),
-      ...(env.BEMMOLY_RELEASE_KEY_FILE ? { releaseKeyFile: env.BEMMOLY_RELEASE_KEY_FILE } : {}),
     },
     sql,
     pgTools: createPgTools({ binDir: env.BEMMOLY_PG_BIN_DIR }),

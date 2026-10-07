@@ -17,7 +17,12 @@ export const updaterEnvSchema = z.object({
   /** Air-gapped installs and tests: use images already loaded, never pull. */
   BEMMOLY_UPDATER_LOCAL_IMAGES: flag,
   COSIGN_PUBLIC_KEY: z.string().min(1).optional(),
-  COSIGN_IDENTITY_REGEXP: z.string().default('^https://github\\.com/bemmoly/bemmoly/'),
+  /** Keyless: images signed by the release workflow, run from a tag or from main. */
+  COSIGN_IDENTITY_REGEXP: z
+    .string()
+    .default(
+      '^https://github\\.com/bemmoly/bemmoly/\\.github/workflows/release\\.yml@refs/(heads/main|tags/v.+)$',
+    ),
   COSIGN_OIDC_ISSUER: z.url().default('https://token.actions.githubusercontent.com'),
   COSIGN_BINARY: z.string().default('/usr/local/bin/cosign'),
   READY_TIMEOUT_MS: z.coerce.number().int().min(10_000).default(180_000),

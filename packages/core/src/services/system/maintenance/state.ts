@@ -1,10 +1,6 @@
 import { mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import {
-  MAINTENANCE_FILE,
-  maintenanceStateSchema,
-  type MaintenanceState,
-} from '@bemmoly/shared';
+import { MAINTENANCE_FILE, maintenanceStateSchema, type MaintenanceState } from '@bemmoly/shared';
 
 export { MAINTENANCE_FILE, maintenanceStateSchema, type MaintenanceState };
 

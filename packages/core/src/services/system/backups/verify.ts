@@ -65,6 +65,7 @@ export async function verifyBackup(
         deps.now?.() ?? new Date(),
         true,
       );
+      deps.onGoodBackup?.(record.completedAt ?? record.createdAt);
       return { backupId, depth, ok: true, message };
     }
     await mkdir(staging, { recursive: true });
