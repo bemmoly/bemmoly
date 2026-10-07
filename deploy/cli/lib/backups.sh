@@ -9,6 +9,7 @@ recent_backup_on_disk() {
 }
 
 cmd_backup() {
+  refuse_during_update backup
   local args=(--kind manual)
   while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -60,6 +61,7 @@ import_backup() {
 }
 
 cmd_restore() {
+  refuse_during_update restore
   local mode=replace ref=''
   ASSUME_YES=''
   while [[ $# -gt 0 ]]; do
