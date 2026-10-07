@@ -5,12 +5,12 @@ const LOGO_SLOT = '<!-- boot:logo -->';
 
 /**
  * The brand file made fit for index.html: the CSP forbids inline style
- * attributes, so `style="fill: var(--brand-mark-bg, …)"` becomes
- * `class="brand-mark-bg"` and the boot frame's markup colours it with tokens.
+ * attributes, so `style="fill: var(--brand-mark-bg, #2356C9)"` becomes the designed colour
+ * as a plain fill, as the Logo component does before any custom brand theme applies.
  */
 export function inlineLogo(svg: string): string {
   return svg
-    .replace(/\sstyle="fill:\s*var\(--([\w-]+)[^"]*"/g, ' class="$1"')
+    .replace(/\sstyle="fill:\s*var\(--([\w-]+),\s*([^)"]+)\)"/g, ' class="$1" fill="$2"')
     .replace(/\s(role|aria-label)="[^"]*"/g, '')
     .replace(/<svg\b/, '<svg aria-hidden="true" focusable="false"')
     .trim();

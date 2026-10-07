@@ -21,6 +21,7 @@
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "lint": "eslint --max-warnings 0 .",
     "test": "vitest run",
+    "brand:marks": "node scripts/brand-marks.ts",
     "brand:icons": "node scripts/brand-icons.ts"
   },
   "dependencies": {

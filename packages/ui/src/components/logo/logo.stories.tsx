@@ -1,4 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import type { CSSProperties } from 'react';
+import { buildTheme, themeStyle } from '../../theme/index.ts';
 import { PRESETS } from '../../tokens/presets.ts';
 import { Logo, type LogoTone } from './logo.tsx';
 import { WorkspaceMark } from './workspace-mark.tsx';
@@ -59,6 +61,18 @@ export const AllVariants: Story = {
   ),
 };
 
+/** Custom brand themes are the one case where the mark takes the workspace's colours. */
+const CUSTOM_BRANDS = [
+  buildTheme({ brand: '#0f766e', mode: 'light', surfaces: 'neutral', font: 'plex' }),
+  buildTheme({ brand: '#c2410c', mode: 'dark', surfaces: 'neutral', font: 'plex' }),
+];
+
+/** The builder's tokens as React style: CSS variables, and color-scheme under React's name. */
+function customStyle(theme: (typeof CUSTOM_BRANDS)[number]): CSSProperties {
+  const { 'color-scheme': colorScheme, ...variables } = themeStyle(theme);
+  return { ...variables, colorScheme } as CSSProperties;
+}
+
 export const AcrossPresets: Story = {
   render: () => (
     <div className="grid grid-cols-4 gap-3">
@@ -69,6 +83,19 @@ export const AcrossPresets: Story = {
           className="flex flex-col gap-3 rounded-card border border-br bg-sf p-4"
         >
           <span className="text-11 text-tx5">{preset.name}</span>
+          <Logo variant="lockup" />
+        </div>
+      ))}
+      {CUSTOM_BRANDS.map((theme) => (
+        <div
+          key={theme.input.brand}
+          data-theme={theme.id}
+          style={customStyle(theme)}
+          className="flex flex-col gap-3 rounded-card border border-br bg-sf p-4"
+        >
+          <span className="text-11 text-tx5">
+            Custom {theme.input.brand}, {theme.mode}
+          </span>
           <Logo variant="lockup" />
         </div>
       ))}

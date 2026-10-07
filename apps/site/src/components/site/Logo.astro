@@ -1,16 +1,14 @@
 ---
 /**
  * The brand lockup, inlined from @bemmoly/ui's brand folder (the only source of the logo).
- * The -color file takes its tile and glyph from CSS variables, set here to the theme's accent
- * fill and on-accent tokens, and its lettering from currentColor. The file is 24 units tall;
- * the wrapper's height scales it (the Landing mock's brand block is 28px tall).
+ * The -color file draws the mark in its designed colours (the variables it reads are only set
+ * for a workspace's custom brand, never on the site) and the lettering in currentColor. The
+ * file is 24 units tall; the wrapper's height scales it (the Landing mock's brand block is 28px
+ * tall).
  */
 import lockup from '@bemmoly/ui/brand/lockup-color.svg?raw';
 
 const svg = lockup.replace(/\s(width|height)="[^"]*"/g, '');
 ---
 
-<span
-  class="inline-flex h-7 text-tx [--brand-mark-bg:var(--ac-fill)] [--brand-mark-fg:var(--on-ac)] [&>svg]:h-full [&>svg]:w-auto"
-  set:html={svg}
-/>
+<span class="inline-flex h-7 text-tx [&>svg]:h-full [&>svg]:w-auto" set:html={svg} />

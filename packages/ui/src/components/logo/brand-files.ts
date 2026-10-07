@@ -26,12 +26,13 @@ export const BRAND_FILES: Record<LogoVariant, Record<LogoFileTone, string>> = {
 
 /**
  * The file's markup made decorative, since the Logo wrapper carries the accessible name. The
- * app's CSP refuses inline style attributes, so `style="fill: var(--brand-mark-bg, …)"`
- * becomes `class="brand-mark-bg"`, which the Logo colours from the same custom property.
+ * app's CSP refuses inline style attributes, so `style="fill: var(--brand-mark-bg, #2356C9)"`
+ * becomes `class="brand-mark-bg" fill="#2356C9"`: the designed colour by default, and a class
+ * the Logo recolours from the same custom property when the workspace has its own brand.
  */
 export function decorative(svg: string): string {
   return svg
-    .replace(/\sstyle="fill:\s*var\(--([\w-]+)[^"]*"/g, ' class="$1"')
+    .replace(/\sstyle="fill:\s*var\(--([\w-]+),\s*([^)"]+)\)"/g, ' class="$1" fill="$2"')
     .replace(/<svg\b([^>]*)>/, (_match, attrs: string) => {
       const kept = attrs.replace(/\s(role|aria-label|aria-hidden|focusable)="[^"]*"/g, '');
       return `<svg${kept} aria-hidden="true" focusable="false">`;

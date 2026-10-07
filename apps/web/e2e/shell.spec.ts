@@ -36,11 +36,8 @@ test('the boot frame paints before the app runs and leaves once a page renders',
 
   const boot = page.locator('#boot');
   await expect(boot.locator('svg')).toBeVisible();
-  const tile = boot.locator('.brand-mark-bg');
-  const accent = await page.evaluate(() =>
-    getComputedStyle(document.documentElement).getPropertyValue('--ac-fill').trim(),
-  );
-  await expect(tile).toHaveCSS('fill', hexToRgb(accent));
+  // The designed blue, from the brand file, not black: the CSP must not have dropped it.
+  await expect(boot.locator('.brand-mark-bg').first()).toHaveCSS('fill', hexToRgb('#2356C9'));
 
   release();
   await expect(page.getByRole('heading', { name: /, Rohan$/ })).toBeVisible();

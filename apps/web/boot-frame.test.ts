@@ -5,15 +5,15 @@ import { chunkGraph, inlineLogo } from './boot-frame.ts';
 describe('inlineLogo', () => {
   const file =
     '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10" role="img" aria-label="Bemmoly">' +
-    '<path style="fill: var(--brand-mark-bg, currentColor)" d="M0 0"/>' +
-    '<path style="fill: var(--brand-mark-fg, #fff)" d="M1 1"/>' +
+    '<path style="fill: var(--brand-mark-bg, #2356C9)" d="M0 0"/>' +
+    '<path style="fill: var(--brand-mark-fg, #9A85EA)" d="M1 1"/>' +
     '<path fill="currentColor" d="M2 2"/></svg>';
 
-  it('turns the themed fills into classes, since the CSP refuses inline styles', () => {
+  it('keeps the designed colours as plain fills, since the CSP refuses inline styles', () => {
     const svg = inlineLogo(file);
     expect(svg).not.toContain('style=');
-    expect(svg).toContain('<path class="brand-mark-bg" d="M0 0"/>');
-    expect(svg).toContain('<path class="brand-mark-fg" d="M1 1"/>');
+    expect(svg).toContain('<path class="brand-mark-bg" fill="#2356C9" d="M0 0"/>');
+    expect(svg).toContain('<path class="brand-mark-fg" fill="#9A85EA" d="M1 1"/>');
     expect(svg).toContain('<path fill="currentColor" d="M2 2"/>');
   });
 
