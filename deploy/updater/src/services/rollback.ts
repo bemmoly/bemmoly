@@ -6,6 +6,7 @@ import {
   acquireLock,
   readState,
   setMaintenance,
+  withFailure,
   withHistory,
   writeState,
   writeVersion,
@@ -37,10 +38,16 @@ export async function runRollback(
 ): Promise<UpdaterStatus> {
   const release = await acquireLock(ctx.env.BEMMOLY_DIR);
   let state = await readState(ctx.env.BEMMOLY_DIR);
+  let from = state.current ?? 'unknown';
+  // What a failure entry in the history can say about the attempt.
+  const planned: { mode: RollbackMode | null; backupId: string | null } = {
+    mode: null,
+    backupId: null,
+  };
   try {
     if (!state.previous) throw new Error('There is no previous version to roll back to');
     const current = await findApp(ctx);
-    const from = versionOf(current.app, current.image) ?? state.current ?? 'unknown';
+    from = versionOf(current.app, current.image) ?? from;
     const to = state.previous;
     const planArgs = [
       'bemmoly-system',
@@ -59,6 +66,8 @@ export async function runRollback(
       );
     }
     const mode = plan.mode;
+    planned.mode = mode;
+    planned.backupId = plan.backupId ?? null;
     const reference = imageFor(ctx, to);
     if (!(await ctx.docker.imageInfo(reference))) await obtainImage(ctx, reference);
 
@@ -147,7 +156,14 @@ export async function runRollback(
     return state;
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    state = { ...state, state: 'failed', operation: 'rollback', message };
+    state = withFailure(state, {
+      operation: 'rollback',
+      from,
+      to: state.previous ?? 'unknown',
+      at: ctx.now().toISOString(),
+      ...planned,
+      message,
+    });
     ctx.log(`rollback failed: ${message}`);
     throw error;
   } finally {

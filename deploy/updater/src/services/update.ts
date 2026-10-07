@@ -6,6 +6,7 @@ import {
   acquireLock,
   readState,
   setMaintenance,
+  withFailure,
   withHistory,
   writeState,
   writeVersion,
@@ -139,10 +140,12 @@ async function rollBackFailedUpdate(
 export async function runUpdate(ctx: UpdaterContext, tag: string): Promise<UpdaterStatus> {
   const release = await acquireLock(ctx.env.BEMMOLY_DIR);
   let state = await readState(ctx.env.BEMMOLY_DIR);
+  let from = state.current ?? 'unknown';
+  let backupId: string | null = null;
   try {
     const reference = imageFor(ctx, tag);
     const current = await findApp(ctx);
-    const from = versionOf(current.app, current.image) ?? 'unknown';
+    from = versionOf(current.app, current.image) ?? 'unknown';
     if (from === tag) throw new Error(`Bemmoly ${tag} is already running`);
 
     state = await enterStep(
@@ -162,6 +165,7 @@ export async function runUpdate(ctx: UpdaterContext, tag: string): Promise<Updat
         '--json',
       ]),
     );
+    backupId = backup.id;
     const backupSet = backup.locations[0]?.location.split('/').filter(Boolean).pop() ?? backup.id;
 
     state = await enterStep(ctx, state, 'update', 'pull', `Pulling ${reference}`);
@@ -227,7 +231,15 @@ export async function runUpdate(ctx: UpdaterContext, tag: string): Promise<Updat
     return state;
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    state = { ...state, state: 'failed', operation: 'update', message };
+    state = withFailure(state, {
+      operation: 'update',
+      from,
+      to: tag,
+      at: ctx.now().toISOString(),
+      backupId,
+      mode: null,
+      message,
+    });
     ctx.log(`update to ${tag} failed: ${message}`);
     throw error;
   } finally {
