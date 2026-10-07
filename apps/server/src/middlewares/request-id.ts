@@ -12,12 +12,19 @@ export function generateRequestId(request: IncomingMessage): string {
   return typeof incoming === 'string' && ACCEPTED_ID.test(incoming) ? incoming : randomUUID();
 }
 
-/** Fastify server options: every log line carries `requestId`. */
+/**
+ * Fastify server options: every log line carries `requestId`. Fastify's own
+ * "incoming request" and "request completed" pair is off; the telemetry plugin
+ * writes one summary line per request instead.
+ */
 export function requestIdOptions() {
   return {
     genReqId: generateRequestId,
     requestIdHeader: false,
-    logController: new LogController({ requestIdLogLabel: 'requestId' }),
+    logController: new LogController({
+      requestIdLogLabel: 'requestId',
+      disableRequestLogging: true,
+    }),
   } as const;
 }
 

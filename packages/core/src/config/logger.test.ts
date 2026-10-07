@@ -43,7 +43,13 @@ describe('logger', () => {
     expect(output).toHaveLength(fixture.events.length);
     const all = output.join('\n');
     expect(all).not.toMatch(/LEAK/);
-    for (const kept of ['KEEP-agent', 'KEEP-smtp', 'KEEP-recipient', 'KEEP-subject', 'KEEP-standard']) {
+    for (const kept of [
+      'KEEP-agent',
+      'KEEP-smtp',
+      'KEEP-recipient',
+      'KEEP-subject',
+      'KEEP-standard',
+    ]) {
       expect(all).toContain(kept);
     }
   });
