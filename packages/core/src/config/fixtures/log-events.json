@@ -1,0 +1,66 @@
+{
+  "_comment": "Every value containing LEAK must never reach a log line. Values containing KEEP must.",
+  "events": [
+    {
+      "msg": "incoming request",
+      "req": {
+        "method": "POST",
+        "url": "/api/v1/sessions",
+        "headers": {
+          "cookie": "sid=LEAK-cookie",
+          "authorization": "Bearer LEAK-bearer",
+          "x-api-key": "LEAK-api-key-header",
+          "x-metrics-token": "LEAK-metrics-token",
+          "proxy-authorization": "Basic LEAK-proxy",
+          "user-agent": "KEEP-agent"
+        },
+        "body": { "email": "ada@example.com", "password": "LEAK-login-password" }
+      },
+      "res": { "statusCode": 201, "headers": { "set-cookie": "sid=LEAK-set-cookie" } }
+    },
+    {
+      "msg": "smtp settings saved",
+      "userId": "0199b1a2-7c3d-7e4f-8a5b-6c7d8e9f0a1b",
+      "smtp": { "host": "KEEP-smtp.example.com", "auth": { "password": "LEAK-smtp-password" } },
+      "smtpUrl": "smtp://user:LEAK-smtp-url@mail.example.com"
+    },
+    {
+      "msg": "email queued",
+      "email": {
+        "to": "KEEP-recipient",
+        "subject": "KEEP-subject",
+        "html": "<p>LEAK-email-html</p>",
+        "text": "LEAK-email-text",
+        "body": "LEAK-email-body"
+      },
+      "outbox": { "message": { "html": "LEAK-outbox-html", "text": "LEAK-outbox-text" } }
+    },
+    {
+      "msg": "ai call finished",
+      "actorId": "0199b1a2-7c3d-7e4f-8a5b-000000000002",
+      "ai": {
+        "role": "KEEP-standard",
+        "prompt": "LEAK-prompt",
+        "systemPrompt": "LEAK-system-prompt",
+        "messages": [{ "role": "user", "content": "LEAK-message" }],
+        "output": "LEAK-output",
+        "usage": { "inputTokens": 1200, "outputTokens": 300 }
+      },
+      "provider": { "apiKey": "LEAK-provider-key", "credentials": { "region": "LEAK-region" } }
+    },
+    {
+      "msg": "token issued",
+      "token": "LEAK-token",
+      "session": {
+        "accessToken": "LEAK-access",
+        "refreshToken": "LEAK-refresh",
+        "idToken": "LEAK-id"
+      },
+      "oidc": { "clientSecret": "LEAK-client-secret", "privateKey": "LEAK-private-key" },
+      "config": {
+        "databaseUrl": "postgres://bemmoly:LEAK-db@db/bemmoly_db",
+        "secretKey": "LEAK-secret-key"
+      }
+    }
+  ]
+}
