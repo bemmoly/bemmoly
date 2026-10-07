@@ -57,7 +57,7 @@ export async function checkForUpdates(
   const enabled = await readSetting(deps.settings, 'system.updates.check');
   if (!enabled && !options.force) return null;
   const [override, channel] = await Promise.all([
-    readSetting(deps.settings, 'system.updates.manifest_url'),
+    readSetting(deps.settings, 'system.updates.manifestUrl'),
     readSetting(deps.settings, 'system.updates.channel'),
   ]);
   const previous = await readUpdateCheckState(deps.config.dataDir);

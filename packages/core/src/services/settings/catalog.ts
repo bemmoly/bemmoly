@@ -1,4 +1,4 @@
-import { NotFoundError } from '@bemmoly/shared';
+import { NotFoundError, SETTING_KEY_PATTERN } from '@bemmoly/shared';
 import type { SettingDefinition } from '../../contracts/settings.ts';
 import type { ModuleRegistry } from '../../modules/registry.ts';
 import { KERNEL_SETTINGS } from './kernel-settings.ts';
@@ -21,10 +21,17 @@ export function createSettingsCatalog(
   kernel: readonly SettingDefinition[] = KERNEL_SETTINGS,
 ): SettingsCatalog {
   const entries = new Map<string, CatalogEntry>();
-  for (const definition of kernel) entries.set(definition.key, { definition });
+  const add = (entry: CatalogEntry) => {
+    // A key the API's key schema refuses would make every settings list fail to parse.
+    if (!SETTING_KEY_PATTERN.test(entry.definition.key)) {
+      throw new TypeError(`Setting key "${entry.definition.key}" must look like "<area>.<name>"`);
+    }
+    entries.set(entry.definition.key, entry);
+  };
+  for (const definition of kernel) add({ definition });
   for (const loaded of modules?.list() ?? []) {
     for (const definition of loaded.contributions.settings) {
-      entries.set(definition.key, { definition, moduleId: loaded.module.id });
+      add({ definition, moduleId: loaded.module.id });
     }
   }
   return {

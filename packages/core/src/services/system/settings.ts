@@ -24,7 +24,7 @@ declare module '../../contracts/settings.ts' {
     'system.backups.verification': BackupVerificationSettings;
     'system.updates.channel': ReleaseChannel;
     'system.updates.check': boolean;
-    'system.updates.manifest_url': string | null;
+    'system.updates.manifestUrl': string | null;
   }
 }
 
@@ -43,7 +43,7 @@ const SYSTEM_DEFAULTS = {
   'system.backups.verification': backupVerificationSettingsSchema.parse({}),
   'system.updates.channel': 'stable',
   'system.updates.check': false,
-  'system.updates.manifest_url': null,
+  'system.updates.manifestUrl': null,
 } as const satisfies {
   [Key in SystemSettingKey]: unknown;
 };
@@ -56,7 +56,7 @@ export type SystemSettingKey =
   | 'system.backups.verification'
   | 'system.updates.channel'
   | 'system.updates.check'
-  | 'system.updates.manifest_url';
+  | 'system.updates.manifestUrl';
 
 /**
  * The system settings, registered with the settings service at boot. The S3
@@ -91,7 +91,7 @@ export const SYSTEM_SETTINGS: readonly SettingDefinition[] = [
   },
   { key: 'system.updates.channel', schema: releaseChannelSchema, default: 'stable' },
   { key: 'system.updates.check', schema: z.boolean(), default: false },
-  { key: 'system.updates.manifest_url', schema: z.url().nullable(), default: null },
+  { key: 'system.updates.manifestUrl', schema: z.url().nullable(), default: null },
 ];
 
 /** Reads a system setting; the documented default when no settings service is wired. */

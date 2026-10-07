@@ -6,7 +6,10 @@ import type { Actor, Authorize } from '../../contracts/authz.ts';
 import type { SettingDefinition } from '../../contracts/settings.ts';
 import type { SettingRow } from '../../models/settings.ts';
 import { createSettingsAdmin } from './admin.ts';
+import { EMAIL_SETTING_DEFINITIONS } from '../email/index.ts';
+import { SYSTEM_SETTINGS } from '../system/index.ts';
 import { createSettingsCatalog } from './catalog.ts';
+import { KERNEL_SETTINGS } from './kernel-settings.ts';
 import { createSecretBox } from './crypto.ts';
 import { createSettingsService } from './service.ts';
 import type { SettingsStore } from './store.ts';
@@ -138,5 +141,17 @@ describe('settings admin', () => {
       'email.smtp.password',
       'workspace.name',
     ]);
+  });
+});
+
+describe('settings catalog', () => {
+  it('refuses a key the API key schema would reject', () => {
+    const bad = { key: 'system.updates.manifest_url', schema: z.string(), default: '' };
+    expect(() => createSettingsCatalog(undefined, [bad])).toThrow(/must look like/);
+  });
+
+  it('accepts every key the kernel, email and system services register', () => {
+    const all = [...KERNEL_SETTINGS, ...EMAIL_SETTING_DEFINITIONS, ...SYSTEM_SETTINGS];
+    expect(() => createSettingsCatalog(undefined, all)).not.toThrow();
   });
 });
