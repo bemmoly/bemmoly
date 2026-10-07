@@ -85,7 +85,6 @@ services:
     image: ${UPDATER_IMAGE:-ghcr.io/bemmoly/updater}:${UPDATER_VERSION:-${VERSION}}
     profiles: [updater]
     restart: unless-stopped
-    init: true
     # The Docker socket is root-equivalent: no published port, read-only, token only.
     environment:
       UPDATER_TOKEN: ${UPDATER_TOKEN:?UPDATER_TOKEN is not set in .env}

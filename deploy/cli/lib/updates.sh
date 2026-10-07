@@ -11,7 +11,7 @@ run_updater() {
   local network
   network=$(docker inspect --format '{{range $name, $_ := .NetworkSettings.Networks}}{{$name}} {{end}}' bemmoly-bemmoly-1 2>/dev/null | awk '{ print $1 }')
   [[ -n "${network}" ]] || die "The bemmoly container is not running" "Start it with: sudo bemmoly start"
-  docker run --rm --init --network "${network}" \
+  docker run --rm --network "${network}" \
     -v /var/run/docker.sock:/var/run/docker.sock \
     -v "${BEMMOLY_DIR}:${BEMMOLY_DIR}" \
     -e UPDATER_TOKEN="$(env_value UPDATER_TOKEN)" \
