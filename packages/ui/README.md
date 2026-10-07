@@ -6,16 +6,16 @@ which are the pixel source of truth.
 
 ## Entry points
 
-| Import | What it gives you |
-|---|---|
-| `@bemmoly/ui` | Components (and, for compatibility, the tokens). |
-| `@bemmoly/ui/tokens` | Token names, presets, `THEMES`, `themeById`, scales. |
-| `@bemmoly/ui/theme` | `buildTheme`, `contrastCheck`, `applyTheme`, `clearTheme`, `themeStyle`, `toHexColors`. |
-| `@bemmoly/ui/icons` | `Icon` and the typed `IconName` set. |
+| Import                     | What it gives you                                                                            |
+| -------------------------- | -------------------------------------------------------------------------------------------- |
+| `@bemmoly/ui`              | Components (and, for compatibility, the tokens).                                             |
+| `@bemmoly/ui/tokens`       | Token names, presets, `THEMES`, `themeById`, scales.                                         |
+| `@bemmoly/ui/theme`        | `buildTheme`, `contrastCheck`, `applyTheme`, `clearTheme`, `themeStyle`, `toHexColors`.      |
+| `@bemmoly/ui/icons`        | `Icon` and the typed `IconName` set.                                                         |
 | `@bemmoly/ui/tailwind.css` | The Tailwind 4 theme. Import after `tailwindcss`; it removes the default palette and scales. |
-| `@bemmoly/ui/theme.css` | Every preset as CSS variables, keyed by `data-theme` on any element (Classic on `:root`). |
-| `@bemmoly/ui/fonts.css` | The self-hosted typefaces. |
-| `@bemmoly/ui/brand/*` | Brand files and the generated favicons and app icons (see `assets/brand/README.md`). |
+| `@bemmoly/ui/theme.css`    | Every preset as CSS variables, keyed by `data-theme` on any element (Classic on `:root`).    |
+| `@bemmoly/ui/fonts.css`    | The self-hosted typefaces.                                                                   |
+| `@bemmoly/ui/brand/*`      | Brand files and the generated favicons and app icons (see `assets/brand/README.md`).         |
 
 ## Rules
 
@@ -31,15 +31,15 @@ which are the pixel source of truth.
 
 One accent is reserved for content the AI produced, and nothing else uses it:
 
-| Token | Classic | Used for |
-|---|---|---|
-| `--ai` | `#2456c9` | The AI dot, AI titles, AI action text. |
-| `--ai-mute` | `#7a93d9` | Provenance ("from 14 comments, 2 PRs"), the ⌘K hint. |
-| `--ai-bg` | `#f6f8fe` | AI card and suggestion backgrounds. |
-| `--ai-tint` | `#eef3fe` | The "Ask Bemmoly" pill. |
-| `--ai-br` | `#cdd8f3` | AI card border, AI action borders, the risk bar. |
-| `--ai-br2` | `#d9e1f5` | The lighter border of page-level AI cards and the plan table. |
-| `--ai-tx` | `#2c3545` | Body copy inside AI briefs and suggestions. |
+| Token       | Classic   | Used for                                                      |
+| ----------- | --------- | ------------------------------------------------------------- |
+| `--ai`      | `#2456c9` | The AI dot, AI titles, AI action text.                        |
+| `--ai-mute` | `#7a93d9` | Provenance ("from 14 comments, 2 PRs"), the ⌘K hint.          |
+| `--ai-bg`   | `#f6f8fe` | AI card and suggestion backgrounds.                           |
+| `--ai-tint` | `#eef3fe` | The "Ask Bemmoly" pill.                                       |
+| `--ai-br`   | `#cdd8f3` | AI card border, AI action borders, the risk bar.              |
+| `--ai-br2`  | `#d9e1f5` | The lighter border of page-level AI cards and the plan table. |
+| `--ai-tx`   | `#2c3545` | Body copy inside AI briefs and suggestions.                   |
 
 Every mock draws AI content in the accent family, so these start equal to the accent tokens in
 every preset and custom theme. Components refer only to the `ai-*` names, so a preset can move AI
