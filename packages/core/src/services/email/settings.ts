@@ -77,3 +77,24 @@ export async function readEmailConfig(
     digestMinutes,
   };
 }
+
+/**
+ * For the system service's SMTP health check: email counts as configured once
+ * the provider is SMTP with a host. The log provider delivers only to the dev
+ * mailbox, so it is reported as not configured.
+ */
+export function createEmailConfigurationProbe(settings: SettingsService): {
+  describe(): Promise<{ configured: boolean; value: string }>;
+} {
+  return {
+    async describe() {
+      const [provider, host, port] = await Promise.all([
+        settings.get('email.provider'),
+        settings.get('email.smtp.host'),
+        settings.get('email.smtp.port'),
+      ]);
+      if (provider === 'smtp' && host) return { configured: true, value: `${host}:${port}` };
+      return { configured: false, value: provider === 'log' ? 'log (dev mailbox)' : provider };
+    },
+  };
+}

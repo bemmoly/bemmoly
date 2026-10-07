@@ -1,3 +1,4 @@
+import type { JobQueue } from '../../contracts/jobs.ts';
 import type { JobDefinition } from '../../modules/registries.ts';
 import { BACKUP_DRILL_JOB, BACKUP_JOB, handleBackupJob } from './backups/jobs.ts';
 import { BACKUP_TICK_CRON } from './backups/schedule.ts';
@@ -42,4 +43,18 @@ export function systemJobs(deps: SystemDependencies): JobDefinition[] {
       },
     },
   ];
+}
+
+/**
+ * Registers the system jobs on the kernel's JobQueue. The host calls it after
+ * the data kernel exists, since the jobs' dependencies include the kernel's
+ * settings, events and queue; the queue works them once it starts.
+ */
+export function registerSystemJobs(queue: JobQueue, deps: SystemDependencies): void {
+  for (const job of systemJobs(deps)) {
+    queue.register(job.name, (payload, ctx) => job.handle(payload, ctx), {
+      ...(job.schedule ? { schedule: job.schedule } : {}),
+      ...(job.retryLimit !== undefined ? { retryLimit: job.retryLimit } : {}),
+    });
+  }
 }

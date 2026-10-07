@@ -14,7 +14,12 @@ export type { NewOutboxEmail } from './outbox/repository.ts';
 export { createSender, type SenderDriver, type SenderPolicy } from './senders/base.ts';
 export { failureOf, type EmailFailure } from './senders/failure.ts';
 export { createEmailService, type EmailService } from './service.ts';
-export { EMAIL_SETTING_DEFINITIONS, readEmailConfig, type EmailConfig } from './settings.ts';
+export {
+  createEmailConfigurationProbe,
+  EMAIL_SETTING_DEFINITIONS,
+  readEmailConfig,
+  type EmailConfig,
+} from './settings.ts';
 export {
   backupFailedEmail,
   DIGEST_LINE_LIMIT,

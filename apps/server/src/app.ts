@@ -2,6 +2,7 @@ import type {
   DatabaseProbe,
   IdentityDependencies,
   KernelRouteDependencies,
+  MaintenanceState,
   ModuleRegistry,
   SqlClient,
 } from '@bemmoly/core';
@@ -9,6 +10,7 @@ import {
   authentication,
   csrfProtection,
   kernelRoutes,
+  maintenanceHook,
   rateLimiting,
   requestUserId,
   securityHeaders,
@@ -37,6 +39,8 @@ export interface BuildAppOptions {
   kernel?: Omit<KernelRouteDependencies, 'modules' | 'database' | 'identity'>;
   /** Sign-in, people, roles and audit; present when a database is configured. */
   identity?: IdentityDependencies & { sql: SqlClient };
+  /** Reads <data>/maintenance.json; while set, writes get 503 and pages the maintenance page. */
+  maintenance?: () => Promise<MaintenanceState | null>;
   /** Absolute path of the web build; skipped when it has no index.html. */
   webRoot?: string;
   /** Defaults to the process-wide metrics; tests pass their own. */
@@ -56,6 +60,7 @@ export async function buildApp(options: BuildAppOptions): Promise<FastifyInstanc
   });
   const metrics = options.metrics ?? getMetrics();
   app.addHook('onRequest', exposeRequestId);
+  if (options.maintenance) app.addHook('onRequest', maintenanceHook(options.maintenance));
   app.setErrorHandler(errorHandler);
   await app.register(httpTelemetry, { metrics, actorOf: requestUserId });
   const { BEMMOLY_PUBLIC_URL: publicUrl } = options.env;

@@ -40,7 +40,7 @@ export {
   type ClientInfo,
   type IssuedSession,
 } from './sessions.ts';
-export { createFirstAdmin, getSetupStatus } from './setup.ts';
+export { createFirstAdmin, getSetupStatus, isSetupOpen } from './setup.ts';
 export {
   addTeamMember,
   createTeam,

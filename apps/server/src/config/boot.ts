@@ -1,14 +1,14 @@
 import {
-  authenticateRequest,
   createEnabledModuleCatalog,
   createJobQueueHandle,
   createLocalEventBus,
+  createMaintenanceReader,
+  createModuleDataBackupHandle,
   createRealtimeService,
   createSettingsReaderHandle,
-  createUserDirectory,
   EMAIL_SETTING_DEFINITIONS,
   loadModules,
-  wireEmailNotifications,
+  SYSTEM_SETTINGS,
   type BemmolyModule,
 } from '@bemmoly/core';
 import { createLogger, type Env } from '@bemmoly/core/config';
@@ -16,8 +16,9 @@ import { getMetrics } from '@bemmoly/core/telemetry';
 import type { FastifyInstance } from 'fastify';
 import { buildApp, type BuildAppOptions } from '../app.ts';
 import { connectDatabase, type DatabaseConnection } from './database.ts';
-import { identityRoutes, identityWiring } from './identity.ts';
+import { identityWiring } from './identity.ts';
 import { createDataKernel, type DataKernel } from './kernel.ts';
+import { wireKernelServices } from './services.ts';
 
 export interface BootOptions {
   env: Env;
@@ -34,10 +35,11 @@ export interface Booted {
 }
 
 /**
- * Connects, wires identity, applies changesets, loads modules and builds the
- * app. With a database every module in the image is registered and the
- * modules table decides which are enabled, live; without one, BEMMOLY_MODULES
- * does and only health and the module list are served.
+ * Connects, wires identity, applies changesets, loads modules, wires the
+ * services built on the kernel and builds the app. With a database every module
+ * in the image is registered and the modules table decides which are enabled,
+ * live; without one, BEMMOLY_MODULES does and only health and the module list
+ * are served.
  */
 export async function bootApplication(options: BootOptions): Promise<Booted> {
   const { env } = options;
@@ -45,8 +47,11 @@ export async function bootApplication(options: BootOptions): Promise<Booted> {
   if (options.logger === false) logger.level = 'silent';
   const database = connectDatabase(env);
   const catalog = createEnabledModuleCatalog();
+  const backup = createModuleDataBackupHandle();
   const identity = identityWiring(
-    database ? { db: database.db, modules: catalog, publicUrl: env.BEMMOLY_PUBLIC_URL } : undefined,
+    database
+      ? { db: database.db, modules: catalog, publicUrl: env.BEMMOLY_PUBLIC_URL, backup }
+      : undefined,
   );
   const realtime = database
     ? createRealtimeService({
@@ -67,16 +72,17 @@ export async function bootApplication(options: BootOptions): Promise<Booted> {
     ...(database ? { database: database.sql } : {}),
   });
   catalog.bindRegistry(modules);
+  const databaseUrl = env.DATABASE_URL;
   const kernel =
-    database && realtime && env.DATABASE_URL
+    database && realtime && databaseUrl
       ? await createDataKernel({
-          env: { ...env, DATABASE_URL: env.DATABASE_URL },
+          env: { ...env, DATABASE_URL: databaseUrl },
           sql: database.sql,
           modules,
           realtime,
           jobQueue,
           identity,
-          settingDefinitions: EMAIL_SETTING_DEFINITIONS,
+          settingDefinitions: [...EMAIL_SETTING_DEFINITIONS, ...SYSTEM_SETTINGS],
           metrics: { jobs: getMetrics().jobs, realtime: getMetrics().realtime },
           logger,
         })
@@ -85,42 +91,27 @@ export async function bootApplication(options: BootOptions): Promise<Booted> {
     settingsReader.bind(kernel.settings);
     catalog.bindState(kernel.moduleState);
   }
-  const people =
-    database && kernel
-      ? identityRoutes({
-          db: database.db,
-          sql: database.sql,
+  const services =
+    database && kernel && databaseUrl
+      ? wireKernelServices({
+          env: { ...env, DATABASE_URL: databaseUrl },
+          database,
+          kernel,
+          identity,
           modules: catalog,
-          events: kernel.events,
-          settings: kernel.settings,
-          publicUrl: env.BEMMOLY_PUBLIC_URL,
-        })
-      : undefined;
-  const mail =
-    database && kernel
-      ? wireEmailNotifications({
-          env,
-          sql: database.sql,
-          settings: kernel.settings,
-          jobs: kernel.jobs,
-          realtime: kernel.realtime,
-          events: kernel.events,
-          users: createUserDirectory(database.db),
-          authorize: identity.authorize,
-          authenticate: authenticateRequest,
+          backup,
           logger,
         })
       : undefined;
   const app = await buildApp({
     env,
     modules,
+    maintenance: createMaintenanceReader(env.BEMMOLY_DATA_DIR),
     ...(options.webRoot ? { webRoot: options.webRoot } : {}),
     ...(options.logger !== undefined ? { logger: options.logger } : {}),
     ...(database ? { database: database.probe } : {}),
-    ...(kernel
-      ? { kernel: { ...kernel.routes, ...(mail ? { emailNotifications: mail.routes } : {}) } }
-      : {}),
-    ...(people ? { identity: people } : {}),
+    ...(kernel ? { kernel: { ...kernel.routes, ...services?.routes } } : {}),
+    ...(services ? { identity: services.identity } : {}),
   });
   return { app, ...(database ? { database } : {}), ...(kernel ? { kernel } : {}) };
 }

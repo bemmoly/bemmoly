@@ -30,3 +30,25 @@ export function createModuleDataBackup(deps: SystemDependencies): ModuleDataBack
     },
   };
 }
+
+export interface ModuleDataBackupHandle extends ModuleDataBackup {
+  bind(deps: SystemDependencies): void;
+}
+
+/**
+ * The module admin is built with the data kernel, before the system service's
+ * dependencies (the kernel's settings, jobs and events) exist; the host binds
+ * them once they do. Until then removing module data refuses.
+ */
+export function createModuleDataBackupHandle(): ModuleDataBackupHandle {
+  let bound: ModuleDataBackup | undefined;
+  return {
+    bind(deps) {
+      bound = createModuleDataBackup(deps);
+    },
+    async backupBeforeRemoval(input) {
+      if (!bound) throw new ModuleBackupError('Backups are not available in this process yet');
+      return bound.backupBeforeRemoval(input);
+    },
+  };
+}

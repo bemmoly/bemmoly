@@ -1,6 +1,7 @@
 import type { Database } from '../../clients/drizzle.ts';
 import { recordAudit, type AuditEntryInput } from './record.ts';
 
+export { createAuditActivity, type AuditActivityCounter } from './activity.ts';
 export { auditCsvHeader, auditCsvRow, auditLogToCsv, csvCell } from './csv.ts';
 export { exportAuditLog } from './export.ts';
 export { EXPORT_MAX_ROWS, iterateAuditLog, listAuditLog, presentAuditEntry } from './list.ts';

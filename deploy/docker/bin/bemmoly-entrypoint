@@ -46,10 +46,7 @@ run_changesets() {
   esac
   status=0
   bemmoly-db update || status=$?
-  if [ "${status}" -eq 127 ]; then
-    log "the changelog runner is not in this image; applying the system changesets only"
-    bemmoly-system schema apply --json >/dev/null
-  elif [ "${status}" -ne 0 ]; then
+  if [ "${status}" -ne 0 ]; then
     log "changesets failed (exit ${status}); not starting. See the lines above, then: bemmoly db status"
     exit "${status}"
   fi

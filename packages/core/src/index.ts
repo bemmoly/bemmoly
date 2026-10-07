@@ -16,6 +16,7 @@ export type { SystemControllerDependencies } from './controllers/system.controll
 export { maintenanceHook } from './middlewares/maintenance.ts';
 export { backups, type BackupRow } from './models/backups.ts';
 export {
+  createEmailConfigurationProbe,
   createEmailService,
   createMemoryMailbox,
   EMAIL_SEND_JOB,
@@ -36,6 +37,7 @@ export {
   type NotificationsService,
 } from './services/notifications/index.ts';
 export {
+  createAuditActivity,
   createAuditService,
   type AuditEntryInput,
   type AuditService,
@@ -55,6 +57,7 @@ export {
   createUserDirectory,
   deleteExpiredSessions,
   INVITATION_CREATED,
+  isSetupOpen,
   PASSWORD_RESET_REQUESTED,
   type IdentityDependencies,
   type InvitationCreatedPayload,

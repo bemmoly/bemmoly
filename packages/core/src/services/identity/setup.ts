@@ -28,6 +28,11 @@ export async function getSetupStatus(db: Database): Promise<SetupStatusResponse>
   return { initialized: await anyUserExists(db) };
 }
 
+/** True until the first admin exists; the wizard's health checks are anonymous until then. */
+export async function isSetupOpen(db: Database): Promise<boolean> {
+  return !(await anyUserExists(db));
+}
+
 /**
  * Creates the first account, an Org admin flagged break-glass so it keeps
  * password sign-in when SSO is required later, and stores the workspace name

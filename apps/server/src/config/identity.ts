@@ -47,6 +47,8 @@ export interface IdentityWiringInput {
   /** Enabled modules; bound to the module state once the kernel creates it. */
   modules: ModuleCatalog;
   publicUrl: string;
+  /** Takes a verified backup before remove-data; bound once the system service exists. */
+  backup?: ModuleDataBackup;
 }
 
 /** The identity hooks the kernel calls; built before the kernel, from the database alone. */
@@ -59,8 +61,7 @@ export function identityWiring(input?: IdentityWiringInput): IdentityWiring {
     moduleAccess: createModuleAccessResolver({ db, modules }),
     applyDefaultAccess: createApplyModuleDefaultAccess(db),
     authorize: createAuthorize({ db, modules }),
-    // TODO: `backup` is left unset for the deploy stream, which provides the
-    // ModuleDataBackup; until it is wired here, remove-data refuses to run.
+    ...(input.backup ? { backup: input.backup } : {}),
     housekeeping: [{ name: 'sessions', run: (now) => deleteExpiredSessions(db, now) }],
   };
 }

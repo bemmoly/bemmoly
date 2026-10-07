@@ -15,7 +15,8 @@ export {
   type BackupVerificationFailedPayload,
   type UpdateAvailablePayload,
 } from './events.ts';
-export { SYSTEM_JOBS, systemJobs } from './jobs.ts';
+export { registerSystemJobs, SYSTEM_JOBS, systemJobs } from './jobs.ts';
+export { createRunnerChangelogProbe, type RunnerChangelogProbeOptions } from './changelog-probe.ts';
 export { STABLE_MANIFEST_URL, SYSTEM_SETTINGS } from './settings.ts';
 
 export {
@@ -40,7 +41,12 @@ export {
 } from './backups/encryption.ts';
 export { syncBackupIndex } from './backups/index-sync.ts';
 export { handleBackupJob } from './backups/jobs.ts';
-export { createModuleDataBackup, ModuleBackupError } from './backups/module-backup.ts';
+export {
+  createModuleDataBackup,
+  createModuleDataBackupHandle,
+  ModuleBackupError,
+  type ModuleDataBackupHandle,
+} from './backups/module-backup.ts';
 export { backupManifestSchema, buildManifest, type BackupManifest } from './backups/manifest.ts';
 export { pruneBackups } from './backups/prune.ts';
 export { createBackupRepository, toBackupDto, type BackupRecord } from './backups/repository.ts';
@@ -73,7 +79,6 @@ export {
 } from './maintenance/index.ts';
 
 export { applyUpdate, getUpdatesOverview, requestRollback } from './updates/admin.ts';
-export { createSqlAuditActivity } from './updates/audit-activity.ts';
 export { storeCatalogUpload, MAX_BUNDLE_BYTES } from './updates/catalog.ts';
 export { checkForUpdates } from './updates/check.ts';
 export { computeRollbackPlan } from './updates/rollback-plan.ts';
@@ -84,7 +89,5 @@ export {
 } from './updates/rollback-mode.ts';
 export { selectAvailable } from './updates/select.ts';
 
-export { SYSTEM_CHANGESETS } from './changelog.ts';
-export { applySystemChangesets } from './schema-fallback.ts';
 export { createStderrLogger } from './utils/stderr-logger.ts';
 export { diskSpace, formatBytes } from './utils/disk.ts';

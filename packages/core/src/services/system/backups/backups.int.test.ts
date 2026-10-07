@@ -3,7 +3,7 @@ import path from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createSqlClient } from '../../../clients/postgres.ts';
 import { startTestDatabase, type TestDatabase } from '../../../testing/postgres.ts';
-import { applySystemChangesets } from '../schema-fallback.ts';
+import { applyKernelChangelog } from '../../../testing/kernel-changelog.ts';
 import { scanAttachments } from './attachments.ts';
 import { createBackupRepository } from './repository.ts';
 import { mountBackup, restoreBackup, unmountBackup } from './restore.ts';
@@ -38,10 +38,12 @@ describe('backups against a real Postgres 18 with pg_dump and pg_restore', () =>
       destinations: () => [remote],
       passphrase: PASSPHRASE,
     });
-    await applySystemChangesets(harness.sql, () => undefined);
-    await harness.sql`create table users (id serial primary key, email text not null)`;
+    await applyKernelChangelog(harness.sql);
     await harness.sql`create table issues (id serial primary key, title text not null)`;
-    await harness.sql`insert into users (email) select 'u' || g || '@acme.test' from generate_series(1, 12) g`;
+    await harness.sql`
+      insert into users (email, name, role_id)
+      select 'u' || g || '@acme.test', 'User ' || g, (select id from roles where key = 'member')
+      from generate_series(1, 12) g`;
     await harness.sql`insert into issues (title) select 'Issue ' || g from generate_series(1, 40) g`;
     await writeAttachment(harness.dataDir, 'aa11', 'first attachment');
     await writeAttachment(harness.dataDir, 'bb22', 'second attachment');

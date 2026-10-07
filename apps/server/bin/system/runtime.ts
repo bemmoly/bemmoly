@@ -1,17 +1,29 @@
 import {
-  createPgTools,
-  createSqlAuditActivity,
+  createChangelogRunner,
+  createDatabase,
+  createNotifyPublisher,
+  createSecretBox,
+  createSettingsCatalog,
+  createSettingsService,
+  createSettingsStore,
   createSqlClient,
   createStderrLogger,
-  createTarTool,
-  createUpdaterClient,
+  EMAIL_SETTING_DEFINITIONS,
+  KERNEL_SETTINGS,
+  loadKernelChangelog,
+  loadModules,
+  readEnabledModuleIds,
+  sourcesFromRegistry,
+  SYSTEM_SETTINGS,
   type Actor,
   type SqlClient,
   type SystemDependencies,
 } from '@bemmoly/core';
 import { loadEnv, type Env } from '@bemmoly/core/config';
+import { systemOnlyAuthorize } from '../../src/config/identity.ts';
 import { importAvailableModules } from '../../src/config/modules.ts';
-import { createCliChangelogProbe } from './changelog-probe.ts';
+import { systemDependencies } from '../../src/config/system.ts';
+import { APP_VERSION } from '../../src/config/version.ts';
 
 export interface Runtime {
   env: Env;
@@ -29,14 +41,15 @@ export class UsageError extends Error {
 
 /**
  * The system service as the command line sees it: the same env as the server, a
- * small pool without the request statement timeout, and logs on stderr. Settings,
- * events, jobs and the changelog runner are wired by the host process; here their
- * documented defaults apply.
+ * small pool without the request statement timeout, and logs on stderr. Settings
+ * are the workspace's own (their changes reach the server through NOTIFY), and
+ * the changelog is read through the runner, as in the server.
  */
 export async function createRuntime(): Promise<Runtime> {
   const env = loadEnv();
-  if (!env.DATABASE_URL) throw new UsageError('DATABASE_URL is not set in /var/bemmoly/.env');
-  const sql = createSqlClient(env.DATABASE_URL, {
+  const databaseUrl = env.DATABASE_URL;
+  if (!databaseUrl) throw new UsageError('DATABASE_URL is not set in /var/bemmoly/.env');
+  const sql = createSqlClient(databaseUrl, {
     applicationName: 'bemmoly-system',
     maxConnections: 4,
     statementTimeoutMs: 0,
@@ -45,45 +58,35 @@ export async function createRuntime(): Promise<Runtime> {
     LOG_LEVEL: env.LOG_LEVEL === 'debug' ? 'debug' : 'warn',
     LOG_FORMAT: 'json',
   });
-  const moduleIds =
-    env.BEMMOLY_MODULES.length > 0
-      ? env.BEMMOLY_MODULES
-      : (await importAvailableModules()).map((module) => module.id);
-  const changelog = createCliChangelogProbe({
-    databaseUrl: env.DATABASE_URL,
-    modules: env.BEMMOLY_MODULES,
-  });
-  const deps: SystemDependencies = {
-    config: {
-      databaseUrl: env.DATABASE_URL,
-      dataDir: env.BEMMOLY_DATA_DIR,
-      backupDir: env.BEMMOLY_BACKUP_DIR,
-      appVersion: env.BEMMOLY_VERSION,
-      role: env.BEMMOLY_ROLE,
-      publicUrl: env.BEMMOLY_PUBLIC_URL,
-      ...(env.BEMMOLY_BACKUP_PASSPHRASE ? { backupPassphrase: env.BEMMOLY_BACKUP_PASSPHRASE } : {}),
-    },
-    sql,
-    pgTools: createPgTools({ binDir: env.BEMMOLY_PG_BIN_DIR }),
-    tar: createTarTool(),
+  const registry = loadModules({ available: await importAvailableModules() });
+  const enabled =
+    env.BEMMOLY_MODULES.length > 0 ? env.BEMMOLY_MODULES : await readEnabledModuleIds(sql);
+  const settings = createSettingsService({
+    store: createSettingsStore(sql),
+    catalog: createSettingsCatalog(registry, [
+      ...KERNEL_SETTINGS,
+      ...EMAIL_SETTING_DEFINITIONS,
+      ...SYSTEM_SETTINGS,
+    ]),
+    secrets: createSecretBox(env.BEMMOLY_SECRET_KEY),
+    realtime: createNotifyPublisher(sql),
     logger,
-    authorize: async () => undefined,
-    modules: () => moduleIds,
-    audit: createSqlAuditActivity(sql),
-    ...(changelog ? { changelog } : {}),
-    ...(env.BEMMOLY_UPDATER_URL && env.UPDATER_TOKEN
-      ? {
-          updater: createUpdaterClient({
-            baseUrl: env.BEMMOLY_UPDATER_URL,
-            token: env.UPDATER_TOKEN,
-          }),
-        }
-      : {}),
-  };
-  return {
-    env,
+  });
+  const runner = createChangelogRunner({
     sql,
-    deps,
-    close: () => sql.end({ timeout: 5 }),
-  };
+    kernel: await loadKernelChangelog(),
+    modules: sourcesFromRegistry(registry),
+    appVersion: APP_VERSION,
+  });
+  const deps = systemDependencies({
+    env: { ...env, DATABASE_URL: databaseUrl },
+    sql,
+    db: createDatabase(sql),
+    logger,
+    authorize: systemOnlyAuthorize,
+    settings,
+    runner,
+    enabledModules: () => enabled,
+  });
+  return { env, sql, deps, close: () => sql.end({ timeout: 5 }) };
 }

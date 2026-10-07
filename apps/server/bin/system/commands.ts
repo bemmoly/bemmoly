@@ -1,5 +1,4 @@
 import {
-  applySystemChangesets,
   checkForUpdates,
   computeRollbackPlan,
   createBackupRepository,
@@ -138,10 +137,6 @@ export const COMMANDS: Record<string, Command> = {
   'update-check': (runtime) => checkForUpdates(runtime.deps, { force: true }),
   prune: (runtime) => pruneBackups(runtime.deps),
   'sync-index': async (runtime) => ({ added: await syncBackupIndex(runtime.deps) }),
-  schema: async (runtime, input) => {
-    if (input.args[0] !== 'apply') throw new UsageError('Usage: bemmoly-system schema apply');
-    return { applied: await applySystemChangesets(runtime.sql, input.log) };
-  },
   maintenance: async (runtime, input) => {
     const mode = required(input.args, 0, 'on or off');
     if (mode === 'off') {
