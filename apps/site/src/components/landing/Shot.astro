@@ -1,0 +1,68 @@
+---
+/**
+ * A framed product shot. The Landing mock embeds the Board and Command mocks live; the site
+ * shows pictures of those frames (scripts/capture-screens.ts) in the mock's frames, as AVIF
+ * and WebP. The Ocean capture is a second picture shown only in the Ocean version
+ * (html[data-theme="dark"]); it is lazy and display:none otherwise, so it is never fetched.
+ */
+import { getImage } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+
+interface Props {
+  src: ImageMetadata;
+  /** The same frame captured in the Ocean preset. */
+  dark: ImageMetadata;
+  alt: string;
+  /** Frame styling: `wide` is the Board frame under the hero, `side` the Command frame. */
+  frame: 'wide' | 'side';
+  /** Rendered width at the 1280 layout, for srcset. */
+  width: number;
+  sizes: string;
+  eager?: boolean;
+}
+
+const { src, dark, alt, frame, width, sizes, eager = false } = Astro.props;
+const frameClass =
+  frame === 'wide'
+    ? 'aspect-[1480/860] rounded-shot bg-bg shadow-shot dark:shadow-glow'
+    : 'aspect-[760/520] rounded-dialog bg-sf shadow-shot-sm dark:shadow-glow-sm';
+
+/** Phone, 2x phone, the 1280 layout and the full 2x capture. */
+const widths = (image: ImageMetadata) =>
+  [...new Set([400, 800, width, image.width])]
+    .filter((w) => w <= image.width)
+    .sort((a, b) => a - b);
+
+async function sources(image: ImageMetadata) {
+  const [avif, webp, fallback] = await Promise.all([
+    getImage({ src: image, format: 'avif', widths: widths(image) }),
+    getImage({ src: image, format: 'webp', widths: widths(image) }),
+    getImage({ src: image, format: 'webp', width }),
+  ]);
+  return { avif: avif.srcSet.attribute, webp: webp.srcSet.attribute, fallback: fallback.src };
+}
+
+const pictures = [
+  { image: src, set: await sources(src), lazy: !eager, className: 'dark:hidden' },
+  { image: dark, set: await sources(dark), lazy: true, className: 'hidden dark:block' },
+];
+---
+
+<div class:list={['relative overflow-hidden border border-br dark:border-edge-ac', frameClass]}>
+  {pictures.map(({ image, set, lazy, className }) => (
+    <picture class={className}>
+      <source type="image/avif" srcset={set.avif} sizes={sizes} />
+      <source type="image/webp" srcset={set.webp} sizes={sizes} />
+      <img
+        src={set.fallback}
+        alt={alt}
+        width={image.width}
+        height={image.height}
+        loading={lazy ? 'lazy' : 'eager'}
+        fetchpriority={lazy ? 'auto' : 'high'}
+        decoding="async"
+        class="block h-full w-full"
+      />
+    </picture>
+  ))}
+</div>

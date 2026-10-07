@@ -1,0 +1,81 @@
+/* Generated from src/tokens.ts by `pnpm --filter @bemmoly/ui tokens:css`. Do not edit. */
+:root,
+[data-theme='light'] {
+  --ac: #2456c9;
+  --ac-d: #183d94;
+  --ac-l: #6a8fe8;
+  --ac-bg: #eef3fe;
+  --ac-bg2: #f6f8fe;
+  --ac-br: #cdd8f3;
+  --ac-br2: #d9e1f5;
+  --ac-av: #d7e3fb;
+  --ac-mute: #7a93d9;
+  --ac-fill: #2456c9;
+  --on-ac: #fff;
+  --bg: #f4f5f7;
+  --bg2: #f9fafb;
+  --sf: #fff;
+  --br: #e2e5ea;
+  --br2: #e9ecf0;
+  --br3: #d5dae2;
+  --trk: #e5e8ee;
+  --chip: #eef0f4;
+  --tx: #1b2430;
+  --tx2: #3b4454;
+  --tx3: #4b5565;
+  --tx4: #6b7483;
+  --tx5: #8a93a3;
+  --tx6: #a2aab8;
+  --sf2: #fafbfc;
+  --br-row: #eceef2;
+  --br-ctl: #c8ced8;
+  --br-off: #cfd4dc;
+  --tx-body: #2c3545;
+  --ai: #2456c9;
+  --ai-mute: #7a93d9;
+  --ai-bg: #f6f8fe;
+  --ai-tint: #eef3fe;
+  --ai-br: #cdd8f3;
+  --ai-br2: #d9e1f5;
+  --ai-tx: #2c3545;
+  --ok: #2b9b5a;
+  --ok-fg: #1f7a44;
+  --ok-bg: #e3f4ea;
+  --danger: #d93838;
+  --danger-hi: #c42d2d;
+  --warn: #e0632a;
+  --warn-fg: #b4470f;
+  --warn-bg: #fdeee3;
+  --caution: #d49a1a;
+  --violet: #8b5cf6;
+  --on-solid: #fff;
+  --scrim: rgba(16, 24, 40, 0.45);
+  --st-todo-bg: #eef0f4;
+  --st-todo-fg: #4b5565;
+  --st-prog-bg: #eef3fe;
+  --st-prog-fg: #2456c9;
+  --st-rev-bg: #efe9fd;
+  --st-rev-fg: #5a3cae;
+  --st-qa-bg: #fdf3dc;
+  --st-qa-fg: #8a6210;
+  --st-done-bg: #e3f4ea;
+  --st-done-fg: #1f7a44;
+  --green-bg: #d7f0e0;
+  --green-fg: #1f7a44;
+  --orange-bg: #fde2cf;
+  --orange-fg: #9a4a16;
+  --violet-bg: #e4dcfa;
+  --violet-fg: #5a3cae;
+  --pink-bg: #fbe3ee;
+  --pink-fg: #a0245f;
+  --amber-bg: #fdf3dc;
+  --amber-fg: #8a6210;
+  --sky-bg: #e0f2fe;
+  --sky-fg: #075985;
+  --font-ui:
+    'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+    sans-serif;
+  --font-code:
+    'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
+  color-scheme: light;
+}

@@ -1,0 +1,16 @@
+# Used by BuildKit only for `docker build -f apps/site/Dockerfile .` (a root .dockerignore
+# would apply to every image built from the repository).
+**/node_modules
+**/dist
+**/.astro
+**/.turbo
+**/coverage
+**/storybook-static
+**/playwright-report
+**/test-results
+apps/site/.screenshots
+.git
+.claude
+**/.env
+**/.env.*
+docs/design/mocks-export.zip

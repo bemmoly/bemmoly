@@ -1,0 +1,29 @@
+---
+import { NAV } from '../../lib/links.ts';
+import Logo from './Logo.astro';
+import Soon from './Soon.astro';
+---
+
+<header class="sticky top-0 z-5 flex h-16 items-center gap-7 border-b border-br-row bg-glass dark:border-br px-4 backdrop-blur-[8px] sm:px-6 lg:px-12">
+  <a href="/" aria-label="Bemmoly home" class="flex items-center">
+    <Logo />
+  </a>
+  <nav aria-label="Main" class="ml-3 hidden gap-5.5 text-14 lg:flex">
+    {NAV.map((link) => (
+      <a href={link.href} class="text-tx2 hover:text-tx">
+        {link.label}
+      </a>
+    ))}
+  </nav>
+  <div class="ml-auto flex items-center gap-2.5 text-14">
+    <span class="hidden items-center gap-1.5 font-medium text-tx2 sm:flex">
+      Live demo <Soon />
+    </span>
+    <a
+      href="/self-hosting"
+      class="inline-flex h-9 items-center rounded-control bg-tx px-4 font-medium text-sf hover:text-sf dark:bg-ac-fill dark:text-on-ac dark:hover:text-on-ac"
+    >
+      Deploy in 5 minutes
+    </a>
+  </div>
+</header>

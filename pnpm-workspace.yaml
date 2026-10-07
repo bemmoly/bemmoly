@@ -8,6 +8,7 @@ allowBuilds:
   cpu-features: false
   esbuild: true
   protobufjs: false
+  sharp: false
   ssh2: false
 
 engineStrict: true

@@ -1,0 +1,72 @@
+---
+import '../styles/site.css';
+import appleTouchIcon from '@bemmoly/ui/brand/generated/apple-touch-icon.png';
+import favicon32 from '@bemmoly/ui/brand/generated/favicon-32.png';
+import faviconSvg from '@bemmoly/ui/brand/generated/favicon.svg?url';
+import socialPreview from '@bemmoly/ui/brand/generated/social-preview.png';
+import plexSans400 from '@fontsource/ibm-plex-sans/files/ibm-plex-sans-latin-400-normal.woff2?url';
+import plexSans600 from '@fontsource/ibm-plex-sans/files/ibm-plex-sans-latin-600-normal.woff2?url';
+import { themeById } from '@bemmoly/ui/tokens';
+import Footer from '../components/site/Footer.astro';
+import Nav from '../components/site/Nav.astro';
+import { themeCss } from '../lib/theme.ts';
+
+interface Props {
+  title: string;
+  description: string;
+  /** The landing page puts its closing call to action inside the footer block. */
+  cta?: boolean;
+}
+
+const { title, description, cta = false } = Astro.props;
+const fullTitle = title === 'Bemmoly' ? 'Bemmoly: Your work. Your platform.' : `${title} · Bemmoly`;
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
+const image = new URL(socialPreview.src, Astro.site).href;
+const themeColor = themeById('light').colors.sf;
+// The two IBM Plex Sans faces above the fold; the rest load on demand.
+const preloads = [plexSans400, plexSans600];
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {preloads.map((href) => (
+      <link rel="preload" href={href} as="font" type="font/woff2" crossorigin />
+    ))}
+    <link rel="icon" href={faviconSvg} type="image/svg+xml" />
+    <link rel="icon" href={favicon32.src} sizes="32x32" type="image/png" />
+    <link rel="apple-touch-icon" href={appleTouchIcon.src} />
+    <link rel="manifest" href="/site.webmanifest" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <meta name="theme-color" content={themeColor} />
+    <meta name="color-scheme" content="light" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Bemmoly" />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={image} />
+    <meta property="og:image:width" content={String(socialPreview.width)} />
+    <meta property="og:image:height" content={String(socialPreview.height)} />
+    <meta property="og:image:alt" content="Bemmoly: Your work. Your platform." />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={fullTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={image} />
+    <style is:inline set:html={themeCss()}></style>
+  </head>
+  <body class="flex min-h-screen flex-col">
+    <Nav />
+    <main class="flex flex-1 flex-col">
+      <slot />
+    </main>
+    <Footer cta={cta}>
+      <slot name="cta" />
+    </Footer>
+  </body>
+</html>

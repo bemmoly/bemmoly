@@ -1,0 +1,24 @@
+---
+/**
+ * The Landing mock's large buttons: 46px tall, 7px radius, 500 15px. Primary is the accent
+ * fill with 22px padding; secondary is bordered with 20px padding. Without `href` the button
+ * renders as plain text (used for things that are not available yet).
+ */
+interface Props {
+  variant: 'primary' | 'secondary';
+  href?: string;
+}
+
+const { variant, href } = Astro.props;
+const Tag = href ? 'a' : 'span';
+const classes = [
+  'inline-flex h-11.5 items-center gap-2 rounded-panel text-15 font-medium',
+  variant === 'primary'
+    ? 'bg-ac-fill px-5.5 text-on-ac hover:text-on-ac'
+    : 'border border-br3 bg-sf px-5 text-tx hover:text-tx dark:border-br',
+];
+---
+
+<Tag href={href} class:list={classes}>
+  <slot />
+</Tag>

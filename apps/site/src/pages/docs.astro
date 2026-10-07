@@ -1,0 +1,31 @@
+---
+import Section from '../components/site/Section.astro';
+import Page from '../layouts/Page.astro';
+import { CONTRIBUTING_URL, REPO_URL, TECH_DESIGN_URL } from '../lib/links.ts';
+---
+
+<Page
+  title="Docs"
+  description="Bemmoly's documentation is being written alongside the first release. Start with self-hosting, the README and the technical design."
+  lede="The documentation is being written alongside the first release and will live here. Until then, these are the best places to start."
+>
+  <Section title="Run it">
+    <p>
+      <a href="/self-hosting">Self-hosting</a> covers the one-command install, requirements, Docker
+      Compose, Helm, Terraform, air-gapped installs, upgrades, rollback and backups.
+    </p>
+  </Section>
+  <Section title="Understand it">
+    <p>
+      The <a href={REPO_URL}>README</a> explains what Bemmoly is. The
+      <a href={TECH_DESIGN_URL}>technical design</a> describes the architecture, the module system,
+      the data model, the AI subsystem and how installs, updates and backups work.
+    </p>
+  </Section>
+  <Section title="Build on it">
+    <p>
+      <a href={CONTRIBUTING_URL}>Contributing</a> is the contract for changes to the code, whether
+      made by a person or an agent.
+    </p>
+  </Section>
+</Page>

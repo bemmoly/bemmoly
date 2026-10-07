@@ -1,0 +1,36 @@
+---
+/**
+ * The hero's install pill. The mock draws it in the Dark preset's colours inside a Classic
+ * border, so the border sits on a wrapper and the pill itself takes data-theme="dark".
+ * Copy works with a few bytes of inline script; without it the command is select-all text.
+ */
+import { INSTALL } from '../../data/landing.ts';
+---
+
+<div class="max-w-full rounded-card border border-br">
+  <div
+    data-theme="dark"
+    class="flex items-center gap-2.5 overflow-x-auto rounded-panel bg-bg px-3.5 dark:bg-sf py-2.5 font-mono text-13h font-medium text-tx"
+  >
+    <span class="text-tx5" aria-hidden="true">
+      $
+    </span>
+    <code class="whitespace-nowrap select-all">{INSTALL}</code>
+    <button
+      type="button"
+      data-copy={INSTALL}
+      class="ml-3.5 cursor-pointer border-l border-br3 pl-3.5 font-sans text-12h font-normal text-tx4 hover:text-tx2"
+    >
+      Copy
+    </button>
+  </div>
+</div>
+<script is:inline>
+  for (const b of document.querySelectorAll('[data-copy]'))
+    b.addEventListener('click', () =>
+      navigator.clipboard.writeText(b.dataset.copy).then(() => {
+        b.textContent = 'Copied';
+        setTimeout(() => (b.textContent = 'Copy'), 1500);
+      }),
+    );
+</script>
