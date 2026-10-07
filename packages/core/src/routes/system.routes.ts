@@ -5,7 +5,11 @@ import { MAX_BUNDLE_BYTES } from '../services/system/index.ts';
 /** Settings › System, Storage and backups, and Updates. Org admins only (checked in the services). */
 export function systemRoutes(controller: SystemController): FastifyPluginAsync {
   return async (app) => {
-    app.get('/admin/system', (request) => controller.health(request));
+    // Anonymous by design while setup is open: the wizard shows these checks before any
+    // account exists. Once the first admin exists the controller requires a signed-in actor.
+    app.get('/admin/system', { config: { anonymous: true } }, (request) =>
+      controller.health(request),
+    );
 
     app.get('/admin/backups', (request) => controller.listBackups(request));
     app.post('/admin/backups', (request, reply) => controller.createBackup(request, reply));
