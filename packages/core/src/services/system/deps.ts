@@ -5,10 +5,8 @@ import type { TarTool } from '../../clients/tar.ts';
 import type { UpdaterClient } from '../../clients/updater.ts';
 import type { Logger } from '../../config/logger.ts';
 import type { Authorize } from '../../contracts/authz.ts';
-import type { ChangelogRunner } from '../../contracts/changelog.ts';
-import type { ChangelogTags } from '../../contracts/changelog-tags.ts';
 import type { EventBus } from '../../contracts/event-bus.ts';
-import type { JobQueue } from '../../contracts/jobs.ts';
+import type { RealtimePublisher } from '../../contracts/realtime.ts';
 import type { SettingsService } from '../../contracts/settings.ts';
 import type { BackupDestination } from './backups/destinations/types.ts';
 
@@ -33,11 +31,36 @@ export interface EmailConfigurationProbe {
   describe(): Promise<{ configured: boolean; value: string }>;
 }
 
-/** Looks up a changeset definition from the loaded changelogs. */
-export type ChangesetLookup = (
-  module: string,
-  id: string,
-) => { hasDown: boolean; irreversible: boolean } | undefined;
+/** What rollback planning needs to know about a changeset applied after a tag. */
+export interface ChangesetTraits {
+  module: string;
+  id: string;
+  hasDown: boolean;
+  irreversible: boolean;
+}
+
+/**
+ * The changelog runner as the system service uses it: through its command line
+ * (`db tag`, `db rollback --to-tag … --dry-run`, `db update`, `db history`), which the
+ * updater also calls. Tags are the outgoing version, e.g. "1.2.4".
+ */
+export interface ChangelogProbe {
+  /** Changesets applied after `tag`, newest first; null when no changeset carries it. */
+  changesSince(tag: string): Promise<ChangesetTraits[] | null>;
+  /** The newest tag, for the backup manifest. */
+  latestTag(): Promise<string | null>;
+  /** Applies pending changesets; resolves to how many ran. */
+  update(): Promise<number>;
+}
+
+/** The producer side of the job queue (the kernel's pg-boss JobQueue.enqueue). */
+export interface JobEnqueuer {
+  enqueue(
+    name: string,
+    payload: object,
+    options?: { key?: string; singleton?: boolean; startAfter?: Date },
+  ): Promise<string | null>;
+}
 
 export interface SystemDependencies {
   config: SystemConfig;
@@ -50,12 +73,10 @@ export interface SystemDependencies {
   modules: () => readonly string[];
   settings?: SettingsService;
   events?: EventBus;
-  jobs?: JobQueue;
-  changelog?: {
-    runner?: ChangelogRunner;
-    tags?: ChangelogTags;
-    lookup?: ChangesetLookup;
-  };
+  jobs?: JobEnqueuer;
+  changelog?: ChangelogProbe;
+  /** Invalidates the backups list in open browsers. */
+  realtime?: RealtimePublisher;
   audit?: AuditActivity;
   email?: EmailConfigurationProbe;
   updater?: UpdaterClient;

@@ -80,7 +80,7 @@ export async function runRollback(
         'bemmoly-db',
         'rollback',
         '--to-tag',
-        `pre-upgrade-${to}`,
+        to,
       ]);
       parseCommandJson('bemmoly-db rollback', { ...result, stdout: result.stdout || '{}' });
     }

@@ -1,33 +1,27 @@
 import type { RollbackPlan } from '@bemmoly/shared';
-import type { ChangesetTraits } from '../../../contracts/changelog-tags.ts';
 import { createBackupRepository, type BackupRecord } from '../backups/repository.ts';
-import type { SystemDependencies } from '../deps.ts';
+import type { ChangesetTraits, SystemDependencies } from '../deps.ts';
 import { readSetting } from '../settings.ts';
 import { decideRollbackMode, describeRollback } from './rollback-mode.ts';
 import { readUpdaterState } from './state.ts';
 
 const DAY_MS = 86_400_000;
-export const PRE_UPGRADE_TAG_PREFIX = 'pre-upgrade-';
 
-/** Changesets applied after the newest pre-upgrade tag, or null when that cannot be known. */
-async function changesetsSinceTag(deps: SystemDependencies): Promise<ChangesetTraits[] | null> {
-  const { tags, runner, lookup } = deps.changelog ?? {};
-  if (!tags || !runner || !lookup) return null;
-  const tag = await tags.latest(PRE_UPGRADE_TAG_PREFIX);
-  if (!tag) return null;
-  const history = await runner.history();
-  return history
-    .filter((entry) => entry.orderExecuted > tag.lastOrderExecuted && entry.state === 'ran')
-    .map((entry) => {
-      const traits = lookup(entry.module, entry.id);
-      return {
-        module: entry.module,
-        id: entry.id,
-        orderExecuted: entry.orderExecuted,
-        hasDown: traits?.hasDown ?? false,
-        irreversible: traits?.irreversible ?? false,
-      };
-    });
+/**
+ * Changesets applied after the version being rolled back to was tagged (the updater
+ * tags the outgoing version before every update), or null when that cannot be known.
+ */
+async function changesetsSinceTag(
+  deps: SystemDependencies,
+  tag: string,
+): Promise<ChangesetTraits[] | null> {
+  if (!deps.changelog) return null;
+  try {
+    return await deps.changelog.changesSince(tag);
+  } catch (error) {
+    deps.logger.warn({ err: error, tag }, 'could not read the changelog for the rollback plan');
+    return null;
+  }
 }
 
 async function preUpgradeBackup(
@@ -64,7 +58,7 @@ export async function computeRollbackPlan(
   const decision = decideRollbackMode({
     fromVersion: updater.current,
     toVersion: updater.previous,
-    changesetsSinceTag: await changesetsSinceTag(deps),
+    changesetsSinceTag: await changesetsSinceTag(deps, updater.previous),
     preferRestore: options.preferRestore,
     hasPreUpgradeBackup: backup !== null,
   });

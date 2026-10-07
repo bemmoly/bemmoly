@@ -22,11 +22,15 @@ export class ProcessError extends Error {
   override readonly name = 'ProcessError';
   readonly exitCode: number | null;
   readonly stderr: string;
+  /** Collected stdout, when it was not piped elsewhere; some tools explain failures there. */
+  readonly stdout: string;
 
-  constructor(command: string, exitCode: number | null, stderr: string) {
-    super(`${command} exited with ${exitCode ?? 'a signal'}: ${stderr.trim().slice(-2_000)}`);
+  constructor(command: string, exitCode: number | null, stderr: string, stdout = '') {
+    const detail = (stderr.trim() || stdout.trim()).slice(-2_000);
+    super(`${command} exited with ${exitCode ?? 'a signal'}: ${detail}`);
     this.exitCode = exitCode;
     this.stderr = stderr;
+    this.stdout = stdout;
   }
 }
 
@@ -70,7 +74,7 @@ export async function runProcess(
   const [exited, ...pipes] = await Promise.allSettled([exit, ...piping]);
   if (exited?.status === 'rejected') throw exited.reason;
   const code = exited?.status === 'fulfilled' ? exited.value : null;
-  if (code !== 0) throw new ProcessError(command, code, err.text);
+  if (code !== 0) throw new ProcessError(command, code, err.text, out.text);
   const broken = pipes.find((result) => result.status === 'rejected');
   if (broken?.status === 'rejected') throw broken.reason;
   return { stdout: out.text, stderr: err.text };

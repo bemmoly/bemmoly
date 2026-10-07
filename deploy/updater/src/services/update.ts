@@ -21,13 +21,17 @@ import {
   type SwapHandle,
 } from './swap.ts';
 
-const PRE_UPGRADE_TAG = (version: string) => `pre-upgrade-${version}`;
+/** The changelog is tagged with the version being left, e.g. "1.2.4". */
+const PRE_UPGRADE_TAG = (version: string) => version;
 
 async function tagChangelog(ctx: UpdaterContext, appId: string, from: string): Promise<string> {
   const result = await ctx.docker.exec(appId, ['bemmoly-db', 'tag', PRE_UPGRADE_TAG(from)]);
   if (result.exitCode === 0) return `tagged ${PRE_UPGRADE_TAG(from)}`;
   if (result.exitCode === 127) return 'changelog runner not in this image; tag skipped';
-  throw new Error(`bemmoly-db tag failed: ${result.stderr.trim().slice(-500)}`);
+  // The runner reports its own errors on stdout as "error: …".
+  const detail = (result.stdout.trim() || result.stderr.trim()).slice(-500);
+  if (/Nothing has been applied/.test(detail)) return 'no changeset applied yet; tag skipped';
+  throw new Error(`bemmoly-db tag failed: ${detail}`);
 }
 
 interface Attempt {

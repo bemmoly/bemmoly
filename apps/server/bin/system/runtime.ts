@@ -11,6 +11,7 @@ import {
 } from '@bemmoly/core';
 import { loadEnv, type Env } from '@bemmoly/core/config';
 import { importAvailableModules } from '../../src/config/modules.ts';
+import { createCliChangelogProbe } from './changelog-probe.ts';
 
 export interface Runtime {
   env: Env;
@@ -48,6 +49,10 @@ export async function createRuntime(): Promise<Runtime> {
     env.BEMMOLY_MODULES.length > 0
       ? env.BEMMOLY_MODULES
       : (await importAvailableModules()).map((module) => module.id);
+  const changelog = createCliChangelogProbe({
+    databaseUrl: env.DATABASE_URL,
+    modules: env.BEMMOLY_MODULES,
+  });
   const deps: SystemDependencies = {
     config: {
       databaseUrl: env.DATABASE_URL,
@@ -65,6 +70,7 @@ export async function createRuntime(): Promise<Runtime> {
     authorize: async () => undefined,
     modules: () => moduleIds,
     audit: createSqlAuditActivity(sql),
+    ...(changelog ? { changelog } : {}),
     ...(env.BEMMOLY_UPDATER_URL && env.UPDATER_TOKEN
       ? {
           updater: createUpdaterClient({

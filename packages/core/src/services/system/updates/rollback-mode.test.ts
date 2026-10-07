@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { ChangesetTraits } from '../../../contracts/changelog-tags.ts';
+import type { ChangesetTraits } from '../deps.ts';
 import {
   decideRollbackMode,
   describeRollback,
@@ -9,7 +9,6 @@ import {
 const changeset = (id: string, traits: Partial<ChangesetTraits> = {}): ChangesetTraits => ({
   module: 'work',
   id,
-  orderExecuted: Number(id.slice(0, 4)),
   hasDown: true,
   irreversible: false,
   ...traits,
@@ -55,7 +54,7 @@ describe('decideRollbackMode', () => {
     const decision = decideRollbackMode({
       ...base,
       fromVersion: '1.6.0',
-      changesetsSinceTag: [changeset('0007-a'), changeset('0009-c'), changeset('0008-b')],
+      changesetsSinceTag: [changeset('0009-c'), changeset('0008-b'), changeset('0007-a')],
     });
     expect(decision.mode).toBe('schema');
     expect(decision.schemaChangesets.map((item) => item.id)).toEqual([

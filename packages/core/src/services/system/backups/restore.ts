@@ -40,12 +40,9 @@ const withoutPassword = (url: string) => {
   return parsed.toString();
 };
 
+/** A backup from an older version is brought up to this one's schema. */
 async function runPendingChangesets(deps: SystemDependencies): Promise<number | null> {
-  const runner = deps.changelog?.runner;
-  if (!runner) return null;
-  const pending = await runner.status();
-  if (pending.length > 0) await runner.update({ contexts: ['production'] });
-  return pending.length;
+  return deps.changelog ? deps.changelog.update() : null;
 }
 
 /**

@@ -66,16 +66,16 @@ export async function startManualBackup(deps: SystemDependencies, actor: Actor):
     kind: 'manual',
     setName: setNameFor(id, 'manual', now),
     appVersion: deps.config.appVersion,
-    changelogTag: (await deps.changelog?.tags?.latest().catch(() => null))?.name ?? null,
+    changelogTag: (await deps.changelog?.latestTag().catch(() => null)) ?? null,
     scheduledFor: null,
     createdBy: actor.userId ?? null,
     createdAt: now,
   });
   if (deps.jobs) {
-    await deps.jobs.send(
+    await deps.jobs.enqueue(
       BACKUP_JOB,
       { kind: 'manual', backupId: record.id },
-      { singletonKey: record.id },
+      { key: record.id, singleton: true },
     );
   } else {
     inBackground(deps, 'manual backup', () =>

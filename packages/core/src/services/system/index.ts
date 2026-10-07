@@ -2,8 +2,10 @@ export { checkReadiness, type DatabaseProbe, type ReadinessDependencies } from '
 export { SYSTEM_CAPABILITY } from './authorize.ts';
 export type {
   AuditActivity,
-  ChangesetLookup,
+  ChangelogProbe,
+  ChangesetTraits,
   EmailConfigurationProbe,
+  JobEnqueuer,
   SystemConfig,
   SystemDependencies,
 } from './deps.ts';
@@ -38,6 +40,7 @@ export {
 } from './backups/encryption.ts';
 export { syncBackupIndex } from './backups/index-sync.ts';
 export { handleBackupJob } from './backups/jobs.ts';
+export { createModuleDataBackup, ModuleBackupError } from './backups/module-backup.ts';
 export { backupManifestSchema, buildManifest, type BackupManifest } from './backups/manifest.ts';
 export { pruneBackups } from './backups/prune.ts';
 export { createBackupRepository, toBackupDto, type BackupRecord } from './backups/repository.ts';
@@ -73,7 +76,7 @@ export { applyUpdate, getUpdatesOverview, requestRollback } from './updates/admi
 export { createSqlAuditActivity } from './updates/audit-activity.ts';
 export { storeCatalogUpload, MAX_BUNDLE_BYTES } from './updates/catalog.ts';
 export { checkForUpdates } from './updates/check.ts';
-export { computeRollbackPlan, PRE_UPGRADE_TAG_PREFIX } from './updates/rollback-plan.ts';
+export { computeRollbackPlan } from './updates/rollback-plan.ts';
 export {
   decideRollbackMode,
   describeRollback,

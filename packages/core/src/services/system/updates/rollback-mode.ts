@@ -1,6 +1,6 @@
 import type { RollbackMode } from '@bemmoly/shared';
 import semver from 'semver';
-import type { ChangesetTraits } from '../../../contracts/changelog-tags.ts';
+import type { ChangesetTraits } from '../deps.ts';
 
 export interface RollbackModeInput {
   fromVersion: string;
@@ -80,9 +80,7 @@ export function decideRollbackMode(input: RollbackModeInput): RollbackModeDecisi
   return {
     mode: 'schema',
     reason: `${input.toVersion} is more than one minor behind; ${changesets.length} changesets are reversed.`,
-    schemaChangesets: [...changesets]
-      .sort((a, b) => b.orderExecuted - a.orderExecuted)
-      .map(({ module, id }) => ({ module, id })),
+    schemaChangesets: changesets.map(({ module, id }) => ({ module, id })),
   };
 }
 

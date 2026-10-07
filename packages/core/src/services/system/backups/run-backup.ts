@@ -57,6 +57,11 @@ async function stageAttachments(
   return { path: file, name: ATTACHMENTS_ARCHIVE, digest: digest.digest() };
 }
 
+/** Tells open Settings › Storage and backups pages to refetch; never fails a backup. */
+async function announce(deps: SystemDependencies, backupId: string): Promise<void> {
+  await deps.realtime?.publish({ kind: 'system.backup', ids: [backupId] }).catch(() => undefined);
+}
+
 /** Refuses to start when less than twice the previous backup's size is free (§18). */
 async function guardDiskSpace(
   deps: SystemDependencies,
@@ -75,12 +80,12 @@ async function createRow(deps: SystemDependencies, request: RunBackupRequest, no
   if (request.existing) return request.existing;
   const repository = createBackupRepository(deps.sql);
   const id = crypto.randomUUID();
-  const tag = await deps.changelog?.tags?.latest().catch(() => null);
+  const tag = (await deps.changelog?.latestTag().catch(() => null)) ?? null;
   return repository.insertRunning({
     kind: request.kind,
     setName: setNameFor(id, request.kind, now),
     appVersion: deps.config.appVersion,
-    changelogTag: tag?.name ?? null,
+    changelogTag: tag,
     scheduledFor: request.scheduledFor ?? null,
     createdBy: request.createdBy ?? null,
     createdAt: now,
@@ -189,6 +194,7 @@ export async function runBackup(
       completedAt,
     });
     deps.onGoodBackup?.(completedAt);
+    await announce(deps, record.id);
     deps.logger.info(
       { backupId: record.id, set: record.setName, kind: record.kind, mode: plan.mode },
       'backup succeeded',
@@ -196,6 +202,7 @@ export async function runBackup(
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     await repository.markFailed(record.id, message, deps.now?.() ?? new Date());
+    await announce(deps, record.id);
     await publishSystemEvent(
       deps,
       'backup.failed',
