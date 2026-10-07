@@ -108,6 +108,9 @@ importers:
         specifier: 5.0.15
         version: 5.0.15(@types/react@19.3.0)(react@19.3.0)(use-sync-external-store@1.7.0(react@19.3.0))
     devDependencies:
+      '@mswjs/interceptors':
+        specifier: 0.45.7
+        version: 0.45.7
       '@playwright/test':
         specifier: 1.63.0
         version: 1.63.0

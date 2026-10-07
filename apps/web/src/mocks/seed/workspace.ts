@@ -1,0 +1,168 @@
+import type {
+  AdminModule,
+  HealthCheck,
+  ModuleManifest,
+  Notification,
+  NotificationPreferences,
+  SettingKey,
+} from '@bemmoly/shared';
+import { USER_IDS } from './people.ts';
+import { ago } from './time.ts';
+
+/** The Setup mock's first step, with Postgres 18 as the tech design queues. */
+export function seedChecks(): HealthCheck[] {
+  return [
+    { id: 'postgres', name: 'Postgres 18', status: 'ok', detail: 'localhost:5432 · 12 ms' },
+    { id: 'disk', name: 'Disk', status: 'ok', detail: '38 GB free of 80 GB' },
+    { id: 'memory', name: 'Memory', status: 'ok', detail: '4 GB · 2 vCPU' },
+    {
+      id: 'smtp',
+      name: 'Outbound email (SMTP)',
+      status: 'warning',
+      detail: 'not configured',
+      fix: { label: 'Configure', href: '/settings/email' },
+    },
+    { id: 'https', name: 'HTTPS', status: 'ok', detail: "Let's Encrypt · auto-renew" },
+    { id: 'backups', name: 'Backups', status: 'ok', detail: 'nightly → /var/bemmoly/backups' },
+  ];
+}
+
+/** Stored settings; secrets keep their value here and read back as `isSet` only. */
+export function seedSettings(complete: boolean): Partial<Record<SettingKey, unknown>> {
+  return {
+    'workspace.name': 'Acme Labs',
+    'workspace.url': 'https://bemmoly.acmelabs.internal',
+    'workspace.locale': 'en',
+    'workspace.timezone': 'UTC',
+    'email.provider': 'log',
+    'email.smtp.port': 587,
+    'email.smtp.security': 'starttls',
+    'email.digestMinutes': 10,
+    'appearance.theme': 'light',
+    'appearance.font': 'plex',
+    'appearance.brandColor': null,
+    'appearance.logoKey': null,
+    'appearance.mode': 'light',
+    'appearance.surfaces': 'neutral',
+    'appearance.memberModeSwitch': true,
+    'appearance.personalThemes': false,
+    'ai.providerId': null,
+    'ai.shareContent': true,
+    'ai.allowActions': true,
+    'updates.channel': 'stable',
+    'updates.checkForUpdates': true,
+    'backups.schedule': {
+      frequency: 'daily',
+      timeOfDay: '02:00',
+      timezone: 'UTC',
+      retention: { hourly: 0, daily: 7, weekly: 4, monthly: 3 },
+      localPath: '/var/bemmoly/backups',
+      s3: null,
+      encryption: false,
+      verification: 'weekly',
+    },
+    'setup.completedAt': complete ? ago(60 * 24 * 9) : null,
+  };
+}
+
+export const SECRET_KEYS: ReadonlySet<SettingKey> = new Set([
+  'email.smtp.password',
+  'backups.s3.accessKeyId',
+  'backups.s3.secretAccessKey',
+]);
+
+export function seedAdminModules(): AdminModule[] {
+  return [
+    {
+      id: 'sample',
+      name: 'Sample',
+      description:
+        'A throwaway module that proves the module contract: a route, a nav entry, a capability, a job and a changeset.',
+      version: '0.1.0',
+      state: 'enabled',
+      dataSizeBytes: 48_000,
+      changelog: { applied: 1, pending: 0, status: 'current' },
+      hasData: true,
+      pinnedByEnv: false,
+      dependsOn: [],
+    },
+  ];
+}
+
+export function seedManifests(): ModuleManifest[] {
+  return [
+    {
+      id: 'sample',
+      version: '0.1.0',
+      navigation: [{ id: 'sample', label: 'Sample', path: '/sample', placement: 'top' }],
+    },
+  ];
+}
+
+type NoteSeed = [string, keyof typeof USER_IDS, string, string, string, string, number];
+const NOTES: NoteSeed[] = [
+  [
+    'n-1',
+    'aisha',
+    'Aisha K.',
+    'requested your review on',
+    'PLT-204',
+    'Backfill finished on staging, 0 mismatches across 2.1M rows.',
+    180,
+  ],
+  [
+    'n-2',
+    'jonas',
+    'Jonas M.',
+    'commented on',
+    'Auth service RFC',
+    'Rollback section says 15 min but the flag TTL is 30. Which is it?',
+    300,
+  ],
+  [
+    'n-3',
+    'priya',
+    'Priya N.',
+    'mentioned you in',
+    'PLT-218',
+    '@Rohan can you confirm the deploy hook fires before the health check?',
+    60 * 26,
+  ],
+  ['n-4', 'lena', 'Lena T.', 'moved', 'PLT-226', 'In progress → In review', 60 * 27],
+];
+
+/** The Home mock's inbox block, already grouped the way the server groups. */
+export function seedNotifications(): Notification[] {
+  return NOTES.map(([id, key, name, verb, target, body, minutes]) => ({
+    id,
+    ids: [id],
+    kind: 'mention',
+    verb,
+    summary: `${name} ${verb} ${target}`,
+    actors: [{ id: USER_IDS[key], name }],
+    actorCount: 1,
+    target: { kind: 'issue', id: target, label: target, url: null },
+    body,
+    read: false,
+    createdAt: ago(minutes),
+  }));
+}
+
+export function seedPreferences(): NotificationPreferences {
+  const kind = (name: string, channel: string, defaultChannel = channel) => ({
+    kind: name,
+    channel,
+    defaultChannel,
+  });
+  return {
+    kinds: [
+      kind('mention', 'email_immediate'),
+      kind('assignment', 'email_immediate'),
+      kind('review_request', 'email_immediate'),
+      kind('comment', 'email_digest'),
+      kind('status_change', 'in_app'),
+      kind('system', 'email_digest'),
+    ],
+    digest: { cadence: 'interval', dailyHour: 9, timeZone: 'UTC' },
+  };
+}
