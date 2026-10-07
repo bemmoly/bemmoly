@@ -1,4 +1,4 @@
-import type { ContainerInfo, ImageInfo } from '../clients/docker.ts';
+import { startContainer, type ContainerInfo, type ImageInfo } from '../clients/docker.ts';
 import { waitForReady } from '../clients/readiness.ts';
 import { cloneSpec, taskSpec } from './container-spec.ts';
 import type { UpdaterContext } from './context.ts';
@@ -49,7 +49,7 @@ export async function swapImage(
   try {
     await beforeStart?.();
     const created = await ctx.docker.raw.createContainer({ ...spec, name });
-    await created.start();
+    await startContainer(created);
     return { name, oldId: current.app.Id, newId: created.id };
   } catch (error) {
     await ctx.docker.raw
@@ -96,7 +96,7 @@ export async function revertSwap(
     .catch(() => undefined);
   await beforeStart?.();
   await ctx.docker.raw.getContainer(handle.oldId).rename({ name: handle.name });
-  await ctx.docker.raw.getContainer(handle.oldId).start();
+  await startContainer(ctx.docker.raw.getContainer(handle.oldId));
 }
 
 /** Runs a command in a one-off container from `image` with the app's env, mounts and network. */

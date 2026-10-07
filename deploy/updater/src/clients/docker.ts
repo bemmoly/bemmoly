@@ -19,6 +19,18 @@ const collect = (stream: PassThrough) => {
   return () => text;
 };
 
+/**
+ * Starts a container. Docker answers 304 when it is already running (a restart policy or
+ * a host command can get there first), which is the outcome the caller wanted.
+ */
+export async function startContainer(container: Pick<Docker.Container, 'start'>): Promise<void> {
+  try {
+    await container.start();
+  } catch (error) {
+    if ((error as { statusCode?: number }).statusCode !== 304) throw error;
+  }
+}
+
 /** The few Docker Engine calls the updater makes, over the mounted socket. */
 export function createDockerClient(socketPath = '/var/run/docker.sock') {
   const docker = new Docker({ socketPath, timeout: 60_000 });
@@ -96,7 +108,7 @@ export function createDockerClient(socketPath = '/var/run/docker.sock') {
       const stream = await container.attach({ stream: true, stdout: true, stderr: true });
       docker.modem.demuxStream(stream, out, err);
       try {
-        await container.start();
+        await startContainer(container);
         const waited = (await Promise.race([
           container.wait(),
           new Promise((_, reject) =>
