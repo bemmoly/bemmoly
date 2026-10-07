@@ -97,6 +97,11 @@ describe('backups against a real Postgres 18 with pg_dump and pg_restore', () =>
     ]);
     const [count] = await sql<{ n: number }[]>`select count(*)::int as n from issues`;
     expect(count?.n).toBe(42);
+    // The restored snapshot saw this backup as running; the re-index completes it.
+    expect((await repository.findBySetName(second.setName))?.status).toBe('succeeded');
+    expect(
+      (await repository.list({ limit: 10 })).filter((row) => row.status === 'running'),
+    ).toEqual([]);
     const live = databaseNameOf(harness.databaseUrl);
     const sides = await withAdmin(harness.databaseUrl, (admin) => listSideDatabases(admin, live));
     expect(sides.map((side) => side.purpose)).toContain('rolledback');

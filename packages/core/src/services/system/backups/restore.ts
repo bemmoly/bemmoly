@@ -80,7 +80,7 @@ export async function restoreBackup(deps: SystemDependencies, ref: string): Prom
     );
     deps.logger.warn({ set: manifest.setName, rolledBack }, 'database replaced by a backup');
     const pendingChangesets = await runPendingChangesets(deps);
-    await syncBackupIndex(deps).catch((error: unknown) =>
+    await syncBackupIndex(deps, { interruptedBefore: now }).catch((error: unknown) =>
       deps.logger.error({ err: error }, 'could not re-index backups after the restore'),
     );
     return {

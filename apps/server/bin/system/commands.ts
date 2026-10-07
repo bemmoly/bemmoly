@@ -60,9 +60,13 @@ async function backup(runtime: Runtime, input: CommandInput) {
 async function status(runtime: Runtime) {
   const [size] = await runtime.sql<{ bytes: string }[]>`
     select pg_database_size(current_database())::text as bytes`;
-  const [queue] = await runtime.sql<{ depth: string | null }[]>`
-    select case when to_regclass('pgboss.job') is null then null
-      else (select count(*)::text from pgboss.job where state in ('created', 'retry')) end as depth`;
+  // Postgres resolves every table at parse time, so the queue is counted only once it exists.
+  const [jobs] = await runtime.sql<{ present: boolean }[]>`
+    select to_regclass('pgboss.job') is not null as present`;
+  const [queue] = jobs?.present
+    ? await runtime.sql<{ depth: string }[]>`
+        select count(*)::text as depth from pgboss.job where state in ('created', 'retry')`
+    : [{ depth: null }];
   const repository = createBackupRepository(runtime.sql);
   const latest = await repository.latest({ status: 'succeeded' }).catch(() => null);
   return {

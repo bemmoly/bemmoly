@@ -65,7 +65,7 @@ export async function computeRollbackPlan(
   let discard: RollbackPlan['discard'] = null;
   if (decision.mode === 'restore' && backup && deps.audit) {
     const counted = await deps.audit.countSince(backup.createdAt).catch((error: unknown) => {
-      deps.logger.warn({ err: error }, 'could not count audit rows for the rollback summary');
+      deps.logger.info({ err: error }, 'no audit rows to count for the rollback summary');
       return null;
     });
     if (counted) discard = { ...counted, since: backup.createdAt.toISOString() };
