@@ -68,7 +68,7 @@ COMPOSE_PROFILES=db,proxy,updater
 BEMMOLY_DIR=${dir}
 BEMMOLY_DOMAIN=bemmoly.acme.dev
 POSTGRES_PASSWORD=secret
-UPDATER_TOKEN=0123456789abcdef0123456789abcdef
+UPDATER_TOKEN=not-a-real-token
 PG_SHARED_BUFFERS=512MB
 EOF
   run docker compose --project-directory "${dir}" config --services
