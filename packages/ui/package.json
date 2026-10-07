@@ -1,0 +1,44 @@
+{
+  "name": "@bemmoly/ui",
+  "version": "0.0.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./tokens": "./src/tokens.ts",
+    "./theme.css": "./src/theme.css",
+    "./tailwind.css": "./src/tailwind.css",
+    "./fonts.css": "./src/fonts.css"
+  },
+  "scripts": {
+    "build": "storybook build --quiet --output-dir storybook-static",
+    "storybook": "storybook dev --port 6006 --no-open",
+    "tokens:css": "node scripts/generate-css.ts",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "lint": "eslint --max-warnings 0 .",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@fontsource/geist": "5.3.0",
+    "@fontsource/ibm-plex-mono": "5.3.0",
+    "@fontsource/ibm-plex-sans": "5.3.0",
+    "@fontsource/inter-tight": "5.3.0",
+    "@fontsource/source-sans-3": "5.3.0"
+  },
+  "peerDependencies": {
+    "react": "19.3.0"
+  },
+  "devDependencies": {
+    "@storybook/react-vite": "10.6.1",
+    "@tailwindcss/vite": "4.3.3",
+    "@types/node": "26.6.4",
+    "@types/react": "19.3.0",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "storybook": "10.6.1",
+    "tailwindcss": "4.3.3",
+    "vite": "8.3.3",
+    "vitest": "5.0.3"
+  }
+}

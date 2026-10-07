@@ -1,0 +1,43 @@
+/* Generated from src/tokens.ts by `pnpm --filter @bemmoly/ui tokens:css`. Do not edit. */
+@source './components';
+
+@theme {
+  --color-*: initial;
+  --spacing: 4px;
+}
+
+@theme inline {
+  --color-ac: var(--ac);
+  --color-ac-d: var(--ac-d);
+  --color-ac-l: var(--ac-l);
+  --color-ac-bg: var(--ac-bg);
+  --color-ac-bg2: var(--ac-bg2);
+  --color-ac-br: var(--ac-br);
+  --color-ac-av: var(--ac-av);
+  --color-ac-mute: var(--ac-mute);
+  --color-on-ac: var(--on-ac);
+  --color-bg: var(--bg);
+  --color-bg2: var(--bg2);
+  --color-sf: var(--sf);
+  --color-br: var(--br);
+  --color-br2: var(--br2);
+  --color-br3: var(--br3);
+  --color-trk: var(--trk);
+  --color-chip: var(--chip);
+  --color-tx: var(--tx);
+  --color-tx2: var(--tx2);
+  --color-tx3: var(--tx3);
+  --color-tx4: var(--tx4);
+  --color-tx5: var(--tx5);
+  --color-tx6: var(--tx6);
+  --font-sans: var(--font-ui);
+  --font-mono: var(--font-code);
+  --text-base: var(--text-base);
+  --text-base--line-height: normal;
+  --text-nav: var(--text-nav);
+  --text-brand: var(--text-brand);
+  --text-mono: var(--text-mono);
+  --radius-control: var(--radius-control);
+  --spacing-control: var(--size-control);
+  --spacing-topbar: var(--size-topbar);
+}
