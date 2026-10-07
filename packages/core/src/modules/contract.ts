@@ -21,6 +21,8 @@ export type ModuleDefaultAccess = 'everyone' | 'teams' | 'none';
 export interface BemmolyModule {
   /** Stable, lowercase, used in config, URLs and the changelog table. */
   id: 'work' | 'docs' | (string & {});
+  /** What Settings › Modules calls it, e.g. "Work"; the id, capitalised, when absent. */
+  name?: string;
   /** The app version it shipped in. */
   version: string;
   /** Semver range of the kernel API it was built against. */

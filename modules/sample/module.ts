@@ -17,6 +17,7 @@ declare module '@bemmoly/core' {
  */
 export default defineModule({
   id: 'sample',
+  name: 'Sample',
   version: '0.0.0',
   coreApi: '^0.1.0',
   defaultAccess: 'everyone',

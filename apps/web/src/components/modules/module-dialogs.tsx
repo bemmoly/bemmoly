@@ -1,6 +1,5 @@
 import type { AdminModule } from '@bemmoly/shared';
 import { Button, Field, Input, Modal } from '@bemmoly/ui';
-import { moduleName } from '../../hooks/use-admin-modules.ts';
 import { FormError } from '../form.tsx';
 
 interface DisableModuleModalProps {
@@ -12,7 +11,7 @@ interface DisableModuleModalProps {
 
 export function DisableModuleModal({ module, busy, onClose, onConfirm }: DisableModuleModalProps) {
   if (!module) return null;
-  const name = moduleName(module.id);
+  const name = module.name;
   return (
     <Modal
       open
@@ -58,7 +57,7 @@ export function RemoveDataModal({
   onConfirm,
 }: RemoveDataModalProps) {
   if (!module) return null;
-  const name = moduleName(module.id);
+  const name = module.name;
   return (
     <Modal
       open

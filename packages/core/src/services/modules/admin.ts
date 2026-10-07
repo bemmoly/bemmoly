@@ -81,6 +81,7 @@ export function createModuleAdmin(deps: ModuleAdminDeps): ModuleAdmin {
     const { module } = entry;
     return {
       id: module.id,
+      name: module.name ?? module.id.charAt(0).toUpperCase() + module.id.slice(1),
       version: module.version,
       enabled: state.isEnabled(module.id),
       enabledAt: row?.enabledAt?.toISOString() ?? null,

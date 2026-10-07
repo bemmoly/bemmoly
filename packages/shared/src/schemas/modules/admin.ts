@@ -8,6 +8,8 @@ export const moduleChangelogStateSchema = z.enum(['pending', 'current', 'failed'
 /** One module in the image, as Settings › Modules lists it. */
 export const adminModuleSchema = z.object({
   id: moduleIdSchema,
+  /** The module's display name from its manifest. */
+  name: z.string().min(1),
   version: z.string(),
   enabled: z.boolean(),
   enabledAt: z.iso.datetime().nullable(),

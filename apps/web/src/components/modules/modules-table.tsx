@@ -40,7 +40,7 @@ export function ModulesTable({
       width: 'minmax(0,1.5fr)',
       render: (module) => (
         <div className="flex min-w-0 flex-col gap-0.5">
-          <span className="font-medium">{moduleName(module.id)}</span>
+          <span className="font-medium">{module.name}</span>
           <span className="truncate text-12 text-tx5">
             {module.dependsOn.length
               ? `Depends on ${module.dependsOn.map(moduleName).join(', ')}`
@@ -116,7 +116,7 @@ export function ModulesTable({
             {module.enabled ? (
               <Button
                 size="xs"
-                aria-label={`Disable ${moduleName(module.id)}`}
+                aria-label={`Disable ${module.name}`}
                 onClick={() => onDisable(module.id)}
               >
                 Disable
@@ -125,7 +125,7 @@ export function ModulesTable({
               <Button
                 size="xs"
                 variant="primary"
-                aria-label={`Enable ${moduleName(module.id)}`}
+                aria-label={`Enable ${module.name}`}
                 loading={busyId === module.id}
                 onClick={() => onEnable(module.id)}
               >
