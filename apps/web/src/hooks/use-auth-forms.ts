@@ -1,10 +1,5 @@
+import { acceptForm, loginForm, resetForm, resetRequestForm } from './auth-form-schemas.ts';
 import { queryKeys } from '@bemmoly/api-client';
-import {
-  acceptInvitationSchema,
-  loginRequestSchema,
-  passwordResetCompleteSchema,
-  passwordResetRequestSchema,
-} from '@bemmoly/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import { useState, type FormEvent } from 'react';
@@ -42,7 +37,7 @@ export function useLoginForm(redirectTo: string | undefined) {
   });
   const submit = (event: FormEvent) => {
     event.preventDefault();
-    const result = validateForm(loginRequestSchema, form.values);
+    const result = validateForm(loginForm, form.values);
     if (result.errors) return form.setErrors(result.errors);
     mutation.mutate(result.data);
   };
@@ -56,7 +51,7 @@ export function useRequestResetForm() {
   });
   const submit = (event: FormEvent) => {
     event.preventDefault();
-    const result = validateForm(passwordResetRequestSchema, form.values);
+    const result = validateForm(resetRequestForm, form.values);
     if (result.errors) return form.setErrors(result.errors);
     mutation.mutate(result.data.email);
   };
@@ -78,7 +73,7 @@ export function useResetPasswordForm(token: string | undefined) {
   });
   const submit = (event: FormEvent) => {
     event.preventDefault();
-    const result = validateForm(passwordResetCompleteSchema, {
+    const result = validateForm(resetForm, {
       token,
       password: form.values.password,
     });
@@ -110,7 +105,7 @@ export function useAcceptInvitation(token: string | undefined) {
   });
   const submit = (event: FormEvent) => {
     event.preventDefault();
-    const result = validateForm(acceptInvitationSchema, form.values);
+    const result = validateForm(acceptForm, form.values);
     const mismatch = matching(form.values);
     if (result.errors || mismatch) return form.setErrors({ ...result.errors, ...mismatch });
     mutation.mutate(result.data);
