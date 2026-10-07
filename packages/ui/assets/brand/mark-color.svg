@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" role="img" aria-label="Bemmoly">
+  <!-- Stand-in from the mocks' top-bar tile until the brand files land. -->
+  <rect width="24" height="24" rx="6" fill="#2456c9"/>
+  <rect x="5" y="5" width="6" height="6" rx="1" fill="#fff"/>
+  <rect x="13" y="5" width="6" height="6" rx="1" fill="#fff" fill-opacity=".55"/>
+  <rect x="5" y="13" width="6" height="6" rx="1" fill="#fff" fill-opacity=".55"/>
+  <rect x="13" y="13" width="6" height="6" rx="1" fill="#fff"/>
+</svg>
