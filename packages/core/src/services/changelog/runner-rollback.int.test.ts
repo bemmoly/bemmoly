@@ -97,12 +97,8 @@ describe('changelog runner: rollback, plan, tag and backfill', () => {
       const kernel = await loadKernelChangelog();
       const runner = createChangelogRunner({ sql: fresh.sql, kernel, appVersion: '1' });
       const plan = await runner.plan({ contexts: ['production'] });
-      // A dry run checks preconditions against today's schema: 0201 and 0202
-      // require `users`, which 0101 creates in the same update, so from empty
-      // they plan as halt although a real update applies them.
-      const halted = ['0201-notifications', '0202-notification-preferences'];
       expect(plan.map((entry) => [entry.id, entry.action])).toEqual(
-        kernel.map((changeset) => [changeset.id, halted.includes(changeset.id) ? 'halt' : 'run']),
+        kernel.map((changeset) => [changeset.id, 'run']),
       );
       expect(plan[0]?.statements[0]).toMatch(/^CREATE TABLE settings/);
       expect(await tableExists(fresh.sql, 'settings')).toBe(false);
