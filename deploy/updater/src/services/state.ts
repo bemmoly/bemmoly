@@ -58,6 +58,19 @@ export function withHistory(state: UpdaterStatus, entry: UpdaterHistoryEntry): U
   return { ...state, history: [entry, ...state.history].slice(0, 20) };
 }
 
+/** A failed update or rollback: the state says so, and the history keeps it with the reason. */
+export function withFailure(
+  state: UpdaterStatus,
+  failure: Pick<UpdaterHistoryEntry, 'operation' | 'from' | 'to' | 'at' | 'backupId' | 'mode'> & {
+    message: string;
+  },
+): UpdaterStatus {
+  return withHistory(
+    { ...state, state: 'failed', operation: failure.operation, message: failure.message },
+    { ...failure, outcome: 'failed', verification: null },
+  );
+}
+
 export async function setMaintenance(
   bemmolyDir: string,
   value: MaintenanceState | null,
