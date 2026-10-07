@@ -1,0 +1,35 @@
+# The devcontainer and Codespaces: Node 24 with pnpm and Docker, next to Postgres 18
+# (pgvector). The workspace shares the database's network, so localhost:5432 is Postgres
+# exactly as with `pnpm dev` on a laptop, and `pnpm dev` uses it instead of starting one.
+name: bemmoly-devcontainer
+
+services:
+  workspace:
+    image: mcr.microsoft.com/devcontainers/typescript-node:4-24-bookworm
+    command: sleep infinity
+    volumes:
+      - ..:/workspaces/bemmoly:cached
+    network_mode: service:db
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: pgvector/pgvector:pg18
+    environment:
+      POSTGRES_USER: bemmoly
+      POSTGRES_PASSWORD: bemmoly
+      POSTGRES_DB: bemmoly_db
+    volumes:
+      - bemmoly-devcontainer-db:/var/lib/postgresql
+      # Creates bemmoly_test for `pnpm test:integration` (BEMMOLY_TEST_DATABASE_URL).
+      - ./initdb:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U bemmoly -d bemmoly_db']
+      interval: 2s
+      timeout: 3s
+      retries: 30
+      start_period: 5s
+
+volumes:
+  bemmoly-devcontainer-db:
