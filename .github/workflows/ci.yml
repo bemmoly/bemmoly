@@ -57,7 +57,17 @@ jobs:
         run: pnpm format:check
 
       - name: Unit tests
-        run: pnpm test
+        run: pnpm test -- --coverage
+
+      - name: Merge coverage reports
+        run: python3 scripts/merge-coverage.py
+
+      - name: Upload coverage artifact
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report-typescript
+          path: coverage/cobertura-coverage.xml
 
       - name: Integration tests
         run: pnpm test:integration
@@ -83,3 +93,23 @@ jobs:
           name: playwright-report
           path: apps/web/test-results
           retention-days: 7
+
+  upload-coverage-typescript:
+    name: Upload TypeScript coverage
+    needs: checks
+    if: ${{ !cancelled() && needs.checks.result == 'success' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      code-quality: write
+    steps:
+      - name: Download coverage artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: coverage-report-typescript
+
+      - uses: actions/upload-code-coverage@v1
+        with:
+          file: cobertura-coverage.xml
+          language: TypeScript
+          label: code-coverage-agent
