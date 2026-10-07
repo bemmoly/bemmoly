@@ -32,8 +32,9 @@ interface RawNotification {
   target_url: string | null;
   body: string;
   reason: string | null;
-  read_at: Date | null;
-  created_at: Date;
+  /** Strings: the pool is wrapped by Drizzle, which leaves timestamps unparsed. */
+  read_at: string | null;
+  created_at: string;
 }
 
 const COLUMNS = `id, user_id, kind, actor_id, actor_name, target_kind, target_id, target_label,
@@ -52,8 +53,8 @@ function toStored(raw: RawNotification): StoredNotification {
     targetUrl: raw.target_url,
     body: raw.body,
     reason: raw.reason,
-    readAt: raw.read_at,
-    createdAt: raw.created_at,
+    readAt: raw.read_at === null ? null : new Date(raw.read_at),
+    createdAt: new Date(raw.created_at),
   };
 }
 
@@ -67,7 +68,7 @@ export async function insertNotification(
       target_label, target_url, body, reason, data, delivery, dedupe_key, emailed_at)
     values (${row.userId}, ${row.kind}, ${row.actorId}, ${row.actorName}, ${row.targetKind},
       ${row.targetId}, ${row.targetLabel}, ${row.targetUrl}, ${row.body}, ${row.reason},
-      ${db.json(row.data as never)}, ${row.delivery}, ${row.dedupeKey},
+      ${JSON.stringify(row.data)}::jsonb, ${row.delivery}, ${row.dedupeKey},
       ${row.delivery === 'email_immediate' ? db`now()` : null})
     on conflict (user_id, dedupe_key) where dedupe_key is not null do nothing
     returning ${db.unsafe(COLUMNS)}`;

@@ -52,7 +52,11 @@ function toRow(raw: RawOutboxRow): OutboxRow {
   };
 }
 
-/** Returns the row id, and whether this call created it. */
+/**
+ * Returns the row id, and whether this call created it. The pool is wrapped by
+ * Drizzle (clients/postgres.ts), so JSON is bound as text and cast, and
+ * timestamps are read back as strings.
+ */
 export async function insertOutboxEmail(
   db: SqlExecutor,
   email: NewOutboxEmail,
@@ -60,7 +64,7 @@ export async function insertOutboxEmail(
   const inserted = await db<{ id: string }[]>`
     insert into email_outbox (kind, to_address, to_name, subject, html, text, headers, dedupe_key)
     values (${email.kind}, ${email.toAddress}, ${email.toName}, ${email.subject}, ${email.html},
-            ${email.text}, ${db.json(email.headers)}, ${email.dedupeKey})
+            ${email.text}, ${JSON.stringify(email.headers)}::jsonb, ${email.dedupeKey})
     on conflict (dedupe_key) where dedupe_key is not null do nothing
     returning id`;
   if (inserted[0]) return { id: inserted[0].id, created: true };
@@ -149,7 +153,7 @@ export async function readOutboxOverview(
 
   const window = db`status = 'failed'
     and updated_at > now() - make_interval(days => ${options.failureWindowDays})`;
-  const [summary] = await db<{ count: number; since: Date | null; top_reason: string | null }[]>`
+  const [summary] = await db<{ count: number; since: string | null; top_reason: string | null }[]>`
     select count(*)::int as count, min(updated_at) as since,
            mode() within group (order by last_error) as top_reason
       from email_outbox where ${window}`;
@@ -161,7 +165,7 @@ export async function readOutboxOverview(
       subject: string;
       attempts: number;
       last_error: string | null;
-      updated_at: Date;
+      updated_at: string;
     }[]
   >`
     select id, kind, to_address, subject, attempts, last_error, updated_at
@@ -171,7 +175,7 @@ export async function readOutboxOverview(
     counts,
     failures:
       summary && summary.count > 0 && summary.since
-        ? { count: summary.count, since: summary.since, topReason: summary.top_reason }
+        ? { count: summary.count, since: new Date(summary.since), topReason: summary.top_reason }
         : null,
     recentFailures: recent.map((row) => ({
       id: row.id,
@@ -180,7 +184,7 @@ export async function readOutboxOverview(
       subject: row.subject,
       attempts: row.attempts,
       lastError: row.last_error,
-      failedAt: row.updated_at.toISOString(),
+      failedAt: new Date(row.updated_at).toISOString(),
     })),
   };
 }
