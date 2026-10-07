@@ -5,6 +5,7 @@
 export * from './components/button/index.ts';
 export * from './components/checkbox/index.ts';
 export * from './components/input/index.ts';
+export * from './components/logo/index.ts';
 export * from './components/segmented-control/index.ts';
 export * from './components/select/index.ts';
 export * from './components/spinner/index.ts';
