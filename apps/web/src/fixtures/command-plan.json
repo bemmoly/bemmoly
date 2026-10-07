@@ -1,0 +1,30 @@
+{
+  "request": "move everything blocked by PLT-204 to next sprint",
+  "summary": "Move the 2 issues blocked by PLT-204 from Sprint 14 to Sprint 15, and post a note in each explaining why.",
+  "rows": [
+    {
+      "issue": "PLT-211",
+      "change": "Session cleanup background job",
+      "from": "Sprint 14",
+      "to": "Sprint 15",
+      "field": null,
+      "permission": "ALLOWED"
+    },
+    {
+      "issue": "PLT-219",
+      "change": "Remove legacy cookie path from monolith",
+      "from": "Sprint 14",
+      "to": "Sprint 15",
+      "field": null,
+      "permission": "ALLOWED"
+    },
+    {
+      "issue": "both",
+      "change": "Comment: \"Moved to Sprint 15: blocked by PLT-204 (in review). — via Bemmoly for Rohan\"",
+      "from": null,
+      "to": null,
+      "field": "Comment",
+      "permission": "ALLOWED"
+    }
+  ]
+}
