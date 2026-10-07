@@ -24,9 +24,9 @@ permissions:
 
 env:
   IMAGE_NAMESPACE: ghcr.io/bemmoly
-  # TODO(deploy): paths owned by deploy/. Each step that needs one skips with a notice
-  # until the file exists; update a path here if it lands elsewhere.
+  # Paths owned by deploy/.
   INSTALLER: deploy/install.sh
+  RELEASE_INSTALLER_SCRIPT: deploy/scripts/release-installer.sh
   COMPOSE_FILE: deploy/compose/docker-compose.yml
   HELM_CHART: deploy/helm/bemmoly
   AIRGAP_SCRIPT: deploy/scripts/airgap-bundle.sh
@@ -274,21 +274,15 @@ jobs:
         run: cosign sign-blob --yes --bundle assets/release-manifest.json.sigstore.json assets/release-manifest.json
 
       - name: Collect the deploy assets
+        env:
+          BEMMOLY_AIRGAP_PLATFORMS: linux/amd64 linux/arm64
         run: |
           cp release/sbom-*.spdx.json assets/ 2>/dev/null || echo "::notice::No SBOMs: no image was built."
-          if [ -f "$INSTALLER" ]; then cp "$INSTALLER" assets/install.sh; else echo "::notice::$INSTALLER does not exist yet."; fi
-          if [ -f "$COMPOSE_FILE" ]; then cp "$COMPOSE_FILE" assets/docker-compose.yml; else echo "::notice::$COMPOSE_FILE does not exist yet."; fi
-          if [ -d "$HELM_CHART" ]; then
-            helm package "$HELM_CHART" --version "$VERSION" --app-version "$VERSION" --destination assets
-          else
-            echo "::notice::$HELM_CHART does not exist yet."
-          fi
-          if [ -f "$AIRGAP_SCRIPT" ]; then
-            # TODO(deploy): confirm the bundle script's arguments (version, output directory).
-            bash "$AIRGAP_SCRIPT" "$VERSION" assets
-          else
-            echo "::notice::$AIRGAP_SCRIPT does not exist yet."
-          fi
+          cp "$INSTALLER" assets/install.sh
+          sh "$RELEASE_INSTALLER_SCRIPT" "$VERSION" assets
+          cp "$COMPOSE_FILE" assets/docker-compose.yml
+          helm package "$HELM_CHART" --version "$VERSION" --app-version "$VERSION" --destination assets
+          bash "$AIRGAP_SCRIPT" "$VERSION" assets
 
       - name: Create the GitHub release
         env:

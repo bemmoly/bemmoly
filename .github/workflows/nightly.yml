@@ -23,9 +23,8 @@ env:
   IMAGE: ghcr.io/bemmoly/bemmoly
   IMAGE_TAG: ${{ inputs.image-tag || 'latest' }}
   K6_IMAGE: grafana/k6:2.3.0
-  # TODO(deploy): scripts owned by deploy/. Each step skips with a notice until its file
-  # exists. The smoke test is expected to complete the wizard through the API, upgrade from
-  # the previous release, and back up and restore; confirm its arguments when it lands.
+  # Scripts owned by deploy/. The smoke test completes the wizard through the API, backs up
+  # and restores; with --upgrade-to it also upgrades and rolls back.
   INSTALLER: deploy/install.sh
   SMOKE_TEST: deploy/scripts/smoke-test.sh
 
@@ -81,22 +80,17 @@ jobs:
         if: failure() && steps.image.outputs.published == 'true'
         run: docker logs app
 
-      - name: Run the installer on this fresh VM
+      - name: Stop the probe containers
+        if: steps.image.outputs.published == 'true'
         run: |
-          if [ ! -f "$INSTALLER" ]; then
-            echo "::notice title=Installer test skipped::$INSTALLER does not exist yet."
-            exit 0
-          fi
-          # TODO(deploy): confirm the non-interactive flags.
-          sudo bash "$INSTALLER" --yes --domain localhost --version "$IMAGE_TAG"
+          docker rm -f app db
+          docker network rm bemmoly
 
-      - name: Wizard through the API, upgrade and restore
-        run: |
-          if [ ! -f "$SMOKE_TEST" ]; then
-            echo "::notice title=Smoke test skipped::$SMOKE_TEST does not exist yet."
-            exit 0
-          fi
-          bash "$SMOKE_TEST" --base-url https://localhost --version "$IMAGE_TAG"
+      - name: Run the installer on this fresh VM
+        run: sudo bash "$INSTALLER" --yes --domain localhost --version "$IMAGE_TAG"
+
+      - name: Wizard through the API, backup and restore
+        run: sudo bash "$SMOKE_TEST" --base-url https://localhost --version "$IMAGE_TAG"
 
       - name: Report the failure
         if: failure()
