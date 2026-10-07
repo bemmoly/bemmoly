@@ -1,0 +1,77 @@
+# Serves the built site (/srv) on port 80 behind the platform's TLS proxy (Coolify).
+# Hosts: bemmoly.com (the site), www.bemmoly.com (redirects to the apex) and get.bemmoly.com
+# (the installer, so `curl -fsSL https://get.bemmoly.com | sh` works). Any other host, such as
+# a health check by IP, gets the site.
+{
+	admin off
+	auto_https off
+	persist_config off
+	servers {
+		trusted_proxies static private_ranges
+	}
+}
+
+(headers) {
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
+		Cross-Origin-Opener-Policy "same-origin"
+		# The script hash is the landing page's inline copy button; tests/caddyfile.test.ts
+		# fails when the built script and this hash drift apart.
+		Content-Security-Policy "default-src 'self'; script-src 'self' 'sha256-hv+s8VknAxjixYTv2FqzB997uQu7+PTgiQQMHCPzjGM='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+		-Server
+	}
+}
+
+(installer) {
+	root * /srv
+	header Content-Type "text/plain; charset=utf-8"
+	header Cache-Control "no-cache"
+	file_server
+}
+
+http://get.bemmoly.com {
+	import headers
+	encode zstd gzip
+	@script path / /install.sh
+	handle @script {
+		rewrite * /install.sh
+		import installer
+	}
+	handle {
+		redir https://bemmoly.com{uri} 302
+	}
+}
+
+http://www.bemmoly.com {
+	redir https://bemmoly.com{uri} 301
+}
+
+:80 {
+	import headers
+	encode zstd gzip
+	root * /srv
+
+	handle /install.sh {
+		import installer
+	}
+
+	# Hashed build output never changes under the same name.
+	@hashed path /_astro/*
+	header @hashed Cache-Control "public, max-age=31536000, immutable"
+	# Pages and unhashed files (robots, sitemap, manifest) stay fresh after a deploy.
+	@fresh not path /_astro/*
+	header @fresh Cache-Control "public, max-age=300, must-revalidate"
+	header /site.webmanifest Content-Type "application/manifest+json"
+
+	try_files {path} {path}.html
+	file_server
+
+	handle_errors 404 {
+		rewrite * /404.html
+		file_server
+	}
+}

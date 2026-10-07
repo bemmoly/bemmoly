@@ -12,7 +12,9 @@
     "lint": "eslint --max-warnings 0 . && html-validate dist",
     "test": "vitest run",
     "size": "node scripts/size.ts",
-    "screens": "node scripts/capture-screens.ts"
+    "screens": "node scripts/capture-screens.ts",
+    "test:container": "vitest run tests/container.test.ts",
+    "docker:build": "docker build -f Dockerfile -t bemmoly-site:dev ../.."
   },
   "devDependencies": {
     "@astrojs/check": "0.9.10",
