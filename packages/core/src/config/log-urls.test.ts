@@ -18,17 +18,30 @@ describe('URL redaction in logs', () => {
       '/api/v1/auth/sso/callback?code=[redacted]&state=[redacted]&x=1',
     ],
     [`/api/v1/exports/download?token=${TOKEN}`, '/api/v1/exports/download?token=[redacted]'],
+    [`/invitations/${TOKEN}`, '/invitations/[redacted]'],
+    [`/invitations/${TOKEN}/accept?from=email`, '/invitations/[redacted]/accept?from=email'],
+    [`/password-reset/${TOKEN}`, '/password-reset/[redacted]'],
+    [`/accept-invitation?t=${TOKEN}`, '/accept-invitation?t=[redacted]'],
+    [`/accept-invitation/${TOKEN}`, '/accept-invitation/[redacted]'],
+    [`/reset-password?k=${TOKEN}&next=%2F`, '/reset-password?k=[redacted]&next=[redacted]'],
+    [`/reset-password/${TOKEN}`, '/reset-password/[redacted]'],
   ])('redacts %s', (url, expected) => {
     expect(redactUrl(url)).toBe(expected);
     expect(redactUrl(url)).not.toContain(TOKEN);
   });
 
-  it.each(['/api/v1/modules', '/api/v1/auth/sessions', `/api/v1/issues/${TOKEN}`, '/healthz'])(
-    'leaves %s alone',
-    (url) => {
-      expect(redactUrl(url)).toBe(url);
-    },
-  );
+  it.each([
+    '/api/v1/modules',
+    '/api/v1/auth/sessions',
+    `/api/v1/issues/${TOKEN}`,
+    '/healthz',
+    '/accept-invitation',
+    '/reset-password',
+    '/settings/invitations',
+    '/reset-passwords-help',
+  ])('leaves %s alone', (url) => {
+    expect(redactUrl(url)).toBe(url);
+  });
 
   it('keeps invitation tokens out of every line Fastify and handlers write', async () => {
     const lines: string[] = [];

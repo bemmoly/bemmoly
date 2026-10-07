@@ -12,7 +12,28 @@ const TOKEN_SEGMENT = /^[A-Za-z0-9_-]{43}$/;
 /** Query parameters that carry a credential. */
 const SECRET_PARAMS = new Set(['token', 'code', 'invitation', 'state', 'access_token']);
 
+/** Web pages an email link opens with the token as the next path segment. */
+const WEB_TOKEN_PREFIXES = ['/invitations/', '/password-reset/'];
+
+/** Web pages an email link opens with the token anywhere after the page's path. */
+const WEB_TOKEN_PAGES = ['/accept-invitation', '/reset-password'];
+
+function tokenPage(path: string): string | undefined {
+  return WEB_TOKEN_PAGES.find((page) => path === page || path.startsWith(`${page}/`));
+}
+
+function redactWebPath(path: string): string | undefined {
+  const page = tokenPage(path);
+  if (page) return path === page ? path : `${page}/${REDACTED}`;
+  const prefix = WEB_TOKEN_PREFIXES.find((candidate) => path.startsWith(candidate));
+  if (!prefix) return undefined;
+  const rest = path.slice(prefix.length).split('/').slice(1);
+  return [`${prefix}${REDACTED}`, ...rest].join('/');
+}
+
 function redactPath(path: string): string {
+  const web = redactWebPath(path);
+  if (web !== undefined) return web;
   const marker = path.indexOf('/auth/');
   if (marker === -1) return path;
   const head = path.slice(0, marker + '/auth/'.length);
@@ -27,20 +48,32 @@ function redactPath(path: string): string {
   );
 }
 
-function redactQuery(query: string): string {
+/** On a token page every parameter is treated as the credential, whatever its name. */
+function redactQuery(query: string, everything: boolean): string {
   return query
     .split('&')
     .map((pair) => {
-      const name = decodeURIComponent(pair.split('=')[0] ?? '').toLowerCase();
-      return SECRET_PARAMS.has(name) ? `${pair.split('=')[0]}=${REDACTED}` : pair;
+      const raw = pair.split('=')[0] ?? '';
+      const name = safeDecode(raw).toLowerCase();
+      return everything || SECRET_PARAMS.has(name) ? `${raw}=${REDACTED}` : pair;
     })
     .join('&');
+}
+
+function safeDecode(value: string): string {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
 }
 
 export function redactUrl(url: string): string {
   const queryStart = url.indexOf('?');
   if (queryStart === -1) return redactPath(url);
-  return `${redactPath(url.slice(0, queryStart))}?${redactQuery(url.slice(queryStart + 1))}`;
+  const path = url.slice(0, queryStart);
+  const everything = tokenPage(path) !== undefined;
+  return `${redactPath(path)}?${redactQuery(url.slice(queryStart + 1), everything)}`;
 }
 
 interface LoggableRequest {
