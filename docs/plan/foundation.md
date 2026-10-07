@@ -1,10 +1,10 @@
-# M0 Foundation: plan
+# Foundation release (0.1.0): plan
 
-Companion to `docs/tech-design.html` (v0.10). M0 builds the kernel, the shell, the design
+Companion to `docs/tech-design.html` (v0.10). The foundation release builds the kernel, the shell, the design
 system and the install/update/backup path. It ships no Work or Docs features on purpose: every
-later milestone is built on, and verified through, what M0 produces.
+later release is built on, and verified through, what it produces.
 
-## What you will be able to do when M0 is done
+## What you will be able to do with 0.1.0
 
 On your laptop:
 
@@ -35,7 +35,7 @@ Quality bar, also part of the output: CI green (typecheck, lint with the layerin
 rules, unit, integration against real Postgres, Playwright for wizard and login, size budget),
 Storybook showing every component next to its mock, ADR-0001, CONTRIBUTING, SECURITY.md.
 
-Not in M0: issues, boards, docs, AI generation, importers, SSO, integrations. The module system
+Not in 0.1.0: issues, boards, docs, AI generation, importers, SSO, integrations. The module system
 is proven with a throwaway `sample` module that registers a route, a nav entry, a capability, a
 job and a changeset.
 
@@ -69,8 +69,8 @@ Everything else depends on this landing first.
 | A. Data kernel | `packages/core/src/services/{changelog,modules,settings,realtime,jobs,storage}`, `packages/core/changelog`, `models/` | Changelog runner (changesets, checksums, preconditions, contexts, `down`, advisory lock, per-module tracking, `lattice db` CLI), module loader and migrator, Drizzle schema for kernel tables, settings with AES-256-GCM secrets, pg-boss setup, NOTIFY hub and WebSocket endpoint, disk ObjectStore, `sample` module |
 | B. Identity and access | `packages/core/src/services/{identity,authz,audit}` and their routes and controllers | Users, argon2id passwords, sessions, invitations, API tokens, teams, roles, capability matrix with org locks, `module_grants`, `authorize()`, rate limiting backed by Postgres, audit log, CSRF and headers |
 | C. Email and notifications | `packages/core/src/services/{email,notifications}` | `EmailSender` with `smtp` and `log`, outbox worker, react-email templates themed from workspace brand, dev mailbox page, SMTP test, digest batching, inbox tables, realtime push, preferences |
-| D. Design system | `packages/ui` | Every component the M0 screens need, ported from mock markup: button, input, select, badge, status badge, avatar, table, modal, drawer, dropdown, tabs, toast, tooltip, empty state, command palette shell, theme switcher, custom theme builder (brand colour to full token set with contrast check). Storybook with mock-side-by-side stories |
-| E. Web shell and settings | `apps/web`, `packages/core-web` | TanStack Router, Query, Zustand, generated API client, auth pages, six-step setup wizard, top nav, settings frame and every M0 settings page, inbox, ⌘K over users and settings, module chunk loader, PWA manifest |
+| D. Design system | `packages/ui` | Every component the 0.1.0 screens need, ported from mock markup: button, input, select, badge, status badge, avatar, table, modal, drawer, dropdown, tabs, toast, tooltip, empty state, command palette shell, theme switcher, custom theme builder (brand colour to full token set with contrast check). Storybook with mock-side-by-side stories |
+| E. Web shell and settings | `apps/web`, `packages/core-web` | TanStack Router, Query, Zustand, generated API client, auth pages, six-step setup wizard, top nav, settings frame and every 0.1.0 settings page, inbox, ⌘K over users and settings, module chunk loader, PWA manifest |
 | F. Deploy and operations | `deploy/`, `packages/core/src/services/system` | Multi-stage Dockerfile (Node 24, Postgres 18 client tools), Compose with Caddy and updater, the updater service (update, rollback, status over the internal network with a token), `install.sh` with `--modules` and `--no-in-app-updates`, `lattice` CLI, backups (dump, incremental attachments, manifest, encryption, GFS retention, verification), restore, release manifest and update check, Updates and Storage pages' API |
 | G. Observability and quality | `.github/`, `docs/adr`, root docs, `packages/core/src/config/logger.ts`, metrics | Logger redaction, Prometheus metrics, optional OTel, CI gates wired to real checks, nightly install test workflow (fresh VM, installer, wizard via API, upgrade, restore), devcontainer, CONTRIBUTING, SECURITY.md, LICENSE, ADR-0001 from the tech design |
 
@@ -83,9 +83,9 @@ PR green before merge.
 
 After the streams land: wire the wizard to real services end to end, run the Playwright suite,
 build the image, run the installer on a fresh VM, demonstrate upgrade and rollback, then tag
-`0.1.0-m0`.
+`v0.1.0`.
 
-## Decisions taken for M0
+## Decisions taken for 0.1.0
 
 - Node 24 LTS now; move to 26 when it enters LTS.
 - Drizzle ORM 1.0 release candidate, pinned; revisit when 1.0 is on the `latest` tag.

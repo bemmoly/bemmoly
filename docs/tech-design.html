@@ -200,7 +200,7 @@ svg .mono{font-family:'IBM Plex Mono',monospace}
 <p>Lattice is a <strong>modular monolith</strong>. One Node process serves the API, the WebSocket endpoint, the collaborative-editing endpoint, the static SPA and the background workers. The same image can be started with <code>LATTICE_ROLE=api</code> or <code>LATTICE_ROLE=worker</code> to split it across machines when a deployment outgrows one box. Nothing in the code knows or cares which mode it is in.</p>
 <figure>
 <svg viewBox="0 0 1040 520" width="100%" style="max-width:1040px;display:block" role="img" aria-label="Lattice runtime architecture">
-  <defs><marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="var(--tx3)"/></marker></defs>
+  <defs><marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="the 0.1 foundation release,0 L8,4 L0,8 z" fill="var(--tx3)"/></marker></defs>
   <!-- clients -->
   <rect x="20" y="30" width="170" height="64" rx="10" fill="var(--sf2)" stroke="var(--br)"/>
   <text x="105" y="56" text-anchor="middle" font-size="13" font-weight="600" fill="var(--tx)">Browser (SPA)</text>
@@ -268,7 +268,7 @@ svg .mono{font-family:'IBM Plex Mono',monospace}
 
 <figure>
 <svg viewBox="0 0 1040 330" width="100%" style="max-width:1040px;display:block" role="img" aria-label="Core kernel and modules">
-  <defs><marker id="arrm" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="var(--tx3)"/></marker></defs>
+  <defs><marker id="arrm" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="the 0.1 foundation release,0 L8,4 L0,8 z" fill="var(--tx3)"/></marker></defs>
   <g font-size="12" fill="var(--tx)">
     <rect x="20" y="20" width="235" height="120" rx="12" fill="var(--ac-bg)" stroke="var(--ac-br)"/>
     <text x="137" y="46" text-anchor="middle" font-weight="600" fill="var(--ac)">work</text>
@@ -565,7 +565,7 @@ export default changeset({
 <p>The full catalogue is below, grouped by module. Column lists show what shapes the design, not every timestamp.</p>
 <figure>
 <svg viewBox="0 0 1040 430" width="100%" style="max-width:1040px;display:block" role="img" aria-label="Core entity relationships">
-  <defs><marker id="arr2" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="var(--tx3)"/></marker></defs>
+  <defs><marker id="arr2" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="the 0.1 foundation release,0 L8,4 L0,8 z" fill="var(--tx3)"/></marker></defs>
   <g font-size="12" fill="var(--tx)">
     <rect x="20" y="30" width="140" height="44" rx="8" fill="var(--sf2)" stroke="var(--br)"/><text x="90" y="57" text-anchor="middle" font-weight="600" class="mono">users</text>
     <rect x="20" y="110" width="140" height="44" rx="8" fill="var(--sf2)" stroke="var(--br)"/><text x="90" y="137" text-anchor="middle" font-weight="600" class="mono">teams</text>
@@ -865,7 +865,7 @@ export default changeset({
 <h3>11.4 Plan → confirm → run</h3>
 <figure>
 <svg viewBox="0 0 1040 150" width="100%" style="max-width:1040px;display:block" role="img" aria-label="AI plan lifecycle">
-  <defs><marker id="arr3" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="var(--tx3)"/></marker></defs>
+  <defs><marker id="arr3" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="the 0.1 foundation release,0 L8,4 L0,8 z" fill="var(--tx3)"/></marker></defs>
   <g font-size="12" fill="var(--tx)">
     <rect x="10" y="30" width="150" height="70" rx="10" fill="var(--sf2)" stroke="var(--br)"/><text x="85" y="58" text-anchor="middle" font-weight="600">1. Request</text><text x="85" y="78" text-anchor="middle" font-size="11" fill="var(--tx3)">"move issues blocked by PLT-204"</text>
     <rect x="190" y="30" width="150" height="70" rx="10" fill="var(--ai-bg)" stroke="var(--ai-br)"/><text x="265" y="58" text-anchor="middle" font-weight="600" fill="var(--ai)">2. strong model</text><text x="265" y="78" text-anchor="middle" font-size="11" fill="var(--tx3)">tools = read-only + proposals</text>
@@ -904,7 +904,7 @@ export default changeset({
 <p>"Pinging" in Lattice means three channels fed by one event stream: the in-app inbox, email, and outgoing webhooks (including chat tools). A notification service turns domain events into per-user notifications according to preferences, then each channel delivers on its own schedule.</p>
 <figure>
 <svg viewBox="0 0 1040 170" width="100%" style="max-width:1040px;display:block" role="img" aria-label="Notification flow">
-  <defs><marker id="arr4" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="var(--tx3)"/></marker></defs>
+  <defs><marker id="arr4" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="the 0.1 foundation release,0 L8,4 L0,8 z" fill="var(--tx3)"/></marker></defs>
   <g font-size="12" fill="var(--tx)">
     <rect x="10" y="40" width="150" height="60" rx="10" fill="var(--sf2)" stroke="var(--br)"/><text x="85" y="66" text-anchor="middle" font-weight="600">Domain event</text><text x="85" y="84" text-anchor="middle" font-size="11" fill="var(--tx3)">issue.assigned, mention…</text>
     <rect x="200" y="40" width="170" height="60" rx="10" fill="var(--sf2)" stroke="var(--br)"/><text x="285" y="66" text-anchor="middle" font-weight="600">notifications service</text><text x="285" y="84" text-anchor="middle" font-size="11" fill="var(--tx3)">recipients × preferences</text>
@@ -1057,7 +1057,7 @@ export default changeset({
 <p>The sidebar badge in the mocks says "Update". Clicking it has to actually update the server, and a container cannot replace its own image. So the installer adds a small <strong>updater</strong> container that holds the Docker socket and does nothing except a fixed set of actions on request from the app.</p>
 <figure>
 <svg viewBox="0 0 1040 160" width="100%" style="max-width:1040px;display:block" role="img" aria-label="In-app update flow">
-  <defs><marker id="arru" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="var(--tx3)"/></marker></defs>
+  <defs><marker id="arru" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="the 0.1 foundation release,0 L8,4 L0,8 z" fill="var(--tx3)"/></marker></defs>
   <g font-size="12" fill="var(--tx)">
     <rect x="10" y="30" width="140" height="70" rx="10" fill="var(--sf2)" stroke="var(--br)"/><text x="80" y="58" text-anchor="middle" font-weight="600">1. Admin clicks</text><text x="80" y="78" text-anchor="middle" font-size="11" fill="var(--tx3)">release notes shown first</text>
     <rect x="180" y="30" width="140" height="70" rx="10" fill="var(--sf2)" stroke="var(--br)"/><text x="250" y="58" text-anchor="middle" font-weight="600">2. App → updater</text><text x="250" y="78" text-anchor="middle" font-size="11" fill="var(--tx3)">internal network, shared token</text>
@@ -1266,15 +1266,15 @@ LATTICE_SMTP_URL=</code></pre></div>
 
 <!-- ===================================================== 23 -->
 <h2 id="roadmap">24. Milestones</h2>
-<p>Six milestones to 1.0. Each ends with a deployable image, so the installer and upgrade path are exercised from the first month, not bolted on at the end.</p>
+<p>Six releases to 1.0, numbered as versions rather than milestones. Each ends with a deployable image, so the installer and upgrade path are exercised from the first month, not bolted on at the end.</p>
 <table>
-  <tr><th style="width:170px">Milestone</th><th>Scope</th><th style="width:230px">Exit criterion</th></tr>
-  <tr><td><strong>M0 Foundation</strong><br><span class="small">weeks 1–4</span></td><td>Monorepo, standards lint rules, Fastify host, the kernel with the module contract, registry, loader and the Liquibase-style changelog runner with its CLI (proven with a throwaway sample module), Drizzle schema and changesets for identity and system, sessions and password auth, roles and capability matrix, settings, pg-boss, NOTIFY hub, email outbox and SMTP, audit log, design tokens and the eight presets in <code>packages/ui</code>, Storybook, installer v0 with Compose, Caddy and the updater, in-app update flow, <code>lattice</code> CLI, backups, CI gates.</td><td>Fresh VM to login page in under 5 minutes; in-app update and rollback work; a sample module can be enabled and disabled from Settings; People and Appearance screens match mocks.</td></tr>
-  <tr><td><strong>M1 Work module</strong><br><span class="small">weeks 5–10</span></td><td>Built as <code>modules/work</code> against the contract. Projects, issue types, fields, workflows with the visual editor, issues with history, comments, attachments, links, labels, versions, board (Scrum and Kanban) with settings, backlog and sprints, LQL and saved filters, keyword search, notifications inbox and email, realtime invalidation, home "my work".</td><td>Board, Backlog, Issue, Board settings and Workflow screens match mocks; board p95 budget met.</td></tr>
-  <tr><td><strong>M2 Docs module</strong><br><span class="small">weeks 11–14</span></td><td>Built as <code>modules/docs</code>; must boot and pass its tests with Work disabled. Spaces, page tree, Tiptap editor with custom nodes, Yjs collaboration and persistence, revisions, inline comments, templates, links graph with backlinks and "referenced in", exports.</td><td>Docs home and Doc editor match mocks; two browsers edit one page without conflict.</td></tr>
-  <tr><td><strong>M3 AI</strong><br><span class="small">weeks 15–18</span></td><td>AI SDK facade, package loader, registry and middleware stack, the models.dev catalog resolved live with snapshot and bundled fallbacks, the provider picker and connection forms generated from the catalog, model roles, prompt files and overrides, context builders, insights cache, issue summary, page TL;DR, sprint pulse, morning brief, ask-your-docs with embeddings and citations, ⌘K palette with plans, ghost text and <code>/ai</code> commands, consistency checks, AI settings with privacy and budget, evals.</td><td>Home, Command palette and the AI panels across screens match mocks; evals pass; "none" mode hides every AI surface.</td></tr>
-  <tr><td><strong>M4 Import and integrations</strong><br><span class="small">weeks 19–22</span></td><td>Jira, Confluence, CSV and Markdown importers; OIDC and SAML SSO; SCIM; GitHub and GitLab code links; outgoing webhooks and chat templates; automation rules; roadmap with forecast; MCP server; setup wizard complete.</td><td>Setup wizard and Roadmap match mocks; a real Jira site with 10k issues imports in under 30 minutes on the reference VM.</td></tr>
-  <tr><td><strong>M5 Launch</strong><br><span class="small">weeks 23–26</span></td><td>Helm chart, Terraform modules, air-gap bundle, docs site and landing page, live demo instance, installable PWA with web push, accessibility pass (WCAG 2.2 AA), i18n scaffolding, security review, load and soak sign-off, 1.0 release.</td><td>All gates green; external security review closed; three design-partner companies on 1.0.</td></tr>
+  <tr><th style="width:170px">Release</th><th>Scope</th><th style="width:230px">Exit criterion</th></tr>
+  <tr><td><strong>0.1 Foundation</strong><br><span class="small">weeks 1–4</span></td><td>Monorepo, standards lint rules, Fastify host, the kernel with the module contract, registry, loader and the Liquibase-style changelog runner with its CLI (proven with a throwaway sample module), Drizzle schema and changesets for identity and system, sessions and password auth, roles and capability matrix, settings, pg-boss, NOTIFY hub, email outbox and SMTP, audit log, design tokens and the eight presets in <code>packages/ui</code>, Storybook, installer v0 with Compose, Caddy and the updater, in-app update flow, <code>lattice</code> CLI, backups, CI gates.</td><td>Fresh VM to login page in under 5 minutes; in-app update and rollback work; a sample module can be enabled and disabled from Settings; People and Appearance screens match mocks.</td></tr>
+  <tr><td><strong>0.2 Work module</strong><br><span class="small">weeks 5–10</span></td><td>Built as <code>modules/work</code> against the contract. Projects, issue types, fields, workflows with the visual editor, issues with history, comments, attachments, links, labels, versions, board (Scrum and Kanban) with settings, backlog and sprints, LQL and saved filters, keyword search, notifications inbox and email, realtime invalidation, home "my work".</td><td>Board, Backlog, Issue, Board settings and Workflow screens match mocks; board p95 budget met.</td></tr>
+  <tr><td><strong>0.3 Docs module</strong><br><span class="small">weeks 11–14</span></td><td>Built as <code>modules/docs</code>; must boot and pass its tests with Work disabled. Spaces, page tree, Tiptap editor with custom nodes, Yjs collaboration and persistence, revisions, inline comments, templates, links graph with backlinks and "referenced in", exports.</td><td>Docs home and Doc editor match mocks; two browsers edit one page without conflict.</td></tr>
+  <tr><td><strong>0.4 AI</strong><br><span class="small">weeks 15–18</span></td><td>AI SDK facade, package loader, registry and middleware stack, the models.dev catalog resolved live with snapshot and bundled fallbacks, the provider picker and connection forms generated from the catalog, model roles, prompt files and overrides, context builders, insights cache, issue summary, page TL;DR, sprint pulse, morning brief, ask-your-docs with embeddings and citations, ⌘K palette with plans, ghost text and <code>/ai</code> commands, consistency checks, AI settings with privacy and budget, evals.</td><td>Home, Command palette and the AI panels across screens match mocks; evals pass; "none" mode hides every AI surface.</td></tr>
+  <tr><td><strong>0.5 Import and integrations</strong><br><span class="small">weeks 19–22</span></td><td>Jira, Confluence, CSV and Markdown importers; OIDC and SAML SSO; SCIM; GitHub and GitLab code links; outgoing webhooks and chat templates; automation rules; roadmap with forecast; MCP server; setup wizard complete.</td><td>Setup wizard and Roadmap match mocks; a real Jira site with 10k issues imports in under 30 minutes on the reference VM.</td></tr>
+  <tr><td><strong>1.0 Launch</strong><br><span class="small">weeks 23–26</span></td><td>Helm chart, Terraform modules, air-gap bundle, docs site and landing page, live demo instance, installable PWA with web push, accessibility pass (WCAG 2.2 AA), i18n scaffolding, security review, load and soak sign-off, 1.0 release.</td><td>All gates green; external security review closed; three design-partner companies on 1.0.</td></tr>
 </table>
 
 <!-- ===================================================== 24 -->
@@ -1285,7 +1285,7 @@ LATTICE_SMTP_URL=</code></pre></div>
   <tr><td>Postgres only vs database options</td><td>Postgres only; options are where it runs.</td><td>Adding Mongo doubles every data-layer cost permanently and removes the queue, search and vector consolidation that makes the one-container promise possible.</td></tr>
   <tr><td>SPA (Vite) vs Next.js</td><td>SPA served by the app process.</td><td>Next.js adds a second Node server or forces the API into Next; gains SSR nobody behind a login needs. The marketing site uses Astro separately.</td></tr>
   <tr><td>Caddy as a third container</td><td>Include, optional.</td><td>ACME inside the app keeps "one container" literally true but means owning certificate code. Could be revisited after 1.0.</td></tr>
-  <tr><td>Name, domain and org</td><td><code>lattice</code>, <code>get.lattice.dev</code>, <code>ghcr.io/lattice-dev</code> as placeholders.</td><td>Trademark and domain availability need checking before M0 publishes anything.</td></tr>
+  <tr><td>Name, domain and org</td><td><code>lattice</code>, <code>get.lattice.dev</code>, <code>ghcr.io/lattice-dev</code> as placeholders.</td><td>Trademark and domain availability need checking before the 0.1 foundation release publishes anything.</td></tr>
   <tr><td>Licence</td><td>MIT, as the mocks state.</td><td>AGPL protects against hosted forks but deters some companies; Apache-2 adds a patent grant. MIT is the most adoption-friendly.</td></tr>
   <tr><td>Multi-workspace per install</td><td>One workspace per install for 1.0.</td><td>Multi-tenant adds a tenant column to every table and a tenant check to every query. Cheap now, expensive later, but it is not what self-hosters ask for.</td></tr>
   <tr><td>One website vs one site per module</td><td>One website, path-routed modules, optional vanity hosts via the proxy (§4).</td><td>Separate sites give independent deploys and natural branding at the cost of SSO complexity, duplicated shell, cross-service calls for every cross-module feature and a multi-host install.</td></tr>
@@ -1300,7 +1300,7 @@ LATTICE_SMTP_URL=</code></pre></div>
 </table>
 
 <div class="hr"></div>
-<p class="small">Next step after sign-off: convert this into ADR-0001, scaffold the monorepo per §6, and start M0 with the installer and the identity module, because every later milestone is verified through them.</p>
+<p class="small">Next step after sign-off: convert this into ADR-0001, scaffold the monorepo per §6, and start the 0.1 foundation release with the installer and the identity module, because every later milestone is verified through them.</p>
 </main>
 </div>
 </body>
