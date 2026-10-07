@@ -20,6 +20,8 @@ const MATRIX: ReadonlyArray<readonly [string, readonly number[], boolean]> = [
   ['workspace.sso.configure', [1, 0, 0, 0, 0], true],
   ['workspace.roles.manage', [1, 0, 0, 0, 0], true],
   ['workspace.appearance.manage', [1, 0, 0, 0, 0], false],
+  ['workspace.settings.manage', [1, 0, 0, 0, 0], false],
+  ['workspace.modules.manage', [1, 0, 0, 0, 0], false],
   ['workspace.email.manage', [1, 0, 0, 0, 0], false],
   ['workspace.audit.view', [1, 0, 0, 0, 0], false],
   ['ai.assist.use', [1, 1, 1, 1, 0], false],

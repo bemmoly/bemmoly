@@ -45,6 +45,20 @@ const KERNEL: ReadonlyArray<
   ],
   ['workspace.appearance.manage', 'Set appearance and themes', null, 'Workspace', ONLY_ORG_ADMIN],
   [
+    'workspace.settings.manage',
+    'Manage workspace settings',
+    'Read and change settings, set secrets',
+    'Workspace',
+    ONLY_ORG_ADMIN,
+  ],
+  [
+    'workspace.modules.manage',
+    'Manage modules',
+    'Enable, disable and remove module data',
+    'Workspace',
+    ONLY_ORG_ADMIN,
+  ],
+  [
     'workspace.email.manage',
     'Manage email delivery',
     'SMTP settings, test sends, the dev mailbox',
