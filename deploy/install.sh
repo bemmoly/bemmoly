@@ -58,14 +58,17 @@ bootstrap() {
   fi
   expected=$(awk '{ print $1; exit }' "${work}/bemmoly-installer.sh.sha256")
   actual=$(sha256sum "${work}/bemmoly-installer.sh" | awk '{ print $1 }')
-  [ -n "${expected}" ] && [ "${expected}" = "${actual}" ] ||
+  if [ -z "${expected}" ] || [ "${expected}" != "${actual}" ]; then
     bootstrap_fail 'The downloaded installer does not match its checksum' 'Run the command again; if it repeats, report it.'
+  fi
   exec sh "${work}/bemmoly-installer.sh" "$@"
 }
 
 if [ -z "${BEMMOLY_BUNDLED}" ]; then
   case "$0" in */*) DEPLOY_DIR=$(cd "$(dirname "$0")" && pwd) ;; *) DEPLOY_DIR='' ;; esac
-  [ -n "${DEPLOY_DIR}" ] && [ -f "${DEPLOY_DIR}/installer/lib/common.sh" ] || bootstrap "$@"
+  if [ -z "${DEPLOY_DIR}" ] || [ ! -f "${DEPLOY_DIR}/installer/lib/common.sh" ]; then
+    bootstrap "$@"
+  fi
   for lib in common args preflight docker config start; do
     # shellcheck source=/dev/null
     . "${DEPLOY_DIR}/installer/lib/${lib}.sh"
