@@ -1,0 +1,4 @@
+@import 'tailwindcss';
+@import '@bemmoly/ui/tailwind.css';
+@import '@bemmoly/ui/fonts.css';
+@import '@bemmoly/ui/theme.css';

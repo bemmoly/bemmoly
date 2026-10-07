@@ -1,0 +1,8 @@
+[
+  {
+    "name": "web shell, initial JS (gzip)",
+    "path": ["dist/assets/index-*.js"],
+    "limit": "250 KB",
+    "gzip": true
+  }
+]
