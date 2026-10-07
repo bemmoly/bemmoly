@@ -193,3 +193,36 @@ fake_self_signed_https() {
   [ "$(grep -c '^sleep$' "${CALLS}")" = 30 ]
   [ "$(grep -c -- ' -k ' "${CALLS}")" = 1 ]
 }
+
+@test "images from a bundle are started, not pulled" {
+  quietly() { :; }
+  has_profile() { return 1; }
+  wait_healthy() { return 0; }
+  IMAGE_ARCHIVE="${BATS_TEST_TMPDIR}/bemmoly-airgap.tar" VERSION=1.2.0
+  run start_stack
+  [ "${status}" -eq 0 ]
+  [[ "${output}" == *"→ Starting bemmoly:1.2.0 … done"* ]]
+  [[ "${output}" != *Pulling* ]]
+  IMAGE_ARCHIVE=''
+  run start_stack
+  [[ "${output}" == "→ Pulling bemmoly:1.2.0 … done" ]]
+}
+
+final_message_for() {
+  DOMAIN="$1" SELF_SIGNED=1 INSTALL_DIR="${BATS_TEST_TMPDIR}"
+  printf 'BEMMOLY_PUBLIC_URL=https://%s\n' "$1" >"${INSTALL_DIR}/.env"
+  curl() { printf '{"initialized":%s,"completedAt":null}' "${INITIALIZED}"; }
+  final_message
+}
+
+@test "the hand-off says sign in after setup and explains local-only certificates" {
+  INITIALIZED=false
+  run final_message_for bemmoly.test
+  [[ "${output}" == *"Open it to create the first admin."* ]]
+  [[ "${output}" == *"bemmoly.test is a local-only name"* ]]
+  [[ "${output}" != *"a real one follows by itself"* ]]
+  INITIALIZED=true
+  run final_message_for bemmoly.acme.dev
+  [[ "${output}" == *"Open it to sign in."* ]]
+  [[ "${output}" == *"until bemmoly.acme.dev points at this machine; a real one follows by itself."* ]]
+}

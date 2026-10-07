@@ -21,13 +21,18 @@ choose_domain() {
     "Re-run with --domain bemmoly.example.com, after pointing that name's DNS A record at this machine."
 }
 
+# Names no public certificate authority will ever sign: local suffixes and bare addresses.
+local_only_name() {
+  case "$1" in
+    localhost | *.localhost | *.local | *.test | *.internal | *.lan) return 0 ;;
+  esac
+  printf '%s' "$1" | grep -Eq '^[0-9.]+$'
+}
+
 # "auto" when the name already resolves to an address of this machine; "internal" when it
 # does not (yet), or is local-only. Caddy tries a real certificate first in both cases.
 tls_mode_for() {
-  case "$1" in
-    localhost | *.localhost | *.local | *.test | *.internal | *.lan) echo internal; return ;;
-  esac
-  if printf '%s' "$1" | grep -Eq '^[0-9.]+$'; then echo internal; return; fi
+  if local_only_name "$1"; then echo internal; return; fi
   resolved=$(getent ahostsv4 "$1" 2>/dev/null | awk '{ print $1 }' | sort -u)
   for address in ${resolved}; do
     for own in $(hostname -I 2>/dev/null); do
