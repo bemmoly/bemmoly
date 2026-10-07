@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>html,body{margin:0;height:100%;background:#f4f5f7;font-family:'IBM Plex Sans',system-ui,sans-serif;color:#1b2430;font-size:13px}*{box-sizing:border-box}a{color:#2456c9;text-decoration:none}a:hover{color:#183d94}input[type=text]{font:inherit}</style>
+</helmet>
+<div data-screen-label="Workspace settings · Storage and backups" style="height:{{ rootH }};min-width:1440px;display:flex;flex-direction:column;overflow:hidden;background:#f4f5f7;position:relative">
+  <div style="height:48px;background:#fff;border-bottom:1px solid #e2e5ea;display:flex;align-items:center;padding:0 12px 0 16px;gap:4px;flex-shrink:0">
+    <a href="Bemmoly Home.dc.html" style="display:flex;align-items:center;gap:9px;padding-right:14px;margin-right:6px;border-right:1px solid #e2e5ea;height:28px;color:#1b2430">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="24" height="24" aria-hidden="true" style="display:block;flex:none"><path fill="#2356C9" d="M100.850,252.884 C99.937,252.731 96.849,251.842 93.988,250.909 C83.521,247.494 74.358,239.397 69.391,229.173 C64.880,219.889 64.970,221.175 64.970,165.865 C64.970,118.454 65.034,115.763 66.278,110.899 C70.229,95.453 82.126,82.880 97.860,77.523 C103.001,75.773 103.866,75.693 124.106,75.108 C153.824,74.249 209.378,74.942 215.468,76.248 C230.155,79.397 240.904,90.645 243.478,105.556 C244.272,110.163 244.398,120.617 244.217,167.107 C244.013,219.273 243.915,223.360 242.782,226.764 C238.369,240.016 229.331,248.808 216.835,252.004 C211.782,253.296 209.716,253.339 157.057,253.252 C127.057,253.202 101.764,253.036 100.850,252.884 Z"/><path fill="#2356C9" d="M99.854,454.909 C97.296,454.369 92.661,452.708 89.555,451.218 C84.943,449.007 82.865,447.460 78.226,442.786 C71.722,436.233 68.353,430.476 66.280,422.372 C65.026,417.468 64.970,414.803 64.970,359.987 C64.970,305.572 65.034,302.475 66.254,297.705 C70.074,282.770 79.940,272.007 94.545,266.846 L99.854,264.970 154.775,264.782 C215.517,264.574 215.042,264.547 223.629,268.757 C229.651,271.710 236.732,278.753 239.563,284.607 C243.803,293.373 243.687,291.273 243.698,359.699 C243.704,400.955 243.469,423.195 242.997,425.812 C241.093,436.386 233.160,446.953 223.593,451.661 C214.746,456.014 215.257,455.982 156.997,455.934 C113.335,455.899 103.723,455.726 99.854,454.909 Z"/><path fill="#9A85EA" d="M344.581,244.650 C330.698,243.710 295.296,237.973 288.186,235.511 C268.278,228.616 256.332,213.228 256.332,194.477 C256.332,189.465 270.523,90.474 272.616,80.888 C275.977,65.490 287.355,56.000 302.453,56.000 C309.329,56.000 349.807,63.883 372.279,69.598 C394.814,75.329 408.807,82.412 421.205,94.364 C428.596,101.489 432.673,106.855 436.967,115.111 C444.178,128.977 446.699,139.360 446.650,155.003 C446.621,164.534 446.389,166.882 444.876,172.973 C438.508,198.599 423.826,218.471 401.224,232.055 C391.026,238.184 374.541,243.551 363.381,244.375 C360.600,244.580 356.980,244.844 355.336,244.962 C353.691,245.079 348.851,244.939 344.581,244.650 Z"/><path fill="#5B7BE5" d="M283.094,455.019 C270.966,452.315 261.158,442.916 257.955,430.928 C256.790,426.567 256.704,400.704 257.629,332.744 C258.063,300.907 258.317,294.261 259.225,291.045 C262.982,277.735 272.950,268.338 286.233,265.583 C293.514,264.073 360.494,264.563 367.855,266.180 C387.225,270.437 400.033,277.210 412.511,289.795 C427.175,304.584 436.351,323.468 439.362,345.051 C442.341,366.413 438.262,387.529 427.426,406.836 C413.714,431.266 391.226,447.881 363.441,454.109 C357.345,455.475 355.114,455.564 322.113,455.747 C294.229,455.903 286.399,455.756 283.094,455.019 Z"/></svg>
+      <div style="font-weight:600;font-size:14px;letter-spacing:-.01em">Bemmoly</div>
+    </a>
+    <div style="display:flex;gap:2px;font-size:13.5px">
+      <a href="Bemmoly Home.dc.html" style="padding:6px 10px;color:#3b4454">Your work <span style="color:#8a93a3;font-size:10px">▾</span></a>
+      <a href="Bemmoly Board.dc.html" style="padding:6px 10px;color:#3b4454">Projects <span style="color:#8a93a3;font-size:10px">▾</span></a>
+      <a href="Bemmoly Docs.dc.html" style="padding:6px 10px;color:#3b4454">Docs <span style="color:#8a93a3;font-size:10px">▾</span></a>
+      <a href="Bemmoly Backlog.dc.html" style="padding:6px 10px;color:#3b4454">Filters <span style="color:#8a93a3;font-size:10px">▾</span></a>
+      <a href="Bemmoly Roadmap.dc.html" style="padding:6px 10px;color:#3b4454">Dashboards <span style="color:#8a93a3;font-size:10px">▾</span></a>
+      <a href="Bemmoly People.dc.html" style="padding:6px 10px;color:#3b4454">Teams <span style="color:#8a93a3;font-size:10px">▾</span></a>
+    </div>
+    <div style="margin-left:6px;padding:6px 14px;border-radius:6px;background:#2456c9;color:#fff;font-weight:500">Create</div>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+      <a href="Bemmoly Command.dc.html" style="width:300px;height:32px;border:1px solid #d5dae2;border-radius:6px;display:flex;align-items:center;padding:0 10px;gap:8px;color:#8a93a3;background:#f9fafb"><span style="font-size:14px">⌕</span><span>Search issues, docs, people</span></a>
+      <div style="width:30px;height:30px;border-radius:50%;background:#d7e3fb;color:#2456c9;font-weight:600;font-size:12px;display:flex;align-items:center;justify-content:center;margin-left:4px">RS</div>
+    </div>
+  </div>
+
+  <div style="flex:1;display:flex;min-height:0">
+    <div style="width:240px;background:#fff;border-right:1px solid #e2e5ea;padding:16px 8px;display:flex;flex-direction:column;gap:14px;flex-shrink:0;overflow:auto">
+      <div style="padding:0 10px 4px;font-weight:600;font-size:14px">Workspace settings</div>
+      <div style="display:flex;flex-direction:column;gap:1px">
+        <div style="padding:4px 10px 6px;font:500 11px 'IBM Plex Sans';color:#8a93a3;letter-spacing:.07em;text-transform:uppercase">General</div>
+        <div style="padding:7px 10px;border-radius:6px;color:#3b4454">Workspace details</div>
+        <a href="Bemmoly Appearance Settings.dc.html" style="padding:7px 10px;border-radius:6px;color:#3b4454">Appearance</a>
+        <div style="padding:7px 10px;border-radius:6px;color:#3b4454">Email and notifications</div>
+        <div style="padding:7px 10px;border-radius:6px;color:#3b4454">AI and models</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:1px">
+        <div style="padding:4px 10px 6px;font:500 11px 'IBM Plex Sans';color:#8a93a3;letter-spacing:.07em;text-transform:uppercase">People</div>
+        <a href="Bemmoly People.dc.html" style="padding:7px 10px;border-radius:6px;color:#3b4454">Users <span style="float:right;font:500 11px 'IBM Plex Mono';color:#8a93a3">42</span></a>
+        <a href="Bemmoly People.dc.html" style="padding:7px 10px;border-radius:6px;color:#3b4454">Teams</a>
+        <a href="Bemmoly People.dc.html" style="padding:7px 10px;border-radius:6px;color:#3b4454">Roles and permissions</a>
+        <a href="Bemmoly People.dc.html" style="padding:7px 10px;border-radius:6px;color:#3b4454">Authentication (SSO)</a>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:1px">
+        <div style="padding:4px 10px 6px;font:500 11px 'IBM Plex Sans';color:#8a93a3;letter-spacing:.07em;text-transform:uppercase">Work</div>
+        <a href="Bemmoly Workflow.dc.html" style="padding:7px 10px;border-radius:6px;color:#3b4454">Issue types and fields</a>
+        <a href="Bemmoly Workflow.dc.html" style="padding:7px 10px;border-radius:6px;color:#3b4454">Workflows</a>
+        <div style="padding:7px 10px;border-radius:6px;color:#3b4454">Automation</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:1px">
+        <div style="padding:4px 10px 6px;font:500 11px 'IBM Plex Sans';color:#8a93a3;letter-spacing:.07em;text-transform:uppercase">System</div>
+        <a href="Bemmoly Modules Settings.dc.html" style="padding:7px 10px;border-radius:6px;color:#3b4454">Modules</a>
+        <div style="padding:7px 10px;border-radius:6px;background:#eef3fe;color:#2456c9;font-weight:500">Storage and backups</div>
+        <a href="Bemmoly Updates Settings.dc.html" style="padding:7px 10px;border-radius:6px;color:#3b4454">Updates</a>
+        <div style="padding:7px 10px;border-radius:6px;color:#3b4454">Audit log</div>
+      </div>
+    </div>
+
+    <div style="flex:1;overflow:auto;min-width:0">
+      <div style="max-width:1120px;padding:28px 40px 48px;display:flex;flex-direction:column;gap:28px">
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div style="font-size:12.5px;color:#6b7483">Workspace settings / Storage and backups</div>
+          <div style="display:flex;align-items:center;gap:16px">
+            <div style="font-weight:600;font-size:22px;letter-spacing:-.015em">Storage and backups</div>
+            <div style="margin-left:auto;display:flex;gap:8px">
+              <div onClick="{{ drill }}" style="height:32px;padding:0 12px;border:1px solid #d5dae2;background:#fff;border-radius:6px;display:flex;align-items:center;font-weight:500;color:#3b4454;cursor:pointer">Restore drill</div>
+              <div onClick="{{ backupNow }}" style="height:32px;padding:0 14px;border-radius:6px;background:#2456c9;color:#fff;display:flex;align-items:center;font-weight:500;cursor:pointer">Back up now</div>
+            </div>
+          </div>
+          <div style="color:#6b7483;font-size:13px;max-width:640px;line-height:1.5">Each backup holds the database, the attachments added since the last one, and a manifest. Choose when backups run, how many to keep and where they go.</div>
+        </div>
+        <div style="background:#fff;border:1px solid #e2e5ea;border-radius:8px;overflow:hidden;padding:12px 16px;display:flex;align-items:center;gap:10px">
+          <span style="width:16px;height:16px;border-radius:50%;background:{{ statusBg }};color:#fff;font-size:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0">{{ statusGlyph }}</span>
+          <span style="font-weight:600">{{ status }}</span>
+          <span style="color:#6b7483;font-size:12.5px">{{ statusSub }}</span>
+          <span style="margin-left:auto;color:#8a93a3;font-size:12px">Next run {{ nextRun }}</span>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start">
+          <div style="background:#fff;border:1px solid #e2e5ea;border-radius:8px;overflow:hidden">
+            <div style="padding:12px 16px;border-bottom:1px solid #e9ecf0;font-weight:600">Schedule</div>
+            <div style="padding:16px;display:flex;flex-direction:column;gap:14px">
+              <div style="display:flex;flex-direction:column;gap:8px"><div style="font-weight:500">Frequency</div><div style="display:flex;background:#eef0f4;border-radius:6px;padding:2px"><sc-for list="{{ freqs }}" as="m" hint-placeholder-count="2"><div onClick="{{ m.pick }}" style="flex:1;text-align:center;padding:6px 10px;border-radius:5px;background:{{ m.bg }};font-weight:500;color:{{ m.fg }};box-shadow:{{ m.sh }};cursor:pointer;white-space:nowrap">{{ m.name }}</div></sc-for></div></div>
+              <div style="display:grid;grid-template-columns:120px 1fr;gap:14px">
+                <div style="display:flex;flex-direction:column;gap:8px"><div style="font-weight:500">{{ timeLabel }}</div><div style="height:32px;border:1px solid #d5dae2;border-radius:6px;display:flex;align-items:center;padding:0 10px;background:#fff;font:500 12.5px 'IBM Plex Mono';justify-content:space-between">{{ timeVal }}<span style="color:#8a93a3;font-size:10px">▾</span></div></div>
+                <div style="display:flex;flex-direction:column;gap:8px"><div style="font-weight:500">Timezone</div><div style="height:32px;border:1px solid #d5dae2;border-radius:6px;display:flex;align-items:center;padding:0 10px;background:#fff;justify-content:space-between">Europe/Berlin <span style="color:#8a93a3;font-size:12px">workspace timezone <span style="font-size:10px">▾</span></span></div></div>
+              </div>
+              <div style="display:flex;align-items:center;gap:12px;padding-top:12px;border-top:1px solid #eceef2"><div style="flex:1;display:flex;flex-direction:column;gap:2px"><span style="font-weight:500">Continuous backup (point in time)</span><span style="color:#8a93a3;font-size:12px;line-height:1.45">Archives the bundled Postgres's write-ahead log with a weekly base copy, so you can restore to any minute. Worth it past a few hundred people.</span></div><div onClick="{{ pitr.flip }}" style="width:34px;height:20px;border-radius:10px;background:{{ pitr.bg }};position:relative;cursor:pointer;flex-shrink:0"><span style="position:absolute;top:2px;left:{{ pitr.knob }};width:16px;height:16px;border-radius:50%;background:#fff;transition:left .15s"></span></div></div>
+            </div>
+          </div>
+
+          <div style="background:#fff;border:1px solid #e2e5ea;border-radius:8px;overflow:hidden">
+            <div style="padding:12px 16px;border-bottom:1px solid #e9ecf0;font-weight:600">Retention</div>
+            <div style="padding:16px;display:flex;flex-direction:column;gap:14px">
+              <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
+                <sc-for list="{{ keep }}" as="k" hint-placeholder-count="4">
+                  <div style="display:flex;flex-direction:column;gap:8px;opacity:{{ k.op }}"><div style="font-weight:500">{{ k.name }}</div><div style="height:32px;border:1px solid #d5dae2;border-radius:6px;display:flex;align-items:center;padding:0 10px;background:#fff;font:500 13px 'IBM Plex Mono';justify-content:space-between">{{ k.n }}<span style="color:#8a93a3;font:400 12px 'IBM Plex Sans'">kept</span></div></div>
+                </sc-for>
+              </div>
+              <div style="color:#6b7483;font-size:12.5px;line-height:1.5">{{ keepNote }} Backups taken before an update follow their own rule: kept for 7 days.</div>
+              <div style="display:flex;align-items:center;gap:8px;padding-top:12px;border-top:1px solid #eceef2;font-size:12.5px"><span style="color:#6b7483">At today's sizes this keeps about</span><span style="font:500 12.5px 'IBM Plex Mono'">{{ keepSize }}</span><span style="color:#6b7483">per destination.</span></div>
+            </div>
+          </div>
+
+          <div style="background:#fff;border:1px solid #e2e5ea;border-radius:8px;overflow:hidden">
+            <div style="padding:12px 16px;border-bottom:1px solid #e9ecf0;font-weight:600">Destinations</div>
+            <div style="padding:6px 16px;display:flex;flex-direction:column">
+              <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #eceef2"><span style="width:28px;height:28px;border-radius:6px;background:#eef0f4;color:#3b4454;font-weight:600;font-size:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0">LD</span><div style="flex:1;display:flex;flex-direction:column;gap:2px"><span style="font-weight:500">Local disk</span><span style="font:500 12px 'IBM Plex Mono';color:#6b7483">/var/bemmoly/backups · 41 GB free</span></div><span style="font-size:11px;padding:2px 7px;border-radius:3px;font-weight:600;background:#e3f4ea;color:#1f7a44">ALWAYS ON</span></div>
+              <div style="display:flex;align-items:center;gap:12px;padding:10px 0"><span style="width:28px;height:28px;border-radius:6px;background:#eef0f4;color:#3b4454;font-weight:600;font-size:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0">S3</span><div style="flex:1;display:flex;flex-direction:column;gap:2px"><span style="font-weight:500">S3-compatible bucket</span><span style="color:#8a93a3;font-size:12px">Any S3 API: a cloud bucket or object storage on your own network.</span></div><div onClick="{{ s3.flip }}" style="width:34px;height:20px;border-radius:10px;background:{{ s3.bg }};position:relative;cursor:pointer;flex-shrink:0"><span style="position:absolute;top:2px;left:{{ s3.knob }};width:16px;height:16px;border-radius:50%;background:#fff;transition:left .15s"></span></div></div>
+              <sc-if value="{{ s3On }}" hint-placeholder-val="{{ true }}">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:4px 0 14px 40px">
+                  <div style="display:flex;flex-direction:column;gap:6px;grid-column:1 / -1"><span style="font-weight:500;font-size:12.5px">Endpoint</span><div style="height:32px;border:1px solid #d5dae2;border-radius:6px;display:flex;align-items:center;padding:0 10px;background:#fff;font:500 12.5px 'IBM Plex Mono'">https://objects.acmelabs.internal</div></div>
+                  <div style="display:flex;flex-direction:column;gap:6px"><span style="font-weight:500;font-size:12.5px">Bucket</span><div style="height:32px;border:1px solid #d5dae2;border-radius:6px;display:flex;align-items:center;padding:0 10px;background:#fff;font:500 12.5px 'IBM Plex Mono'">bemmoly-backups</div></div>
+                  <div style="display:flex;flex-direction:column;gap:6px"><span style="font-weight:500;font-size:12.5px">Region</span><div style="height:32px;border:1px solid #d5dae2;border-radius:6px;display:flex;align-items:center;padding:0 10px;background:#fff;font:500 12.5px 'IBM Plex Mono'">eu-central-1</div></div>
+                  <div style="display:flex;flex-direction:column;gap:6px"><span style="font-weight:500;font-size:12.5px">Access key</span><div style="height:32px;border:1px solid #d5dae2;border-radius:6px;display:flex;align-items:center;padding:0 10px;background:#fff;justify-content:space-between;color:#4b5565">Set<span style="color:#2456c9;font-weight:500">Replace</span></div></div>
+                  <div style="display:flex;flex-direction:column;gap:6px"><span style="font-weight:500;font-size:12.5px">Secret key</span><div style="height:32px;border:1px solid #d5dae2;border-radius:6px;display:flex;align-items:center;padding:0 10px;background:#fff;justify-content:space-between;color:#4b5565">Set<span style="color:#2456c9;font-weight:500">Replace</span></div></div>
+                  <div style="grid-column:1 / -1;display:flex;align-items:center;gap:7px;font-size:12px;color:#6b7483"><span style="width:7px;height:7px;border-radius:50%;background:#2b9b5a"></span>Connected · last upload today at 02:04 · 9.6 GB stored</div>
+                </div>
+              </sc-if>
+              <sc-if value="{{ oneDisk }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;gap:10px;align-items:center;padding:10px 12px;margin:0 0 12px;background:#fdf3dc;border:1px solid #fdf3dc;border-radius:7px;font-size:12.5px;line-height:1.5"><span style="width:7px;height:7px;border-radius:50%;background:#d49a1a;flex-shrink:0"></span><span style="color:#2c3545"><b style="font-weight:600">One disk.</b> Every backup lives on the same disk as the database, so a disk failure takes both. Add a bucket for a second copy.</span></div>
+              </sc-if>
+            </div>
+          </div>
+
+          <div style="background:#fff;border:1px solid #e2e5ea;border-radius:8px;overflow:hidden">
+            <div style="padding:12px 16px;border-bottom:1px solid #e9ecf0;font-weight:600">Encryption and checks</div>
+            <div style="padding:6px 16px;display:flex;flex-direction:column">
+              <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #eceef2"><div style="flex:1;display:flex;flex-direction:column;gap:2px"><span style="font-weight:500">Encrypt local backups</span><span style="color:#8a93a3;font-size:12px;line-height:1.45">AES-256-GCM with the backup passphrase from .env. Backups sent to the bucket are always encrypted.</span></div><div onClick="{{ enc.flip }}" style="width:34px;height:20px;border-radius:10px;background:{{ enc.bg }};position:relative;cursor:pointer;flex-shrink:0"><span style="position:absolute;top:2px;left:{{ enc.knob }};width:16px;height:16px;border-radius:50%;background:#fff;transition:left .15s"></span></div></div>
+              <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #eceef2;flex-direction:column;align-items:stretch;gap:8px"><div style="display:flex;flex-direction:column;gap:2px"><span style="font-weight:500">Test restore</span><span style="color:#8a93a3;font-size:12px;line-height:1.45">Every backup is checked as it is written. A test restore also loads one into a scratch database and compares row counts.</span></div><div style="display:flex;align-items:center;gap:12px"><div style="width:260px"><div style="display:flex;background:#eef0f4;border-radius:6px;padding:2px"><sc-for list="{{ verifies }}" as="m" hint-placeholder-count="2"><div onClick="{{ m.pick }}" style="flex:1;text-align:center;padding:6px 10px;border-radius:5px;background:{{ m.bg }};font-weight:500;color:{{ m.fg }};box-shadow:{{ m.sh }};cursor:pointer;white-space:nowrap">{{ m.name }}</div></sc-for></div></div><span style="color:#6b7483;font-size:12px">{{ verifyNote }}</span></div></div>
+              <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #eceef2"><div style="flex:1;display:flex;flex-direction:column;gap:2px"><span style="font-weight:500">Alert admins</span><span style="color:#8a93a3;font-size:12px;line-height:1.45">Email and an in-app banner when a backup fails, is skipped, or fails its check.</span></div><div onClick="{{ alerts.flip }}" style="width:34px;height:20px;border-radius:10px;background:{{ alerts.bg }};position:relative;cursor:pointer;flex-shrink:0"><span style="position:absolute;top:2px;left:{{ alerts.knob }};width:16px;height:16px;border-radius:50%;background:#fff;transition:left .15s"></span></div></div>
+              <div style="display:flex;align-items:center;gap:12px;padding:10px 0;align-items:flex-start"><span style="width:7px;height:7px;border-radius:50%;background:#2456c9;flex-shrink:0;margin-top:6px"></span><span style="color:#4b5565;font-size:12.5px;line-height:1.5">Backups do not include <span style="font:500 12px 'IBM Plex Mono'">/var/bemmoly/.env</span>. It holds the key that decrypts AI provider keys and SMTP and SSO secrets, and the backup passphrase. Keep a copy somewhere safe, away from this server.</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div style="background:#fff;border:1px solid #e2e5ea;border-radius:8px;overflow:hidden">
+          <div style="padding:12px 16px;border-bottom:1px solid #e9ecf0;display:flex;align-items:center;gap:8px"><span style="font-weight:600">Backups</span><span style="color:#8a93a3;font-size:12px">{{ backupCount }}</span><span style="margin-left:auto;color:#6b7483;font-size:12px">Restore puts Bemmoly in maintenance mode, restores into a fresh database and keeps the replaced one for 7 days.</span></div>
+          <div style="display:grid;grid-template-columns:130px 170px 90px 90px minmax(0,1fr) 190px 120px;gap:12px;padding:9px 16px;background:#fafbfc;border-bottom:1px solid #e9ecf0;font:500 11px 'IBM Plex Sans';color:#8a93a3;letter-spacing:.06em;text-transform:uppercase"><span>Kind</span><span>Time</span><span>Version</span><span>Size</span><span>Stored on</span><span>Verified</span><span></span></div>
+          <sc-for list="{{ backups }}" as="b" hint-placeholder-count="6">
+            <div style="display:grid;grid-template-columns:130px 170px 90px 90px minmax(0,1fr) 190px 120px;gap:12px;padding:10px 16px;border-bottom:1px solid #eceef2;align-items:center;font-size:12.5px">
+              <span style="justify-self:start;font-size:11px;padding:2px 7px;border-radius:3px;font-weight:600;background:{{ b.kBg }};color:{{ b.kFg }}">{{ b.kind }}</span>
+              <span style="color:#1b2430">{{ b.time }}</span>
+              <span style="font:500 12px 'IBM Plex Mono';color:#4b5565">{{ b.version }}</span>
+              <span style="font:500 12px 'IBM Plex Mono';color:#4b5565">{{ b.size }}</span>
+              <span style="color:#4b5565">{{ b.where }}</span>
+              <span style="display:inline-flex;align-items:center;gap:7px;color:#4b5565"><span style="width:14px;height:14px;border-radius:50%;background:{{ b.vBg }};color:#fff;font-size:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0">{{ b.vGlyph }}</span>{{ b.verified }}</span>
+              <span style="display:flex;gap:12px;justify-content:flex-end;color:#2456c9;font-weight:500"><span>Download</span><span>Restore</span></span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { freq: 'daily', verify: 'weekly', pitr: false, s3: true, enc: false, alerts: true, running: null };
+  renderVals() {
+    const rootH = this.props.height ?? '100vh';
+    const s = this.state;
+    const seg = (list, key) => list.map(([v, name]) => ({ name, bg: s[key] === v ? '#fff' : 'transparent', fg: s[key] === v ? '#1b2430' : '#6b7483', sh: s[key] === v ? '0 1px 1px rgba(0,0,0,.06)' : 'none', pick: () => this.setState({ [key]: v }) }));
+    const sw = (key, locked) => ({ bg: s[key] ? '#2456c9' : '#cfd4dc', knob: s[key] ? '16px' : '2px', flip: () => { if (!locked) this.setState({ [key]: !s[key] }); } });
+    const times = { hourly: ['Minute', ':00', 'every hour at :00'], six: ['First run', '02:00', 'at 02:00, 08:00, 14:00 and 20:00'], daily: ['Time', '02:00', 'tomorrow at 02:00'], weekly: ['Sunday at', '02:00', 'Sunday at 02:00'] };
+    const [timeLabel, timeVal, nextRun] = times[s.freq];
+    const keep = [['Hourly', 24, 'hourly'], ['Daily', 7], ['Weekly', 4], ['Monthly', 3]].map(([name, n, only]) => ({ name, n: only && s.freq !== 'hourly' ? '—' : n, op: only && s.freq !== 'hourly' ? 0.5 : 1 }));
+    const status = s.running === 'backup' ? ['Backing up now', 'Database dump 64% · attachments next', '#2456c9', '…']
+      : s.running === 'drill' ? ['Restore drill running', 'Loading today 02:00 into a scratch database · row counts next', '#2456c9', '…']
+      : ['Last good backup 02:00 today · verified', '2.1 GB · on local disk and in the bucket · test restore passed Sunday', '#2b9b5a', '✓'];
+    const kinds = { Scheduled: ['#eef0f4', '#4b5565'], Manual: ['#eef3fe', '#2456c9'], 'Pre-update': ['#fdf3dc', '#8a6210'], Monthly: ['#e3f4ea', '#1f7a44'] };
+    const where = s.s3 ? 'Local disk, bucket' : 'Local disk';
+    const rows = [
+      ['Scheduled', 'Today, 02:00', '0.1.2', '2.1 GB', where, 'Checked on write', '#2b9b5a', '✓'],
+      ['Manual', 'Yesterday, 16:40', '0.1.2', '2.1 GB', where, 'Checked on write', '#2b9b5a', '✓'],
+      ['Scheduled', 'Yesterday, 02:00', '0.1.2', '2.1 GB', where, 'Checked on write', '#2b9b5a', '✓'],
+      ['Scheduled', 'Sun 4 Oct, 02:00', '0.1.2', '2.0 GB', where, 'Test restore passed', '#2b9b5a', '✓'],
+      ['Pre-update', 'Sat 3 Oct, 09:02', '0.1.1', '2.0 GB', where, 'Checked on write', '#2b9b5a', '✓'],
+      ['Monthly', 'Thu 1 Oct, 02:00', '0.1.1', '6.8 GB', where, 'Full copy · checked', '#2b9b5a', '✓']
+    ];
+    return {
+      rootH,
+      status: status[0], statusSub: status[1], statusBg: status[2], statusGlyph: status[3], nextRun,
+      backupNow: () => this.setState({ running: s.running === 'backup' ? null : 'backup' }),
+      drill: () => this.setState({ running: s.running === 'drill' ? null : 'drill' }),
+      freqs: seg([['hourly', 'Hourly'], ['six', 'Every 6 hours'], ['daily', 'Daily'], ['weekly', 'Weekly']], 'freq'),
+      timeLabel, timeVal,
+      pitr: sw('pitr'), s3: sw('s3'), enc: sw('enc'), alerts: sw('alerts'),
+      keep, keepNote: s.freq === 'hourly' ? 'Keeps the newest of each.' : 'Hourly copies apply only with hourly backups.',
+      keepSize: s.freq === 'hourly' ? '74 GB' : '28 GB',
+      s3On: s.s3, oneDisk: !s.s3,
+      verifies: seg([['weekly', 'Weekly'], ['daily', 'Daily'], ['off', 'Off']], 'verify'),
+      verifyNote: s.verify === 'off' ? 'Only the check on write. Not recommended.' : s.verify === 'daily' ? 'Every day at 04:00, if there is room on disk.' : 'Sundays at 04:00, if there is room on disk.',
+      backupCount: '14 kept · 9.6 GB',
+      backups: rows.map(([kind, time, version, size, where, verified, vBg, vGlyph]) => ({ kind: kind.toUpperCase(), kBg: kinds[kind][0], kFg: kinds[kind][1], time, version, size, where, verified, vBg, vGlyph }))
+    };
+  }
+}
+</script>
+</body>
+</html>
