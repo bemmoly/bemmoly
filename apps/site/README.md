@@ -82,8 +82,8 @@ them as AVIF and WebP at 400, 800, 1184 and full width. Run `pnpm screens` after
 - Contrast (WCAG AA): footer text uses `tx4` instead of the mock's `tx5` (3.1:1 on white), the
   terminal's `ubuntu@vm` label uses `tx4`, the "soon" chips use `tx3`, and links inside running
   text on the text pages are underlined.
-- The product shots are pictures of the mocks, so they show the mocks' own top bar (grid mark,
-  "v1.2.0").
+- The product shots are pictures of the mocks, so they show the mocks' own top bar (the designed
+  four-tile mark, "v1.2.0"); recapture them with `pnpm screens` whenever a mock changes.
 - Below 1100px (the mock's minimum width) the layout stacks; at 1280 it matches the mock.
 
 ## Deployment (Coolify)
