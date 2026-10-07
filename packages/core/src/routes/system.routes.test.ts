@@ -20,6 +20,7 @@ const STATUS: Record<string, number> = {
   NotFoundError: 404,
   ConflictError: 409,
   UnauthenticatedError: 401,
+  MaintenanceError: 503,
 };
 
 /** Every query fails when awaited; unawaited fragments stay inert, like postgres.js. */
