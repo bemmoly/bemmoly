@@ -1,5 +1,6 @@
 ---
 import AfterInstall from '../components/self-hosting/AfterInstall.astro';
+import Paths from '../components/self-hosting/Paths.astro';
 import Recommended from '../components/self-hosting/Recommended.astro';
 import Sizing from '../components/self-hosting/Sizing.astro';
 import WhatYouGet from '../components/self-hosting/WhatYouGet.astro';
@@ -20,6 +21,7 @@ import { REPO_URL } from '../lib/links.ts';
     follow progress on <a href={REPO_URL}>GitHub</a> and in the <a href="/changelog">changelog</a>.
   </p>
   <Recommended />
+  <Paths />
   <WhatYouGet />
   <AfterInstall />
   <Sizing />

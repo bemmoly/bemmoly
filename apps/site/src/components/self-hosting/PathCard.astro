@@ -1,0 +1,61 @@
+---
+/**
+ * One "I already have…" card: the situation as its title, an honest status badge, what to
+ * do, and the commands. Planned paths show their command without a Copy button. Drawn as
+ * the Landing mock's configuration cards; the chooser's pick takes the Setup mock's
+ * selected-card look (accent border and ring).
+ */
+import type { PathOption } from '../../data/paths.ts';
+import { STATUS } from '../../data/self-hosting.ts';
+import Badge from '../site/Badge.astro';
+import CodeBlock from '../site/CodeBlock.astro';
+
+interface Props {
+  path: PathOption;
+}
+
+const { path } = Astro.props;
+const status = STATUS[path.status];
+const planned = path.status === 'planned';
+---
+
+<li
+  id={path.id}
+  data-path={path.id}
+  class:list={[
+    'group flex min-w-0 scroll-mt-20 flex-col gap-3.5 rounded-window border border-br bg-sf p-5 data-pick:border-ac data-pick:shadow-ring dark:border-edge-ac',
+    path.wide && 'md:col-span-2',
+  ]}
+>
+  <div class="flex items-start gap-3">
+    <span
+      aria-hidden="true"
+      class="flex size-9 shrink-0 items-center justify-center rounded-card border border-br bg-sf2 font-mono text-13 font-semibold text-ac dark:bg-bg"
+    >
+      {path.tile}
+    </span>
+    <div class="flex min-w-0 flex-col gap-1.5">
+      <h3 class="text-17 font-semibold tracking-brand text-tx">{path.title}</h3>
+      <div class="flex flex-wrap items-center gap-2">
+        <Badge tone={status.tone}>{status.label}</Badge>
+        <span class="hidden group-data-pick:inline-flex">
+          <Badge tone="solid">Matches your answers</Badge>
+        </span>
+      </div>
+    </div>
+  </div>
+  <p class="text-14h leading-desc text-pretty text-tx3">{path.body}</p>
+  {path.code && (
+    <CodeBlock
+      code={path.code}
+      copy={path.copy ?? false}
+      label={planned ? 'Planned, not released yet' : undefined}
+    />
+  )}
+  {path.note && <p class="text-13h leading-brief text-tx4">{path.note}</p>}
+  {path.link && (
+    <a href={path.link.href} class="mt-auto text-13h font-medium">
+      {path.link.label} ↗
+    </a>
+  )}
+</li>

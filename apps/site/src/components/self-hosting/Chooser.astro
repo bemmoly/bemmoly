@@ -1,0 +1,88 @@
+---
+/**
+ * "Which should I pick?": three yes/no questions that mark one path (data-pick) and say why.
+ * It is hidden until its script runs, so without JavaScript the page simply shows every
+ * card. The yes/no switches are @bemmoly/ui's SegmentedControl (md) drawn over native radios,
+ * with tx3 for the idle segment instead of tx4, which is 4.1:1 on chip and fails WCAG AA.
+ */
+const QUESTIONS = [
+  { name: 'server', text: 'Do you have a server already?' },
+  { name: 'docker', text: 'Does it have Docker?' },
+  { name: 'offline', text: 'Is it air-gapped?' },
+] as const;
+const ANSWERS = ['Yes', 'No'] as const;
+---
+
+<div
+  data-chooser
+  hidden
+  class="flex flex-col gap-4 rounded-window border border-br bg-sf2 p-5 dark:bg-sf"
+>
+  <h3 class="text-17 font-semibold tracking-brand text-tx">Which should I pick?</h3>
+  <div class="grid gap-4 sm:grid-cols-3">
+    {QUESTIONS.map((question) => (
+      <fieldset class="min-w-0">
+        <legend class="mb-2 text-14 font-medium text-tx2">{question.text}</legend>
+        <div class="flex rounded-control bg-chip p-0.5">
+          {ANSWERS.map((answer) => (
+            <label class="flex-1 cursor-pointer rounded-sm py-1.5 text-center text-14 font-medium text-tx3 has-checked:bg-sf has-checked:text-tx has-checked:shadow-seg has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-ac">
+              <input
+                type="radio"
+                name={question.name}
+                value={answer.toLowerCase()}
+                class="sr-only"
+              />
+              {answer}
+            </label>
+          ))}
+        </div>
+      </fieldset>
+    ))}
+  </div>
+  <p data-chooser-result aria-live="polite" class="text-14h leading-desc text-tx3">
+    Answer the questions to see where to start.
+  </p>
+</div>
+
+<script>
+  /** Which path the answers point to, and why. */
+  const REASONS: Record<string, string> = {
+    'air-gapped': 'Your machines have no internet, so install from the offline bundle.',
+    compose: 'You already run Docker, so use the same Compose file the installer writes.',
+    recommended: 'Run the one command on a fresh VM; it installs Docker and everything else.',
+  };
+
+  function pick(a: Record<string, string>): string {
+    if (a.offline === 'yes') return 'air-gapped';
+    if (a.server === 'no') return 'recommended';
+    if (a.server === 'yes' && a.docker) return a.docker === 'yes' ? 'compose' : 'recommended';
+    return '';
+  }
+
+  const root = document.querySelector<HTMLElement>('[data-chooser]');
+  const result = root?.querySelector<HTMLElement>('[data-chooser-result]');
+  if (root && result) {
+    const initial = result.textContent;
+    root.hidden = false;
+    root.addEventListener('change', () => {
+      const answers: Record<string, string> = {};
+      for (const input of root.querySelectorAll<HTMLInputElement>('input:checked')) {
+        answers[input.name] = input.value;
+      }
+      const id = pick(answers);
+      for (const el of document.querySelectorAll<HTMLElement>('[data-path]')) {
+        el.toggleAttribute('data-pick', el.dataset.path === id);
+      }
+      const target = id ? document.getElementById(id) : null;
+      const title = target?.querySelector('h2, h3')?.textContent?.replace(/\s+/g, ' ').trim();
+      if (!target || !title) {
+        result.textContent = initial;
+        return;
+      }
+      const link = document.createElement('a');
+      link.href = `#${id}`;
+      link.textContent = title;
+      result.replaceChildren('Start with ', link, `. ${REASONS[id] ?? ''}`);
+    });
+  }
+</script>
