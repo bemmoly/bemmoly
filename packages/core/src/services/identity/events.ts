@@ -7,31 +7,18 @@
  * Only this service ever sees the plaintext token, so the links travel here.
  */
 
-export const INVITATION_CREATED = 'invitation.created';
+import { NOTIFICATION_EVENT_KINDS } from '@bemmoly/shared';
 
-export interface InvitationCreatedPayload {
-  invitationId: string;
-  email: string;
-  inviterName: string;
-  /** `<BEMMOLY_PUBLIC_URL>/invitations/<token>` */
-  acceptUrl: string;
-  expiresAt: Date;
-  /** Optional note from the inviter. */
-  message?: string;
-}
+export type { InvitationCreatedPayload, PasswordResetRequestedPayload } from '@bemmoly/shared';
 
-export const PASSWORD_RESET_REQUESTED = 'password_reset.requested';
+/** acceptUrl is `<BEMMOLY_PUBLIC_URL>/invitations/<token>`. */
+export const INVITATION_CREATED = NOTIFICATION_EVENT_KINDS.invitationCreated;
 
-export interface PasswordResetRequestedPayload {
-  /** The password_reset_tokens row id: stable per request. */
-  resetId: string;
-  userId: string;
-  email: string;
-  name?: string;
-  /** `<BEMMOLY_PUBLIC_URL>/password-reset/<token>` */
-  resetUrl: string;
-  expiresAt: Date;
-}
+/**
+ * resetId is the password_reset_tokens row id; resetUrl is
+ * `<BEMMOLY_PUBLIC_URL>/password-reset/<token>`.
+ */
+export const PASSWORD_RESET_REQUESTED = NOTIFICATION_EVENT_KINDS.passwordResetRequested;
 
 export const INVITATION_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 export const PASSWORD_RESET_TTL_MS = 60 * 60 * 1000;
