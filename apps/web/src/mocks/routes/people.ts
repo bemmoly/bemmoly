@@ -99,6 +99,9 @@ export const peopleRoutes: MockRoute[] = [
     handle: needs(PEOPLE, (request, db) => {
       const user = db.users.find((entry) => entry.id === request.params['id']);
       if (!user) return notFound('That person');
+      if (verb === 'deactivate' && user.id === db.signedInAs) {
+        return fail(409, 'conflict', 'You cannot deactivate yourself.');
+      }
       user.status = verb === 'deactivate' ? 'deactivated' : 'active';
       audit(db, `user.${verb}d`, 'user', user.id);
       return ok(user);
@@ -122,6 +125,21 @@ export const peopleRoutes: MockRoute[] = [
         },
         201,
       );
+    }),
+  },
+  {
+    method: 'DELETE',
+    pattern: '/api/v1/invitations/:id',
+    handle: needs(PEOPLE, (request, db) => {
+      const invitation = db.invitations.find((entry) => entry.id === request.params['id']);
+      if (!invitation) return notFound('That invitation');
+      invitation.revokedAt = new Date().toISOString();
+      // The invited person never signed in, so revoking leaves no account behind.
+      db.users = db.users.filter(
+        (user) => !(user.email === invitation.email && user.status === 'invited'),
+      );
+      audit(db, 'user.invitation_revoked', 'invitation', invitation.id);
+      return ok();
     }),
   },
   { method: 'GET', pattern: '/api/v1/teams', handle: (_, db) => ok({ items: db.teams }) },
