@@ -2,3 +2,5 @@
 @import '../src/tailwind.css';
 @import '../src/fonts.css';
 @import '../src/theme.css';
+
+@source '.';
