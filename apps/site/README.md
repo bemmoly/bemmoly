@@ -7,7 +7,7 @@ source of truth.
 | Page            | Source                                                         |
 | --------------- | -------------------------------------------------------------- |
 | `/`             | The Landing mock, section by section                           |
-| `/self-hosting` | Tech design §18 in plain words                                 |
+| `/self-hosting` | Tech design §18 and the 0.1.0 deploy status (see below)        |
 | `/security`     | Renders the repository's `SECURITY.md`                         |
 | `/changelog`    | `src/data/changelog.ts` (see below)                            |
 | `/docs`         | Placeholder pointing at the README and the tech design         |
@@ -46,8 +46,11 @@ source directly.
   type, 1.08 and 1.15 line heights, -0.03em tracking, 10 and 14px radii) and two shadows built
   from the `--scrim` token. They could move into `@bemmoly/ui` if another screen needs them.
 - The logo is inlined from `@bemmoly/ui/brand/lockup-color.svg`; nothing redraws it.
-- No analytics, cookies or third-party scripts. The only JavaScript is a 0.2 KB inline copy
-  button, allowed by hash in the CSP.
+- No analytics, cookies or third-party scripts. The JavaScript is a 0.2 KB inline copy button
+  (`CopyScript.astro`, allowed by hash in the CSP, so keep it byte-identical) and, on
+  `/self-hosting` only, the 0.6 KB chooser, which Astro emits as a file under `/_astro/` that the
+  CSP's `'self'` already allows.
+- Badges are `@bemmoly/ui`'s Badge tones (`src/lib/badge.ts`), since the site renders no React.
 
 ### Light only, with an Ocean version ready
 
@@ -65,6 +68,37 @@ Landing mock at 1280 wide, 2x, and saves the inside of each frame to `src/assets
 once as drawn and once in Ocean (`scripts/ocean-mocks.ts`: the Board's own `theme="ocean"`, and
 the Command palette's Classic literals swapped for the same tokens' Ocean values). Astro serves
 them as AVIF and WebP at 400, 800, 1184 and full width. Run `pnpm screens` after a mock changes.
+
+### Setup shots
+
+`/self-hosting` shows three crops of `docs/design/mocks/Bemmoly Setup.dc.html` in
+`src/assets/setup/`: steps 1, 3 and 4 at 1280 wide, 2x, each cropped to the step's own panel and
+button with 16px of the mock's background (the admin form, invite by email, the AI privacy
+switches). The crops leave out the mock's "Postgres 16" health check, its identity-provider
+cards and its AI vendor cards. `pnpm screens` does not recapture them yet; after the Setup mock
+changes, recapture them the same way (Playwright, pick the step in the sidebar, clip to the
+panel's box). They have no Ocean versions.
+
+## Self-hosting page
+
+`/self-hosting` leads with one recommended path (a fresh VM and the one command), then "I
+already have…" cards for the other paths, a three-question chooser that marks one of them, what
+every path gets, the first three setup steps and the sizing table. Every badge comes from
+`STATUS` in `src/data/self-hosting.ts`; update it there as the deploy work moves:
+
+| Path                          | Badge in 0.1.0              | Why                                                                                     |
+| ----------------------------- | --------------------------- | --------------------------------------------------------------------------------------- |
+| One command (recommended)     | available, tested on Ubuntu | Tested end to end on Ubuntu; Debian, Fedora and Amazon Linux are supported but untested |
+| I already run Docker Compose  | available                   | The installer's Compose file and env template                                           |
+| I run Kubernetes              | planned                     | The Helm chart is a skeleton                                                            |
+| I want managed infrastructure | planned                     | No Terraform modules yet                                                                |
+| My servers have no internet   | built, untested offline     | The air-gap bundle is built, not tested offline                                         |
+| I have my own Postgres        | available                   | `--database-url`; Postgres 18, 17 with a warning                                        |
+
+The cards' commands follow `deploy/` (the Compose folder, the chart, the bundle's README). Only
+commands that work today get a Copy button. The Compose card links to `deploy/compose` on
+`main`, which resolves once the deploy work is merged. Without JavaScript the chooser stays
+hidden and every card shows.
 
 ## Departures from the mock
 
