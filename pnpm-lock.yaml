@@ -136,6 +136,12 @@ importers:
         specifier: 5.0.3
         version: 5.0.3(@types/node@26.6.4)(vite@8.3.3(@types/node@26.6.4)(jiti@2.7.0)(yaml@2.9.1))
 
+  deploy:
+    devDependencies:
+      bats:
+        specifier: 1.13.0
+        version: 1.13.0
+
   deploy/updater:
     dependencies:
       '@bemmoly/shared':
@@ -1970,6 +1976,10 @@ packages:
   baseline-browser-mapping@2.11.27:
     resolution: {integrity: sha512-ElY12DaROGuan+lMmZ8Cvo/ZUbXPe7Enc/9VU/b1T3Kp4dwytRcNdR8DoSJN5SNJT/CuvcCA0DHDVmMOCePdRQ==}
     engines: {node: '>=6.0.0'}
+    hasBin: true
+
+  bats@1.13.0:
+    resolution: {integrity: sha512-giSYKGTOcPZyJDbfbTtzAedLcNWdjCLbXYU3/MwPnjyvDXzu6Dgw8d2M+8jHhZXSmsCMSQqCp+YBsJ603UO4vQ==}
     hasBin: true
 
   bcrypt-pbkdf@1.0.2:
@@ -5322,6 +5332,8 @@ snapshots:
   base64-js@1.5.1: {}
 
   baseline-browser-mapping@2.11.27: {}
+
+  bats@1.13.0: {}
 
   bcrypt-pbkdf@1.0.2:
     dependencies:

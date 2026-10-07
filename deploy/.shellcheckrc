@@ -1,0 +1,5 @@
+# The installer and the CLI are split into sourced files: a variable set in one (flags,
+# detected OS) is read in another, and libraries are sourced from install-time paths.
+external-sources=true
+disable=SC2034
+disable=SC1091
