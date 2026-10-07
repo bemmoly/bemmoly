@@ -58,6 +58,12 @@ export interface Changeset {
   /** Required for DDL-only changesets; omit and set `irreversible` when data is lost. */
   down?(ctx: ChangesetContext): Promise<void>;
   irreversible?: boolean;
+  /**
+   * Takes more than a few seconds on a large workspace (a table rewrite, an index on a big
+   * table). Release notes and the Update dialog list it. Backfills and non-transactional
+   * changesets are treated as slow without it.
+   */
+  slow?: boolean;
   /** Old checksums accepted for an already-run changeset, each with the reason it changed. */
   validChecksums?: readonly ValidChecksum[];
   /** Re-run on every boot, e.g. a view maintained from source. */

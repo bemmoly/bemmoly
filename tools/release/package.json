@@ -1,0 +1,17 @@
+{
+  "name": "@bemmoly/release-tools",
+  "version": "0.0.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "description": "Release notes, tags and the release manifest, run by .github/workflows/release.yml",
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "lint": "eslint --max-warnings 0 .",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@types/node": "26.6.4",
+    "vitest": "5.0.3"
+  }
+}
