@@ -39,6 +39,23 @@ bemmoly config set BEMMOLY_UPDATER_LOCAL_IMAGES true
 
 sh "${REPO}/deploy/scripts/smoke-test.sh" --base-url https://localhost --version "${FROM}" --upgrade-to "${TO}"
 
+# A release that never becomes ready: the update must roll itself back.
+BROKEN="${BROKEN:-0.1.0-dev.3}"
+note "Building a broken ${BROKEN} that never answers /readyz"
+printf 'FROM ghcr.io/bemmoly/bemmoly:%s\nLABEL org.opencontainers.image.version=%s\nCMD ["node", "-e", "setInterval(() => {}, 60000)"]\n' \
+  "${TO}" "${BROKEN}" | docker build --quiet -t "ghcr.io/bemmoly/bemmoly:${BROKEN}" - >/dev/null
+docker compose --project-directory /var/bemmoly exec -T db psql -U bemmoly -d bemmoly_db -c \
+  "create table smoke_survivor (value text); insert into smoke_survivor values ('kept')" >/dev/null
+if bemmoly upgrade "${BROKEN}" --yes; then
+  echo "✗ the broken upgrade reported success" >&2
+  exit 1
+fi
+[ "$(sed -n 's/^VERSION=//p' /var/bemmoly/.env)" = "${FROM}" ] || { echo "✗ not back on ${FROM}" >&2; exit 1; }
+curl -ksf https://localhost/readyz | grep -q '"status":"ready"' || { echo "✗ ${FROM} is not ready after the automatic rollback" >&2; exit 1; }
+[ "$(docker compose --project-directory /var/bemmoly exec -T db psql -U bemmoly -d bemmoly_db -At -c 'select value from smoke_survivor')" = kept ] ||
+  { echo '✗ data written before the failed update is gone' >&2; exit 1; }
+success "a broken ${BROKEN} was rolled back to ${FROM} automatically, data kept"
+
 if [ -z "${KEEP}" ]; then
   note 'Tearing down'
   docker compose --project-directory /var/bemmoly down --volumes --remove-orphans >/dev/null 2>&1 || true
