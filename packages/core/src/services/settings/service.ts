@@ -4,9 +4,10 @@ import type { Actor } from '../../contracts/authz.ts';
 import type { RealtimeMessage, RealtimePublisher } from '../../contracts/realtime.ts';
 import type { SettingKey, SettingsKeys, SettingsService } from '../../contracts/settings.ts';
 import type { SettingRow } from '../../models/settings.ts';
+import type { RequestMeta } from '../audit/index.ts';
 import type { CatalogEntry, SettingsCatalog } from './catalog.ts';
 import type { SecretBox } from './crypto.ts';
-import type { SettingsStore } from './store.ts';
+import type { SettingAudit, SettingsStore } from './store.ts';
 
 export const SETTINGS_CHANGED = 'settings.changed';
 
@@ -14,9 +15,9 @@ export interface KernelSettingsService extends SettingsService {
   /** Untyped read by key, for keys only known at runtime (module settings). */
   read(key: string): Promise<unknown>;
   /** Untyped validated write, for the admin API. */
-  write(key: string, value: unknown, actor: Actor): Promise<SettingRow>;
+  write(key: string, value: unknown, actor: Actor, meta?: RequestMeta): Promise<SettingRow>;
   /** Back to the default: deletes the stored row. */
-  reset(key: string, actor: Actor): Promise<void>;
+  reset(key: string, actor: Actor, meta?: RequestMeta): Promise<void>;
   /** The API view: secrets are write-only, so only `isSet` is shown. */
   view(key: string): Promise<SettingResponse>;
   viewAll(): Promise<SettingResponse[]>;
@@ -45,6 +46,17 @@ function toView(entry: CatalogEntry, row: SettingRow | undefined): SettingRespon
   };
   if (!secret) view.value = (row ? row.value : definition.default) as SettingResponse['value'];
   return view;
+}
+
+/** What the audit log records of a value: secrets only as set or not, never their content. */
+function auditView(entry: CatalogEntry, row: SettingRow | undefined): unknown {
+  const { definition } = entry;
+  if (definition.secret) return { isSet: Boolean(row?.encrypted) };
+  return { value: row ? row.value : definition.default, isDefault: row === undefined };
+}
+
+function auditOf(entry: CatalogEntry, actor: Actor, meta: RequestMeta | undefined): SettingAudit {
+  return { actor, ...(meta ? { meta } : {}), present: (row) => auditView(entry, row) };
 }
 
 export function createSettingsService(deps: SettingsServiceDeps): KernelSettingsService {
@@ -84,18 +96,26 @@ export function createSettingsService(deps: SettingsServiceDeps): KernelSettings
     return value;
   }
 
-  async function write(key: string, value: unknown, actor: Actor): Promise<SettingRow> {
+  async function write(
+    key: string,
+    value: unknown,
+    actor: Actor,
+    meta?: RequestMeta,
+  ): Promise<SettingRow> {
     const entry = catalog.get(key);
     const { definition } = entry;
     const valid = parseOrThrow(definition.schema, value);
     const secret = definition.secret ?? false;
-    const row = await store.put({
-      key,
-      value: secret ? null : valid,
-      isSecret: secret,
-      encrypted: secret ? secrets.seal(JSON.stringify(valid), key) : null,
-      updatedBy: `${actor.kind}:${actor.id}`,
-    });
+    const row = await store.put(
+      {
+        key,
+        value: secret ? null : valid,
+        isSecret: secret,
+        encrypted: secret ? secrets.seal(JSON.stringify(valid), key) : null,
+        updatedBy: `${actor.kind}:${actor.id}`,
+      },
+      auditOf(entry, actor, meta),
+    );
     await announce(entry);
     return row;
   }
@@ -108,9 +128,9 @@ export function createSettingsService(deps: SettingsServiceDeps): KernelSettings
     },
     read,
     write,
-    async reset(key, actor) {
+    async reset(key, actor, meta) {
       const entry = catalog.get(key);
-      await store.remove(key);
+      await store.remove(key, auditOf(entry, actor, meta));
       logger.info({ key, actor: `${actor.kind}:${actor.id}` }, 'setting reset to default');
       await announce(entry);
     },

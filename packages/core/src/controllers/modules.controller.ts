@@ -15,6 +15,7 @@ import {
   type ModuleAdmin,
   type ModuleState,
 } from '../services/modules/index.ts';
+import { metaOf } from './request-context.ts';
 
 export interface ModulesControllerDeps {
   registry: ModuleRegistry;
@@ -48,14 +49,14 @@ export function createModuleAdminController(admin: ModuleAdmin, actorOf: ActorRe
       return admin.get(await actorOf(request), idOf(request));
     },
     async enable(request: FastifyRequest): Promise<AdminModule> {
-      return admin.enable(await actorOf(request), idOf(request));
+      return admin.enable(await actorOf(request), idOf(request), metaOf(request));
     },
     async disable(request: FastifyRequest): Promise<AdminModule> {
-      return admin.disable(await actorOf(request), idOf(request));
+      return admin.disable(await actorOf(request), idOf(request), metaOf(request));
     },
     async removeData(request: FastifyRequest): Promise<AdminModule> {
       const { confirm } = parseOrThrow(removeModuleDataBodySchema, request.body);
-      return admin.removeData(await actorOf(request), idOf(request), confirm);
+      return admin.removeData(await actorOf(request), idOf(request), confirm, metaOf(request));
     },
   };
 }

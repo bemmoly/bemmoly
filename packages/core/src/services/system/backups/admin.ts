@@ -6,8 +6,10 @@ import {
 } from '@bemmoly/shared';
 import { PassThrough, type Readable } from 'node:stream';
 import type { Actor } from '../../../contracts/authz.ts';
+import type { RequestMeta } from '../../audit/index.ts';
 import type { SystemDependencies } from '../deps.ts';
 import { SYSTEM_CAPABILITY } from '../authorize.ts';
+import { recordBackupAudit, withBackupAudit, type BackupAudit } from './audit.ts';
 import { BACKUP_JOB } from './jobs.ts';
 import { setNameFor } from './manifest.ts';
 import { createBackupRepository, toBackupDto } from './repository.ts';
@@ -55,22 +57,41 @@ export async function getBackup(
   return toBackupDto(record);
 }
 
+const auditOf = (actor: Actor, meta: RequestMeta | undefined): BackupAudit => ({
+  actor,
+  ...(meta ? { meta } : {}),
+});
+
 /** "Back up now": the row exists at once so the list shows it running. */
-export async function startManualBackup(deps: SystemDependencies, actor: Actor): Promise<Backup> {
+export async function startManualBackup(
+  deps: SystemDependencies,
+  actor: Actor,
+  meta?: RequestMeta,
+): Promise<Backup> {
   await requireSystem(deps, actor);
   const now = deps.now?.() ?? new Date();
   const id = crypto.randomUUID();
-  const repository = createBackupRepository(deps.sql);
-  const record = await repository.insertRunning({
-    id,
-    kind: 'manual',
-    setName: setNameFor(id, 'manual', now),
-    appVersion: deps.config.appVersion,
-    changelogTag: (await deps.changelog?.latestTag().catch(() => null)) ?? null,
-    scheduledFor: null,
-    createdBy: actor.userId ?? null,
-    createdAt: now,
-  });
+  const changelogTag = (await deps.changelog?.latestTag().catch(() => null)) ?? null;
+  const record = await withBackupAudit(
+    deps,
+    auditOf(actor, meta),
+    (repository) =>
+      repository.insertRunning({
+        id,
+        kind: 'manual',
+        setName: setNameFor(id, 'manual', now),
+        appVersion: deps.config.appVersion,
+        changelogTag,
+        scheduledFor: null,
+        createdBy: actor.userId ?? null,
+        createdAt: now,
+      }),
+    (inserted) => ({
+      action: 'backup.started',
+      backupId: inserted.id,
+      after: { kind: inserted.kind, setName: inserted.setName, status: inserted.status },
+    }),
+  );
   if (deps.jobs) {
     await deps.jobs.enqueue(
       BACKUP_JOB,
@@ -90,13 +111,42 @@ export async function requestRestore(
   deps: SystemDependencies,
   actor: Actor,
   id: string,
+  meta?: RequestMeta,
 ): Promise<{ accepted: true }> {
   await requireSystem(deps, actor);
   const record = await createBackupRepository(deps.sql).get(id);
   if (!record || record.status !== 'succeeded')
     throw new NotFoundError(`No completed backup ${id}`);
   deps.logger.warn({ backupId: id, actor: actor.id }, 'restore requested');
-  inBackground(deps, 'restore', () => restoreBackup(deps, record.setName));
+  const audit = auditOf(actor, meta);
+  // The restore replaces the database, audit log included, so its row is written
+  // afterwards, into the database it restored.
+  inBackground(deps, 'restore', async () => {
+    try {
+      const result = await restoreBackup(deps, record.setName);
+      await recordBackupAudit(deps, audit, {
+        action: 'backup.restored',
+        backupId: id,
+        after: {
+          setName: result.setName,
+          backupVersion: result.backupVersion,
+          rolledBackDatabase: result.rolledBackDatabase,
+          attachmentsRestored: result.attachmentsRestored,
+          pendingChangesets: result.pendingChangesets,
+        },
+      });
+    } catch (error) {
+      await recordBackupAudit(deps, audit, {
+        action: 'backup.restore_failed',
+        backupId: id,
+        after: {
+          setName: record.setName,
+          error: error instanceof Error ? error.message : String(error),
+        },
+      });
+      throw error;
+    }
+  });
   return { accepted: true };
 }
 
@@ -105,10 +155,12 @@ export async function requestVerify(
   actor: Actor,
   id: string,
   depth: 'list' | 'restore',
+  meta?: RequestMeta,
 ): Promise<VerifyResult | { accepted: true }> {
   await requireSystem(deps, actor);
-  if (depth === 'list') return verifyBackup(deps, id, 'list');
-  inBackground(deps, 'restore drill', () => verifyBackup(deps, id, 'restore'));
+  const audit = auditOf(actor, meta);
+  if (depth === 'list') return verifyBackup(deps, id, 'list', audit);
+  inBackground(deps, 'restore drill', () => verifyBackup(deps, id, 'restore', audit));
   return { accepted: true };
 }
 

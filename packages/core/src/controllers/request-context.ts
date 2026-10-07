@@ -1,5 +1,6 @@
 import { UnauthenticatedError } from '@bemmoly/shared';
 import type { FastifyReply, FastifyRequest } from 'fastify';
+import type { RequestMeta } from '../services/audit/index.ts';
 import type { RequestContext } from '../services/authz/index.ts';
 import type { IssuedSession } from '../services/identity/index.ts';
 import {
@@ -20,6 +21,11 @@ export function contextOf(request: FastifyRequest): SessionRequestContext {
     requestId: request.id,
     ...(request.sessionId ? { sessionId: request.sessionId } : {}),
   };
+}
+
+/** Where an admin request came from, for the audit row of the change it makes. */
+export function metaOf(request: FastifyRequest): RequestMeta {
+  return { ip: request.ip, requestId: request.id };
 }
 
 /** Client details recorded on sessions and audit rows of anonymous requests. */

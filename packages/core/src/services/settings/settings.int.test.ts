@@ -14,7 +14,7 @@ import { createSettingsService } from './service.ts';
 import { createSettingsStore } from './store.ts';
 
 const logger = pino({ level: 'silent' });
-const admin: Actor = { kind: 'user', id: 'admin' };
+const admin: Actor = { kind: 'user', id: '0199c0de-0000-7000-8000-000000000002' };
 const KEY = Buffer.alloc(32, 5).toString('base64');
 const definitions = [
   ...KERNEL_SETTINGS,
@@ -72,6 +72,48 @@ describe('settings against a real database', () => {
     expect(row?.encrypted).not.toContain('p@ss-word');
     expect(await settings.read('email.smtp.password')).toBe('p@ss-word');
     expect(await settings.view('email.smtp.password')).not.toHaveProperty('value');
+  });
+
+  it('audits every change with before and after, and never a secret', async (ctx) => {
+    if (!sql) return ctx.skip(server.available ? 'no client' : server.reason);
+    const { settings } = instance(sql);
+    const editor: Actor = { kind: 'user', id: '0199c0de-0000-7000-8000-000000000003' };
+    const meta = { ip: '198.51.100.7', requestId: 'req-settings' };
+    const audited = () =>
+      sql!<{ action: string; target_id: string; before: unknown; after: unknown }[]>`
+        select action, target_id, before, after from audit_log
+        where target_kind = 'setting' and actor_id = ${editor.id} order by id`;
+
+    await settings.write('workspace.name', 'Northwind', editor, meta);
+    await settings.write('workspace.name', 'Northwind', editor, meta);
+    await settings.write('email.smtp.password', 'hunter2-secret', editor);
+    await settings.reset('workspace.name', editor);
+
+    const rows = await audited();
+    expect(rows).toEqual([
+      {
+        action: 'setting.updated',
+        target_id: 'workspace.name',
+        before: { value: 'Bemmoly', isDefault: true },
+        after: { value: 'Northwind', isDefault: false },
+      },
+      {
+        action: 'setting.updated',
+        target_id: 'email.smtp.password',
+        before: { isSet: true },
+        after: { isSet: true },
+      },
+      {
+        action: 'setting.reset',
+        target_id: 'workspace.name',
+        before: { value: 'Northwind', isDefault: false },
+        after: { value: 'Bemmoly', isDefault: true },
+      },
+    ]);
+    expect(JSON.stringify(rows)).not.toContain('hunter2');
+    const [first] = await sql<{ ip: string; request_id: string }[]>`
+      select ip, request_id from audit_log where target_id = 'workspace.name' and actor_id = ${editor.id} order by id limit 1`;
+    expect(first).toEqual({ ip: meta.ip, request_id: meta.requestId });
   });
 
   it('invalidates another process’s cache through NOTIFY', async (ctx) => {

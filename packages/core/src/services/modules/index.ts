@@ -18,6 +18,7 @@ export {
   createMemoryModuleStateStore,
   createModuleStateStore,
   readEnabledModuleIds,
+  type ModuleAudit,
   type ModuleStatePatch,
   type ModuleStateStore,
 } from './store.ts';

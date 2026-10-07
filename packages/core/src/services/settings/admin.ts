@@ -1,5 +1,6 @@
 import type { SettingResponse } from '@bemmoly/shared';
 import type { Actor, Authorize, ResourceRef } from '../../contracts/authz.ts';
+import type { RequestMeta } from '../audit/index.ts';
 import type { KernelSettingsService } from './service.ts';
 
 export const MANAGE_SETTINGS = 'workspace.settings.manage';
@@ -14,8 +15,8 @@ export interface SettingsAdmin {
   list(actor: Actor): Promise<SettingResponse[]>;
   get(actor: Actor, key: string): Promise<SettingResponse>;
   /** Replaces the value; for a secret, sets the new secret. Returns the write-only view. */
-  put(actor: Actor, key: string, value: unknown): Promise<SettingResponse>;
-  reset(actor: Actor, key: string): Promise<void>;
+  put(actor: Actor, key: string, value: unknown, meta?: RequestMeta): Promise<SettingResponse>;
+  reset(actor: Actor, key: string, meta?: RequestMeta): Promise<void>;
 }
 
 export function createSettingsAdmin(deps: SettingsAdminDeps): SettingsAdmin {
@@ -34,14 +35,14 @@ export function createSettingsAdmin(deps: SettingsAdminDeps): SettingsAdmin {
       await check(actor, key);
       return settings.view(key);
     },
-    async put(actor, key, value) {
+    async put(actor, key, value, meta) {
       await check(actor, key);
-      await settings.write(key, value, actor);
+      await settings.write(key, value, actor, meta);
       return settings.view(key);
     },
-    async reset(actor, key) {
+    async reset(actor, key, meta) {
       await check(actor, key);
-      await settings.reset(key, actor);
+      await settings.reset(key, actor, meta);
     },
   };
 }

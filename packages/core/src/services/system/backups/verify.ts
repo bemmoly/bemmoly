@@ -1,10 +1,11 @@
-import { NotFoundError } from '@bemmoly/shared';
+import { NotFoundError, type BackupVerificationState } from '@bemmoly/shared';
 import { mkdir, rm } from 'node:fs/promises';
 import path from 'node:path';
-import type { SystemDependencies } from '../deps.ts';
+import { systemActorId, type SystemDependencies } from '../deps.ts';
 import { publishSystemEvent } from '../events.ts';
 import { readSetting } from '../settings.ts';
 import { diskSpace, formatBytes } from '../utils/disk.ts';
+import { withBackupAudit, type BackupAudit } from './audit.ts';
 import { fetchPart, readSetManifest, resolveSetSource } from './fetch-set.ts';
 import { createBackupRepository, type BackupRecord } from './repository.ts';
 import { databaseNameOf, stampOf } from './restore-database.ts';
@@ -12,6 +13,7 @@ import { restoreIntoNewDatabase } from './restore-files.ts';
 import { dropDatabase, withAdmin } from './restore-database.ts';
 
 const WEEK_MS = 7 * 86_400_000;
+const SCHEDULED: BackupAudit = { actor: { kind: 'system', id: systemActorId } };
 
 export interface VerifyResult {
   backupId: string;
@@ -25,12 +27,14 @@ export interface VerifyResult {
 /**
  * Checks a backup: `list` re-reads every checksum and runs pg_restore --list;
  * `restore` (the "Restore drill") also restores into a temporary database and
- * compares row counts with the backup's own snapshot, then drops it.
+ * compares row counts with the backup's own snapshot, then drops it. With
+ * `audit`, the verdict and its audit row are written in one transaction.
  */
 export async function verifyBackup(
   deps: SystemDependencies,
   backupId: string,
   depth: 'list' | 'restore',
+  audit?: BackupAudit,
 ): Promise<VerifyResult> {
   const repository = createBackupRepository(deps.sql);
   const record = await repository.get(backupId);
@@ -38,6 +42,17 @@ export async function verifyBackup(
     throw new NotFoundError(`No completed backup ${backupId}`);
   const now = deps.now?.() ?? new Date();
   const stamp = stampOf(now);
+  const settle = async (state: BackupVerificationState, message: string, drilled: boolean) => {
+    const write = (target = repository) =>
+      target.setVerification(record.id, state, message, deps.now?.() ?? new Date(), drilled);
+    if (!audit) return write();
+    await withBackupAudit(deps, audit, write, () => ({
+      action: 'backup.verified',
+      backupId: record.id,
+      before: { state: record.verificationState },
+      after: { depth, state, message },
+    }));
+  };
   const staging = path.join(deps.config.backupDir, '.staging', `verify-${stamp}`);
   try {
     const source = await resolveSetSource(deps, record.setName);
@@ -58,13 +73,7 @@ export async function verifyBackup(
           .map(([table, count]) => `${table} ${count}`)
           .join(', ') || 'no key tables yet'
       })`;
-      await repository.setVerification(
-        record.id,
-        'restored',
-        message,
-        deps.now?.() ?? new Date(),
-        true,
-      );
+      await settle('restored', message, true);
       deps.onGoodBackup?.(record.completedAt ?? record.createdAt);
       return { backupId, depth, ok: true, message };
     }
@@ -85,23 +94,11 @@ export async function verifyBackup(
       });
     }
     const message = 'Checksums match and pg_restore can read the dump';
-    await repository.setVerification(
-      record.id,
-      'listed',
-      message,
-      deps.now?.() ?? new Date(),
-      false,
-    );
+    await settle('listed', message, false);
     return { backupId, depth, ok: true, message };
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    await repository.setVerification(
-      record.id,
-      'failed',
-      message,
-      deps.now?.() ?? new Date(),
-      depth === 'restore',
-    );
+    await settle('failed', message, depth === 'restore');
     await publishSystemEvent(
       deps,
       'backup.verification_failed',
@@ -127,5 +124,5 @@ export async function runScheduledDrill(deps: SystemDependencies): Promise<Verif
   );
   const now = deps.now?.() ?? new Date();
   if (now.getTime() - lastDrill < WEEK_MS) return null;
-  return verifyBackup(deps, latest.id, 'restore');
+  return verifyBackup(deps, latest.id, 'restore', SCHEDULED);
 }

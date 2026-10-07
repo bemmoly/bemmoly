@@ -27,7 +27,7 @@ import { createModuleState } from './state.ts';
 import { createModuleStateStore } from './store.ts';
 
 const logger = pino({ level: 'silent' });
-const admin: Actor = { kind: 'user', id: 'admin' };
+const admin: Actor = { kind: 'user', id: '0199c0de-0000-7000-8000-000000000004' };
 
 const widgets: BemmolyModule = {
   id: 'widgets',
@@ -126,9 +126,44 @@ describe('module enable, disable and remove data against a real database', () =>
     >`select changelog_state from modules where id = 'widgets'`;
     expect(row?.changelog_state).toBe('removed');
 
-    const back = await restarted.moduleAdmin.enable(admin, 'widgets');
+    const back = await restarted.moduleAdmin.enable(admin, 'widgets', {
+      ip: '192.0.2.4',
+      requestId: 'req-modules',
+    });
     expect(back).toMatchObject({ enabled: true, changelogState: 'current', pendingChangesets: 0 });
     expect(await exists('widgets')).toBe(true);
+
+    const audited = await sql<
+      {
+        action: string;
+        target_id: string;
+        before: Record<string, unknown>;
+        after: Record<string, unknown>;
+        request_id: string | null;
+      }[]
+    >`select action, target_id, before, after, request_id from audit_log
+      where target_kind = 'module' and actor_id = ${admin.id} order by id`;
+    expect(audited.map((row) => row.action)).toEqual([
+      'module.disabled',
+      'module.data_removed',
+      'module.enabled',
+    ]);
+    const [disabled, removed, enabled] = audited;
+    expect(disabled).toMatchObject({
+      target_id: 'widgets',
+      before: { enabled: true },
+      after: { enabled: false },
+    });
+    expect(removed?.after).toMatchObject({
+      changelogState: 'removed',
+      versionInstalled: null,
+      changesetsReversed: ['0001-widgets'],
+    });
+    expect(enabled).toMatchObject({
+      before: { enabled: false, changelogState: 'removed' },
+      after: { enabled: true, changelogState: 'current', versionInstalled: '1.0.0' },
+      request_id: 'req-modules',
+    });
   });
 
   it('lists modules and settings within a fixed query budget', async (ctx) => {

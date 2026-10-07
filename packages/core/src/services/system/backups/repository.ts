@@ -5,7 +5,7 @@ import type {
   BackupStatus,
   BackupVerificationState,
 } from '@bemmoly/shared';
-import type { SqlClient } from '../../../clients/postgres.ts';
+import type { SqlExecutor } from '../../../contracts/sql.ts';
 import type { BackupManifest } from './manifest.ts';
 
 export interface BackupRecord {
@@ -129,7 +129,7 @@ export interface NewBackup {
   createdAt: Date;
 }
 
-export function createBackupRepository(sql: SqlClient) {
+export function createBackupRepository(sql: SqlExecutor) {
   return {
     async insertRunning(input: NewBackup): Promise<BackupRecord> {
       const [row] = await sql<Row[]>`

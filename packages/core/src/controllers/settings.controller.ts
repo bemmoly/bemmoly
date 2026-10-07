@@ -8,6 +8,7 @@ import {
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import type { ActorResolver } from '../middlewares/actor.ts';
 import type { SettingsAdmin } from '../services/settings/index.ts';
+import { metaOf } from './request-context.ts';
 
 export function createSettingsController(admin: SettingsAdmin, actorOf: ActorResolver) {
   const keyOf = (request: FastifyRequest) =>
@@ -22,10 +23,10 @@ export function createSettingsController(admin: SettingsAdmin, actorOf: ActorRes
     async put(request: FastifyRequest): Promise<SettingResponse> {
       const key = keyOf(request);
       const { value } = parseOrThrow(putSettingBodySchema, request.body);
-      return admin.put(await actorOf(request), key, value);
+      return admin.put(await actorOf(request), key, value, metaOf(request));
     },
     async reset(request: FastifyRequest, reply: FastifyReply): Promise<void> {
-      await admin.reset(await actorOf(request), keyOf(request));
+      await admin.reset(await actorOf(request), keyOf(request), metaOf(request));
       reply.code(204);
     },
   };

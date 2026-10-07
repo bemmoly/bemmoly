@@ -12,6 +12,7 @@ import type { ApplyModuleDefaultAccess } from '../../contracts/module-access.ts'
 import type { ModuleDataBackup } from '../../contracts/module-backup.ts';
 import type { ModuleRow } from '../../models/modules.ts';
 import type { LoadedModule, ModuleRegistry } from '../../modules/registry.ts';
+import type { RequestMeta } from '../audit/index.ts';
 import type { KernelChangelogRunner } from '../changelog/index.ts';
 import type { ModuleState } from './state.ts';
 import type { ModuleStateStore } from './store.ts';
@@ -35,9 +36,9 @@ export interface ModuleAdminDeps {
 export interface ModuleAdmin {
   list(actor: Actor): Promise<AdminModulesResponse>;
   get(actor: Actor, id: string): Promise<AdminModule>;
-  enable(actor: Actor, id: string): Promise<AdminModule>;
-  disable(actor: Actor, id: string): Promise<AdminModule>;
-  removeData(actor: Actor, id: string, confirm: string): Promise<AdminModule>;
+  enable(actor: Actor, id: string, meta?: RequestMeta): Promise<AdminModule>;
+  disable(actor: Actor, id: string, meta?: RequestMeta): Promise<AdminModule>;
+  removeData(actor: Actor, id: string, confirm: string, meta?: RequestMeta): Promise<AdminModule>;
 }
 
 export function createModuleAdmin(deps: ModuleAdminDeps): ModuleAdmin {
@@ -129,7 +130,7 @@ export function createModuleAdmin(deps: ModuleAdminDeps): ModuleAdmin {
       return view(loaded(id), await rowOf(id));
     },
 
-    async enable(actor, id) {
+    async enable(actor, id, meta) {
       await authorize(actor);
       writable();
       const entry = loaded(id);
@@ -149,17 +150,21 @@ export function createModuleAdmin(deps: ModuleAdminDeps): ModuleAdmin {
         }
       }
       await deps.applyDefaultAccess?.({ id, defaultAccess: entry.module.defaultAccess }, actor);
-      await store.upsert(id, {
-        enabled: true,
-        enabledAt: new Date(),
-        versionInstalled: entry.module.version,
-        changelogState: 'current',
-        dataRemovedAt: null,
-      });
+      await store.upsert(
+        id,
+        {
+          enabled: true,
+          enabledAt: new Date(),
+          versionInstalled: entry.module.version,
+          changelogState: 'current',
+          dataRemovedAt: null,
+        },
+        { actor, action: 'module.enabled', ...(meta ? { meta } : {}) },
+      );
       return changed(actor, id, 'module.enabled');
     },
 
-    async disable(actor, id) {
+    async disable(actor, id, meta) {
       await authorize(actor);
       writable();
       const entry = loaded(id);
@@ -173,11 +178,15 @@ export function createModuleAdmin(deps: ModuleAdminDeps): ModuleAdmin {
           details: { dependents },
         });
       }
-      await store.upsert(id, { enabled: false, disabledAt: new Date() });
+      await store.upsert(
+        id,
+        { enabled: false, disabledAt: new Date() },
+        { actor, action: 'module.disabled', ...(meta ? { meta } : {}) },
+      );
       return changed(actor, id, 'module.disabled');
     },
 
-    async removeData(actor, id, confirm) {
+    async removeData(actor, id, confirm, meta) {
       await authorize(actor);
       writable();
       loaded(id);
@@ -195,12 +204,21 @@ export function createModuleAdmin(deps: ModuleAdminDeps): ModuleAdmin {
         throw new ConflictError('A backup must run first, and backups are not configured');
       await deps.backup.backupBeforeRemoval({ moduleId: id, actor });
       await runner.rollback(id, { count: plan.steps.length });
-      await store.upsert(id, {
-        changelogState: 'removed',
-        dataRemovedAt: new Date(),
-        versionInstalled: null,
-        enabledAt: null,
-      });
+      await store.upsert(
+        id,
+        {
+          changelogState: 'removed',
+          dataRemovedAt: new Date(),
+          versionInstalled: null,
+          enabledAt: null,
+        },
+        {
+          actor,
+          action: 'module.data_removed',
+          details: { changesetsReversed: plan.steps.map((step) => step.id) },
+          ...(meta ? { meta } : {}),
+        },
+      );
       return changed(actor, id, 'module.data_removed');
     },
   };

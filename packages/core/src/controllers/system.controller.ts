@@ -26,6 +26,7 @@ import {
   storeCatalogUpload,
   type SystemDependencies,
 } from '../services/system/index.ts';
+import { metaOf } from './request-context.ts';
 
 export interface SystemControllerDependencies {
   system: SystemDependencies;
@@ -59,7 +60,7 @@ export function createSystemController(deps: SystemControllerDependencies) {
     },
     async createBackup(request: FastifyRequest, reply: FastifyReply) {
       parseOrThrow(createBackupRequestSchema, request.body ?? {});
-      const backup = await startManualBackup(system, await actorOf(request));
+      const backup = await startManualBackup(system, await actorOf(request), metaOf(request));
       reply.code(201);
       return backup;
     },
@@ -70,14 +71,20 @@ export function createSystemController(deps: SystemControllerDependencies) {
     async restoreBackup(request: FastifyRequest, reply: FastifyReply) {
       const { id } = parseOrThrow(backupIdParamsSchema, request.params);
       parseOrThrow(restoreBackupRequestSchema, request.body);
-      const result = await requestRestore(system, await actorOf(request), id);
+      const result = await requestRestore(system, await actorOf(request), id, metaOf(request));
       reply.code(202);
       return result;
     },
     async verifyBackup(request: FastifyRequest, reply: FastifyReply) {
       const { id } = parseOrThrow(backupIdParamsSchema, request.params);
       const { depth } = parseOrThrow(verifyBackupRequestSchema, request.body ?? {});
-      const result = await requestVerify(system, await actorOf(request), id, depth);
+      const result = await requestVerify(
+        system,
+        await actorOf(request),
+        id,
+        depth,
+        metaOf(request),
+      );
       if ('accepted' in result) reply.code(202);
       return result;
     },
