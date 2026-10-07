@@ -136,7 +136,7 @@ svg .mono{font-family:'IBM Plex Mono',monospace}
 </nav>
 <main>
 <h1>Bemmoly: technical design</h1>
-<p class="small" style="font-size:16px;color:var(--tx2)">An open source, self-hosted, AI-first replacement for Jira and Confluence. One app image, one Postgres, deployed in five minutes, free forever.</p>
+<p class="small" style="font-size:16px;color:var(--tx2)">Your work. Your platform. Open source, self-hosted, AI-first issues and docs for your whole company. One app image, one Postgres, deployed in five minutes, free forever.</p>
 <div class="meta">
   <span class="badge warn">Draft v0.10</span>
   <span class="badge">7 October 2026</span>
@@ -146,7 +146,7 @@ svg .mono{font-family:'IBM Plex Mono',monospace}
 
 <!-- ===================================================== 1 -->
 <h2 id="summary">1. Summary and the eight promises</h2>
-<p>Bemmoly is two products in one deployable, the way Jira and Confluence are two products in one Atlassian account: <strong>Work</strong> (projects, issues, boards, sprints, roadmap, workflows) and <strong>Docs</strong> (spaces, pages, a collaborative editor), joined by a single <strong>AI layer</strong> that reads both and acts through the same permissions a person has. The design mocks fix the experience; this document fixes how it is built.</p>
+<p>Bemmoly is two products in one deployable: <strong>Work</strong> (projects, issues, boards, sprints, roadmap, workflows) and <strong>Docs</strong> (spaces, pages, a collaborative editor), joined by a single <strong>AI layer</strong> that reads both and acts through the same permissions a person has. The design mocks fix the experience; this document fixes how it is built.</p>
 <p>Every technical decision below was tested against eight promises taken straight from the landing page and the setup wizard. If a decision breaks a promise, the decision loses.</p>
 <div class="grid c4">
   <div class="card"><div class="k">Promise 1</div><div class="stat">5 min</div><div class="small">curl to first login on a fresh VM. The installer owns Docker, Postgres, HTTPS, backups and upgrades.</div></div>
@@ -193,7 +193,7 @@ svg .mono{font-family:'IBM Plex Mono',monospace}
   <tr><td>Setup wizard</td><td>Server health checks (Postgres, disk, memory, SMTP, HTTPS, backups); first admin; import from Jira, Confluence, CSV or clean start; SSO or invites; AI provider (popular row: OpenAI, Anthropic, Amazon Bedrock, Azure, Vertex, OpenRouter; the full catalog beneath; local server; none) with privacy toggles; theme; summary.</td><td><span class="badge">Setup</span></td></tr>
   <tr><td>Landing</td><td>Marketing site. Separate static site, out of scope for the app image.</td><td><span class="badge">Site</span></td></tr>
 </table>
-<div class="callout"><div class="k">Explicit non-goals for 1.0</div>Multi-tenant SaaS hosting (one workspace per install), native mobile apps (the responsive SPA ships as a PWA; one native shell app comes after 1.0, see §4), Jira-API compatibility shim, marketplace plugins with arbitrary code execution (modules are first-party code in the image for 1.0, see §4), service desk and portals. Each is listed in §25 so it is a decision, not an accident.</div>
+<div class="callout"><div class="k">Explicit non-goals for 1.0</div>Multi-tenant SaaS hosting (one workspace per install), native mobile apps (the responsive SPA ships as a PWA; one native shell app comes after 1.0, see §4), compatibility shims for other trackers' APIs, marketplace plugins with arbitrary code execution (modules are first-party code in the image for 1.0, see §4), service desk and portals. Each is listed in §25 so it is a decision, not an accident.</div>
 
 <!-- ===================================================== 3 -->
 <h2 id="architecture">3. Architecture</h2>
@@ -386,7 +386,7 @@ export interface ModuleContext {
 <table>
   <tr><th style="width:220px">Concern</th><th>One app with modules (chosen)</th><th>One site per module</th></tr>
   <tr><td>Sign-in and session</td><td>One session cookie, one SSO flow, one CSRF model.</td><td>Cookies scoped to a parent domain, cross-origin auth forwarding for every cross-module call, and three places to get it wrong.</td></tr>
-  <tr><td>Cross-module features</td><td>Issue embeds in pages, time entries on issues, one search, one ⌘K, one inbox, one morning brief, one AI with one permission model: all in-process.</td><td>Each becomes a cross-service API with identity propagation and partial failures. This is the pain Atlassian's separate Jira and Confluence URLs are known for.</td></tr>
+  <tr><td>Cross-module features</td><td>Issue embeds in pages, time entries on issues, one search, one ⌘K, one inbox, one morning brief, one AI with one permission model: all in-process.</td><td>Each becomes a cross-service API with identity propagation and partial failures. This is the pain every split suite with separate product URLs is known for.</td></tr>
   <tr><td>Install and operations</td><td>One host, one certificate, one container, one update.</td><td>DNS and certificates per module, more hosts for enterprise IT to allow-list, a compatibility matrix between module versions.</td></tr>
   <tr><td>Performance as modules grow</td><td>The shell stays under its 250 KB budget; each module is a lazy chunk loaded on first use. Forty modules cost nothing until opened.</td><td>Each site is fast on its own, but every switch is a full page load and a cold cache.</td></tr>
   <tr><td>Team autonomy and blast radius</td><td>Module boundaries are enforced in the monorepo with code ownership per module and error boundaries per module in the shell. A module that outgrows the process already has a clean seam.</td><td>Independent deploys, at the price of everything above.</td></tr>
@@ -412,7 +412,7 @@ export interface ModuleContext {
   <tr><td>Typography</td><td>IBM Plex Sans for UI, IBM Plex Mono for keys and code (Classic theme); Inter Tight, Source Sans 3 and Geist as workspace-selectable alternatives, self-hosted in the image</td><td>Inter, system fonts</td><td>Taken from the mocks: Plex reads well at board density and has a matching mono for issue keys. Fonts are bundled so air-gapped installs render identically.</td></tr>
   <tr><td>Jobs</td><td>pg-boss 12</td><td>BullMQ (needs Redis), Graphile Worker, hand-rolled SKIP LOCKED</td><td>Mature Postgres-only queue with retries, scheduling, singleton jobs and archive. Removes Redis from the install.</td></tr>
   <tr><td>Realtime</td><td><code>@fastify/websocket</code> + Postgres <code>LISTEN/NOTIFY</code></td><td>Socket.IO, Redis pub/sub, SSE</td><td>Payloads are tiny invalidation messages, so NOTIFY's 8 KB limit is never approached. Works across replicas with no extra service.</td></tr>
-  <tr><td>Collab editing</td><td>Tiptap 3 (ProseMirror) + Yjs + Hocuspocus 4 with a Postgres persistence extension</td><td>Lexical, Slate, Plate, BlockNote</td><td>Only ProseMirror has a decade of production use for exactly this: Confluence-class documents with custom nodes (issue embeds, decision blocks, issue tables). Yjs gives conflict-free offline-tolerant collaboration; Hocuspocus is MIT.</td></tr>
+  <tr><td>Collab editing</td><td>Tiptap 3 (ProseMirror) + Yjs + Hocuspocus 4 with a Postgres persistence extension</td><td>Lexical, Slate, Plate, BlockNote</td><td>Only ProseMirror has a decade of production use for exactly this: wiki-class documents with custom nodes (issue embeds, decision blocks, issue tables). Yjs gives conflict-free offline-tolerant collaboration; Hocuspocus is MIT.</td></tr>
   <tr><td>Frontend</td><td>React 19, Vite 8, TanStack Router 1 + Query 5 + Virtual, Zustand, Tailwind 4 with tokens from <code>packages/ui</code></td><td>Next.js, Remix, SvelteKit</td><td>No SSR need behind login; a static build keeps the single image. TanStack Router gives type-safe routes and route-level prefetching. Tailwind consumes the one token file so the eight presets plus custom themes are CSS variables, not rebuilds.</td></tr>
   <tr><td>Auth</td><td>Own session layer (Postgres sessions), argon2id, <code>openid-client</code> for OIDC, <code>samlify</code> for SAML, SCIM 2.0 server</td><td>Auth.js, Lucia, Keycloak sidecar</td><td>Keycloak violates the one-image promise. Auth.js is tuned for Next. The surface is small enough to own and must be audited anyway.</td></tr>
   <tr><td>Email</td><td>nodemailer over SMTP, templates with <code>react-email</code></td><td>Resend/Postmark SDKs</td><td>SMTP is what every self-hoster has. Provider SDKs can be added as a second <code>EmailSender</code> implementation when someone needs one.</td></tr>
@@ -637,7 +637,7 @@ export default changeset({
   <tr><td><code>issues</code></td><td><code>project_id</code>, <code>number</code>, <code>key</code> (generated, unique), <code>type_id</code>, <code>title</code>, <code>description</code> JSONB (ProseMirror), <code>description_text</code>, <code>status_id</code>, <code>priority</code>, <code>assignee_id</code>, <code>reporter_id</code>, <code>parent_id</code> (subtask → parent, standard → epic), <code>sprint_id</code>, <code>estimate</code> numeric, <code>due_at</code>, <code>fix_version_id</code>, <code>custom_fields</code> JSONB (GIN indexed), <code>rank</code> (lexorank string for board and backlog ordering), <code>search_vector</code> tsvector, <code>status_changed_at</code> (feeds age and cycle time), <code>deleted_at</code>.</td></tr>
   <tr><td><code>issue_links</code></td><td><code>source_id</code>, <code>target_id</code>, <code>kind</code> (blocks, relates, duplicates). "Blocked by" badges on cards are the inverse of <code>blocks</code>.</td></tr>
   <tr><td><code>labels</code>, <code>issue_labels</code></td><td>Project-scoped labels with colour.</td></tr>
-  <tr><td><code>versions</code>, <code>components</code></td><td>Fix versions (with release date and status) and components, as in Jira.</td></tr>
+  <tr><td><code>versions</code>, <code>components</code></td><td>Fix versions (with release date and status) and components.</td></tr>
   <tr><td><code>sprints</code></td><td><code>project_id</code>, <code>name</code>, <code>goal</code>, <code>starts_at</code>, <code>ends_at</code>, <code>state</code> (future, active, closed), <code>capacity_points</code>, <code>completed_snapshot</code> JSONB written on close for velocity reports.</td></tr>
   <tr><td><code>boards</code></td><td><code>project_id</code>, <code>name</code>, <code>config</code> JSONB: columns (each mapping status ids, WIP limit), lanes (field or saved query), card fields, card colour rules, estimation unit, sprint cadence, working days. One row per board; the org default board scheme is a row with <code>project_id</code> null.</td></tr>
   <tr><td><code>saved_filters</code></td><td><code>owner_id</code>, <code>name</code>, <code>query</code> (the Bemmoly query language, see §16), <code>shared_with</code>.</td></tr>
@@ -981,7 +981,7 @@ export default changeset({
 <ul>
   <li><strong>Keyword</strong>: <code>search_vector</code> on issues and pages with weights (title A, labels and keys B, body D), GIN indexed, plus <code>pg_trgm</code> on titles and issue keys for prefix and typo tolerance in the ⌘K palette. Results are filtered by the actor's project and space access before ranking.</li>
   <li><strong>Semantic</strong>: chunks of pages and issue descriptions embedded via the <code>embedding</code> role, HNSW index in <code>pgvector</code>, queried with cosine distance and merged with keyword results by reciprocal rank fusion. Absent pgvector or an embedding model, the mode is simply not offered and the UI copy says so.</li>
-  <li><strong>Bemmoly Query Language</strong> (LQL), a small JQL-like grammar: <code>project = PLT AND status != Done AND assignee = me AND "spec doc" IS EMPTY ORDER BY updated DESC</code>. Parsed in <code>packages/shared</code> (so the web app can validate and autocomplete) and compiled to parameterised SQL in <code>services/search/lql/</code>. Saved filters, swimlane queries, issue tables in docs and automation conditions all use it. The AI writes LQL from plain English and shows it before running.</li>
+  <li><strong>Bemmoly Query Language</strong> (LQL), a small, familiar query grammar: <code>project = PLT AND status != Done AND assignee = me AND "spec doc" IS EMPTY ORDER BY updated DESC</code>. Parsed in <code>packages/shared</code> (so the web app can validate and autocomplete) and compiled to parameterised SQL in <code>services/search/lql/</code>. Saved filters, swimlane queries, issue tables in docs and automation conditions all use it. The AI writes LQL from plain English and shows it before running.</li>
   <li><strong>Autocomplete</strong> in the palette is a single trigram query across issues, pages and users with a 100 ms budget; results are cached per session for repeated prefixes.</li>
 </ul>
 
@@ -1295,7 +1295,7 @@ BEMMOLY_SMTP_URL=</code></pre></div>
   <tr><td>AI SDK as the only integration vs own provider code</td><td>AI SDK 7 behind a facade, providers resolved from the catalog (§11.1).</td><td>Own code avoids the SDK's yearly major-version churn but means re-implementing streaming, tool calling and structured output per vendor. The facade limits the churn to one folder.</td></tr>
   <tr><td>Updater sidecar with Docker socket</td><td>Install by default, opt out with a flag.</td><td>No sidecar means updates are CLI-only and the "Update" button can only show instructions. Some security teams will choose that; the flag exists for them.</td></tr>
   <tr><td>Sync engine (local replica) for the client</td><td>Not in 1.0; TanStack Query with prefetch and optimistic updates.</td><td>A Linear-style local database makes every navigation instant and offline-tolerant at the cost of a large, subtle subsystem. Candidate for 1.x once the API is stable.</td></tr>
-  <tr><td>Inbound email and service desk</td><td>Post 1.0.</td><td>Both are frequent asks from Jira users; both are large.</td></tr>
+  <tr><td>Inbound email and service desk</td><td>Post 1.0.</td><td>Both are frequent asks from teams leaving legacy trackers; both are large.</td></tr>
   <tr><td>Telemetry</td><td>None by default; an opt-in anonymous ping with version and counts, shown and explained in the wizard.</td><td>No telemetry at all leaves maintainers blind to which features matter.</td></tr>
 </table>
 

@@ -20,8 +20,8 @@
 
   <div style="max-width:1160px;margin:0 auto;padding:88px 48px 56px;display:flex;flex-direction:column;gap:28px;align-items:center;text-align:center">
     <div style="display:inline-flex;align-items:center;gap:8px;padding:5px 12px 5px 6px;border:1px solid #e2e5ea;border-radius:20px;font-size:13px;color:#4b5565;background:#fafbfc"><span style="padding:2px 8px;border-radius:12px;background:#e3f4ea;color:#1f7a44;font-weight:600;font-size:11.5px">v1.2</span>Custom themes, workflow editor, Confluence importer</div>
-    <div style="font:600 58px/1.08 'IBM Plex Sans';letter-spacing:-.03em;max-width:900px;text-wrap:balance">Issues and docs for your whole company. Open source, AI-first, one VM.</div>
-    <div style="font-size:19px;line-height:1.55;color:#4b5565;max-width:700px;text-wrap:pretty">Bemmoly replaces Jira and Confluence with a single self-hosted app your team can run on a $20 server. No per-seat pricing. No usage caps. Your data stays on your hardware.</div>
+    <div style="font:600 58px/1.08 'IBM Plex Sans';letter-spacing:-.03em;max-width:900px;text-wrap:balance">Your work. Your platform.</div>
+    <div style="font-size:19px;line-height:1.55;color:#4b5565;max-width:700px;text-wrap:pretty">Issues and docs for your whole company in a single self-hosted, AI-first app your team can run on a $20 server. No per-seat pricing. No usage caps. Your data stays on your hardware.</div>
     <div style="display:flex;gap:12px;align-items:center">
       <a href="Bemmoly Setup.dc.html" style="height:46px;padding:0 22px;border-radius:7px;background:#2456c9;color:#fff;display:inline-flex;align-items:center;font-weight:500;font-size:15px">Deploy in 5 minutes</a>
       <a href="Bemmoly Home.dc.html" style="height:46px;padding:0 20px;border-radius:7px;border:1px solid #d5dae2;color:#1b2430;display:inline-flex;align-items:center;font-weight:500;font-size:15px;background:#fff">Try the live demo</a>
@@ -104,7 +104,7 @@
       <div style="font:600 32px/1.15 'IBM Plex Sans';letter-spacing:-.02em">Your team's work, on your server, by tonight.</div>
       <div style="display:flex;gap:12px"><a href="Bemmoly Setup.dc.html" style="height:46px;padding:0 22px;border-radius:7px;background:#2456c9;color:#fff;display:inline-flex;align-items:center;font-weight:500;font-size:15px">Deploy in 5 minutes</a><span style="height:46px;padding:0 20px;border-radius:7px;border:1px solid #d5dae2;color:#1b2430;display:inline-flex;align-items:center;font-weight:500;font-size:15px;background:#fff">Star on GitHub</span></div>
     </div>
-    <div style="max-width:1160px;margin:0 auto;padding:0 48px 40px;display:flex;gap:24px;font-size:13px;color:#8a93a3;align-items:center"><span style="font-weight:600;color:#1b2430">Bemmoly</span><span>MIT license</span><span>Docs</span><span>Changelog</span><span>Security</span><span>Discord</span><span style="margin-left:auto">Made by people who've run Jira for too long.</span></div>
+    <div style="max-width:1160px;margin:0 auto;padding:0 48px 40px;display:flex;gap:24px;font-size:13px;color:#8a93a3;align-items:center"><span style="font-weight:600;color:#1b2430">Bemmoly</span><span>MIT license</span><span>Docs</span><span>Changelog</span><span>Security</span><span>Discord</span><span style="margin-left:auto">Made by people who've run work tools for too long.</span></div>
   </div>
 </div>
 </x-dc>
@@ -113,8 +113,8 @@ class Component extends DCLogic {
   renderVals() {
     return {
       features: [
-        { g: 'WK', title: 'Work, Jira-grade', body: 'Scrum or Kanban per project. Epics, sprints, swimlanes, WIP limits, custom fields, a visual workflow editor, roadmap with forecasts.' },
-        { g: 'DC', title: 'Docs, Confluence-grade', body: 'Spaces, page trees, templates, inline comments, live issue embeds that stay in sync, and Q&A across everything you\'ve written.' },
+        { g: 'WK', title: 'Work, from backlog to release', body: 'Scrum or Kanban per project. Epics, sprints, swimlanes, WIP limits, custom fields, a visual workflow editor, roadmap with forecasts.' },
+        { g: 'DC', title: 'Docs, from RFC to handbook', body: 'Spaces, page trees, templates, inline comments, live issue embeds that stay in sync, and Q&A across everything you\'ve written.' },
         { g: 'AI', title: 'AI-first, not AI-bolted-on', body: 'Briefs, risk detection, planning, drafting and a command bar that previews before it acts. Works with any provider or a local model.' },
         { g: 'CF', title: 'Configurable at two levels', body: 'Org defaults with locks; project overrides for columns, lanes, cards, fields, workflows and estimation.' },
         { g: 'RB', title: 'Roles that make sense', body: 'Org admin, project admin, member, viewer, plus custom roles. SSO with group-to-team mapping. Audit log for everything.' },

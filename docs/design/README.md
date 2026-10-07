@@ -5,7 +5,7 @@ Open `mocks/Bemmoly App.dc.html` in a browser; it links to every other screen.
 Each file is self-contained HTML plus `support.js`; the data behind a screen lives in a
 `class Component extends DCLogic` block near the end of the file.
 
-The zip is the original export. The extracted files are what the code is built from.
+`mocks-export.zip` is the original export. The extracted files are what the code is built from.
 
 Changes the tech design has queued for the mocks (the design is otherwise followed exactly):
 
