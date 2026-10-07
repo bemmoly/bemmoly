@@ -30,7 +30,7 @@ Each comes in four tones:
 Keep this stable so a replacement drops in without code changes:
 
 - Every file's `viewBox` is 24 units tall and starts at `0 0`. The mark is `0 0 24 24`; the
-  wordmark and lockup may be any width at that height (the placeholder uses 61 and 94).
+  wordmark and lockup may be any width at that height (the placeholder uses 60.3 and 93.3).
 - File names and the four tone suffixes stay exactly as above.
 - No `id` attributes (several logos can be inline on one page) and no `<text>` (outline the
   lettering to paths so it renders without the font).
