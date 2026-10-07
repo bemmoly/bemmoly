@@ -1,7 +1,9 @@
 import { defineModule } from '@bemmoly/core';
+import { Writable } from 'node:stream';
 import {
   ConflictError,
   ForbiddenError,
+  MaintenanceError,
   NotFoundError,
   ProviderError,
   RateLimitedError,
@@ -21,6 +23,7 @@ const failures: Record<string, () => unknown> = {
   conflict: () => new ConflictError('Changed since you loaded it'),
   limited: () => new RateLimitedError('Slow down', { retryAfterSeconds: 12 }),
   provider: () => new ProviderError('SMTP relay timed out', { provider: 'smtp' }),
+  maintenance: () => new MaintenanceError('Restoring a backup', { retryAfterSeconds: 30 }),
   zod: () => z.object({ title: z.string() }).parse({}),
   crash: () => new Error('database password is hunter2'),
 };
@@ -51,6 +54,7 @@ describe('error handler', () => {
     ['conflict', 409, 'conflict'],
     ['limited', 429, 'rate_limited'],
     ['provider', 502, 'provider_error'],
+    ['maintenance', 503, 'maintenance'],
     ['zod', 400, 'validation_failed'],
     ['crash', 500, 'internal_error'],
   ])('maps %s to %i %s with the shared body', async (kind, status, code) => {
@@ -71,6 +75,25 @@ describe('error handler', () => {
     const crash = await app.inject({ url: '/api/v1/failures/crash' });
     expect(crash.json()).toMatchObject({ message: INTERNAL_ERROR_MESSAGE });
     expect(crash.body).not.toContain('hunter2');
+  });
+
+  it('logs maintenance refusals as warnings and crashes as errors', async () => {
+    const lines: { level: number; msg: string; requestId?: string }[] = [];
+    const stream = new Writable({
+      write(chunk: Buffer, _encoding, done) {
+        lines.push(JSON.parse(chunk.toString()) as (typeof lines)[number]);
+        done();
+      },
+    });
+    const app = await buildApp({ env: TEST_ENV, modules: modulesOf(thrower), logger: { stream } });
+    const levelOf = async (kind: string) => {
+      const response = await app.inject({ url: `/api/v1/failures/${kind}` });
+      const requestId = response.headers['x-request-id'];
+      return lines.find((line) => line.requestId === requestId && line.msg !== 'request completed')
+        ?.level;
+    };
+    expect(await levelOf('maintenance')).toBe(40);
+    expect(await levelOf('crash')).toBe(50);
   });
 
   it('maps malformed JSON bodies to bad_request', async () => {

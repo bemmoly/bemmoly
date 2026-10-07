@@ -8,6 +8,7 @@ import type { JobDefinition } from '../../modules/registries.ts';
 import { createEnqueue, type KernelEnqueueOptions } from './enqueue.ts';
 import { wrapHandler } from './handler.ts';
 import { noJobMetrics, type JobMetricsHook } from './metrics.ts';
+import { logQueueError } from './queue-errors.ts';
 
 export type ProcessRole = 'all' | 'api' | 'worker';
 
@@ -147,7 +148,7 @@ export function createJobsService(options: JobsServiceOptions): JobsService {
         schedule: worker,
         migrate: true,
       });
-      instance.on('error', (error) => logger.error({ err: error }, 'job queue error'));
+      instance.on('error', (error) => logQueueError(logger, error));
       await instance.start();
       for (const job of definitions.values()) await createQueue(instance, job);
       boss = instance;
