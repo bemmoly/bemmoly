@@ -46,15 +46,21 @@ if [ -n "${VERSION}" ] && [ "${VERSION}" != latest ] && [ "${VERSION}" != beta ]
   [ "$(installed_version)" = "${VERSION}" ] || fail "expected version ${VERSION}, .env says $(installed_version)"
   pass "version ${VERSION}"
 fi
-api /api/v1/modules | grep -q '"items"' || fail '/api/v1/modules did not answer'
+# The modules API needs a session once identity is wired; an anonymous call then gets
+# the API's own 401 body, which still proves the API answers.
+modules=$(api /api/v1/modules) || fail '/api/v1/modules did not answer'
+printf '%s' "${modules}" | grep -Eq '"items"|"code":"unauthenticated"' ||
+  fail "/api/v1/modules answered unexpectedly: ${modules}"
 pass 'modules API answers'
 
-# The wizard's first step: anonymous while setup is open, once the host wires the routes.
+# The wizard's first step: anonymous while setup is open, closed once the first admin exists.
+setup=$(api /api/v1/setup/status 2>/dev/null || true)
 code=$(curl -ks -o /dev/null -w '%{http_code}' "${BASE_URL}/api/v1/admin/system")
-case "${code}" in
-  200) pass 'setup health checks answer' ;;
-  401 | 404) echo "! /api/v1/admin/system answered ${code}: the wizard API is not wired in this build; skipped" ;;
-  *) fail "/api/v1/admin/system answered ${code}" ;;
+case "${code}:${setup}" in
+  200:*'"initialized":false'*) pass 'setup health checks answer while setup is open' ;;
+  401:*'"initialized":true'*) pass 'setup health checks are closed to anonymous callers after setup' ;;
+  404:*) echo "! /api/v1/admin/system answered 404: the wizard API is not wired in this build; skipped" ;;
+  *) fail "/api/v1/admin/system answered ${code} with setup status ${setup}" ;;
 esac
 
 bemmoly status >/dev/null || fail 'bemmoly status failed'
