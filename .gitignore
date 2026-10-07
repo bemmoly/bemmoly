@@ -7,6 +7,8 @@ coverage/
 storybook-static/
 playwright-report/
 test-results/
+.lighthouseci/
+k6-summary.json
 *.tsbuildinfo
 
 # environment and secrets
