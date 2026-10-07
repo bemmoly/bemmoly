@@ -8,6 +8,8 @@ export interface HistoryRow extends ChangelogEntry {
   description: string;
   tag: string | null;
   progress: Record<string, unknown>;
+  slow: boolean;
+  irreversible: boolean;
 }
 
 interface RawRow {
@@ -16,7 +18,7 @@ interface RawRow {
   author: string;
   description: string;
   checksum: string;
-  executed_at: Date;
+  executed_at: Date | string;
   execution_ms: number;
   order_executed: number;
   app_version: string;
@@ -24,6 +26,8 @@ interface RawRow {
   state: ChangesetState;
   tag: string | null;
   progress: Record<string, unknown>;
+  slow: boolean;
+  irreversible: boolean;
 }
 
 /**
@@ -47,10 +51,16 @@ export async function ensureChangelogTable(sql: Connection): Promise<void> {
       state text NOT NULL CHECK (state IN ('ran', 'marked_ran', 'rolled_back', 'started')),
       tag text,
       progress jsonb NOT NULL DEFAULT '{}',
+      slow boolean NOT NULL DEFAULT false,
+      irreversible boolean NOT NULL DEFAULT false,
       created_at timestamptz NOT NULL DEFAULT now(),
       updated_at timestamptz NOT NULL DEFAULT now(),
       PRIMARY KEY (module, id)
     )`;
+  // Installs created before these flags existed gain them here.
+  await sql`ALTER TABLE schema_changelog ADD COLUMN IF NOT EXISTS slow boolean NOT NULL DEFAULT false`;
+  await sql`
+    ALTER TABLE schema_changelog ADD COLUMN IF NOT EXISTS irreversible boolean NOT NULL DEFAULT false`;
 }
 
 export async function changelogTableExists(sql: Connection): Promise<boolean> {
@@ -66,7 +76,7 @@ function toEntry(row: RawRow): HistoryRow {
     author: row.author,
     description: row.description,
     checksum: row.checksum,
-    executedAt: row.executed_at,
+    executedAt: new Date(row.executed_at),
     executionMs: row.execution_ms,
     orderExecuted: row.order_executed,
     appVersion: row.app_version,
@@ -74,6 +84,8 @@ function toEntry(row: RawRow): HistoryRow {
     state: row.state,
     tag: row.tag,
     progress: row.progress,
+    slow: row.slow,
+    irreversible: row.irreversible,
   };
 }
 
@@ -98,22 +110,26 @@ export interface RecordInput {
   contexts: readonly string[];
   state: ChangesetState;
   executionMs: number;
+  slow: boolean;
+  irreversible: boolean;
 }
 
 /** Inserts or rewrites the row for (module, id) with the next execution order. */
 export async function recordChangeset(sql: Connection, input: RecordInput): Promise<HistoryRow> {
   const [row] = await sql<RawRow[]>`
     insert into schema_changelog (module, id, author, description, checksum, executed_at,
-      execution_ms, order_executed, app_version, contexts, state, progress)
+      execution_ms, order_executed, app_version, contexts, state, progress, slow, irreversible)
     values (${input.module}, ${input.id}, ${input.author}, ${input.description}, ${input.checksum},
       now(), ${input.executionMs},
       (select coalesce(max(order_executed), 0) + 1 from schema_changelog),
-      ${input.appVersion}, ${sql.array([...input.contexts])}, ${input.state}, '{}')
+      ${input.appVersion}, ${sql.array([...input.contexts])}, ${input.state}, '{}',
+      ${input.slow}, ${input.irreversible})
     on conflict (module, id) do update set
       author = excluded.author, description = excluded.description, checksum = excluded.checksum,
       executed_at = excluded.executed_at, execution_ms = excluded.execution_ms,
       order_executed = excluded.order_executed, app_version = excluded.app_version,
       contexts = excluded.contexts, state = excluded.state, tag = null,
+      slow = excluded.slow, irreversible = excluded.irreversible,
       progress = case when schema_changelog.state = 'started' then schema_changelog.progress
                       else '{}'::jsonb end,
       updated_at = now()
@@ -161,7 +177,8 @@ export async function saveProgress(
   progress: Record<string, unknown>,
 ): Promise<void> {
   await sql`
-    update schema_changelog set progress = ${sql.json(progress as postgres.JSONValue)}, updated_at = now()
+    update schema_changelog
+    set progress = ${JSON.stringify(progress)}::jsonb, slow = true, updated_at = now()
     where module = ${key.module} and id = ${key.id}`;
 }
 

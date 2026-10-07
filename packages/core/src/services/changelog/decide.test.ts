@@ -28,6 +28,8 @@ function row(overrides: Partial<HistoryRow>): HistoryRow {
     state: 'ran',
     tag: null,
     progress: {},
+    slow: false,
+    irreversible: false,
     ...overrides,
   };
 }

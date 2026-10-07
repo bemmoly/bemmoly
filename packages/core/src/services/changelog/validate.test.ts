@@ -25,12 +25,19 @@ function row(id: string, checksum: string, state: HistoryRow['state'] = 'ran'): 
     state,
     tag: null,
     progress: {},
+    slow: false,
+    irreversible: false,
   };
 }
 
 describe('structuralProblems', () => {
-  it('accepts a contiguous changelog', () => {
+  it('accepts a contiguous changelog, and new blocks of 100', () => {
     expect(structuralProblems('work', [cs('0001-a'), cs('0002-b')])).toEqual([]);
+    const blocks = ['0001-a', '0002-b', '0100-c', '0101-d', '0200-e'].map((id) => cs(id));
+    expect(structuralProblems('core', blocks)).toEqual([]);
+    expect(structuralProblems('core', [cs('0001-a'), cs('0102-c')])[0]?.problem).toBe(
+      'gap_in_order',
+    );
   });
 
   it('reports gaps, duplicates, bad ids and a missing down', () => {

@@ -1,4 +1,4 @@
-import { integer, jsonb, pgTable, primaryKey, text } from 'drizzle-orm/pg-core';
+import { boolean, integer, jsonb, pgTable, primaryKey, text } from 'drizzle-orm/pg-core';
 import { timestamptz } from './conventions.ts';
 
 /**
@@ -24,6 +24,8 @@ export const schemaChangelog = pgTable(
     tag: text('tag'),
     /** Backfill progress keyed by call, so an interrupted changeset resumes. */
     progress: jsonb('progress').$type<Record<string, unknown>>().notNull().default({}),
+    slow: boolean('slow').notNull().default(false),
+    irreversible: boolean('irreversible').notNull().default(false),
     createdAt: timestamptz('created_at').notNull().defaultNow(),
     updatedAt: timestamptz('updated_at').notNull().defaultNow(),
   },

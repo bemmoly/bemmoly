@@ -12,6 +12,6 @@ export {
   type KernelChangelogRunner,
   type SelectionOptions,
 } from './runner.ts';
-export { KERNEL_MODULE, type ChangelogSource } from './sources.ts';
+export { KERNEL_MODULE, sourcesFromRegistry, type ChangelogSource } from './sources.ts';
 export type { HistoryRow } from './store.ts';
 export { isError as isBlockingProblem } from './validate.ts';

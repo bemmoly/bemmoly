@@ -1,4 +1,5 @@
 import type { Changelog, Changeset, ChangesetContextName } from '../../contracts/changelog.ts';
+import type { ModuleRegistry } from '../../modules/registry.ts';
 import { ChangelogError } from './errors.ts';
 
 /** The module name kernel changesets are recorded under in schema_changelog. */
@@ -64,6 +65,15 @@ export function selectSources(
   return [{ module: KERNEL_MODULE, changelog: kernel }, ...orderByDependencies(chosen)];
 }
 
+/** One source per registered module, carrying its dependencies for ordering. */
+export function sourcesFromRegistry(registry: ModuleRegistry): ChangelogSource[] {
+  return registry.list().map(({ module }) => ({
+    module: module.id,
+    changelog: module.changelog,
+    ...(module.dependsOn ? { dependsOn: module.dependsOn } : {}),
+  }));
+}
+
 export function findChangeset(
   sources: readonly ChangelogSource[],
   module: string,
@@ -80,4 +90,13 @@ export function matchesContexts(
   const declared = changeset.contexts ?? ['*'];
   if (declared.length === 0 || declared.includes('*')) return true;
   return declared.some((context) => contexts.includes(context));
+}
+
+/** Declared slow, or not transactional (index builds); backfills are marked when they run. */
+export function isSlow(changeset: Changeset): boolean {
+  return changeset.slow === true || changeset.transactional === false;
+}
+
+export function isIrreversible(changeset: Changeset): boolean {
+  return !changeset.down;
 }

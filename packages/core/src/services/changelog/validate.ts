@@ -19,6 +19,17 @@ function problem(
   return { module, id, problem: kind, message, severity };
 }
 
+/** Kernel areas own blocks of 100 prefixes (identity 01xx, email 02xx, ...). */
+export const PREFIX_BLOCK = 100;
+
+/**
+ * The next prefix continues the sequence, or opens a later block at its first
+ * number. Anything else is a gap: a changeset was lost or renumbered.
+ */
+function followsInOrder(prefix: number, expected: number): boolean {
+  return prefix === expected || (prefix > expected && prefix % PREFIX_BLOCK === 0);
+}
+
 /** Problems visible from the source alone: ids, order, duplicates, missing `down`. */
 export function structuralProblems(
   module: string,
@@ -55,7 +66,7 @@ export function structuralProblems(
     }
     seenIds.add(changeset.id);
     seenPrefixes.add(prefix);
-    if (prefix !== expected) {
+    if (!followsInOrder(prefix, expected)) {
       problems.push(
         problem(
           module,

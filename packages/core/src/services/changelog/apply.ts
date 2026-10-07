@@ -3,7 +3,7 @@ import { checksumOf } from './checksum.ts';
 import { createExecuteContext, type ChangelogLogger } from './context.ts';
 import { ChangelogError } from './errors.ts';
 import { describeCheck, firstFailing } from './preconditions.ts';
-import { matchesContexts } from './sources.ts';
+import { isIrreversible, isSlow, matchesContexts } from './sources.ts';
 import {
   finishChangeset,
   recordChangeset,
@@ -72,6 +72,8 @@ function recordInput(module: string, changeset: Changeset, state: ApplyState) {
     checksum: checksumOf(changeset),
     appVersion: state.appVersion,
     contexts: changeset.contexts ?? ['*'],
+    slow: isSlow(changeset),
+    irreversible: isIrreversible(changeset),
   };
 }
 

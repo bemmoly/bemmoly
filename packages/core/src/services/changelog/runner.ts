@@ -16,7 +16,13 @@ import { ChangelogError } from './errors.ts';
 import { withChangelogLock, withConnection } from './lock.ts';
 import { planChangesets, type PlannedChangeset } from './plan.ts';
 import { planRollback, rollbackChangesets, selectTargets, type RollbackPlan } from './rollback.ts';
-import { matchesContexts, selectSources, type ChangelogSource } from './sources.ts';
+import {
+  isIrreversible,
+  isSlow,
+  matchesContexts,
+  selectSources,
+  type ChangelogSource,
+} from './sources.ts';
 import { readHistory, tagLatest, type HistoryRow } from './store.ts';
 import { historyProblems, structuralProblems } from './validate.ts';
 
@@ -110,7 +116,12 @@ export function createChangelogRunner(options: ChangelogRunnerOptions): KernelCh
         .filter(
           (changeset) => !selection.contexts || matchesContexts(changeset, selection.contexts),
         )
-        .map((changeset) => ({ module: source.module, id: changeset.id })),
+        .map((changeset) => ({
+          module: source.module,
+          id: changeset.id,
+          ...(isSlow(changeset) ? { slow: true } : {}),
+          ...(isIrreversible(changeset) ? { irreversible: true } : {}),
+        })),
     );
   }
 

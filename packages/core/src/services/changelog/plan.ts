@@ -2,7 +2,7 @@ import type { ChangesetContextName } from '../../contracts/changelog.ts';
 import { decide } from './apply.ts';
 import { createPlanContext, type ChangelogLogger } from './context.ts';
 import { describeCheck, firstFailing } from './preconditions.ts';
-import type { ChangelogSource } from './sources.ts';
+import { isIrreversible, isSlow, type ChangelogSource } from './sources.ts';
 import { readHistory, type Connection } from './store.ts';
 
 export interface PlannedChangeset {
@@ -10,6 +10,8 @@ export interface PlannedChangeset {
   id: string;
   description: string;
   transactional: boolean;
+  slow: boolean;
+  irreversible: boolean;
   /** What update would do: run it, or the precondition's onFail outcome. */
   action: 'run' | 'markRan' | 'skip' | 'halt' | 'warn';
   note?: string;
@@ -47,6 +49,8 @@ export async function planChangesets(state: PlanState): Promise<PlannedChangeset
             id: changeset.id,
             description: changeset.description,
             transactional: changeset.transactional ?? true,
+            slow: isSlow(changeset),
+            irreversible: isIrreversible(changeset),
             action: 'halt',
             note: error instanceof Error ? error.message : String(error),
             statements: [],
@@ -59,6 +63,8 @@ export async function planChangesets(state: PlanState): Promise<PlannedChangeset
           id: changeset.id,
           description: changeset.description,
           transactional: changeset.transactional ?? true,
+          slow: isSlow(changeset),
+          irreversible: isIrreversible(changeset),
           action: 'run',
           statements: [],
         };
@@ -70,6 +76,9 @@ export async function planChangesets(state: PlanState): Promise<PlannedChangeset
         if (entry.action === 'run' || entry.action === 'warn') {
           const key = { module: source.module, id: changeset.id };
           await changeset.up(createPlanContext({ ...state, key, statements: entry.statements }));
+        }
+        if (entry.statements.some((statement) => statement.startsWith('-- backfill'))) {
+          entry.slow = true;
         }
         planned.push(entry);
       }

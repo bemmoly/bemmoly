@@ -21,8 +21,13 @@ function table(header: readonly string[], rows: readonly (readonly string[])[]):
 export function formatPending(pending: readonly PendingChangeset[]): string {
   if (pending.length === 0) return 'Up to date: no pending changesets.';
   const byModule = new Map<string, string[]>();
-  for (const item of pending)
-    byModule.set(item.module, [...(byModule.get(item.module) ?? []), item.id]);
+  for (const item of pending) {
+    const flags = [item.slow ? 'slow' : '', item.irreversible ? 'irreversible' : ''].filter(
+      Boolean,
+    );
+    const label = flags.length > 0 ? `${item.id} (${flags.join(', ')})` : item.id;
+    byModule.set(item.module, [...(byModule.get(item.module) ?? []), label]);
+  }
   const lines = [...byModule].map(
     ([module, ids]) => `${module}: ${ids.length} pending\n  ${ids.join('\n  ')}`,
   );
@@ -64,6 +69,8 @@ export function formatPlan(planned: readonly PlannedChangeset[]): string {
       const header = [
         `-- ${entry.module}/${entry.id}: ${entry.description}`,
         `-- action: ${entry.action}${entry.transactional ? '' : ' (not transactional)'}`,
+        ...(entry.slow ? ['-- slow: may take a while on a large workspace'] : []),
+        ...(entry.irreversible ? ['-- irreversible: rolling back past it needs a backup'] : []),
         ...(entry.note ? [`-- note: ${entry.note}`] : []),
       ];
       return [...header, ...entry.statements].join('\n');
