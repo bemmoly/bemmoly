@@ -12,6 +12,8 @@ import type { Database } from '../../clients/drizzle.ts';
 import { apiTokens, users } from '../../models/identity/index.ts';
 import { decodeCursor, toPage } from '../../utils/keyset.ts';
 import { recordAudit } from '../audit/index.ts';
+import { readWorkspaceLook } from '../settings/index.ts';
+import type { IdentityDependencies } from './deps.ts';
 import {
   bumpPrivilegeVersion,
   countActiveOrgAdmins,
@@ -160,11 +162,15 @@ export async function reactivateUser(db: Database, ctx: RequestContext, userId: 
 }
 
 /** The signed-in person with what they may do and see, for the web shell. */
-export async function getMe(db: Database, ctx: RequestContext): Promise<MeResponse> {
-  const user = await getUser(db, selfId(ctx));
-  const [capabilities, modules] = await Promise.all([
+export async function getMe(
+  deps: Pick<IdentityDependencies, 'db' | 'settings'>,
+  ctx: RequestContext,
+): Promise<MeResponse> {
+  const user = await getUser(deps.db, selfId(ctx));
+  const [capabilities, modules, workspace] = await Promise.all([
     ctx.authz.workspaceCapabilities(ctx.actor),
     ctx.authz.modulesFor(ctx.actor),
+    readWorkspaceLook(deps.settings),
   ]);
-  return { user, capabilities: capabilities.sort(), modules: [...modules].sort() };
+  return { user, capabilities: capabilities.sort(), modules: [...modules].sort(), workspace };
 }

@@ -1,9 +1,8 @@
-import { hasErrorCode, queryKeys } from '@bemmoly/api-client';
+import { hasErrorCode } from '@bemmoly/api-client';
 import type { MeResponse } from '@bemmoly/shared';
 import type { QueryClient } from '@tanstack/react-query';
 import { redirect } from '@tanstack/react-router';
 import { meQuery, setupStatusQuery } from '../hooks/use-session.ts';
-import { api } from '../lib/api.ts';
 import { isOrgAdmin } from '../lib/session.ts';
 
 /** Only same-origin paths survive a redirect, so a crafted link cannot bounce people away. */
@@ -22,21 +21,11 @@ async function sessionOrNull(queryClient: QueryClient): Promise<MeResponse | nul
   }
 }
 
-/**
- * Whether an org admin still has wizard steps to finish. Unknown (the key is
- * missing or unreadable) counts as finished, so nobody is trapped in the wizard.
- */
+/** Whether an org admin still has wizard steps to finish: setup status says when it finished. */
 export async function wizardPending(queryClient: QueryClient, me: MeResponse): Promise<boolean> {
   if (!isOrgAdmin(me)) return false;
-  try {
-    const read = await queryClient.ensureQueryData({
-      queryKey: [...queryKeys.settings.many(['setup.completedAt']), 'single'],
-      queryFn: () => api.settings.get('setup.completedAt'),
-    });
-    return read.value === null;
-  } catch {
-    return false;
-  }
+  const status = await queryClient.ensureQueryData(setupStatusQuery);
+  return status.completedAt === null;
 }
 
 /** Bootstrap order from the identity stream: setup status, then /me, then everything else. */

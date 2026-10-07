@@ -15,3 +15,4 @@ export {
   type SettingsServiceDeps,
 } from './service.ts';
 export { createSettingsStore, type SettingsStore, type SettingWrite } from './store.ts';
+export { readWorkspaceLook } from './workspace-look.ts';

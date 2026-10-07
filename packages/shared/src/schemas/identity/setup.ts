@@ -4,6 +4,8 @@ import { emailSchema, passwordSchema, personNameSchema } from './common.ts';
 export const setupStatusResponseSchema = z.object({
   /** true once the first admin exists; the wizard's account step is then closed. */
   initialized: z.boolean(),
+  /** When the wizard's last step finished (setup.completedAt); null until then. */
+  completedAt: z.string().nullable(),
 });
 
 export const createFirstAdminSchema = z.object({

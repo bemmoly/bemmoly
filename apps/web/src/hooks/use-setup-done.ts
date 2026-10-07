@@ -64,17 +64,15 @@ export function summaryRows(input: {
 }
 
 /**
- * Writes setup.completedAt. The router guard caches that key on its own, so
- * the entry is dropped to make the next navigation read the new value.
+ * Writes setup.completedAt. The router guard reads it from the setup status,
+ * so that entry is dropped to make the next navigation read the new value.
  */
 export function useCompleteSetup() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: () => api.settings.put('setup.completedAt', new Date().toISOString()),
     onSuccess: async () => {
-      queryClient.removeQueries({
-        queryKey: [...queryKeys.settings.many(['setup.completedAt']), 'single'],
-      });
+      queryClient.removeQueries({ queryKey: queryKeys.setupStatus() });
       await queryClient.invalidateQueries({ queryKey: queryKeys.settings.all() });
     },
   });

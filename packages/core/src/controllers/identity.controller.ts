@@ -42,7 +42,7 @@ export function createIdentityController(deps: IdentityDependencies) {
   const { db, publicUrl } = deps;
   return {
     async setupStatus(): Promise<SetupStatusResponse> {
-      return getSetupStatus(db);
+      return getSetupStatus(deps);
     },
 
     async createFirstAdmin(
@@ -102,7 +102,7 @@ export function createIdentityController(deps: IdentityDependencies) {
     },
 
     async me(request: FastifyRequest): Promise<MeResponse> {
-      return getMe(db, contextOf(request));
+      return getMe(deps, contextOf(request));
     },
 
     async listSessions(request: FastifyRequest): Promise<SessionsResponse> {

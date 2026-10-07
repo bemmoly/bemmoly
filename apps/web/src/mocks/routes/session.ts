@@ -8,6 +8,7 @@ import { audit, capabilitiesOf, currentUser, type MockDb } from '../db.ts';
 import { makeUser, ROLE_IDS } from '../seed/people.ts';
 import { newId } from '../seed/time.ts';
 import { bodyOf, fail, invalid, ok, type MockRoute } from '../types.ts';
+import { completedAtOf, workspaceLookOf } from '../workspace-look.ts';
 
 function signIn(db: MockDb, userId: string, status = 200) {
   db.signedInAs = userId;
@@ -40,7 +41,7 @@ export const sessionRoutes: MockRoute[] = [
     method: 'GET',
     pattern: '/api/v1/setup/status',
     anonymous: true,
-    handle: (_, db) => ok({ initialized: db.initialized }),
+    handle: (_, db) => ok({ initialized: db.initialized, completedAt: completedAtOf(db) }),
   },
   {
     method: 'POST',
@@ -177,6 +178,7 @@ export const sessionRoutes: MockRoute[] = [
         user,
         capabilities: capabilitiesOf(db, user),
         modules: db.manifests.map((m) => m.id),
+        workspace: workspaceLookOf(db),
       });
     },
   },

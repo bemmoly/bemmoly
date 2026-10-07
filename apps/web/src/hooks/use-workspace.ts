@@ -1,4 +1,5 @@
-import { hasErrorCode, queryKeys } from '@bemmoly/api-client';
+import { queryKeys } from '@bemmoly/api-client';
+import { themeFontSchema, type MeResponse } from '@bemmoly/shared';
 import { queryOptions, useQuery } from '@tanstack/react-query';
 import { api } from '../lib/api.ts';
 import {
@@ -23,26 +24,33 @@ const FALLBACK: WorkspaceLook = {
   aiEnabled: false,
 };
 
+/** The look /me carries, in the shape the theme and the appearance page share. */
+export function workspaceLookOf(workspace: MeResponse['workspace']): WorkspaceLook {
+  const { appearance } = workspace;
+  return {
+    name: workspace.name,
+    aiEnabled: workspace.aiEnabled,
+    appearance: appearanceFrom({
+      'appearance.theme': { value: appearance.theme },
+      'appearance.brandColor': { value: appearance.brandColor },
+      'appearance.font': { value: themeFontSchema.safeParse(appearance.font).data },
+      'appearance.logoKey': { value: appearance.logoKey || undefined },
+      'appearance.mode': { value: appearance.mode },
+      'appearance.surfaces': { value: appearance.surfaces },
+      'appearance.memberModeSwitch': { value: appearance.memberModeSwitch },
+      'appearance.personalThemes': { value: appearance.personalThemes },
+    }),
+  };
+}
+
 /**
- * The workspace name and look for everyone signed in. Settings are read
- * through the admin API, so people without settings access see the defaults
- * rather than a failing shell; a public appearance read is an open request.
+ * The workspace name and look for everyone signed in, from /me, which carries
+ * them whatever the person's capabilities. Keyed with the settings it is built
+ * from, so saving any of them (Appearance, the wizard) refreshes the look.
  */
 export const workspaceQuery = queryOptions({
   queryKey: queryKeys.settings.many(KEYS),
-  queryFn: async (): Promise<WorkspaceLook> => {
-    try {
-      const reads = await api.settings.getMany(KEYS);
-      return {
-        name: reads['workspace.name'].value ?? FALLBACK.name,
-        appearance: appearanceFrom(reads),
-        aiEnabled: Boolean(reads['ai.providerId'].value),
-      };
-    } catch (error) {
-      if (hasErrorCode(error, 'forbidden')) return FALLBACK;
-      throw error;
-    }
-  },
+  queryFn: async (): Promise<WorkspaceLook> => workspaceLookOf((await api.auth.me()).workspace),
   staleTime: 5 * 60_000,
 });
 

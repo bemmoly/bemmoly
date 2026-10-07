@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { workspaceLookSchema } from '../settings/workspace.ts';
 import { keysetPageSchema, keysetQuerySchema, personNameSchema } from './common.ts';
 
 export const USER_STATUSES = ['active', 'invited', 'deactivated'] as const;
@@ -53,6 +54,8 @@ export const meResponseSchema = z.object({
   capabilities: z.array(z.string()),
   /** Enabled modules the person may see. */
   modules: z.array(z.string()),
+  /** The workspace's name and look, for everyone signed in. */
+  workspace: workspaceLookSchema,
 });
 
 export type User = z.infer<typeof userSchema>;

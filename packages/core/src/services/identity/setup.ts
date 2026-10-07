@@ -24,8 +24,14 @@ async function anyUserExists(db: Database): Promise<boolean> {
 }
 
 /** Anonymous by design: the wizard asks this before anyone can sign in. */
-export async function getSetupStatus(db: Database): Promise<SetupStatusResponse> {
-  return { initialized: await anyUserExists(db) };
+export async function getSetupStatus(
+  deps: Pick<IdentityDependencies, 'db' | 'settings'>,
+): Promise<SetupStatusResponse> {
+  const [initialized, completedAt] = await Promise.all([
+    anyUserExists(deps.db),
+    deps.settings.get('setup.completedAt'),
+  ]);
+  return { initialized, completedAt };
 }
 
 /** True until the first admin exists; the wizard's health checks are anonymous until then. */

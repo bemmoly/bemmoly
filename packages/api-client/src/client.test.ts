@@ -19,10 +19,12 @@ afterAll(() => server.close());
 describe('api client', () => {
   it('parses a successful response with the shared schema', async () => {
     server.use(
-      route.get(`${BASE}/api/v1/setup/status`, () => HttpResponse.json({ initialized: false })),
+      route.get(`${BASE}/api/v1/setup/status`, () =>
+        HttpResponse.json({ initialized: false, completedAt: null }),
+      ),
     );
     const api = createApiClient({ fetch: absolute });
-    await expect(api.setup.status()).resolves.toEqual({ initialized: false });
+    await expect(api.setup.status()).resolves.toEqual({ initialized: false, completedAt: null });
   });
 
   it('sends the session cookie, JSON and an idempotency key on creates', async () => {

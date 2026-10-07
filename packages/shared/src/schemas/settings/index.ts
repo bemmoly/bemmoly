@@ -9,3 +9,4 @@ export {
   type SettingResponse,
   type SettingsListResponse,
 } from './settings.ts';
+export { workspaceLookSchema, type WorkspaceLook } from './workspace.ts';
