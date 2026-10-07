@@ -5,4 +5,8 @@ After=docker.service
 
 [Service]
 Type=oneshot
+EnvironmentFile=-/etc/default/bemmoly
+# Skipped, not failed, while an update or rollback holds the updater's lock (younger than
+# two hours); the next check is six hours later. ($$ is a literal $ for the shell.)
+ExecCondition=/bin/sh -c '! find "$${BEMMOLY_DIR:-/var/bemmoly}/data/updater/lock" -mmin -120 2>/dev/null | grep -q .'
 ExecStart=/usr/local/bin/bemmoly backup --if-older-than 36h

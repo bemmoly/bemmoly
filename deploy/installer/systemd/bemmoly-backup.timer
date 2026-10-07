@@ -1,10 +1,12 @@
 [Unit]
 Description=Check every 6 hours that Bemmoly has a recent backup
 
+# Counted from when the timer starts (at boot, or when the installer enables it), so the
+# first check never lands in the middle of an install. OnBootSec fired at once on a
+# machine already up for 30 minutes, while the installer was still recreating containers.
 [Timer]
-OnBootSec=30min
+OnActiveSec=30min
 OnUnitActiveSec=6h
-Persistent=true
 RandomizedDelaySec=10min
 
 [Install]
