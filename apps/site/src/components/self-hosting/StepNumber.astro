@@ -1,0 +1,19 @@
+---
+/**
+ * The Setup mock's current-step dot (22px circle, accent fill, 600 11px), used only where
+ * the page shows a real sequence. The number is in the list's own order, so it is hidden
+ * from assistive tech.
+ */
+interface Props {
+  n: number;
+}
+
+const { n } = Astro.props;
+---
+
+<span
+  aria-hidden="true"
+  class="flex size-5.5 shrink-0 items-center justify-center rounded-full bg-ac-fill text-11 font-semibold text-on-ac"
+>
+  {n}
+</span>

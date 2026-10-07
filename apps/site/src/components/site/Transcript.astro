@@ -1,0 +1,42 @@
+---
+/**
+ * The installer transcript from the Landing mock's dark band: a terminal window in the Dark
+ * preset with the one-liner, the progress lines and a cursor. Shared by the landing page and
+ * /self-hosting so both always show the same run. The lines scroll on phones, so the
+ * scroller is focusable for keyboard users.
+ */
+import { INSTALL, TRANSCRIPT } from '../../data/landing.ts';
+---
+
+<figure data-theme="dark" class="m-0 min-w-0 overflow-hidden rounded-window border border-br bg-bg">
+  <div class="flex gap-1.5 border-b border-br px-3 py-2.5" aria-hidden="true">
+    <span class="size-2.5 rounded-full bg-br3"></span>
+    <span class="size-2.5 rounded-full bg-br3"></span>
+    <span class="size-2.5 rounded-full bg-br3"></span>
+    <span class="ml-auto font-mono text-11h text-tx4">ubuntu@vm</span>
+  </div>
+  <div
+    tabindex="0"
+    class="flex flex-col overflow-x-auto p-4 font-mono text-13 leading-prose text-tx2"
+  >
+    <span class="whitespace-nowrap">
+      <span class="text-tx5" aria-hidden="true">
+        $
+      </span>{' '}
+      {INSTALL}
+    </span>
+    {TRANSCRIPT.map((line) => (
+      <span
+        class:list={['whitespace-pre', line.tone === 'done' ? 'text-ok-fg' : 'text-tx4']}
+        set:text={line.text}
+      />
+    ))}
+    <span>
+      <span class="text-tx5" aria-hidden="true">
+        $
+      </span>
+      <span class="inline-block h-3.5 w-2 bg-tx2 align-middle" aria-hidden="true"></span>
+    </span>
+  </div>
+  <figcaption class="sr-only">What the installer prints on a fresh VM</figcaption>
+</figure>

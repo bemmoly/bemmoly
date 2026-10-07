@@ -5,6 +5,7 @@
  * Copy works with a few bytes of inline script; without it the command is select-all text.
  */
 import { INSTALL } from '../../data/landing.ts';
+import CopyScript from '../site/CopyScript.astro';
 ---
 
 <div class="max-w-full rounded-card border border-br">
@@ -25,12 +26,4 @@ import { INSTALL } from '../../data/landing.ts';
     </button>
   </div>
 </div>
-<script is:inline>
-  for (const b of document.querySelectorAll('[data-copy]'))
-    b.addEventListener('click', () =>
-      navigator.clipboard.writeText(b.dataset.copy).then(() => {
-        b.textContent = 'Copied';
-        setTimeout(() => (b.textContent = 'Copy'), 1500);
-      }),
-    );
-</script>
+<CopyScript />

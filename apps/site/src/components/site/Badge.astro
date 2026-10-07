@@ -1,0 +1,24 @@
+---
+/**
+ * @bemmoly/ui's Badge, label variant (11px semibold, 2px 7px, 3px radius), with the design
+ * system's tones from src/lib/badge.ts.
+ */
+import { BADGE_TONES, type BadgeTone } from '../../lib/badge.ts';
+
+interface Props {
+  tone?: BadgeTone;
+  class?: string;
+}
+
+const { tone = 'neutral', class: className } = Astro.props;
+---
+
+<span
+  class:list={[
+    'inline-flex shrink-0 items-center rounded-chip px-1.75 py-0.5 text-11 font-semibold whitespace-nowrap',
+    BADGE_TONES[tone],
+    className,
+  ]}
+>
+  <slot />
+</span>

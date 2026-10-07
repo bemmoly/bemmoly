@@ -1,0 +1,43 @@
+---
+/**
+ * Tech design §18's sizing table, and what the "$20 server" on the landing page means. The
+ * table scrolls on phones, so its wrapper is focusable for keyboard users.
+ */
+import { SIZING, STATUS } from '../../data/self-hosting.ts';
+import Badge from '../site/Badge.astro';
+import Section from '../site/Section.astro';
+---
+
+<Section title="Sizing and cost" id="sizing">
+  <div tabindex="0" class="overflow-x-auto rounded-card border border-br">
+    <table class="w-full border-collapse text-left text-14">
+      <thead class="bg-sf2 text-12 font-semibold tracking-caps text-tx4 uppercase dark:bg-sf">
+        <tr>
+          <th class="px-3.5 py-2.5 font-semibold">Team</th>
+          <th class="px-3.5 py-2.5 font-semibold">Server</th>
+          <th class="px-3.5 py-2.5 font-semibold">What to expect</th>
+        </tr>
+      </thead>
+      <tbody>
+        {SIZING.map((row) => (
+          <tr class="border-t border-br-row align-top">
+            <td class="px-3.5 py-2.5 font-medium whitespace-nowrap text-tx">{row.team}</td>
+            <td class="px-3.5 py-2.5 whitespace-nowrap">
+              <span class="inline-flex items-center gap-2">
+                {row.vm}
+                {row.status && (
+                  <Badge tone={STATUS[row.status].tone}>{STATUS[row.status].label}</Badge>
+                )}
+              </span>
+            </td>
+            <td class="px-3.5 py-2.5">{row.note}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+  <p>
+    The “$20 server” is the second row: a 2 vCPU, 4 GB VM lists at roughly $5 to $25 a month with
+    common cloud and VPS providers, and Bemmoly adds no licence or per-seat fee on top.
+  </p>
+</Section>
