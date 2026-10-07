@@ -234,6 +234,7 @@ jobs:
     permissions:
       contents: write
       id-token: write
+      packages: read
     env:
       VERSION: ${{ needs.plan.outputs.version }}
       TAG: ${{ needs.plan.outputs.tag }}
@@ -282,6 +283,13 @@ jobs:
 
       - name: Sign the manifest (keyless)
         run: cosign sign-blob --yes --bundle assets/release-manifest.json.sigstore.json assets/release-manifest.json
+
+      # The air-gap bundle pulls the images this run just published.
+      - uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Collect the deploy assets
         env:
