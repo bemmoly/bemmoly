@@ -12,6 +12,8 @@ export default changeset({
         id uuid PRIMARY KEY DEFAULT uuidv7(),
         user_id uuid NOT NULL REFERENCES users (id) ON DELETE CASCADE,
         token_hash text NOT NULL,
+        previous_token_hash text,
+        rotated_at timestamptz,
         expires_at timestamptz NOT NULL,
         last_seen_at timestamptz NOT NULL DEFAULT now(),
         ip text,
@@ -21,6 +23,9 @@ export default changeset({
         updated_at timestamptz NOT NULL DEFAULT now()
       )`);
     await ctx.exec(sql`CREATE UNIQUE INDEX sessions_token_hash_key ON sessions (token_hash)`);
+    await ctx.exec(sql`
+      CREATE INDEX sessions_previous_token_hash_idx ON sessions (previous_token_hash)
+        WHERE previous_token_hash IS NOT NULL`);
     await ctx.exec(sql`CREATE INDEX sessions_user_id_idx ON sessions (user_id)`);
     await ctx.exec(sql`CREATE INDEX sessions_expires_at_idx ON sessions (expires_at)`);
     await ctx.exec(sql`

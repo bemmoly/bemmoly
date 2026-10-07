@@ -1,3 +1,4 @@
+import { sql } from 'drizzle-orm';
 import { index, integer, pgTable, text, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
 import { createdAt, primaryId, timestampTz, updatedAt } from './columns.ts';
 import { users } from './users.ts';
@@ -11,6 +12,9 @@ export const sessions = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),
     tokenHash: text('token_hash').notNull(),
+    /** The token before the last rotation, accepted briefly so in-flight requests do not fail. */
+    previousTokenHash: text('previous_token_hash'),
+    rotatedAt: timestampTz('rotated_at'),
     expiresAt: timestampTz('expires_at').notNull(),
     lastSeenAt: timestampTz('last_seen_at').notNull().defaultNow(),
     ip: text('ip'),
@@ -22,6 +26,9 @@ export const sessions = pgTable(
   },
   (t) => [
     uniqueIndex('sessions_token_hash_key').on(t.tokenHash),
+    index('sessions_previous_token_hash_idx')
+      .on(t.previousTokenHash)
+      .where(sql`${t.previousTokenHash} is not null`),
     index('sessions_user_id_idx').on(t.userId),
     index('sessions_expires_at_idx').on(t.expiresAt),
   ],

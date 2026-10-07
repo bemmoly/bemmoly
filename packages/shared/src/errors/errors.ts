@@ -25,10 +25,7 @@ export abstract class BemmolyError<C extends ErrorCode = ErrorCode> extends Erro
 export class UnauthenticatedError extends BemmolyError<'unauthenticated'> {
   override readonly name = 'UnauthenticatedError';
 
-  constructor(
-    message = 'Sign in to continue',
-    options?: BemmolyErrorOptions<'unauthenticated'>,
-  ) {
+  constructor(message = 'Sign in to continue', options?: BemmolyErrorOptions<'unauthenticated'>) {
     super(message, 'unauthenticated', options);
   }
 }

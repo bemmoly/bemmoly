@@ -63,9 +63,7 @@ export const projectRoleCapabilities = pgTable(
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },
-  (t) => [
-    uniqueIndex('project_role_capabilities_key').on(t.projectId, t.roleId, t.capability),
-  ],
+  (t) => [uniqueIndex('project_role_capabilities_key').on(t.projectId, t.roleId, t.capability)],
 );
 
 export const spaceRoleCapabilities = pgTable(
