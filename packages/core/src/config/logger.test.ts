@@ -43,22 +43,18 @@ describe('logger', () => {
     expect(output).toHaveLength(fixture.events.length);
     const all = output.join('\n');
     expect(all).not.toMatch(/LEAK/);
-    for (const kept of [
-      'KEEP-agent',
-      'KEEP-smtp',
-      'KEEP-recipient',
-      'KEEP-subject',
-      'KEEP-standard',
-    ]) {
+    for (const kept of ['KEEP-smtp', 'KEEP-recipient', 'KEEP-subject', 'KEEP-standard']) {
       expect(all).toContain(kept);
     }
   });
 
   it('redacts cookies, authorization, API keys, passwords, email bodies and prompt text', () => {
     const [request, smtp, email, ai] = logFixture(SECRET_KEY);
-    expect(request).toMatchObject({
-      req: { headers: { cookie: REDACTED, authorization: REDACTED, 'x-api-key': REDACTED } },
-    });
+    // The req serializer keeps method and url only; headers and body never reach a line.
+    expect(request?.['req']).toMatchObject({ method: 'POST', url: '/api/v1/sessions' });
+    expect(request?.['req']).not.toHaveProperty('headers');
+    expect(request?.['req']).not.toHaveProperty('body');
+    expect(request).toMatchObject({ res: { headers: { 'set-cookie': REDACTED } } });
     expect(smtp).toMatchObject({ smtp: { auth: { password: REDACTED } } });
     expect(email).toMatchObject({ email: { html: REDACTED, text: REDACTED, body: REDACTED } });
     expect(ai).toMatchObject({

@@ -1,6 +1,7 @@
 import { createHash, createHmac } from 'node:crypto';
 import { pino, type Logger, type LoggerOptions } from 'pino';
 import type { Env } from './env.ts';
+import { redactUrl, serializeRequest } from './log-urls.ts';
 
 /** Credentials: cookies, authorization, API keys, tokens, passwords, connection strings. */
 const SECRET_FIELDS = [
@@ -89,9 +90,11 @@ export function hashUserId(id: string, secretKey?: string): string {
 export type LoggerConfig = Pick<Env, 'LOG_LEVEL' | 'LOG_FORMAT'> &
   Partial<Pick<Env, 'BEMMOLY_SECRET_KEY'>>;
 
-function hashUserFields(secretKey: string | undefined) {
+/** Hashes user ids and strips credentials from a logged `url`, on every line. */
+function formatLogFields(secretKey: string | undefined) {
   return (object: Record<string, unknown>): Record<string, unknown> => {
     let result = object;
+    if (typeof object['url'] === 'string') result = { ...result, url: redactUrl(object['url']) };
     for (const field of USER_ID_FIELDS) {
       const value = object[field];
       if (typeof value === 'string') {
@@ -106,7 +109,8 @@ export function createLoggerOptions(config: LoggerConfig): LoggerOptions {
   return {
     level: config.LOG_LEVEL,
     redact: { paths: [...REDACT_PATHS], censor: REDACTED },
-    formatters: { log: hashUserFields(config.BEMMOLY_SECRET_KEY) },
+    formatters: { log: formatLogFields(config.BEMMOLY_SECRET_KEY) },
+    serializers: { req: serializeRequest },
     ...(config.LOG_FORMAT === 'pretty'
       ? {
           transport: {

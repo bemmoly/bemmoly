@@ -1,4 +1,5 @@
 export { EnvError, envSchema, loadEnv, parseEnv, type Env } from './env.ts';
+export { redactUrl } from './log-urls.ts';
 export {
   createLogger,
   createLoggerOptions,
