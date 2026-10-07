@@ -360,7 +360,7 @@ export interface ModuleContext {
 <h3>Choosing modules at install and after</h3>
 <table>
   <tr><th style="width:220px">Where</th><th>How</th></tr>
-  <tr><td>Installer</td><td><code>curl -fsSL https://get.bemmoly.dev | sh -s -- --modules docs</code>. Without the flag, the wizard asks.</td></tr>
+  <tr><td>Installer</td><td><code>curl -fsSL https://get.bemmoly.com | sh -s -- --modules docs</code>. Without the flag, the wizard asks.</td></tr>
   <tr><td>Setup wizard</td><td>A new first question, "What will you use Bemmoly for?", with Work, Docs and both. AI remains a provider choice in step 4 and lights up the AI features of whichever modules are on.</td></tr>
   <tr><td>Settings › Modules</td><td>Lists every module in the image with its state, version, data size and changelog status. Enable runs its changelog and seeds a sample; disable hides it and keeps data; remove data is separate and confirmed.</td></tr>
   <tr><td>Env (for automation)</td><td><code>BEMMOLY_MODULES=work,docs</code> pins the set; the Settings page becomes read-only for modules when the env is set, so Helm and Terraform deployments cannot drift.</td></tr>
@@ -462,7 +462,7 @@ export interface ModuleContext {
 │   └── docs/
 │       └── (same shape)
 ├── deploy/
-│   ├── install.sh                   <span class="c">what get.bemmoly.dev serves; --modules flag</span>
+│   ├── install.sh                   <span class="c">what get.bemmoly.com serves; --modules flag</span>
 │   ├── compose/                     <span class="c">docker-compose.yml, Caddyfile, bemmoly CLI, updater</span>
 │   ├── helm/  terraform/{aws,gcp,hetzner}/  airgap/
 ├── docs/                            <span class="c">this document, ADRs, design mocks</span>
@@ -1001,7 +1001,7 @@ export default changeset({
 <!-- ===================================================== 17 -->
 <h2 id="deploy">18. Deploy in 5 minutes</h2>
 <p>The landing page shows the whole experience: one command, six lines of progress, a URL. Everything below exists to make those six lines true on a fresh Ubuntu, Debian, Fedora or Amazon Linux VM with ports 80 and 443 open.</p>
-<pre><code>$ curl -fsSL https://get.bemmoly.dev | sh
+<pre><code>$ curl -fsSL https://get.bemmoly.com | sh
 → Detected Ubuntu 24.04, 2 vCPU, 4 GB
 → Installing Docker … done
 → Installing Postgres 18 (pgvector) … done
@@ -1285,7 +1285,7 @@ BEMMOLY_SMTP_URL=</code></pre></div>
   <tr><td>Postgres only vs database options</td><td>Postgres only; options are where it runs.</td><td>Adding Mongo doubles every data-layer cost permanently and removes the queue, search and vector consolidation that makes the one-container promise possible.</td></tr>
   <tr><td>SPA (Vite) vs Next.js</td><td>SPA served by the app process.</td><td>Next.js adds a second Node server or forces the API into Next; gains SSR nobody behind a login needs. The marketing site uses Astro separately.</td></tr>
   <tr><td>Caddy as a third container</td><td>Include, optional.</td><td>ACME inside the app keeps "one container" literally true but means owning certificate code. Could be revisited after 1.0.</td></tr>
-  <tr><td>Name, domain and org</td><td><code>bemmoly</code>, <code>get.bemmoly.dev</code>, <code>ghcr.io/bemmoly-dev</code> as placeholders.</td><td>Trademark and domain availability need checking before the 0.1 foundation release publishes anything.</td></tr>
+  <tr><td>Name, domain and org</td><td><code>bemmoly</code>, <code>get.bemmoly.com</code>, <code>ghcr.io/bemmoly-dev</code> as placeholders.</td><td>Trademark and domain availability need checking before the 0.1 foundation release publishes anything.</td></tr>
   <tr><td>Licence</td><td>MIT, as the mocks state.</td><td>AGPL protects against hosted forks but deters some companies; Apache-2 adds a patent grant. MIT is the most adoption-friendly.</td></tr>
   <tr><td>Multi-workspace per install</td><td>One workspace per install for 1.0.</td><td>Multi-tenant adds a tenant column to every table and a tenant check to every query. Cheap now, expensive later, but it is not what self-hosters ask for.</td></tr>
   <tr><td>One website vs one site per module</td><td>One website, path-routed modules, optional vanity hosts via the proxy (§4).</td><td>Separate sites give independent deploys and natural branding at the cost of SSO complexity, duplicated shell, cross-service calls for every cross-module feature and a multi-host install.</td></tr>
