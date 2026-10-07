@@ -9,19 +9,23 @@
 
 ARG NODE_IMAGE=node:24-trixie-slim
 
-# pnpm and every package in the lockfile, fetched once into a cache.
+# pnpm and every package in the lockfile, fetched once into this stage's own layer. The
+# store is not a cache mount: a layer restored from a registry or CI cache (type=gha)
+# skips this step, and a cache mount is never exported with it, so the offline installs
+# below found an empty store (ERR_PNPM_NO_OFFLINE_TARBALL). In the layer, the store is
+# cached exactly when the step is, keyed on the lockfile. No stage after this writes to
+# a shared store, so the web and server stages can also build in parallel safely.
 FROM ${NODE_IMAGE} AS pnpm
 ENV CI=true PNPM_STORE=/pnpm/store
 RUN npm install --global --no-fund --no-audit pnpm@11.7.0 && npm cache clean --force
 WORKDIR /src
 COPY pnpm-lock.yaml pnpm-workspace.yaml .pnpmfile.cjs package.json ./
-RUN --mount=type=cache,id=bemmoly-pnpm,target=/pnpm/store pnpm fetch --store-dir "$PNPM_STORE"
+RUN pnpm fetch --store-dir "$PNPM_STORE"
 
 # The web shell, built with its dev dependencies.
 FROM pnpm AS web
 COPY . .
-RUN --mount=type=cache,id=bemmoly-pnpm,target=/pnpm/store \
-    pnpm install --offline --frozen-lockfile --store-dir "$PNPM_STORE" --filter "@bemmoly/web..." \
+RUN pnpm install --offline --frozen-lockfile --store-dir "$PNPM_STORE" --filter "@bemmoly/web..." \
  && pnpm --filter @bemmoly/web build
 
 # The server and the packages it loads, production dependencies only. Internal packages
@@ -35,8 +39,7 @@ COPY packages/shared ./packages/shared
 # The email templates read the theme tokens from the design system at runtime.
 COPY packages/ui ./packages/ui
 COPY modules ./modules
-RUN --mount=type=cache,id=bemmoly-pnpm,target=/pnpm/store \
-    rm -rf node_modules \
+RUN rm -rf node_modules \
  && pnpm install --offline --frozen-lockfile --prod --store-dir "$PNPM_STORE" --filter "@bemmoly/server..." \
  && find apps packages modules -name '*.test.ts' -delete \
  && rm -rf packages/core/src/testing \
