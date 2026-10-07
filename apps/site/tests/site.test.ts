@@ -86,11 +86,11 @@ describe('static files', () => {
     },
   );
 
-  it('serves a placeholder installer that explains itself and fails', () => {
+  it('serves the installer from deploy/, byte for byte', () => {
     const script = readFileSync(new URL('install.sh', dist), 'utf8');
+    const installer = readFileSync(new URL('../../../deploy/install.sh', import.meta.url), 'utf8');
     expect(script.startsWith('#!/bin/sh\n')).toBe(true);
-    expect(script).toContain('The Bemmoly installer is not published yet');
-    expect(script).toContain('exit 1');
+    expect(script).toBe(installer);
   });
 
   it('declares the icons and social preview from the brand folder', () => {
