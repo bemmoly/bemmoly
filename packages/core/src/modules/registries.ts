@@ -2,7 +2,7 @@ import type { CapabilityName, NavEntry } from '@bemmoly/shared';
 import type { FastifyPluginAsync } from 'fastify';
 import type { z } from 'zod';
 import type { Actor } from '../contracts/authz.ts';
-import type { SettingDefinition } from '../contracts/settings.ts';
+import type { SettingDefinition, SettingKey, SettingsKeys } from '../contracts/settings.ts';
 
 export interface RouteDefinition {
   /** Mounted under /api/v1, e.g. "/issues". */
@@ -75,18 +75,47 @@ export interface NavRegistry {
 export interface JobContext {
   jobId: string;
   signal: AbortSignal;
+  /** The request that enqueued the job, or the job id for scheduled runs. */
+  requestId?: string;
 }
 
 export interface JobDefinition {
+  /** Namespaced by owner: "system.housekeeping", "sample.ping". */
   name: string;
   handle(payload: unknown, ctx: JobContext): Promise<void>;
   /** Cron expression for scheduled jobs. */
   schedule?: string;
+  /** A setting holding the cron expression; wins over `schedule` and follows its changes. */
+  scheduleSetting?: string;
   retryLimit?: number;
+  /** At most one run at a time across every worker (pg-boss "singleton" policy). */
+  singleton?: boolean;
+  /** How long one run may take before pg-boss retries it. Defaults to 15 minutes. */
+  expireInSeconds?: number;
+  retryDelaySeconds?: number;
+  /** Exponential backoff between retries; defaults to true. */
+  retryBackoff?: boolean;
+  /** Handlers of this job running at once in one process; defaults to 1. */
+  concurrency?: number;
+}
+
+export interface SendJobOptions {
+  /** Stable per piece of work; a repeat within 24 hours is dropped and returns null. */
+  idempotencyKey?: string;
+  /** Run no earlier than this time, or this many seconds from now. */
+  startAfter?: Date | number;
+  /** Carried into the handler's logs so a job can be traced to its request. */
+  requestId?: string;
 }
 
 export interface JobRegistry {
   add(job: JobDefinition): void;
+  /** Enqueues one of this module's own jobs through the kernel's JobQueue. */
+  send(
+    name: string,
+    payload?: Record<string, unknown>,
+    options?: SendJobOptions,
+  ): Promise<string | null>;
 }
 
 export interface SearchIndexerDefinition {
@@ -142,4 +171,11 @@ export interface SettingsRegistry {
   define<Schema extends z.ZodType>(
     setting: SettingDefinition<z.output<Schema>> & { schema: Schema },
   ): void;
+  /** Reads one of this module's own settings (decrypted, validated, cached). */
+  get<Key extends SettingKey>(key: Key): Promise<SettingsKeys[Key]>;
+}
+
+/** What ctx.settings.get reads through; bound once the settings service exists. */
+export interface SettingsReader {
+  read(key: string): Promise<unknown>;
 }

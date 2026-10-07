@@ -1,14 +1,28 @@
 import { isCapabilityOfModule, navEntrySchema } from '@bemmoly/shared';
+import type { SqlClient } from '../clients/postgres.ts';
 import type { EventBus } from '../contracts/event-bus.ts';
+import type { EnqueueOptions, JobQueue } from '../contracts/jobs.ts';
+import type { RealtimePublisher } from '../contracts/realtime.ts';
 import type { BemmolyModule, ModuleContext } from './contract.ts';
 import type { ModuleContributions } from './contributions.ts';
 import { ModuleLoadError } from './errors.ts';
-import type { SettingsRegistry } from './registries.ts';
+import type { SettingsReader, SettingsRegistry } from './registries.ts';
 
 export interface ModuleContextOptions {
   events: EventBus;
   editorEnabled: boolean;
+  /** Bound once the jobs service starts; sends before that fail loudly. */
+  jobQueue?: JobQueue;
+  /** Bound once the settings service exists; reads before that fail loudly. */
+  settingsReader?: SettingsReader;
+  realtime?: RealtimePublisher;
+  database?: SqlClient;
 }
+
+/** The jobs service also reads a request id for its logs. */
+type KernelEnqueueOptions = EnqueueOptions & { requestId?: string };
+
+const noRealtime: RealtimePublisher = { publish: async () => undefined };
 
 function ownsPath(moduleId: string, path: string): boolean {
   return path === `/${moduleId}` || path.startsWith(`/${moduleId}/`);
@@ -29,6 +43,12 @@ export function createModuleContext(
         fail(`setting "${setting.key}" must be namespaced as "${module.id}.<name>"`);
       }
       into.settings.push(setting);
+    },
+    async get(key) {
+      if (!key.startsWith(`${module.id}.`)) fail(`may only read its own settings, not "${key}"`);
+      const reader = options.settingsReader;
+      if (!reader) return fail('settings are not available in this process');
+      return (await reader.read(key)) as never;
     },
   };
   return {
@@ -53,7 +73,31 @@ export function createModuleContext(
         into.navigation.push(entry);
       },
     },
-    jobs: { add: (job) => into.jobs.push(job) },
+    jobs: {
+      add(job) {
+        if (!job.name.startsWith(`${module.id}.`)) {
+          fail(`job "${job.name}" must be namespaced as "${module.id}.<name>"`);
+        }
+        into.jobs.push(job);
+      },
+      async send(name, payload, sendOptions) {
+        if (!name.startsWith(`${module.id}.`)) {
+          fail(`may only send its own jobs ("${module.id}.<name>"), not "${name}"`);
+        }
+        if (!options.jobQueue) {
+          throw new ModuleLoadError(
+            `Module "${module.id}": jobs are not available in this process`,
+            module.id,
+          );
+        }
+        const enqueueOptions: KernelEnqueueOptions = {
+          ...(sendOptions?.idempotencyKey ? { key: sendOptions.idempotencyKey } : {}),
+          ...(sendOptions?.startAfter !== undefined ? { startAfter: sendOptions.startAfter } : {}),
+          ...(sendOptions?.requestId ? { requestId: sendOptions.requestId } : {}),
+        };
+        return options.jobQueue.enqueue(name, payload ?? {}, enqueueOptions);
+      },
+    },
     events: options.events,
     search: {
       addIndexer: (indexer) => into.searchIndexers.push(indexer),
@@ -75,5 +119,7 @@ export function createModuleContext(
       : {}),
     importers: { add: (importer) => into.importers.push(importer) },
     settings,
+    realtime: options.realtime ?? noRealtime,
+    ...(options.database ? { database: options.database } : {}),
   };
 }
