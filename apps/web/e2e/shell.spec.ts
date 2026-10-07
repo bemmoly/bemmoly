@@ -10,7 +10,10 @@ test('the shell boots after the session and lazy-loads a module chunk', async ({
   const header = page.getByRole('banner');
   await expect(header.getByRole('link', { name: 'Bemmoly home' })).toBeVisible();
   const nav = header.getByRole('navigation', { name: 'Main' });
-  await expect(nav.getByRole('link', { name: /Your work/ })).toHaveAttribute('aria-current', 'page');
+  await expect(nav.getByRole('link', { name: /Your work/ })).toHaveAttribute(
+    'aria-current',
+    'page',
+  );
   await expect(page.getByRole('heading', { name: /, Rohan$/ })).toBeVisible();
   await expect(page.locator('html')).toHaveAttribute('data-theme', /^(light|dark)$/);
 
@@ -28,7 +31,9 @@ test('a deep link to a module route loads the shell', async ({ page }) => {
 test('an unknown address shows the not-found page inside the shell', async ({ page }) => {
   await useMockBackend(page, 'ready');
   await page.goto('/nowhere/at/all');
-  await expect(page.getByRole('heading', { name: 'There is nothing at this address' })).toBeVisible();
+  await expect(
+    page.getByRole('heading', { name: 'There is nothing at this address' }),
+  ).toBeVisible();
   await expect(page.getByRole('banner')).toBeVisible();
 });
 

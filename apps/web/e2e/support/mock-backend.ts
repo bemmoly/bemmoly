@@ -22,7 +22,10 @@ function bodyOf(postData: string | null): unknown {
  * and the unit tests use, and answers /ws with the realtime protocol. The
  * page itself (HTML, JS, CSS) still comes from the real server's build.
  */
-export async function useMockBackend(page: Page, scenario: MockScenario = 'ready'): Promise<MockBackend> {
+export async function useMockBackend(
+  page: Page,
+  scenario: MockScenario = 'ready',
+): Promise<MockBackend> {
   const api = createMockApi(scenario);
   const sockets = new Set<WebSocketRoute>();
   const send = (message: unknown) => {
@@ -38,7 +41,8 @@ export async function useMockBackend(page: Page, scenario: MockScenario = 'ready
     sockets.add(socket);
     socket.onMessage((raw) => {
       const data = bodyOf(String(raw)) as { type?: string; scope?: unknown } | undefined;
-      if (data?.type === 'subscribe') socket.send(JSON.stringify({ type: 'subscribed', scope: data.scope }));
+      if (data?.type === 'subscribe')
+        socket.send(JSON.stringify({ type: 'subscribed', scope: data.scope }));
     });
     socket.onClose(() => sockets.delete(socket));
   });
@@ -51,7 +55,11 @@ export async function useMockBackend(page: Page, scenario: MockScenario = 'ready
       const path = new URL(request.url()).pathname;
       await route.fulfill({
         status: 404,
-        json: { code: 'not_found', message: `No route for ${request.method()} ${path}`, requestId: 'e2e' },
+        json: {
+          code: 'not_found',
+          message: `No route for ${request.method()} ${path}`,
+          requestId: 'e2e',
+        },
       });
       return;
     }

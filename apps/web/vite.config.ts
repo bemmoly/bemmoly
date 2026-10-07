@@ -11,12 +11,7 @@ const generatedBrand = fileURLToPath(
 );
 
 export default defineConfig(({ command }) => ({
-  plugins: [
-    react(),
-    tailwindcss(),
-    brandAssets(generatedBrand),
-    precompress(),
-  ],
+  plugins: [react(), tailwindcss(), brandAssets(generatedBrand), precompress()],
   define: {
     /** The in-memory mock backend runs under the dev server only and is compiled out of builds. */
     __MOCK_API__: JSON.stringify(command === 'serve'),

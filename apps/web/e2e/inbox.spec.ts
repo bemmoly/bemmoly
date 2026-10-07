@@ -1,7 +1,9 @@
 import { expect, test } from '@playwright/test';
 import { useMockBackend } from './support/mock-backend.ts';
 
-test('the inbox badge counts unread, read-all clears it, and new ones arrive live', async ({ page }) => {
+test('the inbox badge counts unread, read-all clears it, and new ones arrive live', async ({
+  page,
+}) => {
   const backend = await useMockBackend(page, 'ready');
   await page.goto('/');
   const inbox = page.getByRole('button', { name: /^Inbox/ });
