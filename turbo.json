@@ -1,0 +1,43 @@
+{
+  "$schema": "https://turborepo.com/schema.json",
+  "ui": "stream",
+  "globalDependencies": [
+    "tsconfig.base.json",
+    "eslint.config.js",
+    "tools/eslint-plugin/src/**",
+    ".pnpmfile.cjs"
+  ],
+  "tasks": {
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**", "storybook-static/**"]
+    },
+    "typecheck": {
+      "dependsOn": ["^typecheck"]
+    },
+    "lint": {},
+    "//#lint:root": {},
+    "test": {
+      "outputs": ["coverage/**"]
+    },
+    "test:integration": {
+      "cache": false,
+      "env": ["BEMMOLY_TEST_DATABASE_URL", "DOCKER_HOST", "TESTCONTAINERS_*"]
+    },
+    "test:e2e": {
+      "dependsOn": ["build"],
+      "cache": false
+    },
+    "size": {
+      "dependsOn": ["build"]
+    },
+    "//#format": {
+      "cache": false
+    },
+    "//#typecheck:root": {}
+  }
+}

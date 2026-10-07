@@ -1,0 +1,13 @@
+pnpm-lock.yaml
+docs/
+.changeset/*.md
+**/dist/
+**/storybook-static/
+**/playwright-report/
+**/test-results/
+**/.turbo/
+coverage/
+packages/ui/src/theme.css
+packages/ui/src/tailwind.css
+AGENTS.md
+CLAUDE.md

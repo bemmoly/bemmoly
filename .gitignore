@@ -4,6 +4,9 @@ dist/
 build/
 .turbo/
 coverage/
+storybook-static/
+playwright-report/
+test-results/
 *.tsbuildinfo
 
 # environment and secrets
