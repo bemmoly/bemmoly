@@ -58,15 +58,20 @@ cmd_upgrade() {
   say 'If the new version does not become ready within 3 minutes, the previous one is restored automatically.'
   confirm 'Upgrade now?'
   run_updater upgrade "${version}"
-  # The updater container follows the app; a failed pull keeps the one installed.
   if [[ "$(env_value VERSION)" == "${version}" ]]; then
-    env_set "$(env_file)" UPDATER_VERSION "${version}"
-    if ! compose pull --policy missing updater >>"${BEMMOLY_LOG}" 2>&1; then
-      env_set "$(env_file)" UPDATER_VERSION "$(docker inspect --format '{{index .Config.Labels "org.opencontainers.image.version"}}' bemmoly-updater-1 2>/dev/null || env_value VERSION)"
-    fi
-    compose up -d >>"${BEMMOLY_LOG}" 2>&1 || true
+    follow_app_version
     success "Bemmoly ${version} is running"
   fi
+}
+
+# The updater container follows the app's VERSION, after an upgrade and after a rollback;
+# a failed pull keeps the updater that is installed.
+follow_app_version() {
+  env_set "$(env_file)" UPDATER_VERSION "$(env_value VERSION)"
+  if ! compose pull --policy missing updater >>"${BEMMOLY_LOG}" 2>&1; then
+    env_set "$(env_file)" UPDATER_VERSION "$(docker inspect --format '{{index .Config.Labels "org.opencontainers.image.version"}}' bemmoly-updater-1 2>/dev/null || env_value VERSION)"
+  fi
+  compose up -d >>"${BEMMOLY_LOG}" 2>&1 || true
 }
 
 cmd_rollback() {
@@ -89,6 +94,7 @@ cmd_rollback() {
   say "${summary}"
   confirm 'Roll back now?'
   run_updater rollback --expect "${expect}" "${args[@]}"
+  follow_app_version
   success "Rolled back; Bemmoly $(env_value VERSION) is running"
 }
 
