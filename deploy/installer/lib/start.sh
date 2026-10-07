@@ -77,22 +77,44 @@ start_stack() {
   step_done
 }
 
+# https_answers [-k]   true when the proxy serves /healthz over HTTPS.
+https_answers() {
+  curl -fsS ${1:+"$1"} --max-time 5 --resolve "${DOMAIN}:443:127.0.0.1" "https://${DOMAIN}/healthz" >/dev/null 2>&1
+}
+
+# wait_https [-k] SECONDS   true as soon as HTTPS answers, false after SECONDS.
+wait_https() {
+  _https_waited=0
+  until https_answers "$1"; do
+    [ "${_https_waited}" -lt "$2" ] || return 1
+    sleep 3
+    _https_waited=$((_https_waited + 3))
+  done
+}
+
+# Only "auto" can expect a trusted certificate now. An "internal" name does not point here
+# (or never can), so Caddy serves its own certificate within seconds; waiting out the ACME
+# window for a trusted one would only delay the install.
 request_certificate() {
   [ -z "${NO_PROXY}" ] || return 0
-  step "Requesting certificate for ${DOMAIN}"
-  waited=0
-  while [ "${waited}" -lt 90 ]; do
-    if curl -fsS --max-time 5 --resolve "${DOMAIN}:443:127.0.0.1" "https://${DOMAIN}/healthz" >/dev/null 2>&1; then
+  if [ "${TLS_MODE}" = internal ]; then
+    step "Issuing a self-signed certificate for ${DOMAIN}"
+    if wait_https -k 15; then
+      SELF_SIGNED=1
       step_done
       return 0
     fi
-    sleep 3
-    waited=$((waited + 3))
-  done
-  if curl -kfsS --max-time 5 --resolve "${DOMAIN}:443:127.0.0.1" "https://${DOMAIN}/healthz" >/dev/null 2>&1; then
-    step_done 'self-signed for now'
-    SELF_SIGNED=1
-    return 0
+  else
+    step "Requesting certificate for ${DOMAIN}"
+    if wait_https '' 90; then
+      step_done
+      return 0
+    fi
+    if https_answers -k; then
+      step_done 'self-signed for now'
+      SELF_SIGNED=1
+      return 0
+    fi
   fi
   step_done 'not yet'
   warn "HTTPS does not answer yet; check with: sudo bemmoly doctor"
