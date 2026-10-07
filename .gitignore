@@ -9,6 +9,7 @@ storybook-static/
 playwright-report/
 test-results/
 .lighthouseci/
+.screenshots/
 k6-summary.json
 *.tsbuildinfo
 
