@@ -2,7 +2,7 @@
 /**
  * Text pages (self-hosting, security, changelog, docs, community). No mock draws them, so
  * they reuse the Landing mock's type: the 36px section heading, the 16px/1.65 lede and the
- * 1160px column, narrowed to a 760px reading measure.
+ * 1160px column, narrowed to a 760px reading measure unless `wide` (pages laid out in cards).
  */
 import Base from './Base.astro';
 
@@ -10,14 +10,20 @@ interface Props {
   title: string;
   description: string;
   lede: string;
+  wide?: boolean;
 }
 
-const { title, description, lede } = Astro.props;
+const { title, description, lede, wide = false } = Astro.props;
 ---
 
 <Base title={title} description={description}>
-  <article class="mx-auto flex w-full max-w-190 flex-col gap-12 px-4 pt-16 pb-20 sm:px-6 lg:pt-20">
-    <header class="flex flex-col gap-4">
+  <article
+    class:list={[
+      'mx-auto flex w-full flex-col gap-12 px-4 pt-16 pb-20 sm:px-6 lg:pt-20',
+      wide ? 'max-w-290 lg:px-12' : 'max-w-190',
+    ]}
+  >
+    <header class="flex max-w-190 flex-col gap-4">
       <h1 class="text-36 leading-heading font-semibold tracking-display">{title}</h1>
       <p class="text-16 leading-doc text-pretty text-tx3">{lede}</p>
     </header>

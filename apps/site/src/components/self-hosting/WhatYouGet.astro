@@ -1,0 +1,34 @@
+---
+/** One row that holds for every path, so the choice above is only about where it runs. */
+import { WHAT_YOU_GET } from '../../data/self-hosting.ts';
+---
+
+<section
+  id="what-you-get"
+  aria-labelledby="what-you-get-title"
+  class="flex scroll-mt-20 flex-col gap-5"
+>
+  <h2 id="what-you-get-title" class="text-22 leading-title font-semibold tracking-title text-tx">
+    What you get, on every path
+  </h2>
+  <ul class="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+    {WHAT_YOU_GET.map((item) => (
+      <li class="flex flex-col gap-1.5 rounded-window border border-br bg-sf2 p-4 dark:bg-sf">
+        <span class="flex items-center gap-2 text-14 font-semibold text-tx">
+          <span aria-hidden="true" class="text-ok">
+            ✓
+          </span>
+          {item.title}
+        </span>
+        <span class="text-13h leading-brief text-tx3">{item.body}</span>
+      </li>
+    ))}
+  </ul>
+  <p class="text-13h leading-brief text-tx4">
+    Two differences: with <code class="font-mono text-tx3">--no-proxy</code> you bring your own
+    HTTPS, and on Kubernetes the Updates page gives you the
+    <code class="font-mono text-tx3">helm upgrade</code> command instead of updating in place. On
+    every path, keep a copy of <code class="font-mono text-tx3">/var/bemmoly/.env</code> somewhere
+    safe: it holds the key that decrypts stored credentials, and backups do not contain it.
+  </p>
+</section>

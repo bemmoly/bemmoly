@@ -1,0 +1,92 @@
+---
+/**
+ * The default path, first and largest: a fresh VM, one command, the installer's own output.
+ * Numbered because it is a real sequence. The chooser can mark it (data-pick), as it marks
+ * the situation cards.
+ */
+import { INSTALL_BLOCK, REQUIREMENTS, STATUS } from '../../data/self-hosting.ts';
+import Badge from '../site/Badge.astro';
+import CodeBlock from '../site/CodeBlock.astro';
+import Transcript from '../site/Transcript.astro';
+import StepNumber from './StepNumber.astro';
+
+const badges = [STATUS.available, STATUS.ubuntu];
+---
+
+<section
+  id="recommended"
+  data-path="recommended"
+  aria-labelledby="recommended-title"
+  class="group flex scroll-mt-20 flex-col gap-7 rounded-dialog border border-br bg-sf p-5 shadow-card data-pick:border-ac data-pick:shadow-ring sm:p-7 dark:border-edge-ac dark:shadow-glow-sm"
+>
+  <header class="flex flex-col gap-3">
+    <div class="flex flex-wrap items-center gap-2">
+      {badges.map((badge) => (
+        <Badge tone={badge.tone}>{badge.label}</Badge>
+      ))}
+      <span class="hidden group-data-pick:inline-flex">
+        <Badge tone="solid">Matches your answers</Badge>
+      </span>
+    </div>
+    <h2
+      id="recommended-title"
+      class="text-26 leading-heading font-semibold tracking-display text-tx"
+    >
+      Recommended: one command on a fresh Linux VM
+    </h2>
+  </header>
+
+  <div class="grid items-start gap-8 lg:grid-cols-2">
+    <ol class="flex min-w-0 flex-col gap-6">
+      <li class="flex gap-3">
+        <StepNumber n={1} />
+        <div class="flex min-w-0 flex-col gap-2">
+          <h3 class="text-15 font-semibold text-tx">Get a Linux VM</h3>
+          <ul class="flex flex-col gap-1 text-14h leading-desc text-tx2">
+            {REQUIREMENTS.map((line) => (
+              <li class="flex gap-2">
+                <span aria-hidden="true" class="text-ok">
+                  ✓
+                </span>
+                {line}
+              </li>
+            ))}
+          </ul>
+          <p class="text-13h leading-brief text-tx4">
+            Debian, Fedora and Amazon Linux are supported by the installer but not yet tested end to
+            end. It checks the rest itself (root or sudo, 10 GB of disk, ports 80 and 443) and
+            prints the fix for anything missing.
+          </p>
+        </div>
+      </li>
+      <li class="flex gap-3">
+        <StepNumber n={2} />
+        <div id="install" class="flex min-w-0 flex-1 scroll-mt-20 flex-col gap-2">
+          <h3 class="text-15 font-semibold text-tx">Run one command</h3>
+          <CodeBlock code={INSTALL_BLOCK} label="On the VM, as root or with sudo" copy />
+          <p class="text-13h leading-brief text-tx4">
+            Options such as <code class="font-mono text-tx3">--domain</code> go after
+            <code class="font-mono text-tx3">sh -s --</code>; add
+            <code class="font-mono text-tx3">--help</code> to list them all.
+          </p>
+        </div>
+      </li>
+      <li class="flex gap-3">
+        <StepNumber n={3} />
+        <div class="flex min-w-0 flex-col gap-2">
+          <h3 class="text-15 font-semibold text-tx">Open the address it prints</h3>
+          <p class="text-14h leading-desc text-tx3">
+            About five minutes later the installer prints your URL. Open it to create the first
+            admin; <a href="/self-hosting#after-install">After install</a> shows what comes next.
+          </p>
+        </div>
+      </li>
+    </ol>
+    <Transcript />
+  </div>
+
+  <p class="text-16 leading-doc font-medium text-pretty text-tx">
+    This installs Docker, Postgres, HTTPS, backups and updates for you. Most teams never need the
+    other options.
+  </p>
+</section>
