@@ -82,8 +82,10 @@ export interface MockDb {
   outbound: Array<[string, string | null, string[]]>;
 }
 
-export const INVITE_TOKEN = 'invite-sam-0123456789abcdef';
-export const RESET_TOKEN = 'reset-rohan-0123456789abcdef';
+// Plain words, not random-looking: the schemas only need 16 characters, and a secret
+// scanner should never mistake a fixture for a credential.
+export const INVITE_TOKEN = 'mock-invitation-for-sam';
+export const RESET_TOKEN = 'mock-password-reset-for-rohan';
 
 export function createMockDb(scenario: MockScenario = 'ready'): MockDb {
   const fresh = scenario === 'fresh';
