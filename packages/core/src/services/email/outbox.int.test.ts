@@ -3,12 +3,12 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import type { EmailMessage, EmailSender } from '../../contracts/email-sender.ts';
 import { userActor } from '../../testing/fakes.ts';
 import {
-  EMAIL_CHANGESETS,
+  EMAIL_CHANGESET_IDS,
   startHarness,
   type Harness,
 } from '../../testing/email-notifications-harness.ts';
+import { kernelChangelogRunner } from '../../testing/kernel-changelog.ts';
 import { startTestDatabase, type TestDatabase } from '../../testing/postgres.ts';
-import { applyChangesets, revertChangesets } from '../../testing/temporary-changesets.ts';
 import {
   createEmailService,
   EMAIL_SEND_JOB,
@@ -102,7 +102,7 @@ describe('email outbox against Postgres', () => {
         status: string;
         attempts: number;
         last_error: string | null;
-        sent_at: Date | null;
+        sent_at: string | null;
         provider: string | null;
         due_in: number;
       }[]
@@ -157,7 +157,8 @@ describe('email outbox against Postgres', () => {
       headers: { 'X-Test': '1' },
     });
     expect(await rowOf(id)).toMatchObject({ status: 'sent', attempts: 1, provider: 'scripted' });
-    expect((await rowOf(id))?.sent_at).toBeInstanceOf(Date);
+    const sentAt = (await rowOf(id))?.sent_at;
+    expect(Number.isNaN(new Date(sentAt ?? '').getTime())).toBe(false);
   });
 
   it('retries a transient failure with backoff, then marks it failed after the last attempt', async () => {
@@ -246,12 +247,15 @@ describe('email outbox against Postgres', () => {
   });
 
   it('round-trips its changesets', async () => {
-    await revertChangesets(harness.sql, EMAIL_CHANGESETS);
+    const runner = await kernelChangelogRunner(harness.sql);
+    const reverted = await runner.rollback('core', { toId: '0108-identity-seed' });
+    expect(reverted.map((entry) => entry.id).sort()).toEqual(EMAIL_CHANGESET_IDS);
     const [gone] = await harness.sql<{ n: number }[]>`
       select count(*)::int as n from information_schema.tables
        where table_name in ('email_outbox', 'notifications', 'notification_preferences',
                             'notification_schedules')`;
     expect(gone?.n).toBe(0);
-    await applyChangesets(harness.sql, EMAIL_CHANGESETS);
+    const applied = await runner.update({ contexts: ['test'] });
+    expect(applied.map((entry) => entry.id)).toEqual(EMAIL_CHANGESET_IDS);
   });
 });

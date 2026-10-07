@@ -21,26 +21,17 @@ describe('changelog runner: rollback, plan, tag and backfill', () => {
     if (!server.available) return ctx.skip(server.reason);
     const fresh = await freshDatabase(server);
     try {
-      const runner = createChangelogRunner({
-        sql: fresh.sql,
-        kernel: await loadKernelChangelog(),
-        appVersion: '0.1.0',
-      });
+      const kernel = await loadKernelChangelog();
+      const runner = createChangelogRunner({ sql: fresh.sql, kernel, appVersion: '0.1.0' });
       await runner.update({ contexts: ['production'] });
-      const rolled = await runner.rollback('core', { count: 3 });
-      expect(rolled.map((entry) => entry.id)).toEqual([
-        '0003-idempotency-keys',
-        '0002-modules',
-        '0001-settings',
-      ]);
+      const rolled = await runner.rollback('core', { count: kernel.length });
+      expect(rolled.map((entry) => entry.id)).toEqual(
+        kernel.map((changeset) => changeset.id).reverse(),
+      );
       expect(await tableExists(fresh.sql, 'settings')).toBe(false);
-      expect(Object.values(await states(fresh.sql))).toEqual([
-        'rolled_back',
-        'rolled_back',
-        'rolled_back',
-      ]);
-      expect((await runner.status()).length).toBe(3);
-      expect((await runner.update({ contexts: ['production'] })).length).toBe(3);
+      expect(Object.values(await states(fresh.sql))).toEqual(kernel.map(() => 'rolled_back'));
+      expect((await runner.status()).length).toBe(kernel.length);
+      expect((await runner.update({ contexts: ['production'] })).length).toBe(kernel.length);
       expect(await tableExists(fresh.sql, 'settings')).toBe(true);
     } finally {
       await fresh.close();
@@ -103,17 +94,16 @@ describe('changelog runner: rollback, plan, tag and backfill', () => {
     if (!server.available) return ctx.skip(server.reason);
     const fresh = await freshDatabase(server);
     try {
-      const runner = createChangelogRunner({
-        sql: fresh.sql,
-        kernel: await loadKernelChangelog(),
-        appVersion: '1',
-      });
+      const kernel = await loadKernelChangelog();
+      const runner = createChangelogRunner({ sql: fresh.sql, kernel, appVersion: '1' });
       const plan = await runner.plan({ contexts: ['production'] });
-      expect(plan.map((entry) => [entry.id, entry.action])).toEqual([
-        ['0001-settings', 'run'],
-        ['0002-modules', 'run'],
-        ['0003-idempotency-keys', 'run'],
-      ]);
+      // A dry run checks preconditions against today's schema: 0201 and 0202
+      // require `users`, which 0101 creates in the same update, so from empty
+      // they plan as halt although a real update applies them.
+      const halted = ['0201-notifications', '0202-notification-preferences'];
+      expect(plan.map((entry) => [entry.id, entry.action])).toEqual(
+        kernel.map((changeset) => [changeset.id, halted.includes(changeset.id) ? 'halt' : 'run']),
+      );
       expect(plan[0]?.statements[0]).toMatch(/^CREATE TABLE settings/);
       expect(await tableExists(fresh.sql, 'settings')).toBe(false);
       expect(await runner.history()).toEqual([]);

@@ -9,7 +9,8 @@ import {
   type SqlClient,
 } from '@bemmoly/core';
 import {
-  applyIdentityChangesets,
+  applyKernelChangelog,
+  createIsolatedDatabase,
   createMemorySettings,
   resetIdentityData,
   startTestDatabase,
@@ -37,12 +38,13 @@ export interface Harness {
 export type HarnessResult =
   { available: true; harness: Harness } | { available: false; reason: string };
 
-/** Real Postgres, the identity changesets applied, the full host app in front. */
+/** Real Postgres, the kernel changelog applied from empty, the full host app in front. */
 export async function startHarness(): Promise<HarnessResult> {
   const database = await startTestDatabase();
   if (!database.available) return { available: false, reason: database.reason };
-  const sql = createSqlClient(database.url, { maxConnections: 8 });
-  await applyIdentityChangesets(sql);
+  const isolated = await createIsolatedDatabase(database.url);
+  const sql = createSqlClient(isolated.url, { maxConnections: 8 });
+  await applyKernelChangelog(sql);
   const bus = createLocalEventBus();
   const events: DomainEvent[] = [];
   for (const kind of ['invitation.created', 'password_reset.requested']) {
@@ -82,6 +84,7 @@ export async function startHarness(): Promise<HarnessResult> {
       stop: async () => {
         await Promise.all(apps.map((instance) => instance.close()));
         await sql.end({ timeout: 5 });
+        await isolated.drop();
         await database.stop();
       },
     },

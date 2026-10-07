@@ -22,13 +22,11 @@ describe('changelog runner: update', () => {
     if (!server.available) return ctx.skip(server.reason);
     const fresh = await freshDatabase(server);
     try {
-      const runner = createChangelogRunner({
-        sql: fresh.sql,
-        kernel: await loadKernelChangelog(),
-        appVersion: '0.1.0',
-      });
+      const kernel = await loadKernelChangelog();
+      const runner = createChangelogRunner({ sql: fresh.sql, kernel, appVersion: '0.1.0' });
       const applied = await runner.update({ contexts: ['production'] });
-      expect(applied.map((entry) => entry.id)).toEqual([
+      expect(applied.map((entry) => entry.id)).toEqual(kernel.map((changeset) => changeset.id));
+      expect(applied.slice(0, 3).map((entry) => entry.id)).toEqual([
         '0001-settings',
         '0002-modules',
         '0003-idempotency-keys',
@@ -37,11 +35,9 @@ describe('changelog runner: update', () => {
       expect(await runner.status()).toEqual([]);
       expect(await runner.update({ contexts: ['production'] })).toEqual([]);
       const history = await runner.history();
-      expect(history.map((row) => [row.module, row.state, row.appVersion])).toEqual([
-        ['core', 'ran', '0.1.0'],
-        ['core', 'ran', '0.1.0'],
-        ['core', 'ran', '0.1.0'],
-      ]);
+      expect(history.map((row) => [row.module, row.state, row.appVersion])).toEqual(
+        kernel.map(() => ['core', 'ran', '0.1.0']),
+      );
       expect(history[0]?.checksum).toMatch(/^[0-9a-f]{64}$/);
       expect(await runner.validate()).toEqual([]);
     } finally {
