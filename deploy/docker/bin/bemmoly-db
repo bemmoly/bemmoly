@@ -1,0 +1,13 @@
+#!/bin/sh
+# The changelog runner's command line (`bemmoly db …` on the host). It lives with the
+# runner; this wrapper finds it, and exits 127 when the image was built without it.
+for candidate in \
+  "${BEMMOLY_DB_CLI:-}" \
+  /app/apps/server/bin/bemmoly-db.ts \
+  /app/packages/core/bin/bemmoly-db.ts; do
+  if [ -n "${candidate}" ] && [ -f "${candidate}" ]; then
+    exec node "${candidate}" "$@"
+  fi
+done
+echo "bemmoly-db: the changelog runner is not in this image" >&2
+exit 127
