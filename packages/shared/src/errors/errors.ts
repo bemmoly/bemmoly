@@ -41,15 +41,6 @@ export class NotFoundError extends BemmolyError<'not_found' | 'module_not_enable
   }
 }
 
-/** No valid session or token: the client should sign in. Mapped to 401. */
-export class UnauthenticatedError extends BemmolyError<'unauthenticated'> {
-  override readonly name = 'UnauthenticatedError';
-
-  constructor(message = 'Sign in to continue', options?: BemmolyErrorOptions<'unauthenticated'>) {
-    super(message, 'unauthenticated', options);
-  }
-}
-
 export class ForbiddenError extends BemmolyError<'forbidden' | 'module_access_denied'> {
   override readonly name = 'ForbiddenError';
 
