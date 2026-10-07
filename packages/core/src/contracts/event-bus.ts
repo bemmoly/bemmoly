@@ -1,4 +1,5 @@
 import type { Actor } from './authz.ts';
+import type { SqlExecutor } from './sql.ts';
 
 export interface EntityRef {
   kind: string;
@@ -12,6 +13,11 @@ export interface DomainEvent<Kind extends string = string, Payload = unknown> {
   actor?: Actor;
   entity?: EntityRef;
   payload: Payload;
+  /**
+   * The publisher's open transaction, when it has one. In-process handlers that
+   * write (inbox rows, outbox rows) join it so they commit or roll back together.
+   */
+  transaction?: SqlExecutor;
 }
 
 export type EventHandler<Event extends DomainEvent = DomainEvent> = (
