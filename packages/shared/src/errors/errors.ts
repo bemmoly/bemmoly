@@ -21,6 +21,18 @@ export abstract class BemmolyError<C extends ErrorCode = ErrorCode> extends Erro
   }
 }
 
+/** No valid session or token was presented; the client should sign in. */
+export class UnauthenticatedError extends BemmolyError<'unauthenticated'> {
+  override readonly name = 'UnauthenticatedError';
+
+  constructor(
+    message = 'Sign in to continue',
+    options?: BemmolyErrorOptions<'unauthenticated'>,
+  ) {
+    super(message, 'unauthenticated', options);
+  }
+}
+
 export class NotFoundError extends BemmolyError<'not_found' | 'module_not_enabled'> {
   override readonly name = 'NotFoundError';
 
