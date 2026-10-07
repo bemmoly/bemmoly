@@ -44,10 +44,12 @@ export function formatProblems(problems: readonly ChangelogValidationProblem[]):
     .join('\n');
 }
 
-export function formatHistory(rows: readonly (ChangelogEntry & { tag?: string | null })[]): string {
+export function formatHistory(
+  rows: readonly (ChangelogEntry & { tags?: readonly string[] })[],
+): string {
   if (rows.length === 0) return 'No changesets recorded.';
   return table(
-    ['#', 'module', 'id', 'state', 'author', 'executed at', 'ms', 'version', 'tag'],
+    ['#', 'module', 'id', 'state', 'author', 'executed at', 'ms', 'version', 'tags'],
     rows.map((row) => [
       String(row.orderExecuted),
       row.module,
@@ -57,7 +59,7 @@ export function formatHistory(rows: readonly (ChangelogEntry & { tag?: string | 
       row.executedAt.toISOString(),
       String(row.executionMs),
       row.appVersion,
-      row.tag ?? '',
+      (row.tags ?? []).join(', '),
     ]),
   );
 }

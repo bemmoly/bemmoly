@@ -4,6 +4,7 @@ import type { Changeset } from '../../contracts/changelog.ts';
 import { startTestDatabase, type TestDatabase } from '../../testing/postgres.ts';
 import { loadKernelChangelog } from './kernel.ts';
 import { createChangelogRunner } from './runner.ts';
+import { ensureChangelogTable } from './store.ts';
 import { createTable, freshDatabase, states, tableExists } from './test-support.ts';
 
 describe('changelog runner: rollback, plan, tag and backfill', () => {
@@ -85,6 +86,54 @@ describe('changelog runner: rollback, plan, tag and backfill', () => {
         'core/0001-k': 'ran',
         'work/0001-w': 'rolled_back',
       });
+    } finally {
+      await fresh.close();
+    }
+  });
+
+  it('keeps every tag when upgrades without new changesets tag the same row', async (ctx) => {
+    if (!server.available) return ctx.skip(server.reason);
+    const fresh = await freshDatabase(server);
+    try {
+      const work = { module: 'work', changelog: [createTable('0001-w', 'w')] as Changeset[] };
+      const runner = createChangelogRunner({
+        sql: fresh.sql,
+        kernel: [createTable('0001-k', 'k')],
+        appVersion: '1',
+        modules: [work],
+      });
+      await runner.update({ contexts: ['production'], modules: [] });
+      // 1.2.4 → 1.2.5 and 1.2.5 → 1.2.6 brought no changeset: both tag 0001-k.
+      await runner.tag('1.2.4');
+      expect((await runner.tag('1.2.5')).tags).toEqual(['1.2.4', '1.2.5']);
+      await runner.update({ contexts: ['production'], modules: ['work'] });
+      const [kernelRow] = await runner.history('core');
+      expect(kernelRow).toMatchObject({ tag: '1.2.5', tags: ['1.2.4', '1.2.5'] });
+      await runner.rollback('*', { toTag: '1.2.4' });
+      expect(await states(fresh.sql)).toEqual({
+        'core/0001-k': 'ran',
+        'work/0001-w': 'rolled_back',
+      });
+    } finally {
+      await fresh.close();
+    }
+  });
+
+  it('gives a row tagged before tags existed its tag back', async (ctx) => {
+    if (!server.available) return ctx.skip(server.reason);
+    const fresh = await freshDatabase(server);
+    try {
+      const runner = createChangelogRunner({
+        sql: fresh.sql,
+        kernel: [createTable('0001-k', 'k')],
+        appVersion: '1',
+      });
+      await runner.update({ contexts: ['production'] });
+      await fresh.sql`ALTER TABLE schema_changelog DROP COLUMN tags`;
+      await fresh.sql`UPDATE schema_changelog SET tag = '1.0.0'`;
+      await ensureChangelogTable(fresh.sql);
+      expect((await runner.history('core'))[0]?.tags).toEqual(['1.0.0']);
+      expect((await runner.rollbackPlan('*', { toTag: '1.0.0' })).steps).toEqual([]);
     } finally {
       await fresh.close();
     }

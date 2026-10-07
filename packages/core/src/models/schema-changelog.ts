@@ -21,7 +21,10 @@ export const schemaChangelog = pgTable(
     appVersion: text('app_version').notNull(),
     contexts: text('contexts').array().notNull().default([]),
     state: text('state', { enum: ['ran', 'marked_ran', 'rolled_back', 'started'] }).notNull(),
+    /** The newest of `tags`, for readers that predate `tags`. */
     tag: text('tag'),
+    /** Every tag on the row, oldest first: several upgrades can tag the same row. */
+    tags: text('tags').array().notNull().default([]),
     /** Backfill progress keyed by call, so an interrupted changeset resumes. */
     progress: jsonb('progress').$type<Record<string, unknown>>().notNull().default({}),
     slow: boolean('slow').notNull().default(false),

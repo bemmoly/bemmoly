@@ -24,6 +24,7 @@ function row(id: string, checksum: string, state: HistoryRow['state'] = 'ran'): 
     contexts: ['*'],
     state,
     tag: null,
+    tags: [],
     progress: {},
     slow: false,
     irreversible: false,
