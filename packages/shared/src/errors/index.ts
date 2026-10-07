@@ -7,6 +7,7 @@ export {
   NotFoundError,
   ProviderError,
   RateLimitedError,
+  UnauthenticatedError,
   ValidationError,
   type BemmolyErrorOptions,
   type ProviderErrorOptions,

@@ -1,5 +1,7 @@
+import type { SqlClient } from '../clients/postgres.ts';
 import type { Changelog } from '../contracts/changelog.ts';
 import type { EventBus } from '../contracts/event-bus.ts';
+import type { RealtimePublisher } from '../contracts/realtime.ts';
 import type {
   AiRegistry,
   CapabilityRegistry,
@@ -47,6 +49,10 @@ export interface ModuleContext {
   editor?: EditorRegistry;
   importers: ImporterRegistry;
   settings: SettingsRegistry;
+  /** Invalidation messages for WebSocket clients; a no-op without a database. */
+  realtime: RealtimePublisher;
+  /** The kernel's Postgres pool for the module's own tables; absent without DATABASE_URL. */
+  database?: SqlClient;
 }
 
 /** Identity helper so a module manifest is checked against the contract. */

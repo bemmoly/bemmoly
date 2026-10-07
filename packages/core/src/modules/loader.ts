@@ -1,11 +1,15 @@
 import { isModuleId } from '@bemmoly/shared';
 import semver from 'semver';
 import type { EventBus } from '../contracts/event-bus.ts';
+import type { SqlClient } from '../clients/postgres.ts';
+import type { JobQueue } from '../contracts/jobs.ts';
+import type { RealtimePublisher } from '../contracts/realtime.ts';
 import type { BemmolyModule } from './contract.ts';
 import { createModuleContext } from './context.ts';
 import { emptyContributions } from './contributions.ts';
 import { ModuleLoadError } from './errors.ts';
 import { createLocalEventBus } from './local-event-bus.ts';
+import type { SettingsReader } from './registries.ts';
 import { ModuleRegistry } from './registry.ts';
 
 /** The kernel API version modules declare compatibility against in `coreApi`. */
@@ -19,6 +23,12 @@ export interface LoadModulesOptions {
   events?: EventBus;
   editorEnabled?: boolean;
   coreApiVersion?: string;
+  /** What ctx.jobs.send enqueues through; see services/jobs createJobQueueHandle. */
+  jobQueue?: JobQueue;
+  /** What ctx.settings.get reads through; bind it to the settings service. */
+  settingsReader?: SettingsReader;
+  realtime?: RealtimePublisher;
+  database?: SqlClient;
 }
 
 function indexAvailable(available: readonly BemmolyModule[]): Map<string, BemmolyModule> {
@@ -84,6 +94,10 @@ export function loadModules(options: LoadModulesOptions): ModuleRegistry {
       createModuleContext(module, contributions, {
         events,
         editorEnabled: options.editorEnabled ?? false,
+        ...(options.jobQueue ? { jobQueue: options.jobQueue } : {}),
+        ...(options.settingsReader ? { settingsReader: options.settingsReader } : {}),
+        ...(options.realtime ? { realtime: options.realtime } : {}),
+        ...(options.database ? { database: options.database } : {}),
       }),
     );
     registry.add(module, contributions);

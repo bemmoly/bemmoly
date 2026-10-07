@@ -21,6 +21,18 @@ const moduleList = z
   )
   .pipe(z.array(moduleIdSchema));
 
+/** Changelog contexts this install runs: production, demo, test (comma separated). */
+const contextList = z
+  .string()
+  .default('production')
+  .transform((value) =>
+    value
+      .split(',')
+      .map((context) => context.trim())
+      .filter((context) => context.length > 0),
+  )
+  .pipe(z.array(z.string().regex(/^[a-z][a-z0-9-]*$/)).min(1));
+
 export const envSchema = z.object({
   DATABASE_URL: z.url({ protocol: /^postgres(ql)?$/ }).optional(),
   BEMMOLY_SECRET_KEY: base64Key,
@@ -36,6 +48,7 @@ export const envSchema = z.object({
   OTEL_EXPORTER_OTLP_ENDPOINT: z.url().optional(),
   BEMMOLY_BACKUP_PASSPHRASE: z.string().min(16).optional(),
   BEMMOLY_DB_AUTO_MIGRATE: z.stringbool().default(true),
+  BEMMOLY_DB_CONTEXTS: contextList,
 });
 
 export type Env = z.output<typeof envSchema>;
@@ -66,6 +79,36 @@ export function parseEnv(source: EnvSource): Env {
   throw new EnvError(
     result.error.issues.map((issue) => `${issue.path.join('.') || '(root)'}: ${issue.message}`),
   );
+}
+
+/** What `bemmoly-db` needs: enough to reach the database, nothing secret. */
+export const databaseEnvSchema = envSchema
+  .pick({ BEMMOLY_MODULES: true, BEMMOLY_DB_CONTEXTS: true })
+  .extend({ DATABASE_URL: z.url({ protocol: /^postgres(ql)?$/ }) });
+
+export type DatabaseEnv = z.output<typeof databaseEnvSchema>;
+
+function parseWith<S extends z.ZodType>(schema: S, source: EnvSource): z.output<S> {
+  const result = schema.safeParse(withoutEmptyValues(source));
+  if (result.success) return result.data;
+  throw new EnvError(
+    result.error.issues.map((issue) => `${issue.path.join('.') || '(root)'}: ${issue.message}`),
+  );
+}
+
+export function parseDatabaseEnv(source: EnvSource): DatabaseEnv {
+  return parseWith(databaseEnvSchema, source);
+}
+
+/** The environment for database commands. Exits on a bad key. */
+export function loadDatabaseEnv(): DatabaseEnv {
+  try {
+    return parseDatabaseEnv(process.env);
+  } catch (error) {
+    if (!(error instanceof EnvError)) throw error;
+    process.stderr.write(`${error.message}\n`);
+    process.exit(1);
+  }
 }
 
 /** The only place the process environment is read. Exits on a bad key. */
