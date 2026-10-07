@@ -1,9 +1,6 @@
 import type { ModuleManifest } from '@bemmoly/shared';
-import { act, renderHook } from '@testing-library/react';
-import type { KeyboardEvent } from 'react';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { groupItems, rankItems, type CommandItem } from './command/rank.ts';
-import { useListNavigation } from './command/use-list-navigation.ts';
 import { formatBytes, formatRelative, initials } from './format.ts';
 import { actorLabel } from './inbox/group.ts';
 import { buildSettingsNav, flattenSettings } from './settings/sections.ts';
@@ -27,35 +24,6 @@ describe('command ranking', () => {
     expect(rankItems('rhn', items).map((item) => item.id)).toEqual(['rohan']);
     expect(rankItems('', items)).toHaveLength(3);
     expect(groupItems(items).map((group) => group.name)).toEqual(['Settings', 'People']);
-  });
-});
-
-describe('useListNavigation', () => {
-  const key = (name: string, meta = false) =>
-    ({
-      key: name,
-      metaKey: meta,
-      ctrlKey: false,
-      preventDefault: vi.fn(),
-    }) as unknown as KeyboardEvent;
-
-  it('moves with arrows, wraps, and selects with enter', () => {
-    const onSelect = vi.fn();
-    const { result, rerender } = renderHook(
-      ({ listKey }) => useListNavigation(3, listKey, onSelect),
-      {
-        initialProps: { listKey: 'a' },
-      },
-    );
-    act(() => result.current.onKeyDown(key('ArrowUp')));
-    expect(result.current.activeIndex).toBe(2);
-    act(() => result.current.onKeyDown(key('ArrowDown')));
-    expect(result.current.activeIndex).toBe(0);
-    act(() => result.current.onKeyDown(key('End')));
-    act(() => result.current.onKeyDown(key('Enter', true)));
-    expect(onSelect).toHaveBeenCalledWith(2, true);
-    rerender({ listKey: 'b' });
-    expect(result.current.activeIndex).toBe(0);
   });
 });
 

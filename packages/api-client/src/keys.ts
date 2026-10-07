@@ -68,7 +68,7 @@ const EVENT_KEYS: ReadonlyArray<[match: (kind: string) => boolean, keys: () => Q
     (kind) => kind.startsWith('module.'),
     () => [queryKeys.modules(), queryKeys.adminModules(), queryKeys.moduleGrants()],
   ],
-  [(kind) => kind.startsWith('setting.'), () => [queryKeys.settings.all()]],
+  [(kind) => kind.startsWith('setting'), () => [queryKeys.settings.all()]],
   [(kind) => kind.startsWith('backup.'), () => [queryKeys.backups(), queryKeys.system()]],
   [(kind) => kind.startsWith('update.'), () => [queryKeys.updates(), queryKeys.system()]],
   [(kind) => kind.startsWith('email.'), () => [['email']]],

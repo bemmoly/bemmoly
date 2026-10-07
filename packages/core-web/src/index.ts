@@ -1,6 +1,6 @@
 /**
  * Kernel UI shared by the shell and module web chunks: the module chunk loader,
- * the settings frame, realtime, ⌘K ranking and inbox wording. Visual
+ * the settings navigation model, realtime, ⌘K ranking and inbox wording. Visual
  * primitives come from @bemmoly/ui; data comes from @bemmoly/api-client.
  */
 export {
@@ -10,7 +10,6 @@ export {
   type CommandGroup,
   type CommandItem,
 } from './command/rank.ts';
-export { useListNavigation, type ListNavigation } from './command/use-list-navigation.ts';
 export { formatBytes, formatDateTime, formatRelative, initials } from './format.ts';
 export { actorLabel } from './inbox/group.ts';
 export {
@@ -41,4 +40,3 @@ export {
   type SettingsRequirement,
   type SettingsViewer,
 } from './settings/sections.ts';
-export { SettingsFrame, type SettingsLinkProps } from './settings/settings-frame.tsx';

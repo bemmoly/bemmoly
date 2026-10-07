@@ -1,14 +1,14 @@
 import {
   adminModuleSchema,
+  adminModulesResponseSchema,
   capabilityMatrixSchema,
   createModuleGrantSchema,
   createRoleSchema,
-  listSchema,
   moduleGrantSchema,
   moduleGrantsResponseSchema,
   modulesResponseSchema,
   putRoleCapabilitiesSchema,
-  removeModuleDataRequestSchema,
+  removeModuleDataBodySchema,
   roleCapabilitiesResponseSchema,
   roleSchema,
   rolesResponseSchema,
@@ -19,8 +19,6 @@ import {
 } from '@bemmoly/shared';
 import type { Http } from '../http.ts';
 import { enc, validated } from './validate.ts';
-
-const adminModulesSchema = listSchema(adminModuleSchema);
 
 export function accessEndpoints(http: Http) {
   return {
@@ -66,7 +64,10 @@ export function accessEndpoints(http: Http) {
       list: async () => (await http.request('/api/v1/modules', modulesResponseSchema)).items,
     },
     adminModules: {
-      list: async () => http.request('/api/v1/admin/modules', adminModulesSchema),
+      /** Every module in the image; `pinned` means BEMMOLY_MODULES fixes the set. */
+      list: async () => http.request('/api/v1/admin/modules', adminModulesResponseSchema),
+      get: async (id: string) =>
+        http.request(`/api/v1/admin/modules/${enc(id)}`, adminModuleSchema),
       enable: async (id: string) =>
         http.send(`/api/v1/admin/modules/${enc(id)}/enable`, { method: 'POST' }),
       disable: async (id: string) =>
@@ -74,7 +75,7 @@ export function accessEndpoints(http: Http) {
       removeData: async (id: string, confirm: string) =>
         http.send(`/api/v1/admin/modules/${enc(id)}/remove-data`, {
           method: 'POST',
-          body: validated(removeModuleDataRequestSchema, { confirm }),
+          body: validated(removeModuleDataBodySchema, { confirm }),
         }),
     },
   };

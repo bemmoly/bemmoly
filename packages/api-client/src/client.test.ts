@@ -9,6 +9,8 @@ const absolute = (input: RequestInfo | URL, init?: RequestInit) =>
   fetch(new URL(String(input), BASE), init);
 const ROLE = '018f0000-0000-7000-8000-000000000003';
 const TEAM = '018f0000-0000-7000-8000-000000000010';
+const envelope = (key: string) =>
+  ({ key, secret: false, isSet: true, isDefault: false, updatedAt: null }) as const;
 
 beforeAll(() => server.listen({ onUnhandledFrame: 'error' }));
 afterEach(() => server.resetHandlers());
@@ -120,14 +122,14 @@ describe('api client', () => {
     let stored: unknown = 'Acme Labs';
     server.use(
       route.get(`${BASE}/api/v1/admin/settings/workspace.name`, () =>
-        HttpResponse.json({ key: 'workspace.name', value: stored }),
+        HttpResponse.json({ ...envelope('workspace.name'), value: stored }),
       ),
       route.put(`${BASE}/api/v1/admin/settings/workspace.name`, async ({ request }) => {
         stored = ((await request.json()) as { value: unknown }).value;
-        return new HttpResponse(null, { status: 204 });
+        return HttpResponse.json({ ...envelope('workspace.name'), value: stored });
       }),
       route.get(`${BASE}/api/v1/admin/settings/email.smtp.password`, () =>
-        HttpResponse.json({ key: 'email.smtp.password', isSet: true }),
+        HttpResponse.json({ ...envelope('email.smtp.password'), secret: true }),
       ),
     );
     const api = createApiClient({ fetch: absolute });

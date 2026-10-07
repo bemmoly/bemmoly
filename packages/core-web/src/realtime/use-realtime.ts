@@ -1,9 +1,10 @@
+import type { RealtimeScope } from '@bemmoly/shared';
 import { useEffect, useRef, useState } from 'react';
 import { RealtimeClient, type RealtimeEvent, type RealtimeStatus } from './realtime-client.ts';
 
 export interface UseRealtimeOptions {
   url: string;
-  scopes: readonly string[];
+  scopes: readonly RealtimeScope[];
   enabled: boolean;
   onEvent: (event: RealtimeEvent) => void;
 }
@@ -16,12 +17,12 @@ export function useRealtime({ url, scopes, enabled, onEvent }: UseRealtimeOption
     handler.current = onEvent;
   }, [onEvent]);
 
-  const scopeKey = scopes.join('\n');
+  const scopeKey = JSON.stringify(scopes);
   useEffect(() => {
     if (!enabled) return;
     const client = new RealtimeClient({
       url,
-      scopes: scopeKey.split('\n').filter(Boolean),
+      scopes: JSON.parse(scopeKey) as RealtimeScope[],
       onEvent: (event) => handler.current(event),
       onStatus: setStatus,
     });

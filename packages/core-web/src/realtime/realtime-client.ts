@@ -1,7 +1,11 @@
-import { realtimeEventSchema, type RealtimeEventMessage } from '@bemmoly/shared';
+import {
+  realtimeServerMessageSchema,
+  type RealtimeMessagePayload,
+  type RealtimeScope,
+} from '@bemmoly/shared';
 
 export type RealtimeStatus = 'connecting' | 'open' | 'closed';
-export type RealtimeEvent = RealtimeEventMessage;
+export type RealtimeEvent = RealtimeMessagePayload;
 
 export interface BackoffOptions {
   initialMs: number;
@@ -24,7 +28,8 @@ type SocketFactory = (url: string) => WebSocket;
 
 export interface RealtimeClientOptions {
   url: string;
-  scopes: readonly string[];
+  /** Scopes to subscribe to; messages addressed to the signed-in person arrive regardless. */
+  scopes: readonly RealtimeScope[];
   onEvent: (event: RealtimeEvent) => void;
   onStatus?: (status: RealtimeStatus) => void;
   backoff?: BackoffOptions;
@@ -84,7 +89,8 @@ export class RealtimeClient {
     socket.addEventListener('open', () => {
       this.attempt = 0;
       this.options.onStatus?.('open');
-      socket.send(JSON.stringify({ type: 'subscribe', scopes: this.options.scopes }));
+      for (const scope of this.options.scopes)
+        socket.send(JSON.stringify({ type: 'subscribe', scope }));
     });
     socket.addEventListener('message', (message: MessageEvent) => this.receive(message.data));
     socket.addEventListener('close', () => {
@@ -103,8 +109,9 @@ export class RealtimeClient {
     } catch {
       return;
     }
-    const parsed = realtimeEventSchema.safeParse(json);
-    if (parsed.success) this.options.onEvent(parsed.data);
+    const parsed = realtimeServerMessageSchema.safeParse(json);
+    if (parsed.success && parsed.data.type === 'invalidate')
+      this.options.onEvent(parsed.data.message);
   }
 
   private scheduleReconnect(): void {

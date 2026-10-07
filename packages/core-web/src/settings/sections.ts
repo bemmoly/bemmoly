@@ -30,6 +30,7 @@ const item = (
 });
 
 const PEOPLE = 'workspace.roles.manage';
+const SETTINGS = 'workspace.settings.manage';
 
 /**
  * The kernel's settings pages, in the order of the People and Appearance mocks'
@@ -47,7 +48,7 @@ export const KERNEL_SETTINGS: readonly SettingsGroup[] = [
     id: 'general',
     label: 'General',
     items: [
-      item('workspace', 'Workspace details', '/settings/workspace', 'admin'),
+      item('workspace', 'Workspace details', '/settings/workspace', SETTINGS),
       item('appearance', 'Appearance', '/settings/appearance', 'workspace.appearance.manage'),
       item('email', 'Email and notifications', '/settings/email', 'workspace.email.manage'),
       item('ai', 'AI and models', '/settings/ai', 'ai.models.configure'),
@@ -72,10 +73,10 @@ export const KERNEL_SETTINGS: readonly SettingsGroup[] = [
     id: 'system',
     label: 'System',
     items: [
-      item('modules', 'Modules', '/settings/modules', 'admin'),
-      item('backups', 'Storage and backups', '/settings/backups', 'admin'),
-      item('updates', 'Updates', '/settings/updates', 'admin'),
-      item('system', 'System status', '/settings/system', 'admin'),
+      item('modules', 'Modules', '/settings/modules', 'workspace.modules.manage'),
+      item('backups', 'Storage and backups', '/settings/backups', SETTINGS),
+      item('updates', 'Updates', '/settings/updates', SETTINGS),
+      item('system', 'System status', '/settings/system', SETTINGS),
       item('audit-log', 'Audit log', '/settings/audit-log', 'workspace.audit.view'),
     ],
   },

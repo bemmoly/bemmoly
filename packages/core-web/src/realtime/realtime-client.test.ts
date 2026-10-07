@@ -27,7 +27,7 @@ function harness() {
   const onEvent = vi.fn();
   const client = new RealtimeClient({
     url: 'ws://bemmoly.test/ws',
-    scopes: ['user:u1'],
+    scopes: [{ kind: 'workspace' }],
     onEvent,
     createSocket: () => {
       const socket = new FakeSocket();
@@ -57,18 +57,16 @@ describe('RealtimeClient', () => {
     sockets[0]?.open();
     expect(JSON.parse(sockets[0]?.sent[0] ?? '')).toEqual({
       type: 'subscribe',
-      scopes: ['user:u1'],
+      scope: { kind: 'workspace' },
     });
     sockets[0]?.message({
-      type: 'event',
-      kind: 'notification.created',
-      scope: 'user:u1',
-      ids: ['n1'],
+      type: 'invalidate',
+      message: { kind: 'notifications', ids: ['n1'], userId: 'u1' },
     });
-    sockets[0]?.message({ type: 'subscribed', scopes: ['user:u1'] });
+    sockets[0]?.message({ type: 'subscribed', scope: { kind: 'workspace' } });
     sockets[0]?.message({ nonsense: true });
     expect(onEvent).toHaveBeenCalledOnce();
-    expect(onEvent.mock.calls[0]?.[0]).toMatchObject({ kind: 'notification.created' });
+    expect(onEvent.mock.calls[0]?.[0]).toMatchObject({ kind: 'notifications', userId: 'u1' });
   });
 
   it('reconnects with growing delays and resets after a successful open', () => {
