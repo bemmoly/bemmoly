@@ -1,4 +1,4 @@
-import type { DatabaseProbe, ModuleRegistry } from '@bemmoly/core';
+import type { DatabaseProbe, KernelRouteDependencies, ModuleRegistry } from '@bemmoly/core';
 import { kernelRoutes } from '@bemmoly/core';
 import { createLoggerOptions, type Env } from '@bemmoly/core/config';
 import Fastify, { type FastifyInstance } from 'fastify';
@@ -10,6 +10,8 @@ export interface BuildAppOptions {
   env: Pick<Env, 'BEMMOLY_TRUST_PROXY' | 'LOG_LEVEL' | 'LOG_FORMAT'>;
   modules: ModuleRegistry;
   database?: DatabaseProbe;
+  /** Data kernel services (module state, settings, realtime, identity hooks); see config/kernel.ts. */
+  kernel?: Omit<KernelRouteDependencies, 'modules' | 'database'>;
   /** Absolute path of the web build; skipped when it has no index.html. */
   webRoot?: string;
   /** false silences logs; a stream captures them, for tests. */
@@ -29,6 +31,7 @@ export async function buildApp(options: BuildAppOptions): Promise<FastifyInstanc
   app.setErrorHandler(errorHandler);
   await app.register(
     kernelRoutes({
+      ...options.kernel,
       modules: options.modules,
       ...(options.database ? { database: options.database } : {}),
     }),

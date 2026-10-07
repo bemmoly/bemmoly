@@ -20,6 +20,7 @@ const DEV_VALUES: Record<string, string> = {
   BEMMOLY_DATA_DIR: `${root}var/data`,
   LOG_FORMAT: 'pretty',
   BEMMOLY_TRUST_PROXY: 'false',
+  BEMMOLY_DB_CONTEXTS: 'demo',
 };
 
 function log(message: string): void {
