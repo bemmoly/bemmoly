@@ -95,10 +95,11 @@ describe('SetupPage', () => {
     expect(mockApi.db.initialized).toBe(true);
     expect(mockApi.db.settings['workspace.name']).toBe('Acme Labs');
     expect(router.state.location.search).toEqual({ step: 2 });
-    expect(screen.getByRole('button', { name: 'Start import in background' })).toHaveProperty(
-      'disabled',
-      true,
-    );
+    const sources = screen.getByRole('radiogroup', { name: 'Import source' });
+    const clean = within(sources).getByRole('radio', { name: /Start clean/ });
+    expect(clean.getAttribute('aria-checked')).toBe('true');
+    expect(within(sources).getAllByText('COMING SOON')).toHaveLength(3);
+    expect(screen.getByRole('button', { name: 'Continue' })).toHaveProperty('disabled', false);
     expect(screen.getByRole('button', { name: 'Skip for now' })).toBeTruthy();
     expect(screen.getByText('Step 2 of 6')).toBeTruthy();
   });

@@ -1,34 +1,23 @@
-import { Badge, Button, Card } from '@bemmoly/ui';
+import { Card } from '@bemmoly/ui';
 import { SSO_NOTE, SSO_OPTIONS, useSetupInvites } from '../../hooks/use-setup-invites.ts';
 import { Notice } from '../form.tsx';
-import { BrandTile } from './choice-card.tsx';
+import { BrandTile, ComingSoonBadge } from './choice-card.tsx';
 import { InviteByEmail } from './invite-by-email.tsx';
+import { SSO_MARKS } from './option-marks.tsx';
 import { StepFooter, type StepNav } from './step-footer.tsx';
 
-/** The two single sign-on cards from the mock, shown but switched off. */
+/** The two single sign-on cards from the mock, with their logos, marked coming soon. */
 function SsoCards() {
   return (
     <div className="grid grid-cols-2 gap-3">
-      {SSO_OPTIONS.map((option, index) => (
+      {SSO_OPTIONS.map((option) => (
         <Card key={option.id} className="flex flex-col gap-2 p-4" aria-disabled="true">
           <span className="flex items-center gap-2.5">
-            <BrandTile initials={option.initials} />
-            <span className="text-14 font-semibold">{option.name}</span>
-            {option.badge ? (
-              <Badge tone="ok" className="ml-auto">
-                {option.badge}
-              </Badge>
-            ) : null}
+            <BrandTile initials={option.initials} icon={SSO_MARKS[option.id]} />
+            <span className="text-14 font-semibold text-tx3">{option.name}</span>
+            <ComingSoonBadge />
           </span>
-          <span className="text-12h leading-body text-tx4">{option.description}</span>
-          <Button
-            variant={index === 0 ? 'primary' : 'secondary'}
-            size="sm"
-            disabled
-            className="mt-1 self-start"
-          >
-            {option.action}
-          </Button>
+          <span className="text-12h leading-body text-tx5">{option.description}</span>
         </Card>
       ))}
     </div>

@@ -15,15 +15,17 @@ export const INVITE_HELPER =
   'Everyone you add here joins as a Member with no team, unless you pick otherwise below.';
 export const PASTE_PLACEHOLDER = 'Paste more, comma or newline separated…';
 
-/** The two SSO cards from the mock, shown disabled until single sign-on ships. */
+/**
+ * The two SSO cards from the mock, marked coming soon until single sign-on ships. The mock's
+ * RECOMMENDED badge and connect buttons return with it; recommending an option that cannot be
+ * picked yet would only compete with the coming-soon badge.
+ */
 export const SSO_OPTIONS = [
   {
     id: 'google',
     initials: 'G',
     name: 'Google Workspace',
     description: 'Anyone with an account on your domain can sign in. New users become Members.',
-    badge: 'RECOMMENDED',
-    action: 'Connect Google',
   },
   {
     id: 'oidc',
@@ -31,10 +33,10 @@ export const SSO_OPTIONS = [
     name: 'Okta, Entra, SAML, OIDC',
     description:
       'Any standards-based identity provider, with SCIM provisioning and group → team mapping.',
-    badge: null,
-    action: 'Set up',
   },
 ] as const;
+
+export type SsoOptionId = (typeof SSO_OPTIONS)[number]['id'];
 
 const SEPARATOR = /[\s,;]+/;
 
