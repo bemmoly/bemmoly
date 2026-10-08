@@ -1,6 +1,6 @@
 import type { Appearance } from '../lib/appearance.ts';
 import { describe, expect, it } from 'vitest';
-import { resolveAppearance } from '../lib/theme.ts';
+import { NO_PERSONAL_THEME, presetLook, resolveAppearance } from '../lib/theme.ts';
 import { isPresetId, useThemeStore } from './theme.ts';
 
 const workspace = (patch: Partial<Appearance> = {}): Appearance => ({
@@ -46,6 +46,16 @@ describe('resolveAppearance', () => {
     });
     const open = workspace({ policy: { memberModeSwitch: true, personalThemes: true } });
     expect(resolveAppearance(open, { mode: 'system', preset: 'rose' })).toMatchObject({
+      id: 'rose',
+    });
+  });
+
+  it('shows a preview above the workspace look and every personal choice', () => {
+    const preview = presetLook('midnight');
+    const open = workspace({ policy: { memberModeSwitch: true, personalThemes: true } });
+    expect(resolveAppearance(open, { mode: 'light', preset: 'rose' }, preview)).toBe(preview);
+    expect(resolveAppearance(undefined, NO_PERSONAL_THEME, preview)).toBe(preview);
+    expect(resolveAppearance(open, { mode: 'light', preset: 'rose' }, null)).toMatchObject({
       id: 'rose',
     });
   });

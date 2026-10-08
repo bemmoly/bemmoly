@@ -17,6 +17,9 @@ export type ResolvedAppearance =
   | { kind: 'preset'; id: PresetId; mode: 'light' | 'dark' }
   | { kind: 'custom'; theme: BuiltTheme; mode: 'light' | 'dark' };
 
+/** No personal choice: what a fresh device starts with. */
+export const NO_PERSONAL_THEME: PersonalTheme = { mode: 'system', preset: null };
+
 const presetById = (id: string) => PRESETS.find((preset) => preset.id === id);
 
 function fromPreset(id: string, mode?: 'light' | 'dark'): ResolvedAppearance {
@@ -33,16 +36,24 @@ function fromPreset(id: string, mode?: 'light' | 'dark'): ResolvedAppearance {
   return { kind: 'custom', theme, mode };
 }
 
+/** A preset exactly as it ships, in its own mode. */
+export function presetLook(id: PresetId): ResolvedAppearance {
+  return fromPreset(id);
+}
+
 /**
  * What this person sees: the workspace look, then their own light/dark choice
  * when the policy allows it, then their own preset when personal themes are on.
  * Before a workspace look exists (setup, sign-in) only an explicit personal
  * choice applies, and with none the page is Classic light whatever the OS says.
+ * A preview (a look tried on before it is saved) wins over all of it.
  */
 export function resolveAppearance(
   appearance: Appearance | undefined,
   personal: PersonalTheme,
+  preview: ResolvedAppearance | null = null,
 ): ResolvedAppearance {
+  if (preview) return preview;
   if (!appearance) {
     if (personal.preset) return fromPreset(personal.preset);
     return fromPreset(personal.mode === 'dark' ? 'dark' : 'light');
