@@ -46,14 +46,24 @@ export function useSelect(props: SelectProps) {
     source.flatMap((group) => group.options).find((option) => option.value === value) ??
     (chosen?.value === value ? chosen : undefined);
   const view = useMemo(() => {
-    const pin = remote.options !== null || !query.trim() ? selected : undefined;
+    const typing = query.trim() !== '';
+    // An empty value ("No lead yet", "Anyone") is not worth keeping in view while searching.
+    const keep = selected && !(typing && selected.value === '') ? selected : undefined;
+    const pin = remote.options !== null || !typing ? keep : undefined;
     return remote.options !== null
       ? buildView([{ label: '', options: remote.options }], '', maxVisible, pin)
       : buildView(source, query, maxVisible, pin);
   }, [remote.options, source, query, maxVisible, selected]);
 
   const found = view.flat.findIndex((option) => option.value === activeValue);
-  const active = found >= 0 && !view.flat[found]?.disabled ? found : enabledFrom(view.flat, 0, 1);
+  // While searching, Enter takes the best match rather than the chosen option kept on top.
+  const firstMatch = enabledFrom(view.flat, view.pinned && query.trim() ? 1 : 0, 1);
+  const active =
+    found >= 0 && !view.flat[found]?.disabled
+      ? found
+      : firstMatch >= 0
+        ? firstMatch
+        : enabledFrom(view.flat, 0, 1);
 
   const close = useCallback(
     (refocus = true) => {
