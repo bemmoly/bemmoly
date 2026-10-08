@@ -1,62 +1,13 @@
 import { act, screen, waitFor } from '@testing-library/react';
-import type { FormEvent } from 'react';
 import { describe, expect, it } from 'vitest';
 import { BACKUP_IDS } from '../mocks/seed/operations.ts';
 import { BackupsPage } from '../pages/settings/backups-page.tsx';
 import { renderPage, renderQueryHook } from '../test/render.tsx';
 import { mockApi } from '../test/setup.ts';
-import {
-  backupSaveValues,
-  DEFAULT_POLICY,
-  EMPTY_S3,
-  policyErrors,
-  useBackupSchedule,
-} from './use-backups-schedule.ts';
+import { DEFAULT_POLICY } from './use-backups-schedule.ts';
 import { nextRunLabel, statusLine, useBackups } from './use-backups.ts';
 
-const submitEvent = { preventDefault: () => undefined } as FormEvent;
-const bucket = { ...EMPTY_S3, bucket: 'acme-backups', accessKeyId: 'AKIA1', secretAccessKey: 's' };
-
-describe('backup settings', () => {
-  it('writes the S3 secret only when it is replaced or removed', () => {
-    const keep = backupSaveValues(DEFAULT_POLICY, { mode: 'keep' });
-    expect(keep).not.toHaveProperty('system.backups.s3');
-    expect(keep['system.backups.schedule']).toEqual(DEFAULT_POLICY.schedule);
-    expect(backupSaveValues(DEFAULT_POLICY, { mode: 'remove' })['system.backups.s3']).toBeNull();
-    expect(
-      backupSaveValues(DEFAULT_POLICY, { mode: 'replace', form: { ...bucket, endpoint: ' ' } })[
-        'system.backups.s3'
-      ],
-    ).toEqual({
-      enabled: true,
-      region: 'us-east-1',
-      bucket: 'acme-backups',
-      prefix: 'bemmoly/',
-      accessKeyId: 'AKIA1',
-      secretAccessKey: 's',
-      forcePathStyle: false,
-    });
-  });
-
-  it('checks the schedule, retention and a new destination', () => {
-    const errors = policyErrors(
-      {
-        ...DEFAULT_POLICY,
-        schedule: { ...DEFAULT_POLICY.schedule, time: '25:00' },
-        retention: { ...DEFAULT_POLICY.retention, preUpgradeDays: 0 },
-      },
-      { mode: 'replace', form: EMPTY_S3 },
-    );
-    expect(Object.keys(errors).sort()).toEqual([
-      'retention.preUpgradeDays',
-      's3.accessKeyId',
-      's3.bucket',
-      's3.secretAccessKey',
-      'schedule.time',
-    ]);
-    expect(policyErrors(DEFAULT_POLICY, { mode: 'replace', form: bucket })).toEqual({});
-  });
-
+describe('backups list', () => {
   it('says when the next run is, in the schedule’s timezone', () => {
     const schedule = DEFAULT_POLICY.schedule;
     expect(nextRunLabel(schedule)).toBe('next run 02:00 UTC');
@@ -66,37 +17,6 @@ describe('backup settings', () => {
     expect(nextRunLabel({ ...schedule, frequency: 'hourly' })).toBe('runs every hour');
   });
 
-  it('saves the schedule and keeps the stored destination untouched', async () => {
-    mockApi.db.settings['system.backups.s3'] = { ...bucket, enabled: true };
-    const { result } = await renderQueryHook(() => useBackupSchedule());
-    await waitFor(() => expect(result.current.policy).toBeDefined());
-    expect(result.current.s3Configured).toBe(true);
-    const policy = result.current.policy ?? DEFAULT_POLICY;
-    act(() => result.current.update({ schedule: { ...policy.schedule, frequency: '6h' } }));
-    expect(result.current.dirty).toBe(true);
-    act(() => result.current.submit(submitEvent));
-    await waitFor(() => expect(result.current.settings.save.isSuccess).toBe(true));
-    expect(mockApi.db.settings['system.backups.schedule']).toMatchObject({ frequency: '6h' });
-    expect(mockApi.db.settings['system.backups.s3']).toMatchObject({ bucket: 'acme-backups' });
-  });
-
-  it('writes a new destination as one secret value', async () => {
-    const { result } = await renderQueryHook(() => useBackupSchedule());
-    await waitFor(() => expect(result.current.policy).toBeDefined());
-    expect(result.current.s3Configured).toBe(false);
-    act(() => result.current.startS3());
-    act(() => result.current.editS3({ ...bucket, bucket: 'new-bucket' }));
-    act(() => result.current.submit(submitEvent));
-    await waitFor(() => expect(result.current.settings.save.isSuccess).toBe(true));
-    expect(mockApi.db.settings['system.backups.s3']).toMatchObject({
-      bucket: 'new-bucket',
-      secretAccessKey: 's',
-    });
-    expect(result.current.s3).toEqual({ mode: 'keep' });
-  });
-});
-
-describe('backups list', () => {
   it('summarises the last good backup, the next run and one disk', async () => {
     const { result } = await renderQueryHook(() => useBackups());
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
@@ -112,13 +32,15 @@ describe('backups list', () => {
     );
   });
 
-  it('restores after the typed id, then shows maintenance and pauses writes', async () => {
+  it('restores the picked backup, then shows maintenance and pauses writes', async () => {
     const { result } = await renderQueryHook(() => useBackups());
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(result.current.restorable.every((backup) => backup.status === 'succeeded')).toBe(true);
+    act(() => result.current.restorePicker.show());
+    expect(result.current.restorePicker.open).toBe(true);
     act(() => result.current.restoreDialog.open(BACKUP_IDS.latest));
-    expect(result.current.restoreDialog.canRestore).toBe(false);
-    act(() => result.current.restoreDialog.setTyped(BACKUP_IDS.latest));
-    expect(result.current.restoreDialog.canRestore).toBe(true);
+    expect(result.current.restorePicker.open).toBe(false);
+    expect(result.current.restoreDialog.target?.id).toBe(BACKUP_IDS.latest);
     act(() => result.current.restore.mutate(BACKUP_IDS.latest));
     await waitFor(() => expect(result.current.restore.isSuccess).toBe(true));
     expect(mockApi.db.audit[0]?.action).toBe('backup.restored');

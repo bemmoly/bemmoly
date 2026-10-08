@@ -1,8 +1,8 @@
-import { Badge, Button, Checkbox, Field, Input, SettingsSection } from '@bemmoly/ui';
+import { Badge, Button, Checkbox, Field, Input } from '@bemmoly/ui';
 import type { S3Edit, S3Form } from '../../hooks/use-backups-schedule.ts';
 import type { FieldErrors } from '../../lib/errors.ts';
 
-interface DestinationsCardProps {
+interface DestinationFieldsProps {
   /** Where the newest backup's local copy sits, when there is one. */
   localPath: string | null;
   configured: boolean;
@@ -34,7 +34,29 @@ const TEXT_FIELDS: Array<{
   { key: 'secretAccessKey', label: 'Secret access key', secret: true },
 ];
 
-export function DestinationsCard({
+/** The Local disk row, in both the read view and while editing. */
+export function LocalDiskRow({ localPath }: { localPath: string | null }) {
+  return (
+    <div className="flex items-center gap-3">
+      <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+        <span className="font-medium">Local disk</span>
+        <span className="truncate text-12 text-tx5">
+          Every backup is written here first
+          {localPath ? (
+            <>
+              {' '}
+              · <span className="font-mono">{localPath}</span>
+            </>
+          ) : null}
+        </span>
+      </div>
+      <Badge tone="ok">ALWAYS ON</Badge>
+    </div>
+  );
+}
+
+/** Editing Destinations: set up, replace or remove the S3-compatible bucket. */
+export function DestinationFields({
   localPath,
   configured,
   s3,
@@ -43,26 +65,12 @@ export function DestinationsCard({
   onEdit,
   onRemove,
   onKeep,
-}: DestinationsCardProps) {
+}: DestinationFieldsProps) {
   const state =
     s3.mode === 'remove' ? 'Removed when you save' : configured ? 'Configured' : 'Not configured';
   return (
-    <SettingsSection title="Destinations">
-      <div className="flex items-center gap-3">
-        <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-          <span className="font-medium">Local disk</span>
-          <span className="truncate text-12 text-tx5">
-            Every backup is written here first
-            {localPath ? (
-              <>
-                {' '}
-                · <span className="font-mono">{localPath}</span>
-              </>
-            ) : null}
-          </span>
-        </div>
-        <Badge tone="ok">ALWAYS ON</Badge>
-      </div>
+    <>
+      <LocalDiskRow localPath={localPath} />
       <div className="flex items-center gap-3 border-t border-br-row pt-4">
         <div className="flex min-w-0 flex-1 flex-col gap-0.5">
           <span className="font-medium">S3-compatible bucket</span>
@@ -120,6 +128,6 @@ export function DestinationsCard({
           </div>
         </div>
       ) : null}
-    </SettingsSection>
+    </>
   );
 }

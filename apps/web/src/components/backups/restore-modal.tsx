@@ -1,84 +1,60 @@
-import { formatDateTime } from '@bemmoly/core-web';
+import { formatBytes, formatDateTime } from '@bemmoly/core-web';
 import type { Backup } from '@bemmoly/shared';
-import { Button, Field, Input, Modal } from '@bemmoly/ui';
+import { ConfirmChange } from '@bemmoly/ui';
 import { FormError } from '../form.tsx';
+import { KIND } from './backup-labels.ts';
 
 interface RestoreModalProps {
   backup: Backup | null;
-  typed: string;
-  canRestore: boolean;
+  /** How long the replaced database is kept (the pre-update retention). */
+  keepDays: number;
   busy: boolean;
   error: unknown;
-  onTyped: (value: string) => void;
   onClose: () => void;
   onConfirm: () => void;
 }
 
-/** Restore replaces the live workspace, so the admin types the backup id back. */
+/**
+ * Restore replaces the live workspace, so the dialog says exactly what happens, in order,
+ * and the admin types "restore" before it starts.
+ */
 export function RestoreModal({
   backup,
-  typed,
-  canRestore,
+  keepDays,
   busy,
   error,
-  onTyped,
   onClose,
   onConfirm,
 }: RestoreModalProps) {
   if (!backup) return null;
+  const when = formatDateTime(backup.createdAt);
   return (
-    <Modal
+    <ConfirmChange
       open
-      onClose={onClose}
-      width="lg"
-      title={`Restore the backup from ${formatDateTime(backup.createdAt)}?`}
-      description={`Taken on version ${backup.appVersion}. This replaces the live workspace.`}
-      footer={
-        <>
-          <Button onClick={onClose}>Cancel</Button>
-          <Button variant="danger" disabled={!canRestore} loading={busy} onClick={onConfirm}>
-            Restore this backup
-          </Button>
-        </>
-      }
+      title={`Restore the backup from ${when}?`}
+      description="This replaces the live workspace with the backup."
+      consequences={[
+        'Bemmoly switches to maintenance mode. Nobody can sign in or work until the restore finishes; it usually takes a few minutes.',
+        `Your current data is set aside first: the live database is kept as a fallback copy for ${keepDays} days, so the restore can be undone.`,
+        `Everything written since ${when} (work, comments, settings and people) is no longer in the live workspace.`,
+        'If the backup is from an older version, Bemmoly then brings its data up to the running version.',
+      ]}
+      confirmWord="restore"
+      confirmLabel="Restore this backup"
+      busy={busy}
+      error={<FormError error={error} />}
+      onCancel={onClose}
+      onConfirm={onConfirm}
     >
-      <form
-        className="flex flex-col gap-3.5"
-        onSubmit={(event) => {
-          event.preventDefault();
-          if (canRestore) onConfirm();
-        }}
-      >
-        <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5 text-13 leading-body text-tx-body">
-          <li>
-            Bemmoly switches to maintenance mode: nobody can use it until the restore finishes.
-          </li>
-          <li>
-            The backup is restored into a fresh database and swapped in. Everything written since{' '}
-            {formatDateTime(backup.createdAt)} is no longer in the live workspace.
-          </li>
-          <li>
-            The database it replaces is kept for the retention window, so you can go back to it.
-          </li>
-          <li>
-            If this backup is from an older version than the one running, Bemmoly runs the pending
-            changesets after the restore, bringing the data up to date.
-          </li>
-        </ul>
-        <p className="m-0 text-12h text-tx4">
-          Backup id <span className="font-mono text-12 text-tx2 select-all">{backup.id}</span>
-        </p>
-        <Field label="Type the backup id to confirm">
-          <Input
-            mono
-            autoComplete="off"
-            spellCheck={false}
-            value={typed}
-            onChange={(event) => onTyped(event.target.value)}
-          />
-        </Field>
-        <FormError error={error} />
-      </form>
-    </Modal>
+      <dl className="m-0 grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-1 rounded-panel border border-br2 bg-sf2 px-3 py-2.5 text-12h">
+        <dt className="text-tx4">Backup</dt>
+        <dd className="m-0 text-tx2">
+          {KIND[backup.kind]} · {formatBytes(backup.sizeBytes)} · version{' '}
+          <span className="font-mono text-12">{backup.appVersion}</span>
+        </dd>
+        <dt className="text-tx4">Id</dt>
+        <dd className="m-0 truncate font-mono text-12 text-tx2 select-all">{backup.id}</dd>
+      </dl>
+    </ConfirmChange>
   );
 }
