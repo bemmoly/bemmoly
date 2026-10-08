@@ -1,4 +1,10 @@
-import { hexColorSchema, listSchema, timestampSchema } from '@bemmoly/shared';
+import {
+  hexColorSchema,
+  keysetPageSchema,
+  keysetQuerySchema,
+  listSchema,
+  timestampSchema,
+} from '@bemmoly/shared';
 import { z } from 'zod';
 import { shortNameSchema } from './common.ts';
 import { issueLinkKindSchema } from './enums.ts';
@@ -41,6 +47,11 @@ export const updateLabelBodySchema = z
 
 export const issueLinksResponseSchema = listSchema(issueLinkSchema);
 export const labelsResponseSchema = listSchema(labelSchema);
+/** Labels page by id; the response is a superset of the plain list. */
+export const listLabelsQuerySchema = keysetQuerySchema;
+export const labelsPageSchema = keysetPageSchema(labelSchema);
+export type ListLabelsQuery = z.infer<typeof listLabelsQuerySchema>;
+export type LabelsPage = z.infer<typeof labelsPageSchema>;
 
 export type IssueLink = z.infer<typeof issueLinkSchema>;
 export type CreateIssueLinkBody = z.input<typeof createIssueLinkBodySchema>;

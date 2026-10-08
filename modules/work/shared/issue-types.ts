@@ -96,6 +96,9 @@ export const putIssueTypeFieldsBodySchema = z.object({
     .max(100),
 });
 
+/** The whole order of a scope's types, first to last; positions follow the array. */
+export const reorderIssueTypesBodySchema = z.object({ ids: z.array(z.uuid()).min(1).max(100) });
+
 export const issueTypesResponseSchema = listSchema(issueTypeSchema);
 export const fieldsResponseSchema = listSchema(fieldSchema);
 export const issueTypeFieldsResponseSchema = listSchema(issueTypeFieldSchema);
@@ -109,3 +112,4 @@ export type CreateFieldBody = z.input<typeof createFieldBodySchema>;
 export type UpdateFieldBody = z.infer<typeof updateFieldBodySchema>;
 export type IssueTypeField = z.infer<typeof issueTypeFieldSchema>;
 export type PutIssueTypeFieldsBody = z.input<typeof putIssueTypeFieldsBodySchema>;
+export type ReorderIssueTypesBody = z.infer<typeof reorderIssueTypesBodySchema>;
