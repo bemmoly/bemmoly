@@ -9,6 +9,8 @@ describe('the version this process reports', () => {
 
   it('falls back to the package version, which every workspace package shares', () => {
     expect(appVersionOf({})).toBe(manifest.version);
-    expect(PACKAGE_VERSION).toBe('0.1.0');
+    expect(PACKAGE_VERSION).toBe(manifest.version);
+    // A release number, never a literal: the version commit changes it on every release.
+    expect(PACKAGE_VERSION).toMatch(/^\d+\.\d+\.\d+(-beta\.\d+)?$/);
   });
 });
