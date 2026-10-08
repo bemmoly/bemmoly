@@ -35,6 +35,20 @@ describe('SetupPage', () => {
     ).toBeTruthy();
   });
 
+  it('groups the admin form into the workspace and the account', async () => {
+    mockApi.reset('fresh');
+    await renderPage(() => <Harness />, '/setup', testQueryClient());
+    const workspace = await screen.findByRole('group', { name: 'Workspace' });
+    expect(workspace.getAttribute('aria-describedby')).toBeTruthy();
+    expect(within(workspace).getByLabelText('Workspace name')).toBeTruthy();
+    expect(within(workspace).getByLabelText('URL')).toHaveProperty('value', window.location.origin);
+    const account = screen.getByRole('group', { name: 'Your account' });
+    expect(
+      ['Your name', 'Email', 'Password'].map((label) => within(account).getByLabelText(label)),
+    ).toHaveLength(3);
+    expect(within(account).queryByLabelText('Workspace name')).toBeNull();
+  });
+
   it('creates the admin and moves to the import step', async () => {
     mockApi.reset('fresh');
     const user = userEvent.setup();

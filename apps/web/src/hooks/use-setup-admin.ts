@@ -10,6 +10,9 @@ export type AdminForm = CreateFirstAdminInput;
 export const PASSWORD_HINT =
   'At least 12 characters. You can switch to SSO later and keep this as the break-glass login.';
 
+export const URL_HINT =
+  'Filled in from the address this browser used. Change it if people reach Bemmoly another way.';
+
 /** The URL field starts at the address the browser used to reach this server. */
 export function initialAdminForm(origin: string = window.location.origin): AdminForm {
   return { workspaceName: '', workspaceUrl: origin, name: '', email: '', password: '' };
