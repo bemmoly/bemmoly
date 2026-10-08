@@ -1,8 +1,10 @@
-import type { SqlClient } from '@bemmoly/core';
-import { createProjectsService } from './projects.ts';
+import type { AuditRecorder, RealtimePublisher, SqlClient } from '@bemmoly/core';
+import { createProjectsService } from './projects/index.ts';
 
 export interface WorkServiceDeps {
   database?: SqlClient;
+  audit?: AuditRecorder;
+  realtime?: RealtimePublisher;
 }
 
 /**
