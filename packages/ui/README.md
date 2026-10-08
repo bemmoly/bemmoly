@@ -113,3 +113,12 @@ pnpm --filter @bemmoly/ui brand:icons  # regenerate favicons and app icons from 
   These are built from mock parts and named as such in each component's comment.
 - Board's runtime computes Classic's accent tints with `color-mix`; the tokens use the hex its
   `:root` block and every other mock state.
+- Icons are Lucide icons under the design system's names instead of the mocks' CSS-drawn shapes
+  and text glyphs (⌕ ▾ ✕ ···), at 16px in buttons and rows, 18px in the top bar and 14px for
+  carets, with a 1.5px stroke like the mocks' borders.
+
+## Third-party notices
+
+- Icons: [Lucide](https://lucide.dev) (`lucide-react`), ISC License, Copyright (c) Lucide Icons
+  and Contributors; the icons Lucide takes from Feather are MIT, Copyright (c) Cole Bemis. The
+  full text ships with the package as `lucide-react/LICENSE`.

@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { Icon, ICON_NAMES } from './icon.tsx';
+import { Icon, ICON_NAMES, ICON_SIZE } from './icon.tsx';
 
 const meta = {
   title: 'Foundations/Icons',
@@ -53,8 +53,28 @@ export const SidebarNav: Story = {
               : 'flex items-center gap-2.5 rounded-control px-2.5 py-1.75'
           }
         >
-          <Icon name={name} className={name === 'board' ? 'text-ac' : 'text-tx4'} />
+          <Icon
+            name={name}
+            size={ICON_SIZE.bar}
+            className={name === 'board' ? 'text-ac' : 'text-tx4'}
+          />
           {label}
+        </div>
+      ))}
+    </div>
+  ),
+};
+
+/** 16px in buttons and rows, 18px in the top bar and sidebar, 14px for carets. */
+export const Sizes: Story = {
+  render: () => (
+    <div className="flex items-center gap-6 bg-sf p-4 text-tx2">
+      {(Object.entries(ICON_SIZE) as Array<[keyof typeof ICON_SIZE, number]>).map(([use, px]) => (
+        <div key={use} className="flex items-center gap-2">
+          <Icon name={use === 'caret' ? 'caret' : 'inbox'} size={px} />
+          <span className="font-mono text-11 text-tx3">
+            {use} · {px}px
+          </span>
         </div>
       ))}
     </div>
