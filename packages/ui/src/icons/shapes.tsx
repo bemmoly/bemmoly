@@ -5,6 +5,7 @@ import type { ReactNode } from 'react';
  * at the same natural size and the same 1.5px stroke. Geometry follows the CSS: a border is a
  * stroke centred 0.75px inside the box, border-radius minus 0.75 is the path radius. Strokes
  * stay 1.5px at any drawn size, as CSS borders do (Releases scales its border, as in the mock).
+ * The last few have no mock; they are drawn in the same style for the Setup option tiles.
  */
 export interface ShapeDef {
   /** Natural width and height in px, from the mock. */
@@ -123,6 +124,41 @@ export const SHAPES = {
         d="M0.75 4A3.25 3.25 0 0 1 4 0.75H10A3.25 3.25 0 0 1 13.25 4V7A6.25 6.25 0 0 1 0.75 7Z"
         {...stroke}
       />
+    ),
+  },
+  /** Setup option tiles, no mock: a key for "any identity provider" single sign-on. */
+  key: {
+    w: 14,
+    h: 14,
+    body: (
+      <>
+        <circle cx={4.5} cy={9.5} r={3.75} {...stroke} />
+        <path d="M7.2 6.8L13.25 0.75M10.25 3.75L12.25 5.75M12 2L13.5 3.5" {...stroke} />
+      </>
+    ),
+  },
+  /** Setup option tiles, no mock: two stacked units for a model server on the local network. */
+  server: {
+    w: 14,
+    h: 14,
+    body: (
+      <>
+        <rect x={0.75} y={0.75} width={12.5} height={5} rx={1.25} {...stroke} />
+        <rect x={0.75} y={8.25} width={12.5} height={5} rx={1.25} {...stroke} />
+        <circle cx={3.5} cy={3.25} r={0.9} fill="currentColor" />
+        <circle cx={3.5} cy={10.75} r={0.9} fill="currentColor" />
+      </>
+    ),
+  },
+  /** Setup option tiles, no mock: a grid for spreadsheet (CSV) exports. */
+  table: {
+    w: 14,
+    h: 14,
+    body: (
+      <>
+        <rect x={0.75} y={0.75} width={12.5} height={12.5} rx={1.25} {...stroke} />
+        <path d="M0.75 5H13.25M0.75 9H13.25M5 5V13.25" {...stroke} />
+      </>
     ),
   },
 } satisfies Record<string, ShapeDef>;
