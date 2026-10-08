@@ -24,9 +24,9 @@ import {
   type UpdateFieldBody,
   type UpdateIssueTypeBody,
   type UpdateProjectBody,
-} from '@bemmoly/module-work/shared';
-import type { Http } from '../../http.ts';
-import { enc, validated } from '../validate.ts';
+} from '../../../shared/index.ts';
+import type { Http } from '@bemmoly/api-client';
+import { enc, validated } from '@bemmoly/api-client';
 
 const base = '/api/v1/work';
 

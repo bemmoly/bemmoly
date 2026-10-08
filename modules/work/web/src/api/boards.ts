@@ -11,10 +11,10 @@ import {
   type BoardViewQuery,
   type ListProjectsQuery as ListProjectsOutput,
   type UpdateBoardBody,
-} from '@bemmoly/module-work/shared';
-import type { Http } from '../../http.ts';
-import { enc, validated } from '../validate.ts';
-import type { ListOptions } from '../people.ts';
+} from '../../../shared/index.ts';
+import type { Http } from '@bemmoly/api-client';
+import { enc, validated } from '@bemmoly/api-client';
+import type { ListOptions } from '@bemmoly/api-client';
 
 export type ProjectsFilter = Partial<
   Pick<ListProjectsOutput, 'cursor' | 'limit' | 'teamId' | 'archived'>

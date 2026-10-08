@@ -1,12 +1,38 @@
 import { createApiClient } from '@bemmoly/api-client';
+import {
+  workBoardIssuesEndpoints,
+  workBoardsEndpoints,
+  workSettingsEndpoints,
+  workWorkflowEndpoints,
+} from '../api/index.ts';
 
 /**
- * The module's API client. The shell's client is not shared through the chunk
- * props, and the two are identical: same origin, same session cookie; a 401
- * here surfaces as the query's error and the shell's own calls send the person
- * to sign in.
+ * The module's API client: the shell's generic client plus the Work endpoints,
+ * which live in this package so @bemmoly/api-client stays generic. The shell's
+ * client is not shared through the chunk props, and the two are identical:
+ * same origin, same session cookie; a 401 here surfaces as the query's error
+ * and the shell's own calls send the person to sign in.
  */
-export const api = createApiClient();
+const client = createApiClient();
+const boardsApi = workBoardsEndpoints(client.http);
+const boardIssuesApi = workBoardIssuesEndpoints(client.http);
+const settingsApi = workSettingsEndpoints(client.http);
+
+export const api = {
+  ...client,
+  work: {
+    ...boardsApi,
+    ...boardIssuesApi,
+    ...settingsApi,
+    /** Two streams expose these areas; their endpoints live side by side under one key. */
+    projects: { ...boardsApi.projects, ...settingsApi.projects },
+    boards: { ...boardsApi.boards, ...settingsApi.boards },
+    /** The settings endpoints own issue types; the board only lists them. */
+    issueTypes: settingsApi.issueTypes,
+    /** The workflow editor's endpoints carry everything the board needs too. */
+    workflows: workWorkflowEndpoints(client.http),
+  },
+};
 
 export type WorkApi = typeof api;
 

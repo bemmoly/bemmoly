@@ -330,9 +330,6 @@ importers:
 
   packages/api-client:
     dependencies:
-      '@bemmoly/module-work':
-        specifier: workspace:*
-        version: link:../../modules/work
       '@bemmoly/shared':
         specifier: workspace:*
         version: link:../shared

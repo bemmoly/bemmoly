@@ -13,7 +13,6 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@bemmoly/module-work": "workspace:*",
     "@bemmoly/shared": "workspace:*",
     "zod": "4.6.5"
   },
