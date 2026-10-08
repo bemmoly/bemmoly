@@ -4,6 +4,7 @@ import {
   DEFAULT_ROLE_KEY,
   emailSchema,
   type CreateInvitationsInput,
+  type CreateInvitationsResponse,
   type Role,
 } from '@bemmoly/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -84,6 +85,8 @@ export function useSetupInvites(onDone: () => void | Promise<void>) {
   const removeEmail = useSetupStore((state) => state.removeEmail);
   const [text, setText] = useState('');
   const [error, setError] = useState<string | undefined>(undefined);
+  /** The last batch sent, with each accept link; shown until Continue when email is not set up. */
+  const [issued, setIssued] = useState<CreateInvitationsResponse | null>(null);
 
   const roles = useQuery({ queryKey: queryKeys.roles(), queryFn: () => api.roles.list() });
   const teams = useQuery({ queryKey: queryKeys.teams.all(), queryFn: () => api.teams.list() });
@@ -108,7 +111,9 @@ export function useSetupInvites(onDone: () => void | Promise<void>) {
       toast(invitationsSentMessage(count));
       update({ invitesSent: invitesSent + count, emails: [] });
       await queryClient.invalidateQueries({ queryKey: queryKeys.invitations() });
-      await onDone();
+      setIssued(response);
+      // Without email nobody receives the link, so the step stays to show the links to share.
+      if (response.emailConfigured) await onDone();
     },
     onError: (failure) => {
       const fields = serverFieldErrors(failure);
@@ -155,5 +160,8 @@ export function useSetupInvites(onDone: () => void | Promise<void>) {
     loading: roles.isPending,
     submit,
     mutation,
+    issued,
+    /** Continue after the links were shown. */
+    finish: () => void onDone(),
   };
 }
