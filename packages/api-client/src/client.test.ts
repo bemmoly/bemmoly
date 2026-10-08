@@ -178,4 +178,9 @@ describe('query keys', () => {
     expect(keysForEvent('module.enabled')).toContainEqual(queryKeys.modules());
     expect(keysForEvent('something.else')).toEqual([]);
   });
+
+  it('invalidates every Work query on any work.* event', () => {
+    expect(keysForEvent('work.issue.updated')).toEqual([queryKeys.work()]);
+    expect(keysForEvent('work.board.updated')).toEqual([queryKeys.work()]);
+  });
 });

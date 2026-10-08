@@ -51,6 +51,8 @@ export const queryKeys = {
     list: (filter: AuditFilter = {}) => ['audit', 'list', filter] as const,
   },
   search: (q: string, kinds: readonly string[] = []) => ['search', q, kinds] as const,
+  /** The Work module's root; its own factory (workKeys) nests everything under it. */
+  work: () => ['work'] as const,
 } as const;
 
 export type QueryKey = readonly unknown[];
@@ -78,6 +80,7 @@ const EVENT_KEYS: ReadonlyArray<[match: (kind: string) => boolean, keys: () => Q
   ],
   [(kind) => kind.startsWith('update.'), () => [queryKeys.updates(), queryKeys.system()]],
   [(kind) => kind.startsWith('email.'), () => [['email']]],
+  [(kind) => kind.startsWith('work.'), () => [queryKeys.work()]],
 ];
 
 /** Which cached queries a realtime event makes stale. Unknown kinds invalidate nothing. */
