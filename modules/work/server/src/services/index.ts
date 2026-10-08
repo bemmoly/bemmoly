@@ -1,8 +1,11 @@
-import type { SqlClient } from '@bemmoly/core';
+import type { JobRegistry, RealtimePublisher, SqlClient } from '@bemmoly/core';
 import { createProjectsService } from './projects.ts';
+import { createWorkflowService } from './workflow/index.ts';
 
 export interface WorkServiceDeps {
   database?: SqlClient;
+  realtime?: RealtimePublisher;
+  jobs?: JobRegistry;
 }
 
 /**
@@ -12,6 +15,7 @@ export interface WorkServiceDeps {
 export function createWorkServices(deps: WorkServiceDeps) {
   return {
     projects: createProjectsService(deps),
+    workflow: createWorkflowService(deps),
   };
 }
 
