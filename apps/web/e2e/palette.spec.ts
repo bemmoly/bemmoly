@@ -28,11 +28,12 @@ test('⌘K finds people, and a request shows the plan preview', async ({ page })
   await expect(palette.getByText(/Preview only/)).toBeVisible();
 });
 
-test('Create opens the palette on its actions', async ({ page }) => {
+test('Create explains why it is empty and leads an admin to Modules', async ({ page }) => {
   await useMockBackend(page, 'ready');
   await page.goto('/');
   await page.getByRole('button', { name: 'Create' }).click();
-  const palette = page.getByRole('dialog', { name: 'Command palette' });
-  await expect(palette.getByRole('option', { name: /Invite people/ })).toBeVisible();
-  await expect(palette.getByRole('option', { name: /Workspace details/ })).toHaveCount(0);
+  const menu = page.getByRole('menu', { name: 'Create' });
+  await expect(menu.getByText('Nothing to create yet')).toBeVisible();
+  await menu.getByRole('menuitem', { name: 'Open Settings › Modules' }).click();
+  await expect(page).toHaveURL(/\/settings\/modules$/);
 });

@@ -1,7 +1,49 @@
-import { barIcon, IconButton, Menu, MenuItem, TopBar } from '@bemmoly/ui';
+import {
+  barIcon,
+  CreateMenuEmpty,
+  CreateMenuItem,
+  IconButton,
+  Menu,
+  MenuItem,
+  TopBar,
+} from '@bemmoly/ui';
+import { Icon } from '@bemmoly/ui/icons';
 import { useTopBar } from '../../hooks/use-top-bar.ts';
 import { RouterLink } from '../router-link.tsx';
 import { AnchoredMenu } from './anchored-menu.tsx';
+
+type Bar = ReturnType<typeof useTopBar>;
+
+/** What the enabled modules can make, or why there is nothing yet. */
+function CreateMenu({ bar }: { bar: Bar }) {
+  if (bar.createItems.length > 0)
+    return bar.createItems.map((item) => (
+      <CreateMenuItem
+        key={item.id}
+        icon="plus"
+        label={item.label}
+        description={item.description}
+        onSelect={item.onSelect}
+      />
+    ));
+  return (
+    <CreateMenuEmpty
+      title="Nothing to create yet"
+      description={
+        bar.onOpenModules
+          ? 'Issues, docs and other work come from modules. Enable one and what it makes shows up here.'
+          : 'Issues, docs and other work come from modules. Once an admin enables one, what it makes shows up here.'
+      }
+      action={
+        bar.onOpenModules ? (
+          <MenuItem icon={<Icon name="modules" />} onSelect={bar.onOpenModules}>
+            Open Settings › Modules
+          </MenuItem>
+        ) : undefined
+      }
+    />
+  );
+}
 
 /**
  * The Home mock's top bar from the design system: navigation from the module
@@ -34,7 +76,7 @@ export function AppTopBar() {
         nav={bar.nav}
         linkAs={RouterLink}
         homeHref="/"
-        onCreate={bar.onCreate}
+        createMenu={<CreateMenu bar={bar} />}
         onSearch={bar.onSearch}
         {...(bar.workspace.aiEnabled ? { onAsk: bar.onSearch } : {})}
         inboxCount={bar.unreadCount}

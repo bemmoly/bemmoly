@@ -5,10 +5,20 @@ import { useState } from 'react';
 import { useThemeStore } from '../store/theme.ts';
 import { useUiStore } from '../store/ui.ts';
 import { useDevMailbox } from './use-dev-mailbox.ts';
-import { useNavEntries } from './use-modules.ts';
+import { useModules, useNavEntries } from './use-modules.ts';
 import { useInbox } from './use-notifications.ts';
 import { useMe, useSignOut } from './use-session.ts';
 import { useWorkspace } from './use-workspace.ts';
+
+/** One thing the Create menu makes, from an enabled module's "create" navigation entry. */
+export interface CreateEntry {
+  id: string;
+  label: string;
+  description: string;
+  onSelect: () => void;
+}
+
+const titleCase = (id: string) => id.charAt(0).toUpperCase() + id.slice(1).replace(/-/g, ' ');
 
 export interface MenuEntry {
   id: string;
@@ -26,8 +36,8 @@ const PEOPLE_PATHS = [
 
 /**
  * Everything the top bar shows, derived from the module manifest, the
- * session, the inbox and the appearance policy. "Create" opens ⌘K on its
- * Actions, where the create entries live; "Teams" goes to the People pages.
+ * session, the inbox and the appearance policy. "Create" lists what the
+ * enabled modules can make; "Teams" goes to the People pages.
  */
 export function useTopBar() {
   const me = useMe();
@@ -35,6 +45,7 @@ export function useTopBar() {
   const pathname = useRouterState({ select: (state) => state.location.pathname });
   const go = (to: string) => () => void navigate({ to });
   const topEntries = useNavEntries('top');
+  const { data: modules = [] } = useModules();
   const openPalette = useUiStore((state) => state.openPalette);
   const setInboxOpen = useUiStore((state) => state.setInboxOpen);
   const inboxOpen = useUiStore((state) => state.inboxOpen);
@@ -65,6 +76,17 @@ export function useTopBar() {
         ]
       : []),
   ];
+
+  const createItems: CreateEntry[] = modules.flatMap((module) =>
+    module.navigation
+      .filter((entry) => entry.placement === 'create')
+      .map((entry) => ({
+        id: entry.id,
+        label: entry.label,
+        description: `A new ${entry.label.toLowerCase()} in ${titleCase(module.id)}`,
+        onSelect: go(entry.path),
+      })),
+  );
 
   const tick = (on: boolean) => (on ? '✓' : undefined);
   const themeItems: MenuEntry[] = [
@@ -119,7 +141,9 @@ export function useTopBar() {
     unreadCount,
     accountOpen,
     setAccountOpen,
-    onCreate: () => openPalette('actions'),
+    createItems,
+    /** Admins can enable a module from the empty Create menu. */
+    onOpenModules: me.can('workspace.modules.manage') ? go('/settings/modules') : null,
     onSearch: () => openPalette('all'),
     onInbox: () => setInboxOpen(!inboxOpen),
   };

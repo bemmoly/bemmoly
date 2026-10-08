@@ -1,4 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { MenuItem } from '../menu/menu-item.tsx';
+import { CreateMenuEmpty, CreateMenuItem } from './create-menu.tsx';
 import { TopBar } from './top-bar.tsx';
 
 const noop = () => {};
@@ -58,6 +60,54 @@ export const WithoutAi: Story = {
   },
   render: (args) => (
     <div className="w-360">
+      <TopBar {...args} />
+    </div>
+  ),
+};
+
+/** Create with something to make: icon, label, one line and the Command mock's shortcut. */
+export const CreateMenu: Story = {
+  args: {
+    onCreate: undefined,
+    createMenu: (
+      <>
+        <CreateMenuItem
+          icon="board"
+          label="Issue"
+          description="A bug, story or task in a project"
+          shortcut="⌘ N"
+          onSelect={noop}
+        />
+        <CreateMenuItem
+          icon="doc"
+          label="Doc"
+          description="A page in a docs space"
+          onSelect={noop}
+        />
+      </>
+    ),
+  },
+  render: (args) => (
+    <div className="h-60 w-360">
+      <TopBar {...args} />
+    </div>
+  ),
+};
+
+/** Create while no enabled module makes anything; admins get the way to Settings › Modules. */
+export const CreateEmpty: Story = {
+  args: {
+    onCreate: undefined,
+    createMenu: (
+      <CreateMenuEmpty
+        title="Nothing to create yet"
+        description="Create fills up once a module that makes things, such as issues or docs, is enabled."
+        action={<MenuItem onSelect={noop}>Open Settings › Modules</MenuItem>}
+      />
+    ),
+  },
+  render: (args) => (
+    <div className="h-60 w-360">
       <TopBar {...args} />
     </div>
   ),
