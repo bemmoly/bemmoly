@@ -1,6 +1,15 @@
 import { formatRelative } from '@bemmoly/core-web';
 import type { ReleaseChannel, UpdatesOverview } from '@bemmoly/shared';
-import { Button, buttonClassName, Select, SettingsRow, SettingsSection, Switch } from '@bemmoly/ui';
+import {
+  Button,
+  buttonClassName,
+  Select,
+  SettingsRow,
+  SettingsSection,
+  Switch,
+  type SettingsSectionProps,
+} from '@bemmoly/ui';
+import type { UpdatePolicy } from '../../hooks/use-updates-settings.ts';
 
 const CHANNELS = [
   { value: 'stable', label: 'Stable' },
@@ -9,16 +18,18 @@ const CHANNELS = [
 
 interface VersionCardProps {
   overview: UpdatesOverview;
-  channel: ReleaseChannel;
-  checkDaily: boolean;
-  saving: boolean;
+  /** The edit state of the section: mode, Edit, Save, Cancel, dirty. */
+  section: Omit<SettingsSectionProps, 'title' | 'children'>;
+  /** The draft while editing, the stored values otherwise. */
+  policy: UpdatePolicy;
   refreshing: boolean;
   uploading: boolean;
-  onChannel: (channel: ReleaseChannel) => void;
-  onCheckDaily: (on: boolean) => void;
+  onPolicy: (patch: Partial<UpdatePolicy>) => void;
   onRefresh: () => void;
   onUpload: (file: File) => void;
 }
+
+const valueText = 'text-13 font-medium text-tx';
 
 function checkedLine(checks: UpdatesOverview['checks']): string {
   const when = checks.lastCheckedAt
@@ -32,10 +43,16 @@ function checkedLine(checks: UpdatesOverview['checks']): string {
 }
 
 export function VersionCard(props: VersionCardProps) {
-  const { overview, channel, checkDaily, saving } = props;
+  const { overview, policy, section } = props;
   const { current, checks } = overview;
+  const editing = section.mode === 'edit';
   return (
-    <SettingsSection title="This server" layout="rows">
+    <SettingsSection
+      title="This server"
+      layout="rows"
+      {...section}
+      {...(editing ? { note: 'Channel and daily check save together.' } : {})}
+    >
       <SettingsRow
         title={
           <>
@@ -53,26 +70,34 @@ export function VersionCard(props: VersionCardProps) {
         title="Channel"
         description="Beta gets releases earlier, before they reach stable."
         control={
-          <Select
-            aria-label="Update channel"
-            wrapperClassName="w-40"
-            options={CHANNELS}
-            value={channel}
-            disabled={saving}
-            onChange={(event) => props.onChannel(event.target.value as ReleaseChannel)}
-          />
+          editing ? (
+            <Select
+              aria-label="Update channel"
+              wrapperClassName="w-40"
+              options={CHANNELS}
+              value={policy.channel}
+              onChange={(event) =>
+                props.onPolicy({ channel: event.target.value as ReleaseChannel })
+              }
+            />
+          ) : (
+            <span className={valueText}>{policy.channel === 'beta' ? 'Beta' : 'Stable'}</span>
+          )
         }
       />
       <SettingsRow
         title="Check every day"
         description="The server fetches the release list once a day. Nothing installs until you choose to."
         control={
-          <Switch
-            aria-label="Check every day"
-            checked={checkDaily}
-            disabled={saving}
-            onCheckedChange={props.onCheckDaily}
-          />
+          editing ? (
+            <Switch
+              aria-label="Check every day"
+              checked={policy.checkDaily}
+              onCheckedChange={(checkDaily) => props.onPolicy({ checkDaily })}
+            />
+          ) : (
+            <span className={valueText}>{policy.checkDaily ? 'On' : 'Off'}</span>
+          )
         }
       />
       <SettingsRow

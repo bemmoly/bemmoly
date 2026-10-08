@@ -3,6 +3,7 @@ import type { RollbackPlan } from '@bemmoly/shared';
 import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { UpdatesPage } from '../pages/settings/updates-page.tsx';
+import { channelRisk, useUpdateSettings } from './use-updates-settings.ts';
 import { renderPage, renderQueryHook } from '../test/render.tsx';
 import { mockApi } from '../test/setup.ts';
 import { commandFrom, releaseWarnings, rollbackCopy, updateModeCopy } from './use-updates-copy.ts';
@@ -117,12 +118,23 @@ describe('updates', () => {
     expect(mockApi.db.updates.updater.state).toBe('idle');
   });
 
-  it('switches the channel through the setting', async () => {
-    const { result } = await renderQueryHook(() => useUpdates());
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    act(() => result.current.setChannel('beta'));
-    await waitFor(() => expect(result.current.overview?.current.channel).toBe('beta'));
+  it('switches the channel through the setting and asks first', async () => {
+    const { result } = await renderQueryHook(() => {
+      const updates = useUpdates();
+      return { updates, settings: useUpdateSettings(updates.overview) };
+    });
+    await waitFor(() => expect(result.current.settings.value).toBeDefined());
+    const stored = result.current.settings.stored ?? { channel: 'stable', checkDaily: true };
+    expect(channelRisk(stored, stored)).toBeNull();
+    expect(channelRisk(stored, { ...stored, channel: 'beta' })?.confirmLabel).toBe(
+      'Switch to beta',
+    );
+    act(() => result.current.settings.update({ channel: 'beta' }));
+    expect(result.current.settings.dirty).toBe(true);
+    let saved = false;
+    act(() => result.current.settings.save(() => (saved = true)));
+    await waitFor(() => expect(saved).toBe(true));
     expect(mockApi.db.settings['system.updates.channel']).toBe('beta');
-    expect(result.current.channel).toBe('beta');
+    await waitFor(() => expect(result.current.updates.overview?.current.channel).toBe('beta'));
   });
 });
