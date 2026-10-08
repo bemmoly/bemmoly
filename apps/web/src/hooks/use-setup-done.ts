@@ -15,6 +15,8 @@ export interface SummaryRow {
   key: 'workspace' | 'admin' | 'import' | 'signIn' | 'ai' | 'theme';
   label: string;
   value: string;
+  /** False when the step was skipped, so the row is not ticked as if it were set. */
+  done: boolean;
 }
 
 export const DONE_ACTIONS = {
@@ -48,18 +50,44 @@ export function summaryRows(input: {
   const { draft } = input;
   const workspace = [input.workspaceName, input.workspaceUrl && hostOf(input.workspaceUrl)];
   return [
-    { key: 'workspace', label: 'Workspace', value: workspace.filter(Boolean).join(' · ') },
-    { key: 'admin', label: 'Admin', value: `${input.adminEmail} (break-glass password set)` },
-    { key: 'import', label: 'Import', value: importSummary(draft.importSource) },
-    { key: 'signIn', label: 'Sign-in', value: `Password · ${invitesLine(draft.invitesSent)}` },
+    {
+      key: 'workspace',
+      label: 'Workspace',
+      value: workspace.filter(Boolean).join(' · '),
+      done: true,
+    },
+    {
+      key: 'admin',
+      label: 'Admin',
+      value: `${input.adminEmail} (break-glass password set)`,
+      done: true,
+    },
+    {
+      key: 'import',
+      label: 'Import',
+      value: importSummary(draft.importSource),
+      done: draft.importSource !== null,
+    },
+    {
+      key: 'signIn',
+      label: 'Sign-in',
+      value: `Password · ${invitesLine(draft.invitesSent)}`,
+      done: true,
+    },
     {
       key: 'ai',
       label: 'AI',
       value: draft.aiSaved
         ? aiSummary(input.providerName, draft)
         : 'Skipped · connect a provider any time in Settings',
+      done: draft.aiSaved,
     },
-    { key: 'theme', label: 'Theme', value: themeSummary(draft.theme, draft.themeSaved) },
+    {
+      key: 'theme',
+      label: 'Theme',
+      value: themeSummary(draft.theme, draft.themeSaved),
+      done: draft.themeSaved,
+    },
   ];
 }
 

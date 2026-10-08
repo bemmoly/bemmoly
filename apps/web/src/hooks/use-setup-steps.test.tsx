@@ -85,6 +85,7 @@ describe('summary', () => {
       ai: 'Skipped · connect a provider any time in Settings',
       theme: 'Skipped · the default theme stays',
     });
+    expect(rows.filter((row) => !row.done).map((row) => row.key)).toEqual(['ai', 'theme']);
     expect(importSummary(null)).toBe('Skipped');
     expect(invitesLine(1)).toBe('1 invite sent');
   });

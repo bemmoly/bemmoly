@@ -4,7 +4,10 @@ import { useSetupDone } from '../../hooks/use-setup-done.ts';
 import { FormError, Loading } from '../form.tsx';
 import { StatusCircle } from './health-list.tsx';
 
-/** Step 6: what was set up, from what was saved, and the two ways out. */
+/**
+ * Step 6: what was set up, from what was saved, and the two ways out. A description list, so each
+ * value is read with its label; a skipped step gets an empty circle and quieter text, not a tick.
+ */
 export function StepDone() {
   const { rows, loading, complete, retry, actions, leave } = useSetupDone();
   return (
@@ -12,17 +15,23 @@ export function StepDone() {
       {loading ? (
         <Loading label="Loading the summary" lines={6} />
       ) : (
-        <Card aria-label="Setup summary" className="flex flex-col px-4 py-1.5 text-12h">
-          {rows.map((row) => (
-            <div
-              key={row.key}
-              className="flex items-center gap-2.5 border-b border-br-row py-2.5 last:border-b-0"
-            >
-              <StatusCircle status="ok" />
-              <span className="w-40 shrink-0 font-medium">{row.label}</span>
-              <span className="min-w-0 text-tx3">{row.value}</span>
-            </div>
-          ))}
+        <Card className="px-4 py-1.5 text-12h">
+          <dl aria-label="Setup summary" className="m-0 flex flex-col">
+            {rows.map((row) => (
+              <div
+                key={row.key}
+                className="flex items-center gap-2.5 border-b border-br-row py-2.5 last:border-b-0"
+              >
+                {/* The circle sits in the dt because a dl row may hold only dt and dd; 186px is
+                    the mock's 16px circle, 10px gap and 160px label column. */}
+                <dt className="flex w-46.5 shrink-0 items-center gap-2.5 font-medium text-tx">
+                  <StatusCircle status={row.done ? 'ok' : 'pending'} label={null} />
+                  {row.label}
+                </dt>
+                <dd className={`m-0 min-w-0 ${row.done ? 'text-tx3' : 'text-tx5'}`}>{row.value}</dd>
+              </div>
+            ))}
+          </dl>
         </Card>
       )}
       {complete.isError ? (
