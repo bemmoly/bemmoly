@@ -74,6 +74,8 @@ export function UsersPage() {
           <Select
             className="[field-sizing:content]"
             aria-label="Filter by team"
+            searchable
+            searchPlaceholder="Search teams"
             options={users.teamFilterOptions}
             value={filters.teamId}
             onChange={(event) => users.setTeamId(event.target.value)}
