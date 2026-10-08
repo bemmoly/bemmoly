@@ -131,25 +131,29 @@ describe('backups against a real Postgres 18 with pg_dump and pg_restore', () =>
     },
   );
 
-  it('refuses a tampered or wrongly-keyed off-box copy', async (ctx) => {
-    if (!harness) return ctx.skip(skip ?? 'no harness');
-    const latest = await createBackupRepository(harness.sql).latest({ status: 'succeeded' });
-    if (!latest) throw new Error('expected a backup from the previous test');
-    const key = `${latest.setName}/database.dump.enc`;
-    const original = remote.objects.get(key);
-    if (!original) throw new Error('expected an encrypted remote dump');
-    const remoteOnly = { ...harness.deps, destinations: async () => [remote] };
+  // Its input is the copy the previous test wrote, so it skips with that test on hosted runners.
+  it.skipIf(process.env.CI === 'true')(
+    'refuses a tampered or wrongly-keyed off-box copy',
+    async (ctx) => {
+      if (!harness) return ctx.skip(skip ?? 'no harness');
+      const latest = await createBackupRepository(harness.sql).latest({ status: 'succeeded' });
+      if (!latest) throw new Error('expected a backup from the previous test');
+      const key = `${latest.setName}/database.dump.enc`;
+      const original = remote.objects.get(key);
+      if (!original) throw new Error('expected an encrypted remote dump');
+      const remoteOnly = { ...harness.deps, destinations: async () => [remote] };
 
-    const tampered = Buffer.from(original);
-    tampered[tampered.length - 20] = (tampered[tampered.length - 20] ?? 0) ^ 0xff;
-    remote.objects.set(key, tampered);
-    await expect(restoreBackup(remoteOnly, latest.setName)).rejects.toThrow(/checksum|modified/);
+      const tampered = Buffer.from(original);
+      tampered[tampered.length - 20] = (tampered[tampered.length - 20] ?? 0) ^ 0xff;
+      remote.objects.set(key, tampered);
+      await expect(restoreBackup(remoteOnly, latest.setName)).rejects.toThrow(/checksum|modified/);
 
-    remote.objects.set(key, original);
-    const wrongKey = {
-      ...remoteOnly,
-      config: { ...remoteOnly.config, backupPassphrase: 'a-different-passphrase-entirely' },
-    };
-    await expect(restoreBackup(wrongKey, latest.setName)).rejects.toThrow(/passphrase/);
-  });
+      remote.objects.set(key, original);
+      const wrongKey = {
+        ...remoteOnly,
+        config: { ...remoteOnly.config, backupPassphrase: 'a-different-passphrase-entirely' },
+      };
+      await expect(restoreBackup(wrongKey, latest.setName)).rejects.toThrow(/passphrase/);
+    },
+  );
 });

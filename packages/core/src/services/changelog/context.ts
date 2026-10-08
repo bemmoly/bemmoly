@@ -1,4 +1,4 @@
-import type { SQL } from 'drizzle-orm';
+import { sql, type SQL } from 'drizzle-orm';
 import type { BackfillRow, ChangesetContext } from '../../contracts/changelog.ts';
 import { formatForPlan, quoteTable, run } from './render.ts';
 import { saveProgress, type Connection } from './store.ts';
@@ -48,14 +48,16 @@ export function createExecuteContext(options: ExecuteContextOptions): ChangesetC
       if (!Number.isInteger(batch) || batch < 1) throw new TypeError('backfill batch must be >= 1');
       const progressKey = `${backfillCalls++}:${table}`;
       const state = readProgress(progress, progressKey);
-      const from = quoteTable(table);
+      // The table is a checked, quoted identifier; the cursor and batch travel as parameters.
+      const from = sql.raw(quoteTable(table));
       if (state.rows > 0) logger.info({ ...key, table, ...state }, 'resuming backfill');
       for (;;) {
-        const rows = (await (state.lastId === null
-          ? connection.unsafe(`select * from ${from} order by id limit ${batch}`)
-          : connection.unsafe(`select * from ${from} where id > $1 order by id limit ${batch}`, [
-              state.lastId,
-            ]))) as unknown as Row[];
+        const rows = (await run(
+          connection,
+          state.lastId === null
+            ? sql`select * from ${from} order by id limit ${batch}`
+            : sql`select * from ${from} where id > ${state.lastId} order by id limit ${batch}`,
+        )) as unknown as Row[];
         if (rows.length === 0) break;
         await handle(rows);
         state.lastId = String(rows[rows.length - 1]?.id);
