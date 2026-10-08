@@ -1,4 +1,5 @@
 import type { AuditRecorder, RealtimePublisher, SqlClient } from '@bemmoly/core';
+import { createFieldsService } from './fields/index.ts';
 import { createProjectsService } from './projects/index.ts';
 import { createIssueTypesService } from './types/index.ts';
 
@@ -16,6 +17,7 @@ export function createWorkServices(deps: WorkServiceDeps) {
   return {
     projects: createProjectsService(deps),
     types: createIssueTypesService(deps),
+    fields: createFieldsService(deps),
   };
 }
 

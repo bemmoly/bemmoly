@@ -1,4 +1,5 @@
 import type { WorkServices } from '../services/index.ts';
+import { createFieldsController } from './fields.controller.ts';
 import { createProjectsController } from './projects.controller.ts';
 import { createTypesController } from './types.controller.ts';
 
@@ -7,6 +8,7 @@ export function createWorkControllers(services: WorkServices) {
   return {
     projects: createProjectsController(services.projects),
     types: createTypesController(services.types),
+    fields: createFieldsController(services.fields),
   };
 }
 
