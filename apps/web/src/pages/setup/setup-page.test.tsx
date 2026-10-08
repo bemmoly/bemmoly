@@ -29,6 +29,10 @@ describe('SetupPage', () => {
     expect(screen.getByRole('button', { name: 'Create admin and continue' })).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Skip for now' })).toBeNull();
     expect(screen.getByText('Step 1 of 6')).toBeTruthy();
+    const rail = screen.getByRole('navigation', { name: 'Setup steps' });
+    expect(
+      within(rail).getByText('Everything here can be changed later in Workspace settings.'),
+    ).toBeTruthy();
   });
 
   it('creates the admin and moves to the import step', async () => {
