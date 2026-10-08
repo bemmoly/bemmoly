@@ -35,9 +35,8 @@ describe('createPlannedSchema', () => {
   it('follows alters and drops, including several statements in one exec', () => {
     const schema = createPlannedSchema();
     schema.record(
-      'create table if not exists things (id uuid primary key); ' +
-        'alter table things add column if not exists label text, drop column id;\n' +
-        '-- params: []',
+      `create table if not exists things (id uuid primary key); alter table things add column if not exists label text, drop column id;
+-- params: []`,
     );
     expect(schema.answer({ columnExists: { table: 'things', column: 'label' } })).toBe(true);
     expect(schema.answer({ columnExists: { table: 'things', column: 'id' } })).toBe(false);

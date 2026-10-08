@@ -64,7 +64,7 @@ describe('changelog plan: preconditions', () => {
       ]);
       expect(plan[1]?.note).toMatch(/^precondition rowCount things could not be checked/);
       expect(plan[1]?.statements).toEqual([
-        'create table tags (id uuid primary key default uuidv7(), n int);',
+        'create table "tags" (id uuid primary key default uuidv7(), n int);',
       ]);
       expect(plan[2]?.note).toBe('precondition tableExists missing does not hold');
       expect(formatPlan(plan)).toMatch(/-- work\/0002-tags: create tags\n-- action: deferred\n/);
