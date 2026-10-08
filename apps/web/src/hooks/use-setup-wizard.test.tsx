@@ -1,5 +1,6 @@
 import { act, waitFor } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
+import { useSetupStore } from '../store/setup.ts';
 import { renderPage, testQueryClient } from '../test/render.tsx';
 import { mockApi } from '../test/setup.ts';
 import {
@@ -7,10 +8,13 @@ import {
   LAST_STEP,
   railItems,
   resolveStep,
+  resumeStep,
   SETUP_STEPS,
   stepDef,
   useSetupWizard,
 } from './use-setup-wizard.ts';
+
+beforeEach(() => useSetupStore.getState().reset());
 
 describe('wizard steps', () => {
   it('labels each step as the mock does', () => {
@@ -34,6 +38,13 @@ describe('wizard steps', () => {
     expect(resolveStep(undefined, true)).toBe(2);
     expect(resolveStep(1, true)).toBe(1);
     expect(resolveStep(9, true)).toBe(LAST_STEP);
+  });
+
+  it('resumes at the last of steps 2 to 5 the admin was on', () => {
+    expect(resolveStep(undefined, true, 5)).toBe(5);
+    expect(resolveStep(3, true, 5)).toBe(3);
+    expect(resolveStep(undefined, false, 5)).toBe(1);
+    expect([null, 1, 2, 4, 5, 6, 2.5].map(resumeStep)).toEqual([2, 2, 2, 4, 5, 2, 2]);
   });
 
   it('marks rail dots and only lets an admin jump between steps 1 to 5', () => {
@@ -75,6 +86,32 @@ describe('useSetupWizard', () => {
     });
     expect(router.state.location.pathname).toBe('/setup');
     expect(router.state.location.search).toEqual({ step: 4 });
+  });
+
+  it('remembers the step and picks up there when the URL names none', async () => {
+    mockApi.reset('wizard');
+    let wizard: ReturnType<typeof useSetupWizard> | undefined;
+    const client = testQueryClient();
+    const first = await renderPage(
+      () => {
+        wizard = useSetupWizard(5);
+        return null;
+      },
+      '/setup?step=5',
+      client,
+    );
+    await waitFor(() => expect(useSetupStore.getState().lastStep).toBe(5));
+    first.unmount();
+    await renderPage(
+      () => {
+        wizard = useSetupWizard(undefined);
+        return null;
+      },
+      '/setup',
+      client,
+    );
+    await waitFor(() => expect(wizard?.loading).toBe(false));
+    expect(wizard?.step).toBe(5);
   });
 
   it('stays on step 1 on a fresh install', async () => {

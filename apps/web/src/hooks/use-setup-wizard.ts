@@ -1,5 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
+import { useEffect } from 'react';
+import { useSetupStore } from '../store/setup.ts';
 import { meQuery, setupStatusQuery } from './use-session.ts';
 
 export interface SetupStep {
@@ -88,12 +90,29 @@ export function canSkip(n: number): boolean {
 }
 
 /**
- * Which step to show. Before the admin exists only step 1 makes sense; after,
- * a missing step resumes at 2, where the router guard also sends an admin.
+ * Where an unfinished wizard picks up: the last of steps 2 to 5 the admin was
+ * on in this tab, else 2. The summary is never resumed; reaching it finishes setup.
  */
-export function resolveStep(requested: number | undefined, adminExists: boolean): number {
+export function resumeStep(lastStep: number | null | undefined): number {
+  const resumable =
+    typeof lastStep === 'number' &&
+    Number.isInteger(lastStep) &&
+    lastStep >= 2 &&
+    lastStep < LAST_STEP;
+  return resumable ? lastStep : 2;
+}
+
+/**
+ * Which step to show. Before the admin exists only step 1 makes sense; after,
+ * a missing step resumes where the admin left off, as the router guard does.
+ */
+export function resolveStep(
+  requested: number | undefined,
+  adminExists: boolean,
+  lastStep: number | null = null,
+): number {
   if (!adminExists) return 1;
-  if (requested === undefined || !Number.isInteger(requested)) return 2;
+  if (requested === undefined || !Number.isInteger(requested)) return resumeStep(lastStep);
   return Math.min(Math.max(requested, 1), LAST_STEP);
 }
 
@@ -129,7 +148,12 @@ export function useSetupWizard(requested: number | undefined) {
   const adminExists = status.data?.initialized ?? false;
   const me = useQuery({ ...meQuery, enabled: adminExists });
   const navigate = useNavigate();
-  const step = resolveStep(requested, adminExists);
+  const lastStep = useSetupStore((state) => state.lastStep);
+  const update = useSetupStore((state) => state.update);
+  const step = resolveStep(requested, adminExists, lastStep);
+  useEffect(() => {
+    if (adminExists && resumeStep(step) === step && step !== lastStep) update({ lastStep: step });
+  }, [adminExists, step, lastStep, update]);
   const goTo = (n: number) => navigate({ to: '/setup', search: { step: resolveStep(n, true) } });
   const next = () => goTo(Math.min(step + 1, LAST_STEP));
   return {
