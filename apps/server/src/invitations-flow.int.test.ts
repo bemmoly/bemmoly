@@ -74,6 +74,7 @@ describe('inviting someone on an install without outbound email', () => {
     expect(preview.json()).toMatchObject({
       email: 'sam@acmelabs.dev',
       workspaceName: 'Acme Labs',
+      inviterName: 'Rohan S.',
       roleName: 'Viewer',
     });
 

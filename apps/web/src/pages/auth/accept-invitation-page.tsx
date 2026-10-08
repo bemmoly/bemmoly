@@ -38,8 +38,9 @@ export function AcceptInvitationPage() {
       title={`Join ${invitation.workspaceName}`}
       subtitle={
         <>
-          You were invited as <b className="font-medium text-tx">{invitation.email}</b> with the{' '}
-          {invitation.roleName} role{invitation.teamName ? ` on ${invitation.teamName}` : ''}.
+          {invitation.inviterName ?? 'An administrator'} invited you as{' '}
+          <b className="font-medium text-tx">{invitation.email}</b> with the {invitation.roleName}{' '}
+          role{invitation.teamName ? ` on ${invitation.teamName}` : ''}.
         </>
       }
     >

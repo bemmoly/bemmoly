@@ -44,6 +44,8 @@ export const createInvitationsResponseSchema = z.object({
 export const invitationPreviewSchema = z.object({
   email: z.string(),
   workspaceName: z.string(),
+  /** Who sent it, so the person knows the link is expected; null once that account is gone. */
+  inviterName: z.string().nullable(),
   roleName: z.string(),
   teamName: z.string().nullable(),
   expiresAt: z.string(),
