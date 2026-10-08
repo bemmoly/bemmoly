@@ -119,6 +119,7 @@ export function useSetupDone() {
       shareContent: state.shareContent,
       allowActions: state.allowActions,
       theme: state.theme,
+      lastStep: state.lastStep,
       aiSaved: state.aiSaved,
       themeSaved: state.themeSaved,
     })),

@@ -21,6 +21,8 @@ export interface SetupDraft {
   shareContent: boolean;
   allowActions: boolean;
   theme: PresetId;
+  /** The last of steps 2 to 5 the admin was on, so an interrupted wizard resumes there. */
+  lastStep: number | null;
   /** Whether steps 4 and 5 were saved or skipped, so the summary says what happened. */
   aiSaved: boolean;
   themeSaved: boolean;
@@ -43,6 +45,7 @@ export const INITIAL_SETUP_DRAFT: SetupDraft = {
   shareContent: true,
   allowActions: true,
   theme: DEFAULT_PRESET,
+  lastStep: null,
   aiSaved: false,
   themeSaved: false,
 };
@@ -76,6 +79,7 @@ export const useSetupStore = create<SetupState>()(
         shareContent: state.shareContent,
         allowActions: state.allowActions,
         theme: state.theme,
+        lastStep: state.lastStep,
         aiSaved: state.aiSaved,
         themeSaved: state.themeSaved,
       }),

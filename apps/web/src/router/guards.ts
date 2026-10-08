@@ -3,7 +3,9 @@ import type { MeResponse } from '@bemmoly/shared';
 import type { QueryClient } from '@tanstack/react-query';
 import { redirect } from '@tanstack/react-router';
 import { meQuery, setupStatusQuery } from '../hooks/use-session.ts';
+import { resumeStep } from '../hooks/use-setup-wizard.ts';
 import { isOrgAdmin } from '../lib/session.ts';
+import { useSetupStore } from '../store/setup.ts';
 
 /** Only same-origin paths survive a redirect, so a crafted link cannot bounce people away. */
 export function safeRedirect(target: unknown): string {
@@ -28,13 +30,22 @@ export async function wizardPending(queryClient: QueryClient, me: MeResponse): P
   return status.completedAt === null;
 }
 
-/** Bootstrap order from the identity stream: setup status, then /me, then everything else. */
+/**
+ * Bootstrap order from the identity stream: setup status, then /me, then everything else.
+ * The app stays closed to an admin until the wizard is finished (every step but the first
+ * can be skipped, so nobody is stuck); a stray visit returns them to the step they were on.
+ */
 export async function requireSession(queryClient: QueryClient, href: string): Promise<MeResponse> {
   const status = await queryClient.ensureQueryData(setupStatusQuery);
   if (!status.initialized) throw redirect({ to: '/setup' });
   const me = await sessionOrNull(queryClient);
   if (!me) throw redirect({ to: '/login', search: { redirect: href } });
-  if (await wizardPending(queryClient, me)) throw redirect({ to: '/setup', search: { step: 2 } });
+  if (await wizardPending(queryClient, me)) {
+    throw redirect({
+      to: '/setup',
+      search: { step: resumeStep(useSetupStore.getState().lastStep) },
+    });
+  }
   return me;
 }
 
