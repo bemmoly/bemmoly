@@ -98,6 +98,31 @@ describe('api client', () => {
     await expect(api.roles.list()).rejects.toMatchObject({ code: 'invalid_response' });
   });
 
+  it('passes an abort signal to list calls, rejecting with AbortError', async () => {
+    const reached = vi.fn();
+    server.use(
+      route.get(`${BASE}/api/v1/users`, async () => {
+        reached();
+        await new Promise((resolve) => setTimeout(resolve, 50));
+        return HttpResponse.json({ items: [], nextCursor: null });
+      }),
+      route.get(`${BASE}/api/v1/teams`, () => HttpResponse.json({ items: [] })),
+    );
+    const api = createApiClient({ fetch: absolute });
+    const controller = new AbortController();
+    const pending = api.users.list({ q: 'ana' }, { signal: controller.signal });
+    await vi.waitFor(() => expect(reached).toHaveBeenCalled());
+    controller.abort();
+    await expect(pending).rejects.toMatchObject({ name: 'AbortError' });
+
+    const done = new AbortController();
+    done.abort();
+    await expect(api.teams.list({ signal: done.signal })).rejects.toMatchObject({
+      name: 'AbortError',
+    });
+    await expect(api.users.list({ q: 'ana' })).resolves.toEqual({ items: [], nextCursor: null });
+  });
+
   it('validates request bodies before sending them', async () => {
     const api = createApiClient({ fetch: absolute });
     const error = await api.auth
