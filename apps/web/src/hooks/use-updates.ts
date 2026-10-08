@@ -54,6 +54,20 @@ export function useUpdates() {
     },
   });
 
+  /** "Check for updates": fetch the release list now; the answer replaces the overview. */
+  const check = useMutation({
+    mutationFn: () => api.updates.check(),
+    onSuccess: async (overview) => {
+      queryClient.setQueryData(queryKeys.updates(), overview);
+      if (overview.checks.error)
+        toast(`Could not fetch the release list: ${overview.checks.error}`, 'danger');
+      else if (overview.available) toast(`${overview.available.version} is available`);
+      else toast('You are on the latest release');
+      await queryClient.invalidateQueries({ queryKey: queryKeys.system() });
+    },
+    onError: (error) => toast(describeError(error).message, 'danger'),
+  });
+
   const upload = useMutation({
     mutationFn: (file: File) => api.updates.uploadBundle(file),
     onSuccess: async (stored) => {
@@ -81,6 +95,7 @@ export function useUpdates() {
     cliCommand: commandFrom(apply.error),
     applyError: commandFrom(apply.error) ? null : apply.error,
     rollback,
+    check,
     upload,
     planChanged,
     /** A restore rollback offers the audit rows it would discard as CSV. */

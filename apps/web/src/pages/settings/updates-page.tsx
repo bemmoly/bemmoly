@@ -1,3 +1,4 @@
+import type { UpdatesOverview } from '@bemmoly/shared';
 import { Card, ConfirmChange } from '@bemmoly/ui';
 import { Notice } from '../../components/form.tsx';
 import { SettingsPage } from '../../components/settings/settings-page.tsx';
@@ -10,6 +11,15 @@ import { channelRisk, useUpdateSettings } from '../../hooks/use-updates-settings
 import { useUpdates } from '../../hooks/use-updates.ts';
 import { useConfirmChange } from '../../components/settings/use-confirm-change.ts';
 import { useSectionEdits } from '../../components/settings/use-section-edits.ts';
+
+/** What the page can honestly say when no newer release is on offer. */
+function availabilityLine(overview: UpdatesOverview): string {
+  const { checks, current } = overview;
+  if (checks.error) return `The last check failed: ${checks.error}`;
+  if (!checks.lastCheckedAt)
+    return 'The release list has not been fetched yet. Check for updates to see whether a newer release exists.';
+  return `You are on the latest ${current.channel} release.`;
+}
 
 export function UpdatesPage() {
   const updates = useUpdates();
@@ -72,10 +82,10 @@ export function UpdatesPage() {
                 },
               }}
               policy={policy.value}
-              refreshing={updates.isRefetching}
+              refreshing={updates.check.isPending}
               uploading={updates.upload.isPending}
               onPolicy={policy.update}
-              onRefresh={() => void updates.refetch()}
+              onRefresh={() => updates.check.mutate()}
               onUpload={(file) => updates.upload.mutate(file)}
             />
           ) : null}
@@ -87,9 +97,7 @@ export function UpdatesPage() {
               onUpdate={() => dialog.open('update')}
             />
           ) : (
-            <Card className="px-4 py-3 text-13 text-tx3">
-              You are on the latest {overview.current.channel} release.
-            </Card>
+            <Card className="px-4 py-3 text-13 text-tx3">{availabilityLine(overview)}</Card>
           )}
           {overview.rollback ? (
             <RollbackCard

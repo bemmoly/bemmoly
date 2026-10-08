@@ -80,6 +80,16 @@ describe('rollback copy', () => {
 });
 
 describe('updates', () => {
+  it('says the release list was never fetched, and fetches it on "Check for updates"', async () => {
+    mockApi.db.updates.checks = { ...mockApi.db.updates.checks, lastCheckedAt: null };
+    mockApi.db.updates.available = null;
+    await renderPage(UpdatesPage);
+    expect(await screen.findByText(/has not been fetched yet/)).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Check for updates' }));
+    expect(await screen.findByText(/You are on the latest stable release/)).toBeTruthy();
+    expect(mockApi.db.updates.checks.lastCheckedAt).not.toBeNull();
+  });
+
   it('starts an update, polls the updater, and offers the rollback afterwards', async () => {
     const { result } = await renderQueryHook(() => useUpdates());
     await waitFor(() => expect(result.current.isSuccess).toBe(true));

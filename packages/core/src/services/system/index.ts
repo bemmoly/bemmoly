@@ -79,7 +79,12 @@ export {
   type MaintenanceState,
 } from './maintenance/index.ts';
 
-export { applyUpdate, getUpdatesOverview, requestRollback } from './updates/admin.ts';
+export {
+  applyUpdate,
+  checkUpdatesNow,
+  getUpdatesOverview,
+  requestRollback,
+} from './updates/admin.ts';
 export { storeCatalogUpload, MAX_BUNDLE_BYTES } from './updates/catalog.ts';
 export { checkForUpdates } from './updates/check.ts';
 export { computeRollbackPlan } from './updates/rollback-plan.ts';

@@ -115,6 +115,9 @@ describe('system routes', () => {
     await app.close();
     ({ app } = await build({ signedIn: true, allowed: false }));
     expect((await app.inject({ url: '/api/v1/admin/updates' })).statusCode).toBe(403);
+    expect(
+      (await app.inject({ method: 'POST', url: '/api/v1/admin/updates/check' })).statusCode,
+    ).toBe(403);
   });
 
   it('validates input before any service runs', async () => {

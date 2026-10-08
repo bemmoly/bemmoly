@@ -62,7 +62,7 @@ export function VersionCard(props: VersionCardProps) {
         description={checkedLine(checks)}
         control={
           <Button size="sm" loading={props.refreshing} onClick={props.onRefresh}>
-            Refresh status
+            Check for updates
           </Button>
         }
       />
