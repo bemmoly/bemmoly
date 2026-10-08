@@ -58,6 +58,27 @@ describe('SetupPage', () => {
     expect(within(invites).getByLabelText('Team')).toBeTruthy();
   });
 
+  it('opens the custom theme builder on the appearance step instead of leaving it', async () => {
+    mockApi.reset('wizard');
+    const user = userEvent.setup();
+    const { router } = await renderPage(() => <Harness />, '/setup?step=5', testQueryClient());
+    const toggle = await screen.findByRole('button', {
+      name: 'Build a custom theme with your brand color instead',
+    });
+    expect(toggle.getAttribute('aria-expanded')).toBe('false');
+    await user.click(toggle);
+    expect(router.state.location.search).toEqual({ step: 5 });
+    expect(toggle.getAttribute('aria-expanded')).toBe('true');
+    expect(toggle.textContent).toBe('Use a preset instead');
+    expect(screen.getByText('Custom theme')).toBeTruthy();
+    expect(screen.getByLabelText('Brand color hex')).toBeTruthy();
+    const tiles = screen.getByRole('radiogroup', { name: 'Theme' });
+    expect(within(tiles).queryByRole('radio', { checked: true })).toBeNull();
+    await user.click(within(tiles).getByRole('radio', { name: /Forest/ }));
+    expect(screen.queryByText('Custom theme')).toBeNull();
+    expect(toggle.getAttribute('aria-expanded')).toBe('false');
+  });
+
   it('lists the summary as labels and values', async () => {
     mockApi.reset('wizard');
     await renderPage(() => <Harness />, '/setup?step=6', testQueryClient());

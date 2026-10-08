@@ -85,7 +85,11 @@ export function summaryRows(input: {
     {
       key: 'theme',
       label: 'Theme',
-      value: themeSummary(draft.theme, draft.themeSaved),
+      value: themeSummary(
+        draft.theme,
+        draft.themeSaved,
+        draft.useCustomTheme ? draft.customTheme : null,
+      ),
       done: draft.themeSaved,
     },
   ];
@@ -119,6 +123,8 @@ export function useSetupDone() {
       shareContent: state.shareContent,
       allowActions: state.allowActions,
       theme: state.theme,
+      useCustomTheme: state.useCustomTheme,
+      customTheme: state.customTheme,
       lastStep: state.lastStep,
       aiSaved: state.aiSaved,
       themeSaved: state.themeSaved,

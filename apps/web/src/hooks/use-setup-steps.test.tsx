@@ -5,10 +5,12 @@ import { useThemePreviewStore } from '../store/theme-preview.ts';
 import { renderQueryHook } from '../test/render.tsx';
 import { mockApi } from '../test/setup.ts';
 import {
+  CUSTOM_THEME_TOGGLE,
   presetIdFromSetting,
   THEME_CHOICES,
   themeSettingId,
   themeSettingValues,
+  themeSummary,
   useSetupAppearance,
 } from './use-setup-appearance.ts';
 import { invitesLine, summaryRows, useSetupDone } from './use-setup-done.ts';
@@ -52,6 +54,45 @@ describe('appearance step', () => {
     unmount();
     expect(preview()).toBeNull();
     expect(mockApi.db.settings['appearance.theme']).not.toBe('ocean');
+  });
+
+  it('builds a custom theme in place, previews it and saves it on Finish setup', async () => {
+    const onSaved = vi.fn();
+    const { result } = await renderQueryHook(() => useSetupAppearance(onSaved));
+    expect(result.current.toggleLabel).toBe(CUSTOM_THEME_TOGGLE.open);
+    act(() => result.current.toggleCustom());
+    expect(result.current.customOpen).toBe(true);
+    expect(result.current.selected).toBeNull();
+    expect(result.current.toggleLabel).toBe(CUSTOM_THEME_TOGGLE.close);
+    act(() => result.current.custom.hex.onChange('7C3AED'));
+    act(() => result.current.custom.setMode('dark'));
+    act(() => result.current.custom.setFont('geist'));
+    expect(preview()).toMatchObject({ kind: 'custom', mode: 'dark' });
+    act(() => result.current.submit());
+    await waitFor(() => expect(onSaved).toHaveBeenCalledTimes(1));
+    expect(mockApi.db.settings).toMatchObject({
+      'appearance.theme': 'custom',
+      'appearance.brandColor': '#7c3aed',
+      'appearance.mode': 'dark',
+      'appearance.surfaces': 'neutral',
+      'appearance.font': 'geist',
+    });
+    const { theme, themeSaved, customTheme } = useSetupStore.getState();
+    expect(themeSummary(theme, themeSaved, customTheme)).toBe(
+      'Custom · #7c3aed · dark · members may switch light/dark',
+    );
+  });
+
+  it('closes the builder and previews the preset when a tile is picked again', async () => {
+    const { result } = await renderQueryHook(() => useSetupAppearance(vi.fn()));
+    act(() => result.current.toggleCustom());
+    act(() => result.current.custom.pickBrand('#0f766e'));
+    act(() => result.current.select('warm'));
+    expect(result.current.customOpen).toBe(false);
+    expect(result.current.selected).toBe('warm');
+    expect(preview()).toMatchObject({ kind: 'preset', id: 'warm' });
+    act(() => result.current.toggleCustom());
+    expect(result.current.custom.value.brand).toBe('#0f766e');
   });
 
   it('hands over from the preview to the saved workspace look on Finish setup', async () => {

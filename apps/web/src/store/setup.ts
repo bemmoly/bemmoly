@@ -1,6 +1,8 @@
+import type { SurfaceTone, ThemeFont, ThemeMode } from '@bemmoly/shared';
 import { DEFAULT_PRESET, type PresetId } from '@bemmoly/ui/tokens';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
+import { DEFAULT_BRAND } from '../components/appearance/brand-choices.ts';
 
 /** The import card picked on step 2; null until one is picked. */
 export type ImportSourceId = 'jira' | 'confluence' | 'csv' | 'clean';
@@ -9,6 +11,21 @@ export type ImportSourceId = 'jira' | 'confluence' | 'csv' | 'clean';
 export type AiChoice = string;
 export const LOCAL_AI = 'local';
 export const NO_AI = 'none';
+
+/** Step 5's custom build: the Appearance page's custom theme inputs. */
+export interface CustomThemeDraft {
+  brand: string;
+  mode: ThemeMode;
+  surfaces: SurfaceTone;
+  font: ThemeFont;
+}
+
+export const INITIAL_CUSTOM_THEME: CustomThemeDraft = {
+  brand: DEFAULT_BRAND,
+  mode: 'light',
+  surfaces: 'neutral',
+  font: 'plex',
+};
 
 export interface SetupDraft {
   importSource: ImportSourceId | null;
@@ -21,6 +38,9 @@ export interface SetupDraft {
   shareContent: boolean;
   allowActions: boolean;
   theme: PresetId;
+  /** Step 5 builds a custom theme instead of the preset; the build survives picking a tile. */
+  useCustomTheme: boolean;
+  customTheme: CustomThemeDraft;
   /** The last of steps 2 to 5 the admin was on, so an interrupted wizard resumes there. */
   lastStep: number | null;
   /** Whether steps 4 and 5 were saved or skipped, so the summary says what happened. */
@@ -45,6 +65,8 @@ export const INITIAL_SETUP_DRAFT: SetupDraft = {
   shareContent: true,
   allowActions: true,
   theme: DEFAULT_PRESET,
+  useCustomTheme: false,
+  customTheme: INITIAL_CUSTOM_THEME,
   lastStep: null,
   aiSaved: false,
   themeSaved: false,
@@ -79,6 +101,8 @@ export const useSetupStore = create<SetupState>()(
         shareContent: state.shareContent,
         allowActions: state.allowActions,
         theme: state.theme,
+        useCustomTheme: state.useCustomTheme,
+        customTheme: state.customTheme,
         lastStep: state.lastStep,
         aiSaved: state.aiSaved,
         themeSaved: state.themeSaved,
