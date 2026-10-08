@@ -64,7 +64,14 @@ export function fakeSql(): FakeSql {
     throw new Error(`No fake response for: ${statement.text}`);
   };
 
-  const tagged = (strings: TemplateStringsArray, ...values: unknown[]) => {
+  const fragment = (text: string, values: unknown[] = []): Fragment => ({
+    [FRAGMENT]: true,
+    text,
+    values,
+  });
+
+  const tagged = (strings: TemplateStringsArray | string, ...values: unknown[]) => {
+    if (typeof strings === 'string') return fragment(`"${strings}"`);
     const statement = compose(strings, values);
     const pending: Promise<unknown[]> & Partial<Fragment> = Object.assign(
       new Promise<unknown[]>((resolve, reject) => {
@@ -90,6 +97,7 @@ export function fakeSql(): FakeSql {
       return work(client);
     },
     end: async () => undefined,
+    unsafe: (text: string) => fragment(text.replace(/\s+/g, ' ').trim()),
   }) as unknown as SqlClient;
 
   return {
