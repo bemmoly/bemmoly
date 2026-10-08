@@ -1,5 +1,11 @@
 import { queryKeys } from '@bemmoly/api-client';
-import { createInvitationsSchema, emailSchema, type Role } from '@bemmoly/shared';
+import {
+  createInvitationsSchema,
+  DEFAULT_ROLE_KEY,
+  emailSchema,
+  type CreateInvitationsInput,
+  type Role,
+} from '@bemmoly/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { api } from '../lib/api.ts';
@@ -12,7 +18,7 @@ export const SSO_NOTE =
 export const EMAIL_NOTE =
   'Invitations are sent through the email settings; in development they appear in the dev mailbox.';
 export const INVITE_HELPER =
-  'Everyone you add here joins as a Member with no team, unless you pick otherwise below.';
+  'Everyone you add here joins as a Viewer with no team, unless you pick otherwise below.';
 export const PASTE_PLACEHOLDER = 'Paste more, comma or newline separated…';
 
 /**
@@ -25,7 +31,7 @@ export const SSO_OPTIONS = [
     id: 'google',
     initials: 'G',
     name: 'Google Workspace',
-    description: 'Anyone with an account on your domain can sign in. New users become Members.',
+    description: 'Anyone with an account on your domain can sign in. New users become Viewers.',
   },
   {
     id: 'oidc',
@@ -53,10 +59,13 @@ export function parseEmails(text: string): { valid: string[]; invalid: string[] 
   return { valid, invalid };
 }
 
-/** Member is the default the mock shows; any non-admin role will do if it was renamed. */
+/**
+ * The least-privileged role, Viewer, wherever nobody picks one, as the server does; any
+ * non-admin role stands in if it is missing.
+ */
 export function defaultRoleId(roles: readonly Role[]): string | null {
-  const member = roles.find((role) => role.key === 'member');
-  return (member ?? roles.find((role) => role.key !== 'org_admin') ?? roles[0])?.id ?? null;
+  const viewer = roles.find((role) => role.key === DEFAULT_ROLE_KEY);
+  return (viewer ?? roles.find((role) => role.key !== 'org_admin') ?? roles[0])?.id ?? null;
 }
 
 export function invitationsSentMessage(count: number): string {
@@ -93,8 +102,7 @@ export function useSetupInvites(onDone: () => void | Promise<void>) {
   };
 
   const mutation = useMutation({
-    mutationFn: (body: { emails: string[]; roleId: string; teamId?: string }) =>
-      api.invitations.create(body),
+    mutationFn: (body: CreateInvitationsInput) => api.invitations.create(body),
     onSuccess: async (response) => {
       const count = response.items.length;
       toast(invitationsSentMessage(count));
@@ -116,7 +124,7 @@ export function useSetupInvites(onDone: () => void | Promise<void>) {
     if (!all.length) return void onDone();
     const result = validateForm(createInvitationsSchema, {
       emails: all,
-      roleId,
+      ...(roleId ? { roleId } : {}),
       ...(teamId ? { teamId } : {}),
     });
     if (result.errors) {

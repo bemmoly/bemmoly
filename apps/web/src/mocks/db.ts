@@ -20,7 +20,7 @@ import type {
 } from '@bemmoly/shared';
 import { seedCapabilities, type CapabilityRow, type Cells } from './seed/capabilities.ts';
 import { seedAudit, seedBackups, seedOutbox, seedSystem, seedUpdates } from './seed/operations.ts';
-import { seedGrants, seedRoles, seedTeams, seedUsers, USER_IDS } from './seed/people.ts';
+import { ROLE_IDS, seedGrants, seedRoles, seedTeams, seedUsers, USER_IDS } from './seed/people.ts';
 import { newId } from './seed/time.ts';
 import {
   seedAdminModules,
@@ -98,7 +98,7 @@ export function createMockDb(scenario: MockScenario = 'ready'): MockDb {
     : {
         id: newId(),
         email: 'sam@acmelabs.dev',
-        roleId: users.find((user) => user.id === USER_IDS.sam)?.roleId ?? '',
+        roleId: ROLE_IDS.viewer,
         teamId: null,
         invitedBy: USER_IDS.rohan,
         expiresAt: new Date(Date.now() + 6 * 86_400_000).toISOString(),

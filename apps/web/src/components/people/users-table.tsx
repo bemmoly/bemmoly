@@ -3,6 +3,7 @@ import type { User } from '@bemmoly/shared';
 import {
   Avatar,
   avatarHue,
+  Badge,
   EmptyState,
   Select,
   Table,
@@ -60,10 +61,17 @@ export function UsersTable({
       render: (user) => (
         <div className="flex min-w-0 items-center gap-2.5">
           <Avatar name={user.name} hue={avatarHue(user.id)} size={30} />
-          <div className="flex min-w-0 flex-col gap-px">
-            <span className="font-medium">{user.name}</span>
-            <span className="truncate text-12 text-tx5">{user.email}</span>
-          </div>
+          {user.status === 'invited' ? (
+            <div className="flex min-w-0 items-center gap-2">
+              <span className="truncate font-medium">{user.email}</span>
+              <Badge tone="amber">INVITED</Badge>
+            </div>
+          ) : (
+            <div className="flex min-w-0 flex-col gap-px">
+              <span className="font-medium">{user.name}</span>
+              <span className="truncate text-12 text-tx5">{user.email}</span>
+            </div>
+          )}
         </div>
       ),
     },
@@ -106,11 +114,14 @@ export function UsersTable({
       key: 'last',
       header: 'Last active',
       width: '110px',
-      render: (user) => (
-        <span className={`text-12 ${isLate(user.lastSeenAt) ? 'text-warn-fg' : 'text-tx4'}`}>
-          {formatRelative(user.lastSeenAt)}
-        </span>
-      ),
+      render: (user) =>
+        user.status === 'invited' ? (
+          <span className="text-12 text-tx4">Invited {formatRelative(user.createdAt)}</span>
+        ) : (
+          <span className={`text-12 ${isLate(user.lastSeenAt) ? 'text-warn-fg' : 'text-tx4'}`}>
+            {formatRelative(user.lastSeenAt)}
+          </span>
+        ),
     },
     {
       key: 'menu',

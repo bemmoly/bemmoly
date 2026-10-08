@@ -54,7 +54,7 @@ describe('SetupPage', () => {
     await renderPage(() => <Harness />, '/setup?step=3', testQueryClient());
     const invites = await screen.findByRole('region', { name: 'Or invite by email' });
     expect(within(invites).getByRole('heading', { level: 2 })).toBeTruthy();
-    expect(within(invites).getByText(/joins as a Member with no team/)).toBeTruthy();
+    expect(within(invites).getByText(/joins as a Viewer with no team/)).toBeTruthy();
     expect(within(invites).getByLabelText('Team')).toBeTruthy();
   });
 

@@ -7,6 +7,7 @@ export interface UserMenuActions {
   deactivate: (user: User) => void;
   reactivate: (user: User) => void;
   resend: (user: User) => void;
+  copyLink: (user: User) => void;
   revoke: (user: User) => void;
 }
 
@@ -29,6 +30,7 @@ export function UserMenu({ user, actions }: { user: User; actions: UserMenuActio
       {user.status === 'invited' ? (
         <>
           <MenuItem onSelect={() => actions.resend(user)}>Resend invitation</MenuItem>
+          <MenuItem onSelect={() => actions.copyLink(user)}>Copy invite link</MenuItem>
           <MenuItem tone="danger" onSelect={() => actions.revoke(user)}>
             Revoke invitation
           </MenuItem>

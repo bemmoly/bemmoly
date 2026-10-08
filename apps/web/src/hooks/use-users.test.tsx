@@ -2,6 +2,7 @@ import type { ModuleGrant } from '@bemmoly/shared';
 import { act, waitFor } from '@testing-library/react';
 import type { FormEvent } from 'react';
 import { describe, expect, it } from 'vitest';
+import { INVITE_TOKEN } from '../mocks/db.ts';
 import { ROLE_IDS, TEAM_IDS, USER_IDS } from '../mocks/seed/people.ts';
 import { useUiStore } from '../store/ui.ts';
 import { renderQueryHook } from '../test/render.tsx';
@@ -75,6 +76,32 @@ describe('useUsers', () => {
     );
   });
 
+  it('lists pending invitations as INVITED rows and counts them', async () => {
+    const { result } = await renderQueryHook(() => ({
+      users: useUsers(),
+      invite: useInviteForm(),
+    }));
+    await waitFor(() => expect(result.current.users.rows).toHaveLength(8));
+    const [sam] = result.current.users.rows;
+    expect(sam).toMatchObject({ email: 'sam@acmelabs.dev', status: 'invited' });
+    expect(result.current.users.isInvitation(sam!)).toBe(true);
+    expect(result.current.users.summary).toMatch(/^7 active · 1 invited/);
+
+    act(() => result.current.invite.update({ text: 'new.person@acme.dev' }));
+    act(() => result.current.invite.submit(submitEvent));
+    await waitFor(() => expect(result.current.invite.sent?.items).toHaveLength(1));
+    expect(result.current.invite.sent?.emailConfigured).toBe(false);
+    expect(result.current.invite.sent?.items[0]?.acceptUrl).toMatch(/\/accept-invitation#token=/);
+    act(() => result.current.users.setStatus('invited'));
+    await waitFor(() =>
+      expect(result.current.users.rows.map((row) => row.email)).toEqual([
+        'sam@acmelabs.dev',
+        'new.person@acme.dev',
+      ]),
+    );
+    expect(result.current.users.summary).toMatch(/^7 active · 2 invited/);
+  });
+
   it('searches on the server by name or email', async () => {
     const { result } = await renderQueryHook(() => useUsers());
     await waitFor(() => expect(result.current.rows).toHaveLength(8));
@@ -96,10 +123,10 @@ describe('useUsers', () => {
 });
 
 describe('invitations and row actions', () => {
-  it('invites several addresses with the default Member role', async () => {
+  it('invites several addresses with the least-privileged Viewer role by default', async () => {
     let sent = false;
     const { result } = await renderQueryHook(() => useInviteForm(() => (sent = true)));
-    await waitFor(() => expect(result.current.form.roleId).toBe(ROLE_IDS.member));
+    await waitFor(() => expect(result.current.form.roleId).toBe(ROLE_IDS.viewer));
     act(() =>
       result.current.update({ text: 'Ana@acme.dev, ben@acme.dev', teamId: TEAM_IDS.growth }),
     );
@@ -107,8 +134,8 @@ describe('invitations and row actions', () => {
     await waitFor(() => expect(sent).toBe(true));
     const invited = mockApi.db.invitations.filter((item) => item.email.endsWith('@acme.dev'));
     expect(invited.map((item) => [item.email, item.roleId, item.teamId])).toEqual([
-      ['ana@acme.dev', ROLE_IDS.member, TEAM_IDS.growth],
-      ['ben@acme.dev', ROLE_IDS.member, TEAM_IDS.growth],
+      ['ana@acme.dev', ROLE_IDS.viewer, TEAM_IDS.growth],
+      ['ben@acme.dev', ROLE_IDS.viewer, TEAM_IDS.growth],
     ]);
   });
 
@@ -122,14 +149,31 @@ describe('invitations and row actions', () => {
     expect(result.current.errors['emails']).toBe('Add at least one email address');
   });
 
-  it('revokes an invitation and deactivates a person', async () => {
-    const sam = mockApi.db.users.find((user) => user.id === USER_IDS.sam)!;
-    const aisha = mockApi.db.users.find((user) => user.id === USER_IDS.aisha)!;
-    const { result } = await renderQueryHook(() => useUserActions([]));
+  it('copies a fresh link, re-invites with a new role, and revokes an invitation', async () => {
+    const users = await renderQueryHook(() => useUsers());
+    await waitFor(() => expect(users.result.current.rows[0]?.status).toBe('invited'));
+    const sam = users.result.current.rows[0]!;
+    const { result } = await renderQueryHook(() => useUserActions(mockApi.db.roles));
+
+    act(() => result.current.copyLink.mutate(sam));
+    await waitFor(() => expect(result.current.shownLink?.email).toBe('sam@acmelabs.dev'));
+    expect(mockApi.db.invitationTokens[INVITE_TOKEN]).toBeUndefined();
+
+    act(() => result.current.resend.mutate({ user: sam, roleId: ROLE_IDS.member }));
+    await waitFor(() => expect(result.current.resend.isSuccess).toBe(true));
+    const pending = mockApi.db.invitations.filter((item) => !item.revokedAt);
+    expect(pending.map((item) => [item.email, item.roleId])).toEqual([
+      ['sam@acmelabs.dev', ROLE_IDS.member],
+    ]);
+
     act(() => result.current.revoke.mutate(sam));
     await waitFor(() => expect(result.current.revoke.isSuccess).toBe(true));
-    expect(mockApi.db.users.some((user) => user.id === USER_IDS.sam)).toBe(false);
-    expect(mockApi.db.invitations[0]?.revokedAt).not.toBeNull();
+    expect(mockApi.db.invitations.every((item) => item.revokedAt)).toBe(true);
+  });
+
+  it('deactivates a person', async () => {
+    const aisha = mockApi.db.users.find((user) => user.id === USER_IDS.aisha)!;
+    const { result } = await renderQueryHook(() => useUserActions([]));
     act(() => result.current.deactivate.mutate(aisha));
     await waitFor(() => expect(result.current.deactivate.isSuccess).toBe(true));
     expect(mockApi.db.users.find((user) => user.id === USER_IDS.aisha)?.status).toBe('deactivated');

@@ -1,14 +1,17 @@
-import type {
-  CreateInvitationsInput,
-  CreateModuleGrantInput,
-  CreateRoleInput,
-  CreateTeamInput,
-  PutRoleCapabilitiesInput,
-  UpdateUserInput,
-  User,
+import {
+  ACCEPT_INVITATION_PATH,
+  DEFAULT_ROLE_KEY,
+  tokenLinkPath,
+  type Invitation,
+  type CreateInvitationsInput,
+  type CreateModuleGrantInput,
+  type CreateRoleInput,
+  type CreateTeamInput,
+  type PutRoleCapabilitiesInput,
+  type UpdateUserInput,
+  type User,
 } from '@bemmoly/shared';
 import { audit, can, emit, type MockDb } from '../db.ts';
-import { makeUser } from '../seed/people.ts';
 import { newId } from '../seed/time.ts';
 import { bodyOf, fail, invalid, notFound, ok, page, type MockRoute } from '../types.ts';
 import { capture } from './session.ts';
@@ -33,8 +36,31 @@ function filterUsers(db: MockDb, query: URLSearchParams): User[] {
   );
 }
 
-function invite(db: MockDb, email: string, roleId: string, teamId: string | undefined) {
+/** As the server: SMTP with a host counts as configured; the log provider does not. */
+const emailConfigured = (db: MockDb) =>
+  db.settings['email.provider'] === 'smtp' && Boolean(db.settings['email.smtp.host']);
+
+/** A fresh token for the invitation, as the accept link the admin can share. */
+function issueLink(db: MockDb, invitation: Invitation) {
+  for (const [token, id] of Object.entries(db.invitationTokens)) {
+    if (id === invitation.id) delete db.invitationTokens[token];
+  }
   const token = `invite-${newId().replaceAll('-', '')}`;
+  db.invitationTokens[token] = invitation.id;
+  const origin = globalThis.location?.origin ?? 'http://bemmoly.test';
+  return { token, acceptUrl: new URL(tokenLinkPath(ACCEPT_INVITATION_PATH, token), origin).href };
+}
+
+/**
+ * Like the server, an invitation is only an invitation: the person has no account, and no
+ * user row, until they accept. A pending invitation to the same address is replaced.
+ */
+function invite(db: MockDb, email: string, roleId: string, teamId: string | undefined) {
+  for (const pending of db.invitations) {
+    if (pending.email === email && !pending.acceptedAt && !pending.revokedAt) {
+      pending.revokedAt = new Date().toISOString();
+    }
+  }
   const invitation = {
     id: newId(),
     email,
@@ -47,23 +73,15 @@ function invite(db: MockDb, email: string, roleId: string, teamId: string | unde
     createdAt: new Date().toISOString(),
   };
   db.invitations.push(invitation);
-  db.invitationTokens[token] = invitation.id;
-  if (!db.users.some((user) => user.email === email)) {
-    db.users.push({
-      ...makeUser(newId(), email.split('@')[0] ?? email, email, roleId),
-      status: 'invited',
-      lastSeenAt: null,
-      teamIds: teamId ? [teamId] : [],
-    });
-  }
+  const { acceptUrl } = issueLink(db, invitation);
   capture(
     db,
     email,
     `You're invited to ${String(db.settings['workspace.name'] ?? 'Bemmoly')}`,
-    `Accept: /accept-invitation#token=${token}`,
+    `Accept: ${acceptUrl}`,
   );
-  audit(db, 'user.invited', 'invitation', email);
-  return invitation;
+  audit(db, 'invitation.created', 'invitation', invitation.id);
+  return { ...invitation, acceptUrl };
 }
 
 function matrix(db: MockDb) {
@@ -110,21 +128,23 @@ export const peopleRoutes: MockRoute[] = [
   {
     method: 'GET',
     pattern: '/api/v1/invitations',
-    handle: (_, db) => ok({ items: db.invitations }),
+    handle: needs(PEOPLE, (_, db) =>
+      ok({ items: db.invitations.filter((item) => !item.acceptedAt && !item.revokedAt) }),
+    ),
   },
   {
     method: 'POST',
     pattern: '/api/v1/invitations',
     handle: needs(PEOPLE, (request, db) => {
       const body = bodyOf<CreateInvitationsInput>(request);
-      if (!body.emails?.length || !body.roleId)
-        return invalid('emails', 'Add at least one email address');
-      return ok(
-        {
-          items: body.emails.map((email) => invite(db, email, body.roleId as string, body.teamId)),
-        },
-        201,
-      );
+      if (!body.emails?.length) return invalid('emails', 'Add at least one email address');
+      const roleId = body.roleId ?? db.roles.find((role) => role.key === DEFAULT_ROLE_KEY)?.id;
+      if (!roleId) return invalid('roleId', 'Choose a role');
+      if (body.emails.some((email) => db.users.some((user) => user.email === email))) {
+        return fail(409, 'conflict', 'Some of these people already have accounts');
+      }
+      const items = body.emails.map((email) => invite(db, email, roleId, body.teamId));
+      return ok({ items, emailConfigured: emailConfigured(db) }, 201);
     }),
   },
   {
@@ -134,12 +154,22 @@ export const peopleRoutes: MockRoute[] = [
       const invitation = db.invitations.find((entry) => entry.id === request.params['id']);
       if (!invitation) return notFound('That invitation');
       invitation.revokedAt = new Date().toISOString();
-      // The invited person never signed in, so revoking leaves no account behind.
-      db.users = db.users.filter(
-        (user) => !(user.email === invitation.email && user.status === 'invited'),
-      );
-      audit(db, 'user.invitation_revoked', 'invitation', invitation.id);
+      audit(db, 'invitation.revoked', 'invitation', invitation.id);
       return ok();
+    }),
+  },
+  {
+    method: 'POST',
+    pattern: '/api/v1/invitations/:id/links',
+    handle: needs(PEOPLE, (request, db) => {
+      const invitation = db.invitations.find(
+        (entry) => entry.id === request.params['id'] && !entry.acceptedAt && !entry.revokedAt,
+      );
+      if (!invitation) return notFound('That invitation');
+      invitation.expiresAt = new Date(Date.now() + 7 * 86_400_000).toISOString();
+      const { acceptUrl } = issueLink(db, invitation);
+      audit(db, 'invitation.link_issued', 'invitation', invitation.id);
+      return ok({ ...invitation, acceptUrl }, 201);
     }),
   },
   { method: 'GET', pattern: '/api/v1/teams', handle: (_, db) => ok({ items: db.teams }) },

@@ -22,10 +22,10 @@ describe('teams', () => {
     expect(result.current.cards.at(-1)?.defaultRole).toBe('Viewer');
   });
 
-  it('creates a team with a lead and the Member default role', async () => {
+  it('creates a team with a lead and the Viewer default role', async () => {
     let done = false;
     const { result } = await renderQueryHook(() => useCreateTeam(() => (done = true)));
-    await waitFor(() => expect(result.current.form.defaultRoleId).toBe(ROLE_IDS.member));
+    await waitFor(() => expect(result.current.form.defaultRoleId).toBe(ROLE_IDS.viewer));
     act(() => result.current.submit({ preventDefault: () => undefined } as FormEvent));
     expect(result.current.errors['name']).toBeTruthy();
     act(() => result.current.update({ name: 'Data', leadUserId: USER_IDS.aisha }));
@@ -34,7 +34,7 @@ describe('teams', () => {
     expect(mockApi.db.teams.at(-1)).toMatchObject({
       name: 'Data',
       leadUserId: USER_IDS.aisha,
-      defaultRoleId: ROLE_IDS.member,
+      defaultRoleId: ROLE_IDS.viewer,
     });
   });
 });
