@@ -1,4 +1,4 @@
-import { Card, CardBody, SettingsRow, Switch } from '@bemmoly/ui';
+import { SettingsRow, SettingsSection } from '@bemmoly/ui';
 import { AuthMethodCard, type AuthMethod } from '../../components/people/auth-method-card.tsx';
 import { Notice } from '../../components/form.tsx';
 import { SettingsPage } from '../../components/settings/settings-page.tsx';
@@ -69,18 +69,22 @@ export function AuthenticationPage() {
         <Notice>
           Single sign-on arrives in a later release; until then everyone signs in with a password.
         </Notice>
-        <Card>
-          <CardBody layout="list">
-            {POLICIES.map((policy) => (
-              <SettingsRow
-                key={policy.title}
-                title={policy.title}
-                description={policy.description}
-                control={<Switch checked={false} disabled aria-label={policy.title} />}
-              />
-            ))}
-          </CardBody>
-        </Card>
+        <SettingsSection
+          title="Sign-in policies"
+          layout="rows"
+          mode="read"
+          onEdit={() => undefined}
+          locked="These apply to single sign-on, which arrives in a later release."
+        >
+          {POLICIES.map((policy) => (
+            <SettingsRow
+              key={policy.title}
+              title={policy.title}
+              description={policy.description}
+              control={<span className="text-13 text-tx5">Off</span>}
+            />
+          ))}
+        </SettingsSection>
       </div>
     </SettingsPage>
   );

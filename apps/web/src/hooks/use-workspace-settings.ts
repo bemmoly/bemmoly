@@ -1,5 +1,5 @@
 import { SETTING_SCHEMAS } from '@bemmoly/shared';
-import { useState, type FormEvent } from 'react';
+import { useState } from 'react';
 import { z } from 'zod';
 import { validateForm, type FieldErrors } from '../lib/errors.ts';
 import { useDraft, useSettings, valuesOf } from './use-setting.ts';
@@ -45,8 +45,8 @@ export function useWorkspaceSettings() {
     },
   );
   const [errors, setErrors] = useState<FieldErrors>({});
-  const submit = (event: FormEvent) => {
-    event.preventDefault();
+  /** Checks and writes the draft; `onSaved` returns the section to its read view. */
+  const save = (onSaved: () => void = () => {}) => {
     const result = validateForm(formSchema, draft.value);
     if (result.errors) return setErrors(result.errors);
     setErrors({});
@@ -56,8 +56,17 @@ export function useWorkspaceSettings() {
         'workspace.locale': result.data.locale,
         'workspace.timezone': result.data.timezone,
       },
-      { onSuccess: () => draft.discard() },
+      {
+        onSuccess: () => {
+          draft.discard();
+          onSaved();
+        },
+      },
     );
   };
-  return { settings, draft, errors, submit };
+  const discard = () => {
+    draft.discard();
+    setErrors({});
+  };
+  return { settings, draft, errors, save, discard };
 }
