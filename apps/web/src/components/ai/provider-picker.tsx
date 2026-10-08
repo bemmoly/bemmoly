@@ -1,8 +1,10 @@
+import { Icon } from '@bemmoly/ui/icons';
 import { initialsOf } from '../../hooks/use-ai-catalog.ts';
 import { LOCAL_DESCRIPTION, NO_AI_OPTION, type useSetupAi } from '../../hooks/use-ai-settings.ts';
 import type { AiChoice } from '../../store/setup.ts';
 import { ChoiceCard } from '../setup/choice-card.tsx';
 import { ProviderList } from './provider-list.tsx';
+import { providerIcon } from './provider-logo.tsx';
 
 export type Picker = ReturnType<typeof useSetupAi>['picker'];
 
@@ -32,6 +34,7 @@ export function ProviderPicker({ picker, choice, onPick, disabled }: ProviderPic
           <ChoiceCard
             key={provider.id}
             initials={initialsOf(provider.name)}
+            icon={providerIcon(provider.id)}
             name={provider.name}
             detail={provider.id}
             selected={choice === provider.id}
@@ -54,6 +57,7 @@ export function ProviderPicker({ picker, choice, onPick, disabled }: ProviderPic
       <div role="radiogroup" aria-label="Other options" className="grid grid-cols-2 gap-3">
         <ChoiceCard
           initials={initialsOf(picker.local.name)}
+          icon={<Icon name="server" size={16} />}
           name={picker.local.name}
           description={LOCAL_DESCRIPTION}
           badge="AIR-GAPPED"
