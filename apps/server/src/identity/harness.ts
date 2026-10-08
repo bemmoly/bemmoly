@@ -15,6 +15,7 @@ import {
   resetIdentityData,
   startTestDatabase,
 } from '@bemmoly/core/testing';
+import { tokenOfLink } from '@bemmoly/shared';
 import type { FastifyInstance, InjectOptions, LightMyRequestResponse } from 'fastify';
 import { buildApp } from '../app.ts';
 import { shippedModules, TEST_ENV } from '../test-support.ts';
@@ -182,7 +183,7 @@ export async function addPerson(
   return { cookie, userId: (accepted.json() as { user: { id: string } }).user.id };
 }
 
-/** The token at the end of an emailed link such as `/invitations/<token>`. */
+/** The token in an emailed link such as `/accept-invitation#token=<token>`. */
 export function linkToken(url: string): string {
-  return new URL(url).pathname.split('/').pop() ?? '';
+  return tokenOfLink(url) ?? '';
 }

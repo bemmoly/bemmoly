@@ -3,6 +3,7 @@ export * from './audit.ts';
 export * from './auth.ts';
 export * from './common.ts';
 export * from './invitations.ts';
+export * from './links.ts';
 export * from './module-grants.ts';
 export * from './roles.ts';
 export * from './setup.ts';
