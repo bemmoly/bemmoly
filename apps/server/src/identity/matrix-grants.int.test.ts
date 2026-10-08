@@ -1,4 +1,4 @@
-import { createApplyModuleDefaultAccess, createRequestAuthorization } from '@bemmoly/core';
+import { createModuleAccessWriter, createRequestAuthorization } from '@bemmoly/core';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import {
   addPerson,
@@ -130,9 +130,12 @@ describe('capability matrix, org locks and module grants against a real database
     expect(await modulesOf(admin)).toEqual(['sample']);
     expect(await modulesOf(onTeam.cookie)).toEqual([]);
 
-    const apply = createApplyModuleDefaultAccess(identity.db);
-    await apply({ id: 'sample', defaultAccess: 'everyone' }, { kind: 'system', id: 'modules' });
-    await apply({ id: 'sample', defaultAccess: 'everyone' }, { kind: 'system', id: 'modules' });
+    const writer = createModuleAccessWriter(identity.db);
+    const system = { kind: 'system', id: 'modules' } as const;
+    await writer.apply('sample', { mode: 'none' }, system);
+    expect(await modulesOf(offTeam.cookie)).toEqual([]);
+    await writer.apply('sample', { mode: 'everyone' }, system);
+    await writer.apply('sample', { mode: 'everyone' }, system);
     const grants = (
       await call(app, 'GET', '/module-grants?moduleId=sample', { cookie: admin })
     ).json().items;

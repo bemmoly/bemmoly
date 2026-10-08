@@ -69,16 +69,15 @@ export function createModuleState(deps: ModuleStateDeps): ModuleState {
 
   async function reconcile(): Promise<void> {
     const rows = new Map((await store.list()).map((row) => [row.id, row]));
-    const firstBoot = rows.size === 0;
     for (const id of deps.pinned) {
       if (!registry.has(id))
         throw new ModuleLoadError(`BEMMOLY_MODULES names "${id}", which is not in this image`, id);
     }
     for (const id of registry.ids()) {
       const row = rows.get(id);
-      // Without a pin, a fresh install enables every module in the image; later
-      // additions to the image start disabled until an admin enables them.
-      const want = deps.pinned.length > 0 ? deps.pinned.includes(id) : (row?.enabled ?? firstBoot);
+      // Without a pin, a module runs only once an admin enables it, on a fresh
+      // install as much as for one a later image adds: nothing is on by default.
+      const want = deps.pinned.length > 0 ? deps.pinned.includes(id) : (row?.enabled ?? false);
       if (row && row.enabled === want) continue;
       await store.upsert(
         id,

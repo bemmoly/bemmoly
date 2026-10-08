@@ -136,7 +136,7 @@ export async function createDataKernel(input: DataKernelInput): Promise<DataKern
     contexts,
     authorize: identity.authorize,
     events: realtime.events,
-    ...(identity.applyDefaultAccess ? { applyDefaultAccess: identity.applyDefaultAccess } : {}),
+    ...(identity.moduleAccessWriter ? { access: identity.moduleAccessWriter } : {}),
     ...(identity.backup ? { backup: identity.backup } : {}),
   });
   const objectStore = createObjectStore({

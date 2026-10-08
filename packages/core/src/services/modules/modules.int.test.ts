@@ -104,9 +104,12 @@ describe('module enable, disable and remove data against a real database', () =>
     (await sql!<{ present: boolean }[]>`select to_regclass(${table}) is not null as present`)[0]
       ?.present;
 
-  it('enables on first boot, keeps data when disabled, removes it only when asked', async (ctx) => {
+  it('starts off on a fresh install, keeps data when disabled, removes it only when asked', async (ctx) => {
     if (!sql) return ctx.skip(server.available ? 'no database' : server.reason);
     const { state, moduleAdmin, backups, registry } = await boot(sql);
+    expect(state.enabledIds()).toEqual([]);
+    expect(await exists('widgets')).toBe(false);
+    await moduleAdmin.enable(admin, 'widgets', { mode: 'none' });
     expect(state.enabledIds()).toEqual(['widgets']);
     expect(await exists('widgets')).toBe(true);
 
@@ -126,10 +129,12 @@ describe('module enable, disable and remove data against a real database', () =>
     >`select changelog_state from modules where id = 'widgets'`;
     expect(row?.changelog_state).toBe('removed');
 
-    const back = await restarted.moduleAdmin.enable(admin, 'widgets', {
-      ip: '192.0.2.4',
-      requestId: 'req-modules',
-    });
+    const back = await restarted.moduleAdmin.enable(
+      admin,
+      'widgets',
+      { mode: 'none' },
+      { ip: '192.0.2.4', requestId: 'req-modules' },
+    );
     expect(back).toMatchObject({ enabled: true, changelogState: 'current', pendingChangesets: 0 });
     expect(await exists('widgets')).toBe(true);
 
@@ -144,11 +149,12 @@ describe('module enable, disable and remove data against a real database', () =>
     >`select action, target_id, before, after, request_id from audit_log
       where target_kind = 'module' and actor_id = ${admin.id} order by id`;
     expect(audited.map((row) => row.action)).toEqual([
+      'module.enabled',
       'module.disabled',
       'module.data_removed',
       'module.enabled',
     ]);
-    const [disabled, removed, enabled] = audited;
+    const [, disabled, removed, enabled] = audited;
     expect(disabled).toMatchObject({
       target_id: 'widgets',
       before: { enabled: true },
@@ -161,7 +167,12 @@ describe('module enable, disable and remove data against a real database', () =>
     });
     expect(enabled).toMatchObject({
       before: { enabled: false, changelogState: 'removed' },
-      after: { enabled: true, changelogState: 'current', versionInstalled: '1.0.0' },
+      after: {
+        enabled: true,
+        changelogState: 'current',
+        versionInstalled: '1.0.0',
+        access: { mode: 'none', teamIds: [] },
+      },
       request_id: 'req-modules',
     });
   });

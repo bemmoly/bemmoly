@@ -4,11 +4,12 @@ import {
   ValidationError,
   type AdminModule,
   type AdminModulesResponse,
+  type ModuleAccessChoice,
 } from '@bemmoly/shared';
 import type { Actor, Authorize } from '../../contracts/authz.ts';
 import type { ChangesetContextName } from '../../contracts/changelog.ts';
 import type { EventBus } from '../../contracts/event-bus.ts';
-import type { ApplyModuleDefaultAccess } from '../../contracts/module-access.ts';
+import type { ModuleAccessWriter } from '../../contracts/module-access.ts';
 import type { ModuleDataBackup } from '../../contracts/module-backup.ts';
 import type { ModuleRow } from '../../models/modules.ts';
 import type { LoadedModule, ModuleRegistry } from '../../modules/registry.ts';
@@ -26,8 +27,8 @@ export interface ModuleAdminDeps {
   runner?: KernelChangelogRunner;
   contexts: readonly ChangesetContextName[];
   authorize: Authorize;
-  /** Writes the module's declared default grant; a no-op once it has grants. */
-  applyDefaultAccess?: ApplyModuleDefaultAccess;
+  /** Writes the access the admin chose on enable; absent without a database. */
+  access?: ModuleAccessWriter;
   backup?: ModuleDataBackup;
   events?: EventBus;
 }
@@ -36,7 +37,13 @@ export interface ModuleAdminDeps {
 export interface ModuleAdmin {
   list(actor: Actor): Promise<AdminModulesResponse>;
   get(actor: Actor, id: string): Promise<AdminModule>;
-  enable(actor: Actor, id: string, meta?: RequestMeta): Promise<AdminModule>;
+  /** Grants exactly `access`; the module's own defaultAccess is only shown as a suggestion. */
+  enable(
+    actor: Actor,
+    id: string,
+    access: ModuleAccessChoice,
+    meta?: RequestMeta,
+  ): Promise<AdminModule>;
   disable(actor: Actor, id: string, meta?: RequestMeta): Promise<AdminModule>;
   removeData(actor: Actor, id: string, confirm: string, meta?: RequestMeta): Promise<AdminModule>;
 }
@@ -130,7 +137,7 @@ export function createModuleAdmin(deps: ModuleAdminDeps): ModuleAdmin {
       return view(loaded(id), await rowOf(id));
     },
 
-    async enable(actor, id, meta) {
+    async enable(actor, id, access, meta) {
       await authorize(actor);
       writable();
       const entry = loaded(id);
@@ -141,6 +148,7 @@ export function createModuleAdmin(deps: ModuleAdminDeps): ModuleAdmin {
       if (missing.length > 0) {
         throw new ConflictError(`Enable ${missing.join(', ')} first`, { details: { missing } });
       }
+      await deps.access?.check(access);
       if (runner) {
         try {
           await runner.update({ contexts: deps.contexts, modules: [...state.enabledIds(), id] });
@@ -149,7 +157,7 @@ export function createModuleAdmin(deps: ModuleAdminDeps): ModuleAdmin {
           throw error;
         }
       }
-      await deps.applyDefaultAccess?.({ id, defaultAccess: entry.module.defaultAccess }, actor);
+      await deps.access?.apply(id, access, actor);
       await store.upsert(
         id,
         {
@@ -159,7 +167,12 @@ export function createModuleAdmin(deps: ModuleAdminDeps): ModuleAdmin {
           changelogState: 'current',
           dataRemovedAt: null,
         },
-        { actor, action: 'module.enabled', ...(meta ? { meta } : {}) },
+        {
+          actor,
+          action: 'module.enabled',
+          details: { access: { mode: access.mode, teamIds: access.teamIds ?? [] } },
+          ...(meta ? { meta } : {}),
+        },
       );
       return changed(actor, id, 'module.enabled');
     },

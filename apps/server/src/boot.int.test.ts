@@ -1,66 +1,39 @@
-import { mkdtempSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
-import { parseEnv } from '@bemmoly/core/config';
-import {
-  createIsolatedDatabase,
-  startTestDatabase,
-  type IsolatedDatabase,
-  type TestDatabase,
-} from '@bemmoly/core/testing';
-import type { FastifyInstance, InjectOptions } from 'fastify';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { bootApplication, type Booted } from './config/boot.ts';
-import { importAvailableModules } from './config/modules.ts';
-
-const ORIGIN = 'http://localhost:8080';
+import { startBootHarness, type BootHarness } from './boot-harness.ts';
 
 describe('the host boots the data kernel with the sample module', () => {
-  let server: TestDatabase;
-  let database: IsolatedDatabase | undefined;
-  const booted: Booted[] = [];
-  let cookie: string | undefined;
+  let harness: BootHarness | undefined;
+  let skipReason = '';
 
   beforeAll(async () => {
-    server = await startTestDatabase();
-    if (server.available) database = await createIsolatedDatabase(server.url);
+    const started = await startBootHarness();
+    if (started.available) harness = started.harness;
+    else skipReason = started.reason;
   });
 
-  afterAll(async () => {
-    for (const instance of booted) await instance.app.close();
-    for (const instance of booted) {
-      await instance.kernel?.stop();
-      await instance.database?.sql.end({ timeout: 5 });
-    }
-    await database?.drop();
-    if (server.available) await server.stop();
-  });
+  afterAll(async () => harness?.stop());
 
-  async function boot(pinned = '') {
-    if (!database) throw new Error('no database');
-    const env = parseEnv({
-      DATABASE_URL: database.url,
-      BEMMOLY_SECRET_KEY: Buffer.alloc(32, 8).toString('base64'),
-      BEMMOLY_PUBLIC_URL: ORIGIN,
-      BEMMOLY_DATA_DIR: mkdtempSync(join(tmpdir(), 'bemmoly-data-')),
-      BEMMOLY_DB_CONTEXTS: 'test',
-      BEMMOLY_MODULES: pinned,
-      LOG_LEVEL: 'fatal',
+  it('starts a fresh install with no module enabled', async (ctx) => {
+    if (!harness) return ctx.skip(skipReason);
+    const app = await harness.boot();
+    expect((await app.inject({ url: '/api/v1/modules' })).json()).toEqual({ items: [] });
+    expect((await app.inject({ url: '/api/v1/admin/modules' })).json()).toMatchObject({
+      pinned: false,
+      items: [{ id: 'sample', enabled: false, defaultAccess: 'none' }],
     });
-    const instance = await bootApplication({
-      env,
-      available: await importAvailableModules(),
-      logger: false,
+    const gated = await app.inject({ url: '/api/v1/sample/greeting' });
+    expect(gated.json()).toMatchObject({ code: 'module_not_enabled' });
+    const enabled = await app.inject({
+      method: 'POST',
+      url: '/api/v1/admin/modules/sample/enable',
+      payload: { access: { mode: 'everyone' } },
     });
-    booted.push(instance);
-    await instance.kernel?.start();
-    cookie ??= await createFirstAdmin(instance.app);
-    return signedIn(instance.app, cookie);
-  }
+    expect(enabled.json()).toMatchObject({ id: 'sample', enabled: true });
+  });
 
   it('serves the enabled sample end to end: route, setting, realtime, job', async (ctx) => {
-    if (!database) return ctx.skip(server.available ? 'no database' : server.reason);
-    const app = await boot();
+    if (!harness) return ctx.skip(skipReason);
+    const app = await harness.boot();
     expect(
       (await app.inject({ url: '/api/v1/modules' })).json().items.map((m: { id: string }) => m.id),
     ).toEqual(['sample']);
@@ -104,8 +77,8 @@ describe('the host boots the data kernel with the sample module', () => {
   });
 
   it('disables the sample live and keeps it disabled across a restart', async (ctx) => {
-    if (!database) return ctx.skip(server.available ? 'no database' : server.reason);
-    const app = await boot();
+    if (!harness) return ctx.skip(skipReason);
+    const app = await harness.boot();
     const disabled = await app.inject({
       method: 'POST',
       url: '/api/v1/admin/modules/sample/disable',
@@ -116,7 +89,7 @@ describe('the host boots the data kernel with the sample module', () => {
     expect(gated.statusCode).toBe(404);
     expect(gated.json()).toMatchObject({ code: 'module_not_enabled' });
 
-    const restarted = await boot();
+    const restarted = await harness.boot();
     expect((await restarted.inject({ url: '/api/v1/modules' })).json()).toEqual({ items: [] });
     expect((await restarted.inject({ url: '/api/v1/admin/modules' })).json()).toMatchObject({
       pinned: false,
@@ -125,8 +98,8 @@ describe('the host boots the data kernel with the sample module', () => {
   });
 
   it('follows BEMMOLY_MODULES and refuses changes through the API while pinned', async (ctx) => {
-    if (!database) return ctx.skip(server.available ? 'no database' : server.reason);
-    const app = await boot('sample');
+    if (!harness) return ctx.skip(skipReason);
+    const app = await harness.boot('sample');
     expect((await app.inject({ url: '/api/v1/modules' })).json().items).toHaveLength(1);
     const refused = await app.inject({
       method: 'POST',
@@ -135,33 +108,3 @@ describe('the host boots the data kernel with the sample module', () => {
     expect(refused.statusCode).toBe(409);
   });
 });
-
-/** The first admin, created through the setup wizard's endpoint; returns its session cookie. */
-async function createFirstAdmin(app: FastifyInstance): Promise<string> {
-  const response = await app.inject({
-    method: 'POST',
-    url: '/api/v1/setup/admin',
-    headers: { origin: ORIGIN },
-    payload: {
-      workspaceName: 'Acme Labs',
-      workspaceUrl: 'https://bemmoly.acmelabs.internal',
-      name: 'Rohan S.',
-      email: 'rohan@acmelabs.dev',
-      password: 'correct horse battery',
-    },
-  });
-  const header = response.headers['set-cookie'];
-  const pair = (Array.isArray(header) ? header : [header ?? ''])
-    .find((value) => value.startsWith('bemmoly_session='))
-    ?.split(';')[0];
-  if (response.statusCode !== 201 || !pair) throw new Error(`setup failed: ${response.body}`);
-  return pair;
-}
-
-/** The app as the signed-in admin's browser calls it: same origin, with the session cookie. */
-function signedIn(app: FastifyInstance, session: string) {
-  return {
-    inject: (options: InjectOptions) =>
-      app.inject({ ...options, headers: { origin: ORIGIN, cookie: session, ...options.headers } }),
-  };
-}

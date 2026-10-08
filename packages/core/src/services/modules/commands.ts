@@ -1,5 +1,10 @@
 import { parseArgs } from 'node:util';
-import { isBemmolyError, type AdminModule } from '@bemmoly/shared';
+import {
+  isBemmolyError,
+  moduleAccessChoiceSchema,
+  parseOrThrow,
+  type AdminModule,
+} from '@bemmoly/shared';
 import type { Actor } from '../../contracts/authz.ts';
 import type { ModuleAdmin } from './admin.ts';
 
@@ -7,11 +12,14 @@ export const MODULES_USAGE = `Usage: bemmoly-db modules <command> [options]
 
 Commands:
   list                       every module in the image with its state
-  enable <id>                run its changelog, then enable it (running servers follow)
+  enable <id>                run its changelog, then enable it (running servers follow);
+                             only org admins can open it unless --access says otherwise
   disable <id>               hide it; its data stays
   remove-data <id>           run its down changesets after a backup (module must be disabled)
 
 Options:
+  --access <mode>            enable: none (default), everyone or teams
+  --team <id>                enable with --access teams: a team id; repeat for more
   --confirm <id>             remove-data: repeat the module id to confirm
   --json                     machine-readable output`;
 
@@ -37,7 +45,12 @@ export async function runModulesCommand(
     parsed = parseArgs({
       args: [...argv],
       allowPositionals: true,
-      options: { confirm: { type: 'string' }, json: { type: 'boolean', default: false } },
+      options: {
+        confirm: { type: 'string' },
+        access: { type: 'string', default: 'none' },
+        team: { type: 'string', multiple: true },
+        json: { type: 'boolean', default: false },
+      },
     });
   } catch (error) {
     return { exitCode: 2, output: `${String(error)}\n\n${MODULES_USAGE}` };
@@ -57,7 +70,12 @@ export async function runModulesCommand(
     }
     if (!id) return { exitCode: 2, output: MODULES_USAGE };
     if (command === 'enable') {
-      const module = await deps.admin.enable(deps.actor, id);
+      const { access, team } = parsed.values;
+      const choice = parseOrThrow(moduleAccessChoiceSchema, {
+        mode: access,
+        ...(team?.length ? { teamIds: team } : {}),
+      });
+      const module = await deps.admin.enable(deps.actor, id, choice);
       return print(module, line(module));
     }
     if (command === 'disable') {

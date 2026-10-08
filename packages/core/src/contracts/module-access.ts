@@ -1,4 +1,4 @@
-import type { ModuleId } from '@bemmoly/shared';
+import type { ModuleAccessChoice, ModuleId } from '@bemmoly/shared';
 import type { Actor } from './authz.ts';
 
 /**
@@ -11,10 +11,14 @@ export interface ModuleAccessResolver {
   canAccess(actor: Actor, moduleId: ModuleId): Promise<boolean>;
 }
 
-export type ModuleDefaultAccessMode = 'everyone' | 'teams' | 'none';
-
-/** Called by the module enable path so a newly enabled module starts with its declared access. */
-export type ApplyModuleDefaultAccess = (
-  module: { id: ModuleId; defaultAccess: ModuleDefaultAccessMode },
-  actor: Actor,
-) => Promise<void>;
+/**
+ * Writes the access an admin chose when enabling a module. The module's own
+ * `defaultAccess` is only a suggestion shown to the admin; nothing is granted
+ * that the admin did not choose.
+ */
+export interface ModuleAccessWriter {
+  /** Refuses a choice that names a team that does not exist, before anything changes. */
+  check(access: ModuleAccessChoice): Promise<void>;
+  /** Adds the chosen grants; grants the module already holds stay as they are. */
+  apply(moduleId: ModuleId, access: ModuleAccessChoice, actor: Actor): Promise<void>;
+}

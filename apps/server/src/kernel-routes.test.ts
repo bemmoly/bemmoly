@@ -45,6 +45,8 @@ function memorySettings(): SettingsStore {
 async function app(options: { signedIn: boolean }) {
   const registry = loadModules({ available: await importAvailableModules() });
   const store = createMemoryModuleStateStore();
+  // Nothing is enabled on a fresh install; these tests start from an admin having enabled it.
+  await store.upsert('sample', { enabled: true });
   const state = createModuleState({ registry, store, contexts: ['test'], pinned: [], logger });
   await state.initialize({ migrate: false });
   const authorize = async () => undefined;
