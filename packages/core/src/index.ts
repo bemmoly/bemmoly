@@ -43,9 +43,9 @@ export {
   type AuditService,
 } from './services/audit/index.ts';
 export {
-  createApplyModuleDefaultAccess,
   createAuthorize,
   createModuleAccessResolver,
+  createModuleAccessWriter,
   createRequestAuthorization,
   type ModuleCatalog,
   type RequestAuthorization,

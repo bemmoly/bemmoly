@@ -4,6 +4,7 @@ import {
   capabilityMatrixSchema,
   createModuleGrantSchema,
   createRoleSchema,
+  enableModuleBodySchema,
   moduleGrantSchema,
   moduleGrantsResponseSchema,
   modulesResponseSchema,
@@ -15,6 +16,7 @@ import {
   updateRoleSchema,
   type CreateModuleGrantInput,
   type CreateRoleInput,
+  type ModuleAccessChoice,
   type PutRoleCapabilitiesInput,
 } from '@bemmoly/shared';
 import type { Http } from '../http.ts';
@@ -68,8 +70,12 @@ export function accessEndpoints(http: Http) {
       list: async () => http.request('/api/v1/admin/modules', adminModulesResponseSchema),
       get: async (id: string) =>
         http.request(`/api/v1/admin/modules/${enc(id)}`, adminModuleSchema),
-      enable: async (id: string) =>
-        http.send(`/api/v1/admin/modules/${enc(id)}/enable`, { method: 'POST' }),
+      /** Grants exactly `access`; without it, only org admins can open the module. */
+      enable: async (id: string, access: ModuleAccessChoice = { mode: 'none' }) =>
+        http.request(`/api/v1/admin/modules/${enc(id)}/enable`, adminModuleSchema, {
+          method: 'POST',
+          body: validated(enableModuleBodySchema, { access }),
+        }),
       disable: async (id: string) =>
         http.send(`/api/v1/admin/modules/${enc(id)}/disable`, { method: 'POST' }),
       removeData: async (id: string, confirm: string) =>

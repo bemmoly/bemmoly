@@ -13,14 +13,15 @@ declare module '@bemmoly/core' {
 /**
  * Throwaway module that proves the contract end to end: a changeset, a route,
  * a job, a setting, a realtime message and a domain event, all through the
- * kernel's registries.
+ * kernel's registries. A developer example: it ships in the image but, like
+ * every module, stays off until an admin enables it, and suggests no access.
  */
 export default defineModule({
   id: 'sample',
   name: 'Sample',
   version: '0.0.0',
   coreApi: '^0.1.0',
-  defaultAccess: 'everyone',
+  defaultAccess: 'none',
   changelog: await loadChangelogFolder(new URL('./changelog/', import.meta.url)),
   register(ctx) {
     ctx.navigation.add({ id: 'sample', label: 'Sample', path: '/sample', placement: 'top' });

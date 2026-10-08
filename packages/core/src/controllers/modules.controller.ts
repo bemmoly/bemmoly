@@ -1,4 +1,5 @@
 import {
+  enableModuleBodySchema,
   moduleIdParamsSchema,
   parseOrThrow,
   removeModuleDataBodySchema,
@@ -49,7 +50,8 @@ export function createModuleAdminController(admin: ModuleAdmin, actorOf: ActorRe
       return admin.get(await actorOf(request), idOf(request));
     },
     async enable(request: FastifyRequest): Promise<AdminModule> {
-      return admin.enable(await actorOf(request), idOf(request), metaOf(request));
+      const { access } = parseOrThrow(enableModuleBodySchema, request.body ?? {});
+      return admin.enable(await actorOf(request), idOf(request), access, metaOf(request));
     },
     async disable(request: FastifyRequest): Promise<AdminModule> {
       return admin.disable(await actorOf(request), idOf(request), metaOf(request));

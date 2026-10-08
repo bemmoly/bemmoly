@@ -41,6 +41,8 @@ function fakeRunner(): KernelChangelogRunner {
   } as KernelChangelogRunner;
 }
 
+const NONE = { mode: 'none' } as const;
+
 async function setup(pinned: string[] = []) {
   const registry = loadModules({
     available: [module('work'), module('docs'), module('desk', ['work'])],
@@ -58,7 +60,7 @@ async function setup(pinned: string[] = []) {
     logger,
   });
   await state.initialize({ migrate: true });
-  const applyDefaultAccess = vi.fn(async () => undefined);
+  const access = { check: vi.fn(async () => undefined), apply: vi.fn(async () => undefined) };
   const backup = { backupBeforeRemoval: vi.fn(async () => ({ backupId: 'b1' })) };
   const authorize = vi.fn(async () => undefined);
   const moduleAdmin = createModuleAdmin({
@@ -68,58 +70,72 @@ async function setup(pinned: string[] = []) {
     runner,
     contexts: ['production'],
     authorize,
-    applyDefaultAccess,
+    access,
     backup,
   });
-  return { registry, state, runner, realtime, moduleAdmin, applyDefaultAccess, backup, authorize };
+  return { registry, state, runner, realtime, moduleAdmin, access, backup, authorize };
+}
+
+/** Every module on, as an admin would turn them on one by one. */
+async function setupAllEnabled() {
+  const context = await setup();
+  for (const id of ['work', 'docs', 'desk']) await context.moduleAdmin.enable(admin, id, NONE);
+  context.access.apply.mockClear();
+  return context;
 }
 
 describe('module state', () => {
-  it('enables every module on a fresh install and migrates them', async () => {
+  it('enables nothing on a fresh install', async () => {
     const { state, runner } = await setup();
-    expect(state.enabledIds()).toEqual(['work', 'docs', 'desk']);
-    expect(runner.update).toHaveBeenCalledWith({
-      contexts: ['production'],
-      modules: ['work', 'docs', 'desk'],
-    });
+    expect(state.enabledIds()).toEqual([]);
+    expect(runner.update).toHaveBeenCalledWith({ contexts: ['production'], modules: [] });
   });
 
   it('follows BEMMOLY_MODULES exactly and becomes read-only', async () => {
     const { state, moduleAdmin } = await setup(['docs']);
     expect(state.enabledIds()).toEqual(['docs']);
-    await expect(moduleAdmin.enable(admin, 'work')).rejects.toBeInstanceOf(ConflictError);
+    await expect(moduleAdmin.enable(admin, 'work', NONE)).rejects.toBeInstanceOf(ConflictError);
     expect((await moduleAdmin.list(admin)).pinned).toBe(true);
   });
 });
 
 describe('module admin', () => {
-  it('disables and re-enables, running the changelog and the default grant', async () => {
-    const { state, moduleAdmin, runner, realtime, applyDefaultAccess } = await setup();
+  it('disables and re-enables, running the changelog and granting the chosen access', async () => {
+    const { state, moduleAdmin, runner, realtime, access } = await setupAllEnabled();
     await expect(moduleAdmin.disable(admin, 'work')).rejects.toThrow(/Disable desk first/);
     await moduleAdmin.disable(admin, 'docs');
     expect(state.isEnabled('docs')).toBe(false);
     expect(realtime.publish).toHaveBeenCalledWith({ kind: 'modules.changed', ids: ['docs'] });
-    const enabled = await moduleAdmin.enable(admin, 'docs');
+    const everyone = { mode: 'everyone' } as const;
+    const enabled = await moduleAdmin.enable(admin, 'docs', everyone);
     expect(enabled).toMatchObject({ id: 'docs', enabled: true, changelogState: 'current' });
     expect(runner.update).toHaveBeenLastCalledWith({
       contexts: ['production'],
       modules: ['work', 'desk', 'docs'],
     });
-    expect(applyDefaultAccess).toHaveBeenCalledWith(
-      { id: 'docs', defaultAccess: 'everyone' },
-      admin,
+    expect(access.check).toHaveBeenLastCalledWith(everyone);
+    expect(access.apply).toHaveBeenCalledWith('docs', everyone, admin);
+  });
+
+  it('checks the access choice before running the changelog', async () => {
+    const { moduleAdmin, access, runner, state } = await setup();
+    access.check.mockRejectedValueOnce(
+      new ValidationError('Some of the chosen teams do not exist'),
     );
+    await expect(
+      moduleAdmin.enable(admin, 'docs', { mode: 'teams', teamIds: ['t1'] }),
+    ).rejects.toBeInstanceOf(ValidationError);
+    expect(runner.update).toHaveBeenCalledTimes(1);
+    expect(state.isEnabled('docs')).toBe(false);
   });
 
   it('refuses to enable a module whose dependency is off', async () => {
     const { moduleAdmin } = await setup();
-    await moduleAdmin.disable(admin, 'desk');
-    await moduleAdmin.disable(admin, 'work');
-    await expect(moduleAdmin.enable(admin, 'desk')).rejects.toThrow(/Enable work first/);
+    await expect(moduleAdmin.enable(admin, 'desk', NONE)).rejects.toThrow(/Enable work first/);
   });
 
   it('removes data only for a disabled module, confirmed, after a backup', async () => {
-    const { moduleAdmin, backup, runner } = await setup();
+    const { moduleAdmin, backup, runner } = await setupAllEnabled();
     await expect(moduleAdmin.removeData(admin, 'docs', 'docs')).rejects.toThrow(
       /Disable the module/,
     );
@@ -134,7 +150,7 @@ describe('module admin', () => {
   });
 
   it('authorizes before anything else', async () => {
-    const { moduleAdmin, authorize, state } = await setup();
+    const { moduleAdmin, authorize, state } = await setupAllEnabled();
     authorize.mockRejectedValueOnce(new ForbiddenError());
     await expect(moduleAdmin.disable(admin, 'docs')).rejects.toBeInstanceOf(ForbiddenError);
     expect(state.isEnabled('docs')).toBe(true);

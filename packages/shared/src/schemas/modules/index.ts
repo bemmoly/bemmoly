@@ -1,11 +1,18 @@
 export {
   adminModuleSchema,
   adminModulesResponseSchema,
+  enableModuleBodySchema,
+  MODULE_ACCESS_MODES,
+  moduleAccessChoiceSchema,
+  moduleAccessModeSchema,
   moduleChangelogStateSchema,
   moduleIdParamsSchema,
   removeModuleDataBodySchema,
   type AdminModule,
   type AdminModulesResponse,
+  type EnableModuleBody,
+  type ModuleAccessChoice,
+  type ModuleAccessMode,
   type RemoveModuleDataBody,
 } from './admin.ts';
 export {

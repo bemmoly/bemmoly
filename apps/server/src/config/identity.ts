@@ -1,19 +1,19 @@
 import {
   authenticateRequest,
-  createApplyModuleDefaultAccess,
   createAuthorize,
   createIdentityDependencies,
   createModuleAccessResolver,
+  createModuleAccessWriter,
   createSessionResolver,
   deleteExpiredSessions,
   type ActorResolver,
-  type ApplyModuleDefaultAccess,
   type Authorize,
   type Database,
   type EventBus,
   type HousekeepingTask,
   type IdentityDependencies,
   type ModuleAccessResolver,
+  type ModuleAccessWriter,
   type ModuleCatalog,
   type ModuleDataBackup,
   type SessionResolver,
@@ -32,7 +32,7 @@ export interface IdentityWiring {
   authenticate?: ActorResolver;
   sessions?: SessionResolver;
   moduleAccess?: ModuleAccessResolver;
-  applyDefaultAccess?: ApplyModuleDefaultAccess;
+  moduleAccessWriter?: ModuleAccessWriter;
   authorize: Authorize;
   backup?: ModuleDataBackup;
   housekeeping?: readonly HousekeepingTask[];
@@ -59,7 +59,7 @@ export function identityWiring(input?: IdentityWiringInput): IdentityWiring {
     authenticate: authenticateRequest,
     sessions: createSessionResolver({ db, publicUrl }),
     moduleAccess: createModuleAccessResolver({ db, modules }),
-    applyDefaultAccess: createApplyModuleDefaultAccess(db),
+    moduleAccessWriter: createModuleAccessWriter(db),
     authorize: createAuthorize({ db, modules }),
     ...(input.backup ? { backup: input.backup } : {}),
     housekeeping: [{ name: 'sessions', run: (now) => deleteExpiredSessions(db, now) }],
