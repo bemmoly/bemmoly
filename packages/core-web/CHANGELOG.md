@@ -1,5 +1,13 @@
 # @bemmoly/core-web
 
+## 0.1.2
+
+### Patch Changes
+
+- Updated dependencies [8337385]
+- Updated dependencies [8337385]
+  - @bemmoly/shared@0.1.2
+
 ## 0.1.1
 
 ### Patch Changes

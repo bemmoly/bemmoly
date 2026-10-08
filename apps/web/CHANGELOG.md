@@ -1,5 +1,53 @@
 # @bemmoly/web
 
+## 0.1.2
+
+### Patch Changes
+
+- 8337385: People you invite join as Viewer, the least-privileged role, unless you pick another role:
+  in the setup wizard, in Users › Invite people, for a new team's default role and through the
+  API, where `roleId` is now optional on `POST /api/v1/invitations`. Invited people now appear
+  in Users as INVITED rows and count as invited, with Resend, Copy invite link and Revoke.
+  After sending invitations, Bemmoly shows each person's sign-up link to copy and share, and
+  says so plainly when outbound email is not set up yet; Copy invite link issues a fresh link
+  later (the old one stops working). Invitation and password reset emails now link to pages
+  that exist (`/accept-invitation` and `/reset-password`); links sent by earlier versions open
+  a missing page, so resend those invitations or copy a new link. No configuration or schema
+  change.
+- 8337385: Fresh installs start with no module enabled. A module runs only once an admin enables it in
+  Settings › Modules (or lists it in `BEMMOLY_MODULES`, which still pins the set). Enabling a
+  module now asks "Who can use it?": Nobody yet (recommended; only org admins can open it),
+  Everyone, or Specific teams. Nothing is granted that the admin did not choose; the access a
+  module suggests is shown as a hint only. Access can be changed later under Users › Module
+  access, and the audit log records the access chosen on enable. `bemmoly-db modules enable`
+  takes `--access none|everyone|teams` and `--team <id>`, and defaults to none. The Sample
+  module is a developer example: it stays in the image but is off until enabled and suggests no
+  access. Existing installs keep the modules and grants they have; to turn Sample off, use
+  Disable in Settings › Modules. No configuration or schema change.
+- 3fb2621: Every dropdown is now the same control, whether it holds three options or three hundred. The
+  arrow on each dropdown is darker so you can see it, the list opens in a popover that is never
+  cut off by a table or a panel, and it works from the keyboard. Long lists show the first 50
+  with a search box; people pickers (team lead, module access, the audit log's actor) search the
+  whole workspace on the server as you type, and role and team pickers can be searched too. The
+  "···" menu on a user row in Settings › Users now opens where you can see it.
+- 42a4218: The setup wizard's appearance step builds a custom theme in place: "Build a custom theme with
+  your brand color instead" opens the brand colour, light or dark, surfaces and typeface controls
+  under the preset tiles, the whole page previews the result as you edit, and Finish setup saves
+  it. Before, the link left the wizard and sent you back to the import step. An admin who opens
+  another page before finishing setup now returns to the step they were on.
+
+  Logos on the setup and Settings › AI option cards are no longer greyed out: provider marks use
+  the primary text colour, the Jira and Confluence marks use their brand colours (adjusted on dark
+  themes so they stay readable), and "Coming soon" cards fade as a whole.
+
+- Updated dependencies [8337385]
+- Updated dependencies [8337385]
+- Updated dependencies [3fb2621]
+  - @bemmoly/shared@0.1.2
+  - @bemmoly/api-client@0.1.2
+  - @bemmoly/ui@0.1.2
+  - @bemmoly/core-web@0.1.2
+
 ## 0.1.1
 
 ### Patch Changes
