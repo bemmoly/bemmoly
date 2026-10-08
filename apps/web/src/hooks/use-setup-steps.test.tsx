@@ -1,6 +1,7 @@
 import { act, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { INITIAL_SETUP_DRAFT, useSetupStore } from '../store/setup.ts';
+import { useThemePreviewStore } from '../store/theme-preview.ts';
 import { renderQueryHook } from '../test/render.tsx';
 import { mockApi } from '../test/setup.ts';
 import {
@@ -12,6 +13,9 @@ import {
 } from './use-setup-appearance.ts';
 import { invitesLine, summaryRows, useSetupDone } from './use-setup-done.ts';
 import { importSummary } from './use-setup-import.ts';
+import { workspaceQuery } from './use-workspace.ts';
+
+const preview = () => useThemePreviewStore.getState().preview;
 
 beforeEach(() => useSetupStore.getState().reset());
 
@@ -38,6 +42,29 @@ describe('appearance step', () => {
     expect(mockApi.db.settings['appearance.theme']).toBe('midnight');
     expect(mockApi.db.settings['appearance.font']).toBe('geist');
     expect(useSetupStore.getState().themeSaved).toBe(true);
+  });
+
+  it('previews the picked preset on the whole page and drops it on leaving', async () => {
+    const { result, unmount } = await renderQueryHook(() => useSetupAppearance(vi.fn()));
+    expect(preview()).toMatchObject({ kind: 'preset', id: 'light' });
+    act(() => result.current.select('ocean'));
+    expect(preview()).toMatchObject({ kind: 'preset', id: 'ocean', mode: 'dark' });
+    unmount();
+    expect(preview()).toBeNull();
+    expect(mockApi.db.settings['appearance.theme']).not.toBe('ocean');
+  });
+
+  it('hands over from the preview to the saved workspace look on Finish setup', async () => {
+    let shownOnSave: unknown = 'not saved';
+    const onSaved = vi.fn(() => {
+      shownOnSave = preview();
+    });
+    const { result, queryClient } = await renderQueryHook(() => useSetupAppearance(onSaved));
+    act(() => result.current.select('forest'));
+    act(() => result.current.submit());
+    await waitFor(() => expect(onSaved).toHaveBeenCalledTimes(1));
+    expect(shownOnSave).toBeNull();
+    expect(queryClient.getQueryData(workspaceQuery.queryKey)?.appearance.preset).toBe('forest');
   });
 });
 

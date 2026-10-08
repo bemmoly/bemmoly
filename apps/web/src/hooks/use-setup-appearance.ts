@@ -1,7 +1,12 @@
 import type { ThemeFont } from '@bemmoly/shared';
 import { PRESETS, type PresetId } from '@bemmoly/ui/tokens';
+import { useQueryClient, type QueryClient } from '@tanstack/react-query';
+import { useMemo } from 'react';
+import { presetLook } from '../lib/theme.ts';
 import { useSetupStore } from '../store/setup.ts';
 import { useSettings } from './use-setting.ts';
+import { clearThemePreview, useThemePreview } from './use-theme-preview.ts';
+import { workspaceQuery } from './use-workspace.ts';
 
 export const THEME_KEYS = ['appearance.theme', 'appearance.font'] as const;
 
@@ -55,11 +60,28 @@ export function themeSummary(id: PresetId, saved: boolean): string {
   return `${themeChoice(id).name} · members may switch light/dark`;
 }
 
-/** Step 5: pick a preset tile; "Finish setup" saves it and moves to the summary. */
+/**
+ * Swaps the preview for the saved look without a flash: the workspace look is
+ * loaded into the cache the theme reads first, so dropping the preview leaves
+ * the same preset on screen. A failed load still drops the preview; the saved
+ * look then applies on the next page load.
+ */
+async function handOverToSavedLook(queryClient: QueryClient): Promise<void> {
+  await queryClient.fetchQuery(workspaceQuery).catch(() => undefined);
+  clearThemePreview();
+}
+
+/**
+ * Step 5: pick a preset tile and the whole page shows it at once; "Finish
+ * setup" saves it and moves to the summary. Leaving the step any other way
+ * (Skip, the rail, Back, a reload elsewhere) drops the preview.
+ */
 export function useSetupAppearance(onSaved: () => void | Promise<void>) {
+  const queryClient = useQueryClient();
   const selected = useSetupStore((state) => state.theme);
   const update = useSetupStore((state) => state.update);
   const settings = useSettings(THEME_KEYS, 'Theme saved');
+  useThemePreview(useMemo(() => presetLook(selected), [selected]));
   return {
     choices: THEME_CHOICES,
     selected,
@@ -68,7 +90,8 @@ export function useSetupAppearance(onSaved: () => void | Promise<void>) {
     save: settings.save,
     submit: () =>
       settings.save.mutate(themeSettingValues(selected), {
-        onSuccess: () => {
+        onSuccess: async () => {
+          await handOverToSavedLook(queryClient);
           update({ themeSaved: true });
           void onSaved();
         },
