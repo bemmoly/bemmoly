@@ -1,6 +1,7 @@
 import { Card } from '@bemmoly/ui';
 import { SSO_NOTE, SSO_OPTIONS, useSetupInvites } from '../../hooks/use-setup-invites.ts';
 import { Notice } from '../form.tsx';
+import { InviteLinks } from '../people/invite-links.tsx';
 import { BrandTile, COMING_SOON_MUTE, ComingSoonBadge } from './choice-card.tsx';
 import { InviteByEmail } from './invite-by-email.tsx';
 import { SSO_MARKS } from './option-marks.tsx';
@@ -36,7 +37,20 @@ export function StepPeople({ nav }: { nav: StepNav }) {
       <SsoCards />
       <Notice>{SSO_NOTE}</Notice>
       <InviteByEmail invites={invites} />
-      <StepFooter nav={nav} onPrimary={invites.submit} loading={invites.mutation.isPending} />
+      {invites.issued ? (
+        <Card className="flex flex-col gap-3 p-5">
+          <h2 className="m-0 text-14 font-semibold text-tx">Invitations sent</h2>
+          <InviteLinks
+            links={invites.issued.items}
+            emailConfigured={invites.issued.emailConfigured}
+          />
+        </Card>
+      ) : null}
+      <StepFooter
+        nav={nav}
+        onPrimary={invites.issued ? invites.finish : invites.submit}
+        loading={invites.mutation.isPending}
+      />
     </>
   );
 }
