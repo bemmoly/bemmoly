@@ -7,12 +7,18 @@ import { Avatar, type AvatarHue } from '../avatar/avatar.tsx';
 import { Button } from '../button/button.tsx';
 import { IconButton } from '../button/icon-button.tsx';
 import { Logo } from '../logo/logo.tsx';
+import { Menu } from '../menu/menu.tsx';
 
 export interface TopBarNavItem {
   id: string;
   label: string;
   active?: boolean;
-  /** Shows the ▾ that marks items with a menu (every item in the mocks). */
+  /**
+   * The menu this item opens. Only items with one show the caret: the mocks put ▾ on every
+   * item, which reads as broken when nothing opens.
+   */
+  menu?: ReactNode;
+  /** Shows the caret for an item that opens its own menu from onClick. */
   hasMenu?: boolean;
   href?: string;
   linkProps?: Record<string, unknown>;
@@ -26,6 +32,8 @@ export interface TopBarProps {
   /** Where the brand block links; omit for a plain block. */
   homeHref?: string;
   onCreate?: () => void;
+  /** What Create opens: CreateMenuItem rows, or CreateMenuEmpty. Takes precedence over onCreate. */
+  createMenu?: ReactNode;
   createLabel?: string;
   /** Opens search (the command palette in search mode). */
   onSearch?: () => void;
@@ -46,7 +54,32 @@ export interface TopBarProps {
 /** The top bar's icon buttons draw at the bar size (18px), like the sidebar. */
 export const barIcon = (name: IconName) => <Icon name={name} size={ICON_SIZE.bar} />;
 
+const navClass = (active: boolean | undefined) =>
+  cx(
+    'inline-flex cursor-pointer items-center gap-1 border-0 bg-transparent px-2.5 py-1.5 font-sans text-nav whitespace-nowrap no-underline',
+    active
+      ? 'rounded-none font-medium text-tx shadow-tab'
+      : 'rounded-control text-tx2 hover:bg-bg2',
+    focusRing,
+  );
+
+const caret = <Icon name="caret" className="text-tx5" />;
+
 function NavItem({ item, linkAs }: { item: TopBarNavItem; linkAs: ElementType }) {
+  if (item.menu)
+    return (
+      <Menu
+        widthClassName="w-64"
+        trigger={(props) => (
+          <button type="button" {...props} className={navClass(item.active)}>
+            {item.label}
+            {caret}
+          </button>
+        )}
+      >
+        {item.menu}
+      </Menu>
+    );
   const Component: ElementType = item.href || item.linkProps ? linkAs : 'button';
   const isButton = Component === 'button';
   return (
@@ -55,22 +88,41 @@ function NavItem({ item, linkAs }: { item: TopBarNavItem; linkAs: ElementType })
       {...item.linkProps}
       onClick={item.onClick}
       aria-current={item.active ? 'page' : undefined}
-      className={cx(
-        'cursor-pointer border-0 bg-transparent px-2.5 py-1.5 font-sans text-nav whitespace-nowrap no-underline',
-        item.active
-          ? 'rounded-none font-medium text-tx shadow-tab'
-          : 'rounded-control text-tx2 hover:bg-bg2',
-        focusRing,
-      )}
+      className={navClass(item.active)}
     >
       {item.label}
-      {item.hasMenu !== false && (
-        <>
-          {' '}
-          <Icon name="caret" className="text-tx5" />
-        </>
-      )}
+      {item.hasMenu && caret}
     </Component>
+  );
+}
+
+function CreateButton({
+  label,
+  menu,
+  onCreate,
+}: {
+  label: string;
+  menu?: ReactNode;
+  onCreate?: () => void;
+}) {
+  if (!menu)
+    return (
+      <Button variant="primary" size="bar" className="ml-1.5" onClick={onCreate}>
+        {label}
+      </Button>
+    );
+  return (
+    <Menu
+      className="ml-1.5"
+      widthClassName="w-90"
+      trigger={(props) => (
+        <Button variant="primary" size="bar" {...props}>
+          {label}
+        </Button>
+      )}
+    >
+      {menu}
+    </Menu>
   );
 }
 
@@ -80,6 +132,7 @@ export function TopBar({
   linkAs = 'a',
   homeHref,
   onCreate,
+  createMenu,
   createLabel = 'Create',
   onSearch,
   searchPlaceholder = 'Search issues, docs, people',
@@ -115,10 +168,8 @@ export function TopBar({
           <NavItem key={item.id} item={item} linkAs={linkAs} />
         ))}
       </nav>
-      {onCreate && (
-        <Button variant="primary" size="bar" className="ml-1.5" onClick={onCreate}>
-          {createLabel}
-        </Button>
+      {(onCreate || createMenu) && (
+        <CreateButton label={createLabel} menu={createMenu} onCreate={onCreate} />
       )}
       <div className="ml-auto flex min-w-0 items-center gap-2">
         {onSearch && (
