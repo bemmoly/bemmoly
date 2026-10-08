@@ -14,6 +14,7 @@ import {
 import { outboxCounts, outboxStatus, testResultView } from './use-email-results.ts';
 import { useMe } from './use-session.ts';
 import { useDraft, useSettings } from './use-setting.ts';
+import type { ChangeConfirm } from '../components/settings/use-confirm-change.ts';
 
 export const NO_EMAIL_PERMISSION = 'Only people who can manage email delivery can change these.';
 
@@ -64,35 +65,105 @@ export function useEmailTest() {
   };
 }
 
+/** The two editable sections of the page, each saved on its own. */
+export type EmailSection = 'delivery' | 'sender';
+
+const DELIVERY = ['provider', 'host', 'port', 'security', 'username', 'password'] as const;
+const SENDER = ['from', 'replyTo', 'digestMinutes'] as const;
+type DeliveryForm = Pick<EmailForm, (typeof DELIVERY)[number]>;
+type SenderForm = Pick<EmailForm, (typeof SENDER)[number]>;
+
+const pick = <K extends keyof EmailForm>(form: EmailForm, keys: readonly K[]) =>
+  Object.fromEntries(keys.map((key) => [key, form[key]])) as Pick<EmailForm, K>;
+
+/** Switching from a relay to the dev mailbox stops real delivery, so it asks first. */
+export function deliveryRisk(stored: EmailForm, next: EmailForm): ChangeConfirm | null {
+  if (!(stored.provider === 'smtp' && next.provider === 'log')) return null;
+  return {
+    title: 'Stop sending real email?',
+    consequences: [
+      'Invitations, password resets and notifications stop reaching inboxes.',
+      'Every message is kept in the dev mailbox on this server instead, where only admins see it.',
+      'The relay settings stay stored, so switching back is one change.',
+    ],
+    confirmLabel: 'Use the dev mailbox',
+    tone: 'caution',
+  };
+}
+
 /** Settings › Email and notifications: the relay, the sender, digests, the test send, the outbox. */
 export function useEmailSettings() {
   const me = useMe();
   const canManage = me.can('workspace.email.manage');
   const settings = useSettings(EMAIL_KEYS, 'Email settings saved');
-  const draft = useDraft<EmailForm>(settings.reads && emailFormFrom(settings.reads));
+  const stored = settings.reads && emailFormFrom(settings.reads);
+  const delivery = useDraft<DeliveryForm>(stored && pick(stored, DELIVERY));
+  const sender = useDraft<SenderForm>(stored && pick(stored, SENDER));
   const [errors, setErrors] = useState<FieldErrors>({});
   const [replacing, setReplacing] = useState(false);
+  const [saving, setSaving] = useState<EmailSection | null>(null);
   const passwordSet = settings.reads?.['email.smtp.password'].isSet ?? false;
-  const storedProvider = settings.reads?.['email.provider'].value ?? 'log';
+  const value: EmailForm | undefined = delivery.value &&
+    sender.value && { ...delivery.value, ...sender.value };
 
-  const discard = () => {
-    setErrors({});
-    setReplacing(false);
-    draft.discard();
+  const keysOf = (section: EmailSection): readonly string[] =>
+    section === 'delivery' ? DELIVERY : SENDER;
+  const discard = (section: EmailSection) => {
+    if (section === 'delivery') {
+      delivery.discard();
+      setReplacing(false);
+    } else sender.discard();
+    setErrors((current) =>
+      Object.fromEntries(Object.entries(current).filter(([key]) => !keysOf(section).includes(key))),
+    );
   };
-  const submit = () => {
-    if (!canManage || !draft.value) return;
-    const result = validateForm(emailFormSchema, draft.value);
-    if (result.errors) return setErrors(result.errors);
+
+  /** The stored form with one section's edits; validated, or its field messages shown. */
+  const prepare = (section: EmailSection) => {
+    if (!canManage || !stored || !value) return null;
+    const form = { ...stored, ...pick(value, keysOf(section) as Array<keyof EmailForm>) };
+    const result = validateForm(emailFormSchema, form);
+    if (result.errors) {
+      setErrors(result.errors);
+      return null;
+    }
     setErrors({});
-    settings.save.mutate(emailWrites(result.data), { onSuccess: discard });
+    return { form, writes: emailWrites(result.data) };
+  };
+
+  const save = (
+    section: EmailSection,
+    writes: ReturnType<typeof emailWrites>,
+    onSaved = () => {},
+  ) => {
+    setSaving(section);
+    settings.save.mutate(writes, {
+      onSuccess: () => {
+        discard(section);
+        onSaved();
+      },
+      onSettled: () => setSaving(null),
+    });
   };
 
   return {
     settings,
     canManage,
-    draft,
+    stored,
+    value,
+    update: (patch: Partial<EmailForm>) => {
+      const ofDelivery = Object.keys(patch).some((key) =>
+        (DELIVERY as readonly string[]).includes(key),
+      );
+      if (ofDelivery && delivery.value) delivery.update(patch as Partial<DeliveryForm>);
+      else if (sender.value) sender.update(patch as Partial<SenderForm>);
+    },
+    dirty: { delivery: delivery.dirty, sender: sender.dirty } satisfies Record<
+      EmailSection,
+      boolean
+    >,
     errors,
+    saving,
     password: {
       isSet: passwordSet,
       // With nothing stored there is nothing to keep, so the field shows straight away.
@@ -100,8 +171,9 @@ export function useEmailSettings() {
       replace: () => setReplacing(true),
     },
     /** The dev mailbox note follows what is saved, since that is where mail goes today. */
-    usesDevMailbox: storedProvider === 'log',
-    submit,
+    usesDevMailbox: (stored?.provider ?? 'log') === 'log',
     discard,
+    prepare,
+    save,
   };
 }
