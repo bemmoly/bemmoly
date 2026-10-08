@@ -34,14 +34,15 @@ export const ACCESS_LATER =
   'You can change who has access at any time under Users › Module access.';
 
 const SUGGESTED: Record<ModuleAccessMode, string> = {
-  none: 'nobody until granted',
-  everyone: 'everyone',
-  teams: 'chosen teams',
+  none: 'no one',
+  everyone: 'Everyone',
+  teams: 'specific teams',
 };
 
 /** The module author's defaultAccess, shown as a suggestion and never applied on its own. */
 export function suggestionLine(name: string, suggested: ModuleAccessMode): string {
-  return `${name} suggests access for ${SUGGESTED[suggested]}. Nothing is granted until you choose.`;
+  const nothing = 'Nothing is granted until you choose.';
+  return suggested === 'none' ? nothing : `${name} suggests ${SUGGESTED[suggested]}. ${nothing}`;
 }
 
 export function toAccessChoice(mode: ModuleAccessMode, teamIds: readonly string[]) {
