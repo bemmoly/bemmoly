@@ -66,25 +66,27 @@ export const SECRET_KEYS: ReadonlySet<SettingKey> = new Set([
   'system.backups.s3',
 ]);
 
-export function seedAdminModules(): AdminModule[] {
+/** A fresh install enables nothing; the seeded workspace had Sample enabled by its admin. */
+export function seedAdminModules(enabled = true): AdminModule[] {
   return [
     {
       id: 'sample',
       name: 'Sample',
       version: '0.1.0',
-      enabled: true,
-      enabledAt: ago(60 * 24 * 9),
-      versionInstalled: '0.1.0',
-      changelogState: 'current',
-      pendingChangesets: 0,
+      enabled,
+      enabledAt: enabled ? ago(60 * 24 * 9) : null,
+      versionInstalled: enabled ? '0.1.0' : null,
+      changelogState: enabled ? 'current' : 'pending',
+      pendingChangesets: enabled ? 0 : 1,
       dependsOn: [],
-      defaultAccess: 'everyone',
+      defaultAccess: 'none',
       restartRequired: false,
     },
   ];
 }
 
-export function seedManifests(): ModuleManifest[] {
+export function seedManifests(enabled = true): ModuleManifest[] {
+  if (!enabled) return [];
   return [
     {
       id: 'sample',

@@ -1,10 +1,11 @@
 import { queryKeys } from '@bemmoly/api-client';
-import type { AdminModule } from '@bemmoly/shared';
+import type { AdminModule, ModuleAccessChoice } from '@bemmoly/shared';
 import { queryOptions, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { api } from '../lib/api.ts';
 import { describeError } from '../lib/errors.ts';
 import { toast } from '../lib/toast.ts';
+import { accessSummary, useAccessChoice } from './use-module-access-choice.ts';
 
 export const adminModulesQuery = queryOptions({
   queryKey: queryKeys.adminModules(),
@@ -19,11 +20,14 @@ export function canRemoveData(module: AdminModule, typed: string, pinned: boolea
   return !pinned && !module.enabled && typed.trim() === module.id;
 }
 
-export type ModuleDialog = { kind: 'disable' | 'remove'; id: string } | null;
+export type ModuleDialogKind = 'enable' | 'disable' | 'remove';
+
+export type ModuleDialog = { kind: ModuleDialogKind; id: string } | null;
 
 /**
- * Settings › Modules: every module in the image, enable and disable, and the
- * separate, typed confirmation for removing a disabled module's data. Both
+ * Settings › Modules: every module in the image, enable (after asking who may use
+ * it) and disable, and the separate, typed confirmation for removing a disabled
+ * module's data. Both
  * module queries are refreshed so the top bar navigation follows at once.
  */
 export function useAdminModules() {
@@ -31,6 +35,7 @@ export function useAdminModules() {
   const query = useQuery(adminModulesQuery);
   const [dialog, setDialog] = useState<ModuleDialog>(null);
   const [typed, setTyped] = useState('');
+  const access = useAccessChoice();
 
   const refresh = () =>
     Promise.all([
@@ -43,12 +48,22 @@ export function useAdminModules() {
   };
 
   const setEnabled = useMutation({
-    mutationFn: ({ id, enabled }: { id: string; enabled: boolean }) =>
-      enabled ? api.adminModules.enable(id) : api.adminModules.disable(id),
-    onSuccess: async (_, { id, enabled }) => {
-      await refresh();
+    mutationFn: async (change: { id: string; enabled: boolean; access?: ModuleAccessChoice }) => {
+      if (change.enabled) await api.adminModules.enable(change.id, change.access);
+      else await api.adminModules.disable(change.id);
+    },
+    onSuccess: async (_, { id, enabled, access: choice }) => {
+      await Promise.all([
+        refresh(),
+        queryClient.invalidateQueries({ queryKey: queryKeys.moduleGrants() }),
+      ]);
       setDialog(null);
-      toast(`${moduleName(id)} ${enabled ? 'enabled' : 'disabled'}`);
+      const name = modules.find((module) => module.id === id)?.name ?? moduleName(id);
+      toast(
+        enabled
+          ? `${name} enabled: ${accessSummary(choice ?? { mode: 'none' }, access.teams)}`
+          : `${name} disabled`,
+      );
     },
     onError,
   });
@@ -67,9 +82,10 @@ export function useAdminModules() {
   const pinned = query.data?.pinned ?? false;
   const target = modules.find((module) => module.id === dialog?.id) ?? null;
 
-  const open = (kind: 'disable' | 'remove', id: string) => {
+  const open = (kind: ModuleDialogKind, id: string) => {
     setTyped('');
     removeData.reset();
+    access.reset();
     setDialog({ kind, id });
   };
 
@@ -80,6 +96,7 @@ export function useAdminModules() {
     restartPending: modules.filter((module) => module.restartRequired),
     setEnabled,
     removeData,
+    access,
     dialog: {
       kind: dialog?.kind ?? null,
       target,

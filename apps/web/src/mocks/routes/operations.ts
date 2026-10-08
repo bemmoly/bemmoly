@@ -1,4 +1,5 @@
-import type { RollbackMode } from '@bemmoly/shared';
+import type { EnableModuleBody, ModuleAccessChoice, RollbackMode } from '@bemmoly/shared';
+import { newId } from '../seed/time.ts';
 import { audit, can, emit, type MockDb } from '../db.ts';
 import { bodyOf, fail, notFound, ok, page, type MockRoute } from '../types.ts';
 import {
@@ -19,12 +20,47 @@ const adminOnly =
   (request, db) =>
     can(db, capability) ? handle(request, db) : fail(403, 'forbidden', 'You cannot do that.');
 
-function setModuleState(db: MockDb, id: string, enabled: boolean) {
+/** The admin's choice on enable, added to any grants the module already has, as the server does. */
+function grantAccess(db: MockDb, moduleId: string, access: ModuleAccessChoice) {
+  const subjects =
+    access.mode === 'everyone'
+      ? [{ subjectKind: 'everyone' as const, subjectId: null }]
+      : access.mode === 'teams'
+        ? (access.teamIds ?? []).map((id) => ({ subjectKind: 'team' as const, subjectId: id }))
+        : [];
+  for (const subject of subjects) {
+    const exists = db.grants.some(
+      (grant) =>
+        grant.moduleId === moduleId &&
+        grant.subjectKind === subject.subjectKind &&
+        grant.subjectId === subject.subjectId,
+    );
+    if (exists) continue;
+    db.grants.push({
+      id: newId(),
+      moduleId,
+      ...subject,
+      grantedBy: db.signedInAs,
+      createdAt: new Date().toISOString(),
+    });
+  }
+}
+
+function setModuleState(db: MockDb, id: string, enabled: boolean, access?: ModuleAccessChoice) {
   const module = db.adminModules.find((entry) => entry.id === id);
   if (!module) return notFound(`Module ${id}`);
   if (db.modulesPinned) return fail(409, 'conflict', PINNED);
+  if (access?.mode === 'teams' && !access.teamIds?.length) {
+    return fail(400, 'validation_failed', 'Choose at least one team.');
+  }
   module.enabled = enabled;
   module.enabledAt = enabled ? new Date().toISOString() : null;
+  if (enabled) {
+    module.versionInstalled = module.version;
+    module.changelogState = 'current';
+    module.pendingChangesets = 0;
+    grantAccess(db, id, access ?? { mode: 'none' });
+  }
   if (!enabled) db.manifests = db.manifests.filter((entry) => entry.id !== id);
   else if (!db.manifests.some((entry) => entry.id === id)) {
     const label = id.charAt(0).toUpperCase() + id.slice(1);
@@ -36,7 +72,7 @@ function setModuleState(db: MockDb, id: string, enabled: boolean) {
   }
   audit(db, enabled ? 'module.enabled' : 'module.disabled', 'module', id);
   emit(db, 'modules.changed', [id]);
-  return ok();
+  return ok(module);
 }
 
 export const operationsRoutes: MockRoute[] = [
@@ -49,7 +85,13 @@ export const operationsRoutes: MockRoute[] = [
     method: 'POST',
     pattern: '/api/v1/admin/modules/:id/enable',
     handle: adminOnly(
-      (request, db) => setModuleState(db, request.params['id'] ?? '', true),
+      (request, db) =>
+        setModuleState(
+          db,
+          request.params['id'] ?? '',
+          true,
+          bodyOf<EnableModuleBody>(request).access,
+        ),
       MODULES,
     ),
   },

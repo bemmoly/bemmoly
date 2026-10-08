@@ -1,12 +1,22 @@
 import { Notice } from '../../components/form.tsx';
+import { EnableModuleModal } from '../../components/modules/enable-module-modal.tsx';
 import { DisableModuleModal, RemoveDataModal } from '../../components/modules/module-dialogs.tsx';
 import { ModulesTable } from '../../components/modules/modules-table.tsx';
 import { SettingsPage } from '../../components/settings/settings-page.tsx';
 import { moduleName, useAdminModules } from '../../hooks/use-admin-modules.ts';
 
 export function ModulesPage() {
-  const { modules, pinned, restartPending, setEnabled, removeData, dialog, isPending, error } =
-    useAdminModules();
+  const {
+    modules,
+    pinned,
+    restartPending,
+    setEnabled,
+    removeData,
+    access,
+    dialog,
+    isPending,
+    error,
+  } = useAdminModules();
   const target = dialog.target;
   const busyId = setEnabled.isPending ? (setEnabled.variables?.id ?? null) : null;
   return (
@@ -32,9 +42,18 @@ export function ModulesPage() {
         modules={modules}
         pinned={pinned}
         busyId={busyId}
-        onEnable={(id) => setEnabled.mutate({ id, enabled: true })}
+        onEnable={(id) => dialog.open('enable', id)}
         onDisable={(id) => dialog.open('disable', id)}
         onRemoveData={(id) => dialog.open('remove', id)}
+      />
+      <EnableModuleModal
+        module={dialog.kind === 'enable' ? target : null}
+        access={access}
+        busy={setEnabled.isPending}
+        onClose={dialog.close}
+        onConfirm={() =>
+          target && setEnabled.mutate({ id: target.id, enabled: true, access: access.choice })
+        }
       />
       <DisableModuleModal
         module={dialog.kind === 'disable' ? target : null}
