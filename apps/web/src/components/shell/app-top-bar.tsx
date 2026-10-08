@@ -1,4 +1,4 @@
-import { IconButton, Menu, MenuItem, TopBar } from '@bemmoly/ui';
+import { barIcon, IconButton, Menu, MenuItem, TopBar } from '@bemmoly/ui';
 import { useTopBar } from '../../hooks/use-top-bar.ts';
 import { RouterLink } from '../router-link.tsx';
 import { AnchoredMenu } from './anchored-menu.tsx';
@@ -15,7 +15,7 @@ export function AppTopBar() {
       <Menu
         align="end"
         widthClassName="w-56"
-        trigger={(props) => <IconButton label="Theme" icon="circle" {...props} />}
+        trigger={(props) => <IconButton label="Theme" icon={barIcon('theme')} {...props} />}
       >
         {bar.themeItems.map((item) => (
           <MenuItem
