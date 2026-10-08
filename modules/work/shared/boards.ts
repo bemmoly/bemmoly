@@ -124,7 +124,17 @@ export const boardViewSchema = z.object({
       overWip: z.boolean(),
     }),
   ),
-  lanes: z.array(z.object({ id: z.string(), label: z.string(), color: z.string().nullable() })),
+  lanes: z.array(
+    z.object({
+      id: z.string(),
+      label: z.string(),
+      /** A palette name the screens map to a colour (ac, violet, tx6), or null for none. */
+      color: z.string().nullable(),
+      /** The epic's key and due date when the lane is an epic; the lane header shows both. */
+      issueKey: z.string().nullable().default(null),
+      dueAt: z.iso.date().nullable().default(null),
+    }),
+  ),
   cards: z.array(boardCardSchema.extend({ columnId: z.string(), laneId: z.string() })),
   metrics: z.object({
     throughputPerWeek: z.number().nonnegative(),
