@@ -10,6 +10,7 @@ export * from './issues.ts';
 export * from './lexorank.ts';
 export * from './links-labels.ts';
 export * from './projects.ts';
+export * from './schemes.ts';
 export * from './sprints.ts';
 export * from './versions-components.ts';
 export * from './workflows.ts';
