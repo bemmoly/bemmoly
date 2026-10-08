@@ -1,5 +1,15 @@
 # @bemmoly/core
 
+## 0.1.1
+
+### Patch Changes
+
+- a2b7f81: Run changelog backfills through the tagged query path: the table stays a checked, quoted identifier and the cursor and batch size travel as parameters.
+- Updated dependencies [e231a13]
+- Updated dependencies [94c57cc]
+  - @bemmoly/ui@0.1.1
+  - @bemmoly/shared@0.1.1
+
 ## 0.1.0
 
 ### Minor Changes
