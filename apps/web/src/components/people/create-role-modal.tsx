@@ -61,6 +61,8 @@ export function CreateRoleModal({
         >
           <Select
             size="md"
+            searchable
+            searchPlaceholder="Search roles"
             options={[
               { value: '', label: 'Nothing ticked' },
               ...roles.map((role) => ({ value: role.id, label: role.name })),

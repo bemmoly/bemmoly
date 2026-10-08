@@ -40,6 +40,8 @@ export function InviteModal({ open, onClose }: { open: boolean; onClose: () => v
           <Field label="Role" error={invite.errors['roleId']}>
             <Select
               size="md"
+              searchable
+              searchPlaceholder="Search roles"
               options={invite.roleOptions}
               value={invite.form.roleId}
               onChange={(event) => invite.update({ roleId: event.target.value })}
@@ -48,6 +50,8 @@ export function InviteModal({ open, onClose }: { open: boolean; onClose: () => v
           <Field label="Team" hint="Optional" error={invite.errors['teamId']}>
             <Select
               size="md"
+              searchable
+              searchPlaceholder="Search teams"
               options={invite.teamOptions}
               value={invite.form.teamId}
               onChange={(event) => invite.update({ teamId: event.target.value })}
