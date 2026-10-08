@@ -207,6 +207,18 @@ export const operationsRoutes: MockRoute[] = [
   },
   {
     method: 'POST',
+    pattern: '/api/v1/admin/updates/check',
+    handle: adminOnly((_, db) => {
+      db.updates.checks = {
+        ...db.updates.checks,
+        lastCheckedAt: new Date().toISOString(),
+        error: null,
+      };
+      return ok(overview(db));
+    }),
+  },
+  {
+    method: 'POST',
     pattern: '/api/v1/admin/updates/apply',
     handle: adminOnly(
       writable((request, db) => {

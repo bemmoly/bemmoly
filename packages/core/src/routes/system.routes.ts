@@ -25,6 +25,7 @@ export function systemRoutes(controller: SystemController): FastifyPluginAsync {
     );
 
     app.get('/admin/updates', (request) => controller.updates(request));
+    app.post('/admin/updates/check', (request) => controller.checkUpdates(request));
     app.post('/admin/updates/apply', (request, reply) => controller.applyUpdate(request, reply));
     app.post('/admin/updates/rollback', (request, reply) => controller.rollback(request, reply));
     await app.register(async (upload) => {

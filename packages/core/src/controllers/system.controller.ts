@@ -14,6 +14,7 @@ import type { Readable } from 'node:stream';
 import type { Actor } from '../contracts/authz.ts';
 import {
   applyUpdate,
+  checkUpdatesNow,
   getBackup,
   getSystemHealth,
   getUpdatesOverview,
@@ -98,6 +99,9 @@ export function createSystemController(deps: SystemControllerDependencies) {
     },
     async updates(request: FastifyRequest) {
       return getUpdatesOverview(system, await actorOf(request));
+    },
+    async checkUpdates(request: FastifyRequest) {
+      return checkUpdatesNow(system, await actorOf(request));
     },
     async applyUpdate(request: FastifyRequest, reply: FastifyReply) {
       const { version } = parseOrThrow(applyUpdateRequestSchema, request.body);

@@ -11,6 +11,7 @@ import type { Actor } from '../../../contracts/authz.ts';
 import { SYSTEM_CAPABILITY } from '../authorize.ts';
 import type { SystemDependencies } from '../deps.ts';
 import { readSetting } from '../settings.ts';
+import { checkForUpdates } from './check.ts';
 import { computeRollbackPlan } from './rollback-plan.ts';
 import { toAvailableUpdate } from './select.ts';
 import { readUpdateCheckState, readUpdaterState } from './state.ts';
@@ -70,6 +71,20 @@ export async function getUpdatesOverview(
       command: available ? `${view.command} ${available.version}` : view.command,
     },
   };
+}
+
+/**
+ * Settings › Updates "Check for updates": fetch the channel's release list now, whatever the
+ * daily check setting says, then answer with the refreshed overview. A failed fetch is recorded
+ * on the overview's `checks.error`, not thrown, so the page can show it.
+ */
+export async function checkUpdatesNow(
+  deps: SystemDependencies,
+  actor: Actor,
+): Promise<UpdatesOverview> {
+  await requireSystem(deps, actor);
+  await checkForUpdates(deps, { force: true }).catch(() => undefined);
+  return getUpdatesOverview(deps, actor);
 }
 
 function cliOnly(command: string): ConflictError {

@@ -54,6 +54,9 @@ export function operationsEndpoints(http: Http) {
     },
     updates: {
       overview: async () => http.request('/api/v1/admin/updates', updatesOverviewSchema),
+      /** Fetches the release list now; the answer is the refreshed overview. */
+      check: async () =>
+        http.request('/api/v1/admin/updates/check', updatesOverviewSchema, { method: 'POST' }),
       /** 409 without an updater: the error details carry the `sudo bemmoly upgrade` command. */
       apply: async (version: string) =>
         http.request('/api/v1/admin/updates/apply', updaterAcceptedSchema, {
