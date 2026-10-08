@@ -15,7 +15,7 @@ export function useConfirmChange() {
   const [pending, setPending] = useState<{ spec: ChangeConfirm; run: () => void } | null>(null);
   const close = () => setPending(null);
   return {
-    request: (spec: ChangeConfirm | null, run: () => void) => {
+    ask: (spec: ChangeConfirm | null, run: () => void) => {
       if (spec) setPending({ spec, run });
       else run();
     },

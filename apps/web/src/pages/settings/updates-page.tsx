@@ -66,7 +66,7 @@ export function UpdatesPage() {
                 onSave: () => {
                   const { stored, value } = policy;
                   if (!stored || !value) return;
-                  confirm.request(channelRisk(stored, value), () =>
+                  confirm.ask(channelRisk(stored, value), () =>
                     policy.save(() => edits.close('policy')),
                   );
                 },
