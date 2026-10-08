@@ -32,7 +32,7 @@ const TRANSITIONS: ReadonlyArray<readonly [string | null, string, string]> = [
 ];
 
 export default changeset({
-  id: '0017-work-default-workflow',
+  id: '0018-work-default-workflow',
   author: 'bemmoly',
   description: 'Seed the org default workflow with the statuses and transitions of the mock',
   contexts: ['*'],

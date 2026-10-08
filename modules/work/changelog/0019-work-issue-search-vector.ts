@@ -8,7 +8,7 @@ import { changeset, sql } from '@bemmoly/core/changelog';
  * title A, key and labels B, description D, as the tech design gives them.
  */
 export default changeset({
-  id: '0017-work-issue-search-vector',
+  id: '0019-work-issue-search-vector',
   author: 'bemmoly',
   description: 'Maintain issues.search_vector with triggers on issues and issue_labels',
   contexts: ['*'],

@@ -6,7 +6,7 @@ import { changeset, sql } from '@bemmoly/core/changelog';
  * quiet-period job after the board changes and read by the metrics strip.
  */
 export default changeset({
-  id: '0018-work-sprint-metrics',
+  id: '0020-work-sprint-metrics',
   author: 'bemmoly',
   description: 'Create sprint_metrics',
   contexts: ['*'],
