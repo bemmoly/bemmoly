@@ -141,11 +141,17 @@ export function customField(spec: CustomFieldSpec): LqlField {
     : base;
 }
 
+/**
+ * Earlier fields win a name: built-ins are listed before custom fields, so an
+ * admin naming a custom field "Status" cannot capture the built-in status
+ * filter. The custom field stays reachable through its `cf.` key.
+ */
 export function createFieldCatalog(fields: readonly LqlField[]): LqlFieldCatalog {
   const byName = new Map<string, LqlField>();
   for (const entry of fields) {
-    byName.set(entry.key.toLowerCase(), entry);
-    byName.set(entry.label.toLowerCase(), entry);
+    for (const name of [entry.key.toLowerCase(), entry.label.toLowerCase()]) {
+      if (!byName.has(name)) byName.set(name, entry);
+    }
   }
   return { fields, resolve: (name) => byName.get(name.toLowerCase()) };
 }

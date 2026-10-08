@@ -43,6 +43,12 @@ describe('issue field catalog', () => {
     expect(catalog.fields.map((field) => field.key)).toContain('cf.team');
   });
 
+  it('keeps a built-in field when a custom field borrows its name', () => {
+    const catalog = createIssueFieldCatalog([{ key: 'status', label: 'Status', kind: 'text' }]);
+    expect(catalog.resolve('status')?.key).toBe('status');
+    expect(catalog.resolve('cf.status')?.kind).toBe('text');
+  });
+
   it('gives a custom select its own value provider unless its options are fixed', () => {
     expect(customField({ key: 'team', label: 'Team', kind: 'option' }).values).toBe('cf.team');
     expect(
