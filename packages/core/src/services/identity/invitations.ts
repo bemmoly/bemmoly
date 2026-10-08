@@ -165,16 +165,23 @@ export async function previewInvitation(
   token: string,
 ): Promise<InvitationPreview> {
   const [row] = await deps.db
-    .select({ invitation: invitations, roleName: roles.name, teamName: teams.name })
+    .select({
+      invitation: invitations,
+      roleName: roles.name,
+      teamName: teams.name,
+      inviterName: users.name,
+    })
     .from(invitations)
     .innerJoin(roles, eq(roles.id, invitations.roleId))
     .leftJoin(teams, eq(teams.id, invitations.teamId))
+    .leftJoin(users, eq(users.id, invitations.invitedBy))
     .where(validByToken(token, nowOf(deps)))
     .limit(1);
   if (!row) throw new NotFoundError(INVALID);
   return {
     email: row.invitation.email,
     workspaceName: await deps.settings.get('workspace.name'),
+    inviterName: row.inviterName ?? null,
     roleName: row.roleName,
     teamName: row.teamName ?? null,
     expiresAt: row.invitation.expiresAt.toISOString(),

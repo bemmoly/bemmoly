@@ -133,6 +133,7 @@ export const sessionRoutes: MockRoute[] = [
       return ok({
         email: invitation.email,
         workspaceName: String(db.settings['workspace.name'] ?? 'Bemmoly'),
+        inviterName: db.users.find((user) => user.id === invitation.invitedBy)?.name ?? null,
         roleName: db.roles.find((role) => role.id === invitation.roleId)?.name ?? 'Member',
         teamName: db.teams.find((team) => team.id === invitation.teamId)?.name ?? null,
         expiresAt: invitation.expiresAt,
