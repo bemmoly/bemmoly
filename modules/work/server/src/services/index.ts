@@ -10,6 +10,7 @@ import { createFieldsService } from './fields/index.ts';
 import { createHistoryService } from './history/index.ts';
 import { createIssuesService } from './issues/index.ts';
 import { createLinksService } from './links/index.ts';
+import { createLqlService } from './lql/index.ts';
 import { createProjectsService } from './projects/index.ts';
 import { createSearchService } from './search/index.ts';
 import { createIssueTypesService } from './types/index.ts';
@@ -31,7 +32,8 @@ const noEvents: EventBus = { publish: async () => undefined, subscribe: () => ()
  * nowhere else, so module.ts never grows with the module.
  */
 export function createWorkServices(deps: WorkServiceDeps) {
-  const workflow = createWorkflowService(deps);
+  const lql = createLqlService(deps);
+  const workflow = createWorkflowService({ ...deps, lql });
   const issueDeps = {
     ...(deps.database ? { database: deps.database } : {}),
     realtime: deps.realtime ?? noRealtime,
@@ -49,6 +51,7 @@ export function createWorkServices(deps: WorkServiceDeps) {
     history: createHistoryService(issueDeps),
     search: createSearchService(issueDeps),
     workflow,
+    lql,
   };
 }
 

@@ -20,7 +20,7 @@ export const lqlQuery: ConditionRule<z.infer<typeof params>> = {
   available: (deps) => deps.lql !== undefined,
   async check(args, rule) {
     if (!rule.lql) return fail('Query conditions are not available on this install');
-    return (await rule.lql.matches(rule.sql, rule.issue.id, args.query))
+    return (await rule.lql.matches(rule.ctx, rule.issue.id, args.query))
       ? pass
       : fail(`The issue does not match "${args.query}"`);
   },

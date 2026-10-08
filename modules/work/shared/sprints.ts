@@ -11,6 +11,17 @@ export const sprintSnapshotSchema = z.object({
   completedIssues: z.number().int().nonnegative(),
   /** Where unfinished work went: the next sprint's id or the backlog. */
   carriedOverTo: z.uuid().nullable(),
+  /** Every issue the sprint held at close with its points, so reports never reread issues. */
+  issues: z
+    .array(
+      z.object({
+        issueId: z.uuid(),
+        key: z.string(),
+        estimate: z.number().nonnegative().nullable(),
+        completed: z.boolean(),
+      }),
+    )
+    .default([]),
 });
 
 export const sprintSchema = z.object({

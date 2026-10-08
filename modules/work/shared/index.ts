@@ -1,5 +1,6 @@
 export * from './activity.ts';
 export * from './automation.ts';
+export * from './backlog.ts';
 export * from './boards.ts';
 export * from './comments.ts';
 export * from './common.ts';
@@ -9,6 +10,7 @@ export * from './issue-types.ts';
 export * from './issues.ts';
 export * from './lexorank.ts';
 export * from './links-labels.ts';
+export * from './metrics.ts';
 export * from './projects.ts';
 export * from './realtime.ts';
 export * from './rich-text.ts';

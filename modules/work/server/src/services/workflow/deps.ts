@@ -1,12 +1,17 @@
-import type { JobRegistry, RealtimePublisher, SqlClient, SqlExecutor } from '@bemmoly/core';
+import type {
+  JobRegistry,
+  RequestContext,
+  RealtimePublisher,
+  SqlClient,
+  SqlExecutor,
+} from '@bemmoly/core';
 
 /**
  * Evaluates an LQL query against one issue. The boards stream compiles LQL to
- * SQL; until it is wired in, the lql_query condition reports itself as not
- * available rather than silently passing.
+ * SQL; the request context carries the actor that access filters need.
  */
 export interface LqlEvaluator {
-  matches(sql: SqlExecutor, issueId: string, query: string): Promise<boolean>;
+  matches(ctx: RequestContext, issueId: string, query: string): Promise<boolean>;
 }
 
 /** What the conditions read about an issue, so a rule file never writes SQL. */
