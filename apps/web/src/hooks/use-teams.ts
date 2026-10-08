@@ -15,6 +15,7 @@ import { toast } from '../lib/toast.ts';
 import { useDirectory } from './use-directory.ts';
 import { rolesQuery, roleOptions, teamsQuery, useCanManagePeople } from './use-people.ts';
 import { defaultRoleId } from './use-setup-invites.ts';
+import { userOption, useUserSearch } from './use-user-search.ts';
 
 export interface TeamCardView {
   id: string;
@@ -82,6 +83,7 @@ export function useCreateTeam(onDone: () => void) {
   const queryClient = useQueryClient();
   const roles = useQuery(rolesQuery).data?.items ?? [];
   const { directory } = useDirectory();
+  const searchLeads = useUserSearch({ status: 'active' });
   const [form, setForm] = useState<TeamForm>(EMPTY);
   const [errors, setErrors] = useState<FieldErrors>({});
   const roleId = form.defaultRoleId || defaultRoleId(roles) || '';
@@ -128,10 +130,9 @@ export function useCreateTeam(onDone: () => void) {
     },
     leadOptions: [
       { value: '', label: 'No lead yet' },
-      ...directory.users
-        .filter((user) => user.status === 'active')
-        .map((user) => ({ value: user.id, label: user.name })),
+      ...directory.users.filter((user) => user.status === 'active').map(userOption),
     ],
+    searchLeads,
     roleOptions: roleOptions(roles),
   };
 }
