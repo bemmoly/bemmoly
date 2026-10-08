@@ -15,7 +15,7 @@ export async function createIsolatedDatabase(serverUrl: string): Promise<Isolate
   const name = `bemmoly_test_${randomBytes(6).toString('hex')}`;
   const admin = postgres(serverUrl, { max: 1, onnotice: () => undefined });
   try {
-    await admin.unsafe(`create database ${name}`);
+    await admin`create database ${admin(name)}`;
   } finally {
     await admin.end({ timeout: 5 });
   }
@@ -26,7 +26,7 @@ export async function createIsolatedDatabase(serverUrl: string): Promise<Isolate
     async drop() {
       const cleanup = postgres(serverUrl, { max: 1, onnotice: () => undefined });
       try {
-        await cleanup.unsafe(`drop database if exists ${name} with (force)`);
+        await cleanup`drop database if exists ${cleanup(name)} with (force)`;
       } finally {
         await cleanup.end({ timeout: 5 });
       }
