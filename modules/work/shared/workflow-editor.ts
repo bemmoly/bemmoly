@@ -2,12 +2,12 @@ import { z } from 'zod';
 
 /*
  * What the visual workflow editor needs beyond the workflow itself: the rules
- * catalog it picks conditions, validators and post-actions from, the issue
- * counts the canvas shows per status, and the publish body that maps issues
- * off statuses the draft removed.
+ * catalog it picks conditions, validators and post-actions from, and the issue
+ * counts the canvas shows per status. The rule kind names match the registry
+ * contract in workflows.ts ('post_action'), which the server sends.
  */
 
-export const RULE_KINDS = ['condition', 'validator', 'post'] as const;
+export const RULE_KINDS = ['condition', 'validator', 'post_action'] as const;
 export const ruleKindSchema = z.enum(RULE_KINDS);
 export type RuleKind = z.infer<typeof ruleKindSchema>;
 
@@ -40,13 +40,7 @@ export const workflowStatusCountsSchema = z.object({
   counts: z.record(z.string(), z.number().int().nonnegative()),
 });
 
-/** Publish moves issues off statuses the draft removed; every removed status needs a target. */
-export const publishWorkflowBodySchema = z.object({
-  statusMapping: z.record(z.string(), z.string().min(1)).default({}),
-});
-
 export type RuleParam = z.infer<typeof ruleParamSchema>;
 export type RuleCatalogEntry = z.infer<typeof ruleCatalogEntrySchema>;
 export type RuleCatalogResponse = z.infer<typeof ruleCatalogResponseSchema>;
 export type WorkflowStatusCounts = z.infer<typeof workflowStatusCountsSchema>;
-export type PublishWorkflowBody = z.input<typeof publishWorkflowBodySchema>;

@@ -207,7 +207,7 @@ export function seedWorkRules() {
     },
     {
       name: 'notify',
-      kind: 'post',
+      kind: 'post_action',
       label: 'Notify',
       description: 'Sends an inbox notification.',
       params: [
@@ -226,21 +226,21 @@ export function seedWorkRules() {
     },
     {
       name: 'start_timer',
-      kind: 'post',
+      kind: 'post_action',
       label: 'Start timer',
       description: 'Starts a named timer for cycle time.',
       params: [{ key: 'name', label: 'Timer name', type: 'text', required: true, options: [] }],
     },
     {
       name: 'assign_to',
-      kind: 'post',
+      kind: 'post_action',
       label: 'Assign to',
       description: 'Sets the assignee.',
       params: [{ key: 'user', label: 'Person', type: 'user', required: true, options: [] }],
     },
     {
       name: 'record_history',
-      kind: 'post',
+      kind: 'post_action',
       label: 'Record status change in history',
       description: 'Always on; shown for completeness.',
       params: [],
