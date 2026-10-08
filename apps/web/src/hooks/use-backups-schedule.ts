@@ -12,7 +12,7 @@ import {
   type BackupVerificationSettings,
 } from '@bemmoly/shared';
 import { useQueryClient } from '@tanstack/react-query';
-import { useState, type FormEvent } from 'react';
+import { useState } from 'react';
 import type { z } from 'zod';
 import { validateForm, type FieldErrors } from '../lib/errors.ts';
 import { useDraft, useSettings, type SettingValues } from './use-setting.ts';
@@ -26,12 +26,17 @@ const KEYS = [
 ] as const;
 type Key = (typeof KEYS)[number];
 
+/** The four sections of Storage and backups, each edited and saved on its own. */
+export type BackupSection = 'schedule' | 'retention' | 'destinations' | 'protection';
+
 export interface BackupPolicy {
   schedule: BackupScheduleSettings;
   retention: BackupRetentionSettings;
   encryption: BackupEncryptionSettings;
   verification: BackupVerificationSettings;
 }
+
+export type BackupProtection = Pick<BackupPolicy, 'encryption' | 'verification'>;
 
 /** The schemas' own defaults: daily at 02:00 UTC, 24 · 7 · 4 · 3, local unencrypted, weekly drill. */
 export const DEFAULT_POLICY: BackupPolicy = {
@@ -76,18 +81,6 @@ export const toS3Setting = (form: S3Form): BackupS3Settings => ({
   forcePathStyle: form.forcePathStyle,
 });
 
-/** What a save writes. The secret S3 value goes only when the admin replaced or removed it. */
-export function backupSaveValues(policy: BackupPolicy, s3: S3Edit): SettingValues<Key> {
-  return {
-    'system.backups.schedule': policy.schedule,
-    'system.backups.retention': policy.retention,
-    'system.backups.encryption': policy.encryption,
-    'system.backups.verification': policy.verification,
-    ...(s3.mode === 'replace' ? { 'system.backups.s3': toS3Setting(s3.form) } : {}),
-    ...(s3.mode === 'remove' ? { 'system.backups.s3': null } : {}),
-  };
-}
-
 function errorsOf(prefix: string, schema: z.ZodType, value: unknown): FieldErrors {
   const errors = validateForm(schema, value).errors ?? {};
   return Object.fromEntries(
@@ -95,13 +88,42 @@ function errorsOf(prefix: string, schema: z.ZodType, value: unknown): FieldError
   );
 }
 
-/** Field messages keyed "schedule.time", "retention.daily", "s3.bucket". */
-export function policyErrors(policy: BackupPolicy, s3: S3Edit): FieldErrors {
-  return {
-    ...errorsOf('schedule', backupScheduleSettingsSchema, policy.schedule),
-    ...errorsOf('retention', backupRetentionSettingsSchema, policy.retention),
-    ...(s3.mode === 'replace' ? errorsOf('s3', backupS3SettingsSchema, toS3Setting(s3.form)) : {}),
-  };
+export interface BackupDrafts {
+  policy: BackupPolicy;
+  s3: S3Edit;
+}
+
+/**
+ * What saving one section writes, or its field messages ("schedule.time", "s3.bucket").
+ * Only that section's keys are written; the S3 secret only when it is replaced or removed.
+ */
+export function sectionWrites(
+  section: BackupSection,
+  { policy, s3 }: BackupDrafts,
+): { values: SettingValues<Key> } | { errors: FieldErrors } {
+  const checked = (errors: FieldErrors, values: SettingValues<Key>) =>
+    Object.keys(errors).length ? { errors } : { values };
+  if (section === 'schedule')
+    return checked(errorsOf('schedule', backupScheduleSettingsSchema, policy.schedule), {
+      'system.backups.schedule': policy.schedule,
+    });
+  if (section === 'retention')
+    return checked(errorsOf('retention', backupRetentionSettingsSchema, policy.retention), {
+      'system.backups.retention': policy.retention,
+    });
+  if (section === 'protection')
+    return {
+      values: {
+        'system.backups.encryption': policy.encryption,
+        'system.backups.verification': policy.verification,
+      },
+    };
+  if (s3.mode === 'remove') return { values: { 'system.backups.s3': null } };
+  if (s3.mode === 'keep') return { values: {} };
+  const setting = toS3Setting(s3.form);
+  return checked(errorsOf('s3', backupS3SettingsSchema, setting), {
+    'system.backups.s3': setting,
+  });
 }
 
 /** Settings › Storage and backups: schedule, retention, the S3 destination, encryption, drills. */
@@ -109,43 +131,83 @@ export function useBackupSchedule() {
   const queryClient = useQueryClient();
   const settings = useSettings(KEYS, 'Backup settings saved');
   const reads = settings.reads;
-  const draft = useDraft<BackupPolicy>(
-    reads && {
-      schedule: reads['system.backups.schedule'].value ?? DEFAULT_POLICY.schedule,
-      retention: reads['system.backups.retention'].value ?? DEFAULT_POLICY.retention,
-      encryption: reads['system.backups.encryption'].value ?? DEFAULT_POLICY.encryption,
-      verification: reads['system.backups.verification'].value ?? DEFAULT_POLICY.verification,
-    },
+  const stored: BackupPolicy | undefined = reads && {
+    schedule: reads['system.backups.schedule'].value ?? DEFAULT_POLICY.schedule,
+    retention: reads['system.backups.retention'].value ?? DEFAULT_POLICY.retention,
+    encryption: reads['system.backups.encryption'].value ?? DEFAULT_POLICY.encryption,
+    verification: reads['system.backups.verification'].value ?? DEFAULT_POLICY.verification,
+  };
+  const schedule = useDraft(stored?.schedule);
+  const retention = useDraft(stored?.retention);
+  const protection = useDraft<BackupProtection>(
+    stored && { encryption: stored.encryption, verification: stored.verification },
   );
   const [s3, setS3] = useState<S3Edit>({ mode: 'keep' });
   const [errors, setErrors] = useState<FieldErrors>({});
+  const [saving, setSaving] = useState<BackupSection | null>(null);
 
-  const discard = () => {
-    draft.discard();
-    setS3({ mode: 'keep' });
-    setErrors({});
+  const policy: BackupPolicy | undefined = stored &&
+    schedule.value &&
+    retention.value &&
+    protection.value && {
+      schedule: schedule.value,
+      retention: retention.value,
+      ...protection.value,
+    };
+
+  const discard = (section: BackupSection) => {
+    if (section === 'schedule') schedule.discard();
+    if (section === 'retention') retention.discard();
+    if (section === 'protection') protection.discard();
+    if (section === 'destinations') setS3({ mode: 'keep' });
+    setErrors((current) =>
+      Object.fromEntries(
+        Object.entries(current).filter(([key]) => !key.startsWith(`${prefixOf(section)}.`)),
+      ),
+    );
   };
 
-  const submit = (event: FormEvent) => {
-    event.preventDefault();
-    if (!draft.value) return;
-    const found = policyErrors(draft.value, s3);
-    setErrors(found);
-    if (Object.keys(found).length) return;
-    settings.save.mutate(backupSaveValues(draft.value, s3), {
+  /** Checks a section; returns its writes, or shows its field messages and returns null. */
+  const prepare = (section: BackupSection): SettingValues<Key> | null => {
+    if (!policy) return null;
+    const result = sectionWrites(section, { policy, s3 });
+    if ('errors' in result) {
+      setErrors((current) => ({ ...current, ...result.errors }));
+      return null;
+    }
+    return result.values;
+  };
+
+  const save = (section: BackupSection, values: SettingValues<Key>, onSaved: () => void) => {
+    setSaving(section);
+    settings.save.mutate(values, {
       onSuccess: () => {
-        discard();
+        discard(section);
+        onSaved();
         // "One disk" and the next run in the status line follow the saved settings.
         void queryClient.invalidateQueries({ queryKey: queryKeys.backups.all() });
       },
+      onSettled: () => setSaving(null),
     });
   };
 
   return {
     settings,
-    policy: draft.value,
-    update: draft.update,
-    dirty: draft.dirty || s3.mode !== 'keep',
+    stored,
+    policy,
+    errors,
+    saving,
+    dirty: {
+      schedule: schedule.dirty,
+      retention: retention.dirty,
+      destinations: s3.mode !== 'keep',
+      protection: protection.dirty,
+    } satisfies Record<BackupSection, boolean>,
+    updateSchedule: (patch: Partial<BackupScheduleSettings>) =>
+      schedule.replace({ ...(schedule.value as BackupScheduleSettings), ...patch }),
+    updateRetention: (patch: Partial<BackupRetentionSettings>) =>
+      retention.replace({ ...(retention.value as BackupRetentionSettings), ...patch }),
+    updateProtection: protection.update,
     /** Whether an S3 destination is stored; the value itself is never read back. */
     s3Configured: reads?.['system.backups.s3'].isSet ?? false,
     s3,
@@ -153,8 +215,10 @@ export function useBackupSchedule() {
     startS3: () => setS3({ mode: 'replace', form: EMPTY_S3 }),
     removeS3: () => setS3({ mode: 'remove' }),
     keepS3: () => setS3({ mode: 'keep' }),
-    errors,
-    submit,
     discard,
+    prepare,
+    save,
   };
 }
+
+const prefixOf = (section: BackupSection) => (section === 'destinations' ? 's3' : section);

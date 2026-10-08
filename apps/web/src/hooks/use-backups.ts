@@ -51,12 +51,12 @@ export function statusLine(
 
 /**
  * The backups list, "Back up now", the archive check and restore drill, and a
- * restore the admin confirms by typing the backup id back.
+ * restore: picked from the list or from "Restore…", then confirmed in its dialog.
  */
 export function useBackups() {
   const queryClient = useQueryClient();
   const [restoreId, setRestoreId] = useState<string | null>(null);
-  const [typed, setTyped] = useState('');
+  const [picking, setPicking] = useState(false);
 
   const refresh = () =>
     Promise.all([
@@ -116,14 +116,18 @@ export function useBackups() {
     run,
     verify,
     restore,
+    /** Backups a restore can start from, newest first. */
+    restorable: backups.filter((backup) => backup.status === 'succeeded'),
+    restorePicker: {
+      open: picking,
+      show: () => setPicking(true),
+      close: () => setPicking(false),
+    },
     restoreDialog: {
       target: restoreTarget,
-      typed,
-      setTyped,
-      canRestore: restoreTarget !== null && typed.trim() === restoreTarget.id,
       open: (id: string) => {
-        setTyped('');
         restore.reset();
+        setPicking(false);
         setRestoreId(id);
       },
       close: () => setRestoreId(null),
