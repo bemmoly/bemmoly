@@ -18,7 +18,7 @@ import {
 import { tokenOfLink } from '@bemmoly/shared';
 import type { FastifyInstance, InjectOptions, LightMyRequestResponse } from 'fastify';
 import { buildApp } from '../app.ts';
-import { shippedModules, TEST_ENV } from '../test-support.ts';
+import { identityModules, TEST_ENV } from '../test-support.ts';
 
 export const ORIGIN = TEST_ENV.BEMMOLY_PUBLIC_URL;
 export const ADMIN = { email: 'rohan@acmelabs.dev', password: 'correct horse battery' };
@@ -53,7 +53,7 @@ export async function startHarness(): Promise<HarnessResult> {
       events.push(event);
     });
   }
-  const modules = await shippedModules();
+  const modules = await identityModules();
   const identity = createIdentityDependencies({
     sql,
     modules,
