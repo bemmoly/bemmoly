@@ -56,7 +56,7 @@ describe('useSetupInvites', () => {
     expect(result.current.emails).toEqual([]);
   });
 
-  it('sends chips and the unfinished address with the Viewer role, then moves on', async () => {
+  it('sends chips and the unfinished address with the Viewer role, then shows the links to share', async () => {
     const onDone = vi.fn();
     const { result } = await renderQueryHook(() => useSetupInvites(onDone));
     await waitFor(() => expect(result.current.loading).toBe(false));
@@ -66,10 +66,27 @@ describe('useSetupInvites', () => {
     act(() => result.current.paste('first@acme.test\nsecond@acme.test'));
     act(() => result.current.change('third@acme.test'));
     act(() => result.current.submit());
-    await waitFor(() => expect(onDone).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(result.current.issued?.items).toHaveLength(3));
     expect(mockApi.db.invitations.length - before).toBe(3);
     expect(useSetupStore.getState().invitesSent).toBe(3);
     expect(useSetupStore.getState().emails).toEqual([]);
+    // Email is not set up in the mock workspace, so the step waits for Continue.
+    expect(result.current.issued?.emailConfigured).toBe(false);
+    expect(onDone).not.toHaveBeenCalled();
+    act(() => result.current.finish());
+    expect(onDone).toHaveBeenCalledTimes(1);
+  });
+
+  it('moves on by itself when email delivery is set up', async () => {
+    mockApi.db.settings['email.provider'] = 'smtp';
+    mockApi.db.settings['email.smtp.host'] = 'smtp.acme.test';
+    const onDone = vi.fn();
+    const { result } = await renderQueryHook(() => useSetupInvites(onDone));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    act(() => result.current.paste('first@acme.test'));
+    act(() => result.current.submit());
+    await waitFor(() => expect(onDone).toHaveBeenCalledTimes(1));
+    expect(result.current.issued?.emailConfigured).toBe(true);
   });
 
   it('continues without a request when there is nobody to invite', async () => {
