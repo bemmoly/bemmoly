@@ -1,4 +1,4 @@
-import { listSchema, timestampSchema } from '@bemmoly/shared';
+import { keysetQuerySchema, listSchema, timestampSchema } from '@bemmoly/shared';
 import { z } from 'zod';
 import { nameSchema } from './common.ts';
 
@@ -34,6 +34,14 @@ export const updateSavedFilterBodySchema = z
   .partial();
 
 export const savedFiltersResponseSchema = listSchema(savedFilterSchema);
+
+/** `GET /work/issues/query`: a page of issues for an LQL query, scoped to a project when given. */
+export const issueQueryParamsSchema = keysetQuerySchema.extend({
+  lql: z.string().trim().max(4000).default(''),
+  projectId: z.uuid().optional(),
+});
+
+export type IssueQueryParams = z.infer<typeof issueQueryParamsSchema>;
 
 export type SavedFilter = z.infer<typeof savedFilterSchema>;
 export type CreateSavedFilterBody = z.input<typeof createSavedFilterBodySchema>;

@@ -1,8 +1,11 @@
-import type { SqlClient } from '@bemmoly/core';
+import type { JobRegistry, RealtimePublisher, SqlClient } from '@bemmoly/core';
+import { createLqlService } from './lql/index.ts';
 import { createProjectsService } from './projects.ts';
 
 export interface WorkServiceDeps {
   database?: SqlClient;
+  realtime?: RealtimePublisher;
+  jobs?: JobRegistry;
 }
 
 /**
@@ -10,8 +13,10 @@ export interface WorkServiceDeps {
  * nowhere else, so module.ts never grows with the module.
  */
 export function createWorkServices(deps: WorkServiceDeps) {
+  const lql = createLqlService(deps);
   return {
     projects: createProjectsService(deps),
+    lql,
   };
 }
 

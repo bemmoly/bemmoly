@@ -1,5 +1,6 @@
 import type { FastifyPluginAsync } from 'fastify';
 import type { WorkControllers } from '../controllers/index.ts';
+import { lqlRoutes } from './lql.routes.ts';
 import { projectsRoutes } from './projects.routes.ts';
 
 /**
@@ -9,5 +10,6 @@ import { projectsRoutes } from './projects.routes.ts';
 export function workRoutes(controllers: WorkControllers): FastifyPluginAsync {
   return async (app) => {
     await app.register(projectsRoutes(controllers.projects));
+    await app.register(lqlRoutes(controllers.lql));
   };
 }
