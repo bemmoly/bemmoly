@@ -1,6 +1,7 @@
 import type { User } from '@bemmoly/shared';
 import { Button, Input, SearchInput, Select } from '@bemmoly/ui';
 import type { AuditFilters } from '../../hooks/use-audit.ts';
+import { userOption, useUserSearch } from '../../hooks/use-user-search.ts';
 
 interface AuditFiltersBarProps {
   filters: AuditFilters;
@@ -19,6 +20,7 @@ export function AuditFiltersBar({
   onChange,
   onClear,
 }: AuditFiltersBarProps) {
+  const searchPeople = useUserSearch();
   return (
     <div
       role="search"
@@ -36,10 +38,10 @@ export function AuditFiltersBar({
       <Select
         aria-label="Actor"
         wrapperClassName="w-44"
-        options={[
-          { value: '', label: 'Anyone' },
-          ...people.map((person) => ({ value: person.id, label: person.name })),
-        ]}
+        searchable
+        searchPlaceholder="Search people"
+        loadOptions={searchPeople}
+        options={[{ value: '', label: 'Anyone' }, ...people.map(userOption)]}
         value={filters.actorId}
         onChange={(event) => onChange({ actorId: event.target.value })}
       />

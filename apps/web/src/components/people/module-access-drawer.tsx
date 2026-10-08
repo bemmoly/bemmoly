@@ -29,6 +29,9 @@ function AddGrant({ access, moduleId }: { access: Access; moduleId: string }) {
           aria-label="Who"
           wrapperClassName="min-w-0 flex-1"
           placeholder={options.length ? 'Choose…' : 'Everyone here has access'}
+          searchable
+          searchPlaceholder={`Search ${draft.kind === 'user' ? 'people' : `${draft.kind}s`}`}
+          loadOptions={access.searchSubjects(moduleId, draft.kind)}
           options={options}
           value={draft.subjectId}
           onChange={(event) => access.setDraft(moduleId, { subjectId: event.target.value })}

@@ -49,6 +49,9 @@ export function CreateTeamModal({ open, onClose }: { open: boolean; onClose: () 
           <Field label="Lead" error={create.errors['leadUserId']}>
             <Select
               size="md"
+              searchable
+              searchPlaceholder="Search people"
+              loadOptions={create.searchLeads}
               options={create.leadOptions}
               value={create.form.leadUserId}
               onChange={(event) => create.update({ leadUserId: event.target.value })}
@@ -57,6 +60,8 @@ export function CreateTeamModal({ open, onClose }: { open: boolean; onClose: () 
           <Field label="Default role" error={create.errors['defaultRoleId']}>
             <Select
               size="md"
+              searchable
+              searchPlaceholder="Search roles"
               options={create.roleOptions}
               value={create.form.defaultRoleId}
               onChange={(event) => create.update({ defaultRoleId: event.target.value })}

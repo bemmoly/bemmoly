@@ -6,6 +6,7 @@ import {
   type ModuleManifest,
   type User,
 } from '@bemmoly/shared';
+import type { LoadOptions } from '@bemmoly/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { api } from '../lib/api.ts';
@@ -14,6 +15,7 @@ import { toast } from '../lib/toast.ts';
 import { useDirectory } from './use-directory.ts';
 import { useModules } from './use-modules.ts';
 import { grantsQuery, rolesQuery, teamsQuery, useCanManagePeople } from './use-people.ts';
+import { userOption, useUserSearch } from './use-user-search.ts';
 
 type Subject = Pick<User, 'id' | 'roleId' | 'teamIds'>;
 
@@ -86,6 +88,7 @@ export function useModuleAccess(enabled = true) {
   const roles = useQuery({ ...rolesQuery, enabled }).data?.items ?? [];
   const teams = useQuery({ ...teamsQuery, enabled }).data?.items ?? [];
   const { directory } = useDirectory(enabled);
+  const searchUsers = useUserSearch({ exclude: 'deactivated' });
   const [drafts, setDrafts] = useState<Record<string, GrantDraft>>({});
   const items = grants.data?.items ?? [];
 
@@ -135,23 +138,37 @@ export function useModuleAccess(enabled = true) {
 
   const draftFor = (moduleId: string) => drafts[moduleId] ?? NEW_GRANT;
 
-  /** Subjects of this kind that do not hold a grant on the module yet. */
-  const subjectOptions = (moduleId: string, kind: ModuleGrantSubjectKind) => {
-    const taken = new Set(
+  const takenBy = (moduleId: string, kind: ModuleGrantSubjectKind) =>
+    new Set(
       items
         .filter((g) => g.moduleId === moduleId && g.subjectKind === kind)
         .map((g) => g.subjectId),
     );
+
+  /** Subjects of this kind that do not hold a grant on the module yet. */
+  const subjectOptions = (moduleId: string, kind: ModuleGrantSubjectKind) => {
+    const taken = takenBy(moduleId, kind);
     const all =
       kind === 'team'
         ? teams.map((team) => ({ value: team.id, label: team.name }))
         : kind === 'role'
           ? roles.map((role) => ({ value: role.id, label: role.name }))
-          : directory.users
-              .filter((user) => user.status !== 'deactivated')
-              .map((user) => ({ value: user.id, label: user.name }));
+          : directory.users.filter((user) => user.status !== 'deactivated').map(userOption);
     return all.filter((option) => !taken.has(option.value));
   };
+
+  /** People are searched on the server; teams and roles are few enough to filter here. */
+  const searchSubjects = (
+    moduleId: string,
+    kind: ModuleGrantSubjectKind,
+  ): LoadOptions | undefined =>
+    kind === 'user'
+      ? async (query, signal) => {
+          const taken = takenBy(moduleId, kind);
+          const found = await searchUsers(query, signal);
+          return found.filter((option) => !taken.has(option.value));
+        }
+      : undefined;
 
   const everyoneGranted = (moduleId: string) =>
     items.some((g) => g.moduleId === moduleId && g.subjectKind === 'everyone');
@@ -179,6 +196,7 @@ export function useModuleAccess(enabled = true) {
         return { ...current, [moduleId]: next };
       }),
     subjectOptions,
+    searchSubjects,
     everyoneGranted,
     submit,
     add,
