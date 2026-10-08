@@ -12,7 +12,11 @@ export function isPresetId(value: unknown): value is PresetId {
   return (PRESET_IDS as readonly unknown[]).includes(value);
 }
 
-/** This device's own choice; the workspace policy decides how much of it applies. */
+/**
+ * This device's own choice; the workspace policy decides how much of it
+ * applies. It starts as no choice ("system"), which renders Classic light
+ * until a workspace look exists.
+ */
 export const useThemeStore = create<ThemeState>()(
   persist(
     (set) => ({

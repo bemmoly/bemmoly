@@ -2,6 +2,10 @@ import type { Appearance } from './appearance.ts';
 import { PRESETS, type PresetId } from '@bemmoly/ui/tokens';
 import { buildTheme, type BuiltTheme } from '@bemmoly/ui/theme';
 
+/**
+ * "system" is no personal choice (the menu's "Workspace default"): the
+ * workspace look, or Classic light before one exists. It never follows the OS.
+ */
 export type PersonalMode = 'system' | 'light' | 'dark';
 
 export interface PersonalTheme {
@@ -32,17 +36,16 @@ function fromPreset(id: string, mode?: 'light' | 'dark'): ResolvedAppearance {
 /**
  * What this person sees: the workspace look, then their own light/dark choice
  * when the policy allows it, then their own preset when personal themes are on.
- * Signed out, only the personal choice applies ("system" follows the OS).
+ * Before a workspace look exists (setup, sign-in) only an explicit personal
+ * choice applies, and with none the page is Classic light whatever the OS says.
  */
 export function resolveAppearance(
   appearance: Appearance | undefined,
   personal: PersonalTheme,
-  prefersDark: boolean,
 ): ResolvedAppearance {
   if (!appearance) {
     if (personal.preset) return fromPreset(personal.preset);
-    const mode = personal.mode === 'system' ? (prefersDark ? 'dark' : 'light') : personal.mode;
-    return fromPreset(mode === 'dark' ? 'dark' : 'light');
+    return fromPreset(personal.mode === 'dark' ? 'dark' : 'light');
   }
   if (appearance.policy.personalThemes && personal.preset) return fromPreset(personal.preset);
   const override =
