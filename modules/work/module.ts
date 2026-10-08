@@ -28,7 +28,8 @@ export default defineModule({
     for (const capability of WORK_CAPABILITIES) ctx.capabilities.add(capability);
     defineWorkSettings(ctx.settings);
     const services = createWorkServices({
-      realtime: ctx.realtime,
+      events: ctx.events,
+      jobs: ctx.jobs,
       ...(ctx.database ? { database: ctx.database } : {}),
       ...(ctx.audit ? { audit: ctx.audit } : {}),
     });

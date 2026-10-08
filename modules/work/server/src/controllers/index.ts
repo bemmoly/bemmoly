@@ -1,5 +1,7 @@
 import type { WorkServices } from '../services/index.ts';
+import { createActivityController } from './activity.controller.ts';
 import { createFieldsController } from './fields.controller.ts';
+import { createIssuesController } from './issues.controller.ts';
 import { createProjectsController } from './projects.controller.ts';
 import { createTypesController } from './types.controller.ts';
 
@@ -9,6 +11,8 @@ export function createWorkControllers(services: WorkServices) {
     projects: createProjectsController(services.projects),
     types: createTypesController(services.types),
     fields: createFieldsController(services.fields),
+    issues: createIssuesController(services.issues),
+    activity: createActivityController(services),
   };
 }
 
