@@ -42,7 +42,8 @@ describe('Roles and permissions page', () => {
     await renderPage(() => <RolesPage />);
     fireEvent.click(await screen.findByRole('button', { name: 'Create custom role' }));
     fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Auditor' } });
-    fireEvent.change(screen.getByLabelText('Start from'), { target: { value: ROLE_IDS.viewer } });
+    fireEvent.click(screen.getByRole('combobox', { name: 'Start from' }));
+    fireEvent.click(screen.getByRole('option', { name: 'Viewer' }));
     fireEvent.click(screen.getByRole('button', { name: 'Create role' }));
     await screen.findByRole('columnheader', { name: 'Auditor custom' });
     const auditor = mockApi.db.roles.find((role) => role.name === 'Auditor');

@@ -1,1 +1,9 @@
-export { Select, type SelectOption, type SelectProps, type SelectSize } from './select.tsx';
+export { Select } from './select.tsx';
+export type {
+  LoadOptions,
+  SelectChangeEvent,
+  SelectGroup,
+  SelectOption,
+  SelectProps,
+  SelectSize,
+} from './types.ts';

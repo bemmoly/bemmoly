@@ -1,70 +1,116 @@
-import type { Ref, SelectHTMLAttributes } from 'react';
+import { useId, useImperativeHandle } from 'react';
 import { Icon } from '../../icons/icon.tsx';
 import { cx } from '../../lib/cx.ts';
-import { controlClass } from '../input/input.tsx';
-
-export type SelectSize = 'sm' | 'md';
+import { SelectList } from './select-list.tsx';
+import type { SelectProps, SelectSize } from './types.ts';
+import { useSelect } from './use-select.ts';
 
 /**
- * md: the Board Settings "Starts on" select (32px, 10px padding, caret at the right edge).
- * sm: the People role select (26px, 9px padding, 5px radius, 12.5px medium).
+ * md: the Board Settings "Starts on" select and the People filters (32px, 10px padding, 6px
+ * between label and caret). sm: the People role select (26px, 9px padding, 5px radius, 12.5px
+ * medium). lg: the Setup form's 36px field, beside Input lg.
  */
-const SIZES: Record<SelectSize, { box: string; select: string }> = {
-  md: { box: 'h-control', select: 'pl-2.5 pr-7 text-13' },
-  sm: { box: 'h-6.5 rounded-sm', select: 'pl-2.25 pr-6 text-12h font-medium' },
+const SIZES: Record<SelectSize, string> = {
+  sm: 'h-6.5 gap-1.5 rounded-sm px-2.25 text-12h font-medium',
+  md: 'h-control gap-1.5 rounded-control px-2.5 text-13',
+  lg: 'h-9 gap-2 rounded-control px-3 text-13',
 };
 
-export interface SelectOption {
-  value: string;
-  label: string;
-  disabled?: boolean;
+/** The props the list consumes; everything else goes on the trigger button. */
+const LIST_PROPS = [
+  'options',
+  'groups',
+  'value',
+  'defaultValue',
+  'onChange',
+  'searchable',
+  'loadOptions',
+  'maxVisible',
+] as const;
+
+function buttonAttributes<T extends object>(props: T): Omit<T, (typeof LIST_PROPS)[number]> {
+  const out = { ...props } as Record<string, unknown>;
+  for (const key of LIST_PROPS) delete out[key];
+  return out as Omit<T, (typeof LIST_PROPS)[number]>;
 }
 
-export interface SelectProps extends Omit<SelectHTMLAttributes<HTMLSelectElement>, 'size'> {
-  options: readonly SelectOption[];
-  size?: SelectSize;
-  placeholder?: string;
-  ref?: Ref<HTMLSelectElement>;
-  wrapperClassName?: string;
-}
+/**
+ * The one dropdown of the product: a button showing the value with the caret, opening a
+ * listbox in a portalled popover. Three options or three hundred behave the same way: at most
+ * `maxVisible` are drawn, `searchable` adds a search box, and `loadOptions` asks the server.
+ * Keyboard: arrows, Home and End move, letters jump (or type into the search), Enter and Space
+ * choose, Escape closes and Tab moves on.
+ */
+export function Select({ ref, ...props }: SelectProps) {
+  const {
+    placeholder,
+    size = 'md',
+    error,
+    searchPlaceholder = 'Search',
+    name,
+    className,
+    wrapperClassName,
+    disabled,
+    id,
+    'aria-label': ariaLabel,
+    'aria-invalid': ariaInvalid,
+    ...other
+  } = props;
+  const rest = buttonAttributes(other);
+  const state = useSelect(props);
+  const { setTrigger } = state;
+  const ownId = useId();
+  const triggerId = id ?? ownId;
+  useImperativeHandle(ref, () => state.anchor as HTMLButtonElement, [state.anchor]);
+  const invalid = Boolean(error) || ariaInvalid === true || ariaInvalid === 'true';
+  const activeId =
+    state.open && !state.searchOn && state.active >= 0 ? state.optionId(state.active) : undefined;
 
-/** A native select, so keyboard, screen readers and mobile pickers work without extra code. */
-export function Select({
-  options,
-  size = 'md',
-  placeholder,
-  className,
-  wrapperClassName,
-  ref,
-  ...rest
-}: SelectProps) {
-  const s = SIZES[size];
   return (
-    <div className={cx('relative inline-flex bg-sf', controlClass, s.box, wrapperClassName)}>
-      <select
-        ref={ref}
+    <>
+      <button
+        {...rest}
+        ref={setTrigger}
+        id={triggerId}
+        type="button"
+        role="combobox"
+        aria-label={ariaLabel}
+        aria-haspopup="listbox"
+        aria-expanded={state.open}
+        aria-controls={state.open ? state.listId : undefined}
+        aria-activedescendant={activeId}
+        aria-invalid={invalid || undefined}
+        disabled={disabled}
+        onClick={state.toggle}
+        onKeyDown={state.onKeyDown}
         className={cx(
-          'h-full w-full cursor-pointer appearance-none border-0 bg-transparent font-sans text-inherit outline-0',
-          s.select,
+          'inline-flex max-w-full min-w-0 shrink-0 cursor-pointer items-center border border-br3 bg-sf text-left font-sans text-tx outline-0',
+          'focus-visible:border-ac focus-visible:shadow-ring aria-expanded:border-ac aria-expanded:shadow-ring',
+          'aria-invalid:border-danger disabled:cursor-not-allowed disabled:opacity-50',
+          SIZES[size],
+          wrapperClassName,
           className,
         )}
-        {...rest}
       >
-        {placeholder && (
-          <option value="" disabled>
-            {placeholder}
-          </option>
+        {state.selected?.icon && (
+          <span aria-hidden className="inline-flex shrink-0">
+            {state.selected.icon}
+          </span>
         )}
-        {options.map((option) => (
-          <option key={option.value} value={option.value} disabled={option.disabled}>
-            {option.label}
-          </option>
-        ))}
-      </select>
-      <Icon
-        name="caret"
-        className="pointer-events-none absolute top-1/2 right-2.5 -translate-y-1/2 text-tx5"
-      />
-    </div>
+        <span className={cx('min-w-0 flex-1 truncate', !state.selected && 'text-tx5')}>
+          {state.selected?.label ?? placeholder ?? ''}
+        </span>
+        <Icon name="caret" className="shrink-0 text-tx4" />
+      </button>
+      {name !== undefined && <input type="hidden" name={name} value={state.value} />}
+      {state.open && (
+        <SelectList
+          state={state}
+          label={ariaLabel}
+          labelledBy={triggerId}
+          searchPlaceholder={searchPlaceholder}
+        />
+      )}
+    </>
   );
 }
