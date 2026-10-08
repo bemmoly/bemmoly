@@ -49,6 +49,15 @@ describe('SetupPage', () => {
     expect(within(account).queryByLabelText('Workspace name')).toBeNull();
   });
 
+  it('heads the email invites with their defaults', async () => {
+    mockApi.reset('wizard');
+    await renderPage(() => <Harness />, '/setup?step=3', testQueryClient());
+    const invites = await screen.findByRole('region', { name: 'Or invite by email' });
+    expect(within(invites).getByRole('heading', { level: 2 })).toBeTruthy();
+    expect(within(invites).getByText(/joins as a Member with no team/)).toBeTruthy();
+    expect(within(invites).getByLabelText('Team')).toBeTruthy();
+  });
+
   it('creates the admin and moves to the import step', async () => {
     mockApi.reset('fresh');
     const user = userEvent.setup();

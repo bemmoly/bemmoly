@@ -11,6 +11,8 @@ export const SSO_NOTE =
   'Single sign-on arrives in a later release. Invite by email now; people can switch later.';
 export const EMAIL_NOTE =
   'Invitations are sent through the email settings; in development they appear in the dev mailbox.';
+export const INVITE_HELPER =
+  'Everyone you add here joins as a Member with no team, unless you pick otherwise below.';
 export const PASTE_PLACEHOLDER = 'Paste more, comma or newline separated…';
 
 /** The two SSO cards from the mock, shown disabled until single sign-on ships. */
