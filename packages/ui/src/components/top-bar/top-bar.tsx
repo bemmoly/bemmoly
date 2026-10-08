@@ -1,7 +1,7 @@
 import type { ElementType, ReactNode } from 'react';
 import { Icon, ICON_SIZE, type IconName } from '../../icons/icon.tsx';
 import { cx } from '../../lib/cx.ts';
-import { focusRing } from '../../lib/focus.ts';
+import { caretTone, focusRing } from '../../lib/focus.ts';
 import { AiAskButton } from '../ai-surface/ai-parts.tsx';
 import { Avatar, type AvatarHue } from '../avatar/avatar.tsx';
 import { Button } from '../button/button.tsx';
@@ -56,14 +56,14 @@ export const barIcon = (name: IconName) => <Icon name={name} size={ICON_SIZE.bar
 
 const navClass = (active: boolean | undefined) =>
   cx(
-    'inline-flex cursor-pointer items-center gap-1 border-0 bg-transparent px-2.5 py-1.5 font-sans text-nav whitespace-nowrap no-underline',
+    'group inline-flex cursor-pointer items-center gap-1 border-0 bg-transparent px-2.5 py-1.5 font-sans text-nav whitespace-nowrap no-underline',
     active
       ? 'rounded-none font-medium text-tx shadow-tab'
       : 'rounded-control text-tx2 hover:bg-bg2',
     focusRing,
   );
 
-const caret = <Icon name="caret" className="text-tx5" />;
+const caret = <Icon name="caret" className={caretTone} />;
 
 function NavItem({ item, linkAs }: { item: TopBarNavItem; linkAs: ElementType }) {
   if (item.menu)

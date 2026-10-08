@@ -9,3 +9,10 @@ export const focusRing =
 /** For rows and items inside a clipped container, where an outer offset would be cut off. */
 export const focusRingInset =
   'focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ac';
+
+/**
+ * The caret of a control that opens a list: tx4 at rest, the text colour while the list is
+ * open or the control has keyboard focus. The control carries `group`.
+ */
+export const caretTone =
+  'shrink-0 text-tx4 group-aria-expanded:text-tx group-focus-visible:text-tx';

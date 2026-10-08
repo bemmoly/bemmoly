@@ -19,16 +19,30 @@ describe('Icon', () => {
       expect(ICON_NAMES).toContain(name);
   });
 
-  it('is 16px by default, 14px for carets, and takes an explicit size', () => {
+  it('is 16px by default, carets included, and takes an explicit size', () => {
     const { container } = render(
       <>
         <Icon name="inbox" />
         <Icon name="caret" />
         <Icon name="theme" size={ICON_SIZE.bar} />
+        <Icon name="caret" size={ICON_SIZE.small} />
       </>,
     );
     const sizes = [...container.querySelectorAll('svg')].map((svg) => svg.getAttribute('width'));
-    expect(sizes).toEqual(['16', '14', '18']);
+    expect(sizes).toEqual(['16', '16', '18', '14']);
+  });
+
+  it('draws chevrons a little heavier than other icons', () => {
+    const { container } = render(
+      <>
+        <Icon name="caret" />
+        <Icon name="inbox" />
+      </>,
+    );
+    const strokes = [...container.querySelectorAll('svg')].map((svg) =>
+      Number(svg.getAttribute('stroke-width')),
+    );
+    expect(strokes[0]).toBeGreaterThan(strokes[1] ?? 0);
   });
 
   it('is hidden from assistive tech unless it has a label', () => {
