@@ -1,5 +1,5 @@
 import type { ElementType, ReactNode } from 'react';
-import { Icon } from '../../icons/icon.tsx';
+import { Icon, ICON_SIZE, type IconName } from '../../icons/icon.tsx';
 import { cx } from '../../lib/cx.ts';
 import { focusRing } from '../../lib/focus.ts';
 import { AiAskButton } from '../ai-surface/ai-parts.tsx';
@@ -42,6 +42,9 @@ export interface TopBarProps {
   extra?: ReactNode;
   className?: string;
 }
+
+/** The top bar's icon buttons draw at the bar size (18px), like the sidebar. */
+export const barIcon = (name: IconName) => <Icon name={name} size={ICON_SIZE.bar} />;
 
 function NavItem({ item, linkAs }: { item: TopBarNavItem; linkAs: ElementType }) {
   const Component: ElementType = item.href || item.linkProps ? linkAs : 'button';
@@ -137,13 +140,15 @@ export function TopBar({
         {onInbox && (
           <IconButton
             label="Inbox"
-            icon="inbox"
+            icon={barIcon('inbox')}
             {...(inboxCount ? { badge: inboxCount } : {})}
             onClick={onInbox}
           />
         )}
-        {onHelp && <IconButton label="Help" icon="help" onClick={onHelp} />}
-        {onSettings && <IconButton label="Settings" icon="settings" onClick={onSettings} />}
+        {onHelp && <IconButton label="Help" icon={barIcon('help')} onClick={onHelp} />}
+        {onSettings && (
+          <IconButton label="Settings" icon={barIcon('settings')} onClick={onSettings} />
+        )}
         {extra}
         <button
           type="button"
