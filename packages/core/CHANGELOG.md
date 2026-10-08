@@ -1,5 +1,13 @@
 # @bemmoly/core
 
+## 0.1.4
+
+### Patch Changes
+
+- b98d0c0: Settings › Updates has a "Check for updates" button that fetches the release list right away instead of waiting for the daily check, and the page says plainly when the list has never been fetched or the last check failed, rather than claiming you are on the latest release.
+- @bemmoly/shared@0.1.4
+  - @bemmoly/ui@0.1.4
+
 ## 0.1.3
 
 ### Patch Changes
