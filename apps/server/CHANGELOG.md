@@ -1,5 +1,14 @@
 # @bemmoly/server
 
+## 0.1.1
+
+### Patch Changes
+
+- Updated dependencies [a2b7f81]
+  - @bemmoly/core@0.1.1
+  - @bemmoly/module-sample@0.1.1
+  - @bemmoly/shared@0.1.1
+
 ## 0.1.0
 
 ### Patch Changes
