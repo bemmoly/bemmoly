@@ -1,4 +1,4 @@
-import { listSchema, timestampSchema } from '@bemmoly/shared';
+import { keysetPageSchema, keysetQuerySchema, listSchema, timestampSchema } from '@bemmoly/shared';
 import { z } from 'zod';
 import { shortNameSchema } from './common.ts';
 import { versionStatusSchema } from './enums.ts';
@@ -56,6 +56,17 @@ export const updateComponentBodySchema = z
 
 export const versionsResponseSchema = listSchema(versionSchema);
 export const componentsResponseSchema = listSchema(componentSchema);
+/** Pages by id; a page is a superset of the plain list. */
+export const listVersionsQuerySchema = keysetQuerySchema.extend({
+  status: versionStatusSchema.optional(),
+});
+export const versionsPageSchema = keysetPageSchema(versionSchema);
+export const listComponentsQuerySchema = keysetQuerySchema;
+export const componentsPageSchema = keysetPageSchema(componentSchema);
+export type ListVersionsQuery = z.infer<typeof listVersionsQuerySchema>;
+export type VersionsPage = z.infer<typeof versionsPageSchema>;
+export type ListComponentsQuery = z.infer<typeof listComponentsQuerySchema>;
+export type ComponentsPage = z.infer<typeof componentsPageSchema>;
 
 export type Version = z.infer<typeof versionSchema>;
 export type CreateVersionBody = z.infer<typeof createVersionBodySchema>;

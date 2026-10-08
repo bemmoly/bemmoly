@@ -1,6 +1,8 @@
 import type { FastifyPluginAsync } from 'fastify';
 import type { WorkControllers } from '../controllers/index.ts';
+import { fieldsRoutes } from './fields.routes.ts';
 import { projectsRoutes } from './projects.routes.ts';
+import { typesRoutes } from './types.routes.ts';
 
 /**
  * Everything under /api/v1/work, one plugin per area so each area's routes
@@ -9,5 +11,7 @@ import { projectsRoutes } from './projects.routes.ts';
 export function workRoutes(controllers: WorkControllers): FastifyPluginAsync {
   return async (app) => {
     await app.register(projectsRoutes(controllers.projects));
+    await app.register(typesRoutes(controllers.types));
+    await app.register(fieldsRoutes(controllers.fields));
   };
 }

@@ -40,6 +40,7 @@ export {
 } from './services/notifications/index.ts';
 export {
   createAuditActivity,
+  createAuditRecorder,
   createAuditService,
   type AuditEntryInput,
   type AuditService,

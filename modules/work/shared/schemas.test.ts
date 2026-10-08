@@ -11,6 +11,7 @@ import {
   listProjectsQuerySchema,
   projectKeySchema,
   rankIssueBodySchema,
+  schemeDiffSchema,
   workflowDraftSchema,
 } from './index.ts';
 
@@ -138,5 +139,16 @@ describe('work shared schemas', () => {
       postActions: [],
     });
     expect(draft.statuses[0]?.allowedRoleIds).toEqual([]);
+  });
+
+  it('defaults the attribute list of a scheme diff entry', () => {
+    const diff = schemeDiffSchema.parse({
+      kind: 'issue_types',
+      overridden: true,
+      mark: { overriddenAt: now, overriddenBy: id },
+      entries: [{ key: 'bug', label: 'Bug', change: 'removed', before: { name: 'Bug' } }],
+    });
+    expect(diff.entries[0]?.attributes).toEqual([]);
+    expect(schemeDiffSchema.safeParse({ ...diff, kind: 'sprints' }).success).toBe(false);
   });
 });
