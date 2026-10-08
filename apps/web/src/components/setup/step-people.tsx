@@ -1,7 +1,7 @@
 import { Badge, Button, Card } from '@bemmoly/ui';
 import { SSO_NOTE, SSO_OPTIONS, useSetupInvites } from '../../hooks/use-setup-invites.ts';
 import { Notice } from '../form.tsx';
-import { InitialsTile } from './choice-card.tsx';
+import { BrandTile } from './choice-card.tsx';
 import { InviteByEmail } from './invite-by-email.tsx';
 import { StepFooter, type StepNav } from './step-footer.tsx';
 
@@ -12,7 +12,7 @@ function SsoCards() {
       {SSO_OPTIONS.map((option, index) => (
         <Card key={option.id} className="flex flex-col gap-2 p-4" aria-disabled="true">
           <span className="flex items-center gap-2.5">
-            <InitialsTile text={option.initials} />
+            <BrandTile initials={option.initials} />
             <span className="text-14 font-semibold">{option.name}</span>
             {option.badge ? (
               <Badge tone="ok" className="ml-auto">

@@ -1,6 +1,6 @@
 import { SearchInput } from '@bemmoly/ui';
-import { initialsOf, type CatalogProvider } from '../../hooks/use-ai-catalog.ts';
-import { InitialsTile } from '../setup/choice-card.tsx';
+import type { CatalogProvider } from '../../hooks/use-ai-catalog.ts';
+import { ProviderLogo } from './provider-logo.tsx';
 
 interface ProviderListProps {
   query: string;
@@ -58,7 +58,7 @@ export function ProviderList({
                   selected ? 'bg-ac-bg2' : 'bg-transparent hover:bg-bg2'
                 }`}
               >
-                <InitialsTile text={initialsOf(provider.name)} />
+                <ProviderLogo id={provider.id} name={provider.name} />
                 <span className={`font-medium ${selected ? 'text-ac' : 'text-tx'}`}>
                   {provider.name}
                 </span>

@@ -42,7 +42,7 @@ export function catalogStatus(catalog: AiCatalog): string {
     : 'Live · models.dev';
 }
 
-/** Two letters for the tile until logos ship with the catalog snapshot. */
+/** Two letters for the tile of a provider with no bundled logo. */
 export function initialsOf(name: string): string {
   const words = name.split(/[\s-]+/).filter(Boolean);
   const letters =
