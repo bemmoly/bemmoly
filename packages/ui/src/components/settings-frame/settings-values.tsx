@@ -22,10 +22,10 @@ export interface SettingsValueProps {
   muted?: boolean;
 }
 
-/** 10px rows: label in tx4 on a 220px track, the value in tx beside it. */
+/** 10px rows: label in tx4 on two fifths of the width, the value in tx beside it. */
 export function SettingsValue({ label, children, hint, mono, muted }: SettingsValueProps) {
   return (
-    <div className="grid grid-cols-[220px_minmax(0,1fr)] items-baseline gap-4 border-b border-br-row py-2.5 last:border-b-0">
+    <div className="grid grid-cols-[minmax(0,2fr)_minmax(0,3fr)] items-baseline gap-4 border-b border-br-row py-2.5 last:border-b-0">
       <dt className="text-tx4">{label}</dt>
       <dd className="m-0 flex min-w-0 flex-col gap-0.5">
         <span
