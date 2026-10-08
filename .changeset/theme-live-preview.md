@@ -1,5 +1,5 @@
 ---
-'@bemmoly/web': minor
+'@bemmoly/web': patch
 ---
 
 Picking a theme in the setup wizard's Appearance step, or in Settings › Appearance, now
