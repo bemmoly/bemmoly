@@ -35,11 +35,11 @@ export function createTable(
     description: `create ${table}`,
     up: async (ctx) => {
       await ctx.exec(
-        sql.raw(`create table ${table} (id uuid primary key default uuidv7(), n int)`),
+        sql`create table ${sql.identifier(table)} (id uuid primary key default uuidv7(), n int)`,
       );
     },
     down: async (ctx) => {
-      await ctx.exec(sql.raw(`drop table ${table}`));
+      await ctx.exec(sql`drop table ${sql.identifier(table)}`);
     },
     ...overrides,
   };
