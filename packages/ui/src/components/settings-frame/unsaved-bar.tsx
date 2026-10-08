@@ -23,7 +23,15 @@ function names(sections: readonly UnsavedSection[]) {
   return sections.map((section, index) => (
     <Fragment key={section.id}>
       {index > 0 ? (index === sections.length - 1 ? ' and ' : ', ') : null}
-      <a href={`#${section.id}`} className="font-medium text-ac hover:text-ac-d">
+      <a
+        href={`#${section.id}`}
+        className="font-medium text-ac hover:text-ac-d"
+        onClick={(event) => {
+          // Scrolls in place: a hash change would count as leaving the page for a router.
+          event.preventDefault();
+          document.getElementById(section.id)?.scrollIntoView({ block: 'start' });
+        }}
+      >
         {section.title}
       </a>
     </Fragment>
