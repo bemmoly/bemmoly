@@ -58,6 +58,24 @@ describe('SetupPage', () => {
     expect(within(invites).getByLabelText('Team')).toBeTruthy();
   });
 
+  it('lists the summary as labels and values', async () => {
+    mockApi.reset('wizard');
+    await renderPage(() => <Harness />, '/setup?step=6', testQueryClient());
+    const summary = await screen.findByLabelText('Setup summary');
+    expect(summary.tagName).toBe('DL');
+    const terms = within(summary).getAllByRole('term');
+    // The last node is the label; the status circle before it is aria-hidden.
+    expect(terms.map((term) => term.lastChild?.textContent)).toEqual([
+      'Workspace',
+      'Admin',
+      'Import',
+      'Sign-in',
+      'AI',
+      'Theme',
+    ]);
+    expect(within(summary).getAllByRole('definition')[2]?.textContent).toBe('Skipped');
+  });
+
   it('creates the admin and moves to the import step', async () => {
     mockApi.reset('fresh');
     const user = userEvent.setup();
