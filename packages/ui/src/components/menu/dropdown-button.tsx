@@ -11,8 +11,8 @@ export interface DropdownProps extends Omit<MenuProps, 'trigger'> {
 }
 
 /**
- * The filter trigger of the Board and Backlog ("Epic ▾": 32px, 10px padding, tx2, caret in tx5)
- * opening a Menu.
+ * The filter trigger of the Board and Backlog ("Epic ▾": 32px, 10px padding, tx2) opening a
+ * Menu. The caret is tx4, one step darker than the mock, so it reads on every theme.
  */
 export function Dropdown({ label, buttonProps, ...menu }: DropdownProps) {
   return (
@@ -21,7 +21,7 @@ export function Dropdown({ label, buttonProps, ...menu }: DropdownProps) {
       trigger={(props) => (
         <Button
           tight
-          iconEnd={<Icon name="caret" className="text-tx5" />}
+          iconEnd={<Icon name="caret" className="text-tx4" />}
           {...buttonProps}
           {...props}
         >
