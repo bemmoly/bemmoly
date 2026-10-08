@@ -15,6 +15,10 @@ rules:
         - '**/*.int.test.ts'
         - '**/e2e/**'
         - /scripts/**
+        # Development harnesses, never in a build: the site's preview-server probe and the
+        # web app's mock server, which forwards a Request to the real backend as it is.
+        - /apps/site/tests/**
+        - /apps/web/src/mocks/**
         - /tools/k6/**
         - /tools/semgrep/**
     pattern-either:
