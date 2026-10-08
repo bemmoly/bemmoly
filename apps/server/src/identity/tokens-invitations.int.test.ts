@@ -113,7 +113,9 @@ describe('API tokens, invitations and password reset against a real database', (
     ]);
     expect(payload).toMatchObject({ email: 'sam@acmelabs.dev', inviterName: 'Rohan S.' });
     expect(payload['expiresAt']).toBeInstanceOf(Date);
-    expect(payload['acceptUrl']).toMatch(/^http:\/\/localhost:8080\/invitations\/[\w-]{43}$/);
+    expect(payload['acceptUrl']).toMatch(
+      /^http:\/\/localhost:8080\/accept-invitation#token=[\w-]{43}$/,
+    );
     expect(events[0]?.transaction).toBeDefined();
     const token = linkToken(payload['acceptUrl'] ?? '');
 
@@ -178,7 +180,7 @@ describe('API tokens, invitations and password reset against a real database', (
       'resetUrl',
       'userId',
     ]);
-    expect(reset['resetUrl']).toMatch(/^http:\/\/localhost:8080\/password-reset\/[\w-]{43}$/);
+    expect(reset['resetUrl']).toMatch(/^http:\/\/localhost:8080\/reset-password#token=[\w-]{43}$/);
     expect(events[0]?.transaction).toBeDefined();
     const token = linkToken(String(reset['resetUrl']));
 
