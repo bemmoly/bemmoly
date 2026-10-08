@@ -5,6 +5,8 @@ export interface ImportSource {
   initials: string;
   name: string;
   description: string;
+  /** Shown but not selectable until its importer ships. */
+  comingSoon: boolean;
 }
 
 /** The four cards of the mock's import step, in its order and words. */
@@ -14,6 +16,7 @@ export const IMPORT_SOURCES: readonly ImportSource[] = [
     initials: 'JC',
     name: 'Jira Cloud or Server',
     description: 'Projects, issues, sprints, boards, workflows, custom fields, attachments.',
+    comingSoon: true,
   },
   {
     id: 'confluence',
@@ -21,23 +24,29 @@ export const IMPORT_SOURCES: readonly ImportSource[] = [
     name: 'Confluence',
     description:
       'Spaces, page trees, versions, comments, attachments. Jira macros become live issue links.',
+    comingSoon: true,
   },
   {
     id: 'csv',
     initials: 'CSV',
     name: 'CSV or Linear / Trello / Asana export',
     description: 'Map columns to fields. Good for lighter tools.',
+    comingSoon: true,
   },
   {
     id: 'clean',
     initials: '—',
     name: 'Start clean',
     description: 'Begin with an empty workspace and add projects when you are ready.',
+    comingSoon: false,
   },
 ];
 
 export const IMPORT_NOTICE =
-  'Importers arrive in a later release. Your pick is remembered for this setup only; use Skip for now to continue.';
+  'Importers arrive in a later release, and you can run them later from Settings. Start clean for now.';
+
+/** The primary button while Start clean is the only card that can be picked. */
+export const START_CLEAN_LABEL = 'Continue';
 
 /** The Done step's import line. */
 export function importSummary(source: ImportSourceId | null): string {
@@ -47,15 +56,22 @@ export function importSummary(source: ImportSourceId | null): string {
   return `${name} (importers arrive in a later release)`;
 }
 
-/** Step 2: a selectable card, and a primary button that stays off until importers exist. */
-export function useSetupImport() {
-  const selected = useSetupStore((state) => state.importSource);
+/**
+ * Step 2: the importers are coming soon, so Start clean is the one choice and is picked from
+ * the start. Continue records it; Skip for now leaves the step unanswered.
+ */
+export function useSetupImport(next: () => void) {
   const update = useSetupStore((state) => state.update);
   return {
     sources: IMPORT_SOURCES,
-    selected,
-    select: (id: ImportSourceId) => update({ importSource: id }),
+    selected: 'clean' as ImportSourceId,
     notice: IMPORT_NOTICE,
-    canStart: false as const,
+    label: START_CLEAN_LABEL,
+    canStart: true,
+    select: (id: ImportSourceId) => update({ importSource: id }),
+    start: () => {
+      update({ importSource: 'clean' });
+      next();
+    },
   };
 }
