@@ -76,7 +76,10 @@ describe('LQL compiler: fields', () => {
       text: '(issues.status_id in (select id from workflow_statuses where lower(name) = any($1::text[])))',
       params: [['in progress']],
     });
-    expect(where('type IN (bug, Story)').params).toEqual([['bug', 'story'], ['bug', 'story']]);
+    expect(where('type IN (bug, Story)').params).toEqual([
+      ['bug', 'story'],
+      ['bug', 'story'],
+    ]);
     expect(where('statusCategory = done').text).toContain('where category = any($1::text[])');
   });
 
@@ -136,18 +139,20 @@ describe('LQL compiler: fields', () => {
 describe('LQL compiler: custom fields', () => {
   it('casts the JSONB path by the field kind', () => {
     expect(where('cf.points > 5')).toEqual({
-      text: "((issues.custom_fields ->> $1)::numeric > $2::numeric)",
+      text: '((issues.custom_fields ->> $1)::numeric > $2::numeric)',
       params: ['points', 5],
     });
     expect(where('"Review by" < 2026-12-01').text).toContain(
-      "(issues.custom_fields ->> $1)::timestamptz < $2::timestamptz",
+      '(issues.custom_fields ->> $1)::timestamptz < $2::timestamptz',
     );
     expect(where('"Spec doc" IS EMPTY')).toEqual({
       text: "(coalesce(issues.custom_fields ->> $1, '') = '')",
       params: ['spec_doc'],
     });
     expect(where('cf.owner = me').params).toEqual(['owner', [ME]]);
-    expect(where('cf.tier = gold').text).toContain('lower(issues.custom_fields ->> $1) = lower($2)');
+    expect(where('cf.tier = gold').text).toContain(
+      'lower(issues.custom_fields ->> $1) = lower($2)',
+    );
   });
 
   it('checks multiselect membership by containment', () => {
@@ -170,9 +175,7 @@ describe('LQL compiler: injection attempts stay parameters', () => {
   });
 
   it('binds a hostile custom field key as the JSONB path parameter', () => {
-    const hostile = catalogOf([
-      { key: "x' or 1=1", label: 'X', kind: 'text', storage: 'text' },
-    ]);
+    const hostile = catalogOf([{ key: "x' or 1=1", label: 'X', kind: 'text', storage: 'text' }]);
     const query = parseLql('"X" = a');
     if (!query.ok) throw new Error(query.error.message);
     const { text, params } = render(compileWhere(sql, query.value, hostile, cx));
@@ -185,7 +188,9 @@ describe('LQL compiler: ordering', () => {
   it('defaults to rank with the id tiebreak', () => {
     const compiled = compileQuery(sql, parse(''), catalog, cx);
     expect(render(compiled.where).text).toBe('true');
-    expect(render(compiled.orderBy).text).toBe('issues.rank asc nulls last, issues.id asc nulls last');
+    expect(render(compiled.orderBy).text).toBe(
+      'issues.rank asc nulls last, issues.id asc nulls last',
+    );
     expect(compiled.directions).toEqual(['ASC', 'ASC']);
   });
 

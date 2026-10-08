@@ -108,7 +108,11 @@ export function createIssueTypesService(deps: IssueTypesServiceDeps) {
       const current = await issueTypesOf(sql, projectId);
       const known = new Set(current.map((row) => row.id));
       const unique = new Set(body.ids);
-      if (unique.size !== body.ids.length || unique.size !== known.size || ![...unique].every((x) => known.has(x))) {
+      if (
+        unique.size !== body.ids.length ||
+        unique.size !== known.size ||
+        ![...unique].every((x) => known.has(x))
+      ) {
         throw new ValidationError('Name every issue type of this scope exactly once');
       }
       await sql`

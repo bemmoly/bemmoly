@@ -111,7 +111,9 @@ export function createLqlService(deps: LqlServiceDeps) {
       await ctx.authz.authorize(
         ctx.actor,
         'work.issue.view',
-        projectId ? { kind: 'project', id: projectId, moduleId: 'work' } : { kind: 'module', moduleId: 'work' },
+        projectId
+          ? { kind: 'project', id: projectId, moduleId: 'work' }
+          : { kind: 'module', moduleId: 'work' },
       );
       const sql = db();
       const compiled = await compile(ctx, params.lql, projectId);

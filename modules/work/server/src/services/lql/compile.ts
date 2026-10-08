@@ -79,8 +79,7 @@ function compileExpression(
   builtIns: Record<string, FieldCompiler>,
   cx: ValueContext,
 ): SqlFragment {
-  const recurse = (operand: Expression) =>
-    compileExpression(sql, operand, catalog, builtIns, cx);
+  const recurse = (operand: Expression) => compileExpression(sql, operand, catalog, builtIns, cx);
   switch (expression.kind) {
     case 'and':
     case 'or':

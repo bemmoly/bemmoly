@@ -64,7 +64,12 @@ export function createProjectsService(deps: ProjectsServiceDeps) {
   }
 
   /** Every change to a project's row is one audit entry with the row before and after. */
-  async function audited(ctx: RequestContext, action: string, before: ProjectRow, after: ProjectRow) {
+  async function audited(
+    ctx: RequestContext,
+    action: string,
+    before: ProjectRow,
+    after: ProjectRow,
+  ) {
     await deps.audit?.record({
       actor: ctx.actor,
       action,

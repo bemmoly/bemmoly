@@ -21,7 +21,8 @@ export async function resolveScope(
   kind: SchemeKind,
   projectKey: string | null,
 ): Promise<SchemeScope> {
-  if (!projectKey) return { project: null, rowsProjectId: null, overridden: false, resource: WORK_MODULE };
+  if (!projectKey)
+    return { project: null, rowsProjectId: null, overridden: false, resource: WORK_MODULE };
   const project = await projectByKey(sql, projectKey);
   const overridden = Boolean(project.scheme_overrides[kind]);
   return {

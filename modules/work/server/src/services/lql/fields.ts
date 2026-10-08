@@ -51,8 +51,12 @@ const types = byName(
 const versions = byName(
   (sql, names) => sql`select id from versions where lower(name) = any(${names}::text[])`,
 );
-const projects = byKey((sql, keys) => sql`select id from projects where key = any(${keys}::text[])`);
-const issuesByKey = byKey((sql, keys) => sql`select id from issues where key = any(${keys}::text[])`);
+const projects = byKey(
+  (sql, keys) => sql`select id from projects where key = any(${keys}::text[])`,
+);
+const issuesByKey = byKey(
+  (sql, keys) => sql`select id from issues where key = any(${keys}::text[])`,
+);
 const epicsByKey = byKey(
   (sql, keys) => sql`select e.id from issues e join issue_types t on t.id = e.type_id
     where e.key = any(${keys}::text[]) and t.level = 'epic'`,
@@ -122,11 +126,7 @@ const PRIORITY_ORDER = [...ISSUE_PRIORITIES].reverse();
 const priorityRank = (sql: SqlClient, value: SqlFragment) =>
   sql`array_position(${PRIORITY_ORDER}::text[], ${value})`;
 
-function priorityPredicate(
-  sql: SqlClient,
-  operator: LqlOperator,
-  values: Value[],
-): SqlFragment {
+function priorityPredicate(sql: SqlClient, operator: LqlOperator, values: Value[]): SqlFragment {
   const names = lower(values.map(textOf));
   switch (operator) {
     case '=':
@@ -154,7 +154,10 @@ function labelPredicate(sql: SqlClient, operator: LqlOperator, values: Value[]):
 }
 
 const id = (sql: SqlClient) => sql`issues.id`;
-const col = (column: SqlFragment): FieldCompiler['sort'] => () => column;
+const col =
+  (column: SqlFragment): FieldCompiler['sort'] =>
+  () =>
+    column;
 
 export function builtInFields(sql: SqlClient): Record<string, FieldCompiler> {
   const statusId = sql`issues.status_id`;
@@ -204,7 +207,8 @@ export function builtInFields(sql: SqlClient): Record<string, FieldCompiler> {
       sort: () => subqueryName(sql, 'sprints', sprintId),
     },
     estimate: {
-      predicate: (s, operator, values) => numberPredicate(s, sql`issues.estimate`, operator, values),
+      predicate: (s, operator, values) =>
+        numberPredicate(s, sql`issues.estimate`, operator, values),
       sort: col(sql`issues.estimate`),
     },
     due: {

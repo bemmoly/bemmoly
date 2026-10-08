@@ -63,16 +63,16 @@ describe('issue types service', () => {
     await expect(
       service.create(contextWhere(true), 'PLT', { key: 'bug', name: 'Bug' }),
     ).rejects.toBeInstanceOf(ConflictError);
-    await expect(service.create(contextWhere(false), null, { key: 'bug', name: 'Bug' })).rejects.toBeInstanceOf(
-      ForbiddenError,
-    );
+    await expect(
+      service.create(contextWhere(false), null, { key: 'bug', name: 'Bug' }),
+    ).rejects.toBeInstanceOf(ForbiddenError);
   });
 
   it('needs every type of the scope named once to reorder', async () => {
     const sql = fakeSql([[type, { ...type, id: projectId, key: 'bug' }]]);
     const service = createIssueTypesService({ database: sql.client });
-    await expect(service.reorder(contextWhere(true), null, { ids: [typeId] })).rejects.toBeInstanceOf(
-      ValidationError,
-    );
+    await expect(
+      service.reorder(contextWhere(true), null, { ids: [typeId] }),
+    ).rejects.toBeInstanceOf(ValidationError);
   });
 });

@@ -96,11 +96,7 @@ export function likePattern(term: string): string {
 }
 
 /** Joins fragments with a keyword, wrapping the result so precedence is explicit. */
-export function joinWith(
-  sql: SqlClient,
-  parts: SqlFragment[],
-  keyword: 'and' | 'or',
-): SqlFragment {
+export function joinWith(sql: SqlClient, parts: SqlFragment[], keyword: 'and' | 'or'): SqlFragment {
   const [first, ...rest] = parts;
   if (!first) return sql`true`;
   const joined = rest.reduce(
