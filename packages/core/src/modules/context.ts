@@ -7,6 +7,7 @@ import type { BemmolyModule, ModuleContext } from './contract.ts';
 import type { ModuleContributions } from './contributions.ts';
 import { ModuleLoadError } from './errors.ts';
 import type { SettingsReader, SettingsRegistry } from './registries.ts';
+import { createAuditRecorder } from '../services/audit/index.ts';
 
 export interface ModuleContextOptions {
   events: EventBus;
@@ -120,6 +121,8 @@ export function createModuleContext(
     importers: { add: (importer) => into.importers.push(importer) },
     settings,
     realtime: options.realtime ?? noRealtime,
-    ...(options.database ? { database: options.database } : {}),
+    ...(options.database
+      ? { database: options.database, audit: createAuditRecorder(options.database) }
+      : {}),
   };
 }

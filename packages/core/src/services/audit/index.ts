@@ -6,6 +6,7 @@ export { auditCsvHeader, auditCsvRow, auditLogToCsv, csvCell } from './csv.ts';
 export { exportAuditLog } from './export.ts';
 export { EXPORT_MAX_ROWS, iterateAuditLog, listAuditLog, presentAuditEntry } from './list.ts';
 export { recordAudit, redactSecrets, type AuditEntryInput, type RequestMeta } from './record.ts';
+export { createAuditRecorder } from './recorder.ts';
 
 export interface AuditService {
   /** Pass the mutation's transaction as `db` so both commit together. */
