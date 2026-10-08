@@ -1,5 +1,13 @@
 # @bemmoly/core
 
+## 0.1.3
+
+### Patch Changes
+
+- Updated dependencies [04c4f3a]
+  - @bemmoly/ui@0.1.3
+  - @bemmoly/shared@0.1.3
+
 ## 0.1.2
 
 ### Patch Changes
