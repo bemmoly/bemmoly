@@ -27,7 +27,12 @@ export default defineModule({
     });
     for (const capability of WORK_CAPABILITIES) ctx.capabilities.add(capability);
     defineWorkSettings(ctx.settings);
-    const services = createWorkServices(ctx.database ? { database: ctx.database } : {});
+    const services = createWorkServices({
+      realtime: ctx.realtime,
+      events: ctx.events,
+      jobs: ctx.jobs,
+      ...(ctx.database ? { database: ctx.database } : {}),
+    });
     ctx.jobs.add({
       name: WORK_RANK_REBALANCE_JOB,
       scheduleSetting: 'work.jobs.rankRebalance.schedule',
