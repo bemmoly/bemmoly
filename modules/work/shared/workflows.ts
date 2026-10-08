@@ -65,6 +65,9 @@ export const workflowDraftSchema = z.object({
         color: hexColorSchema.optional(),
         position: z.number().int().min(0),
         allowedRoleIds: z.array(z.uuid()).default([]),
+        /** Centre of the node in the editor's 1000 x 560 canvas; laid out by column when absent. */
+        x: z.number().min(0).max(1000).optional(),
+        y: z.number().min(0).max(560).optional(),
       }),
     )
     .min(1)

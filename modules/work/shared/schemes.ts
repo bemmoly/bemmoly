@@ -4,14 +4,15 @@ import { z } from 'zod';
 /*
  * The override model of tech design §14: an org default scheme, a full copy
  * per project with an origin pointer, and a diff between the two that the
- * Board Settings "View diff" panel renders row by row.
+ * Board Settings "View diff" panel renders row by row. The status list names
+ * the origin and counts what differs; dot-paths address the settings inside.
  */
 
 export const SCHEME_KINDS = ['issue_types', 'fields', 'workflow', 'board'] as const;
 export const schemeKindSchema = z.enum(SCHEME_KINDS);
 export type SchemeKind = z.infer<typeof schemeKindSchema>;
 
-export const schemeKindParamsSchema = z.object({ kind: schemeKindSchema });
+export const schemeKindParamsSchema = z.object({ projectId: z.uuid(), kind: schemeKindSchema });
 
 /** What projects.scheme_overrides stores per overridden kind. */
 export const schemeOverrideMarkSchema = z.object({
@@ -43,7 +44,20 @@ export const schemeDiffSchema = z.object({
   entries: z.array(schemeDiffEntrySchema),
 });
 
+export const schemeStatusSchema = z.object({
+  kind: schemeKindSchema,
+  /** The org default's display name: "Software (Scrum)". */
+  originName: z.string(),
+  overridden: z.boolean(),
+  /** Settings that differ from the origin; 0 while inherited. */
+  overrideCount: z.number().int().nonnegative(),
+});
+
+export const schemesResponseSchema = z.object({ items: z.array(schemeStatusSchema) });
+
 export type SchemeOverrideMark = z.infer<typeof schemeOverrideMarkSchema>;
 export type SchemeChange = z.infer<typeof schemeChangeSchema>;
 export type SchemeDiffEntry = z.infer<typeof schemeDiffEntrySchema>;
 export type SchemeDiff = z.infer<typeof schemeDiffSchema>;
+export type SchemeStatus = z.infer<typeof schemeStatusSchema>;
+export type SchemesResponse = z.infer<typeof schemesResponseSchema>;

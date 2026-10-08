@@ -18,4 +18,5 @@ export * from './schemes.ts';
 export * from './search.ts';
 export * from './sprints.ts';
 export * from './versions-components.ts';
+export * from './workflow-editor.ts';
 export * from './workflows.ts';
