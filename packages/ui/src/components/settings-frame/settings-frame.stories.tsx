@@ -3,8 +3,9 @@ import { useState } from 'react';
 import { Button } from '../button/button.tsx';
 import { PageHeader } from '../page-header/page-header.tsx';
 import { Switch } from '../switch/switch.tsx';
-import { SettingsContent, SettingsFrame, SettingsRow, SettingsSection } from './settings-frame.tsx';
+import { SettingsContent, SettingsFrame, SettingsRow } from './settings-frame.tsx';
 import { SettingsNav, SettingsNavItem, SettingsNavSection } from './settings-nav.tsx';
+import { SettingsSection } from './settings-section.tsx';
 
 const meta = { title: 'Components/SettingsFrame', component: SettingsFrame } satisfies Meta<
   typeof SettingsFrame

@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react';
 import { cx } from '../../lib/cx.ts';
-import { Card } from '../card/card.tsx';
 
 export interface SettingsFrameProps {
   /** A SettingsNav. */
@@ -43,37 +42,6 @@ export function SettingsContent({ children, width = 'wide', className }: Setting
     >
       {children}
     </div>
-  );
-}
-
-export interface SettingsSectionProps {
-  title: ReactNode;
-  /** Light text after the title ("Select Custom above to edit"). */
-  hint?: ReactNode;
-  children: ReactNode;
-  /** rows: SettingsRow list (6px 16px). block: free content (16px). */
-  layout?: 'rows' | 'block';
-  className?: string;
-}
-
-/** A settings panel: the Theme, Custom theme and Policy cards of the Appearance mock. */
-export function SettingsSection({
-  title,
-  hint,
-  children,
-  layout = 'block',
-  className,
-}: SettingsSectionProps) {
-  return (
-    <Card className={className}>
-      <div className="flex items-center gap-2 border-b border-br2 px-4 py-3 font-semibold">
-        {title}
-        {hint && <span className="text-12 font-normal text-tx5">{hint}</span>}
-      </div>
-      <div className={layout === 'rows' ? 'flex flex-col px-4 py-1.5' : 'flex flex-col gap-4 p-4'}>
-        {children}
-      </div>
-    </Card>
   );
 }
 
