@@ -61,7 +61,7 @@ export function BackupSettings({ form, localPath, bucket, paused }: BackupSettin
           : id === 'protection'
             ? protectionRisk(stored, policy)
             : null;
-    confirm.request(risk, () => form.save(id, values, () => edits.close(id)));
+    confirm.ask(risk, () => form.save(id, values, () => edits.close(id)));
   };
   const section = (id: BackupSection) => ({
     ...edits.section(id),

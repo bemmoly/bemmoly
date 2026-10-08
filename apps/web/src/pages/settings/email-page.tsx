@@ -43,7 +43,7 @@ export function EmailPage() {
     const prepared = email.prepare(id);
     if (!prepared || !stored) return;
     const risk = id === 'delivery' ? deliveryRisk(stored, prepared.form) : null;
-    confirm.request(risk, () => email.save(id, prepared.writes, () => edits.close(id)));
+    confirm.ask(risk, () => email.save(id, prepared.writes, () => edits.close(id)));
   };
   const section = (id: EmailSection) => ({
     ...edits.section(id),
