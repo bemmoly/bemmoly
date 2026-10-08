@@ -83,6 +83,8 @@ export const SHADOWS = {
   modal: '0 24px 64px rgba(16,24,40,.35),0 0 0 1px rgba(16,24,40,.08)',
   ring: '0 0 0 2px var(--ac-br)',
   'ring-ac': '0 0 0 2px var(--ac)',
+  /** The selected workflow status node (Workflow mock): a 3px ring of the accent border. */
+  'ring-node': '0 0 0 3px var(--ac-br)',
   /** Active tab and top bar item underline. */
   tab: 'inset 0 -2px 0 var(--ac)',
   /** Selected radio: white gap, then the accent dot (Board Settings). */

@@ -166,6 +166,7 @@
   --shadow-modal: var(--shadow-modal);
   --shadow-ring: var(--shadow-ring);
   --shadow-ring-ac: var(--shadow-ring-ac);
+  --shadow-ring-node: var(--shadow-ring-node);
   --shadow-tab: var(--shadow-tab);
   --shadow-radio: var(--shadow-radio);
   --shadow-halo: var(--shadow-halo);
