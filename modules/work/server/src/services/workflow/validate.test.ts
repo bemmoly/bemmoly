@@ -14,10 +14,21 @@ const edge = (
   from: string | null,
   to: string,
   rules?: WorkflowDraft['transitions'][number]['rules'],
-) => ({ id, fromStatusId: from, toStatusId: to, name: id, position: 0, ...(rules ? { rules } : {}) });
+) => ({
+  id,
+  fromStatusId: from,
+  toStatusId: to,
+  name: id,
+  position: 0,
+  ...(rules ? { rules } : {}),
+});
 
 const sound: WorkflowDraft = {
-  statuses: [status('Backlog', 'todo', 0), status('Doing', 'in_progress', 1), status('Done', 'done', 2)],
+  statuses: [
+    status('Backlog', 'todo', 0),
+    status('Doing', 'in_progress', 1),
+    status('Done', 'done', 2),
+  ],
   transitions: [edge('start', 'Backlog', 'Doing'), edge('finish', 'Doing', 'Done')],
 };
 
@@ -33,7 +44,11 @@ describe('validateDraft', () => {
     };
     expect(validateDraft(draft).problems).toEqual([
       { code: 'no_done_status', message: 'Add a status in the Done category' },
-      { code: 'duplicate_status_name', message: 'Two statuses are named "backlog "', statusId: 'x' },
+      {
+        code: 'duplicate_status_name',
+        message: 'Two statuses are named "backlog "',
+        statusId: 'x',
+      },
     ]);
   });
 
@@ -47,7 +62,10 @@ describe('validateDraft', () => {
   });
 
   it('flags a transition to or from a missing status', () => {
-    const draft = { ...sound, transitions: [...sound.transitions, edge('gone', 'Doing', 'Nowhere')] };
+    const draft = {
+      ...sound,
+      transitions: [...sound.transitions, edge('gone', 'Doing', 'Nowhere')],
+    };
     expect(validateDraft(draft).problems).toEqual([
       {
         code: 'transition_missing_status',
@@ -62,7 +80,10 @@ describe('validateDraft', () => {
       ...sound,
       transitions: [
         edge('start', 'Backlog', 'Doing', {
-          conditions: [{ name: 'required_fields', args: {} }, { name: 'nope', args: {} }],
+          conditions: [
+            { name: 'required_fields', args: {} },
+            { name: 'nope', args: {} },
+          ],
           validators: [{ name: 'required_fields', args: { fields: [] } }],
           postActions: [{ name: 'set_resolution', args: { resolved: 'yes' } }],
         }),

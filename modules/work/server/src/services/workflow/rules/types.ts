@@ -46,9 +46,7 @@ export interface PostActionRule<Args = unknown> extends RuleBase<Args> {
 }
 
 export type WorkflowRuleDefinition<Args = unknown> =
-  | ConditionRule<Args>
-  | ValidatorRule<Args>
-  | PostActionRule<Args>;
+  ConditionRule<Args> | ValidatorRule<Args> | PostActionRule<Args>;
 
 /** The person a post-action is recorded against; system actors leave it null. */
 export function actorUserId(rule: RuleContext): string | null {

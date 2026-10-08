@@ -144,7 +144,9 @@ describe('work shared schemas', () => {
 
   it('publishes with an empty status mapping and names problems by code', () => {
     expect(publishWorkflowBodySchema.parse({})).toEqual({ statusMapping: {} });
-    expect(publishWorkflowBodySchema.safeParse({ statusMapping: { s1: 's2' } }).success).toBe(false);
+    expect(publishWorkflowBodySchema.safeParse({ statusMapping: { s1: 's2' } }).success).toBe(
+      false,
+    );
     expect(
       workflowProblemSchema.safeParse({ code: 'no_done_status', message: 'Add a Done status' })
         .success,

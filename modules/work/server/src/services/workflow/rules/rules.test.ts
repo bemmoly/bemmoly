@@ -145,7 +145,14 @@ describe('post-actions', () => {
       'assignee_id',
       uid(5),
     );
-    expect(rc.writes.setField).toHaveBeenNthCalledWith(2, rc.sql, issue.id, uid(8), 'sprint_id', null);
+    expect(rc.writes.setField).toHaveBeenNthCalledWith(
+      2,
+      rc.sql,
+      issue.id,
+      uid(8),
+      'sprint_id',
+      null,
+    );
   });
 
   it('skips a write that would change nothing', async () => {
