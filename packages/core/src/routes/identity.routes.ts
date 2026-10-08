@@ -46,6 +46,9 @@ export function identityRoutes(
     app.get('/invitations', async (req) => people.listInvitations(req));
     app.post('/invitations', async (req, reply) => people.createInvitations(req, reply));
     app.delete('/invitations/:id', async (req, reply) => people.revokeInvitation(req, reply));
+    app.post('/invitations/:id/links', async (req, reply) =>
+      people.issueInvitationLink(req, reply),
+    );
 
     app.get('/teams', async (req) => people.listTeams(req));
     app.post('/teams', async (req, reply) => people.createTeam(req, reply));

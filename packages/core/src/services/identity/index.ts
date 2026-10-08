@@ -17,6 +17,7 @@ export {
   type InvitationCreatedPayload,
   type PasswordResetRequestedPayload,
 } from './events.ts';
+export { issueInvitationLink } from './invitation-links.ts';
 export {
   acceptInvitation,
   createInvitations,

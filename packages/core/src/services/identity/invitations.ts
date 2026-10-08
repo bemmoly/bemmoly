@@ -1,8 +1,10 @@
 import {
   ConflictError,
+  DEFAULT_ROLE_KEY,
   NotFoundError,
   type AcceptInvitationInput,
   type CreateInvitationsInput,
+  type CreateInvitationsResponse,
   type Invitation,
   type InvitationPreview,
   type User,
@@ -12,7 +14,8 @@ import type { Database } from '../../clients/drizzle.ts';
 import { invitations, roles, teams, users } from '../../models/identity/index.ts';
 import { recordAudit, type RequestMeta } from '../audit/index.ts';
 import type { RequestContext } from '../authz/index.ts';
-import { assertMayAssignRole, createAccount, findRole } from './accounts.ts';
+import { createEmailConfigurationProbe } from '../email/index.ts';
+import { assertMayAssignRole, createAccount, findRole, findRoleByKey } from './accounts.ts';
 import { appLink, nowOf, type IdentityDependencies } from './deps.ts';
 import {
   INVITATION_CREATED,
@@ -36,17 +39,21 @@ async function findTeam(db: Database, teamId: string | undefined) {
 }
 
 /**
- * Invites each address with one role and optional team. An address that
- * already has an account fails the whole batch; a pending invitation to the
- * same address is replaced, which is how "resend" works.
+ * Invites each address with one role (Viewer unless one is chosen) and an
+ * optional team. An address that already has an account fails the whole batch;
+ * a pending invitation to the same address is replaced, which is how "resend"
+ * works. The admin gets each accept link back to share by hand, which is the
+ * only way in while outbound email is not configured.
  */
 export async function createInvitations(
   deps: IdentityDependencies,
   ctx: RequestContext,
   input: CreateInvitationsInput,
-): Promise<Invitation[]> {
+): Promise<CreateInvitationsResponse> {
   await ctx.authz.authorize(ctx.actor, MANAGE, { kind: 'workspace' });
-  const role = await findRole(deps.db, input.roleId);
+  const role = input.roleId
+    ? await findRole(deps.db, input.roleId)
+    : await findRoleByKey(deps.db, DEFAULT_ROLE_KEY);
   await assertMayAssignRole(ctx, role);
   const team = await findTeam(deps.db, input.teamId);
   const emails = [...new Set(input.emails)];
@@ -70,7 +77,7 @@ export async function createInvitations(
       .update(invitations)
       .set({ revokedAt: now, updatedAt: now })
       .where(and(pending, inArray(sql`lower(${invitations.email})`, emails)));
-    const created: (typeof invitations.$inferSelect)[] = [];
+    const created: { row: typeof invitations.$inferSelect; acceptUrl: string }[] = [];
     for (const email of emails) {
       const token = generateSecret();
       const [row] = await tx
@@ -85,7 +92,8 @@ export async function createInvitations(
         })
         .returning();
       if (!row) throw new Error('Invitation insert returned no row');
-      created.push(row);
+      const acceptUrl = appLink(deps.publicUrl, invitationPath(token));
+      created.push({ row, acceptUrl });
       await recordAudit(tx, {
         actor: ctx.actor,
         action: 'invitation.created',
@@ -97,7 +105,7 @@ export async function createInvitations(
         invitationId: row.id,
         email: row.email,
         inviterName: inviter?.name ?? 'An administrator',
-        acceptUrl: appLink(deps.publicUrl, invitationPath(token)),
+        acceptUrl,
         expiresAt: row.expiresAt,
         ...(input.message ? { message: input.message } : {}),
       };
@@ -112,7 +120,11 @@ export async function createInvitations(
     }
     return created;
   });
-  return issued.map(presentInvitation);
+  const email = await createEmailConfigurationProbe(deps.settings).describe();
+  return {
+    items: issued.map(({ row, acceptUrl }) => ({ ...presentInvitation(row), acceptUrl })),
+    emailConfigured: email.configured,
+  };
 }
 
 /** Pending invitations, newest first, including expired ones the admin may resend. */

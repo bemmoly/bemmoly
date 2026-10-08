@@ -2,9 +2,11 @@ import {
   apiTokensResponseSchema,
   createApiTokenSchema,
   createdApiTokenSchema,
+  createInvitationsResponseSchema,
   createInvitationsSchema,
   createTeamSchema,
   invitationsResponseSchema,
+  issuedInvitationSchema,
   listUsersQuerySchema,
   teamMembersResponseSchema,
   teamSchema,
@@ -50,11 +52,19 @@ export function peopleEndpoints(http: Http) {
     },
     invitations: {
       list: async () => http.request('/api/v1/invitations', invitationsResponseSchema),
+      /**
+       * Each item carries its accept link for the admin to share. Not marked idempotent: a
+       * stored replay would keep the one-time links at rest, and a repeat only re-issues them.
+       */
       create: async (body: CreateInvitationsInput) =>
-        http.request('/api/v1/invitations', invitationsResponseSchema, {
+        http.request('/api/v1/invitations', createInvitationsResponseSchema, {
           method: 'POST',
           body: validated(createInvitationsSchema, body),
-          idempotent: true,
+        }),
+      /** A fresh accept link for a pending invitation; the previous link stops working. */
+      issueLink: async (id: string) =>
+        http.request(`/api/v1/invitations/${enc(id)}/links`, issuedInvitationSchema, {
+          method: 'POST',
         }),
       revoke: async (id: string) =>
         http.send(`/api/v1/invitations/${enc(id)}`, { method: 'DELETE' }),
