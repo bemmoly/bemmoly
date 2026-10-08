@@ -85,6 +85,13 @@ export const boardSchema = z.object({
 export const createBoardBodySchema = z.object({
   name: nameSchema,
   config: boardConfigSchema.optional(),
+  /** Absent for the org default board scheme. */
+  projectId: z.uuid().optional(),
+});
+
+export const listBoardsQuerySchema = z.object({
+  /** A project's boards; absent lists the org default board scheme. */
+  projectId: z.uuid().optional(),
 });
 
 export const updateBoardBodySchema = z
@@ -150,3 +157,4 @@ export type UpdateBoardBody = z.input<typeof updateBoardBodySchema>;
 export type BoardCard = z.infer<typeof boardCardSchema>;
 export type BoardView = z.infer<typeof boardViewSchema>;
 export type BoardViewQuery = z.infer<typeof boardViewQuerySchema>;
+export type ListBoardsQuery = z.infer<typeof listBoardsQuerySchema>;
