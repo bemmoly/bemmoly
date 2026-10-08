@@ -47,4 +47,5 @@ export type Comment = z.infer<typeof commentSchema>;
 export type CreateCommentBody = z.infer<typeof createCommentBodySchema>;
 export type UpdateCommentBody = z.infer<typeof updateCommentBodySchema>;
 export type ReactToCommentBody = z.input<typeof reactToCommentBodySchema>;
+export type ListCommentsQuery = z.infer<typeof listCommentsQuerySchema>;
 export type CommentsPage = z.infer<typeof commentsPageSchema>;
