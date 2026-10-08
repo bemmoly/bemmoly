@@ -54,6 +54,28 @@ export const SlashMenu: Story = {
   ),
 };
 
+/** A row menu in a table card: the card clips its overflow, the portalled menu is not cut. */
+export const MenuInsideClippingCard: Story = {
+  args: { trigger: () => null, children: null },
+  render: () => (
+    <div className="flex h-16 w-120 items-center overflow-hidden rounded-card border border-br bg-sf px-4">
+      <span className="flex-1">Priya N. · Member</span>
+      <Menu
+        align="end"
+        widthClassName="w-52"
+        trigger={(props) => (
+          <IconButton {...props} label="Actions for Priya N." icon="more" size="xs" />
+        )}
+      >
+        <MenuItem onSelect={noop}>Resend invitation</MenuItem>
+        <MenuItem tone="danger" onSelect={noop}>
+          Revoke invitation
+        </MenuItem>
+      </Menu>
+    </div>
+  ),
+};
+
 export const ConfirmModal: Story = {
   args: { trigger: () => null, children: null },
   render: function Render() {

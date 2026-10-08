@@ -82,6 +82,23 @@ describe('Menu and Tabs', () => {
     expect(onSelect).toHaveBeenCalled();
   });
 
+  it('portals the menu to the body so a clipping card cannot hide it', () => {
+    render(
+      <div data-testid="card" className="overflow-hidden">
+        <Dropdown label="Actions" align="end">
+          <MenuItem onSelect={() => {}}>Deactivate</MenuItem>
+        </Dropdown>
+      </div>,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Actions' }));
+    const menu = screen.getByRole('menu');
+    expect(menu.parentElement).toBe(document.body);
+    expect(screen.getByTestId('card').contains(menu)).toBe(false);
+    expect(document.activeElement).toBe(screen.getByRole('menuitem', { name: 'Deactivate' }));
+    fireEvent.pointerDown(screen.getByTestId('card'));
+    expect(screen.queryByRole('menu')).toBeNull();
+  });
+
   it('selects tabs with the arrow keys', async () => {
     function Harness() {
       const [tab, setTab] = useState<'columns' | 'lanes'>('columns');
