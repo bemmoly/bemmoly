@@ -4,6 +4,7 @@ import { createFieldsController } from './fields.controller.ts';
 import { createIssuesController } from './issues.controller.ts';
 import { createProjectsController } from './projects.controller.ts';
 import { createTypesController } from './types.controller.ts';
+import { createWorkflowController } from './workflow.controller.ts';
 
 /** One controller per area, each over its own service; areas add a line here. */
 export function createWorkControllers(services: WorkServices) {
@@ -13,6 +14,7 @@ export function createWorkControllers(services: WorkServices) {
     fields: createFieldsController(services.fields),
     issues: createIssuesController(services.issues),
     activity: createActivityController(services),
+    workflow: createWorkflowController(services.workflow),
   };
 }
 

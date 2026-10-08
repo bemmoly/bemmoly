@@ -83,15 +83,31 @@ export const workflowDraftSchema = z.object({
     .max(500),
 });
 
-export const createWorkflowBodySchema = z.object({ name: nameSchema });
+/** A project id makes the new workflow that project's override, copied from the org default. */
+export const createWorkflowBodySchema = z.object({
+  name: nameSchema,
+  projectId: z.uuid().optional(),
+});
 
 export const updateWorkflowBodySchema = z.object({ name: nameSchema }).partial();
 
 export const putWorkflowDraftBodySchema = z.object({ draft: workflowDraftSchema });
 
+/** Every problem the editor's Validate panel can show, so it can render each by code. */
+export const WORKFLOW_PROBLEM_CODES = [
+  'no_done_status',
+  'unreachable_status',
+  'duplicate_status_name',
+  'transition_missing_status',
+  'unknown_rule',
+  'invalid_rule_params',
+] as const;
+
+export const workflowProblemCodeSchema = z.enum(WORKFLOW_PROBLEM_CODES);
+
 /** What validation of a draft reports before publish, keyed to the node or edge it concerns. */
 export const workflowProblemSchema = z.object({
-  code: z.string(),
+  code: workflowProblemCodeSchema,
   message: z.string(),
   statusId: z.string().optional(),
   transitionId: z.string().optional(),
@@ -101,6 +117,44 @@ export const workflowValidationResponseSchema = z.object({
   valid: z.boolean(),
   problems: z.array(workflowProblemSchema),
 });
+
+/**
+ * Publishing a draft that drops a status still in use needs to say where
+ * those issues go: removed status id to a draft status id.
+ */
+export const publishWorkflowBodySchema = z.object({
+  statusMapping: z.record(z.uuid(), z.string().min(1)).default({}),
+});
+
+export const WORKFLOW_RULE_KINDS = ['condition', 'validator', 'post_action'] as const;
+
+export const workflowRuleKindSchema = z.enum(WORKFLOW_RULE_KINDS);
+
+/** One registry entry as the editor's rule picker lists it; params is a JSON Schema. */
+export const workflowRuleDefinitionSchema = z.object({
+  name: z.string(),
+  kind: workflowRuleKindSchema,
+  label: z.string(),
+  description: z.string(),
+  params: z.record(z.string(), z.unknown()),
+  /** False while a rule's evaluator is not wired in, so the editor can say so. */
+  available: z.boolean(),
+});
+
+export const workflowRulesResponseSchema = listSchema(workflowRuleDefinitionSchema);
+
+/** A transition out of an issue's status, with why it is blocked when it is. */
+export const availableTransitionSchema = z.object({
+  id: z.uuid(),
+  name: z.string(),
+  toStatusId: z.uuid(),
+  toStatusName: z.string(),
+  toStatusCategory: statusCategorySchema,
+  available: z.boolean(),
+  blockedBy: z.array(z.string()),
+});
+
+export const issueTransitionsResponseSchema = listSchema(availableTransitionSchema);
 
 export const transitionIssueBodySchema = z.object({
   transitionId: z.uuid(),
@@ -120,5 +174,12 @@ export type CreateWorkflowBody = z.infer<typeof createWorkflowBodySchema>;
 export type UpdateWorkflowBody = z.infer<typeof updateWorkflowBodySchema>;
 export type PutWorkflowDraftBody = z.input<typeof putWorkflowDraftBodySchema>;
 export type WorkflowProblem = z.infer<typeof workflowProblemSchema>;
+export type WorkflowProblemCode = z.infer<typeof workflowProblemCodeSchema>;
+export type PublishWorkflowBody = z.input<typeof publishWorkflowBodySchema>;
+export type WorkflowRuleKind = z.infer<typeof workflowRuleKindSchema>;
+export type WorkflowRuleDefinition = z.infer<typeof workflowRuleDefinitionSchema>;
+export type WorkflowRulesResponse = z.infer<typeof workflowRulesResponseSchema>;
+export type AvailableTransition = z.infer<typeof availableTransitionSchema>;
+export type IssueTransitionsResponse = z.infer<typeof issueTransitionsResponseSchema>;
 export type WorkflowValidationResponse = z.infer<typeof workflowValidationResponseSchema>;
 export type TransitionIssueBody = z.input<typeof transitionIssueBodySchema>;

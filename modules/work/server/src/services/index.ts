@@ -13,7 +13,7 @@ import { createLinksService } from './links/index.ts';
 import { createProjectsService } from './projects/index.ts';
 import { createSearchService } from './search/index.ts';
 import { createIssueTypesService } from './types/index.ts';
-import { openTransitionGate, type TransitionGate } from './workflow/contract.ts';
+import { createWorkflowService } from './workflow/index.ts';
 
 export interface WorkServiceDeps {
   database?: SqlClient;
@@ -21,8 +21,6 @@ export interface WorkServiceDeps {
   realtime?: RealtimePublisher;
   events?: EventBus;
   jobs?: JobRegistry;
-  /** The workflow service once it is wired; any status is reachable until then. */
-  workflow?: TransitionGate;
 }
 
 const noRealtime: RealtimePublisher = { publish: async () => undefined };
@@ -33,12 +31,13 @@ const noEvents: EventBus = { publish: async () => undefined, subscribe: () => ()
  * nowhere else, so module.ts never grows with the module.
  */
 export function createWorkServices(deps: WorkServiceDeps) {
+  const workflow = createWorkflowService(deps);
   const issueDeps = {
     ...(deps.database ? { database: deps.database } : {}),
     realtime: deps.realtime ?? noRealtime,
     events: deps.events ?? noEvents,
     ...(deps.jobs ? { jobs: deps.jobs } : {}),
-    workflow: deps.workflow ?? openTransitionGate,
+    workflow: workflow.gate,
   };
   return {
     projects: createProjectsService(deps),
@@ -49,6 +48,7 @@ export function createWorkServices(deps: WorkServiceDeps) {
     links: createLinksService(issueDeps),
     history: createHistoryService(issueDeps),
     search: createSearchService(issueDeps),
+    workflow,
   };
 }
 

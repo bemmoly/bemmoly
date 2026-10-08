@@ -1,5 +1,6 @@
 import type { RequestContext, SqlExecutor } from '@bemmoly/core';
-import { ForbiddenError, ValidationError } from '@bemmoly/shared';
+import { ValidationError } from '@bemmoly/shared';
+import type { WorkflowRule } from '../../../../shared/index.ts';
 import type { Issue, UpdateIssueBody } from '../../../../shared/issues.ts';
 import { richTextToPlain } from '../../../../shared/rich-text.ts';
 import { recordHistory, type HistoryChange } from '../history/index.ts';
@@ -152,6 +153,7 @@ export async function updateIssue(
     await ctx.authz.authorize(ctx.actor, 'work.issue.transition', resource);
   }
   const actorId = actorUserId(ctx);
+  let postActions: readonly WorkflowRule[] = [];
   const updated = await sql.begin(async (tx) => {
     const row = await loadIssueByKey(tx, key, { lock: true });
     const current = toIssue(row);
@@ -160,9 +162,10 @@ export async function updateIssue(
     let statusName: string | null = null;
     if (body.statusId !== undefined && body.statusId !== current.statusId) {
       const category = await statusCategory(tx, body.statusId, row);
-      if (!(await deps.workflow.canTransition(ctx, current, body.statusId))) {
-        throw new ForbiddenError('The workflow does not allow this transition');
-      }
+      // The gate authorises, runs the conditions and the validators, and hands
+      // back what must run after the move. It throws a typed error when blocked.
+      const move = await deps.workflow.transition(ctx, row, body.statusId, {}, tx);
+      postActions = move.postActions;
       await tx`
         update issues set status_id = ${body.statusId}, status_changed_at = now(),
           resolved_at = case when ${category === 'done'} then now() else null end,
@@ -185,5 +188,9 @@ export async function updateIssue(
     await tellPeople(deps, ctx, tx, issue, changes, statusName);
     return issue;
   });
+  if (postActions.length > 0) {
+    // Post-actions run after the status change is committed, on the row as it now stands.
+    await deps.workflow.runPostActions(ctx, await loadIssueByKey(sql, key), postActions);
+  }
   return updated as Issue;
 }

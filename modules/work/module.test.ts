@@ -55,7 +55,10 @@ describe('work module', () => {
       'work.defaultEstimationUnit',
       'work.jobs.rankRebalance.schedule',
     ]);
-    expect(loaded?.contributions.jobs.map((job) => job.name)).toEqual(['work.rank.rebalance']);
+    expect(loaded?.contributions.jobs.map((job) => job.name)).toEqual([
+      'work.rank.rebalance',
+      'work.automation.run',
+    ]);
     expect(loaded?.contributions.jobs[0]?.scheduleSetting).toBe('work.jobs.rankRebalance.schedule');
     expect(registry.routes().map((route) => route.prefix)).toEqual(['/work']);
   });
