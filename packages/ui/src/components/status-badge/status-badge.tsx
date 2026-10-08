@@ -1,5 +1,5 @@
 import type { ButtonHTMLAttributes, ReactNode } from 'react';
-import { Icon } from '../../icons/icon.tsx';
+import { Icon, ICON_SIZE } from '../../icons/icon.tsx';
 import { cx } from '../../lib/cx.ts';
 import { focusRing } from '../../lib/focus.ts';
 
@@ -90,7 +90,7 @@ export function StatusButton({
       {...rest}
     >
       {label ?? STATUS_LABELS[category]}
-      <Icon name="caret" className="text-9" />
+      <Icon name="caret" size={ICON_SIZE.small} />
     </button>
   );
 }

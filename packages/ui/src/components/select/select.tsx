@@ -1,6 +1,7 @@
 import { useId, useImperativeHandle } from 'react';
-import { Icon } from '../../icons/icon.tsx';
+import { Icon, ICON_SIZE } from '../../icons/icon.tsx';
 import { cx } from '../../lib/cx.ts';
+import { caretTone } from '../../lib/focus.ts';
 import { SelectList } from './select-list.tsx';
 import type { SelectProps, SelectSize } from './types.ts';
 import { useSelect } from './use-select.ts';
@@ -84,7 +85,7 @@ export function Select({ ref, ...props }: SelectProps) {
         onClick={state.toggle}
         onKeyDown={state.onKeyDown}
         className={cx(
-          'inline-flex max-w-full min-w-0 shrink-0 cursor-pointer items-center border border-br3 bg-sf text-left font-sans text-tx outline-0',
+          'group inline-flex max-w-full min-w-0 shrink-0 cursor-pointer items-center border border-br3 bg-sf text-left font-sans text-tx outline-0',
           'focus-visible:border-ac focus-visible:shadow-ring aria-expanded:border-ac aria-expanded:shadow-ring',
           'aria-invalid:border-danger disabled:cursor-not-allowed disabled:opacity-50',
           SIZES[size],
@@ -100,7 +101,11 @@ export function Select({ ref, ...props }: SelectProps) {
         <span className={cx('min-w-0 flex-1 truncate', !state.selected && 'text-tx5')}>
           {state.selected?.label ?? placeholder ?? ''}
         </span>
-        <Icon name="caret" className="shrink-0 text-tx4" />
+        <Icon
+          name="caret"
+          size={size === 'sm' ? ICON_SIZE.small : ICON_SIZE.inline}
+          className={caretTone}
+        />
       </button>
       {name !== undefined && <input type="hidden" name={name} value={state.value} />}
       {state.open && (

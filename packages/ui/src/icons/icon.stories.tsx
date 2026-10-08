@@ -65,13 +65,13 @@ export const SidebarNav: Story = {
   ),
 };
 
-/** 16px in buttons and rows, 18px in the top bar and sidebar, 14px for carets. */
+/** 16px in buttons, rows and carets, 18px in the top bar and sidebar, 14px in small controls. */
 export const Sizes: Story = {
   render: () => (
     <div className="flex items-center gap-6 bg-sf p-4 text-tx2">
       {(Object.entries(ICON_SIZE) as Array<[keyof typeof ICON_SIZE, number]>).map(([use, px]) => (
         <div key={use} className="flex items-center gap-2">
-          <Icon name={use === 'caret' ? 'caret' : 'inbox'} size={px} />
+          <Icon name={use === 'small' ? 'caret' : 'inbox'} size={px} />
           <span className="font-mono text-11 text-tx3">
             {use} · {px}px
           </span>

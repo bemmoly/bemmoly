@@ -114,8 +114,9 @@ pnpm --filter @bemmoly/ui brand:icons  # regenerate favicons and app icons from 
 - Board's runtime computes Classic's accent tints with `color-mix`; the tokens use the hex its
   `:root` block and every other mock state.
 - Icons are Lucide icons under the design system's names instead of the mocks' CSS-drawn shapes
-  and text glyphs (⌕ ▾ ✕ ···), at 16px in buttons and rows, 18px in the top bar and 14px for
-  carets, with a 1.5px stroke like the mocks' borders.
+  and text glyphs (⌕ ▾ ✕ ···), at 16px in buttons, rows and carets, 18px in the top bar and 14px in
+  small controls, with a 1.5px stroke like the mocks' borders (1.75px for chevrons). Dropdown
+  carets are tx4 at rest and tx while open or focused, instead of the mocks' 10px ▾ in tx5.
 
 ## Third-party notices
 

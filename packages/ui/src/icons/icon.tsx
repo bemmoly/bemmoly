@@ -48,14 +48,15 @@ const ALL: Record<IconName, LucideIcon> = { ...SHAPES, ...GLYPHS };
 export const ICON_NAMES = Object.keys(ALL) as IconName[];
 
 /**
- * One size system: 16px inside buttons, rows and menus; 18px in the top bar and the sidebar;
- * 14px for the carets and chevrons that sit beside text. Strokes are 1.5px at every size, the
- * width of the borders the mocks draw their icons with.
+ * One size system: 16px inside buttons, rows, menus and dropdown carets; 18px in the top bar
+ * and the sidebar; 14px in small controls. Strokes are 1.5px at every size, the width of the
+ * borders the mocks draw their icons with; chevrons get 1.75px so a caret reads at a glance.
  */
-export const ICON_SIZE = { inline: 16, bar: 18, caret: 14 } as const;
+export const ICON_SIZE = { inline: 16, bar: 18, small: 14 } as const;
 const STROKE = 1.5;
+const CHEVRON_STROKE = 1.75;
 
-const SMALL: ReadonlySet<IconName> = new Set(['caret', 'caret-up', 'chevron']);
+const CHEVRONS: ReadonlySet<IconName> = new Set(['caret', 'caret-up', 'chevron']);
 
 export interface IconProps {
   name: IconName;
@@ -73,8 +74,8 @@ export function Icon({ name, size, label, className }: IconProps) {
   return (
     <Drawn
       {...a11y}
-      size={size ?? (SMALL.has(name) ? ICON_SIZE.caret : ICON_SIZE.inline)}
-      strokeWidth={STROKE}
+      size={size ?? ICON_SIZE.inline}
+      strokeWidth={CHEVRONS.has(name) ? CHEVRON_STROKE : STROKE}
       absoluteStrokeWidth
       className={cx('inline-block shrink-0', className)}
     />
