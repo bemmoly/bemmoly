@@ -32,12 +32,18 @@ export interface UsersFilter {
   q?: string;
 }
 
+/** For list calls a search box makes: a newer keystroke aborts the older request. */
+export interface ListOptions {
+  signal?: AbortSignal;
+}
+
 export function peopleEndpoints(http: Http) {
   return {
     users: {
-      list: async (filter: UsersFilter = {}) =>
+      list: async (filter: UsersFilter = {}, options: ListOptions = {}) =>
         http.request('/api/v1/users', usersPageSchema, {
           query: validated(listUsersQuerySchema, filter),
+          ...options,
         }),
       get: async (id: string) => http.request(`/api/v1/users/${enc(id)}`, userSchema),
       update: async (id: string, body: UpdateUserInput) =>
@@ -70,7 +76,8 @@ export function peopleEndpoints(http: Http) {
         http.send(`/api/v1/invitations/${enc(id)}`, { method: 'DELETE' }),
     },
     teams: {
-      list: async () => http.request('/api/v1/teams', teamsResponseSchema),
+      list: async (options: ListOptions = {}) =>
+        http.request('/api/v1/teams', teamsResponseSchema, options),
       create: async (body: CreateTeamInput) =>
         http.request('/api/v1/teams', teamSchema, {
           method: 'POST',

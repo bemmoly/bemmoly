@@ -24,12 +24,13 @@ export interface UserSearchOptions {
 
 /**
  * Server search for person pickers: `/users?q=` matches name and email. The Select calls it
- * as people type, so a workspace of 500 or 50,000 behaves the same.
+ * as people type, so a workspace of 500 or 50,000 behaves the same, and aborts the request
+ * when a newer keystroke replaces it.
  */
 export function useUserSearch({ status, exclude }: UserSearchOptions = {}): LoadOptions {
   const queryClient = useQueryClient();
   return useCallback(
-    async (query: string) => {
+    async (query: string, signal?: AbortSignal) => {
       const q = query.trim();
       const filter: UsersFilter = {
         limit: USER_SEARCH_LIMIT,
@@ -38,7 +39,8 @@ export function useUserSearch({ status, exclude }: UserSearchOptions = {}): Load
       };
       const page = await queryClient.fetchQuery({
         queryKey: queryKeys.users.list(filter),
-        queryFn: () => api.users.list(filter),
+        // The Select's signal, so a search a newer keystroke replaces stops on the network too.
+        queryFn: () => api.users.list(filter, signal ? { signal } : {}),
         staleTime: SEARCH_STALE_MS,
       });
       return page.items.filter((user) => user.status !== exclude).map(userOption);

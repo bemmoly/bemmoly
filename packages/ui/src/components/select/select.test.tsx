@@ -141,6 +141,28 @@ describe('Select', () => {
     expect(screen.getAllByRole('option').map(text)).toEqual(['Priya N.']);
   });
 
+  it('aborts a search a newer keystroke replaces and ignores its AbortError', async () => {
+    const signals: AbortSignal[] = [];
+    const load = vi.fn(
+      (query: string, signal: AbortSignal) =>
+        new Promise<SelectOption[]>((resolve, reject) => {
+          signals.push(signal);
+          signal.addEventListener('abort', () =>
+            reject(new DOMException('The search was replaced', 'AbortError')),
+          );
+          if (query === 'an') resolve([{ value: 'ana', label: 'Ana Lima' }]);
+        }),
+    );
+    render(<Harness options={[]} value="" loadOptions={load} />);
+    fireEvent.click(combobox());
+    const search = screen.getByRole('combobox', { name: 'Search' });
+    await waitFor(() => expect(load).toHaveBeenCalledTimes(1));
+    fireEvent.change(search, { target: { value: 'an' } });
+    expect(signals[0]?.aborted).toBe(true);
+    await screen.findByRole('option', { name: 'Ana Lima' });
+    expect(screen.queryByText(/Search is unavailable/)).toBeNull();
+  });
+
   it('says so when the server finds nothing', async () => {
     const load = vi.fn(async () => []);
     render(<Harness options={[]} value="" loadOptions={load} placeholder="Choose…" />);
