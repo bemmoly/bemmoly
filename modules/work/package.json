@@ -16,15 +16,24 @@
     "test:integration": "vitest run --config vitest.integration.config.ts"
   },
   "dependencies": {
+    "@bemmoly/api-client": "workspace:*",
     "@bemmoly/core": "workspace:*",
     "@bemmoly/core-web": "workspace:*",
     "@bemmoly/shared": "workspace:*",
+    "@bemmoly/ui": "workspace:*",
+    "@tanstack/react-query": "5.104.1",
     "fastify": "5.12.5",
     "react": "19.3.0",
-    "zod": "4.6.5"
+    "react-dom": "19.3.0",
+    "zod": "4.6.5",
+    "zustand": "5.0.15"
   },
   "devDependencies": {
+    "@testing-library/react": "16.3.3",
     "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "happy-dom": "20.14.5",
+    "msw": "3.0.2",
     "vitest": "5.0.3"
   }
 }

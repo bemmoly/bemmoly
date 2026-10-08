@@ -9,6 +9,8 @@ import { operationsEndpoints } from './endpoints/operations.ts';
 import { peopleEndpoints } from './endpoints/people.ts';
 import { authEndpoints, setupEndpoints } from './endpoints/session.ts';
 import { settingsEndpoints } from './endpoints/settings.ts';
+import { workSettingsEndpoints } from './endpoints/work/settings.ts';
+import { workWorkflowEndpoints } from './endpoints/work/workflows.ts';
 import { createHttp, type HttpOptions } from './http.ts';
 
 export function createApiClient(options: HttpOptions = {}) {
@@ -22,6 +24,7 @@ export function createApiClient(options: HttpOptions = {}) {
     ...accessEndpoints(http),
     ...messagingEndpoints(http),
     ...operationsEndpoints(http),
+    work: { ...workSettingsEndpoints(http), workflows: workWorkflowEndpoints(http) },
   };
 }
 
@@ -39,4 +42,6 @@ export { buildQuery, createHttp, type Http, type HttpOptions, type Query } from 
 export type { AuditFilter, BackupsFilter } from './endpoints/operations.ts';
 export type { ListOptions, UsersFilter } from './endpoints/people.ts';
 export type { SettingRead } from './endpoints/settings.ts';
+export { workSettingsKeys } from './endpoints/work/settings.ts';
+export { workWorkflowKeys } from './endpoints/work/workflows.ts';
 export { keysForEvent, queryKeys, type QueryKey } from './keys.ts';
