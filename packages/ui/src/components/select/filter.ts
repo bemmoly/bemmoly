@@ -35,6 +35,8 @@ export interface ListView {
   total: number;
   /** How many of the matches are drawn (the pinned option aside). */
   shown: number;
+  /** The chosen option was added at the top although it does not match. */
+  pinned: boolean;
 }
 
 /**
@@ -60,11 +62,12 @@ export function buildView(
   }
   const flat = sections.flatMap((section) => section.options);
   const shown = flat.length;
-  if (pinned && !flat.some((option) => option.value === pinned.value)) {
+  const pin = Boolean(pinned) && !flat.some((option) => option.value === pinned?.value);
+  if (pin && pinned) {
     sections.unshift({ label: '', options: [pinned] });
     flat.unshift(pinned);
   }
-  return { sections, flat, total, shown };
+  return { sections, flat, total, shown, pinned: pin };
 }
 
 /**

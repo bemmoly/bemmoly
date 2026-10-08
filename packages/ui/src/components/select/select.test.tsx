@@ -131,8 +131,14 @@ describe('Select', () => {
       'José Álvarezjose@acme.test',
       'Priya N.',
     ]);
-    fireEvent.click(screen.getByRole('option', { name: 'Priya N.' }));
+    fireEvent.keyDown(search, { key: 'Enter' });
     expect(combobox().textContent).toContain('Priya N.');
+    fireEvent.click(combobox());
+    fireEvent.change(screen.getByRole('combobox', { name: 'Search' }), {
+      target: { value: 'zz' },
+    });
+    expect(await screen.findByText('No matches')).toBeTruthy();
+    expect(screen.getAllByRole('option').map(text)).toEqual(['Priya N.']);
   });
 
   it('says so when the server finds nothing', async () => {

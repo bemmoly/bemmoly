@@ -138,11 +138,6 @@ export function SelectList({ state, label, labelledBy, searchPlaceholder }: Sele
         aria-labelledby={label ? undefined : labelledBy}
         className="flex max-h-80 min-h-0 flex-col overflow-y-auto p-1.5"
       >
-        {view.flat.length === 0 && (
-          <div role="presentation" className="px-2.5 py-2 text-13 text-tx5">
-            {emptyText(state)}
-          </div>
-        )}
         {view.sections.map((section, sectionIndex) => {
           const rows = section.options.map((option, i) => (
             <OptionRow
@@ -175,6 +170,11 @@ export function SelectList({ state, label, labelledBy, searchPlaceholder }: Sele
             </div>
           );
         })}
+        {view.shown === 0 && (
+          <div role="presentation" className="px-2.5 py-2 text-13 text-tx5">
+            {emptyText(state)}
+          </div>
+        )}
       </div>
       {view.total > view.shown && (
         <div className="shrink-0 border-t border-br2 px-3 py-2 text-12 text-tx5">
