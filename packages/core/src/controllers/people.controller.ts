@@ -7,7 +7,9 @@ import {
   teamMemberParamsSchema,
   updateTeamSchema,
   updateUserSchema,
+  type CreateInvitationsResponse,
   type InvitationsResponse,
+  type IssuedInvitation,
   type Team,
   type TeamMember,
   type TeamMembersResponse,
@@ -24,6 +26,7 @@ import {
   deleteTeam,
   getTeam,
   getUser,
+  issueInvitationLink,
   listInvitations,
   listTeamMembers,
   listTeams,
@@ -72,11 +75,20 @@ export function createPeopleController(deps: IdentityDependencies) {
     async createInvitations(
       request: FastifyRequest,
       reply: FastifyReply,
-    ): Promise<InvitationsResponse> {
+    ): Promise<CreateInvitationsResponse> {
       const input = parseOrThrow(createInvitationsSchema, request.body);
-      const items = await createInvitations(deps, contextOf(request), input);
+      const created = await createInvitations(deps, contextOf(request), input);
       reply.code(201);
-      return { items };
+      return created;
+    },
+
+    async issueInvitationLink(
+      request: FastifyRequest,
+      reply: FastifyReply,
+    ): Promise<IssuedInvitation> {
+      const issued = await issueInvitationLink(deps, contextOf(request), idOf(request));
+      reply.code(201);
+      return issued;
     },
 
     async revokeInvitation(request: FastifyRequest, reply: FastifyReply): Promise<void> {

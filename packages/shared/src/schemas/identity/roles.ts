@@ -12,6 +12,15 @@ export const SYSTEM_ROLE_KEYS = [
 
 export type SystemRoleKey = (typeof SYSTEM_ROLE_KEYS)[number];
 
+/**
+ * The role people get when nobody picks one: invitations, the wizard's People step, the
+ * Invite dialog and a new team's default. Viewer reads and holds no workspace capability.
+ * Contractor's column is narrower still, but it is the guest role for people outside the
+ * organisation and limited to the projects and spaces they are added to, so it is never a
+ * silent default for a colleague.
+ */
+export const DEFAULT_ROLE_KEY = 'viewer' satisfies SystemRoleKey;
+
 export const roleSchema = z.object({
   id: z.uuid(),
   key: z.string(),
