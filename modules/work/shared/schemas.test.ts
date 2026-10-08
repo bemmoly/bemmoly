@@ -10,7 +10,10 @@ import {
   listIssuesQuerySchema,
   listProjectsQuerySchema,
   projectKeySchema,
+  publishWorkflowBodySchema,
   rankIssueBodySchema,
+  ruleCatalogEntrySchema,
+  schemeKindSchema,
   workflowDraftSchema,
 } from './index.ts';
 
@@ -138,5 +141,28 @@ describe('work shared schemas', () => {
       postActions: [],
     });
     expect(draft.statuses[0]?.allowedRoleIds).toEqual([]);
+  });
+
+  it('keeps node positions inside the canvas and defaults the editor contracts', () => {
+    const entry = ruleCatalogEntrySchema.parse({
+      name: 'pr_linked',
+      kind: 'condition',
+      label: 'A pull request is linked',
+      description: 'Needs a linked PR',
+    });
+    expect(entry.params).toEqual([]);
+    expect(publishWorkflowBodySchema.parse({})).toEqual({ statusMapping: {} });
+    const placed = workflowDraftSchema.parse({
+      statuses: [{ id: 'a', name: 'Backlog', category: 'todo', position: 0, x: 110, y: 120 }],
+      transitions: [],
+    });
+    expect(placed.statuses[0]?.x).toBe(110);
+    expect(
+      workflowDraftSchema.safeParse({
+        statuses: [{ id: 'a', name: 'Backlog', category: 'todo', position: 0, x: 2000 }],
+        transitions: [],
+      }).success,
+    ).toBe(false);
+    expect(schemeKindSchema.options).toEqual(['issue_types', 'fields', 'workflow', 'board']);
   });
 });
