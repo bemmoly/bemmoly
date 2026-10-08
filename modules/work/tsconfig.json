@@ -2,7 +2,8 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "lib": ["es2024", "dom", "dom.iterable"],
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "types": ["vite/client"]
   },
   "include": ["*.ts", "changelog", "server", "shared", "web"]
 }
