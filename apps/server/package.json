@@ -23,6 +23,7 @@
     "@fastify/static": "10.1.5",
     "@bemmoly/core": "workspace:*",
     "@bemmoly/module-sample": "workspace:*",
+    "@bemmoly/module-work": "workspace:*",
     "@bemmoly/shared": "workspace:*",
     "fastify": "5.12.5",
     "zod": "4.6.5"

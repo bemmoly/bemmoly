@@ -55,6 +55,9 @@ importers:
       '@bemmoly/module-sample':
         specifier: workspace:*
         version: link:../../modules/sample
+      '@bemmoly/module-work':
+        specifier: workspace:*
+        version: link:../../modules/work
       '@bemmoly/shared':
         specifier: workspace:*
         version: link:../../packages/shared

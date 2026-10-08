@@ -19,7 +19,10 @@ describe('the host boots the data kernel with the sample module', () => {
     expect((await app.inject({ url: '/api/v1/modules' })).json()).toEqual({ items: [] });
     expect((await app.inject({ url: '/api/v1/admin/modules' })).json()).toMatchObject({
       pinned: false,
-      items: [{ id: 'sample', enabled: false, defaultAccess: 'none' }],
+      items: [
+        { id: 'sample', enabled: false, defaultAccess: 'none' },
+        { id: 'work', enabled: false, defaultAccess: 'teams' },
+      ],
     });
     const gated = await app.inject({ url: '/api/v1/sample/greeting' });
     expect(gated.json()).toMatchObject({ code: 'module_not_enabled' });
@@ -93,7 +96,10 @@ describe('the host boots the data kernel with the sample module', () => {
     expect((await restarted.inject({ url: '/api/v1/modules' })).json()).toEqual({ items: [] });
     expect((await restarted.inject({ url: '/api/v1/admin/modules' })).json()).toMatchObject({
       pinned: false,
-      items: [{ id: 'sample', enabled: false, changelogState: 'current' }],
+      items: [
+        { id: 'sample', enabled: false, changelogState: 'current' },
+        { id: 'work', enabled: false, changelogState: 'pending' },
+      ],
     });
   });
 
