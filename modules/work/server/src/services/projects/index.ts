@@ -59,8 +59,21 @@ export function createProjectsService(deps: ProjectsServiceDeps) {
       where id = ${project.id}
       returning ${sql.unsafe(PROJECT_COLUMNS)}`;
     if (!row) throw new ProviderError('The project was not updated');
-    await changed(row.id);
+    await audited(ctx, 'project.updated', project, row);
     return toProject(row);
+  }
+
+  /** Every change to a project's row is one audit entry with the row before and after. */
+  async function audited(ctx: RequestContext, action: string, before: ProjectRow, after: ProjectRow) {
+    await deps.audit?.record({
+      actor: ctx.actor,
+      action,
+      target: { kind: 'project', id: after.id },
+      before: toProject(before),
+      after: toProject(after),
+      meta: auditMeta(ctx),
+    });
+    await changed(after.id);
   }
 
   async function setArchived(ctx: RequestContext, key: string, archived: boolean) {
@@ -72,7 +85,7 @@ export function createProjectsService(deps: ProjectsServiceDeps) {
       where id = ${project.id}
       returning ${sql.unsafe(PROJECT_COLUMNS)}`;
     if (!row) throw new ProviderError('The project was not updated');
-    await changed(row.id);
+    await audited(ctx, archived ? 'project.archived' : 'project.unarchived', project, row);
     return toProject(row);
   }
 

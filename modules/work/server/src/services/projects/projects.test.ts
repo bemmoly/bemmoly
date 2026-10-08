@@ -58,6 +58,22 @@ describe('projects service', () => {
     ).rejects.toBeInstanceOf(ConflictError);
   });
 
+  it('audits an archive with the row before and after', async () => {
+    const archived = { ...row, archived_at: '2026-10-08T10:00:00.000Z' };
+    const sql = fakeSql([[row], [archived]]);
+    const audit = { record: vi.fn(async () => undefined) };
+    const service = createProjectsService({ database: sql.client, audit });
+    const project = await service.archive(contextWhere(true), 'PLT');
+    expect(project.archivedAt).toBe('2026-10-08T10:00:00.000Z');
+    expect(audit.record).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: 'project.archived',
+        before: expect.objectContaining({ archivedAt: null }),
+        after: expect.objectContaining({ archivedAt: '2026-10-08T10:00:00.000Z' }),
+      }),
+    );
+  });
+
   it('scopes configuration to the project and refuses to delete a live one', async () => {
     const sql = fakeSql([[row]]);
     const service = createProjectsService({ database: sql.client });
