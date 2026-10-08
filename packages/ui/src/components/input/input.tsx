@@ -19,8 +19,11 @@ export const controlClass = cx(
 
 export interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'size' | 'prefix'> {
   size?: InputSize;
-  /** `subtle` is the top bar search box on the bg2 surface. */
-  tone?: 'default' | 'subtle';
+  /**
+   * `subtle` is the top bar search box on the bg2 surface. `recessed` is the Setup URL field: the
+   * read-only look on a value that stays editable, for a field that is filled in for you.
+   */
+  tone?: 'default' | 'subtle' | 'recessed';
   /** Leading content, such as the search glyph. */
   prefix?: ReactNode;
   /** Trailing content, such as a key hint. */
@@ -43,7 +46,8 @@ export function Input({
   ref,
   ...rest
 }: InputProps) {
-  const surface = readOnly ? 'bg-sf2 text-tx3' : tone === 'subtle' ? 'bg-bg2' : 'bg-sf';
+  const surface =
+    readOnly || tone === 'recessed' ? 'bg-sf2 text-tx3' : tone === 'subtle' ? 'bg-bg2' : 'bg-sf';
   return (
     <div className={cx('flex items-center', SIZES[size], controlClass, surface, wrapperClassName)}>
       {prefix}

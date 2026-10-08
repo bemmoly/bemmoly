@@ -21,7 +21,7 @@ export const SetupForm: Story = {
         <Input size="lg" defaultValue="Acme Labs" />
       </Field>
       <Field label="URL">
-        <Input size="lg" mono readOnly defaultValue="bemmoly.acmelabs.internal" />
+        <Input size="lg" mono tone="recessed" defaultValue="bemmoly.acmelabs.internal" />
       </Field>
       <Field label="Your name">
         <Input size="lg" defaultValue="Rohan S." />
