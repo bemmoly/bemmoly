@@ -1,5 +1,12 @@
 import { Badge, SelectableCard } from '@bemmoly/ui';
 import type { ReactNode } from 'react';
+import { markFill } from '../../lib/logo-colors.ts';
+
+/**
+ * How a coming-soon option is muted: tile, name and description fade together, so the logo
+ * is never greyed on its own; the badge stays crisp because it says why.
+ */
+export const COMING_SOON_MUTE = 'opacity-60';
 
 interface BrandTileProps {
   /** Shown when there is no icon, as in the Setup mock. */
@@ -8,7 +15,10 @@ interface BrandTileProps {
   icon?: ReactNode;
 }
 
-/** The 32px tile from the Setup mock's option cards: a logo or glyph, else initials. */
+/**
+ * The 32px tile from the Setup mock's option cards: a logo or glyph, else initials. The chip
+ * and the tx2 initials are the mock's; logos choose their own colour (see LogoMask).
+ */
 export function BrandTile({ initials, icon }: BrandTileProps) {
   return (
     <span
@@ -21,16 +31,22 @@ export function BrandTile({ initials, icon }: BrandTileProps) {
 }
 
 /**
- * A one-colour logo file used as a mask over the text colour, so every mark (providers,
- * import sources) follows the theme whatever colour the file was drawn in.
+ * A one-colour logo file used as a mask, so the fill is ours whatever colour the file was
+ * drawn in. A mark with a published brand colour is painted in it (adjusted per light or dark
+ * until it holds 3:1 on every preset's tile); a monochrome mark, such as the models.dev
+ * provider logos, is painted in the primary text colour at full strength.
  */
-export function LogoMask({ url }: { url: string }) {
+export function LogoMask({ url, brand }: { url: string; brand?: string }) {
   return (
     <span
       aria-hidden="true"
       data-logo={url}
-      className="size-4.5 bg-current mask-contain mask-center mask-no-repeat"
-      style={{ maskImage: `url("${url}")` }}
+      data-brand={brand}
+      className={`size-4.5 mask-contain mask-center mask-no-repeat ${brand ? '' : 'bg-tx'}`}
+      style={{
+        maskImage: `url("${url}")`,
+        ...(brand ? { backgroundColor: markFill(brand) } : {}),
+      }}
     />
   );
 }
@@ -72,6 +88,7 @@ export function ChoiceCard({
   disabled,
   comingSoon,
 }: ChoiceCardProps) {
+  const mute = comingSoon ? COMING_SOON_MUTE : '';
   return (
     <SelectableCard
       selected={selected && !comingSoon}
@@ -81,12 +98,11 @@ export function ChoiceCard({
       className={comingSoon ? 'cursor-not-allowed' : 'disabled:cursor-not-allowed'}
     >
       <span className="flex w-full items-center gap-2.5">
-        <BrandTile initials={initials} icon={icon} />
-        <span
-          title={name}
-          className={`min-w-0 truncate text-14 font-semibold ${comingSoon ? 'text-tx3' : ''}`}
-        >
-          {name}
+        <span className={`flex min-w-0 items-center gap-2.5 ${mute}`}>
+          <BrandTile initials={initials} icon={icon} />
+          <span title={name} className="min-w-0 truncate text-14 font-semibold">
+            {name}
+          </span>
         </span>
         {comingSoon ? (
           <ComingSoonBadge />
@@ -97,11 +113,9 @@ export function ChoiceCard({
         ) : null}
       </span>
       {description ? (
-        <span className={`text-12h leading-body ${comingSoon ? 'text-tx5' : 'text-tx4'}`}>
-          {description}
-        </span>
+        <span className={`text-12h leading-body text-tx4 ${mute}`}>{description}</span>
       ) : null}
-      {detail ? <span className="font-mono text-12 text-tx4">{detail}</span> : null}
+      {detail ? <span className={`font-mono text-12 text-tx4 ${mute}`}>{detail}</span> : null}
     </SelectableCard>
   );
 }

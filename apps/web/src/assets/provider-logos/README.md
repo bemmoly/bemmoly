@@ -2,7 +2,8 @@
 
 One monochrome SVG per provider in the bundled AI catalog (`src/fixtures/ai-catalog.json`),
 named by catalog id. `ProviderLogo` (`src/components/ai/provider-logo.tsx`) shows the file
-as a mask filled with the current text colour, so every logo follows the theme. A provider
+as a mask filled with the primary text colour (`tx`) on the tile's chip, so every logo follows
+the theme at full strength. models.dev publishes no brand colours, so none is applied. A provider
 without a file here, such as one that only appears in a later live catalog, shows its
 initials instead.
 

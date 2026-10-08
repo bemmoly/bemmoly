@@ -1,7 +1,7 @@
 import { Card } from '@bemmoly/ui';
 import { SSO_NOTE, SSO_OPTIONS, useSetupInvites } from '../../hooks/use-setup-invites.ts';
 import { Notice } from '../form.tsx';
-import { BrandTile, ComingSoonBadge } from './choice-card.tsx';
+import { BrandTile, COMING_SOON_MUTE, ComingSoonBadge } from './choice-card.tsx';
 import { InviteByEmail } from './invite-by-email.tsx';
 import { SSO_MARKS } from './option-marks.tsx';
 import { StepFooter, type StepNav } from './step-footer.tsx';
@@ -13,11 +13,15 @@ function SsoCards() {
       {SSO_OPTIONS.map((option) => (
         <Card key={option.id} className="flex flex-col gap-2 p-4" aria-disabled="true">
           <span className="flex items-center gap-2.5">
-            <BrandTile initials={option.initials} icon={SSO_MARKS[option.id]} />
-            <span className="text-14 font-semibold text-tx3">{option.name}</span>
+            <span className={`flex items-center gap-2.5 ${COMING_SOON_MUTE}`}>
+              <BrandTile initials={option.initials} icon={SSO_MARKS[option.id]} />
+              <span className="text-14 font-semibold">{option.name}</span>
+            </span>
             <ComingSoonBadge />
           </span>
-          <span className="text-12h leading-body text-tx5">{option.description}</span>
+          <span className={`text-12h leading-body text-tx4 ${COMING_SOON_MUTE}`}>
+            {option.description}
+          </span>
         </Card>
       ))}
     </div>

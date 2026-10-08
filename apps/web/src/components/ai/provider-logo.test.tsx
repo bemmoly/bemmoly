@@ -13,12 +13,13 @@ describe('ProviderLogo', () => {
     expect(providerLogoIds().sort()).toEqual(ids.filter((id) => !WITHOUT_LOGO.includes(id)).sort());
   });
 
-  it('masks the bundled file over the text colour', () => {
+  it('paints the bundled monochrome file in the primary text colour', () => {
     const [id] = providerLogoIds();
     const { container } = render(<ProviderLogo id={id ?? ''} name="Some Provider" />);
     const mask = container.querySelector('[data-logo]');
     expect(mask?.getAttribute('data-logo')).toBe(providerLogoUrl(id ?? ''));
-    expect(mask?.className).toContain('bg-current');
+    expect(mask?.className).toContain('bg-tx');
+    expect(mask?.className).not.toMatch(/bg-(current|tx[2-6])/);
     expect(container.textContent).toBe('');
   });
 
