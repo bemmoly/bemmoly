@@ -44,4 +44,39 @@ into `Bemmoly Setup.dc.html`:
   OS setting; there is no "follow the OS" choice any more. Whether the user menu should offer a
   "Match system" entry is open.
 
+Changes from the owner's hands-on test of 0.1.1 (2026-10-08), shipped in 0.1.2 and 0.1.3, to be
+folded back into the mocks:
+
+- Setup step 5: "Build a custom theme with your brand color instead" is a toggle that opens the
+  Custom theme card from the Appearance Settings mock under the tiles, previewed on the whole
+  page; it reads "Use a preset instead" while open and no tile is selected then.
+- Option tiles: logos are drawn in full colour, provider marks in the primary text colour on the
+  chip, import marks in their brand colour (adjusted to at least 3:1 on dark presets), the
+  Google G in its own colours. Coming-soon cards fade as a whole at 60% with the badge at full
+  strength. Settings stay closed until setup is finished.
+- Dropdowns: every select is one custom listbox. Open state (not in any mock): the Doc Editor
+  menu surface with a search row, a tick on the chosen option, a "Showing 50 of N · type to
+  narrow" footer, "No matches" and "Searching…" lines. Person options show the email as a
+  second line. Chevrons are 16px Lucide ChevronDown (14px in small controls), tx4 at rest and
+  tx when open, replacing the 10px ▾.
+- Menus render in a floating layer, so they are never clipped by a card; width fits content
+  between 180 and 320px.
+- Icons: Lucide at 16/18/14px with a 1.5px stroke behind the existing names. Top bar: Inbox is a
+  tray, Theme a sun-and-moon, carets only on items that open a menu, Create opens a menu with
+  icon, label and description, or an empty state pointing admins to Settings › Modules.
+- Settings sections (Storage and backups, Updates, Email, Workspace details, Authentication):
+  read view of label/value rows with an Edit button per section; editing adds an "Editing" tag,
+  outlined card and Cancel/Save footer; dangerous changes open a confirmation dialog, some with
+  a typed word; a sticky unsaved-changes bar guards navigation. Email and Workspace details have
+  no mock yet and follow the same pattern.
+- Storage and backups: Restore… replaces "Restore drill" in the header and leads every row; the
+  Verification column moves after the actions; the table scrolls sideways when narrow; the
+  restore confirmation asks to type `restore`.
+- Modules Settings: Enable opens "Who can use <Module>?" with Nobody yet (recommended), Everyone
+  and Specific teams with a team picker, and the sentence about Users › Module access. The
+  "Default access" column is gone. A fresh install starts with nothing enabled.
+- People: INVITED rows with an amber badge and "Invited <time>", a "Copy invite link" row
+  action, the "Invitations sent" panel with the no-email notice (also on the setup People step),
+  and the Accept invitation page names the inviter. Viewer is the default role everywhere.
+
 Domains: the product site is bemmoly.com, the installer one-liner is served from get.bemmoly.com, and release manifests are GitHub release assets.
