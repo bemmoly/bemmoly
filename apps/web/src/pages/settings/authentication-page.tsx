@@ -49,7 +49,7 @@ const POLICIES = [
   },
   {
     title: 'Auto-provision users on first login',
-    description: 'New SSO users get the Member role and no teams.',
+    description: 'New SSO users get the Viewer role and no teams.',
   },
   {
     title: 'Map IdP groups to teams',
