@@ -9,6 +9,7 @@ import {
   type Ref,
 } from 'react';
 import { cx } from '../../lib/cx.ts';
+import { FloatingLayer } from '../../lib/floating.tsx';
 import { MenuContext } from './menu-context.ts';
 
 export interface MenuTriggerProps {
@@ -28,15 +29,32 @@ export interface MenuProps {
   align?: 'start' | 'end';
   /** Start open, e.g. to show the menu in a story or a screenshot. */
   defaultOpen?: boolean;
-  /** Tailwind width class; the Doc Editor menu is 320px (w-80). */
+  /**
+   * Tailwind width classes. By default the menu fits its content between 180px and 320px; the
+   * Doc Editor's slash menu is a fixed 320px (`w-80`).
+   */
   widthClassName?: string;
   className?: string;
 }
 
 const ITEM_SELECTOR = '[role="menuitem"]:not([aria-disabled="true"])';
 
+const itemsIn = (menu: HTMLElement | null) => [
+  ...(menu?.querySelectorAll<HTMLElement>(ITEM_SELECTOR) ?? []),
+];
+
+/** Moves focus to the first (or last) item once the portalled menu is in the document. */
+function FocusOnOpen({ menuId, last }: { menuId: string; last: boolean }) {
+  useEffect(() => {
+    const list = itemsIn(document.getElementById(menuId));
+    (last ? list.at(-1) : list[0])?.focus();
+  }, [menuId, last]);
+  return null;
+}
+
 /**
- * The popover menu of the Doc Editor: 8px radius, br border, shadow-menu, 6px padding. Arrow
+ * The popover menu of the Doc Editor: 8px radius, br border, shadow-menu, 6px padding. It is
+ * portalled out of its trigger's container, so a table card or drawer never clips it. Arrow
  * keys, Home and End move between items, Enter and Space choose, Escape closes and returns
  * focus to the trigger, Tab and a click outside close.
  */
@@ -44,35 +62,35 @@ export function Menu({
   trigger,
   children,
   align = 'start',
-  widthClassName = 'w-80',
+  widthClassName = 'min-w-45 max-w-80',
   defaultOpen = false,
   className,
 }: MenuProps) {
   const [open, setOpen] = useState(defaultOpen);
   const [focusLast, setFocusLast] = useState(false);
-  const triggerRef = useRef<HTMLButtonElement>(null);
+  const [anchor, setAnchor] = useState<HTMLButtonElement | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const rootRef = useRef<HTMLDivElement>(null);
   const triggerId = useId();
   const menuId = useId();
 
-  const items = () => [...(menuRef.current?.querySelectorAll<HTMLElement>(ITEM_SELECTOR) ?? [])];
-
-  const close = useCallback((refocus = true) => {
-    setOpen(false);
-    if (refocus) triggerRef.current?.focus();
-  }, []);
+  const close = useCallback(
+    (refocus = true) => {
+      setOpen(false);
+      if (refocus) anchor?.focus();
+    },
+    [anchor],
+  );
 
   useEffect(() => {
     if (!open) return undefined;
-    const list = items();
-    (focusLast ? list.at(-1) : list[0])?.focus();
     const onPointerDown = (event: PointerEvent) => {
-      if (!rootRef.current?.contains(event.target as Node)) close(false);
+      const target = event.target as Node;
+      if (!rootRef.current?.contains(target) && !menuRef.current?.contains(target)) close(false);
     };
     document.addEventListener('pointerdown', onPointerDown);
     return () => document.removeEventListener('pointerdown', onPointerDown);
-  }, [open, focusLast, close]);
+  }, [open, close]);
 
   const onTriggerKeyDown = (event: KeyboardEvent) => {
     if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
@@ -83,7 +101,7 @@ export function Menu({
   };
 
   const onMenuKeyDown = (event: KeyboardEvent) => {
-    const list = items();
+    const list = itemsIn(menuRef.current);
     const index = list.indexOf(document.activeElement as HTMLElement);
     const move = (to: number) => {
       event.preventDefault();
@@ -103,7 +121,7 @@ export function Menu({
   return (
     <div ref={rootRef} className={cx('relative inline-flex', className)}>
       {trigger({
-        ref: triggerRef,
+        ref: setAnchor,
         id: triggerId,
         onClick: () => {
           setFocusLast(false);
@@ -116,20 +134,19 @@ export function Menu({
       })}
       {open && (
         <MenuContext.Provider value={{ close }}>
-          <div
+          <FloatingLayer
             ref={menuRef}
+            anchor={anchor}
+            align={align}
             id={menuId}
             role="menu"
             aria-labelledby={triggerId}
             onKeyDown={onMenuKeyDown}
-            className={cx(
-              'absolute top-full z-50 mt-1 flex flex-col rounded-card border border-br bg-sf p-1.5 text-13 text-tx shadow-menu',
-              align === 'end' ? 'right-0' : 'left-0',
-              widthClassName,
-            )}
+            className={cx('overflow-y-auto p-1.5', widthClassName)}
           >
             {children}
-          </div>
+            <FocusOnOpen menuId={menuId} last={focusLast} />
+          </FloatingLayer>
         </MenuContext.Provider>
       )}
     </div>
