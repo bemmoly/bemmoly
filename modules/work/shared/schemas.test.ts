@@ -10,8 +10,10 @@ import {
   listIssuesQuerySchema,
   listProjectsQuerySchema,
   projectKeySchema,
+  publishWorkflowBodySchema,
   rankIssueBodySchema,
   workflowDraftSchema,
+  workflowProblemSchema,
 } from './index.ts';
 
 const id = '0199c0de-0000-7000-8000-000000000001';
@@ -138,5 +140,15 @@ describe('work shared schemas', () => {
       postActions: [],
     });
     expect(draft.statuses[0]?.allowedRoleIds).toEqual([]);
+  });
+
+  it('publishes with an empty status mapping and names problems by code', () => {
+    expect(publishWorkflowBodySchema.parse({})).toEqual({ statusMapping: {} });
+    expect(publishWorkflowBodySchema.safeParse({ statusMapping: { s1: 's2' } }).success).toBe(false);
+    expect(
+      workflowProblemSchema.safeParse({ code: 'no_done_status', message: 'Add a Done status' })
+        .success,
+    ).toBe(true);
+    expect(workflowProblemSchema.safeParse({ code: 'other', message: 'x' }).success).toBe(false);
   });
 });
