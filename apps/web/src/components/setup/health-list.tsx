@@ -9,9 +9,19 @@ const CIRCLE: Record<HealthRowStatus, { look: string; glyph: string; label: stri
   pending: { look: 'border border-br-ctl bg-sf', glyph: '', label: 'Not checked yet' },
 };
 
-/** The 16px status circle of the Setup checks and summary rows. */
-export function StatusCircle({ status }: { status: HealthRowStatus }) {
+/**
+ * The 16px status circle of the Setup checks and summary rows. Pass `label={null}` where the text
+ * beside it already says the status, so screen readers do not hear it twice.
+ */
+export function StatusCircle({
+  status,
+  label,
+}: {
+  status: HealthRowStatus;
+  label?: string | null;
+}) {
   const circle = CIRCLE[status];
+  const spoken = label === undefined ? circle.label : label;
   return (
     <>
       <span
@@ -20,7 +30,7 @@ export function StatusCircle({ status }: { status: HealthRowStatus }) {
       >
         {circle.glyph}
       </span>
-      <span className="sr-only">{circle.label}</span>
+      {spoken ? <span className="sr-only">{spoken}</span> : null}
     </>
   );
 }

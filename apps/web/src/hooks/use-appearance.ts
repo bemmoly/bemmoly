@@ -1,10 +1,11 @@
 import { contrastCheck } from '@bemmoly/ui/theme';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { APPEARANCE_KEYS } from '../lib/appearance.ts';
 import {
   appearanceDescription,
   CUSTOM,
   draftFrom,
+  draftLook,
   draftWrites,
   HEX_ERROR,
   normalizeHex,
@@ -15,6 +16,7 @@ import {
 } from './use-appearance-draft.ts';
 import { useMe } from './use-session.ts';
 import { useDraft, useSettings } from './use-setting.ts';
+import { useThemePreview } from './use-theme-preview.ts';
 import { useWorkspace } from './use-workspace.ts';
 
 export type PreviewView = 'board' | 'doc' | 'login';
@@ -31,9 +33,11 @@ export const NO_APPEARANCE_PERMISSION =
 type CustomPatch = Partial<Pick<AppearanceDraft, 'brand' | 'mode' | 'surfaces' | 'font'>>;
 
 /**
- * Settings › Appearance: a draft of the workspace look, previewed live and
- * saved for everyone. Saving invalidates every settings query, the
- * workspace look included, so the whole app re-themes.
+ * Settings › Appearance: a draft of the workspace look, previewed on the whole
+ * page while it differs from what is stored, and saved for everyone. Saving
+ * refetches the workspace look before the draft is dropped, so the saved look
+ * takes over from the preview with no flash; Discard or leaving the page
+ * returns to the saved look.
  */
 export function useAppearance() {
   const me = useMe();
@@ -44,6 +48,8 @@ export function useAppearance() {
   const [hexText, setHexText] = useState<string | null>(null);
   const [view, setView] = useState<PreviewView>('board');
   const value = draft.value;
+  const dirty = draft.dirty;
+  useThemePreview(useMemo(() => (dirty && value ? draftLook(value) : null), [dirty, value]));
 
   // Editing the builder means building a custom theme, so it selects Custom.
   const editCustom = (patch: CustomPatch) => draft.update({ ...patch, preset: CUSTOM });

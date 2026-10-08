@@ -79,6 +79,17 @@ describe('form controls', () => {
     expectFocusRing(screen.getByRole('radio'));
   });
 
+  it('draws a recessed Input like a read-only one but keeps it editable', () => {
+    render(
+      <Field label="URL">
+        <Input size="lg" mono tone="recessed" defaultValue="https://bemmoly.example" />
+      </Field>,
+    );
+    const input = screen.getByLabelText('URL');
+    expect(input.closest('div')?.className).toContain('bg-sf2');
+    expect(input.hasAttribute('readonly')).toBe(false);
+  });
+
   it('toggles a Switch and exposes its state', async () => {
     function Harness() {
       const [on, setOn] = useState(false);

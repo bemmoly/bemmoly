@@ -29,6 +29,51 @@ describe('SetupPage', () => {
     expect(screen.getByRole('button', { name: 'Create admin and continue' })).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Skip for now' })).toBeNull();
     expect(screen.getByText('Step 1 of 6')).toBeTruthy();
+    const rail = screen.getByRole('navigation', { name: 'Setup steps' });
+    expect(
+      within(rail).getByText('Everything here can be changed later in Workspace settings.'),
+    ).toBeTruthy();
+  });
+
+  it('groups the admin form into the workspace and the account', async () => {
+    mockApi.reset('fresh');
+    await renderPage(() => <Harness />, '/setup', testQueryClient());
+    const workspace = await screen.findByRole('group', { name: 'Workspace' });
+    expect(workspace.getAttribute('aria-describedby')).toBeTruthy();
+    expect(within(workspace).getByLabelText('Workspace name')).toBeTruthy();
+    expect(within(workspace).getByLabelText('URL')).toHaveProperty('value', window.location.origin);
+    const account = screen.getByRole('group', { name: 'Your account' });
+    expect(
+      ['Your name', 'Email', 'Password'].map((label) => within(account).getByLabelText(label)),
+    ).toHaveLength(3);
+    expect(within(account).queryByLabelText('Workspace name')).toBeNull();
+  });
+
+  it('heads the email invites with their defaults', async () => {
+    mockApi.reset('wizard');
+    await renderPage(() => <Harness />, '/setup?step=3', testQueryClient());
+    const invites = await screen.findByRole('region', { name: 'Or invite by email' });
+    expect(within(invites).getByRole('heading', { level: 2 })).toBeTruthy();
+    expect(within(invites).getByText(/joins as a Member with no team/)).toBeTruthy();
+    expect(within(invites).getByLabelText('Team')).toBeTruthy();
+  });
+
+  it('lists the summary as labels and values', async () => {
+    mockApi.reset('wizard');
+    await renderPage(() => <Harness />, '/setup?step=6', testQueryClient());
+    const summary = await screen.findByLabelText('Setup summary');
+    expect(summary.tagName).toBe('DL');
+    const terms = within(summary).getAllByRole('term');
+    // The last node is the label; the status circle before it is aria-hidden.
+    expect(terms.map((term) => term.lastChild?.textContent)).toEqual([
+      'Workspace',
+      'Admin',
+      'Import',
+      'Sign-in',
+      'AI',
+      'Theme',
+    ]);
+    expect(within(summary).getAllByRole('definition')[2]?.textContent).toBe('Skipped');
   });
 
   it('creates the admin and moves to the import step', async () => {

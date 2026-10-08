@@ -4,6 +4,10 @@ import { renderQueryHook, signedInClient } from '../test/render.tsx';
 import { mockApi } from '../test/setup.ts';
 import { HEX_ERROR } from './use-appearance-draft.ts';
 import { useAppearance } from './use-appearance.ts';
+import { useWorkspace } from './use-workspace.ts';
+import { useThemePreviewStore } from '../store/theme-preview.ts';
+
+const preview = () => useThemePreviewStore.getState().preview;
 
 describe('useAppearance', () => {
   it('loads the stored Classic preset for an admin', async () => {
@@ -42,6 +46,35 @@ describe('useAppearance', () => {
       'appearance.personalThemes': true,
     });
     await waitFor(() => expect(result.current.draft.dirty).toBe(false));
+    await waitFor(() => expect(queryClient.isFetching()).toBe(0));
+  });
+
+  it('previews a picked preset on the whole page until Discard', async () => {
+    const { result } = await renderQueryHook(() => useAppearance());
+    await waitFor(() => expect(result.current.value).toBeDefined());
+    expect(preview()).toBeNull();
+    act(() => result.current.selectTheme('midnight'));
+    expect(preview()).toMatchObject({ kind: 'preset', id: 'midnight', mode: 'dark' });
+    act(() => result.current.pickBrand('#7c3aed'));
+    expect(preview()).toMatchObject({ kind: 'custom', mode: 'light' });
+    act(() => result.current.discard());
+    expect(preview()).toBeNull();
+  });
+
+  it('drops the preview once the saved look is loaded, and on leaving the page', async () => {
+    const { result, queryClient, unmount } = await renderQueryHook(() => ({
+      appearance: useAppearance(),
+      workspace: useWorkspace(),
+    }));
+    await waitFor(() => expect(result.current.appearance.value).toBeDefined());
+    act(() => result.current.appearance.selectTheme('forest'));
+    act(() => result.current.appearance.submit());
+    await waitFor(() => expect(preview()).toBeNull());
+    expect(result.current.workspace.appearance.preset).toBe('forest');
+    act(() => result.current.appearance.selectTheme('rose'));
+    expect(preview()).toMatchObject({ id: 'rose' });
+    unmount();
+    expect(preview()).toBeNull();
     await waitFor(() => expect(queryClient.isFetching()).toBe(0));
   });
 

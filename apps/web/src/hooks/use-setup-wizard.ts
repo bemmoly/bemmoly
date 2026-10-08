@@ -76,8 +76,7 @@ export const SETUP_STEPS: readonly SetupStep[] = [
 ];
 
 /** The white note under the rail. */
-export const RAIL_NOTE =
-  'Everything here can be changed later in Workspace settings. Nothing leaves this server unless you connect an AI provider in step 4.';
+export const RAIL_NOTE = 'Everything here can be changed later in Workspace settings.';
 
 export function stepDef(n: number): SetupStep {
   return SETUP_STEPS[Math.min(Math.max(n, 1), LAST_STEP) - 1] as SetupStep;
