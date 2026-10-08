@@ -1,8 +1,9 @@
 import type { AdminModule } from '@bemmoly/shared';
-import { act, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { ModulesPage } from '../pages/settings/modules-page.tsx';
 import { renderPage, renderQueryHook } from '../test/render.tsx';
+import { TEAM_IDS } from '../mocks/seed/people.ts';
 import { mockApi } from '../test/setup.ts';
 import { canRemoveData, useAdminModules } from './use-admin-modules.ts';
 import { useModules } from './use-modules.ts';
@@ -32,6 +33,48 @@ describe('admin modules', () => {
     await waitFor(() => expect(sample().enabled).toBe(true));
     await waitFor(() => expect(result.current.nav.data?.map((m) => m.id)).toContain('sample'));
     expect(result.current.admin.modules[0]?.enabled).toBe(true);
+  });
+
+  it('asks who can use a module before enabling it, nobody by default', async () => {
+    sample().enabled = false;
+    mockApi.db.grants = [];
+    await renderPage(() => <ModulesPage />);
+    fireEvent.click(await screen.findByRole('button', { name: 'Enable Sample' }));
+    expect(await screen.findByText('Who can use Sample?')).toBeTruthy();
+    expect(screen.getByText(/Users › Module access/)).toBeTruthy();
+    const nobody = screen.getByRole('radio', { name: /Nobody yet/ });
+    expect(nobody.getAttribute('aria-checked')).toBe('true');
+
+    // The table's button and the dialog's share a name; the dialog's comes last.
+    const confirm = () => screen.getAllByRole('button', { name: 'Enable Sample' }).at(-1)!;
+    fireEvent.click(screen.getByRole('radio', { name: /Specific teams/ }));
+    expect(confirm().hasAttribute('disabled')).toBe(true);
+    fireEvent.change(screen.getByLabelText('Add a team'), { target: { value: TEAM_IDS.mobile } });
+    expect(screen.getByRole('button', { name: 'Remove Mobile' })).toBeTruthy();
+    fireEvent.click(confirm());
+    await waitFor(() => expect(sample().enabled).toBe(true));
+    expect(mockApi.db.grants.map((grant) => [grant.subjectKind, grant.subjectId])).toEqual([
+      ['team', TEAM_IDS.mobile],
+    ]);
+  });
+
+  it('enables with no grants when the admin keeps Nobody yet', async () => {
+    sample().enabled = false;
+    mockApi.db.grants = [];
+    const { result } = await renderQueryHook(() => useAdminModules());
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    act(() => result.current.dialog.open('enable', 'sample'));
+    expect(result.current.access.choice).toEqual({ mode: 'none' });
+    act(() =>
+      result.current.setEnabled.mutate({
+        id: 'sample',
+        enabled: true,
+        access: result.current.access.choice,
+      }),
+    );
+    await waitFor(() => expect(result.current.setEnabled.isSuccess).toBe(true));
+    expect(sample().enabled).toBe(true);
+    expect(mockApi.db.grants).toEqual([]);
   });
 
   it('reports a pinned set and leaves it unchanged', async () => {

@@ -9,12 +9,6 @@ const CHANGELOG: Record<AdminModule['changelogState'], { label: string; tone: Ba
   removed: { label: 'DATA REMOVED', tone: 'neutral' },
 };
 
-const ACCESS: Record<AdminModule['defaultAccess'], string> = {
-  everyone: 'Everyone',
-  teams: 'Chosen teams',
-  none: 'Nobody until granted',
-};
-
 interface ModulesTableProps {
   modules: readonly AdminModule[];
   pinned: boolean;
@@ -91,12 +85,6 @@ export function ModulesTable({
           ) : null}
         </div>
       ),
-    },
-    {
-      key: 'access',
-      header: 'Default access',
-      width: '150px',
-      render: (module) => <span className="text-tx3">{ACCESS[module.defaultAccess]}</span>,
     },
     {
       key: 'actions',
