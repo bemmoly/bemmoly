@@ -4,7 +4,7 @@ import { defineWorkSettings } from './server/src/config/settings.ts';
 import { createWorkControllers } from './server/src/controllers/index.ts';
 import { workRoutes } from './server/src/routes/index.ts';
 import { createWorkServices } from './server/src/services/index.ts';
-import { WORK_RANK_REBALANCE_JOB } from './server/src/services/jobs.ts';
+import { WORK_AUTOMATION_RUN_JOB, WORK_RANK_REBALANCE_JOB } from './server/src/services/jobs.ts';
 
 /**
  * Issues, boards, backlogs, sprints and workflows. Off until an admin enables
@@ -27,12 +27,21 @@ export default defineModule({
     });
     for (const capability of WORK_CAPABILITIES) ctx.capabilities.add(capability);
     defineWorkSettings(ctx.settings);
-    const services = createWorkServices(ctx.database ? { database: ctx.database } : {});
+    const services = createWorkServices({
+      realtime: ctx.realtime,
+      jobs: ctx.jobs,
+      ...(ctx.database ? { database: ctx.database } : {}),
+    });
     ctx.jobs.add({
       name: WORK_RANK_REBALANCE_JOB,
       scheduleSetting: 'work.jobs.rankRebalance.schedule',
       singleton: true,
       /** Reserved here so the schedule exists; the rebalance itself lands with ranking. */
+      handle: async () => undefined,
+    });
+    ctx.jobs.add({
+      name: WORK_AUTOMATION_RUN_JOB,
+      /** Reserved so a fire_automation post-action enqueues today; the engine lands later. */
       handle: async () => undefined,
     });
     ctx.routes.add({ prefix: '/work', plugin: workRoutes(createWorkControllers(services)) });
