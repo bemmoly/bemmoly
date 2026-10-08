@@ -55,6 +55,9 @@ importers:
       '@bemmoly/module-sample':
         specifier: workspace:*
         version: link:../../modules/sample
+      '@bemmoly/module-work':
+        specifier: workspace:*
+        version: link:../../modules/work
       '@bemmoly/shared':
         specifier: workspace:*
         version: link:../../packages/shared
@@ -263,6 +266,34 @@ importers:
         specifier: 4.6.5
         version: 4.6.5
     devDependencies:
+      vitest:
+        specifier: 5.0.3
+        version: 5.0.3(@opentelemetry/api@1.9.1)(@types/node@26.6.4)(happy-dom@20.14.5)(jsdom@30.1.2)(msw@3.0.2(@types/node@26.6.4)(typescript@7.0.2)(vite@8.3.3(@types/node@26.6.4)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1)))(vite@8.3.3(@types/node@26.6.4)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1))
+
+  modules/work:
+    dependencies:
+      '@bemmoly/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@bemmoly/core-web':
+        specifier: workspace:*
+        version: link:../../packages/core-web
+      '@bemmoly/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
+      fastify:
+        specifier: 5.12.5
+        version: 5.12.5
+      react:
+        specifier: 19.3.0
+        version: 19.3.0
+      zod:
+        specifier: 4.6.5
+        version: 4.6.5
+    devDependencies:
+      '@types/react':
+        specifier: 19.3.0
+        version: 19.3.0
       vitest:
         specifier: 5.0.3
         version: 5.0.3(@opentelemetry/api@1.9.1)(@types/node@26.6.4)(happy-dom@20.14.5)(jsdom@30.1.2)(msw@3.0.2(@types/node@26.6.4)(typescript@7.0.2)(vite@8.3.3(@types/node@26.6.4)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1)))(vite@8.3.3(@types/node@26.6.4)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1))

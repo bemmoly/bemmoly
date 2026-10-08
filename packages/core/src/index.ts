@@ -14,6 +14,8 @@ export * from './services/system/index.ts';
 export type { EmailNotificationRouteDependencies } from './routes/email-notifications.routes.ts';
 export type { SystemControllerDependencies } from './controllers/system.controller.ts';
 export { maintenanceHook } from './middlewares/maintenance.ts';
+export { contextOf } from './controllers/request-context.ts';
+export { decodeCursor, encodeCursor, toPage } from './utils/keyset.ts';
 export { backups, type BackupRow } from './models/backups.ts';
 export {
   createEmailConfigurationProbe,

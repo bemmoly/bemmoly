@@ -14,6 +14,7 @@
   --shadow-modal: 0 24px 64px rgba(16, 24, 40, 0.35), 0 0 0 1px rgba(16, 24, 40, 0.08);
   --shadow-ring: 0 0 0 2px var(--ac-br);
   --shadow-ring-ac: 0 0 0 2px var(--ac);
+  --shadow-ring-node: 0 0 0 3px var(--ac-br);
   --shadow-tab: inset 0 -2px 0 var(--ac);
   --shadow-radio: inset 0 0 0 4px var(--sf), inset 0 0 0 9px var(--ac-fill);
   --shadow-halo: 0 0 0 1px var(--bg);

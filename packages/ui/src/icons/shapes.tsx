@@ -1,5 +1,6 @@
 import {
   ArchiveRestore,
+  ArrowRight,
   Blocks,
   ChartColumn,
   ChartGantt,
@@ -13,6 +14,7 @@ import {
   Pencil,
   Server,
   Settings,
+  SquareCheck,
   SquareKanban,
   SunMoon,
   Table2,
@@ -60,6 +62,10 @@ export const SHAPES = {
   download: Download,
   /** Settings › Modules, and the Create menu's empty state. */
   modules: Blocks,
+  /** Board cards: the mock's ☑ before the subtask count. */
+  subtasks: SquareCheck,
+  /** Workflow: the mock's → before a transition's target. */
+  arrow: ArrowRight,
 } satisfies Record<string, LucideIcon>;
 
 export type ShapeName = keyof typeof SHAPES;
