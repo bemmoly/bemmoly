@@ -46,7 +46,10 @@ export function richTextToPlain(doc: RichText | null | undefined): string {
     if (node.type && BLOCK_NODES.has(node.type)) out += '\n';
   };
   walk(doc as Node, append);
-  return out.replace(/[ \t]+/g, ' ').replace(/\s*\n\s*/g, '\n').trim();
+  return out
+    .replace(/[ \t]+/g, ' ')
+    .replace(/\s*\n\s*/g, '\n')
+    .trim();
 }
 
 /** User ids named by mention nodes, each once, in document order. */
