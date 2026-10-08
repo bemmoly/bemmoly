@@ -1,0 +1,30 @@
+{
+  "name": "@bemmoly/module-work",
+  "version": "0.1.4",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": "./module.ts",
+    "./shared": "./shared/index.ts",
+    "./web": "./web/src/index.tsx"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "lint": "eslint --max-warnings 0 .",
+    "test": "vitest run",
+    "test:integration": "vitest run --config vitest.integration.config.ts"
+  },
+  "dependencies": {
+    "@bemmoly/core": "workspace:*",
+    "@bemmoly/core-web": "workspace:*",
+    "@bemmoly/shared": "workspace:*",
+    "fastify": "5.12.5",
+    "react": "19.3.0",
+    "zod": "4.6.5"
+  },
+  "devDependencies": {
+    "@types/react": "19.3.0",
+    "vitest": "5.0.3"
+  }
+}
