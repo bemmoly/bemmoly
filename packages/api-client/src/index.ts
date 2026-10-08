@@ -9,6 +9,8 @@ import { operationsEndpoints } from './endpoints/operations.ts';
 import { peopleEndpoints } from './endpoints/people.ts';
 import { authEndpoints, setupEndpoints } from './endpoints/session.ts';
 import { settingsEndpoints } from './endpoints/settings.ts';
+import { workBoardIssuesEndpoints } from './endpoints/work/board-issues.ts';
+import { workBoardsEndpoints } from './endpoints/work/boards.ts';
 import { createHttp, type HttpOptions } from './http.ts';
 
 export function createApiClient(options: HttpOptions = {}) {
@@ -22,6 +24,8 @@ export function createApiClient(options: HttpOptions = {}) {
     ...accessEndpoints(http),
     ...messagingEndpoints(http),
     ...operationsEndpoints(http),
+    /** Module endpoints, grouped by module so a workspace without Work never calls them. */
+    work: { ...workBoardsEndpoints(http), ...workBoardIssuesEndpoints(http) },
   };
 }
 

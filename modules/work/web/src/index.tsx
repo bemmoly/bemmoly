@@ -1,13 +1,20 @@
 import type { ModuleChunkProps } from '@bemmoly/core-web';
+import { EmptyState } from '@bemmoly/ui';
+import { Suspense } from 'react';
+import { resolveWorkRoute } from './routes.tsx';
 
-/** The Work chunk: the Board and Backlog screens replace this as they land. */
-export default function WorkModule({ manifest }: ModuleChunkProps) {
+/** The Work chunk: hands the subpath to routes.tsx and renders the screen it names. */
+export default function WorkModule({ manifest, subpath }: ModuleChunkProps) {
+  const route = resolveWorkRoute(subpath);
   return (
-    <section className="px-10 py-8" data-module={manifest.id}>
-      <h1 className="m-0 text-22 font-semibold tracking-title text-tx">Work</h1>
-      <p className="mt-1 text-tx4">
-        Module {manifest.id} {manifest.version} is enabled. Its screens are on the way.
-      </p>
-    </section>
+    <div className="flex min-h-0 flex-1 flex-col" data-module={manifest.id}>
+      {route ? (
+        <Suspense fallback={null}>
+          <route.Screen {...route.props} />
+        </Suspense>
+      ) : (
+        <EmptyState title="No such Work screen" description={`Nothing lives at ${subpath}.`} />
+      )}
+    </div>
   );
 }

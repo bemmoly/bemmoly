@@ -107,6 +107,8 @@ export const boardCardSchema = z.object({
   dueAt: z.iso.date().nullable(),
   subtasks: z.object({ done: z.number().int(), total: z.number().int() }).nullable(),
   parentId: z.uuid().nullable(),
+  /** Short names of linked docs ("RFC", "Spec"); the card shows the first. */
+  docs: z.array(z.string()).default([]),
   /** Days since the status last changed. */
   ageDays: z.number().int().nonnegative(),
 });
@@ -122,12 +124,27 @@ export const boardViewSchema = z.object({
       overWip: z.boolean(),
     }),
   ),
-  lanes: z.array(z.object({ id: z.string(), label: z.string(), color: z.string().nullable() })),
+  lanes: z.array(
+    z.object({
+      id: z.string(),
+      label: z.string(),
+      /** A palette name the screens map to a colour (ac, violet, tx6), or null for none. */
+      color: z.string().nullable(),
+      /** The epic's key and due date when the lane is an epic; the lane header shows both. */
+      issueKey: z.string().nullable().default(null),
+      dueAt: z.iso.date().nullable().default(null),
+    }),
+  ),
   cards: z.array(boardCardSchema.extend({ columnId: z.string(), laneId: z.string() })),
   metrics: z.object({
     throughputPerWeek: z.number().nonnegative(),
     cycleTimeDays: z.number().nonnegative().nullable(),
     wipCount: z.number().int().nonnegative(),
+    /** Sprint points on the board and the points in done columns; the Velocity tile. */
+    committedPoints: z.number().nonnegative().default(0),
+    completedPoints: z.number().nonnegative().default(0),
+    /** Issues completed per week, oldest first; the Flow tile's sparkline. */
+    throughputHistory: z.array(z.number().nonnegative()).default([]),
   }),
 });
 
