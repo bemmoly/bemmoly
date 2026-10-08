@@ -1,6 +1,7 @@
 import { isApiError, queryKeys } from '@bemmoly/api-client';
-import type { Invitation, Role, User } from '@bemmoly/shared';
+import type { CreateInvitationsResponse, Invitation, Role, User } from '@bemmoly/shared';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
 import { api } from '../lib/api.ts';
 import { describeError } from '../lib/errors.ts';
 import { toast } from '../lib/toast.ts';
@@ -16,9 +17,28 @@ export function pendingInvitation(
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0];
 }
 
-/** Role changes and the ··· menu: deactivate, reactivate, resend or revoke an invitation. */
+/** The invitation behind an INVITED row, read fresh so a just-resent one is found. */
+async function pendingFor(queryClient: ReturnType<typeof useQueryClient>, email: string) {
+  const { items } = await queryClient.fetchQuery({ ...invitationsQuery, staleTime: 0 });
+  const invitation = pendingInvitation(items, email);
+  if (!invitation) throw new Error(`No pending invitation for ${email}`);
+  return invitation;
+}
+
+/** A link shown for copying after the action that issued it. */
+export interface ShownLink {
+  email: string;
+  acceptUrl: string;
+}
+
+/**
+ * Role changes and the ··· menu: deactivate, reactivate, and for an invitation resend, copy
+ * its link or revoke. Anything that issues a new link while email is not set up shows it,
+ * since the old link stops working and nobody receives the email.
+ */
 export function useUserActions(roles: readonly Role[]) {
   const queryClient = useQueryClient();
+  const [shownLink, setShownLink] = useState<ShownLink | null>(null);
   const refresh = () =>
     Promise.all([
       queryClient.invalidateQueries({ queryKey: queryKeys.users.all() }),
@@ -54,29 +74,61 @@ export function useUserActions(roles: readonly Role[]) {
     onError,
   });
 
-  /** Sends a fresh invitation with the same role and first team. */
+  const reissued = (response: CreateInvitationsResponse, message: string) => {
+    const [item] = response.items;
+    if (!response.emailConfigured && item) {
+      setShownLink({ email: item.email, acceptUrl: item.acceptUrl });
+    }
+    return done(message)();
+  };
+
+  /** Sends a fresh invitation with the same role (or a new one) and first team. */
   const resend = useMutation({
-    mutationFn: (user: User) =>
+    mutationFn: ({ user, roleId }: { user: User; roleId?: string }) =>
       api.invitations.create({
         emails: [user.email],
-        roleId: user.roleId,
+        roleId: roleId ?? user.roleId,
         ...(user.teamIds[0] ? { teamId: user.teamIds[0] } : {}),
       }),
-    onSuccess: (_, user) => done(`Invitation sent again to ${user.email}`)(),
+    onSuccess: (response, { user, roleId }) => {
+      const role = roles.find((entry) => entry.id === roleId)?.name;
+      return reissued(
+        response,
+        role ? `${user.email} will join as ${role}` : `Invitation sent again to ${user.email}`,
+      );
+    },
     onError,
+  });
+
+  /** A new link for the invitation, shown to copy; the previous link stops working. */
+  const copyLink = useMutation({
+    mutationFn: async (user: User) =>
+      api.invitations.issueLink((await pendingFor(queryClient, user.email)).id),
+    onSuccess: async (issued) => {
+      setShownLink({ email: issued.email, acceptUrl: issued.acceptUrl });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.invitations() });
+    },
+    onError: (error) =>
+      toast(isApiError(error) ? describeError(error).message : error.message, 'danger'),
   });
 
   const revoke = useMutation({
     mutationFn: async (user: User) => {
-      const { items } = await queryClient.fetchQuery({ ...invitationsQuery, staleTime: 0 });
-      const invitation = pendingInvitation(items, user.email);
-      if (!invitation) throw new Error(`No pending invitation for ${user.email}`);
-      await api.invitations.revoke(invitation.id);
+      await api.invitations.revoke((await pendingFor(queryClient, user.email)).id);
     },
     onSuccess: (_, user) => done(`Invitation to ${user.email} revoked`)(),
     onError: (error) =>
       toast(isApiError(error) ? describeError(error).message : error.message, 'danger'),
   });
 
-  return { changeRole, deactivate, reactivate, resend, revoke };
+  return {
+    changeRole,
+    deactivate,
+    reactivate,
+    resend,
+    copyLink,
+    revoke,
+    shownLink,
+    closeLink: () => setShownLink(null),
+  };
 }

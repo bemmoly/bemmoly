@@ -2,6 +2,7 @@ import type { UserStatus } from '@bemmoly/shared';
 import { Button, SearchInput, Select } from '@bemmoly/ui';
 import { useRouterState } from '@tanstack/react-router';
 import { useState } from 'react';
+import { InviteLinkModal } from '../../components/people/invite-links.tsx';
 import { InviteModal } from '../../components/people/invite-modal.tsx';
 import { ModuleAccessDrawer } from '../../components/people/module-access-drawer.tsx';
 import { UsersTable } from '../../components/people/users-table.tsx';
@@ -91,12 +92,17 @@ export function UsersPage() {
           canManage={users.canManage}
           teamsOf={users.teamsOf}
           modulesOf={users.modulesOf}
-          onRoleChange={(user, roleId) => actions.changeRole.mutate({ user, roleId })}
+          onRoleChange={(user, roleId) =>
+            users.isInvitation(user)
+              ? actions.resend.mutate({ user, roleId })
+              : actions.changeRole.mutate({ user, roleId })
+          }
           actions={{
             selfId: me.user.id,
             deactivate: (user) => actions.deactivate.mutate(user),
             reactivate: (user) => actions.reactivate.mutate(user),
-            resend: (user) => actions.resend.mutate(user),
+            resend: (user) => actions.resend.mutate({ user }),
+            copyLink: (user) => actions.copyLink.mutate(user),
             revoke: (user) => actions.revoke.mutate(user),
           }}
           footer={{
@@ -109,6 +115,7 @@ export function UsersPage() {
       </div>
       <InviteModal open={users.inviteOpen} onClose={() => users.setInviteOpen(false)} />
       <ModuleAccessDrawer open={accessOpen} onClose={() => setAccessOpen(false)} />
+      <InviteLinkModal link={actions.shownLink} onClose={actions.closeLink} />
     </SettingsPage>
   );
 }

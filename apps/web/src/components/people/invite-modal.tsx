@@ -1,20 +1,38 @@
 import { Button, Field, Modal, Select, Textarea } from '@bemmoly/ui';
 import { useInviteForm } from '../../hooks/use-users-invite.ts';
+import { InviteLinks } from './invite-links.tsx';
 
 /** Invite people: addresses, a role and an optional team, sent as one request. */
 export function InviteModal({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const invite = useInviteForm(onClose);
+  const invite = useInviteForm();
   const close = () => {
     invite.reset();
     onClose();
   };
   const sending = invite.mutation.isPending;
+  if (invite.sent) {
+    return (
+      <Modal
+        open={open}
+        onClose={close}
+        title="Invitations sent"
+        description="Each person signs up with their own link."
+        footer={
+          <Button variant="primary" onClick={close}>
+            Done
+          </Button>
+        }
+      >
+        <InviteLinks links={invite.sent.items} emailConfigured={invite.sent.emailConfigured} />
+      </Modal>
+    );
+  }
   return (
     <Modal
       open={open}
       onClose={close}
       title="Invite people"
-      description="Each address gets an email with a link to set a password."
+      description="Each person gets a link to set a password, by email once email is set up."
       footer={
         <>
           <Button variant="secondary" onClick={close}>

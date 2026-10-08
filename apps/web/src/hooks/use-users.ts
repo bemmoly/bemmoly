@@ -4,10 +4,17 @@ import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { useEffect, useMemo, useState } from 'react';
 import { api } from '../lib/api.ts';
 import { useUiStore } from '../store/ui.ts';
+import { invitationRows, matchesServerFilters } from './invited-rows.ts';
 import { useDirectory } from './use-directory.ts';
 import { moduleLabel, modulesForUser } from './use-module-access.ts';
 import { useModules } from './use-modules.ts';
-import { grantsQuery, rolesQuery, teamsQuery, useCanManagePeople } from './use-people.ts';
+import {
+  grantsQuery,
+  invitationsQuery,
+  rolesQuery,
+  teamsQuery,
+  useCanManagePeople,
+} from './use-people.ts';
 
 const PAGE = 50;
 const SEARCH_DELAY = 250;
@@ -83,7 +90,11 @@ function useUiHandoff() {
   return { search, setSearch, inviteOpen, setInviteOpen };
 }
 
-/** The Users page: directory counts, filters, keyset pages and the Modules column. */
+/**
+ * The Users page: directory counts, filters, keyset pages and the Modules column. Pending
+ * invitations lead the list as INVITED rows and count as invited, since an invited person
+ * has no account (and no /users row) until they accept.
+ */
 export function useUsers(initialTeamId = '') {
   const canManage = useCanManagePeople();
   const handoff = useUiHandoff();
@@ -110,19 +121,31 @@ export function useUsers(initialTeamId = '') {
   const teams = useQuery(teamsQuery).data?.items ?? [];
   const grants = useQuery(grantsQuery).data?.items;
   const manifests = useModules().data;
+  const invitations = useQuery({ ...invitationsQuery, enabled: canManage }).data?.items;
 
+  const invited = useMemo(
+    () => invitationRows(invitations ?? [], directory.users),
+    [invitations, directory.users],
+  );
   const rows = useMemo(
     () =>
-      (list.data?.pages ?? [])
-        .flatMap((page) => page.items)
-        .filter((user) => matchesFilters(user, { roleId, teamId })),
-    [list.data, roleId, teamId],
+      [
+        ...invited.filter((row) => matchesServerFilters(row, { q, status })),
+        ...(list.data?.pages ?? []).flatMap((page) => page.items),
+      ].filter((user) => matchesFilters(user, { roleId, teamId })),
+    [invited, list.data, q, status, roleId, teamId],
   );
+  const invitationIds = new Set(invited.map((row) => row.id));
   const teamNames = new Map(teams.map((team) => [team.id, team.name]));
 
   return {
     canManage,
-    summary: directorySummary(directory.counts),
+    summary: directorySummary({
+      ...directory.counts,
+      invited: directory.counts.invited + invited.length,
+    }),
+    /** True for a row that is a pending invitation rather than an account. */
+    isInvitation: (user: User) => invitationIds.has(user.id),
     list,
     rows,
     roles,

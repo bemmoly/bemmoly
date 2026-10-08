@@ -94,15 +94,21 @@ export function makeUser(id: string, name: string, email: string, roleId: string
   };
 }
 
+/** Accounts only: Sam (hours null) is invited and, as on the server, has no account yet. */
 export function seedUsers(): User[] {
-  return ROWS.map(([key, name, email, roleId, teamIds, hours]) => ({
-    ...makeUser(USER_IDS[key], name, email, roleId),
-    status: hours === null ? 'invited' : 'active',
-    isBreakGlass: key === 'rohan',
-    teamIds,
-    lastSeenAt: hours === null ? null : ago(hours * 60),
-    createdAt: ago(60 * 24 * 20),
-  }));
+  return ROWS.flatMap(([key, name, email, roleId, teamIds, hours]) =>
+    hours === null
+      ? []
+      : [
+          {
+            ...makeUser(USER_IDS[key], name, email, roleId),
+            isBreakGlass: key === 'rohan',
+            teamIds,
+            lastSeenAt: ago(hours * 60),
+            createdAt: ago(60 * 24 * 20),
+          },
+        ],
+  );
 }
 
 export function seedTeams(): { teams: Team[]; members: TeamMember[] } {

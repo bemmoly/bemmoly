@@ -32,9 +32,10 @@ describe('parseEmails', () => {
 describe('invite helpers', () => {
   const role = (id: string, key: string) => ({ id, key, name: key }) as Role;
 
-  it('defaults to Member, else the first non-admin role', () => {
+  it('defaults to the least-privileged Viewer, else the first non-admin role', () => {
+    const roles = [role('1', 'org_admin'), role('2', 'member'), role('3', 'viewer')];
+    expect(defaultRoleId(roles)).toBe('3');
     expect(defaultRoleId([role('1', 'org_admin'), role('2', 'member')])).toBe('2');
-    expect(defaultRoleId([role('1', 'org_admin'), role('3', 'viewer')])).toBe('3');
     expect(defaultRoleId([])).toBeNull();
   });
 
@@ -55,12 +56,12 @@ describe('useSetupInvites', () => {
     expect(result.current.emails).toEqual([]);
   });
 
-  it('sends chips and the unfinished address with the Member role, then moves on', async () => {
+  it('sends chips and the unfinished address with the Viewer role, then moves on', async () => {
     const onDone = vi.fn();
     const { result } = await renderQueryHook(() => useSetupInvites(onDone));
     await waitFor(() => expect(result.current.loading).toBe(false));
-    const member = mockApi.db.roles.find((entry) => entry.key === 'member');
-    expect(result.current.roleId).toBe(member?.id);
+    const viewer = mockApi.db.roles.find((entry) => entry.key === 'viewer');
+    expect(result.current.roleId).toBe(viewer?.id);
     const before = mockApi.db.invitations.length;
     act(() => result.current.paste('first@acme.test\nsecond@acme.test'));
     act(() => result.current.change('third@acme.test'));
