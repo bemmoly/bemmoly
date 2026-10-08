@@ -49,7 +49,8 @@ describe('admin modules', () => {
     const confirm = () => screen.getAllByRole('button', { name: 'Enable Sample' }).at(-1)!;
     fireEvent.click(screen.getByRole('radio', { name: /Specific teams/ }));
     expect(confirm().hasAttribute('disabled')).toBe(true);
-    fireEvent.change(screen.getByLabelText('Add a team'), { target: { value: TEAM_IDS.mobile } });
+    fireEvent.click(screen.getByRole('combobox', { name: 'Add a team' }));
+    fireEvent.click(screen.getByRole('option', { name: 'Mobile' }));
     expect(screen.getByRole('button', { name: 'Remove Mobile' })).toBeTruthy();
     fireEvent.click(confirm());
     await waitFor(() => expect(sample().enabled).toBe(true));
