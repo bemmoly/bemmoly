@@ -10,6 +10,7 @@ import {
   type Appearance,
   type AppearanceKey,
 } from '../lib/appearance.ts';
+import { NO_PERSONAL_THEME, resolveAppearance, type ResolvedAppearance } from '../lib/theme.ts';
 import type { SettingReads, SettingValues } from './use-setting.ts';
 
 export const CUSTOM = 'custom';
@@ -67,6 +68,11 @@ export function toAppearance(draft: AppearanceDraft): Appearance {
     logoKey: null,
     policy: { memberModeSwitch: draft.memberModeSwitch, personalThemes: draft.personalThemes },
   };
+}
+
+/** The draft as the whole page shows it while previewed: the workspace look itself. */
+export function draftLook(draft: AppearanceDraft): ResolvedAppearance {
+  return resolveAppearance(toAppearance(draft), NO_PERSONAL_THEME);
 }
 
 /** The settings to write for the draft. */
