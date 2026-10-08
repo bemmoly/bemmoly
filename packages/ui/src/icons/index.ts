@@ -1,8 +1,9 @@
-/** `@bemmoly/ui/icons`: the mocks' icon set, drawn shapes and text glyphs under one typed name set. */
+/** `@bemmoly/ui/icons`: Lucide icons under the design system's names, in one size system. */
 export {
   GLYPHS,
   Icon,
   ICON_NAMES,
+  ICON_SIZE,
   type GlyphName,
   type IconName,
   type IconProps,
