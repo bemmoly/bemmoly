@@ -31,10 +31,16 @@ test('a sprint is planned in the backlog, started, and completed with its unfini
   await expect(backlog.getByRole('option')).toHaveCount(3);
   await page.getByRole('button', { name: 'Create sprint' }).first().click();
   const sprint = page.getByRole('listbox', { name: sprintName });
-  await expect(page.getByText('Drag issues here to plan this sprint.')).toBeVisible();
+  await expect(
+    page.getByText('Drag issues here from the backlog, or create one in the sprint.'),
+  ).toBeVisible();
 
   const row = (key: string) => page.getByRole('option', { name: new RegExp(` ${key} `) });
-  await drag(page, row(login.key), page.getByText('Drag issues here to plan this sprint.'));
+  await drag(
+    page,
+    row(login.key),
+    page.getByText('Drag issues here from the backlog, or create one in the sprint.'),
+  );
   await expect(sprint.getByRole('option', { name: new RegExp(` ${login.key} `) })).toBeVisible();
   await drag(page, row(receipts.key), sprint);
   await expect(sprint.getByRole('option')).toHaveCount(2);
