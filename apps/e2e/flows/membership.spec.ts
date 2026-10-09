@@ -15,6 +15,7 @@ test('a project stays out of sight for a non-member until they are added', async
   page,
   admin,
   run,
+  me,
   pageAs,
   apiFor,
 }) => {
@@ -43,7 +44,7 @@ test('a project stays out of sight for a non-member until they are added', async
 
   // The admin adds Sam from the project's Members screen.
   await page.goto(`/work/members/${project.key}`);
-  await expect(page.getByRole('row', { name: new RegExp(`^${run.admin.name}`) })).toBeVisible();
+  await expect(page.getByRole('row', { name: new RegExp(`^${me.name}`) })).toBeVisible();
   await page.getByRole('button', { name: 'Add people' }).click();
   const dialog = page.getByRole('dialog', { name: `Add people to ${project.name}` });
   await dialog.getByRole('combobox', { name: 'People' }).click();

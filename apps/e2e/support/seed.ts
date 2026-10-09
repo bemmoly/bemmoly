@@ -10,6 +10,12 @@ const ADMIN = { name: 'Rohan S.', email: 'rohan@acmelabs.dev', password: 'correc
 const MEMBER = { name: 'Sam R.', email: 'sam@acmelabs.dev', password: 'twelve chars ok' };
 const OBSERVER = { name: 'Priya K.', email: 'priya@acmelabs.dev', password: 'twelve chars ok' };
 const DRIVER = { name: 'Jonas M.', email: 'jonas@acmelabs.dev', password: 'twelve chars ok' };
+/** More org admins, one per parallel worker, so no one person's request budget runs out. */
+const CO_ADMINS = ['Lena', 'Omar', 'Mei'].map((name) => ({
+  name: `${name} A.`,
+  email: `${name.toLowerCase()}@acmelabs.dev`,
+  password: 'twelve chars ok',
+}));
 
 async function expectOk(response: Awaited<ReturnType<APIRequestContext['get']>>, what: string) {
   if (!response.ok()) throw new Error(`${what}: ${response.status()} ${await response.text()}`);
@@ -33,6 +39,7 @@ async function saveSession(api: APIRequestContext, file: string): Promise<string
 
 export interface SeededPeople {
   admin: Person;
+  admins: Person[];
   member: Person;
   observer: Person;
   driver: Person;
@@ -68,9 +75,12 @@ export async function seedPeople(baseURL: string): Promise<SeededPeople> {
     key: string;
   }[];
   const memberRole = roles.find((role) => role.key === 'member')?.id;
+  const adminRole = roles.find((role) => role.key === 'org_admin')?.id;
   const member = await invite(admin, baseURL, MEMBER, memberRole);
   const observer = await invite(admin, baseURL, OBSERVER, memberRole);
   const driver = await invite(admin, baseURL, DRIVER, memberRole);
+  const coAdmins: Person[] = [];
+  for (const who of CO_ADMINS) coAdmins.push(await invite(admin, baseURL, who, adminRole));
   const adminPerson = {
     id: adminId,
     ...ADMIN,
@@ -79,6 +89,7 @@ export async function seedPeople(baseURL: string): Promise<SeededPeople> {
   await admin.dispose();
   return {
     admin: adminPerson,
+    admins: [adminPerson, ...coAdmins],
     member,
     observer,
     driver,

@@ -5,21 +5,29 @@ import { readState, type Person, type RunState } from './state.ts';
 
 interface Fixtures {
   run: RunState;
-  /** The admin's API, for arranging what a test does not exercise through the screen. */
+  /** The org admin this worker acts as; the page is signed in as them. */
+  me: Person;
+  /** Their API, for arranging what a test does not exercise through the screen. */
   admin: WorkApi;
   /** A signed-in page for someone other than the admin. */
   pageAs: (person: Person) => Promise<Page>;
   apiFor: (person: Person) => Promise<WorkApi>;
 }
 
-/** Every test runs signed in as the admin against the run's server unless it asks otherwise. */
+/**
+ * Every test runs signed in as an org admin against the run's server unless it
+ * asks otherwise. Each worker has an admin of its own: the per-person request
+ * budget is the product's, and parallel tests as one person would share it.
+ */
 export const test = base.extend<Fixtures>({
   // eslint-disable-next-line no-empty-pattern
   run: async ({}, use) => use(readState()),
   baseURL: async ({ run }, use) => use(run.baseURL),
-  storageState: async ({ run }, use) => use(run.admin.storageState),
-  admin: async ({ run }, use) => {
-    const context = await apiAs(run.baseURL, run.admin.storageState);
+  me: async ({ run }, use, info) =>
+    use(run.admins[info.workerIndex % run.admins.length] ?? run.admin),
+  storageState: async ({ me }, use) => use(me.storageState),
+  admin: async ({ run, me }, use) => {
+    const context = await apiAs(run.baseURL, me.storageState);
     await use(new WorkApi(context));
     await context.dispose();
   },
