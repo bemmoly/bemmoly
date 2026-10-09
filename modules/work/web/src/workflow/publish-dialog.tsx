@@ -43,7 +43,7 @@ export function PublishDialog(props: PublishDialogProps) {
   };
   const message =
     problems.length > 0
-      ? 'Fix the problems Validate lists, then publish again.'
+      ? 'Fix these problems in the draft, then publish again.'
       : toMap.length > 0
         ? unmapped.length > 0
           ? 'Choose where the issues in each removed status go.'
