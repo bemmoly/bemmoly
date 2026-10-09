@@ -11,6 +11,8 @@ export const WORK_REALTIME_KINDS = {
   sprint: 'work.sprint',
   /** The board of a project needs a refetch (status, rank or sprint of any issue). */
   board: 'work.board',
+  /** Who belongs to a project changed; ids are the people added, changed or removed. */
+  members: 'work.members',
 } as const;
 
 export type WorkRealtimeKind = (typeof WORK_REALTIME_KINDS)[keyof typeof WORK_REALTIME_KINDS];

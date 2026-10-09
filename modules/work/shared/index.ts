@@ -10,6 +10,7 @@ export * from './issue-types.ts';
 export * from './issues.ts';
 export * from './lexorank.ts';
 export * from './links-labels.ts';
+export * from './members.ts';
 export * from './metrics.ts';
 export * from './my-work.ts';
 export * from './projects.ts';
