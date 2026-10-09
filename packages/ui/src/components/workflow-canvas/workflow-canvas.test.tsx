@@ -31,6 +31,19 @@ describe('workflow canvas editing states', () => {
     expect(onSelect).toHaveBeenCalled();
   });
 
+  it('says issue for one and issues for any other count', () => {
+    render(
+      <>
+        <StatusNode name="Testing" category="progress" x="0" y="0" count={1} />
+        <StatusNode name="Done" category="done" x="0" y="0" count={0} />
+        <StatusNode name="Backlog" category="todo" x="0" y="0" count={42} />
+      </>,
+    );
+    expect(screen.getByRole('button', { name: /Testing/ }).textContent).toMatch(/· 1 issue$/);
+    expect(screen.getByRole('button', { name: /Done/ }).textContent).toMatch(/· 0 issues$/);
+    expect(screen.getByRole('button', { name: /Backlog/ }).textContent).toMatch(/· 42 issues$/);
+  });
+
   it('keeps a plain label out of the tab order', () => {
     render(
       <TransitionLabel x="0" y="0">
