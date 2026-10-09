@@ -51,10 +51,21 @@ bar's Create menu through the module's `create` navigation entries.
 [2026-10-09] Work web: the project list, the create project dialog and the ProjectSwitcher.
 [2026-10-09] UI: a ghost variant of the Select for values edited in place.
 [2026-10-09] Mocks: work issue, activity and project routes with the Issue mock's data.
-[2026-10-09] Pointed the workflow editor's client at the server's routes: GET /work/workflows?projectId= and the rules registry's JSON Schema params; the draft calls unwrap { draft }.
-[2026-10-09] Mocked the workflow routes as the server answers them: list by query, the registry with JSON Schema params, the server's problem codes and publish refusals; seeded transitions use registry rule names.
-[2026-10-09] Gave the ui workflow canvas its editing states: invalid node and edge, interactive and selected edge labels with rule-count chips, an optional node count, a connector handle, a measurable canvas ref and named transition-row buttons.
-[2026-10-09] Fixed apps/web's Tailwind @source for module chunks: the directory glob matched no file, so utilities used only inside a chunk were never generated.
-[2026-10-09] Enabled the Work chunk in the mock workspace's manifests so its screens open on the dev backend.
-[2026-10-09] Added the visual workflow editor at /work/workflows/<KEY>[/<id>]: list with version, projects using it and last change; canvas with drag, drag-to-connect, keyboard Tab/arrows/Delete/Escape; status and transition panels with registry rules and their argument forms; debounced draft autosave; Validate marking problems; Publish naming the version and projects and asking for status mapping.
-[2026-10-09] Tests: hook tests for autosave, validate and publish; component tests for adding a transition, editing a rule, delete with confirmation and arrow-key nudge.
+[2026-10-09] Work labels, versions and components: services, routes and tests under
+`/work/projects/:key/{labels,versions,components}`, paged by name with a `q` prefix for pickers.
+[2026-10-09] Work integration suites against Postgres (Testcontainers) for issues, transitions,
+comments, links, search, history, the catalog, the palette provider and my work, on a shared
+harness in `modules/work/server/src/services/int-support.ts`.
+[2026-10-09] Bugs the suites found and fixed: duplicate ranks under concurrent creates;
+`?deleted=false` read as true; validators blind to fields in the same PATCH; stale PATCH answer
+and no invalidation after post-actions; workflow history field names; notifications to people
+outside the project; labels, versions and components of other projects on an issue; an exact
+key suggested after longer keys.
+[2026-10-09] Kernel: `ctx.search.addProvider` and `GET /api/v1/search` feed ⌘K, with each
+module's search groups in its manifest as palette scopes; Work registers issues by key and
+keyword.
+[2026-10-09] Kernel: Home section extension point in core-web (`web/src/home.tsx` per module,
+each in its own error boundary); Work adds "My work" from `GET /work/my-issues`.
+[2026-10-09] Gaps seen end to end: no API to add a project member (seeded with SQL for the run);
+self-assignment sends no inbox notification by design; issue links on Home point at
+`/work/issues/:key`, which no Work screen serves yet.
