@@ -105,14 +105,36 @@ const TRANSITIONS: TransitionSeed[] = [
   [null, "Won't do", 'Close'],
 ];
 
-const codeReviewRules: WorkTransitionRow['rules'] = {
-  conditions: [{ name: 'pr_linked', args: {} }],
-  validators: [{ name: 'field_not_empty', args: { field: 'reviewer' } }],
-  postActions: [
-    { name: 'notify', args: { who: 'reviewers' } },
-    { name: 'start_timer', args: { name: 'review' } },
-  ],
+type Rules = WorkTransitionRow['rules'];
+
+/** Names and arguments from the server's rules registry, which seed/work-rules.ts mirrors. */
+const RULES: Partial<Record<string, Rules>> = {
+  'Open PR': {
+    conditions: [{ name: 'field_set', args: { field: 'pullRequest' } }],
+    validators: [{ name: 'required_fields', args: { fields: ['reviewer'] } }],
+    postActions: [],
+  },
+  'Pass QA': {
+    conditions: [{ name: 'subtasks_done', args: {} }],
+    validators: [],
+    postActions: [{ name: 'set_resolution', args: { resolved: true } }],
+  },
+  'Fail QA': {
+    conditions: [],
+    validators: [{ name: 'comment_required', args: { minLength: 10 } }],
+    postActions: [],
+  },
+  Close: {
+    conditions: [],
+    validators: [{ name: 'comment_required', args: { minLength: 1 } }],
+    postActions: [
+      { name: 'clear_sprint', args: {} },
+      { name: 'set_resolution', args: { resolved: true } },
+    ],
+  },
 };
+
+const noRules = (): Rules => ({ conditions: [], validators: [], postActions: [] });
 
 export function seedWorkTransitions(workflowId: string): WorkTransitionRow[] {
   return TRANSITIONS.map(([from, to, name], position) => ({
@@ -121,10 +143,7 @@ export function seedWorkTransitions(workflowId: string): WorkTransitionRow[] {
     fromStatusId: from ? STATUS_IDS[from] : null,
     toStatusId: STATUS_IDS[to],
     name,
-    rules:
-      to === 'Code review'
-        ? codeReviewRules
-        : { conditions: [], validators: [], postActions: [{ name: 'record_history', args: {} }] },
+    rules: structuredClone(RULES[name] ?? noRules()),
     position,
   }));
 }

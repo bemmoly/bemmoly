@@ -1,26 +1,31 @@
 import { can, emit } from '../db.ts';
-import { newId } from '../seed/time.ts';
-import { WORK_IDS } from '../seed/work-settings.ts';
-import { bodyOf, fail, invalid, notFound, ok, type MockRoute } from '../types.ts';
+import { ago, newId, uid } from '../seed/time.ts';
+import { bodyOf, fail, invalid, notFound, ok, page, type MockRoute } from '../types.ts';
+import { validateDraft, type Draft, type DraftStatus } from './work-workflow-checks.ts';
 import { PROJECT_CONFIGURE, touch, workState, type Row } from './work-state.ts';
 
 const forbidden = () => fail(403, 'forbidden', 'You need "Configure project" to do that.');
 
-interface DraftStatus extends Row {
-  name: string;
-  category: string;
-  position: number;
-  x?: number;
-  y?: number;
-}
-interface DraftTransition extends Row {
-  fromStatusId: string | null;
-  toStatusId: string;
-  name: string;
-}
-interface Draft {
-  statuses: DraftStatus[];
-  transitions: DraftTransition[];
+/** Two more projects that inherit the org default workflow, so the list has someone to count. */
+const INHERITING = [
+  ['MOB', 'Mobile apps', 0x905],
+  ['DAT', 'Data platform', 0x906],
+] as const;
+
+function projects(db: Parameters<typeof workState>[0]): Row[] {
+  const state = workState(db);
+  return [
+    state.project,
+    ...INHERITING.map(([key, name, n]) => ({
+      ...state.project,
+      id: uid(n),
+      key,
+      name,
+      description: null,
+      schemeOverrides: {},
+      createdAt: ago(60 * 24 * 20),
+    })),
+  ];
 }
 
 /** The published statuses and transitions as an editor draft, when none is saved. */
@@ -29,73 +34,90 @@ function draftOf(workflow: Row): Draft {
   if (draft) return draft;
   return {
     statuses: (workflow['statuses'] as DraftStatus[]).map((status) => ({ ...status })),
-    transitions: (workflow['transitions'] as DraftTransition[]).map((transition) => ({
+    transitions: (workflow['transitions'] as Draft['transitions']).map((transition) => ({
       ...transition,
     })),
   };
 }
 
-/** The checks the engine makes before publish, as the Validate panel lists them. */
-function validate(draft: Draft) {
-  const problems: Array<{
-    code: string;
-    message: string;
-    statusId?: string;
-    transitionId?: string;
-  }> = [];
-  const ids = new Set(draft.statuses.map((status) => status.id));
-  const seen = new Set<string>();
-  for (const status of draft.statuses) {
-    const key = status.name.trim().toLowerCase();
-    if (seen.has(key))
-      problems.push({
-        code: 'duplicate_status',
-        message: `Two statuses are named "${status.name}"`,
-        statusId: status.id,
-      });
-    seen.add(key);
-    const reachable = draft.transitions.some(
-      (transition) => transition.toStatusId === status.id && transition.fromStatusId !== status.id,
-    );
-    if (!reachable && status.position !== 0)
-      problems.push({
-        code: 'unreachable',
-        message: `No transition leads to "${status.name}"`,
-        statusId: status.id,
-      });
-  }
-  if (!draft.statuses.some((status) => status.category === 'done'))
-    problems.push({
-      code: 'no_done',
-      message: 'The workflow needs a Done status so issues can resolve',
-    });
-  for (const transition of draft.transitions) {
-    if (
-      !ids.has(transition.toStatusId) ||
-      (transition.fromStatusId && !ids.has(transition.fromStatusId))
-    )
-      problems.push({
-        code: 'dangling',
-        message: `"${transition.name}" points at a removed status`,
-        transitionId: transition.id,
-      });
-  }
-  return { valid: problems.length === 0, problems };
-}
-
 const findWorkflow = (db: Parameters<typeof workState>[0], id: string | undefined) =>
   workState(db).workflows.find((row) => row.id === id);
+
+/** Issues in a removed status go where the body says; without a mapping the publish is refused. */
+function retire(db: Parameters<typeof workState>[0], row: Row, draft: Draft, mapping: object) {
+  const counts = workState(db).statusCounts;
+  const kept = new Set(draft.statuses.map((status) => status.id));
+  const targets = mapping as Record<string, string>;
+  const removed = (row['statuses'] as DraftStatus[]).filter((status) => !kept.has(status.id));
+  const unmapped = removed.filter(
+    (status) => (counts[status.id] ?? 0) > 0 && !kept.has(targets[status.id] ?? ''),
+  );
+  if (unmapped.length > 0)
+    return fail(400, 'validation_failed', 'Say where the issues in removed statuses should go', {
+      statusMappingRequired: unmapped.map((status) => ({
+        statusId: status.id,
+        name: status.name,
+        issues: counts[status.id] ?? 0,
+      })),
+    });
+  for (const status of removed) {
+    const target = targets[status.id];
+    if (target) counts[target] = (counts[target] ?? 0) + (counts[status.id] ?? 0);
+    delete counts[status.id];
+  }
+  return null;
+}
+
+function publish(db: Parameters<typeof workState>[0], row: Row, mapping: object) {
+  const draft = row['draft'] as Draft | null;
+  if (!draft) return invalid('draft', 'There is no draft to publish');
+  const result = validateDraft(draft);
+  if (!result.valid)
+    return fail(400, 'validation_failed', 'The draft has problems', { problems: result.problems });
+  const refused = retire(db, row, draft, mapping);
+  if (refused) return refused;
+  const ids = new Map(
+    draft.statuses.map((status) => [status.id, status.id.includes('-') ? status.id : newId()]),
+  );
+  touch(row, {
+    statuses: draft.statuses.map((status) => ({
+      ...status,
+      id: ids.get(status.id) ?? status.id,
+      workflowId: row.id,
+    })),
+    transitions: draft.transitions.map((transition) => ({
+      ...transition,
+      id: transition.id.includes('-') ? transition.id : newId(),
+      workflowId: row.id,
+      fromStatusId: transition.fromStatusId
+        ? (ids.get(transition.fromStatusId) ?? transition.fromStatusId)
+        : null,
+      toStatusId: ids.get(transition.toStatusId) ?? transition.toStatusId,
+    })),
+    draft: null,
+    hasDraft: false,
+    publishedVersion: Number(row['publishedVersion']) + 1,
+  });
+  emit(db, 'work.workflow', [row.id]);
+  return ok(row);
+}
 
 export const workWorkflowRoutes: MockRoute[] = [
   {
     method: 'GET',
-    pattern: '/api/v1/work/projects/:projectId/workflows',
-    handle: (request, db) =>
-      request.params['projectId'] === WORK_IDS.project
-        ? ok({
-            items: workState(db).workflows.filter((row) => row['projectId'] === WORK_IDS.project),
-          })
-        : notFound('Project'),
+    pattern: '/api/v1/work/projects',
+    handle: (request, db) => ok(page(projects(db), request)),
+  },
+  {
+    method: 'GET',
+    pattern: '/api/v1/work/workflows',
+    handle: (request, db) => {
+      const projectId = request.query.get('projectId');
+      const rows = workState(db).workflows.filter(
+        (row) => !projectId || row['projectId'] === null || row['projectId'] === projectId,
+      );
+      return ok({ items: rows });
+    },
   },
   {
     method: 'GET',
@@ -122,6 +144,7 @@ export const workWorkflowRoutes: MockRoute[] = [
     method: 'GET',
     pattern: '/api/v1/work/workflows/:id/draft',
     handle: (request, db) => {
+      if (!can(db, PROJECT_CONFIGURE)) return forbidden();
       const row = findWorkflow(db, request.params['id']);
       return row ? ok({ draft: draftOf(row) }) : notFound('Workflow');
     },
@@ -145,7 +168,7 @@ export const workWorkflowRoutes: MockRoute[] = [
     pattern: '/api/v1/work/workflows/:id/validate',
     handle: (request, db) => {
       const row = findWorkflow(db, request.params['id']);
-      return row ? ok(validate(draftOf(row))) : notFound('Workflow');
+      return row ? ok(validateDraft(draftOf(row))) : notFound('Workflow');
     },
   },
   {
@@ -155,55 +178,8 @@ export const workWorkflowRoutes: MockRoute[] = [
       if (!can(db, PROJECT_CONFIGURE)) return forbidden();
       const row = findWorkflow(db, request.params['id']);
       if (!row) return notFound('Workflow');
-      const state = workState(db);
-      const draft = draftOf(row);
-      const result = validate(draft);
-      if (!result.valid)
-        return fail(409, 'workflow_invalid', 'Fix the problems before publishing', result);
-      const mapping =
-        bodyOf<{ statusMapping: Record<string, string> }>(request).statusMapping ?? {};
-      const kept = new Set(draft.statuses.map((status) => status.id));
-      for (const status of row['statuses'] as DraftStatus[]) {
-        if (kept.has(status.id) || !(state.statusCounts[status.id] ?? 0)) continue;
-        const target = mapping[status.id];
-        if (!target || !kept.has(target))
-          return invalid(
-            `statusMapping.${status.id}`,
-            `Choose where issues in "${status.name}" go`,
-          );
-        state.statusCounts[target] =
-          (state.statusCounts[target] ?? 0) + (state.statusCounts[status.id] ?? 0);
-        delete state.statusCounts[status.id];
-      }
-      const ids = new Map(
-        draft.statuses.map((status) => [
-          status.id,
-          kept.has(status.id) && status.id.includes('-') ? status.id : newId(),
-        ]),
-      );
-      const statuses = draft.statuses.map((status) => ({
-        ...status,
-        id: ids.get(status.id) ?? status.id,
-        workflowId: row.id,
-      }));
-      const transitions = draft.transitions.map((transition) => ({
-        ...transition,
-        id: transition.id.includes('-') ? transition.id : newId(),
-        workflowId: row.id,
-        fromStatusId: transition.fromStatusId
-          ? (ids.get(transition.fromStatusId) ?? transition.fromStatusId)
-          : null,
-        toStatusId: ids.get(transition.toStatusId) ?? transition.toStatusId,
-      }));
-      touch(row, {
-        statuses,
-        transitions,
-        draft: null,
-        hasDraft: false,
-        publishedVersion: Number(row['publishedVersion']) + 1,
-      });
-      emit(db, 'work.workflow.published', [row.id]);
-      return ok(row);
+      const body = bodyOf<{ statusMapping: Record<string, string> }>(request);
+      return publish(db, row, body.statusMapping ?? {});
     },
   },
 ];
