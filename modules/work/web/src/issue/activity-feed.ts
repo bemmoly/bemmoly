@@ -89,6 +89,9 @@ export function historyVerb(entry: IssueHistoryEntry, names: HistoryNames): stri
     return to ? `assigned ${names.person(String(to))}` : 'removed the assignee';
   }
   if (field === 'title') return 'renamed the issue';
+  // The issue's own lifecycle rows carry no field to name.
+  if (field === 'created') return 'created the issue';
+  if (field === 'deleted') return to ? 'deleted the issue' : 'restored the issue';
   const name = FIELD_NAMES[field] ?? field.replace(/_/g, ' ');
   const before = shown(from);
   const after = shown(to);
