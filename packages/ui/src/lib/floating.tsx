@@ -134,6 +134,8 @@ export function FloatingLayer({
       {...rest}
       className={cx(
         'fixed inset-auto z-50 m-0 flex flex-col rounded-card border border-br bg-sf text-13 text-tx shadow-menu',
+        // Pops from the trigger: down from above it, up from below it.
+        'origin-top motion-safe:animate-pop-in data-[side=top]:origin-bottom data-[side=top]:[--pop-from:4px]',
         className,
       )}
     >

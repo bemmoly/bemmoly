@@ -62,7 +62,7 @@ export function Tooltip({ content, children, side = 'top', delay = 300 }: Toolti
           role="tooltip"
           id={id}
           className={cx(
-            'pointer-events-none absolute left-1/2 z-50 -translate-x-1/2 rounded-sm bg-tx px-2 py-1 text-11h font-medium whitespace-nowrap text-sf shadow-menu',
+            'pointer-events-none absolute left-1/2 z-50 -translate-x-1/2 rounded-sm bg-tx px-2 py-1 text-11h font-medium whitespace-nowrap text-sf shadow-menu motion-safe:animate-fade-in',
             side === 'top' ? 'bottom-full mb-1.5' : 'top-full mt-1.5',
           )}
         >
