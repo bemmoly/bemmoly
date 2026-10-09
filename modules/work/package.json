@@ -22,6 +22,7 @@
     "@bemmoly/shared": "workspace:*",
     "@bemmoly/ui": "workspace:*",
     "@tanstack/react-query": "5.104.1",
+    "@tanstack/react-virtual": "3.14.13",
     "fastify": "5.12.5",
     "react": "19.3.0",
     "zod": "4.6.5",
