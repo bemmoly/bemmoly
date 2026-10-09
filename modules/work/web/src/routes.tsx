@@ -29,5 +29,7 @@ export const WORK_SCREENS: Readonly<Record<string, Screen>> = {
 export function resolveWorkRoute(subpath: string) {
   const [screen = 'board', projectKey, ...rest] = subpath.split('/').filter(Boolean);
   const Screen = WORK_SCREENS[screen];
-  return Screen ? { Screen, props: { projectKey, rest } satisfies WorkScreenProps } : null;
+  return Screen
+    ? { Screen, name: screen, props: { projectKey, rest } satisfies WorkScreenProps }
+    : null;
 }
