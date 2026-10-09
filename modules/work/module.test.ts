@@ -9,6 +9,7 @@ describe('work module', () => {
     const [manifest] = registry.manifests();
     expect(moduleManifestSchema.parse(manifest)).toEqual({
       id: 'work',
+      name: 'Work',
       version: '0.2.0',
       navigation: [
         { id: 'work.board', label: 'Board', path: '/work/board', placement: 'top' },
