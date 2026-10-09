@@ -1,0 +1,36 @@
+---
+/**
+ * The closing call to action of a topic page: the hero's install pill (which brings the copy
+ * script, so a page with this block includes no other CopyScript) and the two ways on.
+ */
+import InstallCommand from '../landing/InstallCommand.astro';
+import Button from '../site/Button.astro';
+
+interface Props {
+  title?: string;
+}
+
+const { title = 'Run it on your own server' } = Astro.props;
+---
+
+<section
+  aria-labelledby="install-cta"
+  class="flex flex-col items-start gap-5 rounded-dialog border border-br bg-sf2 p-5 sm:p-7 dark:bg-sf"
+>
+  <h2 id="install-cta" class="text-22 leading-title font-semibold tracking-title text-tx">
+    {title}
+  </h2>
+  <p class="max-w-175 text-15 leading-desc text-tx3">
+    On a fresh Linux VM with a domain pointing at it, one command installs Docker, Postgres,
+    automatic HTTPS, nightly backups and the updater, then prints the address to open.
+  </p>
+  <InstallCommand />
+  <div class="flex flex-wrap gap-3">
+    <Button variant="primary" href="/docs/install">
+      Read the install guide
+    </Button>
+    <Button variant="secondary" href="/self-hosting#other-paths">
+      Other ways to run it
+    </Button>
+  </div>
+</section>

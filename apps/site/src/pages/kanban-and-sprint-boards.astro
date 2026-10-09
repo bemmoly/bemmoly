@@ -1,0 +1,122 @@
+---
+/**
+ * Topic page for self-hosted Kanban and Scrum boards. Facts from the Work module's 0.2.0
+ * release notes (modules/work/CHANGELOG.md: the board, backlog, board settings and metrics).
+ */
+import Section from '../components/site/Section.astro';
+import BoardShot from '../components/topics/BoardShot.astro';
+import Capabilities from '../components/topics/Capabilities.astro';
+import InstallCta from '../components/topics/InstallCta.astro';
+import Related from '../components/topics/Related.astro';
+import StatusNote from '../components/topics/StatusNote.astro';
+import { RELEASE } from '../data/landing.ts';
+import { pageAt } from '../data/pages.ts';
+import type { Capability } from '../data/topics.ts';
+import Page from '../layouts/Page.astro';
+
+const BOARD: readonly Capability[] = [
+  {
+    tile: 'KS',
+    title: 'Kanban or Scrum per project',
+    body: 'Each project picks its method, with the sprint length, working days and estimation unit for Scrum.',
+    status: 'now',
+  },
+  {
+    tile: 'CO',
+    title: 'Columns are statuses',
+    body: 'Moving a card is a real workflow transition; a column the workflow does not allow says why before you drop.',
+    status: 'now',
+  },
+  {
+    tile: 'WI',
+    title: 'WIP limits',
+    body: 'Cap how many cards a column holds, so a team finishes work before it starts more.',
+    status: 'now',
+  },
+  {
+    tile: 'SL',
+    title: 'Swimlanes and colours',
+    body: 'Lanes by epic, assignee, priority, type or a query; card colours by priority, type, epic or a query.',
+    status: 'now',
+  },
+  {
+    tile: 'QF',
+    title: 'Filters that stay',
+    body: 'People, epic, type and label filters, quick filters, and saved queries shared with your team.',
+    status: 'now',
+  },
+  {
+    tile: 'KB',
+    title: 'Mouse or keyboard',
+    body: 'Drag cards, or pick one up with space and carry it with the arrow keys; the board updates live for everyone.',
+    status: 'now',
+  },
+];
+
+const PLANNING: readonly Capability[] = [
+  {
+    tile: 'BL',
+    title: 'Backlog and sprints',
+    body: 'Drag issues between the backlog and sprints, one at a time or several, with each sprint’s points against its capacity.',
+    status: 'now',
+  },
+  {
+    tile: 'SP',
+    title: 'Start and complete sprints',
+    body: 'Start with dates and a goal; on completion, choose where unfinished issues go.',
+    status: 'now',
+  },
+  {
+    tile: 'ME',
+    title: 'Flow and sprint metrics',
+    body: 'Velocity, the active sprint’s burndown, cycle time and throughput, from each issue’s history.',
+    status: 'now',
+  },
+  {
+    tile: 'AI',
+    title: 'Sprint risk',
+    body: 'An AI note on sprints and flow at risk, with fixes you confirm before anything changes.',
+    status: 'ai',
+  },
+  {
+    tile: 'RM',
+    title: 'Roadmap',
+    body: 'Epics on a timeline with progress, dependencies and a forecast.',
+    status: 'integrations',
+  },
+];
+---
+
+<Page
+  page={pageAt('/kanban-and-sprint-boards')}
+  heading="Kanban and Scrum boards on your own server"
+  lede="Each project picks Kanban or Scrum. Columns map to workflow statuses, WIP limits keep work flowing, swimlanes group the cards, and Scrum projects plan in a backlog and sprints. It all runs on your server, in your Postgres."
+  wide
+>
+  <StatusNote>
+    Boards, the backlog and sprints ship with the Work module in Bemmoly {RELEASE.version}. An admin
+    turns Work on in Settings › Modules and chooses who can use it.
+  </StatusNote>
+
+  <BoardShot eager />
+
+  <Section title="The board">
+    <Capabilities items={BOARD} />
+  </Section>
+
+  <Section title="Planning">
+    <Capabilities items={PLANNING} />
+  </Section>
+
+  <Section title="Set once, adjust per project">
+    <p>
+      An admin sets the organisation's default board: columns, swimlanes, card fields and colours,
+      the method and how work is estimated. Each project can override it, see every setting it
+      changed, and reset to the default. A live preview follows every edit, and a change that would
+      take cards off the board says so and asks first.
+    </p>
+  </Section>
+
+  <InstallCta title="Plan sprints on your own server" />
+  <Related current="/kanban-and-sprint-boards" />
+</Page>

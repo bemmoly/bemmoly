@@ -166,6 +166,7 @@ describe('structured data', () => {
 
   it('only answers questions the page answers in its own words', () => {
     const faqs = graphs.filter(({ graph }) => graph.some((node) => node['@type'] === 'FAQPage'));
+    expect(faqs.length).toBeGreaterThan(0);
     for (const { page, graph } of faqs) {
       const text = visibleText(read(fileOf(page.path)));
       const faq = graph.find((node) => node['@type'] === 'FAQPage');

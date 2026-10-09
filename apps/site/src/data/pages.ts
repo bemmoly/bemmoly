@@ -31,6 +31,42 @@ export const PAGES = [
     software: true,
   },
   {
+    path: '/self-hosted-project-management',
+    name: 'Self-hosted project management',
+    title: 'Self-hosted project management, open source · Bemmoly',
+    description:
+      'Project management you run on your own server: issues, boards, sprints and docs in one MIT-licensed app, one container and one Postgres, with no per-seat fees.',
+    updated: '2026-10-10',
+    software: true,
+  },
+  {
+    path: '/open-source-issue-tracker',
+    name: 'Issue tracker',
+    title: 'Open source issue tracker you host yourself · Bemmoly',
+    description:
+      'An MIT-licensed issue tracker for your own server: issue types, custom fields, visual workflows, a query language, saved filters and the history of every issue.',
+    updated: '2026-10-10',
+    software: true,
+  },
+  {
+    path: '/kanban-and-sprint-boards',
+    name: 'Kanban and sprint boards',
+    title: 'Self-hosted Kanban and Scrum boards with sprints · Bemmoly',
+    description:
+      'Kanban or Scrum per project on your own server: columns mapped to statuses, WIP limits, swimlanes, a backlog with sprints, velocity, burndown and cycle time.',
+    updated: '2026-10-10',
+    software: true,
+  },
+  {
+    path: '/on-premise',
+    name: 'On-premise',
+    title: 'On-premise project management: your data, your server',
+    description:
+      'Run Bemmoly on your own hardware or cloud: your data in your Postgres, verified and encrypted backups, signed updates, and nothing calls home by default.',
+    updated: '2026-10-10',
+    software: true,
+  },
+  {
     path: '/self-hosting',
     name: 'Self-hosting',
     title: 'Self-hosting: install Bemmoly on your own server',
@@ -106,4 +142,11 @@ export function trailOf(path: string): SitePage[] {
 }
 
 /** The guides and topic pages linked from every page's footer and from each other. */
-export const TOPICS: readonly PagePath[] = ['/docs/install', '/docs/compose'];
+export const TOPICS: readonly PagePath[] = [
+  '/self-hosted-project-management',
+  '/open-source-issue-tracker',
+  '/kanban-and-sprint-boards',
+  '/on-premise',
+  '/docs/install',
+  '/docs/compose',
+];
