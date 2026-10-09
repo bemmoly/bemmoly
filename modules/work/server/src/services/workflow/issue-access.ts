@@ -36,10 +36,11 @@ export const issueReads: IssueReads = {
   },
 };
 
+/** History names match the issue service's, so one issue's History tab reads as one list. */
 const COLUMNS: Record<PostActionField, string> = {
-  assignee_id: 'assignee',
-  sprint_id: 'sprint',
-  resolved_at: 'resolved_at',
+  assignee_id: 'assigneeId',
+  sprint_id: 'sprintId',
+  resolved_at: 'resolvedAt',
 };
 
 export const issueWrites: IssueWrites = {
@@ -96,7 +97,7 @@ export async function moveIssuesStatus(
   if (moved.length === 0) return 0;
   await sql`
     insert into issue_history (issue_id, actor_id, field, from_value, to_value)
-    select id, ${actorId}, 'status', ${JSON.stringify(fromStatusId)}::jsonb,
+    select id, ${actorId}, 'statusId', ${JSON.stringify(fromStatusId)}::jsonb,
       ${JSON.stringify(toStatusId)}::jsonb
     from issues where id in ${sql(moved.map((row) => row.id))}`;
   return moved.length;
