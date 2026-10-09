@@ -1,5 +1,13 @@
 # @bemmoly/api-client
 
+## 0.2.0
+
+### Patch Changes
+
+- Updated dependencies [51cd3ae]
+- Updated dependencies [e2aa5d2]
+  - @bemmoly/shared@0.2.0
+
 ## 0.1.7
 
 ### Patch Changes
