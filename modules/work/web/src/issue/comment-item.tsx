@@ -4,7 +4,6 @@ import { ActivityAction, ActivityItem, Menu, MenuItem, ReactionChip } from '@bem
 import { useState } from 'react';
 import type { Person } from '../hooks/issue-people.ts';
 import { CommentBox } from './comment-box.tsx';
-import { docToText } from './rich-text-convert.ts';
 import { RichTextView } from './rich-text.tsx';
 
 /** The reactions the React menu offers; any shortcode the server holds is still shown. */
@@ -40,7 +39,7 @@ export function CommentItem({ comment, replies = [], ...actions }: CommentItemPr
       <CommentBox
         viewer={viewer}
         open
-        initialText={docToText(comment.body)}
+        initialBody={comment.body}
         submitLabel="Save"
         placeholder="Edit the comment"
         onSubmit={(body) => onEdit(comment, body)}
@@ -115,6 +114,7 @@ export function CommentItem({ comment, replies = [], ...actions }: CommentItemPr
             <CommentBox
               viewer={viewer}
               open
+              label="Reply"
               placeholder="Reply…"
               submitLabel="Reply"
               onSubmit={(body) => onReply(comment, body)}
