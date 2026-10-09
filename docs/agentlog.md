@@ -42,3 +42,12 @@ key of the latest project change and the day (`GET /work/boards/:id/metrics`,
 not at all; the Board stream should align with the issue routes.
 [2026-10-09] Checks on Node 24.21.0: module typecheck, lint and unit tests, the module's
 integration suite (7 tests) and format:check, all green.
+[2026-10-09] Work web: client calls for issues, comments, links, watchers, work logs, history,
+transitions and the project catalog, by key as the server's routes are.
+[2026-10-09] Work web: the Issue page from the Issue mock and the same body as IssueSlideOver in
+the design system's drawer, exported from `modules/work/web/src/issue` for the Board.
+[2026-10-09] Work web: the create issue form laid out from the type's layout, opened from the top
+bar's Create menu through the module's `create` navigation entries.
+[2026-10-09] Work web: the project list, the create project dialog and the ProjectSwitcher.
+[2026-10-09] UI: a ghost variant of the Select for values edited in place.
+[2026-10-09] Mocks: work issue, activity and project routes with the Issue mock's data.
