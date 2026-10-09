@@ -36,10 +36,11 @@ export const backlogSchema = z.object({
 });
 
 /**
- * `POST /work/issues/:key/move`: the drop target. The issue lands after
- * `afterIssueId` and before `beforeIssueId`, either of which may be absent at
- * the ends of a list; `sprintId` moves it between containers (null is the
- * backlog) and is left out to rank within the current one.
+ * `POST /work/issues/:key/move`: the drop target. `beforeIssueId` is the row
+ * that ends up above the issue and `afterIssueId` the row below it, either of
+ * which may be absent at the ends of a list; `sprintId` moves it between
+ * containers (null is the backlog) and is left out to rank within the current
+ * one.
  */
 export const moveIssueBodySchema = rankIssueBodySchema;
 
