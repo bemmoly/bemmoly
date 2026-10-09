@@ -2,13 +2,12 @@ import { emit, type MockDb } from '../db.ts';
 import type { MockIssue } from '../seed/work-board.ts';
 import { bodyOf, fail, notFound, ok, type MockRoute } from '../types.ts';
 import { askIssueMock } from './work-board-delegate.ts';
-import { boardState, rankBetween, toIssue, toIssueDetail, workflowOf } from './work-board-state.ts';
+import { boardState, rankBetween, toIssue, workflowOf } from './work-board-state.ts';
 import type { Row } from './work-state.ts';
 
 /*
- * The board's issue routes: transitions, a status change checked against the workflow, a rank
- * change, and the issue read for cards only the board seeds. Issues the issue mock also keeps
- * are handed to it after the board's checks, so both stores stay in step.
+ * The board's issue routes: transitions, a status change checked against the workflow and a
+ * rank change. A checked change is written by the issue mock, which keeps the shared store.
  */
 
 const W = '/api/v1/work';
@@ -66,20 +65,7 @@ function changed(db: MockDb, issue: MockIssue) {
   emit(db, 'work.issue', [issue.id]);
 }
 
-/** Fields the slide-over edits that the board's cards also show. */
-const MIRRORED = ['title', 'priority', 'assigneeId', 'estimate', 'labelIds', 'dueAt'] as const;
-
 export const boardIssueRoutes: MockRoute[] = [
-  {
-    method: 'GET',
-    pattern: `${W}/issues/:key`,
-    handle: (request, db) => {
-      const theirs = askIssueMock('GET', '/issues/:key', request, db);
-      if (theirs && theirs.status !== 404) return theirs;
-      const issue = issueByKey(db, request.params['key']);
-      return issue ? ok(toIssueDetail(db, issue)) : notFound('Issue');
-    },
-  },
   {
     method: 'GET',
     pattern: `${W}/issues/:key/transitions`,
@@ -130,18 +116,9 @@ export const boardIssueRoutes: MockRoute[] = [
             reasons: missing,
           });
       }
-      const theirs = askIssueMock('PATCH', '/issues/:key', request, db);
-      if (!issue) return theirs ?? notFound('Issue');
-      if (theirs && theirs.status >= 400 && theirs.status !== 404) return theirs;
-      if (statusId && statusId !== issue.statusId) {
-        issue.statusId = statusId;
-        issue.statusChangedAt = new Date().toISOString();
-      }
-      for (const field of MIRRORED) {
-        if (field in body) Object.assign(issue, { [field]: body[field] });
-      }
-      changed(db, issue);
-      return theirs && theirs.status < 300 ? theirs : ok(toIssue(issue));
+      const theirs = askIssueMock('PATCH', '/issues/:key', request, db) ?? notFound('Issue');
+      if (issue && theirs.status < 300) changed(db, issue);
+      return theirs;
     },
   },
   {

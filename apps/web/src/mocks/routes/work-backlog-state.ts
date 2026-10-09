@@ -1,34 +1,29 @@
 import type { MockDb } from '../db.ts';
-import {
-  seedBacklogIssues,
-  seedBacklogSprints,
-  type BacklogIssueRow,
-  type BacklogSprintRow,
-} from '../seed/work-backlog.ts';
+import type { BacklogIssueRow, BacklogSprintRow } from '../seed/work-backlog.ts';
 import { WORK_IDS } from '../seed/work-settings.ts';
+import { issueStore } from './work-issue-store.ts';
 import { workState } from './work-state.ts';
 
 /*
- * The Backlog's issues and sprints beside the kernel's mock database, keyed
- * by it like the settings rows so a scenario reset starts them over. The
+ * The Backlog's view of the shared Work issue store: Platform Core's issues
+ * and sprints, so a drop here shows in the slide-over and on the Board. The
  * mock keeps ranks short by renumbering the whole project after each drop,
  * the way the server's rebalance job would; only the order is observable.
  */
 
 export interface BacklogState {
+  /** Platform Core's issues, a fresh list each call; the rows are the store's own. */
   issues: BacklogIssueRow[];
+  /** The store's sprint list itself: add and remove in place. */
   sprints: BacklogSprintRow[];
 }
 
-const states = new WeakMap<MockDb, BacklogState>();
-
 export function backlogState(db: MockDb): BacklogState {
-  let state = states.get(db);
-  if (!state) {
-    state = { issues: seedBacklogIssues(), sprints: seedBacklogSprints() };
-    states.set(db, state);
-  }
-  return state;
+  const store = issueStore(db);
+  return {
+    issues: store.issues.filter((row) => row['projectId'] === WORK_IDS.project) as never,
+    sprints: store.sprints as never,
+  };
 }
 
 /** "PLT" or the project's id; the mock has the one project the settings seed holds. */
