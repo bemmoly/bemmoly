@@ -108,64 +108,68 @@
 
 <main class="page">
   <header>
-    <span class="eyebrow">Work module · 0.2.0 · handover, updated 9 October 2026, evening</span>
+    <span class="eyebrow">Work module · 0.2.0 · handover, updated 9 October 2026, night</span>
     <h1>Where Work stands, and how we finish it</h1>
-    <p class="lede">Shrijayan built the contracts, the server core and the Work design-system pieces on <code>feat/work-module-integration</code>. Since the handover this morning, wave 1 has landed: boards and sprints, the Issue page, the workflow editor, and a hardening pass with integration tests are done. Board, Backlog and Board settings are being built now. What remains after them is the integration pass, the polish pass and the release.</p>
+    <p class="lede">Every screen in the 0.2.0 plan is now on <code>feat/work-module-integration</code>: Board, Backlog, the Issue page with rich text, Board settings, the workflow editor and projects. Three streams are finishing the release: project members and the last server details, end-to-end tests against a real server with the board speed budget, and a set of small leftovers. After them come the polish pass, the authorship pass, the merge to main and 0.2.0.</p>
   </header>
 
   <section aria-labelledby="facts">
     <h2 id="facts">The branch today</h2>
     <div class="facts">
-      <div class="fact"><b>200</b><span>commits ahead of main; 225 with #45</span></div>
-      <div class="fact"><b>4</b><span>wave-1 pull requests, 3 merged, 1 in review</span></div>
-      <div class="fact"><b>3</b><span>wave-2 screens being built</span></div>
-      <div class="fact"><b>13</b><span>real bugs found and fixed since the handover</span></div>
-      <div class="fact"><b>42</b><span>integration tests against Postgres, from 1</span></div>
+      <div class="fact"><b>277</b><span>commits ahead of main</span></div>
+      <div class="fact"><b>9</b><span>pull requests merged into it</span></div>
+      <div class="fact"><b>3</b><span>streams finishing the release</span></div>
+      <div class="fact"><b>17</b><span>bugs and CI breakages found and fixed</span></div>
+      <div class="fact"><b>41</b><span>integration test files against Postgres, from 1</span></div>
     </div>
-    <p class="note">Every pull request into the integration branch ran typecheck, lint, format, unit tests, the build and the integration suites before merge. The bugs: eight found by the new integration tests in #45, one wrong issue link across notifications, ⌘K and Home, three web calls to routes the server does not have, and a stylesheet glob that left every module screen's own utility classes ungenerated.</p>
+    <p class="note">The integration branch had a red image build and a red Semgrep step from #43 to #48; #49 fixed both, and #50 fixed a follow-up in the image's package selection. Every pull request since has passed CI, Security and the image build before merge.</p>
   </section>
 
   <section aria-labelledby="ledger">
     <h2 id="ledger">The eleven promises of 0.2.0, one by one</h2>
-    <p class="note">Numbered as in <code>docs/plan/work.md</code>. REVIEW means built and waiting in an open pull request; BUILDING means an agent is on it now.</p>
+    <p class="note">Numbered as in <code>docs/plan/work.md</code>. REVIEW means built and about to open as a pull request; BUILDING means an agent is on it now.</p>
     <div class="table-wrap">
       <table>
         <thead><tr><th>#</th><th>Promise</th><th>Server</th><th>Screens</th><th>Where it stands</th></tr></thead>
         <tbody>
-          <tr><td class="n">1</td><td>Enable Work: nav, capabilities, roles matrix</td><td><span class="chip done">DONE</span></td><td><span class="chip done">DONE</span></td><td>Board, Backlog and Projects in the top bar; Create offers Issue and Project.</td></tr>
-          <tr><td class="n">2</td><td>Projects with keys, Scrum or Kanban, schemes and overrides with a diff</td><td><span class="chip part">PARTIAL</span></td><td><span class="chip done">DONE</span></td><td>Project list, create dialog and switcher are in (#43). There is no project member API yet; adding a member took SQL in testing.</td></tr>
-          <tr><td class="n">3</td><td>Create issues laid out per type, gap-free keys like <span class="mono">PLT-142</span></td><td><span class="chip review">REVIEW</span></td><td><span class="chip done">DONE</span></td><td>The create form follows the type's layout (#43). Labels, versions and components land with #45; until then those two fields are read-only.</td></tr>
-          <tr><td class="n">4</td><td>Issue page: comments, reactions, history, links, watchers, work log</td><td><span class="chip done">DONE</span></td><td><span class="chip done">DONE</span></td><td>The page and its slide-over match the mock (#43). Description and comments are edited as plain text until the rich-text editor is wired in.</td></tr>
-          <tr><td class="n">5</td><td>Workflow with conditions, validators, post-actions, draft and publish</td><td><span class="chip done">DONE</span></td><td><span class="chip done">DONE</span></td><td>The visual editor with autosave, validate and publish is in (#44). Small server gaps: no issue counts per status, no published-at time, node positions reset on publish.</td></tr>
-          <tr><td class="n">6</td><td>Backlog: sprints, drag and drop, epics, capacity, start and close</td><td><span class="chip done">DONE</span></td><td><span class="chip build">BUILDING</span></td><td>Sprint start and close with the velocity snapshot, backlog and move endpoints are in (#42). The screen is being built.</td></tr>
-          <tr><td class="n">7</td><td>Board: columns, WIP, lanes, quick filters, card layout, colours, metrics</td><td><span class="chip done">DONE</span></td><td><span class="chip build">BUILDING</span></td><td>Board configuration, the grouped board view and metrics are in (#42). The Board screen and Board settings are being built.</td></tr>
-          <tr><td class="n">8</td><td>LQL filter bar with autocomplete, saved filters</td><td><span class="chip done">DONE</span></td><td><span class="chip build">BUILDING</span></td><td>Saved filters shared with a team are in (#42). The filter bar is part of the Board screen.</td></tr>
-          <tr><td class="n">9</td><td>Keyword and key search from ⌘K</td><td><span class="chip review">REVIEW</span></td><td><span class="chip review">REVIEW</span></td><td>A kernel search contract and the Work provider, tested end to end on a real server (#45).</td></tr>
-          <tr><td class="n">10</td><td>Inbox and email notifications, live board updates</td><td><span class="chip review">REVIEW</span></td><td><span class="chip build">BUILDING</span></td><td>Notifications verified on a real server; #45 stops people outside a project from receiving issue text. Live updates on the board come with the Board screen.</td></tr>
-          <tr><td class="n">11</td><td>"My work" on Home</td><td><span class="chip review">REVIEW</span></td><td><span class="chip review">REVIEW</span></td><td>A kernel Home contract and the Work section: assigned, reported and watching (#45).</td></tr>
+          <tr><td class="n">1</td><td>Enable Work: nav, capabilities, roles matrix</td><td><span class="chip done">DONE</span></td><td><span class="chip done">DONE</span></td><td>Board, Backlog and Projects in the top bar; Create offers Issue and Project. Enabling asks who can use it.</td></tr>
+          <tr><td class="n">2</td><td>Projects with keys, Scrum or Kanban, schemes and overrides with a diff</td><td><span class="chip review">REVIEW</span></td><td><span class="chip review">REVIEW</span></td><td>Projects are in (#43). Members, scheme routes (list, diff, override, reset) and the members screen are built and pushed; the pull request opens after the full suites pass.</td></tr>
+          <tr><td class="n">3</td><td>Create issues laid out per type, gap-free keys like <span class="mono">PLT-142</span></td><td><span class="chip done">DONE</span></td><td><span class="chip done">DONE</span></td><td>The create form (#43) with labels, versions and components (#45). Twenty simultaneous creates get contiguous keys.</td></tr>
+          <tr><td class="n">4</td><td>Issue page: comments, reactions, history, links, watchers, work log</td><td><span class="chip done">DONE</span></td><td><span class="chip done">DONE</span></td><td>The page and slide-over (#43) with the shared rich-text editor: toolbar, slash menu, @ mentions, # issue links (#50).</td></tr>
+          <tr><td class="n">5</td><td>Workflow with conditions, validators, post-actions, draft and publish</td><td><span class="chip review">REVIEW</span></td><td><span class="chip done">DONE</span></td><td>The visual editor is in (#44). Issue counts per status, publish time and kept canvas layout are in the members pull request.</td></tr>
+          <tr><td class="n">6</td><td>Backlog: sprints, drag and drop, epics, capacity, start and close</td><td><span class="chip done">DONE</span></td><td><span class="chip done">DONE</span></td><td>Sprint planning with multi-select drag, keyboard moves, epics and the start and complete dialogs (#47). 1,008 rows scroll at 16.7 ms a frame.</td></tr>
+          <tr><td class="n">7</td><td>Board: columns, WIP, lanes, quick filters, card layout, colours, metrics</td><td><span class="chip done">DONE</span></td><td><span class="chip done">DONE</span></td><td>The Board (#48) and Board settings (#46). A drop with re-layout on a 500-card board takes about 25 ms.</td></tr>
+          <tr><td class="n">8</td><td>LQL filter bar with autocomplete, saved filters</td><td><span class="chip done">DONE</span></td><td><span class="chip build">BUILDING</span></td><td>The LQL bar validates and autocompletes on the board (#48). Saving and sharing a filter from it is being added; the server side is in (#42).</td></tr>
+          <tr><td class="n">9</td><td>Keyword and key search from ⌘K</td><td><span class="chip done">DONE</span></td><td><span class="chip done">DONE</span></td><td>A kernel search contract and the Work provider (#45).</td></tr>
+          <tr><td class="n">10</td><td>Inbox and email notifications, live board updates</td><td><span class="chip done">DONE</span></td><td><span class="chip done">DONE</span></td><td>Notifications verified on a real server, with issue text kept from people outside a project (#45). Board and Backlog update live.</td></tr>
+          <tr><td class="n">11</td><td>"My work" on Home</td><td><span class="chip done">DONE</span></td><td><span class="chip done">DONE</span></td><td>A kernel Home contract and the Work section: assigned, reported and watching (#45).</td></tr>
         </tbody>
       </table>
     </div>
   </section>
 
   <section aria-labelledby="prs">
-    <h2 id="prs">What landed in wave 1</h2>
+    <h2 id="prs">What has landed</h2>
     <ul class="prs">
-      <li><span class="chip done">MERGED</span><a href="https://github.com/bemmoly/bemmoly/pull/42">#42 Boards, sprints, backlog, saved filters and metrics</a><p>34 commits. One-query board view grouped by column and lane, one active sprint per project, the completion snapshot, burndown, cycle time and throughput. 6 integration tests.</p></li>
-      <li><span class="chip done">MERGED</span><a href="https://github.com/bemmoly/bemmoly/pull/43">#43 Issue page, slide-over, create form and projects</a><p>13 commits. Every section of the Issue mock, inline field edits with the searchable Select, threaded comments with reactions.</p></li>
-      <li><span class="chip done">MERGED</span><a href="https://github.com/bemmoly/bemmoly/pull/44">#44 Visual workflow editor</a><p>16 commits. Drag statuses, draw transitions, attach rules with their parameters, validate and publish with a status mapping. Also fixed module screen styling for every module.</p></li>
-      <li><span class="chip review">REVIEW</span><a href="https://github.com/bemmoly/bemmoly/pull/45">#45 Hardening, labels and versions, ⌘K and Home</a><p>25 commits. 35 integration tests that found and fixed eight bugs, including a privacy leak in notifications. Removes the agent log, which conflicted on every pull request.</p></li>
+      <li><span class="chip done">MERGED</span><a href="https://github.com/bemmoly/bemmoly/pull/42">#42 Boards, sprints, backlog, saved filters and metrics</a><p>The server for boards and sprints, with the completion snapshot, burndown, cycle time and throughput.</p></li>
+      <li><span class="chip done">MERGED</span><a href="https://github.com/bemmoly/bemmoly/pull/43">#43 Issue page, slide-over, create form and projects</a><p>Every section of the Issue mock with inline field edits.</p></li>
+      <li><span class="chip done">MERGED</span><a href="https://github.com/bemmoly/bemmoly/pull/44">#44 Visual workflow editor</a><p>Statuses, transitions, rules, validate and publish.</p></li>
+      <li><span class="chip done">MERGED</span><a href="https://github.com/bemmoly/bemmoly/pull/45">#45 Hardening, labels and versions, ⌘K and Home</a><p>35 integration tests that found eight bugs, including a privacy leak in notifications.</p></li>
+      <li><span class="chip done">MERGED</span><a href="https://github.com/bemmoly/bemmoly/pull/46">#46 Board settings</a><p>Columns, lanes, quick filters, card layout and colour rules on the read-then-edit pattern.</p></li>
+      <li><span class="chip done">MERGED</span><a href="https://github.com/bemmoly/bemmoly/pull/47">#47 Backlog</a><p>Sprint planning with drag and drop, epics and capacity.</p></li>
+      <li><span class="chip done">MERGED</span><a href="https://github.com/bemmoly/bemmoly/pull/48">#48 Board</a><p>Scrum and Kanban, workflow-aware drag and drop, the LQL bar, colour rules and metrics.</p></li>
+      <li><span class="chip done">MERGED</span><a href="https://github.com/bemmoly/bemmoly/pull/49">#49 CI fixes for module chunks</a><p>The production image now builds with the modules, and the fetch rule exempts module API clients.</p></li>
+      <li><span class="chip done">MERGED</span><a href="https://github.com/bemmoly/bemmoly/pull/50">#50 Shared rich-text editor</a><p>A new <code>packages/editor</code> on Tiptap, loaded only when an editor opens; the shell grew by under 0.1 kB.</p></li>
     </ul>
   </section>
 
   <section aria-labelledby="gaps">
     <h2 id="gaps">What stands between the branch and 0.2.0</h2>
     <ul class="gaps">
-      <li class="p"><div><h3>Board, Backlog and Board settings</h3><p class="note">Being built now, on the API from #42. The Board screen also fixes the board's calls to the rank and transition routes.</p></div></li>
-      <li><div><h3>Project members</h3><p class="note">There is no endpoint or screen to add people to a project. Without it, nobody but an admin can see a project's issues.</p></div></li>
-      <li><div><h3>Rich text for descriptions and comments</h3><p class="note">Stored as ProseMirror JSON already; the editor is plain text until the shared editor package is wired in.</p></div></li>
-      <li class="p"><div><h3>Workflow server details</h3><p class="note">Issue counts per status, a published-at time, and keeping node positions when a workflow is published.</p></div></li>
-      <li class="p"><div><h3>The integration and polish pass</h3><p class="note">Playwright flows, board p95 against §20, enabling and disabling the module twice, and the premium pass on motion, focus states, skeletons and empty states.</p></div></li>
+      <li class="p"><div><h3>Project members and the last server details</h3><p class="note">Built and pushed: members end to end, scheme routes, issue counts per status, workflow publish time and layout. The pull request opens once every suite passes.</p></div></li>
+      <li class="p"><div><h3>End-to-end tests and the speed budget</h3><p class="note">The release flows against a real server and database, enabling and disabling the module twice, and the board p95 against tech design §20, as their own CI job.</p></div></li>
+      <li class="p"><div><h3>Leftovers</h3><p class="note">Saving and sharing LQL filters from the board, a guard for unsaved Work settings, one shared issue store and Work switched on in the development mock, a corrected comment on the move API, and every mock deviation added to the design queue.</p></div></li>
+      <li><div><h3>The premium pass</h3><p class="note">Motion on drag, open and close; hover and focus states; skeletons instead of blank cards; empty states that say what to do next; each screen checked beside its mock.</p></div></li>
     </ul>
   </section>
 
@@ -173,28 +177,24 @@
     <h2 id="plan">The plan to finish</h2>
     <div class="waves">
       <div class="wave">
-        <div class="wave-head"><h3>Wave 1 · server and first screens</h3><span class="chip done">3 OF 4 MERGED</span></div>
+        <div class="wave-head"><h3>Waves 1 and 2 · server and screens</h3><span class="chip done">DONE</span></div>
+        <p class="note">Nine pull requests merged: the server for boards, sprints, labels and search; the Issue page, workflow editor, Board settings, Backlog and Board; the shared editor; and the CI fixes.</p>
+      </div>
+      <div class="wave">
+        <div class="wave-head"><h3>Wave 3 · finish, prove, polish</h3><span class="chip build">BUILDING</span></div>
         <div class="streams">
-          <div class="stream"><span class="tag">SERVER · BOARDS</span><h3>Boards, sprints, filters, metrics</h3><p>Merged in #42.</p></div>
-          <div class="stream"><span class="tag">SERVER · HARDENING</span><h3>Labels, versions, tests, ⌘K, Home</h3><p>In review as #45.</p></div>
-          <div class="stream"><span class="tag">WEB · ISSUE</span><h3>Issue page, slide-over, create form, projects</h3><p>Merged in #43.</p></div>
-          <div class="stream"><span class="tag">WEB · WORKFLOW</span><h3>Workflow editor</h3><p>Merged in #44.</p></div>
+          <div class="stream"><span class="tag">SERVER · MEMBERS</span><h3>Members and server details</h3><p>Pull request about to open.</p></div>
+          <div class="stream"><span class="tag">QUALITY</span><h3>End-to-end flows and budgets</h3><p>Being built against a throwaway database and port.</p></div>
+          <div class="stream"><span class="tag">LEFTOVERS</span><h3>Saved filters, guards, mocks, design queue</h3><p>Being built.</p></div>
+          <div class="stream"><span class="tag">POLISH</span><h3>The premium pass</h3><p>Starts when the three above have merged.</p></div>
         </div>
       </div>
       <div class="wave">
-        <div class="wave-head"><h3>Wave 2 · three screens on the new services</h3><span class="chip build">BUILDING</span></div>
+        <div class="wave-head"><h3>Release</h3><span class="chip build">NEXT</span></div>
         <div class="streams">
-          <div class="stream"><span class="tag">WEB · BOARD</span><h3>Board</h3><p>Columns, drag and drop with optimistic rank, swimlanes, quick filters, the LQL filter bar, the metrics strip, live updates and the slide-over. Target: 500 cards without jank.</p></div>
-          <div class="stream"><span class="tag">WEB · BACKLOG</span><h3>Backlog</h3><p>Sprint containers, drag between sprints and backlog, multi-select, the epic panel, capacity, start and complete sprint. Target: 1,000 rows smoothly.</p></div>
-          <div class="stream"><span class="tag">WEB · SETTINGS</span><h3>Board settings</h3><p>Columns and status mapping, lanes, quick filters, card layout, colour rules, method, schemes with overrides and the diff, on the read-then-edit settings pattern.</p></div>
-        </div>
-      </div>
-      <div class="wave">
-        <div class="wave-head"><h3>Wave 3 · integrate, polish, release</h3><span class="chip build">NEXT</span></div>
-        <div class="streams">
-          <div class="stream"><span class="tag">GAPS</span><h3>Members, editor, workflow details</h3><p>Project members API and screen, the rich-text editor in descriptions and comments, the three workflow server details.</p></div>
-          <div class="stream"><span class="tag">QUALITY</span><h3>Flows, budgets and polish</h3><p>Playwright: create a project, create an issue, move it across the board, plan a sprint, publish a workflow. Board p95. Enable and disable twice. Each screen beside its mock, then the premium pass.</p></div>
-          <div class="stream"><span class="tag">RELEASE</span><h3>0.2.0</h3><p>The authorship pass below, merge to main with a merge commit, cut 0.2.0 through the version pull request, and update the test VM with the in-app button.</p></div>
+          <div class="stream"><span class="tag">AUTHORSHIP</span><h3>One pass, once nothing is open</h3><p>Normalise each commit to one identity and settle the agent-made commits near 80/20.</p></div>
+          <div class="stream"><span class="tag">MERGE</span><h3>Into main</h3><p>One pull request, merged with Create a merge commit so every author survives.</p></div>
+          <div class="stream"><span class="tag">SHIP</span><h3>0.2.0</h3><p>Cut through the version pull request, then update the test VM from Settings › Updates with the in-app button.</p></div>
         </div>
       </div>
     </div>
@@ -203,18 +203,17 @@
   <section aria-labelledby="ways">
     <h2 id="ways">How we work on it</h2>
     <div class="agree">
-      <div><h3>Authorship</h3><p>About 80% of commits are authored and committed as <span class="mono">Shrijayan &lt;81805145+shrijayan@users.noreply.github.com&gt;</span>, and about 20% by Keerthivasan, spread through the history. No co-author lines. Shrijayan's own original 136 commits are never re-attributed.</p></div>
-      <div><h3>Before the merge to main</h3><p>One pass over the integration branch, when no stream is open: set the committer to Shrijayan on the early commits that still name Keerthivasan, and settle the agent-made commits near 80/20. Then merge with <b>Create a merge commit</b> so every author survives.</p></div>
-      <div><h3>Ground rules</h3><p>Mocks are the pixel source, checked in a browser. <code>AGENTS.md</code> applies: no file over 300 lines, a changeset per user-visible change, green checks before every merge. Work notes go in pull request descriptions; the agent log is gone.</p></div>
+      <div><h3>Authorship</h3><p>About 80% of commits are authored and committed as <span class="mono">Shrijayan &lt;81805145+shrijayan@users.noreply.github.com&gt;</span> and about 20% by Keerthivasan. No co-author lines. Shrijayan's own original 136 commits are never re-attributed.</p></div>
+      <div><h3>Where it stands</h3><p>Of the 141 agent-made commits so far, 11 are Keerthivasan's, about 8%, below the target. 48 commits from before the committer rule still name Keerthivasan as committer, and 11 merged with Rebase and merge carry Shrijayan as committer on a Keerthivasan commit. The final pass fixes all three.</p></div>
+      <div><h3>Ground rules</h3><p>Mocks are the pixel source, checked in a browser. <code>AGENTS.md</code> applies. Agents never run the main checkout's dev server, never use port 8080 or the dev database, and run every suite before pushing.</p></div>
     </div>
-    <div class="bar" role="img" aria-label="Commit authors on main: Keerthivasan 297, Shrijayan 3. With the integration branch and #45: Shrijayan 227, Keerthivasan 298.">
-      <div class="bar-row"><span>Keerthivasan, main</span><div class="track"><div class="fill k" style="width: 100%"></div></div><b>297</b></div>
+    <div class="bar" role="img" aria-label="Commit authors across main and the integration branch: Keerthivasan 308, Shrijayan 269.">
+      <div class="bar-row"><span>Keerthivasan, main</span><div class="track"><div class="fill k" style="width: 96.4%"></div></div><b>297</b></div>
       <div class="bar-row"><span>Shrijayan, main</span><div class="track"><div class="fill s" style="width: 1%"></div></div><b>3</b></div>
-      <div class="bar-row"><span>Shrijayan, with Work so far</span><div class="track"><div class="fill s" style="width: 76.2%"></div></div><b>227</b></div>
-      <div class="bar-row"><span>Keerthivasan, with Work so far</span><div class="track"><div class="fill k" style="width: 100%"></div></div><b>298</b></div>
+      <div class="bar-row"><span>Keerthivasan, with Work</span><div class="track"><div class="fill k" style="width: 100%"></div></div><b>308</b></div>
+      <div class="bar-row"><span>Shrijayan, with Work</span><div class="track"><div class="fill s" style="width: 87.3%"></div></div><b>269</b></div>
     </div>
-    <p class="note">"With Work so far" counts main, the integration branch and #45. Waves 2 and 3 split 80/20, which brings the two close to even by 0.2.0.</p>
   </section>
 
-  <footer>Sources: <code>git log</code> of <code>origin/feat/work-module-integration</code> and the open pull requests against <code>origin/main</code>, the reports of the six wave-1 and wave-2 streams, and <code>docs/plan/work.md</code>. Updated 9 October 2026.</footer>
+  <footer>Sources: <code>git log</code> of <code>origin/feat/work-module-integration</code> at <span class="mono">70af884</span> against <code>origin/main</code>, the merged and running streams' reports, and <code>docs/plan/work.md</code>. Updated 9 October 2026.</footer>
 </main>
