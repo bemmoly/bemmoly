@@ -1,5 +1,13 @@
 # @bemmoly/core
 
+## 0.1.6
+
+### Patch Changes
+
+- a13da15: Fix people behind one shared address (an office network) being locked out with "This page did not load". The web app reads the setup status on every page load, and that read counted against the strict sign-in limit of ten requests a minute per address. It now counts against the ordinary per-person budget; creating the first admin stays strictly limited.
+- @bemmoly/shared@0.1.6
+  - @bemmoly/ui@0.1.6
+
 ## 0.1.5
 
 ### Patch Changes
