@@ -71,8 +71,11 @@ export function IssueSlideOver({ issueKey, onClose, variant = 'docked' }: IssueS
         )
       }
     >
-      {/* Links inside the panel stay in the page, as the shell's own links do. */}
-      <div className="contents" onClick={keepLinksInApp}>
+      {/*
+       * Links inside the panel stay in the page, as the shell's own links do. A block of its own
+       * keeps the clipped cards from shrinking inside the drawer's scrolling column.
+       */}
+      <div className="flex flex-col gap-4.5" onClick={keepLinksInApp}>
         {query.isPending && (
           <div aria-busy className="flex flex-col gap-4">
             <Skeleton height={24} width="70%" />
