@@ -22,6 +22,7 @@ describe('work module', () => {
           placement: 'create',
         },
       ],
+      search: [{ kind: 'work.issue', label: 'Issues' }],
     });
     expect(work.defaultAccess).toBe('teams');
   });
