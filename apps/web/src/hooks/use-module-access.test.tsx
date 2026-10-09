@@ -8,6 +8,15 @@ import { grantLabel, moduleLabel, useModuleAccess } from './use-module-access.ts
 describe('module access editor', () => {
   it('names modules and grants in plain words', () => {
     expect(moduleLabel('sample', [])).toBe('Sample');
+    const work = {
+      id: 'work',
+      version: '0.2.0',
+      navigation: [{ id: 'work.board', label: 'Board', path: '/work/board', placement: 'top' }],
+    } as const;
+    expect(moduleLabel('work', [{ ...work, navigation: [...work.navigation] }])).toBe('Work');
+    expect(moduleLabel('work', [{ ...work, name: 'Work items', navigation: [] }])).toBe(
+      'Work items',
+    );
     const names = {
       teams: new Map([[TEAM_IDS.mobile, 'Mobile']]),
       roles: new Map<string, string>(),
