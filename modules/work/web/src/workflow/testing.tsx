@@ -115,7 +115,11 @@ function draftOf(): EditorDraft {
   if (backend.draft) return backend.draft;
   const { statuses, transitions } = backend.workflow;
   return {
-    statuses: statuses.map(({ workflowId: _, color: __, ...status }) => status),
+    statuses: statuses.map(({ workflowId: _, color: __, x, y, ...status }) => ({
+      ...status,
+      ...(x != null ? { x } : {}),
+      ...(y != null ? { y } : {}),
+    })),
     transitions: transitions.map(({ workflowId: _, ...transition }) => transition),
   };
 }
