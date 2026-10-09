@@ -54,6 +54,7 @@ describe('buildApp', () => {
               placement: 'create',
             },
           ],
+          search: [{ kind: 'docs.page', label: 'Pages' }],
         },
         {
           id: 'sample',

@@ -1,6 +1,7 @@
 import type { DocsServiceDeps } from './common.ts';
 import { createHomeService } from './home/index.ts';
 import { createPagesService } from './pages/index.ts';
+import { createSearchService } from './search/index.ts';
 import { createSpacesService } from './spaces/index.ts';
 import { createStarsLabelsService } from './stars-labels/index.ts';
 import { createStatusService } from './status/index.ts';
@@ -23,6 +24,7 @@ export function createDocsServices(deps: DocsServiceDeps) {
     starsLabels: createStarsLabelsService(deps),
     templates: createTemplatesService({ ...deps, pages }),
     home: createHomeService(deps),
+    search: createSearchService(deps),
   };
 }
 

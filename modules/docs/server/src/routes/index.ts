@@ -2,6 +2,7 @@ import type { FastifyPluginAsync } from 'fastify';
 import type { DocsControllers } from '../controllers/index.ts';
 import { libraryRoutes } from './library.routes.ts';
 import { pagesRoutes } from './pages.routes.ts';
+import { searchRoutes } from './search.routes.ts';
 import { spacesRoutes } from './spaces.routes.ts';
 import { treeRoutes } from './tree.routes.ts';
 
@@ -15,5 +16,6 @@ export function docsRoutes(controllers: DocsControllers): FastifyPluginAsync {
     await app.register(pagesRoutes(controllers.pages));
     await app.register(treeRoutes(controllers.tree));
     await app.register(libraryRoutes(controllers.library));
+    await app.register(searchRoutes(controllers.search));
   };
 }

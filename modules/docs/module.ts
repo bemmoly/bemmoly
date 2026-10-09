@@ -4,6 +4,7 @@ import { defineDocsSettings } from './server/src/config/settings.ts';
 import { createDocsControllers } from './server/src/controllers/index.ts';
 import { docsRoutes } from './server/src/routes/index.ts';
 import { createDocsServices } from './server/src/services/index.ts';
+import { registerDocsSearch } from './server/src/services/palette/index.ts';
 
 /**
  * Spaces, page trees, templates and the collaborative editor. Off until an
@@ -40,6 +41,7 @@ export default defineModule({
       ...(ctx.audit ? { audit: ctx.audit } : {}),
       ...(ctx.memberships ? { memberships: ctx.memberships } : {}),
     });
+    registerDocsSearch(ctx.search, services.search);
     ctx.routes.add({ prefix: '/docs', plugin: docsRoutes(createDocsControllers(services)) });
   },
 });

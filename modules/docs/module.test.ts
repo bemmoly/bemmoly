@@ -21,6 +21,7 @@ describe('docs module', () => {
           placement: 'create',
         },
       ],
+      search: [{ kind: 'docs.page', label: 'Pages' }],
     });
     expect(docs.defaultAccess).toBe('teams');
   });
