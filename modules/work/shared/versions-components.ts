@@ -2,6 +2,7 @@ import { keysetPageSchema, keysetQuerySchema, listSchema, timestampSchema } from
 import { z } from 'zod';
 import { shortNameSchema } from './common.ts';
 import { versionStatusSchema } from './enums.ts';
+import { namePrefixSchema } from './links-labels.ts';
 
 export const versionSchema = z.object({
   id: z.uuid(),
@@ -56,12 +57,15 @@ export const updateComponentBodySchema = z
 
 export const versionsResponseSchema = listSchema(versionSchema);
 export const componentsResponseSchema = listSchema(componentSchema);
-/** Pages by id; a page is a superset of the plain list. */
+/** Pages by name, then id; `q` keeps the names that start with it, as pickers ask. */
 export const listVersionsQuerySchema = keysetQuerySchema.extend({
+  q: namePrefixSchema.optional(),
   status: versionStatusSchema.optional(),
 });
 export const versionsPageSchema = keysetPageSchema(versionSchema);
-export const listComponentsQuerySchema = keysetQuerySchema;
+export const listComponentsQuerySchema = keysetQuerySchema.extend({
+  q: namePrefixSchema.optional(),
+});
 export const componentsPageSchema = keysetPageSchema(componentSchema);
 export type ListVersionsQuery = z.infer<typeof listVersionsQuerySchema>;
 export type VersionsPage = z.infer<typeof versionsPageSchema>;
