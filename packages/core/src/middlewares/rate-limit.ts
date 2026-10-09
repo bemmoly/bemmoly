@@ -74,6 +74,14 @@ function rateLimited(ttlMs: number): RateLimitedError {
 /** Anonymous by design, so budgeted per IP: sign-in, setup and email unsubscribe links. */
 const STRICT_PATHS = ['/auth/', '/setup/', '/email-unsubscriptions'];
 
+/**
+ * Anonymous reads the web app makes on every page load, before it knows who is
+ * signed in. Under the strict budget, ten page loads a minute from one address
+ * (an office behind one NAT) locked everyone there out; they share the
+ * per-person budget instead, which counts them per IP until someone signs in.
+ */
+const BOOT_READS = ['/setup/status'];
+
 function actorKey(request: FastifyRequest): string {
   const actor = request.actor ?? null;
   if (actor) return `user:${actor.kind === 'user' ? actor.id : (actor.userId ?? actor.id)}`;
@@ -136,7 +144,10 @@ export const rateLimiting = fp<RateLimitingOptions>(
       if (route.config.rateLimit !== undefined) return;
       if (!path) {
         route.config.rateLimit = false;
-      } else if (STRICT_PATHS.some((prefix) => path.startsWith(prefix))) {
+      } else if (
+        !(method === 'GET' && BOOT_READS.includes(path)) &&
+        STRICT_PATHS.some((prefix) => path.startsWith(prefix))
+      ) {
         route.config.rateLimit = {
           max: strict.max,
           timeWindow: strict.windowMs,

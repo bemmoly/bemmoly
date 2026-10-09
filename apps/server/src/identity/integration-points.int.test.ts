@@ -113,4 +113,26 @@ describe('what email and notifications build on, against a real database', () =>
       await app.close();
     }
   });
+  it('keeps the boot read of setup status out of the strict per-IP budget', async (ctx) => {
+    if (!harness) return ctx.skip(skipReason);
+    const app = Fastify({ logger: false });
+    app.setErrorHandler(errorHandler);
+    await app.register(rateLimiting, {
+      sql: harness.identity.sql,
+      strictPerIp: { max: 2, windowMs: 60_000 },
+    });
+    app.get('/api/v1/setup/status', async () => ({ initialized: true }));
+    app.post('/api/v1/setup/admin', async () => ({ ok: true }));
+    try {
+      for (let load = 0; load < 5; load += 1) {
+        expect((await app.inject({ url: '/api/v1/setup/status' })).statusCode).toBe(200);
+      }
+      const create = () => app.inject({ method: 'POST', url: '/api/v1/setup/admin' });
+      expect((await create()).statusCode).toBe(200);
+      expect((await create()).statusCode).toBe(200);
+      expect((await create()).statusCode).toBe(429);
+    } finally {
+      await app.close();
+    }
+  });
 });
