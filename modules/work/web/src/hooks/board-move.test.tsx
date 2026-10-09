@@ -73,7 +73,7 @@ function setup() {
   if (!plan) throw new Error('no plan');
   const cached = () => client.getQueryData<BoardView>(workKeys.boardView(BOARD_ID, {}));
   const columnOf = () => cached()?.cards.find((entry) => entry.issueId === card.issueId)?.columnId;
-  return { hook, plan, columnOf };
+  return { client, hook, plan, columnOf };
 }
 
 describe('useBoardMove', () => {
@@ -97,6 +97,21 @@ describe('useBoardMove', () => {
     await waitFor(() => expect(calls).toHaveLength(2));
     expect(calls[0]).toBe(`status PLT-10 {"statusId":"${STATUS.doing}"}`);
     expect(calls[1]).toContain('"afterIssueId"');
+  });
+
+  it("forgets the issue's transitions once it moves, so the next pick-up reads the new status", async () => {
+    server.use(
+      http.patch('*/api/v1/work/issues/:key', () => HttpResponse.json(issue)),
+      http.patch('*/api/v1/work/issues/:key/rank', () => HttpResponse.json(issue)),
+      http.get('*/api/v1/work/boards/:id/view', () => HttpResponse.json(testView())),
+      http.get('*/api/v1/work/boards/:id/metrics', () => HttpResponse.json({})),
+    );
+    const { client, hook, plan } = setup();
+    client.setQueryData(workKeys.issueTransitions(plan.key), []);
+    act(() => hook.result.current.move(plan));
+    await waitFor(() =>
+      expect(client.getQueryState(workKeys.issueTransitions(plan.key))?.isInvalidated).toBe(true),
+    );
   });
 
   it('puts the card back and says why when the workflow refuses', async () => {
