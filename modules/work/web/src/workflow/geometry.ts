@@ -1,3 +1,4 @@
+import type { CanvasRegion } from '@bemmoly/ui';
 import { CANVAS, NODE, type DraftTransition, type EditorDraft } from './draft-model.ts';
 
 /** One transition as the canvas draws it: the path, and where its name sits, in canvas units. */
@@ -97,6 +98,34 @@ export function edgeShapes(draft: EditorDraft): EdgeShape[] {
     shapes.push({ id: transition.id, any: false, ...between(from, to, paired) });
   }
   return shapes;
+}
+
+/** How far an "Any →" hook and its label reach left of and above the status it points at. */
+const ANY_REACH = { left: 200, top: 72 };
+
+/**
+ * The box around every status and "Any →" label, in canvas units: what the
+ * canvas brings into view when the editor opens.
+ */
+export function contentBounds(draft: EditorDraft): CanvasRegion | undefined {
+  if (draft.statuses.length === 0) return undefined;
+  const box: CanvasRegion = { left: CANVAS.width, top: CANVAS.height, right: 0, bottom: 0 };
+  const take = (left: number, top: number, right: number, bottom: number) => {
+    box.left = Math.max(0, Math.min(box.left, left));
+    box.top = Math.max(0, Math.min(box.top, top));
+    box.right = Math.min(CANVAS.width, Math.max(box.right, right));
+    box.bottom = Math.min(CANVAS.height, Math.max(box.bottom, bottom));
+  };
+  const { halfWidth: w, halfHeight: h } = NODE;
+  for (const status of draft.statuses) {
+    const at = point(draft, status.id);
+    if (at) take(at.x - w, at.y - h, at.x + w, at.y + h);
+  }
+  for (const transition of draft.transitions) {
+    const to = transition.fromStatusId === null ? point(draft, transition.toStatusId) : undefined;
+    if (to) take(to.x - ANY_REACH.left, to.y - ANY_REACH.top, to.x, to.y);
+  }
+  return box;
 }
 
 /** Canvas units to the percentages the nodes and labels are placed with. */

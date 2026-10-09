@@ -1,4 +1,4 @@
-import type { HTMLAttributes, ReactNode, Ref } from 'react';
+import type { HTMLAttributes, ReactNode } from 'react';
 import { Icon } from '../../icons/icon.tsx';
 import { cx } from '../../lib/cx.ts';
 import { focusRing } from '../../lib/focus.ts';
@@ -91,97 +91,6 @@ export function TransitionLabel({
       className={classes}
       {...rest}
     />
-  );
-}
-
-export interface WorkflowCanvasProps extends HTMLAttributes<HTMLDivElement> {
-  /** Names the canvas, e.g. "Software workflow". */
-  label: string;
-  /** The canvas units the edge paths are drawn in; the mock uses 1000 x 560. */
-  width?: number;
-  height?: number;
-  /** TransitionEdges, drawn under the nodes. */
-  edges?: ReactNode;
-  /** StatusNodes and TransitionLabels, positioned in percentages. */
-  children: ReactNode;
-  /** The surface's box, which an editor measures to turn pointer pixels into canvas units. */
-  ref?: Ref<HTMLDivElement>;
-}
-
-/**
- * The 560px workflow surface: an 8px card with a 20px dot grid in br, the edges in one SVG that
- * stretches to the box, the nodes and labels absolutely placed over it.
- */
-export function WorkflowCanvas({
-  label,
-  width = 1000,
-  height = 560,
-  edges,
-  children,
-  className,
-  style,
-  ...rest
-}: WorkflowCanvasProps) {
-  return (
-    <div
-      role="group"
-      aria-label={label}
-      style={{
-        backgroundImage: 'radial-gradient(var(--br) 1px, transparent 1px)',
-        backgroundSize: '20px 20px',
-        ...style,
-      }}
-      className={cx(
-        'relative h-140 min-w-250 overflow-hidden rounded-card border border-br bg-sf',
-        className,
-      )}
-      {...rest}
-    >
-      <svg
-        aria-hidden
-        className="pointer-events-none absolute inset-0 size-full"
-        viewBox={`0 0 ${width} ${height}`}
-        preserveAspectRatio="none"
-      >
-        <defs>
-          <marker
-            id="workflow-arrow"
-            viewBox="0 0 10 10"
-            refX="9"
-            refY="5"
-            markerWidth="8"
-            markerHeight="8"
-            orient="auto-start-reverse"
-          >
-            <path d="M0 0L10 5L0 10z" className="fill-tx5" />
-          </marker>
-          <marker
-            id="workflow-arrow-ac"
-            viewBox="0 0 10 10"
-            refX="9"
-            refY="5"
-            markerWidth="8"
-            markerHeight="8"
-            orient="auto-start-reverse"
-          >
-            <path d="M0 0L10 5L0 10z" className="fill-ac" />
-          </marker>
-          <marker
-            id="workflow-arrow-danger"
-            viewBox="0 0 10 10"
-            refX="9"
-            refY="5"
-            markerWidth="8"
-            markerHeight="8"
-            orient="auto-start-reverse"
-          >
-            <path d="M0 0L10 5L0 10z" className="fill-danger" />
-          </marker>
-        </defs>
-        {edges}
-      </svg>
-      {children}
-    </div>
   );
 }
 
