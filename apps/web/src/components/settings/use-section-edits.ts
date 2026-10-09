@@ -1,5 +1,5 @@
 import type { SettingsSectionMode, UnsavedChangesBarProps } from '@bemmoly/ui';
-import { useBlocker } from '@tanstack/react-router';
+import { useLeaveGuard } from '@bemmoly/core-web';
 import { useState } from 'react';
 
 export interface SectionSpec {
@@ -31,12 +31,8 @@ export function useSectionEdits<Id extends string>(sections: Record<Id, SectionS
     setOpen([]);
   };
 
-  const blocker = useBlocker({
-    shouldBlockFn: ({ current, next }) => unsaved.length > 0 && current.pathname !== next.pathname,
-    enableBeforeUnload: () => unsaved.length > 0,
-    withResolver: true,
-  });
-  const leaving = blocker.status === 'blocked';
+  const guard = useLeaveGuard({ when: unsaved.length > 0 });
+  const leaving = guard.blocked;
 
   const bar: UnsavedChangesBarProps = {
     sections:
@@ -45,10 +41,10 @@ export function useSectionEdits<Id extends string>(sections: Record<Id, SectionS
         : [],
     leaving,
     onDiscardAll: discardAll,
-    onStay: () => blocker.reset?.(),
+    onStay: guard.stay,
     onLeave: () => {
       discardAll();
-      blocker.proceed?.();
+      guard.leave();
     },
   };
 
