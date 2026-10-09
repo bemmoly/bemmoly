@@ -8,6 +8,7 @@ import type {
 import { createBacklogService } from './backlog/index.ts';
 import { createBoardsService } from './boards/index.ts';
 import { createCommentsService } from './comments/index.ts';
+import { createComponentsService } from './components/index.ts';
 import { createFieldsService } from './fields/index.ts';
 import { createFiltersService } from './filters/index.ts';
 import { createHistoryService } from './history/index.ts';
@@ -54,6 +55,7 @@ export function createWorkServices(deps: WorkServiceDeps) {
     fields: createFieldsService(deps),
     labels: createLabelsService(deps),
     versions: createVersionsService(deps),
+    components: createComponentsService(deps),
     issues: createIssuesService(issueDeps),
     comments: createCommentsService(issueDeps),
     links: createLinksService(issueDeps),
