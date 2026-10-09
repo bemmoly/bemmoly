@@ -6,6 +6,7 @@ import { createIssuesController } from './issues.controller.ts';
 import { createLqlController } from './lql.controller.ts';
 import { createMetricsController } from './metrics.controller.ts';
 import { createProjectsController } from './projects.controller.ts';
+import { createSprintsController } from './sprints.controller.ts';
 import { createTypesController } from './types.controller.ts';
 import { createWorkflowController } from './workflow.controller.ts';
 
@@ -20,6 +21,7 @@ export function createWorkControllers(services: WorkServices) {
     workflow: createWorkflowController(services.workflow),
     lql: createLqlController(services.lql),
     boards: createBoardsController(services.boards),
+    sprints: createSprintsController(services.sprints),
     metrics: createMetricsController(services.metrics),
   };
 }
