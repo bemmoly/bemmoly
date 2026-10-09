@@ -1,4 +1,5 @@
 import { trace } from '@opentelemetry/api';
+import { performance } from 'node:perf_hooks';
 import { describe, expect, it, vi } from 'vitest';
 import type { SqlClient } from '../../clients/index.ts';
 import { aiTelemetrySettings } from './ai-telemetry.ts';
@@ -41,5 +42,12 @@ describe('tracing, off by default', () => {
   it('sends traces to the collector path under the configured base URL', () => {
     expect(tracesUrl('http://collector:4318')).toBe('http://collector:4318/v1/traces');
     expect(tracesUrl('http://collector:4318/')).toBe('http://collector:4318/v1/traces');
+  });
+
+  it('builds the traces URL in linear time from a hostile endpoint', () => {
+    const endpoint = `http://collector:4318${'/'.repeat(100_000)}x`;
+    const start = performance.now();
+    expect(tracesUrl(endpoint)).toBe(`${endpoint}/v1/traces`);
+    expect(performance.now() - start).toBeLessThan(50);
   });
 });

@@ -1,6 +1,7 @@
 import { ValidationError } from '@bemmoly/shared';
 import { createHmac, hkdfSync, timingSafeEqual } from 'node:crypto';
 import { z } from 'zod';
+import { trimTrailingSlashes } from '../../utils/slashes.ts';
 
 /** Who unsubscribes from what: a notification kind, or `digest` for the batched summary. */
 export interface UnsubscribeClaim {
@@ -70,7 +71,7 @@ export interface UnsubscribeLinks {
 }
 
 export function unsubscribeLinks(publicUrl: string, token: string): UnsubscribeLinks {
-  const base = publicUrl.replace(/\/+$/, '');
+  const base = trimTrailingSlashes(publicUrl);
   const query = `token=${encodeURIComponent(token)}`;
   return {
     pageUrl: `${base}/unsubscribe?${query}`,
