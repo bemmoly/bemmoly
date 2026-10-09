@@ -80,6 +80,7 @@ export function DetailsCard({ issue, size }: DetailsCardProps) {
             <PersonField
               label="Assignee"
               value={issue.assigneeId}
+              {...(issue.assignee ? { currentName: issue.assignee.name } : {})}
               onSave={(assigneeId) => save({ assigneeId }, 'The assignee')}
             />
           </FieldRow>
