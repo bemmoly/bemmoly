@@ -33,6 +33,13 @@ export const updateSavedFilterBodySchema = z
   })
   .partial();
 
+/** `GET /work/filters`: the filters the caller sees, optionally for one project (key or id). */
+export const listSavedFiltersQuerySchema = z.object({
+  projectId: z.string().trim().min(1).max(64).optional(),
+  /** "mine" are the caller's own, "shared" those other people shared with their teams. */
+  scope: z.enum(['all', 'mine', 'shared']).default('all'),
+});
+
 export const savedFiltersResponseSchema = listSchema(savedFilterSchema);
 
 /** `GET /work/issues/query`: a page of issues for an LQL query, scoped to a project when given. */
@@ -46,3 +53,4 @@ export type IssueQueryParams = z.infer<typeof issueQueryParamsSchema>;
 export type SavedFilter = z.infer<typeof savedFilterSchema>;
 export type CreateSavedFilterBody = z.input<typeof createSavedFilterBodySchema>;
 export type UpdateSavedFilterBody = z.infer<typeof updateSavedFilterBodySchema>;
+export type ListSavedFiltersQuery = z.infer<typeof listSavedFiltersQuerySchema>;
