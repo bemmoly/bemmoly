@@ -46,4 +46,4 @@ export const moveIssueBodySchema = rankIssueBodySchema;
 export type BacklogSprint = z.infer<typeof backlogSprintSchema>;
 export type EpicProgress = z.infer<typeof epicProgressSchema>;
 export type Backlog = z.infer<typeof backlogSchema>;
-export type MoveIssueBody = z.infer<typeof moveIssueBodySchema>;
+export type MoveIssueBody = z.input<typeof moveIssueBodySchema>;
