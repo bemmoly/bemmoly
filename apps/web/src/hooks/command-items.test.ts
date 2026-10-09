@@ -73,7 +73,7 @@ describe('paletteItems', () => {
             key: 'PLT-204',
             title: 'Session store migration',
             subtitle: 'In review',
-            href: '/work/issues/PLT-204',
+            href: '/work/issue/PLT-204',
             group: 'Issues',
           },
         ],
@@ -83,7 +83,7 @@ describe('paletteItems', () => {
       group: 'Issues',
       issueKey: 'PLT-204',
       title: 'Session store migration',
-      href: '/work/issues/PLT-204',
+      href: '/work/issue/PLT-204',
       fromServer: true,
     });
     expect(titles(items, 'People')).toEqual([]);
