@@ -60,6 +60,7 @@ describe('buildApp', () => {
               placement: 'create',
             },
           ],
+          search: [{ kind: 'work.issue', label: 'Issues' }],
         },
       ],
     });
