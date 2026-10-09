@@ -4,6 +4,9 @@ import type { Issue } from '../../../../shared/issues.ts';
 import type { Project } from '../../../../shared/projects.ts';
 import { startWorkHarness, type HarnessStart, type WorkHarness } from '../int-support.ts';
 
+/** The diff path of the first column's WIP limit. */
+const FIRST_COLUMN_WIP = ['columns', 0, 'wipLimit'].join('.');
+
 describe('project schemes against Postgres', () => {
   let start: HarnessStart;
   let work: WorkHarness;
@@ -117,9 +120,7 @@ describe('project schemes against Postgres', () => {
       config: { ...board!.config, columns },
     });
     const diff = await work.services.schemes.diff(admin(), project.key, 'board');
-    expect(diff.entries).toMatchObject([
-      { key: ['columns', 0, 'wipLimit'].join('.'), change: 'changed', after: 3 },
-    ]);
+    expect(diff.entries).toMatchObject([{ key: FIRST_COLUMN_WIP, change: 'changed', after: 3 }]);
     expect(await status('board')).toMatchObject({ overridden: true, overrideCount: 1 });
     await work.services.schemes.reset(admin(), project.key, 'board');
     expect(await status('board')).toMatchObject({ overridden: false, overrideCount: 0 });
