@@ -28,8 +28,8 @@ import type { BoardTabProps } from './tab-props.ts';
 
 export interface BoardSettingsPageProps {
   projectKey: string | undefined;
-  /** The settings sidebar; page moves go through `guard` so unsaved drafts are asked about. */
-  nav: (guard: (go: () => void) => void) => ReactNode;
+  /** The settings sidebar; the shell's leave guard asks about unsaved drafts on a move. */
+  nav: ReactNode;
 }
 
 /**
@@ -67,7 +67,7 @@ export function BoardSettingsPage({ projectKey, nav }: BoardSettingsPageProps) {
   const project = settings.project;
   const schemeName = settings.orgBoard?.name ?? 'the org default';
   const frame = (content: ReactNode, aside?: ReactNode) => (
-    <SettingsFrame nav={nav(edits.guard)} aside={aside}>
+    <SettingsFrame nav={nav} aside={aside}>
       <SettingsContent width="narrow">{content}</SettingsContent>
     </SettingsFrame>
   );

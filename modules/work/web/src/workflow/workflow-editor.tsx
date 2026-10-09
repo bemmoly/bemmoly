@@ -2,6 +2,7 @@ import { ConfirmChange, EmptyState, Skeleton, useToast } from '@bemmoly/ui';
 import { useMemo, useState } from 'react';
 import type { Project } from '../../../shared/index.ts';
 import { useWorkflowEditor } from '../hooks/workflow-editor.ts';
+import { useDraftLeaveGuard } from '../hooks/workflow-leave.ts';
 import { usePublishWorkflow } from '../hooks/workflow-publish.ts';
 import { useWorkflowUsage } from '../hooks/workflow-usage.ts';
 import { draftChanges } from './draft-changes.ts';
@@ -41,6 +42,7 @@ export function WorkflowEditor({ project, workflowId, listPath }: WorkflowEditor
     () => (workflow && draft ? draftChanges(workflow, draft) : []),
     [workflow, draft],
   );
+  const leaving = useDraftLeaveGuard(draftState);
 
   if (model.workflowError || draftState.loadError)
     return (
@@ -138,6 +140,17 @@ export function WorkflowEditor({ project, workflowId, listPath }: WorkflowEditor
         confirmLabel={model.deleteTarget?.kind === 'status' ? 'Delete status' : 'Delete transition'}
         onConfirm={actions.confirmDelete}
         onCancel={actions.cancelDelete}
+      />
+      <ConfirmChange
+        open={leaving.asking}
+        title="Leave without saving the last change?"
+        consequences={[
+          'The draft did not save, so your last change is lost if you leave.',
+          'Stay and the editor tries again; the draft saves itself once it can.',
+        ]}
+        confirmLabel="Leave without saving"
+        onConfirm={leaving.leave}
+        onCancel={leaving.stay}
       />
     </div>
   );
