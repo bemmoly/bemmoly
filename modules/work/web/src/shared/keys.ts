@@ -22,4 +22,7 @@ export const workKeys = {
   myIssues: () => [...queryKeys.work(), 'my-issues'] as const,
   issueTransitions: (key: string) => [...workKeys.issue(key), 'transitions'] as const,
   boardMetrics: (boardId: string) => [...queryKeys.work(), 'board-metrics', boardId] as const,
+  /** Mutation keys of card moves in flight; a board's view is not read again while one is. */
+  boardMoves: () => [...queryKeys.work(), 'board-moves'] as const,
+  boardMove: (boardId: string) => [...workKeys.boardMoves(), boardId] as const,
 } as const;

@@ -17,7 +17,13 @@ export function useWorkRealtime(projectId: string | undefined) {
   const onEvent = useCallback(
     (event: RealtimeEvent) => {
       if (!event.kind.startsWith('work.')) return;
-      void queryClient.invalidateQueries({ queryKey: workKeys.all() });
+      // While cards are being moved, a board view read now would lack the moves still in
+      // flight and put their cards back; the last move to settle reads the board again.
+      const moving = queryClient.isMutating({ mutationKey: workKeys.boardMoves() }) > 0;
+      void queryClient.invalidateQueries({
+        queryKey: workKeys.all(),
+        ...(moving ? { predicate: (query) => query.queryKey[1] !== 'board-view' } : {}),
+      });
     },
     [queryClient],
   );
