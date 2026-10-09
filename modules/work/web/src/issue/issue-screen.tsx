@@ -1,9 +1,10 @@
 import { formatRelative } from '@bemmoly/core-web';
-import { EmptyState, Skeleton } from '@bemmoly/ui';
+import { EmptyState } from '@bemmoly/ui';
 import { useIssue } from '../hooks/issue-detail.ts';
 import { keepLinksInApp } from '../hooks/issue-navigation.ts';
 import { projectKeyOf } from '../hooks/issue-vocabulary.ts';
 import type { WorkScreenProps } from '../routes.tsx';
+import { IssuePageSkeleton } from '../skeletons/issue-skeleton.tsx';
 import { useProject, useWorkRealtime } from '../shared/index.ts';
 import { DetailsCard } from './details-card.tsx';
 import { IssueBody } from './issue-body.tsx';
@@ -26,13 +27,7 @@ export default function IssueScreen({ projectKey: issueKey }: WorkScreenProps) {
   return (
     <div className="min-h-0 flex-1 overflow-auto" onClick={keepLinksInApp}>
       <div className="mx-auto flex max-w-310 flex-col gap-4 px-10 pt-5 pb-15">
-        {query.isPending && (
-          <div aria-busy className="flex flex-col gap-4">
-            <Skeleton width={240} />
-            <Skeleton height={32} width="60%" />
-            <Skeleton shape="block" height={240} />
-          </div>
-        )}
+        {query.isPending && <IssuePageSkeleton />}
         {query.isError && (
           <EmptyState
             title={`${key ?? 'This issue'} could not be opened`}
