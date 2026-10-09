@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { burnPasswordCheck, hashPassword, verifyPassword } from './passwords.ts';
-import { digestsEqual, generateSecret, hashSecret } from './secrets.ts';
+import { digestsEqual, generateToken, digestToken } from './tokens.ts';
 
 describe('passwords', () => {
   it('hashes with argon2id at the OWASP baseline and verifies', async () => {
@@ -23,18 +23,18 @@ describe('passwords', () => {
   });
 });
 
-describe('secrets', () => {
+describe('minted tokens', () => {
   it('generates 256-bit URL-safe tokens with an optional prefix', () => {
-    const token = generateSecret('bmy_');
+    const token = generateToken('bmy_');
     expect(token).toMatch(/^bmy_[A-Za-z0-9_-]{43}$/);
-    expect(generateSecret()).not.toBe(generateSecret());
+    expect(generateToken()).not.toBe(generateToken());
   });
 
   it('stores only a sha256 digest and compares digests in constant time', () => {
-    const digest = hashSecret('abc');
+    const digest = digestToken('abc');
     expect(digest).toBe('ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad');
-    expect(digestsEqual(digest, hashSecret('abc'))).toBe(true);
-    expect(digestsEqual(digest, hashSecret('abd'))).toBe(false);
+    expect(digestsEqual(digest, digestToken('abc'))).toBe(true);
+    expect(digestsEqual(digest, digestToken('abd'))).toBe(false);
     expect(digestsEqual(digest, 'ab')).toBe(false);
   });
 });

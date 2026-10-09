@@ -29,7 +29,7 @@ export { login, logout } from './login.ts';
 export { listMySessions, revokeMySession } from './my-sessions.ts';
 export { completePasswordReset, requestPasswordReset } from './password-reset.ts';
 export { ARGON2_OPTIONS, hashPassword, verifyPassword } from './passwords.ts';
-export { API_TOKEN_PREFIX, generateSecret, hashSecret } from './secrets.ts';
+export { PERSONAL_TOKEN_PREFIX, generateToken, digestToken } from './tokens.ts';
 export { createSessionResolver } from './session-resolver.ts';
 export {
   authenticateSession,
