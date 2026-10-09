@@ -20,8 +20,12 @@
 	import tls-{$BEMMOLY_TLS_MODE}
 	encode zstd gzip
 
+	# /ws (invalidations) and /collab (collaborative editing) are WebSocket upgrades, which
+	# reverse_proxy passes through as they are. stream_close_delay keeps open sockets alive
+	# across a config reload instead of dropping every editor at once.
 	reverse_proxy bemmoly:8080 {
 		header_up X-Bemmoly-Tls {$BEMMOLY_TLS_MODE}
+		stream_close_delay 5m
 	}
 
 	# The app is down during an update or a rollback: show the progress page.

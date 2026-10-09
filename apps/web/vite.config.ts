@@ -51,6 +51,7 @@ export default defineConfig(({ command, mode }) => {
         '/healthz': server,
         '/readyz': server,
         '/ws': { target: server.replace('http', 'ws'), ws: true },
+        '/collab': { target: server.replace('http', 'ws'), ws: true },
       },
     },
     build: {

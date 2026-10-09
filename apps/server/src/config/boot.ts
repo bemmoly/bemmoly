@@ -1,4 +1,5 @@
 import {
+  createCollabHandle,
   createEnabledModuleCatalog,
   createJobQueueHandle,
   createLocalEventBus,
@@ -10,11 +11,13 @@ import {
   loadModules,
   SYSTEM_SETTINGS,
   type BemmolyModule,
+  type CollabHost,
 } from '@bemmoly/core';
 import { createLogger, type Env } from '@bemmoly/core/config';
 import { getMetrics } from '@bemmoly/core/telemetry';
 import type { FastifyInstance } from 'fastify';
 import { buildApp, type BuildAppOptions } from '../app.ts';
+import { wireCollab } from './collab.ts';
 import { connectDatabase, type DatabaseConnection } from './database.ts';
 import { identityWiring } from './identity.ts';
 import { createDataKernel, type DataKernel } from './kernel.ts';
@@ -32,6 +35,8 @@ export interface Booted {
   app: FastifyInstance;
   database?: DatabaseConnection;
   kernel?: DataKernel;
+  /** Live collaborative documents on /collab; present with a database. */
+  collab?: CollabHost;
 }
 
 /**
@@ -62,12 +67,14 @@ export async function bootApplication(options: BootOptions): Promise<Booted> {
     : undefined;
   const jobQueue = createJobQueueHandle();
   const settingsReader = createSettingsReaderHandle();
+  const collabHandle = createCollabHandle();
   const modules = loadModules({
     available: options.available,
     enabled: database ? [] : env.BEMMOLY_MODULES,
     events: realtime?.events ?? createLocalEventBus(),
     jobQueue,
     settingsReader,
+    collab: collabHandle,
     ...(realtime ? { realtime: realtime.publisher } : {}),
     ...(database ? { database: database.sql } : {}),
   });
@@ -91,6 +98,18 @@ export async function bootApplication(options: BootOptions): Promise<Booted> {
     settingsReader.bind(kernel.settings);
     catalog.bindState(kernel.moduleState);
   }
+  const collab =
+    database && kernel
+      ? wireCollab({
+          env,
+          db: database.db,
+          modules,
+          catalog,
+          moduleState: kernel.moduleState,
+          handle: collabHandle,
+          logger,
+        })
+      : undefined;
   const services =
     database && kernel && databaseUrl
       ? wireKernelServices({
@@ -110,8 +129,18 @@ export async function bootApplication(options: BootOptions): Promise<Booted> {
     ...(options.webRoot ? { webRoot: options.webRoot } : {}),
     ...(options.logger !== undefined ? { logger: options.logger } : {}),
     ...(database ? { database: database.probe } : {}),
-    ...(kernel ? { kernel: { ...kernel.routes, ...services?.routes } } : {}),
+    ...(kernel
+      ? { kernel: { ...kernel.routes, ...services?.routes, ...(collab ? { collab } : {}) } }
+      : {}),
     ...(services ? { identity: services.identity } : {}),
   });
-  return { app, ...(database ? { database } : {}), ...(kernel ? { kernel } : {}) };
+  // Before the HTTP server closes: sockets close, pending edits run their hooks and every
+  // queued update reaches the database while the pool is still open.
+  if (collab) app.addHook('preClose', () => collab.stop());
+  return {
+    app,
+    ...(database ? { database } : {}),
+    ...(kernel ? { kernel } : {}),
+    ...(collab ? { collab } : {}),
+  };
 }
