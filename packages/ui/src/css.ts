@@ -1,6 +1,9 @@
 import {
+  ANIMATIONS,
   COLOR_TOKENS,
   DEFAULT_PRESET,
+  EASE,
+  KEYFRAMES,
   LEADING,
   METRICS,
   MOTION,
@@ -52,6 +55,7 @@ export function renderBaseCss(): string {
       ...vars('', METRICS),
       ...vars('shadow-', SHADOWS),
       ...vars('duration-', MOTION),
+      ...vars('ease-', EASE),
     ]),
     block('body', [
       'margin: 0;',
@@ -110,6 +114,8 @@ export function renderTailwindCss(): string {
     '--spacing-control: var(--size-control);',
     '--spacing-topbar: var(--size-topbar);',
     '--default-transition-duration: var(--duration-fast);',
+    ...Object.keys(EASE).map((name) => `--ease-${name}: var(--ease-${name});`),
+    '--default-transition-timing-function: var(--ease-standard);',
   ];
   const text = Object.entries(TYPE_SCALE).flatMap(([name, size]) => [
     `--text-${name}: ${size};`,
@@ -128,13 +134,21 @@ export function renderTailwindCss(): string {
     ...vars('radius-', RADII).filter((line) => !line.startsWith('--radius-control')),
     ...vars('leading-', LEADING),
     ...vars('tracking-', TRACKING),
+    ...vars('animate-', ANIMATIONS),
   ];
+  const keyframes = Object.entries(KEYFRAMES).map(([name, stops]) =>
+    block(
+      `@keyframes ${name}`,
+      Object.entries(stops).map(([stop, css]) => `${stop} { ${css} }`),
+      '  ',
+    ),
+  );
   return [
     HEADER,
     "@source './components';",
     "@source './icons';",
     '',
-    block('@theme', statics),
+    block('@theme', statics).replace(/\n}$/, `\n\n${keyframes.join('\n\n')}\n}`),
     '',
     block('@theme inline', theme),
     '',

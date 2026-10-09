@@ -8,6 +8,7 @@
 export * from './tokens/names.ts';
 export * from './tokens/fonts.ts';
 export * from './tokens/metrics.ts';
+export * from './tokens/motion.ts';
 export * from './tokens/presets.ts';
 export { HUE_PAIRS, PAIRS, SCRIM, SIGNAL_SOLIDS } from './tokens/semantic.ts';
 export {

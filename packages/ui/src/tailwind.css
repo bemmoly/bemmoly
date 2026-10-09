@@ -75,6 +75,95 @@
   --tracking-label: 0.07em;
   --tracking-dots: 1px;
   --tracking-grip: -2px;
+  --animate-fade-in: fade-in var(--duration-base) var(--ease-out) both;
+  --animate-fade-out: fade-out var(--duration-base) var(--ease-in) forwards;
+  --animate-pop-in: pop-in var(--duration-base) var(--ease-out) both;
+  --animate-dialog-in: dialog-in var(--duration-slow) var(--ease-out) both;
+  --animate-dialog-out: dialog-out var(--duration-base) var(--ease-in) forwards;
+  --animate-slide-in: slide-in var(--duration-slow) var(--ease-out) both;
+  --animate-slide-out: slide-out var(--duration-base) var(--ease-in) forwards;
+  --animate-toast-in: toast-in var(--duration-slow) var(--ease-out) both;
+  --animate-toast-out: toast-out var(--duration-base) var(--ease-in) forwards;
+  --animate-rise: rise var(--duration-base) var(--ease-out) both;
+  --animate-settle: settle var(--duration-slow) var(--ease-settle) both;
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+  }
+
+  @keyframes fade-out {
+    to {
+      opacity: 0;
+    }
+  }
+
+  @keyframes pop-in {
+    from {
+      opacity: 0;
+      transform: translateY(var(--pop-from, -4px)) scale(0.97);
+    }
+  }
+
+  @keyframes dialog-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px) scale(0.98);
+    }
+  }
+
+  @keyframes dialog-out {
+    to {
+      opacity: 0;
+      transform: translateY(4px) scale(0.985);
+    }
+  }
+
+  @keyframes slide-in {
+    from {
+      opacity: 0;
+      transform: translateX(24px);
+    }
+  }
+
+  @keyframes slide-out {
+    to {
+      opacity: 0;
+      transform: translateX(24px);
+    }
+  }
+
+  @keyframes toast-in {
+    from {
+      opacity: 0;
+      transform: translateY(12px) scale(0.96);
+    }
+  }
+
+  @keyframes toast-out {
+    to {
+      opacity: 0;
+      transform: translateX(24px);
+    }
+  }
+
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+  }
+
+  @keyframes settle {
+    from {
+      transform: translateY(-2px) scale(1.02);
+      box-shadow: var(--shadow-menu);
+    }
+    to {
+      transform: none;
+    }
+  }
 }
 
 @theme inline {
@@ -174,4 +263,9 @@
   --spacing-control: var(--size-control);
   --spacing-topbar: var(--size-topbar);
   --default-transition-duration: var(--duration-fast);
+  --ease-standard: var(--ease-standard);
+  --ease-out: var(--ease-out);
+  --ease-in: var(--ease-in);
+  --ease-settle: var(--ease-settle);
+  --default-transition-timing-function: var(--ease-standard);
 }
