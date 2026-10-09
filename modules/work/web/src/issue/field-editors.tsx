@@ -59,15 +59,20 @@ export function PersonField({
   value,
   onSave,
   noneLabel = 'Unassigned',
-}: Omit<ChoiceFieldProps, 'options' | 'clearable'>) {
-  const { people, loadOptions } = usePeople();
-  const options = [
-    { value: NONE, label: noneLabel },
-    ...people
-      .filter((user) => user.status === 'active')
-      .map(personOption)
-      .map(withAvatar),
-  ];
+  currentName,
+}: Omit<ChoiceFieldProps, 'options' | 'clearable'> & {
+  /** The chosen person's name, shown before the people list has loaded or pages past them. */
+  currentName?: string;
+}) {
+  const { people, person, loadOptions } = usePeople();
+  const listed = people.filter((user) => user.status === 'active').map(personOption);
+  const chosen =
+    value && !listed.some((option) => option.value === value)
+      ? [{ value, label: currentName ?? person(value).name }]
+      : [];
+  const options = [{ value: NONE, label: noneLabel }, ...chosen, ...listed].map((option) =>
+    option.value ? withAvatar(option) : option,
+  );
   return (
     <Select
       variant="ghost"
