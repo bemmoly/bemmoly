@@ -1,6 +1,6 @@
 import { keysetPageSchema, keysetQuerySchema, timestampSchema } from '@bemmoly/shared';
 import { z } from 'zod';
-import { issueKeySchema, richTextSchema, slugKeySchema } from './common.ts';
+import { issueKeySchema, queryFlagSchema, richTextSchema, slugKeySchema } from './common.ts';
 import {
   issueLinkKindSchema,
   issuePrioritySchema,
@@ -139,7 +139,7 @@ export const listIssuesQuerySchema = keysetQuerySchema.extend({
   parentId: z.uuid().optional(),
   sort: issueSortSchema.default('rank'),
   order: z.enum(['asc', 'desc']).default('asc'),
-  deleted: z.coerce.boolean().default(false),
+  deleted: queryFlagSchema.default(false),
 });
 
 /** Where a dragged issue lands: between its new neighbours, either of which may be absent. */

@@ -16,6 +16,13 @@ export const nameSchema = z.string().trim().min(1).max(120);
 
 export const shortNameSchema = z.string().trim().min(1).max(60);
 
+/**
+ * A yes or no in a query string. `z.coerce.boolean()` reads any non-empty
+ * string as true, so `?deleted=false` would have meant deleted; this reads
+ * "true" and "false" (and 1, 0, yes, no) as people write them.
+ */
+export const queryFlagSchema = z.union([z.boolean(), z.stringbool()]);
+
 /** "story", "fix_version": the stable, lowercase key of a type or a field. */
 export const slugKeySchema = z
   .string()

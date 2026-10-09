@@ -52,6 +52,10 @@ describe('work shared schemas', () => {
       archived: true,
     });
     expect(listProjectsQuerySchema.safeParse({ limit: 500 }).success).toBe(false);
+    expect(listProjectsQuerySchema.parse({ archived: 'false' }).archived).toBe(false);
+    expect(listIssuesQuerySchema.parse({ deleted: 'false' }).deleted).toBe(false);
+    expect(listIssuesQuerySchema.parse({ deleted: 'true' }).deleted).toBe(true);
+    expect(listIssuesQuerySchema.safeParse({ deleted: 'maybe' }).success).toBe(false);
     expect(listIssuesQuerySchema.parse({ q: 'status != Done' })).toMatchObject({
       q: 'status != Done',
       sort: 'rank',
