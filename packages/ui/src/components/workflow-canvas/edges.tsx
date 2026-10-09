@@ -1,4 +1,4 @@
-import type { HTMLAttributes, ReactNode } from 'react';
+import type { HTMLAttributes, ReactNode, Ref } from 'react';
 import { Icon } from '../../icons/icon.tsx';
 import { cx } from '../../lib/cx.ts';
 import { focusRing } from '../../lib/focus.ts';
@@ -104,6 +104,8 @@ export interface WorkflowCanvasProps extends HTMLAttributes<HTMLDivElement> {
   edges?: ReactNode;
   /** StatusNodes and TransitionLabels, positioned in percentages. */
   children: ReactNode;
+  /** The surface's box, which an editor measures to turn pointer pixels into canvas units. */
+  ref?: Ref<HTMLDivElement>;
 }
 
 /**
