@@ -33,6 +33,9 @@ const contextList = z
   )
   .pipe(z.array(z.string().regex(/^[a-z][a-z0-9-]*$/)).min(1));
 
+/** A rate limit can be raised or lowered, never switched off. */
+const rateLimitMax = z.coerce.number().int().min(1).max(1_000_000).optional();
+
 export const envSchema = z.object({
   DATABASE_URL: z.url({ protocol: /^postgres(ql)?$/ }).optional(),
   BEMMOLY_SECRET_KEY: base64Key,
@@ -44,6 +47,10 @@ export const envSchema = z.object({
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug']).default('info'),
   LOG_FORMAT: z.enum(['json', 'pretty']).default('json'),
   BEMMOLY_TRUST_PROXY: z.stringbool().default(false),
+  /** Rate limit maxima; unset keeps the defaults in middlewares/rate-limit.ts. */
+  BEMMOLY_RATE_LIMIT_PER_USER: rateLimitMax,
+  BEMMOLY_RATE_LIMIT_AUTH_PER_IP: rateLimitMax,
+  BEMMOLY_RATE_LIMIT_AUTH_PER_ACCOUNT: rateLimitMax,
   BEMMOLY_ALLOW_PRIVATE_URLS: z.stringbool().default(false),
   OTEL_EXPORTER_OTLP_ENDPOINT: z.url().optional(),
   BEMMOLY_METRICS_TOKEN: z
