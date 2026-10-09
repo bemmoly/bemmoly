@@ -33,6 +33,8 @@ export interface BacklogData {
   cadenceDays: number;
   /** The issue type inline create uses: Story when the project has it. */
   defaultTypeId: string | undefined;
+  /** The epic type, for "+ Create" in the epics panel. */
+  epicTypeId: string | undefined;
   standardTypes: Array<{ id: string; name: string }>;
   people: Array<{ id: string; name: string }>;
   isPending: boolean;
@@ -99,6 +101,7 @@ export function useBacklogData(pathKey: string | undefined): BacklogData {
     lookups,
     cadenceDays: board?.config.cadenceDays ?? 14,
     defaultTypeId: (standardTypes.find((type) => type.key === 'story') ?? standardTypes[0])?.id,
+    epicTypeId: types.data?.find((type) => type.level === 'epic')?.id,
     standardTypes: standardTypes.map((type) => ({ id: type.id, name: type.name })),
     people: (users.data?.items ?? []).map((user) => ({ id: user.id, name: user.name })),
     isPending: projectPending || (enabled && backlog.isPending),
