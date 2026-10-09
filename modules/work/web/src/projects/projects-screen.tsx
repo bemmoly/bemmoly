@@ -1,10 +1,13 @@
 import type { Project } from '@bemmoly/module-work/shared';
 import { formatRelative } from '@bemmoly/core-web';
-import { Button, EmptyState, PageHeader, Skeleton, Table, Tag, useToast } from '@bemmoly/ui';
+import { Button, EmptyState, PageHeader, Table, TableSkeleton, Tag, useToast } from '@bemmoly/ui';
+import { Icon } from '@bemmoly/ui/icons';
 import { useQuery } from '@tanstack/react-query';
 import { navigateBack, navigateTo, workPaths } from '../hooks/issue-navigation.ts';
 import { useTeams } from '../hooks/projects-list.ts';
 import type { WorkScreenProps } from '../routes.tsx';
+import { LineSkeleton } from '../skeletons/parts.tsx';
+import { BoxCell, MenuCell, TwoLineCell } from '../skeletons/table-cells.tsx';
 import { projectsQuery } from '../shared/use-project.ts';
 import { CreateProjectDialog } from './create-project-dialog.tsx';
 import { ProjectRowMenu } from './project-row-menu.tsx';
@@ -38,7 +41,7 @@ export default function ProjectsScreen({ projectKey: segment }: WorkScreenProps)
           meta={
             projects.isSuccess
               ? [`${rows.length} ${rows.length === 1 ? 'project' : 'projects'}`]
-              : []
+              : [<LineSkeleton key="count" width={60} size="text-12h" bar={8} />]
           }
           actions={
             <Button variant="primary" onClick={() => navigateTo(workPaths.newProject())}>
@@ -47,9 +50,25 @@ export default function ProjectsScreen({ projectKey: segment }: WorkScreenProps)
           }
         />
         {projects.isPending ? (
-          <Skeleton shape="block" height={160} />
+          <TableSkeleton
+            label="Loading projects"
+            rows={3}
+            columns={[
+              { width: '90px', cell: <LineSkeleton width={32} bar={9} /> },
+              { width: 'minmax(0,1.6fr)', cell: <TwoLineCell width="32%" second="48%" /> },
+              { width: '110px', cell: <BoxCell width={48} /> },
+              { width: 'minmax(0,1fr)' },
+              { width: '120px' },
+              { width: '28px', align: 'center', cell: <MenuCell /> },
+            ]}
+          />
         ) : projects.isError ? (
-          <EmptyState title="Projects could not be loaded" description={projects.error.message} />
+          <EmptyState
+            icon={<Icon name="alert" />}
+            title="Projects could not be loaded"
+            description={projects.error.message}
+            action={<Button onClick={() => void projects.refetch()}>Try again</Button>}
+          />
         ) : (
           <Table<Project>
             label="Projects"
@@ -58,6 +77,7 @@ export default function ProjectsScreen({ projectKey: segment }: WorkScreenProps)
             onRowClick={(project) => navigateTo(workPaths.board(project.key))}
             empty={
               <EmptyState
+                icon={<Icon name="project" />}
                 title="No projects yet"
                 description="A project holds issues under one key, with its own board and backlog."
                 action={
@@ -82,9 +102,13 @@ export default function ProjectsScreen({ projectKey: segment }: WorkScreenProps)
                 width: 'minmax(0,1.6fr)',
                 render: (project) => (
                   <span className="flex min-w-0 flex-col">
-                    <span className="truncate font-medium text-tx">{project.name}</span>
+                    <span className="truncate font-medium text-tx" title={project.name}>
+                      {project.name}
+                    </span>
                     {project.description && (
-                      <span className="truncate text-12 text-tx5">{project.description}</span>
+                      <span className="truncate text-12 text-tx5" title={project.description}>
+                        {project.description}
+                      </span>
                     )}
                   </span>
                 ),
