@@ -2,6 +2,7 @@ import type { ModuleChunkProps } from '@bemmoly/core-web';
 import { EmptyState } from '@bemmoly/ui';
 import { Suspense } from 'react';
 import { resolveWorkRoute } from './routes.tsx';
+import { ScreenSkeleton } from './skeletons/screen-skeleton.tsx';
 
 /** The Work chunk: hands the subpath to routes.tsx and renders the screen it names. */
 export default function WorkModule({ manifest, subpath }: ModuleChunkProps) {
@@ -9,7 +10,7 @@ export default function WorkModule({ manifest, subpath }: ModuleChunkProps) {
   return (
     <div className="flex min-h-0 flex-1 flex-col" data-module={manifest.id}>
       {route ? (
-        <Suspense fallback={null}>
+        <Suspense fallback={<ScreenSkeleton screen={route.name} />}>
           <route.Screen {...route.props} />
         </Suspense>
       ) : (
