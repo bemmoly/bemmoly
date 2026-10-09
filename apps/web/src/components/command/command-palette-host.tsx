@@ -11,7 +11,7 @@ import {
 } from '@bemmoly/ui';
 import plan from '../../fixtures/command-plan.json' with { type: 'json' };
 import type { PaletteItem } from '../../hooks/command-items.ts';
-import { SCOPES, useCommandPalette } from '../../hooks/use-command-palette.ts';
+import { useCommandPalette } from '../../hooks/use-command-palette.ts';
 import { toast } from '../../lib/toast.ts';
 
 const steps = plan.rows.map((row) => ({
@@ -44,7 +44,7 @@ export default function CommandPaletteHost() {
   return (
     <CommandPalette open onClose={palette.close}>
       <CommandInput value={palette.query} onValueChange={palette.setQuery} autoFocus />
-      <CommandScopes scopes={SCOPES} value={palette.scope} onChange={palette.setScope} />
+      <CommandScopes scopes={palette.scopes} value={palette.scope} onChange={palette.setScope} />
       {palette.isCommand ? (
         <CommandPlan
           summary={plan.summary}
@@ -56,7 +56,7 @@ export default function CommandPaletteHost() {
         <CommandList>
           {palette.groups.length === 0 ? (
             <p className="m-0 px-4 py-6 text-center text-12h text-tx5">
-              Nothing matches. Try a person's name or a settings page.
+              Nothing matches. Try an issue key, a person's name or a settings page.
             </p>
           ) : (
             palette.groups.map((group) => (
@@ -78,6 +78,7 @@ export default function CommandPaletteHost() {
                         />
                       )
                     }
+                    {...(item.issueKey ? { issueKey: item.issueKey } : {})}
                     title={item.title}
                     {...(item.subtitle ? { meta: item.subtitle } : {})}
                     onSelect={() => palette.open(item)}
