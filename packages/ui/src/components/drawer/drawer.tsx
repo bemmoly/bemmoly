@@ -1,5 +1,7 @@
 import type { KeyboardEvent, ReactNode } from 'react';
 import { cx } from '../../lib/cx.ts';
+import { SHEET_MOTION } from '../../lib/motion.ts';
+import { usePresence } from '../../lib/presence.ts';
 import { useDialog } from '../../lib/use-dialog.ts';
 import { IconButton } from '../button/icon-button.tsx';
 
@@ -54,17 +56,21 @@ export function Drawer({
   variant = 'docked',
   className,
 }: DrawerProps) {
-  const { ref, onBackdropClick } = useDialog(open && variant === 'overlay', onClose);
-  if (!open) return null;
+  const presence = usePresence(open);
+  const { ref, onBackdropClick } = useDialog(presence.mounted && variant === 'overlay', onClose);
+  if (!presence.mounted) return null;
+  const state = presence.leaving ? 'closed' : 'open';
   if (variant === 'overlay') {
     return (
       <dialog
         ref={ref}
         aria-label={label}
         onClick={onBackdropClick}
+        data-state={state}
         className={cx(
           'm-0 ml-auto h-full max-h-full w-100 max-w-full flex-col border-0 border-l border-br bg-sf p-0 text-13 text-tx open:flex',
           'backdrop:bg-scrim',
+          SHEET_MOTION,
           className,
         )}
       >
@@ -84,8 +90,10 @@ export function Drawer({
     <aside
       aria-label={label}
       onKeyDown={onKeyDown}
+      data-state={state}
       className={cx(
         'flex min-h-0 w-100 shrink-0 flex-col border-l border-br bg-sf text-13 text-tx',
+        SHEET_MOTION,
         className,
       )}
     >
