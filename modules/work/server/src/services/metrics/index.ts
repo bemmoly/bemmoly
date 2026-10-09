@@ -3,7 +3,7 @@ import { ValidationError } from '@bemmoly/shared';
 import type { BoardMetrics, BoardMetricsQuery } from '../../../../shared/metrics.ts';
 import type { SprintReport } from '../../../../shared/sprints.ts';
 import { projectResource, requireDatabase } from '../issues/deps.ts';
-import { resolveProject, type PlanningDeps } from '../boards/context.ts';
+import { resolveProject, type PlanningDeps, type PlanningProject } from '../boards/context.ts';
 import { loadBoard, parseConfig, type BoardRow } from '../boards/rows.ts';
 import { activeSprint, loadSprint, toSprint } from '../sprints/rows.ts';
 import { utcDate } from './burndown.ts';
@@ -23,29 +23,34 @@ interface Cached {
   metrics: BoardMetrics;
 }
 
-/** The latest change that can move a board's numbers; part of the cache key. */
-async function changeStamp(sql: SqlExecutor, board: BoardRow, projectId: string) {
-  const [row] = await sql<{ stamp: Date | null }[]>`
+/**
+ * The latest change that can move a board's numbers, part of the cache key,
+ * and the cached numbers, in one round trip.
+ */
+async function readCache(sql: SqlExecutor, board: BoardRow, projectId: string) {
+  const [row] = await sql<{ stamp: Date | null; cached: Cached | null }[]>`
     select greatest(
       (select max(updated_at) from issues where project_id = ${projectId}),
       (select max(updated_at) from sprints where project_id = ${projectId}),
-      (select updated_at from boards where id = ${board.id})) as stamp`;
-  return row?.stamp ? new Date(row.stamp).toISOString() : '';
+      (select updated_at from boards where id = ${board.id})) as stamp,
+      (select data from sprint_metrics
+        where scope_kind = 'board' and scope_id = ${board.id} and kind = ${FLOW_KIND}) as cached`;
+  return { stamp: row?.stamp ? new Date(row.stamp).toISOString() : '', cached: row?.cached };
 }
 
+/** A board's metrics; the board view passes the project it has already resolved. */
 export async function computeBoardMetrics(
   sql: SqlExecutor,
   board: BoardRow,
   sprints: number,
   now: Date,
+  resolved?: PlanningProject,
 ): Promise<BoardMetrics> {
   if (!board.project_id) throw new ValidationError('The org default board has no issues');
-  const project = await resolveProject(sql, board.project_id);
-  const key = `${await changeStamp(sql, board, project.id)}|${utcDate(now.getTime())}|${sprints}`;
-  const [cached] = await sql<{ data: Cached }[]>`
-    select data from sprint_metrics
-    where scope_kind = 'board' and scope_id = ${board.id} and kind = ${FLOW_KIND}`;
-  if (cached?.data.key === key) return cached.data.metrics;
+  const project = resolved ?? (await resolveProject(sql, board.project_id));
+  const { stamp, cached } = await readCache(sql, board, project.id);
+  const key = `${stamp}|${utcDate(now.getTime())}|${sprints}`;
+  if (cached?.key === key) return cached.metrics;
 
   const sets = await statusSets(sql, project.id, parseConfig(board.config));
   const active = project.method === 'scrum' ? await activeSprint(sql, project.id) : undefined;
