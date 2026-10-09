@@ -13,6 +13,7 @@ import {
   schemeDiffSchema,
   schemesResponseSchema,
   updateBoardBodySchema,
+  workflowsResponseSchema,
   updateFieldBodySchema,
   updateIssueTypeBodySchema,
   updateProjectBodySchema,
@@ -38,6 +39,9 @@ export const workSettingsKeys = {
   schemeDiff: (projectId: string, kind: SchemeKind) =>
     ['work', 'project', projectId, 'schemes', kind, 'diff'] as const,
   boards: (projectId: string) => ['work', 'project', projectId, 'boards'] as const,
+  /** The org default board scheme and workflows a project's copies are compared with. */
+  orgBoards: () => ['work', 'org', 'boards'] as const,
+  orgWorkflows: () => ['work', 'org', 'workflows'] as const,
   issueTypes: (projectId: string) => ['work', 'project', projectId, 'issue-types'] as const,
   fields: (projectId: string) => ['work', 'project', projectId, 'fields'] as const,
   typeFields: (issueTypeId: string) => ['work', 'issue-type', issueTypeId, 'fields'] as const,
@@ -82,11 +86,17 @@ export function workSettingsEndpoints(http: Http) {
       list: async (projectId: string) =>
         (await http.request(`${base}/projects/${enc(projectId)}/boards`, boardsResponseSchema))
           .items,
+      /** The org default board scheme: the boards with no project. */
+      listOrg: async () => (await http.request(`${base}/boards`, boardsResponseSchema)).items,
       update: async (boardId: string, body: UpdateBoardBody) =>
         http.request(`${base}/boards/${enc(boardId)}`, boardSchema, {
           method: 'PATCH',
           body: validated(updateBoardBodySchema, body),
         }),
+    },
+    /** The org default workflows, whose status names a project's board copy is matched by. */
+    orgWorkflows: {
+      list: async () => (await http.request(`${base}/workflows`, workflowsResponseSchema)).items,
     },
     issueTypes: {
       list: async (projectId: string) =>
