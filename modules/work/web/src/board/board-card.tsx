@@ -1,5 +1,5 @@
 import { KanbanCard } from '@bemmoly/ui';
-import { memo, useMemo, type CSSProperties } from 'react';
+import { memo, useEffect, useMemo, useRef, type CSSProperties } from 'react';
 import { useBoardDragStore } from '../hooks/board-drag-store.ts';
 import type { ViewCard } from '../hooks/board-model.ts';
 import { cardProps } from './card-view.ts';
@@ -30,8 +30,13 @@ export const BoardCard = memo(function BoardCard({
   const carried = useBoardDragStore((state) => state.carrying?.issueId === card.issueId);
   const props = useMemo(() => cardProps(card, vocab, laneHue), [card, vocab, laneHue]);
   const ruleColor = vocab.ruleColor(card);
+  const element = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (useBoardDragStore.getState().takeFocus(card.issueId)) element.current?.focus();
+  }, [card.issueId, laneId, columnId, index]);
   return (
     <div
+      ref={element}
       data-issue-id={card.issueId}
       role="button"
       tabIndex={0}

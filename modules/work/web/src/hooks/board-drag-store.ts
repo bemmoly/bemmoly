@@ -29,7 +29,16 @@ interface DragState {
   over(target: DropTarget | null): void;
   /** Ends the drag and hands back what was carried and where it was over. */
   finish(): { carrying: CarriedCard; target: DropTarget | null } | null;
+  /**
+   * A card dropped with the keyboard keeps focus: the drop re-renders it in its new cell as a
+   * new element, which claims the focus when it mounts, for a moment after the drop.
+   */
+  focusRequest: { issueId: string; until: number } | null;
+  keepFocus(issueId: string): void;
+  takeFocus(issueId: string): boolean;
 }
+
+const FOCUS_WINDOW_MS = 1000;
 
 const sameTarget = (a: DropTarget | null, b: DropTarget | null) =>
   a === b ||
@@ -54,5 +63,14 @@ export const useBoardDragStore = create<DragState>()((set, get) => ({
     const { carrying, target } = get();
     set({ carrying: null, target: null, verdicts: null });
     return carrying ? { carrying, target } : null;
+  },
+  focusRequest: null,
+  keepFocus: (issueId) =>
+    set({ focusRequest: { issueId, until: performance.now() + FOCUS_WINDOW_MS } }),
+  takeFocus: (issueId) => {
+    const request = get().focusRequest;
+    if (request?.issueId !== issueId || performance.now() > request.until) return false;
+    set({ focusRequest: null });
+    return true;
   },
 }));
