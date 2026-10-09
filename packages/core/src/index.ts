@@ -47,6 +47,7 @@ export {
 } from './services/audit/index.ts';
 export {
   createAuthorize,
+  createContainerMemberships,
   createModuleAccessResolver,
   createModuleAccessWriter,
   createRequestAuthorization,
