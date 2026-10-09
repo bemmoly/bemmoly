@@ -12,7 +12,9 @@ import { hrefsOf, idsOf, parsePage, scriptsOf } from './dom.ts';
 import { startPreview, type Preview } from './serve.ts';
 
 const dist = new URL('../dist/', import.meta.url);
-const pages = readdirSync(dist).filter((file) => file.endsWith('.html'));
+const pages = readdirSync(dist, { recursive: true, encoding: 'utf8' }).filter((file) =>
+  file.endsWith('.html'),
+);
 const html = (page: string) => readFileSync(new URL(page, dist), 'utf8');
 
 const hrefs = (source: string) => hrefsOf(parsePage(source));
@@ -87,6 +89,7 @@ describe('static files', () => {
     '/sitemap-index.xml',
     '/site.webmanifest',
     '/llms.txt',
+    '/changelog.xml',
     `/${INDEXNOW_KEY}.txt`,
   ])('%s is served', async (path) => {
     expect((await fetch(`${preview.url}${path}`)).status).toBe(200);
@@ -121,19 +124,22 @@ describe('indexing', () => {
     expect(robots).toContain('Sitemap: https://bemmoly.com/sitemap-index.xml');
   });
 
-  it('lists every page in the sitemap, with a date, and leaves the 404 page out', () => {
+  it('lists every page in the sitemap with the day its words changed, and not the 404 page', () => {
     const sitemap = readFileSync(new URL('sitemap-0.xml', dist), 'utf8');
-    for (const { path } of PAGES)
-      expect(sitemap).toContain(`<loc>https://bemmoly.com${path}</loc>`);
-    expect(sitemap).toContain('<lastmod>');
+    for (const { path, updated } of PAGES) {
+      expect(sitemap).toContain(
+        `<url><loc>https://bemmoly.com${path}</loc><lastmod>${updated}T00:00:00.000Z</lastmod></url>`,
+      );
+    }
+    expect(sitemap.match(/<url>/g)).toHaveLength(PAGES.length);
     expect(sitemap).not.toContain('/404');
   });
 
   it('serves llms.txt in the llmstxt.org shape with every page', () => {
     const llms = readFileSync(new URL('llms.txt', dist), 'utf8');
     expect(llms.startsWith('# Bemmoly\n\n> ')).toBe(true);
-    for (const { path, title } of PAGES) {
-      expect(llms).toContain(`- [${title}](https://bemmoly.com${path})`);
+    for (const { path, name } of PAGES) {
+      expect(llms).toContain(`- [${name}](https://bemmoly.com${path})`);
     }
   });
 
@@ -147,7 +153,6 @@ describe('indexing', () => {
       const expected = page === '404.html' ? 'noindex, follow' : 'index, follow';
       expect(source, page).toContain(`<meta name="robots" content="${expected}`);
       expect(source, page).toContain('<script type="application/ld+json">');
-      expect(source, page).toContain('"@type":"SoftwareApplication"');
     }
   });
 });

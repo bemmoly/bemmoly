@@ -5,21 +5,23 @@ import Recommended from '../components/self-hosting/Recommended.astro';
 import Sizing from '../components/self-hosting/Sizing.astro';
 import WhatYouGet from '../components/self-hosting/WhatYouGet.astro';
 import CopyScript from '../components/site/CopyScript.astro';
+import StatusNote from '../components/topics/StatusNote.astro';
 import Page from '../layouts/Page.astro';
 import { RELEASE } from '../data/landing.ts';
-import { REPO_URL } from '../lib/links.ts';
+import { pageAt } from '../data/pages.ts';
 ---
 
 <Page
-  title="Self-hosting"
-  description="Run Bemmoly on a fresh Linux VM with one command, or start from the Docker Compose, Kubernetes, Postgres or offline setup you already have. HTTPS, backups and upgrades are built in."
+  page={pageAt('/self-hosting')}
   lede="Bemmoly is one container next to one Postgres. For almost everyone the answer is one command on a fresh VM; if you already run something, start from that instead."
   wide
 >
-  <p class="max-w-190 rounded-card border border-br bg-sf2 px-4 py-3 text-14h leading-desc text-tx3 dark:bg-sf">
-    Version {RELEASE.version} is still being built. The badges say where each option stands for it;
-    follow progress on <a href={REPO_URL}>GitHub</a> and in the <a href="/changelog">changelog</a>.
-  </p>
+  <StatusNote>
+    Bemmoly {RELEASE.version} is the foundation (the installer, the setup wizard, people and roles,
+    backups and updates) and the Work module, with issues, boards, the backlog and sprints. The
+    badges say where each way to run it stands, and the <a href="/changelog">changelog</a> lists
+    every release.
+  </StatusNote>
   <Recommended />
   <Paths />
   <WhatYouGet />

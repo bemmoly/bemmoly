@@ -1,13 +1,13 @@
 ---
 import Section from '../components/site/Section.astro';
+import { pageAt } from '../data/pages.ts';
 import Page from '../layouts/Page.astro';
 import { CONTRIBUTING_URL, REPO_URL, TECH_DESIGN_URL } from '../lib/links.ts';
 ---
 
 <Page
-  title="Docs"
-  description="Bemmoly's documentation is being written alongside the first release. Start with self-hosting, the README and the technical design."
-  lede="The documentation is being written alongside the first release and will live here. Until then, these are the best places to start."
+  page={pageAt('/docs')}
+  lede="The documentation is being written alongside the releases and will live here. Until then, these are the best places to start."
 >
   <Section title="Run it">
     <p>

@@ -3,79 +3,48 @@ import '../styles/site.css';
 import appleTouchIcon from '@bemmoly/ui/brand/generated/apple-touch-icon.png';
 import favicon32 from '@bemmoly/ui/brand/generated/favicon-32.png';
 import faviconSvg from '@bemmoly/ui/brand/generated/favicon.svg?url';
+import icon512 from '@bemmoly/ui/brand/generated/icon-512.png';
 import socialPreview from '@bemmoly/ui/brand/generated/social-preview.png';
 import plexSans400 from '@fontsource/ibm-plex-sans/files/ibm-plex-sans-latin-400-normal.woff2?url';
 import plexSans600 from '@fontsource/ibm-plex-sans/files/ibm-plex-sans-latin-600-normal.woff2?url';
 import { themeById } from '@bemmoly/ui/tokens';
+import { SITE_BING_VERIFICATION, SITE_GOOGLE_VERIFICATION } from 'astro:env/server';
 import Footer from '../components/site/Footer.astro';
 import Nav from '../components/site/Nav.astro';
-import { LICENSE_URL, REPO_URL } from '../lib/links.ts';
+import type { SitePage } from '../data/pages.ts';
+import { jsonLd, structuredData, type FaqItem } from '../lib/structured-data.ts';
 import { themeCss } from '../lib/theme.ts';
 
 interface Props {
-  title: string;
-  description: string;
+  page: SitePage;
   /** The landing page puts its closing call to action inside the footer block. */
   cta?: boolean;
   /** Error pages are served but must not be indexed. */
   noindex?: boolean;
+  /** Questions the page answers in its own text, for the FAQPage data. */
+  faq?: readonly FaqItem[];
+  /** Extra <head> links, such as the changelog's feed. */
+  alternate?: { href: string; type: string; title: string };
 }
 
-const { title, description, cta = false, noindex = false } = Astro.props;
-const fullTitle = title === 'Bemmoly' ? 'Bemmoly: Your work. Your platform.' : `${title} · Bemmoly`;
-// With build.format 'file', Astro 7 reports the built file (/docs.html, /index.html); the
-// canonical address is the clean one Caddy serves (/docs, /).
-const path = Astro.url.pathname.replace(/(\/index)?\.html$/, '') || '/';
-const canonical = new URL(path, Astro.site).href;
+const { page, cta = false, noindex = false, faq, alternate } = Astro.props;
+// Page paths are the clean addresses Caddy serves (/docs, /docs/install, /).
+const canonical = new URL(page.path, Astro.site).href;
 const image = new URL(socialPreview.src, Astro.site).href;
+const logo = new URL(icon512.src, Astro.site).href;
 const themeColor = themeById('light').colors.sf;
 // The two IBM Plex Sans faces above the fold; the rest load on demand.
 const preloads = [plexSans400, plexSans600];
 const robots = noindex
   ? 'noindex, follow'
   : 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1';
-// Structured data for search engines and assistants. Not a script: the CSP leaves it alone.
-const organization = {
-  '@type': 'Organization',
-  '@id': `${Astro.site}#organization`,
-  name: 'Bemmoly',
-  url: Astro.site?.href,
-  logo: image,
-  sameAs: [REPO_URL],
-};
-const structuredData = {
-  '@context': 'https://schema.org',
-  '@graph': [
-    organization,
-    {
-      '@type': 'WebSite',
-      '@id': `${Astro.site}#website`,
-      name: 'Bemmoly',
-      url: Astro.site?.href,
-      publisher: { '@id': organization['@id'] },
-    },
-    {
-      '@type': 'SoftwareApplication',
-      name: 'Bemmoly',
-      applicationCategory: 'BusinessApplication',
-      operatingSystem: 'Linux, Docker, Kubernetes',
-      url: Astro.site?.href,
-      description: 'Open source, self-hosted, AI-first issues and docs for your whole company.',
-      license: LICENSE_URL,
-      isAccessibleForFree: true,
-      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
-      author: { '@id': organization['@id'] },
-    },
-    {
-      '@type': 'WebPage',
-      '@id': canonical,
-      url: canonical,
-      name: fullTitle,
-      description,
-      isPartOf: { '@id': `${Astro.site}#website` },
-    },
-  ],
-};
+// Data, not a script: the browser never runs it, so the CSP does not need to allow it.
+const graph = jsonLd(structuredData({ page, canonical, logo, noindex, faq }));
+// Search Console and Bing Webmaster Tools, only when the owner picks the HTML-tag method.
+const verification = [
+  { name: 'google-site-verification', content: SITE_GOOGLE_VERIFICATION },
+  { name: 'msvalidate.01', content: SITE_BING_VERIFICATION },
+].filter((tag) => tag.content);
 ---
 
 <!doctype html>
@@ -83,10 +52,13 @@ const structuredData = {
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{fullTitle}</title>
-    <meta name="description" content={description} />
-    <link rel="canonical" href={canonical} />
+    <title>{page.title}</title>
+    <meta name="description" content={page.description} />
+    {!noindex && <link rel="canonical" href={canonical} />}
     <meta name="robots" content={robots} />
+    {verification.map((tag) => (
+      <meta name={tag.name} content={tag.content} />
+    ))}
     {preloads.map((href) => (
       <link rel="preload" href={href} as="font" type="font/woff2" crossorigin />
     ))}
@@ -95,23 +67,29 @@ const structuredData = {
     <link rel="apple-touch-icon" href={appleTouchIcon.src} />
     <link rel="manifest" href="/site.webmanifest" />
     <link rel="sitemap" href="/sitemap-index.xml" />
+    {alternate && (
+      <link rel="alternate" href={alternate.href} type={alternate.type} title={alternate.title} />
+    )}
     <meta name="theme-color" content={themeColor} />
     <meta name="color-scheme" content="light" />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Bemmoly" />
-    <meta property="og:title" content={fullTitle} />
-    <meta property="og:description" content={description} />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:title" content={page.title} />
+    <meta property="og:description" content={page.description} />
     <meta property="og:url" content={canonical} />
     <meta property="og:image" content={image} />
+    <meta property="og:image:type" content="image/png" />
     <meta property="og:image:width" content={String(socialPreview.width)} />
     <meta property="og:image:height" content={String(socialPreview.height)} />
     <meta property="og:image:alt" content="Bemmoly: Your work. Your platform." />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content={fullTitle} />
-    <meta name="twitter:description" content={description} />
+    <meta name="twitter:title" content={page.title} />
+    <meta name="twitter:description" content={page.description} />
     <meta name="twitter:image" content={image} />
+    <meta name="twitter:image:alt" content="Bemmoly: Your work. Your platform." />
     <style is:inline set:html={themeCss()}></style>
-    <script is:inline type="application/ld+json" set:html={JSON.stringify(structuredData)} />
+    <script is:inline type="application/ld+json" set:html={graph} />
   </head>
   <body class="flex min-h-screen flex-col">
     <Nav />

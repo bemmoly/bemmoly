@@ -10,6 +10,8 @@ export const CONTRIBUTING_URL = `${REPO_URL}/blob/main/CONTRIBUTING.md`;
 export const CODE_OF_CONDUCT_URL = `${REPO_URL}/blob/main/CODE_OF_CONDUCT.md`;
 export const ISSUES_URL = `${REPO_URL}/issues`;
 export const TECH_DESIGN_URL = `${REPO_URL}/blob/main/docs/tech-design.html`;
+export const RELEASES_URL = `${REPO_URL}/releases/latest`;
+export const COMPOSE_URL = `${REPO_URL}/tree/main/deploy/compose`;
 
 export interface NavLink {
   label: string;
