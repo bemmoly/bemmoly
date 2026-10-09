@@ -79,4 +79,104 @@ folded back into the mocks:
   action, the "Invitations sent" panel with the no-email notice (also on the setup People step),
   and the Accept invitation page names the inviter. Viewer is the default role everywhere.
 
+Work module 0.2.0: deviations the Work screens shipped with, to be folded back into the mocks.
+
+Issue (`Bemmoly Issue.dc.html`), the page and the slide-over:
+
+- Attach and Link doc are not on the action row, and the Docs and Development cards and the
+  Reviewers row are absent: attachments, the Docs module and code integrations are not in this
+  release.
+- Acceptance criteria render as their own section from the type's field, not inside the
+  description.
+- Details values are edited in place: labels show a remove ×, and Watch reads "Watching" when
+  on.
+- Relative times use the shared formatter ("3h ago", not "3 hours ago").
+- In the slide-over, subtask rows keep the page's 13px rows and Linked issues show too.
+- The create issue form, the project list and the create project dialog have no mock; they are
+  built from the Modal, FormGrid, Field, Table and SelectableCard patterns.
+- The create project dialog takes the owning team and shows that team's lead: a project stores
+  no lead of its own.
+
+Workflow (`Bemmoly Workflow.dc.html`):
+
+- The subtitle ("Applies to Story, Bug, Task · …") is replaced by the published version, the
+  count of unpublished changes and the save state: there is no per-type workflow assignment to
+  show.
+- Rule chips (C, V, P with a count) sit on the selected transition's label only; at rest the
+  labels keep the mock's width.
+- "Who can move issues here" and the average time in status are not shown. The status panel adds
+  name, category and colour fields and a delete link, which the mock does not draw.
+- An edge between nodes on different rows leaves the side facing its target and enters the
+  target's facing side; the mock's one such curve enters In progress from the top.
+- The project settings sidebar is drawn with Workflow current and its other items inert, and the
+  logo tile is the accent fill, not the mock's gradient.
+- The workflows list is new; the mock has no list screen.
+
+Board settings (`Bemmoly Board Settings.dc.html`):
+
+- The header has no "Save changes": each tab saves on its own through the read-then-edit pattern
+  (Edit, then Cancel and Review and save under the tab). "+ Add column" and the remove × show
+  while Columns is being edited.
+- A Quick filters tab sits between Swimlanes and Cards, reusing the Custom lanes card.
+- The Permissions tab is not built; capabilities and org locks are edited in Workspace › Roles
+  and permissions.
+- Card color gains a Color rules section (an LQL condition and a colour) under the four presets;
+  the preview card shows the first valid rule's colour.
+- "+ Add custom field to cards" is not shown: whether a custom field is on cards is set per issue
+  type.
+- Sprints has no "Starts on" control: the board stores no start day.
+- The sidebar lists only the pages that exist (Issue types, Fields, Workflow, Board), and its
+  footer says whether the person can change the settings instead of naming a role.
+- The Issue types and Fields pages have no mock; they are the settings frame, the scheme banner
+  and SettingsSection rows.
+- Unmapped statuses are grey whatever their category, as in the mock; mapped statuses take their
+  own colour or their category's.
+- Leaving with an unsaved draft, from the sidebar, the top bar or Back, shows the unsaved-changes
+  bar in its leaving state.
+
+Backlog (`Bemmoly Backlog.dc.html`):
+
+- There is no AI tip row under the active sprint, no doc links on rows and no Insights button;
+  the project switcher sits where Insights was.
+- The project sidebar lists only Backlog and Board, and its tile is the solid accent, not the
+  mock's gradient.
+- Epic meta reads "9 issues · 3 done" or "not started" rather than a due date, which epic
+  progress does not carry.
+- Epic colours run accent, violet, sky, orange, then the other hues in panel order; the mock's
+  teal is not a token.
+- A planned sprint shows the CapacityBar ("19 of 22 pts capacity"), not the "~22" text alone.
+- The Backlog container has no ··· button.
+- A row's status badge names the board column that holds the status ("In review" for Code
+  review), coloured by the column's place among the in-progress columns.
+- The signed-in person's avatar wears the accent and everyone else's hue comes from their id, so
+  the colours differ from the mock's fixed table.
+
+Board (`Bemmoly Board.dc.html`):
+
+- The project sidebar is not part of the board, which takes its 240px.
+- The AI "Sprint risk" and "Flow risk" banner, the Insights button and Kanban's "Release" are
+  left out; "Complete sprint" moves to the Backlog, where sprints are closed.
+- The column "+" for adding an issue to a column is not shown yet.
+- The LQL bar has no mock: it opens from an LQL chip at the end of "Search this board", widens to
+  420px, and shows problems and suggestions in a floating panel built from the menu surface.
+- The refused-column state has no mock: the cell takes the dashed drop frame in the warn pair
+  with the reason inside, and the drop indicator is a 2px accent line in the cell's gap.
+- Kanban age uses the mock's 4-day "slow" threshold.
+- Saved filters have no mock: a "Saved filters" menu (Mine, Shared with me, then Save current
+  filter and Rename or delete) sits after the search box, and a "Save filter" button joins it
+  while an unsaved LQL query is applied. With the LQL bar open at 1440px, "Group by" wraps to a
+  second row.
+
+Rich text, in descriptions, document fields and comments:
+
+- Descriptions are edited in the composer's box (br3 border, 7px radius, 10px 12px padding) with
+  the tool row and Cancel and Save under the text; the Issue mock shows only the read view.
+- The description tool row adds Heading, List, Numbered, Checklist, Quote and Code block to the
+  composer's B, I, @, Link and Code.
+- Typing "/" opens a Blocks menu drawn from the Doc Editor mock's slash menu, and the @ and #
+  lists use the same menu look.
+- "Draft reply with AI" is not shown on the composer.
+- The Issue mock has no dark version, so the editor in dark is checked against the theme tokens
+  only.
+
 Domains: the product site is bemmoly.com, the installer one-liner is served from get.bemmoly.com, and release manifests are GitHub release assets.
