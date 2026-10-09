@@ -3,6 +3,8 @@ import { CODE_TOKENS } from './doc/styles.ts';
 import type { ProseSize } from './types.ts';
 
 /*
+ * A property is set in BLOCKS or in a size, never both, so no two rules compete.
+ *
  * One stylesheet for a document, whether the read-only view printed it or the editor is
  * editing it: both put the same elements under this class list, so a description looks the
  * same before and after Edit. Spacing follows the Issue mock's description: 10px between
@@ -25,10 +27,10 @@ const BLOCKS = [
   '[&_li[data-checked=true]>div]:text-tx5 [&_li[data-checked=true]>div]:line-through',
   '[&_input[type=checkbox]]:m-0 [&_input[type=checkbox]]:accent-ac',
   '[&_blockquote]:m-0 [&_blockquote]:border-l-3 [&_blockquote]:border-br3 [&_blockquote]:pl-3 [&_blockquote]:text-tx3',
-  '[&_pre]:m-0 [&_pre]:overflow-auto [&_pre]:rounded-sm [&_pre]:bg-chip [&_pre]:px-3 [&_pre]:py-2 [&_pre]:font-mono [&_pre]:whitespace-pre-wrap',
+  '[&_pre]:m-0 [&_pre]:overflow-auto [&_pre]:font-mono [&_pre]:whitespace-pre-wrap',
   '[&_code]:rounded-chip [&_code]:bg-chip [&_code]:px-1.25 [&_code]:py-px [&_code]:font-mono [&_code]:font-medium',
   '[&_pre_code]:bg-transparent [&_pre_code]:p-0 [&_pre_code]:font-normal',
-  '[&_hr]:m-0 [&_hr]:border-0 [&_hr]:border-t [&_hr]:border-br2',
+  '[&_hr]:m-0 [&_hr]:border-0 [&_hr]:border-t',
   '[&_[data-type=mention]]:font-medium [&_[data-type=mention]]:text-ac',
 ].join(' ');
 
@@ -36,7 +38,8 @@ const BLOCKS = [
 const ISSUE = [
   '[&_h1]:text-18 [&_h2]:text-16',
   '[&_ul]:gap-1 [&_ul]:pl-5 [&_ol]:gap-1 [&_ol]:pl-5 [&_li_ul]:mt-1 [&_li_ol]:mt-1',
-  '[&_pre]:text-12h [&_code]:text-12h',
+  '[&_pre]:rounded-sm [&_pre]:bg-chip [&_pre]:px-3 [&_pre]:py-2 [&_pre]:text-12h [&_code]:text-12h',
+  '[&_hr]:border-br2',
 ].join(' ');
 
 /** The measures of a Docs page: the Doc Editor mock's. */
@@ -46,7 +49,9 @@ const DOC = [
   '[&_h2]:mt-2.5 [&_h2]:text-22 [&_h2]:leading-title [&_h2]:tracking-brand',
   '[&_h3]:mt-1.5 [&_h3]:text-18 [&_h3]:leading-title',
   '[&_ul]:gap-1.5 [&_ul]:pl-5.5 [&_ol]:gap-1.5 [&_ol]:pl-5.5 [&_li_ul]:mt-1.5 [&_li_ol]:mt-1.5',
-  '[&_code]:text-13h [&_a]:text-ac [&_a]:no-underline [&_a:hover]:text-ac-d',
+  '[&_code]:text-13h',
+  // Link marks only (they carry rel=nofollow); chips that are links keep their own ink.
+  '[&_a[rel~=nofollow]]:text-ac [&_a[rel~=nofollow]]:no-underline [&_a[rel~=nofollow]:hover]:text-ac-d',
   '[&_pre]:rounded-card [&_pre]:border [&_pre]:border-br [&_pre]:bg-bg2 [&_pre]:px-4 [&_pre]:py-3 [&_pre]:text-13 [&_pre]:leading-body',
   '[&_hr]:border-br-row',
   CODE_TOKENS,

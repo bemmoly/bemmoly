@@ -29,7 +29,7 @@ export const calloutClass = (variant: CalloutVariant) =>
 
 /** The header row of a callout or decision: dot, label, and anything at the right. */
 export const NODE_HEADER =
-  'flex items-center gap-1.75 text-12h font-semibold select-none [&>[data-dot]]:size-1.75 [&>[data-dot]]:shrink-0 [&>[data-dot]]:rounded-full';
+  'flex items-center gap-1.75 text-12h leading-brief font-semibold select-none [&>[data-dot]]:size-1.75 [&>[data-dot]]:shrink-0 [&>[data-dot]]:rounded-full';
 
 /** The blocks inside a callout or decision. */
 export const NODE_BODY = 'flex min-w-0 flex-col gap-1.5 [&_p]:m-0';
@@ -66,7 +66,7 @@ export const PLACEHOLDER_CARD =
   'flex flex-col gap-1 rounded-card border border-dashed border-br3 bg-bg2 px-4 py-3 text-13 leading-body text-tx4';
 export const PLACEHOLDER_TITLE = 'text-12h font-semibold text-tx3';
 
-export const PAGE_LINK = 'font-medium text-ac no-underline hover:text-ac-d cursor-pointer';
+export const PAGE_LINK = 'cursor-pointer text-ac no-underline hover:text-ac-d';
 
 /** The mock's inline issue chip (KeyChip inline), with a neutral square when nothing is live. */
 export const ISSUE_CHIP =

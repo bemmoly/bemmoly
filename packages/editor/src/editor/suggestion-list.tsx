@@ -35,7 +35,16 @@ export const optionId = (listId: string, index: number) => `${listId}-option-${i
  * labels in the menu's 11px capitals. Focus stays in the text; the editor points at the active
  * row with aria-activedescendant.
  */
-export function SuggestionList({ store, listId }: { store: SuggestionStore; listId: string }) {
+export function SuggestionList({
+  store,
+  listId,
+  page = false,
+}: {
+  store: SuggestionStore;
+  listId: string;
+  /** On a Docs page the menu takes the page's 1.7 line height, as the mock's does. */
+  page?: boolean;
+}) {
   const open = useSyncExternalStore(store.subscribe, store.get);
   const activeId = open && open.items.length > 0 ? optionId(listId, open.active) : null;
 
@@ -50,7 +59,10 @@ export function SuggestionList({ store, listId }: { store: SuggestionStore; list
       id={listId}
       role="listbox"
       aria-label={open.label}
-      className="flex max-h-80 w-80 flex-col overflow-y-auto rounded-card border border-br bg-sf p-1.5 text-13 text-tx shadow-menu"
+      className={cx(
+        'flex w-80 flex-col overflow-y-auto rounded-card border border-br bg-sf p-1.5 text-13 text-tx shadow-menu',
+        page ? 'max-h-85 leading-prose' : 'max-h-80',
+      )}
     >
       {sections(open.items).map((section, index) => (
         <div

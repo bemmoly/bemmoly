@@ -85,7 +85,7 @@ export default function DocEditor(props: DocEditorProps) {
     <DocServicesContext.Provider value={services}>
       <div ref={frame} className="relative min-w-0">
         <div ref={host} className={props.contentClassName ?? 'min-w-0'} />
-        <SuggestionList store={store} listId={listId} />
+        <SuggestionList store={store} listId={listId} page />
         <NodeViewPortals store={portals} />
         <TableTools editor={editor} host={frame} />
       </div>

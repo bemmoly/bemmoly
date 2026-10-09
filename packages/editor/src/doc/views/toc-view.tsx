@@ -53,9 +53,10 @@ export function TocList({
   }
   const top = Math.min(...entries.map((entry) => entry.level));
   return (
-    <ol className="m-0 flex list-none flex-col gap-0.5 p-0">
+    <div role="list" className="flex flex-col gap-0.5">
       {entries.map((entry, index) => (
-        <li
+        <div
+          role="listitem"
           key={`${entry.id}-${index}`}
           className={cx('min-w-0', TOC_INDENT[entry.level - top + 1])}
         >
@@ -66,9 +67,9 @@ export function TocList({
           >
             {entry.text}
           </a>
-        </li>
+        </div>
       ))}
-    </ol>
+    </div>
   );
 }
 

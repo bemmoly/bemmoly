@@ -105,9 +105,9 @@ function IssueTableChrome({ node, editor, updateAttributes }: NodeViewProps) {
 
 export const issueEmbedView: ViewSpec = {
   tag: 'span',
-  className: () => 'inline-block align-middle',
+  className: () => '',
   attrs: (node) => ({ 'data-type': 'issueEmbed', 'data-key': String(node.attrs['key'] ?? '') }),
-  chrome: { tag: 'span', className: 'inline-flex' },
+  chrome: { tag: 'span', className: '' },
   Component: IssueEmbedChrome,
 };
 

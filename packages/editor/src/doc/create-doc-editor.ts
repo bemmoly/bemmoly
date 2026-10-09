@@ -34,11 +34,11 @@ const PROSEMIRROR = cx(
   'relative min-w-0 whitespace-break-spaces outline-0 [font-variant-ligatures:none]',
   '[&_[contenteditable=false]]:whitespace-normal',
   '[&_img.ProseMirror-separator]:inline [&_img.ProseMirror-separator]:m-0 [&_img.ProseMirror-separator]:border-0',
-  '[&_.ProseMirror-selectednode]:rounded-card [&_.ProseMirror-selectednode]:shadow-ring-ac',
+  '[&_.ProseMirror-selectednode]:rounded-card [&_.ProseMirror-selectednode]:shadow-ring',
   '[&_.ProseMirror-gapcursor]:relative [&_.ProseMirror-gapcursor]:after:absolute [&_.ProseMirror-gapcursor]:after:-top-0.5 [&_.ProseMirror-gapcursor]:after:block [&_.ProseMirror-gapcursor]:after:w-5 [&_.ProseMirror-gapcursor]:after:border-t [&_.ProseMirror-gapcursor]:after:border-tx',
   '[&_.is-empty]:before:pointer-events-none [&_.is-empty]:before:float-left [&_.is-empty]:before:h-0 [&_.is-empty]:before:text-tx6 [&_.is-empty]:before:content-[attr(data-placeholder)]',
   '[&_.tableWrapper]:min-w-0 [&_.tableWrapper]:overflow-x-auto',
-  '[&_[data-type=pageLink]]:cursor-pointer [&_[data-type=pageLink]]:font-medium [&_[data-type=pageLink]]:text-ac',
+  '[&_[data-type=pageLink]]:cursor-pointer [&_[data-type=pageLink]]:text-ac',
   '[&_[data-type=unsupportedBlock]]:rounded-card [&_[data-type=unsupportedBlock]]:border [&_[data-type=unsupportedBlock]]:border-dashed [&_[data-type=unsupportedBlock]]:border-br3 [&_[data-type=unsupportedBlock]]:bg-bg2 [&_[data-type=unsupportedBlock]]:px-4 [&_[data-type=unsupportedBlock]]:py-3 [&_[data-type=unsupportedBlock]]:text-13 [&_[data-type=unsupportedBlock]]:text-tx4',
 );
 

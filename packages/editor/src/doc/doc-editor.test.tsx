@@ -98,7 +98,7 @@ describe('the / menu', () => {
     expect(table?.type).toBe('table');
     expect(table?.content?.[0]?.content?.[0]?.type).toBe('tableHeader');
     const tools = await screen.findByRole('toolbar', { name: 'Table' });
-    fireEvent.click(within(tools).getByRole('button', { name: 'Row below' }));
+    fireEvent.click(within(tools).getByRole('button', { name: 'Add row below' }));
     const rows = () => (editor.getJSON() as RichTextDoc).content?.[0]?.content ?? [];
     expect(rows()).toHaveLength(4);
     fireEvent.click(within(tools).getByRole('button', { name: 'Delete column' }));
