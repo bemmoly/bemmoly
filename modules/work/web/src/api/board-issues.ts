@@ -2,7 +2,7 @@ import {
   issueDetailSchema,
   issueSchema,
   issueTransitionsResponseSchema,
-  labelsResponseSchema,
+  labelsPageSchema,
   rankIssueBodySchema,
   updateIssueBodySchema,
   type RankIssueBody,
@@ -46,8 +46,11 @@ export function workBoardIssuesEndpoints(http: Http) {
     },
     labels: {
       list: async (projectId: string) =>
-        (await http.request(`${BASE}/projects/${enc(projectId)}/labels`, labelsResponseSchema))
-          .items,
+        (
+          await http.request(`${BASE}/projects/${enc(projectId)}/labels`, labelsPageSchema, {
+            query: { limit: 100 },
+          })
+        ).items,
     },
   };
 }
