@@ -3,6 +3,7 @@ import { createActivityController } from './activity.controller.ts';
 import { createBacklogController } from './backlog.controller.ts';
 import { createBoardsController } from './boards.controller.ts';
 import { createFieldsController } from './fields.controller.ts';
+import { createFiltersController } from './filters.controller.ts';
 import { createIssuesController } from './issues.controller.ts';
 import { createLqlController } from './lql.controller.ts';
 import { createMetricsController } from './metrics.controller.ts';
@@ -24,6 +25,7 @@ export function createWorkControllers(services: WorkServices) {
     boards: createBoardsController(services.boards),
     sprints: createSprintsController(services.sprints),
     backlog: createBacklogController(services.backlog),
+    filters: createFiltersController(services.filters),
     metrics: createMetricsController(services.metrics),
   };
 }
