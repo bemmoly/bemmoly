@@ -53,9 +53,11 @@ export function EditorHeader(props: EditorHeaderProps) {
         ]}
       />
       <div className="flex items-center gap-4">
-        <h1 className="m-0 text-22 font-semibold tracking-title">{workflow.name}</h1>
+        <h1 className="m-0 text-22 font-semibold tracking-title whitespace-nowrap">
+          {workflow.name}
+        </h1>
         <Badge tone="accent">{workflow.projectId ? 'PROJECT COPY' : 'ORG DEFAULT'}</Badge>
-        <span className="text-12h text-tx4">
+        <span className="min-w-0 truncate text-12h text-tx4">
           {facts.join(' · ')}
           <span aria-live="polite" className={saveState === 'error' ? 'text-danger' : undefined}>
             {' · '}
