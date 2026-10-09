@@ -1,8 +1,11 @@
-import { EmptyState, SettingsFrame, Skeleton } from '@bemmoly/ui';
+import { EmptyState, SettingsFrame } from '@bemmoly/ui';
+import { useSettingsAccess } from '../hooks/settings-access.ts';
+import { useSchemes } from '../hooks/settings-schemes.ts';
 import type { WorkScreenProps } from '../routes.tsx';
+import { ProjectSettingsNav, settingsPath } from '../settings/project-nav.tsx';
 import { useProject } from '../shared/index.ts';
-import { workflowPaths } from './navigate.ts';
-import { ProjectSettingsNav } from './project-settings-nav.tsx';
+import { WorkflowEditorSkeleton } from '../skeletons/settings-skeleton.tsx';
+import { navigate, workflowPaths } from './navigate.ts';
 import { WorkflowEditor } from './workflow-editor.tsx';
 import { WorkflowsList } from './workflows-list.tsx';
 
@@ -12,9 +15,11 @@ import { WorkflowsList } from './workflows-list.tsx';
  */
 export default function WorkflowsScreen({ projectKey, rest }: WorkScreenProps) {
   const { project, isPending } = useProject(projectKey);
+  const schemes = useSchemes(project?.id);
+  const access = useSettingsAccess();
   const workflowId = rest[0];
   let content;
-  if (isPending) content = <Skeleton className="m-6 h-40" />;
+  if (isPending) content = workflowId ? <WorkflowEditorSkeleton /> : null;
   else if (!project)
     content = (
       <EmptyState
@@ -36,7 +41,18 @@ export default function WorkflowsScreen({ projectKey, rest }: WorkScreenProps) {
       <WorkflowsList project={project} editorPath={(id) => workflowPaths.editor(project.key, id)} />
     );
   return (
-    <SettingsFrame nav={<ProjectSettingsNav project={project} />} className="min-w-0">
+    <SettingsFrame
+      nav={
+        <ProjectSettingsNav
+          project={project}
+          current="workflow"
+          schemes={schemes.list.data?.items ?? []}
+          canConfigure={access.configureBoard || access.configureProject}
+          onOpen={(page) => project && navigate(settingsPath(project.key, page))}
+        />
+      }
+      className="min-w-0"
+    >
       <div className="flex h-full min-h-0 flex-col">{content}</div>
     </SettingsFrame>
   );
