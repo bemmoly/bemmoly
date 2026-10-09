@@ -11,6 +11,7 @@ import { createHistoryService } from './history/index.ts';
 import { createIssuesService } from './issues/index.ts';
 import { createLinksService } from './links/index.ts';
 import { createLqlService } from './lql/index.ts';
+import { createMetricsService } from './metrics/index.ts';
 import { createProjectsService } from './projects/index.ts';
 import { createSearchService } from './search/index.ts';
 import { createIssueTypesService } from './types/index.ts';
@@ -52,6 +53,7 @@ export function createWorkServices(deps: WorkServiceDeps) {
     search: createSearchService(issueDeps),
     workflow,
     lql,
+    metrics: createMetricsService({ ...deps, ...issueDeps, lql }),
   };
 }
 
