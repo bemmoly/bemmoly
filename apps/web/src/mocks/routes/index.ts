@@ -4,6 +4,7 @@ import { peopleRoutes } from './people.ts';
 import { sessionRoutes } from './session.ts';
 import { settingsRoutes } from './settings.ts';
 import { workIssuesRoutes } from './work-issues.ts';
+import { workSettingsBoardRoutes } from './work-settings-boards.ts';
 import { workSettingsRoutes } from './work-settings.ts';
 import { workWorkflowRoutes } from './work-workflows.ts';
 
@@ -14,5 +15,6 @@ export const ROUTES: readonly MockRoute[] = [
   ...operationsRoutes,
   ...workIssuesRoutes,
   ...workSettingsRoutes,
+  ...workSettingsBoardRoutes,
   ...workWorkflowRoutes,
 ];
