@@ -59,22 +59,49 @@ function setup() {
   );
   const hook = renderHook(() => useBoardMove(BOARD_ID, (id) => id), { wrapper });
   const model = buildBoardModel(view);
-  const card = view.cards[0];
-  if (!card) throw new Error('no card');
-  const from = locateCard(model, card.issueId);
-  if (!from) throw new Error('no place');
-  const plan = planMove(
-    model,
-    card,
-    from,
-    { laneId: EPIC, columnId: 'doing', index: 0 },
-    STATUS.doing,
-  );
-  if (!plan) throw new Error('no plan');
+  const planFor = (index: number) => {
+    const card = view.cards[index];
+    const from = card ? locateCard(model, card.issueId) : null;
+    if (!card || !from) throw new Error('no card');
+    const plan = planMove(
+      model,
+      card,
+      from,
+      { laneId: EPIC, columnId: 'doing', index: 0 },
+      STATUS.doing,
+    );
+    if (!plan) throw new Error('no plan');
+    return plan;
+  };
+  const plan = planFor(0);
   const cached = () => client.getQueryData<BoardView>(workKeys.boardView(BOARD_ID, {}));
-  const columnOf = () => cached()?.cards.find((entry) => entry.issueId === card.issueId)?.columnId;
-  return { client, hook, plan, columnOf };
+  const columnOf = (issueId = plan.issueId) =>
+    cached()?.cards.find((entry) => entry.issueId === issueId)?.columnId;
+  return { client, hook, plan, planFor, columnOf, cached };
 }
+
+/** A promise the test resolves when it wants a held response to go. */
+function gate() {
+  let open = () => {};
+  const opened = new Promise<void>((resolve) => (open = resolve));
+  return { open, opened };
+}
+
+const refusal = () =>
+  HttpResponse.json(
+    {
+      code: 'validation_failed',
+      message: 'The transition is blocked',
+      details: { reasons: ['Link a pull request first.'] },
+      requestId: 'r1',
+    },
+    { status: 400 },
+  );
+
+const reads = [
+  http.get('*/api/v1/work/boards/:id/view', () => HttpResponse.json(testView())),
+  http.get('*/api/v1/work/boards/:id/metrics', () => HttpResponse.json({})),
+];
 
 describe('useBoardMove', () => {
   it('moves the card in the same frame, then transitions and ranks it', async () => {
@@ -139,27 +166,45 @@ describe('useBoardMove', () => {
   });
 
   it('puts the card back and says why when the workflow refuses', async () => {
-    server.use(
-      http.patch('*/api/v1/work/issues/:key', () =>
-        HttpResponse.json(
-          {
-            code: 'validation_failed',
-            message: 'The transition is blocked',
-            details: { reasons: ['Link a pull request first.'] },
-            requestId: 'r1',
-          },
-          { status: 400 },
-        ),
-      ),
-      http.get('*/api/v1/work/boards/:id/view', () => HttpResponse.json(testView())),
-      http.get('*/api/v1/work/boards/:id/metrics', () => HttpResponse.json({})),
-    );
+    server.use(http.patch('*/api/v1/work/issues/:key', refusal), ...reads);
     const { hook, plan, columnOf } = setup();
     act(() => hook.result.current.move(plan));
     expect(columnOf()).toBe('doing');
     await waitFor(() => expect(columnOf()).toBe('todo'));
     await waitFor(() => expect(document.body.textContent).toContain('Link a pull request first.'));
     expect(document.body.textContent).toContain('PLT-10 stays in todo');
+  });
+
+  it('puts back only the refused card, not one dropped after it that is still in flight', async () => {
+    const refused = gate();
+    const pending = gate();
+    server.use(
+      http.patch('*/api/v1/work/issues/:key', async ({ params }) => {
+        if (params['key'] === 'PLT-10') {
+          await refused.opened;
+          return refusal();
+        }
+        await pending.opened;
+        return HttpResponse.json(issue);
+      }),
+      http.patch('*/api/v1/work/issues/:key/rank', () => HttpResponse.json(issue)),
+      ...reads,
+    );
+    const { hook, plan, planFor, columnOf, cached } = setup();
+    const second = planFor(1);
+    act(() => hook.result.current.move(plan));
+    act(() => hook.result.current.move(second));
+    expect([columnOf(), columnOf(second.issueId)]).toEqual(['doing', 'doing']);
+    refused.open();
+    await waitFor(() => expect(columnOf()).toBe('todo'));
+    expect(columnOf(second.issueId)).toBe('doing');
+    const counts = cached()?.columns.map((column) => [column.id, column.count]);
+    expect(counts).toEqual([
+      ['todo', 2],
+      ['doing', 3],
+      ['done', 1],
+    ]);
+    pending.open();
   });
 });
 

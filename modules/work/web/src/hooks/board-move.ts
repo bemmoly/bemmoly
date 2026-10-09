@@ -4,15 +4,26 @@ import { useToast } from '@bemmoly/ui';
 import { useMutation, useQueryClient, type QueryKey } from '@tanstack/react-query';
 import { useCallback, useMemo } from 'react';
 import { api, workKeys } from '../shared/index.ts';
-import { applyMove, type MovePlan } from './board-drag.ts';
+import {
+  applyMove,
+  placementOf,
+  revertMove,
+  type CardPlacement,
+  type MovePlan,
+} from './board-drag.ts';
 
 /*
- * A drop, optimistically: the card moves in every cached view of the board in the same frame,
+ * A drop, optimistically: the card moves in every cached view holding it in the same frame,
  * then the transition (when the column changes) and the rank are sent. The server is the
- * authority, so the board is refetched either way; a refusal puts the card back and says why.
+ * authority, so the board is refetched once the last move settles; a refusal puts back that
+ * card alone and says why.
  */
 
-type Snapshot = Array<[QueryKey, BoardView | undefined]>;
+interface Moving {
+  plan: MovePlan;
+  /** The card's place in each cached view before the drop, to put back on a refusal. */
+  before: Array<[QueryKey, CardPlacement]>;
+}
 
 /** The workflow's reasons when it refused the move, else the error's own sentence. */
 export function refusalOf(error: unknown): string {
@@ -39,11 +50,15 @@ export function useBoardMove(boardId: string, columnName: (columnId: string) => 
   const toast = useToast();
   const viewsKey = useMemo(() => workKeys.boardView(boardId).slice(0, -1), [boardId]);
   const mutationKey = useMemo(() => workKeys.boardMove(boardId), [boardId]);
-  const mutation = useMutation<void, unknown, { plan: MovePlan; snapshot: Snapshot }>({
+  const mutation = useMutation<void, unknown, Moving>({
     mutationKey,
     mutationFn: ({ plan }) => send(plan),
-    onError: (error, { plan, snapshot }) => {
-      for (const [key, data] of snapshot) queryClient.setQueryData(key, data);
+    onError: (error, { plan, before }) => {
+      for (const [key, placement] of before) {
+        queryClient.setQueryData<BoardView>(key, (view) =>
+          view ? revertMove(view, plan, placement) : view,
+        );
+      }
       toast.show({
         tone: 'warn',
         title: `${plan.key} stays in ${columnName(plan.fromColumnId)}`,
@@ -66,11 +81,14 @@ export function useBoardMove(boardId: string, columnName: (columnId: string) => 
   const move = useCallback(
     (plan: MovePlan) => {
       void queryClient.cancelQueries({ queryKey: viewsKey });
-      const snapshot = queryClient.getQueriesData<BoardView>({ queryKey: viewsKey });
-      for (const [key, data] of snapshot) {
-        if (data) queryClient.setQueryData<BoardView>(key, applyMove(data, plan));
+      const before: Moving['before'] = [];
+      for (const [key, data] of queryClient.getQueriesData<BoardView>({ queryKey: viewsKey })) {
+        const placement = data ? placementOf(data, plan.issueId) : null;
+        if (!data || !placement) continue;
+        before.push([key, placement]);
+        queryClient.setQueryData<BoardView>(key, applyMove(data, plan));
       }
-      mutation.mutate({ plan, snapshot });
+      mutation.mutate({ plan, before });
     },
     [queryClient, viewsKey, mutation.mutate],
   );
