@@ -72,6 +72,8 @@ describe('search against Postgres', () => {
   it('suggests by key prefix first, case-insensitively, within reach', async (ctx) => {
     if (!start.available) return ctx.skip(start.reason);
     const member = work.as(work.users.member);
+    // SRCH-10 changed last; the exact key still comes first.
+    await work.services.issues.update(member, 'SRCH-10', { title: 'Filler, touched last' });
     const byKey = await work.services.search.suggest(member, { q: 'srch-1', limit: 8 });
     expect(byKey[0]?.key).toBe('SRCH-1');
     expect(byKey.map((item) => item.key)).toEqual(
