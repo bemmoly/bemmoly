@@ -13,11 +13,11 @@ import { recordAudit } from '../audit/index.ts';
 import type { RequestContext } from '../authz/index.ts';
 import { presentApiToken } from './presenters.ts';
 import {
-  API_TOKEN_PREFIX,
-  API_TOKEN_VISIBLE_CHARS,
-  generateSecret,
-  hashSecret,
-} from './secrets.ts';
+  PERSONAL_TOKEN_PREFIX,
+  PERSONAL_TOKEN_VISIBLE_CHARS,
+  generateToken,
+  digestToken,
+} from './tokens.ts';
 
 /** last_used_at is written at most this often per token. */
 const LAST_USED_INTERVAL_MS = 60 * 1000;
@@ -36,15 +36,15 @@ export async function createApiToken(
   input: CreateApiTokenInput,
 ): Promise<CreatedApiToken> {
   const userId = sessionUserId(ctx);
-  const token = generateSecret(API_TOKEN_PREFIX);
+  const token = generateToken(PERSONAL_TOKEN_PREFIX);
   return db.transaction(async (tx) => {
     const [row] = await tx
       .insert(apiTokens)
       .values({
         userId,
         name: input.name,
-        tokenHash: hashSecret(token),
-        tokenPrefix: token.slice(0, API_TOKEN_VISIBLE_CHARS),
+        tokenHash: digestToken(token),
+        tokenPrefix: token.slice(0, PERSONAL_TOKEN_VISIBLE_CHARS),
         scopes: [...new Set(input.scopes)],
         expiresAt: input.expiresAt ? new Date(input.expiresAt) : null,
       })
@@ -103,14 +103,14 @@ export async function authenticateApiToken(
   token: string,
   now: Date,
 ): Promise<AuthenticatedToken | null> {
-  if (!token.startsWith(API_TOKEN_PREFIX)) return null;
+  if (!token.startsWith(PERSONAL_TOKEN_PREFIX)) return null;
   const [row] = await db
     .select({ token: apiTokens, status: users.status })
     .from(apiTokens)
     .innerJoin(users, eq(users.id, apiTokens.userId))
     .where(
       and(
-        eq(apiTokens.tokenHash, hashSecret(token)),
+        eq(apiTokens.tokenHash, digestToken(token)),
         isNull(apiTokens.revokedAt),
         or(isNull(apiTokens.expiresAt), gt(apiTokens.expiresAt, now)),
       ),

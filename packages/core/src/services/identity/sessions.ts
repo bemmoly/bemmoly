@@ -1,7 +1,7 @@
 import { and, desc, eq, gt, lte, ne, or } from 'drizzle-orm';
 import type { Database } from '../../clients/drizzle.ts';
 import { sessions, users, type SessionRow } from '../../models/identity/index.ts';
-import { digestsEqual, generateSecret, hashSecret } from './secrets.ts';
+import { digestsEqual, generateToken, digestToken } from './tokens.ts';
 
 export const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 /** Sliding expiry is written at most this often per session, to keep reads cheap. */
@@ -26,13 +26,13 @@ export async function createSession(
   db: Database,
   input: { userId: string; privilegeVersion: number; client: ClientInfo; now: Date },
 ): Promise<IssuedSession> {
-  const token = generateSecret();
+  const token = generateToken();
   const expiresAt = new Date(input.now.getTime() + SESSION_TTL_MS);
   const [row] = await db
     .insert(sessions)
     .values({
       userId: input.userId,
-      tokenHash: hashSecret(token),
+      tokenHash: digestToken(token),
       expiresAt,
       lastSeenAt: input.now,
       ip: clip(input.client.ip, 64),
@@ -65,7 +65,7 @@ export async function authenticateSession(
   now: Date,
   options: { readOnly?: boolean } = {},
 ): Promise<AuthenticatedSession | null> {
-  const digest = hashSecret(token);
+  const digest = digestToken(token);
   const graceStart = new Date(now.getTime() - ROTATION_GRACE_MS);
   const [row] = await db
     .select({ session: sessions, status: users.status, privilegeVersion: users.privilegeVersion })
@@ -111,12 +111,12 @@ async function rotate(
   client: ClientInfo,
   now: Date,
 ): Promise<Pick<AuthenticatedSession, 'expiresAt' | 'reissue'>> {
-  const token = generateSecret();
+  const token = generateToken();
   const expiresAt = new Date(now.getTime() + SESSION_TTL_MS);
   await db
     .update(sessions)
     .set({
-      tokenHash: hashSecret(token),
+      tokenHash: digestToken(token),
       previousTokenHash: session.tokenHash,
       rotatedAt: now,
       privilegeVersion,

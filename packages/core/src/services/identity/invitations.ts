@@ -24,7 +24,7 @@ import {
   type InvitationCreatedPayload,
 } from './events.ts';
 import { loadUser, presentInvitation } from './presenters.ts';
-import { generateSecret, hashSecret } from './secrets.ts';
+import { generateToken, digestToken } from './tokens.ts';
 import { createSession, type ClientInfo, type IssuedSession } from './sessions.ts';
 import { inSharedTransaction } from './transaction.ts';
 
@@ -79,14 +79,14 @@ export async function createInvitations(
       .where(and(pending, inArray(sql`lower(${invitations.email})`, emails)));
     const created: { row: typeof invitations.$inferSelect; acceptUrl: string }[] = [];
     for (const email of emails) {
-      const token = generateSecret();
+      const token = generateToken();
       const [row] = await tx
         .insert(invitations)
         .values({
           email,
           roleId: role.id,
           teamId: team?.id ?? null,
-          tokenHash: hashSecret(token),
+          tokenHash: digestToken(token),
           invitedBy: inviterId,
           expiresAt,
         })
@@ -156,7 +156,11 @@ export async function revokeInvitation(db: Database, ctx: RequestContext, id: st
 const INVALID = 'This invitation is invalid or has expired';
 
 function validByToken(token: string, now: Date) {
-  return and(eq(invitations.tokenHash, hashSecret(token)), pending, gt(invitations.expiresAt, now));
+  return and(
+    eq(invitations.tokenHash, digestToken(token)),
+    pending,
+    gt(invitations.expiresAt, now),
+  );
 }
 
 /** What the accept page shows. Anonymous: the token is the credential. */
