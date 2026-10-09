@@ -45,7 +45,8 @@ test('a project stays out of sight for a non-member until they are added', async
   // The admin adds Sam from the project's Members screen.
   await page.goto(`/work/members/${project.key}`);
   await expect(page.getByRole('row', { name: new RegExp(`^${me.name}`) })).toBeVisible();
-  await page.getByRole('button', { name: 'Add people' }).click();
+  // The header action; the empty state offers the same dialog under the same name.
+  await page.getByRole('button', { name: 'Add people' }).first().click();
   const dialog = page.getByRole('dialog', { name: `Add people to ${project.name}` });
   await dialog.getByRole('combobox', { name: 'People' }).click();
   await page.keyboard.type('Sam');
