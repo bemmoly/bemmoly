@@ -17,6 +17,7 @@ import { createLabelsService } from './labels/index.ts';
 import { createLinksService } from './links/index.ts';
 import { createLqlService } from './lql/index.ts';
 import { createMetricsService } from './metrics/index.ts';
+import { createMyWorkService } from './my-work/index.ts';
 import { createProjectsService } from './projects/index.ts';
 import { createSearchService } from './search/index.ts';
 import { createSprintsService } from './sprints/index.ts';
@@ -61,6 +62,7 @@ export function createWorkServices(deps: WorkServiceDeps) {
     links: createLinksService(issueDeps),
     history: createHistoryService(issueDeps),
     search: createSearchService(issueDeps),
+    myWork: createMyWorkService(issueDeps),
     workflow,
     lql,
     boards: createBoardsService({ ...deps, ...issueDeps, lql }),
