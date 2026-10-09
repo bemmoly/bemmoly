@@ -122,7 +122,7 @@ function listOf(key: 'boards' | 'issueTypes' | 'fields'): MockRoute {
   };
 }
 
-function patchOf(key: 'boards' | 'issueTypes' | 'fields', what: string, path: string): MockRoute {
+function patchOf(key: 'issueTypes' | 'fields', what: string, path: string): MockRoute {
   return {
     method: 'PATCH',
     pattern: `/api/v1/work/${path}/:id`,
@@ -230,7 +230,6 @@ export const workSettingsRoutes: MockRoute[] = [
   listOf('boards'),
   listOf('issueTypes'),
   listOf('fields'),
-  patchOf('boards', 'Board', 'boards'),
   patchOf('issueTypes', 'Issue type', 'issue-types'),
   patchOf('fields', 'Field', 'fields'),
   createOf('issueTypes', 'issue-types', {
