@@ -1,7 +1,9 @@
 /**
  * Kernel UI shared by the shell and module web chunks: the module chunk loader,
- * the settings navigation model, realtime, ⌘K ranking and inbox wording. Visual
- * primitives come from @bemmoly/ui; data comes from @bemmoly/api-client.
+ * in-app navigation and the leave guard for unsaved work,
+ * the Home section extension point, the settings navigation model, realtime,
+ * ⌘K ranking and inbox wording. Visual primitives come from @bemmoly/ui; data
+ * comes from @bemmoly/api-client.
  */
 export {
   groupItems,
@@ -20,6 +22,22 @@ export {
   type ModuleChunkProps,
 } from './modules/chunks.ts';
 export { ErrorBoundary } from './modules/error-boundary.tsx';
+export {
+  LeaveGuardProvider,
+  useLeaveGuard,
+  type LeaveGuard,
+  type LeaveGuardHook,
+  type LeaveGuardOptions,
+} from './modules/leave-guard.tsx';
+export { navigateInApp, setShellNavigator, type ShellNavigator } from './modules/navigation.ts';
+export {
+  createHomeSectionRegistry,
+  HomeSections,
+  type HomeSection,
+  type HomeSectionLoader,
+  type HomeSectionProps,
+  type HomeSectionRegistry,
+} from './modules/home-sections.tsx';
 export { ModuleOutlet } from './modules/module-outlet.tsx';
 export {
   backoffDelay,

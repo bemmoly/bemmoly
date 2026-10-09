@@ -7,4 +7,5 @@ export {
   type Priority,
   type PriorityGlyphProps,
   type TypeGlyphProps,
+  type TypeGlyphSize,
 } from './glyphs.tsx';

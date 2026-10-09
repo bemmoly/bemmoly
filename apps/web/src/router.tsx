@@ -1,3 +1,4 @@
+import { setShellNavigator } from '@bemmoly/core-web';
 import type { QueryClient } from '@tanstack/react-query';
 import { createRouter } from '@tanstack/react-router';
 import { setUnauthenticatedHandler } from './lib/api.ts';
@@ -33,6 +34,8 @@ export function createAppRouter(queryClient: QueryClient) {
     defaultPreloadStaleTime: 0,
     scrollRestoration: true,
   });
+  /** Module chunks navigate through the router, so leave guards see their moves too. */
+  setShellNavigator((path) => router.history.push(path));
   /** A session that expires mid-use sends the person to sign in, then back here. */
   setUnauthenticatedHandler(() => {
     const here = router.state.location;

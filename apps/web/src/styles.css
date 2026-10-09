@@ -4,6 +4,10 @@
 @import '@bemmoly/ui/theme.css';
 
 @source '../../../packages/core-web/src';
+/* The editor is its own lazy chunk, but its classes live in this one stylesheet. */
+@source '../../../packages/editor/src';
+/* Module web chunks are compiled into this bundle, so their utilities come from here too. */
+@source '../../../modules/*/web/src/**/*.{ts,tsx}';
 
 /* Base element styles from the mocks; in the base layer so utilities always win. */
 @layer base {

@@ -113,6 +113,7 @@ export function CommandPalette({
       className={cx(
         'fixed top-24 left-1/2 m-0 -translate-x-1/2 open:flex',
         'backdrop:bg-scrim backdrop:backdrop-blur-[1.5px]',
+        'motion-safe:animate-dialog-in backdrop:motion-safe:animate-fade-in',
         panel,
       )}
     >

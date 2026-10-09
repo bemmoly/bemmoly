@@ -16,6 +16,18 @@
       "dependsOn": ["^build"],
       "outputs": ["dist/**", "storybook-static/**"]
     },
+    "@bemmoly/web#build": {
+      "dependsOn": ["^build"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/modules/*/package.json",
+        "$TURBO_ROOT$/modules/*/web/**",
+        "$TURBO_ROOT$/modules/*/shared/**",
+        "$TURBO_ROOT$/packages/editor/package.json",
+        "$TURBO_ROOT$/packages/editor/src/**"
+      ],
+      "outputs": ["dist/**"]
+    },
     "@bemmoly/site#build": {
       "dependsOn": [],
       "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/SECURITY.md"],
@@ -42,6 +54,11 @@
     "test:e2e": {
       "dependsOn": ["build"],
       "cache": false
+    },
+    "test:e2e:work": {
+      "dependsOn": ["^build"],
+      "cache": false,
+      "env": ["CI", "BEMMOLY_TEST_DATABASE_URL", "DOCKER_HOST", "TESTCONTAINERS_*"]
     },
     "size": {
       "dependsOn": ["build"]

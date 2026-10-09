@@ -7,6 +7,9 @@ import {
   useState,
   type ReactNode,
 } from 'react';
+import { cx } from '../../lib/cx.ts';
+import { animates } from '../../lib/presence.ts';
+import { MOTION_MS } from '../../tokens/motion.ts';
 import { Toast, type ToastProps } from './toast.tsx';
 
 export interface ToastOptions extends Omit<ToastProps, 'onDismiss' | 'className'> {
@@ -29,14 +32,21 @@ export function useToast(): ToastApi {
 
 /** Holds the toast stack, bottom right, newest last, 8px apart. */
 export function ToastProvider({ children }: { children: ReactNode }) {
-  const [toasts, setToasts] = useState<(ToastOptions & { id: string })[]>([]);
+  const [toasts, setToasts] = useState<(ToastOptions & { id: string; leaving?: boolean })[]>([]);
   const counter = useRef(0);
   const timers = useRef(new Map<string, ReturnType<typeof setTimeout>>());
 
+  /** Plays the exit where motion is allowed, then drops the toast from the stack. */
   const dismiss = useCallback((id: string) => {
     clearTimeout(timers.current.get(id));
     timers.current.delete(id);
-    setToasts((list) => list.filter((t) => t.id !== id));
+    const remove = () => setToasts((list) => list.filter((t) => t.id !== id));
+    if (!animates()) {
+      remove();
+      return;
+    }
+    setToasts((list) => list.map((t) => (t.id === id ? { ...t, leaving: true } : t)));
+    timers.current.set(id, setTimeout(remove, MOTION_MS.base));
   }, []);
 
   const show = useCallback(
@@ -68,6 +78,10 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             {...(toast.tone ? { tone: toast.tone } : {})}
             {...(toast.action ? { action: toast.action } : {})}
             onDismiss={() => dismiss(toast.id)}
+            className={cx(
+              'motion-safe:animate-toast-in',
+              toast.leaving && 'pointer-events-none motion-safe:animate-toast-out',
+            )}
           />
         ))}
       </div>

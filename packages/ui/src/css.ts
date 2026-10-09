@@ -1,6 +1,9 @@
 import {
+  ANIMATIONS,
   COLOR_TOKENS,
   DEFAULT_PRESET,
+  EASE,
+  KEYFRAMES,
   LEADING,
   METRICS,
   MOTION,
@@ -52,6 +55,7 @@ export function renderBaseCss(): string {
       ...vars('', METRICS),
       ...vars('shadow-', SHADOWS),
       ...vars('duration-', MOTION),
+      ...vars('ease-', EASE),
     ]),
     block('body', [
       'margin: 0;',
@@ -64,11 +68,16 @@ export function renderBaseCss(): string {
     ]),
     block('*,\n::before,\n::after', ['box-sizing: border-box;']),
     block('::-webkit-scrollbar', ['width: 10px;', 'height: 10px;']),
+    // The mock's 2px gap around the thumb is drawn in the page colour; a transparent border
+    // clipped out of the background keeps the same gap on the white panels and in dialogs.
     block('::-webkit-scrollbar-thumb', [
       'background: var(--br-off);',
+      'background-clip: padding-box;',
       'border-radius: 6px;',
-      'border: 2px solid var(--bg);',
+      'border: 2px solid transparent;',
     ]),
+    block('::-webkit-scrollbar-thumb:hover', ['background-color: var(--tx6);']),
+    block('::-webkit-scrollbar-corner', ['background: transparent;']),
     // Components animate only behind motion-safe:; this also stops anything a page adds.
     `@media (prefers-reduced-motion: reduce) {\n${reducedMotion}\n}`,
   ];
@@ -110,6 +119,8 @@ export function renderTailwindCss(): string {
     '--spacing-control: var(--size-control);',
     '--spacing-topbar: var(--size-topbar);',
     '--default-transition-duration: var(--duration-fast);',
+    ...Object.keys(EASE).map((name) => `--ease-${name}: var(--ease-${name});`),
+    '--default-transition-timing-function: var(--ease-standard);',
   ];
   const text = Object.entries(TYPE_SCALE).flatMap(([name, size]) => [
     `--text-${name}: ${size};`,
@@ -128,13 +139,21 @@ export function renderTailwindCss(): string {
     ...vars('radius-', RADII).filter((line) => !line.startsWith('--radius-control')),
     ...vars('leading-', LEADING),
     ...vars('tracking-', TRACKING),
+    ...vars('animate-', ANIMATIONS),
   ];
+  const keyframes = Object.entries(KEYFRAMES).map(([name, stops]) =>
+    block(
+      `@keyframes ${name}`,
+      Object.entries(stops).map(([stop, css]) => `${stop} { ${css} }`),
+      '  ',
+    ),
+  );
   return [
     HEADER,
     "@source './components';",
     "@source './icons';",
     '',
-    block('@theme', statics),
+    block('@theme', statics).replace(/\n}$/, `\n\n${keyframes.join('\n\n')}\n}`),
     '',
     block('@theme inline', theme),
     '',

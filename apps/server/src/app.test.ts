@@ -34,7 +34,7 @@ describe('buildApp', () => {
     expect(ready.json()).toMatchObject({ status: 'unavailable' });
   });
 
-  it('lists registered module manifests, including sample', async () => {
+  it('lists registered module manifests, including sample and work', async () => {
     const app = await buildApp({ env: TEST_ENV, modules: await shippedModules(), logger: false });
     const response = await app.inject({ method: 'GET', url: '/api/v1/modules' });
     expect(response.statusCode).toBe(200);
@@ -42,8 +42,27 @@ describe('buildApp', () => {
       items: [
         {
           id: 'sample',
+          name: 'Sample',
           version: '0.0.0',
           navigation: [{ id: 'sample', label: 'Sample', path: '/sample', placement: 'top' }],
+        },
+        {
+          id: 'work',
+          name: 'Work',
+          version: '0.2.0',
+          navigation: [
+            { id: 'work.board', label: 'Board', path: '/work/board', placement: 'top' },
+            { id: 'work.backlog', label: 'Backlog', path: '/work/backlog', placement: 'top' },
+            { id: 'work.projects', label: 'Projects', path: '/work/projects', placement: 'top' },
+            { id: 'work.create-issue', label: 'Issue', path: '/work/create', placement: 'create' },
+            {
+              id: 'work.create-project',
+              label: 'Project',
+              path: '/work/projects/new',
+              placement: 'create',
+            },
+          ],
+          search: [{ kind: 'work.issue', label: 'Issues' }],
         },
       ],
     });

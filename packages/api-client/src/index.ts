@@ -1,7 +1,8 @@
 /**
  * The typed client for /api/v1. Hand-written for 0.1.0 against the zod schemas
  * in @bemmoly/shared; it is generated from the OpenAPI document in a later
- * release, keeping these function names.
+ * release, keeping these function names. Module endpoints live with their
+ * module, so this package never depends on one.
  */
 import { accessEndpoints } from './endpoints/access.ts';
 import { messagingEndpoints } from './endpoints/messaging.ts';
@@ -36,6 +37,7 @@ export {
   type ClientErrorCode,
 } from './errors.ts';
 export { buildQuery, createHttp, type Http, type HttpOptions, type Query } from './http.ts';
+export { enc, validated } from './endpoints/validate.ts';
 export type { AuditFilter, BackupsFilter } from './endpoints/operations.ts';
 export type { ListOptions, UsersFilter } from './endpoints/people.ts';
 export type { SettingRead } from './endpoints/settings.ts';

@@ -1,7 +1,7 @@
 import type { ModuleManifest } from '@bemmoly/shared';
 import { describe, expect, it, vi } from 'vitest';
 import { seedUsers } from '../mocks/seed/people.ts';
-import { paletteItems, type PaletteSources } from './command-items.ts';
+import { paletteItems, paletteScopes, type PaletteSources } from './command-items.ts';
 
 const work: ModuleManifest = {
   id: 'work',
@@ -62,5 +62,42 @@ describe('paletteItems', () => {
       expect.arrayContaining(['Invite people', 'Create team']),
     );
     expect(titles(items, 'Settings')).toContain('Storage and backups');
+  });
+  it('puts what module providers found first, under their group, with the key', () => {
+    const items = paletteItems(
+      sources({
+        searchHits: [
+          {
+            kind: 'work.issue',
+            id: 'i1',
+            key: 'PLT-204',
+            title: 'Session store migration',
+            subtitle: 'In review',
+            href: '/work/issue/PLT-204',
+            group: 'Issues',
+          },
+        ],
+      }),
+    );
+    expect(items[0]).toMatchObject({
+      group: 'Issues',
+      issueKey: 'PLT-204',
+      title: 'Session store migration',
+      href: '/work/issue/PLT-204',
+      fromServer: true,
+    });
+    expect(titles(items, 'People')).toEqual([]);
+  });
+
+  it('offers a scope per module search group between All and People', () => {
+    const scopes = paletteScopes([{ ...work, search: [{ kind: 'work.issue', label: 'Issues' }] }]);
+    expect(scopes.map((scope) => scope.label)).toEqual([
+      'All',
+      'Issues',
+      'People',
+      'Settings',
+      'Actions',
+    ]);
+    expect(scopes[1]).toEqual({ value: 'work.issue', label: 'Issues', group: 'Issues' });
   });
 });

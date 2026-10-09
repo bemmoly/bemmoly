@@ -1,23 +1,10 @@
 import type { Database } from '../../clients/drizzle.ts';
+import type { AuditEntry, AuditMeta } from '../../contracts/audit.ts';
 import type { Actor } from '../../contracts/authz.ts';
 import { auditLog } from '../../models/audit/index.ts';
 
-/** Where a mutation came from, for the audit row. */
-export interface RequestMeta {
-  ip?: string;
-  requestId?: string;
-}
-
-export interface AuditEntryInput {
-  actor: Actor;
-  /** Dotted verb such as `user.deactivated` or `role.capabilities_changed`. */
-  action: string;
-  target: { kind: string; id?: string | null };
-  before?: unknown;
-  after?: unknown;
-  meta?: RequestMeta;
-  aiPlanId?: string;
-}
+export type RequestMeta = AuditMeta;
+export type AuditEntryInput = AuditEntry;
 
 const SECRET_KEY = /password|secret|token_?hash|^token$|credential/i;
 

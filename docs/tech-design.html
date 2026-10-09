@@ -1220,7 +1220,7 @@ BEMMOLY_SMTP_URL=</code></pre></div>
     <li>TanStack Query holds server state with stale-while-revalidate; WebSocket invalidation replaces polling; mutations are optimistic with rollback on error.</li>
     <li>Backlog and long lists are virtualised with TanStack Virtual; the board virtualises columns past 200 cards.</li>
     <li>Fonts self-hosted and preloaded; theme tokens are CSS variables so switching themes is a class change, not a re-render.</li>
-    <li>Editor loads only on doc routes; Yjs state is cached in IndexedDB so a reopened page renders before the socket connects.</li>
+    <li>The editor loads the first time one opens, on any route, and pages that only read documents never load it (ADR-0012); Yjs state is cached in IndexedDB so a reopened page renders before the socket connects.</li>
     <li>Web Vitals are reported to <code>/metrics</code> (opt-in) so admins see real user performance in Settings › System.</li>
   </ul></div>
 </div>

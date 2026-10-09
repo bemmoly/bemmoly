@@ -66,7 +66,7 @@ describe('useUsers', () => {
     await waitFor(() => expect(result.current.rows).toHaveLength(2));
     expect(result.current.rows.map((user) => user.name)).toEqual(['Jonas M.', 'Dev P.']);
     await waitFor(() =>
-      expect(result.current.modulesOf(result.current.rows[0]!)).toEqual(['Sample']),
+      expect(result.current.modulesOf(result.current.rows[0]!)).toEqual(['Sample', 'Work']),
     );
     await waitFor(() =>
       expect(result.current.teamsOf(result.current.rows[0]!)).toEqual(['Platform', 'Mobile']),

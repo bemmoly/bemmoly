@@ -113,6 +113,7 @@ describe('what email and notifications build on, against a real database', () =>
       await app.close();
     }
   });
+
   it('keeps the boot read of setup status out of the strict per-IP budget', async (ctx) => {
     if (!harness) return ctx.skip(skipReason);
     const app = Fastify({ logger: false });

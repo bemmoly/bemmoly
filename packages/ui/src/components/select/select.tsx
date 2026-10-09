@@ -17,6 +17,11 @@ const SIZES: Record<SelectSize, string> = {
   lg: 'h-9 gap-2 rounded-control px-3 text-13',
 };
 
+/** The ghost variant keeps the value's own weight and only shows its border when touched. */
+const GHOST = 'h-6.5 gap-1.5 rounded-sm px-2 border-transparent bg-transparent hover:border-br3';
+const GHOST_CARET =
+  'opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 group-aria-expanded:opacity-100';
+
 /** The props the list consumes; everything else goes on the trigger button. */
 const LIST_PROPS = [
   'options',
@@ -46,6 +51,7 @@ export function Select({ ref, ...props }: SelectProps) {
   const {
     placeholder,
     size = 'md',
+    variant = 'outline',
     error,
     searchPlaceholder = 'Search',
     name,
@@ -85,10 +91,10 @@ export function Select({ ref, ...props }: SelectProps) {
         onClick={state.toggle}
         onKeyDown={state.onKeyDown}
         className={cx(
-          'group inline-flex max-w-full min-w-0 shrink-0 cursor-pointer items-center border border-br3 bg-sf text-left font-sans text-tx outline-0',
+          'group inline-flex max-w-full min-w-0 shrink-0 cursor-pointer items-center border text-left font-sans text-tx outline-0',
           'focus-visible:border-ac focus-visible:shadow-ring aria-expanded:border-ac aria-expanded:shadow-ring',
           'aria-invalid:border-danger disabled:cursor-not-allowed disabled:opacity-50',
-          SIZES[size],
+          variant === 'ghost' ? GHOST : cx('border-br3 bg-sf', SIZES[size]),
           wrapperClassName,
           className,
         )}
@@ -103,8 +109,8 @@ export function Select({ ref, ...props }: SelectProps) {
         </span>
         <Icon
           name="caret"
-          size={size === 'sm' ? ICON_SIZE.small : ICON_SIZE.inline}
-          className={caretTone}
+          size={size === 'sm' || variant === 'ghost' ? ICON_SIZE.small : ICON_SIZE.inline}
+          className={cx(caretTone, variant === 'ghost' && GHOST_CARET)}
         />
       </button>
       {name !== undefined && <input type="hidden" name={name} value={state.value} />}

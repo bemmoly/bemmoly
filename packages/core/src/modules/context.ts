@@ -7,6 +7,8 @@ import type { BemmolyModule, ModuleContext } from './contract.ts';
 import type { ModuleContributions } from './contributions.ts';
 import { ModuleLoadError } from './errors.ts';
 import type { SettingsReader, SettingsRegistry } from './registries.ts';
+import { createAuditRecorder } from '../services/audit/index.ts';
+import { createContainerMemberships } from '../services/authz/index.ts';
 
 export interface ModuleContextOptions {
   events: EventBus;
@@ -102,6 +104,12 @@ export function createModuleContext(
     search: {
       addIndexer: (indexer) => into.searchIndexers.push(indexer),
       addField: (field) => into.queryFields.push(field),
+      addProvider(provider) {
+        if (!provider.kind.startsWith(`${module.id}.`)) {
+          fail(`search kind "${provider.kind}" must be namespaced as "${module.id}.<kind>"`);
+        }
+        into.searchProviders.push(provider);
+      },
     },
     ai: {
       addTool: (tool) => into.aiTools.push(tool),
@@ -120,6 +128,12 @@ export function createModuleContext(
     importers: { add: (importer) => into.importers.push(importer) },
     settings,
     realtime: options.realtime ?? noRealtime,
-    ...(options.database ? { database: options.database } : {}),
+    ...(options.database
+      ? {
+          database: options.database,
+          audit: createAuditRecorder(options.database),
+          memberships: createContainerMemberships(options.database),
+        }
+      : {}),
   };
 }

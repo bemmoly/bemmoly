@@ -1,11 +1,14 @@
+import { HomeSections } from '@bemmoly/core-web';
 import { Link } from '@tanstack/react-router';
+import { Loading } from '../components/form.tsx';
 import { MarkAllRead, useOpenNotification } from '../components/shell/inbox-drawer.tsx';
 import { InboxCount, NotificationList } from '../components/shell/notification-list.tsx';
 import { useModules } from '../hooks/use-modules.ts';
 import { useInbox } from '../hooks/use-notifications.ts';
 import { useMe } from '../hooks/use-session.ts';
 import { useWorkspace } from '../hooks/use-workspace.ts';
-import { Card, CardHeader, EmptyState } from '@bemmoly/ui';
+import { HOME_SECTIONS } from '../lib/home-sections.ts';
+import { Button, Card, CardHeader, EmptyState } from '@bemmoly/ui';
 
 function greeting(now: Date): string {
   const hour = now.getHours();
@@ -14,7 +17,8 @@ function greeting(now: Date): string {
 
 /**
  * The kernel's part of the Home mock: greeting, inbox block and the modules
- * this person can open. Work and Docs add their own blocks when they ship.
+ * this person can open. Modules add their own blocks ("my work", recent
+ * docs) at the top of the main column through the Home section extension point.
  */
 export function HomePage() {
   const me = useMe();
@@ -36,37 +40,60 @@ export function HomePage() {
         </div>
       </div>
       <div className="grid grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] items-start gap-5">
-        <Card>
-          <CardHeader title="Your modules" />
-          {modules.length === 0 ? (
-            <EmptyState
-              title="No modules yet"
-              description="An org admin enables modules in Settings › Modules and shares them with you."
-            />
-          ) : (
-            <ul className="m-0 flex list-none flex-col p-0">
-              {modules.map((module) => {
-                const entry = module.navigation.find((nav) => nav.placement === 'top');
-                return (
-                  <li key={module.id} className="border-b border-br-row last:border-b-0">
-                    <Link
-                      to={entry?.path ?? `/${module.id}`}
-                      className="flex items-center gap-3 px-4 py-2.75 text-tx"
-                    >
-                      <span className="grid size-7.5 place-items-center rounded-panel bg-ac text-12 font-semibold text-on-ac">
-                        {(entry?.label ?? module.id).slice(0, 2).toUpperCase()}
-                      </span>
-                      <span className="flex flex-col gap-0.5">
-                        <span className="font-semibold">{entry?.label ?? module.id}</span>
-                        <span className="text-12 text-tx5">Version {module.version}</span>
-                      </span>
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </Card>
+        <div className="flex min-w-0 flex-col gap-5">
+          <HomeSections
+            modules={modules}
+            registry={HOME_SECTIONS}
+            loading={
+              <Card>
+                <Loading lines={3} label="Loading" />
+              </Card>
+            }
+            failed={(manifest, _error, retry) => (
+              <Card>
+                <EmptyState
+                  title={`This ${manifest.id} section did not load`}
+                  action={
+                    <Button variant="secondary" onClick={retry}>
+                      Try again
+                    </Button>
+                  }
+                />
+              </Card>
+            )}
+          />
+          <Card>
+            <CardHeader title="Your modules" />
+            {modules.length === 0 ? (
+              <EmptyState
+                title="No modules yet"
+                description="An org admin enables modules in Settings › Modules and shares them with you."
+              />
+            ) : (
+              <ul className="m-0 flex list-none flex-col p-0">
+                {modules.map((module) => {
+                  const entry = module.navigation.find((nav) => nav.placement === 'top');
+                  return (
+                    <li key={module.id} className="border-b border-br-row last:border-b-0">
+                      <Link
+                        to={entry?.path ?? `/${module.id}`}
+                        className="flex items-center gap-3 px-4 py-2.75 text-tx"
+                      >
+                        <span className="grid size-7.5 place-items-center rounded-panel bg-ac text-12 font-semibold text-on-ac">
+                          {(entry?.label ?? module.id).slice(0, 2).toUpperCase()}
+                        </span>
+                        <span className="flex flex-col gap-0.5">
+                          <span className="font-semibold">{entry?.label ?? module.id}</span>
+                          <span className="text-12 text-tx5">Version {module.version}</span>
+                        </span>
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </Card>
+        </div>
         <Card>
           <CardHeader
             title={

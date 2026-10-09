@@ -1,6 +1,8 @@
 import type { SqlClient } from '../clients/postgres.ts';
+import type { AuditRecorder } from '../contracts/audit.ts';
 import type { Changelog } from '../contracts/changelog.ts';
 import type { EventBus } from '../contracts/event-bus.ts';
+import type { ContainerMemberships } from '../contracts/memberships.ts';
 import type { RealtimePublisher } from '../contracts/realtime.ts';
 import type {
   AiRegistry,
@@ -55,6 +57,10 @@ export interface ModuleContext {
   realtime: RealtimePublisher;
   /** The kernel's Postgres pool for the module's own tables; absent without DATABASE_URL. */
   database?: SqlClient;
+  /** Writes the kernel's audit log; present whenever the database is. */
+  audit?: AuditRecorder;
+  /** Project and space membership; present whenever the database is. */
+  memberships?: ContainerMemberships;
 }
 
 /** Identity helper so a module manifest is checked against the contract. */
