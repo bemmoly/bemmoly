@@ -76,6 +76,9 @@ importers:
       '@bemmoly/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@bemmoly/module-docs':
+        specifier: workspace:*
+        version: link:../../modules/docs
       '@bemmoly/module-sample':
         specifier: workspace:*
         version: link:../../modules/sample
@@ -274,6 +277,64 @@ importers:
       '@types/node':
         specifier: 26.6.4
         version: 26.6.4
+      vitest:
+        specifier: 5.0.3
+        version: 5.0.3(@opentelemetry/api@1.9.1)(@types/node@26.6.4)(happy-dom@20.14.5)(jsdom@30.1.2)(msw@3.0.2(@types/node@26.6.4)(typescript@7.0.2)(vite@8.3.3(@types/node@26.6.4)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1)))(vite@8.3.3(@types/node@26.6.4)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1))
+
+  modules/docs:
+    dependencies:
+      '@bemmoly/api-client':
+        specifier: workspace:*
+        version: link:../../packages/api-client
+      '@bemmoly/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@bemmoly/core-web':
+        specifier: workspace:*
+        version: link:../../packages/core-web
+      '@bemmoly/editor':
+        specifier: workspace:*
+        version: link:../../packages/editor
+      '@bemmoly/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
+      '@bemmoly/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+      '@tanstack/react-query':
+        specifier: 5.104.1
+        version: 5.104.1(react@19.3.0)
+      fastify:
+        specifier: 5.12.5
+        version: 5.12.5
+      react:
+        specifier: 19.3.0
+        version: 19.3.0
+      zod:
+        specifier: 4.6.5
+        version: 4.6.5
+    devDependencies:
+      '@testing-library/react':
+        specifier: 16.3.3
+        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      '@types/react':
+        specifier: 19.3.0
+        version: 19.3.0
+      '@types/react-dom':
+        specifier: 19.3.0
+        version: 19.3.0(@types/react@19.3.0)
+      happy-dom:
+        specifier: 20.14.5
+        version: 20.14.5
+      msw:
+        specifier: 3.0.2
+        version: 3.0.2(@types/node@26.6.4)(typescript@7.0.2)(vite@8.3.3(@types/node@26.6.4)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1))
+      react-dom:
+        specifier: 19.3.0
+        version: 19.3.0(react@19.3.0)
+      vite:
+        specifier: 8.3.3
+        version: 8.3.3(@types/node@26.6.4)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1)
       vitest:
         specifier: 5.0.3
         version: 5.0.3(@opentelemetry/api@1.9.1)(@types/node@26.6.4)(happy-dom@20.14.5)(jsdom@30.1.2)(msw@3.0.2(@types/node@26.6.4)(typescript@7.0.2)(vite@8.3.3(@types/node@26.6.4)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1)))(vite@8.3.3(@types/node@26.6.4)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1))
