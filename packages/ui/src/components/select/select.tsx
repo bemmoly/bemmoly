@@ -19,6 +19,8 @@ const SIZES: Record<SelectSize, string> = {
 
 /** The ghost variant keeps the value's own weight and only shows its border when touched. */
 const GHOST = 'h-6.5 gap-1.5 rounded-sm px-2 border-transparent bg-transparent hover:border-br3';
+const GHOST_CARET =
+  'opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 group-aria-expanded:opacity-100';
 
 /** The props the list consumes; everything else goes on the trigger button. */
 const LIST_PROPS = [
@@ -108,7 +110,7 @@ export function Select({ ref, ...props }: SelectProps) {
         <Icon
           name="caret"
           size={size === 'sm' || variant === 'ghost' ? ICON_SIZE.small : ICON_SIZE.inline}
-          className={caretTone}
+          className={cx(caretTone, variant === 'ghost' && GHOST_CARET)}
         />
       </button>
       {name !== undefined && <input type="hidden" name={name} value={state.value} />}
