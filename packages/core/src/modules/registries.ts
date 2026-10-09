@@ -1,8 +1,9 @@
-import type { CapabilityName, NavEntry } from '@bemmoly/shared';
+import type { CapabilityName, NavEntry, SearchResult } from '@bemmoly/shared';
 import type { FastifyPluginAsync } from 'fastify';
 import type { z } from 'zod';
 import type { Actor } from '../contracts/authz.ts';
 import type { SettingDefinition, SettingKey, SettingsKeys } from '../contracts/settings.ts';
+import type { RequestContext } from '../services/authz/index.ts';
 
 export interface RouteDefinition {
   /** Mounted under /api/v1, e.g. "/issues". */
@@ -129,9 +130,33 @@ export interface QueryFieldDefinition {
   entityKinds: readonly string[];
 }
 
+/** What a provider is asked: the words typed and how many results its group may show. */
+export interface SearchProviderQuery {
+  q: string;
+  limit: number;
+}
+
+/**
+ * Answers ⌘K for one kind of the module's records. The kernel calls it only
+ * for people with access to the module, with their request context, so the
+ * provider applies its own container rules (project membership, say) as it
+ * does for its own endpoints. Results carry their own href into the module.
+ */
+export interface SearchProviderDefinition {
+  /** Namespaced by module: "work.issue". */
+  kind: string;
+  /** The palette group and scope its results show under: "Issues". */
+  label: string;
+  search(
+    ctx: RequestContext,
+    query: SearchProviderQuery,
+  ): Promise<Omit<SearchResult, 'kind' | 'group'>[]>;
+}
+
 export interface SearchRegistry {
   addIndexer(indexer: SearchIndexerDefinition): void;
   addField(field: QueryFieldDefinition): void;
+  addProvider(provider: SearchProviderDefinition): void;
 }
 
 export interface AiContribution {

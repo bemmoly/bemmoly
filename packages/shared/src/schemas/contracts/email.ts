@@ -80,12 +80,33 @@ export const searchResultSchema = z.object({
   title: z.string(),
   subtitle: z.string().nullable(),
   href: z.string(),
+  /** A short handle printed before the title, such as an issue key. */
+  key: z.string().nullable().optional(),
+  /** The palette group the result belongs to: the label of the provider that found it. */
+  group: z.string().optional(),
 });
 
 export const searchQuerySchema = z.object({
   q: z.string().trim().min(1),
   kinds: z.array(z.string().min(1)).optional(),
   limit: z.number().int().min(1).max(50).optional(),
+});
+
+/** The same query as it arrives in a URL: kinds comma-separated, the limit a string. */
+export const searchRequestQuerySchema = z.object({
+  q: z.string().trim().min(1).max(200),
+  kinds: z
+    .string()
+    .optional()
+    .transform((value) =>
+      value
+        ? value
+            .split(',')
+            .map((kind) => kind.trim())
+            .filter(Boolean)
+        : undefined,
+    ),
+  limit: z.coerce.number().int().min(1).max(50).default(8),
 });
 
 export const searchResponseSchema = z.object({ items: z.array(searchResultSchema) });
@@ -97,3 +118,5 @@ export type DevMailbox = z.infer<typeof devMailboxSchema>;
 export type UnsubscriptionPreview = z.infer<typeof unsubscriptionPreviewSchema>;
 export type SearchResult = z.infer<typeof searchResultSchema>;
 export type SearchQuery = z.infer<typeof searchQuerySchema>;
+export type SearchRequestQuery = z.infer<typeof searchRequestQuerySchema>;
+export type SearchResponse = z.infer<typeof searchResponseSchema>;

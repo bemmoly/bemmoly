@@ -20,8 +20,10 @@ export {
   modulesResponseSchema,
   navEntrySchema,
   navPlacementSchema,
+  searchGroupSchema,
   type ModuleManifest,
   type ModulesResponse,
   type NavEntry,
   type NavPlacement,
+  type SearchGroup,
 } from './manifest.ts';
