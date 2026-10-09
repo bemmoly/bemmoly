@@ -9,6 +9,7 @@ import { createBacklogService } from './backlog/index.ts';
 import { createBoardsService } from './boards/index.ts';
 import { createCommentsService } from './comments/index.ts';
 import { createFieldsService } from './fields/index.ts';
+import { createFiltersService } from './filters/index.ts';
 import { createHistoryService } from './history/index.ts';
 import { createIssuesService } from './issues/index.ts';
 import { createLinksService } from './links/index.ts';
@@ -59,6 +60,7 @@ export function createWorkServices(deps: WorkServiceDeps) {
     boards: createBoardsService({ ...deps, ...issueDeps, lql }),
     sprints: createSprintsService({ ...deps, ...issueDeps, lql }),
     backlog: createBacklogService({ ...deps, ...issueDeps, lql }),
+    filters: createFiltersService({ ...deps, ...issueDeps, lql }),
     metrics: createMetricsService({ ...deps, ...issueDeps, lql }),
   };
 }
