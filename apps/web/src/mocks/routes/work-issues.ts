@@ -176,7 +176,7 @@ const issueRoutes: MockRoute[] = [
       const projectId = request.query.get('projectId');
       return ok({
         items: workState(db).workflows.filter(
-          (flow) => !flow['projectId'] || flow['projectId'] === projectId,
+          (flow) => !projectId || !flow['projectId'] || flow['projectId'] === projectId,
         ),
       });
     },
