@@ -1,8 +1,9 @@
+import { isEmptyDoc, preloadEditor, RichTextEditor, type RichTextDoc } from '@bemmoly/editor';
 import type { RichText } from '@bemmoly/module-work/shared';
-import { Button, IssueSection, SectionHeading, Textarea, useToast } from '@bemmoly/ui';
+import { Button, IssueSection, SectionHeading, useToast } from '@bemmoly/ui';
 import { useState } from 'react';
+import { useEditorSources } from '../hooks/editor-sources.ts';
 import { cx } from './cx.ts';
-import { docToText, isEmptyDoc, textToDoc } from './rich-text-convert.ts';
 import { RichTextView } from './rich-text.tsx';
 
 export interface RichTextSectionProps {
@@ -16,9 +17,13 @@ export interface RichTextSectionProps {
   readOnly?: boolean;
 }
 
+/** Not editing, or editing with this document so far (null while it is empty). */
+type Draft = { doc: RichTextDoc | null } | null;
+
 /**
  * Description, acceptance criteria and the other rich text fields: the document as the mock
- * prints it, and an Edit that swaps in a text box until the editor package lands here.
+ * prints it, and an Edit that opens the editor in the composer's box with the block tools.
+ * The server derives the plain-text shadow from what is saved.
  */
 export function RichTextSection({
   title,
@@ -28,16 +33,18 @@ export function RichTextSection({
   placeholder = 'Nothing written yet.',
   readOnly = false,
 }: RichTextSectionProps) {
-  const [draft, setDraft] = useState<string | null>(null);
+  const [draft, setDraft] = useState<Draft>(null);
   const [saving, setSaving] = useState(false);
   const toast = useToast();
-  const empty = isEmptyDoc(doc);
+  const sources = useEditorSources();
+  const empty = isEmptyDoc(doc as RichTextDoc | null | undefined);
+  const name = title.toLowerCase();
 
   const save = async () => {
-    if (draft === null) return;
+    if (!draft) return;
     setSaving(true);
     try {
-      await onSave(textToDoc(draft));
+      await onSave(isEmptyDoc(draft.doc) ? null : (draft.doc as RichText));
       setDraft(null);
     } catch (error) {
       toast.show({
@@ -50,19 +57,21 @@ export function RichTextSection({
     }
   };
 
-  const edit = () => setDraft(docToText(doc));
+  const edit = () => setDraft({ doc: (doc as RichTextDoc | null | undefined) ?? null });
   const heading = (
     <SectionHeading
       title={title}
       size={size}
       actions={
-        !readOnly && draft === null ? (
+        !readOnly && !draft ? (
           <button
             type="button"
             onClick={edit}
+            onPointerEnter={preloadEditor}
+            onFocus={preloadEditor}
             className="cursor-pointer border-0 bg-transparent p-0 font-sans text-12 font-normal text-tx4 hover:text-tx2"
           >
-            Edit<span className="sr-only"> {title.toLowerCase()}</span>
+            Edit<span className="sr-only"> {name}</span>
           </button>
         ) : undefined
       }
@@ -71,43 +80,56 @@ export function RichTextSection({
 
   return (
     <IssueSection heading={heading}>
-      {draft !== null ? (
-        <div className="flex flex-col gap-2">
-          <Textarea
-            aria-label={title}
-            autoFocus
-            rows={size === 'page' ? 8 : 6}
-            value={draft}
-            onChange={(event) => setDraft(event.target.value)}
-            onKeyDown={(event) => {
-              if (event.key === 'Escape') setDraft(null);
-              if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) void save();
-            }}
-          />
-          <div className="flex items-center gap-2">
-            <span className="mr-auto text-12 text-tx5">
-              Blank line between paragraphs, “- ” for a bullet, “[ ] ” for a checklist item.
-            </span>
-            <Button size="xs" variant="ghost" onClick={() => setDraft(null)}>
-              Cancel
-            </Button>
-            <Button size="xs" variant="primary" loading={saving} onClick={() => void save()}>
-              Save
-            </Button>
-          </div>
-        </div>
+      {draft ? (
+        <RichTextEditor
+          label={title}
+          placeholder={`Add ${name}…`}
+          initialDoc={doc as RichTextDoc | null | undefined}
+          blocks
+          autoFocus
+          size={size}
+          sources={sources}
+          contentClassName={size === 'page' ? 'min-h-24' : 'min-h-20'}
+          onChange={(next) => setDraft({ doc: next })}
+          onSubmit={() => void save()}
+          onCancel={() => setDraft(null)}
+        >
+          {({ content, toolbar, ready }) => (
+            <div className="flex flex-col gap-2.5 rounded-panel border border-br3 bg-sf px-3 py-2.5">
+              {content}
+              <div className="flex flex-wrap items-center gap-2.5 text-12 text-tx4">
+                <div className="min-w-0 flex-1">{toolbar}</div>
+                <span className="ml-auto flex gap-1.5">
+                  <Button size="xs" variant="ghost" onClick={() => setDraft(null)}>
+                    Cancel
+                  </Button>
+                  <Button
+                    size="xs"
+                    variant="primary"
+                    loading={saving}
+                    disabled={!ready}
+                    onClick={() => void save()}
+                  >
+                    Save
+                  </Button>
+                </span>
+              </div>
+            </div>
+          )}
+        </RichTextEditor>
       ) : empty ? (
         <button
           type="button"
           disabled={readOnly}
           onClick={edit}
+          onPointerEnter={readOnly ? undefined : preloadEditor}
           className={cx(
             'cursor-pointer rounded-sm border-0 bg-transparent p-0 text-left font-sans text-tx5',
             size === 'page' ? 'text-14' : 'text-13',
             readOnly && 'cursor-default',
           )}
         >
-          {readOnly ? placeholder : `Add ${title.toLowerCase()}…`}
+          {readOnly ? placeholder : `Add ${name}…`}
         </button>
       ) : (
         <RichTextView doc={doc} size={size} />

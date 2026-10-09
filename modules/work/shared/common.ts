@@ -4,11 +4,13 @@ import { z } from 'zod';
 export const richTextSchema = z.object({ type: z.literal('doc') }).passthrough();
 
 /** "PLT-142": the project key, a dash and the number. */
+export const ISSUE_KEY_PATTERN = /^[A-Z][A-Z0-9]{1,9}-[1-9][0-9]*$/;
+
 export const issueKeySchema = z
   .string()
   .trim()
   .toUpperCase()
-  .regex(/^[A-Z][A-Z0-9]{1,9}-[1-9][0-9]*$/, 'Issue keys look like "PLT-142"');
+  .regex(ISSUE_KEY_PATTERN, 'Issue keys look like "PLT-142"');
 
 export const issueKeyParamsSchema = z.object({ key: issueKeySchema });
 
