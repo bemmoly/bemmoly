@@ -50,11 +50,17 @@ export interface Planning {
 
 export type PlanningStart = { planning: Planning } | { reason: string };
 
-export async function startPlanning(): Promise<PlanningStart> {
+/** `onQuery` sees every statement the services run, for a query-count budget. */
+export async function startPlanning(
+  options: { onQuery?: (statement: string) => void } = {},
+): Promise<PlanningStart> {
   const server: TestDatabase = await startTestDatabase();
   if (!server.available) return { reason: server.reason };
   const database: IsolatedDatabase = await createIsolatedDatabase(server.url);
-  const sql = createSqlClient(database.url, { maxConnections: 8 });
+  const sql = createSqlClient(database.url, {
+    maxConnections: 8,
+    ...(options.onQuery ? { onQuery: options.onQuery } : {}),
+  });
   const runner = createChangelogRunner({
     sql,
     kernel: await loadKernelChangelog(),
