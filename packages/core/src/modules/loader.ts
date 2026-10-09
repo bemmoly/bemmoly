@@ -4,6 +4,7 @@ import type { EventBus } from '../contracts/event-bus.ts';
 import type { SqlClient } from '../clients/postgres.ts';
 import type { JobQueue } from '../contracts/jobs.ts';
 import type { RealtimePublisher } from '../contracts/realtime.ts';
+import type { CollabTransactor } from './collab.ts';
 import type { BemmolyModule } from './contract.ts';
 import { createModuleContext } from './context.ts';
 import { emptyContributions } from './contributions.ts';
@@ -29,6 +30,8 @@ export interface LoadModulesOptions {
   settingsReader?: SettingsReader;
   realtime?: RealtimePublisher;
   database?: SqlClient;
+  /** What ctx.collab.transact goes through; see services/collab createCollabHandle. */
+  collab?: CollabTransactor;
 }
 
 function indexAvailable(available: readonly BemmolyModule[]): Map<string, BemmolyModule> {
@@ -98,6 +101,7 @@ export function loadModules(options: LoadModulesOptions): ModuleRegistry {
         ...(options.settingsReader ? { settingsReader: options.settingsReader } : {}),
         ...(options.realtime ? { realtime: options.realtime } : {}),
         ...(options.database ? { database: options.database } : {}),
+        ...(options.collab ? { collab: options.collab } : {}),
       }),
     );
     registry.add(module, contributions);

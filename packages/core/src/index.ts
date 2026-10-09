@@ -5,6 +5,7 @@ export * from './middlewares/index.ts';
 export * from './modules/index.ts';
 export { API_PREFIX, kernelRoutes, type KernelRouteDependencies } from './routes/index.ts';
 export * from './services/changelog/index.ts';
+export * from './services/collab/index.ts';
 export * from './services/jobs/index.ts';
 export * from './services/modules/index.ts';
 export * from './services/realtime/index.ts';

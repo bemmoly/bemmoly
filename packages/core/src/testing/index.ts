@@ -1,3 +1,9 @@
+export {
+  connectCollabClient,
+  eventually,
+  type CollabTestClient,
+  type CollabTestClientOptions,
+} from './collab-client.ts';
 export { resetIdentityData } from './identity-data.ts';
 export { createIsolatedDatabase, type IsolatedDatabase } from './isolated-database.ts';
 export { applyKernelChangelog, kernelChangelogRunner } from './kernel-changelog.ts';

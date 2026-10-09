@@ -1,4 +1,5 @@
 import type { ModuleManifest } from '@bemmoly/shared';
+import type { CollabDocumentDefinition } from './collab.ts';
 import type { BemmolyModule } from './contract.ts';
 import type { ModuleContributions } from './contributions.ts';
 import { ModuleLoadError } from './errors.ts';
@@ -71,6 +72,10 @@ export class ModuleRegistry {
 
   searchProviders(): FromModule<SearchProviderDefinition>[] {
     return this.#collect((c) => c.searchProviders);
+  }
+
+  collabDocuments(): FromModule<CollabDocumentDefinition>[] {
+    return this.#collect((c) => c.collabDocuments);
   }
 
   capabilities(): FromModule<CapabilityDefinition>[] {

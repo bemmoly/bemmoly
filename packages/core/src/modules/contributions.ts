@@ -1,5 +1,6 @@
 import type { NavEntry } from '@bemmoly/shared';
 import type { SettingDefinition } from '../contracts/settings.ts';
+import type { CollabDocumentDefinition } from './collab.ts';
 import type {
   AiContribution,
   CapabilityDefinition,
@@ -33,6 +34,7 @@ export interface ModuleContributions {
   editorSlashCommands: EditorContribution[];
   importers: ImporterDefinition[];
   settings: SettingDefinition[];
+  collabDocuments: CollabDocumentDefinition[];
 }
 
 export function emptyContributions(): ModuleContributions {
@@ -54,5 +56,6 @@ export function emptyContributions(): ModuleContributions {
     editorSlashCommands: [],
     importers: [],
     settings: [],
+    collabDocuments: [],
   };
 }
