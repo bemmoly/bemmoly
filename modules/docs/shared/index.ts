@@ -7,7 +7,6 @@ export * from './links.ts';
 export * from './pages.ts';
 export * from './realtime.ts';
 export * from './revisions.ts';
-export * from './rich-text.ts';
 export * from './search.ts';
 export * from './spaces.ts';
 export * from './stars-labels.ts';

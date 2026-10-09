@@ -73,12 +73,17 @@ export const createPageBodySchema = z.object({
   beforeId: z.uuid().optional(),
 });
 
-/** Title, icon and owner; content is written by the editor, status by /status. */
+/**
+ * Title, icon and owner; status goes through /status and the body through /collab.
+ * `snapshot` is the 0.2 way to write a body: still accepted, applied through the collab
+ * server as one edit, and removed in 0.4.
+ */
 export const updatePageBodySchema = z
   .object({
     title: pageTitleSchema,
     icon: iconSchema.nullable(),
     ownerId: z.uuid().nullable(),
+    /** @deprecated Edit the body through /collab; accepted until 0.4. */
     snapshot: richTextSchema,
     version: z.number().int().positive(),
   })

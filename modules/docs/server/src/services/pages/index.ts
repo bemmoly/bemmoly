@@ -1,8 +1,8 @@
 import type { RequestContext, SqlExecutor } from '@bemmoly/core';
+import { plainText, wordCount } from '@bemmoly/editor/convert';
 import { ConflictError, NotFoundError, ProviderError } from '@bemmoly/shared';
 import type { RichText } from '../../../../shared/common.ts';
 import type { CreatePageBody, PageDetail, UpdatePageBody } from '../../../../shared/pages.ts';
-import { countWords, richTextToPlain } from '../../../../shared/rich-text.ts';
 import {
   DOCS_REALTIME_KINDS,
   publishChange,
@@ -12,6 +12,7 @@ import {
   userIdOf,
   type DocsServiceDeps,
 } from '../common.ts';
+import type { PageCollab } from '../collab/index.ts';
 import { loadDetail } from './detail.ts';
 import { rankAmongSiblings } from './rank.ts';
 import { pageById, toSummary } from './rows.ts';
@@ -30,7 +31,7 @@ async function startingSnapshot(sql: SqlExecutor, body: CreatePageBody): Promise
 }
 
 /** Pages: create, open, rename and edit, and the trash (in trash.ts). */
-export function createPagesService(deps: DocsServiceDeps) {
+export function createPagesService(deps: DocsServiceDeps, collab: PageCollab) {
   const trash = createTrashService(deps);
 
   return {
@@ -56,14 +57,15 @@ export function createPagesService(deps: DocsServiceDeps) {
           beforeId: body.beforeId,
         });
         const snapshot = await startingSnapshot(tx, body);
-        const text = richTextToPlain(snapshot);
+        const readable = snapshot as Parameters<typeof plainText>[0];
+        const text = plainText(readable);
         const [created] = await tx<{ id: string }[]>`
           insert into pages (id, space_id, parent_id, position, path, title, icon, owner_id,
             template_id, snapshot, text, word_count, created_by, updated_by)
           select g.id, ${body.spaceId}, ${body.parentId ?? null}::uuid, ${position},
             ${parentPath} || g.id::text || '/', ${body.title ?? ''}, ${body.icon ?? null},
             ${userId}::uuid, ${body.templateId ?? null}::uuid,
-            ${snapshot ? JSON.stringify(snapshot) : null}::jsonb, ${text}, ${countWords(text)},
+            ${snapshot ? JSON.stringify(snapshot) : null}::jsonb, ${text}, ${wordCount(readable)},
             ${userId}::uuid, ${userId}::uuid
           from (select uuidv7() as id) g
           returning id`;
@@ -90,9 +92,10 @@ export function createPagesService(deps: DocsServiceDeps) {
     },
 
     /**
-     * Title, icon, owner and, until the collab server owns it, the snapshot.
-     * A version that no longer matches is a conflict, so two tabs never
-     * overwrite each other's rename silently.
+     * Title, icon and owner. A version that no longer matches is a conflict, so
+     * two tabs never overwrite each other's rename silently. The body belongs to
+     * the collab server now; a snapshot sent here (the 0.2 shape, accepted until
+     * 0.4) is applied through it as one edit, so open editors see it.
      */
     async update(ctx: RequestContext, id: string, patch: UpdatePageBody): Promise<PageDetail> {
       const sql = requireDatabase(deps);
@@ -100,17 +103,17 @@ export function createPagesService(deps: DocsServiceDeps) {
       const before = await pageById(sql, id);
       await ctx.authz.authorize(ctx.actor, 'docs.page.edit', spaceResource(before.space_id));
       const has = (field: keyof UpdatePageBody) => patch[field] !== undefined;
-      const text = patch.snapshot ? richTextToPlain(patch.snapshot) : null;
+      if (patch.snapshot) {
+        if (patch.version !== undefined && patch.version !== before.version) {
+          throw new ConflictError('The page changed since you opened it; reload it');
+        }
+        await collab.replaceContent(id, patch.snapshot, ctx.actor);
+      }
       const [updated] = await sql<{ id: string }[]>`
         update pages set
           title = coalesce(${patch.title ?? null}, title),
           icon = case when ${has('icon')} then ${patch.icon ?? null} else icon end,
           owner_id = case when ${has('ownerId')} then ${patch.ownerId ?? null}::uuid else owner_id end,
-          snapshot = case when ${has('snapshot')}
-            then ${patch.snapshot ? JSON.stringify(patch.snapshot) : null}::jsonb else snapshot end,
-          text = coalesce(${text}, text),
-          word_count = coalesce(${text === null ? null : countWords(text)}::integer, word_count),
-          content_updated_at = case when ${has('snapshot')} then now() else content_updated_at end,
           version = version + 1,
           updated_by = ${userId}::uuid,
           updated_at = now()

@@ -1,3 +1,4 @@
+import { createPageCollab } from './collab/index.ts';
 import type { DocsServiceDeps } from './common.ts';
 import { createHomeService } from './home/index.ts';
 import { createPagesService } from './pages/index.ts';
@@ -15,8 +16,10 @@ export type { DocsServiceDeps } from './common.ts';
  * nowhere else, so module.ts never grows with the module.
  */
 export function createDocsServices(deps: DocsServiceDeps) {
-  const pages = createPagesService(deps);
+  const collab = createPageCollab(deps);
+  const pages = createPagesService(deps, collab);
   return {
+    collab,
     spaces: createSpacesService(deps),
     pages,
     tree: createTreeService(deps),

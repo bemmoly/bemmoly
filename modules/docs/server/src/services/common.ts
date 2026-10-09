@@ -1,10 +1,13 @@
 import type {
   AuditMeta,
   AuditRecorder,
+  CollabRegistry,
   ContainerMemberships,
   EventBus,
+  JobRegistry,
   RealtimePublisher,
   RequestContext,
+  SettingsRegistry,
   SqlClient,
   SqlExecutor,
 } from '@bemmoly/core';
@@ -17,6 +20,12 @@ export interface DocsServiceDeps {
   realtime?: RealtimePublisher;
   events?: EventBus;
   memberships?: ContainerMemberships;
+  /** Server-side edits to open page bodies; absent where no collab host runs. */
+  collab?: Pick<CollabRegistry, 'transact'>;
+  /** Enqueues the module's own jobs (docs.compact). */
+  jobs?: Pick<JobRegistry, 'send'>;
+  /** Reads the module's own settings (docs.compactThreshold). */
+  settings?: Pick<SettingsRegistry, 'get'>;
 }
 
 export const DOCS_MODULE = { kind: 'module', moduleId: 'docs' } as const;
