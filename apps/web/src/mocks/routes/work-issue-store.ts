@@ -61,6 +61,20 @@ export function nextKey(db: MockDb, project: Row): { number: number; key: string
   return { number, key: `${String(project['key'])}-${number}` };
 }
 
+/**
+ * Issues per status, as `GET /workflows/:id/status-counts` answers: every
+ * project's, or one project's when `projectId` is given.
+ */
+export function statusCountsOf(db: MockDb, projectId?: string | null): Record<string, number> {
+  const counts: Record<string, number> = {};
+  for (const issue of issueStore(db).issues) {
+    if (issue['deletedAt'] || (projectId && issue['projectId'] !== projectId)) continue;
+    const status = String(issue['statusId']);
+    counts[status] = (counts[status] ?? 0) + 1;
+  }
+  return counts;
+}
+
 /** What a board card reads beyond the issue schema, for an issue created in the mock. */
 export const cardFields = () => ({ blockedBy: [], docs: [], subtasks: null });
 
