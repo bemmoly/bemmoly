@@ -1,5 +1,5 @@
-import type { RequestContext, ResourceRef, SqlClient, SqlExecutor } from '@bemmoly/core';
-import { ConflictError, NotFoundError, ProviderError } from '@bemmoly/shared';
+import type { RequestContext, ResourceRef, SqlClient } from '@bemmoly/core';
+import { ConflictError, ProviderError } from '@bemmoly/shared';
 import type {
   CreateWorkflowBody,
   UpdateWorkflowBody,
@@ -17,8 +17,10 @@ import {
   toStatus,
   toTransition,
   toWorkflow,
+  WORKFLOW_COLUMNS,
   type WorkflowRow,
 } from './rows.ts';
+import { copyWorkflowToProject } from './project-copy.ts';
 
 const MODULE: ResourceRef = { kind: 'module', moduleId: 'work' };
 
@@ -55,7 +57,7 @@ export function createWorkflowReads(deps: WorkflowServiceDeps) {
       await ctx.authz.authorize(ctx.actor, 'work.issue.view', MODULE);
       const sql = db();
       const rows = await sql<WorkflowRow[]>`
-        select id, project_id, origin_id, name, published_version, draft, created_at, updated_at
+        select ${sql.unsafe(WORKFLOW_COLUMNS)}
         from workflows
         where ${projectId ?? null}::uuid is null or project_id is null or project_id = ${projectId ?? null}
         order by project_id nulls first, id`;
@@ -79,7 +81,7 @@ export function createWorkflowReads(deps: WorkflowServiceDeps) {
     /**
      * A project override is a full copy of the org default, pointed at it by
      * origin_id, which "Reset to org default" and "View diff" act on. The
-     * project's scheme pointer is the projects stream's to flip.
+     * project's issues and board columns move onto the copy's statuses.
      */
     async create(ctx: RequestContext, body: CreateWorkflowBody): Promise<Workflow> {
       const resource: ResourceRef = body.projectId
@@ -87,24 +89,20 @@ export function createWorkflowReads(deps: WorkflowServiceDeps) {
         : MODULE;
       await ctx.authz.authorize(ctx.actor, 'work.project.configure', resource);
       const sql = db();
-      const [origin] = await sql<WorkflowRow[]>`
-        select id, project_id, origin_id, name, published_version, draft, created_at, updated_at
-        from workflows where project_id is null order by id limit 1`;
-      if (body.projectId && !origin) throw new NotFoundError('There is no org default workflow');
       const created = await sql.begin(async (tx) => {
         if (body.projectId) {
           const [taken] = await tx<{ id: string }[]>`
             select id from workflows where project_id = ${body.projectId} limit 1`;
           if (taken) throw new ConflictError('The project already has its own workflow');
         }
+        if (body.projectId) {
+          return copyWorkflowToProject(tx, { id: body.projectId, key: '' }, body.name);
+        }
         const [row] = await tx<WorkflowRow[]>`
           insert into workflows (project_id, origin_id, name, published_version, draft)
-          values (${body.projectId ?? null}, ${body.projectId ? (origin?.id ?? null) : null},
-            ${body.name}, ${body.projectId && origin ? 1 : 0}, null)
-          returning id, project_id, origin_id, name, published_version, draft, created_at,
-            updated_at`;
+          values (null, null, ${body.name}, 0, null)
+          returning ${tx.unsafe(WORKFLOW_COLUMNS)}`;
         if (!row) throw new ProviderError('The workflow was not stored');
-        if (body.projectId && origin) await copyContent(tx, origin.id, row.id);
         return row;
       });
       return present(sql, created as WorkflowRow);
@@ -133,29 +131,6 @@ export function createWorkflowReads(deps: WorkflowServiceDeps) {
       return draft;
     },
   };
-}
-
-/** Copies statuses with fresh ids, then transitions remapped onto them. */
-async function copyContent(tx: SqlExecutor, fromId: string, toId: string): Promise<void> {
-  const statuses = await loadStatuses(tx, fromId);
-  const ids = new Map<string, string>();
-  for (const status of statuses) {
-    const [row] = await tx<{ id: string }[]>`
-      insert into workflow_statuses (workflow_id, name, category, color, position, allowed_role_ids)
-      values (${toId}, ${status.name}, ${status.category}, ${status.color}, ${status.position},
-        ${status.allowed_role_ids})
-      returning id`;
-    if (row) ids.set(status.id, row.id);
-  }
-  for (const transition of await loadTransitions(tx, fromId)) {
-    await tx`
-      insert into workflow_transitions (workflow_id, from_status_id, to_status_id, name, rules,
-        position)
-      values (${toId},
-        ${transition.from_status_id ? (ids.get(transition.from_status_id) ?? null) : null},
-        ${ids.get(transition.to_status_id) ?? null}, ${transition.name},
-        ${JSON.stringify(transition.rules)}::jsonb, ${transition.position})`;
-  }
 }
 
 export type WorkflowReads = ReturnType<typeof createWorkflowReads>;
