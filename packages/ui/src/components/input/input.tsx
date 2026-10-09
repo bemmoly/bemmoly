@@ -54,6 +54,7 @@ export function Input({
       <input
         ref={ref}
         readOnly={readOnly}
+        data-autofocus={rest.autoFocus ? '' : undefined}
         className={cx(
           'h-full min-w-0 flex-1 border-0 bg-transparent p-0 text-inherit outline-0 placeholder:text-tx5',
           mono ? 'font-mono text-12h' : 'font-sans text-13',
