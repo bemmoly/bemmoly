@@ -86,7 +86,15 @@ describe('formatting', () => {
   it('builds initials and byte sizes', () => {
     expect(initials('Rohan S.')).toBe('RS');
     expect(initials('priya@acme.dev')).toBe('P');
+    expect(initials('rohan.shah@acme.dev')).toBe('RS');
     expect(formatBytes(38_000_000_000)).toBe('38 GB');
     expect(formatBytes(1_400_000_000)).toBe('1.4 GB');
+  });
+
+  it('builds initials in linear time from a long run of @ signs', () => {
+    const name = `R${'@'.repeat(100_000)}\nx`;
+    const start = performance.now();
+    expect(initials(name)).toBe('R');
+    expect(performance.now() - start).toBeLessThan(50);
   });
 });

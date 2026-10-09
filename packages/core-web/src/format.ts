@@ -22,10 +22,9 @@ export function formatRelative(iso: string | null, now: Date = new Date()): stri
 
 /** "Rohan S." → "RS"; "priya@acme.dev" → "P". */
 export function initials(name: string): string {
-  const words = name
-    .replace(/@.*$/, '')
-    .split(/[\s._-]+/)
-    .filter(Boolean);
+  // indexOf, not /@.*$/: that retries from every @ and is quadratic on a run of them.
+  const at = name.indexOf('@');
+  const words = (at === -1 ? name : name.slice(0, at)).split(/[\s._-]+/).filter(Boolean);
   const letters = words.length > 1 ? [words[0], words[words.length - 1]] : [words[0]];
   return letters
     .map((word) => word?.charAt(0) ?? '')
