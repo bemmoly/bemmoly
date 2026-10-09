@@ -92,6 +92,3 @@ export const SHADOWS = {
   /** Board filter avatars: a 1px page-coloured halo outside the 2px ring. */
   halo: '0 0 0 1px var(--bg)',
 } as const;
-
-/** The mocks animate only the switch knob, at .15s. */
-export const MOTION = { fast: '150ms' } as const;
