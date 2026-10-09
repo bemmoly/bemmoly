@@ -75,7 +75,11 @@ export function createFakeWork(method: Project['method'] = 'scrum') {
     name: 'Software (Scrum)',
     config: orgConfig,
   };
-  const writes: { board: unknown[]; project: unknown[] } = { board: [], project: [] };
+  const writes: { board: unknown[]; project: unknown[]; counts: unknown[][] } = {
+    board: [],
+    project: [],
+    counts: [],
+  };
 
   const work = {
     projects: {
@@ -99,7 +103,10 @@ export function createFakeWork(method: Project['method'] = 'scrum') {
       list: async () => [
         workflow('00000000-0000-7000-8000-0000000000c1', PROJECT_ID, (i) => STATUSES[i]?.id ?? ''),
       ],
-      statusCounts: async () => COUNTS,
+      statusCounts: async (workflowId: string, projectId?: string) => {
+        writes.counts.push([workflowId, projectId]);
+        return COUNTS;
+      },
     },
     orgWorkflows: {
       list: async () => [workflow('00000000-0000-7000-8000-0000000000c2', null, orgStatusId)],
