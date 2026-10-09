@@ -96,8 +96,12 @@ export const BoardCell = memo(function BoardCell({
       onDrop={actions.dropHere}
       className={cls(refused && line !== null && 'border border-dashed border-warn bg-warn-bg')}
     >
+      {/* Not a drop target of its own: under the pointer it would turn the drop into a cancel,
+          and the refusal would go unsaid. */}
       {refused && line !== null && (
-        <p className="m-0 px-2 py-1.5 text-11 font-medium text-warn-fg">{verdict.reason}</p>
+        <p className="pointer-events-none m-0 px-2 py-1.5 text-11 font-medium text-warn-fg">
+          {verdict.reason}
+        </p>
       )}
       {items}
       {!refused && line !== null && line >= others && shown.length === cards.length && <DropLine />}
