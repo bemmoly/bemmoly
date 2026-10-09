@@ -44,7 +44,3 @@ export const issueMockProjects = (db: MockDb) => itemsOf(askIssueMock('GET', '/p
 /** A project's sprints as the issue mock keeps them; the active one scopes a Scrum board. */
 export const sprintsOf = (db: MockDb, projectKey: string) =>
   itemsOf(askIssueMock('GET', '/projects/:key/sprints', { params: { key: projectKey } }, db));
-
-/** A project's labels as the issue mock keeps them. */
-export const issueMockLabels = (db: MockDb, projectKey: string) =>
-  itemsOf(askIssueMock('GET', '/projects/:key/labels', { params: { key: projectKey } }, db));

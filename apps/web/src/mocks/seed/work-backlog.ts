@@ -1,6 +1,7 @@
 import { USER_IDS } from './people.ts';
 import { ago, uid } from './time.ts';
 import { STATUS_IDS, WORK_IDS, type StatusName } from './work-settings.ts';
+import { SPRINT_IDS } from './work-issues.ts';
 import { TYPE_IDS } from './work-types.ts';
 
 /*
@@ -55,10 +56,11 @@ export interface BacklogSprintRow {
   updatedAt: string;
 }
 
+/** Sprints 14 and 15 are the issue mock's, so every Work screen names the same sprint. */
 export const BACKLOG_SPRINT_IDS = {
   sprint13: uid(0xa00),
-  sprint14: uid(0xa01),
-  sprint15: uid(0xa02),
+  sprint14: SPRINT_IDS.s14,
+  sprint15: SPRINT_IDS.s15,
 } as const;
 
 const COLUMN_STATUS: Record<string, StatusName> = {
@@ -83,20 +85,20 @@ type Row = [number, string, string, string, string, Priority, number, string];
 
 /** [number, type, title, epic number, board column, priority, points, assignee initials]. */
 const SPRINT_14: Row[] = [
-  [204, 'story', 'Session store migration to Postgres', '180', 'In review', 'highest', 5, 'AK'],
-  [218, 'story', 'Rotate service tokens on every deploy', '180', 'In progress', 'highest', 5, 'PN'],
+  [204, 'story', 'Session store migration to Postgres', '190', 'In review', 'highest', 5, 'AK'],
+  [218, 'story', 'Rotate service tokens on every deploy', '190', 'In progress', 'highest', 5, 'PN'],
   [
     226,
     'bug',
     'Refresh token reused after logout on Safari',
-    '180',
+    '190',
     'In progress',
     'high',
     2,
     'LT',
   ],
-  [211, 'story', 'Session cleanup background job', '180', 'To do', 'medium', 3, 'JM'],
-  [219, 'task', 'Remove legacy cookie path from monolith', '180', 'To do', 'low', 2, 'JM'],
+  [211, 'story', 'Session cleanup background job', '190', 'To do', 'medium', 3, 'JM'],
+  [219, 'task', 'Remove legacy cookie path from monolith', '190', 'To do', 'low', 2, 'JM'],
   [228, 'story', 'Stripe webhook idempotency', '150', 'In progress', 'high', 3, 'RS'],
   [
     224,
@@ -111,7 +113,7 @@ const SPRINT_14: Row[] = [
 ];
 
 const SPRINT_15: Row[] = [
-  [222, 'task', 'Rate-limit token refresh endpoint', '180', 'To do', 'medium', 3, 'AK'],
+  [222, 'task', 'Rate-limit token refresh endpoint', '190', 'To do', 'medium', 3, 'AK'],
   [230, 'story', 'Usage-based invoice line items', '150', 'To do', 'high', 5, 'LT'],
   [231, 'task', 'Proration when switching plans mid-cycle', '150', 'To do', 'medium', 3, 'LT'],
   [225, 'task', 'Audit log export to S3', '240', 'To do', 'medium', 5, 'RS'],
@@ -131,9 +133,9 @@ const BACKLOG: Row[] = [
 
 /** Finished work in the closed sprint: it never shows, but it moves the epic panel's progress. */
 const FINISHED: Row[] = [
-  [170, 'story', 'Session schema design', '180', 'Done', 'high', 13, 'AK'],
-  [171, 'task', 'Token signing keys in the vault', '180', 'Done', 'medium', 10, 'PN'],
-  [172, 'story', 'Login rate limiting', '180', 'Done', 'high', 8, 'LT'],
+  [170, 'story', 'Session schema design', '190', 'Done', 'high', 13, 'AK'],
+  [171, 'task', 'Token signing keys in the vault', '190', 'Done', 'medium', 10, 'PN'],
+  [172, 'story', 'Login rate limiting', '190', 'Done', 'high', 8, 'LT'],
   [151, 'task', 'Plan catalogue table', '150', 'Done', 'medium', 1, 'RS'],
   [152, 'task', 'Tax rates per region', '150', 'Done', 'medium', 1, 'JM'],
   [153, 'task', 'Invoice numbering', '150', 'Done', 'low', 1, 'JM'],
@@ -149,7 +151,7 @@ const FINISHED: Row[] = [
 
 /** [number, title]: the epics of the panel, in its order. */
 const EPICS: Array<[number, string]> = [
-  [180, 'Auth service'],
+  [190, 'Auth service'],
   [150, 'Billing v2'],
   [240, 'Observability'],
   [160, 'Self-serve onboarding'],
