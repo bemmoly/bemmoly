@@ -19,6 +19,7 @@
     "test": "turbo run test",
     "test:integration": "turbo run test:integration",
     "test:e2e": "turbo run test:e2e",
+    "test:e2e:work": "turbo run test:e2e:work",
     "size": "turbo run size",
     "format": "prettier --write .",
     "format:check": "prettier --check .",

@@ -135,6 +135,77 @@ jobs:
           path: apps/web/test-results
           retention-days: 7
 
+  work-e2e:
+    name: Work end to end
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: pgvector/pgvector:pg18
+        env:
+          POSTGRES_USER: bemmoly
+          POSTGRES_PASSWORD: bemmoly
+          POSTGRES_DB: bemmoly_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U bemmoly -d bemmoly_db"
+          --health-interval 2s
+          --health-timeout 3s
+          --health-retries 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: ./.github/actions/setup
+
+      - name: Restore the Turborepo cache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .turbo/cache
+          key: turbo-work-e2e-${{ runner.os }}-${{ github.sha }}
+          restore-keys: turbo-work-e2e-${{ runner.os }}-
+
+      - name: Read the Playwright version
+        id: playwright
+        working-directory: apps/e2e
+        run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> "$GITHUB_OUTPUT"
+
+      - name: Restore Playwright browsers
+        id: playwright-cache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}
+
+      - name: Install the Playwright browser
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: pnpm --filter @bemmoly/e2e exec playwright install --with-deps chromium
+
+      - name: Install the browser's system libraries
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: pnpm --filter @bemmoly/e2e exec playwright install-deps chromium
+
+      # Builds the web app, then starts the server from the checkout against the service
+      # Postgres, enables Work through the CLI and runs the flows, the module toggle and the
+      # board budget. The budget numbers are printed in the log.
+      - name: Work flows against a real server
+        run: pnpm test:e2e:work
+        env:
+          BEMMOLY_TEST_DATABASE_URL: postgres://bemmoly:bemmoly@localhost:5432/bemmoly_db
+
+      - name: Upload the Playwright report and the server log
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: work-e2e-report
+          path: |
+            apps/e2e/test-results
+            apps/e2e/.state/server.log
+          retention-days: 7
+          if-no-files-found: ignore
+
   lighthouse:
     name: Lighthouse
     runs-on: ubuntu-latest
