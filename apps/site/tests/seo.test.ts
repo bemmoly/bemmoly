@@ -53,13 +53,9 @@ function references(value: unknown): string[] {
   return [];
 }
 
+/** The page's main text, read with the HTML parser (head, scripts and styles are not in it). */
 const visibleText = (source: string) =>
-  decode(
-    source
-      .replace(/<script[\s\S]*?<\/script>/g, ' ')
-      .replace(/<style[\s\S]*?<\/style>/g, ' ')
-      .replace(/<[^>]+>/g, ' '),
-  ).replace(/\s+/g, ' ');
+  (parsePage(source).querySelector('main')?.textContent ?? '').replace(/\s+/g, ' ');
 
 describe('pages', () => {
   it('has one page entry for every built page, and a built page for every entry', () => {
