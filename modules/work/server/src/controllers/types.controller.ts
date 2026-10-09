@@ -7,13 +7,13 @@ import {
   reorderIssueTypesBodySchema,
   updateIssueTypeBodySchema,
 } from '../../../shared/issue-types.ts';
-import { projectKeyParamsSchema } from '../../../shared/projects.ts';
+import { projectRefParamsSchema } from '../../../shared/boards.ts';
 import type { IssueTypesService } from '../services/types/index.ts';
 
-/** The same handlers serve /issue-types and /projects/:key/issue-types; the key decides the scope. */
+/** The same handlers serve /issue-types and /projects/:key/issue-types; the key or id decides the scope. */
 export const scopeOf = (request: FastifyRequest): string | null => {
   const params = request.params as { key?: string };
-  return params.key ? parseOrThrow(projectKeyParamsSchema, params).key : null;
+  return params.key ? parseOrThrow(projectRefParamsSchema, params).key : null;
 };
 
 export const idOf = (request: FastifyRequest) => parseOrThrow(idParamsSchema, request.params).id;
