@@ -27,6 +27,14 @@ export function useWorkLogs(key: string) {
   });
 }
 
+/** Who watches the issue, for the avatars beside the count. */
+export function useWatchers(key: string) {
+  return useQuery({
+    queryKey: issueKeys.watchers(key),
+    queryFn: () => api.work.issues.watchers(key),
+  });
+}
+
 /** Posts a comment or a reply; the thread and the history read again afterwards. */
 export function useAddComment(key: string) {
   const queryClient = useQueryClient();

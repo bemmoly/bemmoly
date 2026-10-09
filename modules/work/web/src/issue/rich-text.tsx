@@ -73,7 +73,13 @@ function block(node: PmNode, index: number): ReactNode {
     case 'orderedList': {
       const List = node.type === 'bulletList' ? 'ul' : 'ol';
       return (
-        <List key={index} className="m-0 flex flex-col gap-1 pl-5">
+        <List
+          key={index}
+          className={cx(
+            'm-0 flex flex-col gap-1 pl-5',
+            node.type === 'bulletList' ? 'list-disc' : 'list-decimal',
+          )}
+        >
           {(node.content ?? []).map((item, i) => (
             <li key={i}>{(item.content ?? []).map((child) => inline(child.content))}</li>
           ))}
