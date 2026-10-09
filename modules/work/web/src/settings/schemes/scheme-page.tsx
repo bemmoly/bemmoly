@@ -11,7 +11,7 @@ import {
 import type { ReactNode } from 'react';
 import { NO_PROJECT_PERMISSION } from '../../hooks/settings-access.ts';
 import type { SchemeFlow } from '../../hooks/settings-scheme-flow.ts';
-import { DiffDialog } from '../diff-dialog.tsx';
+import { DiffDialog, invertDiff } from '../diff-dialog.tsx';
 
 const failure = (error: unknown) =>
   error ? (
@@ -99,7 +99,7 @@ export function SchemePage({
         open={flow.step === 'reset'}
         title="Reset to the org default"
         description={`Everything below goes back to ${origin}.`}
-        entries={flow.diff.data?.entries ?? []}
+        entries={invertDiff(flow.diff.data?.entries ?? [])}
         empty={flow.diff.isPending ? 'Loading the diff…' : 'Nothing differs from the org default.'}
         confirmLabel="Continue"
         onConfirm={flow.continueReset}

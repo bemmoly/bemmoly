@@ -127,9 +127,6 @@ export function LqlInput({
       {error && (
         <span id={errorId} className="text-11h text-danger">
           {error.message}
-          {error.expected && error.expected.length > 0 && error.expected.length <= 4 && (
-            <span className="text-tx5"> Try {error.expected.join(', ')}.</span>
-          )}
         </span>
       )}
       {open && (
