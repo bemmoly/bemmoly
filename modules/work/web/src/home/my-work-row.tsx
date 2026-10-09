@@ -28,7 +28,7 @@ function when(issue: MyIssue): string {
   return `Updated ${formatRelative(issue.updatedAt)}`;
 }
 
-export const issueHref = (key: string) => `/work/issues/${key}`;
+export const issueHref = (key: string) => `/work/issue/${key}`;
 
 /** One row of the Home mock's list: type, key, title, status, when, priority. */
 export function MyWorkRow({ issue }: { issue: MyIssue }) {
