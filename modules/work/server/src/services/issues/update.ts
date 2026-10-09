@@ -7,6 +7,7 @@ import { recordHistory, type HistoryChange } from '../history/index.ts';
 import { actorUserId, projectResource, requireDatabase, type IssueServiceDeps } from './deps.ts';
 import { loadFieldDefinitions, validateCustomFields } from './fields.ts';
 import { notify, publishIssueChange, watcherIds } from './notify.ts';
+import { assertOwnReferences } from './references.ts';
 import { loadIssueById, loadIssueByKey, toIssue, type IssueRow } from './rows.ts';
 
 /*
@@ -193,6 +194,7 @@ export async function updateIssue(
         select name from workflow_statuses where id = ${body.statusId}`;
       statusName = status?.name ?? null;
     }
+    await assertOwnReferences(tx, row.project_id, body);
     await writeScalars(tx, row, body);
     await recordHistory(tx, row.id, actorId, changes);
     const issue = toIssue(await loadIssueById(tx, row.id));

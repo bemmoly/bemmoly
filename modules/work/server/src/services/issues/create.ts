@@ -11,6 +11,7 @@ import { recordHistory } from '../history/index.ts';
 import { actorUserId, projectResource, requireDatabase, type IssueServiceDeps } from './deps.ts';
 import { loadFieldDefinitions, requiredFieldKeys, validateCustomFields } from './fields.ts';
 import { notify, publishIssueChange } from './notify.ts';
+import { assertOwnReferences } from './references.ts';
 import { loadIssueById, toIssue } from './rows.ts';
 
 /**
@@ -55,13 +56,6 @@ async function projectKeyOf(tx: SqlExecutor, projectId: string): Promise<string>
   return row.key;
 }
 
-async function assertTypeInProject(tx: SqlExecutor, projectId: string, typeId: string) {
-  const [row] = await tx<{ id: string }[]>`
-    select id from issue_types
-    where id = ${typeId} and (project_id = ${projectId} or project_id is null)`;
-  if (!row) throw new ValidationError('The issue type does not belong to this project');
-}
-
 export async function createIssue(
   deps: IssueServiceDeps,
   ctx: RequestContext,
@@ -75,7 +69,7 @@ export async function createIssue(
     const [projectKey, statusId] = await Promise.all([
       projectKeyOf(tx, body.projectId),
       initialStatusId(tx, body.projectId),
-      assertTypeInProject(tx, body.projectId, body.typeId),
+      assertOwnReferences(tx, body.projectId, body),
     ]);
     const definitions = await loadFieldDefinitions(tx, body.projectId);
     const customFields = validateCustomFields(definitions, body.customFields ?? {});
