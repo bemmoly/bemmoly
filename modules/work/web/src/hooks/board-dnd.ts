@@ -40,7 +40,9 @@ export function placesOf(model: BoardModel): Map<string, CardPlace> {
 export function useBoardVerdicts(model: BoardModel) {
   const carrying = useBoardDragStore((state) => state.carrying);
   const transitions = useQuery({
-    queryKey: workKeys.issueTransitions(carrying?.key ?? ''),
+    // Keyed by the status too: the transitions of the status a card just left must not judge
+    // its next drop while they are refetched.
+    queryKey: [...workKeys.issueTransitions(carrying?.key ?? ''), carrying?.statusId ?? ''],
     queryFn: () => api.work.boardIssues.transitions(carrying?.key ?? ''),
     enabled: Boolean(carrying),
     staleTime: 15_000,

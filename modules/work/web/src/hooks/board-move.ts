@@ -48,10 +48,12 @@ export function useBoardMove(boardId: string, columnName: (columnId: string) => 
         body: refusalOf(error),
       });
     },
-    onSettled: () =>
+    // The issue's own reads go too: its transitions depend on the status it just left.
+    onSettled: (_data, _error, { plan }) =>
       Promise.all([
         queryClient.invalidateQueries({ queryKey: viewsKey }),
         queryClient.invalidateQueries({ queryKey: workKeys.boardMetrics(boardId) }),
+        queryClient.invalidateQueries({ queryKey: workKeys.issue(plan.key) }),
       ]),
   });
 
