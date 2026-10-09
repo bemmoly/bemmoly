@@ -1,4 +1,5 @@
 import type { EnableModuleBody, ModuleAccessChoice, RollbackMode } from '@bemmoly/shared';
+import { shippedManifest } from '../seed/modules.ts';
 import { newId } from '../seed/time.ts';
 import { audit, can, emit, type MockDb } from '../db.ts';
 import { bodyOf, fail, notFound, ok, page, type MockRoute } from '../types.ts';
@@ -63,12 +64,7 @@ function setModuleState(db: MockDb, id: string, enabled: boolean, access?: Modul
   }
   if (!enabled) db.manifests = db.manifests.filter((entry) => entry.id !== id);
   else if (!db.manifests.some((entry) => entry.id === id)) {
-    const label = id.charAt(0).toUpperCase() + id.slice(1);
-    db.manifests.push({
-      id,
-      version: module.version,
-      navigation: [{ id, label, path: `/${id}`, placement: 'top' }],
-    });
+    db.manifests.push(shippedManifest(id) ?? { id, version: module.version, navigation: [] });
   }
   audit(db, enabled ? 'module.enabled' : 'module.disabled', 'module', id);
   emit(db, 'modules.changed', [id]);
