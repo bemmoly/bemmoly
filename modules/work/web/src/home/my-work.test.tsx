@@ -66,7 +66,7 @@ describe('my work on Home', () => {
   it('lists the assigned issues with key, title, status and a link, and counts each tab', async () => {
     const fetch = renderSection();
     const row = await screen.findByRole('link', { name: /Stripe webhook idempotency/ });
-    expect(row.getAttribute('href')).toBe('/work/issues/PLT-12');
+    expect(row.getAttribute('href')).toBe('/work/issue/PLT-12');
     expect(row.textContent).toContain('PLT-12');
     expect(row.textContent).toContain('In progress');
     expect(row.textContent).toContain('Due Oct 14');

@@ -21,7 +21,7 @@ export interface IssueRef {
   sprintId?: string | null;
 }
 
-export const issuePath = (key: string): string => `/work/issues/${key}`;
+export const issuePath = (key: string): string => `/work/issue/${key}`;
 
 export async function publishIssueChange(
   deps: Pick<IssueServiceDeps, 'realtime'>,
