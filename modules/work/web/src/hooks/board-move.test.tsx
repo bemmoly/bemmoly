@@ -114,6 +114,30 @@ describe('useBoardMove', () => {
     );
   });
 
+  it('reads the board again only once the last of several quick moves settles', async () => {
+    let release = () => {};
+    const held = new Promise<void>((resolve) => (release = resolve));
+    server.use(
+      http.patch('*/api/v1/work/issues/:key', async ({ params }) => {
+        if (params['key'] !== 'PLT-10') await held;
+        return HttpResponse.json(issue);
+      }),
+      http.patch('*/api/v1/work/issues/:key/rank', () => HttpResponse.json(issue)),
+      http.get('*/api/v1/work/boards/:id/view', () => HttpResponse.json(testView())),
+      http.get('*/api/v1/work/boards/:id/metrics', () => HttpResponse.json({})),
+    );
+    const { client, hook, plan, columnOf } = setup();
+    const later = { ...plan, issueId: 'other', key: 'PLT-11' };
+    act(() => hook.result.current.move(later));
+    act(() => hook.result.current.move(plan));
+    const stale = () => client.getQueryState(workKeys.boardView(BOARD_ID, {}))?.isInvalidated;
+    await waitFor(() => expect(client.isMutating()).toBe(1));
+    expect(stale()).toBe(false);
+    expect(columnOf()).toBe('doing');
+    release();
+    await waitFor(() => expect(stale()).toBe(true));
+  });
+
   it('puts the card back and says why when the workflow refuses', async () => {
     server.use(
       http.patch('*/api/v1/work/issues/:key', () =>

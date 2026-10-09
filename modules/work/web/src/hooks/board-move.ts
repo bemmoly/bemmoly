@@ -38,7 +38,9 @@ export function useBoardMove(boardId: string, columnName: (columnId: string) => 
   const queryClient = useQueryClient();
   const toast = useToast();
   const viewsKey = useMemo(() => workKeys.boardView(boardId).slice(0, -1), [boardId]);
+  const mutationKey = useMemo(() => workKeys.boardMove(boardId), [boardId]);
   const mutation = useMutation<void, unknown, { plan: MovePlan; snapshot: Snapshot }>({
+    mutationKey,
     mutationFn: ({ plan }) => send(plan),
     onError: (error, { plan, snapshot }) => {
       for (const [key, data] of snapshot) queryClient.setQueryData(key, data);
@@ -48,13 +50,17 @@ export function useBoardMove(boardId: string, columnName: (columnId: string) => 
         body: refusalOf(error),
       });
     },
-    // The issue's own reads go too: its transitions depend on the status it just left.
-    onSettled: (_data, _error, { plan }) =>
-      Promise.all([
+    // The issue's own reads go too: its transitions depend on the status it just left. The
+    // board is read again only once the last pending move settles: a view fetched while
+    // others are in flight lacks them, and would put their cards back until they land.
+    onSettled: async (_data, _error, { plan }) => {
+      await queryClient.invalidateQueries({ queryKey: workKeys.issue(plan.key) });
+      if (queryClient.isMutating({ mutationKey }) > 1) return;
+      await Promise.all([
         queryClient.invalidateQueries({ queryKey: viewsKey }),
         queryClient.invalidateQueries({ queryKey: workKeys.boardMetrics(boardId) }),
-        queryClient.invalidateQueries({ queryKey: workKeys.issue(plan.key) }),
-      ]),
+      ]);
+    },
   });
 
   const move = useCallback(
