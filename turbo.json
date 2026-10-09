@@ -55,6 +55,11 @@
       "dependsOn": ["build"],
       "cache": false
     },
+    "test:e2e:work": {
+      "dependsOn": ["^build"],
+      "cache": false,
+      "env": ["CI", "BEMMOLY_TEST_DATABASE_URL", "DOCKER_HOST", "TESTCONTAINERS_*"]
+    },
     "size": {
       "dependsOn": ["build"]
     },
