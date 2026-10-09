@@ -14,9 +14,9 @@ export const ROUTES: readonly MockRoute[] = [
   ...peopleRoutes,
   ...settingsRoutes,
   ...operationsRoutes,
+  ...workBacklogRoutes,
   ...workIssuesRoutes,
   ...workSettingsRoutes,
   ...workSettingsBoardRoutes,
   ...workWorkflowRoutes,
-  ...workBacklogRoutes,
 ];
