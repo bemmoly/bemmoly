@@ -1,6 +1,6 @@
 {
   "name": "@bemmoly/deploy",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "private": true,
   "license": "MIT",
   "description": "Installer, Compose stack, bemmoly CLI and release scripts",
