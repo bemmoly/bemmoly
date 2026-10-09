@@ -1,3 +1,4 @@
+export { backlogKeys, workBacklogEndpoints } from './backlog.ts';
 export { workBoardIssuesEndpoints } from './board-issues.ts';
 export { workBoardsEndpoints, type ProjectsFilter } from './boards.ts';
 export { workIssueActivityEndpoints } from './issue-activity.ts';
@@ -5,4 +6,5 @@ export { workIssueEndpoints, type HistoryFilter, type IssuesFilter } from './iss
 export { workProjectCatalogEndpoints } from './project-catalog.ts';
 export { workMyWorkEndpoints } from './my-work.ts';
 export { workSettingsEndpoints, workSettingsKeys } from './settings.ts';
+export { workSprintEndpoints } from './sprints.ts';
 export { workWorkflowEndpoints, workWorkflowKeys } from './workflows.ts';
