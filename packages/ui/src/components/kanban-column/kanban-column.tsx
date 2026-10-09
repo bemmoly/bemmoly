@@ -104,8 +104,9 @@ export function KanbanCell({
       role="group"
       aria-label={label}
       className={cx(
-        'flex min-h-11 flex-col gap-2 rounded-control',
-        dropping && 'border border-dashed border-ac-br bg-ac-bg2',
+        'flex min-h-11 flex-col gap-2 rounded-control motion-safe:transition-colors',
+        // An outline, not a border, so a drag over the cell never nudges its cards by a pixel.
+        dropping && 'bg-ac-bg2 outline-1 -outline-offset-1 outline-ac-br outline-dashed',
         className,
       )}
       {...rest}

@@ -49,6 +49,7 @@ export function SwimlaneHeader({
       onClick={onToggle}
       className={cx(
         'flex w-full cursor-pointer items-center gap-2.5 border-0 border-b border-br2 bg-bg2 px-3 py-2 text-left font-sans text-13 text-tx',
+        'hover:bg-chip motion-safe:transition-colors',
         focusRingInset,
         className,
       )}
@@ -61,7 +62,7 @@ export function SwimlaneHeader({
       <span aria-hidden className={cx('size-2.5 rounded-chip', colorClassName)} />
       <span className="font-semibold">{name}</span>
       {laneKey && <span className="font-mono text-12 font-medium text-tx4">{laneKey}</span>}
-      {meta && <span className="text-12 text-tx4">{meta}</span>}
+      {meta && <span className="text-12 text-tx4 tabular-nums">{meta}</span>}
       {progress !== undefined && (
         <ProgressBar
           value={progress}
@@ -70,7 +71,7 @@ export function SwimlaneHeader({
           className="ml-1.5 w-30"
         />
       )}
-      {due && <span className="ml-auto text-12 text-tx4">{due}</span>}
+      {due && <span className="ml-auto text-12 text-tx4 tabular-nums">{due}</span>}
     </button>
   );
 }
