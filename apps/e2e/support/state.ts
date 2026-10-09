@@ -16,7 +16,10 @@ export interface Person {
 
 export interface RunState {
   baseURL: string;
+  /** The first admin, made by the setup wizard; lead of the Platform team. */
   admin: Person;
+  /** Every org admin, the first among them; each parallel worker acts as one of them. */
+  admins: Person[];
   member: Person;
   /**
    * Two more people for the board budget: one reads the API, one drives the

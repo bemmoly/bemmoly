@@ -6,7 +6,7 @@ test('⌘K finds an issue by its key and opens it', async ({ page, admin }) => {
   const key = `${project.key}-2`;
 
   await page.goto('/');
-  await expect(page.getByRole('heading', { name: /, Rohan$/ })).toBeVisible();
+  await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
   await page.keyboard.press('ControlOrMeta+k');
   const palette = page.getByRole('dialog', { name: 'Command palette' });
   await palette.getByRole('combobox').fill(key);

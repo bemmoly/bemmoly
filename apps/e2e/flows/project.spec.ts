@@ -9,6 +9,7 @@ test('a project is created with an owning team and its creator leads it', async 
   page,
   admin,
   run,
+  me,
 }) => {
   const key = uniqueKey('PRJ');
   const name = `Payments ${key}`;
@@ -39,6 +40,6 @@ test('a project is created with an owning team and its creator leads it', async 
   expect(project).toMatchObject({ teamId: run.team.id, method: 'kanban' });
   const { items } = await admin.call<{ items: Member[] }>('GET', `/work/projects/${key}/members`);
   expect(items).toContainEqual(
-    expect.objectContaining({ userId: run.admin.id, roleKey: 'project_admin' }),
+    expect.objectContaining({ userId: me.id, roleKey: 'project_admin' }),
   );
 });
