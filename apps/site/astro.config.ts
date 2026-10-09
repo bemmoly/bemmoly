@@ -8,6 +8,9 @@ const repoRoot = fileURLToPath(new URL('../..', import.meta.url));
 export default defineConfig({
   site: 'https://bemmoly.com',
   trailingSlash: 'never',
+  // Astro 7's default ('jsx') drops the space where a line ends beside a link or <code>
+  // ("go after<code>"); lossless compression keeps the text as written.
+  compressHTML: true,
   build: {
     format: 'file',
     // Pages are small; inlining the stylesheet removes the only render-blocking request.
