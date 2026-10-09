@@ -18,7 +18,14 @@
   --shadow-tab: inset 0 -2px 0 var(--ac);
   --shadow-radio: inset 0 0 0 4px var(--sf), inset 0 0 0 9px var(--ac-fill);
   --shadow-halo: 0 0 0 1px var(--bg);
+  --duration-instant: 90ms;
   --duration-fast: 150ms;
+  --duration-base: 200ms;
+  --duration-slow: 260ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-settle: cubic-bezier(0.34, 1.36, 0.64, 1);
 }
 
 body {
