@@ -92,7 +92,7 @@ describe('admin modules', () => {
     await renderPage(() => <ModulesPage />);
     expect(await screen.findByText(/BEMMOLY_MODULES is set on the server/)).toBeTruthy();
     expect(screen.queryByRole('button', { name: /disable sample/i })).toBeNull();
-    expect(screen.getByText('Set by BEMMOLY_MODULES')).toBeTruthy();
+    expect(screen.getAllByText('Set by BEMMOLY_MODULES')).toHaveLength(2);
   });
 
   it('allows removing data only when unpinned, disabled and the id is typed exactly', () => {

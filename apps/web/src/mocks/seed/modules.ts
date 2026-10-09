@@ -1,0 +1,113 @@
+import type { AdminModule, ModuleGrant, ModuleManifest } from '@bemmoly/shared';
+import { TEAM_IDS, USER_IDS } from './people.ts';
+import { ago, uid } from './time.ts';
+
+/*
+ * The modules this mock install ships, as the server would list them. A
+ * fresh install enables none; the seeded workspace is what an admin leaves
+ * behind after enabling Sample for everyone and Work for the Platform team.
+ */
+
+interface Shipped {
+  admin: Omit<AdminModule, 'enabled' | 'enabledAt' | 'versionInstalled' | 'changelogState'>;
+  /** The navigation the module registers, mirrored from its module.ts. */
+  manifest: ModuleManifest;
+  /** Minutes before now the seeded admin enabled it. */
+  enabledMinutesAgo: number;
+}
+
+const SHIPPED: Shipped[] = [
+  {
+    admin: {
+      id: 'sample',
+      name: 'Sample',
+      version: '0.1.0',
+      pendingChangesets: 1,
+      dependsOn: [],
+      defaultAccess: 'none',
+      restartRequired: false,
+    },
+    manifest: {
+      id: 'sample',
+      name: 'Sample',
+      version: '0.1.0',
+      navigation: [{ id: 'sample', label: 'Sample', path: '/sample', placement: 'top' }],
+    },
+    enabledMinutesAgo: 60 * 24 * 9,
+  },
+  {
+    admin: {
+      id: 'work',
+      name: 'Work',
+      version: '0.2.0',
+      pendingChangesets: 21,
+      dependsOn: [],
+      defaultAccess: 'teams',
+      restartRequired: false,
+    },
+    manifest: {
+      id: 'work',
+      name: 'Work',
+      version: '0.2.0',
+      navigation: [
+        { id: 'work.board', label: 'Board', path: '/work/board', placement: 'top' },
+        { id: 'work.backlog', label: 'Backlog', path: '/work/backlog', placement: 'top' },
+        { id: 'work.projects', label: 'Projects', path: '/work/projects', placement: 'top' },
+        { id: 'work.create-issue', label: 'Issue', path: '/work/create', placement: 'create' },
+        {
+          id: 'work.create-project',
+          label: 'Project',
+          path: '/work/projects/new',
+          placement: 'create',
+        },
+      ],
+      search: [{ kind: 'work.issue', label: 'Issues' }],
+    },
+    enabledMinutesAgo: 60 * 24 * 3,
+  },
+];
+
+/** The manifest a module serves once enabled, or null when this install does not ship it. */
+export function shippedManifest(id: string): ModuleManifest | null {
+  const found = SHIPPED.find((entry) => entry.admin.id === id);
+  return found ? structuredClone(found.manifest) : null;
+}
+
+/** Settings › Modules rows: every shipped module, enabled in the seeded workspace. */
+export function seedAdminModules(enabled = true): AdminModule[] {
+  return SHIPPED.map(({ admin, enabledMinutesAgo }) => ({
+    ...admin,
+    enabled,
+    enabledAt: enabled ? ago(enabledMinutesAgo) : null,
+    versionInstalled: enabled ? admin.version : null,
+    changelogState: enabled ? 'current' : 'pending',
+    pendingChangesets: enabled ? 0 : admin.pendingChangesets,
+  }));
+}
+
+/** What the shell loads: the enabled modules' manifests. */
+export function seedManifests(enabled = true): ModuleManifest[] {
+  return enabled ? SHIPPED.map((entry) => structuredClone(entry.manifest)) : [];
+}
+
+/** The access the seeded admin chose when enabling each module. */
+export function seedGrants(): ModuleGrant[] {
+  return [
+    {
+      id: uid(60),
+      moduleId: 'sample',
+      subjectKind: 'everyone',
+      subjectId: null,
+      grantedBy: USER_IDS.rohan,
+      createdAt: ago(60 * 24 * 3),
+    },
+    {
+      id: uid(61),
+      moduleId: 'work',
+      subjectKind: 'team',
+      subjectId: TEAM_IDS.platform,
+      grantedBy: USER_IDS.rohan,
+      createdAt: ago(60 * 24 * 3),
+    },
+  ];
+}
