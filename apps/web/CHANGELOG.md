@@ -1,5 +1,91 @@
 # @bemmoly/web
 
+## 0.2.0
+
+### Minor Changes
+
+- d313831: The Work module ships in the image, off until an admin enables it in Settings › Modules.
+  Enabling it runs its schema changelog, which creates the issue tracking tables (projects,
+  issue types and fields, workflows, issues, links, labels, versions, components, sprints,
+  boards, saved filters, comments, history, work logs, watchers, attachments and automation
+  rules) and adds the pg_trgm extension for prefix search, which needs the database owner or a
+  superuser to have created it on managed databases that do not allow trusted extensions. Once
+  enabled, "Board" and "Backlog" appear in the top navigation as placeholders and the Work
+  capabilities (create and configure projects; view, create, edit, move and delete issues;
+  manage sprints; configure the board) appear in the roles matrix with their defaults. The
+  screens and the API behind them arrive in later changes of this release. No configuration
+  change.
+
+### Patch Changes
+
+- e2aa5d2: Home now shows sections from the modules you can open, above "Your modules". A module adds one
+  by shipping `web/src/home.tsx`; a section that fails to load shows a retry card and leaves the
+  rest of Home working. Work adds "My work": the issues assigned to you, reported by you and
+  watched by you, each tab with its count, served by `GET /api/v1/work/my-issues`. No
+  configuration or schema change.
+- e2aa5d2: The command palette (⌘K) now searches inside modules. The kernel serves `GET /api/v1/search`
+  from search providers that modules register with `ctx.search.addProvider`; it asks only the
+  modules a person can open, and each provider keeps to what that person may see. Work answers
+  with issues by key (type `PLT-14`) and by keyword, each with its status and assignee, under an
+  "Issues" group and scope. No configuration or schema change.
+- 7d09c70: Projects now have members you can manage. Open Members from a project's row menu in the
+  project list, or from the project switcher, to see who can open the project and the role each
+  person holds in it. Project admins add people (found by name or email) or whole teams, change
+  a role in place, and remove someone after reading back what they lose. A project always keeps
+  one project admin. Whoever creates a project becomes its project admin, and everyone in the
+  owning team joins with the team's default role. People see only the projects they belong to in
+  the project list; org admins still see every project. Access to a project's issues, search,
+  boards and Home follows membership on the next request, and LQL issue queries, which failed
+  for everyone, now work and respect it too. Every change is in the audit log. The API is
+  `GET` and `POST /api/v1/work/projects/:key/members`, and `PATCH` and `DELETE
+/api/v1/work/projects/:key/members/:userId`. No configuration or schema change.
+- b4f5ea9: Issue descriptions, acceptance criteria and other document fields, and comments, are now written
+  in a rich text editor instead of a plain text box. The tools are bold, italic, mention, link and
+  code, with headings, bulleted and numbered lists, checklists, quotes and code blocks for
+  descriptions; the usual shortcuts work (⌘B, ⌘I, ⌘E, ⌘K for a link, ⌘↵ to save or post, Escape
+  to cancel), and typing / offers the blocks. Type @ to mention someone, or # to link an issue by
+  key or title; issue keys you type or paste become links on their own, and pasted web addresses
+  do too. Text reads the same after saving as it did while you wrote it. The editor loads the
+  first time you edit, so pages that only show text stay as fast as before. Existing descriptions
+  and comments open unchanged. No schema or configuration change.
+- 7625bb6: Unsaved work in Work settings is no longer lost when leaving through the top bar, Back or a
+  typed address. Board settings with an unsaved draft shows its unsaved-changes bar and waits for
+  Keep editing or Discard and leave; the dialogs that add an issue type or a custom field ask
+  before dropping a name that was typed; the workflow editor finishes saving the draft before it
+  leaves, and asks only when that save fails. Modules get the same guard the workspace settings
+  pages use, so any module page can hold a move away from unsaved work. No configuration or
+  schema change.
+- 7d09c70: The workflow editor shows how many issues sit in each status, counting only projects that use
+  the workflow and issues you can open (`GET /api/v1/work/workflows/:id/status-counts`, with an
+  optional `projectId`); Board settings uses the same counts to warn before a change hides
+  cards. Publishing a workflow now records when it was published, shown in the Workflows list
+  in place of the last change, and keeps where each status was drawn, so a published workflow
+  opens with its layout. A project's own copy of a workflow now takes the project's issues and
+  board columns with it.
+
+  Project settings can override and reset each scheme: issue types, fields, the workflow and the
+  board (`GET /api/v1/work/projects/:key/schemes`, `GET …/schemes/:kind/diff`, `POST
+…/schemes/:kind/override` and `…/reset`). Overriding copies the org default into the project
+  and moves its issues onto the copy; resetting moves them back and drops the copy, and the diff
+  lists every row the project changed. A project's issue type or field copy can now be edited by
+  its id alone.
+
+  Schema change: changeset `0021-work-workflow-publish-details` adds `workflows.published_at`
+  and nullable `x` and `y` columns on `workflow_statuses`. It is fast, fills the publish time of
+  existing workflows from their last update, and can be rolled back.
+
+- Updated dependencies [e2aa5d2]
+- Updated dependencies [51cd3ae]
+- Updated dependencies [e2aa5d2]
+- Updated dependencies [2e14b26]
+- Updated dependencies [72bd7b9]
+- Updated dependencies [4d5e58f]
+- Updated dependencies [7625bb6]
+  - @bemmoly/core-web@0.2.0
+  - @bemmoly/shared@0.2.0
+  - @bemmoly/ui@0.2.0
+  - @bemmoly/api-client@0.2.0
+
 ## 0.1.7
 
 ### Patch Changes

@@ -1,5 +1,25 @@
 # @bemmoly/core-web
 
+## 0.2.0
+
+### Patch Changes
+
+- e2aa5d2: Home now shows sections from the modules you can open, above "Your modules". A module adds one
+  by shipping `web/src/home.tsx`; a section that fails to load shows a retry card and leaves the
+  rest of Home working. Work adds "My work": the issues assigned to you, reported by you and
+  watched by you, each tab with its count, served by `GET /api/v1/work/my-issues`. No
+  configuration or schema change.
+- 7625bb6: Unsaved work in Work settings is no longer lost when leaving through the top bar, Back or a
+  typed address. Board settings with an unsaved draft shows its unsaved-changes bar and waits for
+  Keep editing or Discard and leave; the dialogs that add an issue type or a custom field ask
+  before dropping a name that was typed; the workflow editor finishes saving the draft before it
+  leaves, and asks only when that save fails. Modules get the same guard the workspace settings
+  pages use, so any module page can hold a move away from unsaved work. No configuration or
+  schema change.
+- Updated dependencies [51cd3ae]
+- Updated dependencies [e2aa5d2]
+  - @bemmoly/shared@0.2.0
+
 ## 0.1.7
 
 ### Patch Changes

@@ -1,5 +1,45 @@
 # @bemmoly/ui
 
+## 0.2.0
+
+### Minor Changes
+
+- 2e14b26: The design system gains the pieces the Work screens are built from, each ported from the Board,
+  Backlog, Issue, Board Settings and Workflow mocks with a Storybook story beside its mock crop:
+  the board card with its blocked badge, labels, estimate or time in column and colour-rule
+  stripe; column headings with WIP limits and the lane drop areas; collapsible swimlanes; quick
+  filter chips; the velocity and flow tiles and the capacity bar; sprint containers with their
+  headers and backlog rows; the epics panel; the Issue page's subtask, linked issue and acceptance
+  criteria rows, activity entries with reactions, the comment box and the Details field list;
+  create form layout pieces and the fields table; the workflow canvas with status nodes,
+  transition arrows and labels, rule chips and status pills; and the "Inherits from" banner with
+  its diff and reset actions. Issue types now include Epic, Incident and Subtask, priorities add
+  Lowest, and the type tile comes in the 18px and 36px sizes the type settings use.
+
+### Patch Changes
+
+- 72bd7b9: Work gains its Issue page, the same issue in a slide-over for the board, the create issue form
+  and the project list. The Issue page shows the title, the status with the transitions the
+  workflow allows, description and rich text fields such as acceptance criteria, subtasks, linked
+  issues, and activity with threaded comments, reactions, history and the work log; every field in
+  Details edits in place, and the AI summary shows its empty state until AI is turned on. The
+  create form lays itself out from the issue type's form layout, checks its required fields and
+  names the new issue's key when it is created. Projects lists every project you can see and
+  creates new ones with a key, Scrum or Kanban and an owning team. The top bar's Create menu now
+  offers Issue and Project, and Projects joins Board and Backlog in the top bar. The select gains
+  a ghost look for values edited in place. No schema or configuration change.
+- 4d5e58f: The Work screens feel finished. Dialogs, the issue slide-over, menus, dropdowns and toasts now
+  open and close with short, calm motion, and nothing moves for people who ask their system for
+  reduced motion. A board card lifts when you pick it up and settles where you drop it. Every
+  Work screen (board, backlog, issue page and slide-over, projects, members, board settings,
+  workflows and Home's "my work") loads into a placeholder shaped like the finished page instead
+  of grey blocks, so nothing jumps when the data arrives. Empty boards, sprints, backlogs, saved
+  filters, workflow lists and member lists say what they are and offer the one thing to do next.
+  The create issue form opens with the cursor in Title, the workflow pages use the same project
+  settings sidebar as the rest of project settings, buttons show a pressed state, long names
+  show in full on hover, counts line up, and scrollbars inside white panels no longer draw a grey
+  ring. No configuration or schema change.
+
 ## 0.1.7
 
 No changes in this release.
