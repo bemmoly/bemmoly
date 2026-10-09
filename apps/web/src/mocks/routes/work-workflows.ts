@@ -1,6 +1,7 @@
 import { can, emit } from '../db.ts';
 import { ago, newId, uid } from '../seed/time.ts';
 import { bodyOf, fail, invalid, notFound, ok, page, type MockRoute } from '../types.ts';
+import { issueStore, statusCountsOf } from './work-issue-store.ts';
 import { validateDraft, type Draft, type DraftStatus } from './work-workflow-checks.ts';
 import { PROJECT_CONFIGURE, touch, workState, type Row } from './work-state.ts';
 
@@ -49,7 +50,7 @@ const findWorkflow = (db: Parameters<typeof workState>[0], id: string | undefine
 
 /** Issues in a removed status go where the body says; without a mapping the publish is refused. */
 function retire(db: Parameters<typeof workState>[0], row: Row, draft: Draft, mapping: object) {
-  const counts = workState(db).statusCounts;
+  const counts = statusCountsOf(db);
   const kept = new Set(draft.statuses.map((status) => status.id));
   const targets = mapping as Record<string, string>;
   const removed = (row['statuses'] as DraftStatus[]).filter((status) => !kept.has(status.id));
@@ -64,10 +65,9 @@ function retire(db: Parameters<typeof workState>[0], row: Row, draft: Draft, map
         issues: counts[status.id] ?? 0,
       })),
     });
-  for (const status of removed) {
-    const target = targets[status.id];
-    if (target) counts[target] = (counts[target] ?? 0) + (counts[status.id] ?? 0);
-    delete counts[status.id];
+  for (const issue of issueStore(db).issues) {
+    const target = targets[String(issue['statusId'])];
+    if (target) issue['statusId'] = target;
   }
   return null;
 }
@@ -143,7 +143,7 @@ export const workWorkflowRoutes: MockRoute[] = [
     pattern: '/api/v1/work/workflows/:id/status-counts',
     handle: (request, db) =>
       findWorkflow(db, request.params['id'])
-        ? ok({ counts: workState(db).statusCounts })
+        ? ok({ counts: statusCountsOf(db, request.query.get('projectId')) })
         : notFound('Workflow'),
   },
   {
