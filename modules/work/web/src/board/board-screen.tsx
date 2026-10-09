@@ -7,11 +7,11 @@ import { useBoardDragStore } from '../hooks/board-drag-store.ts';
 import type { BoardModel } from '../hooks/board-model.ts';
 import { useBoardScreen } from '../hooks/board-screen.ts';
 import { useBoardIssueSlideOver } from '../hooks/board-slide-over.ts';
+import { IssueSlideOver } from '../issue/index.ts';
 import type { WorkScreenProps } from '../routes.tsx';
 import { BoardContext, type BoardShared } from './board-context.ts';
 import { BoardGrid } from './board-grid.tsx';
 import { BoardHeader } from './board-header.tsx';
-import { BoardSlideOver } from './board-slide-over.tsx';
 import { BoardToolbar } from './board-toolbar.tsx';
 
 type Screen = ReturnType<typeof useBoardScreen>;
@@ -55,7 +55,6 @@ function BoardBody({
     }),
     [actions, screen.vocab, screen.isDimmed, slideOver.issueKey, instructionsId],
   );
-  const laneHue = (laneId: string) => model.lanes.find((lane) => lane.id === laneId)?.hue ?? null;
   const inFlight = model.lanes.reduce((sum, lane) => sum + lane.inFlight, 0);
   const project = screen.project;
   if (!project) return null;
@@ -91,15 +90,7 @@ function BoardBody({
         <BoardAnnouncer />
         <BoardVerdicts model={model} />
       </div>
-      <BoardSlideOver
-        issueKey={slideOver.issueKey}
-        view={view}
-        vocab={screen.vocab}
-        statuses={screen.workflow?.statuses ?? []}
-        laneHue={laneHue}
-        onClose={slideOver.close}
-        onOpenPage={slideOver.openPage}
-      />
+      <IssueSlideOver issueKey={slideOver.issueKey} onClose={slideOver.close} />
     </div>
   );
 }

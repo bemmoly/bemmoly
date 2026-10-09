@@ -8,7 +8,7 @@ import {
   ProgressBar,
 } from '@bemmoly/ui';
 import { Fragment } from 'react';
-import { navigateTo } from '../hooks/board-slide-over.ts';
+import { navigateTo } from '../hooks/issue-navigation.ts';
 
 const DAY = 86_400_000;
 

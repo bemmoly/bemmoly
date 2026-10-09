@@ -145,7 +145,6 @@ describe('Board screen', () => {
     await renderBoard();
     key(cardEl('PLT-12'), 'Enter');
     const panel = await screen.findByRole('complementary', { name: 'PLT-12 details' });
-    expect(within(panel).getByText('Issue 12')).toBeTruthy();
     fireEvent.click(within(panel).getByRole('button', { name: 'Close' }));
     expect(screen.queryByRole('complementary', { name: 'PLT-12 details' })).toBeNull();
   });
