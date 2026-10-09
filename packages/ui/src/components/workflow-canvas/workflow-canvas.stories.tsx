@@ -2,13 +2,8 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
 import { RuleChip, RuleRow } from './rule-chip.tsx';
 import { StatusNode, StatusNodeHandle, StatusPill, type WorkflowCategory } from './status-node.tsx';
-import {
-  TransitionEdge,
-  TransitionLabel,
-  TransitionRow,
-  WorkflowCanvas,
-  WorkflowLegend,
-} from './edges.tsx';
+import { TransitionEdge, TransitionLabel, TransitionRow, WorkflowLegend } from './edges.tsx';
+import { WorkflowCanvas } from './workflow-canvas.tsx';
 
 const meta = { title: 'Components/WorkflowCanvas', component: StatusNode } satisfies Meta<
   typeof StatusNode
