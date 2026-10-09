@@ -8,6 +8,7 @@ import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { request } from 'node:http';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { parsePage, scriptsOf } from './dom.ts';
 
 const image = process.env.SITE_IMAGE ?? 'bemmoly-site:dev';
 let container = '';
@@ -127,9 +128,9 @@ describe('site', () => {
     expect(response.headers.get('x-frame-options')).toBe('DENY');
     expect(response.headers.get('server')).toBeNull();
     const html = await response.text();
-    const scripts = [...html.matchAll(/<script\b(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/g)];
+    const inline = scriptsOf(parsePage(html)).filter((script) => script.src === undefined);
     const csp = response.headers.get('content-security-policy') ?? '';
-    for (const [, body = ''] of scripts) {
+    for (const { body } of inline) {
       const hash = createHash('sha256').update(body).digest('base64');
       expect(csp).toContain(`'sha256-${hash}'`);
     }
