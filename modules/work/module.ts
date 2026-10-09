@@ -5,6 +5,7 @@ import { createWorkControllers } from './server/src/controllers/index.ts';
 import { workRoutes } from './server/src/routes/index.ts';
 import { createWorkServices } from './server/src/services/index.ts';
 import { WORK_AUTOMATION_RUN_JOB, WORK_RANK_REBALANCE_JOB } from './server/src/services/jobs.ts';
+import { registerWorkSearch } from './server/src/services/palette/index.ts';
 
 /**
  * Issues, boards, backlogs, sprints and workflows. Off until an admin enables
@@ -64,6 +65,7 @@ export default defineModule({
       /** Reserved so a fire_automation post-action enqueues today; the engine lands later. */
       handle: async () => undefined,
     });
+    registerWorkSearch(ctx.search, services.search, ctx.database);
     ctx.routes.add({ prefix: '/work', plugin: workRoutes(createWorkControllers(services)) });
   },
 });
