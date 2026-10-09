@@ -91,7 +91,7 @@ export function StatusNode({
       </span>
       <span className="text-11 text-tx5">
         {WORKFLOW_CATEGORY[category].name}
-        {count === undefined ? '' : ` · ${count} issues`}
+        {count === undefined ? '' : ` · ${count} ${count === 1 ? 'issue' : 'issues'}`}
       </span>
     </button>
   );
