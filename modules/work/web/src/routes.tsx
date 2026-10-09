@@ -19,6 +19,7 @@ export const WORK_SCREENS: Readonly<Record<string, Screen>> = {
   issue: lazy(() => import('./issue/issue-screen.tsx')),
   create: lazy(() => import('./create/create-screen.tsx')),
   projects: lazy(() => import('./projects/projects-screen.tsx')),
+  workflows: lazy(() => import('./workflow/workflows-screen.tsx')),
 };
 
 /** "/board/PLT/x" → the Board screen with projectKey "PLT" and rest ["x"]. */
