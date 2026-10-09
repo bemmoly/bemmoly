@@ -1,5 +1,15 @@
 # @bemmoly/server
 
+## 0.2.1
+
+### Patch Changes
+
+- Updated dependencies [ca5b2c4]
+  - @bemmoly/module-work@0.2.1
+  - @bemmoly/module-sample@0.2.1
+  - @bemmoly/core@0.2.1
+  - @bemmoly/shared@0.2.1
+
 ## 0.2.0
 
 ### Minor Changes
