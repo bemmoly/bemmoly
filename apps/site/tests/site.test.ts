@@ -5,16 +5,15 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { REPO_URL } from '../src/lib/links.ts';
+import { hrefsOf, idsOf, parsePage, scriptsOf } from './dom.ts';
 import { startPreview, type Preview } from './serve.ts';
 
 const dist = new URL('../dist/', import.meta.url);
 const pages = readdirSync(dist).filter((file) => file.endsWith('.html'));
 const html = (page: string) => readFileSync(new URL(page, dist), 'utf8');
 
-const hrefs = (source: string) =>
-  [...source.matchAll(/<a\b[^>]*\bhref="([^"]+)"/g)].map((match) => match[1] as string);
-const ids = (source: string) =>
-  new Set([...source.matchAll(/\bid="([^"]+)"/g)].map((match) => match[1] as string));
+const hrefs = (source: string) => hrefsOf(parsePage(source));
+const ids = (source: string) => idsOf(parsePage(source));
 
 let preview: Preview;
 beforeAll(async () => {
@@ -43,12 +42,9 @@ describe('landing page', () => {
   });
 
   it('ships no script beyond the inline copy button', () => {
-    const index = html('index.html');
-    expect(index).not.toMatch(/<script\b[^>]*\bsrc=/);
-    const inline = [...index.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g)];
-    expect(inline.map((match) => match[1]?.length ?? 0).reduce((a, b) => a + b, 0)).toBeLessThan(
-      1024,
-    );
+    const scripts = scriptsOf(parsePage(html('index.html')));
+    expect(scripts.filter((script) => script.src !== undefined)).toEqual([]);
+    expect(scripts.reduce((total, script) => total + script.body.length, 0)).toBeLessThan(1024);
   });
 });
 
