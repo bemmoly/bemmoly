@@ -34,7 +34,7 @@ describe('the Work palette provider against Postgres', () => {
       key: 'PAL-1',
       title: 'Rotate service tokens',
       subtitle: 'Backlog · mo',
-      href: '/work/issues/PAL-1',
+      href: '/work/issue/PAL-1',
     });
     expect(results.map((result) => result.key)).toEqual(
       expect.arrayContaining(['PAL-10', 'PAL-11', 'PAL-12']),
