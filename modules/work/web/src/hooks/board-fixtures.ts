@@ -63,6 +63,7 @@ export function testView(cards: Card[] = defaultCards()): BoardView {
         lanes: { kind: 'epic', queries: [], showEmpty: false, collapsible: true, totals: true },
         cardFields: ['type', 'key', 'priority', 'labels', 'estimate', 'assignee'],
         colorRule: 'none',
+        colorRules: [],
         estimationUnit: 'points',
         cadenceDays: 14,
         workingDays: ['mon', 'tue', 'wed', 'thu', 'fri'],

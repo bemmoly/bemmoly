@@ -36,6 +36,9 @@ export const laneFill = (hue: number | null) =>
 const laneStripe = (hue: number | null) =>
   hue === null ? 'border-l-tx6' : LANE_STRIPES[hue % LANE_STRIPES.length];
 
+/** A colour rule's stripe reads the card's --card-rule, set from the rule's colour. */
+export const RULE_STRIPE = 'border-l-(--card-rule)';
+
 const GLYPHS: ReadonlySet<string> = new Set([
   'story',
   'bug',
@@ -57,6 +60,8 @@ export interface CardVocabulary {
   kanban: boolean;
   /** A card in a done column shows a tick for its age on Kanban. */
   doneColumns: ReadonlySet<string>;
+  /** The colour of the first colour rule the card matches, painted as its stripe. */
+  ruleColor: (card: ViewCard) => string | null;
 }
 
 export function glyphOf(vocab: CardVocabulary, typeId: string): IssueType {
@@ -108,10 +113,12 @@ export function cardProps(
     ...(show('blocked') && card.blockedBy[0] ? { blockedBy: card.blockedBy[0] } : {}),
     ...(show('docs') && card.docs[0] ? { doc: card.docs[0] } : {}),
     ...(show('subtasks') && card.subtasks ? { subtasks: card.subtasks } : {}),
-    stripeClassName: cardStripe(vocab.colorRule, {
-      priority,
-      type,
-      epicClassName: laneStripe(laneHue),
-    }),
+    stripeClassName: vocab.ruleColor(card)
+      ? RULE_STRIPE
+      : cardStripe(vocab.colorRule, {
+          priority,
+          type,
+          epicClassName: laneStripe(laneHue),
+        }),
   };
 }
