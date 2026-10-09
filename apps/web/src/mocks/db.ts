@@ -20,15 +20,10 @@ import type {
 } from '@bemmoly/shared';
 import { seedCapabilities, type CapabilityRow, type Cells } from './seed/capabilities.ts';
 import { seedAudit, seedBackups, seedOutbox, seedSystem, seedUpdates } from './seed/operations.ts';
-import { ROLE_IDS, seedGrants, seedRoles, seedTeams, seedUsers, USER_IDS } from './seed/people.ts';
+import { seedAdminModules, seedGrants, seedManifests } from './seed/modules.ts';
+import { ROLE_IDS, seedRoles, seedTeams, seedUsers, USER_IDS } from './seed/people.ts';
 import { newId } from './seed/time.ts';
-import {
-  seedAdminModules,
-  seedManifests,
-  seedNotifications,
-  seedPreferences,
-  seedSettings,
-} from './seed/workspace.ts';
+import { seedNotifications, seedPreferences, seedSettings } from './seed/workspace.ts';
 
 /**
  * fresh: no admin yet, the wizard runs. ready: set up, signed in as the admin.
