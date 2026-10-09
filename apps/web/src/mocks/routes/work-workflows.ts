@@ -33,7 +33,11 @@ function draftOf(workflow: Row): Draft {
   const draft = workflow['draft'] as Draft | null;
   if (draft) return draft;
   return {
-    statuses: (workflow['statuses'] as DraftStatus[]).map((status) => ({ ...status })),
+    /** As the server's draftOf: no colour key when the status has none. */
+    statuses: (workflow['statuses'] as DraftStatus[]).map(({ color, ...status }) => ({
+      ...status,
+      ...(color ? { color } : {}),
+    })),
     transitions: (workflow['transitions'] as Draft['transitions']).map((transition) => ({
       ...transition,
     })),
@@ -82,6 +86,7 @@ function publish(db: Parameters<typeof workState>[0], row: Row, mapping: object)
   touch(row, {
     statuses: draft.statuses.map((status) => ({
       ...status,
+      color: status['color'] ?? null,
       id: ids.get(status.id) ?? status.id,
       workflowId: row.id,
     })),
