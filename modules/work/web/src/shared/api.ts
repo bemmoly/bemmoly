@@ -5,6 +5,7 @@ import {
   workIssueActivityEndpoints,
   workIssueEndpoints,
   workProjectCatalogEndpoints,
+  workMyWorkEndpoints,
   workSettingsEndpoints,
   workWorkflowEndpoints,
 } from '../api/index.ts';
@@ -37,6 +38,7 @@ export const api = {
     ...workIssueEndpoints(client.http),
     ...workIssueActivityEndpoints(client.http),
     ...workProjectCatalogEndpoints(client.http),
+    myWork: workMyWorkEndpoints(client.http),
   },
 };
 
