@@ -1,7 +1,7 @@
 import { editorSchema } from '@bemmoly/editor/schema';
 import { Node } from '@tiptap/pm/model';
 import { describe, expect, it } from 'vitest';
-import { BUILTIN_TEMPLATES } from '../../../shared/templates/index.ts';
+import { BUILTIN_TEMPLATES } from '../../../shared/builtin-templates/index.ts';
 
 describe('built-in templates', () => {
   it('are the six the tech design names, with unique keys', () => {

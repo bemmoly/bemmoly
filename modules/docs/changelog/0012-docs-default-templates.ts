@@ -1,5 +1,5 @@
 import { changeset, sql } from '@bemmoly/core/changelog';
-import { BUILTIN_TEMPLATES } from '../shared/templates/index.ts';
+import { BUILTIN_TEMPLATES } from '../shared/builtin-templates/index.ts';
 
 /*
  * The six built-in templates as org-wide rows. Each is skipped when a row
