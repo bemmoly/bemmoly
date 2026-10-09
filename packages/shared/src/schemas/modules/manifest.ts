@@ -19,6 +19,8 @@ export const searchGroupSchema = z.object({
 /** What the web shell needs to know about one enabled module. */
 export const moduleManifestSchema = z.object({
   id: moduleIdSchema,
+  /** What people call the module, e.g. "Work"; older servers leave it out. */
+  name: z.string().min(1).optional(),
   version: z.string().min(1),
   navigation: z.array(navEntrySchema),
   /** Present when the module answers palette searches; the palette offers each as a scope. */

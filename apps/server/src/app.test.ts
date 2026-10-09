@@ -42,11 +42,13 @@ describe('buildApp', () => {
       items: [
         {
           id: 'sample',
+          name: 'Sample',
           version: '0.0.0',
           navigation: [{ id: 'sample', label: 'Sample', path: '/sample', placement: 'top' }],
         },
         {
           id: 'work',
+          name: 'Work',
           version: '0.2.0',
           navigation: [
             { id: 'work.board', label: 'Board', path: '/work/board', placement: 'top' },

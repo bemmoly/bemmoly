@@ -35,6 +35,7 @@ describe('loadModules', () => {
     expect(registry.ids()).toEqual(['sample', 'docs']);
     expect(registry.manifests()[0]).toEqual({
       id: 'sample',
+      name: 'Sample',
       version: '0.1.0',
       navigation: [{ id: 'sample', label: 'SAMPLE', path: '/sample', placement: 'top' }],
     });

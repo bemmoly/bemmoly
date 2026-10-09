@@ -54,6 +54,7 @@ export class ModuleRegistry {
   manifests(): ModuleManifest[] {
     return this.list().map(({ module, contributions }) => ({
       id: module.id,
+      name: module.name ?? module.id.charAt(0).toUpperCase() + module.id.slice(1),
       version: module.version,
       navigation: [...contributions.navigation],
       ...(contributions.searchProviders.length > 0
