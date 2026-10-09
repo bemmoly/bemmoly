@@ -2,7 +2,11 @@ import type { ModuleManifest } from '@bemmoly/shared';
 import type { BemmolyModule } from './contract.ts';
 import type { ModuleContributions } from './contributions.ts';
 import { ModuleLoadError } from './errors.ts';
-import type { CapabilityDefinition, RouteDefinition } from './registries.ts';
+import type {
+  CapabilityDefinition,
+  RouteDefinition,
+  SearchProviderDefinition,
+} from './registries.ts';
 
 export interface LoadedModule {
   module: BemmolyModule;
@@ -52,11 +56,20 @@ export class ModuleRegistry {
       id: module.id,
       version: module.version,
       navigation: [...contributions.navigation],
+      ...(contributions.searchProviders.length > 0
+        ? {
+            search: contributions.searchProviders.map(({ kind, label }) => ({ kind, label })),
+          }
+        : {}),
     }));
   }
 
   routes(): FromModule<RouteDefinition>[] {
     return this.#collect((c) => c.routes);
+  }
+
+  searchProviders(): FromModule<SearchProviderDefinition>[] {
+    return this.#collect((c) => c.searchProviders);
   }
 
   capabilities(): FromModule<CapabilityDefinition>[] {

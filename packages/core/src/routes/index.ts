@@ -10,6 +10,7 @@ import {
 } from '../controllers/modules.controller.ts';
 import { createPeopleController } from '../controllers/people.controller.ts';
 import { createRealtimeController } from '../controllers/realtime.controller.ts';
+import { createSearchController } from '../controllers/search.controller.ts';
 import { createSettingsController } from '../controllers/settings.controller.ts';
 import {
   createSystemController,
@@ -22,6 +23,7 @@ import type { ModuleRegistry } from '../modules/registry.ts';
 import type { IdentityDependencies } from '../services/identity/index.ts';
 import type { ModuleAdmin, ModuleState } from '../services/modules/index.ts';
 import type { RealtimeHub, RealtimeMetricsHook } from '../services/realtime/index.ts';
+import { createSearchService } from '../services/search/index.ts';
 import type { SettingsAdmin } from '../services/settings/index.ts';
 import type { DatabaseProbe } from '../services/system/index.ts';
 import type { ScrapeDependencies } from '../services/telemetry/index.ts';
@@ -36,6 +38,7 @@ import { identityRoutes } from './identity.routes.ts';
 import { metricsRoutes } from './metrics.routes.ts';
 import { adminModulesRoutes, moduleResourceRoutes, modulesRoutes } from './modules.routes.ts';
 import { realtimeRoutes } from './realtime.routes.ts';
+import { searchRoutes } from './search.routes.ts';
 import { adminSettingsRoutes } from './settings.routes.ts';
 import { systemRoutes } from './system.routes.ts';
 
@@ -101,6 +104,12 @@ export function kernelRoutes(deps: KernelRouteDependencies): FastifyPluginAsync 
     isEnabled: (id: string) => (state ? state.isEnabled(id) : deps.modules.has(id)),
     ...(deps.moduleAccess && identified ? { access: deps.moduleAccess, actorOf } : {}),
   };
+  const search = createSearchController(
+    createSearchService({
+      providers: () => deps.modules.searchProviders(),
+      isEnabled: gate.isEnabled,
+    }),
+  );
   return async (app) => {
     await app.register(healthRoutes(health));
     if (metrics) await app.register(metricsRoutes(metrics));
@@ -118,6 +127,7 @@ export function kernelRoutes(deps: KernelRouteDependencies): FastifyPluginAsync 
     await app.register(
       async (api) => {
         await api.register(modulesRoutes(modules));
+        await api.register(searchRoutes(search));
         if (deps.identity) await api.register(identityAndAccessRoutes(deps.identity));
         if (deps.moduleAdmin) {
           await api.register(
