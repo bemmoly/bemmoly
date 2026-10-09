@@ -14,3 +14,10 @@ allowBuilds:
   ssh2: false
 
 engineStrict: true
+
+# The editor's ProseMirror packages, held at releases at least two weeks old when they were added.
+overrides:
+  prosemirror-changeset: 2.4.3
+  prosemirror-history: 1.5.0
+  prosemirror-transform: 1.12.1
+  prosemirror-view: 1.42.5
