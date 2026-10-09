@@ -2,6 +2,9 @@ import { createApiClient } from '@bemmoly/api-client';
 import {
   workBoardIssuesEndpoints,
   workBoardsEndpoints,
+  workIssueActivityEndpoints,
+  workIssueEndpoints,
+  workProjectCatalogEndpoints,
   workSettingsEndpoints,
   workWorkflowEndpoints,
 } from '../api/index.ts';
@@ -31,6 +34,9 @@ export const api = {
     issueTypes: settingsApi.issueTypes,
     /** The workflow editor's endpoints carry everything the board needs too. */
     workflows: workWorkflowEndpoints(client.http),
+    ...workIssueEndpoints(client.http),
+    ...workIssueActivityEndpoints(client.http),
+    ...workProjectCatalogEndpoints(client.http),
   },
 };
 
