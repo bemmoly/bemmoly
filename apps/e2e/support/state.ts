@@ -18,8 +18,12 @@ export interface RunState {
   baseURL: string;
   admin: Person;
   member: Person;
-  /** A third person, who measures the board so the others' rate budget stays theirs. */
+  /**
+   * Two more people for the board budget: one reads the API, one drives the
+   * screen, so neither shares a per-person request budget with the seeding.
+   */
   observer: Person;
+  driver: Person;
   /** The team the admin leads; the member is not in it. */
   team: { id: string; name: string };
   serverLog: string;
