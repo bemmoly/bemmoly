@@ -51,3 +51,10 @@ bar's Create menu through the module's `create` navigation entries.
 [2026-10-09] Work web: the project list, the create project dialog and the ProjectSwitcher.
 [2026-10-09] UI: a ghost variant of the Select for values edited in place.
 [2026-10-09] Mocks: work issue, activity and project routes with the Issue mock's data.
+[2026-10-09] Pointed the workflow editor's client at the server's routes: GET /work/workflows?projectId= and the rules registry's JSON Schema params; the draft calls unwrap { draft }.
+[2026-10-09] Mocked the workflow routes as the server answers them: list by query, the registry with JSON Schema params, the server's problem codes and publish refusals; seeded transitions use registry rule names.
+[2026-10-09] Gave the ui workflow canvas its editing states: invalid node and edge, interactive and selected edge labels with rule-count chips, an optional node count, a connector handle, a measurable canvas ref and named transition-row buttons.
+[2026-10-09] Fixed apps/web's Tailwind @source for module chunks: the directory glob matched no file, so utilities used only inside a chunk were never generated.
+[2026-10-09] Enabled the Work chunk in the mock workspace's manifests so its screens open on the dev backend.
+[2026-10-09] Added the visual workflow editor at /work/workflows/<KEY>[/<id>]: list with version, projects using it and last change; canvas with drag, drag-to-connect, keyboard Tab/arrows/Delete/Escape; status and transition panels with registry rules and their argument forms; debounced draft autosave; Validate marking problems; Publish naming the version and projects and asking for status mapping.
+[2026-10-09] Tests: hook tests for autosave, validate and publish; component tests for adding a transition, editing a rule, delete with confirmation and arrow-key nudge.
