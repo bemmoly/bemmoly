@@ -21,14 +21,12 @@ export interface Presence {
  */
 export function usePresence(open: boolean, exit: MotionDuration = 'base'): Presence {
   const [mounted, setMounted] = useState(open);
+  // Adjusted while rendering, as React recommends for state that follows a prop.
   if (open && !mounted) setMounted(true);
+  if (!open && mounted && !animates()) setMounted(false);
 
   useEffect(() => {
     if (open || !mounted) return undefined;
-    if (!animates()) {
-      setMounted(false);
-      return undefined;
-    }
     const timer = setTimeout(() => setMounted(false), MOTION_MS[exit]);
     return () => clearTimeout(timer);
   }, [open, mounted, exit]);
