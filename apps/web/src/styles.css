@@ -5,7 +5,7 @@
 
 @source '../../../packages/core-web/src';
 /* Module web chunks are compiled into this bundle, so their utilities come from here too. */
-@source '../../../modules/*/web/src';
+@source '../../../modules/*/web/src/**/*.{ts,tsx}';
 
 /* Base element styles from the mocks; in the base layer so utilities always win. */
 @layer base {
