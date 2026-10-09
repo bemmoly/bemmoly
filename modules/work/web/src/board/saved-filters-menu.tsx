@@ -23,6 +23,7 @@ export function SavedFiltersMenu({ filters, applied, onApply }: SavedFiltersMenu
   const [saving, setSaving] = useState(false);
   const [managing, setManaging] = useState(false);
   const alreadySaved = [...filters.mine, ...filters.shared].some((f) => f.query === applied);
+  const none = filters.mine.length === 0 && filters.shared.length === 0;
 
   const item = (filter: SavedFilter) => (
     <MenuItem
@@ -49,15 +50,19 @@ export function SavedFiltersMenu({ filters, applied, onApply }: SavedFiltersMenu
         </Button>
       )}
       <Dropdown label="Saved filters">
-        <MenuGroup label="Mine">
-          {filters.mine.length > 0 ? (
-            filters.mine.map(item)
-          ) : (
-            <MenuItem disabled onSelect={() => undefined}>
-              No saved filters yet
-            </MenuItem>
-          )}
-        </MenuGroup>
+        {none ? (
+          <NoSavedFilters />
+        ) : (
+          <MenuGroup label="Mine">
+            {filters.mine.length > 0 ? (
+              filters.mine.map(item)
+            ) : (
+              <MenuItem disabled onSelect={() => undefined}>
+                None of your own yet
+              </MenuItem>
+            )}
+          </MenuGroup>
+        )}
         {filters.shared.length > 0 && (
           <MenuGroup label="Shared with me" separated>
             {filters.shared.map(item)}
@@ -97,5 +102,29 @@ export function SavedFiltersMenu({ filters, applied, onApply }: SavedFiltersMenu
       />
       <ManageFiltersDialog open={managing} filters={filters} onClose={() => setManaging(false)} />
     </>
+  );
+}
+
+/**
+ * The menu with nothing saved: what saved filters are, above the one action that makes one
+ * ("Save current filter…" under the rule). Read out as part of the menu, not as an item.
+ */
+function NoSavedFilters() {
+  return (
+    <div
+      role="none"
+      className="flex max-w-64 flex-col items-center gap-1 px-3 pt-3 pb-2.5 text-center"
+    >
+      <span
+        aria-hidden
+        className="mb-1 flex size-7 items-center justify-center rounded-panel bg-chip text-tx4"
+      >
+        <Icon name="filter" size={14} />
+      </span>
+      <span className="text-13 font-semibold text-tx">No saved filters yet</span>
+      <span className="text-12 leading-body text-tx4">
+        Apply an LQL query, then save it to come back to it in one click.
+      </span>
+    </div>
   );
 }
