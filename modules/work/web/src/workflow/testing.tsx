@@ -70,6 +70,7 @@ function published(): Workflow {
     originId: null,
     name: 'Software workflow',
     publishedVersion: 3,
+    publishedAt: STAMP,
     hasDraft: false,
     statuses: [
       status(STATUS.backlog, 'Backlog', 'todo', 0),
@@ -152,10 +153,17 @@ export const server = setupServer(
         },
         { status: 400 },
       );
+    const placed = new Map((backend.draft?.statuses ?? []).map((status) => [status.id, status]));
     backend.workflow = {
       ...backend.workflow,
       publishedVersion: backend.workflow.publishedVersion + 1,
+      publishedAt: new Date().toISOString(),
       hasDraft: false,
+      statuses: backend.workflow.statuses.map((status) => ({
+        ...status,
+        x: placed.get(status.id)?.x ?? status.x ?? null,
+        y: placed.get(status.id)?.y ?? status.y ?? null,
+      })),
     };
     backend.draft = null;
     return HttpResponse.json(backend.workflow);

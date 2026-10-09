@@ -102,6 +102,7 @@ function publish(db: Parameters<typeof workState>[0], row: Row, mapping: object)
     draft: null,
     hasDraft: false,
     publishedVersion: Number(row['publishedVersion']) + 1,
+    publishedAt: new Date().toISOString(),
   });
   emit(db, 'work.workflow', [row.id]);
   return ok(row);
