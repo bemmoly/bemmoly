@@ -1,5 +1,13 @@
 # @bemmoly/module-sample
 
+## 0.1.6
+
+### Patch Changes
+
+- Updated dependencies [a13da15]
+  - @bemmoly/core@0.1.6
+  - @bemmoly/shared@0.1.6
+
 ## 0.1.5
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @bemmoly/core-web
 
+## 0.1.6
+
+### Patch Changes
+
+- @bemmoly/shared@0.1.6
+
 ## 0.1.5
 
 ### Patch Changes
