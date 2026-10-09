@@ -1,22 +1,38 @@
 ---
 /**
- * Text pages (self-hosting, security, changelog, docs, community). No mock draws them, so
- * they reuse the Landing mock's type: the 36px section heading, the 16px/1.65 lede and the
- * 1160px column, narrowed to a 760px reading measure unless `wide` (pages laid out in cards).
+ * Text pages (self-hosting, docs, topic pages, security, changelog, community). No mock draws
+ * them, so they reuse the Landing mock's type: the 36px section heading, the 16px/1.65 lede
+ * and the 1160px column, narrowed to a 760px reading measure unless `wide` (pages laid out in
+ * cards). Pages below a section (/docs/install) show the way back above the heading.
  */
+import { trailOf, type SitePage } from '../data/pages.ts';
+import type { FaqItem } from '../lib/structured-data.ts';
 import Base from './Base.astro';
 
 interface Props {
-  title: string;
-  description: string;
+  page: SitePage;
+  /** The visible heading; the page's short name when omitted. */
+  heading?: string;
   lede: string;
   wide?: boolean;
+  noindex?: boolean;
+  faq?: readonly FaqItem[];
+  alternate?: { href: string; type: string; title: string };
 }
 
-const { title, description, lede, wide = false } = Astro.props;
+const {
+  page,
+  heading = page.name,
+  lede,
+  wide = false,
+  noindex = false,
+  faq,
+  alternate,
+} = Astro.props;
+const parents = trailOf(page.path).slice(1, -1);
 ---
 
-<Base title={title} description={description}>
+<Base page={page} noindex={noindex} faq={faq} alternate={alternate}>
   <article
     class:list={[
       'mx-auto flex w-full flex-col gap-12 px-4 pt-16 pb-20 sm:px-6 lg:pt-20',
@@ -24,7 +40,20 @@ const { title, description, lede, wide = false } = Astro.props;
     ]}
   >
     <header class="flex max-w-190 flex-col gap-4">
-      <h1 class="text-36 leading-heading font-semibold tracking-display">{title}</h1>
+      {parents.length > 0 && (
+        <nav aria-label="Breadcrumb" class="text-13 text-tx4">
+          {parents.map((parent) => (
+            <>
+              <a href={parent.path} class="text-tx3 underline underline-offset-2 hover:text-tx">
+                {parent.name}
+              </a>
+              <span aria-hidden="true"> / </span>
+            </>
+          ))}
+          <span aria-current="page">{page.name}</span>
+        </nav>
+      )}
+      <h1 class="text-36 leading-heading font-semibold tracking-display">{heading}</h1>
       <p class="text-16 leading-doc text-pretty text-tx3">{lede}</p>
     </header>
     <slot />

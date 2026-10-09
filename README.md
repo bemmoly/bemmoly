@@ -8,6 +8,13 @@
 <p align="center"><strong>Your work. Your platform.</strong></p>
 
 <p align="center">
+  <a href="https://bemmoly.com">Website</a> ·
+  <a href="https://bemmoly.com/docs/install">Install guide</a> ·
+  <a href="https://bemmoly.com/docs">Docs</a> ·
+  <a href="https://bemmoly.com/changelog">Changelog</a>
+</p>
+
+<p align="center">
   <a href="https://github.com/bemmoly/bemmoly/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/bemmoly/bemmoly/ci.yml?branch=main&label=CI"></a>
   <a href="https://github.com/bemmoly/bemmoly/actions/workflows/security.yml"><img alt="Security" src="https://img.shields.io/github/actions/workflow/status/bemmoly/bemmoly/security.yml?branch=main&label=Security"></a>
   <a href="./LICENSE"><img alt="Licence: MIT" src="https://img.shields.io/badge/licence-MIT-blue"></a>
@@ -44,7 +51,8 @@ Requirements:
 The installer sets up Docker, Postgres, HTTPS, backups and updates; it checks the
 requirements itself and prints the fix for anything missing. Docker Compose, Kubernetes (Helm), an existing
 Postgres and offline installs are covered at
-[bemmoly.com/self-hosting](https://bemmoly.com/self-hosting).
+[bemmoly.com/self-hosting](https://bemmoly.com/self-hosting), and the
+[install guide](https://bemmoly.com/docs/install) walks through every step.
 
 ## What you get
 

@@ -35,6 +35,8 @@
 
 http://get.bemmoly.com {
 	import headers
+	# A script host, not pages: keep it out of search results.
+	header X-Robots-Tag "noindex"
 	encode zstd gzip
 	@script path / /install.sh
 	handle @script {
@@ -55,7 +57,16 @@ http://www.bemmoly.com {
 	encode zstd gzip
 	root * /srv
 
+	# One address per page, as the canonical links say: /docs, never /docs.html, /docs/ or
+	# /index.html. Redirects run before try_files, so its internal .html rewrite is not caught.
+	redir /index.html / 301
+	@html path_regexp html ^(/.+)\.html$
+	redir @html {re.html.1} 301
+	@slash path_regexp slash ^(/.+)/$
+	redir @slash {re.slash.1} 301
+
 	handle /install.sh {
+		header X-Robots-Tag "noindex"
 		import installer
 	}
 
@@ -66,8 +77,12 @@ http://www.bemmoly.com {
 	@fresh not path /_astro/*
 	header @fresh Cache-Control "public, max-age=300, must-revalidate"
 	header /site.webmanifest Content-Type "application/manifest+json"
+	header /changelog.xml Content-Type "application/rss+xml; charset=utf-8"
 
 	try_files {path} {path}.html
+	# The error page exists to be shown with a 404, not as a page of its own at /404.
+	@errorpage path /404.html
+	error @errorpage 404
 	file_server
 
 	handle_errors 404 {

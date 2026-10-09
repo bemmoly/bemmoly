@@ -2,11 +2,13 @@
  * Copy for the landing page, from the DCLogic block and markup of
  * docs/design/mocks/Bemmoly Landing.dc.html. Changes from the mock are listed in README.md.
  */
+import { LATEST } from '../lib/changelog.ts';
 import { INSTALL_COMMAND } from '../lib/links.ts';
 
+/** The newest release, from the release notes; the pill, transcript and bundle names use it. */
 export const RELEASE = {
-  version: '0.1.0',
-  note: 'In progress: setup wizard, eight themes, one-command upgrades',
+  version: LATEST.version,
+  note: 'Out now: issues, boards, backlog and sprints',
 };
 
 export const PROOF_POINTS = [

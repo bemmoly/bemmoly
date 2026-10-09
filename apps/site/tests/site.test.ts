@@ -4,12 +4,17 @@
  */
 import { readdirSync, readFileSync } from 'node:fs';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { CRAWLERS } from '../src/data/crawlers.ts';
+import { PAGES } from '../src/data/pages.ts';
+import { INDEXNOW_KEY } from '../src/lib/indexnow.ts';
 import { REPO_URL } from '../src/lib/links.ts';
 import { hrefsOf, idsOf, parsePage, scriptsOf } from './dom.ts';
 import { startPreview, type Preview } from './serve.ts';
 
 const dist = new URL('../dist/', import.meta.url);
-const pages = readdirSync(dist).filter((file) => file.endsWith('.html'));
+const pages = readdirSync(dist, { recursive: true, encoding: 'utf8' }).filter((file) =>
+  file.endsWith('.html'),
+);
 const html = (page: string) => readFileSync(new URL(page, dist), 'utf8');
 
 const hrefs = (source: string) => hrefsOf(parsePage(source));
@@ -42,7 +47,10 @@ describe('landing page', () => {
   });
 
   it('ships no script beyond the inline copy button', () => {
-    const scripts = scriptsOf(parsePage(html('index.html')));
+    // JSON-LD is data, not code: it runs nothing and the CSP does not need to allow it.
+    const scripts = scriptsOf(parsePage(html('index.html'))).filter(
+      (script) => script.type !== 'application/ld+json',
+    );
     expect(scripts.filter((script) => script.src !== undefined)).toEqual([]);
     expect(scripts.reduce((total, script) => total + script.body.length, 0)).toBeLessThan(1024);
   });
@@ -75,12 +83,17 @@ describe('links', () => {
 });
 
 describe('static files', () => {
-  it.each(['/install.sh', '/robots.txt', '/sitemap-index.xml', '/site.webmanifest'])(
-    '%s is served',
-    async (path) => {
-      expect((await fetch(`${preview.url}${path}`)).status).toBe(200);
-    },
-  );
+  it.each([
+    '/install.sh',
+    '/robots.txt',
+    '/sitemap-index.xml',
+    '/site.webmanifest',
+    '/llms.txt',
+    '/changelog.xml',
+    `/${INDEXNOW_KEY}.txt`,
+  ])('%s is served', async (path) => {
+    expect((await fetch(`${preview.url}${path}`)).status).toBe(200);
+  });
 
   it('serves the installer from deploy/, byte for byte', () => {
     const script = readFileSync(new URL('install.sh', dist), 'utf8');
@@ -97,5 +110,49 @@ describe('static files', () => {
       /property="og:image" content="https:\/\/bemmoly\.com\/_astro\/social-preview\.[\w-]+\.png"/,
     );
     expect(index).toContain('<link rel="canonical" href="https://bemmoly.com/">');
+  });
+});
+
+describe('indexing', () => {
+  it('invites every search engine and AI crawler, and points at the sitemap', () => {
+    const robots = readFileSync(new URL('robots.txt', dist), 'utf8');
+    expect(robots).toContain('User-agent: *\nAllow: /');
+    for (const { agents } of CRAWLERS) {
+      for (const agent of agents) expect(robots).toContain(`User-agent: ${agent}`);
+    }
+    expect(robots).not.toContain('Disallow');
+    expect(robots).toContain('Sitemap: https://bemmoly.com/sitemap-index.xml');
+  });
+
+  it('lists every page in the sitemap with the day its words changed, and not the 404 page', () => {
+    const sitemap = readFileSync(new URL('sitemap-0.xml', dist), 'utf8');
+    for (const { path, updated } of PAGES) {
+      expect(sitemap).toContain(
+        `<url><loc>https://bemmoly.com${path}</loc><lastmod>${updated}T00:00:00.000Z</lastmod></url>`,
+      );
+    }
+    expect(sitemap.match(/<url>/g)).toHaveLength(PAGES.length);
+    expect(sitemap).not.toContain('/404');
+  });
+
+  it('serves llms.txt in the llmstxt.org shape with every page', () => {
+    const llms = readFileSync(new URL('llms.txt', dist), 'utf8');
+    expect(llms.startsWith('# Bemmoly\n\n> ')).toBe(true);
+    for (const { path, name } of PAGES) {
+      expect(llms).toContain(`- [${name}](https://bemmoly.com${path})`);
+    }
+  });
+
+  it('serves the IndexNow key at the path the protocol expects', () => {
+    expect(readFileSync(new URL(`${INDEXNOW_KEY}.txt`, dist), 'utf8')).toBe(INDEXNOW_KEY);
+  });
+
+  it('marks pages indexable, the 404 page not, and carries structured data', () => {
+    for (const page of pages) {
+      const source = html(page);
+      const expected = page === '404.html' ? 'noindex, follow' : 'index, follow';
+      expect(source, page).toContain(`<meta name="robots" content="${expected}`);
+      expect(source, page).toContain('<script type="application/ld+json">');
+    }
   });
 });

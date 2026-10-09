@@ -1,12 +1,12 @@
 ---
 import Section from '../components/site/Section.astro';
+import { pageAt } from '../data/pages.ts';
 import Page from '../layouts/Page.astro';
 import { CODE_OF_CONDUCT_URL, CONTRIBUTING_URL, ISSUES_URL, REPO_URL } from '../lib/links.ts';
 ---
 
 <Page
-  title="Community"
-  description="Where to ask questions, report bugs and help build Bemmoly."
+  page={pageAt('/community')}
   lede="Bemmoly is built in the open under the MIT license. Here is where to talk to the people building it."
 >
   <Section title="GitHub" id="github">

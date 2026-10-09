@@ -1,23 +1,42 @@
 ---
 import Section from '../components/site/Section.astro';
+import { pageAt } from '../data/pages.ts';
 import Page from '../layouts/Page.astro';
 import { CONTRIBUTING_URL, REPO_URL, TECH_DESIGN_URL } from '../lib/links.ts';
+
+const guides = [pageAt('/docs/install'), pageAt('/docs/compose'), pageAt('/self-hosting')];
 ---
 
 <Page
-  title="Docs"
-  description="Bemmoly's documentation is being written alongside the first release. Start with self-hosting, the README and the technical design."
-  lede="The documentation is being written alongside the first release and will live here. Until then, these are the best places to start."
+  page={pageAt('/docs')}
+  lede="Guides for running Bemmoly on your own server. They grow with each release; anything not covered yet is in the README and the technical design."
 >
   <Section title="Run it">
+    <dl class="flex flex-col gap-4">
+      {guides.map((guide) => (
+        <div class="flex flex-col gap-1">
+          <dt>
+            <a href={guide.path} class="font-semibold">
+              {guide.name}
+            </a>
+          </dt>
+          <dd>{guide.description}</dd>
+        </div>
+      ))}
+    </dl>
+  </Section>
+  <Section title="Look after it">
     <p>
-      <a href="/self-hosting">Self-hosting</a> covers the one-command install, requirements, Docker
-      Compose, Helm, Terraform, air-gapped installs, upgrades, rollback and backups.
+      Once it is running, the <code>bemmoly</code> command on the server covers the day-to-day:
+      <code>bemmoly status</code> and <code>bemmoly doctor</code> for health, then
+      <code>bemmoly backup</code> and <code>bemmoly restore</code>, and then
+      <code>bemmoly upgrade</code> and <code>bemmoly rollback</code>, each with a backup first. The{' '}
+      <a href="/docs/install#after">install guide</a> lists them all.
     </p>
   </Section>
   <Section title="Understand it">
     <p>
-      The <a href={REPO_URL}>README</a> explains what Bemmoly is. The
+      The <a href={REPO_URL}>README</a> explains what Bemmoly is and what each release adds. The
       <a href={TECH_DESIGN_URL}>technical design</a> describes the architecture, the module system,
       the data model, the AI subsystem and how installs, updates and backups work.
     </p>

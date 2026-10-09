@@ -1,13 +1,22 @@
 ---
 import Page from '../layouts/Page.astro';
+
+const page = {
+  path: '/404',
+  name: 'Page not found',
+  title: 'Page not found · Bemmoly',
+  description: 'This page does not exist.',
+  updated: '',
+};
 ---
 
 <Page
-  title="Page not found"
-  description="This page does not exist."
+  page={page}
+  noindex
   lede="There is nothing at this address. It may have moved, or the link may be mistyped."
 >
   <p class="text-15 text-tx3">
-    Go to the <a href="/">home page</a> or <a href="/self-hosting">self-hosting</a>.
+    Go to the <a href="/">home page</a>, <a href="/self-hosting">self-hosting</a> or the
+    <a href="/docs">docs</a>.
   </p>
 </Page>

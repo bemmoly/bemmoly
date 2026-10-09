@@ -1,0 +1,40 @@
+name: Site IndexNow
+
+# Tells the IndexNow engines (Bing, Yandex, Naver, Seznam, Yep, DuckDuckGo) to recrawl
+# bemmoly.com after a change that alters the site lands on main. Coolify deploys from the
+# same push, so the job builds the site and waits until the live sitemap matches the build
+# before it pings. The release notes feed /changelog, so a release counts as a site change.
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/site/**'
+      - '**/CHANGELOG.md'
+      - 'SECURITY.md'
+      - 'packages/ui/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: site-indexnow
+  cancel-in-progress: true
+
+jobs:
+  submit:
+    name: Submit the sitemap
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: ./.github/actions/setup
+
+      - name: Build the site
+        run: pnpm turbo run build --filter=@bemmoly/site
+
+      - name: Wait for the deploy, then submit
+        run: pnpm --filter @bemmoly/site indexnow

@@ -1,0 +1,159 @@
+---
+/**
+ * Topic page for "self-hosted project management". Facts from the README's status table,
+ * tech design §1, §4 and §18, and the release notes; every capability carries its status.
+ */
+import Section from '../components/site/Section.astro';
+import BoardShot from '../components/topics/BoardShot.astro';
+import Capabilities from '../components/topics/Capabilities.astro';
+import Faq from '../components/topics/Faq.astro';
+import InstallCta from '../components/topics/InstallCta.astro';
+import Related from '../components/topics/Related.astro';
+import StatusNote from '../components/topics/StatusNote.astro';
+import { RELEASE } from '../data/landing.ts';
+import { pageAt } from '../data/pages.ts';
+import type { Capability } from '../data/topics.ts';
+import Page from '../layouts/Page.astro';
+import type { FaqItem } from '../lib/structured-data.ts';
+
+const CAPABILITIES: readonly Capability[] = [
+  {
+    tile: 'PR',
+    title: 'People, teams and roles',
+    body: 'Invitations, teams, roles with organisation-wide locks, and an audit log of who changed what.',
+    status: 'now',
+  },
+  {
+    tile: 'MD',
+    title: 'Modules you switch on',
+    body: 'Every module ships in the one image; an admin turns each on and chooses who can open it.',
+    status: 'now',
+  },
+  {
+    tile: 'UP',
+    title: 'Backups and one-click updates',
+    body: 'Scheduled, verified backups; updates from the app with a backup first and a rollback if needed.',
+    status: 'now',
+  },
+  {
+    tile: 'WK',
+    title: 'Issues and workflows',
+    body: 'Projects with members, issue types, custom fields, workflows in a visual editor, history, comments and links.',
+    status: 'now',
+  },
+  {
+    tile: 'BD',
+    title: 'Boards, backlog and sprints',
+    body: 'Kanban or Scrum per project, a backlog with sprints, saved filters, search and board metrics.',
+    status: 'now',
+  },
+  {
+    tile: 'DC',
+    title: 'Docs for the whole company',
+    body: 'Spaces, a page tree, a collaborative editor, revisions, comments and templates.',
+    status: 'docs',
+  },
+  {
+    tile: 'AI',
+    title: 'AI with any provider, or none',
+    body: 'Summaries, answers from your docs with citations, and a command bar that shows its plan before it runs.',
+    status: 'ai',
+  },
+  {
+    tile: 'IM',
+    title: 'Imports and single sign-on',
+    body: 'Import from Jira, Import from Confluence, CSV and Markdown; OIDC, SAML and SCIM; webhooks and automation.',
+    status: 'integrations',
+  },
+  {
+    tile: 'TH',
+    title: 'Themes, including yours',
+    body: 'Eight presets and a brand colour of your own, light or dark, set in the setup wizard.',
+    status: 'now',
+  },
+];
+
+const FAQ: readonly FaqItem[] = [
+  {
+    question: 'Is Bemmoly free?',
+    answer:
+      'Yes. Bemmoly is open source under the MIT license, with no seat limits and no features held back. You pay only for the server it runs on.',
+  },
+  {
+    question: 'Can I manage projects in it today?',
+    answer: `Yes. Since 0.2.0 the Work module has projects, issues, workflows, Kanban and Scrum boards, the backlog and sprints; an admin turns it on in Settings › Modules. Docs arrive in 0.3 and AI in 0.4. The current release is ${RELEASE.version}.`,
+  },
+  {
+    question: 'What does it need to run?',
+    answer:
+      'A Linux VM with 2 vCPU and 4 GB of memory runs it for about 200 people. The installer sets up Docker, Postgres 18, HTTPS, backups and updates; there is no Redis, search cluster or message broker to run.',
+  },
+  {
+    question: 'Where is my data kept?',
+    answer:
+      'In the Postgres database and the /var/bemmoly folder on your own server, or in an S3-compatible bucket you choose for files and backups. Nothing is sent to the people who make Bemmoly, and checking for updates is off until an admin turns it on.',
+  },
+  {
+    question: 'Do I have to use AI?',
+    answer:
+      'No. AI arrives in 0.4 and works with the provider you connect, a model on your own network, or none at all. Nothing leaves the server for an AI provider until you connect one.',
+  },
+];
+---
+
+<Page
+  page={pageAt('/self-hosted-project-management')}
+  heading="Self-hosted project management, open source"
+  lede="Bemmoly is a work platform you run on your own server: issues, boards, sprints and docs for the whole company in one app, under the MIT license, with no per-seat fees. It is built in the open, one release at a time."
+  wide
+  faq={FAQ}
+>
+  <StatusNote>
+    Bemmoly {RELEASE.version} has the foundation and the Work module: projects, issues, boards, the
+    backlog and sprints. Docs arrive in 0.3 and AI in 0.4. Each badge below says where a part
+    stands.
+  </StatusNote>
+
+  <BoardShot eager />
+
+  <Section title="Why run it yourself">
+    <ul>
+      <li>
+        <strong>Your data stays yours.</strong> Every issue, page and file lives in your Postgres
+        and your folders, behind your login and under your backups. The
+        <a href="/on-premise">on-premise</a> page explains what is stored where.
+      </li>
+      <li>
+        <strong>No per-seat bill.</strong> Inviting the whole company costs nothing more. A 2 vCPU,
+        4 GB VM is enough for about 200 people.
+      </li>
+      <li>
+        <strong>Updates when you say so.</strong> Read the release notes, update with one click, and
+        roll back for seven days if something is wrong.
+      </li>
+      <li>
+        <strong>One thing to run.</strong> One application image and one Postgres: no Redis, no
+        search cluster, no message broker.
+      </li>
+    </ul>
+  </Section>
+
+  <Section title="What it includes">
+    <Capabilities items={CAPABILITIES} />
+  </Section>
+
+  <Section title="How it runs">
+    <p>
+      One command on a fresh Ubuntu, Debian, Fedora or Amazon Linux VM installs Docker, Postgres 18,
+      Caddy for automatic HTTPS, a nightly backup and the updater, then prints the address. The
+      <a href="/docs/install">install guide</a> walks through it, the
+      <a href="/docs/compose">Docker Compose guide</a> covers running the same files yourself, and
+      <a href="/self-hosting">self-hosting</a> lists every other path, from your own Postgres to
+      servers without internet access.
+    </p>
+  </Section>
+
+  <Faq items={FAQ} />
+  <InstallCta />
+  <Related current="/self-hosted-project-management" />
+</Page>

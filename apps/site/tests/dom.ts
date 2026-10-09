@@ -17,13 +17,16 @@ const attribute = (element: HtmlElement, name: string) => {
 
 export interface PageScript {
   src: string | undefined;
+  type: string | undefined;
   body: string;
 }
 
 export function scriptsOf(page: HtmlElement): PageScript[] {
-  return page
-    .querySelectorAll('script')
-    .map((script) => ({ src: attribute(script, 'src'), body: script.textContent }));
+  return page.querySelectorAll('script').map((script) => ({
+    src: attribute(script, 'src'),
+    type: attribute(script, 'type'),
+    body: script.textContent,
+  }));
 }
 
 export function hrefsOf(page: HtmlElement): string[] {

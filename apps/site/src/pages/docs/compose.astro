@@ -1,0 +1,177 @@
+---
+/**
+ * Docker Compose by hand, from deploy/compose (the files the installer writes) and the way
+ * deploy/installer/lib/config.sh fills them in. The installer's preflight message links here.
+ */
+import CodeBlock from '../../components/site/CodeBlock.astro';
+import CopyScript from '../../components/site/CopyScript.astro';
+import Section from '../../components/site/Section.astro';
+import Related from '../../components/topics/Related.astro';
+import StatusNote from '../../components/topics/StatusNote.astro';
+import { RELEASE } from '../../data/landing.ts';
+import { pageAt } from '../../data/pages.ts';
+import Page from '../../layouts/Page.astro';
+import { COMPOSE_URL, REPO_URL } from '../../lib/links.ts';
+
+const SERVICES = [
+  ['bemmoly', 'always', 'The app: API, web app and background jobs in one container. Listens on 8080, on loopback when the proxy runs.'],
+  ['db', 'db', 'Postgres 18 with pgvector. Leave it out and set DATABASE_URL to use your own.'],
+  ['proxy', 'proxy', 'Caddy with automatic HTTPS, HTTP/2 and HTTP/3 on ports 80 and 443.'],
+  ['updater', 'updater', 'Runs updates and rollbacks from Settings › Updates. Holds the Docker socket, publishes no port.'],
+] as const;
+
+const SETTINGS = [
+  ['VERSION, UPDATER_VERSION', `The release to run, such as ${RELEASE.version}.`],
+  ['COMPOSE_PROFILES', 'The optional services to start: db,proxy,updater for everything.'],
+  ['BEMMOLY_DOMAIN', 'The hostname people will use, with a DNS record pointing here.'],
+  ['BEMMOLY_TLS_MODE', 'auto once the domain points here; internal starts with a self-signed certificate.'],
+  ['BEMMOLY_PUBLIC_URL', 'https:// and the domain.'],
+  ['BEMMOLY_HTTP_BIND', '127.0.0.1:8080 behind the proxy; 0.0.0.0:8080 without it.'],
+  ['BEMMOLY_DIR', 'The folder holding these files: /var/bemmoly.'],
+  ['BEMMOLY_UPDATE_CHANNEL', 'stable or beta.'],
+  ['POSTGRES_PASSWORD', 'A new password: openssl rand -hex 24.'],
+  ['DATABASE_URL', 'postgres://bemmoly:PASSWORD@db:5432/bemmoly_db with the password above, or your own Postgres 18.'],
+  ['PG_SHARED_BUFFERS, PG_EFFECTIVE_CACHE_SIZE', 'An eighth and three eighths of the memory: 512MB and 1536MB on 4 GB.'],
+  ['BEMMOLY_SECRET_KEY', 'openssl rand -base64 32. Decrypts stored credentials; never change it later.'],
+  ['BEMMOLY_BACKUP_PASSPHRASE', 'A long random string. Encrypts backups that leave the machine.'],
+  ['UPDATER_TOKEN', 'openssl rand -hex 32, when the updater runs.'],
+  ['BEMMOLY_UPDATER_URL', 'http://updater:8090 with the updater; empty without it.'],
+  ['BEMMOLY_METRICS_TOKEN', 'Optional: a token for Prometheus scrapes of /metrics, which is off while it is empty.'],
+  ['BEMMOLY_MODULES', 'Optional: pins the enabled modules. Empty lets an admin choose in Settings.'],
+] as const;
+
+const FILES = `$ git clone --depth 1 --branch v${RELEASE.version} ${REPO_URL}
+$ sudo install -d -m 755 /var/bemmoly
+$ sudo cp bemmoly/deploy/compose/docker-compose.yml bemmoly/deploy/compose/Caddyfile /var/bemmoly/
+$ sudo install -m 600 bemmoly/deploy/compose/env.template /var/bemmoly/.env
+$ cd /var/bemmoly
+$ sudo install -d -m 750 -o 10001 -g 10001 data backups
+$ sudo install -d -m 755 pg
+$ sudo install -d -m 700 caddy caddy/data caddy/config`;
+
+const START = `$ sudo docker compose up -d
+$ sudo docker compose ps`;
+
+const UPDATE = `$ sudo docker compose pull
+$ sudo docker compose up -d`;
+---
+
+<Page
+  page={pageAt('/docs/compose')}
+  heading="Run Bemmoly with Docker Compose"
+  lede="The one-command installer writes a Compose file and an .env, then runs docker compose up. If you already run Compose, use the same files yourself: four services, three of them optional, and one settings file."
+>
+  <StatusNote>
+    These steps use the files of release {RELEASE.version}. On a fresh VM the
+    <a href="/docs/install">one command</a> does all of this for you, adds the
+    <code class="font-mono text-tx">bemmoly</code> command for backups and upgrades, and is the path
+    tested end to end.
+  </StatusNote>
+
+  <Section title="What runs" id="services">
+    <div tabindex="0" class="overflow-x-auto rounded-card border border-br">
+      <table class="w-full border-collapse text-left text-14">
+        <thead class="bg-sf2 text-12 font-semibold tracking-caps text-tx4 uppercase dark:bg-sf">
+          <tr>
+            <th class="px-3.5 py-2.5 font-semibold">Service</th>
+            <th class="px-3.5 py-2.5 font-semibold">Profile</th>
+            <th class="px-3.5 py-2.5 font-semibold">What it is</th>
+          </tr>
+        </thead>
+        <tbody>
+          {SERVICES.map(([service, profile, body]) => (
+            <tr class="border-t border-br-row align-top">
+              <td class="px-3.5 py-2.5 whitespace-nowrap"><code>{service}</code></td>
+              <td class="px-3.5 py-2.5 whitespace-nowrap">{profile}</td>
+              <td class="px-3.5 py-2.5">{body}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <p>
+      Every service is in one Compose project named <code>bemmoly</code>, on one network. The
+      files are in <a href={COMPOSE_URL}>deploy/compose</a>, each value read from
+      <code>.env</code>.
+    </p>
+  </Section>
+
+  <Section title="1. Put the files in /var/bemmoly" id="files">
+    <CodeBlock code={FILES} label="On the server" copy />
+    <p>
+      The app runs as user 10001 inside its container, so <code>data</code> and
+      <code>backups</code> belong to that id. Keep the folder at <code>/var/bemmoly</code>: the
+      updater works on the same path inside its container.
+    </p>
+  </Section>
+
+  <Section title="2. Fill in .env" id="settings">
+    <p>
+      Replace every <code>@…@</code> placeholder in <code>/var/bemmoly/.env</code>. These are the
+      values the installer would write:
+    </p>
+    <div tabindex="0" class="overflow-x-auto rounded-card border border-br">
+      <table class="w-full border-collapse text-left text-14">
+        <thead class="bg-sf2 text-12 font-semibold tracking-caps text-tx4 uppercase dark:bg-sf">
+          <tr>
+            <th class="px-3.5 py-2.5 font-semibold">Setting</th>
+            <th class="px-3.5 py-2.5 font-semibold">Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          {SETTINGS.map(([key, value]) => (
+            <tr class="border-t border-br-row align-top">
+              <td class="px-3.5 py-2.5"><code>{key}</code></td>
+              <td class="px-3.5 py-2.5">{value}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <p>
+      Keep a copy of the finished file somewhere safe. Backups do not contain it, and a restored
+      workspace without its <code>BEMMOLY_SECRET_KEY</code> cannot read its stored credentials.
+    </p>
+  </Section>
+
+  <Section title="3. Start it" id="start">
+    <CodeBlock code={START} label="In /var/bemmoly" copy />
+    <p>
+      The app waits for Postgres, applies its schema changes and starts; the first start can take a
+      couple of minutes. Then open the domain to run the setup wizard and create the first admin.
+    </p>
+  </Section>
+
+  <Section title="Without the bundled Postgres or the proxy" id="variations">
+    <ul>
+      <li>
+        <strong>Your own Postgres:</strong> drop <code>db</code> from
+        <code>COMPOSE_PROFILES</code> and point <code>DATABASE_URL</code> at Postgres 18 (17 is
+        accepted with a warning). Without pgvector everything works except semantic search.
+      </li>
+      <li>
+        <strong>Your own HTTPS:</strong> drop <code>proxy</code>, set
+        <code>BEMMOLY_HTTP_BIND</code> to <code>0.0.0.0:8080</code> and put your reverse proxy in
+        front of port 8080.
+      </li>
+      <li>
+        <strong>No in-app updates:</strong> drop <code>updater</code> and leave
+        <code>BEMMOLY_UPDATER_URL</code> empty.
+      </li>
+    </ul>
+  </Section>
+
+  <Section title="Updating" id="updating">
+    <p>
+      With the updater, update from Settings › Updates: it takes a backup, then swaps the version
+      and rolls back if the health check fails. By hand, take a backup in Settings › Storage and
+      backups, set <code>VERSION</code> and <code>UPDATER_VERSION</code> to the new release in
+      <code>.env</code>, then pull and restart; the app applies the new schema changes as it starts.
+    </p>
+    <CodeBlock code={UPDATE} label="In /var/bemmoly" copy />
+    <p>The <a href="/changelog">changelog</a> lists what each release changes.</p>
+  </Section>
+
+  <Related current="/docs/compose" />
+  <CopyScript />
+</Page>

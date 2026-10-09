@@ -19,11 +19,28 @@ COPY packages/ui/package.json packages/ui/
 RUN pnpm install --frozen-lockfile --filter @bemmoly/site...
 
 # Only what the build reads: the design system's tokens, styles and brand files, the site,
-# and the security policy the /security page renders.
+# the security policy the /security page renders, and the release notes /changelog is built
+# from (tests/changelog.test.ts fails when a package's CHANGELOG.md is missing here).
 COPY packages/ui/src packages/ui/src
 COPY packages/ui/assets packages/ui/assets
 COPY apps/site apps/site
 COPY SECURITY.md ./
+COPY apps/server/CHANGELOG.md apps/server/
+COPY apps/web/CHANGELOG.md apps/web/
+COPY packages/api-client/CHANGELOG.md packages/api-client/
+COPY packages/core/CHANGELOG.md packages/core/
+COPY packages/core-web/CHANGELOG.md packages/core-web/
+COPY packages/editor/CHANGELOG.md packages/editor/
+COPY packages/shared/CHANGELOG.md packages/shared/
+COPY packages/ui/CHANGELOG.md packages/ui/
+COPY modules/sample/CHANGELOG.md modules/sample/
+COPY modules/work/CHANGELOG.md modules/work/
+COPY deploy/CHANGELOG.md deploy/
+COPY deploy/updater/CHANGELOG.md deploy/updater/
+# Search Console and Bing Webmaster Tools tokens, only for the HTML-tag verification method;
+# empty by default (README.md, Search engines). Set them as build variables in Coolify.
+ARG SITE_GOOGLE_VERIFICATION=""
+ARG SITE_BING_VERIFICATION=""
 RUN pnpm --filter @bemmoly/site build
 
 FROM caddy:2.11-alpine
