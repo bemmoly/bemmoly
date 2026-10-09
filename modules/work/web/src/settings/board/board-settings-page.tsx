@@ -5,7 +5,6 @@ import {
   SchemeOverrideBanner,
   SettingsContent,
   SettingsFrame,
-  Skeleton,
   Tabs,
   UnsavedChangesBar,
 } from '@bemmoly/ui';
@@ -17,6 +16,7 @@ import { sectionAnchor, useSettingsEdits } from '../../hooks/settings-edits.ts';
 import { useIssueTypes } from '../../hooks/settings-schemes.ts';
 import { BOARD_SECTIONS, SECTION_TITLES, type BoardSection } from '../model/sections.ts';
 import { onLinkClick } from '../../workflow/navigate.ts';
+import { BoardSettingsSkeleton, PreviewRailSkeleton } from '../../skeletons/settings-skeleton.tsx';
 import { BoardDialogs } from './board-dialogs.tsx';
 import { CardsTab } from './cards-tab.tsx';
 import { ColumnsTab } from './columns-tab.tsx';
@@ -86,7 +86,7 @@ export function BoardSettingsPage({ projectKey, nav }: BoardSettingsPageProps) {
     );
   }
   if (settings.isPending || !settings.value || !project) {
-    return frame(<Skeleton className="h-60" />);
+    return frame(<BoardSettingsSkeleton />, <PreviewRailSkeleton />);
   }
 
   const tabProps = (section: BoardSection): BoardTabProps => ({
