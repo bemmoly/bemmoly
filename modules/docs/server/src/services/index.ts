@@ -1,4 +1,5 @@
 import type { DocsServiceDeps } from './common.ts';
+import { createPagesService } from './pages/index.ts';
 import { createSpacesService } from './spaces/index.ts';
 
 export type { DocsServiceDeps } from './common.ts';
@@ -10,6 +11,7 @@ export type { DocsServiceDeps } from './common.ts';
 export function createDocsServices(deps: DocsServiceDeps) {
   return {
     spaces: createSpacesService(deps),
+    pages: createPagesService(deps),
   };
 }
 

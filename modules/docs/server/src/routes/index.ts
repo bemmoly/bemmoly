@@ -1,5 +1,6 @@
 import type { FastifyPluginAsync } from 'fastify';
 import type { DocsControllers } from '../controllers/index.ts';
+import { pagesRoutes } from './pages.routes.ts';
 import { spacesRoutes } from './spaces.routes.ts';
 
 /**
@@ -9,5 +10,6 @@ import { spacesRoutes } from './spaces.routes.ts';
 export function docsRoutes(controllers: DocsControllers): FastifyPluginAsync {
   return async (app) => {
     await app.register(spacesRoutes(controllers.spaces));
+    await app.register(pagesRoutes(controllers.pages));
   };
 }

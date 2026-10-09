@@ -38,11 +38,10 @@ export const spaceRefParamsSchema = z.object({
   spaceKey: z.union([z.uuid(), spaceKeySchema]),
 });
 
-/** A person as the Docs screens show them next to a page: avatar, name. */
+/** A person as the Docs screens show them next to a page: initials and name. */
 export const docsPersonSchema = z.object({
   id: z.uuid(),
   name: z.string(),
-  avatarUrl: z.string().nullable(),
 });
 
 export type RichText = z.infer<typeof richTextSchema>;
