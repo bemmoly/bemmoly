@@ -20,6 +20,7 @@ import { createProjectsService } from './projects/index.ts';
 import { createSearchService } from './search/index.ts';
 import { createSprintsService } from './sprints/index.ts';
 import { createIssueTypesService } from './types/index.ts';
+import { createVersionsService } from './versions/index.ts';
 import { createWorkflowService } from './workflow/index.ts';
 
 export interface WorkServiceDeps {
@@ -52,6 +53,7 @@ export function createWorkServices(deps: WorkServiceDeps) {
     types: createIssueTypesService(deps),
     fields: createFieldsService(deps),
     labels: createLabelsService(deps),
+    versions: createVersionsService(deps),
     issues: createIssuesService(issueDeps),
     comments: createCommentsService(issueDeps),
     links: createLinksService(issueDeps),

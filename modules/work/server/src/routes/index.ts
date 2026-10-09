@@ -12,6 +12,7 @@ import { metricsRoutes } from './metrics.routes.ts';
 import { projectsRoutes } from './projects.routes.ts';
 import { sprintsRoutes } from './sprints.routes.ts';
 import { typesRoutes } from './types.routes.ts';
+import { versionsRoutes } from './versions.routes.ts';
 import { workflowRoutes } from './workflow.routes.ts';
 
 /**
@@ -24,6 +25,7 @@ export function workRoutes(controllers: WorkControllers): FastifyPluginAsync {
     await app.register(typesRoutes(controllers.types));
     await app.register(fieldsRoutes(controllers.fields));
     await app.register(labelsRoutes(controllers.labels));
+    await app.register(versionsRoutes(controllers.versions));
     await app.register(issuesRoutes(controllers.issues));
     await app.register(activityRoutes(controllers.activity));
     await app.register(workflowRoutes(controllers.workflow));
