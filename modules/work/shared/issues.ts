@@ -145,7 +145,9 @@ export const listIssuesQuerySchema = keysetQuerySchema.extend({
 /** Where a dragged issue lands: between its new neighbours, either of which may be absent. */
 export const rankIssueBodySchema = z
   .object({
+    /** The row that ends up above the issue (the smaller rank); null at the top. */
     beforeIssueId: z.uuid().nullable().default(null),
+    /** The row that ends up below the issue (the larger rank); null at the end. */
     afterIssueId: z.uuid().nullable().default(null),
     sprintId: z.uuid().nullable().optional(),
   })
