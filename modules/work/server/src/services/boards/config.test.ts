@@ -58,7 +58,7 @@ describe('configProblems', () => {
 });
 
 describe('configQueries', () => {
-  it('lists every lane query and quick filter with its path', () => {
+  it('lists every lane query, quick filter and colour rule with its path', () => {
     const withQueries = config({
       lanes: {
         kind: 'query',
@@ -68,10 +68,12 @@ describe('configQueries', () => {
         totals: true,
       },
       quickFilters: [{ name: 'Mine', query: 'assignee = me' }],
+      colorRules: [{ query: 'type = Bug', color: '#d93838' }],
     });
     expect(configQueries(withQueries)).toEqual([
       { path: 'lanes.queries.0.query', query: 'priority = highest' },
       { path: 'quickFilters.0.query', query: 'assignee = me' },
+      { path: 'colorRules.0.query', query: 'type = Bug' },
     ]);
   });
 });

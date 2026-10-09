@@ -4,7 +4,7 @@ import type { BoardConfig } from '../../../../shared/boards.ts';
 /*
  * The rules a board config must keep beyond its schema: every column maps
  * statuses of the board's workflow, no status sits in two columns, column ids
- * are unique, and every lane query and quick filter is valid LQL.
+ * are unique, and every lane query, quick filter and colour rule is valid LQL.
  */
 
 export interface ConfigProblem {
@@ -52,6 +52,10 @@ export function configQueries(config: BoardConfig): { path: string; query: strin
     ...config.quickFilters.map((filter, index) => ({
       path: `quickFilters.${index}.query`,
       query: filter.query,
+    })),
+    ...config.colorRules.map((rule, index) => ({
+      path: `colorRules.${index}.query`,
+      query: rule.query,
     })),
   ];
 }
