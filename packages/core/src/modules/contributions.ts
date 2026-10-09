@@ -11,6 +11,7 @@ import type {
   QueryFieldDefinition,
   RouteDefinition,
   SearchIndexerDefinition,
+  SearchProviderDefinition,
 } from './registries.ts';
 
 /** Everything one module registered, kept in registration order. */
@@ -22,6 +23,7 @@ export interface ModuleContributions {
   navigation: NavEntry[];
   jobs: JobDefinition[];
   searchIndexers: SearchIndexerDefinition[];
+  searchProviders: SearchProviderDefinition[];
   queryFields: QueryFieldDefinition[];
   aiTools: AiContribution[];
   aiContextBuilders: AiContribution[];
@@ -42,6 +44,7 @@ export function emptyContributions(): ModuleContributions {
     navigation: [],
     jobs: [],
     searchIndexers: [],
+    searchProviders: [],
     queryFields: [],
     aiTools: [],
     aiContextBuilders: [],

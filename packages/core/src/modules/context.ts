@@ -103,6 +103,12 @@ export function createModuleContext(
     search: {
       addIndexer: (indexer) => into.searchIndexers.push(indexer),
       addField: (field) => into.queryFields.push(field),
+      addProvider(provider) {
+        if (!provider.kind.startsWith(`${module.id}.`)) {
+          fail(`search kind "${provider.kind}" must be namespaced as "${module.id}.<kind>"`);
+        }
+        into.searchProviders.push(provider);
+      },
     },
     ai: {
       addTool: (tool) => into.aiTools.push(tool),
