@@ -1,6 +1,13 @@
 import type { AvailableTransition } from '@bemmoly/module-work/shared';
 import { describe, expect, it } from 'vitest';
-import { applyMove, judgeColumn, planMove, stepTarget } from './board-drag.ts';
+import {
+  applyMove,
+  judgeColumn,
+  placementOf,
+  planMove,
+  revertMove,
+  stepTarget,
+} from './board-drag.ts';
 import { EPIC, STATUS, testView } from './board-fixtures.ts';
 import { buildBoardModel, locateCard } from './board-model.ts';
 
@@ -136,6 +143,53 @@ describe('applyMove', () => {
     expect(next.columns.find((entry) => entry.id === 'todo')?.count).toBe(2);
     const cell = buildBoardModel(next).lanes[0]?.cells['doing']?.map((entry) => entry.key);
     expect(cell).toEqual(['PLT-12', 'PLT-13', 'PLT-10']);
+  });
+});
+
+describe('revertMove', () => {
+  const into = (key: string, columnId: string, statusId: string) => {
+    const card = cardOf(key);
+    const plan = planMove(
+      model,
+      card,
+      place(card.issueId),
+      { laneId: EPIC, columnId, index: 0 },
+      statusId,
+    );
+    if (!plan) throw new Error('expected a plan');
+    return plan;
+  };
+  const columnOf = (board: typeof view, key: string) =>
+    board.cards.find((entry) => entry.key === key)?.columnId;
+  const countOf = (board: typeof view, id: string) =>
+    board.columns.find((entry) => entry.id === id)?.count;
+
+  it('puts back the refused card alone, leaving a move still in flight where it was dropped', () => {
+    const refused = into('PLT-10', 'doing', STATUS.doing);
+    const pending = into('PLT-11', 'done', STATUS.done);
+    const before = placementOf(view, refused.issueId);
+    if (!before) throw new Error('no placement');
+    const both = applyMove(applyMove(view, refused), pending);
+    const next = revertMove(both, refused, before);
+    expect(next.cards.find((entry) => entry.key === 'PLT-10')).toMatchObject(before);
+    expect(columnOf(next, 'PLT-11')).toBe('done');
+    expect([countOf(next, 'todo'), countOf(next, 'doing'), countOf(next, 'done')]).toEqual([
+      2, 2, 2,
+    ]);
+  });
+
+  it('leaves a card that has moved on since the refused drop', () => {
+    const refused = into('PLT-10', 'doing', STATUS.doing);
+    const before = placementOf(view, refused.issueId);
+    if (!before) throw new Error('no placement');
+    const later = applyMove(applyMove(view, refused), {
+      ...refused,
+      fromColumnId: 'doing',
+      toColumnId: 'done',
+      statusId: STATUS.done,
+      rank: 'z',
+    });
+    expect(revertMove(later, refused, before)).toBe(later);
   });
 });
 

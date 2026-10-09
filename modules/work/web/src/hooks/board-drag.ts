@@ -94,27 +94,58 @@ export function planMove(
   };
 }
 
-/** The view with the move applied: the card's column, status and rank, and the WIP counts. */
-export function applyMove(view: BoardView, plan: MovePlan): BoardView {
-  const cards = view.cards.map((card) =>
-    card.issueId === plan.issueId
-      ? {
-          ...card,
-          columnId: plan.toColumnId,
-          statusId: plan.statusId ?? card.statusId,
-          rank: plan.rank,
-          ageDays: plan.statusId ? 0 : card.ageDays,
-        }
-      : card,
-  );
-  if (plan.fromColumnId === plan.toColumnId) return { ...view, cards };
+/** Where a card sits in a view: what a move changes and a refusal puts back. */
+export type CardPlacement = Pick<
+  BoardView['cards'][number],
+  'columnId' | 'statusId' | 'rank' | 'ageDays'
+>;
+
+export function placementOf(view: BoardView, issueId: string): CardPlacement | null {
+  const card = view.cards.find((entry) => entry.issueId === issueId);
+  if (!card) return null;
+  return {
+    columnId: card.columnId,
+    statusId: card.statusId,
+    rank: card.rank,
+    ageDays: card.ageDays,
+  };
+}
+
+/** One card placed anew, with the WIP counts of the columns it left and entered. */
+function place(view: BoardView, issueId: string, from: string, to: CardPlacement): BoardView {
+  const cards = view.cards.map((card) => (card.issueId === issueId ? { ...card, ...to } : card));
+  if (from === to.columnId) return { ...view, cards };
   const columns = view.columns.map((column) => {
-    const delta = column.id === plan.toColumnId ? 1 : column.id === plan.fromColumnId ? -1 : 0;
+    const delta = column.id === to.columnId ? 1 : column.id === from ? -1 : 0;
     if (delta === 0) return column;
     const count = Math.max(0, column.count + delta);
     return { ...column, count, overWip: column.wipLimit !== null && count > column.wipLimit };
   });
   return { ...view, cards, columns };
+}
+
+/** The view with the move applied: the card's column, status and rank, and the WIP counts. */
+export function applyMove(view: BoardView, plan: MovePlan): BoardView {
+  const card = placementOf(view, plan.issueId);
+  if (!card) return view;
+  return place(view, plan.issueId, card.columnId, {
+    columnId: plan.toColumnId,
+    statusId: plan.statusId ?? card.statusId,
+    rank: plan.rank,
+    ageDays: plan.statusId ? 0 : card.ageDays,
+  });
+}
+
+/**
+ * The view with a refused move taken back for its own card only, so other cards whose moves
+ * are still in flight stay where they were dropped. A card that has left the place this move
+ * gave it, by a later drop or a fresher read, is not touched: the read after the last move
+ * settles has the server's word on it.
+ */
+export function revertMove(view: BoardView, plan: MovePlan, before: CardPlacement): BoardView {
+  const card = placementOf(view, plan.issueId);
+  if (!card || card.columnId !== plan.toColumnId || card.rank !== plan.rank) return view;
+  return place(view, plan.issueId, card.columnId, before);
 }
 
 export type StepKey = 'ArrowUp' | 'ArrowDown' | 'ArrowLeft' | 'ArrowRight';
