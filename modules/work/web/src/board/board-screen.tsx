@@ -7,6 +7,7 @@ import { useBoardDragStore } from '../hooks/board-drag-store.ts';
 import type { BoardModel } from '../hooks/board-model.ts';
 import { useBoardScreen } from '../hooks/board-screen.ts';
 import { useBoardIssueSlideOver } from '../hooks/board-slide-over.ts';
+import { useSavedFilters } from '../hooks/saved-filters.ts';
 import { IssueSlideOver } from '../issue/index.ts';
 import type { WorkScreenProps } from '../routes.tsx';
 import { BoardContext, type BoardShared } from './board-context.ts';
@@ -43,6 +44,7 @@ function BoardBody({
   model: BoardModel;
 }) {
   const slideOver = useBoardIssueSlideOver();
+  const savedFilters = useSavedFilters(screen.project);
   const actions = useBoardActions(model, view.board.id, slideOver.openIssue);
   const instructionsId = useId();
   const shared = useMemo<BoardShared>(
@@ -76,6 +78,7 @@ function BoardBody({
             laneLabel={screen.laneLabel}
             lqlSources={screen.lqlSources}
             lqlError={screen.filterError ? screen.filterError.message : null}
+            savedFilters={savedFilters}
           />
         </div>
         <div className="min-h-0 flex-1 overflow-auto px-6 pb-6">
