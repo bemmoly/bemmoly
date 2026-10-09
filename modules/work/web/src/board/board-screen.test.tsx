@@ -120,6 +120,23 @@ describe('Board screen', () => {
     await waitFor(() => expect(patches).toEqual(['PLT-10']));
   });
 
+  it('keeps the focus on a card dropped with the keyboard in its new column', async () => {
+    server.use(http.patch('*/api/v1/work/issues/:key', () => new Promise<never>(() => undefined)));
+    await renderBoard();
+    const card = cardEl('PLT-10');
+    card.focus();
+    key(card, ' ');
+    await waitFor(() => expect(useBoardDragStore.getState().verdicts).not.toBeNull());
+    key(card, 'ArrowRight');
+    key(card, ' ');
+    const doing = screen.getByRole('group', { name: 'In progress, Auth service' });
+    await waitFor(() => expect(within(doing).getByText('Issue 10')).toBeTruthy());
+    await waitFor(() =>
+      expect(document.activeElement?.getAttribute('aria-label')).toBe('PLT-10 Issue 10'),
+    );
+    expect(doing.contains(document.activeElement)).toBe(true);
+  });
+
   it('puts a carried card back on Escape', async () => {
     await renderBoard();
     const card = cardEl('PLT-11');

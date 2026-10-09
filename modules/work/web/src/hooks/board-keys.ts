@@ -56,6 +56,7 @@ export function handleCardKey(event: KeyboardEvent, issueId: string, actions: Bo
   if (carried) {
     if (event.key === ' ' || event.key === 'Enter') {
       event.preventDefault();
+      useBoardDragStore.getState().keepFocus(issueId);
       actions.drop();
       focusCard(issueId);
     } else if (event.key === 'Escape') {
