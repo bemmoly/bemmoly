@@ -36,6 +36,9 @@ function state(db: MockDb): IssuesState {
   return current;
 }
 
+/** Issue id to the ids of the people watching it, for Home's "my work". */
+export const watchersOf = (db: MockDb) => state(db).watchers;
+
 const allProjects = (db: MockDb) => [workState(db).project, ...state(db).projects];
 export const projectOf = (db: MockDb, keyOrId = '') =>
   allProjects(db).find((row) => row['key'] === keyOrId.toUpperCase() || row.id === keyOrId);

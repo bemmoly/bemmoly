@@ -7,6 +7,7 @@ import { audit, can, capabilitiesOf, currentUser, emit, type MockDb } from '../d
 import { SECRET_KEYS } from '../seed/workspace.ts';
 import { bodyOf, fail, invalid, notFound, ok, page, type MockRoute } from '../types.ts';
 import { capture } from './session.ts';
+import { workSearchHits } from './work-search.ts';
 
 const isKey = (key: string): key is SettingKey => key in SETTING_SCHEMAS;
 
@@ -247,7 +248,7 @@ export const settingsRoutes: MockRoute[] = [
           subtitle: user.email,
           href: '/settings/users',
         }));
-      return ok({ items });
+      return ok({ items: [...workSearchHits(db, q), ...items] });
     },
   },
 ];
