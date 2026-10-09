@@ -68,7 +68,10 @@ export const workBoardRoutes: MockRoute[] = [
     method: 'GET',
     pattern: `${W}/workflows`,
     handle: (request, db) => {
-      const project = projectRef(db, request.query.get('projectId') ?? undefined);
+      const ref = request.query.get('projectId');
+      // Every workflow, for the workflows list: the issue mock keeps the settings stream's rows.
+      if (!ref) return askIssueMock('GET', '/workflows', request, db) ?? ok({ items: [] });
+      const project = projectRef(db, ref);
       const workflow = workflowOf(db);
       return ok({ items: project && workflow ? [workflow] : [] });
     },
