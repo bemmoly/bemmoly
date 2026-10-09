@@ -1,5 +1,6 @@
 import { mergeAttributes, Node } from '@tiptap/core';
 import { attr, type DocNode } from './types.ts';
+import { isCalloutVariant as isVariant, type CalloutVariant } from './values.ts';
 
 /*
  * A callout: a tinted box around blocks. The variants are the tints the Doc Editor mock
@@ -8,20 +9,7 @@ import { attr, type DocNode } from './types.ts';
  * light and dark from the theme's tokens.
  */
 
-export const CALLOUT_VARIANTS = ['info', 'note', 'success', 'warning', 'danger'] as const;
-export type CalloutVariant = (typeof CALLOUT_VARIANTS)[number];
-
-const isVariant = (value: unknown): value is CalloutVariant =>
-  CALLOUT_VARIANTS.includes(value as CalloutVariant);
-
-/** The label a callout prints in Markdown and reads out to assistive technology. */
-export const CALLOUT_LABELS: Record<CalloutVariant, string> = {
-  info: 'Info',
-  note: 'Note',
-  success: 'Success',
-  warning: 'Warning',
-  danger: 'Danger',
-};
+export { CALLOUT_LABELS, CALLOUT_VARIANTS, type CalloutVariant } from './values.ts';
 
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {

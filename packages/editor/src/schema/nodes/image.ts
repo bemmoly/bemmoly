@@ -1,5 +1,6 @@
 import { mergeAttributes, Node } from '@tiptap/core';
 import { attr, type DocNode } from './types.ts';
+import { SAFE_IMAGE_SRC } from './values.ts';
 
 /*
  * An image by URL, with its alt text. Uploading is the host's: the editor hands a file to an
@@ -7,8 +8,7 @@ import { attr, type DocNode } from './types.ts';
  * live. Only web and same-origin sources are rendered; anything else prints its alt text.
  */
 
-/** Sources an image may load from: the web and paths inside the app. */
-export const SAFE_IMAGE_SRC = /^(https?:\/\/|\/(?!\/))/i;
+export { SAFE_IMAGE_SRC } from './values.ts';
 
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {

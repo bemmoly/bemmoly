@@ -1,5 +1,6 @@
 import { mergeAttributes, Node } from '@tiptap/core';
 import { attr, type DocNode } from './types.ts';
+import { decisionHeading, isDecisionState as isState, type DecisionState } from './values.ts';
 
 /*
  * A decision: what was decided, its state and the day it was made. It is a block of its own
@@ -7,17 +8,7 @@ import { attr, type DocNode } from './types.ts';
  * reads as entries the AI and search can find by state.
  */
 
-export const DECISION_STATES = ['proposed', 'decided', 'superseded'] as const;
-export type DecisionState = (typeof DECISION_STATES)[number];
-
-const isState = (value: unknown): value is DecisionState =>
-  DECISION_STATES.includes(value as DecisionState);
-
-export const DECISION_LABELS: Record<DecisionState, string> = {
-  proposed: 'Proposed',
-  decided: 'Decided',
-  superseded: 'Superseded',
-};
+export { DECISION_LABELS, DECISION_STATES, decisionHeading, type DecisionState } from './values.ts';
 
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {
@@ -76,12 +67,6 @@ export const Decision = Node.create({
     };
   },
 });
-
-/** "Decided · 2026-10-07", the line a decision prints above its text. */
-export function decisionHeading(state: string, decidedOn: string): string {
-  const label = isState(state) ? DECISION_LABELS[state] : DECISION_LABELS.proposed;
-  return decidedOn ? `${label} · ${decidedOn}` : label;
-}
 
 export const decision: DocNode = {
   name: 'decision',

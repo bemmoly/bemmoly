@@ -1,5 +1,6 @@
 import { mergeAttributes, Node } from '@tiptap/core';
 import { attr, type DocNode } from './types.ts';
+import { unsupportedLabel } from './values.ts';
 
 /*
  * What an import could not map: a Confluence macro this build has no node for, say. It keeps
@@ -44,13 +45,7 @@ export const UnsupportedBlock = Node.create({
   },
 });
 
-const SOURCES: Record<string, string> = { confluence: 'Confluence', markdown: 'Markdown' };
-
-/** "Confluence macro: jira-chart", the label the block shows and exports print. */
-export function unsupportedLabel(source: string, name: string): string {
-  const from = SOURCES[source] ?? (source || 'Imported');
-  return `${from} ${source === 'confluence' ? 'macro' : 'block'}: ${name || 'unknown'}`;
-}
+export { unsupportedLabel } from './values.ts';
 
 const label = (node: Parameters<NonNullable<DocNode['plainText']>>[0]) =>
   unsupportedLabel(attr(node, 'source'), attr(node, 'name'));
