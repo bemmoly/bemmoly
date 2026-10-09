@@ -51,4 +51,10 @@ describe('historyVerb', () => {
     expect(historyVerb(entry('assigneeId', null, 'u'), names)).toBe('assigned Jonas M.');
     expect(historyVerb(entry('sprintId', 'a', 'b'), names)).toBe('changed sprint');
   });
+
+  it('names the lifecycle rows the server writes without a field', () => {
+    expect(historyVerb(entry('created', null, 'PLT-1'), names)).toBe('created the issue');
+    expect(historyVerb(entry('deleted', null, true), names)).toBe('deleted the issue');
+    expect(historyVerb(entry('deleted', true, null), names)).toBe('restored the issue');
+  });
 });
