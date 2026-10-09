@@ -1,5 +1,22 @@
 # @bemmoly/module-work
 
+## 0.2.1
+
+### Patch Changes
+
+- ca5b2c4: The workflow editor's canvas now fits beside the settings sidebar and the side panel at every
+  width, so the page no longer runs under the panel. The canvas scrolls inside its own card: with
+  the wheel or trackpad, or by dragging on empty canvas. It opens on the workflow's statuses, and
+  selecting a status or transition from the side panel, or nudging one with the arrow keys,
+  scrolls it into view. Statuses still drag, transitions still draw from the handle, and the
+  canvas keeps the design's 1000 x 560 size. No configuration or schema change.
+- @bemmoly/api-client@0.2.1
+  - @bemmoly/core@0.2.1
+  - @bemmoly/core-web@0.2.1
+  - @bemmoly/editor@0.2.1
+  - @bemmoly/shared@0.2.1
+  - @bemmoly/ui@0.2.1
+
 ## 0.2.0
 
 ### Minor Changes

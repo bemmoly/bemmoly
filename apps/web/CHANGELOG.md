@@ -1,5 +1,14 @@
 # @bemmoly/web
 
+## 0.2.1
+
+### Patch Changes
+
+- @bemmoly/api-client@0.2.1
+  - @bemmoly/core-web@0.2.1
+  - @bemmoly/shared@0.2.1
+  - @bemmoly/ui@0.2.1
+
 ## 0.2.0
 
 ### Minor Changes
