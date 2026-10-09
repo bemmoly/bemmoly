@@ -2,6 +2,7 @@ import { createApiClient } from '@bemmoly/api-client';
 import {
   workBoardIssuesEndpoints,
   workBoardsEndpoints,
+  workFiltersEndpoints,
   workIssueActivityEndpoints,
   workIssueEndpoints,
   workMembersEndpoints,
@@ -41,6 +42,7 @@ export const api = {
     ...workProjectCatalogEndpoints(client.http),
     myWork: workMyWorkEndpoints(client.http),
     members: workMembersEndpoints(client.http),
+    filters: workFiltersEndpoints(client.http),
   },
 };
 
