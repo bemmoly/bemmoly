@@ -15,6 +15,7 @@ import { createLqlService } from './lql/index.ts';
 import { createMetricsService } from './metrics/index.ts';
 import { createProjectsService } from './projects/index.ts';
 import { createSearchService } from './search/index.ts';
+import { createSprintsService } from './sprints/index.ts';
 import { createIssueTypesService } from './types/index.ts';
 import { createWorkflowService } from './workflow/index.ts';
 
@@ -55,6 +56,7 @@ export function createWorkServices(deps: WorkServiceDeps) {
     workflow,
     lql,
     boards: createBoardsService({ ...deps, ...issueDeps, lql }),
+    sprints: createSprintsService({ ...deps, ...issueDeps, lql }),
     metrics: createMetricsService({ ...deps, ...issueDeps, lql }),
   };
 }
