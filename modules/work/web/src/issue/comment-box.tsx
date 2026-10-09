@@ -1,15 +1,19 @@
+import { isEmptyDoc, preloadEditor, RichTextEditor, type RichTextDoc } from '@bemmoly/editor';
 import type { RichText } from '@bemmoly/module-work/shared';
 import { Button, CommentComposer, ComposerPlaceholder, useToast } from '@bemmoly/ui';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useEditorSources } from '../hooks/editor-sources.ts';
 import type { Person } from '../hooks/issue-people.ts';
-import { textToDoc } from './rich-text-convert.ts';
 
 export interface CommentBoxProps {
   viewer: Person;
   onSubmit: (body: RichText) => Promise<unknown>;
   /** Starts open with the cursor in the box, as Reply and Edit do. */
   open?: boolean;
-  initialText?: string;
+  /** The comment being edited. */
+  initialBody?: RichText | null;
+  /** Names the text box and its toolbar: "Comment", "Reply". */
+  label?: string;
   placeholder?: string;
   submitLabel?: string;
   onCancel?: () => void;
@@ -22,24 +26,25 @@ const typing = (target: EventTarget | null) =>
   (target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName));
 
 /**
- * The comment composer: the collapsed "Add a comment… M" line, which opens into a text box
- * with Comment and Cancel. Text becomes paragraphs and lists, as descriptions do.
+ * The comment composer: the collapsed "Add a comment… M" line, which opens into the editor
+ * with the mock's tools (B, I, @, Link, Code) and Comment and Cancel at the end of the row.
  */
 export function CommentBox({
   viewer,
   onSubmit,
   open: startOpen = false,
-  initialText = '',
+  initialBody = null,
+  label = 'Comment',
   placeholder = 'Add a comment…',
   submitLabel = 'Comment',
   onCancel,
   shortcut = false,
 }: CommentBoxProps) {
   const [open, setOpen] = useState(startOpen);
-  const [text, setText] = useState(initialText);
+  const [body, setBody] = useState<RichTextDoc | null>(initialBody as RichTextDoc | null);
   const [sending, setSending] = useState(false);
-  const box = useRef<HTMLTextAreaElement>(null);
   const toast = useToast();
+  const sources = useEditorSources();
 
   useEffect(() => {
     if (!shortcut) return undefined;
@@ -53,23 +58,18 @@ export function CommentBox({
     return () => document.removeEventListener('keydown', onKey);
   }, [shortcut]);
 
-  useEffect(() => {
-    if (open) box.current?.focus();
-  }, [open]);
-
   const cancel = () => {
-    setText(initialText);
+    setBody(initialBody as RichTextDoc | null);
     setOpen(false);
     onCancel?.();
   };
 
   const send = async () => {
-    const body = textToDoc(text);
-    if (!body) return;
+    if (!body || isEmptyDoc(body) || sending) return;
     setSending(true);
     try {
-      await onSubmit(body);
-      setText('');
+      await onSubmit(body as RichText);
+      setBody(null);
       setOpen(false);
       onCancel?.();
     } catch (error) {
@@ -89,6 +89,8 @@ export function CommentBox({
         <button
           type="button"
           onClick={() => setOpen(true)}
+          onPointerEnter={preloadEditor}
+          onFocus={preloadEditor}
           className="cursor-pointer border-0 bg-transparent p-0 text-left font-sans text-13"
         >
           <ComposerPlaceholder hint={shortcut ? 'M' : undefined}>{placeholder}</ComposerPlaceholder>
@@ -98,39 +100,42 @@ export function CommentBox({
   }
 
   return (
-    <CommentComposer
-      viewer={{ name: viewer.name }}
-      tools={<span className="text-tx5">Blank line between paragraphs · ⌘↵ to send</span>}
-      end={
-        <span className="flex gap-1.5">
-          <Button size="xs" variant="ghost" onClick={cancel}>
-            Cancel
-          </Button>
-          <Button
-            size="xs"
-            variant="primary"
-            loading={sending}
-            disabled={!text.trim()}
-            onClick={() => void send()}
-          >
-            {submitLabel}
-          </Button>
-        </span>
-      }
+    <RichTextEditor
+      label={label}
+      placeholder={placeholder}
+      initialDoc={initialBody as RichTextDoc | null}
+      autoFocus
+      size="comment"
+      sources={sources}
+      contentClassName="min-h-15 leading-brief"
+      onChange={setBody}
+      onSubmit={() => void send()}
+      onCancel={cancel}
     >
-      <textarea
-        ref={box}
-        aria-label={placeholder}
-        rows={3}
-        value={text}
-        placeholder={placeholder}
-        onChange={(event) => setText(event.target.value)}
-        onKeyDown={(event) => {
-          if (event.key === 'Escape') cancel();
-          if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) void send();
-        }}
-        className="w-full resize-y border-0 bg-transparent p-0 font-sans text-13 leading-brief text-tx outline-0 placeholder:text-tx5"
-      />
-    </CommentComposer>
+      {({ content, toolbar, ready }) => (
+        <CommentComposer
+          viewer={{ name: viewer.name }}
+          tools={toolbar}
+          end={
+            <span className="flex gap-1.5">
+              <Button size="xs" variant="ghost" onClick={cancel}>
+                Cancel
+              </Button>
+              <Button
+                size="xs"
+                variant="primary"
+                loading={sending}
+                disabled={!ready || isEmptyDoc(body)}
+                onClick={() => void send()}
+              >
+                {submitLabel}
+              </Button>
+            </span>
+          }
+        >
+          {content}
+        </CommentComposer>
+      )}
+    </RichTextEditor>
   );
 }
