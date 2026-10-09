@@ -24,9 +24,7 @@ describe('built-in template content', () => {
 
   it('record decisions as decision blocks, proposed until decided', () => {
     for (const key of ['rfc', 'meeting-notes', 'decision-log']) {
-      const decisions = template(key).snapshot.content!.filter(
-        (node) => node.type === 'decision',
-      );
+      const decisions = template(key).snapshot.content!.filter((node) => node.type === 'decision');
       expect(decisions.length).toBeGreaterThan(0);
       for (const node of decisions) {
         expect(node.attrs).toEqual({ state: 'proposed', decidedOn: null });

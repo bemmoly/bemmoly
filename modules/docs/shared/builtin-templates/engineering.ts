@@ -21,7 +21,10 @@ export const RFC = doc(
   field('Decision date'),
   rule(),
   toc(),
-  callout('info', p('TL;DR: one paragraph a busy reader can stop after: what changes, and why now.')),
+  callout(
+    'info',
+    p('TL;DR: one paragraph a busy reader can stop after: what changes, and why now.'),
+  ),
   h(2, 'Context'),
   p('What is true today, what hurts, and what we measured. Link the issues and pages it rests on.'),
   h(2, 'Goals'),
