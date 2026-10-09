@@ -4,6 +4,7 @@ export type * from './authz.ts';
 export type * from './email-sender.ts';
 export type * from './event-bus.ts';
 export type * from './jobs.ts';
+export type * from './memberships.ts';
 export type * from './module-access.ts';
 export type * from './module-backup.ts';
 export type * from './object-store.ts';
