@@ -85,9 +85,11 @@ export async function createIssue(
     if (missing.length > 0) {
       throw new ValidationError('Required fields are missing', { details: { fields: missing } });
     }
+    // The counter lock serialises creates in a project, so the tail is read
+    // under it: read before, two creates in flight would append the same rank.
+    const number = await allocateNumber(tx, body.projectId);
     const [tail] = await tx<{ rank: string | null }[]>`
       select max(rank) as rank from issues where project_id = ${body.projectId}`;
-    const number = await allocateNumber(tx, body.projectId);
     const description = body.description ?? null;
     const [row] = await tx<{ id: string }[]>`
       insert into issues (project_id, number, key, type_id, title, description, description_text,
