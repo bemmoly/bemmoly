@@ -19,7 +19,11 @@ export const workWorkflowKeys = {
   list: (projectId?: string) => ['work', 'workflows', projectId ?? 'all'] as const,
   one: (workflowId: string) => ['work', 'workflow', workflowId] as const,
   draft: (workflowId: string) => ['work', 'workflow', workflowId, 'draft'] as const,
-  counts: (workflowId: string) => ['work', 'workflow', workflowId, 'counts'] as const,
+  /** Every project's counts, or one project's; invalidating without a project reaches both. */
+  counts: (workflowId: string, projectId?: string) =>
+    projectId
+      ? (['work', 'workflow', workflowId, 'counts', projectId] as const)
+      : (['work', 'workflow', workflowId, 'counts'] as const),
   rules: () => ['work', 'workflow-rules'] as const,
 };
 
