@@ -9,9 +9,11 @@ export {
 export {
   StatusDot,
   StatusNode,
+  StatusNodeHandle,
   StatusPill,
   WORKFLOW_CATEGORY,
   type StatusDotProps,
+  type StatusNodeHandleProps,
   type StatusNodeProps,
   type StatusPillProps,
   type WorkflowCategory,
