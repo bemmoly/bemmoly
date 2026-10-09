@@ -1,10 +1,13 @@
 import { EpicItem, EpicPanel, Input } from '@bemmoly/ui';
 import { useState, type FormEvent } from 'react';
 import { useBacklogUi } from '../hooks/backlog-store.ts';
+import { EpicsSkeleton } from '../skeletons/backlog-skeleton.tsx';
 import { epicMeta, epicPercent, type EpicLook } from './model.ts';
 
 export interface BacklogEpicsProps {
   epics: readonly EpicLook[];
+  /** The backlog is still loading: placeholder items, not "No open epics". */
+  loading?: boolean;
   /** Creates an epic with this title; absent when the project has no epic type. */
   onCreate?: (title: string) => Promise<unknown>;
 }
@@ -14,7 +17,7 @@ export interface BacklogEpicsProps {
  * the list and picked again to clear it. "+ Create" opens a title field at
  * the top of the list.
  */
-export function BacklogEpics({ epics, onCreate }: BacklogEpicsProps) {
+export function BacklogEpics({ epics, loading = false, onCreate }: BacklogEpicsProps) {
   const epicId = useBacklogUi((state) => state.filters.epicId);
   const setFilters = useBacklogUi((state) => state.setFilters);
   const [creating, setCreating] = useState(false);
@@ -73,7 +76,8 @@ export function BacklogEpics({ epics, onCreate }: BacklogEpicsProps) {
           onSelect={() => setFilters({ epicId: epicId === epic.id ? null : epic.id })}
         />
       ))}
-      {epics.length === 0 && !creating && (
+      {loading && <EpicsSkeleton />}
+      {!loading && epics.length === 0 && !creating && (
         <p className="m-0 px-3.5 py-3 text-12 text-tx5">
           No open epics. Create one to group related issues.
         </p>
