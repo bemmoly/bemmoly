@@ -229,7 +229,7 @@ export function seedPlatformIssues(): MockIssue[] {
         customFields:
           key === 'PLT-227' || key === 'PLT-228'
             ? {}
-            : { pr: `#${4800 + index}`, reviewer: WHO.JM },
+            : { pullRequest: `#${4800 + index}`, reviewer: WHO.JM },
         statusChangedAt: ago((age + (key.charCodeAt(5) % 4)) * DAY),
         updatedAt: ago(
           ['PLT-204', 'PLT-218', 'PLT-226', 'PLT-224', 'PLT-228'].includes(key) ? 120 : 3 * DAY,

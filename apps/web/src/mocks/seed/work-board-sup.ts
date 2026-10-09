@@ -46,7 +46,7 @@ export function seedSupportIssues(): MockIssue[] {
           labelIds: n % 3 === 0 ? [LABEL_IDS['customer'] ?? ''] : [],
           rank: rankAt(n),
           blockedBy: n % 41 === 7 ? [`SUP-${n}`] : [],
-          customFields: { pr: `#${n}`, reviewer: WHO.JM },
+          customFields: { pullRequest: `#${n}`, reviewer: WHO.JM },
           statusChangedAt: ago(((n * 5) % 9) * DAY + 30),
           updatedAt: ago(((n * 11) % 30) * 60 * 6),
         }),

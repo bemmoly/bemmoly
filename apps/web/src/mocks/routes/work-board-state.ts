@@ -38,6 +38,7 @@ function supportBoard(db: MockDb): Row {
       lanes: { kind: 'none', queries: [], showEmpty: false, collapsible: true, totals: true },
       cardFields: ['type', 'key', 'priority', 'labels', 'assignee', 'blocked'],
       colorRule: 'priority',
+      colorRules: [{ query: 'label = customer AND priority IN (Highest, High)', color: '#7c3aed' }],
       quickFilters: [{ name: 'Customer reported', query: 'label = customer' }],
     },
     createdAt: ago(60 * 24 * 60),
@@ -50,7 +51,10 @@ export function boardState(db: MockDb): BoardState {
   if (!state) {
     state = {
       issues: [...seedPlatformIssues(), ...seedSupportIssues()],
-      labels: [...seedBoardLabels(WORK_IDS.project), ...seedBoardLabels(BOARD_IDS.supProject)],
+      labels: [
+        ...seedBoardLabels(WORK_IDS.project),
+        ...seedBoardLabels(BOARD_IDS.supProject, ['customer']),
+      ],
       supProject: seedSupportProject() as Row,
       supBoard: supportBoard(db),
     };

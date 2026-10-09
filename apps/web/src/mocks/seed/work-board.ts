@@ -33,7 +33,7 @@ export interface MockIssue {
   blockedBy: string[];
   docs: string[];
   subtasks: { done: number; total: number } | null;
-  /** What the mock's transition rules read: a linked PR and a reviewer. */
+  /** What the mock's transition rules read: the pull request and the reviewer. */
   customFields: Record<string, unknown>;
   statusChangedAt: string;
   updatedAt: string;
@@ -47,8 +47,8 @@ export const LABEL_IDS: Record<string, string> = {
   ...Object.fromEntries(LABELS.map((name, index) => [name, uid(0xe10 + index)])),
 };
 
-export function seedBoardLabels(projectId: string) {
-  return LABELS.map((name) => ({
+export function seedBoardLabels(projectId: string, names: readonly string[] = LABELS) {
+  return names.map((name) => ({
     id: LABEL_IDS[name] ?? '',
     projectId,
     name,
