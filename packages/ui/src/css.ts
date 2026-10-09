@@ -68,11 +68,16 @@ export function renderBaseCss(): string {
     ]),
     block('*,\n::before,\n::after', ['box-sizing: border-box;']),
     block('::-webkit-scrollbar', ['width: 10px;', 'height: 10px;']),
+    // The mock's 2px gap around the thumb is drawn in the page colour; a transparent border
+    // clipped out of the background keeps the same gap on the white panels and in dialogs.
     block('::-webkit-scrollbar-thumb', [
       'background: var(--br-off);',
+      'background-clip: padding-box;',
       'border-radius: 6px;',
-      'border: 2px solid var(--bg);',
+      'border: 2px solid transparent;',
     ]),
+    block('::-webkit-scrollbar-thumb:hover', ['background-color: var(--tx6);']),
+    block('::-webkit-scrollbar-corner', ['background: transparent;']),
     // Components animate only behind motion-safe:; this also stops anything a page adds.
     `@media (prefers-reduced-motion: reduce) {\n${reducedMotion}\n}`,
   ];

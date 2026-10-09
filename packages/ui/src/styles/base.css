@@ -50,8 +50,17 @@ body {
 
 ::-webkit-scrollbar-thumb {
   background: var(--br-off);
+  background-clip: padding-box;
   border-radius: 6px;
-  border: 2px solid var(--bg);
+  border: 2px solid transparent;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--tx6);
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
 }
 
 @media (prefers-reduced-motion: reduce) {
