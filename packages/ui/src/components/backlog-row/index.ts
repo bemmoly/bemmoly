@@ -5,3 +5,4 @@ export {
   type BacklogCreateRowProps,
   type BacklogRowProps,
 } from './backlog-row.tsx';
+export { BacklogRowSkeleton } from './backlog-row-skeleton.tsx';
