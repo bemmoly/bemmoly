@@ -21,6 +21,7 @@ import { createMetricsService } from './metrics/index.ts';
 import { createMyWorkService } from './my-work/index.ts';
 import { createProjectsService } from './projects/index.ts';
 import { createProjectMembersService } from './projects/members.ts';
+import { createSchemesService } from './schemes/index.ts';
 import { createSearchService } from './search/index.ts';
 import { createSprintsService } from './sprints/index.ts';
 import { createIssueTypesService } from './types/index.ts';
@@ -56,6 +57,7 @@ export function createWorkServices(deps: WorkServiceDeps) {
   return {
     projects: createProjectsService(deps),
     members: createProjectMembersService(deps),
+    schemes: createSchemesService(deps),
     types: createIssueTypesService(deps),
     fields: createFieldsService(deps),
     labels: createLabelsService(deps),
