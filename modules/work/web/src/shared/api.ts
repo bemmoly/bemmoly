@@ -4,6 +4,7 @@ import {
   workBoardsEndpoints,
   workIssueActivityEndpoints,
   workIssueEndpoints,
+  workMembersEndpoints,
   workProjectCatalogEndpoints,
   workMyWorkEndpoints,
   workSettingsEndpoints,
@@ -39,6 +40,7 @@ export const api = {
     ...workIssueActivityEndpoints(client.http),
     ...workProjectCatalogEndpoints(client.http),
     myWork: workMyWorkEndpoints(client.http),
+    members: workMembersEndpoints(client.http),
   },
 };
 
