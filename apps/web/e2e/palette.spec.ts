@@ -29,7 +29,9 @@ test('⌘K finds people, and a request shows the plan preview', async ({ page })
 });
 
 test('Create explains why it is empty and leads an admin to Modules', async ({ page }) => {
-  await useMockBackend(page, 'ready');
+  const backend = await useMockBackend(page, 'ready');
+  // The seeded workspace has Work on; with it off, no module offers anything to create.
+  backend.api.dispatch('POST', 'http://127.0.0.1/api/v1/admin/modules/work/disable', {});
   await page.goto('/');
   await page.getByRole('button', { name: 'Create' }).click();
   const menu = page.getByRole('menu', { name: 'Create' });
