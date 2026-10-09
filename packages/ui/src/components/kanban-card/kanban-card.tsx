@@ -35,6 +35,11 @@ export interface KanbanCardProps {
   dimmed?: boolean;
   /** A 3px left border from a colour rule; see cardStripe. */
   stripeClassName?: string;
+  /**
+   * Answers the pointer: a stronger border and a lifted shadow on hover. On by default when the
+   * card selects itself; the Board's wrapper, which handles the click and the drag, turns it on.
+   */
+  interactive?: boolean;
   onSelect?: () => void;
   className?: string;
 }
@@ -60,6 +65,7 @@ export function KanbanCard({
   dimmed = false,
   stripeClassName,
   onSelect,
+  interactive = onSelect !== undefined,
   className,
 }: KanbanCardProps) {
   const onKeyDown = (event: KeyboardEvent) => {
@@ -77,7 +83,9 @@ export function KanbanCard({
       onKeyDown={onSelect ? onKeyDown : undefined}
       className={cx(
         'flex flex-col gap-2 rounded-control border bg-sf px-2.5 pt-2.5 pb-2 text-13 text-tx',
+        'motion-safe:transition-[border-color,box-shadow,opacity]',
         selected ? 'border-ac shadow-ring' : 'border-br shadow-card',
+        interactive && !selected && cx('hover:shadow-pop', !stripeClassName && 'hover:border-br3'),
         stripeClassName && cx('border-l-[3px]', stripeClassName),
         onSelect && cx('cursor-pointer', focusRing),
         dimmed && 'opacity-28',

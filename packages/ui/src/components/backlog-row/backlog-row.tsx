@@ -65,6 +65,7 @@ export function BacklogRow({
       style={{ gridTemplateColumns: BACKLOG_ROW_TEMPLATE }}
       className={cx(
         'grid items-center gap-2.5 border-b border-br-row px-3.5 py-2 text-13 text-tx',
+        'motion-safe:transition-colors',
         selected ? 'bg-ac-bg' : 'bg-sf',
         onSelect && cx('cursor-pointer', !selected && 'hover:bg-bg2', focusRingInset),
         className,
@@ -94,8 +95,12 @@ export function BacklogRow({
       </span>
       <StatusBadge category={status.category} label={status.label} className="justify-self-start" />
       <PriorityGlyph priority={priority} />
-      <span className="flex justify-center">
-        {estimate !== undefined && <Badge variant="count">{estimate}</Badge>}
+      <span className="flex">
+        {estimate !== undefined && (
+          <Badge variant="count" className="flex-1 justify-center">
+            {estimate}
+          </Badge>
+        )}
       </span>
       <span className="flex">
         {assignee ? (

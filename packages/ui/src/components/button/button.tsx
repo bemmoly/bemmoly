@@ -9,6 +9,8 @@ export type ButtonSize = 'xs' | 'sm' | 'md' | 'lg' | 'bar';
 const BASE = cx(
   'inline-flex shrink-0 cursor-pointer items-center justify-center gap-1.5 font-sans font-medium',
   'whitespace-nowrap select-none disabled:cursor-not-allowed disabled:opacity-50',
+  // Colours ease on hover; a press sets the button down by a pixel.
+  'motion-safe:transition-[color,background-color,border-color,box-shadow,filter,translate] enabled:active:translate-y-px',
   focusRing,
 );
 
@@ -42,10 +44,14 @@ const PADDING: Partial<Record<`${ButtonVariant}-${ButtonSize}`, string>> = {
 };
 
 const VARIANTS: Record<ButtonVariant, string> = {
-  primary: 'border-0 bg-ac-fill text-on-ac enabled:hover:brightness-95',
-  secondary: 'border border-br3 bg-sf text-tx2 enabled:hover:bg-bg2',
-  ghost: 'border-0 bg-transparent text-tx4 enabled:hover:bg-chip enabled:hover:text-tx2',
-  danger: 'border-0 bg-danger text-on-solid enabled:hover:brightness-95',
+  primary:
+    'border-0 bg-ac-fill text-on-ac enabled:hover:brightness-95 enabled:active:brightness-90',
+  secondary:
+    'border border-br3 bg-sf text-tx2 enabled:hover:bg-bg2 enabled:hover:text-tx enabled:active:bg-chip',
+  ghost:
+    'border-0 bg-transparent text-tx4 enabled:hover:bg-chip enabled:hover:text-tx2 enabled:active:bg-br2',
+  danger:
+    'border-0 bg-danger text-on-solid enabled:hover:brightness-95 enabled:active:brightness-90',
 };
 
 export interface ButtonStyle {
