@@ -30,3 +30,6 @@ k6-summary.json
 
 # local tool configuration
 .claude/
+
+# end-to-end run state (server env, sessions, logs)
+apps/e2e/.state/

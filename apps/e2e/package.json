@@ -1,0 +1,19 @@
+{
+  "name": "@bemmoly/e2e",
+  "version": "0.1.4",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "lint": "eslint --max-warnings 0 .",
+    "test:e2e:work": "playwright test"
+  },
+  "devDependencies": {
+    "@bemmoly/core": "workspace:*",
+    "@bemmoly/server": "workspace:*",
+    "@bemmoly/web": "workspace:*",
+    "@playwright/test": "1.63.0",
+    "@types/node": "26.6.4"
+  }
+}
