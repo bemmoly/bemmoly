@@ -5,6 +5,7 @@ import { boardsRoutes } from './boards.routes.ts';
 import { fieldsRoutes } from './fields.routes.ts';
 import { issuesRoutes } from './issues.routes.ts';
 import { lqlRoutes } from './lql.routes.ts';
+import { metricsRoutes } from './metrics.routes.ts';
 import { projectsRoutes } from './projects.routes.ts';
 import { typesRoutes } from './types.routes.ts';
 import { workflowRoutes } from './workflow.routes.ts';
@@ -23,5 +24,6 @@ export function workRoutes(controllers: WorkControllers): FastifyPluginAsync {
     await app.register(workflowRoutes(controllers.workflow));
     await app.register(lqlRoutes(controllers.lql));
     await app.register(boardsRoutes(controllers.boards));
+    await app.register(metricsRoutes(controllers.metrics));
   };
 }
