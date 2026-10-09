@@ -11,6 +11,7 @@ import {
   useBoardFilterStore,
 } from './board-filters.ts';
 import type { LqlValueSources } from './board-lql.ts';
+import { compileColorRules } from './board-color-rules.ts';
 import { buildBoardModel } from './board-model.ts';
 
 /*
@@ -44,6 +45,10 @@ export function useBoardScreen(projectKey: string | undefined) {
     [data.view, filters.grouping],
   );
 
+  const statuses = useMemo(
+    () => new Map(data.workflow?.statuses.map((status) => [status.id, status])),
+    [data.workflow],
+  );
   const vocab = useMemo<CardVocabulary>(
     () => ({
       types: new Map(data.issueTypes.map((type) => [type.id, type])),
@@ -56,8 +61,26 @@ export function useBoardScreen(projectKey: string | undefined) {
       doneColumns: new Set(
         (boardConfig?.columns ?? []).filter((column) => column.done).map((column) => column.id),
       ),
+      ruleColor: compileColorRules(boardConfig?.colorRules ?? [], {
+        meId: data.meId,
+        statusName: (id) => statuses.get(id)?.name,
+        statusCategory: (id) => statuses.get(id)?.category,
+        typeName: (id) => data.issueTypes.find((type) => type.id === id)?.name,
+        userName: (id) => data.people.find((person) => person.id === id)?.name,
+        labelName: (id) => data.labels.find((label) => label.id === id)?.name,
+        issueKey: (id) => data.view?.lanes.find((lane) => lane.id === id)?.issueKey ?? undefined,
+      }),
     }),
-    [data.issueTypes, data.people, data.labels, data.meId, boardConfig, kanban],
+    [
+      data.issueTypes,
+      data.people,
+      data.labels,
+      data.meId,
+      data.view,
+      statuses,
+      boardConfig,
+      kanban,
+    ],
   );
 
   const { view, meId } = data;

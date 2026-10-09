@@ -1,5 +1,5 @@
 import { KanbanCard } from '@bemmoly/ui';
-import { memo, useMemo } from 'react';
+import { memo, useMemo, type CSSProperties } from 'react';
 import { useBoardDragStore } from '../hooks/board-drag-store.ts';
 import type { ViewCard } from '../hooks/board-model.ts';
 import { cardProps } from './card-view.ts';
@@ -29,6 +29,7 @@ export const BoardCard = memo(function BoardCard({
   const { actions, vocab, isDimmed, selectedKey, instructionsId } = useBoardShared();
   const carried = useBoardDragStore((state) => state.carrying?.issueId === card.issueId);
   const props = useMemo(() => cardProps(card, vocab, laneHue), [card, vocab, laneHue]);
+  const ruleColor = vocab.ruleColor(card);
   return (
     <div
       data-issue-id={card.issueId}
@@ -48,6 +49,7 @@ export const BoardCard = memo(function BoardCard({
         const below = event.clientY > box.top + box.height / 2;
         actions.dragOver(event, { laneId, columnId, index: index + (below ? 1 : 0) });
       }}
+      style={ruleColor ? ({ '--card-rule': ruleColor } as CSSProperties) : undefined}
       className={cls(
         'cursor-grab rounded-control active:cursor-grabbing',
         FOCUS_RING,
