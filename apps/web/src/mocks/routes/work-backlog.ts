@@ -1,8 +1,8 @@
 import { can, emit, type MockDb } from '../db.ts';
 import { newId } from '../seed/time.ts';
-import { backlogIssue, type BacklogSprintRow } from '../seed/work-backlog.ts';
+import { backlogIssue, type BacklogIssueRow, type BacklogSprintRow } from '../seed/work-backlog.ts';
 import { WORK_IDS } from '../seed/work-settings.ts';
-import { bodyOf, fail, invalid, notFound, ok, type MockRoute } from '../types.ts';
+import { bodyOf, fail, invalid, notFound, ok, type MockRequest, type MockRoute } from '../types.ts';
 import {
   backlogResponse,
   backlogState,
@@ -11,7 +11,7 @@ import {
   renumber,
   unfinishedOf,
 } from './work-backlog-state.ts';
-import { workState } from './work-state.ts';
+import { workIssuesRoutes } from './work-issues.ts';
 
 /*
  * The Backlog screen's routes: the one-call read, the drop, inline create and
@@ -56,30 +56,26 @@ function move(db: MockDb, key: string, body: Partial<MoveBody>) {
   return ok(issue);
 }
 
-function createIssue(db: MockDb, body: Record<string, unknown>) {
+/** The Issue page's create, so the slide-over and the Issue page know every new issue. */
+const issueCreate = workIssuesRoutes.find(
+  (route) => route.method === 'POST' && route.pattern === '/api/v1/work/issues',
+);
+
+/**
+ * Creates through the issue mock and mirrors the new row into the backlog's
+ * own rows, which the issue mock does not share: one numbering for both, so
+ * the key a row shows is the key the slide-over opens.
+ */
+function createIssue(request: MockRequest, db: MockDb) {
+  const result = issueCreate?.handle(request, db);
+  if (!result || result.status !== 201) return result ?? invalid('title', 'Not created');
+  const created = result.body as BacklogIssueRow;
   const state = backlogState(db);
-  const title = typeof body['title'] === 'string' ? body['title'].trim() : '';
-  if (!title) return invalid('title', 'A title is required');
-  const number = Math.max(0, ...state.issues.map((row) => row.number)) + 1;
   const last = [...state.issues].sort(byRank).at(-1);
-  const issue = backlogIssue({
-    id: newId(),
-    number,
-    title,
-    rank: `${last?.rank ?? ''}n`,
-    typeId: String(body['typeId']),
-    priority: (body['priority'] as 'medium' | undefined) ?? 'medium',
-    sprintId: (body['sprintId'] as string | null | undefined) ?? null,
-    parentId: (body['parentId'] as string | null | undefined) ?? null,
-    estimate: (body['estimate'] as number | null | undefined) ?? null,
-    assigneeId: (body['assigneeId'] as string | null | undefined) ?? null,
-    reporterId: db.signedInAs,
-  });
-  state.issues.push(issue);
+  state.issues.push(backlogIssue({ ...created, rank: `${last?.rank ?? ''}n` }));
   /** Appending a letter per create would outgrow the 255-character rank; renumber instead. */
   renumber(state.issues.sort(byRank));
-  changed(db, [issue.id]);
-  return ok(issue, 201);
+  return result;
 }
 
 function sprintRoute(
@@ -157,11 +153,6 @@ function complete(sprint: BacklogSprintRow, db: MockDb, body: Record<string, unk
 export const workBacklogRoutes: MockRoute[] = [
   {
     method: 'GET',
-    pattern: '/api/v1/work/projects',
-    handle: (_, db) => ok({ items: [workState(db).project], nextCursor: null }),
-  },
-  {
-    method: 'GET',
     pattern: '/api/v1/work/projects/:key/backlog',
     handle: (request, db) =>
       projectMatches(request.params['key']) ? ok(backlogResponse(db)) : notFound('Project'),
@@ -175,15 +166,7 @@ export const workBacklogRoutes: MockRoute[] = [
   {
     method: 'POST',
     pattern: '/api/v1/work/issues',
-    handle: (request, db) => (can(db, EDIT) ? createIssue(db, bodyOf(request)) : denied()),
-  },
-  {
-    method: 'GET',
-    pattern: '/api/v1/work/projects/:key/sprints',
-    handle: (request, db) =>
-      projectMatches(request.params['key'])
-        ? ok({ items: backlogState(db).sprints })
-        : notFound('Project'),
+    handle: (request, db) => (can(db, EDIT) ? createIssue(request, db) : denied()),
   },
   {
     method: 'POST',
