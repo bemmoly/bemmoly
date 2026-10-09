@@ -1,64 +1,28 @@
-import { emit, type MockDb } from '../db.ts';
-import type { MockIssue } from '../seed/work-board.ts';
-import { bodyOf, fail, notFound, ok, type MockRoute } from '../types.ts';
+import type { MockDb } from '../db.ts';
+import { fail, notFound, ok, type MockRequest, type MockRoute } from '../types.ts';
+import { askIssueMock, issueMockLabels } from './work-board-delegate.ts';
+import { boardIssueRoutes } from './work-board-issues.ts';
 import { boardMetrics, boardView } from './work-board-view.ts';
-import {
-  boardsOf,
-  boardState,
-  projectRef,
-  projectsOf,
-  rankBetween,
-  toIssue,
-  workflowOf,
-} from './work-board-state.ts';
-import { workState, type Row } from './work-state.ts';
+import { boardsOf, boardState, projectRef, projectsOf, workflowOf } from './work-board-state.ts';
+import { workState } from './work-state.ts';
 
 /*
  * The Board's routes in the mock backend, matching the server's paths and methods: the
- * projects and boards the screen opens, the view and metrics, sprints, labels, the workflow,
- * an issue's transitions, a status change through the workflow and a rank change.
+ * projects and boards the screen opens, the view and metrics, labels, issue types, the
+ * workflow, and (in work-board-issues.ts) an issue's transitions, status and rank. Rows the
+ * issue mock keeps are read from it, so both screens see the same projects, sprints and labels.
  */
 
 const W = '/api/v1/work';
 
-type Rule = { name: string; args: Record<string, unknown> };
-type Transition = Row & { fromStatusId: string | null; toStatusId: string; name: string };
-
-/** Why a transition is closed for an issue: the mock reads the PR and reviewer custom fields. */
-function blockers(transition: Transition, issue: MockIssue): string[] {
-  const rules = transition['rules'] as { conditions: Rule[]; validators: Rule[] } | undefined;
-  const reasons: string[] = [];
-  for (const rule of rules?.conditions ?? []) {
-    if (rule.name === 'pr_linked' && !issue.customFields['pr'])
-      reasons.push('Link a pull request before moving this issue to review.');
-  }
-  for (const rule of rules?.validators ?? []) {
-    const field = String(rule.args['field'] ?? '');
-    if (rule.name === 'field_not_empty' && !issue.customFields[field])
-      reasons.push(`Set ${field} before moving this issue.`);
-  }
-  return reasons;
-}
-
-function graph(db: MockDb, issue: MockIssue) {
-  const workflow = workflowOf(db);
-  const statuses = (workflow?.['statuses'] as Row[] | undefined) ?? [];
-  const transitions = ((workflow?.['transitions'] as Transition[] | undefined) ?? []).filter(
-    (t) => t.fromStatusId === issue.statusId || t.fromStatusId === null,
-  );
-  return { statuses, transitions };
-}
-
-const issueByKey = (db: MockDb, key: string | undefined) =>
-  boardState(db).issues.find((issue) => issue.key === key?.toUpperCase());
-
 const boardById = (db: MockDb, id: string | undefined) =>
   boardsOf(db).find((board) => board.id === id);
 
-function changed(db: MockDb, issue: MockIssue) {
-  issue.updatedAt = new Date().toISOString();
-  emit(db, 'work.board', [issue.id]);
-  emit(db, 'work.issue', [issue.id]);
+/** The issue mock's answer for a project route, unless it does not know the project. */
+function issueMockFirst(pattern: string, request: MockRequest, db: MockDb) {
+  const key = String(projectRef(db, request.params['projectId'])?.['key'] ?? '');
+  const theirs = askIssueMock('GET', pattern, { ...request, params: { key } }, db);
+  return theirs && theirs.status !== 404 ? theirs : null;
 }
 
 export const workBoardRoutes: MockRoute[] = [
@@ -82,6 +46,8 @@ export const workBoardRoutes: MockRoute[] = [
     handle: (request, db) => {
       const project = projectRef(db, request.params['projectId']);
       if (!project) return notFound('Project');
+      const theirs = issueMockFirst('/projects/:key/issue-types', request, db);
+      if (theirs) return theirs;
       const types = workState(db).issueTypes.filter(
         (type) => type['projectId'] === null || type['projectId'] === project.id,
       );
@@ -94,20 +60,11 @@ export const workBoardRoutes: MockRoute[] = [
     handle: (request, db) => {
       const project = projectRef(db, request.params['projectId']);
       if (!project) return notFound('Project');
-      return ok({ items: boardState(db).labels.filter((l) => l['projectId'] === project.id) });
-    },
-  },
-  {
-    method: 'GET',
-    pattern: `${W}/projects/:projectId/sprints`,
-    handle: (request, db) => {
-      const project = projectRef(db, request.params['projectId']);
-      if (!project) return notFound('Project');
-      const state = request.query.get('state');
-      const items = boardState(db).sprints.filter(
-        (sprint) => sprint['projectId'] === project.id && (!state || sprint['state'] === state),
-      );
-      return ok({ items });
+      const items = [
+        ...issueMockLabels(db, String(project['key'])),
+        ...boardState(db).labels.filter((label) => label['projectId'] === project.id),
+      ];
+      return ok({ items, nextCursor: null });
     },
   },
   {
@@ -152,71 +109,5 @@ export const workBoardRoutes: MockRoute[] = [
       });
     },
   },
-  {
-    method: 'GET',
-    pattern: `${W}/issues/:key/transitions`,
-    handle: (request, db) => {
-      const issue = issueByKey(db, request.params['key']);
-      if (!issue) return notFound('Issue');
-      const { statuses, transitions } = graph(db, issue);
-      const items = transitions.flatMap((transition) => {
-        const to = statuses.find((status) => status.id === transition.toStatusId);
-        if (!to || to.id === issue.statusId) return [];
-        const reasons = blockers(transition, issue);
-        return [
-          {
-            id: transition.id,
-            name: transition.name,
-            toStatusId: to.id,
-            toStatusName: to['name'],
-            toStatusCategory: to['category'],
-            available: reasons.length === 0,
-            blockedBy: reasons,
-          },
-        ];
-      });
-      return ok({ items });
-    },
-  },
-  {
-    method: 'PATCH',
-    pattern: `${W}/issues/:key`,
-    handle: (request, db) => {
-      const issue = issueByKey(db, request.params['key']);
-      if (!issue) return notFound('Issue');
-      const { statusId } = bodyOf<{ statusId: string }>(request);
-      if (statusId && statusId !== issue.statusId) {
-        const { statuses, transitions } = graph(db, issue);
-        const to = statuses.find((status) => status.id === statusId);
-        if (!to) return notFound('The target status');
-        const transition = transitions.find((t) => t.toStatusId === statusId);
-        if (!transition)
-          return fail(400, 'bad_request', `No transition leads from this status to ${to['name']}`);
-        const reasons = blockers(transition, issue);
-        if (reasons.length > 0)
-          return fail(400, 'validation_failed', 'The transition is blocked', { reasons });
-        issue.statusId = statusId;
-        issue.statusChangedAt = new Date().toISOString();
-      }
-      changed(db, issue);
-      return ok(toIssue(issue));
-    },
-  },
-  {
-    method: 'PATCH',
-    pattern: `${W}/issues/:key/rank`,
-    handle: (request, db) => {
-      const issue = issueByKey(db, request.params['key']);
-      if (!issue) return notFound('Issue');
-      const body = bodyOf<{ beforeIssueId: string | null; afterIssueId: string | null }>(request);
-      const { issues } = boardState(db);
-      const before = issues.find((other) => other.id === body.beforeIssueId)?.rank ?? null;
-      const after = issues.find((other) => other.id === body.afterIssueId)?.rank ?? null;
-      if (before !== null && after !== null && before >= after)
-        return fail(409, 'conflict', 'The neighbours moved; reload the board and try again.');
-      issue.rank = rankBetween(before, after);
-      changed(db, issue);
-      return ok(toIssue(issue));
-    },
-  },
+  ...boardIssueRoutes,
 ];

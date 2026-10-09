@@ -1,18 +1,22 @@
 import { ago, ahead, uid } from './time.ts';
-import {
-  DAY,
-  issue,
-  LABEL_IDS,
-  rankAt,
-  BOARD_IDS,
-  WHO,
-  type MockIssue,
-  type Who,
-} from './work-board.ts';
+import { DAY, issue, LABEL_IDS, rankAt, WHO, type MockIssue, type Who } from './work-board.ts';
+import { issueId, SPRINT_IDS } from './work-issues.ts';
 import { STATUS_IDS, WORK_IDS, type StatusName } from './work-settings.ts';
 import { TYPE_IDS } from './work-types.ts';
 
-/* Platform Core (PLT, Scrum): the Board mock's nineteen cards, its two epics and its sprint. */
+/*
+ * Platform Core (PLT, Scrum): the Board mock's nineteen cards and two epics in the issue mock's
+ * active sprint. The issues the issue mock also seeds keep its ids, so the slide-over and the
+ * board talk about the same rows.
+ */
+
+const SHARED: ReadonlySet<string> = new Set([
+  'PLT-190',
+  'PLT-204',
+  'PLT-211',
+  'PLT-218',
+  'PLT-219',
+]);
 
 const COLUMN_STATUS: StatusName[] = ['Selected', 'In progress', 'Code review', 'Testing', 'Done'];
 
@@ -183,14 +187,14 @@ const PLT: Seed[] = [
 ];
 
 const EPICS: Array<[string, string, number]> = [
-  ['PLT-180', 'Auth service', 2],
+  ['PLT-190', 'Auth service', 2],
   ['PLT-150', 'Billing v2', 16],
 ];
 
 export function seedPlatformIssues(): MockIssue[] {
   const epics = EPICS.map(([key, title, dueDays], index) =>
     issue({
-      id: uid(0xc00 + index),
+      id: SHARED.has(key) ? issueId(Number(key.slice(4))) : uid(0xe30 + index),
       projectId: WORK_IDS.project,
       key,
       title,
@@ -205,7 +209,7 @@ export function seedPlatformIssues(): MockIssue[] {
       const status = COLUMN_STATUS[column] ?? 'Selected';
       const age = [1, 2, 3, 1, 0][column] ?? 0;
       return issue({
-        id: uid(0xc10 + index),
+        id: SHARED.has(key) ? issueId(Number(key.slice(4))) : uid(0xe40 + index),
         projectId: WORK_IDS.project,
         key,
         title,
@@ -217,7 +221,7 @@ export function seedPlatformIssues(): MockIssue[] {
         labelIds: (extra.labels ?? []).map((name) => LABEL_IDS[name] ?? ''),
         rank: rankAt(10 + index),
         parentId: epics[epic]?.id ?? null,
-        sprintId: BOARD_IDS.sprint,
+        sprintId: SPRINT_IDS.s14,
         blockedBy: extra.blocked ? [extra.blocked] : [],
         docs: extra.doc ? [extra.doc] : [],
         subtasks: extra.sub ? { done: extra.sub[0], total: extra.sub[1] } : null,

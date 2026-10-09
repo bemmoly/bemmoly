@@ -1,7 +1,8 @@
 import type { MockDb } from '../db.ts';
 import type { MockIssue } from '../seed/work-board.ts';
 import { compileLql, type LqlContext } from './work-board-lql.ts';
-import { boardState, projectRef, workflowOf } from './work-board-state.ts';
+import { sprintsOf } from './work-board-delegate.ts';
+import { boardState, projectRef, projectsOf, workflowOf } from './work-board-state.ts';
 import { workState, type Row } from './work-state.ts';
 
 /*
@@ -23,7 +24,8 @@ const PRIORITIES = ['highest', 'high', 'medium', 'low', 'lowest'];
 export function lqlContext(db: MockDb): LqlContext {
   const statuses = (workflowOf(db)?.['statuses'] as Row[] | undefined) ?? [];
   const status = (id: string) => statuses.find((entry) => entry.id === id);
-  const { issues, sprints, labels } = boardState(db);
+  const { issues, labels } = boardState(db);
+  const sprints = projectsOf(db).flatMap((project) => sprintsOf(db, String(project['key'])));
   return {
     meId: db.signedInAs,
     statusName: (id) => String(status(id)?.['name'] ?? ''),
@@ -107,7 +109,8 @@ export function boardMetrics(db: MockDb, board: Row, cards: MockIssue[], sprintI
 export function boardView(db: MockDb, board: Row, q: string | null) {
   const project = projectRef(db, String(board['projectId']));
   if (!project) return { ok: false, error: 'The board has no project' } as const;
-  const { issues, sprints } = boardState(db);
+  const { issues } = boardState(db);
+  const sprints = sprintsOf(db, String(project['key']));
   const sprintId =
     project['method'] === 'scrum'
       ? (sprints.find((s) => s['projectId'] === project.id && s['state'] === 'active')?.id ?? null)

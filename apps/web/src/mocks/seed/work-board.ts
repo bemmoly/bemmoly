@@ -1,18 +1,18 @@
 import { USER_IDS } from './people.ts';
-import { ago, ahead, uid } from './time.ts';
-import { STATUS_IDS, WORK_IDS } from './work-settings.ts';
+import { ago, uid } from './time.ts';
+import { LABEL_IDS as ISSUE_LABEL_IDS } from './work-issues.ts';
+import { STATUS_IDS } from './work-settings.ts';
 import { TYPE_IDS } from './work-types.ts';
 
 /*
- * The Board mock's data: the issue shape the mock backend keeps, labels, ranks and the PLT
- * sprints. The cards themselves are in work-board-plt.ts and work-board-sup.ts.
+ * The Board mock's data: the issue shape the board keeps (the issue mock in work-issues.ts
+ * keeps the Issue page's fuller rows; shared issues have the same ids there), labels and
+ * ranks. The cards themselves are in work-board-plt.ts and work-board-sup.ts.
  */
 
 export const BOARD_IDS = {
-  supProject: uid(0xb00),
-  supBoard: uid(0xb01),
-  sprint: uid(0xb02),
-  lastSprint: uid(0xb03),
+  supProject: uid(0xe00),
+  supBoard: uid(0xe01),
 } as const;
 
 export interface MockIssue {
@@ -39,11 +39,13 @@ export interface MockIssue {
   updatedAt: string;
 }
 
-const LABELS = ['api', 'infra', 'auth', 'security', 'billing', 'ops', 'bug-bash', 'ux', 'customer'];
+/** The board's labels beyond the issue mock's auth, infra and customer, which keep its ids. */
+const LABELS = ['api', 'security', 'billing', 'ops', 'bug-bash', 'ux'];
 
-export const LABEL_IDS = Object.fromEntries(
-  LABELS.map((name, index) => [name, uid(0xb10 + index)]),
-) as Record<string, string>;
+export const LABEL_IDS: Record<string, string> = {
+  ...ISSUE_LABEL_IDS,
+  ...Object.fromEntries(LABELS.map((name, index) => [name, uid(0xe10 + index)])),
+};
 
 export function seedBoardLabels(projectId: string) {
   return LABELS.map((name) => ({
@@ -95,39 +97,4 @@ export function issue(
     updatedAt: ago(DAY),
     ...fields,
   };
-}
-
-export function seedBoardSprints() {
-  const base = {
-    projectId: WORK_IDS.project,
-    capacityPoints: 24,
-    createdAt: ago(30 * DAY),
-    updatedAt: ago(DAY),
-  };
-  return [
-    {
-      ...base,
-      id: BOARD_IDS.lastSprint,
-      name: 'PLT Sprint 13',
-      goal: null,
-      state: 'closed',
-      startsAt: ago(26 * DAY),
-      endsAt: ago(12 * DAY),
-      completedSnapshot: null,
-      startedAt: ago(26 * DAY),
-      closedAt: ago(12 * DAY),
-    },
-    {
-      ...base,
-      id: BOARD_IDS.sprint,
-      name: 'PLT Sprint 14',
-      goal: 'Auth service in production behind flag',
-      state: 'active',
-      startsAt: ago(12 * DAY),
-      endsAt: ahead(2 * DAY),
-      completedSnapshot: null,
-      startedAt: ago(12 * DAY),
-      closedAt: null,
-    },
-  ];
 }
