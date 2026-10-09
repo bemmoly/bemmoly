@@ -12,6 +12,7 @@ export function Textarea({ className, rows = 3, ref, ...rest }: TextareaProps) {
     <textarea
       ref={ref}
       rows={rows}
+      data-autofocus={rest.autoFocus ? '' : undefined}
       className={cx(
         controlClass,
         'block min-h-20 w-full resize-y bg-sf px-3 py-2.5 font-sans leading-body outline-0 placeholder:text-tx5',

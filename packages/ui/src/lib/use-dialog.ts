@@ -4,6 +4,10 @@ import { useEffect, useLayoutEffect, useRef, type MouseEvent } from 'react';
  * Drives a native <dialog> from `open`: showModal() gives focus containment, an inert page and
  * the top layer for free. Escape and a click on the backdrop call onClose; focus returns to
  * whatever had it before opening.
+ *
+ * React focuses an autoFocus field when it mounts, while the dialog is still closed, so the
+ * focus is lost and showModal() would hand it to the header's Close button. Fields that asked
+ * for focus carry data-autofocus, and the first one gets it once the dialog is open.
  */
 export function useDialog(open: boolean, onClose: () => void) {
   const ref = useRef<HTMLDialogElement>(null);
@@ -18,6 +22,7 @@ export function useDialog(open: boolean, onClose: () => void) {
     if (open && !dialog.open) {
       const previous = document.activeElement as HTMLElement | null;
       dialog.showModal();
+      dialog.querySelector<HTMLElement>('[data-autofocus]')?.focus();
       return () => {
         if (dialog.open) dialog.close();
         previous?.focus?.();
