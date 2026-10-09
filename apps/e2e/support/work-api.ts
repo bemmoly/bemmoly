@@ -109,12 +109,16 @@ export class WorkApi {
     return this.call('POST', `/work/projects/${projectKey}/members`, { userIds });
   }
 
-  /** The workflow statuses an issue's project uses, by name. */
-  async statuses(issueKey: string): Promise<Map<string, string>> {
-    const { items } = await this.call<{ items: { toStatusId: string; toStatusName?: string }[] }>(
-      'GET',
-      `/work/issues/${issueKey}/transitions`,
-    );
-    return new Map(items.map((item) => [item.toStatusName ?? item.toStatusId, item.toStatusId]));
+  /** Takes an issue through the workflow, one transition per status name, as people would. */
+  async walk(issueKey: string, statusNames: string[]): Promise<void> {
+    for (const name of statusNames) {
+      const { items } = await this.call<{ items: { toStatusId: string; toStatusName: string }[] }>(
+        'GET',
+        `/work/issues/${issueKey}/transitions`,
+      );
+      const next = items.find((item) => item.toStatusName === name);
+      if (!next) throw new Error(`${issueKey} has no transition to ${name}`);
+      await this.call('PATCH', `/work/issues/${issueKey}`, { statusId: next.toStatusId });
+    }
   }
 }
