@@ -1,5 +1,5 @@
 import { KanbanColumnHeader, KanbanColumnHeaders, Swimlane, SwimlaneHeader } from '@bemmoly/ui';
-import { memo } from 'react';
+import { memo, type ReactNode } from 'react';
 import { useBoardFilterStore } from '../hooks/board-filters.ts';
 import type { BoardModel, ColumnModel, LaneModel } from '../hooks/board-model.ts';
 import { BoardCell } from './board-cell.tsx';
@@ -77,13 +77,15 @@ const Lane = memo(function Lane({
 export interface BoardGridProps {
   model: BoardModel;
   kanban: boolean;
+  /** Drawn under the column headings in place of the lanes, when the board has no cards. */
+  empty?: ReactNode;
 }
 
 /**
  * The board body from the mock: the sticky column headings over the lanes, 10px apart, at
  * least 1260px wide so five columns never squeeze; the page scrolls sideways instead.
  */
-export function BoardGrid({ model, kanban }: BoardGridProps) {
+export function BoardGrid({ model, kanban, empty }: BoardGridProps) {
   const collapsed = useBoardFilterStore((state) => state.collapsed);
   return (
     <div className="flex min-w-315 flex-col">
@@ -97,17 +99,21 @@ export function BoardGrid({ model, kanban }: BoardGridProps) {
           />
         ))}
       </KanbanColumnHeaders>
-      <div className="flex flex-col gap-2.5">
-        {model.lanes.map((lane) => (
-          <Lane
-            key={lane.id}
-            lane={lane}
-            columns={model.columns}
-            kanban={kanban}
-            open={!collapsed.includes(lane.id)}
-          />
-        ))}
-      </div>
+      {empty ? (
+        <div className="rounded-card border border-dashed border-br3 bg-sf">{empty}</div>
+      ) : (
+        <div className="flex flex-col gap-2.5">
+          {model.lanes.map((lane) => (
+            <Lane
+              key={lane.id}
+              lane={lane}
+              columns={model.columns}
+              kanban={kanban}
+              open={!collapsed.includes(lane.id)}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
