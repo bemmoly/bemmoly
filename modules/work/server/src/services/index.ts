@@ -1,5 +1,6 @@
 import type {
   AuditRecorder,
+  ContainerMemberships,
   EventBus,
   JobRegistry,
   RealtimePublisher,
@@ -19,6 +20,7 @@ import { createLqlService } from './lql/index.ts';
 import { createMetricsService } from './metrics/index.ts';
 import { createMyWorkService } from './my-work/index.ts';
 import { createProjectsService } from './projects/index.ts';
+import { createProjectMembersService } from './projects/members.ts';
 import { createSearchService } from './search/index.ts';
 import { createSprintsService } from './sprints/index.ts';
 import { createIssueTypesService } from './types/index.ts';
@@ -31,6 +33,7 @@ export interface WorkServiceDeps {
   realtime?: RealtimePublisher;
   events?: EventBus;
   jobs?: JobRegistry;
+  memberships?: ContainerMemberships;
 }
 
 const noRealtime: RealtimePublisher = { publish: async () => undefined };
@@ -52,6 +55,7 @@ export function createWorkServices(deps: WorkServiceDeps) {
   };
   return {
     projects: createProjectsService(deps),
+    members: createProjectMembersService(deps),
     types: createIssueTypesService(deps),
     fields: createFieldsService(deps),
     labels: createLabelsService(deps),
