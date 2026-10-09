@@ -56,7 +56,8 @@ export function useBoardData(projectKey: string | undefined) {
   });
   const people = useQuery({
     queryKey: queryKeys.users.list(PEOPLE),
-    queryFn: async () => (await api.users.list(PEOPLE)).items,
+    /** The page as the shell and the Backlog cache it under the same key, never a bare list. */
+    queryFn: () => api.users.list(PEOPLE),
     retry: false,
   });
   const me = useQuery({ queryKey: queryKeys.me(), queryFn: () => api.auth.me() });
@@ -72,7 +73,7 @@ export function useBoardData(projectKey: string | undefined) {
     workflow: workflows.data?.[0],
     issueTypes: issueTypes.data ?? [],
     labels: labels.data ?? [],
-    people: people.data ?? [],
+    people: people.data?.items ?? [],
     meId: me.data?.user.id,
     isPending:
       projectPending ||
