@@ -60,6 +60,11 @@ export const boardConfigSchema = z.object({
     .array(cardFieldSchema)
     .default(['type', 'key', 'priority', 'labels', 'estimate', 'assignee']),
   colorRule: cardColorRuleSchema.default('none'),
+  /** Card colour rules: the first whose LQL condition matches paints the card's stripe. */
+  colorRules: z
+    .array(z.object({ query: z.string().trim().min(1).max(4000), color: hexColorSchema }))
+    .max(20)
+    .default([]),
   estimationUnit: estimationUnitSchema.default('points'),
   /** Sprint length in days for Scrum boards. */
   cadenceDays: z.number().int().min(1).max(60).default(14),
@@ -168,6 +173,7 @@ export const boardsResponseSchema = listSchema(boardSchema);
 
 export type BoardColumn = z.input<typeof boardColumnSchema>;
 export type CardField = z.infer<typeof cardFieldSchema>;
+export type CardColorRuleEntry = BoardConfig['colorRules'][number];
 export type BoardLanes = z.input<typeof boardLanesSchema>;
 export type BoardConfig = z.infer<typeof boardConfigSchema>;
 export type BoardConfigInput = z.input<typeof boardConfigSchema>;
