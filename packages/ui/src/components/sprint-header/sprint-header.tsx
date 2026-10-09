@@ -83,7 +83,7 @@ export function SprintHeader({
         {goal && <span className="text-12h text-tx4">· {goal}</span>}
       </button>
       {active && <Badge tone="ok">ACTIVE</Badge>}
-      <span className="text-12h text-tx5">{issueCount} issues</span>
+      <span className="text-12h text-tx5 tabular-nums">{issueCount} issues</span>
       <span className="ml-auto flex items-center gap-1.5">
         <Badge variant="count" title="To do" aria-label={`${counts.todo} to do`}>
           {counts.todo}
@@ -99,7 +99,7 @@ export function SprintHeader({
         <Badge variant="count" tone="ok" title="Done" aria-label={`${counts.done} done`}>
           {counts.done}
         </Badge>
-        {capacity && <span className="ml-1.5 text-12 text-tx4">{capacity}</span>}
+        {capacity && <span className="ml-1.5 text-12 text-tx4 tabular-nums">{capacity}</span>}
         {action && (
           <Button size="xs" className="ml-2" onClick={onAction}>
             {action}

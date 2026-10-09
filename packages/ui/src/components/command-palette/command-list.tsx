@@ -59,12 +59,20 @@ export function CommandItem({ icon, issueKey, title, meta, onSelect }: CommandIt
       role="option"
       aria-selected="false"
       onClick={onSelect}
-      className="flex cursor-pointer items-center gap-2.5 px-4 py-2 text-tx aria-selected:bg-ac-bg"
+      className="flex cursor-pointer items-center gap-2.5 px-4 py-2 text-tx aria-selected:bg-ac-bg motion-safe:transition-colors motion-safe:duration-(--duration-instant)"
     >
       {icon}
-      {issueKey && <span className="font-mono text-11h font-medium text-tx4">{issueKey}</span>}
-      <span className="min-w-0 flex-1 truncate">{title}</span>
-      {meta && <span className="text-12 text-tx5">{meta}</span>}
+      {/* A key column wide enough for PLT-1234, so the titles of mixed projects line up. */}
+      {issueKey && (
+        <span className="min-w-15 shrink-0 font-mono text-11h font-medium text-tx4">{issueKey}</span>
+      )}
+      <span
+        className="min-w-0 flex-1 truncate"
+        title={typeof title === 'string' ? title : undefined}
+      >
+        {title}
+      </span>
+      {meta && <span className="shrink-0 text-12 text-tx5">{meta}</span>}
     </div>
   );
 }

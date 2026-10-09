@@ -41,6 +41,7 @@ export function EpicItem({
       onClick={onSelect}
       className={cx(
         'flex w-full flex-col gap-1.5 border-0 border-b border-br-row px-3.5 py-2.5 text-left font-sans text-13 text-tx',
+        'motion-safe:transition-colors',
         selected ? 'bg-ac-bg' : 'bg-sf',
         onSelect && cx('cursor-pointer', !selected && 'hover:bg-bg2', focusRingInset),
         className,
@@ -58,9 +59,10 @@ export function EpicItem({
           fillClassName={colorClassName}
           className="flex-1"
         />
-        <span>{pct}%</span>
+        {/* A fixed, tabular slot, so every bar in the panel ends at the same place. */}
+        <span className="min-w-8 text-right tabular-nums">{pct}%</span>
       </span>
-      {meta && <span className="text-12 text-tx5">{meta}</span>}
+      {meta && <span className="text-12 text-tx5 tabular-nums">{meta}</span>}
     </Tag>
   );
 }
