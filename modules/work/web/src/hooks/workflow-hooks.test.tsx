@@ -43,6 +43,25 @@ describe('useWorkflowDraft', () => {
     expect(result.current.draft.saveState).toBe('saved');
   });
 
+  it('opens a published workflow where its statuses were drawn', async () => {
+    backend.workflow = {
+      ...backend.workflow,
+      statuses: backend.workflow.statuses.map((status, index) => ({
+        ...status,
+        x: 200 + index * 250,
+        y: 300,
+      })),
+    };
+    const { result } = renderEditorHooks();
+    await waitFor(() => expect(result.current.draft.draft).toBeDefined());
+    const placed = result.current.draft.draft?.statuses.map((status) => [status.x, status.y]);
+    expect(placed).toEqual([
+      [200, 300],
+      [450, 300],
+      [700, 300],
+    ]);
+  });
+
   it('saves the last of several quick edits once, after the pause', async () => {
     const { result } = renderEditorHooks();
     await waitFor(() => expect(result.current.draft.draft).toBeDefined());
