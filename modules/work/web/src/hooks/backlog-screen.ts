@@ -3,7 +3,6 @@ import { useCallback, useEffect, useMemo, useRef } from 'react';
 import type { RowHandlers } from '../backlog/backlog-item.tsx';
 import { isFiltered, matches, type Container } from '../backlog/model.ts';
 import type { DropTarget } from '../backlog/move.ts';
-import { openIssue } from '../backlog/navigation.ts';
 import { useWorkRealtime } from '../shared/index.ts';
 import { useBacklogData } from './backlog-data.ts';
 import { usePointerDrag } from './backlog-drag.ts';
@@ -81,9 +80,10 @@ export function useBacklogScreen(pathKey: string | undefined) {
     },
     [drop],
   );
+  /** Opens the issue in the slide-over beside the list, as the Board does. */
   const onOpen = useCallback((id: string) => {
     const key = current.current.keys.get(id);
-    if (key) openIssue(key);
+    if (key) useBacklogUi.getState().setOpenKey(key);
   }, []);
 
   const scrollRef = useRef<HTMLDivElement>(null);

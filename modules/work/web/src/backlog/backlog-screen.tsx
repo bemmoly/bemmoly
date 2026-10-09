@@ -3,14 +3,16 @@ import { Button, EmptyState, PageHeader, Skeleton, useToast } from '@bemmoly/ui'
 import { useCallback, useMemo, useState } from 'react';
 import { useBacklogScreen } from '../hooks/backlog-screen.ts';
 import { useSprintActions } from '../hooks/backlog-sprints.ts';
+import { keepLinksInApp } from '../hooks/issue-navigation.ts';
 import { useBacklogUi } from '../hooks/backlog-store.ts';
+import { IssueSlideOver } from '../issue/index.ts';
+import { ProjectSwitcher } from '../projects/index.ts';
 import type { WorkScreenProps } from '../routes.tsx';
 import { BacklogEpics } from './backlog-epics.tsx';
 import { BacklogToolbar } from './backlog-toolbar.tsx';
 import { CompleteSprintDialog } from './complete-sprint-dialog.tsx';
 import { DragOverlay } from './drag-overlay.tsx';
 import { BACKLOG_ID, nextSprintName, points } from './model.ts';
-import { keepLinksInApp } from './navigation.ts';
 import { ProjectNav } from './project-nav.tsx';
 import { SprintDialog } from './sprint-dialog.tsx';
 import { SprintSection } from './sprint-section.tsx';
@@ -30,6 +32,8 @@ export default function BacklogScreen({ projectKey: pathKey }: WorkScreenProps) 
   const showEpics = useBacklogUi((state) => state.showEpics);
   const epicFilter = useBacklogUi((state) => state.filters.epicId);
   const dragging = useBacklogUi((state) => state.drag !== null);
+  const openKey = useBacklogUi((state) => state.openKey);
+  const setOpenKey = useBacklogUi((state) => state.setOpenKey);
   const [dialog, setDialog] = useState<Dialog>(null);
 
   const sprints = screen.containers.flatMap((c) => (c.sprint ? [c.sprint] : []));
@@ -92,9 +96,12 @@ export default function BacklogScreen({ projectKey: pathKey }: WorkScreenProps) 
             ]}
             title="Backlog"
             actions={
-              <Button loading={actions.create.isPending} onClick={createSprint}>
-                Create sprint
-              </Button>
+              <>
+                <ProjectSwitcher screen="backlog" projectKey={projectKey || pathKey} />
+                <Button loading={actions.create.isPending} onClick={createSprint}>
+                  Create sprint
+                </Button>
+              </>
             }
           />
           <BacklogToolbar epics={epics} types={screen.standardTypes} people={screen.people} />
@@ -148,6 +155,8 @@ export default function BacklogScreen({ projectKey: pathKey }: WorkScreenProps) 
           </div>
         </div>
       </div>
+      {/* Over the page: beside it the list would lose the width its rows need. */}
+      <IssueSlideOver issueKey={openKey} onClose={() => setOpenKey(null)} variant="overlay" />
       <DragOverlay
         previewRef={screen.previewRef}
         issueById={issueById}
