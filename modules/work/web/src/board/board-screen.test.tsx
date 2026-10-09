@@ -66,8 +66,17 @@ const server = setupServer(
   }),
 );
 
+/** happy-dom answers media queries from its viewport; the board docks its panel from 1200px. */
+const setWidth = (width: number) =>
+  act(() =>
+    (window as { happyDOM?: { setViewport(size: { width: number }): void } }).happyDOM?.setViewport(
+      { width },
+    ),
+  );
+
 beforeAll(() => server.listen({ onUnhandledFrame: 'bypass' }));
 beforeEach(() => {
+  setWidth(1440);
   patches = [];
   useBoardFilterStore.getState().reset();
   useBoardDragStore.getState().finish();
@@ -178,6 +187,29 @@ describe('Board screen', () => {
     await waitFor(() =>
       expect(screen.queryByRole('complementary', { name: 'PLT-12 details' })).toBeNull(),
     );
+  });
+
+  it('lays the slide-over over the board below 1200px; Escape closes it', async () => {
+    setWidth(1024);
+    await renderBoard();
+    key(cardEl('PLT-12'), 'Enter');
+    const panel = await screen.findByRole('dialog', { name: 'PLT-12 details' });
+    expect(panel.hasAttribute('open')).toBe(true);
+    expect(screen.queryByRole('complementary', { name: 'PLT-12 details' })).toBeNull();
+    fireEvent(panel, new Event('cancel', { cancelable: true }));
+    await waitFor(() =>
+      expect(screen.queryByRole('dialog', { name: 'PLT-12 details' })).toBeNull(),
+    );
+  });
+
+  it('docks an open slide-over again when the window widens', async () => {
+    setWidth(1024);
+    await renderBoard();
+    key(cardEl('PLT-12'), 'Enter');
+    await screen.findByRole('dialog', { name: 'PLT-12 details' });
+    setWidth(1440);
+    expect(await screen.findByRole('complementary', { name: 'PLT-12 details' })).toBeTruthy();
+    expect(screen.queryByRole('dialog', { name: 'PLT-12 details' })).toBeNull();
   });
 
   it('fades the cards a quick filter leaves out', async () => {
