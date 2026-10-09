@@ -96,6 +96,12 @@ describe('WorkflowEditor', () => {
     expect(within(canvas).queryByRole('button', { name: 'Start work' })).toBeNull();
   });
 
+  it('shows how many issues sit in each status', async () => {
+    const canvas = await openEditor();
+    expect(await within(canvas).findByText(/· 4 issues/)).toBeTruthy();
+    expect(within(canvas).getByText(/· 9 issues/)).toBeTruthy();
+  });
+
   it('nudges the focused status with the arrow keys', async () => {
     const canvas = await openEditor();
     const node = within(canvas).getByRole('button', { name: /^Done/ });
