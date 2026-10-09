@@ -11,6 +11,7 @@ export * from './issues.ts';
 export * from './lexorank.ts';
 export * from './links-labels.ts';
 export * from './metrics.ts';
+export * from './my-work.ts';
 export * from './projects.ts';
 export * from './realtime.ts';
 export * from './rich-text.ts';
