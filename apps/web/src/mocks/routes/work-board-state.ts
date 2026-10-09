@@ -1,25 +1,20 @@
 import type { MockDb } from '../db.ts';
 import { ago } from '../seed/time.ts';
-import {
-  BOARD_IDS,
-  seedBoardLabels,
-  seedBoardSprints,
-  type MockIssue,
-} from '../seed/work-board.ts';
+import { BOARD_IDS, seedBoardLabels, type MockIssue } from '../seed/work-board.ts';
 import { seedPlatformIssues } from '../seed/work-board-plt.ts';
 import { seedSupportIssues, seedSupportProject } from '../seed/work-board-sup.ts';
 import { WORK_IDS } from '../seed/work-settings.ts';
+import { issueMockProjects } from './work-board-delegate.ts';
 import { workState, type Row } from './work-state.ts';
 
 /*
- * The Board's rows beside the Work settings rows: issues, sprints, labels and the Support Desk
- * project with its board. Kept per mock database like work-state, so a scenario reset starts
+ * The Board's rows beside the Work settings rows: issues, labels and the Support Desk project
+ * with its board. Kept per mock database like work-state, so a scenario reset starts
  * them over. Projects, boards and the workflow are the settings stream's rows where they exist.
  */
 
 export interface BoardState {
   issues: MockIssue[];
-  sprints: Row[];
   labels: Row[];
   supProject: Row;
   supBoard: Row;
@@ -55,7 +50,6 @@ export function boardState(db: MockDb): BoardState {
   if (!state) {
     state = {
       issues: [...seedPlatformIssues(), ...seedSupportIssues()],
-      sprints: seedBoardSprints() as Row[],
       labels: [...seedBoardLabels(WORK_IDS.project), ...seedBoardLabels(BOARD_IDS.supProject)],
       supProject: seedSupportProject() as Row,
       supBoard: supportBoard(db),
@@ -65,8 +59,11 @@ export function boardState(db: MockDb): BoardState {
   return state;
 }
 
+/** The issue mock's projects with Support Desk after them. */
 export function projectsOf(db: MockDb): Row[] {
-  return [workState(db).project, boardState(db).supProject];
+  const listed = issueMockProjects(db);
+  const projects = listed.length > 0 ? listed : [workState(db).project];
+  return [...projects, boardState(db).supProject];
 }
 
 /** A project by its id or its key, as the server's `/projects/:key/...` routes take either. */
@@ -112,6 +109,53 @@ export function toIssue(issue: MockIssue) {
     deletedAt: null,
     createdAt: ago(60 * 24 * 20),
     updatedAt: issue.updatedAt,
+  };
+}
+
+/** The Issue page's detail for a card only the board seeds: names beside each field, no activity. */
+export function toIssueDetail(db: MockDb, issue: MockIssue) {
+  const type = workState(db).issueTypes.find((row) => row.id === issue.typeId);
+  const status = ((workflowOf(db)?.['statuses'] as Row[] | undefined) ?? []).find(
+    (row) => row.id === issue.statusId,
+  );
+  const user = db.users.find((row) => row.id === issue.assigneeId);
+  const parent = boardState(db).issues.find((row) => row.id === issue.parentId);
+  const labels = boardState(db).labels;
+  const ref = (row: MockIssue) => ({
+    id: row.id,
+    key: row.key,
+    title: row.title,
+    statusId: row.statusId,
+    typeId: row.typeId,
+  });
+  return {
+    ...toIssue(issue),
+    type: {
+      id: issue.typeId,
+      name: String(type?.['name'] ?? 'Task'),
+      key: String(type?.['key'] ?? 'task'),
+      level: String(type?.['level'] ?? 'standard'),
+      icon: null,
+    },
+    status: {
+      id: issue.statusId,
+      name: String(status?.['name'] ?? ''),
+      category: String(status?.['category'] ?? 'todo'),
+      color: null,
+    },
+    assignee: user ? { id: user.id, name: user.name, email: user.email } : null,
+    reporter: null,
+    parent: parent ? ref(parent) : null,
+    sprint: null,
+    fixVersion: null,
+    labels: issue.labelIds.flatMap((id) => {
+      const label = labels.find((row) => row.id === id);
+      return label ? [{ id, name: String(label['name']), color: null }] : [];
+    }),
+    links: [],
+    subtasks: [],
+    watchersCount: 0,
+    watching: false,
   };
 }
 
