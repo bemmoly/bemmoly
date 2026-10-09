@@ -1,6 +1,7 @@
 import {
   createAuditRecorder,
   createChangelogRunner,
+  createContainerMemberships,
   createDatabase,
   createRequestAuthorization,
   createSqlClient,
@@ -89,6 +90,7 @@ export async function startWorkHarness(): Promise<HarnessStart> {
   const services = createWorkServices({
     database: sql,
     audit: createAuditRecorder(sql),
+    memberships: createContainerMemberships(sql),
     events: { publish: async (event) => void events.push(event), subscribe: () => () => undefined },
     realtime: { publish: async (message) => void realtime.push(message) },
     jobs: {
@@ -121,7 +123,8 @@ export async function startWorkHarness(): Promise<HarnessStart> {
         for (const userId of members) {
           await sql`
             insert into project_members (project_id, user_id, role_id)
-            select ${project.id}, ${userId}, id from roles where key = 'member'`;
+            select ${project.id}, ${userId}, id from roles where key = 'member'
+            on conflict (project_id, user_id) do nothing`;
         }
         return project;
       },
