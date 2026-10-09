@@ -56,3 +56,20 @@ export function writableProjectId(scope: SchemeScope, kind: SchemeKind): string 
   }
   return scope.rowsProjectId;
 }
+
+/**
+ * The scope a row-addressed call acts in: the project in the URL, else the
+ * project the row belongs to, so PATCH /issue-types/:id edits a project's
+ * copy the same as /projects/:key/issue-types/:id does.
+ */
+export async function scopeOfRow(
+  sql: SqlExecutor,
+  table: 'issue_types' | 'fields',
+  projectKey: string | null,
+  id: string,
+): Promise<string | null> {
+  if (projectKey) return projectKey;
+  const [row] = await sql<{ project_id: string | null }[]>`
+    select project_id from ${sql.unsafe(table)} where id = ${id}`;
+  return row?.project_id ?? null;
+}

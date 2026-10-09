@@ -45,7 +45,7 @@ function slot(index: number): { x: number; y: number } {
   return { x: 110 + (index % 5) * 190, y: 120 + Math.floor(index / 5) * 180 };
 }
 
-/** A published workflow carries no coordinates; lay those statuses out by position. */
+/** Statuses without coordinates, as published before positions were kept, are laid out by position. */
 export function withLayout(draft: EditorDraft): EditorDraft {
   if (draft.statuses.every((status) => status.x !== undefined && status.y !== undefined))
     return draft;

@@ -65,11 +65,13 @@ export function workWorkflowEndpoints(http: Http) {
         method: 'POST',
         body: validated(publishWorkflowBodySchema, body),
       }),
-    statusCounts: async (workflowId: string) =>
+    /** Issues per status the person can see; a project id narrows it to that project's issues. */
+    statusCounts: async (workflowId: string, projectId?: string) =>
       (
         await http.request(
           `${base}/workflows/${enc(workflowId)}/status-counts`,
           workflowStatusCountsSchema,
+          { query: projectId ? { projectId } : {} },
         )
       ).counts,
     /** Conditions, validators and post-actions the rules registry offers, params as JSON Schema. */

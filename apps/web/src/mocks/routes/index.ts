@@ -6,6 +6,7 @@ import { settingsRoutes } from './settings.ts';
 import { workBacklogRoutes } from './work-backlog.ts';
 import { workBoardRoutes } from './work-board.ts';
 import { workIssuesRoutes } from './work-issues.ts';
+import { workMembersRoutes } from './work-members.ts';
 import { workSettingsBoardRoutes } from './work-settings-boards.ts';
 import { workSettingsRoutes } from './work-settings.ts';
 import { workWorkflowRoutes } from './work-workflows.ts';
@@ -18,6 +19,7 @@ export const ROUTES: readonly MockRoute[] = [
   ...workBacklogRoutes,
   ...workBoardRoutes,
   ...workIssuesRoutes,
+  ...workMembersRoutes,
   ...workSettingsRoutes,
   ...workSettingsBoardRoutes,
   ...workWorkflowRoutes,

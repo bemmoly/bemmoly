@@ -70,6 +70,7 @@ function published(): Workflow {
     originId: null,
     name: 'Software workflow',
     publishedVersion: 3,
+    publishedAt: STAMP,
     hasDraft: false,
     statuses: [
       status(STATUS.backlog, 'Backlog', 'todo', 0),
@@ -115,7 +116,11 @@ function draftOf(): EditorDraft {
   if (backend.draft) return backend.draft;
   const { statuses, transitions } = backend.workflow;
   return {
-    statuses: statuses.map(({ workflowId: _, color: __, ...status }) => status),
+    statuses: statuses.map(({ workflowId: _, color: __, x, y, ...status }) => ({
+      ...status,
+      ...(x != null ? { x } : {}),
+      ...(y != null ? { y } : {}),
+    })),
     transitions: transitions.map(({ workflowId: _, ...transition }) => transition),
   };
 }
@@ -148,10 +153,17 @@ export const server = setupServer(
         },
         { status: 400 },
       );
+    const placed = new Map((backend.draft?.statuses ?? []).map((status) => [status.id, status]));
     backend.workflow = {
       ...backend.workflow,
       publishedVersion: backend.workflow.publishedVersion + 1,
+      publishedAt: new Date().toISOString(),
       hasDraft: false,
+      statuses: backend.workflow.statuses.map((status) => ({
+        ...status,
+        x: placed.get(status.id)?.x ?? status.x ?? null,
+        y: placed.get(status.id)?.y ?? status.y ?? null,
+      })),
     };
     backend.draft = null;
     return HttpResponse.json(backend.workflow);

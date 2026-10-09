@@ -261,6 +261,7 @@ export function seedWorkWorkflows() {
     originId,
     name: 'Software workflow',
     publishedVersion: 3,
+    publishedAt: stamp.updatedAt,
     hasDraft: false,
     draft: null as unknown,
     statuses: seedWorkStatuses(id),
