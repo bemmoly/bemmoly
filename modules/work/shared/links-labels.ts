@@ -47,8 +47,15 @@ export const updateLabelBodySchema = z
 
 export const issueLinksResponseSchema = listSchema(issueLinkSchema);
 export const labelsResponseSchema = listSchema(labelSchema);
-/** Labels page by id; the response is a superset of the plain list. */
-export const listLabelsQuerySchema = keysetQuerySchema;
+/**
+ * What a picker types: the start of a name, matched case-insensitively. The
+ * create form and the issue page send it on every keystroke and show the
+ * first page, which is fifty names unless they ask for fewer.
+ */
+export const namePrefixSchema = z.string().trim().min(1).max(60);
+
+/** Labels page by name, then id; `q` keeps the names that start with it. */
+export const listLabelsQuerySchema = keysetQuerySchema.extend({ q: namePrefixSchema.optional() });
 export const labelsPageSchema = keysetPageSchema(labelSchema);
 export type ListLabelsQuery = z.infer<typeof listLabelsQuerySchema>;
 export type LabelsPage = z.infer<typeof labelsPageSchema>;
