@@ -87,7 +87,7 @@ export function EditFooter({
     : null;
   const blocked = problems.length > 0;
   return (
-    <div className="sticky bottom-4 z-10 flex flex-col gap-2 rounded-card border border-ac-br2 bg-sf2 px-4 py-2.5 shadow-ring">
+    <div className="flex flex-col gap-2 rounded-card border border-ac-br2 bg-sf2 px-4 py-2.5 shadow-ring">
       {(blocked || failure) && (
         <ul role="alert" className="m-0 flex list-none flex-col gap-1 p-0 text-12h text-danger">
           {failure && <li>{failure}</li>}
