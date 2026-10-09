@@ -9,6 +9,7 @@ import { createIssuesController } from './issues.controller.ts';
 import { createLabelsController } from './labels.controller.ts';
 import { createLqlController } from './lql.controller.ts';
 import { createMetricsController } from './metrics.controller.ts';
+import { createMyWorkController } from './my-work.controller.ts';
 import { createProjectsController } from './projects.controller.ts';
 import { createSprintsController } from './sprints.controller.ts';
 import { createTypesController } from './types.controller.ts';
@@ -33,6 +34,7 @@ export function createWorkControllers(services: WorkServices) {
     backlog: createBacklogController(services.backlog),
     filters: createFiltersController(services.filters),
     metrics: createMetricsController(services.metrics),
+    myWork: createMyWorkController(services.myWork),
   };
 }
 
