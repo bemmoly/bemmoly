@@ -1,5 +1,6 @@
+import { useLeaveGuard } from '@bemmoly/core-web';
 import type { SettingsSectionMode, UnsavedChangesBarProps } from '@bemmoly/ui';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 export interface EditSpec {
   title: string;
@@ -15,24 +16,16 @@ export const sectionAnchor = (id: string) => `settings-${id}`;
 /**
  * Which settings sections are open for editing: the kernel's read-then-edit
  * pattern for a module page. A section opens with Edit and closes with Cancel
- * (its draft discarded) or after a save. Closing the tab asks first while a
- * draft is unsaved, and `guard` holds a move to another settings page until
- * the person keeps editing or discards; with two or more drafts the bar lists
- * them.
+ * (its draft discarded) or after a save. While a draft is unsaved the shell's
+ * leave guard holds every move away, from the settings sidebar, the top bar
+ * or Back, until the person keeps editing or discards; closing the tab asks
+ * too. With two or more drafts the bar lists them.
  */
 export function useSettingsEdits<Id extends string>(sections: Record<Id, EditSpec>) {
   const [open, setOpen] = useState<readonly Id[]>([]);
-  const [pending, setPending] = useState<(() => void) | null>(null);
   const ids = Object.keys(sections) as Id[];
   const unsaved = ids.filter((id) => open.includes(id) && sections[id].dirty);
-  const hasUnsaved = unsaved.length > 0;
-
-  useEffect(() => {
-    if (!hasUnsaved) return;
-    const warn = (event: BeforeUnloadEvent) => event.preventDefault();
-    window.addEventListener('beforeunload', warn);
-    return () => window.removeEventListener('beforeunload', warn);
-  }, [hasUnsaved]);
+  const guard = useLeaveGuard({ when: unsaved.length > 0 });
 
   const close = (id: Id) => setOpen((current) => current.filter((entry) => entry !== id));
   const cancel = (id: Id) => {
@@ -47,13 +40,7 @@ export function useSettingsEdits<Id extends string>(sections: Record<Id, EditSpe
     setOpen((current) => (current.includes(id) ? current : [...current, id]));
   const mode = (id: Id): SettingsSectionMode => (open.includes(id) ? 'edit' : 'read');
 
-  /** Runs `go` now, or once the person chooses to discard their unsaved drafts. */
-  const guard = (go: () => void) => {
-    if (hasUnsaved) setPending(() => go);
-    else go();
-  };
-
-  const leaving = pending !== null;
+  const leaving = guard.blocked;
   const bar: UnsavedChangesBarProps = {
     sections:
       leaving || unsaved.length > 1
@@ -61,13 +48,12 @@ export function useSettingsEdits<Id extends string>(sections: Record<Id, EditSpe
         : [],
     leaving,
     onDiscardAll: discardAll,
-    onStay: () => setPending(null),
+    onStay: guard.stay,
     onLeave: () => {
       discardAll();
-      pending?.();
-      setPending(null);
+      guard.leave();
     },
   };
 
-  return { mode, edit, close, cancel, guard, bar, unsaved };
+  return { mode, edit, close, cancel, bar, unsaved };
 }

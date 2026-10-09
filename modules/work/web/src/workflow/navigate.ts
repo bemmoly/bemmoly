@@ -1,3 +1,4 @@
+import { navigateInApp } from '@bemmoly/core-web';
 import type { MouseEvent } from 'react';
 
 /** Where the workflow screens live under the Work chunk. */
@@ -7,13 +8,11 @@ export const workflowPaths = {
 };
 
 /**
- * Moves within the app without a reload. A chunk does not import the
- * shell's router; the router follows the browser history, so a pushed entry
- * plus the popstate it listens for is the whole contract.
+ * Moves within the app without a reload, through the shell's router, so a
+ * page holding unsaved work is asked first as it is for a top bar link.
  */
 export function navigate(path: string): void {
-  window.history.pushState(window.history.state, '', path);
-  window.dispatchEvent(new PopStateEvent('popstate', { state: window.history.state }));
+  navigateInApp(path);
 }
 
 /** For an <a href>: a plain click navigates in place; modified clicks keep the browser's meaning. */

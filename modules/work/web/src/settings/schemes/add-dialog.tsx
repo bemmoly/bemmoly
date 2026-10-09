@@ -1,5 +1,6 @@
 import { isApiError } from '@bemmoly/api-client';
-import { Button, Field, Input, Modal, Select } from '@bemmoly/ui';
+import { useLeaveGuard } from '@bemmoly/core-web';
+import { Button, ConfirmChange, Field, Input, Modal, Select } from '@bemmoly/ui';
 import { useState } from 'react';
 
 /** "Spec doc" → "spec_doc": the key a new type or field is created with. */
@@ -31,6 +32,7 @@ export function AddDialog<K extends string>(props: AddDialogProps<K>) {
   const [name, setName] = useState('');
   const [choice, setChoice] = useState<K>(props.initialChoice);
   const key = keyOf(name);
+  const guard = useLeaveGuard({ when: props.open && name.trim() !== '' });
   const close = () => {
     setName('');
     props.onClose();
@@ -80,6 +82,14 @@ export function AddDialog<K extends string>(props: AddDialogProps<K>) {
           />
         </Field>
       </form>
+      <ConfirmChange
+        open={guard.blocked}
+        title={`Leave without creating "${name.trim()}"?`}
+        consequences={['It is not created yet; what you typed here is lost.']}
+        confirmLabel="Leave without creating"
+        onConfirm={guard.leave}
+        onCancel={guard.stay}
+      />
     </Modal>
   );
 }

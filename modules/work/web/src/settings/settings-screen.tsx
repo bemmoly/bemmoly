@@ -38,10 +38,5 @@ export default function SettingsScreen({ projectKey, rest }: WorkScreenProps) {
 
   if (page === 'issue-types') return <IssueTypesPage projectKey={projectKey} nav={nav(open)} />;
   if (page === 'fields') return <FieldsPage projectKey={projectKey} nav={nav(open)} />;
-  return (
-    <BoardSettingsPage
-      projectKey={projectKey}
-      nav={(guard) => nav((next) => guard(() => open(next)))}
-    />
-  );
+  return <BoardSettingsPage projectKey={projectKey} nav={nav(open)} />;
 }
