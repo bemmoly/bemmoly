@@ -95,6 +95,21 @@ export const States: Story = {
   ),
 };
 
+/** A field of the Issue sidebar: plain text until hovered or focused, then the control. */
+export const Ghost: Story = {
+  parameters: {
+    mock: [{ file: 'Bemmoly Issue.dc.html', x: 941, y: 115, w: 358, h: 120, note: 'details' }],
+  },
+  render: () => (
+    <div className="grid w-90 grid-cols-[110px_1fr] items-center gap-y-0.5 text-12h">
+      <span className="text-tx4">Assignee</span>
+      <Controlled aria-label="Assignee" variant="ghost" value="u0" options={PEOPLE} />
+      <span className="text-tx4">Role</span>
+      <Controlled aria-label="Role" variant="ghost" value="member" options={ROLES} />
+    </div>
+  ),
+};
+
 export const Searchable: Story = {
   render: () => (
     <Field label="Lead" className="w-72">

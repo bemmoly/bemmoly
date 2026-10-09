@@ -224,6 +224,17 @@ describe('Select', () => {
     act(() => box.click());
     expect(screen.getByRole('listbox')).toBeTruthy();
   });
+
+  it('draws the ghost variant without a resting border and still opens and chooses', () => {
+    const onPick = vi.fn();
+    render(<Harness variant="ghost" onPick={onPick} />);
+    const box = screen.getByRole('combobox', { name: 'Starts on' });
+    expect(box.className).toContain('border-transparent');
+    expect(box.className).not.toContain('border-br3 bg-sf');
+    act(() => box.click());
+    fireEvent.click(screen.getByRole('option', { name: 'Friday' }));
+    expect(onPick).toHaveBeenCalledWith(expect.objectContaining({ value: 'fri' }));
+  });
 });
 
 describe('Select helpers', () => {
