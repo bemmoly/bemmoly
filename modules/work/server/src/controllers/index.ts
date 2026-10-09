@@ -2,6 +2,7 @@ import type { WorkServices } from '../services/index.ts';
 import { createActivityController } from './activity.controller.ts';
 import { createBacklogController } from './backlog.controller.ts';
 import { createBoardsController } from './boards.controller.ts';
+import { createComponentsController } from './components.controller.ts';
 import { createFieldsController } from './fields.controller.ts';
 import { createFiltersController } from './filters.controller.ts';
 import { createIssuesController } from './issues.controller.ts';
@@ -22,6 +23,7 @@ export function createWorkControllers(services: WorkServices) {
     fields: createFieldsController(services.fields),
     labels: createLabelsController(services.labels),
     versions: createVersionsController(services.versions),
+    components: createComponentsController(services.components),
     issues: createIssuesController(services.issues),
     activity: createActivityController(services),
     workflow: createWorkflowController(services.workflow),
