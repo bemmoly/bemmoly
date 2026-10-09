@@ -64,7 +64,9 @@ export function CommandItem({ icon, issueKey, title, meta, onSelect }: CommandIt
       {icon}
       {/* A key column wide enough for PLT-1234, so the titles of mixed projects line up. */}
       {issueKey && (
-        <span className="min-w-15 shrink-0 font-mono text-11h font-medium text-tx4">{issueKey}</span>
+        <span className="min-w-15 shrink-0 font-mono text-11h font-medium text-tx4">
+          {issueKey}
+        </span>
       )}
       <span
         className="min-w-0 flex-1 truncate"
