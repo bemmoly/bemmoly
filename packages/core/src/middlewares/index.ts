@@ -7,6 +7,7 @@ export {
 } from './auth.ts';
 export { csrfProtection, type CsrfOptions } from './csrf.ts';
 export {
+  DEFAULT_FAILED_CREDENTIALS_PER_IP,
   DEFAULT_PER_ACCOUNT,
   DEFAULT_PER_ACTOR,
   DEFAULT_STRICT_PER_IP,

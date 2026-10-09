@@ -4,6 +4,7 @@ import type { FastifyRequest, RouteOptions } from 'fastify';
 import fp from 'fastify-plugin';
 import type { SqlClient } from '../clients/postgres.ts';
 import type { Env } from '../config/env.ts';
+import { readCookie, SESSION_COOKIE } from '../utils/session-cookie.ts';
 import { accountBucketKey, accountOfRoute } from './rate-limit-accounts.ts';
 import { RateLimitBuckets, storeClass } from './rate-limit-store.ts';
 
@@ -19,6 +20,8 @@ export interface RateLimitBudgets {
   strictPerIp: RateLimitBudget;
   /** Sign-in, password reset and invitation accept, keyed by the account named, per route. */
   perAccount: RateLimitBudget;
+  /** Session cookies and API tokens looked up and refused, keyed by IP. */
+  failedCredentialsPerIp: RateLimitBudget;
 }
 
 export interface RateLimitingOptions extends Partial<RateLimitBudgets> {
@@ -33,6 +36,7 @@ const MINUTE = 60_000;
 export const DEFAULT_PER_ACTOR: RateLimitBudget = { max: 600, windowMs: MINUTE };
 export const DEFAULT_STRICT_PER_IP: RateLimitBudget = { max: 10, windowMs: MINUTE };
 export const DEFAULT_PER_ACCOUNT: RateLimitBudget = { max: 10, windowMs: 15 * MINUTE };
+export const DEFAULT_FAILED_CREDENTIALS_PER_IP: RateLimitBudget = { max: 60, windowMs: MINUTE };
 
 export type RateLimitEnv = Partial<
   Pick<
@@ -40,6 +44,7 @@ export type RateLimitEnv = Partial<
     | 'BEMMOLY_RATE_LIMIT_PER_USER'
     | 'BEMMOLY_RATE_LIMIT_AUTH_PER_IP'
     | 'BEMMOLY_RATE_LIMIT_AUTH_PER_ACCOUNT'
+    | 'BEMMOLY_RATE_LIMIT_FAILED_CREDENTIALS_PER_IP'
   >
 >;
 
@@ -52,6 +57,10 @@ export function rateLimitBudgets(env: RateLimitEnv): RateLimitBudgets {
     perActor: withMax(DEFAULT_PER_ACTOR, env.BEMMOLY_RATE_LIMIT_PER_USER),
     strictPerIp: withMax(DEFAULT_STRICT_PER_IP, env.BEMMOLY_RATE_LIMIT_AUTH_PER_IP),
     perAccount: withMax(DEFAULT_PER_ACCOUNT, env.BEMMOLY_RATE_LIMIT_AUTH_PER_ACCOUNT),
+    failedCredentialsPerIp: withMax(
+      DEFAULT_FAILED_CREDENTIALS_PER_IP,
+      env.BEMMOLY_RATE_LIMIT_FAILED_CREDENTIALS_PER_IP,
+    ),
   };
 }
 
@@ -71,6 +80,10 @@ function actorKey(request: FastifyRequest): string {
   return `ip:${request.ip}`;
 }
 
+const presentsCredential = (request: FastifyRequest) =>
+  request.headers.authorization !== undefined ||
+  readCookie(request.headers.cookie, SESSION_COOKIE) !== undefined;
+
 function appendPreHandler(route: RouteOptions, hook: (request: FastifyRequest) => Promise<void>) {
   const existing = route.preHandler;
   route.preHandler = [...(Array.isArray(existing) ? existing : existing ? [existing] : []), hook];
@@ -80,6 +93,8 @@ function appendPreHandler(route: RouteOptions, hook: (request: FastifyRequest) =
  * Always on. API routes share a per-person budget; the anonymous auth and
  * setup routes get a strict per-IP budget each, and those that name an account
  * a per-account budget as well; non-API routes (health, static files) are not counted.
+ * Register before authentication: an address that keeps presenting refused
+ * cookies or tokens is turned away before the next one is looked up.
  */
 export const rateLimiting = fp<RateLimitingOptions>(
   async (app, options) => {
@@ -87,7 +102,21 @@ export const rateLimiting = fp<RateLimitingOptions>(
     const perActor = options.perActor ?? DEFAULT_PER_ACTOR;
     const strict = options.strictPerIp ?? DEFAULT_STRICT_PER_IP;
     const perAccount = options.perAccount ?? DEFAULT_PER_ACCOUNT;
+    const failed = options.failedCredentialsPerIp ?? DEFAULT_FAILED_CREDENTIALS_PER_IP;
     const buckets = new RateLimitBuckets(options.sql, options.sweepProbability ?? 0.01);
+    const failedKey = (request: FastifyRequest) => `credentials|ip:${request.ip}`;
+
+    // Only refusals count, so requests with valid credentials never use up this budget.
+    app.addHook('onRequest', async (request) => {
+      if (!presentsCredential(request)) return;
+      const { count, ttlMs } = await buckets.peek(failedKey(request));
+      if (count >= failed.max) throw rateLimited(ttlMs);
+    });
+    // Counted before the reply leaves, so the next request from that address sees it.
+    app.addHook('onSend', async (request, _reply, payload) => {
+      if (request.credentialRejected) await buckets.hit(failedKey(request), failed.windowMs);
+      return payload;
+    });
 
     app.addHook('onRoute', (route) => {
       route.config ??= {};
