@@ -1,7 +1,11 @@
 import type { RequestContext, SqlExecutor } from '@bemmoly/core';
-import { NOTIFICATION_EVENT_KINDS, type NotificationRequestedPayload } from '@bemmoly/shared';
+import {
+  ForbiddenError,
+  NOTIFICATION_EVENT_KINDS,
+  type NotificationRequestedPayload,
+} from '@bemmoly/shared';
 import { WORK_REALTIME_KINDS } from '../../../../shared/realtime.ts';
-import { actorUserId, type IssueServiceDeps } from './deps.ts';
+import { actorUserId, projectResource, type IssueServiceDeps } from './deps.ts';
 
 /*
  * The side effects every issue mutation ends with: an invalidation for the
@@ -64,6 +68,32 @@ export async function watcherIds(tx: SqlExecutor, issueId: string): Promise<stri
   return rows.map((row) => row.user_id);
 }
 
+/**
+ * The recipients who may open the issue. A mention names anyone and a watch
+ * outlives a membership, but neither is a key to the project: the inbox row
+ * and the email carry the key, the title and the comment.
+ */
+async function whoMayOpen(
+  ctx: RequestContext,
+  projectId: string,
+  userIds: readonly string[],
+): Promise<string[]> {
+  const allowed: string[] = [];
+  for (const id of userIds) {
+    try {
+      await ctx.authz.authorize(
+        { kind: 'user', id },
+        'work.issue.view',
+        projectResource(projectId),
+      );
+      allowed.push(id);
+    } catch (error) {
+      if (!(error instanceof ForbiddenError)) throw error;
+    }
+  }
+  return allowed;
+}
+
 export async function notify(
   deps: Pick<IssueServiceDeps, 'events' | 'now'>,
   ctx: RequestContext,
@@ -72,7 +102,11 @@ export async function notify(
   notice: Notice,
 ): Promise<void> {
   const actorId = actorUserId(ctx);
-  const recipientIds = [...new Set(notice.recipientIds)].filter((id) => id !== actorId);
+  const recipientIds = await whoMayOpen(
+    ctx,
+    issue.projectId,
+    [...new Set(notice.recipientIds)].filter((id) => id !== actorId),
+  );
   if (recipientIds.length === 0) return;
   const name = await actorName(tx, actorId);
   const payload: NotificationRequestedPayload = {
