@@ -37,7 +37,9 @@ export function useBoardSettingsData(projectKey: string | undefined) {
     queryKey: workSettingsKeys.orgWorkflows(),
     queryFn: () => api.work.orgWorkflows.list(),
   });
-  const workflow = workflows.data?.[0];
+  /** The list carries the org defaults too; the project's own copy is the one its board maps. */
+  const workflow =
+    workflows.data?.find((flow) => flow.projectId === projectId) ?? workflows.data?.[0];
   const counts = useQuery({
     queryKey: workWorkflowKeys.counts(workflow?.id ?? ''),
     queryFn: () => api.work.workflows.statusCounts(workflow?.id ?? ''),

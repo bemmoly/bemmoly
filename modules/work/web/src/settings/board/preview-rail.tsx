@@ -1,3 +1,4 @@
+import { onLinkClick } from '../../workflow/navigate.ts';
 import type { BoardDraft } from '../model/sections.ts';
 import { cx } from '../cx.ts';
 import { ESTIMATE_LABELS, LANE_LABELS, METHOD_LABELS } from '../model/labels.ts';
@@ -53,7 +54,11 @@ export function PreviewRail({ draft, boardHref }: { draft: BoardDraft; boardHref
       <div className="flex items-center gap-2 border-b border-br2 px-4 py-3 font-semibold">
         Preview
         <span className="text-12 font-normal text-tx5">updates as you edit</span>
-        <a href={boardHref} className="ml-auto text-12 font-medium text-ac hover:text-ac-d">
+        <a
+          href={boardHref}
+          onClick={onLinkClick(boardHref)}
+          className="ml-auto text-12 font-medium text-ac hover:text-ac-d"
+        >
           Open board
         </a>
       </div>
