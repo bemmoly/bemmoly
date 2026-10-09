@@ -9,11 +9,13 @@ import {
   Menu,
   MenuItem,
   Select,
-  Skeleton,
   Table,
+  TableSkeleton,
   type SelectOption,
   type TableColumn,
 } from '@bemmoly/ui';
+import { Icon } from '@bemmoly/ui/icons';
+import { BoxCell, MenuCell, TwoLineCell } from '../skeletons/table-cells.tsx';
 
 const LAST_ADMIN = 'A project keeps at least one project admin.';
 
@@ -87,12 +89,16 @@ export function MembersTable({
           <Avatar name={member.name} hue={avatarHue(member.userId)} size={30} />
           <div className="flex min-w-0 flex-col gap-px">
             <span className="flex min-w-0 items-center gap-2">
-              <span className="truncate font-medium">{member.name}</span>
+              <span className="truncate font-medium" title={member.name}>
+                {member.name}
+              </span>
               {member.userId === viewerId && <Badge tone="neutral">YOU</Badge>}
               {member.status === 'invited' && <Badge tone="amber">INVITED</Badge>}
               {member.status === 'deactivated' && <Badge tone="neutral">DEACTIVATED</Badge>}
             </span>
-            <span className="truncate text-12 text-tx5">{member.email}</span>
+            <span className="truncate text-12 text-tx5" title={member.email}>
+              {member.email}
+            </span>
           </div>
         </div>
       ),
@@ -135,6 +141,19 @@ export function MembersTable({
         ) : null,
     },
   ];
+  if (loading)
+    return (
+      <TableSkeleton
+        label="Loading members"
+        rows={4}
+        columns={[
+          { width: 'minmax(0,1.6fr)', cell: <TwoLineCell width="22%" second="34%" avatar={30} /> },
+          { width: '170px', cell: <BoxCell width={86} height={26} /> },
+          { width: '120px' },
+          { width: '28px', align: 'center', cell: <MenuCell /> },
+        ]}
+      />
+    );
   return (
     <Table
       label="Project members"
@@ -142,18 +161,15 @@ export function MembersTable({
       rows={rows}
       rowKey={(member) => member.userId}
       empty={
-        loading ? (
-          <Skeleton shape="block" height={120} />
-        ) : (
-          <EmptyState
-            title={filtered ? 'No one matches' : 'No members yet'}
-            description={
-              filtered
-                ? 'Clear the search to see everyone on the project.'
-                : 'Add people or a whole team so they can see and work on its issues.'
-            }
-          />
-        )
+        <EmptyState
+          icon={<Icon name={filtered ? 'search' : 'people'} />}
+          title={filtered ? 'No one matches' : 'No members yet'}
+          description={
+            filtered
+              ? 'Clear the search to see everyone on the project.'
+              : 'Add people or a whole team so they can see and work on its issues.'
+          }
+        />
       }
     />
   );

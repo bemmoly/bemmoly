@@ -1,9 +1,11 @@
 import type { ProjectMember } from '@bemmoly/module-work/shared';
 import { Button, ConfirmChange, EmptyState, PageHeader, SearchInput, useToast } from '@bemmoly/ui';
+import { Icon } from '@bemmoly/ui/icons';
 import { useState } from 'react';
 import { useViewer } from '../hooks/issue-people.ts';
 import { linkTo, workPaths } from '../hooks/issue-navigation.ts';
 import type { WorkScreenProps } from '../routes.tsx';
+import { LineSkeleton } from '../skeletons/parts.tsx';
 import { useProject } from '../shared/use-project.ts';
 import { useWorkRealtime } from '../shared/use-work-realtime.ts';
 import { MembersAddDialog } from './members-add-dialog.tsx';
@@ -49,6 +51,11 @@ export default function MembersScreen({ projectKey }: WorkScreenProps) {
   }
   const name = project?.name ?? '';
   const count = members.members.length;
+  const alone =
+    members.list.isSuccess &&
+    count === 1 &&
+    members.members[0]?.userId === viewer?.id &&
+    filter.query.trim() === '';
   const failed = (error: Error | null) => error?.message ?? null;
 
   return (
@@ -61,7 +68,11 @@ export default function MembersScreen({ projectKey }: WorkScreenProps) {
             { label: 'Members' },
           ]}
           title="Members"
-          meta={members.list.isSuccess ? [`${count} ${count === 1 ? 'person' : 'people'}`] : []}
+          meta={
+            members.list.isSuccess
+              ? [`${count} ${count === 1 ? 'person' : 'people'}`]
+              : [<LineSkeleton key="count" width={52} size="text-12h" bar={8} />]
+          }
           description="Everyone here can open the project. Their project role decides what they can do in it."
           actions={
             <Button
@@ -105,6 +116,17 @@ export default function MembersScreen({ projectKey }: WorkScreenProps) {
               )
             }
             onRemove={setRemoving}
+          />
+        )}
+        {alone && (
+          <EmptyState
+            icon={<Icon name="people" />}
+            title="Only you so far"
+            description="Add people or a whole team so they can see the project and work on its issues."
+            {...(members.canManage
+              ? { action: <Button onClick={() => setAdding(true)}>Add people</Button> }
+              : {})}
+            className="py-8"
           />
         )}
       </div>
