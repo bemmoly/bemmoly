@@ -1,5 +1,13 @@
 import { formatRelative } from '@bemmoly/core-web';
-import { Badge, Breadcrumbs, EmptyState, Skeleton, Table, type TableColumn } from '@bemmoly/ui';
+import {
+  Badge,
+  Breadcrumbs,
+  EmptyState,
+  Table,
+  TableSkeleton,
+  type TableColumn,
+} from '@bemmoly/ui';
+import { Icon } from '@bemmoly/ui/icons';
 import type { Project, Workflow } from '../../../shared/index.ts';
 import { useWorkflowUsage } from '../hooks/workflow-usage.ts';
 import { navigate } from './navigate.ts';
@@ -19,7 +27,9 @@ function columns(): TableColumn<Row>[] {
       width: 'minmax(0,1fr)',
       render: ({ workflow }) => (
         <span className="flex min-w-0 items-center gap-2">
-          <span className="truncate font-medium text-tx">{workflow.name}</span>
+          <span className="truncate font-medium text-tx" title={workflow.name}>
+            {workflow.name}
+          </span>
           <Badge tone={workflow.projectId ? 'accent' : 'neutral'}>
             {workflow.projectId ? 'PROJECT COPY' : 'ORG DEFAULT'}
           </Badge>
@@ -101,9 +111,22 @@ export function WorkflowsList({
         </div>
       </div>
       {isPending ? (
-        <Skeleton className="h-40" />
+        <TableSkeleton
+          label="Loading workflows"
+          rows={2}
+          columns={[
+            { width: 'minmax(0,1fr)' },
+            { width: '150px' },
+            { width: '200px' },
+            { width: '130px' },
+          ]}
+        />
       ) : error ? (
-        <EmptyState title="Workflows did not load" description="Reload the page to try again." />
+        <EmptyState
+          icon={<Icon name="alert" />}
+          title="Workflows did not load"
+          description="Reload the page to try again."
+        />
       ) : (
         <Table
           label="Workflows"
@@ -113,6 +136,7 @@ export function WorkflowsList({
           onRowClick={(row) => navigate(editorPath(row.workflow.id))}
           empty={
             <EmptyState
+              icon={<Icon name="workflow" />}
               title="No workflows yet"
               description="The org default appears here once Work is set up."
             />

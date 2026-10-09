@@ -1,10 +1,11 @@
-import { ConfirmChange, EmptyState, Skeleton, useToast } from '@bemmoly/ui';
+import { ConfirmChange, EmptyState, useToast } from '@bemmoly/ui';
 import { useMemo, useState } from 'react';
 import type { Project } from '../../../shared/index.ts';
 import { useWorkflowEditor } from '../hooks/workflow-editor.ts';
 import { useDraftLeaveGuard } from '../hooks/workflow-leave.ts';
 import { usePublishWorkflow } from '../hooks/workflow-publish.ts';
 import { useWorkflowUsage } from '../hooks/workflow-usage.ts';
+import { WorkflowEditorSkeleton } from '../skeletons/settings-skeleton.tsx';
 import { draftChanges } from './draft-changes.ts';
 import { statusById, transitionById } from './draft-model.ts';
 import { EditorCanvas } from './editor-canvas.tsx';
@@ -51,7 +52,7 @@ export function WorkflowEditor({ project, workflowId, listPath }: WorkflowEditor
         description="It may have been removed, or you may need Configure project to edit it."
       />
     );
-  if (!workflow || !draft) return <Skeleton className="m-6 h-140" />;
+  if (!workflow || !draft) return <WorkflowEditorSkeleton />;
 
   const problems = validation.problems ?? [];
   const status = selection?.kind === 'status' ? statusById(draft, selection.id) : undefined;
