@@ -1,14 +1,8 @@
 import type { BoardMetrics, BoardView, Project, Sprint } from '@bemmoly/module-work/shared';
-import {
-  Breadcrumbs,
-  Button,
-  IconButton,
-  MetricSparkline,
-  MetricTile,
-  ProgressBar,
-} from '@bemmoly/ui';
+import { Breadcrumbs, Button, MetricSparkline, MetricTile, ProgressBar } from '@bemmoly/ui';
 import { Fragment } from 'react';
 import { navigateTo } from '../hooks/issue-navigation.ts';
+import { BoardActionsMenu } from './board-actions-menu.tsx';
 
 const DAY = 86_400_000;
 
@@ -135,7 +129,7 @@ export function BoardHeader({ project, view, metrics, sprint, inFlight }: BoardH
               Complete sprint
             </Button>
           )}
-          <IconButton label="Board actions" icon="more" variant="secondary" />
+          <BoardActionsMenu project={project} boardName={view.board.name} />
         </div>
       </div>
     </>
