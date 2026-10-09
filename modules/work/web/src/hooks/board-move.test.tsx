@@ -57,7 +57,9 @@ function setup() {
       <ToastProvider>{children}</ToastProvider>
     </QueryClientProvider>
   );
-  const hook = renderHook(() => useBoardMove(BOARD_ID, (id) => id), { wrapper });
+  const heard: string[] = [];
+  const announce = (text: string) => void heard.push(text);
+  const hook = renderHook(() => useBoardMove(BOARD_ID, (id) => id, announce), { wrapper });
   const model = buildBoardModel(view);
   const planFor = (index: number) => {
     const card = view.cards[index];
@@ -77,7 +79,7 @@ function setup() {
   const cached = () => client.getQueryData<BoardView>(workKeys.boardView(BOARD_ID, {}));
   const columnOf = (issueId = plan.issueId) =>
     cached()?.cards.find((entry) => entry.issueId === issueId)?.columnId;
-  return { client, hook, plan, planFor, columnOf, cached };
+  return { client, hook, plan, planFor, columnOf, cached, heard };
 }
 
 /** A promise the test resolves when it wants a held response to go. */
@@ -119,7 +121,7 @@ describe('useBoardMove', () => {
       http.get('*/api/v1/work/boards/:id/metrics', () => HttpResponse.json({})),
     );
     const { hook, plan, columnOf } = setup();
-    act(() => hook.result.current.move(plan));
+    act(() => hook.result.current.move(plan, 1));
     expect(columnOf()).toBe('doing');
     await waitFor(() => expect(calls).toHaveLength(2));
     expect(calls[0]).toBe(`status PLT-10 {"statusId":"${STATUS.doing}"}`);
@@ -135,7 +137,7 @@ describe('useBoardMove', () => {
     );
     const { client, hook, plan } = setup();
     client.setQueryData(workKeys.issueTransitions(plan.key), []);
-    act(() => hook.result.current.move(plan));
+    act(() => hook.result.current.move(plan, 1));
     await waitFor(() =>
       expect(client.getQueryState(workKeys.issueTransitions(plan.key))?.isInvalidated).toBe(true),
     );
@@ -155,8 +157,8 @@ describe('useBoardMove', () => {
     );
     const { client, hook, plan, columnOf } = setup();
     const later = { ...plan, issueId: 'other', key: 'PLT-11' };
-    act(() => hook.result.current.move(later));
-    act(() => hook.result.current.move(plan));
+    act(() => hook.result.current.move(later, 1));
+    act(() => hook.result.current.move(plan, 1));
     const stale = () => client.getQueryState(workKeys.boardView(BOARD_ID, {}))?.isInvalidated;
     await waitFor(() => expect(client.isMutating()).toBe(1));
     expect(stale()).toBe(false);
@@ -168,7 +170,7 @@ describe('useBoardMove', () => {
   it('puts the card back and says why when the workflow refuses', async () => {
     server.use(http.patch('*/api/v1/work/issues/:key', refusal), ...reads);
     const { hook, plan, columnOf } = setup();
-    act(() => hook.result.current.move(plan));
+    act(() => hook.result.current.move(plan, 1));
     expect(columnOf()).toBe('doing');
     await waitFor(() => expect(columnOf()).toBe('todo'));
     await waitFor(() => expect(document.body.textContent).toContain('Link a pull request first.'));
@@ -192,8 +194,8 @@ describe('useBoardMove', () => {
     );
     const { hook, plan, planFor, columnOf, cached } = setup();
     const second = planFor(1);
-    act(() => hook.result.current.move(plan));
-    act(() => hook.result.current.move(second));
+    act(() => hook.result.current.move(plan, 1));
+    act(() => hook.result.current.move(second, 1));
     expect([columnOf(), columnOf(second.issueId)]).toEqual(['doing', 'doing']);
     refused.open();
     await waitFor(() => expect(columnOf()).toBe('todo'));
@@ -205,6 +207,33 @@ describe('useBoardMove', () => {
       ['done', 1],
     ]);
     pending.open();
+  });
+
+  it('announces the move as pending at the drop and as done once the server agrees', async () => {
+    const held = gate();
+    server.use(
+      http.patch('*/api/v1/work/issues/:key', async () => {
+        await held.opened;
+        return HttpResponse.json(issue);
+      }),
+      http.patch('*/api/v1/work/issues/:key/rank', () => HttpResponse.json(issue)),
+      ...reads,
+    );
+    const { hook, plan, heard } = setup();
+    act(() => hook.result.current.move(plan, 1));
+    expect(heard).toEqual(['PLT-10 moving to doing, position 1.']);
+    held.open();
+    await waitFor(() => expect(heard.at(-1)).toBe('PLT-10 moved to doing.'));
+  });
+
+  it('announces a refusal with its reason and never that the card moved', async () => {
+    server.use(http.patch('*/api/v1/work/issues/:key', refusal), ...reads);
+    const { hook, plan, heard } = setup();
+    act(() => hook.result.current.move(plan, 1));
+    await waitFor(() =>
+      expect(heard.at(-1)).toBe('PLT-10 did not move to doing. Link a pull request first.'),
+    );
+    expect(heard).not.toContain('PLT-10 moved to doing.');
   });
 });
 

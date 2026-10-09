@@ -16,7 +16,7 @@ import {
  * A drop, optimistically: the card moves in every cached view holding it in the same frame,
  * then the transition (when the column changes) and the rank are sent. The server is the
  * authority, so the board is refetched once the last move settles; a refusal puts back that
- * card alone and says why.
+ * card alone, says why, and only then is the move announced as done or refused.
  */
 
 interface Moving {
@@ -45,7 +45,17 @@ async function send(plan: MovePlan): Promise<void> {
   }
 }
 
-export function useBoardMove(boardId: string, columnName: (columnId: string) => string) {
+const silent = () => undefined;
+
+/**
+ * `announce` is what a screen reader hears: the move as pending at the drop, then the
+ * server's answer, so nobody is told a card moved before the workflow has agreed.
+ */
+export function useBoardMove(
+  boardId: string,
+  columnName: (columnId: string) => string,
+  announce: (text: string) => void = silent,
+) {
   const queryClient = useQueryClient();
   const toast = useToast();
   const viewsKey = useMemo(() => workKeys.boardView(boardId).slice(0, -1), [boardId]);
@@ -53,17 +63,21 @@ export function useBoardMove(boardId: string, columnName: (columnId: string) => 
   const mutation = useMutation<void, unknown, Moving>({
     mutationKey,
     mutationFn: ({ plan }) => send(plan),
+    onSuccess: (_data, { plan }) =>
+      announce(`${plan.key} moved to ${columnName(plan.toColumnId)}.`),
     onError: (error, { plan, before }) => {
       for (const [key, placement] of before) {
         queryClient.setQueryData<BoardView>(key, (view) =>
           view ? revertMove(view, plan, placement) : view,
         );
       }
+      const reason = refusalOf(error);
       toast.show({
         tone: 'warn',
         title: `${plan.key} stays in ${columnName(plan.fromColumnId)}`,
-        body: refusalOf(error),
+        body: reason,
       });
+      announce(`${plan.key} did not move to ${columnName(plan.toColumnId)}. ${reason}`);
     },
     // The issue's own reads go too: its transitions depend on the status it just left. The
     // board is read again only once the last pending move settles: a view fetched while
@@ -78,8 +92,9 @@ export function useBoardMove(boardId: string, columnName: (columnId: string) => 
     },
   });
 
+  /** `position` is where the card landed in its cell, counted from one, for the announcement. */
   const move = useCallback(
-    (plan: MovePlan) => {
+    (plan: MovePlan, position: number) => {
       void queryClient.cancelQueries({ queryKey: viewsKey });
       const before: Moving['before'] = [];
       for (const [key, data] of queryClient.getQueriesData<BoardView>({ queryKey: viewsKey })) {
@@ -88,9 +103,10 @@ export function useBoardMove(boardId: string, columnName: (columnId: string) => 
         before.push([key, placement]);
         queryClient.setQueryData<BoardView>(key, applyMove(data, plan));
       }
+      announce(`${plan.key} moving to ${columnName(plan.toColumnId)}, position ${position}.`);
       mutation.mutate({ plan, before });
     },
-    [queryClient, viewsKey, mutation.mutate],
+    [queryClient, viewsKey, mutation.mutate, announce, columnName],
   );
 
   /** A drop the workflow refuses before anything is sent: the card never leaves. */

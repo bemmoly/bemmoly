@@ -66,7 +66,7 @@ export function useBoardDnd(model: BoardModel, boardId: string) {
     (columnId: string) => model.columns.find((column) => column.id === columnId)?.name ?? columnId,
     [model.columns],
   );
-  const { move, refuse } = useBoardMove(boardId, columnName);
+  const { move, refuse } = useBoardMove(boardId, columnName, announce);
 
   const pick = useCallback(
     (issueId: string, mode: CarriedCard['mode']) => {
@@ -105,8 +105,7 @@ export function useBoardDnd(model: BoardModel, boardId: string) {
       announce(`${carried.key} dropped where it was.`);
       return;
     }
-    move(plan);
-    announce(`${carried.key} moved to ${column.name}, position ${target.index + 1}.`);
+    move(plan, target.index + 1);
   }, [places, model, refuse, move]);
 
   const cancel = useCallback(() => {
