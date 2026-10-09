@@ -82,23 +82,14 @@ export function seedAdminModules(enabled = true): AdminModule[] {
       defaultAccess: 'none',
       restartRequired: false,
     },
-    {
-      id: 'work',
-      name: 'Work',
-      version: '0.2.0',
-      enabled,
-      enabledAt: enabled ? ago(60 * 24 * 3) : null,
-      versionInstalled: enabled ? '0.2.0' : null,
-      changelogState: enabled ? 'current' : 'pending',
-      pendingChangesets: enabled ? 0 : 20,
-      dependsOn: [],
-      defaultAccess: 'teams',
-      restartRequired: false,
-    },
   ];
 }
 
-/** Work is enabled too, so its screens open against the mock work routes. */
+/**
+ * The shell also loads the Work chunk, so its screens open against the mock
+ * work routes. Settings › Modules keeps listing Sample alone until the Work
+ * module's own admin row is mocked.
+ */
 export function seedManifests(enabled = true): ModuleManifest[] {
   if (!enabled) return [];
   return [
