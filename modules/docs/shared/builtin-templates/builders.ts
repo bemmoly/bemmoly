@@ -1,8 +1,8 @@
 /*
- * Small builders for ProseMirror JSON in the editor's base schema (Tiptap's
- * default node names), so the built-in templates read as outlines rather than
- * nested objects. Only nodes the base schema has: heading 1-3, paragraph,
- * bulletList, orderedList, taskList, blockquote, horizontalRule, bold marks.
+ * Small builders for ProseMirror JSON in the editor's schema (Tiptap's default
+ * node names plus the Docs nodes), so the built-in templates read as outlines
+ * rather than nested objects. Each writes every attribute the editor writes,
+ * so a template loads and saves back unchanged.
  */
 
 export interface PmNode {
@@ -59,3 +59,37 @@ export const tasks = (...items: string[]): PmNode => ({
 export const quote = (value: string): PmNode => ({ type: 'blockquote', content: [p(value)] });
 
 export const rule = (): PmNode => ({ type: 'horizontalRule' });
+
+/** A tinted box around blocks; info is the mock's TL;DR tint. */
+export const callout = (
+  variant: 'info' | 'note' | 'success' | 'warning' | 'danger',
+  ...content: PmNode[]
+): PmNode => ({ type: 'callout', attrs: { variant }, content });
+
+/** A decision block, proposed until the deciders mark it. */
+export const decision = (...content: PmNode[]): PmNode => ({
+  type: 'decision',
+  attrs: { state: 'proposed', decidedOn: null },
+  content,
+});
+
+/** The page's headings, kept current by the editor. */
+export const toc = (): PmNode => ({ type: 'toc', attrs: { maxLevel: 3 } });
+
+const cell = (type: 'tableHeader' | 'tableCell', value: string): PmNode => ({
+  type,
+  attrs: { colspan: 1, rowspan: 1, colwidth: null, align: null },
+  content: [p(value)],
+});
+
+/** A table with a header row; rows shorter than the header get empty cells. */
+export const table = (header: string[], ...rows: string[][]): PmNode => ({
+  type: 'table',
+  content: [
+    { type: 'tableRow', content: header.map((value) => cell('tableHeader', value)) },
+    ...rows.map((row) => ({
+      type: 'tableRow',
+      content: header.map((_, index) => cell('tableCell', row[index] ?? '')),
+    })),
+  ],
+});

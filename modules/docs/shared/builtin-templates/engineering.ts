@@ -1,4 +1,17 @@
-import { bullets, doc, field, h, numbered, p, quote, rule, tasks } from './builders.ts';
+import {
+  bullets,
+  callout,
+  decision,
+  doc,
+  field,
+  h,
+  numbered,
+  p,
+  rule,
+  table,
+  tasks,
+  toc,
+} from './builders.ts';
 
 /** RFC: propose a change, weigh the options, record who decides. */
 export const RFC = doc(
@@ -7,8 +20,8 @@ export const RFC = doc(
   field('Deciders'),
   field('Decision date'),
   rule(),
-  h(2, 'Summary'),
-  p('One paragraph a busy reader can stop after: what changes, and why now.'),
+  toc(),
+  callout('info', p('TL;DR: one paragraph a busy reader can stop after: what changes, and why now.')),
   h(2, 'Context'),
   p('What is true today, what hurts, and what we measured. Link the issues and pages it rests on.'),
   h(2, 'Goals'),
@@ -20,11 +33,16 @@ export const RFC = doc(
   h(3, 'Rollout'),
   numbered('Behind a flag', 'Dual-write and backfill', 'Cut reads over', 'Remove the old path'),
   h(2, 'Alternatives considered'),
-  bullets('Option A, and why not', 'Option B, and why not', 'Doing nothing, and its cost'),
+  table(
+    ['Option', 'For', 'Against'],
+    ['Option A', '', ''],
+    ['Option B', '', ''],
+    ['Do nothing', 'No work now', 'The cost of today, kept'],
+  ),
   h(2, 'Risks and open questions'),
   bullets('What could go wrong, and how we would notice'),
   h(2, 'Decision'),
-  quote('Filled in by the deciders: accepted, rejected or deferred, and why.'),
+  decision(p('Filled in by the deciders: accepted, rejected or deferred, and why.')),
 );
 
 /** Postmortem: blameless account of an incident and what changes because of it. */
@@ -34,17 +52,25 @@ export const POSTMORTEM = doc(
   field('Date'),
   field('Duration'),
   rule(),
+  callout('note', p('This review is blameless. We look for system fixes, not fault.')),
+  toc(),
   h(2, 'Summary'),
   p('What happened, who was affected and for how long, in two or three sentences.'),
   h(2, 'Impact'),
-  bullets('Customers or teams affected', 'Requests, revenue or data affected', 'SLO budget used'),
+  table(
+    ['Area', 'Impact'],
+    ['Customers or teams affected', ''],
+    ['Requests, revenue or data affected', ''],
+    ['SLO budget used', ''],
+  ),
   h(2, 'Timeline'),
   p('All times in UTC. Start at the first signal, end when the impact was over.'),
-  bullets(
-    '00:00 First alert fires',
-    '00:05 Incident declared',
-    '00:40 Mitigated',
-    '01:10 Resolved',
+  table(
+    ['Time (UTC)', 'Event'],
+    ['00:00', 'First alert fires'],
+    ['00:05', 'Incident declared'],
+    ['00:40', 'Mitigated'],
+    ['01:10', 'Resolved'],
   ),
   h(2, 'Root cause'),
   p('The conditions that made this possible, not the person who triggered it.'),
@@ -58,16 +84,18 @@ export const POSTMORTEM = doc(
     'Add the alert that would have caught it sooner',
     'Update the runbook',
   ),
-  quote('This review is blameless. We look for system fixes, not fault.'),
 );
 
 /** Runbook: what an on-call engineer does, step by step, at 3 a.m. */
 export const RUNBOOK = doc(
   field('Service'),
   field('Owner team'),
-  field('Escalation'),
   field('Last verified'),
   rule(),
+  callout(
+    'warning',
+    p('If customers are affected, declare an incident before you start debugging.'),
+  ),
   h(2, 'When to use this'),
   p('The alert or symptom that sends someone here, quoted exactly as it appears.'),
   h(2, 'Before you start'),
@@ -79,5 +107,9 @@ export const RUNBOOK = doc(
   h(2, 'Verify'),
   p('What healthy looks like, and how long to watch before standing down.'),
   h(2, 'Escalate'),
-  p('Who to call if none of the above works, and how.'),
+  table(
+    ['Who', 'How to reach them', 'When'],
+    ['Owning team on-call', 'Page through the on-call rota', 'Not mitigated in 30 minutes'],
+    ['Platform on-call', '', 'A dependency is down'],
+  ),
 );
