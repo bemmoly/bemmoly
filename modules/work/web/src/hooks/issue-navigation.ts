@@ -35,6 +35,11 @@ export function navigateBack(fallback: string): void {
   else navigateTo(fallback);
 }
 
+const plainClick = (event: MouseEvent<HTMLElement>) =>
+  !event.defaultPrevented &&
+  event.button === 0 &&
+  !(event.metaKey || event.ctrlKey || event.shiftKey || event.altKey);
+
 /**
  * Props for an in-app link: a real href, so it opens in a new tab with a modifier, and a
  * plain click that stays in the page.
@@ -43,10 +48,22 @@ export function linkTo(path: string) {
   return {
     href: path,
     onClick: (event: MouseEvent<HTMLElement>) => {
-      if (event.defaultPrevented || event.button !== 0) return;
-      if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      if (!plainClick(event)) return;
       event.preventDefault();
       navigateTo(path);
     },
   };
+}
+
+/**
+ * A click handler for a whole screen: plain clicks on same-origin links inside it stay in the
+ * page, so design-system rows that render a bare anchor behave like the shell's links.
+ */
+export function keepLinksInApp(event: MouseEvent<HTMLElement>): void {
+  if (!plainClick(event)) return;
+  const anchor = (event.target as Element).closest?.('a[href]');
+  const href = anchor?.getAttribute('href') ?? '';
+  if (!href.startsWith('/') || href.startsWith('//') || anchor?.getAttribute('target')) return;
+  event.preventDefault();
+  navigateTo(href);
 }
