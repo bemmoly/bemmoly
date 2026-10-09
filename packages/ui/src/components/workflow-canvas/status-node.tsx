@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes, ReactNode } from 'react';
+import type { ButtonHTMLAttributes, HTMLAttributes, ReactNode } from 'react';
 import { cx } from '../../lib/cx.ts';
 import { focusRing } from '../../lib/focus.ts';
 
@@ -41,9 +41,11 @@ export interface StatusNodeProps extends Omit<ButtonHTMLAttributes<HTMLButtonEle
   name: ReactNode;
   category: WorkflowCategory;
   colorClassName?: string;
-  /** Issues in this status now. */
-  count: number;
+  /** Issues in this status now; the line shows the category alone while it is unknown. */
+  count?: number;
   selected?: boolean;
+  /** A problem from validation names this status: the danger border in place of br3. */
+  invalid?: boolean;
   /** Centre of the node in canvas percentages, as the mock positions them. */
   x: string;
   y: string;
@@ -60,6 +62,7 @@ export function StatusNode({
   colorClassName,
   count,
   selected = false,
+  invalid = false,
   x,
   y,
   className,
@@ -71,10 +74,12 @@ export function StatusNode({
     <button
       type={type}
       aria-pressed={selected}
+      aria-invalid={invalid || undefined}
       style={{ left: x, top: y, ...style }}
       className={cx(
         'absolute flex w-37.5 -translate-1/2 cursor-pointer flex-col gap-1 rounded-card border-[1.5px] bg-sf px-3 py-2.5 text-left font-sans text-tx',
-        selected ? 'border-ac shadow-ring-node' : 'border-br3 shadow-card',
+        selected ? 'shadow-ring-node' : 'shadow-card',
+        invalid ? 'border-danger' : selected ? 'border-ac' : 'border-br3',
         focusRing,
         className,
       )}
@@ -85,9 +90,35 @@ export function StatusNode({
         <span className="text-12h font-semibold">{name}</span>
       </span>
       <span className="text-11 text-tx5">
-        {WORKFLOW_CATEGORY[category].name} · {count} issues
+        {WORKFLOW_CATEGORY[category].name}
+        {count === undefined ? '' : ` · ${count} issues`}
       </span>
     </button>
+  );
+}
+
+export interface StatusNodeHandleProps extends HTMLAttributes<HTMLSpanElement> {
+  /** The node's centre in canvas percentages; the handle sits on its right edge. */
+  x: string;
+  y: string;
+}
+
+/**
+ * The connector on a node's right edge that a transition is drawn from: a 10px accent ring on
+ * the surface, filled while pressed. Pointer only; the side panel's "Add transition" is the
+ * keyboard path, so it stays out of the tab order.
+ */
+export function StatusNodeHandle({ x, y, className, style, ...rest }: StatusNodeHandleProps) {
+  return (
+    <span
+      aria-hidden
+      style={{ left: `calc(${x} + 75px)`, top: y, ...style }}
+      className={cx(
+        'absolute size-2.5 -translate-1/2 cursor-crosshair rounded-full border-2 border-ac bg-sf active:bg-ac',
+        className,
+      )}
+      {...rest}
+    />
   );
 }
 

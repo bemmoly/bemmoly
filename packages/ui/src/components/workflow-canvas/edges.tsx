@@ -11,46 +11,84 @@ export interface TransitionEdgeProps {
   highlighted?: boolean;
   /** A global transition from any status: dashed 4 4. */
   any?: boolean;
+  /** A problem from validation names this transition: danger at 2px. */
+  invalid?: boolean;
 }
 
+const EDGE_TONES = {
+  rest: { stroke: 'stroke-tx5', marker: 'url(#workflow-arrow)' },
+  highlighted: { stroke: 'stroke-ac', marker: 'url(#workflow-arrow-ac)' },
+  invalid: { stroke: 'stroke-danger', marker: 'url(#workflow-arrow-danger)' },
+} as const;
+
 /** One transition arrow; the canvas defines the arrowhead markers it points with. */
-export function TransitionEdge({ d, highlighted = false, any = false }: TransitionEdgeProps) {
+export function TransitionEdge({
+  d,
+  highlighted = false,
+  any = false,
+  invalid = false,
+}: TransitionEdgeProps) {
+  const tone = EDGE_TONES[invalid ? 'invalid' : highlighted ? 'highlighted' : 'rest'];
   return (
     <path
       d={d}
       fill="none"
-      className={highlighted ? 'stroke-ac' : 'stroke-tx5'}
-      strokeWidth={highlighted ? 2 : 1.5}
+      className={tone.stroke}
+      strokeWidth={highlighted || invalid ? 2 : 1.5}
       strokeDasharray={any ? '4 4' : undefined}
-      markerEnd={highlighted ? 'url(#workflow-arrow-ac)' : 'url(#workflow-arrow)'}
+      markerEnd={tone.marker}
     />
   );
 }
 
-export interface TransitionLabelProps extends HTMLAttributes<HTMLSpanElement> {
+export interface TransitionLabelProps extends HTMLAttributes<HTMLElement> {
   /** Centre of the label in canvas percentages. */
   x: string;
   y: string;
   highlighted?: boolean;
+  /** The transition open in the side panel: the accent border on ac-bg. */
+  selected?: boolean;
+  /** A problem from validation names this transition. */
+  invalid?: boolean;
+  /** A button that selects the transition, reached by Tab like the nodes. */
+  interactive?: boolean;
 }
+
+const LABEL_TONES = {
+  rest: 'border-br bg-sf text-tx4',
+  highlighted: 'border-ac-br bg-sf text-ac',
+  selected: 'border-ac bg-ac-bg text-ac',
+  invalid: 'border-danger bg-sf text-danger',
+} as const;
 
 /** The transition name on its edge: 11px, 2px 7px, 4px radius, white with a br border. */
 export function TransitionLabel({
   x,
   y,
   highlighted = false,
+  selected = false,
+  invalid = false,
+  interactive = false,
   className,
   style,
   ...rest
 }: TransitionLabelProps) {
+  const tone = invalid ? 'invalid' : selected ? 'selected' : highlighted ? 'highlighted' : 'rest';
+  const classes = cx(
+    'absolute flex -translate-1/2 items-center gap-1 rounded-xs border px-1.75 py-0.5 font-sans text-11 whitespace-nowrap',
+    LABEL_TONES[tone],
+    interactive && cx('cursor-pointer', focusRing),
+    className,
+  );
+  const position = { left: x, top: y, ...style };
+  if (!interactive) return <span style={position} className={classes} {...rest} />;
   return (
-    <span
-      style={{ left: x, top: y, ...style }}
-      className={cx(
-        'absolute -translate-1/2 rounded-xs border bg-sf px-1.75 py-0.5 text-11 whitespace-nowrap',
-        highlighted ? 'border-ac-br text-ac' : 'border-br text-tx4',
-        className,
-      )}
+    <button
+      type="button"
+      aria-pressed={selected}
+      aria-invalid={invalid || undefined}
+      style={position}
+      className={classes}
       {...rest}
     />
   );
@@ -125,6 +163,17 @@ export function WorkflowCanvas({
             orient="auto-start-reverse"
           >
             <path d="M0 0L10 5L0 10z" className="fill-ac" />
+          </marker>
+          <marker
+            id="workflow-arrow-danger"
+            viewBox="0 0 10 10"
+            refX="9"
+            refY="5"
+            markerWidth="8"
+            markerHeight="8"
+            orient="auto-start-reverse"
+          >
+            <path d="M0 0L10 5L0 10z" className="fill-danger" />
           </marker>
         </defs>
         {edges}

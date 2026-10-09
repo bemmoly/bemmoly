@@ -12,12 +12,36 @@ export const RULE_KINDS: Record<RuleKind, { label: string; className: string }> 
 
 export interface RuleChipProps {
   kind: RuleKind;
+  /**
+   * How many rules of the kind a transition carries, for the chips on a canvas edge label:
+   * the kind's initial and the count in 9px, 0 4px, so the label stays one line.
+   */
+  count?: number;
   className?: string;
 }
 
 /** The kind badge: 10.5px semibold, 1px 6px, 3px radius. */
-export function RuleChip({ kind, className }: RuleChipProps) {
+export function RuleChip({ kind, count, className }: RuleChipProps) {
   const rule = RULE_KINDS[kind];
+  if (count !== undefined) {
+    const name = `${count} ${rule.label.toLowerCase()}${count === 1 ? '' : 's'}`;
+    return (
+      <span
+        title={name}
+        className={cx(
+          'inline-flex shrink-0 rounded-chip px-1 text-9h font-semibold',
+          rule.className,
+          className,
+        )}
+      >
+        <span aria-hidden>
+          {rule.label[0]}
+          {count}
+        </span>
+        <span className="sr-only">{name}</span>
+      </span>
+    );
+  }
   return (
     <span
       className={cx(
