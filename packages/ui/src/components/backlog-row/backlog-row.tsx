@@ -77,7 +77,9 @@ export function BacklogRow({
       <TypeGlyph type={type} />
       <KeyChip issueKey={issueKey} />
       <span className="flex min-w-0 items-center gap-2">
-        <span className="truncate">{title}</span>
+        <span className="truncate" title={typeof title === 'string' ? title : undefined}>
+          {title}
+        </span>
         {doc && (
           <span className="flex shrink-0 items-center gap-0.5 text-11 text-ac">
             <Icon name="external" size={11} />
@@ -89,7 +91,12 @@ export function BacklogRow({
         {epic && (
           <>
             <span aria-hidden className={cx('size-2 shrink-0 rounded-tick', epic.colorClassName)} />
-            <span className="truncate">{epic.name}</span>
+            <span
+              className="truncate"
+              title={typeof epic.name === 'string' ? epic.name : undefined}
+            >
+              {epic.name}
+            </span>
           </>
         )}
       </span>
