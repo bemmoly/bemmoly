@@ -10,7 +10,7 @@ import { richTextToPlain } from '../../../../shared/rich-text.ts';
 import { recordHistory } from '../history/index.ts';
 import { actorUserId, projectResource, requireDatabase, type IssueServiceDeps } from './deps.ts';
 import { loadFieldDefinitions, requiredFieldKeys, validateCustomFields } from './fields.ts';
-import { notify, publishIssueChange } from './notify.ts';
+import { notify, notifyDescriptionMentions, publishIssueChange } from './notify.ts';
 import { assertOwnReferences } from './references.ts';
 import { loadIssueById, toIssue } from './rows.ts';
 
@@ -117,6 +117,7 @@ export async function createIssue(
         dedupeKey: `issue:${issue.id}:assigned:${issue.assigneeId}:created`,
       });
     }
+    await notifyDescriptionMentions(deps, ctx, tx, issue, null);
     return issue;
   });
   return created as Issue;
