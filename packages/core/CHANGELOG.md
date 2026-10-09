@@ -1,5 +1,12 @@
 # @bemmoly/core
 
+## 0.1.7
+
+### Patch Changes
+
+- @bemmoly/shared@0.1.7
+  - @bemmoly/ui@0.1.7
+
 ## 0.1.6
 
 ### Patch Changes
