@@ -3,7 +3,8 @@ import { describe, expect, it, vi } from 'vitest';
 import { expectAccessible } from '../../testing/a11y.ts';
 import { RuleChip } from './rule-chip.tsx';
 import { StatusNode, StatusNodeHandle } from './status-node.tsx';
-import { TransitionEdge, TransitionLabel, WorkflowCanvas } from './edges.tsx';
+import { TransitionEdge, TransitionLabel } from './edges.tsx';
+import { WorkflowCanvas } from './workflow-canvas.tsx';
 
 describe('workflow canvas editing states', () => {
   it('marks an invalid node and edge, and selects a transition from its label', async () => {
