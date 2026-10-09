@@ -25,6 +25,11 @@ export const updaterEnvSchema = z.object({
     ),
   COSIGN_OIDC_ISSUER: z.url().default('https://token.actions.githubusercontent.com'),
   COSIGN_BINARY: z.string().default('/usr/local/bin/cosign'),
+  /**
+   * Where cosign caches Sigstore's trust root. The container's filesystem is read-only
+   * apart from /tmp, and cosign's default (~/.sigstore) cannot be created there.
+   */
+  TUF_ROOT: z.string().min(1).default('/tmp/sigstore'),
   READY_TIMEOUT_MS: z.coerce.number().int().min(10_000).default(180_000),
   RETENTION_DAYS: z.coerce.number().int().min(1).max(90).default(7),
   LOG_LEVEL: z.enum(['error', 'warn', 'info', 'debug']).default('info'),
@@ -37,7 +42,11 @@ export function loadUpdaterEnv(): UpdaterEnv {
   const result = updaterEnvSchema.safeParse(
     Object.fromEntries(Object.entries(process.env).filter(([, value]) => Boolean(value))),
   );
-  if (result.success) return result.data;
+  if (result.success) {
+    // cosign reads TUF_ROOT from the environment it inherits from this process.
+    process.env['TUF_ROOT'] = result.data.TUF_ROOT;
+    return result.data;
+  }
   const problems = result.error.issues.map(
     (issue) => `  - ${issue.path.join('.')}: ${issue.message}`,
   );
