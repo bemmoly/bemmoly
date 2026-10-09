@@ -16,6 +16,17 @@ const show = (value: unknown): string =>
       ? value
       : JSON.stringify(value);
 
+/** The diff read the other way: what a reset does to the project's copy. */
+export function invertDiff(entries: readonly SchemeDiffEntry[]): SchemeDiffEntry[] {
+  const flip = { added: 'removed', removed: 'added', changed: 'changed' } as const;
+  return entries.map(({ before, after, ...entry }) => ({
+    ...entry,
+    change: flip[entry.change],
+    ...(after === undefined ? {} : { before: after }),
+    ...(before === undefined ? {} : { after: before }),
+  }));
+}
+
 /** The diff as rows: what, how it changed, and the value on each side. */
 export function DiffRows({
   entries,
