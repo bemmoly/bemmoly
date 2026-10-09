@@ -1,5 +1,51 @@
 # @bemmoly/server
 
+## 0.2.0
+
+### Minor Changes
+
+- d313831: The Work module ships in the image, off until an admin enables it in Settings › Modules.
+  Enabling it runs its schema changelog, which creates the issue tracking tables (projects,
+  issue types and fields, workflows, issues, links, labels, versions, components, sprints,
+  boards, saved filters, comments, history, work logs, watchers, attachments and automation
+  rules) and adds the pg_trgm extension for prefix search, which needs the database owner or a
+  superuser to have created it on managed databases that do not allow trusted extensions. Once
+  enabled, "Board" and "Backlog" appear in the top navigation as placeholders and the Work
+  capabilities (create and configure projects; view, create, edit, move and delete issues;
+  manage sprints; configure the board) appear in the roles matrix with their defaults. The
+  screens and the API behind them arrive in later changes of this release. No configuration
+  change.
+
+### Patch Changes
+
+- Updated dependencies [dcbcae4]
+- Updated dependencies [7d09c70]
+- Updated dependencies [e2aa5d2]
+- Updated dependencies [51cd3ae]
+- Updated dependencies [e2aa5d2]
+- Updated dependencies [c646c34]
+- Updated dependencies [66e9507]
+- Updated dependencies [83c390e]
+- Updated dependencies [cab0760]
+- Updated dependencies [a28fa79]
+- Updated dependencies [80faa4d]
+- Updated dependencies [158db6a]
+- Updated dependencies [e2aa5d2]
+- Updated dependencies [72bd7b9]
+- Updated dependencies [e2aa5d2]
+- Updated dependencies [d313831]
+- Updated dependencies [7d09c70]
+- Updated dependencies [b4f5ea9]
+- Updated dependencies [9c7de90]
+- Updated dependencies [4d5e58f]
+- Updated dependencies [7625bb6]
+- Updated dependencies [5935186]
+- Updated dependencies [7d09c70]
+  - @bemmoly/core@0.2.0
+  - @bemmoly/module-work@0.2.0
+  - @bemmoly/shared@0.2.0
+  - @bemmoly/module-sample@0.2.0
+
 ## 0.1.7
 
 ### Patch Changes

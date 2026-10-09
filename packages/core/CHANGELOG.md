@@ -1,5 +1,55 @@
 # @bemmoly/core
 
+## 0.2.0
+
+### Minor Changes
+
+- dcbcae4: Modules can now write the kernel's audit log. The module context carries an audit recorder
+  whenever the database is present, so a module records who created a project or overrode a
+  scheme in the same audit log that settings changes use, inside its own transaction. No
+  configuration or schema change.
+- 7d09c70: Modules can now manage who belongs to a project or a space. The module context carries a
+  membership service whenever the database is present: list the members with their role, add
+  people or whole teams (each team member takes the team's default role, everyone else Member,
+  unless a role is named), change a member's role and remove a member, inside the module's own
+  transaction. Access follows on the next request, since authorization reads membership every
+  time. No configuration or schema change.
+- d313831: The Work module ships in the image, off until an admin enables it in Settings › Modules.
+  Enabling it runs its schema changelog, which creates the issue tracking tables (projects,
+  issue types and fields, workflows, issues, links, labels, versions, components, sprints,
+  boards, saved filters, comments, history, work logs, watchers, attachments and automation
+  rules) and adds the pg_trgm extension for prefix search, which needs the database owner or a
+  superuser to have created it on managed databases that do not allow trusted extensions. Once
+  enabled, "Board" and "Backlog" appear in the top navigation as placeholders and the Work
+  capabilities (create and configure projects; view, create, edit, move and delete issues;
+  manage sprints; configure the board) appear in the roles matrix with their defaults. The
+  screens and the API behind them arrive in later changes of this release. No configuration
+  change.
+
+### Patch Changes
+
+- e2aa5d2: The command palette (⌘K) now searches inside modules. The kernel serves `GET /api/v1/search`
+  from search providers that modules register with `ctx.search.addProvider`; it asks only the
+  modules a person can open, and each provider keeps to what that person may see. Work answers
+  with issues by key (type `PLT-14`) and by keyword, each with its status and assignee, under an
+  "Issues" group and scope. No configuration or schema change.
+- 158db6a: Fixes found by the end-to-end Work flows. Page loads no longer count against the strict
+  ten-a-minute limit for sign-in and setup, which locked everyone behind one office address out
+  with "Too many requests". Mentioning someone in an issue description now notifies them, as a
+  mention in a comment does. On the board, a card moved twice in a row is judged by the
+  transitions of its current status, a card dropped with the keyboard keeps the focus, a card
+  dropped on a column's refusal note says why it stays, quick moves no longer jump back while
+  the server catches up, and a link to a project you cannot see says so instead of inviting you
+  to create one. Realtime updates refetch only what changed, and an issue's activity now reads
+  "created the issue" rather than "changed created". No configuration or schema change.
+- Updated dependencies [51cd3ae]
+- Updated dependencies [e2aa5d2]
+- Updated dependencies [2e14b26]
+- Updated dependencies [72bd7b9]
+- Updated dependencies [4d5e58f]
+  - @bemmoly/shared@0.2.0
+  - @bemmoly/ui@0.2.0
+
 ## 0.1.7
 
 ### Patch Changes
