@@ -28,6 +28,19 @@ const boardCards = (api: Api) =>
     .cards;
 
 describe('the shared Work issue store', () => {
+  it('counts issues per status for one project or for every project', () => {
+    const api = createMockApi('ready');
+    const counts = (query: string) =>
+      get<{ counts: Record<string, number> }>(
+        api,
+        `/workflows/${WORK_IDS.workflow}/status-counts${query}`,
+      ).counts;
+    const total = (map: Record<string, number>) => Object.values(map).reduce((a, b) => a + b, 0);
+    const plt = get<{ items: Issue[] }>(api, `/issues?projectId=${WORK_IDS.project}`).items;
+    expect(total(counts(`?projectId=${WORK_IDS.project}`))).toBe(plt.length);
+    expect(total(counts(''))).toBeGreaterThan(plt.length);
+  });
+
   it('shows a backlog move in the issue the slide-over opens', () => {
     const api = createMockApi('ready');
     const moved = backlog(api).issues[0]!;

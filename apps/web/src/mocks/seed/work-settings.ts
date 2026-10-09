@@ -148,19 +148,6 @@ export function seedWorkTransitions(workflowId: string): WorkTransitionRow[] {
   }));
 }
 
-/** "Backlog · 42 issues": the counts on the canvas nodes and the column status pills. */
-export const STATUS_COUNTS: Record<string, number> = {
-  [STATUS_IDS.Backlog]: 42,
-  [STATUS_IDS.Selected]: 9,
-  [STATUS_IDS['In progress']]: 4,
-  [STATUS_IDS['Code review']]: 2,
-  [STATUS_IDS['Design review']]: 0,
-  [STATUS_IDS.Testing]: 2,
-  [STATUS_IDS.Done]: 9,
-  [STATUS_IDS["Won't do"]]: 3,
-  [STATUS_IDS.Duplicate]: 1,
-};
-
 export function seedWorkProject() {
   return {
     id: WORK_IDS.project,
