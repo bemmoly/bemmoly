@@ -125,7 +125,11 @@ function BoardBody({
         <BoardAnnouncer />
         <BoardVerdicts model={model} />
       </div>
-      <IssueSlideOver issueKey={slideOver.issueKey} onClose={slideOver.close} />
+      <IssueSlideOver
+        issueKey={slideOver.issueKey}
+        onClose={slideOver.close}
+        variant={slideOver.variant}
+      />
     </div>
   );
 }
