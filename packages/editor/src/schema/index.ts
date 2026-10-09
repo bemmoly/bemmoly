@@ -1,55 +1,15 @@
 import { getSchema, type AnyExtension } from '@tiptap/core';
-import { TaskItem, TaskList } from '@tiptap/extension-list';
-import { Mention } from '@tiptap/extension-mention';
 import type { Schema } from '@tiptap/pm/model';
-import { StarterKit } from '@tiptap/starter-kit';
-import type { SuggestionOptions } from '@tiptap/suggestion';
+import { baseExtensions, type SchemaOptions } from './base.ts';
 import { docNodeExtensions } from './nodes/registry.ts';
-import { ReferenceLinks, type ReferenceLinkOptions } from './references.ts';
 
 /*
  * The one document schema: Work's descriptions and comments and, from the Docs module, pages.
  * Node and mark names are Tiptap's defaults, which is what the stored JSON and the server's
  * plain-text shadow already assume. It has no React in it, so the server can load it to read
- * documents. The base set is Work's; Docs pages add the registered nodes (nodes/registry.ts)
+ * documents. The base set (base.ts) is Work's; Docs pages add the registered nodes (nodes/registry.ts)
  * on top, and one schema reads both, since a superset reads every document the base wrote.
  */
-
-export interface SchemaOptions {
-  /** The @ search; without it @ is plain text, though stored mentions still load. */
-  mention?: Omit<SuggestionOptions, 'editor'>;
-  /** Links to records by key; see ReferenceLinks. */
-  references?: Partial<ReferenceLinkOptions>;
-}
-
-export const HEADING_LEVELS = [1, 2, 3] as const;
-
-export function baseExtensions(options: SchemaOptions = {}): AnyExtension[] {
-  return [
-    StarterKit.configure({
-      heading: { levels: [...HEADING_LEVELS] },
-      underline: false,
-      trailingNode: false,
-      link: {
-        openOnClick: false,
-        autolink: true,
-        linkOnPaste: true,
-        defaultProtocol: 'https',
-        HTMLAttributes: { target: null },
-      },
-    }),
-    TaskList,
-    TaskItem.configure({
-      nested: true,
-      a11y: { checkboxLabel: (_node, checked) => (checked ? 'Done' : 'Not done') },
-    }),
-    Mention.configure({
-      deleteTriggerWithBackspace: true,
-      suggestion: options.mention ?? { allow: () => false },
-    }),
-    ReferenceLinks.configure(options.references ?? {}),
-  ];
-}
 
 /** The base set and every registered node: what a Docs page is written in. */
 export function docExtensions(options: SchemaOptions = {}): AnyExtension[] {
@@ -64,6 +24,7 @@ export function editorSchema(): Schema {
   return schema;
 }
 
+export { baseExtensions, HEADING_LEVELS, type SchemaOptions } from './base.ts';
 export { ReferenceLinks, referencePluginKey, type ReferenceLinkOptions } from './references.ts';
 export { CALLOUT_LABELS, CALLOUT_VARIANTS, type CalloutVariant } from './nodes/callout.ts';
 export { CODE_LANGUAGES, codeLanguage, type CodeLanguage } from './nodes/code-block.ts';

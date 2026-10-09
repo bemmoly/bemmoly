@@ -5,7 +5,7 @@ import { PluginKey } from '@tiptap/pm/state';
 import { Suggestion } from '@tiptap/suggestion';
 import { cx } from '../cx.ts';
 import { proseClass } from '../prose.ts';
-import { baseExtensions } from '../schema/index.ts';
+import { baseExtensions } from '../schema/base.ts';
 import type { EditorSources, ProseSize, RichTextDoc } from '../types.ts';
 import type { SuggestionRow, SuggestionStore } from './suggestion-store.ts';
 import { SLASH_BLOCKS, slashMatches } from './tools.ts';
