@@ -16,8 +16,9 @@ const SIZES: Record<IconButtonSize, string> = {
 };
 
 const VARIANTS = {
-  ghost: 'border-0 bg-transparent enabled:hover:bg-chip',
-  secondary: 'border border-br3 bg-sf enabled:hover:bg-bg2',
+  ghost:
+    'border-0 bg-transparent enabled:hover:bg-chip enabled:hover:text-tx enabled:active:bg-br2',
+  secondary: 'border border-br3 bg-sf enabled:hover:bg-bg2 enabled:active:bg-chip',
 } as const;
 
 export interface IconButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children'> {
@@ -49,6 +50,7 @@ export function IconButton({
       className={cx(
         'relative inline-flex shrink-0 cursor-pointer items-center justify-center font-semibold text-tx2',
         'disabled:cursor-not-allowed disabled:opacity-50',
+        'motion-safe:transition-[color,background-color,translate] enabled:active:translate-y-px',
         SIZES[size],
         VARIANTS[variant],
         focusRing,
