@@ -76,7 +76,7 @@ describe('board components', () => {
     expect(onSelect).toHaveBeenCalledTimes(1);
     expect(screen.getByLabelText('1 of 3 subtasks done')).toBeTruthy();
     expect(screen.getByRole('group', { name: 'In progress, Auth service' }).className).toContain(
-      'border-dashed',
+      'outline-dashed',
     );
   });
 
