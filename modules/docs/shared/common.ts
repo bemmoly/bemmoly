@@ -33,6 +33,11 @@ export const pageStatusSchema = z.enum(PAGE_STATUSES);
 export const pageIdParamsSchema = z.object({ pageId: z.uuid() });
 export const spaceKeyParamsSchema = z.object({ spaceKey: spaceKeySchema });
 
+/** A space in a URL: its key ("ENG") as links hold, or its id as settings hold. */
+export const spaceRefParamsSchema = z.object({
+  spaceKey: z.union([z.uuid(), spaceKeySchema]),
+});
+
 /** A person as the Docs screens show them next to a page: avatar, name. */
 export const docsPersonSchema = z.object({
   id: z.uuid(),

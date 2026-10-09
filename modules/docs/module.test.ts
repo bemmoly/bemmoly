@@ -45,12 +45,13 @@ describe('docs module', () => {
     expect(edit?.defaults.contractor).toBe(true);
   });
 
-  it('contributes its settings', () => {
+  it('contributes its settings and the /docs routes', () => {
     const registry = loadModules({ available: [docs] });
     const [loaded] = registry.list();
     expect(loaded?.contributions.settings.map((setting) => setting.key)).toEqual([
       'docs.staleAfterDays',
       'docs.compactThreshold',
     ]);
+    expect(registry.routes().map((route) => route.prefix)).toEqual(['/docs']);
   });
 });

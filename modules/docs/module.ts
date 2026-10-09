@@ -1,6 +1,9 @@
 import { defineModule, loadChangelogFolder } from '@bemmoly/core';
 import { DOCS_CAPABILITIES } from './server/src/config/capabilities.ts';
 import { defineDocsSettings } from './server/src/config/settings.ts';
+import { createDocsControllers } from './server/src/controllers/index.ts';
+import { docsRoutes } from './server/src/routes/index.ts';
+import { createDocsServices } from './server/src/services/index.ts';
 
 /**
  * Spaces, page trees, templates and the collaborative editor. Off until an
@@ -30,5 +33,13 @@ export default defineModule({
     });
     for (const capability of DOCS_CAPABILITIES) ctx.capabilities.add(capability);
     defineDocsSettings(ctx.settings);
+    const services = createDocsServices({
+      realtime: ctx.realtime,
+      events: ctx.events,
+      ...(ctx.database ? { database: ctx.database } : {}),
+      ...(ctx.audit ? { audit: ctx.audit } : {}),
+      ...(ctx.memberships ? { memberships: ctx.memberships } : {}),
+    });
+    ctx.routes.add({ prefix: '/docs', plugin: docsRoutes(createDocsControllers(services)) });
   },
 });
