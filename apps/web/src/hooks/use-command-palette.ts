@@ -7,28 +7,25 @@ import { api } from '../lib/api.ts';
 import { viewerOf } from '../lib/session.ts';
 import { useThemeStore } from '../store/theme.ts';
 import { useUiStore, type PaletteScope } from '../store/ui.ts';
-import { paletteItems, type PaletteItem } from './command-items.ts';
+import { paletteItems, paletteScopes, type PaletteItem } from './command-items.ts';
 import { useDirectory } from './use-directory.ts';
 import { useModules } from './use-modules.ts';
 import { useMe, useSignOut } from './use-session.ts';
 
-export const SCOPES: ReadonlyArray<{ value: PaletteScope; label: string; group?: string }> = [
-  { value: 'all', label: 'All' },
-  { value: 'people', label: 'People', group: 'People' },
-  { value: 'settings', label: 'Settings', group: 'Settings' },
-  { value: 'actions', label: 'Actions', group: 'Actions' },
-];
-
 /** The Command mock's rule: a sentence that starts with a verb is a request, not a search. */
 const COMMAND = /^(move|assign|close|set|change|reopen|add|remove|rename)\b/;
 
-/** Server search when the server has it; a 404 means "not yet" and the directory still answers. */
+/**
+ * Server search across every module search provider the person can reach;
+ * a 404 (a server without the search route) means "nothing" and the
+ * directory still answers for people.
+ */
 function useServerSearch(q: string) {
   return useQuery({
-    queryKey: queryKeys.search(q, ['user']),
+    queryKey: queryKeys.search(q),
     queryFn: async () => {
       try {
-        return (await api.search({ q, kinds: ['user'], limit: 8 })).items;
+        return (await api.search({ q, limit: 8 })).items;
       } catch (error) {
         if (isApiError(error) && error.code === 'not_found') return [];
         throw error;
@@ -71,12 +68,18 @@ export function useCommandPalette() {
     [me, canManagePeople, modules, directory, server.data, ui, setMode, signOut],
   );
 
-  const group = SCOPES.find((entry) => entry.value === scope)?.group;
+  const scopes = useMemo(() => paletteScopes(modules), [modules]);
+  const group = scopes.find((entry) => entry.value === scope)?.group;
   const groups = useMemo(() => {
     const scoped = group ? items.filter((item) => item.group === group) : items;
-    const ranked = rankItems(deferred, scoped);
+    // Providers already matched and ranked their results; ⌘K ranks only its own items.
+    const found = deferred.length >= 2 ? scoped.filter((item) => item.fromServer) : [];
+    const ranked = rankItems(
+      deferred,
+      scoped.filter((item) => !item.fromServer),
+    );
     const shown = deferred ? ranked : ranked.filter((item) => item.group !== 'People' || group);
-    return groupItems(shown.slice(0, 30));
+    return groupItems([...found, ...shown.slice(0, 30)]);
   }, [items, group, deferred]);
 
   const open = (item: PaletteItem) => {
@@ -91,6 +94,7 @@ export function useCommandPalette() {
     setQuery,
     scope,
     setScope,
+    scopes,
     groups,
     open,
     close: ui.closePalette,

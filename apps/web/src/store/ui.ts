@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 
-export type PaletteScope = 'all' | 'people' | 'settings' | 'actions';
+/** The kernel's scopes, or a module search kind such as "work.issue". */
+export type PaletteScope = 'all' | 'people' | 'settings' | 'actions' | (string & {});
 
 /** Client-only shell state: which overlay is open. Server data never lives here. */
 interface UiState {
