@@ -183,7 +183,7 @@ const PLT: Seed[] = [
     { labels: ['infra'] },
   ],
   ['PLT-212', 2, 4, 'bug', 'high', 'Avatar upload fails over 2 MB', 'AK', 1],
-  ['PLT-205', 2, 4, 'task', 'medium', 'Docker compose quick-start docs', 'PN', 2, { doc: 'Guide' }],
+  ['PLT-246', 2, 4, 'task', 'medium', 'Docker compose quick-start docs', 'PN', 2, { doc: 'Guide' }],
 ];
 
 const EPICS: Array<[string, string, number]> = [

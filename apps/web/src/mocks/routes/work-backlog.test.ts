@@ -34,12 +34,16 @@ describe('the Backlog mock', () => {
       ['PLT Sprint 14', 'active'],
       ['PLT Sprint 15', 'future'],
     ]);
-    expect(keys(backlog.sprints[0]!.issues).slice(0, 2)).toEqual(['PLT-204', 'PLT-218']);
-    expect(backlog.sprints[1]!.committedPoints).toBe(19);
-    expect(backlog.issues).toHaveLength(8);
+    // The active sprint holds the Board's cards too: one store behind both screens.
+    expect(keys(backlog.sprints[0]!.issues)).toEqual(
+      expect.arrayContaining(['PLT-204', 'PLT-218', 'PLT-246']),
+    );
+    expect(keys(backlog.sprints[1]!.issues)).toEqual(['PLT-225', 'PLT-241']);
+    expect(backlog.sprints[1]!.committedPoints).toBe(8);
+    expect(backlog.issues).toHaveLength(7);
     expect(backlog.epics.map((epic) => [epic.key, epic.done, epic.total])).toEqual([
-      ['PLT-180', 3, 9],
-      ['PLT-150', 8, 12],
+      ['PLT-190', 5, 12],
+      ['PLT-150', 9, 14],
       ['PLT-240', 0, 5],
       ['PLT-160', 3, 8],
     ]);
@@ -91,7 +95,7 @@ describe('the Backlog mock', () => {
       moveUnfinishedTo: next,
     });
     expect(done?.status).toBe(200);
-    expect(read(api).sprints[0]!.issues.length).toBe(12);
+    expect(read(api).sprints[0]!.issues.length).toBe(18);
     expect(api.dispatch('POST', `${BASE}/sprints/${next}/start`, {})?.status).toBe(200);
   });
 });

@@ -45,26 +45,6 @@ export function seedVersions(): Row[] {
   }));
 }
 
-export function seedSprints(): Row[] {
-  return [
-    ['PLT Sprint 14', SPRINT_IDS.s14, 'active'],
-    ['PLT Sprint 15', SPRINT_IDS.s15, 'future'],
-  ].map(([name, id, state], index) => ({
-    id: id ?? '',
-    projectId: P,
-    name,
-    goal: index === 0 ? 'Sessions on Postgres' : null,
-    state,
-    startsAt: state === 'active' ? ago(5 * DAY) : null,
-    endsAt: null,
-    capacityPoints: null,
-    completedSnapshot: null,
-    startedAt: state === 'active' ? ago(5 * DAY) : null,
-    closedAt: null,
-    ...stamp(20 * DAY),
-  }));
-}
-
 export function seedProjects(): Row[] {
   return [
     {
@@ -167,9 +147,6 @@ export function seedIssues(): Row[] {
     };
   });
 }
-
-/** The highest number taken so far, so a new issue continues the sequence. */
-export const LAST_NUMBER = 226;
 
 export function seedLinks(): Row[] {
   const link = (n: number, target: number, kind: string) => ({

@@ -1,6 +1,6 @@
 import type { MockDb } from '../db.ts';
 import { fail, notFound, ok, type MockRequest, type MockRoute } from '../types.ts';
-import { askIssueMock, issueMockLabels } from './work-board-delegate.ts';
+import { askIssueMock } from './work-board-delegate.ts';
 import { boardIssueRoutes } from './work-board-issues.ts';
 import { boardMetrics, boardView } from './work-board-view.ts';
 import { boardsOf, boardState, projectRef, projectsOf, workflowOf } from './work-board-state.ts';
@@ -60,10 +60,7 @@ export const workBoardRoutes: MockRoute[] = [
     handle: (request, db) => {
       const project = projectRef(db, request.params['projectId']);
       if (!project) return notFound('Project');
-      const items = [
-        ...issueMockLabels(db, String(project['key'])),
-        ...boardState(db).labels.filter((label) => label['projectId'] === project.id),
-      ];
+      const items = boardState(db).labels.filter((label) => label['projectId'] === project.id);
       return ok({ items, nextCursor: null });
     },
   },

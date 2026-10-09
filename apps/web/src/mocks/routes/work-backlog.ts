@@ -1,6 +1,6 @@
 import { can, emit, type MockDb } from '../db.ts';
 import { newId } from '../seed/time.ts';
-import { backlogIssue, type BacklogIssueRow, type BacklogSprintRow } from '../seed/work-backlog.ts';
+import type { BacklogIssueRow, BacklogSprintRow } from '../seed/work-backlog.ts';
 import { WORK_IDS } from '../seed/work-settings.ts';
 import { bodyOf, fail, invalid, notFound, ok, type MockRequest, type MockRoute } from '../types.ts';
 import {
@@ -11,6 +11,7 @@ import {
   renumber,
   unfinishedOf,
 } from './work-backlog-state.ts';
+import { removeFrom } from './work-issue-store.ts';
 import { workIssuesRoutes } from './work-issues.ts';
 
 /*
@@ -62,19 +63,21 @@ const issueCreate = workIssuesRoutes.find(
 );
 
 /**
- * Creates through the issue mock and mirrors the new row into the backlog's
- * own rows, which the issue mock does not share: one numbering for both, so
- * the key a row shows is the key the slide-over opens.
+ * Creates through the issue mock, which writes the shared store and takes
+ * the project's next key, then puts the new row at the foot of the list.
  */
 function createIssue(request: MockRequest, db: MockDb) {
   const result = issueCreate?.handle(request, db);
   if (!result || result.status !== 201) return result ?? invalid('title', 'Not created');
   const created = result.body as BacklogIssueRow;
-  const state = backlogState(db);
-  const last = [...state.issues].sort(byRank).at(-1);
-  state.issues.push(backlogIssue({ ...created, rank: `${last?.rank ?? ''}n` }));
+  const issues = backlogState(db).issues.sort(byRank);
+  const row = issues.find((issue) => issue.id === created.id);
+  if (row) {
+    issues.splice(issues.indexOf(row), 1);
+    issues.push(row);
+  }
   /** Appending a letter per create would outgrow the 255-character rank; renumber instead. */
-  renumber(state.issues.sort(byRank));
+  renumber(issues);
   return result;
 }
 
@@ -209,7 +212,7 @@ export const workBacklogRoutes: MockRoute[] = [
     }
     const state = backlogState(db);
     for (const issue of state.issues) if (issue.sprintId === sprint.id) issue.sprintId = null;
-    state.sprints = state.sprints.filter((row) => row !== sprint);
+    removeFrom(state.sprints, sprint);
     return undefined;
   }),
   sprintRoute('POST', '/start', start),
