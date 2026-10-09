@@ -63,9 +63,14 @@ function withViews(extensions: AnyExtension[], portals: PortalStore): AnyExtensi
 /** The Docs editor: every registered node, the / [[ # @ lists and code colours. */
 export function createDocEditor(options: CreateDocEditorOptions): Editor {
   const { store, services } = options;
+  // Collaboration brings Yjs undo; ProseMirror's history beside it would undo other people's edits.
+  const collaborative = (options.extensions ?? []).some(
+    (extension) => extension.name === 'collaboration',
+  );
   const schema = docExtensions({
     mention: mentionOptions(store, services),
     references: { pattern: null, suggestion: null },
+    history: !collaborative,
   });
   return new Editor({
     element: null,

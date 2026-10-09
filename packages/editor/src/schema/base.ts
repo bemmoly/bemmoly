@@ -15,6 +15,11 @@ export interface SchemaOptions {
   mention?: Omit<SuggestionOptions, 'editor'>;
   /** Links to records by key; see ReferenceLinks. */
   references?: Partial<ReferenceLinkOptions>;
+  /**
+   * False leaves out ProseMirror's undo history, for collaborative editing, where undo is
+   * Yjs's and covers only the person's own changes.
+   */
+  history?: boolean;
 }
 
 export const HEADING_LEVELS = [1, 2, 3] as const;
@@ -25,6 +30,7 @@ export function baseExtensions(options: SchemaOptions = {}): AnyExtension[] {
       heading: { levels: [...HEADING_LEVELS] },
       underline: false,
       trailingNode: false,
+      ...(options.history === false ? { undoRedo: false as const } : {}),
       link: {
         openOnClick: false,
         autolink: true,
