@@ -76,6 +76,8 @@ function createIssue(db: MockDb, body: Record<string, unknown>) {
     reporterId: db.signedInAs,
   });
   state.issues.push(issue);
+  /** Appending a letter per create would outgrow the 255-character rank; renumber instead. */
+  renumber(state.issues.sort(byRank));
   changed(db, [issue.id]);
   return ok(issue, 201);
 }
