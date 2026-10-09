@@ -8,6 +8,7 @@ import { createFiltersController } from './filters.controller.ts';
 import { createIssuesController } from './issues.controller.ts';
 import { createLabelsController } from './labels.controller.ts';
 import { createLqlController } from './lql.controller.ts';
+import { createMembersController } from './members.controller.ts';
 import { createMetricsController } from './metrics.controller.ts';
 import { createMyWorkController } from './my-work.controller.ts';
 import { createProjectsController } from './projects.controller.ts';
@@ -20,6 +21,7 @@ import { createWorkflowController } from './workflow.controller.ts';
 export function createWorkControllers(services: WorkServices) {
   return {
     projects: createProjectsController(services.projects),
+    members: createMembersController(services.members),
     types: createTypesController(services.types),
     fields: createFieldsController(services.fields),
     labels: createLabelsController(services.labels),
