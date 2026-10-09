@@ -1,9 +1,14 @@
 ---
 /**
  * The Landing mock's closing block: a top border, an optional call to action (the slot) and
- * the footer row. Pages without a call to action get the row's 40px back as top padding.
+ * the footer row. Above the row, in the same type, a line of links to the guides and topic
+ * pages (not in the mock: every page links to them). Without a call to action the block
+ * gets its 40px back as top padding.
  */
+import { pageAt, TOPICS } from '../../data/pages.ts';
 import { FOOTER } from '../../lib/links.ts';
+
+const topics = TOPICS.map(pageAt);
 
 interface Props {
   cta?: boolean;
@@ -14,12 +19,20 @@ const { cta = false } = Astro.props;
 
 <footer class="border-t border-br-row dark:border-br dark:bg-sf">
   <slot />
-  <div
+  <nav
+    aria-label="Guides"
     class:list={[
-      'mx-auto flex max-w-290 flex-wrap items-center gap-x-6 gap-y-3 px-4 pb-10 text-13 text-tx4 sm:px-6 lg:px-12',
+      'mx-auto flex max-w-290 flex-wrap gap-x-6 gap-y-2 px-4 pb-4 text-13 sm:px-6 lg:px-12',
       { 'pt-10': !cta },
     ]}
   >
+    {topics.map((page) => (
+      <a href={page.path} class="text-tx4 hover:text-tx2">
+        {page.name}
+      </a>
+    ))}
+  </nav>
+  <div class="mx-auto flex max-w-290 flex-wrap items-center gap-x-6 gap-y-3 px-4 pb-10 text-13 text-tx4 sm:px-6 lg:px-12">
     <span class="font-semibold text-tx">Bemmoly</span>
     {FOOTER.map((link) => (
       <a href={link.href} class="text-tx4 hover:text-tx2">

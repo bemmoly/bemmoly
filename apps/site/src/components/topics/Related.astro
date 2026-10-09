@@ -1,0 +1,27 @@
+---
+/** Links to the other guides and topic pages, so each page leads to the rest. */
+import { pageAt, TOPICS, type PagePath } from '../../data/pages.ts';
+
+interface Props {
+  current: PagePath;
+}
+
+const { current } = Astro.props;
+const pages = TOPICS.filter((path) => path !== current).map(pageAt);
+---
+
+<nav aria-labelledby="related" class="flex flex-col gap-4 border-t border-br-row pt-8">
+  <h2 id="related" class="text-17 font-semibold tracking-brand text-tx">
+    Read next
+  </h2>
+  <ul class="grid gap-x-10 gap-y-4 sm:grid-cols-2">
+    {pages.map((page) => (
+      <li class="flex flex-col gap-1">
+        <a href={page.path} class="text-15 font-semibold">
+          {page.name}
+        </a>
+        <span class="text-14h leading-desc text-tx3">{page.description}</span>
+      </li>
+    ))}
+  </ul>
+</nav>

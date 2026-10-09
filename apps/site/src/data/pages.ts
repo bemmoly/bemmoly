@@ -48,6 +48,23 @@ export const PAGES = [
     updated: '2026-10-10',
   },
   {
+    path: '/docs/install',
+    name: 'Install guide',
+    title: 'Install guide: Bemmoly on a Linux server in one command',
+    description:
+      'Step by step: pick a VM, point a domain at it, run one command and open the address it prints. What the installer checks, what it writes and what to do next.',
+    updated: '2026-10-10',
+    software: true,
+  },
+  {
+    path: '/docs/compose',
+    name: 'Docker Compose',
+    title: 'Run Bemmoly with Docker Compose: a self-hosted setup guide',
+    description:
+      'Run Bemmoly from the Compose file the installer writes: four services, three of them optional, and one .env file. Every setting explained, then one command.',
+    updated: '2026-10-10',
+  },
+  {
     path: '/changelog',
     name: 'Changelog',
     title: 'Bemmoly changelog: every release and what changed',
@@ -87,3 +104,6 @@ export function trailOf(path: string): SitePage[] {
   const prefixes = ['/', ...parts.map((_, index) => `/${parts.slice(0, index + 1).join('/')}`)];
   return prefixes.flatMap((prefix) => PAGES.filter((page) => page.path === prefix));
 }
+
+/** The guides and topic pages linked from every page's footer and from each other. */
+export const TOPICS: readonly PagePath[] = ['/docs/install', '/docs/compose'];
