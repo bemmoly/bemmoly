@@ -34,7 +34,7 @@ function state(db: MockDb): IssuesState {
 }
 
 const allProjects = (db: MockDb) => [workState(db).project, ...state(db).projects];
-const projectOf = (db: MockDb, keyOrId = '') =>
+export const projectOf = (db: MockDb, keyOrId = '') =>
   allProjects(db).find((row) => row['key'] === keyOrId.toUpperCase() || row.id === keyOrId);
 const issueOf = (db: MockDb, key = '') =>
   state(db).issues.find((row) => row['key'] === key.toUpperCase() && !row['deletedAt']);
