@@ -5,10 +5,11 @@ import { useDocsRealtime } from '../hooks/use-docs-realtime.ts';
 import type { DocsScreenProps } from '../routes.tsx';
 import { docsPaths, keepLinksInApp } from '../shared/navigation.ts';
 import { PageSkeleton } from '../skeletons/docs-skeletons.tsx';
+import { PageBody } from './page-body.tsx';
 
 /**
- * A page at /docs/p/:pageId: a read-only placeholder with the trail, title
- * and plain text until the editor screen lands with Tiptap and collaboration.
+ * A page at /docs/p/:pageId: the trail, title and the live body. A placeholder
+ * frame until the editor screen lands; the body is the real collaborative one.
  */
 export default function PageScreen({ segment }: DocsScreenProps) {
   const page = usePage(segment);
@@ -52,17 +53,7 @@ export default function PageScreen({ segment }: DocsScreenProps) {
           {data.owner ? `${data.owner.name} · ` : ''}
           Updated {formatRelative(data.updatedAt)} · {data.wordCount} words
         </p>
-        {data.wordCount === 0 ? (
-          <EmptyState
-            size="sm"
-            title="This page is empty"
-            description="The editor arrives in a later change."
-          />
-        ) : (
-          <p className="m-0 text-15 whitespace-pre-wrap text-tx2">
-            The editor arrives in a later change; this page has {data.wordCount} words.
-          </p>
-        )}
+        <PageBody page={data} />
       </article>
     </div>
   );
