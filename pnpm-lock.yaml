@@ -287,6 +287,9 @@ importers:
       '@bemmoly/core-web':
         specifier: workspace:*
         version: link:../../packages/core-web
+      '@bemmoly/editor':
+        specifier: workspace:*
+        version: link:../../packages/editor
       '@bemmoly/shared':
         specifier: workspace:*
         version: link:../../packages/shared

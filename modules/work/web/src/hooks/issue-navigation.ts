@@ -62,6 +62,8 @@ export function linkTo(path: string) {
 export function keepLinksInApp(event: MouseEvent<HTMLElement>): void {
   if (!plainClick(event)) return;
   const anchor = (event.target as Element).closest?.('a[href]');
+  /* A click on a link being edited places the caret; it never leaves the page. */
+  if (anchor?.closest('[contenteditable="true"]')) return;
   const href = anchor?.getAttribute('href') ?? '';
   if (!href.startsWith('/') || href.startsWith('//') || anchor?.getAttribute('target')) return;
   event.preventDefault();

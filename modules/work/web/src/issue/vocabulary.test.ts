@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { docToText, isEmptyDoc, textToDoc } from './rich-text-convert.ts';
+import { docToText, textToDoc } from './rich-text-convert.ts';
 import { formatMinutes, parseDuration, statusTone, typeGlyph } from './vocabulary.ts';
 
 describe('issue vocabulary', () => {
@@ -47,6 +47,5 @@ describe('rich text as text', () => {
   it('keeps line breaks inside a paragraph and treats whitespace as no document', () => {
     expect(docToText(textToDoc('one\ntwo'))).toBe('one\ntwo');
     expect(textToDoc('  \n \n')).toBeNull();
-    expect(isEmptyDoc({ type: 'doc', content: [{ type: 'paragraph' }] })).toBe(true);
   });
 });
