@@ -46,6 +46,11 @@ export interface SelectProps extends TriggerAttributes {
   /** Shown in tx5 while no option is chosen. */
   placeholder?: string;
   size?: SelectSize;
+  /**
+   * outline: the bordered control of forms. ghost: a value in a field list that reads as text
+   * until hovered, focused or open, as the Issue sidebar's fields edit in place.
+   */
+  variant?: 'outline' | 'ghost';
   /** Marks the control invalid; a Field with an error sets aria-invalid, which does the same. */
   error?: boolean;
   /**
