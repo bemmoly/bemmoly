@@ -7,6 +7,7 @@ import { useTeams } from '../hooks/projects-list.ts';
 import type { WorkScreenProps } from '../routes.tsx';
 import { projectsQuery } from '../shared/use-project.ts';
 import { CreateProjectDialog } from './create-project-dialog.tsx';
+import { ProjectRowMenu } from './project-row-menu.tsx';
 
 /**
  * The project list at /work/projects, with the create dialog open at /work/projects/new so
@@ -109,6 +110,13 @@ export default function ProjectsScreen({ projectKey: segment }: WorkScreenProps)
                 render: (project) => (
                   <span className="text-12h text-tx4">{formatRelative(project.updatedAt)}</span>
                 ),
+              },
+              {
+                key: 'menu',
+                header: <span className="sr-only">Actions</span>,
+                width: '28px',
+                align: 'center',
+                render: (project) => <ProjectRowMenu project={project} />,
               },
             ]}
           />
