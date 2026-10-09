@@ -82,9 +82,23 @@ export function seedAdminModules(enabled = true): AdminModule[] {
       defaultAccess: 'none',
       restartRequired: false,
     },
+    {
+      id: 'work',
+      name: 'Work',
+      version: '0.2.0',
+      enabled,
+      enabledAt: enabled ? ago(60 * 24 * 3) : null,
+      versionInstalled: enabled ? '0.2.0' : null,
+      changelogState: enabled ? 'current' : 'pending',
+      pendingChangesets: enabled ? 0 : 20,
+      dependsOn: [],
+      defaultAccess: 'teams',
+      restartRequired: false,
+    },
   ];
 }
 
+/** Work is enabled too, so its screens open against the mock work routes. */
 export function seedManifests(enabled = true): ModuleManifest[] {
   if (!enabled) return [];
   return [
@@ -92,6 +106,14 @@ export function seedManifests(enabled = true): ModuleManifest[] {
       id: 'sample',
       version: '0.1.0',
       navigation: [{ id: 'sample', label: 'Sample', path: '/sample', placement: 'top' }],
+    },
+    {
+      id: 'work',
+      version: '0.2.0',
+      navigation: [
+        { id: 'work.board', label: 'Board', path: '/work/board', placement: 'top' },
+        { id: 'work.backlog', label: 'Backlog', path: '/work/backlog', placement: 'top' },
+      ],
     },
   ];
 }
