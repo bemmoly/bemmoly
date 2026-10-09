@@ -98,13 +98,16 @@ describe('error handler', () => {
 
   it('maps malformed JSON bodies to bad_request', async () => {
     const app = await buildApp({ env: TEST_ENV, modules: modulesOf(thrower), logger: false });
-    app.post('/api/v1/echo', async (request) => request.body);
-    const response = await app.inject({
-      method: 'POST',
-      url: '/api/v1/echo',
-      headers: { 'content-type': 'application/json' },
-      payload: '{not json',
-    });
+    app.post('/api/v1/json-bodies', async () => ({ parsed: true }));
+    const post = (payload: string) =>
+      app.inject({
+        method: 'POST',
+        url: '/api/v1/json-bodies',
+        headers: { 'content-type': 'application/json' },
+        payload,
+      });
+    expect((await post('{"title":"ok"}')).json()).toEqual({ parsed: true });
+    const response = await post('{not json');
     expect(response.statusCode).toBe(400);
     expect(response.json()).toMatchObject({ code: 'bad_request' });
   });
