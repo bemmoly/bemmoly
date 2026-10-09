@@ -1,4 +1,5 @@
 import {
+  revealInCanvas,
   RuleChip,
   StatusNode,
   StatusNodeHandle,
@@ -7,11 +8,11 @@ import {
   WorkflowCanvas,
   WorkflowLegend,
 } from '@bemmoly/ui';
-import { useRef, type KeyboardEvent } from 'react';
+import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { useCanvasPointer } from '../hooks/workflow-canvas-pointer.ts';
 import { NUDGE, type WorkflowEditorModel } from '../hooks/workflow-editor.ts';
 import type { DraftTransition, EditorDraft, Selection } from './draft-model.ts';
-import { edgeShapes, pctX, pctY } from './geometry.ts';
+import { contentBounds, edgeShapes, pctX, pctY } from './geometry.ts';
 import { canvasCategory, colorClassOf } from './status-colors.ts';
 
 const ARROWS: Record<string, [number, number]> = {
@@ -63,10 +64,21 @@ export function EditorCanvas({
     onMove: actions.moveStatus,
     onConnect: actions.connect,
   });
+  /** The box the canvas opens on; later edits never move the view on their own. */
+  const [frame] = useState(() => contentBounds(draft));
   const shapes = edgeShapes(draft);
   const byId = new Map(draft.transitions.map((transition) => [transition.id, transition]));
   const selectedStatus = selection?.kind === 'status' ? selection.id : null;
   const selectedTransition = selection?.kind === 'transition' ? selection.id : null;
+
+  // A selection made from the side panel can name a status or transition scrolled out of view.
+  const selectedKind = selection?.kind;
+  const selectedId = selection?.id;
+  useEffect(() => {
+    if (!selectedKind || !selectedId) return;
+    const element = canvas.current?.querySelector(`[data-${selectedKind}-id="${selectedId}"]`);
+    if (element) revealInCanvas(element);
+  }, [selectedKind, selectedId]);
 
   const onKey = (event: KeyboardEvent, target: NonNullable<Selection>) => {
     if (event.key === 'Delete' || event.key === 'Backspace') {
@@ -85,6 +97,9 @@ export function EditorCanvas({
     const step = event.shiftKey ? NUDGE.fine : NUDGE.step;
     actions.select(target);
     actions.nudgeStatus(target.id, arrow[0] * step, arrow[1] * step);
+    // The view follows a node nudged past its edge, once the move has drawn.
+    const node = event.currentTarget;
+    requestAnimationFrame(() => revealInCanvas(node));
   };
 
   const highlightOf = (transition: DraftTransition | undefined) =>
@@ -97,6 +112,7 @@ export function EditorCanvas({
     <WorkflowCanvas
       ref={canvas}
       label={label}
+      {...(frame ? { frame } : {})}
       edges={
         <>
           {shapes.map((shape) => (
@@ -155,6 +171,7 @@ export function EditorCanvas({
         return (
           <TransitionLabel
             key={shape.id}
+            data-transition-id={transition.id}
             interactive
             x={pctX(shape.labelX)}
             y={pctY(shape.labelY)}
