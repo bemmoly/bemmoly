@@ -73,6 +73,18 @@ export function diffIssue(current: Issue, body: UpdateIssueBody): HistoryChange[
   return changes;
 }
 
+/** What the PATCH sets beside the status, so a validator sees a field filled in the same move. */
+function submittedFields(body: UpdateIssueBody): Record<string, unknown> {
+  const submitted: Record<string, unknown> = { ...body.customFields };
+  for (const field of Object.keys(COLUMNS) as Scalar[]) {
+    if (body[field] === undefined) continue;
+    submitted[field] = body[field];
+    submitted[COLUMNS[field]] = body[field];
+  }
+  if (body.labelIds !== undefined) submitted['labelIds'] = body.labelIds;
+  return submitted;
+}
+
 async function statusCategory(tx: SqlExecutor, statusId: string, row: IssueRow): Promise<string> {
   const [status] = await tx<{ category: string }[]>`
     select s.category from workflow_statuses s
@@ -164,7 +176,13 @@ export async function updateIssue(
       const category = await statusCategory(tx, body.statusId, row);
       // The gate authorises, runs the conditions and the validators, and hands
       // back what must run after the move. It throws a typed error when blocked.
-      const move = await deps.workflow.transition(ctx, row, body.statusId, {}, tx);
+      const move = await deps.workflow.transition(
+        ctx,
+        row,
+        body.statusId,
+        submittedFields(body),
+        tx,
+      );
       postActions = move.postActions;
       await tx`
         update issues set status_id = ${body.statusId}, status_changed_at = now(),
