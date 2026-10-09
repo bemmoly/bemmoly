@@ -19,6 +19,7 @@
     "@bemmoly/api-client": "workspace:*",
     "@bemmoly/core": "workspace:*",
     "@bemmoly/core-web": "workspace:*",
+    "@bemmoly/editor": "workspace:*",
     "@bemmoly/shared": "workspace:*",
     "@bemmoly/ui": "workspace:*",
     "@tanstack/react-query": "5.104.1",

@@ -1,9 +1,10 @@
 import type { RichText } from '@bemmoly/module-work/shared';
 
 /*
- * The editor package's Tiptap editor is not in this chunk yet, so descriptions and comments
- * are edited as text. Paragraphs are separated by a blank line, "- " starts a bullet, "1. " a
- * numbered item and "[ ] " or "[x] " a checklist item; other nodes survive as their text.
+ * Text to and from a document, for the create form's plain text fields and for carrying a
+ * comment into that form as a description. Paragraphs are separated by a blank line, "- "
+ * starts a bullet, "1. " a numbered item and "[ ] " or "[x] " a checklist item; other nodes
+ * survive as their text. Everywhere else documents are written in the editor.
  */
 
 export interface PmNode {
@@ -97,9 +98,4 @@ export function textToDoc(text: string): RichText | null {
     };
   });
   return { type: 'doc', content } as RichText;
-}
-
-/** True when a document holds no visible text. */
-export function isEmptyDoc(doc: RichText | null | undefined): boolean {
-  return !docToText(doc).trim();
 }
