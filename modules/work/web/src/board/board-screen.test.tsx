@@ -78,15 +78,19 @@ afterEach(() => {
   server.resetHandlers();
 });
 
-async function renderBoard() {
+function renderScreen(projectKey: string) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   render(
     <QueryClientProvider client={client}>
       <ToastProvider>
-        <BoardScreen projectKey="PLT" rest={[]} />
+        <BoardScreen projectKey={projectKey} rest={[]} />
       </ToastProvider>
     </QueryClientProvider>,
   );
+}
+
+async function renderBoard() {
+  renderScreen('PLT');
   await screen.findByRole('heading', { name: 'Platform Core board' });
 }
 
@@ -135,6 +139,11 @@ describe('Board screen', () => {
       expect(document.activeElement?.getAttribute('aria-label')).toBe('PLT-10 Issue 10'),
     );
     expect(doing.contains(document.activeElement)).toBe(true);
+  });
+
+  it('says a linked project is not one the person can see', async () => {
+    renderScreen('sec');
+    expect(await screen.findByText('There is no project SEC you can see.')).toBeTruthy();
   });
 
   it('puts a carried card back on Escape', async () => {

@@ -120,7 +120,17 @@ export default function BoardScreen({ projectKey }: WorkScreenProps) {
     );
   }
   if (!screen.project) {
-    return <EmptyState title="No project" description="Create a project to get a board." />;
+    // A link to a project the person cannot see must not read as if no project existed.
+    return (
+      <EmptyState
+        title="No project"
+        description={
+          projectKey
+            ? `There is no project ${projectKey.toUpperCase()} you can see.`
+            : 'Create a project to get a board.'
+        }
+      />
+    );
   }
   if (!screen.view || !screen.model) {
     return (
