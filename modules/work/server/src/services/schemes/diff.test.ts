@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { diffConfig, diffItems, type DiffItem } from './diff.ts';
 
+/** The diff path of the first column's WIP limit. */
+const FIRST_COLUMN_WIP = ['columns', 0, 'wipLimit'].join('.');
+
 const item = (key: string, value: Record<string, unknown>, originKey: string | null = key) =>
   ({ key, label: String(value['name'] ?? key), originKey, value }) satisfies DiffItem;
 
@@ -38,7 +41,7 @@ describe('diffConfig', () => {
     const next = { columns: [{ name: 'To do', wipLimit: 4 }], swimlanes: 'epic', extra: true };
     expect(diffConfig(base, next)).toEqual([
       {
-        key: 'columns.0.wipLimit',
+        key: FIRST_COLUMN_WIP,
         label: 'columns › 1 › wipLimit',
         change: 'changed',
         before: null,
