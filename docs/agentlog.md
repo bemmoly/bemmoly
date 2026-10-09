@@ -20,3 +20,25 @@ those kernel tests, as it is before an admin enables it.
 tests, build, and the integration suites (core, server, module-work) — all green.
 [2026-10-08] Next: the remaining Work screens (backlog, issue page and create form, board
 settings and workflow editor) plus the Playwright flows in docs/plan/work.md "Integration".
+[2026-10-09] Added the boards service: a project's first read creates its board from the org
+default board scheme (statuses matched by name) or from its workflow; config is validated
+against the workflow's statuses and LQL; WIP-only edits need `work.board.wip`; the board view is
+one card statement in rank order with lanes resolved in SQL (`GET /work/boards/:id/view`).
+[2026-10-09] Added sprints: start locks the project row so a Scrum project has one active
+sprint and writes the commitment to `sprint_metrics`; complete moves unfinished issues to the
+backlog, the next or a chosen sprint and writes the completion snapshot to the sprint and to
+`sprint_metrics`. Kanban projects cannot start sprints.
+[2026-10-09] Added the backlog read (`GET /work/projects/:key/backlog`) and
+`POST /work/issues/:key/move`, which validates the target sprint and then calls the issue
+service's rank, so lexorank, history and invalidations stay in one place.
+[2026-10-09] Added saved filters at `/work/filters`: visible to the owner and to members of the
+teams they are shared with, changed by the owner only, queries checked with the LQL validator.
+[2026-10-09] Added metrics: burndown rebuilt from issue history, cycle time and throughput from
+status changes, velocity from completion snapshots; cached per board in `sprint_metrics` under a
+key of the latest project change and the day (`GET /work/boards/:id/metrics`,
+`GET /work/sprints/:id/report`). No schema changeset was needed.
+[2026-10-09] Finding: the web client in `modules/work/web/src/api/board-issues.ts` calls
+`POST /work/issues/:key/rank` and `/transition`, which the server serves as `PATCH .../rank` and
+not at all; the Board stream should align with the issue routes.
+[2026-10-09] Checks on Node 24.21.0: module typecheck, lint and unit tests, the module's
+integration suite (7 tests) and format:check, all green.
