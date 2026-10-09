@@ -12,6 +12,7 @@ import { createFieldsService } from './fields/index.ts';
 import { createFiltersService } from './filters/index.ts';
 import { createHistoryService } from './history/index.ts';
 import { createIssuesService } from './issues/index.ts';
+import { createLabelsService } from './labels/index.ts';
 import { createLinksService } from './links/index.ts';
 import { createLqlService } from './lql/index.ts';
 import { createMetricsService } from './metrics/index.ts';
@@ -50,6 +51,7 @@ export function createWorkServices(deps: WorkServiceDeps) {
     projects: createProjectsService(deps),
     types: createIssueTypesService(deps),
     fields: createFieldsService(deps),
+    labels: createLabelsService(deps),
     issues: createIssuesService(issueDeps),
     comments: createCommentsService(issueDeps),
     links: createLinksService(issueDeps),
