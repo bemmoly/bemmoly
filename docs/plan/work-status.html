@@ -1,0 +1,205 @@
+<title>Work Module Handover</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@600&display=swap">
+<style>
+  /* Layout: one reading column; a facts strip, then a status ledger, gaps, waves and agreements. */
+  :root {
+    --bg: #f6f7fb;
+    --surface: #ffffff;
+    --ink: #161b2e;
+    --ink-2: #4a5270;
+    --ink-3: #7a819b;
+    --rule: #e2e5ef;
+    --brand: #2356c9;
+    --brand-soft: #e8eefc;
+    --lilac: #9a85ea;
+    --done: #1f7a4d;
+    --done-soft: #e3f3ea;
+    --part: #9a5b00;
+    --part-soft: #fbf0dc;
+    --miss: #b0263b;
+    --miss-soft: #fbe5e8;
+    --font-display: "IBM Plex Sans Condensed", "IBM Plex Sans", system-ui, sans-serif;
+    --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0e1220; --surface: #161b2c; --ink: #e8ebf5; --ink-2: #b2b8cc; --ink-3: #8189a3;
+      --rule: #273049; --brand: #7d9bf0; --brand-soft: #1c2747; --lilac: #b3a4f1;
+      --done: #5fcf94; --done-soft: #15301f; --part: #e8b25c; --part-soft: #33270f;
+      --miss: #f08597; --miss-soft: #3a1820; color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0e1220; --surface: #161b2c; --ink: #e8ebf5; --ink-2: #b2b8cc; --ink-3: #8189a3;
+    --rule: #273049; --brand: #7d9bf0; --brand-soft: #1c2747; --lilac: #b3a4f1;
+    --done: #5fcf94; --done-soft: #15301f; --part: #e8b25c; --part-soft: #33270f;
+    --miss: #f08597; --miss-soft: #3a1820; color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body { background: var(--bg); color: var(--ink); font: 15px/1.6 var(--font-body); }
+  .page { max-width: 980px; margin: 0 auto; padding-inline: 20px; padding-block: 40px 72px; display: grid; gap: 44px; }
+  h1, h2, h3 { margin: 0; text-wrap: balance; }
+  h1 { font: 600 34px/1.15 var(--font-display); letter-spacing: -0.01em; }
+  h2 { font: 600 22px/1.25 var(--font-display); }
+  h3 { font: 600 15px/1.35 var(--font-body); }
+  p { margin: 0; max-width: 68ch; }
+  .lede { color: var(--ink-2); font-size: 16px; }
+  .eyebrow { font: 500 12px/1 var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--brand); }
+  code, .mono { font-family: var(--font-mono); font-size: 0.88em; }
+  code { background: var(--brand-soft); color: var(--ink); padding: 1px 5px; border-radius: 4px; }
+  header { display: grid; gap: 14px; }
+  section { display: grid; gap: 16px; }
+  .facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 1px; background: var(--rule); border: 1px solid var(--rule); border-radius: 10px; overflow: hidden; }
+  .fact { background: var(--surface); padding: 14px 16px; display: grid; gap: 2px; }
+  .fact b { font: 500 22px/1.2 var(--font-mono); font-variant-numeric: tabular-nums; }
+  .fact span { color: var(--ink-3); font-size: 13px; }
+  .table-wrap { overflow-x: auto; border: 1px solid var(--rule); border-radius: 10px; background: var(--surface); }
+  table { width: 100%; border-collapse: collapse; min-width: 720px; }
+  th, td { text-align: left; vertical-align: top; padding: 11px 14px; border-bottom: 1px solid var(--rule); }
+  tr:last-child td { border-bottom: 0; }
+  th { font: 500 12px/1.3 var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-3); background: var(--bg); }
+  td { font-size: 14px; }
+  td.n { font-family: var(--font-mono); color: var(--ink-3); width: 2.5em; font-variant-numeric: tabular-nums; }
+  .chip { display: inline-block; font: 500 11.5px/1 var(--font-mono); letter-spacing: 0.04em; padding: 4px 7px; border-radius: 5px; white-space: nowrap; }
+  .done { color: var(--done); background: var(--done-soft); }
+  .part { color: var(--part); background: var(--part-soft); }
+  .miss { color: var(--miss); background: var(--miss-soft); }
+  .note { color: var(--ink-2); font-size: 13.5px; }
+  ul.gaps { margin: 0; padding: 0; list-style: none; display: grid; gap: 10px; }
+  ul.gaps li { display: grid; grid-template-columns: 6px 1fr; gap: 12px; background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: 12px 14px; }
+  ul.gaps li::before { content: ""; border-radius: 3px; background: var(--miss); }
+  ul.gaps li.p::before { background: var(--part); }
+  ul.gaps li div { display: grid; gap: 3px; min-width: 0; }
+  .waves { display: grid; gap: 14px; }
+  .wave { background: var(--surface); border: 1px solid var(--rule); border-radius: 12px; padding: 18px; display: grid; gap: 12px; }
+  .wave-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px 14px; }
+  .wave-head .when { color: var(--ink-3); font-size: 13px; }
+  .streams { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 10px; }
+  .stream { border: 1px solid var(--rule); border-radius: 9px; padding: 12px 14px; display: grid; gap: 6px; align-content: start; }
+  .stream .tag { font: 500 11.5px/1 var(--font-mono); color: var(--brand); }
+  .stream p { font-size: 13.5px; color: var(--ink-2); }
+  .agree { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; }
+  .agree > div { background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: 14px 16px; display: grid; gap: 6px; align-content: start; }
+  .agree p { font-size: 14px; color: var(--ink-2); }
+  .bar { display: grid; gap: 6px; }
+  .bar-row { display: grid; grid-template-columns: 150px 1fr 52px; gap: 10px; align-items: center; font-size: 13px; }
+  .bar-row span:first-child { color: var(--ink-2); }
+  .track { height: 10px; background: var(--bg); border-radius: 5px; overflow: hidden; border: 1px solid var(--rule); }
+  .fill { height: 100%; border-radius: 5px; }
+  .fill.k { background: var(--brand); }
+  .fill.s { background: var(--lilac); }
+  .bar-row b { font: 500 13px var(--font-mono); text-align: right; font-variant-numeric: tabular-nums; }
+  footer { color: var(--ink-3); font-size: 13px; border-top: 1px solid var(--rule); padding-top: 16px; }
+  @media (max-width: 520px) {
+    h1 { font-size: 28px; }
+    .bar-row { grid-template-columns: 110px 1fr 44px; }
+  }
+</style>
+
+<main class="page">
+  <header>
+    <span class="eyebrow">Work module · 0.2.0 · handover, 9 October 2026</span>
+    <h1>Where Work stands, and how we finish it</h1>
+    <p class="lede">Shrijayan built the contracts, the server core and the design-system pieces of the Work module on <code>feat/work-module-integration</code> before his credits ran out. The server can already create projects, issues and workflows, and compile LQL to SQL. The screens are not built yet, and boards, sprints, saved filters and metrics have schemas but no services. This page is the inventory and the plan to ship 0.2.0 from his branch.</p>
+  </header>
+
+  <section aria-labelledby="facts">
+    <h2 id="facts">The branch today</h2>
+    <div class="facts">
+      <div class="fact"><b>136</b><span>commits ahead of main, 0 behind</span></div>
+      <div class="fact"><b>255</b><span>files changed</span></div>
+      <div class="fact"><b>+17,990</b><span>lines added, 36 removed</span></div>
+      <div class="fact"><b>20</b><span>schema changesets, every Work table</span></div>
+      <div class="fact"><b>7</b><span>stream branches merged in</span></div>
+    </div>
+    <p class="note">Checked on 9 October on Node 24 from a clean worktree: typecheck, lint, format, unit tests and build all pass. The module's integration suite has one test, which applies the changelog to an empty Postgres. The issues, comments, links, search and transition services have no tests yet.</p>
+  </section>
+
+  <section aria-labelledby="ledger">
+    <h2 id="ledger">The eleven promises of 0.2.0, one by one</h2>
+    <p class="note">Numbered as in <code>docs/plan/work.md</code>. "Server" covers services, routes and schema; "Screens" covers the web module.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>#</th><th>Promise</th><th>Server</th><th>Screens</th><th>What is there</th></tr></thead>
+        <tbody>
+          <tr><td class="n">1</td><td>Enable Work: nav, capabilities, roles matrix</td><td><span class="chip done">DONE</span></td><td><span class="chip done">DONE</span></td><td>Board and Backlog nav, capabilities with org locks. Its <code>defaultAccess: 'teams'</code> is now a suggestion; the 0.1.2 enable dialog asks.</td></tr>
+          <tr><td class="n">2</td><td>Projects with keys, Scrum or Kanban, schemes and overrides with a diff</td><td><span class="chip done">DONE</span></td><td><span class="chip miss">MISSING</span></td><td>Projects, issue types, fields and scheme diff with tests. No project list or create screen.</td></tr>
+          <tr><td class="n">3</td><td>Create issues laid out per type, gap-free keys like <span class="mono">PLT-142</span></td><td><span class="chip part">PARTIAL</span></td><td><span class="chip miss">MISSING</span></td><td>Issue create with numbering under the counter lock and a rank. Labels, versions and components have tables and schemas, no services.</td></tr>
+          <tr><td class="n">4</td><td>Issue page: comments, reactions, history, links, watchers, work log</td><td><span class="chip done">DONE</span></td><td><span class="chip part">PARTIAL</span></td><td>Every endpoint exists. The design system has the issue sections, composer and field list; the page itself is not assembled.</td></tr>
+          <tr><td class="n">5</td><td>Workflow with conditions, validators, post-actions, draft and publish</td><td><span class="chip done">DONE</span></td><td><span class="chip part">PARTIAL</span></td><td>Rules registry, draft, validate, publish, transitions. The workflow canvas components exist; the editor screen does not.</td></tr>
+          <tr><td class="n">6</td><td>Backlog: sprints, drag and drop, epics, capacity, start and close</td><td><span class="chip part">PARTIAL</span></td><td><span class="chip part">PARTIAL</span></td><td>Lexorank, the rank endpoint and the rebalance job exist. No sprint service. Backlog row, epic panel and sprint header components exist.</td></tr>
+          <tr><td class="n">7</td><td>Board: columns, WIP, lanes, quick filters, card layout, colours, metrics</td><td><span class="chip miss">MISSING</span></td><td><span class="chip part">PARTIAL</span></td><td>No board configuration or metrics service. Kanban column, card, swimlane, quick filter and metric tile components exist; the screen is a placeholder.</td></tr>
+          <tr><td class="n">8</td><td>LQL filter bar with autocomplete, saved filters</td><td><span class="chip part">PARTIAL</span></td><td><span class="chip miss">MISSING</span></td><td>Parser, validator and autocomplete in <code>packages/shared</code>, compiled to parameterised SQL behind <code>GET /work/issues/query</code>. Saved filters have a table, no service.</td></tr>
+          <tr><td class="n">9</td><td>Keyword and key search from ⌘K</td><td><span class="chip part">PARTIAL</span></td><td><span class="chip miss">MISSING</span></td><td><code>/work/search</code> and <code>/work/search/suggest</code> exist but are not registered with the kernel's command palette.</td></tr>
+          <tr><td class="n">10</td><td>Inbox and email notifications, live board updates</td><td><span class="chip part">PARTIAL</span></td><td><span class="chip part">PARTIAL</span></td><td>The issue service publishes notifications and realtime events. The web realtime hook exists. Neither has been exercised end to end.</td></tr>
+          <tr><td class="n">11</td><td>"My work" on Home</td><td><span class="chip miss">MISSING</span></td><td><span class="chip miss">MISSING</span></td><td>The kernel has no Home extension point yet, so this needs a small kernel contract first.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section aria-labelledby="gaps">
+    <h2 id="gaps">What stands between the branch and 0.2.0</h2>
+    <ul class="gaps">
+      <li><div><h3>Five screens</h3><p class="note">Board with slide-over, Backlog, Issue page with the create form, Board settings, Workflow editor, plus project list and create. The components they need are mostly in <code>packages/ui</code> already.</p></div></li>
+      <li><div><h3>Board, sprint, saved-filter and metrics services</h3><p class="note">Schemas and tables exist; the services, routes and tests do not. Sprint close writes the velocity snapshot into <code>sprint_metrics</code>.</p></div></li>
+      <li><div><h3>Labels, versions and components</h3><p class="note">Tables and schemas only. The create form and the issue page need them.</p></div></li>
+      <li class="p"><div><h3>Tests where it matters most</h3><p class="note">Gap-free numbering under concurrent creates, transitions with post-actions, comment threads, links and search have no tests. These need Testcontainers integration tests before release.</p></div></li>
+      <li class="p"><div><h3>Kernel touch points</h3><p class="note">Register Work search with the command palette, and add a Home extension point for "my work". Both are small kernel changes, reviewed like any other.</p></div></li>
+      <li class="p"><div><h3>The integration pass in the plan</h3><p class="note">Playwright flows, board p95 against the budget in tech design §20, enable and disable twice, every screen beside its mock.</p></div></li>
+    </ul>
+  </section>
+
+  <section aria-labelledby="plan">
+    <h2 id="plan">The plan to finish, in three waves</h2>
+    <p class="note">Each stream is one agent in its own worktree, branched from <code>feat/work-module-integration</code> and merged back into it with green checks. Wave 2 waits only for the server pieces it calls.</p>
+    <div class="waves">
+      <div class="wave">
+        <div class="wave-head"><h3>Wave 1 · four streams in parallel</h3><span class="when">Starts now; nothing blocks it.</span></div>
+        <div class="streams">
+          <div class="stream"><span class="tag">SERVER · BOARDS</span><h3>Boards, sprints, filters, metrics</h3><p>Board configuration (columns, WIP, lanes, card layout, colour rules), sprint create, start and close with the velocity snapshot, backlog endpoints, saved filters shared with a team, velocity, burndown, cycle time and throughput.</p></div>
+          <div class="stream"><span class="tag">SERVER · HARDENING</span><h3>Labels, versions, search, Home</h3><p>Labels, versions and components services; integration tests for numbering, transitions, comments, links and search; Work search in the command palette; the kernel Home extension point and the "my work" lists.</p></div>
+          <div class="stream"><span class="tag">WEB · ISSUE</span><h3>Issue page, slide-over, create form, projects</h3><p>The Issue mock with every section, the same detail in a slide-over for the board, the create form laid out per type, and project list and create.</p></div>
+          <div class="stream"><span class="tag">WEB · WORKFLOW</span><h3>Workflow editor</h3><p>The Workflow mock: status nodes, transitions, rule chips, draft, validate and publish, on the workflow API that already exists.</p></div>
+        </div>
+      </div>
+      <div class="wave">
+        <div class="wave-head"><h3>Wave 2 · three screens on the new services</h3><span class="when">Starts when the boards stream merges.</span></div>
+        <div class="streams">
+          <div class="stream"><span class="tag">WEB · BOARD</span><h3>Board</h3><p>Scrum and Kanban columns, drag and drop with optimistic rank, swimlanes, quick filters, the LQL filter bar, the metrics strip and live updates.</p></div>
+          <div class="stream"><span class="tag">WEB · BACKLOG</span><h3>Backlog</h3><p>Sprint containers, drag between sprints and backlog, the epic panel, capacity against committed points, start and close sprint.</p></div>
+          <div class="stream"><span class="tag">WEB · SETTINGS</span><h3>Board settings</h3><p>Schemes with overrides and the diff, columns, lanes, card layout, colour rules, method, cadence and estimation, issue types and fields.</p></div>
+        </div>
+      </div>
+      <div class="wave">
+        <div class="wave-head"><h3>Wave 3 · integrate, polish, release</h3><span class="when">Once every screen is in.</span></div>
+        <div class="streams">
+          <div class="stream"><span class="tag">QUALITY</span><h3>Flows and budgets</h3><p>Playwright: create a project, create an issue, move it across the board, plan a sprint, publish a workflow. Board p95 measured against §20. Enable and disable the module twice.</p></div>
+          <div class="stream"><span class="tag">POLISH</span><h3>The premium pass</h3><p>Motion on drag, open and close; hover and focus states; skeletons instead of blank cards; empty states that say what to do next. Each screen checked beside its mock.</p></div>
+          <div class="stream"><span class="tag">RELEASE</span><h3>0.2.0</h3><p>Merge to main, cut 0.2.0 through the version pull request, and update the test VM from Settings › Updates with the in-app button.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="ways">
+    <h2 id="ways">How we work on it</h2>
+    <div class="agree">
+      <div><h3>Authorship</h3><p>Commits to the Work module, its design-system components and its plan are authored as <span class="mono">Shrijayan &lt;81805145+shrijayan@users.noreply.github.com&gt;</span>, the address on his own commits, so GitHub links them to his profile. Kernel and release commits stay with Keerthivasan. One author per commit, no co-author lines.</p></div>
+      <div><h3>Merging</h3><p>Streams merge into <code>feat/work-module-integration</code>. The final pull request to main uses <b>Create a merge commit</b>: it keeps every commit and its author exactly. Squash would fold them into one commit, and rebase can fail on the merge commits already in the branch.</p></div>
+      <div><h3>Ground rules</h3><p>The mocks are the pixel source; every screen is checked in a browser beside its mock. <code>AGENTS.md</code> applies: no file over 300 lines, a changeset per schema or user-visible change, green checks before every merge.</p></div>
+    </div>
+    <div class="bar" role="img" aria-label="Commit authors on main: Keerthivasan 297, Shrijayan 3. After merging the branch: Shrijayan 139. Projected after 0.2.0: roughly 300 each.">
+      <div class="bar-row"><span>Keerthivasan, main</span><div class="track"><div class="fill k" style="width: 100%"></div></div><b>297</b></div>
+      <div class="bar-row"><span>Shrijayan, main</span><div class="track"><div class="fill s" style="width: 1%"></div></div><b>3</b></div>
+      <div class="bar-row"><span>Shrijayan, with branch</span><div class="track"><div class="fill s" style="width: 46.8%"></div></div><b>139</b></div>
+      <div class="bar-row"><span>Shrijayan, at 0.2.0</span><div class="track"><div class="fill s" style="width: 100%; opacity: 0.55"></div></div><b>~300</b></div>
+    </div>
+    <p class="note">The last bar is a projection: the three waves should add roughly 150 to 200 commits, all in the Work module.</p>
+  </section>
+
+  <footer>Sources: <code>git log</code> and <code>git diff</code> of <code>origin/feat/work-module-integration</code> against <code>origin/main</code> at <span class="mono">f4f9250</span>, <code>docs/plan/work.md</code>, <code>docs/agentlog.md</code>, and a full check run on 9 October 2026.</footer>
+</main>
