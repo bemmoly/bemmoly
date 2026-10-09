@@ -12,6 +12,7 @@ test('the issue page saves a rich description with a mention, a comment and a re
   page,
   admin,
   run,
+  me,
   apiFor,
 }) => {
   const project = await admin.createProject({ key: uniqueKey('ISU'), name: 'Issue flow' });
@@ -21,7 +22,7 @@ test('the issue page saves a rich description with a mention, a comment and a re
 
   await page.goto(`/work/issue/${issue.key}`);
   await expect(page.getByRole('heading', { name: 'Rate limit the exports' })).toBeVisible();
-  await expect(page.getByText(`${run.admin.name} created the issue`)).toBeVisible();
+  await expect(page.getByText(`${me.name} created the issue`)).toBeVisible();
 
   // Description: plain words, a bold one, and a mention picked from the people list.
   await page.getByRole('button', { name: 'Add description…' }).click();
