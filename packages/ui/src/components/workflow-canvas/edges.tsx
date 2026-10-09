@@ -221,11 +221,18 @@ export function WorkflowLegend({ className }: { className?: string }) {
 export interface TransitionRowProps {
   children: ReactNode;
   onMore?: () => void;
+  /** Names the ··· button for this row, e.g. "Edit Approve"; rows in a list need distinct names. */
+  moreLabel?: string;
   className?: string;
 }
 
 /** "→ Testing (Approve)": a transition out of the selected status, in the side panel. */
-export function TransitionRow({ children, onMore, className }: TransitionRowProps) {
+export function TransitionRow({
+  children,
+  onMore,
+  moreLabel = 'Transition actions',
+  className,
+}: TransitionRowProps) {
   return (
     <div
       className={cx(
@@ -238,7 +245,7 @@ export function TransitionRow({ children, onMore, className }: TransitionRowProp
       {onMore && (
         <button
           type="button"
-          aria-label="Transition actions"
+          aria-label={moreLabel}
           onClick={onMore}
           className={cx(
             'flex cursor-pointer border-0 bg-transparent p-0 text-tx6 hover:text-tx2',
