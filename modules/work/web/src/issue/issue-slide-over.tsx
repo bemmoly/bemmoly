@@ -1,14 +1,8 @@
-import {
-  Drawer,
-  EmptyState,
-  FieldSwatch,
-  IconButton,
-  KeyChip,
-  Skeleton,
-  TypeGlyph,
-} from '@bemmoly/ui';
+import { Drawer, EmptyState, FieldSwatch, IconButton, KeyChip, TypeGlyph } from '@bemmoly/ui';
+import { useState } from 'react';
 import { useIssue } from '../hooks/issue-detail.ts';
 import { keepLinksInApp, navigateTo, workPaths } from '../hooks/issue-navigation.ts';
+import { IssuePanelSkeleton } from '../skeletons/issue-skeleton.tsx';
 import { IssueBody } from './issue-body.tsx';
 import { IssueMoreMenu } from './issue-header.tsx';
 import { typeGlyph } from './vocabulary.ts';
@@ -29,10 +23,18 @@ export interface IssueSlideOverProps {
  * page: the epic and key trail, open-full-page and more, then the Issue page's body at panel
  * size with Details under the description, as the mock lays it out.
  */
-export function IssueSlideOver({ issueKey, onClose, variant = 'docked' }: IssueSlideOverProps) {
+export function IssueSlideOver({
+  issueKey: openKey,
+  onClose,
+  variant = 'docked',
+}: IssueSlideOverProps) {
+  // The panel slides out after it is closed; it keeps showing the issue it had until it is gone.
+  const [lastKey, setLastKey] = useState(openKey);
+  if (openKey !== null && openKey !== lastKey) setLastKey(openKey);
+  const issueKey = openKey ?? lastKey;
   const query = useIssue(issueKey ?? undefined);
   const issue = query.data;
-  const open = issueKey !== null;
+  const open = openKey !== null;
 
   return (
     <Drawer
@@ -76,12 +78,7 @@ export function IssueSlideOver({ issueKey, onClose, variant = 'docked' }: IssueS
        * keeps the clipped cards from shrinking inside the drawer's scrolling column.
        */}
       <div className="flex flex-col gap-4.5" onClick={keepLinksInApp}>
-        {query.isPending && (
-          <div aria-busy className="flex flex-col gap-4">
-            <Skeleton height={24} width="70%" />
-            <Skeleton shape="block" height={160} />
-          </div>
-        )}
+        {query.isPending && <IssuePanelSkeleton />}
         {query.isError && (
           <EmptyState
             title={`${issueKey ?? 'The issue'} could not be opened`}
