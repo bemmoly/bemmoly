@@ -40,10 +40,11 @@ export function useBoardSettingsData(projectKey: string | undefined) {
   /** The list carries the org defaults too; the project's own copy is the one its board maps. */
   const workflow =
     workflows.data?.find((flow) => flow.projectId === projectId) ?? workflows.data?.[0];
+  /** This project's issues only: a workflow shared by several projects counts all of theirs. */
   const counts = useQuery({
-    queryKey: workWorkflowKeys.counts(workflow?.id ?? ''),
-    queryFn: () => api.work.workflows.statusCounts(workflow?.id ?? ''),
-    enabled: Boolean(workflow),
+    queryKey: workWorkflowKeys.counts(workflow?.id ?? '', projectId),
+    queryFn: () => api.work.workflows.statusCounts(workflow?.id ?? '', projectId),
+    enabled: Boolean(workflow) && enabled,
     retry: false,
   });
   const fields = useQuery({

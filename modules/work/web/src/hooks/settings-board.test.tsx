@@ -38,6 +38,15 @@ describe('useBoardSettings', () => {
     holder.fake = createFakeWork();
   });
 
+  it("counts only this project's issues, though the workflow may be shared", async () => {
+    await loaded();
+    await waitFor(() => expect(holder.fake.writes.counts).toHaveLength(1));
+    expect(holder.fake.writes.counts[0]).toEqual([
+      '00000000-0000-7000-8000-0000000000c1',
+      holder.fake.project.id,
+    ]);
+  });
+
   it('compares the board with the org default matched by status name', async () => {
     const { result } = await loaded();
     expect(result.current.overrides.map((row) => [row.label, row.after])).toEqual([
