@@ -6,7 +6,7 @@ import { richTextToPlain } from '../../../../shared/rich-text.ts';
 import { recordHistory, type HistoryChange } from '../history/index.ts';
 import { actorUserId, projectResource, requireDatabase, type IssueServiceDeps } from './deps.ts';
 import { loadFieldDefinitions, validateCustomFields } from './fields.ts';
-import { notify, publishIssueChange, watcherIds } from './notify.ts';
+import { notify, notifyDescriptionMentions, publishIssueChange, watcherIds } from './notify.ts';
 import { assertOwnReferences } from './references.ts';
 import { loadIssueById, loadIssueByKey, toIssue, type IssueRow } from './rows.ts';
 
@@ -131,9 +131,13 @@ async function tellPeople(
   ctx: RequestContext,
   tx: SqlExecutor,
   issue: Issue,
+  previous: Issue,
   changes: readonly HistoryChange[],
   statusName: string | null,
 ) {
+  if (changes.some((change) => change.field === 'description')) {
+    await notifyDescriptionMentions(deps, ctx, tx, issue, previous.description);
+  }
   const assigned = changes.find((change) => change.field === 'assigneeId');
   if (assigned && typeof assigned.to === 'string') {
     await notify(deps, ctx, tx, issue, {
@@ -205,7 +209,7 @@ export async function updateIssue(
       board: boardChange,
       sprintIds: [current.sprintId, issue.sprintId],
     });
-    await tellPeople(deps, ctx, tx, issue, changes, statusName);
+    await tellPeople(deps, ctx, tx, issue, current, changes, statusName);
     return issue;
   });
   if (postActions.length === 0) return updated as Issue;

@@ -4,7 +4,9 @@ import {
   NOTIFICATION_EVENT_KINDS,
   type NotificationRequestedPayload,
 } from '@bemmoly/shared';
+import type { RichText } from '../../../../shared/common.ts';
 import { WORK_REALTIME_KINDS } from '../../../../shared/realtime.ts';
+import { mentionedUserIds } from '../../../../shared/rich-text.ts';
 import { actorUserId, projectResource, type IssueServiceDeps } from './deps.ts';
 
 /*
@@ -125,5 +127,28 @@ export async function notify(
     entity: { kind: 'issue', id: issue.id },
     payload,
     transaction: tx,
+  });
+}
+
+/**
+ * The people a description names for the first time: a mention in the
+ * description reaches them as one in a comment does, once, not on every
+ * later edit that keeps it.
+ */
+export async function notifyDescriptionMentions(
+  deps: Pick<IssueServiceDeps, 'events' | 'now'>,
+  ctx: RequestContext,
+  tx: SqlExecutor,
+  issue: IssueRef & { title: string; description: RichText | null; updatedAt: string },
+  previous: RichText | null,
+): Promise<void> {
+  const before = new Set(mentionedUserIds(previous));
+  const named = mentionedUserIds(issue.description).filter((id) => !before.has(id));
+  if (named.length === 0) return;
+  await notify(deps, ctx, tx, issue, {
+    kind: 'mention',
+    recipientIds: named,
+    body: issue.title,
+    dedupeKey: `issue:${issue.id}:description-mention:${issue.updatedAt}`,
   });
 }
