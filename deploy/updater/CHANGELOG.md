@@ -1,5 +1,11 @@
 # @bemmoly/updater
 
+## 0.1.5
+
+### Patch Changes
+
+- @bemmoly/shared@0.1.5
+
 ## 0.1.4
 
 ### Patch Changes
