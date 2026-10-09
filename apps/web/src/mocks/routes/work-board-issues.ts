@@ -16,20 +16,36 @@ const W = '/api/v1/work';
 type Rule = { name: string; args: Record<string, unknown> };
 type Transition = Row & { fromStatusId: string | null; toStatusId: string; name: string };
 
-/** Why a transition is closed for an issue: the mock reads the PR and reviewer custom fields. */
+const rulesOf = (transition: Transition) =>
+  transition['rules'] as { conditions: Rule[]; validators: Rule[] } | undefined;
+
+/** Why a transition's conditions close it for an issue, as the transitions list reports. */
 function blockers(transition: Transition, issue: MockIssue): string[] {
-  const rules = transition['rules'] as { conditions: Rule[]; validators: Rule[] } | undefined;
-  const reasons: string[] = [];
-  for (const rule of rules?.conditions ?? []) {
-    if (rule.name === 'pr_linked' && !issue.customFields['pr'])
-      reasons.push('Link a pull request before moving this issue to review.');
-  }
-  for (const rule of rules?.validators ?? []) {
+  return (rulesOf(transition)?.conditions ?? []).flatMap((rule) => {
     const field = String(rule.args['field'] ?? '');
-    if (rule.name === 'field_not_empty' && !issue.customFields[field])
-      reasons.push(`Set ${field} before moving this issue.`);
-  }
-  return reasons;
+    if (rule.name === 'field_set' && !issue.customFields[field])
+      return [`Set ${field === 'pullRequest' ? 'the pull request' : field} first.`];
+    if (
+      rule.name === 'subtasks_done' &&
+      issue.subtasks &&
+      issue.subtasks.done < issue.subtasks.total
+    )
+      return ['Finish the subtasks first.'];
+    return [];
+  });
+}
+
+/** What the validators want that a drop on the board cannot give, checked when it is made. */
+function incomplete(transition: Transition, issue: MockIssue): string[] {
+  return (rulesOf(transition)?.validators ?? []).flatMap((rule) => {
+    if (rule.name === 'comment_required')
+      return ['This move needs a comment; make it from the issue.'];
+    if (rule.name !== 'required_fields') return [];
+    const fields = (rule.args['fields'] as string[] | undefined) ?? [];
+    return fields
+      .filter((field) => !issue.customFields[field])
+      .map((field) => `Set ${field} first.`);
+  });
 }
 
 function graph(db: MockDb, issue: MockIssue) {
@@ -108,6 +124,11 @@ export const boardIssueRoutes: MockRoute[] = [
         const reasons = blockers(transition, issue);
         if (reasons.length > 0)
           return fail(400, 'validation_failed', 'The transition is blocked', { reasons });
+        const missing = incomplete(transition, issue);
+        if (missing.length > 0)
+          return fail(400, 'validation_failed', 'The transition form is not complete', {
+            reasons: missing,
+          });
       }
       const theirs = askIssueMock('PATCH', '/issues/:key', request, db);
       if (!issue) return theirs ?? notFound('Issue');
