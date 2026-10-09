@@ -9,7 +9,7 @@ const enabled = (api: ReturnType<typeof createMockApi>) =>
 describe('the mock module seed', () => {
   it('starts a fresh install with every module off and no grants', () => {
     const api = createMockApi('fresh');
-    expect(api.db.adminModules.map((module) => module.id)).toEqual(['sample', 'work']);
+    expect(api.db.adminModules.map((module) => module.id)).toEqual(['sample', 'work', 'docs']);
     expect(enabled(api)).toEqual([]);
     expect(api.db.manifests).toEqual([]);
     expect(api.db.grants).toEqual([]);
@@ -17,7 +17,7 @@ describe('the mock module seed', () => {
 
   it('seeds the demo workspace with Work enabled for the Platform team', () => {
     const api = createMockApi('ready');
-    expect(enabled(api)).toEqual(['sample', 'work']);
+    expect(enabled(api)).toEqual(['sample', 'work', 'docs']);
     const work = api.db.manifests.find((manifest) => manifest.id === 'work');
     expect(work?.name).toBe('Work');
     expect(
