@@ -1,5 +1,7 @@
 import { useId, type ReactNode } from 'react';
 import { cx } from '../../lib/cx.ts';
+import { DIALOG_MOTION } from '../../lib/motion.ts';
+import { usePresence } from '../../lib/presence.ts';
 import { useDialog } from '../../lib/use-dialog.ts';
 import { IconButton } from '../button/icon-button.tsx';
 
@@ -35,19 +37,22 @@ export function Modal({
   width = 'md',
   className,
 }: ModalProps) {
-  const { ref, onBackdropClick } = useDialog(open, onClose);
+  const presence = usePresence(open);
+  const { ref, onBackdropClick } = useDialog(presence.mounted, onClose);
   const titleId = useId();
   const descId = useId();
-  if (!open) return null;
+  if (!presence.mounted) return null;
   return (
     <dialog
       ref={ref}
       aria-labelledby={titleId}
       aria-describedby={description ? descId : undefined}
       onClick={onBackdropClick}
+      data-state={presence.leaving ? 'closed' : 'open'}
       className={cx(
         'm-auto max-h-[calc(100vh-96px)] max-w-[calc(100vw-32px)] flex-col overflow-hidden rounded-dialog border-0 bg-sf p-0 text-13 text-tx shadow-modal open:flex',
         'backdrop:bg-scrim',
+        DIALOG_MOTION,
         WIDTHS[width],
         className,
       )}
