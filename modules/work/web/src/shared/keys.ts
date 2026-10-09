@@ -19,4 +19,5 @@ export const workKeys = {
   issueTypes: (projectId: string) => [...workKeys.project(projectId), 'issue-types'] as const,
   labels: (projectId: string) => [...workKeys.project(projectId), 'labels'] as const,
   issue: (key: string) => [...queryKeys.work(), 'issue', key] as const,
+  myIssues: () => [...queryKeys.work(), 'my-issues'] as const,
 } as const;
