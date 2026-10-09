@@ -7,6 +7,7 @@ export {
   type ModuleCatalog,
 } from './catalog.ts';
 export type { RequestAuthorization, RequestContext } from './context.ts';
+export { createContainerMemberships } from './memberships.ts';
 export { countActiveOrgAdmins, loadPrincipal, type Principal } from './loaders.ts';
 export { createAuthorize, createModuleAccessResolver } from './module-access.ts';
 export { createModuleAccessWriter } from './module-access-writer.ts';
