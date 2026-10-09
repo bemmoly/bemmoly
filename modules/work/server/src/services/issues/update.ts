@@ -206,9 +206,15 @@ export async function updateIssue(
     await tellPeople(deps, ctx, tx, issue, changes, statusName);
     return issue;
   });
-  if (postActions.length > 0) {
-    // Post-actions run after the status change is committed, on the row as it now stands.
-    await deps.workflow.runPostActions(ctx, await loadIssueByKey(sql, key), postActions);
-  }
-  return updated as Issue;
+  if (postActions.length === 0) return updated as Issue;
+  // Post-actions run after the status change is committed, on the row as it now stands.
+  await deps.workflow.runPostActions(ctx, await loadIssueByKey(sql, key), postActions);
+  // They may have changed the assignee, sprint or resolution: answer with the row
+  // as they left it, and tell the open screens, which saw only the move.
+  const settled = toIssue(await loadIssueByKey(sql, key));
+  await publishIssueChange(deps, sql, settled, {
+    board: true,
+    sprintIds: [(updated as Issue).sprintId, settled.sprintId],
+  });
+  return settled;
 }
