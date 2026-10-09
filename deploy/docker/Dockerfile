@@ -23,11 +23,12 @@ COPY pnpm-lock.yaml pnpm-workspace.yaml .pnpmfile.cjs package.json ./
 RUN pnpm fetch --store-dir "$PNPM_STORE"
 
 # The web shell, built with its dev dependencies. The shell bundles every module's web
-# chunk from modules/*/web/src, so the modules' own dependencies are installed too.
+# chunk from modules/*/web/src, so each module and its workspace dependencies (such as
+# @bemmoly/editor) are installed too. Selecting by package name is what pulls those in.
 FROM pnpm AS web
 COPY . .
 RUN pnpm install --offline --frozen-lockfile --store-dir "$PNPM_STORE" \
-      --filter "@bemmoly/web..." --filter "./modules/*..." \
+      --filter "@bemmoly/web..." --filter "@bemmoly/module-*..." \
  && pnpm --filter @bemmoly/web build
 
 # The server and the packages it loads, production dependencies only. Internal packages
