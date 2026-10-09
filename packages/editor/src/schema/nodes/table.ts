@@ -11,13 +11,15 @@ import type { DocNode, ExportContext } from './types.ts';
 const rowsOf = (node: RichTextNode) => node.content ?? [];
 const cellsOf = (row: RichTextNode) => row.content ?? [];
 
-/** A cell's paragraphs as one line, for formats whose cells hold only inline content. */
+/**
+ * A cell's paragraphs as one line, for formats whose cells hold only inline content. The
+ * Markdown printer already escapes a pipe in text, so the row stays one row.
+ */
 function cellLine(cell: RichTextNode, context: ExportContext): string {
   return (cell.content ?? [])
     .map((block) => context.inline(block.content))
     .filter(Boolean)
-    .join(' ')
-    .replace(/\|/g, '\\|');
+    .join(' ');
 }
 
 function tableMarkdown(node: RichTextNode, context: ExportContext): string {
