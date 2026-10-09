@@ -9,6 +9,7 @@ import { statePath, type Person } from './state.ts';
 const ADMIN = { name: 'Rohan S.', email: 'rohan@acmelabs.dev', password: 'correct horse battery' };
 const MEMBER = { name: 'Sam R.', email: 'sam@acmelabs.dev', password: 'twelve chars ok' };
 const OBSERVER = { name: 'Priya K.', email: 'priya@acmelabs.dev', password: 'twelve chars ok' };
+const DRIVER = { name: 'Jonas M.', email: 'jonas@acmelabs.dev', password: 'twelve chars ok' };
 
 async function expectOk(response: Awaited<ReturnType<APIRequestContext['get']>>, what: string) {
   if (!response.ok()) throw new Error(`${what}: ${response.status()} ${await response.text()}`);
@@ -34,6 +35,7 @@ export interface SeededPeople {
   admin: Person;
   member: Person;
   observer: Person;
+  driver: Person;
   team: { id: string; name: string };
 }
 
@@ -68,6 +70,7 @@ export async function seedPeople(baseURL: string): Promise<SeededPeople> {
   const memberRole = roles.find((role) => role.key === 'member')?.id;
   const member = await invite(admin, baseURL, MEMBER, memberRole);
   const observer = await invite(admin, baseURL, OBSERVER, memberRole);
+  const driver = await invite(admin, baseURL, DRIVER, memberRole);
   const adminPerson = {
     id: adminId,
     ...ADMIN,
@@ -78,6 +81,7 @@ export async function seedPeople(baseURL: string): Promise<SeededPeople> {
     admin: adminPerson,
     member,
     observer,
+    driver,
     team: { id: String(team['id']), name: String(team['name']) },
   };
 }
