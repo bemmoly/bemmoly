@@ -25,6 +25,24 @@ export default defineModule({
       path: '/work/backlog',
       placement: 'top',
     });
+    ctx.navigation.add({
+      id: 'work.projects',
+      label: 'Projects',
+      path: '/work/projects',
+      placement: 'top',
+    });
+    ctx.navigation.add({
+      id: 'work.create-issue',
+      label: 'Issue',
+      path: '/work/create',
+      placement: 'create',
+    });
+    ctx.navigation.add({
+      id: 'work.create-project',
+      label: 'Project',
+      path: '/work/projects/new',
+      placement: 'create',
+    });
     for (const capability of WORK_CAPABILITIES) ctx.capabilities.add(capability);
     defineWorkSettings(ctx.settings);
     const services = createWorkServices({
