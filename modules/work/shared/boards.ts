@@ -89,6 +89,9 @@ export const createBoardBodySchema = z.object({
   projectId: z.uuid().optional(),
 });
 
+/** `/projects/:key/...` under boards, sprints and the backlog: a project key or its id. */
+export const projectRefParamsSchema = z.object({ key: z.string().trim().min(1).max(64) });
+
 export const listBoardsQuerySchema = z.object({
   /** A project's boards; absent lists the org default board scheme. */
   projectId: z.uuid().optional(),
