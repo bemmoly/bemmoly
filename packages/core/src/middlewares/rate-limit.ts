@@ -80,6 +80,13 @@ function storeClass(sql: SqlClient, sweepProbability: number): FastifyRateLimitS
 
 /** Anonymous by design, so budgeted per IP: sign-in, setup and email unsubscribe links. */
 const STRICT_PATHS = ['/auth/', '/setup/', '/email-unsubscriptions'];
+/**
+ * Anonymous reads the web app makes on every page load, before it knows who is
+ * signed in. Under the strict budget, ten page loads a minute from one address
+ * (an office behind one NAT) locked everyone there out; they share the
+ * per-person budget instead, which counts them per IP until someone signs in.
+ */
+const BOOT_READS = ['/setup/status'];
 
 function actorKey(request: FastifyRequest): string {
   const actor = request.actor ?? null;
@@ -102,7 +109,10 @@ export const rateLimiting = fp<RateLimitingOptions>(
       if (route.config.rateLimit !== undefined) return;
       if (!route.url.startsWith(`${apiPrefix}/`)) {
         route.config.rateLimit = false;
-      } else if (STRICT_PATHS.some((path) => route.url.startsWith(`${apiPrefix}${path}`))) {
+      } else if (
+        STRICT_PATHS.some((path) => route.url.startsWith(`${apiPrefix}${path}`)) &&
+        !BOOT_READS.some((path) => route.url === `${apiPrefix}${path}`)
+      ) {
         route.config.rateLimit = {
           max: strict.max,
           timeWindow: strict.windowMs,
