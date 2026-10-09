@@ -1,4 +1,4 @@
-import { ForbiddenError, NotFoundError } from '@bemmoly/shared';
+import { ForbiddenError, NotFoundError, ValidationError } from '@bemmoly/shared';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { startWorkHarness, type HarnessStart, type WorkHarness } from '../int-support.ts';
 
@@ -86,5 +86,33 @@ describe('issues against Postgres', () => {
       [true, null],
       [null, true],
     ]);
+  });
+  it('refuses a label, version or component of another project', async (ctx) => {
+    if (!start.available) return ctx.skip(start.reason);
+    const admin = work.as(work.users.admin);
+    const home = await work.project('HOME');
+    await work.project('AWAY');
+    const label = await work.services.labels.create(admin, 'AWAY', { name: 'away' });
+    const version = await work.services.versions.create(admin, 'AWAY', { name: '1.0' });
+    const component = await work.services.components.create(admin, 'AWAY', { name: 'Away' });
+    await expect(
+      work.issue(home, 'Borrowed label', { labelIds: [label.id] }),
+    ).rejects.toBeInstanceOf(ValidationError);
+    await expect(
+      work.issue(home, 'Borrowed version', { fixVersionId: version.id }),
+    ).rejects.toBeInstanceOf(ValidationError);
+    const issue = await work.issue(home, 'Stays home');
+    for (const patch of [
+      { labelIds: [label.id] },
+      { fixVersionId: version.id },
+      { componentId: component.id },
+    ]) {
+      await expect(work.services.issues.update(admin, issue.key, patch)).rejects.toBeInstanceOf(
+        ValidationError,
+      );
+    }
+    const own = await work.services.versions.create(admin, 'HOME', { name: '1.0' });
+    const updated = await work.services.issues.update(admin, issue.key, { fixVersionId: own.id });
+    expect(updated.fixVersionId).toBe(own.id);
   });
 });
