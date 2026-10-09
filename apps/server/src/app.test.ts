@@ -51,6 +51,14 @@ describe('buildApp', () => {
           navigation: [
             { id: 'work.board', label: 'Board', path: '/work/board', placement: 'top' },
             { id: 'work.backlog', label: 'Backlog', path: '/work/backlog', placement: 'top' },
+            { id: 'work.projects', label: 'Projects', path: '/work/projects', placement: 'top' },
+            { id: 'work.create-issue', label: 'Issue', path: '/work/create', placement: 'create' },
+            {
+              id: 'work.create-project',
+              label: 'Project',
+              path: '/work/projects/new',
+              placement: 'create',
+            },
           ],
         },
       ],

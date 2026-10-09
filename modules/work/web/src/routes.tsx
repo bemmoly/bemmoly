@@ -16,6 +16,9 @@ type Screen = LazyExoticComponent<ComponentType<WorkScreenProps>>;
  */
 export const WORK_SCREENS: Readonly<Record<string, Screen>> = {
   board: lazy(() => import('./board/board-screen.tsx')),
+  issue: lazy(() => import('./issue/issue-screen.tsx')),
+  create: lazy(() => import('./create/create-screen.tsx')),
+  projects: lazy(() => import('./projects/projects-screen.tsx')),
 };
 
 /** "/board/PLT/x" → the Board screen with projectKey "PLT" and rest ["x"]. */
