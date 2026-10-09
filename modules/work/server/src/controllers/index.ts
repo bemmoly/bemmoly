@@ -1,5 +1,6 @@
 import type { WorkServices } from '../services/index.ts';
 import { createActivityController } from './activity.controller.ts';
+import { createBacklogController } from './backlog.controller.ts';
 import { createBoardsController } from './boards.controller.ts';
 import { createFieldsController } from './fields.controller.ts';
 import { createIssuesController } from './issues.controller.ts';
@@ -22,6 +23,7 @@ export function createWorkControllers(services: WorkServices) {
     lql: createLqlController(services.lql),
     boards: createBoardsController(services.boards),
     sprints: createSprintsController(services.sprints),
+    backlog: createBacklogController(services.backlog),
     metrics: createMetricsController(services.metrics),
   };
 }
