@@ -54,11 +54,13 @@ function columns(): TableColumn<Row>[] {
       ),
     },
     {
-      key: 'changed',
-      header: 'Last change',
+      key: 'published',
+      header: 'Published',
       width: '130px',
       render: ({ workflow }) => (
-        <span className="text-tx4">{formatRelative(workflow.updatedAt)}</span>
+        <span className="text-tx4">
+          {workflow.publishedAt ? formatRelative(workflow.publishedAt) : 'Never'}
+        </span>
       ),
     },
   ];
