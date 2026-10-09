@@ -1,6 +1,7 @@
 import type { HomeSectionProps } from '@bemmoly/core-web';
-import { Button, Card, EmptyState, SkeletonText, Tabs } from '@bemmoly/ui';
-import { MyWorkRow } from './home/my-work-row.tsx';
+import { Button, buttonClassName, Card, EmptyState, Tabs } from '@bemmoly/ui';
+import { Icon } from '@bemmoly/ui/icons';
+import { MyWorkRow, MyWorkRowSkeleton } from './home/my-work-row.tsx';
 import { MY_WORK_TABS, useMyWork, type MyWorkTab } from './home/use-my-work.ts';
 
 const EMPTY: Record<MyWorkTab, string> = {
@@ -37,11 +38,14 @@ export default function MyWorkSection({ manifest }: HomeSectionProps) {
         }
       />
       {work.isPending ? (
-        <div role="status" aria-label="Loading your work" className="p-4">
-          <SkeletonText lines={4} />
+        <div role="status" aria-label="Loading your work" aria-busy className="flex flex-col">
+          {[0, 1, 2, 3].map((index) => (
+            <MyWorkRowSkeleton key={index} index={index} />
+          ))}
         </div>
       ) : work.error ? (
         <EmptyState
+          icon={<Icon name="alert" />}
           title="Your work did not load"
           action={
             <Button variant="secondary" onClick={work.retry}>
@@ -56,7 +60,20 @@ export default function MyWorkSection({ manifest }: HomeSectionProps) {
           ))}
         </div>
       ) : (
-        <EmptyState title="All clear" description={EMPTY[work.tab]} />
+        <EmptyState
+          icon={<Icon name="check" />}
+          title="All clear"
+          description={EMPTY[work.tab]}
+          {...(top
+            ? {
+                action: (
+                  <a href={top.path} className={buttonClassName({ size: 'sm' })}>
+                    Open {top.label}
+                  </a>
+                ),
+              }
+            : {})}
+        />
       )}
     </Card>
   );
