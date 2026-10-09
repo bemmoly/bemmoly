@@ -32,6 +32,17 @@ function frame(reason: string, unsubscribe: boolean): EmailFrame {
   };
 }
 
+/** Every character React escapes in a text node, the way it escapes them. */
+const TEXT_ENTITIES: Readonly<Record<string, string>> = {
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+  '"': '&quot;',
+  "'": '&#x27;',
+};
+const asHtmlText = (value: string) =>
+  value.replace(/[&<>"']/g, (char) => TEXT_ENTITIES[char] ?? char);
+
 const notificationFrame = frame("You're receiving this because you watch PLT-204.", true);
 const accountFrame = frame("You're receiving this because Aisha K. invited this address.", false);
 
@@ -128,8 +139,7 @@ describe('email templates', () => {
     async (_name, used, content) => {
       const email = await renderEmail(used, content);
       expect(email.text.length).toBeGreaterThan(40);
-      const reason = used.reason.replace("'", '&#x27;');
-      expect(email.html).toContain(reason);
+      expect(email.html).toContain(asHtmlText(used.reason));
       expect(email.text).toContain(used.reason);
       expect(email.html).toContain('Acme Labs');
     },
@@ -143,6 +153,14 @@ describe('email templates', () => {
       expect(email.text).toContain(UNSUBSCRIBE);
     },
   );
+
+  it('escapes every markup character in the reason line', async () => {
+    const [, used, content] = cases[0]!;
+    const reason = `You're in <b>"R&D"</b>`;
+    const email = await renderEmail({ ...used, reason }, content);
+    expect(email.html).toContain(asHtmlText(reason));
+    expect(email.html).not.toContain('<b>');
+  });
 
   it('themes buttons from the brand colour', async () => {
     const [, used, content] = cases[3]!;

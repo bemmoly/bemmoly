@@ -4,6 +4,7 @@ import type {
   KernelRouteDependencies,
   MaintenanceState,
   ModuleRegistry,
+  RateLimitEnv,
   SqlClient,
 } from '@bemmoly/core';
 import {
@@ -11,6 +12,7 @@ import {
   csrfProtection,
   kernelRoutes,
   maintenanceHook,
+  rateLimitBudgets,
   rateLimiting,
   requestUserId,
   securityHeaders,
@@ -32,7 +34,8 @@ export interface BuildAppOptions {
     | 'BEMMOLY_PUBLIC_URL'
     | 'BEMMOLY_METRICS_TOKEN'
   > &
-    Partial<Pick<Env, 'BEMMOLY_SECRET_KEY'>>;
+    Partial<Pick<Env, 'BEMMOLY_SECRET_KEY'>> &
+    RateLimitEnv;
   modules: ModuleRegistry;
   database?: DatabaseProbe;
   /** Data kernel services (module state, settings, realtime, identity hooks); see config/kernel.ts. */
@@ -66,8 +69,14 @@ export async function buildApp(options: BuildAppOptions): Promise<FastifyInstanc
   const { BEMMOLY_PUBLIC_URL: publicUrl } = options.env;
   await app.register(securityHeaders, { publicUrl });
   await app.register(csrfProtection, { publicUrl });
-  if (options.identity) await app.register(authentication, options.identity);
-  if (options.identity) await app.register(rateLimiting, { sql: options.identity.sql });
+  if (options.identity) {
+    // Rate limiting first, so its checks run before any credential is looked up.
+    await app.register(rateLimiting, {
+      sql: options.identity.sql,
+      ...rateLimitBudgets(options.env),
+    });
+    await app.register(authentication, options.identity);
+  }
   await app.register(
     kernelRoutes({
       ...options.kernel,

@@ -6,6 +6,7 @@ import type { JobQueue } from '../../contracts/jobs.ts';
 import type { SettingsService } from '../../contracts/settings.ts';
 import type { SqlExecutor } from '../../contracts/sql.ts';
 import type { UserDirectory } from '../../contracts/users.ts';
+import { trimLeadingSlashes, trimTrailingSlashes } from '../../utils/slashes.ts';
 import { loadEmailBrand, type LogoUrlResolver } from './brand.ts';
 import type { MailboxStore } from './mailbox.ts';
 import type { DrainDependencies, DrainPolicy } from './outbox/drain.ts';
@@ -50,7 +51,7 @@ export interface FramedEmail {
 
 export function absoluteUrl(publicUrl: string, path: string): string {
   if (/^https?:\/\//i.test(path)) return path;
-  return `${publicUrl.replace(/\/+$/, '')}/${path.replace(/^\/+/, '')}`;
+  return `${trimTrailingSlashes(publicUrl)}/${trimLeadingSlashes(path)}`;
 }
 
 /**

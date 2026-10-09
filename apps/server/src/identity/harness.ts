@@ -6,6 +6,7 @@ import {
   type EventBus,
   type IdentityDependencies,
   type ModuleRegistry,
+  type RateLimitEnv,
   type SqlClient,
 } from '@bemmoly/core';
 import {
@@ -31,7 +32,8 @@ export interface Harness {
   bus: EventBus;
   app: FastifyInstance;
   /** A second app on the same database, as a second replica would be. */
-  newApp(): Promise<FastifyInstance>;
+  /** Another replica on the same database; rate limit maxima can be set as the env would. */
+  newApp(limits?: RateLimitEnv): Promise<FastifyInstance>;
   reset(): Promise<void>;
   stop(): Promise<void>;
 }
@@ -62,8 +64,9 @@ export async function startHarness(): Promise<HarnessResult> {
     publicUrl: ORIGIN,
   });
   const apps: FastifyInstance[] = [];
-  const newApp = async () => {
-    const app = await buildApp({ env: TEST_ENV, modules, identity, logger: false });
+  const newApp = async (limits: RateLimitEnv = {}) => {
+    const env = { ...TEST_ENV, ...limits };
+    const app = await buildApp({ env, modules, identity, logger: false });
     apps.push(app);
     return app;
   };
@@ -98,6 +101,8 @@ export interface CallOptions {
   body?: unknown;
   origin?: string | null;
   headers?: Record<string, string>;
+  /** The client address; requests come from 127.0.0.1 otherwise. */
+  remoteAddress?: string;
 }
 
 /** An API call as the web app makes it: same-origin, JSON, with the session cookie. */
@@ -115,6 +120,7 @@ export async function call(
     method,
     url: `/api/v1${url}`,
     headers,
+    ...(options.remoteAddress ? { remoteAddress: options.remoteAddress } : {}),
     ...(options.body === undefined ? {} : { payload: options.body as object }),
   });
 }

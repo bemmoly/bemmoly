@@ -1,7 +1,9 @@
 import { ValidationError } from '@bemmoly/shared';
+import { performance } from 'node:perf_hooks';
 import { describe, expect, it } from 'vitest';
 import { TEST_SECRET_KEY } from '../../testing/fakes.ts';
 import { checkDeliverability, fromDomain } from './deliverability.ts';
+import { absoluteUrl } from './context.ts';
 import { createUnsubscribeSigner, unsubscribeLinks } from './unsubscribe.ts';
 
 describe('unsubscribe tokens', () => {
@@ -29,6 +31,15 @@ describe('unsubscribe tokens', () => {
       'List-Unsubscribe': '<https://bemmoly.example.com/api/v1/email-unsubscriptions?token=a.b>',
       'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
     });
+  });
+
+  it('joins links in linear time, whatever run of slashes the URL holds', () => {
+    expect(absoluteUrl('https://b.test//', '//inbox')).toBe('https://b.test/inbox');
+    const slashes = '/'.repeat(100_000);
+    const start = performance.now();
+    unsubscribeLinks(`https://b.test${slashes}x`, 'a.b');
+    absoluteUrl(`https://b.test${slashes}x`, `${slashes}x`);
+    expect(performance.now() - start).toBeLessThan(50);
   });
 });
 

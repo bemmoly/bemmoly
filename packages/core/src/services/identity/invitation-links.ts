@@ -6,7 +6,7 @@ import type { RequestContext } from '../authz/index.ts';
 import { appLink, nowOf, type IdentityDependencies } from './deps.ts';
 import { INVITATION_TTL_MS, invitationPath } from './events.ts';
 import { presentInvitation } from './presenters.ts';
-import { generateSecret, hashSecret } from './secrets.ts';
+import { generateToken, digestToken } from './tokens.ts';
 
 const MANAGE = 'workspace.roles.manage' as const;
 
@@ -23,12 +23,12 @@ export async function issueInvitationLink(
 ): Promise<IssuedInvitation> {
   await ctx.authz.authorize(ctx.actor, MANAGE, { kind: 'workspace' });
   const now = nowOf(deps);
-  const token = generateSecret();
+  const token = generateToken();
   const row = await deps.db.transaction(async (tx) => {
     const [updated] = await tx
       .update(invitations)
       .set({
-        tokenHash: hashSecret(token),
+        tokenHash: digestToken(token),
         expiresAt: new Date(now.getTime() + INVITATION_TTL_MS),
         updatedAt: now,
       })

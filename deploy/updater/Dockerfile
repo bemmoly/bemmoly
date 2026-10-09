@@ -37,6 +37,9 @@ RUN apt-get update \
  && apt-get install --yes --no-install-recommends ca-certificates tini \
  && rm -rf /var/lib/apt/lists/*
 COPY --from=cosign /ko-app/cosign /usr/local/bin/cosign
+# The container runs read-only with /tmp as its only writable path; cosign caches
+# Sigstore's trust root here instead of ~/.sigstore.
+ENV TUF_ROOT=/tmp/sigstore
 WORKDIR /app
 COPY --from=build /src/node_modules ./node_modules
 COPY --from=build /src/packages/shared ./packages/shared
