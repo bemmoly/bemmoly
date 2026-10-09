@@ -174,7 +174,10 @@ describe('Board screen', () => {
     key(cardEl('PLT-12'), 'Enter');
     const panel = await screen.findByRole('complementary', { name: 'PLT-12 details' });
     fireEvent.click(within(panel).getByRole('button', { name: 'Close' }));
-    expect(screen.queryByRole('complementary', { name: 'PLT-12 details' })).toBeNull();
+    // The panel plays its exit before it unmounts.
+    await waitFor(() =>
+      expect(screen.queryByRole('complementary', { name: 'PLT-12 details' })).toBeNull(),
+    );
   });
 
   it('fades the cards a quick filter leaves out', async () => {
