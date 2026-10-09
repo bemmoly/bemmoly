@@ -50,6 +50,8 @@ const server = setupServer(
   http.get('*/api/v1/work/workflows', () => HttpResponse.json({ items: [] })),
   http.get('*/api/v1/users', () => HttpResponse.json({ items: [], nextCursor: null })),
   http.get('*/api/v1/me', () => refusal(404)),
+  http.get('*/api/v1/work/filters', () => HttpResponse.json({ items: [] })),
+  http.get('*/api/v1/teams', () => HttpResponse.json({ items: [] })),
   http.get('*/api/v1/work/issues/:key/transitions', ({ params }) =>
     HttpResponse.json({
       items:

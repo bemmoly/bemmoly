@@ -12,7 +12,9 @@ import { useState } from 'react';
 import { useBoardFilterStore, type FacetKey, type QuickFilter } from '../hooks/board-filters.ts';
 import type { BoardGrouping } from '../hooks/board-model.ts';
 import type { LqlValueSources } from '../hooks/board-lql.ts';
+import type { SavedFilters } from '../hooks/saved-filters.ts';
 import { LqlFilterBar } from './lql-filter-bar.tsx';
+import { SavedFiltersMenu } from './saved-filters-menu.tsx';
 
 export interface FacetOption {
   id: string;
@@ -27,6 +29,7 @@ export interface BoardToolbarProps {
   laneLabel: string | null;
   lqlSources: LqlValueSources;
   lqlError: string | null;
+  savedFilters: SavedFilters;
 }
 
 const FACET_LABELS = { epics: 'Epic', types: 'Type', labels: 'Label' } as const;
@@ -77,14 +80,23 @@ export function BoardToolbar({
   laneLabel,
   lqlSources,
   lqlError,
+  savedFilters,
 }: BoardToolbarProps) {
   const filters = useBoardFilterStore();
   const [lqlOpen, setLqlOpen] = useState(filters.lql !== '');
+  /** Remounts the LQL bar so a saved filter's query replaces what was being typed. */
+  const [barKey, setBarKey] = useState(0);
+  const applySaved = (query: string) => {
+    filters.setLql(query);
+    setLqlOpen(true);
+    setBarKey((key) => key + 1);
+  };
   const grouping: BoardGrouping = laneLabel ? filters.grouping : 'none';
   return (
     <div className="flex flex-wrap items-center gap-2 gap-y-2.5 pb-3">
       {lqlOpen ? (
         <LqlFilterBar
+          key={barKey}
           applied={filters.lql}
           onApply={filters.setLql}
           onClose={() => setLqlOpen(false)}
@@ -110,6 +122,7 @@ export function BoardToolbar({
           }
         />
       )}
+      <SavedFiltersMenu filters={savedFilters} applied={filters.lql} onApply={applySaved} />
       {people.length > 0 && (
         <AvatarStack
           people={people}
