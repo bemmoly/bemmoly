@@ -1,5 +1,5 @@
 import type { Sprint } from '@bemmoly/module-work/shared';
-import { Button, EmptyState, PageHeader, Skeleton, useToast } from '@bemmoly/ui';
+import { Button, EmptyState, PageHeader, useToast } from '@bemmoly/ui';
 import { useCallback, useMemo, useState } from 'react';
 import { useBacklogScreen } from '../hooks/backlog-screen.ts';
 import { useSprintActions } from '../hooks/backlog-sprints.ts';
@@ -8,6 +8,8 @@ import { useBacklogUi } from '../hooks/backlog-store.ts';
 import { IssueSlideOver } from '../issue/index.ts';
 import { ProjectSwitcher } from '../projects/index.ts';
 import type { WorkScreenProps } from '../routes.tsx';
+import { BacklogContainersSkeleton } from '../skeletons/backlog-skeleton.tsx';
+import { LineSkeleton } from '../skeletons/parts.tsx';
 import { BacklogEpics } from './backlog-epics.tsx';
 import { BacklogToolbar } from './backlog-toolbar.tsx';
 import { CompleteSprintDialog } from './complete-sprint-dialog.tsx';
@@ -91,7 +93,9 @@ export default function BacklogScreen({ projectKey: pathKey }: WorkScreenProps) 
           <PageHeader
             breadcrumbs={[
               { label: 'Projects' },
-              { label: screen.project?.name ?? projectKey },
+              {
+                label: screen.project?.name ?? <LineSkeleton width={84} size="text-12h" bar={8} />,
+              },
               { label: 'Backlog' },
             ]}
             title="Backlog"
@@ -110,6 +114,7 @@ export default function BacklogScreen({ projectKey: pathKey }: WorkScreenProps) 
           {showEpics && (
             <BacklogEpics
               epics={epics}
+              loading={screen.isPending}
               {...(epicTypeId ? { onCreate: createIssue(null, epicTypeId) } : {})}
             />
           )}
@@ -118,7 +123,7 @@ export default function BacklogScreen({ projectKey: pathKey }: WorkScreenProps) 
             className={`min-w-0 flex-1 overflow-auto px-6 pb-10 ${dragging ? 'select-none' : ''}`}
           >
             <div className="min-w-220">
-              {screen.isPending && <LoadingContainers />}
+              {screen.isPending && <BacklogContainersSkeleton />}
               {screen.error &&
                 (screen.backlog ? (
                   <p role="status" className="m-0 pt-4 text-12h text-warn-fg">
@@ -183,16 +188,6 @@ export default function BacklogScreen({ projectKey: pathKey }: WorkScreenProps) 
           onClose={() => setDialog(null)}
         />
       )}
-    </div>
-  );
-}
-
-function LoadingContainers() {
-  return (
-    <div aria-busy className="flex flex-col gap-4 pt-4">
-      {[0, 1, 2].map((index) => (
-        <Skeleton key={index} shape="block" height={160} />
-      ))}
     </div>
   );
 }

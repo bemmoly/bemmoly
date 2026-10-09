@@ -4,6 +4,7 @@ import { useId, type ReactNode, type RefObject } from 'react';
 import { useBacklogUi } from '../hooks/backlog-store.ts';
 import type { RowHandlers } from './backlog-item.tsx';
 import { BacklogRows } from './backlog-rows.tsx';
+import { ContainerEmpty } from './container-empty.tsx';
 import { InlineCreate } from './inline-create.tsx';
 import { countsOf, points, sprintDates, type Container, type Lookups } from './model.ts';
 
@@ -116,13 +117,7 @@ export function SprintSection({
           />
         </div>
         {visible.length === 0 && (
-          <div className="border-b border-br-row px-3.5 py-2.25 pl-12.5 text-12h text-tx5">
-            {filtered
-              ? 'No issues here match the filters.'
-              : sprint
-                ? 'Drag issues here to plan this sprint.'
-                : 'The backlog is empty.'}
-          </div>
+          <ContainerEmpty filtered={filtered} sprint={sprint !== null} containerId={container.id} />
         )}
         <div className="relative">
           {dropAtEnd && (

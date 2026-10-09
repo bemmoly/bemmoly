@@ -1,5 +1,6 @@
 import type { Project } from '@bemmoly/module-work/shared';
-import { SettingsNav, SettingsNavItem, SettingsNavSection } from '@bemmoly/ui';
+import { SettingsNav, SettingsNavItem, SettingsNavSection, Skeleton } from '@bemmoly/ui';
+import { LineSkeleton } from '../skeletons/parts.tsx';
 
 const initials = (name: string) =>
   name
@@ -20,20 +21,30 @@ export function ProjectNav({ project }: { project: Project | undefined }) {
     <SettingsNav
       label="Project"
       title={
-        <div className="flex items-center gap-2.5 px-2 pt-0 pb-1">
-          <span
-            aria-hidden
-            className="flex size-8 shrink-0 items-center justify-center rounded-sm bg-ac-fill font-semibold text-on-ac"
-          >
-            {initials(project?.name ?? key)}
-          </span>
-          <span className="flex min-w-0 flex-col gap-px">
-            <span className="truncate text-13h font-semibold">{project?.name ?? key}</span>
-            <span className="text-12 text-tx4">
-              {project?.method === 'kanban' ? 'Kanban project' : 'Software project'}
+        project === undefined ? (
+          <div aria-hidden className="flex items-center gap-2.5 px-2 pt-0 pb-1">
+            <Skeleton width={32} height={32} className="rounded-sm" />
+            <span className="flex flex-col gap-px">
+              <LineSkeleton width={96} size="text-13h" bar={10} />
+              <LineSkeleton width={84} size="text-12" bar={8} />
             </span>
-          </span>
-        </div>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2.5 px-2 pt-0 pb-1">
+            <span
+              aria-hidden
+              className="flex size-8 shrink-0 items-center justify-center rounded-sm bg-ac-fill font-semibold text-on-ac"
+            >
+              {initials(project?.name ?? key)}
+            </span>
+            <span className="flex min-w-0 flex-col gap-px">
+              <span className="truncate text-13h font-semibold">{project?.name ?? key}</span>
+              <span className="text-12 text-tx4">
+                {project?.method === 'kanban' ? 'Kanban project' : 'Software project'}
+              </span>
+            </span>
+          </div>
+        )
       }
     >
       <SettingsNavSection label="Planning">
