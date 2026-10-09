@@ -51,6 +51,7 @@ export const envSchema = z.object({
   BEMMOLY_RATE_LIMIT_PER_USER: rateLimitMax,
   BEMMOLY_RATE_LIMIT_AUTH_PER_IP: rateLimitMax,
   BEMMOLY_RATE_LIMIT_AUTH_PER_ACCOUNT: rateLimitMax,
+  BEMMOLY_RATE_LIMIT_FAILED_CREDENTIALS_PER_IP: rateLimitMax,
   BEMMOLY_ALLOW_PRIVATE_URLS: z.stringbool().default(false),
   OTEL_EXPORTER_OTLP_ENDPOINT: z.url().optional(),
   BEMMOLY_METRICS_TOKEN: z
