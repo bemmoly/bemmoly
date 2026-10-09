@@ -5,6 +5,7 @@ import type {
   RealtimePublisher,
   SqlClient,
 } from '@bemmoly/core';
+import { createBacklogService } from './backlog/index.ts';
 import { createBoardsService } from './boards/index.ts';
 import { createCommentsService } from './comments/index.ts';
 import { createFieldsService } from './fields/index.ts';
@@ -57,6 +58,7 @@ export function createWorkServices(deps: WorkServiceDeps) {
     lql,
     boards: createBoardsService({ ...deps, ...issueDeps, lql }),
     sprints: createSprintsService({ ...deps, ...issueDeps, lql }),
+    backlog: createBacklogService({ ...deps, ...issueDeps, lql }),
     metrics: createMetricsService({ ...deps, ...issueDeps, lql }),
   };
 }
