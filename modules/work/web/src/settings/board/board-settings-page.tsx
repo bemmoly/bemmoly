@@ -16,7 +16,7 @@ import { useBoardSettings } from '../../hooks/settings-board.ts';
 import { sectionAnchor, useSettingsEdits } from '../../hooks/settings-edits.ts';
 import { useIssueTypes } from '../../hooks/settings-schemes.ts';
 import { BOARD_SECTIONS, SECTION_TITLES, type BoardSection } from '../model/sections.ts';
-import type { SettingsPage } from '../project-nav.tsx';
+import { onLinkClick } from '../../workflow/navigate.ts';
 import { BoardDialogs } from './board-dialogs.tsx';
 import { CardsTab } from './cards-tab.tsx';
 import { ColumnsTab } from './columns-tab.tsx';
@@ -29,7 +29,7 @@ import type { BoardTabProps } from './tab-props.ts';
 export interface BoardSettingsPageProps {
   projectKey: string | undefined;
   /** The settings sidebar; page moves go through `guard` so unsaved drafts are asked about. */
-  nav: (guard: (go: () => void) => void, current: SettingsPage) => ReactNode;
+  nav: (guard: (go: () => void) => void) => ReactNode;
 }
 
 /**
@@ -67,7 +67,7 @@ export function BoardSettingsPage({ projectKey, nav }: BoardSettingsPageProps) {
   const project = settings.project;
   const schemeName = settings.orgBoard?.name ?? 'the org default';
   const frame = (content: ReactNode, aside?: ReactNode) => (
-    <SettingsFrame nav={nav(edits.guard, 'board')} aside={aside}>
+    <SettingsFrame nav={nav(edits.guard)} aside={aside}>
       <SettingsContent width="narrow">{content}</SettingsContent>
     </SettingsFrame>
   );
@@ -114,7 +114,11 @@ export function BoardSettingsPage({ projectKey, nav }: BoardSettingsPageProps) {
         variant="settings"
         breadcrumbs={[
           { label: 'Projects' },
-          { label: project.name, href: `/work/board/${project.key}` },
+          {
+            label: project.name,
+            href: `/work/board/${project.key}`,
+            linkProps: { onClick: onLinkClick(`/work/board/${project.key}`) },
+          },
           { label: 'Settings' },
           { label: 'Board' },
         ]}

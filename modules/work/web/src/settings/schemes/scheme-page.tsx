@@ -11,6 +11,7 @@ import {
 import type { ReactNode } from 'react';
 import { NO_PROJECT_PERMISSION } from '../../hooks/settings-access.ts';
 import type { SchemeFlow } from '../../hooks/settings-scheme-flow.ts';
+import { onLinkClick } from '../../workflow/navigate.ts';
 import { DiffDialog, invertDiff } from '../diff-dialog.tsx';
 
 const failure = (error: unknown) =>
@@ -53,7 +54,15 @@ export function SchemePage({
           variant="settings"
           breadcrumbs={[
             { label: 'Projects' },
-            ...(project ? [{ label: project.name, href: `/work/board/${project.key}` }] : []),
+            ...(project
+              ? [
+                  {
+                    label: project.name,
+                    href: `/work/board/${project.key}`,
+                    linkProps: { onClick: onLinkClick(`/work/board/${project.key}`) },
+                  },
+                ]
+              : []),
             { label: 'Settings' },
             { label: title },
           ]}

@@ -13,6 +13,7 @@ import {
   setWip,
   unmappedStatuses,
 } from '../model/columns.ts';
+import { onLinkClick, workflowPaths } from '../../workflow/navigate.ts';
 import { EditFooter, SectionHeading, ToggleCard } from '../section.tsx';
 import { ColumnCard } from './column-card.tsx';
 import { StatusChip } from './status-chip.tsx';
@@ -55,7 +56,7 @@ export function ColumnsTab(props: BoardTabProps) {
   const toggle =
     (key: 'collapseEmptyColumns' | 'showColumnCounts' | 'showUnassigned') => (checked: boolean) =>
       settings.updateConfig((current) => ({ ...current, [key]: checked }));
-  const workflowHref = settings.project ? `/work/workflow/${settings.project.key}` : '/work';
+  const workflowHref = settings.project ? workflowPaths.list(settings.project.key) : '/work';
 
   return (
     <div className="flex flex-col gap-4">
@@ -155,7 +156,11 @@ export function ColumnsTab(props: BoardTabProps) {
         ))}
         <span className="ml-auto text-12 text-tx4">
           Edit statuses in{' '}
-          <a href={workflowHref} className="text-ac hover:text-ac-d">
+          <a
+            href={workflowHref}
+            onClick={onLinkClick(workflowHref)}
+            className="text-ac hover:text-ac-d"
+          >
             Workflow
           </a>
         </span>

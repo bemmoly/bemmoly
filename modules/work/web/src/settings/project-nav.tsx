@@ -1,11 +1,16 @@
 import type { Project, SchemeKind, SchemeStatus } from '@bemmoly/module-work/shared';
 import { SettingsNav, SettingsNavItem, SettingsNavSection } from '@bemmoly/ui';
+import { onLinkClick, workflowPaths } from '../workflow/navigate.ts';
 
 export const SETTINGS_PAGES = ['board', 'issue-types', 'fields'] as const;
 export type SettingsPage = (typeof SETTINGS_PAGES)[number];
 
 export const isSettingsPage = (value: string | undefined): value is SettingsPage =>
   (SETTINGS_PAGES as readonly string[]).includes(value ?? '');
+
+/** Where a project settings page lives under the Work chunk. */
+export const settingsPath = (projectKey: string, page: SettingsPage) =>
+  `/work/settings/${projectKey}/${page}`;
 
 /** "Platform Core" → "PC", the project tile of the settings sidebar. */
 const tileOf = (name: string) =>
@@ -18,7 +23,8 @@ const tileOf = (name: string) =>
 
 export interface ProjectSettingsNavProps {
   project: Project | undefined;
-  current: SettingsPage;
+  /** The page shown; the workflow screens pass "workflow" to reuse this sidebar. */
+  current: SettingsPage | 'workflow';
   schemes: readonly SchemeStatus[];
   /** Whether the person can change these settings, for the footer line. */
   canConfigure: boolean;
@@ -87,7 +93,16 @@ export function ProjectSettingsNav({
       <SettingsNavSection label="Work">
         {item('issue-types', 'Issue types', 'issue_types')}
         {item('fields', 'Fields', 'fields')}
-        <SettingsNavItem href={`/work/workflow/${project?.key ?? ''}`} {...meta('workflow')}>
+        <SettingsNavItem
+          active={current === 'workflow'}
+          {...(project
+            ? {
+                href: workflowPaths.list(project.key),
+                linkProps: { onClick: onLinkClick(workflowPaths.list(project.key)) },
+              }
+            : {})}
+          {...meta('workflow')}
+        >
           Workflow
         </SettingsNavItem>
         {item('board', 'Board')}
