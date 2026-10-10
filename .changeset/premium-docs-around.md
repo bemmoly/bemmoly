@@ -1,9 +1,9 @@
 ---
-'@bemmoly/module-docs': minor
-'@bemmoly/web': minor
-'@bemmoly/ui': minor
-'@bemmoly/shared': minor
-'@bemmoly/editor': minor
+'@bemmoly/module-docs': patch
+'@bemmoly/web': patch
+'@bemmoly/ui': patch
+'@bemmoly/shared': patch
+'@bemmoly/editor': patch
 ---
 
 New page now makes the page where you are and opens it with the cursor in the title, with Undo in the toast. An empty page offers the space's templates and an import, and N creates a page from the Docs home and from a space.

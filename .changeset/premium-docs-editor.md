@@ -1,9 +1,9 @@
 ---
-'@bemmoly/editor': minor
-'@bemmoly/module-docs': minor
-'@bemmoly/module-work': minor
-'@bemmoly/core-web': minor
-'@bemmoly/ui': minor
+'@bemmoly/editor': patch
+'@bemmoly/module-docs': patch
+'@bemmoly/module-work': patch
+'@bemmoly/core-web': patch
+'@bemmoly/ui': patch
 ---
 
 Writing a Docs page now feels like a writing tool. Select words and a bubble offers Text (turn the

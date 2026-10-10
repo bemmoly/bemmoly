@@ -1,6 +1,6 @@
 ---
-'@bemmoly/module-docs': minor
-'@bemmoly/ui': minor
+'@bemmoly/module-docs': patch
+'@bemmoly/ui': patch
 ---
 
 A Docs page now has a face and a margin. Pages take a drawn icon in one of eight tints and an

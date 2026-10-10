@@ -1,7 +1,7 @@
 ---
-'@bemmoly/module-docs': minor
-'@bemmoly/core-web': minor
-'@bemmoly/web': minor
+'@bemmoly/module-docs': patch
+'@bemmoly/core-web': patch
+'@bemmoly/web': patch
 '@bemmoly/editor': patch
 ---
 
