@@ -121,7 +121,7 @@ export function CommandPalette({
       onPointerMove={onPointerMove}
       className={cx(
         'fixed top-[min(110px,12vh)] left-1/2 m-0 -translate-x-1/2 open:flex',
-        'backdrop:bg-scrim backdrop:backdrop-blur-[1.5px]',
+        'backdrop:bg-scrim',
         'motion-safe:animate-dialog-in backdrop:motion-safe:animate-fade-in',
         panel,
       )}
