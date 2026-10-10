@@ -71,11 +71,14 @@ export function reasonOf(error: unknown): string | null {
   return null;
 }
 
+const HUMAN_KEY = /^[A-Z][A-Z0-9]{1,9}-[1-9][0-9]*$/;
+
 /** What a step reads as when its record cannot be described: the arguments themselves. */
 function fallbackPreview(proposal: Proposal): AiPlanStepPreview {
-  const target = ['key', 'issueKey', 'pageId', 'id']
-    .map((name) => proposal.args[name])
-    .find((value): value is string => typeof value === 'string');
+  // A human key ("PLT-211") reads well; a bare id would only be noise, so it is left out.
+  const target = Object.values(proposal.args).find(
+    (value): value is string => typeof value === 'string' && HUMAN_KEY.test(value),
+  );
   return {
     target: (target ?? '').slice(0, 80),
     change: proposal.tool.description.split('.')[0]?.slice(0, 200) ?? proposal.tool.name,
