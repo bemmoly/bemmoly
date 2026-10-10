@@ -63,7 +63,7 @@ export async function replaceTarget(
         insert into embeddings (target_kind, target_id, chunk_index, text, location, embedding,
           dimensions, provider_id, model, module_id, space_id, project_id, author_id, content_hash)
         values (${scope.kind}, ${scope.targetId}, ${chunk.chunkIndex}, ${chunk.text},
-          ${tx.json(chunk.location as never)}, ${chunk.vector}::vector, ${model.dimensions},
+          ${JSON.stringify(chunk.location)}::text::jsonb, ${chunk.vector}::vector, ${model.dimensions},
           (select id from ai_providers where id::text = ${model.providerId}), ${model.modelId},
           ${scope.moduleId}, ${spaceId}::uuid, ${projectId}::uuid,
           (select id from users where id::text = ${chunk.authorId ?? ''}), ${chunk.contentHash})`;

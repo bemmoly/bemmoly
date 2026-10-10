@@ -130,10 +130,11 @@ export async function retrieve(
     }
     const ids = await keywordIds(deps, ctx, source, input.question);
     keywordLists.push(ids.map((id) => keyOf(source.kind, id)));
-    const missing = ids.filter((id) => !candidates.has(keyOf(source.kind, id)));
-    for (const chunk of await chunksOf(deps.sql, { ...filters, targetIds: missing })) {
+    for (const chunk of await chunksOf(deps.sql, { ...filters, targetIds: ids })) {
       const key = keyOf(source.kind, chunk.targetId);
-      candidates.set(key, [...(candidates.get(key) ?? []), chunk]);
+      const pool = candidates.get(key) ?? [];
+      if (!pool.some((known) => known.chunkIndex === chunk.chunkIndex)) pool.push(chunk);
+      candidates.set(key, pool);
     }
   }
   vectorHits.sort((a, b) => b.similarity - a.similarity);
@@ -172,9 +173,16 @@ async function cite(
     const source = sources.find((entry) => entry.kind === record.kind)!;
     const document = documents.get(record.key)!;
     const pool = candidates.get(record.key)!;
-    const best = pool.some((chunk) => chunk.similarity !== undefined)
-      ? [...pool].sort((a, b) => (b.similarity ?? 0) - (a.similarity ?? 0))
-      : byOverlap(pool, question);
+    // Chunks the vectors matched lead; a keyword match fills the rest with its closest words.
+    const best = [
+      ...pool
+        .filter((chunk) => chunk.similarity !== undefined)
+        .sort((a, b) => b.similarity! - a.similarity!),
+      ...byOverlap(
+        pool.filter((chunk) => chunk.similarity === undefined),
+        question,
+      ),
+    ];
     for (const chunk of best.slice(0, CHUNKS_PER_RECORD)) {
       if (chunks.length >= MAX_CHUNKS) break;
       const id = `c${chunks.length + 1}`;
