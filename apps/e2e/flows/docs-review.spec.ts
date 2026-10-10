@@ -51,7 +51,7 @@ test('a reader comments on selected words, gets a reply and resolves the thread'
   await openLive(page, doc.id);
 
   await selectWords(page, '15 minutes');
-  await page.getByRole('button', { name: /^Comment Command|^Comment Control/ }).click();
+  await page.getByRole('button', { name: 'Comment', exact: true }).click();
   const draft = comments(page).getByRole('region', { name: 'New comment' });
   await expect(draft).toContainText('15 minutes');
   await write(page, 'Comment', 'The flag TTL in code is 30. Which is it?');
