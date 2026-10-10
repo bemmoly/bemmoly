@@ -11,7 +11,8 @@ import { useMockBackend, type MockBackend } from './support/mock-backend.ts';
  * stays unshown, and not one element is painted with an `ai` token, in light or dark.
  */
 
-const SCREENS: readonly { path: string; title: RegExp }[] = [
+/** `admin`: a screen only an admin opens; a member is sent to their profile instead. */
+const SCREENS: readonly { path: string; title: RegExp; admin?: true }[] = [
   { path: '/', title: /^Home · / },
   { path: '/inbox', title: /^Inbox · / },
   { path: '/work/my-issues', title: /^My issues · / },
@@ -25,7 +26,7 @@ const SCREENS: readonly { path: string; title: RegExp }[] = [
   { path: '/docs/s/ENG', title: /^Engineering · / },
   { path: `/docs/p/${RFC_PAGE_ID}`, title: /Bemmoly$/ },
   { path: '/settings/profile', title: /^Profile · Settings/ },
-  { path: '/settings/appearance', title: /^Appearance · Settings/ },
+  { path: '/settings/appearance', title: /^Appearance · Settings/, admin: true },
 ];
 
 /** Words only an AI surface uses; none may be on screen. */
@@ -41,8 +42,8 @@ async function expectNoAiWords(page: Page, where: string) {
   expect(text.match(AI_WORDS)?.[0] ?? null, `${where} names an AI surface`).toBeNull();
 }
 
-async function walkScreens(page: Page, mode: 'light' | 'dark') {
-  for (const { path, title } of SCREENS) {
+async function walkScreens(page: Page, mode: 'light' | 'dark', admin: boolean) {
+  for (const { path, title } of SCREENS.filter((screen) => admin || !screen.admin)) {
     await page.goto(path);
     await expect(page).toHaveTitle(title, { timeout: 10_000 });
     await expect(page.locator('html')).toHaveAttribute('data-mode', mode);
@@ -130,7 +131,7 @@ for (const { who, scenario, turnOff } of PEOPLE) {
 
       test('no screen draws AI or lilac', async ({ page }) => {
         test.setTimeout(90_000);
-        await walkScreens(page, mode);
+        await walkScreens(page, mode, scenario === 'ready');
       });
 
       test('the editor and the palette offer no AI', async ({ page }) => {
