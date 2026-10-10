@@ -36,6 +36,7 @@ export function AuditTable({
       key: 'actor',
       header: 'Actor',
       width: 'minmax(0,1fr)',
+      hideOnPhone: true,
       render: (entry) => <span className="block truncate font-medium">{actorOf(entry)}</span>,
     },
     {
@@ -48,6 +49,7 @@ export function AuditTable({
       key: 'target',
       header: 'Target',
       width: 'minmax(0,1.2fr)',
+      hideOnPhone: true,
       render: (entry) => (
         <span className="block truncate">
           <span className="text-tx5">{entry.targetKind}</span>
@@ -61,6 +63,7 @@ export function AuditTable({
       key: 'ip',
       header: 'IP',
       width: '96px',
+      hideOnPhone: true,
       render: (entry) =>
         entry.ip ? <span className="font-mono text-12 text-tx3">{entry.ip}</span> : DASH,
     },
@@ -68,6 +71,7 @@ export function AuditTable({
       key: 'request',
       header: 'Request id',
       width: '112px',
+      hideOnPhone: true,
       render: (entry) =>
         entry.requestId ? (
           <span className="block truncate font-mono text-12 text-tx4" title={entry.requestId}>

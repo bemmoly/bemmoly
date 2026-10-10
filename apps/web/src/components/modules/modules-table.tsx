@@ -68,6 +68,7 @@ export function ModulesTable({
       key: 'state',
       header: 'State',
       width: '100px',
+      hideOnPhone: true,
       render: (module) =>
         module.enabled ? (
           <StatePill tone="ok" stage="done">
@@ -83,6 +84,7 @@ export function ModulesTable({
       key: 'version',
       header: 'Version',
       width: '120px',
+      hideOnPhone: true,
       render: (module) => (
         <div className="flex flex-col gap-0.5">
           <span className="font-mono text-12">{module.version}</span>
@@ -98,6 +100,7 @@ export function ModulesTable({
       key: 'changelog',
       header: 'Schema',
       width: 'minmax(0,1fr)',
+      hideOnPhone: true,
       render: (module) => (
         <div className="flex flex-col items-start gap-0.5">
           <StatePill tone={CHANGELOG[module.changelogState].tone}>
