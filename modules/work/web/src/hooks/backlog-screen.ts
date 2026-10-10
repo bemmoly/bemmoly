@@ -1,9 +1,12 @@
 import type { Issue } from '@bemmoly/module-work/shared';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import type { RowHandlers } from '../backlog/backlog-item.tsx';
-import { isFiltered, matches, type Container } from '../backlog/model.ts';
+import { issueMatches, type Container } from '../backlog/model.ts';
 import type { DropTarget } from '../backlog/move.ts';
 import { useWorkRealtime } from '../shared/index.ts';
+import { useIssueFilters } from '../shared/issue-filters.ts';
+import { useIssuePeek } from '../shared/issue-peek.ts';
+import { useHiddenIssues } from './issue-quick-actions.ts';
 import { useBacklogData } from './backlog-data.ts';
 import { usePointerDrag } from './backlog-drag.ts';
 import { useKeyboardMove, useRowKeys } from './backlog-keyboard.ts';
@@ -34,18 +37,22 @@ export function useBacklogScreen(pathKey: string | undefined) {
     if (projectKey) reset(projectKey);
   }, [projectKey, reset]);
 
-  const filters = useBacklogUi((state) => state.filters);
+  const { filters, filtered } = useIssueFilters();
   const collapsed = useBacklogUi((state) => state.collapsed);
-  const filtered = isFiltered(filters);
+  const hidden = useHiddenIssues((state) => state.keys);
+  const blocked = data.backlog?.blocked;
+  const meId = data.meId;
   const sections = useMemo<Section[]>(
     () =>
       data.containers.map((container) => ({
         container,
-        visible: filtered
-          ? container.issues.filter((issue) => matches(issue, filters))
-          : container.issues,
+        visible: container.issues.filter(
+          (issue) =>
+            !hidden.has(issue.key) &&
+            (!filtered || issueMatches(issue, filters, meId, Boolean(blocked?.[issue.id]))),
+        ),
       })),
-    [data.containers, filtered, filters],
+    [data.containers, filtered, filters, hidden, blocked, meId],
   );
   const layout = useMemo<ContainerLayout[]>(
     () =>
@@ -80,11 +87,21 @@ export function useBacklogScreen(pathKey: string | undefined) {
     },
     [drop],
   );
-  /** Opens the issue in the slide-over beside the list, as the Board does. */
-  const onOpen = useCallback((id: string) => {
-    const key = current.current.keys.get(id);
-    if (key) useBacklogUi.getState().setOpenKey(key);
-  }, []);
+  const peek = useIssuePeek(() =>
+    screenOrder(current.current.layout).flatMap((id) => {
+      const key = current.current.keys.get(id);
+      return key ? [key] : [];
+    }),
+  );
+  const openPeek = peek.open;
+  /** Opens the issue in the peek beside the list, with its key in the address. */
+  const onOpen = useCallback(
+    (id: string) => {
+      const key = current.current.keys.get(id);
+      if (key) openPeek(key);
+    },
+    [openPeek],
+  );
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const previewRef = useRef<HTMLDivElement>(null);
@@ -102,9 +119,19 @@ export function useBacklogScreen(pathKey: string | undefined) {
       onClick: (event, id) => {
         if (consumeClick()) return;
         const toggle = event.metaKey || event.ctrlKey;
+        const ui = useBacklogUi.getState();
+        if (toggle || event.shiftKey) {
+          ui.select(id, { shift: event.shiftKey, toggle }, screenOrder(getLayout()));
+          return;
+        }
+        // A plain click opens the peek and moves the anchor, without starting a selection.
+        ui.setSelection({ ...ui.selection, anchor: id });
+        onOpen(id);
+      },
+      onCheck: (event, id) => {
         useBacklogUi
           .getState()
-          .select(id, { shift: event.shiftKey, toggle }, screenOrder(getLayout()));
+          .select(id, { shift: event.shiftKey, toggle: !event.shiftKey }, screenOrder(getLayout()));
       },
       onPointerDown,
       onKeyDown,
@@ -117,5 +144,5 @@ export function useBacklogScreen(pathKey: string | undefined) {
   const order = screenOrder(layout);
   const entryId = anchor && order.includes(anchor) ? anchor : (order[0] ?? null);
 
-  return { ...data, sections, filtered, handlers, entryId, scrollRef, previewRef };
+  return { ...data, sections, filtered, handlers, entryId, scrollRef, previewRef, peek };
 }

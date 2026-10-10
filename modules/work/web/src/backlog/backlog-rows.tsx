@@ -5,8 +5,8 @@ import { registerScroller } from '../hooks/backlog-scroll.ts';
 import { BacklogItem, type RowHandlers } from './backlog-item.tsx';
 import type { Lookups } from './model.ts';
 
-/** 8px padding above and below a 22px avatar, and the 1px rule. */
-export const ROW_HEIGHT = 39;
+/** The list row: 36px including its rule. */
+export const ROW_HEIGHT = 36;
 /** Lists up to this long render whole; longer ones render what is on screen. */
 export const VIRTUAL_FROM = 80;
 

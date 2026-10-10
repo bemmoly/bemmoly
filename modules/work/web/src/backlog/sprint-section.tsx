@@ -1,12 +1,12 @@
 import type { Issue } from '@bemmoly/module-work/shared';
-import { CapacityBar, SprintContainer, SprintHeader } from '@bemmoly/ui';
+import { CapacityBar, SprintContainer, SprintHeader, type SprintPoints } from '@bemmoly/ui';
 import { useId, type ReactNode, type RefObject } from 'react';
 import { useBacklogUi } from '../hooks/backlog-store.ts';
 import type { RowHandlers } from './backlog-item.tsx';
 import { BacklogRows } from './backlog-rows.tsx';
 import { ContainerEmpty } from './container-empty.tsx';
 import { InlineCreate } from './inline-create.tsx';
-import { countsOf, points, sprintDates, type Container, type Lookups } from './model.ts';
+import { points, sprintDates, type Container, type Lookups } from './model.ts';
 
 export interface SprintSectionProps {
   container: Container;
@@ -22,17 +22,25 @@ export interface SprintSectionProps {
   onCreateIssue: (title: string) => Promise<unknown>;
 }
 
-/** What the header says about points: done so far when active, against capacity when planned. */
-function capacityOf(container: Container, lookups: Lookups): ReactNode {
-  const sprint = container.sprint;
-  if (!sprint) return undefined;
-  const committed = points(container.issues);
-  if (sprint.state === 'active') {
-    const done = points(
-      container.issues.filter((issue) => lookups.statuses.get(issue.statusId)?.done),
+/** Done, in-progress and total points of the active sprint: the two-tone bar. */
+function pointsOf(container: Container, lookups: Lookups): SprintPoints | undefined {
+  if (container.sprint?.state !== 'active') return undefined;
+  const of = (category: 'done' | 'doing') =>
+    points(
+      container.issues.filter((issue) => {
+        const look = lookups.statuses.get(issue.statusId);
+        if (!look) return false;
+        return category === 'done' ? look.done : !look.done && look.category !== 'todo';
+      }),
     );
-    return `${committed} pts · ${done} done`;
-  }
+  return { done: of('done'), doing: of('doing'), total: points(container.issues) };
+}
+
+/** A planned sprint's points against its capacity, or just its points. */
+function capacityOf(container: Container): ReactNode {
+  const sprint = container.sprint;
+  if (!sprint || sprint.state === 'active') return undefined;
+  const committed = points(container.issues);
   if (sprint.capacityPoints !== null) {
     return (
       <CapacityBar
@@ -42,10 +50,10 @@ function capacityOf(container: Container, lookups: Lookups): ReactNode {
       />
     );
   }
-  return `${committed} pts`;
+  return committed > 0 ? `${committed} pts` : undefined;
 }
 
-const ACTIONS = { active: 'Complete sprint', future: 'Start sprint', closed: undefined } as const;
+const ACTIONS = { active: 'Complete', future: 'Start sprint', closed: undefined } as const;
 
 /**
  * A sprint or the backlog: the header with dates, goal, counts and capacity,
@@ -73,25 +81,26 @@ export function SprintSection({
   );
   const sprint = container.sprint;
   const dates = sprint ? sprintDates(sprint) : undefined;
+  const sprintPoints = pointsOf(container, lookups);
+  const capacity = capacityOf(container);
 
   return (
-    <div data-container-id={container.id} className="mt-4">
+    <div data-container-id={container.id}>
       <SprintContainer
         id={bodyId}
         open={open}
-        active={sprint?.state === 'active'}
-        className={dropAtEnd && !open ? 'outline-2 -outline-offset-2 outline-ac' : undefined}
+        className={dropAtEnd && !open ? 'outline-2 -outline-offset-2 outline-acc' : undefined}
         header={
           <div data-drop-top>
             <SprintHeader
               name={sprint?.name ?? 'Backlog'}
               {...(dates ? { dates } : {})}
               {...(sprint?.goal ? { goal: sprint.goal } : {})}
-              active={sprint?.state === 'active'}
+              kind={sprint ? (sprint.state === 'active' ? 'active' : 'future') : 'backlog'}
               issueCount={visible.length}
-              counts={countsOf(visible, lookups.statuses)}
-              capacity={capacityOf(container, lookups)}
-              action={sprint ? ACTIONS[sprint.state] : 'Create sprint'}
+              {...(sprintPoints ? { points: sprintPoints } : {})}
+              {...(capacity ? { capacity } : {})}
+              action={sprint ? ACTIONS[sprint.state] : undefined}
               onAction={onAction}
               {...(onMore ? { onMore } : {})}
               open={open}
@@ -123,7 +132,7 @@ export function SprintSection({
           {dropAtEnd && (
             <span
               aria-hidden
-              className="pointer-events-none absolute inset-x-0 -top-px z-10 h-0.5 bg-ac"
+              className="pointer-events-none absolute inset-x-0 -top-px z-10 h-0.5 bg-acc"
             />
           )}
           <InlineCreate containerId={container.id} onCreate={onCreateIssue} />

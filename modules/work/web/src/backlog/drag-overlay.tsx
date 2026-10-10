@@ -48,13 +48,13 @@ export function DragOverlay({ previewRef, issueById, containerName }: DragOverla
         <div
           ref={previewRef}
           aria-hidden
-          className="pointer-events-none fixed top-0 left-0 z-50 flex max-w-80 items-center gap-2 rounded-sm border border-br bg-sf px-2.5 py-1.5 text-13 text-tx shadow-menu"
+          className="pointer-events-none fixed top-0 left-0 z-50 flex max-w-80 items-center gap-2 rounded-card border border-line bg-card px-2.5 py-1.5 text-13 text-tx shadow-e3"
           style={{ transform: 'translate(-9999px, 0)' }}
         >
           <KeyChip issueKey={first.key} />
           <span className="truncate">{first.title}</span>
           {more > 0 && (
-            <span className="shrink-0 rounded-pill bg-ac-fill px-1.5 font-mono text-11 font-medium text-on-ac">
+            <span className="shrink-0 rounded-full bg-acc-fill px-1.5 font-mono text-11 font-medium text-on-acc">
               +{more}
             </span>
           )}

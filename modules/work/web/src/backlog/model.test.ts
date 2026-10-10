@@ -1,4 +1,5 @@
 import type { WorkflowStatus } from '@bemmoly/module-work/shared';
+import { NO_FILTERS, type IssueFilters } from '../shared/issue-filters.ts';
 import { describe, expect, it } from 'vitest';
 import { id, issue, sampleBacklog, sprint, STATUS } from './fixtures.test-helper.ts';
 import {
@@ -7,9 +8,8 @@ import {
   countsOf,
   epicMeta,
   epicPercent,
-  matches,
+  issueMatches,
   nextSprintName,
-  NO_FILTERS,
   sprintDates,
   statusLooks,
 } from './model.ts';
@@ -75,15 +75,18 @@ describe('filters and counts', () => {
     assigneeId: id(2),
   });
 
-  it('matches on title or key, epic, type and assignee', () => {
-    expect(matches(row, { ...NO_FILTERS, text: 'TOKENS' })).toBe(true);
-    expect(matches(row, { ...NO_FILTERS, text: 'plt-9' })).toBe(true);
-    expect(matches(row, { ...NO_FILTERS, text: 'billing' })).toBe(false);
-    expect(matches(row, { ...NO_FILTERS, epicId: id(1) })).toBe(true);
-    expect(matches(row, { ...NO_FILTERS, epicId: id(3) })).toBe(false);
-    expect(matches(row, { ...NO_FILTERS, typeIds: [id(0x962)] })).toBe(false);
-    expect(matches(row, { ...NO_FILTERS, assigneeIds: ['none'] })).toBe(false);
-    expect(matches(issue(10, 'n'), { ...NO_FILTERS, assigneeIds: ['none'] })).toBe(true);
+  it('matches on title or key, epic, type, assignee and blocked', () => {
+    const f = (patch: Partial<IssueFilters>) => ({ ...NO_FILTERS, ...patch });
+    expect(issueMatches(row, f({ q: 'TOKENS' }), undefined, false)).toBe(true);
+    expect(issueMatches(row, f({ q: 'plt-9' }), undefined, false)).toBe(true);
+    expect(issueMatches(row, f({ q: 'billing' }), undefined, false)).toBe(false);
+    expect(issueMatches(row, f({ epic: [id(1)] }), undefined, false)).toBe(true);
+    expect(issueMatches(row, f({ epic: [id(3)] }), undefined, false)).toBe(false);
+    expect(issueMatches(row, f({ type: [id(0x962)] }), undefined, false)).toBe(false);
+    expect(issueMatches(row, f({ assignee: ['none'] }), undefined, false)).toBe(false);
+    expect(issueMatches(issue(10, 'n'), f({ assignee: ['none'] }), undefined, false)).toBe(true);
+    expect(issueMatches(row, f({ quick: ['blocked'] }), undefined, true)).toBe(true);
+    expect(issueMatches(row, f({ quick: ['blocked'] }), undefined, false)).toBe(false);
   });
 
   it('counts to do, in progress and done by the board look', () => {

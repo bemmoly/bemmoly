@@ -9,11 +9,15 @@ import type {
 } from '@bemmoly/module-work/shared';
 import {
   avatarHue,
+  epicColor,
+  epicFill,
   initialsOf,
+  type EpicColor,
   type AvatarHue,
   type IssueTypeRef,
   type StatusCategory,
 } from '@bemmoly/ui';
+import { matchesFilters, type IssueFilters } from '../shared/issue-filters.ts';
 
 /*
  * The Backlog screen as plain data: containers in screen order, the names
@@ -45,6 +49,8 @@ export interface PersonLook {
 }
 
 export interface EpicLook extends EpicProgress {
+  /** The colour stored on the epic, the same one the Board and the Issue page paint. */
+  look: EpicColor;
   colorClassName: string;
 }
 
@@ -124,24 +130,12 @@ export function personLooks(
   );
 }
 
-/** Epic squares in panel order, from the epic palette. */
-export const EPIC_COLORS = [
-  'bg-epic-1',
-  'bg-epic-2',
-  'bg-epic-3',
-  'bg-epic-4',
-  'bg-epic-5',
-  'bg-epic-6',
-  'bg-epic-7',
-  'bg-epic-8',
-] as const;
-
 export function epicLooks(epics: readonly EpicProgress[]): Map<string, EpicLook> {
   return new Map(
-    epics.map((epic, index) => [
-      epic.id,
-      { ...epic, colorClassName: EPIC_COLORS[index % EPIC_COLORS.length] ?? 'bg-epic-1' },
-    ]),
+    epics.map((epic) => {
+      const look = epicColor(epic.color, epic.id);
+      return [epic.id, { ...epic, look, colorClassName: epicFill(look) }];
+    }),
   );
 }
 
@@ -156,36 +150,27 @@ export function epicMeta(epic: EpicProgress): string {
   return `${issues} · ${epic.done === 0 ? 'not started' : `${epic.done} done`}`;
 }
 
-export interface BacklogFilters {
-  text: string;
-  epicId: string | null;
-  typeIds: readonly string[];
-  /** User ids; "none" stands for unassigned. */
-  assigneeIds: readonly string[];
-}
-
-export const NO_FILTERS: BacklogFilters = { text: '', epicId: null, typeIds: [], assigneeIds: [] };
-
-export function isFiltered(filters: BacklogFilters): boolean {
-  return Boolean(
-    filters.text.trim() ||
-    filters.epicId ||
-    filters.typeIds.length > 0 ||
-    filters.assigneeIds.length > 0,
+/** Whether a row passes the shared filters; its blockers come with the backlog. */
+export function issueMatches(
+  issue: Issue,
+  filters: IssueFilters,
+  meId: string | undefined,
+  blocked: boolean,
+): boolean {
+  return matchesFilters(
+    {
+      key: issue.key,
+      title: issue.title,
+      assigneeId: issue.assigneeId,
+      parentId: issue.parentId,
+      typeId: issue.typeId,
+      labelIds: issue.labelIds,
+      blocked,
+      updatedAt: issue.updatedAt,
+    },
+    filters,
+    meId,
   );
-}
-
-export function matches(issue: Issue, filters: BacklogFilters): boolean {
-  const text = filters.text.trim().toLowerCase();
-  if (text && !issue.title.toLowerCase().includes(text) && !issue.key.toLowerCase().includes(text))
-    return false;
-  if (filters.epicId && issue.parentId !== filters.epicId) return false;
-  if (filters.typeIds.length > 0 && !filters.typeIds.includes(issue.typeId)) return false;
-  if (filters.assigneeIds.length > 0) {
-    const who = issue.assigneeId ?? 'none';
-    if (!filters.assigneeIds.includes(who)) return false;
-  }
-  return true;
 }
 
 export interface Counts {

@@ -1,7 +1,7 @@
 import { Button, EmptyState } from '@bemmoly/ui';
 import { Icon } from '@bemmoly/ui/icons';
 import { useBacklogUi } from '../hooks/backlog-store.ts';
-import { NO_FILTERS } from './model.ts';
+import { useIssueFilters } from '../shared/issue-filters.ts';
 
 export interface ContainerEmptyProps {
   /** Filters are on: the container has issues, none of them match. */
@@ -16,7 +16,7 @@ export interface ContainerEmptyProps {
  * the small size so the containers below stay in view. Rows still drop onto it.
  */
 export function ContainerEmpty({ filtered, sprint, containerId }: ContainerEmptyProps) {
-  const setFilters = useBacklogUi((state) => state.setFilters);
+  const { clear } = useIssueFilters();
   const setCreatingIn = useBacklogUi((state) => state.setCreatingIn);
   const create = (
     <Button
@@ -34,11 +34,11 @@ export function ContainerEmpty({ filtered, sprint, containerId }: ContainerEmpty
         icon={<Icon name="filter" />}
         title="No issues here match the filters"
         action={
-          <Button size="xs" onClick={() => setFilters(NO_FILTERS)}>
+          <Button size="xs" onClick={clear}>
             Clear filters
           </Button>
         }
-        className="border-b border-br-row"
+        className="border-b border-line-2"
       />
     );
   return (
@@ -52,7 +52,7 @@ export function ContainerEmpty({ filtered, sprint, containerId }: ContainerEmpty
           : 'Capture the work that comes next; sprints are planned from here.'
       }
       action={create}
-      className="border-b border-br-row"
+      className="border-b border-line-2"
     />
   );
 }
