@@ -1,15 +1,18 @@
-import type { CreateIssueBody, Issue, UpdateIssueBody } from '@bemmoly/module-work/shared';
+import type { CreateIssueBody, Issue } from '@bemmoly/module-work/shared';
 import { useToast } from '@bemmoly/ui';
 import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useMemo } from 'react';
 import { create } from 'zustand';
 import { api } from '../shared/api.ts';
 import { workKeys } from '../shared/keys.ts';
+import { plural, useIssueEdits } from './issue-edits.ts';
 
 /*
  * The small edits a list screen makes without opening an issue: assign, priority, sprint, and
- * delete. They apply to one issue or to a selection. Delete waits out an Undo window before it
- * reaches the server, and the issues leave the screen at once, so undoing only puts them back.
+ * delete. They apply to one issue or to a selection. Assign, priority and sprint show at once
+ * and go back for any issue the server refuses (issue-edits.ts). Delete waits out an Undo window
+ * before it reaches the server, and the issues leave the screen at once, so undoing only puts
+ * them back.
  */
 
 /** How long a deleted issue waits for Undo before the delete is sent. */
@@ -29,10 +32,7 @@ export const useHiddenIssues = create<Hidden>()((set) => ({
     set((state) => ({ keys: new Set([...state.keys].filter((key) => !keys.includes(key))) })),
 }));
 
-export type QuickPatch = Pick<UpdateIssueBody, 'assigneeId' | 'priority' | 'sprintId' | 'statusId'>;
-
-const plural = (keys: readonly string[]) =>
-  keys.length === 1 ? (keys[0] ?? '') : `${keys.length} issues`;
+export type { QuickPatch } from './issue-edit-patch.ts';
 
 export function useIssueQuickActions() {
   const queryClient = useQueryClient();
@@ -43,29 +43,7 @@ export function useIssueQuickActions() {
     [queryClient],
   );
 
-  const update = useCallback(
-    async (keys: readonly string[], patch: QuickPatch, done?: string) => {
-      const results = await Promise.allSettled(
-        keys.map((key) => api.work.issues.update(key, patch)),
-      );
-      await refresh();
-      const failed = results.filter((result) => result.status === 'rejected');
-      if (failed.length > 0) {
-        const reason = (failed[0] as PromiseRejectedResult).reason;
-        toast.show({
-          tone: 'danger',
-          title:
-            failed.length === keys.length
-              ? `${plural(keys)} could not be changed`
-              : `${failed.length} of ${keys.length} issues could not be changed`,
-          body: reason instanceof Error ? reason.message : 'Try again in a moment.',
-        });
-      } else if (done) {
-        toast.show({ tone: 'ok', title: done });
-      }
-    },
-    [refresh, toast],
-  );
+  const update = useIssueEdits();
 
   const remove = useCallback(
     (keys: readonly string[]) => {

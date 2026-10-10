@@ -2,6 +2,7 @@ import { IconButton, IssueCard, type EpicColor, type Priority } from '@bemmoly/u
 import { memo, useEffect, useLayoutEffect, useMemo, useRef, type CSSProperties } from 'react';
 import { useBoardDragStore } from '../hooks/board-drag-store.ts';
 import type { ViewCard } from '../hooks/board-model.ts';
+import { useIssuePending } from '../hooks/issue-edits.ts';
 import { IssueActionsMenu, openRowMenu } from '../shared/issue-actions-menu.tsx';
 import { cardProps } from './card-view.ts';
 import { cls, FOCUS_RING, useBoardShared } from './board-context.ts';
@@ -43,6 +44,7 @@ export const BoardCard = memo(function BoardCard({
     state.carrying?.issueId === card.issueId ? state.carrying.mode : null,
   );
   const props = useMemo(() => cardProps(card, vocab, laneColor), [card, vocab, laneColor]);
+  const pending = useIssuePending(card.key);
   const ruleColor = vocab.ruleColor(card);
   const element = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -100,6 +102,7 @@ export const BoardCard = memo(function BoardCard({
         {...props}
         interactive={carried === null}
         selected={carried !== null || selectedKey === card.key}
+        pending={pending}
         tools={
           carried === null && (
             <>

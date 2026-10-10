@@ -2,6 +2,7 @@ import type { Issue } from '@bemmoly/module-work/shared';
 import { IssueRow, statusStage } from '@bemmoly/ui';
 import { memo, type KeyboardEvent, type MouseEvent, type PointerEvent } from 'react';
 import { useBacklogUi } from '../hooks/backlog-store.ts';
+import { useIssuePending } from '../hooks/issue-edits.ts';
 import { useSearchParam } from '../shared/url-state.ts';
 import { openRowMenu } from '../shared/issue-actions-menu.tsx';
 import { useBacklogRowShared } from './backlog-row-context.ts';
@@ -57,6 +58,7 @@ export const BacklogItem = memo(function BacklogItem({
   const open = useSearchParam('issue') === issue.key;
   const { blocked, menu } = useBacklogRowShared();
   const dragged = useBacklogUi((state) => state.drag?.ids.includes(id) ?? false);
+  const pending = useIssuePending(issue.key);
   const dropAbove = useBacklogUi(
     (state) => state.drag?.target?.containerId === containerId && state.drag.target.beforeId === id,
   );
@@ -97,6 +99,7 @@ export const BacklogItem = memo(function BacklogItem({
         {...(blocked[id]?.[0] ? { blockedBy: blocked[id][0] } : {})}
         selected={open}
         checked={selected}
+        pending={pending}
         selecting={selecting}
         onCheck={(event) => handlers.onCheck(event, id)}
       />
