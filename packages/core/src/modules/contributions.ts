@@ -3,6 +3,7 @@ import type { SettingDefinition } from '../contracts/settings.ts';
 import type { CollabDocumentDefinition } from './collab.ts';
 import type {
   AiContribution,
+  AiExclusionSourceDefinition,
   CapabilityDefinition,
   EditorContribution,
   EntityDefinition,
@@ -32,6 +33,7 @@ export interface ModuleContributions {
   aiContextBuilders: AiContribution[];
   aiInsightGenerators: AiContribution[];
   aiPromptFiles: { name: string; path: string }[];
+  aiExclusionSources: AiExclusionSourceDefinition[];
   editorNodes: EditorContribution[];
   editorSlashCommands: EditorContribution[];
   importers: ImporterDefinition[];
@@ -55,6 +57,7 @@ export function emptyContributions(): ModuleContributions {
     aiContextBuilders: [],
     aiInsightGenerators: [],
     aiPromptFiles: [],
+    aiExclusionSources: [],
     editorNodes: [],
     editorSlashCommands: [],
     importers: [],

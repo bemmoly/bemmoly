@@ -1,4 +1,10 @@
 export {
+  createTestAi,
+  type TestAi,
+  type TestAiOptions,
+  type TestAiReply,
+} from '../services/ai/index.ts';
+export {
   connectCollabClient,
   eventually,
   type CollabTestClient,

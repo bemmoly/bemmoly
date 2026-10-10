@@ -4,6 +4,13 @@ export { changeset } from './contracts/changelog.ts';
 export * from './middlewares/index.ts';
 export * from './modules/index.ts';
 export { API_PREFIX, kernelRoutes, type KernelRouteDependencies } from './routes/index.ts';
+export {
+  aiRefusal,
+  createAiFacade,
+  createDisabledAi,
+  isAiRefusal,
+  type AiFacadeDependencies,
+} from './services/ai/index.ts';
 export * from './services/changelog/index.ts';
 export * from './services/collab/index.ts';
 export * from './services/jobs/index.ts';

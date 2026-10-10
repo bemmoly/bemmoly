@@ -1,6 +1,7 @@
 import type { CapabilityName, NavEntry, SearchResult } from '@bemmoly/shared';
 import type { FastifyPluginAsync } from 'fastify';
 import type { z } from 'zod';
+import type { AiFacade } from '../contracts/ai.ts';
 import type { SettingDefinition, SettingKey, SettingsKeys } from '../contracts/settings.ts';
 import type { RequestContext } from '../services/authz/index.ts';
 
@@ -226,11 +227,32 @@ export interface AiContribution {
   definition: unknown;
 }
 
-export interface AiRegistry {
+/** A space or project Settings › AI › Privacy can exclude, as a module lists it. */
+export interface AiExclusionTarget {
+  id: string;
+  name: string;
+  key: string | null;
+}
+
+/** Lists one kind of container (Docs' spaces, Work's projects) for the exclusion picker. */
+export interface AiExclusionSourceDefinition {
+  kind: 'space' | 'project';
+  list(): Promise<readonly AiExclusionTarget[]>;
+}
+
+/**
+ * What a module sees as `ctx.ai`: the registries it contributes to at boot, and the facade
+ * (`generate`, `stream`, `embed`, `enabled`, `policy`) it calls at run time. With AI off, or
+ * before the server binds the runtime, every call refuses with ForbiddenError
+ * `details.reason: 'ai_off'`.
+ */
+export interface AiRegistry extends AiFacade {
   addTool(tool: AiContribution): void;
   addContextBuilder(builder: AiContribution): void;
   addInsightGenerator(generator: AiContribution): void;
+  /** A Markdown prompt file with frontmatter; its id must start with "<module id>.". */
   addPromptFile(prompt: { name: string; path: string }): void;
+  addExclusionSource(source: AiExclusionSourceDefinition): void;
 }
 
 export interface EditorContribution {

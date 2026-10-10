@@ -1,5 +1,6 @@
 import { isCapabilityOfModule, navEntrySchema } from '@bemmoly/shared';
 import type { SqlClient } from '../clients/postgres.ts';
+import type { AiFacade } from '../contracts/ai.ts';
 import type { EventBus } from '../contracts/event-bus.ts';
 import type { EnqueueOptions, JobQueue } from '../contracts/jobs.ts';
 import type { RealtimePublisher } from '../contracts/realtime.ts';
@@ -10,6 +11,7 @@ import { ModuleLoadError } from './errors.ts';
 import { createReferenceRegistries } from './references.ts';
 import type { SettingsReader, SettingsRegistry } from './registries.ts';
 import type { ModuleRegistry } from './registry.ts';
+import { createDisabledAi } from '../services/ai/index.ts';
 import { createAuditRecorder } from '../services/audit/index.ts';
 import { createContainerMemberships } from '../services/authz/index.ts';
 
@@ -24,6 +26,8 @@ export interface ModuleContextOptions {
   database?: SqlClient;
   /** Bound once the collaboration host exists; server edits before that fail loudly. */
   collab?: CollabTransactor;
+  /** The AI facade, read on every call so it can be bound after modules register. */
+  ai?: () => AiFacade | undefined;
   /** Every enabled module, for cross-module lookups; answers once loading finishes. */
   peers?: () => ModuleRegistry | undefined;
 }
@@ -35,6 +39,31 @@ const noRealtime: RealtimePublisher = { publish: async () => undefined };
 
 function ownsPath(moduleId: string, path: string): boolean {
   return path === `/${moduleId}` || path.startsWith(`/${moduleId}/`);
+}
+
+const disabledAi = createDisabledAi();
+
+/** `ctx.ai`: registries recorded into the module's contributions, calls through the facade. */
+function createModuleAi(
+  into: ModuleContributions,
+  bound: (() => AiFacade | undefined) | undefined,
+): ModuleContext['ai'] {
+  const facade = () => bound?.() ?? disabledAi;
+  return {
+    addTool: (tool) => into.aiTools.push(tool),
+    addContextBuilder: (builder) => into.aiContextBuilders.push(builder),
+    addInsightGenerator: (generator) => into.aiInsightGenerators.push(generator),
+    addPromptFile: (prompt) => into.aiPromptFiles.push(prompt),
+    addExclusionSource: (source) => into.aiExclusionSources.push(source),
+    generate: (input) => facade().generate(input),
+    stream: (input) => facade().stream(input),
+    embed: (input) => facade().embed(input),
+    enabled: (actor) => facade().enabled(actor),
+    policy: (actor) => facade().policy(actor),
+    assertAvailable: (role, actor) => facade().assertAvailable(role, actor),
+    maySend: (scope, actor) => facade().maySend(scope, actor),
+    renderPrompt: (id, variables) => facade().renderPrompt(id, variables),
+  };
 }
 
 /** Builds the registries one module sees, recording into that module's contributions. */
@@ -117,12 +146,7 @@ export function createModuleContext(
         into.searchProviders.push(provider);
       },
     },
-    ai: {
-      addTool: (tool) => into.aiTools.push(tool),
-      addContextBuilder: (builder) => into.aiContextBuilders.push(builder),
-      addInsightGenerator: (generator) => into.aiInsightGenerators.push(generator),
-      addPromptFile: (prompt) => into.aiPromptFiles.push(prompt),
-    },
+    ai: createModuleAi(into, options.ai),
     ...(options.editorEnabled
       ? {
           editor: {

@@ -1,3 +1,4 @@
+export type * from './ai.ts';
 export type * from './audit.ts';
 export type * from './authn.ts';
 export type * from './authz.ts';
