@@ -43,6 +43,11 @@ export interface EntityRenderer {
   Table?: ComponentType<{ query: string; title: string }>;
   /** Records to pick from while writing. */
   search?: EntitySearch;
+  /**
+   * Tells the module which list a record is about to be opened from (the Inbox's issues, in
+   * the order shown), so the record's page can step through that list with j and k.
+   */
+  rememberList?: (list: { label: string; keys: readonly string[] }) => void;
 }
 
 export type EntityRenderersLoader = () => Promise<{ default: readonly EntityRenderer[] }>;

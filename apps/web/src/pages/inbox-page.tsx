@@ -1,4 +1,10 @@
-import { PageLayout, useFrame, useGlobalKeys, useShortcutHelp } from '@bemmoly/core-web';
+import {
+  PageLayout,
+  useEntityRenderer,
+  useFrame,
+  useGlobalKeys,
+  useShortcutHelp,
+} from '@bemmoly/core-web';
 import type { Notification } from '@bemmoly/shared';
 import {
   Button,
@@ -94,8 +100,15 @@ export function InboxPage() {
   };
   const next = (item: Notification) =>
     order[order.indexOf(item) + 1] ?? order[order.indexOf(item) - 1];
+  // The module that owns the selected item learns the list it came from, for its j and k.
+  const owner = useEntityRenderer(selected?.target.kind ?? '');
   const open = (item: Notification) => {
-    if (inApp(item.target.url)) void routerNavigate({ to: item.target.url });
+    if (!inApp(item.target.url)) return;
+    const keys = order.flatMap((entry) =>
+      entry.target.kind === item.target.kind && entry.target.label ? [entry.target.label] : [],
+    );
+    owner?.rememberList?.({ label: 'Inbox', keys: [...new Set(keys)] });
+    void routerNavigate({ to: item.target.url });
   };
   const done = (item: Notification) => {
     select(next(item));
