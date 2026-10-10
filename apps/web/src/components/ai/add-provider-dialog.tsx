@@ -95,6 +95,7 @@ export function AddProviderDialog({ onConnected }: AddProviderDialogProps) {
           onQuery={setQuery}
           choice={null}
           onPick={(id) => setAdd(id)}
+          autoFocusSearch
         />
       ) : null}
     </Modal>

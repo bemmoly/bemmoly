@@ -14,6 +14,7 @@ interface ProviderPickerProps {
   onQuery: (query: string) => void;
   choice: string | null;
   onPick: (id: string) => void;
+  autoFocusSearch?: boolean;
 }
 
 function GroupLabel({ children }: { children: string }) {
@@ -38,7 +39,14 @@ function PickerSkeleton() {
  * The provider choice shared by the wizard and Settings › AI: the Popular row from the
  * catalog (its own names and logos) with Local server last, then the whole catalog, searchable.
  */
-export function ProviderPicker({ catalog, query, onQuery, choice, onPick }: ProviderPickerProps) {
+export function ProviderPicker({
+  catalog,
+  query,
+  onQuery,
+  choice,
+  onPick,
+  autoFocusSearch,
+}: ProviderPickerProps) {
   if (catalog.query.isPending) return <PickerSkeleton />;
   if (catalog.query.error) {
     return (
@@ -88,6 +96,7 @@ export function ProviderPicker({ catalog, query, onQuery, choice, onPick }: Prov
         total={catalog.total}
         selectedId={choice}
         onPick={onPick}
+        autoFocus={autoFocusSearch}
       />
     </div>
   );

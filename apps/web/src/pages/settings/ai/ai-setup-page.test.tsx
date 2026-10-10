@@ -81,4 +81,16 @@ describe('AiSetupPage', () => {
     await user.click(other as HTMLElement);
     await waitFor(() => expect(mockApi.db.ai.roles.fast?.model).not.toBe(before));
   });
+
+  it('says which provider is down, on its row and on the roles it fills', async () => {
+    const [row] = mockApi.db.ai.providers;
+    if (row) {
+      row.status = 'failed';
+      row.lastError = 'Acme refused the key: "Incorrect API key provided."';
+    }
+    await renderPage(() => <AiSetupPage />);
+    const table = await screen.findByRole('table', { name: 'Connected providers' });
+    expect(within(table).getAllByText('Not answering').length).toBeGreaterThan(0);
+    expect((await screen.findAllByText(/isn’t answering, so this role fails/)).length).toBe(4);
+  });
 });

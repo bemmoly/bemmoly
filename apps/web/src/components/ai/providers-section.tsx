@@ -33,7 +33,7 @@ function Status({ provider }: { provider: AiProvider }) {
         {status.label}
       </StatePill>
       {status.detail ? (
-        <span title={status.detail} className="max-w-full truncate text-12 text-red-tx">
+        <span className="line-clamp-2 max-w-full text-12 break-words text-red-tx">
           {status.detail}
         </span>
       ) : null}

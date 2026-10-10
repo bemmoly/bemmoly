@@ -43,12 +43,12 @@ provider" saves.
 
 1. Turn AI on or off: the first switch on Setup. Tab reaches it first; Space toggles.
 2. Add a provider: "Add provider…" (mouse, Tab then Enter, touch). In the dialog the search
-   box takes focus; arrows move through the list; Enter picks; Mod+Enter sends the form.
+   box takes focus; Tab reaches the list; Enter picks; Enter in a field connects.
 3. Assign a model to a role: each role's `Select` (Enter or Space opens, typing searches, Enter
    picks). The change saves at once with Undo.
 
 **Keyboard map.** No single-letter keys (the page is mostly fields). Esc closes the dialog, then
-leaves settings, as the shell does. Mod+Enter submits the provider and budget forms. Every key
+leaves settings, as the shell does. Enter in a field submits the provider and budget forms; Mod+Enter saves a prompt override. Every key
 is the shared components' own.
 
 **States.**

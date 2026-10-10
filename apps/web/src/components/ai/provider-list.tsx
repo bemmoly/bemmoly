@@ -11,6 +11,8 @@ interface ProviderListProps {
   selectedId: string | null;
   onPick: (id: string) => void;
   disabled?: boolean;
+  /** In the dialog the search box takes focus, so typing filters at once. */
+  autoFocus?: boolean;
 }
 
 /** The full catalog under the Popular row: a search box, the status line and a scrolling list. */
@@ -23,12 +25,14 @@ export function ProviderList({
   selectedId,
   onPick,
   disabled,
+  autoFocus,
 }: ProviderListProps) {
   const shown = results.length === total ? `${total} providers` : `${results.length} of ${total}`;
   return (
     <div className="flex flex-col gap-2">
       <SearchInput
         aria-label="Search providers"
+        autoFocus={autoFocus}
         placeholder="Search all providers by name or id"
         value={query}
         onChange={(event) => onQuery(event.target.value)}

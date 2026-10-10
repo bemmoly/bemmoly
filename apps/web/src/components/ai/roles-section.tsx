@@ -40,6 +40,14 @@ function Warning({ children }: { children: string }) {
   );
 }
 
+/** A connected provider whose last test failed: the roles on it fail too. */
+function downProvider(roles: AiRoles, providerId: string): boolean {
+  return (
+    roles.providers.data?.items.some((row) => row.id === providerId && row.status === 'failed') ??
+    false
+  );
+}
+
 function RoleRow({ role, roles, disabled }: { role: AiRole; roles: AiRoles; disabled?: boolean }) {
   const current = roles.assignment(role);
   const eligible = eligibleFor(role, roles.models, current);
@@ -66,6 +74,11 @@ function RoleRow({ role, roles, disabled }: { role: AiRole; roles: AiRoles; disa
           className="w-full"
         />
         {chosen ? <ModelFacts model={chosen.model} role={role} /> : null}
+        {current && downProvider(roles, current.providerId) ? (
+          <Warning>
+            {`${current.providerName} isn’t answering, so this role fails until it does. Test it under Providers, or choose another model.`}
+          </Warning>
+        ) : null}
         {current?.paused ? (
           <Warning>
             Paused: this month’s budget is spent. It starts again on the 1st, or when the budget is
