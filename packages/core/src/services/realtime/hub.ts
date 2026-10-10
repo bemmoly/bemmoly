@@ -8,6 +8,7 @@ import type { Actor } from '../../contracts/authz.ts';
 import type { ModuleAccessResolver } from '../../contracts/module-access.ts';
 import type { RealtimeMessage } from '../../contracts/realtime.ts';
 import type { RealtimeMetrics } from '../../contracts/telemetry.ts';
+import { createPresenceRoster } from './presence.ts';
 
 /** The part of a WebSocket the hub needs; `ws` sockets satisfy it. */
 export interface HubSocket {
@@ -27,6 +28,8 @@ export interface RealtimeHubOptions {
   moduleAccess?: ModuleAccessResolver;
   /** Project and space membership checks; the identity service supplies one. */
   authorizeSubscription?: SubscriptionAuthorizer;
+  /** The clock presence stamps arrivals with; tests pass their own. */
+  now?: () => Date;
 }
 
 export interface HubClient {
@@ -46,6 +49,8 @@ interface Connection {
   socket: HubSocket;
   actor: Actor;
   scopes: Set<string>;
+  /** Bumped by every presence message, so a slow authorization never lands after a newer one. */
+  presenceTurn: number;
 }
 
 export function scopeKey(scope: RealtimeScope): string {
@@ -82,12 +87,54 @@ function send(socket: HubSocket, message: RealtimeServerMessage): void {
 
 export function createRealtimeHub(options: RealtimeHubOptions): RealtimeHub {
   const connections = new Set<Connection>();
+  const presence = createPresenceRoster({
+    logger: options.logger,
+    ...(options.now ? { now: options.now } : {}),
+  });
+
+  function drop(connection: Connection): void {
+    connections.delete(connection);
+    presence.leave(connection);
+  }
 
   async function maySubscribe(actor: Actor, scope: RealtimeScope): Promise<boolean> {
     if (scope.kind === 'module' && options.moduleAccess) {
       if (!(await options.moduleAccess.canAccess(actor, scope.id))) return false;
     }
     return options.authorizeSubscription ? options.authorizeSubscription(actor, scope) : true;
+  }
+
+  /** Presence is authorized exactly as a subscription to the same scope is. */
+  async function join(connection: Connection, scope: RealtimeScope, view: string): Promise<void> {
+    const turn = ++connection.presenceTurn;
+    const userId = personOf(connection.actor);
+    if (!userId) {
+      return send(connection.socket, {
+        type: 'error',
+        code: 'forbidden',
+        message: 'Only a person can be present',
+      });
+    }
+    if (!presence.allow(connection)) {
+      return send(connection.socket, {
+        type: 'error',
+        code: 'rate_limited',
+        message: 'Too many presence updates',
+      });
+    }
+    if (!(await maySubscribe(connection.actor, scope))) {
+      const code = scope.kind === 'module' ? 'module_access_denied' : 'forbidden';
+      return send(connection.socket, { type: 'error', code, message: 'Not allowed to join' });
+    }
+    // Closed, left or moved on while the check ran: joining now would leave a ghost behind.
+    if (turn !== connection.presenceTurn || !connections.has(connection)) return;
+    presence.join(connection, {
+      socket: connection.socket,
+      userId,
+      scope,
+      scopeKey: scopeKey(scope),
+      view,
+    });
   }
 
   async function handle(connection: Connection, raw: string): Promise<void> {
@@ -103,6 +150,11 @@ export function createRealtimeHub(options: RealtimeHubOptions): RealtimeHub {
     }
     const message = parsed.data;
     if (message.type === 'ping') return send(connection.socket, { type: 'pong' });
+    if (message.type === 'presence') return join(connection, message.scope, message.view);
+    if (message.type === 'leave') {
+      connection.presenceTurn += 1;
+      return presence.leave(connection);
+    }
     if (message.type === 'unsubscribe') {
       connection.scopes.delete(scopeKey(message.scope));
       return send(connection.socket, { type: 'unsubscribed', scope: message.scope });
@@ -117,12 +169,12 @@ export function createRealtimeHub(options: RealtimeHubOptions): RealtimeHub {
 
   return {
     connect(socket, actor) {
-      const connection: Connection = { socket, actor, scopes: new Set() };
+      const connection: Connection = { socket, actor, scopes: new Set(), presenceTurn: 0 };
       connections.add(connection);
       send(socket, { type: 'ready' });
       return {
         receive: (raw) => handle(connection, raw),
-        disconnect: () => void connections.delete(connection),
+        disconnect: () => drop(connection),
       };
     },
     dispatch(message) {
@@ -136,7 +188,7 @@ export function createRealtimeHub(options: RealtimeHubOptions): RealtimeHub {
           delivered += 1;
         } catch (error) {
           options.logger.warn({ err: error }, 'dropping a realtime client that failed a send');
-          connections.delete(connection);
+          drop(connection);
         }
       }
       return delivered;
@@ -145,6 +197,7 @@ export function createRealtimeHub(options: RealtimeHubOptions): RealtimeHub {
     closeAll() {
       for (const connection of connections) connection.socket.close(1001, 'server shutting down');
       connections.clear();
+      presence.clear();
     },
   };
 }
