@@ -99,7 +99,7 @@ export function createPagesService(deps: DocsServiceDeps, collab: PageCollab) {
     },
 
     /**
-     * Title, icon and owner. A version that no longer matches is a conflict, so
+     * Title, icon, cover and owner. A version that no longer matches is a conflict, so
      * two tabs never overwrite each other's rename silently. The body belongs to
      * the collab server now; a snapshot sent here (the 0.2 shape, accepted until
      * 0.4) is applied through it as one edit, so open editors see it.
@@ -120,6 +120,7 @@ export function createPagesService(deps: DocsServiceDeps, collab: PageCollab) {
         update pages set
           title = coalesce(${patch.title ?? null}, title),
           icon = case when ${has('icon')} then ${patch.icon ?? null} else icon end,
+          cover = case when ${has('cover')} then ${patch.cover ?? null} else cover end,
           owner_id = case when ${has('ownerId')} then ${patch.ownerId ?? null}::uuid else owner_id end,
           version = version + 1,
           updated_by = ${userId}::uuid,

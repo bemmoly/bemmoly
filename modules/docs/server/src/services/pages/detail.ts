@@ -1,7 +1,18 @@
 import type { SqlExecutor } from '@bemmoly/core';
-import type { Breadcrumb, PageDetail } from '../../../../shared/pages.ts';
+import {
+  pageCoverSchema,
+  type Breadcrumb,
+  type PageCover,
+  type PageDetail,
+} from '../../../../shared/pages.ts';
 import { iso, isoOrNull } from '../common.ts';
 import { toSummary, type PageRow } from './rows.ts';
+
+/** A stored id this release does not draw reads as no cover. */
+const coverOf = (value: string | null): PageCover | null => {
+  const parsed = pageCoverSchema.safeParse(value);
+  return parsed.success ? parsed.data : null;
+};
 
 /** Ancestor ids from the materialized path, root first, the page itself left out. */
 export const ancestorIds = (row: Pick<PageRow, 'id' | 'path'>) =>
@@ -36,6 +47,7 @@ export async function loadDetail(
   return {
     ...toSummary(row),
     snapshot: row.snapshot,
+    cover: coverOf(row.cover),
     tldr: row.tldr,
     reviewers: row.reviewers,
     templateId: row.template_id,

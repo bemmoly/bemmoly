@@ -133,6 +133,7 @@ export const docsRoutes: MockRoute[] = [
       const body = bodyOf<{
         title: string;
         icon: string | null;
+        cover: string | null;
         ownerId: string | null;
         snapshot: object;
         version: number;
@@ -145,6 +146,7 @@ export const docsRoutes: MockRoute[] = [
       if (Object.keys(body).every((key) => key === 'snapshot')) return ok(detail(db, row));
       if (body.title !== undefined) row.title = body.title;
       if (body.icon !== undefined) row.icon = body.icon;
+      if (body.cover !== undefined) row.cover = body.cover;
       if (body.ownerId !== undefined) row.ownerId = body.ownerId;
       row.version += 1;
       row.updatedAt = now();

@@ -98,6 +98,7 @@ export function pageDetail(overrides: Record<string, unknown> = {}) {
         { type: 'paragraph', content: [{ type: 'text', text: 'Sessions move to Postgres.' }] },
       ],
     },
+    cover: null,
     tldr: null,
     reviewers: [],
     templateId: null,
