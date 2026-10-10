@@ -6,6 +6,7 @@ import type { SqlClient } from '../clients/postgres.ts';
 import type { Env } from '../config/env.ts';
 import { readCookie, SESSION_COOKIE } from '../utils/session-cookie.ts';
 import { accountBucketKey, accountOfRoute } from './rate-limit-accounts.ts';
+import { isAiRoute } from './rate-limit-ai.ts';
 import { RateLimitBuckets, storeClass } from './rate-limit-store.ts';
 
 export interface RateLimitBudget {
@@ -22,6 +23,8 @@ export interface RateLimitBudgets {
   perAccount: RateLimitBudget;
   /** Session cookies and API tokens looked up and refused, keyed by IP. */
   failedCredentialsPerIp: RateLimitBudget;
+  /** Each route that calls a model, keyed by person: see rate-limit-ai.ts. */
+  aiPerActor: RateLimitBudget;
 }
 
 export interface RateLimitingOptions extends Partial<RateLimitBudgets> {
@@ -37,6 +40,8 @@ export const DEFAULT_PER_ACTOR: RateLimitBudget = { max: 600, windowMs: MINUTE }
 export const DEFAULT_STRICT_PER_IP: RateLimitBudget = { max: 10, windowMs: MINUTE };
 export const DEFAULT_PER_ACCOUNT: RateLimitBudget = { max: 10, windowMs: 15 * MINUTE };
 export const DEFAULT_FAILED_CREDENTIALS_PER_IP: RateLimitBudget = { max: 60, windowMs: MINUTE };
+/** About one model call a second per route: ghost text while someone types stays well under. */
+export const DEFAULT_AI_PER_ACTOR: RateLimitBudget = { max: 60, windowMs: MINUTE };
 
 export type RateLimitEnv = Partial<
   Pick<
@@ -45,6 +50,7 @@ export type RateLimitEnv = Partial<
     | 'BEMMOLY_RATE_LIMIT_AUTH_PER_IP'
     | 'BEMMOLY_RATE_LIMIT_AUTH_PER_ACCOUNT'
     | 'BEMMOLY_RATE_LIMIT_FAILED_CREDENTIALS_PER_IP'
+    | 'BEMMOLY_RATE_LIMIT_AI_PER_USER'
   >
 >;
 
@@ -61,6 +67,7 @@ export function rateLimitBudgets(env: RateLimitEnv): RateLimitBudgets {
       DEFAULT_FAILED_CREDENTIALS_PER_IP,
       env.BEMMOLY_RATE_LIMIT_FAILED_CREDENTIALS_PER_IP,
     ),
+    aiPerActor: withMax(DEFAULT_AI_PER_ACTOR, env.BEMMOLY_RATE_LIMIT_AI_PER_USER),
   };
 }
 
@@ -111,6 +118,7 @@ export const rateLimiting = fp<RateLimitingOptions>(
     const strict = options.strictPerIp ?? DEFAULT_STRICT_PER_IP;
     const perAccount = options.perAccount ?? DEFAULT_PER_ACCOUNT;
     const failed = options.failedCredentialsPerIp ?? DEFAULT_FAILED_CREDENTIALS_PER_IP;
+    const ai = options.aiPerActor ?? DEFAULT_AI_PER_ACTOR;
     const buckets = new RateLimitBuckets(options.sql, options.sweepProbability ?? 0.01);
     const failedKey = (request: FastifyRequest) => `credentials|ip:${request.ip}`;
 
@@ -144,6 +152,12 @@ export const rateLimiting = fp<RateLimitingOptions>(
       if (route.config.rateLimit !== undefined) return;
       if (!path) {
         route.config.rateLimit = false;
+      } else if (isAiRoute(method, path)) {
+        route.config.rateLimit = {
+          max: ai.max,
+          timeWindow: ai.windowMs,
+          keyGenerator: (request: FastifyRequest) => `ai|${actorKey(request)}`,
+        };
       } else if (
         !(method === 'GET' && BOOT_READS.includes(path)) &&
         STRICT_PATHS.some((prefix) => path.startsWith(prefix))
