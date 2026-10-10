@@ -15,4 +15,17 @@ export {
   CommandList,
   type CommandItemProps,
 } from './command-list.tsx';
-export { CommandPlan, type CommandPlanProps, type PlanStep } from './command-plan.tsx';
+export {
+  CommandAiLine,
+  CommandAiNotice,
+  CommandAiThinking,
+  type CommandAiLineProps,
+  type CommandAiNoticeProps,
+} from './command-ai.tsx';
+export {
+  CommandPlan,
+  type CommandPlanProps,
+  type CommandPlanState,
+  type PlanStep,
+  type PlanStepStatus,
+} from './command-plan.tsx';
