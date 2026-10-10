@@ -27,6 +27,7 @@ import { useSpaceActions } from '../space/space-layout.tsx';
 import { PageCoverBand } from './body/page-identity.tsx';
 import { DockedMargin, OverlayMargin } from './panel/page-margin.tsx';
 import {
+  FADE_WHILE_TYPING,
   marginShown,
   PageScreenContext,
   usePageChrome,
@@ -169,7 +170,7 @@ export function PageFrame({ page }: { page: PageDetail }) {
 
   return (
     <PageScreenContext.Provider value={screen}>
-      <DocsLayout layout="full" trailing={<StatusMenu />}>
+      <DocsLayout layout="full" trailing={<StatusMenu />} headerClassName={FADE_WHILE_TYPING}>
         <PageHeaderActions />
         <div className="relative flex min-h-0 flex-1" data-page-id={page.id}>
           <div
