@@ -64,7 +64,10 @@ export async function useMockBackend(
       return;
     }
     if (result.body === undefined) await route.fulfill({ status: result.status, body: '' });
-    else await route.fulfill({ status: result.status, json: result.body });
+    else if (typeof result.body === 'string' && result.headers) {
+      // A download or a streamed reply: sent as written, all at once.
+      await route.fulfill({ status: result.status, body: result.body, headers: result.headers });
+    } else await route.fulfill({ status: result.status, json: result.body });
   });
 
   return {

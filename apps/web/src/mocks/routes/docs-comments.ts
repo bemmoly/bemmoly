@@ -24,7 +24,7 @@ function pageOf(db: MockDb, request: MockRequest) {
   return row && live(row) ? row : undefined;
 }
 
-function present(db: MockDb, comment: MockComment) {
+export function present(db: MockDb, comment: MockComment) {
   const author = db.users.find((user) => user.id === comment.authorId);
   const row = docsState(db).pages.find((item) => item.id === comment.pageId);
   const text = row ? normalize(textOf(snapshotOf(row))) : '';
@@ -49,7 +49,7 @@ function present(db: MockDb, comment: MockComment) {
   };
 }
 
-function commentOf(db: MockDb, request: MockRequest) {
+export function commentOf(db: MockDb, request: MockRequest) {
   return historyState(db).comments.find(
     (item) => item.id === request.params['commentId'] && !item.deletedAt,
   );

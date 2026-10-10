@@ -13,6 +13,8 @@ export interface MockResponse {
   /** JSON, or a string sent as is with `headers` (a file download). */
   body?: unknown;
   headers?: Record<string, string>;
+  /** A string body sent one line at a time, this far apart, as a streamed reply arrives. */
+  lineDelayMs?: number;
 }
 
 export type MockHandler = (request: MockRequest, db: MockDb) => MockResponse;
