@@ -42,6 +42,7 @@ export const LINKED_MARGIN: MarginSlot = {
         <h2 className="m-0 flex-1 text-13 font-semibold text-tx">Linked work</h2>
         <IconButton
           label="Close linked work"
+          keys="Mod+Alt+L"
           icon="close"
           size="xs"
           variant="ghost"

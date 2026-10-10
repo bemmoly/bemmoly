@@ -1,4 +1,4 @@
-import { IconButton, Tooltip } from '@bemmoly/ui';
+import { IconButton } from '@bemmoly/ui';
 import type { IconName } from '@bemmoly/ui/icons';
 import type { Editor } from '@tiptap/core';
 import { Fragment, useEffect, useReducer, type RefObject } from 'react';
@@ -115,18 +115,15 @@ export function TableTools({
             <span role="separator" aria-orientation="vertical" className="mx-1 h-4 w-px bg-line" />
           )}
           {group.map((tool) => (
-            <Tooltip key={tool.label} label={tool.label}>
-              <IconButton
-                size="xs"
-                label={tool.label}
-                icon={tool.icon}
-                // The Tooltip names it; no second, native tip.
-                title=""
-                disabled={!tool.can(editor)}
-                onClick={() => tool.run(editor)}
-                className={cx(tool.danger && 'text-red enabled:hover:text-red')}
-              />
-            </Tooltip>
+            <IconButton
+              key={tool.label}
+              size="xs"
+              label={tool.label}
+              icon={tool.icon}
+              disabled={!tool.can(editor)}
+              onClick={() => tool.run(editor)}
+              className={cx(tool.danger && 'text-red enabled:hover:text-red')}
+            />
           ))}
         </Fragment>
       ))}

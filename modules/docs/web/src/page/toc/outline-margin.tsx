@@ -17,6 +17,7 @@ function OutlineMargin({ docked, onClose }: MarginProps) {
           <h2 className="m-0 text-13 font-semibold text-tx">Outline</h2>
           <IconButton
             label="Close outline"
+            keys="Mod+Alt+O"
             icon="close"
             size="xs"
             variant="ghost"

@@ -192,6 +192,7 @@ export function CommentsRail({ pageId, canComment = true, alignTo, onClose }: Co
           {onClose && (
             <IconButton
               label="Close comments"
+              keys="Mod+Alt+C"
               icon="close"
               size="xs"
               variant="ghost"
