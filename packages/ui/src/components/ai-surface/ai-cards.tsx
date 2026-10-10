@@ -160,6 +160,11 @@ export interface AiSuggestionProps {
   dismissDone?: boolean;
   /** row: inside a list (Backlog sprint tip). card: free-standing (doc comment reply). */
   variant?: 'row' | 'card';
+  /**
+   * The actions on a line of their own under the text, for a narrow column such as the
+   * comments rail; side by side with the text otherwise.
+   */
+  stacked?: boolean;
   className?: string;
 }
 
@@ -175,50 +180,72 @@ export function AiSuggestion({
   dismissLabel = 'Dismiss',
   dismissDone = false,
   variant = 'row',
+  stacked = false,
   className,
 }: AiSuggestionProps) {
+  const accept = onAccept && (
+    <button
+      type="button"
+      onClick={onAccept}
+      disabled={acceptDisabled}
+      className={cx(
+        'shrink-0 cursor-pointer rounded-chip border border-ai-100 bg-card px-2.25 py-1 font-sans text-13 font-medium text-ai-600 hover:bg-ai-50',
+        ACTION_OFF,
+        focusRing,
+      )}
+    >
+      {acceptLabel}
+    </button>
+  );
+  const dismiss = onDismiss && (
+    <button
+      type="button"
+      onClick={onDismiss}
+      disabled={dismissDone}
+      aria-pressed={dismissDone || undefined}
+      className={cx(
+        'shrink-0 cursor-pointer border-0 bg-transparent p-0 font-sans text-13 text-tx-2 hover:text-tx',
+        ACTION_OFF,
+        focusRing,
+        stacked && 'ml-auto',
+      )}
+    >
+      {dismissLabel}
+    </button>
+  );
   return (
     <div
       role="note"
       aria-label="AI suggestion"
       className={cx(
-        'flex items-center gap-2.5 bg-ai-50 text-13',
+        'flex gap-2.5 bg-ai-50 text-13',
+        stacked ? 'flex-col' : 'items-center',
         variant === 'row'
           ? 'border-b border-line-2 px-3.5 py-2'
           : 'rounded-control border border-ai-100 px-3 py-2.5 leading-note',
         className,
       )}
     >
-      <AiDot />
-      <span className="min-w-0 flex-1 text-tx">{children}</span>
-      {onAccept && (
-        <button
-          type="button"
-          onClick={onAccept}
-          disabled={acceptDisabled}
-          className={cx(
-            'shrink-0 cursor-pointer rounded-chip border border-ai-100 bg-card px-2.25 py-1 font-sans text-13 font-medium text-ai-600 hover:bg-ai-50',
-            ACTION_OFF,
-            focusRing,
+      {stacked ? (
+        <>
+          <span className="flex min-w-0 items-start gap-2">
+            <AiDot className="mt-1.5" />
+            <span className="min-w-0 flex-1 text-tx">{children}</span>
+          </span>
+          {(accept || dismiss) && (
+            <span className="flex items-center gap-2.5">
+              {accept}
+              {dismiss}
+            </span>
           )}
-        >
-          {acceptLabel}
-        </button>
-      )}
-      {onDismiss && (
-        <button
-          type="button"
-          onClick={onDismiss}
-          disabled={dismissDone}
-          aria-pressed={dismissDone || undefined}
-          className={cx(
-            'shrink-0 cursor-pointer border-0 bg-transparent p-0 font-sans text-13 text-tx-2 hover:text-tx',
-            ACTION_OFF,
-            focusRing,
-          )}
-        >
-          {dismissLabel}
-        </button>
+        </>
+      ) : (
+        <>
+          <AiDot />
+          <span className="min-w-0 flex-1 text-tx">{children}</span>
+          {accept}
+          {dismiss}
+        </>
       )}
     </div>
   );

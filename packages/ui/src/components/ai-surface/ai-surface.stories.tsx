@@ -115,6 +115,17 @@ export const Suggestion: Story = {
       <AiSuggestion variant="card" onAccept={noop} onDismiss={noop} className="w-120">
         Code says 30 (auth/flags.go:41). Update the doc to 30 minutes?
       </AiSuggestion>
+      <AiSuggestion
+        variant="card"
+        stacked
+        acceptLabel="Apply fix"
+        onAccept={noop}
+        dismissLabel="Not useful"
+        onDismiss={noop}
+        className="w-70"
+      >
+        Code says 30 (auth/flags.go:41). Replace with “stay valid for 30 minutes”?
+      </AiSuggestion>
     </div>
   ),
 };

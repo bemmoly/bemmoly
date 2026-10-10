@@ -62,6 +62,7 @@ function FixSuggestion({
   return (
     <AiSuggestion
       variant="card"
+      stacked
       className="mt-0.5"
       acceptLabel="Apply fix"
       acceptDisabled={busy}
