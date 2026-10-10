@@ -2,7 +2,7 @@ import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { AppFrame } from './app-frame.tsx';
 import { FrameContext, type FrameState } from './frame-context.ts';
-import { HeaderActions } from './page-header.tsx';
+import { HeaderActions, useHeaderTrail } from './page-header.tsx';
 import { PageLayout } from './page-layout.tsx';
 import { SidebarRow } from './sidebar/sidebar-row.tsx';
 
@@ -110,6 +110,24 @@ describe('the page header', () => {
       </FrameContext.Provider>,
     );
     expect(document.title).toBe('Inbox · Acme Labs · Bemmoly');
+  });
+
+  it('names a page by the trail its screen refines, not the route’s placeholder', () => {
+    function Page() {
+      useHeaderTrail([
+        { label: 'Engineering', path: '/docs/s/ENG' },
+        { label: 'Session store RFC', path: '/docs/p/1' },
+      ]);
+      return <p>Body</p>;
+    }
+    render(
+      <FrameContext.Provider value={frame({ pathname: '/docs/p/1', workspaceName: 'Acme Labs' })}>
+        <PageLayout layout="full" header={{ crumbs: [{ label: 'Page', path: '/docs/p/1' }] }}>
+          <Page />
+        </PageLayout>
+      </FrameContext.Provider>,
+    );
+    expect(document.title).toBe('Session store RFC · Engineering · Bemmoly');
   });
 
   it('keeps only the current crumb on a phone, with the menu button', () => {

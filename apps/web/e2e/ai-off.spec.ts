@@ -24,7 +24,7 @@ const SCREENS: readonly { path: string; title: RegExp; admin?: true }[] = [
   { path: '/work/settings/PLT/fields', title: /^Fields · Platform Core/ },
   { path: '/docs', title: /^Docs · / },
   { path: '/docs/s/ENG', title: /^Engineering · / },
-  { path: `/docs/p/${RFC_PAGE_ID}`, title: /Bemmoly$/ },
+  { path: `/docs/p/${RFC_PAGE_ID}`, title: /^RFC: Move sessions to Postgres · / },
   { path: '/settings/profile', title: /^Profile · Settings/ },
   { path: '/settings/appearance', title: /^Appearance · Settings/, admin: true },
 ];
