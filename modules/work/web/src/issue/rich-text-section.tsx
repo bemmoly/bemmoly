@@ -1,6 +1,6 @@
 import { isEmptyDoc, preloadEditor, RichTextEditor, type RichTextDoc } from '@bemmoly/editor';
 import type { RichText } from '@bemmoly/module-work/shared';
-import { IconButton, Kbd, SaveState, SectionHeading } from '@bemmoly/ui';
+import { IconButton, Kbd, rowReveal, SaveState, SectionHeading } from '@bemmoly/ui';
 import { Icon } from '@bemmoly/ui/icons';
 import { useRef, useState, type FocusEvent, type MouseEvent } from 'react';
 import { useEditorSources } from '../hooks/editor-sources.ts';
@@ -71,27 +71,38 @@ export function RichTextSection({
     finish();
   };
 
-  const heading = (showTitle || autosave.state !== 'idle' || !editing) && (
-    <div className="flex min-h-6 items-center gap-2">
-      {showTitle && <SectionHeading title={title} size={size} />}
-      <span className="ml-auto flex items-center gap-1">
-        <SaveState state={autosave.state} onRetry={() => void autosave.retry()} />
-        {!readOnly && !editing && !empty && (
-          <IconButton
-            label={`Edit ${name}`}
-            icon={<Icon name="edit" size={14} />}
-            size="xs"
-            onClick={start}
-            onPointerEnter={preloadEditor}
-          />
-        )}
-      </span>
-    </div>
+  const tools = (
+    <span className="flex items-center gap-1">
+      <SaveState state={autosave.state} onRetry={() => void autosave.retry()} />
+      {!readOnly && !editing && !empty && (
+        <IconButton
+          label={`Edit ${name}`}
+          icon={<Icon name="edit" size={14} />}
+          size="xs"
+          onClick={start}
+          onPointerEnter={preloadEditor}
+          // Without a heading the pencil floats on the text's corner, shown on hover and focus.
+          className={showTitle ? undefined : rowReveal}
+        />
+      )}
+    </span>
   );
+  const saving = autosave.state !== 'idle';
 
   return (
-    <section aria-label={title} className="flex flex-col gap-1">
-      {heading}
+    <section aria-label={title} className="group/row relative flex flex-col gap-1">
+      {showTitle ? (
+        <div className="flex min-h-6 items-center gap-2">
+          <SectionHeading title={title} size={size} />
+          <span className="ml-auto">{tools}</span>
+        </div>
+      ) : (
+        // The description is the issue's body: no heading row, so no gap above its first line.
+        !editing &&
+        (saving || (!empty && !readOnly)) && (
+          <div className="absolute -top-1 right-0 z-10">{tools}</div>
+        )
+      )}
       {editing ? (
         <div ref={box} onBlur={onBlur} className={cx(SURFACE, 'bg-card shadow-e1')}>
           <RichTextEditor
@@ -112,6 +123,9 @@ export function RichTextSection({
                 {content}
                 <div className="flex flex-wrap items-center gap-2.5 border-t border-line-2 pt-1.5 text-12 text-tx-3">
                   <div className="min-w-0 flex-1">{toolbar}</div>
+                  {!showTitle && (
+                    <SaveState state={autosave.state} onRetry={() => void autosave.retry()} />
+                  )}
                   <span className="hidden items-center gap-1 sm:flex">
                     <Kbd keys="Esc" /> to finish
                   </span>
@@ -146,7 +160,11 @@ export function RichTextSection({
         <div
           onClick={onSurfaceClick}
           onPointerEnter={readOnly ? undefined : preloadEditor}
-          className={cx(SURFACE, !readOnly && 'cursor-text hover:bg-hover')}
+          className={cx(
+            SURFACE,
+            !readOnly && 'cursor-text hover:bg-hover',
+            !showTitle && !readOnly && 'pr-10',
+          )}
         >
           <RichTextView doc={doc} size={size} />
         </div>
