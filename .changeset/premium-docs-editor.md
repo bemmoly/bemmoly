@@ -26,3 +26,6 @@ Issues inside a page read like Work: inline issues show the type, key, title and
 instead of a capitalised pill, and a new Issue card block shows status, priority, assignee,
 sprint and epic, live. Linked work lists the issues in the page with how far along they are, the
 issues and pages that link here, and shows an issue once even when it appears in both lists.
+
+A browser tab still open on the previous release can't show Issue card blocks; refresh it after
+updating.
