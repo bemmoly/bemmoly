@@ -53,24 +53,37 @@ Keep this stable so a replacement drops in without code changes:
 ## Pending
 
 - The logo's colours are the product's colour system (ADR 0015): `#2356C9` is the accent and Work, `#5B7BE5` Docs and the dark accent, `#9A85EA` AI only (the `--brand-1/2/3` and `--ai` tokens).
-- The banners and social previews under `generated/` still show the lockup before its re-cut; run `brand:banners` to refresh them.
 
 ## Generated files (`generated/`, committed)
 
 Built from `mark-color.svg` (its designed colours) and `lockup-color.svg`; the plates use the Classic
 preset surface and the designed blue:
 
-| File                                             | Size        | Use                                                                                                                                                                                                                                                                     |
-| ------------------------------------------------ | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `favicon.svg`                                    | vector      | `<link rel="icon" type="image/svg+xml">`; the mark on transparent                                                                                                                                                                                                       |
-| `favicon-32.png`                                 | 32          | `<link rel="icon" sizes="32x32">`; mark at 72% on a white rounded square                                                                                                                                                                                                |
-| `apple-touch-icon.png`                           | 180         | `<link rel="apple-touch-icon">`; mark at 72% on a full-bleed white square (iOS rounds it and would paint transparent corners black)                                                                                                                                     |
-| `icon-192.png`, `icon-512.png`                   | 192, 512    | PWA manifest, `"purpose": "any"`; mark at 72% on a white rounded square                                                                                                                                                                                                 |
-| `icon-maskable-192.png`, `icon-maskable-512.png` | 192, 512    | PWA manifest, `"purpose": "maskable"`; solid `#2356C9`, mark at 64% inside the safe zone with the blue tiles white, the mid tile 80% white and the lilac kept                                                                                                           |
-| `social-preview.png`                             | 1200 x 630  | `og:image` and `twitter:image`: lockup, tagline, one line about the product, the install command and a framed slice of the Board shot (`apps/site/src/assets/screens/board.png`) on the Classic background with an accent glow; composed by `scripts/social-preview.ts` |
-| `social-preview-square.png`                      | 1080 x 1080 | The same elements stacked (lockup, copy, Board) for platforms that crop square                                                                                                                                                                                          |
+| File                                             | Size        | Use                                                                                                                                                                                                                                                                   |
+| ------------------------------------------------ | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `favicon.svg`                                    | vector      | `<link rel="icon" type="image/svg+xml">`; the mark on transparent                                                                                                                                                                                                     |
+| `favicon-32.png`                                 | 32          | `<link rel="icon" sizes="32x32">`; mark at 72% on a white rounded square                                                                                                                                                                                              |
+| `apple-touch-icon.png`                           | 180         | `<link rel="apple-touch-icon">`; mark at 72% on a full-bleed white square (iOS rounds it and would paint transparent corners black)                                                                                                                                   |
+| `icon-192.png`, `icon-512.png`                   | 192, 512    | PWA manifest, `"purpose": "any"`; mark at 72% on a white rounded square                                                                                                                                                                                               |
+| `icon-maskable-192.png`, `icon-maskable-512.png` | 192, 512    | PWA manifest, `"purpose": "maskable"`; solid `#2356C9`, mark at 64% inside the safe zone with the blue tiles white, the mid tile 80% white and the lilac kept                                                                                                         |
+| `social-preview.png`                             | 1200 x 630  | `og:image` and `twitter:image`: lockup, tagline, one line about the product, the install command and a framed slice of the Board captured from the demo (`captures/board.png`) on the Classic background with an accent glow; composed by `scripts/social-preview.ts` |
+| `social-preview-square.png`                      | 1080 x 1080 | The same elements stacked (lockup, copy, Board) for platforms that crop square                                                                                                                                                                                        |
 
 The app imports them through the package export `@bemmoly/ui/brand/generated/<file>`.
+
+## Captures (`captures/`, committed)
+
+`board.png` and `board-ocean.png` are the Board of the demo build (`apps/web`, `--mode demo`) at
+the homepage previews' viewport, 1280 x 744 at 2x (2560 x 1488), in Classic and in Ocean. Every
+social preview and banner frames a slice of them. `scripts/brand-captures.ts` takes them from a
+running demo, removes the demo banner and blanks the sidebar's version line, so the images do
+not go stale with a release:
+
+```sh
+pnpm --filter @bemmoly/web exec vite --mode demo --port 5431   # in another terminal
+pnpm --filter @bemmoly/ui brand:captures   # --url to point at another demo address
+pnpm --filter @bemmoly/ui brand:icons
+```
 
 ## Banners
 
@@ -85,6 +98,11 @@ The banners carry **no mark and no wordmark**: each platform shows the mark as t
 picture beside the banner, so the only name on them is "bemmoly.com", small, in a corner. The
 README hero and the repository social preview are shown with no avatar beside them, so those
 two keep the lockup.
+
+The copy is `HEADLINE` and `LINE` in `scripts/social-preview.ts`: "Your work. Your platform."
+over "Self-hosted issues and docs. Open source, no pricing, nothing to buy." It makes no claim
+the shipped product does not keep and carries no version number. The lilac tile of the mark is
+the only lilac on any of these images; the glow is the accent.
 
 Regenerate after changing the copy, a capture or a token:
 

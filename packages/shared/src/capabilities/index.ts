@@ -7,7 +7,6 @@ import { MODULE_ID_PATTERN } from '../modules/index.ts';
  * by the module through the capability registry.
  */
 export const KERNEL_CAPABILITIES = [
-  'workspace.billing.manage',
   'workspace.delete',
   'workspace.sso.configure',
   'workspace.roles.manage',
