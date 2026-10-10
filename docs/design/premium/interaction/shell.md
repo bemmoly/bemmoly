@@ -173,6 +173,7 @@ Home. A module chunk that fails to load gets the same failure with Try again.
   in the product yet, so the detail offers Open, Snooze and Done; the actions land with reviews.
 - The review's Inbox list shows each issue's title. The notification carries the key, not the
   title, so the list shows the key and the detail shows the module's full row.
-- The boot frame follows the default light theme; a dark-mode person sees it light for the
-  moment before the app applies their theme (the CSP forbids the inline script that would
-  read their choice first).
+- The boot frame paints in the look this device last showed: the app remembers it when it
+  applies a theme, and a small same-origin script (`public/boot-theme.js`, allowed by the CSP
+  where an inline script is not) puts it on `<html>` before the first paint. A first visit,
+  or a browser with storage blocked, gets Classic light.
