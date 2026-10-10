@@ -19,7 +19,7 @@ export interface Presence {
  * Without motion (reduced motion, or no browser) it unmounts at once, so nothing waits on an
  * animation that will not play.
  */
-export function usePresence(open: boolean, exit: MotionDuration = 'base'): Presence {
+export function usePresence(open: boolean, exit: MotionDuration = 'exit'): Presence {
   const [mounted, setMounted] = useState(open);
   // Adjusted while rendering, as React recommends for state that follows a prop.
   if (open && !mounted) setMounted(true);

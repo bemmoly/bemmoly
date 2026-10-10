@@ -1,4 +1,5 @@
-import { PRESETS } from '@bemmoly/ui/tokens';
+import { flatten } from '@bemmoly/ui/theme';
+import { themeById } from '@bemmoly/ui/tokens';
 
 export interface TileColors {
   bg: string;
@@ -7,14 +8,14 @@ export interface TileColors {
   br: string;
 }
 
-/** A preset's own tokens for its tile: light presets outline with br3, dark ones with br. */
+/** A preset's own tokens for its tile: its page, card, accent and line. */
 export function presetTileColors(id: string): TileColors {
-  const preset = PRESETS.find((entry) => entry.id === id) ?? PRESETS[0];
+  const { colors } = themeById(id);
   return {
-    bg: preset.neutrals.bg,
-    sf: preset.neutrals.sf,
-    ac: preset.accent[0],
-    br: preset.mode === 'dark' ? preset.neutrals.br : preset.neutrals.br3,
+    bg: colors.sunken,
+    sf: colors.card,
+    ac: colors.acc,
+    br: flatten(colors.line, colors.card),
   };
 }
 

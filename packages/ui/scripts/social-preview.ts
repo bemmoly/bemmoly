@@ -4,7 +4,7 @@
  * radius and shadow comes from the tokens; the text is outlined from the self-hosted fonts.
  */
 import { readFileSync } from 'node:fs';
-import { RADII, SHADOWS } from '../src/tokens.ts';
+import { ELEVATIONS, RADII } from '../src/tokens.ts';
 import { measure, outline, wrap, type TextStyle } from './outline-text.ts';
 
 export interface PreviewInput {
@@ -39,7 +39,7 @@ const px = (value: string) => Number.parseFloat(value);
 
 /** `0 1px 2px rgba(16,24,40,.05)` as an SVG drop shadow. */
 export function shadowFilter(id: string): string {
-  const [x = '0', y = '0', blur = '0', ...rest] = SHADOWS.card.split(' ');
+  const [x = '0', y = '0', blur = '0', ...rest] = ELEVATIONS.light['shadow-card'].split(' ');
   const rgba = /rgba\(([^)]+)\)/.exec(rest.join(' '))?.[1]?.split(',') ?? [];
   const [r = '0', g = '0', b = '0', a = '1'] = rgba.map((part) => part.trim());
   return `<filter id="${id}" x="-10%" y="-10%" width="120%" height="120%"><feDropShadow dx="${px(x)}" dy="${px(y)}" stdDeviation="${px(blur) / 2}" flood-color="rgb(${r},${g},${b})" flood-opacity="${Number(a)}"/></filter>`;

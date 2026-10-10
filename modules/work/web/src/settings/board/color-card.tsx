@@ -2,7 +2,7 @@ import type { BoardConfig, CardColorRuleEntry } from '@bemmoly/module-work/share
 import type { LqlFieldCatalog } from '@bemmoly/shared';
 import { Card } from '@bemmoly/ui';
 import { Icon } from '@bemmoly/ui/icons';
-import { HUE_PAIRS, SIGNAL_SOLIDS } from '@bemmoly/ui/tokens';
+import { EPIC_COLORS, MODE_COLORS } from '@bemmoly/ui/tokens';
 import { cx } from '../cx.ts';
 import { LqlInput } from '../lql/lql-input.tsx';
 import { COLOR_RULE_LABELS } from '../model/labels.ts';
@@ -14,14 +14,17 @@ const PRESETS: [BoardConfig['colorRule'], string][] = [
   ['epic', 'matches lane color'],
 ];
 
-/** Rule colours are stored as hex on the board, so they come from the token palette. */
+/**
+ * Rule colours are stored as hex on the board, so they come from the token palette: the
+ * signal red, then the epic hues.
+ */
 export const RULE_COLORS: { name: string; hex: string }[] = [
-  { name: 'Red', hex: SIGNAL_SOLIDS['danger-hi'] },
-  { name: 'Orange', hex: SIGNAL_SOLIDS.warn },
-  { name: 'Amber', hex: SIGNAL_SOLIDS.caution },
-  { name: 'Green', hex: SIGNAL_SOLIDS.ok },
-  { name: 'Violet', hex: SIGNAL_SOLIDS.violet },
-  { name: 'Blue', hex: HUE_PAIRS.sky[1] },
+  { name: 'Red', hex: MODE_COLORS.light.red },
+  { name: 'Orange', hex: EPIC_COLORS['epic-4'] },
+  { name: 'Amber', hex: EPIC_COLORS['epic-7'] },
+  { name: 'Green', hex: EPIC_COLORS['epic-5'] },
+  { name: 'Violet', hex: EPIC_COLORS['epic-2'] },
+  { name: 'Blue', hex: EPIC_COLORS['epic-1'] },
 ];
 
 export interface ColorCardProps {

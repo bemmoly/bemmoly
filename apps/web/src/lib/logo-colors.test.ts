@@ -1,4 +1,5 @@
-import { PRESETS } from '@bemmoly/ui/tokens';
+import { flatten } from '@bemmoly/ui/theme';
+import { PRESETS, themeById } from '@bemmoly/ui/tokens';
 import { siConfluence, siJira } from 'simple-icons';
 import { describe, expect, it } from 'vitest';
 import {
@@ -9,6 +10,12 @@ import {
   markColor,
   markFill,
 } from './logo-colors.ts';
+
+/** The chip a mark sits on, flattened over the card. */
+const chipOf = (id: string) => {
+  const { colors } = themeById(id);
+  return flatten(colors.chip, colors.card);
+};
 
 describe('logo colours', () => {
   it('keeps the import brands equal to what simple-icons publishes', () => {
@@ -22,7 +29,7 @@ describe('logo colours', () => {
     for (const brand of Object.values(IMPORT_MARK_BRANDS)) {
       for (const preset of PRESETS) {
         const fill = markColor(brand, preset.mode) ?? preset.neutrals.tx;
-        expect(contrastRatio(fill, preset.neutrals.chip)).toBeGreaterThanOrEqual(MARK_CONTRAST);
+        expect(contrastRatio(fill, chipOf(preset.id))).toBeGreaterThanOrEqual(MARK_CONTRAST);
       }
     }
   });
@@ -43,7 +50,7 @@ describe('logo colours', () => {
 
   it('gives monochrome marks (primary text) strong contrast on every preset tile', () => {
     for (const preset of PRESETS) {
-      expect(contrastRatio(preset.neutrals.tx, preset.neutrals.chip)).toBeGreaterThanOrEqual(4.5);
+      expect(contrastRatio(preset.neutrals.tx, chipOf(preset.id))).toBeGreaterThanOrEqual(4.5);
     }
     expect(chipsOf('dark')).toHaveLength(3);
   });

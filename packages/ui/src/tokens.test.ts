@@ -4,123 +4,160 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { formattedCssFiles } from '../scripts/format-css.ts';
 import { renderCssFiles, renderTailwindCss } from './css.ts';
-import { channelDistance, mixCss, resolveHex } from './theme/color.ts';
+import { flatten as over, resolveHex } from './theme/color.ts';
+import { contrastRatio } from './theme/contrast.ts';
 import {
-  accentTints,
-  AI_TOKENS,
+  BRAND,
+  COLOR_ALIASES,
   COLOR_TOKENS,
+  ELEVATIONS,
+  FIXED_COLOR_TOKENS,
   PRESET_IDS,
-  PRESETS,
+  RADII,
+  RADIUS_STEPS,
   themeById,
   THEMES,
+  TYPE_COLORS,
+  TYPE_SCALE,
+  TYPE_STEPS,
 } from './tokens.ts';
 
-/** Copied verbatim from the `P` array in the Appearance Settings mock. */
-const APPEARANCE_PRESETS = [
-  ['light', 'Classic', 'Light', '#f4f5f7', '#fff', '#2456c9', '#d5dae2'],
-  ['dark', 'Dark', 'Dark', '#0f1217', '#1a1f29', '#5b8def', '#262c38'],
-  ['slate', 'Slate', 'Light', '#eef1f4', '#fff', '#0f766e', '#c8d0da'],
-  ['warm', 'Warm', 'Light', '#f6f3ee', '#fffdf9', '#b4530f', '#d8d0c3'],
-  ['midnight', 'Midnight', 'Dark', '#0b0a14', '#171428', '#a78bfa', '#2a2542'],
-  ['forest', 'Forest', 'Light', '#f1f4f1', '#fff', '#1f7a44', '#c9d3cb'],
-  ['ocean', 'Ocean', 'Dark', '#07111c', '#101e30', '#38bdf8', '#1e3047'],
-  ['rose', 'Rose', 'Light', '#f7f3f4', '#fff', '#be123c', '#d9ccd1'],
-] as const;
-
-/** The :root block of the Board mock. */
-const BOARD_ROOT = {
-  ac: '#2456c9',
-  'ac-d': '#183d94',
-  'ac-l': '#6a8fe8',
-  'ac-bg': '#eef3fe',
-  'ac-bg2': '#f6f8fe',
-  'ac-br': '#cdd8f3',
-  'ac-av': '#d7e3fb',
-  'ac-mute': '#7a93d9',
-  bg: '#f4f5f7',
-  bg2: '#f9fafb',
-  sf: '#fff',
-  br: '#e2e5ea',
-  br2: '#e9ecf0',
-  br3: '#d5dae2',
-  trk: '#e5e8ee',
-  chip: '#eef0f4',
-  tx: '#1b2430',
-  tx2: '#3b4454',
-  tx3: '#4b5565',
-  tx4: '#6b7483',
-  tx5: '#8a93a3',
-  tx6: '#a2aab8',
+/** kit.css `.px`; tx-3 and todo are the two values lifted to pass contrast. */
+const KIT_LIGHT = {
+  canvas: '#ffffff',
+  side: '#f7f8fa',
+  sunken: '#f5f6f8',
+  card: '#ffffff',
+  hover: 'rgba(22,27,38,0.045)',
+  press: 'rgba(22,27,38,0.07)',
+  line: '#e7e9ee',
+  'line-2': '#f0f1f4',
+  tx: '#161b26',
+  'tx-2': '#4b5264',
+  'tx-3': '#697181',
+  acc: '#2356c9',
+  'acc-fill': '#2356c9',
+  'acc-500': '#5b7be5',
+  'acc-50': '#eef2fd',
+  'acc-100': '#dfe7fb',
+  'on-acc': '#fff',
+  ai: '#9a85ea',
+  'ai-50': '#f4f1fd',
+  todo: '#888f9c',
+  prog: '#2356c9',
+  done: '#1f9d55',
+  red: '#e5484d',
+  'red-50': '#fdeeee',
+  amber: '#d97706',
+  'amber-50': '#fff6e6',
 };
 
-/** Literals the other mocks use, which Classic must equal exactly. */
-const MOCK_LITERALS = {
-  'ac-br2': '#d9e1f5',
-  sf2: '#fafbfc',
-  'br-row': '#eceef2',
-  'br-ctl': '#c8ced8',
-  'br-off': '#cfd4dc',
-  'tx-body': '#2c3545',
-  ok: '#2b9b5a',
-  'ok-fg': '#1f7a44',
-  'ok-bg': '#e3f4ea',
-  danger: '#d93838',
-  'danger-hi': '#c42d2d',
-  warn: '#e0632a',
-  'warn-fg': '#b4470f',
-  'warn-bg': '#fdeee3',
-  caution: '#d49a1a',
-  'st-rev-bg': '#efe9fd',
-  'st-rev-fg': '#5a3cae',
-  'st-qa-bg': '#fdf3dc',
-  'st-qa-fg': '#8a6210',
-  'violet-bg': '#e4dcfa',
-  'sky-fg': '#075985',
+/** kit.css `.px.dark`; tx-3 is lifted, and the accent is split into text and fill. */
+const KIT_DARK = {
+  canvas: '#111418',
+  side: '#0c0f13',
+  sunken: '#0e1115',
+  card: '#181c22',
+  hover: 'rgba(255,255,255,.05)',
+  press: 'rgba(255,255,255,.08)',
+  line: 'rgba(255,255,255,.08)',
+  'line-2': 'rgba(255,255,255,.05)',
+  tx: '#e8ebf1',
+  'tx-2': '#a8b0be',
+  'tx-3': '#7d8492',
+  'acc-500': '#7b95ec',
+  'acc-50': 'rgba(91,123,229,.14)',
+  'acc-100': 'rgba(91,123,229,.24)',
+  todo: '#6f7786',
+  prog: '#6f8ff0',
+  done: '#3fb67a',
+  'amber-50': 'rgba(217,119,6,.14)',
+  'red-50': 'rgba(229,72,77,.14)',
 };
+
+const surfacesOf = (c: Record<string, string>) => [c.canvas, c.side, c.sunken, c.card] as string[];
 
 describe('design tokens', () => {
-  it('has the eight presets of the Setup and Appearance mocks, in order', () => {
-    expect(PRESET_IDS).toEqual(APPEARANCE_PRESETS.map(([id]) => id));
+  it('keeps the eight presets in order', () => {
+    expect(PRESET_IDS).toEqual([
+      'light',
+      'dark',
+      'slate',
+      'warm',
+      'midnight',
+      'forest',
+      'ocean',
+      'rose',
+    ]);
   });
 
-  it.each(APPEARANCE_PRESETS)(
-    '%s matches the mock preview swatch',
-    (id, name, mode, bg, sf, ac, border) => {
-      const theme = themeById(id);
-      expect(theme.name).toBe(name);
-      expect(theme.mode).toBe(mode.toLowerCase());
-      expect(theme.colors.bg).toBe(bg);
-      expect(theme.colors.sf).toBe(sf);
-      expect(theme.colors.ac).toBe(ac);
-      expect(theme.colors[theme.mode === 'dark' ? 'br' : 'br3']).toBe(border);
+  it('gives Classic the design review values, with the logo blue as the accent', () => {
+    expect(themeById('light').colors).toMatchObject(KIT_LIGHT);
+    expect(themeById('light').colors.acc).toBe(BRAND['brand-1']);
+    expect(themeById('light').elevation).toMatchObject(ELEVATIONS.light);
+  });
+
+  it('gives Dark the review dark values, its accent from the logo mid blue', () => {
+    const dark = themeById('dark').colors;
+    expect(dark).toMatchObject(KIT_DARK);
+    expect(dark['acc-500']).not.toBe(BRAND['brand-2']);
+    expect(dark['acc-fill']).toBe('#506ecf');
+    expect(themeById('dark').elevation.e2).toBe(ELEVATIONS.dark.e2);
+  });
+
+  it.each(THEMES.map((t) => [t.id, t] as const))(
+    '%s: text greys pass 4.5:1 on every surface',
+    (_, theme) => {
+      const c = theme.colors as Record<string, string>;
+      for (const surface of surfacesOf(c))
+        for (const ink of ['tx', 'tx-2', 'tx-3', 'acc'])
+          expect(
+            contrastRatio(c[ink] as string, surface),
+            `${ink} on ${surface}`,
+          ).toBeGreaterThanOrEqual(4.5);
     },
   );
 
-  it('Classic equals the Board mock :root variables and the other mocks literals exactly', () => {
-    expect(themeById('light').colors).toMatchObject({ ...BOARD_ROOT, ...MOCK_LITERALS });
-    expect(themeById('light').fontUi.startsWith("'IBM Plex Sans'")).toBe(true);
+  it.each(THEMES.map((t) => [t.id, t] as const))(
+    '%s: accent fills, glyphs and signals hold contrast',
+    (_, theme) => {
+      const c = theme.colors as Record<string, string>;
+      const card = c.card as string;
+      expect(contrastRatio(c['on-acc'] as string, c['acc-fill'] as string)).toBeGreaterThanOrEqual(
+        4.5,
+      );
+      for (const glyph of ['todo', 'prog', 'done'])
+        expect(contrastRatio(c[glyph] as string, card), glyph).toBeGreaterThanOrEqual(3);
+      for (const signal of ['red', 'amber', 'green']) {
+        const ink = c[`${signal}-tx`] as string;
+        expect(contrastRatio(ink, card), signal).toBeGreaterThanOrEqual(4.5);
+        expect(
+          contrastRatio(ink, over(c[`${signal}-50`] as string, card)),
+          signal,
+        ).toBeGreaterThanOrEqual(4.5);
+      }
+      expect(
+        contrastRatio(c['ai-600'] as string, over(c['ai-50'] as string, card)),
+      ).toBeGreaterThanOrEqual(4.5);
+    },
+  );
+
+  it('resolves every alias to exactly its canonical value, in every preset', () => {
+    for (const { id, colors } of THEMES)
+      for (const [alias, target] of Object.entries(COLOR_ALIASES))
+        expect(colors[alias as keyof typeof colors], `${id} ${alias}`).toBe(colors[target]);
   });
 
-  it('keeps Classic as exact hex because the Board formula does not reproduce it', () => {
-    const formula = accentTints('#2456c9', 'light', '#fff');
-    const exact = PRESETS[0].exact.tints;
-    for (const token of Object.keys(formula) as (keyof typeof formula)[]) {
-      const steps = channelDistance(formula[token], exact[token]);
-      expect(steps).toBeGreaterThan(0);
-      expect(steps).toBeLessThanOrEqual(17);
+  it('keeps AI on the logo lilac, apart from the accent', () => {
+    for (const { colors } of THEMES) {
+      expect(colors.ai).toBe(BRAND['brand-3']);
+      expect(colors.ai).not.toBe(colors.acc);
     }
   });
 
-  it('derives tints for the other presets with the Board mock formula', () => {
-    expect(themeById('dark').colors['ac-bg']).toBe('color-mix(in oklab, #5b8def 18%, #1a1f29)');
-    expect(themeById('slate').colors['ac-bg']).toBe('color-mix(in oklab, #0f766e 9%, #fff)');
-  });
-
-  it('derives dark status and avatar pairs with the Board mock people remap', () => {
-    const dark = themeById('dark').colors;
-    expect(dark['st-rev-bg']).toBe(mixCss('#5a3cae', 30, '#1a1f29'));
-    expect(dark['st-rev-fg']).toBe(mixCss('#5a3cae', 60, '#fff'));
-    expect(dark['orange-bg']).toBe(mixCss('#9a4a16', 30, '#1a1f29'));
+  it('drops the old violet', () => {
+    expect(COLOR_TOKENS).not.toContain('violet');
+    expect(Object.values(renderCssFiles()).join('\n')).not.toMatch(/--violet:/);
   });
 
   it('defines every colour token in every preset, each resolvable to a colour', () => {
@@ -133,23 +170,18 @@ describe('design tokens', () => {
     }
   });
 
-  it('reserves the AI tokens and starts them on the accent family the mocks use for AI', () => {
-    expect(AI_TOKENS).toEqual(['ai', 'ai-mute', 'ai-bg', 'ai-tint', 'ai-br', 'ai-br2', 'ai-tx']);
-    for (const { colors } of THEMES) {
-      expect(colors.ai).toBe(colors.ac);
-      expect(colors['ai-bg']).toBe(colors['ac-bg2']);
-      expect(colors['ai-tint']).toBe(colors['ac-bg']);
-      expect(colors['ai-br']).toBe(colors['ac-br']);
-      expect(colors['ai-br2']).toBe(colors['ac-br2']);
-      expect(colors['ai-mute']).toBe(colors['ac-mute']);
-    }
-  });
-
   it('gives every font stack real fallbacks', () => {
     for (const theme of THEMES) {
       expect(theme.fontUi).toMatch(/system-ui, .*sans-serif$/);
       expect(theme.fontCode).toMatch(/^'IBM Plex Mono', .*monospace$/);
     }
+  });
+
+  it('keeps the type and radius scales to the diet, with old names on a step', () => {
+    expect(Object.keys(TYPE_STEPS)).toEqual(['11', '12', '13', '14', '16', '20', '24']);
+    expect(new Set(Object.values(TYPE_SCALE))).toEqual(new Set(Object.values(TYPE_STEPS)));
+    expect(Object.values(RADIUS_STEPS)).toEqual(['4px', '6px', '8px', '12px', '9999px']);
+    expect(new Set(Object.values(RADII))).toEqual(new Set(Object.values(RADIUS_STEPS)));
   });
 });
 
@@ -171,9 +203,27 @@ describe('generated CSS', () => {
     }
   });
 
-  it('stops animation and transitions under prefers-reduced-motion', () => {
-    expect(renderCssFiles()['styles/base.css']).toMatch(
+  it('declares the fixed families once, on :root, so no preset can recolour them', () => {
+    const files = renderCssFiles();
+    for (const token of FIXED_COLOR_TOKENS) {
+      expect(files['styles/base.css']).toContain(`--${token}:`);
+      for (const id of PRESET_IDS)
+        expect(files[`styles/presets/${id}.css`]).not.toContain(`--${token}:`);
+    }
+    expect(files['styles/base.css']).toContain(`--type-epic: ${TYPE_COLORS['type-epic']}`);
+  });
+
+  it('stops animation and zeroes durations under prefers-reduced-motion', () => {
+    const base = renderCssFiles()['styles/base.css'];
+    expect(base).toMatch(
       /prefers-reduced-motion: reduce[\s\S]*transition-duration: 0\.01ms !important/,
+    );
+    expect(base).toMatch(/prefers-reduced-motion: reduce[\s\S]*--duration-base: 0ms/);
+  });
+
+  it('ships the focus ring as a utility on :focus-visible', () => {
+    expect(renderTailwindCss()).toMatch(
+      /@utility focus-ring \{\s*&:focus-visible \{\s*outline: var\(--focus-width\) solid var\(--acc\)/,
     );
   });
 });

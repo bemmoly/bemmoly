@@ -11,9 +11,9 @@
   --leading-*: initial;
   --tracking-*: initial;
   --spacing: 4px;
-  --text-9: 9px;
+  --text-9: 11px;
   --text-9--line-height: normal;
-  --text-10: 10px;
+  --text-10: 11px;
   --text-10--line-height: normal;
   --text-11: 11px;
   --text-11--line-height: normal;
@@ -23,42 +23,44 @@
   --text-13--line-height: normal;
   --text-14: 14px;
   --text-14--line-height: normal;
-  --text-15: 15px;
+  --text-15: 16px;
   --text-15--line-height: normal;
   --text-16: 16px;
   --text-16--line-height: normal;
-  --text-18: 18px;
+  --text-18: 16px;
   --text-18--line-height: normal;
-  --text-22: 22px;
+  --text-20: 20px;
+  --text-20--line-height: normal;
+  --text-22: 20px;
   --text-22--line-height: normal;
   --text-24: 24px;
   --text-24--line-height: normal;
-  --text-26: 26px;
+  --text-26: 24px;
   --text-26--line-height: normal;
-  --text-36: 36px;
+  --text-36: 24px;
   --text-36--line-height: normal;
-  --text-9h: 9.5px;
+  --text-9h: 11px;
   --text-9h--line-height: normal;
-  --text-10h: 10.5px;
+  --text-10h: 11px;
   --text-10h--line-height: normal;
-  --text-11h: 11.5px;
+  --text-11h: 12px;
   --text-11h--line-height: normal;
-  --text-12h: 12.5px;
+  --text-12h: 13px;
   --text-12h--line-height: normal;
-  --text-13h: 13.5px;
+  --text-13h: 13px;
   --text-13h--line-height: normal;
-  --text-15h: 15.5px;
+  --text-15h: 16px;
   --text-15h--line-height: normal;
-  --radius-hair: 1px;
-  --radius-tick: 2px;
-  --radius-chip: 3px;
-  --radius-xs: 4px;
-  --radius-sm: 5px;
-  --radius-panel: 7px;
+  --radius-chip: 4px;
   --radius-card: 8px;
-  --radius-pill: 9px;
   --radius-dialog: 12px;
   --radius-full: 9999px;
+  --radius-hair: 4px;
+  --radius-tick: 4px;
+  --radius-xs: 4px;
+  --radius-sm: 4px;
+  --radius-panel: 6px;
+  --radius-pill: 9999px;
   --leading-display: 1.15;
   --leading-title: 1.3;
   --leading-card: 1.4;
@@ -77,14 +79,14 @@
   --tracking-dots: 1px;
   --tracking-grip: -2px;
   --animate-fade-in: fade-in var(--duration-base) var(--ease-out) both;
-  --animate-fade-out: fade-out var(--duration-base) var(--ease-in) forwards;
+  --animate-fade-out: fade-out var(--duration-exit) var(--ease-in) forwards;
   --animate-pop-in: pop-in var(--duration-base) var(--ease-out) both;
   --animate-dialog-in: dialog-in var(--duration-slow) var(--ease-out) both;
-  --animate-dialog-out: dialog-out var(--duration-base) var(--ease-in) forwards;
+  --animate-dialog-out: dialog-out var(--duration-exit) var(--ease-in) forwards;
   --animate-slide-in: slide-in var(--duration-slow) var(--ease-out) both;
-  --animate-slide-out: slide-out var(--duration-base) var(--ease-in) forwards;
+  --animate-slide-out: slide-out var(--duration-exit) var(--ease-in) forwards;
   --animate-toast-in: toast-in var(--duration-slow) var(--ease-out) both;
-  --animate-toast-out: toast-out var(--duration-base) var(--ease-in) forwards;
+  --animate-toast-out: toast-out var(--duration-exit) var(--ease-in) forwards;
   --animate-rise: rise var(--duration-base) var(--ease-out) both;
   --animate-settle: settle var(--duration-slow) var(--ease-settle) both;
 
@@ -168,6 +170,54 @@
 }
 
 @theme inline {
+  --color-canvas: var(--canvas);
+  --color-side: var(--side);
+  --color-sunken: var(--sunken);
+  --color-card: var(--card);
+  --color-hover: var(--hover);
+  --color-press: var(--press);
+  --color-line: var(--line);
+  --color-line-2: var(--line-2);
+  --color-tx: var(--tx);
+  --color-tx-2: var(--tx-2);
+  --color-tx-3: var(--tx-3);
+  --color-acc: var(--acc);
+  --color-acc-600: var(--acc-600);
+  --color-acc-500: var(--acc-500);
+  --color-acc-100: var(--acc-100);
+  --color-acc-50: var(--acc-50);
+  --color-acc-fill: var(--acc-fill);
+  --color-on-acc: var(--on-acc);
+  --color-ai: var(--ai);
+  --color-ai-600: var(--ai-600);
+  --color-ai-100: var(--ai-100);
+  --color-ai-50: var(--ai-50);
+  --color-todo: var(--todo);
+  --color-prog: var(--prog);
+  --color-done: var(--done);
+  --color-red: var(--red);
+  --color-red-tx: var(--red-tx);
+  --color-red-50: var(--red-50);
+  --color-amber: var(--amber);
+  --color-amber-tx: var(--amber-tx);
+  --color-amber-50: var(--amber-50);
+  --color-green: var(--green);
+  --color-green-tx: var(--green-tx);
+  --color-green-50: var(--green-50);
+  --color-on-solid: var(--on-solid);
+  --color-scrim: var(--scrim);
+  --color-green-bg: var(--green-bg);
+  --color-green-fg: var(--green-fg);
+  --color-orange-bg: var(--orange-bg);
+  --color-orange-fg: var(--orange-fg);
+  --color-violet-bg: var(--violet-bg);
+  --color-violet-fg: var(--violet-fg);
+  --color-pink-bg: var(--pink-bg);
+  --color-pink-fg: var(--pink-fg);
+  --color-amber-bg: var(--amber-bg);
+  --color-amber-fg: var(--amber-fg);
+  --color-sky-bg: var(--sky-bg);
+  --color-sky-fg: var(--sky-fg);
   --color-ac: var(--ac);
   --color-ac-d: var(--ac-d);
   --color-ac-l: var(--ac-l);
@@ -182,23 +232,21 @@
   --color-bg: var(--bg);
   --color-bg2: var(--bg2);
   --color-sf: var(--sf);
+  --color-sf2: var(--sf2);
   --color-br: var(--br);
   --color-br2: var(--br2);
   --color-br3: var(--br3);
+  --color-br-row: var(--br-row);
+  --color-br-off: var(--br-off);
   --color-trk: var(--trk);
   --color-chip: var(--chip);
-  --color-tx: var(--tx);
+  --color-br-ctl: var(--br-ctl);
   --color-tx2: var(--tx2);
   --color-tx3: var(--tx3);
   --color-tx4: var(--tx4);
   --color-tx5: var(--tx5);
   --color-tx6: var(--tx6);
-  --color-sf2: var(--sf2);
-  --color-br-row: var(--br-row);
-  --color-br-ctl: var(--br-ctl);
-  --color-br-off: var(--br-off);
   --color-tx-body: var(--tx-body);
-  --color-ai: var(--ai);
   --color-ai-mute: var(--ai-mute);
   --color-ai-bg: var(--ai-bg);
   --color-ai-tint: var(--ai-tint);
@@ -214,9 +262,6 @@
   --color-warn-fg: var(--warn-fg);
   --color-warn-bg: var(--warn-bg);
   --color-caution: var(--caution);
-  --color-violet: var(--violet);
-  --color-on-solid: var(--on-solid);
-  --color-scrim: var(--scrim);
   --color-st-todo-bg: var(--st-todo-bg);
   --color-st-todo-fg: var(--st-todo-fg);
   --color-st-prog-bg: var(--st-prog-bg);
@@ -227,18 +272,31 @@
   --color-st-qa-fg: var(--st-qa-fg);
   --color-st-done-bg: var(--st-done-bg);
   --color-st-done-fg: var(--st-done-fg);
-  --color-green-bg: var(--green-bg);
-  --color-green-fg: var(--green-fg);
-  --color-orange-bg: var(--orange-bg);
-  --color-orange-fg: var(--orange-fg);
-  --color-violet-bg: var(--violet-bg);
-  --color-violet-fg: var(--violet-fg);
-  --color-pink-bg: var(--pink-bg);
-  --color-pink-fg: var(--pink-fg);
-  --color-amber-bg: var(--amber-bg);
-  --color-amber-fg: var(--amber-fg);
-  --color-sky-bg: var(--sky-bg);
-  --color-sky-fg: var(--sky-fg);
+  --color-brand-1: var(--brand-1);
+  --color-brand-2: var(--brand-2);
+  --color-brand-3: var(--brand-3);
+  --color-type-epic: var(--type-epic);
+  --color-type-story: var(--type-story);
+  --color-type-task: var(--type-task);
+  --color-type-bug: var(--type-bug);
+  --color-type-subtask: var(--type-subtask);
+  --color-type-incident: var(--type-incident);
+  --color-epic-1: var(--epic-1);
+  --color-epic-2: var(--epic-2);
+  --color-epic-3: var(--epic-3);
+  --color-epic-4: var(--epic-4);
+  --color-epic-5: var(--epic-5);
+  --color-epic-6: var(--epic-6);
+  --color-epic-7: var(--epic-7);
+  --color-epic-8: var(--epic-8);
+  --color-avatar-blue: var(--avatar-blue);
+  --color-avatar-orange: var(--avatar-orange);
+  --color-avatar-sky: var(--avatar-sky);
+  --color-avatar-green: var(--avatar-green);
+  --color-avatar-pink: var(--avatar-pink);
+  --color-avatar-violet: var(--avatar-violet);
+  --color-avatar-teal: var(--avatar-teal);
+  --color-avatar-amber: var(--avatar-amber);
   --font-sans: var(--font-ui);
   --font-mono: var(--font-code);
   --text-base: var(--text-base);
@@ -249,6 +307,10 @@
   --text-brand--line-height: normal;
   --text-mono: var(--text-mono);
   --text-mono--line-height: normal;
+  --shadow-e1: var(--e1);
+  --shadow-e1h: var(--e1h);
+  --shadow-e2: var(--e2);
+  --shadow-e3: var(--e3);
   --shadow-card: var(--shadow-card);
   --shadow-seg: var(--shadow-seg);
   --shadow-pop: var(--shadow-pop);
@@ -269,4 +331,25 @@
   --ease-in: var(--ease-in);
   --ease-settle: var(--ease-settle);
   --default-transition-timing-function: var(--ease-standard);
+}
+
+@utility focus-ring {
+  &:focus-visible {
+    outline: var(--focus-width) solid var(--acc);
+    outline-offset: var(--focus-offset);
+  }
+}
+
+@utility focus-ring-within {
+  &:has(:focus-visible) {
+    outline: var(--focus-width) solid var(--acc);
+    outline-offset: var(--focus-offset);
+  }
+}
+
+@utility focus-ring-inset {
+  &:focus-visible {
+    outline: var(--focus-width) solid var(--acc);
+    outline-offset: calc(var(--focus-width) * -1);
+  }
 }

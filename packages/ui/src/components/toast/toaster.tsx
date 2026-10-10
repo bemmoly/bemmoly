@@ -46,7 +46,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       return;
     }
     setToasts((list) => list.map((t) => (t.id === id ? { ...t, leaving: true } : t)));
-    timers.current.set(id, setTimeout(remove, MOTION_MS.base));
+    timers.current.set(id, setTimeout(remove, MOTION_MS.exit));
   }, []);
 
   const show = useCallback(

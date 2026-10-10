@@ -1,20 +1,23 @@
 /**
  * Motion: the one set of durations, easings and keyframes every component and page animates
- * with. The mocks animate only the switch knob (.15s); everything else here is the polish pass's
- * addition, kept short so the product stays calm and fast. All of it runs behind motion-safe:,
- * and the base stylesheet stops it entirely under prefers-reduced-motion.
+ * with. Things enter in 120 to 180ms with an ease-out and leave in about 100ms (ADR 0015,
+ * docs/design/premium/interaction.md); only transform and opacity animate. All of it runs
+ * behind motion-safe:, and under prefers-reduced-motion the base stylesheet sets every
+ * duration to zero, so nothing waits on an animation that will not play.
  */
 
 /** Milliseconds, for code that waits on an animation (an exit before unmount). */
 export const MOTION_MS = {
   /** Press feedback and colour flips. */
   instant: 90,
-  /** Hover, focus and the switch knob: the mocks' .15s. */
-  fast: 150,
+  /** Hover, focus and the switch knob. */
+  fast: 120,
   /** Popovers, menus, tooltips and list rows arriving. */
-  base: 200,
+  base: 160,
   /** Dialogs, the slide-over, toasts and a dropped card settling. */
-  slow: 260,
+  slow: 180,
+  /** Anything leaving: menus, dialogs, toasts. */
+  exit: 100,
 } as const;
 
 export type MotionDuration = keyof typeof MOTION_MS;
@@ -64,14 +67,14 @@ export const KEYFRAMES: Readonly<Record<string, Readonly<Record<string, string>>
 /** Tailwind's animate-<name> utilities: keyframe, duration, easing and fill. */
 export const ANIMATIONS = {
   'fade-in': 'fade-in var(--duration-base) var(--ease-out) both',
-  'fade-out': 'fade-out var(--duration-base) var(--ease-in) forwards',
+  'fade-out': 'fade-out var(--duration-exit) var(--ease-in) forwards',
   'pop-in': 'pop-in var(--duration-base) var(--ease-out) both',
   'dialog-in': 'dialog-in var(--duration-slow) var(--ease-out) both',
-  'dialog-out': 'dialog-out var(--duration-base) var(--ease-in) forwards',
+  'dialog-out': 'dialog-out var(--duration-exit) var(--ease-in) forwards',
   'slide-in': 'slide-in var(--duration-slow) var(--ease-out) both',
-  'slide-out': 'slide-out var(--duration-base) var(--ease-in) forwards',
+  'slide-out': 'slide-out var(--duration-exit) var(--ease-in) forwards',
   'toast-in': 'toast-in var(--duration-slow) var(--ease-out) both',
-  'toast-out': 'toast-out var(--duration-base) var(--ease-in) forwards',
+  'toast-out': 'toast-out var(--duration-exit) var(--ease-in) forwards',
   rise: 'rise var(--duration-base) var(--ease-out) both',
   settle: 'settle var(--duration-slow) var(--ease-settle) both',
 } as const;

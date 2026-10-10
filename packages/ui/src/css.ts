@@ -3,6 +3,9 @@ import {
   COLOR_TOKENS,
   DEFAULT_PRESET,
   EASE,
+  ELEVATION_TOKENS,
+  FIXED_COLORS,
+  FOCUS,
   KEYFRAMES,
   LEADING,
   METRICS,
@@ -18,12 +21,13 @@ import {
 const HEADER =
   '/* Generated from src/tokens.ts by `pnpm --filter @bemmoly/ui tokens:css`. Do not edit. */';
 
-type ThemeLike = Pick<ResolvedTheme, 'colors' | 'fontUi' | 'fontCode' | 'mode'>;
+type ThemeLike = Pick<ResolvedTheme, 'colors' | 'elevation' | 'fontUi' | 'fontCode' | 'mode'>;
 
 /** The CSS custom properties of one theme, without selector. */
 export function themeDeclarations(theme: ThemeLike): string[] {
   return [
     ...COLOR_TOKENS.map((token) => `--${token}: ${theme.colors[token]};`),
+    ...ELEVATION_TOKENS.map((token) => `--${token}: ${theme.elevation[token]};`),
     `--font-ui: ${theme.fontUi};`,
     `--font-code: ${theme.fontCode};`,
     `color-scheme: ${theme.mode};`,
@@ -38,28 +42,34 @@ function block(selector: string, lines: readonly string[], indent = ''): string 
 const vars = (prefix: string, scale: Readonly<Record<string, string>>) =>
   Object.entries(scale).map(([name, value]) => `--${prefix}${name}: ${value};`);
 
-/** Base rules: metrics, page defaults, scrollbars and the reduced-motion override. */
+/** Base rules: metrics, fixed colours, page defaults, scrollbars and the reduced-motion override. */
 export function renderBaseCss(): string {
-  const reducedMotion = block(
-    '*,\n  ::before,\n  ::after',
-    [
+  const reducedMotion = [
+    block('*,\n  ::before,\n  ::after', [
       'animation-duration: 0.01ms !important;',
       'animation-iteration-count: 1 !important;',
       'transition-duration: 0.01ms !important;',
       'scroll-behavior: auto !important;',
-    ],
-    '  ',
-  );
+    ]),
+    block(
+      ':root',
+      Object.keys(MOTION).map((name) => `--duration-${name}: 0ms;`),
+    ),
+  ]
+    .map((rule) => rule.replace(/^/gm, '  '))
+    .join('\n\n');
   const rules = [
     block(':root', [
       ...vars('', METRICS),
+      ...vars('', FIXED_COLORS),
+      ...vars('', FOCUS),
       ...vars('shadow-', SHADOWS),
       ...vars('duration-', MOTION),
       ...vars('ease-', EASE),
     ]),
     block('body', [
       'margin: 0;',
-      'background: var(--bg);',
+      'background: var(--sunken);',
       'color: var(--tx);',
       'font-family: var(--font-ui);',
       'font-size: var(--text-base);',
@@ -68,17 +78,18 @@ export function renderBaseCss(): string {
     ]),
     block('*,\n::before,\n::after', ['box-sizing: border-box;']),
     block('::-webkit-scrollbar', ['width: 10px;', 'height: 10px;']),
-    // The mock's 2px gap around the thumb is drawn in the page colour; a transparent border
-    // clipped out of the background keeps the same gap on the white panels and in dialogs.
+    // A transparent border clipped out of the background keeps a 2px gap around the thumb on
+    // every surface.
     block('::-webkit-scrollbar-thumb', [
-      'background: var(--br-off);',
+      'background: var(--line);',
       'background-clip: padding-box;',
       'border-radius: 6px;',
       'border: 2px solid transparent;',
     ]),
-    block('::-webkit-scrollbar-thumb:hover', ['background-color: var(--tx6);']),
+    block('::-webkit-scrollbar-thumb:hover', ['background-color: var(--tx-3);']),
     block('::-webkit-scrollbar-corner', ['background: transparent;']),
-    // Components animate only behind motion-safe:; this also stops anything a page adds.
+    // Components animate only behind motion-safe:; this also stops anything a page adds, and
+    // zeroes the durations code waits on.
     `@media (prefers-reduced-motion: reduce) {\n${reducedMotion}\n}`,
   ];
   return `${HEADER}\n${rules.join('\n\n')}\n`;
@@ -102,19 +113,50 @@ export function renderThemeCss(): string {
   return `${HEADER}\n${imports.join('\n')}\n`;
 }
 
+/**
+ * The focus ring and the hover and press fills as utilities, so every interactive primitive
+ * draws them the same way.
+ */
+const UTILITIES = [
+  block('@utility focus-ring', [
+    '&:focus-visible {',
+    '  outline: var(--focus-width) solid var(--acc);',
+    '  outline-offset: var(--focus-offset);',
+    '}',
+  ]),
+  block('@utility focus-ring-within', [
+    '&:has(:focus-visible) {',
+    '  outline: var(--focus-width) solid var(--acc);',
+    '  outline-offset: var(--focus-offset);',
+    '}',
+  ]),
+  block('@utility focus-ring-inset', [
+    '&:focus-visible {',
+    '  outline: var(--focus-width) solid var(--acc);',
+    '  outline-offset: calc(var(--focus-width) * -1);',
+    '}',
+  ]),
+];
+
 /** Tailwind 4 theme: utilities resolve to the runtime variables, so presets switch without a rebuild. */
 export function renderTailwindCss(): string {
-  const colors = COLOR_TOKENS.map((token) => `--color-${token}: var(--${token});`);
+  const colors = [...COLOR_TOKENS, ...Object.keys(FIXED_COLORS)].map(
+    (token) => `--color-${token}: var(--${token});`,
+  );
   const runtimeText = ['base', 'nav', 'brand', 'mono'].flatMap((name) => [
     `--text-${name}: var(--text-${name});`,
     `--text-${name}--line-height: normal;`,
   ]);
+  const shadows = [
+    ...ELEVATION_TOKENS.map((token) => token.replace(/^shadow-/, '')),
+    ...Object.keys(SHADOWS),
+  ].map((name) => `--shadow-${name}: var(--${/^e\dh?$/.test(name) ? name : `shadow-${name}`});`);
   const theme = [
     ...colors,
     '--font-sans: var(--font-ui);',
     '--font-mono: var(--font-code);',
     ...runtimeText,
-    ...Object.keys(SHADOWS).map((name) => `--shadow-${name}: var(--shadow-${name});`),
+    ...shadows,
     '--radius-control: var(--radius-control);',
     '--spacing-control: var(--size-control);',
     '--spacing-topbar: var(--size-topbar);',
@@ -156,6 +198,8 @@ export function renderTailwindCss(): string {
     block('@theme', statics).replace(/\n}$/, `\n\n${keyframes.join('\n\n')}\n}`),
     '',
     block('@theme inline', theme),
+    '',
+    UTILITIES.join('\n\n'),
     '',
   ].join('\n');
 }
