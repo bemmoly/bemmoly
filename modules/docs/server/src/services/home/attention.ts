@@ -21,7 +21,7 @@ const DEFAULT_STALE_AFTER_DAYS = 90;
 export function createAttentionService(
   deps: Pick<DocsServiceDeps, 'database' | 'settings' | 'entities' | 'ai'>,
 ) {
-  /** With AI on for the person: their pages whose last consistency check found something. */
+  /** AI on for the person: their pages' consistency findings (owned, created or reviewing). */
   async function aiOn(ctx: RequestContext): Promise<boolean> {
     if (!deps.ai) return false;
     const policy = await deps.ai.policy(ctx.actor);
@@ -63,7 +63,8 @@ export function createAttentionService(
               where i.kind = 'consistency' and i.target_kind = 'page' and i.status = 'ready'
                 and jsonb_array_length(coalesce(i.content->'output'->'findings', '[]')) > 0
                 and ${inSpaces()} and not s.ai_excluded
-                and (p.owner_id = ${userId}::uuid or p.created_by = ${userId}::uuid)
+                and (p.owner_id = ${userId}::uuid or p.created_by = ${userId}::uuid
+                  or ${userId}::uuid = any(p.reviewers))
               order by i.generated_at desc, p.id
               limit ${query.limit - reviews.length - stale.length}`
           : [];
