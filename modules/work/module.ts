@@ -32,12 +32,19 @@ export default defineModule({
   changelog: await loadChangelogFolder(new URL('./changelog/', import.meta.url)),
   register(ctx) {
     /** One top-level area; the sidebar section draws the projects and their views. */
-    ctx.navigation.add({ id: 'work.home', label: 'Work', path: '/work/board', placement: 'top' });
+    ctx.navigation.add({
+      id: 'work.home',
+      label: 'Work',
+      path: '/work/board',
+      placement: 'top',
+      icon: 'board',
+    });
     ctx.navigation.add({
       id: 'work.board',
       label: 'Board',
       path: '/work/board',
       placement: 'command',
+      icon: 'board',
       keys: 'G B',
     });
     ctx.navigation.add({
@@ -45,6 +52,7 @@ export default defineModule({
       label: 'Backlog',
       path: '/work/backlog',
       placement: 'command',
+      icon: 'backlog',
       keys: 'G L',
     });
     ctx.navigation.add({
@@ -52,18 +60,21 @@ export default defineModule({
       label: 'Projects',
       path: '/work/projects',
       placement: 'command',
+      icon: 'layers',
     });
     ctx.navigation.add({
       id: 'work.create-issue',
       label: 'Issue',
       path: '/work/create',
       placement: 'create',
+      icon: 'check',
     });
     ctx.navigation.add({
       id: 'work.create-project',
       label: 'Project',
       path: '/work/projects/new',
       placement: 'create',
+      icon: 'project',
     });
     for (const capability of WORK_CAPABILITIES) ctx.capabilities.add(capability);
     defineWorkSettings(ctx.settings);

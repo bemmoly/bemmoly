@@ -8,6 +8,8 @@ export const navEntrySchema = z.object({
   label: z.string().min(1),
   path: z.string().startsWith('/'),
   placement: navPlacementSchema,
+  /** The row's icon in ⌘K and menus: an icon name from the design system's set. */
+  icon: z.string().min(1).optional(),
   /** A "G, then a letter" chord that goes here from anywhere, e.g. "G B" for the board. */
   keys: z
     .string()

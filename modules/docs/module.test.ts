@@ -12,13 +12,20 @@ describe('docs module', () => {
       name: 'Docs',
       version: '0.2.0',
       navigation: [
-        { id: 'docs.home', label: 'Docs', path: '/docs', placement: 'top' },
-        { id: 'docs.create-page', label: 'Page', path: '/docs/create', placement: 'create' },
+        { id: 'docs.home', label: 'Docs', path: '/docs', placement: 'top', icon: 'doc' },
+        {
+          id: 'docs.create-page',
+          label: 'Page',
+          path: '/docs/create',
+          placement: 'create',
+          icon: 'doc',
+        },
         {
           id: 'docs.create-space',
           label: 'Space',
           path: '/docs/spaces/new',
           placement: 'create',
+          icon: 'layers',
         },
       ],
       search: [{ kind: 'docs.page', label: 'Pages' }],

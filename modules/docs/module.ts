@@ -28,18 +28,26 @@ export default defineModule({
   },
   changelog: await loadChangelogFolder(new URL('./changelog/', import.meta.url)),
   register(ctx) {
-    ctx.navigation.add({ id: 'docs.home', label: 'Docs', path: '/docs', placement: 'top' });
+    ctx.navigation.add({
+      id: 'docs.home',
+      label: 'Docs',
+      path: '/docs',
+      placement: 'top',
+      icon: 'doc',
+    });
     ctx.navigation.add({
       id: 'docs.create-page',
       label: 'Page',
       path: '/docs/create',
       placement: 'create',
+      icon: 'doc',
     });
     ctx.navigation.add({
       id: 'docs.create-space',
       label: 'Space',
       path: '/docs/spaces/new',
       placement: 'create',
+      icon: 'layers',
     });
     for (const capability of DOCS_CAPABILITIES) ctx.capabilities.add(capability);
     defineDocsSettings(ctx.settings);
