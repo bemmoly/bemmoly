@@ -12,16 +12,18 @@
 }
 
 (headers) {
+	# Applied as the response is written (the -Server removal defers the block); the two
+	# defaults (?) give way to a route that sets its own, as /demo does.
 	header {
 		Strict-Transport-Security "max-age=31536000"
 		X-Content-Type-Options "nosniff"
-		X-Frame-Options "DENY"
+		?X-Frame-Options "DENY"
 		Referrer-Policy "strict-origin-when-cross-origin"
 		Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
 		Cross-Origin-Opener-Policy "same-origin"
 		# The script hash is the landing page's inline copy button; tests/caddyfile.test.ts
 		# fails when the built script and this hash drift apart.
-		Content-Security-Policy "default-src 'self'; script-src 'self' 'sha256-hv+s8VknAxjixYTv2FqzB997uQu7+PTgiQQMHCPzjGM='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+		?Content-Security-Policy "default-src 'self'; script-src 'self' 'sha256-hv+s8VknAxjixYTv2FqzB997uQu7+PTgiQQMHCPzjGM='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
 		-Server
 	}
 }

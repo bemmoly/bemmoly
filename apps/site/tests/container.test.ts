@@ -134,6 +134,34 @@ describe('site', () => {
     expect(response.headers.get('location')).toBe(location);
   });
 
+  it('serves the live demo at /demo, indexable, framable by the site alone', async () => {
+    const response = await get('/demo');
+    expect(response.status).toBe(200);
+    expect(response.headers.get('content-type')).toBe('text/html; charset=utf-8');
+    expect(response.headers.get('x-robots-tag')).toBeNull();
+    expect(response.headers.get('x-frame-options')).toBe('SAMEORIGIN');
+    expect(response.headers.get('content-security-policy')).toContain("frame-ancestors 'self'");
+    expect(await response.text()).toContain('<link rel="canonical" href="https://bemmoly.com/demo"');
+  });
+
+  it('answers every demo route with the demo page, kept out of search results', async () => {
+    const landing = await (await get('/demo')).text();
+    const response = await get('/demo/work/board/PLT');
+    expect(response.status).toBe(200);
+    expect(response.headers.get('x-robots-tag')).toBe('noindex');
+    expect(await response.text()).toBe(landing);
+    expect((await get('/demo/')).headers.get('location')).toBe('/demo');
+  });
+
+  it("caches the demo's hashed files for a year, and a missing one is a 404", async () => {
+    const landing = await (await get('/demo')).text();
+    const script = /src="(\/demo\/assets\/[^"]+\.js)"/.exec(landing)?.[1] ?? '';
+    const response = await get(script);
+    expect(response.status).toBe(200);
+    expect(response.headers.get('cache-control')).toBe('public, max-age=31536000, immutable');
+    expect((await get('/demo/assets/missing.js')).status).toBe(404);
+  });
+
   it('serves the changelog feed as RSS', async () => {
     const response = await get('/changelog.xml');
     expect(response.headers.get('content-type')).toBe('application/rss+xml; charset=utf-8');
