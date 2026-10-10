@@ -1,5 +1,113 @@
 # @bemmoly/ui
 
+## 0.4.0
+
+### Minor Changes
+
+- e7df029: The Board and the Backlog now look and behave as two views of the same issues. Cards and rows
+  show the same fields in the same order, epics keep one stored colour on every screen, and both
+  screens share one filter bar whose filters live in the address, so a filtered view can be shared
+  and survives a reload. Filters now hide issues instead of fading them, and every count follows.
+  One click opens an issue in a peek beside the list (`?issue=KEY`), with ↑↓ or j and k to step
+  through. Cards and rows offer assign, open and more on hover and on right-click, columns offer
+  New issue in place, and deleting an issue can be undone for a few seconds. On the Backlog, rows
+  can be selected with their box, Shift or Cmd, and a bulk bar assigns, sets priority, moves to a
+  sprint or deletes. The sprint strip shows a two-tone progress bar, and Complete sprint opens the
+  real dialog. On phones the Board shows one column at a time.
+
+  Schema: adds a nullable `color` column to `issues` (changeset `0023-work-epic-color`), filled for
+  existing epics in rank order. It is reversible.
+
+- ab5214d: Create issue is now a composer: pick the project and type in its header, write a title and a
+  rich description, fill the sections the type requires, and set status, priority, assignee,
+  labels, sprint, points and epic as chips that start from where you opened it. Mod+Enter
+  creates, "Create another" keeps the dialog open, the toast offers to open the new issue, and
+  closing with anything typed asks first. Dialogs open as full-screen sheets on phones and keep
+  their buttons in view. Completing a sprint shows how much of it got done, deleting a saved
+  filter can be undone, Link issue works from the keyboard, and Create project previews the
+  new project's tile and first key.
+- 2ab05df: Bemmoly takes on its logo's colours and a quieter visual system. The accent is the logo blue
+  (the mid blue in dark mode), AI is the logo lilac and nothing else, and epics have their own
+  violet. Every text grey now reads at 4.5:1 or better on every surface in every theme, so muted
+  text that was hard to read is fixed everywhere at once, and the Midnight and Ocean themes get
+  readable primary buttons. Type, radii and shadows are fewer and consistent.
+
+  Icons are drawn instead of typed, so they look the same on every computer: issue types are
+  tiles with a drawn mark, priority is three neutral bars with only the most urgent level in red,
+  and keyboard shortcuts are drawn keys ("Ctrl" off Apple platforms). Custom issue types show
+  their own icon and colour instead of a task's, and Settings › Issue types shows every type's
+  icon rather than a stored character. Status pills follow their category, so In review and QA
+  read as in progress (blue). Avatars are solid colours with white initials, labels are outlined
+  pills with their own colour, and project, team and module tiles share one shape.
+
+  Workspace logo colours no longer recolour the Bemmoly mark under a custom theme. Tooltips name
+  their shortcut, deleting something reversible shows Undo for six seconds, relative times show
+  the full date on hover, and every keyboard focus shows the same ring.
+
+  Workflow status colours stored by earlier versions are drawn as their nearest new colour, and
+  the issue type icon field now takes an icon name of up to 40 characters. No configuration or
+  schema change.
+
+- 8f4df5f: The Board can now select cards like the Backlog: tick a card's corner, Shift-click for a range or
+  ⌘-click for one more, and the same bar assigns, sets priority, moves to a sprint or deletes them
+  with Undo. A Display menu on the Board lets each person choose the card fields, a compact density
+  and whether empty columns show; it never changes the board for anyone else.
+
+  Assigning, changing priority and moving to a sprint from a card, a row, the issue menu or the bulk
+  bar now shows at once, dims the issue until the server answers, puts it back if the change is
+  refused, and offers Undo. The Board, Backlog and Issue page show who else is looking at them.
+  Issues can be linked from their menu on the Board and Backlog.
+
+  Every icon button has the same tooltip, with its shortcut. Epics keep their colour on every
+  screen, project and space tiles are drawn the same everywhere, and labels that shouted in
+  capitals are now in sentence case. On a phone the Backlog keeps each issue's title and the
+  sprint's name, and Board lanes keep the epic's name. Home's My issues moves with j and k, an issue
+  created over a Scrum board joins the running sprint, and the loading screen follows the theme you
+  last used.
+
+  Someone who opens an issue in a project they are not a member of is now told so, and who can add
+  them, instead of being told the server did not answer.
+
+  Live updates and presence over the realtime connection are now limited to the people who can open
+  the project or space, as the project and space lists already were.
+
+- bb4a602: The issue page reads like a document. Edit the title, the description and every property where
+  it is shown; the description saves as you type and says when it has saved. Issues get an
+  acceptance-criteria checklist, sub-issue and link sections that are always there, and activity
+  that shows comments and history together by default. Status sits at the top of the right rail
+  with one-click next steps, and a status change, a removed label or a removed link can be undone
+  from the toast. Step to the previous or next issue with j and k. The AI summary appears only
+  when AI is turned on.
+- e5697e8: Projects is a searchable, sortable table or grid with All, Starred and Archived views; each
+  row shows the project's tile, lead, team, method and progress, and a row menu archives a
+  project with Undo. Project settings read calmer: Members has role menus and Admins and Invited
+  views; Issue types and Fields are tables you rename in place, and issue types reorder by drag
+  or with the arrow keys; Board fits all its columns, draws each status with its glyph and says
+  in one line what it inherits; the workflow editor deletes a status or transition at once with
+  Undo (and Cmd/Ctrl+Z), and publishing is "Review and publish".
+- d568104: Workspace settings pages take on the new design: read-then-edit sections on quiet cards, one table
+  style for members, teams, modules, backups and the audit log, calm sentence-case status pills, and
+  shaped loading skeletons with a Retry on errors. On phones, tables keep their key columns, card
+  grids stack and long values truncate instead of overlapping.
+- 259e195: Every signed-in screen now sits in one frame: a sidebar with the Bemmoly mark and your workspace,
+  Search and New, Home, Inbox and My issues, then Work's projects with their Board, Backlog and
+  Settings and Docs' spaces, with Settings, Help, the version and your account at the foot. The top
+  bar is gone. Press `[` to fold the sidebar to a narrow rail (it remembers), and on a phone the
+  sidebar opens from the menu button with a bottom bar for Home, Inbox, New and My issues. Settings
+  use the same sidebar, and Esc takes you back to where you were.
+
+  Creating opens over the page you are on instead of taking you elsewhere. ⌘K shows what you opened
+  recently and what the current screen can do, Tab filters it by type, and `?` lists every
+  shortcut, including C for a new issue, `/` to search and G chords to move between places.
+
+  The Inbox is a two-pane triage view: Mentions, Reviews and Assigned segments, items grouped by
+  day, the issue itself beside each item, and J/K to move, E to mark done and S to snooze, each
+  with Undo. Home shows your issues by status, the inbox and the current sprint, and an issue
+  opened from either steps through that list with J and K. Sign-in pages lead with your workspace
+  and say "Powered by Bemmoly", tab titles name the page and the workspace, and a missing or broken
+  page stays inside the frame with a way back. Once a workspace logo can be uploaded, it leads the
+  sidebar with "on Bemmoly" under it. No configuration or schema change.
+
 ## 0.3.0
 
 ### Minor Changes
