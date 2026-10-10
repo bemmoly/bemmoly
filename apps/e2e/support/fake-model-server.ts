@@ -57,6 +57,26 @@ function completion(body: Record<string, unknown>) {
   };
 }
 
+/** The same completion as server-sent events, the way a server answers `stream: true`. */
+function streamCompletion(response: ServerResponse, done: ReturnType<typeof completion>): void {
+  response.writeHead(200, { 'content-type': 'text/event-stream', 'cache-control': 'no-cache' });
+  const [choice] = done.choices;
+  const base = { id: done.id, object: 'chat.completion.chunk', created: done.created };
+  const event = (data: unknown) => response.write(`data: ${JSON.stringify(data)}\n\n`);
+  const content = choice?.message.content ?? '';
+  event({ ...base, model: done.model, choices: [{ index: 0, delta: { role: 'assistant' } }] });
+  for (const word of content.split(/(?<= )/)) {
+    event({ ...base, model: done.model, choices: [{ index: 0, delta: { content: word } }] });
+  }
+  event({
+    ...base,
+    model: done.model,
+    choices: [{ index: 0, delta: {}, finish_reason: choice?.finish_reason ?? 'stop' }],
+    usage: done.usage,
+  });
+  response.end('data: [DONE]\n\n');
+}
+
 async function handle(request: IncomingMessage, response: ServerResponse, seen: string[]) {
   const path = (request.url ?? '/').split('?')[0] ?? '/';
   seen.push(`${request.method ?? 'GET'} ${path}`);
@@ -75,7 +95,9 @@ async function handle(request: IncomingMessage, response: ServerResponse, seen: 
     return;
   }
   if (request.method === 'POST' && path === '/v1/chat/completions') {
-    send(response, 200, completion(await readJson(request)));
+    const body = await readJson(request);
+    if (body['stream'] === true) streamCompletion(response, completion(body));
+    else send(response, 200, completion(body));
     return;
   }
   if (request.method === 'POST' && path === '/v1/embeddings') {
