@@ -1,6 +1,6 @@
 # ADR 0015: The design review is the source of truth for the shell and the visual language
 
-- Status: accepted
+- Status: accepted; decision 1 superseded in part by [ADR 0016](0016-design-system-is-canonical.md)
 - Date: 2026-10-10
 - Supersedes: [ADR 0005](0005-classic-preset-exact-others-derived.md) decision 1 (Classic's
   exact values now come from the review, not the Board mock)
