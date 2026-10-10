@@ -1,6 +1,7 @@
 import {
   AppFrame,
   BottomBar,
+  EntityRenderersProvider,
   ErrorBoundary,
   knownIcon,
   useFrame,
@@ -11,6 +12,7 @@ import { Outlet, useNavigate, useRouterState } from '@tanstack/react-router';
 import { lazy, Suspense, useCallback, useEffect, useMemo } from 'react';
 import { useRealtimeSync } from '../../hooks/use-shell-effects.ts';
 import { useShell, type Shell } from '../../hooks/use-shell.ts';
+import { ENTITY_RENDERERS } from '../../lib/entity-renderers.ts';
 import { useUiStore } from '../../store/ui.ts';
 import { PageFailure } from '../page-failure.tsx';
 import { AboutDialog } from './about-dialog.tsx';
@@ -82,7 +84,8 @@ function PhoneBar({ shell }: { shell: Shell }) {
 /**
  * Everything behind sign-in: the one frame (sidebar, then the routed page), with the palette,
  * the shortcuts overlay and create dialogs over it. On /settings the same sidebar shows the
- * settings pages.
+ * settings pages. Every page may draw the records of any module the person can open (the
+ * Inbox shows Work's issue, Docs embeds it).
  */
 export function AppShell() {
   const shell = useShell();
@@ -126,7 +129,12 @@ export function AppShell() {
         resetKey={pathname}
         fallback={(error, retry) => <PageFailure framed error={error} onRetry={retry} />}
       >
-        <Outlet />
+        <EntityRenderersProvider
+          registry={ENTITY_RENDERERS}
+          moduleIds={shell.modules.map((module) => module.id)}
+        >
+          <Outlet />
+        </EntityRenderersProvider>
       </ErrorBoundary>
       <CreateHost />
       <ShortcutsOverlay groups={shortcuts} />

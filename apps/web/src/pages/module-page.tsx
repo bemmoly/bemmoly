@@ -1,9 +1,8 @@
-import { EntityRenderersProvider, ModuleOutlet, moduleName, PageLayout } from '@bemmoly/core-web';
+import { ModuleOutlet, moduleName, PageLayout } from '@bemmoly/core-web';
 import type { ModuleManifest } from '@bemmoly/shared';
 import { useParams } from '@tanstack/react-router';
 import { PageFailure } from '../components/page-failure.tsx';
-import { useModule, useModules } from '../hooks/use-modules.ts';
-import { ENTITY_RENDERERS } from '../lib/entity-renderers.ts';
+import { useModule } from '../hooks/use-modules.ts';
 import { MODULE_CHUNKS } from '../lib/module-chunks.ts';
 import { Loading } from '../components/form.tsx';
 import { NotFoundPage } from './not-found-page.tsx';
@@ -23,28 +22,22 @@ function ModuleLoading({ manifest }: { manifest?: ModuleManifest | undefined }) 
 }
 
 /**
- * A module's area: its lazy chunk under /<module id>, inside its own error boundary, with
- * the record renderers of every module this person can open (Docs draws Work's issues).
+ * A module's area: its lazy chunk under /<module id>, inside its own error boundary. The shell
+ * lends it the record renderers of every module this person can open.
  */
 export function ModulePage() {
   const params = useParams({ strict: false }) as { moduleId?: string; _splat?: string };
   const moduleId = params.moduleId ?? '';
   const { manifest, isPending } = useModule(moduleId);
-  const { data: modules = [] } = useModules();
   if (isPending) return <ModuleLoading />;
   if (!manifest) return <NotFoundPage />;
   return (
-    <EntityRenderersProvider
-      registry={ENTITY_RENDERERS}
-      moduleIds={modules.map((module) => module.id)}
-    >
-      <ModuleOutlet
-        manifest={manifest}
-        subpath={params._splat ? `/${params._splat}` : '/'}
-        registry={MODULE_CHUNKS}
-        loading={<ModuleLoading manifest={manifest} />}
-        failed={(error, retry) => <PageFailure framed error={error} onRetry={retry} />}
-      />
-    </EntityRenderersProvider>
+    <ModuleOutlet
+      manifest={manifest}
+      subpath={params._splat ? `/${params._splat}` : '/'}
+      registry={MODULE_CHUNKS}
+      loading={<ModuleLoading manifest={manifest} />}
+      failed={(error, retry) => <PageFailure framed error={error} onRetry={retry} />}
+    />
   );
 }

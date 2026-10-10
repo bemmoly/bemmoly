@@ -1,4 +1,4 @@
-import { actorLabel } from '@bemmoly/core-web';
+import { actorLabel, useEntityRenderer } from '@bemmoly/core-web';
 import type { Notification } from '@bemmoly/shared';
 import { Avatar, avatarHue, Button, Menu, MenuItem, RelativeTime, Tooltip } from '@bemmoly/ui';
 import { Icon } from '@bemmoly/ui/icons';
@@ -46,6 +46,24 @@ export function SnoozeMenu({ onSnooze }: { onSnooze: InboxDetailProps['onSnooze'
         </MenuItem>
       ))}
     </Menu>
+  );
+}
+
+/**
+ * What the item is about, drawn by the module that owns it (Work's issue: type, key, title and
+ * status, as a link), or its label alone when no module lends a renderer for the kind.
+ */
+function TargetContext({ item }: { item: Notification }) {
+  const Card = useEntityRenderer(item.target.kind)?.Card;
+  const label = item.target.label ?? item.summary;
+  if (!Card || !item.target.label) {
+    return <h2 className="m-0 text-20 font-semibold tracking-title text-tx">{label}</h2>;
+  }
+  return (
+    <>
+      <h2 className="sr-only">{label}</h2>
+      <Card entityKey={item.target.label} />
+    </>
   );
 }
 
@@ -105,9 +123,7 @@ export function InboxDetail(props: InboxDetailProps) {
           </Tooltip>
         ) : null}
       </div>
-      <h2 className="m-0 text-20 font-semibold tracking-title text-tx">
-        {item.target.label ?? item.summary}
-      </h2>
+      <TargetContext item={item} />
       <div className="flex flex-col gap-3 rounded-card bg-card px-4 py-3.5 shadow-e1">
         <div className="flex flex-wrap items-center gap-2.5 text-13">
           <Avatar
