@@ -1,4 +1,4 @@
-import { Fragment, type ReactNode } from 'react';
+import { Fragment, type MouseEvent } from 'react';
 import { cx } from '../../lib/cx.ts';
 import { focusRing } from '../../lib/focus.ts';
 import { SkeletonText } from '../skeleton/skeleton.tsx';
@@ -32,8 +32,8 @@ export interface AiInsightBodyProps {
   onRetry?: () => void;
   /** Skeleton lines while loading. */
   lines?: number;
-  /** Renders an in-app link (router navigation); a plain anchor by default. */
-  renderLink?: (citation: AiCitationLink, children: ReactNode) => ReactNode;
+  /** In-app navigation for a citation link; without it the link is a plain anchor. */
+  onNavigate?: (href: string) => void;
   className?: string;
 }
 
@@ -43,11 +43,25 @@ const CHIP = cx(
   focusRing,
 );
 
-function defaultLink(citation: AiCitationLink, children: ReactNode): ReactNode {
-  if (!citation.href) return <span className={CHIP}>{children}</span>;
+function CitationLink({
+  citation,
+  onNavigate,
+}: {
+  citation: AiCitationLink;
+  onNavigate: ((href: string) => void) | undefined;
+}) {
+  const { href } = citation;
+  if (!href) return <span className={CHIP}>{citation.label}</span>;
+  const follow = (event: MouseEvent<HTMLAnchorElement>) => {
+    if (!onNavigate || event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0) {
+      return;
+    }
+    event.preventDefault();
+    onNavigate(href);
+  };
   return (
-    <a href={citation.href} className={CHIP} title={citation.location ?? undefined}>
-      {children}
+    <a href={href} className={CHIP} title={citation.location ?? undefined} onClick={follow}>
+      {citation.label}
     </a>
   );
 }
@@ -65,7 +79,7 @@ export function AiInsightBody({
   failedDetail,
   onRetry,
   lines = 3,
-  renderLink = defaultLink,
+  onNavigate,
   className,
 }: AiInsightBodyProps) {
   if (state === 'loading') {
@@ -103,7 +117,10 @@ export function AiInsightBody({
             {index > 0 && ' '}
             <span>{point.text}</span>
             {sources.map((citation) => (
-              <Fragment key={citation.id}> {renderLink(citation, citation.label)}</Fragment>
+              <Fragment key={citation.id}>
+                {' '}
+                <CitationLink citation={citation} onNavigate={onNavigate} />
+              </Fragment>
             ))}
             {sources.length === 0 && (
               <>

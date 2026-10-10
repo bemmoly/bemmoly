@@ -57,15 +57,17 @@ describe('AiInsightBody', () => {
     await expectAccessible(container);
   });
 
-  it('renders links through the caller for in-app navigation', () => {
+  it('follows a citation in the app when given a navigator', () => {
+    const onNavigate = vi.fn();
     render(
       <AiInsightBody
         state="ready"
         citations={citations}
         points={[{ text: 'Waiting on review.', cites: ['c1'] }]}
-        renderLink={(_citation, children) => <button type="button">{children}</button>}
+        onNavigate={onNavigate}
       />,
     );
-    expect(screen.getByRole('button', { name: 'PLT-204' })).toBeTruthy();
+    fireEvent.click(screen.getByRole('link', { name: 'PLT-204' }));
+    expect(onNavigate).toHaveBeenCalledWith('/work/issue/PLT-204');
   });
 });
