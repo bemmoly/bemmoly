@@ -102,7 +102,7 @@ export function MyIssuesCard({ limit, full = false }: { limit: number; full?: bo
         work.groups.map((group) => (
           <div key={group.name} role="group" aria-label={group.name}>
             <div className="flex h-7.5 items-center gap-2 border-b border-line bg-sunken px-3.5 text-12 font-semibold">
-              <StatusGlyph stage={statusStage(group.category, group.name)} size={12} />
+              <StatusGlyph stage={statusStage(group.category, group.name)} size={12} decorative />
               {group.name}
               <span className="font-normal text-tx-3 tabular-nums">{group.issues.length}</span>
             </div>

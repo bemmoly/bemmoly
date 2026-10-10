@@ -27,7 +27,7 @@ export function PhoneColumns({ columns, stages, value, onChange }: PhoneColumnsP
             onClick={() => onChange(column.id)}
             className={`focus-ring inline-flex h-8 shrink-0 cursor-pointer items-center gap-1.5 rounded-panel border-0 px-2.5 font-sans text-13 ${on ? 'bg-acc-50 font-semibold text-acc' : 'bg-transparent text-tx-2'}`}
           >
-            <StatusGlyph stage={stages[column.id] ?? 'todo'} size={12} />
+            <StatusGlyph stage={stages[column.id] ?? 'todo'} size={12} decorative />
             {column.name}
             <span className="text-tx-3 tabular-nums">{column.count}</span>
           </button>

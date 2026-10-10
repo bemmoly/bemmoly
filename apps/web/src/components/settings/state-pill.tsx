@@ -30,7 +30,8 @@ export function StatePill({ tone, children, icon, stage }: StatePillProps) {
     <span
       className={`inline-flex h-5 shrink-0 items-center gap-1 rounded-chip px-1.75 text-12 font-medium whitespace-nowrap ${TONES[tone]}`}
     >
-      {stage ? <StatusGlyph stage={stage} size={12} /> : null}
+      {/* The words name the state; the circle beside them is read once, as they are. */}
+      {stage ? <StatusGlyph stage={stage} size={12} decorative /> : null}
       {icon ? <Icon name={icon} size={12} /> : null}
       {children}
     </span>

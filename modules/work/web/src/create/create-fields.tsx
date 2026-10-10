@@ -76,7 +76,7 @@ export function CreateFields({ form, options }: { form: Form; options: CreateOpt
           options={options.statuses.map((s) => ({
             value: s.id,
             label: s.name,
-            icon: <StatusGlyph stage={statusStage(s.category, s.name)} size={14} />,
+            icon: <StatusGlyph stage={statusStage(s.category, s.name)} size={14} decorative />,
           }))}
           onChange={(value) => set('statusId', value)}
         />

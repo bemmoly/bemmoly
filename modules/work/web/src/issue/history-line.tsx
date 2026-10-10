@@ -10,8 +10,8 @@ function StatusName({ id, vocabulary }: { id: unknown; vocabulary: IssueVocabula
     <span className="inline-flex items-baseline gap-1 whitespace-nowrap text-tx">
       <StatusGlyph
         stage={statusStage(status.category, status.name)}
-        label={status.name}
         size={12}
+        decorative
         className="relative top-px self-center"
       />
       {status.name}
