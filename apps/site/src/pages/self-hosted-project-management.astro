@@ -18,55 +18,61 @@ import type { FaqItem } from '../lib/structured-data.ts';
 
 const CAPABILITIES: readonly Capability[] = [
   {
-    tile: 'PR',
+    icon: 'people',
     title: 'People, teams and roles',
     body: 'Invitations, teams, roles with organisation-wide locks, and an audit log of who changed what.',
     status: 'now',
   },
   {
-    tile: 'MD',
+    icon: 'modules',
     title: 'Modules you switch on',
     body: 'Every module ships in the one image; an admin turns each on and chooses who can open it.',
     status: 'now',
   },
   {
-    tile: 'UP',
+    icon: 'refresh',
     title: 'Backups and one-click updates',
     body: 'Scheduled, verified backups; updates from the app with a backup first and a rollback if needed.',
     status: 'now',
   },
   {
-    tile: 'WK',
+    icon: 'list',
     title: 'Issues and workflows',
     body: 'Projects with members, issue types, custom fields, workflows in a visual editor, history, comments and links.',
     status: 'now',
   },
   {
-    tile: 'BD',
+    icon: 'board',
     title: 'Boards, backlog and sprints',
     body: 'Kanban or Scrum per project, a backlog with sprints, saved filters, search and board metrics.',
     status: 'now',
   },
   {
-    tile: 'DC',
+    icon: 'doc',
     title: 'Docs for the whole company',
     body: 'Spaces, a page tree, a collaborative editor, revisions, comments and templates.',
     status: 'docs',
   },
   {
-    tile: 'AI',
+    icon: 'spark',
     title: 'AI with any provider, or none',
     body: 'Summaries, answers from your docs with citations, and a command bar that shows its plan before it runs.',
     status: 'ai',
   },
   {
-    tile: 'IM',
-    title: 'Imports and single sign-on',
-    body: 'Import from Jira, Import from Confluence, CSV and Markdown; OIDC, SAML and SCIM; webhooks and automation.',
+    icon: 'import',
+    title: 'Bring your pages, take them with you',
+    body: 'Import from Confluence (space exports) and Markdown folders into Docs; export a page as Markdown or HTML, or a page and its subpages as a zip.',
+    status: 'docs',
+  },
+  {
+    icon: 'key',
+    title: 'More imports and single sign-on',
+    body: 'Import from Jira and CSV; OIDC, SAML and SCIM; webhooks and automation.',
     status: 'integrations',
   },
   {
-    tile: 'TH',
+    icon: 'palette',
     title: 'Themes, including yours',
     body: 'Eight presets and a brand colour of your own, light or dark, set in the setup wizard.',
     status: 'now',
@@ -81,7 +87,7 @@ const FAQ: readonly FaqItem[] = [
   },
   {
     question: 'Can I manage projects in it today?',
-    answer: `Yes. Since the 0.2 release the Work module has projects, issues, workflows, Kanban and Scrum boards, the backlog and sprints; an admin turns it on in Settings › Modules. Docs arrive in 0.3 and AI in 0.4. The current release is ${RELEASE.version}.`,
+    answer: `Yes. The Work module has projects, issues, workflows, Kanban and Scrum boards, the backlog and sprints, and the Docs module has spaces, a live editor, comments and history; an admin turns each on in Settings › Modules. AI is still to come. The current release is ${RELEASE.version}.`,
   },
   {
     question: 'What does it need to run?',
@@ -96,7 +102,7 @@ const FAQ: readonly FaqItem[] = [
   {
     question: 'Do I have to use AI?',
     answer:
-      'No. AI arrives in 0.4 and works with the provider you connect, a model on your own network, or none at all. Nothing leaves the server for an AI provider until you connect one.',
+      'No. AI is not in Bemmoly yet, and when it comes it works with the provider you connect, a model on your own network, or none at all. Nothing leaves the server for an AI provider until you connect one.',
   },
 ];
 ---
@@ -109,9 +115,9 @@ const FAQ: readonly FaqItem[] = [
   faq={FAQ}
 >
   <StatusNote>
-    Bemmoly {RELEASE.version} has the foundation and the Work module: projects, issues, boards, the
-    backlog and sprints. Docs arrive in 0.3 and AI in 0.4. Each badge below says where a part
-    stands.
+    Bemmoly {RELEASE.version} has the foundation, the Work module (projects, issues, boards, the
+    backlog and sprints) and the Docs module. AI is still to come. Each badge below says where a
+    part stands.
   </StatusNote>
 
   <BoardShot eager />

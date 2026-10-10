@@ -9,6 +9,7 @@ import type { PathOption } from '../../data/paths.ts';
 import { STATUS } from '../../data/self-hosting.ts';
 import Badge from '../site/Badge.astro';
 import CodeBlock from '../site/CodeBlock.astro';
+import Icon from '../site/Icon.astro';
 
 interface Props {
   path: PathOption;
@@ -23,16 +24,16 @@ const planned = path.status === 'launch';
   id={path.id}
   data-path={path.id}
   class:list={[
-    'group flex min-w-0 scroll-mt-20 flex-col gap-3.5 rounded-window border border-line bg-card p-5 data-pick:border-acc data-pick:shadow-ring dark:border-edge-ac',
+    'group flex min-w-0 scroll-mt-20 flex-col gap-3.5 rounded-window border border-line bg-card p-5 data-pick:border-acc data-pick:shadow-ring',
     path.wide && 'md:col-span-2',
   ]}
 >
   <div class="flex items-start gap-3">
     <span
       aria-hidden="true"
-      class="flex size-9 shrink-0 items-center justify-center rounded-card border border-line bg-side font-mono text-13 font-semibold text-acc dark:bg-sunken"
+      class="flex size-9 shrink-0 items-center justify-center rounded-card bg-acc-50 text-acc"
     >
-      {path.tile}
+      <Icon name={path.icon} size={18} />
     </span>
     <div class="flex min-w-0 flex-col gap-1.5">
       <h3 class="text-17 font-semibold tracking-brand text-tx">{path.title}</h3>
@@ -54,8 +55,9 @@ const planned = path.status === 'launch';
   )}
   {path.note && <p class="text-13 leading-brief text-tx-3">{path.note}</p>}
   {path.link && (
-    <a href={path.link.href} class="mt-auto text-13 font-medium">
-      {path.link.label} ↗
+    <a href={path.link.href} class="mt-auto inline-flex items-center gap-1 text-13 font-medium">
+      {path.link.label}
+      <Icon name="external" size={14} />
     </a>
   )}
 </li>

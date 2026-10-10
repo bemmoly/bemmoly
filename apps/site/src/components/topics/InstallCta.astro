@@ -1,9 +1,9 @@
 ---
 /**
- * The closing call to action of a topic page: the hero's install pill (which brings the copy
- * script, so a page with this block includes no other CopyScript) and the two ways on.
+ * The closing call to action of a topic page: the hero's install command, with the same copy
+ * button, and the two ways on.
  */
-import InstallCommand from '../landing/InstallCommand.astro';
+import CommandField from '../site/CommandField.astro';
 import Button from '../site/Button.astro';
 
 interface Props {
@@ -24,7 +24,7 @@ const { title = 'Run it on your own server' } = Astro.props;
     On a fresh Linux VM with a domain pointing at it, one command installs Docker, Postgres,
     automatic HTTPS, nightly backups and the updater, then prints the address to open.
   </p>
-  <InstallCommand />
+  <CommandField id="install-cta-command" />
   <div class="flex flex-wrap gap-3">
     <Button variant="primary" href="/docs/install">
       Read the install guide

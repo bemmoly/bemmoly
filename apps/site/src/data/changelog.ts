@@ -5,6 +5,9 @@
  * shows without a date until it is added.
  */
 export const RELEASE_DATES: Readonly<Record<string, string>> = {
+  '0.4.0': '2026-10-10',
+  '0.3.0': '2026-10-10',
+  '0.2.2': '2026-10-10',
   '0.2.0': '2026-10-09',
   '0.1.7': '2026-10-09',
   '0.1.6': '2026-10-09',
@@ -17,33 +20,44 @@ export const RELEASE_DATES: Readonly<Record<string, string>> = {
 };
 
 /**
- * What each coming release adds, from the README's status table (tech design §24). Rows for
- * versions already released drop out on their own (UPCOMING in src/lib/changelog.ts).
+ * A title and one line for the releases the homepage lists under "Recent releases", in the
+ * words of their notes. A release without an entry here is listed by its first note instead.
+ */
+export const RELEASE_TITLES: Readonly<Record<string, { title: string; summary: string }>> = {
+  '0.4.0': {
+    title: 'A quieter, premium look',
+    summary: 'One sidebar for Work and Docs, the logo’s colours, drawn icons and a new setup',
+  },
+  '0.3.0': {
+    title: 'Docs arrives',
+    summary: 'Spaces, a live editor, comments, history, import and export',
+  },
+  '0.2.0': {
+    title: 'Work ships in the image',
+    summary: 'Projects, workflows, boards, the backlog and sprints',
+  },
+};
+
+/**
+ * What is still to come, from the README's status table (tech design §24), with no release
+ * numbers: a version promised for unbuilt work becomes false the day plans move (0.4 shipped
+ * the new look, not the AI it was once promised). A row leaves this list in the change that
+ * ships it.
  */
 export const ROADMAP = [
   {
-    version: '0.2',
-    title: 'Work',
-    scope: 'projects, issues, workflows, boards, backlog and sprints, filters, search',
+    title: 'AI, optional',
+    scope:
+      'summaries that cite their sources, answers from your docs, a ⌘K palette that shows its plan before it acts; any provider, a model on your own network, or none',
   },
   {
-    version: '0.3',
-    title: 'Docs',
-    scope: 'spaces, the page tree, a collaborative editor, revisions, comments, templates',
-  },
-  {
-    version: '0.4',
-    title: 'AI',
-    scope: 'summaries, ask-your-docs with citations, the ⌘K palette with plans, any provider',
-  },
-  {
-    version: '0.5',
     title: 'Import and integrations',
-    scope: 'importers, OIDC, SAML and SCIM, webhooks, automation, roadmap',
+    scope:
+      'Import from Jira, single sign-on (OIDC, SAML and SCIM), webhooks, automation, a roadmap',
   },
   {
-    version: '1.0',
     title: 'Launch',
-    scope: 'Helm and Terraform, air-gap bundle, PWA, accessibility and security review',
+    scope:
+      'a Helm chart and Terraform modules, a tested offline install, a PWA, and an accessibility and security review',
   },
 ] as const;

@@ -11,14 +11,13 @@ import { themeById } from '@bemmoly/ui/tokens';
 import { SITE_BING_VERIFICATION, SITE_GOOGLE_VERIFICATION } from 'astro:env/server';
 import Footer from '../components/site/Footer.astro';
 import Nav from '../components/site/Nav.astro';
+import ThemeScript from '../components/site/ThemeScript.astro';
 import type { SitePage } from '../data/pages.ts';
 import { jsonLd, structuredData, type FaqItem } from '../lib/structured-data.ts';
 import { themeCss } from '../lib/theme.ts';
 
 interface Props {
   page: SitePage;
-  /** The landing page puts its closing call to action inside the footer block. */
-  cta?: boolean;
   /** Error pages are served but must not be indexed. */
   noindex?: boolean;
   /** Questions the page answers in its own text, for the FAQPage data. */
@@ -27,12 +26,16 @@ interface Props {
   alternate?: { href: string; type: string; title: string };
 }
 
-const { page, cta = false, noindex = false, faq, alternate } = Astro.props;
+const { page, noindex = false, faq, alternate } = Astro.props;
 // Page paths are the clean addresses Caddy serves (/docs, /docs/install, /).
 const canonical = new URL(page.path, Astro.site).href;
 const image = new URL(socialPreview.src, Astro.site).href;
 const logo = new URL(icon512.src, Astro.site).href;
-const themeColor = themeById('light').colors.card;
+// The browser's own chrome matches the page in both versions.
+const themeColors = {
+  light: themeById('light').colors.canvas,
+  dark: themeById('dark').colors.canvas,
+};
 // The two IBM Plex Sans faces above the fold; the rest load on demand.
 const preloads = [plexSans400, plexSans600];
 const robots = noindex
@@ -70,8 +73,9 @@ const verification = [
     {alternate && (
       <link rel="alternate" href={alternate.href} type={alternate.type} title={alternate.title} />
     )}
-    <meta name="theme-color" content={themeColor} />
-    <meta name="color-scheme" content="light" />
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content={themeColors.light} />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content={themeColors.dark} />
+    <meta name="color-scheme" content="light dark" />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Bemmoly" />
     <meta property="og:locale" content="en_US" />
@@ -82,22 +86,28 @@ const verification = [
     <meta property="og:image:type" content="image/png" />
     <meta property="og:image:width" content={String(socialPreview.width)} />
     <meta property="og:image:height" content={String(socialPreview.height)} />
-    <meta property="og:image:alt" content="Bemmoly: Keep your work in-house." />
+    <meta property="og:image:alt" content="Bemmoly: Your work. Your platform." />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={page.title} />
     <meta name="twitter:description" content={page.description} />
     <meta name="twitter:image" content={image} />
-    <meta name="twitter:image:alt" content="Bemmoly: Keep your work in-house." />
+    <meta name="twitter:image:alt" content="Bemmoly: Your work. Your platform." />
+    <ThemeScript />
     <style is:inline set:html={themeCss()}></style>
     <script is:inline type="application/ld+json" set:html={graph} />
   </head>
   <body class="flex min-h-screen flex-col">
+    <p data-live-status class="sr-only" aria-live="polite"></p>
     <Nav />
     <main class="flex flex-1 flex-col">
       <slot />
     </main>
-    <Footer cta={cta}>
+    <Footer>
       <slot name="cta" />
     </Footer>
+    <script>
+      import { start } from '../lib/client/index.ts';
+      start();
+    </script>
   </body>
 </html>

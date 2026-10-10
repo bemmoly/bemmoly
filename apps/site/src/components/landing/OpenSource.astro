@@ -1,0 +1,152 @@
+---
+/**
+ * Built in the open, from the site review: the repository as the testimonial. Licence and
+ * latest release come from the build; the star count is fetched at build time and simply left
+ * out when the fetch fails. No invented numbers, logos or quotes. The recent releases are the
+ * changelog the site already builds (data-release-history marks the one place on the page
+ * where older versions belong).
+ */
+import { RELEASE_TITLES } from '../../data/changelog.ts';
+import { LATEST, RELEASES, releaseId } from '../../lib/changelog.ts';
+import { repoFacts } from '../../lib/clients/github.ts';
+import { CONTRIBUTING_URL, ISSUES_URL, REPO_URL } from '../../lib/links.ts';
+import type { SiteIconName } from '../../lib/icons.ts';
+import Icon from '../site/Icon.astro';
+import Logo from '../site/Logo.astro';
+
+const facts = await repoFacts();
+const cells = [
+  { label: 'Licence', value: 'MIT' },
+  { label: 'Latest release', value: LATEST.version },
+  ...(facts ? [{ label: 'Stars', value: facts.stars.toLocaleString('en-GB') }] : []),
+];
+const recent = RELEASES.filter((release) => RELEASE_TITLES[release.version])
+  .slice(0, 3)
+  .map((release) => ({ ...release, ...RELEASE_TITLES[release.version] }));
+const HELP: readonly { icon: SiteIconName; lead: string; rest: string; href: string }[] = [
+  {
+    icon: 'star',
+    lead: 'Star the repository',
+    rest: 'it helps other teams find Bemmoly',
+    href: REPO_URL,
+  },
+  {
+    icon: 'report',
+    lead: 'Report a bug or ask for a feature',
+    rest: 'in GitHub issues',
+    href: ISSUES_URL,
+  },
+  {
+    icon: 'git',
+    lead: 'Contribute',
+    rest: 'read the contributing guide first',
+    href: CONTRIBUTING_URL,
+  },
+];
+const formatDate = (iso: string) =>
+  new Date(`${iso}T00:00:00Z`).toLocaleDateString('en-GB', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    timeZone: 'UTC',
+  });
+---
+
+<section id="open-source" aria-labelledby="open-source-title" class="py-18 md:py-24">
+  <div class="mx-auto grid max-w-300 gap-12 px-4 sm:px-6 lg:grid-cols-2 lg:gap-14 lg:px-8">
+    <div class="flex flex-col">
+      <span class="inline-flex items-center gap-2 text-14 font-semibold text-acc">
+        <Icon name="git" size={15} />
+        Open source
+      </span>
+      <h2 id="open-source-title" class="mt-3 text-32 font-semibold tracking-section md:text-44">
+        Built in the open.
+      </h2>
+      <p class="mt-3.5 text-16 leading-desc text-pretty text-tx-2 md:text-17">
+        The code, the roadmap, the architecture decisions and the design reviews behind this page
+        are all in one public repository. Nothing is decided somewhere you can’t read.
+      </p>
+      <div class="mt-6.5 rounded-shot bg-card p-5 shadow-e1 md:px-5.5">
+        <div class="flex items-center gap-3">
+          <Logo variant="mark" size={30} />
+          <div class="min-w-0 flex-1">
+            <b class="block text-16 font-semibold">bemmoly/bemmoly</b>
+            <span class="text-14 text-tx-3">Issues and docs you host yourself</span>
+          </div>
+          <a
+            href={REPO_URL}
+            class="inline-flex h-8.5 items-center gap-1.5 rounded-card bg-card px-3 text-14 font-medium text-tx shadow-e1 hover:bg-hover hover:text-tx"
+          >
+            <Icon name="star" size={14} />
+            Star
+          </a>
+        </div>
+        <dl class="mt-4.5 grid grid-cols-3 gap-3 border-t border-line-2 pt-4">
+          {cells.map((cell) => (
+            <div>
+              <dt class="text-12 text-tx-3">{cell.label}</dt>
+              <dd class="m-0 font-mono text-17 text-tx">{cell.value}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+      <ul class="mt-5.5 flex flex-col gap-3">
+        {HELP.map((item) => (
+          <li class="flex items-center gap-3">
+            <Icon name={item.icon} size={17} class="text-acc" />
+            <span class="text-15 text-tx-2">
+              <a href={item.href} class="font-medium text-tx underline-offset-3">
+                {item.lead}
+              </a>
+              {`, ${item.rest}`}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </div>
+    <div class="flex flex-col">
+      <div class="flex items-center justify-between">
+        <h3 class="text-15 font-semibold">Recent releases</h3>
+        <a href="/changelog" class="inline-flex items-center gap-1 text-14">
+          Changelog
+          <Icon name="arrow" size={13} />
+        </a>
+      </div>
+      <ol data-release-history class="mt-3.5 ml-1.5 border-l-2 border-line">
+        {recent.map((release, index) => (
+          <li class="relative pt-1 pb-5.5 pl-5.5">
+            <span
+              class:list={[
+                'absolute top-2.25 -left-1.75 size-3 rounded-full shadow-[0_0_0_3px_var(--canvas)]',
+                index === 0 ? 'bg-acc' : 'bg-line',
+              ]}
+            />
+            <div class="flex flex-wrap items-center gap-x-2.5 gap-y-1">
+              <a
+                href={`/changelog#${releaseId(release.version)}`}
+                class="rounded-[5px] bg-sunken px-1.5 py-0.5 font-mono text-13 text-tx no-underline! shadow-[inset_0_0_0_1px_var(--line-2)]"
+              >
+                {release.version}
+              </a>
+              <b class="text-16 font-semibold">{release.title}</b>
+              {release.date && (
+                <time datetime={release.date} class="text-13 text-tx-3">
+                  {formatDate(release.date)}
+                </time>
+              )}
+            </div>
+            <p class="mt-1 text-14h text-tx-3">{release.summary}</p>
+          </li>
+        ))}
+      </ol>
+      <div class="mt-1.5 rounded-shot bg-sunken p-5">
+        <h3 class="text-15 font-semibold">Who maintains it</h3>
+        <p class="mt-1 text-14h leading-brief text-tx-3">
+          An independent open-source project and its contributors, in public on GitHub. Changes land
+          through pull requests with tests; each release is tagged, its images are signed, and it is
+          listed in the changelog, also as an <a href="/changelog.xml">RSS feed</a>.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>

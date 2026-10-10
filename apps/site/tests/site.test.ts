@@ -8,7 +8,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { CRAWLERS } from '../src/data/crawlers.ts';
 import { DEMO_PAGE, PAGES } from '../src/data/pages.ts';
 import { INDEXNOW_KEY } from '../src/lib/indexnow.ts';
-import { REPO_URL } from '../src/lib/links.ts';
+import { DEMO_URL, INSTALL_HREF, NAV, REPO_URL } from '../src/lib/links.ts';
 import { hrefsOf, idsOf, isSitePage, parsePage, scriptsOf } from './dom.ts';
 import { startPreview, type Preview } from './serve.ts';
 
@@ -28,37 +28,51 @@ afterAll(() => preview?.stop());
 describe('landing page', () => {
   it('renders the hero headline', async () => {
     const body = await (await fetch(`${preview.url}/`)).text();
-    expect(body).toMatch(/<h1\b[^>]*>\s*Keep your work in-house\.\s*<\/h1>/);
+    expect(body).toMatch(/<h1\b[^>]*>\s*Your work\. Your platform\.\s*<\/h1>/);
   });
 
-  it('shows the installer one-liner and the Postgres 18 transcript', () => {
+  it('states the three promises in the hero, in a section of their own and in the footer', () => {
+    const page = parsePage(html('index.html'));
+    const text = (selector: string) => page.querySelector(selector)?.textContent ?? '';
+    for (const promise of ['100% open source', 'No pricing', 'No in-app purchases']) {
+      expect(text('main section'), promise).toContain(promise);
+      expect(text('#promise'), promise).toContain(promise);
+    }
+    expect(text('footer')).toContain('No in-app purchases');
+  });
+
+  it('copies the installer one-liner, and promises no install time nothing measured', () => {
     const index = html('index.html');
-    expect(index).toContain('curl -fsSL https://get.bemmoly.com | sh');
-    expect(index).toContain('Installing Postgres 18');
+    expect(index).toContain('data-copy="curl -fsSL https://get.bemmoly.com | sh"');
+    expect(index).not.toMatch(/\b(5|five) min/i);
     expect(index).not.toContain('bemmoly.dev');
   });
 
-  it('is light for every visitor, with Ocean only behind data-theme="dark"', () => {
+  it("follows the system into the product's dark theme, unless the visitor chose light", () => {
     const index = html('index.html');
-    expect(index).not.toContain('prefers-color-scheme');
-    expect(index).toContain('<meta name="color-scheme" content="light">');
-    expect(index).toMatch(/html\[data-theme=['"]?dark['"]?\][^{]*\{[^}]*--sunken:#07111c/);
+    expect(index).toContain('<meta name="color-scheme" content="light dark">');
+    // The product's dark surfaces (ADR 0015), never a retired preset's navy.
+    expect(index).toMatch(
+      /@media \(prefers-color-scheme:dark\)\{:root:not\(\[data-theme='light'\]\)\{[^}]*--canvas:#111418/,
+    );
+    expect(index).toMatch(/\[data-theme='dark'\]\{[^}]*--card:#181c22/);
+    expect(index).not.toContain('#07111c');
   });
 
-  it('ships only the inline copy button and the small preview script', () => {
+  it('ships only the inline theme script and the one small site script', () => {
     // JSON-LD is data, not code: it runs nothing and the CSP does not need to allow it.
     const scripts = scriptsOf(parsePage(html('index.html'))).filter(
       (script) => script.type !== 'application/ld+json',
     );
     const inline = scripts.filter((script) => script.src === undefined);
-    expect(inline.reduce((total, script) => total + script.body.length, 0)).toBeLessThan(1024);
-    // The previews' script (src/lib/preview.ts), a file the CSP's 'self' allows. The demo
-    // itself loads only when a visitor asks for it.
+    expect(inline.reduce((total, script) => total + script.body.length, 0)).toBeLessThan(512);
+    // The site script (src/lib/client): menu, theme, copy, tabs and previews, a file the
+    // CSP's 'self' allows. The demo itself loads only when a visitor asks for it.
     const external = scripts.flatMap((script) => script.src ?? []);
     expect(external).toHaveLength(1);
     expect(external[0]).toMatch(/^\/_astro\/[\w.-]+\.js$/);
     const code = readFileSync(new URL(`.${external[0]}`, dist));
-    expect(gzipSync(code).length).toBeLessThan(2048);
+    expect(gzipSync(code).length).toBeLessThan(3 * 1024);
     expect(code.toString()).not.toContain('/demo/assets/');
   });
 });
@@ -68,7 +82,7 @@ describe('links', () => {
 
   it('finds the navigation on every page', () => {
     for (const page of pages) {
-      for (const href of ['/#product', '/self-hosting', '/docs', '/community', REPO_URL]) {
+      for (const href of [...NAV.map((link) => link.href), INSTALL_HREF, DEMO_URL, REPO_URL]) {
         expect(hrefs(html(page)), `${page} links to ${href}`).toContain(href);
       }
     }

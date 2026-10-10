@@ -1,0 +1,30 @@
+---
+/**
+ * One proof line: a check (or the repository's mark for a file), the link in mono and what it
+ * shows. Each is a link with its own focus ring, to the file on GitHub or the page that says
+ * more.
+ */
+import type { Proof } from '../../data/proofs.ts';
+import Icon from '../site/Icon.astro';
+
+interface Props {
+  proof: Proof;
+  /** The repository's mark instead of a check, for the self-hosting band's file links. */
+  file?: boolean;
+}
+
+const { proof, file = false } = Astro.props;
+---
+
+<span class="grid grid-cols-[14px_1fr] items-start gap-2 text-13 leading-note text-tx-3">
+  <Icon name={file ? 'git' : 'check-circle'} size={14} class="mt-0.5 text-green-tx" />
+  <span>
+    <a
+      href={proof.href}
+      class="font-mono text-12 text-tx-2 underline decoration-line underline-offset-3 hover:text-tx"
+    >
+      {proof.label}
+    </a>
+    {proof.note && <span> {proof.note}</span>}
+  </span>
+</span>

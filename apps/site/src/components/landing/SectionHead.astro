@@ -1,0 +1,50 @@
+---
+/**
+ * The opening of a homepage section, as the site review draws them: a drawn-icon eyebrow in
+ * the accent, the 44px section title (32px on a phone) and a lede, either centred or split
+ * into title left and lede right on wide screens.
+ */
+import type { SiteIconName } from '../../lib/icons.ts';
+import Icon from '../site/Icon.astro';
+
+interface Props {
+  eyebrow: string;
+  icon: SiteIconName;
+  title: string;
+  /** The heading's id, for the section's aria-labelledby. */
+  id: string;
+  layout?: 'center' | 'split';
+}
+
+const { eyebrow, icon, title, id, layout = 'center' } = Astro.props;
+const lede = Astro.slots.has('default');
+---
+
+<div
+  class:list={[
+    'mx-auto w-full max-w-300 px-4 sm:px-6 lg:px-8',
+    layout === 'center'
+      ? 'flex flex-col items-center text-center'
+      : 'grid items-end gap-x-12 gap-y-4 lg:grid-cols-2',
+  ]}
+>
+  <div class:list={['flex flex-col gap-3', layout === 'center' && 'items-center']}>
+    <span class="inline-flex items-center gap-2 text-14 font-semibold text-acc">
+      <Icon name={icon} size={15} />
+      {eyebrow}
+    </span>
+    <h2 id={id} class="text-32 font-semibold tracking-section text-balance md:text-44">
+      {title}
+    </h2>
+  </div>
+  {lede && (
+    <p
+      class:list={[
+        'text-17 leading-body text-pretty text-tx-2 md:text-19',
+        layout === 'center' ? 'mt-4 max-w-180' : 'lg:pb-1',
+      ]}
+    >
+      <slot />
+    </p>
+  )}
+</div>

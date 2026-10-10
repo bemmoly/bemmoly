@@ -1,0 +1,38 @@
+---
+/**
+ * The honest answers, from the site review: the doubts a free, self-hosted product raises,
+ * answered plainly, the first two open because everyone has them. Native details, so they work
+ * without the script and find-in-page opens a closed answer. The same list is the page's
+ * FAQPage data (src/data/faq.ts, passed to Base.astro).
+ */
+import { HOME_FAQ } from '../../data/faq.ts';
+import { ISSUES_URL } from '../../lib/links.ts';
+import Icon from '../site/Icon.astro';
+import SectionHead from './SectionHead.astro';
+---
+
+<section id="questions" aria-labelledby="questions-title" class="py-18 md:py-24">
+  <SectionHead eyebrow="Questions" icon="help" title="The honest answers" id="questions-title" />
+  <div class="mx-auto mt-10 max-w-215 px-4 sm:px-6">
+    <div class="border-t border-line">
+      {HOME_FAQ.map((item, index) => (
+        <details open={index < 2} class="group border-b border-line">
+          <summary class="flex cursor-pointer list-none items-center gap-4 px-1 py-4.5 text-17 font-medium tracking-brand md:text-19 [&::-webkit-details-marker]:hidden">
+            <h3 class="m-0 flex-1 text-[inherit] font-[inherit]">{item.question}</h3>
+            <Icon
+              name="plus"
+              size={18}
+              class="text-tx-3 motion-safe:transition-transform motion-safe:duration-base group-open:rotate-45"
+            />
+          </summary>
+          <p class="m-0 pr-4 pb-5.5 pl-1 text-16 leading-doc text-pretty text-tx-2 md:pr-15">
+            {item.answer}
+          </p>
+        </details>
+      ))}
+    </div>
+    <p class="mt-6.5 text-center text-14 text-tx-3">
+      Something else? <a href={ISSUES_URL}>Ask in GitHub issues</a>.
+    </p>
+  </div>
+</section>

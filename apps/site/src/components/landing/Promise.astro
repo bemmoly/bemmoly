@@ -1,0 +1,55 @@
+---
+/**
+ * "Open. Free. Nothing to buy.": Keerthi's three differentiators as the deal, each card with
+ * the files that prove it (src/data/proofs.ts, kept honest by tests/promises.test.ts), then the
+ * next four things that keep it yours, which the self-hosting band proves line by line.
+ */
+import { PROMISES, YOURS } from '../../data/proofs.ts';
+import Icon from '../site/Icon.astro';
+import ProofLine from './ProofLine.astro';
+import SectionHead from './SectionHead.astro';
+---
+
+<section id="promise" aria-labelledby="promise-title" class="bg-sunken py-18 md:py-24">
+  <SectionHead
+    eyebrow="The deal"
+    icon="heart"
+    title="Open. Free. Nothing to buy."
+    id="promise-title"
+  >
+    Bemmoly is not a trial of something bigger. What you install is the whole product, and it stays
+    that way.
+  </SectionHead>
+  <div class="mx-auto mt-10 grid max-w-300 gap-4 px-4 sm:px-6 md:mt-12 md:grid-cols-3 md:gap-6 lg:px-8">
+    {PROMISES.map((promise) => (
+      <article
+        id={`promise-${promise.id}`}
+        class="flex scroll-mt-24 flex-col gap-3.5 rounded-shot bg-card p-6 shadow-e1 md:p-7"
+      >
+        <span class="grid size-10 place-items-center rounded-[10px] bg-acc-50 text-acc">
+          <Icon name={promise.icon} size={20} />
+        </span>
+        <h3 class="text-22 font-semibold tracking-title">{promise.title}</h3>
+        <p class="text-15 leading-desc text-pretty text-tx-2">{promise.body}</p>
+        <div class="mt-auto flex flex-col gap-1.5 border-t border-line-2 pt-3.5">
+          {promise.proofs.map((proof) => (
+            <ProofLine proof={proof} />
+          ))}
+        </div>
+      </article>
+    ))}
+  </div>
+  <div class="mx-auto mt-8 flex max-w-300 flex-col gap-3 px-4 text-14h text-tx-2 sm:px-6 md:flex-row md:flex-wrap md:items-center md:justify-center md:gap-x-7 lg:px-8">
+    <b class="font-semibold text-tx">And it stays yours:</b>
+    {YOURS.map((item) => (
+      <span class="inline-flex items-center gap-1.75">
+        <Icon name={item.icon} size={15} />
+        {item.label}
+      </span>
+    ))}
+    <a href="/#yours" class="inline-flex items-center gap-1 underline underline-offset-3">
+      How we know
+      <Icon name="arrow" size={13} />
+    </a>
+  </div>
+</section>

@@ -1,24 +1,35 @@
 ---
 /**
- * The Landing mock's large buttons: 46px tall, 7px radius, 500 15px. Primary is the accent
- * fill with 22px padding; secondary is bordered with 20px padding. Without `href` the button
- * renders as plain text (used for things that are not available yet).
+ * The site review's one button family: 44px (34px small, 56px beside the hero's command),
+ * radius 8, 500 weight. Primary is the accent fill, secondary a card with a hairline,
+ * ghost text on hover. Without `href` it renders as plain text.
  */
 interface Props {
-  variant: 'primary' | 'secondary';
+  variant: 'primary' | 'secondary' | 'ghost';
+  size?: 'sm' | 'md' | 'lg';
   href?: string;
+  class?: string;
+  [key: `data-${string}`]: string | undefined;
 }
 
-const { variant, href } = Astro.props;
+const { variant, size = 'md', href, class: className, ...data } = Astro.props;
 const Tag = href ? 'a' : 'span';
 const classes = [
-  'inline-flex h-11.5 items-center gap-2 rounded-control text-16 font-medium',
-  variant === 'primary'
-    ? 'bg-acc-fill px-5.5 text-on-acc hover:text-on-acc'
-    : 'border border-line bg-card px-5 text-tx hover:text-tx dark:border-line',
+  'inline-flex items-center justify-center gap-2 rounded-card font-medium whitespace-nowrap',
+  {
+    sm: 'h-8.5 px-3.5 text-14',
+    md: 'h-11 px-4.5 text-15',
+    lg: 'h-12 px-5.5 text-15 sm:h-14',
+  }[size],
+  {
+    primary: 'bg-acc-fill text-on-acc shadow-e1 hover:bg-acc-600 hover:text-on-acc',
+    secondary: 'bg-card text-tx shadow-e1 hover:bg-sunken hover:text-tx',
+    ghost: 'text-tx-2 hover:bg-hover hover:text-tx',
+  }[variant],
+  className,
 ];
 ---
 
-<Tag href={href} class:list={classes}>
+<Tag href={href} class:list={classes} {...data}>
   <slot />
 </Tag>

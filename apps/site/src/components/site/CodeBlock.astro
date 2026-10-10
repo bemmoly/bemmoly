@@ -1,48 +1,47 @@
 ---
 /**
- * A command or file in the Landing mock's terminal style (Dark preset, 13px/1.7 mono,
- * 10px radius, 16px padding). Lines starting with "$ " get the dimmed prompt. With `copy`,
- * the header gets the install pill's Copy button, which copies the lines without prompts;
- * the page includes CopyScript once for it. Long lines scroll, so the code is focusable for
- * keyboard scrolling.
+ * A command or file as a terminal block on the product's dark surfaces (13px/1.7 mono, 12px
+ * radius). Lines starting with "$ " get the dimmed prompt. With `copy`, the header gets the
+ * site's copy button, which copies the lines without their prompts. Long lines scroll, so the
+ * code is focusable for keyboard scrolling.
  */
+import CopyButton from './CopyButton.astro';
+import Icon from './Icon.astro';
+
 interface Props {
   code: string;
   label?: string;
   copy?: boolean;
+  class?: string;
 }
 
-const { code, label, copy = false } = Astro.props;
+const { code, label, copy = false, class: className } = Astro.props;
 const lines = code.replace(/\n$/, '').split('\n');
 const copied = lines.map((line) => (line.startsWith('$ ') ? line.slice(2) : line)).join('\n');
 ---
 
 <figure
   data-theme="dark"
-  class="m-0 min-w-0 overflow-hidden rounded-window border border-line bg-sunken text-tx-2"
+  class:list={[
+    'm-0 min-w-0 overflow-hidden rounded-dialog bg-sunken text-tx-2 shadow-e2',
+    className,
+  ]}
 >
   {(label || copy) && (
-    <figcaption class="flex items-center gap-3 border-b border-line px-3 py-2.5 font-mono text-12 text-tx-3">
+    <figcaption class="flex h-11 items-center gap-2.5 border-b border-line pr-2 pl-4 font-sans text-12 font-medium text-tx-3">
+      <Icon name="terminal" size={14} />
       {label}
-      {copy && (
-        <button
-          type="button"
-          data-copy={copied}
-          class="ml-auto cursor-pointer font-sans text-13 text-tx-3 hover:text-tx-2"
-        >
-          Copy
-        </button>
-      )}
+      {copy && <CopyButton value={copied} size="sm" class="ml-auto" />}
     </figcaption>
   )}
-  <code tabindex="0" class="block overflow-x-auto p-4 font-mono text-13 leading-prose">
+  <code tabindex="0" class="block overflow-x-auto px-4.5 py-3.5 font-mono text-13 leading-prose">
     {lines.map((line) =>
       line.startsWith('$ ') ? (
         <span class="block whitespace-nowrap">
-          <span class="text-tx-3" aria-hidden="true">
+          <span class="text-tx-3 select-none" aria-hidden="true">
             $
           </span>{' '}
-          <span class="whitespace-pre" set:text={line.slice(2)} />
+          <span class="whitespace-pre text-tx" set:text={line.slice(2)} />
         </span>
       ) : (
         <span class="block whitespace-pre" set:text={line || ' '} />

@@ -4,7 +4,6 @@
  * deploy/installer/lib/config.sh fills them in. The installer's preflight message links here.
  */
 import CodeBlock from '../../components/site/CodeBlock.astro';
-import CopyScript from '../../components/site/CopyScript.astro';
 import Section from '../../components/site/Section.astro';
 import Related from '../../components/topics/Related.astro';
 import StatusNote from '../../components/topics/StatusNote.astro';
@@ -177,7 +176,7 @@ $ sudo docker compose up -d`;
       <li>
         <strong>Your own Postgres:</strong> drop <code>db</code> from
         <code>COMPOSE_PROFILES</code> and point <code>DATABASE_URL</code> at Postgres 18 (17 is
-        accepted with a warning). Add the pgvector extension too: AI search needs it from 0.4.
+        accepted with a warning). Add the pgvector extension too.
       </li>
       <li>
         <strong>Your own HTTPS:</strong> drop <code>proxy</code>, set
@@ -205,5 +204,4 @@ $ sudo docker compose up -d`;
   </Section>
 
   <Related current="/docs/compose" />
-  <CopyScript />
 </Page>

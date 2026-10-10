@@ -1,0 +1,59 @@
+---
+/**
+ * AI, honestly: one band in the lilac that means AI and only AI, "Coming" with no version and
+ * no picture until there is a real screen to capture. It answers "do I need AI?" and "will it
+ * read my data?" with what is already true: setup and Settings record what AI may do.
+ */
+import { AI_DESIGNED } from '../../data/landing.ts';
+import Badge from '../site/Badge.astro';
+import Icon from '../site/Icon.astro';
+import ModuleTile from '../site/ModuleTile.astro';
+---
+
+<section
+  id="ai"
+  aria-labelledby="ai-title"
+  class="mx-auto max-w-300 scroll-mt-16 px-4 py-10 sm:px-6 md:py-18 lg:px-8"
+>
+  <div class="grid items-center gap-8 rounded-band bg-ai-50 p-6 md:p-10 lg:grid-cols-2 lg:gap-12 lg:px-11">
+    <div class="flex flex-col">
+      <div class="flex items-center gap-2.5">
+        <ModuleTile module="ai" size={28} />
+        <b class="text-15 font-semibold">AI</b>
+        <Badge tone="ai" pill class="bg-card!">
+          Coming, optional
+        </Badge>
+      </div>
+      <h2
+        id="ai-title"
+        class="mt-4 mb-3 text-24 font-semibold tracking-sub text-balance md:text-32"
+      >
+        AI comes later, and stays optional.
+      </h2>
+      <p class="text-16 leading-desc text-pretty text-tx-2">
+        Bring any provider, a model on your own network, or none at all: everything on this page
+        works without it. You can already choose what AI may read and change, in setup and in
+        Settings, before it ever runs.
+      </p>
+    </div>
+    <div class="flex flex-col gap-3">
+      <ul class="flex flex-col gap-3">
+        {AI_DESIGNED.map((item) => (
+          <li class="flex items-center gap-3 rounded-shot bg-card px-4 py-3.5 shadow-[0_0_0_1px_var(--ai-100)]">
+            <span class="grid size-8 shrink-0 place-items-center rounded-card bg-ai-50 text-ai-600">
+              <Icon name="spark" size={16} />
+            </span>
+            <span class="flex min-w-0 flex-1 flex-col">
+              <b class="text-15 font-semibold">{item.lead}</b>
+              <span class="text-14 text-tx-3">{item.rest}</span>
+            </span>
+            <Badge tone="ai" pill>
+              Designed
+            </Badge>
+          </li>
+        ))}
+      </ul>
+      <p class="pl-1 text-13 text-tx-2">Lilac on this site means AI, and only AI.</p>
+    </div>
+  </div>
+</section>

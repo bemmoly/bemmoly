@@ -1,12 +1,13 @@
 # @bemmoly/site
 
 The marketing site at https://bemmoly.com: an Astro static site, not part of the app image.
-The landing page is ported from `docs/design/mocks/Bemmoly Landing.dc.html`, which is its pixel
-source of truth.
+The homepage follows the site design review's Proposed tabs (the review of bemmoly.com, built on
+the product's visual system, ADR 0015); the first Landing mock
+(`docs/design/mocks/Bemmoly Landing.dc.html`) still holds for the text pages it styled.
 
 | Page                              | Source                                                                |
 | --------------------------------- | --------------------------------------------------------------------- |
-| `/`                               | The Landing mock, section by section                                  |
+| `/`                               | The site review's homepage, section by section (see Homepage below)   |
 | `/self-hosted-project-management` | Topic page: the README's status table, tech design §1, §4 and §18     |
 | `/open-source-issue-tracker`      | Topic page: the Work module's release notes, tech design §14 and §16  |
 | `/kanban-and-sprint-boards`       | Topic page: the Work module's release notes (board, backlog, metrics) |
@@ -17,7 +18,7 @@ source of truth.
 | `/docs/compose`                   | `deploy/compose` and how the installer fills in its `.env`            |
 | `/changelog`, `/changelog.xml`    | The packages' `CHANGELOG.md` files (see Changelog below), and RSS     |
 | `/security`                       | Renders the repository's `SECURITY.md`                                |
-| `/community`                      | GitHub, the Discord placeholder, contributing                         |
+| `/community`                      | GitHub issues, security reports, contributing                         |
 | `/install.sh`                     | `public/install.sh`, a copy of `deploy/install.sh` (see below)        |
 | `/demo`                           | The live demo: apps/web's demo build (see Live demo below)            |
 
@@ -35,8 +36,7 @@ pnpm --filter @bemmoly/site typecheck       # astro check
 pnpm --filter @bemmoly/site lint            # eslint (incl. .astro) + html-validate on dist/
 pnpm --filter @bemmoly/site test            # Vitest against dist/ via astro preview
 pnpm --filter @bemmoly/site size            # page JavaScript budget, 30 KB gzip
-pnpm --filter @bemmoly/site screens         # recapture the product shots from the mocks
-pnpm --filter @bemmoly/site previews        # recapture the homepage previews' posters from the demo
+pnpm --filter @bemmoly/site previews        # recapture every product picture from the demo
 pnpm --filter @bemmoly/site docker:build    # the production image, tagged bemmoly-site:dev
 pnpm --filter @bemmoly/site test:container  # Caddy hosts and headers against that image
 ```
@@ -78,16 +78,26 @@ click-through (board drag, backlog, an issue, the workflow editor, at 1280 and 3
 browser check before release. The app is designed for desktop widths: on a phone it works but
 scrolls sideways on the board.
 
-### Homepage previews
+### Product pictures and the live preview
 
-The frame under the hero (`LivePreview.astro`, `src/lib/preview.ts`, `src/data/previews.ts`)
-has three tabs, Board, Issue and Workflow, each showing a poster captured from its demo route at
-1280 × 744, 2x (`pnpm previews`, after building the site with its demo). "Try it live" frames
-that route over the poster at the same size, scaled to fit, so nothing moves; the tabs then move
-the framed app without reloading it. Nothing of the demo loads before that click. Without
-JavaScript, or in a frame narrower than 640px, the tabs and the button are links to the full
-demo. The tabs follow the ARIA tabs pattern (arrow keys, Home, End), and every transition is
-`motion-safe`. Recapture the posters whenever the demo's screens change.
+Every picture of the product is captured from the demo, never drawn or taken from a mock:
+`scripts/capture-previews.ts` opens each route in `src/data/previews.ts` (Board, a Docs page,
+an Issue, the Backlog) at 1280 × 744 and the board at 390 wide (the phone poster), 2x, in the
+product's light and dark themes (`?theme=dark`), with the demo banner removed. Run it after
+building the site with its demo (`pnpm previews`), or against a running demo build
+(`pnpm --filter @bemmoly/web exec vite --mode demo --port 5391`, then
+`pnpm previews -- --origin http://127.0.0.1:5391`). Recapture whenever the demo's screens
+change; `tests/demo.test.ts` fails if a preview lacks either theme.
+
+`Poster.astro` puts both themes in one `<picture>` (AVIF and WebP at 640 to 2560 wide): the
+dark sources carry a `prefers-color-scheme` query, so a browser downloads only the one it shows,
+and the footer's theme control rewrites those queries. The hero's preview
+(`ProductPreview.astro`, `src/lib/client/preview.ts`) shows the four posters as tabs (arrow
+keys, Home, End). "Try it live" frames the route over the poster at the same size, scaled to
+fit, behind a skeleton that says what is happening; if the app has not drawn in eight seconds
+the frame says so and offers Retry and a new tab. Esc in the live app returns focus to the tabs.
+Nothing of the demo loads before that press. Without JavaScript, or in a frame narrower than
+640px, the tabs and the button are links to the full demo; phones get the phone poster instead.
 
 ## Search engines
 
@@ -160,43 +170,52 @@ Coolify application and redeploy; every page then carries the tags. Both are emp
 
 - Colours, type, radii, shadows and fonts come from `@bemmoly/ui`: `tailwind.css` for the
   utilities, `fonts.css` for the self-hosted faces, and the tokens for the theme variables, which
-  `src/lib/theme.ts` inlines in every page (Classic, Dark and Ocean only, not all eight presets).
-- `src/styles/site.css` adds only the Landing mock's extra scale steps (58, 32, 19, 17 and 14.5px
-  type, 1.08 and 1.15 line heights, -0.03em tracking, 10 and 14px radii) and two shadows built
-  from the `--scrim` token. They could move into `@bemmoly/ui` if another screen needs them.
-- The logo is inlined from `@bemmoly/ui/brand/lockup-color.svg`; nothing redraws it.
-- No analytics, cookies or third-party scripts. The JavaScript is a 0.2 KB inline copy button
-  (`CopyScript.astro`, allowed by hash in the CSP, so keep it byte-identical), on the homepage
-  the 1.1 KB previews script, and on `/self-hosting` the 0.6 KB chooser; Astro emits both as
-  files under `/_astro/` that the CSP's `'self'` already allows.
-- Badges are `@bemmoly/ui`'s Badge tones (`src/lib/badge.ts`), since the site renders no React.
+  `src/lib/theme.ts` inlines in every page (the product's light and dark presets only).
+- `src/styles/site.css` adds only the marketing display steps the product never needs (64, 44,
+  40 and 32px titles, the 22px card title) and, for the text pages, the first Landing mock's
+  14.5, 17 and 19px steps. Everything else is the product's scale.
+- The logo is inlined from `@bemmoly/ui/brand`: the re-cut lockup (lettering at 115%) and the
+  mark; nothing redraws it. Module tiles are the logo's colours at its corner ratio.
+- Icons are drawn: `Icon.astro` renders the product's own Lucide set (`@bemmoly/ui/icons`, stroke
+  1.75) to SVG at build time, plus a few marketing-only icons from the same Lucide release
+  (`src/lib/icons.ts`). The product's `no-glyph-characters` lint rule runs on `.astro` files.
+- No analytics, cookies or third-party scripts. The JavaScript is a tiny inline theme script
+  (`ThemeScript.astro`, allowed by hash in the CSP, so keep it byte-identical) and one site
+  script of about 2.5 KB gzip (`src/lib/client`: menu, theme control, copy, share, tabs and the
+  preview), plus the 0.6 KB chooser on `/self-hosting`; Astro emits them as files under
+  `/_astro/` that the CSP's `'self'` already allows.
+- Badges are `@bemmoly/ui`'s Badge tones (`src/lib/badge.ts`), since the site renders no React:
+  green is shipped, the accent is new, grey is planned, amber is untested, lilac is AI only.
 
-### Light only, with an Ocean version ready
+### Light and dark
 
-Every visitor gets the light (Classic) design, whatever their system setting. A dark version in
-the Ocean preset is built and applies only when the root element has `data-theme="dark"`;
-nothing sets it yet. Tailwind's `dark:` variant targets that attribute. In it the page is Ocean
-`bg`, raised surfaces are `sf` with `br` borders, buttons and the hero glow use the sky accent
-with navy text (from `contrastCheck`), body copy uses `tx2`, and the product shots are the
-Ocean captures (lazy and hidden otherwise, so light visitors never download them).
+The site follows the visitor's system into the product's dark theme (#111418 surfaces, the mid
+blue as accent). The footer's System / Light / Dark control overrides it and is remembered in
+the browser; `ThemeScript.astro` applies the choice before the first paint, so there is no flash,
+and blocked storage falls back to the system setting. `data-theme="dark"` on an element makes a
+dark island on a light page (the self-hosting band, the terminal blocks), as the product's code
+blocks are. Tailwind's `dark:` variant covers all three cases; most styles need none, because
+the tokens themselves change.
 
-### Product shots
+## Homepage
 
-The mock embeds the Board and Command mocks live. `scripts/capture-screens.ts` opens the
-Landing mock at 1280 wide, 2x, and saves the inside of each frame to `src/assets/screens/`,
-once as drawn and once in Ocean (`scripts/ocean-mocks.ts`: the Board's own `theme="ocean"`, and
-the Command palette's Classic literals swapped for the same tokens' Ocean values). Astro serves
-them as AVIF and WebP at 400, 800, 1184 and full width. Run `pnpm screens` after a mock changes.
+`src/pages/index.astro`, from the site design review: the hero ("Your work. Your platform.", the
+three promises as ticks, the install command with its copy button, the product in four views),
+the three promises with the file behind each claim, Work and Docs, the AI band, "Yours to run",
+install, import and configure, open source, the FAQ and the final call. The copy lives in
+`src/data/landing.ts`, the claims and their files in `src/data/proofs.ts`, the questions in
+`src/data/faq.ts` (also the page's FAQPage data).
 
-### Setup shots
-
-`/self-hosting` shows three crops of `docs/design/mocks/Bemmoly Setup.dc.html` in
-`src/assets/setup/`: steps 1, 3 and 4 at 1280 wide, 2x, each cropped to the step's own panel and
-button with 16px of the mock's background (the admin form, invite by email, the AI privacy
-switches). The crops leave out the mock's "Postgres 16" health check, its identity-provider
-cards and its AI vendor cards. `pnpm screens` does not recapture them yet; after the Setup mock
-changes, recapture them the same way (Playwright, pick the step in the sidebar, clip to the
-panel's box). They have no Ocean versions.
+- **Proof.** `tests/promises.test.ts` fails when a file a proof line quotes no longer contains
+  the line, so a claim cannot outlive the code behind it.
+- **Versions.** Read from the changelogs at build time. Nothing unreleased carries a version;
+  Docs' "New in 0.3" comes from the module's own changelog, and the recent releases are the
+  changelog's list (`data-release-history`, the one place older versions may appear).
+- **No time promises.** No install time is published until the nightly install job measures one.
+- **Live facts.** The GitHub star count is fetched once per build (`src/lib/clients/github.ts`,
+  5 s timeout); when the fetch fails the number is simply left out.
+- **Names.** Other products appear only as import sources ("Import from Confluence",
+  "Import from Jira"); `tests/seo.test.ts` enforces it.
 
 ## Self-hosting page
 
@@ -209,8 +228,8 @@ every path gets, the first three setup steps and the sizing table. Every badge c
 | ----------------------------- | --------------------------- | --------------------------------------------------------------------------------------- |
 | One command (recommended)     | available, tested on Ubuntu | Tested end to end on Ubuntu; Debian, Fedora and Amazon Linux are supported but untested |
 | I already run Docker Compose  | available                   | The installer's Compose file and env template                                           |
-| I run Kubernetes              | planned for 1.0             | The Helm chart is a skeleton                                                            |
-| I want managed infrastructure | planned for 1.0             | No Terraform modules yet                                                                |
+| I run Kubernetes              | planned                     | The Helm chart is a skeleton                                                            |
+| I want managed infrastructure | planned                     | No Terraform modules yet                                                                |
 | My servers have no internet   | built, untested offline     | The air-gap bundle is built, not tested offline                                         |
 | I have my own Postgres        | available                   | `--database-url`; Postgres 18, 17 with a warning                                        |
 
@@ -219,33 +238,16 @@ commands that work today get a Copy button. The Compose card links to `deploy/co
 `main`, which resolves once the deploy work is merged. Without JavaScript the chooser stays
 hidden and every card shows.
 
-## Departures from the mock
+## Notes on the build
 
-- Logo: the brand lockup (the placeholder "B" mark) at 28px tall instead of the 2x2 grid; it is
-  2.3px narrower than the mock's tile and text, so the nav links start at 196.8px, not 199.1px.
-- GitHub has no star count. "Live demo", "Try the live demo" and the configuration cards link
-  to the live demo at `/demo`.
-- The headline is "Keep your work in-house." (the owner's wording), not the mock's "Your work.
-  Your platform.", with the owner's subhead. The feature cards and the AI section carry the
-  topic pages' status badges, and the AI points use a neutral arrow, not the shipped check.
-- The product shot under the hero is the live preview (above) of the demo, not the Board mock;
-  its posters are captures of the app, without the mock's AI note.
-- The release pill shows the newest release from the release notes and "Out now: issues,
-  boards, backlog and sprints"; the mock's "v1.2" pill lists features (an importer) that are not
-  released. The transcript pulls that version and installs Postgres 18.
-- The installer host is `get.bemmoly.com`; the AI bullet reads "Bring your own provider, or a
-  local model. Or none." because no file names an AI vendor.
-- The terminal background is the Dark preset's `bg` (#0f1217), not the mock's #0c0f14, and the
-  transcript's success lines use Dark `ok-fg`, not #5fb582: neither literal is a token.
-- Contrast (WCAG AA): footer text uses `tx4` instead of the mock's `tx5` (3.1:1 on white), the
-  terminal's `ubuntu@vm` label uses `tx4`, the "soon" chips use `tx3`, and links inside running
-  text on the text pages are underlined.
-- The product shots are pictures of the mocks, so they show the mocks' own top bar (the designed
-  four-tile mark, "v1.2.0"); recapture them with `pnpm screens` whenever a mock changes.
-- Below 1100px (the mock's minimum width) the layout stacks; at 1280 it matches the mock. The
-  hero takes the full width, so on a phone its text wraps instead of running off the screen.
-- The footer adds a row of links to the topic pages and guides above the mock's row, in the
-  same type, so every page links to them.
+- The self-hosting page and the topic pages keep the first Landing mock's layout until their own
+  redesign (the setup guide is a later build); they already take the product's tokens, dark
+  theme, drawn icons and the review's page-title sizes.
+- Contrast (WCAG AA): every text colour is a product token at 4.5:1 or better; accent text on
+  its own tint steps up to `acc-500` in dark mode, and links inside running text are underlined.
+- On a phone the hero's command wraps instead of scrolling, so Copy stays in reach; the
+  "Share the command to your computer" link uses the Web Share API and becomes "Copy the
+  command" where it is missing.
 - `compressHTML: true`: Astro 7's default drops the space where a source line ends beside a
   link or `<code>` ("go after--domain"); lossless compression keeps the text as written.
 
@@ -277,8 +279,9 @@ host:
 Caching: `/_astro/*` (hashed) is `immutable` for a year; pages and other files revalidate after
 five minutes. Responses are compressed with zstd or gzip. Security headers: HSTS, nosniff,
 `X-Frame-Options: DENY`, a strict referrer and permissions policy, COOP, and a CSP whose only
-script source is the copy button's hash. A test (`test:container`) fails if the hash and the built
-script drift apart; update the hash in `Caddyfile` when the inline script changes.
+inline script source is the theme script's hash. `tests/csp.test.ts` (and `test:container`)
+fail if the hash and the built script drift apart; update the hash in `Caddyfile` when the
+inline script changes.
 
 `Dockerfile.dockerignore` (read by BuildKit only for this Dockerfile) keeps `node_modules` and
 build output out of the context without a root `.dockerignore`.
@@ -303,5 +306,5 @@ build output out of the context without a root `.dockerignore`.
   Coolify, leave the watch paths empty (or add `apps/web/**`, `modules/**` and `packages/**`),
   so a change to the app redeploys the demo. Nothing else changes: same Dockerfile, port and
   domains.
-- **Discord.** `/community#discord` says the invite is not published; add the link there and in
-  `src/lib/links.ts`.
+- **Discord.** There is no invite yet, so the site does not mention it. When one exists, add a
+  section to /community and the link to `FOOTER` in `src/lib/links.ts`.

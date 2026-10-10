@@ -1,44 +1,88 @@
 ---
 /**
- * The Landing mock's closing block: a top border, an optional call to action (the slot) and
- * the footer row. Above the row, in the same type, a line of links to the guides and topic
- * pages (not in the mock: every page links to them). Without a call to action the block
- * gets its 40px back as top padding.
+ * The closing block, from the site review: an optional call to action (the slot, the homepage
+ * only), then the footer in columns (the brand line, Product, Self-host, Open source, Guides)
+ * and a base line with the three promises, the version from the build and the theme control.
+ * The theme control needs the site script, so it stays hidden until that script shows it.
  */
 import { pageAt, TOPICS } from '../../data/pages.ts';
-import { FOOTER } from '../../lib/links.ts';
+import { LATEST } from '../../lib/changelog.ts';
+import { FOOTER_COLUMNS } from '../../lib/links.ts';
+import Icon from './Icon.astro';
+import Logo from './Logo.astro';
 
-const topics = TOPICS.map(pageAt);
-
-interface Props {
-  cta?: boolean;
-}
-
-const { cta = false } = Astro.props;
+const columns = [
+  ...FOOTER_COLUMNS,
+  {
+    title: 'Guides',
+    links: TOPICS.slice(0, 4)
+      .map(pageAt)
+      .map((p) => ({ label: p.name, href: p.path })),
+  },
+];
+const PROMISES = ['MIT licensed', 'Free forever', 'No in-app purchases'];
+const THEMES = [
+  { value: 'system', label: 'System', icon: 'system' },
+  { value: 'light', label: 'Light', icon: 'sun' },
+  { value: 'dark', label: 'Dark', icon: 'moon' },
+] as const;
 ---
 
-<footer class="border-t border-line-2 dark:border-line dark:bg-card">
+<footer class="border-t border-line">
   <slot />
-  <nav
-    aria-label="Guides"
-    class:list={[
-      'mx-auto flex max-w-290 flex-wrap gap-x-6 gap-y-2 px-4 pb-4 text-13 sm:px-6 lg:px-12',
-      { 'pt-10': !cta },
-    ]}
-  >
-    {topics.map((page) => (
-      <a href={page.path} class="text-tx-3 hover:text-tx-2">
-        {page.name}
-      </a>
-    ))}
-  </nav>
-  <div class="mx-auto flex max-w-290 flex-wrap items-center gap-x-6 gap-y-3 px-4 pb-10 text-13 text-tx-3 sm:px-6 lg:px-12">
-    <span class="font-semibold text-tx">Bemmoly</span>
-    {FOOTER.map((link) => (
-      <a href={link.href} class="text-tx-3 hover:text-tx-2">
-        {link.label}
-      </a>
-    ))}
-    <span class="lg:ml-auto">Made by people who've run work tools for too long.</span>
+  <div class="mx-auto grid max-w-300 gap-x-8 gap-y-10 px-4 pt-14 pb-9 sm:px-6 md:grid-cols-[1.5fr_repeat(4,1fr)] lg:px-8">
+    <div class="flex flex-col gap-3">
+      <Logo size={22} />
+      <p class="max-w-65 text-14 leading-brief text-tx-3">
+        Your work. Your platform. Issues and docs for your whole company, on your own server.
+      </p>
+    </div>
+    <div class="grid grid-cols-2 gap-x-8 gap-y-10 sm:grid-cols-4 md:contents">
+      {columns.map((column) => (
+        <nav aria-label={column.title} class="flex flex-col">
+          <h2 class="mb-3 text-13 font-semibold text-tx">{column.title}</h2>
+          {column.links.map((link) => (
+            <a href={link.href} class="py-1 text-14 text-tx-2 hover:text-tx">
+              {link.label}
+            </a>
+          ))}
+        </nav>
+      ))}
+    </div>
+    <div class="col-span-full flex flex-wrap items-center gap-x-6 gap-y-3 border-t border-line-2 pt-6 text-13 text-tx-3">
+      <ul class="flex flex-wrap gap-x-4 gap-y-1">
+        {PROMISES.map((promise) => (
+          <li class="inline-flex items-center gap-1.5">
+            <Icon name="check" size={13} class="text-acc" />
+            {promise}
+          </li>
+        ))}
+      </ul>
+      <span class="inline-flex items-center gap-1.5 md:ml-auto">
+        <Logo variant="mark" size={14} />
+        <span class="font-semibold text-tx-2">Bemmoly</span>
+        <a href="/changelog" class="font-mono text-tx-3 hover:text-tx-2">
+          {LATEST.version}
+        </a>
+      </span>
+      <fieldset data-theme-control hidden class="m-0 inline-flex items-center gap-2 border-0 p-0">
+        <legend class="sr-only">Theme</legend>
+        <span class="inline-flex rounded-card bg-sunken p-0.5 shadow-[inset_0_0_0_1px_var(--line)]">
+          {THEMES.map((theme) => (
+            <label class="relative inline-flex size-8 cursor-pointer items-center justify-center rounded-[6px] text-tx-3 hover:text-tx has-checked:bg-card has-checked:text-tx has-checked:shadow-e1 has-focus-visible:outline-2 has-focus-visible:outline-acc">
+              <input
+                type="radio"
+                name="site-theme"
+                value={theme.value}
+                checked={theme.value === 'system'}
+                class="absolute inset-0 cursor-pointer appearance-none opacity-0"
+              />
+              <Icon name={theme.icon} size={15} label={theme.label} />
+            </label>
+          ))}
+        </span>
+      </fieldset>
+      <span class="w-full md:w-auto">Made by people who’ve run work tools for too long.</span>
+    </div>
   </div>
 </footer>

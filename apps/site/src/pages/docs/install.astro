@@ -5,7 +5,6 @@
  * (deploy/cli/bemmoly). Tech design §18 is the design behind it.
  */
 import CodeBlock from '../../components/site/CodeBlock.astro';
-import CopyScript from '../../components/site/CopyScript.astro';
 import Section from '../../components/site/Section.astro';
 import Transcript from '../../components/site/Transcript.astro';
 import Related from '../../components/topics/Related.astro';
@@ -61,12 +60,12 @@ const COMMANDS = [
 <Page
   page={pageAt('/docs/install')}
   heading="Install Bemmoly on a Linux server"
-  lede="One command on a fresh Linux VM installs Docker, Postgres 18, automatic HTTPS, nightly backups and the in-app updater, then prints the address of your workspace. Plan on about five minutes."
+  lede="One command on a fresh Linux VM installs Docker, Postgres 18, automatic HTTPS, nightly backups and the in-app updater, then prints the address of your workspace."
 >
   <StatusNote>
     The installer pulls the newest stable release, {RELEASE.version} today: the foundation (setup,
-    people and roles, email, backups and updates) and the Work module, with issues, boards, the
-    backlog and sprints.
+    people and roles, email, backups and updates), the Work module, with issues, boards, the backlog
+    and sprints, and the Docs module, with spaces, a live editor, comments and history.
   </StatusNote>
 
   <Section title="1. Get a server" id="requirements">
@@ -151,13 +150,13 @@ const COMMANDS = [
   <Section title="4. Open the address and finish setup" id="first-login">
     <p>
       The first visit runs the setup wizard: the server’s health checks, then the first admin
-      account, then invitations, what AI may do once it arrives in 0.4, and the workspace’s look.
+      account, then invitations, what AI may do once it arrives, and the workspace’s look.
       Everything can be changed later in Settings.{' '}
       <a href="/self-hosting#after-install">After install</a> shows the steps.
     </p>
     <p>
-      Modules start switched off. To track issues, turn on Work in Settings › Modules and choose who
-      can use it: nobody yet, everyone, or specific teams.
+      Modules start switched off. To track issues or write pages, turn on Work or Docs in Settings ›
+      Modules and choose who can use it: nobody yet, everyone, or specific teams.
     </p>
     <p>
       Keep a copy of <code>/var/bemmoly/.env</code> somewhere safe. It holds the key that decrypts
@@ -207,5 +206,4 @@ const COMMANDS = [
   </Section>
 
   <Related current="/docs/install" />
-  <CopyScript />
 </Page>
