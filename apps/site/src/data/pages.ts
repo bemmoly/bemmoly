@@ -128,6 +128,21 @@ export const PAGES = [
 
 export type PagePath = (typeof PAGES)[number]['path'];
 
+/**
+ * The live demo's landing route: not an Astro page but apps/web's demo build, which
+ * scripts/bundle-demo.ts copies into dist/demo with this title, description and share card.
+ * It is the demo's one indexable address (the Caddyfile marks the routes under it noindex),
+ * so it is in the sitemap and llms.txt beside the pages.
+ */
+export const DEMO_PAGE = {
+  path: '/demo',
+  name: 'Live demo',
+  title: 'Live demo: Bemmoly issues, boards and sprints',
+  description:
+    'Click through Bemmoly in your browser: a sprint board, the backlog, issues and the workflow editor, on sample data that resets when you reload.',
+  updated: '2026-10-10',
+} as const satisfies SitePage;
+
 export function pageAt(path: PagePath): SitePage {
   const page = PAGES.find((candidate) => candidate.path === path);
   if (!page) throw new Error(`No page at ${path}`);

@@ -1,7 +1,7 @@
 ---
 import { PROOF_POINTS, RELEASE } from '../../data/landing.ts';
+import { DEMO_URL } from '../../lib/links.ts';
 import Button from '../site/Button.astro';
-import Soon from '../site/Soon.astro';
 import InstallCommand from './InstallCommand.astro';
 ---
 
@@ -23,8 +23,8 @@ import InstallCommand from './InstallCommand.astro';
     <Button variant="primary" href="/self-hosting#recommended">
       Deploy in 5 minutes
     </Button>
-    <Button variant="secondary">
-      Try the live demo <Soon />
+    <Button variant="secondary" href={DEMO_URL}>
+      Try the live demo
     </Button>
   </div>
   <InstallCommand />

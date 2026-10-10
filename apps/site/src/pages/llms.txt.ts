@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
 import { INSTALL, RELEASE } from '../data/landing.ts';
-import { PAGES } from '../data/pages.ts';
+import { DEMO_PAGE, PAGES } from '../data/pages.ts';
 import { WHAT_YOU_GET } from '../data/self-hosting.ts';
 import { UPCOMING } from '../lib/changelog.ts';
 import { CONTRIBUTING_URL, REPO_URL, TECH_DESIGN_URL } from '../lib/links.ts';
@@ -38,7 +38,9 @@ export const GET: APIRoute = ({ site }) => {
     '',
     '## Pages',
     '',
-    ...PAGES.map(({ path, name, description }) => `- [${name}](${url(path)}): ${description}`),
+    ...[...PAGES, DEMO_PAGE].map(
+      ({ path, name, description }) => `- [${name}](${url(path)}): ${description}`,
+    ),
     '',
     '## Optional',
     '',

@@ -36,3 +36,9 @@ export function hrefsOf(page: HtmlElement): string[] {
 export function idsOf(page: HtmlElement): Set<string> {
   return new Set(page.querySelectorAll('[id]').flatMap((element) => element.id ?? []));
 }
+
+/**
+ * A page of the site itself. dist/demo holds the live demo, apps/web's build, which
+ * tests/demo.test.ts checks on its own terms: it is an app, not a page with the site's layout.
+ */
+export const isSitePage = (file: string) => file.endsWith('.html') && !file.startsWith('demo/');

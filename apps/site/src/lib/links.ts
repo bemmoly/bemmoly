@@ -12,6 +12,8 @@ export const ISSUES_URL = `${REPO_URL}/issues`;
 export const TECH_DESIGN_URL = `${REPO_URL}/blob/main/docs/tech-design.html`;
 export const RELEASES_URL = `${REPO_URL}/releases/latest`;
 export const COMPOSE_URL = `${REPO_URL}/tree/main/deploy/compose`;
+/** The live demo: apps/web's demo build, served by this site (scripts/bundle-demo.ts). */
+export const DEMO_URL = '/demo';
 
 export interface NavLink {
   label: string;

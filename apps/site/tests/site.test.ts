@@ -5,16 +5,14 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { CRAWLERS } from '../src/data/crawlers.ts';
-import { PAGES } from '../src/data/pages.ts';
+import { DEMO_PAGE, PAGES } from '../src/data/pages.ts';
 import { INDEXNOW_KEY } from '../src/lib/indexnow.ts';
 import { REPO_URL } from '../src/lib/links.ts';
-import { hrefsOf, idsOf, parsePage, scriptsOf } from './dom.ts';
+import { hrefsOf, idsOf, isSitePage, parsePage, scriptsOf } from './dom.ts';
 import { startPreview, type Preview } from './serve.ts';
 
 const dist = new URL('../dist/', import.meta.url);
-const pages = readdirSync(dist, { recursive: true, encoding: 'utf8' }).filter((file) =>
-  file.endsWith('.html'),
-);
+const pages = readdirSync(dist, { recursive: true, encoding: 'utf8' }).filter(isSitePage);
 const html = (page: string) => readFileSync(new URL(page, dist), 'utf8');
 
 const hrefs = (source: string) => hrefsOf(parsePage(source));
@@ -126,19 +124,19 @@ describe('indexing', () => {
 
   it('lists every page in the sitemap with the day its words changed, and not the 404 page', () => {
     const sitemap = readFileSync(new URL('sitemap-0.xml', dist), 'utf8');
-    for (const { path, updated } of PAGES) {
+    for (const { path, updated } of [...PAGES, DEMO_PAGE]) {
       expect(sitemap).toContain(
         `<url><loc>https://bemmoly.com${path}</loc><lastmod>${updated}T00:00:00.000Z</lastmod></url>`,
       );
     }
-    expect(sitemap.match(/<url>/g)).toHaveLength(PAGES.length);
+    expect(sitemap.match(/<url>/g)).toHaveLength(PAGES.length + 1);
     expect(sitemap).not.toContain('/404');
   });
 
   it('serves llms.txt in the llmstxt.org shape with every page', () => {
     const llms = readFileSync(new URL('llms.txt', dist), 'utf8');
     expect(llms.startsWith('# Bemmoly\n\n> ')).toBe(true);
-    for (const { path, name } of PAGES) {
+    for (const { path, name } of [...PAGES, DEMO_PAGE]) {
       expect(llms).toContain(`- [${name}](https://bemmoly.com${path})`);
     }
   });

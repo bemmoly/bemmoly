@@ -41,8 +41,16 @@
       "outputs": ["dist-demo/**"]
     },
     "@bemmoly/site#build": {
-      "dependsOn": [],
-      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/SECURITY.md"],
+      "dependsOn": ["@bemmoly/web#build:demo"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/SECURITY.md",
+        "$TURBO_ROOT$/apps/*/CHANGELOG.md",
+        "$TURBO_ROOT$/packages/*/CHANGELOG.md",
+        "$TURBO_ROOT$/modules/*/CHANGELOG.md",
+        "$TURBO_ROOT$/deploy/CHANGELOG.md",
+        "$TURBO_ROOT$/deploy/updater/CHANGELOG.md"
+      ],
       "outputs": ["dist/**"]
     },
     "typecheck": {
