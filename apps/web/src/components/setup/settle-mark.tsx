@@ -36,7 +36,12 @@ export function SettleMark({ size = 56 }: { size?: number }) {
         { duration: 420, delay: 80 + index * 70, easing: 'cubic-bezier(.2,.8,.2,1)', fill: 'both' },
       );
     });
-    return () => animations.forEach((animation) => animation.cancel());
+    return () =>
+      animations.forEach((animation) => {
+        // Cancelling rejects `finished`; nothing waits on it, so the rejection is expected.
+        animation.finished.catch(() => undefined);
+        animation.cancel();
+      });
   }, [size]);
   return (
     <span ref={ref} className="inline-flex [&_path]:[transform-box:fill-box] [&_path]:[transform-origin:center]">

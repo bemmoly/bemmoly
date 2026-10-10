@@ -7,7 +7,7 @@ import { draftOf, useSetupStore, type SetupDraft } from '../store/setup.ts';
 import { BUNDLED_CATALOG, providerFor } from './use-ai-catalog.ts';
 import { aiSummary, providerIdOf } from './use-ai-settings.ts';
 import { useModule } from './use-modules.ts';
-import { meQuery } from './use-session.ts';
+import { meQuery, setupStatusQuery } from './use-session.ts';
 import { settingsQuery } from './use-setting.ts';
 import { themeSummary } from './use-setup-appearance.ts';
 import { importSummary } from './use-setup-import.ts';
@@ -106,15 +106,22 @@ export function summaryRows(input: {
 }
 
 /**
- * Writes setup.completedAt. The router guard reads it from the setup status,
- * so that entry is dropped to make the next navigation read the new value.
+ * Writes setup.completedAt. The router guard reads it from the setup status, so the cached
+ * status takes the new value in place: dropping it would send the wizard back to loading and
+ * remount the summary, which would finish setup a second time.
  */
 export function useCompleteSetup() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: () => api.settings.put('setup.completedAt', new Date().toISOString()),
-    onSuccess: async () => {
-      queryClient.removeQueries({ queryKey: queryKeys.setupStatus() });
+    mutationFn: async () => {
+      const completedAt = new Date().toISOString();
+      await api.settings.put('setup.completedAt', completedAt);
+      return completedAt;
+    },
+    onSuccess: async (completedAt) => {
+      queryClient.setQueryData(setupStatusQuery.queryKey, (status) =>
+        status ? { ...status, completedAt } : status,
+      );
       await queryClient.invalidateQueries({ queryKey: queryKeys.settings.all() });
     },
   });
