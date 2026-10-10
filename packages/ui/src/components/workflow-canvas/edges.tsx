@@ -2,7 +2,7 @@ import type { HTMLAttributes, ReactNode } from 'react';
 import { Icon } from '../../icons/icon.tsx';
 import { cx } from '../../lib/cx.ts';
 import { focusRing } from '../../lib/focus.ts';
-import { StatusDot } from './status-node.tsx';
+import { StatusGlyph } from '../glyphs/status-glyph.tsx';
 
 export interface TransitionEdgeProps {
   /** The SVG path in canvas units (the mock's 1000 x 560 box). */
@@ -112,15 +112,15 @@ export function WorkflowLegend({ className }: { className?: string }) {
         any status
       </span>
       <span className="flex items-center gap-1.5">
-        <StatusDot category="todo" />
+        <StatusGlyph stage="todo" size={12} decorative />
         To do
       </span>
       <span className="flex items-center gap-1.5">
-        <StatusDot category="progress" />
+        <StatusGlyph stage="progress" size={12} decorative />
         In progress
       </span>
       <span className="flex items-center gap-1.5">
-        <StatusDot category="done" />
+        <StatusGlyph stage="done" size={12} decorative />
         Done
       </span>
     </div>

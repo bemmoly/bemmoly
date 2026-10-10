@@ -1,6 +1,7 @@
 import type { ButtonHTMLAttributes, HTMLAttributes, ReactNode } from 'react';
 import { cx } from '../../lib/cx.ts';
 import { focusRing } from '../../lib/focus.ts';
+import { StatusGlyph, statusStage } from '../glyphs/status-glyph.tsx';
 
 /** The three categories the workflow canvas colours by: tx5, the accent and ok. */
 export type WorkflowCategory = 'todo' | 'progress' | 'done';
@@ -40,6 +41,7 @@ export function StatusDot({ category, colorClassName, size = 9, className }: Sta
 export interface StatusNodeProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'name'> {
   name: ReactNode;
   category: WorkflowCategory;
+  /** Ignored on nodes: the glyph is coloured by category only, so any workflow reads alike. */
   colorClassName?: string;
   /** Issues in this status now; the line shows the category alone while it is unknown. */
   count?: number;
@@ -59,7 +61,7 @@ export interface StatusNodeProps extends Omit<ButtonHTMLAttributes<HTMLButtonEle
 export function StatusNode({
   name,
   category,
-  colorClassName,
+  colorClassName: _ownColor,
   count,
   selected = false,
   invalid = false,
@@ -77,19 +79,26 @@ export function StatusNode({
       aria-invalid={invalid || undefined}
       style={{ left: x, top: y, ...style }}
       className={cx(
-        'absolute flex w-37.5 -translate-1/2 cursor-pointer flex-col gap-1 rounded-card border-[1.5px] bg-sf px-3 py-2.5 text-left font-sans text-tx',
+        'absolute flex w-37.5 -translate-1/2 cursor-pointer flex-col gap-1 rounded-lg border bg-card px-3 py-2.5 text-left font-sans text-tx',
         selected ? 'shadow-ring-node' : 'shadow-card',
-        invalid ? 'border-danger' : selected ? 'border-ac' : 'border-br3',
+        invalid ? 'border-danger' : selected ? 'border-ac' : 'border-line',
         focusRing,
         className,
       )}
       {...rest}
     >
       <span className="flex items-center gap-1.75">
-        <StatusDot category={category} colorClassName={colorClassName} />
-        <span className="text-12h font-semibold">{name}</span>
+        <StatusGlyph
+          stage={statusStage(
+            category === 'progress' ? 'in_progress' : category,
+            typeof name === 'string' ? name : '',
+          )}
+          size={13}
+          decorative
+        />
+        <span className="text-13 font-semibold">{name}</span>
       </span>
-      <span className="text-11 text-tx5">
+      <span className="text-11 text-tx-3">
         {WORKFLOW_CATEGORY[category].name}
         {count === undefined ? '' : ` · ${count} ${count === 1 ? 'issue' : 'issues'}`}
       </span>

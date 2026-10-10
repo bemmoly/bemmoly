@@ -7,9 +7,22 @@ import type { StatusInfo } from '../model/columns.ts';
  * A workflow status as the review draws it everywhere: the circle that fills as work moves
  * right, coloured by its category only, so a custom colour never breaks the reading.
  */
-export function StatusDot({ status, size = 12 }: { status: StatusInfo; size?: number }) {
+export function StatusDot({
+  status,
+  size = 12,
+  decorative = true,
+}: {
+  status: StatusInfo;
+  size?: number;
+  decorative?: boolean;
+}) {
   return (
-    <StatusGlyph stage={statusStage(status.category, status.name)} label={status.name} size={size} />
+    <StatusGlyph
+      stage={statusStage(status.category, status.name)}
+      label={status.name}
+      size={size}
+      decorative={decorative}
+    />
   );
 }
 

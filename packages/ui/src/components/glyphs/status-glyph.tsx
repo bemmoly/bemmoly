@@ -36,13 +36,21 @@ export interface StatusGlyphProps {
   label?: string;
   size?: number;
   className?: string;
+  /** Beside the status's visible name: hidden from assistive tech so the name is read once. */
+  decorative?: boolean;
 }
 
 /**
  * A status as a circle that fills as work moves right, coloured by its category only (grey,
  * blue, green), so any custom workflow reads correctly (docs/design/premium/kit.js, `stc`).
  */
-export function StatusGlyph({ stage, label, size = 14, className }: StatusGlyphProps) {
+export function StatusGlyph({
+  stage,
+  label,
+  size = 14,
+  className,
+  decorative = false,
+}: StatusGlyphProps) {
   const { fill, tone, label: stageLabel } = STAGES[stage];
   const color = `var(--${tone})`;
   const name = label ?? stageLabel;
@@ -97,14 +105,13 @@ export function StatusGlyph({ stage, label, size = 14, className }: StatusGlyphP
   }
   return (
     <svg
-      role="img"
-      aria-label={name}
+      {...(decorative ? { 'aria-hidden': true } : { role: 'img', 'aria-label': name })}
       width={size}
       height={size}
       viewBox="0 0 14 14"
       className={cx('inline-block shrink-0', className)}
     >
-      <title>{name}</title>
+      {!decorative && <title>{name}</title>}
       {body}
     </svg>
   );
