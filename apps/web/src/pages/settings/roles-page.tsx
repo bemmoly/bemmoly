@@ -12,7 +12,7 @@ export function RolesPage() {
   const locked = matrix.canManage ? undefined : NO_PEOPLE_ACCESS;
   return (
     <SettingsPage
-      title="Roles and permissions"
+      title="Roles"
       description="Org roles set the ceiling. Project admins can grant less than this to their members, never more. Rows you lock can't be changed at project level."
       loading={matrix.query.isPending}
       error={matrix.query.error}

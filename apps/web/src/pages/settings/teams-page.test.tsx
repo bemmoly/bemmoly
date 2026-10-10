@@ -12,8 +12,17 @@ describe('TeamsPage', () => {
     const headings = within(table)
       .getAllByRole('columnheader')
       .map((cell) => cell.textContent);
-    expect(headings).toEqual(['Team', 'Lead', 'Members', 'Module access', 'Default role', 'Actions']);
-    const mobile = (await within(table).findByText('Mobile')).closest('[role="row"]') as HTMLElement;
+    expect(headings).toEqual([
+      'Team',
+      'Lead',
+      'Members',
+      'Module access',
+      'Default role',
+      'Actions',
+    ]);
+    const mobile = (await within(table).findByText('Mobile')).closest(
+      '[role="row"]',
+    ) as HTMLElement;
     expect(within(mobile).getByText('Jonas M.')).toBeTruthy();
     expect(within(mobile).getByText('6')).toBeTruthy();
   });

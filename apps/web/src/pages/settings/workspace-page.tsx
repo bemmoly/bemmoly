@@ -23,7 +23,7 @@ export function WorkspacePage() {
   const reading = edits.mode('workspace') === 'read';
   return (
     <SettingsPage
-      title="Workspace details"
+      title="General"
       description="The name and address everyone sees, and the defaults for dates and times."
       loading={settings.isPending}
       error={settings.error}

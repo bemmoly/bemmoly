@@ -59,7 +59,7 @@ const POLICIES = [
 
 export function AuthenticationPage() {
   return (
-    <SettingsPage title="Authentication" description="How people sign in to this workspace.">
+    <SettingsPage title="Sign-in and SSO" description="How people sign in to this workspace.">
       <div className="-mt-2 flex flex-col gap-5">
         <div className="grid grid-cols-2 gap-3">
           {METHODS.map((method) => (
