@@ -1,5 +1,6 @@
 import { queryKeys } from '@bemmoly/api-client';
-import type { AiAnswerEvent, AiRole } from '@bemmoly/shared';
+import type { AiRole } from '@bemmoly/shared';
+import type { AiAnswerEvent } from '@bemmoly/shared/ai-answers';
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import { describe, expect, it } from 'vitest';

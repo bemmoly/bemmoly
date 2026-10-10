@@ -1,4 +1,5 @@
-import { aiAnswerEventSchema, isBemmolyError } from '@bemmoly/shared';
+import { isBemmolyError } from '@bemmoly/shared';
+import { aiAnswerEventSchema } from '@bemmoly/shared/ai-answers';
 import Fastify, { type FastifyInstance } from 'fastify';
 import { afterEach, describe, expect, it } from 'vitest';
 import { loadModules } from '../modules/loader.ts';

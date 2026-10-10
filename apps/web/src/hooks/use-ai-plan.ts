@@ -62,7 +62,7 @@ export function useAiPlan() {
     },
   });
   const notUseful = useMutation({
-    mutationFn: (runId: string) => api.ai.answers.feedback(runId, 'not_useful'),
+    mutationFn: (runId: string) => api.ai.runs.feedback(runId, 'not_useful'),
     onSuccess: () => toast('Thanks. That helps tune Bemmoly’s plans.', 'info'),
   });
 

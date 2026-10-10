@@ -1,10 +1,5 @@
-import {
-  aiAnswerRequestSchema,
-  aiRunFeedbackBodySchema,
-  citedIds,
-  type AiAnswerEvent,
-  type AiRole,
-} from '@bemmoly/shared';
+import { aiRunFeedbackBodySchema, type AiRole } from '@bemmoly/shared';
+import { aiAnswerRequestSchema, citedIds, type AiAnswerEvent } from '@bemmoly/shared/ai-answers';
 import { currentUser, type MockDb } from '../db.ts';
 import { cannedAnswer } from '../seed/ai-answers.ts';
 import { fail, ok, type MockResponse, type MockRoute } from '../types.ts';

@@ -1,4 +1,4 @@
-import type { AiAnswerSource } from '@bemmoly/shared';
+import type { AiAnswerSource } from '@bemmoly/shared/ai-answers';
 import { uid } from './time.ts';
 import { issueId } from './work-issues.ts';
 

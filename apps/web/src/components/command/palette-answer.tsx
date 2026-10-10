@@ -1,5 +1,6 @@
-import { describeSources, readAnswer } from '@bemmoly/shared';
-import { AiAnswer, AiNotUseful, CommandAiNotice } from '@bemmoly/ui';
+import { describeSources, readAnswer } from '@bemmoly/shared/ai-answers';
+import { AiNotUseful, CommandAiNotice } from '@bemmoly/ui';
+import { AiAnswer } from '@bemmoly/ui/ai-answer';
 import type { MouseEvent } from 'react';
 import type { AiAnswerState } from '../../hooks/use-ai-answer.ts';
 

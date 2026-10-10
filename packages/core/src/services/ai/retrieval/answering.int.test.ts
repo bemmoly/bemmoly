@@ -1,4 +1,4 @@
-import type { AiAnswerEvent } from '@bemmoly/shared';
+import type { AiAnswerEvent } from '@bemmoly/shared/ai-answers';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { startTestDatabase, type TestDatabase } from '../../../testing/postgres.ts';
 import { embeddingInput } from './chunks.ts';

@@ -1,7 +1,7 @@
 import { render, screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { expectAccessible } from '../testing/a11y.ts';
-import { AiAnswer, type AiAnswerBlock, type AiAnswerSourceItem } from './ai-surface/index.ts';
+import { AiAnswer, type AiAnswerBlock, type AiAnswerSourceItem } from './ai-surface/ai-answer.tsx';
 
 const sources: AiAnswerSourceItem[] = [
   { id: 'c1', title: 'RFC: Move sessions', label: 'Rollback', href: '/docs/p/1#rollback' },

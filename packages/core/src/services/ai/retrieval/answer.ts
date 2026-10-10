@@ -1,10 +1,10 @@
+import { BemmolyError } from '@bemmoly/shared';
 import {
-  BemmolyError,
   citedIds,
   type AiAnswerEvent,
   type AiAnswerRequest,
   type AiAnswerSource,
-} from '@bemmoly/shared';
+} from '@bemmoly/shared/ai-answers';
 import type { AiStreamResult } from '../../../contracts/ai.ts';
 import type { RequestContext } from '../../authz/index.ts';
 import type { RetrievalDependencies } from './deps.ts';

@@ -1,5 +1,6 @@
 import { isApiError, queryKeys } from '@bemmoly/api-client';
-import type { AiAnswerSource, AiProviderErrorDetails } from '@bemmoly/shared';
+import type { AiProviderErrorDetails } from '@bemmoly/shared';
+import type { AiAnswerSource } from '@bemmoly/shared/ai-answers';
 import { useQuery } from '@tanstack/react-query';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { api } from '../shared/api.ts';
@@ -122,7 +123,7 @@ export function useAskDocs() {
   const rateNotUseful = useCallback(() => {
     if (state.phase !== 'answered' || !state.runId) return;
     setNotUseful(true);
-    api.ai.answers.feedback(state.runId, 'not_useful').catch(() => setNotUseful(false));
+    api.ai.runs.feedback(state.runId, 'not_useful').catch(() => setNotUseful(false));
   }, [state]);
 
   return { state, ask, reset, notUseful, rateNotUseful };

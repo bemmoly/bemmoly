@@ -9,6 +9,7 @@
     "./tokens": "./src/tokens.ts",
     "./theme": "./src/theme/index.ts",
     "./icons": "./src/icons/index.ts",
+    "./ai-answer": "./src/components/ai-surface/ai-answer.tsx",
     "./time": "./src/lib/time.ts",
     "./theme.css": "./src/theme.css",
     "./tailwind.css": "./src/tailwind.css",

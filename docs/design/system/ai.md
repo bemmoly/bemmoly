@@ -28,7 +28,8 @@ AI is optional, honest and visibly AI. Lilac marks it, and nothing appears while
 3. **Use the AI components.** From `@bemmoly/ui` · Story: Components/AI surfaces
    ([`ai-surface.stories.tsx`](../../../packages/ui/src/components/ai-surface/ai-surface.stories.tsx)):
    `AiSummary` (a TL;DR card), `AiInsightBar`, `AiBrief`, `AiSuggestion` (a proposed change with
-   Apply), `AiAnswer` (a cited answer), `AiActionButton`, `AiAskButton` (Ask AI, with its shortcut), `AiDot`, `AiNotUseful`,
+   Apply), `AiAnswer` (a cited answer, from
+   `@bemmoly/ui/ai-answer` so the shell's first load does not carry it), `AiActionButton`, `AiAskButton` (Ask AI, with its shortcut), `AiDot`, `AiNotUseful`,
    and `AiInsightBody` (what goes inside a card: cited claims, the skeleton, the failed state).
    Toasts about AI output use `tone="ai"`. Inside `packages/ui`, the AI tokens are allowed only in
    `ai-surface/`, `command-palette/` and `toast/` (`rules.test.ts` fails anything else).

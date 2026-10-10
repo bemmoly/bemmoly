@@ -1,8 +1,11 @@
-import type { AiAnswerOutcome, AiAnswerSource } from '@bemmoly/shared';
+import type { AiAnswerOutcome, AiAnswerSource } from '@bemmoly/shared/ai-answers';
 import { useEffect, useRef, useState } from 'react';
 import { aiProblemOf, type AiProblem } from '../lib/ai-problem.ts';
+import { aiAnswerEndpoints } from '@bemmoly/api-client/ai-answers';
 import { api } from '../lib/api.ts';
 import { toast } from '../lib/toast.ts';
+
+const answers = aiAnswerEndpoints(api.http).answers;
 
 export interface AiAnswerState {
   question: string;
@@ -47,7 +50,7 @@ export function useAiAnswer() {
     };
     put({});
     try {
-      for await (const event of api.ai.answers.stream({ question }, controller.signal)) {
+      for await (const event of answers.stream({ question }, controller.signal)) {
         if (event.type === 'sources') put({ sources: event.sources });
         else if (event.type === 'delta') put({ text: next.text + event.text });
         else if (event.type === 'done') {
@@ -74,7 +77,7 @@ export function useAiAnswer() {
     ask: (question: string) => void ask(question),
     notUseful: () => {
       if (!state?.runId) return;
-      void api.ai.answers.feedback(state.runId, 'not_useful').then(() => {
+      void api.ai.runs.feedback(state.runId, 'not_useful').then(() => {
         toast('Thanks. That helps tune Bemmoly’s answers.', 'info');
       });
     },

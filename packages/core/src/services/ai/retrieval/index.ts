@@ -1,4 +1,4 @@
-import type { AiAnswerRequest } from '@bemmoly/shared';
+import type { AiAnswerRequest } from '@bemmoly/shared/ai-answers';
 import type { DomainEvent } from '../../../contracts/event-bus.ts';
 import type { RealtimeMessage } from '../../../contracts/realtime.ts';
 import type { RequestContext } from '../../authz/index.ts';

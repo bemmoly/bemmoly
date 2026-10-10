@@ -1,5 +1,6 @@
 import { Readable } from 'node:stream';
-import { AI_ANSWER_CONTENT_TYPE, aiAnswerRequestSchema, parseOrThrow } from '@bemmoly/shared';
+import { parseOrThrow } from '@bemmoly/shared';
+import { AI_ANSWER_CONTENT_TYPE, aiAnswerRequestSchema } from '@bemmoly/shared/ai-answers';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import type { RetrievalService } from '../services/ai/index.ts';
 import { contextOf } from './request-context.ts';

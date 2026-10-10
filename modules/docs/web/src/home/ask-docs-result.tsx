@@ -1,5 +1,11 @@
-import { citedIds, describeSources, readAnswer, type AiAnswerSource } from '@bemmoly/shared';
-import { AiActionButton, AiAnswer, AiNotUseful, Button, Kbd, SkeletonText } from '@bemmoly/ui';
+import {
+  citedIds,
+  describeSources,
+  readAnswer,
+  type AiAnswerSource,
+} from '@bemmoly/shared/ai-answers';
+import { AiActionButton, AiNotUseful, Button, Kbd, SkeletonText } from '@bemmoly/ui';
+import { AiAnswer } from '@bemmoly/ui/ai-answer';
 import { Icon } from '@bemmoly/ui/icons';
 import type { AskFailure, AskState } from '../hooks/use-ask-docs.ts';
 

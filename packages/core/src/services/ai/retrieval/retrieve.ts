@@ -1,4 +1,5 @@
-import { ForbiddenError, type AiAnswerSource } from '@bemmoly/shared';
+import { ForbiddenError } from '@bemmoly/shared';
+import { type AiAnswerSource } from '@bemmoly/shared/ai-answers';
 import type { AiPolicy } from '../../../contracts/ai.ts';
 import type { RequestContext } from '../../authz/index.ts';
 import {

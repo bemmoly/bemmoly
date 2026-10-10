@@ -1,7 +1,10 @@
 import { http as route, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
+import { aiAnswerEndpoints } from './endpoints/ai-answers.ts';
 import { createApiClient, isApiError } from './index.ts';
+
+const answersApi = () => aiAnswerEndpoints(createApiClient({ fetch: absolute }).http).answers;
 
 const BASE = 'http://bemmoly.test';
 const server = setupServer();
@@ -35,9 +38,8 @@ describe('answers', () => {
         ]),
       ),
     );
-    const api = createApiClient({ fetch: absolute });
     const seen: string[] = [];
-    for await (const event of api.ai.answers.stream({ question: 'How?' })) seen.push(event.type);
+    for await (const event of answersApi().stream({ question: 'How?' })) seen.push(event.type);
     expect(seen).toEqual(['sources', 'delta', 'done']);
   });
 
@@ -55,15 +57,13 @@ describe('answers', () => {
         ),
       ),
     );
-    const api = createApiClient({ fetch: absolute });
-    const stream = api.ai.answers.stream({ question: 'How?' });
+    const stream = answersApi().stream({ question: 'How?' });
     const error = await stream.next().catch((caught: unknown) => caught);
     expect(isApiError(error) && error.details).toEqual({ reason: 'ai_off' });
   });
 
   it('refuses an empty question without calling the server', async () => {
-    const api = createApiClient({ fetch: absolute });
-    await expect(api.ai.answers.stream({ question: '  ' }).next()).rejects.toMatchObject({
+    await expect(answersApi().stream({ question: '  ' }).next()).rejects.toMatchObject({
       code: 'validation_failed',
     });
   });
@@ -76,7 +76,7 @@ describe('answers', () => {
         return new HttpResponse(null, { status: 204 });
       }),
     );
-    await createApiClient({ fetch: absolute }).ai.answers.feedback('r1', 'not_useful');
+    await createApiClient({ fetch: absolute }).ai.runs.feedback('r1', 'not_useful');
     expect(body).toEqual({ feedback: 'not_useful' });
   });
 });

@@ -1,4 +1,4 @@
-import { aiAnswerEventSchema, readAnswer, type AiAnswerEvent } from '@bemmoly/shared';
+import { aiAnswerEventSchema, readAnswer, type AiAnswerEvent } from '@bemmoly/shared/ai-answers';
 import { describe, expect, it } from 'vitest';
 import { createMockApi } from '../dispatch.ts';
 import { aiOf } from './ai-state.ts';
