@@ -27,11 +27,12 @@ async function anyUserExists(db: Database): Promise<boolean> {
 export async function getSetupStatus(
   deps: Pick<IdentityDependencies, 'db' | 'settings'>,
 ): Promise<SetupStatusResponse> {
-  const [initialized, completedAt] = await Promise.all([
+  const [initialized, completedAt, workspaceName] = await Promise.all([
     anyUserExists(deps.db),
     deps.settings.get('setup.completedAt'),
+    deps.settings.get('workspace.name'),
   ]);
-  return { initialized, completedAt };
+  return { initialized, completedAt, workspaceName: initialized ? workspaceName || null : null };
 }
 
 /** True until the first admin exists; the wizard's health checks are anonymous until then. */
