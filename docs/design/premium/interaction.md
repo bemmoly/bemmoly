@@ -61,3 +61,4 @@ that passes (ADR 0015).
 - [Dialogs](interaction/dialogs.md): the modal, Create issue, sprint, saved filter, link, project dialogs.
 - [Setup wizard](interaction/setup.md)
 - [Issue page](interaction/issue.md)
+- [Board and Backlog](interaction/board-backlog.md)
