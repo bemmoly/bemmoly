@@ -9,6 +9,7 @@ import { createDocEditor } from './create-doc-editor.ts';
 import type { DocEditorProps } from './doc-editor-props.ts';
 import { NodeViewPortals } from './node-view-portals.tsx';
 import { PortalStore } from './portals.ts';
+import { BlockHandle } from './block-handle.tsx';
 import { BubbleMenu } from './bubble-menu.tsx';
 import { TableTools } from './table-tools.tsx';
 
@@ -94,6 +95,7 @@ export default function DocEditor(props: DocEditorProps) {
         <SuggestionList store={store} listId={listId} page />
         <NodeViewPortals store={portals} />
         <TableTools editor={editor} host={frame} />
+        <BlockHandle editor={editor} frame={frame} />
         <BubbleMenu editor={editor} services={services} linking={linking} setLinking={setLinking} />
       </div>
     </DocServicesContext.Provider>
