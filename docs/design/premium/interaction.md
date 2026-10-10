@@ -63,3 +63,4 @@ that passes (ADR 0015).
 - [Issue page](interaction/issue.md)
 - [Board and Backlog](interaction/board-backlog.md)
 - [Projects and project settings](interaction/projects-settings.md)
+- [Shell](interaction/shell.md): the frame, sidebar and rail, header, global keys, palette, Home, Inbox, sign-in, boot, not found.
