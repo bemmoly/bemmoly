@@ -67,7 +67,7 @@ export function TableHeading({
           name={active && sort.direction === 'desc' ? 'arrow-down' : 'arrow-up'}
           size={12}
           className={cx(
-            'transition-opacity duration-base',
+            'motion-safe:transition-opacity motion-safe:duration-base',
             active
               ? 'opacity-100'
               : 'opacity-0 group-hover:opacity-60 group-focus-visible:opacity-60',
