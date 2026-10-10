@@ -67,11 +67,15 @@ test('a space is created, a page made from a template, reordered, starred, trash
   // Blank page makes a page in place; a template from inside the empty page fills it.
   await page.getByRole('button', { name: /^Blank page/ }).click();
   await expect(page).toHaveURL(/\/docs\/p\/[0-9a-f-]{36}$/);
+  const blankUrl = page.url();
   await page
     .getByRole('region', { name: 'Start from a template' })
     .getByRole('button', { name: /^Runbook/ })
     .click();
   await expect(page.getByRole('textbox', { name: 'Page title' })).toHaveValue('Runbook');
+  // The template fills the same page: nothing new is made and nothing is thrown away.
+  expect(page.url()).toBe(blankUrl);
+  await expect(page.getByRole('region', { name: 'Start from a template' })).toHaveCount(0);
   await expect(page.getByRole('treeitem', { name: 'Runbook' })).toHaveAttribute(
     'aria-current',
     'page',
@@ -119,6 +123,7 @@ test('a space is created, a page made from a template, reordered, starred, trash
     .getByRole('row')
     .filter({ has: page.getByRole('cell', { name: 'Runbook', exact: true }) });
   await expect(trashed).toHaveCount(1);
+  await expect(page.getByRole('table').getByRole('cell', { name: 'Untitled' })).toHaveCount(0);
   await trashed.getByRole('button', { name: 'Restore' }).click();
   await expect(page.getByText(/^“Runbook” restored/)).toBeVisible();
   await expect(trashed).toHaveCount(0);

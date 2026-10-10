@@ -56,7 +56,7 @@ export function EmptyPageTemplates() {
   const fresh = useFreshPages((state) => state.ids.has(page.id));
   const empty = useBodyEmpty(editor);
   const templates = useTemplates(page.spaceId);
-  const apply = useApplyTemplate(page);
+  const apply = useApplyTemplate(page, editor);
   const space = useSpace(page.spaceKey).data;
   const [importing, setImporting] = useState(false);
   const grid = useRef<HTMLDivElement>(null);
@@ -98,7 +98,9 @@ export function EmptyPageTemplates() {
               <TemplateTile
                 key={template.id}
                 template={template}
-                onUse={() => apply.mutate(template.id)}
+                onUse={() => {
+                  if (!apply.isPending) apply.mutate(template.id);
+                }}
               />
             ))}
         {space && (

@@ -9,6 +9,22 @@ import { docsState, live, presentSummary, spaceByRef } from './docs-state.ts';
 
 const BASE = '/api/v1/docs';
 
+const text = (value: string) => [{ type: 'text', text: value }];
+
+/** A built-in template's body on the in-memory backend: its purpose, then sections to fill. */
+function templateBody(description: string) {
+  return {
+    type: 'doc',
+    content: [
+      { type: 'paragraph', content: text(description) },
+      { type: 'heading', attrs: { level: 2 }, content: text('Context') },
+      { type: 'paragraph' },
+      { type: 'heading', attrs: { level: 2 }, content: text('Details') },
+      { type: 'paragraph' },
+    ],
+  };
+}
+
 const newestFirst = (a: { updatedAt: string }, b: { updatedAt: string }) =>
   b.updatedAt.localeCompare(a.updatedAt);
 
@@ -87,6 +103,17 @@ export const docsLibraryRoutes: MockRoute[] = [
     method: 'GET',
     pattern: `${BASE}/templates`,
     handle: (_request, db) => ok({ items: docsState(db).templates }),
+  },
+  {
+    method: 'GET',
+    pattern: `${BASE}/templates/:templateId`,
+    handle: (request, db) => {
+      const template = docsState(db).templates.find(
+        (item) => item.id === request.params['templateId'],
+      );
+      if (!template) return notFound('The template');
+      return ok({ ...template, snapshot: templateBody(template.description ?? '') });
+    },
   },
   {
     method: 'GET',

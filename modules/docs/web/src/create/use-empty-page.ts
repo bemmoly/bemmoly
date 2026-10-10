@@ -3,9 +3,9 @@ import { useToast } from '@bemmoly/ui';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useRef, useState } from 'react';
 import type { PageEditor } from '../page/screen-context.ts';
+import { useUpdatePage } from '../page/use-page-actions.ts';
 import { api } from '../shared/api.ts';
 import { docsKeys } from '../shared/keys.ts';
-import { docsPaths, replaceWith } from '../shared/navigation.ts';
 import { useFreshPages } from './fresh-pages.ts';
 
 /** True while the live body has no text, following every edit. */
@@ -64,27 +64,22 @@ export function useDropAbandoned(page: PageDetail, fresh: boolean, empty: boolea
   );
 }
 
-/** Swaps the blank page for one made from the template, in the same place and title. */
-export function useApplyTemplate(page: PageDetail) {
-  const queryClient = useQueryClient();
+/**
+ * Fills the blank page with the template's document, in place: the same page, the same
+ * place and any title already typed (the template's name otherwise). Nothing is created or
+ * thrown away, so no "Untitled" is left in the trash and Back goes where it went before.
+ * The body changes through the live editor, so others see it at once and ⌘Z takes it back.
+ */
+export function useApplyTemplate(page: PageDetail, editor: PageEditor | null) {
+  const update = useUpdatePage(page.id);
   const toast = useToast();
   return useMutation({
-    mutationFn: async (templateId: string) => {
-      const title = page.title.trim();
-      return api.docs.templates.createPage(templateId, {
-        spaceId: page.spaceId,
-        parentId: page.parentId,
-        ...(title ? { title } : {}),
-      });
-    },
-    // The blank page goes once the new one is on screen; removing it first would pull the
-    // open editor out from under the person.
-    onSuccess: async (made) => {
+    mutationFn: (templateId: string) => api.docs.templates.get(templateId),
+    onSuccess: (template) => {
+      if (!editor || editor.isDestroyed) return;
       useFreshPages.getState().remove(page.id);
-      queryClient.setQueryData(docsKeys.page(made.id), made);
-      replaceWith(docsPaths.page(made.id));
-      await api.docs.pages.remove(page.id).catch(() => undefined);
-      void queryClient.invalidateQueries({ queryKey: docsKeys.all() });
+      editor.chain().setContent(template.snapshot).focus('start').run();
+      if (!page.title.trim()) update.mutate({ title: template.name });
     },
     onError: (error) =>
       toast.show({ tone: 'danger', title: 'The template was not applied', body: error.message }),
