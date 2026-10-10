@@ -94,6 +94,21 @@ describe('pages service', () => {
     ).rejects.toBeInstanceOf(ConflictError);
   });
 
+  it('sets and clears a drawn cover without touching the icon', async (ctx) => {
+    if (!harness) return ctx.skip(skipReason);
+    const { services, as, users } = harness;
+    const space = await harness.space('CVR');
+    const page = await services.pages.create(as(users.member), {
+      spaceId: space.id,
+      icon: 'flag:epic-2',
+    });
+    expect(page.cover).toBeNull();
+    const covered = await services.pages.update(as(users.member), page.id, { cover: 'orbit' });
+    expect(covered).toMatchObject({ cover: 'orbit', icon: 'flag:epic-2' });
+    const cleared = await services.pages.update(as(users.member), page.id, { cover: null });
+    expect(cleared.cover).toBeNull();
+  });
+
   it('soft deletes a subtree and restores exactly what went with it', async (ctx) => {
     if (!harness) return ctx.skip(skipReason);
     const { services, as, users } = harness;

@@ -84,6 +84,7 @@ export function presentDetail(
           : { type: 'paragraph' },
       ],
     },
+    cover: page.cover ?? null,
     tldr: null,
     reviewers: page.reviewers,
     templateId: page.templateId,

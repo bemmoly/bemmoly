@@ -34,6 +34,8 @@ export interface MockPage {
   path: string;
   title: string;
   icon: string | null;
+  /** The drawn cover pattern's id; absent or null for none. */
+  cover?: string | null;
   status: 'draft' | 'in_review' | 'published' | 'archived';
   ownerId: string | null;
   reviewers: string[];
@@ -241,7 +243,8 @@ export function seedDocsPages(): MockPage[] {
       position,
       path: `${parentRow?.path ?? '/'}${id}/`,
       title,
-      icon: null,
+      icon: title.startsWith('RFC') ? 'flag:epic-2' : null,
+      cover: title.startsWith('RFC') ? 'tiles' : null,
       status,
       ownerId,
       reviewers: status === 'in_review' ? [USER_IDS.jonas] : [],
