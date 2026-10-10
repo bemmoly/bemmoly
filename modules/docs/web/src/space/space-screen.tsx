@@ -1,6 +1,7 @@
 import { usePage, useSpace } from '../hooks/queries.ts';
 import { PageFrame } from '../page/page-frame.tsx';
 import type { DocsScreenProps } from '../routes.tsx';
+import { DocsLayout } from '../shared/docs-layout.tsx';
 import { PageSkeleton } from '../skeletons/docs-skeletons.tsx';
 import { SpaceLayout } from './space-layout.tsx';
 import { SpaceOverview } from './space-overview.tsx';
@@ -12,19 +13,25 @@ function SpaceHome({ spaceRef }: { spaceRef: string }) {
   const homeId = space.data?.homePageId ?? undefined;
   const home = usePage(homeId);
   if (!homeId) return <SpaceOverview />;
-  if (home.isPending) return <PageSkeleton />;
+  if (home.isPending) {
+    return (
+      <DocsLayout layout="full">
+        <PageSkeleton />
+      </DocsLayout>
+    );
+  }
   if (home.isError) return <SpaceOverview />;
   return <PageFrame key={home.data.id} page={home.data} />;
 }
 
 /**
- * A space at /docs/s/ENG: the sidebar with the page tree, beside the space's home page or
- * its overview; /docs/s/ENG/trash shows the trash in the same frame.
+ * A space at /docs/s/ENG: its home page or its overview; /docs/s/ENG/trash shows its trash.
+ * The space's page tree is in the app sidebar.
  */
 export default function SpaceScreen({ segment = '', rest }: DocsScreenProps) {
   const inTrash = rest[0] === 'trash';
   return (
-    <SpaceLayout spaceRef={segment} inTrash={inTrash}>
+    <SpaceLayout spaceRef={segment} layout="contained">
       {inTrash ? <TrashView /> : <SpaceHome spaceRef={segment} />}
     </SpaceLayout>
   );

@@ -54,18 +54,26 @@ export function PageLists({ spaces, person }: PageListsProps) {
   const recent = useRecentPages();
   const starred = useStarredPages();
   const drafts = useMyDrafts(tab === 'drafts');
-  const lists: Record<ListTab, { pages: PageSummary[]; pending: boolean; error: boolean }> = {
+  type List = { pages: PageSummary[]; pending: boolean; error: boolean; retry: () => void };
+  const lists: Record<ListTab, List> = {
     recent: {
       pages: recent.data?.pages.flatMap((page) => page.items) ?? [],
       pending: recent.isPending,
       error: recent.isError,
+      retry: () => void recent.refetch(),
     },
     starred: {
       pages: starred.data?.pages.flatMap((page) => page.items) ?? [],
       pending: starred.isPending,
       error: starred.isError,
+      retry: () => void starred.refetch(),
     },
-    drafts: { pages: drafts.drafts, pending: drafts.isPending, error: drafts.isError },
+    drafts: {
+      pages: drafts.drafts,
+      pending: drafts.isPending,
+      error: drafts.isError,
+      retry: drafts.retry,
+    },
   };
   const list = lists[tab];
   const more = tab === 'recent' ? recent : tab === 'starred' ? starred : null;
@@ -86,7 +94,16 @@ export function PageLists({ spaces, person }: PageListsProps) {
         {list.pending ? (
           <DocListRowSkeleton rows={6} />
         ) : list.error ? (
-          <EmptyState size="sm" title="This list could not be loaded" />
+          <EmptyState
+            size="sm"
+            title="This list did not load"
+            description="The rest of Docs still works. Try again in a moment."
+            action={
+              <Button size="sm" variant="secondary" onClick={list.retry}>
+                Try again
+              </Button>
+            }
+          />
         ) : list.pages.length === 0 ? (
           <EmptyState size="sm" {...EMPTY[tab]} />
         ) : (

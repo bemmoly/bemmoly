@@ -1,10 +1,4 @@
-import {
-  Card,
-  DocListRowSkeleton,
-  Skeleton,
-  SpaceCardSkeleton,
-  SpaceSwitcherSkeleton,
-} from '@bemmoly/ui';
+import { Card, DocListRowSkeleton, Skeleton, SpaceCardSkeleton } from '@bemmoly/ui';
 
 /*
  * Loading states of the Docs screens. Each bar sits in a line box of the text
@@ -45,11 +39,11 @@ export function PageRowsSkeleton({ rows = 5, label }: { rows?: number; label: st
   );
 }
 
-/** The Docs home: the header, a row of space cards, the lists card. */
+/** The Docs home in its contained column: the title, a row of space cards, the lists card. */
 export function HomeSkeleton() {
   return (
-    <div role="status" aria-label="Loading Docs" className="min-h-0 flex-1 overflow-hidden">
-      <div className="mx-auto flex max-w-300 flex-col gap-7 px-4 pt-8 sm:px-10">
+    <div role="status" aria-label="Loading Docs">
+      <div className="flex flex-col gap-7">
         <div className="flex flex-col gap-1">
           <Line width={88} size="text-24" bar={18} />
           <Line width={220} size="text-13" />
@@ -77,56 +71,26 @@ export function HomeSkeleton() {
   );
 }
 
-/** The space sidebar: the switcher, the search box and a few tree rows. */
-function SidebarSkeleton() {
-  return (
-    <aside className="hidden w-65 shrink-0 flex-col border-r border-line bg-card md:flex">
-      <SpaceSwitcherSkeleton />
-      <span className="px-3 pb-2.5">
-        <Skeleton height={30} shape="block" />
-      </span>
-      <span className="flex flex-col gap-px px-2">
-        {[62, 48, 70, 55, 40, 66].map((width) => (
-          <span key={width} className="flex h-7.5 items-center gap-1.75 pl-2.5">
-            <Skeleton width={9} height={9} shape="block" />
-            <Skeleton width={`${width}%`} height={10} />
-          </span>
-        ))}
-      </span>
-    </aside>
-  );
-}
-
-/** A space: the sidebar's head, search and tree beside the main column. */
+/** A space's overview in its contained column: the title, then its pages. */
 export function SpaceSkeleton() {
   return (
-    <div role="status" aria-label="Loading space" className="flex min-h-0 flex-1">
-      <SidebarSkeleton />
-      <div className="flex min-w-0 flex-1 flex-col gap-4 px-10 pt-8">
-        <Line width={200} size="text-24" bar={18} />
-        <PageRowsSkeleton label="Loading pages" />
-      </div>
+    <div role="status" aria-label="Loading space" className="flex flex-col gap-4">
+      <Line width={200} size="text-24" bar={18} />
+      <PageRowsSkeleton label="Loading pages" />
     </div>
   );
 }
 
 /**
- * A page's main column as the doc editor lays it out: the 44px bar, then the 720px body column
- * with the title, the line about it and paragraphs, and the 340px panel when it is open.
+ * A page under the frame's header as the doc editor lays it out: the body column with the
+ * title, the line about it and paragraphs, and the 340px panel when it is open.
  */
 export function PageSkeleton({ panel = false }: { panel?: boolean }) {
   return (
     <div role="status" aria-label="Loading page" className="flex min-h-0 min-w-0 flex-1 flex-col">
-      <div className="flex h-11 shrink-0 items-center gap-2.5 border-b border-line bg-card px-5">
-        <Line width={220} size="text-13" bar={9} />
-        <span className="ml-auto flex items-center gap-2">
-          <Skeleton width={30} height={30} shape="block" />
-          <Skeleton width={30} height={30} shape="block" />
-        </span>
-      </div>
       <div className="flex min-h-0 flex-1">
-        <div className="min-w-0 flex-1 overflow-hidden bg-card">
-          <div className="mx-auto flex max-w-180 flex-col gap-4.5 px-4 pt-8 sm:px-10 sm:pt-12">
+        <div className="min-w-0 flex-1 overflow-hidden bg-sf">
+          <div className="mx-auto flex max-w-195 flex-col gap-4.5 px-4 pt-8 sm:px-10 sm:pt-12">
             <span className="flex h-6.5 items-center gap-1.5">
               <Skeleton width={110} height={26} shape="block" />
               <Skeleton width={130} height={26} shape="block" />
@@ -157,19 +121,9 @@ export function PageSkeleton({ panel = false }: { panel?: boolean }) {
   );
 }
 
-/** The page screen before its data: the sidebar beside the page's own skeleton. */
-export function PageScreenSkeleton({ panel = false }: { panel?: boolean }) {
-  return (
-    <div className="flex min-h-0 flex-1">
-      <SidebarSkeleton />
-      <PageSkeleton panel={panel} />
-    </div>
-  );
-}
-
 /** What a Docs screen shows while its own code loads: the same skeleton as its data paint. */
 export function ScreenSkeleton({ screen }: { screen: string }) {
-  if (screen === 'p') return <PageScreenSkeleton />;
+  if (screen === 'p') return <PageSkeleton />;
   if (screen === 's') return <SpaceSkeleton />;
   return <HomeSkeleton />;
 }

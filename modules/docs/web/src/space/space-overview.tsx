@@ -1,4 +1,4 @@
-import { formatRelative } from '@bemmoly/core-web';
+import { formatRelative, HeaderActions } from '@bemmoly/core-web';
 import {
   Button,
   Card,
@@ -10,9 +10,12 @@ import {
   spaceTone,
 } from '@bemmoly/ui';
 import { Icon } from '@bemmoly/ui/icons';
+import { useState } from 'react';
+import { DocsLayout } from '../shared/docs-layout.tsx';
+import { ImportDialog } from '../transfer/index.ts';
 import { usePeople } from '../shared/people.ts';
 import { docsPaths } from '../shared/navigation.ts';
-import { pageCountLabel } from './space-sidebar.tsx';
+import { pageCountLabel } from './page-count.ts';
 import { useSpaceActions } from './space-layout.tsx';
 import { useSpaceTree } from './use-space-tree.ts';
 
@@ -25,10 +28,27 @@ export function SpaceOverview() {
   const tree = useSpaceTree(space.key);
   const { person } = usePeople();
   const roots = tree.items.filter((item) => item.depth === 0);
+  const [importing, setImporting] = useState(false);
 
   return (
-    <div className="min-h-0 flex-1 overflow-auto">
-      <div className="mx-auto flex max-w-225 flex-col gap-7 px-5 pt-8 pb-15 md:px-10">
+    <DocsLayout layout="contained">
+      <HeaderActions>
+        <Button
+          variant="ghost"
+          icon={<Icon name="download" size={14} />}
+          onClick={() => setImporting(true)}
+        >
+          Import
+        </Button>
+        <Button
+          variant="primary"
+          icon={<Icon name="plus" size={14} />}
+          onClick={() => createPage(null)}
+        >
+          New page
+        </Button>
+      </HeaderActions>
+      <div className="flex flex-col gap-7">
         <header className="flex flex-wrap items-end gap-4">
           <div className="flex min-w-0 items-center gap-3.5">
             <SpaceTile
@@ -45,11 +65,6 @@ export function SpaceOverview() {
                 {space.description ? ` · ${space.description}` : ''}
               </p>
             </div>
-          </div>
-          <div className="ml-auto flex gap-2">
-            <Button variant="primary" onClick={() => createPage(null)}>
-              New page
-            </Button>
           </div>
         </header>
 
@@ -92,6 +107,7 @@ export function SpaceOverview() {
           )}
         </section>
       </div>
-    </div>
+      <ImportDialog open={importing} onClose={() => setImporting(false)} space={space} />
+    </DocsLayout>
   );
 }

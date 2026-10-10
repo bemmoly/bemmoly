@@ -1,3 +1,4 @@
+import { HeaderActions } from '@bemmoly/core-web';
 import { Button, EmptyState } from '@bemmoly/ui';
 import { Icon } from '@bemmoly/ui/icons';
 import { useMemo, useState } from 'react';
@@ -6,10 +7,11 @@ import { CreateSpaceDialog } from '../create/create-space-dialog.tsx';
 import { useRecentPages, useSpaces, useTemplates } from '../hooks/queries.ts';
 import { useDocsRealtime } from '../hooks/use-docs-realtime.ts';
 import type { DocsScreenProps } from '../routes.tsx';
+import { DocsLayout } from '../shared/docs-layout.tsx';
 import { docsPaths, keepLinksInApp, navigateTo } from '../shared/navigation.ts';
 import { usePeople, useSession } from '../shared/people.ts';
 import { HomeSkeleton } from '../skeletons/docs-skeletons.tsx';
-import { pageCountLabel } from '../space/space-sidebar.tsx';
+import { pageCountLabel } from '../space/page-count.ts';
 import { FirstRun } from './first-run.tsx';
 import { PageLists } from './page-lists.tsx';
 import { AttentionPanel, TemplatesPanel } from './side-panels.tsx';
@@ -51,7 +53,13 @@ export default function DocsHomeScreen(props: DocsScreenProps) {
     if (routed) navigateTo(docsPaths.home());
   };
 
-  if (spaces.isPending) return <HomeSkeleton />;
+  if (spaces.isPending) {
+    return (
+      <DocsLayout layout="contained">
+        <HomeSkeleton />
+      </DocsLayout>
+    );
+  }
   const list = spaces.data ?? [];
   const pages = list.reduce((sum, space) => sum + space.pageCount, 0);
   const meta = [
@@ -63,34 +71,26 @@ export default function DocsHomeScreen(props: DocsScreenProps) {
     .join(' · ');
 
   return (
-    <div className="min-h-0 flex-1 overflow-auto" onClick={keepLinksInApp}>
-      <div className="mx-auto flex max-w-300 flex-col gap-7 px-4 pt-8 pb-15 sm:px-10">
-        <header className="flex flex-wrap items-end gap-4">
-          <div className="flex flex-col gap-1">
-            <h1 className="m-0 text-24 font-semibold tracking-display text-tx">Docs</h1>
-            {spaces.isSuccess && <p className="m-0 text-13 text-tx-3">{meta}</p>}
-          </div>
-          <div className="ml-auto flex flex-wrap gap-2">
-            <Button
-              variant="secondary"
-              onClick={() => setDialog({ kind: 'page', templateId: null })}
-            >
-              Templates
-            </Button>
-            {canCreateSpace && (
-              <Button variant="secondary" onClick={() => setDialog({ kind: 'space' })}>
-                Create space
-              </Button>
-            )}
-            {list.length > 0 && (
-              <Button
-                variant="primary"
-                onClick={() => setDialog({ kind: 'page', templateId: null })}
-              >
-                New page
-              </Button>
-            )}
-          </div>
+    <DocsLayout layout="contained">
+      <HeaderActions>
+        <Button variant="ghost" onClick={() => setDialog({ kind: 'page', templateId: null })}>
+          Templates
+        </Button>
+        {canCreateSpace && (
+          <Button variant="secondary" onClick={() => setDialog({ kind: 'space' })}>
+            Create space
+          </Button>
+        )}
+        {list.length > 0 && (
+          <Button variant="primary" onClick={() => setDialog({ kind: 'page', templateId: null })}>
+            New page
+          </Button>
+        )}
+      </HeaderActions>
+      <div className="flex flex-col gap-7" onClick={keepLinksInApp}>
+        <header className="flex flex-col gap-1">
+          <h1 className="m-0 text-24 font-semibold tracking-display text-tx">Docs</h1>
+          {spaces.isSuccess && <p className="m-0 text-13h text-tx4">{meta}</p>}
         </header>
 
         {spaces.isError ? (
@@ -138,6 +138,6 @@ export default function DocsHomeScreen(props: DocsScreenProps) {
         onClose={close}
         onCreated={(space) => navigateTo(docsPaths.space(space.key))}
       />
-    </div>
+    </DocsLayout>
   );
 }

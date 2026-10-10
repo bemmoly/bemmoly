@@ -5,12 +5,6 @@ export {
   type SpaceCardProps,
 } from './space-card.tsx';
 export {
-  SpaceSwitcher,
-  SpaceSwitcherSkeleton,
-  type SpaceSwitcherProps,
-  type SwitcherSpace,
-} from './space-switcher.tsx';
-export {
   SPACE_TONE_HUES,
   SPACE_TONES,
   SpaceTile,

@@ -1,16 +1,13 @@
 import type { Space } from '@bemmoly/module-docs/shared';
-import { Button, Drawer, EmptyState, type PageTreeItem } from '@bemmoly/ui';
+import { Button, EmptyState, type PageTreeItem } from '@bemmoly/ui';
 import { Icon } from '@bemmoly/ui/icons';
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
-import { CreateSpaceDialog } from '../create/create-space-dialog.tsx';
+import { createContext, useContext, type ReactNode } from 'react';
 import { useCreatePage } from '../create/use-create-page.ts';
 import { useSpace } from '../hooks/queries.ts';
 import { useDocsRealtime } from '../hooks/use-docs-realtime.ts';
+import { DocsLayout } from '../shared/docs-layout.tsx';
 import { docsPaths, keepLinksInApp, navigateTo } from '../shared/navigation.ts';
-import { useSession } from '../shared/people.ts';
-import { SpaceSkeleton } from '../skeletons/docs-skeletons.tsx';
-import { SpaceSidebar } from './space-sidebar.tsx';
-import { useTreeOpen } from './tree-store.ts';
+import { PageSkeleton, SpaceSkeleton } from '../skeletons/docs-skeletons.tsx';
 
 interface SpaceActions {
   space: Space;
@@ -30,125 +27,77 @@ export function useSpaceActions(): SpaceActions {
 export interface SpaceLayoutProps {
   /** The space key ("ENG") or id. */
   spaceRef: string;
-  /** The page open in the main column; its row is highlighted and its ancestors open. */
-  activePageId?: string | null;
-  /** The active page's ancestors, root first: opened in the tree so the page shows. */
-  activeTrail?: readonly string[];
-  inTrash?: boolean;
-  /** The main column. It fills the rest of the width and scrolls on its own. */
+  /** The layout its screen draws in, so loading and errors hold the same shape. */
+  layout: 'full' | 'contained';
+  /** The screen: the overview, the trash or a page. Each draws its own DocsLayout. */
   children: ReactNode;
 }
 
 /**
- * Every screen inside a space: the 260px sidebar with the page tree beside a main column.
- * The space overview, the trash and the page screen use it; the doc editor screen puts its
- * own header and body in `children`. Below 768px the sidebar folds into a drawer opened
- * from a Pages button. It also owns the create dialogs, so the tree, the footer and the
- * main column all open the same picker.
+ * Every screen inside a space: loads the space, follows its realtime events and hands its
+ * screens the space and create in place. Its page tree is in the app sidebar; a space that
+ * did not load says so in the frame, with Retry, and the sidebar stays.
  */
-export function SpaceLayout({
-  spaceRef,
-  activePageId = null,
-  activeTrail,
-  inTrash = false,
-  children,
-}: SpaceLayoutProps) {
+export function SpaceLayout({ spaceRef, layout, children }: SpaceLayoutProps) {
   const space = useSpace(spaceRef);
-  const reveal = useTreeOpen((state) => state.reveal);
-  const spaceKey = space.data?.key;
-  const trail = activeTrail?.join('/') ?? '';
-  useEffect(() => {
-    if (spaceKey && trail) reveal(spaceKey, trail.split('/'));
-  }, [spaceKey, trail, reveal]);
   useDocsRealtime(space.data ? [space.data.id] : []);
   const newPage = useCreatePage();
-  const [creatingSpace, setCreatingSpace] = useState(false);
-  const [drawer, setDrawer] = useState(false);
-  const { can } = useSession();
 
-  if (space.isPending) return <SpaceSkeleton />;
+  if (space.isPending) {
+    return (
+      <DocsLayout layout={layout}>
+        {layout === 'full' ? <PageSkeleton /> : <SpaceSkeleton />}
+      </DocsLayout>
+    );
+  }
   if (space.isError) {
     return (
-      <EmptyState
-        headingLevel={1}
-        className="flex-1 justify-center"
-        icon={<Icon name="doc" />}
-        title={`${spaceRef} could not be opened`}
-        description="It may have been deleted, or you may not be a member of it."
-        action={
-          <Button variant="secondary" onClick={() => navigateTo(docsPaths.home())}>
-            Back to Docs
-          </Button>
-        }
-      />
+      <DocsLayout layout={layout}>
+        <EmptyState
+          headingLevel={1}
+          className="flex-1 justify-center py-16"
+          icon={<Icon name="doc" />}
+          title={`${spaceRef} could not be opened`}
+          description="It may have been deleted, or you may not be a member of it. If the server was busy, try again."
+          action={
+            <span className="flex gap-2">
+              <Button
+                variant="primary"
+                icon={<Icon name="refresh" size={14} />}
+                onClick={() => void space.refetch()}
+              >
+                Try again
+              </Button>
+              <Button variant="ghost" onClick={() => navigateTo(docsPaths.home())}>
+                Back to Docs
+              </Button>
+            </span>
+          }
+        />
+      </DocsLayout>
     );
   }
 
   const actions: SpaceActions = {
     space: space.data,
-    createPage: (parent) => {
-      setDrawer(false);
+    createPage: (parent) =>
       newPage.create({
         spaceId: space.data.id,
         parentId: parent?.id ?? null,
         placeName: parent ? parent.title || 'Untitled' : space.data.name,
-      });
-    },
+      }),
   };
-  const sidebar = (
-    <SpaceSidebar
-      space={space.data}
-      activePageId={activePageId}
-      inTrash={inTrash}
-      onCreatePage={actions.createPage}
-      onCreateSpace={can('docs.space.create') ? () => setCreatingSpace(true) : undefined}
-    />
-  );
-
   return (
     <SpaceContext.Provider value={actions}>
       <div
-        className="flex min-h-0 flex-1"
+        className="contents"
         onClick={keepLinksInApp}
         data-search-place={space.data.key}
         data-search-place-label={space.data.name}
         data-search-place-kind="docs.page"
       >
-        <aside className="hidden w-65 shrink-0 flex-col border-r border-line bg-card md:flex">
-          {sidebar}
-        </aside>
-        <div className="flex min-w-0 flex-1 flex-col">
-          <div className="flex items-center border-b border-line bg-card px-4 py-2 md:hidden">
-            <Button
-              size="sm"
-              variant="secondary"
-              icon={<Icon name="lines" size={14} />}
-              onClick={() => setDrawer(true)}
-            >
-              {space.data.name} pages
-            </Button>
-          </div>
-          {children}
-        </div>
+        {children}
       </div>
-      <Drawer
-        open={drawer}
-        onClose={() => setDrawer(false)}
-        label={`${space.data.name} pages`}
-        variant="overlay"
-      >
-        <div className="flex h-full flex-col" onClick={keepLinksInApp}>
-          {sidebar}
-        </div>
-      </Drawer>
-      <CreateSpaceDialog
-        open={creatingSpace}
-        onClose={() => setCreatingSpace(false)}
-        onCreated={(created) => {
-          setCreatingSpace(false);
-          navigateTo(docsPaths.space(created.key));
-        }}
-      />
     </SpaceContext.Provider>
   );
 }
