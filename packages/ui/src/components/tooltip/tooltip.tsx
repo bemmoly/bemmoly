@@ -1,13 +1,15 @@
 import {
   cloneElement,
   useEffect,
+  useLayoutEffect,
   useId,
   useRef,
   useState,
   type ReactElement,
   type ReactNode,
 } from 'react';
-import { cx } from '../../lib/cx.ts';
+import { createPortal } from 'react-dom';
+import { layerFor } from '../../lib/floating.tsx';
 import { TIMING } from '../../tokens/interaction.ts';
 import { Kbd } from '../kbd/kbd.tsx';
 
@@ -18,7 +20,8 @@ export interface TooltipProps {
   keys?: string;
   /** One focusable element; it gets aria-describedby while the tip shows. */
   children: ReactElement<Record<string, unknown>>;
-  side?: 'top' | 'bottom';
+  /** right: beside a control on the collapsed sidebar rail. */
+  side?: 'top' | 'bottom' | 'right';
   /** Milliseconds of hover before it opens; focus opens it at once. */
   delay?: number;
 }
@@ -30,6 +33,59 @@ export interface TooltipProps {
 let lastClosedAt = -Infinity;
 
 const recently = () => performance.now() - lastClosedAt < TIMING.tooltipSkipMs;
+
+const GAP = 6;
+
+interface TipProps extends Pick<TooltipProps, 'label' | 'keys'> {
+  anchor: HTMLElement;
+  side: NonNullable<TooltipProps['side']>;
+  id: string;
+}
+
+/**
+ * The tip itself, portalled beside its trigger so a scrolling sidebar or a clipped toolbar
+ * never cuts it off, and kept inside the viewport.
+ */
+function Tip({ anchor, side, id, label, keys }: TipProps) {
+  const ref = useRef<HTMLSpanElement>(null);
+  useLayoutEffect(() => {
+    const tip = ref.current;
+    if (!tip) return;
+    const box = anchor.getBoundingClientRect();
+    const own = tip.getBoundingClientRect();
+    const view = anchor.ownerDocument.documentElement.clientWidth || window.innerWidth;
+    let top: number;
+    let left: number;
+    if (side === 'right') {
+      top = box.top + box.height / 2 - own.height / 2;
+      left = box.right + GAP;
+    } else {
+      top = side === 'top' ? box.top - GAP - own.height : box.bottom + GAP;
+      left = box.left + box.width / 2 - own.width / 2;
+    }
+    tip.style.top = `${Math.max(4, top)}px`;
+    tip.style.left = `${Math.max(4, Math.min(left, view - own.width - 4))}px`;
+    tip.style.visibility = 'visible';
+  }, [anchor, side]);
+  return createPortal(
+    <span
+      ref={ref}
+      role="tooltip"
+      id={id}
+      style={{ visibility: 'hidden' }}
+      className="pointer-events-none fixed top-0 left-0 z-50 inline-flex items-center gap-2 rounded-control bg-tx px-2 py-1 text-12 font-medium whitespace-nowrap text-canvas shadow-e2 motion-safe:animate-fade-in"
+    >
+      {label}
+      {keys && (
+        <Kbd
+          keys={keys}
+          className="border-transparent bg-[color-mix(in_oklab,var(--canvas)_16%,transparent)] text-canvas"
+        />
+      )}
+    </span>,
+    layerFor(anchor),
+  );
+}
 
 /**
  * A short label for a control, with its shortcut. It opens after a hover delay, at once on
@@ -44,6 +100,7 @@ export function Tooltip({
   delay = TIMING.tooltipDelayMs,
 }: TooltipProps) {
   const [open, setOpen] = useState(false);
+  const [anchor, setAnchor] = useState<HTMLSpanElement | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const id = useId();
 
@@ -71,6 +128,7 @@ export function Tooltip({
 
   return (
     <span
+      ref={setAnchor}
       className="relative inline-flex"
       onPointerEnter={() => show(false)}
       onPointerLeave={hide}
@@ -78,24 +136,7 @@ export function Tooltip({
       onBlur={hide}
     >
       {cloneElement(children, { 'aria-describedby': open ? id : undefined })}
-      {open && (
-        <span
-          role="tooltip"
-          id={id}
-          className={cx(
-            'pointer-events-none absolute left-1/2 z-50 inline-flex -translate-x-1/2 items-center gap-2 rounded-control bg-tx px-2 py-1 text-12 font-medium whitespace-nowrap text-canvas shadow-e2 motion-safe:animate-fade-in',
-            side === 'top' ? 'bottom-full mb-1.5' : 'top-full mt-1.5',
-          )}
-        >
-          {label}
-          {keys && (
-            <Kbd
-              keys={keys}
-              className="border-transparent bg-[color-mix(in_oklab,var(--canvas)_16%,transparent)] text-canvas"
-            />
-          )}
-        </span>
-      )}
+      {open && anchor && <Tip anchor={anchor} side={side} id={id} label={label} keys={keys} />}
     </span>
   );
 }
