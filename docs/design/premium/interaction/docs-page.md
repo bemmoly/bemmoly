@@ -7,7 +7,9 @@ edit in place, including every property under the title.
 
 ## The page column
 
-- A 700px column (780px with its 40px sides; 16px sides on phones). An optional 148px drawn
+- A 700px column (780px with its 40px sides; 16px sides on phones), centred on the page where
+  the scroller is at least 1164px wide, with the resting outline hanging off its right edge;
+  narrower, the column and the outline share the centre. An optional 148px drawn
   cover runs full width above it; the 56px icon tile rises 30px into the cover.
 - **Icon.** A drawn icon from the kit in one of the eight entity tints (`epic-1` to `epic-8`),
   stored on the page's existing `icon` field as `name:epic-N`. Emoji stored by older pages
@@ -24,16 +26,17 @@ edit in place, including every property under the title.
 
 ## One properties row
 
-Status, owner, reviewers, labels, edited and reading time in one row of 28px properties, in
-place of the chips above the title and the About panel's form. The About panel is gone.
+Owner, reviewers, labels, edited and reading time in one row of 28px properties, in place of
+the chips above the title and the About panel's form. The About panel is gone.
 
-- Status: the status glyph and its name (draft is to do, in review is in progress, published is
-  done, archived is crossed); a menu of the moves the server allows. Request review picks
-  reviewers first; Publish and Archive are greyed with "Needs publish rights" for people who may
-  not publish.
+- Status is not repeated here: it lives once, as the menu beside the header's trail (the
+  review's place). That menu lists the moves the server allows; Request review picks reviewers
+  first in a dialog; Publish and Archive are greyed with "Needs publish rights" for people who
+  may not publish. On a phone it shows the glyph alone.
 - Owner: a searchable people popover, with No owner.
-- Reviewers: a face pile; a click opens the reviewers dialog (kept: picking several people
-  with a filter is a dialog's job).
+- Reviewers: a face pile; a click opens a popover like the owner's, with a filter and a
+  checkbox per person who may review. Each tick saves at once, and the faces change before the
+  server answers.
 - Labels: outlined Label pills; the tag button adds one in place with workspace suggestions;
   × removes one with Undo.
 - Edited: RelativeTime (absolute date on hover), with who edited last in its tooltip. Reading

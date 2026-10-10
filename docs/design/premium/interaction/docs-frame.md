@@ -19,10 +19,9 @@ Phone tabs, `docs-tree.js`, `docs-kit.*`).
 - **+ creates in place.** The space row's + and a page row's + make "Untitled" there and open it
   (the create-in-place hook from `create/`, with Undo in its toast). The header's New page on the
   overview does the same.
-- **Focus mode replaces the Docs section, not the whole sidebar.** The review draws focus mode
-  taking the full sidebar. The section is a module contribution; taking over the shell's other
-  sections needs a shell change, so focus hides the other spaces and Docs home and keeps Home,
-  Inbox and Work above. Recorded for the shell owner to revisit.
+- **Focus mode takes the whole sidebar,** as the review draws it. The shell lets a module's
+  section ask for the sidebar while it needs it (`useSidebarTakeover` in core-web): only the
+  brand block, search and New, the section's own rows and the foot stay. Never on the rail.
 - **Focus mode is offered always,** from the space's ···, a double-click on its row or F on the
   focused row, rather than only over about 40 rows: a count that small is not a reason to hide a
   way to filter.
@@ -31,9 +30,9 @@ Phone tabs, `docs-tree.js`, `docs-kit.*`).
   icon and the matching line, and offers Retry when it fails.
 - **Open pages and focus are a per-person preference** through the shell's person store
   (`docs.tree-open`, `docs.tree-focus`), so two people sharing a browser keep their own.
-- **Row menu:** Add a page inside, Rename (F2), Star, Copy link, Open in new tab, Move to trash.
-  The review also lists Duplicate and Move to…; neither has an API for a tree row yet, so they
-  are left out rather than drawn and disabled.
+- **Row menu:** Add a page inside, Rename (F2), Duplicate, Move to…, Star, Copy link, Open in
+  new tab, Move to trash. Move to… is the page's move dialog; Duplicate is described in
+  docs-around.md.
 - **The body column's measure is 700px** (`page-frame.tsx`, `max-w-195` with 40px gutters).
   `page/body` draws into it.
 - **Trash uses the full layout.** Its table has a preview peek beside it at wide sizes, so it

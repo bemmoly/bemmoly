@@ -123,7 +123,8 @@ editor, and the React parts read the editor from outside).
   `data-doc-typing`.
 - The hook fades to transparent in 300ms and back in 150ms (instant with reduced motion); focus
   inside a faded part shows it again. Only opacity changes, so nothing jumps.
-- The header belongs to the frame stream and the margin to the margin stream; they apply the hook.
+- The page's header (through the shell PageHeader's `className`) and its docked margin take the
+  hook; the overlay margin does not, since it was opened on purpose.
 
 ## Issues inside a page (Linked work)
 
