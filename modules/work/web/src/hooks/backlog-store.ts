@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import type { DropTarget } from '../backlog/move.ts';
-import { EMPTY_SELECTION, nextSelection, type Selection } from './backlog-selection.ts';
+import { EMPTY_SELECTION, nextSelection, type Selection } from './issue-selection.ts';
 
 /*
  * The Backlog's client state: selection, the drag in flight and what is

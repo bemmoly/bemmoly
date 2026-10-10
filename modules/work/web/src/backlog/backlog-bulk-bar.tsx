@@ -11,7 +11,7 @@ import {
 import { Icon, type IconName } from '@bemmoly/ui/icons';
 import { useEffect } from 'react';
 import { useBacklogUi } from '../hooks/backlog-store.ts';
-import { EMPTY_SELECTION } from '../hooks/backlog-selection.ts';
+import { EMPTY_SELECTION } from '../hooks/issue-selection.ts';
 import type { IssueQuickActions } from '../hooks/issue-quick-actions.ts';
 import type { MenuSprint } from '../shared/issue-actions-menu.tsx';
 

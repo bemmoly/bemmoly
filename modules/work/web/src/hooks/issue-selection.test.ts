@@ -5,7 +5,7 @@ import {
   nextSelection,
   pruneSelection,
   type Selection,
-} from './backlog-selection.ts';
+} from './issue-selection.ts';
 
 const ORDER = ['a', 'b', 'c', 'd', 'e'];
 

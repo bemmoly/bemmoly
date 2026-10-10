@@ -1,7 +1,7 @@
 import { useCallback, useEffect, type KeyboardEvent } from 'react';
 import type { DropTarget } from '../backlog/move.ts';
 import { revealRow } from './backlog-scroll.ts';
-import { draggedIds } from './backlog-selection.ts';
+import { draggedIds } from './issue-selection.ts';
 import { initialTarget, screenOrder, stepTarget, type ContainerLayout } from './backlog-slots.ts';
 import { useBacklogUi } from './backlog-store.ts';
 

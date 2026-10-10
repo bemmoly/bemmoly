@@ -1,7 +1,8 @@
 /*
- * Multi-select over the Backlog's rows, as file lists do it: a click picks
- * one row, cmd or ctrl toggles a row, shift extends from the anchor over the
- * rows as the screen orders them, across sprints and the backlog.
+ * Multi-select over a list of issues, as file lists do it: a click picks one,
+ * cmd or ctrl toggles one, shift extends from the anchor over the issues as the
+ * screen orders them (the Backlog's rows across sprints, the Board's cards lane
+ * by lane and column by column).
  */
 
 export interface Selection {

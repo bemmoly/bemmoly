@@ -11,7 +11,7 @@ import { useBacklogData } from './backlog-data.ts';
 import { usePointerDrag } from './backlog-drag.ts';
 import { useKeyboardMove, useRowKeys } from './backlog-keyboard.ts';
 import { useMoveIssues } from './backlog-move.ts';
-import { pruneSelection } from './backlog-selection.ts';
+import { pruneSelection } from './issue-selection.ts';
 import { screenOrder, type ContainerLayout } from './backlog-slots.ts';
 import { useBacklogUi } from './backlog-store.ts';
 
