@@ -44,12 +44,16 @@ export function spaceInitials(name: string): string {
   return letters.toUpperCase();
 }
 
-export type SpaceTileSize = 'sm' | 'md';
+export type SpaceTileSize = 'xs' | 'sm' | 'md';
 
-/** md: the Docs home cards (34px, 13px). sm: the space sidebar header (30px, 12px). */
+/**
+ * md: the Docs home cards (34px, 13px). sm: the space sidebar header (30px, 12px). xs: a
+ * space in a menu or a picker row (20px, 9.5px), the avatar size of the same lists.
+ */
 const SIZES: Record<SpaceTileSize, string> = {
-  md: 'size-8.5 text-13',
-  sm: 'size-7.5 text-12',
+  md: 'size-8.5 rounded-panel text-13',
+  sm: 'size-7.5 rounded-panel text-12',
+  xs: 'size-5 rounded-xs text-9h',
 };
 
 export interface SpaceTileProps {
@@ -65,7 +69,7 @@ export function SpaceTile({ name, tone, size = 'md', className }: SpaceTileProps
     <span
       aria-hidden
       className={cx(
-        'flex shrink-0 items-center justify-center rounded-panel font-semibold',
+        'flex shrink-0 items-center justify-center font-semibold',
         TONE_CLASSES[tone],
         SIZES[size],
         className,
