@@ -17,19 +17,19 @@ It replaces the placeholder "B" glyph on an accent tile.
 | ---------------- | -------------------------------------------------------------------- |
 | `mark-*.svg`     | The four-tile mark (top bar, favicon, app icons).                    |
 | `wordmark-*.svg` | The "Bemmoly" lettering alone.                                       |
-| `lockup-*.svg`   | Mark and wordmark side by side, 9px apart (the top bar brand block). |
+| `lockup-*.svg`   | Mark and wordmark side by side, 10 units apart, the lettering at 115% so the word carries beside the mark (ADR 0015). |
 
 Each comes in four tones:
 
 | Suffix   | Use                                                         | Colours                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | -------- | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `-color` | Default in the app (`tone="auto"`).                         | Blue tiles `var(--brand-mark-bg, #2356C9)`, mid tile `var(--brand-mark-mid, #5B7BE5)`, lilac tile `var(--brand-mark-fg, #9A85EA)`, lettering `currentColor` (`Logo` sets it to `--tx`). The designed colours are the default on every preset. Only under a custom brand theme (`data-theme="custom"`) does `Logo` recolour the tiles: `--ac`, `--ac-l`, and the brand colour mixed 45% with `--sf` (lighter in light mode, toward the surface in dark mode). This replaces the placeholder's "accent tile and on-accent glyph" rule. |
+| `-color` | Default in the app (`tone="auto"`).                         | Blue tiles `var(--brand-mark-bg, #2356C9)`, mid tile `var(--brand-mark-mid, #5B7BE5)`, lilac tile `var(--brand-mark-fg, #9A85EA)`, lettering `currentColor` (`Logo` sets it to `--tx`). `Logo` draws every tile in its designed colour on every preset and every custom theme: themes never recolour the mark (ADR 0015). |
 | `-dark`  | On light backgrounds where CSS variables are not available. | Tiles `#1b2430`, `#4b5565` (mid), `#8690a0` (lilac); lettering `#1b2430`.                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | `-light` | On dark backgrounds.                                        | Tiles white at 100%, 80% (mid) and 60% (lilac); white lettering.                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | `-mono`  | One colour (print, embossing, single-colour UI).            | Everything `currentColor`; tiles at 100%, 75% (mid) and 55% (lilac) opacity so the groups still read.                                                                                                                                                                                                                                                                                                                                                                                                                                |
 
 The app's CSP refuses inline style attributes, so `Logo` rewrites each `style="fill: var(--x, #hex)"`
-into `class="x" fill="#hex"` before inlining a file; the class is what a custom theme recolours.
+into `fill="#hex"` before inlining a file.
 
 ## Contract
 
@@ -52,7 +52,8 @@ Keep this stable so a replacement drops in without code changes:
 
 ## Pending
 
-- The lilac `#9A85EA` is reserved as the future AI accent; the `--ai` tokens will be revisited when the AI release is designed, and are not tied to the mark today.
+- The logo's colours are the product's colour system (ADR 0015): `#2356C9` is the accent and Work, `#5B7BE5` Docs and the dark accent, `#9A85EA` AI only (the `--brand-1/2/3` and `--ai` tokens).
+- The banners and social previews under `generated/` still show the lockup before its re-cut; run `brand:banners` to refresh them.
 
 ## Generated files (`generated/`, committed)
 

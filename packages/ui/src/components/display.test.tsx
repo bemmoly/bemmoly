@@ -64,23 +64,23 @@ describe('display components', () => {
     expect(initialsOf('rohan@acmelabs.dev')).toBe('RO');
   });
 
-  it('renders the logo from the brand files and follows the theme accent', () => {
-    render(<Logo variant="lockup" />);
+  it('renders the logo from the brand files in its own colours on every theme', () => {
+    render(
+      <div data-theme="custom">
+        <Logo variant="lockup" />
+      </div>,
+    );
     const logo = screen.getByRole('img', { name: 'Bemmoly' });
     expect(logo.querySelector('svg')?.getAttribute('aria-hidden')).toBe('true');
-    // The CSP refuses inline style attributes: each tile carries its designed colour as a fill
-    // and a class that a custom brand theme recolours.
+    // The CSP refuses inline style attributes, and no theme may recolour the mark: each tile
+    // carries its designed colour as a plain fill.
     expect(logo.innerHTML).not.toContain('style=');
-    const fills = (name: string) =>
-      [...logo.querySelectorAll(`.${name}`)].map((tile) => tile.getAttribute('fill'));
-    expect(fills('brand-mark-bg')).toEqual(['#2356C9', '#2356C9']);
-    expect(fills('brand-mark-mid')).toEqual(['#5B7BE5']);
-    expect(fills('brand-mark-fg')).toEqual(['#9A85EA']);
-    expect(logo.getAttribute('style')).toContain('--brand-mark-bg: var(--ac)');
-    expect(logo.getAttribute('style')).toContain('--brand-mark-mid: var(--ac-l)');
-    expect(logo.className).toContain(
-      'in-data-[theme=custom]:[&_.brand-mark-bg]:fill-(--brand-mark-bg)',
+    expect(logo.innerHTML).not.toContain('var(--');
+    const fills = [...logo.querySelectorAll('path[fill^="#"]')].map((tile) =>
+      tile.getAttribute('fill'),
     );
+    expect(fills).toEqual(['#2356C9', '#2356C9', '#9A85EA', '#5B7BE5']);
+    expect(logo.getAttribute('style')).toBe('height: 24px;');
   });
 
   it('draws workspace, project, module and team tiles from one component', () => {

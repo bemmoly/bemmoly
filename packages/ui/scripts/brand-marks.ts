@@ -84,8 +84,14 @@ const inner = (svg: string) =>
     .replace(/<\/svg>\s*$/, '')
     .trimEnd();
 
-/** The gap between mark and wordmark in the lockup, as in the mocks' brand block. */
-const GAP = 9;
+/**
+ * The lockup as the design review re-cut it (docs/design/premium/kit.css, `.bb`): a 10-unit
+ * gap, and the lettering 15% larger, centred on the mark, so the word carries beside it.
+ */
+const GAP = 10;
+const LETTER_SCALE = 1.15;
+/** Lifts the scaled lettering so its capitals stay centred on the 24-unit mark. */
+const LETTER_LIFT = -2.2;
 
 const tiles = tilesOf(read('source/bemmoly-icon.svg'));
 for (const tone of ['color', 'dark', 'light', 'mono'] as const) {
@@ -95,8 +101,11 @@ for (const tone of ['color', 'dark', 'light', 'mono'] as const) {
   const wordWidth = Number(/viewBox="0 0 ([\d.]+) 24"/.exec(wordmark)?.[1]);
   if (!wordWidth) throw new Error(`brand:marks: wordmark-${tone}.svg is not 24 units tall`);
   const offset = 24 + GAP;
-  const lettering = inner(wordmark).replace(/<path\b/g, `<path transform="translate(${offset} 0)"`);
-  const width = Number((offset + wordWidth).toFixed(2));
+  const lettering = inner(wordmark).replace(
+    /<path\b/g,
+    `<path transform="translate(${offset} ${LETTER_LIFT}) scale(${LETTER_SCALE})"`,
+  );
+  const width = Number((offset + wordWidth * LETTER_SCALE).toFixed(2));
   writeFileSync(
     new URL(`lockup-${tone}.svg`, brand),
     `${svgOpen(width)}\n${mark}\n${lettering}\n</svg>\n`,
