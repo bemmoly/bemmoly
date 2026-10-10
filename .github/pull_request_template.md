@@ -22,13 +22,39 @@ at most 72 characters, no issue numbers (AGENTS.md §4 and §5). Keep it under ~
 ## Screenshots (UI changes)
 
 <!--
-Verified in a running browser. Put the screenshot beside the matching mock from
-docs/design/mocks, per theme where it differs. Delete this section if there is no UI.
+Verified in a running browser, light and dark, at 1440×900 and 390×844. Put each screenshot
+beside the matching drawing in the design review (docs/design/premium), or the mock where the
+review draws nothing. Delete this section and the next if there is no UI.
 -->
 
-| Mock | This change |
-| ---- | ----------- |
-|      |             |
+| Design | This change |
+| ------ | ----------- |
+|        |             |
+
+## Design system (UI changes)
+
+<!--
+Every UI change follows docs/design/system (AGENTS.md, "Design system: always follow it").
+The full list is docs/design/system/definition-of-done.md. Tick what holds; explain any line
+that does not.
+-->
+
+- [ ] In the frame: `PageLayout` (`full` or `contained`), one scroll region, sticky header, no
+      sideways scroll at 390px
+- [ ] Tokens only: no literal colour or font size; no new colour, size, radius, shadow, icon or
+      pattern unless this PR adds it to `docs/design/system` (with an ADR where it says so)
+- [ ] Shared components reused, not redrawn; a new shared component has a story and a test
+- [ ] Icons drawn with `Icon` or a glyph component, keys with `Kbd`; no glyph characters
+- [ ] Interaction notes written (primary job, top actions, keys, states) in
+      `docs/design/premium/interaction/`
+- [ ] States designed: skeleton, empty with one action, error with Try again, no permission, phone
+- [ ] Optimistic edits, Undo over confirm, URL keeps filters and the open item, focus returns
+- [ ] Keyboard: top actions work without a mouse; icon buttons have tooltips with their keys
+- [ ] Words: sentence case, verbs on buttons, errors say what to do next, competitor names only
+      as import labels
+- [ ] AI surfaces are lilac and render only with AI on (tested with AI off)
+- [ ] Accessible: 4.5:1 text in light and dark, focus ring visible, controls named, motion behind
+      `motion-safe:`, 32px targets (44px on touch)
 
 ## Checklist
 
