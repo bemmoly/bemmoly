@@ -9,7 +9,9 @@ import {
 } from '../screen-context.ts';
 import { MARGIN_SLOTS } from '../slots.ts';
 
-const FOCUSABLE = '[data-thread],a[href],button:not([disabled]),input,[tabindex="0"]';
+/** The margin's content first, so focus lands on a thread or a link rather than on Close. */
+const CONTENT = '[data-thread],a[href],input,[tabindex="0"]';
+const FOCUSABLE = `${CONTENT},button:not([disabled])`;
 
 /** The margin's current view, if any shows on screen now. */
 function useShownSlot(docked: boolean) {
@@ -28,7 +30,12 @@ function useFocusOnRequest(ref: RefObject<HTMLElement | null>) {
       return;
     }
     // After the slot has rendered its first content.
-    requestAnimationFrame(() => ref.current?.querySelector<HTMLElement>(FOCUSABLE)?.focus());
+    requestAnimationFrame(() => {
+      const margin = ref.current;
+      (
+        margin?.querySelector<HTMLElement>(CONTENT) ?? margin?.querySelector<HTMLElement>(FOCUSABLE)
+      )?.focus();
+    });
   }, [focusRequest, ref]);
 }
 
