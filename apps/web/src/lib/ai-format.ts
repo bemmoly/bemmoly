@@ -32,7 +32,7 @@ export function formatUsd(amount: number): string {
 /** "$3 in · $15 out per M tokens", "Free" for a local model, null when unknown. */
 export function priceLine(input: number | null | undefined, output: number | null | undefined) {
   if (input == null && output == null) return null;
-  if (!input && !output) return 'Free to run';
+  if (!input && !output) return 'Free';
   return `${perMillion.format(input ?? 0)} in · ${perMillion.format(output ?? 0)} out per M tokens`;
 }
 
@@ -45,10 +45,10 @@ export function releaseLine(date: string | null | undefined): string | null {
   return `Released ${month}`;
 }
 
-/** "1,840" runs or tokens, tabular in tables. */
+/** "1,840", "27K", "1.5M": runs and tokens, tabular in tables. */
 export function formatCount(value: number): string {
-  if (value >= 10_000_000) return `${(value / 1_000_000).toFixed(1)}M`;
-  if (value >= 100_000) return `${Math.round(value / 1000)}K`;
+  if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`;
+  if (value >= 10_000) return `${Math.round(value / 1000)}K`;
   return value.toLocaleString('en');
 }
 

@@ -141,7 +141,9 @@ export function ConnectionForm({
       className="flex flex-col gap-4"
     >
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-        <h3 className="m-0 text-14 font-semibold text-tx">Connect {provider.name}</h3>
+        {inline ? (
+          <h3 className="m-0 text-14 font-semibold text-tx">Connect {provider.name}</h3>
+        ) : null}
         {provider.doc ? <DocLink href={provider.doc} /> : null}
       </div>
       {isLocal ? (

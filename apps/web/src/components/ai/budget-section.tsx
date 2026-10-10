@@ -105,6 +105,7 @@ export function BudgetSection({
           <Input
             size="lg"
             inputMode="decimal"
+            autoFocus
             prefix={<span className="text-tx-3">$</span>}
             value={text}
             onChange={(event) => setText(event.target.value)}

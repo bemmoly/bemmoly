@@ -17,6 +17,11 @@ import { projectsOf } from './work-board-state.ts';
 
 const ADMIN = '/api/v1/admin/ai';
 
+function minutesAgo(iso: string): string {
+  const minutes = Math.max(1, Math.round((Date.now() - Date.parse(iso)) / 60_000));
+  return minutes === 1 ? '1 minute ago' : `${minutes} minutes ago`;
+}
+
 function catalogStatus(db: MockDb): AiCatalogStatus {
   const ai = aiOf(db);
   const providers = catalogSummaries();
@@ -27,7 +32,9 @@ function catalogStatus(db: MockDb): AiCatalogStatus {
     offline: !live,
     fetchedAt: fetched,
     bundledWith: live ? null : '0.5.0',
-    line: live ? 'Live · models.dev' : 'Offline · bundled with 0.5.0',
+    line: live
+      ? `Live · models.dev · updated ${minutesAgo(fetched)}`
+      : 'Offline · bundled with 0.5.0',
     liveFetch: ai.settings.liveCatalog,
     providerCount: providers.length,
     modelCount: providers.reduce((sum, provider) => sum + provider.modelCount, 0),

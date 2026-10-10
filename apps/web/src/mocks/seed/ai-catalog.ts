@@ -29,7 +29,8 @@ const MODELS = models as unknown as Record<string, CatalogProvider>;
 
 export const CATALOG_POPULAR = PROVIDERS.popular;
 
-const COMPATIBLE = '@ai-sdk/openai-compatible';
+/** The runtime's allow-list in short: the official packages and one third-party provider package. */
+const allowListed = (npm: string) => npm.startsWith('@ai-sdk/') || npm.endsWith('/ai-sdk-provider');
 
 export function catalogSummaries(): AiCatalogProviderSummary[] {
   return PROVIDERS.providers.map((provider) => ({
@@ -39,8 +40,7 @@ export function catalogSummaries(): AiCatalogProviderSummary[] {
     api: provider.api,
     doc: provider.doc,
     npm: provider.npm,
-    loader:
-      provider.npm.startsWith('@ai-sdk/') && provider.npm !== COMPATIBLE ? 'package' : 'compatible',
+    loader: allowListed(provider.npm) ? 'package' : 'compatible',
     modelCount: Object.keys(MODELS[provider.id]?.models ?? {}).length,
     logoUrl: providerLogoUrl(provider.id),
   }));

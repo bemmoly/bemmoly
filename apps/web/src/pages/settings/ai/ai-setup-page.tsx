@@ -36,7 +36,6 @@ export function AiSetupPage() {
         ? `${row.name} connected · suggested models chosen for ${filled} ${filled === 1 ? 'role' : 'roles'}`
         : `${row.name} connected`,
     );
-    providers.test(row.id);
   };
   const loading = admin.query.isPending || providers.query.isPending;
   return (

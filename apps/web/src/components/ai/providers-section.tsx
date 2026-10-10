@@ -56,9 +56,14 @@ export function ProvidersSection({ providers, onAdd }: ProvidersSectionProps) {
       render: (row) => (
         <span className="flex min-w-0 items-center gap-2.5">
           <ProviderLogo id={row.catalogId} name={row.name} />
-          <span className="flex min-w-0 flex-col">
-            <span className="truncate font-medium text-tx">{row.name}</span>
-            <span className="truncate text-12 text-tx-3">{providerKind(row)}</span>
+          <span className="flex min-w-0 flex-col items-start">
+            <span className="max-w-full truncate font-medium text-tx">{row.name}</span>
+            <span className="max-w-full truncate text-12 text-tx-3 max-sm:hidden">
+              {providerKind(row)}
+            </span>
+            <span className="mt-0.5 sm:hidden">
+              <Status provider={row} />
+            </span>
           </span>
         </span>
       ),
@@ -67,6 +72,7 @@ export function ProvidersSection({ providers, onAdd }: ProvidersSectionProps) {
       key: 'status',
       header: 'Status',
       width: 'minmax(0,1.2fr)',
+      hideOnPhone: true,
       render: (row) => <Status provider={row} />,
     },
     {
@@ -129,7 +135,7 @@ export function ProvidersSection({ providers, onAdd }: ProvidersSectionProps) {
     <Card>
       <CardHeader
         title="Providers"
-        hint="Any provider's model can fill any role"
+        hint={<span className="max-sm:hidden">Any provider’s model can fill any role</span>}
         actions={
           <Button size="xs" icon={<Icon name="plus" />} onClick={onAdd}>
             Add provider…

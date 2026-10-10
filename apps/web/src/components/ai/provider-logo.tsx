@@ -1,3 +1,4 @@
+import { Icon } from '@bemmoly/ui/icons';
 import { initialsOf } from '../../hooks/use-ai-catalog.ts';
 import { providerLogoUrl } from '../../lib/provider-logos.ts';
 import { BrandTile, LogoMask } from '../setup/choice-card.tsx';
@@ -9,6 +10,8 @@ import { BrandTile, LogoMask } from '../setup/choice-card.tsx';
  * brand colour, so they take the primary text colour.
  */
 export function providerIcon(id: string, logoUrl?: string | null) {
+  // A Local server (catalog id "custom" once connected, "local" in the picker) is a server.
+  if (id === 'custom' || id === 'local') return <Icon name="server" />;
   const url = providerLogoUrl(id) ?? logoUrl ?? null;
   return url ? <LogoMask url={url} /> : undefined;
 }
