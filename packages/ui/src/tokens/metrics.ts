@@ -27,28 +27,7 @@ export const TYPE_STEPS = {
 } as const;
 
 /** The first release's sizes, each on its nearest step by role. `h` was a half pixel. */
-export const TYPE_ALIASES = {
-  '9': '11',
-  '9h': '11',
-  '10': '11',
-  '10h': '11',
-  '11h': '12',
-  '12h': '13',
-  '13h': '13',
-  '15': '16',
-  '15h': '16',
-  '18': '16',
-  '22': '20',
-  '26': '24',
-  '36': '24',
-} as const satisfies Record<string, keyof typeof TYPE_STEPS>;
-
-export const TYPE_SCALE = {
-  ...TYPE_STEPS,
-  ...Object.fromEntries(
-    Object.entries(TYPE_ALIASES).map(([alias, step]) => [alias, TYPE_STEPS[step]]),
-  ),
-} as Readonly<Record<keyof typeof TYPE_STEPS | keyof typeof TYPE_ALIASES, string>>;
+export const TYPE_SCALE: Readonly<Record<keyof typeof TYPE_STEPS, string>> = TYPE_STEPS;
 
 /**
  * Four radii and full: chips 4, controls 6, cards 8, dialogs 12. Marks smaller than 12px (epic
@@ -64,21 +43,7 @@ export const RADIUS_STEPS = {
   full: '9999px',
 } as const;
 
-/** The first release's radii on the nearest step. */
-export const RADIUS_ALIASES = {
-  hair: 'tick',
-  xs: 'chip',
-  sm: 'chip',
-  panel: 'control',
-  pill: 'full',
-} as const satisfies Record<string, keyof typeof RADIUS_STEPS>;
-
-export const RADII = {
-  ...RADIUS_STEPS,
-  ...Object.fromEntries(
-    Object.entries(RADIUS_ALIASES).map(([alias, step]) => [alias, RADIUS_STEPS[step]]),
-  ),
-} as Readonly<Record<keyof typeof RADIUS_STEPS | keyof typeof RADIUS_ALIASES, string>>;
+export const RADII: Readonly<Record<keyof typeof RADIUS_STEPS, string>> = RADIUS_STEPS;
 
 export const LEADING = {
   display: '1.15',

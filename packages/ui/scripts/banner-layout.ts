@@ -115,14 +115,14 @@ function copyBlock(spec: BannerSpec, input: BannerInput, top: number) {
   for (const line of balanced(LINE, body, width)) {
     y += body.size * 1.3;
     const baseline = y - body.size * 0.3;
-    parts.push(`<path fill="${colors.tx2}" d="${outline(line, body, x, baseline)}"/>`);
+    parts.push(`<path fill="${colors['tx-2']}" d="${outline(line, body, x, baseline)}"/>`);
     boxes.push(textBox(x, baseline, line, body));
   }
   if (code) {
     y += code.size * 1.4;
     const pill = { x, y, w: measure(COMMAND, code) + code.size * 2, h: code.size * 2.4 };
     parts.push(
-      `<rect x="${pill.x}" y="${pill.y}" width="${pill.w}" height="${pill.h}" rx="${px(RADII.card)}" fill="${colors.sf}" stroke="${colors.br}"/>`,
+      `<rect x="${pill.x}" y="${pill.y}" width="${pill.w}" height="${pill.h}" rx="${px(RADII.card)}" fill="${colors.card}" stroke="${colors.line}"/>`,
       `<path fill="${colors.tx}" d="${outline(COMMAND, code, x + code.size, y + code.size * 1.55)}"/>`,
     );
     boxes.push(pill);
@@ -157,18 +157,18 @@ export function composeBanner(spec: BannerSpec, input: BannerInput) {
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}">`,
     '<defs>',
     `<radialGradient id="glow" cx="${glow.cx}" cy="${glow.cy}" r="${glow.r}" gradientUnits="userSpaceOnUse">`,
-    `<stop offset="0" stop-color="${colors.ac}" stop-opacity="0.14"/>`,
-    `<stop offset="1" stop-color="${colors.ac}" stop-opacity="0"/>`,
+    `<stop offset="0" stop-color="${colors.acc}" stop-opacity="0.14"/>`,
+    `<stop offset="1" stop-color="${colors.acc}" stop-opacity="0"/>`,
     '</radialGradient>',
     shadowFilter('shadow'),
     '</defs>',
-    `<rect width="${width}" height="${height}" fill="${colors.bg}"/>`,
+    `<rect width="${width}" height="${height}" fill="${colors.sunken}"/>`,
     `<rect width="${width}" height="${height}" fill="url(#glow)"/>`,
     boardFrame(input, spec.frame.rect, spec.frame.scale, spec.frame.from),
     brand?.svg ?? '',
     copy.svg,
     domain
-      ? `<path fill="${colors.tx3}" d="${outline(DOMAIN, domain.style, domainX, domain.baseline)}"/>`
+      ? `<path fill="${colors['tx-2']}" d="${outline(DOMAIN, domain.style, domainX, domain.baseline)}"/>`
       : '',
     '</svg>',
   ].join('');

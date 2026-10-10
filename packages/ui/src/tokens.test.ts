@@ -8,7 +8,6 @@ import { flatten as over, resolveHex } from './theme/color.ts';
 import { contrastRatio } from './theme/contrast.ts';
 import {
   BRAND,
-  COLOR_ALIASES,
   COLOR_TOKENS,
   ELEVATIONS,
   FIXED_COLOR_TOKENS,
@@ -142,10 +141,10 @@ describe('design tokens', () => {
     },
   );
 
-  it('resolves every alias to exactly its canonical value, in every preset', () => {
-    for (const { id, colors } of THEMES)
-      for (const [alias, target] of Object.entries(COLOR_ALIASES))
-        expect(colors[alias as keyof typeof colors], `${id} ${alias}`).toBe(colors[target]);
+  it('emits no first-release alias, so every screen uses the canonical names', () => {
+    const css = Object.values(renderCssFiles()).join('\n');
+    for (const old of ['--sf:', '--tx4:', '--ac-bg:', '--br2:', '--shadow-card:', '--text-12h:'])
+      expect(css).not.toContain(old);
   });
 
   it('keeps AI on the logo lilac, apart from the accent', () => {

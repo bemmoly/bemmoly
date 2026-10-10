@@ -14,7 +14,7 @@ import {
 /** The chip a mark sits on, flattened over the card. */
 const chipOf = (id: string) => {
   const { colors } = themeById(id);
-  return flatten(colors.chip, colors.card);
+  return flatten(colors['line-2'], colors.card);
 };
 
 describe('logo colours', () => {

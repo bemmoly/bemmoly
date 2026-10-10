@@ -83,7 +83,10 @@ component style, `kit.js` the icon, glyph, avatar, tile and brand-block drawings
 - Presets other than Classic and Dark keep their accent and font and project their neutrals
   onto the reduced set; a test holds every preset to the contrast rules.
 - The aliases are debt with an owner: `packages/ui/src/tokens/names.ts` (`COLOR_ALIASES`) and
-  `metrics.ts` (`TYPE_ALIASES`, `RADIUS_ALIASES`) list every one for removal.
+  `metrics.ts` (`TYPE_ALIASES`, `RADIUS_ALIASES`) listed every one for removal. They were removed
+  in the same release that migrated Work, Settings and setup: every call site now names the
+  canonical token, and the old card and segment shadows became `e1`, the review's one card
+  elevation.
 - `AGENTS.md`'s design-fidelity rule now points at the review first.
 
 ## Alternatives considered

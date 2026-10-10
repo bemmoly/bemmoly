@@ -13,9 +13,9 @@ const ocean = darkColors();
 
 /** Token preference per property, for literals several tokens share (#fff, #2456c9). */
 const PREFER: Record<'background' | 'color' | 'border', readonly ColorToken[]> = {
-  background: ['sf', 'bg', 'bg2', 'sf2', 'chip', 'ac-bg', 'ac-bg2', 'ok-bg', 'ac-fill'],
-  color: ['tx', 'tx2', 'tx3', 'tx4', 'tx5', 'tx6', 'tx-body', 'ac', 'ac-d', 'ac-mute', 'on-ac'],
-  border: ['br', 'br2', 'br3', 'br-row', 'ac-br', 'ac-br2', 'ac'],
+  background: ['card', 'sunken', 'side', 'line-2', 'acc-50', 'green-50', 'acc-fill'],
+  color: ['tx', 'tx-2', 'tx-3', 'acc', 'acc-600', 'acc-500', 'on-acc'],
+  border: ['line', 'line-2', 'acc-100', 'acc'],
 };
 
 function tokenFor(hex: string, property: keyof typeof PREFER): ColorToken | undefined {

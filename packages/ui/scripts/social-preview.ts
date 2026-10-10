@@ -10,7 +10,7 @@ import { measure, outline, wrap, type TextStyle } from './outline-text.ts';
 export interface PreviewInput {
   /** The -color lockup with its colours resolved. */
   lockup: string;
-  colors: Record<'bg' | 'sf' | 'br' | 'tx' | 'tx2' | 'tx3' | 'ac', string>;
+  colors: Record<'sunken' | 'card' | 'line' | 'tx' | 'tx-2' | 'acc', string>;
   /** The Board capture to frame; the light one unless a preset has its own. */
   board?: URL;
 }
@@ -39,7 +39,9 @@ const px = (value: string) => Number.parseFloat(value);
 
 /** `0 1px 2px rgba(16,24,40,.05)` as an SVG drop shadow. */
 export function shadowFilter(id: string): string {
-  const [x = '0', y = '0', blur = '0', ...rest] = ELEVATIONS.light['shadow-card'].split(' ');
+  // The drop of e1, without its 1px ring: the frame draws its own outline.
+  const drop = ELEVATIONS.light.e1.split(',0 0 0')[0] ?? ELEVATIONS.light.e1;
+  const [x = '0', y = '0', blur = '0', ...rest] = drop.split(' ');
   const rgba = /rgba\(([^)]+)\)/.exec(rest.join(' '))?.[1]?.split(',') ?? [];
   const [r = '0', g = '0', b = '0', a = '1'] = rgba.map((part) => part.trim());
   return `<filter id="${id}" x="-10%" y="-10%" width="120%" height="120%"><feDropShadow dx="${px(x)}" dy="${px(y)}" stdDeviation="${px(blur) / 2}" flood-color="rgb(${r},${g},${b})" flood-opacity="${Number(a)}"/></filter>`;
@@ -68,12 +70,12 @@ function copyBlock(input: PreviewInput, x: number, top: number, width: number) {
   y += 16;
   for (const line of lines) {
     y += 34;
-    parts.push(`<path fill="${colors.tx2}" d="${outline(line, body, x, y - 8)}"/>`);
+    parts.push(`<path fill="${colors['tx-2']}" d="${outline(line, body, x, y - 8)}"/>`);
   }
   y += 28;
   const pillWidth = measure(COMMAND, code) + 40;
   parts.push(
-    `<rect x="${x}" y="${y}" width="${pillWidth}" height="48" rx="${px(RADII.card)}" fill="${colors.sf}" stroke="${colors.br}"/>`,
+    `<rect x="${x}" y="${y}" width="${pillWidth}" height="48" rx="${px(RADII.card)}" fill="${colors.card}" stroke="${colors.line}"/>`,
     `<path fill="${colors.tx}" d="${outline(COMMAND, code, x + 20, y + 31)}"/>`,
   );
   y += 48;
@@ -99,9 +101,9 @@ export function boardFrame(
   const y = frame.y - from.y * scale;
   return [
     `<clipPath id="board"><rect x="${frame.x}" y="${frame.y}" width="${frame.w}" height="${frame.h}" rx="${radius}"/></clipPath>`,
-    `<rect x="${frame.x}" y="${frame.y}" width="${frame.w}" height="${frame.h}" rx="${radius}" fill="${input.colors.sf}" filter="url(#shadow)"/>`,
+    `<rect x="${frame.x}" y="${frame.y}" width="${frame.w}" height="${frame.h}" rx="${radius}" fill="${input.colors.card}" filter="url(#shadow)"/>`,
     `<image clip-path="url(#board)" x="${x}" y="${y}" width="${w}" height="${h}" href="data:image/png;base64,${image}"/>`,
-    `<rect x="${frame.x + 0.5}" y="${frame.y + 0.5}" width="${frame.w - 1}" height="${frame.h - 1}" rx="${radius}" fill="none" stroke="${input.colors.br}"/>`,
+    `<rect x="${frame.x + 0.5}" y="${frame.y + 0.5}" width="${frame.w - 1}" height="${frame.h - 1}" rx="${radius}" fill="none" stroke="${input.colors.line}"/>`,
   ].join('');
 }
 
@@ -111,12 +113,12 @@ function canvas(input: PreviewInput, width: number, height: number, content: str
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}">`,
     '<defs>',
     `<radialGradient id="glow" cx="0" cy="0" r="${width * 0.7}" gradientUnits="userSpaceOnUse">`,
-    `<stop offset="0" stop-color="${colors.ac}" stop-opacity="0.14"/>`,
-    `<stop offset="1" stop-color="${colors.ac}" stop-opacity="0"/>`,
+    `<stop offset="0" stop-color="${colors.acc}" stop-opacity="0.14"/>`,
+    `<stop offset="1" stop-color="${colors.acc}" stop-opacity="0"/>`,
     '</radialGradient>',
     shadowFilter('shadow'),
     '</defs>',
-    `<rect width="${width}" height="${height}" fill="${colors.bg}"/>`,
+    `<rect width="${width}" height="${height}" fill="${colors.sunken}"/>`,
     `<rect width="${width}" height="${height}" fill="url(#glow)"/>`,
     ...content,
     '</svg>',
@@ -138,7 +140,7 @@ export function wideCard(input: PreviewInput, width = 1200, height = 630): strin
   return canvas(input, width, height, [
     lockupAt(input, MARGIN, MARGIN),
     copyBlock(input, MARGIN, top, column).svg,
-    `<path fill="${input.colors.tx3}" d="${outline(FOOTER, footer, MARGIN, footerBaseline)}"/>`,
+    `<path fill="${input.colors['tx-2']}" d="${outline(FOOTER, footer, MARGIN, footerBaseline)}"/>`,
     boardFrame(input, { x: left, y: 150, w: width - left + 40, h: height - 110 }, 0.42),
   ]);
 }
@@ -151,7 +153,7 @@ export function squareCard(input: PreviewInput): string {
   const footerWidth = measure(FOOTER, footer);
   return canvas(input, 1080, 1080, [
     lockupAt(input, MARGIN, MARGIN),
-    `<path fill="${input.colors.tx3}" d="${outline(FOOTER, footer, 1080 - MARGIN - footerWidth, MARGIN + 36)}"/>`,
+    `<path fill="${input.colors['tx-2']}" d="${outline(FOOTER, footer, 1080 - MARGIN - footerWidth, MARGIN + 36)}"/>`,
     copy.svg,
     boardFrame(
       input,

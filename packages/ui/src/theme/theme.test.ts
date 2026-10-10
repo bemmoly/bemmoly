@@ -155,13 +155,13 @@ describe('applyTheme', () => {
     const t = buildTheme({ brand: '#7c3aed', mode: 'light', surfaces: 'neutral', font: 'geist' });
     applyTheme(el, t);
     expect(el.style.getPropertyValue('--acc')).toBe('#7c3aed');
-    expect(el.style.getPropertyValue('--ac')).toBe('#7c3aed');
+    expect(el.style.getPropertyValue('--ac')).toBe('');
     expect(el.style.getPropertyValue('--ai')).toBe('#9a85ea');
     expect(el.style.getPropertyValue('--e2')).toContain('rgba');
     expect(el.style.getPropertyValue('--font-ui')).toContain('Geist');
     expect(el.dataset['theme']).toBe('custom');
     clearTheme(el, 'light');
-    expect(el.style.getPropertyValue('--ac')).toBe('');
+    expect(el.style.getPropertyValue('--acc')).toBe('');
     expect(el.style.getPropertyValue('--e2')).toBe('');
     expect(el.dataset['theme']).toBe('light');
   });

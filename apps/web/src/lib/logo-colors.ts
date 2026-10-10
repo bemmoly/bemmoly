@@ -26,7 +26,7 @@ export function contrastRatio(a: string, b: string): number {
 export function chipsOf(mode: Mode): string[] {
   return PRESETS.filter((preset) => preset.mode === mode).map((preset) => {
     const { colors } = themeById(preset.id);
-    return flatten(colors.chip, colors.card);
+    return flatten(colors['line-2'], colors.card);
   });
 }
 

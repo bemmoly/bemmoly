@@ -142,17 +142,8 @@ export const ELEVATIONS: Readonly<Record<ThemeMode, ElevationSet>> = {
   }),
 };
 
-function elevationSet(e: Pick<ElevationSet, 'e1' | 'e1h' | 'e2' | 'e3'>): ElevationSet {
-  // Cards already carry a border, so their alias keeps the drop without the ring.
-  const drop = e.e1.split(',0 0 0')[0] ?? e.e1;
-  return {
-    ...e,
-    'shadow-card': drop.startsWith('0 0 0') ? 'none' : drop,
-    'shadow-seg': drop.startsWith('0 0 0') ? 'none' : drop,
-    'shadow-pop': e.e2,
-    'shadow-menu': e.e2,
-    'shadow-modal': e.e3,
-  };
+function elevationSet(e: ElevationSet): ElevationSet {
+  return e;
 }
 
 /** [background, foreground] legacy pastel pairs, light mode. */

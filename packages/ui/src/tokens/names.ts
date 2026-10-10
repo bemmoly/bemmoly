@@ -75,77 +75,8 @@ export const CANONICAL_COLOR_TOKENS = [
 
 export type CanonicalColorToken = (typeof CANONICAL_COLOR_TOKENS)[number];
 
-/** Old name → canonical name. Each alias resolves to exactly its target's value. */
-export const COLOR_ALIASES = {
-  // accent
-  ac: 'acc',
-  'ac-d': 'acc-600',
-  'ac-l': 'acc-500',
-  'ac-bg': 'acc-50',
-  'ac-bg2': 'acc-50',
-  'ac-br': 'acc-100',
-  'ac-br2': 'acc-100',
-  'ac-av': 'acc-100',
-  'ac-mute': 'acc-500',
-  'ac-fill': 'acc-fill',
-  'on-ac': 'on-acc',
-  // surfaces and lines
-  bg: 'sunken',
-  bg2: 'side',
-  sf: 'card',
-  sf2: 'side',
-  br: 'line',
-  br2: 'line-2',
-  br3: 'line',
-  'br-row': 'line-2',
-  'br-off': 'line',
-  trk: 'line',
-  chip: 'line-2',
-  // Control outlines (checkbox, radio) must reach 3:1, which no line does.
-  'br-ctl': 'tx-3',
-  // text
-  tx2: 'tx-2',
-  tx3: 'tx-2',
-  tx4: 'tx-3',
-  tx5: 'tx-3',
-  tx6: 'tx-3',
-  'tx-body': 'tx',
-  // AI
-  'ai-mute': 'ai',
-  'ai-bg': 'ai-50',
-  'ai-tint': 'ai-50',
-  'ai-br': 'ai-100',
-  'ai-br2': 'ai-100',
-  'ai-tx': 'tx',
-  // signal
-  ok: 'green',
-  'ok-fg': 'green-tx',
-  'ok-bg': 'green-50',
-  danger: 'red',
-  'danger-hi': 'red-tx',
-  warn: 'amber',
-  'warn-fg': 'amber-tx',
-  'warn-bg': 'amber-50',
-  caution: 'amber',
-  // status pills: the category's colour, so review and QA read as in progress
-  'st-todo-bg': 'line-2',
-  'st-todo-fg': 'tx-2',
-  'st-prog-bg': 'acc-50',
-  'st-prog-fg': 'acc',
-  'st-rev-bg': 'acc-50',
-  'st-rev-fg': 'acc',
-  'st-qa-bg': 'acc-50',
-  'st-qa-fg': 'acc',
-  'st-done-bg': 'green-50',
-  'st-done-fg': 'green-tx',
-} as const satisfies Record<string, CanonicalColorToken>;
-
-export type ColorAlias = keyof typeof COLOR_ALIASES;
-
-export const ALIAS_TOKENS = Object.keys(COLOR_ALIASES) as ColorAlias[];
-
-/** Every per-theme colour token: canonical, then the legacy hue pairs, then the aliases. */
-export const COLOR_TOKENS = [...CANONICAL_COLOR_TOKENS, ...HUE_TOKENS, ...ALIAS_TOKENS] as const;
+/** Every per-theme colour token: canonical, then the legacy hue pairs. */
+export const COLOR_TOKENS = [...CANONICAL_COLOR_TOKENS, ...HUE_TOKENS] as const;
 
 export type ColorToken = (typeof COLOR_TOKENS)[number];
 export type ColorSet = Readonly<Record<ColorToken, string>>;
@@ -155,17 +86,7 @@ export type Neutrals = Readonly<
   Record<'canvas' | 'side' | 'sunken' | 'card' | 'line' | 'line-2' | 'tx' | 'tx-2' | 'tx-3', string>
 >;
 
-/** Elevations, and the first release's shadow names mapped onto them, per theme mode. */
-export const ELEVATION_TOKENS = [
-  'e1',
-  'e1h',
-  'e2',
-  'e3',
-  'shadow-card',
-  'shadow-seg',
-  'shadow-pop',
-  'shadow-menu',
-  'shadow-modal',
-] as const;
+/** Elevations, per theme mode. */
+export const ELEVATION_TOKENS = ['e1', 'e1h', 'e2', 'e3'] as const;
 export type ElevationToken = (typeof ELEVATION_TOKENS)[number];
 export type ElevationSet = Readonly<Record<ElevationToken, string>>;

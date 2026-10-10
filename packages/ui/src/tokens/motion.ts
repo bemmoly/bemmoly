@@ -59,7 +59,7 @@ export const KEYFRAMES: Readonly<Record<string, Readonly<Record<string, string>>
   rise: { from: 'opacity: 0; transform: translateY(4px);' },
   /** A card or row that has just been dropped: lifted a hair, then set down. */
   settle: {
-    from: 'transform: translateY(-2px) scale(1.02); box-shadow: var(--shadow-menu);',
+    from: 'transform: translateY(-2px) scale(1.02); box-shadow: var(--e2);',
     to: 'transform: none;',
   },
 };

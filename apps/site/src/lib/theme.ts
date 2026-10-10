@@ -22,14 +22,13 @@ import {
 export const DARK_PRESET = 'ocean';
 
 /**
- * Ocean values with two site choices: body copy (tx3) uses Ocean tx2 so secondary text stays
- * clearly readable on navy, and text on accent fills follows contrastCheck: the sky accent is
- * too light for white text, so it gets the deepest Ocean navy instead.
+ * Ocean values with one site choice: text on accent fills follows contrastCheck, so the sky
+ * accent, too light for white text, gets the deepest Ocean navy instead.
  */
 export function darkColors(): Record<ColorToken, string> {
   const ocean = themeById(DARK_PRESET).colors;
-  const onAccent = contrastCheck(ocean.ac).level === 'dark-text' ? ocean.bg : ocean['on-ac'];
-  return { ...ocean, tx3: ocean.tx2, 'on-ac': onAccent };
+  const onAccent = contrastCheck(ocean.acc).level === 'dark-text' ? ocean.sunken : ocean['on-acc'];
+  return { ...ocean, 'on-acc': onAccent };
 }
 
 const vars = (prefix: string, scale: Readonly<Record<string, string>>) =>

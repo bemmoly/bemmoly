@@ -6,7 +6,6 @@ import { mixCss, mixHex, resolveHex } from '../theme/color.ts';
 import { contrastCheck, contrastRatio, darkenForWhiteText } from '../theme/contrast.ts';
 import { FONTS, MONO_STACK } from './fonts.ts';
 import {
-  COLOR_ALIASES,
   HUES,
   type CanonicalColorToken,
   type ColorSet,
@@ -106,10 +105,7 @@ export function resolveColors(input: ColorInputs): ColorSet {
       ];
     }),
   );
-  const aliases = Object.fromEntries(
-    Object.entries(COLOR_ALIASES).map(([alias, target]) => [alias, canonical[target]]),
-  );
-  return { ...canonical, ...hues, ...aliases } as ColorSet;
+  return { ...canonical, ...hues } as ColorSet;
 }
 
 export interface ResolvedTheme {
