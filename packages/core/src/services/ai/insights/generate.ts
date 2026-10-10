@@ -130,7 +130,11 @@ export async function regenerate(
   } catch (error) {
     const expected = isAiRefusal(error) || error instanceof ProviderError;
     const message = expected ? (error as Error).message.slice(0, 300) : FAILURE_COPY;
-    const saved = await deps.store.saveFailed({ ...where, inputHash: key, error: message });
+    // A failure keeps the row's generation time, so the next view builds the context with
+    // the same `since` as this one did: store that hash, or the view never sees the failure
+    // and queues another call on every look.
+    const failedKey = generator.stamp ? key : context.hash;
+    const saved = await deps.store.saveFailed({ ...where, inputHash: failedKey, error: message });
     await announce();
     if (!expected) throw error;
     return saved;

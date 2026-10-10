@@ -37,6 +37,8 @@ const notes = () =>
             const { aiRefusal } = await import('../refusals.ts');
             throw aiRefusal('excluded');
           }
+          // As Work's issue does: the context reads differently once a summary exists.
+          writer.heading(options.since ? 'Changes since the last summary' : 'Recent changes');
           writer.cite({
             kind: 'note',
             objectId: id,
@@ -217,6 +219,8 @@ describe('the insight cache against a real database', () => {
     const failed = await t.insights.get(ctxFor(userId), 'issue_summary', noteId);
     expect(failed.state).toBe('failed');
     expect(failed.error).toEqual(expect.any(String));
+    // Viewing a failed card again neither queues another call nor hides the failure.
+    expect((await t.insights.get(ctxFor(userId), 'issue_summary', noteId)).state).toBe('failed');
     expect(t.jobs).toHaveLength(0);
 
     const retry = await t.insights.refresh(ctxFor(userId), 'issue_summary', noteId);
