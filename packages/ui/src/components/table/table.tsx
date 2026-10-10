@@ -101,8 +101,8 @@ export function Table<T>({
                 className={cx(
                   'grid items-center gap-3 border-b border-br-row px-4',
                   rowPad,
-                  onRowClick && cx('cursor-pointer hover:bg-bg2', focusRingInset),
-                  selected && 'bg-ac-bg hover:bg-ac-bg',
+                  onRowClick && cx('cursor-pointer hover:bg-hover', focusRingInset),
+                  selected && 'bg-acc-50 hover:bg-acc-50',
                 )}
               >
                 {columns.map((column) => (

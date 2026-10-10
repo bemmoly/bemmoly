@@ -46,10 +46,13 @@ const PADDING: Partial<Record<`${ButtonVariant}-${ButtonSize}`, string>> = {
 const VARIANTS: Record<ButtonVariant, string> = {
   primary:
     'border-0 bg-ac-fill text-on-ac enabled:hover:brightness-95 enabled:active:brightness-90',
-  secondary:
-    'border border-br3 bg-sf text-tx2 enabled:hover:bg-bg2 enabled:hover:text-tx enabled:active:bg-chip',
+  // The hover and press overlays tint whatever the button sits on, the same on every surface.
+  secondary: cx(
+    'border border-line bg-card text-tx-2 enabled:hover:text-tx',
+    'enabled:hover:shadow-[inset_0_0_0_99px_var(--hover)] enabled:active:shadow-[inset_0_0_0_99px_var(--press)]',
+  ),
   ghost:
-    'border-0 bg-transparent text-tx4 enabled:hover:bg-chip enabled:hover:text-tx2 enabled:active:bg-br2',
+    'border-0 bg-transparent text-tx-2 enabled:hover:bg-hover enabled:hover:text-tx enabled:active:bg-press',
   danger:
     'border-0 bg-danger text-on-solid enabled:hover:brightness-95 enabled:active:brightness-90',
 };

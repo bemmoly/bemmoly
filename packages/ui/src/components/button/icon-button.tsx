@@ -17,8 +17,11 @@ const SIZES: Record<IconButtonSize, string> = {
 
 const VARIANTS = {
   ghost:
-    'border-0 bg-transparent enabled:hover:bg-chip enabled:hover:text-tx enabled:active:bg-br2',
-  secondary: 'border border-br3 bg-sf enabled:hover:bg-bg2 enabled:active:bg-chip',
+    'border-0 bg-transparent enabled:hover:bg-hover enabled:hover:text-tx enabled:active:bg-press',
+  secondary: cx(
+    'border border-line bg-card',
+    'enabled:hover:shadow-[inset_0_0_0_99px_var(--hover)] enabled:active:shadow-[inset_0_0_0_99px_var(--press)]',
+  ),
 } as const;
 
 export interface IconButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children'> {

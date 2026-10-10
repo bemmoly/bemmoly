@@ -133,9 +133,10 @@ export function FloatingLayer({
       popover={POPOVER ? 'manual' : undefined}
       {...rest}
       className={cx(
-        'fixed inset-auto z-50 m-0 flex flex-col rounded-card border border-br bg-sf text-13 text-tx shadow-menu',
+        'fixed inset-auto z-50 m-0 flex flex-col rounded-card border-0 bg-card text-13 text-tx shadow-e2',
         // Pops from the trigger: down from above it, up from below it.
         'origin-top motion-safe:animate-pop-in data-[side=top]:origin-bottom data-[side=top]:[--pop-from:4px]',
+        'data-[state=closed]:pointer-events-none data-[state=closed]:motion-safe:animate-fade-out',
         className,
       )}
     >
