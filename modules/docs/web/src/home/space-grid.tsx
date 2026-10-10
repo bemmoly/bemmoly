@@ -1,6 +1,5 @@
 import type { PageSummary, Space } from '@bemmoly/module-docs/shared';
 import { SpaceCard, SpaceCardSkeleton, spaceTone, type SpaceCardPerson } from '@bemmoly/ui';
-import { useSpaceTops } from '../hooks/home-queries.ts';
 import { docsPaths } from '../shared/navigation.ts';
 import type { DocsPersonView } from '../shared/people.ts';
 import { pageCountLabel } from '../space/space-sidebar.tsx';
@@ -32,11 +31,10 @@ function writersOf(
 
 /**
  * The Docs mock's space cards, three to a row: the tile and name, the page count (and, for
- * a project space, its PROJECT tag), the first pages of its tree, and who has been writing
- * there. On narrower screens they go two, then one, to a row.
+ * a project space, its PROJECT tag), the first pages of its tree (sent with the space, so
+ * there is no request per card), and who has been writing there. On narrower screens they go two, then one, to a row.
  */
 export function SpaceGrid({ spaces, recent, person }: SpaceGridProps) {
-  const tops = useSpaceTops(spaces.map((space) => space.key));
   return (
     <section aria-labelledby="docs-spaces" className="flex flex-col gap-3">
       <h2 id="docs-spaces" className="m-0 text-15 font-semibold text-tx">
@@ -52,7 +50,7 @@ export function SpaceGrid({ spaces, recent, person }: SpaceGridProps) {
             tone={spaceTone(space.key, space.color)}
             meta={pageCountLabel(space.pageCount)}
             project={Boolean(space.projectId)}
-            pages={(tops.get(space.key) ?? []).map((page) => page.title)}
+            pages={space.topPages.map((page) => page.title || 'Untitled')}
             people={writersOf(space.id, recent, person)}
           />
         ))}

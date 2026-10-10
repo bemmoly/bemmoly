@@ -16,17 +16,21 @@ const me = {
   capabilities: ['docs.space.create'],
 };
 
+/** The first pages of a space come with it; the home asks no tree. */
+const TOPS = [summary('Architecture'), summary('Runbooks')].map(({ id, title, icon }) => ({
+  id,
+  title,
+  icon,
+}));
+
 const { server } = startServer(
   http.get('*/api/v1/docs/spaces', () =>
     HttpResponse.json(
       listed([
-        space({ pageCount: 184 }),
-        space({ id: OWNER, key: 'PRD', name: 'Product', pageCount: 62 }),
+        space({ pageCount: 184, topPages: TOPS }),
+        space({ id: OWNER, key: 'PRD', name: 'Product', pageCount: 62, topPages: TOPS }),
       ]),
     ),
-  ),
-  http.get('*/api/v1/docs/spaces/:key/tree', () =>
-    HttpResponse.json(listed([summary('Architecture'), summary('Runbooks')])),
   ),
   http.get('*/api/v1/docs/home/recent', () => HttpResponse.json(listed([RFC]))),
   http.get('*/api/v1/docs/home/starred', () => HttpResponse.json(listed([]))),

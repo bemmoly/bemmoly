@@ -1,9 +1,8 @@
 import type { PageSummary } from '@bemmoly/module-docs/shared';
-import { useQueries, useQuery } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useEffect, useMemo } from 'react';
 import { api } from '../shared/api.ts';
 import { docsKeys } from '../shared/keys.ts';
-import { levelQuery } from '../space/use-space-tree.ts';
 import { useRecentPages } from './queries.ts';
 
 /** What waits on the person: reviews asked of them, stale pages they own. */
@@ -50,12 +49,4 @@ export function useMyDrafts(enabled: boolean) {
     if (more) void mine.fetchNextPage();
   }, [more, mine]);
   return { drafts, isPending: mine.isPending, isError: mine.isError };
-}
-
-/** The first three pages of each space, in tree order, for the space cards. */
-export function useSpaceTops(spaceKeys: readonly string[]) {
-  const levels = useQueries({ queries: spaceKeys.map((key) => levelQuery(key, null)) });
-  return new Map(
-    spaceKeys.map((key, index) => [key, (levels[index]?.data ?? []).slice(0, 3)] as const),
-  );
 }

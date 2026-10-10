@@ -40,7 +40,10 @@ export function spaceByRef(state: DocsState, ref: string): MockSpace | undefined
 
 export function presentSpace(state: DocsState, space: MockSpace) {
   const pageCount = state.pages.filter((page) => page.spaceId === space.id && live(page)).length;
-  return { ...space, pageCount };
+  const topPages = childrenOf(state, space.id, null)
+    .slice(0, 3)
+    .map((page) => ({ id: page.id, title: page.title, icon: page.icon }));
+  return { ...space, pageCount, topPages };
 }
 
 export function presentSummary(state: DocsState, page: MockPage) {
