@@ -14,6 +14,10 @@ const issue = {
   title: 'Session store migration to Postgres',
   type: { key: 'story', level: 'standard' },
   status: { name: 'In review', category: 'in_progress' },
+  priority: 'highest',
+  assignee: { id: 'u1', name: 'Aisha K.', email: 'a@example.org' },
+  parent: null,
+  sprint: { id: 's1', name: 'Sprint 14', state: 'active' },
 };
 
 vi.mock('../shared/api.ts', () => ({
@@ -41,9 +45,20 @@ function wrap(node: ReactNode) {
 describe('work entity renderers', () => {
   afterEach(cleanup);
 
-  it('lends an issue chip, card, table and search', () => {
+  it('lends an issue chip, card, embed, table and search', () => {
     expect(renderer).toMatchObject({ kind: 'issue' });
-    expect(renderer?.Chip && renderer.Card && renderer.Table && renderer.search).toBeTruthy();
+    expect(
+      renderer?.Chip && renderer.Card && renderer.Embed && renderer.Table && renderer.search,
+    ).toBeTruthy();
+  });
+
+  it('draws the card embed with status, priority and assignee', async () => {
+    const Embed = renderer!.Embed!;
+    wrap(<Embed entityKey="PLT-204" />);
+    expect(await screen.findByText('In review')).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'Open PLT-204' }).getAttribute('href')).toBe(
+      '/work/issue/PLT-204',
+    );
   });
 
   it('draws the chip live, and the bare key for an issue it cannot read', async () => {
@@ -56,14 +71,15 @@ describe('work entity renderers', () => {
         <Card entityKey="PLT-204" />
       </>,
     );
-    expect(await screen.findAllByText('In review')).toHaveLength(2);
+    expect(await screen.findAllByRole('img', { name: 'In review' })).toHaveLength(2);
     const links = screen.getAllByRole('link');
     expect(links.map((link) => link.getAttribute('href'))).toEqual([
       '/work/issue/PLT-204',
       '/work/issue/PLT-204',
     ]);
-    expect(await screen.findByTitle(/not found or is not shared/)).toBeTruthy();
-    expect(screen.getByText('Session store migration to Postgres')).toBeTruthy();
+    expect(await screen.findByTitle(/An issue you can’t see/)).toBeTruthy();
+    expect(screen.getAllByText('Session store migration to Postgres')).toHaveLength(2);
+    expect(screen.queryByText('IN REVIEW')).toBeNull();
   });
 
   it('searches issues as editor suggestions named by key', async () => {
