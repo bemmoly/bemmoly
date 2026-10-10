@@ -9,6 +9,7 @@ import { registerDocsAiTools } from './server/src/services/ai-tools/index.ts';
 import { createDocsServices } from './server/src/services/index.ts';
 import { registerDocsReferences } from './server/src/services/links/registry.ts';
 import { registerDocsSearch } from './server/src/services/palette/index.ts';
+import { registerDocsRetrieval } from './server/src/services/retrieval/index.ts';
 
 /**
  * Spaces, page trees, templates and the collaborative editor. Off until an
@@ -70,6 +71,7 @@ export default defineModule({
     ctx.jobs.add(importJob(services.transfer));
     ctx.jobs.add(purgeTrashJob(services.pages));
     registerDocsSearch(ctx.search, services.search);
+    registerDocsRetrieval(ctx);
     registerDocsReferences(ctx, services.links);
     registerDocsAiTools(ctx.ai, services);
     ctx.routes.add({ prefix: '/docs', plugin: docsRoutes(createDocsControllers(services)) });
