@@ -29,8 +29,9 @@ Foundations/Icons ([`icon.stories.tsx`](../../../packages/ui/src/icons/icon.stor
   the icon is that signal (a `warning` in `amber`).
 - **Decorative by default** (`aria-hidden`). Give `label` only to an icon that stands alone and
   is not inside a named control; an `IconButton` names itself.
-- **No direct `lucide-react` imports** outside `packages/ui/src/icons`: add the icon there under
-  a design-system name, so the set stays one set. Lint: `no-restricted-imports`.
+- **No direct `lucide-react` imports** outside `packages/ui/src/icons` (and the marketing site's
+  own set, `apps/site/src/lib/icons.ts`): add the icon there under a design-system name, so the
+  set stays one set. Lint: `no-restricted-imports`.
 
 ## Purpose-drawn glyphs
 
@@ -55,7 +56,8 @@ shortcuts overlay all use it.
 ## The ban on glyph characters
 
 `bemmoly/no-glyph-characters` (in `tools/eslint-plugin`, on for `apps/web`, `packages/ui`,
-`packages/core-web`, `packages/editor` and every `modules/*/web`) fails:
+`packages/core-web`, `packages/editor`, every `modules/*/web` and the site's `.astro` pages)
+fails:
 
 - JSX text containing an arrow, a technical symbol, a geometric shape or a dingbat:
   `← → ↑ ↓ ↗ ⌘ ⌥ ⏎ ■ ● ◆ ▲ ▾ ▮ ✓ ✕ ⚙ ◐`, outside `<Kbd>`;
