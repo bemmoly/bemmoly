@@ -128,12 +128,18 @@ export const docsRoutes: MockRoute[] = [
       if (!can(db, 'docs.page.edit')) return denied();
       const row = pageOf(db, request);
       if (!row) return notFound('The page');
-      const body = bodyOf<{ title: string; icon: string | null; version: number }>(request);
+      const body = bodyOf<{
+        title: string;
+        icon: string | null;
+        ownerId: string | null;
+        version: number;
+      }>(request);
       if (body.version !== undefined && body.version !== row.version) {
         return fail(409, 'conflict', 'The page changed since you opened it; reload it');
       }
       if (body.title !== undefined) row.title = body.title;
       if (body.icon !== undefined) row.icon = body.icon;
+      if (body.ownerId !== undefined) row.ownerId = body.ownerId;
       row.version += 1;
       row.updatedAt = now();
       emit(db, 'docs.page', [row.id]);
@@ -180,6 +186,19 @@ export const docsRoutes: MockRoute[] = [
       row.status = status;
       row.version += 1;
       row.updatedAt = now();
+      emit(db, 'docs.page', [row.id]);
+      return ok(detail(db, row));
+    },
+  },
+  {
+    method: 'PUT',
+    pattern: `${BASE}/pages/:pageId/reviewers`,
+    handle: (request, db) => {
+      if (!can(db, 'docs.page.edit')) return denied();
+      const row = pageOf(db, request);
+      if (!row) return notFound('The page');
+      row.reviewers = bodyOf<{ reviewers: string[] }>(request).reviewers ?? [];
+      row.version += 1;
       emit(db, 'docs.page', [row.id]);
       return ok(detail(db, row));
     },

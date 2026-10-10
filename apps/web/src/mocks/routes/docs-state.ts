@@ -73,7 +73,7 @@ export function presentDetail(
   const ancestors = page.path.split('/').filter((id) => id && id !== page.id);
   return {
     ...presentSummary(state, page),
-    snapshot: {
+    snapshot: page.snapshot ?? {
       type: 'doc',
       content: [{ type: 'paragraph', content: [{ type: 'text', text: page.text }] }],
     },

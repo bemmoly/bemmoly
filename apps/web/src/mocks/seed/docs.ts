@@ -1,3 +1,4 @@
+import { DOCS_BODIES } from './docs-bodies.ts';
 import { TEAM_IDS, USER_IDS } from './people.ts';
 import { ago, uid } from './time.ts';
 
@@ -38,6 +39,8 @@ export interface MockPage {
   reviewers: string[];
   templateId: string | null;
   text: string;
+  /** The body as the editor stores it; absent pages print `text` as one paragraph. */
+  snapshot?: object;
   labels: string[];
   wordCount: number;
   version: number;
@@ -240,6 +243,7 @@ export function seedDocsPages(): MockPage[] {
       reviewers: status === 'in_review' ? [USER_IDS.jonas] : [],
       templateId: null,
       text,
+      ...(DOCS_BODIES[n] ? { snapshot: DOCS_BODIES[n] } : {}),
       labels: title.startsWith('RFC') ? ['rfc'] : [],
       wordCount: text.split(/\s+/).length,
       version: 1,
