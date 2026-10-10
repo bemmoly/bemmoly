@@ -1,0 +1,648 @@
+/* ───────── Docs components (all prefixed d-, scoped under .px) ───────── */
+.px.dark {
+  --ai-600: #b3a4f2;
+  --ai-50: rgba(154, 133, 234, 0.12);
+}
+.px .d-tn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding-right: 4px;
+  border-radius: 7px;
+  color: var(--tx-2);
+  position: relative;
+  white-space: nowrap;
+}
+.px .d-tn.hover {
+  background: var(--hover);
+}
+.px .d-tn.on {
+  background: var(--card);
+  color: var(--tx);
+  font-weight: 550;
+  box-shadow: var(--e1);
+}
+.px.dark .d-tn.on {
+  background: rgba(255, 255, 255, 0.07);
+  box-shadow: none;
+}
+.px .d-tn .chev {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  display: grid;
+  place-items: center;
+  color: var(--tx-3);
+  flex: none;
+}
+.px .d-tn .tools {
+  margin-left: auto;
+  display: flex;
+  gap: 1px;
+  color: var(--tx-2);
+}
+.px .d-tn .tools span {
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+  display: grid;
+  place-items: center;
+}
+.px .d-tn .cnt {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--tx-3);
+  font-variant-numeric: tabular-nums;
+}
+.px .d-tn.drag {
+  background: var(--card);
+  box-shadow: var(--e2);
+  color: var(--tx);
+  transform: rotate(-1.5deg);
+  z-index: 3;
+}
+.px .d-drop {
+  height: 2px;
+  background: var(--acc);
+  border-radius: 1px;
+  position: relative;
+}
+.px .d-drop::before {
+  content: '';
+  position: absolute;
+  left: -4px;
+  top: -3px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  box-sizing: border-box;
+  border: 2px solid var(--acc);
+  background: var(--side);
+}
+.px .d-pgi {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+}
+.px .d-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  position: relative;
+  background: var(--canvas);
+}
+.px .d-cover {
+  height: 148px;
+  position: relative;
+  overflow: hidden;
+}
+.px .d-col {
+  width: 700px;
+  margin: 0 auto;
+  position: relative;
+}
+.px .d-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 13px;
+  background: var(--card);
+  box-shadow: var(--e1h);
+  display: grid;
+  place-items: center;
+}
+.px .d-title {
+  font-size: 36px;
+  font-weight: 650;
+  letter-spacing: -0.025em;
+  line-height: 1.15;
+  color: var(--tx);
+}
+.px .d-props {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px;
+  margin: 12px 0 0 -8px;
+  font-size: 12.5px;
+  color: var(--tx-2);
+}
+.px .d-prop {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 8px;
+  border-radius: 7px;
+  white-space: nowrap;
+}
+.px .d-prop.hover {
+  background: var(--hover);
+}
+.px .d-prop .k {
+  color: var(--tx-3);
+}
+.px .d-rule {
+  height: 1px;
+  background: var(--line);
+  margin: 14px 0 20px;
+}
+.px .d-prose {
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--tx);
+}
+.px .d-prose p {
+  margin: 0 0 14px;
+  position: relative;
+}
+.px .d-prose h2 {
+  font-size: 21px;
+  font-weight: 620;
+  letter-spacing: -0.015em;
+  line-height: 1.3;
+  margin: 24px 0 8px;
+  position: relative;
+}
+.px .d-prose h3 {
+  font-size: 16.5px;
+  font-weight: 620;
+  margin: 18px 0 6px;
+  position: relative;
+}
+.px .d-prose ol,
+.px .d-prose ul {
+  margin: 0 0 14px;
+  padding-left: 24px;
+}
+.px .d-prose li {
+  margin: 4px 0;
+  padding-left: 2px;
+  position: relative;
+}
+.px .d-a {
+  color: var(--acc);
+  text-decoration: underline;
+  text-decoration-color: var(--acc-100);
+  text-underline-offset: 3px;
+}
+.px .d-code {
+  font-family: var(--mono);
+  font-size: 13px;
+  background: var(--sunken);
+  box-shadow: inset 0 0 0 1px var(--line);
+  border-radius: 5px;
+  padding: 1px 5px;
+}
+.px .d-ich {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 23px;
+  padding: 0 7px 0 4px;
+  border-radius: 6px;
+  box-shadow: inset 0 0 0 1px var(--line);
+  background: var(--card);
+  font-size: 13px;
+  line-height: 1;
+  vertical-align: 1px;
+  white-space: nowrap;
+  color: var(--tx);
+  max-width: 320px;
+}
+.px .d-ich .mono {
+  color: var(--tx-3);
+  font-size: 11.5px;
+}
+.px .d-chl {
+  background: rgba(217, 119, 6, 0.12);
+  box-shadow: inset 0 -2px 0 rgba(217, 119, 6, 0.4);
+  border-radius: 2px;
+}
+.px .d-chl.on {
+  background: rgba(217, 119, 6, 0.24);
+  box-shadow: inset 0 -2px 0 var(--amber);
+}
+.px.dark .d-chl {
+  background: rgba(245, 158, 11, 0.13);
+  box-shadow: inset 0 -2px 0 rgba(245, 158, 11, 0.55);
+}
+.px .d-sel {
+  background: rgba(35, 86, 201, 0.17);
+  border-radius: 2px;
+}
+.px.dark .d-sel {
+  background: rgba(91, 123, 229, 0.32);
+}
+.px .d-cmk {
+  position: absolute;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 24px;
+  padding: 0 7px 0 3px;
+  border-radius: 12px;
+  background: var(--card);
+  box-shadow: var(--e1);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--tx-2);
+  line-height: 1;
+}
+.px .d-caret {
+  display: inline-block;
+  width: 2px;
+  height: 21px;
+  vertical-align: -5px;
+  position: relative;
+  border-radius: 1px;
+}
+.px .d-caret i {
+  position: absolute;
+  left: 0;
+  bottom: 20px;
+  font-style: normal;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: #fff;
+  padding: 1px 5px;
+  border-radius: 4px 4px 4px 0;
+  white-space: nowrap;
+  line-height: 14px;
+}
+.px .d-mycaret {
+  display: inline-block;
+  width: 1.5px;
+  height: 20px;
+  background: var(--acc);
+  vertical-align: -5px;
+}
+.px .d-toc {
+  position: absolute;
+  width: 170px;
+  font-size: 12.5px;
+}
+.px .d-toc .h {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--tx-3);
+  margin: 0 0 8px;
+}
+.px .d-toc .a {
+  display: block;
+  padding: 4px 0 4px 12px;
+  color: var(--tx-3);
+  border-left: 1.5px solid var(--line);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.px .d-toc .a.on {
+  color: var(--tx);
+  font-weight: 550;
+  border-left-color: var(--acc);
+}
+.px .d-toc .a.sub {
+  padding-left: 24px;
+}
+.px .d-handle {
+  position: absolute;
+  left: -52px;
+  top: 0;
+  display: flex;
+  gap: 1px;
+  color: var(--tx-3);
+}
+.px .d-handle span {
+  width: 22px;
+  height: 25px;
+  border-radius: 5px;
+  display: grid;
+  place-items: center;
+}
+.px .d-handle span.on {
+  background: var(--hover);
+  color: var(--tx-2);
+}
+.px .d-pop {
+  position: absolute;
+  background: var(--card);
+  border-radius: 11px;
+  box-shadow: var(--e2);
+  z-index: 5;
+}
+.px .d-mi {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 32px;
+  padding: 0 10px;
+  border-radius: 7px;
+  color: var(--tx);
+  white-space: nowrap;
+}
+.px .d-mi.on {
+  background: var(--hover);
+}
+.px .d-mi .r {
+  margin-left: auto;
+  color: var(--tx-3);
+  font-size: 11.5px;
+}
+.px .d-mi svg {
+  color: var(--tx-2);
+}
+.px .d-sl {
+  display: grid;
+  grid-template-columns: 32px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  height: 46px;
+  padding: 0 10px 0 7px;
+  border-radius: 8px;
+}
+.px .d-sl.on {
+  background: var(--hover);
+}
+.px .d-sl .ti {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--canvas);
+  box-shadow: inset 0 0 0 1px var(--line);
+  display: grid;
+  place-items: center;
+  color: var(--tx-2);
+}
+.px .d-sl .l {
+  font-weight: 550;
+  line-height: 1.25;
+}
+.px .d-sl .d {
+  color: var(--tx-3);
+  font-size: 12px;
+  line-height: 1.3;
+}
+.px .d-sl.ai .ti {
+  background: var(--ai-50);
+  box-shadow: inset 0 0 0 1px rgba(154, 133, 234, 0.4);
+  color: var(--ai-600);
+}
+.px .d-grp {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--tx-3);
+  padding: 8px 10px 4px;
+}
+.px .d-bub {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  height: 40px;
+}
+.px .d-bub > span {
+  height: 30px;
+  min-width: 30px;
+  padding: 0 7px;
+  border-radius: 7px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: var(--tx-2);
+  white-space: nowrap;
+}
+.px .d-bub > span.on {
+  background: var(--acc-50);
+  color: var(--acc);
+}
+.px .d-bub > span.ai {
+  color: var(--ai-600);
+}
+.px .d-bub .dv {
+  width: 1px;
+  min-width: 1px;
+  height: 18px;
+  padding: 0;
+  background: var(--line);
+  margin: 0 3px;
+}
+.px .d-thread {
+  background: var(--card);
+  border-radius: 10px;
+  box-shadow: var(--e1);
+  padding: 11px 12px;
+  position: absolute;
+  left: 14px;
+  right: 14px;
+}
+.px .d-thread.on {
+  box-shadow: 0 0 0 1.5px var(--amber), var(--e1h);
+}
+.px .d-thread .who {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12.5px;
+}
+.px .d-thread .msg {
+  margin: 5px 0 0 27px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--tx);
+}
+.px .d-react {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 22px;
+  padding: 0 7px;
+  border-radius: 11px;
+  box-shadow: inset 0 0 0 1px var(--line);
+  font-size: 11.5px;
+  color: var(--tx-2);
+}
+.px .d-react.me {
+  background: var(--acc-50);
+  box-shadow: inset 0 0 0 1px var(--acc-100);
+  color: var(--acc);
+}
+.px .d-ins {
+  background: rgba(31, 157, 85, 0.14);
+  color: #17733f;
+  border-radius: 2px;
+}
+.px .d-del {
+  background: rgba(229, 72, 77, 0.11);
+  color: #b4262b;
+  text-decoration: line-through;
+  text-decoration-color: rgba(180, 38, 43, 0.55);
+  border-radius: 2px;
+}
+.px.dark .d-ins {
+  color: #5fd394;
+}
+.px.dark .d-del {
+  color: #ff8a8e;
+}
+.px .d-chg {
+  position: absolute;
+  left: -22px;
+  width: 3px;
+  border-radius: 2px;
+}
+.px .d-vr {
+  display: grid;
+  grid-template-columns: 14px 1fr auto;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: 8px;
+  position: relative;
+}
+.px .d-vr.on {
+  background: var(--acc-50);
+  box-shadow: inset 0 0 0 1px var(--acc-100);
+}
+.px .d-vr .dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  margin: 5px 0 0 2px;
+  background: var(--card);
+  box-shadow: 0 0 0 1.5px var(--tx-3);
+}
+.px .d-vr .dot.named,
+.px .d-vr.on .dot {
+  background: var(--acc);
+  box-shadow: 0 0 0 1.5px var(--acc);
+}
+.px .d-tpl {
+  border-radius: 10px;
+  box-shadow: var(--e1);
+  background: var(--card);
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+.px .d-tpl.on {
+  box-shadow: 0 0 0 1.5px var(--acc), var(--e1h);
+}
+.px .d-mini {
+  height: 56px;
+  border-radius: 6px;
+  background: var(--sunken);
+  box-shadow: inset 0 0 0 1px var(--line-2);
+  padding: 8px 9px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  overflow: hidden;
+}
+.px .d-mini i {
+  display: block;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--line);
+}
+.px .d-mini i.h {
+  height: 6px;
+  width: 55%;
+  background: var(--tx-3);
+  opacity: 0.4;
+}
+.px .d-callout {
+  display: flex;
+  gap: 10px;
+  padding: 11px 14px;
+  border-radius: 9px;
+  background: var(--acc-50);
+  margin: 0 0 14px;
+  font-size: 14.5px;
+  line-height: 1.6;
+}
+.px .d-callout svg {
+  color: var(--acc);
+  margin-top: 3px;
+}
+.px .d-ai {
+  border-radius: 10px;
+  background: var(--ai-50);
+  box-shadow: inset 0 0 0 1px rgba(154, 133, 234, 0.35);
+  padding: 10px 14px;
+}
+.px .d-ai .lab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--ai-600);
+  font-weight: 600;
+  font-size: 12px;
+}
+.px .d-toast {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 44px;
+  padding: 0 8px 0 14px;
+  border-radius: 10px;
+  background: #161b26;
+  color: #fff;
+  box-shadow: var(--e3);
+  font-size: 13px;
+  z-index: 6;
+}
+.px.dark .d-toast {
+  background: #252b35;
+}
+.px .d-toast .u {
+  color: #9db3f5;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.08);
+}
+.px .d-kh {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--tx-3);
+  font-size: 12px;
+}
+.px .d-lrow {
+  display: grid;
+  align-items: center;
+  gap: 12px;
+  height: 40px;
+  padding: 0 14px;
+  border-bottom: 1px solid var(--line-2);
+}
+.px .d-lrow.hover {
+  background: var(--hover);
+}
+.px .d-sec {
+  font-size: 13px;
+  font-weight: 600;
+  margin: 0 0 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.px .d-mark {
+  background: rgba(217, 119, 6, 0.18);
+  color: inherit;
+  border-radius: 2px;
+  padding: 0 1px;
+}
+.px .d-rc {
+  border-radius: 10px;
+  background: var(--card);
+  box-shadow: var(--e1);
+  padding: 13px 14px;
+  min-width: 0;
+}
+.px .d-rc.hover {
+  box-shadow: var(--e1h);
+}
