@@ -70,7 +70,7 @@ describe('system status', () => {
     );
     expect(screen.getByText('3 days 4 hours')).toBeTruthy();
     expect(screen.getByText(/Rolling back to 0\.1\.0… Changes are paused/)).toBeTruthy();
-    expect(screen.getByText('Available with the AI runtime')).toBeTruthy();
+    expect(await screen.findByText(/this month/)).toBeTruthy();
     expect(screen.getByText('Job queue figures arrive with the jobs dashboard.')).toBeTruthy();
   });
 });
