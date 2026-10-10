@@ -1,5 +1,13 @@
 import type { ModuleContributions } from './contributions.ts';
-import type { EntityRegistry, LinkRegistry, ReferenceGroup } from './registries.ts';
+import type { RequestContext } from '../services/authz/index.ts';
+import type {
+  EntityDefinition,
+  EntityLookup,
+  EntityRegistry,
+  EntitySummary,
+  LinkRegistry,
+  ReferenceGroup,
+} from './registries.ts';
 import type { ModuleRegistry } from './registry.ts';
 
 /**
@@ -16,19 +24,38 @@ export function createReferenceRegistries(
     if (!registry) throw new Error('Cross-module lookups run only after every module has loaded');
     return registry;
   };
+  const definitionOf = (kind: string) =>
+    loaded()
+      .entities()
+      .find((entity) => entity.kind === kind);
+  const resolveOne = async (
+    definition: EntityDefinition,
+    ref: EntityLookup,
+    ctx?: RequestContext,
+  ) => {
+    const summary = await definition.resolve(ref);
+    if (!summary) return null;
+    if (ctx && !(await definition.canView(ctx, summary.id))) return null;
+    return summary;
+  };
   return {
     entities: {
       add: (entity) => into.entities.push(entity),
       async resolve(kind, ref, ctx) {
-        const definition = loaded()
-          .entities()
-          .find((entity) => entity.kind === kind);
-        if (!definition) return null;
-        const summary = await definition.resolve(ref);
-        if (!summary) return null;
-        if (ctx && !(await definition.canView(ctx, summary.id))) return null;
-        return summary;
+        const definition = definitionOf(kind);
+        return definition ? resolveOne(definition, ref, ctx) : null;
       },
+      async resolveMany(kind, refs, ctx) {
+        const definition = definitionOf(kind);
+        if (!definition || refs.length === 0) return [];
+        const found = definition.resolveMany
+          ? await definition.resolveMany(refs, ctx)
+          : await Promise.all(refs.map((ref) => resolveOne(definition, ref, ctx)));
+        const unique = new Map<string, EntitySummary>();
+        for (const summary of found) if (summary) unique.set(summary.id, summary);
+        return [...unique.values()];
+      },
+      has: (kind) => definitionOf(kind) !== undefined,
     },
     links: {
       add: (link) => into.links.push(link),

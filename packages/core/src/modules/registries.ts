@@ -20,6 +20,11 @@ export interface EntitySummary {
   key?: string;
   title: string;
   path: string;
+  /**
+   * Facts a renderer shows beside the title, owned by the serving module and
+   * passed through untouched: an issue's status, type and priority.
+   */
+  data?: Record<string, unknown>;
 }
 
 export interface SearchDocument {
@@ -37,6 +42,12 @@ export interface EntityDefinition {
   kind: string;
   renderer: string;
   resolve(ref: EntityLookup): Promise<EntitySummary | null>;
+  /**
+   * Many records by id or key in one round trip, for lists. With a context,
+   * only those the person may open. Without it the registry falls back to
+   * resolve and canView per record.
+   */
+  resolveMany?(refs: readonly EntityLookup[], ctx?: RequestContext): Promise<EntitySummary[]>;
   /** Whether the person behind the request may open the record. */
   canView(ctx: RequestContext, id: string): Promise<boolean>;
   buildSearchDocument?(id: string): Promise<SearchDocument | null>;
@@ -51,6 +62,18 @@ export interface EntityRegistry {
    * when no enabled module serves the kind or the record is not there.
    */
   resolve(kind: string, ref: EntityLookup, ctx?: RequestContext): Promise<EntitySummary | null>;
+  /**
+   * resolve for a list: the records found, each at most once, in no set
+   * order; the ones the person may not open are left out. Empty when no
+   * enabled module serves the kind.
+   */
+  resolveMany(
+    kind: string,
+    refs: readonly EntityLookup[],
+    ctx?: RequestContext,
+  ): Promise<EntitySummary[]>;
+  /** Whether an enabled module serves the kind, so callers can keep a placeholder otherwise. */
+  has(kind: string): boolean;
 }
 
 export interface LinkKindDefinition {

@@ -69,8 +69,35 @@ describe('cross-module references', () => {
     ).toEqual([]);
   });
 
+  it('resolves many records at once, falling back to one at a time', async () => {
+    loadModules({ available: [pages, issues] });
+    const refs = [{ key: 'PLT-1' }, { key: 'PLT-1' }, { key: 'NOPE-9' }];
+    expect(await notes!.entities.resolveMany('issue', refs)).toMatchObject([{ id: 'i-1' }]);
+    expect(await notes!.entities.resolveMany('issue', refs, asPerson('mo'))).toEqual([]);
+    expect(await notes!.entities.resolveMany('ticket', refs)).toEqual([]);
+    expect(notes!.entities.has('issue')).toBe(true);
+    expect(notes!.entities.has('ticket')).toBe(false);
+  });
+
+  it('uses a module’s own batch lookup when it has one', async () => {
+    const batch = moduleNamed('batch', (ctx) => {
+      ctx.entities.add({
+        kind: 'card',
+        renderer: 'card',
+        resolve: async () => null,
+        resolveMany: async (refs, ctx) =>
+          ctx ? [] : refs.map((_, n) => ({ kind: 'card', id: `c-${n}`, title: 'C', path: '/' })),
+        canView: async () => true,
+      });
+    });
+    loadModules({ available: [pages, batch] });
+    expect(await notes!.entities.resolveMany('card', [{ id: 'a' }, { id: 'b' }])).toHaveLength(2);
+    expect(await notes!.entities.resolveMany('card', [{ id: 'a' }], asPerson('ada'))).toEqual([]);
+  });
+
   it('answers only for enabled modules', async () => {
     loadModules({ available: [pages, issues], enabled: ['notes'] });
     expect(await notes!.entities.resolve('issue', { key: 'PLT-1' })).toBeNull();
+    expect(notes!.entities.has('issue')).toBe(false);
   });
 });
