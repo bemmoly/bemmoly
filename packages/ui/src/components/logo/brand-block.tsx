@@ -28,7 +28,8 @@ export interface BrandBlockProps {
 }
 
 const LINE_BUTTON = cx(
-  'flex min-w-0 cursor-pointer items-center gap-1 rounded-chip border-0 bg-transparent p-0 font-sans text-12 text-tx-3 hover:text-tx-2 aria-expanded:text-tx-2',
+  // 24px tall for touch and pointer targets, without moving the line it sits on.
+  '-my-1 flex min-h-6 min-w-0 cursor-pointer items-center gap-1 rounded-chip border-0 bg-transparent p-0 font-sans text-12 text-tx-3 hover:text-tx-2 aria-expanded:text-tx-2',
   focusRing,
 );
 

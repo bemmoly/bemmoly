@@ -74,7 +74,7 @@ export function NewButton({ shell, size = 30 }: { shell: Shell; size?: number })
             {...props}
             aria-label="More to create"
             style={{ height: size }}
-            className={`${FILL} w-4.5 rounded-r-control border-l border-on-acc/25`}
+            className={`${FILL} w-6 rounded-r-control border-l border-on-acc/25`}
           >
             <Icon name="caret" size={12} />
           </button>

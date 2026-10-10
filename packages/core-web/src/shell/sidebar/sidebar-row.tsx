@@ -167,7 +167,7 @@ export function SidebarHeading({ label, tile, add }: SidebarHeadingProps) {
             type="button"
             aria-label={add.label}
             onClick={add.onSelect}
-            className="grid size-5 cursor-pointer place-items-center rounded-chip border-0 bg-transparent p-0 text-tx-3 opacity-0 group-hover/heading:opacity-100 hover:bg-hover hover:text-tx focus-ring focus-visible:opacity-100 pointer-coarse:opacity-100"
+            className="grid size-6 cursor-pointer place-items-center rounded-chip border-0 bg-transparent p-0 text-tx-3 opacity-0 group-hover/heading:opacity-100 hover:bg-hover hover:text-tx focus-ring focus-visible:opacity-100 pointer-coarse:opacity-100"
           >
             <Icon name="plus" size={14} />
           </button>
