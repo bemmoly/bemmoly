@@ -10,5 +10,9 @@ export function pagesRoutes(controller: PagesController): FastifyPluginAsync {
     app.delete('/pages/:pageId', async (request, reply) => controller.remove(request, reply));
     app.post('/pages/:pageId/restore', async (request) => controller.restore(request));
     app.get('/spaces/:spaceKey/trash', async (request) => controller.trash(request));
+    app.delete('/spaces/:spaceKey/trash', async (request) => controller.emptyTrash(request));
+    app.delete('/spaces/:spaceKey/trash/:pageId', async (request, reply) =>
+      controller.deleteForever(request, reply),
+    );
   };
 }

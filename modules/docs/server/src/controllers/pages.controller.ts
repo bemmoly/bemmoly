@@ -6,6 +6,8 @@ import {
   createPageBodySchema,
   getPageQuerySchema,
   listTrashQuerySchema,
+  trashPageParamsSchema,
+  type EmptyTrashResult,
   updatePageBodySchema,
   type PageDetail,
   type PageSummaryPage,
@@ -41,6 +43,14 @@ export function createPagesController(service: PagesService) {
     async trash(request: FastifyRequest): Promise<PageSummaryPage> {
       const query = parseOrThrow(listTrashQuerySchema, request.query);
       return service.listTrash(contextOf(request), spaceRefOf(request), query);
+    },
+    async deleteForever(request: FastifyRequest, reply: FastifyReply): Promise<void> {
+      const params = parseOrThrow(trashPageParamsSchema, request.params);
+      await service.deleteForever(contextOf(request), params.spaceKey, params.pageId);
+      reply.code(204);
+    },
+    async emptyTrash(request: FastifyRequest): Promise<EmptyTrashResult> {
+      return service.emptyTrash(contextOf(request), spaceRefOf(request));
     },
   };
 }
