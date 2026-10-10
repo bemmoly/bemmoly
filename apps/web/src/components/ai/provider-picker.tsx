@@ -62,7 +62,7 @@ export function ProviderPicker({ picker, choice, onPick, disabled }: ProviderPic
           icon={<Icon name="server" size={16} />}
           name={picker.local.name}
           description={LOCAL_DESCRIPTION}
-          badge="AIR-GAPPED"
+          badge="Air-gapped"
           selected={choice === picker.local.id}
           onSelect={() => onPick(picker.local.id)}
           disabled={disabled}
