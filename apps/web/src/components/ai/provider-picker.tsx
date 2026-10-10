@@ -29,7 +29,7 @@ export function ProviderPicker({ picker, choice, onPick, disabled }: ProviderPic
   return (
     <div className="flex flex-col gap-3">
       <GroupLabel>Popular</GroupLabel>
-      <div role="radiogroup" aria-label="Popular providers" className="grid grid-cols-3 gap-3">
+      <div role="radiogroup" aria-label="Popular providers" className="grid grid-cols-2 gap-3 sm:grid-cols-3">
         {picker.popular.map((provider) => (
           <ChoiceCard
             key={provider.id}
