@@ -90,6 +90,7 @@ export default function DocsHomeScreen(props: DocsScreenProps) {
         <HeaderActions>
           <Button
             variant="ghost"
+            className="max-sm:hidden!"
             icon={<Icon name="upload" size={14} />}
             onClick={() => setDialog({ kind: 'import' })}
           >
@@ -97,6 +98,7 @@ export default function DocsHomeScreen(props: DocsScreenProps) {
           </Button>
           <Button
             variant="secondary"
+            className="max-sm:hidden!"
             icon={<Icon name="layers" size={14} />}
             onClick={() => setDialog({ kind: 'page' })}
           >
@@ -105,7 +107,7 @@ export default function DocsHomeScreen(props: DocsScreenProps) {
           <Button
             variant="primary"
             icon={<Icon name="plus" size={15} />}
-            iconEnd={<Kbd keys="N" />}
+            iconEnd={<Kbd keys="N" className="max-sm:hidden!" />}
             loading={newPage.isPending}
             onClick={() => createHere?.()}
           >
