@@ -120,7 +120,7 @@ export function CompareDialog({
               description="Both sides are the same version."
             />
           ) : compare.isPending ? (
-            <div className="flex flex-col gap-3" aria-label="Loading the compare">
+            <div role="status" className="flex flex-col gap-3" aria-label="Loading the compare">
               <Skeleton width="70%" />
               <Skeleton width="90%" />
               <Skeleton width="55%" />

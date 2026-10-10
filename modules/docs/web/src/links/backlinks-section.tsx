@@ -82,7 +82,7 @@ export function BacklinksSection({ pageId }: { pageId: string }) {
 
   if (loading) {
     return (
-      <div className="flex flex-col gap-2 pt-2" aria-label="Loading links">
+      <div role="status" className="flex flex-col gap-2 pt-2" aria-label="Loading links">
         <Skeleton width="35%" />
         <Skeleton width="80%" />
       </div>

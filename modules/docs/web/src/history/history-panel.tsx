@@ -118,7 +118,7 @@ export function HistoryPanel({ pageId, canEdit = true }: HistoryPanelProps) {
       )}
       <div className="min-h-0 flex-1 overflow-auto px-2 pb-3.5">
         {history.isPending ? (
-          <div className="flex flex-col gap-3 px-3 py-2" aria-label="Loading versions">
+          <div role="status" className="flex flex-col gap-3 px-3 py-2" aria-label="Loading versions">
             {[0, 1, 2, 3].map((key) => (
               <div key={key} className="flex flex-col gap-1.5">
                 <Skeleton width="55%" />
