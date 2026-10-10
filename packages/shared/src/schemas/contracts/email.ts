@@ -98,8 +98,14 @@ export const searchResultSchema = z.object({
       status: z
         .object({ category: z.enum(['todo', 'in_progress', 'done']), name: z.string() })
         .optional(),
+      /** A record's own stored icon, such as a page's emoji or icon name. */
+      icon: z.string().nullable().optional(),
     })
     .optional(),
+  /** Where the record lives, read left to right: "Engineering › Platform". */
+  context: z.string().optional(),
+  /** The line that matched, with <b> around each hit; drawn as marks, never as HTML. */
+  snippet: z.string().optional(),
 });
 
 export const searchQuerySchema = z.object({

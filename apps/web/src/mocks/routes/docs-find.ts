@@ -42,6 +42,9 @@ export function docsSearchHits(db: MockDb, q: string) {
     .slice(0, 8)
     .map((row) => {
       const page = presentSummary(state, row);
+      const space = state.spaces.find((item) => item.id === row.spaceId);
+      const parent = state.pages.find((item) => item.id === row.parentId);
+      const inBody = row.text.toLowerCase().includes(q.trim().toLowerCase());
       return {
         kind: 'docs.page',
         group: 'Pages',
@@ -49,6 +52,13 @@ export function docsSearchHits(db: MockDb, q: string) {
         key: page.spaceKey,
         title: page.title || 'Untitled',
         subtitle: STATUS[page.status] ?? null,
+        context: parent
+          ? `${space?.name ?? ''} › ${parent.title || 'Untitled'}`
+          : (space?.name ?? ''),
+        ...(row.text
+          ? { snippet: inBody ? snippet(row.text, q.trim()) : row.text.slice(0, 120) }
+          : {}),
+        look: { icon: page.icon },
         href: `/docs/p/${page.id}`,
       };
     });
