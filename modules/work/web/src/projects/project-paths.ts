@@ -1,12 +1,11 @@
-/**
- * Where a project's pages live. Settings sections are tabs of one settings page, Members among
- * them; the shell's header draws the tabs, these pages draw what is under them.
- */
-export type ProjectSettingsTab =
-  'general' | 'members' | 'issue-types' | 'fields' | 'workflow' | 'board';
+import { workPaths } from '../hooks/issue-navigation.ts';
 
+/**
+ * Where a project's pages live, as the frame's header tabs name them: settings open on their
+ * first section, and Members is one of those sections.
+ */
 export const projectPaths = {
-  backlog: (key: string) => `/work/backlog/${key}`,
-  settings: (key: string, tab: ProjectSettingsTab = 'general') => `/work/settings/${key}/${tab}`,
-  members: (key: string) => `/work/settings/${key}/members`,
+  backlog: workPaths.backlog,
+  settings: workPaths.settings,
+  members: (key: string) => `/work/members/${key}`,
 };
