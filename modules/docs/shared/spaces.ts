@@ -7,6 +7,7 @@ import {
   queryFlagSchema,
   spaceKeySchema,
 } from './common.ts';
+import { breadcrumbSchema } from './pages.ts';
 
 /*
  * Spaces: GET/POST /api/v1/docs/spaces, GET/PATCH/DELETE
@@ -33,6 +34,8 @@ export const spaceSchema = z.object({
   contributors: z.array(docsPersonSchema).default([]),
   /** People with a membership row in the space (org admins without one are not counted). */
   memberCount: z.number().int().nonnegative().default(0),
+  /** The first three root pages in tree order, for the space card's preview. */
+  topPages: z.array(breadcrumbSchema).default([]),
   archivedAt: timestampSchema.nullable(),
   createdAt: timestampSchema,
   updatedAt: timestampSchema,

@@ -129,8 +129,9 @@ describe('docs home enrichment', () => {
     const card = spaces.items.find((space) => space.key === 'ENR')!;
     expect(card.memberCount).toBe(3);
     expect(card.contributors.map((person) => person.id)).toEqual([users.admin, member]);
+    expect(card.topPages).toEqual([{ id: expect.any(String), title: 'Engineering', icon: null }]);
     const fresh = await services.spaces.create(as(users.admin), { key: 'NEW', name: 'New' });
-    expect(fresh).toMatchObject({ contributors: [], memberCount: 1 });
+    expect(fresh).toMatchObject({ contributors: [], memberCount: 1, topPages: [] });
   });
 
   it('leaves issue keys empty with Work off, without asking anyone', async (ctx) => {
