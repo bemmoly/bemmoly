@@ -4,6 +4,7 @@
 !**/.env.example
 **/node_modules
 **/dist
+**/dist-demo
 **/.turbo
 **/coverage
 **/storybook-static

@@ -28,6 +28,18 @@
       ],
       "outputs": ["dist/**"]
     },
+    "@bemmoly/web#build:demo": {
+      "dependsOn": [],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/modules/*/package.json",
+        "$TURBO_ROOT$/modules/*/web/**",
+        "$TURBO_ROOT$/modules/*/shared/**",
+        "$TURBO_ROOT$/packages/editor/package.json",
+        "$TURBO_ROOT$/packages/editor/src/**"
+      ],
+      "outputs": ["dist-demo/**"]
+    },
     "@bemmoly/site#build": {
       "dependsOn": [],
       "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/SECURITY.md"],

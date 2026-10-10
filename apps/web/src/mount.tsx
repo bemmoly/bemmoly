@@ -4,8 +4,11 @@ import { App } from './app.tsx';
 
 /** Renders the app into #root; the boot frame stays on top until the router renders a page. */
 export async function mount(): Promise<void> {
-  // The dev server sets this so the mock backend is compiled out of builds.
-  if (__MOCK_API__) {
+  // The dev server and the demo build set these, so the mock backend is compiled out of builds.
+  if (__DEMO__) {
+    const { startDemo } = await import('./demo/start.ts');
+    await startDemo();
+  } else if (__MOCK_API__) {
     const { startDevMocks } = await import('./mocks/browser.ts');
     await startDevMocks();
   }

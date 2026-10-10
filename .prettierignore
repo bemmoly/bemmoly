@@ -2,6 +2,7 @@ pnpm-lock.yaml
 docs/
 .changeset/*.md
 **/dist/
+**/dist-demo/
 **/storybook-static/
 **/playwright-report/
 **/test-results/

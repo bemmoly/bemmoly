@@ -1,0 +1,9 @@
+/* The demo banner (banner.ts) sits above the shell, so the shell's full-screen frame gives
+   up the banner's height instead of pushing the page into a scroll. */
+:root {
+  --demo-banner: 32px;
+}
+
+html[data-demo-banner] #root .h-screen {
+  height: calc(100dvh - var(--demo-banner));
+}

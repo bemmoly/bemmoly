@@ -2,8 +2,8 @@ import { FetchInterceptor } from '@mswjs/interceptors/fetch';
 import { WebSocketInterceptor } from '@mswjs/interceptors/WebSocket';
 import { defineNetwork, InterceptorSource } from 'msw/experimental';
 import { MOCK_SCENARIOS, type MockDb, type MockScenario } from './db.ts';
-import { createMockApi } from './dispatch.ts';
-import { mswHandlers } from './msw.ts';
+import { createMockApi, type MockApi } from './dispatch.ts';
+import { mswHandlers, type MswOptions } from './msw.ts';
 
 const STORAGE_KEY = 'bemmoly.mock-db';
 const REAL_KEY = 'bemmoly.mock-real';
@@ -41,13 +41,18 @@ export async function startDevMocks(): Promise<void> {
   const api = createMockApi(isScenario(requested) ? requested : (load() ?? 'ready'));
   const save = () => sessionStorage.setItem(STORAGE_KEY, JSON.stringify(api.db));
   save();
+  await enableMockNetwork(api, { fallback, onChange: save });
+}
+
+/** Answers the page's fetch and WebSocket calls from `api`, in the page itself. */
+export async function enableMockNetwork(api: MockApi, options: MswOptions): Promise<void> {
   const network = defineNetwork({
     sources: [
       new InterceptorSource({
         interceptors: [new FetchInterceptor(), new WebSocketInterceptor()] as never,
       }),
     ],
-    handlers: mswHandlers(api, { fallback, onChange: save }),
+    handlers: mswHandlers(api, options),
     onUnhandledFrame: 'bypass',
   });
   await network.enable();

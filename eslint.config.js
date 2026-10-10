@@ -12,6 +12,7 @@ export default defineConfig(
   {
     ignores: [
       '**/dist/**',
+      '**/dist-demo/**',
       '**/storybook-static/**',
       '**/coverage/**',
       '**/playwright-report/**',
