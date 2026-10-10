@@ -6,6 +6,7 @@
  */
 import { existsSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { HOME_FAQ } from '../src/data/faq.ts';
 import { OWN, PROMISES, type Proof } from '../src/data/proofs.ts';
 import { REPO_URL, sourceUrl } from '../src/lib/links.ts';
 import { hrefsOf, parsePage } from './dom.ts';
@@ -57,5 +58,17 @@ describe('proofs', () => {
       parsePage(readFileSync(new URL('../dist/index.html', import.meta.url), 'utf8')),
     );
     for (const proof of proofs) expect(hrefs, proof.label).toContain(proof.href);
+  });
+
+  it('presents the sponsor button as optional support that unlocks nothing', () => {
+    // The repository keeps its Buy Me a Coffee button; the site must never sell it.
+    const funding = readFileSync(new URL('.github/FUNDING.yml', repo), 'utf8');
+    expect(funding).toMatch(/^buy_me_a_coffee: \S+/m);
+    const mentions = HOME_FAQ.filter((item) => /sponsor|coffee/i.test(item.answer));
+    expect(mentions.map((item) => item.question)).toEqual(['How is it free?']);
+    for (const item of mentions) {
+      expect(item.answer).toContain('optional');
+      expect(item.answer).toContain('unlocks nothing');
+    }
   });
 });
