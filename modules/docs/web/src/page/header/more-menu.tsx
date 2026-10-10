@@ -1,3 +1,4 @@
+import { useScreenActions } from '@bemmoly/core-web';
 import { IconButton, Menu, MenuItem, MenuSeparator, useToast } from '@bemmoly/ui';
 import { Icon } from '@bemmoly/ui/icons';
 import { useState } from 'react';
@@ -42,6 +43,37 @@ export function MoreMenu() {
   const copy = useDuplicatePage();
   const trashed = readOnly === 'trashed';
   const canChange = !trashed && readOnly !== 'viewer';
+  const name = page.title || 'Untitled';
+  // ⌘K offers the page's own commands first, as Work's screens do.
+  useScreenActions([
+    {
+      id: 'docs.copy-link',
+      title: `Copy link to ${name}`,
+      look: { kind: 'icon', icon: 'link' },
+      run: () => void copyLink(),
+    },
+    ...(canChange
+      ? [
+          {
+            id: 'docs.duplicate',
+            title: `Duplicate ${name}`,
+            look: { kind: 'icon' as const, icon: 'copy' },
+            run: () => copy.duplicate(page.id),
+          },
+        ]
+      : []),
+    ...(!trashed
+      ? [
+          {
+            id: 'docs.history',
+            title: 'Open version history',
+            keys: HISTORY_SLOT.keys,
+            look: { kind: 'icon' as const, icon: HISTORY_SLOT.icon },
+            run: () => setMode('history'),
+          },
+        ]
+      : []),
+  ]);
 
   return (
     <>

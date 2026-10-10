@@ -15,6 +15,7 @@ import {
   useRestore,
   useTrash,
 } from './trash/use-trash.ts';
+import { useDocsShortcutHelp } from '../shared/shortcut-help.ts';
 
 function TrashSkeleton() {
   return (
@@ -67,6 +68,7 @@ export function TrashView() {
   const [emptying, setEmptying] = useState(false);
   const search = useRef<HTMLInputElement>(null);
   useSlashToSearch(search);
+  useDocsShortcutHelp('trash');
 
   const clear = (page: TrashItem) => setSelected((open) => (open?.id === page.id ? null : open));
   const restore = useRestore(clear);

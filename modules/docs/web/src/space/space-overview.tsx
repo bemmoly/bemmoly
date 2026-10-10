@@ -16,6 +16,7 @@ import { useSpaceMembers, useSpaceRecent } from './overview/use-overview.ts';
 import { pageCountLabel } from './page-count.ts';
 import { useSpaceActions } from './space-layout.tsx';
 import { useSpaceTree } from './use-space-tree.ts';
+import { useDocsShortcutHelp } from '../shared/shortcut-help.ts';
 
 /**
  * A space's overview: who and what it is, Start here (its home page), what waits in review,
@@ -35,6 +36,7 @@ export function SpaceOverview() {
   const canChange = members.data?.canManage ?? false;
   const empty = !tree.isPending && roots.length === 0;
   useNewPageKey(canWrite && !dialog ? () => createPage(null) : null);
+  useDocsShortcutHelp('space');
 
   return (
     <DocsLayout layout="contained">
