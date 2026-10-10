@@ -15,11 +15,9 @@ import { useThemeStore } from '../store/theme.ts';
 import { useUiStore, type PaletteScope } from '../store/ui.ts';
 import { paletteItems, paletteScopes, recentItem, type PaletteItem } from './command-items.ts';
 import { useDirectory } from './use-directory.ts';
+import { usePaletteAi } from './use-palette-ai.ts';
 import { inPlace, usePalettePlace } from './use-palette-place.ts';
 import { useShell } from './use-shell.ts';
-
-/** The Command mock's rule: a sentence that starts with a verb is a request, not a search. */
-const COMMAND = /^(move|assign|close|set|change|reopen|add|remove|rename)\b/;
 
 /** What the empty palette shows before anything is typed, per group. */
 const EMPTY_LIMITS: Readonly<Record<string, number>> = { Recent: 5, Actions: 6, Navigation: 8 };
@@ -95,7 +93,7 @@ export function useCommandPalette() {
   const { place, clear: clearPlace } = usePalettePlace();
   // Kept to a place, ask for more so the place's own results still fill the list.
   const server = useServerSearch(deferred, place ? 24 : 8);
-  const ai = shell.workspace.aiEnabled;
+  const aiOn = shell.workspace.aiEnabled;
 
   const items = useMemo(
     () =>
@@ -123,6 +121,17 @@ export function useCommandPalette() {
     () => arrange(inPlace(items, place), recentItems, deferred, group),
     [items, place, recentItems, deferred, group],
   );
+
+  const ai = usePaletteAi({
+    enabled: aiOn,
+    query,
+    you: shell.me.user.name.split(' ')[0] ?? shell.me.user.name,
+    isAdmin: shell.me.can('ai.models.configure'),
+    open: (href) => {
+      ui.closePalette();
+      void navigate({ to: href });
+    },
+  });
 
   const open = (item: PaletteItem) => {
     ui.closePalette();
@@ -152,6 +161,5 @@ export function useCommandPalette() {
     ai,
     close: ui.closePalette,
     openShortcuts: () => ui.setShortcutsOpen(true),
-    isCommand: ai && COMMAND.test(query.trim().toLowerCase()),
   };
 }

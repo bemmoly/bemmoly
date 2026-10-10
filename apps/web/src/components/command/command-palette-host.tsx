@@ -1,36 +1,47 @@
 import {
   Avatar,
   avatarHue,
+  CommandAiLine,
   CommandFooter,
   CommandGroup,
   CommandInput,
   CommandItem,
   CommandList,
   CommandPalette,
-  CommandPlan,
   CommandScopes,
   Kbd,
 } from '@bemmoly/ui';
 import { Icon, PageIcon } from '@bemmoly/ui/icons';
-import plan from '../../fixtures/command-plan.json' with { type: 'json' };
 import type { PaletteItem } from '../../hooks/command-items.ts';
 import { useCommandPalette } from '../../hooks/use-command-palette.ts';
-import { toast } from '../../lib/toast.ts';
+import type { PaletteAi } from '../../hooks/use-palette-ai.ts';
 import { RecentMark, RecentStatus } from '../shell/recent-mark.tsx';
+import { PaletteAiPanel } from './palette-ai.tsx';
 import { Marked, PlaceChip } from './palette-parts.tsx';
 
-const steps = plan.rows.map((row) => ({
-  target: row.issue,
-  change: row.change,
-  field: row.field ?? (
-    <span className="inline-flex items-center gap-1">
-      {row.from}
-      <Icon name="arrow" size={12} label="to" />
-      <b className="font-semibold">{row.to}</b>
-    </span>
-  ),
-  allowed: row.permission === 'ALLOWED',
-}));
+/** The AI line: the typed words handed to Bemmoly, a result row like any other. */
+function AiLine({ ai, query }: { ai: PaletteAi; query: string }) {
+  if (!ai.line) return null;
+  return <CommandAiLine label={ai.line.label} query={query.trim()} onSelect={ai.start} />;
+}
+
+/** The footer's keys follow what Enter does now. */
+function hintsFor(ai: PaletteAi) {
+  if (ai.mode === 'plan' && ai.plan.plan?.status === 'proposed' && ai.plan.plan.runnable) {
+    return [
+      { keys: 'Enter', label: 'run' },
+      { keys: 'Tab', label: 'edit' },
+      { keys: 'Esc', label: 'close' },
+    ];
+  }
+  if (ai.active) return [{ keys: 'Esc', label: 'close' }];
+  return [
+    { keys: 'Up Down', label: 'move' },
+    { keys: 'Enter', label: 'open' },
+    ...(ai.line ? [{ keys: 'Mod+Enter', label: ai.line.label.split(' ')[0]!.toLowerCase() }] : []),
+    { keys: 'Tab', label: 'filter by type' },
+  ];
+}
 
 /** Each row's own mark: a person's avatar, an issue's type tile, or the place's icon. */
 function Mark({ item }: { item: PaletteItem }) {
@@ -66,30 +77,33 @@ function Meta({ item }: { item: PaletteItem }) {
 export default function CommandPaletteHost() {
   const palette = useCommandPalette();
   return (
-    <CommandPalette open onClose={palette.close} onTab={palette.cycleScope}>
+    <CommandPalette
+      open
+      onClose={palette.close}
+      {...(palette.ai.active ? {} : { onTab: palette.cycleScope })}
+    >
       <CommandInput
         value={palette.query}
         onValueChange={palette.setQuery}
-        ai={palette.ai}
+        ai={palette.ai.enabled}
         autoFocus
         trailing={
           palette.place && <PlaceChip label={palette.place.label} onClear={palette.clearPlace} />
         }
         onKeyDown={(event) => {
+          palette.ai.onKeyDown(event);
           if (event.key === 'Backspace' && !palette.query && palette.place) palette.clearPlace();
         }}
       />
-      <CommandScopes scopes={palette.scopes} value={palette.scope} onChange={palette.setScope} />
-      {palette.isCommand ? (
-        <CommandPlan
-          summary={plan.summary}
-          steps={steps}
-          onRun={() => toast('AI plans arrive with the AI runtime in a later release.', 'info')}
-          footnote="Preview only: nothing runs until the AI runtime ships."
-        />
+      {!palette.ai.active && (
+        <CommandScopes scopes={palette.scopes} value={palette.scope} onChange={palette.setScope} />
+      )}
+      {palette.ai.active ? (
+        <PaletteAiPanel ai={palette.ai} />
       ) : (
         <CommandList>
-          {palette.groups.length === 0 ? (
+          {palette.ai.line?.first && <AiLine ai={palette.ai} query={palette.query} />}
+          {palette.groups.length === 0 && !palette.ai.line ? (
             <p className="m-0 px-4 py-6 text-center text-13 text-tx-3">
               Nothing matches “{palette.query.trim()}”. Try an issue key, a person’s name or a page.
             </p>
@@ -117,9 +131,13 @@ export default function CommandPaletteHost() {
               </CommandGroup>
             ))
           )}
+          {palette.ai.line && !palette.ai.line.first && (
+            <AiLine ai={palette.ai} query={palette.query} />
+          )}
         </CommandList>
       )}
       <CommandFooter
+        hints={hintsFor(palette.ai)}
         extra={
           <button
             type="button"
