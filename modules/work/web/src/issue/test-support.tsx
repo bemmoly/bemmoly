@@ -143,8 +143,31 @@ export const issue = {
 
 const empty = { items: [], nextCursor: null };
 
+/** The signed-in person (Rohan), with AI on or off for the workspace. */
+export const me = (aiEnabled: boolean) => ({
+  user: user(IDS.rohan, 'Rohan S.'),
+  capabilities: [],
+  modules: ['work'],
+  workspace: {
+    name: 'Acme',
+    url: 'http://bemmoly.test',
+    aiEnabled,
+    appearance: {
+      theme: 'classic',
+      brandColor: '#2356C9',
+      font: 'inter',
+      logoKey: '',
+      mode: 'light',
+      surfaces: 'neutral',
+      memberModeSwitch: true,
+      personalThemes: true,
+    },
+  },
+});
+
 /** The routes every Issue screen reads; tests add or replace handlers for their case. */
 export const baseHandlers: HttpHandler[] = [
+  http.get('*/api/v1/me', () => HttpResponse.json(me(false))),
   http.get('*/api/v1/users', () =>
     HttpResponse.json({
       items: [user(IDS.rohan, 'Rohan S.'), user(IDS.aisha, 'Aisha K.')],
