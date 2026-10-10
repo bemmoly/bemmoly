@@ -3,6 +3,9 @@ import type { HtmlTagDescriptor, Plugin, Rolldown } from 'vite';
 
 const LOGO_SLOT = '<!-- boot:logo -->';
 
+/** public/boot-theme.js: the remembered look, put on <html> before the first paint. */
+const BOOT_SCRIPT = 'boot-theme.js';
+
 /**
  * The brand file made fit for index.html: the CSP forbids inline style
  * attributes, so `style="fill: var(--brand-mark-bg, #2356C9)"` becomes the designed colour
@@ -45,10 +48,23 @@ export function chunkGraph(
 export function bootFrame(options: { logo: string; app: string }): Plugin {
   const { app } = options;
   let base = '/';
+  let publicDir = '';
+  let copiesPublic = true;
   return {
     name: 'bemmoly-boot-frame',
     configResolved(config) {
       base = config.base;
+      publicDir = config.publicDir;
+      copiesPublic = config.build.copyPublicDir;
+    },
+    /** A build that leaves the public folder out (the demo) still needs the boot script. */
+    generateBundle() {
+      if (copiesPublic || !publicDir) return;
+      this.emitFile({
+        type: 'asset',
+        fileName: BOOT_SCRIPT,
+        source: readFileSync(`${publicDir}/${BOOT_SCRIPT}`, 'utf8'),
+      });
     },
     transformIndexHtml: {
       order: 'post',
@@ -57,7 +73,7 @@ export function bootFrame(options: { logo: string; app: string }): Plugin {
         // The remembered look goes on <html> before anything paints (public/boot-theme.js).
         const look: HtmlTagDescriptor = {
           tag: 'script',
-          attrs: { src: `${base}boot-theme.js` },
+          attrs: { src: `${base}${BOOT_SCRIPT}` },
           injectTo: 'head-prepend',
         };
         const { bundle, chunk: entry } = context;
