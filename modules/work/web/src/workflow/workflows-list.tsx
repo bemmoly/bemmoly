@@ -41,7 +41,7 @@ function columns(projectId: string): TableColumn<Row>[] {
     {
       key: 'version',
       header: 'Version',
-      width: '150px',
+      width: '100px',
       render: ({ workflow }) => (
         <span className="flex items-center gap-2">
           <span className="font-mono text-12 tabular-nums">
@@ -78,6 +78,7 @@ function columns(projectId: string): TableColumn<Row>[] {
       key: 'published',
       header: 'Published',
       width: '110px',
+      hideOnPhone: true,
       render: ({ workflow }) => (
         <span className="text-tx-3">
           {workflow.publishedAt ? formatRelative(workflow.publishedAt) : 'Never'}
@@ -117,7 +118,7 @@ export function WorkflowsList({
             rows={2}
             columns={[
               { width: 'minmax(0,1fr)' },
-              { width: '150px' },
+              { width: '100px' },
               { width: '200px' },
               { width: '110px' },
             ]}

@@ -21,7 +21,7 @@ export function SummaryPanel({ name, version, problems, changes, select }: Summa
     <PanelFrame label="Workflow">
       <PanelHeader
         title={name}
-        chip={<Badge tone="neutral">{version > 0 ? `VERSION ${version}` : 'UNPUBLISHED'}</Badge>}
+        chip={<Badge tone="neutral">{version > 0 ? `Version ${version}` : 'Unpublished'}</Badge>}
       />
       <PanelBody>
         <PanelSection title="Problems">

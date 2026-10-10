@@ -28,10 +28,13 @@ test('a project is created with an owning team and its creator leads it', async 
   await expect(dialog).toBeHidden();
 
   await page.goto('/work/projects');
-  const row = page.getByRole('row', { name: new RegExp(`^${key} `) });
-  await expect(row.getByRole('cell').nth(1)).toHaveText(name);
-  await expect(row.getByRole('cell').nth(2)).toHaveText('Kanban');
-  await expect(row.getByRole('cell').nth(3)).toHaveText(run.team.name);
+  // Name leads the row; the key, lead, team and method follow it.
+  const row = page
+    .getByRole('row')
+    .filter({ has: page.getByRole('cell', { name: key, exact: true }) });
+  await expect(row.getByRole('cell').nth(1)).toContainText(name);
+  await expect(row.getByRole('cell').nth(4)).toContainText(run.team.name);
+  await expect(row.getByRole('cell').nth(5)).toContainText('Kanban');
 
   const project = await admin.call<{ teamId: string; method: string }>(
     'GET',

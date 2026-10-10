@@ -26,7 +26,7 @@ test('a workflow change published in the editor is what the board follows', asyn
 
   await page.goto(`/work/workflows/${project.key}`);
   await page
-    .getByRole('row', { name: /PROJECT COPY/ })
+    .getByRole('row', { name: /This project/ })
     .getByRole('cell')
     .first()
     .click();
@@ -40,11 +40,11 @@ test('a workflow change published in the editor is what the board follows', asyn
   await expect(page.getByText('No unpublished changes')).toBeHidden();
   await expect(page.getByText('Draft saved')).toBeVisible();
 
-  await page.getByRole('button', { name: 'Publish' }).click();
+  await page.getByRole('button', { name: 'Review and publish' }).click();
   const publish = page.getByRole('dialog', { name: /^Publish .* version 2\?$/ });
   await publish.getByRole('button', { name: 'Publish version 2' }).click();
   await expect(publish).toBeHidden();
-  await expect(page.getByText('Version 2 published')).toBeVisible();
+  await expect(page.getByText('v2 published')).toBeVisible();
   expect(await targets()).toContain('Testing');
 
   // The board takes the new transition the workflow just gained.

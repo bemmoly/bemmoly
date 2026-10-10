@@ -8,7 +8,7 @@ export function PanelFrame({ label, children }: { label: string; children: React
   return (
     <aside
       aria-label={label}
-      className="flex w-85 shrink-0 flex-col overflow-auto border-l border-br bg-sf"
+      className="flex w-85 shrink-0 flex-col overflow-auto border-l border-line bg-card max-md:max-h-[45vh] max-md:w-full max-md:border-t max-md:border-l-0"
     >
       {children}
     </aside>
