@@ -1,5 +1,10 @@
 # Interaction log
 
+> The interaction **rules** (the twelve principles, the shortcut map and the notes every new
+> screen needs) are in the design system: [`../system/interaction.md`](../system/interaction.md).
+> This log is history and evidence: each screen's notes and the choices recorded while building
+> it. Keep adding a section per new screen here.
+
 How every screen behaves, not only how it looks. One section per screen: its primary job, the
 top three actions, the keyboard map, and how each state looks (loading, empty, error, partial,
 many items, no permission). Each stream adds its screens here before building them, and records

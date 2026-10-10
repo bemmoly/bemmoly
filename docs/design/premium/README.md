@@ -1,10 +1,12 @@
 # Premium design review
 
-The design review that compares every screen as it is with the proposed redesign. Where it covers
-a screen, a component or a part of the visual language, it is the source of truth; see
-`docs/adr/0015-premium-visual-system.md`. The mocks in `../mocks` still hold for anything the
-review does not draw (the content of most settings pages, the setup wizard's steps, the docs
-editor's internals).
+> **History and evidence.** The rules now live in the design system,
+> [`../system/`](../system/README.md) (ADR 0016). Read this review for why a rule exists; follow
+> the system for what to build. New screens still add their interaction notes under
+> `interaction/`.
+
+The design review that compares every screen as it is with the proposed redesign (ADR 0015). The
+mocks in `../mocks` are superseded wherever the review or the system covers a screen.
 
 ## Build it
 
