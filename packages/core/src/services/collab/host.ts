@@ -12,6 +12,7 @@ import {
   CLOSE_TOO_BIG,
   createMessageLimiter,
   DEFAULT_COLLAB_LIMITS,
+  messageKindOf,
   type CollabLimits,
 } from './limits.ts';
 import { resolveDocumentName, type HostedDocument } from './names.ts';
@@ -191,7 +192,7 @@ export function createCollabHost(options: CollabHostOptions): CollabHost {
       const connection = hocuspocus.handleConnection(socket, hookRequest(request), { actor });
       socket.on('message', (data: RawData) => {
         const bytes = bytesOf(data);
-        const verdict = limiter.check(bytes.byteLength);
+        const verdict = limiter.check(bytes.byteLength, messageKindOf(bytes));
         if (verdict !== 'ok') {
           const close = verdict === 'too-big' ? CLOSE_TOO_BIG : CLOSE_RATE_LIMITED;
           logger.warn(

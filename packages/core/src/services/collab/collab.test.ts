@@ -2,7 +2,7 @@ import { pino } from 'pino';
 import { describe, expect, it } from 'vitest';
 import { applyUpdate, Doc, encodeStateAsUpdate, encodeStateVector, mergeUpdates } from 'yjs';
 import type { Actor } from '../../contracts/authz.ts';
-import { createMessageLimiter } from './limits.ts';
+import { createMessageLimiter, messageKindOf } from './limits.ts';
 import { resolveDocumentName, type HostedDocument } from './names.ts';
 import { createUpdateWriter } from './writer.ts';
 
@@ -75,6 +75,36 @@ describe('message limiter', () => {
     expect(limiter.check(5)).toBe('rate-limited');
     now = 1_000;
     expect(limiter.check(5)).toBe('ok');
+  });
+
+  it('gives awareness a budget of its own, so carets never spend the typing budget', () => {
+    let now = 0;
+    const limiter = createMessageLimiter(
+      { maxMessageBytes: 10, messagesPerWindow: 2, windowMs: 1_000 },
+      () => now,
+    );
+    for (let i = 0; i < 6; i += 1) expect(limiter.check(5, 'awareness')).toBe('ok');
+    expect(limiter.check(5, 'document')).toBe('ok');
+    expect(limiter.check(5, 'document')).toBe('ok');
+    // Three times the document budget, then a flood of carets closes the socket too.
+    expect(limiter.check(5, 'awareness')).toBe('rate-limited');
+    expect(limiter.check(5, 'document')).toBe('rate-limited');
+    now = 1_000;
+    expect(limiter.check(5, 'awareness')).toBe('ok');
+  });
+
+  it('reads the message type after the document name', () => {
+    const varUint = (value: number): number[] =>
+      value < 0x80 ? [value] : [(value & 0x7f) | 0x80, ...varUint(value >>> 7)];
+    const message = (name: string, type: number) => {
+      const bytes = new TextEncoder().encode(name);
+      return Uint8Array.from([...varUint(bytes.length), ...bytes, type, 0]);
+    };
+    expect(messageKindOf(message('docs.page:0193', 1))).toBe('awareness');
+    expect(messageKindOf(message('docs.page:0193', 0))).toBe('document');
+    expect(messageKindOf(message(`docs.page:${'é'.repeat(100)}`, 1))).toBe('awareness');
+    expect(messageKindOf(Uint8Array.from([0xff]))).toBe('document');
+    expect(messageKindOf(new Uint8Array())).toBe('document');
   });
 });
 

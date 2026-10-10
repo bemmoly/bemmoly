@@ -36,9 +36,13 @@ socket and what happens on shutdown and across replicas.
    and never skipped, since a gap in a Yjs log strands every later update.
 5. **`onChange` is debounced 2 s** (at most every 10 s while typing continues) and also runs on
    unload and on shutdown, with the people who edited since the last call.
-6. **Limits are per socket and in memory:** 2 MiB per message and 600 messages per 10 s by
-   default (`BEMMOLY_COLLAB_MAX_MESSAGE_BYTES`, `BEMMOLY_RATE_LIMIT_COLLAB_MESSAGES`); a socket
-   over either is closed (1009, 1008) and the client reconnects with backoff. A socket lives
+6. **Limits are per socket and in memory:** 2 MiB per message and 1200 document messages per
+   10 s by default (`BEMMOLY_COLLAB_MAX_MESSAGE_BYTES`, `BEMMOLY_RATE_LIMIT_COLLAB_MESSAGES`);
+   awareness (carets, selections) has its own budget of three times that, so moving the caret
+   never spends the typing budget. Measured in a browser, holding a key down with the caret
+   moving sent about 70 messages a second, half of them awareness, which closed sockets at
+   the first default of 600 counted together. A socket over any limit is closed (1009, 1008)
+   and the client reconnects with backoff. A socket lives
    on one process, so there is nothing to share through Postgres as the HTTP limits do.
 7. **Graceful shutdown** runs in Fastify's `preClose`: close the sockets, run pending
    `onChange` calls, and wait for every queued update to be stored while the pool is open.

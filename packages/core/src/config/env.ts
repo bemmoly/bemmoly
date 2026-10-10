@@ -52,7 +52,7 @@ export const envSchema = z.object({
   BEMMOLY_RATE_LIMIT_AUTH_PER_IP: rateLimitMax,
   BEMMOLY_RATE_LIMIT_AUTH_PER_ACCOUNT: rateLimitMax,
   BEMMOLY_RATE_LIMIT_FAILED_CREDENTIALS_PER_IP: rateLimitMax,
-  /** Messages one /collab socket may send per 10 seconds; unset keeps services/collab's default. */
+  /** Document messages per /collab socket per 10 s (awareness counts apart); unset: the default. */
   BEMMOLY_RATE_LIMIT_COLLAB_MESSAGES: rateLimitMax,
   /** Largest /collab message in bytes, 64 KiB to 16 MiB; unset keeps the 2 MiB default. */
   BEMMOLY_COLLAB_MAX_MESSAGE_BYTES: z.coerce

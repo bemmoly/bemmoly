@@ -160,6 +160,21 @@ describe('/collab', () => {
     expect(textOf(storedDoc())).not.toContain('x'.repeat(1024));
   });
 
+  it('lets carets move freely but closes a socket that floods edits', async () => {
+    const alice = connect('alice');
+    const bob = connect('bob');
+    await Promise.all([alice.synced, bob.synced]);
+    // Past the 1200 document messages per window, as awareness spends a budget of its own.
+    for (let i = 0; i < 1500; i += 1) alice.provider.setAwarenessField('cursor', i);
+    alice.doc.getText('body').insert(0, 'still here ');
+    await eventually(() => textOf(bob.doc).startsWith('still here '));
+    await eventually(() =>
+      [...bob.provider.awareness!.getStates().values()].some((state) => state['cursor'] === 1499),
+    );
+    for (let i = 0; i < 1300; i += 1) alice.doc.getText('body').insert(0, '.');
+    expect(await alice.closed).toBe(1008);
+  });
+
   it('changes a document from the server and stores the change', async () => {
     const alice = connect('alice');
     await alice.synced;
