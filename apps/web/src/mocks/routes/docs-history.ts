@@ -5,7 +5,13 @@ import { diffDocs, type PmNode } from './docs-diff.ts';
 import { docsCommentRoutes } from './docs-comments.ts';
 import { docsLinkRoutes } from './docs-links.ts';
 import { docsTransferRoutes } from './docs-transfer.ts';
-import { historyState, snapshotOf, textOf, type MockRevision } from './docs-history-state.ts';
+import {
+  historyState,
+  snapshotOf,
+  textOf,
+  writeBody,
+  type MockRevision,
+} from './docs-history-state.ts';
 import { docsState, live } from './docs-state.ts';
 
 /*
@@ -127,8 +133,7 @@ const revisionRoutes: MockRoute[] = [
         (rev) => rev.id === request.params['revisionId'],
       );
       if (!row || !revision) return notFound('Revision');
-      row.snapshot = JSON.parse(JSON.stringify(revision.snapshot)) as object;
-      row.updatedAt = now();
+      writeBody(row, revision.snapshot);
       emit(db, 'docs.page', [row.id]);
       return ok(
         summary(

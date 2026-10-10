@@ -58,6 +58,17 @@ export function snapshotOf(page: MockPage): PmNode {
   );
 }
 
+/** Replaces a page's body, as the collab server's store does: word count and edit time too. */
+export function writeBody(page: MockPage, snapshot: object): void {
+  const at = new Date().toISOString();
+  page.snapshot = JSON.parse(JSON.stringify(snapshot)) as object;
+  page.wordCount = textOf(page.snapshot as PmNode)
+    .split(/\s+/)
+    .filter(Boolean).length;
+  page.contentUpdatedAt = at;
+  page.updatedAt = at;
+}
+
 /** The readable text of a body, blocks on their own lines. */
 export function textOf(node: PmNode): string {
   if (node.text !== undefined) return node.text;

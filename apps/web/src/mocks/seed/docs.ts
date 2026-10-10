@@ -46,6 +46,8 @@ export interface MockPage {
   version: number;
   createdAt: string;
   updatedAt: string;
+  /** When the body last changed; status, title and reviewers leave it alone, as on the server. */
+  contentUpdatedAt: string;
   deletedAt: string | null;
 }
 
@@ -249,6 +251,7 @@ export function seedDocsPages(): MockPage[] {
       version: 1,
       createdAt: ago(minutes + 60 * 24 * 7),
       updatedAt: ago(minutes),
+      contentUpdatedAt: ago(minutes),
       deletedAt: null,
     });
   }

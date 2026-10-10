@@ -7,6 +7,7 @@ import {
   replaceText,
   snapshotOf,
   textOf,
+  writeBody,
   type MockComment,
 } from './docs-history-state.ts';
 import { docsState, live } from './docs-state.ts';
@@ -159,7 +160,7 @@ export const docsCommentRoutes: MockRoute[] = [
       if (!replaceText(body, comment.anchor.quote, comment.aiSuggestion.replacement)) {
         return fail(409, 'conflict', 'The text changed since this fix was suggested');
       }
-      row.snapshot = body;
+      writeBody(row, body);
       comment.aiSuggestion = { ...comment.aiSuggestion, appliedAt: now() };
       comment.resolvedAt ??= now();
       emit(db, 'docs.page', [row.id]);

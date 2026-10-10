@@ -91,7 +91,7 @@ export function presentDetail(
     createdBy: page.ownerId,
     updatedBy: page.ownerId,
     publishedAt: page.status === 'published' ? page.updatedAt : null,
-    contentUpdatedAt: page.updatedAt,
+    contentUpdatedAt: page.contentUpdatedAt,
   };
 }
 

@@ -2,6 +2,7 @@ import { can, emit, type MockDb } from '../db.ts';
 import type { MockPage } from '../seed/docs.ts';
 import { newId } from '../seed/time.ts';
 import { bodyOf, fail, notFound, ok, page, type MockRequest, type MockRoute } from '../types.ts';
+import { writeBody } from './docs-history-state.ts';
 import {
   childrenOf,
   docsState,
@@ -114,6 +115,7 @@ export const docsRoutes: MockRoute[] = [
         version: 1,
         createdAt: now(),
         updatedAt: now(),
+        contentUpdatedAt: now(),
         deletedAt: null,
       };
       state.pages.push(row);
@@ -132,11 +134,15 @@ export const docsRoutes: MockRoute[] = [
         title: string;
         icon: string | null;
         ownerId: string | null;
+        snapshot: object;
         version: number;
       }>(request);
       if (body.version !== undefined && body.version !== row.version) {
         return fail(409, 'conflict', 'The page changed since you opened it; reload it');
       }
+      // A body alone is the editor's local mode keeping this copy in step: no new version.
+      if (body.snapshot !== undefined) writeBody(row, body.snapshot);
+      if (Object.keys(body).every((key) => key === 'snapshot')) return ok(detail(db, row));
       if (body.title !== undefined) row.title = body.title;
       if (body.icon !== undefined) row.icon = body.icon;
       if (body.ownerId !== undefined) row.ownerId = body.ownerId;

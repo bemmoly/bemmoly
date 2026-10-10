@@ -123,6 +123,7 @@ function createPage(
     version: 1,
     createdAt: now(),
     updatedAt: now(),
+    contentUpdatedAt: now(),
     deletedAt: null,
   };
   state.pages.push(row);

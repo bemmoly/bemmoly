@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { createMockApi } from '../dispatch.ts';
 import { DOCS_SPACE_IDS } from '../seed/docs.ts';
 
@@ -57,5 +57,41 @@ describe('the Docs mock backend', () => {
     expect(api.dispatch('GET', `/api/v1/docs/pages/${id}`, undefined)?.status).toBe(404);
     expect(api.dispatch('POST', `/api/v1/docs/pages/${id}/restore`, undefined)?.status).toBe(200);
     expect(api.dispatch('GET', `/api/v1/docs/pages/${id}`, undefined)?.status).toBe(200);
+  });
+
+  it('moves the body edit time for a body, not for a status change', () => {
+    vi.useFakeTimers({ now: new Date('2026-10-01T09:00:00.000Z') });
+    try {
+      const api = createMockApi('ready');
+      const created = api.dispatch('POST', '/api/v1/docs/pages', {
+        spaceId: DOCS_SPACE_IDS.product,
+        title: 'Edit times',
+      })?.body as { id: string; contentUpdatedAt: string };
+      const page = `/api/v1/docs/pages/${created.id}`;
+      const read = () =>
+        api.dispatch('GET', page, undefined)?.body as {
+          contentUpdatedAt: string;
+          updatedAt: string;
+          version: number;
+        };
+      vi.setSystemTime(new Date('2026-10-01T10:00:00.000Z'));
+      api.dispatch('PUT', `${page}/status`, { status: 'in_review' });
+      expect(read()).toMatchObject({
+        contentUpdatedAt: '2026-10-01T09:00:00.000Z',
+        updatedAt: '2026-10-01T10:00:00.000Z',
+      });
+      vi.setSystemTime(new Date('2026-10-01T11:00:00.000Z'));
+      const { version } = read();
+      const text = { type: 'text', text: 'two words' };
+      const snapshot = { type: 'doc', content: [{ type: 'paragraph', content: [text] }] };
+      expect(api.dispatch('PATCH', page, { snapshot })?.body).toMatchObject({
+        snapshot,
+        wordCount: 2,
+        version,
+        contentUpdatedAt: '2026-10-01T11:00:00.000Z',
+      });
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
