@@ -37,6 +37,16 @@ export interface Http {
     query?: Query,
   ): Promise<z.output<S>>;
   url(path: string, query?: Query): string;
+  /**
+   * A streamed NDJSON response, one parsed value per line as it arrives. An error status
+   * before the stream starts throws the usual ApiError; a malformed line throws
+   * invalid_response.
+   */
+  lines<S extends z.ZodType>(
+    path: string,
+    schema: S,
+    options?: RequestOptions,
+  ): AsyncGenerator<z.output<S>, void, undefined>;
 }
 
 function assertRelativePath(path: string): void {
@@ -80,8 +90,8 @@ export function createHttp(options: HttpOptions = {}): Http {
     return `${baseUrl}${path}${buildQuery(query)}`;
   };
 
-  async function call(path: string, init: RequestOptions): Promise<unknown> {
-    const headers: Record<string, string> = { accept: 'application/json' };
+  async function open(path: string, init: RequestOptions, accept: string): Promise<Response> {
+    const headers: Record<string, string> = { accept };
     if (init.raw) headers['content-type'] = 'application/octet-stream';
     else if (init.body !== undefined) headers['content-type'] = 'application/json';
     if (init.idempotent) headers['idempotency-key'] = crypto.randomUUID();
@@ -102,13 +112,30 @@ export function createHttp(options: HttpOptions = {}): Http {
       if (init.signal?.aborted) throw cause;
       throw new ApiError(0, 'network_error', 'Bemmoly could not reach the server.', { cause });
     }
-    const body = await readJson(response);
     if (!response.ok) {
-      const error = errorFromResponse(response, body);
+      const error = errorFromResponse(response, await readJson(response));
       if (error.status === 401) options.onUnauthenticated?.(error);
       throw error;
     }
-    return body;
+    return response;
+  }
+
+  async function call(path: string, init: RequestOptions): Promise<unknown> {
+    return readJson(await open(path, init, 'application/json'));
+  }
+
+  function parseLine<S extends z.ZodType>(path: string, schema: S, line: string): z.output<S> {
+    let value: unknown;
+    try {
+      value = JSON.parse(line) as unknown;
+    } catch {
+      value = undefined;
+    }
+    const parsed = schema.safeParse(value);
+    if (!parsed.success) {
+      throw new ApiError(200, 'invalid_response', `Unexpected stream line from ${path}`);
+    }
+    return parsed.data;
   }
 
   return {
@@ -125,6 +152,29 @@ export function createHttp(options: HttpOptions = {}): Http {
     },
     async send(path, init = {}) {
       await call(path, init);
+    },
+    async *lines(path, schema, init = {}) {
+      const response = await open(path, init, 'application/x-ndjson');
+      if (!response.body) return;
+      const reader = response.body.pipeThrough(new TextDecoderStream()).getReader();
+      let buffer = '';
+      try {
+        for (;;) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += value;
+          let end = buffer.indexOf('\n');
+          while (end >= 0) {
+            const line = buffer.slice(0, end).trim();
+            buffer = buffer.slice(end + 1);
+            if (line) yield parseLine(path, schema, line);
+            end = buffer.indexOf('\n');
+          }
+        }
+        if (buffer.trim()) yield parseLine(path, schema, buffer.trim());
+      } finally {
+        reader.releaseLock();
+      }
     },
     async upload(path, schema, file, query) {
       return this.request(path, schema, { method: 'POST', raw: file, ...(query ? { query } : {}) });

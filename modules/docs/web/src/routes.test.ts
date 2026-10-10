@@ -37,6 +37,9 @@ describe('docs endpoints', () => {
     },
     upload: async () => ({}) as never,
     url: (path) => path,
+    lines: async function* () {
+      yield* [];
+    },
   };
 
   it('address spaces by key and pages by id under /api/v1/docs', async () => {
