@@ -5,6 +5,7 @@ import { linkTo, workPaths } from '../hooks/issue-navigation.ts';
 import { useRememberIssueList } from '../issue/issue-list-context.ts';
 import { MyWorkRow, MyWorkRowSkeleton, ROW } from './my-work-row.tsx';
 import { MY_WORK_TABS, useMyWork, type Mention, type MyWorkTab } from './use-my-work.ts';
+import { ROW_KEY, useRowKeys } from './use-row-keys.ts';
 
 const EMPTY: Record<MyWorkTab, string> = {
   assigned: 'Nothing is assigned to you right now.',
@@ -30,6 +31,7 @@ function MentionRow({ mention }: { mention: Mention }) {
   return url ? (
     <a
       {...linkTo(url)}
+      {...{ [ROW_KEY]: '' }}
       className={`${ROW} text-13 text-tx no-underline hover:bg-hover focus-ring-inset`}
     >
       {body}
@@ -46,6 +48,7 @@ function MentionRow({ mention }: { mention: Mention }) {
  */
 export function MyIssuesCard({ limit, full = false }: { limit: number; full?: boolean }) {
   const work = useMyWork(limit);
+  const rows = useRowKeys();
   const total = (tab: MyWorkTab) => (tab === 'mentions' ? undefined : work.lists?.[tab].total);
   const shownMentions = work.mentions.slice(0, full ? 50 : limit);
   // The issue page's j and k walk this list, in the order it is drawn, for the tab on show.
@@ -58,7 +61,12 @@ export function MyIssuesCard({ limit, full = false }: { limit: number; full?: bo
     work.isPending ? null : { label: `My issues · ${tabLabel}`, keys: [...new Set(keys)] },
   );
   return (
-    <section aria-label="My issues" className="overflow-hidden rounded-card bg-card shadow-e1">
+    <section
+      ref={rows.list}
+      onKeyDown={rows.onKeyDown}
+      aria-label="My issues"
+      className="overflow-hidden rounded-card bg-card shadow-e1"
+    >
       <div className="flex flex-wrap items-center gap-2.5 border-b border-line px-3.5 py-2">
         {full ? null : <h2 className="m-0 text-13 font-semibold">My issues</h2>}
         <SegmentedControl

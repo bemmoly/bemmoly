@@ -1,6 +1,7 @@
 import { PriorityGlyph, RelativeTime, Skeleton, TypeGlyph } from '@bemmoly/ui';
 import type { MyIssue } from '../../../shared/index.ts';
 import { linkTo } from '../hooks/issue-navigation.ts';
+import { ROW_KEY } from './use-row-keys.ts';
 
 /** "Due Oct 7" when the issue has a due date; otherwise when it last changed. */
 function When({ issue }: { issue: MyIssue }) {
@@ -28,6 +29,7 @@ export function MyWorkRow({ issue }: { issue: MyIssue }) {
   return (
     <a
       {...linkTo(issueHref(issue.key))}
+      {...{ [ROW_KEY]: '' }}
       className={`${ROW} text-13 text-tx no-underline hover:bg-hover focus-ring-inset`}
     >
       <TypeGlyph type={issue.type} />

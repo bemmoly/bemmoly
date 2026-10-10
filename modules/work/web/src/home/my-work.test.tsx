@@ -116,6 +116,20 @@ describe('My issues on Home', () => {
     expect(link.getAttribute('href')).toBe('/work/issue/PLT-218');
   });
 
+  it('walks the rows with j and k, and the arrows once a row has focus', async () => {
+    renderSection();
+    const first = await screen.findByRole('link', { name: /Stripe webhook idempotency/ });
+    const second = screen.getByRole('link', { name: /Dunning emails/ });
+    fireEvent.keyDown(document.body, { key: 'j' });
+    expect(document.activeElement).toBe(first);
+    fireEvent.keyDown(first, { key: 'j' });
+    expect(document.activeElement).toBe(second);
+    fireEvent.keyDown(second, { key: 'ArrowUp' });
+    expect(document.activeElement).toBe(first);
+    fireEvent.keyDown(first, { key: 'k' });
+    expect(document.activeElement).toBe(first);
+  });
+
   it('orders status groups in progress, to do, then done', () => {
     const done = { ...todo, name: 'Done', category: 'done' as const };
     const groups = groupByStatus([
