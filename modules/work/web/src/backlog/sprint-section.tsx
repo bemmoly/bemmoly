@@ -53,7 +53,7 @@ function capacityOf(container: Container): ReactNode {
   return committed > 0 ? `${committed} pts` : undefined;
 }
 
-const ACTIONS = { active: 'Complete', future: 'Start sprint', closed: undefined } as const;
+const ACTIONS = { active: 'Complete sprint', future: 'Start sprint', closed: undefined } as const;
 
 /**
  * A sprint or the backlog: the header with dates, goal, counts and capacity,

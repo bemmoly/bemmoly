@@ -49,7 +49,7 @@ export interface SprintHeaderProps {
   points?: SprintPoints;
   /** Planned sprints: a capacity line instead of the bar. */
   capacity?: ReactNode;
-  /** "Complete", "Start sprint" or "Create sprint". */
+  /** "Complete sprint", "Start sprint" or "Create sprint". */
   action?: ReactNode;
   onAction?: () => void;
   onMore?: () => void;
