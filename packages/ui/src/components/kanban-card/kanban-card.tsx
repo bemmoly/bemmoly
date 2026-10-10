@@ -1,4 +1,5 @@
 import type { KeyboardEvent, ReactNode } from 'react';
+import { Label, type LabelValue } from '../label/label.tsx';
 import { Icon } from '../../icons/icon.tsx';
 import { cx } from '../../lib/cx.ts';
 import { focusRing } from '../../lib/focus.ts';
@@ -6,7 +7,6 @@ import { Avatar, type AvatarHue } from '../avatar/avatar.tsx';
 import { Badge } from '../badge/badge.tsx';
 import { PriorityGlyph, TypeGlyph, type IssueTypeRef, type Priority } from '../glyphs/glyphs.tsx';
 import { KeyChip } from '../key-chip/key-chip.tsx';
-import { Tag } from '../tag/tag.tsx';
 
 export interface CardPerson {
   name: string;
@@ -20,7 +20,8 @@ export interface KanbanCardProps {
   type: IssueTypeRef;
   priority: Priority;
   assignee?: CardPerson;
-  labels?: readonly string[];
+  /** Names, or stored labels with their colour. */
+  labels?: readonly (string | LabelValue)[];
   /** Story points (Scrum) in the mono chip pill; omit on Kanban boards. */
   estimate?: number | string;
   /** Time in column (Kanban): the label and whether it is past the column's average. */
@@ -101,9 +102,10 @@ export function KanbanCard({
       <div className="leading-card text-pretty">{title}</div>
       {labels && labels.length > 0 && (
         <div className="flex flex-wrap gap-1">
-          {labels.map((label) => (
-            <Tag key={label}>{label}</Tag>
-          ))}
+          {labels.map((label) => {
+            const value = typeof label === 'string' ? { name: label } : label;
+            return <Label key={value.name} {...value} />;
+          })}
         </div>
       )}
       <div className="flex items-center gap-1.5 pt-0.5">

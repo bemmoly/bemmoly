@@ -10,6 +10,7 @@ import {
   type CardPerson,
   type IssueTypeRef,
   type KanbanCardProps,
+  type LabelValue,
   type Priority,
 } from '@bemmoly/ui';
 import type { ViewCard } from '../hooks/board-model.ts';
@@ -55,7 +56,7 @@ const PRIORITIES: ReadonlySet<string> = new Set(['highest', 'high', 'medium', 'l
 export interface CardVocabulary {
   types: ReadonlyMap<string, Pick<WorkIssueType, 'key' | 'name' | 'level'>>;
   people: ReadonlyMap<string, Pick<User, 'id' | 'name'>>;
-  labels: ReadonlyMap<string, string>;
+  labels: ReadonlyMap<string, LabelValue>;
   meId: string | undefined;
   fields: readonly CardField[];
   colorRule: CardColorRule;
@@ -92,7 +93,7 @@ export function cardProps(
   const type = glyphOf(vocab, card.typeId);
   const labels = card.labelIds
     .map((id) => vocab.labels.get(id))
-    .filter((name): name is string => Boolean(name));
+    .filter((label): label is LabelValue => Boolean(label));
   const done = vocab.doneColumns.has(card.columnId);
   return {
     issueKey: card.key,

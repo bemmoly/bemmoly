@@ -7,7 +7,7 @@ import {
   PriorityGlyph,
   STATUS_LABELS,
   StatusBadge,
-  Tag,
+  Label,
   TypeGlyph,
 } from '@bemmoly/ui';
 import { SAMPLE_COLUMNS, type SampleIssue } from './preview-data.ts';
@@ -20,9 +20,7 @@ function IssueCard({ issue }: { issue: SampleIssue }) {
       {issue.labels.length ? (
         <span className="flex gap-1">
           {issue.labels.map((label) => (
-            <Tag key={label} size="sm">
-              {label}
-            </Tag>
+            <Label key={label} name={label} />
           ))}
         </span>
       ) : null}

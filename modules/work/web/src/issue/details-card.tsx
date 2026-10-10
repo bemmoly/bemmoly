@@ -6,7 +6,7 @@ import {
   FieldPerson,
   FieldRow,
   FieldSwatch,
-  Tag,
+  Label,
   useToast,
   WatcherList,
 } from '@bemmoly/ui';
@@ -134,15 +134,14 @@ export function DetailsCard({ issue, size }: DetailsCardProps) {
           )}
           <FieldRow label="Labels" className="gap-1">
             {issue.labels.map((label) => (
-              <Tag
+              <Label
                 key={label.id}
+                name={label.name}
+                color={label.color}
                 onRemove={() =>
                   save({ labelIds: issue.labelIds.filter((id) => id !== label.id) }, 'The labels')
                 }
-                removeLabel={`Remove label ${label.name}`}
-              >
-                {label.name}
-              </Tag>
+              />
             ))}
             {labels.isSuccess && labelOptions.length > 0 && (
               <ChoiceField

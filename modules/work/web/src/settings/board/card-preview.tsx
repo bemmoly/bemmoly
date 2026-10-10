@@ -1,5 +1,5 @@
 import type { BoardConfig, CardField } from '@bemmoly/module-work/shared';
-import { Avatar, Badge, cardStripe, KeyChip, PriorityGlyph, Tag, TypeGlyph } from '@bemmoly/ui';
+import { Avatar, Badge, cardStripe, KeyChip, Label, PriorityGlyph, TypeGlyph } from '@bemmoly/ui';
 import { Icon } from '@bemmoly/ui/icons';
 import { cx } from '../cx.ts';
 
@@ -42,8 +42,8 @@ export function CardPreview({
       <div className="leading-card">Session cleanup background job</div>
       {on('labels') && (
         <div className="flex gap-1">
-          <Tag>infra</Tag>
-          <Tag>auth</Tag>
+          <Label name="infra" />
+          <Label name="auth" />
         </div>
       )}
       <div className="flex items-center gap-1.5 pt-0.5">

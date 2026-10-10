@@ -53,7 +53,9 @@ export function useBoardScreen(projectKey: string | undefined) {
     () => ({
       types: new Map(data.issueTypes.map((type) => [type.id, type])),
       people: new Map(data.people.map((person) => [person.id, person])),
-      labels: new Map(data.labels.map((label) => [label.id, label.name])),
+      labels: new Map(
+        data.labels.map((label) => [label.id, { name: label.name, color: label.color }]),
+      ),
       meId: data.meId,
       fields: boardConfig?.cardFields ?? [],
       colorRule: boardConfig?.colorRule ?? 'none',
