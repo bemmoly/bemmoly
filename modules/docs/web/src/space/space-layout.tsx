@@ -107,7 +107,13 @@ export function SpaceLayout({
 
   return (
     <SpaceContext.Provider value={actions}>
-      <div className="flex min-h-0 flex-1" onClick={keepLinksInApp}>
+      <div
+        className="flex min-h-0 flex-1"
+        onClick={keepLinksInApp}
+        data-search-place={space.data.key}
+        data-search-place-label={space.data.name}
+        data-search-place-kind="docs.page"
+      >
         <aside className="hidden w-65 shrink-0 flex-col border-r border-line bg-card md:flex">
           {sidebar}
         </aside>

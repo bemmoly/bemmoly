@@ -27,6 +27,12 @@ export interface PaletteItem extends CommandItem {
   person?: boolean;
   /** A recent item's own type ("Issues", "Pages"), so a type filter keeps it. */
   kindGroup?: string;
+  /** A record's own stored icon (a page's emoji or icon name), drawn as the page icon. */
+  recordIcon?: string | null;
+  /** The line that matched, with <b> around each hit. */
+  snippet?: string;
+  /** The container's key (a space's "ENG"), for the palette's place filter. */
+  placeKey?: string;
 }
 
 export interface PaletteScopeEntry {
@@ -142,8 +148,12 @@ export function paletteItems(sources: PaletteSources): PaletteItem[] {
       id: `${hit.kind}:${hit.id}`,
       group: hit.group ?? hit.kind,
       title: hit.title,
-      ...(hit.subtitle ? { subtitle: hit.subtitle } : {}),
-      ...(hit.key ? { issueKey: hit.key } : {}),
+      ...(hit.context || hit.subtitle ? { subtitle: hit.context ?? hit.subtitle ?? '' } : {}),
+      // Only an issue prints its key; a page shows its icon and its place instead.
+      ...(hit.key && hit.look?.type ? { issueKey: hit.key } : {}),
+      ...(hit.key ? { placeKey: hit.key } : {}),
+      ...(hit.look && 'icon' in hit.look ? { recordIcon: hit.look.icon ?? null } : {}),
+      ...(hit.snippet ? { snippet: hit.snippet } : {}),
       href: hit.href,
       ...(hit.look?.type
         ? {
