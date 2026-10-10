@@ -22,8 +22,9 @@ import { seedCapabilities, type CapabilityRow, type Cells } from './seed/capabil
 import { seedAudit, seedBackups, seedOutbox, seedSystem, seedUpdates } from './seed/operations.ts';
 import { seedAdminModules, seedGrants, seedManifests } from './seed/modules.ts';
 import { ROLE_IDS, seedRoles, seedTeams, seedUsers, USER_IDS } from './seed/people.ts';
+import { seedNotifications } from './seed/notifications.ts';
 import { newId } from './seed/time.ts';
-import { seedNotifications, seedPreferences, seedSettings } from './seed/workspace.ts';
+import { seedPreferences, seedSettings } from './seed/workspace.ts';
 
 /**
  * fresh: no admin yet, the wizard runs. ready: set up, signed in as the admin.

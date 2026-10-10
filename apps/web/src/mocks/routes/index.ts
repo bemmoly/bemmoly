@@ -5,6 +5,7 @@ import { docsLibraryRoutes } from './docs-library.ts';
 import { docsMemberRoutes } from './docs-members.ts';
 import { docsMoveRoutes } from './docs-moves.ts';
 import { docsRoutes } from './docs.ts';
+import { notificationRoutes } from './notifications.ts';
 import { operationsRoutes } from './operations.ts';
 import { peopleRoutes } from './people.ts';
 import { sessionRoutes } from './session.ts';
@@ -23,6 +24,7 @@ export const ROUTES: readonly MockRoute[] = [
   ...sessionRoutes,
   ...peopleRoutes,
   ...settingsRoutes,
+  ...notificationRoutes,
   ...operationsRoutes,
   ...workBacklogRoutes,
   ...workBoardRoutes,
