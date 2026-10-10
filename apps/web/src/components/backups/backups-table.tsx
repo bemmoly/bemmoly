@@ -52,6 +52,7 @@ export function BackupsTable(props: BackupsTableProps) {
       key: 'kind',
       header: 'Kind',
       width: '100px',
+      hideOnPhone: true,
       render: (backup) => (
         <div className="flex flex-col gap-0.5">
           <span className="text-tx3">{KIND[backup.kind]}</span>
@@ -62,7 +63,7 @@ export function BackupsTable(props: BackupsTableProps) {
     {
       key: 'status',
       header: 'Status',
-      width: 'minmax(200px,1fr)',
+      width: 'minmax(120px,1fr)',
       render: (backup) => (
         <div className="flex min-w-0 flex-col items-start gap-0.5">
           <StatePill tone={STATUS[backup.status].tone} stage={STATUS[backup.status].stage}>
@@ -85,6 +86,7 @@ export function BackupsTable(props: BackupsTableProps) {
       key: 'size',
       header: 'Size',
       width: '72px',
+      hideOnPhone: true,
       align: 'end',
       render: (backup) => (
         <span className="font-mono text-12">
@@ -96,6 +98,7 @@ export function BackupsTable(props: BackupsTableProps) {
       key: 'version',
       header: 'Version',
       width: '56px',
+      hideOnPhone: true,
       render: (backup) => <span className="font-mono text-12">{backup.appVersion}</span>,
     },
     {
@@ -133,6 +136,7 @@ export function BackupsTable(props: BackupsTableProps) {
       key: 'verification',
       header: 'Verification',
       width: '170px',
+      hideOnPhone: true,
       render: (backup) => (
         <div className="flex flex-col items-start gap-1">
           <span title={backup.verification.message ?? undefined}>
@@ -183,7 +187,7 @@ export function BackupsTable(props: BackupsTableProps) {
       <div className="overflow-x-auto">
         <Table
           label="Backups"
-          className="min-w-250 rounded-none! border-0!"
+          className="rounded-none! border-0! sm:min-w-250"
           columns={columns}
           rows={backups}
           rowKey={(backup) => backup.id}
