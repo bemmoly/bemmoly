@@ -85,10 +85,29 @@ export const docsLibraryRoutes: MockRoute[] = [
       const state = docsState(db);
       const space = spaceByRef(state, request.params['spaceKey'] ?? '');
       if (!space) return notFound(`Space ${request.params['spaceKey']}`);
-      const rows = state.pages.filter((row) => row.spaceId === space.id && !live(row));
+      const inSpace = state.pages.filter((row) => row.spaceId === space.id && !live(row));
+      const rows = inSpace
+        .filter(
+          (row) => !inSpace.some((up) => up.id === row.parentId && up.deletedAt === row.deletedAt),
+        )
+        .sort((a, b) => (b.deletedAt ?? '').localeCompare(a.deletedAt ?? ''));
       return ok(
         page(
-          rows.map((row) => presentSummary(state, row)),
+          rows.map((row) => {
+            const parent = state.pages.find((item) => item.id === row.parentId);
+            const by = db.users.find((user) => user.id === row.deletedBy);
+            return {
+              ...presentSummary(state, row),
+              deletedBy: by ? { id: by.id, name: by.name } : null,
+              wasIn: parent ? { id: parent.id, title: parent.title, icon: parent.icon } : null,
+              pagesInside: inSpace.filter(
+                (item) =>
+                  item.id !== row.id &&
+                  item.deletedAt === row.deletedAt &&
+                  item.path.startsWith(row.path),
+              ).length,
+            };
+          }),
           request,
         ),
       );

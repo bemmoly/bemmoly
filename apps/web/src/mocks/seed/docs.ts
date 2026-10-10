@@ -49,6 +49,8 @@ export interface MockPage {
   /** When the body last changed; status, title and reviewers leave it alone, as on the server. */
   contentUpdatedAt: string;
   deletedAt: string | null;
+  /** Who moved it to the trash. */
+  deletedBy?: string | null;
 }
 
 export const DOCS_SPACE_IDS = {
@@ -255,5 +257,39 @@ export function seedDocsPages(): MockPage[] {
       deletedAt: null,
     });
   }
-  return pages;
+  return [...pages, ...seedTrash(pages)];
+}
+
+/** Two pages already in Engineering's trash, so the trash has something to restore. */
+function seedTrash(pages: readonly MockPage[]): MockPage[] {
+  const platform = pages.find((row) => row.id === uid(5100));
+  const trashed = (n: number, title: string, minutes: number, parent?: MockPage): MockPage => {
+    const id = uid(n);
+    return {
+      id,
+      spaceId: DOCS_SPACE_IDS.eng,
+      parentId: parent?.id ?? null,
+      position: 'z',
+      path: `${parent?.path ?? '/'}${id}/`,
+      title,
+      icon: null,
+      status: 'draft',
+      ownerId: USER_IDS.jonas,
+      reviewers: [],
+      templateId: null,
+      text: `${title}: notes kept from an earlier draft.`,
+      labels: [],
+      wordCount: 8,
+      version: 1,
+      createdAt: ago(minutes + 60 * 24 * 30),
+      updatedAt: ago(minutes),
+      contentUpdatedAt: ago(minutes),
+      deletedAt: ago(minutes),
+      deletedBy: USER_IDS.jonas,
+    };
+  };
+  return [
+    trashed(5190, 'Old deploy checklist', 60 * 26, platform),
+    trashed(5191, 'Q2 incident notes', 60 * 24 * 9),
+  ];
 }

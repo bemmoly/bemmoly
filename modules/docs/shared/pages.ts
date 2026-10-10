@@ -96,6 +96,19 @@ export const TRASH_RETENTION_DAYS = 30;
 
 export const trashPageParamsSchema = z.object({ spaceKey: z.string().min(1), pageId: z.uuid() });
 
+/** A trash row: the page, who deleted it, where it was and how many pages went with it. */
+export const trashItemSchema = pageSummarySchema.extend({
+  deletedBy: docsPersonSchema.nullable(),
+  /** The parent it was under; null at the top of the space. */
+  wasIn: breadcrumbSchema.nullable(),
+  /** Pages under it that went to the trash with it. */
+  pagesInside: z.number().int().nonnegative(),
+});
+
+export const trashPageSchema = keysetPageSchema(trashItemSchema);
+export type TrashItem = z.infer<typeof trashItemSchema>;
+export type TrashPage = z.infer<typeof trashPageSchema>;
+
 export const emptyTrashResultSchema = z.object({ deleted: z.number().int().nonnegative() });
 export type EmptyTrashResult = z.infer<typeof emptyTrashResultSchema>;
 

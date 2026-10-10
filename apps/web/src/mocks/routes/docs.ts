@@ -160,7 +160,10 @@ export const docsRoutes: MockRoute[] = [
       if (!row) return notFound('The page');
       const at = now();
       for (const item of docsState(db).pages) {
-        if (live(item) && item.path.startsWith(row.path)) item.deletedAt = at;
+        if (live(item) && item.path.startsWith(row.path)) {
+          item.deletedAt = at;
+          item.deletedBy = db.signedInAs;
+        }
       }
       emit(db, 'docs.tree', [row.id]);
       return ok();
