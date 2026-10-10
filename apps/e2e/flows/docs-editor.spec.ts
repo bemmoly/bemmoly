@@ -151,7 +151,9 @@ test('a writer formats from the bubble, links with ⌘K and moves blocks from th
 
   // The grip's menu deletes a block at once, with Undo.
   await body(page).locator('p').first().hover();
-  await page.getByRole('button', { name: /Move or change this paragraph/ }).click();
+  const grip = page.getByRole('button', { name: /Move or change this paragraph/ });
+  await grip.click();
+  await expect(grip).toHaveAttribute('aria-expanded', 'true');
   await page.getByRole('menuitem', { name: /Delete/ }).click();
   await expect(page.getByText('Block deleted')).toBeVisible();
   await page.getByRole('button', { name: 'Undo' }).click();
