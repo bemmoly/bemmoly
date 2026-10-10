@@ -10,7 +10,9 @@ export interface MockRequest {
 
 export interface MockResponse {
   status: number;
+  /** JSON, or a string sent as is with `headers` (a file download). */
   body?: unknown;
+  headers?: Record<string, string>;
 }
 
 export type MockHandler = (request: MockRequest, db: MockDb) => MockResponse;

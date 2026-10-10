@@ -31,6 +31,9 @@ async function readBody(request: Request): Promise<unknown> {
 
 export function toResponse(result: MockResponse): Response {
   if (result.body === undefined) return new HttpResponse(null, { status: result.status });
+  if (result.headers && typeof result.body === 'string') {
+    return new HttpResponse(result.body, { status: result.status, headers: result.headers });
+  }
   return HttpResponse.json(result.body as Record<string, unknown>, { status: result.status });
 }
 
