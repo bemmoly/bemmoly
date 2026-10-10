@@ -1,6 +1,7 @@
-import { Avatar, Card, SettingsRow } from '@bemmoly/ui';
+import { Avatar, Card, SettingsRow, Switch } from '@bemmoly/ui';
 import { Link } from '@tanstack/react-router';
 import { SettingsPage } from '../../components/settings/settings-page.tsx';
+import { useAiOptOut } from '../../hooks/use-ai-opt-out.ts';
 import { useMe } from '../../hooks/use-session.ts';
 
 /**
@@ -9,6 +10,7 @@ import { useMe } from '../../hooks/use-session.ts';
  */
 export function ProfilePage() {
   const me = useMe();
+  const ai = useAiOptOut();
   return (
     <SettingsPage title="Profile" description="Who you are signed in as in this workspace.">
       <Card className="flex items-center gap-4 px-5 py-4">
@@ -28,6 +30,20 @@ export function ProfilePage() {
           title="Theme"
           description="Light, dark or the workspace default, from the menu under your name."
         />
+        {ai.shown ? (
+          <SettingsRow
+            title="Use AI features"
+            description="Summaries, suggestions and the palette’s AI. Off hides them for you, and keeps what you write out of summaries others ask for, except titles."
+            control={
+              <Switch
+                aria-label="Use AI features"
+                checked={ai.useAi}
+                disabled={ai.pending}
+                onCheckedChange={ai.set}
+              />
+            }
+          />
+        ) : null}
       </Card>
     </SettingsPage>
   );

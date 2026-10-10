@@ -1,16 +1,12 @@
 import { act, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { aiProviderSchema } from '@bemmoly/shared';
 import { useSetupStore } from '../store/setup.ts';
 import { renderQueryHook, signedInClient } from '../test/render.tsx';
 import { mockApi } from '../test/setup.ts';
 import { BUNDLED_CATALOG } from './use-ai-catalog.ts';
-import {
-  aiSettingValues,
-  aiSummary,
-  choiceOf,
-  useAiSettings,
-  useSetupAi,
-} from './use-ai-settings.ts';
+import { aiSettingValues, aiSummary, choiceOf } from './use-ai-settings.ts';
+import { useSetupAi } from './use-setup-ai.ts';
 
 const PROVIDER = BUNDLED_CATALOG.popular[0] as string;
 
@@ -38,19 +34,40 @@ describe('AI choice values', () => {
 });
 
 describe('useSetupAi', () => {
-  it('saves the provider and both privacy toggles, then moves on', async () => {
+  it('leaves AI off with no AI chosen, and says so in the summary', async () => {
+    mockApi.reset('wizard');
+    const onSaved = vi.fn();
+    const { result } = await renderQueryHook(() => useSetupAi(onSaved));
+    expect(result.current.none).toBe(true);
+    expect(result.current.canSave).toBe(true);
+    act(() => result.current.submit());
+    await waitFor(() => expect(onSaved).toHaveBeenCalledTimes(1));
+    expect(mockApi.db.settings['ai.providerId']).toBeNull();
+    expect(mockApi.db.ai.settings.privacy.enabled).toBe(false);
+    expect(useSetupStore.getState().aiSaved).toBe(true);
+  });
+
+  it('saves a connected provider and turns AI on with the privacy choices', async () => {
+    mockApi.reset('wizard');
     const onSaved = vi.fn();
     const { result } = await renderQueryHook(() => useSetupAi(onSaved));
     act(() => result.current.pick(PROVIDER));
+    expect(result.current.canSave).toBe(false);
+    const row = aiProviderSchema.parse(
+      mockApi.dispatch('POST', '/api/v1/admin/ai/providers', {
+        kind: 'catalog',
+        catalogId: PROVIDER,
+        credentials: { KEY: 'value' },
+      })?.body,
+    );
+    await act(() => result.current.onConnected(row));
     act(() => result.current.setShareContent(false));
-    expect(result.current.picker.connection?.fields.length).toBeGreaterThan(0);
-    expect(result.current.picker.status).toBe('Offline · bundled with 0.1.0');
+    await waitFor(() => expect(result.current.provider?.id).toBe(row.id));
     act(() => result.current.submit());
     await waitFor(() => expect(onSaved).toHaveBeenCalledTimes(1));
     expect(mockApi.db.settings['ai.providerId']).toBe(PROVIDER);
-    expect(mockApi.db.settings['ai.shareContent']).toBe(false);
-    expect(mockApi.db.settings['ai.allowActions']).toBe(true);
-    expect(useSetupStore.getState().aiSaved).toBe(true);
+    expect(mockApi.db.ai.settings.privacy).toMatchObject({ enabled: true, shareContent: false });
+    expect(mockApi.db.ai.roles.standard?.providerId).toBe(row.id);
   });
 
   it('reports a refused write and stays on the step', async () => {
@@ -61,36 +78,5 @@ describe('useSetupAi', () => {
     await waitFor(() => expect(result.current.save.isError).toBe(true));
     expect(onSaved).not.toHaveBeenCalled();
     expect(useSetupStore.getState().aiSaved).toBe(false);
-  });
-});
-
-describe('useAiSettings', () => {
-  it('loads the stored choice and saves a new one', async () => {
-    const { result } = await renderQueryHook(() => useAiSettings());
-    await waitFor(() => expect(result.current.draft.value).toBeDefined());
-    expect(result.current.canConfigure).toBe(true);
-    expect(result.current.choice).toBe('none');
-    expect(result.current.modelRoles.map((role) => role.id)).toEqual([
-      'fast',
-      'standard',
-      'strong',
-      'embedding',
-    ]);
-    act(() => result.current.pick('local'));
-    act(() => result.current.draft.update({ allowActions: false }));
-    expect(result.current.draft.dirty).toBe(true);
-    act(() => result.current.submit());
-    await waitFor(() => expect(result.current.settings.save.isSuccess).toBe(true));
-    expect(mockApi.db.settings['ai.providerId']).toBe('local');
-    expect(mockApi.db.settings['ai.allowActions']).toBe(false);
-  });
-
-  it('lets only people who can configure models save', async () => {
-    mockApi.reset('member');
-    const { result } = await renderQueryHook(() => useAiSettings(), await signedInClient());
-    expect(result.current.canConfigure).toBe(false);
-    expect(result.current.disabledReason).not.toBeNull();
-    act(() => result.current.submit());
-    expect(result.current.settings.save.isIdle).toBe(true);
   });
 });

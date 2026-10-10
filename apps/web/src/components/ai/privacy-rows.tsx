@@ -1,74 +1,54 @@
-import { Card, CardBody, SettingsRow, SettingsSection, Switch } from '@bemmoly/ui';
+import { SettingsRow, SettingsSection, Switch } from '@bemmoly/ui';
 import { PRIVACY_ROWS } from '../../hooks/use-ai-settings.ts';
-import { LINK_ACTION } from '../actions.ts';
+
+export type PrivacyKey = keyof typeof PRIVACY_ROWS;
+
+interface PrivacySwitchProps {
+  row: PrivacyKey;
+  checked: boolean;
+  onChange: (value: boolean) => void;
+  disabled?: boolean;
+}
+
+/** One privacy choice: its words from PRIVACY_ROWS and a switch that applies at once. */
+export function PrivacySwitch({ row, checked, onChange, disabled }: PrivacySwitchProps) {
+  const copy = PRIVACY_ROWS[row];
+  return (
+    <SettingsRow
+      title={copy.label}
+      description={copy.hint}
+      control={
+        <Switch
+          aria-label={copy.label}
+          checked={checked}
+          onCheckedChange={onChange}
+          disabled={disabled}
+        />
+      }
+    />
+  );
+}
 
 interface PrivacyRowsProps {
   shareContent: boolean;
   onShareContent: (value: boolean) => void;
   allowActions: boolean;
   onAllowActions: (value: boolean) => void;
-  disabled?: boolean;
-  /** Settings pages title the card; the wizard shows the rows bare, as its mock does. */
-  title?: string;
+  title: string;
 }
 
-/** What AI may see and do: two switches that save, and the space exclusion that waits for Docs. */
+/** The wizard's two privacy choices; the rest wait in Settings › AI › Privacy. */
 export function PrivacyRows({
   shareContent,
   onShareContent,
   allowActions,
   onAllowActions,
-  disabled,
   title,
 }: PrivacyRowsProps) {
-  const { shareContent: share, allowActions: act, excludeSpaces: exclude } = PRIVACY_ROWS;
-  const rows = (
-    <>
-      <SettingsRow
-        title={share.label}
-        description={share.hint}
-        control={
-          <Switch
-            aria-label={share.label}
-            checked={shareContent}
-            onCheckedChange={onShareContent}
-            disabled={disabled}
-          />
-        }
-      />
-      <SettingsRow
-        title={act.label}
-        description={act.hint}
-        control={
-          <Switch
-            aria-label={act.label}
-            checked={allowActions}
-            onCheckedChange={onAllowActions}
-            disabled={disabled}
-          />
-        }
-      />
-      <SettingsRow
-        title={exclude.label}
-        description={`${exclude.hint} ${exclude.disabledReason}.`}
-        control={
-          <button type="button" className={LINK_ACTION} disabled title={exclude.disabledReason}>
-            {exclude.action}
-          </button>
-        }
-      />
-    </>
-  );
-  if (title) {
-    return (
-      <SettingsSection title={title} layout="rows">
-        {rows}
-      </SettingsSection>
-    );
-  }
   return (
-    <Card>
-      <CardBody layout="list">{rows}</CardBody>
-    </Card>
+    <SettingsSection title={title} hint="More in Settings › AI › Privacy" layout="rows">
+      <PrivacySwitch row="shareContent" checked={shareContent} onChange={onShareContent} />
+      <PrivacySwitch row="allowActions" checked={allowActions} onChange={onAllowActions} />
+    </SettingsSection>
   );
 }

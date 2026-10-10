@@ -12,7 +12,12 @@ import {
 export interface WorkspaceLook {
   name: string;
   appearance: Appearance;
-  /** An AI provider is chosen: the top bar shows "Ask Bemmoly". */
+  /**
+   * AI is on for this person: the workspace has it on with a model to call, and they have not
+   * turned it off for themselves. Every AI surface renders only while it is true (ai.md); hosts
+   * pass it to modules. The server decides it; turning AI on or off, an opt-out and the
+   * realtime "ai" event all refetch it, so it follows a flip live.
+   */
   aiEnabled: boolean;
 }
 

@@ -42,7 +42,10 @@ export function ProviderList({
         className="flex max-h-66 flex-col overflow-y-auto rounded-control border border-line bg-card"
       >
         {results.length === 0 ? (
-          <span className="px-3 py-3 text-13 text-tx-3">No provider matches “{query.trim()}”.</span>
+          <span className="px-3 py-3 text-13 text-tx-3">
+            No provider in the catalog matches “{query.trim()}”. For a model server on your own
+            network, choose Local server.
+          </span>
         ) : (
           results.map((provider) => {
             const selected = provider.id === selectedId;
@@ -58,7 +61,7 @@ export function ProviderList({
                   selected ? 'bg-acc-50' : 'bg-transparent hover:bg-side'
                 }`}
               >
-                <ProviderLogo id={provider.id} name={provider.name} />
+                <ProviderLogo id={provider.id} name={provider.name} logoUrl={provider.logoUrl} />
                 <span className={`font-medium ${selected ? 'text-acc' : 'text-tx'}`}>
                   {provider.name}
                 </span>

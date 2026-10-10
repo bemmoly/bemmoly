@@ -1,106 +1,94 @@
+import { Card, CardBody } from '@bemmoly/ui';
 import { Icon } from '@bemmoly/ui/icons';
-import { useId, useState } from 'react';
-import { initialsOf } from '../../hooks/use-ai-catalog.ts';
-import { LOCAL_DESCRIPTION, NO_AI_OPTION, useSetupAi } from '../../hooks/use-ai-settings.ts';
+import { LOCAL_SERVER } from '../../hooks/use-ai-catalog.ts';
+import { useConnection } from '../../hooks/use-ai-connection.ts';
+import { NO_AI_OPTION } from '../../hooks/use-ai-settings.ts';
+import { useSetupAi, type SetupAi } from '../../hooks/use-setup-ai.ts';
 import { NO_AI } from '../../store/setup.ts';
-import { ConnectionShell } from '../ai/connection-shell.tsx';
+import { ConnectionForm } from '../ai/connection-form.tsx';
 import { PrivacyRows } from '../ai/privacy-rows.tsx';
-import { ProviderList } from '../ai/provider-list.tsx';
-import { providerIcon } from '../ai/provider-logo.tsx';
+import { ProviderPicker } from '../ai/provider-picker.tsx';
+import { RolesSection } from '../ai/roles-section.tsx';
+import { TestResult } from '../ai/test-result.tsx';
 import { ChoiceCard } from './choice-card.tsx';
 import { StepFooter, StepForm, type StepNav } from './step-footer.tsx';
 
-type Ai = ReturnType<typeof useSetupAi>;
-
-/**
- * The two answers that need no catalog, first: no AI (the default) or a server on your own
- * hardware. Then the popular providers, and the whole catalog behind one disclosure.
- */
-function Choices({ ai }: { ai: Ai }) {
-  const { picker } = ai;
-  const [browsing, setBrowsing] = useState(false);
-  const listId = useId();
-  const inCatalog = !picker.popular.some((p) => p.id === ai.choice) && picker.selected;
-  const open = browsing || Boolean(inCatalog && ai.choice !== picker.local.id);
+function Connected({ ai }: { ai: SetupAi }) {
+  const row = ai.provider;
+  if (!row) return null;
   return (
-    <div className="flex flex-col gap-3">
-      <div role="radiogroup" aria-label="Other options" className="grid gap-2.5 sm:grid-cols-2">
-        <ChoiceCard
-          initials="0"
-          icon={<Icon name="minus" size={16} />}
-          name={NO_AI_OPTION.name}
-          description={NO_AI_OPTION.description}
-          selected={ai.choice === NO_AI}
-          onSelect={() => ai.pick(NO_AI)}
-        />
-        <ChoiceCard
-          initials={initialsOf(picker.local.name)}
-          icon={<Icon name="server" size={16} />}
-          name={picker.local.name}
-          description={LOCAL_DESCRIPTION}
-          badge="Air-gapped"
-          selected={ai.choice === picker.local.id}
-          onSelect={() => ai.pick(picker.local.id)}
-        />
-      </div>
-      <h2 className="m-0 mt-1 text-13 font-semibold text-tx">Or connect a provider</h2>
-      <div
-        role="radiogroup"
-        aria-label="Popular providers"
-        className="grid grid-cols-2 gap-2.5 sm:grid-cols-3"
-      >
-        {picker.popular.map((provider) => (
-          <ChoiceCard
-            key={provider.id}
-            initials={initialsOf(provider.name)}
-            icon={providerIcon(provider.id)}
-            name={provider.name}
-            selected={ai.choice === provider.id}
-            onSelect={() => ai.pick(provider.id)}
-          />
-        ))}
-      </div>
-      <button
-        type="button"
-        aria-expanded={open}
-        aria-controls={listId}
-        onClick={() => setBrowsing(!open)}
-        className="flex cursor-pointer items-center gap-1 self-start rounded-chip border-0 bg-transparent p-0 font-sans text-13 font-medium text-acc hover:underline focus-ring"
-      >
-        {open ? 'Hide the full catalog' : `Browse all ${picker.total} providers`}
-        <span className={`flex motion-safe:transition-transform ${open ? 'rotate-180' : ''}`}>
-          <Icon name="caret" size={12} />
-        </span>
-      </button>
-      <div id={listId} hidden={!open}>
-        {open ? (
-          <ProviderList
-            query={picker.query}
-            onQuery={picker.setQuery}
-            status={picker.status}
-            results={picker.results}
-            total={picker.total}
-            selectedId={ai.choice}
-            onPick={ai.pick}
-          />
-        ) : null}
-      </div>
-    </div>
+    <TestResult
+      result={{
+        ok: row.status !== 'failed',
+        message:
+          row.status === 'failed'
+            ? (row.lastError ?? `${row.name} didn’t answer.`)
+            : `${row.name} is connected. Suggested models are chosen below; change any of them.`,
+        latencyMs: null,
+        model: null,
+        modelsFound: null,
+        checkedAt: row.updatedAt,
+      }}
+      error={null}
+    />
   );
 }
 
 /**
- * AI: nothing by default. Choosing a provider shows its connection form and what AI may see
- * and do; with no AI there is nothing to configure, so neither is shown.
+ * AI: no AI by default, and skipping is a first-class answer. Otherwise the Popular row and
+ * the whole catalog, the form the chosen entry generates with Test and Connect, the four roles
+ * with the suggested models chosen, and the two privacy choices. Same API as Settings › AI.
  */
 export function StepAi({ nav }: { nav: StepNav }) {
   const ai = useSetupAi(nav.next);
+  const selected = ai.selected;
+  const connection = useConnection(selected ?? LOCAL_SERVER, (row) => void ai.onConnected(row));
+  const busy = ai.save.isPending || connection.connect.pending;
+  const submit = async () => {
+    if (ai.none || ai.provider) return ai.submit();
+    const row = await connection.connect.runAsync().catch(() => null);
+    if (row) {
+      await ai.onConnected(row);
+      ai.submit(row);
+    }
+  };
+  const label = ai.none
+    ? 'Continue without AI'
+    : ai.provider
+      ? 'Save AI settings'
+      : 'Connect and continue';
   return (
-    <StepForm label="AI" onSubmit={ai.submit} busy={ai.save.isPending}>
-      <Choices ai={ai} />
-      {ai.choice === NO_AI ? null : (
+    <StepForm label="AI" onSubmit={() => void submit()} busy={busy}>
+      <div role="radiogroup" aria-label="No AI" className="grid gap-2.5 sm:grid-cols-2">
+        <ChoiceCard
+          initials="0"
+          icon={<Icon name="minus" />}
+          name={NO_AI_OPTION.name}
+          description={NO_AI_OPTION.description}
+          selected={ai.none}
+          onSelect={() => ai.pick(NO_AI)}
+        />
+      </div>
+      <h2 className="m-0 text-13 font-semibold text-tx">Or connect a provider</h2>
+      <ProviderPicker
+        catalog={ai.catalog}
+        query={ai.query}
+        onQuery={ai.setQuery}
+        choice={ai.choice}
+        onPick={ai.pick}
+      />
+      {selected ? (
         <>
-          <ConnectionShell picker={ai.picker} />
+          <Card aria-label={`Connect ${selected.name}`}>
+            <CardBody className="flex flex-col gap-3">
+              {ai.provider ? (
+                <Connected ai={ai} />
+              ) : (
+                <ConnectionForm connection={connection} inline />
+              )}
+            </CardBody>
+          </Card>
+          {ai.provider ? <RolesSection roles={ai.roles} /> : null}
           <PrivacyRows
             title="What AI may see and do"
             shareContent={ai.shareContent}
@@ -109,8 +97,20 @@ export function StepAi({ nav }: { nav: StepNav }) {
             onAllowActions={ai.setAllowActions}
           />
         </>
-      )}
-      <StepFooter nav={nav} loading={ai.save.isPending} error={ai.save.error} />
+      ) : null}
+      <StepFooter
+        nav={{
+          ...nav,
+          skip: () => {
+            ai.skip();
+            nav.skip();
+          },
+        }}
+        label={label}
+        skipLabel="Skip, no AI"
+        loading={busy}
+        error={ai.save.error}
+      />
     </StepForm>
   );
 }
