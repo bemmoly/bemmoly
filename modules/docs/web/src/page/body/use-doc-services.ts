@@ -44,6 +44,7 @@ async function searchIssues(query: string): Promise<SuggestionItem[]> {
     id: item.key ?? item.id,
     label: item.key ?? item.title,
     description: item.title,
+    href: item.href,
   }));
 }
 
@@ -54,7 +55,7 @@ async function searchIssues(query: string): Promise<SuggestionItem[]> {
  * navigation for link clicks. Uploads are absent (the kernel has no upload endpoint yet), so
  * images go in by link; AI arrives with its runtime.
  */
-export function useDocServices(pageId: string): DocServices {
+export function useDocServices(pageId: string, comments = false): DocServices {
   const issues = useIssueServices();
   return useMemo<DocServices>(
     () => ({
@@ -63,8 +64,10 @@ export function useDocServices(pageId: string): DocServices {
       searchPeople,
       searchIssues: (query) => searchIssues(query),
       onNavigate: navigateTo,
+      // Commenting needs edit rights, as the comment layer's canComment does.
+      comments,
       ...issues,
     }),
-    [pageId, issues],
+    [pageId, issues, comments],
   );
 }

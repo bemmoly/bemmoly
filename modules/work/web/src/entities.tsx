@@ -1,6 +1,7 @@
 import type { EntityRenderer } from '@bemmoly/core-web';
 import { IssueCard, IssueChip } from './entities/issue-chip.tsx';
 import { IssueTable } from './entities/issue-table.tsx';
+import { issueHref } from './home/my-work-row.tsx';
 import { rememberIssueList } from './issue/issue-list-context.ts';
 import { api } from './shared/api.ts';
 
@@ -22,6 +23,7 @@ const renderers: readonly EntityRenderer[] = [
         id: issue.key,
         label: issue.key,
         description: issue.title,
+        href: issueHref(issue.key),
       })),
   },
 ];
