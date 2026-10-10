@@ -1,4 +1,5 @@
 import { can, emit, type MockDb } from '../db.ts';
+import { newId } from '../seed/time.ts';
 import { bodyOf, fail, notFound, ok, type MockRequest, type MockRoute } from '../types.ts';
 import { aiEnabledFor } from './ai-state.ts';
 import { commentOf, present } from './docs-comments.ts';
@@ -119,6 +120,8 @@ export const docsEditorAiRoutes: readonly MockRoute[] = [
         rationale: /15 minutes/.test(quote)
           ? 'The flag TTL in code is 30 minutes.'
           : 'The thread asks who owns this, so the line names a placeholder owner.',
+        // The server names the run that wrote it, which is what Not useful marks.
+        runId: newId(),
         appliedAt: null,
       };
       emit(db, 'docs.comments', [comment.pageId]);

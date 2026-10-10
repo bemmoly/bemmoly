@@ -67,9 +67,11 @@ describe('the editor AI mock', () => {
     thread.aiSuggestion = null;
     const reply = api.dispatch('POST', `${URL}/docs/comments/${thread.id}/suggest-fix`, {});
     const comment = reply?.body as {
-      aiSuggestion: { replacement: string; appliedAt: null } | null;
+      aiSuggestion: { replacement: string; runId: string; appliedAt: null } | null;
     };
     expect(comment.aiSuggestion?.replacement).toBeTruthy();
+    // A run to mark: the fix card offers Not useful, as every AI card does.
+    expect(comment.aiSuggestion?.runId).toMatch(/^[0-9a-f-]{36}$/);
     expect(comment.aiSuggestion?.appliedAt).toBeNull();
   });
 });
