@@ -50,6 +50,20 @@ export const queryKeys = {
     all: () => ['audit'] as const,
     list: (filter: AuditFilter = {}) => ['audit', 'list', filter] as const,
   },
+  ai: {
+    all: () => ['ai'] as const,
+    /** What a signed-in person's client needs to draw AI surfaces. */
+    status: () => ['ai', 'status'] as const,
+    settings: () => ['ai', 'settings'] as const,
+    exclusionTargets: () => ['ai', 'exclusion-targets'] as const,
+    catalog: () => ['ai', 'catalog'] as const,
+    catalogProvider: (id: string) => ['ai', 'catalog', id] as const,
+    providers: () => ['ai', 'providers'] as const,
+    roles: () => ['ai', 'roles'] as const,
+    usage: (month = '') => ['ai', 'usage', month] as const,
+    prompts: () => ['ai', 'prompts'] as const,
+    promptDiff: (id: string) => ['ai', 'prompts', id, 'diff'] as const,
+  },
   search: (q: string, kinds: readonly string[] = []) => ['search', q, kinds] as const,
   /** The Work module's root; its own factory (workKeys) nests everything under it. */
   work: () => ['work'] as const,
@@ -82,6 +96,11 @@ const EVENT_KEYS: ReadonlyArray<[match: (kind: string) => boolean, keys: () => Q
   ],
   [(kind) => kind.startsWith('update.'), () => [queryKeys.updates(), queryKeys.system()]],
   [(kind) => kind.startsWith('email.'), () => [['email']]],
+  // AI on or off changes what /me says (workspace.aiEnabled) and every AI surface with it.
+  [
+    (kind) => kind === 'ai' || kind.startsWith('ai.'),
+    () => [queryKeys.ai.all(), queryKeys.me(), queryKeys.settings.all()],
+  ],
   [(kind) => kind.startsWith('work.'), () => [queryKeys.work()]],
   [(kind) => kind.startsWith('docs.'), () => [queryKeys.docs()]],
 ];
