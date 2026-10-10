@@ -13,9 +13,9 @@ const cx = (...parts: Array<string | false | null | undefined>) => parts.filter(
 export const ROW = cx(
   'group/row relative flex h-7.5 min-w-0 items-center gap-2 rounded-control px-2 text-13 text-tx-2 no-underline',
   'cursor-pointer border-0 bg-transparent text-left font-sans hover:bg-hover hover:text-tx',
-  'focus-ring-inset [&_svg]:text-tx-3',
+  'focus-ring-inset [&>svg]:text-tx-3',
   'aria-[current=page]:bg-card aria-[current=page]:font-medium aria-[current=page]:text-tx aria-[current=page]:shadow-e1',
-  'aria-[current=page]:[&_svg]:text-acc',
+  'aria-[current=page]:[&>svg]:text-acc',
 );
 
 /** A rail button: 36 by 32, the icon centred, the current one raised like a row. */
