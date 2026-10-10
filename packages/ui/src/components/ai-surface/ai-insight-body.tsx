@@ -1,7 +1,7 @@
 import { Fragment, type MouseEvent } from 'react';
 import { cx } from '../../lib/cx.ts';
 import { focusRing } from '../../lib/focus.ts';
-import { SkeletonText } from '../skeleton/skeleton.tsx';
+import { Skeleton, SkeletonText } from '../skeleton/skeleton.tsx';
 import { Tag } from '../tag/tag.tsx';
 import { AiActionButton } from './ai-parts.tsx';
 
@@ -32,6 +32,11 @@ export interface AiInsightBodyProps {
   onRetry?: () => void;
   /** Skeleton lines while loading. */
   lines?: number;
+  /**
+   * One line inside an AiInsightBar: spans instead of blocks, one skeleton bar, and the failed
+   * label alone (the bar's own actions carry Try again).
+   */
+  inline?: boolean;
   /** In-app navigation for a citation link; without it the link is a plain anchor. */
   onNavigate?: (href: string) => void;
   className?: string;
@@ -80,8 +85,20 @@ export function AiInsightBody({
   onRetry,
   lines = 3,
   onNavigate,
+  inline = false,
   className,
 }: AiInsightBodyProps) {
+  if (inline && state !== 'ready') {
+    return state === 'loading' ? (
+      <span role="status" aria-busy="true" aria-label="Writing with AI" className={className}>
+        <Skeleton width={240} className="inline-block align-middle" />
+      </span>
+    ) : (
+      <span role="status" className={className}>
+        {failedLabel}
+      </span>
+    );
+  }
   if (state === 'loading') {
     return (
       <div
@@ -108,8 +125,9 @@ export function AiInsightBody({
     );
   }
   const byId = new Map(citations.map((citation) => [citation.id, citation]));
+  const Text = inline ? 'span' : 'p';
   return (
-    <p className={cx('m-0', className)}>
+    <Text className={cx('m-0', className)}>
       {points.map((point, index) => {
         const sources = point.cites.flatMap((id) => byId.get(id) ?? []);
         return (
@@ -133,6 +151,6 @@ export function AiInsightBody({
           </Fragment>
         );
       })}
-    </p>
+    </Text>
   );
 }

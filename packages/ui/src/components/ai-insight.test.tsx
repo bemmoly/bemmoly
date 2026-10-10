@@ -2,7 +2,7 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectAccessible, expectFocusRing } from '../testing/a11y.ts';
 import { AiInsightBody } from './ai-surface/ai-insight-body.tsx';
-import { AiSummary } from './ai-surface/ai-cards.tsx';
+import { AiInsightBar, AiSummary } from './ai-surface/ai-cards.tsx';
 
 const citations = [
   { id: 'c1', label: 'PLT-204', location: 'description', href: '/work/issue/PLT-204' },
@@ -69,5 +69,28 @@ describe('AiInsightBody', () => {
     );
     fireEvent.click(screen.getByRole('link', { name: 'PLT-204' }));
     expect(onNavigate).toHaveBeenCalledWith('/work/issue/PLT-204');
+  });
+
+  it('fits one line of an insight bar when inline', async () => {
+    const { container, rerender } = render(
+      <AiInsightBar title="Sprint risk">
+        <AiInsightBody
+          inline
+          state="ready"
+          citations={citations}
+          points={[{ text: 'PLT-204 has waited 3 days.', cites: ['c1'] }]}
+        />
+      </AiInsightBar>,
+    );
+    expect(container.querySelector('p')).toBeNull();
+    expect(screen.getByRole('link', { name: 'PLT-204' })).toBeTruthy();
+    await expectAccessible(container);
+    rerender(
+      <AiInsightBar title="Sprint risk">
+        <AiInsightBody inline state="failed" failedLabel="Couldn’t get the sprint risk" />
+      </AiInsightBar>,
+    );
+    expect(screen.getByRole('status').textContent).toBe('Couldn’t get the sprint risk');
+    expect(screen.queryByRole('button', { name: 'Try again' })).toBeNull();
   });
 });

@@ -233,3 +233,31 @@ export const InsightStates: Story = {
     </div>
   ),
 };
+
+/** The sprint risk bar drawing an insight inline: its one line, loading and failed. */
+export const InsightBarStates: Story = {
+  args: { children: null },
+  render: () => (
+    <div className="flex w-188 flex-col gap-3 bg-sunken p-1">
+      <AiInsightBar title="Sprint risk" actions={<AiNotUseful />} onDismiss={noop}>
+        <AiInsightBody
+          inline
+          state="ready"
+          citations={citations}
+          points={[
+            { text: 'PLT-204 has been in review 3 days and blocks 2 issues.', cites: ['c1'] },
+          ]}
+        />
+      </AiInsightBar>
+      <AiInsightBar title="Sprint risk">
+        <AiInsightBody inline state="loading" />
+      </AiInsightBar>
+      <AiInsightBar
+        title="Sprint risk"
+        actions={<AiActionButton onClick={noop}>Try again</AiActionButton>}
+      >
+        <AiInsightBody inline state="failed" failedLabel="Couldn’t get the sprint risk" />
+      </AiInsightBar>
+    </div>
+  ),
+};
