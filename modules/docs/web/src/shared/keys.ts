@@ -9,6 +9,8 @@ export const docsKeys = {
   all: () => queryKeys.docs(),
   spaces: () => [...queryKeys.docs(), 'spaces'] as const,
   space: (ref: string) => [...queryKeys.docs(), 'space', ref] as const,
+  /** A space's people with their roles and canReview, for settings and the reviewer picker. */
+  members: (spaceRef: string) => [...queryKeys.docs(), 'members', spaceRef] as const,
   tree: (spaceRef: string, parentId: string | null) =>
     [...queryKeys.docs(), 'tree', spaceRef, parentId] as const,
   /** Every tree level of a space, for a move that touches several. */
