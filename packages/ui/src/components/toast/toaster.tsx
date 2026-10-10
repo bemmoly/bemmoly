@@ -2,6 +2,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -62,6 +63,21 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<(ToastOptions & { id: string; leaving?: boolean })[]>([]);
   const counter = useRef(0);
   const clocks = useRef(new Map<string, Clock>());
+  /** Exit animations still waiting to drop their toast. */
+  const exits = useRef(new Set<ReturnType<typeof setTimeout>>());
+
+  // A provider that goes away takes its countdowns with it, so no timer updates a stack that
+  // is no longer on screen.
+  useEffect(() => {
+    const running = clocks.current;
+    const leaving = exits.current;
+    return () => {
+      for (const clock of running.values()) clearTimeout(clock.timer);
+      running.clear();
+      for (const timer of leaving) clearTimeout(timer);
+      leaving.clear();
+    };
+  }, []);
 
   /** Plays the exit where motion is allowed, then drops the toast from the stack. */
   const dismiss = useCallback((id: string) => {
@@ -73,7 +89,11 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       return;
     }
     setToasts((list) => list.map((t) => (t.id === id ? { ...t, leaving: true } : t)));
-    setTimeout(remove, MOTION_MS.exit);
+    const timer = setTimeout(() => {
+      exits.current.delete(timer);
+      remove();
+    }, MOTION_MS.exit);
+    exits.current.add(timer);
   }, []);
 
   const run = useCallback(
