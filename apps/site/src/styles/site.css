@@ -80,7 +80,7 @@ body {
   margin: 0;
   color: var(--tx);
   font-family: var(--font-ui);
-  font-size: var(--text-15);
+  font-size: var(--text-16);
   line-height: normal;
   overflow-x: clip;
 }

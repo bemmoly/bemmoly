@@ -146,7 +146,7 @@ export function ColumnCard(props: ColumnCardProps) {
         ))}
         <div
           className={cx(
-            'mt-auto rounded-md border border-dashed p-1.5 text-center text-12',
+            'mt-auto rounded-control border border-dashed p-1.5 text-center text-12',
             accept && hovered ? 'border-acc bg-acc-50 text-acc' : 'border-line text-tx-3',
           )}
         >

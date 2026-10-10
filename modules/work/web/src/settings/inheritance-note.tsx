@@ -23,7 +23,7 @@ export function InheritanceNote({
       ? ', with no changes yet for this project.'
       : `, with ${changes} ${changes === 1 ? 'change' : 'changes'} for this project.`;
   return (
-    <div className="flex items-center gap-2 rounded-lg bg-acc-50 px-3 py-2.25 text-13 text-tx-2">
+    <div className="flex items-center gap-2 rounded-card bg-acc-50 px-3 py-2.25 text-13 text-tx-2">
       <Icon name="layers" size={15} className="shrink-0 text-acc" />
       <span className="min-w-0">
         Based on <b className="font-semibold text-tx">{origin}</b>
