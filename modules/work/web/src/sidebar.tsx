@@ -74,8 +74,11 @@ export default function WorkSidebar(_props: ModuleSidebarProps) {
   const recent = useRecentProjects();
   const query = useQuery(projectsQuery);
   const inPath = projectInPath(pathname);
-  const current = inPath ?? projectKey;
-  const projects = sidebarProjects(query.data?.items ?? [], current, recent);
+  const listed = (query.data?.items ?? []).filter((project) => !project.archivedAt);
+  // As the Work screens choose (useProject): the last project while it still exists, else the first.
+  const fallback = (listed.find((project) => project.key === projectKey) ?? listed[0])?.key;
+  const current = inPath ?? fallback ?? null;
+  const projects = sidebarProjects(listed, current, recent);
   const inWork = pathname.startsWith('/work/');
 
   if (query.isError) {
