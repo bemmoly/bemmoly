@@ -1,3 +1,4 @@
+import { useFrame, useHeaderTrail } from '@bemmoly/core-web';
 import { Button, EmptyState } from '@bemmoly/ui';
 import { Icon } from '@bemmoly/ui/icons';
 import { useSpace } from '../hooks/queries.ts';
@@ -9,6 +10,9 @@ import { SpaceLayout } from '../space/space-layout.tsx';
 import { PageFrame } from './page-frame.tsx';
 import { ABOUT_PANEL, usePageChrome } from './screen-context.ts';
 import { usePageLoad } from './use-page-load.ts';
+
+/** Where the trail ends when there is no page to name. */
+const TRAIL = { 'not-found': 'Page not found', forbidden: 'No access', error: 'Did not load' };
 
 function BackToDocs({ quiet = false }: { quiet?: boolean }) {
   return (
@@ -44,6 +48,11 @@ function Problem({
       description: 'The server did not answer in time. Nothing you wrote was lost.',
     },
   }[kind];
+  const { pathname } = useFrame();
+  useHeaderTrail([
+    { label: 'Docs', path: docsPaths.home(), icon: <Icon name="doc" /> },
+    { label: TRAIL[kind], path: pathname },
+  ]);
   return (
     <DocsLayout layout="full">
       <EmptyState
