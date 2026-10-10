@@ -1,0 +1,25 @@
+{
+  "prompt": {
+    "id": "work.sprint_pulse",
+    "version": 1
+  },
+  "replies": {
+    "work.sprint_pulse": [
+      {
+        "object": {
+          "risk": "at_risk",
+          "headline": {
+            "text": "PLT-204 has sat in review for 4 days and holds PLT-211 and PLT-219; 14 of 23 points remain with 4 days left.",
+            "cites": ["c2", "c3", "c4", "c1"]
+          },
+          "next": [
+            {
+              "label": "Open PLT-204",
+              "cite": "c2"
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

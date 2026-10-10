@@ -1,0 +1,34 @@
+{
+  "prompt": {
+    "id": "ai.brief",
+    "version": 1
+  },
+  "replies": {
+    "ai.brief": [
+      {
+        "object": {
+          "points": [
+            {
+              "text": "PLT-204 waits on your review of PR #4821 since 8 October.",
+              "cites": ["c1"]
+            },
+            {
+              "text": "Your PLT-211 and PLT-219 stay blocked until it merges.",
+              "cites": ["c2", "c3"]
+            },
+            {
+              "text": "Sprint 14 ends 16 October with 9 of 23 points done.",
+              "cites": ["c5"]
+            }
+          ],
+          "next": [
+            {
+              "label": "Review PLT-204",
+              "cite": "c1"
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
