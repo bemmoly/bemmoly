@@ -59,7 +59,13 @@ test('an unknown address shows the not-found page inside the frame', async ({ pa
     page.getByRole('heading', { name: 'There is nothing at this address' }),
   ).toBeVisible();
   await expect(page.getByRole('complementary', { name: 'Sidebar' })).toBeVisible();
-  await expect(page.getByRole('navigation', { name: 'Breadcrumb' })).toBeVisible();
+  const trail = page.getByRole('navigation', { name: 'Breadcrumb' });
+  await expect(trail.getByRole('link', { name: 'Home' })).not.toHaveAttribute('aria-current');
+  await expect(trail.getByRole('link', { name: 'Not found' })).toHaveAttribute(
+    'aria-current',
+    'page',
+  );
+  await expect(page).toHaveTitle('Not found · Acme Labs · Bemmoly');
 });
 
 test('the web app manifest and icons come from the brand files', async ({ request }) => {

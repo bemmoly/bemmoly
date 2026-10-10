@@ -1,4 +1,4 @@
-import { PageLayout } from '@bemmoly/core-web';
+import { PageLayout, useFrame } from '@bemmoly/core-web';
 import { Button, Kbd } from '@bemmoly/ui';
 import { Icon } from '@bemmoly/ui/icons';
 import { PageNotice } from '../components/page-failure.tsx';
@@ -7,10 +7,16 @@ import { useUiStore } from '../store/ui.ts';
 /** An address nothing lives at, inside the frame so the sidebar is still the way on. */
 export function NotFoundPage() {
   const openPalette = useUiStore((state) => state.openPalette);
+  const { pathname } = useFrame();
   return (
     <PageLayout
       layout="contained"
-      header={{ crumbs: [{ label: 'Home', path: '/', icon: <Icon name="home" size={15} /> }] }}
+      header={{
+        crumbs: [
+          { label: 'Home', path: '/', icon: <Icon name="home" size={15} /> },
+          { label: 'Not found', path: pathname },
+        ],
+      }}
       title={['Not found']}
     >
       <PageNotice

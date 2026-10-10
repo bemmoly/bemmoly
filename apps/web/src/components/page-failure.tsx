@@ -1,4 +1,4 @@
-import { PageLayout, useFrameLink } from '@bemmoly/core-web';
+import { PageLayout, useFrame, useFrameLink } from '@bemmoly/core-web';
 import { Button, buttonClassName } from '@bemmoly/ui';
 import { Icon } from '@bemmoly/ui/icons';
 import type { ReactNode } from 'react';
@@ -80,13 +80,24 @@ export function PageFailure({
     </PageNotice>
   );
   if (!framed) return notice;
+  return <FailedPage>{notice}</FailedPage>;
+}
+
+/** A failed page in the frame: Home, then where the person is, so the trail never claims Home. */
+function FailedPage({ children }: { children: ReactNode }) {
+  const { pathname } = useFrame();
   return (
     <PageLayout
       layout="contained"
-      header={{ crumbs: [{ label: 'Home', path: '/', icon: <Icon name="home" size={15} /> }] }}
+      header={{
+        crumbs: [
+          { label: 'Home', path: '/', icon: <Icon name="home" size={15} /> },
+          { label: 'Something went wrong', path: pathname },
+        ],
+      }}
       title={['Something went wrong']}
     >
-      {notice}
+      {children}
     </PageLayout>
   );
 }
