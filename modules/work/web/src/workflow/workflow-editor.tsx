@@ -1,5 +1,5 @@
 import { ConfirmChange, EmptyState, useToast } from '@bemmoly/ui';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { Project } from '../../../shared/index.ts';
 import { useWorkflowEditor } from '../hooks/workflow-editor.ts';
 import { useDraftLeaveGuard } from '../hooks/workflow-leave.ts';
@@ -22,11 +22,20 @@ export interface WorkflowEditorProps {
 }
 
 /** The visual workflow editor: header, canvas and the panel for whatever is selected. */
-export function WorkflowEditor({ project, workflowId, listPath }: WorkflowEditorProps) {
-  const model = useWorkflowEditor(workflowId);
+export function WorkflowEditor({ workflowId, listPath }: WorkflowEditorProps) {
+  const toast = useToast();
+  const model = useWorkflowEditor(workflowId, (item) =>
+    toast.undo({
+      title: `${item.kind === 'status' ? 'Status' : 'Transition'} "${item.name}" deleted`,
+      body:
+        item.takes > 0
+          ? `Its ${item.takes} transition${item.takes === 1 ? '' : 's'} went too. Nothing is live until you publish.`
+          : 'Nothing is live until you publish.',
+      onUndo: () => model.actions.undo(),
+    }),
+  );
   const { workflow, draftState, validation, selection, actions, rules } = model;
   const { draft } = draftState;
-  const toast = useToast();
   const usage = useWorkflowUsage();
   const [publishing, setPublishing] = useState(false);
   const publisher = usePublishWorkflow(workflowId, draftState.flush, async (published) => {
@@ -44,6 +53,7 @@ export function WorkflowEditor({ project, workflowId, listPath }: WorkflowEditor
     [workflow, draft],
   );
   const leaving = useDraftLeaveGuard(draftState);
+  useUndoKey(actions.undo);
 
   if (model.workflowError || draftState.loadError)
     return (
@@ -75,17 +85,18 @@ export function WorkflowEditor({ project, workflowId, listPath }: WorkflowEditor
     <div className="flex min-h-0 min-w-0 flex-1 flex-col">
       <EditorHeader
         workflow={workflow}
-        projectName={project.name}
         listPath={listPath}
         changeCount={changes.length}
         saveState={draftState.saveState}
         isValidating={validation.isValidating}
+        canUndo={model.canUndo}
+        onUndo={actions.undo}
         onValidate={validate}
         onAddStatus={actions.addStatus}
         onPublish={() => setPublishing(true)}
       />
-      <div className="flex min-h-0 flex-1">
-        <div className="min-w-0 flex-1 overflow-auto px-6 pb-6">
+      <div className="flex min-h-0 flex-1 max-md:flex-col">
+        <div className="min-h-0 min-w-0 flex-1 overflow-auto px-6 pb-6 max-md:px-4">
           <EditorCanvas
             label={workflow.name}
             draft={draft}
@@ -135,14 +146,6 @@ export function WorkflowEditor({ project, workflowId, listPath }: WorkflowEditor
         onClose={() => setPublishing(false)}
       />
       <ConfirmChange
-        open={model.deleteTarget !== null}
-        title={`Delete ${model.deleteTarget?.kind === 'status' ? 'status' : 'transition'} "${model.deleteTarget?.name ?? ''}"?`}
-        consequences={deleteConsequences(model.deleteTarget)}
-        confirmLabel={model.deleteTarget?.kind === 'status' ? 'Delete status' : 'Delete transition'}
-        onConfirm={actions.confirmDelete}
-        onCancel={actions.cancelDelete}
-      />
-      <ConfirmChange
         open={leaving.asking}
         title="Leave without saving the last change?"
         consequences={[
@@ -157,17 +160,18 @@ export function WorkflowEditor({ project, workflowId, listPath }: WorkflowEditor
   );
 }
 
-function deleteConsequences(target: ReturnType<typeof useWorkflowEditor>['deleteTarget']) {
-  if (!target) return [];
-  const draftOnly = 'It leaves the draft now; the published version keeps it until you publish.';
-  if (target.kind === 'transition') return [draftOnly];
-  return [
-    target.takes > 0
-      ? `The ${target.takes} transition${target.takes === 1 ? '' : 's'} into and out of it go too.`
-      : 'No transition uses it.',
-    target.issues && target.issues > 0
-      ? `Publish will ask where its ${target.issues === 1 ? 'issue goes' : `${target.issues} issues go`}.`
-      : 'No issue is in it.',
-    draftOnly,
-  ];
+/** ⌘Z or Ctrl+Z walks the draft back, unless the key belongs to a field being typed in. */
+function useUndoKey(undo: () => void) {
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key.toLowerCase() !== 'z' || event.shiftKey || !(event.metaKey || event.ctrlKey))
+        return;
+      const target = event.target as HTMLElement | null;
+      if (target?.closest('input, textarea, select, [contenteditable="true"]')) return;
+      event.preventDefault();
+      undo();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [undo]);
 }

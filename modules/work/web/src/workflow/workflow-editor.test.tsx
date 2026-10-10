@@ -83,17 +83,18 @@ describe('WorkflowEditor', () => {
     expect(within(panel).queryByText('CONDITION')).toBeNull();
   });
 
-  it('asks before Delete removes the focused status', async () => {
+  it('deletes the focused status at once and offers Undo', async () => {
     const canvas = await openEditor();
     const node = within(canvas).getByRole('button', { name: /^Backlog/ });
     fireEvent.keyDown(node, { key: 'Delete' });
-    const dialog = await screen.findByRole('dialog', { name: 'Delete status "Backlog"?' });
-    expect(within(dialog).getByText('The 1 transition into and out of it go too.')).toBeTruthy();
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Delete status' }));
     await waitFor(() =>
       expect(within(canvas).queryByRole('button', { name: /^Backlog/ })).toBeNull(),
     );
     expect(within(canvas).queryByRole('button', { name: 'Start work' })).toBeNull();
+    expect(await screen.findByText('Status "Backlog" deleted')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Undo' }));
+    expect(await within(canvas).findByRole('button', { name: /^Backlog/ })).toBeTruthy();
+    expect(within(canvas).getByRole('button', { name: 'Start work' })).toBeTruthy();
   });
 
   it('shows how many issues sit in each status', async () => {
