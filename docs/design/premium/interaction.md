@@ -67,3 +67,4 @@ that passes (ADR 0015).
 - [Integration](interaction/integration.md): choices made bringing the streams together, the token alias removal, what is left.
 - [Docs: frame and tree](interaction/docs-frame.md): the space tree in the sidebar, focus mode, the one header, layouts, errors in the frame, AI gating.
 - [Docs page](interaction/docs-page.md): page column, icon and cover, properties row, the right margin, history mode, presence, Share.
+- [Docs: writing surface](interaction/docs-editor.md): selection bubble and ⌘K links, block handles, the / menu, code and table tools, the typing fade, issue embeds and Linked work.
