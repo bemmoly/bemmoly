@@ -82,3 +82,32 @@ test('Home’s inbox preview opens the inbox on the item chosen', async ({ page 
     page.getByRole('listbox', { name: 'Notifications' }).getByRole('option', { selected: true }),
   ).toContainText('Priya N.');
 });
+
+test('an item shows its issue, opens it, and the issue page walks the Inbox', async ({ page }) => {
+  await useMockBackend(page, 'ready');
+  await page.goto('/inbox');
+  const detail = page.getByRole('article');
+  await expect(detail.getByRole('link', { name: /PLT-204/ })).toContainText(
+    'Session store migration to Postgres',
+  );
+  await page.keyboard.press('Enter');
+  await expect(page).toHaveURL(/\/work\/issue\/PLT-204$/);
+  await expect(
+    page.getByRole('heading', { name: 'Session store migration to Postgres' }),
+  ).toBeVisible();
+  await page.keyboard.press('j');
+  await expect(page).toHaveURL(/\/work\/issue\/PLT-218$/);
+});
+
+test('an issue opened from Home’s My issues steps through that list', async ({ page }) => {
+  await useMockBackend(page, 'ready');
+  await page.goto('/');
+  const rows = page.getByRole('region', { name: 'My issues' }).getByRole('link', { name: /-\d+/ });
+  await expect(rows.nth(1)).toBeVisible();
+  const second = /[A-Z]+-\d+/.exec((await rows.nth(1).textContent()) ?? '')?.[0] ?? '';
+  const title = (await rows.first().locator('span.truncate[title]').getAttribute('title')) ?? '';
+  await rows.first().click();
+  await expect(page.getByRole('heading', { name: title })).toBeVisible();
+  await page.keyboard.press('j');
+  await expect(page).toHaveURL(new RegExp(`/work/issue/${second}$`));
+});
