@@ -43,16 +43,16 @@ function FormatTile({
       aria-checked={chosen}
       onClick={onChoose}
       className={
-        'flex cursor-pointer flex-col gap-1 rounded-card border bg-sf p-3 text-left font-sans outline-0 ' +
+        'flex cursor-pointer flex-col gap-1 rounded-card border bg-card p-3 text-left font-sans outline-0 ' +
         'focus-visible:shadow-ring motion-safe:transition-[border-color,box-shadow] ' +
-        (chosen ? 'border-ac bg-ac-bg shadow-ring' : 'border-br hover:border-br3')
+        (chosen ? 'border-acc bg-acc-50 shadow-ring' : 'border-line hover:border-line')
       }
     >
-      <span className={`flex items-center gap-2 ${chosen ? 'text-ac' : 'text-tx3'}`}>
+      <span className={`flex items-center gap-2 ${chosen ? 'text-acc' : 'text-tx-2'}`}>
         <Icon name={format.icon} size={15} />
         <span className="text-13 font-semibold text-tx">{format.label}</span>
       </span>
-      <span className="text-12 leading-body text-tx4">{format.hint}</span>
+      <span className="text-12 leading-body text-tx-3">{format.hint}</span>
     </button>
   );
 }

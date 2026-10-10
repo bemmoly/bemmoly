@@ -35,7 +35,7 @@ function Section({
 }) {
   return (
     <section aria-label={title} className="flex flex-col">
-      <h3 className="m-0 mx-2 mt-4 mb-1 flex gap-1.5 text-11h font-semibold text-tx-3">
+      <h3 className="m-0 mx-2 mt-4 mb-1 flex gap-1.5 text-12 font-semibold text-tx-3">
         {title}
         <span className="font-medium tabular-nums">{count}</span>
       </h3>
@@ -64,7 +64,7 @@ function PlainRecord({ record }: { record: LinkedRecord }) {
   return (
     <a href={record.path} className={ROW}>
       {data?.type && <TypeGlyph type={data.type} size={15} />}
-      <span className="font-mono text-11h text-tx-3">{record.key ?? record.kind}</span>
+      <span className="font-mono text-12 text-tx-3">{record.key ?? record.kind}</span>
       <span className="min-w-0 flex-1 truncate" title={record.title}>
         {record.title || 'Untitled'}
       </span>

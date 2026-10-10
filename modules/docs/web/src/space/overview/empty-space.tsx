@@ -15,12 +15,12 @@ function ChoiceCard({ choice, primary }: { choice: Choice; primary: boolean }) {
       type="button"
       onClick={choice.onChoose}
       autoFocus={primary}
-      className="group flex cursor-pointer flex-col gap-2 rounded-card border border-br bg-sf p-4 text-left font-sans outline-0 hover:border-br3 hover:shadow-e1 focus-visible:border-ac focus-visible:shadow-ring"
+      className="group flex cursor-pointer flex-col gap-2 rounded-card border border-line bg-card p-4 text-left font-sans outline-0 hover:border-line hover:shadow-e1 focus-visible:border-acc focus-visible:shadow-ring"
     >
       <span
         className={
-          'grid size-8.5 place-items-center rounded-control border border-br ' +
-          (primary ? 'bg-ac-bg text-ac' : 'bg-bg2 text-tx3')
+          'grid size-8.5 place-items-center rounded-control border border-line ' +
+          (primary ? 'bg-acc-50 text-acc' : 'bg-side text-tx-2')
         }
       >
         <Icon name={choice.icon} size={18} />
@@ -29,7 +29,7 @@ function ChoiceCard({ choice, primary }: { choice: Choice; primary: boolean }) {
         <span className="flex-1 text-13 font-semibold text-tx">{choice.title}</span>
         {choice.keys && <Kbd keys={choice.keys} />}
       </span>
-      <span className="text-12h leading-body text-tx4">{choice.description}</span>
+      <span className="text-13 leading-body text-tx-3">{choice.description}</span>
     </button>
   );
 }
@@ -55,7 +55,7 @@ export function EmptySpace({
     return (
       <div className="mx-auto mt-16 max-w-130 text-center">
         <h2 className="m-0 text-16 font-semibold text-tx">Nothing written in {spaceName} yet</h2>
-        <p className="m-0 mt-1.5 text-13h text-tx4">
+        <p className="m-0 mt-1.5 text-13 text-tx-3">
           You can read {spaceName} but not add pages. A space admin can change that.
         </p>
       </div>
@@ -85,10 +85,10 @@ export function EmptySpace({
   return (
     <section aria-label="Start the space" className="mx-auto mt-12 flex max-w-190 flex-col gap-5">
       <div className="text-center">
-        <h2 className="m-0 text-18 font-semibold tracking-display text-tx">
+        <h2 className="m-0 text-16 font-semibold tracking-display text-tx">
           Write the first page in {spaceName}
         </h2>
-        <p className="m-0 mt-1.5 text-13h text-tx4">
+        <p className="m-0 mt-1.5 text-13 text-tx-3">
           It becomes the space’s home page. You can change that later.
         </p>
       </div>

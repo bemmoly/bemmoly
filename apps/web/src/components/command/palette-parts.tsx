@@ -1,7 +1,7 @@
 import { Icon } from '@bemmoly/ui/icons';
 import type { ReactNode } from 'react';
 
-const MARK = 'rounded-xs bg-warn-bg px-px text-tx';
+const MARK = 'rounded-chip bg-amber-50 px-px text-tx';
 
 /** Splits on the server's <b>…</b> into text and marks, never through innerHTML. */
 function fromTags(text: string): ReactNode[] {
@@ -43,13 +43,13 @@ export function Marked({ text, query }: { text: string; query?: string }) {
 /** "In Engineering ×": the place the search keeps to until it is cleared. */
 export function PlaceChip({ label, onClear }: { label: string; onClear: () => void }) {
   return (
-    <span className="inline-flex h-6 shrink-0 items-center gap-1 rounded-full border border-ac/30 bg-ac-bg pr-1 pl-2.5 text-12 font-medium text-ac">
+    <span className="inline-flex h-6 shrink-0 items-center gap-1 rounded-full border border-acc/30 bg-acc-50 pr-1 pl-2.5 text-12 font-medium text-acc">
       In {label}
       <button
         type="button"
         aria-label={`Search everywhere, not only in ${label}`}
         onClick={onClear}
-        className="grid size-4 cursor-pointer place-items-center rounded-full border-0 bg-transparent p-0 text-ac hover:bg-ac/15"
+        className="grid size-4 cursor-pointer place-items-center rounded-full border-0 bg-transparent p-0 text-acc hover:bg-acc/15"
       >
         <Icon name="close" size={11} />
       </button>

@@ -105,7 +105,7 @@ export function PageLenses({ lens, onLens, spaces, person }: PageLensesProps) {
 
   return (
     <Card className="overflow-hidden">
-      <div className="flex items-center gap-2.5 overflow-x-auto border-b border-br2 px-3.5 py-2.5">
+      <div className="flex items-center gap-2.5 overflow-x-auto border-b border-line-2 px-3.5 py-2.5">
         <SegmentedControl
           size="sm"
           aria-label="Which pages"
@@ -156,7 +156,7 @@ export function PageLenses({ lens, onLens, spaces, person }: PageLensesProps) {
         )}
       </div>
       {more?.hasNextPage && (
-        <div className="flex justify-center border-t border-br-row py-1.5">
+        <div className="flex justify-center border-t border-line-2 py-1.5">
           <Button
             size="sm"
             variant="ghost"

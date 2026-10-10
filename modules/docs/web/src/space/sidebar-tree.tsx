@@ -37,7 +37,7 @@ function TreeSkeleton({ indent }: { indent: number }) {
       {[62, 48, 70, 55].map((width) => (
         <span key={width} className="flex h-7 items-center gap-1.5" style={{ paddingLeft: indent }}>
           <span className="size-4.5 shrink-0" />
-          <Skeleton width={15} height={15} className="rounded-xs" />
+          <Skeleton width={15} height={15} className="rounded-chip" />
           <Skeleton width={`${width}%`} height={10} />
         </span>
       ))}

@@ -59,16 +59,16 @@ export function PageRow({ page, place, person, when, whenLabel }: PageRowProps) 
     <a
       href={docsPaths.page(page.id)}
       data-list-row
-      className="grid min-h-10 grid-cols-[18px_minmax(0,1fr)_16px_22px_64px] items-center gap-3 border-b border-br-row px-3.5 text-13 text-tx no-underline outline-0 last:border-b-0 hover:bg-hover focus-visible:bg-hover focus-visible:shadow-[inset_2px_0_0_var(--color-ac)] sm:grid-cols-[18px_minmax(0,1fr)_16px_140px_22px_72px]"
+      className="grid min-h-10 grid-cols-[18px_minmax(0,1fr)_16px_22px_64px] items-center gap-3 border-b border-line-2 px-3.5 text-13 text-tx no-underline outline-0 last:border-b-0 hover:bg-hover focus-visible:bg-hover focus-visible:shadow-[inset_2px_0_0_var(--color-ac)] sm:grid-cols-[18px_minmax(0,1fr)_16px_140px_22px_72px]"
     >
-      <PageIcon value={page.icon} size={16} className="text-tx4" />
+      <PageIcon value={page.icon} size={16} className="text-tx-3" />
       <span className="truncate font-medium">{page.title || 'Untitled'}</span>
       <PageStatusGlyph status={page.status} />
-      <span className="hidden min-w-0 items-center gap-1.5 truncate text-12h text-tx3 sm:flex">
+      <span className="hidden min-w-0 items-center gap-1.5 truncate text-13 text-tx-2 sm:flex">
         {place}
       </span>
       {person ? <Avatar name={person.name} size={20} /> : <span />}
-      <span className="text-right text-12 text-tx4 tabular-nums">
+      <span className="text-right text-12 text-tx-3 tabular-nums">
         {whenLabel ?? <RelativeTime iso={when} />}
       </span>
     </a>

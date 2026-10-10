@@ -88,7 +88,7 @@ export function CommandItem({
         <span className="truncate" title={typeof title === 'string' ? title : undefined}>
           {title}
         </span>
-        {detail && <span className="truncate text-12h text-tx-3">{detail}</span>}
+        {detail && <span className="truncate text-13 text-tx-3">{detail}</span>}
       </span>
       {meta && <span className="flex shrink-0 items-center gap-1.5 text-12 text-tx-3">{meta}</span>}
       {keys && (

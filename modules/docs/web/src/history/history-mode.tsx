@@ -121,7 +121,7 @@ export function HistoryMode({ pageId, canEdit = true, onExit }: HistoryModeProps
             />
           )}
           <Icon name="arrow" size={14} className="text-tx-3" />
-          <span className="text-12h text-tx-2">Current version</span>
+          <span className="text-13 text-tx-2">Current version</span>
           {compare.data && <StatsLine stats={compare.data.diff.stats} />}
           <span className="ml-auto flex items-center gap-2">
             <span className="hidden items-center gap-1 text-12 text-tx-3 lg:flex">

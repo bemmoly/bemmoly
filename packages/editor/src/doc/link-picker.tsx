@@ -166,7 +166,7 @@ export function LinkPicker({ editor, services, onDone }: LinkPickerProps) {
         />
       </div>
       {error && (
-        <p role="alert" className="m-0 px-3 pb-2 text-12 text-danger">
+        <p role="alert" className="m-0 px-3 pb-2 text-12 text-red">
           {error}
         </p>
       )}
@@ -186,9 +186,9 @@ export function LinkPicker({ editor, services, onDone }: LinkPickerProps) {
               onPointerMove={() => setActive(index)}
               onClick={() => take(choice)}
               className={cx(
-                'flex h-8 cursor-pointer items-center gap-2.5 rounded-sm px-2 text-13',
+                'flex h-8 cursor-pointer items-center gap-2.5 rounded-chip px-2 text-13',
                 choice === current ? 'bg-hover text-tx' : 'text-tx-2',
-                choice.kind === 'remove' && 'text-danger',
+                choice.kind === 'remove' && 'text-red',
               )}
             >
               <Icon name={ICONS[choice.kind]} size={15} className="shrink-0 text-tx-3" />

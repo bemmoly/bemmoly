@@ -11,7 +11,7 @@ import { usePageScreen } from '../screen-context.ts';
 import { MoreMenu } from './more-menu.tsx';
 import { saveLine, saveState, spokenState } from './save-state.ts';
 
-const TONE = { quiet: 'text-tx-3', busy: 'text-tx-2', warn: 'text-warn-fg' } as const;
+const TONE = { quiet: 'text-tx-3', busy: 'text-tx-2', warn: 'text-amber-tx' } as const;
 
 /** "Saved · Priya is editing" and the faces of everyone else on the page. */
 function Presence() {

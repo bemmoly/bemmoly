@@ -13,7 +13,7 @@ import { docsPaths } from '../../shared/navigation.ts';
 import type { DocsPersonView } from '../../shared/people.ts';
 import { isStale, STALE_DAYS } from './use-overview.ts';
 
-const HEAD = 'flex items-center gap-2 border-b border-br2 px-3.5 py-2.5';
+const HEAD = 'flex items-center gap-2 border-b border-line-2 px-3.5 py-2.5';
 
 /** Pages waiting on a reviewer, and how many nobody has touched for 90 days. */
 export function InReview({
@@ -31,12 +31,12 @@ export function InReview({
     <Card className="flex min-w-0 flex-col overflow-hidden">
       <div className={HEAD}>
         <h2 className="m-0 flex-1 text-13 font-semibold text-tx">In review</h2>
-        <span className="text-12 text-tx5 tabular-nums">{pending ? '' : waiting.length}</span>
+        <span className="text-12 text-tx-3 tabular-nums">{pending ? '' : waiting.length}</span>
       </div>
       {pending ? (
         <DocListRowSkeleton rows={2} />
       ) : waiting.length === 0 ? (
-        <p className="m-0 px-3.5 py-3 text-12h text-tx4">Nothing is waiting on a reviewer.</p>
+        <p className="m-0 px-3.5 py-3 text-13 text-tx-3">Nothing is waiting on a reviewer.</p>
       ) : (
         waiting.slice(0, 3).map((page) => {
           const owner = person(page.ownerId);
@@ -46,10 +46,10 @@ export function InReview({
               href={docsPaths.page(page.id)}
               className="flex items-center gap-2.5 px-3.5 py-2.5 text-tx no-underline hover:bg-hover"
             >
-              <PageIcon value={page.icon} size={16} className="text-tx4" />
+              <PageIcon value={page.icon} size={16} className="text-tx-3" />
               <span className="flex min-w-0 flex-1 flex-col">
                 <span className="truncate text-13 font-semibold">{page.title || 'Untitled'}</span>
-                <span className="truncate text-12 text-tx4">
+                <span className="truncate text-12 text-tx-3">
                   {owner ? `${owner.name} asked for review` : 'Waiting for review'}
                 </span>
               </span>
@@ -59,7 +59,7 @@ export function InReview({
         })
       )}
       {stale.length > 0 && (
-        <p className="m-0 mt-auto flex items-center gap-2 border-t border-br-row px-3.5 py-2.5 text-12h text-tx3">
+        <p className="m-0 mt-auto flex items-center gap-2 border-t border-line-2 px-3.5 py-2.5 text-13 text-tx-2">
           <Icon name="clock" size={14} className="text-amber" />
           {stale.length} {stale.length === 1 ? 'page' : 'pages'} not updated for {STALE_DAYS} days
         </p>
@@ -87,19 +87,19 @@ export function TopPages({
           <a
             key={root.id}
             href={docsPaths.page(root.id)}
-            className="flex min-w-0 flex-col gap-2.5 rounded-card border border-br bg-sf p-3.5 text-tx no-underline outline-0 hover:border-br3 hover:shadow-e1 focus-visible:border-ac focus-visible:shadow-ring"
+            className="flex min-w-0 flex-col gap-2.5 rounded-card border border-line bg-card p-3.5 text-tx no-underline outline-0 hover:border-line hover:shadow-e1 focus-visible:border-acc focus-visible:shadow-ring"
           >
             <span className="flex items-center gap-2">
-              <PageIcon value={root.icon} size={18} className="text-tx3" />
+              <PageIcon value={root.icon} size={18} className="text-tx-2" />
               <span className="min-w-0 flex-1 truncate text-13 font-semibold">
                 {root.title || 'Untitled'}
               </span>
               {page && <PageStatusGlyph status={page.status} />}
             </span>
-            <span className="text-12 text-tx4">
+            <span className="text-12 text-tx-3">
               {root.hasChildren ? 'Has pages under it' : 'A single page'}
             </span>
-            <span className="flex items-center gap-1.5 text-12 text-tx4">
+            <span className="flex items-center gap-1.5 text-12 text-tx-3">
               {owner && <Avatar name={owner.name} size={16} />}
               {page ? (
                 <span>

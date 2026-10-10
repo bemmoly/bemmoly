@@ -14,7 +14,7 @@ import { PROP, PropKey } from './property.tsx';
 import { ReviewersProperty } from './reviewers-property.tsx';
 
 const OPTION =
-  'flex h-8 w-full cursor-pointer items-center gap-2 rounded-md border-0 bg-transparent px-2 text-left font-sans text-13 text-tx hover:bg-hover focus-visible:bg-hover focus-visible:outline-0 aria-selected:font-medium';
+  'flex h-8 w-full cursor-pointer items-center gap-2 rounded-control border-0 bg-transparent px-2 text-left font-sans text-13 text-tx hover:bg-hover focus-visible:bg-hover focus-visible:outline-0 aria-selected:font-medium';
 
 function OwnerList({ onPick }: { onPick: (id: string | null) => void }) {
   const { page } = usePageScreen();
@@ -37,7 +37,7 @@ function OwnerList({ onPick }: { onPick: (id: string | null) => void }) {
         placeholder="Find a person…"
         value={query}
         onChange={(event) => setQuery(event.target.value)}
-        className="h-8 rounded-md border border-line bg-canvas px-2 font-sans text-13 text-tx outline-0 focus:border-acc"
+        className="h-8 rounded-control border border-line bg-canvas px-2 font-sans text-13 text-tx outline-0 focus:border-acc"
       />
       <div role="listbox" aria-label="Owner" className="flex max-h-64 flex-col overflow-auto">
         {shown.map((user) => (

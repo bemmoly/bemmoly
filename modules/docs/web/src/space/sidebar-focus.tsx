@@ -63,7 +63,7 @@ export function SidebarFocus({ space, activePageId, onExit }: SidebarFocusProps)
           placeholder={`Filter ${pageCountLabel(space.pageCount)}`}
           tone="subtle"
           wrapperClassName="h-7! gap-1.75! px-2!"
-          className="text-12h!"
+          className="text-13!"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           onKeyDown={(event) => {

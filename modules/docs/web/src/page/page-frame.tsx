@@ -191,7 +191,7 @@ export function PageFrame({ page }: { page: PageDetail }) {
               >
                 <article
                   className={cx(
-                    'relative flex max-w-[780px] min-w-0 flex-1 flex-col gap-4.5 px-4 pb-30 text-15h leading-prose text-tx-body sm:px-10',
+                    'relative flex max-w-[780px] min-w-0 flex-1 flex-col gap-4.5 px-4 pb-30 text-16 leading-prose text-tx sm:px-10',
                     page.cover ? 'pt-0' : 'pt-8 sm:pt-10',
                   )}
                 >

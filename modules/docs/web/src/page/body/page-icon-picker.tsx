@@ -74,7 +74,7 @@ function walkGrid(event: KeyboardEvent<HTMLElement>) {
 }
 
 const CELL =
-  'grid size-8 cursor-pointer place-items-center rounded-md border-0 bg-transparent hover:bg-hover focus-visible:shadow-ring focus-visible:outline-0 aria-pressed:bg-acc-50';
+  'grid size-8 cursor-pointer place-items-center rounded-control border-0 bg-transparent hover:bg-hover focus-visible:shadow-ring focus-visible:outline-0 aria-pressed:bg-acc-50';
 
 export interface PageIconPickerProps {
   /** The stored icon, or null. */
@@ -136,7 +136,7 @@ export function PageIconPicker({ value, onChange }: PageIconPickerProps) {
         <button
           type="button"
           onClick={() => onChange(null)}
-          className="flex h-8 cursor-pointer items-center gap-2 rounded-md border-0 bg-transparent px-2 font-sans text-13 text-tx-2 hover:bg-hover focus-visible:shadow-ring focus-visible:outline-0"
+          className="flex h-8 cursor-pointer items-center gap-2 rounded-control border-0 bg-transparent px-2 font-sans text-13 text-tx-2 hover:bg-hover focus-visible:shadow-ring focus-visible:outline-0"
         >
           <Icon name="trash" size={14} />
           Remove icon
