@@ -96,12 +96,7 @@ function columns(actions: TeamRowActions): TableColumn<TeamCardView>[] {
       render: (team) => (
         <span className="flex items-center gap-2">
           {team.people.length > 0 && (
-            <AvatarStack
-              people={team.people}
-              size={20}
-              max={4}
-              label={`Members of ${team.name}`}
-            />
+            <AvatarStack people={team.people} size={20} max={4} label={`Members of ${team.name}`} />
           )}
           <span className="text-tx-3 tabular-nums">{team.memberCount}</span>
         </span>

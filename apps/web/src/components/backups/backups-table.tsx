@@ -1,7 +1,6 @@
 import { formatBytes, formatDateTime } from '@bemmoly/core-web';
 import type { Backup } from '@bemmoly/shared';
 import {
-  Badge,
   Button,
   buttonClassName,
   Card,
@@ -13,6 +12,7 @@ import {
 import { Icon } from '@bemmoly/ui/icons';
 import { LINK_ACTION } from '../actions.ts';
 import { KIND, STATUS, VERIFICATION, WHERE } from './backup-labels.ts';
+import { StatePill } from '../settings/state-pill.tsx';
 
 interface BackupsTableProps {
   backups: readonly Backup[];
@@ -65,7 +65,9 @@ export function BackupsTable(props: BackupsTableProps) {
       width: 'minmax(200px,1fr)',
       render: (backup) => (
         <div className="flex min-w-0 flex-col items-start gap-0.5">
-          <Badge tone={STATUS[backup.status].tone}>{STATUS[backup.status].label}</Badge>
+          <StatePill tone={STATUS[backup.status].tone} stage={STATUS[backup.status].stage}>
+            {STATUS[backup.status].label}
+          </StatePill>
           {backup.error ? (
             <span className="max-w-50 truncate text-12 text-danger" title={backup.error}>
               {backup.error}
@@ -134,9 +136,9 @@ export function BackupsTable(props: BackupsTableProps) {
       render: (backup) => (
         <div className="flex flex-col items-start gap-1">
           <span title={backup.verification.message ?? undefined}>
-            <Badge tone={VERIFICATION[backup.verification.state].tone}>
+            <StatePill tone={VERIFICATION[backup.verification.state].tone}>
               {VERIFICATION[backup.verification.state].label}
-            </Badge>
+            </StatePill>
           </span>
           {backup.status === 'succeeded' ? (
             <span className="flex items-center gap-1.5 text-12">

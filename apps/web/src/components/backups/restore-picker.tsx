@@ -1,8 +1,9 @@
 import { formatBytes, formatDateTime } from '@bemmoly/core-web';
 import type { Backup } from '@bemmoly/shared';
-import { Badge, Button, EmptyState, Modal } from '@bemmoly/ui';
+import { Button, EmptyState, Modal } from '@bemmoly/ui';
 import { useState } from 'react';
 import { KIND, VERIFICATION } from './backup-labels.ts';
+import { StatePill } from '../settings/state-pill.tsx';
 
 interface RestorePickerProps {
   open: boolean;
@@ -64,7 +65,7 @@ function Picker({ backups, onClose, onPick }: Omit<RestorePickerProps, 'open'>) 
                     {backup.appVersion}
                   </span>
                 </span>
-                <Badge tone={verification.tone}>{verification.label}</Badge>
+                <StatePill tone={verification.tone}>{verification.label}</StatePill>
               </button>
             );
           })}

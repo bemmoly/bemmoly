@@ -73,7 +73,7 @@ describe('backups list', () => {
     expect(await screen.findByText('one disk')).toBeTruthy();
     expect(screen.getByText(/One disk: backups sit on the same disk/)).toBeTruthy();
     expect(screen.getByText('/var/bemmoly/.env')).toBeTruthy();
-    expect(screen.getByText('NOT CONFIGURED')).toBeTruthy();
+    expect(screen.getByText('Not configured')).toBeTruthy();
     expect(screen.getByRole('table', { name: 'Backups' })).toBeTruthy();
     const download = screen.getAllByRole('link', { name: /^Download the backup/ })[0];
     expect(download?.getAttribute('href')).toBe(

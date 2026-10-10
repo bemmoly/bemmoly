@@ -1,4 +1,5 @@
-import { Badge, Button, Card } from '@bemmoly/ui';
+import { Button, Card } from '@bemmoly/ui';
+import { StatePill } from '../settings/state-pill.tsx';
 
 export interface AuthMethod {
   id: string;
@@ -20,9 +21,11 @@ export function AuthMethodCard({ method }: { method: AuthMethod }) {
           {method.initials}
         </span>
         <span className="text-14 font-semibold">{method.name}</span>
-        <Badge tone={method.enabled ? 'ok' : 'neutral'} className="ml-auto">
-          {method.enabled ? 'ENABLED' : 'NOT AVAILABLE'}
-        </Badge>
+        <span className="ml-auto">
+          <StatePill tone={method.enabled ? 'ok' : 'neutral'}>
+            {method.enabled ? 'Enabled' : 'Not available yet'}
+          </StatePill>
+        </span>
       </div>
       <p className="m-0 text-12h leading-body text-tx4">{method.description}</p>
       {!method.enabled && (

@@ -1,7 +1,8 @@
-import { Badge, SettingsValue, SettingsValues } from '@bemmoly/ui';
+import { SettingsValue, SettingsValues } from '@bemmoly/ui';
 import type { BackupPolicy } from '../../hooks/use-backups-schedule.ts';
 import { LocalDiskRow } from './destinations-card.tsx';
 import { FREQUENCIES, TIERS, WEEKDAYS } from './schedule-cards.tsx';
+import { StatePill } from '../settings/state-pill.tsx';
 
 const labelOf = (list: ReadonlyArray<{ value: string; label: string }>, value: string) =>
   list.find((entry) => entry.value === value)?.label ?? value;
@@ -85,9 +86,9 @@ export function DestinationValues({ localPath, configured, bucket }: Destination
               : 'Not set up: every backup sits on this machine only.'}
           </span>
         </div>
-        <Badge tone={configured ? 'ok' : 'neutral'}>
-          {configured ? 'CONFIGURED' : 'NOT CONFIGURED'}
-        </Badge>
+        <StatePill tone={configured ? 'ok' : 'neutral'}>
+          {configured ? 'Configured' : 'Not configured'}
+        </StatePill>
       </div>
     </>
   );

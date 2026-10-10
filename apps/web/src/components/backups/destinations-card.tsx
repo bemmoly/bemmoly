@@ -1,6 +1,7 @@
-import { Badge, Button, Checkbox, Field, Input } from '@bemmoly/ui';
+import { Button, Checkbox, Field, Input } from '@bemmoly/ui';
 import type { S3Edit, S3Form } from '../../hooks/use-backups-schedule.ts';
 import type { FieldErrors } from '../../lib/errors.ts';
+import { StatePill } from '../settings/state-pill.tsx';
 
 interface DestinationFieldsProps {
   /** Where the newest backup's local copy sits, when there is one. */
@@ -50,7 +51,7 @@ export function LocalDiskRow({ localPath }: { localPath: string | null }) {
           ) : null}
         </span>
       </div>
-      <Badge tone="ok">ALWAYS ON</Badge>
+      <StatePill tone="ok">Always on</StatePill>
     </div>
   );
 }
@@ -79,9 +80,9 @@ export function DestinationFields({
             shown again, only replaced.
           </span>
         </div>
-        <Badge tone={configured && s3.mode !== 'remove' ? 'ok' : 'neutral'}>
+        <StatePill tone={configured && s3.mode !== 'remove' ? 'ok' : 'neutral'}>
           {state.toUpperCase()}
-        </Badge>
+        </StatePill>
         {s3.mode === 'keep' ? (
           <>
             {configured ? (
