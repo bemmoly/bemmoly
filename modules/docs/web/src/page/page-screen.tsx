@@ -13,6 +13,16 @@ import { usePageLoad } from './use-page-load.ts';
 /** Where the trail ends when there is no page to name. */
 const TRAIL = { 'not-found': 'Page not found', forbidden: 'No access', error: 'Did not load' };
 
+/** Names the problem at the end of the trail; inside the layout, where the trail is kept. */
+function ProblemTrail({ kind }: { kind: keyof typeof TRAIL }) {
+  const { pathname } = useFrame();
+  useHeaderTrail([
+    { label: 'Docs', path: docsPaths.home(), icon: <Icon name="doc" /> },
+    { label: TRAIL[kind], path: pathname },
+  ]);
+  return null;
+}
+
 function BackToDocs({ quiet = false }: { quiet?: boolean }) {
   return (
     <Button variant={quiet ? 'ghost' : 'secondary'} onClick={() => navigateTo(docsPaths.home())}>
@@ -47,13 +57,9 @@ function Problem({
       description: 'The server did not answer in time. Nothing you wrote was lost.',
     },
   }[kind];
-  const { pathname } = useFrame();
-  useHeaderTrail([
-    { label: 'Docs', path: docsPaths.home(), icon: <Icon name="doc" /> },
-    { label: TRAIL[kind], path: pathname },
-  ]);
   return (
     <DocsLayout layout="full">
+      <ProblemTrail kind={kind} />
       <EmptyState
         headingLevel={1}
         className="flex-1 justify-center"

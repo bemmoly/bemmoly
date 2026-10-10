@@ -249,5 +249,7 @@ describe('the doc editor screen', () => {
     );
     renderPage();
     expect(await screen.findByText('This page does not exist')).toBeTruthy();
+    const trail = screen.getByRole('navigation', { name: 'Breadcrumb' });
+    expect(await within(trail).findByRole('link', { name: 'Page not found' })).toBeTruthy();
   });
 });
