@@ -14,7 +14,7 @@ import {
 import { createIsolatedDatabase, startTestDatabase } from '@bemmoly/core/testing';
 import docs from '../../../module.ts';
 import type { Space } from '../../../shared/spaces.ts';
-import { createDocsServices, type DocsServices } from './index.ts';
+import { createDocsServices, type DocsServiceDeps, type DocsServices } from './index.ts';
 
 /*
  * One real Postgres per integration file: the kernel and Docs changelogs
@@ -50,7 +50,14 @@ async function seedPerson(sql: SqlClient, email: string, roleKey: string): Promi
   return row.id;
 }
 
-export async function startDocsHarness(): Promise<HarnessStart> {
+export interface HarnessOptions {
+  /** What ctx.entities.resolve answers, standing in for Work's issues. */
+  entities?: DocsServiceDeps['entities'];
+  /** What the comments service publishes notification events through. */
+  events?: DocsServiceDeps['events'];
+}
+
+export async function startDocsHarness(options: HarnessOptions = {}): Promise<HarnessStart> {
   const server = await startTestDatabase();
   if (!server.available) return { available: false, reason: server.reason };
   const database = await createIsolatedDatabase(server.url);
@@ -77,6 +84,8 @@ export async function startDocsHarness(): Promise<HarnessStart> {
     audit: createAuditRecorder(sql),
     memberships: createContainerMemberships(sql),
     realtime: { publish: async (message) => void realtime.push(message) },
+    ...(options.entities ? { entities: options.entities } : {}),
+    ...(options.events ? { events: options.events } : {}),
   });
   const as = (userId: string): RequestContext => ({
     actor: { kind: 'user', id: userId },

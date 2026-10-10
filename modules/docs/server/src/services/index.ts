@@ -1,6 +1,7 @@
 import { createPageCollab } from './collab/index.ts';
 import type { DocsServiceDeps } from './common.ts';
 import { createHomeService } from './home/index.ts';
+import { createLinksService } from './links/index.ts';
 import { createPagesService } from './pages/index.ts';
 import { createRevisionsService } from './revisions/index.ts';
 import { createSearchService } from './search/index.ts';
@@ -30,6 +31,7 @@ export function createDocsServices(deps: DocsServiceDeps) {
     home: createHomeService(deps),
     search: createSearchService(deps),
     revisions: createRevisionsService(deps, collab),
+    links: createLinksService(deps),
   };
 }
 

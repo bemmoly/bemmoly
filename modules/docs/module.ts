@@ -5,6 +5,7 @@ import { createDocsControllers } from './server/src/controllers/index.ts';
 import { compactJob } from './server/src/config/jobs.ts';
 import { docsRoutes } from './server/src/routes/index.ts';
 import { createDocsServices } from './server/src/services/index.ts';
+import { registerDocsReferences } from './server/src/services/links/registry.ts';
 import { registerDocsSearch } from './server/src/services/palette/index.ts';
 
 /**
@@ -41,6 +42,7 @@ export default defineModule({
       collab: ctx.collab,
       jobs: ctx.jobs,
       settings: ctx.settings,
+      entities: ctx.entities,
       ...(ctx.database ? { database: ctx.database } : {}),
       ...(ctx.audit ? { audit: ctx.audit } : {}),
       ...(ctx.memberships ? { memberships: ctx.memberships } : {}),
@@ -48,6 +50,7 @@ export default defineModule({
     ctx.collab.add(services.collab.definition);
     ctx.jobs.add(compactJob(services.collab));
     registerDocsSearch(ctx.search, services.search);
+    registerDocsReferences(ctx, services.links);
     ctx.routes.add({ prefix: '/docs', plugin: docsRoutes(createDocsControllers(services)) });
   },
 });

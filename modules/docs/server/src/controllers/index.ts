@@ -1,5 +1,6 @@
 import type { DocsServices } from '../services/index.ts';
 import { createLibraryController } from './library.controller.ts';
+import { createLinksController } from './links.controller.ts';
 import { createPagesController } from './pages.controller.ts';
 import { createRevisionsController } from './revisions.controller.ts';
 import { createSearchController } from './search.controller.ts';
@@ -15,6 +16,7 @@ export function createDocsControllers(services: DocsServices) {
     library: createLibraryController(services),
     search: createSearchController(services.search),
     revisions: createRevisionsController(services.revisions),
+    links: createLinksController(services.links),
   };
 }
 

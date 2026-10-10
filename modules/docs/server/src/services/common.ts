@@ -3,6 +3,7 @@ import type {
   AuditRecorder,
   CollabRegistry,
   ContainerMemberships,
+  EntityRegistry,
   EventBus,
   JobRegistry,
   RealtimePublisher,
@@ -26,6 +27,8 @@ export interface DocsServiceDeps {
   jobs?: Pick<JobRegistry, 'send'>;
   /** Reads the module's own settings (docs.compactThreshold). */
   settings?: Pick<SettingsRegistry, 'get'>;
+  /** Other modules' records (issues) by key or id, without importing those modules. */
+  entities?: Pick<EntityRegistry, 'resolve'>;
 }
 
 export const DOCS_MODULE = { kind: 'module', moduleId: 'docs' } as const;
