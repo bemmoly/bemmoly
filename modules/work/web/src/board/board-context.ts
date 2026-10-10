@@ -39,5 +39,4 @@ export const cls = (...parts: Array<string | false | null | undefined>) =>
   parts.filter(Boolean).join(' ');
 
 /** The focus ring of the design system's interactive parts, for the card wrapper. */
-export const FOCUS_RING =
-  'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ac';
+export const FOCUS_RING = 'focus-ring';

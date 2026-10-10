@@ -13,7 +13,7 @@ const SIZES: Record<InputSize, string> = {
 /** Shared by Input, Textarea and Select: the mock's bordered control and its focus state. */
 export const controlClass = cx(
   'rounded-control border border-br3 text-13 text-tx',
-  'focus-within:border-ac focus-within:shadow-ring',
+  'focus-ring-within focus-within:border-acc',
   'has-disabled:cursor-not-allowed has-disabled:opacity-50',
 );
 

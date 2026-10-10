@@ -29,7 +29,7 @@ export function TypefacePicker({ value, onChange }: TypefacePickerProps) {
               role="radio"
               aria-checked={selected}
               onClick={() => onChange(font)}
-              className={`flex cursor-pointer flex-col gap-0.5 rounded-control border bg-sf px-2.5 py-2 text-left font-sans focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ac ${
+              className={`flex cursor-pointer flex-col gap-0.5 rounded-control border bg-sf px-2.5 py-2 text-left font-sans focus-ring ${
                 selected ? 'border-ac shadow-ring' : 'border-br'
               }`}
             >

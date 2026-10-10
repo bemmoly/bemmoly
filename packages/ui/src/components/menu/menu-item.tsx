@@ -1,5 +1,6 @@
 import { useId, type ReactNode } from 'react';
 import { cx } from '../../lib/cx.ts';
+import { focusRingInset } from '../../lib/focus.ts';
 import { useMenu } from './menu-context.ts';
 
 export interface MenuItemProps {
@@ -40,8 +41,9 @@ export function MenuItem({
       }}
       className={cx(
         'flex w-full cursor-pointer items-center gap-2 rounded-sm border-0 bg-transparent px-2.5 py-2 text-left font-sans text-13 outline-0',
+        focusRingInset,
         tone === 'danger' ? 'text-danger' : 'text-tx',
-        'hover:bg-bg2 focus:bg-ac-bg focus:font-medium focus:text-ac',
+        'hover:bg-hover focus:bg-acc-50 focus:font-medium focus:text-acc',
         'aria-disabled:cursor-not-allowed aria-disabled:opacity-50',
       )}
     >

@@ -39,7 +39,7 @@ export function MyWorkRow({ issue }: { issue: MyIssue }) {
   return (
     <a
       href={issueHref(issue.key)}
-      className={`${ROW} text-tx no-underline hover:bg-sf2 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ac motion-safe:transition-colors`}
+      className={`${ROW} text-tx no-underline hover:bg-sf2 focus-ring-inset motion-safe:transition-colors`}
     >
       <TypeGlyph type={glyphType(issue.type.key)} />
       <KeyChip issueKey={issue.key} />

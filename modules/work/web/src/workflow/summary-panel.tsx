@@ -43,7 +43,7 @@ export function SummaryPanel({ name, version, problems, changes, select }: Summa
                       type="button"
                       disabled={!target}
                       onClick={() => target && select(target)}
-                      className="w-full cursor-pointer rounded-control border border-danger bg-sf px-2.5 py-2 text-left font-sans text-12h leading-note text-danger enabled:hover:bg-bg2 disabled:cursor-default focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ac"
+                      className="w-full cursor-pointer rounded-control border border-danger bg-sf px-2.5 py-2 text-left font-sans text-12h leading-note text-danger enabled:hover:bg-bg2 disabled:cursor-default focus-ring"
                     >
                       {problem.message}
                     </button>

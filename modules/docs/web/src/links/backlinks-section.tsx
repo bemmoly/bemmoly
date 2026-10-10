@@ -7,7 +7,7 @@ import { useBacklinks, useOutgoingLinks, usePageReferences } from './use-links.t
 
 const HEADING = 'm-0 text-11 font-medium tracking-caps text-tx5 uppercase';
 const CARD =
-  'flex flex-col gap-1 rounded-panel border border-br px-3 py-2.5 text-tx no-underline hover:border-br3 hover:bg-bg2 hover:text-tx focus-visible:outline-2 focus-visible:outline-ac motion-safe:transition-colors';
+  'flex flex-col gap-1 rounded-panel border border-br px-3 py-2.5 text-tx no-underline hover:border-br3 hover:bg-bg2 hover:text-tx focus-ring motion-safe:transition-colors';
 
 const LINK_KIND_WORDS = { mention: 'Mentioned', embed: 'Embedded', linked: 'Linked' } as const;
 

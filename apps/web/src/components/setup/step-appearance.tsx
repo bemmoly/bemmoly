@@ -31,7 +31,7 @@ export function StepAppearance({ nav }: { nav: StepNav }) {
         aria-expanded={state.customOpen}
         aria-controls={panelId}
         onClick={state.toggleCustom}
-        className={`${LINK_ACTION} self-start focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ac`}
+        className={`${LINK_ACTION} self-start focus-ring`}
       >
         {state.toggleLabel}
       </button>

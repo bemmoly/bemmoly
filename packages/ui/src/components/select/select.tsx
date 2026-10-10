@@ -92,7 +92,7 @@ export function Select({ ref, ...props }: SelectProps) {
         onKeyDown={state.onKeyDown}
         className={cx(
           'group inline-flex max-w-full min-w-0 shrink-0 cursor-pointer items-center border text-left font-sans text-tx outline-0',
-          'focus-visible:border-ac focus-visible:shadow-ring aria-expanded:border-ac aria-expanded:shadow-ring',
+          'focus-ring focus-visible:border-acc aria-expanded:border-acc aria-expanded:shadow-ring',
           'aria-invalid:border-danger disabled:cursor-not-allowed disabled:opacity-50',
           variant === 'ghost' ? GHOST : cx('border-br3 bg-sf', SIZES[size]),
           wrapperClassName,

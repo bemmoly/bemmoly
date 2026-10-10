@@ -22,7 +22,7 @@ export interface BacklogItemProps {
   index?: number;
 }
 
-const FOCUS = 'focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ac';
+const FOCUS = 'focus-ring-inset';
 
 /**
  * One issue in a container: the design system's row inside an option that

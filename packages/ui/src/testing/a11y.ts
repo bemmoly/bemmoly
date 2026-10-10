@@ -17,5 +17,5 @@ export async function expectAccessible(container: Element): Promise<void> {
 
 /** The focus ring every interactive component carries (see lib/focus.ts). */
 export function expectFocusRing(el: Element): void {
-  expect(el.className).toMatch(/focus-visible:outline-2/);
+  expect(el.className).toMatch(/focus-ring/);
 }

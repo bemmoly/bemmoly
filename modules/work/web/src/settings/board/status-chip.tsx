@@ -75,7 +75,7 @@ export function StatusChip({
         variant === 'column'
           ? 'gap-2 rounded-control px-2.25 py-1.75'
           : 'gap-1.5 rounded-control px-2.25 py-1',
-        movable && 'cursor-grab focus-visible:outline-2 focus-visible:outline-ac',
+        movable && 'cursor-grab focus-ring',
       )}
     >
       <StatusDot status={status} muted={variant === 'unmapped'} />

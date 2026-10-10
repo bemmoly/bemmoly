@@ -67,7 +67,7 @@ export function MoveLink({ block, target, end }: MoveLinkProps) {
     <button
       type="button"
       onClick={() => jumpTo(target)}
-      className="inline-flex cursor-pointer items-center gap-1.5 rounded-xs border-0 bg-transparent p-0 font-sans text-11h font-medium text-violet-fg hover:underline focus-visible:outline-2 focus-visible:outline-ac"
+      className="inline-flex cursor-pointer items-center gap-1.5 rounded-xs border-0 bg-transparent p-0 font-sans text-11h font-medium text-violet-fg hover:underline focus-ring"
     >
       <span aria-hidden>{down === (end === 'move') ? '↑' : '↓'}</span>
       {label}
