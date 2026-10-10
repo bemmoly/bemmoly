@@ -45,11 +45,14 @@ describe('capability matrix, org locks and module grants against a real database
       'contractor',
     ]);
     const memberRole = await roleId(app, admin, 'member');
-    expect(cell(matrix.items, 'workspace.billing.manage', memberRole)).toEqual({
+    expect(cell(matrix.items, 'workspace.delete', memberRole)).toEqual({
       allowed: false,
       lockedByOrg: true,
     });
     expect(cell(matrix.items, 'sample.view', memberRole)?.allowed).toBe(true);
+    expect(matrix.items.map((item: MatrixItem) => item.name)).not.toContain(
+      'workspace.billing.manage',
+    );
 
     const put = await call(app, 'PUT', `/roles/${memberRole}/capabilities`, {
       cookie: admin,
@@ -96,7 +99,7 @@ describe('capability matrix, org locks and module grants against a real database
     const viewer = await roleId(app, admin, 'viewer');
     const locked = await call(app, 'PUT', `/roles/${viewer}/capabilities`, {
       cookie: manager.cookie,
-      body: { items: [{ capability: 'workspace.billing.manage', allowed: true }] },
+      body: { items: [{ capability: 'workspace.delete', allowed: true }] },
     });
     expect(locked.statusCode).toBe(403);
     const lock = await call(app, 'PUT', `/roles/${viewer}/capabilities`, {
