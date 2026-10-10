@@ -3,6 +3,7 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { MyIssue, MyIssues } from '../../../shared/index.ts';
 import MyWorkSection from '../home.tsx';
+import { groupByStatus } from './use-my-work.ts';
 
 const issue = (key: string, title: string, patch: Partial<MyIssue> = {}): MyIssue => ({
   id: `0199c0de-0000-7000-8000-0000000000${key.slice(-2).padStart(2, '0')}`,
@@ -27,61 +28,96 @@ const issue = (key: string, title: string, patch: Partial<MyIssue> = {}): MyIssu
   ...patch,
 });
 
+const todo = {
+  id: '0199c0de-0000-7000-8000-000000000102',
+  name: 'To do',
+  category: 'todo' as const,
+  color: null,
+};
+
 const lists: MyIssues = {
-  assigned: { items: [issue('PLT-12', 'Stripe webhook idempotency')], total: 1 },
+  assigned: {
+    items: [
+      issue('PLT-12', 'Stripe webhook idempotency'),
+      issue('PLT-14', 'Dunning emails', { status: todo }),
+    ],
+    total: 2,
+  },
   reported: { items: [], total: 0 },
   watching: { items: [issue('PLT-31', 'Audit log export', { dueAt: null })], total: 3 },
 };
 
+const mention = {
+  id: '0199c0de-0000-7000-8000-000000000301',
+  ids: ['0199c0de-0000-7000-8000-000000000301'],
+  kind: 'mention',
+  verb: 'mentioned you in',
+  summary: 'Priya N. mentioned you in PLT-218',
+  actors: [{ id: null, name: 'Priya N.' }],
+  actorCount: 1,
+  target: { kind: 'work.issue', id: 'x', label: 'PLT-218', url: '/work/issue/PLT-218' },
+  body: 'can you confirm the deploy hook?',
+  read: false,
+  done: false,
+  snoozedUntil: null,
+  createdAt: '2026-10-09T09:00:00.000Z',
+};
+
 function renderSection() {
-  const fetch = vi.fn(
-    async (_input: RequestInfo | URL, _init?: RequestInit) =>
-      new Response(JSON.stringify(lists), {
-        status: 200,
-        headers: { 'content-type': 'application/json' },
-      }),
-  );
+  const fetch = vi.fn(async (input: RequestInfo | URL) => {
+    const body = String(input).includes('/notifications')
+      ? { items: [mention], nextCursor: null, unreadCount: 1 }
+      : lists;
+    return new Response(JSON.stringify(body), {
+      status: 200,
+      headers: { 'content-type': 'application/json' },
+    });
+  });
   vi.stubGlobal('fetch', fetch);
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   render(
     <QueryClientProvider client={client}>
-      <MyWorkSection
-        manifest={{
-          id: 'work',
-          version: '0.2.0',
-          navigation: [{ id: 'work.board', label: 'Board', path: '/work/board', placement: 'top' }],
-        }}
-      />
+      <MyWorkSection manifest={{ id: 'work', version: '0.2.0', navigation: [] }} />
     </QueryClientProvider>,
   );
   return fetch;
 }
 
-describe('my work on Home', () => {
+describe('My issues on Home', () => {
   afterEach(() => {
     cleanup();
     vi.unstubAllGlobals();
   });
 
-  it('lists the assigned issues with key, title, status and a link, and counts each tab', async () => {
+  it('groups the assigned issues by status, started first, and counts each tab', async () => {
     const fetch = renderSection();
     const row = await screen.findByRole('link', { name: /Stripe webhook idempotency/ });
     expect(row.getAttribute('href')).toBe('/work/issue/PLT-12');
-    expect(row.textContent).toContain('PLT-12');
-    expect(row.textContent).toContain('In progress');
     expect(row.textContent).toContain('Due Oct 14');
     expect(String(fetch.mock.calls[0]?.[0])).toContain('/api/v1/work/my-issues?limit=6');
-    const tabs = screen.getAllByRole('tab').map((tab) => tab.textContent);
-    expect(tabs).toEqual(['Assigned to me1', 'Reported by me0', 'Watching3']);
+    const groups = screen.getAllByRole('group').map((group) => group.getAttribute('aria-label'));
+    expect(groups).toEqual(['In progress', 'To do']);
+    const tabs = screen.getAllByRole('radio').map((tab) => tab.textContent);
+    expect(tabs).toEqual(['Assigned · 2', 'Created · 0', 'Watching · 3', 'Mentions']);
   });
 
-  it('switches tabs and says what an empty one means', async () => {
+  it('says what an empty tab means and lists mentions from the inbox', async () => {
     renderSection();
     await screen.findByText('Stripe webhook idempotency');
-    fireEvent.click(screen.getByRole('tab', { name: /Reported by me/ }));
-    expect(screen.getByText('You have not reported an issue yet.')).toBeTruthy();
-    fireEvent.click(screen.getByRole('tab', { name: /Watching/ }));
-    expect(screen.getByText('Audit log export')).toBeTruthy();
-    expect(screen.getByText(/^Updated /)).toBeTruthy();
+    fireEvent.click(screen.getByRole('radio', { name: /Created/ }));
+    expect(screen.getByText('You have not created an issue yet.')).toBeTruthy();
+    fireEvent.click(screen.getByRole('radio', { name: /Mentions/ }));
+    const link = await screen.findByRole('link', { name: /Priya N\./ });
+    expect(link.getAttribute('href')).toBe('/work/issue/PLT-218');
+  });
+
+  it('orders status groups in progress, to do, then done', () => {
+    const done = { ...todo, name: 'Done', category: 'done' as const };
+    const groups = groupByStatus([
+      issue('PLT-1', 'a', { status: done }),
+      issue('PLT-2', 'b', { status: todo }),
+      issue('PLT-3', 'c'),
+    ]);
+    expect(groups.map((group) => group.name)).toEqual(['In progress', 'To do', 'Done']);
   });
 });
