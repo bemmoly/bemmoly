@@ -95,7 +95,7 @@ function CreateProjectForm({ open, onClose, onCreated }: CreateProjectDialogProp
               onChange={(event) => form.setName(event.target.value)}
             />
           </Field>
-          <Field label="Key" error={errors.key} hint={errors.key ? undefined : 'As in PLT-142'}>
+          <Field label="Key" error={errors.key}>
             <Input
               mono
               value={draft.key}
