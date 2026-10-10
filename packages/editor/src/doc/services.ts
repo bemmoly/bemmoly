@@ -43,6 +43,8 @@ export interface AiHandler {
 export interface DocServices {
   /** Draws an issue chip live (status, title); without it the key prints as a quiet chip. */
   renderIssue?: (key: string) => ReactNode;
+  /** Draws an issue as a block card (status, priority, assignee, sprint, epic). */
+  renderIssueCard?: (key: string) => ReactNode;
   /** Draws a saved query as a live table; without it a placeholder card shows the query. */
   renderIssueTable?: (attrs: IssueTableAttrs) => ReactNode;
   /** Pages for `[[` links. */

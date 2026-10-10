@@ -15,6 +15,7 @@ import {
 import { CalloutHeader, calloutVariant } from './views/callout-view.tsx';
 import { decisionClass, DecisionHeader, decisionState } from './views/decision-view.tsx';
 import { ImageFigure } from './views/image-view.tsx';
+import { IssueCardBlock } from './views/issue-card-view.tsx';
 import { IssueChip, IssueTableBlock } from './views/issue-views.tsx';
 import { TocList } from './views/toc-view.tsx';
 
@@ -121,6 +122,8 @@ export function docBlock(
     }
     case 'image':
       return <ImageFigure key={key} src={str(node, 'src')} alt={str(node, 'alt')} />;
+    case 'issueCard':
+      return <IssueCardBlock key={key} issueKey={str(node, 'key')} />;
     case 'issueTable':
       return <IssueTableBlock key={key} query={str(node, 'query')} title={str(node, 'title')} />;
     case 'unsupportedBlock':
