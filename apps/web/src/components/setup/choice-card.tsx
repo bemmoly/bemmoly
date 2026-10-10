@@ -23,7 +23,7 @@ export function BrandTile({ initials, icon }: BrandTileProps) {
   return (
     <span
       aria-hidden="true"
-      className="flex size-8 shrink-0 items-center justify-center rounded-panel bg-chip text-12 font-semibold text-tx2"
+      className="flex size-8 shrink-0 items-center justify-center rounded-control bg-sunken text-12 font-semibold text-tx-2"
     >
       {icon ?? initials}
     </span>
@@ -51,11 +51,11 @@ export function LogoMask({ url, brand }: { url: string; brand?: string }) {
   );
 }
 
-/** The badge an option shows until its feature ships. */
+/** The badge an option shows until its feature ships: the neutral chip, in sentence case. */
 export function ComingSoonBadge() {
   return (
     <Badge tone="neutral" className="ml-auto">
-      COMING SOON
+      Coming soon
     </Badge>
   );
 }
@@ -113,9 +113,9 @@ export function ChoiceCard({
         ) : null}
       </span>
       {description ? (
-        <span className={`text-12h leading-body text-tx4 ${mute}`}>{description}</span>
+        <span className={`text-13 leading-body text-tx-3 ${mute}`}>{description}</span>
       ) : null}
-      {detail ? <span className={`font-mono text-12 text-tx4 ${mute}`}>{detail}</span> : null}
+      {detail ? <span className={`font-mono text-12 text-tx-3 ${mute}`}>{detail}</span> : null}
     </SelectableCard>
   );
 }

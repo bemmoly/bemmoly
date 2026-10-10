@@ -35,7 +35,7 @@ const STATUS: Record<SystemCheck['status'], HealthRowStatus> = {
   fail: 'failed',
 };
 
-/** One server check as a step-1 row. */
+/** One server check as a row of the first step's details. */
 export function checkRow(check: SystemCheck): HealthRow {
   return {
     id: check.id,
@@ -68,7 +68,7 @@ export function databaseRow(
 }
 
 /**
- * Step 1's rows. GET /admin/system answers before any admin exists, so it is
+ * The first step's rows. GET /admin/system answers before any admin exists, so it is
  * the source; only when it fails does Postgres fall back to /readyz.
  */
 export function healthRows(input: {
@@ -87,20 +87,81 @@ export function healthRows(input: {
   ];
 }
 
-/** The line under "Your server is up", in plain words from what was actually checked. */
-export function healthHeadline(rows: readonly HealthRow[]): string {
+export type HealthTone = 'ok' | 'warning' | 'failed' | 'pending';
+
+/** Settings pages a check can point at, named as the Settings sidebar names them. */
+const SETTINGS_PAGES: Record<string, string> = {
+  '/settings/email': 'Email',
+  '/settings/backups': 'Storage and backups',
+  '/settings/system': 'System status',
+  '/settings/updates': 'Updates',
+};
+
+/**
+ * What to do about a check, in words: the wizard never links out of itself, so a fix with a
+ * Settings page reads "Configure later in Settings › Email".
+ */
+export function fixLater(row: HealthRow): string | null {
+  if (row.fix) {
+    const page = SETTINGS_PAGES[row.fix.href];
+    return page ? `Configure later in Settings › ${page}` : 'Configure later in Settings';
+  }
+  return row.hint ?? null;
+}
+
+function worst(rows: readonly HealthRow[]): HealthTone {
+  for (const tone of ['failed', 'warning', 'pending'] as const) {
+    if (rows.some((row) => row.status === tone)) return tone;
+  }
+  return 'ok';
+}
+
+/** "38 GB free of 80 GB" → "38 GB free"; "nightly to /var/…" → "backups nightly". */
+function highlights(rows: readonly HealthRow[]): string[] {
+  const byId = (id: string) => rows.find((row) => row.id === id && row.status === 'ok');
+  const database = byId('postgres');
+  const disk = byId('disk');
+  const backups = byId('backups');
+  return [
+    database?.name,
+    disk?.detail.split(' of ')[0],
+    backups ? `backups ${backups.detail.split(' ')[0]}` : undefined,
+  ].filter((part): part is string => Boolean(part));
+}
+
+/** The one line the checks collapse to, and whether the list should open on its own. */
+export function healthSummary(rows: readonly HealthRow[]): {
+  tone: HealthTone;
+  text: string;
+  open: boolean;
+} {
+  const tone = worst(rows);
   const database = rows.find((row) => row.id === 'postgres');
-  if (database?.status === 'failed') return `Bemmoly cannot reach Postgres: ${database.detail}.`;
-  if (database?.status === 'ok') return 'Bemmoly found a healthy Postgres.';
-  return 'Bemmoly is checking the server.';
+  if (database?.status === 'failed') {
+    return { tone, text: `Bemmoly cannot reach Postgres: ${database.detail}`, open: true };
+  }
+  if (tone === 'pending' && !rows.some((row) => row.status === 'ok')) {
+    return { tone, text: 'Checking the server…', open: false };
+  }
+  const attention = rows.filter((row) => row.status === 'warning' || row.status === 'failed');
+  const lead = tone === 'failed' ? 'Server needs attention' : 'Server healthy';
+  const tail = attention.length
+    ? attention.length === 1
+      ? `${attention[0]?.name} to set up`
+      : `${attention.length} things to set up`
+    : highlights(rows).join(', ');
+  return { tone, text: [lead, tail].filter(Boolean).join(' · '), open: attention.length > 0 };
 }
 
-/** "host · v0.1.0 · self-hosted", without the version when the server has not said it. */
-export function serverLabel(host: string, version: string | undefined): string {
-  return [host, version ? `v${version}` : null, 'self-hosted'].filter(Boolean).join(' · ');
+/**
+ * The header chip. The web build and the server ship as one image, so the version this page
+ * was built from is the version running; it is never typed by hand.
+ */
+export function versionLabel(version: string = __APP_VERSION__): string {
+  return `Self-hosted · ${version}`;
 }
 
-/** Step 1's health checks and the header's server line; signing in asks again. */
+/** The first step's health checks and the header's version chip; signing in asks again. */
 export function useSetupHealth(signedIn: boolean) {
   const system = useQuery({
     queryKey: [...queryKeys.system(), { signedIn }],
@@ -121,8 +182,8 @@ export function useSetupHealth(signedIn: boolean) {
   });
   return {
     rows,
-    headline: healthHeadline(rows),
-    serverLabel: serverLabel(window.location.host, system.data?.version),
+    summary: healthSummary(rows),
+    versionLabel: versionLabel(),
     loading: system.isPending || (system.isError && readiness.isPending),
     refetch: () => {
       void system.refetch();
