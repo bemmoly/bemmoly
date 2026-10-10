@@ -28,6 +28,13 @@ test('two people edit one page at once and both keep every word', async ({
 
   await Promise.all([openLive(page, doc.id), openLive(theirs, doc.id)]);
 
+  // Both find the page marked in their own sidebar's tree, beside the live document.
+  for (const side of [page, theirs]) {
+    await expect(
+      side.getByRole('tree').getByRole('treeitem', { name: 'Shared incident notes' }),
+    ).toHaveAttribute('aria-current', 'page');
+  }
+
   // Each sees the other here.
   await expect(saveLine(page)).toContainText(`${firstName(other.name)} is editing`);
   await expect(saveLine(theirs)).toContainText(`${firstName(me.name)} is editing`);
