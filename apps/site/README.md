@@ -19,6 +19,7 @@ source of truth.
 | `/security`                       | Renders the repository's `SECURITY.md`                                |
 | `/community`                      | GitHub, the Discord placeholder, contributing                         |
 | `/install.sh`                     | `public/install.sh`, a copy of `deploy/install.sh` (see below)        |
+| `/demo`                           | The live demo: apps/web's demo build (see Live demo below)            |
 
 `robots.txt`, `sitemap-index.xml` (`@astrojs/sitemap`), `llms.txt`, the IndexNow key file,
 `site.webmanifest`, the favicons and the Open Graph image are generated or taken from
@@ -35,6 +36,7 @@ pnpm --filter @bemmoly/site lint            # eslint (incl. .astro) + html-valid
 pnpm --filter @bemmoly/site test            # Vitest against dist/ via astro preview
 pnpm --filter @bemmoly/site size            # page JavaScript budget, 30 KB gzip
 pnpm --filter @bemmoly/site screens         # recapture the product shots from the mocks
+pnpm --filter @bemmoly/site previews        # recapture the homepage previews' posters from the demo
 pnpm --filter @bemmoly/site docker:build    # the production image, tagged bemmoly-site:dev
 pnpm --filter @bemmoly/site test:container  # Caddy hosts and headers against that image
 ```
@@ -42,7 +44,50 @@ pnpm --filter @bemmoly/site test:container  # Caddy hosts and headers against th
 From the root, `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm build` and `pnpm size` include
 the site. Turborepo builds the site before its `lint` and `test` (both read `dist/`), and its
 build does not wait for the design system's Storybook build because it reads the package's
-source directly.
+source directly. It does wait for `@bemmoly/web#build:demo`, the live demo, which `build` copies
+into `dist/demo` (`scripts/bundle-demo.ts`); run the site's build through Turborepo, or build the
+demo first, or the build stops and says so.
+
+## Live demo
+
+`/demo` is the real web app (`apps/web`) on its mock backend, built with
+`vite build --mode demo` into `apps/web/dist-demo`:
+
+- **No server.** The mock backend (`apps/web/src/mocks`) already runs inside the page: MSW's
+  fetch and WebSocket interceptors answer every `/api/v1` and `/ws` call, and in the demo nothing
+  falls through to a network. `apps/web/src/demo` starts it with the mocks' signed-in Acme Labs
+  workspace, in memory only, so a reload starts over, and shows the slim banner ("Live demo ·
+  data resets on reload · Install Bemmoly"). The demo code is behind the build-time `__DEMO__`
+  flag and compiled out of the install build.
+- **Modules.** Every module the mocks ship is enabled (except the developer Sample), and the
+  shell bundles every `modules/*/web` chunk, so a module's screens reach the demo when its mock
+  handlers land, with no change to the demo or the image.
+- **Base path.** The router's `basepath` is vite's `base` (`/` on installs, `/demo/` here); the
+  demo also keeps module chunks' root-relative `pushState` and links under `/demo`.
+- **One version.** The demo reports the release in `apps/web/package.json`, which the changesets
+  tool bumps with the release notes; `tests/version.test.ts` checks that it, every page, the
+  JSON-LD and llms.txt name the same release, the newest in the changelogs.
+- **Search.** `/demo` is indexable, in the sitemap and llms.txt, with its title and description
+  from `DEMO_PAGE` in `src/data/pages.ts`; every route under it is `X-Robots-Tag: noindex`.
+- **Headers.** Caddy serves every `/demo` route as the demo's `index.html` under the app's own
+  CSP (packages/core security-headers) with `frame-ancestors 'self'` and
+  `X-Frame-Options: SAMEORIGIN`, so only the site's previews can frame it.
+
+The site's tests check the bundle and the routes the previews open (`tests/demo.test.ts`); the
+click-through (board drag, backlog, an issue, the workflow editor, at 1280 and 375 wide) is a
+browser check before release. The app is designed for desktop widths: on a phone it works but
+scrolls sideways on the board.
+
+### Homepage previews
+
+The frame under the hero (`LivePreview.astro`, `src/lib/preview.ts`, `src/data/previews.ts`)
+has three tabs, Board, Issue and Workflow, each showing a poster captured from its demo route at
+1280 × 744, 2x (`pnpm previews`, after building the site with its demo). "Try it live" frames
+that route over the poster at the same size, scaled to fit, so nothing moves; the tabs then move
+the framed app without reloading it. Nothing of the demo loads before that click. Without
+JavaScript, or in a frame narrower than 640px, the tabs and the button are links to the full
+demo. The tabs follow the ARIA tabs pattern (arrow keys, Home, End), and every transition is
+`motion-safe`. Recapture the posters whenever the demo's screens change.
 
 ## Search engines
 
@@ -121,9 +166,9 @@ Coolify application and redeploy; every page then carries the tags. Both are emp
   from the `--scrim` token. They could move into `@bemmoly/ui` if another screen needs them.
 - The logo is inlined from `@bemmoly/ui/brand/lockup-color.svg`; nothing redraws it.
 - No analytics, cookies or third-party scripts. The JavaScript is a 0.2 KB inline copy button
-  (`CopyScript.astro`, allowed by hash in the CSP, so keep it byte-identical) and, on
-  `/self-hosting` only, the 0.6 KB chooser, which Astro emits as a file under `/_astro/` that the
-  CSP's `'self'` already allows.
+  (`CopyScript.astro`, allowed by hash in the CSP, so keep it byte-identical), on the homepage
+  the 1.1 KB previews script, and on `/self-hosting` the 0.6 KB chooser; Astro emits both as
+  files under `/_astro/` that the CSP's `'self'` already allows.
 - Badges are `@bemmoly/ui`'s Badge tones (`src/lib/badge.ts`), since the site renders no React.
 
 ### Light only, with an Ocean version ready
@@ -164,8 +209,8 @@ every path gets, the first three setup steps and the sizing table. Every badge c
 | ----------------------------- | --------------------------- | --------------------------------------------------------------------------------------- |
 | One command (recommended)     | available, tested on Ubuntu | Tested end to end on Ubuntu; Debian, Fedora and Amazon Linux are supported but untested |
 | I already run Docker Compose  | available                   | The installer's Compose file and env template                                           |
-| I run Kubernetes              | planned                     | The Helm chart is a skeleton                                                            |
-| I want managed infrastructure | planned                     | No Terraform modules yet                                                                |
+| I run Kubernetes              | planned for 1.0             | The Helm chart is a skeleton                                                            |
+| I want managed infrastructure | planned for 1.0             | No Terraform modules yet                                                                |
 | My servers have no internet   | built, untested offline     | The air-gap bundle is built, not tested offline                                         |
 | I have my own Postgres        | available                   | `--database-url`; Postgres 18, 17 with a warning                                        |
 
@@ -178,8 +223,13 @@ hidden and every card shows.
 
 - Logo: the brand lockup (the placeholder "B" mark) at 28px tall instead of the 2x2 grid; it is
   2.3px narrower than the mock's tile and text, so the nav links start at 196.8px, not 199.1px.
-- GitHub has no star count. "Live demo", "Try the live demo" and the configuration cards are
-  marked as coming soon (the cards say "See it in the live demo, soon").
+- GitHub has no star count. "Live demo", "Try the live demo" and the configuration cards link
+  to the live demo at `/demo`.
+- The headline is "Keep your work in-house." (the owner's wording), not the mock's "Your work.
+  Your platform.", with the owner's subhead. The feature cards and the AI section carry the
+  topic pages' status badges, and the AI points use a neutral arrow, not the shipped check.
+- The product shot under the hero is the live preview (above) of the demo, not the Board mock;
+  its posters are captures of the app, without the mock's AI note.
 - The release pill shows the newest release from the release notes and "Out now: issues,
   boards, backlog and sprints"; the mock's "v1.2" pill lists features (an importer) that are not
   released. The transcript pulls that version and installs Postgres 18.
@@ -247,5 +297,11 @@ build output out of the context without a root `.dockerignore`.
   changelog into the build, and a test fails when a package's changelog is missing there. In
   Coolify, leave the watch paths empty (or include `**/CHANGELOG.md`), so a release redeploys
   the site and its changelog.
+- **Live demo.** The image builds the demo in its own stage (the whole workspace context, the
+  web shell and every module installed, `build:demo`), in parallel with the site, so a build
+  takes a few minutes longer than before and the Docker build context is the repository. In
+  Coolify, leave the watch paths empty (or add `apps/web/**`, `modules/**` and `packages/**`),
+  so a change to the app redeploys the demo. Nothing else changes: same Dockerfile, port and
+  domains.
 - **Discord.** `/community#discord` says the invite is not published; add the link there and in
   `src/lib/links.ts`.
