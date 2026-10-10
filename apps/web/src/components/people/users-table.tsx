@@ -91,9 +91,11 @@ export function UsersTable({
               <span className="min-w-0 truncate font-medium text-tx">
                 {user.status === 'invited' ? user.email : user.name}
               </span>
-              {user.id === actions.selfId && <Chip tone="neutral">You</Chip>}
-              {user.status === 'invited' && <Chip tone="amber">Invited</Chip>}
-              {user.status === 'deactivated' && <Chip tone="neutral">Deactivated</Chip>}
+              <span className="flex shrink-0 items-center gap-1.5">
+                {user.id === actions.selfId && <Chip tone="neutral">You</Chip>}
+                {user.status === 'invited' && <Chip tone="amber">Invited</Chip>}
+                {user.status === 'deactivated' && <Chip tone="neutral">Deactivated</Chip>}
+              </span>
             </span>
             {user.status !== 'invited' && (
               <span className="truncate text-12 text-tx-3">{user.email}</span>

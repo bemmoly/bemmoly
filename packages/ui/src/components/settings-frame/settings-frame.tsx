@@ -63,7 +63,7 @@ export function SettingsRow({ title, description, control, className }: Settings
         className,
       )}
     >
-      <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+      <div className="flex min-w-0 flex-1 basis-56 flex-col gap-0.5">
         <span className="font-medium">{title}</span>
         {description && <span className="text-12 text-tx-3">{description}</span>}
       </div>
