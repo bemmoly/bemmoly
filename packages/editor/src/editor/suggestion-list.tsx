@@ -59,6 +59,8 @@ export function SuggestionList({
       id={listId}
       role="listbox"
       aria-label={open.label}
+      // Focus stays in the text, even for a click on a label or the scrollbar.
+      onMouseDown={(event) => event.preventDefault()}
       className={cx(
         'flex w-80 flex-col overflow-y-auto rounded-card border border-br bg-sf p-1.5 text-13 text-tx shadow-menu',
         page ? 'max-h-85 leading-prose' : 'max-h-80',
