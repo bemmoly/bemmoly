@@ -12,6 +12,8 @@ import { breadcrumbSchema, pageSummarySchema } from './pages.ts';
 export const recentPagesQuerySchema = keysetQuerySchema.extend({
   /** Only pages this person last edited or owns. */
   mine: z.union([z.boolean(), z.stringbool()]).default(false),
+  /** Only pages in this space, for its overview. */
+  spaceId: z.uuid().optional(),
   limit: z.coerce.number().int().min(1).max(100).default(20),
 });
 
