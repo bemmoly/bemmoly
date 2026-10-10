@@ -19,9 +19,11 @@ import {
   Settings,
   SquareCheck,
   SquareKanban,
+  Star,
   SunMoon,
   Table2,
   Timer,
+  Trash2,
   Users,
   Workflow,
   type LucideIcon,
@@ -77,6 +79,10 @@ export const SHAPES = {
   filter: ListFilter,
   workflow: Workflow,
   alert: CircleAlert,
+  /** Docs: star a page; the home's Starred list. */
+  star: Star,
+  /** Docs: move a page to the trash, and the space's trash. */
+  trash: Trash2,
 } satisfies Record<string, LucideIcon>;
 
 export type ShapeName = keyof typeof SHAPES;

@@ -1,7 +1,6 @@
 import type { CapabilityName, NavEntry, SearchResult } from '@bemmoly/shared';
 import type { FastifyPluginAsync } from 'fastify';
 import type { z } from 'zod';
-import type { Actor } from '../contracts/authz.ts';
 import type { SettingDefinition, SettingKey, SettingsKeys } from '../contracts/settings.ts';
 import type { RequestContext } from '../services/authz/index.ts';
 
@@ -21,6 +20,11 @@ export interface EntitySummary {
   key?: string;
   title: string;
   path: string;
+  /**
+   * Facts a renderer shows beside the title, owned by the serving module and
+   * passed through untouched: an issue's status, type and priority.
+   */
+  data?: Record<string, unknown>;
 }
 
 export interface SearchDocument {
@@ -31,16 +35,45 @@ export interface SearchDocument {
   containerId?: string;
 }
 
+/** A record named by its id or by its human key ("PLT-204"). */
+export type EntityLookup = { id: string } | { key: string };
+
 export interface EntityDefinition {
   kind: string;
   renderer: string;
-  resolve(ref: { id: string } | { key: string }): Promise<EntitySummary | null>;
-  canView(actor: Actor, id: string): Promise<boolean>;
+  resolve(ref: EntityLookup): Promise<EntitySummary | null>;
+  /**
+   * Many records by id or key in one round trip, for lists. With a context,
+   * only those the person may open. Without it the registry falls back to
+   * resolve and canView per record.
+   */
+  resolveMany?(refs: readonly EntityLookup[], ctx?: RequestContext): Promise<EntitySummary[]>;
+  /** Whether the person behind the request may open the record. */
+  canView(ctx: RequestContext, id: string): Promise<boolean>;
   buildSearchDocument?(id: string): Promise<SearchDocument | null>;
 }
 
 export interface EntityRegistry {
   add(entity: EntityDefinition): void;
+  /**
+   * Resolves a record any enabled module registered, so one module can name another's records
+   * without importing it. With a request context the result is only what that person may see;
+   * without one it is a trusted server-side lookup (a background job reading a document). Null
+   * when no enabled module serves the kind or the record is not there.
+   */
+  resolve(kind: string, ref: EntityLookup, ctx?: RequestContext): Promise<EntitySummary | null>;
+  /**
+   * resolve for a list: the records found, each at most once, in no set
+   * order; the ones the person may not open are left out. Empty when no
+   * enabled module serves the kind.
+   */
+  resolveMany(
+    kind: string,
+    refs: readonly EntityLookup[],
+    ctx?: RequestContext,
+  ): Promise<EntitySummary[]>;
+  /** Whether an enabled module serves the kind, so callers can keep a placeholder otherwise. */
+  has(kind: string): boolean;
 }
 
 export interface LinkKindDefinition {
@@ -50,8 +83,36 @@ export interface LinkKindDefinition {
   toKinds: readonly string[];
 }
 
+/** The other end of a reference, as the module that owns it describes it. */
+export interface ReferenceTarget {
+  kind: string;
+  id: string;
+}
+
+/**
+ * A module's answer to "what of yours points at this record?": Docs answers with the pages
+ * that mention or embed an issue. Results are already filtered to what the person may see.
+ */
+export interface ReferenceSourceDefinition {
+  /** Namespaced by module: "docs.page". */
+  kind: string;
+  /** What the group is called next to the record: "Linked docs". */
+  label: string;
+  referencesTo(ctx: RequestContext, target: ReferenceTarget): Promise<EntitySummary[]>;
+}
+
+export interface ReferenceGroup {
+  source: string;
+  label: string;
+  moduleId: string;
+  items: EntitySummary[];
+}
+
 export interface LinkRegistry {
   add(link: LinkKindDefinition): void;
+  addReferenceSource(source: ReferenceSourceDefinition): void;
+  /** Every enabled module's references to the target, one group per source that has any. */
+  referencesTo(ctx: RequestContext, target: ReferenceTarget): Promise<ReferenceGroup[]>;
 }
 
 /** Columns of the roles matrix in the People mock. */

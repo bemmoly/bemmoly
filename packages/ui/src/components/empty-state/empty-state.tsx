@@ -14,6 +14,11 @@ export interface EmptyStateProps {
    * empty sprint, where the full state would push the next container off the screen.
    */
   size?: 'md' | 'sm';
+  /**
+   * The title as a heading of this level, for a state that is the whole screen (1) or a
+   * section's (2, 3); a paragraph without it, inside a list that has its own heading.
+   */
+  headingLevel?: 1 | 2 | 3;
   className?: string;
 }
 
@@ -33,9 +38,11 @@ export function EmptyState({
   description,
   action,
   size = 'md',
+  headingLevel,
   className,
 }: EmptyStateProps) {
   const look = SIZES[size];
+  const Title = headingLevel ? (`h${headingLevel}` as const) : 'p';
   return (
     <div
       className={cx(
@@ -55,7 +62,7 @@ export function EmptyState({
           {icon}
         </span>
       )}
-      <p className={cx('m-0 font-semibold text-tx', look.title)}>{title}</p>
+      <Title className={cx('m-0 font-semibold text-tx', look.title)}>{title}</Title>
       {description && <p className="m-0 max-w-90 text-12h leading-body text-tx4">{description}</p>}
       {action && <div className={size === 'sm' ? 'mt-1.5' : 'mt-2'}>{action}</div>}
     </div>

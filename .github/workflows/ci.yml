@@ -188,8 +188,8 @@ jobs:
         run: pnpm --filter @bemmoly/e2e exec playwright install-deps chromium
 
       # Builds the web app, then starts the server from the checkout against the service
-      # Postgres, enables Work through the CLI and runs the flows, the module toggle and the
-      # board budget. The budget numbers are printed in the log.
+      # Postgres, enables Work and Docs through the CLI and runs the flows (Docs' among them),
+      # the module toggle and the board budget. The budget numbers are printed in the log.
       - name: Work flows against a real server
         run: pnpm test:e2e:work
         env:

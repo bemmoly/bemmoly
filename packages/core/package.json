@@ -28,6 +28,7 @@
     "@fastify/otel": "0.21.1",
     "@fastify/rate-limit": "11.2.0",
     "@fastify/websocket": "11.3.3",
+    "@hocuspocus/server": "4.7.0",
     "@node-rs/argon2": "2.2.2",
     "@opentelemetry/api": "1.9.1",
     "@opentelemetry/exporter-trace-otlp-http": "0.223.0",
@@ -51,9 +52,12 @@
     "react-email": "6.11.0",
     "semver": "7.8.5",
     "ws": "8.22.0",
+    "y-protocols": "1.0.7",
+    "yjs": "13.6.32",
     "zod": "4.6.5"
   },
   "devDependencies": {
+    "@hocuspocus/provider": "4.7.0",
     "@opentelemetry/sdk-trace-base": "2.12.0",
     "@testcontainers/postgresql": "12.2.0",
     "@types/node": "26.6.4",

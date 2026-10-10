@@ -1,5 +1,6 @@
 import type { NavEntry } from '@bemmoly/shared';
 import type { SettingDefinition } from '../contracts/settings.ts';
+import type { CollabDocumentDefinition } from './collab.ts';
 import type {
   AiContribution,
   CapabilityDefinition,
@@ -9,6 +10,7 @@ import type {
   JobDefinition,
   LinkKindDefinition,
   QueryFieldDefinition,
+  ReferenceSourceDefinition,
   RouteDefinition,
   SearchIndexerDefinition,
   SearchProviderDefinition,
@@ -19,6 +21,7 @@ export interface ModuleContributions {
   routes: RouteDefinition[];
   entities: EntityDefinition[];
   links: LinkKindDefinition[];
+  referenceSources: ReferenceSourceDefinition[];
   capabilities: CapabilityDefinition[];
   navigation: NavEntry[];
   jobs: JobDefinition[];
@@ -33,6 +36,7 @@ export interface ModuleContributions {
   editorSlashCommands: EditorContribution[];
   importers: ImporterDefinition[];
   settings: SettingDefinition[];
+  collabDocuments: CollabDocumentDefinition[];
 }
 
 export function emptyContributions(): ModuleContributions {
@@ -40,6 +44,7 @@ export function emptyContributions(): ModuleContributions {
     routes: [],
     entities: [],
     links: [],
+    referenceSources: [],
     capabilities: [],
     navigation: [],
     jobs: [],
@@ -54,5 +59,6 @@ export function emptyContributions(): ModuleContributions {
     editorSlashCommands: [],
     importers: [],
     settings: [],
+    collabDocuments: [],
   };
 }

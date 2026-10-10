@@ -15,3 +15,11 @@ export {
 export { createLocalEventBus } from './local-event-bus.ts';
 export type * from './registries.ts';
 export { ModuleRegistry, type FromModule, type LoadedModule } from './registry.ts';
+export {
+  collabDocumentName,
+  type CollabAccess,
+  type CollabChange,
+  type CollabDocumentDefinition,
+  type CollabRegistry,
+  type CollabTransactor,
+} from './collab.ts';

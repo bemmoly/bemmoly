@@ -1,5 +1,6 @@
 import {
   createSavedFilterBodySchema,
+  issuesPageSchema,
   savedFilterSchema,
   savedFiltersResponseSchema,
   updateSavedFilterBodySchema,
@@ -34,5 +35,8 @@ export function workFiltersEndpoints(http: Http) {
         body: validated(updateSavedFilterBodySchema, body),
       }),
     remove: async (id: string) => http.send(`${base}/${enc(id)}`, { method: 'DELETE' }),
+    /** Runs an LQL query, keeping to the projects the caller may read. */
+    run: async (lql: string, limit: number) =>
+      http.request('/api/v1/work/issues/query', issuesPageSchema, { query: { lql, limit } }),
   };
 }

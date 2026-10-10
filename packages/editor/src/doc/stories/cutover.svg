@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="220" viewBox="0 0 640 220" font-family="IBM Plex Sans, sans-serif" font-size="13">
+  <rect width="640" height="220" fill="#f9fafb"/>
+  <g fill="#fff" stroke="#d5dae2">
+    <rect x="32" y="80" width="150" height="60" rx="8"/>
+    <rect x="245" y="80" width="150" height="60" rx="8"/>
+    <rect x="458" y="80" width="150" height="60" rx="8"/>
+  </g>
+  <g fill="#1b2430" text-anchor="middle">
+    <text x="107" y="115">Dual-write</text>
+    <text x="320" y="115">Cut reads</text>
+    <text x="533" y="115">Keep Redis 7 days</text>
+  </g>
+  <g stroke="#2456c9" stroke-width="2" fill="none">
+    <path d="M182 110h56"/>
+    <path d="M395 110h56"/>
+  </g>
+</svg>

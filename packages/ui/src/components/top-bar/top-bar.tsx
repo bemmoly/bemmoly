@@ -1,4 +1,4 @@
-import type { ElementType, ReactNode } from 'react';
+import { useEffect, useRef, type ElementType, type ReactNode } from 'react';
 import { Icon, ICON_SIZE, type IconName } from '../../icons/icon.tsx';
 import { cx } from '../../lib/cx.ts';
 import { caretTone, focusRing } from '../../lib/focus.ts';
@@ -71,7 +71,12 @@ function NavItem({ item, linkAs }: { item: TopBarNavItem; linkAs: ElementType })
       <Menu
         widthClassName="w-64"
         trigger={(props) => (
-          <button type="button" {...props} className={navClass(item.active)}>
+          <button
+            type="button"
+            {...props}
+            data-active={item.active || undefined}
+            className={navClass(item.active)}
+          >
             {item.label}
             {caret}
           </button>
@@ -88,6 +93,7 @@ function NavItem({ item, linkAs }: { item: TopBarNavItem; linkAs: ElementType })
       {...item.linkProps}
       onClick={item.onClick}
       aria-current={item.active ? 'page' : undefined}
+      data-active={item.active || undefined}
       className={navClass(item.active)}
     >
       {item.label}
@@ -107,13 +113,13 @@ function CreateButton({
 }) {
   if (!menu)
     return (
-      <Button variant="primary" size="bar" className="ml-1.5" onClick={onCreate}>
+      <Button variant="primary" size="bar" className="ml-1.5 shrink-0" onClick={onCreate}>
         {label}
       </Button>
     );
   return (
     <Menu
-      className="ml-1.5"
+      className="ml-1.5 shrink-0"
       widthClassName="w-90"
       trigger={(props) => (
         <Button variant="primary" size="bar" {...props}>
@@ -147,23 +153,38 @@ export function TopBar({
   className,
 }: TopBarProps) {
   const Brand: ElementType = homeHref ? linkAs : 'div';
+  const navRef = useRef<HTMLElement>(null);
+  const activeId = nav.find((item) => item.active)?.id;
+  // Where the items scroll (a phone), keep the current one in view.
+  useEffect(() => {
+    navRef.current
+      ?.querySelector('[data-active]')
+      ?.scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
+  }, [activeId]);
   return (
     <header
       className={cx(
-        'flex h-topbar shrink-0 items-center gap-1 border-b border-br bg-sf pr-3 pl-4',
+        'flex h-topbar min-w-0 shrink-0 items-center gap-1 border-b border-br bg-sf pr-3 pl-4 max-sm:pr-2 max-sm:pl-3',
         className,
       )}
     >
       <Brand
         {...(homeHref ? { href: homeHref, 'aria-label': 'Bemmoly home' } : {})}
         className={cx(
-          'mr-1.5 flex h-7 items-center border-r border-br pr-3.5 no-underline',
+          'mr-1.5 flex h-7 shrink-0 items-center border-r border-br pr-3.5 no-underline max-sm:mr-0.5 max-sm:pr-2.5',
           homeHref && focusRing,
         )}
       >
-        <Logo variant="lockup" label={homeHref ? '' : 'Bemmoly'} />
+        <Logo variant="lockup" label={homeHref ? '' : 'Bemmoly'} className="max-sm:hidden" />
+        <Logo label={homeHref ? '' : 'Bemmoly'} className="sm:hidden" />
       </Brand>
-      <nav aria-label="Main" className="flex gap-0.5">
+      {/* On a phone the items scroll sideways inside the bar instead of pushing the page wider;
+          the padding keeps the focus outline inside the scroll box. */}
+      <nav
+        ref={navRef}
+        aria-label="Main"
+        className="-mx-1 flex min-w-0 gap-0.5 overflow-x-auto px-1 py-1 [scrollbar-width:none]"
+      >
         {nav.map((item) => (
           <NavItem key={item.id} item={item} linkAs={linkAs} />
         ))}
@@ -171,23 +192,27 @@ export function TopBar({
       {(onCreate || createMenu) && (
         <CreateButton label={createLabel} menu={createMenu} onCreate={onCreate} />
       )}
-      <div className="ml-auto flex min-w-0 items-center gap-2">
+      <div className="ml-auto flex min-w-0 shrink-0 items-center gap-2 max-sm:gap-1 md:shrink">
         {onSearch && (
           <button
             type="button"
             onClick={onSearch}
             aria-keyshortcuts="/"
+            aria-label={searchPlaceholder}
             className={cx(
               'flex h-control w-75 min-w-20 shrink cursor-pointer items-center gap-2 rounded-control border border-br3 bg-bg2 px-2.5 font-sans text-13 text-tx5',
+              'max-md:w-control max-md:min-w-0 max-md:justify-center max-md:px-0',
               focusRing,
             )}
           >
             <Icon name="search" />
-            <span className="truncate">{searchPlaceholder}</span>
-            <kbd className="ml-auto shrink-0 font-mono text-11 font-medium text-tx6">/</kbd>
+            <span className="truncate max-md:hidden">{searchPlaceholder}</span>
+            <kbd className="ml-auto shrink-0 font-mono text-11 font-medium text-tx6 max-md:hidden">
+              /
+            </kbd>
           </button>
         )}
-        {onAsk && <AiAskButton shortcut="⌘K" onClick={onAsk} />}
+        {onAsk && <AiAskButton shortcut="⌘K" onClick={onAsk} className="max-sm:hidden" />}
         {onInbox && (
           <IconButton
             label="Inbox"

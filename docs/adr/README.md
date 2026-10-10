@@ -17,3 +17,5 @@ accepted record is never edited except to mark it superseded.
 | [0010](0010-liquibase-style-changelog-runner.md)        | Schema changes run through a Liquibase-style changelog runner    | accepted |
 | [0011](0011-postgres-only.md)                           | Postgres is the only database                                    | accepted |
 | [0012](0012-shared-editor-loaded-on-first-use.md)       | One shared editor package, loaded the first time an editor opens | accepted |
+| [0013](0013-modules-read-documents-with-the-editor-schema.md) | Module server code reads documents with the editor's schema | accepted |
+| [0014](0014-collab-host-in-the-kernel.md) | The collaboration host lives in the kernel; modules register kinds | accepted |

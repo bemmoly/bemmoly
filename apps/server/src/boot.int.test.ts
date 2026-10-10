@@ -20,6 +20,7 @@ describe('the host boots the data kernel with the sample module', () => {
     expect((await app.inject({ url: '/api/v1/admin/modules' })).json()).toMatchObject({
       pinned: false,
       items: [
+        { id: 'docs', enabled: false, defaultAccess: 'teams' },
         { id: 'sample', enabled: false, defaultAccess: 'none' },
         { id: 'work', enabled: false, defaultAccess: 'teams' },
       ],
@@ -97,6 +98,7 @@ describe('the host boots the data kernel with the sample module', () => {
     expect((await restarted.inject({ url: '/api/v1/admin/modules' })).json()).toMatchObject({
       pinned: false,
       items: [
+        { id: 'docs', enabled: false, changelogState: 'pending' },
         { id: 'sample', enabled: false, changelogState: 'current' },
         { id: 'work', enabled: false, changelogState: 'pending' },
       ],

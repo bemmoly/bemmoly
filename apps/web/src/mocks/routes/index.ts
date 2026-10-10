@@ -1,4 +1,10 @@
 import type { MockRoute } from '../types.ts';
+import { docsFindRoutes } from './docs-find.ts';
+import { docsHistoryRoutes } from './docs-history.ts';
+import { docsLibraryRoutes } from './docs-library.ts';
+import { docsMemberRoutes } from './docs-members.ts';
+import { docsMoveRoutes } from './docs-moves.ts';
+import { docsRoutes } from './docs.ts';
 import { operationsRoutes } from './operations.ts';
 import { peopleRoutes } from './people.ts';
 import { sessionRoutes } from './session.ts';
@@ -27,4 +33,10 @@ export const ROUTES: readonly MockRoute[] = [
   ...workSettingsRoutes,
   ...workSettingsBoardRoutes,
   ...workWorkflowRoutes,
+  ...docsRoutes,
+  ...docsLibraryRoutes,
+  ...docsMoveRoutes,
+  ...docsFindRoutes,
+  ...docsMemberRoutes,
+  ...docsHistoryRoutes,
 ];

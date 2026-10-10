@@ -39,6 +39,9 @@ export function writeServerEnv(databaseUrl: string, port: number): string {
     BEMMOLY_DATA_DIR: data,
     BEMMOLY_BACKUP_DIR: backups,
     BEMMOLY_TRUST_PROXY: 'false',
+    // Every flow signs in as the one seeded admin, so the whole suite shares one person's
+    // budget; the default 600 a minute is a real person's ceiling, not two parallel workers'.
+    BEMMOLY_RATE_LIMIT_PER_USER: '6000',
     PORT: String(port),
     LOG_LEVEL: 'warn',
   };

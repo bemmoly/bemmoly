@@ -3,10 +3,13 @@ import type { SqlClient } from '../clients/postgres.ts';
 import type { EventBus } from '../contracts/event-bus.ts';
 import type { EnqueueOptions, JobQueue } from '../contracts/jobs.ts';
 import type { RealtimePublisher } from '../contracts/realtime.ts';
+import { collabDocumentName, type CollabTransactor } from './collab.ts';
 import type { BemmolyModule, ModuleContext } from './contract.ts';
 import type { ModuleContributions } from './contributions.ts';
 import { ModuleLoadError } from './errors.ts';
+import { createReferenceRegistries } from './references.ts';
 import type { SettingsReader, SettingsRegistry } from './registries.ts';
+import type { ModuleRegistry } from './registry.ts';
 import { createAuditRecorder } from '../services/audit/index.ts';
 import { createContainerMemberships } from '../services/authz/index.ts';
 
@@ -19,6 +22,10 @@ export interface ModuleContextOptions {
   settingsReader?: SettingsReader;
   realtime?: RealtimePublisher;
   database?: SqlClient;
+  /** Bound once the collaboration host exists; server edits before that fail loudly. */
+  collab?: CollabTransactor;
+  /** Every enabled module, for cross-module lookups; answers once loading finishes. */
+  peers?: () => ModuleRegistry | undefined;
 }
 
 /** The jobs service also reads a request id for its logs. */
@@ -55,8 +62,7 @@ export function createModuleContext(
   };
   return {
     routes: { add: (route) => into.routes.push(route) },
-    entities: { add: (entity) => into.entities.push(entity) },
-    links: { add: (link) => into.links.push(link) },
+    ...createReferenceRegistries(into, options.peers ?? (() => undefined)),
     capabilities: {
       add(capability) {
         if (!isCapabilityOfModule(capability.name, module.id)) {
@@ -127,6 +133,29 @@ export function createModuleContext(
       : {}),
     importers: { add: (importer) => into.importers.push(importer) },
     settings,
+    collab: {
+      add(definition) {
+        if (!definition.kind.startsWith(`${module.id}.`)) {
+          fail(`collab kind "${definition.kind}" must be namespaced as "${module.id}.<kind>"`);
+        }
+        if (!/^[a-z][a-z0-9.-]*$/.test(definition.kind)) {
+          fail(`collab kind "${definition.kind}" may hold only a-z, 0-9, dots and dashes`);
+        }
+        into.collabDocuments.push(definition);
+      },
+      async transact(kind, id, change, actor) {
+        if (!kind.startsWith(`${module.id}.`)) {
+          fail(`may only change its own documents ("${module.id}.<kind>"), not "${kind}"`);
+        }
+        if (!options.collab) {
+          throw new ModuleLoadError(
+            `Module "${module.id}": collaboration is not available in this process`,
+            module.id,
+          );
+        }
+        await options.collab.transact(collabDocumentName(kind, id), change, actor ?? null);
+      },
+    },
     realtime: options.realtime ?? noRealtime,
     ...(options.database
       ? {

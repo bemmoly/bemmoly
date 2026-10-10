@@ -6,7 +6,8 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./schema": "./src/schema/index.ts"
+    "./schema": "./src/schema/index.ts",
+    "./convert": "./src/convert/index.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit -p tsconfig.json",
@@ -18,16 +19,23 @@
     "@tiptap/core": "3.31.3",
     "@tiptap/extension-list": "3.31.3",
     "@tiptap/extension-mention": "3.31.3",
+    "@tiptap/extension-table": "3.31.3",
     "@tiptap/extensions": "3.31.3",
     "@tiptap/pm": "3.31.3",
     "@tiptap/starter-kit": "3.31.3",
-    "@tiptap/suggestion": "3.31.3"
+    "@tiptap/suggestion": "3.31.3",
+    "entities": "8.1.0",
+    "highlight.js": "11.11.1",
+    "htmlparser2": "12.0.0",
+    "lowlight": "3.3.0",
+    "marked": "18.0.14"
   },
   "peerDependencies": {
     "react": "19.3.0",
     "react-dom": "19.3.0"
   },
   "devDependencies": {
+    "@storybook/react-vite": "10.6.1",
     "@testing-library/react": "16.3.3",
     "@testing-library/user-event": "14.6.7",
     "@types/react": "19.3.0",

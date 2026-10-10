@@ -4,3 +4,4 @@
 @import '../src/theme.css';
 
 @source '.';
+@source '../../editor/src';

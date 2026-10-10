@@ -55,7 +55,8 @@ describe('enabling a module grants only the access the admin chose', () => {
     const noTeams = await enable(app, { access: { mode: 'teams', teamIds: [] } });
     expect(noTeams.statusCode).toBe(400);
     const modules = (await app.inject({ url: '/api/v1/admin/modules' })).json();
-    expect(modules.items[0]).toMatchObject({ id: 'sample', enabled: false });
+    const sample = modules.items.find((item: { id: string }) => item.id === 'sample');
+    expect(sample).toMatchObject({ id: 'sample', enabled: false });
 
     expect((await enable(app, { access: { mode: 'teams', teamIds: [team.id] } })).statusCode).toBe(
       200,

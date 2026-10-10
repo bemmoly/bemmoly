@@ -1,8 +1,9 @@
 import { Editor } from '@tiptap/core';
 import { Node } from '@tiptap/pm/model';
 import { afterEach, describe, expect, it } from 'vitest';
+import { EVERY_DOC_NODE } from '../testing/doc-fixture.ts';
 import { EVERY_NODE } from '../testing/fixture.ts';
-import { baseExtensions, editorSchema } from './index.ts';
+import { baseExtensions, docExtensions, editorSchema } from './index.ts';
 
 let editor: Editor | null = null;
 afterEach(() => {
@@ -45,7 +46,32 @@ describe('the document schema', () => {
 
   it('rejects node types the schema does not have', () => {
     expect(() =>
-      Node.fromJSON(editorSchema(), { type: 'doc', content: [{ type: 'issueTable' }] }),
+      Node.fromJSON(editorSchema(), { type: 'doc', content: [{ type: 'kanbanBoard' }] }),
     ).toThrow();
+  });
+
+  it('loads every Docs node and writes the same JSON back', () => {
+    const doc = Node.fromJSON(editorSchema(), EVERY_DOC_NODE);
+    doc.check();
+    expect(doc.toJSON()).toEqual(EVERY_DOC_NODE);
+  });
+
+  it('round-trips every Docs node through an editor unchanged', () => {
+    editor = new Editor({ extensions: docExtensions(), content: EVERY_DOC_NODE });
+    expect(editor.getJSON()).toEqual(EVERY_DOC_NODE);
+  });
+
+  it('round-trips every Docs node through the HTML the schema renders', () => {
+    editor = new Editor({ extensions: docExtensions(), content: EVERY_DOC_NODE });
+    const html = editor.getHTML();
+    editor.destroy();
+    editor = new Editor({ extensions: docExtensions(), content: html });
+    expect(editor.getJSON()).toEqual(EVERY_DOC_NODE);
+  });
+
+  it("keeps the base set free of Docs nodes, so Work's editors are unchanged", () => {
+    editor = new Editor({ extensions: baseExtensions() });
+    expect(Object.keys(editor.schema.nodes)).not.toContain('callout');
+    expect(Object.keys(editor.schema.nodes)).not.toContain('table');
   });
 });

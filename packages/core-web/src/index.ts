@@ -21,6 +21,22 @@ export {
   type ModuleChunkLoader,
   type ModuleChunkProps,
 } from './modules/chunks.ts';
+export {
+  preloadable,
+  useLoaded,
+  type ComponentLoader,
+  type Preloadable,
+} from './modules/preloadable.ts';
+export {
+  createEntityRendererRegistry,
+  EntityRenderersProvider,
+  useEntityRenderer,
+  type EntityRenderer,
+  type EntityRendererRegistry,
+  type EntityRenderersLoader,
+  type EntitySearch,
+  type EntitySearchItem,
+} from './modules/entity-renderers.tsx';
 export { ErrorBoundary } from './modules/error-boundary.tsx';
 export {
   LeaveGuardProvider,

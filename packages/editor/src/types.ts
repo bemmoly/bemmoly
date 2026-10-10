@@ -49,5 +49,8 @@ export interface EditorSources {
   references?: ReferenceSource;
 }
 
-/** page: the Issue page (14px at 1.65). panel: the drawer (13px at 1.6). comment: 13px. */
-export type ProseSize = 'page' | 'panel' | 'comment';
+/**
+ * page: the Issue page (14px at 1.65). panel: the drawer (13px at 1.6). comment: 13px.
+ * doc: a Docs page (15.5px at 1.7).
+ */
+export type ProseSize = 'page' | 'panel' | 'comment' | 'doc';

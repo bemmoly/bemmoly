@@ -65,6 +65,34 @@ const SHIPPED: Shipped[] = [
     },
     enabledMinutesAgo: 60 * 24 * 3,
   },
+  {
+    admin: {
+      id: 'docs',
+      name: 'Docs',
+      version: '0.2.0',
+      pendingChangesets: 12,
+      dependsOn: [],
+      defaultAccess: 'teams',
+      restartRequired: false,
+    },
+    manifest: {
+      id: 'docs',
+      name: 'Docs',
+      version: '0.2.0',
+      navigation: [
+        { id: 'docs.home', label: 'Docs', path: '/docs', placement: 'top' },
+        { id: 'docs.create-page', label: 'Page', path: '/docs/create', placement: 'create' },
+        {
+          id: 'docs.create-space',
+          label: 'Space',
+          path: '/docs/spaces/new',
+          placement: 'create',
+        },
+      ],
+      search: [{ kind: 'docs.page', label: 'Pages' }],
+    },
+    enabledMinutesAgo: 60 * 24 * 2,
+  },
 ];
 
 /** The manifest a module serves once enabled, or null when this install does not ship it. */
@@ -108,6 +136,14 @@ export function seedGrants(): ModuleGrant[] {
       subjectId: TEAM_IDS.platform,
       grantedBy: USER_IDS.rohan,
       createdAt: ago(60 * 24 * 3),
+    },
+    {
+      id: uid(62),
+      moduleId: 'docs',
+      subjectKind: 'everyone',
+      subjectId: null,
+      grantedBy: USER_IDS.rohan,
+      createdAt: ago(60 * 24 * 2),
     },
   ];
 }

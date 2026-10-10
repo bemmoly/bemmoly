@@ -1,6 +1,8 @@
+import websocket from '@fastify/websocket';
 import type { FastifyPluginAsync } from 'fastify';
 import { createAuditController } from '../controllers/audit.controller.ts';
 import { createAuthzController } from '../controllers/authz.controller.ts';
+import { createCollabController } from '../controllers/collab.controller.ts';
 import { createHealthController } from '../controllers/health.controller.ts';
 import { createIdentityController } from '../controllers/identity.controller.ts';
 import { createMetricsController } from '../controllers/metrics.controller.ts';
@@ -9,7 +11,10 @@ import {
   createModulesController,
 } from '../controllers/modules.controller.ts';
 import { createPeopleController } from '../controllers/people.controller.ts';
-import { createRealtimeController } from '../controllers/realtime.controller.ts';
+import {
+  createRealtimeController,
+  REALTIME_MAX_MESSAGE_BYTES,
+} from '../controllers/realtime.controller.ts';
 import { createSearchController } from '../controllers/search.controller.ts';
 import { createSettingsController } from '../controllers/settings.controller.ts';
 import {
@@ -20,6 +25,7 @@ import type { ModuleAccessResolver } from '../contracts/module-access.ts';
 import type { SessionResolver } from '../contracts/session-resolver.ts';
 import { createActorResolver, type ActorResolver } from '../middlewares/actor.ts';
 import type { ModuleRegistry } from '../modules/registry.ts';
+import type { CollabHost } from '../services/collab/index.ts';
 import type { IdentityDependencies } from '../services/identity/index.ts';
 import type { ModuleAdmin, ModuleState } from '../services/modules/index.ts';
 import type { RealtimeHub, RealtimeMetricsHook } from '../services/realtime/index.ts';
@@ -29,6 +35,7 @@ import type { DatabaseProbe } from '../services/system/index.ts';
 import type { ScrapeDependencies } from '../services/telemetry/index.ts';
 import { auditRoutes } from './audit.routes.ts';
 import { authzRoutes } from './authz.routes.ts';
+import { collabRoutes } from './collab.routes.ts';
 import {
   emailNotificationRoutes,
   type EmailNotificationRouteDependencies,
@@ -65,6 +72,8 @@ export interface KernelRouteDependencies {
   realtime?: RealtimeHub;
   /** The observability service's `getMetrics().realtime`. */
   realtimeMetrics?: RealtimeMetricsHook;
+  /** The collaboration host; /collab is mounted only when present. */
+  collab?: CollabHost;
   /** Identity, authorization and audit routes; mounted only when a database is configured. */
   identity?: IdentityDependencies;
   /** Mounted when the host wires email and notifications. */
@@ -113,6 +122,25 @@ export function kernelRoutes(deps: KernelRouteDependencies): FastifyPluginAsync 
   return async (app) => {
     await app.register(healthRoutes(health));
     if (metrics) await app.register(metricsRoutes(metrics));
+    if (deps.realtime || deps.collab) {
+      // One socket server for both endpoints: the plugin owns the HTTP upgrade event, so it
+      // is registered once, with the larger limit, and /ws checks its own smaller one.
+      const maxPayload = Math.max(
+        REALTIME_MAX_MESSAGE_BYTES,
+        deps.collab?.limits.maxMessageBytes ?? 0,
+      );
+      await app.register(websocket, { options: { maxPayload } });
+    }
+    if (deps.collab) {
+      await app.register(
+        collabRoutes(
+          createCollabController({
+            host: deps.collab,
+            ...(deps.sessions ? { sessions: deps.sessions } : {}),
+          }),
+        ),
+      );
+    }
     if (deps.realtime) {
       await app.register(
         realtimeRoutes(

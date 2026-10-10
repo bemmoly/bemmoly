@@ -41,6 +41,11 @@ COPY packages/core ./packages/core
 COPY packages/shared ./packages/shared
 # The email templates read the theme tokens from the design system at runtime.
 COPY packages/ui ./packages/ui
+# Docs reads and writes page bodies on the server with the editor's schema and converters;
+# its web-side workspace dependencies come along so the install can link them.
+COPY packages/editor ./packages/editor
+COPY packages/api-client ./packages/api-client
+COPY packages/core-web ./packages/core-web
 COPY modules ./modules
 RUN rm -rf node_modules \
  && pnpm install --offline --frozen-lockfile --prod --store-dir "$PNPM_STORE" --filter "@bemmoly/server..." \
