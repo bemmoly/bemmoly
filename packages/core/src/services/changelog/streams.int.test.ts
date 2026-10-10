@@ -93,9 +93,13 @@ describe('changelog runner: every kernel stream together', () => {
     ]) {
       expect(allowed(capability)).toEqual(['org_admin']);
     }
-    const [locked] = await sql<{ count: number }[]>`
-      select count(distinct capability)::int as count from role_capabilities where locked_by_org`;
-    expect(locked?.count).toBe(4);
+    const locked = await sql<{ capability: string }[]>`
+      select distinct capability from role_capabilities where locked_by_org order by capability`;
+    expect(locked.map((row) => row.capability)).toEqual([
+      'workspace.delete',
+      'workspace.roles.manage',
+      'workspace.sso.configure',
+    ]);
   });
 
   it('keeps the audit log append-only', async (ctx) => {
