@@ -28,6 +28,7 @@ export * from './components/metric-tile/index.ts';
 export * from './components/modal/index.ts';
 export * from './components/page-header/index.ts';
 export * from './components/page-status/index.ts';
+export * from './components/page-tree/index.ts';
 export * from './components/progress-bar/index.ts';
 export * from './components/quick-filter/index.ts';
 export * from './components/scheme-banner/index.ts';
