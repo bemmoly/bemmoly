@@ -289,14 +289,12 @@
   --color-epic-6: var(--epic-6);
   --color-epic-7: var(--epic-7);
   --color-epic-8: var(--epic-8);
-  --color-avatar-blue: var(--avatar-blue);
-  --color-avatar-orange: var(--avatar-orange);
-  --color-avatar-sky: var(--avatar-sky);
   --color-avatar-green: var(--avatar-green);
-  --color-avatar-pink: var(--avatar-pink);
+  --color-avatar-orange: var(--avatar-orange);
   --color-avatar-violet: var(--avatar-violet);
-  --color-avatar-teal: var(--avatar-teal);
+  --color-avatar-pink: var(--avatar-pink);
   --color-avatar-amber: var(--avatar-amber);
+  --color-avatar-sky: var(--avatar-sky);
   --font-sans: var(--font-ui);
   --font-mono: var(--font-code);
   --text-base: var(--text-base);

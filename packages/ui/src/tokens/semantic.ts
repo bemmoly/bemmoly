@@ -42,18 +42,17 @@ export const EPIC_COLORS = {
 } as const;
 
 /**
- * Solid avatar colours, white initials on top. The kit's people colours, each darkened the
- * least that carries white initials at 4.5:1.
+ * Solid avatar colours, white initials on top, one per avatar hue (the signed-in person wears
+ * the accent). The kit's people colours, each darkened the least that carries white initials
+ * at 4.5:1.
  */
 export const AVATAR_COLORS = {
-  'avatar-blue': '#5b6cd9',
-  'avatar-orange': '#b85b27',
-  'avatar-sky': '#247cae',
   'avatar-green': '#26855c',
-  'avatar-pink': '#bd5167',
+  'avatar-orange': '#b85b27',
   'avatar-violet': '#875fca',
-  'avatar-teal': '#1d8477',
+  'avatar-pink': '#bd5167',
   'avatar-amber': '#a36c1b',
+  'avatar-sky': '#247cae',
 } as const;
 
 export type AvatarColor = keyof typeof AVATAR_COLORS extends `avatar-${infer C}` ? C : never;

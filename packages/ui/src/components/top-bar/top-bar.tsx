@@ -234,7 +234,6 @@ export function TopBar({
           <Avatar
             name={user.name}
             size={30}
-            prominent
             hue={user.hue ?? 'accent'}
             {...(user.initials ? { initials: user.initials } : {})}
           />

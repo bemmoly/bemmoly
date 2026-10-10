@@ -24,14 +24,12 @@
   --epic-6: #c2536a;
   --epic-7: #b7791f;
   --epic-8: #9b4f96;
-  --avatar-blue: #5b6cd9;
-  --avatar-orange: #b85b27;
-  --avatar-sky: #247cae;
   --avatar-green: #26855c;
-  --avatar-pink: #bd5167;
+  --avatar-orange: #b85b27;
   --avatar-violet: #875fca;
-  --avatar-teal: #1d8477;
+  --avatar-pink: #bd5167;
   --avatar-amber: #a36c1b;
+  --avatar-sky: #247cae;
   --focus-width: 2px;
   --focus-offset: 2px;
   --shadow-ring: 0 0 0 2px var(--acc-100);
