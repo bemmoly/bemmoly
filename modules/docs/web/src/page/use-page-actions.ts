@@ -71,14 +71,23 @@ export function useChangeStatus(pageId: string) {
   });
 }
 
+/** Reviewers replace the set; the faces change before the server answers, as labels do. */
 export function useSetReviewers(pageId: string) {
   const cache = usePageCache(pageId);
   const { show } = useToast();
   return useMutation({
     mutationFn: (reviewers: string[]) => api.docs.pages.setReviewers(pageId, { reviewers }),
+    onMutate: async (reviewers) => {
+      await cache.queryClient.cancelQueries({ queryKey: docsKeys.page(pageId) });
+      const before = cache.read();
+      if (before) cache.write({ ...before, reviewers });
+      return { before };
+    },
     onSuccess: (page) => cache.write(page),
-    onError: (error) =>
-      show({ tone: 'danger', title: 'Reviewers were not saved', body: error.message }),
+    onError: (error, _reviewers, context) => {
+      if (context?.before) cache.write(context.before);
+      show({ tone: 'danger', title: 'Reviewers were not saved', body: error.message });
+    },
   });
 }
 
