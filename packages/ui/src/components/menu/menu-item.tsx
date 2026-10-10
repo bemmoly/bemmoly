@@ -1,4 +1,5 @@
 import { useId, type ReactNode } from 'react';
+import { Icon } from '../../icons/icon.tsx';
 import { cx } from '../../lib/cx.ts';
 import { focusRingInset } from '../../lib/focus.ts';
 import { useMenu } from './menu-context.ts';
@@ -15,6 +16,11 @@ export interface MenuItemProps {
   tone?: 'default' | 'danger';
   /** Keep the menu open after choosing (toggles in a filter menu). */
   keepOpen?: boolean;
+  /**
+   * One choice of several (a theme, a callout colour): the item becomes a menuitemradio and the
+   * chosen one shows a tick in place of the hint.
+   */
+  checked?: boolean;
 }
 
 /** 8px 10px, 5px radius; the highlighted item is accent on ac-bg, medium weight. */
@@ -26,12 +32,15 @@ export function MenuItem({
   disabled,
   tone = 'default',
   keepOpen,
+  checked,
 }: MenuItemProps) {
+  const choice = checked !== undefined;
   const { close } = useMenu();
   return (
     <button
       type="button"
-      role="menuitem"
+      role={choice ? 'menuitemradio' : 'menuitem'}
+      aria-checked={choice ? checked : undefined}
       tabIndex={-1}
       aria-disabled={disabled || undefined}
       onClick={() => {
@@ -49,7 +58,11 @@ export function MenuItem({
     >
       {icon}
       <span className="min-w-0 flex-1 truncate">{children}</span>
-      {hint && <span className="text-12 font-normal text-tx5">{hint}</span>}
+      {checked ? (
+        <Icon name="check" className="text-acc" />
+      ) : (
+        hint && <span className="text-12 font-normal text-tx-3">{hint}</span>
+      )}
     </button>
   );
 }

@@ -127,7 +127,7 @@ export const AskButtons: Story = {
   },
   render: () => (
     <div className="flex items-center gap-3">
-      <AiAskButton shortcut="⌘K" />
+      <AiAskButton shortcut="Mod+K" />
       <AiAskButton label="Copilot" size="sm" pressed />
     </div>
   ),

@@ -75,7 +75,7 @@ export const CreateMenu: Story = {
           icon="board"
           label="Issue"
           description="A bug, story or task in a project"
-          shortcut="⌘ N"
+          shortcut="Mod+N"
           onSelect={noop}
         />
         <CreateMenuItem

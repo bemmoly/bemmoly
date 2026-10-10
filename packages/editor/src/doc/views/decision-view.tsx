@@ -42,7 +42,7 @@ export function DecisionHeader({
           {DECISION_STATES.map((option) => (
             <MenuItem
               key={option}
-              hint={option === state ? '✓' : undefined}
+              checked={option === state}
               onSelect={() =>
                 onChange(option, option === 'decided' ? (decidedOn ?? today()) : decidedOn)
               }

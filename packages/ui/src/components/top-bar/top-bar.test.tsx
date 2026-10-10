@@ -37,7 +37,7 @@ describe('TopBar', () => {
             icon="board"
             label="Issue"
             description="A bug, story or task in a project"
-            shortcut="⌘ N"
+            shortcut="Mod+N"
             onSelect={onSelect}
           />
         }
@@ -46,7 +46,8 @@ describe('TopBar', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Create' }));
     const item = screen.getByRole('menuitem', { name: /Issue/ });
     expect(item.textContent).toContain('A bug, story or task in a project');
-    expect(item.textContent).toContain('⌘ N');
+    // Keys are drawn as icons and words; assistive tech hears them spelled out.
+    expect(item.textContent).toContain('Control N');
     await expectAccessible(container);
     fireEvent.click(item);
     expect(onSelect).toHaveBeenCalledOnce();

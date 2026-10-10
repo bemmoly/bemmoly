@@ -1,4 +1,5 @@
 import type { InputHTMLAttributes, ReactNode, Ref } from 'react';
+import { Kbd } from '../kbd/kbd.tsx';
 import { Icon } from '../../icons/icon.tsx';
 import { cx } from '../../lib/cx.ts';
 
@@ -79,10 +80,7 @@ export function SearchInput({ hint, suffix, ...rest }: SearchInputProps) {
       type="search"
       prefix={<Icon name="search" className="text-tx5" />}
       suffix={
-        suffix ??
-        (hint ? (
-          <kbd className="ml-auto font-mono text-11 font-medium text-tx6">{hint}</kbd>
-        ) : undefined)
+        suffix ?? (hint ? <Kbd keys={hint} variant="plain" className="ml-auto" /> : undefined)
       }
       {...rest}
     />

@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { Kbd } from '../kbd/kbd.tsx';
 import { Icon, ICON_SIZE, type IconName } from '../../icons/icon.tsx';
 import { cx } from '../../lib/cx.ts';
 import { useMenu } from '../menu/menu-context.ts';
@@ -8,7 +9,7 @@ export interface CreateMenuItemProps {
   label: string;
   /** One line saying what gets made and where. */
   description: string;
-  /** A keyboard shortcut, shown as a key chip ("⌘ N" in the Command mock). */
+  /** A keyboard shortcut, shown as a key chip ("Mod+N"). */
   shortcut?: string;
   onSelect: () => void;
 }
@@ -45,11 +46,7 @@ export function CreateMenuItem({
         <span className="text-13 font-medium text-tx group-focus:text-ac">{label}</span>
         <span className="text-12 leading-note text-tx5">{description}</span>
       </span>
-      {shortcut ? (
-        <kbd className="shrink-0 rounded-sm border border-br3 bg-sf px-1.5 py-0.5 font-mono text-11 font-medium text-tx4">
-          {shortcut}
-        </kbd>
-      ) : null}
+      {shortcut ? <Kbd keys={shortcut} /> : null}
     </button>
   );
 }

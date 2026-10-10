@@ -158,7 +158,7 @@ function Overview() {
           </Dropdown>
         </Section>
         <Section title="AI surfaces" wide>
-          <AiAskButton shortcut="⌘K" />
+          <AiAskButton shortcut="Mod+K" />
           <AiInsightBar title="Sprint risk" onDismiss={noop} className="w-full">
             PLT-204 blocks 2 issues.
           </AiInsightBar>

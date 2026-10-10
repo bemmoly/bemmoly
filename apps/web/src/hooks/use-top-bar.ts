@@ -24,6 +24,8 @@ export interface MenuEntry {
   id: string;
   label: string;
   hint?: string;
+  /** Set on choices of one (the theme menu): the chosen entry shows a tick. */
+  checked?: boolean;
   onSelect: () => void;
 }
 
@@ -88,13 +90,12 @@ export function useTopBar() {
       })),
   );
 
-  const tick = (on: boolean) => (on ? '✓' : undefined);
   const themeItems: MenuEntry[] = [
     ...(policy.memberModeSwitch
       ? (['system', 'light', 'dark'] as const).map((value) => ({
           id: `mode-${value}`,
           label: value === 'system' ? 'Workspace default' : value === 'light' ? 'Light' : 'Dark',
-          hint: tick(mode === value && !preset),
+          checked: mode === value && !preset,
           onSelect: () => {
             setPreset(null);
             setMode(value);
@@ -105,7 +106,7 @@ export function useTopBar() {
       ? PRESETS.map((entry) => ({
           id: `preset-${entry.id}`,
           label: entry.name,
-          hint: tick(preset === entry.id),
+          checked: preset === entry.id,
           onSelect: () => setPreset(entry.id),
         }))
       : []),

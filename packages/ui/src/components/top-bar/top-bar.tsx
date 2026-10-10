@@ -1,4 +1,5 @@
 import { useEffect, useRef, type ElementType, type ReactNode } from 'react';
+import { Kbd } from '../kbd/kbd.tsx';
 import { Icon, ICON_SIZE, type IconName } from '../../icons/icon.tsx';
 import { cx } from '../../lib/cx.ts';
 import { caretTone, focusRing } from '../../lib/focus.ts';
@@ -207,12 +208,10 @@ export function TopBar({
           >
             <Icon name="search" />
             <span className="truncate max-md:hidden">{searchPlaceholder}</span>
-            <kbd className="ml-auto shrink-0 font-mono text-11 font-medium text-tx6 max-md:hidden">
-              /
-            </kbd>
+            <Kbd keys="/" variant="plain" className="ml-auto max-md:hidden" />
           </button>
         )}
-        {onAsk && <AiAskButton shortcut="⌘K" onClick={onAsk} className="max-sm:hidden" />}
+        {onAsk && <AiAskButton shortcut="Mod+K" onClick={onAsk} className="max-sm:hidden" />}
         {onInbox && (
           <IconButton
             label="Inbox"

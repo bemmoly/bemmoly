@@ -64,6 +64,7 @@ export function AppTopBar() {
             key={item.id}
             onSelect={item.onSelect}
             {...(item.hint ? { hint: item.hint } : {})}
+            {...(item.checked !== undefined ? { checked: item.checked } : {})}
           >
             {item.label}
           </MenuItem>

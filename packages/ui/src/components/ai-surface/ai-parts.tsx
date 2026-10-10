@@ -1,4 +1,6 @@
 import type { ButtonHTMLAttributes, ReactNode } from 'react';
+import { Kbd } from '../kbd/kbd.tsx';
+import { ariaKeyShortcuts } from '../kbd/keys.ts';
 import { cx } from '../../lib/cx.ts';
 import { focusRing } from '../../lib/focus.ts';
 
@@ -65,7 +67,7 @@ export function AiNotUseful({
 
 export interface AiAskButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   label?: ReactNode;
-  /** Key hint after the label, e.g. "⌘K". */
+  /** Key hint after the label, e.g. "Mod+K". */
   shortcut?: string;
   /** md: top bar (32px, 0 12px, 6px radius). sm: Doc Editor "Copilot" (30px, 0 10px, 5px). */
   size?: 'sm' | 'md';
@@ -87,7 +89,7 @@ export function AiAskButton({
     <button
       type={type}
       aria-pressed={pressed}
-      aria-keyshortcuts={shortcut === '⌘K' ? 'Meta+K Control+K' : undefined}
+      aria-keyshortcuts={shortcut ? ariaKeyShortcuts(shortcut) : undefined}
       className={cx(
         'inline-flex shrink-0 cursor-pointer items-center border border-ai-br font-sans font-medium whitespace-nowrap text-ai-600',
         size === 'md'
@@ -101,7 +103,7 @@ export function AiAskButton({
     >
       <AiDot size={size === 'md' ? 8 : 7} />
       {label}
-      {shortcut && <kbd className="font-mono text-11 font-medium text-ai-600">{shortcut}</kbd>}
+      {shortcut && <Kbd keys={shortcut} variant="plain" className="text-ai-600" />}
     </button>
   );
 }

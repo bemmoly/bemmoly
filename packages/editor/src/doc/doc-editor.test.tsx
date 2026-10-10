@@ -128,7 +128,7 @@ describe('Docs nodes in the editor', () => {
   it('changes a callout variant from its menu as one step', async () => {
     const { editor } = await setup({ initialDoc: EVERY_DOC_NODE });
     fireEvent.click(await screen.findByRole('button', { name: /Info callout/ }));
-    fireEvent.click(await screen.findByRole('menuitem', { name: /Warning/ }));
+    fireEvent.click(await screen.findByRole('menuitemradio', { name: /Warning/ }));
     await waitFor(() =>
       expect(editor.getJSON().content?.[1]?.attrs).toEqual({ variant: 'warning' }),
     );

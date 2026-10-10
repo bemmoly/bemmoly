@@ -37,7 +37,8 @@ export interface MenuProps {
   className?: string;
 }
 
-const ITEM_SELECTOR = '[role="menuitem"]:not([aria-disabled="true"])';
+const ITEM_SELECTOR =
+  '[role="menuitem"]:not([aria-disabled="true"]),[role="menuitemradio"]:not([aria-disabled="true"])';
 
 const itemsIn = (menu: HTMLElement | null) => [
   ...(menu?.querySelectorAll<HTMLElement>(ITEM_SELECTOR) ?? []),

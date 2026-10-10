@@ -18,6 +18,7 @@ export * from './components/epic-panel/index.ts';
 export * from './components/form-layout/index.ts';
 export * from './components/glyphs/index.ts';
 export * from './components/input/index.ts';
+export * from './components/kbd/index.ts';
 export * from './components/issue-sections/index.ts';
 export * from './components/kanban-card/index.ts';
 export * from './components/kanban-column/index.ts';

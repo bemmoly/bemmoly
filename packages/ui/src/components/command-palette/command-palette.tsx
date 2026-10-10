@@ -1,3 +1,4 @@
+import { Kbd } from '../kbd/kbd.tsx';
 import {
   createContext,
   useContext,
@@ -151,9 +152,7 @@ export function CommandInput({
         className="min-w-0 flex-1 border-0 bg-transparent px-0.5 py-px font-sans text-16 text-tx outline-0 placeholder:text-tx5"
         {...rest}
       />
-      <kbd className="rounded-xs border border-br px-1.5 py-0.5 font-mono text-11 font-medium text-tx5">
-        esc
-      </kbd>
+      <Kbd keys="Esc" />
     </div>
   );
 }
@@ -207,20 +206,18 @@ export interface CommandFooterProps {
 }
 
 const DEFAULT_HINTS = [
-  { keys: '↑↓', label: 'navigate' },
-  { keys: '⏎', label: 'open' },
-  { keys: '⌘⏎', label: 'run' },
+  { keys: 'Up Down', label: 'navigate' },
+  { keys: 'Enter', label: 'open' },
+  { keys: 'Mod+Enter', label: 'run' },
 ];
 
-/** Key hints on the sf2 bar: mono 11px keys in a bordered chip. */
+/** Key hints on the footer bar, each a Kbd chip and its action. */
 export function CommandFooter({ hints = DEFAULT_HINTS, extra }: CommandFooterProps) {
   return (
     <div className="flex items-center gap-3.5 border-t border-br2 bg-sf2 px-4 py-2.5 text-12 text-tx5">
       {hints.map((hint) => (
-        <span key={hint.keys}>
-          <kbd className="rounded-chip border border-br bg-sf px-1.25 py-px font-mono text-11 font-medium text-tx4">
-            {hint.keys}
-          </kbd>{' '}
+        <span key={hint.keys} className="inline-flex items-center gap-1.5">
+          <Kbd keys={hint.keys} />
           {hint.label}
         </span>
       ))}

@@ -81,9 +81,8 @@ function ConfirmBody(props: ConfirmChangeProps) {
           <Field
             label={
               <>
-                Type{' '}
-                <span className="font-mono font-semibold text-tx select-all">{confirmWord}</span> to
-                confirm
+                Type <span className="font-mono font-medium text-tx select-all">{confirmWord}</span>{' '}
+                to confirm
               </>
             }
           >
