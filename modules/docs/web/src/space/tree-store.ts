@@ -1,66 +1,63 @@
+import { readPreference, usePreference, writePreference } from '@bemmoly/core-web';
 import { create } from 'zustand';
 
 /*
- * Which pages are open in each space's sidebar tree. Client state, so it
- * lives here rather than in the query cache; it is remembered per browser so
- * a reload keeps the tree as it was. Storage can be missing or throw (private
- * windows, blocked site data), and the tree then simply starts closed.
+ * Which pages are open in each space's sidebar tree, and which space has the sidebar to itself
+ * (focus mode). Client state, so it lives here rather than in the query cache. It is a
+ * preference of the signed-in person on this device, kept by the shell's person store, so a
+ * reload keeps the tree as it was and two people sharing a browser keep their own.
  */
 
-const STORAGE_KEY = 'bemmoly.docs.tree-open';
+const OPEN_KEY = 'docs.tree-open';
+const FOCUS_KEY = 'docs.tree-focus';
 
 type OpenBySpace = Record<string, readonly string[]>;
 
-function load(): OpenBySpace {
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    const parsed: unknown = raw ? JSON.parse(raw) : {};
-    return parsed && typeof parsed === 'object' ? (parsed as OpenBySpace) : {};
-  } catch {
-    return {};
-  }
-}
+const readOpen = () => readPreference<OpenBySpace>(OPEN_KEY, {});
 
-function save(open: OpenBySpace): void {
-  try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(open));
-  } catch {
-    // Nowhere to remember it; the tree still works for this visit.
-  }
+function writeOpen(spaceKey: string, change: (ids: Set<string>) => boolean): void {
+  const all = readOpen();
+  const ids = new Set(all[spaceKey] ?? []);
+  if (!change(ids)) return;
+  writePreference<OpenBySpace>(OPEN_KEY, { ...all, [spaceKey]: [...ids] });
 }
 
 interface TreeOpenState {
-  open: OpenBySpace;
   /** Opens or closes one page. */
   set: (spaceKey: string, pageId: string, open: boolean) => void;
   /** Opens every page on the way to the one shown, keeping the rest. */
   reveal: (spaceKey: string, pageIds: readonly string[]) => void;
 }
 
-export const useTreeOpen = create<TreeOpenState>((set) => ({
-  open: typeof window === 'undefined' ? {} : load(),
-  set: (spaceKey, pageId, isOpen) =>
-    set((state) => {
-      const ids = new Set(state.open[spaceKey] ?? []);
-      if (isOpen) ids.add(pageId);
+/** The tree's open-state actions; the state itself is read with useOpenIds. */
+export const useTreeOpen = create<TreeOpenState>(() => ({
+  set: (spaceKey, pageId, open) =>
+    writeOpen(spaceKey, (ids) => {
+      if (open === ids.has(pageId)) return false;
+      if (open) ids.add(pageId);
       else ids.delete(pageId);
-      const open = { ...state.open, [spaceKey]: [...ids] };
-      save(open);
-      return { open };
+      return true;
     }),
   reveal: (spaceKey, pageIds) =>
-    set((state) => {
-      const ids = new Set(state.open[spaceKey] ?? []);
-      if (pageIds.every((id) => ids.has(id))) return state;
+    writeOpen(spaceKey, (ids) => {
+      if (pageIds.every((id) => ids.has(id))) return false;
       for (const id of pageIds) ids.add(id);
-      const open = { ...state.open, [spaceKey]: [...ids] };
-      save(open);
-      return { open };
+      return true;
     }),
 }));
 
 const NONE: readonly string[] = [];
 
 /** The open pages of one space, as a stable array. */
-export const useOpenIds = (spaceKey: string) =>
-  useTreeOpen((state) => state.open[spaceKey] ?? NONE);
+export function useOpenIds(spaceKey: string): readonly string[] {
+  const [open] = usePreference<OpenBySpace>(OPEN_KEY, {});
+  return open[spaceKey] ?? NONE;
+}
+
+/**
+ * The space that has the sidebar to itself, with a filter, or null for all of Docs. Kept per
+ * person, so a writer who lives in one big space finds it focused again tomorrow.
+ */
+export function useTreeFocus(): [string | null, (spaceKey: string | null) => void] {
+  return usePreference<string | null>(FOCUS_KEY, null);
+}

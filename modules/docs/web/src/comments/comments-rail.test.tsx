@@ -66,9 +66,14 @@ const { server, calls } = startServer(
 
 afterEach(() => useCommentUi.getState().reset(PAGE));
 
-function renderRail(canComment = true) {
+function renderRail(canComment = true, aiEnabled = true) {
   const client = newClient();
-  client.setQueryData(queryKeys.me(), { user: ME, capabilities: [], modules: [], workspace: {} });
+  client.setQueryData(queryKeys.me(), {
+    user: ME,
+    capabilities: [],
+    modules: [],
+    workspace: { aiEnabled },
+  });
   render(<CommentsRail pageId={PAGE} canComment={canComment} />, { wrapper: providers(client) });
   return client;
 }
@@ -84,6 +89,14 @@ describe('the comments rail', () => {
     expect(within(fifteen).queryByText('Text changed')).toBeNull();
     expect(within(card('Remove the legacy cookie path')).getByText('Text changed')).toBeTruthy();
     expect(screen.getByRole('radio', { name: 'Open (3)' })).toBeTruthy();
+  });
+
+  it('shows no suggested fix at all while the workspace has AI off', async () => {
+    renderRail(true, false);
+    await screen.findByText('stay valid for 15 minutes');
+    const fifteen = card('stay valid for 15 minutes');
+    expect(within(fifteen).queryByText(/Replace with/)).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Apply fix' })).toBeNull();
   });
 
   it('offers Apply fix only on a thread that carries a suggestion', async () => {
@@ -117,6 +130,35 @@ describe('the comments rail', () => {
     );
     fireEvent.click(screen.getByRole('button', { name: 'Apply fix' }));
     expect(await screen.findByText('The text changed since this fix was suggested')).toBeTruthy();
+  });
+
+  it('resolves from the keyboard with E, and Undo reopens the thread', async () => {
+    server.use(
+      http.post('*/api/v1/docs/comments/:id/resolve', () =>
+        HttpResponse.json({ ...GENERAL, resolvedAt: at(6) }),
+      ),
+      http.post('*/api/v1/docs/comments/:id/reopen', () => HttpResponse.json(GENERAL)),
+    );
+    renderRail();
+    await screen.findByText(/Which is it\?/);
+    const thread = card('Looks good overall.');
+    thread.focus();
+    fireEvent.keyDown(thread, { key: 'e' });
+    fireEvent.click(await screen.findByRole('button', { name: 'Undo' }));
+    await waitFor(() =>
+      expect(calls.map((call) => call.path.split('/').pop())).toEqual(['resolve', 'reopen']),
+    );
+  });
+
+  it('walks the threads with J and K', async () => {
+    renderRail();
+    await screen.findByText(/Which is it\?/);
+    const cards = [...document.querySelectorAll<HTMLElement>('[data-thread]')];
+    cards[0]!.focus();
+    fireEvent.keyDown(cards[0]!, { key: 'j' });
+    expect(document.activeElement).toBe(cards[1]);
+    fireEvent.keyDown(cards[1]!, { key: 'k' });
+    expect(document.activeElement).toBe(cards[0]);
   });
 
   it('lets only the author edit and delete, and asks before deleting a thread', async () => {

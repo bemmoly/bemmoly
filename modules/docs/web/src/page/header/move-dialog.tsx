@@ -15,7 +15,8 @@ interface Destination {
 }
 
 export interface MoveDialogProps {
-  page: PageDetail;
+  /** The page being moved: a page screen's detail or a tree row with its space. */
+  page: Pick<PageDetail, 'id' | 'spaceId' | 'title'>;
   open: boolean;
   onClose: () => void;
 }

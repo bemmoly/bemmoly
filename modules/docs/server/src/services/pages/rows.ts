@@ -13,6 +13,7 @@ export interface PageRow {
   path: string;
   title: string;
   icon: string | null;
+  cover: string | null;
   status: PageStatus;
   owner_id: string | null;
   reviewers: string[];
@@ -58,7 +59,7 @@ export const toSummary = (row: PageRow): PageSummary => ({
  * here too: a page's metadata and its document are one row.
  */
 export const PAGE_COLUMNS = `p.id, p.space_id, s.key as space_key, p.parent_id, p.position,
-  p.path, p.title, p.icon, p.status, p.owner_id, p.reviewers, p.template_id, p.snapshot, p.tldr,
+  p.path, p.title, p.icon, p.cover, p.status, p.owner_id, p.reviewers, p.template_id, p.snapshot, p.tldr,
   p.word_count, p.version, p.created_by, p.updated_by, p.published_at, p.content_updated_at,
   p.created_at, p.updated_at, p.deleted_at,
   exists (select 1 from pages c where c.parent_id = p.id and c.deleted_at is null) as has_children`;

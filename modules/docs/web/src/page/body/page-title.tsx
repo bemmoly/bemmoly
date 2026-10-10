@@ -1,11 +1,10 @@
-import { isIconName } from '@bemmoly/ui/icons';
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { cx } from '../cx.ts';
 import { usePageScreen } from '../screen-context.ts';
 import { useUpdatePage } from '../use-page-actions.ts';
 
-/** The mock's title: 600 36px/1.15, -0.02em, tx. The field and the heading share it. */
-const TITLE = 'm-0 text-24 leading-display font-semibold tracking-display text-tx';
+/** The review's title (docs-kit .d-title): 36px/1.15, outside the app's type steps on purpose. */
+const TITLE = 'm-0 text-[36px] leading-display font-semibold tracking-display text-tx';
 
 export const TITLE_FIELD_ID = 'page-title';
 
@@ -22,7 +21,6 @@ export function PageTitle() {
   const [focused, setFocused] = useState(false);
   /** Escape leaves the field without saving what was typed. */
   const discard = useRef(false);
-  const emoji = page.icon && !isIconName(page.icon) ? page.icon : null;
 
   useEffect(() => {
     if (!focused) setDraft(page.title);
@@ -53,15 +51,13 @@ export function PageTitle() {
   if (!editable) {
     return (
       <h1 className={cx(TITLE, 'text-pretty break-words', !page.title && 'text-tx-3')}>
-        {emoji && <span className="mr-3">{emoji}</span>}
         {page.title || 'Untitled'}
       </h1>
     );
   }
 
   return (
-    <h1 className={cx(TITLE, 'flex items-start gap-3')}>
-      {emoji && <span aria-hidden>{emoji}</span>}
+    <h1 className={cx(TITLE, 'flex items-start')}>
       <textarea
         id={TITLE_FIELD_ID}
         aria-label="Page title"

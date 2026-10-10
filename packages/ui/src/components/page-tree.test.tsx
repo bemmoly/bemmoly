@@ -6,7 +6,6 @@ import { expectAccessible } from '../testing/a11y.ts';
 import { StartGuide } from './empty-state/index.ts';
 import { MenuItem } from './menu/index.ts';
 import { PageTree, type PageTreeItem, type PageTreeMove } from './page-tree/index.ts';
-import { SpaceSwitcher } from './space-card/index.ts';
 import { TemplatePicker } from './template-card/index.ts';
 
 const base: PageTreeItem[] = [
@@ -84,6 +83,12 @@ describe('PageTree', () => {
     expect(onOpen).toHaveBeenCalledWith('a');
   });
 
+  it("opens a row's menu with a right-click, as its ··· does", () => {
+    render(<Harness />);
+    fireEvent.contextMenu(screen.getByRole('treeitem', { name: /Runbooks/ }));
+    expect(screen.getByRole('menuitem', { name: 'Rename' })).toBeTruthy();
+  });
+
   it('moves a page with Alt+arrows', () => {
     const onMove = vi.fn();
     render(<Harness onMove={onMove} />);
@@ -128,18 +133,6 @@ describe('PageTree', () => {
 });
 
 describe('Docs navigation pieces', () => {
-  it('switch spaces from the sidebar head', () => {
-    const onSelect = vi.fn();
-    const eng = { id: '1', key: 'ENG', name: 'Engineering', tone: 'accent' as const };
-    const ops = { id: '2', key: 'OPS', name: 'Operations', tone: 'slate' as const };
-    render(
-      <SpaceSwitcher current={eng} meta="184 pages" spaces={[eng, ops]} onSelect={onSelect} />,
-    );
-    fireEvent.click(screen.getByRole('button', { name: 'Engineering, switch space' }));
-    fireEvent.click(screen.getByRole('menuitem', { name: /Operations/ }));
-    expect(onSelect).toHaveBeenCalledWith(ops);
-  });
-
   it('pick a template, blank first, grouped by category', async () => {
     const onSelect = vi.fn();
     const onChoose = vi.fn();

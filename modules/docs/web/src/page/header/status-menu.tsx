@@ -1,5 +1,6 @@
 import { STATUS_TRANSITIONS, type PageStatus } from '@bemmoly/module-docs/shared';
-import { Menu, MenuItem, PageStatusPill } from '@bemmoly/ui';
+import { Menu, MenuItem, PAGE_STATUS_STAGES, PageStatusMark, StatusGlyph } from '@bemmoly/ui';
+import { Icon } from '@bemmoly/ui/icons';
 import { useState } from 'react';
 import { useSession } from '../../shared/people.ts';
 import { usePageScreen } from '../screen-context.ts';
@@ -20,8 +21,12 @@ const ORDER: readonly PageStatus[] = ['in_review', 'published', 'draft', 'archiv
 /** The server's rule: publishing and archiving need docs.page.publish. */
 const NEEDS_PUBLISH: readonly PageStatus[] = ['published', 'archived'];
 
+/** The status beside the trail: its glyph and name in a quiet outlined button. */
+const TRIGGER =
+  'inline-flex h-7 items-center gap-1 rounded-control border-0 bg-transparent px-2 font-sans text-13 text-tx-2 shadow-[inset_0_0_0_1px_var(--line)]';
+
 /**
- * The status pill beside the breadcrumbs, as a menu of the moves the server allows from here.
+ * The page's status right after the header's trail, as a menu of the moves the server allows from here.
  * Asking for review picks reviewers first; the rest apply at once. A person who may not
  * publish sees Publish and Archive greyed with the reason, rather than an error after.
  */
@@ -34,20 +39,27 @@ export function StatusMenu() {
   const moves = ORDER.filter((next) => STATUS_TRANSITIONS[status].includes(next));
   const locked = readOnly === 'trashed' || readOnly === 'viewer';
 
-  if (locked) return <PageStatusPill status={status} className="ml-3.5" />;
+  if (locked) return <PageStatusMark status={status} className={`${TRIGGER} cursor-default`} />;
 
   return (
     <>
       <Menu
-        className="ml-3.5"
         trigger={(props) => (
           <button
             {...props}
             type="button"
             aria-label={`Status: ${status.replace('_', ' ')}. Change status`}
-            className="inline-flex cursor-pointer items-center rounded-chip border-0 bg-transparent p-0 focus-visible:shadow-ring focus-visible:outline-0"
+            className={`${TRIGGER} cursor-pointer hover:bg-hover hover:text-tx focus-ring aria-expanded:bg-hover`}
           >
-            <PageStatusPill status={status} className="hover:brightness-95" />
+            {/* On a phone the glyph alone keeps room for the page's name. */}
+            <PageStatusMark status={status} className="max-sm:hidden" />
+            <StatusGlyph
+              stage={PAGE_STATUS_STAGES[status]}
+              size={13}
+              decorative
+              className="sm:hidden"
+            />
+            <Icon name="caret" size={12} className="text-tx-3" />
           </button>
         )}
       >
@@ -57,11 +69,7 @@ export function StatusMenu() {
             <MenuItem
               key={next}
               disabled={!allowed || change.isPending}
-              icon={
-                <span aria-hidden className="inline-flex">
-                  <PageStatusPill status={next} className="w-21 justify-center" />
-                </span>
-              }
+              icon={<StatusGlyph stage={PAGE_STATUS_STAGES[next]} size={14} decorative />}
               hint={allowed ? undefined : 'Needs publish rights'}
               onSelect={() => {
                 if (next === 'in_review') setPicking(true);

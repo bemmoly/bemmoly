@@ -20,10 +20,24 @@ const STATUS_LABEL: Record<PageSuggestion['status'], string> = {
   archived: 'Archived',
 };
 
+/** "Engineering › Platform": the space, then the page it sits under. */
+export const placeOf = (page: Pick<PageSuggestion, 'spaceName' | 'parentTitle'>) =>
+  page.parentTitle === null
+    ? page.spaceName
+    : `${page.spaceName} › ${page.parentTitle || 'Untitled'}`;
+
+/** The headline covers "title\nbody"; the palette wants the body's line, not the title again. */
+export function bodyLine(snippet: string, title: string): string | undefined {
+  const at = snippet.indexOf('\n');
+  const body = (at >= 0 ? snippet.slice(at + 1) : snippet).trim();
+  const plain = body.replace(/<\/?b>/g, '').trim();
+  return plain && plain !== title.trim() ? body : undefined;
+}
+
 /**
  * Pages for ⌘K: the title lookup first, so a page typed by name leads, then
  * keyword search over the body, merged without repeats. Both already keep to
- * the spaces the person is in. The space key prints before the title.
+ * the spaces the person is in. Each carries its icon, its place and the line that matched.
  */
 export function createPageSearchProvider(search: SearchService): SearchProviderDefinition {
   return {
@@ -35,15 +49,18 @@ export function createPageSearchProvider(search: SearchService): SearchProviderD
         limit: Math.min(query.limit, 20),
       });
       const byWords = await search.search(ctx, { q: q.slice(0, 200), limit: query.limit });
-      const merged = new Map<string, PageSuggestion>();
-      for (const page of [...byTitle, ...byWords]) {
-        if (!merged.has(page.id)) merged.set(page.id, page);
-      }
+      const merged = new Map<string, PageSuggestion & { snippet?: string }>();
+      for (const page of byTitle) merged.set(page.id, page);
+      // A body match says why the page came up, even when its title matched too.
+      for (const page of byWords) merged.set(page.id, { ...merged.get(page.id), ...page });
       return [...merged.values()].slice(0, query.limit).map((page) => ({
         id: page.id,
         key: page.spaceKey,
         title: page.title || 'Untitled',
         subtitle: STATUS_LABEL[page.status],
+        context: placeOf(page),
+        ...(page.snippet ? { snippet: bodyLine(page.snippet, page.title) } : {}),
+        look: { icon: page.icon },
         href: pagePath(page.id),
       }));
     },

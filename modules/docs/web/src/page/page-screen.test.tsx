@@ -44,10 +44,13 @@ const { server, calls } = startServer(
 beforeEach(() => {
   page = pageDetail();
   live.state = collabState();
-  usePageChrome.setState({ panel: null });
+  usePageChrome.setState({ margin: null, chosen: false, mode: 'page' });
 });
 
 const title = () => screen.findByRole('textbox', { name: 'Page title' });
+
+/** The status menu beside the header's trail: the page's one status control. */
+const rowStatus = () => screen.findByRole('button', { name: /Change status/ });
 
 describe('the doc editor screen', () => {
   it('draws the trail, the facts, the title and the body as the mock lays them out', async () => {
@@ -59,12 +62,38 @@ describe('the doc editor screen', () => {
       '/docs/s/ENG',
     );
     expect(within(trail).getByRole('link', { name: 'Architecture' })).toBeTruthy();
-    const facts = screen.getByRole('list', { name: 'Page facts' });
-    expect(facts.textContent).toBe('rfcOwner: Priya N.');
-    expect(screen.getByText(/Created Sep 12 · Edited/)).toBeTruthy();
-    expect(screen.getByText('1 min read')).toBeTruthy();
+    const props = screen.getByRole('group', { name: 'Page properties' });
+    expect(within(props).getByText('Priya N.')).toBeTruthy();
+    expect(within(props).getByText('rfc')).toBeTruthy();
+    expect(within(props).getByText('1 min read')).toBeTruthy();
     expect(screen.getByRole('status', { name: '' }).textContent).toBe('Saved · Priya is editing');
+    // The faces are the header's facepile, as on Work's screens.
+    expect(
+      screen.getByRole('group', { name: 'Also here: Priya Nair · on this page' }),
+    ).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'Context' })).toBeTruthy();
+  });
+
+  it('lets the header fade while the writer types', async () => {
+    renderPage();
+    await title();
+    const header = screen.getByRole('navigation', { name: 'Breadcrumb' }).closest('header');
+    expect(header?.className).toContain('[:root[data-doc-typing]_&]:opacity-0');
+  });
+
+  it('keeps a stored TL;DR unshown while the workspace has AI off', async () => {
+    page = pageDetail({ tldr: 'Sessions move to Postgres in two steps.' });
+    renderPage();
+    await title();
+    expect(screen.queryByText('TL;DR')).toBeNull();
+    expect(screen.queryByText('Sessions move to Postgres in two steps.')).toBeNull();
+  });
+
+  it('shows the TL;DR in the AI surface once the workspace has AI on', async () => {
+    page = pageDetail({ tldr: 'Sessions move to Postgres in two steps.' });
+    renderPage({ aiEnabled: true });
+    expect(await screen.findByText('Sessions move to Postgres in two steps.')).toBeTruthy();
+    expect(screen.getByText('TL;DR')).toBeTruthy();
   });
 
   it('renames the page from its title and hands the caret on with Enter', async () => {
@@ -95,7 +124,7 @@ describe('the doc editor screen', () => {
 
   it('asks for review with reviewers picked first, then publishes', async () => {
     renderPage();
-    fireEvent.click(await screen.findByRole('button', { name: /Change status/ }));
+    fireEvent.click(await rowStatus());
     fireEvent.click(await screen.findByRole('menuitem', { name: 'Request review…' }));
     const dialog = await screen.findByRole('dialog', { name: 'Reviewers' });
     const jonas = await within(dialog).findByRole('checkbox', { name: 'Jonas M.' });
@@ -110,7 +139,7 @@ describe('the doc editor screen', () => {
       ['PUT', 'status', { status: 'in_review' }],
     ]);
 
-    fireEvent.click(screen.getByRole('button', { name: /Change status/ }));
+    fireEvent.click(await rowStatus());
     fireEvent.click(await screen.findByRole('menuitem', { name: 'Publish' }));
     await waitFor(() => expect(calls.at(-1)?.body).toEqual({ status: 'published' }));
   });
@@ -129,7 +158,7 @@ describe('the doc editor screen', () => {
       ),
     );
     renderPage();
-    fireEvent.click(await screen.findByRole('button', { name: /Change status/ }));
+    fireEvent.click(await rowStatus());
     fireEvent.click(await screen.findByRole('menuitem', { name: 'Request review…' }));
     const dialog = await screen.findByRole('dialog', { name: 'Reviewers' });
     const confirm = within(dialog).getByRole('button', { name: 'Request review' });
@@ -143,7 +172,7 @@ describe('the doc editor screen', () => {
 
   it('greys Publish for someone who may not publish', async () => {
     renderPage({ capabilities: [] });
-    fireEvent.click(await screen.findByRole('button', { name: /Change status/ }));
+    fireEvent.click(await rowStatus());
     const publish = await screen.findByRole('menuitem', { name: /Publish/ });
     expect(publish.getAttribute('aria-disabled')).toBe('true');
     expect(publish.textContent).toContain('Needs publish rights');
@@ -224,5 +253,7 @@ describe('the doc editor screen', () => {
     );
     renderPage();
     expect(await screen.findByText('This page does not exist')).toBeTruthy();
+    const trail = screen.getByRole('navigation', { name: 'Breadcrumb' });
+    expect(await within(trail).findByRole('link', { name: 'Page not found' })).toBeTruthy();
   });
 });

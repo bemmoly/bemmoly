@@ -11,12 +11,13 @@ import {
   CommandScopes,
   Kbd,
 } from '@bemmoly/ui';
-import { Icon } from '@bemmoly/ui/icons';
+import { Icon, PageIcon } from '@bemmoly/ui/icons';
 import plan from '../../fixtures/command-plan.json' with { type: 'json' };
 import type { PaletteItem } from '../../hooks/command-items.ts';
 import { useCommandPalette } from '../../hooks/use-command-palette.ts';
 import { toast } from '../../lib/toast.ts';
 import { RecentMark, RecentStatus } from '../shell/recent-mark.tsx';
+import { Marked, PlaceChip } from './palette-parts.tsx';
 
 const steps = plan.rows.map((row) => ({
   target: row.issue,
@@ -35,6 +36,7 @@ const steps = plan.rows.map((row) => ({
 function Mark({ item }: { item: PaletteItem }) {
   if (item.person) return <Avatar name={item.title} hue={avatarHue(item.id)} size={18} />;
   if (item.look) return <RecentMark look={item.look} />;
+  if (item.recordIcon !== undefined) return <PageIcon value={item.recordIcon} size={16} />;
   return <Icon name={item.icon ?? 'chevron'} size={16} />;
 }
 
@@ -70,6 +72,12 @@ export default function CommandPaletteHost() {
         onValueChange={palette.setQuery}
         ai={palette.ai}
         autoFocus
+        trailing={
+          palette.place && <PlaceChip label={palette.place.label} onClear={palette.clearPlace} />
+        }
+        onKeyDown={(event) => {
+          if (event.key === 'Backspace' && !palette.query && palette.place) palette.clearPlace();
+        }}
       />
       <CommandScopes scopes={palette.scopes} value={palette.scope} onChange={palette.setScope} />
       {palette.isCommand ? (
@@ -93,7 +101,14 @@ export default function CommandPaletteHost() {
                     key={item.id}
                     icon={<Mark item={item} />}
                     {...(item.issueKey ? { issueKey: item.issueKey } : {})}
-                    title={item.title}
+                    title={
+                      item.fromServer ? (
+                        <Marked text={item.title} query={palette.query} />
+                      ) : (
+                        item.title
+                      )
+                    }
+                    {...(item.snippet ? { detail: <Marked text={item.snippet} /> } : {})}
                     meta={<Meta item={item} />}
                     {...(item.keys ? { keys: item.keys } : {})}
                     onSelect={() => palette.open(item)}

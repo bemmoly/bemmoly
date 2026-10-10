@@ -1,10 +1,11 @@
-import { Editor, type AnyExtension, type NodeViewRendererProps } from '@tiptap/core';
+import { Editor, Extension, type AnyExtension, type NodeViewRendererProps } from '@tiptap/core';
 import { Placeholder } from '@tiptap/extensions';
 import { cx } from '../cx.ts';
 import type { SuggestionStore } from '../editor/suggestion-store.ts';
 import { proseClass } from '../prose.ts';
 import { docExtensions } from '../schema/index.ts';
 import type { RichTextDoc } from '../types.ts';
+import { blockKeys } from './block-commands.ts';
 import { CodeHighlight } from './highlight.ts';
 import { imageDrop } from './image-drop.ts';
 import { PortalNodeView, type PortalStore } from './portals.ts';
@@ -27,6 +28,35 @@ export interface CreateDocEditorOptions {
   /** More extensions, such as collaboration's; they may replace the initial content. */
   extensions?: readonly AnyExtension[] | undefined;
   onUpdate: (editor: Editor) => void;
+  /** What the page's own keys ask of the component around the editor. */
+  keys?: DocEditorKeys | undefined;
+}
+
+export interface DocEditorKeys {
+  /** ⌘K: the link field over the selection, or at the caret. */
+  link: () => void;
+  /** Alt+F10: focus into the selection bubble, as the composer's toolbar takes it. */
+  toolbar: () => void;
+}
+
+/** ⌘K and Alt+F10, ported from the composer's keys (editor/create.ts). */
+function docKeys(keys: DocEditorKeys, store: SuggestionStore) {
+  return Extension.create({
+    name: 'docKeys',
+    addKeyboardShortcuts() {
+      return {
+        'Mod-k': () => {
+          if (store.isOpen || !this.editor.isEditable) return false;
+          keys.link();
+          return true;
+        },
+        'Alt-F10': () => {
+          keys.toolbar();
+          return true;
+        },
+      };
+    },
+  });
 }
 
 /** ProseMirror's own base styles as classes, plus the empty-line hint the mock shows. */
@@ -38,6 +68,8 @@ const PROSEMIRROR = cx(
   '[&_.ProseMirror-gapcursor]:relative [&_.ProseMirror-gapcursor]:after:absolute [&_.ProseMirror-gapcursor]:after:-top-0.5 [&_.ProseMirror-gapcursor]:after:block [&_.ProseMirror-gapcursor]:after:w-5 [&_.ProseMirror-gapcursor]:after:border-t [&_.ProseMirror-gapcursor]:after:border-tx',
   '[&_.is-empty]:before:pointer-events-none [&_.is-empty]:before:float-left [&_.is-empty]:before:h-0 [&_.is-empty]:before:text-tx-3 [&_.is-empty]:before:content-[attr(data-placeholder)]',
   '[&_.tableWrapper]:min-w-0 [&_.tableWrapper]:overflow-x-auto',
+  // Room above the code for its language and Copy (code-tools.tsx).
+  '[&_pre]:pt-10',
   '[&_[data-type=pageLink]]:cursor-pointer [&_[data-type=pageLink]]:text-acc',
   '[&_[data-type=unsupportedBlock]]:rounded-card [&_[data-type=unsupportedBlock]]:border [&_[data-type=unsupportedBlock]]:border-dashed [&_[data-type=unsupportedBlock]]:border-line [&_[data-type=unsupportedBlock]]:bg-side [&_[data-type=unsupportedBlock]]:px-4 [&_[data-type=unsupportedBlock]]:py-3 [&_[data-type=unsupportedBlock]]:text-13 [&_[data-type=unsupportedBlock]]:text-tx-3',
 );
@@ -86,6 +118,8 @@ export function createDocEditor(options: CreateDocEditorOptions): Editor {
       issueEmbeds(store, services),
       imageDrop(services),
       CodeHighlight,
+      blockKeys(() => store.isOpen),
+      ...(options.keys ? [docKeys(options.keys, store)] : []),
       ...(options.extensions ?? []),
     ],
     editorProps: {

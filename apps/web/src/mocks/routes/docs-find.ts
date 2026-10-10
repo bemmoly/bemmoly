@@ -42,6 +42,9 @@ export function docsSearchHits(db: MockDb, q: string) {
     .slice(0, 8)
     .map((row) => {
       const page = presentSummary(state, row);
+      const space = state.spaces.find((item) => item.id === row.spaceId);
+      const parent = state.pages.find((item) => item.id === row.parentId);
+      const inBody = row.text.toLowerCase().includes(q.trim().toLowerCase());
       return {
         kind: 'docs.page',
         group: 'Pages',
@@ -49,9 +52,26 @@ export function docsSearchHits(db: MockDb, q: string) {
         key: page.spaceKey,
         title: page.title || 'Untitled',
         subtitle: STATUS[page.status] ?? null,
+        context: parent
+          ? `${space?.name ?? ''} › ${parent.title || 'Untitled'}`
+          : (space?.name ?? ''),
+        ...(row.text
+          ? { snippet: inBody ? snippet(row.text, q.trim()) : row.text.slice(0, 120) }
+          : {}),
+        look: { icon: page.icon },
         href: `/docs/p/${page.id}`,
       };
     });
+}
+
+/** Where a page lives, as search hits carry it: its space's name and the page it is under. */
+export function placeOf(
+  state: ReturnType<typeof docsState>,
+  row: { spaceId: string; parentId: string | null },
+) {
+  const space = state.spaces.find((item) => item.id === row.spaceId);
+  const parent = row.parentId ? state.pages.find((item) => item.id === row.parentId) : null;
+  return { spaceName: space?.name ?? '', parentTitle: parent ? parent.title || 'Untitled' : null };
 }
 
 export const docsFindRoutes: MockRoute[] = [
@@ -76,6 +96,7 @@ export const docsFindRoutes: MockRoute[] = [
             title,
             icon,
             status,
+            ...placeOf(state, row),
             snippet: snippet(row.text, q),
             rank,
           };

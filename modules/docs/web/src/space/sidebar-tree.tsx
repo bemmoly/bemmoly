@@ -1,19 +1,24 @@
+import { useFrame } from '@bemmoly/core-web';
 import type { Space } from '@bemmoly/module-docs/shared';
 import {
   Button,
-  EmptyState,
+  Kbd,
   MenuItem,
   MenuSeparator,
   PageTree,
   Skeleton,
+  useToast,
   type PageTreeItem,
 } from '@bemmoly/ui';
 import { Icon } from '@bemmoly/ui/icons';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useDuplicatePage } from '../create/use-duplicate-page.ts';
 import { useStarredIds } from '../hooks/home-queries.ts';
-import { docsPaths, navigateTo } from '../shared/navigation.ts';
+import { MoveDialog } from '../page/header/move-dialog.tsx';
+import { docsPaths } from '../shared/navigation.ts';
 import { useTreeOpen } from './tree-store.ts';
 import { useSpaceTree } from './use-space-tree.ts';
+import { useCreatePage } from '../create/use-create-page.ts';
 import {
   useMoveInTree,
   useRenameInTree,
@@ -24,17 +29,17 @@ import {
 export interface SidebarTreeProps {
   space: Space;
   activePageId: string | null;
-  /** The + on a row, and "Add a page inside" in its menu. */
-  onAddChild: (item: PageTreeItem) => void;
-  onCreate: () => void;
+  /** Where depth 0 starts: one level in under the space's row, flush in focus mode. */
+  indentStart: number;
 }
 
-function TreeSkeleton() {
+function TreeSkeleton({ indent }: { indent: number }) {
   return (
     <div role="status" aria-label="Loading pages" className="flex flex-col gap-px">
-      {[62, 48, 70, 55, 40, 66].map((width, index) => (
-        <span key={index} className="flex h-7.5 items-center gap-1.75 pl-2.5">
-          <Skeleton width={9} height={9} shape="block" />
+      {[62, 48, 70, 55].map((width) => (
+        <span key={width} className="flex h-7 items-center gap-1.5" style={{ paddingLeft: indent }}>
+          <span className="size-4.5 shrink-0" />
+          <Skeleton width={15} height={15} className="rounded-chip" />
           <Skeleton width={`${width}%`} height={10} />
         </span>
       ))}
@@ -42,112 +47,146 @@ function TreeSkeleton() {
   );
 }
 
+/** One quiet line for what the tree cannot show: loading failed, or nothing written yet. */
+const QUIET =
+  'flex h-7 w-full items-center gap-1.5 rounded-control border-0 bg-transparent pr-1 text-left font-sans text-13 text-tx-3';
+
 /**
- * The space's pages in the sidebar: the shared tree, wired to the tree and move APIs.
- * Moves, renames and trashing paint at once and roll back if refused; opening a page
- * navigates in place, a modifier click opens it in a new tab.
+ * The current space's pages under its sidebar row: the shared tree, wired to the tree and move
+ * APIs. Moves, renames and trashing paint at once and roll back if refused; + makes a page
+ * inside a row and opens it; opening a page navigates in place, a modifier click opens a tab.
+ * The open page's row is scrolled into view, so the tree follows a page opened from a link.
  */
-export function SidebarTree({ space, activePageId, onAddChild, onCreate }: SidebarTreeProps) {
+export function SidebarTree({ space, activePageId, indentStart }: SidebarTreeProps) {
   const tree = useSpaceTree(space.key);
+  const { navigate } = useFrame();
+  const { show } = useToast();
   const setOpen = useTreeOpen((state) => state.set);
   const [renaming, setRenaming] = useState<string | null>(null);
   const move = useMoveInTree(space.key);
   const rename = useRenameInTree(space.key);
   const star = useStarFromTree();
   const starred = useStarredIds();
+  const add = useCreatePage();
+  const copy = useDuplicatePage();
+  const [moving, setMoving] = useState<PageTreeItem | null>(null);
   const trash = useTrashFromTree(space.key, (pageId) => {
-    if (pageId === activePageId) navigateTo(docsPaths.space(space.key));
+    if (pageId === activePageId) navigate(docsPaths.space(space.key));
   });
+  const addInside = (item: PageTreeItem) =>
+    add.create({ spaceId: space.id, parentId: item.id, placeName: item.title || 'Untitled' });
+  const shown = tree.items.some((item) => item.id === activePageId);
 
-  if (tree.isPending) return <TreeSkeleton />;
+  useEffect(() => {
+    if (!activePageId || !shown) return;
+    document.getElementById(`tree-${activePageId}`)?.scrollIntoView?.({ block: 'nearest' });
+  }, [activePageId, shown]);
+
+  if (tree.isPending) return <TreeSkeleton indent={indentStart} />;
   if (tree.isError) {
     return (
-      <EmptyState
-        size="sm"
-        title="Pages could not be loaded"
-        description={tree.error?.message}
-        action={
-          <Button size="sm" variant="secondary" onClick={tree.refetch}>
-            Try again
-          </Button>
-        }
-      />
+      <p className={`m-0 ${QUIET}`} style={{ paddingLeft: indentStart }}>
+        <span className="min-w-0 flex-1 truncate">Pages did not load.</span>
+        <Button size="sm" variant="ghost" onClick={tree.refetch}>
+          Retry
+        </Button>
+      </p>
     );
   }
   if (tree.items.length === 0) {
     return (
-      <EmptyState
-        size="sm"
-        icon={<Icon name="doc" />}
-        title="No pages yet"
-        description="The first page you write here starts the tree."
-        action={
-          <Button size="sm" onClick={onCreate}>
-            New page
-          </Button>
-        }
-      />
+      <button
+        type="button"
+        onClick={() => add.create({ spaceId: space.id, parentId: null, placeName: space.name })}
+        style={{ paddingLeft: indentStart }}
+        className={`${QUIET} cursor-pointer hover:bg-hover hover:text-tx focus-ring-inset`}
+      >
+        <span className="size-4.5 shrink-0" />
+        <Icon name="plus" size={14} />
+        <span className="min-w-0 flex-1">New page</span>
+        <Kbd keys="N" />
+      </button>
     );
   }
 
   return (
-    <PageTree
-      label={`Pages in ${space.name}`}
-      items={tree.items}
-      activeId={activePageId}
-      hrefOf={(item) => docsPaths.page(item.id)}
-      onOpen={(item, event) => {
-        const href = docsPaths.page(item.id);
-        if (event.metaKey || event.ctrlKey || event.shiftKey) window.open(href, '_blank');
-        else navigateTo(href);
-      }}
-      onToggle={(item, open) => setOpen(space.key, item.id, open)}
-      onMove={(change) => move.mutate(change)}
-      onAddChild={onAddChild}
-      renamingId={renaming}
-      onRenameStart={(item) => setRenaming(item.id)}
-      onRename={(item, title) => {
-        setRenaming(null);
-        rename.mutate({ id: item.id, title });
-      }}
-      onRenameCancel={() => setRenaming(null)}
-      menu={(item) => {
-        const isStarred = starred.has(item.id);
-        return (
-          <>
-            <MenuItem onSelect={() => onAddChild(item)} icon={<Icon name="plus" />}>
-              Add a page inside
-            </MenuItem>
-            <MenuItem onSelect={() => setRenaming(item.id)} icon={<Icon name="edit" />} hint="F2">
-              Rename
-            </MenuItem>
-            <MenuItem
-              onSelect={() => star.mutate({ id: item.id, starred: !isStarred })}
-              icon={<Icon name="star" />}
-            >
-              {isStarred ? 'Unstar' : 'Star'}
-            </MenuItem>
-            <MenuItem
-              onSelect={() =>
-                void navigator.clipboard?.writeText(
-                  new URL(docsPaths.page(item.id), window.location.origin).href,
-                )
-              }
-              icon={<Icon name="external" />}
-            >
-              Copy link
-            </MenuItem>
-            <MenuSeparator />
-            <MenuItem
-              tone="danger"
-              onSelect={() => trash.trash({ id: item.id, title: item.title })}
-              icon={<Icon name="trash" />}
-            >
-              Move to trash
-            </MenuItem>
-          </>
-        );
-      }}
-    />
+    <>
+      <PageTree
+        label={`Pages in ${space.name}`}
+        items={tree.items}
+        activeId={activePageId}
+        indentStart={indentStart}
+        hrefOf={(item) => docsPaths.page(item.id)}
+        onOpen={(item, event) => {
+          const href = docsPaths.page(item.id);
+          if (event.metaKey || event.ctrlKey || event.shiftKey) window.open(href, '_blank');
+          else navigate(href);
+        }}
+        onToggle={(item, open) => setOpen(space.key, item.id, open)}
+        onMove={(change) => move.mutate(change)}
+        onAddChild={addInside}
+        renamingId={renaming}
+        onRenameStart={(item) => setRenaming(item.id)}
+        onRename={(item, title) => {
+          setRenaming(null);
+          rename.mutate({ id: item.id, title });
+        }}
+        onRenameCancel={() => setRenaming(null)}
+        menu={(item) => {
+          const isStarred = starred.has(item.id);
+          const href = docsPaths.page(item.id);
+          return (
+            <>
+              <MenuItem onSelect={() => addInside(item)} icon={<Icon name="plus" />}>
+                Add a page inside
+              </MenuItem>
+              <MenuItem onSelect={() => setRenaming(item.id)} icon={<Icon name="edit" />} hint="F2">
+                Rename
+              </MenuItem>
+              <MenuItem onSelect={() => copy.duplicate(item.id)} icon={<Icon name="copy" />}>
+                Duplicate
+              </MenuItem>
+              <MenuItem onSelect={() => setMoving(item)} icon={<Icon name="arrow" />}>
+                Move to…
+              </MenuItem>
+              <MenuItem
+                onSelect={() => star.mutate({ id: item.id, starred: !isStarred })}
+                icon={<Icon name="star" />}
+              >
+                {isStarred ? 'Unstar' : 'Star'}
+              </MenuItem>
+              <MenuItem
+                onSelect={() => {
+                  void navigator.clipboard?.writeText(new URL(href, window.location.origin).href);
+                  show({ tone: 'ok', title: 'Link copied' });
+                }}
+                icon={<Icon name="link" />}
+              >
+                Copy link
+              </MenuItem>
+              <MenuItem
+                onSelect={() => window.open(href, '_blank')}
+                icon={<Icon name="external" />}
+              >
+                Open in new tab
+              </MenuItem>
+              <MenuSeparator />
+              <MenuItem
+                tone="danger"
+                onSelect={() => trash.trash({ id: item.id, title: item.title })}
+                icon={<Icon name="trash" />}
+              >
+                Move to trash
+              </MenuItem>
+            </>
+          );
+        }}
+      />
+      <MoveDialog
+        page={{ id: moving?.id ?? '', spaceId: space.id, title: moving?.title ?? '' }}
+        open={moving !== null}
+        onClose={() => setMoving(null)}
+      />
+    </>
   );
 }

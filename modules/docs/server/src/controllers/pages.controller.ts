@@ -6,9 +6,11 @@ import {
   createPageBodySchema,
   getPageQuerySchema,
   listTrashQuerySchema,
+  trashPageParamsSchema,
+  type EmptyTrashResult,
   updatePageBodySchema,
   type PageDetail,
-  type PageSummaryPage,
+  type TrashPage,
 } from '../../../shared/pages.ts';
 import type { PagesService } from '../services/pages/index.ts';
 import { spaceRefOf } from './spaces.controller.ts';
@@ -38,9 +40,17 @@ export function createPagesController(service: PagesService) {
     async restore(request: FastifyRequest): Promise<PageDetail> {
       return service.restore(contextOf(request), pageIdOf(request));
     },
-    async trash(request: FastifyRequest): Promise<PageSummaryPage> {
+    async trash(request: FastifyRequest): Promise<TrashPage> {
       const query = parseOrThrow(listTrashQuerySchema, request.query);
       return service.listTrash(contextOf(request), spaceRefOf(request), query);
+    },
+    async deleteForever(request: FastifyRequest, reply: FastifyReply): Promise<void> {
+      const params = parseOrThrow(trashPageParamsSchema, request.params);
+      await service.deleteForever(contextOf(request), params.spaceKey, params.pageId);
+      reply.code(204);
+    },
+    async emptyTrash(request: FastifyRequest): Promise<EmptyTrashResult> {
+      return service.emptyTrash(contextOf(request), spaceRefOf(request));
     },
   };
 }

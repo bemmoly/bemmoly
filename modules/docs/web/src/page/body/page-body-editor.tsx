@@ -1,9 +1,10 @@
-import { DocEditor, RichTextView, type RichTextDoc } from '@bemmoly/editor';
+import { DocEditor, mountedDom, RichTextView, type RichTextDoc } from '@bemmoly/editor';
 import { Skeleton } from '@bemmoly/ui';
 import { useEffect } from 'react';
 import type { CollabPage } from '../../collab/use-collab-page.ts';
 import { cx } from '../cx.ts';
 import { usePageScreen, type PageEditor } from '../screen-context.ts';
+import { useTypingFlag } from '../use-typing-flag.ts';
 import { TITLE_FIELD_ID } from './page-title.tsx';
 import { useDocServices } from './use-doc-services.ts';
 
@@ -23,8 +24,8 @@ export function bodyReady(collab: Pick<CollabPage, 'status' | 'editable'>): bool
 /** ↑ on the first line of the body goes back up into the title, as ↓ in the title comes down. */
 function useArrowUpToTitle(editor: PageEditor | null) {
   useEffect(() => {
-    if (!editor) return undefined;
-    const dom = editor.view.dom;
+    const dom = mountedDom(editor);
+    if (!editor || !dom) return undefined;
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key !== 'ArrowUp' || event.shiftKey || event.metaKey || event.altKey) return;
       const { selection } = editor.state;
@@ -61,9 +62,10 @@ function BodySkeleton() {
  */
 export function PageBodyEditor({ onEditor }: { onEditor: (editor: PageEditor | null) => void }) {
   const { page, collab, editable, editor } = usePageScreen();
-  const services = useDocServices(page.id);
+  const services = useDocServices(page.id, editable);
   const ready = bodyReady(collab);
   useArrowUpToTitle(editor);
+  useTypingFlag(editor);
   const stored = page.snapshot as RichTextDoc | null;
   const live = Boolean(collab.extensions) && !page.deletedAt;
 

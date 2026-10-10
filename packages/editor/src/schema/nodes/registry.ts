@@ -3,6 +3,7 @@ import { callout } from './callout.ts';
 import { codeBlock } from './code-block.ts';
 import { decision } from './decision.ts';
 import { image } from './image.ts';
+import { issueCard } from './issue-card.ts';
 import { issueEmbed } from './issue-embed.ts';
 import { issueTable } from './issue-table.ts';
 import { mention } from './mention.ts';
@@ -23,6 +24,7 @@ export const DOC_NODES: readonly DocNode[] = [
   image,
   codeBlock,
   issueEmbed,
+  issueCard,
   issueTable,
   unsupportedBlock,
 ];

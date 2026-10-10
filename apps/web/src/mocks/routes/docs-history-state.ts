@@ -53,7 +53,11 @@ export function snapshotOf(page: MockPage): PmNode {
   return (
     (page.snapshot as PmNode | undefined) ?? {
       type: 'doc',
-      content: [{ type: 'paragraph', content: [{ type: 'text', text: page.text }] }],
+      content: [
+        page.text
+          ? { type: 'paragraph', content: [{ type: 'text', text: page.text }] }
+          : { type: 'paragraph' },
+      ],
     }
   );
 }

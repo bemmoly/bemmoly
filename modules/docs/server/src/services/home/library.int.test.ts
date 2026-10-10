@@ -58,6 +58,12 @@ describe('home, stars, labels and templates services', () => {
     expect(titles).not.toContain('Secret');
     const own = await services.home.recent(as(users.viewer), { limit: 50, mine: true });
     expect(own.items.map((page) => page.id)).not.toContain(mine.id);
+    const inSpace = await services.home.recent(as(users.admin), {
+      limit: 50,
+      mine: false,
+      spaceId: hidden.id,
+    });
+    expect(inSpace.items.map((page) => page.title)).toEqual(['Secret']);
   });
 
   it('replaces labels case-insensitively and suggests the ones in use', async (ctx) => {

@@ -25,6 +25,8 @@ export interface EntitySearchItem {
   label: string;
   /** A second line, such as the title and status. */
   description?: string;
+  /** Where the record lives: what a document links selected words to. */
+  href?: string;
 }
 
 export type EntitySearch = (
@@ -39,6 +41,8 @@ export interface EntityRenderer {
   Chip?: ComponentType<{ entityKey: string }>;
   /** Block card for one record, by key: a row in a "Linked" panel. */
   Card?: ComponentType<{ entityKey: string }>;
+  /** One record as a block inside a document: the issue card embed. */
+  Embed?: ComponentType<{ entityKey: string }>;
   /** A saved query drawn live as a table. */
   Table?: ComponentType<{ query: string; title: string }>;
   /** Records to pick from while writing. */

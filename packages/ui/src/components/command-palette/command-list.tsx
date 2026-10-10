@@ -48,11 +48,21 @@ export interface CommandItemProps {
   meta?: ReactNode;
   /** The shortcut that does the same, drawn as keys: "C", "G B". */
   keys?: string;
+  /** A second line under the title, such as the line of a page that matched. */
+  detail?: ReactNode;
   onSelect: () => void;
 }
 
 /** A 38px result row with its own icon; the active row takes the hover overlay (the palette sets it). */
-export function CommandItem({ icon, issueKey, title, meta, keys, onSelect }: CommandItemProps) {
+export function CommandItem({
+  icon,
+  issueKey,
+  title,
+  meta,
+  keys,
+  detail,
+  onSelect,
+}: CommandItemProps) {
   const id = useId();
   return (
     <div
@@ -60,7 +70,10 @@ export function CommandItem({ icon, issueKey, title, meta, keys, onSelect }: Com
       role="option"
       aria-selected="false"
       onClick={onSelect}
-      className="flex h-9.5 shrink-0 cursor-pointer items-center gap-2.5 rounded-card px-3.5 text-tx aria-selected:bg-hover motion-safe:transition-colors motion-safe:duration-(--duration-instant)"
+      className={cx(
+        'flex shrink-0 cursor-pointer items-center gap-2.5 rounded-card px-3.5 text-tx aria-selected:bg-hover motion-safe:transition-colors motion-safe:duration-(--duration-instant)',
+        detail ? 'min-h-13.5 py-2' : 'h-9.5',
+      )}
     >
       <span aria-hidden className="grid w-4.5 shrink-0 place-items-center text-tx-2">
         {icon}
@@ -71,11 +84,11 @@ export function CommandItem({ icon, issueKey, title, meta, keys, onSelect }: Com
           {issueKey}
         </span>
       )}
-      <span
-        className="min-w-0 flex-1 truncate"
-        title={typeof title === 'string' ? title : undefined}
-      >
-        {title}
+      <span className="flex min-w-0 flex-1 flex-col">
+        <span className="truncate" title={typeof title === 'string' ? title : undefined}>
+          {title}
+        </span>
+        {detail && <span className="truncate text-13 text-tx-3">{detail}</span>}
       </span>
       {meta && <span className="flex shrink-0 items-center gap-1.5 text-12 text-tx-3">{meta}</span>}
       {keys && (

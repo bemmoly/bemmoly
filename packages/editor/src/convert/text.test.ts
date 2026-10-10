@@ -21,6 +21,7 @@ describe('plain text', () => {
       'Migration order',
       'Dual-write sessions PLT-204',
       'Open work',
+      'PLT-204',
       'Owners',
       'Step Owner',
       'Backfill Aisha',
@@ -42,7 +43,7 @@ describe('plain text', () => {
   });
 
   it('counts words', () => {
-    expect(wordCount(EVERY_DOC_NODE)).toBe(52);
+    expect(wordCount(EVERY_DOC_NODE)).toBe(53);
     expect(wordCount({ type: 'paragraph', content: [{ type: 'text', text: ' a  b\tc ' }] })).toBe(
       3,
     );

@@ -1,4 +1,4 @@
-import type { MockDb } from '../db.ts';
+import { currentUser, type MockDb } from '../db.ts';
 import { notFound, ok, type MockRoute } from '../types.ts';
 import { docsState, spaceByRef } from './docs-state.ts';
 
@@ -27,6 +27,11 @@ function memberOf(db: MockDb, user: MockDb['users'][number]) {
   };
 }
 
+function isOrgAdmin(db: MockDb): boolean {
+  const user = currentUser(db);
+  return db.roles.find((item) => item.id === user?.roleId)?.key === 'org_admin';
+}
+
 export const docsMemberRoutes: MockRoute[] = [
   {
     method: 'GET',
@@ -37,7 +42,7 @@ export const docsMemberRoutes: MockRoute[] = [
       return ok({
         items: db.users.map((user) => memberOf(db, user)),
         roles: db.roles.map(({ id, key, name }) => ({ id, key, name })),
-        canManage: false,
+        canManage: isOrgAdmin(db),
       });
     },
   },

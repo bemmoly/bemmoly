@@ -1,13 +1,24 @@
 import type { PageComment } from '@bemmoly/module-docs/shared';
 import { Icon } from '@bemmoly/ui/icons';
-import { Button, EmptyState, SegmentedControl, Skeleton, spokenKeys, useToast } from '@bemmoly/ui';
+import {
+  Button,
+  EmptyState,
+  IconButton,
+  SegmentedControl,
+  Skeleton,
+  spokenKeys,
+  useToast,
+} from '@bemmoly/ui';
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
 import { useSession } from '../shared/people.ts';
+import { AlignedThreads } from './aligned-threads.tsx';
 import { CommentBox } from './comment-box.tsx';
 import { COMMENT_SHORTCUT } from './comment-bubble.tsx';
 import { usePageCommentUi } from './comment-store.ts';
 import { CommentThread } from './comment-thread.tsx';
 import { ConfirmDialog } from './confirm-dialog.tsx';
+import { cx } from './cx.ts';
+import type { PageEditor } from './highlights.ts';
 import { useThreadHandlers } from './use-thread-handlers.ts';
 import {
   usePageComments,
@@ -19,6 +30,12 @@ export interface CommentsRailProps {
   pageId: string;
   /** Readers (no docs.page.edit) read threads but write none. */
   canComment?: boolean;
+  /**
+   * The live page editor, when the rail is docked beside the page and scrolls with it:
+   * inline threads then sit level with their passages. Without it they are a list.
+   */
+  alignTo?: PageEditor | null;
+  onClose?: () => void;
 }
 
 /** Inline threads in page order, then page-level ones and those whose text is gone, oldest first. */
@@ -48,25 +65,31 @@ function RailSkeleton() {
   );
 }
 
-/** Arrow keys walk the thread cards, as a list's rows. */
+const NEXT = new Set(['ArrowDown', 'j']);
+const PREVIOUS = new Set(['ArrowUp', 'k']);
+
+/** ↑↓ and J K walk the thread cards in reading order, as a list's rows. */
 function walkThreads(event: KeyboardEvent<HTMLElement>) {
-  if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return;
-  const cards = [...event.currentTarget.querySelectorAll<HTMLElement>('[data-thread]')];
+  if (!NEXT.has(event.key) && !PREVIOUS.has(event.key)) return;
+  if (event.metaKey || event.ctrlKey || event.altKey) return;
+  const cards = [...event.currentTarget.querySelectorAll<HTMLElement>('[data-thread]')].sort(
+    (a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top,
+  );
   const index = cards.indexOf(document.activeElement as HTMLElement);
   if (index < 0) return;
   event.preventDefault();
-  cards[
-    Math.max(0, Math.min(cards.length - 1, index + (event.key === 'ArrowDown' ? 1 : -1)))
-  ]?.focus();
+  cards[Math.max(0, Math.min(cards.length - 1, index + (NEXT.has(event.key) ? 1 : -1)))]?.focus();
 }
 
 /**
- * The Comments tab of the Doc Editor's side panel (340px): open or resolved threads, a new
- * comment's draft on top when one was started from a selection, and a page-level comment.
- * Threads follow the page's reading order. Focusing a thread highlights and scrolls to its
- * text; a click on highlighted text in the page focuses its card here.
+ * The comments margin (340px): open or resolved threads, a new comment's draft on top when
+ * one was started from a selection, and a page-level comment. Docked beside the page, open
+ * inline threads sit level with their passages and comments on the whole page come first;
+ * over the page (narrow screens) they are a list in reading order. Focusing a thread
+ * highlights and scrolls to its text; a click on highlighted text focuses its card here.
+ * ↑↓ or J K walk the cards, R replies, E resolves with Undo.
  */
-export function CommentsRail({ pageId, canComment = true }: CommentsRailProps) {
+export function CommentsRail({ pageId, canComment = true, alignTo, onClose }: CommentsRailProps) {
   const [filter, setFilter] = useState<CommentFilter>('open');
   const [general, setGeneral] = useState(false);
   const [deleting, setDeleting] = useState<{ comment: PageComment; replies: number } | null>(null);
@@ -117,9 +140,34 @@ export function CommentsRail({ pageId, canComment = true }: CommentsRailProps) {
   };
 
   const openCount = filter === 'open' ? threads.length : undefined;
+  const docked = alignTo !== undefined;
+  const aligned = docked && filter === 'open';
+  const inline = aligned ? threads.filter((thread) => ui.anchors.has(thread.root.id)) : [];
+  const listed = aligned ? threads.filter((thread) => !ui.anchors.has(thread.root.id)) : threads;
+  const renderThread = (thread: Thread) => (
+    <CommentThread
+      key={thread.root.id}
+      thread={thread}
+      viewerId={user?.id ?? null}
+      active={ui.active === thread.root.id}
+      canComment={canComment}
+      busy={handlers.busy}
+      {...handlers.thread}
+      onSelect={(selected) => ui.focusThread(selected.root.id)}
+      onDelete={(comment, replies) => setDeleting({ comment, replies })}
+    />
+  );
   return (
-    <div className="flex min-h-0 flex-1 flex-col text-13 leading-body">
-      <div className="flex shrink-0 items-center gap-2 px-3.5 pt-3.5">
+    <div
+      className={cx('flex flex-col text-13 leading-body', docked ? 'min-h-full' : 'min-h-0 flex-1')}
+    >
+      <div
+        className={cx(
+          'flex h-11.5 shrink-0 items-center gap-2 border-b border-line bg-canvas pr-2.5 pl-4',
+          docked && 'sticky top-0 z-10',
+        )}
+      >
+        <h2 className="m-0 text-13 font-semibold text-tx">Comments</h2>
         <SegmentedControl
           size="sm"
           aria-label="Show comments"
@@ -130,17 +178,36 @@ export function CommentsRail({ pageId, canComment = true }: CommentsRailProps) {
             { value: 'resolved', label: 'Resolved' },
           ]}
         />
-        {canComment && !general && (
-          <Button size="xs" variant="ghost" className="ml-auto" onClick={() => setGeneral(true)}>
-            <Icon name="plus" size={14} />
-            Comment
-          </Button>
-        )}
+        <span className="ml-auto flex items-center gap-1">
+          {canComment && !general && (
+            <Button
+              size="xs"
+              variant="ghost"
+              icon={<Icon name="plus" size={14} />}
+              onClick={() => setGeneral(true)}
+            >
+              Comment
+            </Button>
+          )}
+          {onClose && (
+            <IconButton
+              label="Close comments"
+              keys="Mod+Alt+C"
+              icon="close"
+              size="xs"
+              variant="ghost"
+              onClick={onClose}
+            />
+          )}
+        </span>
       </div>
       <div
         ref={list}
         onKeyDown={walkThreads}
-        className="flex min-h-0 flex-1 flex-col gap-2.5 overflow-auto p-3.5"
+        className={cx(
+          'flex flex-col gap-2.5 p-3.5',
+          docked ? 'flex-1' : 'min-h-0 flex-1 overflow-auto',
+        )}
       >
         {ui.draft && canComment && (
           <section
@@ -189,19 +256,21 @@ export function CommentsRail({ pageId, canComment = true }: CommentsRailProps) {
             }
           />
         ) : (
-          threads.map((thread) => (
-            <CommentThread
-              key={thread.root.id}
-              thread={thread}
-              viewerId={user?.id ?? null}
-              active={ui.active === thread.root.id}
-              canComment={canComment}
-              busy={handlers.busy}
-              {...handlers.thread}
-              onSelect={(selected) => ui.focusThread(selected.root.id)}
-              onDelete={(comment, replies) => setDeleting({ comment, replies })}
-            />
-          ))
+          <>
+            {aligned && listed.length > 0 && (
+              <h3 className="m-0 text-12 font-semibold text-tx-3">On the whole page</h3>
+            )}
+            {listed.map(renderThread)}
+            {inline.length > 0 && (
+              <AlignedThreads
+                editor={alignTo ?? null}
+                threads={inline}
+                anchors={ui.anchors}
+                active={ui.active}
+                renderThread={renderThread}
+              />
+            )}
+          </>
         )}
       </div>
       <ConfirmDialog

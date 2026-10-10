@@ -1,15 +1,11 @@
-import { Kbd, shortcutText, useToast } from '@bemmoly/ui';
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
+import { COMMENT_EVENT, mountedDom } from '@bemmoly/editor';
+import { useToast } from '@bemmoly/ui';
+import { useCallback, useEffect } from 'react';
 import type { CommentAnchor } from '@bemmoly/module-docs/shared';
 import { captureAnchor } from './anchor.ts';
-import { cx } from './cx.ts';
 import type { PageEditor } from './highlights.ts';
 
 export const COMMENT_SHORTCUT = 'Mod+Alt+M';
-
-/** 8px clear of the selection and of the viewport edge. */
-const GAP = 8;
 
 const REASONS = {
   empty: 'Select some text to comment on.',
@@ -17,27 +13,20 @@ const REASONS = {
   'not-shared': 'Comments open once the page has connected.',
 } as const;
 
-function hasText(editor: PageEditor): boolean {
-  const { empty, from, to } = editor.state.selection;
-  return !empty && editor.state.doc.textBetween(from, to, ' ').trim().length > 0;
-}
-
 export interface CommentBubbleProps {
   editor: PageEditor | null;
   /** A comment was started from the selection: open the rail on its draft. */
   onStart: (anchor: CommentAnchor) => void;
-  /** Readers may not comment: no bubble and no shortcut. */
+  /** Readers may not comment: no shortcut, and the editor's bubble shows no Comment. */
   disabled?: boolean;
 }
 
 /**
- * "Comment" over a text selection, and ⌘⌥M (Ctrl+Alt+M) in the page for the same. Built from
- * the menu surface (8px radius, br border, shadow-e2) since no mock draws it; it fades in
- * over the selection and keeps the editor's focus and selection when pressed.
+ * Starting a comment on the selection: the editor's selection bubble draws the Comment button
+ * (and dispatches COMMENT_EVENT on the text), ⌘⌥M (Ctrl+Alt+M) does the same from the keys.
+ * Typing then belongs to the comment box, never over the selected words in the page.
  */
 export function CommentBubble({ editor, onStart, disabled = false }: CommentBubbleProps) {
-  const ref = useRef<HTMLDivElement>(null);
-  const [shown, setShown] = useState(false);
   const toast = useToast();
 
   const start = useCallback(() => {
@@ -45,85 +34,29 @@ export function CommentBubble({ editor, onStart, disabled = false }: CommentBubb
     const result = captureAnchor(editor.state);
     if (result.ok) {
       onStart(result.anchor);
-      setShown(false);
-      // Typing now belongs to the comment box, never over the selected words in the page.
-      editor.view.dom.blur();
+      mountedDom(editor)?.blur();
     } else {
       toast.show({ tone: 'info', title: REASONS[result.reason] });
     }
   }, [editor, disabled, onStart, toast]);
 
-  const place = useCallback(() => {
-    const el = ref.current;
-    if (!el || !editor || editor.isDestroyed) return;
-    const { from, to } = editor.state.selection;
-    const start = editor.view.coordsAtPos(from);
-    const end = editor.view.coordsAtPos(to);
-    // Layout size, not the box mid pop-in animation, which is scaled down.
-    const box = { width: el.offsetWidth, height: el.offsetHeight };
-    const sameLine = Math.abs(start.top - end.top) < 4;
-    const centre = sameLine ? (start.left + end.right) / 2 : start.left + box.width / 2;
-    const top = start.top - box.height - GAP;
-    el.style.top = `${top < GAP ? end.bottom + GAP : top}px`;
-    el.style.left = `${Math.max(GAP, Math.min(centre - box.width / 2, window.innerWidth - box.width - GAP))}px`;
-  }, [editor]);
-
   useEffect(() => {
     if (!editor || disabled) return undefined;
-    const update = () => setShown(editor.isFocused && hasText(editor));
-    const onBlur = ({ event }: { event: FocusEvent }) => {
-      if (!ref.current?.contains(event.relatedTarget as Node | null)) setShown(false);
-    };
     const onKey = (event: KeyboardEvent) => {
       if ((event.metaKey || event.ctrlKey) && event.altKey && event.code === 'KeyM') {
         event.preventDefault();
         start();
       }
     };
-    editor.on('selectionUpdate', update);
-    editor.on('focus', update);
-    editor.on('blur', onBlur);
-    const dom = editor.view.dom;
+    const dom = mountedDom(editor);
+    if (!dom) return undefined;
     dom.addEventListener('keydown', onKey);
+    dom.addEventListener(COMMENT_EVENT, start);
     return () => {
-      editor.off('selectionUpdate', update);
-      editor.off('focus', update);
-      editor.off('blur', onBlur);
       dom.removeEventListener('keydown', onKey);
+      dom.removeEventListener(COMMENT_EVENT, start);
     };
   }, [editor, disabled, start]);
 
-  useLayoutEffect(() => {
-    if (!shown) return undefined;
-    place();
-    window.addEventListener('scroll', place, true);
-    window.addEventListener('resize', place);
-    return () => {
-      window.removeEventListener('scroll', place, true);
-      window.removeEventListener('resize', place);
-    };
-  }, [shown, place]);
-
-  if (!shown || !editor) return null;
-  return createPortal(
-    <div
-      ref={ref}
-      className={cx(
-        'fixed z-40 flex items-center rounded-card border border-line bg-card p-0.5 shadow-e2',
-        'motion-safe:animate-pop-in',
-      )}
-      onMouseDown={(event) => event.preventDefault()}
-    >
-      <button
-        type="button"
-        onClick={start}
-        title={`Comment (${shortcutText(COMMENT_SHORTCUT)})`}
-        className="flex cursor-pointer items-center gap-2 rounded-chip border-0 bg-transparent px-2.5 py-1.5 font-sans text-13 font-medium text-tx-2 hover:bg-side hover:text-tx focus-visible:bg-acc-50 focus-visible:text-acc focus-visible:outline-0"
-      >
-        Comment
-        <Kbd keys={COMMENT_SHORTCUT} />
-      </button>
-    </div>,
-    document.body,
-  );
+  return null;
 }

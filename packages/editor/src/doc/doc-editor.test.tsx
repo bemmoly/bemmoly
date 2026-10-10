@@ -28,28 +28,29 @@ const type = (editor: Editor, text: string) =>
     }
   });
 
-const optionNames = () => screen.getAllByRole('option').map((option) => option.textContent);
+const optionNames = () =>
+  screen
+    .getAllByRole('option')
+    .map((option) => option.querySelector('[data-label]')?.textContent ?? option.textContent);
 
 describe('the / menu', () => {
-  it('opens on / with the Blocks group, and no AI group without an AI handler', async () => {
+  it('opens on / with Basic blocks first, and no AI group without an AI handler', async () => {
     const { editor } = await setup();
     type(editor, '/');
     const menu = await screen.findByRole('listbox', { name: 'Blocks' });
     expect(within(menu).queryByRole('group', { name: 'AI' })).toBeNull();
-    expect(optionNames().slice(0, 3)).toEqual([
-      'Issue table from filter',
-      'Decision',
-      'Code block',
-    ]);
+    expect(within(menu).getByRole('group', { name: 'Basic blocks' })).toBeTruthy();
+    expect(optionNames().slice(0, 3)).toEqual(['Text', 'Heading', 'Subheading']);
     expect(optionNames()).not.toContain('Link to page');
+    expect(screen.getByText(/\d+ blocks/)).toBeTruthy();
   });
 
-  it('shows the AI group first when the host lends a handler, and /ai lists it', async () => {
+  it('shows the AI group after Basic blocks when the host lends a handler, and /ai lists it', async () => {
     const run = vi.fn();
     const { box, editor } = await setup({ services: { ai: { run } } });
     type(editor, '/');
-    await screen.findByRole('group', { name: 'AI' });
-    expect(optionNames()[0]).toBe('Continue writing');
+    const groups = (await screen.findAllByRole('group')).map((g) => g.getAttribute('aria-label'));
+    expect(groups.slice(0, 2)).toEqual(['Basic blocks', 'AI']);
     type(editor, 'ai');
     await waitFor(() =>
       expect(optionNames()).toEqual([
@@ -86,7 +87,7 @@ describe('the / menu', () => {
   it('says so when nothing matches', async () => {
     const { editor } = await setup();
     type(editor, '/zzz');
-    expect(await screen.findByText('No matches')).toBeTruthy();
+    expect(await screen.findByText(/No block called “zzz”/)).toBeTruthy();
   });
 
   it('inserts a table with a header row and shows its tools', async () => {
@@ -146,6 +147,19 @@ describe('Docs nodes in the editor', () => {
         attrs: { key: 'PLT-218' },
       }),
     );
+  });
+
+  it('turns a block back into text from the / menu', async () => {
+    const { box, editor } = await setup({
+      initialDoc: { type: 'doc', content: [{ type: 'heading', attrs: { level: 2 } }] },
+    });
+    act(() => {
+      editor.commands.focus('end');
+    });
+    type(editor, '/text');
+    await waitFor(() => expect(optionNames()[0]).toBe('Text'));
+    fireEvent.keyDown(box, { key: 'Enter' });
+    await waitFor(() => expect(editor.getJSON().content?.[0]?.type).toBe('paragraph'));
   });
 
   it('prints read-only when not editable', async () => {

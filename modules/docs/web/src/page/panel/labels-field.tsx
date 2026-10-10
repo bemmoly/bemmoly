@@ -1,10 +1,11 @@
 import { labelNameSchema } from '@bemmoly/module-docs/shared';
 import { Icon } from '@bemmoly/ui/icons';
-import { Tag } from '@bemmoly/ui';
+import { Label, useToast } from '@bemmoly/ui';
 import { useQuery } from '@tanstack/react-query';
 import { useDeferredValue, useId, useState, type KeyboardEvent } from 'react';
 import { api } from '../../shared/api.ts';
 import { docsKeys } from '../../shared/keys.ts';
+import { PROP } from '../body/property.tsx';
 import { usePageScreen } from '../screen-context.ts';
 import { useSetLabels } from '../use-page-actions.ts';
 
@@ -21,8 +22,9 @@ function useLabelSuggestions(query: string, enabled: boolean) {
 }
 
 /**
- * The page's labels as removable tags and a field that adds one on Enter or comma, suggesting
- * names other pages use so a space keeps one spelling of "rfc". Read-only pages list them.
+ * The page's labels in the properties row, as outlined Label pills that remove on their ×,
+ * and a field that adds one on Enter or comma, suggesting names other pages use so a space
+ * keeps one spelling of "rfc". Read-only pages list them.
  */
 export function LabelsField() {
   const { page, editable } = usePageScreen();
@@ -39,7 +41,20 @@ export function LabelsField() {
     if (!parsed.success || labels.includes(parsed.data) || labels.length >= MAX_LABELS) return;
     setLabels.mutate([...labels, parsed.data]);
   };
-  const remove = (label: string) => setLabels.mutate(labels.filter((item) => item !== label));
+  const toast = useToast();
+  const remove = (label: string) => {
+    const before = labels;
+    setLabels.mutate(
+      labels.filter((item) => item !== label),
+      {
+        onSuccess: () =>
+          toast.undo({
+            title: `Label “${label}” removed`,
+            onUndo: () => setLabels.mutate([...before]),
+          }),
+      },
+    );
+  };
   const onKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'Enter' || event.key === ',') {
       event.preventDefault();
@@ -54,31 +69,36 @@ export function LabelsField() {
 
   if (!editable) {
     return labels.length ? (
-      labels.map((label) => <Tag key={label}>{label}</Tag>)
-    ) : (
-      <span className="text-tx-3">None</span>
-    );
+      <span className={PROP}>
+        {labels.map((label) => (
+          <Label key={label} name={label} />
+        ))}
+      </span>
+    ) : null;
   }
 
   const offered = (suggestions.data ?? [])
     .map((usage) => usage.name)
     .filter((name) => !labels.includes(name));
   return (
-    <>
+    <span
+      role="group"
+      aria-label="Labels"
+      className="inline-flex flex-wrap items-center gap-1 px-1"
+    >
       {labels.map((label) => (
-        <Tag key={label} onRemove={() => remove(label)} removeLabel={`Remove label ${label}`}>
-          {label}
-        </Tag>
+        <Label key={label} name={label} onRemove={() => remove(label)} />
       ))}
       {draft === null ? (
         labels.length < MAX_LABELS && (
           <button
             type="button"
             onClick={() => setDraft('')}
-            className="inline-flex cursor-pointer items-center gap-1 rounded-chip border-0 bg-transparent px-1 py-0.5 font-sans text-13 font-medium text-acc hover:text-acc-600 focus-visible:shadow-ring focus-visible:outline-0"
+            aria-label="Add label"
+            className={PROP}
           >
-            <Icon name="plus" size={14} />
-            Add label
+            <Icon name="tag" size={13} className="text-tx-3" />
+            {labels.length === 0 && <span className="text-tx-3">Add label</span>}
           </button>
         )
       ) : (
@@ -96,7 +116,7 @@ export function LabelsField() {
               if (draft.trim()) add(draft);
               setDraft(null);
             }}
-            className="h-6 w-28 rounded-chip border border-acc bg-card px-1.5 font-sans text-13 text-tx shadow-ring outline-0"
+            className="h-6 w-28 rounded-control border border-acc bg-canvas px-1.5 font-sans text-12 text-tx shadow-ring outline-0"
           />
           <datalist id={listId}>
             {offered.map((name) => (
@@ -105,6 +125,6 @@ export function LabelsField() {
           </datalist>
         </>
       )}
-    </>
+    </span>
   );
 }

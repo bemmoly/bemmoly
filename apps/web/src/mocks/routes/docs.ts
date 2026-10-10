@@ -91,20 +91,31 @@ export const docsRoutes: MockRoute[] = [
     pattern: `${BASE}/pages`,
     handle: (request, db) => {
       if (!can(db, 'docs.page.edit')) return denied();
-      const body = bodyOf<{ spaceId: string; parentId: string | null; title: string }>(request);
+      const body = bodyOf<{
+        spaceId: string;
+        parentId: string | null;
+        title: string;
+        icon?: string;
+        snapshot?: object;
+        afterId?: string;
+      }>(request);
       const state = docsState(db);
       const space = state.spaces.find((row) => row.id === body.spaceId);
       if (!space) return notFound('The space');
       const parent = body.parentId ? state.pages.find((row) => row.id === body.parentId) : null;
       const id = newId();
+      const after = body.afterId ? state.pages.find((row) => row.id === body.afterId) : null;
       const row: MockPage = {
         id,
         spaceId: space.id,
         parentId: parent?.id ?? null,
-        position: nextPosition(childrenOf(state, space.id, parent?.id ?? null)),
+        // Right after a sibling sorts between it and the next one ("n" < "nm" < "nn").
+        position: after
+          ? `${after.position}m`
+          : nextPosition(childrenOf(state, space.id, parent?.id ?? null)),
         path: `${parent?.path ?? '/'}${id}/`,
         title: body.title ?? '',
-        icon: null,
+        icon: body.icon ?? null,
         status: 'draft',
         ownerId: db.signedInAs,
         reviewers: [],
@@ -118,6 +129,7 @@ export const docsRoutes: MockRoute[] = [
         contentUpdatedAt: now(),
         deletedAt: null,
       };
+      if (body.snapshot) writeBody(row, body.snapshot);
       state.pages.push(row);
       emit(db, 'docs.tree', [id]);
       return ok(detail(db, row), 201);
@@ -133,6 +145,7 @@ export const docsRoutes: MockRoute[] = [
       const body = bodyOf<{
         title: string;
         icon: string | null;
+        cover: string | null;
         ownerId: string | null;
         snapshot: object;
         version: number;
@@ -145,6 +158,7 @@ export const docsRoutes: MockRoute[] = [
       if (Object.keys(body).every((key) => key === 'snapshot')) return ok(detail(db, row));
       if (body.title !== undefined) row.title = body.title;
       if (body.icon !== undefined) row.icon = body.icon;
+      if (body.cover !== undefined) row.cover = body.cover;
       if (body.ownerId !== undefined) row.ownerId = body.ownerId;
       row.version += 1;
       row.updatedAt = now();
@@ -160,7 +174,10 @@ export const docsRoutes: MockRoute[] = [
       if (!row) return notFound('The page');
       const at = now();
       for (const item of docsState(db).pages) {
-        if (live(item) && item.path.startsWith(row.path)) item.deletedAt = at;
+        if (live(item) && item.path.startsWith(row.path)) {
+          item.deletedAt = at;
+          item.deletedBy = db.signedInAs;
+        }
       }
       emit(db, 'docs.tree', [row.id]);
       return ok();

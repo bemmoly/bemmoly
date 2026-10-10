@@ -65,3 +65,7 @@ that passes (ADR 0015).
 - [Projects and project settings](interaction/projects-settings.md)
 - [Shell](interaction/shell.md): the frame, sidebar and rail, header, global keys, palette, Home, Inbox, sign-in, boot, not found.
 - [Integration](interaction/integration.md): choices made bringing the streams together, the token alias removal, what is left.
+- [Docs: frame and tree](interaction/docs-frame.md): the space tree in the sidebar, focus mode, the one header, layouts, errors in the frame, AI gating.
+- [Docs page](interaction/docs-page.md): page column, icon and cover, properties row, the right margin, history mode, presence, Share.
+- [Docs: writing surface](interaction/docs-editor.md): selection bubble and ⌘K links, block handles, the / menu, code and table tools, the typing fade, issue embeds and Linked work.
+- [Docs: around the page](interaction/docs-around.md): create in place, Docs home, space overview, trash, search, import and export, phone.

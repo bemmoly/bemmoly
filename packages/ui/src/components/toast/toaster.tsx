@@ -35,6 +35,11 @@ interface ToastApi {
 
 const ToastContext = createContext<ToastApi | null>(null);
 
+/** The toasts, or null outside a provider: for shared parts that may render without one. */
+export function useOptionalToast(): ToastApi | null {
+  return useContext(ToastContext);
+}
+
 export function useToast(): ToastApi {
   const api = useContext(ToastContext);
   if (!api) throw new Error('useToast needs a <ToastProvider> above it.');

@@ -1,6 +1,7 @@
 import { proseClass } from '@bemmoly/editor';
 import type { BlockDiff, DocDiff } from '@bemmoly/module-docs/shared';
 import { EmptyState } from '@bemmoly/ui';
+import { Icon } from '@bemmoly/ui/icons';
 import { useId, useState } from 'react';
 import { cx } from '../comments/cx.ts';
 import { attrSummary, DiffBlock } from './diff-blocks.tsx';
@@ -134,9 +135,9 @@ export function DiffView({ diff, className }: { diff: DocDiff; className?: strin
             key={`fold-${index}`}
             type="button"
             onClick={() => setOpen(new Set([...open, first]))}
-            className="flex cursor-pointer items-center gap-2 rounded-chip border border-dashed border-line bg-side px-3 py-1.5 font-sans text-12 text-tx-3 hover:border-acc-100 hover:text-acc focus-ring"
+            className="flex h-7.5 cursor-pointer items-center gap-2 rounded-[7px] border-0 bg-sunken px-2.5 font-sans text-[12.5px] text-tx-3 hover:text-tx-2 focus-ring"
           >
-            <span aria-hidden>⋯</span>
+            <Icon name="caret" size={13} />
             {row.blocks.length} unchanged {row.blocks.length === 1 ? 'block' : 'blocks'}
           </button>
         );

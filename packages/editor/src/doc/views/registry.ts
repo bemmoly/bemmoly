@@ -2,6 +2,7 @@ import type { ViewSpec } from '../portals.ts';
 import { calloutView } from './callout-view.tsx';
 import { decisionView } from './decision-view.tsx';
 import { imageView } from './image-view.tsx';
+import { issueCardView } from './issue-card-view.tsx';
 import { issueEmbedView, issueTableView } from './issue-views.tsx';
 import { tocView } from './toc-view.tsx';
 
@@ -16,5 +17,6 @@ export const NODE_VIEWS: Readonly<Record<string, ViewSpec>> = {
   toc: tocView,
   image: imageView,
   issueEmbed: issueEmbedView,
+  issueCard: issueCardView,
   issueTable: issueTableView,
 };

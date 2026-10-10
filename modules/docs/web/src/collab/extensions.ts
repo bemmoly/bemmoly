@@ -6,6 +6,7 @@ import CollaborationCaret from '@tiptap/extension-collaboration-caret';
 import { prosemirrorJSONToYXmlFragment, yXmlFragmentToProsemirrorJSON } from '@tiptap/y-tiptap';
 import type { Doc } from 'yjs';
 import type { RichText } from '../../../shared/common.ts';
+import { createCaretIdle, type CaretIdle } from './caret-idle.ts';
 import { FROM_SEED } from './origins.ts';
 import type { CollabSession } from './session.ts';
 import type { CollabUser } from './user.ts';
@@ -43,17 +44,39 @@ const CARET: Record<AvatarHue, { caret: string; label: string; selection: string
 const colours = (user: Record<string, unknown>) =>
   CARET[(user['hue'] as AvatarHue | undefined) ?? 'grey'] ?? CARET.grey;
 
-/** A caret: a one-pixel line in the person's colour with their name above it. */
-function renderCaret(user: Record<string, unknown>): HTMLElement {
-  const { caret, label } = colours(user);
-  const line = document.createElement('span');
-  line.className = `pointer-events-none relative -mx-px border-x break-normal ${caret}`;
-  line.setAttribute('data-collab-caret', String(user['id'] ?? ''));
-  const name = document.createElement('span');
-  name.className = `absolute bottom-full -left-px rounded-chip rounded-bl-none px-1.5 py-0.5 text-11 leading-none font-semibold whitespace-nowrap select-none ${label}`;
-  name.textContent = String(user['name'] ?? '');
-  line.append(name);
-  return line;
+/**
+ * A caret: a one-pixel line in the person's colour with their name above it. The name fades
+ * after three seconds idle (caret-idle.ts) and returns when they move.
+ */
+function caretRenderer(idle: CaretIdle) {
+  return (user: Record<string, unknown>): HTMLElement => {
+    const { caret, label } = colours(user);
+    const id = String(user['id'] ?? '');
+    const line = document.createElement('span');
+    line.className = `pointer-events-none relative -mx-px border-x break-normal ${caret}`;
+    line.setAttribute('data-collab-caret', id);
+    const name = document.createElement('span');
+    name.className = `absolute bottom-full -left-px rounded-chip rounded-bl-none px-1.5 py-0.5 text-11 leading-none font-semibold whitespace-nowrap select-none motion-safe:transition-opacity motion-safe:duration-300 data-idle:opacity-0 ${label}`;
+    name.setAttribute('data-collab-caret-name', id);
+    name.textContent = String(user['name'] ?? '');
+    line.append(name);
+    idle.attach(id, name);
+    return line;
+  };
+}
+
+/** The awareness of a live session: who changed, so their caret name shows again. */
+type Awareness = NonNullable<NonNullable<CollabSession['provider']>['awareness']>;
+
+function watchActivity(awareness: Awareness, idle: CaretIdle): () => void {
+  const onChange = ({ updated }: { updated: number[] }) => {
+    for (const clientId of updated) {
+      const user = awareness.getStates().get(clientId)?.['user'] as { id?: unknown } | undefined;
+      if (user?.id) idle.touch(String(user.id));
+    }
+  };
+  awareness.on('change', onChange);
+  return () => awareness.off('change', onChange);
 }
 
 /**
@@ -64,12 +87,27 @@ export function collabExtensions(session: CollabSession, user: CollabUser): AnyE
   const extensions: AnyExtension[] = [
     Collaboration.configure({ document: session.doc, field: FIELD }),
   ];
-  if (session.provider) {
+  const provider = session.provider;
+  if (provider) {
+    const idle = createCaretIdle();
+    let unwatch: (() => void) | undefined;
+    // Only the caret extension's own lifecycle is used: nothing is added to a live editor.
+    const Caret = CollaborationCaret.extend({
+      onCreate(event) {
+        this.parent?.(event);
+        if (provider.awareness) unwatch = watchActivity(provider.awareness, idle);
+      },
+      onDestroy() {
+        this.parent?.();
+        unwatch?.();
+        idle.destroy();
+      },
+    });
     extensions.push(
-      CollaborationCaret.configure({
-        provider: session.provider,
+      Caret.configure({
+        provider,
         user,
-        render: renderCaret,
+        render: caretRenderer(idle),
         selectionRender: (other) => ({ nodeName: 'span', class: colours(other).selection }),
       }),
     );

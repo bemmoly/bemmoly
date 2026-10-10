@@ -43,6 +43,8 @@ export interface AiHandler {
 export interface DocServices {
   /** Draws an issue chip live (status, title); without it the key prints as a quiet chip. */
   renderIssue?: (key: string) => ReactNode;
+  /** Draws an issue as a block card (status, priority, assignee, sprint, epic). */
+  renderIssueCard?: (key: string) => ReactNode;
   /** Draws a saved query as a live table; without it a placeholder card shows the query. */
   renderIssueTable?: (attrs: IssueTableAttrs) => ReactNode;
   /** Pages for `[[` links. */
@@ -59,7 +61,18 @@ export interface DocServices {
   ai?: AiHandler;
   /** A link click inside the page, so in-app paths move without a reload. */
   onNavigate?: (href: string) => void;
+  /**
+   * True when the host takes comments on a selection: the selection bubble then shows
+   * Comment, which dispatches COMMENT_EVENT on the text box for the host to answer.
+   */
+  comments?: boolean;
 }
+
+/** What the bubble's Comment button dispatches on the editor's DOM; the host starts a comment. */
+export const COMMENT_EVENT = 'bemmoly:comment';
+
+/** The Comment shortcut, as the host binds it. */
+export const COMMENT_KEYS = 'Mod-Alt-m';
 
 /** The AI group of the Doc Editor mock's menu. */
 export const DEFAULT_AI_COMMANDS: readonly AiCommand[] = [

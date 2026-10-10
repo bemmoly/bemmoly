@@ -47,6 +47,10 @@ export interface PageHeaderProps {
   actions?: ReactNode;
   /** Who else is here, before the actions. */
   presence?: ReactNode;
+  /** Right after the trail, about the thing it ends on: a document's status menu. */
+  trailing?: ReactNode;
+  /** Extra classes on the bar, for a screen that dims it (a document fades it while typing). */
+  className?: string;
 }
 
 const CRUMB =
@@ -178,6 +182,8 @@ export function PageHeader({
   activeTab,
   actions,
   presence,
+  trailing,
+  className,
   onActionsSlot,
   onPresenceSlot,
 }: PageHeaderProps & {
@@ -205,7 +211,9 @@ export function PageHeader({
     ) : null;
   return (
     <>
-      <header className="flex h-13 shrink-0 items-center gap-2.5 border-b border-line bg-canvas px-3 md:px-6">
+      <header
+        className={`flex h-13 shrink-0 items-center gap-2.5 border-b border-line bg-canvas px-3 md:px-6 ${className ?? ''}`}
+      >
         {phone ? <IconButton label="Open menu" icon="lines" size="sm" onClick={openSheet} /> : null}
         <nav aria-label="Breadcrumb" className="min-w-0">
           <ol className="m-0 flex min-w-0 list-none items-center gap-1 p-0 text-13">
@@ -223,6 +231,7 @@ export function PageHeader({
             ))}
           </ol>
         </nav>
+        {trailing ? <div className="flex shrink-0 items-center">{trailing}</div> : null}
         {phone ? null : tabList}
         <div className="ml-auto flex shrink-0 items-center gap-2">
           {phone ? null : presence}

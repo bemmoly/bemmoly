@@ -98,6 +98,7 @@ export function pageDetail(overrides: Record<string, unknown> = {}) {
         { type: 'paragraph', content: [{ type: 'text', text: 'Sessions move to Postgres.' }] },
       ],
     },
+    cover: null,
     tldr: null,
     reviewers: [],
     templateId: null,
@@ -130,11 +131,11 @@ export function collabState(patch: Partial<CollabPage> = {}): CollabPage {
 }
 
 /** Renders /docs/p/:pageId as the shell would, signed in as Rohan with publish rights. */
-export function renderPage({ capabilities = ['docs.page.publish'] } = {}) {
+export function renderPage({ capabilities = ['docs.page.publish'], aiEnabled = false } = {}) {
   const client = newClient();
   client.setQueryData(queryKeys.me(), {
     user: PEOPLE[2],
-    workspace: { name: 'Acme' },
+    workspace: { name: 'Acme', aiEnabled },
     capabilities,
     modules: ['docs'],
   });

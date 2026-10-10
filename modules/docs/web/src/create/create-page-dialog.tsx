@@ -1,7 +1,7 @@
 import type { PageDetail } from '@bemmoly/module-docs/shared';
 import { Button, Field, Input, Modal, Select, TemplatePicker } from '@bemmoly/ui';
 import { useSpaces, useTemplates } from '../hooks/queries.ts';
-import { useCreatePage, type CreatePagePlace } from './use-create-page.ts';
+import { useCreatePageForm, type CreatePagePlace } from './use-create-page-form.ts';
 
 export interface CreatePageDialogProps extends CreatePagePlace {
   open: boolean;
@@ -31,7 +31,7 @@ function CreatePageForm({
 }: CreatePageDialogProps) {
   const spaces = useSpaces();
   const fallback = presetSpace ?? spaces.data?.[0]?.id ?? null;
-  const form = useCreatePage({ spaceId: fallback, parentId, templateId }, onCreated);
+  const form = useCreatePageForm({ spaceId: fallback, parentId, templateId }, onCreated);
   const spaceId = form.spaceId;
   const templates = useTemplates(spaceId ?? undefined);
   const space = spaces.data?.find((item) => item.id === spaceId);

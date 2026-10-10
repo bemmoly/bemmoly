@@ -1,3 +1,4 @@
+import type { IconName } from '@bemmoly/ui/icons';
 import type { SuggestionOptions, SuggestionProps } from '@tiptap/suggestion';
 import type { SuggestionItem } from '../types.ts';
 
@@ -11,8 +12,14 @@ import type { SuggestionItem } from '../types.ts';
 export type SuggestionKind = 'mention' | 'reference' | 'slash';
 
 export interface SuggestionRow extends SuggestionItem {
-  /** A section heading the row sits under, such as "Blocks". */
+  /** A section heading the row sits under, such as "Basic blocks". */
   group?: string;
+  /** The / menu's tile: the block's drawing. */
+  icon?: IconName;
+  /** The Markdown or key that does the same, drawn as a key at the row's end. */
+  hint?: string;
+  /** AI rows take the lilac reserved for AI. */
+  tone?: 'ai';
 }
 
 export interface OpenSuggestion {

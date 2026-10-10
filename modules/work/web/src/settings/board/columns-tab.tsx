@@ -120,7 +120,7 @@ export function ColumnsTab(props: BoardTabProps) {
       </div>
       <div
         className={cx(
-          'flex flex-wrap items-center gap-2 rounded-lg border px-1 py-1 text-13',
+          'flex flex-wrap items-center gap-2 rounded-card border px-1 py-1 text-13',
           overUnmapped ? 'border-acc shadow-ring' : 'border-transparent',
         )}
         {...(editable && draggedStatus

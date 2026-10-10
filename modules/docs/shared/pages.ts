@@ -11,6 +11,14 @@ import {
 } from './common.ts';
 import { lexorankSchema } from './lexorank.ts';
 
+/**
+ * The drawn covers a page can take, by id. Patterns only for now; an id the
+ * client does not know (from a newer release) reads as no cover.
+ */
+export const PAGE_COVERS = ['tiles', 'steps', 'orbit', 'grid', 'dots', 'bands'] as const;
+export const pageCoverSchema = z.enum(PAGE_COVERS);
+export type PageCover = z.infer<typeof pageCoverSchema>;
+
 /*
  * Pages: POST /api/v1/docs/pages, GET/PATCH/DELETE /api/v1/docs/pages/:pageId,
  * POST /api/v1/docs/pages/:pageId/restore, GET /api/v1/docs/spaces/:spaceKey/trash.
@@ -45,6 +53,8 @@ export const breadcrumbSchema = z.object({
 
 export const pageDetailSchema = pageSummarySchema.extend({
   snapshot: richTextSchema.nullable(),
+  /** The drawn cover pattern over the title, or null for none. */
+  cover: pageCoverSchema.nullable(),
   tldr: z.string().nullable(),
   reviewers: z.array(z.uuid()),
   templateId: z.uuid().nullable(),
@@ -74,7 +84,7 @@ export const createPageBodySchema = z.object({
 });
 
 /**
- * Title, icon and owner; status goes through /status and the body through /collab.
+ * Title, icon, cover and owner; status goes through /status and the body through /collab.
  * `snapshot` is the 0.2 way to write a body: still accepted, applied through the collab
  * server as one edit, and removed in 0.4.
  */
@@ -82,6 +92,7 @@ export const updatePageBodySchema = z
   .object({
     title: pageTitleSchema,
     icon: iconSchema.nullable(),
+    cover: pageCoverSchema.nullable(),
     ownerId: z.uuid().nullable(),
     /** @deprecated Edit the body through /collab; accepted until 0.4. */
     snapshot: richTextSchema,
@@ -90,6 +101,27 @@ export const updatePageBodySchema = z
   .partial();
 
 export const listTrashQuerySchema = keysetQuerySchema;
+
+/** Days a page stays in the trash before the purge job deletes it for good. */
+export const TRASH_RETENTION_DAYS = 30;
+
+export const trashPageParamsSchema = z.object({ spaceKey: z.string().min(1), pageId: z.uuid() });
+
+/** A trash row: the page, who deleted it, where it was and how many pages went with it. */
+export const trashItemSchema = pageSummarySchema.extend({
+  deletedBy: docsPersonSchema.nullable(),
+  /** The parent it was under; null at the top of the space. */
+  wasIn: breadcrumbSchema.nullable(),
+  /** Pages under it that went to the trash with it. */
+  pagesInside: z.number().int().nonnegative(),
+});
+
+export const trashPageSchema = keysetPageSchema(trashItemSchema);
+export type TrashItem = z.infer<typeof trashItemSchema>;
+export type TrashPage = z.infer<typeof trashPageSchema>;
+
+export const emptyTrashResultSchema = z.object({ deleted: z.number().int().nonnegative() });
+export type EmptyTrashResult = z.infer<typeof emptyTrashResultSchema>;
 
 export const getPageQuerySchema = z.object({
   /** Include a page in the trash, for the restore banner. */

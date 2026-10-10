@@ -20,6 +20,8 @@ export interface SuggestionItem {
   label: string;
   /** A second line, such as an email or an issue title. */
   description?: string;
+  /** Where the record lives, when the source knows: what ⌘K links selected words to. */
+  href?: string;
 }
 
 /** Server search, shaped like the searchable Select's: abandon the work when `signal` aborts. */

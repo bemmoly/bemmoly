@@ -28,6 +28,13 @@ test('two people edit one page at once and both keep every word', async ({
 
   await Promise.all([openLive(page, doc.id), openLive(theirs, doc.id)]);
 
+  // Both find the page marked in their own sidebar's tree, beside the live document.
+  for (const side of [page, theirs]) {
+    await expect(
+      side.getByRole('tree').getByRole('treeitem', { name: 'Shared incident notes' }),
+    ).toHaveAttribute('aria-current', 'page');
+  }
+
   // Each sees the other here.
   await expect(saveLine(page)).toContainText(`${firstName(other.name)} is editing`);
   await expect(saveLine(theirs)).toContainText(`${firstName(me.name)} is editing`);
@@ -57,6 +64,12 @@ test('two people edit one page at once and both keep every word', async ({
   // Each side draws the other person's caret.
   await expect(page.locator(`[data-collab-caret="${other.id}"]`)).toHaveCount(1);
   await expect(theirs.locator(`[data-collab-caret="${me.id}"]`)).toHaveCount(1);
+
+  // The other person's name fades after three seconds still, and comes back when they type.
+  const theirName = page.locator(`[data-collab-caret-name="${other.id}"]`);
+  await expect(theirName).toHaveAttribute('data-idle', '', { timeout: 6_000 });
+  await typeAt(theirs, '.', 1);
+  await expect(theirName).not.toHaveAttribute('data-idle', '');
 
   // It survives a reload, and the person who reloads finds the same document.
   const converged = await docText(theirs);

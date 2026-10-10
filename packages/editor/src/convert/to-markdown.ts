@@ -20,6 +20,7 @@ const MARKS: Record<string, [string, string]> = {
   bold: ['**', '**'],
   italic: ['_', '_'],
   strike: ['~~', '~~'],
+  highlight: ['==', '=='],
 };
 
 function markText(node: RichTextNode): string {

@@ -3,6 +3,7 @@ import { TaskItem, TaskList } from '@tiptap/extension-list';
 import { Mention } from '@tiptap/extension-mention';
 import { StarterKit } from '@tiptap/starter-kit';
 import type { SuggestionOptions } from '@tiptap/suggestion';
+import { Highlight } from './highlight.ts';
 import { ReferenceLinks, type ReferenceLinkOptions } from './references.ts';
 
 /*
@@ -30,6 +31,8 @@ export function baseExtensions(options: SchemaOptions = {}): AnyExtension[] {
       heading: { levels: [...HEADING_LEVELS] },
       underline: false,
       trailingNode: false,
+      // The drop line of a dragged block: the accent, 2px, as the review draws it.
+      dropcursor: { color: 'var(--acc)', width: 2, class: 'rounded-full' },
       ...(options.history === false ? { undoRedo: false as const } : {}),
       link: {
         openOnClick: false,
@@ -39,6 +42,7 @@ export function baseExtensions(options: SchemaOptions = {}): AnyExtension[] {
         HTMLAttributes: { target: null },
       },
     }),
+    Highlight,
     TaskList,
     TaskItem.configure({
       nested: true,

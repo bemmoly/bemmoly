@@ -92,15 +92,19 @@ for (const theme of ['light', 'dark'] as const) {
     await expect(body(page).getByRole('link', { name: 'runbook' })).toBeVisible();
     await expectNoViolations(page, 'page editor');
 
-    const details = page.getByRole('complementary', { name: 'Page details' });
-    for (const tab of [/^Comments/, 'Linked work']) {
-      await details.getByRole('tab', { name: tab }).click();
-      await expectNoViolations(page, `panel tab ${String(tab)}`);
+    for (const margin of ['Comments', 'Linked work']) {
+      await page.getByRole('button', { name: margin, exact: true }).click();
+      await expect(page.getByRole('complementary', { name: margin })).toBeVisible();
+      await expectNoViolations(page, `margin ${margin}`);
     }
-    await page.getByRole('button', { name: 'More actions' }).click();
-    await page.getByRole('menuitem', { name: 'Version history' }).click();
-    await expect(details.getByRole('tab', { name: 'History' })).toBeFocused();
+    await page.getByRole('button', { name: 'Version history' }).click();
+    await expect(page.getByRole('complementary', { name: 'Versions' })).toBeVisible();
     await expectNoViolations(page, 'version history');
+    await page.keyboard.press('Escape');
+
+    await page.getByRole('button', { name: 'Share' }).click();
+    await expect(page.getByRole('dialog', { name: 'Share' })).toBeVisible();
+    await expectNoViolations(page, 'share');
 
     await page.goto('/docs/p/01a00000-0000-7000-8000-000000000000');
     await expect(

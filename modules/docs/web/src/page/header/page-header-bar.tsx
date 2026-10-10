@@ -1,24 +1,30 @@
-import { AvatarStack, Breadcrumbs, Button, IconButton } from '@bemmoly/ui';
-import { Icon } from '@bemmoly/ui/icons';
+import {
+  HeaderActions,
+  HeaderPresence,
+  PresenceFacepile,
+  useHeaderTrail,
+  type PageCrumb,
+  type PresencePerson,
+} from '@bemmoly/core-web';
+import { IconButton } from '@bemmoly/ui';
+import { PageIcon } from '@bemmoly/ui/icons';
+import { useMemo } from 'react';
 import { useStarPage } from '../../hooks/mutations.ts';
 import { docsPaths } from '../../shared/navigation.ts';
+import { SpaceTile } from '../../space/space-tile.tsx';
 import { useSpaceActions } from '../../space/space-layout.tsx';
-import { ABOUT_PANEL, usePageChrome, usePageScreen } from '../screen-context.ts';
-import { PANEL_SLOTS } from '../slots.ts';
-import { MoreMenu, useCopyLink } from './more-menu.tsx';
+import { MarginToggles } from '../panel/margin-toggles.tsx';
+import { SharePopover } from '../share/share-popover.tsx';
+import { usePageScreen } from '../screen-context.ts';
+import { MoreMenu } from './more-menu.tsx';
 import { saveLine, saveState, spokenState } from './save-state.ts';
-import { StatusMenu } from './status-menu.tsx';
 
-const TONE = { quiet: 'text-tx-3', busy: 'text-tx-3', warn: 'text-amber-tx' } as const;
+const TONE = { quiet: 'text-tx-3', busy: 'text-tx-2', warn: 'text-amber-tx' } as const;
 
-/** Pressed panel toggles take the mock's open-panel look: accent ink on the accent wash. */
-const TOGGLE = 'aria-pressed:border-acc-100 aria-pressed:bg-acc-50 aria-pressed:text-acc';
-
-/** "Saved · Priya is editing" and the faces of everyone else on the page. */
-function Presence() {
+/** "Saved · Priya is editing", beside the actions; the faces are in the presence slot. */
+function SaveLine() {
   const { collab, readOnly } = usePageScreen();
   const state = saveState(collab, readOnly);
-  const names = collab.peers.map((peer) => peer.name).join(', ');
   return (
     <>
       <span
@@ -32,22 +38,30 @@ function Presence() {
       <span role="status" className="sr-only">
         {saveLine(spokenState(state))}
       </span>
-      {collab.peers.length > 0 && (
-        <span title={names} className="hidden sm:inline-flex">
-          <AvatarStack
-            label={`Also here: ${names}`}
-            size={24}
-            max={4}
-            people={collab.peers.map((peer) => ({
-              id: peer.id,
-              name: peer.name,
-              initials: peer.initials,
-              hue: peer.hue,
-            }))}
-          />
-        </span>
-      )}
     </>
+  );
+}
+
+/**
+ * Everyone else on the page, drawn as Work draws the people on a board: the header's facepile,
+ * before the actions, and nothing on a phone. The people come from the page's own session.
+ */
+function PageFaces() {
+  const { collab } = usePageScreen();
+  const people = useMemo(
+    () =>
+      collab.peers.map((peer): PresencePerson => ({
+        id: peer.id,
+        name: peer.name,
+        where: 'on this page',
+        hue: peer.hue,
+      })),
+    [collab.peers],
+  );
+  return (
+    <HeaderPresence>
+      <PresenceFacepile people={people} />
+    </HeaderPresence>
   );
 }
 
@@ -62,72 +76,59 @@ function StarButton() {
       size="sm"
       variant="ghost"
       aria-pressed={page.starred}
-      className="aria-pressed:text-amber-fg [&[aria-pressed=true]_svg]:fill-current"
+      className="max-sm:hidden aria-pressed:text-amber-fg [&[aria-pressed=true]_svg]:fill-current"
       onClick={() => star.mutate(!page.starred)}
     />
   );
 }
 
 /**
- * The 44px bar over the body: the trail and status on the left; the save line, the people
- * here, star, Share, the panel toggles and ··· on the right. Below 768px the trail keeps only
- * the page and the quieter parts fold away.
+ * The page's trail in the frame's header: space › parents › page, each with its tile or icon
+ * and each a link, replacing the route's placeholder once the page has loaded.
  */
-export function PageHeaderBar() {
+export function usePageTrail() {
   const { page } = usePageScreen();
   const { space } = useSpaceActions();
-  const panel = usePageChrome((state) => state.panel);
-  const togglePanel = usePageChrome((state) => state.togglePanel);
-  const copyLink = useCopyLink(page.id);
-  const toggles = PANEL_SLOTS.filter((slot) => slot.header);
+  const crumbs: PageCrumb[] = [
+    {
+      label: space.name,
+      path: docsPaths.space(space.key),
+      icon: <SpaceTile space={space} size={16} />,
+    },
+    ...page.breadcrumbs.map((crumb) => ({
+      label: crumb.title || 'Untitled',
+      path: docsPaths.page(crumb.id),
+      icon: <PageIcon value={crumb.icon} size={14} className="text-tx-3" />,
+    })),
+    {
+      label: page.title || 'Untitled',
+      path: docsPaths.page(page.id),
+      icon: <PageIcon value={page.icon} size={14} className="text-tx-3" />,
+    },
+  ];
+  useHeaderTrail(crumbs);
+}
+
+/**
+ * The page's part of the frame's one header (no bar of its own): the trail and, after it, the
+ * status menu (page-frame.tsx), then on the right the people here, the save line, star, the
+ * margin toggles, Share and ···. On a phone the quieter parts fold away.
+ */
+export function PageHeaderActions() {
+  usePageTrail();
 
   return (
-    <header className="flex h-11 shrink-0 items-center gap-2.5 border-b border-line bg-card px-4 text-13 text-tx-3 sm:px-5">
-      <Breadcrumbs
-        strongCurrent
-        className="min-w-0 [&_li]:shrink-0 [&_li:last-child]:min-w-0 [&_li:last-child]:shrink [&_li:last-child>span]:block [&_li:last-child>span]:truncate [&_ol]:flex-nowrap max-md:[&_li:not(:last-child)]:hidden"
-        items={[
-          { label: space.name, href: docsPaths.space(space.key) },
-          ...page.breadcrumbs.map((crumb) => ({
-            label: crumb.title || 'Untitled',
-            href: docsPaths.page(crumb.id),
-          })),
-          { label: page.title || 'Untitled' },
-        ]}
-      />
-      <StatusMenu />
-      <div className="ml-auto flex shrink-0 items-center gap-2">
-        <Presence />
+    <>
+      <PageFaces />
+      <HeaderActions>
+        <SaveLine />
         <StarButton />
+        <MarginToggles />
         <span className="hidden md:inline-flex">
-          <Button size="sm" onClick={() => void copyLink()}>
-            Share
-          </Button>
+          <SharePopover />
         </span>
-        {toggles.map((slot) => (
-          <Button
-            key={slot.id}
-            size="sm"
-            aria-pressed={panel === slot.id}
-            icon={slot.header ? <Icon name={slot.header.icon} size={14} /> : undefined}
-            className={TOGGLE}
-            onClick={() => togglePanel(slot.id)}
-          >
-            <span className="max-sm:sr-only">{slot.header?.label}</span>
-          </Button>
-        ))}
-        <Button
-          size="sm"
-          aria-pressed={panel === ABOUT_PANEL}
-          aria-keyshortcuts="Meta+Period"
-          icon={<Icon name="lines" size={14} />}
-          className={TOGGLE}
-          onClick={() => togglePanel(ABOUT_PANEL)}
-        >
-          <span className="max-sm:sr-only">About</span>
-        </Button>
         <MoreMenu />
-      </div>
-    </header>
+      </HeaderActions>
+    </>
   );
 }

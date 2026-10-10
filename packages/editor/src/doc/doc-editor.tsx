@@ -9,6 +9,9 @@ import { createDocEditor } from './create-doc-editor.ts';
 import type { DocEditorProps } from './doc-editor-props.ts';
 import { NodeViewPortals } from './node-view-portals.tsx';
 import { PortalStore } from './portals.ts';
+import { BlockHandle } from './block-handle.tsx';
+import { BubbleMenu } from './bubble-menu.tsx';
+import { CodeTools } from './code-tools.tsx';
 import { TableTools } from './table-tools.tsx';
 
 const NO_SERVICES = {};
@@ -32,6 +35,7 @@ export default function DocEditor(props: DocEditorProps) {
   const [portals] = useState(() => new PortalStore());
   const host = useRef<HTMLDivElement>(null);
   const frame = useRef<HTMLDivElement>(null);
+  const [linking, setLinking] = useState(false);
 
   const editor = useMountedEditor(
     () =>
@@ -48,6 +52,10 @@ export default function DocEditor(props: DocEditorProps) {
         extensions: props.extensions,
         onUpdate: (instance) =>
           latest.current.onChange?.(instance.isEmpty ? null : (instance.getJSON() as RichTextDoc)),
+        keys: {
+          link: () => setLinking(true),
+          toolbar: () => document.querySelector<HTMLElement>('[data-bubble-menu] button')?.focus(),
+        },
       }),
     host,
   );
@@ -88,6 +96,9 @@ export default function DocEditor(props: DocEditorProps) {
         <SuggestionList store={store} listId={listId} page />
         <NodeViewPortals store={portals} />
         <TableTools editor={editor} host={frame} />
+        <BlockHandle editor={editor} frame={frame} />
+        <CodeTools editor={editor} host={frame} />
+        <BubbleMenu editor={editor} services={services} linking={linking} setLinking={setLinking} />
       </div>
     </DocServicesContext.Provider>
   );

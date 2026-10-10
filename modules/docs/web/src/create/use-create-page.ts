@@ -1,67 +1,64 @@
 import type { PageDetail } from '@bemmoly/module-docs/shared';
+import { useToast } from '@bemmoly/ui';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
 import { api } from '../shared/api.ts';
 import { docsKeys } from '../shared/keys.ts';
+import { docsPaths, navigateTo } from '../shared/navigation.ts';
 import { useTreeOpen } from '../space/tree-store.ts';
+import { useFreshPages } from './fresh-pages.ts';
 
-export interface CreatePagePlace {
-  spaceId: string | null;
-  /** The page it goes under; the space's roots when null. */
+export interface PagePlace {
+  spaceId: string;
+  /** The page it goes under; the top of the space when null. */
   parentId: string | null;
-  /** A template already chosen, as a Templates panel chip opens the picker. */
-  templateId?: string | null;
+  /** Named in the toast: "Page created in Platform". */
+  placeName: string;
 }
 
 /**
- * The new-page form: where it goes, a template (null for a blank page) and an optional
- * title. A template page takes the template's name as its title when none is typed. On
- * success the parent opens in the sidebar so the new page shows where it was put.
+ * Create in place: N, a row's + or New page makes "Untitled" where the person is and opens
+ * it with the caret in the title, no dialog in between. The toast's Undo takes the page back
+ * out and returns to where they were.
  */
-export function useCreatePage(place: CreatePagePlace, onCreated: (page: PageDetail) => void) {
+export function useCreatePage() {
   const queryClient = useQueryClient();
+  const toast = useToast();
   const reveal = useTreeOpen((state) => state.reveal);
-  const [chosenSpace, setSpaceId] = useState<string | null>(null);
-  // The place can arrive after the first render (the spaces list loading); a choice wins.
-  const spaceId = chosenSpace ?? place.spaceId;
-  const [templateId, setTemplateId] = useState<string | null>(place.templateId ?? null);
-  const [title, setTitle] = useState('');
-  const [error, setError] = useState<string | null>(null);
+  const markFresh = useFreshPages((state) => state.add);
 
-  const create = useMutation({
-    mutationFn: async (chosen: string | null) => {
-      if (!spaceId) throw new Error('Choose a space for the page');
-      const where = { spaceId, parentId: place.parentId };
-      const typed = title.trim();
-      return chosen
-        ? api.docs.templates.createPage(chosen, { ...where, ...(typed ? { title: typed } : {}) })
-        : api.docs.pages.create({ ...where, title: typed });
-    },
-    onSuccess: (page) => {
+  const refresh = () => queryClient.invalidateQueries({ queryKey: docsKeys.all() });
+
+  const undo = async (page: PageDetail, from: string) => {
+    useFreshPages.getState().remove(page.id);
+    navigateTo(from);
+    await api.docs.pages.remove(page.id);
+    await refresh();
+  };
+
+  const mutation = useMutation({
+    mutationFn: (place: PagePlace) =>
+      api.docs.pages.create({ spaceId: place.spaceId, parentId: place.parentId, title: '' }),
+    onSuccess: (page, place) => {
+      const from = window.location.pathname + window.location.search;
       queryClient.setQueryData(docsKeys.page(page.id), page);
       if (page.parentId) reveal(page.spaceKey, [page.parentId]);
-      void queryClient.invalidateQueries({ queryKey: docsKeys.all() });
-      onCreated(page);
+      markFresh(page.id);
+      void refresh();
+      navigateTo(docsPaths.page(page.id));
+      toast.undo({
+        title: `Page created in ${place.placeName}`,
+        onUndo: () => void undo(page, from),
+      });
     },
-    onError: (failure) => setError(failure.message),
+    onError: (error) =>
+      toast.show({ tone: 'danger', title: 'The page was not created', body: error.message }),
   });
 
   return {
-    spaceId,
-    templateId,
-    title,
-    error,
-    isSubmitting: create.isPending,
-    setSpaceId: (id: string) => {
-      setSpaceId(id);
-      setError(null);
+    /** Ignored while a create is on its way, so a held N makes one page. */
+    create: (place: PagePlace) => {
+      if (!mutation.isPending) mutation.mutate(place);
     },
-    setTemplateId,
-    setTitle,
-    /** Creates with the chosen template, or with `chosen` when a card is double-clicked. */
-    submit: (chosen: string | null = templateId) => {
-      if (!spaceId) return setError('Choose a space for the page');
-      if (!create.isPending) create.mutate(chosen);
-    },
+    isPending: mutation.isPending,
   };
 }

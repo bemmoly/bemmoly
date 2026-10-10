@@ -72,7 +72,7 @@ export function StatusChip({
       className={cx(
         'flex items-center text-13 whitespace-nowrap',
         variant === 'column'
-          ? 'gap-1.75 rounded-md bg-sunken px-2 py-1.5'
+          ? 'gap-1.75 rounded-control bg-sunken px-2 py-1.5'
           : 'gap-1.5 rounded-full bg-line-2 px-2.25 py-0.5 text-12',
         movable && 'cursor-grab focus-ring',
       )}

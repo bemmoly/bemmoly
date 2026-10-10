@@ -1,5 +1,6 @@
 import { emit } from '../db.ts';
 import { notFound, ok, page, type MockRoute } from '../types.ts';
+import { placeOf } from './docs-find.ts';
 import { docsState, live, presentSummary, spaceByRef } from './docs-state.ts';
 
 /*
@@ -8,6 +9,22 @@ import { docsState, live, presentSummary, spaceByRef } from './docs-state.ts';
  */
 
 const BASE = '/api/v1/docs';
+
+const text = (value: string) => [{ type: 'text', text: value }];
+
+/** A built-in template's body on the in-memory backend: its purpose, then sections to fill. */
+function templateBody(description: string) {
+  return {
+    type: 'doc',
+    content: [
+      { type: 'paragraph', content: text(description) },
+      { type: 'heading', attrs: { level: 2 }, content: text('Context') },
+      { type: 'paragraph' },
+      { type: 'heading', attrs: { level: 2 }, content: text('Details') },
+      { type: 'paragraph' },
+    ],
+  };
+}
 
 const newestFirst = (a: { updatedAt: string }, b: { updatedAt: string }) =>
   b.updatedAt.localeCompare(a.updatedAt);
@@ -19,12 +36,22 @@ export const docsLibraryRoutes: MockRoute[] = [
     handle: (request, db) => {
       const state = docsState(db);
       const mine = request.query.get('mine') === 'true';
+      const spaceId = request.query.get('spaceId');
       const rows = state.pages
-        .filter((row) => live(row) && (!mine || row.ownerId === db.signedInAs))
+        .filter(
+          (row) =>
+            live(row) &&
+            (!mine || row.ownerId === db.signedInAs) &&
+            (!spaceId || row.spaceId === spaceId),
+        )
         .sort(newestFirst);
+      const editor = (id: string | null) => {
+        const user = db.users.find((item) => item.id === id);
+        return user ? { id: user.id, name: user.name } : null;
+      };
       return ok(
         page(
-          rows.map((row) => presentSummary(state, row)),
+          rows.map((row) => ({ ...presentSummary(state, row), lastEditor: editor(row.ownerId) })),
           request,
           20,
         ),
@@ -80,18 +107,74 @@ export const docsLibraryRoutes: MockRoute[] = [
   },
   {
     method: 'GET',
+    pattern: `${BASE}/templates/:templateId`,
+    handle: (request, db) => {
+      const template = docsState(db).templates.find(
+        (item) => item.id === request.params['templateId'],
+      );
+      if (!template) return notFound('The template');
+      return ok({ ...template, snapshot: templateBody(template.description ?? '') });
+    },
+  },
+  {
+    method: 'GET',
     pattern: `${BASE}/spaces/:spaceKey/trash`,
     handle: (request, db) => {
       const state = docsState(db);
       const space = spaceByRef(state, request.params['spaceKey'] ?? '');
       if (!space) return notFound(`Space ${request.params['spaceKey']}`);
-      const rows = state.pages.filter((row) => row.spaceId === space.id && !live(row));
+      const inSpace = state.pages.filter((row) => row.spaceId === space.id && !live(row));
+      const rows = inSpace
+        .filter(
+          (row) => !inSpace.some((up) => up.id === row.parentId && up.deletedAt === row.deletedAt),
+        )
+        .sort((a, b) => (b.deletedAt ?? '').localeCompare(a.deletedAt ?? ''));
       return ok(
         page(
-          rows.map((row) => presentSummary(state, row)),
+          rows.map((row) => {
+            const parent = state.pages.find((item) => item.id === row.parentId);
+            const by = db.users.find((user) => user.id === row.deletedBy);
+            return {
+              ...presentSummary(state, row),
+              deletedBy: by ? { id: by.id, name: by.name } : null,
+              wasIn: parent ? { id: parent.id, title: parent.title, icon: parent.icon } : null,
+              pagesInside: inSpace.filter(
+                (item) =>
+                  item.id !== row.id &&
+                  item.deletedAt === row.deletedAt &&
+                  item.path.startsWith(row.path),
+              ).length,
+            };
+          }),
           request,
         ),
       );
+    },
+  },
+  {
+    method: 'DELETE',
+    pattern: `${BASE}/spaces/:spaceKey/trash`,
+    handle: (request, db) => {
+      const state = docsState(db);
+      const space = spaceByRef(state, request.params['spaceKey'] ?? '');
+      if (!space) return notFound(`Space ${request.params['spaceKey']}`);
+      const before = state.pages.length;
+      state.pages = state.pages.filter((row) => row.spaceId !== space.id || live(row));
+      emit(db, 'docs.tree', []);
+      return ok({ deleted: before - state.pages.length });
+    },
+  },
+  {
+    method: 'DELETE',
+    pattern: `${BASE}/spaces/:spaceKey/trash/:pageId`,
+    handle: (request, db) => {
+      const state = docsState(db);
+      const space = spaceByRef(state, request.params['spaceKey'] ?? '');
+      const root = state.pages.find((row) => row.id === request.params['pageId'] && !live(row));
+      if (!space || !root || root.spaceId !== space.id) return notFound('Page in the trash');
+      state.pages = state.pages.filter((row) => !row.path.startsWith(root.path));
+      emit(db, 'docs.tree', [root.id]);
+      return ok();
     },
   },
   {
@@ -106,7 +189,7 @@ export const docsLibraryRoutes: MockRoute[] = [
       return ok({
         items: rows.map((row) => {
           const { id, spaceId, spaceKey, title, icon, status } = presentSummary(state, row);
-          return { id, spaceId, spaceKey, title, icon, status };
+          return { id, spaceId, spaceKey, title, icon, status, ...placeOf(state, row) };
         }),
       });
     },
