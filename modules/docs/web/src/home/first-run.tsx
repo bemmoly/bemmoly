@@ -13,7 +13,12 @@ const ART = (
  * that fill the home, the first one ready to take. Shown instead of empty sections, which
  * would say nothing about what to do.
  */
-export function FirstRun({ onCreateSpace }: { onCreateSpace: () => void }) {
+export function FirstRun({
+  onCreateSpace,
+}: {
+  /** Absent for someone who may not create spaces. */
+  onCreateSpace?: (() => void) | undefined;
+}) {
   return (
     <StartGuide
       art={ART}
@@ -22,9 +27,12 @@ export function FirstRun({ onCreateSpace }: { onCreateSpace: () => void }) {
       steps={[
         {
           title: 'Create a space',
-          description:
-            'A space is a home for one team or one topic: Engineering, Product, the handbook.',
-          action: <Button onClick={onCreateSpace}>Create space</Button>,
+          description: onCreateSpace
+            ? 'A space is a home for one team or one topic: Engineering, Product, the handbook.'
+            : 'Spaces are made by workspace admins. Ask one to create a space and add you.',
+          ...(onCreateSpace
+            ? { action: <Button onClick={onCreateSpace}>Create space</Button> }
+            : {}),
         },
         {
           title: 'Write the first page',

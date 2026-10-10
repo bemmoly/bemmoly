@@ -18,7 +18,8 @@ export interface SpaceSidebarProps {
   activePageId: string | null;
   /** New page at the root (null) or inside a page. */
   onCreatePage: (parent: PageTreeItem | null) => void;
-  onCreateSpace: () => void;
+  /** Absent for someone who may not create spaces. */
+  onCreateSpace?: (() => void) | undefined;
   /** Trash is open in the main column. */
   inTrash?: boolean;
 }
@@ -55,7 +56,7 @@ export function SpaceSidebar({
         spaces={(spaces.data ?? [space]).map(switcherSpace)}
         onSelect={(next) => navigateTo(docsPaths.space(next.key))}
         onShowAll={() => navigateTo(docsPaths.home())}
-        onCreate={onCreateSpace}
+        {...(onCreateSpace ? { onCreate: onCreateSpace } : {})}
       />
       <div className="px-3 pb-2.5">
         <SearchInput

@@ -34,7 +34,8 @@ export default function DocsHomeScreen(props: DocsScreenProps) {
   const recent = useRecentPages();
   const templates = useTemplates();
   const { person } = usePeople();
-  const { workspaceName } = useSession();
+  const { workspaceName, can } = useSession();
+  const canCreateSpace = can('docs.space.create');
   const routed = dialogFor(props, props.screen);
   const [dialog, setDialog] = useState<Dialog>(null);
   const open = dialog ?? routed;
@@ -76,9 +77,11 @@ export default function DocsHomeScreen(props: DocsScreenProps) {
             >
               Templates
             </Button>
-            <Button variant="secondary" onClick={() => setDialog({ kind: 'space' })}>
-              Create space
-            </Button>
+            {canCreateSpace && (
+              <Button variant="secondary" onClick={() => setDialog({ kind: 'space' })}>
+                Create space
+              </Button>
+            )}
             {list.length > 0 && (
               <Button
                 variant="primary"
@@ -102,7 +105,9 @@ export default function DocsHomeScreen(props: DocsScreenProps) {
             }
           />
         ) : list.length === 0 ? (
-          <FirstRun onCreateSpace={() => setDialog({ kind: 'space' })} />
+          <FirstRun
+            onCreateSpace={canCreateSpace ? () => setDialog({ kind: 'space' }) : undefined}
+          />
         ) : (
           <>
             <SpaceGrid

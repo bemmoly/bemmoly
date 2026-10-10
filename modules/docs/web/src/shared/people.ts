@@ -34,15 +34,18 @@ export function usePeople() {
   return { person, loaded: query.isSuccess };
 }
 
-/** The signed-in session: the person, the workspace name and whether AI is set up. */
+/** The signed-in session: the person, the workspace name and what they may do. */
 export function useSession() {
   const { data } = useQuery({
     queryKey: queryKeys.me(),
     queryFn: () => api.auth.me(),
     staleTime: 60_000,
   });
+  const capabilities = new Set(data?.capabilities ?? []);
   return {
     user: data?.user ?? null,
     workspaceName: data?.workspace.name ?? null,
+    /** Workspace-level capabilities only; space rules are the server's to apply. */
+    can: (capability: string) => capabilities.has(capability),
   };
 }

@@ -7,6 +7,7 @@ import { CreateSpaceDialog } from '../create/create-space-dialog.tsx';
 import { useSpace } from '../hooks/queries.ts';
 import { useDocsRealtime } from '../hooks/use-docs-realtime.ts';
 import { docsPaths, keepLinksInApp, navigateTo } from '../shared/navigation.ts';
+import { useSession } from '../shared/people.ts';
 import { SpaceSkeleton } from '../skeletons/docs-skeletons.tsx';
 import { SpaceSidebar } from './space-sidebar.tsx';
 import { useTreeOpen } from './tree-store.ts';
@@ -63,6 +64,7 @@ export function SpaceLayout({
   const [creating, setCreating] = useState<{ id: string; title: string } | null | false>(false);
   const [creatingSpace, setCreatingSpace] = useState(false);
   const [drawer, setDrawer] = useState(false);
+  const { can } = useSession();
 
   if (space.isPending) return <SpaceSkeleton />;
   if (space.isError) {
@@ -91,7 +93,7 @@ export function SpaceLayout({
       activePageId={activePageId}
       inTrash={inTrash}
       onCreatePage={actions.createPage}
-      onCreateSpace={() => setCreatingSpace(true)}
+      onCreateSpace={can('docs.space.create') ? () => setCreatingSpace(true) : undefined}
     />
   );
 
