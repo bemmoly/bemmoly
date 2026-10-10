@@ -1,5 +1,5 @@
 import type { LinkedPage, LinkedRecord } from '@bemmoly/module-docs/shared';
-import { PageStatusPill, Skeleton } from '@bemmoly/ui';
+import { PageStatusPill, Skeleton, StatusBadge, type StatusCategory } from '@bemmoly/ui';
 import { PageIcon } from '@bemmoly/ui/icons';
 import type { ReactNode } from 'react';
 import { docsPaths, keepLinksInApp } from '../shared/navigation.ts';
@@ -30,7 +30,22 @@ function Section({
   );
 }
 
-/** An issue or another module's record, as the mock's Linked work card: key in mono, title. */
+/**
+ * A record's workflow status, when its module sent one (an issue's), as a badge tone: the
+ * same mapping Work's own screens use, written out here because Docs never imports Work.
+ */
+function statusOf(record: LinkedRecord): { name: string; tone: StatusCategory } | null {
+  const status = record.data?.['status'] as { name?: unknown; category?: unknown } | undefined;
+  if (!status || typeof status.name !== 'string') return null;
+  const name = status.name;
+  if (status.category === 'todo') return { name, tone: 'todo' };
+  if (status.category === 'done') return { name, tone: 'done' };
+  if (/review/i.test(name)) return { name, tone: 'review' };
+  if (/\b(qa|test)/i.test(name)) return { name, tone: 'qa' };
+  return { name, tone: 'progress' };
+}
+
+/** An issue or another module's record, as the mock's Linked work card: key, status, title. */
 function RecordCard({
   record,
   kind,
@@ -38,10 +53,12 @@ function RecordCard({
   record: LinkedRecord;
   kind?: keyof typeof LINK_KIND_WORDS;
 }) {
+  const status = statusOf(record);
   return (
     <a href={record.path} className={CARD}>
       <span className="flex items-center gap-2">
         <span className="font-mono text-11h font-medium text-tx4">{record.key ?? record.kind}</span>
+        {status && <StatusBadge size="sm" category={status.tone} label={status.name} />}
         {kind && <span className="ml-auto text-11 text-tx5">{LINK_KIND_WORDS[kind]}</span>}
       </span>
       <span className="line-clamp-2">{record.title || 'Untitled'}</span>

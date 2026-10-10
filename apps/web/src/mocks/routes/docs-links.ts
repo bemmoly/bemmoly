@@ -1,6 +1,7 @@
 import type { MockDb } from '../db.ts';
 import type { MockPage } from '../seed/docs.ts';
 import { uid } from '../seed/time.ts';
+import { seedWorkStatuses } from '../seed/work-settings.ts';
 import { notFound, ok, type MockRequest, type MockRoute } from '../types.ts';
 import type { PmNode } from './docs-diff.ts';
 import { snapshotOf } from './docs-history-state.ts';
@@ -34,14 +35,21 @@ export function issueKeysOf(node: PmNode, keys = new Set<string>()): Set<string>
   return keys;
 }
 
+/** The seeded workflow's statuses by id, for the status a linked issue carries. */
+const STATUSES = new Map(seedWorkStatuses('').map((row) => [row.id, row]));
+
 function issueRecord(db: MockDb, key: string) {
   const issue = issueStore(db).issues.find((row) => row['key'] === key);
+  const status = STATUSES.get(String(issue?.['statusId']));
   return {
     kind: 'issue',
     id: String(issue?.id ?? uid(0x700000 + key.length)),
     key,
     title: String(issue?.['title'] ?? key),
     path: `/work/issue/${key}`,
+    ...(status
+      ? { data: { status: { name: status.name, category: status.category, color: status.color } } }
+      : {}),
   };
 }
 

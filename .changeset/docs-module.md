@@ -47,8 +47,8 @@ have replies, @mentions, edit and delete, and resolve or reopen. A comment follo
 through later edits and says "Text changed" when they go. A version is saved on publish, when
 you choose Save version, and every 30 minutes of editing; compare any two versions block by
 block, word by word and cell by cell, and restore one as a live edit that is itself kept as a
-version. Linked work lists the issues a page references, the records that reference it and the
-pages that link back, both ways and only what you may open.
+version. Linked work lists the issues a page references with their live status, the records
+that reference it and the pages that link back, both ways and only what you may open.
 
 **Export and import.** Export a page as Markdown or self-contained HTML, or a page and its
 subpages as a zip. Import Markdown files and folders, or a Confluence space export, whose
