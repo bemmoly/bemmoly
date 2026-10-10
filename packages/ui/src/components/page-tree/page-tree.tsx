@@ -9,7 +9,7 @@ import {
 import { cx } from '../../lib/cx.ts';
 import { IconButton } from '../button/icon-button.tsx';
 import { Menu } from '../menu/menu.tsx';
-import { PageTreeRow } from './page-tree-row.tsx';
+import { PageTreeRow, ROW_MENU } from './page-tree-row.tsx';
 import {
   focusForKey,
   moveForKey,
@@ -48,6 +48,8 @@ export interface PageTreeProps {
   onRenameCancel?: () => void;
   /** Below the rows: "Show more", a loading line. */
   footer?: ReactNode;
+  /** Where depth 0 starts, in px (6 by default); a tree under a sidebar row starts deeper. */
+  indentStart?: number;
   className?: string;
 }
 
@@ -82,6 +84,7 @@ export function PageTree({
   onRename,
   onRenameCancel,
   footer,
+  indentStart,
   className,
 }: PageTreeProps) {
   const root = useRef<HTMLDivElement>(null);
@@ -175,6 +178,7 @@ export function PageTree({
             trigger={(props) => (
               <IconButton
                 {...props}
+                {...{ [ROW_MENU]: '' }}
                 label={`Actions for ${item.title || 'Untitled'}`}
                 icon="more"
                 size="xs"
@@ -205,6 +209,7 @@ export function PageTree({
           key={item.id}
           item={item}
           href={hrefOf(item)}
+          {...(indentStart === undefined ? {} : { indentStart })}
           active={item.id === activeId}
           tabbable={item.id === tabbableId}
           dragging={drag.dragId === item.id}
