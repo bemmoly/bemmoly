@@ -5,6 +5,7 @@ import { defineDocsSettings } from './server/src/config/settings.ts';
 import { createDocsControllers } from './server/src/controllers/index.ts';
 import { compactJob, importJob, purgeTrashJob } from './server/src/config/jobs.ts';
 import { docsRoutes } from './server/src/routes/index.ts';
+import { registerDocsAiTools } from './server/src/services/ai-tools/index.ts';
 import { createDocsServices } from './server/src/services/index.ts';
 import { registerDocsReferences } from './server/src/services/links/registry.ts';
 import { registerDocsSearch } from './server/src/services/palette/index.ts';
@@ -70,6 +71,7 @@ export default defineModule({
     ctx.jobs.add(purgeTrashJob(services.pages));
     registerDocsSearch(ctx.search, services.search);
     registerDocsReferences(ctx, services.links);
+    registerDocsAiTools(ctx.ai, services);
     ctx.routes.add({ prefix: '/docs', plugin: docsRoutes(createDocsControllers(services)) });
     registerEditorAi(ctx, services);
   },
