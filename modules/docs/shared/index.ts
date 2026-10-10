@@ -2,6 +2,7 @@ export * from './attention.ts';
 export * from './builtin-templates/index.ts';
 export * from './comments.ts';
 export * from './common.ts';
+export * from './diff/index.ts';
 export * from './home.ts';
 export * from './lexorank.ts';
 export * from './links.ts';
