@@ -34,8 +34,12 @@ export function spaceTone(key: string, color?: string | null): SpaceTone {
   return SPACE_TONES[hash % SPACE_TONES.length] as SpaceTone;
 }
 
-/** "Company handbook" → "CH"; "Engineering" → "EN". */
-export function spaceInitials(name: string): string {
+/**
+ * The tile's two letters: the first two of the space key when there is one ("ENG" → "EN",
+ * "DS" → "DS"), as the mock's tiles read; else from the name ("Company handbook" → "CH").
+ */
+export function spaceInitials(name: string, spaceKey?: string): string {
+  if (spaceKey) return spaceKey.slice(0, 2).toUpperCase();
   const words = name.split(/\s+/).filter(Boolean);
   const letters =
     words.length > 1
@@ -58,13 +62,15 @@ const SIZES: Record<SpaceTileSize, string> = {
 
 export interface SpaceTileProps {
   name: string;
+  /** The space key, which the initials come from when given. */
+  spaceKey?: string;
   tone: SpaceTone;
   size?: SpaceTileSize;
   className?: string;
 }
 
 /** The space's square: 7px radius, semibold initials on the space colour. */
-export function SpaceTile({ name, tone, size = 'md', className }: SpaceTileProps) {
+export function SpaceTile({ name, spaceKey, tone, size = 'md', className }: SpaceTileProps) {
   return (
     <span
       aria-hidden
@@ -75,7 +81,7 @@ export function SpaceTile({ name, tone, size = 'md', className }: SpaceTileProps
         className,
       )}
     >
-      {spaceInitials(name)}
+      {spaceInitials(name, spaceKey)}
     </span>
   );
 }

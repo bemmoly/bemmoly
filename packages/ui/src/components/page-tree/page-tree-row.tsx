@@ -121,7 +121,7 @@ export function PageTreeRow({
       onDrop={onDrop}
       style={{ paddingLeft: indent }}
       className={cx(
-        'group/row relative flex h-7.5 cursor-pointer items-center gap-1.75 rounded-control py-1.5 pr-1.5 text-13 select-none',
+        'group/row relative flex h-7.25 cursor-pointer items-center gap-1.75 rounded-control py-1.5 pr-1.5 text-13 select-none',
         active ? 'bg-ac-bg font-medium text-ac' : 'text-tx2 hover:bg-bg2',
         drop === 'inside' && 'bg-ac-bg2 shadow-ring-ac',
         dragging && 'opacity-50',

@@ -15,6 +15,8 @@ export interface SpaceCardPerson {
 export interface SpaceCardProps {
   href: string;
   name: string;
+  /** The space key; the tile's letters come from it. */
+  spaceKey?: string;
   tone: SpaceTone;
   /** "184 pages", or "31 pages · linked to PLT". */
   meta: ReactNode;
@@ -34,6 +36,7 @@ export interface SpaceCardProps {
 export function SpaceCard({
   href,
   name,
+  spaceKey,
   tone,
   meta,
   project,
@@ -52,7 +55,7 @@ export function SpaceCard({
       )}
     >
       <span className="flex items-center gap-2.5">
-        <SpaceTile name={name} tone={tone} />
+        <SpaceTile name={name} {...(spaceKey ? { spaceKey } : {})} tone={tone} />
         <span className="flex min-w-0 flex-col gap-0.5">
           <span className="truncate text-14 font-semibold">{name}</span>
           <span className="truncate text-12 text-tx5">{meta}</span>

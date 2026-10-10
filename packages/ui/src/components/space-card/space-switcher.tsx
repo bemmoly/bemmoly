@@ -58,7 +58,7 @@ export function SpaceSwitcher({
               focusRingInset,
             )}
           >
-            <SpaceTile name={current.name} tone={current.tone} size="sm" />
+            <SpaceTile name={current.name} spaceKey={current.key} tone={current.tone} size="sm" />
             <span className="flex min-w-0 flex-1 flex-col gap-px">
               <span className="truncate text-13h font-semibold text-tx">{current.name}</span>
               <span className="truncate text-12 text-tx4">{meta}</span>
@@ -76,7 +76,9 @@ export function SpaceSwitcher({
             <MenuItem
               key={space.id}
               onSelect={() => onSelect(space)}
-              icon={<SpaceTile name={space.name} tone={space.tone} size="xs" />}
+              icon={
+                <SpaceTile name={space.name} spaceKey={space.key} tone={space.tone} size="xs" />
+              }
               hint={space.id === current.id ? <Icon name="check" size={14} /> : space.key}
             >
               {space.name}
