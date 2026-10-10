@@ -107,6 +107,23 @@ describe('Docs pages as a retrieval source against Postgres', () => {
     expect(outsider.chunks).toEqual([]);
   });
 
+  it('follows a space membership change on the next question, with nothing re-indexed', async (ctx) => {
+    if (!start.available) return ctx.skip(start.reason);
+    await retrieval.indexRecords('docs.page', [rfc.id, hidden.id]);
+    const ask = async () =>
+      (
+        await retrieval.retrieve(docs.as(docs.users.member), { question: 'rollback salary band' })
+      ).sources.map((source) => source.targetId);
+    expect(await ask()).not.toContain(hidden.id);
+    await docs.sql`
+      insert into space_members (space_id, user_id, role_id)
+      select ${hidden.spaceId}, ${docs.users.member}, id from roles where key = 'member'`;
+    expect(await ask()).toContain(hidden.id);
+    await docs.sql`
+      delete from space_members where space_id = ${hidden.spaceId} and user_id = ${docs.users.member}`;
+    expect(await ask()).not.toContain(hidden.id);
+  });
+
   it('drops a page from the index once it is in the trash', async (ctx) => {
     if (!start.available) return ctx.skip(start.reason);
     await retrieval.indexRecords('docs.page', [hidden.id]);

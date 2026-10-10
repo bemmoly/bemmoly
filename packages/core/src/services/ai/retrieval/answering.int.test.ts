@@ -77,6 +77,24 @@ describe('retrieval and answers', () => {
     expect(stranger.chunks).toEqual([]);
   });
 
+  it('follows a permission change at once, with nothing re-indexed', async (ctx) => {
+    if (!f) return ctx.skip(skip ?? 'no database');
+    const question = 'rollback salary bands engineers';
+    const ask = async () =>
+      (await f!.service.retrieve(f!.contextFor(f!.users.insider), { question })).sources.map(
+        (source) => source.targetId,
+      );
+    expect(await ask()).toContain(P_SALARY);
+    const before = f.readers.get(f.users.insider) ?? [];
+    f.readers.set(f.users.insider, [SPACE_OPEN]);
+    try {
+      expect(await ask()).not.toContain(P_SALARY);
+    } finally {
+      f.readers.set(f.users.insider, before);
+    }
+    expect(await ask()).toContain(P_SALARY);
+  });
+
   it('leaves out excluded spaces at query time, before any sweep', async (ctx) => {
     if (!f) return ctx.skip(skip ?? 'no database');
     f.ai.setPolicy({ excludedSpaceIds: [SPACE_SECRET] });
