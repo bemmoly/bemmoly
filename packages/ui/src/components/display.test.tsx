@@ -142,6 +142,18 @@ describe('display components', () => {
     expect(dismiss).toHaveBeenCalled();
     expect(screen.getByRole('button', { name: 'Not useful' })).toBeTruthy();
   });
+
+  it('draws a suggestion without the actions it is not given, and holds a done one', () => {
+    render(
+      <AiSuggestion variant="card" acceptLabel="Apply fix" onDismiss={vi.fn()} dismissDone>
+        Replace with “every 30 days”?
+      </AiSuggestion>,
+    );
+    expect(screen.queryByRole('button', { name: 'Apply fix' })).toBeNull();
+    const done = screen.getByRole('button', { name: 'Dismiss' }) as HTMLButtonElement;
+    expect(done.disabled).toBe(true);
+    expect(done.getAttribute('aria-pressed')).toBe('true');
+  });
 });
 
 describe('Table', () => {

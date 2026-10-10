@@ -145,23 +145,35 @@ export function AiBrief({ title, source, children, actions, className }: AiBrief
 
 export interface AiSuggestionProps {
   children: ReactNode;
-  /** Runs the suggestion. Label it with the verb: "Apply", "Move both", "Do it". */
-  onAccept: () => void;
+  /**
+   * Runs the suggestion. Label it with the verb: "Apply", "Move both", "Do it". Left out (for
+   * someone who may only read) the suggestion shows without it.
+   */
+  onAccept?: () => void;
   acceptLabel?: string;
-  onDismiss: () => void;
+  /** While a change is already on its way, the suggestion cannot be accepted again. */
+  acceptDisabled?: boolean;
+  /** Dismiss, or "Not useful": the quiet second action. Left out, there is none. */
+  onDismiss?: () => void;
   dismissLabel?: string;
+  /** Pressed and done, as "Not useful" once marked. */
+  dismissDone?: boolean;
   /** row: inside a list (Backlog sprint tip). card: free-standing (doc comment reply). */
   variant?: 'row' | 'card';
   className?: string;
 }
+
+const ACTION_OFF = 'disabled:cursor-not-allowed disabled:opacity-50';
 
 /** A suggestion with Do it / Dismiss: AI tint, 7px dot, ai-tx text, AI action, tx5 dismiss. */
 export function AiSuggestion({
   children,
   onAccept,
   acceptLabel = 'Do it',
+  acceptDisabled = false,
   onDismiss,
   dismissLabel = 'Dismiss',
+  dismissDone = false,
   variant = 'row',
   className,
 }: AiSuggestionProps) {
@@ -179,26 +191,35 @@ export function AiSuggestion({
     >
       <AiDot />
       <span className="min-w-0 flex-1 text-tx">{children}</span>
-      <button
-        type="button"
-        onClick={onAccept}
-        className={cx(
-          'shrink-0 cursor-pointer rounded-chip border border-ai-100 bg-card px-2.25 py-1 font-sans text-13 font-medium text-ai-600 hover:bg-ai-50',
-          focusRing,
-        )}
-      >
-        {acceptLabel}
-      </button>
-      <button
-        type="button"
-        onClick={onDismiss}
-        className={cx(
-          'shrink-0 cursor-pointer border-0 bg-transparent p-0 font-sans text-13 text-tx-2 hover:text-tx',
-          focusRing,
-        )}
-      >
-        {dismissLabel}
-      </button>
+      {onAccept && (
+        <button
+          type="button"
+          onClick={onAccept}
+          disabled={acceptDisabled}
+          className={cx(
+            'shrink-0 cursor-pointer rounded-chip border border-ai-100 bg-card px-2.25 py-1 font-sans text-13 font-medium text-ai-600 hover:bg-ai-50',
+            ACTION_OFF,
+            focusRing,
+          )}
+        >
+          {acceptLabel}
+        </button>
+      )}
+      {onDismiss && (
+        <button
+          type="button"
+          onClick={onDismiss}
+          disabled={dismissDone}
+          aria-pressed={dismissDone || undefined}
+          className={cx(
+            'shrink-0 cursor-pointer border-0 bg-transparent p-0 font-sans text-13 text-tx-2 hover:text-tx',
+            ACTION_OFF,
+            focusRing,
+          )}
+        >
+          {dismissLabel}
+        </button>
+      )}
     </div>
   );
 }
