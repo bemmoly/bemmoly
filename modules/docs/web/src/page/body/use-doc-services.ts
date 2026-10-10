@@ -1,4 +1,4 @@
-import type { DocServices, SuggestionItem } from '@bemmoly/editor';
+import type { AiHandler, DocServices, SuggestionItem } from '@bemmoly/editor';
 import { useMemo } from 'react';
 import { api } from '../../shared/api.ts';
 import { useIssueServices } from '../../shared/issue-services.tsx';
@@ -53,9 +53,9 @@ async function searchIssues(query: string): Promise<SuggestionItem[]> {
  * workspace, live issue chips, tables and # search from whichever module owns issues (through
  * the kernel's entity registry; the kernel's search stands in for # without one), and in-app
  * navigation for link clicks. Uploads are absent (the kernel has no upload endpoint yet), so
- * images go in by link; AI arrives with its runtime.
+ * images go in by link. AI (use-doc-ai.ts) is lent only while every AI surface may show.
  */
-export function useDocServices(pageId: string, comments = false): DocServices {
+export function useDocServices(pageId: string, comments = false, ai?: AiHandler): DocServices {
   const issues = useIssueServices();
   return useMemo<DocServices>(
     () => ({
@@ -67,7 +67,8 @@ export function useDocServices(pageId: string, comments = false): DocServices {
       // Commenting needs edit rights, as the comment layer's canComment does.
       comments,
       ...issues,
+      ...(ai ? { ai } : {}),
     }),
-    [pageId, issues, comments],
+    [pageId, issues, comments, ai],
   );
 }
