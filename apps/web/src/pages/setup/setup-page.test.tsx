@@ -1,7 +1,8 @@
 import { useSearch } from '@tanstack/react-router';
 import { screen, waitFor, within } from '@testing-library/react';
-import { userEvent } from '@testing-library/user-event';
+import { userEvent, type UserEvent } from '@testing-library/user-event';
 import { beforeEach, describe, expect, it } from 'vitest';
+import { requireSetupOpen } from '../../router/guards.ts';
 import { useSetupStore } from '../../store/setup.ts';
 import { renderPage, testQueryClient } from '../../test/render.tsx';
 import { mockApi } from '../../test/setup.ts';
@@ -13,12 +14,29 @@ function Harness() {
   return <SetupWizard requestedStep={search.step} />;
 }
 
+/**
+ * The /setup route's guard loads setup status (and the admin's session, once there is one)
+ * before the wizard mounts; run it here too, so a step renders as it does in the app instead
+ * of starting from a loading state the app never shows.
+ */
+async function setupClient() {
+  const client = testQueryClient();
+  await requireSetupOpen(client);
+  return client;
+}
+
+/** Puts a whole value into a field at once; these tests are about the steps, not keystrokes. */
+async function fill(user: UserEvent, field: HTMLElement, value: string) {
+  await user.click(field);
+  await user.paste(value);
+}
+
 beforeEach(() => useSetupStore.getState().reset());
 
 describe('SetupPage', () => {
   it('welcomes a fresh install with the health summary and the workspace step', async () => {
     mockApi.reset('fresh');
-    await renderPage(() => <Harness />, '/setup', testQueryClient());
+    await renderPage(() => <Harness />, '/setup', await setupClient());
     expect(
       await screen.findByRole('heading', { level: 1, name: 'Welcome to Bemmoly' }),
     ).toBeTruthy();
@@ -39,7 +57,7 @@ describe('SetupPage', () => {
   it('checks the workspace name on Continue without leaving the step', async () => {
     mockApi.reset('fresh');
     const user = userEvent.setup();
-    const { router } = await renderPage(() => <Harness />, '/setup', testQueryClient());
+    const { router } = await renderPage(() => <Harness />, '/setup', await setupClient());
     await user.click(await screen.findByRole('button', { name: 'Continue' }));
     await waitFor(() =>
       expect(screen.getByLabelText('Workspace name').getAttribute('aria-invalid')).toBe('true'),
@@ -50,17 +68,17 @@ describe('SetupPage', () => {
   it('creates the account with the workspace and moves to the import step', async () => {
     mockApi.reset('fresh');
     const user = userEvent.setup();
-    const { router } = await renderPage(() => <Harness />, '/setup', testQueryClient());
-    await user.type(await screen.findByLabelText('Workspace name'), 'Acme Labs');
+    const { router } = await renderPage(() => <Harness />, '/setup', await setupClient());
+    await fill(user, await screen.findByLabelText('Workspace name'), 'Acme Labs');
     await user.click(screen.getByRole('button', { name: 'Continue' }));
 
     expect(
       await screen.findByRole('heading', { level: 1, name: 'Create your account' }),
     ).toBeTruthy();
-    await user.type(screen.getByLabelText('Your name'), 'Rohan S.');
-    await user.type(screen.getByLabelText('Email'), 'rohan@acme.test');
+    await fill(user, screen.getByLabelText('Your name'), 'Rohan S.');
+    await fill(user, screen.getByLabelText('Email'), 'rohan@acme.test');
     const password = screen.getByLabelText('Password');
-    await user.type(password, 'a long enough password');
+    await fill(user, password, 'a long enough password');
     expect(password.getAttribute('type')).toBe('password');
     await user.click(screen.getByRole('button', { name: 'Show password' }));
     expect(password.getAttribute('type')).toBe('text');
@@ -84,7 +102,7 @@ describe('SetupPage', () => {
 
   it('heads the email invites with their defaults', async () => {
     mockApi.reset('wizard');
-    await renderPage(() => <Harness />, '/setup?step=4', testQueryClient());
+    await renderPage(() => <Harness />, '/setup?step=4', await setupClient());
     const invites = await screen.findByRole('region', { name: 'Invite by email' });
     expect(within(invites).getByRole('heading', { level: 2 })).toBeTruthy();
     expect(within(invites).getByLabelText('Team')).toBeTruthy();
@@ -94,7 +112,7 @@ describe('SetupPage', () => {
   it('shows the brand color inline on the look step', async () => {
     mockApi.reset('wizard');
     const user = userEvent.setup();
-    const { router } = await renderPage(() => <Harness />, '/setup?step=6', testQueryClient());
+    const { router } = await renderPage(() => <Harness />, '/setup?step=6', await setupClient());
     const brand = await screen.findByRole('region', { name: 'Brand color' });
     const toggle = within(brand).getByRole('button', { expanded: false });
     await user.click(toggle);
@@ -108,7 +126,7 @@ describe('SetupPage', () => {
 
   it('ends on a launchpad that lists the summary as labels and values', async () => {
     mockApi.reset('wizard');
-    await renderPage(() => <Harness />, '/setup?step=7', testQueryClient());
+    await renderPage(() => <Harness />, '/setup?step=7', await setupClient());
     const summary = await screen.findByLabelText('Setup summary');
     expect(summary.tagName).toBe('DL');
     const terms = within(summary).getAllByRole('term');
