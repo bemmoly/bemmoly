@@ -64,7 +64,9 @@ function providerMessageOf(error: ApiCallShape): string | null {
     }
   }
   const clean = text
-    .replace(/\b(sk|key|token|bearer)[-_ ]?[A-Za-z0-9_-]{12,}/gi, '[redacted]')
+    .replace(/\b(?:sk|pk|rk|key)[-_][A-Za-z0-9_-]{10,}/gi, '[redacted]')
+    .replace(/\bbearer\s+[A-Za-z0-9._~+/-]+=*/gi, 'Bearer [redacted]')
+    .replace(/\b[A-Za-z0-9_-]{32,}\b/g, '[redacted]')
     .replace(/\s+/g, ' ')
     .trim();
   return clean ? clean.slice(0, 300) : null;
