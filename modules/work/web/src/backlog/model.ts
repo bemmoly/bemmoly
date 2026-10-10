@@ -126,22 +126,23 @@ export function personLooks(
   );
 }
 
-/** Epic squares in panel order, the first four as the mock paints them. */
+/** Epic squares in panel order, from the epic palette. */
 export const EPIC_COLORS = [
-  'bg-ac',
-  'bg-violet',
-  'bg-sky-fg',
-  'bg-orange-fg',
-  'bg-green-fg',
-  'bg-pink-fg',
-  'bg-amber-fg',
+  'bg-epic-1',
+  'bg-epic-2',
+  'bg-epic-3',
+  'bg-epic-4',
+  'bg-epic-5',
+  'bg-epic-6',
+  'bg-epic-7',
+  'bg-epic-8',
 ] as const;
 
 export function epicLooks(epics: readonly EpicProgress[]): Map<string, EpicLook> {
   return new Map(
     epics.map((epic, index) => [
       epic.id,
-      { ...epic, colorClassName: EPIC_COLORS[index % EPIC_COLORS.length] ?? 'bg-ac' },
+      { ...epic, colorClassName: EPIC_COLORS[index % EPIC_COLORS.length] ?? 'bg-epic-1' },
     ]),
   );
 }

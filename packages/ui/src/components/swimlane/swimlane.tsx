@@ -15,7 +15,7 @@ export interface SwimlaneHeaderProps {
   progress?: number;
   /** "Due Oct 7", right-aligned. */
   due?: ReactNode;
-  /** The lane colour as background utilities for the square and the bar (bg-ac, bg-violet). */
+  /** The lane colour as background utilities for the square and the bar (bg-epic-1, bg-epic-2). */
   colorClassName?: string;
   open: boolean;
   onToggle: () => void;

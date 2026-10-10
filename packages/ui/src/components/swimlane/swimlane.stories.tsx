@@ -155,7 +155,7 @@ export const CollapsedAndDropping: Story = {
             meta="6 issues · 16 pts"
             progress={6}
             due="Due Oct 21"
-            colorClassName="bg-violet"
+            colorClassName="bg-epic-2"
             open={false}
             onToggle={() => {}}
           />

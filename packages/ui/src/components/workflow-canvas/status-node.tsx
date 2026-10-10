@@ -13,7 +13,7 @@ export const WORKFLOW_CATEGORY: Record<WorkflowCategory, { name: string; dot: st
 
 export interface StatusDotProps {
   category: WorkflowCategory;
-  /** A status's own colour (bg-violet, bg-caution) in place of its category's. */
+  /** A status's own colour (bg-epic-2, bg-caution) in place of its category's. */
   colorClassName?: string;
   /** 8px in status pills, 9px on nodes, 10px in the panel heading. */
   size?: 8 | 9 | 10;

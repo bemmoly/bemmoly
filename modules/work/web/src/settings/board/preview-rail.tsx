@@ -8,8 +8,8 @@ import { sampleStripe } from './card-preview.tsx';
 const LANES: Record<BoardDraft['config']['lanes']['kind'], [string, string][]> = {
   none: [['All issues', 'bg-ac']],
   epic: [
-    ['Auth service', 'bg-ac'],
-    ['Billing v2', 'bg-violet'],
+    ['Auth service', 'bg-epic-1'],
+    ['Billing v2', 'bg-epic-2'],
   ],
   assignee: [
     ['Priya N.', 'bg-ok-fg'],

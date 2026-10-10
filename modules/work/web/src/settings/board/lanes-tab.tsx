@@ -21,7 +21,7 @@ const LANES: [BoardLaneKind, string, string, Bars, Bars][] = [
     'epic',
     'Epic',
     'Group by parent epic. Shows epic progress per lane.',
-    ['bg-ac', 'bg-violet', 'bg-tx6'],
+    ['bg-epic-1', 'bg-epic-2', 'bg-tx-3'],
     ['w-[70%]', 'w-[55%]', 'w-[40%]'],
   ],
   [

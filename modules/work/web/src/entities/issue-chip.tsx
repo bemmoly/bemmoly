@@ -17,12 +17,12 @@ import { workKeys } from '../shared/keys.ts';
 
 /** The type square's colour in the inline chip, by glyph. */
 const TYPE_SQUARE: Record<IssueType, string> = {
-  story: 'bg-ok',
-  bug: 'bg-danger',
-  task: 'bg-ac-fill',
-  epic: 'bg-violet',
-  incident: 'bg-warn',
-  subtask: 'bg-tx4',
+  story: 'bg-type-story',
+  bug: 'bg-type-bug',
+  task: 'bg-type-task',
+  epic: 'bg-type-epic',
+  incident: 'bg-type-incident',
+  subtask: 'bg-type-subtask',
 };
 
 export function useIssueSummary(key: string) {
@@ -102,7 +102,7 @@ export function IssueCard({ entityKey }: { entityKey: string }) {
     <a
       href={href}
       onClick={(event) => follow(event, href)}
-      className={`${ROW} hover:bg-sf2 focus-visible:outline-2 focus-visible:outline-ac motion-safe:transition-colors`}
+      className={`${ROW} hover:bg-sf2 focus-ring motion-safe:transition-colors`}
     >
       <TypeGlyph type={typeGlyph(issue.type)} />
       <KeyChip issueKey={issue.key} />

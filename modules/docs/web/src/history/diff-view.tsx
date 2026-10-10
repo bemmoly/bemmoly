@@ -35,8 +35,8 @@ const BARS: Record<BlockDiff['op'], string> = {
   insert: 'before:bg-ok',
   delete: 'before:bg-danger',
   change: 'before:bg-caution',
-  move: 'before:bg-violet',
-  move_source: 'before:bg-violet/40',
+  move: 'before:bg-epic-2',
+  move_source: 'before:bg-epic-2/40',
 };
 
 const OP_WORDS: Record<BlockDiff['op'], string> = {
@@ -134,7 +134,7 @@ export function DiffView({ diff, className }: { diff: DocDiff; className?: strin
             key={`fold-${index}`}
             type="button"
             onClick={() => setOpen(new Set([...open, first]))}
-            className="flex cursor-pointer items-center gap-2 rounded-sm border border-dashed border-br3 bg-sf2 px-3 py-1.5 font-sans text-12 text-tx4 hover:border-ac-br hover:text-ac focus-visible:outline-2 focus-visible:outline-ac"
+            className="flex cursor-pointer items-center gap-2 rounded-sm border border-dashed border-br3 bg-sf2 px-3 py-1.5 font-sans text-12 text-tx4 hover:border-ac-br hover:text-ac focus-ring"
           >
             <span aria-hidden>⋯</span>
             {row.blocks.length} unchanged {row.blocks.length === 1 ? 'block' : 'blocks'}

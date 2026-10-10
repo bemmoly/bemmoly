@@ -151,7 +151,7 @@ describe('settings components', () => {
           <StatusNode
             name="Code review"
             category="progress"
-            colorClassName="bg-violet"
+            colorClassName="bg-epic-2"
             count={2}
             x="50%"
             y="50%"

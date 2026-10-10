@@ -15,18 +15,18 @@ const PRIORITY_STRIPES: Record<Priority, string> = {
 };
 
 const TYPE_STRIPES: Record<IssueType, string> = {
-  story: 'border-l-ok',
-  bug: 'border-l-danger',
-  task: 'border-l-ac',
-  epic: 'border-l-violet',
-  incident: 'border-l-warn',
-  subtask: 'border-l-tx4',
+  story: 'border-l-type-story',
+  bug: 'border-l-type-bug',
+  task: 'border-l-type-task',
+  epic: 'border-l-type-epic',
+  incident: 'border-l-type-incident',
+  subtask: 'border-l-type-subtask',
 };
 
 export interface StripeSource {
   priority: Priority;
   type: IssueType;
-  /** The epic's colour as a border utility, e.g. "border-l-ac" or "border-l-violet". */
+  /** The epic's colour as a border utility, e.g. "border-l-epic-1" or "border-l-epic-2". */
   epicClassName?: string;
 }
 

@@ -25,7 +25,7 @@ const EPICS = [
   {
     key: 'PLT-150',
     name: 'Billing v2',
-    color: 'bg-violet',
+    color: 'bg-epic-2',
     pct: 34,
     meta: '12 issues · due Oct 21',
   },

@@ -6,7 +6,7 @@ import { ProgressBar } from '../progress-bar/progress-bar.tsx';
 export interface EpicItemProps {
   name: ReactNode;
   epicKey: string;
-  /** The epic colour as a background utility (bg-ac, bg-violet). */
+  /** The epic colour as a background utility (bg-epic-1, bg-epic-2). */
   colorClassName: string;
   /** Percent of its issues done. */
   progress: number;

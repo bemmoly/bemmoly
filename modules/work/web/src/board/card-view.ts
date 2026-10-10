@@ -19,22 +19,33 @@ import type { ViewCard } from '../hooks/board-model.ts';
  * colour rule. The names come from the vocabularies the board loaded once.
  */
 
-/** Lane colours in order, from the Board mock's epics (accent, then violet); grey for none. */
-const LANE_FILLS = ['bg-ac', 'bg-violet', 'bg-ok', 'bg-caution', 'bg-warn', 'bg-danger-hi'];
+/** Lane colours in order, from the epic palette; muted grey for no epic. */
+const LANE_FILLS = [
+  'bg-epic-1',
+  'bg-epic-2',
+  'bg-epic-3',
+  'bg-epic-4',
+  'bg-epic-5',
+  'bg-epic-6',
+  'bg-epic-7',
+  'bg-epic-8',
+];
 const LANE_STRIPES = [
-  'border-l-ac',
-  'border-l-violet',
-  'border-l-ok',
-  'border-l-caution',
-  'border-l-warn',
-  'border-l-danger-hi',
+  'border-l-epic-1',
+  'border-l-epic-2',
+  'border-l-epic-3',
+  'border-l-epic-4',
+  'border-l-epic-5',
+  'border-l-epic-6',
+  'border-l-epic-7',
+  'border-l-epic-8',
 ];
 
 export const laneFill = (hue: number | null) =>
-  hue === null ? 'bg-tx6' : (LANE_FILLS[hue % LANE_FILLS.length] ?? 'bg-ac');
+  hue === null ? 'bg-tx-3' : (LANE_FILLS[hue % LANE_FILLS.length] ?? 'bg-epic-1');
 
 const laneStripe = (hue: number | null) =>
-  hue === null ? 'border-l-tx6' : LANE_STRIPES[hue % LANE_STRIPES.length];
+  hue === null ? 'border-l-tx-3' : LANE_STRIPES[hue % LANE_STRIPES.length];
 
 /** A colour rule's stripe reads the card's --card-rule, set from the rule's colour. */
 export const RULE_STRIPE = 'border-l-(--card-rule)';

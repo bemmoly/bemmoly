@@ -28,7 +28,7 @@ export function StatsLine({ stats }: { stats: DiffStats }) {
     { n: stats.inserted, word: 'added', tone: 'bg-ok' },
     { n: stats.deleted, word: 'removed', tone: 'bg-danger' },
     { n: stats.changed, word: 'edited', tone: 'bg-caution' },
-    { n: stats.moved, word: 'moved', tone: 'bg-violet' },
+    { n: stats.moved, word: 'moved', tone: 'bg-epic-2' },
   ].filter((part) => part.n > 0);
   if (parts.length === 0) return <span className="text-tx5">No changes</span>;
   return (

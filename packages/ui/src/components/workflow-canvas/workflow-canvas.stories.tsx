@@ -18,7 +18,7 @@ const NODES: Record<string, [number, number, WorkflowCategory, number, string?]>
   Backlog: [110, 120, 'todo', 42],
   Selected: [300, 120, 'todo', 9],
   'In progress': [490, 120, 'progress', 4],
-  'Code review': [680, 120, 'progress', 2, 'bg-violet'],
+  'Code review': [680, 120, 'progress', 2, 'bg-epic-2'],
   Testing: [680, 300, 'progress', 2, 'bg-caution'],
   Done: [870, 300, 'done', 9],
   "Won't do": [300, 420, 'done', 3],
@@ -195,7 +195,7 @@ export const PanelPieces: Story = {
           block
           name="Code review"
           category="progress"
-          colorClassName="bg-violet"
+          colorClassName="bg-epic-2"
           count={2}
         />
         <span className="flex gap-1.5">

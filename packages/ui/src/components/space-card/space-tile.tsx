@@ -18,7 +18,7 @@ export type SpaceTone = (typeof SPACE_TONES)[number];
 
 const TONE_CLASSES: Record<SpaceTone, string> = {
   accent: 'bg-ac-fill text-on-ac',
-  violet: 'bg-violet text-on-solid',
+  violet: 'bg-epic-2 text-on-solid',
   green: 'bg-ok text-on-solid',
   orange: 'bg-warn text-on-solid',
   red: 'bg-danger text-on-solid',
