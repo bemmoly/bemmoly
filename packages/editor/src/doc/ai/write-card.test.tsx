@@ -130,6 +130,25 @@ describe('the suggestion card', () => {
     expect(text(editor)).toBe(kept);
   });
 
+  it('takes the place of the empty line it was asked from', async () => {
+    const stream = scripted();
+    const ai = { write: stream.write };
+    const editor = await setup(ai);
+    act(() => {
+      editor.chain().focus('end').splitBlock().run();
+    });
+    act(() => runAiCommand(editor, CONTINUE, ai));
+    await act(async () => {
+      stream.send({ type: 'text', text: 'Reads cut over next.' });
+      stream.send(null);
+    });
+    fireEvent.click(await screen.findByRole('button', { name: 'Insert' }));
+    await waitFor(() => expect(card()).toBeNull());
+    expect(text(editor)).toBe(
+      'Rollout\nwe moves sessions to postgres\nRedis stays warm.\nReads cut over next.',
+    );
+  });
+
   it('replaces only the words chosen when Ask AI ran over a selection', async () => {
     const stream = scripted();
     const ai = { write: stream.write };

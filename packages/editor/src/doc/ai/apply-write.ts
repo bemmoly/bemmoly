@@ -44,6 +44,19 @@ export async function applyWrite(
     .focus()
     .command(({ tr, state }) => Boolean(ownUndoStep(state, tr)));
   if (mode === 'insert') {
+    // Run from an empty line (the / menu), the writing takes that line's place.
+    const anchor = placed.anchor;
+    const $anchor = anchor ? editor.state.doc.resolve(anchor.from) : null;
+    if (
+      anchor &&
+      $anchor &&
+      !anchor.text &&
+      $anchor.parent.isTextblock &&
+      !$anchor.parent.content.size
+    ) {
+      const range = { from: $anchor.before($anchor.depth), to: $anchor.after($anchor.depth) };
+      return chain.insertContentAt(range, blocks, { updateSelection: true }).run();
+    }
     return chain.insertContentAt(placed.insertAt, blocks, { updateSelection: true }).run();
   }
   const target = placed.target;

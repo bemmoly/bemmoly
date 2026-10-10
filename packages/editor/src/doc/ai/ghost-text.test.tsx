@@ -126,6 +126,22 @@ describe('ghost text', () => {
     expect(ghost()).toBeNull();
   });
 
+  it('keeps the ghost through an edit elsewhere, and drops it when the words before it change', async () => {
+    const { editor } = await setup({ complete: async () => GHOST });
+    type(editor, ' now');
+    await pause();
+    const remoteEdit = (apply: (tr: Editor['state']['tr']) => void) =>
+      act(() => {
+        const { tr } = editor.state;
+        apply(tr);
+        editor.view.dispatch(tr.setMeta('y-sync$', { isChangeOrigin: true }));
+      });
+    remoteEdit((tr) => tr.insert(0, editor.schema.nodes['paragraph']!.create()));
+    expect(ghost()).not.toBeNull();
+    remoteEdit((tr) => tr.insertText('X', editor.state.selection.head - 2));
+    expect(ghost()).toBeNull();
+  });
+
   it('asks nothing for another person’s edit', async () => {
     const complete = vi.fn(async () => GHOST);
     const { editor } = await setup({ complete });

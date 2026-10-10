@@ -18,11 +18,21 @@ interface GhostState {
   text: string | null;
   /** Where it is drawn: the caret it was asked for. */
   pos: number;
+  /** The line's text before the caret when it was drawn, to know it still belongs there. */
+  tail: string;
   /** Counts this person's own edits; a change starts the debounce again. */
   edits: number;
 }
 
 type GhostMeta = { show: { text: string; pos: number } } | { clear: true };
+
+const TAIL = 40;
+/** Up to TAIL characters of the caret's own line before it. */
+function tailAt(doc: Transaction['doc'], pos: number): string {
+  const $pos = doc.resolve(Math.min(pos, doc.content.size));
+  if (!$pos.parent.isTextblock) return '';
+  return doc.textBetween(Math.max($pos.start(), pos - TAIL), pos, '\n', ' ');
+}
 
 export const ghostTextKey = new PluginKey<GhostState>('aiGhostText');
 
@@ -38,13 +48,19 @@ const MAX_GHOST = 240;
 
 function apply(tr: Transaction, value: GhostState): GhostState {
   const meta = tr.getMeta(ghostTextKey) as GhostMeta | undefined;
-  if (meta && 'show' in meta) return { ...value, text: meta.show.text, pos: meta.show.pos };
+  if (meta && 'show' in meta) {
+    const { text, pos } = meta.show;
+    return { ...value, text, pos, tail: tailAt(tr.doc, pos) };
+  }
   if (meta) return value.text === null ? value : { ...value, text: null };
-  if (tr.docChanged && !remote(tr)) return { text: null, pos: 0, edits: value.edits + 1 };
+  if (tr.docChanged && !remote(tr)) return { ...value, text: null, edits: value.edits + 1 };
   if (value.text === null) return value;
-  // Someone else's edit: the caret is restored after it, and the ghost follows it there.
+  // An edit from the shared document (someone else's, or a Yjs undo): the caret is restored
+  // after it, and the ghost follows only if the words before the caret are still the same.
   if (tr.docChanged) {
-    return tr.selection.empty ? { ...value, pos: tr.selection.head } : { ...value, text: null };
+    const head = tr.selection.head;
+    const same = tr.selection.empty && tailAt(tr.doc, head) === value.tail;
+    return same ? { ...value, pos: head } : { ...value, text: null };
   }
   return tr.selectionSet ? { ...value, text: null } : value;
 }
@@ -135,7 +151,7 @@ function ghostPlugin(options: GhostTextOptions): Plugin<GhostState> {
   return new Plugin<GhostState>({
     key: ghostTextKey,
     state: {
-      init: () => ({ text: null, pos: 0, edits: 0 }),
+      init: () => ({ text: null, pos: 0, tail: '', edits: 0 }),
       apply,
     },
     view: () => ({
