@@ -140,7 +140,7 @@ function pageHeader(o = {}) {
     <span class="btn ghost icon" title="Star (S)">${ic('star', 16)}</span>
     <span class="btn">${ic('share', 14)}Share</span>
     <span class="btn ghost icon">${ic('more', 16)}</span>`;
-  return `<div style="${o.quiet ? 'opacity:.18' : ''}">${header({ crumbs, right: `${right}` }).replace('<div class="crumbs">', '<div class="crumbs">').replace('</div><div class="right">', `</div>${statusBtn}<div class="right">`)}</div>`;
+  return `<div style="${o.quiet ? 'opacity:.18' : ''}">${header({ crumbs, right: `${right}` }).replace('</div><div class="right">', `</div>${statusBtn}<div class="right">`)}</div>`;
 }
 /* A cover drawn from the logo's shapes: rounded tiles in the space's colour family */
 function cover(c = '#5B7BE5', dark = false) {
