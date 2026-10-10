@@ -14,6 +14,7 @@ import { useIssueFilters } from '../shared/issue-filters.ts';
 import { openCreate, useRecordRecent, useScreenActions } from '@bemmoly/core-web';
 import { navigateTo, workPaths } from '../hooks/issue-navigation.ts';
 import { useSavedFilters } from '../hooks/saved-filters.ts';
+import { WorkPresence } from '../shared/work-presence.tsx';
 import { IssueSlideOver, useRememberIssueList } from '../issue/index.ts';
 import type { WorkScreenProps } from '../routes.tsx';
 import { BoardSkeleton } from '../skeletons/board-skeleton.tsx';
@@ -283,5 +284,10 @@ export default function BoardScreen({ projectKey }: WorkScreenProps) {
       />
     );
   }
-  return <BoardBody screen={screen} view={screen.view} model={screen.model} />;
+  return (
+    <>
+      <WorkPresence projectId={screen.project.id} view="board" />
+      <BoardBody screen={screen} view={screen.view} model={screen.model} />
+    </>
+  );
 }

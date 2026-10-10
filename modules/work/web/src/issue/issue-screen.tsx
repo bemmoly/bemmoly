@@ -6,6 +6,7 @@ import { useMediaQuery } from '../hooks/media-query.ts';
 import type { WorkScreenProps } from '../routes.tsx';
 import { ISSUE_GRID, IssuePageSkeleton } from '../skeletons/issue-skeleton.tsx';
 import { useProject, useWorkRealtime } from '../shared/index.ts';
+import { WorkPresence } from '../shared/work-presence.tsx';
 import { IssueBody } from './issue-body.tsx';
 import { IssueError } from './issue-error.tsx';
 import { IssueMoreMenu, IssueStepper, ShareButton, WatchButton } from './issue-header.tsx';
@@ -46,6 +47,7 @@ export default function IssueScreen({ projectKey: issueKey }: WorkScreenProps) {
       )}
       {issue && (
         <>
+          <WorkPresence projectId={issue.projectId} view={`issue:${issue.key}`} />
           <HeaderActions>
             {neighbours && <IssueStepper neighbours={neighbours} />}
             <WatchButton issue={issue} />

@@ -9,6 +9,7 @@ import { DOCKED_SLIDE_OVER_QUERY, useMediaQuery } from '../hooks/media-query.ts'
 import { IssueActionsMenu, type MenuSprint } from '../shared/issue-actions-menu.tsx';
 import type { FilterOptions } from '../shared/issue-filter-bar.tsx';
 import { useIssueFilters } from '../shared/issue-filters.ts';
+import { WorkPresence } from '../shared/work-presence.tsx';
 import { BacklogBulkBar } from './backlog-bulk-bar.tsx';
 import { BacklogRowContext, type BacklogRowShared } from './backlog-row-context.ts';
 import { useBacklogScreen } from '../hooks/backlog-screen.ts';
@@ -169,6 +170,7 @@ export default function BacklogScreen({ projectKey: pathKey }: WorkScreenProps) 
   const open = screen.containers.find((c) => c.id === dialog?.sprintId);
   return (
     <div className="flex min-h-0 flex-1" onClick={keepLinksInApp}>
+      <WorkPresence projectId={screen.project?.id} view="backlog" />
       <HeaderActions>
         <Button loading={actions.create.isPending} onClick={createSprint}>
           Create sprint
