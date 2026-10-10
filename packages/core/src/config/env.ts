@@ -62,6 +62,16 @@ export const envSchema = z.object({
     .max(16 * 1024 * 1024)
     .optional(),
   BEMMOLY_ALLOW_PRIVATE_URLS: z.stringbool().default(false),
+  /**
+   * Absolute path of a JSON file of canned AI replies (the recorded provider). When set, no AI
+   * provider is ever called: for end-to-end tests and demos only. Empty or unset: off.
+   */
+  BEMMOLY_AI_RECORDING: z
+    .string()
+    .trim()
+    .optional()
+    .transform((value) => value || undefined)
+    .refine((value) => value === undefined || value.startsWith('/'), 'must be an absolute path'),
   OTEL_EXPORTER_OTLP_ENDPOINT: z.url().optional(),
   BEMMOLY_METRICS_TOKEN: z
     .string()

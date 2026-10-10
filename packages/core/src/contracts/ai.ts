@@ -130,6 +130,8 @@ export interface AiPolicy {
   /** The actor asked about opted out (always false without one). */
   actorOptedOut: boolean;
   budgetState: AiBudgetState;
+  /** Roles with a model assigned, paused or not. */
+  assignedRoles: readonly AiRole[];
   /** Assigned and not paused. */
   availableRoles: readonly AiRole[];
 }

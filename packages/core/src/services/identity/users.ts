@@ -163,14 +163,14 @@ export async function reactivateUser(db: Database, ctx: RequestContext, userId: 
 
 /** The signed-in person with what they may do and see, for the web shell. */
 export async function getMe(
-  deps: Pick<IdentityDependencies, 'db' | 'settings'>,
+  deps: Pick<IdentityDependencies, 'db' | 'settings' | 'aiEnabled'>,
   ctx: RequestContext,
 ): Promise<MeResponse> {
   const user = await getUser(deps.db, selfId(ctx));
   const [capabilities, modules, workspace] = await Promise.all([
     ctx.authz.workspaceCapabilities(ctx.actor),
     ctx.authz.modulesFor(ctx.actor),
-    readWorkspaceLook(deps.settings),
+    readWorkspaceLook(deps.settings, deps.aiEnabled && (() => deps.aiEnabled!(ctx.actor))),
   ]);
   return { user, capabilities: capabilities.sort(), modules: [...modules].sort(), workspace };
 }

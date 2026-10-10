@@ -38,6 +38,7 @@ export const OFF_POLICY: AiPolicy = {
   optedOutUserIds: [],
   actorOptedOut: false,
   budgetState: 'unlimited',
+  assignedRoles: [],
   availableRoles: [],
 };
 

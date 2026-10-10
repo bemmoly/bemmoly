@@ -6,6 +6,7 @@ import type { ModuleContributions } from './contributions.ts';
 import { ModuleLoadError } from './errors.ts';
 import type {
   AiContribution,
+  AiExclusionSourceDefinition,
   CapabilityDefinition,
   EntityDefinition,
   ReferenceSourceDefinition,
@@ -105,6 +106,16 @@ export class ModuleRegistry {
   /** Every module's `ctx.ai.addTool` contributions; the plans service reads its tools here. */
   aiTools(): FromModule<AiContribution>[] {
     return this.#collect((c) => c.aiTools);
+  }
+
+  /** Prompt files modules registered with `ctx.ai.addPromptFile`; the prompt service loads them. */
+  aiPromptFiles(): FromModule<{ name: string; path: string }>[] {
+    return this.#collect((c) => c.aiPromptFiles);
+  }
+
+  /** Spaces and projects Settings › AI › Privacy can exclude, per module. */
+  aiExclusionSources(): FromModule<AiExclusionSourceDefinition>[] {
+    return this.#collect((c) => c.aiExclusionSources);
   }
 
   #collect<T extends object>(pick: (c: ModuleContributions) => readonly T[]): FromModule<T>[] {

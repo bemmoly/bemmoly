@@ -11,6 +11,7 @@ declare module '../../contracts/settings.ts' {
     'ai.perUserOptOutAllowed': boolean;
     'ai.monthlyBudgetUsd': number | null;
     'ai.liveCatalog': boolean;
+    'ai.budgetNotified': string | null;
   }
 }
 
@@ -32,4 +33,6 @@ export const AI_SETTING_DEFINITIONS: readonly SettingDefinition[] = [
     default: null,
   },
   { key: 'ai.liveCatalog', schema: z.boolean(), default: true },
+  // "2026-10:warning": the last budget threshold admins were told about, so it is told once.
+  { key: 'ai.budgetNotified', schema: z.string().max(32).nullable(), default: null },
 ];

@@ -51,6 +51,7 @@ const ON_POLICY: AiPolicy = {
   optedOutUserIds: [],
   actorOptedOut: false,
   budgetState: 'unlimited',
+  assignedRoles: AI_ROLES,
   availableRoles: AI_ROLES,
 };
 

@@ -17,6 +17,7 @@ const policy = (change: Partial<AiPolicy> = {}): AiPolicy => ({
   optedOutUserIds: [],
   actorOptedOut: false,
   budgetState: 'unlimited',
+  assignedRoles: AI_ROLES,
   availableRoles: AI_ROLES,
   ...change,
 });
