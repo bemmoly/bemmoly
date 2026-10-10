@@ -49,13 +49,15 @@ export function usePaletteAi({ enabled, query, you, isAdmin, open }: PaletteAiOp
   const plan = useAiPlan();
   const answer = useAiAnswer();
   const location = useRouterState({ select: (state) => state.location });
-  const [mode, setMode] = useState<'idle' | 'plan' | 'answer'>('idle');
+  // A plan still followed from before (running, say) is back in view when the palette opens.
+  const [mode, setMode] = useState<'idle' | 'plan' | 'answer'>(plan.plan ? 'plan' : 'idle');
   const [asked, setAsked] = useState('');
   const words = query.trim();
   const intent = aiIntentOf(words);
   const running = plan.plan ? ['approved', 'running'].includes(plan.plan.status) : false;
   // Editing the words goes back to the results; a running plan stays in view.
-  const active = enabled && mode !== 'idle' && (asked === words || running);
+  const active =
+    enabled && mode !== 'idle' && (asked === words || running || (mode === 'plan' && !words));
   const ready = active && mode === 'plan' && plan.plan?.status === 'proposed' && plan.plan.runnable;
 
   const start = (text = words) => {

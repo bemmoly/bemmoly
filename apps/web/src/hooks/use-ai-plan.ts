@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { aiProblemOf, type AiProblem } from '../lib/ai-problem.ts';
 import { api } from '../lib/api.ts';
 import { toast } from '../lib/toast.ts';
+import { useUiStore } from '../store/ui.ts';
 
 const ACTIVE = new Set<AiPlan['status']>(['approved', 'running']);
 
@@ -15,7 +16,9 @@ const ACTIVE = new Set<AiPlan['status']>(['approved', 'running']);
  */
 export function useAiPlan() {
   const client = useQueryClient();
-  const [planId, setPlanId] = useState<string | null>(null);
+  // Kept in the shell's store, so a running plan is still there when the palette reopens.
+  const planId = useUiStore((state) => state.aiPlanId);
+  const setPlanId = useUiStore((state) => state.setAiPlanId);
   const [kept, setKept] = useState<Set<number> | null>(null);
   const store = (plan: AiPlan) => client.setQueryData(queryKeys.ai.plan(plan.id), plan);
 
@@ -32,7 +35,7 @@ export function useAiPlan() {
     queryKey: queryKeys.ai.plan(planId ?? ''),
     queryFn: () => api.ai.plans.get(planId ?? ''),
     enabled: planId !== null,
-    refetchInterval: (query) => (ACTIVE.has(query.state.data?.status ?? 'done') ? 2000 : false),
+    refetchInterval: (query) => (ACTIVE.has(query.state.data?.status ?? 'done') ? 1000 : false),
   });
 
   const settle = (next: AiPlan) => {

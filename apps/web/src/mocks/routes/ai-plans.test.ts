@@ -1,6 +1,7 @@
 import { aiPlanSchema, type AiPlan } from '@bemmoly/shared';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createMockApi } from '../dispatch.ts';
+import { MOCK_STEP_MS } from './ai-plans.ts';
 
 /* The plans mock: the Command mock's request works end to end on the Acme Labs seed. */
 
@@ -11,6 +12,8 @@ const call = (api: Api, method: string, path: string, body?: unknown) =>
   api.dispatch(method, `${API}${path}`, body);
 const plan = (body: unknown): AiPlan => aiPlanSchema.parse(body);
 const FLAGSHIP = 'move everything blocked by PLT-204 to next sprint';
+
+afterEach(() => vi.useRealTimers());
 
 describe('the plans mock', () => {
   it('plans the flagship request: two moves and a note on each, all allowed', () => {
@@ -33,21 +36,29 @@ describe('the plans mock', () => {
 
   it('runs a step per read, announces each, and undoes them', () => {
     const api = createMockApi('ready');
+    vi.useFakeTimers();
     const draft = plan(call(api, 'POST', '/ai/plans', { request: FLAGSHIP })?.body);
-    const queued = plan(call(api, 'POST', `/ai/plans/${draft.id}/run`, { steps: [0, 1, 2] })?.body);
+    const queued = plan(
+      call(api, 'POST', `/ai/plans/${draft.id}/run`, { steps: [0, 1, 2, 3] })?.body,
+    );
     expect(queued.steps.map((step) => step.status)).toEqual([
       'pending',
       'pending',
       'pending',
-      'skipped',
+      'pending',
     ]);
     api.db.outbound.length = 0;
-    let current = queued;
-    for (let i = 0; i < 3; i += 1) current = plan(call(api, 'GET', `/ai/plans/${draft.id}`)?.body);
+    // The mock's job makes a step every MOCK_STEP_MS, whether or not anyone reads the plan.
+    vi.advanceTimersByTime(MOCK_STEP_MS);
+    expect(plan(call(api, 'GET', `/ai/plans/${draft.id}`)?.body).status).toBe('running');
+    vi.advanceTimersByTime(MOCK_STEP_MS * 4);
+    const current = plan(call(api, 'GET', `/ai/plans/${draft.id}`)?.body);
     expect(current.status).toBe('done');
-    expect(api.db.outbound.filter(([kind]) => kind === 'ai.plan')).toHaveLength(3);
-    const issue = call(api, 'GET', '/work/issues/PLT-211')?.body as { sprint: { name: string } };
-    expect(issue.sprint.name).toBe('PLT Sprint 15');
+    expect(api.db.outbound.filter(([kind]) => kind === 'ai.plan')).toHaveLength(4);
+    for (const key of ['PLT-211', 'PLT-219']) {
+      const issue = call(api, 'GET', `/work/issues/${key}`)?.body as { sprint: { name: string } };
+      expect(issue.sprint.name).toBe('PLT Sprint 15');
+    }
     const comments = call(api, 'GET', '/work/issues/PLT-211/comments')?.body as {
       items: { bodyText: string; aiRunId: string | null }[];
     };
@@ -59,7 +70,7 @@ describe('the plans mock', () => {
       'undone',
       'undone',
       'undone',
-      'skipped',
+      'undone',
     ]);
     const back = call(api, 'GET', '/work/issues/PLT-211')?.body as { sprint: { name: string } };
     expect(back.sprint.name).toBe('PLT Sprint 14');

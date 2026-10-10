@@ -30,7 +30,6 @@ function hintsFor(ai: PaletteAi) {
   if (ai.mode === 'plan' && ai.plan.plan?.status === 'proposed' && ai.plan.plan.runnable) {
     return [
       { keys: 'Enter', label: 'run' },
-      { keys: 'Tab', label: 'edit' },
       { keys: 'Esc', label: 'close' },
     ];
   }

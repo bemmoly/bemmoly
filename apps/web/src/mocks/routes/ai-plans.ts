@@ -20,8 +20,8 @@ import { aiEnabledFor, aiOf, budgetStatus, parse } from './ai-state.ts';
 
 /*
  * The plans API on the in-memory backend. Planning is canned (ai-plans-planner.ts); running
- * goes through the mock Work routes, one step each time the plan is read, so the palette sees
- * the steps land one by one as it refetches on each `ai.plan` announcement.
+ * goes through the mock Work routes on a timer, a step at a time as the server's job does, so
+ * the palette sees each land and a closed palette does not stop the run.
  */
 
 interface StoredPlan extends AiPlan {
@@ -112,7 +112,18 @@ function runStep(db: MockDb, plan: StoredPlan, step: AiPlanStep) {
   return { undo: { [field]: before[field] ?? null } };
 }
 
-/** The job's work, one step per read: what lets the palette show progress in the mock. */
+/** About how long the server takes over a step, so the palette's progress can be seen. */
+export const MOCK_STEP_MS = 400;
+
+/** The run job: one step every MOCK_STEP_MS, whether or not anyone is watching. */
+function work(db: MockDb, plan: StoredPlan) {
+  const tick = () => {
+    advance(db, plan);
+    if (plan.status === 'running') setTimeout(tick, MOCK_STEP_MS);
+  };
+  setTimeout(tick, MOCK_STEP_MS);
+}
+
 function advance(db: MockDb, plan: StoredPlan) {
   if (plan.status !== 'approved' && plan.status !== 'running') return;
   plan.status = 'running';
@@ -175,7 +186,6 @@ export const aiPlanRoutes: MockRoute[] = [
     handle: (request, db) => {
       const plan = owned(db, request);
       if (!plan) return notFound('The plan');
-      advance(db, plan);
       return ok(view(plan));
     },
   },
@@ -203,6 +213,7 @@ export const aiPlanRoutes: MockRoute[] = [
       }
       Object.assign(plan, { status: 'approved', approvedAt: now() });
       announce(db, plan);
+      work(db, plan);
       return ok(view(plan));
     },
   },

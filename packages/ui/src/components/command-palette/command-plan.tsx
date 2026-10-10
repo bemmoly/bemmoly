@@ -42,6 +42,10 @@ function heading(state: CommandPlanState, steps: readonly PlanStep[]) {
   const chosen = steps.filter((step) => !['proposed', 'skipped'].includes(step.status ?? ''));
   const made = chosen.filter((step) => step.status === 'done').length;
   const failed = chosen.filter((step) => step.status === 'failed').length;
+  const undone = chosen.filter((step) => step.status === 'undone').length;
+  if (undone > 0 && made === 0 && ['done', 'failed', 'cancelled'].includes(state)) {
+    return ['Undone', `${plural(undone, 'change')} put back`];
+  }
   switch (state) {
     case 'ready':
       return ['Plan', 'nothing happens until you confirm'];
@@ -93,9 +97,11 @@ export function CommandPlan({
     footnote ??
     (state === 'ready' && denied > 0
       ? `${plural(denied, "change you can't make", "changes you can't make")} will be left out.`
-      : state === 'ready' || state === 'running'
+      : state === 'ready'
         ? 'Uses your permissions. Logged in the audit trail.'
-        : 'Logged in the audit trail.');
+        : state === 'running'
+          ? 'Keeps running if you close this.'
+          : 'Logged in the audit trail.');
   return (
     <section
       aria-label="Plan"
