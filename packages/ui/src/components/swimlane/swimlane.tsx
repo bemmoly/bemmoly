@@ -62,8 +62,12 @@ export function SwimlaneHeader({
       {colorClassName && (
         <i aria-hidden className={cx('size-2.5 shrink-0 rounded-[3px]', colorClassName)} />
       )}
-      <span className="truncate font-semibold">{name}</span>
-      {laneKey && <span className="font-mono text-12 text-tx-3">{laneKey}</span>}
+      <span className="min-w-12 truncate font-semibold">{name}</span>
+      {laneKey && (
+        <span className="shrink-0 font-mono text-12 whitespace-nowrap text-tx-3 max-sm:hidden">
+          {laneKey}
+        </span>
+      )}
       {meta && <span className="shrink-0 text-tx-3 tabular-nums">{meta}</span>}
       {pct !== undefined && (
         <span
@@ -72,7 +76,7 @@ export function SwimlaneHeader({
           aria-valuenow={Math.round(pct)}
           aria-valuemin={0}
           aria-valuemax={100}
-          className="h-1 w-22.5 shrink-0 overflow-hidden rounded-[2px] bg-line"
+          className="h-1 w-22.5 shrink-0 overflow-hidden rounded-[2px] bg-line max-sm:hidden"
         >
           <i
             className={cx('block h-full rounded-[2px]', colorClassName ?? 'bg-tx-3')}
