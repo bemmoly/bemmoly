@@ -3,9 +3,10 @@ import type { DocEditorProps } from '@bemmoly/editor';
 import { editorSchema } from '@bemmoly/editor/schema';
 import Collaboration from '@tiptap/extension-collaboration';
 import CollaborationCaret from '@tiptap/extension-collaboration-caret';
-import { prosemirrorJSONToYXmlFragment } from '@tiptap/y-tiptap';
+import { prosemirrorJSONToYXmlFragment, yXmlFragmentToProsemirrorJSON } from '@tiptap/y-tiptap';
 import type { Doc } from 'yjs';
 import type { RichText } from '../../../shared/common.ts';
+import { FROM_SEED } from './origins.ts';
 import type { CollabSession } from './session.ts';
 import type { CollabUser } from './user.ts';
 
@@ -79,5 +80,24 @@ export function collabExtensions(session: CollabSession, user: CollabUser): AnyE
 /** Local mode only: the page's stored snapshot as the starting document. */
 export function seedLocal(doc: Doc, snapshot: RichText | null | undefined): void {
   if (!snapshot || doc.getXmlFragment(FIELD).length > 0) return;
-  prosemirrorJSONToYXmlFragment(editorSchema(), snapshot, doc.getXmlFragment(FIELD));
+  doc.transact(() => {
+    prosemirrorJSONToYXmlFragment(editorSchema(), snapshot, doc.getXmlFragment(FIELD));
+  }, FROM_SEED);
+}
+
+/** Local mode only: the document as the page's stored snapshot, to keep the mock's copy. */
+export function localSnapshot(doc: Doc): RichText {
+  return yXmlFragmentToProsemirrorJSON(doc.getXmlFragment(FIELD)) as RichText;
+}
+
+/**
+ * Local mode only: the stored body changed outside the editor (a restore, an applied fix),
+ * so the tab's document takes it, as a collab server would push it. `origin` marks the
+ * change so it is not written back.
+ */
+export function replaceLocal(doc: Doc, snapshot: RichText, origin: unknown): void {
+  // Applied as a diff against what the tab has, inside one transaction tagged `origin`.
+  doc.transact(() => {
+    prosemirrorJSONToYXmlFragment(editorSchema(), snapshot, doc.getXmlFragment(FIELD));
+  }, origin);
 }

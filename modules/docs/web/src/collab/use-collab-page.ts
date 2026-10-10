@@ -32,7 +32,7 @@ export function collabUrl(): string {
 /**
  * One page body, shared live with everyone who has it open. `fallback` is the page's stored
  * snapshot: used only when no collab server answers (the dev mock), where the page becomes a
- * private document in this tab so the editor still works.
+ * private document in this tab (see use-local-sync.ts) so the editor still works.
  */
 export function useCollabPage(
   pageId: string | undefined,

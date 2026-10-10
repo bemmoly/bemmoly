@@ -10,6 +10,7 @@ import {
 import type { PageDetail } from '../../../shared/pages.ts';
 import { useCollabPage } from '../collab/use-collab-page.ts';
 import { useCollabUser } from '../collab/use-collab-user.ts';
+import { useLocalSync } from '../collab/use-local-sync.ts';
 import { useDocStats } from './body/doc-stats.ts';
 import { PageBanner } from './body/page-banner.tsx';
 import { PageBodyEditor } from './body/page-body-editor.tsx';
@@ -81,6 +82,7 @@ function readOnlyOf(page: PageDetail, status: string): ReadOnlyReason {
 export function PageFrame({ page }: { page: PageDetail }) {
   const user = useCollabUser();
   const collab = useCollabPage(page.deletedAt ? undefined : page.id, user, page.snapshot);
+  useLocalSync(page, collab.doc, collab.status === 'local');
   const [editor, setEditor] = useState<PageEditor | null>(null);
   const scroller = useRef<HTMLDivElement>(null);
   const readOnly = readOnlyOf(page, collab.status);
