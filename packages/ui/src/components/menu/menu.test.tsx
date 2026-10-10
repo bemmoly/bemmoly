@@ -23,4 +23,30 @@ describe('Menu', () => {
     expect(onSelect).toHaveBeenCalledOnce();
     expect(document.activeElement).toBe(trigger);
   });
+
+  it('toggles a checkbox item in place and reaches it with the arrow keys', () => {
+    const onSelect = vi.fn();
+    render(
+      <Menu
+        trigger={(props) => (
+          <button type="button" {...props}>
+            Display
+          </button>
+        )}
+      >
+        <MenuItem onSelect={() => undefined}>Reset</MenuItem>
+        <MenuItem kind="checkbox" checked={false} keepOpen onSelect={onSelect}>
+          Labels
+        </MenuItem>
+      </Menu>,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Display' }));
+    const item = screen.getByRole('menuitemcheckbox', { name: 'Labels' });
+    expect(item.getAttribute('aria-checked')).toBe('false');
+    fireEvent.keyDown(document.activeElement ?? document.body, { key: 'ArrowDown' });
+    expect(document.activeElement).toBe(item);
+    fireEvent.click(item);
+    expect(onSelect).toHaveBeenCalledOnce();
+    expect(screen.getByRole('menuitemcheckbox', { name: 'Labels' })).toBeTruthy();
+  });
 });

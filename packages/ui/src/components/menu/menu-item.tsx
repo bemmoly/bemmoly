@@ -21,6 +21,11 @@ export interface MenuItemProps {
    * chosen one shows a tick in place of the hint.
    */
   checked?: boolean;
+  /**
+   * With `checked`: "radio" picks one of a group; "checkbox" turns one setting on or off
+   * independently of its neighbours (which card fields show), as a menuitemcheckbox.
+   */
+  kind?: 'radio' | 'checkbox';
 }
 
 /** 8px 10px, 5px radius; the highlighted item is accent on ac-bg, medium weight. */
@@ -33,13 +38,14 @@ export function MenuItem({
   tone = 'default',
   keepOpen,
   checked,
+  kind = 'radio',
 }: MenuItemProps) {
   const choice = checked !== undefined;
   const { close } = useMenu();
   return (
     <button
       type="button"
-      role={choice ? 'menuitemradio' : 'menuitem'}
+      role={choice ? (kind === 'checkbox' ? 'menuitemcheckbox' : 'menuitemradio') : 'menuitem'}
       aria-checked={choice ? checked : undefined}
       tabIndex={-1}
       aria-disabled={disabled || undefined}
