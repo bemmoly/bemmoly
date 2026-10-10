@@ -141,6 +141,11 @@ export function collectReleases(
 ): Release[] {
   const byVersion = new Map<string, Map<string, ReleaseChange>>();
   for (const source of sources) {
+    // A release whose only notes are dependency bumps still shipped: the fixed group tags
+    // every package, so it is the version the installer pulls even with nothing to list.
+    for (const [, version] of source.matchAll(/^## (\S+)\s*$/gm)) {
+      if (version && !byVersion.has(version)) byVersion.set(version, new Map());
+    }
     for (const { version, kind, id, paragraphs } of parseChangelog(source)) {
       const changes = byVersion.get(version) ?? new Map<string, ReleaseChange>();
       if (!changes.has(id)) changes.set(id, { kind, paragraphs });
