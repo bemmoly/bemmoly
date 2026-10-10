@@ -60,7 +60,7 @@ function Quote({ comment }: { comment: PageComment }) {
  * when its text is in focus. The comments one under another (the first with its quote under
  * the name line), the AI fix in lilac when the thread carries one and the workspace has AI on,
  * and Apply fix · Reply · Resolve.
- * Enter or a click focuses its text.
+ * Enter or a click focuses its text; R replies and E resolves (or reopens).
  */
 export function CommentThread({
   thread,
@@ -86,6 +86,11 @@ export function CommentThread({
     if (event.key === 'r' && canComment && !resolved) {
       event.preventDefault();
       setReplying(true);
+    }
+    if (event.key === 'e' && canComment && !busy) {
+      event.preventDefault();
+      if (resolved) on.onReopen(root);
+      else on.onResolve(root);
     }
   };
 
@@ -119,9 +124,9 @@ export function CommentThread({
         }
       }}
       className={cx(
-        'flex cursor-default flex-col gap-1.5 rounded-control border px-3 py-2.5 text-13 leading-body outline-0',
-        'motion-safe:animate-rise motion-safe:transition-colors focus-visible:border-acc',
-        active ? 'border-line bg-amber-bg/50' : 'border-line bg-card',
+        'flex cursor-default flex-col gap-1.5 rounded-card border px-3 py-2.5 text-13 leading-body outline-0',
+        'motion-safe:animate-rise motion-safe:transition-colors focus-visible:shadow-ring',
+        active ? 'border-amber bg-card shadow-e1' : 'border-line bg-card',
         resolved && 'opacity-80',
       )}
     >

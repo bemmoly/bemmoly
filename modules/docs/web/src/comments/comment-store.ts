@@ -24,7 +24,13 @@ interface CommentUiState {
   /** Inline threads in the order their text appears in the page. */
   order: readonly string[];
   setOrder: (pageId: string, order: readonly string[]) => void;
+  /** Where each inline thread's text starts in the document, for markers and aligned cards. */
+  anchors: ReadonlyMap<string, number>;
+  setAnchors: (pageId: string, anchors: ReadonlyMap<string, number>) => void;
 }
+
+const sameAnchors = (a: ReadonlyMap<string, number>, b: ReadonlyMap<string, number>) =>
+  a.size === b.size && [...a].every(([id, from]) => b.get(id) === from);
 
 export const useCommentUi = create<CommentUiState>((set) => ({
   pageId: null,
@@ -36,13 +42,20 @@ export const useCommentUi = create<CommentUiState>((set) => ({
   clearDraft: () => set({ draft: null }),
   focusThread: (pageId, id, from = 'rail') =>
     set((state) => ({ pageId, active: id, focusFrom: from, focusTick: state.focusTick + 1 })),
-  reset: (pageId) => set({ pageId, draft: null, active: null, order: [] }),
+  reset: (pageId) => set({ pageId, draft: null, active: null, order: [], anchors: new Map() }),
   order: [],
   setOrder: (pageId, order) =>
     set((state) =>
       state.pageId === pageId && state.order.join() === order.join() ? state : { pageId, order },
     ),
+  anchors: new Map(),
+  setAnchors: (pageId, anchors) =>
+    set((state) =>
+      state.pageId === pageId && sameAnchors(state.anchors, anchors) ? state : { pageId, anchors },
+    ),
 }));
+
+const EMPTY: ReadonlyMap<string, number> = new Map();
 
 /** The draft and the focused thread, only when they belong to this page. */
 export function usePageCommentUi(pageId: string) {
@@ -54,6 +67,7 @@ export function usePageCommentUi(pageId: string) {
     focusTick: state.focusTick,
     focusFrom: state.focusFrom,
     order: mine ? state.order : [],
+    anchors: mine ? state.anchors : EMPTY,
     startDraft: (anchor: CommentAnchor) => state.startDraft(pageId, anchor),
     clearDraft: state.clearDraft,
     focusThread: (id: string | null, from?: FocusSource) => state.focusThread(pageId, id, from),

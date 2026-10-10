@@ -132,6 +132,35 @@ describe('the comments rail', () => {
     expect(await screen.findByText('The text changed since this fix was suggested')).toBeTruthy();
   });
 
+  it('resolves from the keyboard with E, and Undo reopens the thread', async () => {
+    server.use(
+      http.post('*/api/v1/docs/comments/:id/resolve', () =>
+        HttpResponse.json({ ...GENERAL, resolvedAt: at(6) }),
+      ),
+      http.post('*/api/v1/docs/comments/:id/reopen', () => HttpResponse.json(GENERAL)),
+    );
+    renderRail();
+    await screen.findByText(/Which is it\?/);
+    const thread = card('Looks good overall.');
+    thread.focus();
+    fireEvent.keyDown(thread, { key: 'e' });
+    fireEvent.click(await screen.findByRole('button', { name: 'Undo' }));
+    await waitFor(() =>
+      expect(calls.map((call) => call.path.split('/').pop())).toEqual(['resolve', 'reopen']),
+    );
+  });
+
+  it('walks the threads with J and K', async () => {
+    renderRail();
+    await screen.findByText(/Which is it\?/);
+    const cards = [...document.querySelectorAll<HTMLElement>('[data-thread]')];
+    cards[0]!.focus();
+    fireEvent.keyDown(cards[0]!, { key: 'j' });
+    expect(document.activeElement).toBe(cards[1]);
+    fireEvent.keyDown(cards[1]!, { key: 'k' });
+    expect(document.activeElement).toBe(cards[0]);
+  });
+
   it('lets only the author edit and delete, and asks before deleting a thread', async () => {
     server.use(
       http.delete('*/api/v1/docs/comments/:id', () => new HttpResponse(null, { status: 204 })),

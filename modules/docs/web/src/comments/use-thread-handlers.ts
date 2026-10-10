@@ -7,7 +7,8 @@ const messageOf = (error: unknown) =>
   error instanceof Error ? error.message : 'Try again in a moment.';
 
 /**
- * The rail's actions on threads, with what to say when one fails. A fix whose text moved
+ * The rail's actions on threads, with what to say when one fails. Resolve happens at once
+ * and offers Undo, which reopens the thread. A fix whose text moved
  * on (409) says so plainly: someone edited those words after the fix was suggested.
  */
 export function useThreadHandlers(pageId: string) {
@@ -21,7 +22,12 @@ export function useThreadHandlers(pageId: string) {
     onEdit: (comment, body) => actions.update.mutateAsync({ id: comment.id, body }),
     onResolve: (root) =>
       actions.resolve.mutate(root.id, {
-        onSuccess: () => toast.show({ tone: 'ok', title: 'Thread resolved', duration: 3000 }),
+        onSuccess: () =>
+          toast.undo({
+            title: 'Thread resolved',
+            onUndo: () =>
+              actions.reopen.mutate(root.id, { onError: fail('The thread was not reopened') }),
+          }),
         onError: fail('The thread was not resolved'),
       }),
     onReopen: (root) =>
