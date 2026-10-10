@@ -2,7 +2,7 @@ import type { AiPlan, AiPlanStep } from '@bemmoly/shared';
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { aiIntentOf } from '../../hooks/use-palette-ai.ts';
-import { planRows, planState } from './palette-plan-steps.tsx';
+import { planRows, planState, planWords } from './palette-plan-steps.tsx';
 
 const step = (index: number, patch: Partial<AiPlanStep> = {}): AiPlanStep => ({
   index,
@@ -81,6 +81,21 @@ describe('the palette plan table', () => {
     expect(planState(plan([], { runnable: false }))).toBe('preview');
     expect(planState(plan([], { status: 'approved' }))).toBe('running');
     expect(planState(plan([], { status: 'cancelled' }))).toBe('cancelled');
+  });
+
+  it('says an empty plan changes nothing once, and tells only admins where actions turn on', () => {
+    expect(planWords(plan([], { summary: null }), false)).toEqual({
+      summary: 'Nothing to change. Try naming the issues and what should change.',
+      footnote: undefined,
+    });
+    expect(planWords(plan([step(0)], { summary: null }), false).summary).toBe(
+      'Here is what I would change.',
+    );
+    const preview = plan([step(0)], { runnable: false });
+    expect(planWords(preview, true).footnote).toBe(
+      'Turn AI actions on in Settings › AI to run plans.',
+    );
+    expect(planWords(preview, false).footnote).not.toMatch(/Settings/);
   });
 });
 

@@ -93,3 +93,29 @@ export function planState(plan: AiPlan): CommandPlanState {
       return plan.status;
   }
 }
+
+/**
+ * The plan's sentence and footnote. An empty plan says so once, with what to try, rather than
+ * promising changes it then does not list. A plan AI actions may not run is a preview; only an
+ * admin is told where that is changed.
+ */
+export function planWords(
+  plan: AiPlan,
+  isAdmin: boolean,
+): { summary: string; footnote: string | undefined } {
+  const empty = plan.steps.length === 0;
+  const summary =
+    plan.summary ??
+    (empty
+      ? 'Nothing to change. Try naming the issues and what should change.'
+      : 'Here is what I would change.');
+  if (planState(plan) === 'preview') {
+    return {
+      summary,
+      footnote: isAdmin
+        ? 'Turn AI actions on in Settings › AI to run plans.'
+        : 'AI actions are off in this workspace, so this plan is a preview.',
+    };
+  }
+  return { summary, footnote: empty && plan.summary ? 'Nothing to change.' : undefined };
+}

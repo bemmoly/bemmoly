@@ -1,7 +1,7 @@
 import { CommandAiNotice, CommandAiThinking, CommandPlan } from '@bemmoly/ui';
 import type { PaletteAi } from '../../hooks/use-palette-ai.ts';
 import { PaletteAnswer } from './palette-answer.tsx';
-import { planRows, planState } from './palette-plan-steps.tsx';
+import { planRows, planState, planWords } from './palette-plan-steps.tsx';
 
 /**
  * Where the palette's results go once Bemmoly is asked: thinking, the plan (ready, partly
@@ -26,9 +26,10 @@ export function PaletteAiPanel({ ai }: { ai: PaletteAi }) {
     ? new Set(rows.filter((row) => row.indexes.some((i) => plan.kept?.has(i))).map((row) => row.id))
     : undefined;
   const empty = current.steps.length === 0;
+  const { summary, footnote } = planWords(current, ai.isAdmin);
   return (
     <CommandPlan
-      summary={current.summary ?? 'Here is what I would change.'}
+      summary={summary}
       steps={rows}
       state={state}
       editing={plan.editing}
@@ -41,15 +42,7 @@ export function PaletteAiPanel({ ai }: { ai: PaletteAi }) {
       {...(current.steps.some((step) => step.undoable) ? { onUndo: plan.undo } : {})}
       {...(current.runId ? { onNotUseful: plan.notUseful } : {})}
       busy={plan.busy}
-      {...(state === 'preview'
-        ? {
-            footnote: ai.isAdmin
-              ? 'Turn AI actions on in Settings › AI to run plans.'
-              : 'An admin can turn AI actions on in Settings › AI.',
-          }
-        : empty
-          ? { footnote: 'Nothing to change.' }
-          : {})}
+      {...(footnote ? { footnote } : {})}
     />
   );
 }
