@@ -28,6 +28,11 @@ export interface IssueCardProps {
   selected?: boolean;
   /** Part of a multi-selection: the accent tint and ring. */
   checked?: boolean;
+  /**
+   * An edit to it is on its way to the server: it dims after a beat, so an answer that comes
+   * quickly shows nothing, and comes back the moment the answer lands.
+   */
+  pending?: boolean;
   /** A 3px left border from a colour rule; see cardStripe. */
   stripeClassName?: string;
   /**
@@ -60,6 +65,7 @@ export function IssueCard({
   subtasks,
   selected = false,
   checked = false,
+  pending = false,
   stripeClassName,
   tools,
   onSelect,
@@ -78,12 +84,14 @@ export function IssueCard({
       role={onSelect ? 'button' : undefined}
       tabIndex={onSelect ? 0 : undefined}
       aria-pressed={onSelect ? selected : undefined}
+      aria-busy={pending || undefined}
       onClick={onSelect}
       onKeyDown={onSelect ? onKeyDown : undefined}
       className={cx(
         'group/card relative flex flex-col gap-2 rounded-card bg-card px-2.75 pt-2.5 pb-2.25 text-13 text-tx',
-        'motion-safe:transition-[box-shadow,background-color]',
+        'motion-safe:transition-[box-shadow,background-color,opacity]',
         checked ? 'bg-acc-50 shadow-e1 ring-1 ring-acc-100' : 'shadow-e1',
+        pending && 'opacity-60 motion-safe:delay-(--duration-base)',
         selected && 'ring-2 ring-acc',
         interactive && 'hover:shadow-e1h',
         stripeClassName && cx('border-l-[3px]', stripeClassName),

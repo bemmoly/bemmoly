@@ -33,6 +33,8 @@ export interface IssueRowProps {
   selected?: boolean;
   /** Part of a multi-selection: the box is ticked and the row tinted. */
   checked?: boolean;
+  /** An edit to it is on its way: it dims after a beat, as the IssueCard does. */
+  pending?: boolean;
   /**
    * Shows the selection box on hover and focus (always while anything is checked). It gets
    * the click, so the handler can read Shift and ⌘ / Ctrl.
@@ -67,6 +69,7 @@ export function IssueRow({
   blockedBy,
   selected = false,
   checked = false,
+  pending = false,
   onCheck,
   selecting = false,
   dragHandleProps,
@@ -76,10 +79,12 @@ export function IssueRow({
   return (
     <div
       style={{ gridTemplateColumns: issueRowTemplate(epic !== undefined) }}
+      aria-busy={pending || undefined}
       className={cx(
         'group/row relative grid h-9 items-center gap-2.5 border-b border-line-2 pr-6 pl-4 text-13 text-tx',
-        'motion-safe:transition-colors',
+        'motion-safe:transition-[color,background-color,border-color,opacity]',
         checked || selected ? 'bg-acc-50' : 'hover:bg-hover',
+        pending && 'opacity-60 motion-safe:delay-(--duration-base)',
         className,
       )}
     >
