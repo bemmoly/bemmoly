@@ -22,6 +22,15 @@ describe('docs module', () => {
         },
       ],
       search: [{ kind: 'docs.page', label: 'Pages' }],
+      icon: 'doc',
+      color: 'brand-2',
+      order: 20,
+      sidebar: {
+        path: '/docs',
+        links: [],
+        primary: [],
+        add: { create: 'docs.create-space', label: 'New space' },
+      },
     });
     expect(docs.defaultAccess).toBe('teams');
   });

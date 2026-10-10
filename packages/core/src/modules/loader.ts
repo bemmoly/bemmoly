@@ -10,6 +10,7 @@ import { createModuleContext } from './context.ts';
 import { emptyContributions } from './contributions.ts';
 import { ModuleLoadError } from './errors.ts';
 import { createLocalEventBus } from './local-event-bus.ts';
+import { checkModuleLook } from './look.ts';
 import type { SettingsReader } from './registries.ts';
 import { ModuleRegistry } from './registry.ts';
 
@@ -105,6 +106,7 @@ export function loadModules(options: LoadModulesOptions): ModuleRegistry {
         peers: () => registry,
       }),
     );
+    checkModuleLook(module, contributions);
     registry.add(module, contributions);
   }
   return registry;

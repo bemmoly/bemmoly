@@ -19,6 +19,13 @@ export default defineModule({
   version: '0.2.0',
   coreApi: '^0.1.0',
   defaultAccess: 'teams',
+  icon: 'doc',
+  color: 'brand-2',
+  order: 20,
+  sidebar: {
+    path: '/docs',
+    add: { create: 'docs.create-space', label: 'New space' },
+  },
   changelog: await loadChangelogFolder(new URL('./changelog/', import.meta.url)),
   register(ctx) {
     ctx.navigation.add({ id: 'docs.home', label: 'Docs', path: '/docs', placement: 'top' });

@@ -55,21 +55,40 @@ describe('buildApp', () => {
             },
           ],
           search: [{ kind: 'docs.page', label: 'Pages' }],
+          icon: 'doc',
+          color: 'brand-2',
+          order: 20,
+          sidebar: {
+            path: '/docs',
+            links: [],
+            primary: [],
+            add: { create: 'docs.create-space', label: 'New space' },
+          },
         },
         {
           id: 'sample',
           name: 'Sample',
           version: '0.0.0',
           navigation: [{ id: 'sample', label: 'Sample', path: '/sample', placement: 'top' }],
+          icon: 'box',
+          color: 'epic-4',
+          order: 90,
+          sidebar: { path: '/sample', links: [], primary: [] },
         },
         {
           id: 'work',
           name: 'Work',
           version: '0.2.0',
           navigation: [
-            { id: 'work.board', label: 'Board', path: '/work/board', placement: 'top' },
-            { id: 'work.backlog', label: 'Backlog', path: '/work/backlog', placement: 'top' },
-            { id: 'work.projects', label: 'Projects', path: '/work/projects', placement: 'top' },
+            { id: 'work.home', label: 'Work', path: '/work/board', placement: 'top' },
+            { id: 'work.board', label: 'Board', path: '/work/board', placement: 'command' },
+            { id: 'work.backlog', label: 'Backlog', path: '/work/backlog', placement: 'command' },
+            {
+              id: 'work.projects',
+              label: 'Projects',
+              path: '/work/projects',
+              placement: 'command',
+            },
             { id: 'work.create-issue', label: 'Issue', path: '/work/create', placement: 'create' },
             {
               id: 'work.create-project',
@@ -79,6 +98,24 @@ describe('buildApp', () => {
             },
           ],
           search: [{ kind: 'work.issue', label: 'Issues' }],
+          icon: 'board',
+          color: 'brand-1',
+          order: 10,
+          sidebar: {
+            path: '/work/projects',
+            links: [
+              {
+                id: 'work.all-projects',
+                label: 'All projects',
+                path: '/work/projects',
+                icon: 'layers',
+              },
+            ],
+            primary: [
+              { id: 'work.my-issues', label: 'My issues', path: '/work/my-issues', icon: 'me' },
+            ],
+            add: { create: 'work.create-project', label: 'New project' },
+          },
         },
       ],
     });

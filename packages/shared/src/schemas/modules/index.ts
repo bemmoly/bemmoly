@@ -16,14 +16,21 @@ export {
   type RemoveModuleDataBody,
 } from './admin.ts';
 export {
+  moduleColorSchema,
   moduleManifestSchema,
   modulesResponseSchema,
   navEntrySchema,
   navPlacementSchema,
   searchGroupSchema,
+  sidebarLinkSchema,
+  sidebarSectionSchema,
+  type ModuleColor,
   type ModuleManifest,
   type ModulesResponse,
   type NavEntry,
   type NavPlacement,
   type SearchGroup,
+  type SidebarLink,
+  type SidebarSection,
+  type SidebarSectionInput,
 } from './manifest.ts';

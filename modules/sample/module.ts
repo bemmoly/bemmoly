@@ -22,6 +22,10 @@ export default defineModule({
   version: '0.0.0',
   coreApi: '^0.1.0',
   defaultAccess: 'none',
+  icon: 'box',
+  color: 'epic-4',
+  order: 90,
+  sidebar: { path: '/sample' },
   changelog: await loadChangelogFolder(new URL('./changelog/', import.meta.url)),
   register(ctx) {
     ctx.navigation.add({ id: 'sample', label: 'Sample', path: '/sample', placement: 'top' });

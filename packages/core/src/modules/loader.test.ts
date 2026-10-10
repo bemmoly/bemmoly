@@ -101,6 +101,39 @@ describe('loadModules', () => {
     expect(() => loadModules({ available: [badNav] })).toThrow(/must live under "\/work"/);
   });
 
+  it('lists the tile and sidebar section the shell draws the module with', () => {
+    const work = fakeModule('work', {
+      icon: 'board',
+      color: 'brand-1',
+      order: 10,
+      sidebar: {
+        path: '/work/projects',
+        links: [{ id: 'work.projects', label: 'All projects', path: '/work/projects' }],
+      },
+    });
+    expect(loadModules({ available: [work] }).manifests()[0]).toMatchObject({
+      icon: 'board',
+      color: 'brand-1',
+      order: 10,
+      sidebar: { path: '/work/projects', links: [{ label: 'All projects' }] },
+    });
+  });
+
+  it('keeps a sidebar section inside its module and its "+" on its own create entry', () => {
+    const outside = fakeModule('work', {
+      sidebar: { path: '/work', links: [{ id: 'x', label: 'X', path: '/docs/x' }] },
+    });
+    expect(() => loadModules({ available: [outside] })).toThrow(
+      /sidebar path "\/docs\/x" must live under "\/work"/,
+    );
+    const unknownAdd = fakeModule('work', {
+      sidebar: { path: '/work', add: { create: 'work.create-thing', label: 'New thing' } },
+    });
+    expect(() => loadModules({ available: [unknownAdd] })).toThrow(/not one of its create entries/);
+    const badColor = fakeModule('work', { color: '#ff0000' as never });
+    expect(() => loadModules({ available: [badColor] })).toThrow(/not a module colour/);
+  });
+
   it('rejects two modules claiming the same route prefix', () => {
     const plugin = async () => undefined;
     const withRoute = (id: string) =>
