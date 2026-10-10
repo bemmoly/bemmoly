@@ -1,5 +1,6 @@
 import { useRealtime, type RealtimeEvent } from '@bemmoly/core-web';
-import type { RealtimeScope } from '@bemmoly/shared';
+import { queryKeys } from '@bemmoly/api-client';
+import { AI_REALTIME_KINDS, type RealtimeScope } from '@bemmoly/shared';
 import { useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
 import { realtimeUrl } from './api.ts';
@@ -18,6 +19,11 @@ export function useWorkRealtime(projectId: string | undefined) {
   const queryClient = useQueryClient();
   const onEvent = useCallback(
     (event: RealtimeEvent) => {
+      if (event.kind === AI_REALTIME_KINDS.insight) {
+        // A summary, TL;DR, pulse or check about something in this scope was rewritten.
+        void queryClient.invalidateQueries({ queryKey: queryKeys.ai.insights() });
+        return;
+      }
       if (!event.kind.startsWith('work.')) return;
       const moving = queryClient.isMutating({ mutationKey: workKeys.boardMoves() }) > 0;
       void queryClient.invalidateQueries({
