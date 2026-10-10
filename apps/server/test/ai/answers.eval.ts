@@ -91,7 +91,8 @@ describe('retrieval.answer', () => {
     });
     const ctx = {
       actor: { kind: 'user', id: 'u-rohan' },
-      authz: { modulesFor: async () => new Set<string>() },
+      // Rohan may use AI assist; the eval is about what happens after that check.
+      authz: { modulesFor: async () => new Set<string>(), authorize: async () => undefined },
     } as unknown as RequestContext;
     const events: AiAnswerEvent[] = [];
     for await (const event of await service.answer(ctx, { question: 'What is our rollback?' })) {
