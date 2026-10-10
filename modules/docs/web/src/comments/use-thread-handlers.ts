@@ -1,5 +1,6 @@
 import { ApiError } from '@bemmoly/api-client';
 import { useToast } from '@bemmoly/ui';
+import { describeAiError } from '../page/body/ai/describe-ai-error.ts';
 import type { ThreadHandlers } from './comment-thread.tsx';
 import { useCommentActions } from './use-comments.ts';
 
@@ -44,6 +45,16 @@ export function useThreadHandlers(pageId: string) {
               })
             : fail('The fix was not applied')(error),
       }),
+    onSuggestFix: (root) =>
+      actions.suggestFix.mutate(root.id, {
+        onError: (error) =>
+          toast.show({
+            tone: 'danger',
+            title: 'No fix was suggested',
+            body: describeAiError(error),
+          }),
+      }),
+    suggesting: actions.suggestFix.isPending ? (actions.suggestFix.variables ?? null) : null,
   };
 
   return {

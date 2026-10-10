@@ -15,6 +15,10 @@ export interface ThreadHandlers {
   onResolve: (root: PageComment) => void;
   onReopen: (root: PageComment) => void;
   onApplyFix: (root: PageComment) => void;
+  /** Asks AI for a fix to the thread's text; shown only with AI on. */
+  onSuggestFix: (root: PageComment) => void;
+  /** The thread a fix is being written for, if any. */
+  suggesting: string | null;
 }
 
 export interface CommentThreadProps extends ThreadHandlers {
@@ -79,6 +83,9 @@ export function CommentThread({
     aiEnabled && root.aiSuggestion && !root.aiSuggestion.appliedAt && root.anchor
       ? root.aiSuggestion
       : null;
+  const writing = aiEnabled && on.suggesting === root.id;
+  const canSuggest =
+    aiEnabled && canComment && root.anchorStatus === 'anchored' && !fix && !writing && !resolved;
 
   const onKeyDown = (event: KeyboardEvent<HTMLElement>) => {
     if (event.target !== event.currentTarget) return;
@@ -144,6 +151,15 @@ export function CommentThread({
           </span>
         </div>
       )}
+      {writing && (
+        <div
+          role="status"
+          className="mt-0.5 flex items-center gap-2 rounded-chip border border-ai-100 bg-ai-50 p-2 text-ai-600"
+        >
+          <AiDot />
+          Writing a fix…
+        </div>
+      )}
       {replying && (
         <CommentBox
           label="Reply"
@@ -165,6 +181,14 @@ export function CommentThread({
               onClick={() => on.onApplyFix(root)}
             >
               Apply fix
+            </ActivityAction>
+          )}
+          {canSuggest && (
+            <ActivityAction
+              className="font-medium text-ai-600! hover:text-tx!"
+              onClick={() => on.onSuggestFix(root)}
+            >
+              Suggest a fix
             </ActivityAction>
           )}
           {!resolved && (
