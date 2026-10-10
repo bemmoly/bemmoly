@@ -104,7 +104,7 @@ export const BacklogItem = memo(function BacklogItem({
         onPointerDown={(event) => event.stopPropagation()}
         onKeyDown={(event) => event.stopPropagation()}
         onClick={(event) => event.stopPropagation()}
-        className="absolute top-1/2 right-1 -translate-y-1/2 opacity-0 group-hover/item:opacity-100 group-focus-within/item:opacity-100 has-[[aria-expanded=true]]:opacity-100 pointer-coarse:opacity-100"
+        className="absolute top-1/2 right-0.5 -translate-y-1/2 opacity-0 group-hover/item:opacity-100 group-focus-within/item:opacity-100 has-[[aria-expanded=true]]:opacity-100 pointer-coarse:opacity-100"
       >
         {menu(issue, containerId)}
       </span>

@@ -6,7 +6,9 @@ import {
   SwimlaneHeader,
   type StatusStage,
 } from '@bemmoly/ui';
-import { memo, type ReactNode } from 'react';
+import { memo, useState, type ReactNode } from 'react';
+import { useMediaQuery } from '../hooks/media-query.ts';
+import { PhoneColumns } from './phone-columns.tsx';
 import { useBoardLanes } from '../hooks/board-filters.ts';
 import type { BoardModel, ColumnModel, LaneModel } from '../hooks/board-model.ts';
 import { cellId } from '../hooks/board-window.ts';
@@ -101,10 +103,23 @@ export function BoardGrid({ model, kanban, empty, stages, canCreate }: BoardGrid
   const collapsed = useBoardLanes((state) => state.collapsed);
   const openCreate = useColumnCreate((state) => state.open);
   const firstOpen = model.lanes.find((lane) => !collapsed.includes(lane.id)) ?? model.lanes[0];
+  // Phones show one column at a time, chosen from the status segments.
+  const phone = useMediaQuery('(max-width: 767px)', false);
+  const [phoneColumn, setPhoneColumn] = useState<string | null>(null);
+  const picked = model.columns.find((column) => column.id === phoneColumn) ?? model.columns[0];
+  const columns = phone && picked ? [picked] : model.columns;
   return (
     <div className="flex min-w-240 flex-col max-md:min-w-0">
-      <KanbanColumnHeaders columns={model.columns.length}>
-        {model.columns.map((column) => (
+      {phone && (
+        <PhoneColumns
+          columns={model.columns}
+          stages={stages}
+          value={picked?.id ?? null}
+          onChange={setPhoneColumn}
+        />
+      )}
+      <KanbanColumnHeaders columns={columns.length} className={phone ? 'hidden' : undefined}>
+        {columns.map((column) => (
           <KanbanColumnHeader
             key={column.id}
             name={column.name}
@@ -125,7 +140,7 @@ export function BoardGrid({ model, kanban, empty, stages, canCreate }: BoardGrid
             <Lane
               key={lane.id}
               lane={lane}
-              columns={model.columns}
+              columns={columns}
               kanban={kanban}
               open={!collapsed.includes(lane.id)}
             />

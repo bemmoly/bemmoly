@@ -1,7 +1,9 @@
 import type { Issue, Sprint } from '@bemmoly/module-work/shared';
-import { HeaderActions, useRecordRecent, useScreenActions } from '@bemmoly/core-web';
+import { HeaderActions } from '@bemmoly/core-web';
+import { useBacklogPresence } from './backlog-presence.ts';
 import { avatarHue, Button, EmptyState, useToast } from '@bemmoly/ui';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { setSearchParams, useSearchParam } from '../shared/url-state.ts';
 import { useIssueQuickActions } from '../hooks/issue-quick-actions.ts';
 import { DOCKED_SLIDE_OVER_QUERY, useMediaQuery } from '../hooks/media-query.ts';
 import { IssueActionsMenu, type MenuSprint } from '../shared/issue-actions-menu.tsx';
@@ -11,7 +13,7 @@ import { BacklogBulkBar } from './backlog-bulk-bar.tsx';
 import { BacklogRowContext, type BacklogRowShared } from './backlog-row-context.ts';
 import { useBacklogScreen } from '../hooks/backlog-screen.ts';
 import { useSprintActions } from '../hooks/backlog-sprints.ts';
-import { keepLinksInApp, navigateTo, workPaths } from '../hooks/issue-navigation.ts';
+import { keepLinksInApp } from '../hooks/issue-navigation.ts';
 import { useBacklogUi } from '../hooks/backlog-store.ts';
 import { IssueSlideOver, useRememberIssueList } from '../issue/index.ts';
 import type { WorkScreenProps } from '../routes.tsx';
@@ -25,35 +27,6 @@ import { SprintDialog } from './sprint-dialog.tsx';
 import { SprintSection } from './sprint-section.tsx';
 
 type Dialog = { kind: 'start' | 'edit' | 'complete'; sprintId: string } | null;
-
-/** The backlog as a recent item and its palette actions, once its project is known. */
-function useBacklogPresence(project: { key: string; name: string } | undefined) {
-  useRecordRecent(
-    project
-      ? {
-          id: `work.backlog:${project.key}`,
-          title: 'Backlog',
-          context: project.name,
-          path: workPaths.backlog(project.key),
-          look: { kind: 'icon', icon: 'backlog', moduleId: 'work' },
-          group: 'Boards',
-        }
-      : null,
-  );
-  useScreenActions(
-    project
-      ? [
-          {
-            id: 'work.go-board',
-            title: 'Go to board',
-            keys: 'G B',
-            look: { kind: 'icon', icon: 'board' },
-            run: () => navigateTo(workPaths.board(project.key)),
-          },
-        ]
-      : null,
-  );
-}
 
 /**
  * The Backlog at /work/backlog/PLT: the filter row, the epics panel and the sprint containers
@@ -73,6 +46,15 @@ export default function BacklogScreen({ projectKey: pathKey }: WorkScreenProps) 
   const dragging = useBacklogUi((state) => state.drag !== null);
   const selectedIds = useBacklogUi((state) => state.selection.ids);
   const [dialog, setDialog] = useState<Dialog>(null);
+  // "Complete sprint" on the Board lands here with ?complete=<sprint id> and opens the dialog.
+  const completeId = useSearchParam('complete');
+  const activeIds = screen.containers.filter((c) => c.sprint?.state === 'active').map((c) => c.id);
+  const canComplete = completeId !== null && activeIds.includes(completeId);
+  useEffect(() => {
+    if (!canComplete || !completeId) return;
+    setDialog({ kind: 'complete', sprintId: completeId });
+    setSearchParams({ complete: null });
+  }, [canComplete, completeId]);
   const quick = useIssueQuickActions();
   const docked = useMediaQuery(DOCKED_SLIDE_OVER_QUERY);
   const { peek, meId, lookups } = screen;
@@ -208,7 +190,7 @@ export default function BacklogScreen({ projectKey: pathKey }: WorkScreenProps) 
             className={`min-w-0 flex-1 overflow-auto pb-24 ${dragging ? 'select-none' : ''}`}
           >
             <BacklogRowContext.Provider value={rowShared}>
-              <div className="min-w-160 max-md:min-w-0">
+              <div className="min-w-0">
                 {screen.isPending && <BacklogContainersSkeleton />}
                 {screen.error &&
                   (screen.backlog ? (

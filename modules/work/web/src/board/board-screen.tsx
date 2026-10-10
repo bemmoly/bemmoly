@@ -149,6 +149,23 @@ function BoardBody({
             metrics={screen.metrics}
             sprint={screen.sprint}
             inFlight={inFlight}
+            doingPoints={model.lanes.reduce(
+              (sum, lane) =>
+                sum +
+                model.columns
+                  .slice(1)
+                  .filter((column) => !column.done)
+                  .reduce(
+                    (cells, column) =>
+                      cells +
+                      (lane.cells[column.id] ?? []).reduce(
+                        (p, card) => p + (card.estimate ?? 0),
+                        0,
+                      ),
+                    0,
+                  ),
+              0,
+            )}
           />
           <BoardToolbar
             options={screen.filterOptions}
