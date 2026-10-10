@@ -79,7 +79,7 @@ export function StatusNode({
       aria-invalid={invalid || undefined}
       style={{ left: x, top: y, ...style }}
       className={cx(
-        'absolute flex w-37.5 -translate-1/2 cursor-pointer flex-col gap-1 rounded-lg border bg-card px-3 py-2.5 text-left font-sans text-tx',
+        'absolute flex w-37.5 -translate-1/2 cursor-pointer flex-col gap-1 rounded-card border bg-card px-3 py-2.5 text-left font-sans text-tx',
         selected && 'shadow-ring-node',
         invalid ? 'border-red' : selected ? 'border-acc' : 'border-line',
         focusRing,

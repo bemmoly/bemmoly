@@ -22,7 +22,7 @@ export function MockFrame({ crop }: { crop: MockCrop }) {
   const { width, height } = crop.viewport ?? { width: 1440, height: 900 };
   return (
     <div
-      className="relative overflow-hidden rounded-card border border-br bg-sf"
+      className="relative overflow-hidden rounded-card border border-line bg-card"
       style={{ width: crop.w, height: crop.h }}
     >
       <iframe
@@ -39,7 +39,7 @@ export function MockFrame({ crop }: { crop: MockCrop }) {
 function Column({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className="flex min-w-0 flex-col gap-2">
-      <div className="text-11 font-medium tracking-caps text-tx5 uppercase">{label}</div>
+      <div className="text-11 font-medium tracking-caps text-tx-3 uppercase">{label}</div>
       {children}
     </div>
   );
@@ -53,7 +53,7 @@ export function SideBySide({ crops, children }: { crops: MockCrop[]; children: R
         {crops.map((crop) => (
           <div key={`${crop.file}-${crop.x}-${crop.y}`} className="flex flex-col gap-1">
             <MockFrame crop={crop} />
-            <div className="text-11 text-tx5">
+            <div className="text-11 text-tx-3">
               {crop.file} @ {crop.x},{crop.y} {crop.w}x{crop.h}
               {crop.note ? ` · ${crop.note}` : ''}
             </div>
