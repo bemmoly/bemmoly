@@ -1,3 +1,4 @@
+import type { Space, SpacesPage } from '@bemmoly/module-docs/shared';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { api } from '../shared/api.ts';
 import { docsKeys } from '../shared/keys.ts';
@@ -11,11 +12,34 @@ import { docsKeys } from '../shared/keys.ts';
 const TREE_PAGE = 50;
 const HOME_PAGE = 20;
 
+/** The server's largest page, and a ceiling of pages no real workspace reaches. */
+const SPACES_PAGE = 200;
+const MOST_SPACE_PAGES = 25;
+
+/**
+ * Every space this person can see, page after page: the sidebar, the home and each space's
+ * screens find their space in it, so one cut off after the first page would leave a busy
+ * workspace's newest spaces out of the sidebar.
+ */
+export async function listEverySpace(): Promise<Space[]> {
+  const items: Space[] = [];
+  let cursor: string | null = null;
+  for (let page = 0; page < MOST_SPACE_PAGES; page += 1) {
+    const next: SpacesPage = await api.docs.spaces.list({
+      limit: SPACES_PAGE,
+      ...(cursor ? { cursor } : {}),
+    });
+    items.push(...next.items);
+    cursor = next.nextCursor;
+    if (!cursor) break;
+  }
+  return items;
+}
+
 export function useSpaces() {
   return useQuery({
     queryKey: docsKeys.spaces(),
-    queryFn: () => api.docs.spaces.list({ limit: 200 }),
-    select: (page) => page.items,
+    queryFn: () => listEverySpace(),
   });
 }
 
