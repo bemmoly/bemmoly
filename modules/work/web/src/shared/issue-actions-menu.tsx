@@ -9,8 +9,10 @@ import {
   type Priority,
 } from '@bemmoly/ui';
 import { Icon } from '@bemmoly/ui/icons';
+import { useState } from 'react';
 import type { IssueQuickActions } from '../hooks/issue-quick-actions.ts';
 import { navigateTo, workPaths } from '../hooks/issue-navigation.ts';
+import { LinkIssueDialog } from '../issue/link-issue-dialog.tsx';
 
 /*
  * The one menu for an issue on a list screen: the card's and the row's ···, and the same menu
@@ -63,94 +65,101 @@ export function IssueActionsMenu({
   const keys = targets && targets.length > 1 ? targets : [issueKey];
   const many = keys.length > 1;
   const mine = meId !== undefined && assigneeId === meId;
+  const [linking, setLinking] = useState(false);
   return (
-    <Menu
-      align="end"
-      trigger={(props) => (
-        <IconButton
-          {...props}
-          {...{ [ROW_MENU]: '' }}
-          size="tool"
-          label={many ? `Actions for ${keys.length} issues` : `Actions for ${issueKey}`}
-          icon="more"
-          onClick={(event) => {
-            event.stopPropagation();
-            props.onClick();
-          }}
-        />
-      )}
-    >
-      {!many && (
-        <>
-          <MenuItem icon={<Icon name="expand" size={14} />} hint="Enter" onSelect={onOpen}>
-            Open
-          </MenuItem>
-          <MenuItem
-            icon={<Icon name="link" size={14} />}
-            onSelect={() => navigateTo(workPaths.issue(issueKey))}
-          >
-            Open full page
-          </MenuItem>
-          <MenuItem
-            icon={<Icon name="copy" size={14} />}
-            onSelect={() =>
-              void navigator.clipboard?.writeText(
-                `${window.location.origin}${workPaths.issue(issueKey)}`,
-              )
-            }
-          >
-            Copy link
-          </MenuItem>
-          <MenuSeparator />
-        </>
-      )}
-      {meId && (
-        <MenuItem
-          icon={<Icon name="user" size={14} />}
-          hint="I"
-          onSelect={() => void actions.update(keys, { assigneeId: mine && !many ? null : meId })}
-        >
-          {mine && !many ? 'Unassign' : 'Assign to me'}
-        </MenuItem>
-      )}
-      <MenuGroup label="Priority" separated>
-        {ORDER.map((level) => (
-          <MenuItem
-            key={level}
-            icon={<PriorityGlyph priority={level} />}
-            {...(many ? {} : { checked: level === priority })}
-            onSelect={() => void actions.update(keys, { priority: level })}
-          >
-            {PRIORITIES[level].name}
-          </MenuItem>
-        ))}
-      </MenuGroup>
-      {sprints && sprints.length > 0 && (
-        <MenuGroup label="Move to" separated>
-          {sprints
-            .filter((sprint) => many || sprint.id !== (sprintId ?? null))
-            .map((sprint) => (
-              <MenuItem
-                key={sprint.id ?? 'backlog'}
-                icon={<Icon name={sprint.id ? 'target' : 'backlog'} size={14} />}
-                onSelect={() =>
-                  void actions.update(keys, { sprintId: sprint.id }, `Moved to ${sprint.name}`)
-                }
-              >
-                {sprint.name}
-              </MenuItem>
-            ))}
-        </MenuGroup>
-      )}
-      <MenuSeparator />
-      <MenuItem
-        tone="danger"
-        icon={<Icon name="trash" size={14} />}
-        hint="Delete"
-        onSelect={() => actions.remove(keys)}
+    <>
+      <Menu
+        align="end"
+        trigger={(props) => (
+          <IconButton
+            {...props}
+            {...{ [ROW_MENU]: '' }}
+            size="tool"
+            label={many ? `Actions for ${keys.length} issues` : `Actions for ${issueKey}`}
+            icon="more"
+            onClick={(event) => {
+              event.stopPropagation();
+              props.onClick();
+            }}
+          />
+        )}
       >
-        {many ? `Delete ${keys.length} issues` : 'Delete issue'}
-      </MenuItem>
-    </Menu>
+        {!many && (
+          <>
+            <MenuItem icon={<Icon name="expand" size={14} />} hint="Enter" onSelect={onOpen}>
+              Open
+            </MenuItem>
+            <MenuItem
+              icon={<Icon name="external" size={14} />}
+              onSelect={() => navigateTo(workPaths.issue(issueKey))}
+            >
+              Open full page
+            </MenuItem>
+            <MenuItem
+              icon={<Icon name="copy" size={14} />}
+              onSelect={() =>
+                void navigator.clipboard?.writeText(
+                  `${window.location.origin}${workPaths.issue(issueKey)}`,
+                )
+              }
+            >
+              Copy link
+            </MenuItem>
+            <MenuItem icon={<Icon name="link" size={14} />} onSelect={() => setLinking(true)}>
+              Link issue…
+            </MenuItem>
+            <MenuSeparator />
+          </>
+        )}
+        {meId && (
+          <MenuItem
+            icon={<Icon name="user" size={14} />}
+            hint="I"
+            onSelect={() => void actions.update(keys, { assigneeId: mine && !many ? null : meId })}
+          >
+            {mine && !many ? 'Unassign' : 'Assign to me'}
+          </MenuItem>
+        )}
+        <MenuGroup label="Priority" separated>
+          {ORDER.map((level) => (
+            <MenuItem
+              key={level}
+              icon={<PriorityGlyph priority={level} />}
+              {...(many ? {} : { checked: level === priority })}
+              onSelect={() => void actions.update(keys, { priority: level })}
+            >
+              {PRIORITIES[level].name}
+            </MenuItem>
+          ))}
+        </MenuGroup>
+        {sprints && sprints.length > 0 && (
+          <MenuGroup label="Move to" separated>
+            {sprints
+              .filter((sprint) => many || sprint.id !== (sprintId ?? null))
+              .map((sprint) => (
+                <MenuItem
+                  key={sprint.id ?? 'backlog'}
+                  icon={<Icon name={sprint.id ? 'target' : 'backlog'} size={14} />}
+                  onSelect={() =>
+                    void actions.update(keys, { sprintId: sprint.id }, `Moved to ${sprint.name}`)
+                  }
+                >
+                  {sprint.name}
+                </MenuItem>
+              ))}
+          </MenuGroup>
+        )}
+        <MenuSeparator />
+        <MenuItem
+          tone="danger"
+          icon={<Icon name="trash" size={14} />}
+          hint="Delete"
+          onSelect={() => actions.remove(keys)}
+        >
+          {many ? `Delete ${keys.length} issues` : 'Delete issue'}
+        </MenuItem>
+      </Menu>
+      {linking && <LinkIssueDialog issueKey={issueKey} open onClose={() => setLinking(false)} />}
+    </>
   );
 }
