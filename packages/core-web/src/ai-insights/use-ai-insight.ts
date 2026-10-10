@@ -30,7 +30,7 @@ function viewOf(
 }
 
 /** While a regeneration runs, read again this often in case no socket announces it. */
-const POLL_MS = 2_500;
+const POLL_MS = 1_500;
 
 /**
  * One cached insight for a card. Hidden while AI is off for the person, and whenever the

@@ -186,7 +186,7 @@ export default function BacklogScreen({ projectKey: pathKey }: WorkScreenProps) 
             screen.sections.find(({ container }) => container.sprint?.state === 'active')?.container
               .id
           }
-          className="px-6 pt-3 max-md:px-4"
+          className="px-6 pt-3 pb-2 max-md:px-4"
         />
         <div className="flex min-h-0 flex-1">
           {showEpics && epicTypeId !== undefined && (

@@ -74,7 +74,7 @@ describe('ConsistencyFindings', () => {
     );
     renderFindings(true);
     expect(
-      await screen.findByText('“Sessions stay valid for 15 minutes.” PLT-204 says 30 minutes'),
+      await screen.findByText('“Sessions stay valid for 15 minutes.” PLT-204: 30 minutes'),
     ).toBeTruthy();
     expect(screen.getByRole('link', { name: 'Rollback' })).toBeTruthy();
     expect(screen.getByRole('link', { name: 'PLT-204' })).toBeTruthy();

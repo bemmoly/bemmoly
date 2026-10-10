@@ -31,7 +31,7 @@ export function ConsistencyFindings({ pageId }: { pageId: string }) {
                 state="ready"
                 points={[
                   {
-                    text: `“${finding.claim}” ${finding.issueKey} says ${finding.issueValue}`,
+                    text: `“${finding.claim}” ${finding.issueKey}: ${finding.issueValue}`,
                     cites: finding.cites,
                   },
                 ]}
