@@ -1,28 +1,126 @@
 ---
-import { DEMO_URL, NAV } from '../../lib/links.ts';
+/**
+ * The site's header, from the site review: the lockup, four links, a GitHub chip with the star
+ * count fetched at build time (no number at all when the fetch fails), a quiet Live demo and
+ * one primary, Install. Below 1024px the links move into a menu sheet (a modal dialog, so
+ * focus stays inside and Esc closes it); Install stays in the bar.
+ */
+import { formatCount, repoFacts } from '../../lib/clients/github.ts';
+import { DEMO_URL, INSTALL_HREF, NAV, REPO_URL } from '../../lib/links.ts';
+import Icon from './Icon.astro';
 import Logo from './Logo.astro';
+
+const facts = await repoFacts();
+const stars = facts ? formatCount(facts.stars) : null;
+const starLabel = facts ? `Bemmoly on GitHub, ${facts.stars} stars` : 'Bemmoly on GitHub';
 ---
 
-<header class="sticky top-0 z-5 flex h-16 items-center gap-7 border-b border-line-2 bg-glass dark:border-line px-4 backdrop-blur-[8px] sm:px-6 lg:px-12">
-  <a href="/" aria-label="Bemmoly home" class="flex items-center">
-    <Logo />
-  </a>
-  <nav aria-label="Main" class="ml-3 hidden gap-5.5 text-14 lg:flex">
-    {NAV.map((link) => (
-      <a href={link.href} class="text-tx-2 hover:text-tx">
-        {link.label}
+<header class="sticky top-0 z-20 border-b border-line-2 bg-glass backdrop-blur-[8px]">
+  <div class="mx-auto flex h-14 max-w-300 items-center gap-7 px-4 sm:px-6 lg:h-16 lg:px-8">
+    <a href="/" aria-label="Bemmoly home" class="flex items-center">
+      <Logo size={24} class="lg:h-6.5!" />
+    </a>
+    <nav aria-label="Main" class="ml-2 hidden gap-1 text-14h lg:flex">
+      {NAV.map((link) => (
+        <a
+          href={link.href}
+          class="rounded-card px-2.5 py-1.5 text-tx-2 hover:bg-hover hover:text-tx"
+        >
+          {link.label}
+        </a>
+      ))}
+    </nav>
+    <div class="ml-auto flex items-center gap-2">
+      <a
+        href={REPO_URL}
+        aria-label={starLabel}
+        class="hidden h-8.5 items-center gap-2 rounded-card px-2.5 text-14 text-tx-2 shadow-[inset_0_0_0_1px_var(--line)] hover:bg-hover hover:text-tx lg:inline-flex"
+      >
+        <Icon name="git" size={15} />
+        <span class="font-medium text-tx">GitHub</span>
+        {stars && (
+          <span class="inline-flex items-center gap-1 border-l border-line pl-2 font-mono text-12 text-tx-2">
+            <Icon name="star" size={12} />
+            {stars}
+          </span>
+        )}
       </a>
-    ))}
-  </nav>
-  <div class="ml-auto flex items-center gap-2.5 text-14">
-    <a href={DEMO_URL} class="hidden font-medium text-tx-2 hover:text-tx sm:inline">
-      Live demo
-    </a>
-    <a
-      href="/self-hosting#recommended"
-      class="inline-flex h-9 items-center rounded-control bg-tx px-4 font-medium text-card hover:text-card dark:bg-acc-fill dark:text-on-acc dark:hover:text-on-acc"
-    >
-      Install
-    </a>
+      <a
+        href={DEMO_URL}
+        class="hidden h-8.5 items-center rounded-card px-3 text-14 font-medium text-tx-2 hover:bg-hover hover:text-tx lg:inline-flex"
+      >
+        Live demo
+      </a>
+      <a
+        href={INSTALL_HREF}
+        class="inline-flex h-10 items-center rounded-card bg-acc-fill px-4 text-14 font-medium text-on-acc hover:bg-acc-600 hover:text-on-acc lg:h-8.5 lg:px-3.5"
+      >
+        Install
+      </a>
+      <button
+        type="button"
+        data-menu-open
+        aria-haspopup="dialog"
+        aria-controls="site-menu"
+        aria-expanded="false"
+        class="-mr-1.5 inline-grid size-11 cursor-pointer place-items-center rounded-card text-tx-2 hover:bg-hover hover:text-tx lg:hidden"
+      >
+        <Icon name="lines" size={20} label="Open the menu" />
+      </button>
+    </div>
   </div>
+  <dialog
+    id="site-menu"
+    aria-label="Menu"
+    class="inset-x-0 top-0 bottom-auto m-0 h-auto max-h-dvh w-full max-w-none overflow-y-auto border-0 border-b border-line bg-canvas p-0 text-tx shadow-e2 backdrop:bg-scrim lg:hidden"
+  >
+    <div class="flex h-14 items-center gap-3 px-4 sm:px-6">
+      <Logo size={24} />
+      <button
+        type="button"
+        data-menu-close
+        class="-mr-1.5 ml-auto inline-grid size-11 cursor-pointer place-items-center rounded-card text-tx-2 hover:bg-hover hover:text-tx"
+      >
+        <Icon name="close" size={20} label="Close the menu" />
+      </button>
+    </div>
+    <nav class="flex flex-col px-2 pb-2 sm:px-4">
+      {NAV.map((link) => (
+        <a
+          href={link.href}
+          class="flex h-12 items-center rounded-card px-3 text-16 text-tx hover:bg-hover hover:text-tx"
+        >
+          {link.label}
+        </a>
+      ))}
+      <a
+        href={DEMO_URL}
+        class="flex h-12 items-center rounded-card px-3 text-16 text-tx hover:bg-hover hover:text-tx"
+      >
+        Live demo
+      </a>
+      <a
+        href={REPO_URL}
+        class="flex h-12 items-center gap-2.5 rounded-card px-3 text-16 text-tx hover:bg-hover hover:text-tx"
+      >
+        <Icon name="git" size={17} />
+        GitHub
+        {stars && (
+          <span class="inline-flex items-center gap-1 font-mono text-13 text-tx-2">
+            <Icon name="star" size={12} />
+            {stars}
+          </span>
+        )}
+      </a>
+    </nav>
+    <div class="border-t border-line-2 p-4 sm:px-6">
+      <a
+        href={INSTALL_HREF}
+        data-menu-close
+        class="flex h-11 items-center justify-center rounded-card bg-acc-fill text-15 font-medium text-on-acc hover:bg-acc-600 hover:text-on-acc"
+      >
+        Install
+      </a>
+    </div>
+  </dialog>
 </header>

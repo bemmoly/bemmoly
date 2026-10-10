@@ -5,7 +5,6 @@
  * (deploy/cli/bemmoly). Tech design §18 is the design behind it.
  */
 import CodeBlock from '../../components/site/CodeBlock.astro';
-import CopyScript from '../../components/site/CopyScript.astro';
 import Section from '../../components/site/Section.astro';
 import Transcript from '../../components/site/Transcript.astro';
 import Related from '../../components/topics/Related.astro';
@@ -65,8 +64,8 @@ const COMMANDS = [
 >
   <StatusNote>
     The installer pulls the newest stable release, {RELEASE.version} today: the foundation (setup,
-    people and roles, email, backups and updates), the Work module, with issues, boards, the
-    backlog and sprints, and the Docs module, with spaces, a live editor, comments and history.
+    people and roles, email, backups and updates), the Work module, with issues, boards, the backlog
+    and sprints, and the Docs module, with spaces, a live editor, comments and history.
   </StatusNote>
 
   <Section title="1. Get a server" id="requirements">
@@ -156,8 +155,8 @@ const COMMANDS = [
       <a href="/self-hosting#after-install">After install</a> shows the steps.
     </p>
     <p>
-      Modules start switched off. To track issues or write pages, turn on Work or Docs in Settings › Modules and choose who
-      can use it: nobody yet, everyone, or specific teams.
+      Modules start switched off. To track issues or write pages, turn on Work or Docs in Settings ›
+      Modules and choose who can use it: nobody yet, everyone, or specific teams.
     </p>
     <p>
       Keep a copy of <code>/var/bemmoly/.env</code> somewhere safe. It holds the key that decrypts
@@ -207,5 +206,4 @@ const COMMANDS = [
   </Section>
 
   <Related current="/docs/install" />
-  <CopyScript />
 </Page>

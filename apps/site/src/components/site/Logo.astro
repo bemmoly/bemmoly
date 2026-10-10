@@ -1,14 +1,29 @@
 ---
 /**
- * The brand lockup, inlined from @bemmoly/ui's brand folder (the only source of the logo).
- * The -color file draws the mark in its designed colours (the variables it reads are only set
- * for a workspace's custom brand, never on the site) and the lettering in currentColor. The
- * file is 24 units tall; the wrapper's height scales it (the Landing mock's brand block is 28px
- * tall).
+ * The brand, inlined from @bemmoly/ui's brand folder (the only source of the logo): the
+ * re-cut lockup, whose lettering is set at 115% so the word carries beside the mark (ADR 0015),
+ * or the mark alone. The -color files draw the four tiles in their designed colours on every
+ * theme and the lettering in currentColor. The files are 24 units tall; `size` is the height in
+ * px (the site review's nav draws the lockup 26px tall, its footer 22px).
  */
 import lockup from '@bemmoly/ui/brand/lockup-color.svg?raw';
+import mark from '@bemmoly/ui/brand/mark-color.svg?raw';
 
-const svg = lockup.replace(/\s(width|height)="[^"]*"/g, '');
+interface Props {
+  variant?: 'lockup' | 'mark';
+  size?: number;
+  class?: string;
+}
+
+const { variant = 'lockup', size = 26, class: className } = Astro.props;
+// The wrapper names the brand (or the link around it does); the drawing is decoration.
+const svg = (variant === 'mark' ? mark : lockup)
+  .replace(/\s(width|height)="[^"]*"/g, '')
+  .replace(/\srole="img"\saria-label="[^"]*"/, ' aria-hidden="true" focusable="false"');
 ---
 
-<span class="inline-flex h-7 text-tx [&>svg]:h-full [&>svg]:w-auto" set:html={svg} />
+<span
+  class:list={['inline-flex shrink-0 text-tx [&>svg]:h-full [&>svg]:w-auto', className]}
+  style={`height:${size}px`}
+  set:html={svg}
+/>

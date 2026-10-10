@@ -109,6 +109,11 @@ body {
     outline-offset: var(--focus-offset);
   }
 
+  /* The phone menu is a modal sheet: the page behind it does not scroll. */
+  html:has(dialog[open]) {
+    overflow: hidden;
+  }
+
   /* The scroll position an in-page link lands on clears the sticky header. */
   :target {
     scroll-margin-top: 80px;

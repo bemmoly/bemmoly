@@ -8,7 +8,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { CRAWLERS } from '../src/data/crawlers.ts';
 import { DEMO_PAGE, PAGES } from '../src/data/pages.ts';
 import { INDEXNOW_KEY } from '../src/lib/indexnow.ts';
-import { REPO_URL } from '../src/lib/links.ts';
+import { DEMO_URL, INSTALL_HREF, NAV, REPO_URL } from '../src/lib/links.ts';
 import { hrefsOf, idsOf, isSitePage, parsePage, scriptsOf } from './dom.ts';
 import { startPreview, type Preview } from './serve.ts';
 
@@ -49,20 +49,20 @@ describe('landing page', () => {
     expect(index).not.toContain('#07111c');
   });
 
-  it('ships only the inline copy button and the small preview script', () => {
+  it('ships only the inline theme script and the one small site script', () => {
     // JSON-LD is data, not code: it runs nothing and the CSP does not need to allow it.
     const scripts = scriptsOf(parsePage(html('index.html'))).filter(
       (script) => script.type !== 'application/ld+json',
     );
     const inline = scripts.filter((script) => script.src === undefined);
-    expect(inline.reduce((total, script) => total + script.body.length, 0)).toBeLessThan(1024);
-    // The previews' script (src/lib/preview.ts), a file the CSP's 'self' allows. The demo
-    // itself loads only when a visitor asks for it.
+    expect(inline.reduce((total, script) => total + script.body.length, 0)).toBeLessThan(512);
+    // The site script (src/lib/client): menu, theme, copy, tabs and previews, a file the
+    // CSP's 'self' allows. The demo itself loads only when a visitor asks for it.
     const external = scripts.flatMap((script) => script.src ?? []);
     expect(external).toHaveLength(1);
     expect(external[0]).toMatch(/^\/_astro\/[\w.-]+\.js$/);
     const code = readFileSync(new URL(`.${external[0]}`, dist));
-    expect(gzipSync(code).length).toBeLessThan(2048);
+    expect(gzipSync(code).length).toBeLessThan(3 * 1024);
     expect(code.toString()).not.toContain('/demo/assets/');
   });
 });
@@ -72,7 +72,7 @@ describe('links', () => {
 
   it('finds the navigation on every page', () => {
     for (const page of pages) {
-      for (const href of ['/#product', '/self-hosting', '/docs', '/community', REPO_URL]) {
+      for (const href of [...NAV.map((link) => link.href), INSTALL_HREF, DEMO_URL, REPO_URL]) {
         expect(hrefs(html(page)), `${page} links to ${href}`).toContain(href);
       }
     }

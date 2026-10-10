@@ -20,6 +20,7 @@ export const PROOF_POINTS = [
 ];
 
 export interface Feature {
+  id?: string;
   g: string;
   title: string;
   body: string;
@@ -29,12 +30,14 @@ export interface Feature {
 
 export const FEATURES: readonly Feature[] = [
   {
+    id: 'work',
     g: 'WK',
     title: 'Work, from backlog to release',
     body: 'Scrum or Kanban per project. Epics, sprints, swimlanes, WIP limits, custom fields, a visual workflow editor, saved filters and ⌘K search.',
     status: 'now',
   },
   {
+    id: 'docs',
     g: 'DC',
     title: 'Docs, from RFC to handbook',
     body: 'Spaces, page trees, templates, inline comments and live issue embeds that stay in sync, in the same app as the work they describe.',

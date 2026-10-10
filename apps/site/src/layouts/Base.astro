@@ -18,8 +18,6 @@ import { themeCss } from '../lib/theme.ts';
 
 interface Props {
   page: SitePage;
-  /** The landing page puts its closing call to action inside the footer block. */
-  cta?: boolean;
   /** Error pages are served but must not be indexed. */
   noindex?: boolean;
   /** Questions the page answers in its own text, for the FAQPage data. */
@@ -28,13 +26,16 @@ interface Props {
   alternate?: { href: string; type: string; title: string };
 }
 
-const { page, cta = false, noindex = false, faq, alternate } = Astro.props;
+const { page, noindex = false, faq, alternate } = Astro.props;
 // Page paths are the clean addresses Caddy serves (/docs, /docs/install, /).
 const canonical = new URL(page.path, Astro.site).href;
 const image = new URL(socialPreview.src, Astro.site).href;
 const logo = new URL(icon512.src, Astro.site).href;
 // The browser's own chrome matches the page in both versions.
-const themeColors = { light: themeById('light').colors.canvas, dark: themeById('dark').colors.canvas };
+const themeColors = {
+  light: themeById('light').colors.canvas,
+  dark: themeById('dark').colors.canvas,
+};
 // The two IBM Plex Sans faces above the fold; the rest load on demand.
 const preloads = [plexSans400, plexSans600];
 const robots = noindex
@@ -96,12 +97,17 @@ const verification = [
     <script is:inline type="application/ld+json" set:html={graph} />
   </head>
   <body class="flex min-h-screen flex-col">
+    <p data-live-status class="sr-only" aria-live="polite"></p>
     <Nav />
     <main class="flex flex-1 flex-col">
       <slot />
     </main>
-    <Footer cta={cta}>
+    <Footer>
       <slot name="cta" />
     </Footer>
+    <script>
+      import { start } from '../lib/client/index.ts';
+      start();
+    </script>
   </body>
 </html>

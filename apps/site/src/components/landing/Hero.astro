@@ -2,7 +2,7 @@
 import { PROOF_POINTS, RELEASE } from '../../data/landing.ts';
 import { DEMO_URL } from '../../lib/links.ts';
 import Button from '../site/Button.astro';
-import InstallCommand from './InstallCommand.astro';
+import CommandField from '../site/CommandField.astro';
 ---
 
 <section class="relative isolate mx-auto flex w-full max-w-290 flex-col items-center gap-7 px-4 pt-16 pb-14 text-center sm:px-6 lg:px-12 lg:pt-22">
@@ -27,7 +27,7 @@ import InstallCommand from './InstallCommand.astro';
       Try the live demo
     </Button>
   </div>
-  <InstallCommand />
+  <CommandField id="hero-command" size="lg" />
   <ul class="flex flex-wrap justify-center gap-x-7 gap-y-2 text-13 text-tx-3">
     {PROOF_POINTS.map((point) => (
       <li>{point}</li>

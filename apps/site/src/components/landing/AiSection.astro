@@ -7,22 +7,23 @@ import Badge from '../site/Badge.astro';
 import Shot from './Shot.astro';
 ---
 
-<section class="mx-auto grid w-full max-w-290 items-center gap-16 px-4 py-20 sm:px-6 lg:grid-cols-2 lg:px-12">
+<section
+  id="ai"
+  class="mx-auto grid w-full max-w-290 items-center gap-16 px-4 py-20 sm:px-6 lg:grid-cols-2 lg:px-12"
+>
   <div class="flex flex-col items-start gap-4">
     <Badge tone={AVAILABILITY.ai.tone}>{AVAILABILITY.ai.label}</Badge>
     <h2 class="text-24 leading-display font-semibold tracking-display">
       AI that does the chores, and shows its work
     </h2>
     <p class="text-16 leading-doc text-pretty text-tx-2">
-      Coming, and optional: ask in plain language from anywhere, and Bemmoly turns it into a plan you can
-      read before anything changes, runs it with your permissions, and logs it. Summaries cite the
-      comments and pages they came from. Until then, everything works without AI.
+      Coming, and optional: ask in plain language from anywhere, and Bemmoly turns it into a plan
+      you can read before anything changes, runs it with your permissions, and logs it. Summaries
+      cite the comments and pages they came from. Until then, everything works without AI.
     </p>
     <ul class="flex flex-col gap-2.5 text-14h text-tx">
       {AI_POINTS.map((point) => (
-        <li class="flex gap-2.5">
-          {point}
-        </li>
+        <li class="flex gap-2.5">{point}</li>
       ))}
     </ul>
   </div>
