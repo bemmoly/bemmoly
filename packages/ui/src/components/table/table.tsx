@@ -2,6 +2,7 @@ import {
   useRef,
   useSyncExternalStore,
   type KeyboardEvent,
+  type HTMLAttributes,
   type MouseEvent,
   type ReactNode,
 } from 'react';
@@ -57,6 +58,8 @@ export interface TableProps<T> {
   footer?: TableFooter;
   /** Shown instead of rows when there are none, e.g. an EmptyState. */
   empty?: ReactNode;
+  /** Extra attributes per row, such as the drop handlers of a reorderable list. */
+  rowProps?: (row: T, index: number) => HTMLAttributes<HTMLDivElement> & { 'data-over'?: boolean };
   className?: string;
 }
 
@@ -109,6 +112,7 @@ export function Table<T>({
   onSort,
   footer,
   empty,
+  rowProps,
   className,
 }: TableProps<T>) {
   const body = useRef<HTMLDivElement>(null);
@@ -142,11 +146,12 @@ export function Table<T>({
           </div>
         </div>
         <div role="rowgroup" ref={body}>
-          {rows.map((row) => {
+          {rows.map((row, index) => {
             const key = rowKey(row);
             const selected = key === selectedKey;
             return (
               <div
+                {...rowProps?.(row, index)}
                 key={key}
                 role="row"
                 aria-selected={onRowClick ? selected : undefined}
@@ -163,6 +168,7 @@ export function Table<T>({
                   onRowClick && cx('cursor-pointer', focusRingInset),
                   selected && 'bg-acc-50 hover:bg-acc-50',
                   isMuted?.(row) && 'text-tx-3 [&_*]:text-tx-3',
+                  'data-[over=true]:shadow-[inset_0_2px_0_var(--acc)]',
                 )}
               >
                 {shown.map((column) => (
