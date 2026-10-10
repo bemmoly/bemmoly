@@ -50,10 +50,10 @@ export function SpaceOverview() {
           <Button
             variant="primary"
             icon={<Icon name="plus" size={15} />}
+            iconEnd={<Kbd keys="N" />}
             onClick={() => createPage(null)}
           >
             New page
-            <Kbd keys="N" variant="plain" className="text-on-acc/75" />
           </Button>
         </HeaderActions>
       )}
