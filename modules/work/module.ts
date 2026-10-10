@@ -2,6 +2,7 @@ import { defineModule, loadChangelogFolder } from '@bemmoly/core';
 import { WORK_CAPABILITIES } from './server/src/config/capabilities.ts';
 import { defineWorkSettings } from './server/src/config/settings.ts';
 import { createWorkControllers } from './server/src/controllers/index.ts';
+import { registerWorkAiTools } from './server/src/services/ai-tools/index.ts';
 import { workRoutes } from './server/src/routes/index.ts';
 import { createWorkServices } from './server/src/services/index.ts';
 import { WORK_AUTOMATION_RUN_JOB, WORK_RANK_REBALANCE_JOB } from './server/src/services/jobs.ts';
@@ -100,6 +101,7 @@ export default defineModule({
     });
     registerWorkSearch(ctx.search, services.search, ctx.database);
     registerWorkReferences(ctx, ctx.database);
+    registerWorkAiTools(ctx.ai, services);
     ctx.routes.add({ prefix: '/work', plugin: workRoutes(createWorkControllers(services)) });
   },
 });

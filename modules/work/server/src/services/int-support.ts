@@ -7,6 +7,7 @@ import {
   createSqlClient,
   loadKernelChangelog,
   loadModules,
+  type Actor,
   type DomainEvent,
   type RealtimeMessage,
   type RequestContext,
@@ -40,6 +41,8 @@ export interface WorkHarness {
   jobs: SentJob[];
   /** A request context for the person, with a fresh per-request authorization. */
   as(userId: string): RequestContext;
+  /** The same for any actor: an AI plan acting for a person, say. */
+  context(actor: Actor): RequestContext;
   /** A project created by the admin, with `members` added in the member role. */
   project(key: string, members?: readonly string[]): Promise<Project>;
   /** A task in the project, created by `userId` (the admin when omitted). */
@@ -101,10 +104,11 @@ export async function startWorkHarness(): Promise<HarnessStart> {
       },
     },
   });
-  const as = (userId: string): RequestContext => ({
-    actor: { kind: 'user', id: userId },
+  const context = (actor: Actor): RequestContext => ({
+    actor,
     authz: createRequestAuthorization({ db, modules: catalog }),
   });
+  const as = (userId: string): RequestContext => context({ kind: 'user', id: userId });
   const [task] = await sql<{ id: string }[]>`
     select id from issue_types where project_id is null and key = 'task'`;
   if (!task) throw new Error('The default task type is not seeded');
@@ -118,6 +122,7 @@ export async function startWorkHarness(): Promise<HarnessStart> {
       realtime,
       jobs,
       as,
+      context,
       async project(key, members = []) {
         const project = await services.projects.create(as(users.admin), { key, name: key });
         for (const userId of members) {
