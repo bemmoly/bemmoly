@@ -7,6 +7,7 @@ import {
   useState,
   type RefObject,
 } from 'react';
+import { useHeaderTrail, useRecordRecent } from '@bemmoly/core-web';
 import type { PageDetail } from '../../../shared/pages.ts';
 import { useCollabPage } from '../collab/use-collab-page.ts';
 import { useCollabUser } from '../collab/use-collab-user.ts';
@@ -16,6 +17,8 @@ import { PageBanner } from './body/page-banner.tsx';
 import { PageBodyEditor } from './body/page-body-editor.tsx';
 import { PageHeading } from './body/page-heading.tsx';
 import { PageHeaderBar } from './header/page-header-bar.tsx';
+import { docsPaths } from '../shared/navigation.ts';
+import { useSpaceActions } from '../space/space-layout.tsx';
 import { PagePanel } from './panel/page-panel.tsx';
 import {
   PageScreenContext,
@@ -93,6 +96,19 @@ export function PageFrame({ page }: { page: PageDetail }) {
   const stats = useDocStats(editor, page.wordCount);
   usePageShortcuts(collab.status, readOnly);
   useHashLanding(editor, outline);
+  const { space } = useSpaceActions();
+  useHeaderTrail([
+    { label: space.name, path: docsPaths.space(space.key) },
+    { label: page.title || 'Untitled', path: docsPaths.page(page.id) },
+  ]);
+  useRecordRecent({
+    id: `docs.page:${page.id}`,
+    title: page.title || 'Untitled',
+    context: space.name,
+    path: docsPaths.page(page.id),
+    look: { kind: 'icon', icon: 'doc', moduleId: 'docs' },
+    group: 'Pages',
+  });
 
   // Focus moves at once, not on the next frame as Tiptap's focus() does: a fast typist's next
   // key after Enter in the title must land in the body.
