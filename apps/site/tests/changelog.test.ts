@@ -74,6 +74,13 @@ describe('parser', () => {
     expect(releases[1]?.date).toBeNull();
   });
 
+  it('keeps a release whose only notes are dependency bumps, so it can be the newest', () => {
+    const bump = '## 0.1.6\n\n### Patch Changes\n\n- @bemmoly/core@0.1.6\n';
+    const releases = collectReleases([bump, SAMPLE]);
+    expect(releases.map((release) => release.version)).toEqual(['0.1.6', '0.1.5', '0.1.4']);
+    expect(releases[0]?.changes).toEqual([]);
+  });
+
   it('orders versions numerically, a pre-release below its release', () => {
     const sorted = ['0.1.9', '0.2.0-beta.1', '0.1.10', '0.2.0', '0.2.0-beta.2'].sort(
       compareVersions,
@@ -128,7 +135,7 @@ describe('sources', () => {
 
   it('finds the releases', () => {
     expect(RELEASES.length).toBeGreaterThan(0);
-    expect(RELEASES[0]?.changes.length).toBeGreaterThan(0);
+    expect(RELEASES.some((release) => release.changes.length > 0)).toBe(true);
   });
 });
 
