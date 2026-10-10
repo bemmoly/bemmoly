@@ -21,6 +21,8 @@ import { JumpBackIn } from './jump-back-in.tsx';
 import { PageLenses, type Lens } from './page-lenses.tsx';
 import { NeedsYou, SpacesList } from './side-panels.tsx';
 import { useDocsShortcutHelp } from '../shared/shortcut-help.ts';
+import { useAskDocsOffered } from '../hooks/use-ask-docs.ts';
+import { AskDocsPanel } from './ask-docs-panel.tsx';
 
 type Dialog = { kind: 'page' } | { kind: 'space' } | { kind: 'import' } | null;
 
@@ -43,7 +45,8 @@ export default function DocsHomeScreen(props: DocsScreenProps) {
   const recent = useRecentPages();
   const attention = useAttention();
   const { person } = usePeople();
-  const { can, user } = useSession();
+  const { can, user, aiEnabled } = useSession();
+  const askOffered = useAskDocsOffered(aiEnabled);
   const userId = user?.id ?? null;
   const newPage = useCreatePage();
   const canCreateSpace = can('docs.space.create');
@@ -140,6 +143,7 @@ export default function DocsHomeScreen(props: DocsScreenProps) {
           />
         ) : (
           <>
+            {askOffered && <AskDocsPanel isAdmin={can('ai.models.configure')} />}
             <JumpBackIn
               pages={recentPages}
               pending={recent.isPending}
