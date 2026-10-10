@@ -92,6 +92,10 @@ function seedPrompts(): AiPrompt[] {
       'Turn the request into a list of proposed changes.',
       'Only touch issues the request names or the context lists.',
     ]),
+    PROMPT('retrieval.answer', 'standard', 'Ask your docs: a cited answer from your pages', [
+      'Answer only from the numbered sources and cite each fact like [c2].',
+      'If the sources do not answer the question, reply with exactly NO_ANSWER.',
+    ]),
     PROMPT('ai.brief', 'standard', 'The morning brief on Home', [
       'Say what changed for this person since their last visit, grouped by project.',
     ]),

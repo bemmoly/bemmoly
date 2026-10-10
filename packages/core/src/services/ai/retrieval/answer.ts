@@ -8,7 +8,7 @@ import {
 import type { AiStreamResult } from '../../../contracts/ai.ts';
 import type { RequestContext } from '../../authz/index.ts';
 import type { RetrievalDependencies } from './deps.ts';
-import { ANSWER_PROMPT, ANSWER_SYSTEM, NO_ANSWER, answerPrompt } from './prompt.ts';
+import { ANSWER_PROMPT_ID, NO_ANSWER, answerVariables } from './prompt.ts';
 import { retrieve } from './retrieve.ts';
 
 /** Room for six cited sentences; an answer longer than this is not brief. */
@@ -111,13 +111,17 @@ export async function answerQuestion(
     ...(request.kinds ? { kinds: request.kinds } : {}),
   });
   if (context.chunks.length === 0) return answerEvents([], null);
+  const prompt = await ai.renderPrompt(
+    ANSWER_PROMPT_ID,
+    answerVariables(request.question, context.chunks),
+  );
   const stream = await ai.stream({
     role: 'standard',
     purpose: 'qa',
     actor: ctx.actor,
-    system: ANSWER_SYSTEM,
-    prompt: answerPrompt(request.question, context.chunks),
-    promptRef: ANSWER_PROMPT,
+    system: prompt.system,
+    prompt: prompt.prompt,
+    promptRef: prompt.promptRef,
     maxOutputTokens: MAX_OUTPUT_TOKENS,
     temperature: 0.2,
     ...(ctx.requestId ? { requestId: ctx.requestId } : {}),

@@ -29,8 +29,14 @@ export interface ModulePromptFile {
   path: string;
 }
 
+/**
+ * Kernel prompt ids start with "ai."; "Ask your docs" keeps "retrieval.answer", the id its
+ * runs were recorded under before the namespace existed.
+ */
+const KERNEL_PREFIXES: readonly string[] = ['ai.', 'retrieval.'];
+
 export interface PromptServiceOptions {
-  /** Kernel prompt files (absolute paths); their ids start with "ai.". */
+  /** Kernel prompt files (absolute paths); their ids start with "ai." or "retrieval.". */
   kernelFiles?: readonly string[];
   moduleFiles?: readonly ModulePromptFile[];
   /** Without a database, overrides are off (tests, no-database boots). */
@@ -96,9 +102,9 @@ export function createPromptService(options: PromptServiceOptions): PromptServic
   return {
     async load() {
       const files = [
-        ...(options.kernelFiles ?? []).map((path) => ({ prefix: 'ai.', path })),
+        ...(options.kernelFiles ?? []).map((path) => ({ prefixes: KERNEL_PREFIXES, path })),
         ...(options.moduleFiles ?? []).map((file) => ({
-          prefix: `${file.moduleId}.`,
+          prefixes: [`${file.moduleId}.`],
           path: file.path,
         })),
       ];
@@ -106,9 +112,9 @@ export function createPromptService(options: PromptServiceOptions): PromptServic
       for (const file of files) {
         try {
           const prompt = parsePromptFile(await readFile(file.path, 'utf8'), file.path);
-          if (!prompt.id.startsWith(file.prefix)) {
+          if (!file.prefixes.some((prefix) => prompt.id.startsWith(prefix))) {
             throw new PromptFileError(
-              `${file.path}: the id "${prompt.id}" must start with "${file.prefix}"`,
+              `${file.path}: the id "${prompt.id}" must start with "${file.prefixes.join('" or "')}"`,
             );
           }
           const existing = prompts.get(prompt.id);

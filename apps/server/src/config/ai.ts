@@ -1,4 +1,5 @@
 import {
+  ANSWER_PROMPT_FILE,
   authenticateRequest,
   createAiService,
   createInsightsService,
@@ -58,7 +59,7 @@ export async function wireAi(input: AiWiringInput): Promise<AiWiring> {
     events: kernel.events,
     realtime: kernel.realtime,
     appVersion: appVersionOf(env),
-    kernelPromptFiles: [PLAN_PROMPT_FILE, ...INSIGHT_PROMPT_FILES],
+    kernelPromptFiles: [PLAN_PROMPT_FILE, ANSWER_PROMPT_FILE, ...INSIGHT_PROMPT_FILES],
     modulePromptFiles: modules
       .aiPromptFiles()
       .map((file) => ({ moduleId: file.moduleId, path: file.path })),

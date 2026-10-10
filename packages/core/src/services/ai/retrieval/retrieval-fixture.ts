@@ -1,3 +1,4 @@
+import { readFile } from 'node:fs/promises';
 import postgres from 'postgres';
 import type { SqlClient } from '../../../clients/postgres.ts';
 import type { RetrievalDocument, RetrievalSourceDefinition } from '../../../contracts/retrieval.ts';
@@ -10,8 +11,10 @@ import {
 } from '../../../testing/isolated-database.ts';
 import { applyKernelChangelog } from '../../../testing/kernel-changelog.ts';
 import type { RequestContext } from '../../authz/index.ts';
+import { parsePromptFile } from '../prompts/parse.ts';
 import { createTestAi, type TestAi } from '../test-ai.ts';
 import { createRetrievalService, type RetrievalService } from './index.ts';
+import { ANSWER_PROMPT_FILE } from './prompt.ts';
 
 /*
  * A small wiki for retrieval tests: pages in spaces, people who read some spaces, a keyword
@@ -129,6 +132,14 @@ export async function createFixture(serverUrl: string, dimensions = 8): Promise<
     quiet: await addUser(sql, 'quiet'),
   };
   const ai = createTestAi({ dimensions });
+  const answer = parsePromptFile(await readFile(ANSWER_PROMPT_FILE, 'utf8'), ANSWER_PROMPT_FILE);
+  ai.addPrompt(answer.id, {
+    role: answer.role,
+    version: answer.version,
+    system: answer.system,
+    prompt: answer.template,
+    outputSchema: answer.output_schema,
+  });
   const jobs = fakeJobQueue();
   const box: { fixture?: Fixture } = {};
   const current = () => box.fixture!;

@@ -14,6 +14,7 @@ export type { IndexOutcome } from './indexer.ts';
 export { RETRIEVAL_JOBS, type RetrievalJob } from './jobs.ts';
 export type { BackfillCursor, BackfillStep, ReconcileOutcome } from './reconcile.ts';
 export type { RetrievalContext, RetrievedChunk } from './retrieve.ts';
+export { ANSWER_PROMPT_FILE, ANSWER_PROMPT_ID, answerVariables, NO_ANSWER } from './prompt.ts';
 export { fuseRankings } from './rrf.ts';
 export { splitText } from './chunks.ts';
 
