@@ -1,15 +1,15 @@
 import { AiSummary, Avatar, avatarHue, EntityTile, Tag } from '@bemmoly/ui';
 import { SAMPLE_PAGES } from './preview-data.ts';
-import { PreviewTopBar } from './preview-top-bar.tsx';
+import { PreviewSidebar } from './preview-sidebar.tsx';
 
 const ACTIVE_PAGE = 'Auth service RFC';
 
-/** A representative doc page: the space's page tree, then a page with an AI TL;DR. */
+/** A representative doc page: the sidebar, the space's page tree, then a page with an AI TL;DR. */
 export function PreviewDoc() {
   return (
-    <div className="flex h-full flex-col">
-      <PreviewTopBar active="Docs" />
-      <div className="flex min-h-0 flex-1">
+    <div className="flex h-full">
+      <PreviewSidebar active="docs" />
+      <div className="flex min-h-0 min-w-0 flex-1">
         <aside className="flex w-60 shrink-0 flex-col gap-3.5 border-r border-br bg-sf px-2 py-4">
           <span className="flex items-center gap-2.5 px-2">
             <EntityTile name="Engineering" tone="accent" size={30} />

@@ -11,7 +11,7 @@ import {
   TypeGlyph,
 } from '@bemmoly/ui';
 import { SAMPLE_COLUMNS, type SampleIssue } from './preview-data.ts';
-import { PreviewTopBar } from './preview-top-bar.tsx';
+import { PreviewSidebar } from './preview-sidebar.tsx';
 
 function IssueCard({ issue }: { issue: SampleIssue }) {
   return (
@@ -39,12 +39,12 @@ function IssueCard({ issue }: { issue: SampleIssue }) {
   );
 }
 
-/** A representative board: the real top bar, the AI risk bar and four status columns. */
+/** A representative board: the real sidebar, the AI risk bar and four status columns. */
 export function PreviewBoard() {
   return (
-    <div className="flex h-full flex-col">
-      <PreviewTopBar active="Projects" />
-      <div className="flex min-h-0 flex-1 flex-col gap-4 px-6 pt-5">
+    <div className="flex h-full">
+      <PreviewSidebar active="board" />
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-4 bg-canvas px-6 pt-5">
         <div className="flex flex-col gap-1">
           <span className="text-12h text-tx4">Projects / Platform Core</span>
           <div className="flex items-center gap-3">
