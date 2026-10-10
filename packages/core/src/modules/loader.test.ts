@@ -134,6 +134,27 @@ describe('loadModules', () => {
     expect(() => loadModules({ available: [badColor] })).toThrow(/not a module colour/);
   });
 
+  it('gives every G chord one place, keeping G H and G I for the shell', () => {
+    const chord = (id: string, keys: string) =>
+      fakeModule(id, {
+        register: (ctx) =>
+          ctx.navigation.add({
+            id: `${id}.x`,
+            label: 'X',
+            path: `/${id}`,
+            placement: 'command',
+            keys,
+          }),
+      });
+    expect(() => loadModules({ available: [chord('work', 'G H')] })).toThrow(/used by the shell/);
+    expect(() => loadModules({ available: [chord('work', 'G B'), chord('docs', 'G B')] })).toThrow(
+      /"G B" is already used by "work"/,
+    );
+    expect(
+      loadModules({ available: [chord('work', 'G B')] }).manifests()[0]?.navigation[0]?.keys,
+    ).toBe('G B');
+  });
+
   it('rejects two modules claiming the same route prefix', () => {
     const plugin = async () => undefined;
     const withRoute = (id: string) =>

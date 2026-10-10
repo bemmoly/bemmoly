@@ -55,8 +55,20 @@ const SHIPPED: Shipped[] = [
       version: '0.2.0',
       navigation: [
         { id: 'work.home', label: 'Work', path: '/work/board', placement: 'top' },
-        { id: 'work.board', label: 'Board', path: '/work/board', placement: 'command' },
-        { id: 'work.backlog', label: 'Backlog', path: '/work/backlog', placement: 'command' },
+        {
+          id: 'work.board',
+          label: 'Board',
+          path: '/work/board',
+          placement: 'command',
+          keys: 'G B',
+        },
+        {
+          id: 'work.backlog',
+          label: 'Backlog',
+          path: '/work/backlog',
+          placement: 'command',
+          keys: 'G L',
+        },
         { id: 'work.projects', label: 'Projects', path: '/work/projects', placement: 'command' },
         { id: 'work.create-issue', label: 'Issue', path: '/work/create', placement: 'create' },
         {

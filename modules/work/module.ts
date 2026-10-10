@@ -38,12 +38,14 @@ export default defineModule({
       label: 'Board',
       path: '/work/board',
       placement: 'command',
+      keys: 'G B',
     });
     ctx.navigation.add({
       id: 'work.backlog',
       label: 'Backlog',
       path: '/work/backlog',
       placement: 'command',
+      keys: 'G L',
     });
     ctx.navigation.add({
       id: 'work.projects',

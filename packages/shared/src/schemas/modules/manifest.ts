@@ -8,7 +8,15 @@ export const navEntrySchema = z.object({
   label: z.string().min(1),
   path: z.string().startsWith('/'),
   placement: navPlacementSchema,
+  /** A "G, then a letter" chord that goes here from anywhere, e.g. "G B" for the board. */
+  keys: z
+    .string()
+    .regex(/^G [A-Z]$/)
+    .optional(),
 });
+
+/** The chords the shell keeps for itself: G H for Home, G I for Inbox. */
+export const KERNEL_CHORDS: readonly string[] = ['G H', 'G I'];
 
 /** One kind of result a module's search provider answers ⌘K with, and the group it shows under. */
 export const searchGroupSchema = z.object({

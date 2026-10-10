@@ -16,6 +16,7 @@ export {
   type RemoveModuleDataBody,
 } from './admin.ts';
 export {
+  KERNEL_CHORDS,
   moduleColorSchema,
   moduleManifestSchema,
   modulesResponseSchema,
