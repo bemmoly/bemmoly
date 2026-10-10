@@ -1,6 +1,8 @@
 import type { Field as FieldDef } from '@bemmoly/module-work/shared';
 import {
   Avatar,
+  epicColor,
+  epicFill,
   Field,
   FormGrid,
   FormGridItem,
@@ -20,7 +22,6 @@ import type { CreateDraft, useCreateIssue } from '../hooks/create-issue.ts';
 import type { CreateOptions } from '../hooks/create-options.ts';
 import { personOption, usePeople } from '../hooks/issue-people.ts';
 import { cx } from '../issue/cx.ts';
-import { EPIC_COLORS } from '../backlog/model.ts';
 import { useVersions } from '../hooks/projects-catalog.ts';
 import { ChipMore, ChipMulti, ChipNumber, ChipSelect } from './create-chips.tsx';
 
@@ -32,13 +33,13 @@ const PRIORITY_OPTIONS: SelectOption[] = (Object.keys(PRIORITIES) as Priority[])
   icon: <PriorityGlyph priority={key} />,
 }));
 
-/** A square of the epic's colour, in the order the backlog's epics panel paints them. */
-const epicSwatch = (index: number | null) => (
+/** A square of the epic's stored colour, the same one the Board, Backlog and Issue paint. */
+const epicSwatch = (epic: { id: string; color?: string | null } | null) => (
   <i
     aria-hidden
     className={cx(
       'inline-block size-2.25 rounded-tick',
-      index === null ? 'bg-tx-3' : (EPIC_COLORS[index % EPIC_COLORS.length] ?? 'bg-epic-1'),
+      epicFill(epic ? epicColor(epic.color, epic.id) : null),
     )}
   />
 );
@@ -129,11 +130,11 @@ export function CreateFields({ form, options }: { form: Form; options: CreateOpt
           <ChipSelect
             name="Epic"
             value={draft.parentId}
-            options={options.epics.map((epic, index) => ({
+            options={options.epics.map((epic) => ({
               value: epic.id,
               label: epic.title,
               description: epic.key,
-              icon: epicSwatch(index),
+              icon: epicSwatch(epic),
             }))}
             noneLabel="No epic"
             emptyIcon={epicSwatch(null)}

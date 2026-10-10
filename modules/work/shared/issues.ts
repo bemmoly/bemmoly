@@ -38,6 +38,8 @@ export const issueSchema = z.object({
   componentId: z.uuid().nullable(),
   customFields: z.record(z.string(), z.unknown()),
   labelIds: z.array(z.uuid()),
+  /** An epic's stored palette colour ('epic-1' … 'epic-8'); null on every other issue. */
+  color: z.string().nullable().optional(),
   rank: lexorankSchema,
   statusChangedAt: timestampSchema,
   resolvedAt: timestampSchema.nullable(),

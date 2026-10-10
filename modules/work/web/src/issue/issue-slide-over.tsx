@@ -64,11 +64,7 @@ export function IssueSlideOver({
             {issue.parent && (
               <>
                 <FieldSwatch
-                  colorClassName={
-                    issue.parent.color
-                      ? epicFill(epicColor(issue.parent.color, issue.parent.id))
-                      : 'bg-tx-3'
-                  }
+                  colorClassName={epicFill(epicColor(issue.parent.color, issue.parent.id))}
                 />
                 <span className="truncate">{issue.parent.title}</span>
                 <span aria-hidden>/</span>

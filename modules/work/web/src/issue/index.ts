@@ -1,6 +1,5 @@
 /** What other Work screens use of the issue: the slide-over and the create form. */
 export { CreateIssueDialog, type CreateIssueDialogProps } from '../create/create-issue-dialog.tsx';
-export { EPIC_SWATCHES, epicSwatch } from './epic-color.ts';
 export {
   rememberIssueList,
   useIssueNeighbours,

@@ -1,6 +1,8 @@
 import type { IssueDetail } from '@bemmoly/module-work/shared';
 import {
   Avatar,
+  epicColor,
+  epicFill,
   FieldSwatch,
   PropertyEmpty,
   PropertyGroup,
@@ -18,13 +20,16 @@ import { useIssueTypes, useSprints, useVersions } from '../hooks/projects-catalo
 import { api } from '../shared/api.ts';
 import { workKeys } from '../shared/keys.ts';
 import { cx } from './cx.ts';
-import { epicSwatch } from './epic-color.ts';
 import { ChoiceField, InlineValue } from './field-editors.tsx';
 import { useWatchToggle } from './issue-header.tsx';
 import { useIssueEdit } from './use-issue-edit.ts';
 import { formatDay } from './vocabulary.ts';
 
 const today = () => new Date().toISOString().slice(0, 10);
+
+/** The epic's stored colour as a fill, the one its Board lane and Backlog row use. */
+const epicSwatch = (epic: { id: string; color?: string | null }) =>
+  epicFill(epicColor(epic.color, epic.id));
 
 /** The project's epics, for the Epic picker. */
 function useEpics(issue: IssueDetail) {
@@ -53,13 +58,13 @@ export function RailPlanning({ issue }: { issue: IssueDetail }) {
   const epicOptions: SelectOption[] = (epics.data ?? []).map((epic) => ({
     value: epic.id,
     label: epic.title,
-    icon: <FieldSwatch colorClassName={epicSwatch(epic.id)} />,
+    icon: <FieldSwatch colorClassName={epicSwatch(epic)} />,
   }));
   if (issue.parent && !epicOptions.some((option) => option.value === issue.parent?.id)) {
     epicOptions.unshift({
       value: issue.parent.id,
       label: issue.parent.title,
-      icon: <FieldSwatch colorClassName={epicSwatch(issue.parent.id)} />,
+      icon: <FieldSwatch colorClassName={epicSwatch(issue.parent)} />,
     });
   }
 
@@ -110,7 +115,7 @@ export function RailPlanning({ issue }: { issue: IssueDetail }) {
                         title: epic.title,
                         statusId: epic.statusId,
                         typeId: epic.typeId,
-                        color: null,
+                        color: epic.color ?? null,
                       }
                     : null,
                 },
@@ -123,7 +128,7 @@ export function RailPlanning({ issue }: { issue: IssueDetail }) {
             {...linkTo(workPaths.issue(issue.parent.key))}
             className={cx(propertyValueClass, 'no-underline')}
           >
-            <FieldSwatch colorClassName={epicSwatch(issue.parent.id)} />
+            <FieldSwatch colorClassName={epicSwatch(issue.parent)} />
             <span className="truncate">{issue.parent.title}</span>
           </a>
         ) : (

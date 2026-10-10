@@ -31,13 +31,14 @@ export interface IssueRow {
   created_at: Date | string;
   updated_at: Date | string;
   label_ids: string[] | null;
+  color?: string | null;
 }
 
 export const ISSUE_COLUMNS = `
   i.id, i.project_id, i.number, i.key, i.type_id, i.title, i.description, i.description_text,
   i.status_id, i.priority, i.assignee_id, i.reporter_id, i.parent_id, i.sprint_id, i.estimate,
   i.due_at, i.fix_version_id, i.component_id, i.custom_fields, i.rank, i.status_changed_at,
-  i.resolved_at, i.deleted_at, i.created_at, i.updated_at,
+  i.resolved_at, i.deleted_at, i.created_at, i.updated_at, i.color,
   (select array_agg(il.label_id order by il.id) from issue_labels il where il.issue_id = i.id)
     as label_ids`;
 
@@ -64,6 +65,7 @@ export const toIssue = (row: IssueRow): Issue => ({
   componentId: row.component_id,
   customFields: row.custom_fields,
   labelIds: row.label_ids ?? [],
+  color: row.color ?? null,
   rank: row.rank,
   statusChangedAt: iso(row.status_changed_at),
   resolvedAt: row.resolved_at ? iso(row.resolved_at) : null,

@@ -3,6 +3,7 @@ import { newId } from '../seed/time.ts';
 import * as seed from '../seed/work-issues.ts';
 import { bodyOf, fail, invalid, notFound, ok, type MockRequest, type MockRoute } from '../types.ts';
 import { issueActivityRoutes, type IssuesState } from './work-issue-activity.ts';
+import { mockEpicColor } from './work-backlog-state.ts';
 import { issueDetail, statuses } from './work-issue-detail.ts';
 import { cardFields, issueStore, nextKey } from './work-issue-store.ts';
 import { touch, workState, type Row } from './work-state.ts';
@@ -34,6 +35,20 @@ function state(db: MockDb): IssuesState {
     states.set(db, current);
   }
   return current;
+}
+
+/** An epic's stored colour, the one the Board and the Backlog paint; null for other issues. */
+function epicColorOf(db: MockDb, rows: readonly Row[], row: Row): string | null {
+  const epicTypes = new Set(
+    workState(db)
+      .issueTypes.filter((type) => type['level'] === 'epic')
+      .map((type) => type.id),
+  );
+  if (!epicTypes.has(String(row['typeId']))) return null;
+  const epics = rows
+    .filter((each) => epicTypes.has(String(each['typeId'])) && each['projectId'] === row['projectId'])
+    .map((each) => ({ id: each.id, key: String(each['key']) }));
+  return mockEpicColor(epics, row.id);
 }
 
 /** Issue id to the ids of the people watching it, for Home's "my work". */
@@ -211,12 +226,16 @@ const issueRoutes: MockRoute[] = [
     handle: (request, db) => {
       const parentId = request.query.get('parentId');
       const projectId = request.query.get('projectId');
-      const items = state(db).issues.filter(
-        (row) =>
-          !row['deletedAt'] &&
-          (!parentId || row['parentId'] === parentId) &&
-          (!projectId || row['projectId'] === projectId),
-      );
+      const typeId = request.query.get('typeId');
+      const rows = state(db).issues.filter((row) => !row['deletedAt']);
+      const items = rows
+        .filter(
+          (row) =>
+            (!parentId || row['parentId'] === parentId) &&
+            (!projectId || row['projectId'] === projectId) &&
+            (!typeId || row['typeId'] === typeId),
+        )
+        .map((row) => ({ ...row, color: epicColorOf(db, rows, row) }));
       return ok({ items, nextCursor: null });
     },
   },
