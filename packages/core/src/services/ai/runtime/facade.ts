@@ -162,6 +162,7 @@ export function createAiFacade(deps: AiFacadeDependencies): AiFacade {
     const { resolved, model, log } = prepared;
     const tools = toolsOf(input);
     let streamError: unknown;
+    let streamedChars = 0;
     const result = streamText({
       model,
       messages: messagesOf(input),
@@ -169,6 +170,9 @@ export function createAiFacade(deps: AiFacadeDependencies): AiFacade {
       ...(tools ? { tools } : {}),
       ...(input.schema ? { output: Output.object({ schema: input.schema as never }) } : {}),
       abortSignal: signalOf(input, input.timeoutMs ?? DEFAULT_TIMEOUT_MS[input.role]),
+      onChunk: ({ chunk }) => {
+        if (chunk.type === 'text-delta') streamedChars += chunk.text.length;
+      },
       onError: ({ error }) => {
         streamError = error;
       },
@@ -190,7 +194,7 @@ export function createAiFacade(deps: AiFacadeDependencies): AiFacade {
           output,
         );
       } catch (error) {
-        throw await log.failure(streamError ?? error, input.signal, false);
+        throw await log.failure(streamError ?? error, input.signal, false, streamedChars);
       }
     })();
     // The caller may only read the stream; the result still settles and records the run.

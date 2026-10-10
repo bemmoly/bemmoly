@@ -46,8 +46,30 @@ export interface RunLog {
     object: unknown,
   ): Promise<AiGenerateResult<unknown>>;
   embedded(embeddings: number[][], tokens: number): Promise<AiEmbedResult>;
-  /** Records the failed run and returns the error to throw: a ProviderError or the refusal. */
-  failure(error: unknown, signal: AbortSignal | undefined, repaired: boolean): Promise<Error>;
+  /**
+   * Records the failed run and returns the error to throw: a ProviderError or the refusal.
+   * `streamedChars` is how much text already reached the caller.
+   */
+  failure(
+    error: unknown,
+    signal: AbortSignal | undefined,
+    repaired: boolean,
+    streamedChars?: number,
+  ): Promise<Error>;
+}
+
+/** About four characters a token: the charge for a call the provider never reported on. */
+export function estimateTokens(chars: number): number {
+  return Math.ceil(Math.max(0, chars) / 4);
+}
+
+function inputCharsOf(input: LoggedInput): number {
+  return (
+    (input.system?.length ?? 0) +
+    (input.prompt?.length ?? 0) +
+    (input.messages ? JSON.stringify(input.messages).length : 0) +
+    (input.values?.reduce((sum, value) => sum + value.length, 0) ?? 0)
+  );
 }
 
 /** The person behind the call: the user, or whom a token or plan acts for. */
@@ -139,7 +161,7 @@ export function createRunLog(
         model: resolved.ref,
       };
     },
-    async failure(error, signal, repaired) {
+    async failure(error, signal, repaired, streamedChars = 0) {
       const cancelled = isAbort(error, signal) && Boolean(signal?.aborted);
       const providerError = toProviderError(error, resolved.ref.providerName);
       const failure = (providerError.details as { failure?: string } | undefined)?.failure;
@@ -150,11 +172,17 @@ export function createRunLog(
           : failure === 'invalid_output' || repaired
             ? 'invalid_output'
             : 'error';
+      // A stopped or timed-out call reached the provider, which bills for it, but the
+      // provider never reported usage. Charge an estimate, so cancelling a stream after its
+      // text arrived cannot take spend past the budget unseen. A refused call costs nothing.
+      const charged = outcome === 'cancelled' || outcome === 'timeout';
+      const inputTokens = charged ? estimateTokens(inputCharsOf(input)) : 0;
+      const outputTokens = charged ? estimateTokens(streamedChars) : 0;
       await runs.record({
         ...base(),
-        inputTokens: 0,
-        outputTokens: 0,
-        costUsd: 0,
+        inputTokens,
+        outputTokens,
+        costUsd: costOf(resolved.capabilities, { inputTokens, outputTokens }),
         outcome,
         error: providerError.message,
       });
