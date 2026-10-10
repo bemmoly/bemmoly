@@ -52,7 +52,7 @@ test('a sprint is planned in the backlog, started, and completed with its unfini
   await start.getByRole('textbox', { name: 'Sprint goal' }).fill('Passkeys and receipts');
   await start.getByRole('button', { name: 'Start sprint' }).click();
   await expect(start).toBeHidden();
-  await expect(page.getByRole('button', { name: 'Complete sprint' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Complete', exact: true })).toBeVisible();
 
   // The board shows the active sprint; one issue gets all the way to Done.
   await admin.walk(login.key, ['Selected', 'In progress', 'Code review', 'Testing', 'Done']);
@@ -61,7 +61,7 @@ test('a sprint is planned in the backlog, started, and completed with its unfini
   const done = page.getByRole('group', { name: /^Done, / });
   await expect(done.getByRole('button', { name: new RegExp(`^${login.key} `) })).toBeVisible();
 
-  await page.goto(`/work/backlog/${project.key}`);
+  // Complete sprint on the board opens the dialog over the backlog.
   await page.getByRole('button', { name: 'Complete sprint' }).click();
   const complete = page.getByRole('dialog', { name: `Complete ${sprintName}` });
   await expect(complete.getByText('Completed')).toBeVisible();
