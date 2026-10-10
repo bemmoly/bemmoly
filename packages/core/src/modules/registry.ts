@@ -4,6 +4,7 @@ import type { BemmolyModule } from './contract.ts';
 import type { ModuleContributions } from './contributions.ts';
 import { ModuleLoadError } from './errors.ts';
 import type {
+  AiContribution,
   CapabilityDefinition,
   EntityDefinition,
   ReferenceSourceDefinition,
@@ -94,6 +95,11 @@ export class ModuleRegistry {
 
   capabilities(): FromModule<CapabilityDefinition>[] {
     return this.#collect((c) => c.capabilities);
+  }
+
+  /** Every module's `ctx.ai.addTool` contributions; the plans service reads its tools here. */
+  aiTools(): FromModule<AiContribution>[] {
+    return this.#collect((c) => c.aiTools);
   }
 
   #collect<T extends object>(pick: (c: ModuleContributions) => readonly T[]): FromModule<T>[] {

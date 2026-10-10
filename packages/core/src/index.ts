@@ -11,6 +11,7 @@ export {
   isAiRefusal,
   type AiFacadeDependencies,
 } from './services/ai/index.ts';
+export * from './services/ai/tools/index.ts';
 export * from './services/changelog/index.ts';
 export * from './services/collab/index.ts';
 export * from './services/jobs/index.ts';
