@@ -12,11 +12,16 @@ import type { AiCallKey, AiModelSource } from './registry.ts';
 /**
  * The recorded provider (BEMMOLY_AI_RECORDING): replies read from a JSON file, keyed by the
  * prompt id or the purpose, so end-to-end tests run the real server with AI on and no vendor.
- * Each list plays in order and then repeats its last reply.
+ * Each list plays in order, one reply per model call (so a tool loop's steps follow it), then
+ * repeats its last reply.
  */
 const replySchema = z.union([
   z.object({ text: z.string(), delayMs: z.number().int().nonnegative().optional() }),
   z.object({ object: z.unknown(), delayMs: z.number().int().nonnegative().optional() }),
+  z.object({
+    toolCalls: z.array(z.object({ toolName: z.string().min(1), input: z.unknown() })).min(1),
+    delayMs: z.number().int().nonnegative().optional(),
+  }),
   z.object({
     error: z.object({ statusCode: z.number().int(), message: z.string().optional() }),
   }),
@@ -42,6 +47,7 @@ function toMockReply(reply: z.infer<typeof replySchema>): MockReply {
     });
     return { error };
   }
+  if ('toolCalls' in reply) return { toolCalls: reply.toolCalls };
   return 'text' in reply ? { text: reply.text } : { object: reply.object };
 }
 
@@ -61,11 +67,16 @@ export function createRecordedModelSource(recording: Recording): AiModelSource {
 
   return {
     async language(role: string, call?: AiCallKey) {
-      const reply = replyFor(call ?? { purpose: role, promptId: null });
-      const delay = 'delayMs' in reply ? (reply.delayMs ?? 0) : 0;
-      if (delay) await new Promise((resolve) => setTimeout(resolve, delay));
+      const key = call ?? { purpose: role, promptId: null };
+      // One reply per model call, so a tool loop's steps play the list in order.
+      const next = async () => {
+        const reply = replyFor(key);
+        const delay = 'delayMs' in reply ? (reply.delayMs ?? 0) : 0;
+        if (delay) await new Promise((resolve) => setTimeout(resolve, delay));
+        return toMockReply(reply);
+      };
       const model = createMockLanguageModel({
-        next: () => toMockReply(reply),
+        next,
         calls: [],
         modelId: `recorded-${role}`,
       });

@@ -34,13 +34,13 @@ function contentOf(reply: Exclude<MockReply, { error: unknown }>) {
 }
 
 export function createMockLanguageModel(options: {
-  next: () => MockReply;
+  next: () => MockReply | Promise<MockReply>;
   calls: MockCall[];
   modelId?: string;
 }) {
-  const answer = (callOptions: { prompt: unknown }) => {
+  const answer = async (callOptions: { prompt: unknown }) => {
     options.calls.push({ prompt: callOptions.prompt });
-    const reply = options.next();
+    const reply = await options.next();
     if ('error' in reply) throw reply.error;
     return reply;
   };
@@ -48,7 +48,7 @@ export function createMockLanguageModel(options: {
     provider: 'test',
     modelId: options.modelId ?? 'test-model',
     doGenerate: async (callOptions) => {
-      const reply = answer(callOptions);
+      const reply = await answer(callOptions);
       return {
         content: contentOf(reply),
         finishReason: { unified: 'toolCalls' in reply ? 'tool-calls' : 'stop', raw: undefined },
@@ -57,7 +57,7 @@ export function createMockLanguageModel(options: {
       } as never;
     },
     doStream: async (callOptions) => {
-      const reply = answer(callOptions);
+      const reply = await answer(callOptions);
       const text =
         'text' in reply ? reply.text : 'object' in reply ? JSON.stringify(reply.object) : '';
       const words = text.split(/(?<= )/);
