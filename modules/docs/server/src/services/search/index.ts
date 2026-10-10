@@ -27,6 +27,8 @@ interface SuggestionRow {
   title: string;
   icon: string | null;
   status: PageSuggestion['status'];
+  space_name: string;
+  parent_title: string | null;
 }
 
 interface HitRow extends SuggestionRow {
@@ -41,7 +43,11 @@ const toSuggestion = (row: SuggestionRow): PageSuggestion => ({
   title: row.title,
   icon: row.icon,
   status: row.status,
+  spaceName: row.space_name,
+  parentTitle: row.parent_title,
 });
+
+const PLACE_COLUMNS = `s.name as space_name, up.title as parent_title`;
 
 export function createSearchService(deps: DocsServiceDeps) {
   return {
@@ -57,10 +63,12 @@ export function createSearchService(deps: DocsServiceDeps) {
         with q as (select websearch_to_tsquery('english', ${query.q})
           || websearch_to_tsquery('simple', ${query.q}) as query)
         select p.id, p.space_id, s.key as space_key, p.title, p.icon, p.status,
+          ${sql.unsafe(PLACE_COLUMNS)},
           ts_headline('english', p.title || E'\\n' || left(p.text, 2000), q.query,
             'MaxFragments=1, MaxWords=24, MinWords=8, StartSel=<b>, StopSel=</b>') as snippet,
           ts_rank_cd(p.search_vector, q.query) as rank
-        from pages p join spaces s on s.id = p.space_id, q
+        from pages p join spaces s on s.id = p.space_id
+          left join pages up on up.id = p.parent_id, q
         where p.deleted_at is null and s.archived_at is null
           and p.search_vector @@ q.query
           and (${spaces === null} or p.space_id = any(${spaces ?? []}::uuid[]))
@@ -80,8 +88,10 @@ export function createSearchService(deps: DocsServiceDeps) {
       const spaces = await visibleSpaceIds(sql, ctx);
       const term = query.q.replace(/[\\%_]/g, (char) => `\\${char}`);
       const rows = await sql<SuggestionRow[]>`
-        select p.id, p.space_id, s.key as space_key, p.title, p.icon, p.status
+        select p.id, p.space_id, s.key as space_key, p.title, p.icon, p.status,
+          ${sql.unsafe(PLACE_COLUMNS)}
         from pages p join spaces s on s.id = p.space_id
+          left join pages up on up.id = p.parent_id
         where p.deleted_at is null and s.archived_at is null
           and p.title ilike ${`%${term}%`}
           and (${spaces === null} or p.space_id = any(${spaces ?? []}::uuid[]))

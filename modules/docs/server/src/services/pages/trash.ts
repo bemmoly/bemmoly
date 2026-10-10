@@ -108,11 +108,7 @@ export function createTrashService(deps: DocsServiceDeps) {
     },
 
     /** The space's trash: only the pages deleted on their own, newest first. */
-    async list(
-      ctx: RequestContext,
-      spaceRef: string,
-      query: ListTrashQuery,
-    ): Promise<TrashPage> {
+    async list(ctx: RequestContext, spaceRef: string, query: ListTrashQuery): Promise<TrashPage> {
       const sql = requireDatabase(deps);
       const space = await spaceByRef(sql, spaceRef);
       await ctx.authz.authorize(ctx.actor, 'docs.page.delete', spaceResource(space.id));

@@ -27,6 +27,9 @@ export const pageSearchHitSchema = z.object({
   title: z.string(),
   icon: z.string().nullable(),
   status: pageStatusSchema,
+  spaceName: z.string(),
+  /** The page it sits under; null at the top of the space. */
+  parentTitle: z.string().nullable(),
   /** A fragment of the matched text with <b> around the hits; the UI renders it as marks. */
   snippet: z.string(),
   rank: z.number(),

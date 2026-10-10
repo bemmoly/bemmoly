@@ -68,8 +68,17 @@ describe('page search and the Docs palette provider against Postgres', () => {
       key: 'PAL',
       title: 'Token rotation',
       subtitle: 'Draft',
+      context: 'PAL',
+      snippet: 'Rotate service credentials every ninety days',
+      look: { icon: null },
       href: `/docs/p/${rotation.id}`,
     });
+    const [onboarding] = await provider.search(docs.as(docs.users.member), {
+      q: 'engineers',
+      limit: 8,
+    });
+    expect(onboarding?.snippet).toContain('<b>engineers</b>');
+    expect(onboarding?.snippet).not.toContain('Onboarding');
     const member = await provider.search(docs.as(docs.users.member), { q: 'rotation', limit: 8 });
     expect(member.map((result) => result.title)).toEqual(['Token rotation', 'Onboarding']);
     const admin = await provider.search(docs.as(docs.users.admin), { q: 'rotation', limit: 8 });
