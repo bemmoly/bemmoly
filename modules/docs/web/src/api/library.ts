@@ -1,6 +1,8 @@
 import type { Http } from '@bemmoly/api-client';
 import { enc, validated } from '@bemmoly/api-client';
 import {
+  attentionQuerySchema,
+  attentionResponseSchema,
   createFromTemplateBodySchema,
   homePagesSchema,
   labelsResponseSchema,
@@ -18,6 +20,7 @@ import {
   suggestPagesQuerySchema,
   templateDetailSchema,
   templatesResponseSchema,
+  type AttentionQuery,
   type CreateFromTemplateBody,
   type LabelSuggestQuery,
   type ListTemplatesQuery,
@@ -40,6 +43,10 @@ export function docsLibraryEndpoints(http: Http) {
       starred: async (query: Partial<StarredPagesQuery> = {}) =>
         http.request(`${DOCS_BASE}/home/starred`, homePagesSchema, {
           query: validated(starredPagesQuerySchema, query),
+        }),
+      attention: async (query: Partial<AttentionQuery> = {}) =>
+        http.request(`${DOCS_BASE}/home/attention`, attentionResponseSchema, {
+          query: validated(attentionQuerySchema, query),
         }),
     },
     stars: {

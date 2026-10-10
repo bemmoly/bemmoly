@@ -6,6 +6,7 @@ export function libraryRoutes(controller: LibraryController): FastifyPluginAsync
   return async (app) => {
     app.get('/home/recent', async (request) => controller.recent(request));
     app.get('/home/starred', async (request) => controller.starred(request));
+    app.get('/home/attention', async (request) => controller.attention(request));
     app.put('/pages/:pageId/star', async (request) => controller.star(request));
     app.delete('/pages/:pageId/star', async (request) => controller.unstar(request));
     app.put('/pages/:pageId/labels', async (request) => controller.setLabels(request));

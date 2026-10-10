@@ -8,6 +8,7 @@ import {
   type DocsServiceDeps,
 } from '../common.ts';
 import { SUMMARY_COLUMNS, toSummary, type PageRow } from '../pages/rows.ts';
+import { createAttentionService } from './attention.ts';
 
 /*
  * The Docs home's "Recent" and "Starred" lists. Recent reads the
@@ -17,6 +18,7 @@ import { SUMMARY_COLUMNS, toSummary, type PageRow } from '../pages/rows.ts';
  */
 export function createHomeService(deps: DocsServiceDeps) {
   return {
+    ...createAttentionService(deps),
     async recent(ctx: RequestContext, query: RecentPagesQuery): Promise<HomePages> {
       await ctx.authz.authorize(ctx.actor, 'docs.page.view', DOCS_MODULE);
       const sql = requireDatabase(deps);

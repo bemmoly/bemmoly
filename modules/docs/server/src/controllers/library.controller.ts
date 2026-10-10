@@ -6,6 +6,7 @@ import {
   starredPagesQuerySchema,
   type HomePages,
 } from '../../../shared/home.ts';
+import { attentionQuerySchema, type AttentionResponse } from '../../../shared/attention.ts';
 import type { PageDetail } from '../../../shared/pages.ts';
 import {
   labelSuggestQuerySchema,
@@ -47,6 +48,10 @@ export function createLibraryController(services: LibraryServices) {
     async starred(request: FastifyRequest): Promise<HomePages> {
       const query = parseOrThrow(starredPagesQuerySchema, request.query);
       return services.home.starred(contextOf(request), query);
+    },
+    async attention(request: FastifyRequest): Promise<AttentionResponse> {
+      const query = parseOrThrow(attentionQuerySchema, request.query);
+      return services.home.attention(contextOf(request), query);
     },
     async star(request: FastifyRequest): Promise<StarResponse> {
       return services.starsLabels.star(contextOf(request), pageIdOf(request), true);
