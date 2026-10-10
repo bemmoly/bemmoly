@@ -138,6 +138,11 @@ export interface CommandInputProps extends Omit<InputHTMLAttributes<HTMLInputEle
   trailing?: ReactNode;
   /** AI is on: the lilac dot leads the input, which also takes requests. */
   ai?: boolean;
+  /**
+   * The result list is drawn under the input. False while a plan or an answer takes its place,
+   * so the combobox neither claims an open list nor points at one that is not there.
+   */
+  expanded?: boolean;
 }
 
 /**
@@ -148,6 +153,7 @@ export function CommandInput({
   value,
   onValueChange,
   ai = false,
+  expanded = true,
   placeholder = ai ? 'Search, or tell Bemmoly what to do…' : 'Search or run a command…',
   trailing,
   ...rest
@@ -158,8 +164,8 @@ export function CommandInput({
       {ai ? <AiDot size={9} /> : <Icon name="search" size={18} className="text-tx-3" />}
       <input
         role="combobox"
-        aria-expanded="true"
-        aria-controls={listId}
+        aria-expanded={expanded}
+        aria-controls={expanded ? listId : undefined}
         aria-autocomplete="list"
         aria-label={placeholder}
         autoFocus

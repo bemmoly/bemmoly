@@ -85,6 +85,7 @@ export default function CommandPaletteHost() {
         value={palette.query}
         onValueChange={palette.setQuery}
         ai={palette.ai.enabled}
+        expanded={!palette.ai.active}
         autoFocus
         trailing={
           palette.place && <PlaceChip label={palette.place.label} onClear={palette.clearPlace} />

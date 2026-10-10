@@ -209,6 +209,19 @@ describe('CommandPalette', () => {
     expect(first).not.toHaveBeenCalled();
   });
 
+  it('closes the combobox while a plan or an answer stands in for the list', async () => {
+    render(
+      <CommandPalette open onClose={() => {}}>
+        <CommandInput value="move it" onValueChange={() => {}} ai expanded={false} />
+        <p>The plan goes here.</p>
+      </CommandPalette>,
+    );
+    const input = screen.getByRole('combobox');
+    expect(input.getAttribute('aria-expanded')).toBe('false');
+    expect(input.hasAttribute('aria-controls')).toBe(false);
+    await expectAccessible(screen.getByRole('dialog', { name: 'Command palette' }));
+  });
+
   it('shows the plan with its permission verdicts and runs only allowed steps', () => {
     const onRun = vi.fn();
     render(
