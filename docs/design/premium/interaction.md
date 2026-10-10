@@ -66,3 +66,4 @@ that passes (ADR 0015).
 - [Shell](interaction/shell.md): the frame, sidebar and rail, header, global keys, palette, Home, Inbox, sign-in, boot, not found.
 - [Integration](interaction/integration.md): choices made bringing the streams together, the token alias removal, what is left.
 - [Docs: frame and tree](interaction/docs-frame.md): the space tree in the sidebar, focus mode, the one header, layouts, errors in the frame, AI gating.
+- [Docs page](interaction/docs-page.md): page column, icon and cover, properties row, the right margin, history mode, presence, Share.
