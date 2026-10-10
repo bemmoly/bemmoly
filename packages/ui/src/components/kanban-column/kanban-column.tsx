@@ -3,9 +3,17 @@ import { cx } from '../../lib/cx.ts';
 import { IconButton } from '../button/icon-button.tsx';
 import { StatusGlyph, type StatusStage } from '../glyphs/glyphs.tsx';
 
-/** The board's column tracks: equal columns 10px apart (docs/design/premium/kit.css, `.cols`). */
-export function kanbanGridStyle(columns: number): CSSProperties {
-  return { gridTemplateColumns: `repeat(${columns},minmax(0,1fr))` };
+/**
+ * The board's column tracks: equal columns 10px apart (docs/design/premium/kit.css, `.cols`).
+ * With `of` above `columns`, some columns are hidden: the rest keep the width they would have
+ * among all of them, so one column never stretches across the page.
+ */
+export function kanbanGridStyle(columns: number, of = columns): CSSProperties {
+  if (of <= columns) return { gridTemplateColumns: `repeat(${columns},minmax(0,1fr))` };
+  const gap = 'calc(var(--spacing) * 2.5)';
+  return {
+    gridTemplateColumns: `repeat(${columns},minmax(0,calc((100% - ${gap} * ${of - 1}) / ${of})))`,
+  };
 }
 
 export interface KanbanColumnHeaderProps {
@@ -91,14 +99,21 @@ export function KanbanColumnHeader({
 export interface KanbanColumnHeadersProps {
   children: ReactNode;
   columns: number;
+  /** How many columns the board has when some are hidden; see kanbanGridStyle. */
+  of?: number;
   className?: string;
 }
 
 /** The sticky heading row over the lanes, on the board's sunken canvas. */
-export function KanbanColumnHeaders({ children, columns, className }: KanbanColumnHeadersProps) {
+export function KanbanColumnHeaders({
+  children,
+  columns,
+  of,
+  className,
+}: KanbanColumnHeadersProps) {
   return (
     <div
-      style={kanbanGridStyle(columns)}
+      style={kanbanGridStyle(columns, of)}
       className={cx('sticky top-0 z-2 grid gap-2.5 bg-sunken pt-1', className)}
     >
       {children}

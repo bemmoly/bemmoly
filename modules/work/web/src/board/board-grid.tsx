@@ -42,11 +42,14 @@ function laneProgress(lane: LaneModel, columns: readonly ColumnModel[]): number 
 const Lane = memo(function Lane({
   lane,
   columns,
+  of,
   kanban,
   open,
 }: {
   lane: LaneModel;
   columns: readonly ColumnModel[];
+  /** The board's column count, above `columns` while empty ones step aside. */
+  of: number;
   kanban: boolean;
   open: boolean;
 }) {
@@ -56,6 +59,7 @@ const Lane = memo(function Lane({
     <Swimlane
       id={bodyId}
       columns={columns.length}
+      of={of}
       open={open}
       header={
         <SwimlaneHeader
@@ -124,6 +128,8 @@ export function BoardGrid({
   const [phoneColumn, setPhoneColumn] = useState<string | null>(null);
   const picked = shown.find((column) => column.id === phoneColumn) ?? shown[0];
   const columns = useMemo(() => (phone && picked ? [picked] : shown), [phone, picked, shown]);
+  // Stepped-aside columns leave the rest at their usual width; a phone shows one column anyway.
+  const of = phone ? columns.length : model.columns.length;
   return (
     <div className="flex min-w-240 flex-col max-md:min-w-0">
       {phone && (
@@ -134,7 +140,11 @@ export function BoardGrid({
           onChange={setPhoneColumn}
         />
       )}
-      <KanbanColumnHeaders columns={columns.length} className={phone ? 'hidden' : undefined}>
+      <KanbanColumnHeaders
+        columns={columns.length}
+        of={of}
+        className={phone ? 'hidden' : undefined}
+      >
         {columns.map((column) => (
           <KanbanColumnHeader
             key={column.id}
@@ -157,6 +167,7 @@ export function BoardGrid({
               key={lane.id}
               lane={lane}
               columns={columns}
+              of={of}
               kanban={kanban}
               open={!collapsed.includes(lane.id)}
             />

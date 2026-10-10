@@ -89,6 +89,8 @@ export interface SwimlaneProps {
   header: ReactNode;
   /** Column count; the body lays its cells out on the board grid. */
   columns: number;
+  /** How many columns the board has when some are hidden; see kanbanGridStyle. */
+  of?: number;
   open: boolean;
   id?: string;
   children?: ReactNode;
@@ -96,12 +98,12 @@ export interface SwimlaneProps {
 }
 
 /** A lane: its heading over the column grid, 8px below the previous lane. */
-export function Swimlane({ header, columns, open, id, children, className }: SwimlaneProps) {
+export function Swimlane({ header, columns, of, open, id, children, className }: SwimlaneProps) {
   return (
     <section className={cx('mt-2', className)}>
       {header}
       {open && (
-        <div id={id} style={kanbanGridStyle(columns)} className="grid gap-2.5">
+        <div id={id} style={kanbanGridStyle(columns, of)} className="grid gap-2.5">
           {children}
         </div>
       )}
