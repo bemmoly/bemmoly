@@ -12,7 +12,6 @@
     "lint": "eslint --max-warnings 0 . && html-validate dist",
     "test": "vitest run",
     "size": "node scripts/size.ts",
-    "screens": "node scripts/capture-screens.ts",
     "previews": "node scripts/capture-previews.ts",
     "indexnow": "node scripts/indexnow.ts",
     "test:container": "vitest run tests/container.test.ts",

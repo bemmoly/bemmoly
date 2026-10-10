@@ -11,6 +11,7 @@ import { themeById } from '@bemmoly/ui/tokens';
 import { SITE_BING_VERIFICATION, SITE_GOOGLE_VERIFICATION } from 'astro:env/server';
 import Footer from '../components/site/Footer.astro';
 import Nav from '../components/site/Nav.astro';
+import ThemeScript from '../components/site/ThemeScript.astro';
 import type { SitePage } from '../data/pages.ts';
 import { jsonLd, structuredData, type FaqItem } from '../lib/structured-data.ts';
 import { themeCss } from '../lib/theme.ts';
@@ -32,7 +33,8 @@ const { page, cta = false, noindex = false, faq, alternate } = Astro.props;
 const canonical = new URL(page.path, Astro.site).href;
 const image = new URL(socialPreview.src, Astro.site).href;
 const logo = new URL(icon512.src, Astro.site).href;
-const themeColor = themeById('light').colors.card;
+// The browser's own chrome matches the page in both versions.
+const themeColors = { light: themeById('light').colors.canvas, dark: themeById('dark').colors.canvas };
 // The two IBM Plex Sans faces above the fold; the rest load on demand.
 const preloads = [plexSans400, plexSans600];
 const robots = noindex
@@ -70,8 +72,9 @@ const verification = [
     {alternate && (
       <link rel="alternate" href={alternate.href} type={alternate.type} title={alternate.title} />
     )}
-    <meta name="theme-color" content={themeColor} />
-    <meta name="color-scheme" content="light" />
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content={themeColors.light} />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content={themeColors.dark} />
+    <meta name="color-scheme" content="light dark" />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Bemmoly" />
     <meta property="og:locale" content="en_US" />
@@ -88,6 +91,7 @@ const verification = [
     <meta name="twitter:description" content={page.description} />
     <meta name="twitter:image" content={image} />
     <meta name="twitter:image:alt" content="Bemmoly: Keep your work in-house." />
+    <ThemeScript />
     <style is:inline set:html={themeCss()}></style>
     <script is:inline type="application/ld+json" set:html={graph} />
   </head>

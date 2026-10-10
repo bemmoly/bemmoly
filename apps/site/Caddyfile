@@ -21,9 +21,10 @@
 		Referrer-Policy "strict-origin-when-cross-origin"
 		Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
 		Cross-Origin-Opener-Policy "same-origin"
-		# The script hash is the landing page's inline copy button; tests/caddyfile.test.ts
-		# fails when the built script and this hash drift apart.
-		?Content-Security-Policy "default-src 'self'; script-src 'self' 'sha256-hv+s8VknAxjixYTv2FqzB997uQu7+PTgiQQMHCPzjGM='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+		# The script hashes are the inline theme script (before first paint) and the copy
+		# button; tests/csp.test.ts and tests/container.test.ts fail when a built script and
+		# these hashes drift apart.
+		?Content-Security-Policy "default-src 'self'; script-src 'self' 'sha256-/kOpV2xSdoH/7055lokFY28Xi4c0aSdakEvZCgnzJd8=' 'sha256-hv+s8VknAxjixYTv2FqzB997uQu7+PTgiQQMHCPzjGM='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
 		-Server
 	}
 }

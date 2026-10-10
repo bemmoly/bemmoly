@@ -24,8 +24,8 @@ interface Props {
 const { src, dark, alt, frame, width, sizes, eager = false } = Astro.props;
 const frameClass =
   frame === 'wide'
-    ? 'aspect-[1480/860] rounded-shot bg-sunken shadow-shot dark:shadow-glow'
-    : 'aspect-[760/520] rounded-dialog bg-card shadow-shot-sm dark:shadow-glow-sm';
+    ? 'aspect-[1480/860] rounded-shot bg-sunken shadow-e3'
+    : 'aspect-[760/520] rounded-dialog bg-card shadow-e2';
 
 /** Phone, 2x phone, the 1280 layout and the full 2x capture. */
 const widths = (image: ImageMetadata) =>
@@ -48,7 +48,7 @@ const pictures = [
 ];
 ---
 
-<div class:list={['relative overflow-hidden border border-line dark:border-edge-ac', frameClass]}>
+<div class:list={['relative overflow-hidden border border-line', frameClass]}>
   {pictures.map(({ image, set, lazy, className }) => (
     <picture class={className}>
       <source type="image/avif" srcset={set.avif} sizes={sizes} />

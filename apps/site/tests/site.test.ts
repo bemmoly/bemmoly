@@ -38,11 +38,15 @@ describe('landing page', () => {
     expect(index).not.toContain('bemmoly.dev');
   });
 
-  it('is light for every visitor, with Ocean only behind data-theme="dark"', () => {
+  it("follows the system into the product's dark theme, unless the visitor chose light", () => {
     const index = html('index.html');
-    expect(index).not.toContain('prefers-color-scheme');
-    expect(index).toContain('<meta name="color-scheme" content="light">');
-    expect(index).toMatch(/html\[data-theme=['"]?dark['"]?\][^{]*\{[^}]*--sunken:#07111c/);
+    expect(index).toContain('<meta name="color-scheme" content="light dark">');
+    // The product's dark surfaces (ADR 0015), never a retired preset's navy.
+    expect(index).toMatch(
+      /@media \(prefers-color-scheme:dark\)\{:root:not\(\[data-theme='light'\]\)\{[^}]*--canvas:#111418/,
+    );
+    expect(index).toMatch(/\[data-theme='dark'\]\{[^}]*--card:#181c22/);
+    expect(index).not.toContain('#07111c');
   });
 
   it('ships only the inline copy button and the small preview script', () => {
