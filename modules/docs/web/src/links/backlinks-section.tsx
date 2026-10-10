@@ -1,15 +1,28 @@
 import type { LinkedPage, LinkedRecord } from '@bemmoly/module-docs/shared';
-import { PageStatusPill, Skeleton, StatusBadge, type StatusCategory } from '@bemmoly/ui';
+import {
+  focusRing,
+  PageStatusPill,
+  Skeleton,
+  StatusGlyph,
+  statusStage,
+  TypeGlyph,
+  type IssueTypeLike,
+  type StatusCategoryKey,
+} from '@bemmoly/ui';
 import { PageIcon } from '@bemmoly/ui/icons';
 import type { ReactNode } from 'react';
+import { useIssueRenderer } from '../shared/issue-services.tsx';
 import { docsPaths, keepLinksInApp } from '../shared/navigation.ts';
 import { useBacklinks, useOutgoingLinks, usePageReferences } from './use-links.ts';
 
-const HEADING = 'm-0 text-11 font-medium tracking-caps text-tx-3 uppercase';
-const CARD =
-  'flex flex-col gap-1 rounded-control border border-line px-3 py-2.5 text-tx no-underline hover:border-line hover:bg-side hover:text-tx focus-ring motion-safe:transition-colors';
+/*
+ * The page's Linked work (the Docs review's Linked work tab): issues in this page with how far
+ * along they are, issues that link here, and pages that link here, each issue once. Issue rows
+ * are Work's own row (type tile, key, title, status glyph, assignee) through the kernel's
+ * entity registry; with Work off they print from what the link carries, in the same order.
+ */
 
-const LINK_KIND_WORDS = { mention: 'Mentioned', embed: 'Embedded', linked: 'Linked' } as const;
+const ROW = `flex h-9 min-w-0 items-center gap-2 rounded-card px-2 text-13 text-tx no-underline hover:bg-hover ${focusRing}`;
 
 function Section({
   title,
@@ -21,128 +34,144 @@ function Section({
   children: ReactNode;
 }) {
   return (
-    <section aria-label={title} className="flex flex-col gap-2">
-      <h3 className={HEADING}>
-        {title} <span className="font-mono text-tx-3">{count}</span>
+    <section aria-label={title} className="flex flex-col">
+      <h3 className="m-0 mx-2 mt-4 mb-1 flex gap-1.5 text-11h font-semibold text-tx-3">
+        {title}
+        <span className="font-medium tabular-nums">{count}</span>
       </h3>
-      <div className="flex flex-col gap-1.5">{children}</div>
+      {children}
     </section>
   );
 }
 
-/**
- * A record's workflow status, when its module sent one (an issue's), as a badge tone: the
- * same mapping Work's own screens use, written out here because Docs never imports Work.
- */
-function statusOf(record: LinkedRecord): { name: string; tone: StatusCategory } | null {
-  const status = record.data?.['status'] as { name?: unknown; category?: unknown } | undefined;
-  if (!status || typeof status.name !== 'string') return null;
-  const name = status.name;
-  if (status.category === 'todo') return { name, tone: 'todo' };
-  if (status.category === 'done') return { name, tone: 'done' };
-  if (/review/i.test(name)) return { name, tone: 'review' };
-  if (/\b(qa|test)/i.test(name)) return { name, tone: 'qa' };
-  return { name, tone: 'progress' };
+interface IssueData {
+  status?: { name?: unknown; category?: unknown } | null;
+  type?: IssueTypeLike | null;
 }
 
-/** An issue or another module's record, as the mock's Linked work card: key, status, title. */
-function RecordCard({
-  record,
-  kind,
-}: {
-  record: LinkedRecord;
-  kind?: keyof typeof LINK_KIND_WORDS;
-}) {
-  const status = statusOf(record);
+const CATEGORIES = new Set<StatusCategoryKey>(['todo', 'in_progress', 'done']);
+
+function categoryOf(record: LinkedRecord): StatusCategoryKey | null {
+  const category = (record.data as IssueData | undefined)?.status?.category;
+  return CATEGORIES.has(category as StatusCategoryKey) ? (category as StatusCategoryKey) : null;
+}
+
+/** A record drawn from the link alone, for Work off or a record of another module. */
+function PlainRecord({ record }: { record: LinkedRecord }) {
+  const data = record.data as IssueData | undefined;
+  const category = categoryOf(record);
+  const name = typeof data?.status?.name === 'string' ? data.status.name : undefined;
   return (
-    <a href={record.path} className={CARD}>
-      <span className="flex items-center gap-2">
-        <span className="font-mono text-12 font-medium text-tx-3">{record.key ?? record.kind}</span>
-        {status && <StatusBadge size="sm" category={status.tone} label={status.name} />}
-        {kind && <span className="ml-auto text-11 text-tx-3">{LINK_KIND_WORDS[kind]}</span>}
+    <a href={record.path} className={ROW}>
+      {data?.type && <TypeGlyph type={data.type} size={15} />}
+      <span className="font-mono text-11h text-tx-3">{record.key ?? record.kind}</span>
+      <span className="min-w-0 flex-1 truncate" title={record.title}>
+        {record.title || 'Untitled'}
       </span>
-      <span className="line-clamp-2">{record.title || 'Untitled'}</span>
+      {category && (
+        <StatusGlyph
+          stage={statusStage(category, name)}
+          size={13}
+          {...(name ? { label: name } : {})}
+        />
+      )}
     </a>
   );
 }
 
-/** A page that links here: its icon and title, its space and status. */
-function PageCard({ page }: { page: LinkedPage }) {
+function RecordRow({ record }: { record: LinkedRecord }) {
+  const Row = useIssueRenderer()?.Card;
+  if (Row && record.kind === 'issue' && record.key) return <Row entityKey={record.key} />;
+  return <PlainRecord record={record} />;
+}
+
+/** "2 of 3 in progress, none done", over a bar in the status colours. */
+function Progress({ records }: { records: readonly LinkedRecord[] }) {
+  const total = records.length;
+  const done = records.filter((record) => categoryOf(record) === 'done').length;
+  const moving = records.filter((record) => categoryOf(record) === 'in_progress').length;
+  const width = (n: number) => `${(n / total) * 100}%`;
   return (
-    <a href={docsPaths.page(page.pageId)} className={`${CARD} gap-0.5! py-2!`}>
-      <span className="flex min-w-0 items-center gap-2">
-        <PageIcon value={page.icon} size={14} className="shrink-0 text-tx-3" />
-        <span className="truncate">{page.title || 'Untitled'}</span>
-        {page.status !== 'published' && (
-          <PageStatusPill status={page.status} className="ml-auto shrink-0" />
-        )}
+    <div className="mx-2 mt-1.5 flex items-center gap-2 text-12 text-tx-3">
+      <span aria-hidden className="flex h-1 w-30 overflow-hidden rounded-full bg-line">
+        <i className="bg-done" style={{ width: width(done) }} />
+        <i className="bg-prog" style={{ width: width(moving) }} />
       </span>
-      <span className="text-12 text-tx-3">
-        {page.spaceKey} · {LINK_KIND_WORDS[page.kind]} here
+      <span className="tabular-nums">
+        {moving} of {total} in progress, {done ? `${done} done` : 'none done'}
       </span>
+    </div>
+  );
+}
+
+function PageRow({ page }: { page: LinkedPage }) {
+  return (
+    <a href={docsPaths.page(page.pageId)} className={ROW}>
+      <PageIcon value={page.icon} size={15} className="shrink-0 text-tx-3" />
+      <span className="min-w-0 flex-1 truncate">{page.title || 'Untitled'}</span>
+      {page.status !== 'published' && <PageStatusPill status={page.status} className="shrink-0" />}
+      <span className="shrink-0 text-12 text-tx-3">{page.spaceKey}</span>
     </a>
   );
 }
 
-/**
- * The page's links for the About tab (the mock's Linked work): issues the page references,
- * the records that reference it ("Referenced in") and the pages that link to it. Each part
- * hides while empty; when all are, one quiet line says so.
- */
+const recordId = (record: LinkedRecord) => `${record.kind}:${record.key ?? record.id}`;
+
 export function BacklinksSection({ pageId }: { pageId: string }) {
   const outgoing = useOutgoingLinks(pageId);
   const references = usePageReferences(pageId);
   const backlinks = useBacklinks(pageId);
-  const issues = (outgoing.data ?? []).filter((link) => link.record);
   const loading = outgoing.isPending || references.isPending || backlinks.isPending;
   const failed = outgoing.isError && references.isError && backlinks.isError;
 
   if (loading) {
     return (
-      <div role="status" className="flex flex-col gap-2 pt-2" aria-label="Loading links">
+      <div role="status" className="flex flex-col gap-2 px-2 pt-4" aria-label="Loading links">
         <Skeleton width="35%" />
         <Skeleton width="80%" />
       </div>
     );
   }
-  const refs = references.data ?? [];
+  const inPage = (outgoing.data ?? []).flatMap((link) => (link.record ? [link.record] : []));
+  const seen = new Set(inPage.map(recordId));
+  const linkHere = (references.data ?? []).filter((record) => {
+    const fresh = !seen.has(recordId(record));
+    seen.add(recordId(record));
+    return fresh;
+  });
   const pages = backlinks.data ?? [];
-  if (failed || issues.length + refs.length + pages.length === 0) {
+  if (failed || inPage.length + linkHere.length + pages.length === 0) {
     return (
-      <section aria-label="Linked work" className="flex flex-col gap-1.5 pt-2">
-        <h3 className={HEADING}>Linked work</h3>
+      <section aria-label="Linked work" className="flex flex-col gap-1.5 px-2 pt-4">
         <p className="m-0 text-12 text-tx-3">
           {failed
-            ? 'Links could not be loaded.'
-            : 'Nothing links here yet. Mention this page in an issue or another page, and it shows up here.'}
+            ? 'Links could not be loaded. Reopen the panel to try again.'
+            : 'Nothing links here yet. Type # to embed an issue, or mention this page elsewhere.'}
         </p>
       </section>
     );
   }
   return (
-    <div className="flex flex-col gap-4 pt-2" onClick={keepLinksInApp}>
-      {issues.length > 0 && (
-        <Section title="Issues referenced" count={issues.length}>
-          {issues.map((link) => (
-            <RecordCard key={`${link.targetKind}-${link.targetId}`} record={link.record!} />
+    <div className="flex flex-col" onClick={keepLinksInApp}>
+      {inPage.length > 0 && (
+        <Section title="In this page" count={inPage.length}>
+          {inPage.map((record) => (
+            <RecordRow key={recordId(record)} record={record} />
           ))}
+          <Progress records={inPage} />
         </Section>
       )}
-      {refs.length > 0 && (
-        <Section title="Referenced in" count={refs.length}>
-          {refs.map((record) => (
-            <RecordCard
-              key={`${record.kind}-${record.id}`}
-              record={record}
-              kind={record.linkKind}
-            />
+      {linkHere.length > 0 && (
+        <Section title="Issues that link here" count={linkHere.length}>
+          {linkHere.map((record) => (
+            <RecordRow key={recordId(record)} record={record} />
           ))}
         </Section>
       )}
       {pages.length > 0 && (
-        <Section title="Backlinks" count={pages.length}>
+        <Section title="Pages that link here" count={pages.length}>
           {pages.map((page) => (
-            <PageCard key={page.pageId} page={page} />
+            <PageRow key={page.pageId} page={page} />
           ))}
         </Section>
       )}
