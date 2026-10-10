@@ -10,6 +10,7 @@ import type {
   JobDefinition,
   LinkKindDefinition,
   QueryFieldDefinition,
+  ReferenceSourceDefinition,
   RouteDefinition,
   SearchIndexerDefinition,
   SearchProviderDefinition,
@@ -20,6 +21,7 @@ export interface ModuleContributions {
   routes: RouteDefinition[];
   entities: EntityDefinition[];
   links: LinkKindDefinition[];
+  referenceSources: ReferenceSourceDefinition[];
   capabilities: CapabilityDefinition[];
   navigation: NavEntry[];
   jobs: JobDefinition[];
@@ -42,6 +44,7 @@ export function emptyContributions(): ModuleContributions {
     routes: [],
     entities: [],
     links: [],
+    referenceSources: [],
     capabilities: [],
     navigation: [],
     jobs: [],

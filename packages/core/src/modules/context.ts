@@ -7,7 +7,9 @@ import { collabDocumentName, type CollabTransactor } from './collab.ts';
 import type { BemmolyModule, ModuleContext } from './contract.ts';
 import type { ModuleContributions } from './contributions.ts';
 import { ModuleLoadError } from './errors.ts';
+import { createReferenceRegistries } from './references.ts';
 import type { SettingsReader, SettingsRegistry } from './registries.ts';
+import type { ModuleRegistry } from './registry.ts';
 import { createAuditRecorder } from '../services/audit/index.ts';
 import { createContainerMemberships } from '../services/authz/index.ts';
 
@@ -22,6 +24,8 @@ export interface ModuleContextOptions {
   database?: SqlClient;
   /** Bound once the collaboration host exists; server edits before that fail loudly. */
   collab?: CollabTransactor;
+  /** Every enabled module, for cross-module lookups; answers once loading finishes. */
+  peers?: () => ModuleRegistry | undefined;
 }
 
 /** The jobs service also reads a request id for its logs. */
@@ -58,8 +62,7 @@ export function createModuleContext(
   };
   return {
     routes: { add: (route) => into.routes.push(route) },
-    entities: { add: (entity) => into.entities.push(entity) },
-    links: { add: (link) => into.links.push(link) },
+    ...createReferenceRegistries(into, options.peers ?? (() => undefined)),
     capabilities: {
       add(capability) {
         if (!isCapabilityOfModule(capability.name, module.id)) {

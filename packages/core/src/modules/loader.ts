@@ -102,6 +102,7 @@ export function loadModules(options: LoadModulesOptions): ModuleRegistry {
         ...(options.realtime ? { realtime: options.realtime } : {}),
         ...(options.database ? { database: options.database } : {}),
         ...(options.collab ? { collab: options.collab } : {}),
+        peers: () => registry,
       }),
     );
     registry.add(module, contributions);
