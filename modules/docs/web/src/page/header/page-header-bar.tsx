@@ -61,7 +61,7 @@ function StarButton() {
       size="sm"
       variant="ghost"
       aria-pressed={page.starred}
-      className="aria-pressed:text-amber-fg [&[aria-pressed=true]_svg]:fill-current"
+      className="max-sm:hidden aria-pressed:text-amber-fg [&[aria-pressed=true]_svg]:fill-current"
       onClick={() => star.mutate(!page.starred)}
     />
   );

@@ -1,5 +1,5 @@
 import type { PageDetail } from '@bemmoly/module-docs/shared';
-import { MenuGroup, MenuItem } from '@bemmoly/ui';
+import { MenuItem } from '@bemmoly/ui';
 import { Icon } from '@bemmoly/ui/icons';
 import { useExportDialog } from './export-dialog.tsx';
 
@@ -8,10 +8,8 @@ export function ExportMenuItems({ page }: { page: PageDetail }) {
   const show = useExportDialog((state) => state.show);
   if (page.deletedAt) return null;
   return (
-    <MenuGroup label="Export" separated>
-      <MenuItem icon={<Icon name="download" size={14} />} onSelect={show}>
-        Export…
-      </MenuItem>
-    </MenuGroup>
+    <MenuItem icon={<Icon name="download" size={14} />} onSelect={show}>
+      Export…
+    </MenuItem>
   );
 }

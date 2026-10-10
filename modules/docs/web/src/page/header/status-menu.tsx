@@ -51,7 +51,14 @@ export function StatusMenu() {
             aria-label={`Status: ${status.replace('_', ' ')}. Change status`}
             className={`${TRIGGER} cursor-pointer hover:bg-hover hover:text-tx focus-ring aria-expanded:bg-hover`}
           >
-            <PageStatusMark status={status} />
+            {/* On a phone the glyph alone keeps room for the page's name. */}
+            <PageStatusMark status={status} className="max-sm:hidden" />
+            <StatusGlyph
+              stage={PAGE_STATUS_STAGES[status]}
+              size={13}
+              decorative
+              className="sm:hidden"
+            />
             <Icon name="caret" size={12} className="text-tx-3" />
           </button>
         )}

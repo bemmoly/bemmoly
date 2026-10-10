@@ -1,7 +1,8 @@
-import { useScreenActions } from '@bemmoly/core-web';
+import { useFrame, useScreenActions } from '@bemmoly/core-web';
 import { IconButton, Menu, MenuItem, MenuSeparator, useToast } from '@bemmoly/ui';
 import { Icon } from '@bemmoly/ui/icons';
 import { useState } from 'react';
+import { useStarPage } from '../../hooks/mutations.ts';
 import { docsPaths } from '../../shared/navigation.ts';
 import { usePageChrome, usePageScreen, useSlotProps } from '../screen-context.ts';
 import { HISTORY_SLOT, MENU_SLOTS } from '../slots.ts';
@@ -41,6 +42,9 @@ export function MoreMenu() {
   const { trash } = useTrashPage(page);
   const [moving, setMoving] = useState(false);
   const copy = useDuplicatePage();
+  const { phone } = useFrame();
+  const star = useStarPage(page.id);
+  const openMargin = usePageChrome((state) => state.openMargin);
   const trashed = readOnly === 'trashed';
   const canChange = !trashed && readOnly !== 'viewer';
   const name = page.title || 'Untitled';
@@ -83,9 +87,23 @@ export function MoreMenu() {
           <IconButton {...props} label="More actions" icon="more" size="sm" variant="secondary" />
         )}
       >
-        <MenuItem icon={<Icon name="external" size={14} />} onSelect={() => void copyLink()}>
+        <MenuItem icon={<Icon name="link" size={14} />} onSelect={() => void copyLink()}>
           Copy link
         </MenuItem>
+        {/* What the phone's one-bar header has no room for. */}
+        {phone && !trashed && (
+          <>
+            <MenuItem
+              icon={<Icon name="star" size={14} />}
+              onSelect={() => star.mutate(!page.starred)}
+            >
+              {page.starred ? 'Remove from starred' : 'Star this page'}
+            </MenuItem>
+            <MenuItem icon={<Icon name="link" size={14} />} onSelect={() => openMargin('linked')}>
+              Linked work
+            </MenuItem>
+          </>
+        )}
         {canChange && (
           <>
             <MenuItem
