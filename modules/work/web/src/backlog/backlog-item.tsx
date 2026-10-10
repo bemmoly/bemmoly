@@ -1,10 +1,18 @@
 import type { Issue } from '@bemmoly/module-work/shared';
 import { IssueRow, statusStage } from '@bemmoly/ui';
-import { memo, type KeyboardEvent, type MouseEvent, type PointerEvent } from 'react';
+import {
+  memo,
+  startTransition,
+  useState,
+  type KeyboardEvent,
+  type MouseEvent,
+  type PointerEvent,
+} from 'react';
+import { flushSync } from 'react-dom';
 import { useBacklogUi } from '../hooks/backlog-store.ts';
 import { useIssuePending } from '../hooks/issue-edits.ts';
-import { useSearchParam } from '../shared/url-state.ts';
-import { openRowMenu } from '../shared/issue-actions-menu.tsx';
+import { useSearchParamIs } from '../shared/url-state.ts';
+import { openRowMenu, ROW_MENU } from '../shared/issue-actions-menu.tsx';
 import { useBacklogRowShared } from './backlog-row-context.ts';
 import type { Lookups, StatusLook } from './model.ts';
 
@@ -42,7 +50,8 @@ const stageOf = (look: StatusLook | undefined) =>
 /**
  * One issue in a container: the design system's row inside an option that
  * carries selection, focus, the drag handlers and the drop line. Each row
- * reads only its own slice of the drag and selection state.
+ * reads only its own slice of the drag and selection state, and draws its
+ * menu only once someone reaches it.
  */
 export const BacklogItem = memo(function BacklogItem({
   issue,
@@ -55,8 +64,11 @@ export const BacklogItem = memo(function BacklogItem({
   const id = issue.id;
   const selected = useBacklogUi((state) => state.selection.ids.includes(id));
   const selecting = useBacklogUi((state) => state.selection.ids.length > 0);
-  const open = useSearchParam('issue') === issue.key;
-  const { blocked, menu } = useBacklogRowShared();
+  const open = useSearchParamIs('issue', issue.key);
+  const { blocked, menu, touch } = useBacklogRowShared();
+  // The menu is drawn the first time the pointer or the focus reaches the row.
+  const [reached, setReached] = useState(false);
+  const reach = reached ? undefined : () => startTransition(() => setReached(true));
   const dragged = useBacklogUi((state) => state.drag?.ids.includes(id) ?? false);
   const pending = useIssuePending(issue.key);
   const dropAbove = useBacklogUi(
@@ -76,7 +88,12 @@ export const BacklogItem = memo(function BacklogItem({
       data-container-id={containerId}
       data-index={index}
       onClick={(event) => handlers.onClick(event, id)}
-      onContextMenu={openRowMenu}
+      onPointerEnter={reach}
+      onFocus={reach}
+      onContextMenu={(event) => {
+        if (!event.currentTarget.querySelector(`[${ROW_MENU}]`)) flushSync(() => setReached(true));
+        openRowMenu(event);
+      }}
       onPointerDown={(event) => handlers.onPointerDown(event, id)}
       onKeyDown={(event) => handlers.onKeyDown(event, id)}
       className={`group/item relative cursor-pointer select-none ${FOCUS} ${dragged ? 'opacity-50' : ''}`}
@@ -109,7 +126,7 @@ export const BacklogItem = memo(function BacklogItem({
         onClick={(event) => event.stopPropagation()}
         className="absolute top-1/2 right-0.5 -translate-y-1/2 opacity-0 group-hover/item:opacity-100 group-focus-within/item:opacity-100 has-[[aria-expanded=true]]:opacity-100 pointer-coarse:opacity-100"
       >
-        {menu(issue, containerId)}
+        {(reached || touch) && menu(issue, containerId)}
       </span>
     </div>
   );

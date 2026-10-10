@@ -1,4 +1,4 @@
-import type { Issue, Sprint } from '@bemmoly/module-work/shared';
+import type { Sprint } from '@bemmoly/module-work/shared';
 import { HeaderActions } from '@bemmoly/core-web';
 import { useBacklogInShell } from './backlog-shell.ts';
 import { avatarHue, Button, EmptyState, useToast } from '@bemmoly/ui';
@@ -6,12 +6,18 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { setSearchParams, useSearchParam } from '../shared/url-state.ts';
 import { useIssueQuickActions } from '../hooks/issue-quick-actions.ts';
 import { DOCKED_SLIDE_OVER_QUERY, useMediaQuery } from '../hooks/media-query.ts';
-import { IssueActionsMenu, type MenuSprint } from '../shared/issue-actions-menu.tsx';
+import type { MenuSprint } from '../shared/issue-actions-menu.tsx';
 import { IssueBulkBar } from '../shared/issue-bulk-bar.tsx';
 import type { FilterOptions } from '../shared/issue-filter-bar.tsx';
 import { useIssueFilters } from '../shared/issue-filters.ts';
 import { WorkPresence } from '../shared/work-presence.tsx';
-import { BacklogRowContext, type BacklogRowShared } from './backlog-row-context.ts';
+import {
+  BacklogMenuContext,
+  BacklogRowContext,
+  type BacklogMenuShared,
+  type BacklogRowShared,
+} from './backlog-row-context.ts';
+import { rowMenu } from './backlog-row-menu.tsx';
 import { useBacklogScreen } from '../hooks/backlog-screen.ts';
 import { useSprintActions } from '../hooks/backlog-sprints.ts';
 import { keepLinksInApp } from '../hooks/issue-navigation.ts';
@@ -29,6 +35,7 @@ import { SprintDialog } from './sprint-dialog.tsx';
 import { SprintSection } from './sprint-section.tsx';
 
 const clearSelection = () => useBacklogUi.getState().setSelection(EMPTY_SELECTION);
+const NO_BLOCKERS: Readonly<Record<string, readonly string[]>> = {};
 const backlogDragging = () => useBacklogUi.getState().drag !== null;
 
 type Dialog = { kind: 'start' | 'edit' | 'complete'; sprintId: string } | null;
@@ -110,24 +117,15 @@ export default function BacklogScreen({ projectKey: pathKey }: WorkScreenProps) 
     const key = keyOf.get(id);
     return key ? [key] : [];
   });
+  const blocked = screen.backlog?.blocked ?? NO_BLOCKERS;
+  const touch = useMediaQuery('(pointer: coarse)', false);
   const rowShared = useMemo<BacklogRowShared>(
-    () => ({
-      blocked: screen.backlog?.blocked ?? {},
-      menu: (issue: Issue) => (
-        <IssueActionsMenu
-          issueKey={issue.key}
-          assigneeId={issue.assigneeId}
-          priority={issue.priority}
-          sprintId={issue.sprintId}
-          meId={meId}
-          actions={quick}
-          sprints={moveTargets}
-          onOpen={() => peek.open(issue.key)}
-          {...(selectedIds.includes(issue.id) ? { targets: selectedKeys } : {})}
-        />
-      ),
-    }),
-    [screen.backlog?.blocked, meId, quick, moveTargets, peek.open, selectedIds, keyOf],
+    () => ({ blocked, menu: rowMenu, touch }),
+    [blocked, touch],
+  );
+  const menuShared = useMemo<BacklogMenuShared>(
+    () => ({ meId, quick, sprints: moveTargets, open: peek.open, keyOf }),
+    [meId, quick, moveTargets, peek.open, keyOf],
   );
 
   const issueById = useCallback(
@@ -195,48 +193,50 @@ export default function BacklogScreen({ projectKey: pathKey }: WorkScreenProps) 
             ref={screen.scrollRef}
             className={`min-w-0 flex-1 overflow-auto pb-24 ${dragging ? 'select-none' : ''}`}
           >
-            <BacklogRowContext.Provider value={rowShared}>
-              <div className="min-w-0">
-                {screen.isPending && <BacklogContainersSkeleton />}
-                {screen.error &&
-                  (screen.backlog ? (
-                    <p role="status" className="m-0 px-6 py-3 text-12 text-amber-tx">
-                      The backlog could not refresh, so it may be out of date.{' '}
-                      {screen.error.message}
-                    </p>
-                  ) : (
-                    <EmptyState
-                      title="The backlog did not load"
-                      description={screen.error.message}
-                      action={<Button onClick={() => void screen.refetch()}>Try again</Button>}
+            <BacklogMenuContext.Provider value={menuShared}>
+              <BacklogRowContext.Provider value={rowShared}>
+                <div className="min-w-0">
+                  {screen.isPending && <BacklogContainersSkeleton />}
+                  {screen.error &&
+                    (screen.backlog ? (
+                      <p role="status" className="m-0 px-6 py-3 text-12 text-amber-tx">
+                        The backlog could not refresh, so it may be out of date.{' '}
+                        {screen.error.message}
+                      </p>
+                    ) : (
+                      <EmptyState
+                        title="The backlog did not load"
+                        description={screen.error.message}
+                        action={<Button onClick={() => void screen.refetch()}>Try again</Button>}
+                      />
+                    ))}
+                  {screen.sections.map(({ container, visible }) => (
+                    <SprintSection
+                      key={container.id}
+                      container={container}
+                      visible={visible}
+                      filtered={screen.filtered}
+                      lookups={screen.lookups}
+                      handlers={screen.handlers}
+                      entryId={screen.entryId}
+                      scrollRef={screen.scrollRef}
+                      onAction={() =>
+                        container.sprint
+                          ? setDialog({
+                              kind: container.sprint.state === 'active' ? 'complete' : 'start',
+                              sprintId: container.id,
+                            })
+                          : createSprint()
+                      }
+                      {...(container.sprint
+                        ? { onMore: () => setDialog({ kind: 'edit', sprintId: container.id }) }
+                        : {})}
+                      onCreateIssue={createIssue(container.sprint, screen.defaultTypeId)}
                     />
                   ))}
-                {screen.sections.map(({ container, visible }) => (
-                  <SprintSection
-                    key={container.id}
-                    container={container}
-                    visible={visible}
-                    filtered={screen.filtered}
-                    lookups={screen.lookups}
-                    handlers={screen.handlers}
-                    entryId={screen.entryId}
-                    scrollRef={screen.scrollRef}
-                    onAction={() =>
-                      container.sprint
-                        ? setDialog({
-                            kind: container.sprint.state === 'active' ? 'complete' : 'start',
-                            sprintId: container.id,
-                          })
-                        : createSprint()
-                    }
-                    {...(container.sprint
-                      ? { onMore: () => setDialog({ kind: 'edit', sprintId: container.id }) }
-                      : {})}
-                    onCreateIssue={createIssue(container.sprint, screen.defaultTypeId)}
-                  />
-                ))}
-              </div>
-            </BacklogRowContext.Provider>
+                </div>
+              </BacklogRowContext.Provider>
+            </BacklogMenuContext.Provider>
           </div>
         </div>
       </div>
