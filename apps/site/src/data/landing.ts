@@ -9,14 +9,14 @@ import type { Availability } from './topics.ts';
 /** The newest release, from the release notes; the pill, transcript and bundle names use it. */
 export const RELEASE = {
   version: LATEST.version,
-  note: 'Out now: issues, boards, backlog and sprints',
+  note: 'The new look is here, and so is Docs',
 };
 
 export const PROOF_POINTS = [
   'MIT licensed',
   'Postgres only, no Redis or Elastic',
-  'Imports from Jira and Confluence in 0.5',
-  'Any AI provider, or none, from 0.4',
+  'Import from Confluence and Markdown',
+  'AI coming, and optional',
 ];
 
 export interface Feature {
@@ -31,7 +31,7 @@ export const FEATURES: readonly Feature[] = [
   {
     g: 'WK',
     title: 'Work, from backlog to release',
-    body: 'Scrum or Kanban per project. Epics, sprints, swimlanes, WIP limits, custom fields, a visual workflow editor, saved filters and ⌘K search. A roadmap with forecasts follows in 0.5.',
+    body: 'Scrum or Kanban per project. Epics, sprints, swimlanes, WIP limits, custom fields, a visual workflow editor, saved filters and ⌘K search.',
     status: 'now',
   },
   {
@@ -42,7 +42,7 @@ export const FEATURES: readonly Feature[] = [
   },
   {
     g: 'AI',
-    title: 'AI-first, not AI-bolted-on',
+    title: 'AI, when it comes, on your terms',
     body: 'Briefs, risk detection, planning, drafting, Q&A across everything you have written, and a command bar that previews before it acts. Any provider, a local model, or none.',
     status: 'ai',
   },
@@ -55,7 +55,7 @@ export const FEATURES: readonly Feature[] = [
   {
     g: 'RB',
     title: 'Roles that make sense',
-    body: 'Org admin, project admin, member, viewer, plus custom roles, with org locks on what each may change. An audit log of who changed what. SSO in 0.5.',
+    body: 'Org admin, project admin, member, viewer, plus custom roles, with org locks on what each may change. An audit log of who changed what.',
     status: 'now',
   },
   {
@@ -76,7 +76,7 @@ export const AI_POINTS = [
 export const STATS = [
   { value: '$0', label: 'per seat, forever. MIT license.' },
   { value: '$5–25', label: 'a month for the 2 vCPU, 4 GB VM it needs' },
-  { value: '5 min', label: 'curl to first login' },
+  { value: '1 cmd', label: 'to install, on a fresh Linux VM' },
   { value: '1 cmd', label: 'to upgrade or roll back' },
 ];
 
@@ -97,7 +97,7 @@ export const INSTALL_PATHS = [
   'Docker Compose',
   'Your own Postgres',
   'Air-gapped bundle, untested offline',
-  'Helm and Terraform in 1.0',
+  'Helm and Terraform, planned',
 ];
 
 export const CONFIGS = [

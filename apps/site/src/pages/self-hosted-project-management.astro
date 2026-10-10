@@ -61,8 +61,14 @@ const CAPABILITIES: readonly Capability[] = [
   },
   {
     tile: 'IM',
-    title: 'Imports and single sign-on',
-    body: 'Import from Jira, Import from Confluence, CSV and Markdown; OIDC, SAML and SCIM; webhooks and automation.',
+    title: 'Bring your pages, take them with you',
+    body: 'Import from Confluence (space exports) and Markdown folders into Docs; export a page as Markdown or HTML, or a page and its subpages as a zip.',
+    status: 'docs',
+  },
+  {
+    tile: 'SO',
+    title: 'More imports and single sign-on',
+    body: 'Import from Jira and CSV; OIDC, SAML and SCIM; webhooks and automation.',
     status: 'integrations',
   },
   {
@@ -81,7 +87,7 @@ const FAQ: readonly FaqItem[] = [
   },
   {
     question: 'Can I manage projects in it today?',
-    answer: `Yes. Since the 0.2 release the Work module has projects, issues, workflows, Kanban and Scrum boards, the backlog and sprints; an admin turns it on in Settings › Modules. Docs arrive in 0.3 and AI in 0.4. The current release is ${RELEASE.version}.`,
+    answer: `Yes. The Work module has projects, issues, workflows, Kanban and Scrum boards, the backlog and sprints, and the Docs module has spaces, a live editor, comments and history; an admin turns each on in Settings › Modules. AI is still to come. The current release is ${RELEASE.version}.`,
   },
   {
     question: 'What does it need to run?',
@@ -96,7 +102,7 @@ const FAQ: readonly FaqItem[] = [
   {
     question: 'Do I have to use AI?',
     answer:
-      'No. AI arrives in 0.4 and works with the provider you connect, a model on your own network, or none at all. Nothing leaves the server for an AI provider until you connect one.',
+      'No. AI is not in Bemmoly yet, and when it comes it works with the provider you connect, a model on your own network, or none at all. Nothing leaves the server for an AI provider until you connect one.',
   },
 ];
 ---
@@ -109,8 +115,8 @@ const FAQ: readonly FaqItem[] = [
   faq={FAQ}
 >
   <StatusNote>
-    Bemmoly {RELEASE.version} has the foundation and the Work module: projects, issues, boards, the
-    backlog and sprints. Docs arrive in 0.3 and AI in 0.4. Each badge below says where a part
+    Bemmoly {RELEASE.version} has the foundation, the Work module (projects, issues, boards, the
+    backlog and sprints) and the Docs module. AI is still to come. Each badge below says where a part
     stands.
   </StatusNote>
 
