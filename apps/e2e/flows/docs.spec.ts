@@ -62,14 +62,14 @@ test('a space is created, a page made from a template, reordered, starred, trash
   await expect(spaceRow(page, name)).toHaveAttribute('aria-current', 'page');
   await expect(page.getByRole('button', { name: /^New page N$/ })).toBeVisible();
 
-  // A page from a template, through the picker the header's New page opens.
+  // The header's New page makes a page in place; a template from inside the empty page fills it.
   await page.getByRole('button', { name: 'New page', exact: true }).click();
-  const pageDialog = page.getByRole('dialog', { name: 'New page' });
-  await pageDialog.getByRole('button', { name: /^Runbook/ }).click();
-  await pageDialog.getByRole('button', { name: 'Create page' }).click();
   await expect(page).toHaveURL(/\/docs\/p\/[0-9a-f-]{36}$/);
-  await expect(page.getByRole('heading', { name: 'Runbook', level: 1 })).toBeVisible();
-
+  await page
+    .getByRole('region', { name: 'Start from a template' })
+    .getByRole('button', { name: /^Runbook/ })
+    .click();
+  await expect(page.getByRole('textbox', { name: 'Page title' })).toHaveValue('Runbook');
   await expect(page.getByRole('treeitem', { name: 'Runbook' })).toHaveAttribute(
     'aria-current',
     'page',
@@ -110,11 +110,14 @@ test('a space is created, a page made from a template, reordered, starred, trash
   await expect(rows(page)).toHaveText(['Failover drill']);
   await spaceAction(page, name, 'Trash');
   await expect(page).toHaveURL(new RegExp(`/docs/s/${key}/trash$`));
-  const trashed = page.getByRole('list', { name: 'Pages in the trash' }).getByRole('listitem');
+  const trashed = page
+    .getByRole('table')
+    .getByRole('row')
+    .filter({ has: page.getByRole('cell', { name: 'Runbook', exact: true }) });
   await expect(trashed).toHaveCount(1);
   await trashed.getByRole('button', { name: 'Restore' }).click();
-  await expect(page.getByText('“Runbook” restored')).toBeVisible();
-  await expect(page.getByText('The trash is empty')).toBeVisible();
+  await expect(page.getByText(/^“Runbook” restored/)).toBeVisible();
+  await expect(trashed).toHaveCount(0);
   await expect(rows(page)).toHaveText(['Failover drill', 'Runbook']);
 });
 
