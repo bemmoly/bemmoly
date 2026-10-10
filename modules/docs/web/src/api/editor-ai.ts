@@ -1,5 +1,5 @@
 import type { Http } from '@bemmoly/api-client';
-import { enc, streamNdjson, validated } from '@bemmoly/api-client';
+import { enc, validated } from '@bemmoly/api-client';
 import {
   aiWriteBodySchema,
   aiWriteEventSchema,
@@ -7,6 +7,7 @@ import {
   completionResponseSchema,
   pageCommentSchema,
   type AiWriteBody,
+  type AiWriteStreamEvent,
   type CompletionBody,
 } from '../../../shared/index.ts';
 import { DOCS_BASE } from './pages.ts';
@@ -23,20 +24,20 @@ export function docsEditorAiEndpoints(http: Http) {
           ...(signal ? { signal } : {}),
         }),
       /** The write's events as they arrive; a refusal throws before the first. */
-      write: (pageId: string, body: AiWriteBody, signal?: AbortSignal) =>
-        streamNdjson(http, page(pageId, '/ai-writes'), aiWriteEventSchema, {
+      async *write(
+        pageId: string,
+        body: AiWriteBody,
+        signal?: AbortSignal,
+      ): AsyncGenerator<AiWriteStreamEvent> {
+        yield* http.lines(page(pageId, '/ai-writes'), aiWriteEventSchema, {
+          method: 'POST',
           body: validated(aiWriteBodySchema, body),
           ...(signal ? { signal } : {}),
-        }),
+        });
+      },
       suggestFix: async (commentId: string) =>
         http.request(`${DOCS_BASE}/comments/${enc(commentId)}/suggest-fix`, pageCommentSchema, {
           method: 'POST',
-        }),
-      /** "Not useful" on a run, for the AI settings' feedback numbers. */
-      notUseful: async (runId: string) =>
-        http.send(`/api/v1/ai/runs/${enc(runId)}/feedback`, {
-          method: 'PUT',
-          body: { feedback: 'not_useful' },
         }),
     },
   };

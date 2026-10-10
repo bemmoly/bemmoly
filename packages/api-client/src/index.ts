@@ -38,7 +38,6 @@ export function createApiClient(options: HttpOptions = {}) {
 
 export type ApiClient = ReturnType<typeof createApiClient>;
 
-export { streamNdjson, type NdjsonOptions } from './ndjson.ts';
 export {
   ApiError,
   fieldErrors,

@@ -92,7 +92,8 @@ export function useDocAi({ pageId, spaceKey, editable }: DocAiOptions): AiHandle
       },
       ghostText: ghostOn,
       describeError: describeAiError,
-      notUseful: (runId) => void api.docs.ai.notUseful(runId).catch(() => undefined),
+      // A mark for the AI settings' numbers; a failed one changes nothing the person sees.
+      notUseful: (runId) => void api.ai.answers.feedback(runId, 'not_useful').catch(() => null),
     };
   }, [on, pageId, ghostOn]);
 }
