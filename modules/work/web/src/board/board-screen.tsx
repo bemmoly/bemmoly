@@ -31,6 +31,7 @@ import { BoardEmpty } from './board-empty.tsx';
 import { BoardGrid } from './board-grid.tsx';
 import { BoardHeader } from './board-header.tsx';
 import { BoardToolbar } from './board-toolbar.tsx';
+import { SprintPulse } from '../shared/sprint-pulse.tsx';
 
 type Screen = ReturnType<typeof useBoardScreen>;
 
@@ -166,6 +167,7 @@ function BoardBody({
             display={<BoardDisplayMenu display={screen.display} kanban={screen.kanban} />}
           />
         </div>
+        <SprintPulse sprintId={screen.sprint?.id} className="bg-sunken px-6 pt-3 max-md:px-4" />
         <div className="min-h-0 flex-1 overflow-auto bg-sunken px-6 pb-6 max-md:px-4">
           <BoardContext.Provider value={shared}>
             <BoardGrid
