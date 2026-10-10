@@ -95,9 +95,11 @@ export function PageHeaderBar() {
       <div className="ml-auto flex shrink-0 items-center gap-2">
         <Presence />
         <StarButton />
-        <Button size="sm" className="hidden md:inline-flex" onClick={() => void copyLink()}>
-          Share
-        </Button>
+        <span className="hidden md:inline-flex">
+          <Button size="sm" onClick={() => void copyLink()}>
+            Share
+          </Button>
+        </span>
         {toggles.map((slot) => (
           <Button
             key={slot.id}

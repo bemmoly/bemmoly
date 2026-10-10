@@ -57,7 +57,11 @@ export function StatusMenu() {
             <MenuItem
               key={next}
               disabled={!allowed || change.isPending}
-              icon={<PageStatusPill status={next} className="w-21 justify-center" />}
+              icon={
+                <span aria-hidden className="inline-flex">
+                  <PageStatusPill status={next} className="w-21 justify-center" />
+                </span>
+              }
               hint={allowed ? undefined : 'Needs publish rights'}
               onSelect={() => {
                 if (next === 'in_review') setPicking(true);

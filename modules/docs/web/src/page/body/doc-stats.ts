@@ -12,7 +12,8 @@ export interface DocStats {
 }
 
 export function countWords(text: string): number {
-  const words = text.trim().match(/[\p{L}\p{N}][\p{L}\p{N}'’_-]*/gu);
+  // "it’s", "auth_pg_sessions" and "0.5%" are one word each.
+  const words = text.trim().match(/[\p{L}\p{N}](?:[\p{L}\p{N}'’_-]|[.,](?=\p{N}))*/gu);
   return words?.length ?? 0;
 }
 

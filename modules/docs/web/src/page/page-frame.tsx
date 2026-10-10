@@ -92,8 +92,12 @@ export function PageFrame({ page }: { page: PageDetail }) {
   usePageShortcuts(collab.status, readOnly);
   useHashLanding(editor, outline);
 
+  // Focus moves at once, not on the next frame as Tiptap's focus() does: a fast typist's next
+  // key after Enter in the title must land in the body.
   const focusBody = useCallback(() => {
-    editor?.chain().focus('start').scrollIntoView().run();
+    if (!editor || editor.isDestroyed) return;
+    editor.view.focus();
+    editor.chain().setTextSelection(1).scrollIntoView().run();
   }, [editor]);
 
   const screen = useMemo<PageScreenState>(
