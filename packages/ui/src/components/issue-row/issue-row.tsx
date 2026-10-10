@@ -1,4 +1,4 @@
-import type { MouseEvent, ReactNode } from 'react';
+import type { CSSProperties, MouseEvent, ReactNode } from 'react';
 import { Icon } from '../../icons/icon.tsx';
 import { cx } from '../../lib/cx.ts';
 import { focusRing, focusRingInset } from '../../lib/focus.ts';
@@ -51,6 +51,23 @@ export interface IssueRowProps {
 export const issueRowTemplate = (epic: boolean) =>
   `16px 16px 64px minmax(0,1fr) ${epic ? '120px ' : ''}16px 16px 22px 20px`;
 
+/** On a phone the epic steps aside so the title keeps its room; the key's track narrows. */
+const PHONE_TEMPLATE = '16px 16px 56px minmax(0,1fr) 16px 16px 22px 20px';
+
+/**
+ * The row's tracks as custom properties, so a phone width can swap them from CSS (the inline
+ * template would otherwise win over any class).
+ */
+export const issueRowTracks = (epic: boolean): CSSProperties =>
+  ({
+    '--row-tracks': issueRowTemplate(epic),
+    '--row-tracks-phone': PHONE_TEMPLATE,
+  }) as CSSProperties;
+
+/** The grid classes that read issueRowTracks. */
+export const ISSUE_ROW_GRID =
+  'grid [grid-template-columns:var(--row-tracks)] max-sm:gap-2 max-sm:[grid-template-columns:var(--row-tracks-phone)]';
+
 /**
  * The one issue row (docs/design/premium/kit.css, `.lrow`): 36px tall, divided by the lighter
  * line, with the same fields in the same order as the card. Secondary parts (the grip, the
@@ -78,10 +95,11 @@ export function IssueRow({
   const reveal = 'opacity-0 group-hover/row:opacity-100 group-focus-within/row:opacity-100';
   return (
     <div
-      style={{ gridTemplateColumns: issueRowTemplate(epic !== undefined) }}
+      style={issueRowTracks(epic !== undefined)}
       aria-busy={pending || undefined}
       className={cx(
-        'group/row relative grid h-9 items-center gap-2.5 border-b border-line-2 pr-6 pl-4 text-13 text-tx',
+        ISSUE_ROW_GRID,
+        'group/row relative h-9 items-center gap-2.5 border-b border-line-2 pr-6 pl-4 text-13 text-tx max-sm:pr-7',
         'motion-safe:transition-[color,background-color,border-color,opacity]',
         checked || selected ? 'bg-acc-50' : 'hover:bg-hover',
         pending && 'opacity-60 motion-safe:delay-(--duration-base)',
@@ -145,7 +163,7 @@ export function IssueRow({
         )}
       </span>
       {epic && (
-        <span className="flex min-w-0 items-center gap-1.5 text-12 text-tx-2">
+        <span className="flex min-w-0 items-center gap-1.5 text-12 text-tx-2 max-sm:hidden">
           <i aria-hidden className={cx('size-2 shrink-0 rounded-[2.5px]', epicFill(epic.color))} />
           <span className="truncate" title={epic.name}>
             {epic.name}

@@ -91,7 +91,7 @@ export function SprintHeader({
   return (
     <div
       className={cx(
-        'flex h-9 items-center gap-2 border-y border-line bg-sunken pr-6 pl-4 text-13 font-semibold whitespace-nowrap text-tx',
+        'flex h-9 items-center gap-2 border-y border-line bg-sunken pr-6 pl-4 text-13 font-semibold whitespace-nowrap text-tx max-sm:pr-3 max-sm:pl-3',
         className,
       )}
     >
@@ -101,7 +101,7 @@ export function SprintHeader({
         aria-controls={controls}
         onClick={onToggle}
         className={cx(
-          'flex min-w-0 cursor-pointer items-center gap-2 rounded-chip border-0 bg-transparent p-0 text-left font-sans text-13 font-semibold text-tx',
+          'flex min-w-0 cursor-pointer items-center gap-2 rounded-chip border-0 bg-transparent p-0 text-left font-sans text-13 font-semibold text-tx max-sm:min-w-20',
           focusRingInset,
         )}
       >
@@ -120,14 +120,14 @@ export function SprintHeader({
       {chip && (
         <span
           className={cx(
-            'inline-flex h-4.5 shrink-0 items-center rounded-chip px-1.5 text-11 font-semibold',
+            'inline-flex h-4.5 shrink-0 items-center rounded-chip px-1.5 text-11 font-semibold max-sm:hidden',
             chip.className,
           )}
         >
           {chip.label}
         </span>
       )}
-      <span className="min-w-0 truncate font-normal text-tx-3" title={goal}>
+      <span className="min-w-0 truncate font-normal text-tx-3 max-sm:hidden" title={goal}>
         {[dates, `${issueCount} ${issueCount === 1 ? 'issue' : 'issues'}`]
           .filter(Boolean)
           .map((part, index) => (
@@ -141,7 +141,7 @@ export function SprintHeader({
       <span className="ml-auto flex shrink-0 items-center gap-2.5 font-normal">
         {points && points.total > 0 && (
           <>
-            <SprintProgress {...points} className="w-22.5" />
+            <SprintProgress {...points} className="w-22.5 max-sm:hidden" />
             <span className="text-tx-3 tabular-nums">
               {points.done} / {points.total} pts
             </span>
