@@ -40,16 +40,22 @@ export function BlockMenu({
   editor,
   block,
   trigger,
+  onOpenChange,
 }: {
   editor: Editor;
   block: BlockRef;
   trigger: (props: Record<string, unknown>) => ReactNode;
+  onOpenChange?: (open: boolean) => void;
 }) {
   const toast = useOptionalToast();
   const anchor = headingAnchor(editor, block);
   const textual = block.node.isTextblock || block.node.type.name.endsWith('Item');
   return (
-    <Menu widthClassName="w-60" trigger={(props) => trigger({ ...props })}>
+    <Menu
+      widthClassName="w-60"
+      onOpenChange={onOpenChange}
+      trigger={(props) => trigger({ ...props })}
+    >
       {textual && (
         <MenuGroup label="Turn into">
           <TurnIntoItems
@@ -95,6 +101,8 @@ export function BlockMenu({
         onSelect={() => {
           const stored = block.node.toJSON() as Record<string, unknown>;
           deleteBlock(editor, block);
+          // The handles go with the block, so the caret, not the grip, keeps the focus.
+          refocus(editor);
           // Put back this block only: an editor undo would take the person's other recent
           // edits with it, and with others writing, the position may have moved a little.
           toast?.undo({
