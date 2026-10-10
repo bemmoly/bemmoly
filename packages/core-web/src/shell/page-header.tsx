@@ -47,6 +47,8 @@ export interface PageHeaderProps {
   actions?: ReactNode;
   /** Who else is here, before the actions. */
   presence?: ReactNode;
+  /** Right after the trail, about the thing it ends on: a document's status menu. */
+  trailing?: ReactNode;
 }
 
 const CRUMB =
@@ -178,6 +180,7 @@ export function PageHeader({
   activeTab,
   actions,
   presence,
+  trailing,
   onActionsSlot,
   onPresenceSlot,
 }: PageHeaderProps & {
@@ -223,6 +226,7 @@ export function PageHeader({
             ))}
           </ol>
         </nav>
+        {trailing ? <div className="flex shrink-0 items-center">{trailing}</div> : null}
         {phone ? null : tabList}
         <div className="ml-auto flex shrink-0 items-center gap-2">
           {phone ? null : presence}
