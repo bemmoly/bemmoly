@@ -10,9 +10,11 @@ function firstPage(me: MeResponse): string {
   return (items.find((item) => item.id === 'users') ?? items[0])?.path ?? '/';
 }
 
-const requirement = (id: string) =>
-  KERNEL_SETTINGS.flatMap((group) => group.items).find((item) => item.id === id)?.requires ??
-  'admin';
+/** What a page needs; null (everyone signed in, Profile and Notifications) must stay null. */
+function requirement(id: string) {
+  const item = KERNEL_SETTINGS.flatMap((group) => group.items).find((entry) => entry.id === id);
+  return item ? item.requires : 'admin';
+}
 
 function guard(id: string) {
   return ({ context }: { context: { me: MeResponse } }) => {
