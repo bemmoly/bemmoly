@@ -1,10 +1,9 @@
-import { formatRelative } from '@bemmoly/core-web';
 import { AiSummary } from '@bemmoly/ui';
-import { Fragment, type ReactNode } from 'react';
-import { usePeople, useSession } from '../../shared/people.ts';
+import { useSession } from '../../shared/people.ts';
 import { usePageScreen } from '../screen-context.ts';
-import { readingTime } from './doc-stats.ts';
+import { PageIdentity } from './page-identity.tsx';
 import { PageTitle } from './page-title.tsx';
+import { PropertiesRow } from './properties-row.tsx';
 
 /** "Sep 12", with the year when it is not this one: "Sep 12, 2025". */
 export function shortDate(iso: string, now: Date = new Date()): string {
@@ -16,74 +15,28 @@ export function shortDate(iso: string, now: Date = new Date()): string {
   });
 }
 
-/** One of the quiet chips over the title (RFC · Owner: Priya N. · Reviewers: Rohan, Jonas). */
-function Chip({ children }: { children: ReactNode }) {
-  return <li className="rounded-chip bg-line-2 px-2 py-0.75">{children}</li>;
-}
-
-/** The labels, owner and reviewers as the mock prints them above the title. */
-function Chips() {
-  const { page } = usePageScreen();
-  const { person } = usePeople();
-  const reviewers = page.reviewers.map((id) => person(id)?.name ?? 'Someone');
-  if (page.labels.length === 0 && !page.owner && reviewers.length === 0) return null;
-  return (
-    <ul
-      aria-label="Page facts"
-      className="m-0 flex list-none flex-wrap gap-1.5 p-0 text-12 leading-prose text-tx-3"
-    >
-      {page.labels.map((label) => (
-        <Chip key={label}>{label}</Chip>
-      ))}
-      {page.owner && <Chip>Owner: {page.owner.name}</Chip>}
-      {reviewers.length > 0 && <Chip>Reviewers: {reviewers.join(', ')}</Chip>}
-    </ul>
-  );
-}
-
-/** "Priya N. · Created Sep 12 · Edited 2h ago · 6 min read", over a hairline. */
-function MetaLine() {
-  const { page, stats } = usePageScreen();
-  const parts = [
-    [
-      page.owner?.name,
-      `Created ${shortDate(page.createdAt)}`,
-      `Edited ${formatRelative(page.contentUpdatedAt)}`,
-    ]
-      .filter(Boolean)
-      .join(' · '),
-    readingTime(stats),
-  ].filter(Boolean);
-  return (
-    <p className="m-0 flex flex-wrap items-center gap-3.5 border-b border-line-2 pb-1.5 text-13 leading-prose text-tx-3">
-      {parts.map((part, index) => (
-        <Fragment key={index}>
-          {index > 0 && <span aria-hidden>·</span>}
-          <span>{part}</span>
-        </Fragment>
-      ))}
-    </p>
-  );
-}
-
 /**
- * Everything above the body: the facts as chips, the title, the line about the page and,
- * when the page has one and the workspace has AI on, its generated TL;DR in the AI lilac.
- * With AI off a stored summary stays unshown: the page never claims what the workspace lacks.
+ * Everything above the body, as the review draws the page column: the icon (with Add icon
+ * and Add cover on hover while either is missing), the 36px title, the one properties row
+ * and a hairline. When the page has one and the workspace has AI on, its generated TL;DR
+ * follows in the AI lilac; with AI off a stored summary stays unshown.
  */
 export function PageHeading() {
   const { page } = usePageScreen();
   const { aiEnabled } = useSession();
   return (
-    <>
-      <Chips />
-      <PageTitle />
-      <MetaLine />
+    <header className="group/heading flex flex-col">
+      <PageIdentity />
+      <div className="mt-4">
+        <PageTitle />
+      </div>
+      <PropertiesRow />
+      <div aria-hidden className="mt-3.5 mb-1.5 h-px bg-line" />
       {aiEnabled && page.tldr && (
         <AiSummary variant="page" title="TL;DR" source="generated · updates with the doc">
           {page.tldr}
         </AiSummary>
       )}
-    </>
+    </header>
   );
 }

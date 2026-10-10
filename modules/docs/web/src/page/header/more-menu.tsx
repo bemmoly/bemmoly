@@ -3,7 +3,7 @@ import { Icon } from '@bemmoly/ui/icons';
 import { useState } from 'react';
 import { docsPaths } from '../../shared/navigation.ts';
 import { usePageChrome, usePageScreen, useSlotProps } from '../screen-context.ts';
-import { MENU_SLOTS, PANEL_SLOTS } from '../slots.ts';
+import { HISTORY_SLOT, MENU_SLOTS } from '../slots.ts';
 import { useTrashPage } from '../use-page-actions.ts';
 import { MoveDialog } from './move-dialog.tsx';
 
@@ -27,14 +27,14 @@ export function useCopyLink(pageId: string) {
 }
 
 /**
- * ···: copy link, move, the panels other folders add (History), their actions (Export), and
+ * ···: copy link, move, version history, the actions other folders add (Export), and
  * Move to trash with Undo. Duplicate is absent: the API has no copy of a page yet.
  */
 export function MoreMenu() {
   const screen = usePageScreen();
   const { page, readOnly } = screen;
   const slotProps = useSlotProps();
-  const showPanel = usePageChrome((state) => state.showPanel);
+  const setMode = usePageChrome((state) => state.setMode);
   const copyLink = useCopyLink(page.id);
   const { trash } = useTrashPage(page);
   const [moving, setMoving] = useState(false);
@@ -57,15 +57,14 @@ export function MoreMenu() {
             Move to…
           </MenuItem>
         )}
-        {PANEL_SLOTS.filter((slot) => slot.menu).map((slot) => (
+        {!trashed && (
           <MenuItem
-            key={slot.id}
-            icon={slot.menu?.icon ? <Icon name={slot.menu.icon} size={14} /> : undefined}
-            onSelect={() => showPanel(slot.id)}
+            icon={<Icon name={HISTORY_SLOT.icon} size={14} />}
+            onSelect={() => setMode('history')}
           >
-            {slot.menu?.label}
+            {HISTORY_SLOT.label}
           </MenuItem>
-        ))}
+        )}
         {MENU_SLOTS.map((Slot, index) => (
           <Slot key={index} {...slotProps} />
         ))}

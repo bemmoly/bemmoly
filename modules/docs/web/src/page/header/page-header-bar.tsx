@@ -1,19 +1,17 @@
 import { HeaderActions, useHeaderTrail, type PageCrumb } from '@bemmoly/core-web';
-import { AvatarStack, Button, IconButton } from '@bemmoly/ui';
-import { Icon, PageIcon } from '@bemmoly/ui/icons';
+import { AvatarStack, IconButton } from '@bemmoly/ui';
+import { PageIcon } from '@bemmoly/ui/icons';
 import { useStarPage } from '../../hooks/mutations.ts';
 import { docsPaths } from '../../shared/navigation.ts';
 import { SpaceTile } from '../../space/space-tile.tsx';
 import { useSpaceActions } from '../../space/space-layout.tsx';
-import { ABOUT_PANEL, usePageChrome, usePageScreen } from '../screen-context.ts';
-import { PANEL_SLOTS } from '../slots.ts';
-import { MoreMenu, useCopyLink } from './more-menu.tsx';
+import { MarginToggles } from '../panel/margin-toggles.tsx';
+import { SharePopover } from '../share/share-popover.tsx';
+import { usePageScreen } from '../screen-context.ts';
+import { MoreMenu } from './more-menu.tsx';
 import { saveLine, saveState, spokenState } from './save-state.ts';
 
 const TONE = { quiet: 'text-tx-3', busy: 'text-tx-2', warn: 'text-warn-fg' } as const;
-
-/** Pressed panel toggles take the mock's open-panel look: accent ink on the accent wash. */
-const TOGGLE = 'aria-pressed:border-acc aria-pressed:bg-acc-50 aria-pressed:text-acc';
 
 /** "Saved · Priya is editing" and the faces of everyone else on the page. */
 function Presence() {
@@ -98,48 +96,20 @@ export function usePageTrail() {
 
 /**
  * The page's part of the frame's one header (no bar of its own): the trail and, after it, the
- * status menu (page-frame.tsx), then on the right the save line, the people here, star, Share,
- * the panel toggles and ···. On a phone the quieter parts fold away.
+ * status menu (page-frame.tsx), then on the right the save line, the people here, star, the
+ * margin toggles, Share and ···. On a phone the quieter parts fold away.
  */
 export function PageHeaderActions() {
-  const { page } = usePageScreen();
-  const panel = usePageChrome((state) => state.panel);
-  const togglePanel = usePageChrome((state) => state.togglePanel);
-  const copyLink = useCopyLink(page.id);
-  const toggles = PANEL_SLOTS.filter((slot) => slot.header);
   usePageTrail();
 
   return (
     <HeaderActions>
       <Presence />
       <StarButton />
+      <MarginToggles />
       <span className="hidden md:inline-flex">
-        <Button size="sm" icon={<Icon name="link" size={14} />} onClick={() => void copyLink()}>
-          Share
-        </Button>
+        <SharePopover />
       </span>
-      {toggles.map((slot) => (
-        <Button
-          key={slot.id}
-          size="sm"
-          aria-pressed={panel === slot.id}
-          icon={slot.header ? <Icon name={slot.header.icon} size={14} /> : undefined}
-          className={TOGGLE}
-          onClick={() => togglePanel(slot.id)}
-        >
-          <span className="max-lg:sr-only">{slot.header?.label}</span>
-        </Button>
-      ))}
-      <Button
-        size="sm"
-        aria-pressed={panel === ABOUT_PANEL}
-        aria-keyshortcuts="Meta+Period"
-        icon={<Icon name="lines" size={14} />}
-        className={TOGGLE}
-        onClick={() => togglePanel(ABOUT_PANEL)}
-      >
-        <span className="max-lg:sr-only">About</span>
-      </Button>
       <MoreMenu />
     </HeaderActions>
   );

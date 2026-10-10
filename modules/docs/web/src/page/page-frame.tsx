@@ -8,6 +8,7 @@ import {
   type RefObject,
 } from 'react';
 import { useRecordRecent } from '@bemmoly/core-web';
+import { cx } from './cx.ts';
 import type { PageDetail } from '../../../shared/pages.ts';
 import { useCollabPage } from '../collab/use-collab-page.ts';
 import { useCollabUser } from '../collab/use-collab-user.ts';
@@ -22,24 +23,26 @@ import { StatusMenu } from './header/status-menu.tsx';
 import { DocsLayout } from '../shared/docs-layout.tsx';
 import { docsPaths } from '../shared/navigation.ts';
 import { useSpaceActions } from '../space/space-layout.tsx';
-import { PagePanel } from './panel/page-panel.tsx';
+import { PageCoverBand } from './body/page-identity.tsx';
+import { DockedMargin, OverlayMargin } from './panel/page-margin.tsx';
 import {
+  marginShown,
   PageScreenContext,
+  usePageChrome,
   type PageEditor,
   type PageScreenState,
   type ReadOnlyReason,
   useSlotProps,
 } from './screen-context.ts';
-import { LAYER_SLOTS } from './slots.ts';
-import { TocList } from './toc/toc-list.tsx';
+import { HISTORY_SLOT, LAYER_SLOTS } from './slots.ts';
 import { goToHeading, useActiveHeading, useOutline } from './toc/use-outline.ts';
 import { usePageShortcuts } from './use-page-shortcuts.ts';
 
 /**
- * The body column (a 700px measure inside 40px gutters, page/body draws into it) and an
- * outline rail beside it fit from this scroller width.
+ * The 700px column with its side padding and the 340px margin fit side by side from this
+ * scroller width; below it the margin opens over the page.
  */
-const RAIL_FROM = 1080;
+const DOCK_FROM = 1104;
 
 function useWiderThan(ref: RefObject<HTMLElement | null>, width: number): boolean {
   const [wide, setWide] = useState(false);
@@ -76,6 +79,14 @@ function Layers() {
   return LAYER_SLOTS.map((Layer, index) => <Layer key={index} {...props} />);
 }
 
+/** Version history in place of the body, with Escape to leave it. */
+function HistoryBody() {
+  const props = useSlotProps();
+  const setMode = usePageChrome((state) => state.setMode);
+  const Mode = HISTORY_SLOT.Component;
+  return <Mode {...props} onExit={() => setMode('page')} />;
+}
+
 function readOnlyOf(page: PageDetail, status: string): ReadOnlyReason {
   if (page.deletedAt) return 'trashed';
   if (page.status === 'archived') return 'archived';
@@ -99,9 +110,14 @@ export function PageFrame({ page }: { page: PageDetail }) {
   const editable = !readOnly && collab.editable;
   const outline = useOutline(editor);
   const { active: activeHeading, pin: pinHeading } = useActiveHeading(scroller, editor, outline);
-  const outlineInRail = useWiderThan(scroller, RAIL_FROM);
+  const docked = useWiderThan(scroller, DOCK_FROM);
+  const mode = usePageChrome((state) => state.mode);
+  const history = mode === 'history' && !page.deletedAt;
   const stats = useDocStats(editor, page.wordCount);
-  usePageShortcuts(collab.status, readOnly);
+  const margin = usePageChrome((state) => state.margin);
+  const chosen = usePageChrome((state) => state.chosen);
+  usePageShortcuts(collab.status, readOnly, (id) => marginShown({ margin, chosen }, id, docked));
+  const panelDocked = docked && margin !== null && margin !== 'outline';
   useHashLanding(editor, outline);
   const { space } = useSpaceActions();
   useRecordRecent({
@@ -132,7 +148,7 @@ export function PageFrame({ page }: { page: PageDetail }) {
       outline,
       activeHeading,
       pinHeading,
-      outlineInRail,
+      docked,
       stats,
     }),
     [
@@ -145,7 +161,7 @@ export function PageFrame({ page }: { page: PageDetail }) {
       outline,
       activeHeading,
       pinHeading,
-      outlineInRail,
+      docked,
       stats,
     ],
   );
@@ -155,29 +171,39 @@ export function PageFrame({ page }: { page: PageDetail }) {
       <DocsLayout layout="full" trailing={<StatusMenu />}>
         <PageHeaderActions />
         <div className="relative flex min-h-0 flex-1" data-page-id={page.id}>
-          <div ref={scroller} className="min-h-0 min-w-0 flex-1 overflow-auto bg-sf">
+          <div
+            ref={scroller}
+            hidden={history}
+            className="min-h-0 min-w-0 flex-1 overflow-auto bg-canvas"
+          >
             <PageBanner />
-            <div className="flex justify-center gap-8">
-              <article className="flex max-w-195 min-w-0 flex-1 flex-col gap-4.5 px-4 pt-8 pb-30 text-15h leading-prose text-tx-body sm:px-10 sm:pt-12">
-                <PageHeading />
-                <PageBodyEditor onEditor={setEditor} />
-                <EmptyPageTemplates />
-                <Layers />
-              </article>
-              {/* The rail keeps its width while empty, so the body never shifts when headings arrive. */}
-              {outlineInRail && (
-                <aside className="sticky top-0 w-52 shrink-0 self-start pt-12 pr-6">
-                  <TocList
-                    outline={outline}
-                    active={activeHeading}
-                    editor={editor}
-                    onPin={pinHeading}
-                  />
-                </aside>
-              )}
+            <PageCoverBand />
+            {/* A panel margin sits at the right edge with the column centred in what is left; the
+                bare outline sits right beside the column. */}
+            <div className={cx('flex min-h-full', panelDocked ? '' : 'justify-center')}>
+              <div
+                className={cx(
+                  'flex min-w-0 justify-center',
+                  panelDocked ? 'flex-1' : 'max-w-[780px] flex-1',
+                )}
+              >
+                <article
+                  className={cx(
+                    'relative flex max-w-[780px] min-w-0 flex-1 flex-col gap-4.5 px-4 pb-30 text-15h leading-prose text-tx-body sm:px-10',
+                    page.cover ? 'pt-0' : 'pt-8 sm:pt-10',
+                  )}
+                >
+                  <PageHeading />
+                  <PageBodyEditor onEditor={setEditor} />
+                  <EmptyPageTemplates />
+                  <Layers />
+                </article>
+              </div>
+              {docked && <DockedMargin />}
             </div>
           </div>
-          <PagePanel />
+          {history && <HistoryBody />}
+          {!history && <OverlayMargin />}
         </div>
       </DocsLayout>
     </PageScreenContext.Provider>
