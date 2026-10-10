@@ -22,7 +22,11 @@ const CHECKLIST: RichTextDoc = {
 
 const isChecklist = (name: string) => /criteria|checklist|checks/i.test(name);
 
-const plural = (name: string) => (/s$/i.test(name) ? name : `${name}s`).toLowerCase();
+const plural = (name: string) => {
+  const word = name.toLowerCase();
+  if (/s$/.test(word)) return word;
+  return /[^aeiou]y$/.test(word) ? `${word.slice(0, -1)}ies` : `${word}s`;
+};
 
 interface CreateBodyProps {
   form: Form;
