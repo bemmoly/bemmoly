@@ -11,7 +11,7 @@ import { IssueError } from './issue-error.tsx';
 import { IssueMoreMenu, IssueStepper, ShareButton, WatchButton } from './issue-header.tsx';
 import { useIssueNeighbours } from './issue-list-context.ts';
 import { useIssueShortcuts } from './issue-shortcuts.ts';
-import { useIssuePresence } from './issue-presence.tsx';
+import { useIssueInShell } from './issue-shell.tsx';
 import { IssueRail } from './issue-rail.tsx';
 
 /** Below this width the rail moves under the title, as one column. */
@@ -28,7 +28,7 @@ export default function IssueScreen({ projectKey: issueKey }: WorkScreenProps) {
   const { project } = useProject(key ? projectKeyOf(key) : undefined);
   useWorkRealtime(query.data?.projectId);
   const issue = query.data;
-  useIssuePresence(issue, project?.name);
+  useIssueInShell(issue, project?.name);
   const neighbours = useIssueNeighbours(key);
   useIssueShortcuts(neighbours);
   const wide = useMediaQuery(WIDE);

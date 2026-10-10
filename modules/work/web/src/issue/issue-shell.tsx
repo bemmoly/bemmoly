@@ -21,7 +21,7 @@ const issueLook = (issue: IssueDetail) => ({
  * What the shell knows about the open issue: it is a recent item, the trail ends in its epic
  * and its key with the type tile, and ⌘K offers "Assign to me" and its next statuses.
  */
-export function useIssuePresence(issue: IssueDetail | undefined, projectName: string | undefined) {
+export function useIssueInShell(issue: IssueDetail | undefined, projectName: string | undefined) {
   const viewer = useViewer();
   const key = issue?.key ?? '';
   const transitions = useTransitions(key, Boolean(issue));

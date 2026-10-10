@@ -207,7 +207,7 @@ function BoardBody({
 }
 
 /** The board as a recent item and its palette actions, once its project is known. */
-function useBoardPresence(project: { key: string; name: string } | undefined) {
+function useBoardInShell(project: { key: string; name: string } | undefined) {
   useRecordRecent(
     project
       ? {
@@ -238,7 +238,7 @@ function useBoardPresence(project: { key: string; name: string } | undefined) {
 /** The Board: Scrum or Kanban, matching the Board mock, with live updates over the socket. */
 export default function BoardScreen({ projectKey }: WorkScreenProps) {
   const screen = useBoardScreen(projectKey);
-  useBoardPresence(screen.project);
+  useBoardInShell(screen.project);
   if (screen.isPending) return <BoardSkeleton />;
   if (screen.error) {
     return (

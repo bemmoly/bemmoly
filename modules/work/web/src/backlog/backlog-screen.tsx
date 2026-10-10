@@ -1,6 +1,6 @@
 import type { Issue, Sprint } from '@bemmoly/module-work/shared';
 import { HeaderActions } from '@bemmoly/core-web';
-import { useBacklogPresence } from './backlog-presence.ts';
+import { useBacklogInShell } from './backlog-shell.ts';
 import { avatarHue, Button, EmptyState, useToast } from '@bemmoly/ui';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { setSearchParams, useSearchParam } from '../shared/url-state.ts';
@@ -36,7 +36,7 @@ type Dialog = { kind: 'start' | 'edit' | 'complete'; sprintId: string } | null;
 export default function BacklogScreen({ projectKey: pathKey }: WorkScreenProps) {
   const screen = useBacklogScreen(pathKey);
   const projectKey = screen.project?.key ?? '';
-  useBacklogPresence(screen.project);
+  useBacklogInShell(screen.project);
   const actions = useSprintActions(projectKey);
   const { show } = useToast();
   const showEpics = useBacklogUi((state) => state.showEpics);
