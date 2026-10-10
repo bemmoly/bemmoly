@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Button } from '../button/button.tsx';
+import { AiAnswer, type AiAnswerSourceItem } from './ai-answer.tsx';
 import { AiBrief, AiInsightBar, AiSuggestion, AiSummary } from './ai-cards.tsx';
 import { AiActionButton, AiAskButton, AiNotUseful } from './ai-parts.tsx';
 
@@ -129,6 +130,64 @@ export const AskButtons: Story = {
     <div className="flex items-center gap-3">
       <AiAskButton shortcut="Mod+K" />
       <AiAskButton label="Copilot" size="sm" pressed />
+    </div>
+  ),
+};
+
+const RFC = 'RFC: Move sessions to Postgres';
+const answerSources: AiAnswerSourceItem[] = [
+  { id: 'c1', title: RFC, label: 'Rollback', href: '#rollback' },
+  { id: 'c2', title: RFC, label: 'Backfill', href: '#backfill' },
+  { id: 'c3', title: 'Auth service runbook', label: 'Auth service runbook', href: '#runbook' },
+  {
+    id: 'c4',
+    title: 'PLT-204 Session store migration',
+    label: 'Description',
+    href: '#plt-204',
+    icon: 'subtasks',
+  },
+];
+
+const s = (text: string, citations: string[] = [], unsourced = false) => ({
+  text,
+  citations,
+  unsourced,
+});
+
+/** No mock draws an answer; the cards above set its look (tech design §11.3 sets its parts). */
+export const Answer: Story = {
+  args: { children: null },
+  render: () => (
+    <div className="flex w-180 flex-col gap-4">
+      <AiAnswer
+        source="from 2 pages, 1 issue"
+        sources={answerSources}
+        blocks={[
+          {
+            kind: 'paragraph',
+            sentences: [
+              s('If error rates pass 0.5% after the cutover, flip auth_pg_sessions off.', ['c1']),
+              s('Redis stays warm for 7 days.', ['c1', 'c3']),
+            ],
+          },
+          {
+            kind: 'item',
+            sentences: [s('Re-run the backfill once errors are back down.', ['c2'])],
+          },
+          { kind: 'item', sentences: [s('PLT-204 tracks the dual-write.', ['c4'])] },
+          {
+            kind: 'item',
+            sentences: [s('Most teams flip the flag back within the hour.', [], true)],
+          },
+        ]}
+        actions={<AiNotUseful />}
+      />
+      <AiAnswer
+        variant="panel"
+        streaming
+        sources={answerSources}
+        blocks={[{ kind: 'paragraph', sentences: [s('If error rates pass 0.5% after', [])] }]}
+      />
     </div>
   ),
 };

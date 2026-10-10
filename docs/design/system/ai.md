@@ -28,7 +28,7 @@ AI is optional, honest and visibly AI. Lilac marks it, and nothing appears while
 3. **Use the AI components.** From `@bemmoly/ui` · Story: Components/AI surfaces
    ([`ai-surface.stories.tsx`](../../../packages/ui/src/components/ai-surface/ai-surface.stories.tsx)):
    `AiSummary` (a TL;DR card), `AiInsightBar`, `AiBrief`, `AiSuggestion` (a proposed change with
-   Apply), `AiActionButton`, `AiAskButton` (Ask AI, with its shortcut), `AiDot`, `AiNotUseful`.
+   Apply), `AiAnswer` (a cited answer), `AiActionButton`, `AiAskButton` (Ask AI, with its shortcut), `AiDot`, `AiNotUseful`.
    Toasts about AI output use `tone="ai"`. Inside `packages/ui`, the AI tokens are allowed only in
    `ai-surface/`, `command-palette/` and `toast/` (`rules.test.ts` fails anything else).
 
@@ -42,11 +42,19 @@ AI is optional, honest and visibly AI. Lilac marks it, and nothing appears while
 6. **AI never blocks.** A slow or failing model shows its own state inside its card (a skeleton,
    then "Couldn't get a summary" with Try again); the page around it works without it.
 
+7. **Answers cite.** A generated answer uses `AiAnswer`: each sentence ends with numbered
+   citation links that open the source at its place (a page heading, an issue), a factual
+   sentence without one carries a neutral "Unsourced" tag, and the cited places are listed
+   under it once it finishes. When nothing in the workspace answers, say so plainly; never
+   guess.
+
 ## Where AI appears today
 
 - The palette: the AI line and the plan preview (`CommandPlan`), in lilac, only with AI on.
 - Docs (with #77): the TL;DR card, a comment's suggested fix with Apply fix, the / menu's AI
   group, Ask AI in the selection bubble.
+- Docs home: "Ask your docs", the question box with a streamed `AiAnswer` under it, only with
+  AI on and an embedding model set.
 - The marketing site: one lilac "coming, optional" band, no picture until a real screen exists
   ([marketing-site.md](marketing-site.md)).
 

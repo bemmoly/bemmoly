@@ -16,3 +16,10 @@ export {
   type AiSuggestionProps,
   type AiSummaryProps,
 } from './ai-cards.tsx';
+export {
+  AiAnswer,
+  type AiAnswerBlock,
+  type AiAnswerProps,
+  type AiAnswerSentence,
+  type AiAnswerSourceItem,
+} from './ai-answer.tsx';
