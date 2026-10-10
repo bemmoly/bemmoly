@@ -2,20 +2,19 @@ import type { ReactNode } from 'react';
 import { cx } from '../../lib/cx.ts';
 
 export interface SettingsFrameProps {
-  /** A SettingsNav. */
-  nav: ReactNode;
+  /** Unused: the app sidebar shows the settings contents. Kept while pages move over. */
+  nav?: ReactNode;
   children: ReactNode;
   /** A right rail such as the Board Settings live preview. */
   aside?: ReactNode;
   className?: string;
 }
 
-/** Sidebar plus scrolling content, filling the space under the top bar. */
-export function SettingsFrame({ nav, children, aside, className }: SettingsFrameProps) {
+/** Scrolling content and an optional rail (a live preview), filling the page's body. */
+export function SettingsFrame({ children, aside, className }: SettingsFrameProps) {
   return (
-    <div className={cx('flex min-h-0 flex-1 bg-bg', className)}>
-      {nav}
-      <main className="min-w-0 flex-1 overflow-auto">{children}</main>
+    <div className={cx('flex min-h-0 flex-1 bg-canvas', className)}>
+      <div className="min-w-0 flex-1 overflow-auto">{children}</div>
       {aside}
     </div>
   );

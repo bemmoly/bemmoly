@@ -53,7 +53,6 @@ export * from './components/template-card/index.ts';
 export * from './components/textarea/index.ts';
 export * from './components/toast/index.ts';
 export * from './components/tooltip/index.ts';
-export * from './components/top-bar/index.ts';
 export * from './components/workflow-canvas/index.ts';
 export { formatAbsolute, formatRelative } from './lib/time.ts';
 /** For kernel surfaces built on the same popover, sheet and dialog behaviour as the components. */

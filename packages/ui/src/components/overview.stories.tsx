@@ -23,11 +23,6 @@ import { MenuItem } from './menu/menu-item.tsx';
 import { PageTitle } from './page-title/page-title.tsx';
 import { SegmentedControl } from './segmented-control/segmented-control.tsx';
 import { Select } from './select/select.tsx';
-import {
-  SettingsNav,
-  SettingsNavItem,
-  SettingsNavSection,
-} from './settings-frame/settings-nav.tsx';
 import { Skeleton } from './skeleton/skeleton.tsx';
 import { StatusBadge, StatusButton } from './status-badge/status-badge.tsx';
 import { Switch } from './switch/switch.tsx';
@@ -35,7 +30,6 @@ import { Tabs } from './tabs/tabs.tsx';
 import { Tag } from './tag/tag.tsx';
 import { Textarea } from './textarea/textarea.tsx';
 import { Toast } from './toast/toast.tsx';
-import { TopBar } from './top-bar/top-bar.tsx';
 
 const noop = () => {};
 
@@ -61,19 +55,6 @@ function Section({
 function Overview() {
   return (
     <div className="flex w-300 flex-col gap-6">
-      <TopBar
-        nav={[
-          { id: 'work', label: 'Your work' },
-          { id: 'projects', label: 'Projects', active: true },
-          { id: 'docs', label: 'Docs' },
-        ]}
-        onCreate={noop}
-        onSearch={noop}
-        onAsk={noop}
-        inboxCount={4}
-        onInbox={noop}
-        user={{ name: 'Rohan S.', initials: 'RS' }}
-      />
       <PageTitle
         breadcrumbs={[{ label: 'Projects' }, { label: 'Platform Core' }, { label: 'PLT board' }]}
         title="PLT Sprint 14"
@@ -194,16 +175,6 @@ function Overview() {
             title="No docs yet"
             description="Pages you edit show up here."
           />
-        </Section>
-        <Section title="Settings nav">
-          <SettingsNav title="Workspace settings" className="h-60">
-            <SettingsNavSection label="People">
-              <SettingsNavItem active count={42}>
-                Users
-              </SettingsNavItem>
-              <SettingsNavItem count={6}>Teams</SettingsNavItem>
-            </SettingsNavSection>
-          </SettingsNav>
         </Section>
         <Section title="Command palette" wide>
           <CommandPalette open inline onClose={noop}>
