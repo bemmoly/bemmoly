@@ -119,6 +119,10 @@ function Tab({ tab, on }: { tab: PageTab; on: boolean }) {
 const ActionsSlot = createContext<HTMLElement | null | undefined>(undefined);
 export const ActionsSlotProvider = ActionsSlot.Provider;
 
+/** Where a screen's presence facepile is portalled to; absent on phones. */
+const PresenceSlot = createContext<HTMLElement | null | undefined>(undefined);
+export const PresenceSlotProvider = PresenceSlot.Provider;
+
 /** Lets a screen that knows more (an issue's epic and type) refine the end of the trail. */
 export const TrailContext = createContext<(tail: readonly PageCrumb[] | null) => void>(
   () => undefined,
@@ -154,6 +158,16 @@ export function HeaderActions({ children }: { children: ReactNode }) {
 }
 
 /**
+ * Who else is here, from inside a screen: rendered into the header before the actions. Phones
+ * have no slot, so nothing is drawn there.
+ */
+export function HeaderPresence({ children }: { children: ReactNode }) {
+  const slot = useContext(PresenceSlot);
+  if (slot === undefined) return <>{children}</>;
+  return slot ? createPortal(children, slot) : null;
+}
+
+/**
  * The one page header (docs/design/premium/kit.css, `.hdr`): 52px, breadcrumbs on the left, the
  * view tabs after a rule, then presence and actions on the right. On a phone the menu button
  * opens the sidebar sheet, the trail keeps only the current page and the tabs scroll.
@@ -165,7 +179,11 @@ export function PageHeader({
   actions,
   presence,
   onActionsSlot,
-}: PageHeaderProps & { onActionsSlot?: (element: HTMLElement | null) => void }) {
+  onPresenceSlot,
+}: PageHeaderProps & {
+  onActionsSlot?: (element: HTMLElement | null) => void;
+  onPresenceSlot?: (element: HTMLElement | null) => void;
+}) {
   const { phone, pathname, openSheet } = useFrame();
   const shown = phone ? crumbs.slice(-1) : crumbs;
   const current =
@@ -208,6 +226,7 @@ export function PageHeader({
         {phone ? null : tabList}
         <div className="ml-auto flex shrink-0 items-center gap-2">
           {phone ? null : presence}
+          {phone ? null : <span ref={onPresenceSlot} className="flex items-center empty:hidden" />}
           {phone ? null : actions}
           <span ref={onActionsSlot} className="flex items-center gap-2 empty:hidden" />
         </div>

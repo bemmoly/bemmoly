@@ -61,9 +61,11 @@ export {
   RealtimeClient,
   type BackoffOptions,
   type RealtimeClientOptions,
+  type PresencePlace,
   type RealtimeEvent,
   type RealtimeStatus,
 } from './realtime/realtime-client.ts';
+export { useRealtimePresence, type UseRealtimePresenceOptions } from './realtime/use-presence.ts';
 export { useRealtime, type UseRealtimeOptions } from './realtime/use-realtime.ts';
 export {
   buildSettingsNav,
@@ -108,6 +110,7 @@ export {
 export { knownIcon, moduleName, ModuleTile } from './shell/module-tile.tsx';
 export {
   HeaderActions,
+  HeaderPresence,
   PageHeader,
   useHeaderTrail,
   type PageCrumb,
@@ -115,6 +118,11 @@ export {
   type PageTab,
 } from './shell/page-header.tsx';
 export { PageLayout, useDocumentTitle, type PageLayoutProps } from './shell/page-layout.tsx';
+export {
+  PresenceFacepile,
+  type PresenceFacepileProps,
+  type PresencePerson,
+} from './shell/presence-facepile.tsx';
 export {
   readPreference,
   setPreferenceOwner,
