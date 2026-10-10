@@ -1,5 +1,52 @@
 # @bemmoly/core
 
+## 0.3.0
+
+### Minor Changes
+
+- 27dec1d: The server now hosts live collaborative documents at `/collab`, on its own port and
+  authenticated with the session cookie. Every change is stored in Postgres as it happens and
+  survives restarts; a page's text, word count, search index and links update two seconds after
+  typing stops.
+
+  Two new optional environment keys cap each editing connection; empty keeps the default.
+  `BEMMOLY_COLLAB_MAX_MESSAGE_BYTES` is the largest message one socket may send, from 64 KiB to
+  16 MiB (2 MiB by default). `BEMMOLY_RATE_LIMIT_COLLAB_MESSAGES` is how many document messages
+  one socket may send per 10 seconds (1200 by default); caret and selection updates count
+  separately, up to three times that, so moving the caret never spends the typing budget. A
+  socket over a limit is closed and the editor reconnects on its own, keeping what was typed.
+  Measured in a browser, the fastest key repeat with the caret moving sends about 70 messages a
+  second, half of them carets, so the defaults leave room for two people typing flat out.
+
+  Run one API process per install for live editing; with several, route `/collab` with session
+  affinity. The bundled Caddy configuration keeps editing connections open across a
+  configuration reload. No schema change.
+
+- 27dec1d: For module authors and API clients, the kernel gains what let Docs and Work point at each
+  other without importing each other. `ctx.entities.resolve` finds a record any enabled module
+  registered, by id or key, filtered to what the person may see; `ctx.entities.resolveMany` does
+  it for a whole list in one batch, and `EntitySummary` can carry the facts a renderer shows,
+  such as an issue's status. `EntityDefinition.canView` now receives the request context.
+  `ctx.links.addReferenceSource` and `ctx.links.referencesTo` answer "what points at this record"
+  across modules, which is how an issue lists its linked docs. A module that ships
+  `web/src/entities.tsx` lends a chip, card, table and search for the records it owns, and other
+  modules' screens draw them through `useEntityRenderer(kind)`, keeping a placeholder while the
+  owner is off. Work registers its issues, so Docs pages show live issue chips and tables. In the
+  web kernel, `preloadable` and `useLoaded` load a lazy screen before rendering it, and module
+  chunks now load that way, so opening a module no longer waits out React's 300 ms Suspense
+  reveal.
+
+  Deprecated: `PATCH /api/v1/docs/pages/:id` still accepts `snapshot` and applies it as one live
+  edit, but write page bodies through `/collab`; the field is removed in 0.4. No configuration or
+  schema change.
+
+### Patch Changes
+
+- Updated dependencies [27dec1d]
+- Updated dependencies [27dec1d]
+  - @bemmoly/ui@0.3.0
+  - @bemmoly/shared@0.3.0
+
 ## 0.2.2
 
 ### Patch Changes
