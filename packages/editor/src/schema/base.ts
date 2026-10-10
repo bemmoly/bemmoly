@@ -31,6 +31,8 @@ export function baseExtensions(options: SchemaOptions = {}): AnyExtension[] {
       heading: { levels: [...HEADING_LEVELS] },
       underline: false,
       trailingNode: false,
+      // The drop line of a dragged block: the accent, 2px, as the review draws it.
+      dropcursor: { color: 'var(--acc)', width: 2, class: 'rounded-full' },
       ...(options.history === false ? { undoRedo: false as const } : {}),
       link: {
         openOnClick: false,

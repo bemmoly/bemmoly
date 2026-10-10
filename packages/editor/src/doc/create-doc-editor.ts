@@ -5,6 +5,7 @@ import type { SuggestionStore } from '../editor/suggestion-store.ts';
 import { proseClass } from '../prose.ts';
 import { docExtensions } from '../schema/index.ts';
 import type { RichTextDoc } from '../types.ts';
+import { blockKeys } from './block-commands.ts';
 import { CodeHighlight } from './highlight.ts';
 import { imageDrop } from './image-drop.ts';
 import { PortalNodeView, type PortalStore } from './portals.ts';
@@ -115,6 +116,7 @@ export function createDocEditor(options: CreateDocEditorOptions): Editor {
       issueEmbeds(store, services),
       imageDrop(services),
       CodeHighlight,
+      blockKeys(() => store.isOpen),
       ...(options.keys ? [docKeys(options.keys, store)] : []),
       ...(options.extensions ?? []),
     ],
