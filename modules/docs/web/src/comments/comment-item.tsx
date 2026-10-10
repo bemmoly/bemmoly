@@ -2,6 +2,7 @@ import { formatRelative } from '@bemmoly/core-web';
 import { RichTextView, type RichTextDoc } from '@bemmoly/editor';
 import type { PageComment, RichText } from '@bemmoly/module-docs/shared';
 import { Avatar, IconButton, Menu, MenuItem } from '@bemmoly/ui';
+import type { ReactNode } from 'react';
 import { CommentBox } from './comment-box.tsx';
 
 export interface CommentItemProps {
@@ -13,11 +14,13 @@ export interface CommentItemProps {
   onCancelEdit: () => void;
   onSave: (body: RichText) => Promise<unknown>;
   onDelete: () => void;
+  /** The quoted text a thread's first comment is about, between its name line and its body. */
+  quote?: ReactNode;
 }
 
 /**
  * One comment of a thread, as the mock's rail card has it: a 20px avatar, the name in
- * semibold and the time in tx5, then the body at 12.5px. The author's ··· menu edits and
+ * semibold and the time in tx5, the quote for a thread's first comment, then the body at 12.5px. The author's ··· menu edits and
  * deletes; an edited comment says so after the time.
  */
 export function CommentItem({
@@ -28,6 +31,7 @@ export function CommentItem({
   onCancelEdit,
   onSave,
   onDelete,
+  quote,
 }: CommentItemProps) {
   const name = comment.author?.name ?? 'Former member';
   return (
@@ -55,6 +59,7 @@ export function CommentItem({
           </span>
         )}
       </div>
+      {quote}
       {editing ? (
         <CommentBox
           label="Edit comment"

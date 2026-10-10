@@ -1,6 +1,6 @@
 import type { PageComment, RichText } from '@bemmoly/module-docs/shared';
 import { ActivityAction, AiDot } from '@bemmoly/ui';
-import { useState, type KeyboardEvent } from 'react';
+import { useState, type KeyboardEvent, type ReactNode } from 'react';
 import { CommentBox } from './comment-box.tsx';
 import { cx } from './cx.ts';
 import { CommentItem } from './comment-item.tsx';
@@ -53,8 +53,9 @@ function Quote({ comment }: { comment: PageComment }) {
 
 /**
  * One thread in the rail, the mock's card: br border, 7px radius, 10px 12px, the amber tint
- * when its text is in focus. The quote, the comments one under another, the AI fix when the
- * thread carries one, and Apply fix · Reply · Resolve. Enter or a click focuses its text.
+ * when its text is in focus. The comments one under another (the first with its quote under
+ * the name line), the AI fix when the thread carries one, and Apply fix · Reply · Resolve.
+ * Enter or a click focuses its text.
  */
 export function CommentThread({
   thread,
@@ -80,10 +81,11 @@ export function CommentThread({
     }
   };
 
-  const item = (comment: PageComment, count = 0) => (
+  const item = (comment: PageComment, count = 0, quote?: ReactNode) => (
     <CommentItem
       key={comment.id}
       comment={comment}
+      quote={quote}
       mine={canComment && comment.author?.id === viewerId}
       editing={editing === comment.id}
       onEdit={() => setEditing(comment.id)}
@@ -111,12 +113,11 @@ export function CommentThread({
       className={cx(
         'flex cursor-default flex-col gap-1.5 rounded-panel border px-3 py-2.5 text-12h leading-body outline-0',
         'motion-safe:animate-rise motion-safe:transition-colors focus-visible:border-ac',
-        active ? 'border-amber-fg/30 bg-amber-bg/50' : 'border-br bg-sf',
+        active ? 'border-br bg-amber-bg/50' : 'border-br bg-sf',
         resolved && 'opacity-80',
       )}
     >
-      <Quote comment={root} />
-      {item(root, replies.length)}
+      {item(root, replies.length, <Quote comment={root} />)}
       {replies.length > 0 && (
         <div className="mt-1 flex flex-col gap-2.5 border-t border-br-row pt-2.5">
           {replies.map((reply) => item(reply))}
