@@ -1,38 +1,26 @@
 import { navigateInApp } from '@bemmoly/core-web';
 import {
-  KeyChip,
+  focusRing,
+  IssueAssignee,
   Skeleton,
-  StatusBadge,
   StatusGlyph,
   statusStage,
   TypeGlyph,
-  typeLook,
-  type TypeColorToken,
 } from '@bemmoly/ui';
 import { useQuery } from '@tanstack/react-query';
 import type { MouseEvent } from 'react';
 import { issueHref } from '../home/my-work-row.tsx';
-import { statusTone, typeGlyph } from '../issue/vocabulary.ts';
+import { typeGlyph } from '../issue/vocabulary.ts';
 import { api } from '../shared/api.ts';
 import { workKeys } from '../shared/keys.ts';
 
 /*
- * Issues as other modules draw them: the inline chip of the Doc Editor mock
- * (type square, key, status) and the "Linked" panel row (key, title,
- * status). Both read the issue through Work's own API, sharing the Issue
- * page's cache entry, so a chip is as current as the issue and an issue the
- * reader may not open prints as its bare key.
+ * Issues as other modules draw them, in Work's own vocabulary (the Docs review's Linked work
+ * tab): the inline chip (type tile, key, title, status glyph) and the "Linked" row (the same,
+ * one line). No uppercase status pills. Both read the issue through Work's own API, sharing
+ * the Issue page's cache entry, so a chip is as current as the issue, and an issue the reader
+ * may not open prints as its bare key.
  */
-
-/** The type square's colour in the inline chip, by the type's colour. */
-const TYPE_SQUARE: Record<TypeColorToken, string> = {
-  'type-story': 'bg-type-story',
-  'type-bug': 'bg-type-bug',
-  'type-task': 'bg-type-task',
-  'type-epic': 'bg-type-epic',
-  'type-incident': 'bg-type-incident',
-  'type-subtask': 'bg-type-subtask',
-};
 
 export function useIssueSummary(key: string) {
   return useQuery({
@@ -44,12 +32,16 @@ export function useIssueSummary(key: string) {
 }
 
 /** In-app navigation for a plain click; modified clicks open a tab as links do. */
-function follow(event: MouseEvent<HTMLAnchorElement>, href: string) {
+export function follow(event: MouseEvent<HTMLAnchorElement>, href: string) {
   if (event.defaultPrevented || event.button !== 0) return;
   if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
   event.preventDefault();
   navigateInApp(href);
 }
+
+const CHIP =
+  'inline-flex h-5.75 max-w-90 items-center gap-1.25 rounded-control bg-card pr-1.75 pl-1 align-[1px] text-13 leading-none whitespace-nowrap text-tx no-underline shadow-[inset_0_0_0_1px_var(--line)]';
+const KEY = 'font-mono text-12 text-tx-3';
 
 /** The inline chip: the key alone until the issue loads, or when it cannot be opened. */
 export function IssueChip({ entityKey }: { entityKey: string }) {
@@ -58,42 +50,41 @@ export function IssueChip({ entityKey }: { entityKey: string }) {
     return (
       <span
         aria-busy={!isError}
-        title={isError ? 'This issue was not found or is not shared with you' : undefined}
+        className={CHIP}
+        title={isError ? 'An issue you can’t see, or one that was deleted' : undefined}
       >
-        <KeyChip issueKey={entityKey} inline className={isError ? 'text-tx-3' : undefined} />
+        <span className={isError ? `${KEY} line-through` : KEY}>{entityKey}</span>
+        {isError && <span className="text-12 text-tx-3">Not available</span>}
       </span>
     );
   }
   const href = issueHref(issue.key);
+  const stage = statusStage(issue.status.category, issue.status.name);
   return (
-    <KeyChip
-      issueKey={issue.key}
-      inline
+    <a
       href={href}
-      title={issue.title}
-      typeClassName={TYPE_SQUARE[typeLook(issue.type).color]}
+      title={`${issue.key} · ${issue.title} · ${issue.status.name}`}
       onClick={(event) => follow(event, href)}
+      className={`${CHIP} hover:bg-hover ${focusRing}`}
     >
-      <StatusBadge
-        size="xs"
-        category={statusTone(issue.status.category, issue.status.name)}
-        label={issue.status.name}
-      />
-    </KeyChip>
+      <TypeGlyph type={typeGlyph(issue.type)} size={14} />
+      <span className={KEY}>{issue.key}</span>
+      <span className="min-w-0 truncate">{issue.title}</span>
+      <StatusGlyph stage={stage} label={issue.status.name} size={13} />
+    </a>
   );
 }
 
-const ROW =
-  'flex min-w-0 items-center gap-2.5 rounded-chip border border-line-2 bg-card px-3 py-2 text-13 text-tx no-underline';
+const ROW = 'flex h-9 min-w-0 items-center gap-2 rounded-card px-2 text-13 text-tx no-underline';
 
-/** A "Linked" panel row: type, key, title and status, as one link to the issue. */
+/** A "Linked" row: type tile, key, title, status glyph and assignee, as one link to the issue. */
 export function IssueCard({ entityKey }: { entityKey: string }) {
   const { data: issue, isError, isPending } = useIssueSummary(entityKey);
   if (isPending) {
     return (
       <div aria-busy className={ROW}>
-        <Skeleton width={14} height={14} className="rounded-chip" />
-        <KeyChip issueKey={entityKey} />
+        <Skeleton width={15} height={15} className="rounded-chip" />
+        <span className={KEY}>{entityKey}</span>
         <Skeleton width="60%" height={12} />
       </div>
     );
@@ -101,8 +92,8 @@ export function IssueCard({ entityKey }: { entityKey: string }) {
   if (isError || !issue) {
     return (
       <div className={`${ROW} text-tx-3`}>
-        <KeyChip issueKey={entityKey} />
-        <span className="truncate">Not found or not shared with you</span>
+        <span className={KEY}>{entityKey}</span>
+        <span className="truncate">An issue you can’t see, or one that was deleted</span>
       </div>
     );
   }
@@ -111,21 +102,19 @@ export function IssueCard({ entityKey }: { entityKey: string }) {
     <a
       href={href}
       onClick={(event) => follow(event, href)}
-      className={`${ROW} hover:bg-side focus-ring motion-safe:transition-colors`}
+      className={`${ROW} hover:bg-hover ${focusRing} motion-safe:transition-colors`}
     >
-      <TypeGlyph type={typeGlyph(issue.type)} />
-      <KeyChip issueKey={issue.key} />
+      <TypeGlyph type={typeGlyph(issue.type)} size={15} />
+      <span className={KEY}>{issue.key}</span>
       <span className="min-w-0 flex-1 truncate" title={issue.title}>
         {issue.title}
       </span>
-      <span className="flex shrink-0 items-center gap-1.5 text-12 text-tx-2">
-        <StatusGlyph
-          stage={statusStage(issue.status.category, issue.status.name)}
-          size={12}
-          decorative
-        />
-        {issue.status.name}
-      </span>
+      <StatusGlyph
+        stage={statusStage(issue.status.category, issue.status.name)}
+        label={issue.status.name}
+        size={13}
+      />
+      <IssueAssignee person={issue.assignee} size={18} />
     </a>
   );
 }
