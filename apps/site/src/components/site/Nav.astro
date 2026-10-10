@@ -84,7 +84,7 @@ const starLabel = facts ? `Bemmoly on GitHub, ${facts.stars} stars` : 'Bemmoly o
         <Icon name="close" size={20} label="Close the menu" />
       </button>
     </div>
-    <nav class="flex flex-col px-2 pb-2 sm:px-4">
+    <nav aria-label="Menu links" class="flex flex-col px-2 pb-2 sm:px-4">
       {NAV.map((link) => (
         <a
           href={link.href}

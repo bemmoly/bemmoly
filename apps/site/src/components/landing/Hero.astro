@@ -1,36 +1,98 @@
 ---
-import { PROOF_POINTS, RELEASE } from '../../data/landing.ts';
-import { DEMO_URL } from '../../lib/links.ts';
+/**
+ * The first screen, from the site review: in five seconds, this is issues and docs for a whole
+ * company, it is yours and free, here is the command. The version chip reads the newest
+ * release from the changelogs; the three ticks are the three promises, each linking to its
+ * proof; the command is the call to action. Below it, the product in four views on wide
+ * screens, and the product's own phone layout on a phone.
+ */
+import { HERO_TICKS, RELEASE } from '../../data/landing.ts';
+import { PHONE_POSTER, PREVIEWS } from '../../data/previews.ts';
+import { PHONE_POSTERS } from '../../data/posters.ts';
+import { DEMO_URL, INSTALL_COMMAND } from '../../lib/links.ts';
 import Button from '../site/Button.astro';
 import CommandField from '../site/CommandField.astro';
+import Icon from '../site/Icon.astro';
+import Poster from '../site/Poster.astro';
+import ProductPreview from './ProductPreview.astro';
+
+const board = PREVIEWS[0]?.path ?? DEMO_URL;
 ---
 
-<section class="relative isolate mx-auto flex w-full max-w-290 flex-col items-center gap-7 px-4 pt-16 pb-14 text-center sm:px-6 lg:px-12 lg:pt-22">
-  <p class="inline-flex items-center gap-2 rounded-full border border-line bg-side py-1.25 dark:bg-card pr-3 pl-1.5 text-13 text-tx-2">
-    <span class="rounded-full bg-green-50 px-2 py-0.5 text-12 font-semibold text-green-tx">
-      {RELEASE.version}
-    </span>
-    {RELEASE.note}
-  </p>
-  <h1 class="max-w-225 text-40 font-semibold tracking-hero text-balance md:text-64">
-    Keep your work in-house.
-  </h1>
-  <p class="max-w-175 text-19 leading-brief text-pretty text-tx-2">
-    Issues, boards and docs for your whole company, on a server you own. Your work stays in your
-    Postgres, behind your login. No pricing, no seat limits, nothing to buy.
-  </p>
-  <div class="flex flex-wrap items-center justify-center gap-3">
-    <Button variant="primary" href="/self-hosting#recommended">
-      Install
-    </Button>
-    <Button variant="secondary" href={DEMO_URL}>
-      Try the live demo
-    </Button>
+<section aria-labelledby="hero-title" class="pb-14 md:pb-20">
+  <div class="mx-auto flex max-w-300 flex-col items-center px-4 pt-7 text-center sm:px-6 md:pt-16 lg:px-8">
+    <a
+      href="/changelog"
+      class="inline-flex h-8 items-center gap-2 rounded-full bg-card py-0 pr-3 pl-1.25 text-13 text-tx-2 shadow-[inset_0_0_0_1px_var(--line)] hover:text-tx"
+    >
+      <b class="inline-flex h-5.5 items-center rounded-full bg-acc-50 px-2 font-mono text-12 font-normal text-acc dark:text-acc-500">
+        {RELEASE.version}
+      </b>
+      <span class="md:hidden">{RELEASE.short}</span>
+      <span class="hidden md:inline">{RELEASE.note}</span>
+      <Icon name="arrow" size={14} />
+    </a>
+    <h1
+      id="hero-title"
+      class="mt-4 max-w-225 text-40 font-semibold tracking-hero text-balance md:mt-5.5 md:text-64"
+    >
+      Your work. Your platform.
+    </h1>
+    <p class="mt-3 max-w-185 text-17 leading-body text-pretty text-tx-2 md:mt-5 md:text-20">
+      Issues, boards and docs for your whole company, on a server you own.
+      <span class="hidden sm:inline">Install it in one command and keep it forever.</span>
+    </p>
+    <ul class="mt-4.5 flex flex-col gap-2 text-left text-14h text-tx-2 md:mt-5.5 md:flex-row md:gap-6">
+      {HERO_TICKS.map((tick) => (
+        <li>
+          <a
+            href={tick.href}
+            class="inline-flex items-center gap-2 text-tx-2 no-underline! hover:text-tx"
+          >
+            <Icon name="check" size={15} class="text-acc" />
+            {tick.label}
+          </a>
+        </li>
+      ))}
+    </ul>
+    <div class="mt-5.5 flex w-full flex-col gap-2.5 md:mt-7.5 md:w-auto md:flex-row md:gap-3">
+      <CommandField id="hero-command" size="lg" class="md:w-auto" />
+      <Button variant="secondary" size="lg" href={DEMO_URL} data-start-preview="">
+        <Icon name="play" size={12} class="fill-current" />
+        Try the live demo
+      </Button>
+    </div>
+    <p class="mt-3.5 hidden text-14 text-tx-3 md:block">
+      On a Linux VM with 2 vCPU and 4 GB, and a domain pointing at it.
+      <a href="/install.sh" class="underline underline-offset-3">
+        Read the script first
+      </a>
+    </p>
+    <p class="mt-2.5 flex flex-wrap justify-center gap-x-1 text-13 text-tx-3 md:hidden">
+      You run it on a Linux server.
+      <button
+        type="button"
+        data-share={INSTALL_COMMAND}
+        hidden
+        class="cursor-pointer text-acc underline underline-offset-3"
+      >
+        <span data-copy-label>Share the command to your computer</span>
+      </button>
+    </p>
   </div>
-  <CommandField id="hero-command" size="lg" />
-  <ul class="flex flex-wrap justify-center gap-x-7 gap-y-2 text-13 text-tx-3">
-    {PROOF_POINTS.map((point) => (
-      <li>{point}</li>
-    ))}
-  </ul>
+  <div class="mx-auto mt-11 hidden max-w-300 px-6 md:block lg:px-8">
+    <ProductPreview />
+  </div>
+  <a
+    href={board}
+    class="mx-auto mt-6.5 block aspect-[300/420] w-75 overflow-hidden rounded-[26px] shadow-e3 md:hidden"
+  >
+    <Poster
+      {...PHONE_POSTERS}
+      alt={PHONE_POSTER.alt}
+      widths={[300, 600]}
+      sizes="300px"
+      class="object-cover object-top"
+    />
+  </a>
 </section>

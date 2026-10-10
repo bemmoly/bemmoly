@@ -6,7 +6,8 @@
  */
 import { readdirSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { LATEST } from '../src/lib/changelog.ts';
+import type { HtmlElement } from 'html-validate';
+import { compareVersions, LATEST, RELEASES } from '../src/lib/changelog.ts';
 import { parsePage, scriptsOf } from './dom.ts';
 
 const repo = new URL('../../../', import.meta.url);
@@ -28,15 +29,32 @@ function readable(file: string): string {
   const source = read(file);
   if (!file.endsWith('.html')) return source;
   const page = parsePage(source);
+  // The homepage's recent releases are the changelog's own list, the one place a page may
+  // name older versions; history() below checks that list against the release notes.
+  const inHistory = (element: HtmlElement | null): boolean =>
+    element !== null && (element.hasAttribute(HISTORY_LIST) || inHistory(element.parent));
   const attributes = page
     .querySelectorAll('*')
+    .filter((element) => !inHistory(element))
     .flatMap((element) => element.attributes.map((attribute) => String(attribute.value ?? '')));
   const data = scriptsOf(page)
     .filter((script) => script.type === 'application/ld+json')
     .map((script) => script.body);
-  const text = page.querySelectorAll('body, title').map((element) => element.textContent);
+  const history = page.querySelectorAll(`[${HISTORY_LIST}]`).map((list) => list.textContent);
+  const text = page
+    .querySelectorAll('body, title')
+    .map((element) => history.reduce((rest, list) => rest.replace(list, ''), element.textContent));
   return [...text, ...attributes, ...data].join('\n');
 }
+
+const HISTORY_LIST = 'data-release-history';
+
+/** The versions a page's release lists name. */
+const history = (file: string) =>
+  parsePage(read(file))
+    .querySelectorAll(`[${HISTORY_LIST}]`)
+    .flatMap((list) => versionsIn(list.textContent))
+    .filter((version): version is string => Boolean(version));
 
 describe('version', () => {
   it('is derived from a published release', () => {
@@ -46,6 +64,14 @@ describe('version', () => {
   it.each(files)('%s names no release but the newest', (file) => {
     const others = versionsIn(readable(file)).filter((version) => version !== LATEST.version);
     expect(others, file).toEqual([]);
+  });
+
+  it('lists only released versions in a release history, newest first', () => {
+    const listed = history('index.html');
+    expect(listed[0]).toBe(LATEST.version);
+    const released = RELEASES.map((release) => release.version);
+    for (const version of listed) expect(released, version).toContain(version);
+    expect([...listed].sort(compareVersions)).toEqual(listed);
   });
 
   it('is the version the home page, JSON-LD and install guide show', () => {

@@ -11,11 +11,21 @@ import mark from '@bemmoly/ui/brand/mark-color.svg?raw';
 
 interface Props {
   variant?: 'lockup' | 'mark';
-  size?: number;
+  /** Height in px; one of the steps below. */
+  size?: 14 | 22 | 24 | 26 | 30 | 48;
   class?: string;
 }
 
 const { variant = 'lockup', size = 26, class: className } = Astro.props;
+// Heights as classes: the strict HTML rules allow no inline style.
+const HEIGHTS: Readonly<Record<NonNullable<Props['size']>, string>> = {
+  14: 'h-3.5',
+  22: 'h-5.5',
+  24: 'h-6',
+  26: 'h-6.5',
+  30: 'h-7.5',
+  48: 'h-12',
+};
 // The wrapper names the brand (or the link around it does); the drawing is decoration.
 const svg = (variant === 'mark' ? mark : lockup)
   .replace(/\s(width|height)="[^"]*"/g, '')
@@ -23,7 +33,10 @@ const svg = (variant === 'mark' ? mark : lockup)
 ---
 
 <span
-  class:list={['inline-flex shrink-0 text-tx [&>svg]:h-full [&>svg]:w-auto', className]}
-  style={`height:${size}px`}
+  class:list={[
+    'inline-flex shrink-0 text-tx [&>svg]:h-full [&>svg]:w-auto',
+    HEIGHTS[size],
+    className,
+  ]}
   set:html={svg}
 />

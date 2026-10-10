@@ -1,21 +1,27 @@
 ---
 /**
- * @bemmoly/ui's Badge, label variant (11px semibold, 2px 7px, 3px radius), with the design
- * system's tones from src/lib/badge.ts.
+ * A status badge in sentence case, with the design system's tones (src/lib/badge.ts): the
+ * product's label variant (11px semibold, 3px radius) on the text pages, or the site review's
+ * pill (12px, 22px tall) on the homepage. Green means shipped, the accent means new, grey
+ * means planned, amber means untested and lilac means AI, and nothing else.
  */
 import { BADGE_TONES, type BadgeTone } from '../../lib/badge.ts';
 
 interface Props {
   tone?: BadgeTone;
+  pill?: boolean;
   class?: string;
 }
 
-const { tone = 'neutral', class: className } = Astro.props;
+const { tone = 'neutral', pill = false, class: className } = Astro.props;
 ---
 
 <span
   class:list={[
-    'inline-flex shrink-0 items-center rounded-chip px-1.75 py-0.5 text-11 font-semibold whitespace-nowrap',
+    'inline-flex shrink-0 items-center whitespace-nowrap',
+    pill
+      ? 'h-5.5 rounded-full px-2 text-12 font-medium'
+      : 'rounded-chip px-1.75 py-0.5 text-11 font-semibold',
     BADGE_TONES[tone],
     className,
   ]}

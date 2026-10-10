@@ -76,3 +76,6 @@ export function siteIcon(name: SiteIconName): LucideIcon {
 
 /** The product's stroke at every size (ADR 0015). */
 export const ICON_STROKE = 1.75;
+
+/** The product's modules, each drawn as a tile in its logo colour (ModuleTile.astro). */
+export type ModuleId = 'work' | 'docs' | 'ai';

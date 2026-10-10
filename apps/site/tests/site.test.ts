@@ -28,13 +28,23 @@ afterAll(() => preview?.stop());
 describe('landing page', () => {
   it('renders the hero headline', async () => {
     const body = await (await fetch(`${preview.url}/`)).text();
-    expect(body).toMatch(/<h1\b[^>]*>\s*Keep your work in-house\.\s*<\/h1>/);
+    expect(body).toMatch(/<h1\b[^>]*>\s*Your work\. Your platform\.\s*<\/h1>/);
   });
 
-  it('shows the installer one-liner and the Postgres 18 transcript', () => {
+  it('states the three promises in the hero, in a section of their own and in the footer', () => {
+    const page = parsePage(html('index.html'));
+    const text = (selector: string) => page.querySelector(selector)?.textContent ?? '';
+    for (const promise of ['100% open source', 'No pricing', 'No in-app purchases']) {
+      expect(text('main section'), promise).toContain(promise);
+      expect(text('#promise'), promise).toContain(promise);
+    }
+    expect(text('footer')).toContain('No in-app purchases');
+  });
+
+  it('copies the installer one-liner, and promises no install time nothing measured', () => {
     const index = html('index.html');
-    expect(index).toContain('curl -fsSL https://get.bemmoly.com | sh');
-    expect(index).toContain('Installing Postgres 18');
+    expect(index).toContain('data-copy="curl -fsSL https://get.bemmoly.com | sh"');
+    expect(index).not.toMatch(/\b(5|five) min/i);
     expect(index).not.toContain('bemmoly.dev');
   });
 

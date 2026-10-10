@@ -4,7 +4,8 @@
  */
 export const BADGE_TONES = {
   neutral: 'bg-line-2 text-tx-2',
-  accent: 'bg-acc-50 text-acc',
+  // In dark mode the accent is a step lighter on its own tint, so the text keeps 4.5:1.
+  accent: 'bg-acc-50 text-acc dark:text-acc-500',
   ok: 'bg-green-50 text-green-tx',
   warn: 'bg-amber-50 text-amber-tx',
   /** AI and only AI, in the logo's lilac (ADR 0015). */
