@@ -17,7 +17,8 @@ function Count({ slot, page }: { slot: MarginSlot; page: PageDetail }) {
 /**
  * The header's margin toggles, as the review draws them: Outline, Comments with its count,
  * Linked work, then Version history, each with a tooltip naming it and its shortcut. One
- * margin shows at a time; pressing the one shown closes it. The header renders this as is.
+ * margin shows at a time; pressing the one shown closes it. On phones the outline and
+ * history toggles fold away (history stays in ···). The header renders this as is.
  */
 export function MarginToggles() {
   const { page, docked, readOnly } = usePageScreen();
@@ -59,7 +60,7 @@ export function MarginToggles() {
             aria-pressed={history}
             aria-keyshortcuts={ariaKeyShortcuts(HISTORY_SLOT.keys)}
             icon={<Icon name={HISTORY_SLOT.icon} size={15} />}
-            className={TOGGLE}
+            className={cx(TOGGLE, 'max-sm:hidden')}
             onClick={() => setMode(history ? 'page' : 'history')}
           />
         </Tooltip>
