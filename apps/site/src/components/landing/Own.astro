@@ -1,0 +1,52 @@
+---
+/**
+ * "Yours to run. Yours to keep.": the self-hosting promise on the product's dark surfaces, as
+ * the app's dark mode draws them, in both versions of the page. Six facts, each verified in
+ * the code, each with the file that proves it (src/data/proofs.ts). What is not proven yet says
+ * so in amber.
+ */
+import { OWN } from '../../data/proofs.ts';
+import Badge from '../site/Badge.astro';
+import Icon from '../site/Icon.astro';
+import ProofLine from './ProofLine.astro';
+import SectionHead from './SectionHead.astro';
+---
+
+<section
+  id="yours"
+  data-theme="dark"
+  aria-labelledby="yours-title"
+  class="scroll-mt-16 border-y border-line bg-canvas py-18 text-tx md:py-24"
+>
+  <SectionHead
+    eyebrow="Self-hosted"
+    icon="shield"
+    title="Yours to run. Yours to keep."
+    id="yours-title"
+    layout="split"
+  >
+    Your issues and pages live in your Postgres, on your machine. Here is what that means in
+    practice, with the file that proves each line.
+  </SectionHead>
+  <ul class="mx-auto mt-10 grid max-w-300 gap-4 px-4 sm:px-6 md:mt-12 md:grid-cols-2 lg:grid-cols-3 lg:gap-5 lg:px-8">
+    {OWN.map((fact) => (
+      <li class="flex flex-col gap-3 rounded-shot bg-card p-6 pb-5 shadow-e1">
+        <div class="flex items-center gap-3">
+          <span class="grid size-10 place-items-center rounded-[10px] bg-acc-50 text-acc">
+            <Icon name={fact.icon} size={19} />
+          </span>
+          {fact.untested && (
+            <Badge tone="warn" pill>
+              {fact.untested}
+            </Badge>
+          )}
+        </div>
+        <h3 class="text-17 font-semibold tracking-brand">{fact.title}</h3>
+        <p class="text-15 leading-desc text-pretty text-tx-2">{fact.body}</p>
+        <div class="mt-auto">
+          <ProofLine proof={fact.proof} file />
+        </div>
+      </li>
+    ))}
+  </ul>
+</section>

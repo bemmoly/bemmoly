@@ -1,12 +1,12 @@
 ---
 /**
- * The topic pages' board picture: the homepage's board poster, captured from the live demo
- * (scripts/capture-previews.ts), with a caption that says what it is and links to the demo.
+ * The topic pages' board picture: the homepage's board poster of the new UI, captured from the
+ * live demo in light and dark (scripts/capture-previews.ts), with a caption that says what it
+ * is and links to the demo.
  */
-import boardOcean from '../../assets/previews/board-ocean.png';
-import board from '../../assets/previews/board.png';
+import { POSTERS, POSTER_WIDTHS } from '../../data/posters.ts';
 import { PREVIEWS } from '../../data/previews.ts';
-import Shot from '../landing/Shot.astro';
+import Poster from '../site/Poster.astro';
 
 interface Props {
   eager?: boolean;
@@ -17,17 +17,17 @@ const preview = PREVIEWS.find((entry) => entry.id === 'board');
 ---
 
 <figure class="m-0 flex flex-col gap-3">
-  <Shot
-    src={board}
-    dark={boardOcean}
-    frame="wide"
-    width={1064}
-    sizes="(min-width: 1160px) 1064px, calc(100vw - 32px)"
-    eager={eager}
-    alt={preview?.alt ?? ''}
-  />
+  <div class="overflow-hidden rounded-shot bg-card shadow-e3">
+    <Poster
+      {...POSTERS.board}
+      alt={preview?.alt ?? ''}
+      widths={POSTER_WIDTHS}
+      sizes="(min-width: 1160px) 1064px, calc(100vw - 32px)"
+      eager={eager}
+    />
+  </div>
   <figcaption class="text-13 leading-brief text-tx-3">
-    The Work module’s board in the live demo, on sample data that never leaves your browser.
+    The Work module’s board in the live demo, on sample data that stays in your browser.
     <a href={preview?.path} class="font-medium underline">
       Drag a card yourself.
     </a>

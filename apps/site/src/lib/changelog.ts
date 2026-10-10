@@ -167,10 +167,34 @@ export const RELEASES: readonly Release[] = collectReleases(Object.values(files)
 /** The newest release: the version the installer pulls today. */
 export const LATEST: Release = RELEASES[0] ?? { version: '0.1.0', date: null, changes: [] };
 
-/** The roadmap rows not released yet: 0.3 is upcoming while the newest release is 0.2.x. */
-export const UPCOMING = ROADMAP.filter(
-  (step) => compareVersions(`${step.version}.0`, LATEST.version) < 0,
-);
+/** "0.3.0" → "0.3": how the site names the release a feature arrived in. */
+export const minorOf = (version: string) => version.split('.').slice(0, 2).join('.');
+
+/** The oldest release in one changelog, such as a module's: the release it first shipped in. */
+export function firstReleaseIn(path: string): string | null {
+  const source = Object.entries(files).find(([file]) => file.endsWith(path))?.[1];
+  if (!source) return null;
+  const versions = [...source.matchAll(/^## (\S+)\s*$/gm)].flatMap((match) => match[1] ?? []);
+  return versions.sort(compareVersions).at(-1) ?? null;
+}
+
+/**
+ * The badge for a module that has shipped: "New in 0.3" while its release is the newest minor
+ * or the one before, then plain "Available". Read from the changelogs, so it cannot go stale.
+ */
+export function shippedLabel(since: string | null): string {
+  if (!since) return 'Available';
+  const [major, minor] = LATEST.version.split('.').map(Number);
+  const [sinceMajor, sinceMinor] = since.split('.').map(Number);
+  const recent = major === sinceMajor && (minor ?? 0) - (sinceMinor ?? 0) <= 1;
+  return recent ? `New in ${minorOf(since)}` : 'Available';
+}
+
+/** The release Docs first shipped in, from the module's own changelog. */
+export const DOCS_SINCE = firstReleaseIn('modules/docs/CHANGELOG.md');
+
+/** What is still to come, without release numbers (src/data/changelog.ts). */
+export const UPCOMING = ROADMAP;
 
 /** The changelogs read, from the repository root; the tests compare them with the repository. */
 export const CHANGELOG_FILES: readonly string[] = Object.keys(files).map((path) =>

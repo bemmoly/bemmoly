@@ -1,0 +1,18 @@
+---
+/**
+ * Applies the theme a visitor picked in the footer (System, Light or Dark) before the first
+ * paint, so a dark-mode visitor who chose light never sees a flash. Without a choice, or when
+ * storage is blocked, nothing is set and the page follows the system (src/lib/theme.ts).
+ * The Caddyfile's CSP allows this exact script by its hash: any edit, even whitespace, needs
+ * the new hash there (tests/csp.test.ts checks it).
+ */
+---
+
+<script is:inline>
+  try {
+    const t = localStorage.getItem('bemmoly.site.theme');
+    if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
+  } catch {
+    // Storage blocked: the page follows the system setting.
+  }
+</script>

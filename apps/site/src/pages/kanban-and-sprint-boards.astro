@@ -16,37 +16,37 @@ import Page from '../layouts/Page.astro';
 
 const BOARD: readonly Capability[] = [
   {
-    tile: 'KS',
+    icon: 'board',
     title: 'Kanban or Scrum per project',
     body: 'Each project picks its method, with the sprint length, working days and estimation unit for Scrum.',
     status: 'now',
   },
   {
-    tile: 'CO',
+    icon: 'grid',
     title: 'Columns are statuses',
     body: 'Moving a card is a real workflow transition; a column the workflow does not allow says why before you drop.',
     status: 'now',
   },
   {
-    tile: 'WI',
+    icon: 'target',
     title: 'WIP limits',
     body: 'Cap how many cards a column holds, so a team finishes work before it starts more.',
     status: 'now',
   },
   {
-    tile: 'SL',
+    icon: 'layers',
     title: 'Swimlanes and colours',
     body: 'Lanes by epic, assignee, priority, type or a query; card colours by priority, type, epic or a query.',
     status: 'now',
   },
   {
-    tile: 'QF',
+    icon: 'filter',
     title: 'Filters that stay',
     body: 'People, epic, type and label filters, quick filters, and saved queries shared with your team.',
     status: 'now',
   },
   {
-    tile: 'KB',
+    icon: 'command',
     title: 'Mouse or keyboard',
     body: 'Drag cards, or pick one up with space and carry it with the arrow keys; the board updates live for everyone.',
     status: 'now',
@@ -55,31 +55,31 @@ const BOARD: readonly Capability[] = [
 
 const PLANNING: readonly Capability[] = [
   {
-    tile: 'BL',
+    icon: 'backlog',
     title: 'Backlog and sprints',
     body: 'Drag issues between the backlog and sprints, one at a time or several, with each sprint’s points against its capacity.',
     status: 'now',
   },
   {
-    tile: 'SP',
+    icon: 'sprint',
     title: 'Start and complete sprints',
     body: 'Start with dates and a goal; on completion, choose where unfinished issues go.',
     status: 'now',
   },
   {
-    tile: 'ME',
+    icon: 'reports',
     title: 'Flow and sprint metrics',
     body: 'Velocity, the active sprint’s burndown, cycle time and throughput, from each issue’s history.',
     status: 'now',
   },
   {
-    tile: 'AI',
+    icon: 'spark',
     title: 'Sprint risk',
     body: 'An AI note on sprints and flow at risk, with fixes you confirm before anything changes.',
     status: 'ai',
   },
   {
-    tile: 'RM',
+    icon: 'roadmap',
     title: 'Roadmap',
     body: 'Epics on a timeline with progress, dependencies and a forecast.',
     status: 'integrations',

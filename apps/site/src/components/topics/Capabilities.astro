@@ -1,11 +1,12 @@
 ---
 /**
- * The landing page's feature grid (two-letter tile, 17px title, 14.5px body), with a status
+ * A grid of capabilities (a drawn icon in an accent tile, 17px title, 14.5px body), with a status
  * badge on every item so a topic page cannot present planned work as shipped. Plain blocks
  * rather than a list, so a Section's list styles do not turn the grid into bullets.
  */
 import { AVAILABILITY, type Capability } from '../../data/topics.ts';
 import Badge from '../site/Badge.astro';
+import Icon from '../site/Icon.astro';
 
 interface Props {
   items: readonly Capability[];
@@ -20,9 +21,9 @@ const { items } = Astro.props;
       <div class="flex items-center gap-2.5">
         <span
           aria-hidden="true"
-          class="flex size-9 items-center justify-center rounded-card border border-line bg-card font-mono text-13 font-semibold text-acc dark:bg-sunken"
+          class="flex size-9 items-center justify-center rounded-card bg-acc-50 text-acc"
         >
-          {item.tile}
+          <Icon name={item.icon} size={18} />
         </span>
         <Badge tone={AVAILABILITY[item.status].tone}>{AVAILABILITY[item.status].label}</Badge>
       </div>

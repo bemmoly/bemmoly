@@ -1,0 +1,64 @@
+---
+/**
+ * One module in the showcase: its tile, name and state, a sub-section title, four outcomes
+ * (bold, then the detail after the comma) and a deep link into the demo, beside a framed
+ * screen of the new UI (the slot). `flip` puts the screen first on wide screens.
+ */
+import type { Outcome } from '../../data/landing.ts';
+import type { BadgeTone } from '../../lib/badge.ts';
+import Badge from '../site/Badge.astro';
+import Button from '../site/Button.astro';
+import Icon from '../site/Icon.astro';
+import type { ModuleId } from '../../lib/icons.ts';
+import ModuleTile from '../site/ModuleTile.astro';
+
+interface Props {
+  id: string;
+  module: ModuleId;
+  name: string;
+  badge: string;
+  tone: BadgeTone;
+  title: string;
+  outcomes: readonly Outcome[];
+  demo: { label: string; href: string };
+  flip?: boolean;
+}
+
+const { id, module, name, badge, tone, title, outcomes, demo, flip = false } = Astro.props;
+---
+
+<div
+  id={id}
+  class:list={[
+    'mx-auto mt-16 grid max-w-300 scroll-mt-20 items-center gap-8 px-4 sm:px-6 md:mt-22 lg:gap-14 lg:px-8',
+    flip ? 'lg:grid-cols-[1fr_420px]' : 'lg:grid-cols-[420px_1fr]',
+  ]}
+>
+  <div class:list={['flex flex-col', flip && 'lg:order-2']}>
+    <div class="flex items-center gap-2.5">
+      <ModuleTile module={module} size={28} />
+      <b class="text-15 font-semibold">{name}</b>
+      <Badge tone={tone} pill>
+        {badge}
+      </Badge>
+    </div>
+    <h3 class="mt-4 mb-3.5 text-24 font-semibold tracking-sub text-balance md:text-32">{title}</h3>
+    <ul class="flex flex-col gap-2.5">
+      {outcomes.map((outcome) => (
+        <li class="grid grid-cols-[22px_1fr] gap-2.5 text-15 leading-body text-tx-2">
+          <Icon name="check" size={16} class="mt-0.75 text-acc" />
+          <span>
+            <b class="font-semibold text-tx">{outcome.lead}</b>, {outcome.rest}
+          </span>
+        </li>
+      ))}
+    </ul>
+    <Button variant="secondary" size="sm" href={demo.href} class="mt-5.5 self-start">
+      <Icon name="play" size={11} class="fill-current" />
+      {demo.label}
+    </Button>
+  </div>
+  <div class="overflow-hidden rounded-shot bg-card shadow-e3">
+    <slot />
+  </div>
+</div>
