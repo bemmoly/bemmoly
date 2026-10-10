@@ -46,7 +46,10 @@ export function IssueTitle({ issue, size }: { issue: IssueDetail; size: 'page' |
         autoFocus
         rows={1}
         value={draft}
-        onFocus={(event) => event.currentTarget.select()}
+        onFocus={(event) => {
+          const end = event.currentTarget.value.length;
+          event.currentTarget.setSelectionRange(end, end);
+        }}
         onChange={(event) => setDraft(event.target.value.replace(/\n/g, ' '))}
         onBlur={commit}
         onKeyDown={(event) => {
