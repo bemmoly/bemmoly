@@ -9,11 +9,11 @@ import {
   movePageBodySchema,
   moveResultSchema,
   pageDetailSchema,
-  pageSummaryPageSchema,
   setReviewersBodySchema,
   setStatusBodySchema,
   spaceSchema,
   spacesPageSchema,
+  trashPageSchema,
   treePageSchema,
   treeQuerySchema,
   updatePageBodySchema,
@@ -60,7 +60,7 @@ export function docsPagesEndpoints(http: Http) {
           query: validated(treeQuerySchema, query),
         }),
       trash: async (ref: string, query: Partial<ListTrashQuery> = {}) =>
-        http.request(space(ref, '/trash'), pageSummaryPageSchema, {
+        http.request(space(ref, '/trash'), trashPageSchema, {
           query: validated(listTrashQuerySchema, query),
         }),
       /** Deletes one trashed page and everything under it for good (space admins). */

@@ -29,6 +29,9 @@ describe('trash purge', () => {
     });
     const live = await services.pages.create(member, { spaceId: space.id, title: 'Live' });
     await services.pages.remove(member, parent.id);
+    const [row] = (await services.pages.listTrash(member, space.key, { limit: 50 })).items;
+    expect(row).toMatchObject({ title: 'Old', wasIn: null, pagesInside: 1 });
+    expect(row?.deletedBy?.id).toBe(users.member);
     await expect(services.pages.deleteForever(member, space.key, parent.id)).rejects.toBeInstanceOf(
       ForbiddenError,
     );

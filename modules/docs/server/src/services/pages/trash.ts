@@ -1,5 +1,5 @@
 import { decodeCursor, toPage, type RequestContext } from '@bemmoly/core';
-import type { ListTrashQuery, PageDetail, PageSummaryPage } from '../../../../shared/pages.ts';
+import type { ListTrashQuery, PageDetail, TrashPage } from '../../../../shared/pages.ts';
 import {
   DOCS_REALTIME_KINDS,
   publishChange,
@@ -13,6 +13,24 @@ import { spaceByRef } from '../spaces/rows.ts';
 import { loadDetail } from './detail.ts';
 import { rankAmongSiblings } from './rank.ts';
 import { pageById, SUMMARY_COLUMNS, toSummary, type PageRow } from './rows.ts';
+
+interface TrashRow extends PageRow {
+  deleted_by_id: string | null;
+  deleted_by_name: string | null;
+  was_in_id: string | null;
+  was_in_title: string | null;
+  was_in_icon: string | null;
+  pages_inside: number;
+}
+
+const toTrashItem = (row: TrashRow) => ({
+  ...toSummary(row),
+  deletedBy: row.deleted_by_id ? { id: row.deleted_by_id, name: row.deleted_by_name ?? '' } : null,
+  wasIn: row.was_in_id
+    ? { id: row.was_in_id, title: row.was_in_title ?? '', icon: row.was_in_icon }
+    : null,
+  pagesInside: row.pages_inside,
+});
 
 /*
  * Delete is soft: the page and every live page under it get one deleted_at,
@@ -94,14 +112,21 @@ export function createTrashService(deps: DocsServiceDeps) {
       ctx: RequestContext,
       spaceRef: string,
       query: ListTrashQuery,
-    ): Promise<PageSummaryPage> {
+    ): Promise<TrashPage> {
       const sql = requireDatabase(deps);
       const space = await spaceByRef(sql, spaceRef);
       await ctx.authz.authorize(ctx.actor, 'docs.page.delete', spaceResource(space.id));
       const cursor = decodeCursor(query.cursor);
-      const rows = await sql<PageRow[]>`
-        select ${sql.unsafe(SUMMARY_COLUMNS)}
+      const rows = await sql<TrashRow[]>`
+        select ${sql.unsafe(SUMMARY_COLUMNS)},
+          u.id as deleted_by_id, u.name as deleted_by_name,
+          up.id as was_in_id, up.title as was_in_title, up.icon as was_in_icon,
+          (select count(*)::int from pages d
+            where d.path like p.path || '%' and d.id <> p.id
+              and d.deleted_at = p.deleted_at) as pages_inside
         from pages p join spaces s on s.id = p.space_id
+          left join users u on u.id = p.deleted_by
+          left join pages up on up.id = p.parent_id
         where p.space_id = ${space.id} and p.deleted_at is not null
           and not exists (
             select 1 from pages up where up.id = p.parent_id and up.deleted_at = p.deleted_at)
@@ -109,7 +134,7 @@ export function createTrashService(deps: DocsServiceDeps) {
         order by p.deleted_at desc, p.id desc
         limit ${query.limit + 1}`;
       const page = toPage(rows, query.limit);
-      return { items: page.rows.map(toSummary), nextCursor: page.nextCursor };
+      return { items: page.rows.map(toTrashItem), nextCursor: page.nextCursor };
     },
   };
 }
