@@ -1,4 +1,3 @@
-import type { Editor } from '@tiptap/core';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import { describe, expect, it, vi } from 'vitest';
@@ -7,10 +6,14 @@ import { CreateIssueDialog } from './create-issue-dialog.tsx';
 
 const server = startServer();
 
+interface EditorHandle {
+  chain: () => { focus: (at: 'end') => { insertContent: (text: string) => { run: () => void } } };
+}
+
 /** Types into a rich text section through its editor, as a person would. */
 async function write(name: RegExp, text: string) {
   const box = await screen.findByRole('textbox', { name });
-  const editor = (box as HTMLElement & { editor: Editor }).editor;
+  const editor = (box as HTMLElement & { editor: EditorHandle }).editor;
   act(() => {
     editor.chain().focus('end').insertContent(text).run();
   });
