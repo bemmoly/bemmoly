@@ -8,6 +8,18 @@ export {
 export { createDatabase, createTransactionDatabase, type Database } from './drizzle.ts';
 export { HttpStatusError, requestJson, type JsonRequest } from './http-json.ts';
 export {
+  createModelServerClient,
+  type ModelServerClient,
+  type ServerModel,
+} from './model-server.ts';
+export {
+  createModelsDevClient,
+  MODELS_DEV_URL,
+  ModelsDevError,
+  type CatalogFetch,
+  type ModelsDevClient,
+} from './models-dev.ts';
+export {
   connectionFor,
   createPgTools,
   type DumpOptions,
