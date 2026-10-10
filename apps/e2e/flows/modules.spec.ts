@@ -18,7 +18,7 @@ async function disableWork(page: Page) {
   const dialog = page.getByRole('dialog', { name: 'Disable Work?' });
   await dialog.getByRole('button', { name: 'Disable Work' }).click();
   await expect(dialog).toBeHidden();
-  await expect(workRow(page).getByRole('cell').nth(1)).toHaveText('DISABLED');
+  await expect(workRow(page).getByRole('cell').nth(1)).toHaveText('Disabled');
 }
 
 async function enableWork(page: Page) {
@@ -28,7 +28,7 @@ async function enableWork(page: Page) {
   await dialog.getByRole('radio', { name: /^Everyone/ }).click();
   await dialog.getByRole('button', { name: 'Enable Work' }).click();
   await expect(dialog).toBeHidden();
-  await expect(workRow(page).getByRole('cell').nth(1)).toHaveText('ENABLED');
+  await expect(workRow(page).getByRole('cell').nth(1)).toHaveText('Enabled');
 }
 
 /** Work's section of the sidebar: there while Work is on, gone while it is off. */
