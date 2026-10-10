@@ -12,10 +12,13 @@ export type PageEditor = NonNullable<Parameters<NonNullable<DocEditorProps['onEd
 /** Why the page cannot be changed right now, for the banner and the save state. */
 export type ReadOnlyReason = 'archived' | 'trashed' | 'viewer' | null;
 
-/** The built-in first tab of the side panel. */
-export const ABOUT_PANEL = 'about';
+/** What the right margin shows: the outline, the comments or the linked work. */
+export type MarginId = 'outline' | 'comments' | 'linked';
 
-/** What the parts of the page screen share: the page, its live body and the panel. */
+/** The page as written, or its version history in place of the body. */
+export type PageMode = 'page' | 'history';
+
+/** What the parts of the page screen share: the page, its live body and the margin. */
 export interface PageScreenState {
   page: PageDetail;
   collab: CollabPage;
@@ -30,8 +33,8 @@ export interface PageScreenState {
   activeHeading: string | null;
   /** Marks the heading the person just jumped to as the one being read. */
   pinHeading: (id: string) => void;
-  /** True when the outline has room for its own rail beside the body; else the panel shows it. */
-  outlineInRail: boolean;
+  /** True when the margin has room to sit beside the body; below that it opens over it. */
+  docked: boolean;
   /** Words and reading time of the live document. */
   stats: DocStats;
 }
@@ -45,40 +48,55 @@ export function usePageScreen(): PageScreenState {
 }
 
 interface PageChrome {
-  /** The side panel's tab, or null while it is closed. */
-  panel: string | null;
-  openPanel: (id: string) => void;
-  closePanel: () => void;
-  /** Opens the panel on `id`, or closes it when it already shows `id`. */
-  togglePanel: (id: string) => void;
-  /** Opens the panel on `id` and moves focus to its tab, for a menu that closes behind it. */
-  showPanel: (id: string) => void;
-  /** Bumped by showPanel; the panel focuses its tab on each change. */
+  /** What the right margin shows, or null while it is closed. */
+  margin: MarginId | null;
+  /**
+   * True once the person chose the margin themselves. The outline is the margin's resting
+   * state where it fits; it only opens over a narrow page when someone asked for it.
+   */
+  chosen: boolean;
+  openMargin: (id: MarginId) => void;
+  closeMargin: () => void;
+  /** Shows `id`, or closes the margin when `id` is what it shows on screen now. */
+  toggleMargin: (id: MarginId, shown: boolean) => void;
+  mode: PageMode;
+  setMode: (mode: PageMode) => void;
+  /** Bumped when a margin opens from a key or a menu; the margin then takes focus. */
   focusRequest: number;
 }
 
-const WIDE = '(min-width: 1280px)';
-const wide = () => typeof window !== 'undefined' && Boolean(window.matchMedia?.(WIDE).matches);
-
 /**
- * The side panel, kept across pages so the panel stays where the person left it
- * while they move through a space. It starts open where the mock's 340px panel fits beside
- * the body, and closed below that, where it opens over the body instead.
+ * The margin and the mode, kept across pages so the margin stays where the person left it
+ * while they move through a space. The outline rests in the margin until someone picks
+ * comments or linked work, or closes it.
  */
 export const usePageChrome = create<PageChrome>((set, get) => ({
-  panel: wide() ? ABOUT_PANEL : null,
-  openPanel: (id) => set({ panel: id }),
-  closePanel: () => set({ panel: null }),
-  togglePanel: (id) => set({ panel: get().panel === id ? null : id }),
-  showPanel: (id) => set({ panel: id, focusRequest: get().focusRequest + 1 }),
+  margin: 'outline',
+  chosen: false,
+  openMargin: (id) => set({ margin: id, chosen: true, focusRequest: get().focusRequest + 1 }),
+  closeMargin: () => set({ margin: null, chosen: true }),
+  toggleMargin: (id, shown) => (shown ? get().closeMargin() : get().openMargin(id)),
+  mode: 'page',
+  setMode: (mode) => set({ mode }),
   focusRequest: 0,
 }));
+
+/** Whether the margin shows `id` on screen: resting outlines show only where they fit. */
+export function marginShown(
+  chrome: Pick<PageChrome, 'margin' | 'chosen'>,
+  id: MarginId,
+  docked: boolean,
+): boolean {
+  if (chrome.margin !== id) return false;
+  return id !== 'outline' || docked || chrome.chosen;
+}
 
 /** What the slots in slots.ts are drawn with. */
 export function useSlotProps(): PageSlotProps {
   const { page, editable, editor } = usePageScreen();
-  const openPanel = usePageChrome((state) => state.openPanel);
-  return { page, editable, editor, openPanel };
+  const margin = usePageChrome((state) => state.margin);
+  const openMargin = usePageChrome((state) => state.openMargin);
+  return { page, editable, editor, margin, openMargin };
 }
 
 interface PageTyping {

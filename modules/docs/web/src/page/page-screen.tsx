@@ -8,7 +8,6 @@ import { docsPaths, navigateTo } from '../shared/navigation.ts';
 import { PageSkeleton } from '../skeletons/docs-skeletons.tsx';
 import { SpaceLayout } from '../space/space-layout.tsx';
 import { PageFrame } from './page-frame.tsx';
-import { ABOUT_PANEL, usePageChrome } from './screen-context.ts';
 import { usePageLoad } from './use-page-load.ts';
 
 /** Where the trail ends when there is no page to name. */
@@ -87,7 +86,6 @@ export default function PageScreen({ segment }: DocsScreenProps) {
   const load = usePageLoad(segment);
   const page = load.state === 'ready' ? load.page : null;
   const space = useSpace(page?.spaceKey);
-  const panelOpen = usePageChrome((state) => state.panel === ABOUT_PANEL);
 
   if (load.state === 'not-found' || load.state === 'forbidden')
     return <Problem kind={load.state} />;
@@ -95,7 +93,7 @@ export default function PageScreen({ segment }: DocsScreenProps) {
   if (!page || space.isPending) {
     return (
       <DocsLayout layout="full">
-        <PageSkeleton panel={panelOpen} />
+        <PageSkeleton />
       </DocsLayout>
     );
   }

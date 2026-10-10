@@ -1,7 +1,7 @@
 import { useToast } from '@bemmoly/ui';
 import { useEffect, useRef } from 'react';
 import type { CollabStatus } from '../collab/session.ts';
-import { ABOUT_PANEL, usePageChrome, type ReadOnlyReason } from './screen-context.ts';
+import { usePageChrome, type MarginId, type ReadOnlyReason } from './screen-context.ts';
 
 /** What ⌘S says, given where the page is: never an error, never a no-op. */
 export function saveShortcutMessage(
@@ -23,19 +23,46 @@ export function saveShortcutMessage(
 const isMod = (event: KeyboardEvent) =>
   (event.metaKey || event.ctrlKey) && !event.altKey && !event.shiftKey;
 
+/** ⌘⌥ (Ctrl+Alt) with a letter, read from the physical key: Alt changes event.key on a Mac. */
+const MOD_ALT: Record<string, MarginId | 'history'> = {
+  KeyO: 'outline',
+  KeyC: 'comments',
+  KeyL: 'linked',
+  KeyH: 'history',
+};
+
 /**
  * The page's own keys: ⌘S (Ctrl+S) answers that saving is automatic instead of opening the
- * browser's save dialog, and ⌘. (Ctrl+.) shows or hides the About panel.
+ * browser's save dialog; ⌘⌥O, ⌘⌥C and ⌘⌥L show or hide the outline, comments and linked
+ * work in the margin; ⌘⌥H enters or leaves version history.
  */
-export function usePageShortcuts(status: CollabStatus, readOnly: ReadOnlyReason) {
+export function usePageShortcuts(
+  status: CollabStatus,
+  readOnly: ReadOnlyReason,
+  /** Whether the margin shows this view on screen now, so its key closes it. */
+  shown: (id: MarginId) => boolean,
+) {
   const { show } = useToast();
-  const togglePanel = usePageChrome((state) => state.togglePanel);
+  const latestShown = useRef(shown);
+  useEffect(() => {
+    latestShown.current = shown;
+  });
   const latest = useRef({ status, readOnly });
   useEffect(() => {
     latest.current = { status, readOnly };
   });
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
+      const chord = MOD_ALT[event.code];
+      if ((event.metaKey || event.ctrlKey) && event.altKey && !event.shiftKey && chord) {
+        event.preventDefault();
+        const chrome = usePageChrome.getState();
+        if (chord === 'history') {
+          if (latest.current.readOnly !== 'trashed')
+            chrome.setMode(chrome.mode === 'history' ? 'page' : 'history');
+        } else chrome.toggleMargin(chord, latestShown.current(chord));
+        return;
+      }
       if (!isMod(event)) return;
       const key = event.key.toLowerCase();
       if (key === 's') {
@@ -45,12 +72,9 @@ export function usePageShortcuts(status: CollabStatus, readOnly: ReadOnlyReason)
           ...saveShortcutMessage(latest.current.status, latest.current.readOnly),
           duration: 2500,
         });
-      } else if (key === '.') {
-        event.preventDefault();
-        togglePanel(ABOUT_PANEL);
       }
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [show, togglePanel]);
+  }, [show]);
 }

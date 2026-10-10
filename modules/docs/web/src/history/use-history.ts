@@ -1,4 +1,5 @@
 import type { RevisionSummary } from '@bemmoly/module-docs/shared';
+import { useToast } from '@bemmoly/ui';
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../shared/api.ts';
 import { docsKeys } from '../shared/keys.ts';
@@ -58,6 +59,48 @@ export function useRestoreVersion(pageId: string) {
       void queryClient.invalidateQueries({ queryKey: [...docsKeys.all(), 'comments', pageId] });
     },
   });
+}
+
+const messageOf = (error: unknown) =>
+  error instanceof Error ? error.message : 'Try again in a moment.';
+
+/**
+ * Restore at once, with Undo. The page as it reads now is saved as a version first, so Undo
+ * restores exactly that, and the history keeps both. Fails say what did not happen and
+ * offer Retry.
+ */
+export function useRestoreWithUndo(pageId: string) {
+  const save = useSaveVersion(pageId);
+  const restore = useRestoreVersion(pageId);
+  const toast = useToast();
+  const run = async (revision: RevisionSummary, onDone?: () => void) => {
+    try {
+      const before = await save.mutateAsync(`Before restoring ${revisionName(revision)}`);
+      await restore.mutateAsync(revision.id);
+      onDone?.();
+      toast.undo({
+        title: `Restored ${revisionName(revision)}`,
+        body: 'Saved as a new version.',
+        onUndo: () =>
+          restore.mutate(before.id, {
+            onError: (error) =>
+              toast.show({
+                tone: 'danger',
+                title: 'The restore was not undone',
+                body: messageOf(error),
+              }),
+          }),
+      });
+    } catch (error) {
+      toast.show({
+        tone: 'danger',
+        title: 'The version was not restored',
+        body: messageOf(error),
+        action: { label: 'Retry', onClick: () => void run(revision, onDone) },
+      });
+    }
+  };
+  return { restore: run, pending: save.isPending || restore.isPending };
 }
 
 /** A version's name as the list shows it: its label, or what made it. */

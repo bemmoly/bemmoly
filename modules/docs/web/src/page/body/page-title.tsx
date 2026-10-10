@@ -1,4 +1,3 @@
-import { isIconName } from '@bemmoly/ui/icons';
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { cx } from '../cx.ts';
 import { usePageScreen } from '../screen-context.ts';
@@ -22,7 +21,6 @@ export function PageTitle() {
   const [focused, setFocused] = useState(false);
   /** Escape leaves the field without saving what was typed. */
   const discard = useRef(false);
-  const emoji = page.icon && !isIconName(page.icon) ? page.icon : null;
 
   useEffect(() => {
     if (!focused) setDraft(page.title);
@@ -53,15 +51,13 @@ export function PageTitle() {
   if (!editable) {
     return (
       <h1 className={cx(TITLE, 'text-pretty break-words', !page.title && 'text-tx-3')}>
-        {emoji && <span className="mr-3">{emoji}</span>}
         {page.title || 'Untitled'}
       </h1>
     );
   }
 
   return (
-    <h1 className={cx(TITLE, 'flex items-start gap-3')}>
-      {emoji && <span aria-hidden>{emoji}</span>}
+    <h1 className={cx(TITLE, 'flex items-start')}>
       <textarea
         id={TITLE_FIELD_ID}
         aria-label="Page title"

@@ -3,12 +3,13 @@ import type { ComponentType } from 'react';
 import type { PageDetail } from '../../../shared/pages.ts';
 import {
   COMMENT_LAYER,
-  COMMENTS_PANEL,
+  COMMENTS_MARGIN,
   EXPORT_MENU,
-  HISTORY_PANEL,
-  LINKED_PANEL,
+  HISTORY_MODE,
+  LINKED_MARGIN,
 } from '../page-slots/index.tsx';
-import type { PageEditor } from './screen-context.ts';
+import type { MarginId, PageEditor } from './screen-context.ts';
+import { OUTLINE_MARGIN } from './toc/outline-margin.tsx';
 
 /*
  * Where other parts of the Docs module plug into the page screen, as lists the screen reads.
@@ -23,32 +24,49 @@ export interface PageSlotProps {
   editable: boolean;
   /** The live body's editor once it is up; null before, and for a trashed page. */
   editor: PageEditor | null;
-  /** Opens the side panel on a tab: "about", or a PanelSlot's id. */
-  openPanel: (id: string) => void;
+  /** What the right margin shows, or null while it is closed. */
+  margin: MarginId | null;
+  /** Shows a margin: "comments" when a highlight is clicked, say. */
+  openMargin: (id: MarginId) => void;
+}
+
+/** What a margin is drawn with: docked beside the page it scrolls with it. */
+export interface MarginProps extends PageSlotProps {
+  /** True beside the page (wide screens); false over it, from the right. */
+  docked: boolean;
+  onClose: () => void;
 }
 
 /**
- * A tab of the side panel beside the body (the mock's Copilot, Comments and Linked work).
- * "About" is the screen's own first tab; each entry here adds one after it.
+ * One view of the right margin, chosen from its header toggle: the outline, the comments,
+ * the linked work. One shows at a time.
  */
-export interface PanelSlot {
-  /** Stable id, also the panel value in openPanel("comments"). */
-  id: string;
-  /** The tab's name: "Comments". */
+export interface MarginSlot {
+  id: MarginId;
+  /** The toggle's name and the margin's: "Comments". */
   label: string;
-  /** A number after the name, as the mock's "Comments (3)". */
+  icon: IconName;
+  /** Its shortcut, for the tooltip and the page's key handler: "Mod+Alt+C". */
+  keys: string;
+  /** The number on the toggle, as the review's "Comments 3". */
   useCount?: (page: PageDetail) => number | undefined;
-  /** A toggle in the header beside Share, opening the panel on this tab. */
-  header?: { icon: IconName; label: string };
-  /** An entry in the More menu opening the panel on this tab ("History"). */
-  menu?: { icon?: IconName; label: string };
-  /** False keeps it out of the tab strip: it opens from the header or the menu only. */
-  tab?: boolean;
-  Component: ComponentType<PageSlotProps & { onClose: () => void }>;
+  /** Drawn bare in the margin (the outline), rather than as a 340px panel. */
+  bare?: boolean;
+  Component: ComponentType<MarginProps>;
 }
 
-/** Tabs after "About", in order. */
-export const PANEL_SLOTS: readonly PanelSlot[] = [COMMENTS_PANEL, LINKED_PANEL, HISTORY_PANEL];
+/** The margin's views, in header order. */
+export const MARGIN_SLOTS: readonly MarginSlot[] = [OUTLINE_MARGIN, COMMENTS_MARGIN, LINKED_MARGIN];
+
+/** A mode that takes the body's place: version history. */
+export interface ModeSlot {
+  label: string;
+  icon: IconName;
+  keys: string;
+  Component: ComponentType<PageSlotProps & { onExit: () => void }>;
+}
+
+export const HISTORY_SLOT: ModeSlot = HISTORY_MODE;
 
 /**
  * Rows of the More menu between the built-in actions and Move to trash: export, for one.
@@ -57,13 +75,7 @@ export const PANEL_SLOTS: readonly PanelSlot[] = [COMMENTS_PANEL, LINKED_PANEL, 
 export const MENU_SLOTS: readonly ComponentType<PageSlotProps>[] = [EXPORT_MENU];
 
 /**
- * Sections of the About tab after the page's own facts: "Referenced in", backlinks and
- * linked issues. Each draws its own heading and returns null while it has nothing to show.
- */
-export const ABOUT_SLOTS: readonly ComponentType<PageSlotProps>[] = [];
-
-/**
- * What a part puts on the body itself, whichever panel tab is open: highlights, a bubble over
- * a selection, a shortcut. Mounted once beside the editor, inside the body column.
+ * What a part puts on the body itself, whichever margin is open: highlights, markers, a
+ * bubble over a selection, a shortcut. Mounted once beside the editor, inside the column.
  */
 export const LAYER_SLOTS: readonly ComponentType<PageSlotProps>[] = [COMMENT_LAYER];
