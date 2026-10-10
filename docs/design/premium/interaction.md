@@ -62,3 +62,4 @@ that passes (ADR 0015).
 - [Setup wizard](interaction/setup.md)
 - [Issue page](interaction/issue.md)
 - [Board and Backlog](interaction/board-backlog.md)
+- [Projects and project settings](interaction/projects-settings.md)
