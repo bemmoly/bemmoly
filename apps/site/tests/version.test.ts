@@ -81,8 +81,11 @@ describe('version', () => {
       file.endsWith('.js'),
     );
     // The define in apps/web's vite.config.ts, whatever quotes the minifier picks.
-    const literal = new RegExp(`version:[\`"']${LATEST.version.replace(/\./g, '\\.')}[\`"']`);
-    const bundled = assets.some((file) => literal.test(read(`demo/assets/${file}`)));
+    const literals = ['`', '"', "'"].map((quote) => `version:${quote}${LATEST.version}${quote}`);
+    const bundled = assets.some((file) => {
+      const code = read(`demo/assets/${file}`);
+      return literals.some((literal) => code.includes(literal));
+    });
     expect(bundled).toBe(true);
   });
 });

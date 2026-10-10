@@ -36,8 +36,8 @@ const page = await browser.newPage({
   reducedMotion: 'reduce',
 });
 // The demo's files from dist, and its page for every route, as the Caddyfile serves them.
-await page.route(`${ORIGIN}/**`, async (route) => {
-  const path = new URL(route.request().url()).pathname;
+await page.route(`${ORIGIN}/**`, async (route, asked) => {
+  const path = new URL(asked.url()).pathname;
   const file = new URL(`.${path}`, dist);
   const found = extname(path) !== '' && existsSync(file);
   await route.fulfill({
