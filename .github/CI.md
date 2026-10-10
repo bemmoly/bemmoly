@@ -21,9 +21,9 @@ What each check runs:
 - **Full checks**: integration tests against `pgvector/pgvector:pg18`, `pnpm build` (server,
   web shell and Storybook), `pnpm size` (shell under 250 KB gzip), Playwright end to end.
 - **Work end to end**: the Playwright suite in `apps/e2e` against a real install: the server
-  from the checkout on the service Postgres, serving the built web app, with Work enabled for
-  everyone through the CLI and people created through the setup and invitation endpoints. It
-  runs the Work flows, turns Work off and on twice from Settings › Modules, and holds a
+  from the checkout on the service Postgres, serving the built web app, with Work and Docs
+  enabled for everyone through the CLI and people created through the setup and invitation
+  endpoints. It runs the Work and Docs flows, turns Work off and on twice from Settings › Modules, and holds a
   500-issue board to the budgets of tech design §20 (board view p95 under 80 ms; a dropped
   card painted within six frames). The budget numbers are printed in the job log. Its own job,
   so a failure there is not read as a Full checks failure.

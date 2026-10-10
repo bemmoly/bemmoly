@@ -3,7 +3,7 @@ import { defineConfig, devices } from '@playwright/test';
 const CI = Boolean(process.env['CI']);
 
 /**
- * The Work flows against a real install: Postgres, the server from this
+ * The Work and Docs flows against a real install: Postgres, the server from this
  * checkout and the built web app (`pnpm build` first). The global setup
  * starts all three and seeds the people; nothing is mocked.
  *
@@ -14,6 +14,8 @@ const CI = Boolean(process.env['CI']);
  */
 export default defineConfig({
   testDir: 'flows',
+  /** A fixed server port (BEMMOLY_E2E_PORT) for machines that must keep to a range; else a free one. */
+  metadata: { serverPort: Number(process.env['BEMMOLY_E2E_PORT'] ?? 0) },
   globalSetup: './support/global-setup.ts',
   fullyParallel: true,
   forbidOnly: CI,
