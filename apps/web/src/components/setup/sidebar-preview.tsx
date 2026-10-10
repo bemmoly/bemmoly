@@ -20,7 +20,12 @@ interface SidebarPreviewProps {
  * The top of the real sidebar, drawn with the real BrandBlock, so what is typed shows where
  * people will see it. Inert: it is a picture, not navigation.
  */
-export function SidebarPreview({ workspaceName, customLogo, rows = 4, caption }: SidebarPreviewProps) {
+export function SidebarPreview({
+  workspaceName,
+  customLogo,
+  rows = 4,
+  caption,
+}: SidebarPreviewProps) {
   return (
     <figure className="m-0 flex flex-col gap-2">
       <div

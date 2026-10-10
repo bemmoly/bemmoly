@@ -44,7 +44,11 @@ function Choices({ ai }: { ai: Ai }) {
         />
       </div>
       <h2 className="m-0 mt-1 text-13 font-semibold text-tx">Or connect a provider</h2>
-      <div role="radiogroup" aria-label="Popular providers" className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
+      <div
+        role="radiogroup"
+        aria-label="Popular providers"
+        className="grid grid-cols-2 gap-2.5 sm:grid-cols-3"
+      >
         {picker.popular.map((provider) => (
           <ChoiceCard
             key={provider.id}

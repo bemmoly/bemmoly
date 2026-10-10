@@ -160,7 +160,10 @@ export function railItems(
             : 'done'
           : 'upcoming';
     const canVisit = adminExists
-      ? step.n !== current && step.n >= FIRST_ADMIN_STEP && step.n < LAST_STEP && current < LAST_STEP
+      ? step.n !== current &&
+        step.n >= FIRST_ADMIN_STEP &&
+        step.n < LAST_STEP &&
+        current < LAST_STEP
       : step.n === 1 && current === ACCOUNT_STEP;
     return { ...step, state, canVisit };
   });

@@ -37,7 +37,9 @@ export function InviteByEmail({ invites }: { invites: ReturnType<typeof useSetup
           aria-invalid={invites.error ? true : undefined}
           aria-describedby={invites.error ? errorId : undefined}
           value={invites.text}
-          placeholder={invites.emails.length ? PASTE_PLACEHOLDER : 'name@company.com, another@company.com'}
+          placeholder={
+            invites.emails.length ? PASTE_PLACEHOLDER : 'name@company.com, another@company.com'
+          }
           onChange={(event) => invites.change(event.target.value)}
           onPaste={(event) => {
             event.preventDefault();

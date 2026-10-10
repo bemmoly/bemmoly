@@ -54,7 +54,9 @@ describe('SetupPage', () => {
     await user.type(await screen.findByLabelText('Workspace name'), 'Acme Labs');
     await user.click(screen.getByRole('button', { name: 'Continue' }));
 
-    expect(await screen.findByRole('heading', { level: 1, name: 'Create your account' })).toBeTruthy();
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Create your account' }),
+    ).toBeTruthy();
     await user.type(screen.getByLabelText('Your name'), 'Rohan S.');
     await user.type(screen.getByLabelText('Email'), 'rohan@acme.test');
     const password = screen.getByLabelText('Password');
@@ -71,9 +73,11 @@ describe('SetupPage', () => {
     expect(mockApi.db.settings['workspace.name']).toBe('Acme Labs');
     expect(router.state.location.search).toEqual({ step: 3 });
     const sources = screen.getByRole('radiogroup', { name: 'Import source' });
-    expect(within(sources).getByRole('radio', { name: /Start clean/ }).getAttribute('aria-checked')).toBe(
-      'true',
-    );
+    expect(
+      within(sources)
+        .getByRole('radio', { name: /Start clean/ })
+        .getAttribute('aria-checked'),
+    ).toBe('true');
     expect(within(sources).getAllByText('Coming soon')).toHaveLength(3);
     expect(screen.getByRole('button', { name: 'Skip for now' })).toBeTruthy();
   });

@@ -44,7 +44,10 @@ export function SettleMark({ size = 56 }: { size?: number }) {
       });
   }, [size]);
   return (
-    <span ref={ref} className="inline-flex [&_path]:[transform-box:fill-box] [&_path]:[transform-origin:center]">
+    <span
+      ref={ref}
+      className="inline-flex [&_path]:[transform-box:fill-box] [&_path]:[transform-origin:center]"
+    >
       <Logo size={size} label="" />
     </span>
   );

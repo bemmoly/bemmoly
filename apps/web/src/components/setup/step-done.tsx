@@ -82,7 +82,11 @@ export function StepDone({ nav }: { nav: StepNav }) {
   };
   return (
     <StepForm label="Done" onSubmit={complete.isError ? retry : open} busy={complete.isPending}>
-      {loading ? <Loading label="Loading the summary" lines={6} /> : <Summary rows={rows} leave={leave} />}
+      {loading ? (
+        <Loading label="Loading the summary" lines={6} />
+      ) : (
+        <Summary rows={rows} leave={leave} />
+      )}
       <div className="grid gap-3 sm:grid-cols-3">
         <ActionCard
           to={projectAction.to}

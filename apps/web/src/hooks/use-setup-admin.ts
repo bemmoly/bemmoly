@@ -62,7 +62,10 @@ export function useSetupWorkspace(onDone: () => void | Promise<void>) {
     },
     blur: (field: keyof WorkspaceForm) => () => {
       if (field === 'workspaceName' && !values.workspaceName) return;
-      setErrors((current) => ({ ...current, [field]: fieldMessage(workspaceSchema, check, field) }));
+      setErrors((current) => ({
+        ...current,
+        [field]: fieldMessage(workspaceSchema, check, field),
+      }));
     },
     submit: (event?: FormEvent) => {
       event?.preventDefault();
@@ -80,10 +83,7 @@ export function useSetupWorkspace(onDone: () => void | Promise<void>) {
  * signs them in, so on success the setup status and the session are refreshed before the
  * wizard moves on. A workspace the server refuses sends them back to fix it.
  */
-export function useSetupAdmin(
-  onCreated: () => void | Promise<void>,
-  onWorkspaceError: () => void,
-) {
+export function useSetupAdmin(onCreated: () => void | Promise<void>, onWorkspaceError: () => void) {
   const queryClient = useQueryClient();
   const workspaceName = useSetupStore((state) => state.workspaceName);
   const workspaceUrl = useSetupStore((state) => state.workspaceUrl) ?? initialWorkspaceUrl();

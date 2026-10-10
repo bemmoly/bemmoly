@@ -78,10 +78,7 @@ export function SetupStepper({ steps, onVisit }: SetupStepperProps) {
   return (
     <nav aria-label="Setup steps" className="sticky top-24 hidden md:block">
       <ol className="relative m-0 flex list-none flex-col p-0">
-        <span
-          aria-hidden="true"
-          className="absolute top-4 bottom-4 left-[17px] w-px bg-line"
-        />
+        <span aria-hidden="true" className="absolute top-4 bottom-4 left-[17px] w-px bg-line" />
         {steps.map((item) => {
           const row = 'relative flex w-full items-start gap-3 rounded-control px-2 py-2 text-left';
           return (

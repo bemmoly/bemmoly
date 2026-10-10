@@ -80,7 +80,9 @@ export function summaryRows(input: {
       label: 'Sign-in',
       value: `Password · ${invitesLine(draft.invitesSent)}`,
       done: true,
-      ...(draft.invitesSent === 0 ? { later: { label: 'Invite people', to: '/settings/users' } } : {}),
+      ...(draft.invitesSent === 0
+        ? { later: { label: 'Invite people', to: '/settings/users' } }
+        : {}),
     },
     {
       key: 'ai',

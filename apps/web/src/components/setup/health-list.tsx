@@ -9,7 +9,11 @@ import {
 
 const CIRCLE: Record<HealthRowStatus, { look: string; mark: ReactNode; label: string }> = {
   ok: { look: 'bg-green text-on-solid', mark: <Icon name="check" size={10} />, label: 'OK' },
-  warning: { look: 'bg-amber text-on-solid', mark: <Icon name="minus" size={10} />, label: 'Needs attention' },
+  warning: {
+    look: 'bg-amber text-on-solid',
+    mark: <Icon name="minus" size={10} />,
+    label: 'Needs attention',
+  },
   failed: { look: 'bg-red text-on-solid', mark: <Icon name="close" size={10} />, label: 'Failed' },
   pending: { look: 'border-[1.5px] border-line-2', mark: null, label: 'Not checked yet' },
 };
@@ -52,10 +56,15 @@ function HealthRows({ rows }: { rows: readonly HealthRow[] }) {
             className="flex flex-wrap items-center gap-x-2.5 gap-y-0.5 border-t border-line py-2 text-13"
           >
             <StatusCircle status={row.status} />
-            <span className={`w-44 shrink font-medium ${row.status === 'pending' ? 'text-tx-3' : 'text-tx'}`}>
+            <span
+              className={`w-44 shrink font-medium ${row.status === 'pending' ? 'text-tx-3' : 'text-tx'}`}
+            >
               {row.name}
             </span>
-            <span className="min-w-0 flex-1 truncate font-mono text-12 text-tx-3" title={row.detail}>
+            <span
+              className="min-w-0 flex-1 truncate font-mono text-12 text-tx-3"
+              title={row.detail}
+            >
               {row.detail}
             </span>
             {later ? <span className="basis-full pl-6.5 text-12 text-tx-2">{later}</span> : null}
