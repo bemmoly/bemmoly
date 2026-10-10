@@ -1,5 +1,6 @@
 import { createContext, useContext, type DragEvent, type KeyboardEvent } from 'react';
 import type { DropTarget } from '../hooks/board-drag.ts';
+import type { IssueQuickActions } from '../hooks/issue-quick-actions.ts';
 import type { CardVocabulary } from './card-view.ts';
 
 /*
@@ -19,10 +20,12 @@ export interface BoardActions {
 export interface BoardShared {
   actions: BoardActions;
   vocab: CardVocabulary;
-  /** Fades cards the filters leave out; undefined when no filter is on. */
-  isDimmed: ((issueId: string) => boolean) | undefined;
-  /** The issue open in the slide-over; its card carries the selected ring. */
+  /** Assign, priority and delete from a card's tools and menu. */
+  quick: IssueQuickActions;
+  /** The issue open in the peek; its card carries the selected ring. */
   selectedKey: string | null;
+  /** Creates an issue at the foot of a cell; absent when the person cannot create. */
+  createIn?: (laneId: string, columnId: string, title: string) => Promise<unknown>;
   /** The id of the hidden text that explains the keyboard to screen readers. */
   instructionsId: string;
 }

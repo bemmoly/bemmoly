@@ -1,4 +1,14 @@
-import { Drawer, EmptyState, FieldSwatch, IconButton, KeyChip, TypeGlyph } from '@bemmoly/ui';
+import {
+  Drawer,
+  EmptyState,
+  epicColor,
+  epicFill,
+  FieldSwatch,
+  IconButton,
+  KeyChip,
+  Tooltip,
+  TypeGlyph,
+} from '@bemmoly/ui';
 import { useState } from 'react';
 import { useIssue } from '../hooks/issue-detail.ts';
 import { keepLinksInApp, navigateTo, workPaths } from '../hooks/issue-navigation.ts';
@@ -16,6 +26,10 @@ export interface IssueSlideOverProps {
    * scrim, for narrow screens and pages without room beside them.
    */
   variant?: 'docked' | 'overlay';
+  /** Steps to the issue above in the list (↑ or k); absent at the top. */
+  onPrevious?: () => void;
+  /** Steps to the issue below in the list (↓ or j); absent at the bottom. */
+  onNext?: () => void;
 }
 
 /**
@@ -27,6 +41,8 @@ export function IssueSlideOver({
   issueKey: openKey,
   onClose,
   variant = 'docked',
+  onPrevious,
+  onNext,
 }: IssueSlideOverProps) {
   // The panel slides out after it is closed; it keeps showing the issue it had until it is gone.
   const [lastKey, setLastKey] = useState(openKey);
@@ -47,7 +63,13 @@ export function IssueSlideOver({
           <>
             {issue.parent && (
               <>
-                <FieldSwatch colorClassName="bg-ac" />
+                <FieldSwatch
+                  colorClassName={
+                    issue.parent.color
+                      ? epicFill(epicColor(issue.parent.color, issue.parent.id))
+                      : 'bg-tx-3'
+                  }
+                />
                 <span className="truncate">{issue.parent.title}</span>
                 <span aria-hidden>/</span>
               </>
@@ -62,6 +84,28 @@ export function IssueSlideOver({
       actions={
         issue && (
           <>
+            {(onPrevious || onNext) && (
+              <>
+                <Tooltip label="Previous issue" keys="K">
+                  <IconButton
+                    label="Previous issue"
+                    icon="arrow-up"
+                    size="xs"
+                    disabled={!onPrevious}
+                    onClick={onPrevious}
+                  />
+                </Tooltip>
+                <Tooltip label="Next issue" keys="J">
+                  <IconButton
+                    label="Next issue"
+                    icon="arrow-down"
+                    size="xs"
+                    disabled={!onNext}
+                    onClick={onNext}
+                  />
+                </Tooltip>
+              </>
+            )}
             <IconButton
               label="Open full page"
               icon="expand"

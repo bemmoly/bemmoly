@@ -1,9 +1,17 @@
-import { KanbanColumnHeader, KanbanColumnHeaders, Swimlane, SwimlaneHeader } from '@bemmoly/ui';
+import {
+  epicFill,
+  KanbanColumnHeader,
+  KanbanColumnHeaders,
+  Swimlane,
+  SwimlaneHeader,
+  type StatusStage,
+} from '@bemmoly/ui';
 import { memo, type ReactNode } from 'react';
-import { useBoardFilterStore } from '../hooks/board-filters.ts';
+import { useBoardLanes } from '../hooks/board-filters.ts';
 import type { BoardModel, ColumnModel, LaneModel } from '../hooks/board-model.ts';
+import { cellId } from '../hooks/board-window.ts';
 import { BoardCell } from './board-cell.tsx';
-import { laneFill } from './card-view.ts';
+import { useColumnCreate } from './column-create.tsx';
 
 /** "Oct 7" from an ISO date, in UTC so the day never shifts with the viewer's zone. */
 function shortDate(iso: string): string {
@@ -38,7 +46,7 @@ const Lane = memo(function Lane({
   kanban: boolean;
   open: boolean;
 }) {
-  const toggle = useBoardFilterStore((state) => state.toggle);
+  const toggle = useBoardLanes((state) => state.toggle);
   const bodyId = `lane-${lane.id}`;
   return (
     <Swimlane
@@ -52,9 +60,9 @@ const Lane = memo(function Lane({
           meta={laneMeta(lane, kanban)}
           progress={laneProgress(lane, columns)}
           {...(lane.dueAt ? { due: `Due ${shortDate(lane.dueAt)}` } : {})}
-          colorClassName={laneFill(lane.hue)}
+          {...(lane.color ? { colorClassName: epicFill(lane.color) } : {})}
           open={open}
-          onToggle={() => toggle('collapsed', lane.id)}
+          onToggle={() => toggle(lane.id)}
           controls={bodyId}
         />
       }
@@ -67,7 +75,7 @@ const Lane = memo(function Lane({
           columnId={column.id}
           columnName={column.name}
           cards={lane.cells[column.id] ?? []}
-          laneHue={lane.hue}
+          laneColor={lane.color}
         />
       ))}
     </Swimlane>
@@ -79,30 +87,40 @@ export interface BoardGridProps {
   kanban: boolean;
   /** Drawn under the column headings in place of the lanes, when the board has no cards. */
   empty?: ReactNode;
+  /** Each column's status glyph, from its first status. */
+  stages: Readonly<Record<string, StatusStage>>;
+  /** Whether a column offers "New issue". */
+  canCreate: boolean;
 }
 
 /**
  * The board body from the mock: the sticky column headings over the lanes, 10px apart, at
  * least 1260px wide so five columns never squeeze; the page scrolls sideways instead.
  */
-export function BoardGrid({ model, kanban, empty }: BoardGridProps) {
-  const collapsed = useBoardFilterStore((state) => state.collapsed);
+export function BoardGrid({ model, kanban, empty, stages, canCreate }: BoardGridProps) {
+  const collapsed = useBoardLanes((state) => state.collapsed);
+  const openCreate = useColumnCreate((state) => state.open);
+  const firstOpen = model.lanes.find((lane) => !collapsed.includes(lane.id)) ?? model.lanes[0];
   return (
-    <div className="flex min-w-315 flex-col">
+    <div className="flex min-w-240 flex-col max-md:min-w-0">
       <KanbanColumnHeaders columns={model.columns.length}>
         {model.columns.map((column) => (
           <KanbanColumnHeader
             key={column.id}
             name={column.name}
+            stage={stages[column.id] ?? 'todo'}
             count={column.count}
             {...(column.wipLimit === null ? {} : { wipLimit: column.wipLimit })}
+            {...(canCreate && firstOpen
+              ? { onAdd: () => openCreate(cellId(firstOpen.id, column.id)) }
+              : {})}
           />
         ))}
       </KanbanColumnHeaders>
       {empty ? (
-        <div className="rounded-card border border-dashed border-br3 bg-sf">{empty}</div>
+        <div className="mt-2 rounded-card border border-dashed border-line bg-card">{empty}</div>
       ) : (
-        <div className="flex flex-col gap-2.5">
+        <div className="flex flex-col">
           {model.lanes.map((lane) => (
             <Lane
               key={lane.id}

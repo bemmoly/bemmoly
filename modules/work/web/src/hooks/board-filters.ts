@@ -1,15 +1,14 @@
 import type { BoardConfig } from '@bemmoly/module-work/shared';
 import { create } from 'zustand';
-import type { BoardGrouping, ViewCard } from './board-model.ts';
+import { matchesFilters, type IssueFilters } from '../shared/issue-filters.ts';
+import type { ViewCard } from './board-model.ts';
 
 /*
- * The filter row above the board. People, epics, types, labels, the search box and the
- * "mine" and "blocked" chips are answered on the client from the cards already loaded; the
- * LQL bar and the LQL quick filters go to the server as one `q`. A card that does not match
- * stays in place and fades, as the Board mock shows.
+ * The Board's side of the shared filter model (shared/issue-filters.ts, kept in the address).
+ * Search, people, epics, types, labels and the "mine" and "blocked" chips are answered on the
+ * client from the cards already loaded; the query bar and the LQL quick filters go to the
+ * server as one `q`. A card that does not match leaves the board, and every count follows.
  */
-
-export type FacetKey = 'people' | 'epics' | 'types' | 'labels';
 
 export interface QuickFilter {
   id: string;
@@ -18,7 +17,7 @@ export interface QuickFilter {
   query?: string;
 }
 
-/** The mock's three chips first, then the board's own from Board settings. */
+/** The built-in chips first, then the board's own from Board settings. */
 export const BUILT_IN_QUICK_FILTERS: readonly QuickFilter[] = [
   { id: 'mine', name: 'Only my issues' },
   { id: 'recent', name: 'Recently updated', query: 'updated >= -1d' },
@@ -36,55 +35,34 @@ export function quickFiltersOf(config: BoardConfig | undefined): QuickFilter[] {
   ];
 }
 
-interface FilterState {
-  search: string;
-  /** The LQL the board is filtered by: what was last applied from the bar, not the draft. */
-  lql: string;
-  quick: readonly string[];
-  people: readonly string[];
-  epics: readonly string[];
-  types: readonly string[];
-  labels: readonly string[];
-  grouping: BoardGrouping;
+interface LaneState {
   collapsed: readonly string[];
-  setSearch(search: string): void;
-  setLql(lql: string): void;
-  toggle(key: FacetKey | 'quick' | 'collapsed', id: string): void;
-  setGrouping(grouping: BoardGrouping): void;
+  toggle(laneId: string): void;
   reset(): void;
 }
 
-const EMPTY = {
-  search: '',
-  lql: '',
-  quick: [],
-  people: [],
-  epics: [],
-  types: [],
-  labels: [],
-  grouping: 'lanes' as BoardGrouping,
+/** Which lanes are folded; per visit, not shared in the address. */
+export const useBoardLanes = create<LaneState>()((set) => ({
   collapsed: [],
-};
-
-const flip = (list: readonly string[], id: string) =>
-  list.includes(id) ? list.filter((entry) => entry !== id) : [...list, id];
-
-export const useBoardFilterStore = create<FilterState>()((set) => ({
-  ...EMPTY,
-  setSearch: (search) => set({ search }),
-  setLql: (lql) => set({ lql: lql.trim() }),
-  toggle: (key, id) => set((state) => ({ [key]: flip(state[key], id) })),
-  setGrouping: (grouping) => set({ grouping }),
-  reset: () => set(EMPTY),
+  toggle: (laneId) =>
+    set((state) => ({
+      collapsed: state.collapsed.includes(laneId)
+        ? state.collapsed.filter((id) => id !== laneId)
+        : [...state.collapsed, laneId],
+    })),
+  reset: () => set({ collapsed: [] }),
 }));
 
 export type BoardFilters = Pick<
-  FilterState,
-  'search' | 'lql' | 'quick' | 'people' | 'epics' | 'types' | 'labels'
+  IssueFilters,
+  'q' | 'lql' | 'quick' | 'assignee' | 'epic' | 'type' | 'label'
 >;
 
-/** The `q` for the board view: the LQL bar and every active LQL chip, all of them true. */
-export function serverQuery(filters: BoardFilters, quick: readonly QuickFilter[]): string {
+/** The `q` for the board view: the query bar and every active LQL chip, all of them true. */
+export function serverQuery(
+  filters: Pick<IssueFilters, 'lql' | 'quick'>,
+  quick: readonly QuickFilter[],
+): string {
   const parts = [
     filters.lql,
     ...quick.filter((chip) => filters.quick.includes(chip.id) && chip.query).map((c) => c.query),
@@ -95,25 +73,26 @@ export function serverQuery(filters: BoardFilters, quick: readonly QuickFilter[]
 
 export function hasClientFilters(filters: BoardFilters): boolean {
   return (
-    filters.search.trim() !== '' ||
+    filters.q.trim() !== '' ||
     filters.quick.includes('mine') ||
     filters.quick.includes('blocked') ||
-    filters.people.length + filters.epics.length + filters.types.length + filters.labels.length > 0
+    filters.assignee.length + filters.epic.length + filters.type.length + filters.label.length > 0
   );
 }
 
-/** Whether a card passes the filters answered on the client. */
+/** Whether a card passes the filters answered on the client; "recent" is the server's. */
 export function cardMatches(card: ViewCard, filters: BoardFilters, meId: string | undefined) {
-  const text = filters.search.trim().toLowerCase();
-  if (text && !card.title.toLowerCase().includes(text) && !card.key.toLowerCase().includes(text))
-    return false;
-  if (filters.quick.includes('mine') && card.assigneeId !== (meId ?? null)) return false;
-  if (filters.quick.includes('blocked') && card.blockedBy.length === 0) return false;
-  if (filters.people.length > 0 && !filters.people.includes(card.assigneeId ?? 'none'))
-    return false;
-  if (filters.epics.length > 0 && !filters.epics.includes(card.parentId ?? 'none')) return false;
-  if (filters.types.length > 0 && !filters.types.includes(card.typeId)) return false;
-  if (filters.labels.length > 0 && !card.labelIds.some((id) => filters.labels.includes(id)))
-    return false;
-  return true;
+  return matchesFilters(
+    {
+      key: card.key,
+      title: card.title,
+      assigneeId: card.assigneeId,
+      parentId: card.parentId,
+      typeId: card.typeId,
+      labelIds: card.labelIds,
+      blocked: card.blockedBy.length > 0,
+    },
+    { ...filters, view: null },
+    meId,
+  );
 }

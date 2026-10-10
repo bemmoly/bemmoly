@@ -1,4 +1,5 @@
 import type { BoardView } from '@bemmoly/module-work/shared';
+import { EPIC_PALETTE, epicColor, type EpicColor } from '@bemmoly/ui';
 
 /*
  * The board as the screen lays it out: the view's columns with their names, and each lane's
@@ -22,8 +23,8 @@ export interface LaneModel {
   label: string;
   issueKey: string | null;
   dueAt: string | null;
-  /** Index into the lane palette; null for the "No epic" / "Unassigned" grey. */
-  hue: number | null;
+  /** The epic's stored colour, a palette colour for other lanes; null for the catch-all grey. */
+  color: EpicColor | null;
   /** Card lists by column id, in rank order. */
   cells: Readonly<Record<string, readonly ViewCard[]>>;
   count: number;
@@ -72,7 +73,7 @@ export function buildColumns(view: BoardView): ColumnModel[] {
 
 function lanesOf(view: BoardView, grouping: BoardGrouping) {
   if (grouping === 'none' || view.lanes.length === 0) {
-    return [{ id: ALL_LANE, label: 'All issues', issueKey: null, dueAt: null, hue: 0 }];
+    return [{ id: ALL_LANE, label: 'All issues', issueKey: null, dueAt: null, color: null }];
   }
   let next = 0;
   return view.lanes.map((lane) => ({
@@ -80,12 +81,29 @@ function lanesOf(view: BoardView, grouping: BoardGrouping) {
     label: lane.label,
     issueKey: lane.issueKey ?? null,
     dueAt: lane.dueAt ?? null,
-    hue: NO_LANE.has(lane.id) ? null : next++,
+    color: NO_LANE.has(lane.id)
+      ? null
+      : lane.issueKey
+        ? epicColor(lane.color, lane.id)
+        : (EPIC_PALETTE[next++ % EPIC_PALETTE.length] ?? null),
   }));
 }
 
-export function buildBoardModel(view: BoardView, grouping: BoardGrouping = 'lanes'): BoardModel {
-  const columns = buildColumns(view);
+/**
+ * Lays the board out. With `keep`, cards it rejects are left out and the column counts are the
+ * shown cards, so a filtered board never shows a number its cards contradict.
+ */
+export function buildBoardModel(
+  view: BoardView,
+  grouping: BoardGrouping = 'lanes',
+  keep?: (card: ViewCard) => boolean,
+): BoardModel {
+  const cards = keep ? view.cards.filter(keep) : view.cards;
+  const columns = buildColumns(view).map((column) => {
+    if (!keep) return column;
+    const count = cards.filter((card) => card.columnId === column.id).length;
+    return { ...column, count, overWip: column.wipLimit !== null && count > column.wipLimit };
+  });
   const doneColumns = new Set(columns.filter((column) => column.done).map((column) => column.id));
   const firstColumn = columns[0]?.id;
   const lanes = lanesOf(view, view.lanes.length === 0 ? 'none' : grouping).map((lane) => {
@@ -96,7 +114,7 @@ export function buildBoardModel(view: BoardView, grouping: BoardGrouping = 'lane
     let points = 0;
     let donePoints = 0;
     let inFlight = 0;
-    for (const card of view.cards) {
+    for (const card of cards) {
       if (laneOfCard(card, lane.id === ALL_LANE ? 'none' : 'lanes') !== lane.id) continue;
       const cell = cells[card.columnId];
       if (!cell) continue;

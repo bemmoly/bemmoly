@@ -1,7 +1,8 @@
-import { KanbanCard } from '@bemmoly/ui';
+import { IconButton, IssueCard, Tooltip, type EpicColor, type Priority } from '@bemmoly/ui';
 import { memo, useEffect, useLayoutEffect, useMemo, useRef, type CSSProperties } from 'react';
 import { useBoardDragStore } from '../hooks/board-drag-store.ts';
 import type { ViewCard } from '../hooks/board-model.ts';
+import { IssueActionsMenu, openRowMenu } from '../shared/issue-actions-menu.tsx';
 import { cardProps } from './card-view.ts';
 import { cls, FOCUS_RING, useBoardShared } from './board-context.ts';
 import { settle, takeLanding } from './landing.ts';
@@ -12,7 +13,7 @@ export interface BoardCardProps {
   columnId: string;
   /** Position among the cell's other cards, as a drop before this card would land. */
   index: number;
-  laneHue: number | null;
+  laneColor: EpicColor | null;
 }
 
 /**
@@ -35,13 +36,13 @@ export const BoardCard = memo(function BoardCard({
   laneId,
   columnId,
   index,
-  laneHue,
+  laneColor,
 }: BoardCardProps) {
-  const { actions, vocab, isDimmed, selectedKey, instructionsId } = useBoardShared();
+  const { actions, vocab, selectedKey, instructionsId, quick } = useBoardShared();
   const carried = useBoardDragStore((state) =>
     state.carrying?.issueId === card.issueId ? state.carrying.mode : null,
   );
-  const props = useMemo(() => cardProps(card, vocab, laneHue), [card, vocab, laneHue]);
+  const props = useMemo(() => cardProps(card, vocab, laneColor), [card, vocab, laneColor]);
   const ruleColor = vocab.ruleColor(card);
   const element = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -63,7 +64,23 @@ export const BoardCard = memo(function BoardCard({
       aria-pressed={carried !== null}
       draggable
       onClick={() => actions.open(card.key)}
-      onKeyDown={(event) => actions.keyDown(event, card.issueId)}
+      data-issue-key={card.key}
+      onContextMenu={openRowMenu}
+      onKeyDown={(event) => {
+        if (event.target !== event.currentTarget) return;
+        const plain = !event.metaKey && !event.ctrlKey && !event.altKey;
+        if (plain && carried === null && event.key === 'i' && vocab.meId) {
+          event.preventDefault();
+          void quick.update([card.key], { assigneeId: vocab.meId });
+          return;
+        }
+        if (plain && carried === null && (event.key === 'Delete' || event.key === 'Backspace')) {
+          event.preventDefault();
+          quick.remove([card.key]);
+          return;
+        }
+        actions.keyDown(event, card.issueId);
+      }}
       onDragStart={(event) => actions.dragStart(event, card.issueId)}
       onDragEnd={actions.dragEnd}
       onDragOver={(event) => {
@@ -79,11 +96,48 @@ export const BoardCard = memo(function BoardCard({
         carried && CARRIED[carried],
       )}
     >
-      <KanbanCard
+      <IssueCard
         {...props}
         interactive={carried === null}
         selected={carried !== null || selectedKey === card.key}
-        dimmed={isDimmed?.(card.issueId) ?? false}
+        tools={
+          carried === null && (
+            <>
+              {vocab.meId && card.assigneeId !== vocab.meId && (
+                <Tooltip label="Assign to me" keys="I">
+                  <IconButton
+                    size="tool"
+                    icon="user"
+                    label={`Assign ${card.key} to me`}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      void quick.update([card.key], { assigneeId: vocab.meId ?? null });
+                    }}
+                  />
+                </Tooltip>
+              )}
+              <Tooltip label="Open in peek" keys="Enter">
+                <IconButton
+                  size="tool"
+                  icon="expand"
+                  label={`Open ${card.key}`}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    actions.open(card.key);
+                  }}
+                />
+              </Tooltip>
+              <IssueActionsMenu
+                issueKey={card.key}
+                assigneeId={card.assigneeId}
+                priority={props.priority as Priority}
+                meId={vocab.meId}
+                actions={quick}
+                onOpen={() => actions.open(card.key)}
+              />
+            </>
+          )
+        }
       />
     </div>
   );

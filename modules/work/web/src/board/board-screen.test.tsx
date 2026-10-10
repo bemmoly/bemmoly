@@ -6,7 +6,7 @@ import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { useBoardDragStore } from '../hooks/board-drag-store.ts';
 import { STATUS, testView } from '../hooks/board-fixtures.ts';
-import { useBoardFilterStore } from '../hooks/board-filters.ts';
+import { useBoardLanes } from '../hooks/board-filters.ts';
 import BoardScreen from './board-screen.tsx';
 
 const PROJECT = {
@@ -78,7 +78,8 @@ beforeAll(() => server.listen({ onUnhandledFrame: 'bypass' }));
 beforeEach(() => {
   setWidth(1440);
   patches = [];
-  useBoardFilterStore.getState().reset();
+  useBoardLanes.getState().reset();
+  window.history.replaceState(null, '', '/work/board/PLT');
   useBoardDragStore.getState().finish();
 });
 afterAll(() => server.close());
@@ -115,7 +116,7 @@ describe('Board screen', () => {
   it('lays the view out in columns and lanes with WIP counts', async () => {
     await renderBoard();
     expect(screen.getByRole('group', { name: 'To do, Auth service' })).toBeTruthy();
-    expect(screen.getByLabelText('2 of 2 allowed')).toBeTruthy();
+    expect(screen.getByLabelText('WIP limit 2')).toBeTruthy();
     expect(
       within(screen.getByRole('group', { name: 'Done, Auth service' })).getByText('Issue 14'),
     ).toBeTruthy();
@@ -212,9 +213,21 @@ describe('Board screen', () => {
     expect(screen.queryByRole('dialog', { name: 'PLT-12 details' })).toBeNull();
   });
 
-  it('fades the cards a quick filter leaves out', async () => {
+  it('puts the open issue in the address and closes it from there', async () => {
     await renderBoard();
-    fireEvent.click(screen.getByRole('button', { name: 'Blocked' }));
-    await waitFor(() => expect(document.querySelectorAll('.opacity-28')).toHaveLength(6));
+    key(cardEl('PLT-12'), 'Enter');
+    await screen.findByRole('complementary', { name: 'PLT-12 details' });
+    expect(new URLSearchParams(window.location.search).get('issue')).toBe('PLT-12');
+  });
+
+  it('hides the cards a quick filter leaves out and offers to clear it', async () => {
+    window.history.replaceState(null, '', '/work/board/PLT?quick=blocked');
+    await renderScreen('PLT');
+    expect(await screen.findByText('No issues match these filters')).toBeTruthy();
+    expect(document.querySelectorAll('[data-issue-key]')).toHaveLength(0);
+    fireEvent.click(screen.getByRole('button', { name: 'Clear filters' }));
+    await waitFor(() =>
+      expect(document.querySelectorAll('[data-issue-key]').length).toBeGreaterThan(0),
+    );
   });
 });

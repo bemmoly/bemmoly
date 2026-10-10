@@ -215,8 +215,9 @@ describe('buildBoardModel', () => {
   it('splits lanes into rank-ordered cells with points and progress', () => {
     const [epic, none] = model.lanes;
     expect(epic?.cells['todo']?.map((entry) => entry.key)).toEqual(['PLT-10', 'PLT-11']);
-    expect(epic).toMatchObject({ count: 5, points: 12, donePoints: 5, inFlight: 2, hue: 0 });
-    expect(none).toMatchObject({ label: 'No epic', count: 1, hue: null });
+    expect(epic).toMatchObject({ count: 5, points: 12, donePoints: 5, inFlight: 2 });
+    expect(epic?.color).toMatch(/^epic-[1-8]$/);
+    expect(none).toMatchObject({ label: 'No epic', count: 1, color: null });
   });
 
   it('puts every card in one lane when grouping is off', () => {

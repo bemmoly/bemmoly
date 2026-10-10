@@ -7,7 +7,10 @@ import { useBoardVerdicts } from '../hooks/board-dnd.ts';
 import { useBoardDragStore } from '../hooks/board-drag-store.ts';
 import type { BoardModel } from '../hooks/board-model.ts';
 import { useBoardScreen } from '../hooks/board-screen.ts';
-import { useBoardIssueSlideOver } from '../hooks/board-slide-over.ts';
+import { useIssueQuickActions } from '../hooks/issue-quick-actions.ts';
+import { DOCKED_SLIDE_OVER_QUERY, useMediaQuery } from '../hooks/media-query.ts';
+import { useIssuePeek } from '../shared/issue-peek.ts';
+import { useIssueFilters } from '../shared/issue-filters.ts';
 import { openCreate, useRecordRecent, useScreenActions } from '@bemmoly/core-web';
 import { navigateTo, workPaths } from '../hooks/issue-navigation.ts';
 import { useSavedFilters } from '../hooks/saved-filters.ts';
@@ -47,26 +50,67 @@ function BoardBody({
   view: BoardView;
   model: BoardModel;
 }) {
-  const slideOver = useBoardIssueSlideOver();
   const savedFilters = useSavedFilters(screen.project);
-  const actions = useBoardActions(model, view.board.id, slideOver.openIssue);
+  const quick = useIssueQuickActions();
+  const { clear } = useIssueFilters();
+  const docked = useMediaQuery(DOCKED_SLIDE_OVER_QUERY);
+  // Screen order: lane by lane, column by column, top to bottom, as j and k step.
+  const peek = useIssuePeek(() =>
+    model.lanes.flatMap((lane) =>
+      model.columns.flatMap((column) => (lane.cells[column.id] ?? []).map((card) => card.key)),
+    ),
+  );
+  const actions = useBoardActions(model, view.board.id, peek.open);
   const instructionsId = useId();
+  const project = screen.project;
+  const sprintId = screen.sprint?.id;
+  const firstStatus = (columnId: string) =>
+    view.board.config.columns.find((column) => column.id === columnId)?.statusIds[0];
+  const laneKind = view.board.config.lanes.kind;
+  const createIn = useMemo(() => {
+    const typeId = screen.defaultTypeId;
+    if (!project || !typeId) return undefined;
+    return (laneId: string, columnId: string, title: string) =>
+      quick.create(
+        {
+          projectId: project.id,
+          typeId,
+          title,
+          priority: 'medium',
+          ...(sprintId ? { sprintId } : {}),
+          ...(laneKind === 'epic' && laneId !== 'none' && laneId !== 'all'
+            ? { parentId: laneId }
+            : {}),
+          ...(laneKind === 'assignee' && laneId !== 'none' && laneId !== 'all'
+            ? { assigneeId: laneId }
+            : {}),
+        },
+        firstStatus(columnId),
+      );
+  }, [project, screen.defaultTypeId, sprintId, laneKind, quick, view.board.config]);
   const shared = useMemo<BoardShared>(
     () => ({
       actions,
       vocab: screen.vocab,
-      isDimmed: screen.isDimmed,
-      selectedKey: slideOver.issueKey,
+      quick,
+      selectedKey: peek.issueKey,
       instructionsId,
+      ...(createIn ? { createIn } : {}),
     }),
-    [actions, screen.vocab, screen.isDimmed, slideOver.issueKey, instructionsId],
+    [actions, screen.vocab, quick, peek.issueKey, instructionsId, createIn],
   );
   const inFlight = model.lanes.reduce((sum, lane) => sum + lane.inFlight, 0);
-  const cards = model.lanes.reduce((sum, lane) => sum + lane.count, 0);
-  const project = screen.project;
+  const cards = view.cards.length;
   if (!project) return null;
   const empty =
-    cards > 0 ? undefined : screen.kanban ? (
+    screen.shownTotal > 0 ? undefined : cards > 0 ? (
+      <EmptyState
+        icon={<Icon name="filter" />}
+        title="No issues match these filters"
+        description="Clear a filter or two to see more of the board."
+        action={<Button onClick={clear}>Clear filters</Button>}
+      />
+    ) : screen.kanban ? (
       <EmptyState
         icon={<Icon name="board" />}
         title="No issues on the board yet"
@@ -96,7 +140,7 @@ function BoardBody({
   return (
     <div className="flex min-h-0 flex-1">
       <div className="flex min-w-0 flex-1 flex-col">
-        <div className="flex shrink-0 flex-col gap-3 bg-canvas px-6 pt-3.5">
+        <div className="flex shrink-0 flex-col bg-canvas">
           <BoardHeader
             project={project}
             view={view}
@@ -105,18 +149,24 @@ function BoardBody({
             inFlight={inFlight}
           />
           <BoardToolbar
-            people={screen.people}
-            facets={screen.facets}
-            quickFilters={screen.quickFilters}
+            options={screen.filterOptions}
             laneLabel={screen.laneLabel}
+            grouping={screen.grouping}
+            onGrouping={screen.setGrouping}
             lqlSources={screen.lqlSources}
             lqlError={screen.filterError ? screen.filterError.message : null}
             savedFilters={savedFilters}
           />
         </div>
-        <div className="min-h-0 flex-1 overflow-auto px-6 pb-6">
+        <div className="min-h-0 flex-1 overflow-auto bg-sunken px-6 pb-6 max-md:px-4">
           <BoardContext.Provider value={shared}>
-            <BoardGrid model={model} kanban={screen.kanban} empty={empty} />
+            <BoardGrid
+              model={model}
+              kanban={screen.kanban}
+              empty={empty}
+              stages={screen.stages}
+              canCreate={createIn !== undefined}
+            />
           </BoardContext.Provider>
         </div>
         <p id={instructionsId} hidden>
@@ -127,9 +177,11 @@ function BoardBody({
         <BoardVerdicts model={model} />
       </div>
       <IssueSlideOver
-        issueKey={slideOver.issueKey}
-        onClose={slideOver.close}
-        variant={slideOver.variant}
+        issueKey={peek.issueKey}
+        onClose={peek.close}
+        variant={docked ? 'docked' : 'overlay'}
+        {...(peek.previous ? { onPrevious: peek.previous } : {})}
+        {...(peek.next ? { onNext: peek.next } : {})}
       />
     </div>
   );

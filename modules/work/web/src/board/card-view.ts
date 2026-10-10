@@ -7,9 +7,11 @@ import type { User } from '@bemmoly/shared';
 import {
   avatarHue,
   cardStripe,
+  epicStripe,
   type CardPerson,
+  type EpicColor,
+  type IssueCardProps,
   type IssueTypeRef,
-  type KanbanCardProps,
   type LabelValue,
   type Priority,
 } from '@bemmoly/ui';
@@ -19,34 +21,6 @@ import type { ViewCard } from '../hooks/board-model.ts';
  * From a view card to what the design system's card draws, under the board's card fields and
  * colour rule. The names come from the vocabularies the board loaded once.
  */
-
-/** Lane colours in order, from the epic palette; muted grey for no epic. */
-const LANE_FILLS = [
-  'bg-epic-1',
-  'bg-epic-2',
-  'bg-epic-3',
-  'bg-epic-4',
-  'bg-epic-5',
-  'bg-epic-6',
-  'bg-epic-7',
-  'bg-epic-8',
-];
-const LANE_STRIPES = [
-  'border-l-epic-1',
-  'border-l-epic-2',
-  'border-l-epic-3',
-  'border-l-epic-4',
-  'border-l-epic-5',
-  'border-l-epic-6',
-  'border-l-epic-7',
-  'border-l-epic-8',
-];
-
-export const laneFill = (hue: number | null) =>
-  hue === null ? 'bg-tx-3' : (LANE_FILLS[hue % LANE_FILLS.length] ?? 'bg-epic-1');
-
-const laneStripe = (hue: number | null) =>
-  hue === null ? 'border-l-tx-3' : LANE_STRIPES[hue % LANE_STRIPES.length];
 
 /** A colour rule's stripe reads the card's --card-rule, set from the rule's colour. */
 export const RULE_STRIPE = 'border-l-(--card-rule)';
@@ -64,6 +38,8 @@ export interface CardVocabulary {
   kanban: boolean;
   /** A card in a done column shows a tick for its age on Kanban. */
   doneColumns: ReadonlySet<string>;
+  /** Each epic's stored colour by id, for the "by epic" stripe when lanes are not epics. */
+  epicColors: ReadonlyMap<string, EpicColor>;
   /** The colour of the first colour rule the card matches, painted as its stripe. */
   ruleColor: (card: ViewCard) => string | null;
 }
@@ -86,8 +62,8 @@ const SLOW_DAYS = 4;
 export function cardProps(
   card: ViewCard,
   vocab: CardVocabulary,
-  laneHue: number | null,
-): Omit<KanbanCardProps, 'selected' | 'dimmed' | 'onSelect' | 'className'> {
+  laneColor: EpicColor | null,
+): Omit<IssueCardProps, 'selected' | 'checked' | 'onSelect' | 'className' | 'tools'> {
   const show = (field: CardField) => vocab.fields.includes(field);
   const priority = (PRIORITIES.has(card.priority) ? card.priority : 'medium') as Priority;
   const type = glyphOf(vocab, card.typeId);
@@ -120,7 +96,9 @@ export function cardProps(
       : cardStripe(vocab.colorRule, {
           priority,
           type,
-          epicClassName: laneStripe(laneHue),
+          epicClassName: epicStripe(
+            (card.parentId ? vocab.epicColors.get(card.parentId) : undefined) ?? laneColor,
+          ),
         }),
   };
 }
