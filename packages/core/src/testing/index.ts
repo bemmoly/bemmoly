@@ -21,3 +21,9 @@ export {
   QueryBudgetExceededError,
   type QueryCounter,
 } from './query-count.ts';
+export {
+  createTestInsights,
+  moduleWithAi,
+  type RecordedJob,
+  type TestInsights,
+} from './insights.ts';
