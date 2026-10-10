@@ -55,5 +55,6 @@ export function createDisabledAi(): AiFacade {
     policy: async () => OFF_POLICY,
     assertAvailable: off,
     maySend: async () => false,
+    embeddingModel: async () => null,
   };
 }

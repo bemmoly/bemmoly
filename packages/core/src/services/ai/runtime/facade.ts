@@ -84,7 +84,10 @@ export function createAiFacade(deps: AiFacadeDependencies): AiFacade {
     const actor = input.actor ?? null;
     const policy = await deps.policy.policy(actor);
     assertRoleAvailable(policy, input.role);
-    const resolved = await deps.models.language(input.role as AiLanguageRole);
+    const resolved = await deps.models.language(input.role as AiLanguageRole, {
+      purpose: input.purpose,
+      promptId: input.promptRef?.id ?? null,
+    });
     if (!resolved) throw aiRefusal('role_unset', input.role);
     const names = policy.redactNames && deps.names ? await deps.names.names() : [];
     const redaction = createRedaction({ emails: policy.redactEmails, names });
@@ -229,5 +232,6 @@ export function createAiFacade(deps: AiFacadeDependencies): AiFacade {
       assertRoleAvailable(await deps.policy.policy(actor ?? null), role);
     },
     maySend: async (scope, actor) => maySendUnder(await deps.policy.policy(actor ?? null), scope),
+    embeddingModel: async () => (await deps.models.embedding())?.ref ?? null,
   };
 }

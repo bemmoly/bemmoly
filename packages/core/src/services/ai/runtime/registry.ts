@@ -10,6 +10,12 @@ import type { AiRoleDefaults } from './dependencies.ts';
 
 export type { EmbeddingModelMiddleware, LanguageModelMiddleware };
 
+/** What a call is for, as a recorded model source keys its replies. */
+export interface AiCallKey {
+  purpose: string;
+  promptId: string | null;
+}
+
 /** A role resolved to a callable model: the SDK object plus what the facade records. */
 export interface ResolvedLanguageModel {
   model: Exclude<LanguageModel, string>;
@@ -29,7 +35,8 @@ export interface ResolvedEmbeddingModel {
  * loads provider packages through the loader; tests pass a static one.
  */
 export interface AiModelSource {
-  language(role: AiLanguageRole): Promise<ResolvedLanguageModel | null>;
+  /** `call` lets a recorded source answer per purpose or prompt; real sources ignore it. */
+  language(role: AiLanguageRole, call?: AiCallKey): Promise<ResolvedLanguageModel | null>;
   embedding(): Promise<ResolvedEmbeddingModel | null>;
   /** Drops cached models after a provider or role changes. */
   invalidate(): void;

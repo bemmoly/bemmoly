@@ -63,6 +63,7 @@ function createModuleAi(
     assertAvailable: (role, actor) => facade().assertAvailable(role, actor),
     maySend: (scope, actor) => facade().maySend(scope, actor),
     renderPrompt: (id, variables) => facade().renderPrompt(id, variables),
+    embeddingModel: () => facade().embeddingModel(),
   };
 }
 

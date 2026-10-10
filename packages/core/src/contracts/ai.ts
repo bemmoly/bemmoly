@@ -158,6 +158,8 @@ export interface AiFacade {
   assertAvailable(role: AiRole, actor?: Actor | null): Promise<void>;
   /** False when the scope is excluded or its author opted out of others' summaries. */
   maySend(scope: AiContentScope, actor?: Actor | null): Promise<boolean>;
+  /** The model the embedding role uses now; null when unset. Detects a model switch. */
+  embeddingModel(): Promise<AiModelRef | null>;
   /** Renders a prompt (override first) into system and prompt plus its ref and role. */
   renderPrompt(id: string, variables: Readonly<Record<string, string>>): Promise<AiRenderedPrompt>;
 }

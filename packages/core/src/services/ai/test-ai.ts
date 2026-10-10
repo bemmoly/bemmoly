@@ -1,6 +1,5 @@
-import { AI_LANGUAGE_ROLES, AI_ROLES, type AiLanguageRole } from '@bemmoly/shared';
+import { AI_LANGUAGE_ROLES, AI_ROLES, NotFoundError, type AiLanguageRole } from '@bemmoly/shared';
 import type { AiFacade, AiPolicy, AiRenderedPrompt } from '../../contracts/ai.ts';
-import { aiRefusal } from './refusals.ts';
 import type { AiRunRecord } from './runtime/dependencies.ts';
 import { createAiFacade } from './runtime/facade.ts';
 import {
@@ -96,7 +95,7 @@ export function createTestAi(options: TestAiOptions = {}): TestAi {
     prompts: {
       render: async (id, variables) => {
         const prompt = prompts.get(id);
-        if (!prompt) throw aiRefusal('role_unset');
+        if (!prompt) throw new NotFoundError(`There is no AI prompt "${id}"`);
         return {
           ...prompt,
           system: fill(prompt.system, variables),
