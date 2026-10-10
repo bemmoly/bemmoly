@@ -11,6 +11,7 @@
   },
   "scripts": {
     "dev": "node scripts/dev.ts",
+    "ai:catalog": "node scripts/ai-catalog.ts",
     "build": "turbo run build",
     "typecheck": "turbo run typecheck //#typecheck:root",
     "typecheck:root": "tsc --noEmit -p scripts/tsconfig.json",

@@ -1,0 +1,62 @@
+{
+  "popular": ["openai", "anthropic", "amazon-bedrock", "azure", "google-vertex", "openrouter"],
+  "suggested": {
+    "fast": ["haiku", "flash-lite", "nano", "mini", "luna", "small", "lite", "flash"],
+    "standard": ["sonnet", "flash", "medium", "sol", "large"],
+    "strong": ["opus", "astra", "pro", "large", "sonnet"],
+    "embedding": ["embedding-3-small", "embed-v4", "embedding-001", "embed-text-v2", "embed"]
+  },
+  "embeddingModels": {
+    "openai": [
+      {
+        "id": "text-embedding-3-small",
+        "name": "text-embedding-3-small",
+        "dimensions": 1536,
+        "input": 0.02
+      },
+      {
+        "id": "text-embedding-3-large",
+        "name": "text-embedding-3-large",
+        "dimensions": 3072,
+        "input": 0.13
+      }
+    ],
+    "azure": [
+      {
+        "id": "text-embedding-3-small",
+        "name": "text-embedding-3-small",
+        "dimensions": 1536,
+        "input": 0.02
+      },
+      {
+        "id": "text-embedding-3-large",
+        "name": "text-embedding-3-large",
+        "dimensions": 3072,
+        "input": 0.13
+      }
+    ],
+    "mistral": [
+      { "id": "mistral-embed", "name": "Mistral Embed", "dimensions": 1024, "input": 0.1 }
+    ],
+    "google": [
+      { "id": "gemini-embedding-001", "name": "Gemini Embedding", "dimensions": 768, "input": 0.15 }
+    ],
+    "google-vertex": [
+      { "id": "gemini-embedding-001", "name": "Gemini Embedding", "dimensions": 768, "input": 0.15 }
+    ],
+    "amazon-bedrock": [
+      {
+        "id": "amazon.titan-embed-text-v2:0",
+        "name": "Titan Text Embeddings V2",
+        "dimensions": 1024,
+        "input": 0.02
+      }
+    ],
+    "cohere": [{ "id": "embed-v4.0", "name": "Embed v4", "dimensions": 1536, "input": 0.12 }]
+  },
+  "localServer": {
+    "id": "custom",
+    "name": "Local server",
+    "protocols": ["openai-compatible", "anthropic-compatible"]
+  }
+}
