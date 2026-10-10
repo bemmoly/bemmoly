@@ -34,19 +34,24 @@ export async function flagDeprecatedRoles(
 
 /**
  * The background warmer: refreshes the snapshot even when nobody opens the picker, then flags
- * deprecated configured models. With the live fetch off it only re-checks deprecation.
+ * deprecated configured models. With the live fetch off it only re-checks deprecation. With AI
+ * off it does nothing at all, so an install that never turns AI on never calls out for it; the
+ * Settings › AI and setup pickers still resolve the catalog when they open.
  */
 export function registerCatalogRefresh(
   jobs: JobQueue,
   deps: {
     sql: SqlExecutor;
     catalog: CatalogResolver;
+    /** The workspace's AI switch, read when the job runs. */
+    aiEnabled: () => Promise<boolean>;
     onFlagged?: (flags: DeprecationFlag[]) => Promise<void>;
   },
 ): void {
   jobs.register(
     AI_CATALOG_REFRESH_JOB,
     async () => {
+      if (!(await deps.aiEnabled())) return;
       const resolved = await deps.catalog.resolve({ force: true });
       const flags = await flagDeprecatedRoles(deps.sql, resolved.data);
       if (flags.length) await deps.onFlagged?.(flags);

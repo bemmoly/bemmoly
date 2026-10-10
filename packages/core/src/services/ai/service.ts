@@ -120,7 +120,11 @@ export function createAiService(deps: AiServiceDependencies): AiService {
     context,
     load: () => prompts.load(),
     registerJobs(jobs) {
-      registerCatalogRefresh(jobs, { sql: deps.sql, catalog });
+      registerCatalogRefresh(jobs, {
+        sql: deps.sql,
+        catalog,
+        aiEnabled: () => deps.settings.get('ai.enabled'),
+      });
     },
   };
 }
