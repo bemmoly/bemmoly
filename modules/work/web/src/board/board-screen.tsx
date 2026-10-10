@@ -5,13 +5,13 @@ import { useId, useMemo } from 'react';
 import { useBoardActions } from '../hooks/board-actions.ts';
 import { useBoardVerdicts } from '../hooks/board-dnd.ts';
 import { useBoardDragStore } from '../hooks/board-drag-store.ts';
-import { boardIssueOrder, type BoardModel } from '../hooks/board-model.ts';
+import { boardIssueOrder, doingPoints, type BoardModel } from '../hooks/board-model.ts';
 import { useBoardScreen } from '../hooks/board-screen.ts';
 import { useIssueQuickActions } from '../hooks/issue-quick-actions.ts';
 import { DOCKED_SLIDE_OVER_QUERY, useMediaQuery } from '../hooks/media-query.ts';
 import { useIssuePeek } from '../shared/issue-peek.ts';
 import { useIssueFilters } from '../shared/issue-filters.ts';
-import { openCreate, useRecordRecent, useScreenActions } from '@bemmoly/core-web';
+import { useRecordRecent, useScreenActions } from '@bemmoly/core-web';
 import { navigateTo, workPaths } from '../hooks/issue-navigation.ts';
 import { useSavedFilters } from '../hooks/saved-filters.ts';
 import { WorkPresence } from '../shared/work-presence.tsx';
@@ -19,6 +19,7 @@ import { IssueSlideOver, useRememberIssueList } from '../issue/index.ts';
 import type { WorkScreenProps } from '../routes.tsx';
 import { BoardSkeleton } from '../skeletons/board-skeleton.tsx';
 import { BoardContext, type BoardShared } from './board-context.ts';
+import { BoardEmpty } from './board-empty.tsx';
 import { BoardGrid } from './board-grid.tsx';
 import { BoardHeader } from './board-header.tsx';
 import { BoardToolbar } from './board-toolbar.tsx';
@@ -103,41 +104,15 @@ function BoardBody({
     [actions, screen.vocab, quick, peek.issueKey, instructionsId, createIn],
   );
   const inFlight = model.lanes.reduce((sum, lane) => sum + lane.inFlight, 0);
-  const cards = view.cards.length;
   if (!project) return null;
   const empty =
-    screen.shownTotal > 0 ? undefined : cards > 0 ? (
-      <EmptyState
-        icon={<Icon name="filter" />}
-        title="No issues match these filters"
-        description="Clear a filter or two to see more of the board."
-        action={<Button onClick={clear}>Clear filters</Button>}
-      />
-    ) : screen.kanban ? (
-      <EmptyState
-        icon={<Icon name="board" />}
-        title="No issues on the board yet"
-        description="Create an issue and it lands in the first column."
-        action={
-          <Button variant="primary" onClick={() => openCreate('work.create-issue')}>
-            Create issue
-          </Button>
-        }
-      />
-    ) : (
-      <EmptyState
-        icon={<Icon name="sprint" />}
-        title={screen.sprint ? 'Nothing in this sprint yet' : 'No sprint is running'}
-        description={
-          screen.sprint
-            ? 'Plan the sprint from the backlog and its issues show up here.'
-            : 'Start a sprint from the backlog and its issues show up here.'
-        }
-        action={
-          <Button variant="primary" onClick={() => navigateTo(`/work/backlog/${project.key}`)}>
-            Open the backlog
-          </Button>
-        }
+    screen.shownTotal > 0 ? undefined : (
+      <BoardEmpty
+        projectKey={project.key}
+        cards={view.cards.length}
+        kanban={screen.kanban}
+        sprintRunning={screen.sprint !== undefined}
+        onClearFilters={clear}
       />
     );
   return (
@@ -150,23 +125,7 @@ function BoardBody({
             metrics={screen.metrics}
             sprint={screen.sprint}
             inFlight={inFlight}
-            doingPoints={model.lanes.reduce(
-              (sum, lane) =>
-                sum +
-                model.columns
-                  .slice(1)
-                  .filter((column) => !column.done)
-                  .reduce(
-                    (cells, column) =>
-                      cells +
-                      (lane.cells[column.id] ?? []).reduce(
-                        (p, card) => p + (card.estimate ?? 0),
-                        0,
-                      ),
-                    0,
-                  ),
-              0,
-            )}
+            doingPoints={doingPoints(model)}
           />
           <BoardToolbar
             options={screen.filterOptions}

@@ -147,3 +147,18 @@ export function boardIssueOrder(model: BoardModel): string[] {
     model.columns.flatMap((column) => (lane.cells[column.id] ?? []).map((card) => card.key)),
   );
 }
+
+/** Points on cards past the first column and not yet done: the sprint strip's "in progress". */
+export function doingPoints(model: BoardModel): number {
+  const doing = model.columns.slice(1).filter((column) => !column.done);
+  return model.lanes.reduce(
+    (sum, lane) =>
+      sum +
+      doing.reduce(
+        (cells, column) =>
+          cells + (lane.cells[column.id] ?? []).reduce((p, card) => p + (card.estimate ?? 0), 0),
+        0,
+      ),
+    0,
+  );
+}
