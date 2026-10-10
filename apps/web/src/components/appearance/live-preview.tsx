@@ -11,14 +11,23 @@ interface LivePreviewProps {
   onView: (view: PreviewView) => void;
   scope: ThemeScope;
   workspaceName: string;
+  aiEnabled: boolean;
 }
 
 /**
  * The live preview: a 1440x900 screen built from the real components, themed
  * with the draft and scaled to 0.425 so it fits the 612px column. The screen
  * is inert: it is a picture of the app, not a second copy to click through.
+ * Like the app, it draws its AI cards only while AI is on.
  */
-export function LivePreview({ label, view, onView, scope, workspaceName }: LivePreviewProps) {
+export function LivePreview({
+  label,
+  view,
+  onView,
+  scope,
+  workspaceName,
+  aiEnabled,
+}: LivePreviewProps) {
   return (
     <div className="sticky top-0 flex flex-col gap-2.5">
       <div className="flex items-center gap-2.5 font-semibold">
@@ -45,8 +54,8 @@ export function LivePreview({ label, view, onView, scope, workspaceName }: LiveP
           data-testid="appearance-preview"
           className="absolute top-0 left-0 h-225 w-360 origin-top-left scale-[0.425] bg-sunken font-sans text-13 text-tx"
         >
-          {view === 'board' ? <PreviewBoard /> : null}
-          {view === 'doc' ? <PreviewDoc /> : null}
+          {view === 'board' ? <PreviewBoard aiEnabled={aiEnabled} /> : null}
+          {view === 'doc' ? <PreviewDoc aiEnabled={aiEnabled} /> : null}
           {view === 'login' ? <PreviewLogin workspaceName={workspaceName} /> : null}
         </div>
       </div>

@@ -39,8 +39,11 @@ function IssueCard({ issue }: { issue: SampleIssue }) {
   );
 }
 
-/** A representative board: the real sidebar, the AI risk bar and four status columns. */
-export function PreviewBoard() {
+/**
+ * A representative board: the real sidebar, the AI risk bar (only while AI is on) and four
+ * status columns.
+ */
+export function PreviewBoard({ aiEnabled }: { aiEnabled: boolean }) {
   return (
     <div className="flex h-full">
       <PreviewSidebar active="board" />
@@ -56,19 +59,21 @@ export function PreviewBoard() {
             </span>
           </div>
         </div>
-        <AiInsightBar
-          title="Sprint risk"
-          actions={
-            <>
-              <Button size="xs">Show plan</Button>
-              <Button size="xs" variant="ghost">
-                Not now
-              </Button>
-            </>
-          }
-        >
-          PLT-204 blocks two stories; at the current pace the sprint ends with 8 points open.
-        </AiInsightBar>
+        {aiEnabled ? (
+          <AiInsightBar
+            title="Sprint risk"
+            actions={
+              <>
+                <Button size="xs">Show plan</Button>
+                <Button size="xs" variant="ghost">
+                  Not now
+                </Button>
+              </>
+            }
+          >
+            PLT-204 blocks two stories; at the current pace the sprint ends with 8 points open.
+          </AiInsightBar>
+        ) : null}
         <div className="grid min-h-0 flex-1 grid-cols-4 gap-3">
           {SAMPLE_COLUMNS.map((column) => (
             <div key={column.status} className="flex flex-col gap-2 rounded-card bg-side p-2">

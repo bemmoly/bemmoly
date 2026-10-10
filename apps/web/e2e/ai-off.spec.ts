@@ -25,6 +25,7 @@ const SCREENS: readonly { path: string; title: RegExp }[] = [
   { path: '/docs/s/ENG', title: /^Engineering · / },
   { path: `/docs/p/${RFC_PAGE_ID}`, title: /Bemmoly$/ },
   { path: '/settings/profile', title: /^Profile · Settings/ },
+  { path: '/settings/appearance', title: /^Appearance · Settings/ },
 ];
 
 /** Words only an AI surface uses; none may be on screen. */

@@ -75,6 +75,8 @@ export function useAppearance() {
     settings,
     canManage,
     workspaceName: workspace.name,
+    /** The preview draws its AI samples only while AI is on, as the app does. */
+    aiEnabled: workspace.aiEnabled,
     draft,
     value,
     isCustom: value?.preset === CUSTOM,
