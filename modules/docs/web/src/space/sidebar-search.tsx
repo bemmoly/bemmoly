@@ -1,5 +1,6 @@
-import { EmptyState, Skeleton } from '@bemmoly/ui';
-import { isIconName } from '@bemmoly/ui/icons';
+import { useFrameLink } from '@bemmoly/core-web';
+import { Button, Skeleton } from '@bemmoly/ui';
+import { PageIcon } from '@bemmoly/ui/icons';
 import { useQuery } from '@tanstack/react-query';
 import { Fragment } from 'react';
 import { api } from '../shared/api.ts';
@@ -20,9 +21,40 @@ function Snippet({ html }: { html: string }) {
   );
 }
 
+interface Hit {
+  id: string;
+  title: string;
+  icon: string | null;
+  snippet?: string | null;
+}
+
+/** One hit: the page's icon and title, the matching line under it; opens in place. */
+function HitLink({ hit }: { hit: Hit }) {
+  const link = useFrameLink(docsPaths.page(hit.id));
+  return (
+    <a
+      {...link}
+      className="flex flex-col gap-0.5 rounded-control px-2 py-1.5 text-13 text-tx-2 no-underline hover:bg-hover hover:text-tx focus-ring-inset"
+    >
+      <span className="flex min-w-0 items-center gap-1.5 font-medium text-tx">
+        <PageIcon value={hit.icon} size={15} className="text-tx-3" />
+        <span className="truncate">{hit.title || 'Untitled'}</span>
+      </span>
+      {hit.snippet && (
+        <span className="line-clamp-2 pl-5.25 text-12 leading-note text-tx-3">
+          <Snippet html={hit.snippet} />
+        </span>
+      )}
+    </a>
+  );
+}
+
+const QUIET = 'm-0 flex min-h-7 items-center gap-2 px-2 text-12 text-tx-3';
+
 /**
- * "Search this space": keyword search over the space's pages, shown in place of the tree
- * while there is a query. Each hit is a link with the matched words marked.
+ * The focus mode filter": keyword search over the space's pages, shown in place of the tree
+ * while there is a query. Each hit is a link with the matched words marked; a failed search says
+ * so and offers Retry, in place.
  */
 export function SidebarSearch({ spaceId, q }: { spaceId: string; q: string }) {
   const hits = useQuery({
@@ -33,7 +65,7 @@ export function SidebarSearch({ spaceId, q }: { spaceId: string; q: string }) {
   });
   if (hits.isPending) {
     return (
-      <div role="status" aria-label="Searching" className="flex flex-col gap-3 px-2.5 pt-1">
+      <div role="status" aria-label="Searching" className="flex flex-col gap-3 px-2 pt-1">
         {[70, 55, 62].map((width) => (
           <span key={width} className="flex flex-col gap-1.5">
             <Skeleton width={`${width}%`} height={10} />
@@ -44,31 +76,21 @@ export function SidebarSearch({ spaceId, q }: { spaceId: string; q: string }) {
     );
   }
   if (hits.isError) {
-    return <EmptyState size="sm" title="Search failed" description={hits.error.message} />;
-  }
-  if (hits.data.length === 0) {
     return (
-      <EmptyState size="sm" title="No pages match" description={`Nothing here mentions “${q}”.`} />
+      <p className={QUIET}>
+        <span className="min-w-0 flex-1">The search did not answer.</span>
+        <Button size="sm" variant="ghost" onClick={() => void hits.refetch()}>
+          Retry
+        </Button>
+      </p>
     );
   }
+  if (hits.data.length === 0) return <p className={QUIET}>No page here mentions “{q}”.</p>;
   return (
     <ul aria-label={`Pages matching ${q}`} className="m-0 flex list-none flex-col gap-px p-0">
       {hits.data.map((hit) => (
         <li key={hit.id}>
-          <a
-            href={docsPaths.page(hit.id)}
-            className="flex flex-col gap-0.5 rounded-control px-2.5 py-1.5 text-13 text-tx-2 no-underline hover:bg-side hover:text-tx-2"
-          >
-            <span className="truncate font-medium text-tx">
-              {hit.icon && !isIconName(hit.icon) ? `${hit.icon} ` : ''}
-              {hit.title || 'Untitled'}
-            </span>
-            {hit.snippet && (
-              <span className="line-clamp-2 text-12 leading-note text-tx-3">
-                <Snippet html={hit.snippet} />
-              </span>
-            )}
-          </a>
+          <HitLink hit={hit} />
         </li>
       ))}
     </ul>

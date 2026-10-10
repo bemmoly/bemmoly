@@ -7,7 +7,7 @@ import {
   useState,
   type RefObject,
 } from 'react';
-import { useHeaderTrail, useRecordRecent } from '@bemmoly/core-web';
+import { useRecordRecent } from '@bemmoly/core-web';
 import type { PageDetail } from '../../../shared/pages.ts';
 import { useCollabPage } from '../collab/use-collab-page.ts';
 import { useCollabUser } from '../collab/use-collab-user.ts';
@@ -17,7 +17,9 @@ import { PageBanner } from './body/page-banner.tsx';
 import { EmptyPageTemplates } from '../create/empty-page-templates.tsx';
 import { PageBodyEditor } from './body/page-body-editor.tsx';
 import { PageHeading } from './body/page-heading.tsx';
-import { PageHeaderBar } from './header/page-header-bar.tsx';
+import { PageHeaderActions } from './header/page-header-bar.tsx';
+import { StatusMenu } from './header/status-menu.tsx';
+import { DocsLayout } from '../shared/docs-layout.tsx';
 import { docsPaths } from '../shared/navigation.ts';
 import { useSpaceActions } from '../space/space-layout.tsx';
 import { PagePanel } from './panel/page-panel.tsx';
@@ -33,7 +35,10 @@ import { TocList } from './toc/toc-list.tsx';
 import { goToHeading, useActiveHeading, useOutline } from './toc/use-outline.ts';
 import { usePageShortcuts } from './use-page-shortcuts.ts';
 
-/** The body column (720px) and an outline rail beside it fit from this scroller width. */
+/**
+ * The body column (a 700px measure inside 40px gutters, page/body draws into it) and an
+ * outline rail beside it fit from this scroller width.
+ */
 const RAIL_FROM = 1080;
 
 function useWiderThan(ref: RefObject<HTMLElement | null>, width: number): boolean {
@@ -79,8 +84,9 @@ function readOnlyOf(page: PageDetail, status: string): ReadOnlyReason {
 }
 
 /**
- * The doc editor screen inside the space layout: the header bar over the body column, the
- * outline rail when there is room for it and the side panel. A trashed page opens no live
+ * The doc editor screen in the frame's full layout: the page's trail, status and actions in the
+ * one header, then the body column, the outline rail when there is room for it and the side
+ * panel. A trashed page opens no live
  * document; every other page is edited live with everyone who has it open.
  */
 export function PageFrame({ page }: { page: PageDetail }) {
@@ -98,10 +104,6 @@ export function PageFrame({ page }: { page: PageDetail }) {
   usePageShortcuts(collab.status, readOnly);
   useHashLanding(editor, outline);
   const { space } = useSpaceActions();
-  useHeaderTrail([
-    { label: space.name, path: docsPaths.space(space.key) },
-    { label: page.title || 'Untitled', path: docsPaths.page(page.id) },
-  ]);
   useRecordRecent({
     id: `docs.page:${page.id}`,
     title: page.title || 'Untitled',
@@ -150,13 +152,13 @@ export function PageFrame({ page }: { page: PageDetail }) {
 
   return (
     <PageScreenContext.Provider value={screen}>
-      <div className="relative flex min-h-0 flex-1 flex-col" data-page-id={page.id}>
-        <PageHeaderBar />
-        <div className="relative flex min-h-0 flex-1">
-          <div ref={scroller} className="min-h-0 min-w-0 flex-1 overflow-auto bg-card">
+      <DocsLayout layout="full" trailing={<StatusMenu />}>
+        <PageHeaderActions />
+        <div className="relative flex min-h-0 flex-1" data-page-id={page.id}>
+          <div ref={scroller} className="min-h-0 min-w-0 flex-1 overflow-auto bg-sf">
             <PageBanner />
             <div className="flex justify-center gap-8">
-              <article className="flex max-w-180 min-w-0 flex-1 flex-col gap-4.5 px-4 pt-8 pb-30 text-16 leading-prose text-tx sm:px-10 sm:pt-12">
+              <article className="flex max-w-195 min-w-0 flex-1 flex-col gap-4.5 px-4 pt-8 pb-30 text-15h leading-prose text-tx-body sm:px-10 sm:pt-12">
                 <PageHeading />
                 <PageBodyEditor onEditor={setEditor} />
                 <EmptyPageTemplates />
@@ -177,7 +179,7 @@ export function PageFrame({ page }: { page: PageDetail }) {
           </div>
           <PagePanel />
         </div>
-      </div>
+      </DocsLayout>
     </PageScreenContext.Provider>
   );
 }

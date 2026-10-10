@@ -3,6 +3,7 @@ import { Button, ConfirmChange, EmptyState, Input, Kbd, Skeleton } from '@bemmol
 import { Icon } from '@bemmoly/ui/icons';
 import { useEffect, useRef, useState } from 'react';
 import { useMediaQuery } from '../hooks/use-media-query.ts';
+import { DocsLayout } from '../shared/docs-layout.tsx';
 import { useSpaceActions } from './space-layout.tsx';
 import { TrashPeek } from './trash/trash-peek.tsx';
 import { TrashTable } from './trash/trash-table.tsx';
@@ -84,133 +85,135 @@ export function TrashView() {
   const inside = all.reduce((sum, page) => sum + page.pagesInside, 0);
 
   return (
-    <div className="flex min-h-0 flex-1">
-      <div className="min-h-0 min-w-0 flex-1 overflow-auto">
-        <div className="mx-auto flex max-w-260 flex-col gap-4 px-4 pt-7 pb-15 md:px-8">
-          <header className="flex flex-wrap items-start gap-3">
-            <div className="flex min-w-0 flex-1 flex-col gap-1">
-              <h1 className="m-0 text-24 font-semibold tracking-display text-tx">Trash</h1>
-              <p className="m-0 text-13h text-tx4">
-                Pages stay here for {TRASH_RETENTION_DAYS} days, then they’re deleted for good.
-                Restoring a page brings back the pages under it.
+    <DocsLayout layout="full">
+      <div className="flex min-h-0 flex-1">
+        <div className="min-h-0 min-w-0 flex-1 overflow-auto">
+          <div className="mx-auto flex max-w-260 flex-col gap-4 px-4 pt-7 pb-15 md:px-8">
+            <header className="flex flex-wrap items-start gap-3">
+              <div className="flex min-w-0 flex-1 flex-col gap-1">
+                <h1 className="m-0 text-24 font-semibold tracking-display text-tx">Trash</h1>
+                <p className="m-0 text-13h text-tx4">
+                  Pages stay here for {TRASH_RETENTION_DAYS} days, then they’re deleted for good.
+                  Restoring a page brings back the pages under it.
+                </p>
+              </div>
+              {canPurge && all.length > 0 && (
+                <Button
+                  variant="ghost"
+                  className="text-danger! enabled:hover:text-danger!"
+                  icon={<Icon name="trash" size={14} />}
+                  onClick={() => setEmptying(true)}
+                >
+                  Empty trash
+                </Button>
+              )}
+            </header>
+            {all.length > 0 && (
+              <div className="flex flex-wrap items-center gap-2">
+                <Input
+                  ref={search}
+                  type="search"
+                  aria-label="Search the trash"
+                  placeholder="Search the trash…"
+                  value={query}
+                  onChange={(event) => setQuery(event.target.value)}
+                  prefix={<Icon name="search" size={14} />}
+                  suffix={<Kbd keys="/" />}
+                  wrapperClassName="w-full sm:w-64"
+                />
+                <span className="ml-auto text-12 text-tx5 tabular-nums">
+                  {all.length} {all.length === 1 ? 'page' : 'pages'}
+                  {inside > 0 && ` · ${inside} more under them`}
+                </span>
+              </div>
+            )}
+            {trash.isPending ? (
+              <TrashSkeleton />
+            ) : trash.isError ? (
+              <EmptyState
+                icon={<Icon name="warning" />}
+                title="The trash didn’t load"
+                description="Nothing in it was changed. Check your connection and try again."
+                action={<Button onClick={() => void trash.refetch()}>Try again</Button>}
+              />
+            ) : all.length === 0 ? (
+              <EmptyState
+                icon={<Icon name="trash" />}
+                title="Nothing in the trash"
+                description={`Deleted pages stay here for ${TRASH_RETENTION_DAYS} days.`}
+              />
+            ) : pages.length === 0 ? (
+              <p className="m-0 py-8 text-center text-13 text-tx4">
+                Nothing in the trash matches “{query.trim()}”.
               </p>
-            </div>
-            {canPurge && all.length > 0 && (
+            ) : (
+              <TrashTable
+                pages={pages}
+                spaceName={space.name}
+                selectedId={selected?.id ?? null}
+                canPurge={canPurge}
+                restoringId={restore.isPending ? (restore.variables?.id ?? null) : null}
+                onPreview={setSelected}
+                onRestore={(page) => restore.mutate(page)}
+                onDeleteForever={setPurging}
+              />
+            )}
+            {trash.hasNextPage && (
               <Button
                 variant="ghost"
-                className="text-danger! enabled:hover:text-danger!"
-                icon={<Icon name="trash" size={14} />}
-                onClick={() => setEmptying(true)}
+                loading={trash.isFetchingNextPage}
+                onClick={() => void trash.fetchNextPage()}
               >
-                Empty trash
+                Show more
               </Button>
             )}
-          </header>
-          {all.length > 0 && (
-            <div className="flex flex-wrap items-center gap-2">
-              <Input
-                ref={search}
-                type="search"
-                aria-label="Search the trash"
-                placeholder="Search the trash…"
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                prefix={<Icon name="search" size={14} />}
-                suffix={<Kbd keys="/" />}
-                wrapperClassName="w-full sm:w-64"
-              />
-              <span className="ml-auto text-12 text-tx5 tabular-nums">
-                {all.length} {all.length === 1 ? 'page' : 'pages'}
-                {inside > 0 && ` · ${inside} more under them`}
-              </span>
-            </div>
-          )}
-          {trash.isPending ? (
-            <TrashSkeleton />
-          ) : trash.isError ? (
-            <EmptyState
-              icon={<Icon name="warning" />}
-              title="The trash didn’t load"
-              description="Nothing in it was changed. Check your connection and try again."
-              action={<Button onClick={() => void trash.refetch()}>Try again</Button>}
-            />
-          ) : all.length === 0 ? (
-            <EmptyState
-              icon={<Icon name="trash" />}
-              title="Nothing in the trash"
-              description={`Deleted pages stay here for ${TRASH_RETENTION_DAYS} days.`}
-            />
-          ) : pages.length === 0 ? (
-            <p className="m-0 py-8 text-center text-13 text-tx4">
-              Nothing in the trash matches “{query.trim()}”.
-            </p>
-          ) : (
-            <TrashTable
-              pages={pages}
-              spaceName={space.name}
-              selectedId={selected?.id ?? null}
-              canPurge={canPurge}
-              restoringId={restore.isPending ? (restore.variables?.id ?? null) : null}
-              onPreview={setSelected}
-              onRestore={(page) => restore.mutate(page)}
-              onDeleteForever={setPurging}
-            />
-          )}
-          {trash.hasNextPage && (
-            <Button
-              variant="ghost"
-              loading={trash.isFetchingNextPage}
-              onClick={() => void trash.fetchNextPage()}
-            >
-              Show more
-            </Button>
-          )}
-          {canPurge && all.length > 0 && (
-            <p className="m-0 text-12 text-tx5">
-              Deleting forever can’t be undone. Only space admins can empty the trash.
-            </p>
-          )}
+            {canPurge && all.length > 0 && (
+              <p className="m-0 text-12 text-tx5">
+                Deleting forever can’t be undone. Only space admins can empty the trash.
+              </p>
+            )}
+          </div>
         </div>
+        <TrashPeek
+          page={selected}
+          variant={wide ? 'docked' : 'overlay'}
+          canPurge={canPurge}
+          restoring={restore.isPending && restore.variables?.id === selected?.id}
+          onRestore={(page) => restore.mutate(page)}
+          onDeleteForever={setPurging}
+          onClose={() => setSelected(null)}
+        />
+        <ConfirmChange
+          open={Boolean(purging)}
+          title={`Delete “${purging ? pageTitle(purging) : ''}” forever?`}
+          consequences={[
+            purging?.pagesInside
+              ? `The page and the ${purging.pagesInside} ${purging.pagesInside === 1 ? 'page' : 'pages'} under it are deleted for good.`
+              : 'The page is deleted for good.',
+            'Its comments and history go with it. This can’t be undone.',
+          ]}
+          confirmWord="delete"
+          confirmLabel="Delete forever"
+          busy={purge.isPending}
+          error={purge.error?.message}
+          onConfirm={() => purging && purge.mutate(purging)}
+          onCancel={() => setPurging(null)}
+        />
+        <ConfirmChange
+          open={emptying}
+          title={`Empty the trash in ${space.name}?`}
+          consequences={[
+            `All ${all.length + inside} ${all.length + inside === 1 ? 'page' : 'pages'} in the trash are deleted for good.`,
+            'Their comments and history go with them. This can’t be undone.',
+          ]}
+          confirmWord={space.key}
+          confirmLabel="Empty trash"
+          busy={empty.isPending}
+          error={empty.error?.message}
+          onConfirm={() => empty.mutate()}
+          onCancel={() => setEmptying(false)}
+        />
       </div>
-      <TrashPeek
-        page={selected}
-        variant={wide ? 'docked' : 'overlay'}
-        canPurge={canPurge}
-        restoring={restore.isPending && restore.variables?.id === selected?.id}
-        onRestore={(page) => restore.mutate(page)}
-        onDeleteForever={setPurging}
-        onClose={() => setSelected(null)}
-      />
-      <ConfirmChange
-        open={Boolean(purging)}
-        title={`Delete “${purging ? pageTitle(purging) : ''}” forever?`}
-        consequences={[
-          purging?.pagesInside
-            ? `The page and the ${purging.pagesInside} ${purging.pagesInside === 1 ? 'page' : 'pages'} under it are deleted for good.`
-            : 'The page is deleted for good.',
-          'Its comments and history go with it. This can’t be undone.',
-        ]}
-        confirmWord="delete"
-        confirmLabel="Delete forever"
-        busy={purge.isPending}
-        error={purge.error?.message}
-        onConfirm={() => purging && purge.mutate(purging)}
-        onCancel={() => setPurging(null)}
-      />
-      <ConfirmChange
-        open={emptying}
-        title={`Empty the trash in ${space.name}?`}
-        consequences={[
-          `All ${all.length + inside} ${all.length + inside === 1 ? 'page' : 'pages'} in the trash are deleted for good.`,
-          'Their comments and history go with them. This can’t be undone.',
-        ]}
-        confirmWord={space.key}
-        confirmLabel="Empty trash"
-        busy={empty.isPending}
-        error={empty.error?.message}
-        onConfirm={() => empty.mutate()}
-        onCancel={() => setEmptying(false)}
-      />
-    </div>
+    </DocsLayout>
   );
 }

@@ -2,7 +2,7 @@ import type { PageSummary, Space } from '@bemmoly/module-docs/shared';
 import { SpaceCard, SpaceCardSkeleton, spaceTone, type SpaceCardPerson } from '@bemmoly/ui';
 import { docsPaths } from '../shared/navigation.ts';
 import type { DocsPersonView } from '../shared/people.ts';
-import { pageCountLabel } from '../space/space-sidebar.tsx';
+import { pageCountLabel } from '../space/page-count.ts';
 
 export const SPACE_GRID = 'grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3';
 

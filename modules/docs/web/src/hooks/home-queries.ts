@@ -48,5 +48,10 @@ export function useMyDrafts(enabled: boolean) {
   useEffect(() => {
     if (more) void mine.fetchNextPage();
   }, [more, mine]);
-  return { drafts, isPending: mine.isPending, isError: mine.isError };
+  return {
+    drafts,
+    isPending: mine.isPending,
+    isError: mine.isError,
+    retry: () => void mine.refetch(),
+  };
 }

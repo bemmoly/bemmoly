@@ -1,37 +1,69 @@
 import { SidebarRow, useFrame, type ModuleSidebarProps } from '@bemmoly/core-web';
-import { EntityTile, SPACE_TONE_HUES, spaceTone, type EntityTileProps } from '@bemmoly/ui';
+import { Button } from '@bemmoly/ui';
+import { useEffect } from 'react';
 import { useSpaces } from './hooks/queries.ts';
 import { docsPaths } from './shared/navigation.ts';
+import { SidebarFocus } from './space/sidebar-focus.tsx';
+import { useDocsPlace } from './space/sidebar-place.ts';
+import { SidebarSpace } from './space/sidebar-space.tsx';
+import { useTreeFocus, useTreeOpen } from './space/tree-store.ts';
 
-/** How many spaces the sidebar lists; Docs home lists them all. */
+/** How many spaces the sidebar lists; the current one is always among them. */
 const SHOWN = 6;
 
-/** A space's tile in the sidebar: one letter on its colour, like a project's. */
-function spaceTile(space: { key: string; color: string | null }): Partial<EntityTileProps> {
-  const look = SPACE_TONE_HUES[spaceTone(space.key, space.color)];
-  return look === 'accent' || look === 'ink' ? { tone: look } : { hue: look };
-}
-
 /**
- * Docs' live sidebar rows: Docs home, then the person's spaces. A space's page tree stays
- * inside its pages for now, so the sidebar never holds two trees.
+ * Docs' live sidebar rows (docs/design/premium/docs/docs-tree.js, option A): the spaces as rows
+ * like projects, the current one opened to its page tree, then Docs home. A focused space takes
+ * the section to itself, with a filter. On the rail each space is its tile.
  */
 export default function DocsSidebar(_props: ModuleSidebarProps) {
-  const { pathname } = useFrame();
+  const { mode, pathname } = useFrame();
   const spaces = useSpaces();
-  const list = (spaces.data ?? []).slice(0, SHOWN);
+  const place = useDocsPlace(pathname);
+  const [focus, setFocus] = useTreeFocus();
+  const reveal = useTreeOpen((state) => state.reveal);
+  const trail = place.trail.join('/');
+  const list = spaces.data ?? [];
+  const current = list.find((space) => space.key.toLowerCase() === place.spaceKey?.toLowerCase());
+
+  // Opening a page from search or a link opens its ancestors, so its row shows.
+  useEffect(() => {
+    if (current && trail) reveal(current.key, trail.split('/'));
+  }, [current, trail, reveal]);
+
+  if (spaces.isError) {
+    return mode === 'rail' ? null : (
+      <div className="flex items-center gap-2 px-2 py-1 text-12 text-tx-3">
+        <span className="min-w-0 flex-1">Spaces did not load.</span>
+        <Button size="sm" variant="ghost" onClick={() => void spaces.refetch()}>
+          Retry
+        </Button>
+      </div>
+    );
+  }
+
+  const focused = mode === 'rail' ? undefined : list.find((space) => space.key === focus);
+  if (focused) {
+    return (
+      <SidebarFocus space={focused} activePageId={place.pageId} onExit={() => setFocus(null)} />
+    );
+  }
+
+  const shown = list.slice(0, SHOWN);
+  if (current && !shown.includes(current)) shown.splice(SHOWN - 1, 1, current);
   return (
     <>
-      <SidebarRow label="Docs home" icon="doc" path={docsPaths.home()} exact />
-      {list.map((space) => (
-        <SidebarRow
+      {shown.map((space) => (
+        <SidebarSpace
           key={space.id}
-          label={space.name}
-          icon={<EntityTile name={space.name} size={18} {...spaceTile(space)} />}
-          path={docsPaths.space(space.key)}
-          active={pathname.startsWith(docsPaths.space(space.key))}
+          space={space}
+          open={space === current}
+          here={space === current && !place.pageId}
+          activePageId={space === current ? place.pageId : undefined}
+          onFocus={() => setFocus(space.key)}
         />
       ))}
+      <SidebarRow label="Docs home" icon="grid" path={docsPaths.home()} exact />
     </>
   );
 }
