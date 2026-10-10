@@ -78,7 +78,11 @@ export function presentDetail(
     ...presentSummary(state, page),
     snapshot: page.snapshot ?? {
       type: 'doc',
-      content: [{ type: 'paragraph', content: [{ type: 'text', text: page.text }] }],
+      content: [
+        page.text
+          ? { type: 'paragraph', content: [{ type: 'text', text: page.text }] }
+          : { type: 'paragraph' },
+      ],
     },
     tldr: null,
     reviewers: page.reviewers,
