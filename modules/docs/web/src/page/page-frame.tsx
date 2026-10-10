@@ -77,6 +77,16 @@ function useHashLanding(editor: PageEditor | null, outline: PageScreenState['out
     const entry = hash ? outline.find((item) => item.id === hash) : undefined;
     if (entry) goToHeading(editor, entry);
   }, [editor, outline]);
+  // Without an editor (offline, before it loads) the read view prints the same anchors as ids,
+  // so a cited heading still opens where it should.
+  useEffect(() => {
+    if (landed.current || editor) return;
+    const hash = decodeURIComponent(window.location.hash.slice(1));
+    const target = hash ? document.getElementById(hash) : null;
+    if (!target) return;
+    landed.current = true;
+    target.scrollIntoView({ block: 'start' });
+  });
 }
 
 /** The body's layers from slots.ts: highlights and bubbles other folders draw on the page. */
