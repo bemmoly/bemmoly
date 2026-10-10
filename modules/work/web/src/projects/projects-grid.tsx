@@ -58,7 +58,7 @@ export function ProjectsGrid({
           >
             <div className="flex items-start gap-2">
               <span className="min-w-0 flex-1">
-                <ProjectIdentity project={project} team={team} size={32} />
+                <ProjectIdentity project={project} size={32} />
               </span>
               {!project.archivedAt && (
                 <StarButton

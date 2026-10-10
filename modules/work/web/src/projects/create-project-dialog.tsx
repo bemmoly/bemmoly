@@ -81,11 +81,7 @@ function CreateProjectForm({ open, onClose, onCreated }: CreateProjectDialogProp
         }}
       >
         <div className="flex items-center gap-2.5 rounded-card border border-line bg-sunken px-3 py-2.5">
-          <EntityTile
-            name={draft.name || 'Project'}
-            letter={(draft.key || draft.name || 'P').slice(0, 1)}
-            size={28}
-          />
+          <EntityTile name={draft.name.trim() || draft.key || 'Project'} size={28} />
           <div className="flex min-w-0 flex-col">
             <span className="truncate text-13 font-semibold text-tx">
               {draft.name.trim() || 'New project'}

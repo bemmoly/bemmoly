@@ -1,8 +1,9 @@
 import type { Project } from '@bemmoly/module-work/shared';
 import type { Team } from '@bemmoly/shared';
-import { Avatar, avatarHue, EntityTile, IconButton, rowReveal } from '@bemmoly/ui';
+import { Avatar, avatarHue, IconButton, rowReveal } from '@bemmoly/ui';
 import { Icon } from '@bemmoly/ui/icons';
 import { cx } from '../settings/cx.ts';
+import { ProjectTile } from '../shared/project-tile.tsx';
 
 /** The star at the start of a row: amber when set, revealed on hover when not. */
 export function StarButton({
@@ -32,19 +33,11 @@ export function StarButton({
   );
 }
 
-/** The project's tile in its own colour (its team's, else a stable palette hue), name and description. */
-export function ProjectIdentity({
-  project,
-  team,
-  size = 28,
-}: {
-  project: Project;
-  team: Team | undefined;
-  size?: number;
-}) {
+/** The project's tile (the same one the sidebar and the switcher draw), name and description. */
+export function ProjectIdentity({ project, size = 28 }: { project: Project; size?: number }) {
   return (
     <span className="flex min-w-0 items-center gap-2.5">
-      <EntityTile name={project.name} color={team?.color} size={size} />
+      <ProjectTile project={project} size={size} />
       <span className="flex min-w-0 flex-col">
         <span className="truncate font-medium text-tx" title={project.name}>
           {project.name}

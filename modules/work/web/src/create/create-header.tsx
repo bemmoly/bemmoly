@@ -1,8 +1,9 @@
 import type { IssueType, Project } from '@bemmoly/module-work/shared';
-import { EntityTile, IconButton, Select, TypeGlyph } from '@bemmoly/ui';
+import { IconButton, Select, TypeGlyph } from '@bemmoly/ui';
 import { Icon } from '@bemmoly/ui/icons';
 import { typeGlyph } from '../issue/vocabulary.ts';
 import { CHIP } from './create-chips.tsx';
+import { ProjectTile } from '../shared/project-tile.tsx';
 
 interface CreateHeaderProps {
   projects: readonly Project[];
@@ -31,7 +32,7 @@ export function CreateHeader(props: CreateHeaderProps) {
           value: item.key,
           label: item.name,
           description: item.key,
-          icon: <EntityTile name={item.name} letter={item.key.slice(0, 1)} size={16} />,
+          icon: <ProjectTile project={item} size={16} />,
         }))}
         onChange={(event) => onProject(event.value)}
         className={CHIP}

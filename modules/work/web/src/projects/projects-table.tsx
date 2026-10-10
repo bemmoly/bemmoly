@@ -67,7 +67,7 @@ export function ProjectsTable({
       header: 'Project',
       width: PROJECT_TRACKS.project,
       sortable: true,
-      render: (project) => <ProjectIdentity project={project} team={actions.teamOf(project)} />,
+      render: (project) => <ProjectIdentity project={project} />,
     },
     {
       key: 'key',
