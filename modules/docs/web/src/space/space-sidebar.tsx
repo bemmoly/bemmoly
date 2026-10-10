@@ -9,6 +9,7 @@ import {
 import { Icon } from '@bemmoly/ui/icons';
 import { useDeferredValue, useState } from 'react';
 import { useSpaces } from '../hooks/queries.ts';
+import { ImportDialog } from '../transfer/index.ts';
 import { docsPaths, navigateTo } from '../shared/navigation.ts';
 import { SidebarSearch } from './sidebar-search.tsx';
 import { SidebarTree } from './sidebar-tree.tsx';
@@ -48,6 +49,7 @@ export function SpaceSidebar({
   const spaces = useSpaces();
   const [query, setQuery] = useState('');
   const q = useDeferredValue(query.trim());
+  const [importing, setImporting] = useState(false);
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <SpaceSwitcher
@@ -90,15 +92,23 @@ export function SpaceSidebar({
         >
           + New page
         </button>
+        <button
+          type="button"
+          onClick={() => setImporting(true)}
+          className="ml-auto cursor-pointer border-0 bg-transparent p-0 font-sans text-12h text-tx5 hover:text-tx3"
+        >
+          Import
+        </button>
         <a
           href={docsPaths.trash(space.key)}
           aria-current={inTrash ? 'page' : undefined}
-          className="ml-auto flex items-center gap-1 text-tx5 no-underline hover:text-tx3 aria-[current=page]:text-ac"
+          className="ml-3 flex items-center gap-1 text-tx5 no-underline hover:text-tx3 aria-[current=page]:text-ac"
         >
           <Icon name="trash" size={14} />
           Trash
         </a>
       </div>
+      <ImportDialog open={importing} onClose={() => setImporting(false)} space={space} />
     </div>
   );
 }

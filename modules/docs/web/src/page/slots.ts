@@ -1,6 +1,13 @@
 import type { IconName } from '@bemmoly/ui/icons';
 import type { ComponentType } from 'react';
 import type { PageDetail } from '../../../shared/pages.ts';
+import {
+  COMMENT_LAYER,
+  COMMENTS_PANEL,
+  EXPORT_MENU,
+  HISTORY_PANEL,
+  LINKED_PANEL,
+} from '../page-slots/index.tsx';
 import type { PageEditor } from './screen-context.ts';
 
 /*
@@ -41,13 +48,13 @@ export interface PanelSlot {
 }
 
 /** Tabs after "About", in order. */
-export const PANEL_SLOTS: readonly PanelSlot[] = [];
+export const PANEL_SLOTS: readonly PanelSlot[] = [COMMENTS_PANEL, LINKED_PANEL, HISTORY_PANEL];
 
 /**
  * Rows of the More menu between the built-in actions and Move to trash: export, for one.
  * Each renders MenuItem elements; it may use hooks and returns null to hide itself.
  */
-export const MENU_SLOTS: readonly ComponentType<PageSlotProps>[] = [];
+export const MENU_SLOTS: readonly ComponentType<PageSlotProps>[] = [EXPORT_MENU];
 
 /**
  * Sections of the About tab after the page's own facts: "Referenced in", backlinks and
@@ -59,4 +66,4 @@ export const ABOUT_SLOTS: readonly ComponentType<PageSlotProps>[] = [];
  * What a part puts on the body itself, whichever panel tab is open: highlights, a bubble over
  * a selection, a shortcut. Mounted once beside the editor, inside the body column.
  */
-export const LAYER_SLOTS: readonly ComponentType<PageSlotProps>[] = [];
+export const LAYER_SLOTS: readonly ComponentType<PageSlotProps>[] = [COMMENT_LAYER];
