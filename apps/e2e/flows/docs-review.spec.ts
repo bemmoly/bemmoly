@@ -38,7 +38,7 @@ async function write(page: Page, box: string, text: string) {
   await page.keyboard.type(text);
 }
 
-const panel = (page: Page) => page.getByRole('complementary', { name: 'Page details' });
+const comments = (page: Page) => page.getByRole('complementary', { name: 'Comments' });
 
 test('a reader comments on selected words, gets a reply and resolves the thread', async ({
   page,
@@ -51,31 +51,38 @@ test('a reader comments on selected words, gets a reply and resolves the thread'
   await openLive(page, doc.id);
 
   await selectWords(page, '15 minutes');
-  await page.getByRole('button', { name: /^Comment/ }).click();
-  const draft = panel(page).getByRole('region', { name: 'New comment' });
+  await page.getByRole('button', { name: /^Comment Command|^Comment Control/ }).click();
+  const draft = comments(page).getByRole('region', { name: 'New comment' });
   await expect(draft).toContainText('15 minutes');
   await write(page, 'Comment', 'The flag TTL in code is 30. Which is it?');
   await draft.getByRole('button', { name: 'Comment', exact: true }).click();
 
-  const thread = panel(page).locator('article', { hasText: 'Which is it?' });
+  const thread = comments(page).locator('article', { hasText: 'Which is it?' });
   await expect(thread).toContainText('15 minutes');
   await expect(body(page).locator('[data-comment-id]')).toHaveText('15 minutes');
-  await expect(panel(page).getByRole('tab', { name: 'Comments (1)' })).toBeVisible();
+  // The header's Comments toggle carries the open thread count.
+  await expect(page.getByRole('button', { name: 'Comments', exact: true })).toHaveText('1');
 
   await thread.getByRole('button', { name: 'Reply' }).click();
   await write(page, 'Reply', 'Thirty. Updating the doc.');
   await thread.getByRole('button', { name: 'Reply', exact: true }).click();
   await expect(thread).toContainText('Thirty. Updating the doc.');
 
+  // Resolve happens at once; Undo brings the thread back, and resolving again sticks.
   await thread.getByRole('button', { name: 'Resolve' }).click();
-  await expect(panel(page).getByText('No open comments')).toBeVisible();
+  await expect(comments(page).getByText('No open comments')).toBeVisible();
+  await page.getByRole('button', { name: 'Undo' }).click();
+  await expect(comments(page).locator('article', { hasText: 'Which is it?' })).toBeVisible();
+  await comments(page).locator('article', { hasText: 'Which is it?' }).focus();
+  await page.keyboard.press('e');
+  await expect(comments(page).getByText('No open comments')).toBeVisible();
   await expect(body(page).locator('[data-comment-id]')).toHaveCount(0);
-  await panel(page).getByRole('radio', { name: 'Resolved' }).click();
-  await expect(panel(page).locator('article', { hasText: 'Which is it?' })).toBeVisible();
-  await expect(panel(page).getByRole('button', { name: 'Reopen' })).toBeVisible();
+  await comments(page).getByRole('radio', { name: 'Resolved' }).click();
+  await expect(comments(page).locator('article', { hasText: 'Which is it?' })).toBeVisible();
+  await expect(comments(page).getByRole('button', { name: 'Reopen' })).toBeVisible();
 });
 
-test('a version is saved, the page edited, the two compared and the version restored', async ({
+test('a version is named, the page edited, the two compared in history and the version restored with Undo', async ({
   page,
   admin,
 }) => {
@@ -85,12 +92,13 @@ test('a version is saved, the page edited, the two compared and the version rest
   });
   await openLive(page, doc.id);
 
-  await page.getByRole('button', { name: 'More actions' }).click();
-  await page.getByRole('menuitem', { name: 'Version history' }).click();
-  await panel(page).getByRole('button', { name: 'Save version' }).click();
-  await panel(page).getByRole('textbox', { name: 'Version name' }).fill('Before review');
-  await panel(page).getByRole('button', { name: 'Save', exact: true }).click();
-  await expect(panel(page).getByText('Before review')).toBeVisible();
+  const versions = page.getByRole('complementary', { name: 'Versions' });
+  await page.getByRole('button', { name: 'Version history' }).click();
+  await versions.getByRole('button', { name: 'Name this version' }).click();
+  await versions.getByRole('textbox', { name: 'Version name' }).fill('Before review');
+  await versions.getByRole('button', { name: 'Save', exact: true }).click();
+  await expect(versions.getByText('Before review')).toBeVisible();
+  await page.keyboard.press('Escape');
 
   await typeAt(page, ' Then page the on-call.', 0);
   await settled(page);
@@ -113,23 +121,21 @@ test('a version is saved, the page edited, the two compared and the version rest
     )
     .toBe(1);
 
-  // The version just saved is the one picked, with its actions open.
-  await expect(panel(page).getByRole('button', { name: /^Before review/ })).toHaveAttribute(
-    'aria-expanded',
-    'true',
-  );
-  await panel(page).getByRole('button', { name: 'Compare with now' }).click();
-  const compare = page.getByRole('dialog', { name: 'Compare versions' });
-  await expect(compare.getByText('1 edited')).toBeVisible();
-  await expect(compare.locator('ins')).toContainText('page the on-call.');
+  // History is a mode of the page: the diff in the column, the versions in the margin.
+  await page.getByRole('button', { name: 'Version history' }).click();
+  await versions.getByRole('button', { name: /^Before review/ }).click();
+  const mode = page.locator('[data-history-mode]');
+  await expect(mode.getByText('1 edited')).toBeVisible();
+  await expect(mode.locator('ins')).toContainText('page the on-call.');
 
-  await compare.getByRole('button', { name: 'Restore Before review' }).click();
-  const confirm = page.getByRole('dialog', { name: 'Restore “Before review”?' });
-  await expect(confirm).toContainText('Everyone with the page open sees the change');
-  await confirm.getByRole('button', { name: 'Restore', exact: true }).click();
-
+  // Restore happens at once, without a dialog, and Undo puts the edit back.
+  await mode.getByRole('button', { name: 'Restore this version' }).click();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
   await expect.poll(() => docText(page), { timeout: 20_000 }).toBe('Flip the flag off.');
-  await expect(panel(page).getByText('Restore', { exact: true }).first()).toBeVisible();
+  await page.getByRole('button', { name: 'Undo' }).click();
+  await expect
+    .poll(() => docText(page), { timeout: 20_000 })
+    .toBe('Flip the flag off. Then page the on-call.');
 });
 
 test('a page exports as Markdown and Markdown imports into a space', async ({ page, admin }) => {

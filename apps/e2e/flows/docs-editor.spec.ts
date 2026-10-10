@@ -48,29 +48,42 @@ test('a page is written, kept, renamed, read by its outline, reviewed and publis
     page.getByRole('tree').getByRole('treeitem', { name: 'Session store RFC v2' }),
   ).toBeVisible();
 
-  // The outline sits in the About panel at this width; it scrolls to a section and marks it.
+  // The outline rests in the margin where it fits and opens over the page where it does
+  // not; it scrolls to a section and marks it.
   const outline = page.getByRole('navigation', { name: 'On this page' });
+  const showOutline = async () => {
+    if (!(await outline.isVisible())) await page.getByRole('button', { name: 'Outline' }).click();
+  };
+  await showOutline();
   await expect(outline.getByRole('link')).toHaveText(SECTIONS);
   await outline.getByRole('link', { name: 'Open questions' }).click();
   await expect(page).toHaveURL(/#open-questions$/);
   await expect(body(page).getByRole('heading', { name: 'Open questions' })).toBeInViewport();
+  await showOutline();
   await expect(outline.getByRole('link', { name: 'Open questions' })).toHaveAttribute(
     'aria-current',
     'location',
   );
+  await page.keyboard.press('Escape');
 
   // ⌘S is answered, not ignored.
   await page.keyboard.press('ControlOrMeta+s');
   await expect(page.getByText('Saved automatically')).toBeVisible();
 
   // Ask for review with a reviewer, then publish.
-  await page.getByRole('button', { name: /Change status/ }).click();
+  await page
+    .getByRole('button', { name: /Change status/ })
+    .first()
+    .click();
   await page.getByRole('menuitem', { name: 'Request review…' }).click();
   const dialog = page.getByRole('dialog', { name: 'Reviewers' });
   await dialog.getByRole('checkbox', { name: reviewer.name }).check();
   await dialog.getByRole('button', { name: 'Request review' }).click();
   await expect(page.getByRole('button', { name: /Status: in review/ })).toBeVisible();
-  await page.getByRole('button', { name: /Change status/ }).click();
+  await page
+    .getByRole('button', { name: /Change status/ })
+    .first()
+    .click();
   await page.getByRole('menuitem', { name: 'Publish' }).click();
   await expect(page.getByRole('button', { name: /Status: published/ })).toBeVisible();
 
