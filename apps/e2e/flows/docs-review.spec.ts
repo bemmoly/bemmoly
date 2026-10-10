@@ -148,7 +148,10 @@ test('a page exports as Markdown and Markdown imports into a space', async ({ pa
 
   await page.getByRole('button', { name: 'More actions' }).click();
   const downloading = page.waitForEvent('download');
-  await page.getByRole('menuitem', { name: /Export as Markdown/ }).click();
+  await page.getByRole('menuitem', { name: 'Export…' }).click();
+  const exporting = page.getByRole('dialog', { name: /^Export/ });
+  await expect(exporting.getByRole('radio', { name: /Markdown/ })).toBeChecked();
+  await exporting.getByRole('button', { name: 'Export', exact: true }).click();
   const file = await downloading;
   expect(file.suggestedFilename()).toMatch(/\.md$/);
   const text = await readFile(await file.path(), 'utf8');
@@ -166,6 +169,8 @@ test('a page exports as Markdown and Markdown imports into a space', async ({ pa
   });
   await expect(dialog.getByText('on-call.md')).toBeVisible();
   await dialog.getByRole('button', { name: 'Import 1 file' }).click();
+  await expect(dialog.getByRole('list', { name: 'Imported pages' })).toContainText('on-call.md');
+  await dialog.getByRole('button', { name: 'Open pages' }).click();
   await expect(page).toHaveURL(/\/docs\/p\/[0-9a-f-]{36}$/);
   await expect(page.getByRole('textbox', { name: 'Page title' })).toHaveValue('On-call handbook');
   await expect(page.getByRole('treeitem', { name: 'On-call handbook' })).toBeVisible();

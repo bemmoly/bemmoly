@@ -16,6 +16,7 @@ import { useLocalSync } from '../collab/use-local-sync.ts';
 import { useDocStats } from './body/doc-stats.ts';
 import { PageBanner } from './body/page-banner.tsx';
 import { EmptyPageTemplates } from '../create/empty-page-templates.tsx';
+import { ExportDialogHost } from '../transfer/export-dialog.tsx';
 import { PageBodyEditor } from './body/page-body-editor.tsx';
 import { PageHeading } from './body/page-heading.tsx';
 import { PageHeaderActions } from './header/page-header-bar.tsx';
@@ -196,6 +197,7 @@ export function PageFrame({ page }: { page: PageDetail }) {
                   <PageHeading />
                   <PageBodyEditor onEditor={setEditor} />
                   <EmptyPageTemplates />
+                  <ExportDialogHost />
                   <Layers />
                 </article>
               </div>
