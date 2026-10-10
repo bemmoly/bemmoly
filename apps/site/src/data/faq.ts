@@ -9,7 +9,7 @@ export const HOME_FAQ: readonly FaqItem[] = [
   {
     question: 'How is it free?',
     answer:
-      'Bemmoly is software you run, not a service we run for you, so there is nothing for us to meter or charge for. It is MIT licensed: you may use, change and share it, at work, for any number of people. Your only cost is the server; a 2 vCPU, 4 GB VM lists at roughly $5–25 a month.',
+      'Bemmoly is software you run, not a service we run for you, so there is nothing for us to meter or charge for. It is MIT licensed: you may use, change and share it, at work, for any number of people. Your only cost is the server; a 2 vCPU, 4 GB VM lists at roughly $5–25 a month. Sponsoring the project on Buy Me a Coffee is optional: it supports development and unlocks nothing, because every feature is in the free product.',
   },
   {
     question: 'What’s the catch?',
