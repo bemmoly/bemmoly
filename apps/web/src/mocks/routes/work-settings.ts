@@ -238,7 +238,7 @@ export const workSettingsRoutes: MockRoute[] = [
     handle: (request, db) => {
       if (!can(db, PROJECT_CONFIGURE)) return forbidden();
       const state = workState(db);
-      const { ids } = bodyOf<{ ids: string[] }>(request);
+      const ids = bodyOf<{ ids: string[] }>(request).ids ?? [];
       for (const row of state.issueTypes) {
         const at = ids.indexOf(row.id);
         if (at >= 0) touch(row, { position: at });
