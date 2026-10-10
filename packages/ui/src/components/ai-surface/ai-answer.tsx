@@ -176,11 +176,11 @@ export function AiAnswer({
       </div>
       {!streaming && listed.length > 0 && (
         <div className="flex flex-col gap-1 border-t border-ai-100 pt-2">
-          <span className="text-12 font-medium text-tx-3">Sources</span>
+          <span className="text-12 font-medium text-tx-2">Sources</span>
           <ol className="m-0 flex list-none flex-col gap-0.5 p-0">
             {listed.map((item) => (
               <li key={item.id} className="flex min-w-0 items-center gap-1.5 text-13">
-                <span className="w-4 shrink-0 text-right text-12 text-tx-3">
+                <span className="w-4 shrink-0 text-right text-12 text-tx-2">
                   {numbers.get(item.id)}
                 </span>
                 <Icon name={item.icon ?? 'doc'} size={13} className="shrink-0 text-tx-3" />
@@ -190,7 +190,7 @@ export function AiAnswer({
                 >
                   {item.title}
                   {item.label && item.label !== item.title && (
-                    <span className="text-tx-3"> › {item.label}</span>
+                    <span className="text-tx-2"> › {item.label}</span>
                   )}
                 </a>
               </li>

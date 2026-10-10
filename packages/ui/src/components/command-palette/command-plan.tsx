@@ -184,7 +184,7 @@ export function CommandPlan({
           </Button>
         )}
         {onNotUseful && state !== 'running' && <AiNotUseful onClick={onNotUseful} />}
-        <span className="ml-auto text-12 text-tx-3">{note}</span>
+        <span className="ml-auto text-12 text-tx-2">{note}</span>
       </div>
     </section>
   );

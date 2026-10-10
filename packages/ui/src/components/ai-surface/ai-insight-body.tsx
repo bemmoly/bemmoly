@@ -120,7 +120,7 @@ export function AiInsightBody({
             Try again
           </AiActionButton>
         )}
-        {failedDetail && <span className="w-full text-12 text-tx-3">{failedDetail}</span>}
+        {failedDetail && <span className="w-full text-12 text-tx-2">{failedDetail}</span>}
       </div>
     );
   }

@@ -127,6 +127,15 @@ describe('design tokens', () => {
   );
 
   it.each(THEMES.map((t) => [t.id, t] as const))(
+    '%s: tx-2, the quiet text inside an AI card, reads at 4.5:1 on its ai-50 fill',
+    (_, theme) => {
+      const c = theme.colors as Record<string, string>;
+      const fill = over(c['ai-50'] as string, c.card as string);
+      expect(contrastRatio(c['tx-2'] as string, fill)).toBeGreaterThanOrEqual(4.5);
+    },
+  );
+
+  it.each(THEMES.map((t) => [t.id, t] as const))(
     '%s: accent fills, glyphs and signals hold contrast',
     (_, theme) => {
       const c = theme.colors as Record<string, string>;

@@ -14,6 +14,9 @@ AI is optional, honest and visibly AI. Lilac marks it, and nothing appears while
    | `ai-100` | Borders of AI cards                |
    | `ai-50`  | Backgrounds of AI cards            |
 
+   Quiet text on an `ai-50` fill (a source line, "Not useful", a plan's note, a sources list)
+   is `tx-2`, not `tx-3`: `tx-3` reads under 4.5:1 there in the light themes.
+
    Never use them for a brand flourish, a "new" badge, a module colour or an epic. Epics are
    `type-epic` violet `#6E56CF`, a different hue on purpose.
 

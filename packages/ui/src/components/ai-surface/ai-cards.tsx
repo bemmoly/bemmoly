@@ -193,7 +193,7 @@ export function AiSuggestion({
         type="button"
         onClick={onDismiss}
         className={cx(
-          'shrink-0 cursor-pointer border-0 bg-transparent p-0 font-sans text-13 text-tx-3 hover:text-tx-2',
+          'shrink-0 cursor-pointer border-0 bg-transparent p-0 font-sans text-13 text-tx-2 hover:text-tx',
           focusRing,
         )}
       >
