@@ -1,7 +1,7 @@
 import { formatDateTime } from '@bemmoly/core-web';
 import { useState } from 'react';
 import { useDevMailbox } from '../hooks/use-dev-mailbox.ts';
-import { Button, Card, CardHeader, EmptyState, PageHeader } from '@bemmoly/ui';
+import { Button, Card, CardHeader, EmptyState, PageTitle } from '@bemmoly/ui';
 import { Loading } from '../components/form.tsx';
 
 /** Development only: mail the `log` provider captured, so invites and resets can be followed. */
@@ -11,7 +11,7 @@ export function DevMailboxPage() {
   const open = items.find((item) => item.id === openId) ?? items[0];
   return (
     <div className="flex w-full max-w-280 flex-col gap-5 px-10 pt-7 pb-15">
-      <PageHeader
+      <PageTitle
         title="Dev mailbox"
         description="Email the server would have sent. Shown only while the log email provider is in use."
         actions={

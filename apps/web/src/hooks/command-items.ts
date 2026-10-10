@@ -1,21 +1,32 @@
-import type { IconName } from '@bemmoly/ui/icons';
 import {
   buildSettingsNav,
   flattenSettings,
+  knownIcon,
   type CommandItem,
+  type RecentItem,
+  type RecentLook,
+  type ScreenAction,
   type SettingsViewer,
 } from '@bemmoly/core-web';
 import type { ModuleManifest, SearchResult, User } from '@bemmoly/shared';
+import type { IconName } from '@bemmoly/ui/icons';
 import type { PaletteScope } from '../store/ui.ts';
 
 export interface PaletteItem extends CommandItem {
   /** Runs before navigating to `href` (when there is one). */
   run?: () => void;
-  icon: IconName;
+  icon?: IconName;
+  /** An issue's type tile and status, in place of the icon. */
+  look?: RecentLook;
   /** A record's short handle, such as an issue key, printed in mono before the title. */
   issueKey?: string;
+  /** The shortcut that does the same thing. */
+  keys?: string;
   /** Found and ranked by a module's search provider, so ⌘K does not filter it again. */
   fromServer?: boolean;
+  person?: boolean;
+  /** A recent item's own type ("Issues", "Pages"), so a type filter keeps it. */
+  kindGroup?: string;
 }
 
 export interface PaletteScopeEntry {
@@ -24,7 +35,7 @@ export interface PaletteScopeEntry {
   group?: string;
 }
 
-/** All, then one scope per module search group (Issues, Docs), then the kernel's own. */
+/** All, then one scope per module search group (Issues, Pages), then the kernel's own. */
 export function paletteScopes(modules: readonly ModuleManifest[]): PaletteScopeEntry[] {
   const found = modules
     .flatMap((module) => module.search ?? [])
@@ -44,33 +55,85 @@ export interface PaletteSources {
   modules: readonly ModuleManifest[];
   users: readonly User[];
   searchHits: readonly SearchResult[];
+  /** What the screen on show offers ("Assign PLT-204 to me"). */
+  screenActions?: readonly ScreenAction[];
+  /** What the New button makes, the first being C. */
+  creates?: readonly { id: string; label: string; icon?: string | undefined; open: () => void }[];
   run: {
     invite: () => void;
-    inbox: () => void;
+    shortcuts: () => void;
     mode: (mode: 'light' | 'dark') => void;
     signOut: () => void;
   };
 }
 
-const action = (
-  id: string,
-  title: string,
-  icon: IconName,
-  rest: Partial<PaletteItem>,
-): PaletteItem => ({
+const action = (id: string, title: string, rest: Partial<PaletteItem>): PaletteItem => ({
   id,
   group: 'Actions',
   title,
-  icon,
   href: '',
   ...rest,
 });
 
+const nav = (id: string, title: string, href: string, rest: Partial<PaletteItem>): PaletteItem => ({
+  id,
+  group: 'Navigation',
+  title,
+  href,
+  ...rest,
+});
+
+/** A recent item as a palette row, under its own type's group when the person filters. */
+export function recentItem(item: RecentItem): PaletteItem {
+  return {
+    id: `recent:${item.id}`,
+    group: 'Recent',
+    title: item.title,
+    ...(item.context ? { subtitle: item.context } : {}),
+    ...(item.handle ? { issueKey: item.handle, keywords: [item.handle] } : {}),
+    href: item.path,
+    look: item.look,
+    kindGroup: item.group,
+  };
+}
+
+function screenItems(sources: PaletteSources): PaletteItem[] {
+  return (sources.screenActions ?? []).map((entry) =>
+    action(`screen:${entry.id}`, entry.title, {
+      run: entry.run,
+      ...(entry.look ? { look: entry.look } : {}),
+      ...(entry.keys ? { keys: entry.keys } : {}),
+      ...(entry.keywords ? { keywords: [...entry.keywords] } : {}),
+    }),
+  );
+}
+
+function navigation(sources: PaletteSources): PaletteItem[] {
+  const entries = sources.modules.flatMap((module) =>
+    module.navigation
+      .filter((entry) => entry.placement === 'command')
+      .map((entry) => ({
+        entry,
+        icon: knownIcon(entry.icon) ?? knownIcon(module.icon) ?? 'modules',
+      })),
+  );
+  return [
+    nav('go:home', 'Home', '/', { icon: 'home', keys: 'G H' }),
+    nav('go:inbox', 'Inbox', '/inbox', { icon: 'inbox', keys: 'G I', keywords: ['notifications'] }),
+    ...entries.map(({ entry, icon }) =>
+      nav(`go:${entry.id}`, entry.label, entry.path, {
+        icon,
+        ...(entry.keys ? { keys: entry.keys } : {}),
+      }),
+    ),
+    nav('go:settings', 'Settings', '/settings', { icon: 'settings' }),
+  ];
+}
+
 /**
- * Everything ⌘K can open: what module search providers found (issues by key
- * and keyword, say), people (the directory plus server search hits),
- * settings pages this person may open, and actions, including what "Create"
- * offers (module create entries, invite, team).
+ * Everything ⌘K can open besides recents: what module search providers found (issues by key
+ * and keyword, pages), people, the settings pages this person may open, actions (the screen's
+ * own first, then creating, inviting, theme) and navigation.
  */
 export function paletteItems(sources: PaletteSources): PaletteItem[] {
   const found: PaletteItem[] = sources.searchHits
@@ -82,31 +145,24 @@ export function paletteItems(sources: PaletteSources): PaletteItem[] {
       ...(hit.subtitle ? { subtitle: hit.subtitle } : {}),
       ...(hit.key ? { issueKey: hit.key } : {}),
       href: hit.href,
-      icon: /doc|page/.test(hit.kind) ? 'doc' : 'board',
+      ...(hit.look?.type
+        ? {
+            look: {
+              kind: 'issue',
+              type: hit.look.type,
+              ...(hit.look.status ? { status: hit.look.status } : {}),
+            },
+          }
+        : { icon: /doc|page/.test(hit.kind) ? ('doc' as const) : ('board' as const) }),
       fromServer: true,
     }));
   const people = new Map<string, PaletteItem>();
-  for (const user of sources.users) {
-    people.set(user.id, {
-      id: `user:${user.id}`,
-      group: 'People',
-      title: user.name,
-      subtitle: user.email,
-      href: '/settings/users',
-      icon: 'people',
-    });
-  }
+  const person = (id: string, title: string, subtitle: string | undefined, href: string) =>
+    people.set(id, { id: `user:${id}`, group: 'People', title, subtitle, href, person: true });
+  for (const user of sources.users) person(user.id, user.name, user.email, '/settings/users');
   for (const hit of sources.searchHits) {
-    if (hit.kind === 'user' && !people.has(hit.id)) {
-      people.set(hit.id, {
-        id: `user:${hit.id}`,
-        group: 'People',
-        title: hit.title,
-        subtitle: hit.subtitle ?? undefined,
-        href: hit.href,
-        icon: 'people',
-      });
-    }
+    if (hit.kind === 'user' && !people.has(hit.id))
+      person(hit.id, hit.title, hit.subtitle ?? undefined, hit.href);
   }
   const settings: PaletteItem[] = flattenSettings(
     buildSettingsNav(sources.modules, sources.viewer),
@@ -114,51 +170,57 @@ export function paletteItems(sources: PaletteSources): PaletteItem[] {
     id: `setting:${entry.id}`,
     group: 'Settings',
     title: entry.label,
-    subtitle: 'Settings',
-    keywords: entry.id.split('-'),
+    keywords: [...entry.id.split('-'), 'settings'],
     href: entry.path,
-    icon: 'settings',
+    icon: entry.icon,
   }));
-  const entries = sources.modules.flatMap((module) => module.navigation);
-  const creates = entries
-    .filter((entry) => entry.placement === 'create')
-    .map((entry) =>
-      action(`create:${entry.id}`, `Create ${entry.label.toLowerCase()}`, 'plus', {
-        href: entry.path,
-        keywords: ['create', 'new'],
-      }),
-    );
-  const goTo = entries
-    .filter((entry) => entry.placement === 'command' || entry.placement === 'top')
-    .map((entry) =>
-      action(`go:${entry.id}`, `Go to ${entry.label}`, 'chevron', { href: entry.path }),
-    );
+  const creates = (sources.creates ?? []).map((entry, index) =>
+    action(`create:${entry.id}`, `New ${entry.label.toLowerCase()}`, {
+      icon: knownIcon(entry.icon) ?? 'plus',
+      run: entry.open,
+      keywords: ['create', 'add'],
+      ...(index === 0 ? { keys: 'C' } : {}),
+    }),
+  );
   const actions: PaletteItem[] = [
+    ...screenItems(sources),
     ...creates,
     ...(sources.canManagePeople
       ? [
-          action('invite', 'Invite people', 'plus', {
-            keywords: ['create', 'user', 'email'],
+          action('invite', 'Invite people', {
+            icon: 'people',
+            keywords: ['user', 'email', 'add'],
             href: '/settings/users',
             run: sources.run.invite,
           }),
-          action('team', 'Create team', 'plus', {
-            keywords: ['create', 'new'],
+          action('team', 'New team', {
+            icon: 'people',
+            keywords: ['create'],
             href: '/settings/teams',
           }),
         ]
       : []),
-    action('inbox', 'Open inbox', 'inbox', { keywords: ['notifications'], run: sources.run.inbox }),
-    action('dark', 'Switch to dark mode', 'moon', {
+    action('dark', 'Switch to dark mode', {
+      icon: 'moon',
       keywords: ['theme'],
       run: () => sources.run.mode('dark'),
     }),
-    action('light', 'Switch to light mode', 'sun', {
+    action('light', 'Switch to light mode', {
+      icon: 'sun',
       keywords: ['theme'],
       run: () => sources.run.mode('light'),
     }),
-    ...goTo,
-    action('sign-out', 'Sign out', 'chevron', { keywords: ['log out'], run: sources.run.signOut }),
+    action('shortcuts', 'Keyboard shortcuts', {
+      icon: 'help',
+      keys: '?',
+      keywords: ['keys', 'help'],
+      run: sources.run.shortcuts,
+    }),
+    action('sign-out', 'Sign out', {
+      icon: 'arrow-left',
+      keywords: ['log out'],
+      run: sources.run.signOut,
+    }),
   ];
-  return [...found, ...people.values(), ...settings, ...actions];
+  return [...found, ...people.values(), ...settings, ...actions, ...navigation(sources)];
 }

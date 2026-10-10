@@ -1,5 +1,5 @@
-import { PageHeader, SettingsContent } from '@bemmoly/ui';
-import { Link } from '@tanstack/react-router';
+import { HeaderActions } from '@bemmoly/core-web';
+import { PageTitle } from '@bemmoly/ui';
 import type { ReactNode } from 'react';
 import { Loading } from '../form.tsx';
 import { PageFailure } from '../page-failure.tsx';
@@ -7,37 +7,29 @@ import { PageFailure } from '../page-failure.tsx';
 interface SettingsPageProps {
   title: string;
   description?: ReactNode;
+  /** The page's actions ("New team"): shown on the right of the frame's header. */
   actions?: ReactNode;
-  /** The Appearance mock shows "Workspace settings / <page>" above the title. */
+  /** Kept for callers from before the frame; the header's trail now always shows. */
   breadcrumb?: boolean;
   loading?: boolean;
   error?: unknown;
   children?: ReactNode;
 }
 
-/** A settings page inside the frame: the settings header, then the page's blocks. */
+/** A settings page in the frame's reading column: its title, then the page's blocks. */
 export function SettingsPage({
   title,
   description,
   actions,
-  breadcrumb,
   loading,
   error,
   children,
 }: SettingsPageProps) {
   return (
-    <SettingsContent>
-      <PageHeader
-        variant="settings"
-        title={title}
-        description={description}
-        actions={actions}
-        linkAs={Link}
-        {...(breadcrumb
-          ? { breadcrumbs: [{ label: 'Workspace settings', href: '/settings' }, { label: title }] }
-          : {})}
-      />
+    <div className="flex flex-col gap-7">
+      {actions ? <HeaderActions>{actions}</HeaderActions> : null}
+      <PageTitle variant="settings" title={title} description={description} />
       {error ? <PageFailure error={error} /> : loading ? <Loading lines={5} /> : children}
-    </SettingsContent>
+    </div>
   );
 }

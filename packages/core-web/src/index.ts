@@ -70,6 +70,8 @@ export {
   canOpen,
   flattenSettings,
   KERNEL_SETTINGS,
+  settingsTrail,
+  type SettingsDecorations,
   type SettingsGroup,
   type SettingsItem,
   type SettingsRequirement,
