@@ -32,17 +32,19 @@ describe('Icon', () => {
     expect(sizes).toEqual(['16', '16', '18', '14']);
   });
 
-  it('draws chevrons a little heavier than other icons', () => {
+  it('draws every icon, chevrons included, with the 1.75px stroke', () => {
     const { container } = render(
       <>
         <Icon name="caret" />
-        <Icon name="inbox" />
+        <Icon name="inbox" size={ICON_SIZE.bar} />
+        <Icon name="zap" />
       </>,
     );
-    const strokes = [...container.querySelectorAll('svg')].map((svg) =>
-      Number(svg.getAttribute('stroke-width')),
+    // Lucide scales the stroke into its 24-unit viewBox so it draws at 1.75 screen pixels.
+    const strokes = [...container.querySelectorAll('svg')].map(
+      (svg) => (Number(svg.getAttribute('stroke-width')) * Number(svg.getAttribute('width'))) / 24,
     );
-    expect(strokes[0]).toBeGreaterThan(strokes[1] ?? 0);
+    expect(strokes).toEqual([1.75, 1.75, 1.75]);
   });
 
   it('is hidden from assistive tech unless it has a label', () => {
