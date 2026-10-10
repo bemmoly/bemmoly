@@ -37,3 +37,21 @@ export function decorative(svg: string): string {
       return `<svg${kept} aria-hidden="true" focusable="false">`;
     });
 }
+
+/**
+ * The file cropped to its ink: the viewBox shrinks to the outline's bounds (read from the path
+ * coordinates), so the wordmark can sit on a line of text at the size of its letters rather
+ * than inside the 24-unit box every file shares.
+ */
+export function trimmed(svg: string): string {
+  const ys = [...svg.matchAll(/\bd="([^"]+)"/g)].flatMap(([, d = '']) =>
+    [...d.matchAll(/-?\d+(?:\.\d+)?[ ,](-?\d+(?:\.\d+)?)/g)].map(([, y]) => Number(y)),
+  );
+  const width = /viewBox="0 0 ([\d.]+) /.exec(svg)?.[1];
+  if (!ys.length || !width) return svg;
+  const top = Math.min(...ys);
+  const height = Number((Math.max(...ys) - top).toFixed(2));
+  return svg
+    .replace(/viewBox="[^"]*"/, `viewBox="0 ${top} ${width} ${height}"`)
+    .replace(/\sheight="[\d.]+"/, ` height="${height}"`);
+}
