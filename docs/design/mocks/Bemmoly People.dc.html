@@ -142,7 +142,7 @@
 </x-dc>
 <script type="text/x-dc" data-dc-script>
 class Component extends DCLogic {
-  state = { view: 'users', perms: {}, locks: { 'Manage billing and license': true, 'Delete workspace': true, 'Configure SSO': true, 'Manage org roles': true } };
+  state = { view: 'users', perms: {}, locks: { 'Delete workspace': true, 'Configure SSO': true, 'Manage org roles': true } };
   renderVals() {
     const rootH = this.props.height ?? '100vh';
     const s = this.state, on = '#2456c9', off = '#cfd4dc';
@@ -152,7 +152,7 @@ class Component extends DCLogic {
     const modChip = name => ({ name, bg: '#eef3fe', fg: '#2456c9' });
     const grant = (kind, name, extra) => ({ kind: kind || null, name, bg: '#fff', fg: '#3b4454', br: '#e2e5ea', dot: null, av: null, ...extra });
     const permGroups = [
-      { name: 'Workspace', rows: [['Manage billing and license', '', [1, 0, 0, 0, 0]], ['Delete workspace', '', [1, 0, 0, 0, 0]], ['Configure SSO', '', [1, 0, 0, 0, 0]], ['Manage org roles', 'Create roles, edit this page', [1, 0, 0, 0, 0]], ['Set appearance and themes', '', [1, 0, 0, 0, 0]]] },
+      { name: 'Workspace', rows: [['Delete workspace', '', [1, 0, 0, 0, 0]], ['Configure SSO', '', [1, 0, 0, 0, 0]], ['Manage org roles', 'Create roles, edit this page', [1, 0, 0, 0, 0]], ['Set appearance and themes', '', [1, 0, 0, 0, 0]]] },
       { name: 'Projects', rows: [['Create projects', '', [1, 1, 0, 0, 0]], ['Configure project', 'Board, workflow, fields, members', [1, 1, 0, 0, 0]], ['Create and edit issues', '', [1, 1, 1, 0, 1]], ['Delete issues', 'Soft delete, 30-day recovery', [1, 1, 0, 0, 0]], ['View issues', '', [1, 1, 1, 1, 1]]] },
       { name: 'Docs', rows: [['Create spaces', '', [1, 1, 0, 0, 0]], ['Edit pages', '', [1, 1, 1, 0, 1]], ['Publish and restrict pages', '', [1, 1, 1, 0, 0]], ['Export space', '', [1, 1, 0, 0, 0]]] },
       { name: 'AI', rows: [['Use AI assist', 'Summaries, drafting, search', [1, 1, 1, 1, 0]], ['Run AI actions that change data', 'Bulk moves, auto-created issues', [1, 1, 1, 0, 0]], ['Configure models and data policy', '', [1, 0, 0, 0, 0]]] }
