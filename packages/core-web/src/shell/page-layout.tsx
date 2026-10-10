@@ -55,9 +55,9 @@ export function PageLayout({ header, layout, title, children }: PageLayoutProps)
         <div className="flex min-h-0 min-w-0 flex-1 flex-col bg-canvas">
           <PageHeader {...header} crumbs={crumbs} onActionsSlot={setSlot} />
           {layout === 'full' ? (
-            <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-auto">{children}</div>
+            <div className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-auto">{children}</div>
           ) : (
-            <div className="min-h-0 min-w-0 flex-1 overflow-y-auto" data-scroll-region>
+            <div className="relative min-h-0 min-w-0 flex-1 overflow-y-auto" data-scroll-region>
               <div className="mx-auto flex w-full max-w-260 min-w-0 flex-col px-4 pt-6 pb-16 md:px-8 md:pt-8">
                 {children}
               </div>
