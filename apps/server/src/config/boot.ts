@@ -24,6 +24,7 @@ import { wireCollab } from './collab.ts';
 import { connectDatabase, type DatabaseConnection } from './database.ts';
 import { identityWiring } from './identity.ts';
 import { createDataKernel, type DataKernel } from './kernel.ts';
+import { wireRetrieval } from './retrieval.ts';
 import { wireKernelServices } from './services.ts';
 
 export interface BootOptions {
@@ -128,6 +129,19 @@ export async function bootApplication(options: BootOptions): Promise<Booted> {
     database && kernel
       ? await wireAi({ env, database, kernel, identity, modules, handle: aiHandle, logger })
       : undefined;
+  const retrieval =
+    database && kernel && realtime
+      ? wireRetrieval({
+          sql: database.sql,
+          modules,
+          moduleState: kernel.moduleState,
+          jobs: kernel.jobs,
+          listener: realtime.listener,
+          events: kernel.events,
+          ai: () => aiHandle.current(),
+          logger,
+        })
+      : undefined;
   const services =
     database && kernel && databaseUrl
       ? wireKernelServices({
@@ -154,6 +168,7 @@ export async function bootApplication(options: BootOptions): Promise<Booted> {
             ...kernel.routes,
             ...services?.routes,
             ...ai?.routes,
+            ...(retrieval ? { retrieval } : {}),
             ...(collab ? { collab } : {}),
           },
         }
