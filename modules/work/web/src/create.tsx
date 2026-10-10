@@ -3,6 +3,7 @@ import type { Project } from '@bemmoly/module-work/shared';
 import { useToast } from '@bemmoly/ui';
 import { CreateIssueDialog } from './create/create-issue-dialog.tsx';
 import { workPaths } from './hooks/issue-navigation.ts';
+import { useSprints } from './hooks/projects-catalog.ts';
 import { CreateProjectDialog } from './projects/create-project-dialog.tsx';
 import { useProject } from './shared/use-project.ts';
 
@@ -13,8 +14,19 @@ import { useProject } from './shared/use-project.ts';
  */
 function NewIssue({ onClose }: CreateOverlayProps) {
   const { project, isPending } = useProject();
-  if (isPending) return null;
-  return <CreateIssueDialog open projectKey={project?.key} onClose={onClose} />;
+  const sprints = useSprints(project?.key);
+  // Over a Scrum board, new work joins the sprint on screen, as a column's own create does.
+  const onBoard = project ? window.location.pathname.endsWith(workPaths.board(project.key)) : false;
+  const running = sprints.data?.find((sprint) => sprint.state === 'active');
+  if (isPending || (onBoard && sprints.isPending)) return null;
+  return (
+    <CreateIssueDialog
+      open
+      projectKey={project?.key}
+      {...(onBoard && running ? { initial: { sprintId: running.id } } : {})}
+      onClose={onClose}
+    />
+  );
 }
 
 /** A new project, then its board, with a toast saying how its issues are numbered. */
