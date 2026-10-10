@@ -55,6 +55,8 @@ export interface HarnessOptions {
   entities?: DocsServiceDeps['entities'];
   /** What the comments service publishes notification events through. */
   events?: DocsServiceDeps['events'];
+  /** What large imports are queued on. */
+  jobs?: DocsServiceDeps['jobs'];
 }
 
 export async function startDocsHarness(options: HarnessOptions = {}): Promise<HarnessStart> {
@@ -86,6 +88,7 @@ export async function startDocsHarness(options: HarnessOptions = {}): Promise<Ha
     realtime: { publish: async (message) => void realtime.push(message) },
     ...(options.entities ? { entities: options.entities } : {}),
     ...(options.events ? { events: options.events } : {}),
+    ...(options.jobs ? { jobs: options.jobs } : {}),
   });
   const as = (userId: string): RequestContext => ({
     actor: { kind: 'user', id: userId },

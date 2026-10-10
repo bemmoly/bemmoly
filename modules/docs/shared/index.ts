@@ -14,4 +14,5 @@ export * from './spaces.ts';
 export * from './stars-labels.ts';
 export * from './status.ts';
 export * from './templates.ts';
+export * from './transfer.ts';
 export * from './tree.ts';

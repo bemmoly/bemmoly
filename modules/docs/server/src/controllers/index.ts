@@ -4,6 +4,7 @@ import { createCommentsController } from './comments.controller.ts';
 import { createLinksController } from './links.controller.ts';
 import { createPagesController } from './pages.controller.ts';
 import { createRevisionsController } from './revisions.controller.ts';
+import { createTransferController } from './transfer.controller.ts';
 import { createSearchController } from './search.controller.ts';
 import { createSpacesController } from './spaces.controller.ts';
 import { createTreeController } from './tree.controller.ts';
@@ -19,6 +20,7 @@ export function createDocsControllers(services: DocsServices) {
     revisions: createRevisionsController(services.revisions),
     links: createLinksController(services.links),
     comments: createCommentsController(services.comments),
+    transfer: createTransferController(services.transfer),
   };
 }
 

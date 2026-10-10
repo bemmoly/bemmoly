@@ -5,6 +5,7 @@ import { commentsRoutes } from './comments.routes.ts';
 import { linksRoutes } from './links.routes.ts';
 import { pagesRoutes } from './pages.routes.ts';
 import { revisionsRoutes } from './revisions.routes.ts';
+import { transferRoutes } from './transfer.routes.ts';
 import { searchRoutes } from './search.routes.ts';
 import { spacesRoutes } from './spaces.routes.ts';
 import { treeRoutes } from './tree.routes.ts';
@@ -23,5 +24,6 @@ export function docsRoutes(controllers: DocsControllers): FastifyPluginAsync {
     await app.register(revisionsRoutes(controllers.revisions));
     await app.register(linksRoutes(controllers.links));
     await app.register(commentsRoutes(controllers.comments));
+    await app.register(transferRoutes(controllers.transfer));
   };
 }
