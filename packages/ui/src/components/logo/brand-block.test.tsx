@@ -1,6 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectAccessible } from '../../testing/a11y.ts';
+import { MenuItem } from '../menu/menu-item.tsx';
 import { BrandBlock, BrandRailFoot, BrandRailTop } from './brand-block.tsx';
 import { BRAND_FILES, trimmed } from './brand-files.ts';
 
@@ -14,6 +15,17 @@ describe('BrandBlock', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Acme Labs, workspace menu' }));
     expect(onMenu).toHaveBeenCalledOnce();
     await expectAccessible(container);
+  });
+
+  it('opens its own workspace menu of items, with no switcher in it', () => {
+    render(
+      <BrandBlock
+        workspaceName="Acme Labs"
+        workspaceMenu={<MenuItem onSelect={() => undefined}>Workspace settings</MenuItem>}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Acme Labs, workspace menu' }));
+    expect(screen.getByRole('menuitem', { name: 'Workspace settings' })).toBeTruthy();
   });
 
   it('moves Bemmoly to "on Bemmoly" under a customer logo, and never drops it', () => {

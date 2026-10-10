@@ -3,6 +3,7 @@ import { Icon } from '../../icons/icon.tsx';
 import { cx } from '../../lib/cx.ts';
 import { focusRing } from '../../lib/focus.ts';
 import { EntityTile } from '../entity-tile/entity-tile.tsx';
+import { Menu, type MenuTriggerProps } from '../menu/menu.tsx';
 import { Tooltip } from '../tooltip/tooltip.tsx';
 import { Logo } from './logo.tsx';
 
@@ -19,30 +20,43 @@ export interface BrandBlockProps {
   customLogo?: CustomerLogo | null;
   /** Opens the workspace menu (settings, invite, what's new, about); never a switcher. */
   onWorkspaceMenu?: () => void;
+  /** The workspace menu's items: the line under the lockup (or the logo's name) opens them. */
+  workspaceMenu?: ReactNode;
   /** The sidebar's collapse button, drawn at the right of the block. */
   sidebarToggle?: ReactNode;
   className?: string;
 }
 
+const LINE_BUTTON = cx(
+  'flex min-w-0 cursor-pointer items-center gap-1 rounded-chip border-0 bg-transparent p-0 font-sans text-12 text-tx-3 hover:text-tx-2 aria-expanded:text-tx-2',
+  focusRing,
+);
+
 /** The workspace line: the name and a chevron that opens the workspace menu. */
-function WorkspaceLine({ name, onOpen }: { name: string; onOpen?: () => void }) {
+function WorkspaceLine({
+  name,
+  onOpen,
+  trigger,
+}: {
+  name: string;
+  onOpen?: () => void;
+  trigger?: MenuTriggerProps;
+}) {
   const body = (
     <>
       <span className="truncate">{name}</span>
       <Icon name="caret" size={11} />
     </>
   );
-  if (!onOpen) return <span className="flex min-w-0 items-center gap-1">{body}</span>;
+  if (!onOpen && !trigger) return <span className="flex min-w-0 items-center gap-1">{body}</span>;
   return (
     <button
       type="button"
-      onClick={onOpen}
+      {...trigger}
+      onClick={trigger?.onClick ?? onOpen}
       aria-haspopup="menu"
       aria-label={`${name}, workspace menu`}
-      className={cx(
-        'flex min-w-0 cursor-pointer items-center gap-1 rounded-chip border-0 bg-transparent p-0 font-sans text-12 text-tx-3 hover:text-tx-2',
-        focusRing,
-      )}
+      className={LINE_BUTTON}
     >
       {body}
     </button>
@@ -59,9 +73,17 @@ export function BrandBlock({
   workspaceName,
   customLogo,
   onWorkspaceMenu,
+  workspaceMenu,
   sidebarToggle,
   className,
 }: BrandBlockProps) {
+  const line = (trigger?: MenuTriggerProps) => (
+    <WorkspaceLine
+      name={workspaceName}
+      {...(onWorkspaceMenu ? { onOpen: onWorkspaceMenu } : {})}
+      {...(trigger ? { trigger } : {})}
+    />
+  );
   return (
     <div className={cx('flex items-center gap-2.5 pt-1 pr-1.5 pb-2.5 pl-2', className)}>
       {customLogo ? (
@@ -70,7 +92,27 @@ export function BrandBlock({
         <Logo size={24} label="" />
       )}
       <div className="flex min-w-0 flex-1 flex-col gap-1">
-        {customLogo ? (
+        {customLogo && workspaceMenu ? (
+          <Menu
+            widthClassName="w-60"
+            trigger={(props) => (
+              <button
+                type="button"
+                {...props}
+                aria-label={`${customLogo.name}, workspace menu`}
+                className={cx(
+                  LINE_BUTTON,
+                  'text-14 leading-tight font-semibold tracking-title text-tx',
+                )}
+              >
+                <span className="truncate">{customLogo.name}</span>
+                <Icon name="caret" size={11} className="text-tx-3" />
+              </button>
+            )}
+          >
+            {workspaceMenu}
+          </Menu>
+        ) : customLogo ? (
           <span className="truncate text-14 leading-tight font-semibold tracking-title text-tx">
             {customLogo.name}
           </span>
@@ -83,11 +125,12 @@ export function BrandBlock({
               on <Logo size={11} label="" />
               <b className="font-semibold text-tx-2">Bemmoly</b>
             </>
+          ) : workspaceMenu ? (
+            <Menu widthClassName="w-60" trigger={(props) => line(props)}>
+              {workspaceMenu}
+            </Menu>
           ) : (
-            <WorkspaceLine
-              name={workspaceName}
-              {...(onWorkspaceMenu ? { onOpen: onWorkspaceMenu } : {})}
-            />
+            line()
           )}
         </span>
       </div>
