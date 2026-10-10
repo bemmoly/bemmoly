@@ -4,10 +4,10 @@ import { Button } from '../button/button.tsx';
 import { IconButton } from '../button/icon-button.tsx';
 import { TypeGlyph } from '../glyphs/glyphs.tsx';
 import { KeyChip } from '../key-chip/key-chip.tsx';
-import { PageHeader } from './page-header.tsx';
+import { PageTitle } from './page-title.tsx';
 
-const meta = { title: 'Components/PageHeader', component: PageHeader } satisfies Meta<
-  typeof PageHeader
+const meta = { title: 'Components/PageTitle', component: PageTitle } satisfies Meta<
+  typeof PageTitle
 >;
 
 export default meta;
@@ -21,7 +21,7 @@ export const Board: Story = {
   },
   render: (args) => (
     <div className="w-192 bg-bg px-6 pt-3.5">
-      <PageHeader
+      <PageTitle
         {...args}
         breadcrumbs={[{ label: 'Projects' }, { label: 'Platform Core' }, { label: 'PLT board' }]}
         meta={[
@@ -59,7 +59,7 @@ export const Settings: Story = {
   },
   render: (args) => (
     <div className="w-260 bg-bg p-2">
-      <PageHeader
+      <PageTitle
         {...args}
         variant="settings"
         breadcrumbs={[{ label: 'Workspace settings' }, { label: 'Appearance' }]}

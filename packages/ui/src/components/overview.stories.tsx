@@ -20,7 +20,7 @@ import { KeyChip } from './key-chip/key-chip.tsx';
 import { Logo } from './logo/logo.tsx';
 import { Dropdown } from './menu/dropdown-button.tsx';
 import { MenuItem } from './menu/menu-item.tsx';
-import { PageHeader } from './page-header/page-header.tsx';
+import { PageTitle } from './page-title/page-title.tsx';
 import { SegmentedControl } from './segmented-control/segmented-control.tsx';
 import { Select } from './select/select.tsx';
 import {
@@ -74,7 +74,7 @@ function Overview() {
         onInbox={noop}
         user={{ name: 'Rohan S.', initials: 'RS' }}
       />
-      <PageHeader
+      <PageTitle
         breadcrumbs={[{ label: 'Projects' }, { label: 'Platform Core' }, { label: 'PLT board' }]}
         title="PLT Sprint 14"
         meta={['Sep 23 – Oct 7', '2 days remaining']}

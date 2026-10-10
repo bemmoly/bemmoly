@@ -2,7 +2,7 @@ import { Fragment, type ReactNode } from 'react';
 import { cx } from '../../lib/cx.ts';
 import { Breadcrumbs, type BreadcrumbsProps, type Crumb } from '../breadcrumbs/breadcrumbs.tsx';
 
-export interface PageHeaderProps {
+export interface PageTitleProps {
   breadcrumbs?: readonly Crumb[];
   linkAs?: BreadcrumbsProps['linkAs'];
   title: ReactNode;
@@ -20,8 +20,12 @@ export interface PageHeaderProps {
   className?: string;
 }
 
-/** "Projects / Platform Core / Board", a 22px title, its facts and the page actions. */
-export function PageHeader({
+/**
+ * The title block at the top of a page's content: a 20px title, its facts and a sentence. The
+ * frame's page header (core-web) holds the trail and the page actions, so new pages leave
+ * `breadcrumbs` and `actions` out.
+ */
+export function PageTitle({
   breadcrumbs,
   linkAs,
   title,
@@ -30,7 +34,7 @@ export function PageHeader({
   actions,
   variant = 'page',
   className,
-}: PageHeaderProps) {
+}: PageTitleProps) {
   const settings = variant === 'settings';
   return (
     <header className={cx('flex flex-col', settings ? 'gap-1.5' : 'gap-3', className)}>

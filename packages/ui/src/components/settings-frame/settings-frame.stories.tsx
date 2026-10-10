@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
 import { Button } from '../button/button.tsx';
-import { PageHeader } from '../page-header/page-header.tsx';
+import { PageTitle } from '../page-title/page-title.tsx';
 import { Switch } from '../switch/switch.tsx';
 import { SettingsContent, SettingsFrame, SettingsRow } from './settings-frame.tsx';
 import { SettingsNav, SettingsNavItem, SettingsNavSection } from './settings-nav.tsx';
@@ -63,7 +63,7 @@ export const WorkspaceSettings: Story = {
           }
         >
           <SettingsContent>
-            <PageHeader
+            <PageTitle
               variant="settings"
               title={page}
               breadcrumbs={[{ label: 'Workspace settings' }, { label: page }]}
