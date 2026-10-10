@@ -106,6 +106,7 @@ export function PageTreeRow({
       role="treeitem"
       id={`tree-${item.id}`}
       data-tree-id={item.id}
+      aria-labelledby={`tree-${item.id}-title`}
       aria-level={item.depth + 1}
       aria-selected={active}
       aria-current={active ? 'page' : undefined}
@@ -176,6 +177,7 @@ export function PageTreeRow({
         <RenameField title={item.title} onRename={onRename} onCancel={onRenameCancel} />
       ) : (
         <a
+          id={`tree-${item.id}-title`}
           href={href}
           tabIndex={-1}
           draggable={false}
