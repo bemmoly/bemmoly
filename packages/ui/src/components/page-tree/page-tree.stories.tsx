@@ -1,9 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useMemo, useState } from 'react';
 import { Icon } from '../../icons/icon.tsx';
-import { SearchInput } from '../input/index.ts';
 import { MenuItem, MenuSeparator } from '../menu/menu-item.tsx';
-import { SpaceSwitcher } from '../space-card/space-switcher.tsx';
+import { EntityTile } from '../entity-tile/index.ts';
 import { PageTree } from './page-tree.tsx';
 import type { PageTreeItem, PageTreeMove } from './tree-model.ts';
 
@@ -84,23 +83,17 @@ function Sidebar() {
   const [active, setActive] = useState('rfc');
   const [renaming, setRenaming] = useState<string | null>(null);
   const items = useMemo(() => flatten(nodes, open), [nodes, open]);
-  const eng = { id: '1', key: 'ENG', name: 'Engineering', tone: 'accent' as const };
   return (
-    <aside className="flex h-180 w-65 flex-col border-r border-line bg-card">
-      <SpaceSwitcher
-        current={eng}
-        meta="184 pages"
-        spaces={[eng, { id: '2', key: 'PRD', name: 'Product', tone: 'violet' }]}
-        onSelect={() => undefined}
-        onShowAll={() => undefined}
-        onCreate={() => undefined}
-      />
-      <div className="px-3 pb-2.5">
-        <SearchInput placeholder="Search this space" size="md" tone="recessed" />
+    <aside className="flex h-180 w-60 flex-col gap-0.5 bg-side p-2">
+      <div className="flex h-7.5 items-center gap-2 rounded-control px-2 text-13 text-tx">
+        <EntityTile name="Engineering" size={18} tone="accent" />
+        <span className="flex-1 truncate">Engineering</span>
+        <Icon name="caret" size={14} className="text-tx-3" />
       </div>
-      <div className="px-2">
+      <div>
         <PageTree
           label="Pages in Engineering"
+          indentStart={20}
           items={items}
           activeId={active}
           hrefOf={(item) => `#${item.id}`}
@@ -140,10 +133,6 @@ function Sidebar() {
           onRenameCancel={() => setRenaming(null)}
         />
       </div>
-      <div className="mt-auto flex items-center gap-1 border-t border-line-2 px-4 py-3 text-13 font-medium text-acc">
-        <Icon name="plus" size={14} />
-        New page
-      </div>
     </aside>
   );
 }
@@ -160,7 +149,6 @@ const meta = {
   component: Sidebar,
   parameters: {
     layout: 'fullscreen',
-    mock: [{ file: 'Bemmoly Doc Editor.dc.html', x: 0, y: 48, w: 260, h: 720, note: 'sidebar' }],
   },
 } satisfies Meta<typeof Sidebar>;
 
@@ -168,5 +156,5 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-/** Drag a row above, below or into another; Alt+arrows move the focused row. */
+/** The current space in the sidebar: drag a row above, below or into another; Alt+arrows move it. */
 export const SpaceSidebar: Story = {};
