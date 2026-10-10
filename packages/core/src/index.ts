@@ -11,7 +11,30 @@ export {
   isAiRefusal,
   type AiFacadeDependencies,
 } from './services/ai/index.ts';
-export * from './services/ai/tools/index.ts';
+export {
+  AI_PLAN_RUN_JOB,
+  aiToolContribution,
+  createAiPlansService,
+  createAiToolRegistry,
+  defineReadTool,
+  defineWriteTool,
+  isAiToolDefinition,
+  PLAN_PROMPT_FILE,
+  PLAN_PROMPT_ID,
+  requestToolInput,
+  toolSetFor,
+  wireAiPlans,
+  type AiPlans,
+  type AiPlansService,
+  type AiPlansWiring,
+  type AiReadToolDefinition,
+  type AiToolDefinition,
+  type AiToolRegistry,
+  type AiToolRunContext,
+  type AiWriteOutcome,
+  type AiWriteToolDefinition,
+  type RegisteredAiTool,
+} from './services/ai/index.ts';
 export * from './services/changelog/index.ts';
 export * from './services/collab/index.ts';
 export * from './services/jobs/index.ts';
