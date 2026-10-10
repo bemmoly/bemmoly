@@ -8,7 +8,8 @@ export function saveShortcutMessage(
   status: CollabStatus,
   readOnly: ReadOnlyReason,
 ): { title: string; body?: string } {
-  if (readOnly === 'trashed') return { title: 'Nothing to save', body: 'This page is in the trash.' };
+  if (readOnly === 'trashed')
+    return { title: 'Nothing to save', body: 'This page is in the trash.' };
   if (readOnly === 'archived' || readOnly === 'viewer' || status === 'read-only') {
     return { title: 'Nothing to save', body: 'This page is open to read only.' };
   }
@@ -39,7 +40,11 @@ export function usePageShortcuts(status: CollabStatus, readOnly: ReadOnlyReason)
       const key = event.key.toLowerCase();
       if (key === 's') {
         event.preventDefault();
-        show({ tone: 'ok', ...saveShortcutMessage(latest.current.status, latest.current.readOnly), duration: 2500 });
+        show({
+          tone: 'ok',
+          ...saveShortcutMessage(latest.current.status, latest.current.readOnly),
+          duration: 2500,
+        });
       } else if (key === '.') {
         event.preventDefault();
         togglePanel(ABOUT_PANEL);

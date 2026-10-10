@@ -18,7 +18,13 @@ function BackToDocs() {
 }
 
 /** Missing, refused or failed: one calm message in the middle of the screen. */
-function Problem({ kind, retry }: { kind: 'not-found' | 'forbidden' | 'error'; retry?: () => void }) {
+function Problem({
+  kind,
+  retry,
+}: {
+  kind: 'not-found' | 'forbidden' | 'error';
+  retry?: () => void;
+}) {
   const copy = {
     'not-found': {
       title: 'This page does not exist',
@@ -26,7 +32,8 @@ function Problem({ kind, retry }: { kind: 'not-found' | 'forbidden' | 'error'; r
     },
     forbidden: {
       title: 'You do not have access to this page',
-      description: 'It is in a space you are not a member of. Ask its owner or an admin to add you.',
+      description:
+        'It is in a space you are not a member of. Ask its owner or an admin to add you.',
     },
     error: {
       title: 'This page did not load',
@@ -63,7 +70,8 @@ export default function PageScreen({ segment }: DocsScreenProps) {
   const space = useSpace(page?.spaceKey);
   const panelOpen = usePageChrome((state) => state.panel === ABOUT_PANEL);
 
-  if (load.state === 'not-found' || load.state === 'forbidden') return <Problem kind={load.state} />;
+  if (load.state === 'not-found' || load.state === 'forbidden')
+    return <Problem kind={load.state} />;
   if (load.state === 'error') return <Problem kind="error" retry={load.retry} />;
   if (!page || space.isPending) return <PageScreenSkeleton panel={panelOpen} />;
   return (

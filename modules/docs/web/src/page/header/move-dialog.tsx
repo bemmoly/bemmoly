@@ -134,7 +134,10 @@ function MoveForm({ page, open, onClose }: MoveDialogProps) {
           value={query}
           onChange={(event) => setQuery(event.target.value)}
         />
-        <ul aria-label="Destinations" className="m-0 flex max-h-64 list-none flex-col gap-px overflow-auto p-0">
+        <ul
+          aria-label="Destinations"
+          className="m-0 flex max-h-64 list-none flex-col gap-px overflow-auto p-0"
+        >
           {row({ id: null, title: '', icon: null }, `Top level of ${space?.name ?? 'the space'}`)}
           {(destinations.data ?? []).map((destination) => row(destination, destination.title))}
         </ul>

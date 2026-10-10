@@ -21,7 +21,9 @@ import {
   type PageEditor,
   type PageScreenState,
   type ReadOnlyReason,
+  useSlotProps,
 } from './screen-context.ts';
+import { LAYER_SLOTS } from './slots.ts';
 import { TocList } from './toc/toc-list.tsx';
 import { goToHeading, useActiveHeading, useOutline } from './toc/use-outline.ts';
 import { usePageShortcuts } from './use-page-shortcuts.ts';
@@ -58,6 +60,12 @@ function useHashLanding(editor: PageEditor | null, outline: PageScreenState['out
   }, [editor, outline]);
 }
 
+/** The body's layers from slots.ts: highlights and bubbles other folders draw on the page. */
+function Layers() {
+  const props = useSlotProps();
+  return LAYER_SLOTS.map((Layer, index) => <Layer key={index} {...props} />);
+}
+
 function readOnlyOf(page: PageDetail, status: string): ReadOnlyReason {
   if (page.deletedAt) return 'trashed';
   if (page.status === 'archived') return 'archived';
@@ -89,8 +97,30 @@ export function PageFrame({ page }: { page: PageDetail }) {
   }, [editor]);
 
   const screen = useMemo<PageScreenState>(
-    () => ({ page, collab, editable, readOnly, editor, focusBody, outline, activeHeading, outlineInRail, stats }),
-    [page, collab, editable, readOnly, editor, focusBody, outline, activeHeading, outlineInRail, stats],
+    () => ({
+      page,
+      collab,
+      editable,
+      readOnly,
+      editor,
+      focusBody,
+      outline,
+      activeHeading,
+      outlineInRail,
+      stats,
+    }),
+    [
+      page,
+      collab,
+      editable,
+      readOnly,
+      editor,
+      focusBody,
+      outline,
+      activeHeading,
+      outlineInRail,
+      stats,
+    ],
   );
 
   return (
@@ -104,6 +134,7 @@ export function PageFrame({ page }: { page: PageDetail }) {
               <article className="flex max-w-180 min-w-0 flex-1 flex-col gap-4.5 px-4 pt-8 pb-30 text-15h leading-prose text-tx-body sm:px-10 sm:pt-12">
                 <PageHeading />
                 <PageBodyEditor onEditor={setEditor} />
+                <Layers />
               </article>
               {/* The rail keeps its width while empty, so the body never shifts when headings arrive. */}
               {outlineInRail && (

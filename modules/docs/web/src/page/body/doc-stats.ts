@@ -38,7 +38,10 @@ export function useDocStats(editor: PageEditor | null, storedWords: number): Doc
       return undefined;
     }
     let timer: ReturnType<typeof setTimeout> | undefined;
-    const read = () => setWords(countWords(editor.state.doc.textBetween(0, editor.state.doc.content.size, ' ', ' ')));
+    const read = () =>
+      setWords(
+        countWords(editor.state.doc.textBetween(0, editor.state.doc.content.size, ' ', ' ')),
+      );
     const later = () => {
       clearTimeout(timer);
       timer = setTimeout(read, SETTLE_MS);

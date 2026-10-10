@@ -2,7 +2,7 @@ import { IconButton, Menu, MenuItem, MenuSeparator, useToast } from '@bemmoly/ui
 import { Icon } from '@bemmoly/ui/icons';
 import { useState } from 'react';
 import { docsPaths } from '../../shared/navigation.ts';
-import { usePageChrome, usePageScreen } from '../screen-context.ts';
+import { usePageChrome, usePageScreen, useSlotProps } from '../screen-context.ts';
 import { MENU_SLOTS, PANEL_SLOTS } from '../slots.ts';
 import { useTrashPage } from '../use-page-actions.ts';
 import { MoveDialog } from './move-dialog.tsx';
@@ -32,7 +32,8 @@ export function useCopyLink(pageId: string) {
  */
 export function MoreMenu() {
   const screen = usePageScreen();
-  const { page, editable, readOnly } = screen;
+  const { page, readOnly } = screen;
+  const slotProps = useSlotProps();
   const openPanel = usePageChrome((state) => state.openPanel);
   const copyLink = useCopyLink(page.id);
   const { trash } = useTrashPage(page);
@@ -44,7 +45,9 @@ export function MoreMenu() {
     <>
       <Menu
         align="end"
-        trigger={(props) => <IconButton {...props} label="More actions" icon="more" size="sm" variant="secondary" />}
+        trigger={(props) => (
+          <IconButton {...props} label="More actions" icon="more" size="sm" variant="secondary" />
+        )}
       >
         <MenuItem icon={<Icon name="external" size={14} />} onSelect={() => void copyLink()}>
           Copy link
@@ -64,7 +67,7 @@ export function MoreMenu() {
           </MenuItem>
         ))}
         {MENU_SLOTS.map((Slot, index) => (
-          <Slot key={index} page={page} editable={editable} />
+          <Slot key={index} {...slotProps} />
         ))}
         {canChange && (
           <>

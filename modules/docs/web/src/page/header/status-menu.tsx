@@ -77,10 +77,7 @@ export function StatusMenu() {
         pending={change.isPending}
         onClose={() => setPicking(false)}
         onConfirm={(reviewers) =>
-          change.mutate(
-            { status: 'in_review', reviewers },
-            { onSuccess: () => setPicking(false) },
-          )
+          change.mutate({ status: 'in_review', reviewers }, { onSuccess: () => setPicking(false) })
         }
       />
     </>

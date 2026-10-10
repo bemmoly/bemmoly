@@ -1,6 +1,7 @@
 import type { IconName } from '@bemmoly/ui/icons';
 import type { ComponentType } from 'react';
 import type { PageDetail } from '../../../shared/pages.ts';
+import type { PageEditor } from './screen-context.ts';
 
 /*
  * Where other parts of the Docs module plug into the page screen, as lists the screen reads.
@@ -13,6 +14,10 @@ export interface PageSlotProps {
   page: PageDetail;
   /** Whether the person may change the page right now (not archived, trashed or read-only). */
   editable: boolean;
+  /** The live body's editor once it is up; null before, and for a trashed page. */
+  editor: PageEditor | null;
+  /** Opens the side panel on a tab: "about", or a PanelSlot's id. */
+  openPanel: (id: string) => void;
 }
 
 /**
@@ -49,3 +54,9 @@ export const MENU_SLOTS: readonly ComponentType<PageSlotProps>[] = [];
  * linked issues. Each draws its own heading and returns null while it has nothing to show.
  */
 export const ABOUT_SLOTS: readonly ComponentType<PageSlotProps>[] = [];
+
+/**
+ * What a part puts on the body itself, whichever panel tab is open: highlights, a bubble over
+ * a selection, a shortcut. Mounted once beside the editor, inside the body column.
+ */
+export const LAYER_SLOTS: readonly ComponentType<PageSlotProps>[] = [];

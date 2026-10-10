@@ -64,7 +64,11 @@ function ArchivedBanner() {
       icon="alert"
       action={
         mayEdit && (
-          <Button size="xs" loading={change.isPending} onClick={() => change.mutate({ status: 'draft' })}>
+          <Button
+            size="xs"
+            loading={change.isPending}
+            onClick={() => change.mutate({ status: 'draft' })}
+          >
             Move back to draft
           </Button>
         )

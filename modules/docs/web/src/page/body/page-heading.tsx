@@ -28,7 +28,10 @@ function Chips() {
   const reviewers = page.reviewers.map((id) => person(id)?.name ?? 'Someone');
   if (page.labels.length === 0 && !page.owner && reviewers.length === 0) return null;
   return (
-    <ul aria-label="Page facts" className="m-0 flex list-none flex-wrap gap-1.5 p-0 text-12 text-tx4">
+    <ul
+      aria-label="Page facts"
+      className="m-0 flex list-none flex-wrap gap-1.5 p-0 text-12 text-tx4"
+    >
       {page.labels.map((label) => (
         <Chip key={label}>{label}</Chip>
       ))}
@@ -42,7 +45,11 @@ function Chips() {
 function MetaLine() {
   const { page, stats } = usePageScreen();
   const parts = [
-    [page.owner?.name, `Created ${shortDate(page.createdAt)}`, `Edited ${formatRelative(page.contentUpdatedAt)}`]
+    [
+      page.owner?.name,
+      `Created ${shortDate(page.createdAt)}`,
+      `Edited ${formatRelative(page.contentUpdatedAt)}`,
+    ]
       .filter(Boolean)
       .join(' · '),
     readingTime(stats),

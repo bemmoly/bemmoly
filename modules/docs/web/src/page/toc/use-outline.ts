@@ -19,7 +19,11 @@ export function readOutline(editor: PageEditor): OutlineEntry[] {
   const headings: { text: string; level: number; pos: number }[] = [];
   editor.state.doc.forEach((node, offset) => {
     if (node.type.name !== 'heading') return;
-    headings.push({ text: node.textContent.trim(), level: Number(node.attrs['level'] ?? 1), pos: offset });
+    headings.push({
+      text: node.textContent.trim(),
+      level: Number(node.attrs['level'] ?? 1),
+      pos: offset,
+    });
   });
   const ids = headingIds({
     type: 'doc',
@@ -52,10 +56,11 @@ export function useOutline(editor: PageEditor | null): OutlineEntry[] {
       return undefined;
     }
     let timer: ReturnType<typeof setTimeout> | undefined;
-    const read = () => setOutline((current) => {
-      const next = readOutline(editor);
-      return same(current, next) ? current : next;
-    });
+    const read = () =>
+      setOutline((current) => {
+        const next = readOutline(editor);
+        return same(current, next) ? current : next;
+      });
     const later = () => {
       clearTimeout(timer);
       timer = setTimeout(read, SETTLE_MS);

@@ -1,5 +1,13 @@
 import { formatRelative } from '@bemmoly/core-web';
-import { Avatar, avatarHue, FieldList, FieldPerson, FieldRow, PageStatusPill, Select } from '@bemmoly/ui';
+import {
+  Avatar,
+  avatarHue,
+  FieldList,
+  FieldPerson,
+  FieldRow,
+  PageStatusPill,
+  Select,
+} from '@bemmoly/ui';
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { api } from '../../shared/api.ts';
@@ -139,7 +147,10 @@ export function AboutFacts() {
         {by(page.updatedBy)}
       </FieldRow>
       <FieldRow label="Contributors">
-        <span className="inline-flex flex-wrap items-center gap-1" aria-label={`${contributors.length} contributors`}>
+        <span
+          className="inline-flex flex-wrap items-center gap-1"
+          aria-label={`${contributors.length} contributors`}
+        >
           {contributors.map((id) => {
             const name = person(id)?.name ?? 'Someone';
             return (

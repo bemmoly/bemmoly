@@ -4,6 +4,7 @@ import { create } from 'zustand';
 import type { PageDetail } from '../../../shared/pages.ts';
 import type { CollabPage } from '../collab/use-collab-page.ts';
 import type { DocStats } from './body/doc-stats.ts';
+import type { PageSlotProps } from './slots.ts';
 import type { OutlineEntry } from './toc/use-outline.ts';
 
 export type PageEditor = NonNullable<Parameters<NonNullable<DocEditorProps['onEditor']>>[0]>;
@@ -64,3 +65,10 @@ export const usePageChrome = create<PageChrome>((set, get) => ({
   closePanel: () => set({ panel: null }),
   togglePanel: (id) => set({ panel: get().panel === id ? null : id }),
 }));
+
+/** What the slots in slots.ts are drawn with. */
+export function useSlotProps(): PageSlotProps {
+  const { page, editable, editor } = usePageScreen();
+  const openPanel = usePageChrome((state) => state.openPanel);
+  return { page, editable, editor, openPanel };
+}

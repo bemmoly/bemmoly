@@ -2,7 +2,7 @@ import type { PageDetail } from '@bemmoly/module-docs/shared';
 import { IconButton, Tabs } from '@bemmoly/ui';
 import { useEffect } from 'react';
 import { cx } from '../cx.ts';
-import { ABOUT_PANEL, usePageChrome, usePageScreen } from '../screen-context.ts';
+import { ABOUT_PANEL, usePageChrome, usePageScreen, useSlotProps } from '../screen-context.ts';
 import { ABOUT_SLOTS, PANEL_SLOTS, type PanelSlot } from '../slots.ts';
 import { TocList } from '../toc/toc-list.tsx';
 import { AboutFacts } from './about-facts.tsx';
@@ -23,6 +23,7 @@ function SlotLabel({ slot, page }: { slot: PanelSlot; page: PageDetail }) {
 /** About: the page's facts, the outline when it has no rail of its own, and the slots after. */
 function AboutTab({ onJump }: { onJump: () => void }) {
   const screen = usePageScreen();
+  const slotProps = useSlotProps();
   return (
     <div className="flex flex-col gap-3 p-3.5 text-12h leading-desc">
       <h2 className={cx('m-0', HEADING)}>About this page</h2>
@@ -37,7 +38,7 @@ function AboutTab({ onJump }: { onJump: () => void }) {
         />
       )}
       {ABOUT_SLOTS.map((Slot, index) => (
-        <Slot key={index} page={screen.page} editable={screen.editable} />
+        <Slot key={index} {...slotProps} />
       ))}
     </div>
   );
@@ -50,6 +51,7 @@ function AboutTab({ onJump }: { onJump: () => void }) {
  */
 export function PagePanel() {
   const screen = usePageScreen();
+  const slotProps = useSlotProps();
   const panel = usePageChrome((state) => state.panel);
   const openPanel = usePageChrome((state) => state.openPanel);
   const closePanel = usePageChrome((state) => state.closePanel);
@@ -98,11 +100,19 @@ export function PagePanel() {
           value={panel ?? ABOUT_PANEL}
           onChange={openPanel}
           className="h-11 shrink-0 border-b border-br-row px-3.5"
-          end={<IconButton label="Close panel" icon="close" size="xs" onClick={closePanel} className="xl:hidden" />}
+          end={
+            <IconButton
+              label="Close panel"
+              icon="close"
+              size="xs"
+              onClick={closePanel}
+              className="xl:hidden"
+            />
+          }
         />
         <div className="min-h-0 flex-1 overflow-auto">
           {Body ? (
-            <Body page={screen.page} editable={screen.editable} onClose={closePanel} />
+            <Body {...slotProps} onClose={closePanel} />
           ) : (
             <AboutTab onJump={() => overlay() && closePanel()} />
           )}

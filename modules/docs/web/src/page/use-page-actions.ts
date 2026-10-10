@@ -45,7 +45,8 @@ export function useUpdatePage(pageId: string) {
     },
     onError: (error, body, context) => {
       if (context?.before) cache.write(context.before);
-      const what = body.title !== undefined ? 'title' : body.ownerId !== undefined ? 'owner' : 'change';
+      const what =
+        body.title !== undefined ? 'title' : body.ownerId !== undefined ? 'owner' : 'change';
       show({ tone: 'danger', title: `The ${what} was not saved`, body: error.message });
     },
   });
@@ -65,7 +66,8 @@ export function useChangeStatus(pageId: string) {
       void cache.refreshLists();
       void cache.queryClient.invalidateQueries({ queryKey: docsKeys.attention() });
     },
-    onError: (error) => show({ tone: 'danger', title: 'The status did not change', body: error.message }),
+    onError: (error) =>
+      show({ tone: 'danger', title: 'The status did not change', body: error.message }),
   });
 }
 
@@ -75,7 +77,8 @@ export function useSetReviewers(pageId: string) {
   return useMutation({
     mutationFn: (reviewers: string[]) => api.docs.pages.setReviewers(pageId, { reviewers }),
     onSuccess: (page) => cache.write(page),
-    onError: (error) => show({ tone: 'danger', title: 'Reviewers were not saved', body: error.message }),
+    onError: (error) =>
+      show({ tone: 'danger', title: 'Reviewers were not saved', body: error.message }),
   });
 }
 
@@ -116,7 +119,8 @@ export function useTrashPage(page: Pick<PageDetail, 'id' | 'title' | 'spaceKey'>
       cache.queryClient.removeQueries({ queryKey: trashedPageKey(page.id) });
       show({ tone: 'ok', title: `“${restored.title || 'Untitled'}” restored` });
     },
-    onError: (error) => show({ tone: 'danger', title: 'The page was not restored', body: error.message }),
+    onError: (error) =>
+      show({ tone: 'danger', title: 'The page was not restored', body: error.message }),
     onSettled: settle,
   });
   const trash = useMutation({
