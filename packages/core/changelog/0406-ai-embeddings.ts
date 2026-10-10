@@ -5,8 +5,10 @@ import { sql } from 'drizzle-orm';
 const INDEXED_DIMENSIONS = [384, 512, 768, 1024, 1536] as const;
 
 /*
- * Chunks of issues and pages as vectors, with the access metadata retrieval filters on (module,
- * project or space, author) so excluded and unreadable content never comes back. The column is
+ * Chunks of issues and pages as vectors, where in the record each came from (location: a
+ * heading and anchor, a description or a comment, for citations), and the access metadata
+ * retrieval filters on (module, project or space, author) so excluded and unreadable content
+ * never comes back. The column is
  * an untyped vector because the size follows the embedding model; each common size has a
  * partial HNSW index over the cast, and a query uses it with
  * `where dimensions = N order by embedding::vector(N) <=> $query`. Switching models reindexes.
@@ -25,6 +27,7 @@ export default changeset({
         target_id text not null,
         chunk_index integer not null,
         text text not null,
+        location jsonb,
         embedding vector not null,
         dimensions integer not null,
         provider_id uuid references ai_providers (id) on delete set null,
