@@ -1,5 +1,6 @@
 import {
   realtimeServerMessageSchema,
+  type PresenceEntry,
   type RealtimeMessagePayload,
   type RealtimeScope,
 } from '@bemmoly/shared';
@@ -14,6 +15,9 @@ export interface BackoffOptions {
 
 const DEFAULT_BACKOFF: BackoffOptions = { initialMs: 500, maxMs: 30_000 };
 
+/** WebSocket.OPEN, spelled out so the client runs where the global is missing. */
+const OPEN = 1;
+
 /** Exponential backoff with jitter between half and the full delay, capped at `maxMs`. */
 export function backoffDelay(
   attempt: number,
@@ -26,12 +30,22 @@ export function backoffDelay(
 
 type SocketFactory = (url: string) => WebSocket;
 
+/** Where this tab is: one scope and a view in it ("board", "issue:PLT-204"). */
+export interface PresencePlace {
+  scope: RealtimeScope;
+  view: string;
+}
+
 export interface RealtimeClientOptions {
   url: string;
   /** Scopes to subscribe to; messages addressed to the signed-in person arrive regardless. */
   scopes: readonly RealtimeScope[];
   onEvent: (event: RealtimeEvent) => void;
   onStatus?: (status: RealtimeStatus) => void;
+  /** Joined on every open, so a reconnect puts the tab back where it was. */
+  presence?: PresencePlace | null;
+  /** Everyone else in the joined scope, whenever that changes. */
+  onPresence?: (people: PresenceEntry[]) => void;
   backoff?: BackoffOptions;
   createSocket?: SocketFactory;
   setTimer?: (callback: () => void, ms: number) => unknown;
@@ -47,8 +61,11 @@ export class RealtimeClient {
   private attempt = 0;
   private timer: unknown = null;
   private stopped = true;
-  private readonly options: Required<Omit<RealtimeClientOptions, 'onStatus'>> &
-    Pick<RealtimeClientOptions, 'onStatus'>;
+  private place: PresencePlace | null;
+  private readonly options: Required<
+    Omit<RealtimeClientOptions, 'onStatus' | 'presence' | 'onPresence'>
+  > &
+    Pick<RealtimeClientOptions, 'onStatus' | 'onPresence'>;
 
   constructor(options: RealtimeClientOptions) {
     this.options = {
@@ -58,6 +75,19 @@ export class RealtimeClient {
       clearTimer: (handle) => clearTimeout(handle as ReturnType<typeof setTimeout>),
       ...options,
     };
+    this.place = options.presence ?? null;
+  }
+
+  /** Moves this tab's presence, or leaves with null; sent now when open, else on open. */
+  present(place: PresencePlace | null): void {
+    const same =
+      place && this.place
+        ? JSON.stringify(place) === JSON.stringify(this.place)
+        : place === this.place;
+    if (same) return;
+    this.place = place;
+    if (this.socket?.readyState !== OPEN) return;
+    this.socket.send(JSON.stringify(place ? { type: 'presence', ...place } : { type: 'leave' }));
   }
 
   start(): void {
@@ -91,6 +121,7 @@ export class RealtimeClient {
       this.options.onStatus?.('open');
       for (const scope of this.options.scopes)
         socket.send(JSON.stringify({ type: 'subscribe', scope }));
+      if (this.place) socket.send(JSON.stringify({ type: 'presence', ...this.place }));
     });
     socket.addEventListener('message', (message: MessageEvent) => this.receive(message.data));
     socket.addEventListener('close', () => {
@@ -110,8 +141,9 @@ export class RealtimeClient {
       return;
     }
     const parsed = realtimeServerMessageSchema.safeParse(json);
-    if (parsed.success && parsed.data.type === 'invalidate')
-      this.options.onEvent(parsed.data.message);
+    if (!parsed.success) return;
+    if (parsed.data.type === 'invalidate') this.options.onEvent(parsed.data.message);
+    if (parsed.data.type === 'presence') this.options.onPresence?.(parsed.data.people);
   }
 
   private scheduleReconnect(): void {
