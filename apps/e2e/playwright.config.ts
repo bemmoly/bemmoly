@@ -15,7 +15,11 @@ const CI = Boolean(process.env['CI']);
 export default defineConfig({
   testDir: 'flows',
   /** A fixed server port (BEMMOLY_E2E_PORT) for machines that must keep to a range; else a free one. */
-  metadata: { serverPort: Number(process.env['BEMMOLY_E2E_PORT'] ?? 0) },
+  metadata: {
+    serverPort: Number(process.env['BEMMOLY_E2E_PORT'] ?? 0),
+    /** The modules the install enables, comma separated; empty means work,docs. */
+    modules: process.env['BEMMOLY_E2E_MODULES'] ?? '',
+  },
   globalSetup: './support/global-setup.ts',
   fullyParallel: true,
   forbidOnly: CI,

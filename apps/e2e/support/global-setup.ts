@@ -6,11 +6,26 @@ import { freePort, modulesCli, startServer, writeServerEnv } from './server.ts';
 import { STATE_DIR, writeState } from './state.ts';
 
 /**
+ * Work and Docs unless BEMMOLY_E2E_MODULES (read into the config's metadata) names others:
+ * `BEMMOLY_E2E_MODULES=docs` runs the Docs flows on an install where Work was never enabled,
+ * as 0.3 promises Docs works alone.
+ */
+function modulesToEnable(config: FullConfig): string[] {
+  const named = String(config.metadata['modules'] ?? '');
+  const ids = named
+    .split(',')
+    .map((id) => id.trim())
+    .filter(Boolean);
+  return ids.length > 0 ? ids : ['work', 'docs'];
+}
+
+/**
  * One real install per run: Postgres (a CI service through
  * BEMMOLY_TEST_DATABASE_URL, or a Testcontainers pgvector container), the
  * server from this checkout on a free port serving the built web app, Work and
- * Docs enabled for everyone through the operator CLI, and the people. Returns
- * the teardown, which stops all of it.
+ * Docs enabled for everyone through the operator CLI (or the modules
+ * BEMMOLY_E2E_MODULES names), and the people. Returns the teardown, which
+ * stops all of it.
  */
 export default async function globalSetup(config: FullConfig): Promise<() => Promise<void>> {
   rmSync(STATE_DIR, { recursive: true, force: true });
@@ -28,8 +43,9 @@ export default async function globalSetup(config: FullConfig): Promise<() => Pro
   try {
     const server = await startServer(envFile, port);
     cleanups.push(() => server.stop());
-    await modulesCli(envFile, ['enable', 'work', '--access', 'everyone']);
-    await modulesCli(envFile, ['enable', 'docs', '--access', 'everyone']);
+    for (const module of modulesToEnable(config)) {
+      await modulesCli(envFile, ['enable', module, '--access', 'everyone']);
+    }
     const people = await seedPeople(server.baseURL);
     writeState({ baseURL: server.baseURL, serverLog: server.log, ...people });
   } catch (error) {
