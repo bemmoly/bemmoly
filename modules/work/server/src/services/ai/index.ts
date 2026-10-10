@@ -11,16 +11,19 @@ import { AI_INSIGHT_EVENT_KINDS } from '@bemmoly/shared';
 import { WORK_REALTIME_KINDS } from '../../../../shared/realtime.ts';
 import { createWorkActivitySource } from './activity.ts';
 import { createIssueContextBuilder } from './issue-context.ts';
+import { createIssueDetailsSource } from './related.ts';
 import { createSprintContextBuilder } from './sprint-context.ts';
 
 export { createIssueContextBuilder, ISSUE_CONTEXT_LIMITS } from './issue-context.ts';
 export { createSprintContextBuilder, SPRINT_CONTEXT_LIMITS } from './sprint-context.ts';
 export { createWorkActivitySource } from './activity.ts';
+export { createIssueDetailsSource } from './related.ts';
 
 export const WORK_AI_BUILDERS = {
   issue: 'work.issue',
   sprint: 'work.sprint',
   activity: 'work.activity',
+  issueDetails: 'work.issue_details',
 } as const;
 
 export const WORK_PROMPT_FILES = {
@@ -60,6 +63,13 @@ export function registerWorkAi(
       WORK_AI_BUILDERS.activity,
       'Issues and sprints that changed',
       createWorkActivitySource(sql),
+    ),
+  );
+  ctx.ai.addContextBuilder(
+    defineContextBuilder(
+      WORK_AI_BUILDERS.issueDetails,
+      "An issue's fields and description, for other modules' context",
+      createIssueDetailsSource(sql),
     ),
   );
   ctx.ai.addInsightGenerator(

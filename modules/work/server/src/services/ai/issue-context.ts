@@ -191,7 +191,7 @@ export function createIssueContextBuilder(
       });
       if (writer.excluded({ projectId: issue.projectId })) throw aiRefusal('excluded');
       await writeIssue(db, writer, issue, options.since);
-      await options.related?.(writer, { kind: 'issue', id: issue.id });
+      await options.related?.(writer, { kind: 'issue.links', id: issue.id });
       return writer.build({ projectId: issue.projectId }, { key: issue.key, title: issue.title });
     },
     async lastChangedAt(id) {
