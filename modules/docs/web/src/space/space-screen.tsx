@@ -1,5 +1,5 @@
 import { usePage, useSpace } from '../hooks/queries.ts';
-import { PageArticle } from '../page/page-article.tsx';
+import { PageFrame } from '../page/page-frame.tsx';
 import type { DocsScreenProps } from '../routes.tsx';
 import { PageSkeleton } from '../skeletons/docs-skeletons.tsx';
 import { SpaceLayout } from './space-layout.tsx';
@@ -14,7 +14,7 @@ function SpaceHome({ spaceRef }: { spaceRef: string }) {
   if (!homeId) return <SpaceOverview />;
   if (home.isPending) return <PageSkeleton />;
   if (home.isError) return <SpaceOverview />;
-  return <PageArticle page={home.data} />;
+  return <PageFrame key={home.data.id} page={home.data} />;
 }
 
 /**

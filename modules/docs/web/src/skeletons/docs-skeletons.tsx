@@ -77,24 +77,31 @@ export function HomeSkeleton() {
   );
 }
 
+/** The space sidebar: the switcher, the search box and a few tree rows. */
+function SidebarSkeleton() {
+  return (
+    <aside className="hidden w-65 shrink-0 flex-col border-r border-br bg-sf md:flex">
+      <SpaceSwitcherSkeleton />
+      <span className="px-3 pb-2.5">
+        <Skeleton height={30} shape="block" />
+      </span>
+      <span className="flex flex-col gap-px px-2">
+        {[62, 48, 70, 55, 40, 66].map((width) => (
+          <span key={width} className="flex h-7.5 items-center gap-1.75 pl-2.5">
+            <Skeleton width={9} height={9} shape="block" />
+            <Skeleton width={`${width}%`} height={10} />
+          </span>
+        ))}
+      </span>
+    </aside>
+  );
+}
+
 /** A space: the sidebar's head, search and tree beside the main column. */
 export function SpaceSkeleton() {
   return (
     <div role="status" aria-label="Loading space" className="flex min-h-0 flex-1">
-      <aside className="hidden w-65 shrink-0 flex-col border-r border-br bg-sf md:flex">
-        <SpaceSwitcherSkeleton />
-        <span className="px-3 pb-2.5">
-          <Skeleton height={30} shape="block" />
-        </span>
-        <span className="flex flex-col gap-px px-2">
-          {[62, 48, 70, 55, 40, 66].map((width) => (
-            <span key={width} className="flex h-7.5 items-center gap-1.75 pl-2.5">
-              <Skeleton width={9} height={9} shape="block" />
-              <Skeleton width={`${width}%`} height={10} />
-            </span>
-          ))}
-        </span>
-      </aside>
+      <SidebarSkeleton />
       <div className="flex min-w-0 flex-1 flex-col gap-4 px-10 pt-8">
         <Line width={200} size="text-24" bar={18} />
         <PageRowsSkeleton label="Loading pages" />
@@ -103,23 +110,62 @@ export function SpaceSkeleton() {
   );
 }
 
-/** A page: breadcrumbs, title, then paragraphs of the document column. */
-export function PageSkeleton() {
+/**
+ * A page's main column as the doc editor lays it out: the 44px bar, then the 720px body column
+ * with the title, the line about it and paragraphs, and the 340px panel when it is open.
+ */
+export function PageSkeleton({ panel = false }: { panel?: boolean }) {
   return (
-    <div role="status" aria-label="Loading page" className="min-h-0 flex-1 overflow-hidden bg-sf">
-      <div className="mx-auto flex max-w-180 flex-col gap-3 px-10 pt-12">
-        <Line width={180} size="text-12h" bar={8} />
-        <Line width="55%" size="text-36" bar={24} />
-        {Array.from({ length: 6 }, (_, index) => (
-          <Line key={index} width={index % 3 === 2 ? '60%' : '100%'} size="text-15" />
-        ))}
+    <div role="status" aria-label="Loading page" className="flex min-h-0 min-w-0 flex-1 flex-col">
+      <div className="flex h-11 shrink-0 items-center gap-2.5 border-b border-br bg-sf px-5">
+        <Line width={220} size="text-12h" bar={9} />
+        <span className="ml-auto flex items-center gap-2">
+          <Skeleton width={30} height={30} shape="block" />
+          <Skeleton width={30} height={30} shape="block" />
+        </span>
       </div>
+      <div className="flex min-h-0 flex-1">
+        <div className="min-w-0 flex-1 overflow-hidden bg-sf">
+          <div className="mx-auto flex max-w-180 flex-col gap-4.5 px-4 pt-8 sm:px-10 sm:pt-12">
+            <Line width="55%" size="text-36" bar={26} />
+            <span className="border-b border-br-row pb-1.5">
+              <Line width={260} size="text-12h" bar={9} />
+            </span>
+            {[100, 96, 62, 100, 88].map((width, index) => (
+              <Line key={index} width={`${width}%`} size="text-15h" bar={11} />
+            ))}
+          </div>
+        </div>
+        {panel && (
+          <div className="hidden w-85 shrink-0 flex-col gap-3 border-l border-br bg-sf xl:flex">
+            <span className="flex h-11 items-center gap-5 border-b border-br-row px-6">
+              <Skeleton width={44} height={10} />
+              <Skeleton width={64} height={10} />
+            </span>
+            <span className="flex flex-col gap-3 px-3.5">
+              <Skeleton width={110} height={8} />
+              <Skeleton height={220} shape="block" />
+            </span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/** The page screen before its data: the sidebar beside the page's own skeleton. */
+export function PageScreenSkeleton({ panel = false }: { panel?: boolean }) {
+  return (
+    <div className="flex min-h-0 flex-1">
+      <SidebarSkeleton />
+      <PageSkeleton panel={panel} />
     </div>
   );
 }
 
 /** What a Docs screen shows while its own code loads: the same skeleton as its data paint. */
 export function ScreenSkeleton({ screen }: { screen: string }) {
-  if (screen === 's' || screen === 'p') return <SpaceSkeleton />;
+  if (screen === 'p') return <PageScreenSkeleton />;
+  if (screen === 's') return <SpaceSkeleton />;
   return <HomeSkeleton />;
 }
