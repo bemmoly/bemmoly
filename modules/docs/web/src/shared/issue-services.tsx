@@ -3,7 +3,10 @@ import type { DocServices, IssueTableAttrs } from '@bemmoly/editor';
 import { useMemo } from 'react';
 
 /** The editor's issue services; spread them into the page's DocServices. */
-export type IssueServices = Pick<DocServices, 'renderIssue' | 'renderIssueTable' | 'searchIssues'>;
+export type IssueServices = Pick<
+  DocServices,
+  'renderIssue' | 'renderIssueCard' | 'renderIssueTable' | 'searchIssues'
+>;
 
 /**
  * Live issues in a page, lent by whichever enabled module owns the "issue"
@@ -17,9 +20,10 @@ export function useIssueServices(): IssueServices {
   const renderer = useEntityRenderer('issue');
   return useMemo<IssueServices>(() => {
     if (!renderer) return {};
-    const { Chip, Table, search } = renderer;
+    const { Chip, Embed, Table, search } = renderer;
     return {
       ...(Chip ? { renderIssue: (key: string) => <Chip entityKey={key} /> } : {}),
+      ...(Embed ? { renderIssueCard: (key: string) => <Embed entityKey={key} /> } : {}),
       ...(Table
         ? {
             renderIssueTable: (attrs: IssueTableAttrs) => (
