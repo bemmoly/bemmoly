@@ -19,9 +19,23 @@ describe('demoWorkspace', () => {
   });
 
   it('starts in the preset ?theme names, and ignores one it does not know', () => {
-    expect(demoWorkspace('?theme=ocean').settings['appearance.theme']).toBe('ocean');
-    expect(demoWorkspace('?theme=ocean').settings['appearance.mode']).toBe('dark');
-    expect(demoWorkspace('?theme=neon').settings['appearance.theme']).toBe('classic');
+    expect(demoWorkspace({ search: '?theme=ocean' }).settings['appearance.theme']).toBe('ocean');
+    expect(demoWorkspace({ search: '?theme=ocean' }).settings['appearance.mode']).toBe('dark');
+    expect(demoWorkspace({ search: '?theme=neon' }).settings['appearance.theme']).toBe('classic');
+  });
+
+  it('reports the release it was built from and no other version', () => {
+    const db = demoWorkspace({ version: '9.8.7' });
+    const versions = JSON.stringify([
+      db.system,
+      db.updates,
+      db.backups,
+      db.adminModules,
+      db.manifests,
+      db.audit,
+    ]).match(/(?<![\d.])\d+\.\d+\.\d+(?![.\d])/g);
+    expect(new Set(versions)).toEqual(new Set(['9.8.7']));
+    expect(db.updates.available).toBeNull();
   });
 
   it('starts over each time, so a reload resets the data', () => {

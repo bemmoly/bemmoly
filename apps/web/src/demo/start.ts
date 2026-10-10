@@ -16,6 +16,7 @@ export async function startDemo(): Promise<void> {
   keepUnderBase(import.meta.env.BASE_URL, root);
   // Framed by the site's homepage previews, the page around it already says it is a demo.
   if (window.self === window.top) showBanner();
-  const api = createMockApi(demoWorkspace(window.location.search));
+  const workspace = demoWorkspace({ search: window.location.search, version: __APP_VERSION__ });
+  const api = createMockApi(workspace);
   await enableMockNetwork(api, { fallback: false });
 }

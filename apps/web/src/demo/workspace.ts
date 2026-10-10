@@ -1,5 +1,6 @@
 import { PRESETS } from '@bemmoly/ui/tokens';
 import { createMockDb, type MockDb } from '../mocks/db.ts';
+import { atRelease } from './release.ts';
 
 /**
  * The demo's workspace: the mock backend's signed-in "ready" install (Acme Labs, its people,
@@ -9,10 +10,13 @@ import { createMockDb, type MockDb } from '../mocks/db.ts';
  * developer example, which an install leaves off.
  *
  * `?theme=<preset>` (for example `ocean`) starts the workspace in that preset, so the site's
- * previews can match the page around them.
+ * previews can match the page around them. With a `version`, the install reports that release
+ * everywhere (release.ts).
  */
-export function demoWorkspace(search = ''): MockDb {
+export function demoWorkspace(options: { search?: string; version?: string } = {}): MockDb {
+  const { search = '', version } = options;
   const db = createMockDb('ready');
+  if (version) atRelease(db, version);
   const example = (id: string) => id === 'sample';
   db.manifests = db.manifests.filter((manifest) => !example(manifest.id));
   db.grants = db.grants.filter((grant) => !example(grant.moduleId));

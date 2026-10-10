@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
@@ -8,6 +9,11 @@ import { demoPage, DEMO_BASE } from './demo-page.ts';
 import { precompress } from './precompress.ts';
 
 const server = 'http://localhost:8080';
+const { version } = JSON.parse(
+  readFileSync(new URL('./package.json', import.meta.url), 'utf8'),
+) as {
+  version: string;
+};
 const brand = (path: string) =>
   fileURLToPath(new URL(`../../packages/ui/assets/brand/${path}`, import.meta.url));
 
@@ -34,6 +40,8 @@ export default defineConfig(({ command, mode }) => {
       /** The in-memory mock backend runs under the dev server and in the demo build only. */
       __MOCK_API__: JSON.stringify(command === 'serve' || demo),
       __DEMO__: JSON.stringify(demo),
+      /** The release this build is: the changesets tool writes it into package.json. */
+      __APP_VERSION__: JSON.stringify(version),
     },
     server: {
       port: 5173,
