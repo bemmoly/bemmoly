@@ -80,6 +80,7 @@ export {
   ANSWER_PROMPT_FILE,
   ANSWER_PROMPT_ID,
   answerVariables,
+  NO_ANSWER,
   createRetrievalService,
   fuseRankings,
   RETRIEVAL_JOBS,

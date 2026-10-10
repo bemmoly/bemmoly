@@ -1,5 +1,11 @@
 export {
+  createEvalAi,
   createTestAi,
+  EvalSetupError,
+  loadEvalPrompts,
+  type EvalAi,
+  type EvalPrompts,
+  type EvalProvider,
   type TestAi,
   type TestAiOptions,
   type TestAiReply,

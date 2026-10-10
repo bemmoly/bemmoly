@@ -21,6 +21,13 @@ import type { IdentityWiring } from './identity.ts';
 import type { DataKernel } from './kernel.ts';
 import { appVersionOf } from './version.ts';
 
+/** The kernel's own prompt files; modules add theirs with ctx.ai.addPromptFile. */
+export const KERNEL_PROMPT_FILES: readonly string[] = [
+  PLAN_PROMPT_FILE,
+  ANSWER_PROMPT_FILE,
+  ...INSIGHT_PROMPT_FILES,
+];
+
 export interface AiWiringInput {
   env: Pick<
     Env,
@@ -60,7 +67,7 @@ export async function wireAi(input: AiWiringInput): Promise<AiWiring> {
     events: kernel.events,
     realtime: kernel.realtime,
     appVersion: appVersionOf(env),
-    kernelPromptFiles: [PLAN_PROMPT_FILE, ANSWER_PROMPT_FILE, ...INSIGHT_PROMPT_FILES],
+    kernelPromptFiles: KERNEL_PROMPT_FILES,
     modulePromptFiles: modules
       .aiPromptFiles()
       .map((file) => ({ moduleId: file.moduleId, path: file.path })),
