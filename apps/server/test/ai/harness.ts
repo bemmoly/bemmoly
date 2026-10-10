@@ -7,7 +7,7 @@ import {
   type EvalPrompts,
   type EvalProvider,
 } from '@bemmoly/core/testing';
-import { expect, inject } from 'vitest';
+import { expect, inject, onTestFailed, onTestFinished } from 'vitest';
 import { KERNEL_PROMPT_FILES } from '../../src/config/ai.ts';
 import { shippedModules } from '../../src/test-support.ts';
 import type { Verdict } from './checks.ts';
@@ -38,7 +38,10 @@ export type RecordedReply =
 export interface EvalCase {
   ai: EvalAi;
   live: boolean;
-  /** In record mode, writes what the live model answered as this case's recording. */
+  /**
+   * In record mode, keeps what the live model answered as this case's recording, written
+   * once the case has passed its checks; a failing answer is never recorded.
+   */
   save(prompt: AiPromptRef, replies: RecordedReply[]): Promise<void>;
 }
 
@@ -54,7 +57,13 @@ export async function evalCase(caseId: string): Promise<EvalCase> {
     async save(prompt, replies) {
       if (!mode.record) return;
       const body = { prompt, replies: { [prompt.id]: replies } };
-      await writeFile(recordingPath(caseId), `${JSON.stringify(body, null, 2)}\n`);
+      let failed = false;
+      onTestFailed(() => {
+        failed = true;
+      });
+      onTestFinished(async () => {
+        if (!failed) await writeFile(recordingPath(caseId), `${JSON.stringify(body, null, 2)}\n`);
+      });
     },
   };
 }
