@@ -7,8 +7,15 @@ import {
   ActivityItem,
   CommentComposer,
   ComposerPlaceholder,
+  ChecklistBlock,
   CriteriaRow,
   FieldList,
+  HistoryItem,
+  PropertyEmpty,
+  PropertyGroup,
+  PropertyRow,
+  PropertyValue,
+  SaveState,
   FieldPerson,
   FieldRow,
   LinkedIssueRow,
@@ -95,6 +102,39 @@ describe('issue page components', () => {
     expect(screen.getByText('logged 4h · Wednesday')).toBeTruthy();
     expect(screen.getByRole('group', { name: '6 watching' })).toBeTruthy();
     expect(screen.getByText('Lowest')).toBeTruthy();
+  });
+
+  it('draws the rail groups, the checklist block, history lines and the saved state', async () => {
+    const onRetry = vi.fn();
+    const { container, rerender } = render(
+      <div>
+        <PropertyGroup title="Planning">
+          <PropertyRow label="Due date">
+            <PropertyValue aria-label="Due date: none. Change">
+              <PropertyEmpty>Add date</PropertyEmpty>
+            </PropertyValue>
+          </PropertyRow>
+        </PropertyGroup>
+        <ChecklistBlock title="Acceptance criteria" done={1} total={2} hint="Checks to tick">
+          <CriteriaRow checked>One</CriteriaRow>
+          <CriteriaRow checked={false}>Two</CriteriaRow>
+        </ChecklistBlock>
+        <HistoryItem person={AK} when="2h ago">
+          moved the issue
+        </HistoryItem>
+        <SaveState state="error" onRetry={onRetry} />
+      </div>,
+    );
+    await expectAccessible(container);
+    expect(screen.getByRole('region', { name: 'Planning' })).toBeTruthy();
+    expect(screen.getByText('Add date')).toBeTruthy();
+    expect(screen.getByLabelText('1 of 2 met').textContent).toBe('1 / 2');
+    expect(screen.queryByText('Checks to tick')).toBeNull();
+    expect(screen.getByText('moved the issue')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
+    expect(onRetry).toHaveBeenCalled();
+    rerender(<SaveState state="saved" />);
+    expect(screen.getByRole('status').textContent).toBe('Saved');
   });
 
   it("lays out create form fields and the type's field table", async () => {

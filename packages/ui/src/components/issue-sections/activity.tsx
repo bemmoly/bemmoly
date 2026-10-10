@@ -69,6 +69,36 @@ export function ActivityItem({
   );
 }
 
+export interface HistoryItemProps {
+  person: ActivityPerson;
+  /** The change, with status glyphs and names inline: "moved from (o) To do to (o) In progress". */
+  children: ReactNode;
+  /** A RelativeTime, right-aligned. */
+  when: ReactNode;
+  className?: string;
+}
+
+/**
+ * A history or work log line: the 22px avatar, the name in medium weight, the change in tx-2
+ * with its glyphs, and the time at the end in tx-3 (docs/design/premium/screens.js).
+ */
+export function HistoryItem({ person, children, when, className }: HistoryItemProps) {
+  return (
+    <article className={cx('flex items-start gap-2.5 text-13 leading-brief', className)}>
+      <Avatar
+        name={person.name}
+        hue={person.hue}
+        size={22}
+        {...(person.initials ? { initials: person.initials } : {})}
+      />
+      <p className="m-0 min-w-0 flex-1 pt-px text-tx-2">
+        <span className="font-medium text-tx">{person.name}</span> {children}
+      </p>
+      <span className="shrink-0 pt-px text-12 text-tx-3">{when}</span>
+    </article>
+  );
+}
+
 /** A borderless 12px tx4 action under a comment: Reply, React, Create issue from this. */
 export function ActivityAction({
   className,

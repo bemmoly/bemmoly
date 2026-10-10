@@ -1,5 +1,6 @@
 import type { HTMLAttributes, ReactNode } from 'react';
 import { cx } from '../../lib/cx.ts';
+import { focusRing } from '../../lib/focus.ts';
 
 export interface SectionHeadingProps {
   title: ReactNode;
@@ -57,11 +58,63 @@ export function ListCard({ className, ...rest }: ListCardProps) {
   return (
     <div
       className={cx(
-        'flex flex-col overflow-hidden rounded-panel border border-br bg-sf text-13 text-tx [&>:last-child]:border-b-0',
+        'flex flex-col overflow-hidden rounded-card border border-line bg-card text-13 text-tx [&>:last-child]:border-b-0',
         className,
       )}
       {...rest}
     />
+  );
+}
+
+/** The line an always-shown section prints while it is empty: what it is for, in tx-3. */
+export function EmptyHint({ className, ...rest }: HTMLAttributes<HTMLParagraphElement>) {
+  return <p className={cx('m-0 py-1 text-13 text-tx-3', className)} {...rest} />;
+}
+
+export type SaveStateValue = 'idle' | 'saving' | 'saved' | 'error';
+
+export interface SaveStateProps {
+  state: SaveStateValue;
+  /** Offered beside "Not saved". */
+  onRetry?: () => void;
+  className?: string;
+}
+
+/**
+ * The quiet saved state of an autosaving field: "Saving…", then "Saved", or "Not saved" with
+ * Retry. Announced politely; it takes no room while idle.
+ */
+export function SaveState({ state, onRetry, className }: SaveStateProps) {
+  return (
+    <span
+      role="status"
+      aria-live="polite"
+      className={cx(
+        'inline-flex items-center gap-1.5 text-12 tabular-nums',
+        state === 'error' ? 'text-red-tx' : 'text-tx-3',
+        className,
+      )}
+    >
+      {state === 'saving' && 'Saving…'}
+      {state === 'saved' && 'Saved'}
+      {state === 'error' && (
+        <>
+          Not saved
+          {onRetry && (
+            <button
+              type="button"
+              onClick={onRetry}
+              className={cx(
+                'cursor-pointer rounded-xs border-0 bg-transparent p-0 font-sans text-12 font-medium text-tx underline',
+                focusRing,
+              )}
+            >
+              Retry
+            </button>
+          )}
+        </>
+      )}
+    </span>
   );
 }
 
