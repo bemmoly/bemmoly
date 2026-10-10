@@ -22,6 +22,7 @@ const BLOCKS = new Set([
   'horizontalRule',
   'image',
   'issueTable',
+  'issueCard',
   'toc',
   'unsupportedBlock',
 ]);

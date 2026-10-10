@@ -16,7 +16,7 @@ const portable = (doc: RichTextDoc): RichTextDoc => ({
     (node) =>
       !['toc', 'unsupportedBlock'].includes(node.type) &&
       !(node.type === 'paragraph' && !node.content) &&
-      !JSON.stringify(node).match(/"(mention|pageLink|issueEmbed|hardBreak)"/),
+      !JSON.stringify(node).match(/"(mention|pageLink|issueEmbed|issueCard|hardBreak)"/),
   ),
 });
 
@@ -45,6 +45,8 @@ describe('Markdown export', () => {
       \`\`\`lql title="Open work"
       project = PLT AND status != Done
       \`\`\`
+
+      [PLT-204](https://bemmoly.example/work/issue/PLT-204)
 
       ### Owners
 

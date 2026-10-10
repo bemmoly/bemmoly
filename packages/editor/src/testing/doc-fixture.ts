@@ -63,6 +63,7 @@ export const EVERY_DOC_NODE: RichTextDoc = {
       type: 'issueTable',
       attrs: { query: 'project = PLT AND status != Done', title: 'Open work' },
     },
+    { type: 'issueCard', attrs: { key: 'PLT-204' } },
     heading(3, 'Owners'),
     {
       type: 'table',
