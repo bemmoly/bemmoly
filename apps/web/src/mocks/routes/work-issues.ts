@@ -46,7 +46,9 @@ function epicColorOf(db: MockDb, rows: readonly Row[], row: Row): string | null 
   );
   if (!epicTypes.has(String(row['typeId']))) return null;
   const epics = rows
-    .filter((each) => epicTypes.has(String(each['typeId'])) && each['projectId'] === row['projectId'])
+    .filter(
+      (each) => epicTypes.has(String(each['typeId'])) && each['projectId'] === row['projectId'],
+    )
     .map((each) => ({ id: each.id, key: String(each['key']) }));
   return mockEpicColor(epics, row.id);
 }
