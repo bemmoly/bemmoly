@@ -53,6 +53,7 @@ export function kindLabel(kind: string): string {
     comment: 'New comment',
     status_change: 'Status changed',
     watch_update: 'Watching',
+    ai_budget: 'AI budget',
   };
   return labels[kind] ?? 'Update';
 }

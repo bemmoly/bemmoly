@@ -6,6 +6,7 @@ import {
   createSecretBox,
   INSIGHT_PROMPT_FILES,
   PLAN_PROMPT_FILE,
+  subscribeAiBudgetAlerts,
   wireAiPlans,
   type AiHandle,
   type AiPlans,
@@ -102,6 +103,13 @@ export async function wireAi(input: AiWiringInput): Promise<AiWiring> {
     isEnabled,
   });
   insights.start();
+  // Admins hear about the budget in the inbox and by email, once per month and threshold.
+  subscribeAiBudgetAlerts({
+    sql: database.sql,
+    authorize: input.identity.authorize,
+    events: kernel.events,
+    logger: logger.child({ component: 'ai-budget' }),
+  });
   return {
     service,
     plans,

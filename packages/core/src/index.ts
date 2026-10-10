@@ -5,8 +5,12 @@ export * from './middlewares/index.ts';
 export * from './modules/index.ts';
 export { API_PREFIX, kernelRoutes, type KernelRouteDependencies } from './routes/index.ts';
 export {
+  AI_BUDGET_NOTIFICATION_KIND,
   AI_BUDGET_THRESHOLD,
   AI_CATALOG_REFRESH_JOB,
+  AI_USAGE_PATH,
+  budgetAlertCopy,
+  subscribeAiBudgetAlerts,
   AI_SETTING_DEFINITIONS,
   AI_SETTINGS_CHANGED,
   aiEnabledFor,

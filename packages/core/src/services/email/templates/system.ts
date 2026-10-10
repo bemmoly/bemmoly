@@ -35,6 +35,35 @@ export function backupFailedEmail(frame: EmailFrame, data: BackupFailedEmailData
   };
 }
 
+export interface AiBudgetEmailData {
+  state: 'warning' | 'paused';
+  /** "AI has used 80% of this month's $50 budget." */
+  headline: string;
+  /** What happens next, in one or two sentences. */
+  detail: string;
+  usageUrl: string;
+}
+
+export function aiBudgetEmail(frame: EmailFrame, data: AiBudgetEmailData): EmailContent {
+  const { theme, brand } = frame;
+  const subject =
+    data.state === 'paused'
+      ? `AI in ${brand.workspaceName} has used this month's budget`
+      : `AI in ${brand.workspaceName} has used 80% of this month's budget`;
+  return {
+    subject,
+    preview: data.headline,
+    body: h(
+      Fragment,
+      null,
+      h(Title, { theme }, data.headline),
+      h(Paragraph, { theme }, data.detail),
+      h(Muted, { theme }, 'Usage shows which features and people the spend came from.'),
+      h(ActionButton, { theme, href: data.usageUrl }, 'Open AI usage'),
+    ),
+  };
+}
+
 export interface UpdateAvailableEmailData {
   version: string;
   currentVersion: string | null;
