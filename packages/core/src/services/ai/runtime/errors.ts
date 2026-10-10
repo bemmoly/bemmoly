@@ -86,6 +86,18 @@ const COPY: Record<AiProviderFailure, (provider: string, retry: number | null) =
   unknown: (p) => `${p} failed to answer`,
 };
 
+/**
+ * What the error keeps as its cause, for the logs: the failure's name, status and scrubbed
+ * words. Never the SDK's own error, which carries the request body (the prompt, the person's
+ * content), the response and the provider's unscrubbed message, where a key can appear.
+ */
+function safeCauseOf(shape: ApiCallShape): Error {
+  const cause = new Error(providerMessageOf(shape) ?? 'The provider gave no detail');
+  cause.name = shape.name ?? 'Error';
+  if (shape.statusCode !== undefined) Object.assign(cause, { statusCode: shape.statusCode });
+  return cause;
+}
+
 /** Unwraps the SDK's retry wrapper to the error that actually happened. */
 function innermost(error: unknown): ApiCallShape {
   const shape = (error ?? {}) as ApiCallShape;
@@ -108,7 +120,7 @@ export function toProviderError(error: unknown, provider: string): ProviderError
   return new ProviderError(COPY[failure](provider, retryAfterSeconds), {
     provider,
     details,
-    cause: error,
+    cause: safeCauseOf(shape),
   });
 }
 
