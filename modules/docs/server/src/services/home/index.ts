@@ -31,6 +31,7 @@ export function createHomeService(deps: DocsServiceDeps) {
         from pages p join spaces s on s.id = p.space_id
         where p.deleted_at is null and s.archived_at is null
           and (${visible === null} or p.space_id = any(${visible ?? []}::uuid[]))
+          ${query.spaceId ? sql`and p.space_id = ${query.spaceId}` : sql``}
           ${query.mine ? sql`and (p.updated_by = ${userId}::uuid or p.owner_id = ${userId}::uuid)` : sql``}
           ${cursor ? sql`and (p.updated_at, p.id) < (select updated_at, id from pages where id = ${cursor})` : sql``}
         order by p.updated_at desc, p.id desc

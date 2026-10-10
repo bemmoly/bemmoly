@@ -19,12 +19,22 @@ export const docsLibraryRoutes: MockRoute[] = [
     handle: (request, db) => {
       const state = docsState(db);
       const mine = request.query.get('mine') === 'true';
+      const spaceId = request.query.get('spaceId');
       const rows = state.pages
-        .filter((row) => live(row) && (!mine || row.ownerId === db.signedInAs))
+        .filter(
+          (row) =>
+            live(row) &&
+            (!mine || row.ownerId === db.signedInAs) &&
+            (!spaceId || row.spaceId === spaceId),
+        )
         .sort(newestFirst);
+      const editor = (id: string | null) => {
+        const user = db.users.find((item) => item.id === id);
+        return user ? { id: user.id, name: user.name } : null;
+      };
       return ok(
         page(
-          rows.map((row) => presentSummary(state, row)),
+          rows.map((row) => ({ ...presentSummary(state, row), lastEditor: editor(row.ownerId) })),
           request,
           20,
         ),
