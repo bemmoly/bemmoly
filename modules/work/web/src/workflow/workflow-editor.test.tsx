@@ -64,7 +64,7 @@ describe('WorkflowEditor', () => {
     fireEvent.click(within(panel).getByRole('button', { name: 'Add condition' }));
     await choose(within(panel).getByRole('combobox', { name: 'Add condition' }), 'Field is set');
 
-    expect(within(panel).getByText('CONDITION')).toBeTruthy();
+    expect(within(panel).getByText('Condition')).toBeTruthy();
     expect(within(panel).getByText('Fill in Field.')).toBeTruthy();
     fireEvent.change(within(panel).getByRole('textbox', { name: 'Field *' }), {
       target: { value: 'pullRequest' },
@@ -80,7 +80,7 @@ describe('WorkflowEditor', () => {
       { timeout: 3000 },
     );
     fireEvent.click(within(panel).getByRole('button', { name: 'Remove Field is set' }));
-    expect(within(panel).queryByText('CONDITION')).toBeNull();
+    expect(within(panel).queryByText('Condition')).toBeNull();
   });
 
   it('deletes the focused status at once and offers Undo', async () => {

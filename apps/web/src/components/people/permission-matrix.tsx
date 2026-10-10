@@ -32,7 +32,7 @@ function Header({ roles, grid }: { roles: readonly Role[]; grid: CSSProperties }
     <div
       role="row"
       style={grid}
-      className="grid items-end border-b border-br2 bg-sf2 px-4 py-2.5 text-11 font-medium tracking-caps text-tx5 uppercase"
+      className="grid items-end border-b border-line bg-sunken px-4 py-2.5 text-12 text-tx-3"
     >
       <span role="columnheader">Capability</span>
       {roles.map((role) => (

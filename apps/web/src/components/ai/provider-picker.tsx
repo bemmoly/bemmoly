@@ -16,9 +16,7 @@ interface ProviderPickerProps {
 }
 
 function GroupLabel({ children }: { children: string }) {
-  return (
-    <span className="text-11 font-semibold tracking-label text-tx5 uppercase">{children}</span>
-  );
+  return <span className="text-11 font-semibold text-tx-3">{children}</span>;
 }
 
 /**

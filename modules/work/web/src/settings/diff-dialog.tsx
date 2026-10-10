@@ -5,9 +5,9 @@ import type { ReactNode } from 'react';
 
 const CHANGE: Record<SchemeDiffEntry['change'], { label: string; tone: 'ok' | 'warn' | 'accent' }> =
   {
-    added: { label: 'ADDED', tone: 'ok' },
-    removed: { label: 'REMOVED', tone: 'warn' },
-    changed: { label: 'CHANGED', tone: 'accent' },
+    added: { label: 'Added', tone: 'ok' },
+    removed: { label: 'Removed', tone: 'warn' },
+    changed: { label: 'Changed', tone: 'accent' },
   };
 
 const show = (value: unknown): string =>

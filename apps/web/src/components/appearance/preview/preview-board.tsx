@@ -72,7 +72,7 @@ export function PreviewBoard() {
         <div className="grid min-h-0 flex-1 grid-cols-4 gap-3">
           {SAMPLE_COLUMNS.map((column) => (
             <div key={column.status} className="flex flex-col gap-2 rounded-card bg-bg2 p-2">
-              <span className="flex items-center gap-2 px-1 py-1 text-11 font-semibold tracking-caps text-tx4 uppercase">
+              <span className="flex items-center gap-2 px-1 py-1 text-12 font-semibold text-tx">
                 {STATUS_LABELS[column.status]}
                 <span className="font-mono font-medium text-tx5">{column.issues.length}</span>
               </span>

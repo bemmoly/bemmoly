@@ -34,7 +34,7 @@ export function SectionHeading({
         <h2 className="m-0 flex items-center gap-2 text-15 font-semibold">
           {title}
           {mode === 'edit' && (
-            <span className="rounded-chip bg-ac-bg px-1.5 py-0.5 text-11 font-semibold tracking-caps text-ac uppercase">
+            <span className="rounded-chip bg-acc-50 px-1.5 py-0.5 text-11 font-semibold text-acc">
               Editing
             </span>
           )}

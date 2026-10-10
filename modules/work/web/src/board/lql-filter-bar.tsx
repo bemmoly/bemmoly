@@ -149,7 +149,7 @@ export function LqlFilterBar({
               >
                 <span className="font-mono">{item.label}</span>
                 {item.detail && <span className="ml-auto text-11 text-tx5">{item.detail}</span>}
-                <span className="text-10 tracking-label text-tx6 uppercase">{item.kind}</span>
+                <span className="text-11 text-tx-3">{item.kind}</span>
               </li>
             ))}
           </ul>

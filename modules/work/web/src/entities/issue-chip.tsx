@@ -3,6 +3,8 @@ import {
   KeyChip,
   Skeleton,
   StatusBadge,
+  StatusGlyph,
+  statusStage,
   TypeGlyph,
   typeLook,
   type TypeColorToken,
@@ -116,11 +118,14 @@ export function IssueCard({ entityKey }: { entityKey: string }) {
       <span className="min-w-0 flex-1 truncate" title={issue.title}>
         {issue.title}
       </span>
-      <StatusBadge
-        size="sm"
-        category={statusTone(issue.status.category, issue.status.name)}
-        label={issue.status.name}
-      />
+      <span className="flex shrink-0 items-center gap-1.5 text-12 text-tx-2">
+        <StatusGlyph
+          stage={statusStage(issue.status.category, issue.status.name)}
+          size={12}
+          decorative
+        />
+        {issue.status.name}
+      </span>
     </a>
   );
 }

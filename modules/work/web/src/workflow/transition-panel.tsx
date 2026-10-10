@@ -43,7 +43,7 @@ export function TransitionPanel({
       <PanelHeader
         mark={<Icon name="arrow" size={14} className="shrink-0 text-tx5" />}
         title={transition.name}
-        chip={<Badge>{any ? 'ANY STATUS' : 'TRANSITION'}</Badge>}
+        chip={<Badge>{any ? 'Any status' : 'Transition'}</Badge>}
       />
       <PanelBody>
         <PanelProblems problems={problems} />

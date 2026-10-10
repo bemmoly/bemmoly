@@ -99,7 +99,7 @@ export function CardsTab(props: CardsTabProps) {
           ))}
         </Card>
         <div className="flex flex-col gap-2.5">
-          <div className="text-12 font-medium tracking-caps text-tx5 uppercase">Preview</div>
+          <div className="text-12 font-semibold text-tx-3">Preview</div>
           <CardPreview
             fields={config.cardFields}
             colorRule={config.colorRule}
