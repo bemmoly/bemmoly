@@ -107,7 +107,8 @@ export function BlockHandle({
       role="group"
       aria-label="Block"
       style={{ top, left: box.left - origin.left - 52 }}
-      className="absolute z-10 flex gap-px"
+      // No margin to hold them on a phone; the / menu and the bubble remain.
+      className="absolute z-10 flex gap-px max-sm:hidden"
     >
       <Tooltip label="Add a block below" keys="/">
         <button

@@ -158,7 +158,7 @@ export function BubbleMenu({ editor, services, linking, setLinking }: BubbleMenu
       <div
         role="toolbar"
         aria-label="Format"
-        className="flex h-10 items-center gap-0.5 p-1"
+        className="flex h-10 max-w-[calc(100vw-16px)] items-center gap-0.5 overflow-x-auto p-1 [scrollbar-width:none]"
         onKeyDown={(event) => walk(event, editor)}
       >
         {editable && (
