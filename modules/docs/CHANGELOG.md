@@ -1,4 +1,4 @@
-# @bemmoly/editor
+# @bemmoly/module-docs
 
 ## 0.3.0
 
@@ -75,42 +75,13 @@
 
 ### Patch Changes
 
-- 27dec1d: The top bar fits a phone: below 640px the brand shows its mark, the module links scroll
-  sideways inside the bar with the current one kept in view, search folds into an icon below
-  768px, and Ask Bemmoly hides. Before, the bar widened every page on a phone and pushed side
-  panels off screen. Empty and missing-page states can now title themselves as headings, and links
-  in Docs pages are faintly underlined so they read without relying on colour. No configuration or schema
-  change.
 - Updated dependencies [27dec1d]
 - Updated dependencies [27dec1d]
+- Updated dependencies [27dec1d]
+- Updated dependencies [27dec1d]
+  - @bemmoly/core@0.3.0
+  - @bemmoly/core-web@0.3.0
+  - @bemmoly/editor@0.3.0
   - @bemmoly/ui@0.3.0
-
-## 0.2.2
-
-### Patch Changes
-
-- @bemmoly/ui@0.2.2
-
-## 0.2.1
-
-### Patch Changes
-
-- @bemmoly/ui@0.2.1
-
-## 0.2.0
-
-### Patch Changes
-
-- b4f5ea9: Issue descriptions, acceptance criteria and other document fields, and comments, are now written
-  in a rich text editor instead of a plain text box. The tools are bold, italic, mention, link and
-  code, with headings, bulleted and numbered lists, checklists, quotes and code blocks for
-  descriptions; the usual shortcuts work (⌘B, ⌘I, ⌘E, ⌘K for a link, ⌘↵ to save or post, Escape
-  to cancel), and typing / offers the blocks. Type @ to mention someone, or # to link an issue by
-  key or title; issue keys you type or paste become links on their own, and pasted web addresses
-  do too. Text reads the same after saving as it did while you wrote it. The editor loads the
-  first time you edit, so pages that only show text stay as fast as before. Existing descriptions
-  and comments open unchanged. No schema or configuration change.
-- Updated dependencies [2e14b26]
-- Updated dependencies [72bd7b9]
-- Updated dependencies [4d5e58f]
-  - @bemmoly/ui@0.2.0
+  - @bemmoly/api-client@0.3.0
+  - @bemmoly/shared@0.3.0
