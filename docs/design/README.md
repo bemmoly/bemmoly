@@ -1,6 +1,11 @@
 # Design mocks
 
-`mocks/` holds the 17 product screens that are the pixel source of truth for Bemmoly.
+`premium/` holds the design review, the source of truth for the shell and the visual language
+(tokens, icons, glyphs, tiles, the brand block); see its README and ADR 0015. Where the review
+and a mock overlap, the review wins.
+
+`mocks/` holds the 17 product screens that are the pixel source of truth for everything the
+review does not draw.
 Open `mocks/Bemmoly App.dc.html` in a browser; it links to every other screen. Under
 "Configuration and admin" it includes the three System settings screens:
 `Bemmoly Modules Settings.dc.html`, `Bemmoly Updates Settings.dc.html` and

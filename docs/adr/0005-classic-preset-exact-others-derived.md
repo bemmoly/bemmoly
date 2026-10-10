@@ -1,6 +1,6 @@
 # ADR 0005: Classic uses the mock's exact colours; other presets derive tints with color-mix
 
-- Status: accepted
+- Status: accepted; decision 1 superseded by [ADR 0015](0015-premium-visual-system.md)
 - Date: 2026-10-07
 - Tech design: [§2 Product scope](../tech-design.html#scope) (Appearance), [§6 Repository](../tech-design.html#repo) (`packages/ui`)
 
