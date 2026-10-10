@@ -1,29 +1,15 @@
+import { StatusGlyph, statusStage } from '@bemmoly/ui';
 import { cx } from '../cx.ts';
 import type { DragEvent, KeyboardEvent } from 'react';
 import type { StatusInfo } from '../model/columns.ts';
 
-/** A status without its own colour takes its category's: grey to do, accent in progress, green done. */
-const CATEGORY_DOT: Record<StatusInfo['category'], string> = {
-  todo: 'bg-tx5',
-  in_progress: 'bg-ac',
-  done: 'bg-ok',
-};
-
 /**
- * The 8px dot of a workflow status; a colour set on the status is data, so it comes inline.
- * Off the board (`muted`) every status is grey, as the mock's unmapped statuses are.
+ * A workflow status as the review draws it everywhere: the circle that fills as work moves
+ * right, coloured by its category only, so a custom colour never breaks the reading.
  */
-export function StatusDot({ status, muted = false }: { status: StatusInfo; muted?: boolean }) {
-  const own = !muted && status.color;
+export function StatusDot({ status, size = 12 }: { status: StatusInfo; size?: number }) {
   return (
-    <span
-      aria-hidden
-      className={cx(
-        'size-2 shrink-0 rounded-full',
-        muted ? 'bg-tx5' : own ? null : CATEGORY_DOT[status.category],
-      )}
-      style={own ? { backgroundColor: status.color ?? undefined } : undefined}
-    />
+    <StatusGlyph stage={statusStage(status.category, status.name)} label={status.name} size={size} />
   );
 }
 
@@ -41,7 +27,7 @@ export interface StatusChipProps {
   onStep?: (step: -1 | 0 | 1) => void;
 }
 
-/** A status in a column, as the mock draws it: dot, name and the mono issue count. */
+/** A status in a column on the sunken surface: glyph, name and the mono issue count. */
 export function StatusChip({
   status,
   count,
@@ -71,17 +57,19 @@ export function StatusChip({
           }
         : {})}
       className={cx(
-        'flex items-center border border-br bg-sf text-12h',
+        'flex items-center text-13 whitespace-nowrap',
         variant === 'column'
-          ? 'gap-2 rounded-control px-2.25 py-1.75'
-          : 'gap-1.5 rounded-control px-2.25 py-1',
+          ? 'gap-1.75 rounded-md bg-sunken px-2 py-1.5'
+          : 'gap-1.5 rounded-pill bg-chip px-2.25 py-0.5 text-12',
         movable && 'cursor-grab focus-ring',
       )}
     >
-      <StatusDot status={status} muted={variant === 'unmapped'} />
-      <span className={variant === 'column' ? 'flex-1' : undefined}>{status.name}</span>
+      <StatusDot status={status} />
+      <span className={variant === 'column' ? 'min-w-0 flex-1 truncate' : undefined} title={status.name}>
+        {status.name}
+      </span>
       {variant === 'column' && count !== undefined && (
-        <span className="font-mono text-11 text-tx5">{count}</span>
+        <span className="font-mono text-12 text-tx-3 tabular-nums">{count}</span>
       )}
     </div>
   );

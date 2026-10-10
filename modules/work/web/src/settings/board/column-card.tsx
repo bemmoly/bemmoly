@@ -1,9 +1,8 @@
-import { Badge } from '@bemmoly/ui';
 import { Icon } from '@bemmoly/ui/icons';
 import { useState, type DragEvent, type HTMLAttributes } from 'react';
 import { cx } from '../cx.ts';
 import type { Column, StatusInfo } from '../model/columns.ts';
-import { StatusChip } from './status-chip.tsx';
+import { StatusChip, StatusDot } from './status-chip.tsx';
 
 export interface ColumnCardProps {
   column: Column;
@@ -29,9 +28,9 @@ export interface ColumnCardProps {
 }
 
 /**
- * One column of the mock's column editor: a 260px card with the name, the
- * WIP limit and RESOLVES on the done column over the sf2 header, then its
- * statuses and the dashed drop target.
+ * One column of the column editor, as the review draws it: the first status's glyph, the
+ * name and a compact WIP field ("No limit" until set) on one line, then its statuses on the
+ * sunken surface and the dashed "Drop a status" target. Narrow enough that five fit.
  */
 export function ColumnCard(props: ColumnCardProps) {
   const { column, statuses, counts, editable, wipEditable } = props;
@@ -44,8 +43,8 @@ export function ColumnCard(props: ColumnCardProps) {
   return (
     <div
       className={cx(
-        'flex min-h-65 flex-col overflow-hidden rounded-card border bg-sf',
-        accept && hovered ? 'border-ac shadow-ring' : 'border-br',
+        'flex min-h-52 flex-col rounded-[10px] border bg-card',
+        accept && hovered ? 'border-ac shadow-ring' : 'border-line',
       )}
       {...(accept
         ? {
@@ -63,61 +62,76 @@ export function ColumnCard(props: ColumnCardProps) {
           }
         : {})}
     >
-      <div className="flex flex-col gap-2 border-b border-br-row bg-sf2 px-2.5 pt-2.5 pb-2">
+      <div className="flex flex-col gap-1.5 px-2.5 pt-2.5 pb-2">
         <div className="flex items-center gap-1.5">
-          <span
-            {...props.gripProps}
-            {...(editable
-              ? { tabIndex: 0, role: 'button', 'aria-label': `Move ${column.name}` }
-              : {})}
-            className={cx('flex text-tx6', editable && 'cursor-grab')}
-          >
-            <Icon name="drag" size={14} />
-          </span>
+          {editable ? (
+            <span
+              {...props.gripProps}
+              tabIndex={0}
+              role="button"
+              aria-label={`Move ${column.name}`}
+              title="Drag to reorder, or use ←→"
+              className="-ml-1 flex cursor-grab text-tx-3 focus-ring"
+            >
+              <Icon name="drag" size={14} />
+            </span>
+          ) : (
+            mapped[0] && <StatusDot status={mapped[0]} size={14} />
+          )}
           <input
             aria-label="Column name"
             value={column.name}
             readOnly={!editable}
             onChange={(event) => props.onRename(event.target.value)}
             className={cx(
-              'min-w-0 flex-1 rounded-xs border border-transparent bg-transparent px-1.5 py-0.75 font-sans text-12h font-semibold text-tx outline-0',
-              editable && 'hover:border-br3 focus:border-ac',
+              'min-w-0 flex-1 rounded-sm border border-transparent bg-transparent px-1 py-0.5 font-sans text-13 font-semibold text-tx outline-0',
+              editable && 'hover:border-line focus:border-ac',
             )}
           />
           {editable && props.canRemove && (
             <button
               type="button"
               aria-label={`Remove ${column.name}`}
+              title={`Remove ${column.name}`}
               onClick={props.onRemove}
-              className="flex cursor-pointer border-0 bg-transparent px-1 text-tx6 hover:text-tx2"
+              className="flex cursor-pointer rounded-sm border-0 bg-transparent p-0.5 text-tx-3 hover:text-tx focus-ring"
             >
               <Icon name="close" size={13} />
             </button>
           )}
         </div>
-        <div className="flex flex-wrap items-center gap-1.5 text-12 text-tx4">
-          <span className="whitespace-nowrap">WIP limit</span>
-          <input
-            aria-label={`${column.name} WIP limit`}
-            inputMode="numeric"
-            placeholder="–"
-            readOnly={!wipEditable}
-            value={wip ?? (column.wipLimit ? String(column.wipLimit) : '')}
-            onChange={(event) => {
-              setWip(event.target.value);
-              props.onWip(event.target.value);
-            }}
-            onBlur={() => setWip(null)}
-            className="w-10 rounded-xs border border-br3 bg-sf px-1.5 py-0.75 text-center font-mono text-12 font-medium text-tx outline-0 focus:border-ac"
-          />
+        <div className="flex items-center gap-1.5 text-12 text-tx-3">
+          <label className="flex items-center gap-1" title="Work in progress limit">
+            <span className="whitespace-nowrap">WIP</span>
+            <input
+              aria-label={`${column.name} WIP limit`}
+              inputMode="numeric"
+              placeholder="No limit"
+              readOnly={!wipEditable}
+              value={wip ?? (column.wipLimit ? String(column.wipLimit) : '')}
+              onChange={(event) => {
+                setWip(event.target.value);
+                props.onWip(event.target.value);
+              }}
+              onBlur={() => setWip(null)}
+              className={cx(
+                'w-14 min-w-0 rounded-sm border border-line bg-transparent px-1.5 py-px text-12 text-tx tabular-nums outline-0 placeholder:text-tx-3 focus:border-ac',
+                !wipEditable && 'border-transparent px-0',
+              )}
+            />
+          </label>
           {column.done && (
-            <Badge tone="ok" className="ml-auto">
-              RESOLVES
-            </Badge>
+            <span
+              className="ml-auto flex shrink-0 text-ok-fg"
+              title="Resolves: issues here count as done"
+            >
+              <Icon name="check" size={13} />
+              <span className="sr-only">Resolves</span>
+            </span>
           )}
         </div>
       </div>
-      <div className="flex flex-1 flex-col gap-1.5 p-2">
+      <div className="flex flex-1 flex-col gap-1.5 px-2 pb-2">
         {mapped.map((status) => (
           <StatusChip
             key={status.id}
@@ -132,11 +146,11 @@ export function ColumnCard(props: ColumnCardProps) {
         ))}
         <div
           className={cx(
-            'mt-auto rounded-control border border-dashed p-2 text-center text-12',
-            accept && hovered ? 'border-ac bg-ac-bg2 text-ac' : 'border-br3 text-tx5',
+            'mt-auto rounded-md border border-dashed p-1.5 text-center text-12',
+            accept && hovered ? 'border-ac bg-ac-bg text-ac' : 'border-line text-tx-3',
           )}
         >
-          Drop status here
+          Drop a status
         </div>
       </div>
     </div>

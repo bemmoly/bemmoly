@@ -63,7 +63,7 @@ export function ColumnsTab(props: BoardTabProps) {
     <div className="flex flex-col gap-4">
       <SectionHeading
         title="Columns"
-        description="Drag to reorder. Each column maps one or more workflow statuses; every status must live in exactly one column. Unmapped statuses stay off the board."
+        description="Drag to reorder. Each status lives in one column; the ones left out stay off the board."
         mode={mode}
         locked={access.editWip ? undefined : NO_BOARD_PERMISSION}
         onEdit={props.onEdit}
@@ -81,8 +81,8 @@ export function ColumnsTab(props: BoardTabProps) {
       />
       <div className="overflow-x-auto pb-1.5">
         <div
-          className="grid gap-2.5"
-          style={{ gridTemplateColumns: `repeat(${config.columns.length}, minmax(190px, 1fr))` }}
+          className="grid gap-2"
+          style={{ gridTemplateColumns: `repeat(${config.columns.length}, minmax(140px, 1fr))` }}
         >
           {config.columns.map((column, index) => (
             <div
@@ -120,8 +120,8 @@ export function ColumnsTab(props: BoardTabProps) {
       </div>
       <div
         className={cx(
-          'flex flex-wrap items-center gap-2.5 rounded-panel border bg-sf px-3.5 py-2.5',
-          overUnmapped ? 'border-ac shadow-ring' : 'border-br',
+          'flex flex-wrap items-center gap-2 rounded-lg border px-1 py-1 text-13',
+          overUnmapped ? 'border-ac shadow-ring' : 'border-transparent',
         )}
         {...(editable && draggedStatus
           ? {
@@ -137,8 +137,8 @@ export function ColumnsTab(props: BoardTabProps) {
             }
           : {})}
       >
-        <span className="font-semibold">Unmapped statuses</span>
-        {unmapped.length === 0 && <span className="text-12h text-tx5">None</span>}
+        <span className="text-tx-3">Not on the board:</span>
+        {unmapped.length === 0 && <span className="text-tx-3">none</span>}
         {unmapped.map((status) => (
           <StatusChip
             key={status.id}
@@ -156,12 +156,12 @@ export function ColumnsTab(props: BoardTabProps) {
             }
           />
         ))}
-        <span className="ml-auto text-12 text-tx4">
-          Edit statuses in{' '}
+        <span className="ml-auto text-tx-3">
+          Statuses come from the{' '}
           <a
             href={workflowHref}
             onClick={onLinkClick(workflowHref)}
-            className="text-ac hover:text-ac-d"
+            className="text-ac hover:underline"
           >
             Workflow
           </a>
