@@ -103,6 +103,22 @@ describe('repository ESLint config', () => {
     expect(ids).not.toContain('no-restricted-imports');
   });
 
+  it('fails a literal colour on a marketing site page', async () => {
+    const ids = await ruleIds(
+      'apps/site/src/components/fixture.astro',
+      '<div class="bg-[#2356c9]">Install</div>\n',
+    );
+    expect(ids).toContain('bemmoly/no-literal-styles');
+  });
+
+  it("lets only the site's icon set import Lucide", async () => {
+    const code = "import { Star } from 'lucide-react';\nexport const S = Star;\n";
+    expect(await ruleIds('apps/site/src/lib/icons.ts', code)).not.toContain(
+      'no-restricted-imports',
+    );
+    expect(await ruleIds('apps/site/src/lib/fixture.ts', code)).toContain('no-restricted-imports');
+  });
+
   it('lets a story pass a label its stored colour', async () => {
     const ids = await ruleIds(
       'packages/ui/src/components/fixture.stories.tsx',
