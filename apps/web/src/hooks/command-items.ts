@@ -176,7 +176,8 @@ export function paletteItems(sources: PaletteSources): PaletteItem[] {
   }));
   const creates = (sources.creates ?? []).map((entry, index) =>
     action(`create:${entry.id}`, `New ${entry.label.toLowerCase()}`, {
-      icon: knownIcon(entry.icon) ?? 'plus',
+      // The primary create is C, drawn with the New button's plus; the rest keep their own.
+      icon: index === 0 ? 'plus' : (knownIcon(entry.icon) ?? 'plus'),
       run: entry.open,
       keywords: ['create', 'add'],
       ...(index === 0 ? { keys: 'C' } : {}),

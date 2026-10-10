@@ -40,7 +40,7 @@ describe('paletteItems', () => {
     const items = paletteItems(sources());
     expect(titles(items, 'Settings')).toEqual(['Profile', 'Notifications']);
     const create = items.find((item) => item.title === 'New issue');
-    expect(create).toMatchObject({ group: 'Actions', keys: 'C', icon: 'check' });
+    expect(create).toMatchObject({ group: 'Actions', keys: 'C', icon: 'plus' });
     expect(titles(items, 'Actions')).not.toContain('Invite people');
     expect(titles(items, 'Navigation')).toEqual(['Home', 'Inbox', 'Backlog', 'Settings']);
     expect(items.find((item) => item.title === 'Backlog')).toMatchObject({
