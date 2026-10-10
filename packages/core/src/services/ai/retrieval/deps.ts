@@ -18,8 +18,6 @@ export interface RetrievalDependencies {
   isEnabled: (moduleId: string) => boolean;
   /** Where index jobs are queued; without it changes are not followed (tests drive directly). */
   jobs?: JobQueue;
-  /** The model the embedding role points at now; the facade's when not given. */
-  embeddingModel?: () => Promise<AiModelRef | null>;
   logger?: Pick<Logger, 'info' | 'warn'>;
 }
 
@@ -34,19 +32,7 @@ export function sourceOf(deps: RetrievalDependencies, kind: string): Source | un
   return liveSources(deps).find((source) => source.kind === kind);
 }
 
-/**
- * The embedding role's model. Until the facade answers it, the role's row says it: its
- * `model` is the id embed() reports.
- */
-export async function currentEmbeddingModel(
-  deps: RetrievalDependencies,
-): Promise<AiModelRef | null> {
-  if (deps.embeddingModel) return deps.embeddingModel();
-  const [row] = await deps.sql<{ provider_id: string; model: string; name: string | null }[]>`
-    select r.provider_id, r.model, p.name from ai_model_roles r
-      left join ai_providers p on p.id = r.provider_id
-    where r.role = 'embedding' limit 1`;
-  return row
-    ? { providerId: row.provider_id, providerName: row.name ?? '', modelId: row.model }
-    : null;
+/** The model the embedding role points at now; null while the role is unset. */
+export function currentEmbeddingModel(deps: RetrievalDependencies): Promise<AiModelRef | null> {
+  return deps.ai().embeddingModel();
 }

@@ -139,11 +139,6 @@ export async function createFixture(serverUrl: string): Promise<Fixture> {
     keyword: () => [wikiKeyword(current)],
     isEnabled: () => true,
     jobs,
-    embeddingModel: async () => ({
-      providerId: 'test',
-      providerName: 'Test provider',
-      modelId: 'test-embedding',
-    }),
   });
   for (const job of service.jobs()) jobs.register(job.name, (payload) => job.handle(payload));
   box.fixture = {
