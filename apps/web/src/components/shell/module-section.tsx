@@ -47,7 +47,14 @@ function LiveRows({ manifest }: { manifest: ModuleManifest }) {
  * its sidebar entry draws, then its fixed links. A module from an older server, with no
  * section declared, and one with nothing to list, get a single row to its area.
  */
-export function ModuleSection({ manifest }: { manifest: ModuleManifest }) {
+export function ModuleSection({
+  manifest,
+  alone = false,
+}: {
+  manifest: ModuleManifest;
+  /** In focus mode: only the module's own rows, without its heading and fixed links. */
+  alone?: boolean;
+}) {
   const name = moduleName(manifest);
   const rail = useFrame().mode === 'rail';
   const section = manifest.sidebar;
@@ -63,6 +70,13 @@ export function ModuleSection({ manifest }: { manifest: ModuleManifest }) {
     );
   }
   const add = section.add;
+  if (alone) {
+    return (
+      <section aria-label={name} className="flex flex-col gap-0.5">
+        <LiveRows manifest={manifest} />
+      </section>
+    );
+  }
   return (
     <section aria-label={name} className={`flex flex-col gap-0.5 ${rail ? 'items-center' : ''}`}>
       <SidebarHeading

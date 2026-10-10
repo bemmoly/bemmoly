@@ -153,4 +153,5 @@ export {
   type SidebarHeadingProps,
   type SidebarRowProps,
 } from './shell/sidebar/sidebar-row.tsx';
+export { useSidebarFocusOwner, useSidebarTakeover } from './shell/sidebar-focus.ts';
 export { SwitcherMenu, type SwitcherItem, type SwitcherMenuProps } from './shell/switcher-menu.tsx';

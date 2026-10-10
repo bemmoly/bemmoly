@@ -1,4 +1,9 @@
-import { SidebarRow, useFrame, type ModuleSidebarProps } from '@bemmoly/core-web';
+import {
+  SidebarRow,
+  useFrame,
+  useSidebarTakeover,
+  type ModuleSidebarProps,
+} from '@bemmoly/core-web';
 import { Button } from '@bemmoly/ui';
 import { useEffect } from 'react';
 import { useSpaces } from './hooks/queries.ts';
@@ -14,9 +19,9 @@ const SHOWN = 6;
 /**
  * Docs' live sidebar rows (docs/design/premium/docs/docs-tree.js, option A): the spaces as rows
  * like projects, the current one opened to its page tree, then Docs home. A focused space takes
- * the section to itself, with a filter. On the rail each space is its tile.
+ * the whole sidebar, with a filter. On the rail each space is its tile.
  */
-export default function DocsSidebar(_props: ModuleSidebarProps) {
+export default function DocsSidebar({ manifest }: ModuleSidebarProps) {
   const { mode, pathname } = useFrame();
   const spaces = useSpaces();
   const place = useDocsPlace(pathname);
@@ -31,6 +36,10 @@ export default function DocsSidebar(_props: ModuleSidebarProps) {
     if (current && trail) reveal(current.key, trail.split('/'));
   }, [current, trail, reveal]);
 
+  const focused = mode === 'rail' ? undefined : list.find((space) => space.key === focus);
+  // Focus mode takes the whole sidebar, as the review draws it, not only the Docs section.
+  useSidebarTakeover(manifest.id, Boolean(focused));
+
   if (spaces.isError) {
     return mode === 'rail' ? null : (
       <div className="flex items-center gap-2 px-2 py-1 text-12 text-tx-3">
@@ -42,7 +51,6 @@ export default function DocsSidebar(_props: ModuleSidebarProps) {
     );
   }
 
-  const focused = mode === 'rail' ? undefined : list.find((space) => space.key === focus);
   if (focused) {
     return (
       <SidebarFocus space={focused} activePageId={place.pageId} onExit={() => setFocus(null)} />
