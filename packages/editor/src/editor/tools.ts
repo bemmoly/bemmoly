@@ -1,4 +1,5 @@
 import { shortcutText } from '@bemmoly/ui';
+import type { IconName } from '@bemmoly/ui/icons';
 import type { ChainedCommands, Editor } from '@tiptap/core';
 
 /*
@@ -18,6 +19,8 @@ export interface Tool {
   glyph: string;
   /** What the button is called. */
   label: string;
+  /** The drawing where a surface shows icons instead of glyphs (the Docs selection bubble). */
+  icon?: IconName;
   /** In ProseMirror's notation: Mod-b. */
   keys?: string;
   /** Toggles report their state with aria-pressed. */
@@ -39,6 +42,7 @@ function startMention(editor: Editor) {
 export const INLINE_TOOLS: readonly Tool[] = [
   {
     id: 'bold',
+    icon: 'bold',
     glyph: 'B',
     label: 'Bold',
     keys: 'Mod-b',
@@ -47,6 +51,7 @@ export const INLINE_TOOLS: readonly Tool[] = [
   },
   {
     id: 'italic',
+    icon: 'italic',
     glyph: 'I',
     label: 'Italic',
     keys: 'Mod-i',
@@ -56,6 +61,7 @@ export const INLINE_TOOLS: readonly Tool[] = [
   { id: 'mention', glyph: '@', label: 'Mention someone', run: startMention },
   {
     id: 'link',
+    icon: 'link',
     glyph: 'Link',
     label: 'Link',
     keys: 'Mod-k',
@@ -64,12 +70,45 @@ export const INLINE_TOOLS: readonly Tool[] = [
   },
   {
     id: 'code',
+    icon: 'code',
     glyph: 'Code',
     label: 'Inline code',
     keys: 'Mod-e',
     active: (e) => e.isActive('code'),
     run: (e) => chain(e).toggleCode().run(),
   },
+];
+
+const STRIKE: Tool = {
+  id: 'strike',
+  icon: 'strike',
+  glyph: 'S',
+  label: 'Strikethrough',
+  keys: 'Mod-Shift-s',
+  active: (e) => e.isActive('strike'),
+  run: (e) => chain(e).toggleStrike().run(),
+};
+
+const HIGHLIGHT: Tool = {
+  id: 'highlight',
+  icon: 'highlight',
+  glyph: 'H',
+  label: 'Highlight',
+  keys: 'Mod-Shift-h',
+  active: (e) => e.isActive('highlight'),
+  run: (e) => chain(e).toggleHighlight().run(),
+};
+
+const inline = (id: string) => INLINE_TOOLS.find((tool) => tool.id === id)!;
+
+/** The Docs selection bubble's marks, in the review's order: B I S code link highlight. */
+export const BUBBLE_TOOLS: readonly Tool[] = [
+  inline('bold'),
+  inline('italic'),
+  STRIKE,
+  inline('code'),
+  inline('link'),
+  HIGHLIGHT,
 ];
 
 export const BLOCK_TOOLS: readonly Tool[] = [
