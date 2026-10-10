@@ -1,6 +1,6 @@
-import { DocEditor, type AiHandler, type AiWriteEvent } from '@bemmoly/editor';
+import { DocEditor, preloadDocEditor, type AiHandler, type AiWriteEvent } from '@bemmoly/editor';
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { Doc } from 'yjs';
 import { collabExtensions, seedLocal } from '../../../collab/extensions.ts';
 import type { CollabSession } from '../../../collab/session.ts';
@@ -12,6 +12,10 @@ import type { PageEditor as Editor } from '../../screen-context.ts';
  * in the Yjs document, so collaborators never see it; accepting it is one change in that
  * document, and one Yjs undo takes it back.
  */
+
+// The editor is its own lazy chunk. Loaded here, before any test, its import never races the
+// queries below: under a full parallel run it could take longer than findByRole waits.
+beforeAll(() => preloadDocEditor());
 
 afterEach(() => {
   cleanup();

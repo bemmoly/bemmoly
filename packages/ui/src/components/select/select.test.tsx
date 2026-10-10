@@ -1,12 +1,20 @@
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { useState } from 'react';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { placeFloating } from '../../lib/floating.tsx';
 import { expectAccessible } from '../../testing/a11y.ts';
 import { Field } from '../input/index.ts';
 import { Modal } from '../modal/index.ts';
 import { buildView, typeahead } from './filter.ts';
 import { Select, type SelectChangeEvent, type SelectOption, type SelectProps } from './index.ts';
+import { SEARCH_DEBOUNCE_MS } from './use-async-options.ts';
+
+afterEach(() => {
+  vi.useRealTimers();
+});
+
+/** The search pause passes and the server's answer lands, on fake timers: no real waits. */
+const settle = () => act(() => vi.advanceTimersByTimeAsync(SEARCH_DEBOUNCE_MS));
 
 const DAYS: SelectOption[] = [
   { value: 'mon', label: 'Monday' },
@@ -117,6 +125,7 @@ describe('Select', () => {
     const load = vi.fn(async (query: string) =>
       query === 'pri' ? [{ value: 'priya', label: 'Priya N.' }] : [],
     );
+    vi.useFakeTimers();
     render(<Harness options={PEOPLE.slice(0, 1)} value="jose" loadOptions={load} />);
     fireEvent.click(combobox());
     expect(load).not.toHaveBeenCalled();
@@ -124,7 +133,10 @@ describe('Select', () => {
     fireEvent.change(search, { target: { value: 'p' } });
     fireEvent.change(search, { target: { value: 'pri' } });
     expect(screen.getByRole('status', { name: 'Searching' })).toBeTruthy();
-    await screen.findByRole('option', { name: 'Priya N.' });
+    await act(() => vi.advanceTimersByTimeAsync(SEARCH_DEBOUNCE_MS - 1));
+    expect(load).not.toHaveBeenCalled();
+    await settle();
+    expect(screen.getByRole('option', { name: 'Priya N.' })).toBeTruthy();
     expect(load).toHaveBeenCalledTimes(1);
     expect(load.mock.calls[0]?.[0]).toBe('pri');
     expect(screen.getAllByRole('option').map(text)).toEqual([
@@ -137,7 +149,8 @@ describe('Select', () => {
     fireEvent.change(screen.getByRole('combobox', { name: 'Search' }), {
       target: { value: 'zz' },
     });
-    expect(await screen.findByText('No matches')).toBeTruthy();
+    await settle();
+    expect(screen.getByText('No matches')).toBeTruthy();
     expect(screen.getAllByRole('option').map(text)).toEqual(['Priya N.']);
   });
 
@@ -153,23 +166,28 @@ describe('Select', () => {
           if (query === 'an') resolve([{ value: 'ana', label: 'Ana Lima' }]);
         }),
     );
+    vi.useFakeTimers();
     render(<Harness options={[]} value="" loadOptions={load} />);
     fireEvent.click(combobox());
     const search = screen.getByRole('combobox', { name: 'Search' });
-    await waitFor(() => expect(load).toHaveBeenCalledTimes(1));
+    await settle();
+    expect(load).toHaveBeenCalledTimes(1);
     fireEvent.change(search, { target: { value: 'an' } });
     expect(signals[0]?.aborted).toBe(true);
-    await screen.findByRole('option', { name: 'Ana Lima' });
+    await settle();
+    expect(screen.getByRole('option', { name: 'Ana Lima' })).toBeTruthy();
     expect(screen.queryByText(/Search is unavailable/)).toBeNull();
   });
 
   it('says so when the server finds nothing', async () => {
+    vi.useFakeTimers();
     const load = vi.fn(async () => []);
     render(<Harness options={[]} value="" loadOptions={load} placeholder="Choose…" />);
     expect(combobox().textContent).toContain('Choose…');
     fireEvent.click(combobox());
-    await waitFor(() => expect(load).toHaveBeenCalledWith('', expect.any(AbortSignal)));
-    expect(await screen.findByText('No matches')).toBeTruthy();
+    await settle();
+    expect(load).toHaveBeenCalledWith('', expect.any(AbortSignal));
+    expect(screen.getByText('No matches')).toBeTruthy();
   });
 
   it('draws 50 options with a footer and turns search on for long lists', () => {
