@@ -65,13 +65,13 @@ const PROMPT = (id: string, role: AiPrompt['role'], description: string, lines: 
 
 function seedPrompts(): AiPrompt[] {
   return [
-    PROMPT('issue.summary', 'standard', 'The TL;DR at the top of an issue', [
+    PROMPT('work.issue_summary', 'standard', 'The AI summary card on the issue page', [
       'Summarise this issue for someone joining it today.',
       'Say what is decided, what is open and who is waiting on whom.',
       'Cite every claim with its source id.',
     ]),
     {
-      ...PROMPT('docs.tldr', 'standard', 'The TL;DR card at the top of a page', [
+      ...PROMPT('docs.write.summarize', 'standard', 'The /ai Summarize command', [
         'Write a three-line TL;DR of this page.',
         'Lead with the decision, then the open questions.',
         'Cite every claim with its source id.',
@@ -88,14 +88,14 @@ function seedPrompts(): AiPrompt[] {
         updatedBy: USER_IDS.rohan,
       },
     },
-    PROMPT('palette.plan', 'strong', 'Plans the palette proposes before anything changes', [
+    PROMPT('ai.plan', 'strong', 'Turns a palette request into changes a person confirms', [
       'Turn the request into a list of proposed changes.',
       'Only touch issues the request names or the context lists.',
     ]),
-    PROMPT('home.brief', 'standard', 'The morning brief on Home', [
+    PROMPT('ai.brief', 'standard', 'The morning brief on Home', [
       'Say what changed for this person since their last visit, grouped by project.',
     ]),
-    PROMPT('field.suggest', 'fast', 'Field suggestions while creating an issue', [
+    PROMPT('docs.autocomplete', 'fast', 'Ghost text in the Docs editor', [
       'Suggest a type, priority and labels for this issue. Answer in JSON.',
     ]),
   ];

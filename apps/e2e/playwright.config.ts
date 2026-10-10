@@ -7,10 +7,11 @@ const CI = Boolean(process.env['CI']);
  * checkout and the built web app (`pnpm build` first). The global setup
  * starts all three and seeds the people; nothing is mocked.
  *
- * Three projects run one after the other. The flows share the server and run
+ * Four projects run one after the other. The flows share the server and run
  * in parallel, each in its own project key. Enabling and disabling Work
- * changes the whole install, so it runs alone after them, and the board
- * budget runs last on a quiet server so its numbers are its own.
+ * changes the whole install, so it runs alone after them, the board budget
+ * runs on a quiet server so its numbers are its own, and Settings › AI,
+ * which turns AI on and off for everyone, runs last.
  */
 export default defineConfig({
   testDir: 'flows',
@@ -35,8 +36,13 @@ export default defineConfig({
     screenshot: 'only-on-failure',
   },
   projects: [
-    { name: 'flows', testIgnore: ['modules.spec.ts', 'board-budget.spec.ts'] },
+    {
+      name: 'flows',
+      testIgnore: ['modules.spec.ts', 'board-budget.spec.ts', 'ai-settings.spec.ts'],
+    },
     { name: 'modules', testMatch: 'modules.spec.ts', dependencies: ['flows'] },
     { name: 'budget', testMatch: 'board-budget.spec.ts', dependencies: ['modules'] },
+    // Turning AI on and off changes every screen, so Settings › AI runs alone, at the end.
+    { name: 'ai-settings', testMatch: 'ai-settings.spec.ts', dependencies: ['budget'] },
   ],
 });
