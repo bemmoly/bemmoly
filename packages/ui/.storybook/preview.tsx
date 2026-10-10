@@ -89,7 +89,13 @@ const preview: Preview = {
     },
   },
   initialGlobals: { theme: DEFAULT_PRESET, mode: 'auto', mock: 'side' },
-  parameters: { layout: 'padded' },
+  parameters: {
+    layout: 'padded',
+    // The design system's front page first; its rules live in docs/design/system.
+    options: {
+      storySort: { order: ['Design system', 'Foundations', 'Components', 'Docs', 'Editor'] },
+    },
+  },
 };
 
 export default preview;
