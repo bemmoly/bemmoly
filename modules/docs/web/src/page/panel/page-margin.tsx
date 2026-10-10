@@ -1,6 +1,12 @@
 import { useEffect, useRef, type RefObject } from 'react';
 import { cx } from '../cx.ts';
-import { marginShown, usePageChrome, usePageScreen, useSlotProps } from '../screen-context.ts';
+import {
+  FADE_WHILE_TYPING,
+  marginShown,
+  usePageChrome,
+  usePageScreen,
+  useSlotProps,
+} from '../screen-context.ts';
 import { MARGIN_SLOTS } from '../slots.ts';
 
 const FOCUSABLE = '[data-thread],a[href],button:not([disabled]),input,[tabindex="0"]';
@@ -46,6 +52,7 @@ export function DockedMargin() {
       data-margin={slot.id}
       className={cx(
         'shrink-0',
+        FADE_WHILE_TYPING,
         slot.bare
           ? 'w-56 self-start'
           : 'w-85 self-stretch border-l border-line bg-sunken motion-safe:animate-fade-in',

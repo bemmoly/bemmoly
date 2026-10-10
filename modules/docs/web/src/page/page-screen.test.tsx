@@ -70,6 +70,13 @@ describe('the doc editor screen', () => {
     expect(screen.getByRole('heading', { name: 'Context' })).toBeTruthy();
   });
 
+  it('lets the header fade while the writer types', async () => {
+    renderPage();
+    await title();
+    const header = screen.getByRole('navigation', { name: 'Breadcrumb' }).closest('header');
+    expect(header?.className).toContain('[:root[data-doc-typing]_&]:opacity-0');
+  });
+
   it('keeps a stored TL;DR unshown while the workspace has AI off', async () => {
     page = pageDetail({ tldr: 'Sessions move to Postgres in two steps.' });
     renderPage();

@@ -13,6 +13,8 @@ export interface DocsLayoutProps {
   layout: 'full' | 'contained';
   /** After the trail: a page's status menu. */
   trailing?: ReactNode;
+  /** Classes for the header bar: a page fades it while its writer types. */
+  headerClassName?: string;
   children: ReactNode;
 }
 
@@ -20,10 +22,17 @@ export interface DocsLayoutProps {
  * Every Docs screen in the one frame: the shell's page header with the Docs trail, then one of
  * the two page layouts. The sidebar stays whatever the screen shows, errors included.
  */
-export function DocsLayout({ layout, trailing, children }: DocsLayoutProps) {
+export function DocsLayout({ layout, trailing, headerClassName, children }: DocsLayoutProps) {
   const crumbs = useContext(DocsCrumbs);
   return (
-    <PageLayout layout={layout} header={{ crumbs, ...(trailing ? { trailing } : {}) }}>
+    <PageLayout
+      layout={layout}
+      header={{
+        crumbs,
+        ...(trailing ? { trailing } : {}),
+        ...(headerClassName ? { className: headerClassName } : {}),
+      }}
+    >
       <div
         data-module="docs"
         className={
