@@ -124,7 +124,7 @@ export function AppShell() {
       <ShellKeys shell={shell} />
       <ErrorBoundary
         resetKey={pathname}
-        fallback={(error, retry) => <PageFailure error={error} onRetry={retry} />}
+        fallback={(error, retry) => <PageFailure framed error={error} onRetry={retry} />}
       >
         <Outlet />
       </ErrorBoundary>

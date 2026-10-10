@@ -1,48 +1,60 @@
+import { useDocumentTitle } from '@bemmoly/core-web';
+import { EntityTile, Logo } from '@bemmoly/ui';
+import { useQuery } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
-import { Logo } from '@bemmoly/ui';
+import { setupStatusQuery } from '../../hooks/use-session.ts';
 
 /**
- * Sign-in pages: the Setup mock's 56px header, the Landing mock's tagline
- * treatment, and a 400px card using the Setup mock's form styling.
+ * Sign-in, password reset and invitations (docs/design/premium/brand.js, `signIn`): the
+ * customer's workspace leads the card, its logo once uploads exist and its initial until then,
+ * and "Powered by Bemmoly" sits under it. Before the workspace has a name the Bemmoly lockup
+ * leads instead.
  */
 export function AuthLayout({
   title,
   subtitle,
   children,
+  workspaceName,
 }: {
   title: string;
   subtitle?: ReactNode;
   children: ReactNode;
+  /** Known to the page already (an invitation names its workspace). */
+  workspaceName?: string;
 }) {
+  const status = useQuery(setupStatusQuery);
+  const name = workspaceName ?? status.data?.workspaceName ?? null;
+  useDocumentTitle([title, name]);
   return (
-    <div className="flex min-h-screen flex-col bg-bg text-tx">
-      <header className="flex h-14 items-center gap-3 border-b border-br bg-sf px-8">
-        <Logo variant="lockup" size={26} />
-      </header>
-      <main className="flex flex-1 flex-col items-center px-8 pt-16 pb-20">
-        <div className="flex w-100 max-w-full flex-col gap-6">
-          <div className="flex flex-col gap-2 text-center">
-            <p className="m-0 text-26 leading-title font-semibold tracking-display text-balance">
-              Your work. Your platform.
-            </p>
-            <p className="m-0 text-brand leading-brief text-tx4">
-              Issues and docs for your whole company, on your own server.
-            </p>
-          </div>
-          <section
-            className="flex flex-col gap-4 rounded-card border border-br bg-sf p-6"
-            aria-labelledby="auth-title"
-          >
-            <div className="flex flex-col gap-1">
-              <h1 id="auth-title" className="m-0 text-15 font-semibold">
-                {title}
-              </h1>
-              {subtitle ? <div className="text-12h leading-body text-tx4">{subtitle}</div> : null}
-            </div>
-            {children}
-          </section>
+    <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-sunken px-4 py-12 text-tx">
+      <section
+        className="flex w-100 max-w-full flex-col gap-4 rounded-dialog bg-card p-6 shadow-e2"
+        aria-labelledby="auth-title"
+      >
+        <div className="flex min-h-7 items-center gap-2.5">
+          {name ? (
+            <>
+              <EntityTile name={name} tone="ink" size={28} />
+              <b className="truncate text-16 font-semibold tracking-title">{name}</b>
+            </>
+          ) : (
+            <Logo variant="lockup" size={26} />
+          )}
         </div>
-      </main>
+        <div className="flex flex-col gap-1">
+          <h1 id="auth-title" className="m-0 text-16 font-semibold">
+            {title}
+          </h1>
+          {subtitle ? <div className="text-13 leading-body text-tx-2">{subtitle}</div> : null}
+        </div>
+        {children}
+      </section>
+      {name ? (
+        <p className="m-0 flex items-center gap-1.5 text-12 text-tx-3">
+          Powered by <Logo size={13} label="" />
+          <b className="font-semibold text-tx-2">Bemmoly</b>
+        </p>
+      ) : null}
     </div>
   );
 }

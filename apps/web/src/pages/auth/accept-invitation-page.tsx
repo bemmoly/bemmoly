@@ -36,6 +36,7 @@ export function AcceptInvitationPage() {
   return (
     <AuthLayout
       title={`Join ${invitation.workspaceName}`}
+      workspaceName={invitation.workspaceName}
       subtitle={
         <>
           {invitation.inviterName ?? 'An administrator'} invited you as{' '}

@@ -30,7 +30,7 @@ export default defineConfig(({ command, mode }) => {
       tailwindcss(),
       brandAssets(brand('generated')),
       bootFrame({
-        logo: brand('lockup-color.svg'),
+        logo: brand('mark-color.svg'),
         app: fileURLToPath(new URL('./src/mount.tsx', import.meta.url)),
       }),
       demo ? demoPage() : null,

@@ -36,8 +36,8 @@ export function chunkGraph(
 }
 
 /**
- * The shell's first paint. index.html carries a static frame (the top bar and
- * the logo lockup from the brand files) that the main stylesheet alone draws,
+ * The shell's first paint. index.html carries a static frame (the Bemmoly mark
+ * from the brand files over a quiet bar) that the main stylesheet alone draws,
  * and the entry imports the app only after that frame is on screen. The app's
  * chunks are still fetched from the start, in parallel, at low priority, so
  * only the stylesheet stands between the document and first paint.
