@@ -1,0 +1,203 @@
+# Tokens
+
+The canonical names, and nothing else. Values live in `packages/ui/src/tokens/*.ts`
+(`@bemmoly/ui/tokens`); `theme.css` and `tailwind.css` are generated from them by
+`pnpm --filter @bemmoly/ui tokens:css`, and a test fails if they drift. Values below are Classic
+(light) and Dark; the six other presets keep the same names.
+
+## How to use a token
+
+| Where                 | How                                                    | Example                                      |
+| --------------------- | ------------------------------------------------------ | -------------------------------------------- |
+| Class names           | Tailwind utilities generated from the tokens           | `bg-card text-13 text-tx-2 rounded-card shadow-e1` |
+| SVG and inline styles | The CSS variable                                       | `fill="var(--acc)"`, `style={{ width }}`     |
+| TypeScript            | `@bemmoly/ui/tokens`                                   | `MOTION_MS.exit`, `TIMING.toastMs`, `TYPE_COLORS` |
+
+Rules:
+
+- **No literal colours** in UI code: no hex, `rgb()`, `hsl()`, `oklch()`, and no arbitrary
+  colour class (`bg-[#…]`). Lint: `bemmoly/no-literal-styles`.
+- **No literal font sizes**: no `text-[13px]`. Lint: same rule.
+- **No arbitrary radius or shadow in new code** (`rounded-[3px]`, `shadow-[…]`). A few older
+  marks still carry them; they are debt, not precedent.
+- **Spacing is the 4px grid**: Tailwind's scale with `--spacing: 4px` (`p-2` = 8px, `gap-3` =
+  12px). Half steps (`py-0.75`) exist for optical alignment only.
+- **Colour that is data** (a label's or team's stored colour, a theme's brand input) is passed as
+  a value at run time and drawn by the component that owns it (`Label`, `EntityTile color`).
+
+## Colour
+
+### Surfaces and lines
+
+| Token     | Classic   | Dark      | Use                                                        |
+| --------- | --------- | --------- | ---------------------------------------------------------- |
+| `canvas`  | `#ffffff` | `#111418` | The page under the header; the header itself               |
+| `side`    | `#f7f8fa` | `#0c0f13` | The sidebar and the settings sidebar only                  |
+| `sunken`  | `#f5f6f8` | `#0e1115` | Recessed areas: board columns, wells, read-only fields     |
+| `card`    | `#ffffff` | `#181c22` | Cards, menus, dialogs, popovers                            |
+| `hover`   | ink 4.5%  | white 5%  | Overlay on any surface under the pointer (`bg-hover`)      |
+| `press`   | ink 7%    | white 8%  | Overlay while pressed or open (`bg-press`)                 |
+| `line`    | `#e7e9ee` | white 8%  | Borders: cards, inputs, the header rule                    |
+| `line-2`  | `#f0f1f4` | white 5%  | Dividers inside a card, table row rules, quiet chips       |
+| `scrim`   | `rgba(16,24,40,.45)` | same | Behind dialogs and sheets. Flat, never blurred       |
+
+### Text
+
+| Token  | Classic   | Dark      | Use                                                    |
+| ------ | --------- | --------- | ------------------------------------------------------ |
+| `tx`   | `#161b26` | `#e8ebf1` | Titles, primary text, values                           |
+| `tx-2` | `#4b5264` | `#a8b0be` | Secondary text, labels, inactive tabs                  |
+| `tx-3` | `#697181` | `#7d8492` | Meta: keys, timestamps, counts, placeholders, carets   |
+
+Every one passes 4.5:1 on every surface of every preset (`tokens.test.ts`). There is no fourth
+grey. A disabled control fades as a whole (`disabled:opacity-50`), never with a lighter grey.
+
+### Accent
+
+| Token      | Classic   | Dark      | Use                                                          |
+| ---------- | --------- | --------- | ------------------------------------------------------------ |
+| `acc`      | `#2356c9` | `#5e7ee6` | Accent text, icons, lines, the focus ring, links             |
+| `acc-fill` | `#2356c9` | `#506ecf` | Fill behind on-accent text (primary button, selected chip)   |
+| `on-acc`   | `#fff`    | `#fff`    | Text on `acc-fill`                                           |
+| `acc-600`  | `#1d48ad` | `#4a68d0` | Pressed primary                                              |
+| `acc-500`  | `#5b7be5` | `#7b95ec` | Light accent: progress, secondary marks                      |
+| `acc-100`  | `#dfe7fb` | 24% tint  | Selected borders, the soft ring (`shadow-ring`)              |
+| `acc-50`   | `#eef2fd` | 14% tint  | Selected row and card background, current nav row            |
+
+The accent means "you can act here" or "this is selected". It is not a decoration colour.
+
+### Signals
+
+| Token                                | Use                                                      |
+| ------------------------------------ | -------------------------------------------------------- |
+| `red`, `red-tx`, `red-50`            | Errors, destructive actions, the Urgent priority mark    |
+| `amber`, `amber-tx`, `amber-50`      | Warnings: WIP reached, sprint ends today, refused drop   |
+| `green`, `green-tx`, `green-50`      | Success confirmations, healthy states                    |
+| `on-solid`                           | White text or marks on any solid fill (type tiles, avatars) |
+
+Solid (`red`) for marks and fills, `-tx` for text (passes 4.5:1), `-50` for the background
+behind `-tx` text. Never put `red` text on `red-50`; use `red-tx`.
+
+### Status categories
+
+| Token  | Classic   | Dark      | Category                         |
+| ------ | --------- | --------- | -------------------------------- |
+| `todo` | `#888f9c` | `#6f7786` | To do (and backlog, won't do)    |
+| `prog` | `#2356c9` | `#6f8ff0` | In progress, review, QA          |
+| `done` | `#1f9d55` | `#3fb67a` | Done                             |
+
+A status is coloured by its category only, whatever its name, so custom workflows read right.
+Draw it with `StatusGlyph`, never a coloured pill.
+
+### Type colours (fixed across presets and modes)
+
+`type-epic` `#6e56cf`, `type-story` `#1f9d55`, `type-task` `#2356c9`, `type-bug` `#e5484d`,
+`type-subtask` `#0e9bb0`, `type-incident` `#d46a2e`. Only `TypeGlyph` uses them. Custom types
+pick from `TYPE_COLOR_CHOICES`.
+
+### Epic palette (fixed)
+
+`epic-1` `#2356c9`, `epic-2` `#6e56cf`, `epic-3` `#0e9bb0`, `epic-4` `#d46a2e`, `epic-5`
+`#2f9e6e`, `epic-6` `#c2536a`, `epic-7` `#b7791f`, `epic-8` `#9b4f96`. The colour is stored on
+the epic and is the same on every screen; read it with `epicColor()` from `@bemmoly/ui`. No
+danger red, so an epic never reads as an error. The same eight hues serve `EntityTile`, space
+tones and page icon tints.
+
+### Avatar hues (fixed)
+
+`avatar-green`, `avatar-orange`, `avatar-violet`, `avatar-pink`, `avatar-amber`, `avatar-sky`:
+solid fills with white initials at 4.5:1. The signed-in person wears the accent; everyone else's
+hue comes from their id (`avatarHue`). Only `Avatar` uses them.
+
+### Brand and AI
+
+`brand-1/2/3` are the logo's colours ([brand.md](brand.md#logo-colours-are-the-system)).
+`ai` (fill, mark), `ai-600` (AI text), `ai-100` (AI borders), `ai-50` (AI backgrounds) are
+lilac and reserved for AI output ([ai.md](ai.md)).
+
+### Not for new code
+
+The pastel pairs `green-bg/-fg`, `orange-bg/-fg`, `violet-bg/-fg`, `pink-bg/-fg`,
+`amber-bg/-fg`, `sky-bg/-fg` (`HUE_TOKENS`) remain for the screens that still use them. New UI
+uses the avatar, epic or signal families instead.
+
+## Type
+
+| Class     | Size | Use                                                          |
+| --------- | ---- | ------------------------------------------------------------ |
+| `text-11` | 11px | Meta: keys in chips, counts, sidebar section headings        |
+| `text-12` | 12px | Secondary: hints, captions, tooltips, badges                 |
+| `text-13` | 13px | UI default: rows, buttons, inputs, menus (`text-base` = 13px) |
+| `text-14` | 14px | Reading: descriptions, comments, card titles in dialogs      |
+| `text-16` | 16px | Section titles                                               |
+| `text-20` | 20px | Page titles, dialog titles                                   |
+| `text-24` | 24px | The greeting on Home; the largest product size               |
+
+- One recorded exception: the Docs page title is 36px (with #77), drawn only by Docs'
+  page title (`page/body/page-title.tsx`) and its skeleton. It stays until an ADR either adds a display step or brings it to
+  24px; nothing else may use it. Docs' 12.5px property text is debt, not an exception.
+- Weights: 400 body, 500 labels and nav, 600 titles and emphasis. No 700 in product UI.
+- Line heights: `leading-display` 1.15, `leading-title` 1.3, `leading-card` 1.4,
+  `leading-body` 1.5, `leading-desc` 1.6, `leading-doc` 1.65, `leading-prose` 1.7 (long reading).
+- Tracking: `tracking-display` and `tracking-title` tighten large titles; `tracking-brand` the
+  wordmark line. `tracking-caps` and `tracking-label` serve old capitalised marks only: new UI
+  has no capitalised labels ([content.md](content.md)).
+- Faces: `font-sans` is the preset's face (IBM Plex Sans in Classic and Dark; `FONTS` lists the
+  four); `font-mono` is IBM Plex Mono for keys, code and tabular ids. Self-hosted via
+  `@bemmoly/ui/fonts.css`; never load a font from a CDN.
+
+## Radius
+
+| Class            | Size  | Use                                                       |
+| ---------------- | ----- | --------------------------------------------------------- |
+| `rounded-tick`   | 2px   | Marks under 12px: epic swatches, progress bars            |
+| `rounded-chip`   | 4px   | Chips, badges, labels' inner parts, crumbs, small buttons |
+| `rounded-control`| 6px   | Buttons, inputs, selects, nav rows (`h-control` is 32px)  |
+| `rounded-card`   | 8px   | Cards, menus, popovers, toasts                            |
+| `rounded-dialog` | 12px  | Dialogs and sheets                                        |
+| `rounded-full`   | full  | Avatars, pills, status glyphs, label dots                 |
+
+## Elevation
+
+| Class       | Use                                                                |
+| ----------- | ------------------------------------------------------------------ |
+| `shadow-e1` | Resting cards and the selected segment: a hairline ring and a breath of shadow |
+| `shadow-e1h`| A card under the pointer or lifted for drag                        |
+| `shadow-e2` | Menus, popovers, tooltips, the unfolded sidebar over the page      |
+| `shadow-e3` | Dialogs, the palette, sheets                                       |
+
+Dark mode elevations are white rings plus deeper shadows, so they read on dark surfaces. Rings
+that are not elevation: `shadow-ring` (soft accent), `shadow-ring-ac` (solid accent),
+`shadow-ring-node` (selected workflow node), `shadow-tab` (active tab underline),
+`shadow-radio`, `shadow-halo` (overlapping avatars).
+
+## Motion
+
+| Token (`--duration-*`, `MOTION_MS`) | ms  | Use                                              |
+| ----------------------------------- | --- | ------------------------------------------------ |
+| `instant`                           | 90  | Press feedback, colour flips                     |
+| `fast`                              | 120 | Hover, focus, the switch knob (default transition) |
+| `base`                              | 160 | Menus, popovers, tooltips, rows arriving         |
+| `slow`                              | 180 | Dialogs, the slide-over, toasts, a dropped card  |
+| `exit`                              | 100 | Anything leaving                                 |
+
+Easings: `ease-standard` (moving within the page), `ease-out` (arriving), `ease-in` (leaving),
+`ease-settle` (a dropped card). Animations: `animate-fade-in/out`, `pop-in`, `dialog-in/out`,
+`slide-in/out`, `toast-in/out`, `rise`, `settle`; for overlays use `DIALOG_MOTION` and
+`SHEET_MOTION` from `@bemmoly/ui`. Every animation sits behind `motion-safe:`; under reduced
+motion every duration is zero ([accessibility.md](accessibility.md#motion)).
+
+## Focus and timing
+
+- `focus-ring`: 2px `acc` outline, 2px offset, on `:focus-visible` only (`FOCUS`). Inside clipped
+  lists use `focus-ring-inset`; on a field wrapper `focus-ring-within`. From TS: `focusRing`,
+  `focusRingInset`.
+- `TIMING.tooltipDelayMs` 400, `TIMING.tooltipSkipMs` 300, `TIMING.toastMs` 6000.
+
+## Presets and custom themes
+
+Eight presets (`PRESETS`): Classic and Dark carry the review's values exactly; Slate, Warm,
+Midnight, Forest, Ocean and Rose keep their accent and face and project onto the same names. A
+custom theme is `buildTheme({ brand, mode, surfaces, font })` from `@bemmoly/ui/theme`. Screens
+never set theme colours themselves, and nothing a theme does reaches the brand, type, epic or
+avatar colours.

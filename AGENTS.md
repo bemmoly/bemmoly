@@ -8,12 +8,31 @@ It is deliberately specific. When it conflicts with a tool's default behaviour, 
 Read first:
 
 - `docs/tech-design.html`: the architecture. Decisions there are settled unless an ADR changes them.
-- `docs/design/premium/`: the design review. It is the source of truth for the shell and the
-  visual language (ADR 0015).
-- `docs/design/mocks/`: seventeen product screens, the pixel source of truth for what the
-  review does not draw.
+- `docs/design/system/README.md`: the design system, the one rulebook for every screen (below).
 - `docs/plan/foundation.md`: what the first release (0.1.0) contains and how the work is split.
 - `docs/adr/`: one record per decision that changed after the tech design.
+
+## Design system: always follow it
+
+**Every UI change follows [`docs/design/system/`](docs/design/system/README.md)**: the product
+(Work, Docs, Home, Inbox), Settings, the setup wizard, sign-in and the marketing site, whether a
+person or an agent writes it. It is the single source of truth for how Bemmoly looks, reads and
+behaves (ADR 0016); the design review, the interaction notes and the old mocks are history and
+evidence linked from it, never a second rulebook.
+
+- **Nothing outside it.** No new colour, type size, radius, shadow, icon, component or
+  interaction pattern may appear unless the system has it, or the same pull request adds it
+  there through [changing-the-system.md](docs/design/system/changing-the-system.md) (an ADR,
+  the doc, a story, a check).
+- **These fail review on sight**: a screen outside the frame (its own top bar, sidebar or scroll
+  container instead of `PageLayout`); a glyph character standing in for an icon; a literal
+  colour or font size in UI code; a shared component redrawn in a page; AI lilac on anything
+  that is not AI, or an AI surface while AI is off. The linter fails the glyphs, the literals and
+  direct Lucide imports.
+- **Done means the UI checklist**: [definition-of-done.md](docs/design/system/definition-of-done.md),
+  carried by the pull request template, on top of section 7.
+- **New screens write interaction notes first** (primary job, top three actions, keys, states),
+  as [interaction.md](docs/design/system/interaction.md#notes-every-new-screen-needs) describes.
 
 ## 1. Repository layout
 
@@ -101,15 +120,9 @@ is no noun. `201` on create, `204` on delete. Error body `{ code, message, detai
 
 **Frontend.** Hooks own logic, components stay presentational, files under 300 lines. Server
 state in TanStack Query; client state in Zustand; never copy one into the other. All HTTP
-through `packages/api-client`. Tokens from `packages/ui` are the only source of colour,
-spacing, radius, type and shadow; never a literal colour in a component. One accent is
-reserved for AI-produced content and nothing else.
-
-**Design fidelity.** Build from the design review (`docs/design/premium/`, ADR 0015) where it
-covers a screen or a component, and from the mock's markup and measurements elsewhere. Never
-approximate a spacing, an icon or a colour, and never type a character where an icon belongs. Shared components are reused, never redrawn in a page. New UI is
-verified in a running browser against the mock before it is called done, with a screenshot in
-the PR beside the mock. The theme is settled; proposals to change it go through an ADR, not a PR.
+through `packages/api-client`. How it looks and behaves is the design system's job (the
+section above): tokens from `packages/ui` are the only source of colour, spacing, radius, type
+and shadow, and the theme changes only through an ADR.
 
 **Comments.** Explain why, never what. No ticket or issue numbers in source. No commented-out
 code. Removing the old path is part of shipping the new one.
@@ -159,7 +172,8 @@ build(deploy): pin the Postgres image to pgvector pg18
 - Open a draft early. Keep it small; under roughly 400 changed lines is the target. Split
   larger work into a sequence of PRs that each leave `main` working.
 - Title follows the commit format and becomes the squash commit. The description says what
-  changed, why, how it was tested, and for UI includes a screenshot beside the mock.
+  changed, why, how it was tested, and for UI includes light and dark screenshots beside the
+  review's drawing and the ticked UI checklist.
 - Required before review: the required status checks green (listed in `.github/CI.md`:
   typecheck, lint, unit and integration tests among them); `.env.example`
   current; changesets written for any schema change; a release note entry (section 6) for
@@ -192,8 +206,8 @@ build(deploy): pin the Postgres image to pgvector pg18
 
 A change is done when: typecheck, lint and build are clean; the service boots; unit tests cover
 the service logic; integration tests run against real Postgres for anything touching the
-database, queue, realtime or search; Playwright covers any new user flow; new UI is verified in
-a browser against the mock; changesets are written and applied; `.env.example` is current; no
+database, queue, realtime or search; Playwright covers any new user flow; new UI passes the
+design system's definition of done, verified in a running browser; changesets are written and applied; `.env.example` is current; no
 secrets are in the diff; and the standards above hold for every touched file.
 
 Tests run with Vitest. Integration tests use Testcontainers Postgres and never mock the
@@ -207,9 +221,9 @@ high), the Semgrep rules, secret scanning and image scanning run in CI and block
 
 ## 9. Working as an AI agent in this repository
 
-- Read the relevant part of the tech design and the mock before writing code. Do not invent
-  behaviour the design does not describe; if the design is silent, choose the simplest option
-  and note it in the PR.
+- Read the relevant part of the tech design, and for UI the design system, before writing
+  code. Do not invent behaviour or visuals the design does not describe; if it is silent,
+  choose the simplest option that keeps the system's principles and note it in the PR.
 - Stay inside the folders your task owns. If you need an interface another stream owns, add or
   change it in `packages/shared` or `packages/core` contracts and say so in the PR; do not edit
   the other stream's implementation.
