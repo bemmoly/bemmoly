@@ -40,6 +40,7 @@ export async function extractPage(deps: DocsServiceDeps, change: CollabChange): 
         text = ${text},
         word_count = ${words},
         content_updated_at = now(),
+        content_updated_by = coalesce(${lastEditor}::uuid, content_updated_by),
         updated_by = coalesce(${lastEditor}::uuid, updated_by),
         updated_at = now(),
         revision_editor_ids = array(
