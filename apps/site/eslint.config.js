@@ -13,6 +13,11 @@ export default defineConfig(
     languageOptions: { globals: { ...globals.browser } },
   },
   {
+    // Icons are drawn, never typed (ADR 0015): the product's rule, on the site's pages too.
+    files: ['src/**/*.{astro,ts}'],
+    rules: { 'bemmoly/no-glyph-characters': 'error' },
+  },
+  {
     files: ['scripts/**'],
     rules: { 'no-console': 'off' },
   },

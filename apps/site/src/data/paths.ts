@@ -3,6 +3,7 @@
  * recommended one command, titled by the reader's situation. Commands follow deploy/ (the
  * Compose file and env template, the Helm chart, the air-gap bundle's README).
  */
+import type { SiteIconName } from '../lib/icons.ts';
 import { REPO_URL } from '../lib/links.ts';
 import { RELEASE } from './landing.ts';
 import type { StatusKey } from './self-hosting.ts';
@@ -13,8 +14,8 @@ export type PathId =
 
 export interface PathOption {
   id: Exclude<PathId, 'recommended'>;
-  /** Two letters in a tile, as the mocks label things without a logo. */
-  tile: string;
+  /** A drawn icon from the product's set, never letters in a box. */
+  icon: SiteIconName;
   title: string;
   status: StatusKey;
   body: string;
@@ -32,7 +33,7 @@ const BUNDLE = `bemmoly-airgap-${RELEASE.version}-amd64`;
 export const PATHS: readonly PathOption[] = [
   {
     id: 'compose',
-    tile: 'DC',
+    icon: 'box',
     title: 'I already run Docker Compose',
     status: 'available',
     body: 'Use the Compose file and env template the installer writes. Postgres, the HTTPS proxy and the in-app updater are Compose profiles you can leave out.',
@@ -48,7 +49,7 @@ $ docker compose up -d`,
   },
   {
     id: 'helm',
-    tile: 'K8',
+    icon: 'hexagon',
     title: 'I run Kubernetes',
     status: 'launch',
     body: 'A Helm chart runs the same image as one Deployment, or as separate api and worker Deployments. It connects to your Postgres instead of running one.',
@@ -58,7 +59,7 @@ $ docker compose up -d`,
   },
   {
     id: 'terraform',
-    tile: 'TF',
+    icon: 'globe',
     title: 'I want managed infrastructure',
     status: 'launch',
     body: 'Terraform modules for AWS, GCP and Hetzner will create the VM, with a managed Postgres on AWS and GCP, and run the installer through cloud-init.',
@@ -66,7 +67,7 @@ $ docker compose up -d`,
   },
   {
     id: 'air-gapped',
-    tile: 'AG',
+    icon: 'wifi-off',
     title: 'My servers have no internet',
     status: 'offline',
     body: 'Each release has a bundle with the four images, the installer, the Compose file and checksums. Copy it to the machine; Docker must already be installed there.',
@@ -79,7 +80,7 @@ $ sudo sh install.sh --version ${RELEASE.version} \\
   },
   {
     id: 'own-postgres',
-    tile: 'PG',
+    icon: 'database',
     title: 'I have my own Postgres',
     status: 'available',
     body: 'One flag on any path, and the bundled database is left out. With Compose, set DATABASE_URL in .env and drop db from COMPOSE_PROFILES; on Kubernetes it goes in the Secret.',

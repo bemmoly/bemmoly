@@ -32,37 +32,37 @@ const WHERE = [
 
 const CONTROLS: readonly Capability[] = [
   {
-    tile: 'BK',
+    icon: 'database',
     title: 'Backups you can trust',
     body: 'Daily at 02:00 by default, kept 7 days, 4 weeks and 3 months, checked as each is written and test-restored every week.',
     status: 'now',
   },
   {
-    tile: 'EN',
+    icon: 'lock',
     title: 'Encrypted off the machine',
     body: 'Backups sent to a bucket are encrypted with AES-256-GCM using a passphrase only your server holds.',
     status: 'now',
   },
   {
-    tile: 'SG',
+    icon: 'shield',
     title: 'Signed updates',
     body: 'Release images are signed; the updater verifies the signature before it installs anything.',
     status: 'now',
   },
   {
-    tile: 'RB',
+    icon: 'restore',
     title: 'Rollback for a week',
     body: 'Every update takes a backup first, rolls back by itself if the health check fails, and can be undone for 7 days.',
     status: 'now',
   },
   {
-    tile: 'AL',
+    icon: 'checklist',
     title: 'An audit log',
     body: 'Who changed settings, modules and backups, and when, exportable as CSV.',
     status: 'now',
   },
   {
-    tile: 'SO',
+    icon: 'key',
     title: 'Single sign-on',
     body: 'OIDC and SAML sign-in, and SCIM to keep people and groups in step with your directory.',
     status: 'integrations',

@@ -7,6 +7,7 @@
 import { INSTALL_BLOCK, REQUIREMENTS, STATUS } from '../../data/self-hosting.ts';
 import Badge from '../site/Badge.astro';
 import CodeBlock from '../site/CodeBlock.astro';
+import Icon from '../site/Icon.astro';
 import Transcript from '../site/Transcript.astro';
 import StepNumber from './StepNumber.astro';
 
@@ -45,9 +46,7 @@ const badges = [STATUS.available, STATUS.ubuntu];
           <ul class="flex flex-col gap-1 text-14h leading-desc text-tx-2">
             {REQUIREMENTS.map((line) => (
               <li class="flex gap-2">
-                <span aria-hidden="true" class="text-green">
-                  ✓
-                </span>
+                <Icon name="check-circle" class="mt-0.75 text-green-tx" />
                 {line}
               </li>
             ))}

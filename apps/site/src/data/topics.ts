@@ -5,6 +5,7 @@
  * release number: plans move, and a version on unbuilt work turns into a false claim.
  */
 import type { BadgeTone } from '../lib/badge.ts';
+import type { SiteIconName } from '../lib/icons.ts';
 import { DOCS_SINCE, shippedLabel } from '../lib/changelog.ts';
 
 export const AVAILABILITY = {
@@ -19,8 +20,8 @@ export const AVAILABILITY = {
 export type Availability = keyof typeof AVAILABILITY;
 
 export interface Capability {
-  /** Two letters in a tile, as the landing page's feature grid draws them. */
-  tile: string;
+  /** A drawn icon from the product's set, never letters in a box. */
+  icon: SiteIconName;
   title: string;
   body: string;
   status: Availability;
