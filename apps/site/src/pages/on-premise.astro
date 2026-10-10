@@ -107,11 +107,11 @@ const CONTROLS: readonly Capability[] = [
         <strong>Email</strong> goes through the mail server you configure, and nowhere until you do.
       </li>
       <li>
-        <strong>AI</strong>, from 0.4, talks only to the provider you connect, which can be a model
+        <strong>AI</strong>, once it ships, will talk only to the provider you connect, which can be a model
         on your own network. Until you connect one, nothing is sent.
       </li>
       <li>
-        <strong>Metrics</strong> for your own Prometheus are off until you set a scrape token.
+        <strong>Metrics</strong> for your own Prometheus sit behind a scrape token the installer generates; without the token, /metrics answers 404.
       </li>
     </ul>
   </Section>

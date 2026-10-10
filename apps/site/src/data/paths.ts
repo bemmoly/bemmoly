@@ -75,7 +75,7 @@ $ cd ${BUNDLE}
 $ sudo sh install.sh --version ${RELEASE.version} \\
     --image-archive images.tar --domain bemmoly.internal`,
     copy: true,
-    note: 'Later updates: upload the next bundle on the Updates page. From 0.4, AI can use a model server on the same network.',
+    note: 'Later updates: upload the next bundle on the Updates page.',
   },
   {
     id: 'own-postgres',
@@ -86,7 +86,7 @@ $ sudo sh install.sh --version ${RELEASE.version} \\
     code: `$ curl -fsSL https://get.bemmoly.com | sh -s -- \\
     --database-url postgres://bemmoly:PASSWORD@db.internal:5432/bemmoly_db`,
     copy: true,
-    note: 'Postgres 18 is required; 17 is accepted with a warning. Install the pgvector extension too: AI search needs it from 0.4, and the health page says when it is missing.',
+    note: 'Postgres 18 is required; 17 is accepted with a warning. Install the pgvector extension too: the health page says when it is missing.',
     wide: true,
   },
 ];

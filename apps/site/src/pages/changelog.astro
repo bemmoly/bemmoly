@@ -75,9 +75,7 @@ const formatDate = (iso: string) =>
     <ul class="flex list-disc flex-col gap-1.5 pl-5 text-16 leading-desc text-tx-2">
       {UPCOMING.map((step) => (
         <li class="pl-1">
-          <strong class="font-semibold text-tx">
-            {step.version} {step.title}:
-          </strong>{' '}
+          <strong class="font-semibold text-tx">{step.title}:</strong>{' '}
           {step.scope}.
         </li>
       ))}

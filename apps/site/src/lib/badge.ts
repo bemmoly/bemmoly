@@ -7,6 +7,8 @@ export const BADGE_TONES = {
   accent: 'bg-acc-50 text-acc',
   ok: 'bg-green-50 text-green-tx',
   warn: 'bg-amber-50 text-amber-tx',
+  /** AI and only AI, in the logo's lilac (ADR 0015). */
+  ai: 'bg-ai-50 text-ai-600',
   solid: 'bg-acc-fill text-on-acc',
 } as const;
 
