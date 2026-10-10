@@ -50,9 +50,9 @@ export const KEYFRAMES: Readonly<Record<string, Readonly<Record<string, string>>
   'pop-in': { from: 'opacity: 0; transform: translateY(var(--pop-from, -4px)) scale(0.97);' },
   'dialog-in': { from: 'opacity: 0; transform: translateY(8px) scale(0.98);' },
   'dialog-out': { to: 'opacity: 0; transform: translateY(4px) scale(0.985);' },
-  /** The issue slide-over, in from the right edge. */
-  'slide-in': { from: 'opacity: 0; transform: translateX(24px);' },
-  'slide-out': { to: 'opacity: 0; transform: translateX(24px);' },
+  /** The issue slide-over, in from the right edge; the phone's sidebar sheet sets -24px. */
+  'slide-in': { from: 'opacity: 0; transform: translateX(var(--slide-from, 24px));' },
+  'slide-out': { to: 'opacity: 0; transform: translateX(var(--slide-from, 24px));' },
   'toast-in': { from: 'opacity: 0; transform: translateY(12px) scale(0.96);' },
   'toast-out': { to: 'opacity: 0; transform: translateX(24px);' },
   /** A row or card that has just been added to a list. */

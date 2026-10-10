@@ -56,4 +56,10 @@ export * from './components/tooltip/index.ts';
 export * from './components/top-bar/index.ts';
 export * from './components/workflow-canvas/index.ts';
 export { formatAbsolute, formatRelative } from './lib/time.ts';
+/** For kernel surfaces built on the same popover, sheet and dialog behaviour as the components. */
+export { FloatingLayer, type FloatingLayerProps } from './lib/floating.tsx';
+export { DIALOG_MOTION, SHEET_MOTION } from './lib/motion.ts';
+export { usePresence, type Presence } from './lib/presence.ts';
+export { useDialog } from './lib/use-dialog.ts';
+export { focusRing, focusRingInset } from './lib/focus.ts';
 export * from './tokens.ts';

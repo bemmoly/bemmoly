@@ -126,14 +126,14 @@
   @keyframes slide-in {
     from {
       opacity: 0;
-      transform: translateX(24px);
+      transform: translateX(var(--slide-from, 24px));
     }
   }
 
   @keyframes slide-out {
     to {
       opacity: 0;
-      transform: translateX(24px);
+      transform: translateX(var(--slide-from, 24px));
     }
   }
 
