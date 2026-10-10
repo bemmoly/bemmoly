@@ -1,6 +1,6 @@
 import type { Backlog, BoardView, Issue } from '@bemmoly/module-work/shared';
 import { useQuery } from '@tanstack/react-query';
-import { act, renderHook, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, renderHook, screen, waitFor } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import { describe, expect, it } from 'vitest';
 import { backlogKeys } from '../api/index.ts';
@@ -13,6 +13,7 @@ import { findIssue, patchBacklog } from './issue-edit-backlog.ts';
 import { useIssueEdits, useIssuePending } from './issue-edits.ts';
 
 const ME = id(0x990);
+const s14 = sprint(14).id;
 const s15 = sprint(15).id;
 const backlogKey = backlogKeys.backlog('PLT');
 const viewKey = workKeys.boardView(BOARD_ID, {});
@@ -102,6 +103,22 @@ describe('useIssueEdits', () => {
     expect(backlog().sprints[1]?.committedIssues).toBe(1);
     expect(await screen.findByText('PLT-5 could not be changed')).toBeTruthy();
     await waitFor(() => expect(screen.queryByText('Moved to Sprint')).toBeNull());
+  });
+
+  it('offers Undo on a move, putting each issue back in its own container', async () => {
+    const { hook, backlog } = setup();
+    await act(() =>
+      hook.result.current.update(['PLT-1', 'PLT-5'], { sprintId: s15 }, 'Moved 2 to Sprint 15'),
+    );
+    expect(keysOf(backlog().sprints[1]!.issues)).toEqual(['PLT-1', 'PLT-4', 'PLT-5']);
+    fireEvent.click(await screen.findByRole('button', { name: 'Undo' }));
+    expect(keysOf(backlog().sprints[0]!.issues)).toEqual(['PLT-1', 'PLT-2', 'PLT-3']);
+    expect(keysOf(backlog().issues)).toEqual(['PLT-5', 'PLT-6', 'PLT-7']);
+    await waitFor(() => expect(calls).toHaveLength(4));
+    expect(calls.slice(2).map((call) => [call.path.split('/').at(-1), call.body])).toEqual([
+      ['PLT-1', { sprintId: s14 }],
+      ['PLT-5', { sprintId: null }],
+    ]);
   });
 
   it('shows the issue as pending until its edit lands', async () => {

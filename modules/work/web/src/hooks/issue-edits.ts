@@ -56,17 +56,42 @@ async function settle(client: QueryClient) {
   await client.invalidateQueries(filters);
 }
 
+/** The edit that puts each issue back, grouped so issues with the same old values share one. */
+function undoGroups(keys: readonly string[], befores: ReadonlyArray<QuickPatch | null>) {
+  const groups = new Map<string, { keys: string[]; patch: QuickPatch }>();
+  keys.forEach((key, index) => {
+    const patch = befores[index];
+    if (!patch) return;
+    const id = JSON.stringify(patch);
+    const group = groups.get(id) ?? { keys: [], patch };
+    group.keys.push(key);
+    groups.set(id, group);
+  });
+  return [...groups.values()];
+}
+
 export function useIssueEdits() {
   const queryClient = useQueryClient();
   const toast = useToast();
 
   const update = useCallback(
-    async (keys: readonly string[], patch: QuickPatch, done?: string) => {
+    async function update(keys: readonly string[], patch: QuickPatch, done?: string) {
       for (const key of keys) {
         for (const queryKey of editedCaches(key)) void queryClient.cancelQueries({ queryKey });
       }
       const painted = keys.map((key) => paintEdit(queryClient, key, patch));
-      const shown = done ? toast.show({ tone: 'ok', title: done }) : undefined;
+      const befores = painted.map((edit) => edit.before);
+      let shown: string | undefined;
+      if (done) {
+        shown = befores.every(Boolean)
+          ? toast.undo({
+              title: done,
+              onUndo: () => {
+                for (const group of undoGroups(keys, befores)) void update(group.keys, group.patch);
+              },
+            })
+          : toast.show({ tone: 'ok', title: done });
+      }
       const results = await Promise.allSettled(keys.map((key) => send(queryClient, key, patch)));
       const failed: unknown[] = [];
       results.forEach((result, index) => {
