@@ -107,6 +107,34 @@ route that draws another screen behind the dialog.
   if the server search fails, the local results (settings, actions, places) still answer. The
   scrim is flat, like every dialog's.
 
+### The palette with AI (plan → confirm → run)
+
+- **Primary job.** Turn a sentence into changes the person checks and runs, or into an answer
+  with its sources, without leaving the keyboard.
+- **Top actions.** Hand the words to Bemmoly (the AI line, or Mod+Enter from anywhere in the
+  palette); run the plan (Enter, or Run N changes); put it back (Undo).
+- **The AI line.** A lilac result row: "Plan with Bemmoly" when the words start with a verb
+  ("move", "assign", "close"…), "Ask Bemmoly" for a question. It is first in the list when the
+  words read as a request or a question, and last otherwise, so a plain search still opens on
+  Enter.
+- **Keys.** Enter on the AI line asks. With a plan ready, Enter and Mod+Enter run it. Tab
+  leaves the input for the plan's buttons and the edit checkboxes. Esc closes. Changing the
+  words goes back to the results, except while a plan runs.
+- **States.** Thinking (the plan's shape, pulsing, with Stop). Plan ready ("nothing happens
+  until you confirm"). Partly denied: the denied rows say why and the footnote counts what is
+  left out. Editing (checkboxes on allowed rows; Run counts the kept ones). Running (per-row
+  status, a lilac progress bar, Stop; "Keeps running if you close this"). Done, Finished with a
+  failed step (its reason under it), Stopped, and Undone. All of these offer Undo while anything
+  can be put back. Preview only: actions off, never runnable, and admins are told where to turn
+  actions on. The answer streams with numbered sources and "Unsourced" marks. Notices for
+  provider down (with Try again), budget spent, AI turned off and nothing found.
+- **Phone.** The plan table drops the Field column and shows the field under the change. The
+  footer hints are hidden, as everywhere on touch.
+- **Choices recorded.** The Command mock draws one row for the note posted on both issues
+  ("both"). The server proposes one comment step per issue, and the palette folds identical
+  notes into one row, so "Run 3 changes" matches the mock. Closing the palette mid-run doesn't
+  stop the server's job. The shell follows the plan and toasts the result with Undo.
+
 ## Shortcuts overlay (?)
 
 Everywhere, Lists and dialogs, Go to, and a group per screen that registers its own keys (the
