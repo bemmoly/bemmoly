@@ -11,6 +11,7 @@ import { NodeViewPortals } from './node-view-portals.tsx';
 import { PortalStore } from './portals.ts';
 import { BlockHandle } from './block-handle.tsx';
 import { BubbleMenu } from './bubble-menu.tsx';
+import { CodeTools } from './code-tools.tsx';
 import { TableTools } from './table-tools.tsx';
 
 const NO_SERVICES = {};
@@ -96,6 +97,7 @@ export default function DocEditor(props: DocEditorProps) {
         <NodeViewPortals store={portals} />
         <TableTools editor={editor} host={frame} />
         <BlockHandle editor={editor} frame={frame} />
+        <CodeTools editor={editor} host={frame} />
         <BubbleMenu editor={editor} services={services} linking={linking} setLinking={setLinking} />
       </div>
     </DocServicesContext.Provider>
