@@ -1,4 +1,4 @@
-import { USER_IDS } from './people.ts';
+import { TEAM_IDS, USER_IDS } from './people.ts';
 import { ago, uid } from './time.ts';
 import { STATUS_IDS, WORK_IDS, type StatusName } from './work-settings.ts';
 import { TYPE_IDS } from './work-types.ts';
@@ -52,7 +52,7 @@ export function seedProjects(): Row[] {
       key: 'MOB',
       name: 'Mobile App',
       description: 'iOS and Android clients',
-      teamId: null,
+      teamId: TEAM_IDS.mobile,
       method: 'kanban',
       schemeOverrides: {},
       defaultSpaceId: null,

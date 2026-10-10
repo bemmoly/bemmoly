@@ -137,6 +137,21 @@ function createProject(request: MockRequest, db: MockDb) {
   return ok(project, 201);
 }
 
+/** POST /projects/:key/archive and /unarchive: sets or clears archivedAt and returns the project. */
+function archiveRoute(verb: string, archivedAt: () => string | null): MockRoute {
+  return {
+    method: 'POST',
+    pattern: `/api/v1/work/projects/:key/${verb}`,
+    handle: (request, db) => {
+      const project = projectOf(db, of(request, 'key'));
+      if (!project) return notFound('Project');
+      touch(project, { archivedAt: archivedAt() });
+      emit(db, 'work.project.updated', [project.id]);
+      return ok(project);
+    },
+  };
+}
+
 /** Routes for a project's catalog, by key; org rows and the project's own both show. */
 function catalog(path: string, rows: (db: MockDb) => Row[]): MockRoute {
   return {
@@ -156,9 +171,15 @@ const issueRoutes: MockRoute[] = [
   {
     method: 'GET',
     pattern: '/api/v1/work/projects',
-    handle: (_, db) => ok({ items: allProjects(db), nextCursor: null }),
+    handle: (request, db) => {
+      const archived = request.query.get('archived') === 'true';
+      const items = allProjects(db).filter((row) => archived || !row['archivedAt']);
+      return ok({ items, nextCursor: null });
+    },
   },
   { method: 'POST', pattern: '/api/v1/work/projects', handle: createProject },
+  archiveRoute('archive', () => new Date().toISOString()),
+  archiveRoute('unarchive', () => null),
   catalog('issue-types', (db) => workState(db).issueTypes),
   catalog('fields', (db) => workState(db).fields),
   catalog('labels', (db) => state(db).labels),

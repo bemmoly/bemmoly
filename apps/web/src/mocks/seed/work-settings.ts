@@ -1,4 +1,4 @@
-import { ROLE_IDS } from './people.ts';
+import { ROLE_IDS, TEAM_IDS } from './people.ts';
 import { ago, uid } from './time.ts';
 
 /*
@@ -154,7 +154,7 @@ export function seedWorkProject() {
     key: 'PLT',
     name: 'Platform Core',
     description: 'The platform team',
-    teamId: null,
+    teamId: TEAM_IDS.platform,
     method: 'scrum',
     /** Fields and the board are project copies; types and the workflow inherit. */
     schemeOverrides: { fields: true, board: true },
