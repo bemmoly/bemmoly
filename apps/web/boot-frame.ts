@@ -54,8 +54,14 @@ export function bootFrame(options: { logo: string; app: string }): Plugin {
       order: 'post',
       handler(html, context) {
         const page = html.replace(LOGO_SLOT, inlineLogo(readFileSync(options.logo, 'utf8')));
+        // The remembered look goes on <html> before anything paints (public/boot-theme.js).
+        const look: HtmlTagDescriptor = {
+          tag: 'script',
+          attrs: { src: `${base}boot-theme.js` },
+          injectTo: 'head-prepend',
+        };
         const { bundle, chunk: entry } = context;
-        if (!bundle || !entry) return page;
+        if (!bundle || !entry) return { html: page, tags: [look] };
         const chunk = Object.values(bundle).find(
           (output): output is Rolldown.OutputChunk =>
             output.type === 'chunk' && output.facadeModuleId === app,
@@ -72,7 +78,7 @@ export function bootFrame(options: { logo: string; app: string }): Plugin {
           },
           injectTo: 'head',
         }));
-        return { html: page, tags };
+        return { html: page, tags: [look, ...tags] };
       },
     },
   };
