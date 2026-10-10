@@ -106,6 +106,12 @@ export const aiStatusResponseSchema = z.object({
   optOutAllowed: z.boolean(),
   /** This person's ghost text switch in the editor; on unless they turned it off. */
   ghostText: z.boolean().default(true),
+  /**
+   * The spaces and projects Settings › AI › Privacy excludes, so a client hides the AI
+   * actions there (such as "Suggest a fix") instead of offering one the server refuses.
+   */
+  excludedSpaceIds: z.array(z.uuid()).default([]),
+  excludedProjectIds: z.array(z.uuid()).default([]),
   allowActions: z.boolean(),
   /** Roles that can be called now: assigned, and not paused by the budget. */
   availableRoles: z.array(aiRoleSchema),

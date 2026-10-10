@@ -254,6 +254,8 @@ export const aiRoleRoutes: MockRoute[] = [
         optedOut,
         optOutAllowed: ai.settings.privacy.perUserOptOutAllowed,
         ghostText: !(db.signedInAs && ai.ghostTextOff?.includes(db.signedInAs)),
+        excludedSpaceIds: ai.settings.privacy.excludedSpaceIds,
+        excludedProjectIds: ai.settings.privacy.excludedProjectIds,
         allowActions: ai.settings.privacy.allowActions,
         availableRoles:
           enabled && aiEnabledFor(db, db.signedInAs)

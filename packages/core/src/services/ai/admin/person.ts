@@ -32,6 +32,8 @@ export async function getAiStatus(
     optedOut: policy.actorOptedOut,
     optOutAllowed: policy.perUserOptOutAllowed,
     ghostText: userId ? await readGhostText(ctx.sql, userId) : true,
+    excludedSpaceIds: [...policy.excludedSpaceIds],
+    excludedProjectIds: [...policy.excludedProjectIds],
     allowActions: policy.allowActions,
     availableRoles: policy.enabled && !policy.actorOptedOut ? [...policy.availableRoles] : [],
     budgetState: policy.budgetState,

@@ -163,6 +163,23 @@ describe('AI policy, budget, prompts and "none" against a real database', () => 
     await aiAdmin.setAiPreferences(ai.context, ai.facade, fx.member, { optedOut: false });
   });
 
+  it('tells every person which spaces and projects Privacy excludes', async (ctx) => {
+    if (!fx) return ctx.skip(skip);
+    const ai = fx.build({ recordingPath: recording });
+    const space = '0199c0de-0000-7000-8000-00000000a001';
+    const project = '0199c0de-0000-7000-8000-00000000a002';
+    await aiAdmin.updateAiSettings(ai.context, fx.admin, {
+      privacy: { excludedSpaceIds: [space], excludedProjectIds: [project] },
+    });
+    expect(await aiAdmin.getAiStatus(ai.context, ai.facade, fx.member)).toMatchObject({
+      excludedSpaceIds: [space],
+      excludedProjectIds: [project],
+    });
+    await aiAdmin.updateAiSettings(ai.context, fx.admin, {
+      privacy: { excludedSpaceIds: [], excludedProjectIds: [] },
+    });
+  });
+
   it("keeps a person's ghost text switch on the server, apart from opting out", async (ctx) => {
     if (!fx) return ctx.skip(skip);
     const ai = fx.build({ recordingPath: recording });
