@@ -7,7 +7,9 @@ import type { RailItem, RailState } from '../../hooks/use-setup-wizard.ts';
  * colour is the accent, not the done green, because finishing a step is progress, not success.
  */
 export function StepCircle({ state, size = 18 }: { state: RailState; size?: number }) {
-  const line = state === 'upcoming' || state === 'skipped' ? 'var(--line-2)' : 'var(--acc)';
+  // A skipped ring carries meaning, so it is drawn at the muted text colour, not a hairline.
+  const line =
+    state === 'upcoming' ? 'var(--line-2)' : state === 'skipped' ? 'var(--tx-3)' : 'var(--acc)';
   return (
     <svg aria-hidden="true" width={size} height={size} viewBox="0 0 18 18" className="shrink-0">
       {state === 'done' ? (
