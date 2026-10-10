@@ -1,11 +1,24 @@
-import { IconButton, IssueCard, type EpicColor } from '@bemmoly/ui';
-import { memo, useEffect, useLayoutEffect, useMemo, useRef, type CSSProperties } from 'react';
+import { IssueCard, type EpicColor } from '@bemmoly/ui';
+import {
+  memo,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  startTransition,
+  useState,
+  type CSSProperties,
+  type MouseEvent,
+} from 'react';
+import { flushSync } from 'react-dom';
 import { useBoardDragStore } from '../hooks/board-drag-store.ts';
 import type { ViewCard } from '../hooks/board-model.ts';
 import { useIssuePending } from '../hooks/issue-edits.ts';
 import { clearBoardSelection, useBoardSelectionStore } from '../hooks/board-selection.ts';
-import { IssueActionsMenu, openRowMenu } from '../shared/issue-actions-menu.tsx';
-import { cardPriority, cardProps } from './card-view.ts';
+import { openRowMenu, ROW_MENU } from '../shared/issue-actions-menu.tsx';
+import { useSearchParamIs } from '../shared/url-state.ts';
+import { CardTools } from './card-tools.tsx';
+import { cardProps } from './card-view.ts';
 import { cls, FOCUS_RING, useBoardShared } from './board-context.ts';
 import { settle, takeLanding } from './landing.ts';
 
@@ -13,8 +26,11 @@ export interface BoardCardProps {
   card: ViewCard;
   laneId: string;
   columnId: string;
-  /** Position among the cell's other cards, as a drop before this card would land. */
-  index: number;
+  /**
+   * Where in its cell the card just set down landed. Only that card is told: it settles there
+   * and keeps the focus, and the cards the drop shifted up or down have no reason to render.
+   */
+  landing?: number;
   laneColor: EpicColor | null;
 }
 
@@ -30,38 +46,90 @@ const CARRIED = {
   keyboard: 'shadow-e2 motion-safe:-translate-y-0.5',
 } as const;
 
+interface CardFaceProps {
+  card: ViewCard;
+  laneColor: EpicColor | null;
+  carried: 'pointer' | 'keyboard' | null;
+  selected: boolean;
+  checked: boolean;
+  /** Draws the hover tools and the selection box; off until the card is first reached. */
+  tools: boolean;
+}
+
 /**
- * One draggable, focusable card. The design system's card draws it; this wrapper carries the
- * pointer and keyboard handling and the "carried" look, and skips rendering unless its own
- * card, place or carried state changed.
+ * What the card shows, apart from where it sits: it renders only when the card, its look or its
+ * tools change, never because a drop moved the cards around it up or down a place.
  */
-export const BoardCard = memo(function BoardCard({
+const CardFace = memo(function CardFace({
   card,
-  laneId,
-  columnId,
-  index,
   laneColor,
-}: BoardCardProps) {
-  const { actions, vocab, selectedKey, instructionsId, quick, select, sprints, density } =
-    useBoardShared();
-  const carried = useBoardDragStore((state) =>
-    state.carrying?.issueId === card.issueId ? state.carrying.mode : null,
-  );
-  const checked = useBoardSelectionStore((state) => state.selection.ids.includes(card.key));
+  carried,
+  selected,
+  checked,
+  tools,
+}: CardFaceProps) {
+  const { vocab, select, density } = useBoardShared();
   const selecting = useBoardSelectionStore((state) => state.selection.ids.length > 0);
   // Only a checked card follows the whole selection, so its menu can act on all of it.
   const targets = useBoardSelectionStore((state) => (checked ? state.selection.ids : NONE));
   const props = useMemo(() => cardProps(card, vocab, laneColor), [card, vocab, laneColor]);
   const pending = useIssuePending(card.key);
+  const boxed = tools || checked || selecting;
+  return (
+    <IssueCard
+      {...props}
+      interactive={carried === null}
+      selected={selected}
+      pending={pending}
+      checked={checked}
+      selecting={selecting}
+      density={density}
+      {...(boxed
+        ? { onCheck: (event: MouseEvent<HTMLElement>) => select.check(event, card.key) }
+        : {})}
+      tools={
+        tools && carried === null && <CardTools card={card} {...(checked ? { targets } : {})} />
+      }
+    />
+  );
+});
+
+/**
+ * One draggable, focusable card. The design system's card draws it; this wrapper carries the
+ * pointer and keyboard handling and the "carried" look, and skips rendering unless its own
+ * card, place or carried state changed. Its tools (two tooltipped buttons and a menu) are drawn
+ * the first time the pointer or the focus reaches the card, so a board of hundreds of cards
+ * mounts, and redraws, only what anyone can see.
+ */
+export const BoardCard = memo(function BoardCard({
+  card,
+  laneId,
+  columnId,
+  landing,
+  laneColor,
+}: BoardCardProps) {
+  const { actions, vocab, instructionsId, quick, select, touch } = useBoardShared();
+  const carried = useBoardDragStore((state) =>
+    state.carrying?.issueId === card.issueId ? state.carrying.mode : null,
+  );
+  const checked = useBoardSelectionStore((state) => state.selection.ids.includes(card.key));
+  const open = useSearchParamIs('issue', card.key);
+  const [reached, setReached] = useState(false);
+  // Low priority: a card the pointer crosses mid-drag, or lands under it, never holds up a frame.
+  const reach = reached ? undefined : () => startTransition(() => setReached(true));
   const ruleColor = vocab.ruleColor(card);
   const element = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (useBoardDragStore.getState().takeFocus(card.issueId)) element.current?.focus();
-  }, [card.issueId, laneId, columnId, index]);
+  }, [card.issueId, laneId, columnId, landing]);
   useLayoutEffect(() => {
-    if (element.current && takeLanding(card.issueId, { laneId, columnId, index }))
+    if (
+      landing !== undefined &&
+      element.current &&
+      takeLanding(card.issueId, { laneId, columnId, index: landing })
+    )
       settle(element.current);
-  }, [card.issueId, laneId, columnId, index]);
+  }, [card.issueId, laneId, columnId, landing]);
   return (
     <div
       ref={element}
@@ -73,6 +141,8 @@ export const BoardCard = memo(function BoardCard({
       aria-describedby={instructionsId}
       aria-pressed={carried !== null}
       draggable
+      onPointerEnter={reach}
+      onFocus={reach}
       onClick={(event) => {
         if (!select.click(event, card.key)) actions.open(card.key);
       }}
@@ -81,7 +151,11 @@ export const BoardCard = memo(function BoardCard({
         if (event.shiftKey) event.preventDefault();
       }}
       data-issue-key={card.key}
-      onContextMenu={openRowMenu}
+      onContextMenu={(event) => {
+        // The menu key on a card the pointer never reached: draw the tools, then open the menu.
+        if (!event.currentTarget.querySelector(`[${ROW_MENU}]`)) flushSync(() => setReached(true));
+        openRowMenu(event);
+      }}
       onKeyDown={(event) => {
         if (event.target !== event.currentTarget) return;
         const plain = !event.metaKey && !event.ctrlKey && !event.altKey;
@@ -104,8 +178,7 @@ export const BoardCard = memo(function BoardCard({
       onDragEnd={actions.dragEnd}
       onDragOver={(event) => {
         const box = event.currentTarget.getBoundingClientRect();
-        const below = event.clientY > box.top + box.height / 2;
-        actions.dragOver(event, { laneId, columnId, index: index + (below ? 1 : 0) });
+        actions.dragOverCard(event, card.issueId, event.clientY > box.top + box.height / 2);
       }}
       style={ruleColor ? ({ '--card-rule': ruleColor } as CSSProperties) : undefined}
       className={cls(
@@ -115,55 +188,13 @@ export const BoardCard = memo(function BoardCard({
         carried && CARRIED[carried],
       )}
     >
-      <IssueCard
-        {...props}
-        interactive={carried === null}
-        selected={carried !== null || selectedKey === card.key}
-        pending={pending}
+      <CardFace
+        card={card}
+        laneColor={laneColor}
+        carried={carried}
+        selected={carried !== null || open}
         checked={checked}
-        selecting={selecting}
-        density={density}
-        onCheck={(event) => select.check(event, card.key)}
-        tools={
-          carried === null && (
-            <>
-              {vocab.meId && card.assigneeId !== vocab.meId && (
-                <IconButton
-                  tip="Assign to me"
-                  keys="I"
-                  size="tool"
-                  icon="user"
-                  label={`Assign ${card.key} to me`}
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    void quick.update([card.key], { assigneeId: vocab.meId ?? null });
-                  }}
-                />
-              )}
-              <IconButton
-                tip="Open in peek"
-                keys="Enter"
-                size="tool"
-                icon="expand"
-                label={`Open ${card.key}`}
-                onClick={(event) => {
-                  event.stopPropagation();
-                  actions.open(card.key);
-                }}
-              />
-              <IssueActionsMenu
-                issueKey={card.key}
-                assigneeId={card.assigneeId}
-                priority={cardPriority(card)}
-                meId={vocab.meId}
-                actions={quick}
-                onOpen={() => actions.open(card.key)}
-                {...(sprints ? { sprints } : {})}
-                {...(checked ? { targets } : {})}
-              />
-            </>
-          )
-        }
+        tools={reached || touch}
       />
     </div>
   );

@@ -59,9 +59,12 @@ export interface IssueCardProps {
   className?: string;
 }
 
-/** Hover tools and the selection box: on hover, on focus inside the card or on its wrapper. */
+/**
+ * Hover tools and the selection box: on hover, on focus inside the card or on its wrapper. A
+ * screen may draw them only once the card is first reached; they still fade in then.
+ */
 const REVEAL =
-  'opacity-0 group-hover/card:opacity-100 group-focus-within/card:opacity-100 in-focus-visible:opacity-100';
+  'opacity-0 group-hover/card:opacity-100 group-focus-within/card:opacity-100 in-focus-visible:opacity-100 starting:opacity-0';
 
 interface SelectBoxProps {
   issueKey: string;

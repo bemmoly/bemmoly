@@ -7,8 +7,10 @@ import type { IssueQuickActions } from '../hooks/issue-quick-actions.ts';
 import type { CardVocabulary } from './card-view.ts';
 
 /*
- * What every card and cell of the board shares. The actions are stable for the board's life
- * (they read the latest state through a ref), so a drag never re-renders every card.
+ * What every card and cell of the board shares, and only what changes rarely: every card reads
+ * it, so a change here redraws the whole board. The actions are stable for the board's life
+ * (they read the latest state through a ref), and the open issue is not here: each card asks
+ * the address whether it is the one, so opening an issue redraws two cards, not all of them.
  */
 
 export interface BoardActions {
@@ -16,6 +18,8 @@ export interface BoardActions {
   keyDown(event: KeyboardEvent, issueId: string): void;
   dragStart(event: DragEvent, issueId: string): void;
   dragOver(event: DragEvent, target: DropTarget): void;
+  /** Over a card: before it, or after it when `below`, wherever the board has it now. */
+  dragOverCard(event: DragEvent, issueId: string, below: boolean): void;
   dragEnd(): void;
   dropHere(event: DragEvent): void;
 }
@@ -31,8 +35,11 @@ export interface BoardShared {
   sprints?: readonly MenuSprint[];
   /** This person's card density on this board. */
   density: Density;
-  /** The issue open in the peek; its card carries the selected ring. */
-  selectedKey: string | null;
+  /**
+   * A touch screen has no hover, so every card shows its tools from the start; elsewhere a card
+   * draws them the first time the pointer or the focus reaches it.
+   */
+  touch: boolean;
   /** Creates an issue at the foot of a cell; absent when the person cannot create. */
   createIn?: (laneId: string, columnId: string, title: string) => Promise<unknown>;
   /** The id of the hidden text that explains the keyboard to screen readers. */

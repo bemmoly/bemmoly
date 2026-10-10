@@ -24,8 +24,15 @@ export function useBoardActions(model: BoardModel, boardId: string, open: (key: 
     live.current = { dnd, model, open };
   });
 
-  const actions = useMemo(
-    () => ({
+  const actions = useMemo(() => {
+    const over = (event: DragEvent, target: DropTarget) => {
+      if (live.current.dnd.over(withoutCarried(target))) {
+        event.preventDefault();
+        event.stopPropagation();
+        event.dataTransfer.dropEffect = 'move';
+      }
+    };
+    return {
       open: (key: string) => {
         if (!useBoardDragStore.getState().carrying) live.current.open(key);
       },
@@ -46,12 +53,14 @@ export function useBoardActions(model: BoardModel, boardId: string, open: (key: 
         event.dataTransfer.setData('text/plain', issueId);
         live.current.dnd.pick(issueId, 'pointer');
       },
-      dragOver: (event: DragEvent, target: DropTarget) => {
-        if (live.current.dnd.over(withoutCarried(target))) {
-          event.preventDefault();
-          event.stopPropagation();
-          event.dataTransfer.dropEffect = 'move';
-        }
+      dragOver: (event: DragEvent, target: DropTarget) => over(event, target),
+      dragOverCard: (event: DragEvent, issueId: string, below: boolean) => {
+        // The card's place comes from the board as laid out now, so a card never needs to
+        // re-render because a drop moved it up or down its cell.
+        const place = live.current.dnd.places.get(issueId);
+        if (!place) return;
+        const { laneId, columnId, index } = place;
+        over(event, { laneId, columnId, index: index + (below ? 1 : 0) });
       },
       dropHere: (event: DragEvent) => {
         if (!useBoardDragStore.getState().carrying) return;
@@ -59,9 +68,8 @@ export function useBoardActions(model: BoardModel, boardId: string, open: (key: 
         live.current.dnd.drop();
       },
       dragEnd: () => live.current.dnd.cancel(),
-    }),
-    [],
-  );
+    };
+  }, []);
 
   return actions;
 }

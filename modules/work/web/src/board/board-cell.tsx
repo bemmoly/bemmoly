@@ -5,6 +5,7 @@ import type { ViewCard } from '../hooks/board-model.ts';
 import { cellId, useBoardWindowStore, useCellLimit } from '../hooks/board-window.ts';
 import { BoardCard } from './board-card.tsx';
 import { ColumnCreate } from './column-create.tsx';
+import { landsAt } from './landing.ts';
 import { useBoardShared } from './board-context.ts';
 
 export interface BoardCellProps {
@@ -79,7 +80,7 @@ export const BoardCell = memo(function BoardCell({
           card={card}
           laneId={laneId}
           columnId={columnId}
-          index={index}
+          {...(landsAt(card.issueId, { laneId, columnId, index }) ? { landing: index } : {})}
           laneColor={laneColor}
         />
       </Fragment>,
@@ -112,11 +113,12 @@ export const BoardCell = memo(function BoardCell({
       {items}
       {!refused && line !== null && line >= others && shown.length === cards.length && <DropLine />}
       {cards.length > limit && <MoreSentinel cell={cell} />}
-      {createIn && carriedId === null && (
+      {createIn && (
         <ColumnCreate
           cell={cell}
           columnName={columnName}
           onCreate={(title) => createIn(laneId, columnId, title)}
+          hidden={carriedId !== null}
         />
       )}
     </KanbanCell>
