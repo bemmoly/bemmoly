@@ -159,10 +159,7 @@ export function CommentsRail({ pageId, canComment = true, alignTo, onClose }: Co
   );
   return (
     <div
-      className={cx(
-        'flex flex-col text-13 leading-body',
-        docked ? 'min-h-full' : 'min-h-0 flex-1',
-      )}
+      className={cx('flex flex-col text-13 leading-body', docked ? 'min-h-full' : 'min-h-0 flex-1')}
     >
       <div
         className={cx(

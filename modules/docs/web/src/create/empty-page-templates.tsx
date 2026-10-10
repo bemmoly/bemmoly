@@ -16,16 +16,16 @@ import {
 
 const COLUMNS = 4;
 const TILE =
-  'flex min-h-30 cursor-pointer flex-col gap-2 rounded-card border border-br bg-sf p-3 text-left font-sans outline-0 ' +
-  'hover:border-br3 focus-visible:border-ac focus-visible:shadow-ring motion-safe:transition-[border-color,box-shadow]';
+  'flex min-h-30 cursor-pointer flex-col gap-2 rounded-card border border-line bg-card p-3 text-left font-sans outline-0 ' +
+  'hover:border-line focus-visible:border-acc focus-visible:shadow-ring motion-safe:transition-[border-color,box-shadow]';
 
 /** A drawn page in miniature: a heading bar and three lines, the same for every template. */
 function Mini() {
   return (
-    <span aria-hidden className="flex flex-col gap-1.5 rounded-sm bg-bg2 p-2.5">
-      <span className="h-1.5 w-1/2 rounded-full bg-tx6/60" />
+    <span aria-hidden className="flex flex-col gap-1.5 rounded-chip bg-side p-2.5">
+      <span className="h-1.5 w-1/2 rounded-full bg-tx-3/60" />
       {[90, 75, 82].map((width) => (
-        <span key={width} className="h-1 rounded-full bg-tx6/35" style={{ width: `${width}%` }} />
+        <span key={width} className="h-1 rounded-full bg-tx-3/35" style={{ width: `${width}%` }} />
       ))}
     </span>
   );
@@ -40,7 +40,7 @@ function TemplateTile({ template, onUse }: { template: TemplateSummary; onUse: (
         <span className="truncate">{template.name}</span>
       </span>
       {template.description && (
-        <span className="line-clamp-2 text-12 leading-body text-tx4">{template.description}</span>
+        <span className="line-clamp-2 text-12 leading-body text-tx-3">{template.description}</span>
       )}
     </button>
   );
@@ -82,7 +82,7 @@ export function EmptyPageTemplates() {
     >
       <div className="flex items-center gap-3">
         <h2 className="m-0 flex-1 text-13 font-semibold text-tx">Start from a template</h2>
-        <span className="hidden items-center gap-1.5 text-12 text-tx5 sm:flex">
+        <span className="hidden items-center gap-1.5 text-12 text-tx-3 sm:flex">
           <Kbd keys="Up Down Left Right" /> choose <Kbd keys="Enter" /> use
         </span>
       </div>
@@ -107,17 +107,17 @@ export function EmptyPageTemplates() {
           <button
             type="button"
             data-template-tile
-            className={`${TILE} items-center justify-center border-dashed text-tx2`}
+            className={`${TILE} items-center justify-center border-dashed text-tx-2`}
             onClick={() => setImporting(true)}
           >
             <Icon name="upload" size={18} />
             <span className="text-13 font-medium">Import a file</span>
-            <span className="text-12 text-tx5">Markdown or Confluence</span>
+            <span className="text-12 text-tx-3">Markdown or Confluence</span>
           </button>
         )}
       </div>
       {templates.isError && (
-        <p className="m-0 text-12 text-tx5">
+        <p className="m-0 text-12 text-tx-3">
           Templates could not be loaded. Start writing instead.
         </p>
       )}

@@ -52,7 +52,7 @@ function CoverPicker({
             aria-label={COVER_NAMES[cover]}
             aria-pressed={value === cover}
             onClick={() => onPick(cover)}
-            className="relative h-14 cursor-pointer overflow-hidden rounded-md border-0 p-0 shadow-[inset_0_0_0_1px_var(--line)] focus-visible:shadow-ring focus-visible:outline-0 aria-pressed:shadow-[inset_0_0_0_2px_var(--acc)]"
+            className="relative h-14 cursor-pointer overflow-hidden rounded-control border-0 p-0 shadow-[inset_0_0_0_1px_var(--line)] focus-visible:shadow-ring focus-visible:outline-0 aria-pressed:shadow-[inset_0_0_0_2px_var(--acc)]"
           >
             <CoverArt cover={cover} tint={tint} />
           </button>
@@ -62,7 +62,7 @@ function CoverPicker({
         <button
           type="button"
           onClick={() => onPick(null)}
-          className="flex h-8 cursor-pointer items-center gap-2 rounded-md border-0 bg-transparent px-2 font-sans text-13 text-tx-2 hover:bg-hover focus-visible:shadow-ring focus-visible:outline-0"
+          className="flex h-8 cursor-pointer items-center gap-2 rounded-control border-0 bg-transparent px-2 font-sans text-13 text-tx-2 hover:bg-hover focus-visible:shadow-ring focus-visible:outline-0"
         >
           <Icon name="trash" size={14} />
           Remove cover

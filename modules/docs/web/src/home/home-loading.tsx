@@ -18,13 +18,13 @@ export function HomeLoading() {
       </div>
       <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
         <Card className="overflow-hidden">
-          <span className="flex h-12 items-center border-b border-br2 px-3.5">
+          <span className="flex h-12 items-center border-b border-line-2 px-3.5">
             <Skeleton width={320} height={24} />
           </span>
           <DocListRowSkeleton rows={6} />
         </Card>
         <Card className="overflow-hidden">
-          <span className="flex h-11 items-center border-b border-br2 px-3.5">
+          <span className="flex h-11 items-center border-b border-line-2 px-3.5">
             <Skeleton width={64} height={11} />
           </span>
           <DocListRowSkeleton rows={4} />

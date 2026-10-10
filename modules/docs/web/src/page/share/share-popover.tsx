@@ -23,7 +23,7 @@ function WhoCanSee() {
     <div className="flex w-80 flex-col gap-3 p-2">
       <div className="flex flex-col gap-1">
         <h2 className="m-0 text-13 font-semibold text-tx">Who can see this</h2>
-        <p className="m-0 text-12h leading-body text-tx-2">
+        <p className="m-0 text-13 leading-body text-tx-2">
           Everyone in this space can open the page. Pages have no permissions of their own; the
           space decides.
         </p>
@@ -34,9 +34,7 @@ function WhoCanSee() {
           <Skeleton width="55%" />
         </div>
       ) : members.isError ? (
-        <p className="m-0 text-12h text-tx-3">
-          The members did not load. Close this and try again.
-        </p>
+        <p className="m-0 text-13 text-tx-3">The members did not load. Close this and try again.</p>
       ) : (
         <ul aria-label="Space members" className="m-0 flex list-none flex-col gap-0.5 p-0">
           {people.slice(0, SHOWN).map((member) => (

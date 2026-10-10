@@ -78,7 +78,7 @@ function IssuePicker({ onPick }: { onPick: (key: string) => void }) {
               onMouseDown={(event) => event.preventDefault()}
               onClick={() => onPick(item.id)}
               className={cx(
-                'flex h-8 cursor-pointer items-center gap-2 rounded-sm px-2 text-13 text-tx',
+                'flex h-8 cursor-pointer items-center gap-2 rounded-chip px-2 text-13 text-tx',
                 index === active && 'bg-hover',
               )}
             >

@@ -16,7 +16,7 @@ import { BlockMenu, GripTip } from './block-menu.tsx';
  */
 
 const BUTTON = cx(
-  'grid h-6.25 w-5.5 cursor-pointer place-items-center rounded-panel border-0 bg-transparent p-0 text-tx-3',
+  'grid h-6.25 w-5.5 cursor-pointer place-items-center rounded-control border-0 bg-transparent p-0 text-tx-3',
   'hover:bg-hover hover:text-tx-2 aria-expanded:bg-hover aria-expanded:text-tx-2',
   focusRing,
 );

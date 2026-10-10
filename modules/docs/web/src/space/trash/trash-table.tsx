@@ -16,7 +16,7 @@ export interface TrashTableProps {
   onDeleteForever: (page: TrashItem) => void;
 }
 
-const HEAD = 'px-3 py-2 text-left text-12 font-medium text-tx4';
+const HEAD = 'px-3 py-2 text-left text-12 font-medium text-tx-3';
 const CELL = 'px-3 py-2.5 align-middle';
 
 /**
@@ -45,9 +45,9 @@ export function TrashTable(props: TrashTableProps) {
   };
 
   return (
-    <div className="overflow-x-auto rounded-card border border-br bg-sf">
+    <div className="overflow-x-auto rounded-card border border-line bg-card">
       <table className="w-full border-collapse text-13">
-        <thead className="border-b border-br">
+        <thead className="border-b border-line">
           <tr>
             <th className={HEAD}>Page</th>
             <th className={cx(HEAD, 'hidden md:table-cell')}>Was in</th>
@@ -67,23 +67,23 @@ export function TrashTable(props: TrashTableProps) {
               onClick={() => props.onPreview(page)}
               onKeyDown={(event) => onRowKey(event, page, at)}
               className={cx(
-                'group cursor-pointer border-b border-br-row whitespace-nowrap outline-0 last:border-b-0',
-                'hover:bg-bg2 focus-visible:bg-bg2 focus-visible:shadow-[inset_2px_0_0_var(--color-ac)]',
-                page.id === selectedId && 'bg-bg2 shadow-[inset_2px_0_0_var(--color-ac)]',
+                'group cursor-pointer border-b border-line-2 whitespace-nowrap outline-0 last:border-b-0',
+                'hover:bg-side focus-visible:bg-side focus-visible:shadow-[inset_2px_0_0_var(--color-ac)]',
+                page.id === selectedId && 'bg-side shadow-[inset_2px_0_0_var(--color-ac)]',
               )}
             >
               <td className={CELL}>
                 <span className="flex min-w-0 items-center gap-2.5">
-                  <PageIcon value={page.icon} size={16} className="shrink-0 text-tx4" />
+                  <PageIcon value={page.icon} size={16} className="shrink-0 text-tx-3" />
                   <span className="truncate font-medium text-tx">{pageTitle(page)}</span>
                   {page.pagesInside > 0 && (
-                    <span className="shrink-0 text-12 text-tx5 tabular-nums">
+                    <span className="shrink-0 text-12 text-tx-3 tabular-nums">
                       +{page.pagesInside}
                     </span>
                   )}
                 </span>
               </td>
-              <td className={cx(CELL, 'hidden text-tx3 md:table-cell')}>
+              <td className={cx(CELL, 'hidden text-tx-2 md:table-cell')}>
                 <span className="flex items-center gap-1.5">
                   {page.wasIn ? (
                     <>
@@ -97,15 +97,15 @@ export function TrashTable(props: TrashTableProps) {
               </td>
               <td className={cx(CELL, 'hidden sm:table-cell')}>
                 {page.deletedBy ? (
-                  <span className="flex items-center gap-1.5 text-tx2">
+                  <span className="flex items-center gap-1.5 text-tx-2">
                     <Avatar name={page.deletedBy.name} size={18} />
                     {page.deletedBy.name}
                   </span>
                 ) : (
-                  <span className="text-tx5">Someone</span>
+                  <span className="text-tx-3">Someone</span>
                 )}
               </td>
-              <td className={cx(CELL, 'text-tx4 tabular-nums')}>
+              <td className={cx(CELL, 'text-tx-3 tabular-nums')}>
                 {page.deletedAt && <RelativeTime iso={page.deletedAt} />}
               </td>
               <td

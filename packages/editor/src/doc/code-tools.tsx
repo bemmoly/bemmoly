@@ -15,7 +15,7 @@ import { CODE_LANGUAGES, codeLanguage } from '../schema/nodes/code-block.ts';
  */
 
 const CHIP = cx(
-  'inline-flex h-6 cursor-pointer items-center gap-1.5 rounded-panel border-0 bg-transparent px-1.75',
+  'inline-flex h-6 cursor-pointer items-center gap-1.5 rounded-control border-0 bg-transparent px-1.75',
   'font-sans text-12 text-tx-2 hover:bg-hover hover:text-tx',
   focusRing,
 );

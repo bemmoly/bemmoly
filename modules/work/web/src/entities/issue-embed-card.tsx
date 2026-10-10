@@ -64,13 +64,13 @@ export function IssueEmbedCard({ entityKey }: { entityKey: string }) {
             href={href}
             aria-label={`Open ${issue.key}`}
             onClick={(event) => follow(event, href)}
-            className={`grid size-6 place-items-center rounded-panel text-tx-3 hover:bg-hover hover:text-tx ${focusRing}`}
+            className={`grid size-6 place-items-center rounded-control text-tx-3 hover:bg-hover hover:text-tx ${focusRing}`}
           >
             <Icon name="expand" size={14} />
           </a>
         </Tooltip>
       </div>
-      <div className="flex flex-wrap items-center gap-x-3.5 gap-y-1 text-12h text-tx-2">
+      <div className="flex flex-wrap items-center gap-x-3.5 gap-y-1 text-13 text-tx-2">
         <span className={FACT}>
           <StatusGlyph
             stage={statusStage(issue.status.category, issue.status.name)}

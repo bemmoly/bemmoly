@@ -118,7 +118,7 @@ export default function DocsHomeScreen(props: DocsScreenProps) {
       <div className="flex flex-col gap-6" onClick={keepLinksInApp}>
         <header className="flex flex-col gap-0.5">
           <h1 className="m-0 text-24 font-semibold tracking-display text-tx">Docs</h1>
-          {list.length > 0 && <p className="m-0 text-13h text-tx4">{meta}</p>}
+          {list.length > 0 && <p className="m-0 text-13 text-tx-3">{meta}</p>}
         </header>
 
         {spaces.isError ? (

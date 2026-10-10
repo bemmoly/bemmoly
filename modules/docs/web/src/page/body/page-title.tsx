@@ -3,8 +3,8 @@ import { cx } from '../cx.ts';
 import { usePageScreen } from '../screen-context.ts';
 import { useUpdatePage } from '../use-page-actions.ts';
 
-/** The mock's title: 600 36px/1.15, -0.02em, tx. The field and the heading share it. */
-const TITLE = 'm-0 text-24 leading-display font-semibold tracking-display text-tx';
+/** The review's title (docs-kit .d-title): 36px/1.15, outside the app's type steps on purpose. */
+const TITLE = 'm-0 text-[36px] leading-display font-semibold tracking-display text-tx';
 
 export const TITLE_FIELD_ID = 'page-title';
 

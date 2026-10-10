@@ -73,22 +73,22 @@ export function ReviewerList({
         aria-label="People"
         className="m-0 flex max-h-72 list-none flex-col gap-px overflow-auto p-0"
       >
-        {people.isPending && <li className="px-2 py-2 text-12h text-tx-3">Loading people…</li>}
+        {people.isPending && <li className="px-2 py-2 text-13 text-tx-3">Loading people…</li>}
         {people.isSuccess && shown.length === 0 && (
-          <li className="px-2 py-2 text-12h text-tx-3">
+          <li className="px-2 py-2 text-13 text-tx-3">
             {filter.trim()
               ? `Nobody matches “${filter.trim()}”.`
               : 'Nobody else in this space can review yet. Add people to the space first.'}
           </li>
         )}
         {people.isError && (
-          <li role="alert" className="px-2 py-2 text-12h text-danger">
+          <li role="alert" className="px-2 py-2 text-13 text-red">
             The people of this space did not load.
           </li>
         )}
         {shown.map((person) => (
           <li key={person.id}>
-            <label className="flex cursor-pointer items-center gap-2.5 rounded-md px-2 py-1.5 hover:bg-hover">
+            <label className="flex cursor-pointer items-center gap-2.5 rounded-control px-2 py-1.5 hover:bg-hover">
               <Checkbox
                 size="sm"
                 aria-label={person.name}
@@ -99,7 +99,7 @@ export function ReviewerList({
               <Avatar name={person.name} hue={avatarHue(person.id)} size={22} />
               <span className="flex min-w-0 flex-col">
                 <span className="truncate text-13 text-tx">{person.name}</span>
-                <span className="truncate text-11h text-tx-3">{person.email}</span>
+                <span className="truncate text-12 text-tx-3">{person.email}</span>
               </span>
             </label>
           </li>

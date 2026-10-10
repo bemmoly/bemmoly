@@ -25,7 +25,7 @@ function OutlineMargin({ docked, onClose }: MarginProps) {
         </div>
       )}
       {outline.length === 0 ? (
-        !docked && <p className="m-0 text-12h text-tx-3">Headings in the page show here.</p>
+        !docked && <p className="m-0 text-13 text-tx-3">Headings in the page show here.</p>
       ) : (
         <TocList
           outline={outline}

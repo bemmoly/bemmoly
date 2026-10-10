@@ -20,13 +20,13 @@ function TrashSkeleton() {
   return (
     <div
       role="status"
-      className="flex flex-col rounded-card border border-br bg-sf"
+      className="flex flex-col rounded-card border border-line bg-card"
       aria-label="Loading the trash"
     >
       {[48, 36, 42].map((width) => (
         <div
           key={width}
-          className="flex items-center gap-3 border-b border-br-row px-3 py-3.5 last:border-b-0"
+          className="flex items-center gap-3 border-b border-line-2 px-3 py-3.5 last:border-b-0"
         >
           <Skeleton width={16} height={16} />
           <Skeleton width={`${width}%`} height={11} />
@@ -92,7 +92,7 @@ export function TrashView() {
             <header className="flex flex-wrap items-start gap-3">
               <div className="flex min-w-0 flex-1 flex-col gap-1">
                 <h1 className="m-0 text-24 font-semibold tracking-display text-tx">Trash</h1>
-                <p className="m-0 text-13h text-tx4">
+                <p className="m-0 text-13 text-tx-3">
                   Pages stay here for {TRASH_RETENTION_DAYS} days, then they’re deleted for good.
                   Restoring a page brings back the pages under it.
                 </p>
@@ -100,7 +100,7 @@ export function TrashView() {
               {canPurge && all.length > 0 && (
                 <Button
                   variant="ghost"
-                  className="text-danger! enabled:hover:text-danger!"
+                  className="text-red! enabled:hover:text-red!"
                   icon={<Icon name="trash" size={14} />}
                   onClick={() => setEmptying(true)}
                 >
@@ -121,7 +121,7 @@ export function TrashView() {
                   suffix={<Kbd keys="/" />}
                   wrapperClassName="w-full sm:w-64"
                 />
-                <span className="ml-auto text-12 text-tx5 tabular-nums">
+                <span className="ml-auto text-12 text-tx-3 tabular-nums">
                   {all.length} {all.length === 1 ? 'page' : 'pages'}
                   {inside > 0 && ` · ${inside} more under them`}
                 </span>
@@ -143,7 +143,7 @@ export function TrashView() {
                 description={`Deleted pages stay here for ${TRASH_RETENTION_DAYS} days.`}
               />
             ) : pages.length === 0 ? (
-              <p className="m-0 py-8 text-center text-13 text-tx4">
+              <p className="m-0 py-8 text-center text-13 text-tx-3">
                 Nothing in the trash matches “{query.trim()}”.
               </p>
             ) : (
@@ -168,7 +168,7 @@ export function TrashView() {
               </Button>
             )}
             {canPurge && all.length > 0 && (
-              <p className="m-0 text-12 text-tx5">
+              <p className="m-0 text-12 text-tx-3">
                 Deleting forever can’t be undone. Only space admins can empty the trash.
               </p>
             )}

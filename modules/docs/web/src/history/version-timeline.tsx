@@ -100,7 +100,7 @@ export function VersionTimeline(props: VersionTimelineProps) {
         data-version={revision.id}
         aria-pressed={selected === revision.id}
         onClick={() => onSelect(revision)}
-        className="flex w-full cursor-pointer items-start gap-2.5 rounded-lg border-0 bg-transparent px-2.5 py-2 text-left font-sans text-13 text-tx hover:bg-hover focus-visible:shadow-ring focus-visible:outline-0 aria-pressed:bg-acc-50"
+        className="flex w-full cursor-pointer items-start gap-2.5 rounded-card border-0 bg-transparent px-2.5 py-2 text-left font-sans text-13 text-tx hover:bg-hover focus-visible:shadow-ring focus-visible:outline-0 aria-pressed:bg-acc-50"
       >
         <span
           aria-hidden
@@ -191,7 +191,7 @@ export function VersionTimeline(props: VersionTimelineProps) {
               return (
                 <h3
                   key={`day-${index}`}
-                  className="m-0 px-2.5 pt-3 pb-1 text-11h font-semibold text-tx-3"
+                  className="m-0 px-2.5 pt-3 pb-1 text-12 font-semibold text-tx-3"
                 >
                   {entry.label}
                 </h3>
@@ -209,7 +209,7 @@ export function VersionTimeline(props: VersionTimelineProps) {
                 type="button"
                 aria-expanded={false}
                 onClick={() => setOpen(new Set([...open, first]))}
-                className="flex w-full cursor-pointer items-center gap-2 rounded-lg border-0 bg-transparent py-1.5 pr-2.5 pl-8 text-left font-sans text-12h text-tx-3 hover:bg-hover focus-visible:shadow-ring focus-visible:outline-0"
+                className="flex w-full cursor-pointer items-center gap-2 rounded-card border-0 bg-transparent py-1.5 pr-2.5 pl-8 text-left font-sans text-13 text-tx-3 hover:bg-hover focus-visible:shadow-ring focus-visible:outline-0"
               >
                 <Icon name="chevron" size={12} />
                 {entry.revisions.length} autosaves{names.length ? ` · ${names.join(', ')}` : ''}

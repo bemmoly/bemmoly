@@ -7,7 +7,7 @@ import type { DocsPersonView } from '../shared/people.ts';
 import { pageCountLabel } from '../space/page-count.ts';
 import { SpaceMark } from './page-row.tsx';
 
-const HEAD = 'flex items-center gap-2 border-b border-br2 px-3.5 py-2.5';
+const HEAD = 'flex items-center gap-2 border-b border-line-2 px-3.5 py-2.5';
 
 function NeedRow({
   item,
@@ -25,18 +25,18 @@ function NeedRow({
     <a
       href={docsPaths.page(item.page.id)}
       data-list-row
-      className="flex items-center gap-2.5 border-b border-br-row px-3.5 py-2.5 text-tx no-underline outline-0 last:border-b-0 hover:bg-hover focus-visible:bg-hover"
+      className="flex items-center gap-2.5 border-b border-line-2 px-3.5 py-2.5 text-tx no-underline outline-0 last:border-b-0 hover:bg-hover focus-visible:bg-hover"
     >
-      <Icon name={item.kind === 'review' ? 'eye' : 'clock'} size={15} className="text-tx4" />
-      <span className="flex min-w-0 flex-1 flex-col text-12h">
-        <span className="truncate text-tx4">{why}</span>
+      <Icon name={item.kind === 'review' ? 'eye' : 'clock'} size={15} className="text-tx-3" />
+      <span className="flex min-w-0 flex-1 flex-col text-13">
+        <span className="truncate text-tx-3">{why}</span>
         <span className="flex min-w-0 items-center gap-1.5 font-semibold">
           <PageIcon value={item.page.icon} size={14} />
           <span className="truncate">{item.page.title || 'Untitled'}</span>
         </span>
       </span>
       {item.kind === 'review' && (
-        <span className="shrink-0 text-11 text-tx5 tabular-nums">
+        <span className="shrink-0 text-11 text-tx-3 tabular-nums">
           <RelativeTime iso={item.since} />
         </span>
       )}
@@ -53,7 +53,7 @@ export function NeedsYou({ person }: { person: (id: string | null) => DocsPerson
   const items = attention.data?.items ?? [];
   if (attention.isError) {
     return (
-      <Card className="flex items-center gap-2 px-3.5 py-3 text-12h text-tx4">
+      <Card className="flex items-center gap-2 px-3.5 py-3 text-13 text-tx-3">
         <span className="flex-1">What needs you didn’t load.</span>
         <Button size="sm" variant="ghost" onClick={() => void attention.refetch()}>
           Try again
@@ -68,7 +68,7 @@ export function NeedsYou({ person }: { person: (id: string | null) => DocsPerson
       <div className={HEAD}>
         <h2 className="m-0 flex-1 text-13 font-semibold text-tx">Needs you</h2>
         {reviews > 0 && (
-          <span className="rounded-full bg-ac-fill px-1.5 text-11 font-semibold text-on-ac tabular-nums">
+          <span className="rounded-full bg-acc-fill px-1.5 text-11 font-semibold text-on-acc tabular-nums">
             {reviews}
           </span>
         )}
@@ -117,13 +117,13 @@ export function SpacesList({
               <SpaceMark space={space} size={24} />
               <span className="flex min-w-0 flex-1 flex-col">
                 <span className="truncate text-13 font-semibold">{space.name}</span>
-                <span className="truncate text-12 text-tx4">
+                <span className="truncate text-12 text-tx-3">
                   {pageCountLabel(space.pageCount)}
                   {space.description ? ` · ${space.description}` : ''}
                 </span>
               </span>
               {space.memberCount > 0 && (
-                <span className="flex shrink-0 items-center gap-1 text-12 text-tx5 tabular-nums">
+                <span className="flex shrink-0 items-center gap-1 text-12 text-tx-3 tabular-nums">
                   <Icon name="people" size={13} label="Members" />
                   {space.memberCount}
                 </span>

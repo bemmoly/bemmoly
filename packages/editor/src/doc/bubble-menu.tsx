@@ -21,7 +21,7 @@ import { useBubbleOpen } from './use-bubble-open.ts';
  */
 
 const BUTTON = cx(
-  'inline-flex h-7.5 min-w-7.5 shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-panel border-0 px-1.75',
+  'inline-flex h-7.5 min-w-7.5 shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-control border-0 px-1.75',
   'bg-transparent font-sans text-13 whitespace-nowrap text-tx-2 outline-0',
   'hover:bg-hover hover:text-tx',
   focusRing,

@@ -41,14 +41,16 @@ export function SourceTiles({
             className={
               'flex cursor-pointer flex-col gap-0.5 rounded-card border p-3 text-left font-sans outline-0 ' +
               'focus-visible:shadow-ring motion-safe:transition-[border-color,box-shadow] ' +
-              (chosen ? 'border-ac bg-ac-bg shadow-ring' : 'border-br bg-sf hover:border-br3')
+              (chosen
+                ? 'border-acc bg-acc-50 shadow-ring'
+                : 'border-line bg-card hover:border-line')
             }
           >
-            <span className={`flex items-center gap-2 ${chosen ? 'text-ac' : 'text-tx3'}`}>
+            <span className={`flex items-center gap-2 ${chosen ? 'text-acc' : 'text-tx-2'}`}>
               <Icon name={source.icon} size={15} />
               <span className="text-13 font-semibold text-tx">{source.label}</span>
             </span>
-            <span className="text-12 text-tx4">{source.hint}</span>
+            <span className="text-12 text-tx-3">{source.hint}</span>
           </button>
         );
       })}
@@ -91,7 +93,7 @@ export function ParentPicker({
     });
   }
   return (
-    <label className="flex flex-wrap items-center gap-2 text-12h text-tx4">
+    <label className="flex flex-wrap items-center gap-2 text-13 text-tx-3">
       Put the pages under
       <Select
         size="sm"
@@ -113,22 +115,22 @@ export function ImportResults({ pages }: { pages: readonly ImportedPage[] }) {
   return (
     <ul
       aria-label="Imported pages"
-      className="m-0 flex max-h-64 list-none flex-col overflow-auto p-0 text-12h"
+      className="m-0 flex max-h-64 list-none flex-col overflow-auto p-0 text-13"
     >
       {pages.map((page) => (
         <li
           key={page.id}
-          className="flex items-center gap-2.5 border-b border-br-row py-2 last:border-b-0"
+          className="flex items-center gap-2.5 border-b border-line-2 py-2 last:border-b-0"
         >
-          <Icon name="check" size={14} className="shrink-0 text-ok" />
-          <span className="min-w-0 flex-1 truncate text-tx2">{page.path}</span>
+          <Icon name="check" size={14} className="shrink-0 text-green" />
+          <span className="min-w-0 flex-1 truncate text-tx-2">{page.path}</span>
           {page.placeholders > 0 && (
-            <span className="shrink-0 rounded-chip bg-warn-bg px-1.5 py-px text-11 font-medium text-warn-fg">
+            <span className="shrink-0 rounded-chip bg-amber-50 px-1.5 py-px text-11 font-medium text-amber-tx">
               {page.placeholders} {page.placeholders === 1 ? 'macro' : 'macros'} kept as
               placeholders
             </span>
           )}
-          <span className="flex max-w-50 shrink-0 items-center gap-1 text-tx5">
+          <span className="flex max-w-50 shrink-0 items-center gap-1 text-tx-3">
             <Icon name="arrow" size={12} label="became" />
             <span className="truncate">{page.title || 'Untitled'}</span>
           </span>

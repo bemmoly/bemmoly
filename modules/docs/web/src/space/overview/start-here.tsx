@@ -7,7 +7,7 @@ import { Icon, PageIcon } from '@bemmoly/ui/icons';
 import { docsPaths } from '../../shared/navigation.ts';
 import { useHomePage, useSetHomePage } from './use-overview.ts';
 
-const LABEL = 'flex items-center gap-2 text-12 font-semibold text-tx4';
+const LABEL = 'flex items-center gap-2 text-12 font-semibold text-tx-3';
 
 /**
  * Start here: the space's home page, pinned, with its opening lines. Without one, the first
@@ -41,7 +41,7 @@ export function StartHere({
               <button
                 {...trigger}
                 type="button"
-                className="cursor-pointer rounded-sm border-0 bg-transparent px-1.5 py-0.5 font-sans text-12 font-medium text-tx3 hover:bg-hover hover:text-tx"
+                className="cursor-pointer rounded-chip border-0 bg-transparent px-1.5 py-0.5 font-sans text-12 font-medium text-tx-2 hover:bg-hover hover:text-tx"
               >
                 {pinned ? 'Change' : 'Pin a page'}
               </button>
@@ -70,17 +70,17 @@ export function StartHere({
         <>
           <a
             href={docsPaths.page(home.data.id)}
-            className="flex items-center gap-2.5 text-16 font-semibold tracking-display text-tx no-underline hover:text-ac"
+            className="flex items-center gap-2.5 text-16 font-semibold tracking-display text-tx no-underline hover:text-acc"
           >
             <PageIcon value={home.data.icon} size={20} />
             <span className="truncate">{home.data.title || 'Untitled'}</span>
           </a>
-          <p className="m-0 line-clamp-3 text-13 leading-body text-tx3">
+          <p className="m-0 line-clamp-3 text-13 leading-body text-tx-2">
             {lines || 'Nothing written on this page yet.'}
           </p>
         </>
       ) : (
-        <p className="m-0 text-13 text-tx4">
+        <p className="m-0 text-13 text-tx-3">
           {home.isError ? 'The home page didn’t load.' : 'No pages yet.'}
         </p>
       )}

@@ -45,7 +45,7 @@ export function TrashPeek({
     >
       {page && (
         <>
-          <p className="-mx-5 -mt-4 mb-0 flex items-center gap-2 border-b border-br2 bg-bg2 px-5 py-2.5 text-12h text-tx3">
+          <p className="-mx-5 -mt-4 mb-0 flex items-center gap-2 border-b border-line-2 bg-side px-5 py-2.5 text-13 text-tx-2">
             <Icon name="trash" size={14} />
             <span>
               Deleted {page.deletedBy ? `by ${page.deletedBy.name} ` : ''}
@@ -60,11 +60,11 @@ export function TrashPeek({
               ))}
             </div>
           ) : detail.isError ? (
-            <p className="m-0 text-13 text-tx4">
+            <p className="m-0 text-13 text-tx-3">
               The page could not be read.{' '}
               <button
                 type="button"
-                className="cursor-pointer border-0 bg-transparent p-0 font-medium text-ac"
+                className="cursor-pointer border-0 bg-transparent p-0 font-medium text-acc"
                 onClick={() => void detail.refetch()}
               >
                 Retry
@@ -73,13 +73,13 @@ export function TrashPeek({
           ) : doc?.content?.length ? (
             <RichTextView doc={doc} size="doc" />
           ) : (
-            <p className="m-0 text-13 text-tx5">This page has nothing written in it.</p>
+            <p className="m-0 text-13 text-tx-3">This page has nothing written in it.</p>
           )}
-          <div className="sticky bottom-0 -mx-5 mt-auto -mb-6 flex items-center gap-2 border-t border-br2 bg-sf px-5 py-3">
+          <div className="sticky bottom-0 -mx-5 mt-auto -mb-6 flex items-center gap-2 border-t border-line-2 bg-card px-5 py-3">
             {canPurge && (
               <Button
                 variant="ghost"
-                className="text-danger! enabled:hover:text-danger!"
+                className="text-red! enabled:hover:text-red!"
                 icon={<Icon name="trash" size={14} />}
                 onClick={() => onDeleteForever(page)}
               >
