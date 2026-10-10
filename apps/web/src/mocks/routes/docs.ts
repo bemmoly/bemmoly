@@ -91,20 +91,31 @@ export const docsRoutes: MockRoute[] = [
     pattern: `${BASE}/pages`,
     handle: (request, db) => {
       if (!can(db, 'docs.page.edit')) return denied();
-      const body = bodyOf<{ spaceId: string; parentId: string | null; title: string }>(request);
+      const body = bodyOf<{
+        spaceId: string;
+        parentId: string | null;
+        title: string;
+        icon?: string;
+        snapshot?: object;
+        afterId?: string;
+      }>(request);
       const state = docsState(db);
       const space = state.spaces.find((row) => row.id === body.spaceId);
       if (!space) return notFound('The space');
       const parent = body.parentId ? state.pages.find((row) => row.id === body.parentId) : null;
       const id = newId();
+      const after = body.afterId ? state.pages.find((row) => row.id === body.afterId) : null;
       const row: MockPage = {
         id,
         spaceId: space.id,
         parentId: parent?.id ?? null,
-        position: nextPosition(childrenOf(state, space.id, parent?.id ?? null)),
+        // Right after a sibling sorts between it and the next one ("n" < "nm" < "nn").
+        position: after
+          ? `${after.position}m`
+          : nextPosition(childrenOf(state, space.id, parent?.id ?? null)),
         path: `${parent?.path ?? '/'}${id}/`,
         title: body.title ?? '',
-        icon: null,
+        icon: body.icon ?? null,
         status: 'draft',
         ownerId: db.signedInAs,
         reviewers: [],
@@ -118,6 +129,7 @@ export const docsRoutes: MockRoute[] = [
         contentUpdatedAt: now(),
         deletedAt: null,
       };
+      if (body.snapshot) writeBody(row, body.snapshot);
       state.pages.push(row);
       emit(db, 'docs.tree', [id]);
       return ok(detail(db, row), 201);

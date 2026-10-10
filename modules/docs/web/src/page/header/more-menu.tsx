@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { docsPaths } from '../../shared/navigation.ts';
 import { usePageChrome, usePageScreen, useSlotProps } from '../screen-context.ts';
 import { HISTORY_SLOT, MENU_SLOTS } from '../slots.ts';
+import { useDuplicatePage } from '../../create/use-duplicate-page.ts';
 import { useTrashPage } from '../use-page-actions.ts';
 import { MoveDialog } from './move-dialog.tsx';
 
@@ -27,8 +28,8 @@ export function useCopyLink(pageId: string) {
 }
 
 /**
- * ···: copy link, move, version history, the actions other folders add (Export), and
- * Move to trash with Undo. Duplicate is absent: the API has no copy of a page yet.
+ * ···: copy link, duplicate, move, version history, the actions other folders add (Export),
+ * and Move to trash with Undo.
  */
 export function MoreMenu() {
   const screen = usePageScreen();
@@ -38,6 +39,7 @@ export function MoreMenu() {
   const copyLink = useCopyLink(page.id);
   const { trash } = useTrashPage(page);
   const [moving, setMoving] = useState(false);
+  const copy = useDuplicatePage();
   const trashed = readOnly === 'trashed';
   const canChange = !trashed && readOnly !== 'viewer';
 
@@ -53,9 +55,18 @@ export function MoreMenu() {
           Copy link
         </MenuItem>
         {canChange && (
-          <MenuItem icon={<Icon name="arrow" size={14} />} onSelect={() => setMoving(true)}>
-            Move to…
-          </MenuItem>
+          <>
+            <MenuItem
+              icon={<Icon name="copy" size={14} />}
+              disabled={copy.isPending}
+              onSelect={() => copy.duplicate(page.id)}
+            >
+              Duplicate
+            </MenuItem>
+            <MenuItem icon={<Icon name="arrow" size={14} />} onSelect={() => setMoving(true)}>
+              Move to…
+            </MenuItem>
+          </>
         )}
         {!trashed && (
           <MenuItem

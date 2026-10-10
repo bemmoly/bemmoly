@@ -59,6 +59,9 @@ const { calls } = startServer(
   }),
   http.get('*/api/v1/docs/pages/:pageId/comments', () => HttpResponse.json(listed([]))),
   http.delete('*/api/v1/docs/pages/:pageId', () => new HttpResponse(null, { status: 204 })),
+  http.post('*/api/v1/docs/pages', async ({ request }) =>
+    HttpResponse.json({ ...pageDetail(), ...((await request.json()) as object) }, { status: 201 }),
+  ),
   http.post('*/api/v1/docs/pages/:pageId/restore', () => HttpResponse.json(pageDetail())),
 );
 
@@ -172,11 +175,24 @@ describe('Share', () => {
 });
 
 describe('the More menu', () => {
+  it('duplicates the page right after it, with its icon and words', async () => {
+    renderPage();
+    fireEvent.click(await screen.findByRole('button', { name: 'More actions' }));
+    fireEvent.click(await screen.findByRole('menuitem', { name: 'Duplicate' }));
+    await waitFor(() =>
+      expect(calls.at(-1)).toMatchObject({
+        method: 'POST',
+        body: { title: 'Auth service RFC (copy)', afterId: PAGE_ID },
+      }),
+    );
+    expect(await screen.findByText('Duplicated as “Auth service RFC (copy)”')).toBeTruthy();
+  });
+
   it('moves the page to the trash with an Undo that restores it', async () => {
     renderPage();
     fireEvent.click(await screen.findByRole('button', { name: 'More actions' }));
     expect(await screen.findByRole('menuitem', { name: 'Copy link' })).toBeTruthy();
-    expect(screen.queryByRole('menuitem', { name: /Duplicate/ })).toBeNull();
+    expect(screen.getByRole('menuitem', { name: 'Duplicate' })).toBeTruthy();
     fireEvent.click(screen.getByRole('menuitem', { name: 'Move to trash' }));
     fireEvent.click(await screen.findByRole('button', { name: 'Undo' }));
     await waitFor(() =>

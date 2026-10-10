@@ -12,7 +12,9 @@ import {
 } from '@bemmoly/ui';
 import { Icon } from '@bemmoly/ui/icons';
 import { useEffect, useState } from 'react';
+import { useDuplicatePage } from '../create/use-duplicate-page.ts';
 import { useStarredIds } from '../hooks/home-queries.ts';
+import { MoveDialog } from '../page/header/move-dialog.tsx';
 import { docsPaths } from '../shared/navigation.ts';
 import { useTreeOpen } from './tree-store.ts';
 import { useSpaceTree } from './use-space-tree.ts';
@@ -66,6 +68,8 @@ export function SidebarTree({ space, activePageId, indentStart }: SidebarTreePro
   const star = useStarFromTree();
   const starred = useStarredIds();
   const add = useCreatePage();
+  const copy = useDuplicatePage();
+  const [moving, setMoving] = useState<PageTreeItem | null>(null);
   const trash = useTrashFromTree(space.key, (pageId) => {
     if (pageId === activePageId) navigate(docsPaths.space(space.key));
   });
@@ -106,67 +110,83 @@ export function SidebarTree({ space, activePageId, indentStart }: SidebarTreePro
   }
 
   return (
-    <PageTree
-      label={`Pages in ${space.name}`}
-      items={tree.items}
-      activeId={activePageId}
-      indentStart={indentStart}
-      hrefOf={(item) => docsPaths.page(item.id)}
-      onOpen={(item, event) => {
-        const href = docsPaths.page(item.id);
-        if (event.metaKey || event.ctrlKey || event.shiftKey) window.open(href, '_blank');
-        else navigate(href);
-      }}
-      onToggle={(item, open) => setOpen(space.key, item.id, open)}
-      onMove={(change) => move.mutate(change)}
-      onAddChild={addInside}
-      renamingId={renaming}
-      onRenameStart={(item) => setRenaming(item.id)}
-      onRename={(item, title) => {
-        setRenaming(null);
-        rename.mutate({ id: item.id, title });
-      }}
-      onRenameCancel={() => setRenaming(null)}
-      menu={(item) => {
-        const isStarred = starred.has(item.id);
-        const href = docsPaths.page(item.id);
-        return (
-          <>
-            <MenuItem onSelect={() => addInside(item)} icon={<Icon name="plus" />}>
-              Add a page inside
-            </MenuItem>
-            <MenuItem onSelect={() => setRenaming(item.id)} icon={<Icon name="edit" />} hint="F2">
-              Rename
-            </MenuItem>
-            <MenuItem
-              onSelect={() => star.mutate({ id: item.id, starred: !isStarred })}
-              icon={<Icon name="star" />}
-            >
-              {isStarred ? 'Unstar' : 'Star'}
-            </MenuItem>
-            <MenuItem
-              onSelect={() => {
-                void navigator.clipboard?.writeText(new URL(href, window.location.origin).href);
-                show({ tone: 'ok', title: 'Link copied' });
-              }}
-              icon={<Icon name="link" />}
-            >
-              Copy link
-            </MenuItem>
-            <MenuItem onSelect={() => window.open(href, '_blank')} icon={<Icon name="external" />}>
-              Open in new tab
-            </MenuItem>
-            <MenuSeparator />
-            <MenuItem
-              tone="danger"
-              onSelect={() => trash.trash({ id: item.id, title: item.title })}
-              icon={<Icon name="trash" />}
-            >
-              Move to trash
-            </MenuItem>
-          </>
-        );
-      }}
-    />
+    <>
+      <PageTree
+        label={`Pages in ${space.name}`}
+        items={tree.items}
+        activeId={activePageId}
+        indentStart={indentStart}
+        hrefOf={(item) => docsPaths.page(item.id)}
+        onOpen={(item, event) => {
+          const href = docsPaths.page(item.id);
+          if (event.metaKey || event.ctrlKey || event.shiftKey) window.open(href, '_blank');
+          else navigate(href);
+        }}
+        onToggle={(item, open) => setOpen(space.key, item.id, open)}
+        onMove={(change) => move.mutate(change)}
+        onAddChild={addInside}
+        renamingId={renaming}
+        onRenameStart={(item) => setRenaming(item.id)}
+        onRename={(item, title) => {
+          setRenaming(null);
+          rename.mutate({ id: item.id, title });
+        }}
+        onRenameCancel={() => setRenaming(null)}
+        menu={(item) => {
+          const isStarred = starred.has(item.id);
+          const href = docsPaths.page(item.id);
+          return (
+            <>
+              <MenuItem onSelect={() => addInside(item)} icon={<Icon name="plus" />}>
+                Add a page inside
+              </MenuItem>
+              <MenuItem onSelect={() => setRenaming(item.id)} icon={<Icon name="edit" />} hint="F2">
+                Rename
+              </MenuItem>
+              <MenuItem onSelect={() => copy.duplicate(item.id)} icon={<Icon name="copy" />}>
+                Duplicate
+              </MenuItem>
+              <MenuItem onSelect={() => setMoving(item)} icon={<Icon name="arrow" />}>
+                Move to…
+              </MenuItem>
+              <MenuItem
+                onSelect={() => star.mutate({ id: item.id, starred: !isStarred })}
+                icon={<Icon name="star" />}
+              >
+                {isStarred ? 'Unstar' : 'Star'}
+              </MenuItem>
+              <MenuItem
+                onSelect={() => {
+                  void navigator.clipboard?.writeText(new URL(href, window.location.origin).href);
+                  show({ tone: 'ok', title: 'Link copied' });
+                }}
+                icon={<Icon name="link" />}
+              >
+                Copy link
+              </MenuItem>
+              <MenuItem
+                onSelect={() => window.open(href, '_blank')}
+                icon={<Icon name="external" />}
+              >
+                Open in new tab
+              </MenuItem>
+              <MenuSeparator />
+              <MenuItem
+                tone="danger"
+                onSelect={() => trash.trash({ id: item.id, title: item.title })}
+                icon={<Icon name="trash" />}
+              >
+                Move to trash
+              </MenuItem>
+            </>
+          );
+        }}
+      />
+      <MoveDialog
+        page={{ id: moving?.id ?? '', spaceId: space.id, title: moving?.title ?? '' }}
+        open={moving !== null}
+        onClose={() => setMoving(null)}
+      />
+    </>
   );
 }
