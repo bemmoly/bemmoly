@@ -1,6 +1,5 @@
 import { useToast } from '@bemmoly/ui';
 import {
-  useIsMutating,
   useQueryClient,
   type InvalidateQueryFilters,
   type QueryClient,
@@ -23,10 +22,7 @@ import type { QuickPatch } from './issue-edit-patch.ts';
 export const plural = (keys: readonly string[]) =>
   keys.length === 1 ? (keys[0] ?? '') : `${keys.length} issues`;
 
-/** True while an edit to this issue is on its way; its card or row shows it quietly. */
-export function useIssuePending(key: string): boolean {
-  return useIsMutating({ mutationKey: workKeys.issueEdit(key) }) > 0;
-}
+export { useIssuePending } from './issue-pending.ts';
 
 /** One issue's edit as a mutation in the cache, queued behind any earlier edit to it. */
 function send(client: QueryClient, key: string, patch: QuickPatch) {

@@ -73,6 +73,7 @@ export function PriorityGlyph({ priority, showLabel, size = 16, className }: Pri
       width={size}
       height={size}
       viewBox="0 0 16 16"
+      overflow="visible"
       className={cx('inline-block shrink-0', !showLabel && className)}
     >
       {!showLabel && <title>{p?.name ?? 'No priority'}</title>}

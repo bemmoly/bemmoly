@@ -4,9 +4,13 @@ import { create } from 'zustand';
  * Long columns render in windows: the first CELL_WINDOW cards, then another window each time
  * the end of the cell scrolls into view or the keyboard walks past it. A 500-card board then
  * mounts a few hundred cards, and the rest cost nothing until someone looks at them.
+ *
+ * Forty cards is about 2,800px of column, twice a tall screen plus the 600px the next window is
+ * fetched ahead, so nobody scrolls into an empty column. A card is drawn glyphs and labels, so
+ * every card mounted beyond that only slows each drop and each style recalc.
  */
 
-export const CELL_WINDOW = 60;
+export const CELL_WINDOW = 40;
 
 interface WindowState {
   limits: Readonly<Record<string, number>>;

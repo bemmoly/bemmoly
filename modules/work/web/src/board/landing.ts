@@ -18,13 +18,24 @@ useBoardDragStore.subscribe((state, previous) => {
   }
 });
 
-/** True once for a card that has just been dropped somewhere other than where it started. */
-export function takeLanding(issueId: string, place: DropTarget): boolean {
+/**
+ * Whether this card, drawn at this place, is the one set down a moment ago, now somewhere other
+ * than where it started; nothing is taken. A cell hands only that card its place, so it can
+ * settle and keep the focus, while the cards a drop shifts up or down skip rendering. Before
+ * the board has moved it, the card is still where it started, and is not told yet.
+ */
+export function landsAt(issueId: string, place: DropTarget): boolean {
   if (!landed || landed.issueId !== issueId || performance.now() - landed.at > WINDOW_MS)
     return false;
   const { from } = landed;
-  const moved =
-    from.laneId !== place.laneId || from.columnId !== place.columnId || from.index !== place.index;
+  return (
+    from.laneId !== place.laneId || from.columnId !== place.columnId || from.index !== place.index
+  );
+}
+
+/** True once for a card that has just been dropped somewhere other than where it started. */
+export function takeLanding(issueId: string, place: DropTarget): boolean {
+  const moved = landsAt(issueId, place);
   if (moved) landed = null;
   return moved;
 }

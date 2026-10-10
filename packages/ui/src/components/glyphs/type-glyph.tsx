@@ -57,6 +57,7 @@ function Mark({ mark, s }: { mark: TypeMark; s: number }) {
     color: WHITE,
     fill: mark.filled ? WHITE : 'none',
     strokeWidth: mark.filled ? 1.5 : 3.4,
+    overflow: 'visible',
     'aria-hidden': true,
   });
 }
@@ -74,6 +75,7 @@ export function TypeGlyph({ type, size = 14, className }: TypeGlyphProps) {
       width={size}
       height={size}
       viewBox={`0 0 ${size} ${size}`}
+      overflow="visible"
       className={cx('inline-block shrink-0', className)}
     >
       <title>{look.name}</title>

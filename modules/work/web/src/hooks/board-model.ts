@@ -130,6 +130,64 @@ export function buildBoardModel(
   return { columns, lanes };
 }
 
+const sameCards = (a: readonly ViewCard[], b: readonly ViewCard[]) =>
+  a.length === b.length && a.every((card, index) => card === b[index]);
+
+/**
+ * The new layout with every part that did not change taken from the old one: a cell holding the
+ * same cards, a lane whose cells and numbers are all as they were, a column with the same count.
+ * A drop then hands new props only to the two cells it touched, and the rest of the board skips
+ * rendering.
+ */
+export function shareModel(previous: BoardModel | null, next: BoardModel): BoardModel {
+  if (!previous) return next;
+  const oldColumns = new Map(previous.columns.map((column) => [column.id, column]));
+  const columns = next.columns.map((column) => {
+    const old = oldColumns.get(column.id);
+    return old &&
+      old.name === column.name &&
+      old.statusIds === column.statusIds &&
+      old.count === column.count &&
+      old.wipLimit === column.wipLimit &&
+      old.overWip === column.overWip &&
+      old.done === column.done
+      ? old
+      : column;
+  });
+  const oldLanes = new Map(previous.lanes.map((lane) => [lane.id, lane]));
+  const lanes = next.lanes.map((lane) => {
+    const old = oldLanes.get(lane.id);
+    if (!old) return lane;
+    let unchanged = true;
+    const cells: Record<string, readonly ViewCard[]> = {};
+    for (const [columnId, cards] of Object.entries(lane.cells)) {
+      const before = old.cells[columnId];
+      if (before && sameCards(before, cards)) cells[columnId] = before;
+      else {
+        cells[columnId] = cards;
+        unchanged = false;
+      }
+    }
+    const sameShape =
+      unchanged &&
+      Object.keys(old.cells).length === Object.keys(cells).length &&
+      old.label === lane.label &&
+      old.issueKey === lane.issueKey &&
+      old.dueAt === lane.dueAt &&
+      old.color === lane.color &&
+      old.count === lane.count &&
+      old.points === lane.points &&
+      old.donePoints === lane.donePoints &&
+      old.inFlight === lane.inFlight;
+    return sameShape ? old : { ...lane, cells };
+  });
+  const sameColumns = columns.every((column, index) => column === previous.columns[index]);
+  return {
+    columns: sameColumns && columns.length === previous.columns.length ? previous.columns : columns,
+    lanes,
+  };
+}
+
 /** The card's column and position within its cell, or null when it is not on the board. */
 export function locateCard(model: BoardModel, issueId: string) {
   for (const lane of model.lanes) {

@@ -33,7 +33,11 @@ afterEach(() => {
   server.resetHandlers();
 });
 
-const box = (issueKey: string) => screen.getByRole('checkbox', { name: `Select ${issueKey}` });
+/** A card's box, which it draws once the pointer reaches it, as a person's would. */
+const box = (issueKey: string) => {
+  fireEvent.pointerEnter(cardEl(issueKey));
+  return screen.getByRole('checkbox', { name: `Select ${issueKey}` });
+};
 const bar = () => screen.queryByRole('toolbar', { name: /selected$/ });
 const selected = () => useBoardSelectionStore.getState().selection.ids;
 
@@ -92,6 +96,16 @@ describe('Board selection', () => {
       target: { value: 'Issue 10' },
     });
     await waitFor(() => expect(selected()).toEqual(['PLT-10']));
+  });
+
+  it('draws a card’s tools once it is reached, and right-click opens its menu either way', async () => {
+    await renderBoard();
+    expect(screen.queryByRole('button', { name: 'Open PLT-10' })).toBeNull();
+    fireEvent.pointerEnter(cardEl('PLT-10'));
+    expect(screen.getByRole('button', { name: 'Open PLT-10' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Actions for PLT-11' })).toBeNull();
+    fireEvent.contextMenu(cardEl('PLT-11'));
+    expect(await screen.findByRole('menuitem', { name: 'Open full page' })).toBeTruthy();
   });
 
   it('offers Move to on a Scrum board and leaves it out on Kanban', async () => {

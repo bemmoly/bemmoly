@@ -64,6 +64,7 @@ function BoardBody({
   const quick = useIssueQuickActions();
   const { clear } = useIssueFilters();
   const docked = useMediaQuery(DOCKED_SLIDE_OVER_QUERY);
+  const touch = useMediaQuery('(pointer: coarse)', false);
   // Screen order: lane by lane, column by column, top to bottom, as j and k step.
   const order = useMemo(() => boardIssueOrder(model), [model]);
   const peek = useIssuePeek(() => order);
@@ -113,7 +114,7 @@ function BoardBody({
       quick,
       select,
       ...(screen.moveTargets ? { sprints: screen.moveTargets } : {}),
-      selectedKey: peek.issueKey,
+      touch,
       density: screen.display.display.density,
       instructionsId,
       ...(createIn ? { createIn } : {}),
@@ -124,7 +125,7 @@ function BoardBody({
       quick,
       select,
       screen.moveTargets,
-      peek.issueKey,
+      touch,
       screen.display.display.density,
       instructionsId,
       createIn,

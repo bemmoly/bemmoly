@@ -21,9 +21,11 @@ export interface ColumnCreateProps {
   cell: string;
   columnName: string;
   onCreate: (title: string) => Promise<unknown>;
+  /** Out of the way while a card is carried, keeping a title being typed for after the drop. */
+  hidden?: boolean;
 }
 
-export function ColumnCreate({ cell, columnName, onCreate }: ColumnCreateProps) {
+export function ColumnCreate({ cell, columnName, onCreate, hidden = false }: ColumnCreateProps) {
   const open = useColumnCreate((state) => state.cell === cell);
   const setOpen = useColumnCreate((state) => state.open);
   const [title, setTitle] = useState('');
@@ -34,6 +36,7 @@ export function ColumnCreate({ cell, columnName, onCreate }: ColumnCreateProps) 
     return (
       <button
         type="button"
+        hidden={hidden}
         onClick={() => setOpen(cell)}
         className="focus-ring flex h-8 w-full cursor-pointer items-center gap-1.5 rounded-card border-0 bg-transparent px-2 font-sans text-13 text-tx-3 opacity-0 group-hover/cell:opacity-100 hover:bg-hover hover:text-tx-2 focus-visible:opacity-100 motion-safe:transition-opacity pointer-coarse:opacity-100"
       >
@@ -64,7 +67,11 @@ export function ColumnCreate({ cell, columnName, onCreate }: ColumnCreateProps) 
     }
   };
   return (
-    <form onSubmit={submit} className="flex flex-col gap-1 rounded-card bg-card p-2 shadow-e1">
+    <form
+      onSubmit={submit}
+      hidden={hidden}
+      className="flex flex-col gap-1 rounded-card bg-card p-2 shadow-e1"
+    >
       <textarea
         autoFocus
         rows={2}

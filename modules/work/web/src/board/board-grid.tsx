@@ -90,6 +90,31 @@ const Lane = memo(function Lane({
   );
 });
 
+/** A column's heading; it redraws only when its own count, name or glyph changes. */
+const ColumnHeading = memo(function ColumnHeading({
+  column,
+  stage,
+  createLane,
+}: {
+  column: ColumnModel;
+  stage: StatusStage;
+  /** The lane "New issue" adds to, the first open one; absent when the person cannot create. */
+  createLane: string | undefined;
+}) {
+  const openCreate = useColumnCreate((state) => state.open);
+  return (
+    <KanbanColumnHeader
+      name={column.name}
+      stage={stage}
+      count={column.count}
+      {...(column.wipLimit === null ? {} : { wipLimit: column.wipLimit })}
+      {...(createLane === undefined
+        ? {}
+        : { onAdd: () => openCreate(cellId(createLane, column.id)) })}
+    />
+  );
+});
+
 export interface BoardGridProps {
   model: BoardModel;
   kanban: boolean;
@@ -121,7 +146,6 @@ export function BoardGrid({
     () => visibleColumns(model.columns, showEmptyColumns, carrying),
     [model.columns, showEmptyColumns, carrying],
   );
-  const openCreate = useColumnCreate((state) => state.open);
   const firstOpen = model.lanes.find((lane) => !collapsed.includes(lane.id)) ?? model.lanes[0];
   // Phones show one column at a time, chosen from the status segments.
   const phone = useMediaQuery('(max-width: 767px)', false);
@@ -146,15 +170,11 @@ export function BoardGrid({
         className={phone ? 'hidden' : undefined}
       >
         {columns.map((column) => (
-          <KanbanColumnHeader
+          <ColumnHeading
             key={column.id}
-            name={column.name}
+            column={column}
             stage={stages[column.id] ?? 'todo'}
-            count={column.count}
-            {...(column.wipLimit === null ? {} : { wipLimit: column.wipLimit })}
-            {...(canCreate && firstOpen
-              ? { onAdd: () => openCreate(cellId(firstOpen.id, column.id)) }
-              : {})}
+            createLane={canCreate ? firstOpen?.id : undefined}
           />
         ))}
       </KanbanColumnHeaders>
