@@ -2,6 +2,8 @@ import type { JobDefinition } from '@bemmoly/core';
 import { z } from 'zod';
 import { IMPORT_FORMATS, importFileSchema } from '../../../shared/transfer.ts';
 import { DOCS_COMPACT_JOB, type PageCollab } from '../services/collab/index.ts';
+import { DOCS_PURGE_JOB } from '../services/pages/purge.ts';
+import type { PagesService } from '../services/pages/index.ts';
 import { DOCS_IMPORT_JOB, type TransferService } from '../services/transfer/index.ts';
 
 const compactPayloadSchema = z.object({ pageId: z.uuid() });
@@ -41,6 +43,23 @@ export function importJob(transfer: Pick<TransferService, 'runQueuedImport'>): J
     retryLimit: 2,
     handle: async (payload) => {
       await transfer.runQueuedImport(importPayloadSchema.parse(payload));
+    },
+  };
+}
+
+/**
+ * docs.purge-trash: deletes pages trashed more than the retention ago, nightly. Scheduled, so
+ * pg-boss sends one run per cron tick (the tick is its idempotency key) and the singleton
+ * policy keeps two workers from overlapping; a repeat run finds nothing left to delete.
+ */
+export function purgeTrashJob(pages: Pick<PagesService, 'purgeExpiredTrash'>): JobDefinition {
+  return {
+    name: DOCS_PURGE_JOB,
+    schedule: '17 3 * * *',
+    singleton: true,
+    retryLimit: 2,
+    handle: async () => {
+      await pages.purgeExpiredTrash();
     },
   };
 }

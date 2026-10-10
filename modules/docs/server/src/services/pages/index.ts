@@ -17,6 +17,7 @@ import { bodyEdges, rewriteBodyLinks } from '../links/rewrite.ts';
 import { loadDetail } from './detail.ts';
 import { rankAmongSiblings } from './rank.ts';
 import { pageById, toSummary } from './rows.ts';
+import { createPurgeService } from './purge.ts';
 import { createTrashService } from './trash.ts';
 
 /** The snapshot a new page starts from: the body's, the template's, or none. */
@@ -34,6 +35,7 @@ async function startingSnapshot(sql: SqlExecutor, body: CreatePageBody): Promise
 /** Pages: create, open, rename and edit, and the trash (in trash.ts). */
 export function createPagesService(deps: DocsServiceDeps, collab: PageCollab) {
   const trash = createTrashService(deps);
+  const purge = createPurgeService(deps);
 
   return {
     async create(ctx: RequestContext, body: CreatePageBody): Promise<PageDetail> {
@@ -144,6 +146,9 @@ export function createPagesService(deps: DocsServiceDeps, collab: PageCollab) {
     remove: trash.remove,
     restore: trash.restore,
     listTrash: trash.list,
+    deleteForever: purge.deleteForever,
+    emptyTrash: purge.empty,
+    purgeExpiredTrash: purge.purgeExpired,
   };
 }
 

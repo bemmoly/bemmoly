@@ -91,6 +91,14 @@ export const updatePageBodySchema = z
 
 export const listTrashQuerySchema = keysetQuerySchema;
 
+/** Days a page stays in the trash before the purge job deletes it for good. */
+export const TRASH_RETENTION_DAYS = 30;
+
+export const trashPageParamsSchema = z.object({ spaceKey: z.string().min(1), pageId: z.uuid() });
+
+export const emptyTrashResultSchema = z.object({ deleted: z.number().int().nonnegative() });
+export type EmptyTrashResult = z.infer<typeof emptyTrashResultSchema>;
+
 export const getPageQuerySchema = z.object({
   /** Include a page in the trash, for the restore banner. */
   deleted: queryFlagSchema.default(false),

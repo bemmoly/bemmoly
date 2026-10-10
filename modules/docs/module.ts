@@ -2,7 +2,7 @@ import { defineModule, loadChangelogFolder } from '@bemmoly/core';
 import { DOCS_CAPABILITIES } from './server/src/config/capabilities.ts';
 import { defineDocsSettings } from './server/src/config/settings.ts';
 import { createDocsControllers } from './server/src/controllers/index.ts';
-import { compactJob, importJob } from './server/src/config/jobs.ts';
+import { compactJob, importJob, purgeTrashJob } from './server/src/config/jobs.ts';
 import { docsRoutes } from './server/src/routes/index.ts';
 import { createDocsServices } from './server/src/services/index.ts';
 import { registerDocsReferences } from './server/src/services/links/registry.ts';
@@ -66,6 +66,7 @@ export default defineModule({
     ctx.collab.add(services.collab.definition);
     ctx.jobs.add(compactJob(services.collab));
     ctx.jobs.add(importJob(services.transfer));
+    ctx.jobs.add(purgeTrashJob(services.pages));
     registerDocsSearch(ctx.search, services.search);
     registerDocsReferences(ctx, services.links);
     ctx.routes.add({ prefix: '/docs', plugin: docsRoutes(createDocsControllers(services)) });
