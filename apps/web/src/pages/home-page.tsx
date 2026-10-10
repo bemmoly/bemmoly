@@ -1,11 +1,15 @@
 import { HomeSections, PageLayout, useFrameLink } from '@bemmoly/core-web';
 import { Button, buttonClassName, EmptyState, Kbd, SkeletonCard } from '@bemmoly/ui';
 import { Icon } from '@bemmoly/ui/icons';
+import { lazy, Suspense } from 'react';
 import { InboxPreview } from '../components/home/inbox-preview.tsx';
 import { JumpBackIn } from '../components/home/jump-back-in.tsx';
 import { useInbox } from '../hooks/use-notifications.ts';
 import { useShell } from '../hooks/use-shell.ts';
 import { HOME_SECTIONS } from '../lib/home-sections.ts';
+
+/** The morning brief and its insight code load only for people with AI on. */
+const MorningBrief = lazy(() => import('../components/ai/morning-brief.tsx'));
 
 /** Kinds that ask something of the person, rather than tell them something happened. */
 const NEEDS_YOU = new Set(['mention', 'review_request', 'assignment']);
@@ -94,6 +98,11 @@ export function HomePage() {
             {needs === null ? '' : ` · ${needsLine(needs)}`}
           </p>
         </div>
+        {shell.workspace.aiEnabled && (
+          <Suspense fallback={null}>
+            <MorningBrief userId={shell.me.user.id} />
+          </Suspense>
+        )}
         <JumpBackIn />
         <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-[minmax(0,1.55fr)_minmax(0,1fr)]">
           <div className="flex min-w-0 flex-col gap-5">
