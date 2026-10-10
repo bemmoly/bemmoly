@@ -1,5 +1,12 @@
 # @bemmoly/module-sample
 
+## 0.4.1
+
+### Patch Changes
+
+- @bemmoly/core@0.4.1
+  - @bemmoly/shared@0.4.1
+
 ## 0.4.0
 
 ### Patch Changes
