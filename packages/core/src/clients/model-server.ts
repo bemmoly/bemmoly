@@ -76,9 +76,17 @@ export function createModelServerClient(): ModelServerClient {
         response = await fetch(url, {
           headers: { accept: 'application/json', ...headers, ...auth },
           signal: AbortSignal.timeout(timeoutMs),
+          // A redirect could lead a checked address to an unchecked one; it is refused.
+          redirect: 'manual',
         });
       } catch (error) {
         throw new ModelServerError(`${url} could not be reached`, null, { cause: error });
+      }
+      if (response.status >= 300 && response.status < 400) {
+        throw new ModelServerError(
+          `${url} answered with a redirect; use the address it points to`,
+          response.status,
+        );
       }
       const text = await response.text();
       if (text.length > MAX_BYTES) throw new ModelServerError(`${url} answered too much`);

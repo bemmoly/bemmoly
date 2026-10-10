@@ -11,6 +11,8 @@ export interface DbModelSourceDeps {
   secrets: SecretBox;
   /** The catalog without a network request, for the provider's package name. */
   catalog: () => Promise<CatalogData>;
+  /** BEMMOLY_ALLOW_PRIVATE_URLS: model calls may reach any address. */
+  allowPrivateUrls?: boolean;
 }
 
 /** A stored provider as the loader needs it, secrets opened. */
@@ -54,7 +56,9 @@ export function createDbModelSource(deps: DbModelSourceDeps): AiModelSource {
       pending = (async () => {
         const row = await findProvider(deps.sql, id);
         if (!row) throw new Error(`AI provider ${id} no longer exists`);
-        return loadProvider(await connectionOf(row, deps.secrets, deps.catalog));
+        return loadProvider(await connectionOf(row, deps.secrets, deps.catalog), {
+          allowPrivateUrls: deps.allowPrivateUrls ?? false,
+        });
       })();
       providers.set(id, pending);
       pending.catch(() => providers.delete(id));

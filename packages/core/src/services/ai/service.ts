@@ -77,6 +77,7 @@ export function createAiService(deps: AiServiceDependencies): AiService {
         sql: deps.sql,
         secrets: deps.secrets,
         catalog: () => catalog.cached(),
+        allowPrivateUrls: deps.allowPrivateUrls ?? false,
       });
   const context: AiServiceContext = {
     sql: deps.sql,

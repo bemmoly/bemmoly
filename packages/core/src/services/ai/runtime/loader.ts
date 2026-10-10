@@ -2,6 +2,7 @@ import type { AiCustomProtocol, AiLoaderKind } from '@bemmoly/shared';
 import type { EmbeddingModel, LanguageModel } from 'ai';
 import allowList from './allow-list.json' with { type: 'json' };
 import credentialOptions from './credential-options.json' with { type: 'json' };
+import { createGuardedFetch, type AddressPolicy } from '../../../clients/guarded-fetch.ts';
 
 /**
  * Loads AI SDK provider packages by the name the catalog gives (its `npm` field), only from
@@ -111,14 +112,32 @@ async function factoryOf(packageName: string): Promise<Factory> {
   return pending;
 }
 
-/** Builds the provider for one stored connection; one code path for every catalog entry. */
-export async function loadProvider(connection: ProviderConnection): Promise<LoadedProvider> {
+/** Where a connection's calls may go: see AddressPolicy. */
+export function addressPolicyOf(
+  connection: Pick<ProviderConnection, 'catalogId'>,
+  allowPrivateUrls: boolean,
+): AddressPolicy {
+  if (allowPrivateUrls) return 'any';
+  return connection.catalogId === 'custom' ? 'local' : 'public';
+}
+
+/**
+ * Builds the provider for one stored connection; one code path for every catalog entry. Its
+ * calls go through a fetch that checks each address when it is called and refuses redirects.
+ */
+export async function loadProvider(
+  connection: ProviderConnection,
+  network: { allowPrivateUrls: boolean } = { allowPrivateUrls: false },
+): Promise<LoadedProvider> {
   const { name, loader } = packageFor(connection);
   if (loader === 'compatible' && !connection.baseUrl) {
     throw new ProviderLoadError(`${connection.name} needs a base URL to be reached`);
   }
   const factory = await factoryOf(name);
-  const provider = factory(factoryOptions(connection));
+  const provider = factory({
+    ...factoryOptions(connection),
+    fetch: createGuardedFetch(addressPolicyOf(connection, network.allowPrivateUrls)),
+  });
   return {
     loader,
     languageModel(modelId) {

@@ -7,7 +7,7 @@ import {
   type AiProviderUpdateBody,
   type CatalogData,
 } from '@bemmoly/shared';
-import { resolvePublicAddress } from '../../../clients/network.ts';
+import { assertAddressAllowed } from '../../../clients/guarded-fetch.ts';
 import type { Actor } from '../../../contracts/authz.ts';
 import { loaderKindOf } from '../runtime/loader.ts';
 import {
@@ -46,7 +46,8 @@ export function toApiProvider(row: ProviderRow, catalog: CatalogData): AiProvide
 
 /**
  * A base URL the server will call: http(s), and on a public address unless it is a Local
- * server (private by design) or the operator allowed private URLs.
+ * server (private by design, but never link-local, where cloud metadata answers) or the
+ * operator allowed private URLs. Every call is checked again when it is made.
  */
 export async function checkBaseUrl(
   ctx: AiServiceContext,
@@ -58,12 +59,9 @@ export async function checkBaseUrl(
   if (parsed.username || parsed.password) {
     throw new ValidationError('Put credentials in their fields, not in the base URL');
   }
-  if (custom || ctx.allowPrivateUrls || ctx.recorded) return;
+  if (ctx.allowPrivateUrls || ctx.recorded) return;
   try {
-    await resolvePublicAddress(parsed.hostname.replace(/^\[|\]$/g, ''), {
-      allowPrivate: false,
-      timeoutMs: 2_000,
-    });
+    await assertAddressAllowed(url, custom ? 'local' : 'public');
   } catch (error) {
     throw new ValidationError(
       error instanceof Error ? error.message : 'The base URL is not reachable',

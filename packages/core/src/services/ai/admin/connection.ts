@@ -35,6 +35,7 @@ async function discover(
   connection: ProviderConnection,
 ): Promise<AiDiscoveredModel[]> {
   if (!connection.protocol || !connection.baseUrl) return [];
+  await checkBaseUrl(ctx, connection.baseUrl, true);
   const models = await ctx.modelServer.listModels({
     baseUrl: connection.baseUrl,
     protocol: connection.protocol,
@@ -76,7 +77,7 @@ async function runTest(
         discovered,
       };
     }
-    const provider = await loadProvider(connection);
+    const provider = await loadProvider(connection, { allowPrivateUrls: ctx.allowPrivateUrls });
     await pingModel(provider.languageModel(model), ctx.testTimeoutMs);
     const latencyMs = Math.round(performance.now() - started);
     return {
@@ -187,7 +188,7 @@ export async function discoverAiProvider(
   } catch (error) {
     throw toProviderError(error, row.name);
   }
-  const provider = await loadProvider(connection);
+  const provider = await loadProvider(connection, { allowPrivateUrls: ctx.allowPrivateUrls });
   const probed: AiDiscoveredModel[] = [];
   for (const [index, model] of models.entries()) {
     if (model.embedding || index >= 20) {
