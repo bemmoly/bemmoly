@@ -21,6 +21,14 @@ bar, one issue menu, one peek.
   Applied to a selection when the issue is part of one.
 - **Delete is undoable**: the issue leaves at once, a toast offers Undo for 6 seconds, and the
   delete is sent only after that. No confirmation dialog.
+- **Optimistic edits**: assign, priority and Move to (card tools, the issue menu, the bulk bar,
+  `I`) show in the same frame on every cached Board, Backlog and open peek: a card moved to
+  another sprint leaves a sprint board, a row changes container and the sprint totals follow.
+  While the edit is on its way the card or row dims to 60% after a 160ms beat, so a quick answer
+  shows nothing. An issue the server refuses goes back alone (the others keep their edit) with
+  the usual "could not be changed" toast, which replaces the success toast. Edits to one issue are
+  sent in order; Work reads refresh once the last edit in flight settles. "Moved to …" and
+  "Assigned N to you" offer Undo for 6 seconds, putting each issue back where it came from.
 - **States**: skeletons match the strip, filter row, column headings, lanes and rows; load errors
   say what happened with Try again; a stale backlog says it may be out of date.
 
