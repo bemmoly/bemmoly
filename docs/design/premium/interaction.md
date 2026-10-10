@@ -56,3 +56,4 @@ It fades out in 100ms.
 sizes 11 to 24 in seven steps), keeping its 2px for marks under 12px so an epic's square
 swatch never reads as a label's dot. Where a kit colour fails contrast it is lifted the smallest step
 that passes (ADR 0015).
+- [Workspace settings](interaction/settings.md)
