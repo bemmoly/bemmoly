@@ -28,7 +28,13 @@ describe('the save line', () => {
   });
 
   it('names every connection state and never claims a save it cannot make', () => {
-    expect(saveState(state({ status: 'connecting' }), null).label).toBe('Connecting…');
+    expect(saveState(state({ status: 'connecting', editable: false }), null).label).toBe(
+      'Connecting…',
+    );
+    expect(saveState(state({ status: 'connecting' }), null)).toMatchObject({
+      label: 'Reconnecting…',
+      tone: 'busy',
+    });
     expect(saveState(state({ status: 'offline' }), null)).toMatchObject({
       label: 'Offline · changes kept',
       tone: 'warn',

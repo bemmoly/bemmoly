@@ -34,6 +34,9 @@ export interface CollabSession {
 /** The close code the dev mock answers /collab with when no real server is behind it. */
 export const NO_COLLAB_SERVER = 4404;
 
+/** The server closed a socket that sent more than its budget; the provider reconnects. */
+export const RATE_LIMITED = 1008;
+
 export interface CollabSessionOptions {
   pageId: string;
   /** wss://host/collab on the workspace origin. */
@@ -67,6 +70,8 @@ export function createCollabSession(options: CollabSessionOptions): CollabSessio
   let denied = false;
   let local = false;
   let everSynced = false;
+  /** Closed for sending too much: back in a second, so not "offline". */
+  let throttled = false;
   let state: CollabState = { status: 'connecting', editable: false, unsynced: 0, peers: [] };
 
   const websocket = new HocuspocusProviderWebsocket({
@@ -82,7 +87,7 @@ export function createCollabSession(options: CollabSessionOptions): CollabSessio
     if (local) return 'local';
     if (denied) return 'denied';
     if (socket === 'connected' && synced) return readOnly ? 'read-only' : 'live';
-    return socket === 'disconnected' ? 'offline' : 'connecting';
+    return socket === 'disconnected' && !throttled ? 'offline' : 'connecting';
   }
 
   function update(): void {
@@ -112,6 +117,7 @@ export function createCollabSession(options: CollabSessionOptions): CollabSessio
     onStatus: ({ status }) => {
       socket = status;
       if (status !== 'connected') synced = false;
+      else throttled = false;
       update();
     },
     onSynced: ({ state: isSynced }) => {
@@ -130,6 +136,8 @@ export function createCollabSession(options: CollabSessionOptions): CollabSessio
     },
     onClose: ({ event }) => {
       if (event.code === NO_COLLAB_SERVER) goLocal();
+      throttled = event.code === RATE_LIMITED;
+      update();
     },
     onUnsyncedChanges: () => update(),
     onAwarenessChange: () => update(),

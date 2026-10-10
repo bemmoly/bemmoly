@@ -33,7 +33,9 @@ export function saveState(collab: CollabState, readOnly: ReadOnlyReason): SaveSt
   if (readOnly === 'archived') return { label: 'Archived · read-only', others, tone: 'quiet' };
   switch (collab.status) {
     case 'connecting':
-      return { label: 'Connecting…', others: '', tone: 'busy' };
+      // Editable while connecting means it was live before: the socket dropped and is back
+      // in a moment, with everything typed meanwhile kept in the tab.
+      return { label: collab.editable ? 'Reconnecting…' : 'Connecting…', others: '', tone: 'busy' };
     case 'live':
       return collab.unsynced > 0
         ? { label: 'Saving…', others, tone: 'busy' }
