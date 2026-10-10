@@ -84,6 +84,22 @@ export const searchResultSchema = z.object({
   key: z.string().nullable().optional(),
   /** The palette group the result belongs to: the label of the provider that found it. */
   group: z.string().optional(),
+  /** How ⌘K draws it, when the provider knows: an issue's type tile and its status. */
+  look: z
+    .object({
+      type: z
+        .object({
+          key: z.string(),
+          icon: z.string().nullable(),
+          color: z.string().nullable(),
+          level: z.string().nullable(),
+        })
+        .optional(),
+      status: z
+        .object({ category: z.enum(['todo', 'in_progress', 'done']), name: z.string() })
+        .optional(),
+    })
+    .optional(),
 });
 
 export const searchQuerySchema = z.object({

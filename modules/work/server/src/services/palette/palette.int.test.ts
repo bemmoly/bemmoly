@@ -26,15 +26,16 @@ describe('the Work palette provider against Postgres', () => {
 
   const provider = () => createIssueSearchProvider(work.services.search, work.sql);
 
-  it('answers a key with that issue first, its status and assignee, and a link', async (ctx) => {
+  it('answers a key with that issue first, its status, type and assignee, and a link', async (ctx) => {
     if (!start.available) return ctx.skip(start.reason);
     const results = await provider().search(work.as(work.users.member), { q: 'pal-1', limit: 8 });
-    expect(results[0]).toEqual({
+    expect(results[0]).toMatchObject({
       id: first.id,
       key: 'PAL-1',
       title: 'Rotate service tokens',
       subtitle: 'Backlog · mo',
       href: '/work/issue/PAL-1',
+      look: { type: { key: expect.any(String) }, status: { category: 'todo', name: 'Backlog' } },
     });
     expect(results.map((result) => result.key)).toEqual(
       expect.arrayContaining(['PAL-10', 'PAL-11', 'PAL-12']),
