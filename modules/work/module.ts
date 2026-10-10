@@ -9,6 +9,7 @@ import { WORK_AUTOMATION_RUN_JOB, WORK_RANK_REBALANCE_JOB } from './server/src/s
 import { registerWorkSearch } from './server/src/services/palette/index.ts';
 import { registerWorkAi, withAiTriggers } from './server/src/services/ai/index.ts';
 import { registerWorkReferences } from './server/src/services/references/index.ts';
+import { registerWorkRetrieval } from './server/src/services/retrieval/index.ts';
 
 /**
  * Issues, boards, backlogs, sprints and workflows. Off until an admin enables
@@ -101,6 +102,7 @@ export default defineModule({
       handle: async () => undefined,
     });
     registerWorkSearch(ctx.search, services.search, ctx.database);
+    registerWorkRetrieval(ctx);
     registerWorkReferences(ctx, ctx.database);
     registerWorkAiTools(ctx.ai, services);
     registerWorkAi(ctx, ctx.database);
