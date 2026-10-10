@@ -8,7 +8,6 @@ import type {
 } from '@bemmoly/shared';
 import providers from '../../fixtures/ai-catalog.json' with { type: 'json' };
 import models from '../../fixtures/ai-models.json' with { type: 'json' };
-import { providerLogoUrl } from '../../lib/provider-logos.ts';
 
 /**
  * The mock's catalog: the bundled provider list, and a trimmed excerpt of models.dev's models
@@ -29,6 +28,16 @@ const MODELS = models as unknown as Record<string, CatalogProvider>;
 
 export const CATALOG_POPULAR = PROVIDERS.popular;
 
+/*
+ * The bundled logos are found with Vite's import.meta.glob, which only a Vite build has; the
+ * browser mock passes the lookup in, and the Node-run mock (Playwright, scripts) has none.
+ */
+let logoUrlOf: (id: string) => string | null = () => null;
+
+export function setProviderLogos(lookup: (id: string) => string | null): void {
+  logoUrlOf = lookup;
+}
+
 /** The runtime's allow-list in short: the official packages and one third-party provider package. */
 const allowListed = (npm: string) => npm.startsWith('@ai-sdk/') || npm.endsWith('/ai-sdk-provider');
 
@@ -42,7 +51,7 @@ export function catalogSummaries(): AiCatalogProviderSummary[] {
     npm: provider.npm,
     loader: allowListed(provider.npm) ? 'package' : 'compatible',
     modelCount: Object.keys(MODELS[provider.id]?.models ?? {}).length,
-    logoUrl: providerLogoUrl(provider.id),
+    logoUrl: logoUrlOf(provider.id),
   }));
 }
 
