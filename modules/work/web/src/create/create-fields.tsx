@@ -9,25 +9,22 @@ import {
   PriorityGlyph,
   RequiredMark,
   Select,
-  Textarea,
+  StatusGlyph,
+  statusStage,
   type Priority,
   type SelectOption,
 } from '@bemmoly/ui';
-import type { ReactNode } from 'react';
-import { DEFAULT_FIELDS, type CreateDraft, type useCreateIssue } from '../hooks/create-issue.ts';
+import { Icon } from '@bemmoly/ui/icons';
+import { useState, type ReactNode } from 'react';
+import type { CreateDraft, useCreateIssue } from '../hooks/create-issue.ts';
+import type { CreateOptions } from '../hooks/create-options.ts';
 import { personOption, usePeople } from '../hooks/issue-people.ts';
-import { useLabels, useSprints, useVersions } from '../hooks/projects-catalog.ts';
+import { cx } from '../issue/cx.ts';
+import { EPIC_COLORS } from '../backlog/model.ts';
+import { useVersions } from '../hooks/projects-catalog.ts';
+import { ChipMore, ChipMulti, ChipNumber, ChipSelect } from './create-chips.tsx';
 
 type Form = ReturnType<typeof useCreateIssue>;
-
-const LABELS: Record<(typeof DEFAULT_FIELDS)[number], string> = {
-  assigneeId: 'Assignee',
-  priority: 'Priority',
-  labelIds: 'Labels',
-  estimate: 'Story points',
-  sprintId: 'Sprint',
-  fixVersionId: 'Fix version',
-};
 
 const PRIORITY_OPTIONS: SelectOption[] = (Object.keys(PRIORITIES) as Priority[]).map((key) => ({
   value: key,
@@ -35,119 +32,182 @@ const PRIORITY_OPTIONS: SelectOption[] = (Object.keys(PRIORITIES) as Priority[])
   icon: <PriorityGlyph priority={key} />,
 }));
 
-const withNone = (label: string, options: SelectOption[]) => [{ value: '', label }, ...options];
-const label = (text: string, required: boolean): ReactNode => (
-  <>
-    {text}
-    {required && <RequiredMark />}
-  </>
+/** A square of the epic's colour, in the order the backlog's epics panel paints them. */
+const epicSwatch = (index: number | null) => (
+  <i
+    aria-hidden
+    className={cx(
+      'inline-block size-2.25 rounded-tick',
+      index === null ? 'bg-tx-3' : (EPIC_COLORS[index % EPIC_COLORS.length] ?? 'bg-epic-1'),
+    )}
+  />
 );
 
-/** The fields under title and description: the built-ins, then the type's custom fields. */
-export function CreateFields({ form }: { form: Form }) {
-  const { draft, set, setCustom, errors, layout, projectKey } = form;
+/**
+ * The properties under the text, as chips: status, priority, assignee, labels, sprint,
+ * points and epic, each starting from where the person opened the form. ··· shows the
+ * rest of the type's fields; a required one, or one with an error, is always shown.
+ */
+export function CreateFields({ form, options }: { form: Form; options: CreateOptions }) {
+  const { draft, set, setCustom, errors, layout } = form;
   const { people, loadOptions } = usePeople();
-  const labels = useLabels(projectKey);
-  const sprints = useSprints(projectKey);
-  const versions = useVersions(projectKey);
-  const required = (column: string) =>
-    layout.rows.some((row) => row.column === column && row.required);
-  const custom = layout.rows.filter((row) => row.column === null);
-  const personOptions = people.filter((user) => user.status === 'active').map(personOption);
+  const versions = useVersions(form.projectKey);
+  const [more, setMore] = useState(false);
+  const personOptions = people
+    .filter((user) => user.status === 'active')
+    .map((user) => ({ ...personOption(user), icon: <Avatar name={user.name} size={16} /> }));
+  const subtask = Boolean(draft.parentId) && !options.epics.some((e) => e.id === draft.parentId);
 
-  const builtIn = (column: (typeof DEFAULT_FIELDS)[number]): ReactNode => {
-    const common = { label: label(LABELS[column], required(column)), error: errors[column] };
-    switch (column) {
-      case 'assigneeId':
-        return (
-          <Field {...common}>
-            <Select
-              value={draft.assigneeId ?? ''}
-              options={withNone('Unassigned', personOptions).map((option) =>
-                option.value
-                  ? { ...option, icon: <Avatar name={option.label} size={20} /> }
-                  : option,
-              )}
-              loadOptions={loadOptions}
-              onChange={(event) => set('assigneeId', event.value || null)}
-            />
-          </Field>
-        );
-      case 'priority':
-        return (
-          <Field {...common}>
-            <Select
-              value={draft.priority}
-              options={PRIORITY_OPTIONS}
-              onChange={(event) => set('priority', event.value as CreateDraft['priority'])}
-            />
-          </Field>
-        );
-      case 'labelIds':
-        return (
-          <Field {...common} hint={labels.isError ? 'Labels are not available yet.' : undefined}>
-            <Select
-              value={draft.labelIds[0] ?? ''}
-              disabled={!labels.isSuccess}
-              options={withNone(
-                'No label',
-                (labels.data ?? []).map((row) => ({ value: row.id, label: row.name })),
-              )}
-              onChange={(event) => set('labelIds', event.value ? [event.value] : [])}
-            />
-          </Field>
-        );
-      case 'estimate':
-        return (
-          <Field {...common}>
-            <Input
-              type="number"
-              min={0}
-              mono
-              value={draft.estimate}
-              onChange={(event) => set('estimate', event.target.value)}
-            />
-          </Field>
-        );
-      case 'sprintId':
-      case 'fixVersionId': {
-        const source = column === 'sprintId' ? sprints : versions;
-        const rows = (source.data ?? []) as Array<{ id: string; name: string }>;
-        return (
-          <Field {...common}>
-            <Select
-              value={draft[column] ?? ''}
-              disabled={!source.isSuccess}
-              options={withNone(
-                column === 'sprintId' ? 'Backlog' : 'None',
-                rows.map((row) => ({ value: row.id, label: row.name })),
-              )}
-              onChange={(event) => set(column, event.value || null)}
-            />
-          </Field>
-        );
-      }
-    }
-  };
+  const extra = layout.rows.filter(
+    (row) => row.column === null && row.field.kind !== 'richtext',
+  );
+  const shown = extra.filter(
+    (row) => more || row.required || errors[`customFields.${row.field.key}`],
+  );
+  const showVersion = more || Boolean(draft.fixVersionId) || Boolean(errors['fixVersionId']);
+  const hidden = extra.length - shown.length + (showVersion ? 0 : 1);
 
+  const status = draft.statusId ?? options.initial?.id ?? null;
   return (
-    <FormGrid columns={2}>
-      {DEFAULT_FIELDS.map((column) => (
-        <FormGridItem key={column}>{builtIn(column)}</FormGridItem>
-      ))}
-      {custom.map(({ field, required: must }) => (
-        <FormGridItem key={field.id} full={field.kind === 'richtext'}>
-          <CustomInput
-            field={field}
-            label={label(field.name, must)}
-            error={errors[`customFields.${field.key}`]}
-            value={draft.custom[field.key]}
-            people={personOptions}
-            onChange={(value) => setCustom(field.key, value)}
+    <div className="flex flex-col gap-3">
+      <div role="group" aria-label="Properties" className="flex flex-wrap items-center gap-1.5">
+        <ChipSelect
+          name="Status"
+          value={status}
+          options={options.statuses.map((s) => ({
+            value: s.id,
+            label: s.name,
+            icon: <StatusGlyph stage={statusStage(s.category, s.name)} size={14} />,
+          }))}
+          onChange={(value) => set('statusId', value)}
+        />
+        <ChipSelect
+          name="Priority"
+          value={draft.priority}
+          options={PRIORITY_OPTIONS}
+          invalid={Boolean(errors['priority'])}
+          onChange={(value) => set('priority', (value ?? 'medium') as CreateDraft['priority'])}
+        />
+        <ChipSelect
+          name="Assignee"
+          value={draft.assigneeId}
+          options={personOptions}
+          loadOptions={loadOptions}
+          noneLabel="Unassigned"
+          emptyIcon={<Icon name="user" size={14} />}
+          invalid={Boolean(errors['assigneeId'])}
+          onChange={(value) => set('assigneeId', value)}
+        />
+        <ChipMulti
+          name="Labels"
+          values={draft.labelIds}
+          options={options.labels.map((row) => ({ value: row.id, label: row.name }))}
+          icon={<Icon name="tag" size={14} />}
+          invalid={Boolean(errors['labelIds'])}
+          onChange={(value) => set('labelIds', value)}
+        />
+        {options.sprints.length > 0 && (
+          <ChipSelect
+            name="Sprint"
+            value={draft.sprintId}
+            options={options.sprints.map((sprint) => ({
+              value: sprint.id,
+              label: sprint.name,
+              icon: <Icon name="target" size={14} />,
+            }))}
+            noneLabel="Backlog"
+            emptyIcon={<Icon name="target" size={14} />}
+            invalid={Boolean(errors['sprintId'])}
+            onChange={(value) => set('sprintId', value)}
           />
-        </FormGridItem>
+        )}
+        <ChipNumber
+          name="Story points"
+          value={draft.estimate}
+          invalid={Boolean(errors['estimate'])}
+          onChange={(value) => set('estimate', value)}
+        />
+        {!subtask && options.epics.length > 0 && (
+          <ChipSelect
+            name="Epic"
+            value={draft.parentId}
+            options={options.epics.map((epic, index) => ({
+              value: epic.id,
+              label: epic.title,
+              description: epic.key,
+              icon: epicSwatch(index),
+            }))}
+            noneLabel="No epic"
+            emptyIcon={epicSwatch(null)}
+            invalid={Boolean(errors['parentId'])}
+            onChange={(value) => set('parentId', value)}
+          />
+        )}
+        {(hidden > 0 || more) && (
+          <ChipMore open={more} count={hidden} onToggle={() => setMore((value) => !value)} />
+        )}
+      </div>
+      <ChipErrors errors={errors} />
+      {(shown.length > 0 || showVersion) && (
+        <FormGrid columns={2}>
+          {showVersion && (
+            <FormGridItem>
+              <Field label="Fix version" error={errors['fixVersionId']}>
+                <Select
+                  value={draft.fixVersionId ?? ''}
+                  disabled={!versions.isSuccess}
+                  options={[
+                    { value: '', label: 'None' },
+                    ...(versions.data ?? []).map((row) => ({ value: row.id, label: row.name })),
+                  ]}
+                  onChange={(event) => set('fixVersionId', event.value || null)}
+                />
+              </Field>
+            </FormGridItem>
+          )}
+          {shown.map(({ field, required }) => (
+            <FormGridItem key={field.id}>
+              <CustomInput
+                field={field}
+                label={
+                  <>
+                    {field.name}
+                    {required && <RequiredMark />}
+                  </>
+                }
+                error={errors[`customFields.${field.key}`]}
+                value={draft.custom[field.key]}
+                people={personOptions}
+                onChange={(value) => setCustom(field.key, value)}
+              />
+            </FormGridItem>
+          ))}
+        </FormGrid>
+      )}
+    </div>
+  );
+}
+
+const CHIP_NAMES: Record<string, string> = {
+  statusId: 'Status',
+  priority: 'Priority',
+  assigneeId: 'Assignee',
+  labelIds: 'Labels',
+  sprintId: 'Sprint',
+  estimate: 'Story points',
+  parentId: 'Epic',
+};
+
+/** A chip has no room under it, so its problem is spelled out beneath the row. */
+function ChipErrors({ errors }: { errors: Record<string, string> }) {
+  const found = Object.keys(CHIP_NAMES).filter((key) => errors[key]);
+  if (found.length === 0) return null;
+  return (
+    <ul role="alert" className="m-0 flex list-none flex-col gap-0.5 p-0 text-12 text-red-tx">
+      {found.map((key) => (
+        <li key={key}>{errors[key]}</li>
       ))}
-    </FormGrid>
+    </ul>
   );
 }
 
@@ -165,11 +225,11 @@ function CustomInput({ field, label: text, error, value, people, onChange }: Cus
   const single = Array.isArray(value) ? value[0] : value;
   const current = typeof single === 'string' || typeof single === 'number' ? String(single) : '';
   const many = field.kind === 'multiselect';
-  const select = (options: SelectOption[]) => (
+  const select = (choices: SelectOption[]) => (
     <Field label={text} error={error}>
       <Select
         value={current}
-        options={withNone('None', options)}
+        options={[{ value: '', label: 'None' }, ...choices]}
         onChange={(event) => onChange(event.value ? (many ? [event.value] : event.value) : null)}
       />
     </Field>
@@ -180,12 +240,6 @@ function CustomInput({ field, label: text, error, value, people, onChange }: Cus
       return select(field.options.map((option) => ({ value: option.value, label: option.label })));
     case 'user':
       return select(people);
-    case 'richtext':
-      return (
-        <Field label={text} error={error} hint="Blank line between paragraphs, “- ” for a bullet.">
-          <Textarea rows={4} value={current} onChange={(event) => onChange(event.target.value)} />
-        </Field>
-      );
     default: {
       const type = { number: 'number', date: 'date', datetime: 'datetime-local', url: 'url' }[
         field.kind as string
