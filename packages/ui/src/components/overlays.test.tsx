@@ -40,6 +40,27 @@ describe('Modal and Drawer', () => {
     expect(onClose).toHaveBeenCalled();
   });
 
+  it('keeps its name with a custom header and holds the footer outside the scroll', () => {
+    render(
+      <Modal
+        open
+        onClose={() => undefined}
+        title="Create issue"
+        header={<div>Platform Core</div>}
+        footer={<Button>Create issue</Button>}
+        width="composer"
+      >
+        Body
+      </Modal>,
+    );
+    const dialog = screen.getByRole('dialog', { name: 'Create issue' });
+    expect(dialog.className).toContain('w-180');
+    expect(dialog.className).toContain('max-sm:h-dvh');
+    const body = screen.getByText('Body');
+    expect(body.className).toContain('overflow-auto');
+    expect(body.contains(screen.getByRole('button', { name: 'Create issue' }))).toBe(false);
+  });
+
   it('docks the drawer beside content and closes it with Escape', async () => {
     const onClose = vi.fn();
     const { container } = render(
