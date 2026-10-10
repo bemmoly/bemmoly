@@ -1,10 +1,10 @@
 import { ApiError, queryKeys } from '@bemmoly/api-client';
 import type { AiHandler, AiWriteEvent, AiWriteRequest } from '@bemmoly/editor';
 import type { AiStatusResponse } from '@bemmoly/shared';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useMemo, useRef } from 'react';
 import type { AiWriteStreamEvent, DocsAiCommand } from '../../../../../shared/index.ts';
-import { useSpace } from '../../../hooks/queries.ts';
+import { useAiStatus, useSpaceAi } from '../../../hooks/use-space-ai.ts';
 import { api } from '../../../shared/api.ts';
 import { useSession } from '../../../shared/people.ts';
 import { describeAiError, isAiRefusal } from './describe-ai-error.ts';
@@ -15,15 +15,6 @@ import { describeAiError, isAiRefusal } from './describe-ai-error.ts';
  * Nothing at all with AI off, for a reader, in a space excluded from AI, or for a person who
  * turned AI off for themselves: the editor then draws no AI group, no Ask AI and no ghost.
  */
-
-function useAiStatus(enabled: boolean) {
-  return useQuery({
-    queryKey: queryKeys.ai.status(),
-    queryFn: () => api.ai.status(),
-    enabled,
-    staleTime: 60_000,
-  });
-}
 
 /**
  * The person's own ghost text switch, kept on the server (PUT /ai/preferences) so it follows
@@ -85,18 +76,11 @@ export interface DocAiOptions {
 
 /** The editor's AI handler for this page, or undefined when no AI surface may show. */
 export function useDocAi({ pageId, spaceKey, editable }: DocAiOptions): AiHandler | undefined {
-  const { aiEnabled } = useSession();
-  const space = useSpace(aiEnabled ? spaceKey : undefined);
-  const status = useAiStatus(aiEnabled);
+  const allowed = useSpaceAi(spaceKey);
   const [ghostOn] = useGhostTextPreference();
   /* A refusal (excluded, budget spent) stops ghost text asking again on every pause. */
   const ghostRefused = useRef(false);
-  const on =
-    aiEnabled &&
-    editable &&
-    space.data?.aiExcluded === false &&
-    status.data?.enabled !== false &&
-    status.data?.optedOut !== true;
+  const on = allowed && editable;
 
   return useMemo<AiHandler | undefined>(() => {
     if (!on) return undefined;

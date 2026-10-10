@@ -1,5 +1,7 @@
 import { ApiError } from '@bemmoly/api-client';
 import { useToast } from '@bemmoly/ui';
+import { usePage } from '../hooks/queries.ts';
+import { useSpaceAi } from '../hooks/use-space-ai.ts';
 import { describeAiError } from '../page/body/ai/describe-ai-error.ts';
 import type { ThreadHandlers } from './comment-thread.tsx';
 import { useCommentActions } from './use-comments.ts';
@@ -15,6 +17,8 @@ const messageOf = (error: unknown) =>
 export function useThreadHandlers(pageId: string) {
   const actions = useCommentActions(pageId);
   const toast = useToast();
+  // "Suggest a fix" sends the thread's text: never offered where AI may not go.
+  const aiAllowed = useSpaceAi(usePage(pageId).data?.spaceKey);
   const fail = (title: string) => (error: unknown) =>
     toast.show({ tone: 'danger', title, body: messageOf(error) });
 
@@ -55,6 +59,7 @@ export function useThreadHandlers(pageId: string) {
           }),
       }),
     suggesting: actions.suggestFix.isPending ? (actions.suggestFix.variables ?? null) : null,
+    aiAllowed,
   };
 
   return {

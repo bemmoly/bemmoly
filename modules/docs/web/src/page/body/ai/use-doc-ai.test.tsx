@@ -5,7 +5,7 @@ import { act, renderHook, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { api } from '../../../shared/api.ts';
 import { docsKeys } from '../../../shared/keys.ts';
-import { newClient, providers, space } from '../../../test-support.tsx';
+import { newClient, providers, space, SPACE_ID } from '../../../test-support.tsx';
 import { describeAiError } from './describe-ai-error.ts';
 import { useDocAi, useGhostTextPreference } from './use-doc-ai.ts';
 
@@ -21,14 +21,23 @@ interface Seed {
   excluded?: boolean;
   optedOut?: boolean;
   ghostText?: boolean;
+  /** Settings › AI › Privacy excludes the space. */
+  policyExcluded?: boolean;
 }
 
-const status = ({ aiEnabled = true, optedOut = false, ghostText = true }: Seed = {}) =>
+const status = ({
+  aiEnabled = true,
+  optedOut = false,
+  ghostText = true,
+  policyExcluded = false,
+}: Seed = {}) =>
   ({
     enabled: aiEnabled,
     optedOut,
     optOutAllowed: true,
     ghostText,
+    excludedSpaceIds: policyExcluded ? [SPACE_ID] : [],
+    excludedProjectIds: [],
     allowActions: true,
     availableRoles: ['fast', 'standard', 'strong'],
     budgetState: 'unlimited',
@@ -71,6 +80,7 @@ describe('the Docs editor’s AI', () => {
     expect(hook({ aiEnabled: false }).result.current).toBeUndefined();
     expect(hook({ editable: false }).result.current).toBeUndefined();
     expect(hook({ excluded: true }).result.current).toBeUndefined();
+    expect(hook({ policyExcluded: true }).result.current).toBeUndefined();
     expect(hook({ optedOut: true }).result.current).toBeUndefined();
     expect(hook().result.current).toBeDefined();
   });

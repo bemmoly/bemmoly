@@ -1,8 +1,17 @@
 import { queryKeys } from '@bemmoly/api-client';
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import { afterEach, describe, expect, it } from 'vitest';
-import { id, listed, newClient, providers, startServer } from '../test-support.tsx';
+import { docsKeys } from '../shared/keys.ts';
+import {
+  id,
+  listed,
+  newClient,
+  providers,
+  space,
+  SPACE_ID,
+  startServer,
+} from '../test-support.tsx';
 import { useCommentUi } from './comment-store.ts';
 import { CommentsRail } from './comments-rail.tsx';
 
@@ -44,12 +53,19 @@ const MOVED = comment('This line was rewritten.', {
   anchorStatus: 'text_changed',
 });
 const GENERAL = comment('Looks good overall.');
+const RUN = id(650);
+const FIXED = comment('Rotate them sooner.', {
+  anchor: anchor('every month'),
+  anchorStatus: 'anchored',
+  aiSuggestion: { replacement: 'every 30 days', rationale: 'Policy says 30.', runId: RUN },
+});
 
 let refuse = true;
+let threads = [ASK, MOVED, GENERAL];
+/* The fix stays "being written" until a test lets it through: no real waits. */
+let release = () => {};
 const { calls } = startServer(
-  http.get('*/api/v1/docs/pages/:pageId/comments', () =>
-    HttpResponse.json(listed([ASK, MOVED, GENERAL])),
-  ),
+  http.get('*/api/v1/docs/pages/:pageId/comments', () => HttpResponse.json(listed(threads))),
   http.post('*/api/v1/docs/comments/:id/suggest-fix', async () => {
     if (refuse) {
       return HttpResponse.json(
@@ -57,26 +73,50 @@ const { calls } = startServer(
         { status: 403 },
       );
     }
-    await new Promise((resolve) => setTimeout(resolve, 300));
+    await new Promise<void>((resolve) => (release = resolve));
     return HttpResponse.json({
       ...ASK,
       aiSuggestion: { replacement: 'every 90 days', rationale: 'Policy says 90 days.' },
     });
   }),
+  http.put('*/api/v1/ai/runs/:id/feedback', () => new HttpResponse(null, { status: 204 })),
 );
 
 afterEach(() => {
+  release();
   useCommentUi.getState().reset(PAGE);
   refuse = true;
+  threads = [ASK, MOVED, GENERAL];
 });
 
-function renderRail(aiEnabled: boolean) {
+interface Seed {
+  aiEnabled?: boolean;
+  /** The space's own "exclude from AI" switch. */
+  spaceExcluded?: boolean;
+  /** Settings › AI › Privacy excludes the space. */
+  policyExcluded?: boolean;
+}
+
+function renderRail({ aiEnabled = true, spaceExcluded = false, policyExcluded = false }: Seed) {
   const client = newClient();
   client.setQueryData(queryKeys.me(), {
     user: ME,
     capabilities: [],
     modules: [],
     workspace: { aiEnabled },
+  });
+  client.setQueryData(docsKeys.page(PAGE), { id: PAGE, spaceKey: 'ENG' });
+  client.setQueryData(docsKeys.space('ENG'), space({ aiExcluded: spaceExcluded }));
+  client.setQueryData(queryKeys.ai.status(), {
+    enabled: aiEnabled,
+    optedOut: false,
+    optOutAllowed: false,
+    ghostText: true,
+    excludedSpaceIds: policyExcluded ? [SPACE_ID] : [],
+    excludedProjectIds: [],
+    allowActions: true,
+    availableRoles: ['fast', 'standard'],
+    budgetState: 'unlimited',
   });
   render(<CommentsRail pageId={PAGE} canComment />, { wrapper: providers(client) });
 }
@@ -85,20 +125,20 @@ const card = async (text: string) => (await screen.findByText(text)).closest('ar
 
 describe('Suggest a fix', () => {
   it('shows only on a thread whose text is still there, and only with AI on', async () => {
-    renderRail(true);
+    renderRail({});
     const thread = within(await card('every year'));
     expect(thread.getByRole('button', { name: 'Suggest a fix' })).toBeTruthy();
     expect(screen.getAllByRole('button', { name: 'Suggest a fix' })).toHaveLength(1);
   });
 
   it('is not there at all with AI off', async () => {
-    renderRail(false);
+    renderRail({ aiEnabled: false });
     await card('every year');
     expect(screen.queryByRole('button', { name: 'Suggest a fix' })).toBeNull();
   });
 
   it('says a refusal plainly, then shows the fix being written', async () => {
-    renderRail(true);
+    renderRail({});
     const thread = within(await card('every year'));
     fireEvent.click(thread.getByRole('button', { name: 'Suggest a fix' }));
     expect(
@@ -109,5 +149,35 @@ describe('Suggest a fix', () => {
     refuse = false;
     fireEvent.click(thread.getByRole('button', { name: 'Suggest a fix' }));
     expect(await screen.findByText('Writing a fix…')).toBeTruthy();
+  });
+
+  it('is not offered in a space excluded from AI, by its own switch or by Privacy', async () => {
+    renderRail({ spaceExcluded: true });
+    await card('every year');
+    expect(screen.queryByRole('button', { name: 'Suggest a fix' })).toBeNull();
+    cleanup();
+
+    renderRail({ policyExcluded: true });
+    await card('every year');
+    expect(screen.queryByRole('button', { name: 'Suggest a fix' })).toBeNull();
+  });
+
+  it('marks a written fix not useful, once', async () => {
+    threads = [FIXED];
+    renderRail({});
+    const thread = within(await card('every month'));
+    expect(thread.getByText(/Replace with “every 30 days”/)).toBeTruthy();
+    fireEvent.click(thread.getByRole('button', { name: 'Not useful' }));
+    const marked = await thread.findByRole('button', { name: 'Marked not useful' });
+    expect((marked as HTMLButtonElement).disabled).toBe(true);
+    await waitFor(() =>
+      expect(calls).toContainEqual({
+        method: 'PUT',
+        path: `/api/v1/ai/runs/${RUN}/feedback`,
+        body: { feedback: 'not_useful' },
+      }),
+    );
+    // The fix itself stays, to apply or leave.
+    expect(thread.getByRole('button', { name: 'Apply fix' })).toBeTruthy();
   });
 });

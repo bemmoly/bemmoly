@@ -1,6 +1,7 @@
 import type { PageComment, RichText } from '@bemmoly/module-docs/shared';
-import { ActivityAction, AiDot } from '@bemmoly/ui';
+import { ActivityAction, AiDot, AiNotUseful } from '@bemmoly/ui';
 import { useState, type KeyboardEvent, type ReactNode } from 'react';
+import { api } from '../shared/api.ts';
 import { useSession } from '../shared/people.ts';
 import { CommentBox } from './comment-box.tsx';
 import { cx } from './cx.ts';
@@ -19,6 +20,11 @@ export interface ThreadHandlers {
   onSuggestFix: (root: PageComment) => void;
   /** The thread a fix is being written for, if any. */
   suggesting: string | null;
+  /**
+   * AI may work on this page for this person: on, not opted out, and the space not excluded
+   * by its own switch or by Settings › AI. "Suggest a fix" shows only then.
+   */
+  aiAllowed: boolean;
 }
 
 export interface CommentThreadProps extends ThreadHandlers {
@@ -29,6 +35,25 @@ export interface CommentThreadProps extends ThreadHandlers {
   /** Commenting needs edit rights on the page; readers see threads only. */
   canComment: boolean;
   busy?: boolean;
+}
+
+/** The fix's "Not useful": marks the run that wrote it, once, for Settings › AI's numbers. */
+function FixNotUseful({ runId }: { runId: string }) {
+  const [marked, setMarked] = useState(false);
+  return (
+    <AiNotUseful
+      className="-my-1 ml-auto"
+      disabled={marked}
+      aria-pressed={marked}
+      onClick={() => {
+        setMarked(true);
+        // A failed mark changes nothing the person sees, as on every AI card.
+        void api.ai.runs.feedback(runId, 'not_useful').catch(() => null);
+      }}
+    >
+      {marked ? 'Marked not useful' : 'Not useful'}
+    </AiNotUseful>
+  );
 }
 
 /** The quoted text an inline thread is about, with the marker when that text has changed. */
@@ -85,7 +110,13 @@ export function CommentThread({
       : null;
   const writing = aiEnabled && on.suggesting === root.id;
   const canSuggest =
-    aiEnabled && canComment && root.anchorStatus === 'anchored' && !fix && !writing && !resolved;
+    aiEnabled &&
+    on.aiAllowed &&
+    canComment &&
+    root.anchorStatus === 'anchored' &&
+    !fix &&
+    !writing &&
+    !resolved;
 
   const onKeyDown = (event: KeyboardEvent<HTMLElement>) => {
     if (event.target !== event.currentTarget) return;
@@ -149,6 +180,7 @@ export function CommentThread({
           <span className="min-w-0 text-tx">
             {fix.rationale ? `${fix.rationale} ` : ''}Replace with “{fix.replacement}”?
           </span>
+          {fix.runId && <FixNotUseful key={fix.runId} runId={fix.runId} />}
         </div>
       )}
       {writing && (
