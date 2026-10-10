@@ -1,5 +1,6 @@
 export * from './catalog.ts';
 export * from './enums.ts';
+export * from './insights.ts';
 export * from './plans.ts';
 export * from './prompts.ts';
 export * from './providers.ts';
