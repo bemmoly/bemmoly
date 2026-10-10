@@ -11,6 +11,7 @@ import {
   COMMAND,
   HEADLINE,
   LINE,
+  sentences,
   shadowFilter,
   type PreviewInput,
 } from './social-preview.ts';
@@ -44,6 +45,8 @@ export interface BannerSpec {
     headline: TextStyle;
     /** One sentence per line, as the social preview has it. */
     split: boolean;
+    /** The line broken between its sentences too, where the height allows it. */
+    splitLine?: boolean;
     body: TextStyle;
     /** The install pill, or none where it cannot be read at the platform's size. */
     code?: TextStyle;
@@ -94,8 +97,8 @@ function copyBlock(spec: BannerSpec, input: BannerInput, top: number) {
   const { x, width, headline, body, code } = spec.copy;
   const headlineWidth = spec.copy.headlineWidth ?? width;
   // A sentence wider than the room wraps, balanced, rather than shrinking the type.
-  const sentences = spec.copy.split ? HEADLINE.split(/(?<=\.) /) : [HEADLINE];
-  const titles = sentences.flatMap((sentence) =>
+  const heads = spec.copy.split ? sentences(HEADLINE) : [HEADLINE];
+  const titles = heads.flatMap((sentence) =>
     measure(sentence, headline) > headlineWidth
       ? balanced(sentence, headline, headlineWidth)
       : [sentence],
@@ -112,7 +115,11 @@ function copyBlock(spec: BannerSpec, input: BannerInput, top: number) {
     y += headline.size * 0.125;
   }
   y += headline.size * 0.25;
-  for (const line of balanced(LINE, body, width)) {
+  // Where there is room, the line breaks between its sentences: what it is, then the promises.
+  const lines = spec.copy.splitLine
+    ? sentences(LINE).flatMap((sentence) => balanced(sentence, body, width))
+    : balanced(LINE, body, width);
+  for (const line of lines) {
     y += body.size * 1.3;
     const baseline = y - body.size * 0.3;
     parts.push(`<path fill="${colors['tx-2']}" d="${outline(line, body, x, baseline)}"/>`);
