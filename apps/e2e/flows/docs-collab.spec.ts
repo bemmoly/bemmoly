@@ -65,6 +65,12 @@ test('two people edit one page at once and both keep every word', async ({
   await expect(page.locator(`[data-collab-caret="${other.id}"]`)).toHaveCount(1);
   await expect(theirs.locator(`[data-collab-caret="${me.id}"]`)).toHaveCount(1);
 
+  // The other person's name fades after three seconds still, and comes back when they type.
+  const theirName = page.locator(`[data-collab-caret-name="${other.id}"]`);
+  await expect(theirName).toHaveAttribute('data-idle', '', { timeout: 6_000 });
+  await typeAt(theirs, '.', 1);
+  await expect(theirName).not.toHaveAttribute('data-idle', '');
+
   // It survives a reload, and the person who reloads finds the same document.
   const converged = await docText(theirs);
   await page.reload();
