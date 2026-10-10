@@ -6,7 +6,7 @@ import { useSpaceActions } from '../../space/space-layout.tsx';
 import { ABOUT_PANEL, usePageChrome, usePageScreen } from '../screen-context.ts';
 import { PANEL_SLOTS } from '../slots.ts';
 import { MoreMenu, useCopyLink } from './more-menu.tsx';
-import { saveLine, saveState } from './save-state.ts';
+import { saveLine, saveState, spokenState } from './save-state.ts';
 import { StatusMenu } from './status-menu.tsx';
 
 const TONE = { quiet: 'text-tx5', busy: 'text-tx4', warn: 'text-warn-fg' } as const;
@@ -22,11 +22,15 @@ function Presence() {
   return (
     <>
       <span
-        role="status"
+        aria-hidden
         data-save-state={collab.status}
         className={`hidden truncate text-12 whitespace-nowrap sm:inline ${TONE[state.tone]}`}
       >
         {saveLine(state)}
+      </span>
+      {/* Read out on every change, phones included; without the Saving… of every keystroke. */}
+      <span role="status" className="sr-only">
+        {saveLine(spokenState(state))}
       </span>
       {collab.peers.length > 0 && (
         <span title={names} className="hidden sm:inline-flex">

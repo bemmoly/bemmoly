@@ -1,6 +1,6 @@
 import type { PageDetail } from '@bemmoly/module-docs/shared';
 import { IconButton, Tabs } from '@bemmoly/ui';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { cx } from '../cx.ts';
 import { ABOUT_PANEL, usePageChrome, usePageScreen, useSlotProps } from '../screen-context.ts';
 import { ABOUT_SLOTS, PANEL_SLOTS, type PanelSlot } from '../slots.ts';
@@ -56,6 +56,8 @@ export function PagePanel() {
   const panel = usePageChrome((state) => state.panel);
   const openPanel = usePageChrome((state) => state.openPanel);
   const closePanel = usePageChrome((state) => state.closePanel);
+  const focusRequest = usePageChrome((state) => state.focusRequest);
+  const aside = useRef<HTMLElement>(null);
   const slot = PANEL_SLOTS.find((item) => item.id === panel);
   const open = panel === ABOUT_PANEL || Boolean(slot);
   const overlay = () => !window.matchMedia?.('(min-width: 1280px)').matches;
@@ -68,6 +70,12 @@ export function PagePanel() {
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [open, closePanel]);
+
+  // After the menu that opened it has handed focus back to its trigger.
+  useEffect(() => {
+    if (focusRequest === 0) return;
+    aside.current?.querySelector<HTMLElement>('[role=tab][aria-selected=true]')?.focus();
+  }, [focusRequest]);
 
   if (!open) return null;
   const tabs = [
@@ -87,6 +95,7 @@ export function PagePanel() {
         className="absolute inset-0 z-20 bg-scrim motion-safe:animate-fade-in xl:hidden"
       />
       <aside
+        ref={aside}
         aria-label="Page details"
         className={cx(
           'absolute inset-y-0 right-0 z-30 flex w-full max-w-85 flex-col border-l border-br bg-sf shadow-modal',

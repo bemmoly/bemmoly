@@ -4,7 +4,7 @@ import { collabUser } from '../../collab/user.ts';
 import { countWords, readingTime, statsOf } from '../body/doc-stats.ts';
 import { shortDate } from '../body/page-heading.tsx';
 import { saveShortcutMessage } from '../use-page-shortcuts.ts';
-import { saveLine, saveState } from './save-state.ts';
+import { saveLine, saveState, spokenState } from './save-state.ts';
 
 const priya = collabUser({ id: 'u-priya', name: 'Priya Nair', email: 'priya@acme.test' });
 const jonas = collabUser({ id: 'u-jonas', name: 'Jonas Meyer', email: 'jonas@acme.test' });
@@ -25,6 +25,14 @@ describe('the save line', () => {
     expect(saveState(state({ peers: [priya, jonas, priya] }), null).others).toBe(
       '3 people editing',
     );
+  });
+
+  it('speaks saving as saved, so the status region stays quiet while someone types', () => {
+    const saving = saveState(state({ unsynced: 1, peers: [priya] }), null);
+    expect(saveLine(saving)).toBe('Saving… · Priya is editing');
+    expect(saveLine(spokenState(saving))).toBe('Saved · Priya is editing');
+    const offline = saveState(state({ status: 'offline' }), null);
+    expect(spokenState(offline)).toEqual(offline);
   });
 
   it('names every connection state and never claims a save it cannot make', () => {

@@ -51,6 +51,10 @@ interface PageChrome {
   closePanel: () => void;
   /** Opens the panel on `id`, or closes it when it already shows `id`. */
   togglePanel: (id: string) => void;
+  /** Opens the panel on `id` and moves focus to its tab, for a menu that closes behind it. */
+  showPanel: (id: string) => void;
+  /** Bumped by showPanel; the panel focuses its tab on each change. */
+  focusRequest: number;
 }
 
 const WIDE = '(min-width: 1280px)';
@@ -66,6 +70,8 @@ export const usePageChrome = create<PageChrome>((set, get) => ({
   openPanel: (id) => set({ panel: id }),
   closePanel: () => set({ panel: null }),
   togglePanel: (id) => set({ panel: get().panel === id ? null : id }),
+  showPanel: (id) => set({ panel: id, focusRequest: get().focusRequest + 1 }),
+  focusRequest: 0,
 }));
 
 /** What the slots in slots.ts are drawn with. */

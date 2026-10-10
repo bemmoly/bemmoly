@@ -34,7 +34,7 @@ export function MoreMenu() {
   const screen = usePageScreen();
   const { page, readOnly } = screen;
   const slotProps = useSlotProps();
-  const openPanel = usePageChrome((state) => state.openPanel);
+  const showPanel = usePageChrome((state) => state.showPanel);
   const copyLink = useCopyLink(page.id);
   const { trash } = useTrashPage(page);
   const [moving, setMoving] = useState(false);
@@ -61,7 +61,7 @@ export function MoreMenu() {
           <MenuItem
             key={slot.id}
             icon={slot.menu?.icon ? <Icon name={slot.menu.icon} size={14} /> : undefined}
-            onSelect={() => openPanel(slot.id)}
+            onSelect={() => showPanel(slot.id)}
           >
             {slot.menu?.label}
           </MenuItem>

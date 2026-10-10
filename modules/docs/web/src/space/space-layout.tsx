@@ -70,6 +70,7 @@ export function SpaceLayout({
   if (space.isError) {
     return (
       <EmptyState
+        headingLevel={1}
         className="flex-1 justify-center"
         icon={<Icon name="doc" />}
         title={`${spaceRef} could not be opened`}

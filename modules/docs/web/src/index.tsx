@@ -14,7 +14,12 @@ export default function DocsModule({ manifest, subpath }: ModuleChunkProps) {
           <route.Screen {...route.props} />
         </Suspense>
       ) : (
-        <EmptyState title="No such Docs screen" description={`Nothing lives at ${subpath}.`} />
+        <EmptyState
+          headingLevel={1}
+          className="flex-1 justify-center"
+          title="No such Docs screen"
+          description={`Nothing lives at ${subpath}.`}
+        />
       )}
     </div>
   );

@@ -177,7 +177,9 @@ describe('the doc editor screen', () => {
     live.state = collabState({ status: 'offline' });
     renderPage();
     expect(await screen.findByText(/You are offline/)).toBeTruthy();
-    expect(screen.getByText('Offline · changes kept')).toBeTruthy();
+    expect(
+      screen.getAllByRole('status').some((node) => node.textContent === 'Offline · changes kept'),
+    ).toBe(true);
     expect(await title()).toBeTruthy();
   });
 

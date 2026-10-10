@@ -72,6 +72,8 @@ export function CommentsRail({ pageId, canComment = true }: CommentsRailProps) {
   const toast = useToast();
   const handlers = useThreadHandlers(pageId);
   const list = useRef<HTMLDivElement>(null);
+  /** The thread just posted: focus moves to its card once it is in the list. */
+  const posted = useRef<string | null>(null);
   const threads = useMemo(
     () => sortThreads(comments.threads, ui.order),
     [comments.threads, ui.order],
@@ -87,11 +89,23 @@ export function CommentsRail({ pageId, canComment = true }: CommentsRailProps) {
     card?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   }, [ui.active, ui.focusFrom, ui.focusTick]);
 
+  // The box that had focus is gone once a comment posts; its card takes focus, not the page.
+  const focusPosted = () => {
+    if (!posted.current) return;
+    const card = list.current?.querySelector<HTMLElement>(`[data-thread="${posted.current}"]`);
+    if (!card) return;
+    posted.current = null;
+    card.focus({ preventScroll: true });
+  };
+  useEffect(focusPosted, [threads]);
+
   const create = async (body: PageComment['body'], anchored: boolean) => {
     const comment = await handlers.create.mutateAsync({
       body,
       ...(anchored && ui.draft ? { anchor: ui.draft } : {}),
     });
+    posted.current = comment.id;
+    requestAnimationFrame(focusPosted);
     if (anchored) {
       ui.clearDraft();
       ui.focusThread(comment.id);

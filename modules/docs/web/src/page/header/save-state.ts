@@ -51,6 +51,14 @@ export function saveState(collab: CollabState, readOnly: ReadOnlyReason): SaveSt
   }
 }
 
+/**
+ * What the status region says: the same, except that saving reads as saved. Saving flickers
+ * on every keystroke; spoken, it would talk over the typing.
+ */
+export function spokenState(state: SaveState): SaveState {
+  return state.label === 'Saving…' ? { ...state, label: 'Saved', tone: 'quiet' } : state;
+}
+
 /** One line for the status region, read once by assistive technology on each change. */
 export function saveLine(state: SaveState): string {
   return state.others ? `${state.label} · ${state.others}` : state.label;

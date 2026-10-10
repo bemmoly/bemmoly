@@ -42,6 +42,7 @@ function Problem({
   }[kind];
   return (
     <EmptyState
+      headingLevel={1}
       className="flex-1 justify-center"
       icon={<Icon name={kind === 'forbidden' ? 'key' : 'doc'} />}
       title={copy.title}
