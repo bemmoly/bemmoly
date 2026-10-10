@@ -82,7 +82,9 @@ export function RailPlanning({ issue }: { issue: IssueDetail }) {
             const sprint = sprints.data?.find((entry) => entry.id === sprintId);
             edit({
               body: { sprintId },
-              shown: { sprint: sprint ? { id: sprint.id, name: sprint.name, state: sprint.state } : null },
+              shown: {
+                sprint: sprint ? { id: sprint.id, name: sprint.name, state: sprint.state } : null,
+              },
               what: 'The sprint',
             });
           }}
@@ -102,7 +104,14 @@ export function RailPlanning({ issue }: { issue: IssueDetail }) {
                 body: { parentId },
                 shown: {
                   parent: epic
-                    ? { id: epic.id, key: epic.key, title: epic.title, statusId: epic.statusId, typeId: epic.typeId }
+                    ? {
+                        id: epic.id,
+                        key: epic.key,
+                        title: epic.title,
+                        statusId: epic.statusId,
+                        typeId: epic.typeId,
+                        color: null,
+                      }
                     : null,
                 },
                 what: 'The epic',
@@ -110,7 +119,10 @@ export function RailPlanning({ issue }: { issue: IssueDetail }) {
             }}
           />
         ) : issue.parent ? (
-          <a {...linkTo(workPaths.issue(issue.parent.key))} className={cx(propertyValueClass, 'no-underline')}>
+          <a
+            {...linkTo(workPaths.issue(issue.parent.key))}
+            className={cx(propertyValueClass, 'no-underline')}
+          >
             <FieldSwatch colorClassName={epicSwatch(issue.parent.id)} />
             <span className="truncate">{issue.parent.title}</span>
           </a>
@@ -125,7 +137,9 @@ export function RailPlanning({ issue }: { issue: IssueDetail }) {
           placeholder="Add version"
           clearLabel="Clear"
           options={(versions.data ?? [])
-            .filter((version) => version.status === 'unreleased' || version.id === issue.fixVersionId)
+            .filter(
+              (version) => version.status === 'unreleased' || version.id === issue.fixVersionId,
+            )
             .map((version) => ({ value: version.id, label: version.name }))}
           onSave={(fixVersionId) => {
             const version = versions.data?.find((entry) => entry.id === fixVersionId);
@@ -195,7 +209,12 @@ export function RailPeople({ issue }: { issue: IssueDetail }) {
         >
           <span className="flex -space-x-1">
             {(watchers.data ?? []).slice(0, 3).map((row) => (
-              <Avatar key={row.userId} name={person(row.userId).name} size={18} className="ring-2 ring-canvas" />
+              <Avatar
+                key={row.userId}
+                name={person(row.userId).name}
+                size={18}
+                className="ring-2 ring-canvas"
+              />
             ))}
           </span>
           <span className="truncate text-tx-3">{summary}</span>
