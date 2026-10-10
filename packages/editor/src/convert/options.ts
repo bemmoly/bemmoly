@@ -9,9 +9,15 @@ export interface ExportOptions {
 /** Links an export follows: the web, mail and paths inside the app. */
 export const SAFE_LINK = /^(https?:|mailto:|\/(?!\/)|#)/i;
 
+/**
+ * What a host may also point an export's links at: a file next to this one ("./a.md",
+ * "../b.html"), so a folder of exported pages links between its files offline.
+ */
+const RELATIVE_FILE = /^\.\.?\/(?!\/)/;
+
 /** A host-supplied URL, kept only when it is one an export may follow. */
 export const safeHref = (href: string | null | undefined): string | null =>
-  href && SAFE_LINK.test(href) ? href : null;
+  href && (SAFE_LINK.test(href) || RELATIVE_FILE.test(href)) ? href : null;
 
 const HTML_ESCAPES: Record<string, string> = {
   '&': '&amp;',

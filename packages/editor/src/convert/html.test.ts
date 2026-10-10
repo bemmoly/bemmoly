@@ -52,6 +52,20 @@ describe('HTML export', () => {
     expect(html).toContain('data-variant="info"');
   });
 
+  it('follows a host link to a file beside the export, and nothing protocol-relative', () => {
+    const doc: RichTextDoc = {
+      type: 'doc',
+      content: [
+        { type: 'paragraph', content: [{ type: 'pageLink', attrs: { pageId: 'p1', title: 'A' } }] },
+      ],
+    };
+    expect(toHtml(doc, { pageHref: () => '../runbook/deploy.html' })).toContain(
+      'href="../runbook/deploy.html"',
+    );
+    expect(toHtml(doc, { pageHref: () => './a.html' })).toContain('href="./a.html"');
+    expect(toHtml(doc, { pageHref: () => './/evil.example' })).not.toContain('evil');
+  });
+
   it('wraps a whole file with the title and an inline stylesheet, nothing fetched', () => {
     const file = toHtmlDocument(EVERY_DOC_NODE, 'Auth service <RFC>');
     expect(file.startsWith('<!doctype html>')).toBe(true);
