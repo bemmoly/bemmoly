@@ -1,10 +1,11 @@
 ---
 /**
- * The landing page's board picture with a caption that says what it is: a capture of the
- * Board design mock the Work module's board is built to, not a screenshot of a release.
+ * The topic pages' board picture: the homepage's board poster, captured from the live demo
+ * (scripts/capture-previews.ts), with a caption that says what it is and links to the demo.
  */
-import boardOcean from '../../assets/screens/board-ocean.png';
-import board from '../../assets/screens/board.png';
+import boardOcean from '../../assets/previews/board-ocean.png';
+import board from '../../assets/previews/board.png';
+import { PREVIEWS } from '../../data/previews.ts';
 import Shot from '../landing/Shot.astro';
 
 interface Props {
@@ -12,6 +13,7 @@ interface Props {
 }
 
 const { eager = false } = Astro.props;
+const preview = PREVIEWS.find((entry) => entry.id === 'board');
 ---
 
 <figure class="m-0 flex flex-col gap-3">
@@ -22,10 +24,12 @@ const { eager = false } = Astro.props;
     width={1064}
     sizes="(min-width: 1160px) 1064px, calc(100vw - 32px)"
     eager={eager}
-    alt="A sprint board in Bemmoly with an AI sprint-risk note, swimlanes by epic and an issue open beside the board."
+    alt={preview?.alt ?? ''}
   />
   <figcaption class="text-13h leading-brief text-tx4">
-    The board design the Work module is built to, including the AI note planned for 0.4. It is a
-    picture of the design, not a screenshot of a release.
+    The Work module’s board in the live demo, on sample data that never leaves your browser.
+    <a href={preview?.path} class="font-medium underline">
+      Drag a card yourself.
+    </a>
   </figcaption>
 </figure>

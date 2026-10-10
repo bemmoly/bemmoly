@@ -2,13 +2,13 @@ import sitemap from '@astrojs/sitemap';
 import tailwindcss from '@tailwindcss/vite';
 import { defineConfig, envField } from 'astro/config';
 import { fileURLToPath } from 'node:url';
-import { PAGES } from './src/data/pages.ts';
+import { DEMO_PAGE, PAGES } from './src/data/pages.ts';
 
 const repoRoot = fileURLToPath(new URL('../..', import.meta.url));
 const site = 'https://bemmoly.com';
 /** lastmod is the day a page's words last changed (src/data/pages.ts), never the build time. */
 const updated = new Map<string, string>(
-  PAGES.map((page) => [new URL(page.path, site).href, page.updated]),
+  [...PAGES, DEMO_PAGE].map((page) => [new URL(page.path, site).href, page.updated]),
 );
 
 export default defineConfig({
@@ -36,6 +36,8 @@ export default defineConfig({
   },
   integrations: [
     sitemap({
+      // The live demo is apps/web's build, copied in after Astro's (scripts/bundle-demo.ts).
+      customPages: [new URL(DEMO_PAGE.path, site).href],
       // The 404 page is served but is not a destination.
       filter: (page) => updated.has(page),
       serialize: (item) => ({ url: item.url, lastmod: updated.get(item.url) }),

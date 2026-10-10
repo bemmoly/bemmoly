@@ -17,9 +17,9 @@ import { CONFIGS } from '../../data/landing.ts';
       <li class="flex flex-col gap-2 rounded-window border border-br bg-sf p-4.5 text-tx">
         <h3 class="text-15 font-semibold">{config.title}</h3>
         <p class="text-13h leading-brief text-tx4">{config.body}</p>
-        <span class="mt-auto pt-1.5 text-13 font-medium text-ac">
-          See it in the live demo, soon
-        </span>
+        <a href={config.demo} class="mt-auto pt-1.5 text-13 font-medium">
+          See it in the live demo →
+        </a>
       </li>
     ))}
   </ul>

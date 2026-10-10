@@ -10,8 +10,9 @@ const BUDGET = 30 * 1024;
 const dist = new URL('../dist/', import.meta.url);
 
 let failed = false;
-const pages = readdirSync(dist, { recursive: true, encoding: 'utf8' }).filter((file) =>
-  file.endsWith('.html'),
+// dist/demo is the live demo, the app itself, not a page of the site; it loads only when asked.
+const pages = readdirSync(dist, { recursive: true, encoding: 'utf8' }).filter(
+  (file) => file.endsWith('.html') && !file.startsWith('demo/'),
 );
 for (const page of pages) {
   const html = readFileSync(new URL(page, dist), 'utf8');

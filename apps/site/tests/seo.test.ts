@@ -8,11 +8,11 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { PAGES, type SitePage } from '../src/data/pages.ts';
 import { LATEST } from '../src/lib/changelog.ts';
-import { parsePage, scriptsOf } from './dom.ts';
+import { isSitePage, parsePage, scriptsOf } from './dom.ts';
 
 const dist = new URL('../dist/', import.meta.url);
 const files = readdirSync(dist, { recursive: true, encoding: 'utf8' });
-const htmlFiles = files.filter((file) => file.endsWith('.html'));
+const htmlFiles = files.filter(isSitePage);
 const fileOf = (path: string) => (path === '/' ? 'index.html' : `${path.slice(1)}.html`);
 const read = (file: string) => readFileSync(new URL(file, dist), 'utf8');
 

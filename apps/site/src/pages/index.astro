@@ -1,13 +1,11 @@
 ---
-import boardOcean from '../assets/screens/board-ocean.png';
-import board from '../assets/screens/board.png';
 import AiSection from '../components/landing/AiSection.astro';
 import Configure from '../components/landing/Configure.astro';
 import Cta from '../components/landing/Cta.astro';
 import Features from '../components/landing/Features.astro';
 import Hero from '../components/landing/Hero.astro';
+import LivePreview from '../components/landing/LivePreview.astro';
 import SelfHost from '../components/landing/SelfHost.astro';
-import Shot from '../components/landing/Shot.astro';
 import { pageAt } from '../data/pages.ts';
 import Base from '../layouts/Base.astro';
 ---
@@ -15,15 +13,7 @@ import Base from '../layouts/Base.astro';
 <Base page={pageAt('/')} cta>
   <Hero />
   <div class="mx-auto w-full max-w-320 px-4 pb-20 sm:px-6 lg:px-12">
-    <Shot
-      src={board}
-      dark={boardOcean}
-      frame="wide"
-      width={1184}
-      sizes="(min-width: 1280px) 1184px, calc(100vw - 32px)"
-      eager
-      alt="A sprint board in Bemmoly with an AI sprint-risk note, swimlanes by epic and an issue open beside the board."
-    />
+    <LivePreview />
   </div>
   <Features />
   <AiSection />

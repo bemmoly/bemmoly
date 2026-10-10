@@ -1,7 +1,7 @@
 ---
 import { PROOF_POINTS, RELEASE } from '../../data/landing.ts';
+import { DEMO_URL } from '../../lib/links.ts';
 import Button from '../site/Button.astro';
-import Soon from '../site/Soon.astro';
 import InstallCommand from './InstallCommand.astro';
 ---
 
@@ -13,18 +13,18 @@ import InstallCommand from './InstallCommand.astro';
     {RELEASE.note}
   </p>
   <h1 class="max-w-225 text-36 leading-hero font-semibold tracking-hero text-balance md:text-58">
-    Your work. Your platform.
+    Keep your work in-house.
   </h1>
   <p class="max-w-175 text-19 leading-brief text-pretty text-tx3">
-    Issues and docs for your whole company in a single self-hosted, AI-first app your team can run
-    on a $20 server. No per-seat pricing. No usage caps. Your data stays on your hardware.
+    Issues, boards and sprints for your whole company today, with docs and AI next. It runs on a
+    server you own, so your data never leaves your hardware. No per-seat pricing. No usage caps.
   </p>
   <div class="flex flex-wrap items-center justify-center gap-3">
     <Button variant="primary" href="/self-hosting#recommended">
       Deploy in 5 minutes
     </Button>
-    <Button variant="secondary">
-      Try the live demo <Soon />
+    <Button variant="secondary" href={DEMO_URL}>
+      Try the live demo
     </Button>
   </div>
   <InstallCommand />

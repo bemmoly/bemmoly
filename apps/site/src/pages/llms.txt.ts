@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
 import { INSTALL, RELEASE } from '../data/landing.ts';
-import { PAGES } from '../data/pages.ts';
+import { DEMO_PAGE, PAGES } from '../data/pages.ts';
 import { WHAT_YOU_GET } from '../data/self-hosting.ts';
 import { UPCOMING } from '../lib/changelog.ts';
 import { CONTRIBUTING_URL, REPO_URL, TECH_DESIGN_URL } from '../lib/links.ts';
@@ -17,7 +17,7 @@ export const GET: APIRoute = ({ site }) => {
     '',
     '> Open source (MIT), self-hosted, AI-first work platform: issues, boards, sprints and docs',
     '> for a whole company, in one application image next to one Postgres on your own server,',
-    '> with no per-seat pricing. Your work. Your platform.',
+    '> with no per-seat pricing. Keep your work in-house.',
     '',
     `Bemmoly is built in the open at ${REPO_URL}. The current release is ${RELEASE.version}. It has`,
     'the foundation (the installer, the setup wizard, people, teams and roles, email and',
@@ -38,7 +38,9 @@ export const GET: APIRoute = ({ site }) => {
     '',
     '## Pages',
     '',
-    ...PAGES.map(({ path, name, description }) => `- [${name}](${url(path)}): ${description}`),
+    ...[...PAGES, DEMO_PAGE].map(
+      ({ path, name, description }) => `- [${name}](${url(path)}): ${description}`,
+    ),
     '',
     '## Optional',
     '',

@@ -1,0 +1,2 @@
+# dist/demo is the live demo, apps/web's own build in its own markup style; tests/demo.test.ts checks it.
+dist/demo/

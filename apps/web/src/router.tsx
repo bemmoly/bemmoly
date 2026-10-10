@@ -29,6 +29,8 @@ const routeTree = rootRoute.addChildren([
 export function createAppRouter(queryClient: QueryClient) {
   const router = createRouter({
     routeTree,
+    // '/' for an install; the demo build is served under bemmoly.com/demo.
+    basepath: import.meta.env.BASE_URL,
     context: { queryClient },
     defaultPreload: 'intent',
     defaultPreloadStaleTime: 0,

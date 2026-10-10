@@ -15,7 +15,7 @@ export interface PreviewInput {
   board?: URL;
 }
 
-export const HEADLINE = 'Your work. Your platform.';
+export const HEADLINE = 'Keep your work in-house.';
 export const LINE = 'Open source, self-hosted, AI-first issues and docs for your whole company.';
 export const COMMAND = 'curl -fsSL https://get.bemmoly.com | sh';
 const FOOTER = 'bemmoly.com  ·  MIT licensed';

@@ -2,6 +2,7 @@
 # would apply to every image built from the repository).
 **/node_modules
 **/dist
+**/dist-demo
 **/.astro
 **/.turbo
 **/coverage

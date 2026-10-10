@@ -4,13 +4,24 @@
 # port 80. apps/site/Dockerfile.dockerignore keeps node_modules and build output out of the
 # context without a root .dockerignore, so other images keep their own rules.
 
-FROM node:24-slim AS build
+FROM node:24-slim AS base
 ENV PNPM_HOME=/pnpm \
     PATH=/pnpm:$PATH \
     COREPACK_ENABLE_DOWNLOAD_PROMPT=0 \
     ASTRO_TELEMETRY_DISABLED=1
 RUN corepack enable
 WORKDIR /repo
+
+# The live demo at /demo: the web shell on its in-browser mock backend (apps/web build:demo).
+# The shell bundles every module's web chunk from modules/*/web, so each module and its
+# workspace dependencies are installed, as the application image does; a new module's
+# screens reach the demo with no change here. Builds in parallel with the site.
+FROM base AS demo
+COPY . .
+RUN pnpm install --frozen-lockfile --filter "@bemmoly/web..." --filter "@bemmoly/module-*..." \
+ && pnpm --filter @bemmoly/web build:demo
+
+FROM base AS build
 
 # Manifests first so the dependency layer is cached until a lockfile or manifest changes.
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .pnpmfile.cjs ./
@@ -41,6 +52,8 @@ COPY deploy/updater/CHANGELOG.md deploy/updater/
 # empty by default (README.md, Search engines). Set them as build variables in Coolify.
 ARG SITE_GOOGLE_VERIFICATION=""
 ARG SITE_BING_VERIFICATION=""
+# scripts/bundle-demo.ts copies it into dist/demo after the Astro build.
+COPY --from=demo /repo/apps/web/dist-demo apps/web/dist-demo
 RUN pnpm --filter @bemmoly/site build
 
 FROM caddy:2.11-alpine

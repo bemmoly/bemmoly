@@ -3,18 +3,17 @@
  * renders its headline, every link on every page resolves, and the static files are there.
  */
 import { readdirSync, readFileSync } from 'node:fs';
+import { gzipSync } from 'node:zlib';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { CRAWLERS } from '../src/data/crawlers.ts';
-import { PAGES } from '../src/data/pages.ts';
+import { DEMO_PAGE, PAGES } from '../src/data/pages.ts';
 import { INDEXNOW_KEY } from '../src/lib/indexnow.ts';
 import { REPO_URL } from '../src/lib/links.ts';
-import { hrefsOf, idsOf, parsePage, scriptsOf } from './dom.ts';
+import { hrefsOf, idsOf, isSitePage, parsePage, scriptsOf } from './dom.ts';
 import { startPreview, type Preview } from './serve.ts';
 
 const dist = new URL('../dist/', import.meta.url);
-const pages = readdirSync(dist, { recursive: true, encoding: 'utf8' }).filter((file) =>
-  file.endsWith('.html'),
-);
+const pages = readdirSync(dist, { recursive: true, encoding: 'utf8' }).filter(isSitePage);
 const html = (page: string) => readFileSync(new URL(page, dist), 'utf8');
 
 const hrefs = (source: string) => hrefsOf(parsePage(source));
@@ -29,7 +28,7 @@ afterAll(() => preview?.stop());
 describe('landing page', () => {
   it('renders the hero headline', async () => {
     const body = await (await fetch(`${preview.url}/`)).text();
-    expect(body).toMatch(/<h1\b[^>]*>\s*Your work\. Your platform\.\s*<\/h1>/);
+    expect(body).toMatch(/<h1\b[^>]*>\s*Keep your work in-house\.\s*<\/h1>/);
   });
 
   it('shows the installer one-liner and the Postgres 18 transcript', () => {
@@ -46,13 +45,21 @@ describe('landing page', () => {
     expect(index).toMatch(/html\[data-theme=['"]?dark['"]?\][^{]*\{[^}]*--bg:#07111c/);
   });
 
-  it('ships no script beyond the inline copy button', () => {
+  it('ships only the inline copy button and the small preview script', () => {
     // JSON-LD is data, not code: it runs nothing and the CSP does not need to allow it.
     const scripts = scriptsOf(parsePage(html('index.html'))).filter(
       (script) => script.type !== 'application/ld+json',
     );
-    expect(scripts.filter((script) => script.src !== undefined)).toEqual([]);
-    expect(scripts.reduce((total, script) => total + script.body.length, 0)).toBeLessThan(1024);
+    const inline = scripts.filter((script) => script.src === undefined);
+    expect(inline.reduce((total, script) => total + script.body.length, 0)).toBeLessThan(1024);
+    // The previews' script (src/lib/preview.ts), a file the CSP's 'self' allows. The demo
+    // itself loads only when a visitor asks for it.
+    const external = scripts.flatMap((script) => script.src ?? []);
+    expect(external).toHaveLength(1);
+    expect(external[0]).toMatch(/^\/_astro\/[\w.-]+\.js$/);
+    const code = readFileSync(new URL(`.${external[0]}`, dist));
+    expect(gzipSync(code).length).toBeLessThan(2048);
+    expect(code.toString()).not.toContain('/demo/assets/');
   });
 });
 
@@ -69,7 +76,9 @@ describe('links', () => {
 
   it.each(links.filter((href) => href.startsWith('/')))('%s resolves', async (href) => {
     const [path, hash] = href.split('#') as [string, string | undefined];
-    const response = await fetch(`${preview.url}${path || '/'}`);
+    // A demo route is a state of the demo's one page, which Caddy serves for all of them.
+    const served = path.startsWith('/demo/') ? '/demo/index.html' : path || '/';
+    const response = await fetch(`${preview.url}${served}`);
     expect(response.status).toBe(200);
     if (hash) expect(ids(await response.text())).toContain(hash);
   });
@@ -126,19 +135,19 @@ describe('indexing', () => {
 
   it('lists every page in the sitemap with the day its words changed, and not the 404 page', () => {
     const sitemap = readFileSync(new URL('sitemap-0.xml', dist), 'utf8');
-    for (const { path, updated } of PAGES) {
+    for (const { path, updated } of [...PAGES, DEMO_PAGE]) {
       expect(sitemap).toContain(
         `<url><loc>https://bemmoly.com${path}</loc><lastmod>${updated}T00:00:00.000Z</lastmod></url>`,
       );
     }
-    expect(sitemap.match(/<url>/g)).toHaveLength(PAGES.length);
+    expect(sitemap.match(/<url>/g)).toHaveLength(PAGES.length + 1);
     expect(sitemap).not.toContain('/404');
   });
 
   it('serves llms.txt in the llmstxt.org shape with every page', () => {
     const llms = readFileSync(new URL('llms.txt', dist), 'utf8');
     expect(llms.startsWith('# Bemmoly\n\n> ')).toBe(true);
-    for (const { path, name } of PAGES) {
+    for (const { path, name } of [...PAGES, DEMO_PAGE]) {
       expect(llms).toContain(`- [${name}](https://bemmoly.com${path})`);
     }
   });
