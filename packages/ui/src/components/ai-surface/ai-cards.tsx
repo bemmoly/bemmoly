@@ -40,10 +40,10 @@ export function AiSummary({
         className,
       )}
     >
-      <div className="flex items-center gap-1.75 font-semibold text-ai">
+      <div className="flex items-center gap-1.75 font-semibold text-ai-600">
         <AiDot />
         {title}
-        {source && <span className="ml-auto text-11h font-normal text-ai-mute">{source}</span>}
+        {source && <span className="ml-auto text-11h font-normal text-ai-600">{source}</span>}
       </div>
       <div className="text-tx">{children}</div>
       {actions && (
@@ -87,7 +87,7 @@ export function AiInsightBar({
         className,
       )}
     >
-      <span className="flex shrink-0 items-center gap-1.75 font-semibold whitespace-nowrap text-ai">
+      <span className="flex shrink-0 items-center gap-1.75 font-semibold whitespace-nowrap text-ai-600">
         <AiDot />
         {title}
       </span>
@@ -131,7 +131,7 @@ export function AiBrief({ title, source, children, actions, className }: AiBrief
         className,
       )}
     >
-      <div className="flex items-center gap-2 font-semibold text-ai">
+      <div className="flex items-center gap-2 font-semibold text-ai-600">
         <AiDot />
         {title}
         {source && <span className="text-12 font-normal text-tx5">{source}</span>}
@@ -182,7 +182,7 @@ export function AiSuggestion({
         type="button"
         onClick={onAccept}
         className={cx(
-          'shrink-0 cursor-pointer rounded-xs border border-ai-br bg-sf px-2.25 py-1 font-sans text-12h font-medium text-ai hover:bg-ai-bg',
+          'shrink-0 cursor-pointer rounded-xs border border-ai-br bg-sf px-2.25 py-1 font-sans text-12h font-medium text-ai-600 hover:bg-ai-bg',
           focusRing,
         )}
       >

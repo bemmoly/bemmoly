@@ -148,7 +148,7 @@ export function CommentThread({
           {fix && !resolved && (
             <ActivityAction
               disabled={busy}
-              className="font-medium text-ai! hover:text-ai-tx!"
+              className="font-medium text-ai-600! hover:text-ai-tx!"
               onClick={() => on.onApplyFix(root)}
             >
               Apply fix

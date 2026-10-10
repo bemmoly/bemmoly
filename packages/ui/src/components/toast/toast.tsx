@@ -40,13 +40,13 @@ export function Toast({ tone = 'info', title, body, action, onDismiss, className
     >
       <span aria-hidden className={cx('mt-1.25 size-1.75 shrink-0 rounded-full', DOTS[tone])} />
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-        <span className={cx('font-semibold', ai ? 'text-ai' : 'text-tx')}>{title}</span>
+        <span className={cx('font-semibold', ai ? 'text-ai-600' : 'text-tx')}>{title}</span>
         {body && <span className={ai ? 'text-ai-tx' : 'text-tx2'}>{body}</span>}
         {action && (
           <button
             type="button"
             onClick={action.onClick}
-            className="mt-1 cursor-pointer self-start border-0 bg-transparent p-0 font-sans text-12h font-medium text-ac hover:text-ac-d focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ac"
+            className="mt-1 cursor-pointer self-start border-0 bg-transparent p-0 font-sans text-12h font-medium text-ac hover:text-ac-d focus-ring"
           >
             {action.label}
           </button>

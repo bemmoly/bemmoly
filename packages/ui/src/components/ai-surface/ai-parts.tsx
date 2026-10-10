@@ -29,7 +29,7 @@ export function AiActionButton({
     <button
       type={type}
       className={cx(
-        'inline-flex shrink-0 cursor-pointer items-center border border-ai-br bg-sf font-sans font-medium whitespace-nowrap text-ai',
+        'inline-flex shrink-0 cursor-pointer items-center border border-ai-br bg-sf font-sans font-medium whitespace-nowrap text-ai-600',
         size === 'sm' ? 'rounded-xs px-2.25 py-1 text-12h' : 'rounded-xs px-2.5 py-1.25',
         'enabled:hover:bg-ai-bg disabled:cursor-not-allowed disabled:opacity-50',
         focusRing,
@@ -89,7 +89,7 @@ export function AiAskButton({
       aria-pressed={pressed}
       aria-keyshortcuts={shortcut === '⌘K' ? 'Meta+K Control+K' : undefined}
       className={cx(
-        'inline-flex shrink-0 cursor-pointer items-center border border-ai-br font-sans font-medium whitespace-nowrap text-ai',
+        'inline-flex shrink-0 cursor-pointer items-center border border-ai-br font-sans font-medium whitespace-nowrap text-ai-600',
         size === 'md'
           ? 'h-control gap-1.75 rounded-control px-3'
           : 'h-7.5 gap-1.5 rounded-sm px-2.5',
@@ -101,7 +101,7 @@ export function AiAskButton({
     >
       <AiDot size={size === 'md' ? 8 : 7} />
       {label}
-      {shortcut && <kbd className="font-mono text-11 font-medium text-ai-mute">{shortcut}</kbd>}
+      {shortcut && <kbd className="font-mono text-11 font-medium text-ai-600">{shortcut}</kbd>}
     </button>
   );
 }

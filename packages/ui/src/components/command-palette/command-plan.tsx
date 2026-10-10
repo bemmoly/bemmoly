@@ -43,10 +43,10 @@ export function CommandPlan({
       aria-label="Plan"
       className="flex flex-col gap-3 border-b border-br2 bg-ai-bg px-4 py-3.5"
     >
-      <div className="flex items-center gap-2 text-12h font-semibold text-ai">
+      <div className="flex items-center gap-2 text-12h font-semibold text-ai-600">
         <AiDot />
         Plan
-        <span className="font-normal text-ai-mute">nothing happens until you confirm</span>
+        <span className="font-normal text-ai-600">nothing happens until you confirm</span>
       </div>
       <div className="text-13h leading-brief text-tx">{summary}</div>
       <div
