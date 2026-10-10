@@ -21,3 +21,6 @@ accepted record is never edited except to mark it superseded.
 | [0014](0014-collab-host-in-the-kernel.md) | The collaboration host lives in the kernel; modules register kinds | accepted |
 | [0015](0015-premium-visual-system.md) | The design review is the source of truth for the shell and visual language | superseded in part by 0016 |
 | [0016](0016-design-system-is-canonical.md) | One written design system is the canonical rulebook for UI | accepted |
+| [0017](0017-ai-streams-as-ndjson.md) | Streamed AI replies are NDJSON over the request that asked | accepted |
+| [0018](0018-ai-code-behind-subpath-exports.md) | AI code a lazy screen needs sits behind its own subpath export | accepted |
+| [0019](0019-ai-writes-only-through-a-confirmed-plan.md) | AI changes data only through a step a person confirmed | accepted |

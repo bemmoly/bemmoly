@@ -707,7 +707,7 @@ export default changeset({
   <tr><td><code>/api/v1/sprints</code></td><td>CRUD, <code>POST /:id/start</code>, <code>POST /:id/complete</code> (moves unfinished issues per the chosen option), <code>GET /:id/report</code>.</td></tr>
   <tr><td><code>/api/v1/spaces</code>, <code>/pages</code></td><td>CRUD; <code>GET /spaces/:id/tree</code>; <code>GET /pages/:id</code> returns snapshot and metadata; <code>POST /pages/:id/publish</code>, <code>/move</code>; <code>/comments</code>, <code>/revisions</code>, <code>/backlinks</code>; <code>GET /pages/:id/export?format=md|pdf|html</code>.</td></tr>
   <tr><td><code>/api/v1/search</code></td><td><code>GET ?q=&amp;kinds=issue,page,user</code>, keyword by default, <code>mode=semantic</code> when embeddings exist.</td></tr>
-  <tr><td><code>/api/v1/ai/*</code></td><td><code>POST /ai/ask</code> (streams, cites sources), <code>POST /ai/plans</code> (returns a plan), <code>POST /ai/plans/:id/run</code>, <code>GET /ai/insights?target=</code>, <code>POST /ai/insights/:id/feedback</code>, <code>POST /ai/complete</code> (editor ghost text, short timeout).</td></tr>
+  <tr><td><code>/api/v1/ai/*</code></td><td><code>POST /ai/answers</code> (streams NDJSON, cites sources; ADR 0017), <code>POST /ai/plans</code> (returns a plan), <code>POST /ai/plans/:id/run</code>, <code>GET /ai/insights?target=</code>, <code>POST /ai/insights/:id/feedback</code>, <code>POST /ai/complete</code> (editor ghost text, short timeout).</td></tr>
   <tr><td><code>/api/v1/notifications</code></td><td>List, <code>POST /read-all</code>, <code>PATCH /:id</code>; <code>/notification-preferences</code>.</td></tr>
   <tr><td><code>/api/v1/admin/*</code></td><td>Settings, appearance, SMTP (<code>POST /admin/smtp/test</code>), AI providers (<code>POST /admin/ai/providers/:id/test</code>), auth providers, backups (<code>POST /admin/backups</code>), updates, audit log export, import jobs.</td></tr>
   <tr><td><code>/api/v1/webhooks</code></td><td>Outgoing webhook management.</td></tr>
@@ -770,7 +770,7 @@ export default changeset({
 
 <!-- ===================================================== 10 -->
 <h2 id="ai">11. AI subsystem</h2>
-<p>The AI layer is the product's differentiator and its biggest trust risk, so it follows four rules before any feature: <strong>off by default</strong>, <strong>reads through the same permissions as the user</strong>, <strong>never writes without a confirmed plan</strong>, and <strong>every call is logged with its cost</strong>. The design mocks show AI in three forms, a ⌘K palette, inline suggestions and side-panel insights, and all three sit on the same small set of services.</p>
+<p>The AI layer is the product's differentiator and its biggest trust risk, so it follows four rules before any feature: <strong>off by default</strong>, <strong>reads through the same permissions as the user</strong>, <strong>never writes without a confirmed plan</strong> (enforced as ADR 0019 records), and <strong>every call is logged with its cost</strong>. The design mocks show AI in three forms, a ⌘K palette, inline suggestions and side-panel insights, and all three sit on the same small set of services.</p>
 
 <h3>11.1 One integration: the AI SDK, driven by the models.dev catalog</h3>
 <div class="decision">
