@@ -1,4 +1,4 @@
-import { Editor, type AnyExtension, type NodeViewRendererProps } from '@tiptap/core';
+import { Editor, Extension, type AnyExtension, type NodeViewRendererProps } from '@tiptap/core';
 import { Placeholder } from '@tiptap/extensions';
 import { cx } from '../cx.ts';
 import type { SuggestionStore } from '../editor/suggestion-store.ts';
@@ -27,6 +27,35 @@ export interface CreateDocEditorOptions {
   /** More extensions, such as collaboration's; they may replace the initial content. */
   extensions?: readonly AnyExtension[] | undefined;
   onUpdate: (editor: Editor) => void;
+  /** What the page's own keys ask of the component around the editor. */
+  keys?: DocEditorKeys | undefined;
+}
+
+export interface DocEditorKeys {
+  /** ⌘K: the link field over the selection, or at the caret. */
+  link: () => void;
+  /** Alt+F10: focus into the selection bubble, as the composer's toolbar takes it. */
+  toolbar: () => void;
+}
+
+/** ⌘K and Alt+F10, ported from the composer's keys (editor/create.ts). */
+function docKeys(keys: DocEditorKeys, store: SuggestionStore) {
+  return Extension.create({
+    name: 'docKeys',
+    addKeyboardShortcuts() {
+      return {
+        'Mod-k': () => {
+          if (store.isOpen || !this.editor.isEditable) return false;
+          keys.link();
+          return true;
+        },
+        'Alt-F10': () => {
+          keys.toolbar();
+          return true;
+        },
+      };
+    },
+  });
 }
 
 /** ProseMirror's own base styles as classes, plus the empty-line hint the mock shows. */
@@ -86,6 +115,7 @@ export function createDocEditor(options: CreateDocEditorOptions): Editor {
       issueEmbeds(store, services),
       imageDrop(services),
       CodeHighlight,
+      ...(options.keys ? [docKeys(options.keys, store)] : []),
       ...(options.extensions ?? []),
     ],
     editorProps: {
