@@ -29,7 +29,7 @@ async function loadRelated(sql: SqlExecutor, row: IssueRow, userId: string | nul
       (select jsonb_build_object('id', u.id, 'name', u.name, 'email', u.email)
          from users u where u.id = ${row.reporter_id}) as "reporter",
       (select jsonb_build_object('id', p.id, 'key', p.key, 'title', p.title,
-         'statusId', p.status_id, 'typeId', p.type_id)
+         'statusId', p.status_id, 'typeId', p.type_id, 'color', p.color)
          from issues p where p.id = ${row.parent_id} and p.deleted_at is null) as "parent",
       (select jsonb_build_object('id', sp.id, 'name', sp.name, 'state', sp.state)
          from sprints sp where sp.id = ${row.sprint_id}) as "sprint",

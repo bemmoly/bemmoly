@@ -45,7 +45,7 @@ const entry = (c: BoardCard, epicId: string | null = null, queryLane: number | n
   ({ card: c, epicId, queryLane }) satisfies GroupCard;
 
 const NAMES: LaneNames = {
-  epics: new Map([[EPIC, { key: 'PLT-1', title: 'Checkout', dueAt: '2026-11-01' }]]),
+  epics: new Map([[EPIC, { key: 'PLT-1', title: 'Checkout', dueAt: '2026-11-01', color: 'epic-3' }]]),
   users: new Map([
     [BEN, 'Ben'],
     [ANA, 'Ana'],
@@ -78,13 +78,13 @@ describe('groupBoard', () => {
     expect(view.lanes.map((lane) => lane.id)).toEqual(['all']);
   });
 
-  it('makes epic lanes with the key and due date, and a lane for work in no epic', () => {
+  it('makes epic lanes with the key, due date and stored colour, and a lane for work in no epic', () => {
     const view = groupBoard(board({ kind: 'epic' }), CARDS, NAMES);
     expect(view.lanes).toEqual([
       {
         id: EPIC,
         label: 'Checkout',
-        color: null,
+        color: 'epic-3',
         issueKey: 'PLT-1',
         dueAt: '2026-11-01',
       },

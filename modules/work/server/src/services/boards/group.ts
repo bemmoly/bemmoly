@@ -17,7 +17,10 @@ export interface GroupCard {
 
 export interface LaneNames {
   /** Epics in rank order with what their lane header prints. */
-  epics: ReadonlyMap<string, { key: string; title: string; dueAt: string | null }>;
+  epics: ReadonlyMap<
+    string,
+    { key: string; title: string; dueAt: string | null; color?: string | null }
+  >;
   users: ReadonlyMap<string, string>;
   /** Issue types in their scheme order. */
   types: ReadonlyMap<string, string>;
@@ -59,7 +62,11 @@ function allLanes(config: BoardConfig, names: LaneNames): Lane[] {
     case 'epic':
       return [
         ...[...names.epics].map(([id, epic]) =>
-          lane(id, epic.title, { issueKey: epic.key, dueAt: epic.dueAt }),
+          lane(id, epic.title, {
+            issueKey: epic.key,
+            dueAt: epic.dueAt,
+            color: epic.color ?? null,
+          }),
         ),
         lane(NONE, 'No epic'),
       ];

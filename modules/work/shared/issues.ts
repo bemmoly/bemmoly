@@ -111,7 +111,8 @@ export const issueDetailSchema = issueSchema.extend({
   status: refSchema.extend({ category: statusCategorySchema, color: z.string().nullable() }),
   assignee: userRefSchema.nullable(),
   reporter: userRefSchema.nullable(),
-  parent: issueRefSchema.nullable(),
+  /** The parent; an epic brings its stored palette colour. */
+  parent: issueRefSchema.extend({ color: z.string().nullable().default(null) }).nullable(),
   sprint: refSchema.extend({ state: sprintStateSchema }).nullable(),
   fixVersion: refSchema.nullable(),
   labels: z.array(refSchema.extend({ color: z.string().nullable() })),

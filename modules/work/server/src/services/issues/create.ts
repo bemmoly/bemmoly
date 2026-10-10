@@ -56,6 +56,20 @@ async function projectKeyOf(tx: SqlExecutor, projectId: string): Promise<string>
   return row.key;
 }
 
+/**
+ * A new epic takes the next colour of the palette in its project, so two
+ * epics side by side never share one until the palette runs out.
+ */
+async function paintNewEpic(tx: SqlExecutor, issueId: string): Promise<void> {
+  await tx`
+    update issues i set color = 'epic-' || ((
+      select count(*) from issues e
+      join issue_types t on t.id = e.type_id and t.level = 'epic'
+      where e.project_id = i.project_id and e.id <> i.id) % 8 + 1)
+    where i.id = ${issueId} and i.color is null
+      and exists (select 1 from issue_types t where t.id = i.type_id and t.level = 'epic')`;
+}
+
 export async function createIssue(
   deps: IssueServiceDeps,
   ctx: RequestContext,
@@ -98,6 +112,7 @@ export async function createIssue(
         ${JSON.stringify(customFields)}::jsonb, ${last(tail?.rank ?? undefined)})
       returning id`;
     if (!row) throw new NotFoundError('The issue was not stored');
+    await paintNewEpic(tx, row.id);
     for (const labelId of body.labelIds ?? []) {
       await tx`insert into issue_labels (issue_id, label_id) values (${row.id}, ${labelId})`;
     }
