@@ -1,6 +1,6 @@
 import type { CardField } from '@bemmoly/module-work/shared';
 import { avatarHue, epicColor, statusStage, type EpicColor, type StatusStage } from '@bemmoly/ui';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import type { CardVocabulary } from '../board/card-view.ts';
 import type { MenuSprint } from '../shared/issue-actions-menu.tsx';
 import type { FilterOptions } from '../shared/issue-filter-bar.tsx';
@@ -18,7 +18,13 @@ import { useHiddenIssues } from './issue-quick-actions.ts';
 import type { LqlValueSources } from './board-lql.ts';
 import { compileColorRules } from './board-color-rules.ts';
 import { useBoardDisplay } from './board-display.ts';
-import { buildBoardModel, type BoardGrouping, type ViewCard } from './board-model.ts';
+import {
+  buildBoardModel,
+  shareModel,
+  type BoardGrouping,
+  type BoardModel,
+  type ViewCard,
+} from './board-model.ts';
 
 /*
  * The Board screen's state in one place: the data, the filters applied over it, the laid-out
@@ -63,15 +69,24 @@ export function useBoardScreen(projectKey: string | undefined) {
       cardMatches(card, filters, meId);
   }, [filters, matching, meId, hidden]);
 
+  // Laid out against the last model the screen showed, so the parts a change left alone keep
+  // their identity and the cells and lanes holding them skip rendering.
+  const shown = useRef<BoardModel | null>(null);
   const model = useMemo(
-    () => (view ? buildBoardModel(view, grouping, keep) : null),
+    () => (view ? shareModel(shown.current, buildBoardModel(view, grouping, keep)) : null),
     [view, grouping, keep],
   );
+  useEffect(() => {
+    shown.current = model;
+  }, [model]);
 
   const statuses = useMemo(
     () => new Map(data.workflow?.statuses.map((status) => [status.id, status])),
     [data.workflow],
   );
+  // The cards' names come from the lanes, not the cards: a drop replaces the view but keeps its
+  // lanes, so the vocabulary, and every card that reads it, stays put.
+  const viewLanes = view?.lanes;
   const vocab = useMemo<CardVocabulary>(
     () => ({
       types: new Map(data.issueTypes.map((type) => [type.id, type])),
@@ -87,7 +102,7 @@ export function useBoardScreen(projectKey: string | undefined) {
         (boardConfig?.columns ?? []).filter((column) => column.done).map((column) => column.id),
       ),
       epicColors: new Map(
-        (data.view?.lanes ?? []).flatMap((lane): [string, EpicColor][] =>
+        (viewLanes ?? []).flatMap((lane): [string, EpicColor][] =>
           lane.issueKey ? [[lane.id, epicColor(lane.color, lane.id)]] : [],
         ),
       ),
@@ -98,7 +113,7 @@ export function useBoardScreen(projectKey: string | undefined) {
         typeName: (id) => data.issueTypes.find((type) => type.id === id)?.name,
         userName: (id) => data.people.find((person) => person.id === id)?.name,
         labelName: (id) => data.labels.find((label) => label.id === id)?.name,
-        issueKey: (id) => data.view?.lanes.find((lane) => lane.id === id)?.issueKey ?? undefined,
+        issueKey: (id) => viewLanes?.find((lane) => lane.id === id)?.issueKey ?? undefined,
       }),
     }),
     [
@@ -106,7 +121,7 @@ export function useBoardScreen(projectKey: string | undefined) {
       data.people,
       data.labels,
       data.meId,
-      data.view,
+      viewLanes,
       statuses,
       boardConfig,
       kanban,
