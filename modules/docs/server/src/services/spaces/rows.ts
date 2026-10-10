@@ -1,5 +1,6 @@
 import type { SqlExecutor } from '@bemmoly/core';
 import { NotFoundError } from '@bemmoly/shared';
+import type { DocsPerson } from '../../../../shared/common.ts';
 import type { Space } from '../../../../shared/spaces.ts';
 import { iso, isoOrNull } from '../common.ts';
 
@@ -15,6 +16,8 @@ export interface SpaceRow {
   ai_excluded: boolean;
   home_page_id: string | null;
   page_count: number | string;
+  contributors: DocsPerson[] | null;
+  member_count: number | string;
   archived_at: Date | string | null;
   created_at: Date | string;
   updated_at: Date | string;
@@ -32,15 +35,31 @@ export const toSpace = (row: SpaceRow): Space => ({
   aiExcluded: row.ai_excluded,
   homePageId: row.home_page_id,
   pageCount: Number(row.page_count),
+  contributors: row.contributors ?? [],
+  memberCount: Number(row.member_count),
   archivedAt: isoOrNull(row.archived_at),
   createdAt: iso(row.created_at),
   updatedAt: iso(row.updated_at),
 });
 
-/** The space columns plus its live page count, read with the alias s. */
+/**
+ * The space columns plus its live page count, member count and the five
+ * people who edited its pages most recently, read with the alias s, so a
+ * list of spaces stays one query.
+ */
 export const SPACE_COLUMNS = `s.id, s.key, s.name, s.description, s.icon, s.color, s.team_id,
   s.project_id, s.ai_excluded, s.home_page_id, s.archived_at, s.created_at, s.updated_at,
-  (select count(*) from pages p where p.space_id = s.id and p.deleted_at is null) as page_count`;
+  (select count(*) from pages p where p.space_id = s.id and p.deleted_at is null) as page_count,
+  (select count(*) from space_members m where m.space_id = s.id) as member_count,
+  (select json_agg(json_build_object('id', u.id, 'name', u.name) order by c.last_edit desc)
+    from (
+      select coalesce(p.content_updated_by, p.created_by) as user_id,
+        max(p.content_updated_at) as last_edit
+      from pages p
+      where p.space_id = s.id and p.deleted_at is null
+        and coalesce(p.content_updated_by, p.created_by) is not null
+      group by 1 order by 2 desc limit 5
+    ) c join users u on u.id = c.user_id) as contributors`;
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 

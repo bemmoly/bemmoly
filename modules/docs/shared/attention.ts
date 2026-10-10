@@ -1,6 +1,6 @@
 import { timestampSchema } from '@bemmoly/shared';
 import { z } from 'zod';
-import { pageSummarySchema } from './pages.ts';
+import { homePageSchema } from './home.ts';
 
 /*
  * The Docs home's "Needs attention": GET /api/v1/docs/home/attention. What is
@@ -14,7 +14,7 @@ export const ATTENTION_KINDS = ['review', 'stale'] as const;
 
 export const attentionItemSchema = z.object({
   kind: z.enum(ATTENTION_KINDS),
-  page: pageSummarySchema,
+  page: homePageSchema,
   /** Since when: the review request, or the last edit of a stale page. */
   since: timestampSchema,
 });

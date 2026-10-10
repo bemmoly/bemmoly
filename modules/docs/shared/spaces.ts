@@ -1,6 +1,12 @@
 import { keysetPageSchema, keysetQuerySchema, timestampSchema } from '@bemmoly/shared';
 import { z } from 'zod';
-import { iconSchema, nameSchema, queryFlagSchema, spaceKeySchema } from './common.ts';
+import {
+  docsPersonSchema,
+  iconSchema,
+  nameSchema,
+  queryFlagSchema,
+  spaceKeySchema,
+} from './common.ts';
 
 /*
  * Spaces: GET/POST /api/v1/docs/spaces, GET/PATCH/DELETE
@@ -23,6 +29,10 @@ export const spaceSchema = z.object({
   homePageId: z.uuid().nullable(),
   /** Live pages in the space, for the Docs home's space cards. */
   pageCount: z.number().int().nonnegative(),
+  /** Up to five people who edited the space's pages most recently, newest first. */
+  contributors: z.array(docsPersonSchema).default([]),
+  /** People with a membership row in the space (org admins without one are not counted). */
+  memberCount: z.number().int().nonnegative().default(0),
   archivedAt: timestampSchema.nullable(),
   createdAt: timestampSchema,
   updatedAt: timestampSchema,

@@ -1,6 +1,7 @@
 import { keysetPageSchema, keysetQuerySchema } from '@bemmoly/shared';
 import { z } from 'zod';
-import { pageSummarySchema } from './pages.ts';
+import { docsPersonSchema } from './common.ts';
+import { breadcrumbSchema, pageSummarySchema } from './pages.ts';
 
 /*
  * The Docs home's lists: GET /api/v1/docs/home/recent (pages updated most
@@ -18,8 +19,22 @@ export const starredPagesQuerySchema = keysetQuerySchema.extend({
   limit: z.coerce.number().int().min(1).max(100).default(20),
 });
 
-export const homePagesSchema = keysetPageSchema(pageSummarySchema);
+/**
+ * A page as the Docs home's lists show it. The extra fields default, so a
+ * server or mock that does not send them still parses.
+ */
+export const homePageSchema = pageSummarySchema.extend({
+  /** The page's ancestors, root first, for "Engineering / Architecture"; empty at the root. */
+  ancestors: z.array(breadcrumbSchema).default([]),
+  /** Who last changed the body (the creator until someone edits it), not the owner. */
+  lastEditor: docsPersonSchema.nullable().default(null),
+  /** Keys of the issues the page embeds or links that the person may open; empty with Work off. */
+  issueKeys: z.array(z.string()).default([]),
+});
+
+export const homePagesSchema = keysetPageSchema(homePageSchema);
 
 export type RecentPagesQuery = z.infer<typeof recentPagesQuerySchema>;
 export type StarredPagesQuery = z.infer<typeof starredPagesQuerySchema>;
+export type HomePage = z.infer<typeof homePageSchema>;
 export type HomePages = z.infer<typeof homePagesSchema>;
