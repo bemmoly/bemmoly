@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 import { createLoggerOptions } from '../../../config/logger.ts';
 import { toProviderError } from './errors.ts';
 
+// Built from parts so secret scanners don't take this stand-in for a real key.
 const KEY = ['sk', 'live', '0123456789abcdefghijklmnop'].join('-');
 const PROMPT = 'Salary bands for the platform team';
 
