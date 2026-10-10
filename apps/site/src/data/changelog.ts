@@ -33,7 +33,8 @@ export const ROADMAP = [
   },
   {
     title: 'Import and integrations',
-    scope: 'Import from Jira, single sign-on (OIDC, SAML and SCIM), webhooks, automation, a roadmap',
+    scope:
+      'Import from Jira, single sign-on (OIDC, SAML and SCIM), webhooks, automation, a roadmap',
   },
   {
     title: 'Launch',
