@@ -1,34 +1,23 @@
 ---
 /**
- * The first three steps of the setup wizard, with crops of the Setup mock
- * (docs/design/mocks/Bemmoly Setup.dc.html, steps 1, 3 and 4 at 1280 wide, 2x). Each crop is
- * the step's own panel and button, so the mock's sample health checks and provider names
- * stay out. Astro serves them as AVIF and WebP.
+ * The first steps of the setup wizard, in words. The pictures that were here were crops of the
+ * old Setup mock, one of which promised single sign-on, which is not built; the setup guide's
+ * own redesign draws the new wizard.
  */
-import { Picture } from 'astro:assets';
-import admin from '../../assets/setup/admin.png';
-import ai from '../../assets/setup/ai.png';
-import invite from '../../assets/setup/invite.png';
 import StepNumber from './StepNumber.astro';
 
 const STEPS = [
   {
     title: 'Open the URL and create the first admin',
-    body: 'The first visit runs a short setup: the server’s health checks, then the account that owns the workspace.',
-    image: admin,
-    alt: 'Setup step 1: workspace name, URL, your name, email and password, and a Create admin and continue button.',
+    body: 'The first visit runs a short setup: the workspace’s name, then the account that owns it, created on your server.',
   },
   {
     title: 'Invite your team',
     body: 'Paste email addresses, pick a role and a team, and Bemmoly sends the invitations through your mail server.',
-    image: invite,
-    alt: 'Setup step 3: three email addresses pasted into an invite box, with a role of Member and a team of Platform.',
   },
   {
-    title: 'Choose what AI may do',
-    body: 'Bemmoly works fully without AI, which arrives in 0.4. This step records what AI may read and change once you connect a provider; skip it for now if you like.',
-    image: ai,
-    alt: 'Setup step 4: switches for sending content to the AI provider and letting AI actions change data, with Save and Skip for now.',
+    title: 'Turn on Work and Docs',
+    body: 'Modules start switched off. In Settings › Modules, turn on Work, Docs or both, and choose who can use each.',
   },
 ];
 ---
@@ -48,26 +37,11 @@ const STEPS = [
   </div>
   <ol class="grid gap-8 md:grid-cols-3 md:gap-6">
     {STEPS.map((step, i) => (
-      <li class="flex flex-col gap-3">
-        <div class="flex items-start gap-3">
-          <StepNumber n={i + 1} />
-          <div class="flex flex-col gap-1">
-            <h3 class="text-16 font-semibold text-tx">{step.title}</h3>
-            <p class="text-14h leading-desc text-tx-2">{step.body}</p>
-          </div>
-        </div>
-        <div class="overflow-hidden rounded-window border border-line bg-sunken">
-          <Picture
-            src={step.image}
-            alt={step.alt}
-            formats={['avif', 'webp']}
-            fallbackFormat="webp"
-            widths={[400, 752, step.image.width]}
-            sizes="(min-width: 1280px) 362px, (min-width: 768px) 30vw, calc(100vw - 32px)"
-            loading="lazy"
-            decoding="async"
-            class="block h-auto w-full"
-          />
+      <li class="flex items-start gap-3">
+        <StepNumber n={i + 1} />
+        <div class="flex flex-col gap-1">
+          <h3 class="text-16 font-semibold text-tx">{step.title}</h3>
+          <p class="text-14h leading-desc text-tx-2">{step.body}</p>
         </div>
       </li>
     ))}
