@@ -42,7 +42,7 @@ export function IssueTypesTable({
                 role="button"
                 tabIndex={0}
                 aria-label={`Move ${type.name}; use the arrow keys`}
-                title="Drag to reorder, or use ↑↓"
+                title="Drag to reorder, or use the arrow keys"
                 className={`flex cursor-grab text-tx-3 ${rowReveal} focus-visible:outline-2 focus-visible:outline-ac`}
               >
                 <Icon name="drag" size={14} />

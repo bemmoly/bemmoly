@@ -70,7 +70,7 @@ export function ColumnCard(props: ColumnCardProps) {
               tabIndex={0}
               role="button"
               aria-label={`Move ${column.name}`}
-              title="Drag to reorder, or use ←→"
+              title="Drag to reorder, or use the arrow keys"
               className="-ml-1 flex cursor-grab text-tx-3 focus-ring"
             >
               <Icon name="drag" size={14} />

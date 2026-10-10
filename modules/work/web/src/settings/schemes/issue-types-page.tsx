@@ -36,7 +36,7 @@ export function IssueTypesPage({ projectKey }: { projectKey: string | undefined 
       <div className="flex items-center gap-3">
         <p className="m-0 flex-1 text-12 text-tx-3">
           {editable
-            ? 'Click a name to rename it. Drag a row, or use ↑↓ on its grip, to change the order pickers show.'
+            ? 'Click a name to rename it. Drag a row, or focus its grip and use the arrow keys, to change the order pickers show.'
             : 'Override the scheme to rename, reorder or add types.'}
         </p>
         {editable && (

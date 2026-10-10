@@ -32,7 +32,7 @@ export function shellShortcuts(options: {
         { keys: 'J K', label: 'Move down and up (or the arrow keys)' },
         { keys: 'Enter', label: 'Open' },
         { keys: 'Esc', label: 'Close, or clear the selection' },
-        { keys: 'Tab', label: 'In ⌘K, filter by type' },
+        { keys: 'Tab', label: 'In the palette, filter by type' },
       ],
     },
   ];
