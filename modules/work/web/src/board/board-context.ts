@@ -1,5 +1,7 @@
 import { createContext, useContext, type DragEvent, type KeyboardEvent } from 'react';
 import type { DropTarget } from '../hooks/board-drag.ts';
+import type { BoardSelectHandlers } from '../hooks/board-selection.ts';
+import type { MenuSprint } from '../shared/issue-actions-menu.tsx';
 import type { IssueQuickActions } from '../hooks/issue-quick-actions.ts';
 import type { CardVocabulary } from './card-view.ts';
 
@@ -22,6 +24,12 @@ export interface BoardShared {
   vocab: CardVocabulary;
   /** Assign, priority and delete from a card's tools and menu. */
   quick: IssueQuickActions;
+  /** Picking cards for the bulk bar; the card's menu and keys act on the selection. */
+  select: BoardSelectHandlers;
+  /** Where a card can move from its menu (Scrum only): the other sprints and the Backlog. */
+  sprints?: readonly MenuSprint[];
+  /** The running sprint, which the menu leaves out of a single card's Move to. */
+  sprintId?: string;
   /** The issue open in the peek; its card carries the selected ring. */
   selectedKey: string | null;
   /** Creates an issue at the foot of a cell; absent when the person cannot create. */

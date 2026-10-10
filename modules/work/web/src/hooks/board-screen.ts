@@ -1,6 +1,7 @@
 import { avatarHue, epicColor, statusStage, type EpicColor, type StatusStage } from '@bemmoly/ui';
 import { useEffect, useMemo } from 'react';
 import type { CardVocabulary } from '../board/card-view.ts';
+import type { MenuSprint } from '../shared/issue-actions-menu.tsx';
 import type { FilterOptions } from '../shared/issue-filter-bar.tsx';
 import { useIssueFilters } from '../shared/issue-filters.ts';
 import { setSearchParams, useSearchParam } from '../shared/url-state.ts';
@@ -161,6 +162,20 @@ export function useBoardScreen(projectKey: string | undefined) {
     [data.people, data.workflow, data.issueTypes, data.labels, view, data.sprint, data.project],
   );
 
+  // A Scrum card can leave the running sprint for a planned one or the Backlog.
+  const moveTargets = useMemo<MenuSprint[] | undefined>(
+    () =>
+      kanban || !data.project
+        ? undefined
+        : [
+            ...data.sprints.flatMap((sprint) =>
+              sprint.state === 'closed' ? [] : [{ id: sprint.id, name: sprint.name }],
+            ),
+            { id: null, name: 'Backlog' },
+          ],
+    [kanban, data.project, data.sprints],
+  );
+
   const laneKind = boardConfig?.lanes.kind ?? 'none';
   return {
     ...data,
@@ -181,6 +196,7 @@ export function useBoardScreen(projectKey: string | undefined) {
     grouping,
     setGrouping,
     lqlSources,
+    moveTargets,
     serverQuery: q,
     laneLabel: laneKind === 'none' ? null : LANE_KINDS[laneKind],
   };

@@ -3,6 +3,7 @@ import { memo, useEffect, useLayoutEffect, useMemo, useRef, type CSSProperties }
 import { useBoardDragStore } from '../hooks/board-drag-store.ts';
 import type { ViewCard } from '../hooks/board-model.ts';
 import { useIssuePending } from '../hooks/issue-edits.ts';
+import { clearBoardSelection, useBoardSelectionStore } from '../hooks/board-selection.ts';
 import { IssueActionsMenu, openRowMenu } from '../shared/issue-actions-menu.tsx';
 import { cardProps } from './card-view.ts';
 import { cls, FOCUS_RING, useBoardShared } from './board-context.ts';
@@ -16,6 +17,8 @@ export interface BoardCardProps {
   index: number;
   laneColor: EpicColor | null;
 }
+
+const NONE: readonly string[] = [];
 
 /**
  * Carried by the pointer, the card left behind is a faded, slightly smaller slot while the
@@ -39,10 +42,15 @@ export const BoardCard = memo(function BoardCard({
   index,
   laneColor,
 }: BoardCardProps) {
-  const { actions, vocab, selectedKey, instructionsId, quick } = useBoardShared();
+  const { actions, vocab, selectedKey, instructionsId, quick, select, sprints, sprintId } =
+    useBoardShared();
   const carried = useBoardDragStore((state) =>
     state.carrying?.issueId === card.issueId ? state.carrying.mode : null,
   );
+  const checked = useBoardSelectionStore((state) => state.selection.ids.includes(card.key));
+  const selecting = useBoardSelectionStore((state) => state.selection.ids.length > 0);
+  // Only a checked card follows the whole selection, so its menu can act on all of it.
+  const targets = useBoardSelectionStore((state) => (checked ? state.selection.ids : NONE));
   const props = useMemo(() => cardProps(card, vocab, laneColor), [card, vocab, laneColor]);
   const pending = useIssuePending(card.key);
   const ruleColor = vocab.ruleColor(card);
@@ -61,24 +69,33 @@ export const BoardCard = memo(function BoardCard({
       role="button"
       tabIndex={0}
       aria-roledescription="draggable card"
-      aria-label={`${card.key} ${card.title}`}
+      aria-label={`${card.key} ${card.title}${checked ? ', selected' : ''}`}
       aria-describedby={instructionsId}
       aria-pressed={carried !== null}
       draggable
-      onClick={() => actions.open(card.key)}
+      onClick={(event) => {
+        if (!select.click(event, card.key)) actions.open(card.key);
+      }}
+      onMouseDown={(event) => {
+        // Shift-click would otherwise select the text between this card and the anchor.
+        if (event.shiftKey) event.preventDefault();
+      }}
       data-issue-key={card.key}
       onContextMenu={openRowMenu}
       onKeyDown={(event) => {
         if (event.target !== event.currentTarget) return;
         const plain = !event.metaKey && !event.ctrlKey && !event.altKey;
+        if (carried === null && select.keyDown(event, card.key)) return;
         if (plain && carried === null && event.key === 'i' && vocab.meId) {
           event.preventDefault();
-          void quick.update([card.key], { assigneeId: vocab.meId });
+          void quick.update(select.targets(card.key), { assigneeId: vocab.meId });
           return;
         }
         if (plain && carried === null && (event.key === 'Delete' || event.key === 'Backspace')) {
           event.preventDefault();
-          quick.remove([card.key]);
+          const keys = select.targets(card.key);
+          quick.remove(keys);
+          if (keys.length > 1) clearBoardSelection();
           return;
         }
         actions.keyDown(event, card.issueId);
@@ -103,6 +120,9 @@ export const BoardCard = memo(function BoardCard({
         interactive={carried === null}
         selected={carried !== null || selectedKey === card.key}
         pending={pending}
+        checked={checked}
+        selecting={selecting}
+        onCheck={(event) => select.check(event, card.key)}
         tools={
           carried === null && (
             <>
@@ -137,6 +157,8 @@ export const BoardCard = memo(function BoardCard({
                 meId={vocab.meId}
                 actions={quick}
                 onOpen={() => actions.open(card.key)}
+                {...(sprints ? { sprints, sprintId: sprintId ?? null } : {})}
+                {...(checked ? { targets } : {})}
               />
             </>
           )

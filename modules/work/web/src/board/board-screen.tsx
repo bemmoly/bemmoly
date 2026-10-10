@@ -6,6 +6,12 @@ import { useBoardActions } from '../hooks/board-actions.ts';
 import { useBoardVerdicts } from '../hooks/board-dnd.ts';
 import { useBoardDragStore } from '../hooks/board-drag-store.ts';
 import { boardIssueOrder, doingPoints, type BoardModel } from '../hooks/board-model.ts';
+import {
+  boardCarrying,
+  clearBoardSelection,
+  useBoardSelect,
+  useBoardSelectionStore,
+} from '../hooks/board-selection.ts';
 import { useBoardScreen } from '../hooks/board-screen.ts';
 import { useIssueQuickActions } from '../hooks/issue-quick-actions.ts';
 import { DOCKED_SLIDE_OVER_QUERY, useMediaQuery } from '../hooks/media-query.ts';
@@ -15,6 +21,7 @@ import { useRecordRecent, useScreenActions } from '@bemmoly/core-web';
 import { navigateTo, workPaths } from '../hooks/issue-navigation.ts';
 import { useSavedFilters } from '../hooks/saved-filters.ts';
 import { WorkPresence } from '../shared/work-presence.tsx';
+import { IssueBulkBar } from '../shared/issue-bulk-bar.tsx';
 import { IssueSlideOver, useRememberIssueList } from '../issue/index.ts';
 import type { WorkScreenProps } from '../routes.tsx';
 import { BoardSkeleton } from '../skeletons/board-skeleton.tsx';
@@ -65,6 +72,12 @@ function BoardBody({
   });
 
   const actions = useBoardActions(model, view.board.id, peek.open);
+  const select = useBoardSelect(model, view.board.id);
+  const selectedIds = useBoardSelectionStore((state) => state.selection.ids);
+  const selectedKeys = useMemo(
+    () => order.filter((key) => selectedIds.includes(key)),
+    [order, selectedIds],
+  );
   const instructionsId = useId();
   const project = screen.project;
   const sprintId = screen.sprint?.id;
@@ -97,11 +110,24 @@ function BoardBody({
       actions,
       vocab: screen.vocab,
       quick,
+      select,
+      ...(screen.moveTargets ? { sprints: screen.moveTargets } : {}),
+      ...(sprintId ? { sprintId } : {}),
       selectedKey: peek.issueKey,
       instructionsId,
       ...(createIn ? { createIn } : {}),
     }),
-    [actions, screen.vocab, quick, peek.issueKey, instructionsId, createIn],
+    [
+      actions,
+      screen.vocab,
+      quick,
+      select,
+      screen.moveTargets,
+      sprintId,
+      peek.issueKey,
+      instructionsId,
+      createIn,
+    ],
   );
   const inFlight = model.lanes.reduce((sum, lane) => sum + lane.inFlight, 0);
   if (!project) return null;
@@ -161,6 +187,14 @@ function BoardBody({
         variant={docked ? 'docked' : 'overlay'}
         {...(peek.previous ? { onPrevious: peek.previous } : {})}
         {...(peek.next ? { onNext: peek.next } : {})}
+      />
+      <IssueBulkBar
+        keys={selectedKeys}
+        meId={screen.meId}
+        {...(screen.moveTargets ? { sprints: screen.moveTargets } : {})}
+        actions={quick}
+        onClear={clearBoardSelection}
+        holdEscape={boardCarrying}
       />
     </div>
   );
