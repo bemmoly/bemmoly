@@ -1,3 +1,4 @@
+import { flip, shift, size } from '@floating-ui/dom';
 import { Extension, type Range } from '@tiptap/core';
 import type { EditorState } from '@tiptap/pm/state';
 import { PluginKey } from '@tiptap/pm/state';
@@ -15,6 +16,35 @@ import { docSlashItems, filterSlashItems, slashRow } from './slash-items.ts';
  */
 
 type Services = () => DocServices;
+
+/** A list never grows past this, and opens above the caret only below this much room. */
+const TALLEST = 340;
+const SHORTEST = 200;
+
+/**
+ * Below the caret, as tall as the room under it allows (down to 200px); above it only when
+ * even that does not fit. The page's own scroll box never counts as the edge: the viewport
+ * does, so the list does not flip over the text being read just because a pane is short.
+ */
+export const DOC_PLACEMENT = {
+  placement: 'bottom-start' as const,
+  offset: { mainAxis: 6 },
+  flip: false,
+  floatingUi: {
+    strategy: 'fixed' as const,
+    middleware: [
+      size({
+        padding: 8,
+        apply: ({ availableHeight, elements }) => {
+          const height = Math.max(SHORTEST, Math.min(TALLEST, availableHeight));
+          elements.floating.style.setProperty('--list-max', `${height}px`);
+        },
+      }),
+      flip({ padding: 8, fallbackStrategy: 'initialPlacement' }),
+      shift({ padding: 8 }),
+    ],
+  },
+};
 
 /** Lists never open inside code, where / [ and # are just characters. */
 const outsideCode = ({ state, range }: { state: EditorState; range: Range }) =>
@@ -35,6 +65,7 @@ export function docSlash(store: SuggestionStore, services: Services) {
           editor: this.editor,
           char: '/',
           pluginKey: new PluginKey('docSlash'),
+          ...DOC_PLACEMENT,
           allow: outsideCode,
           items: ({ query }) => filterSlashItems(docSlashItems(services()), query).map(slashRow),
           command: ({ editor, range, props }) => {
@@ -57,6 +88,7 @@ export function pageLinks(store: SuggestionStore, services: Services) {
           editor: this.editor,
           char: '[[',
           pluginKey: new PluginKey('pageLinkSuggestion'),
+          ...DOC_PLACEMENT,
           allowSpaces: true,
           debounce: 200,
           allow: (props) => outsideCode(props) && Boolean(services().searchPages),
@@ -87,6 +119,7 @@ export function issueEmbeds(store: SuggestionStore, services: Services) {
           char: '#',
           allowedPrefixes: [' ', '('],
           pluginKey: new PluginKey('issueEmbedSuggestion'),
+          ...DOC_PLACEMENT,
           debounce: 200,
           allow: (props) => outsideCode(props) && Boolean(services().searchIssues),
           items: store.searching(lent((s) => s.searchIssues, services)),
@@ -109,6 +142,7 @@ export function issueEmbeds(store: SuggestionStore, services: Services) {
 /** The @ list's options for the schema's mention node, when the host lends a people search. */
 export function mentionOptions(store: SuggestionStore, services: Services) {
   return {
+    ...DOC_PLACEMENT,
     debounce: 200,
     allow: (props: { state: EditorState; range: Range }) =>
       outsideCode(props) && Boolean(services().searchPeople),
