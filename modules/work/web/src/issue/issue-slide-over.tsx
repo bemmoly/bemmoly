@@ -1,6 +1,5 @@
 import {
   Drawer,
-  EmptyState,
   epicColor,
   epicFill,
   FieldSwatch,
@@ -13,6 +12,7 @@ import { useIssue } from '../hooks/issue-detail.ts';
 import { keepLinksInApp, navigateTo, workPaths } from '../hooks/issue-navigation.ts';
 import { IssuePanelSkeleton } from '../skeletons/issue-skeleton.tsx';
 import { IssueBody } from './issue-body.tsx';
+import { IssueError } from './issue-error.tsx';
 import { IssueMoreMenu } from './issue-header.tsx';
 import { typeGlyph } from './vocabulary.ts';
 
@@ -117,9 +117,10 @@ export function IssueSlideOver({
       <div className="flex flex-col gap-4.5" onClick={keepLinksInApp}>
         {query.isPending && <IssuePanelSkeleton />}
         {query.isError && (
-          <EmptyState
-            title={`${issueKey ?? 'The issue'} could not be opened`}
-            description={query.error.message}
+          <IssueError
+            issueKey={issueKey ?? 'The issue'}
+            error={query.error}
+            onRetry={() => void query.refetch()}
           />
         )}
         {issue && <IssueBody issue={issue} size="panel" />}
