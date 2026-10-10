@@ -160,7 +160,7 @@ export function SelectList({ state, label, labelledBy, searchPlaceholder }: Sele
                 id={headingId}
                 role="presentation"
                 className={cx(
-                  'px-2.5 py-1.5 text-11 font-medium tracking-caps text-tx5 uppercase',
+                  'px-2.5 pt-2 pb-1 text-11 font-semibold text-tx-3',
                   sectionIndex > 0 && 'mt-1 border-t border-br-row',
                 )}
               >

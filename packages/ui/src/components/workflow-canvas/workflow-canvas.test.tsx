@@ -26,7 +26,7 @@ describe('workflow canvas editing states', () => {
     expect(node.className).toContain('border-danger');
     expect(node.textContent).toBe('DoneDone');
     expect(container.querySelector('path[marker-end="url(#workflow-arrow-danger)"]')).toBeTruthy();
-    const label = screen.getByRole('button', { name: /^Pass QA\s*1 condition\s*2 posts$/ });
+    const label = screen.getByRole('button', { name: /^Pass QA\s*1 condition\s*2 post-actions$/ });
     expect(label.getAttribute('aria-pressed')).toBe('true');
     fireEvent.click(label);
     expect(onSelect).toHaveBeenCalled();

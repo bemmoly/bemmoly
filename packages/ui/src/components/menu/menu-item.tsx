@@ -82,7 +82,7 @@ export function MenuGroup({ label, children, separated }: MenuGroupProps) {
       <div
         id={id}
         className={cx(
-          'px-2.5 py-1.5 text-11 font-medium tracking-caps text-tx5 uppercase',
+          'px-2.5 pt-2 pb-1 text-11 font-semibold text-tx-3',
           separated && 'mt-1 border-t border-br-row',
         )}
       >

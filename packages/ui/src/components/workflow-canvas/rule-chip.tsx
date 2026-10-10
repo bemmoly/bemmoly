@@ -5,9 +5,9 @@ import { cx } from '../../lib/cx.ts';
 export type RuleKind = 'condition' | 'validator' | 'post';
 
 export const RULE_KINDS: Record<RuleKind, { label: string; className: string }> = {
-  condition: { label: 'CONDITION', className: 'bg-chip text-tx3' },
-  validator: { label: 'VALIDATOR', className: 'bg-st-qa-bg text-st-qa-fg' },
-  post: { label: 'POST', className: 'bg-ok-bg text-ok-fg' },
+  condition: { label: 'Condition', className: 'bg-chip text-tx3' },
+  validator: { label: 'Validator', className: 'bg-st-qa-bg text-st-qa-fg' },
+  post: { label: 'Post-action', className: 'bg-ok-bg text-ok-fg' },
 };
 
 export interface RuleChipProps {

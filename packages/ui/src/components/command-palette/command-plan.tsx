@@ -57,7 +57,7 @@ export function CommandPlan({
         <div
           role="row"
           style={COLUMNS}
-          className="grid gap-2.5 border-b border-br2 bg-sf2 px-3 py-1.75 text-11 font-medium tracking-caps text-tx5 uppercase"
+          className="grid gap-2.5 border-b border-br2 bg-sf2 px-3 py-1.75 text-11 font-semibold text-tx-3"
         >
           <span role="columnheader">Issue</span>
           <span role="columnheader">Change</span>
@@ -87,7 +87,7 @@ export function CommandPlan({
                 step.allowed ? 'text-ok-fg' : 'text-danger',
               )}
             >
-              {step.allowed ? 'ALLOWED' : 'DENIED'}
+              {step.allowed ? 'Allowed' : 'Denied'}
             </span>
           </div>
         ))}

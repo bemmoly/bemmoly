@@ -221,7 +221,7 @@ describe('CommandPalette', () => {
         onRun={onRun}
       />,
     );
-    expect(screen.getByText('DENIED')).toBeTruthy();
+    expect(screen.getByText('Denied')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: /Run 1 change/ }));
     expect(onRun).toHaveBeenCalled();
   });
