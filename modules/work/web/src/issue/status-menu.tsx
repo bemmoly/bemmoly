@@ -17,7 +17,7 @@ export interface StatusMenuProps {
   variant?: 'rail' | 'compact';
 }
 
-/** Moves the issue at once; a refusal puts the old status back and offers Retry. */
+/** Moves the issue at once with Undo; a refusal puts the old status back and offers Retry. */
 function useMove(issue: IssueDetail) {
   const { edit } = useIssueEdit(issue.key);
   return (transition: AvailableTransition) =>
@@ -33,6 +33,14 @@ function useMove(issue: IssueDetail) {
         },
       },
       what: `${issue.key}'s status`,
+      undo: {
+        title: `${issue.key} moved to ${transition.toStatusName}`,
+        edit: {
+          body: { statusId: issue.statusId },
+          shown: { statusId: issue.statusId, status: issue.status },
+          what: `${issue.key}'s status`,
+        },
+      },
     });
 }
 

@@ -146,4 +146,28 @@ describe('StatusMenu', () => {
     fireEvent.click(within(quick).getByRole('button', { name: /Testing/ }));
     await waitFor(() => expect(patched).toEqual({ statusId: IDS.testing }));
   });
+
+  it('offers Undo after a status change and moves the issue back', async () => {
+    const patches: unknown[] = [];
+    server.use(
+      http.get('*/api/v1/work/issues/PLT-204/transitions', () =>
+        HttpResponse.json({ items: transitions }),
+      ),
+      http.patch('*/api/v1/work/issues/PLT-204', async ({ request }) => {
+        patches.push(await request.json());
+        return HttpResponse.json(issue);
+      }),
+    );
+    render(
+      <Providers>
+        <StatusMenu issue={issue as never} />
+      </Providers>,
+    );
+    const quick = await screen.findByRole('group', { name: 'Move to' });
+    fireEvent.click(within(quick).getByRole('button', { name: /Testing/ }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Undo' }));
+    await waitFor(() =>
+      expect(patches).toEqual([{ statusId: IDS.testing }, { statusId: issue.statusId }]),
+    );
+  });
 });

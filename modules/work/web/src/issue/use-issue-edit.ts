@@ -15,6 +15,11 @@ export interface IssueEdit {
   shown?: Partial<IssueDetail>;
   /** "The assignee", "The labels": names the field in the error. */
   what: string;
+  /**
+   * For a change worth taking back (status, a removed label): the toast that confirms it and
+   * the edit that restores the old value, offered as Undo for the toast's few seconds.
+   */
+  undo?: { title: string; edit: IssueEdit };
 }
 
 export interface EditOptions {
@@ -48,10 +53,14 @@ export function useIssueEdit(key: string) {
   });
 
   const edit = useCallback(
-    (change: IssueEdit, options: EditOptions = {}) => {
+    function edit(change: IssueEdit, options: EditOptions = {}): void {
       const run = () =>
         mutation.mutate(change, {
-          onSuccess: options.onSuccess,
+          onSuccess: () => {
+            options.onSuccess?.();
+            const undo = change.undo;
+            if (undo) toast.undo({ title: undo.title, onUndo: () => edit(undo.edit) });
+          },
           onError: (error) =>
             toast.show({
               tone: 'danger',
