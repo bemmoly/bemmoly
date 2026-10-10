@@ -104,7 +104,12 @@ function CreateSpaceForm({ open, onClose, onCreated }: CreateSpaceDialogProps) {
                   draft.tone === tone ? 'shadow-ring-ac' : 'hover:shadow-ring'
                 }`}
               >
-                <SpaceTile name={draft.name || 'New space'} tone={tone} size="sm" />
+                <SpaceTile
+                  name={draft.name}
+                  {...(draft.key ? { spaceKey: draft.key } : {})}
+                  tone={tone}
+                  size="sm"
+                />
               </button>
             ))}
           </div>

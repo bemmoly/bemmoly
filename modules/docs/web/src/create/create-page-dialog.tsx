@@ -72,7 +72,9 @@ function CreatePageForm({
           form.submit();
         }}
       >
-        <div className={presetSpace ? 'flex' : 'grid grid-cols-[minmax(0,1fr)_220px] gap-3.5'}>
+        <div
+          className={`grid gap-3.5 ${presetSpace ? 'grid-cols-1' : 'grid-cols-[minmax(0,1fr)_220px]'}`}
+        >
           <Field label="Title" hint="Optional. A template page takes the template's name.">
             <Input
               autoFocus

@@ -1,4 +1,5 @@
 import { EmptyState, Skeleton } from '@bemmoly/ui';
+import { isIconName } from '@bemmoly/ui/icons';
 import { useQuery } from '@tanstack/react-query';
 import { Fragment } from 'react';
 import { api } from '../shared/api.ts';
@@ -59,7 +60,7 @@ export function SidebarSearch({ spaceId, q }: { spaceId: string; q: string }) {
             className="flex flex-col gap-0.5 rounded-control px-2.5 py-1.5 text-13 text-tx2 no-underline hover:bg-bg2 hover:text-tx2"
           >
             <span className="truncate font-medium text-tx">
-              {hit.icon ? `${hit.icon} ` : ''}
+              {hit.icon && !isIconName(hit.icon) ? `${hit.icon} ` : ''}
               {hit.title || 'Untitled'}
             </span>
             {hit.snippet && (

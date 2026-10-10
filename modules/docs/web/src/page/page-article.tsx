@@ -1,6 +1,7 @@
 import { formatRelative } from '@bemmoly/core-web';
 import type { PageDetail } from '@bemmoly/module-docs/shared';
 import { PageStatusPill } from '@bemmoly/ui';
+import { isIconName } from '@bemmoly/ui/icons';
 import { docsPaths } from '../shared/navigation.ts';
 import { PageBody } from './page-body.tsx';
 
@@ -31,7 +32,7 @@ export function PageArticle({ page }: { page: PageDetail }) {
           <PageStatusPill status={page.status} className="ml-2" />
         </nav>
         <h1 className="m-0 text-36 leading-title font-semibold tracking-display text-tx">
-          {page.icon ? `${page.icon} ` : ''}
+          {page.icon && !isIconName(page.icon) ? `${page.icon} ` : ''}
           {page.title || 'Untitled'}
         </h1>
         <p className="m-0 border-b border-br-row pb-1.5 text-12h text-tx5">
