@@ -11,4 +11,10 @@ export default [
     plugins: { 'react-hooks': reactHooks },
     rules: reactHooks.configs.recommended.rules,
   },
+  {
+    // The root config's glyph rule, with paths relative to this package.
+    files: ['src/**/*.{ts,tsx}'],
+    ignores: ['**/*.test.{ts,tsx}'],
+    rules: { 'bemmoly/no-glyph-characters': 'error' },
+  },
 ];

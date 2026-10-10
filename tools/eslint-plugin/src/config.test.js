@@ -62,4 +62,12 @@ describe('repository ESLint config', () => {
     );
     expect(ids).toEqual([]);
   });
+
+  it('fails a glyph character set as an icon in UI code', async () => {
+    const ids = await ruleIds(
+      'packages/ui/src/components/fixture.tsx',
+      'export const Done = () => <span>✓</span>;\n',
+    );
+    expect(ids).toContain('bemmoly/no-glyph-characters');
+  });
 });
