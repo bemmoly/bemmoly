@@ -1,3 +1,4 @@
+import { StatusGlyph, type StatusStage } from '../glyphs/status-glyph.tsx';
 import { cx } from '../../lib/cx.ts';
 
 /** Where a page is in its review flow. */
@@ -37,6 +38,28 @@ export function PageStatusPill({ status, className }: PageStatusPillProps) {
         className,
       )}
     >
+      {PAGE_STATUS_LABELS[status]}
+    </span>
+  );
+}
+
+/**
+ * A page's status on the status glyph family (docs/design/premium/docs/docs-kit.js, `PSTATUS`):
+ * draft fills like a to-do, in review like work under review, published is done, archived is
+ * set aside. Colour comes from the glyph's category, never from a signal colour.
+ */
+export const PAGE_STATUS_STAGES: Record<PageStatus, StatusStage> = {
+  draft: 'todo',
+  in_review: 'review',
+  published: 'done',
+  archived: 'wont',
+};
+
+/** The status as its glyph and its name in sentence case: the header's status menu, lists. */
+export function PageStatusMark({ status, className }: PageStatusPillProps) {
+  return (
+    <span className={cx('inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap', className)}>
+      <StatusGlyph stage={PAGE_STATUS_STAGES[status]} size={13} decorative />
       {PAGE_STATUS_LABELS[status]}
     </span>
   );
