@@ -13,10 +13,18 @@ the phone layout of these screens. Decisions recorded here can be overruled by K
   back.
 - **Templates:** the empty page shows the space's templates as tiles under the body, plus
   "Import a file". Arrows move between the tiles and Enter uses one. Typing in the body hides
-  them. Using a template replaces the blank page with one made from the template, in the same
-  place and with any title already typed, and Back skips the blank page.
+  them. Using a template fills the same page with the template's document through the live
+  editor (⌘Z takes it back), keeps any title already typed or takes the template's name, and
+  creates or trashes nothing, so no stray "Untitled" waits in the trash. The page does not
+  record which template it came from (the update endpoint has no template field).
 - **Abandoned:** a fresh page left with no title and no words is moved to the trash when you
   leave it.
+- **On a page:** N makes a page beside it (same parent) and Shift+N one inside it, in place.
+  Neither acts while writing. Each Docs screen lists its keys in the ? overlay, and a page offers
+  Copy link, Duplicate and Version history first in ⌘K.
+- **Duplicate:** from a tree row's menu or the page's ···: a copy right after the page with its
+  icon and its words as last saved ("Runbook (copy)"), none of the pages under it, made through
+  the ordinary create with the stored body; the toast's Undo trashes the copy.
 - **Global Create:** the Create menu's New page keeps the dialog, because it has no place to
   start from.
 
