@@ -43,6 +43,9 @@ export function exportStylesheet(): string {
     `.issue-table,.unsupported{border:1px dashed ${c.line};border-radius:8px;padding:12px 16px;color:${c['tx-3']};font-size:13.5px}`,
     `nav.toc{font-size:13.5px}nav.toc ul{list-style:none;padding-left:0;gap:2px}`,
     `.toc-2{margin-left:16px}.toc-3{margin-left:32px}`,
-    `@media print{article{padding:0}a{color:inherit}}`,
+    // Print, and Save as PDF through the browser's print dialog: plain paper, no split blocks.
+    `@page{margin:18mm 16mm}`,
+    `@media print{body{background:#fff}article{padding:0;max-width:none}a{color:inherit}`,
+    `h1,h2,h3{break-after:avoid}pre,table,figure,blockquote,.callout,.decision,img{break-inside:avoid}}`,
   ].join('\n');
 }
