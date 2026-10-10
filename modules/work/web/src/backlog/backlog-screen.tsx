@@ -1,34 +1,62 @@
 import type { Sprint } from '@bemmoly/module-work/shared';
-import { Button, EmptyState, PageHeader, useToast } from '@bemmoly/ui';
+import { HeaderActions, useRecordRecent, useScreenActions } from '@bemmoly/core-web';
+import { Button, EmptyState, useToast } from '@bemmoly/ui';
 import { useCallback, useMemo, useState } from 'react';
 import { useBacklogScreen } from '../hooks/backlog-screen.ts';
 import { useSprintActions } from '../hooks/backlog-sprints.ts';
-import { keepLinksInApp } from '../hooks/issue-navigation.ts';
+import { keepLinksInApp, navigateTo, workPaths } from '../hooks/issue-navigation.ts';
 import { useBacklogUi } from '../hooks/backlog-store.ts';
 import { IssueSlideOver } from '../issue/index.ts';
-import { ProjectSwitcher } from '../projects/index.ts';
 import type { WorkScreenProps } from '../routes.tsx';
 import { BacklogContainersSkeleton } from '../skeletons/backlog-skeleton.tsx';
-import { LineSkeleton } from '../skeletons/parts.tsx';
 import { BacklogEpics } from './backlog-epics.tsx';
 import { BacklogToolbar } from './backlog-toolbar.tsx';
 import { CompleteSprintDialog } from './complete-sprint-dialog.tsx';
 import { DragOverlay } from './drag-overlay.tsx';
 import { BACKLOG_ID, nextSprintName, points } from './model.ts';
-import { ProjectNav } from './project-nav.tsx';
 import { SprintDialog } from './sprint-dialog.tsx';
 import { SprintSection } from './sprint-section.tsx';
 
 type Dialog = { kind: 'start' | 'edit' | 'complete'; sprintId: string } | null;
 
+/** The backlog as a recent item and its palette actions, once its project is known. */
+function useBacklogPresence(project: { key: string; name: string } | undefined) {
+  useRecordRecent(
+    project
+      ? {
+          id: `work.backlog:${project.key}`,
+          title: 'Backlog',
+          context: project.name,
+          path: workPaths.backlog(project.key),
+          look: { kind: 'icon', icon: 'backlog', moduleId: 'work' },
+          group: 'Boards',
+        }
+      : null,
+  );
+  useScreenActions(
+    project
+      ? [
+          {
+            id: 'work.go-board',
+            title: 'Go to board',
+            keys: 'G B',
+            look: { kind: 'icon', icon: 'board' },
+            run: () => navigateTo(workPaths.board(project.key)),
+          },
+        ]
+      : null,
+  );
+}
+
 /**
- * The Backlog at /work/backlog/PLT: the project sidebar, the header with the
- * filter row, the epics panel and the sprint containers above the backlog,
- * as the Backlog mock lays them out.
+ * The Backlog at /work/backlog/PLT: the filter row, the epics panel and the sprint containers
+ * above the backlog, as the Backlog mock lays them out. The frame's header holds the project,
+ * the Board and Backlog tabs and Create sprint.
  */
 export default function BacklogScreen({ projectKey: pathKey }: WorkScreenProps) {
   const screen = useBacklogScreen(pathKey);
   const projectKey = screen.project?.key ?? '';
+  useBacklogPresence(screen.project);
   const actions = useSprintActions(projectKey);
   const { show } = useToast();
   const showEpics = useBacklogUi((state) => state.showEpics);
@@ -87,27 +115,13 @@ export default function BacklogScreen({ projectKey: pathKey }: WorkScreenProps) 
   const open = screen.containers.find((c) => c.id === dialog?.sprintId);
   return (
     <div className="flex min-h-0 flex-1" onClick={keepLinksInApp}>
-      <ProjectNav project={screen.project} />
+      <HeaderActions>
+        <Button loading={actions.create.isPending} onClick={createSprint}>
+          Create sprint
+        </Button>
+      </HeaderActions>
       <div className="flex min-h-0 min-w-0 flex-1 flex-col">
         <div className="flex shrink-0 flex-col gap-3 px-6 pt-3.5 pb-3">
-          <PageHeader
-            breadcrumbs={[
-              { label: 'Projects' },
-              {
-                label: screen.project?.name ?? <LineSkeleton width={84} size="text-12h" bar={8} />,
-              },
-              { label: 'Backlog' },
-            ]}
-            title="Backlog"
-            actions={
-              <>
-                <ProjectSwitcher screen="backlog" projectKey={projectKey || pathKey} />
-                <Button loading={actions.create.isPending} onClick={createSprint}>
-                  Create sprint
-                </Button>
-              </>
-            }
-          />
           <BacklogToolbar epics={epics} types={screen.standardTypes} people={screen.people} />
         </div>
         <div className="flex min-h-0 flex-1">

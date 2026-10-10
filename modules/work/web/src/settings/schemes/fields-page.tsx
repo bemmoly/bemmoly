@@ -1,7 +1,7 @@
 import { FIELD_KINDS, type FieldKind } from '@bemmoly/module-work/shared';
 import { Icon } from '@bemmoly/ui/icons';
 import { Badge, Button, SettingsSection, Skeleton } from '@bemmoly/ui';
-import { useState, type ReactNode } from 'react';
+import { useState } from 'react';
 import { useSettingsAccess } from '../../hooks/settings-access.ts';
 import { useSchemeFlow } from '../../hooks/settings-scheme-flow.ts';
 import { useFields } from '../../hooks/settings-schemes.ts';
@@ -30,10 +30,8 @@ const KINDS: Record<FieldKind, string> = {
  */
 export function FieldsPage({
   projectKey,
-  nav,
 }: {
   projectKey: string | undefined;
-  nav: ReactNode;
 }) {
   const { project } = useProject(projectKey);
   const access = useSettingsAccess();
@@ -43,12 +41,10 @@ export function FieldsPage({
   const overridden = flow.status?.overridden ?? false;
   return (
     <SchemePage
-      project={project}
       title="Fields"
       description="Custom fields on this project's issues. Which ones each type asks for, and which show on cards, is set per issue type."
       flow={flow}
       canConfigure={access.configureProject}
-      nav={nav}
     >
       <SettingsSection
         title="Custom fields"

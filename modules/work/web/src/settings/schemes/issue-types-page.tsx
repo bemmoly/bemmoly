@@ -1,7 +1,7 @@
 import { ISSUE_TYPE_LEVELS, type IssueTypeLevel } from '@bemmoly/module-work/shared';
 import { Icon } from '@bemmoly/ui/icons';
 import { Badge, Button, SettingsSection, Skeleton, TypeGlyph } from '@bemmoly/ui';
-import { useState, type ReactNode } from 'react';
+import { useState } from 'react';
 import { useSettingsAccess } from '../../hooks/settings-access.ts';
 import { useSchemeFlow } from '../../hooks/settings-scheme-flow.ts';
 import { useIssueTypes } from '../../hooks/settings-schemes.ts';
@@ -22,10 +22,8 @@ const LEVELS: Record<IssueTypeLevel, string> = {
  */
 export function IssueTypesPage({
   projectKey,
-  nav,
 }: {
   projectKey: string | undefined;
-  nav: ReactNode;
 }) {
   const { project } = useProject(projectKey);
   const access = useSettingsAccess();
@@ -35,12 +33,10 @@ export function IssueTypesPage({
   const overridden = flow.status?.overridden ?? false;
   return (
     <SchemePage
-      project={project}
       title="Issue types"
       description="The kinds of work this project tracks and how they nest: Epic › Story, Bug, Task, Incident › Subtask."
       flow={flow}
       canConfigure={access.configureProject}
-      nav={nav}
     >
       <SettingsSection
         title="Issue types"

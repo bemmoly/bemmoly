@@ -1,14 +1,10 @@
 import type { IssueDetail } from '@bemmoly/module-work/shared';
 import {
-  Breadcrumbs,
   Button,
-  FieldSwatch,
   IconButton,
-  KeyChip,
   Menu,
   MenuItem,
   Modal,
-  TypeGlyph,
   useToast,
 } from '@bemmoly/ui';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -18,32 +14,6 @@ import { navigateTo, workPaths } from '../hooks/issue-navigation.ts';
 import { projectKeyOf } from '../hooks/issue-vocabulary.ts';
 import { api } from '../shared/api.ts';
 import { workKeys } from '../shared/keys.ts';
-import { typeGlyph } from './vocabulary.ts';
-
-/** "Platform Core / ■ Auth service / ▮ PLT-204": project, epic and the issue's own key. */
-export function IssueTrail({ issue, projectName }: { issue: IssueDetail; projectName: string }) {
-  const projectKey = projectKeyOf(issue.key);
-  return (
-    <Breadcrumbs
-      items={[
-        { label: projectName, href: workPaths.board(projectKey) },
-        ...(issue.parent
-          ? [
-              {
-                label: issue.parent.title,
-                href: workPaths.issue(issue.parent.key),
-                icon: <FieldSwatch colorClassName="bg-ac" />,
-              },
-            ]
-          : []),
-        {
-          label: <KeyChip issueKey={issue.key} size="md" />,
-          icon: <TypeGlyph type={typeGlyph(issue.type)} />,
-        },
-      ]}
-    />
-  );
-}
 
 /** Watch with the count, as the mock's 30px bordered button. */
 export function WatchButton({ issue }: { issue: IssueDetail }) {

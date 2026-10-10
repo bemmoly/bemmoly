@@ -51,11 +51,12 @@ describe('Board actions menu', () => {
     ]);
   });
 
-  it('opens the board settings', () => {
+  it('opens the board settings', async () => {
     openMenu();
     choose('Board settings');
     expect(window.location.pathname).toBe('/work/settings/PLT/board');
-    expect(screen.queryByRole('menu')).toBeNull();
+    // The menu fades out for 100ms before it leaves the page.
+    await waitFor(() => expect(screen.queryByRole('menu')).toBeNull());
   });
 
   it('opens the project workflows', () => {

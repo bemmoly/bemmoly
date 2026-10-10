@@ -1,7 +1,7 @@
 import {
   Button,
   EmptyState,
-  PageHeader,
+  PageTitle,
   SchemeOverrideBanner,
   SettingsContent,
   SettingsFrame,
@@ -15,7 +15,6 @@ import { useBoardSettings } from '../../hooks/settings-board.ts';
 import { sectionAnchor, useSettingsEdits } from '../../hooks/settings-edits.ts';
 import { useIssueTypes } from '../../hooks/settings-schemes.ts';
 import { BOARD_SECTIONS, SECTION_TITLES, type BoardSection } from '../model/sections.ts';
-import { onLinkClick } from '../../workflow/navigate.ts';
 import { BoardSettingsSkeleton, PreviewRailSkeleton } from '../../skeletons/settings-skeleton.tsx';
 import { BoardDialogs } from './board-dialogs.tsx';
 import { CardsTab } from './cards-tab.tsx';
@@ -28,8 +27,6 @@ import type { BoardTabProps } from './tab-props.ts';
 
 export interface BoardSettingsPageProps {
   projectKey: string | undefined;
-  /** The settings sidebar; the shell's leave guard asks about unsaved drafts on a move. */
-  nav: ReactNode;
 }
 
 /**
@@ -38,7 +35,7 @@ export interface BoardSettingsPageProps {
  * calmly until Edit, saves on its own after the diff is reviewed, and asks
  * before a change that takes cards off the board.
  */
-export function BoardSettingsPage({ projectKey, nav }: BoardSettingsPageProps) {
+export function BoardSettingsPage({ projectKey }: BoardSettingsPageProps) {
   const settings = useBoardSettings(projectKey);
   const access = useSettingsAccess();
   const types = useIssueTypes(settings.project?.id);
@@ -67,7 +64,7 @@ export function BoardSettingsPage({ projectKey, nav }: BoardSettingsPageProps) {
   const project = settings.project;
   const schemeName = settings.orgBoard?.name ?? 'the org default';
   const frame = (content: ReactNode, aside?: ReactNode) => (
-    <SettingsFrame nav={nav} aside={aside}>
+    <SettingsFrame nav={null} aside={aside}>
       <SettingsContent width="narrow">{content}</SettingsContent>
     </SettingsFrame>
   );
@@ -110,18 +107,8 @@ export function BoardSettingsPage({ projectKey, nav }: BoardSettingsPageProps) {
 
   return frame(
     <>
-      <PageHeader
+      <PageTitle
         variant="settings"
-        breadcrumbs={[
-          { label: 'Projects' },
-          {
-            label: project.name,
-            href: `/work/board/${project.key}`,
-            linkProps: { onClick: onLinkClick(`/work/board/${project.key}`) },
-          },
-          { label: 'Settings' },
-          { label: 'Board' },
-        ]}
         title="Board"
         description={`How the ${project.key} board looks for everyone on the project. Members can still apply their own filters and swimlane view; those are personal and don't change this page.`}
         actions={

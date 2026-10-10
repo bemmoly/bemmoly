@@ -8,6 +8,7 @@ import { useBoardDragStore } from '../hooks/board-drag-store.ts';
 import type { BoardModel } from '../hooks/board-model.ts';
 import { useBoardScreen } from '../hooks/board-screen.ts';
 import { useBoardIssueSlideOver } from '../hooks/board-slide-over.ts';
+import { openCreate, useRecordRecent, useScreenActions } from '@bemmoly/core-web';
 import { navigateTo, workPaths } from '../hooks/issue-navigation.ts';
 import { useSavedFilters } from '../hooks/saved-filters.ts';
 import { IssueSlideOver } from '../issue/index.ts';
@@ -71,7 +72,7 @@ function BoardBody({
         title="No issues on the board yet"
         description="Create an issue and it lands in the first column."
         action={
-          <Button variant="primary" onClick={() => navigateTo(workPaths.createIssue(project.key))}>
+          <Button variant="primary" onClick={() => openCreate('work.create-issue')}>
             Create issue
           </Button>
         }
@@ -95,7 +96,7 @@ function BoardBody({
   return (
     <div className="flex min-h-0 flex-1">
       <div className="flex min-w-0 flex-1 flex-col">
-        <div className="flex shrink-0 flex-col gap-3 bg-bg px-6 pt-3.5">
+        <div className="flex shrink-0 flex-col gap-3 bg-canvas px-6 pt-3.5">
           <BoardHeader
             project={project}
             view={view}
@@ -134,9 +135,39 @@ function BoardBody({
   );
 }
 
+/** The board as a recent item and its palette actions, once its project is known. */
+function useBoardPresence(project: { key: string; name: string } | undefined) {
+  useRecordRecent(
+    project
+      ? {
+          id: `work.board:${project.key}`,
+          title: 'Board',
+          context: project.name,
+          path: workPaths.board(project.key),
+          look: { kind: 'icon', icon: 'board', moduleId: 'work' },
+          group: 'Boards',
+        }
+      : null,
+  );
+  useScreenActions(
+    project
+      ? [
+          {
+            id: 'work.go-backlog',
+            title: 'Go to backlog',
+            keys: 'G L',
+            look: { kind: 'icon', icon: 'backlog' },
+            run: () => navigateTo(workPaths.backlog(project.key)),
+          },
+        ]
+      : null,
+  );
+}
+
 /** The Board: Scrum or Kanban, matching the Board mock, with live updates over the socket. */
 export default function BoardScreen({ projectKey }: WorkScreenProps) {
   const screen = useBoardScreen(projectKey);
+  useBoardPresence(screen.project);
   if (screen.isPending) return <BoardSkeleton />;
   if (screen.error) {
     return (

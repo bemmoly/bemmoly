@@ -1,6 +1,7 @@
 import type { BoardMetrics, BoardView, Project, Sprint } from '@bemmoly/module-work/shared';
 import { Icon } from '@bemmoly/ui/icons';
-import { Breadcrumbs, Button, MetricSparkline, MetricTile, ProgressBar } from '@bemmoly/ui';
+import { HeaderActions } from '@bemmoly/core-web';
+import { Button, MetricSparkline, MetricTile, ProgressBar } from '@bemmoly/ui';
 import { Fragment } from 'react';
 import { navigateTo } from '../hooks/issue-navigation.ts';
 import { BoardActionsMenu } from './board-actions-menu.tsx';
@@ -54,7 +55,10 @@ export interface BoardHeaderProps {
   inFlight: number;
 }
 
-/** The breadcrumb, the sprint or flow heading and the metrics strip, as the Board mock's top. */
+/**
+ * The sprint or flow heading and the metrics strip, as the Board mock's top; the trail and the
+ * board's ··· live in the frame's header.
+ */
 export function BoardHeader({ project, view, metrics, sprint, inFlight }: BoardHeaderProps) {
   const kanban = project.method === 'kanban';
   const flow = metrics ?? view.metrics;
@@ -67,9 +71,6 @@ export function BoardHeader({ project, view, metrics, sprint, inFlight }: BoardH
   const cycle = flow.cycleTimeDays;
   return (
     <>
-      <Breadcrumbs
-        items={[{ label: 'Projects' }, { label: project.name }, { label: view.board.name }]}
-      />
       <div className="flex items-start gap-4">
         <div className="flex min-w-0 flex-col gap-1">
           <h1 className="m-0 text-22 font-semibold tracking-title whitespace-nowrap">
@@ -139,8 +140,10 @@ export function BoardHeader({ project, view, metrics, sprint, inFlight }: BoardH
               Complete sprint
             </Button>
           )}
-          <BoardActionsMenu project={project} boardName={view.board.name} />
         </div>
+        <HeaderActions>
+          <BoardActionsMenu project={project} boardName={view.board.name} />
+        </HeaderActions>
       </div>
     </>
   );

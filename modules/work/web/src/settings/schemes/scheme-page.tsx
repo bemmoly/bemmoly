@@ -1,9 +1,8 @@
 import { isApiError } from '@bemmoly/api-client';
-import type { Project } from '@bemmoly/module-work/shared';
 import {
   Button,
   ConfirmChange,
-  PageHeader,
+  PageTitle,
   SchemeOverrideBanner,
   SettingsContent,
   SettingsFrame,
@@ -11,7 +10,6 @@ import {
 import type { ReactNode } from 'react';
 import { NO_PROJECT_PERMISSION } from '../../hooks/settings-access.ts';
 import type { SchemeFlow } from '../../hooks/settings-scheme-flow.ts';
-import { onLinkClick } from '../../workflow/navigate.ts';
 import { DiffDialog, invertDiff } from '../diff-dialog.tsx';
 
 const failure = (error: unknown) =>
@@ -22,12 +20,10 @@ const failure = (error: unknown) =>
   ) : undefined;
 
 export interface SchemePageProps {
-  project: Project | undefined;
   title: string;
   description: string;
   flow: SchemeFlow;
   canConfigure: boolean;
-  nav: ReactNode;
   children: ReactNode;
 }
 
@@ -36,36 +32,20 @@ export interface SchemePageProps {
  * or Reset, the "Inherits from" banner with its diff, and the asks.
  */
 export function SchemePage({
-  project,
   title,
   description,
   flow,
   canConfigure,
-  nav,
   children,
 }: SchemePageProps) {
   const overridden = flow.status?.overridden ?? false;
   const origin = flow.status?.originName ?? 'the org default';
   const locked = canConfigure ? undefined : NO_PROJECT_PERMISSION;
   return (
-    <SettingsFrame nav={nav}>
+    <SettingsFrame nav={null}>
       <SettingsContent width="narrow">
-        <PageHeader
+        <PageTitle
           variant="settings"
-          breadcrumbs={[
-            { label: 'Projects' },
-            ...(project
-              ? [
-                  {
-                    label: project.name,
-                    href: `/work/board/${project.key}`,
-                    linkProps: { onClick: onLinkClick(`/work/board/${project.key}`) },
-                  },
-                ]
-              : []),
-            { label: 'Settings' },
-            { label: title },
-          ]}
           title={title}
           description={description}
           actions={

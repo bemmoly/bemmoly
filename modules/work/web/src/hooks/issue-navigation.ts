@@ -9,8 +9,6 @@ export const workPaths = {
   settings: (projectKey: string) => `/work/members/${projectKey}`,
   projects: () => '/work/projects',
   myIssues: () => '/work/my-issues',
-  newProject: () => '/work/projects/new',
-  createIssue: (projectKey?: string) => `/work/create${projectKey ? `/${projectKey}` : ''}`,
 };
 
 interface RouterState {
