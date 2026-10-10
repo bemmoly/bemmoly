@@ -24,9 +24,57 @@ export function useSearch(): string {
   return useSyncExternalStore(subscribe, snapshot, () => '');
 }
 
-/** One parameter of the current query string, or null. */
+let parsed: { search: string; params: URLSearchParams } | null = null;
+
+/** The current parameters, parsed once per address however many components ask. */
+function currentParams(): URLSearchParams {
+  const search = window.location.search;
+  if (parsed?.search !== search) parsed = { search, params: new URLSearchParams(search) };
+  return parsed.params;
+}
+
+/**
+ * One parameter of the current query string, or null. It re-renders only when that parameter
+ * changes, so typing in a filter does not redraw everything that reads the open issue.
+ */
 export function useSearchParam(name: string): string | null {
-  return new URLSearchParams(useSearch()).get(name);
+  return useSyncExternalStore(
+    subscribe,
+    () => currentParams().get(name),
+    () => null,
+  );
+}
+
+/**
+ * Whether a parameter holds this value: a list row asks whether it is the open issue, and only
+ * the rows that were or become open re-render when another one opens.
+ */
+export function useSearchParamIs(name: string, value: string): boolean {
+  return useSyncExternalStore(
+    subscribe,
+    () => currentParams().get(name) === value,
+    () => false,
+  );
+}
+
+/**
+ * Only the named parameters, in a fixed order, as a query string: the part of the address one
+ * concern reads, so a change to any other parameter leaves it, and its readers, alone.
+ */
+export function useSearchSlice(names: readonly string[]): string {
+  return useSyncExternalStore(
+    subscribe,
+    () => {
+      const params = currentParams();
+      const slice = new URLSearchParams();
+      for (const name of names) {
+        const value = params.get(name);
+        if (value !== null) slice.set(name, value);
+      }
+      return slice.toString();
+    },
+    () => '',
+  );
 }
 
 interface RouterState {

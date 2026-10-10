@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { joinParam, listParam, setSearchParams, useSearch } from './url-state.ts';
+import { joinParam, listParam, setSearchParams, useSearchSlice } from './url-state.ts';
 
 /*
  * The one filter model Board and Backlog share. It lives in the address, so a filtered board
@@ -40,6 +40,9 @@ export const NO_FILTERS: IssueFilters = {
   lql: '',
   view: null,
 };
+
+/** The parameters the filters live in; the open issue and the grouping are not among them. */
+const FILTER_PARAMS = ['q', 'assignee', 'epic', 'type', 'label', 'quick', 'lql', 'view'] as const;
 
 export function parseFilters(search: string): IssueFilters {
   const params = new URLSearchParams(search);
@@ -112,7 +115,9 @@ const flip = (list: readonly string[], id: string) =>
 
 /** The filters from the address, and the ways to change them. */
 export function useIssueFilters() {
-  const search = useSearch();
+  // Opening an issue writes the address too; the filters, and every list built from them,
+  // stay as they were.
+  const search = useSearchSlice(FILTER_PARAMS);
   const filters = useMemo(() => parseFilters(search), [search]);
   return useMemo(
     () => ({
