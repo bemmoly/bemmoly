@@ -1,5 +1,5 @@
-import { Button } from '@bemmoly/ui';
-import { Icon } from '@bemmoly/ui/icons';
+import { IconButton, Tooltip } from '@bemmoly/ui';
+import type { IconName } from '@bemmoly/ui/icons';
 import type { Editor } from '@tiptap/core';
 import { Fragment, useEffect, useReducer, type RefObject } from 'react';
 import { cx } from '../cx.ts';
@@ -7,16 +7,14 @@ import { useEditorState } from '../editor/use-editor.ts';
 
 /*
  * The table's tools, over the table the caret is in: add and remove rows and columns, turn
- * the header row on or off, delete the table. A table has no tools in the mock, so they take
- * the menu's surface and the ghost buttons, one short row above the table, and appear only
- * while a cell holds the caret.
+ * the header row on or off, delete the table. Icon buttons from the one icon set, each named
+ * by its tooltip (the Docs review's components: "table tools all draw from the one icon set"),
+ * on the popover surface, one short row above the table while a cell holds the caret.
  */
 
 interface TableTool {
-  /** What the button shows, after its icon when it has one. */
-  short: string;
-  icon?: 'plus' | 'minus';
-  /** What it is called. */
+  icon: IconName;
+  /** What it is called, in its tooltip and to assistive tech. */
   label: string;
   run: (editor: Editor) => boolean;
   can: (editor: Editor) => boolean;
@@ -28,21 +26,19 @@ const chain = (editor: Editor) => editor.chain().focus();
 const GROUPS: ReadonlyArray<readonly TableTool[]> = [
   [
     {
-      short: 'Row',
-      icon: 'plus',
+      icon: 'row-add',
       label: 'Add row below',
       run: (e) => chain(e).addRowAfter().run(),
       can: (e) => e.can().addRowAfter(),
     },
     {
-      short: 'Column',
-      icon: 'plus',
+      icon: 'column-add',
       label: 'Add column right',
       run: (e) => chain(e).addColumnAfter().run(),
       can: (e) => e.can().addColumnAfter(),
     },
     {
-      short: 'Header',
+      icon: 'header-row',
       label: 'Header row',
       run: (e) => chain(e).toggleHeaderRow().run(),
       can: (e) => e.can().toggleHeaderRow(),
@@ -50,23 +46,21 @@ const GROUPS: ReadonlyArray<readonly TableTool[]> = [
   ],
   [
     {
-      short: 'Row',
-      icon: 'minus',
+      icon: 'row-remove',
       label: 'Delete row',
       run: (e) => chain(e).deleteRow().run(),
       can: (e) => e.can().deleteRow(),
       danger: true,
     },
     {
-      short: 'Column',
-      icon: 'minus',
+      icon: 'column-remove',
       label: 'Delete column',
       run: (e) => chain(e).deleteColumn().run(),
       can: (e) => e.can().deleteColumn(),
       danger: true,
     },
     {
-      short: 'Delete table',
+      icon: 'trash-can',
       label: 'Delete table',
       run: (e) => chain(e).deleteTable().run(),
       can: (e) => e.can().deleteTable(),
@@ -113,32 +107,26 @@ export function TableTools({
       aria-label="Table"
       onMouseDown={(event) => event.preventDefault()}
       style={{ top: box.top - origin.top - 6, left: box.left - origin.left }}
-      className="absolute z-10 flex -translate-y-full items-center gap-0.5 rounded-card border border-line bg-card p-1 shadow-e2"
+      className="absolute z-10 flex -translate-y-full items-center gap-0.5 rounded-dialog bg-card p-1 shadow-e2"
     >
       {GROUPS.map((group, index) => (
         <Fragment key={index}>
           {index > 0 && (
-            <span
-              role="separator"
-              aria-orientation="vertical"
-              className="mx-1 h-4 w-px bg-line-2"
-            />
+            <span role="separator" aria-orientation="vertical" className="mx-1 h-4 w-px bg-line" />
           )}
           {group.map((tool) => (
-            <Button
-              key={tool.label}
-              type="button"
-              size="xs"
-              variant="ghost"
-              aria-label={tool.label}
-              title={tool.label}
-              disabled={!tool.can(editor)}
-              onClick={() => tool.run(editor)}
-              className={cx(tool.danger && 'text-red')}
-            >
-              {tool.icon && <Icon name={tool.icon} size={12} />}
-              {tool.short}
-            </Button>
+            <Tooltip key={tool.label} label={tool.label}>
+              <IconButton
+                size="xs"
+                label={tool.label}
+                icon={tool.icon}
+                // The Tooltip names it; no second, native tip.
+                title=""
+                disabled={!tool.can(editor)}
+                onClick={() => tool.run(editor)}
+                className={cx(tool.danger && 'text-red enabled:hover:text-red')}
+              />
+            </Tooltip>
           ))}
         </Fragment>
       ))}
