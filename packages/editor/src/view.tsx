@@ -28,6 +28,8 @@ function marked(text: ReactNode, node: RichTextNode, key: number, navigate?: Nav
         return <em key={key}>{inner}</em>;
       case 'strike':
         return <s key={key}>{inner}</s>;
+      case 'highlight':
+        return <mark key={key}>{inner}</mark>;
       case 'code':
         return <code key={key}>{inner}</code>;
       case 'link': {

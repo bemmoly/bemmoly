@@ -32,6 +32,8 @@ const BLOCKS = [
   '[&_pre_code]:bg-transparent [&_pre_code]:p-0 [&_pre_code]:font-normal',
   '[&_hr]:m-0 [&_hr]:border-0 [&_hr]:border-t',
   '[&_[data-type=mention]]:font-medium [&_[data-type=mention]]:text-acc',
+  // A highlight is a flat tint; comment anchors add an underline, so the two never read alike.
+  '[&_mark]:rounded-tick [&_mark]:bg-amber-50 [&_mark]:px-px [&_mark]:text-inherit',
 ].join(' ');
 
 /** The measures of a description, a comment and a drawer: the Issue mock's. */
