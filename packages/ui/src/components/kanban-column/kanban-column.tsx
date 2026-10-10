@@ -113,6 +113,8 @@ export interface KanbanCellProps extends HTMLAttributes<HTMLDivElement> {
   dropping?: boolean;
   /** A drag is over this cell and the workflow refuses it: the dashed amber frame. */
   refused?: boolean;
+  /** Compact cards sit 6px apart instead of 8px. */
+  compact?: boolean;
 }
 
 /** The drop area of one column inside a lane: cards 8px apart, 2px above and 8px below. */
@@ -120,6 +122,7 @@ export function KanbanCell({
   label,
   dropping = false,
   refused = false,
+  compact = false,
   className,
   children,
   ...rest
@@ -129,7 +132,8 @@ export function KanbanCell({
       role="group"
       aria-label={label}
       className={cx(
-        'flex min-h-11 min-w-0 flex-col gap-2 rounded-card pt-0.5 pb-2 motion-safe:transition-colors',
+        'flex min-h-11 min-w-0 flex-col rounded-card pt-0.5 pb-2 motion-safe:transition-colors',
+        compact ? 'gap-1.5' : 'gap-2',
         // An outline, not a border, so a drag over the cell never nudges its cards by a pixel.
         dropping && 'bg-acc-50 outline-1 -outline-offset-1 outline-acc-100 outline-dashed',
         refused && 'bg-amber-50 outline-1 -outline-offset-1 outline-amber outline-dashed',

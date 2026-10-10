@@ -8,9 +8,12 @@ import { BlockedChip, IssueAssignee, Points, type CardPerson } from './issue-ato
 
 export interface IssueCardProps {
   issueKey: string;
+  /** Prints the key beside the type; off, the key still names the card to assistive tech. */
+  showKey?: boolean;
   title: ReactNode;
   type: IssueTypeRef;
-  priority: Priority;
+  /** The priority bars; undefined leaves the slot out. */
+  priority?: Priority;
   /** The assignee; null draws the unassigned ring, undefined leaves the slot out. */
   assignee?: CardPerson | null;
   /** Names, or stored labels with their colour. */
@@ -41,6 +44,8 @@ export interface IssueCardProps {
   onCheck?: (event: MouseEvent<HTMLElement>) => void;
   /** Whether any card on the screen is checked; the boxes then stay visible. */
   selecting?: boolean;
+  /** Compact tightens the padding and gaps and keeps the title to two lines. */
+  density?: 'comfortable' | 'compact';
   /** A 3px left border from a colour rule; see cardStripe. */
   stripeClassName?: string;
   /**
@@ -111,6 +116,7 @@ function SelectBox({ issueKey, checked, visible, onCheck }: SelectBoxProps) {
  */
 export function IssueCard({
   issueKey,
+  showKey = true,
   title,
   type,
   priority,
@@ -126,6 +132,7 @@ export function IssueCard({
   pending = false,
   onCheck,
   selecting = false,
+  density = 'comfortable',
   stripeClassName,
   tools,
   onSelect,
@@ -148,7 +155,8 @@ export function IssueCard({
       onClick={onSelect}
       onKeyDown={onSelect ? onKeyDown : undefined}
       className={cx(
-        'group/card relative flex flex-col gap-2 rounded-card px-2.75 pt-2.5 pb-2.25 text-13 text-tx',
+        'group/card relative flex flex-col rounded-card text-13 text-tx',
+        density === 'compact' ? 'gap-1.25 px-2.5 py-1.75' : 'gap-2 px-2.75 pt-2.5 pb-2.25',
         'motion-safe:transition-[box-shadow,background-color,opacity]',
         checked ? 'bg-acc-50 shadow-e1 ring-1 ring-acc-100' : 'bg-card shadow-e1',
         pending && 'opacity-60 motion-safe:delay-(--duration-base)',
@@ -178,7 +186,14 @@ export function IssueCard({
         </div>
       )}
       {blockedBy && <BlockedChip by={blockedBy} />}
-      <div className="leading-card font-medium text-pretty">{title}</div>
+      <div
+        className={cx(
+          'leading-card font-medium text-pretty',
+          density === 'compact' && 'line-clamp-2',
+        )}
+      >
+        {title}
+      </div>
       {labels && labels.length > 0 && (
         <div className="flex flex-wrap gap-1">
           {labels.map((label) => {
@@ -199,7 +214,7 @@ export function IssueCard({
           )}
           <TypeGlyph type={type} />
         </span>
-        <span className="font-mono text-12 tracking-[-0.01em]">{issueKey}</span>
+        {showKey && <span className="font-mono text-12 tracking-[-0.01em]">{issueKey}</span>}
         {doc && (
           <span className="flex items-center gap-0.75 text-11 text-acc">
             <Icon name="doc" size={11} />
@@ -216,7 +231,7 @@ export function IssueCard({
           </span>
         )}
         <span className="ml-auto flex items-center gap-1.5">
-          <PriorityGlyph priority={priority} />
+          {priority && <PriorityGlyph priority={priority} />}
           {estimate !== undefined && <Points value={estimate} />}
           {age && (
             <span

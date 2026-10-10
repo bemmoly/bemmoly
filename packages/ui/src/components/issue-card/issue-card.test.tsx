@@ -32,4 +32,21 @@ describe('IssueCard', () => {
     rerender(<IssueCard {...base} onCheck={() => undefined} checked />);
     expect(screen.getByRole('checkbox').getAttribute('aria-checked')).toBe('true');
   });
+
+  it('leaves out the key and the priority when asked, and draws no box without onCheck', () => {
+    const { rerender } = render(<IssueCard {...base} priority="high" />);
+    expect(screen.getByText('PLT-241')).toBeTruthy();
+    expect(screen.getByLabelText('High priority')).toBeTruthy();
+    rerender(
+      <IssueCard issueKey="PLT-241" title="Structured logging" type="story" showKey={false} />,
+    );
+    expect(screen.queryByText('PLT-241')).toBeNull();
+    expect(screen.queryByLabelText('High priority')).toBeNull();
+    expect(screen.queryByRole('checkbox')).toBeNull();
+  });
+
+  it('clamps the title to two lines when compact', () => {
+    render(<IssueCard {...base} density="compact" />);
+    expect(screen.getByText('Structured logging').className).toContain('line-clamp-2');
+  });
 });
