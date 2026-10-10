@@ -5,7 +5,7 @@ import { usePageScreen } from '../screen-context.ts';
 import { useUpdatePage } from '../use-page-actions.ts';
 
 /** The mock's title: 600 36px/1.15, -0.02em, tx. The field and the heading share it. */
-const TITLE = 'm-0 text-36 leading-title font-semibold tracking-display text-tx';
+const TITLE = 'm-0 text-36 leading-display font-semibold tracking-display text-tx';
 
 export const TITLE_FIELD_ID = 'page-title';
 

@@ -18,7 +18,7 @@ export function shortDate(iso: string, now: Date = new Date()): string {
 
 /** One of the quiet chips over the title (RFC · Owner: Priya N. · Reviewers: Rohan, Jonas). */
 function Chip({ children }: { children: ReactNode }) {
-  return <li className="rounded-xs bg-chip px-2 py-0.75 leading-normal">{children}</li>;
+  return <li className="rounded-xs bg-chip px-2 py-0.75">{children}</li>;
 }
 
 /** The labels, owner and reviewers as the mock prints them above the title. */
@@ -30,7 +30,7 @@ function Chips() {
   return (
     <ul
       aria-label="Page facts"
-      className="m-0 flex list-none flex-wrap gap-1.5 p-0 text-12 text-tx4"
+      className="m-0 flex list-none flex-wrap gap-1.5 p-0 text-12 leading-prose text-tx4"
     >
       {page.labels.map((label) => (
         <Chip key={label}>{label}</Chip>
@@ -55,7 +55,7 @@ function MetaLine() {
     readingTime(stats),
   ].filter(Boolean);
   return (
-    <p className="m-0 flex flex-wrap items-center gap-3.5 border-b border-br-row pb-1.5 text-12h leading-normal text-tx5">
+    <p className="m-0 flex flex-wrap items-center gap-3.5 border-b border-br-row pb-1.5 text-12h leading-prose text-tx5">
       {parts.map((part, index) => (
         <Fragment key={index}>
           {index > 0 && <span aria-hidden>·</span>}

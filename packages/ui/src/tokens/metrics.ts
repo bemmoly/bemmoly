@@ -53,6 +53,7 @@ export const RADII = {
 } as const;
 
 export const LEADING = {
+  display: '1.15',
   title: '1.3',
   card: '1.4',
   note: '1.45',

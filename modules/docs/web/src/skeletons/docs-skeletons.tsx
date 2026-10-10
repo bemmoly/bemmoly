@@ -127,7 +127,11 @@ export function PageSkeleton({ panel = false }: { panel?: boolean }) {
       <div className="flex min-h-0 flex-1">
         <div className="min-w-0 flex-1 overflow-hidden bg-sf">
           <div className="mx-auto flex max-w-180 flex-col gap-4.5 px-4 pt-8 sm:px-10 sm:pt-12">
-            <Line width="55%" size="text-36" bar={26} />
+            <span className="flex h-6.5 items-center gap-1.5">
+              <Skeleton width={110} height={26} shape="block" />
+              <Skeleton width={130} height={26} shape="block" />
+            </span>
+            <Line width="55%" size="text-36 leading-display" bar={26} />
             <span className="border-b border-br-row pb-1.5">
               <Line width={260} size="text-12h" bar={9} />
             </span>
