@@ -34,7 +34,7 @@ const ROW =
 /** Secondary actions at the end of a row: shown on hover and focus, always on touch screens. */
 function RowActions({ children }: { children: ReactNode }) {
   return (
-    <span className="flex shrink-0 items-center opacity-100 transition-opacity duration-(--duration-base) pointer-fine:opacity-0 pointer-fine:group-focus-within/row:opacity-100 pointer-fine:group-hover/row:opacity-100">
+    <span className="flex shrink-0 items-center opacity-100 motion-safe:transition-opacity motion-safe:duration-(--duration-base) pointer-fine:opacity-0 pointer-fine:group-focus-within/row:opacity-100 pointer-fine:group-hover/row:opacity-100">
       {children}
     </span>
   );
