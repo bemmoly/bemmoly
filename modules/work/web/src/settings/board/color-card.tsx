@@ -84,9 +84,10 @@ export function ColorCard(props: ColorCardProps) {
             <button
               type="button"
               onClick={() => onRules([...rules, { query: '', color: RULE_COLORS[0]?.hex ?? '' }])}
-              className="ml-auto cursor-pointer border-0 bg-transparent p-0 font-sans text-12h font-medium text-ac hover:text-ac-d"
+              className="ml-auto inline-flex cursor-pointer items-center gap-1 border-0 bg-transparent p-0 font-sans text-12h font-medium text-ac hover:text-ac-d"
             >
-              + Add rule
+              <Icon name="plus" size={14} />
+              Add rule
             </button>
           )}
         </div>

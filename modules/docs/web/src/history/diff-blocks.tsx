@@ -1,4 +1,5 @@
 import type { BlockDiff } from '@bemmoly/module-docs/shared';
+import { Icon } from '@bemmoly/ui/icons';
 import type { ReactNode } from 'react';
 import { InlineContent, InlineRuns } from './diff-inline.tsx';
 import { blockName, blockShell, StaticNode, type ShellProps } from './diff-node.tsx';
@@ -69,7 +70,7 @@ export function MoveLink({ block, target, end }: MoveLinkProps) {
       onClick={() => jumpTo(target)}
       className="inline-flex cursor-pointer items-center gap-1.5 rounded-xs border-0 bg-transparent p-0 font-sans text-11h font-medium text-violet-fg hover:underline focus-ring"
     >
-      <span aria-hidden>{down === (end === 'move') ? '↑' : '↓'}</span>
+      <Icon name={down === (end === 'move') ? 'arrow-up' : 'arrow-down'} size={12} />
       {label}
     </button>
   );

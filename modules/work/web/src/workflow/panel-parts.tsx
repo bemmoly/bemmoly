@@ -59,7 +59,7 @@ export function AddLink({
     <button
       type="button"
       className={cx(
-        'cursor-pointer self-start border-0 bg-transparent p-0 text-left font-sans text-12h font-medium disabled:cursor-not-allowed disabled:text-tx5',
+        'inline-flex cursor-pointer items-center gap-1 self-start border-0 bg-transparent p-0 text-left font-sans text-12h font-medium disabled:cursor-not-allowed disabled:text-tx5',
         tone === 'accent' ? 'text-ac hover:text-ac-d' : 'text-danger hover:text-danger-hi',
         'focus-ring',
         className,

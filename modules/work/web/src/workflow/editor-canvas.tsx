@@ -8,6 +8,7 @@ import {
   WorkflowCanvas,
   WorkflowLegend,
 } from '@bemmoly/ui';
+import { Icon } from '@bemmoly/ui/icons';
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { useCanvasPointer } from '../hooks/workflow-canvas-pointer.ts';
 import { NUDGE, type WorkflowEditorModel } from '../hooks/workflow-editor.ts';
@@ -181,7 +182,13 @@ export function EditorCanvas({
             onClick={() => actions.select(target)}
             onKeyDown={(event) => onKey(event, target)}
           >
-            {shape.any ? `Any → ${transition.name}` : transition.name}
+            {shape.any ? (
+              <>
+                Any <Icon name="arrow" size={11} label="to" /> {transition.name}
+              </>
+            ) : (
+              transition.name
+            )}
             {/* The selected edge alone carries its chips: at rest the labels stay the
                 mock's width, which already fills the 40px between neighbours. */}
             {transition.id === selectedTransition && <RuleChips transition={transition} />}

@@ -1,5 +1,6 @@
 import type { PageComment } from '@bemmoly/module-docs/shared';
-import { Button, EmptyState, SegmentedControl, Skeleton, useToast } from '@bemmoly/ui';
+import { Icon } from '@bemmoly/ui/icons';
+import { Button, EmptyState, SegmentedControl, Skeleton, spokenKeys, useToast } from '@bemmoly/ui';
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
 import { useSession } from '../shared/people.ts';
 import { CommentBox } from './comment-box.tsx';
@@ -128,7 +129,8 @@ export function CommentsRail({ pageId, canComment = true }: CommentsRailProps) {
         />
         {canComment && !general && (
           <Button size="xs" variant="ghost" className="ml-auto" onClick={() => setGeneral(true)}>
-            + Comment
+            <Icon name="plus" size={14} />
+            Comment
           </Button>
         )}
       </div>
@@ -179,7 +181,7 @@ export function CommentsRail({ pageId, canComment = true }: CommentsRailProps) {
             title={filter === 'open' ? 'No open comments' : 'No resolved comments'}
             description={
               filter === 'open' && canComment
-                ? `Select text in the page and choose Comment, or press ${COMMENT_SHORTCUT}.`
+                ? `Select text in the page and choose Comment, or press ${spokenKeys(COMMENT_SHORTCUT)}.`
                 : 'Resolved threads are kept here.'
             }
           />

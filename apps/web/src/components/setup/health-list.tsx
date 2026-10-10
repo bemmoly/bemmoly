@@ -1,12 +1,14 @@
 import { Card } from '@bemmoly/ui';
+import { Icon } from '@bemmoly/ui/icons';
+import type { ReactNode } from 'react';
 import type { HealthRow, HealthRowStatus } from '../../hooks/use-setup-health.ts';
 import { RouterLink } from '../router-link.tsx';
 
-const CIRCLE: Record<HealthRowStatus, { look: string; glyph: string; label: string }> = {
-  ok: { look: 'bg-ok', glyph: '✓', label: 'OK' },
-  warning: { look: 'bg-caution', glyph: '!', label: 'Needs attention' },
-  failed: { look: 'bg-danger', glyph: '!', label: 'Failed' },
-  pending: { look: 'border border-br-ctl bg-sf', glyph: '', label: 'Not checked yet' },
+const CIRCLE: Record<HealthRowStatus, { look: string; mark: ReactNode; label: string }> = {
+  ok: { look: 'bg-ok', mark: <Icon name="check" size={10} />, label: 'OK' },
+  warning: { look: 'bg-caution', mark: '!', label: 'Needs attention' },
+  failed: { look: 'bg-danger', mark: '!', label: 'Failed' },
+  pending: { look: 'border border-br-ctl bg-sf', mark: null, label: 'Not checked yet' },
 };
 
 /**
@@ -28,7 +30,7 @@ export function StatusCircle({
         aria-hidden="true"
         className={`flex size-4 shrink-0 items-center justify-center rounded-full text-10 text-on-solid ${circle.look}`}
       >
-        {circle.glyph}
+        {circle.mark}
       </span>
       {spoken ? <span className="sr-only">{spoken}</span> : null}
     </>

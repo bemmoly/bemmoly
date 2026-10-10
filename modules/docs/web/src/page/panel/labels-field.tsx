@@ -1,4 +1,5 @@
 import { labelNameSchema } from '@bemmoly/module-docs/shared';
+import { Icon } from '@bemmoly/ui/icons';
 import { Tag } from '@bemmoly/ui';
 import { useQuery } from '@tanstack/react-query';
 import { useDeferredValue, useId, useState, type KeyboardEvent } from 'react';
@@ -74,9 +75,10 @@ export function LabelsField() {
           <button
             type="button"
             onClick={() => setDraft('')}
-            className="cursor-pointer rounded-xs border-0 bg-transparent px-1 py-0.5 font-sans text-12h font-medium text-ac hover:text-ac-d focus-visible:shadow-ring focus-visible:outline-0"
+            className="inline-flex cursor-pointer items-center gap-1 rounded-xs border-0 bg-transparent px-1 py-0.5 font-sans text-12h font-medium text-ac hover:text-ac-d focus-visible:shadow-ring focus-visible:outline-0"
           >
-            + Add label
+            <Icon name="plus" size={14} />
+            Add label
           </button>
         )
       ) : (

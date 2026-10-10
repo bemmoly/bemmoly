@@ -97,7 +97,7 @@ export function LanesTab(props: LanesTabProps) {
       {lanes.kind === 'query' && (
         <NamedQueries
           title="Custom lanes"
-          addLabel="+ Add lane"
+          addLabel="Add lane"
           noun="lane"
           items={lanes.queries}
           editable={editable}

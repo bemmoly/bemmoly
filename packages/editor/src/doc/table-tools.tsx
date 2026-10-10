@@ -1,4 +1,5 @@
 import { Button } from '@bemmoly/ui';
+import { Icon } from '@bemmoly/ui/icons';
 import type { Editor } from '@tiptap/core';
 import { Fragment, useEffect, useReducer, type RefObject } from 'react';
 import { cx } from '../cx.ts';
@@ -12,8 +13,9 @@ import { useEditorState } from '../editor/use-editor.ts';
  */
 
 interface TableTool {
-  /** What the button shows. */
+  /** What the button shows, after its icon when it has one. */
   short: string;
+  icon?: 'plus' | 'minus';
   /** What it is called. */
   label: string;
   run: (editor: Editor) => boolean;
@@ -26,13 +28,15 @@ const chain = (editor: Editor) => editor.chain().focus();
 const GROUPS: ReadonlyArray<readonly TableTool[]> = [
   [
     {
-      short: '+ Row',
+      short: 'Row',
+      icon: 'plus',
       label: 'Add row below',
       run: (e) => chain(e).addRowAfter().run(),
       can: (e) => e.can().addRowAfter(),
     },
     {
-      short: '+ Column',
+      short: 'Column',
+      icon: 'plus',
       label: 'Add column right',
       run: (e) => chain(e).addColumnAfter().run(),
       can: (e) => e.can().addColumnAfter(),
@@ -46,14 +50,16 @@ const GROUPS: ReadonlyArray<readonly TableTool[]> = [
   ],
   [
     {
-      short: '− Row',
+      short: 'Row',
+      icon: 'minus',
       label: 'Delete row',
       run: (e) => chain(e).deleteRow().run(),
       can: (e) => e.can().deleteRow(),
       danger: true,
     },
     {
-      short: '− Column',
+      short: 'Column',
+      icon: 'minus',
       label: 'Delete column',
       run: (e) => chain(e).deleteColumn().run(),
       can: (e) => e.can().deleteColumn(),
@@ -126,6 +132,7 @@ export function TableTools({
               onClick={() => tool.run(editor)}
               className={cx(tool.danger && 'text-danger')}
             >
+              {tool.icon && <Icon name={tool.icon} size={12} />}
               {tool.short}
             </Button>
           ))}

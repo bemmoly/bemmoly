@@ -1,4 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { Icon } from '../../icons/icon.tsx';
+import { Kbd } from '../kbd/kbd.tsx';
 import { useState } from 'react';
 import { Button } from '../button/button.tsx';
 import { TypeGlyph } from '../glyphs/glyphs.tsx';
@@ -35,7 +37,12 @@ function Palette({ plan, inline }: { plan: boolean; inline: boolean }) {
   const [q, setQ] = useState(plan ? 'move everything blocked by PLT-204 to next sprint' : 'auth');
   const [scope, setScope] = useState<Scope>('all');
   const [open, setOpen] = useState(true);
-  if (!open) return <Button onClick={() => setOpen(true)}>Open ⌘K</Button>;
+  if (!open)
+    return (
+      <Button onClick={() => setOpen(true)}>
+        Open <Kbd keys="Mod+K" variant="plain" />
+      </Button>
+    );
   return (
     <CommandPalette open inline={inline} onClose={() => setOpen(false)}>
       <CommandInput value={q} onValueChange={setQ} />
@@ -62,9 +69,9 @@ function Palette({ plan, inline }: { plan: boolean; inline: boolean }) {
               target: 'PLT-211',
               change: 'Session cleanup background job',
               field: (
-                <>
-                  Sprint 14 → <b>Sprint 15</b>
-                </>
+                <span className="inline-flex items-center gap-1">
+                  Sprint 14 <Icon name="arrow" size={12} label="to" /> <b>Sprint 15</b>
+                </span>
               ),
               allowed: true,
             },
@@ -72,9 +79,9 @@ function Palette({ plan, inline }: { plan: boolean; inline: boolean }) {
               target: 'PLT-219',
               change: 'Remove legacy cookie path from monolith',
               field: (
-                <>
-                  Sprint 14 → <b>Sprint 15</b>
-                </>
+                <span className="inline-flex items-center gap-1">
+                  Sprint 14 <Icon name="arrow" size={12} label="to" /> <b>Sprint 15</b>
+                </span>
               ),
               allowed: true,
             },
@@ -113,7 +120,7 @@ function Palette({ plan, inline }: { plan: boolean; inline: boolean }) {
           </CommandGroup>
           <CommandGroup label="Docs">
             <CommandItem
-              icon={<CommandGlyph glyph="≡" />}
+              icon={<CommandGlyph icon="doc" />}
               title="Auth service RFC"
               meta="Engineering · edited 2h ago"
               onSelect={noop}
@@ -121,15 +128,15 @@ function Palette({ plan, inline }: { plan: boolean; inline: boolean }) {
           </CommandGroup>
           <CommandGroup label="Actions">
             <CommandItem
-              icon={<CommandGlyph glyph="●" tone="ai" round />}
+              icon={<CommandGlyph icon="spark" tone="ai" round />}
               title="Ask: what changed in auth this week?"
               meta="AI answer with citations"
               onSelect={noop}
             />
             <CommandItem
-              icon={<CommandGlyph glyph="+" tone="accent" />}
+              icon={<CommandGlyph icon="plus" tone="accent" />}
               title="Create issue in Platform Core"
-              meta="⌘ N"
+              meta={<Kbd keys="Mod+N" />}
               onSelect={noop}
             />
           </CommandGroup>

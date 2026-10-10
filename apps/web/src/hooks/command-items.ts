@@ -1,3 +1,4 @@
+import type { IconName } from '@bemmoly/ui/icons';
 import {
   buildSettingsNav,
   flattenSettings,
@@ -10,7 +11,7 @@ import type { PaletteScope } from '../store/ui.ts';
 export interface PaletteItem extends CommandItem {
   /** Runs before navigating to `href` (when there is one). */
   run?: () => void;
-  glyph: string;
+  icon: IconName;
   /** A record's short handle, such as an issue key, printed in mono before the title. */
   issueKey?: string;
   /** Found and ranked by a module's search provider, so ⌘K does not filter it again. */
@@ -54,13 +55,13 @@ export interface PaletteSources {
 const action = (
   id: string,
   title: string,
-  glyph: string,
+  icon: IconName,
   rest: Partial<PaletteItem>,
 ): PaletteItem => ({
   id,
   group: 'Actions',
   title,
-  glyph,
+  icon,
   href: '',
   ...rest,
 });
@@ -81,7 +82,7 @@ export function paletteItems(sources: PaletteSources): PaletteItem[] {
       ...(hit.subtitle ? { subtitle: hit.subtitle } : {}),
       ...(hit.key ? { issueKey: hit.key } : {}),
       href: hit.href,
-      glyph: '▮',
+      icon: /doc|page/.test(hit.kind) ? 'doc' : 'board',
       fromServer: true,
     }));
   const people = new Map<string, PaletteItem>();
@@ -92,7 +93,7 @@ export function paletteItems(sources: PaletteSources): PaletteItem[] {
       title: user.name,
       subtitle: user.email,
       href: '/settings/users',
-      glyph: '',
+      icon: 'people',
     });
   }
   for (const hit of sources.searchHits) {
@@ -103,59 +104,61 @@ export function paletteItems(sources: PaletteSources): PaletteItem[] {
         title: hit.title,
         subtitle: hit.subtitle ?? undefined,
         href: hit.href,
-        glyph: '',
+        icon: 'people',
       });
     }
   }
-  const settings = flattenSettings(buildSettingsNav(sources.modules, sources.viewer)).map(
-    (entry) => ({
-      id: `setting:${entry.id}`,
-      group: 'Settings',
-      title: entry.label,
-      subtitle: 'Settings',
-      keywords: entry.id.split('-'),
-      href: entry.path,
-      glyph: '⚙',
-    }),
-  );
+  const settings: PaletteItem[] = flattenSettings(
+    buildSettingsNav(sources.modules, sources.viewer),
+  ).map((entry) => ({
+    id: `setting:${entry.id}`,
+    group: 'Settings',
+    title: entry.label,
+    subtitle: 'Settings',
+    keywords: entry.id.split('-'),
+    href: entry.path,
+    icon: 'settings',
+  }));
   const entries = sources.modules.flatMap((module) => module.navigation);
   const creates = entries
     .filter((entry) => entry.placement === 'create')
     .map((entry) =>
-      action(`create:${entry.id}`, `Create ${entry.label.toLowerCase()}`, '+', {
+      action(`create:${entry.id}`, `Create ${entry.label.toLowerCase()}`, 'plus', {
         href: entry.path,
         keywords: ['create', 'new'],
       }),
     );
   const goTo = entries
     .filter((entry) => entry.placement === 'command' || entry.placement === 'top')
-    .map((entry) => action(`go:${entry.id}`, `Go to ${entry.label}`, '›', { href: entry.path }));
+    .map((entry) =>
+      action(`go:${entry.id}`, `Go to ${entry.label}`, 'chevron', { href: entry.path }),
+    );
   const actions: PaletteItem[] = [
     ...creates,
     ...(sources.canManagePeople
       ? [
-          action('invite', 'Invite people', '+', {
+          action('invite', 'Invite people', 'plus', {
             keywords: ['create', 'user', 'email'],
             href: '/settings/users',
             run: sources.run.invite,
           }),
-          action('team', 'Create team', '+', {
+          action('team', 'Create team', 'plus', {
             keywords: ['create', 'new'],
             href: '/settings/teams',
           }),
         ]
       : []),
-    action('inbox', 'Open inbox', '›', { keywords: ['notifications'], run: sources.run.inbox }),
-    action('dark', 'Switch to dark mode', '◐', {
+    action('inbox', 'Open inbox', 'inbox', { keywords: ['notifications'], run: sources.run.inbox }),
+    action('dark', 'Switch to dark mode', 'moon', {
       keywords: ['theme'],
       run: () => sources.run.mode('dark'),
     }),
-    action('light', 'Switch to light mode', '◐', {
+    action('light', 'Switch to light mode', 'sun', {
       keywords: ['theme'],
       run: () => sources.run.mode('light'),
     }),
     ...goTo,
-    action('sign-out', 'Sign out', '›', { keywords: ['log out'], run: sources.run.signOut }),
+    action('sign-out', 'Sign out', 'chevron', { keywords: ['log out'], run: sources.run.signOut }),
   ];
   return [...found, ...people.values(), ...settings, ...actions];
 }

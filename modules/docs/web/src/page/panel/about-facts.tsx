@@ -1,4 +1,5 @@
 import { formatRelative } from '@bemmoly/core-web';
+import { Icon } from '@bemmoly/ui/icons';
 import {
   Avatar,
   avatarHue,
@@ -20,7 +21,7 @@ import { useSetReviewers, useUpdatePage } from '../use-page-actions.ts';
 import { LabelsField } from './labels-field.tsx';
 
 const LINK =
-  'cursor-pointer rounded-xs border-0 bg-transparent px-1 py-0.5 font-sans text-12h font-medium text-ac hover:text-ac-d focus-visible:shadow-ring focus-visible:outline-0';
+  'inline-flex cursor-pointer items-center gap-1 rounded-xs border-0 bg-transparent px-1 py-0.5 font-sans text-12h font-medium text-ac hover:text-ac-d focus-visible:shadow-ring focus-visible:outline-0';
 
 /** Everyone who wrote the page: its versions' authors, its creator and its last editor. */
 function useContributors(pageId: string, known: readonly (string | null)[]) {
@@ -95,7 +96,14 @@ function ReviewersField() {
       {page.reviewers.length === 0 && !editable && <span className="text-tx5">Nobody</span>}
       {editable && (
         <button type="button" className={LINK} onClick={() => setOpen(true)}>
-          {page.reviewers.length ? 'Change' : '+ Add reviewers'}
+          {page.reviewers.length ? (
+            'Change'
+          ) : (
+            <>
+              <Icon name="plus" size={14} />
+              Add reviewers
+            </>
+          )}
         </button>
       )}
       <ReviewersDialog

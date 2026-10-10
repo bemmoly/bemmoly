@@ -1,4 +1,5 @@
 import { Card, CardBody, CardHeader, Field, Input } from '@bemmoly/ui';
+import { Icon } from '@bemmoly/ui/icons';
 import { CONNECTION_NOTE } from '../../hooks/use-ai-catalog.ts';
 import { Notice } from '../form.tsx';
 import type { Picker } from './provider-picker.tsx';
@@ -11,8 +12,14 @@ export function ConnectionShell({ picker }: { picker: Picker }) {
   const { selected, connection, isLocal } = picker;
   if (!selected) return null;
   const doc = connection?.doc ? (
-    <a href={connection.doc} target="_blank" rel="noreferrer" className="text-ac">
-      Provider documentation ↗
+    <a
+      href={connection.doc}
+      target="_blank"
+      rel="noreferrer"
+      className="inline-flex items-center gap-1 text-acc"
+    >
+      Provider documentation
+      <Icon name="external" size={14} />
     </a>
   ) : null;
   return (

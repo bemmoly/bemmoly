@@ -24,7 +24,7 @@ export interface KanbanCardProps {
   /** Story points (Scrum) in the mono chip pill; omit on Kanban boards. */
   estimate?: number | string;
   /** Time in column (Kanban): the label and whether it is past the column's average. */
-  age?: { label: string; slow?: boolean };
+  age?: { label: string; slow?: boolean; done?: boolean };
   /** The key of the issue blocking this one; shows the warn badge above the title. */
   blockedBy?: string;
   /** A linked doc's short name ("RFC", "Spec") in the accent with a doc icon. */
@@ -139,7 +139,7 @@ export function KanbanCard({
                 age.slow ? 'text-warn-fg' : 'text-tx5',
               )}
             >
-              {age.label}
+              {age.done ? <Icon name="check" size={12} label={age.label} /> : age.label}
             </span>
           )}
           {assignee && (

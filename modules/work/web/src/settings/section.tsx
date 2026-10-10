@@ -16,7 +16,7 @@ export interface SectionHeadingProps {
   /** Why Edit is shut: no permission. */
   locked?: string | undefined;
   onEdit: () => void;
-  /** Shown while editing, before the Editing mark: "+ Add column". */
+  /** Shown while editing, before the Editing mark: "Add column". */
   actions?: ReactNode;
 }
 

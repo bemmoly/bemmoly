@@ -1,4 +1,5 @@
 import { Button } from '@bemmoly/ui';
+import { Icon } from '@bemmoly/ui/icons';
 import { useState, type DragEvent } from 'react';
 import { NO_BOARD_PERMISSION } from '../../hooks/settings-access.ts';
 import { cx } from '../cx.ts';
@@ -72,7 +73,8 @@ export function ColumnsTab(props: BoardTabProps) {
               className="whitespace-nowrap"
               onClick={() => settings.updateConfig((current) => addColumn(current))}
             >
-              + Add column
+              <Icon name="plus" size={14} />
+              Add column
             </Button>
           ) : null
         }

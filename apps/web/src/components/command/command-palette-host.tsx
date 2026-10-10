@@ -1,3 +1,4 @@
+import { Icon } from '@bemmoly/ui/icons';
 import {
   CommandFooter,
   CommandGlyph,
@@ -18,9 +19,11 @@ const steps = plan.rows.map((row) => ({
   target: row.issue,
   change: row.change,
   field: row.field ?? (
-    <>
-      {row.from} → <b className="font-semibold">{row.to}</b>
-    </>
+    <span className="inline-flex items-center gap-1">
+      {row.from}
+      <Icon name="arrow" size={12} label="to" />
+      <b className="font-semibold">{row.to}</b>
+    </span>
   ),
   allowed: row.permission === 'ALLOWED',
 }));
@@ -67,14 +70,14 @@ export default function CommandPaletteHost() {
                     icon={
                       group.name === 'People' ? (
                         <CommandGlyph
-                          glyph={item.title.charAt(0).toUpperCase()}
+                          letter={item.title.charAt(0).toUpperCase()}
                           tone="accent"
                           round
                         />
                       ) : (
                         <CommandGlyph
-                          glyph={item.glyph}
-                          tone={item.glyph === '+' ? 'accent' : 'neutral'}
+                          icon={item.icon}
+                          tone={item.icon === 'plus' ? 'accent' : 'neutral'}
                         />
                       )
                     }

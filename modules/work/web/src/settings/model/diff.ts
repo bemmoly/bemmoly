@@ -197,7 +197,7 @@ export function boardConfigDiff(
       (r) => COLOR_RULE_LABELS[r],
     ),
     ...scalar('colorRules', 'Color rules', rules(before), rules(after), (r) =>
-      list(r.map((rule) => `${rule.query} → ${rule.name}`)),
+      list(r.map((rule) => `${rule.query} as ${rule.name}`)),
     ),
     ...scalar(
       'estimationUnit',

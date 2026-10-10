@@ -42,7 +42,7 @@ describe('WorkflowEditor', () => {
     const canvas = await openEditor();
     fireEvent.click(within(canvas).getByRole('button', { name: /^In progress/ }));
     const panel = screen.getByRole('complementary', { name: 'Status' });
-    fireEvent.click(within(panel).getByRole('button', { name: '+ Add transition' }));
+    fireEvent.click(within(panel).getByRole('button', { name: 'Add transition' }));
     await choose(within(panel).getByRole('combobox', { name: 'Add transition to' }), 'Done');
 
     const label = await within(canvas).findByRole('button', { name: /^Done/, pressed: true });
@@ -61,7 +61,7 @@ describe('WorkflowEditor', () => {
     const canvas = await openEditor();
     fireEvent.click(within(canvas).getByRole('button', { name: 'Start work' }));
     const panel = screen.getByRole('complementary', { name: 'Transition' });
-    fireEvent.click(within(panel).getByRole('button', { name: '+ Add condition' }));
+    fireEvent.click(within(panel).getByRole('button', { name: 'Add condition' }));
     await choose(within(panel).getByRole('combobox', { name: 'Add condition' }), 'Field is set');
 
     expect(within(panel).getByText('CONDITION')).toBeTruthy();

@@ -142,7 +142,7 @@ export function seedSystem(): SystemHealthResponse {
         id: 'backups',
         name: 'Backups',
         status: 'ok',
-        value: `nightly → ${LOCAL_BACKUPS}`,
+        value: `nightly to ${LOCAL_BACKUPS}`,
         fix: null,
       },
     ],

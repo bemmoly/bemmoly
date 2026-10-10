@@ -77,7 +77,7 @@ export const WorkspaceSettings: Story = {
               />
               <SettingsRow
                 title="Map IdP groups to teams"
-                description="eng-platform → Platform. 2 mappings."
+                description="eng-platform maps to Platform. 2 mappings."
                 control={<span className="font-medium text-ac">Edit</span>}
               />
             </SettingsSection>

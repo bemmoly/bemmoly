@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { Icon } from '../../icons/icon.tsx';
 import { useState } from 'react';
 import { Button } from '../button/button.tsx';
 import { Card } from '../card/card.tsx';
@@ -80,8 +81,14 @@ export const FieldsTable: Story = {
             />
           ))}
           <div className="flex gap-3.5 px-3.5 py-2.5 text-12h font-medium text-ac">
-            <span>+ Add existing field</span>
-            <span>+ Create custom field</span>
+            <span className="inline-flex items-center gap-1">
+              <Icon name="plus" size={14} />
+              Add existing field
+            </span>
+            <span className="inline-flex items-center gap-1">
+              <Icon name="plus" size={14} />
+              Create custom field
+            </span>
           </div>
         </Card>
       </div>

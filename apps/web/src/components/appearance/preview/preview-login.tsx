@@ -17,7 +17,7 @@ export function PreviewLogin({ workspaceName }: { workspaceName: string }) {
           <Input size="lg" autoComplete="off" defaultValue="rohan@acmelabs.dev" />
         </Field>
         <Field label="Password">
-          <Input size="lg" autoComplete="off" defaultValue="••••••••••" />
+          <Input size="lg" type="password" autoComplete="off" defaultValue="preview-only" />
         </Field>
         <Button variant="primary" size="lg" block>
           Sign in

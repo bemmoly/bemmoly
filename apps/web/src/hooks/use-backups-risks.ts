@@ -24,7 +24,7 @@ export function retentionRisk(
       ...lowered.map((tier) =>
         tier.key === 'preUpgradeDays'
           ? `Backups taken before an update are kept ${next.preUpgradeDays} days instead of ${stored.preUpgradeDays}; older ones are deleted.`
-          : `${tier.label}: ${stored[tier.key]} → ${next[tier.key]} kept. Up to ${stored[tier.key] - next[tier.key]} older ${tier.label.toLowerCase()} ${tier.unit} are deleted.`,
+          : `${tier.label}: ${stored[tier.key]} to ${next[tier.key]} kept. Up to ${stored[tier.key] - next[tier.key]} older ${tier.label.toLowerCase()} ${tier.unit} are deleted.`,
       ),
       'Deleted backups cannot be restored or downloaded again.',
     ],

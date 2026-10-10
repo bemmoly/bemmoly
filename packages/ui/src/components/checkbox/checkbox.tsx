@@ -1,4 +1,5 @@
 import type { InputHTMLAttributes, ReactNode, Ref } from 'react';
+import { Icon } from '../../icons/icon.tsx';
 import { cx } from '../../lib/cx.ts';
 import { focusRing } from '../../lib/focus.ts';
 
@@ -72,9 +73,9 @@ export function Checkbox({
       />
       <span
         aria-hidden
-        className="pointer-events-none absolute inset-0 hidden items-center justify-center leading-none text-on-ac peer-checked:flex"
+        className="pointer-events-none absolute inset-0 hidden items-center justify-center text-on-acc peer-checked:flex"
       >
-        ✓
+        <Icon name="check" size={size === 'sm' ? 10 : 12} />
       </span>
     </span>
   );

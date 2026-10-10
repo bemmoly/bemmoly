@@ -34,7 +34,7 @@ test('a workflow change published in the editor is what the board follows', asyn
 
   // In progress → Testing, for work that needs no review.
   await page.getByRole('button', { name: /^In progress In progress/ }).click();
-  await page.getByRole('button', { name: '+ Add transition' }).click();
+  await page.getByRole('button', { name: 'Add transition' }).click();
   await page.getByRole('combobox', { name: 'Add transition to' }).click();
   await page.getByRole('option', { name: 'Testing' }).click();
   await expect(page.getByText('No unpublished changes')).toBeHidden();

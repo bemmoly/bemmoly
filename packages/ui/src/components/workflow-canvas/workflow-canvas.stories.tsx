@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { Icon } from '../../icons/icon.tsx';
 import { useState } from 'react';
 import { RuleChip, RuleRow } from './rule-chip.tsx';
 import { StatusNode, StatusNodeHandle, StatusPill, type WorkflowCategory } from './status-node.tsx';
@@ -121,7 +122,7 @@ export const Canvas: Story = {
             );
           })}
           <TransitionLabel x={px(wx - 160)} y={py(wy - 62)}>
-            Any → Close
+            Any <Icon name="arrow" size={11} label="to" /> Close
           </TransitionLabel>
           <WorkflowLegend />
         </WorkflowCanvas>

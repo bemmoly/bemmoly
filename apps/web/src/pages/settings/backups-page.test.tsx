@@ -41,7 +41,7 @@ describe('Storage and backups', () => {
     );
     click(within(region('Retention')).getByRole('button', { name: 'Save' }));
     const dialog = screen.getByRole('dialog', { name: 'Lower retention?' });
-    expect(dialog.textContent).toContain('Daily: 7 → 3 kept');
+    expect(dialog.textContent).toContain('Daily: 7 to 3 kept');
     const confirm = within(dialog).getByRole('button', { name: 'Lower retention' });
     expect((confirm as HTMLButtonElement).disabled).toBe(true);
     act(() =>

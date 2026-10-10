@@ -120,7 +120,7 @@ export type RailState = 'done' | 'current' | 'upcoming';
 
 export interface RailItem extends SetupStep {
   state: RailState;
-  /** Shown as ✓ when done, otherwise the number. */
+  /** The step number; a finished step shows a tick instead. */
   marker: string;
   /**
    * Nothing is clickable before the admin exists. The summary is reached only
@@ -136,7 +136,7 @@ export function railItems(current: number, adminExists: boolean): RailItem[] {
     return {
       ...step,
       state,
-      marker: state === 'done' ? '✓' : String(step.n),
+      marker: String(step.n),
       canVisit: adminExists && step.n !== current && step.n < LAST_STEP && current < LAST_STEP,
     };
   });

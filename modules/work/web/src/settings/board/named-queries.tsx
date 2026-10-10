@@ -55,8 +55,9 @@ export function NamedQueries(props: NamedQueriesProps) {
           <button
             type="button"
             onClick={() => onChange([...items, { name: name(`New ${props.noun}`), query: '' }])}
-            className="ml-auto cursor-pointer border-0 bg-transparent p-0 font-sans text-13 font-medium text-ac hover:text-ac-d"
+            className="ml-auto inline-flex cursor-pointer items-center gap-1 border-0 bg-transparent p-0 font-sans text-13 font-medium text-ac hover:text-ac-d"
           >
+            <Icon name="plus" size={14} />
             {props.addLabel}
           </button>
         )}

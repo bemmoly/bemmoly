@@ -1,4 +1,5 @@
 import type { SchemeDiffEntry } from '@bemmoly/module-work/shared';
+import { Icon } from '@bemmoly/ui/icons';
 import { Badge, Button, Modal } from '@bemmoly/ui';
 import type { ReactNode } from 'react';
 
@@ -54,9 +55,7 @@ export function DiffRows({
             <span className="break-words text-tx4 line-through decoration-tx6">
               {show(entry.before)}
             </span>
-            <span aria-label="becomes" className="text-tx5">
-              →
-            </span>
+            <Icon name="arrow" size={14} label="becomes" className="self-center text-tx-3" />
             <span className="font-mono break-words text-tx">{show(entry.after)}</span>
           </div>
         </li>

@@ -1,4 +1,5 @@
 import type { BoardMetrics, BoardView, Project, Sprint } from '@bemmoly/module-work/shared';
+import { Icon } from '@bemmoly/ui/icons';
 import { Breadcrumbs, Button, MetricSparkline, MetricTile, ProgressBar } from '@bemmoly/ui';
 import { Fragment } from 'react';
 import { navigateTo } from '../hooks/issue-navigation.ts';
@@ -105,7 +106,16 @@ export function BoardHeader({ project, view, metrics, sprint, inFlight }: BoardH
               {...(trend === null
                 ? {}
                 : {
-                    value: `${trend >= 0 ? '▲' : '▼'} ${Math.abs(trend)}%`,
+                    value: (
+                      <span className="inline-flex items-center gap-0.5">
+                        <Icon
+                          name={trend >= 0 ? 'arrow-up' : 'arrow-down'}
+                          size={11}
+                          label={trend >= 0 ? 'up' : 'down'}
+                        />
+                        {Math.abs(trend)}%
+                      </span>
+                    ),
                     valueTone: trend >= 0 ? 'ok' : 'warn',
                   })}
             >

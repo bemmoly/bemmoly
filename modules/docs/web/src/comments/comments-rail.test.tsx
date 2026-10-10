@@ -181,7 +181,7 @@ describe('the comments rail', () => {
     renderRail(false);
     await screen.findByText(/Which is it\?/);
     expect(screen.queryByRole('button', { name: 'Reply' })).toBeNull();
-    expect(screen.queryByRole('button', { name: '+ Comment' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Comment' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Apply fix' })).toBeNull();
   });
 

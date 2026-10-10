@@ -1,3 +1,4 @@
+import { createElement } from 'react';
 import { iconComponent } from '../../icons/icon.tsx';
 import { cx } from '../../lib/cx.ts';
 import { typeLook, type IssueTypeRef, type TypeMark } from './type-look.ts';
@@ -47,20 +48,17 @@ function AlertMark({ s }: { s: number }) {
 
 function Mark({ mark, s }: { mark: TypeMark; s: number }) {
   if ('drawn' in mark) return mark.drawn === 'bug' ? <BugMark s={s} /> : <AlertMark s={s} />;
-  const Drawn = iconComponent(mark.icon);
-  const inner = s * 0.62;
   const offset = s * 0.19;
-  return (
-    <Drawn
-      x={offset}
-      y={offset}
-      size={inner}
-      color={WHITE}
-      fill={mark.filled ? WHITE : 'none'}
-      strokeWidth={mark.filled ? 1.5 : 3.4}
-      aria-hidden
-    />
-  );
+  // The icon is a nested <svg> placed inside the tile, in the tile's coordinates.
+  return createElement(iconComponent(mark.icon), {
+    x: offset,
+    y: offset,
+    size: s * 0.62,
+    color: WHITE,
+    fill: mark.filled ? WHITE : 'none',
+    strokeWidth: mark.filled ? 1.5 : 3.4,
+    'aria-hidden': true,
+  });
 }
 
 /**

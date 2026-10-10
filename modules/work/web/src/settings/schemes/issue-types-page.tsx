@@ -1,4 +1,5 @@
 import { ISSUE_TYPE_LEVELS, type IssueTypeLevel } from '@bemmoly/module-work/shared';
+import { Icon } from '@bemmoly/ui/icons';
 import { Badge, Button, SettingsSection, Skeleton, TypeGlyph } from '@bemmoly/ui';
 import { useState, type ReactNode } from 'react';
 import { useSettingsAccess } from '../../hooks/settings-access.ts';
@@ -48,7 +49,8 @@ export function IssueTypesPage({
         actions={
           overridden && access.configureProject ? (
             <Button size="xs" onClick={() => setAdding(true)}>
-              + Add
+              <Icon name="plus" size={14} />
+              Add
             </Button>
           ) : undefined
         }

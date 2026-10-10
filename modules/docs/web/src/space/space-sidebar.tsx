@@ -36,7 +36,7 @@ export const pageCountLabel = (count: number) => `${count} ${count === 1 ? 'page
 
 /**
  * The space sidebar of the Doc Editor mock, 260px on sf with a br rule: the space head
- * (which switches spaces), "Search this space", the page tree, and "+ New page" pinned to
+ * (which switches spaces), "Search this space", the page tree, and "New page" pinned to
  * the bottom over a br2 rule. The trash sits at the right of that last line.
  */
 export function SpaceSidebar({
@@ -88,9 +88,10 @@ export function SpaceSidebar({
         <button
           type="button"
           onClick={() => onCreatePage(null)}
-          className="cursor-pointer border-0 bg-transparent p-0 font-sans text-12h font-medium text-ac hover:text-ac-d"
+          className="inline-flex cursor-pointer items-center gap-1 border-0 bg-transparent p-0 font-sans text-12h font-medium text-ac hover:text-ac-d"
         >
-          + New page
+          <Icon name="plus" size={14} />
+          New page
         </button>
         <button
           type="button"

@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { Icon } from '../../icons/icon.tsx';
 import { cx } from '../../lib/cx.ts';
 import { focusRing, focusRingInset } from '../../lib/focus.ts';
 import { ProgressBar } from '../progress-bar/progress-bar.tsx';
@@ -74,7 +75,7 @@ export interface EpicPanelProps {
   className?: string;
 }
 
-/** The 260px panel beside the backlog: "Epics" and "+ Create" over the items. */
+/** The 260px panel beside the backlog: "Epics" and Create over the items. */
 export function EpicPanel({ title = 'Epics', onCreate, children, className }: EpicPanelProps) {
   return (
     <aside
@@ -91,11 +92,12 @@ export function EpicPanel({ title = 'Epics', onCreate, children, className }: Ep
             type="button"
             onClick={onCreate}
             className={cx(
-              'ml-auto cursor-pointer rounded-xs border-0 bg-transparent p-0 font-sans text-12h font-medium text-ac hover:text-ac-d',
+              'ml-auto inline-flex cursor-pointer items-center gap-1 rounded-xs border-0 bg-transparent p-0 font-sans text-12h font-medium text-ac hover:text-ac-d',
               focusRing,
             )}
           >
-            + Create
+            <Icon name="plus" size={14} />
+            Create
           </button>
         )}
       </div>

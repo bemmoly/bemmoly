@@ -22,7 +22,7 @@ export function seedChecks(): HealthCheck[] {
       fix: { label: 'Configure', href: '/settings/email' },
     },
     { id: 'https', name: 'HTTPS', status: 'ok', detail: "Let's Encrypt · auto-renew" },
-    { id: 'backups', name: 'Backups', status: 'ok', detail: 'nightly → /var/bemmoly/backups' },
+    { id: 'backups', name: 'Backups', status: 'ok', detail: 'nightly to /var/bemmoly/backups' },
   ];
 }
 
@@ -93,7 +93,7 @@ const NOTES: NoteSeed[] = [
     '@Rohan can you confirm the deploy hook fires before the health check?',
     60 * 26,
   ],
-  ['n-4', 'lena', 'Lena T.', 'moved', 'PLT-226', 'In progress → In review', 60 * 27],
+  ['n-4', 'lena', 'Lena T.', 'moved', 'PLT-226', 'Moved from In progress to In review', 60 * 27],
 ];
 
 /** The Home mock's inbox block, already grouped the way the server groups. */

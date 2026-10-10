@@ -59,7 +59,8 @@ describe('wizard steps', () => {
       'upcoming',
       'upcoming',
     ]);
-    expect(during.map((item) => item.marker)).toEqual(['✓', '✓', '3', '4', '5', '6']);
+    expect(during.map((item) => item.marker)).toEqual(['1', '2', '3', '4', '5', '6']);
+    expect(during.map((item) => item.state).slice(0, 3)).toEqual(['done', 'done', 'current']);
     expect(during.map((item) => item.canVisit)).toEqual([true, true, false, true, true, false]);
     expect(railItems(6, true).every((item) => !item.canVisit)).toBe(true);
   });

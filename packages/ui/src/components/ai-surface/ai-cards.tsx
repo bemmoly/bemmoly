@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { Icon } from '../../icons/icon.tsx';
 import { cx } from '../../lib/cx.ts';
 import { focusRing } from '../../lib/focus.ts';
 import { AiDot } from './ai-parts.tsx';
@@ -100,11 +101,11 @@ export function AiInsightBar({
             aria-label="Dismiss"
             onClick={onDismiss}
             className={cx(
-              'cursor-pointer border-0 bg-transparent px-2 py-1.25 font-semibold text-tx5 hover:text-tx2',
+              'inline-flex cursor-pointer items-center border-0 bg-transparent px-2 py-1.25 text-tx-3 hover:text-tx-2',
               focusRing,
             )}
           >
-            ✕
+            <Icon name="close" size={14} />
           </button>
         )}
       </div>

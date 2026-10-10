@@ -200,7 +200,11 @@ export const Activity: Story = {
           Backfill finished on staging, 0 mismatches across 2.1M rows. Ready for a second pair of
           eyes on #4821.
         </ActivityItem>
-        <ActivityItem person={AK} verb="changed status In progress → In review" when="Thursday" />
+        <ActivityItem
+          person={AK}
+          verb="changed status from In progress to In review"
+          when="Thursday"
+        />
         <ActivityItem person={AK} verb="logged 4h" when="Wednesday" />
       </div>
     );

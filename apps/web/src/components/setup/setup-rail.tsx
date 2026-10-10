@@ -1,4 +1,5 @@
 import type { RailItem, RailState } from '../../hooks/use-setup-wizard.ts';
+import { Icon } from '@bemmoly/ui/icons';
 
 const DOT: Record<RailState, string> = {
   done: 'border-ok bg-ok text-on-solid',
@@ -13,7 +14,7 @@ function RailRow({ item }: { item: RailItem }) {
         aria-hidden="true"
         className={`flex size-5.5 shrink-0 items-center justify-center rounded-full border-[1.5px] text-11 font-semibold ${DOT[item.state]}`}
       >
-        {item.marker}
+        {item.state === 'done' ? <Icon name="check" size={12} /> : item.marker}
       </span>
       <span className="flex flex-col gap-0.5">
         <span className={`font-semibold ${item.state === 'upcoming' ? 'text-tx4' : 'text-tx'}`}>

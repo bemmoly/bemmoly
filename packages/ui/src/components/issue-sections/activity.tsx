@@ -11,7 +11,7 @@ export interface ActivityPerson {
 
 export interface ActivityItemProps {
   person: ActivityPerson;
-  /** "commented", "changed status In progress → In review", "logged 4h". */
+  /** "commented", "changed status from In progress to In review", "logged 4h". */
   verb: ReactNode;
   /** "3 hours ago", "Thursday". */
   when: ReactNode;

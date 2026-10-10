@@ -73,17 +73,17 @@ const FIELD_NAMES: Record<string, string> = {
 const shown = (value: unknown): string | null =>
   typeof value === 'string' || typeof value === 'number' ? String(value) : null;
 
-/** "changed status In progress → In review", "changed priority High → Highest", "logged 4h". */
+/** "changed status from In progress to In review", "changed priority from High to Highest", "logged 4h". */
 export function historyVerb(entry: IssueHistoryEntry, names: HistoryNames): string {
   const { field, from, to } = entry;
   if (field === 'statusId') {
     const before = names.status(String(from)) ?? 'another status';
     const after = names.status(String(to)) ?? 'another status';
-    return `changed status ${before} → ${after}`;
+    return `changed status from ${before} to ${after}`;
   }
   if (field === 'priority') {
     const label = (value: unknown) => PRIORITIES[value as Priority]?.name ?? String(value);
-    return `changed priority ${label(from)} → ${label(to)}`;
+    return `changed priority from ${label(from)} to ${label(to)}`;
   }
   if (field === 'assigneeId') {
     return to ? `assigned ${names.person(String(to))}` : 'removed the assignee';
@@ -97,7 +97,7 @@ export function historyVerb(entry: IssueHistoryEntry, names: HistoryNames): stri
   const after = shown(to);
   if (field === 'estimate' && after !== null) return `set the estimate to ${after}`;
   if (field.endsWith('Id') || before === null || after === null) return `changed ${name}`;
-  return `changed ${name} ${before} → ${after}`;
+  return `changed ${name} from ${before} to ${after}`;
 }
 
 export const workVerb = (log: WorkLog) => `logged ${formatMinutes(log.minutes)}`;

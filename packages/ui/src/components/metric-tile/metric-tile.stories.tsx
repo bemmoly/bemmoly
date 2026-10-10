@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { Icon } from '../../icons/icon.tsx';
 import { Button } from '../button/button.tsx';
 import { IconButton } from '../button/icon-button.tsx';
 import { ProgressBar } from '../progress-bar/progress-bar.tsx';
@@ -38,7 +39,17 @@ export const Flow: Story = {
   parameters: { mock: undefined },
   render: () => (
     <div className="flex items-center gap-2 bg-bg p-2">
-      <MetricTile label="Flow" value="▲ 18%" valueTone="ok" childrenFirst>
+      <MetricTile
+        label="Flow"
+        value={
+          <span className="inline-flex items-center gap-0.5">
+            <Icon name="arrow-up" size={11} label="up" />
+            18%
+          </span>
+        }
+        valueTone="ok"
+        childrenFirst
+      >
         <MetricSparkline values={[50, 70, 45, 85, 100, 65, 80]} label="Throughput, last 7 weeks" />
       </MetricTile>
       <Button>Insights</Button>

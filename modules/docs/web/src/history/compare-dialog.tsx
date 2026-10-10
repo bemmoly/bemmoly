@@ -1,4 +1,5 @@
 import { formatDateTime } from '@bemmoly/core-web';
+import { Icon } from '@bemmoly/ui/icons';
 import type { DiffStats, RevisionSummary } from '@bemmoly/module-docs/shared';
 import { Button, EmptyState, Modal, Select, Skeleton } from '@bemmoly/ui';
 import { DiffView } from './diff-view.tsx';
@@ -95,9 +96,7 @@ export function CompareDialog({
               value={selection.from}
               onChange={(event) => onChange({ ...selection, from: event.value })}
             />
-            <span aria-hidden className="text-tx5">
-              →
-            </span>
+            <Icon name="arrow" size={14} className="text-tx-3" />
             <Select
               aria-label="Newer version"
               size="sm"

@@ -1,4 +1,5 @@
 import { FIELD_KINDS, type FieldKind } from '@bemmoly/module-work/shared';
+import { Icon } from '@bemmoly/ui/icons';
 import { Badge, Button, SettingsSection, Skeleton } from '@bemmoly/ui';
 import { useState, type ReactNode } from 'react';
 import { useSettingsAccess } from '../../hooks/settings-access.ts';
@@ -56,7 +57,8 @@ export function FieldsPage({
         actions={
           overridden && access.configureProject ? (
             <Button size="xs" onClick={() => setAdding(true)}>
-              + Create custom field
+              <Icon name="plus" size={14} />
+              Create custom field
             </Button>
           ) : undefined
         }

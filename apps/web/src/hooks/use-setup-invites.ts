@@ -39,7 +39,7 @@ export const SSO_OPTIONS = [
     initials: 'ID',
     name: 'Okta, Entra, SAML, OIDC',
     description:
-      'Any standards-based identity provider, with SCIM provisioning and group → team mapping.',
+      'Any standards-based identity provider, with SCIM provisioning and group-to-team mapping.',
   },
 ] as const;
 

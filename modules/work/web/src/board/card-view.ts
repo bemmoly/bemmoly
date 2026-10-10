@@ -107,7 +107,7 @@ export function cardProps(
     ...(vocab.kanban
       ? {
           age: done
-            ? { label: '✓' }
+            ? { label: 'Done', done: true }
             : { label: `${card.ageDays}d`, slow: card.ageDays >= SLOW_DAYS },
         }
       : {}),

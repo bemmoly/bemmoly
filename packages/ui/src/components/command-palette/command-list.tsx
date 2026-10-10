@@ -1,4 +1,5 @@
 import { useId, type ReactNode } from 'react';
+import { Icon, type IconName } from '../../icons/icon.tsx';
 import { cx } from '../../lib/cx.ts';
 import { useCommandContext } from './command-palette.tsx';
 
@@ -79,13 +80,15 @@ export function CommandItem({ icon, issueKey, title, meta, onSelect }: CommandIt
   );
 }
 
-/** The 16px tiles the Command mock uses for docs (≡) and actions (+, ⚙). */
+/** The 16px tiles for docs, settings and actions: an icon, or a person's initial. */
 export function CommandGlyph({
-  glyph,
+  icon,
+  letter,
   tone = 'neutral',
   round,
 }: {
-  glyph: string;
+  icon?: IconName;
+  letter?: string;
   tone?: 'neutral' | 'accent' | 'ai';
   round?: boolean;
 }) {
@@ -103,7 +106,7 @@ export function CommandGlyph({
         tones[tone],
       )}
     >
-      {glyph}
+      {icon ? <Icon name={icon} size={11} /> : letter}
     </span>
   );
 }

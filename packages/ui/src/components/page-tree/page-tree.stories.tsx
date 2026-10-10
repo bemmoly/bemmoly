@@ -140,8 +140,9 @@ function Sidebar() {
           onRenameCancel={() => setRenaming(null)}
         />
       </div>
-      <div className="mt-auto border-t border-br2 px-4 py-3 text-12h font-medium text-ac">
-        + New page
+      <div className="mt-auto flex items-center gap-1 border-t border-br2 px-4 py-3 text-12h font-medium text-ac">
+        <Icon name="plus" size={14} />
+        New page
       </div>
     </aside>
   );
