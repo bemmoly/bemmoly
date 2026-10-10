@@ -50,12 +50,13 @@ const WRITES: Record<string, (target: string, heading: string) => string> = {
   draft: (_target, heading) =>
     `${heading ? `For ${heading.toLowerCase()}, ` : ''}we start with dual writes behind the session.store flag and compare both stores daily. When a week passes with no mismatches, reads move over in two steps, 10% and then everyone. [owner] signs off before each step.`,
   improve: (target) =>
-    target
-      ? `${target.charAt(0).toUpperCase()}${target.slice(1).replace(/\s+$/, '')}`.replace(
-          /\bwe moves\b/i,
-          'We move',
-        )
-      : 'We move sessions to Postgres.',
+    target.trim().split(/\s+/).length < 4
+      ? target.trim()
+      : target
+          .replace(/\bwe moves\b/i, 'we move')
+          .replace(/\s+/g, ' ')
+          .replace(/^\w/, (first) => first.toUpperCase())
+          .trim(),
   shorten: (target) => target.split(/[,.;]/)[0]?.trim().concat('.') ?? target,
   'fix-grammar': (target) => target.replace(/\bwe moves\b/gi, 'we move').replace(/\bteh\b/g, 'the'),
   translate: (target) => target,
@@ -112,12 +113,12 @@ export const docsEditorAiRoutes: readonly MockRoute[] = [
       const quote = comment.anchor.quote;
       const replacement = /15 minutes/.test(quote)
         ? quote.replace('15 minutes', '30 minutes')
-        : quote.replace(/\s+$/, '');
+        : `${quote.trim()} (owner: [name], tracked as an issue)`;
       comment.aiSuggestion = {
         replacement,
         rationale: /15 minutes/.test(quote)
           ? 'The flag TTL in code is 30 minutes.'
-          : 'Tightens the wording the thread asks about.',
+          : 'The thread asks who owns this, so the line names a placeholder owner.',
         appliedAt: null,
       };
       emit(db, 'docs.comments', [comment.pageId]);
