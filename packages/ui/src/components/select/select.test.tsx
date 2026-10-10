@@ -205,6 +205,19 @@ describe('Select', () => {
     expect(screen.queryByText(/type to narrow/)).toBeNull();
   });
 
+  it('keeps the drawn rows mounted when the pinned choice comes and goes', () => {
+    const many = Array.from({ length: 60 }, (_, i) => ({ value: `u${i}`, label: `User ${i}` }));
+    render(<Harness options={many} value="u55" />);
+    fireEvent.click(combobox());
+    const row = screen.getByRole('option', { name: 'User 1' });
+    // Typing drops the pinned choice from the top; the rows under it stay the same nodes.
+    fireEvent.change(screen.getByRole('combobox', { name: 'Search' }), {
+      target: { value: 'user' },
+    });
+    expect(screen.getAllByRole('option')).toHaveLength(50);
+    expect(row.isConnected).toBe(true);
+  });
+
   it('portals the popover out of a clipping container, and into an open dialog', () => {
     const { unmount } = render(
       <div data-testid="card" style={{ overflow: 'hidden' }}>

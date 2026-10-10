@@ -139,6 +139,10 @@ export function SelectList({ state, label, labelledBy, searchPlaceholder }: Sele
         className="flex max-h-80 min-h-0 flex-col overflow-y-auto p-1.5"
       >
         {view.sections.map((section, sectionIndex) => {
+          // The pinned choice has a key of its own, so pinning it (or not, as a search starts)
+          // never shifts the other sections' keys and remounts every row under the pointer.
+          const pinned = view.pinned && sectionIndex === 0;
+          const key = pinned ? 'pinned' : `section-${sectionIndex - (view.pinned ? 1 : 0)}`;
           const rows = section.options.map((option, i) => (
             <OptionRow
               key={option.value}
@@ -147,15 +151,10 @@ export function SelectList({ state, label, labelledBy, searchPlaceholder }: Sele
               index={starts[sectionIndex]! + i}
             />
           ));
-          if (!section.label) return <Fragment key={`section-${sectionIndex}`}>{rows}</Fragment>;
+          if (!section.label) return <Fragment key={key}>{rows}</Fragment>;
           const headingId = `${state.listId}-group-${sectionIndex}`;
           return (
-            <div
-              key={`section-${sectionIndex}`}
-              role="group"
-              aria-labelledby={headingId}
-              className="flex flex-col"
-            >
+            <div key={key} role="group" aria-labelledby={headingId} className="flex flex-col">
               <div
                 id={headingId}
                 role="presentation"
