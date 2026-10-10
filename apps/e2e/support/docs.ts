@@ -58,17 +58,27 @@ export async function docText(page: Page): Promise<string> {
  * types there, at about a fast typist's pace.
  */
 export async function typeAt(page: Page, text: string, block?: number): Promise<void> {
-  // The DOM selection, not End keys: they move differently on macOS and Linux.
+  // Through the editor's own selection, not the DOM's or End keys: End moves differently on
+  // macOS and Linux, and a DOM selection reaches the editor only on its next selectionchange.
+  // With another person's edits arriving in between, the editor redrew its older caret and
+  // the first keys landed at the top of the page.
   await body(page).evaluate((element, index) => {
     const target = index === undefined ? element : element.querySelectorAll('p')[index];
     if (!target) throw new Error(`no paragraph ${String(index)}`);
+    const editor = (element as HTMLElement & { editor?: TiptapLike }).editor;
+    if (!editor) throw new Error('the page body has no editor');
+    const at = editor.view.posAtDOM(target, target.childNodes.length);
+    // Focus now, not through Tiptap's focus command, which waits a frame and drops the
+    // first key typed before it lands.
     (element as HTMLElement).focus();
-    const range = document.createRange();
-    range.selectNodeContents(target);
-    range.collapse(false);
-    const selection = window.getSelection();
-    selection?.removeAllRanges();
-    selection?.addRange(range);
+    editor.commands.setTextSelection(at);
+    return new Promise((resolve) => requestAnimationFrame(() => resolve(undefined)));
   }, block);
   await page.keyboard.type(text, { delay: 40 });
+}
+
+/** The part of Tiptap's editor, found on its DOM node, that typeAt uses. */
+interface TiptapLike {
+  view: { posAtDOM(node: Node, offset: number): number };
+  commands: { setTextSelection(at: number): boolean };
 }
