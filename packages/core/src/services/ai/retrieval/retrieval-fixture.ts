@@ -118,7 +118,7 @@ async function addUser(sql: SqlClient, name: string): Promise<string> {
   return row!.id;
 }
 
-export async function createFixture(serverUrl: string): Promise<Fixture> {
+export async function createFixture(serverUrl: string, dimensions = 8): Promise<Fixture> {
   const database: IsolatedDatabase = await createIsolatedDatabase(serverUrl);
   const sql = postgres(database.url, { max: 4, onnotice: () => undefined });
   await applyKernelChangelog(sql);
@@ -128,7 +128,7 @@ export async function createFixture(serverUrl: string): Promise<Fixture> {
     writer: await addUser(sql, 'writer'),
     quiet: await addUser(sql, 'quiet'),
   };
-  const ai = createTestAi();
+  const ai = createTestAi({ dimensions });
   const jobs = fakeJobQueue();
   const box: { fixture?: Fixture } = {};
   const current = () => box.fixture!;

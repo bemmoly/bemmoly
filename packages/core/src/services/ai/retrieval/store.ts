@@ -129,12 +129,33 @@ export interface NearestChunk {
   similarity: number;
 }
 
+/**
+ * Cosine distance to the query, written so the partial HNSW index for the size is used: each
+ * indexed size is its own literal cast. Any other size compares untyped, by sequential scan.
+ */
+function distance(sql: SqlClient, size: number, vector: string) {
+  switch (size) {
+    case 384:
+      return sql`e.embedding::vector(384) <=> ${vector}::vector(384)`;
+    case 512:
+      return sql`e.embedding::vector(512) <=> ${vector}::vector(512)`;
+    case 768:
+      return sql`e.embedding::vector(768) <=> ${vector}::vector(768)`;
+    case 1024:
+      return sql`e.embedding::vector(1024) <=> ${vector}::vector(1024)`;
+    case 1536:
+      return sql`e.embedding::vector(1536) <=> ${vector}::vector(1536)`;
+    default:
+      return sql`e.embedding <=> ${vector}::vector`;
+  }
+}
+
 /** The closest chunks of one kind in containers the person may read, by cosine similarity. */
 export async function nearest(sql: SqlClient, query: NearestQuery): Promise<NearestChunk[]> {
   const size = query.vector.length;
   if (!Number.isInteger(size) || size < 1 || size > 16_000) return [];
-  const cast = sql.unsafe(`vector(${size})`);
   const vector = toVector(query.vector);
+  const away = distance(sql, size, vector);
   const column = query.container === 'space' ? sql`e.space_id` : sql`e.project_id`;
   const rows = await sql<
     {
@@ -146,13 +167,13 @@ export async function nearest(sql: SqlClient, query: NearestQuery): Promise<Near
     }[]
   >`
     select e.target_id, e.chunk_index, e.text, e.location,
-      1 - (e.embedding::${cast} <=> ${vector}::${cast}) as similarity
+      1 - (${away}) as similarity
     from embeddings e
     where e.target_kind = ${query.kind} and e.model = ${query.modelId} and e.dimensions = ${size}
       and (${query.containerIds === null} or ${column} = any(${(query.containerIds ?? []) as string[]}::uuid[]))
       and (${column} is null or not ${column} = any(${query.excludedContainerIds as string[]}::uuid[]))
       and (e.author_id is null or not e.author_id = any(${query.optedOutUserIds as string[]}::uuid[]))
-    order by e.embedding::${cast} <=> ${vector}::${cast}
+    order by ${away}
     limit ${query.limit}`;
   return rows.map((row) => ({
     kind: query.kind,
