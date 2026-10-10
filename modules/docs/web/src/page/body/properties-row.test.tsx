@@ -71,10 +71,10 @@ beforeEach(() => {
 const row = () => screen.findByRole('group', { name: 'Page properties' });
 
 describe('the properties row', () => {
-  it('shows status, owner, labels, the edit time and the reading time in one row', async () => {
+  it('shows owner, labels, the edit time and the reading time in one row', async () => {
     renderPage();
     const props = await row();
-    expect(within(props).getByRole('button', { name: /Status: Draft/ })).toBeTruthy();
+    expect(within(props).queryByRole('button', { name: /Status:/ })).toBeNull();
     expect(within(props).getByRole('button', { name: /Owner: Priya N\./ })).toBeTruthy();
     expect(within(props).getByText('rfc')).toBeTruthy();
     expect(within(props).getByText('Edited')).toBeTruthy();
@@ -96,15 +96,16 @@ describe('the properties row', () => {
     await waitFor(() => expect(calls.at(-1)?.body).toEqual({ labels: ['rfc', 'auth'] }));
   });
 
-  it('changes the reviewers', async () => {
+  it('changes the reviewers in a popover, saving each tick at once', async () => {
     renderPage();
     const props = await row();
     fireEvent.click(within(props).getByRole('button', { name: 'Add reviewers' }));
-    const dialog = await screen.findByRole('dialog', { name: 'Reviewers' });
-    fireEvent.click(await within(dialog).findByRole('checkbox', { name: 'Rohan S.' }));
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Save reviewers' }));
+    const popover = await screen.findByRole('dialog', { name: 'Reviewers' });
+    fireEvent.click(await within(popover).findByRole('checkbox', { name: 'Rohan S.' }));
     await waitFor(() => expect(calls.at(-1)?.body).toEqual({ reviewers: [ROHAN] }));
     expect(await within(props).findByRole('button', { name: /Reviewers: Rohan S\./ })).toBeTruthy();
+    fireEvent.keyDown(popover, { key: 'Escape' });
+    await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Reviewers' })).toBeNull());
   });
 });
 

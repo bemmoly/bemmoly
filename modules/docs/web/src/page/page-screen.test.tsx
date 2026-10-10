@@ -49,11 +49,8 @@ beforeEach(() => {
 
 const title = () => screen.findByRole('textbox', { name: 'Page title' });
 
-/** The status in the properties row; the header has its own. */
-const rowStatus = async () =>
-  within(await screen.findByRole('group', { name: 'Page properties' })).getByRole('button', {
-    name: /Change status/,
-  });
+/** The status menu beside the header's trail: the page's one status control. */
+const rowStatus = () => screen.findByRole('button', { name: /Change status/ });
 
 describe('the doc editor screen', () => {
   it('draws the trail, the facts, the title and the body as the mock lays them out', async () => {
