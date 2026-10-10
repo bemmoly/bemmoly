@@ -3,13 +3,14 @@ import { Icon, type IconName } from '../../icons/icon.tsx';
 import { cx } from '../../lib/cx.ts';
 import { focusRing } from '../../lib/focus.ts';
 
-export type IconButtonSize = 'xs' | 'sm' | 'md';
+export type IconButtonSize = 'tool' | 'xs' | 'sm' | 'md';
 
 /**
- * Square buttons: 28 (drawer header ⤢ ··· ✕), 30 (Issue toolbar ···) and 32 (top bar inbox,
+ * Square buttons: 22 (a card's hover tools and a column header's + and ···), 28 (drawer header ⤢ ··· ✕), 30 (Issue toolbar ···) and 32 (top bar inbox,
  * help and settings; Board header ···).
  */
 const SIZES: Record<IconButtonSize, string> = {
+  tool: 'size-5.5 rounded-xs',
   xs: 'size-7 rounded-sm',
   sm: 'size-7.5 rounded-sm',
   md: 'size-control rounded-control',
