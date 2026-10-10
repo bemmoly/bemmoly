@@ -1,5 +1,6 @@
+import { preloadable, useLoaded } from '@bemmoly/core-web';
 import { Skeleton } from '@bemmoly/ui';
-import { lazy, Suspense } from 'react';
+import { Suspense } from 'react';
 import type { HistoryPanelProps } from './history-panel.tsx';
 
 /*
@@ -7,20 +8,22 @@ import type { HistoryPanelProps } from './history-panel.tsx';
  * the compare view and its diff renderer load in their own chunk on first open.
  */
 
-const Panel = lazy(() => import('./history-panel.tsx').then((m) => ({ default: m.HistoryPanel })));
+// Loaded before it renders (useLoaded), so no Suspense fallback holds it back 300 ms.
+const Panel = preloadable<HistoryPanelProps>(() =>
+  import('./history-panel.tsx').then((m) => ({ default: m.HistoryPanel })),
+);
+
+const skeleton = (
+  <div className="flex flex-col gap-2 p-3.5" aria-hidden>
+    <Skeleton width="40%" />
+    <Skeleton width="75%" />
+  </div>
+);
 
 export function HistoryPanel(props: HistoryPanelProps) {
+  const ready = useLoaded(Panel);
   return (
-    <Suspense
-      fallback={
-        <div className="flex flex-col gap-2 p-3.5" aria-hidden>
-          <Skeleton width="40%" />
-          <Skeleton width="75%" />
-        </div>
-      }
-    >
-      <Panel {...props} />
-    </Suspense>
+    <Suspense fallback={skeleton}>{ready ? <Panel.Component {...props} /> : skeleton}</Suspense>
   );
 }
 
