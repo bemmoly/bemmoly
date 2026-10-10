@@ -1,5 +1,14 @@
 # @bemmoly/server
 
+## 0.2.2
+
+### Patch Changes
+
+- @bemmoly/module-sample@0.2.2
+  - @bemmoly/module-work@0.2.2
+  - @bemmoly/core@0.2.2
+  - @bemmoly/shared@0.2.2
+
 ## 0.2.1
 
 ### Patch Changes

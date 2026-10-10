@@ -1,5 +1,16 @@
 # @bemmoly/module-work
 
+## 0.2.2
+
+### Patch Changes
+
+- @bemmoly/api-client@0.2.2
+  - @bemmoly/core@0.2.2
+  - @bemmoly/core-web@0.2.2
+  - @bemmoly/editor@0.2.2
+  - @bemmoly/shared@0.2.2
+  - @bemmoly/ui@0.2.2
+
 ## 0.2.1
 
 ### Patch Changes
