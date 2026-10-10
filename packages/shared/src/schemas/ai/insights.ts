@@ -26,8 +26,21 @@ export type AiInsightState = z.infer<typeof aiInsightStateSchema>;
 /** The realtime message a finished (or failed) regeneration publishes; ids hold the target. */
 export const AI_REALTIME_KINDS = { insight: 'ai.insight' } as const;
 
-/** Modules ask the kernel for a fresh insight through this event on the bus. */
-export const AI_INSIGHT_EVENT_KINDS = { requested: 'ai.insight.requested' } as const;
+/**
+ * On the event bus: `requested` asks the kernel for a fresh insight; `sourceChanged` tells
+ * other modules that records their insights read changed (Work's issues, for the pages that
+ * name them), without either module importing the other.
+ */
+export const AI_INSIGHT_EVENT_KINDS = {
+  requested: 'ai.insight.requested',
+  sourceChanged: 'ai.source.changed',
+} as const;
+
+export const aiSourceChangedPayloadSchema = z.object({
+  kind: z.string().min(1).max(40),
+  ids: z.array(z.uuid()).min(1).max(200),
+});
+export type AiSourceChangedPayload = z.infer<typeof aiSourceChangedPayloadSchema>;
 
 export const aiInsightRequestedPayloadSchema = z.object({
   kind: aiInsightKindSchema,
