@@ -133,7 +133,7 @@ describe('issue page components', () => {
     );
     fireEvent.click(screen.getByRole('switch', { name: 'Story points required' }));
     expect(onRequired).toHaveBeenCalledWith(true);
-    expect(screen.getByText('AI-FILLED')).toBeTruthy();
+    expect(screen.getByText('AI-filled')).toBeTruthy();
     expect(screen.getByRole('img', { name: 'Incident' }).getAttribute('width')).toBe('36');
   });
 });
