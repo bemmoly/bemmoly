@@ -5,6 +5,7 @@ import {
   createModuleAccessResolver,
   createModuleAccessWriter,
   createSessionResolver,
+  createSubscriptionAuthorizer,
   deleteExpiredSessions,
   type ActorResolver,
   type Authorize,
@@ -19,6 +20,7 @@ import {
   type SessionResolver,
   type SettingsService,
   type SqlClient,
+  type SubscriptionAuthorizer,
 } from '@bemmoly/core';
 import { ForbiddenError } from '@bemmoly/shared';
 
@@ -32,6 +34,8 @@ export interface IdentityWiring {
   authenticate?: ActorResolver;
   sessions?: SessionResolver;
   moduleAccess?: ModuleAccessResolver;
+  /** Who may listen to a project or space over /ws, for invalidations and presence. */
+  authorizeSubscription?: SubscriptionAuthorizer;
   moduleAccessWriter?: ModuleAccessWriter;
   authorize: Authorize;
   backup?: ModuleDataBackup;
@@ -59,6 +63,7 @@ export function identityWiring(input?: IdentityWiringInput): IdentityWiring {
     authenticate: authenticateRequest,
     sessions: createSessionResolver({ db, publicUrl }),
     moduleAccess: createModuleAccessResolver({ db, modules }),
+    authorizeSubscription: createSubscriptionAuthorizer(db),
     moduleAccessWriter: createModuleAccessWriter(db),
     authorize: createAuthorize({ db, modules }),
     ...(input.backup ? { backup: input.backup } : {}),

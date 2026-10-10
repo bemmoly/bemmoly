@@ -32,3 +32,8 @@ export {
   putRoleCapabilities,
 } from './role-capabilities.ts';
 export { createRole, deleteRole, getRole, listRoles, updateRole } from './roles.ts';
+export {
+  createSubscriptionAuthorizer,
+  subscriptionAuthorizer,
+  type SubscriptionLookups,
+} from './subscriptions.ts';
