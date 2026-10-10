@@ -225,10 +225,13 @@ const DEFAULT_HINTS = [
   { keys: 'Tab', label: 'filter by type' },
 ];
 
-/** Key hints on the 38px footer bar, each a Kbd chip and its action, teaching the keyboard. */
+/**
+ * Key hints on the 38px footer bar, each a Kbd chip and its action, teaching the keyboard. A
+ * phone has no keyboard to teach, so the bar is left out there.
+ */
 export function CommandFooter({ hints = DEFAULT_HINTS, extra }: CommandFooterProps) {
   return (
-    <div className="flex h-9.5 shrink-0 items-center gap-3.5 border-t border-line bg-sunken px-4 text-12 text-tx-3">
+    <div className="hidden h-9.5 shrink-0 items-center sm:flex gap-3.5 border-t border-line bg-sunken px-4 text-12 text-tx-3">
       {hints.map((hint) => (
         <span key={hint.keys} className="inline-flex items-center gap-1.5">
           <Kbd keys={hint.keys} />
