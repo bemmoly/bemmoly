@@ -3,6 +3,7 @@ import { TaskItem, TaskList } from '@tiptap/extension-list';
 import { Mention } from '@tiptap/extension-mention';
 import { StarterKit } from '@tiptap/starter-kit';
 import type { SuggestionOptions } from '@tiptap/suggestion';
+import { Highlight } from './highlight.ts';
 import { ReferenceLinks, type ReferenceLinkOptions } from './references.ts';
 
 /*
@@ -39,6 +40,7 @@ export function baseExtensions(options: SchemaOptions = {}): AnyExtension[] {
         HTMLAttributes: { target: null },
       },
     }),
+    Highlight,
     TaskList,
     TaskItem.configure({
       nested: true,

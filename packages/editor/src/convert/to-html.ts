@@ -17,6 +17,7 @@ const MARK_TAGS: Record<string, string> = {
   italic: 'em',
   strike: 's',
   code: 'code',
+  highlight: 'mark',
 };
 
 function markText(node: RichTextNode): string {

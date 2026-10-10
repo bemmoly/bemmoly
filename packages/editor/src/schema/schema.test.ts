@@ -74,4 +74,27 @@ describe('the document schema', () => {
     expect(Object.keys(editor.schema.nodes)).not.toContain('callout');
     expect(Object.keys(editor.schema.nodes)).not.toContain('table');
   });
+
+  it('reads strike and highlight, and keeps them through HTML', () => {
+    const marked = {
+      type: 'doc',
+      content: [
+        {
+          type: 'paragraph',
+          content: [
+            { type: 'text', text: 'gone', marks: [{ type: 'strike' }] },
+            { type: 'text', text: ' and ' },
+            { type: 'text', text: 'noted', marks: [{ type: 'highlight' }] },
+          ],
+        },
+      ],
+    };
+    expect(Node.fromJSON(editorSchema(), marked).toJSON()).toEqual(marked);
+    editor = new Editor({ extensions: docExtensions(), content: marked });
+    const html = editor.getHTML();
+    expect(html).toContain('<mark>noted</mark>');
+    editor.destroy();
+    editor = new Editor({ extensions: docExtensions(), content: html });
+    expect(editor.getJSON()).toEqual(marked);
+  });
 });

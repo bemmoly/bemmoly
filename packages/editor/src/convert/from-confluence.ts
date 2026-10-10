@@ -42,6 +42,7 @@ const MARKS: Record<string, string> = {
   s: 'strike',
   del: 'strike',
   strike: 'strike',
+  mark: 'highlight',
   code: 'code',
 };
 const HEADINGS: Record<string, number> = { h1: 1, h2: 2, h3: 3, h4: 3, h5: 3, h6: 3 };
