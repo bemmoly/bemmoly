@@ -49,4 +49,25 @@ describe('Menu', () => {
     expect(onSelect).toHaveBeenCalledOnce();
     expect(screen.getByRole('menuitemcheckbox', { name: 'Labels' })).toBeTruthy();
   });
+
+  it('tells its owner when it opens and closes', () => {
+    const onOpenChange = vi.fn();
+    render(
+      <Menu
+        onOpenChange={onOpenChange}
+        trigger={(props) => (
+          <button type="button" {...props}>
+            Block
+          </button>
+        )}
+      >
+        <MenuItem onSelect={() => undefined}>Duplicate</MenuItem>
+      </Menu>,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Block' }));
+    expect(onOpenChange).toHaveBeenLastCalledWith(true);
+    fireEvent.keyDown(screen.getByRole('menu'), { key: 'Escape' });
+    expect(onOpenChange).toHaveBeenLastCalledWith(false);
+    expect(onOpenChange).toHaveBeenCalledTimes(2);
+  });
 });

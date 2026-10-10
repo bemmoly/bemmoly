@@ -36,6 +36,11 @@ export interface MenuProps {
    */
   widthClassName?: string;
   className?: string;
+  /**
+   * Told whenever the person opens or closes the menu, so chrome that only shows on hover (the
+   * Doc Editor's block handle) can hold still while its menu is open.
+   */
+  onOpenChange?: (open: boolean) => void;
 }
 
 const ITEM_SELECTOR = ['menuitem', 'menuitemradio', 'menuitemcheckbox']
@@ -69,6 +74,7 @@ export function Menu({
   widthClassName = 'min-w-45 max-w-80',
   defaultOpen = false,
   className,
+  onOpenChange,
 }: MenuProps) {
   const [open, setOpen] = useState(defaultOpen);
   const [focusLast, setFocusLast] = useState(false);
@@ -80,12 +86,20 @@ export function Menu({
   // Stays mounted for its 100ms exit, then lets go.
   const presence = usePresence(open);
 
+  const change = useCallback(
+    (next: boolean) => {
+      setOpen(next);
+      onOpenChange?.(next);
+    },
+    [onOpenChange],
+  );
+
   const close = useCallback(
     (refocus = true) => {
-      setOpen(false);
+      change(false);
       if (refocus) anchor?.focus();
     },
-    [anchor],
+    [anchor, change],
   );
 
   useEffect(() => {
@@ -102,7 +116,7 @@ export function Menu({
     if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
       event.preventDefault();
       setFocusLast(event.key === 'ArrowUp');
-      setOpen(true);
+      change(true);
     }
   };
 
@@ -131,7 +145,7 @@ export function Menu({
         id: triggerId,
         onClick: () => {
           setFocusLast(false);
-          setOpen((value) => !value);
+          change(!open);
         },
         onKeyDown: onTriggerKeyDown,
         'aria-haspopup': 'menu',
