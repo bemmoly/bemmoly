@@ -10,4 +10,13 @@ export {
 } from './icon.tsx';
 export { KIT_ICONS, type KitIconName } from './kit.tsx';
 export { SHAPES, type ShapeName } from './shapes.tsx';
-export { isIconName, PageIcon, type PageIconProps } from './page-icon.tsx';
+export {
+  formatPageIcon,
+  isIconName,
+  PAGE_ICON_TINTS,
+  PageIcon,
+  pageIconTintClass,
+  parsePageIcon,
+  type PageIconProps,
+  type PageIconTint,
+} from './page-icon.tsx';
