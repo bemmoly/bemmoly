@@ -3,6 +3,7 @@ import { NotFoundError } from '@bemmoly/shared';
 import { applyUpdate, Doc, encodeStateAsUpdate, encodeStateVector } from 'yjs';
 import type { RichText } from '../../../../shared/common.ts';
 import { requireDatabase, spaceResource, type DocsServiceDeps } from '../common.ts';
+import { writePeriodicIfDue } from '../revisions/write.ts';
 import { snapshotToUpdate, writeSnapshot } from './convert.ts';
 import { extractPage, personOf } from './extract.ts';
 import { appendUpdate, compactLog, logLength, mergeLog, readLog, seedState } from './log.ts';
@@ -82,8 +83,15 @@ export function createPageCollab(deps: DocsServiceDeps) {
   return {
     definition,
 
-    /** The docs.compact job: folds the page's log into page_state. */
-    compact: (pageId: string) => compactLog(sql(), pageId),
+    /**
+     * The docs.compact job: folds the page's log into page_state. A page busy enough to need
+     * compacting is being edited, so this is also a moment to take the periodic revision.
+     */
+    async compact(pageId: string) {
+      const folded = await compactLog(sql(), pageId);
+      await sql().begin((tx) => writePeriodicIfDue(tx, pageId));
+      return folded;
+    },
 
     /**
      * Replaces a page body from the server, for the deprecated snapshot field of

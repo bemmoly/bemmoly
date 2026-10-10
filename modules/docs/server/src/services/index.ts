@@ -2,6 +2,7 @@ import { createPageCollab } from './collab/index.ts';
 import type { DocsServiceDeps } from './common.ts';
 import { createHomeService } from './home/index.ts';
 import { createPagesService } from './pages/index.ts';
+import { createRevisionsService } from './revisions/index.ts';
 import { createSearchService } from './search/index.ts';
 import { createSpacesService } from './spaces/index.ts';
 import { createStarsLabelsService } from './stars-labels/index.ts';
@@ -28,6 +29,7 @@ export function createDocsServices(deps: DocsServiceDeps) {
     templates: createTemplatesService({ ...deps, pages }),
     home: createHomeService(deps),
     search: createSearchService(deps),
+    revisions: createRevisionsService(deps, collab),
   };
 }
 

@@ -18,10 +18,12 @@ import {
 } from '../common.ts';
 import { loadDetail } from '../pages/detail.ts';
 import { pageById } from '../pages/rows.ts';
+import { insertRevision } from '../revisions/write.ts';
 
 /*
  * The review flow: draft, in review, published, archived. Entering published
  * or archived needs docs.page.publish; the rest needs docs.page.edit.
+ * Publishing writes a "publish" revision, so the history marks each release.
  * Reviewers must be members of the space, so a review request never names
  * someone who cannot open the page.
  */
@@ -40,14 +42,19 @@ export function createStatusService(deps: DocsServiceDeps) {
       if (body.status === 'in_review' && page.reviewers.length === 0) {
         throw new ValidationError('Add a reviewer before asking for a review');
       }
-      await sql`
-        update pages set
-          status = ${body.status},
-          published_at = case when ${body.status === 'published'} then now() else published_at end,
-          version = version + 1,
-          updated_by = ${userIdOf(ctx)}::uuid,
-          updated_at = now()
-        where id = ${id}`;
+      await sql.begin(async (tx) => {
+        await tx`
+          update pages set
+            status = ${body.status},
+            published_at = case when ${body.status === 'published'} then now() else published_at end,
+            version = version + 1,
+            updated_by = ${userIdOf(ctx)}::uuid,
+            updated_at = now()
+          where id = ${id}`;
+        if (body.status === 'published') {
+          await insertRevision(tx, { pageId: id, kind: 'publish', createdBy: userIdOf(ctx) });
+        }
+      });
       const after = await pageById(sql, id);
       await recordAudit(deps, ctx, {
         action: 'page.status_changed',
@@ -58,6 +65,9 @@ export function createStatusService(deps: DocsServiceDeps) {
       });
       await publishChange(deps, DOCS_REALTIME_KINDS.page, page.space_id, [id]);
       await publishChange(deps, DOCS_REALTIME_KINDS.tree, page.space_id, [id]);
+      if (body.status === 'published') {
+        await publishChange(deps, DOCS_REALTIME_KINDS.revisions, page.space_id, [id]);
+      }
       return loadDetail(sql, after, userIdOf(ctx));
     },
 

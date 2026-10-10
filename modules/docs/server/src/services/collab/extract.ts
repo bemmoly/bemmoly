@@ -7,6 +7,7 @@ import {
   requireDatabase,
   type DocsServiceDeps,
 } from '../common.ts';
+import { writePeriodicIfDue } from '../revisions/write.ts';
 import { docToSnapshot } from './convert.ts';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -53,7 +54,7 @@ async function rewritePageLinks(
 /**
  * The debounced collab hook: writes the body's ProseMirror snapshot, plain text and word
  * count into pages (search_vector follows by trigger), rewrites the page's links, records who
- * edited in the audit log and tells open screens. A change that leaves the body as it was
+ * edited in the audit log, writes the periodic revision when one is due and tells open screens. A change that leaves the body as it was
  * (typing then undoing) writes nothing.
  */
 export async function extractPage(deps: DocsServiceDeps, change: CollabChange): Promise<void> {
@@ -64,7 +65,7 @@ export async function extractPage(deps: DocsServiceDeps, change: CollabChange): 
   const editors = [...new Set(change.editors.map(personOf).filter((id) => id !== null))];
   const lastEditor = editors.at(-1) ?? null;
   const json = JSON.stringify(snapshot);
-  const spaceId = await sql.begin(async (tx) => {
+  const result = await sql.begin(async (tx) => {
     const [updated] = await tx<{ space_id: string }[]>`
       update pages set
         snapshot = ${json}::jsonb,
@@ -72,7 +73,10 @@ export async function extractPage(deps: DocsServiceDeps, change: CollabChange): 
         word_count = ${words},
         content_updated_at = now(),
         updated_by = coalesce(${lastEditor}::uuid, updated_by),
-        updated_at = now()
+        updated_at = now(),
+        revision_editor_ids = array(
+          select distinct unnest(revision_editor_ids || ${editors}::uuid[])),
+        revision_pending_since = coalesce(revision_pending_since, now())
       where id = ${change.id} and deleted_at is null
         and (snapshot is distinct from ${json}::jsonb or text is distinct from ${text})
       returning space_id`;
@@ -87,7 +91,12 @@ export async function extractPage(deps: DocsServiceDeps, change: CollabChange): 
       },
       tx,
     );
-    return updated.space_id;
+    const periodic = await writePeriodicIfDue(tx, change.id);
+    return { spaceId: updated.space_id, revised: periodic !== null };
   });
-  if (spaceId) await publishChange(deps, DOCS_REALTIME_KINDS.page, spaceId, [change.id]);
+  if (!result) return;
+  await publishChange(deps, DOCS_REALTIME_KINDS.page, result.spaceId, [change.id]);
+  if (result.revised) {
+    await publishChange(deps, DOCS_REALTIME_KINDS.revisions, result.spaceId, [change.id]);
+  }
 }

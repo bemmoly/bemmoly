@@ -10,8 +10,12 @@ export const DOCS_REALTIME_KINDS = {
   page: 'docs.page',
   /** The tree of a space changed: a page was created, moved, deleted or restored. */
   tree: 'docs.tree',
-  /** A page's comments changed. */
+  /** A page's comments changed: added, edited, resolved, reopened, deleted or a fix applied. */
   comments: 'docs.comments',
+  /** A page gained a revision (saved, published, periodic or restored). */
+  revisions: 'docs.revisions',
+  /** A page's outgoing links changed, so its targets' backlinks did too. */
+  links: 'docs.links',
   /** A template was added, changed or removed. */
   templates: 'docs.templates',
 } as const;
