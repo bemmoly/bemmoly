@@ -17,7 +17,7 @@ source of truth.
 | `/docs/compose`                   | `deploy/compose` and how the installer fills in its `.env`            |
 | `/changelog`, `/changelog.xml`    | The packages' `CHANGELOG.md` files (see Changelog below), and RSS     |
 | `/security`                       | Renders the repository's `SECURITY.md`                                |
-| `/community`                      | GitHub, the Discord placeholder, contributing                         |
+| `/community`                      | GitHub issues, security reports, contributing                         |
 | `/install.sh`                     | `public/install.sh`, a copy of `deploy/install.sh` (see below)        |
 | `/demo`                           | The live demo: apps/web's demo build (see Live demo below)            |
 
@@ -303,5 +303,5 @@ build output out of the context without a root `.dockerignore`.
   Coolify, leave the watch paths empty (or add `apps/web/**`, `modules/**` and `packages/**`),
   so a change to the app redeploys the demo. Nothing else changes: same Dockerfile, port and
   domains.
-- **Discord.** `/community#discord` says the invite is not published; add the link there and in
-  `src/lib/links.ts`.
+- **Discord.** There is no invite yet, so the site does not mention it. When one exists, add a
+  section to /community and the link to `FOOTER` in `src/lib/links.ts`.

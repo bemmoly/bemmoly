@@ -29,11 +29,10 @@ export const NAV: readonly NavLink[] = [
   { label: 'GitHub', href: REPO_URL },
 ];
 
-/** Footer links after "Bemmoly", in the mock's order. Discord has no invite yet. */
+/** Footer links after "Bemmoly". Discord joins them once its invite exists. */
 export const FOOTER: readonly NavLink[] = [
   { label: 'MIT license', href: LICENSE_URL },
   { label: 'Docs', href: '/docs' },
   { label: 'Changelog', href: '/changelog' },
   { label: 'Security', href: '/security' },
-  { label: 'Discord', href: '/community#discord' },
 ];
