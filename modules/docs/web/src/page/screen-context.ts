@@ -80,3 +80,30 @@ export function useSlotProps(): PageSlotProps {
   const openPanel = usePageChrome((state) => state.openPanel);
   return { page, editable, editor, openPanel };
 }
+
+interface PageTyping {
+  /** True from a keystroke in the body until the pointer moves, Esc, or the body loses focus. */
+  typing: boolean;
+  setTyping: (typing: boolean) => void;
+}
+
+/**
+ * Whether the person is writing, so the chrome around the body can step back (the Docs
+ * review's Writing tab: "the header fades while you type"). The header and the margin read it
+ * through FADE_WHILE_TYPING; nothing jumps, since only opacity changes.
+ */
+export const usePageTyping = create<PageTyping>((set) => ({
+  typing: false,
+  setTyping: (typing) => set((state) => (state.typing === typing ? state : { typing })),
+}));
+
+/** The attribute on <html> that FADE_WHILE_TYPING keys off, set while typing. */
+export const TYPING_ATTRIBUTE = 'data-doc-typing';
+
+/**
+ * The CSS hook for chrome that fades while typing: the header, the outline and the panel. It
+ * fades out in 300ms and comes back in 150ms on pointer move or Esc; with reduced motion it
+ * switches at once. Focus inside it shows it again, so it stays reachable from the keyboard.
+ */
+export const FADE_WHILE_TYPING =
+  'motion-safe:transition-opacity motion-safe:duration-150 [:root[data-doc-typing]_&]:opacity-0 [:root[data-doc-typing]_&]:motion-safe:duration-300 [:root[data-doc-typing]_&:focus-within]:opacity-100';

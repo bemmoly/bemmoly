@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import type { CollabPage } from '../../collab/use-collab-page.ts';
 import { cx } from '../cx.ts';
 import { usePageScreen, type PageEditor } from '../screen-context.ts';
+import { useTypingFlag } from '../use-typing-flag.ts';
 import { TITLE_FIELD_ID } from './page-title.tsx';
 import { useDocServices } from './use-doc-services.ts';
 
@@ -64,6 +65,7 @@ export function PageBodyEditor({ onEditor }: { onEditor: (editor: PageEditor | n
   const services = useDocServices(page.id, editable);
   const ready = bodyReady(collab);
   useArrowUpToTitle(editor);
+  useTypingFlag(editor);
   const stored = page.snapshot as RichTextDoc | null;
   const live = Boolean(collab.extensions) && !page.deletedAt;
 
