@@ -3,6 +3,7 @@ import { enc, validated } from '@bemmoly/api-client';
 import {
   createPageBodySchema,
   createSpaceBodySchema,
+  emptyTrashResultSchema,
   listSpacesQuerySchema,
   listTrashQuerySchema,
   movePageBodySchema,
@@ -62,6 +63,11 @@ export function docsPagesEndpoints(http: Http) {
         http.request(space(ref, '/trash'), pageSummaryPageSchema, {
           query: validated(listTrashQuerySchema, query),
         }),
+      /** Deletes one trashed page and everything under it for good (space admins). */
+      deleteForever: async (ref: string, pageId: string) =>
+        http.send(space(ref, `/trash/${enc(pageId)}`), { method: 'DELETE' }),
+      emptyTrash: async (ref: string) =>
+        http.request(space(ref, '/trash'), emptyTrashResultSchema, { method: 'DELETE' }),
     },
     pages: {
       get: async (id: string, options: { deleted?: boolean } = {}) =>

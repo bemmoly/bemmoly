@@ -95,6 +95,32 @@ export const docsLibraryRoutes: MockRoute[] = [
     },
   },
   {
+    method: 'DELETE',
+    pattern: `${BASE}/spaces/:spaceKey/trash`,
+    handle: (request, db) => {
+      const state = docsState(db);
+      const space = spaceByRef(state, request.params['spaceKey'] ?? '');
+      if (!space) return notFound(`Space ${request.params['spaceKey']}`);
+      const before = state.pages.length;
+      state.pages = state.pages.filter((row) => row.spaceId !== space.id || live(row));
+      emit(db, 'docs.tree', []);
+      return ok({ deleted: before - state.pages.length });
+    },
+  },
+  {
+    method: 'DELETE',
+    pattern: `${BASE}/spaces/:spaceKey/trash/:pageId`,
+    handle: (request, db) => {
+      const state = docsState(db);
+      const space = spaceByRef(state, request.params['spaceKey'] ?? '');
+      const root = state.pages.find((row) => row.id === request.params['pageId'] && !live(row));
+      if (!space || !root || root.spaceId !== space.id) return notFound('Page in the trash');
+      state.pages = state.pages.filter((row) => !row.path.startsWith(root.path));
+      emit(db, 'docs.tree', [root.id]);
+      return ok();
+    },
+  },
+  {
     method: 'GET',
     pattern: `${BASE}/search/suggest`,
     handle: (request, db) => {
