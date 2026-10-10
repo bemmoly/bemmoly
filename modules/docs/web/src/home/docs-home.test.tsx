@@ -1,5 +1,5 @@
 import { queryKeys } from '@bemmoly/api-client';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import { describe, expect, it } from 'vitest';
 import { listed, newClient, providers, space, startServer, summary } from '../test-support.tsx';
@@ -55,23 +55,23 @@ function renderHome(screenName = 'home') {
 }
 
 describe('the Docs home', () => {
-  it('shows the totals, the space cards and the recent pages with their owners', async () => {
+  it('shows the totals, jump back in and the recent pages with who edited them', async () => {
     renderHome();
     expect((await screen.findAllByText('Engineering')).length).toBeGreaterThan(0);
     expect(screen.getAllByText('Product').length).toBeGreaterThan(0);
-    expect(await screen.findByText('2 spaces · 246 pages · Acme Labs')).toBeTruthy();
-    expect(await screen.findByRole('link', { name: /Auth service RFC/ })).toBeTruthy();
-    expect((await screen.findAllByText('Priya N.')).length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Architecture').length).toBe(2);
+    expect(await screen.findByText('2 spaces · 246 pages')).toBeTruthy();
+    expect(await screen.findByRole('heading', { name: 'Jump back in' })).toBeTruthy();
+    expect((await screen.findAllByRole('link', { name: /Auth service RFC/ })).length).toBe(2);
+    expect(screen.getByRole('radio', { name: 'Recent' })).toBeTruthy();
   });
 
-  it('leaves out needs attention when nothing waits', async () => {
+  it('leaves out Needs you when nothing waits', async () => {
     renderHome();
     await screen.findAllByText('Engineering');
-    expect(screen.queryByText('Needs attention')).toBeNull();
+    expect(screen.queryByText('Needs you')).toBeNull();
   });
 
-  it('lists reviews asked of the person and their stale pages', async () => {
+  it('lists reviews asked of the person and their stale pages, and counts them', async () => {
     server.use(
       http.get('*/api/v1/docs/home/attention', () =>
         HttpResponse.json({
@@ -84,9 +84,14 @@ describe('the Docs home', () => {
       ),
     );
     renderHome();
-    expect(await screen.findByRole('list', { name: 'Needs attention' })).toBeTruthy();
-    expect(screen.getByText('Review requested')).toBeTruthy();
-    expect(screen.getByText('Stale:')).toBeTruthy();
+    const needs = await screen.findByRole('list', { name: 'Needs you' });
+    expect(needs.textContent).toContain('Priya N. asked you to review');
+    expect(needs.textContent).toContain('Not updated for a while');
+    expect(await screen.findByText(/1 page waiting for your review/)).toBeTruthy();
+    fireEvent.keyDown(window, { key: '4' });
+    expect(screen.getByRole('radio', { name: 'For review · 1' }).getAttribute('aria-checked')).toBe(
+      'true',
+    );
   });
 
   it('guides a first run when there are no spaces', async () => {
