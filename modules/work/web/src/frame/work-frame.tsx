@@ -139,8 +139,10 @@ export function useWorkFrame(
           ? rest[0]
           : 'board';
   const editing = name === 'workflows' && rest[0];
+  const wide =
+    editing || (name === 'settings' && !['issue-types', 'fields'].includes(rest[0] ?? ''));
   return {
-    layout: name === 'members' || (name === 'workflows' && !editing) ? 'contained' : 'full',
+    layout: wide ? 'full' : 'contained',
     header: {
       crumbs: [
         crumb,

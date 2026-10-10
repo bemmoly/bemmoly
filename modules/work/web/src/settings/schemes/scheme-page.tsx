@@ -1,5 +1,5 @@
 import { isApiError } from '@bemmoly/api-client';
-import { Button, ConfirmChange, PageTitle, SettingsContent, SettingsFrame } from '@bemmoly/ui';
+import { Button, ConfirmChange, PageTitle } from '@bemmoly/ui';
 import type { ReactNode } from 'react';
 import { NO_PROJECT_PERMISSION } from '../../hooks/settings-access.ts';
 import type { SchemeFlow } from '../../hooks/settings-scheme-flow.ts';
@@ -30,37 +30,35 @@ export function SchemePage({ title, description, flow, canConfigure, children }:
   const origin = flow.status?.originName ?? 'the org default';
   const locked = canConfigure ? undefined : NO_PROJECT_PERMISSION;
   return (
-    <SettingsFrame nav={null}>
-      <SettingsContent width="narrow">
-        <PageTitle
-          variant="settings"
-          title={title}
-          description={description}
-          actions={
-            overridden ? (
-              <Button disabled={!canConfigure} title={locked} onClick={flow.startReset}>
-                Reset to org default
-              </Button>
-            ) : (
-              <Button
-                variant="primary"
-                disabled={!canConfigure}
-                title={locked}
-                onClick={flow.startOverride}
-              >
-                Override for this project
-              </Button>
-            )
-          }
-        />
-        <InheritanceNote
-          origin={origin}
-          overridden={overridden}
-          changes={flow.status?.overrideCount ?? 0}
-          onCompare={flow.viewDiff}
-        />
-        {children}
-      </SettingsContent>
+    <div className="flex flex-col gap-6">
+      <PageTitle
+        variant="settings"
+        title={title}
+        description={description}
+        actions={
+          overridden ? (
+            <Button disabled={!canConfigure} title={locked} onClick={flow.startReset}>
+              Reset to org default
+            </Button>
+          ) : (
+            <Button
+              variant="primary"
+              disabled={!canConfigure}
+              title={locked}
+              onClick={flow.startOverride}
+            >
+              Override for this project
+            </Button>
+          )
+        }
+      />
+      <InheritanceNote
+        origin={origin}
+        overridden={overridden}
+        changes={flow.status?.overrideCount ?? 0}
+        onCompare={flow.viewDiff}
+      />
+      {children}
       <DiffDialog
         open={flow.step === 'view'}
         title={`${title} overridden on this project`}
@@ -99,6 +97,6 @@ export function SchemePage({ title, description, flow, canConfigure, children }:
         onConfirm={flow.confirmReset}
         onCancel={flow.close}
       />
-    </SettingsFrame>
+    </div>
   );
 }
