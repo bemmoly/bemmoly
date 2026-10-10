@@ -5,7 +5,7 @@ interface TreePage {
   items: { id: string; title: string }[];
 }
 
-/** The rows of the space sidebar's tree, top to bottom. */
+/** The rows of the current space's tree in the app sidebar, top to bottom. */
 const rows = (page: Page) => page.getByRole('tree').getByRole('treeitem');
 
 /** Opens a row's ··· menu and chooses an item. */
@@ -14,6 +14,17 @@ async function rowAction(page: Page, title: string, action: string) {
   await row.hover();
   await row.getByRole('button', { name: `Actions for ${title}` }).click();
   await page.getByRole('menuitem', { name: action }).click();
+}
+
+/** A space's row in the sidebar's Docs section. */
+const spaceRow = (page: Page, name: string) =>
+  page.getByRole('region', { name: 'Docs' }).getByRole('link', { name, exact: true });
+
+/** Opens a space row's ··· menu in the sidebar and chooses an item. */
+async function spaceAction(page: Page, name: string, action: string) {
+  await spaceRow(page, name).hover();
+  await page.getByRole('button', { name: `Actions for ${name}` }).click();
+  await page.getByRole('menuitem', { name: action, exact: true }).click();
 }
 
 /** Drags one row onto the top quarter of another, where the drop line goes above it. */
@@ -47,20 +58,31 @@ test('a space is created, a page made from a template, reordered, starred, trash
   await expect(page.getByRole('heading', { name, level: 1 })).toBeVisible();
   await expect(page.getByText('Nothing written here yet')).toBeVisible();
 
-  // A page from a template, through the picker.
-  // The overview's own button; the space sidebar and the empty state offer the same picker.
-  await page.getByRole('button', { name: 'New page', exact: true }).last().click();
+  // The space is the open row in the sidebar, with one quiet row for its first page.
+  await expect(spaceRow(page, name)).toHaveAttribute('aria-current', 'page');
+  await expect(page.getByRole('button', { name: /^New page N$/ })).toBeVisible();
+
+  // A page from a template, through the picker the header's New page opens.
+  await page.getByRole('button', { name: 'New page', exact: true }).click();
   const pageDialog = page.getByRole('dialog', { name: 'New page' });
   await pageDialog.getByRole('button', { name: /^Runbook/ }).click();
   await pageDialog.getByRole('button', { name: 'Create page' }).click();
   await expect(page).toHaveURL(/\/docs\/p\/[0-9a-f-]{36}$/);
   await expect(page.getByRole('heading', { name: 'Runbook', level: 1 })).toBeVisible();
 
-  // A blank page beside it, so there is an order to change.
-  await page.getByRole('button', { name: 'New page' }).click();
-  await pageDialog.getByRole('textbox', { name: 'Title' }).fill('Failover drill');
-  await pageDialog.getByRole('textbox', { name: 'Title' }).press('Enter');
-  await expect(page.getByRole('heading', { name: 'Failover drill', level: 1 })).toBeVisible();
+  await expect(page.getByRole('treeitem', { name: 'Runbook' })).toHaveAttribute(
+    'aria-current',
+    'page',
+  );
+
+  // A blank page beside it from the space row's +, made in place and named on the page.
+  const runbookUrl = page.url();
+  await spaceRow(page, name).hover();
+  await page.getByRole('button', { name: `New page in ${name}` }).click();
+  await expect(page).not.toHaveURL(runbookUrl);
+  const title = page.getByRole('textbox', { name: 'Page title' });
+  await title.fill('Failover drill');
+  await title.press('Enter');
   await expect(rows(page)).toHaveText(['Runbook', 'Failover drill']);
 
   // Reorder by dragging, then check the server kept it.
@@ -86,7 +108,7 @@ test('a space is created, a page made from a template, reordered, starred, trash
   await rowAction(page, 'Runbook', 'Move to trash');
   await expect(page.getByText('“Runbook” moved to trash')).toBeVisible();
   await expect(rows(page)).toHaveText(['Failover drill']);
-  await page.getByRole('link', { name: 'Trash' }).click();
+  await spaceAction(page, name, 'Trash');
   await expect(page).toHaveURL(new RegExp(`/docs/s/${key}/trash$`));
   const trashed = page.getByRole('list', { name: 'Pages in the trash' }).getByRole('listitem');
   await expect(trashed).toHaveCount(1);
@@ -94,4 +116,33 @@ test('a space is created, a page made from a template, reordered, starred, trash
   await expect(page.getByText('“Runbook” restored')).toBeVisible();
   await expect(page.getByText('The trash is empty')).toBeVisible();
   await expect(rows(page)).toHaveText(['Failover drill', 'Runbook']);
+});
+
+test('a big space takes the sidebar in focus mode, with a filter, and gives it back', async ({
+  page,
+  admin,
+}) => {
+  const key = uniqueKey('F');
+  const name = `Handbook ${key}`;
+  const space = await admin.call<{ id: string }>('POST', '/docs/spaces', { key, name });
+  for (const title of ['Onboarding', 'Expenses', 'Time off']) {
+    await admin.call('POST', '/docs/pages', { spaceId: space.id, title });
+  }
+  await page.goto(`/docs/s/${key}`);
+  await expect(rows(page)).toHaveText(['Onboarding', 'Expenses', 'Time off']);
+
+  await spaceRow(page, name).dblclick();
+  const filter = page.getByRole('searchbox', { name: `Filter ${name}` });
+  await expect(filter).toBeFocused();
+  await expect(page.getByRole('link', { name: 'Docs home' })).toHaveCount(0);
+  await filter.fill('Expenses');
+  await expect(page.getByRole('list', { name: 'Pages matching Expenses' })).toContainText(
+    'Expenses',
+  );
+
+  // Focus is remembered across a reload, then Esc gives every space back.
+  await page.reload();
+  await expect(page.getByRole('button', { name: /All of Docs/ })).toBeVisible();
+  await page.getByRole('searchbox', { name: `Filter ${name}` }).press('Escape');
+  await expect(page.getByRole('link', { name: 'Docs home' })).toBeVisible();
 });
