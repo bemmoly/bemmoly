@@ -208,10 +208,10 @@ export const Tooltips: Story = {
   args: { trigger: () => null, children: null },
   render: () => (
     <div className="flex gap-3 pt-10">
-      <Tooltip content="Open full page">
+      <Tooltip label="Open full page">
         <IconButton label="Open full page" icon="expand" size="xs" />
       </Tooltip>
-      <Tooltip content="Time in column" side="bottom">
+      <Tooltip label="Time in column" side="bottom">
         <Button size="xs">3d</Button>
       </Tooltip>
     </div>

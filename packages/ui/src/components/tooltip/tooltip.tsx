@@ -8,21 +8,41 @@ import {
   type ReactNode,
 } from 'react';
 import { cx } from '../../lib/cx.ts';
+import { TIMING } from '../../tokens/interaction.ts';
+import { Kbd } from '../kbd/kbd.tsx';
 
 export interface TooltipProps {
-  content: ReactNode;
+  /** What the control does, in a few words: "New issue". */
+  label: ReactNode;
+  /** Its shortcut, drawn as keys: "C", "Mod+K". */
+  keys?: string;
   /** One focusable element; it gets aria-describedby while the tip shows. */
   children: ReactElement<Record<string, unknown>>;
   side?: 'top' | 'bottom';
-  /** Milliseconds before showing on hover; focus shows at once. */
+  /** Milliseconds of hover before it opens; focus opens it at once. */
   delay?: number;
 }
 
 /**
- * The mocks use native title attributes for hints; this is the styled equivalent for keyboard
- * and touch users: inverted (tx on sf), 11.5px medium, 4px 8px, 5px radius.
+ * When the last tooltip closed. Moving from one control to the next within the skip window
+ * opens the next tip at once, so scanning a toolbar is not a series of waits.
  */
-export function Tooltip({ content, children, side = 'top', delay = 300 }: TooltipProps) {
+let lastClosedAt = -Infinity;
+
+const recently = () => performance.now() - lastClosedAt < TIMING.tooltipSkipMs;
+
+/**
+ * A short label for a control, with its shortcut. It opens after a hover delay, at once on
+ * keyboard focus or when another tooltip has just closed, and closes on Escape, blur or
+ * pointer leave. It never holds the only copy of information (docs/design/premium/interaction.md).
+ */
+export function Tooltip({
+  label,
+  keys,
+  children,
+  side = 'top',
+  delay = TIMING.tooltipDelayMs,
+}: TooltipProps) {
   const [open, setOpen] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const id = useId();
@@ -40,11 +60,12 @@ export function Tooltip({ content, children, side = 'top', delay = 300 }: Toolti
 
   const show = (now: boolean) => {
     clearTimeout(timer.current);
-    if (now) setOpen(true);
+    if (now || recently()) setOpen(true);
     else timer.current = setTimeout(() => setOpen(true), delay);
   };
   const hide = () => {
     clearTimeout(timer.current);
+    if (open) lastClosedAt = performance.now();
     setOpen(false);
   };
 
@@ -62,11 +83,17 @@ export function Tooltip({ content, children, side = 'top', delay = 300 }: Toolti
           role="tooltip"
           id={id}
           className={cx(
-            'pointer-events-none absolute left-1/2 z-50 -translate-x-1/2 rounded-sm bg-tx px-2 py-1 text-11h font-medium whitespace-nowrap text-sf shadow-menu motion-safe:animate-fade-in',
+            'pointer-events-none absolute left-1/2 z-50 inline-flex -translate-x-1/2 items-center gap-2 rounded-control bg-tx px-2 py-1 text-12 font-medium whitespace-nowrap text-canvas shadow-e2 motion-safe:animate-fade-in',
             side === 'top' ? 'bottom-full mb-1.5' : 'top-full mt-1.5',
           )}
         >
-          {content}
+          {label}
+          {keys && (
+            <Kbd
+              keys={keys}
+              className="border-transparent bg-[color-mix(in_oklab,var(--canvas)_16%,transparent)] text-canvas"
+            />
+          )}
         </span>
       )}
     </span>

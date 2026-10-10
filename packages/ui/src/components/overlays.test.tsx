@@ -150,7 +150,7 @@ describe('Toast and Tooltip', () => {
 
   it('describes its trigger on focus', () => {
     render(
-      <Tooltip content="Open full page">
+      <Tooltip label="Open full page">
         <button type="button">Expand</button>
       </Tooltip>,
     );
