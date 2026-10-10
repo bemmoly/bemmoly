@@ -1,4 +1,6 @@
 import {
+  AI_SETTING_DEFINITIONS,
+  createAiHandle,
   createCollabHandle,
   createEnabledModuleCatalog,
   createJobQueueHandle,
@@ -17,6 +19,7 @@ import { createLogger, type Env } from '@bemmoly/core/config';
 import { getMetrics } from '@bemmoly/core/telemetry';
 import type { FastifyInstance } from 'fastify';
 import { buildApp, type BuildAppOptions } from '../app.ts';
+import { wireAi } from './ai.ts';
 import { wireCollab } from './collab.ts';
 import { connectDatabase, type DatabaseConnection } from './database.ts';
 import { identityWiring } from './identity.ts';
@@ -73,6 +76,7 @@ export async function bootApplication(options: BootOptions): Promise<Booted> {
   const jobQueue = createJobQueueHandle();
   const settingsReader = createSettingsReaderHandle();
   const collabHandle = createCollabHandle();
+  const aiHandle = createAiHandle();
   const modules = loadModules({
     available: options.available,
     enabled: database ? [] : env.BEMMOLY_MODULES,
@@ -80,6 +84,7 @@ export async function bootApplication(options: BootOptions): Promise<Booted> {
     jobQueue,
     settingsReader,
     collab: collabHandle,
+    ai: () => aiHandle.bound(),
     ...(realtime ? { realtime: realtime.publisher } : {}),
     ...(database ? { database: database.sql } : {}),
   });
@@ -94,7 +99,11 @@ export async function bootApplication(options: BootOptions): Promise<Booted> {
           realtime,
           jobQueue,
           identity,
-          settingDefinitions: [...EMAIL_SETTING_DEFINITIONS, ...SYSTEM_SETTINGS],
+          settingDefinitions: [
+            ...EMAIL_SETTING_DEFINITIONS,
+            ...SYSTEM_SETTINGS,
+            ...AI_SETTING_DEFINITIONS,
+          ],
           metrics: { jobs: getMetrics().jobs, realtime: getMetrics().realtime },
           logger,
         })
@@ -115,6 +124,10 @@ export async function bootApplication(options: BootOptions): Promise<Booted> {
           logger,
         })
       : undefined;
+  const ai =
+    database && kernel
+      ? await wireAi({ env, database, kernel, identity, modules, handle: aiHandle, logger })
+      : undefined;
   const services =
     database && kernel && databaseUrl
       ? wireKernelServices({
@@ -124,6 +137,7 @@ export async function bootApplication(options: BootOptions): Promise<Booted> {
           identity,
           modules: catalog,
           backup,
+          aiEnabled: (actor) => aiHandle.enabledFor(actor),
           logger,
         })
       : undefined;
@@ -135,7 +149,14 @@ export async function bootApplication(options: BootOptions): Promise<Booted> {
     ...(options.logger !== undefined ? { logger: options.logger } : {}),
     ...(database ? { database: database.probe } : {}),
     ...(kernel
-      ? { kernel: { ...kernel.routes, ...services?.routes, ...(collab ? { collab } : {}) } }
+      ? {
+          kernel: {
+            ...kernel.routes,
+            ...services?.routes,
+            ...ai?.routes,
+            ...(collab ? { collab } : {}),
+          },
+        }
       : {}),
     ...(services ? { identity: services.identity } : {}),
   });
