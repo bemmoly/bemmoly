@@ -1,0 +1,3 @@
+# The built review inlines every screenshot; build it with build.py (see README.md).
+*.html
+!template.html
