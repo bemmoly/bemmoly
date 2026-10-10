@@ -105,4 +105,20 @@ describe('block keys and handles', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Undo' }));
     await waitFor(() => expect(texts(editor).slice(0, 2)).toEqual(['one', 'two']));
   });
+
+  it('keeps the handles and their open menu while the pointer and the caret move away', async () => {
+    const { box, editor } = await setup();
+    caretIn(editor, 'one');
+    fireEvent.keyDown(box, { key: 'Escape' });
+    const grip = await screen.findByRole('button', { name: /Move or change this paragraph/ });
+    fireEvent.click(grip);
+    const menu = await screen.findByRole('menu');
+    // Reaching the portalled menu leaves the frame; others' edits may move the caret too.
+    fireEvent.pointerLeave(grip.closest('[data-block-handle]')!.parentElement!);
+    caretIn(editor, 'two');
+    expect(menu.isConnected).toBe(true);
+    expect(grip.isConnected).toBe(true);
+    fireEvent.click(screen.getByRole('menuitem', { name: /Delete/ }));
+    await waitFor(() => expect(texts(editor).slice(0, 2)).toEqual(['two', 'first']));
+  });
 });

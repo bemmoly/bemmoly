@@ -2,11 +2,12 @@ import { focusRing, Tooltip } from '@bemmoly/ui';
 import { Icon } from '@bemmoly/ui/icons';
 import type { Editor } from '@tiptap/core';
 import { NodeSelection, TextSelection } from '@tiptap/pm/state';
-import { useEffect, useState, type DragEvent, type RefObject } from 'react';
+import type { DragEvent, RefObject } from 'react';
 import { cx } from '../cx.ts';
 import { useEditorState } from '../editor/use-editor.ts';
-import { blockAt, type BlockRef } from './block-commands.ts';
+import type { BlockRef } from './block-commands.ts';
 import { BlockMenu, GripTip } from './block-menu.tsx';
+import { placeBeside, useBlockTarget } from './use-block-target.ts';
 
 /*
  * The margin handles of the Docs review's Writing tab: + adds a block below and opens the /
@@ -21,42 +22,10 @@ const BUTTON = cx(
   focusRing,
 );
 
-/** The block under the pointer, found at the text column's left edge on the pointer's line. */
-function blockUnder(editor: Editor, y: number): BlockRef | null {
-  const box = editor.view.dom.getBoundingClientRect();
-  const hit = editor.view.posAtCoords({ left: box.left + 4, top: y });
-  if (!hit) return null;
-  return blockAt(editor, hit.inside >= 0 ? hit.inside : hit.pos);
-}
-
 /** The selected block, when the person selected one whole (Esc, or a click on an atom). */
 function selected(editor: Editor): BlockRef | null {
   const { selection } = editor.state;
   return selection instanceof NodeSelection ? { pos: selection.from, node: selection.node } : null;
-}
-
-function useHovered(editor: Editor, frame: RefObject<HTMLElement | null>) {
-  const [hovered, setHovered] = useState<BlockRef | null>(null);
-  useEffect(() => {
-    const host = frame.current;
-    if (!host) return undefined;
-    const move = (event: PointerEvent) => {
-      if (editor.isDestroyed || !editor.isEditable) return;
-      if ((event.target as Element).closest?.('[data-block-handle]')) return;
-      // The block stays put while its menu is open.
-      if (host.querySelector('[data-block-handle] [aria-expanded="true"]')) return;
-      const next = blockUnder(editor, event.clientY);
-      setHovered((current) => (current?.pos === next?.pos ? current : next));
-    };
-    const leave = () => setHovered(null);
-    host.addEventListener('pointermove', move);
-    host.addEventListener('pointerleave', leave);
-    return () => {
-      host.removeEventListener('pointermove', move);
-      host.removeEventListener('pointerleave', leave);
-    };
-  }, [editor, frame]);
-  return hovered;
 }
 
 /** Adds an empty paragraph below the block and types / there, so the menu opens. */
@@ -90,23 +59,20 @@ export function BlockHandle({
   frame: RefObject<HTMLElement | null>;
 }) {
   useEditorState(editor);
-  const hovered = useHovered(editor, frame);
-  const block = hovered ?? selected(editor);
+  const { hovered, held, hold } = useBlockTarget(editor, frame);
+  const block = held?.block ?? hovered ?? selected(editor);
   const host = frame.current;
   if (!block || !host || !editor.isEditable || editor.isDestroyed) return null;
-  const dom = editor.view.nodeDOM(block.pos);
-  if (!(dom instanceof HTMLElement)) return null;
-  const box = dom.getBoundingClientRect();
-  const origin = host.getBoundingClientRect();
-  const line = parseFloat(getComputedStyle(dom).lineHeight) || 25;
-  const top = box.top - origin.top + Math.max(0, (Math.min(line, box.height) - 25) / 2);
+  // While its menu is open the handle stays where the menu was opened from.
+  const place = held ?? placeBeside(editor, block, host);
+  if (!place) return null;
   const name = block.node.type.name;
   return (
     <div
       data-block-handle=""
       role="group"
       aria-label="Block"
-      style={{ top, left: box.left - origin.left - 52 }}
+      style={{ top: place.top, left: place.left }}
       // No margin to hold them on a phone; the / menu and the bubble remain.
       className="absolute z-10 flex gap-px max-sm:hidden"
     >
@@ -124,6 +90,7 @@ export function BlockHandle({
       <BlockMenu
         editor={editor}
         block={block}
+        onOpenChange={(open) => hold(open ? { block, top: place.top, left: place.left } : null)}
         trigger={(props) => (
           <GripTip>
             <button
