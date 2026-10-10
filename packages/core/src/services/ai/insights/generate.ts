@@ -4,7 +4,7 @@ import type { AiFacade, AiPolicy } from '../../../contracts/ai.ts';
 import type { RealtimePublisher } from '../../../contracts/realtime.ts';
 import { isAiRefusal } from '../refusals.ts';
 import { keepKnownCitations } from '../context/citations.ts';
-import type { AiBuiltContext } from '../context/types.ts';
+import type { AiBuiltContext, AiContextOptions } from '../context/types.ts';
 import type { ResolvedGenerator } from './registry.ts';
 import type { InsightRow, InsightStore } from './store.ts';
 
@@ -16,6 +16,21 @@ export interface RegenerateDeps {
 }
 
 const FAILURE_COPY = 'Something went wrong while writing this';
+
+/** Build options with other modules' related sources wired in. */
+export function contextOptions(
+  resolved: ResolvedGenerator,
+  base: Omit<AiContextOptions, 'related'>,
+): AiContextOptions {
+  return {
+    ...base,
+    related: async (writer, target) => {
+      for (const source of resolved.related(target.kind)) {
+        await source.collect(writer, target, base);
+      }
+    },
+  };
+}
 
 /**
  * The cache key a view compares with the stored row. With a `stamp` it is that; otherwise
@@ -31,7 +46,7 @@ export async function cacheKeyOf(
 ): Promise<string | null> {
   const { generator, builder } = resolved;
   if (generator.stamp) return generator.stamp(targetId, { policy, now });
-  const context = await builder.build(targetId, { policy, now, since });
+  const context = await builder.build(targetId, contextOptions(resolved, { policy, now, since }));
   return context?.hash ?? null;
 }
 
@@ -78,7 +93,10 @@ export async function regenerate(
   const now = deps.now();
   let context: AiBuiltContext | null;
   try {
-    context = await builder.build(targetId, { policy, now, since: previous?.generatedAt ?? null });
+    context = await builder.build(
+      targetId,
+      contextOptions(resolved, { policy, now, since: previous?.generatedAt ?? null }),
+    );
   } catch (error) {
     if (isAiRefusal(error)) return null;
     throw error;

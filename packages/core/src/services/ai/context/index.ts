@@ -15,6 +15,8 @@ export type {
   AiContextAudience,
   AiContextBuilderDefinition,
   AiContextOptions,
+  AiRelatedSource,
+  AiRelatedTarget,
   AiTargetContextBuilder,
 } from './types.ts';
 export {
@@ -45,6 +47,8 @@ export function isContextBuilderDefinition(value: unknown): value is AiContextBu
   if (value === null || typeof value !== 'object') return false;
   const { type } = value as { type?: unknown };
   if (type === 'target') return typeof (value as { build?: unknown }).build === 'function';
-  if (type === 'activity') return typeof (value as { collect?: unknown }).collect === 'function';
+  if (type === 'activity' || type === 'related') {
+    return typeof (value as { collect?: unknown }).collect === 'function';
+  }
   return false;
 }

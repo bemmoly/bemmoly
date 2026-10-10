@@ -4,6 +4,7 @@ import { isContextBuilderDefinition } from '../context/index.ts';
 import type {
   AiActivitySource,
   AiContextBuilderDefinition,
+  AiRelatedSource,
   AiTargetContextBuilder,
 } from '../context/types.ts';
 import { isInsightGenerator, type AiInsightGenerator } from './types.ts';
@@ -21,6 +22,8 @@ export interface ResolvedGenerator {
   builder: AiTargetContextBuilder;
   /** The module that registered the generator, or "ai" for the kernel. */
   owner: string;
+  /** Other modules' related sources for a kind of record. */
+  related(kind: string): AiRelatedSource[];
 }
 
 /**
@@ -40,7 +43,7 @@ export function createInsightRegistry(deps: InsightRegistryDeps) {
     return null;
   };
 
-  return {
+  const registry = {
     resolve(kind: AiInsightKind): ResolvedGenerator | null {
       const candidates: { generator: AiInsightGenerator; owner: string }[] = [
         ...(deps.generators ?? []).map((generator) => ({ generator, owner: 'ai' })),
@@ -55,7 +58,24 @@ export function createInsightRegistry(deps: InsightRegistryDeps) {
       if (!match) return null;
       const builder = builderNamed(match.generator.builder);
       if (!builder || builder.type !== 'target') return null;
-      return { generator: match.generator, builder, owner: match.owner };
+      return {
+        generator: match.generator,
+        builder,
+        owner: match.owner,
+        related: (target: string) => registry.relatedSources(target),
+      };
+    },
+
+    relatedSources(kind: string): AiRelatedSource[] {
+      return enabled().flatMap(({ contributions }) =>
+        contributions.aiContextBuilders
+          .map((entry) => entry.definition)
+          .filter(isContextBuilderDefinition)
+          .filter(
+            (definition): definition is AiRelatedSource =>
+              definition.type === 'related' && definition.targetKinds.includes(kind),
+          ),
+      );
     },
 
     activitySources(): AiActivitySource[] {
@@ -67,6 +87,7 @@ export function createInsightRegistry(deps: InsightRegistryDeps) {
       );
     },
   };
+  return registry;
 }
 
 export type InsightRegistry = ReturnType<typeof createInsightRegistry>;

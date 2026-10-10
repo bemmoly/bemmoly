@@ -35,6 +35,16 @@ export interface AiContextOptions {
   now: Date;
   /** When the cached insight was generated: "history since the last summary". */
   since: Date | null;
+  /**
+   * Asks other enabled modules what they know about a record, written into the same writer
+   * (an issue's linked pages and their TL;DRs, from Docs). Absent outside the insight service.
+   */
+  related?: (writer: ContextWriter, target: AiRelatedTarget) => Promise<void>;
+}
+
+export interface AiRelatedTarget {
+  kind: string;
+  id: string;
 }
 
 /** Builds context for one record (an issue, a sprint, a page). */
@@ -69,4 +79,19 @@ export interface AiActivitySource {
   collect(writer: ContextWriter, options: AiActivityOptions): Promise<void>;
 }
 
-export type AiContextBuilderDefinition = AiTargetContextBuilder | AiActivitySource;
+/**
+ * One module's knowledge about another module's records, so builders stay inside their own
+ * module: Docs answers for an issue with the pages that link it and their TL;DRs.
+ */
+export interface AiRelatedSource {
+  type: 'related';
+  targetKinds: readonly string[];
+  collect(
+    writer: ContextWriter,
+    target: AiRelatedTarget,
+    options: Omit<AiContextOptions, 'related'>,
+  ): Promise<void>;
+}
+
+export type AiContextBuilderDefinition =
+  AiTargetContextBuilder | AiActivitySource | AiRelatedSource;

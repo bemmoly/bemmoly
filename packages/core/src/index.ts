@@ -66,6 +66,8 @@ export {
   type AiContextOptions,
   type AiInsightGenerator,
   type AiInsightStampOptions,
+  type AiRelatedSource,
+  type AiRelatedTarget,
   type AiTargetContextBuilder,
   type ContextChunk,
   type ContextWriter,
