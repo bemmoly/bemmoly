@@ -36,7 +36,6 @@ export * from './components/page-status/index.ts';
 export * from './components/page-tree/index.ts';
 export * from './components/progress-bar/index.ts';
 export * from './components/relative-time/index.ts';
-export * from './components/scheme-banner/index.ts';
 export * from './components/segmented-control/index.ts';
 export * from './components/select/index.ts';
 export * from './components/settings-frame/index.ts';

@@ -26,7 +26,6 @@ import {
   SubtaskRow,
   WatcherList,
 } from './issue-sections/index.ts';
-import { SchemeOverrideBanner } from './scheme-banner/index.ts';
 import {
   RuleRow,
   StatusNode,
@@ -179,9 +178,8 @@ describe('issue page components', () => {
 });
 
 describe('settings components', () => {
-  it('draws the workflow canvas with a selected node and the scheme banner', async () => {
+  it('draws the workflow canvas with a selected node', async () => {
     const onPick = vi.fn();
-    const onDiff = vi.fn();
     const { container } = render(
       <div>
         <WorkflowCanvas
@@ -207,13 +205,6 @@ describe('settings components', () => {
         <TransitionRow onMore={() => {}}>Testing (Approve)</TransitionRow>
         <RuleRow kind="validator">Reviewer field is not empty</RuleRow>
         <StatusPill name="Backlog" category="todo" count={42} block />
-        <SchemeOverrideBanner
-          scheme="Org default: Software (Scrum)"
-          onPickScheme={() => {}}
-          overrideCount={1}
-          onViewDiff={onDiff}
-          onReset={() => {}}
-        />
       </div>,
     );
     await expectAccessible(container);
@@ -224,9 +215,5 @@ describe('settings components', () => {
     expect(onPick).toHaveBeenCalled();
     expect(container.querySelector('path[marker-end="url(#workflow-arrow-ac)"]')).toBeTruthy();
     expect(screen.getByText('VALIDATOR').className).toContain('bg-st-qa-bg');
-    expect(screen.getByText('1 setting overridden on this project')).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: 'View diff' }));
-    expect(onDiff).toHaveBeenCalled();
-    expect(screen.getByRole('button', { name: 'Reset to org default' })).toBeTruthy();
   });
 });
