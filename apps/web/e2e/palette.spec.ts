@@ -8,9 +8,10 @@ test('⌘K finds a settings page with the keyboard and opens it', async ({ page 
   await page.keyboard.press('ControlOrMeta+k');
   const palette = page.getByRole('dialog', { name: 'Command palette' });
   await expect(palette).toBeVisible();
+  // AI is on in the seeded workspace: the input also takes requests.
   await expect(palette.getByRole('combobox')).toHaveAttribute(
     'placeholder',
-    'Search or run a command…',
+    'Search, or tell Bemmoly what to do…',
   );
   await palette.getByRole('combobox').fill('storage');
   await expect(palette.getByRole('option', { name: /Storage and backups/ })).toBeVisible();
@@ -50,7 +51,10 @@ test('empty, ⌘K offers what you opened, what this screen can do, then places',
 });
 
 test('without AI the palette never offers a plan', async ({ page }) => {
-  await useMockBackend(page, 'ready');
+  const backend = await useMockBackend(page, 'ready');
+  backend.api.dispatch('PATCH', 'http://127.0.0.1/api/v1/admin/ai/settings', {
+    privacy: { enabled: false },
+  });
   await page.goto('/');
   await expect(page.getByRole('heading', { name: /, Rohan$/ })).toBeVisible();
   await page.keyboard.press('/');
@@ -58,6 +62,8 @@ test('without AI the palette never offers a plan', async ({ page }) => {
   await palette.getByRole('combobox').fill('aisha');
   await expect(palette.getByRole('option', { name: /Aisha K\./ })).toBeVisible();
   await palette.getByRole('combobox').fill('move everything blocked by PLT-204 to next sprint');
+  await expect(palette.getByRole('option', { name: /Bemmoly/ })).toHaveCount(0);
+  await page.keyboard.press('ControlOrMeta+Enter');
   await expect(palette.getByRole('button', { name: /Run 3 changes/ })).toHaveCount(0);
 });
 
