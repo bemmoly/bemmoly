@@ -73,7 +73,7 @@ export function invitationsSentMessage(count: number): string {
   return count === 1 ? '1 invitation sent' : `${count} invitations sent`;
 }
 
-/** Step 3: email chips, role and team, and sending the invitations on Continue. */
+/** People: email chips, role and team, and sending the invitations on Continue. */
 export function useSetupInvites(onDone: () => void | Promise<void>) {
   const queryClient = useQueryClient();
   const emails = useSetupStore((state) => state.emails);

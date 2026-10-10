@@ -57,7 +57,7 @@ export function importSummary(source: ImportSourceId | null): string {
 }
 
 /**
- * Step 2: the importers are coming soon, so Start clean is the one choice and is picked from
+ * Import: the importers are coming soon, so Start clean is the one choice and is picked from
  * the start. Continue records it; Skip for now leaves the step unanswered.
  */
 export function useSetupImport(next: () => void) {
