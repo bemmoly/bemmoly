@@ -74,7 +74,11 @@ export function useCreateSpace(onCreated: (space: Space) => void) {
     errors,
     isSubmitting: create.isPending,
     setName: (name: string) => {
-      setDraft((current) => ({ ...current, name, key: keyTouched ? current.key : suggestKey(name) }));
+      setDraft((current) => ({
+        ...current,
+        name,
+        key: keyTouched ? current.key : suggestKey(name),
+      }));
       setErrors(({ name: _name, ...rest }) => rest);
     },
     setKey: (key: string) => {

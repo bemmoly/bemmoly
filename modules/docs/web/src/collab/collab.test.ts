@@ -11,8 +11,6 @@ describe('collab user', () => {
   });
 
   it('falls back to the email when the name is blank', () => {
-    expect(collabUser({ id: 'u-1', name: ' ', email: 'sam@acme.test' }).name).toBe(
-      'sam@acme.test',
-    );
+    expect(collabUser({ id: 'u-1', name: ' ', email: 'sam@acme.test' }).name).toBe('sam@acme.test');
   });
 });

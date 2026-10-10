@@ -51,8 +51,8 @@ export function TrashView() {
         <header className="flex flex-col gap-1">
           <h1 className="m-0 text-24 font-semibold tracking-display text-tx">Trash</h1>
           <p className="m-0 text-13h text-tx4">
-            Pages moved to the trash in {space.name}. Restoring a page brings back the pages
-            under it.
+            Pages moved to the trash in {space.name}. Restoring a page brings back the pages under
+            it.
           </p>
         </header>
         {trash.isPending ? (

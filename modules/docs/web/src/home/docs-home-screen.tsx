@@ -110,11 +110,7 @@ export default function DocsHomeScreen(props: DocsScreenProps) {
           />
         ) : (
           <>
-            <SpaceGrid
-              spaces={list}
-              recent={recent.data?.pages[0]?.items ?? []}
-              person={person}
-            />
+            <SpaceGrid spaces={list} recent={recent.data?.pages[0]?.items ?? []} person={person} />
             <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
               <PageLists spaces={byId} person={person} />
               <div className="flex flex-col gap-5">

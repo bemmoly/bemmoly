@@ -18,13 +18,19 @@ import { INSTALL_HOST, RELEASES_URL } from '../../lib/links.ts';
 
 const OPTIONS = [
   ['--domain NAME', 'The hostname people will use. Asked for when you leave it out.'],
-  ['--version X.Y.Z', 'The version to install, or latest or beta. The newest in the channel by default.'],
+  [
+    '--version X.Y.Z',
+    'The version to install, or latest or beta. The newest in the channel by default.',
+  ],
   ['--channel stable|beta', 'The update channel. Stable by default.'],
   ['--modules a,b', 'Pin the enabled modules. By default an admin chooses them in Settings.'],
   ['--no-proxy', 'Leave out Caddy: you terminate HTTPS, and the app listens on port 8080.'],
   ['--no-in-app-updates', 'Leave out the updater container; update with sudo bemmoly upgrade.'],
   ['--database-url URL', 'Use an existing Postgres 18 instead of the bundled one.'],
-  ['--image-archive FILE', 'Load the images from a release bundle instead of pulling them (offline).'],
+  [
+    '--image-archive FILE',
+    'Load the images from a release bundle instead of pulling them (offline).',
+  ],
   ['--dir PATH', 'The install folder. /var/bemmoly by default.'],
   ['--yes', 'Do not ask anything; fail when something is missing.'],
 ] as const;
@@ -34,9 +40,18 @@ const COMMANDS = [
   ['doctor', 'Re-runs the installer’s checks and the app’s health checks, with fixes.'],
   ['logs [service] [-f]', 'Recent logs of bemmoly, db, proxy or updater.'],
   ['backup / backups', 'Take a backup now; list every backup with version, size and verification.'],
-  ['verify <backup> [--drill]', 'Check a backup’s checksums, or restore it into a temporary database.'],
-  ['restore <backup|file|s3-url>', 'Restore a backup; --mount attaches one read-only beside the live data.'],
-  ['upgrade [version]', 'Backup, pull, verify, swap, health check; rolls back on its own if the check fails.'],
+  [
+    'verify <backup> [--drill]',
+    'Check a backup’s checksums, or restore it into a temporary database.',
+  ],
+  [
+    'restore <backup|file|s3-url>',
+    'Restore a backup; --mount attaches one read-only beside the live data.',
+  ],
+  [
+    'upgrade [version]',
+    'Backup, pull, verify, swap, health check; rolls back on its own if the check fails.',
+  ],
   ['rollback', 'Go back to the previous version, saying first exactly what it keeps.'],
   ['config get | set KEY', 'Read or change a setting in .env and restart what uses it.'],
   ['update-channel [stable|beta]', 'Show or change the update channel.'],
@@ -80,15 +95,17 @@ const COMMANDS = [
   <Section title="2. Run the installer" id="run">
     <CodeBlock code={INSTALL_BLOCK} label="On the VM, as root or with sudo" copy />
     <p>
-      The script at <code>{INSTALL_HOST}</code> downloads the installer of the matching release
-      from <a href={RELEASES_URL}>GitHub</a>, checks its SHA-256 checksum and runs it with your
-      options. To read it before running it, download it first:
+      The script at <code>{INSTALL_HOST}</code> downloads the installer of the matching release from{' '}
+      <a href={RELEASES_URL}>GitHub</a>, checks its SHA-256 checksum and runs it with your options.
+      To read it before running it, download it first:
     </p>
     <CodeBlock
       code={`$ curl -fsSL https://${INSTALL_HOST} -o install.sh\n$ less install.sh\n$ sudo sh install.sh --domain work.example.com`}
       copy
     />
-    <p>Options go after <code>sh -s --</code> when piping, or straight after the script name:</p>
+    <p>
+      Options go after <code>sh -s --</code> when piping, or straight after the script name:
+    </p>
     <div tabindex="0" class="overflow-x-auto rounded-card border border-br">
       <table class="w-full border-collapse text-left text-14">
         <thead class="bg-sf2 text-12 font-semibold tracking-caps text-tx4 uppercase dark:bg-sf">
@@ -100,7 +117,9 @@ const COMMANDS = [
         <tbody>
           {OPTIONS.map(([option, body]) => (
             <tr class="border-t border-br-row align-top">
-              <td class="px-3.5 py-2.5 whitespace-nowrap"><code>{option}</code></td>
+              <td class="px-3.5 py-2.5 whitespace-nowrap">
+                <code>{option}</code>
+              </td>
               <td class="px-3.5 py-2.5">{body}</td>
             </tr>
           ))}
@@ -132,13 +151,13 @@ const COMMANDS = [
   <Section title="4. Open the address and finish setup" id="first-login">
     <p>
       The first visit runs the setup wizard: the server’s health checks, then the first admin
-      account, then invitations, what AI may do once it arrives in 0.4, and the workspace’s look. Everything can be
-      changed later in Settings. <a href="/self-hosting#after-install">After install</a> shows the
-      steps.
+      account, then invitations, what AI may do once it arrives in 0.4, and the workspace’s look.
+      Everything can be changed later in Settings.{' '}
+      <a href="/self-hosting#after-install">After install</a> shows the steps.
     </p>
     <p>
-      Modules start switched off. To track issues, turn on Work in Settings › Modules and choose
-      who can use it: nobody yet, everyone, or specific teams.
+      Modules start switched off. To track issues, turn on Work in Settings › Modules and choose who
+      can use it: nobody yet, everyone, or specific teams.
     </p>
     <p>
       Keep a copy of <code>/var/bemmoly/.env</code> somewhere safe. It holds the key that decrypts
@@ -148,7 +167,8 @@ const COMMANDS = [
 
   <Section title="5. Look after it with one command" id="after">
     <p>
-      The installer puts <code>bemmoly</code> in <code>/usr/local/bin</code>. It asks for sudo itself;
+      The installer puts <code>bemmoly</code> in <code>/usr/local/bin</code>. It asks for sudo
+      itself;
       <code>bemmoly help</code> lists everything.
     </p>
     <div tabindex="0" class="overflow-x-auto rounded-card border border-br">
@@ -162,7 +182,9 @@ const COMMANDS = [
         <tbody>
           {COMMANDS.map(([command, body]) => (
             <tr class="border-t border-br-row align-top">
-              <td class="px-3.5 py-2.5 whitespace-nowrap"><code>{command}</code></td>
+              <td class="px-3.5 py-2.5 whitespace-nowrap">
+                <code>{command}</code>
+              </td>
               <td class="px-3.5 py-2.5">{body}</td>
             </tr>
           ))}
@@ -170,9 +192,9 @@ const COMMANDS = [
       </table>
     </div>
     <p>
-      Updates can also run from the app: Settings › Updates shows the release notes and updates
-      with one click, taking a backup first. Checking for new releases is off until an admin turns
-      it on there.
+      Updates can also run from the app: Settings › Updates shows the release notes and updates with
+      one click, taking a backup first. Checking for new releases is off until an admin turns it on
+      there.
     </p>
   </Section>
 

@@ -1,5 +1,5 @@
 pnpm-lock.yaml
-docs/
+/docs/
 .changeset/*.md
 **/dist/
 **/dist-demo/

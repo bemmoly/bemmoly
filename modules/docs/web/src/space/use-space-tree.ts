@@ -11,10 +11,7 @@ const LEVEL_PAGE = 100;
 const LEVEL_CAP = 1000;
 
 /** One level of the tree, whole: the roots of a space, or the children of a page. */
-export async function loadLevel(
-  spaceKey: string,
-  parentId: string | null,
-): Promise<PageSummary[]> {
+export async function loadLevel(spaceKey: string, parentId: string | null): Promise<PageSummary[]> {
   const rows: PageSummary[] = [];
   let cursor: string | null = null;
   do {
