@@ -1,8 +1,7 @@
 import { HeaderActions } from '@bemmoly/core-web';
 import { PageTitle } from '@bemmoly/ui';
 import type { ReactNode } from 'react';
-import { Loading } from '../form.tsx';
-import { PageFailure } from '../page-failure.tsx';
+import { SettingsFailure, SettingsSkeleton } from './settings-states.tsx';
 
 interface SettingsPageProps {
   title: string;
@@ -12,7 +11,11 @@ interface SettingsPageProps {
   /** Kept for callers from before the frame; the header's trail now always shows. */
   breadcrumb?: boolean;
   loading?: boolean;
+  /** A skeleton shaped like this page's content; two value sections by default. */
+  skeleton?: ReactNode;
   error?: unknown;
+  /** What Retry does; by default every failed query on the page asks again. */
+  onRetry?: () => void;
   children?: ReactNode;
 }
 
@@ -22,14 +25,22 @@ export function SettingsPage({
   description,
   actions,
   loading,
+  skeleton,
   error,
+  onRetry,
   children,
 }: SettingsPageProps) {
   return (
-    <div className="flex flex-col gap-7">
+    <div className="flex flex-col gap-6">
       {actions ? <HeaderActions>{actions}</HeaderActions> : null}
       <PageTitle variant="settings" title={title} description={description} />
-      {error ? <PageFailure error={error} /> : loading ? <Loading lines={5} /> : children}
+      {error ? (
+        <SettingsFailure error={error} {...(onRetry ? { onRetry } : {})} />
+      ) : loading ? (
+        (skeleton ?? <SettingsSkeleton />)
+      ) : (
+        children
+      )}
     </div>
   );
 }
