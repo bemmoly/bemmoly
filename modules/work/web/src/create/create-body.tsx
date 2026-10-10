@@ -160,7 +160,7 @@ function DocumentSection({
       )}
       {checklist && (
         <p className="m-0 mt-1 hidden pl-5.5 text-11 text-tx-3 sm:block">
-          <Kbd keys="Enter" variant="plain" /> adds a check
+          Type a check beside the box; <Kbd keys="Enter" variant="plain" /> adds the next one
         </p>
       )}
     </section>
