@@ -21,6 +21,8 @@ export function makeTabs(
 ): (index: number, focus?: boolean) => void {
   const tabs = [...list.querySelectorAll<HTMLElement>('[data-tab]')];
   list.setAttribute('role', 'tablist');
+  // Named only once it is a tablist: until then it is a row of links.
+  if (list.dataset['label']) list.setAttribute('aria-label', list.dataset['label']);
   const select = (index: number, focus = false) => {
     const tab = tabs[index];
     if (!tab) return;
@@ -60,17 +62,19 @@ export function enhanceTabs(): void {
     const panels = [...group.querySelectorAll<HTMLElement>('[data-tabpanel]')];
     if (!list || panels.length === 0) continue;
     let ready = false;
+    const hashOf = (tab: HTMLElement) =>
+      new URL(tab.getAttribute('href') ?? '', location.href).hash;
     const select = makeTabs(list, (index, tab) => {
       panels.forEach((panel, n) => {
         panel.hidden = n !== index;
         panel.setAttribute('role', 'tabpanel');
         panel.setAttribute('aria-labelledby', tab.id);
       });
-      const hash = tab.getAttribute('href') ?? '';
-      if (ready && hash.startsWith('#')) history.replaceState(null, '', hash);
+      const hash = hashOf(tab);
+      if (ready && hash) history.replaceState(null, '', hash);
     });
     const tabs = [...list.querySelectorAll<HTMLElement>('[data-tab]')];
-    const asked = tabs.findIndex((tab) => tab.getAttribute('href') === location.hash);
+    const asked = tabs.findIndex((tab) => location.hash && hashOf(tab) === location.hash);
     select(Math.max(asked, 0));
     ready = true;
   }

@@ -55,15 +55,23 @@ describe('live demo', () => {
   it.each(PREVIEWS)('the $id preview opens a route the demo has sample data for', (preview) => {
     // The demo's own workspace and mock backend (apps/web), asked what the screen would ask.
     const api = createMockApi(demoWorkspace());
-    const [, , , screen, key, id] = preview.path.split('/');
+    const [, , module, screen, key] = preview.path.split('/');
     const asks: Record<string, string> = {
-      board: `/api/v1/work/projects/${key}/sprints`,
-      issue: `/api/v1/work/issues/${key}`,
-      workflows: `/api/v1/work/workflows/${id}`,
+      'work/board': `/api/v1/work/projects/${key}/sprints`,
+      'work/backlog': `/api/v1/work/projects/${key}/sprints`,
+      'work/issue': `/api/v1/work/issues/${key}`,
+      'docs/p': `/api/v1/docs/pages/${key}`,
     };
-    const ask = asks[screen ?? ''];
+    const ask = asks[`${module}/${screen}`];
     expect(ask, preview.path).toBeDefined();
     expect(api.dispatch('GET', ask ?? '', undefined)?.status, preview.path).toBe(200);
+  });
+
+  it.each(PREVIEWS)('the $id preview has a poster captured in both themes', (preview) => {
+    for (const theme of ['', '-dark']) {
+      const poster = new URL(`../src/assets/previews/${preview.id}${theme}.png`, import.meta.url);
+      expect(existsSync(poster), `${preview.id}${theme}.png`).toBe(true);
+    }
   });
 
   it('is served as one page for every route, framed only by the site, indexed only at /demo', () => {

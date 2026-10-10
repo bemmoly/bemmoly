@@ -16,7 +16,21 @@ function saved(): Choice {
   }
 }
 
+const MEDIA: Readonly<Record<Choice, string>> = {
+  system: '(prefers-color-scheme: dark)',
+  light: 'not all',
+  dark: 'all',
+};
+
+/** Product pictures (Poster.astro) choose their dark sources by the same choice. */
+function syncPictures(choice: Choice): void {
+  for (const source of document.querySelectorAll<HTMLSourceElement>('[data-themed] [data-dark]')) {
+    source.media = MEDIA[choice];
+  }
+}
+
 function apply(choice: Choice): void {
+  syncPictures(choice);
   const root = document.documentElement;
   if (choice === 'system') delete root.dataset['theme'];
   else root.dataset['theme'] = choice;
@@ -32,6 +46,7 @@ export function enhanceTheme(): void {
   const control = document.querySelector<HTMLFieldSetElement>('[data-theme-control]');
   if (!control) return;
   const current = saved();
+  syncPictures(current);
   for (const input of control.querySelectorAll<HTMLInputElement>('input[type="radio"]')) {
     input.checked = input.value === current;
     input.addEventListener('change', () => apply(input.value as Choice));

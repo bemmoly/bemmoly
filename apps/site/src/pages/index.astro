@@ -4,7 +4,7 @@ import Configure from '../components/landing/Configure.astro';
 import Cta from '../components/landing/Cta.astro';
 import Features from '../components/landing/Features.astro';
 import Hero from '../components/landing/Hero.astro';
-import LivePreview from '../components/landing/LivePreview.astro';
+import ProductPreview from '../components/landing/ProductPreview.astro';
 import SelfHost from '../components/landing/SelfHost.astro';
 import { pageAt } from '../data/pages.ts';
 import Base from '../layouts/Base.astro';
@@ -12,8 +12,8 @@ import Base from '../layouts/Base.astro';
 
 <Base page={pageAt('/')}>
   <Hero />
-  <div class="mx-auto w-full max-w-320 px-4 pb-20 sm:px-6 lg:px-12">
-    <LivePreview />
+  <div class="mx-auto w-full max-w-300 px-4 pb-20 sm:px-6 lg:px-8">
+    <ProductPreview />
   </div>
   <Features />
   <AiSection />

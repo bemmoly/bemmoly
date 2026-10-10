@@ -91,6 +91,17 @@ function enhance(figure: HTMLElement): void {
     start();
   });
   failed.querySelector('[data-retry]')?.addEventListener('click', start);
+
+  // "Try the live demo" in the hero starts this preview in place rather than leaving the page.
+  for (const link of document.querySelectorAll<HTMLAnchorElement>('[data-start-preview]')) {
+    link.addEventListener('click', (event) => {
+      if (!plainClick(event) || frame.clientWidth < PHONE) return;
+      event.preventDefault();
+      const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      figure.scrollIntoView({ behavior: still ? 'auto' : 'smooth', block: 'center' });
+      if (!live) start();
+    });
+  }
 }
 
 /** Moves the framed demo to `path` inside the app, keeping what the visitor changed. */
@@ -131,11 +142,23 @@ function frameDemo(
   return iframe;
 }
 
-/** Calls `done` once the framed shell has replaced its boot frame; the caller gives up later. */
+/**
+ * Calls `done` once the framed app has drawn: its root holds the shell and its boot frame is
+ * gone. A page that is not the app (an error page, a blocked frame we cannot read) never
+ * passes, so the caller's timer shows the failure instead of a wrong page.
+ */
 function whenDrawn(iframe: HTMLIFrameElement, started: number, done: () => void): void {
+  const drawn = () => {
+    try {
+      const doc = iframe.contentDocument;
+      return Boolean(doc?.getElementById('root')?.firstElementChild && !doc.getElementById('boot'));
+    } catch {
+      return false;
+    }
+  };
   const check = () => {
     if (!iframe.isConnected || performance.now() - started > GIVE_UP_MS) return;
-    if (!iframe.contentDocument?.getElementById('boot')) done();
+    if (drawn()) done();
     else window.setTimeout(check, 50);
   };
   check();
