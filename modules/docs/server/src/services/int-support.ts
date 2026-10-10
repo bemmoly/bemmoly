@@ -62,6 +62,8 @@ export interface HarnessOptions {
   jobs?: DocsServiceDeps['jobs'];
   /** What ctx.links.referencesTo answers, standing in for Work's reference source. */
   links?: DocsServiceDeps['links'];
+  /** The AI facade the services read the policy from (a test fake). */
+  ai?: DocsServiceDeps['ai'];
 }
 
 export async function startDocsHarness(options: HarnessOptions = {}): Promise<HarnessStart> {
@@ -95,6 +97,7 @@ export async function startDocsHarness(options: HarnessOptions = {}): Promise<Ha
     ...(options.events ? { events: options.events } : {}),
     ...(options.jobs ? { jobs: options.jobs } : {}),
     ...(options.links ? { links: options.links } : {}),
+    ...(options.ai ? { ai: options.ai } : {}),
   });
   const context = (actor: Actor): RequestContext => ({
     actor,

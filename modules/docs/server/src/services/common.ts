@@ -1,4 +1,5 @@
 import type {
+  AiFacade,
   AuditMeta,
   AuditRecorder,
   CollabRegistry,
@@ -32,6 +33,8 @@ export interface DocsServiceDeps {
   entities?: Pick<EntityRegistry, 'resolve'> & Partial<Pick<EntityRegistry, 'resolveMany' | 'has'>>;
   /** Other modules' records that point at a page (issues whose description links it). */
   links?: Pick<LinkRegistry, 'referencesTo'>;
+  /** Whether AI is on for a person, so AI-made attention items show only then. */
+  ai?: Pick<AiFacade, 'policy'>;
 }
 
 export const DOCS_MODULE = { kind: 'module', moduleId: 'docs' } as const;

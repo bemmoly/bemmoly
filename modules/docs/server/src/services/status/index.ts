@@ -20,6 +20,7 @@ import { loadDetail } from '../pages/detail.ts';
 import { pageById } from '../pages/rows.ts';
 import { insertRevision } from '../revisions/write.ts';
 import { eligibleReviewers } from '../spaces/eligibility.ts';
+import { requestConsistency } from '../ai/index.ts';
 
 /*
  * The review flow: draft, in review, published, archived. Entering published
@@ -69,6 +70,7 @@ export function createStatusService(deps: DocsServiceDeps) {
       await publishChange(deps, DOCS_REALTIME_KINDS.tree, page.space_id, [id]);
       if (body.status === 'published') {
         await publishChange(deps, DOCS_REALTIME_KINDS.revisions, page.space_id, [id]);
+        await requestConsistency(deps.events, [id]);
       }
       return loadDetail(sql, after, userIdOf(ctx));
     },

@@ -9,6 +9,7 @@ import { registerDocsAiTools } from './server/src/services/ai-tools/index.ts';
 import { createDocsServices } from './server/src/services/index.ts';
 import { registerDocsReferences } from './server/src/services/links/registry.ts';
 import { registerDocsSearch } from './server/src/services/palette/index.ts';
+import { registerDocsAi } from './server/src/services/ai/index.ts';
 import { registerDocsRetrieval } from './server/src/services/retrieval/index.ts';
 
 /**
@@ -62,6 +63,7 @@ export default defineModule({
       settings: ctx.settings,
       entities: ctx.entities,
       links: ctx.links,
+      ai: ctx.ai,
       ...(ctx.database ? { database: ctx.database } : {}),
       ...(ctx.audit ? { audit: ctx.audit } : {}),
       ...(ctx.memberships ? { memberships: ctx.memberships } : {}),
@@ -74,6 +76,10 @@ export default defineModule({
     registerDocsRetrieval(ctx);
     registerDocsReferences(ctx, services.links);
     registerDocsAiTools(ctx.ai, services);
+    registerDocsAi(ctx, {
+      entities: ctx.entities,
+      ...(ctx.database ? { database: ctx.database } : {}),
+    });
     ctx.routes.add({ prefix: '/docs', plugin: docsRoutes(createDocsControllers(services)) });
     registerEditorAi(ctx, services);
   },
