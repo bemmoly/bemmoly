@@ -17,8 +17,8 @@ function Count({ slot, page }: { slot: MarginSlot; page: PageDetail }) {
 /**
  * The header's margin toggles, as the review draws them: Outline, Comments with its count,
  * Linked work, then Version history, each with a tooltip naming it and its shortcut. One
- * margin shows at a time; pressing the one shown closes it. On phones the outline and
- * history toggles fold away (history stays in ···). The header renders this as is.
+ * margin shows at a time; pressing the one shown closes it. On phones only Comments stays;
+ * the outline folds away and Linked work and history move into ···.
  */
 export function MarginToggles() {
   const { page, docked, readOnly } = usePageScreen();
@@ -43,7 +43,7 @@ export function MarginToggles() {
                 aria-keyshortcuts={ariaKeyShortcuts(slot.keys)}
                 data-margin-toggle={slot.id}
                 icon={<Icon name={slot.icon} size={15} />}
-                className={cx(TOGGLE, slot.id === 'outline' && 'max-sm:hidden')}
+                className={cx(TOGGLE, slot.id !== 'comments' && 'max-sm:hidden')}
                 onClick={() => toggleMargin(slot.id, shown)}
               >
                 <Count slot={slot} page={page} />
