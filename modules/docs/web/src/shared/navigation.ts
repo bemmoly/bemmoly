@@ -4,7 +4,11 @@ import type { MouseEvent } from 'react';
 export const docsPaths = {
   home: () => '/docs',
   space: (spaceKey: string) => `/docs/s/${spaceKey}`,
+  trash: (spaceKey: string) => `/docs/s/${spaceKey}/trash`,
   page: (pageId: string) => `/docs/p/${pageId}`,
+  /** The global Create menu's entries, as module.ts registers them. */
+  createPage: () => '/docs/create',
+  createSpace: () => '/docs/spaces/new',
 };
 
 interface RouterState {
