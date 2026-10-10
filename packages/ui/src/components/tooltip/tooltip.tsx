@@ -51,7 +51,8 @@ function Tip({ anchor, side, id, label, keys }: TipProps) {
   useLayoutEffect(() => {
     const tip = ref.current;
     if (!tip) return;
-    const box = anchor.getBoundingClientRect();
+    // The wrapper is display: contents (no box of its own), so the control is what it points at.
+    const box = (anchor.firstElementChild ?? anchor).getBoundingClientRect();
     const own = tip.getBoundingClientRect();
     const view = anchor.ownerDocument.documentElement.clientWidth || window.innerWidth;
     let top: number;
@@ -102,6 +103,7 @@ export function Tooltip({
   const [open, setOpen] = useState(false);
   const [anchor, setAnchor] = useState<HTMLSpanElement | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const pressed = useRef(false);
   const id = useId();
 
   useEffect(() => {
@@ -126,14 +128,26 @@ export function Tooltip({
     setOpen(false);
   };
 
+  // display: contents keeps the wrapper out of layout, so the control stays the flex or grid
+  // item its own classes place, and a disabled control still reports the pointer to it.
   return (
     <span
       ref={setAnchor}
-      className="relative inline-flex"
+      className="contents"
       onPointerEnter={() => show(false)}
       onPointerLeave={hide}
-      onFocus={() => show(true)}
-      onBlur={hide}
+      onPointerDown={() => {
+        pressed.current = true;
+        hide();
+      }}
+      onFocus={() => {
+        // Keyboard focus opens it at once; a click's focus does not cover the menu it opens.
+        if (!pressed.current) show(true);
+      }}
+      onBlur={() => {
+        pressed.current = false;
+        hide();
+      }}
     >
       {cloneElement(children, { 'aria-describedby': open ? id : undefined })}
       {open && anchor && <Tip anchor={anchor} side={side} id={id} label={label} keys={keys} />}

@@ -2,6 +2,7 @@ import type { ButtonHTMLAttributes, ReactNode } from 'react';
 import { Icon, type IconName } from '../../icons/icon.tsx';
 import { cx } from '../../lib/cx.ts';
 import { focusRing } from '../../lib/focus.ts';
+import { Tooltip, type TooltipProps } from '../tooltip/tooltip.tsx';
 
 export type IconButtonSize = 'tool' | 'xs' | 'sm' | 'md';
 
@@ -33,6 +34,12 @@ export interface IconButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonEle
   variant?: keyof typeof VARIANTS;
   /** A count in the corner, as on the top bar inbox. */
   badge?: number | string;
+  /** Its shortcut, shown in the tooltip beside the label: "C", "Mod+Z". */
+  keys?: string;
+  /** The tooltip's words when shorter than the label: "Assign to me" for "Assign PLT-4 to me". */
+  tip?: string;
+  /** Where the tooltip opens; `false` leaves it out (a menu item's own row, say). */
+  tooltip?: TooltipProps['side'] | false;
 }
 
 export function IconButton({
@@ -41,16 +48,18 @@ export function IconButton({
   size = 'md',
   variant = 'ghost',
   badge,
+  keys,
+  tip,
+  tooltip = 'top',
   className,
   type = 'button',
   ...rest
 }: IconButtonProps) {
   const hasBadge = badge !== undefined && badge !== 0 && badge !== '';
-  return (
+  const button = (
     <button
       type={type}
       aria-label={hasBadge ? `${label}, ${badge}` : label}
-      title={label}
       className={cx(
         'relative inline-flex shrink-0 cursor-pointer items-center justify-center font-semibold text-tx2',
         'disabled:cursor-not-allowed disabled:opacity-50',
@@ -72,5 +81,12 @@ export function IconButton({
         </span>
       )}
     </button>
+  );
+  // Every icon-only button names its action, and its shortcut, in the one tooltip.
+  if (tooltip === false) return button;
+  return (
+    <Tooltip label={tip ?? label} keys={keys} side={tooltip}>
+      {button}
+    </Tooltip>
   );
 }

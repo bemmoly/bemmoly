@@ -2,6 +2,7 @@ import { act, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { TIMING } from '../tokens/interaction.ts';
 import { ToastProvider, useToast } from './toast/toaster.tsx';
+import { IconButton } from './button/icon-button.tsx';
 import { Tooltip } from './tooltip/tooltip.tsx';
 
 describe('Tooltip', () => {
@@ -46,6 +47,25 @@ describe('Tooltip', () => {
     expect(screen.getByRole('tooltip')).toBeTruthy();
     fireEvent.keyDown(document, { key: 'Escape' });
     expect(screen.queryByRole('tooltip')).toBeNull();
+  });
+
+  it('stays shut when a click focuses its control, so it never covers the menu it opens', () => {
+    bar();
+    const button = screen.getByText('Find');
+    fireEvent.pointerDown(button);
+    fireEvent.focus(button);
+    expect(screen.queryByRole('tooltip')).toBeNull();
+  });
+
+  it('names an icon button and its shortcut in the one tooltip, never a native title', () => {
+    render(<IconButton label="Undo the last edit" keys="Mod+Z" icon="undo" />);
+    const button = screen.getByRole('button', { name: 'Undo the last edit' });
+    expect(button.getAttribute('title')).toBeNull();
+    fireEvent.focus(button);
+    const tip = screen.getByRole('tooltip');
+    expect(tip.textContent).toContain('Undo the last edit');
+    expect(tip.querySelector('kbd')).not.toBeNull();
+    expect(button.getAttribute('aria-describedby')).toBe(tip.id);
   });
 });
 
