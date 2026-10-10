@@ -9,7 +9,10 @@ test('the shell boots after the session and lazy-loads a module chunk', async ({
 
   const sidebar = page.getByRole('complementary', { name: 'Sidebar' });
   await expect(sidebar.getByRole('img', { name: 'Bemmoly' }).first()).toBeAttached();
-  await expect(sidebar.getByRole('link', { name: 'Home' })).toHaveAttribute('aria-current', 'page');
+  await expect(sidebar.getByRole('link', { name: 'Home', exact: true })).toHaveAttribute(
+    'aria-current',
+    'page',
+  );
   await expect(page.getByRole('heading', { name: /, Rohan$/ })).toBeVisible();
   await expect(page.locator('html')).toHaveAttribute('data-theme', /^(light|dark)$/);
   await expect(page).toHaveTitle('Home · Acme Labs · Bemmoly');
@@ -60,7 +63,9 @@ test('an unknown address shows the not-found page inside the frame', async ({ pa
   ).toBeVisible();
   await expect(page.getByRole('complementary', { name: 'Sidebar' })).toBeVisible();
   const trail = page.getByRole('navigation', { name: 'Breadcrumb' });
-  await expect(trail.getByRole('link', { name: 'Home' })).not.toHaveAttribute('aria-current');
+  await expect(trail.getByRole('link', { name: 'Home', exact: true })).not.toHaveAttribute(
+    'aria-current',
+  );
   await expect(trail.getByRole('link', { name: 'Not found' })).toHaveAttribute(
     'aria-current',
     'page',
