@@ -1,4 +1,4 @@
-import { knownIcon, SidebarRow, useFrame } from '@bemmoly/core-web';
+import { knownIcon, SidebarRow, useFrame, useSidebarFocusOwner } from '@bemmoly/core-web';
 import { BrandRailFoot } from '@bemmoly/ui';
 import { useEffect } from 'react';
 import { APP_VERSION, WHATS_NEW_URL, type Shell } from '../../hooks/use-shell.ts';
@@ -19,6 +19,9 @@ export function AppSidebar({ shell }: { shell: Shell }) {
   const rail = mode === 'rail';
   const setShortcutsOpen = useUiStore((state) => state.setShortcutsOpen);
   const { modules } = shell;
+  // A section in focus mode (a big Docs space) has the sidebar to itself; never on the rail.
+  const focusOwner = useSidebarFocusOwner();
+  const focused = rail ? undefined : modules.find((manifest) => manifest.id === focusOwner);
 
   useEffect(() => {
     MODULE_SIDEBARS.preload(modules);
@@ -27,7 +30,11 @@ export function AppSidebar({ shell }: { shell: Shell }) {
   return (
     <>
       <SidebarTop shell={shell} />
-      <nav aria-label="Main" className={`flex flex-col gap-0.5 ${rail ? 'items-center' : ''}`}>
+      <nav
+        aria-label="Main"
+        hidden={Boolean(focused)}
+        className={`flex flex-col gap-0.5 ${rail ? 'items-center' : ''}`}
+      >
         <SidebarRow label="Home" icon="home" path="/" exact keys="G H" testId="nav-home" />
         <SidebarRow
           label="Inbox"
@@ -49,9 +56,11 @@ export function AppSidebar({ shell }: { shell: Shell }) {
       <div
         className={`-mx-2 flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto px-2 pb-2 ${rail ? 'mx-0 items-center px-0' : ''}`}
       >
-        {modules.map((manifest) => (
-          <ModuleSection key={manifest.id} manifest={manifest} />
-        ))}
+        {modules.map((manifest) =>
+          focused && manifest !== focused ? null : (
+            <ModuleSection key={manifest.id} manifest={manifest} alone={manifest === focused} />
+          ),
+        )}
       </div>
       <SidebarFoot>
         <SidebarRow label="Settings" icon="settings" path="/settings" testId="nav-settings" />
