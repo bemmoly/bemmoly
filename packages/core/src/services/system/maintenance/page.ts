@@ -16,7 +16,7 @@ export function renderMaintenancePage(state: MaintenanceState): string {
 <meta http-equiv="refresh" content="5">
 <title>Bemmoly is under maintenance</title>
 <style>
-  :root { color-scheme: light dark; --bg: #f7f8fa; --fg: #1d2330; --muted: #6b7483; --accent: #2456c9; }
+  :root { color-scheme: light dark; --bg: #f7f8fa; --fg: #1d2330; --muted: #6b7483; --accent: #2356c9; }
   @media (prefers-color-scheme: dark) { :root { --bg: #14171d; --fg: #e8eaee; --muted: #9aa3b2; --accent: #7aa2ff; } }
   body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: var(--bg); color: var(--fg);
     font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }

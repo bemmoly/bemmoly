@@ -14,7 +14,7 @@ export function workspaceLookOf(db: MockDb): WorkspaceLook {
     aiEnabled: Boolean(settings['ai.providerId']),
     appearance: {
       theme: text('appearance.theme', 'classic'),
-      brandColor: text('appearance.brandColor', '#2456c9'),
+      brandColor: text('appearance.brandColor', '#2356c9'),
       font: text('appearance.font', 'plex'),
       logoKey: text('appearance.logoKey', ''),
       mode: settings['appearance.mode'] === 'dark' ? 'dark' : 'light',

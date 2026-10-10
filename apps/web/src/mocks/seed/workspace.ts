@@ -39,7 +39,7 @@ export function seedSettings(complete: boolean): Partial<Record<SettingKey, unkn
     'email.digestMinutes': 10,
     'appearance.theme': 'classic',
     'appearance.font': 'plex',
-    'appearance.brandColor': '#2456c9',
+    'appearance.brandColor': '#2356c9',
     'appearance.logoKey': '',
     'appearance.mode': 'light',
     'appearance.surfaces': 'neutral',
