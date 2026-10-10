@@ -8,7 +8,14 @@ import { useEditorState } from '../editor/use-editor.ts';
 import { BUBBLE_TOOLS, type Tool } from '../editor/tools.ts';
 import { LinkPicker } from './link-picker.tsx';
 import { placeOver } from './place.ts';
-import { COMMENT_EVENT, COMMENT_KEYS, DEFAULT_AI_COMMANDS, type DocServices } from './services.ts';
+import { runAiCommand } from './ai/run-command.ts';
+import {
+  COMMENT_EVENT,
+  COMMENT_KEYS,
+  DEFAULT_SELECTION_COMMANDS,
+  type AiCommand,
+  type DocServices,
+} from './services.ts';
 import { refocus, TurnIntoMenu } from './turn-into-menu.tsx';
 import { useBubbleOpen } from './use-bubble-open.ts';
 
@@ -51,13 +58,8 @@ function MarkButton({ tool, editor, onLink }: { tool: Tool; editor: Editor; onLi
 function AskAi({ editor, services }: { editor: Editor; services: DocServices }) {
   const ai = services.ai;
   if (!ai) return null;
-  const run = (id: string) => {
-    const { from, to, $from } = editor.state.selection;
-    ai.run(id, {
-      blockText: $from.parent.textContent,
-      selectionText: editor.state.doc.textBetween(from, to, '\n'),
-      insertText: (text) => editor.chain().focus().insertContent(text).run(),
-    });
+  const run = (command: AiCommand) => {
+    runAiCommand(editor, command, ai);
     refocus(editor);
   };
   return (
@@ -71,11 +73,11 @@ function AskAi({ editor, services }: { editor: Editor; services: DocServices }) 
         </button>
       )}
     >
-      {(ai.commands ?? DEFAULT_AI_COMMANDS).map((command) => (
+      {(ai.selectionCommands ?? DEFAULT_SELECTION_COMMANDS).map((command) => (
         <MenuItem
           key={command.id}
           icon={<Icon name="spark" size={15} className="text-ai-600" />}
-          onSelect={() => run(command.id)}
+          onSelect={() => run(command)}
         >
           {command.label}
         </MenuItem>

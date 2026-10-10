@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import type { SuggestionSearch } from '../types.ts';
+import type { AiHandler } from './ai/types.ts';
 
 /*
  * What a host lends the Docs editor and view. Everything is optional, and the editor never
@@ -19,26 +20,18 @@ export interface UploadedImage {
   alt?: string;
 }
 
-/** One /ai command: a row in the menu's AI group. */
-export interface AiCommand {
-  id: string;
-  label: string;
-}
-
-/** What an /ai command is run with. */
-export interface AiCommandContext {
-  /** The text of the block the menu was opened in, and the selection if there was one. */
-  blockText: string;
-  selectionText: string;
-  /** Inserts text at the caret, as the person would have typed it. */
-  insertText: (text: string) => void;
-}
-
-export interface AiHandler {
-  /** The rows of the AI group; the Doc Editor mock's four when absent. */
-  commands?: readonly AiCommand[];
-  run: (commandId: string, context: AiCommandContext) => void;
-}
+export {
+  DEFAULT_AI_COMMANDS,
+  DEFAULT_SELECTION_COMMANDS,
+  GHOST_DEBOUNCE_MS,
+  GHOST_TIMEOUT_MS,
+  type AiCommand,
+  type AiCommandContext,
+  type AiCompleteRequest,
+  type AiHandler,
+  type AiWriteEvent,
+  type AiWriteRequest,
+} from './ai/types.ts';
 
 export interface DocServices {
   /** Draws an issue chip live (status, title); without it the key prints as a quiet chip. */
@@ -57,7 +50,7 @@ export interface DocServices {
   searchPeople?: SuggestionSearch;
   /** Stores a file and returns its URL; without it images are added by link only. */
   uploadImage?: (file: File) => Promise<UploadedImage>;
-  /** The /ai commands; the AI group is hidden without it. */
+  /** AI: the / menu's AI group, Ask AI and ghost text; each is hidden without it. */
   ai?: AiHandler;
   /** A link click inside the page, so in-app paths move without a reload. */
   onNavigate?: (href: string) => void;
@@ -73,14 +66,6 @@ export const COMMENT_EVENT = 'bemmoly:comment';
 
 /** The Comment shortcut, as the host binds it. */
 export const COMMENT_KEYS = 'Mod-Alt-m';
-
-/** The AI group of the Doc Editor mock's menu. */
-export const DEFAULT_AI_COMMANDS: readonly AiCommand[] = [
-  { id: 'continue', label: 'Continue writing' },
-  { id: 'summarize-comments', label: 'Summarize open questions from comments' },
-  { id: 'create-issues', label: 'Create issues from this section' },
-  { id: 'check-consistency', label: 'Check consistency with linked issues' },
-];
 
 /** The empty line's hint, as the Doc Editor mock writes it. */
 export const docPlaceholder = (ai: boolean) =>

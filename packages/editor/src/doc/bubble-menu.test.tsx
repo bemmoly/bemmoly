@@ -54,8 +54,7 @@ describe('the selection bubble', () => {
   });
 
   it('offers Comment and Ask AI only when the host lends them', async () => {
-    const run = vi.fn();
-    const { editor, box } = await setup({ services: { comments: true, ai: { run } } });
+    const { editor, box } = await setup({ services: { comments: true, ai: {} } });
     const onComment = vi.fn();
     box.addEventListener(COMMENT_EVENT, onComment);
     selectWord(editor);

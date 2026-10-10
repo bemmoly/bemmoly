@@ -1,7 +1,17 @@
 import { KeyChip, StatusBadge, type StatusCategory } from '@bemmoly/ui';
 import type { ReactNode } from 'react';
-import type { DocServices } from '../services.ts';
+import type { AiWriteEvent, DocServices } from '../services.ts';
 import cutover from './cutover.svg?no-inline';
+
+/** A canned write, streamed word by word as a model would. */
+async function* storyWrite(): AsyncIterable<AiWriteEvent> {
+  const text = 'Sessions move to Postgres behind a flag, with dual writes until reads cut over.';
+  for (const word of text.split(/(?<= )/)) {
+    await new Promise((resolve) => setTimeout(resolve, 40));
+    yield { type: 'text', text: word };
+  }
+  yield { type: 'done', runId: null };
+}
 
 /*
  * What a host lends the Docs editor in the stories: issue chips drawn the way Work draws
@@ -90,7 +100,7 @@ export const WORK_ON: DocServices = {
     ),
   searchPeople: (query) => match(people, query),
   uploadImage: async (file) => ({ src: cutover, alt: file.name }),
-  ai: { run: () => undefined },
+  ai: { write: storyWrite, complete: async () => ' and the old store is switched off.' },
 };
 
 /** Work off and no AI: the editor's own fallbacks. */

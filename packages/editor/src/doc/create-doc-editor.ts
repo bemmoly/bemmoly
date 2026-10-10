@@ -5,6 +5,9 @@ import type { SuggestionStore } from '../editor/suggestion-store.ts';
 import { proseClass } from '../prose.ts';
 import { docExtensions } from '../schema/index.ts';
 import type { RichTextDoc } from '../types.ts';
+import { ghostText } from './ai/ghost-text.ts';
+import { aiWrite } from './ai/write-plugin.ts';
+import type { AiWriteStore } from './ai/write-store.ts';
 import { blockKeys } from './block-commands.ts';
 import { CodeHighlight } from './highlight.ts';
 import { imageDrop } from './image-drop.ts';
@@ -25,6 +28,8 @@ export interface CreateDocEditorOptions {
   services: () => DocServices;
   store: SuggestionStore;
   portals: PortalStore;
+  /** The suggestion card's state, shared with the / menu and Ask AI. */
+  writes: AiWriteStore;
   /** More extensions, such as collaboration's; they may replace the initial content. */
   extensions?: readonly AnyExtension[] | undefined;
   onUpdate: (editor: Editor) => void;
@@ -120,6 +125,9 @@ export function createDocEditor(options: CreateDocEditorOptions): Editor {
       CodeHighlight,
       blockKeys(() => store.isOpen),
       ...(options.keys ? [docKeys(options.keys, store)] : []),
+      // Made with the editor and asleep until the host lends AI: nothing is added to it later.
+      ghostText({ handler: () => services().ai }),
+      aiWrite({ store: options.writes }),
       ...(options.extensions ?? []),
     ],
     editorProps: {
