@@ -6,6 +6,9 @@ import { freshDatabase, tableExists, type Fresh } from './test-support.ts';
 import { structuralProblems } from './validate.ts';
 
 const LATER_STREAM_TABLES = [
+  'ai_providers',
+  'ai_runs',
+  'embeddings',
   'users',
   'sessions',
   'roles',
@@ -46,10 +49,10 @@ describe('changelog runner: every kernel stream together', () => {
       [],
     );
     const prefixes = new Set(kernel.map((changeset) => changeset.id.slice(0, 2)));
-    expect([...prefixes]).toEqual(['00', '01', '02', '03']);
+    expect([...prefixes]).toEqual(['00', '01', '02', '03', '04']);
   });
 
-  it('applies 00xx, 01xx, 02xx then 03xx from empty, and nothing on a second run', async (ctx) => {
+  it('applies 00xx, 01xx, 02xx, 03xx then 04xx from empty, and nothing on a second run', async (ctx) => {
     if (!fresh) return ctx.skip(server.available ? 'no database' : server.reason);
     const kernel = await loadKernelChangelog();
     const runner = await runnerOn(fresh);
