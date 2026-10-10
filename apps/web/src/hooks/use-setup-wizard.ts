@@ -6,139 +6,163 @@ import { meQuery, setupStatusQuery } from './use-session.ts';
 
 export interface SetupStep {
   n: number;
-  /** Rail label and its one-line hint. */
+  /** The stepper's label, and the one line shown under it while the step is current. */
   name: string;
   sub: string;
   title: string;
   subtitle: string;
-  /** The bottom bar's primary button; the last step has its own buttons. */
+  /** The footer's primary button; the last step has its own. */
   nextLabel: string | null;
   canSkip: boolean;
 }
 
-export const LAST_STEP = 6;
+/** Workspace and account come before the admin exists; the rest is theirs to skip. */
+export const ACCOUNT_STEP = 2;
+export const FIRST_ADMIN_STEP = 3;
+export const LAST_STEP = 7;
 
 export const SETUP_STEPS: readonly SetupStep[] = [
   {
     n: 1,
-    name: 'Server and admin',
-    sub: 'Health checks, first account',
-    title: 'Your server is up',
-    subtitle: 'Create the first admin account; it owns this workspace.',
-    nextLabel: 'Create admin and continue',
+    name: 'Workspace',
+    sub: 'Its name and address',
+    title: 'Welcome to Bemmoly',
+    subtitle: 'Name your workspace. It takes two minutes, and everything can be changed later.',
+    nextLabel: 'Continue',
     canSkip: false,
   },
   {
     n: 2,
-    name: 'Import',
-    sub: 'Jira, Confluence, CSV, or clean',
-    title: 'Bring your data, or start clean',
+    name: 'Your account',
+    sub: 'The workspace owner',
+    title: 'Create your account',
     subtitle:
-      'Import will keep keys, history, comments, attachments and page trees, and you can run it again for a second project.',
-    nextLabel: 'Start import in background',
-    canSkip: true,
+      'You will own this workspace. Keep this password after you turn on single sign-on: it is the way in if sign-on breaks.',
+    nextLabel: 'Create account',
+    canSkip: false,
   },
   {
     n: 3,
+    name: 'Import',
+    sub: 'Bring data, or start clean',
+    title: 'Bring your data, or start clean',
+    subtitle:
+      'Import will keep keys, history, comments, attachments and page trees, and you can run it again for a second project.',
+    nextLabel: 'Continue',
+    canSkip: true,
+  },
+  {
+    n: 4,
     name: 'People',
-    sub: 'Invites by email',
+    sub: 'Invite your team',
     title: 'Invite your team',
     subtitle: 'Paste emails and everyone gets an invitation to set a password.',
     nextLabel: 'Continue',
     canSkip: true,
   },
   {
-    n: 4,
-    name: 'AI provider',
+    n: 5,
+    name: 'AI',
     sub: 'Optional, private by default',
     title: 'AI, on your terms',
     subtitle:
-      'Bemmoly works fully without AI. Connect a provider to get summaries, planning help, doc Q&A and the command bar. Nothing is sent anywhere until you do.',
+      'Bemmoly works fully without AI. Connect a provider for summaries, planning help and answers from your docs. Nothing is sent anywhere until you do.',
     nextLabel: 'Save AI settings',
     canSkip: true,
   },
   {
-    n: 5,
-    name: 'Appearance',
-    sub: 'Theme and logo',
+    n: 6,
+    name: 'Look',
+    sub: 'Theme and brand color',
     title: 'Make it yours',
-    subtitle: 'Pick a theme now or upload a logo and brand color. Everyone sees this by default.',
+    subtitle: 'Pick a theme or use your brand color. Everyone sees it by default.',
     nextLabel: 'Finish setup',
     canSkip: true,
   },
   {
-    n: 6,
+    n: 7,
     name: 'Done',
-    sub: 'Summary',
-    title: 'Ready',
-    subtitle: "Here's what we set up. Everything can be changed later in Workspace settings.",
-    nextLabel: null,
+    sub: 'What is next',
+    title: 'You are all set',
+    subtitle: 'Here is what is set up. Anything you skipped is one click away in Settings.',
+    nextLabel: 'Open Bemmoly',
     canSkip: false,
   },
 ];
-
-/** The white note under the rail. */
-export const RAIL_NOTE = 'Everything here can be changed later in Workspace settings.';
 
 export function stepDef(n: number): SetupStep {
   return SETUP_STEPS[Math.min(Math.max(n, 1), LAST_STEP) - 1] as SetupStep;
 }
 
-/** Steps 2 to 5 may be skipped; the admin account and the summary may not. */
+/** Import, People, AI and Look may be skipped; the workspace, account and summary may not. */
 export function canSkip(n: number): boolean {
   return stepDef(n).canSkip;
 }
 
 /**
- * Where an unfinished wizard picks up: the last of steps 2 to 5 the admin was
- * on in this tab, else 2. The summary is never resumed; reaching it finishes setup.
+ * Where an unfinished wizard picks up once the admin exists: the last of the skippable steps
+ * the admin was on in this tab, else Import. The summary is never resumed; reaching it
+ * finishes setup.
  */
 export function resumeStep(lastStep: number | null | undefined): number {
   const resumable =
     typeof lastStep === 'number' &&
     Number.isInteger(lastStep) &&
-    lastStep >= 2 &&
+    lastStep >= FIRST_ADMIN_STEP &&
     lastStep < LAST_STEP;
-  return resumable ? lastStep : 2;
+  return resumable ? lastStep : FIRST_ADMIN_STEP;
 }
 
 /**
- * Which step to show. Before the admin exists only step 1 makes sense; after,
- * a missing step resumes where the admin left off, as the router guard does.
+ * Which step to show. Before the admin exists only the workspace and the account make sense,
+ * and the account only once the workspace has a name; after, a missing step resumes where the
+ * admin left off (as the router guard does), and the first two are behind them.
  */
 export function resolveStep(
   requested: number | undefined,
   adminExists: boolean,
   lastStep: number | null = null,
+  workspaceNamed = false,
 ): number {
-  if (!adminExists) return 1;
+  if (!adminExists) {
+    const wanted = requested ?? lastStep ?? 1;
+    return wanted >= ACCOUNT_STEP && workspaceNamed ? ACCOUNT_STEP : 1;
+  }
   if (requested === undefined || !Number.isInteger(requested)) return resumeStep(lastStep);
-  return Math.min(Math.max(requested, 1), LAST_STEP);
+  return Math.min(Math.max(requested, FIRST_ADMIN_STEP), LAST_STEP);
 }
 
-export type RailState = 'done' | 'current' | 'upcoming';
+export type RailState = 'done' | 'skipped' | 'current' | 'upcoming';
 
 export interface RailItem extends SetupStep {
   state: RailState;
-  /** The step number; a finished step shows a tick instead. */
-  marker: string;
   /**
-   * Nothing is clickable before the admin exists. The summary is reached only
-   * through "Finish setup", because arriving there marks setup finished.
+   * Nothing is clickable before the admin exists except going back to the workspace. After,
+   * the first two steps are done for good, and the summary is reached only through "Finish
+   * setup", because arriving there marks setup finished.
    */
   canVisit: boolean;
 }
 
-export function railItems(current: number, adminExists: boolean): RailItem[] {
+export function railItems(
+  current: number,
+  adminExists: boolean,
+  skipped: readonly number[] = [],
+): RailItem[] {
   return SETUP_STEPS.map((step) => {
+    const passed = step.n < current;
     const state: RailState =
-      step.n < current ? 'done' : step.n === current ? 'current' : 'upcoming';
-    return {
-      ...step,
-      state,
-      marker: String(step.n),
-      canVisit: adminExists && step.n !== current && step.n < LAST_STEP && current < LAST_STEP,
-    };
+      step.n === current
+        ? 'current'
+        : passed
+          ? skipped.includes(step.n)
+            ? 'skipped'
+            : 'done'
+          : 'upcoming';
+    const canVisit = adminExists
+      ? step.n !== current && step.n >= FIRST_ADMIN_STEP && step.n < LAST_STEP && current < LAST_STEP
+      : step.n === 1 && current === ACCOUNT_STEP;
+    return { ...step, state, canVisit };
   });
 }
 
@@ -149,26 +173,44 @@ export function useSetupWizard(requested: number | undefined) {
   const me = useQuery({ ...meQuery, enabled: adminExists });
   const navigate = useNavigate();
   const lastStep = useSetupStore((state) => state.lastStep);
+  const skipped = useSetupStore((state) => state.skipped);
+  const workspaceNamed = useSetupStore((state) => state.workspaceName.trim() !== '');
   const update = useSetupStore((state) => state.update);
-  const step = resolveStep(requested, adminExists, lastStep);
+  const step = resolveStep(requested, adminExists, lastStep, workspaceNamed);
   useEffect(() => {
-    if (adminExists && resumeStep(step) === step && step !== lastStep) update({ lastStep: step });
+    if (step !== lastStep && step < LAST_STEP && (adminExists || step < FIRST_ADMIN_STEP)) {
+      update({ lastStep: step });
+    }
   }, [adminExists, step, lastStep, update]);
-  const goTo = (n: number) => navigate({ to: '/setup', search: { step: resolveStep(n, true) } });
-  const next = () => goTo(Math.min(step + 1, LAST_STEP));
+  const goTo = (n: number) =>
+    navigate({ to: '/setup', search: { step: Math.min(Math.max(n, 1), LAST_STEP) } });
+  const next = () => {
+    if (skipped.includes(step)) update({ skipped: skipped.filter((n) => n !== step) });
+    return goTo(step + 1);
+  };
+  const skip = () => {
+    if (!skipped.includes(step)) update({ skipped: [...skipped, step] });
+    return goTo(step + 1);
+  };
+  const first = adminExists ? FIRST_ADMIN_STEP : 1;
   return {
     loading: status.isPending || (adminExists && me.isPending),
     error: status.error,
+    retry: () => void status.refetch(),
     adminExists,
     signedIn: Boolean(me.data),
     me: me.data ?? null,
     step,
     def: stepDef(step),
-    steps: railItems(step, adminExists),
+    steps: railItems(step, adminExists, skipped),
     isLast: step === LAST_STEP,
     canSkip: canSkip(step),
+    /** Back is offered where the step before can still be changed. */
+    canGoBack: step > first && step < LAST_STEP,
     counter: `Step ${step} of ${LAST_STEP}`,
     goTo,
     next,
+    skip,
+    back: () => goTo(step - 1),
   };
 }
