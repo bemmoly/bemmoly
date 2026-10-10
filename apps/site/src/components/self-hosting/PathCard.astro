@@ -16,7 +16,7 @@ interface Props {
 
 const { path } = Astro.props;
 const status = STATUS[path.status];
-const planned = path.status === 'planned';
+const planned = path.status === 'launch';
 ---
 
 <li

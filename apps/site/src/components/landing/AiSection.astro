@@ -2,36 +2,44 @@
 import commandOcean from '../../assets/screens/command-ocean.png';
 import command from '../../assets/screens/command.png';
 import { AI_POINTS } from '../../data/landing.ts';
+import { AVAILABILITY } from '../../data/topics.ts';
+import Badge from '../site/Badge.astro';
 import Shot from './Shot.astro';
 ---
 
 <section class="mx-auto grid w-full max-w-290 items-center gap-16 px-4 py-20 sm:px-6 lg:grid-cols-2 lg:px-12">
-  <div class="flex flex-col gap-4">
+  <div class="flex flex-col items-start gap-4">
+    <Badge tone={AVAILABILITY.ai.tone}>{AVAILABILITY.ai.label}</Badge>
     <h2 class="text-36 leading-heading font-semibold tracking-display">
       AI that does the chores, and shows its work
     </h2>
     <p class="text-16 leading-doc text-pretty text-tx3">
-      Ask in plain language from anywhere. Bemmoly turns it into a plan you can read before anything
-      changes, runs it with your permissions, and logs it. Summaries cite the comments, PRs and
-      pages they came from.
+      Coming in 0.4: ask in plain language from anywhere, and Bemmoly turns it into a plan you can
+      read before anything changes, runs it with your permissions, and logs it. Summaries cite the
+      comments and pages they came from. Until then, everything works without AI.
     </p>
     <ul class="flex flex-col gap-2.5 text-14h text-tx-body">
       {AI_POINTS.map((point) => (
         <li class="flex gap-2.5">
-          <span aria-hidden="true" class="font-semibold text-ok">
-            ✓
+          <span aria-hidden="true" class="font-semibold text-tx4">
+            →
           </span>
           {point}
         </li>
       ))}
     </ul>
   </div>
-  <Shot
-    src={command}
-    dark={commandOcean}
-    frame="side"
-    width={500}
-    sizes="(min-width: 1160px) 500px, (min-width: 1024px) calc(50vw - 80px), calc(100vw - 32px)"
-    alt="The command bar showing a plan to move two blocked issues to the next sprint, waiting for confirmation."
-  />
+  <figure class="m-0 flex flex-col gap-3">
+    <Shot
+      src={command}
+      dark={commandOcean}
+      frame="side"
+      width={500}
+      sizes="(min-width: 1160px) 500px, (min-width: 1024px) calc(50vw - 80px), calc(100vw - 32px)"
+      alt="The command bar showing a plan to move two blocked issues to the next sprint, waiting for confirmation."
+    />
+    <figcaption class="text-13h leading-brief text-tx4">
+      The command bar as designed for 0.4, a picture of the design rather than the app.
+    </figcaption>
+  </figure>
 </section>

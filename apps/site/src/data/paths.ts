@@ -50,7 +50,7 @@ $ docker compose up -d`,
     id: 'helm',
     tile: 'K8',
     title: 'I run Kubernetes',
-    status: 'planned',
+    status: 'launch',
     body: 'A Helm chart runs the same image as one Deployment, or as separate api and worker Deployments. It connects to your Postgres instead of running one.',
     code: `$ helm install bemmoly ./deploy/helm/bemmoly \\
     --set publicUrl=https://work.example.com`,
@@ -60,7 +60,7 @@ $ docker compose up -d`,
     id: 'terraform',
     tile: 'TF',
     title: 'I want managed infrastructure',
-    status: 'planned',
+    status: 'launch',
     body: 'Terraform modules for AWS, GCP and Hetzner will create the VM, with a managed Postgres on AWS and GCP, and run the installer through cloud-init.',
     note: 'Until they ship, create the VM in your provider’s console and use the one command above.',
   },
@@ -75,7 +75,7 @@ $ cd ${BUNDLE}
 $ sudo sh install.sh --version ${RELEASE.version} \\
     --image-archive images.tar --domain bemmoly.internal`,
     copy: true,
-    note: 'Later updates: upload the next bundle on the Updates page. For AI, point Bemmoly at a model server on the same network.',
+    note: 'Later updates: upload the next bundle on the Updates page. From 0.4, AI can use a model server on the same network.',
   },
   {
     id: 'own-postgres',
@@ -86,7 +86,7 @@ $ sudo sh install.sh --version ${RELEASE.version} \\
     code: `$ curl -fsSL https://get.bemmoly.com | sh -s -- \\
     --database-url postgres://bemmoly:PASSWORD@db.internal:5432/bemmoly_db`,
     copy: true,
-    note: 'Postgres 18 is required; 17 is accepted with a warning. Without the pgvector extension everything works except semantic search, and the health page says so.',
+    note: 'Postgres 18 is required; 17 is accepted with a warning. Install the pgvector extension too: AI search needs it from 0.4, and the health page says when it is missing.',
     wide: true,
   },
 ];

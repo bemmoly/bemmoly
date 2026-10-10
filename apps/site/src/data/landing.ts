@@ -4,6 +4,7 @@
  */
 import { LATEST } from '../lib/changelog.ts';
 import { INSTALL_COMMAND } from '../lib/links.ts';
+import type { Availability } from './topics.ts';
 
 /** The newest release, from the release notes; the pill, transcript and bundle names use it. */
 export const RELEASE = {
@@ -14,53 +15,67 @@ export const RELEASE = {
 export const PROOF_POINTS = [
   'MIT licensed',
   'Postgres only, no Redis or Elastic',
-  'Imports from Jira and Confluence',
-  'Any AI provider, or none',
+  'Imports from Jira and Confluence in 0.5',
+  'Any AI provider, or none, from 0.4',
 ];
 
-export const FEATURES = [
+export interface Feature {
+  g: string;
+  title: string;
+  body: string;
+  /** Every card carries a badge, so nothing planned reads as shipped (topics.ts). */
+  status: Availability;
+}
+
+export const FEATURES: readonly Feature[] = [
   {
     g: 'WK',
     title: 'Work, from backlog to release',
-    body: 'Scrum or Kanban per project. Epics, sprints, swimlanes, WIP limits, custom fields, a visual workflow editor, roadmap with forecasts.',
+    body: 'Scrum or Kanban per project. Epics, sprints, swimlanes, WIP limits, custom fields, a visual workflow editor, saved filters and ⌘K search. A roadmap with forecasts follows in 0.5.',
+    status: 'now',
   },
   {
     g: 'DC',
     title: 'Docs, from RFC to handbook',
-    body: "Spaces, page trees, templates, inline comments, live issue embeds that stay in sync, and Q&A across everything you've written.",
+    body: 'Spaces, page trees, templates, inline comments and live issue embeds that stay in sync, in the same app as the work they describe.',
+    status: 'docs',
   },
   {
     g: 'AI',
     title: 'AI-first, not AI-bolted-on',
-    body: 'Briefs, risk detection, planning, drafting and a command bar that previews before it acts. Works with any provider or a local model.',
+    body: 'Briefs, risk detection, planning, drafting, Q&A across everything you have written, and a command bar that previews before it acts. Any provider, a local model, or none.',
+    status: 'ai',
   },
   {
     g: 'CF',
     title: 'Configurable at two levels',
-    body: 'Org defaults with locks; project overrides for columns, lanes, cards, fields, workflows and estimation.',
+    body: 'Org defaults, and project overrides for issue types, fields, workflows, columns, lanes, cards and estimation, each one reset with a click.',
+    status: 'now',
   },
   {
     g: 'RB',
     title: 'Roles that make sense',
-    body: 'Org admin, project admin, member, viewer, plus custom roles. SSO with group-to-team mapping. Audit log for everything.',
+    body: 'Org admin, project admin, member, viewer, plus custom roles, with org locks on what each may change. An audit log of who changed what. SSO in 0.5.',
+    status: 'now',
   },
   {
     g: 'TH',
     title: 'Themes, including yours',
     body: 'Eight presets and a brand-color builder with automatic contrast checks. Members can pick light or dark for themselves.',
+    status: 'now',
   },
 ];
 
 export const AI_POINTS = [
   'Morning brief: what changed, what needs you',
-  'Sprint and flow risk, with one-click fixes',
+  'Sprint and flow risk, with fixes you confirm',
   'Docs that catch their own inconsistencies with linked issues',
   'Bring your own provider, or a local model. Or none.',
 ];
 
 export const STATS = [
   { value: '$0', label: 'per seat, forever. MIT license.' },
-  { value: '~$20/mo', label: 'typical VM cost for a startup' },
+  { value: '$5–25', label: 'a month for the 2 vCPU, 4 GB VM it needs' },
   { value: '5 min', label: 'curl to first login' },
   { value: '1 cmd', label: 'to upgrade or roll back' },
 ];
@@ -79,27 +94,31 @@ export const TRANSCRIPT: readonly { text: string; tone: 'step' | 'done' }[] = [
 export const INSTALL = INSTALL_COMMAND;
 
 export const INSTALL_PATHS = [
-  'Docker',
-  'Helm chart',
-  'Terraform for AWS, GCP, Hetzner',
-  'Air-gapped install',
+  'Docker Compose',
+  'Your own Postgres',
+  'Air-gapped bundle, untested offline',
+  'Helm and Terraform in 1.0',
 ];
 
 export const CONFIGS = [
   {
     title: 'Board settings',
+    demo: '/demo/work/settings/PLT/board',
     body: 'Columns mapped to statuses, WIP limits, default swimlanes, card fields, Scrum or Kanban.',
   },
   {
     title: 'Issue types and fields',
-    body: 'Project-specific types like Incident, custom fields, AI-filled defaults, create-form layout.',
+    demo: '/demo/work/settings/PLT/issue-types',
+    body: 'Project-specific types like Incident, custom fields and the create-form layout, overriding the org defaults or reset to them.',
   },
   {
     title: 'Workflow editor',
+    demo: '/demo/work/workflows/PLT',
     body: 'Visual statuses and transitions with conditions, validators and post-actions.',
   },
   {
     title: 'Roles and themes',
+    demo: '/demo/settings/roles',
     body: 'Permission matrix with org locks; theme presets and custom brand colors.',
   },
 ];
