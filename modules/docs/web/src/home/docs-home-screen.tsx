@@ -143,7 +143,9 @@ export default function DocsHomeScreen(props: DocsScreenProps) {
           />
         ) : (
           <>
-            {askOffered && <AskDocsPanel isAdmin={can('ai.models.configure')} />}
+            {askOffered && (
+              <AskDocsPanel isAdmin={can('ai.models.configure')} recentPages={recentPages} />
+            )}
             <JumpBackIn
               pages={recentPages}
               pending={recent.isPending}

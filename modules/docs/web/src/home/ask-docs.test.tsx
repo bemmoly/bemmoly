@@ -4,7 +4,7 @@ import type { AiAnswerEvent } from '@bemmoly/shared/ai-answers';
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import { describe, expect, it } from 'vitest';
-import { listed, newClient, providers, space, startServer } from '../test-support.tsx';
+import { listed, newClient, providers, space, startServer, summary } from '../test-support.tsx';
 import { docsKeys } from '../shared/keys.ts';
 import DocsHomeScreen from './docs-home-screen.tsx';
 
@@ -83,6 +83,29 @@ describe('Ask your docs on the Docs home', () => {
     await screen.findAllByText('Engineering');
     expect(screen.queryByRole('region', { name: 'Ask your docs' })).toBeNull();
     expect(screen.queryByText(/Answers cite/)).toBeNull();
+  });
+
+  it('suggests no questions in a workspace without recent pages', async () => {
+    renderHome({ ai: true });
+    expect(await screen.findByText('Answers cite the pages they came from.')).toBeTruthy();
+    expect(screen.queryByText(/Try:/)).toBeNull();
+    expect(screen.queryByRole('button', { name: /^What does/ })).toBeNull();
+  });
+
+  it('suggests questions about the pages touched most recently', async () => {
+    server.use(
+      http.get('*/api/v1/docs/home/recent', () =>
+        HttpResponse.json(
+          listed([summary('Session store RFC'), summary(''), summary('Billing runbook')]),
+        ),
+      ),
+    );
+    renderHome({ ai: true });
+    expect(
+      await screen.findByRole('button', { name: 'What does “Session store RFC” say?' }),
+    ).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'What does “Billing runbook” say?' })).toBeTruthy();
+    expect(screen.getAllByRole('button', { name: /^What does/ })).toHaveLength(2);
   });
 
   it('is not offered without an embedding model', async () => {
