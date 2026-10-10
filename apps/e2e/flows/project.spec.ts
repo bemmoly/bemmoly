@@ -23,7 +23,9 @@ test('a project is created with an owning team and its creator leads it', async 
   await dialog.getByRole('combobox', { name: 'Team' }).click();
   await page.getByRole('option', { name: run.team.name }).click();
   await expect(dialog.getByRole('combobox', { name: 'Team' })).toHaveText(run.team.name);
-  await expect(dialog.getByText(`Lead: ${run.admin.name}, the team's lead`)).toBeVisible();
+  await expect(
+    dialog.getByText(`${run.admin.name} leads the project, as the team's lead.`),
+  ).toBeVisible();
   await dialog.getByRole('button', { name: 'Create project' }).click();
   await expect(dialog).toBeHidden();
 

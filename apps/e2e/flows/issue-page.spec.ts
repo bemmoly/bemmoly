@@ -24,10 +24,14 @@ test('the issue page saves a rich description with a mention, a comment and a re
   await expect(page.getByRole('heading', { name: 'Rate limit the exports' })).toBeVisible();
   await expect(page.getByText(`${me.name} created the issue`)).toBeVisible();
 
-  // Description: plain words, a bold one, and a mention picked from the people list.
-  await page.getByRole('button', { name: 'Add description…' }).click();
+  // Description: plain words, a bold one, and a mention picked from the people list. The empty
+  // description is an editor surface: a click puts the caret in it, and it saves as you type.
+  await page
+    .getByRole('region', { name: 'Description' })
+    .getByRole('button', { name: /^Describe the problem/ })
+    .click();
   const editor = page.getByRole('textbox', { name: 'Description' });
-  await editor.click();
+  await expect(editor).toBeFocused();
   await page.keyboard.type('Exports must be ');
   await page.getByRole('button', { name: 'Bold' }).click();
   await page.keyboard.type('throttled');
@@ -38,14 +42,21 @@ test('the issue page saves a rich description with a mention, a comment and a re
     .getByRole('option', { name: /Sam R\./ })
     .click();
   await page.keyboard.type('to review.');
-  await page.getByRole('button', { name: 'Save' }).click();
+  // Escape finishes editing and sends what is left to save.
+  await page.keyboard.press('Escape');
+  await expect
+    .poll(async () => {
+      const saved = await admin.call<{ description: unknown }>('GET', `/work/issues/${issue.key}`);
+      return json(saved.description);
+    })
+    .toContain('to review.');
 
   await expect(page.getByText(/Exports must be/)).toBeVisible();
   await expect(page.locator('strong', { hasText: 'throttled' })).toBeVisible();
   await expect(page.locator(`[data-type="mention"][data-id="${run.member.id}"]`)).toBeVisible();
 
   // Comment, then react to it.
-  await page.getByRole('button', { name: /^Add a comment/ }).click();
+  await page.getByRole('button', { name: /^Leave a comment/ }).click();
   await expect(page.getByRole('textbox', { name: 'Comment' })).toBeFocused();
   await page.keyboard.type('Throttling at 10 a minute should do.');
   await page.getByRole('button', { name: 'Comment', exact: true }).click();

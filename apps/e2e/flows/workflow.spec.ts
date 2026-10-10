@@ -52,8 +52,12 @@ test('a workflow change published in the editor is what the board follows', asyn
   const column = (name: string) => page.getByRole('group', { name: `${name}, All issues` });
   const card = column('In progress').getByRole('button', { name: new RegExp(`^${issue.key} `) });
   await card.dragTo(column('Testing'));
-  await expect(column('Testing').getByRole('button', { name: issue.key })).toBeVisible();
+  await expect(
+    column('Testing').getByRole('button', { name: new RegExp(`^${issue.key} `) }),
+  ).toBeVisible();
   await expect.poll(async () => (await targets()).includes('Done')).toBe(true);
   await page.reload();
-  await expect(column('Testing').getByRole('button', { name: issue.key })).toBeVisible();
+  await expect(
+    column('Testing').getByRole('button', { name: new RegExp(`^${issue.key} `) }),
+  ).toBeVisible();
 });
