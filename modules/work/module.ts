@@ -7,6 +7,7 @@ import { workRoutes } from './server/src/routes/index.ts';
 import { createWorkServices } from './server/src/services/index.ts';
 import { WORK_AUTOMATION_RUN_JOB, WORK_RANK_REBALANCE_JOB } from './server/src/services/jobs.ts';
 import { registerWorkSearch } from './server/src/services/palette/index.ts';
+import { registerWorkAi, withAiTriggers } from './server/src/services/ai/index.ts';
 import { registerWorkReferences } from './server/src/services/references/index.ts';
 
 /**
@@ -80,7 +81,7 @@ export default defineModule({
     for (const capability of WORK_CAPABILITIES) ctx.capabilities.add(capability);
     defineWorkSettings(ctx.settings);
     const services = createWorkServices({
-      realtime: ctx.realtime,
+      realtime: withAiTriggers(ctx.realtime, ctx.events),
       events: ctx.events,
       jobs: ctx.jobs,
       ...(ctx.database ? { database: ctx.database } : {}),
@@ -102,6 +103,7 @@ export default defineModule({
     registerWorkSearch(ctx.search, services.search, ctx.database);
     registerWorkReferences(ctx, ctx.database);
     registerWorkAiTools(ctx.ai, services);
+    registerWorkAi(ctx, ctx.database);
     ctx.routes.add({ prefix: '/work', plugin: workRoutes(createWorkControllers(services)) });
   },
 });
