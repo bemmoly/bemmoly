@@ -64,6 +64,16 @@ export function docsSearchHits(db: MockDb, q: string) {
     });
 }
 
+/** Where a page lives, as search hits carry it: its space's name and the page it is under. */
+export function placeOf(
+  state: ReturnType<typeof docsState>,
+  row: { spaceId: string; parentId: string | null },
+) {
+  const space = state.spaces.find((item) => item.id === row.spaceId);
+  const parent = row.parentId ? state.pages.find((item) => item.id === row.parentId) : null;
+  return { spaceName: space?.name ?? '', parentTitle: parent ? parent.title || 'Untitled' : null };
+}
+
 export const docsFindRoutes: MockRoute[] = [
   {
     method: 'GET',
@@ -86,6 +96,7 @@ export const docsFindRoutes: MockRoute[] = [
             title,
             icon,
             status,
+            ...placeOf(state, row),
             snippet: snippet(row.text, q),
             rank,
           };
