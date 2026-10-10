@@ -97,7 +97,7 @@ export function UpdatesPage() {
               onUpdate={() => dialog.open('update')}
             />
           ) : (
-            <Card className="px-4 py-3 text-13 text-tx3">{availabilityLine(overview)}</Card>
+            <Card className="px-4 py-3 text-13 text-tx-2">{availabilityLine(overview)}</Card>
           )}
           {overview.rollback ? (
             <RollbackCard

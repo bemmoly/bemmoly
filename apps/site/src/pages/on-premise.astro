@@ -77,9 +77,9 @@ const CONTROLS: readonly Capability[] = [
   wide
 >
   <Section title="Where everything lives">
-    <div tabindex="0" class="overflow-x-auto rounded-card border border-br">
+    <div tabindex="0" class="overflow-x-auto rounded-card border border-line">
       <table class="w-full border-collapse text-left text-14">
-        <thead class="bg-sf2 text-12 font-semibold tracking-caps text-tx4 uppercase dark:bg-sf">
+        <thead class="bg-side text-12 font-semibold tracking-caps text-tx-3 uppercase dark:bg-card">
           <tr>
             <th class="px-3.5 py-2.5 font-semibold">What</th>
             <th class="px-3.5 py-2.5 font-semibold">Where</th>
@@ -87,7 +87,7 @@ const CONTROLS: readonly Capability[] = [
         </thead>
         <tbody>
           {WHERE.map(([what, where]) => (
-            <tr class="border-t border-br-row align-top">
+            <tr class="border-t border-line-2 align-top">
               <td class="px-3.5 py-2.5 font-medium whitespace-nowrap text-tx">{what}</td>
               <td class="px-3.5 py-2.5">{where}</td>
             </tr>

@@ -11,7 +11,7 @@ export type TabsSize = 'md' | 'sm' | 'panel';
 const SIZES: Record<TabsSize, string> = {
   md: 'px-3.5 py-2.25',
   sm: 'px-2.5 py-2.75',
-  panel: 'px-2.5 py-3 text-12h',
+  panel: 'px-2.5 py-3 text-13',
 };
 
 export interface TabItem<V extends string> {
@@ -69,7 +69,7 @@ export function Tabs<V extends string>({
     refs.current[next]?.focus();
   };
   return (
-    <div className={cx('flex items-center gap-0.5', bordered && 'border-b border-br', className)}>
+    <div className={cx('flex items-center gap-0.5', bordered && 'border-b border-line', className)}>
       <div role="tablist" {...aria} className="flex gap-0.5">
         {items.map((item, index) => {
           const selected = item.value === value;
@@ -90,16 +90,16 @@ export function Tabs<V extends string>({
               className={cx(
                 'flex cursor-pointer items-center gap-1.5 border-0 bg-transparent font-sans font-medium whitespace-nowrap',
                 SIZES[size],
-                selected ? 'text-tx shadow-tab' : 'text-tx4 hover:text-tx2',
+                selected ? 'text-tx shadow-tab' : 'text-tx-3 hover:text-tx-2',
                 focusRingInset,
               )}
             >
               {item.label}
               {item.count !== undefined && (
-                <span className="font-mono text-11 font-medium text-tx5">{item.count}</span>
+                <span className="font-mono text-11 font-medium text-tx-3">{item.count}</span>
               )}
               {item.badge !== undefined && (
-                <span className="rounded-pill bg-ac-bg px-1.5 py-px font-mono text-10h font-medium text-ac">
+                <span className="rounded-full bg-acc-50 px-1.5 py-px font-mono text-11 font-medium text-acc">
                   {item.badge}
                 </span>
               )}

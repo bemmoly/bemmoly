@@ -1,11 +1,11 @@
 import type { BoardConfig, CardField } from '@bemmoly/module-work/shared';
-import { Avatar, Badge, cardStripe, KeyChip, PriorityGlyph, Tag, TypeGlyph } from '@bemmoly/ui';
+import { Avatar, Badge, cardStripe, KeyChip, Label, PriorityGlyph, TypeGlyph } from '@bemmoly/ui';
 import { Icon } from '@bemmoly/ui/icons';
 import { cx } from '../cx.ts';
 
 /** The stripe a colour preset paints on the mock's sample card: a medium-priority story in an epic. */
 export const sampleStripe = (rule: BoardConfig['colorRule']) =>
-  cardStripe(rule, { priority: 'medium', type: 'story', epicClassName: 'border-l-ac' });
+  cardStripe(rule, { priority: 'medium', type: 'story', epicClassName: 'border-l-acc' });
 
 /**
  * The Cards tab preview: the mock's sample card with only the chosen fields.
@@ -29,21 +29,21 @@ export function CardPreview({
       aria-label="Card preview"
       style={ruleColor ? { borderLeftColor: ruleColor } : undefined}
       className={cx(
-        'flex w-70 flex-col gap-2 rounded-control border border-br bg-sf px-2.5 pt-2.5 pb-2 text-13 text-tx shadow-card',
+        'flex w-70 flex-col gap-2 rounded-control bg-card px-2.5 pt-2.5 pb-2 text-13 text-tx shadow-e1',
         stripe && cx('border-l-[3px]', stripe),
       )}
     >
       {on('blocked') && (
-        <span className="flex items-center gap-1.5 self-start rounded-xs bg-warn-bg px-1.75 py-0.75 text-11 font-medium text-warn-fg">
-          <span aria-hidden className="size-1.75 rounded-full bg-warn" />
+        <span className="flex items-center gap-1.5 self-start rounded-chip bg-amber-50 px-1.75 py-0.75 text-11 font-medium text-amber-tx">
+          <span aria-hidden className="size-1.75 rounded-full bg-amber" />
           Blocked by PLT-204
         </span>
       )}
       <div className="leading-card">Session cleanup background job</div>
       {on('labels') && (
         <div className="flex gap-1">
-          <Tag>infra</Tag>
-          <Tag>auth</Tag>
+          <Label name="infra" />
+          <Label name="auth" />
         </div>
       )}
       <div className="flex items-center gap-1.5 pt-0.5">
@@ -51,19 +51,19 @@ export function CardPreview({
         {on('key') && <KeyChip issueKey="PLT-211" />}
         {on('priority') && <PriorityGlyph priority="medium" />}
         {on('docs') && (
-          <span className="flex items-center gap-0.75 text-11 text-ac">
+          <span className="flex items-center gap-0.75 text-11 text-acc">
             <Icon name="doc" size={11} />
             RFC
           </span>
         )}
-        {on('due') && <span className="text-11 text-warn-fg">Oct 6</span>}
+        {on('due') && <span className="text-11 text-amber-tx">Oct 6</span>}
         {on('subtasks') && (
-          <span className="flex items-center gap-0.75 font-mono text-11 text-tx4">
+          <span className="flex items-center gap-0.75 font-mono text-11 text-tx-3">
             <Icon name="subtasks" size={11} />
             2/5
           </span>
         )}
-        {on('created') && <span className="text-11 text-tx5">Sep 28</span>}
+        {on('created') && <span className="text-11 text-tx-3">Sep 28</span>}
         <span className="ml-auto flex items-center gap-1.5">
           {on('estimate') && (
             <Badge variant="count" className="min-w-5 justify-center">

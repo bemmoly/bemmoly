@@ -33,6 +33,8 @@ export const backlogSchema = z.object({
   sprints: z.array(backlogSprintSchema),
   issues: z.array(issueSchema),
   epics: z.array(epicProgressSchema),
+  /** The keys of the open issues blocking each issue, by issue id; rows show a red lock. */
+  blocked: z.record(z.string(), z.array(z.string())).default({}),
 });
 
 /**

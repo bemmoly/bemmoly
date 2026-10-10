@@ -27,14 +27,31 @@ export const BRAND_FILES: Record<LogoVariant, Record<LogoFileTone, string>> = {
 /**
  * The file's markup made decorative, since the Logo wrapper carries the accessible name. The
  * app's CSP refuses inline style attributes, so `style="fill: var(--brand-mark-bg, #2356C9)"`
- * becomes `class="brand-mark-bg" fill="#2356C9"`: the designed colour by default, and a class
- * the Logo recolours from the same custom property when the workspace has its own brand.
+ * becomes `fill="#2356C9"`: the designed colour, which no theme changes (ADR 0015).
  */
 export function decorative(svg: string): string {
   return svg
-    .replace(/\sstyle="fill:\s*var\(--([\w-]+),\s*([^)"]+)\)"/g, ' class="$1" fill="$2"')
+    .replace(/\sstyle="fill:\s*var\(--[\w-]+,\s*([^)"]+)\)"/g, ' fill="$1"')
     .replace(/<svg\b([^>]*)>/, (_match, attrs: string) => {
       const kept = attrs.replace(/\s(role|aria-label|aria-hidden|focusable)="[^"]*"/g, '');
       return `<svg${kept} aria-hidden="true" focusable="false">`;
     });
+}
+
+/**
+ * The file cropped to its ink: the viewBox shrinks to the outline's bounds (read from the path
+ * coordinates), so the wordmark can sit on a line of text at the size of its letters rather
+ * than inside the 24-unit box every file shares.
+ */
+export function trimmed(svg: string): string {
+  const ys = [...svg.matchAll(/\bd="([^"]+)"/g)].flatMap(([, d = '']) =>
+    [...d.matchAll(/-?\d+(?:\.\d+)?[ ,](-?\d+(?:\.\d+)?)/g)].map(([, y]) => Number(y)),
+  );
+  const width = /viewBox="0 0 ([\d.]+) /.exec(svg)?.[1];
+  if (!ys.length || !width) return svg;
+  const top = Math.min(...ys);
+  const height = Number((Math.max(...ys) - top).toFixed(2));
+  return svg
+    .replace(/viewBox="[^"]*"/, `viewBox="0 ${top} ${width} ${height}"`)
+    .replace(/\sheight="[\d.]+"/, ` height="${height}"`);
 }

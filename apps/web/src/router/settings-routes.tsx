@@ -59,6 +59,7 @@ function page<const P extends string>(
 }
 
 const pages = [
+  page('profile', 'profile', () => import('../pages/settings/profile-page.tsx'), 'ProfilePage'),
   page(
     'notifications',
     'notifications',

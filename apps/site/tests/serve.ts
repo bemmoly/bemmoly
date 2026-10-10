@@ -27,6 +27,9 @@ export interface Preview {
   stop: () => void;
 }
 
+/** Long enough for a busy CI runner, where turbo starts many tasks at once. */
+const START_TIMEOUT_MS = 60_000;
+
 export async function startPreview(): Promise<Preview> {
   const port = await freePort();
   const child: ChildProcess = spawn(
@@ -34,17 +37,31 @@ export async function startPreview(): Promise<Preview> {
     // Astro 7 hands a locked preview to a separate server process that outlives this child;
     // without the lock it serves in-process, so stop() ends it and a running preview is untouched.
     [astroBin, 'preview', '--ignore-lock', '--port', String(port), '--host', '127.0.0.1'],
-    { cwd: root, stdio: 'ignore' },
+    { cwd: root, stdio: ['ignore', 'pipe', 'pipe'] },
   );
+  let output = '';
+  const keep = (chunk: Buffer) => {
+    output = (output + chunk.toString()).slice(-4000);
+  };
+  child.stdout?.on('data', keep);
+  child.stderr?.on('data', keep);
+  let exited = false;
+  child.once('exit', () => {
+    exited = true;
+  });
   const url = `http://127.0.0.1:${port}`;
-  for (let attempt = 0; attempt < 100; attempt += 1) {
+  const deadline = Date.now() + START_TIMEOUT_MS;
+  while (Date.now() < deadline && !exited) {
     try {
       await fetch(url);
       return { url, stop: () => child.kill() };
     } catch {
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 200));
     }
   }
   child.kill();
-  throw new Error(`astro preview did not start on ${url}; run the build first.`);
+  const why = exited ? 'it exited' : `nothing answered in ${START_TIMEOUT_MS / 1000}s`;
+  throw new Error(
+    `astro preview did not start on ${url} (${why}); run the build first.\n${output.trim()}`,
+  );
 }

@@ -86,20 +86,28 @@ describe('MembersScreen', () => {
   it('lists members with their project role and guards the last project admin', async () => {
     serve();
     const rohan = await rowOf('Rohan S.');
-    const role = within(rohan).getByRole('combobox', { name: 'Project role for Rohan S.' });
-    expect(role.textContent).toContain('Project admin');
-    expect(role.hasAttribute('disabled')).toBe(true);
+    const role = within(rohan).getByTitle('A project keeps at least one project admin.');
+    expect(role.textContent).toBe('Project admin');
+    expect(within(rohan).queryByRole('button', { name: /Project role/ })).toBeNull();
     fireEvent.click(within(rohan).getByRole('button', { name: 'Actions for Rohan S.' }));
     const remove = await screen.findByRole('menuitem', { name: /Remove from project/ });
     expect(remove.getAttribute('aria-disabled')).toBe('true');
     expect(screen.getByText('2 people')).toBeTruthy();
   });
 
+  it('narrows to admins with a segment', async () => {
+    serve();
+    await rowOf('Aisha K.');
+    fireEvent.click(screen.getByRole('radio', { name: /Admins/ }));
+    expect(screen.queryByText('Aisha K.')).toBeNull();
+    expect(screen.getByText('Rohan S.')).toBeTruthy();
+  });
+
   it('changes a member role', async () => {
     const calls = serve();
     const aisha = await rowOf('Aisha K.');
-    fireEvent.click(within(aisha).getByRole('combobox', { name: 'Project role for Aisha K.' }));
-    fireEvent.click(await screen.findByRole('option', { name: 'Viewer' }));
+    fireEvent.click(within(aisha).getByRole('button', { name: /Project role for Aisha K\./ }));
+    fireEvent.click(await screen.findByRole('menuitemradio', { name: 'Viewer' }));
     await waitFor(() => expect(calls).toHaveLength(1));
     expect(calls[0]).toMatchObject({ method: 'PATCH', body: { roleId: ROLES.viewer } });
     expect(calls[0]?.url).toContain(`/members/${IDS.aisha}`);

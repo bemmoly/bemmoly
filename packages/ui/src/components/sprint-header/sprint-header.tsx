@@ -2,29 +2,54 @@ import type { ReactNode } from 'react';
 import { Icon } from '../../icons/icon.tsx';
 import { cx } from '../../lib/cx.ts';
 import { focusRingInset } from '../../lib/focus.ts';
-import { Badge } from '../badge/badge.tsx';
 import { Button } from '../button/button.tsx';
 import { IconButton } from '../button/icon-button.tsx';
 
-export interface SprintCounts {
-  todo: number;
-  doing: number;
+export interface SprintPoints {
   done: number;
+  /** Points on issues in progress: the blue part of the bar. */
+  doing: number;
+  total: number;
 }
 
+export interface SprintProgressProps extends SprintPoints {
+  className?: string;
+}
+
+/**
+ * The two-tone sprint bar: done in green, in progress in blue, on the line colour. It reads
+ * aloud as "9 of 48 points done, 11 in progress".
+ */
+export function SprintProgress({ done, doing, total, className }: SprintProgressProps) {
+  const share = (n: number) => (total > 0 ? `${Math.min(100, (n / total) * 100)}%` : '0%');
+  return (
+    <span
+      role="img"
+      aria-label={`${done} of ${total} points done, ${doing} in progress`}
+      title={`${done} done · ${doing} in progress · ${Math.max(0, total - done - doing)} to do`}
+      className={cx('flex h-1 overflow-hidden rounded-[2px] bg-line', className)}
+    >
+      <i className="block h-full bg-done" style={{ width: share(done) }} />
+      <i className="block h-full bg-prog" style={{ width: share(doing) }} />
+    </span>
+  );
+}
+
+export type SprintKind = 'active' | 'future' | 'backlog';
+
 export interface SprintHeaderProps {
-  name: ReactNode;
-  /** "Sep 23 – Oct 7", after the name in 12.5px tx4. */
+  name: string;
+  kind: SprintKind;
+  /** "Sep 23 – Oct 7". */
   dates?: ReactNode;
-  /** The sprint goal, after the dates the way the Board header lists it. */
-  goal?: ReactNode;
-  active?: boolean;
+  /** The sprint goal, shown after the dates; long goals truncate with a tooltip. */
+  goal?: string;
   issueCount: number;
-  /** The three mono pills: to do (chip), in progress (accent), done (ok). */
-  counts: SprintCounts;
-  /** "23 pts · 14 done" or a CapacityBar; shown before the action. */
+  /** Done, in-progress and total points; draws the bar and "9 / 48 pts". */
+  points?: SprintPoints;
+  /** Planned sprints: a capacity line instead of the bar. */
   capacity?: ReactNode;
-  /** "Start sprint", "Complete sprint" or "Create sprint". */
+  /** "Complete sprint", "Start sprint" or "Create sprint". */
   action?: ReactNode;
   onAction?: () => void;
   onMore?: () => void;
@@ -35,18 +60,24 @@ export interface SprintHeaderProps {
   className?: string;
 }
 
+const CHIPS: Record<SprintKind, { label: string; className: string } | null> = {
+  active: { label: 'Active', className: 'bg-acc-50 text-acc' },
+  future: { label: 'Planned', className: 'bg-sunken text-tx-2 ring-1 ring-line ring-inset' },
+  backlog: null,
+};
+
 /**
- * The Backlog's sprint container heading: 10px 14px on sf2 over a br-row rule, the chevron,
- * the name at 13.5px semibold, dates, the ACTIVE badge, the issue count, then the status pills
- * 6px apart, the capacity text, the 28px action and the more button.
+ * A sprint or the backlog in the list (docs/design/premium/kit.css, `.grp`): the chevron, the
+ * sprint target or the backlog icon, the name, a status chip, the dates and goal, the issue
+ * count, then the two-tone bar, the points and one action. Nothing is an unlabelled number.
  */
 export function SprintHeader({
   name,
+  kind,
   dates,
   goal,
-  active = false,
   issueCount,
-  counts,
+  points,
   capacity,
   action,
   onAction,
@@ -56,10 +87,11 @@ export function SprintHeader({
   controls,
   className,
 }: SprintHeaderProps) {
+  const chip = CHIPS[kind];
   return (
     <div
       className={cx(
-        'flex items-center gap-2.5 border-b border-br-row bg-sf2 px-3.5 py-2.5 text-13 text-tx',
+        'flex h-9 items-center gap-2 border-y border-line bg-sunken pr-6 pl-4 text-13 font-semibold whitespace-nowrap text-tx max-sm:pr-3 max-sm:pl-3',
         className,
       )}
     >
@@ -69,43 +101,59 @@ export function SprintHeader({
         aria-controls={controls}
         onClick={onToggle}
         className={cx(
-          'flex min-w-0 cursor-pointer items-center gap-2.5 border-0 bg-transparent p-0 text-left font-sans text-13 text-tx',
+          'flex min-w-0 cursor-pointer items-center gap-2 rounded-chip border-0 bg-transparent p-0 text-left font-sans text-13 font-semibold text-tx max-sm:min-w-20',
           focusRingInset,
         )}
       >
         <Icon
           name="chevron"
-          size={10}
-          className={cx('w-2.5 text-tx5 motion-safe:transition-transform', open && 'rotate-90')}
+          size={14}
+          className={cx('text-tx-3 motion-safe:transition-transform', open && 'rotate-90')}
         />
-        <span className="text-13h font-semibold">{name}</span>
-        {dates && <span className="text-12h text-tx4">{dates}</span>}
-        {goal && <span className="text-12h text-tx4">· {goal}</span>}
+        <Icon
+          name={kind === 'backlog' ? 'backlog' : 'target'}
+          size={15}
+          className={kind === 'active' ? 'text-acc' : 'text-tx-3'}
+        />
+        <span className="truncate">{name}</span>
       </button>
-      {active && <Badge tone="ok">ACTIVE</Badge>}
-      <span className="text-12h text-tx5 tabular-nums">{issueCount} issues</span>
-      <span className="ml-auto flex items-center gap-1.5">
-        <Badge variant="count" title="To do" aria-label={`${counts.todo} to do`}>
-          {counts.todo}
-        </Badge>
-        <Badge
-          variant="count"
-          tone="accent"
-          title="In progress"
-          aria-label={`${counts.doing} in progress`}
+      {chip && (
+        <span
+          className={cx(
+            'inline-flex h-4.5 shrink-0 items-center rounded-chip px-1.5 text-11 font-semibold max-sm:hidden',
+            chip.className,
+          )}
         >
-          {counts.doing}
-        </Badge>
-        <Badge variant="count" tone="ok" title="Done" aria-label={`${counts.done} done`}>
-          {counts.done}
-        </Badge>
-        {capacity && <span className="ml-1.5 text-12 text-tx4 tabular-nums">{capacity}</span>}
+          {chip.label}
+        </span>
+      )}
+      <span className="min-w-0 truncate font-normal text-tx-3 max-sm:hidden" title={goal}>
+        {[dates, `${issueCount} ${issueCount === 1 ? 'issue' : 'issues'}`]
+          .filter(Boolean)
+          .map((part, index) => (
+            <span key={index}>
+              {index > 0 && ' · '}
+              {part}
+            </span>
+          ))}
+        {goal && <span> · {goal}</span>}
+      </span>
+      <span className="ml-auto flex shrink-0 items-center gap-2.5 font-normal">
+        {points && points.total > 0 && (
+          <>
+            <SprintProgress {...points} className="w-22.5 max-sm:hidden" />
+            <span className="text-tx-3 tabular-nums">
+              {points.done} / {points.total} pts
+            </span>
+          </>
+        )}
+        {capacity && <span className="text-12 text-tx-3 tabular-nums">{capacity}</span>}
         {action && (
-          <Button size="xs" className="ml-2" onClick={onAction}>
+          <Button size="xs" onClick={onAction}>
             {action}
           </Button>
         )}
-        {onMore && <IconButton label="Sprint actions" icon="more" size="xs" onClick={onMore} />}
+        {onMore && <IconButton label="Sprint actions" icon="more" size="tool" onClick={onMore} />}
       </span>
     </div>
   );
@@ -113,31 +161,16 @@ export function SprintHeader({
 
 export interface SprintContainerProps {
   header: ReactNode;
-  /** The active sprint carries the accent border; others the plain br. */
-  active?: boolean;
   open: boolean;
   id?: string;
   children?: ReactNode;
   className?: string;
 }
 
-/** A sprint or the backlog: an 8px card with its header and the rows, 16px above the next. */
-export function SprintContainer({
-  header,
-  active = false,
-  open,
-  id,
-  children,
-  className,
-}: SprintContainerProps) {
+/** A sprint or the backlog: its header over the rows, flush with the list's edges. */
+export function SprintContainer({ header, open, id, children, className }: SprintContainerProps) {
   return (
-    <section
-      className={cx(
-        'overflow-hidden rounded-card border bg-sf',
-        active ? 'border-ac-br' : 'border-br',
-        className,
-      )}
-    >
+    <section className={cx('-mt-px', className)}>
       {header}
       {open && (
         <div id={id} className="flex flex-col">

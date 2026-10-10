@@ -151,7 +151,7 @@ async function tellPeople(
     await notify(deps, ctx, tx, issue, {
       kind: 'status_change',
       recipientIds: await watcherIds(tx, issue.id),
-      body: `${issue.title} → ${statusName}`,
+      body: `${issue.title} moved to ${statusName}`,
       dedupeKey: `issue:${issue.id}:status:${issue.statusId}:${issue.statusChangedAt}`,
     });
   }

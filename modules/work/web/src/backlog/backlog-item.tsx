@@ -1,14 +1,20 @@
 import type { Issue } from '@bemmoly/module-work/shared';
-import { BacklogRow } from '@bemmoly/ui';
+import { IssueRow, statusStage } from '@bemmoly/ui';
 import { memo, type KeyboardEvent, type MouseEvent, type PointerEvent } from 'react';
 import { useBacklogUi } from '../hooks/backlog-store.ts';
-import type { Lookups } from './model.ts';
+import { useIssuePending } from '../hooks/issue-edits.ts';
+import { useSearchParam } from '../shared/url-state.ts';
+import { openRowMenu } from '../shared/issue-actions-menu.tsx';
+import { useBacklogRowShared } from './backlog-row-context.ts';
+import type { Lookups, StatusLook } from './model.ts';
 
 export interface RowHandlers {
   onClick(event: MouseEvent<HTMLElement>, id: string): void;
   onPointerDown(event: PointerEvent<HTMLElement>, id: string): void;
   onKeyDown(event: KeyboardEvent<HTMLElement>, id: string): void;
   onOpen(id: string): void;
+  /** The selection box: Shift extends from the anchor, otherwise it toggles one row. */
+  onCheck(event: MouseEvent<HTMLElement>, id: string): void;
 }
 
 export interface BacklogItemProps {
@@ -22,7 +28,16 @@ export interface BacklogItemProps {
   index?: number;
 }
 
-const FOCUS = 'focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ac';
+const FOCUS = 'focus-ring-inset';
+
+/** The row's status glyph: its column's place for the stage, its own name for the label. */
+const stageOf = (look: StatusLook | undefined) =>
+  look
+    ? statusStage(
+        look.done ? 'done' : look.category === 'todo' ? 'todo' : 'in_progress',
+        look.category === 'review' ? 'review' : look.category === 'qa' ? 'qa' : look.label,
+      )
+    : 'todo';
 
 /**
  * One issue in a container: the design system's row inside an option that
@@ -39,7 +54,11 @@ export const BacklogItem = memo(function BacklogItem({
 }: BacklogItemProps) {
   const id = issue.id;
   const selected = useBacklogUi((state) => state.selection.ids.includes(id));
+  const selecting = useBacklogUi((state) => state.selection.ids.length > 0);
+  const open = useSearchParam('issue') === issue.key;
+  const { blocked, menu } = useBacklogRowShared();
   const dragged = useBacklogUi((state) => state.drag?.ids.includes(id) ?? false);
+  const pending = useIssuePending(issue.key);
   const dropAbove = useBacklogUi(
     (state) => state.drag?.target?.containerId === containerId && state.drag.target.beforeId === id,
   );
@@ -53,34 +72,45 @@ export const BacklogItem = memo(function BacklogItem({
       aria-selected={selected}
       tabIndex={entry ? 0 : -1}
       data-row-id={id}
+      data-issue-key={issue.key}
       data-container-id={containerId}
       data-index={index}
       onClick={(event) => handlers.onClick(event, id)}
-      onDoubleClick={() => handlers.onOpen(id)}
+      onContextMenu={openRowMenu}
       onPointerDown={(event) => handlers.onPointerDown(event, id)}
       onKeyDown={(event) => handlers.onKeyDown(event, id)}
-      className={`relative cursor-pointer select-none ${FOCUS} ${dragged ? 'opacity-50' : ''}`}
+      className={`group/item relative cursor-pointer select-none ${FOCUS} ${dragged ? 'opacity-50' : ''}`}
     >
       {dropAbove && (
         <span
           aria-hidden
-          className="pointer-events-none absolute inset-x-0 -top-px z-10 h-0.5 bg-ac"
+          className="pointer-events-none absolute inset-x-0 -top-px z-10 h-0.5 bg-acc"
         />
       )}
-      <BacklogRow
+      <IssueRow
         issueKey={issue.key}
         title={issue.title}
         type={lookups.types.get(issue.typeId) ?? 'task'}
         priority={issue.priority}
-        status={{ category: status?.category ?? 'todo', label: status?.label }}
-        {...(epic ? { epic: { name: epic.title, colorClassName: epic.colorClassName } } : {})}
-        {...(person
-          ? { assignee: { name: person.name, initials: person.initials, hue: person.hue } }
-          : {})}
+        status={{ stage: stageOf(status), ...(status ? { label: status.label } : {}) }}
+        {...(epic ? { epic: { name: epic.title, color: epic.look } } : {})}
+        assignee={person ? { name: person.name, initials: person.initials, hue: person.hue } : null}
         {...(issue.estimate !== null ? { estimate: issue.estimate } : {})}
-        selected={selected}
-        className={selected ? undefined : 'hover:bg-bg2'}
+        {...(blocked[id]?.[0] ? { blockedBy: blocked[id][0] } : {})}
+        selected={open}
+        checked={selected}
+        pending={pending}
+        selecting={selecting}
+        onCheck={(event) => handlers.onCheck(event, id)}
       />
+      <span
+        onPointerDown={(event) => event.stopPropagation()}
+        onKeyDown={(event) => event.stopPropagation()}
+        onClick={(event) => event.stopPropagation()}
+        className="absolute top-1/2 right-0.5 -translate-y-1/2 opacity-0 group-hover/item:opacity-100 group-focus-within/item:opacity-100 has-[[aria-expanded=true]]:opacity-100 pointer-coarse:opacity-100"
+      >
+        {menu(issue, containerId)}
+      </span>
     </div>
   );
 });

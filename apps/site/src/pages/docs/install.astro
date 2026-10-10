@@ -106,9 +106,9 @@ const COMMANDS = [
     <p>
       Options go after <code>sh -s --</code> when piping, or straight after the script name:
     </p>
-    <div tabindex="0" class="overflow-x-auto rounded-card border border-br">
+    <div tabindex="0" class="overflow-x-auto rounded-card border border-line">
       <table class="w-full border-collapse text-left text-14">
-        <thead class="bg-sf2 text-12 font-semibold tracking-caps text-tx4 uppercase dark:bg-sf">
+        <thead class="bg-side text-12 font-semibold tracking-caps text-tx-3 uppercase dark:bg-card">
           <tr>
             <th class="px-3.5 py-2.5 font-semibold">Option</th>
             <th class="px-3.5 py-2.5 font-semibold">What it does</th>
@@ -116,7 +116,7 @@ const COMMANDS = [
         </thead>
         <tbody>
           {OPTIONS.map(([option, body]) => (
-            <tr class="border-t border-br-row align-top">
+            <tr class="border-t border-line-2 align-top">
               <td class="px-3.5 py-2.5 whitespace-nowrap">
                 <code>{option}</code>
               </td>
@@ -171,9 +171,9 @@ const COMMANDS = [
       itself;
       <code>bemmoly help</code> lists everything.
     </p>
-    <div tabindex="0" class="overflow-x-auto rounded-card border border-br">
+    <div tabindex="0" class="overflow-x-auto rounded-card border border-line">
       <table class="w-full border-collapse text-left text-14">
-        <thead class="bg-sf2 text-12 font-semibold tracking-caps text-tx4 uppercase dark:bg-sf">
+        <thead class="bg-side text-12 font-semibold tracking-caps text-tx-3 uppercase dark:bg-card">
           <tr>
             <th class="px-3.5 py-2.5 font-semibold">bemmoly …</th>
             <th class="px-3.5 py-2.5 font-semibold">What it does</th>
@@ -181,7 +181,7 @@ const COMMANDS = [
         </thead>
         <tbody>
           {COMMANDS.map(([command, body]) => (
-            <tr class="border-t border-br-row align-top">
+            <tr class="border-t border-line-2 align-top">
               <td class="px-3.5 py-2.5 whitespace-nowrap">
                 <code>{command}</code>
               </td>

@@ -143,7 +143,7 @@ export const boardViewSchema = z.object({
     z.object({
       id: z.string(),
       label: z.string(),
-      /** A palette name the screens map to a colour (ac, violet, tx6), or null for none. */
+      /** The epic's stored palette colour (epic-1 … epic-8), or null for lanes without one. */
       color: z.string().nullable(),
       /** The epic's key and due date when the lane is an epic; the lane header shows both. */
       issueKey: z.string().nullable().default(null),

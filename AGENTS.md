@@ -8,7 +8,10 @@ It is deliberately specific. When it conflicts with a tool's default behaviour, 
 Read first:
 
 - `docs/tech-design.html`: the architecture. Decisions there are settled unless an ADR changes them.
-- `docs/design/mocks/`: seventeen product screens. They are the pixel source of truth.
+- `docs/design/premium/`: the design review. It is the source of truth for the shell and the
+  visual language (ADR 0015).
+- `docs/design/mocks/`: seventeen product screens, the pixel source of truth for what the
+  review does not draw.
 - `docs/plan/foundation.md`: what the first release (0.1.0) contains and how the work is split.
 - `docs/adr/`: one record per decision that changed after the tech design.
 
@@ -102,8 +105,9 @@ through `packages/api-client`. Tokens from `packages/ui` are the only source of 
 spacing, radius, type and shadow; never a literal colour in a component. One accent is
 reserved for AI-produced content and nothing else.
 
-**Design fidelity.** Build from the mock's markup and measurements. Never approximate a
-spacing, an icon or a colour. Shared components are reused, never redrawn in a page. New UI is
+**Design fidelity.** Build from the design review (`docs/design/premium/`, ADR 0015) where it
+covers a screen or a component, and from the mock's markup and measurements elsewhere. Never
+approximate a spacing, an icon or a colour, and never type a character where an icon belongs. Shared components are reused, never redrawn in a page. New UI is
 verified in a running browser against the mock before it is called done, with a screenshot in
 the PR beside the mock. The theme is settled; proposals to change it go through an ADR, not a PR.
 

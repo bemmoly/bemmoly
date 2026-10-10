@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { Icon } from '../../icons/icon.tsx';
 import { cx } from '../../lib/cx.ts';
 import { focusRing } from '../../lib/focus.ts';
 import { AiDot } from './ai-parts.tsx';
@@ -33,17 +34,17 @@ export function AiSummary({
     <section
       aria-label={typeof title === 'string' ? `AI ${title.toLowerCase()}` : 'AI summary'}
       className={cx(
-        'flex flex-col gap-2 bg-ai-bg',
+        'flex flex-col gap-2 bg-ai-50',
         panel
-          ? 'rounded-panel border border-ai-br px-3.5 py-3 text-12h leading-body'
-          : 'rounded-card border border-ai-br2 px-4 py-3.5 leading-brief',
+          ? 'rounded-control border border-ai-100 px-3.5 py-3 text-13 leading-body'
+          : 'rounded-card border border-ai-100 px-4 py-3.5 leading-brief',
         className,
       )}
     >
-      <div className="flex items-center gap-1.75 font-semibold text-ai">
+      <div className="flex items-center gap-1.75 font-semibold text-ai-600">
         <AiDot />
         {title}
-        {source && <span className="ml-auto text-11h font-normal text-ai-mute">{source}</span>}
+        {source && <span className="ml-auto text-12 font-normal text-ai-600">{source}</span>}
       </div>
       <div className="text-tx">{children}</div>
       {actions && (
@@ -83,15 +84,15 @@ export function AiInsightBar({
     <section
       aria-label={typeof title === 'string' ? title : 'AI insight'}
       className={cx(
-        'flex items-center gap-3 rounded-control border border-l-3 border-ai-br border-l-ai bg-sf py-2.25 pr-3 pl-3.5 text-12h',
+        'flex items-center gap-3 rounded-control border border-l-3 border-ai-100 border-l-ai bg-card py-2.25 pr-3 pl-3.5 text-13',
         className,
       )}
     >
-      <span className="flex shrink-0 items-center gap-1.75 font-semibold whitespace-nowrap text-ai">
+      <span className="flex shrink-0 items-center gap-1.75 font-semibold whitespace-nowrap text-ai-600">
         <AiDot />
         {title}
       </span>
-      <span className="min-w-0 truncate text-tx2">{children}</span>
+      <span className="min-w-0 truncate text-tx-2">{children}</span>
       <div className="ml-auto flex shrink-0 items-center gap-1.5 whitespace-nowrap">
         {actions}
         {onDismiss && (
@@ -100,11 +101,11 @@ export function AiInsightBar({
             aria-label="Dismiss"
             onClick={onDismiss}
             className={cx(
-              'cursor-pointer border-0 bg-transparent px-2 py-1.25 font-semibold text-tx5 hover:text-tx2',
+              'inline-flex cursor-pointer items-center border-0 bg-transparent px-2 py-1.25 text-tx-3 hover:text-tx-2',
               focusRing,
             )}
           >
-            ✕
+            <Icon name="close" size={14} />
           </button>
         )}
       </div>
@@ -127,16 +128,16 @@ export function AiBrief({ title, source, children, actions, className }: AiBrief
     <section
       aria-label={typeof title === 'string' ? title : 'AI brief'}
       className={cx(
-        'flex flex-col gap-2 rounded-panel border border-l-3 border-ai-br2 border-l-ai bg-sf px-4 py-3.5',
+        'flex flex-col gap-2 rounded-control border border-l-3 border-ai-100 border-l-ai bg-card px-4 py-3.5',
         className,
       )}
     >
-      <div className="flex items-center gap-2 font-semibold text-ai">
+      <div className="flex items-center gap-2 font-semibold text-ai-600">
         <AiDot />
         {title}
-        {source && <span className="text-12 font-normal text-tx5">{source}</span>}
+        {source && <span className="text-12 font-normal text-tx-3">{source}</span>}
       </div>
-      <div className="max-w-225 text-13h leading-desc text-ai-tx">{children}</div>
+      <div className="max-w-225 text-13 leading-desc text-tx">{children}</div>
       {actions && <div className="flex flex-wrap gap-1.5">{actions}</div>}
     </section>
   );
@@ -169,20 +170,20 @@ export function AiSuggestion({
       role="note"
       aria-label="AI suggestion"
       className={cx(
-        'flex items-center gap-2.5 bg-ai-bg text-12h',
+        'flex items-center gap-2.5 bg-ai-50 text-13',
         variant === 'row'
-          ? 'border-b border-br2 px-3.5 py-2'
-          : 'rounded-panel border border-ai-br2 px-3 py-2.5 leading-note',
+          ? 'border-b border-line-2 px-3.5 py-2'
+          : 'rounded-control border border-ai-100 px-3 py-2.5 leading-note',
         className,
       )}
     >
       <AiDot />
-      <span className="min-w-0 flex-1 text-ai-tx">{children}</span>
+      <span className="min-w-0 flex-1 text-tx">{children}</span>
       <button
         type="button"
         onClick={onAccept}
         className={cx(
-          'shrink-0 cursor-pointer rounded-xs border border-ai-br bg-sf px-2.25 py-1 font-sans text-12h font-medium text-ai hover:bg-ai-bg',
+          'shrink-0 cursor-pointer rounded-chip border border-ai-100 bg-card px-2.25 py-1 font-sans text-13 font-medium text-ai-600 hover:bg-ai-50',
           focusRing,
         )}
       >
@@ -192,7 +193,7 @@ export function AiSuggestion({
         type="button"
         onClick={onDismiss}
         className={cx(
-          'shrink-0 cursor-pointer border-0 bg-transparent p-0 font-sans text-12h text-tx5 hover:text-tx2',
+          'shrink-0 cursor-pointer border-0 bg-transparent p-0 font-sans text-13 text-tx-3 hover:text-tx-2',
           focusRing,
         )}
       >

@@ -1,10 +1,23 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import { describe, expect, it, vi } from 'vitest';
 import { issue, IDS, Providers, startServer } from '../issue/test-support.tsx';
 import { CreateIssueDialog } from './create-issue-dialog.tsx';
 
 const server = startServer();
+
+interface EditorHandle {
+  chain: () => { focus: (at: 'end') => { insertContent: (text: string) => { run: () => void } } };
+}
+
+/** Types into a rich text section through its editor, as a person would. */
+async function write(name: RegExp, text: string) {
+  const box = await screen.findByRole('textbox', { name });
+  const editor = (box as HTMLElement & { editor: EditorHandle }).editor;
+  act(() => {
+    editor.chain().focus('end').insertContent(text).run();
+  });
+}
 
 const open = (onCreated = vi.fn()) =>
   render(
@@ -16,10 +29,12 @@ const open = (onCreated = vi.fn()) =>
 describe('CreateIssueDialog', () => {
   it("lays the form out from the type's layout and checks its required fields", async () => {
     open();
-    expect(await screen.findByLabelText(/Acceptance criteria/)).toBeTruthy();
+    expect(await screen.findByRole('region', { name: 'Acceptance criteria' })).toBeTruthy();
+    expect(screen.queryByLabelText('Severity')).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: /More fields/ }));
     expect(screen.getByLabelText('Severity')).toBeTruthy();
     expect(screen.getByRole('combobox', { name: 'Issue type' }).textContent).toContain('Story');
-    fireEvent.click(screen.getByRole('button', { name: 'Create issue' }));
+    fireEvent.click(screen.getByRole('button', { name: /^Create issue/ }));
     expect(await screen.findByText('Give the issue a title.')).toBeTruthy();
     expect(screen.getByText('Acceptance criteria is required.')).toBeTruthy();
   });
@@ -36,10 +51,8 @@ describe('CreateIssueDialog', () => {
     open(onCreated);
     const title = await screen.findByLabelText(/Title/);
     fireEvent.change(title, { target: { value: 'Session audit export' } });
-    fireEvent.change(await screen.findByLabelText(/Acceptance criteria/), {
-      target: { value: '- Covers 90 days' },
-    });
-    fireEvent.click(screen.getByRole('button', { name: 'Create issue' }));
+    await write(/Acceptance criteria/, 'Covers 90 days');
+    fireEvent.click(screen.getByRole('button', { name: /^Create issue/ }));
     await waitFor(() => expect(onCreated).toHaveBeenCalled());
     expect(body).toMatchObject({
       projectId: IDS.project,
@@ -48,7 +61,7 @@ describe('CreateIssueDialog', () => {
       customFields: {
         acceptance_criteria: {
           type: 'doc',
-          content: [{ type: 'bulletList' }],
+          content: [{ type: 'taskList' }],
         },
       },
     });
@@ -73,10 +86,8 @@ describe('CreateIssueDialog', () => {
     );
     open();
     fireEvent.change(await screen.findByLabelText(/Title/), { target: { value: 'Sessions' } });
-    fireEvent.change(await screen.findByLabelText(/Acceptance criteria/), {
-      target: { value: 'Done' },
-    });
-    fireEvent.click(screen.getByRole('button', { name: 'Create issue' }));
+    await write(/Acceptance criteria/, 'Done');
+    fireEvent.click(screen.getByRole('button', { name: /^Create issue/ }));
     expect(await screen.findByText('Too similar to PLT-204.')).toBeTruthy();
   });
 });

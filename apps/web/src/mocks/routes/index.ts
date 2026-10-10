@@ -5,10 +5,12 @@ import { docsLibraryRoutes } from './docs-library.ts';
 import { docsMemberRoutes } from './docs-members.ts';
 import { docsMoveRoutes } from './docs-moves.ts';
 import { docsRoutes } from './docs.ts';
+import { notificationRoutes } from './notifications.ts';
 import { operationsRoutes } from './operations.ts';
 import { peopleRoutes } from './people.ts';
 import { sessionRoutes } from './session.ts';
 import { settingsRoutes } from './settings.ts';
+import { teamRoutes } from './teams.ts';
 import { workBacklogRoutes } from './work-backlog.ts';
 import { workBoardRoutes } from './work-board.ts';
 import { workFilterRoutes } from './work-filters.ts';
@@ -22,7 +24,9 @@ import { workWorkflowRoutes } from './work-workflows.ts';
 export const ROUTES: readonly MockRoute[] = [
   ...sessionRoutes,
   ...peopleRoutes,
+  ...teamRoutes,
   ...settingsRoutes,
+  ...notificationRoutes,
   ...operationsRoutes,
   ...workBacklogRoutes,
   ...workBoardRoutes,

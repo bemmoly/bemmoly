@@ -1,4 +1,4 @@
-import { useToast } from '@bemmoly/ui';
+import { Kbd, shortcutText, useToast } from '@bemmoly/ui';
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import type { CommentAnchor } from '@bemmoly/module-docs/shared';
@@ -6,8 +6,7 @@ import { captureAnchor } from './anchor.ts';
 import { cx } from './cx.ts';
 import type { PageEditor } from './highlights.ts';
 
-const IS_MAC = typeof navigator !== 'undefined' && /Mac|iP(hone|ad)/.test(navigator.platform);
-export const COMMENT_SHORTCUT = IS_MAC ? '⌘⌥M' : 'Ctrl+Alt+M';
+export const COMMENT_SHORTCUT = 'Mod+Alt+M';
 
 /** 8px clear of the selection and of the viewport edge. */
 const GAP = 8;
@@ -33,7 +32,7 @@ export interface CommentBubbleProps {
 
 /**
  * "Comment" over a text selection, and ⌘⌥M (Ctrl+Alt+M) in the page for the same. Built from
- * the menu surface (8px radius, br border, shadow-menu) since no mock draws it; it fades in
+ * the menu surface (8px radius, br border, shadow-e2) since no mock draws it; it fades in
  * over the selection and keeps the editor's focus and selection when pressed.
  */
 export function CommentBubble({ editor, onStart, disabled = false }: CommentBubbleProps) {
@@ -110,7 +109,7 @@ export function CommentBubble({ editor, onStart, disabled = false }: CommentBubb
     <div
       ref={ref}
       className={cx(
-        'fixed z-40 flex items-center rounded-card border border-br bg-sf p-0.5 shadow-menu',
+        'fixed z-40 flex items-center rounded-card border border-line bg-card p-0.5 shadow-e2',
         'motion-safe:animate-pop-in',
       )}
       onMouseDown={(event) => event.preventDefault()}
@@ -118,13 +117,11 @@ export function CommentBubble({ editor, onStart, disabled = false }: CommentBubb
       <button
         type="button"
         onClick={start}
-        title={`Comment (${COMMENT_SHORTCUT})`}
-        className="flex cursor-pointer items-center gap-2 rounded-sm border-0 bg-transparent px-2.5 py-1.5 font-sans text-12h font-medium text-tx2 hover:bg-bg2 hover:text-tx focus-visible:bg-ac-bg focus-visible:text-ac focus-visible:outline-0"
+        title={`Comment (${shortcutText(COMMENT_SHORTCUT)})`}
+        className="flex cursor-pointer items-center gap-2 rounded-chip border-0 bg-transparent px-2.5 py-1.5 font-sans text-13 font-medium text-tx-2 hover:bg-side hover:text-tx focus-visible:bg-acc-50 focus-visible:text-acc focus-visible:outline-0"
       >
         Comment
-        <kbd className="rounded-xs border border-br3 bg-sf px-1.5 py-px font-mono text-10h font-medium text-tx4">
-          {COMMENT_SHORTCUT}
-        </kbd>
+        <Kbd keys={COMMENT_SHORTCUT} />
       </button>
     </div>,
     document.body,

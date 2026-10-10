@@ -1,4 +1,6 @@
 import type { ButtonHTMLAttributes, ReactNode } from 'react';
+import { Kbd } from '../kbd/kbd.tsx';
+import { ariaKeyShortcuts } from '../kbd/keys.ts';
 import { cx } from '../../lib/cx.ts';
 import { focusRing } from '../../lib/focus.ts';
 
@@ -29,9 +31,9 @@ export function AiActionButton({
     <button
       type={type}
       className={cx(
-        'inline-flex shrink-0 cursor-pointer items-center border border-ai-br bg-sf font-sans font-medium whitespace-nowrap text-ai',
-        size === 'sm' ? 'rounded-xs px-2.25 py-1 text-12h' : 'rounded-xs px-2.5 py-1.25',
-        'enabled:hover:bg-ai-bg disabled:cursor-not-allowed disabled:opacity-50',
+        'inline-flex shrink-0 cursor-pointer items-center border border-ai-100 bg-card font-sans font-medium whitespace-nowrap text-ai-600',
+        size === 'sm' ? 'rounded-chip px-2.25 py-1 text-13' : 'rounded-chip px-2.5 py-1.25',
+        'enabled:hover:bg-ai-50 disabled:cursor-not-allowed disabled:opacity-50',
         focusRing,
         className,
       )}
@@ -51,8 +53,8 @@ export function AiNotUseful({
     <button
       type="button"
       className={cx(
-        'inline-flex shrink-0 cursor-pointer items-center rounded-xs border-0 bg-transparent font-sans text-tx4 hover:text-tx2',
-        size === 'sm' ? 'px-2.25 py-1 text-12h' : 'px-2.5 py-1.25',
+        'inline-flex shrink-0 cursor-pointer items-center rounded-chip border-0 bg-transparent font-sans text-tx-3 hover:text-tx-2',
+        size === 'sm' ? 'px-2.25 py-1 text-13' : 'px-2.5 py-1.25',
         focusRing,
         className,
       )}
@@ -65,7 +67,7 @@ export function AiNotUseful({
 
 export interface AiAskButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   label?: ReactNode;
-  /** Key hint after the label, e.g. "⌘K". */
+  /** Key hint after the label, e.g. "Mod+K". */
   shortcut?: string;
   /** md: top bar (32px, 0 12px, 6px radius). sm: Doc Editor "Copilot" (30px, 0 10px, 5px). */
   size?: 'sm' | 'md';
@@ -87,13 +89,13 @@ export function AiAskButton({
     <button
       type={type}
       aria-pressed={pressed}
-      aria-keyshortcuts={shortcut === '⌘K' ? 'Meta+K Control+K' : undefined}
+      aria-keyshortcuts={shortcut ? ariaKeyShortcuts(shortcut) : undefined}
       className={cx(
-        'inline-flex shrink-0 cursor-pointer items-center border border-ai-br font-sans font-medium whitespace-nowrap text-ai',
+        'inline-flex shrink-0 cursor-pointer items-center border border-ai-100 font-sans font-medium whitespace-nowrap text-ai-600',
         size === 'md'
           ? 'h-control gap-1.75 rounded-control px-3'
-          : 'h-7.5 gap-1.5 rounded-sm px-2.5',
-        size === 'md' || pressed ? 'bg-ai-tint' : 'bg-sf',
+          : 'h-7.5 gap-1.5 rounded-chip px-2.5',
+        size === 'md' || pressed ? 'bg-ai-50' : 'bg-card',
         focusRing,
         className,
       )}
@@ -101,7 +103,7 @@ export function AiAskButton({
     >
       <AiDot size={size === 'md' ? 8 : 7} />
       {label}
-      {shortcut && <kbd className="font-mono text-11 font-medium text-ai-mute">{shortcut}</kbd>}
+      {shortcut && <Kbd keys={shortcut} variant="plain" className="text-ai-600" />}
     </button>
   );
 }

@@ -12,6 +12,10 @@ describe('sample module', () => {
       name: 'Sample',
       version: '0.0.0',
       navigation: [{ id: 'sample', label: 'Sample', path: '/sample', placement: 'top' }],
+      icon: 'box',
+      color: 'epic-4',
+      order: 90,
+      sidebar: { path: '/sample', links: [], primary: [] },
     });
     expect(registry.capabilities().map((capability) => capability.name)).toEqual(['sample.view']);
   });

@@ -3,16 +3,19 @@ import {
   type NotificationListQuery,
   type NotificationListResponse,
   type NotificationPatchBody,
+  type NotificationPatchResponse,
 } from '@bemmoly/shared';
 import type { Actor } from '../../contracts/authz.ts';
 import {
   inboxOwner,
   inTransaction,
+  nowOf,
   NOTIFICATIONS_REALTIME_KIND,
   type NotificationsDependencies,
 } from './context.ts';
 import { groupNotifications } from './grouping.ts';
-import { countUnread, listNotifications, markAllRead, setRead } from './repository.ts';
+import { countUnread, listNotifications, markAllRead } from './repository.ts';
+import { updateEntry } from './triage.ts';
 
 export async function listInbox(
   deps: NotificationsDependencies,
@@ -20,14 +23,17 @@ export async function listInbox(
   query: NotificationListQuery,
 ): Promise<NotificationListResponse> {
   const userId = inboxOwner(actor);
+  const now = nowOf(deps);
   const [page, unreadCount] = await Promise.all([
     listNotifications(deps.sql, {
       userId,
       cursor: query.cursor,
       limit: query.limit,
       unreadOnly: query.unread === true,
+      view: query.view,
+      now,
     }),
-    countUnread(deps.sql, userId),
+    countUnread(deps.sql, userId, now),
   ]);
   const last = page.rows.at(-1);
   return {
@@ -37,16 +43,36 @@ export async function listInbox(
   };
 }
 
-/** Marks one entry, and with `read: true` the older unread rows of its group. */
+/** The read state the entry ends with, when the change decided it. */
+function readAfter(body: NotificationPatchBody): boolean | undefined {
+  if (body.read !== undefined) return body.read;
+  if (body.snoozedUntil) return false;
+  return body.done === true ? true : undefined;
+}
+
+/**
+ * Marks one entry done, snoozed or read. Done and snooze cover the entry's
+ * group (the older rows of its kind and target); so does `read: true`.
+ */
 export async function markInboxEntry(
   deps: NotificationsDependencies,
   actor: Actor,
   id: string,
   body: NotificationPatchBody,
-): Promise<{ ids: string[]; read: boolean }> {
+): Promise<NotificationPatchResponse> {
   const userId = inboxOwner(actor);
+  const snoozedUntil =
+    body.snoozedUntil === undefined || body.snoozedUntil === null
+      ? body.snoozedUntil
+      : new Date(body.snoozedUntil);
   const ids = await inTransaction(deps, undefined, async (db) => {
-    const changed = await setRead(db, { userId, id, read: body.read });
+    const changed = await updateEntry(db, {
+      userId,
+      id,
+      read: body.read,
+      done: body.done,
+      snoozedUntil,
+    });
     if (!changed) throw new NotFoundError('No such notification in your inbox');
     await deps.realtime.publish(
       { kind: NOTIFICATIONS_REALTIME_KIND, ids: changed, userId },
@@ -54,7 +80,13 @@ export async function markInboxEntry(
     );
     return changed;
   });
-  return { ids, read: body.read };
+  const read = readAfter(body);
+  return {
+    ids,
+    ...(read === undefined ? {} : { read }),
+    ...(body.done === undefined ? {} : { done: body.done }),
+    ...(snoozedUntil === undefined ? {} : { snoozedUntil: snoozedUntil?.toISOString() ?? null }),
+  };
 }
 
 export async function markInboxRead(
@@ -63,7 +95,7 @@ export async function markInboxRead(
 ): Promise<{ updated: number }> {
   const userId = inboxOwner(actor);
   const ids = await inTransaction(deps, undefined, async (db) => {
-    const changed = await markAllRead(db, userId);
+    const changed = await markAllRead(db, userId, nowOf(deps));
     if (changed.length > 0) {
       await deps.realtime.publish(
         { kind: NOTIFICATIONS_REALTIME_KIND, ids: changed, userId },

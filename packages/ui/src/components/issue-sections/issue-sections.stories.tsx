@@ -43,7 +43,7 @@ export const Lists: Story = {
   render: function Render() {
     const [done, setDone] = useState([true, true, false]);
     return (
-      <div className="flex w-194 flex-col gap-5 bg-bg">
+      <div className="flex w-194 flex-col gap-5 bg-sunken">
         <IssueSection heading={<SectionHeading title="Subtasks" hint="2 of 4 done" />}>
           <ProgressBar value={50} size="xs" label="Subtasks done" />
           <ListCard>
@@ -143,7 +143,7 @@ export const Activity: Story = {
   render: function Render() {
     const [tab, setTab] = useState('all');
     return (
-      <div className="flex w-194 flex-col gap-3 bg-bg">
+      <div className="flex w-194 flex-col gap-3 bg-sunken">
         <SectionHeading
           title="Activity"
           actions={
@@ -200,7 +200,11 @@ export const Activity: Story = {
           Backfill finished on staging, 0 mismatches across 2.1M rows. Ready for a second pair of
           eyes on #4821.
         </ActivityItem>
-        <ActivityItem person={AK} verb="changed status In progress → In review" when="Thursday" />
+        <ActivityItem
+          person={AK}
+          verb="changed status from In progress to In review"
+          when="Thursday"
+        />
         <ActivityItem person={AK} verb="logged 4h" when="Wednesday" />
       </div>
     );
@@ -247,7 +251,7 @@ export const Details: Story = {
           <a href="#sprint">PLT Sprint 14</a>
         </FieldRow>
         <FieldRow label="Epic">
-          <FieldSwatch colorClassName="bg-ac" />
+          <FieldSwatch colorClassName="bg-acc" />
           Auth service
         </FieldRow>
         <FieldRow label="Labels" className="gap-1">
@@ -256,7 +260,7 @@ export const Details: Story = {
         </FieldRow>
         <FieldRow label="Fix version">v1.3.0</FieldRow>
         <FieldRow label="Due date">
-          <span className="text-warn-fg">Oct 7, 2026</span>
+          <span className="text-amber-tx">Oct 7, 2026</span>
         </FieldRow>
         <FieldRow label="Watchers">
           <WatcherList people={[AK, JM, RS]} total={6} />

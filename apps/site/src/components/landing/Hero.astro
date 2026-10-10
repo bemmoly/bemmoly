@@ -6,16 +6,16 @@ import InstallCommand from './InstallCommand.astro';
 ---
 
 <section class="hero-glow relative isolate mx-auto flex w-full max-w-290 flex-col items-center gap-7 px-4 pt-16 pb-14 text-center sm:px-6 lg:px-12 lg:pt-22">
-  <p class="inline-flex items-center gap-2 rounded-full border border-br bg-sf2 py-1.25 dark:bg-sf pr-3 pl-1.5 text-13 text-tx3">
-    <span class="rounded-full bg-ok-bg px-2 py-0.5 text-11h font-semibold text-ok-fg">
+  <p class="inline-flex items-center gap-2 rounded-full border border-line bg-side py-1.25 dark:bg-card pr-3 pl-1.5 text-13 text-tx-2">
+    <span class="rounded-full bg-green-50 px-2 py-0.5 text-12 font-semibold text-green-tx">
       {RELEASE.version}
     </span>
     {RELEASE.note}
   </p>
-  <h1 class="max-w-225 text-36 leading-hero font-semibold tracking-hero text-balance md:text-58">
+  <h1 class="max-w-225 text-24 leading-hero font-semibold tracking-hero text-balance md:text-58">
     Keep your work in-house.
   </h1>
-  <p class="max-w-175 text-19 leading-brief text-pretty text-tx3">
+  <p class="max-w-175 text-19 leading-brief text-pretty text-tx-2">
     Issues, boards and sprints for your whole company today, with docs and AI next. It runs on a
     server you own, so your data never leaves your hardware. No per-seat pricing. No usage caps.
   </p>
@@ -28,7 +28,7 @@ import InstallCommand from './InstallCommand.astro';
     </Button>
   </div>
   <InstallCommand />
-  <ul class="flex flex-wrap justify-center gap-x-7 gap-y-2 text-13 text-tx4">
+  <ul class="flex flex-wrap justify-center gap-x-7 gap-y-2 text-13 text-tx-3">
     {PROOF_POINTS.map((point) => (
       <li>{point}</li>
     ))}

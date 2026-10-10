@@ -1,3 +1,4 @@
+import { shortcutText } from '@bemmoly/ui';
 import type { ChainedCommands, Editor } from '@tiptap/core';
 
 /*
@@ -154,14 +155,9 @@ export function slashMatches(query: string): SlashBlock[] {
 
 const MAC = typeof navigator !== 'undefined' && /Mac|iP(hone|ad)/.test(navigator.platform);
 
-/** "Mod-Shift-8" as the person's keyboard writes it: ⌘⇧8 or Ctrl+Shift+8. */
+/** "Mod-Shift-8" as the person's keyboard writes it, for a tooltip: Command symbols or Ctrl+Shift+8. */
 export function keyLabel(keys: string): string {
-  const parts = keys.split('-').map((part) => (part.length === 1 ? part.toUpperCase() : part));
-  if (MAC) {
-    const glyphs: Record<string, string> = { Mod: '⌘', Shift: '⇧', Alt: '⌥' };
-    return parts.map((part) => glyphs[part] ?? part).join('');
-  }
-  return parts.map((part) => (part === 'Mod' ? 'Ctrl' : part)).join('+');
+  return shortcutText(keys.replace(/-/g, '+'), MAC);
 }
 
 /** "Mod-Shift-8" for aria-keyshortcuts: Meta+Shift+8 on a Mac, Control+Shift+8 elsewhere. */

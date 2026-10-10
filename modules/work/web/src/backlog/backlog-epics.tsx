@@ -1,6 +1,6 @@
 import { EpicItem, EpicPanel, Input } from '@bemmoly/ui';
 import { useState, type FormEvent } from 'react';
-import { useBacklogUi } from '../hooks/backlog-store.ts';
+import { useIssueFilters } from '../shared/issue-filters.ts';
 import { EpicsSkeleton } from '../skeletons/backlog-skeleton.tsx';
 import { epicMeta, epicPercent, type EpicLook } from './model.ts';
 
@@ -10,16 +10,17 @@ export interface BacklogEpicsProps {
   loading?: boolean;
   /** Creates an epic with this title; absent when the project has no epic type. */
   onCreate?: (title: string) => Promise<unknown>;
+  className?: string;
 }
 
 /**
- * The 260px epics panel: each open epic with its progress, picked to filter
- * the list and picked again to clear it. "+ Create" opens a title field at
+ * The quiet epics rail: each open epic in its stored colour with its
+ * progress, picked to filter the list (it sets the Epic filter in the
+ * address) and picked again to clear it. "+ Create" opens a title field at
  * the top of the list.
  */
-export function BacklogEpics({ epics, loading = false, onCreate }: BacklogEpicsProps) {
-  const epicId = useBacklogUi((state) => state.filters.epicId);
-  const setFilters = useBacklogUi((state) => state.setFilters);
+export function BacklogEpics({ epics, loading = false, onCreate, className }: BacklogEpicsProps) {
+  const { filters, toggle } = useIssueFilters();
   const [creating, setCreating] = useState(false);
   const [title, setTitle] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -38,12 +39,12 @@ export function BacklogEpics({ epics, loading = false, onCreate }: BacklogEpicsP
   };
 
   return (
-    <EpicPanel {...(onCreate ? { onCreate: () => setCreating(true) } : {})}>
+    <EpicPanel
+      {...(onCreate ? { onCreate: () => setCreating(true) } : {})}
+      {...(className ? { className } : {})}
+    >
       {creating && (
-        <form
-          onSubmit={submit}
-          className="flex flex-col gap-1 border-b border-br-row px-3.5 py-2.5"
-        >
+        <form onSubmit={submit} className="flex flex-col gap-1 px-1 pb-2">
           <Input
             autoFocus
             aria-label="New epic title"
@@ -58,7 +59,7 @@ export function BacklogEpics({ epics, loading = false, onCreate }: BacklogEpicsP
             }}
           />
           {error && (
-            <span role="alert" className="text-12 text-danger">
+            <span role="alert" className="text-12 text-red-tx">
               {error}
             </span>
           )}
@@ -72,13 +73,13 @@ export function BacklogEpics({ epics, loading = false, onCreate }: BacklogEpicsP
           colorClassName={epic.colorClassName}
           progress={epicPercent(epic)}
           meta={epicMeta(epic)}
-          selected={epicId === epic.id}
-          onSelect={() => setFilters({ epicId: epicId === epic.id ? null : epic.id })}
+          selected={filters.epic.includes(epic.id)}
+          onSelect={() => toggle('epic', epic.id)}
         />
       ))}
       {loading && <EpicsSkeleton />}
       {!loading && epics.length === 0 && !creating && (
-        <p className="m-0 px-3.5 py-3 text-12 text-tx5">
+        <p className="m-0 px-1 py-2 text-12 text-tx-3">
           No open epics. Create one to group related issues.
         </p>
       )}

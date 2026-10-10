@@ -45,7 +45,7 @@ export function CalloutHeader({
             <MenuItem
               key={option}
               icon={<span className={cx('size-1.75 rounded-full', CALLOUT_INK[option].dot)} />}
-              hint={option === variant ? '✓' : undefined}
+              checked={option === variant}
               onSelect={() => onChange(option)}
             >
               {CALLOUT_LABELS[option]}

@@ -1,4 +1,5 @@
 import { Select } from '@bemmoly/ui';
+import { Icon } from '@bemmoly/ui/icons';
 import { useState } from 'react';
 import type { WorkflowRuleDefinition, WorkflowRuleKind } from '../../../shared/index.ts';
 import type { WorkflowEditorModel } from '../hooks/workflow-editor.ts';
@@ -11,17 +12,17 @@ import { defaultArgs } from './rule-params.ts';
 const COPY: Record<WorkflowRuleKind, { title: string; add: string; empty: string }> = {
   condition: {
     title: 'Conditions',
-    add: '+ Add condition',
+    add: 'Add condition',
     empty: 'Anyone who can move the issue sees this transition.',
   },
   validator: {
     title: 'Validators',
-    add: '+ Add validator',
+    add: 'Add validator',
     empty: 'The move needs nothing filled in.',
   },
   post_action: {
     title: 'Post-actions',
-    add: '+ Add post-action',
+    add: 'Add post-action',
     empty: 'Nothing else happens after the move.',
   },
 };
@@ -55,7 +56,7 @@ export function RuleSection({ kind, transition, registry, actions }: RuleSection
       ))}
       {picking ? (
         <Select
-          aria-label={copy.add.slice(2)}
+          aria-label={copy.add}
           placeholder={`Choose a ${copy.title.toLowerCase().replace(/s$/, '')}`}
           options={offered.map((rule) => ({
             value: rule.name,
@@ -75,6 +76,7 @@ export function RuleSection({ kind, transition, registry, actions }: RuleSection
         />
       ) : (
         <AddLink onClick={() => setPicking(true)} disabled={offered.length === 0}>
+          <Icon name="plus" size={14} />
           {copy.add}
         </AddLink>
       )}

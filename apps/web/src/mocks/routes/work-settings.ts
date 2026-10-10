@@ -232,10 +232,29 @@ export const workSettingsRoutes: MockRoute[] = [
   listOf('fields'),
   patchOf('issueTypes', 'Issue type', 'issue-types'),
   patchOf('fields', 'Field', 'fields'),
+  {
+    method: 'POST',
+    pattern: '/api/v1/work/projects/:projectId/issue-types/reorder',
+    handle: (request, db) => {
+      if (!can(db, PROJECT_CONFIGURE)) return forbidden();
+      const state = workState(db);
+      const ids = bodyOf<{ ids: string[] }>(request).ids ?? [];
+      for (const row of state.issueTypes) {
+        const at = ids.indexOf(row.id);
+        if (at >= 0) touch(row, { position: at });
+      }
+      emit(db, 'work.issue-types.updated', ids);
+      return ok({
+        items: state.issueTypes.filter(
+          (row) => row['projectId'] === null || row['projectId'] === WORK_IDS.project,
+        ),
+      });
+    },
+  },
   createOf('issueTypes', 'issue-types', {
     description: null,
-    icon: '•',
-    color: '#6b7483',
+    icon: null,
+    color: null,
     level: 'standard',
     position: 99,
   }),

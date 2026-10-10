@@ -2,6 +2,7 @@ import type { ButtonHTMLAttributes, ReactNode } from 'react';
 import { cx } from '../../lib/cx.ts';
 import { focusRing } from '../../lib/focus.ts';
 import { Avatar } from '../avatar/avatar.tsx';
+import { Kbd } from '../kbd/kbd.tsx';
 import type { ActivityPerson } from './activity.tsx';
 
 export interface CommentComposerProps {
@@ -21,17 +22,22 @@ export interface CommentComposerProps {
  */
 export function CommentComposer({ viewer, children, tools, end, className }: CommentComposerProps) {
   return (
-    <div className={cx('flex gap-2.5', className)}>
+    <div
+      className={cx(
+        'flex items-start gap-2.5 rounded-control bg-card px-3 py-2.5 text-13 text-tx shadow-e1 focus-within:shadow-ring-ac',
+        className,
+      )}
+    >
       <Avatar
         name={viewer.name}
         hue={viewer.hue}
-        size={28}
+        size={22}
         {...(viewer.initials ? { initials: viewer.initials } : {})}
       />
-      <div className="flex min-w-0 flex-1 flex-col gap-2.5 rounded-panel border border-br3 bg-sf px-3 py-2.5 text-13 text-tx">
+      <div className="flex min-w-0 flex-1 flex-col gap-2.5 pt-px">
         {children}
         {(tools || end) && (
-          <div className="flex items-center gap-2.5 text-12 text-tx4">
+          <div className="flex flex-wrap items-center gap-2.5 text-12 text-tx-3">
             {tools}
             {end && <span className="ml-auto flex items-center">{end}</span>}
           </div>
@@ -50,9 +56,9 @@ export function ComposerPlaceholder({
   children?: ReactNode;
 }) {
   return (
-    <span className="flex items-center gap-1 text-tx5">
+    <span className="flex flex-wrap items-center gap-1.5 text-tx-3">
       {children}
-      {hint && <span className="font-mono text-11 font-medium">{hint}</span>}
+      {hint && <Kbd keys={hint} />}
     </span>
   );
 }
@@ -70,7 +76,7 @@ export function ComposerTool({ label, className, type = 'button', ...rest }: Com
       aria-label={label}
       title={label}
       className={cx(
-        'cursor-pointer rounded-xs border-0 bg-transparent p-0 font-sans text-12 text-tx4 hover:text-tx2',
+        'cursor-pointer rounded-chip border-0 bg-transparent p-0 font-sans text-12 text-tx-3 hover:text-tx-2',
         focusRing,
         className,
       )}

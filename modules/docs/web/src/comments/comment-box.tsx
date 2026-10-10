@@ -65,9 +65,9 @@ export function CommentBox({
       onCancel={onCancel}
     >
       {({ content, toolbar, ready }) => (
-        <div className="flex flex-col gap-2 rounded-panel border border-br3 bg-sf px-2.5 py-2 text-12h text-tx focus-within:border-ac-br">
+        <div className="flex flex-col gap-2 rounded-control border border-line bg-card px-2.5 py-2 text-13 text-tx focus-within:border-acc-100">
           {content}
-          <div className="flex flex-wrap items-center gap-2 text-12 text-tx4">
+          <div className="flex flex-wrap items-center gap-2 text-12 text-tx-3">
             {toolbar}
             <span className="ml-auto flex gap-1.5">
               <Button size="xs" variant="ghost" onClick={onCancel}>

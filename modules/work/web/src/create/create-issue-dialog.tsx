@@ -1,25 +1,14 @@
 import type { Issue } from '@bemmoly/module-work/shared';
-import {
-  Button,
-  Field,
-  FormGrid,
-  FormGridItem,
-  Input,
-  Modal,
-  RequiredMark,
-  Select,
-  Skeleton,
-  Textarea,
-  TypeGlyph,
-  useToast,
-} from '@bemmoly/ui';
+import { Button, Kbd, Modal, Skeleton, Switch, useToast } from '@bemmoly/ui';
 import { useQuery } from '@tanstack/react-query';
-import type { FormEvent } from 'react';
-import { useCreateIssue, type CreateDraft } from '../hooks/create-issue.ts';
+import { useEffect, useId, useState, type FormEvent, type KeyboardEvent } from 'react';
+import { useCreateIssue, type CreateInitial } from '../hooks/create-issue.ts';
+import { useCreateOptions } from '../hooks/create-options.ts';
 import { navigateTo, workPaths } from '../hooks/issue-navigation.ts';
-import { typeGlyph } from '../issue/vocabulary.ts';
 import { projectsQuery } from '../shared/use-project.ts';
+import { CreateBody } from './create-body.tsx';
 import { CreateFields } from './create-fields.tsx';
+import { CreateHeader } from './create-header.tsx';
 
 export interface CreateIssueDialogProps {
   open: boolean;
@@ -28,15 +17,20 @@ export interface CreateIssueDialogProps {
   projectKey: string | undefined;
   /** Creating a subtask: the parent's id and key, shown above the form. */
   parent?: { id: string; key: string };
-  initial?: Partial<CreateDraft>;
+  /**
+   * Defaults from where the person started: a column's status, the sprint on screen, the
+   * epic lane, "assigned to me". A description may be plain text.
+   */
+  initial?: CreateInitial;
   /** After the issue exists, in place of closing; the dialog has said so in a toast. */
   onCreated?: (issue: Issue) => void;
 }
 
 /**
- * Create issue: project and type first, then the title, description and the fields the
- * type's layout lists, with its required ones marked. The toast names the new key. The form
- * mounts only while open, so every opening starts from a clean draft.
+ * Create issue, as the review draws it: project and type as pickers, a borderless title, the
+ * issue page's editor, the type's documents, then the properties as chips. ⌘↵ creates,
+ * "Create another" keeps the dialog for the next one, and Escape asks before throwing away
+ * anything typed. The form mounts only while open, so every opening starts clean.
  */
 export function CreateIssueDialog(props: CreateIssueDialogProps) {
   return props.open ? <CreateIssueForm {...props} /> : null;
@@ -50,117 +44,123 @@ function CreateIssueForm(props: CreateIssueDialogProps) {
     ...(props.initial ? { initial: props.initial } : {}),
   });
   const projects = useQuery(projectsQuery);
-  const toast = useToast();
   const project = projects.data?.items.find((item) => item.key === form.projectKey);
-  const { draft, set, errors } = form;
+  const options = useCreateOptions(form.projectKey, project?.id, form.types);
+  const toast = useToast();
+  const [another, setAnother] = useState(false);
+  const [asking, setAsking] = useState(false);
+  const keepId = useId();
+  const type = form.types.find((item) => item.id === form.typeId);
+
+  useEffect(() => {
+    if (asking) document.getElementById(keepId)?.focus();
+  }, [asking, keepId]);
+
+  /** Escape, the scrim and Close: straight out when nothing is typed, otherwise ask first. */
+  const requestClose = () => {
+    if (asking) setAsking(false);
+    else if (form.dirty) setAsking(true);
+    else onClose();
+  };
 
   const submit = async (event?: FormEvent) => {
     event?.preventDefault();
-    if (!project) return;
-    const issue = await form.submit(project.id);
-    if (!issue) return;
+    if (!project || form.isSubmitting) return;
+    const result = await form.submit(project.id);
+    if (!result) return;
+    const { issue, moved } = result;
     toast.show({
       tone: 'ok',
       title: `Created ${issue.key}`,
-      body: issue.title,
+      body: moved ? issue.title : `${issue.title}. It starts in the first status.`,
       action: { label: `Open ${issue.key}`, onClick: () => navigateTo(workPaths.issue(issue.key)) },
     });
-    if (onCreated) onCreated(issue);
+    if (another) {
+      form.again();
+      document.querySelector<HTMLElement>('dialog[open] [data-autofocus]')?.focus();
+    } else if (onCreated) onCreated(issue);
     else onClose();
+  };
+
+  const onKeyDown = (event: KeyboardEvent) => {
+    if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) {
+      event.preventDefault();
+      void submit();
+    }
   };
 
   return (
     <Modal
       open={open}
-      onClose={onClose}
-      width="lg"
+      onClose={requestClose}
+      width="composer"
+      flush
       title={parent ? `Create a subtask of ${parent.key}` : 'Create issue'}
-      description="Fields follow the issue type; the ones marked * are required."
+      header={
+        <CreateHeader
+          projects={projects.data?.items ?? []}
+          projectKey={form.projectKey}
+          onProject={form.setProjectKey}
+          types={form.types}
+          typeId={form.typeId}
+          onType={form.setTypeId}
+          parentKey={parent?.key}
+          onClose={requestClose}
+        />
+      }
       footer={
-        <>
-          {errors['form'] && (
-            <span role="alert" className="mr-auto text-12h text-danger">
-              {errors['form']}
+        asking ? (
+          <>
+            <span className="mr-auto text-13 text-tx" role="alert">
+              Discard this issue? What you typed will be lost.
             </span>
-          )}
-          <Button variant="ghost" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button
-            variant="primary"
-            loading={form.isSubmitting}
-            disabled={!project || !form.typeId}
-            onClick={() => void submit()}
-          >
-            Create issue
-          </Button>
-        </>
+            <Button id={keepId} variant="ghost" onClick={() => setAsking(false)}>
+              Keep editing
+            </Button>
+            <Button variant="danger" onClick={onClose}>
+              Discard
+            </Button>
+          </>
+        ) : (
+          <>
+            {form.errors['form'] && (
+              <span role="alert" className="mr-auto text-12 text-red-tx">
+                {form.errors['form']}
+              </span>
+            )}
+            <label className="mr-auto flex cursor-pointer items-center gap-2 text-13 text-tx-2 first:mr-0 max-sm:hidden">
+              <Switch size="sm" checked={another} onCheckedChange={setAnother} />
+              Create another
+            </label>
+            <Button variant="ghost" onClick={requestClose}>
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              loading={form.isSubmitting}
+              disabled={!project || !form.typeId}
+              onClick={() => void submit()}
+              iconEnd={
+                <Kbd keys="Mod+Enter" variant="plain" className="opacity-80 max-sm:hidden" />
+              }
+            >
+              Create issue
+            </Button>
+          </>
+        )
       }
     >
-      <form onSubmit={(event) => void submit(event)} className="flex flex-col gap-3.5" noValidate>
-        <FormGrid columns={2}>
-          <FormGridItem>
-            <Field label="Project" error={errors['projectId']}>
-              <Select
-                value={form.projectKey ?? ''}
-                placeholder="Choose a project"
-                disabled={Boolean(parent)}
-                options={(projects.data?.items ?? []).map((item) => ({
-                  value: item.key,
-                  label: item.name,
-                  description: item.key,
-                }))}
-                onChange={(event) => form.setProjectKey(event.value)}
-              />
-            </Field>
-          </FormGridItem>
-          <FormGridItem>
-            <Field label="Issue type" error={errors['typeId']}>
-              <Select
-                value={form.typeId ?? ''}
-                placeholder="Choose a type"
-                options={form.types.map((type) => ({
-                  value: type.id,
-                  label: type.name,
-                  icon: <TypeGlyph type={typeGlyph(type)} />,
-                }))}
-                onChange={(event) => form.setTypeId(event.value)}
-              />
-            </Field>
-          </FormGridItem>
-          <FormGridItem full>
-            <Field
-              label={
-                <>
-                  Title
-                  <RequiredMark />
-                </>
-              }
-              error={errors['title']}
-            >
-              <Input
-                autoFocus
-                value={draft.title}
-                placeholder="What needs doing"
-                onChange={(event) => set('title', event.target.value)}
-              />
-            </Field>
-          </FormGridItem>
-          <FormGridItem full>
-            <Field label="Description" error={errors['description']}>
-              <Textarea
-                rows={4}
-                value={draft.description}
-                placeholder="Context, links, what done looks like"
-                onChange={(event) => set('description', event.target.value)}
-              />
-            </Field>
-          </FormGridItem>
-        </FormGrid>
+      <form
+        onSubmit={(event) => void submit(event)}
+        onKeyDown={onKeyDown}
+        className="flex flex-col gap-4 px-5 pt-4 pb-5"
+        noValidate
+      >
+        <CreateBody form={form} typeName={type?.name} onSubmit={() => void submit()} />
         {form.layout.isPending && form.typeId ? (
-          <Skeleton shape="block" height={120} />
+          <Skeleton shape="block" height={26} />
         ) : (
-          <CreateFields form={form} />
+          <CreateFields form={form} options={options} />
         )}
         <button type="submit" hidden aria-hidden tabIndex={-1} />
       </form>

@@ -43,14 +43,14 @@ export function DropZone({ format, files, onPick, onRemove }: DropZoneProps) {
         onDrop={onDrop}
         className={cx(
           'flex flex-col items-center gap-2 rounded-card border border-dashed px-4 py-6 text-center motion-safe:transition-colors',
-          over ? 'border-ac bg-ac-bg2' : 'border-br3 bg-sf2',
+          over ? 'border-acc bg-acc-50' : 'border-line bg-side',
         )}
       >
-        <Icon name="download" size={18} className="rotate-180 text-tx4" />
-        <p className="m-0 text-13 text-tx2">
+        <Icon name="download" size={18} className="rotate-180 text-tx-3" />
+        <p className="m-0 text-13 text-tx-2">
           Drop {format === 'markdown' ? 'Markdown files' : 'exported HTML pages'} or a folder here
         </p>
-        <p className="m-0 text-12 text-tx5">{EXTENSIONS[format].join(' ')} · up to 10 MB in all</p>
+        <p className="m-0 text-12 text-tx-3">{EXTENSIONS[format].join(' ')} · up to 10 MB in all</p>
         <span className="mt-1 flex gap-2">
           <Button size="sm" variant="secondary" onClick={() => filesInput.current?.click()}>
             Choose files
@@ -87,17 +87,17 @@ export function DropZone({ format, files, onPick, onRemove }: DropZoneProps) {
         />
       </div>
       {files.length > 0 && (
-        <ul aria-label="Files to import" className="m-0 flex list-none flex-col p-0 text-12h">
+        <ul aria-label="Files to import" className="m-0 flex list-none flex-col p-0 text-13">
           {files.slice(0, SHOWN).map((file) => (
             <li
               key={file.path}
-              className="flex items-center gap-2 border-b border-br-row py-1.5 motion-safe:animate-rise"
+              className="flex items-center gap-2 border-b border-line-2 py-1.5 motion-safe:animate-rise"
             >
-              <Icon name="doc" size={14} className="shrink-0 text-tx5" />
-              <span className="min-w-0 flex-1 truncate font-mono text-12 text-tx2">
+              <Icon name="doc" size={14} className="shrink-0 text-tx-3" />
+              <span className="min-w-0 flex-1 truncate font-mono text-12 text-tx-2">
                 {file.path}
               </span>
-              <span className="shrink-0 text-11h text-tx5">{formatBytes(file.size)}</span>
+              <span className="shrink-0 text-12 text-tx-3">{formatBytes(file.size)}</span>
               <IconButton
                 label={`Remove ${file.path}`}
                 icon="close"
@@ -107,7 +107,7 @@ export function DropZone({ format, files, onPick, onRemove }: DropZoneProps) {
             </li>
           ))}
           {files.length > SHOWN && (
-            <li className="pt-1.5 text-12 text-tx5">and {files.length - SHOWN} more</li>
+            <li className="pt-1.5 text-12 text-tx-3">and {files.length - SHOWN} more</li>
           )}
         </ul>
       )}

@@ -59,7 +59,7 @@ const [first] = views;
   data-height={PREVIEW_VIEWPORT.height}
 >
   <div class="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-    <div class="flex rounded-control bg-chip p-0.5 text-13" data-tabs>
+    <div class="flex rounded-control bg-line-2 p-0.5 text-13" data-tabs>
       {views.map((view) => (
         <a
           href={view.path}
@@ -67,7 +67,7 @@ const [first] = views;
           data-tab={view.id}
           data-action={view.action}
           data-active={view.first ? '' : undefined}
-          class="rounded-chip px-3 py-1 font-medium text-tx3 hover:text-tx data-active:bg-sf data-active:text-tx data-active:shadow-card"
+          class="rounded-chip px-3 py-1 font-medium text-tx-2 hover:text-tx data-active:bg-card data-active:text-tx data-active:shadow-e1"
         >
           {view.label}
         </a>
@@ -80,7 +80,7 @@ const [first] = views;
   <div
     id="preview-panel"
     data-frame
-    class="relative isolate aspect-[1480/860] overflow-hidden rounded-shot border border-br bg-bg shadow-shot dark:border-edge-ac dark:shadow-glow"
+    class="relative isolate aspect-[1480/860] overflow-hidden rounded-shot border border-line bg-sunken shadow-shot dark:border-edge-ac dark:shadow-glow"
   >
     {views.map((view) =>
       view.pictures.map(({ image, set, theme }) => (
@@ -107,7 +107,7 @@ const [first] = views;
     <a
       href={first?.path}
       data-try
-      class="absolute bottom-3 left-1/2 z-2 inline-flex h-8 -translate-x-1/2 items-center gap-2 rounded-full bg-tx px-3.5 text-13 font-medium sm:bottom-5 sm:h-10 sm:px-4.5 sm:text-14 whitespace-nowrap text-sf shadow-shot-sm hover:text-sf dark:bg-ac-fill dark:text-on-ac dark:hover:text-on-ac motion-safe:transition-transform motion-safe:hover:-translate-y-0.5"
+      class="absolute bottom-3 left-1/2 z-2 inline-flex h-8 -translate-x-1/2 items-center gap-2 rounded-full bg-tx px-3.5 text-13 font-medium sm:bottom-5 sm:h-10 sm:px-4.5 sm:text-14 whitespace-nowrap text-card shadow-shot-sm hover:text-card dark:bg-acc-fill dark:text-on-acc dark:hover:text-on-acc motion-safe:transition-transform motion-safe:hover:-translate-y-0.5"
     >
       <span
         aria-hidden="true"
@@ -118,7 +118,7 @@ const [first] = views;
       </span>
     </a>
   </div>
-  <figcaption class="text-13h leading-brief text-tx4">
+  <figcaption class="text-13 leading-brief text-tx-3">
     The real app on sample data, running in your browser. Nothing you change leaves the page, and a
     reload starts over.
   </figcaption>

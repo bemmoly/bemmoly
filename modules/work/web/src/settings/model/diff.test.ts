@@ -69,7 +69,7 @@ describe('boardConfigDiff', () => {
         'Issue type, Issue key, Priority, Labels, Estimate, Assignee',
         'Issue key, Issue type',
       ],
-      ['Color rules', 'None', 'type = Bug → #d93838'],
+      ['Color rules', 'None', 'type = Bug as #d93838'],
       ['Estimation', 'Story points', 'Hours'],
     ]);
   });

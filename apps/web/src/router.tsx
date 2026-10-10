@@ -37,7 +37,9 @@ export function createAppRouter(queryClient: QueryClient) {
     scrollRestoration: true,
   });
   /** Module chunks navigate through the router, so leave guards see their moves too. */
-  setShellNavigator((path) => router.history.push(path));
+  setShellNavigator((path, options) =>
+    options?.replace ? router.history.replace(path) : router.history.push(path),
+  );
   /** A session that expires mid-use sends the person to sign in, then back here. */
   setUnauthenticatedHandler(() => {
     const here = router.state.location;

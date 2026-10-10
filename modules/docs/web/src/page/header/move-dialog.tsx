@@ -85,7 +85,7 @@ function MoveForm({ page, open, onClose }: MoveDialogProps) {
           type="button"
           aria-pressed={on}
           onClick={() => setTarget(destination)}
-          className="flex w-full cursor-pointer items-center gap-2 rounded-sm border-0 bg-transparent px-2.5 py-2 text-left font-sans text-13 text-tx hover:bg-bg2 aria-pressed:bg-ac-bg aria-pressed:font-medium aria-pressed:text-ac"
+          className="flex w-full cursor-pointer items-center gap-2 rounded-chip border-0 bg-transparent px-2.5 py-2 text-left font-sans text-13 text-tx hover:bg-side aria-pressed:bg-acc-50 aria-pressed:font-medium aria-pressed:text-acc"
         >
           {destination.id ? (
             <PageIcon value={destination.icon} size={14} />

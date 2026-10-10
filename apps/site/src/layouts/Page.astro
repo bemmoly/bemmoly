@@ -41,10 +41,10 @@ const parents = trailOf(page.path).slice(1, -1);
   >
     <header class="flex max-w-190 flex-col gap-4">
       {parents.length > 0 && (
-        <nav aria-label="Breadcrumb" class="text-13 text-tx4">
+        <nav aria-label="Breadcrumb" class="text-13 text-tx-3">
           {parents.map((parent) => (
             <>
-              <a href={parent.path} class="text-tx3 underline underline-offset-2 hover:text-tx">
+              <a href={parent.path} class="text-tx-2 underline underline-offset-2 hover:text-tx">
                 {parent.name}
               </a>
               <span aria-hidden="true"> / </span>
@@ -53,8 +53,8 @@ const parents = trailOf(page.path).slice(1, -1);
           <span aria-current="page">{page.name}</span>
         </nav>
       )}
-      <h1 class="text-36 leading-heading font-semibold tracking-display">{heading}</h1>
-      <p class="text-16 leading-doc text-pretty text-tx3">{lede}</p>
+      <h1 class="text-24 leading-heading font-semibold tracking-display">{heading}</h1>
+      <p class="text-16 leading-doc text-pretty text-tx-2">{lede}</p>
     </header>
     <slot />
   </article>

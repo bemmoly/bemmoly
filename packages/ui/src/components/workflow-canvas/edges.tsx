@@ -2,7 +2,7 @@ import type { HTMLAttributes, ReactNode } from 'react';
 import { Icon } from '../../icons/icon.tsx';
 import { cx } from '../../lib/cx.ts';
 import { focusRing } from '../../lib/focus.ts';
-import { StatusDot } from './status-node.tsx';
+import { StatusGlyph } from '../glyphs/status-glyph.tsx';
 
 export interface TransitionEdgeProps {
   /** The SVG path in canvas units (the mock's 1000 x 560 box). */
@@ -16,9 +16,9 @@ export interface TransitionEdgeProps {
 }
 
 const EDGE_TONES = {
-  rest: { stroke: 'stroke-tx5', marker: 'url(#workflow-arrow)' },
-  highlighted: { stroke: 'stroke-ac', marker: 'url(#workflow-arrow-ac)' },
-  invalid: { stroke: 'stroke-danger', marker: 'url(#workflow-arrow-danger)' },
+  rest: { stroke: 'stroke-tx-3', marker: 'url(#workflow-arrow)' },
+  highlighted: { stroke: 'stroke-acc', marker: 'url(#workflow-arrow-ac)' },
+  invalid: { stroke: 'stroke-red', marker: 'url(#workflow-arrow-danger)' },
 } as const;
 
 /** One transition arrow; the canvas defines the arrowhead markers it points with. */
@@ -55,10 +55,10 @@ export interface TransitionLabelProps extends HTMLAttributes<HTMLElement> {
 }
 
 const LABEL_TONES = {
-  rest: 'border-br bg-sf text-tx4',
-  highlighted: 'border-ac-br bg-sf text-ac',
-  selected: 'border-ac bg-ac-bg text-ac',
-  invalid: 'border-danger bg-sf text-danger',
+  rest: 'border-line bg-card text-tx-3',
+  highlighted: 'border-acc-100 bg-card text-acc',
+  selected: 'border-acc bg-acc-50 text-acc',
+  invalid: 'border-red bg-card text-red',
 } as const;
 
 /** The transition name on its edge: 11px, 2px 7px, 4px radius, white with a br border. */
@@ -75,7 +75,7 @@ export function TransitionLabel({
 }: TransitionLabelProps) {
   const tone = invalid ? 'invalid' : selected ? 'selected' : highlighted ? 'highlighted' : 'rest';
   const classes = cx(
-    'absolute flex -translate-1/2 items-center gap-1 rounded-xs border px-1.75 py-0.5 font-sans text-11 whitespace-nowrap',
+    'absolute flex -translate-1/2 items-center gap-1 rounded-chip border px-1.75 py-0.5 font-sans text-11 whitespace-nowrap',
     LABEL_TONES[tone],
     interactive && cx('cursor-pointer', focusRing),
     className,
@@ -99,28 +99,28 @@ export function WorkflowLegend({ className }: { className?: string }) {
   return (
     <div
       className={cx(
-        'absolute bottom-3.5 left-4 flex items-center gap-3.5 text-11h text-tx4',
+        'absolute bottom-3.5 left-4 flex items-center gap-3.5 text-12 text-tx-3',
         className,
       )}
     >
       <span className="flex items-center gap-1.5">
-        <span aria-hidden className="w-5 border-t-[1.5px] border-tx5" />
+        <span aria-hidden className="w-5 border-t-[1.5px] border-tx-3" />
         <span className="lowercase">Transition</span>
       </span>
       <span className="flex items-center gap-1.5">
-        <span aria-hidden className="w-5 border-t-[1.5px] border-dashed border-tx5" />
+        <span aria-hidden className="w-5 border-t-[1.5px] border-dashed border-tx-3" />
         any status
       </span>
       <span className="flex items-center gap-1.5">
-        <StatusDot category="todo" />
+        <StatusGlyph stage="todo" size={12} decorative />
         To do
       </span>
       <span className="flex items-center gap-1.5">
-        <StatusDot category="progress" />
+        <StatusGlyph stage="progress" size={12} decorative />
         In progress
       </span>
       <span className="flex items-center gap-1.5">
-        <StatusDot category="done" />
+        <StatusGlyph stage="done" size={12} decorative />
         Done
       </span>
     </div>
@@ -145,11 +145,11 @@ export function TransitionRow({
   return (
     <div
       className={cx(
-        'flex items-center gap-2 rounded-control border border-br px-2.5 py-2 text-12h text-tx',
+        'flex items-center gap-2 rounded-control border border-line px-2.5 py-2 text-13 text-tx',
         className,
       )}
     >
-      <Icon name="arrow" size={14} className="text-tx5" />
+      <Icon name="arrow" size={14} className="text-tx-3" />
       <span className="flex-1 font-medium">{children}</span>
       {onMore && (
         <button
@@ -157,7 +157,7 @@ export function TransitionRow({
           aria-label={moreLabel}
           onClick={onMore}
           className={cx(
-            'flex cursor-pointer border-0 bg-transparent p-0 text-tx6 hover:text-tx2',
+            'flex cursor-pointer border-0 bg-transparent p-0 text-tx-3 hover:text-tx-2',
             focusRing,
           )}
         >

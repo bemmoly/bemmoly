@@ -35,7 +35,7 @@ export function CommentBox({
   open: startOpen = false,
   initialBody = null,
   label = 'Comment',
-  placeholder = 'Add a comment…',
+  placeholder = 'Leave a comment…',
   submitLabel = 'Comment',
   onCancel,
   shortcut = false,
@@ -93,7 +93,10 @@ export function CommentBox({
           onFocus={preloadEditor}
           className="cursor-pointer border-0 bg-transparent p-0 text-left font-sans text-13"
         >
-          <ComposerPlaceholder hint={shortcut ? 'M' : undefined}>{placeholder}</ComposerPlaceholder>
+          <ComposerPlaceholder hint={shortcut ? 'M' : undefined}>
+            {placeholder}
+            <span className="text-12">@ to mention, / for blocks</span>
+          </ComposerPlaceholder>
         </button>
       </CommentComposer>
     );

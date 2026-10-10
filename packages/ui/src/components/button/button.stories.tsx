@@ -28,8 +28,8 @@ export const FromTheBoardMock: Story = {
     ],
   },
   render: () => (
-    <div className="flex flex-col gap-4 bg-bg p-3">
-      <div className="flex h-topbar items-center bg-sf px-2">
+    <div className="flex flex-col gap-4 bg-sunken p-3">
+      <div className="flex h-topbar items-center bg-card px-2">
         <Button variant="primary" size="bar">
           Create
         </Button>
@@ -39,7 +39,7 @@ export const FromTheBoardMock: Story = {
         <Button>Complete sprint</Button>
         <IconButton label="More" icon="more" variant="secondary" />
       </div>
-      <div className="flex items-center gap-1.5 bg-sf p-2">
+      <div className="flex items-center gap-1.5 bg-card p-2">
         <Button size="sm">Attach</Button>
         <Button size="sm">Link doc</Button>
         <Button size="sm">Subtask</Button>
@@ -65,7 +65,7 @@ export const Sizes: Story = {
           <Button variant="ghost" size={size}>
             Not useful
           </Button>
-          <span className="text-11 text-tx5">{size}</span>
+          <span className="text-11 text-tx-3">{size}</span>
         </div>
       ))}
     </div>
@@ -78,7 +78,7 @@ export const States: Story = {
       <Button variant="primary" iconEnd={<Icon name="enter" className="ml-0.5 opacity-75" />}>
         Run 3 changes
       </Button>
-      <Button iconEnd={<Icon name="caret" className="text-tx5" />}>Epic</Button>
+      <Button iconEnd={<Icon name="caret" className="text-tx-3" />}>Epic</Button>
       <Button variant="primary" loading>
         Saving
       </Button>
@@ -93,7 +93,7 @@ export const IconButtons: Story = {
     mock: [{ file: 'Bemmoly Board.dc.html', x: 1268, y: 0, w: 132, h: 48, note: 'top bar' }],
   },
   render: () => (
-    <div className="flex h-topbar items-center gap-2 bg-sf px-2">
+    <div className="flex h-topbar items-center gap-2 bg-card px-2">
       <IconButton label="Inbox" icon="inbox" badge={4} />
       <IconButton label="Help" icon="help" />
       <IconButton label="Settings" icon="settings" />

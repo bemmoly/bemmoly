@@ -5,22 +5,22 @@ import {
   hasClientFilters,
   quickFiltersOf,
   serverQuery,
-  useBoardFilterStore,
+  useBoardLanes,
   type BoardFilters,
 } from './board-filters.ts';
 import { checkLql, completeLql, insertSuggestion } from './board-lql.ts';
 
 const none: BoardFilters = {
-  search: '',
+  q: '',
   lql: '',
   quick: [],
-  people: [],
-  epics: [],
-  types: [],
-  labels: [],
+  assignee: [],
+  epic: [],
+  type: [],
+  label: [],
 };
 
-afterEach(() => useBoardFilterStore.getState().reset());
+afterEach(() => useBoardLanes.getState().reset());
 
 describe('board filters', () => {
   const quick = quickFiltersOf(testView().board.config);
@@ -47,27 +47,20 @@ describe('board filters', () => {
     const mine = card(1, { assigneeId: me, title: 'Rotate tokens' });
     const blocked = card(2, { blockedBy: ['PLT-1'] });
     expect(hasClientFilters(none)).toBe(false);
-    expect(cardMatches(mine, { ...none, search: 'rotate' }, me)).toBe(true);
-    expect(cardMatches(blocked, { ...none, search: 'rotate' }, me)).toBe(false);
+    expect(cardMatches(mine, { ...none, q: 'rotate' }, me)).toBe(true);
+    expect(cardMatches(blocked, { ...none, q: 'rotate' }, me)).toBe(false);
     expect(cardMatches(mine, { ...none, quick: ['mine'] }, me)).toBe(true);
     expect(cardMatches(blocked, { ...none, quick: ['mine'] }, me)).toBe(false);
     expect(cardMatches(blocked, { ...none, quick: ['blocked'] }, me)).toBe(true);
-    expect(cardMatches(mine, { ...none, people: [me] }, me)).toBe(true);
-    expect(cardMatches(blocked, { ...none, people: ['none'] }, me)).toBe(true);
+    expect(cardMatches(mine, { ...none, assignee: [me] }, me)).toBe(true);
+    expect(cardMatches(blocked, { ...none, assignee: ['none'] }, me)).toBe(true);
   });
 
-  it('toggles chips and lanes in the store and resets them', () => {
-    const store = useBoardFilterStore.getState();
-    store.toggle('quick', 'blocked');
-    store.toggle('collapsed', 'lane-1');
-    expect(useBoardFilterStore.getState()).toMatchObject({
-      quick: ['blocked'],
-      collapsed: ['lane-1'],
-    });
-    store.toggle('quick', 'blocked');
-    expect(useBoardFilterStore.getState().quick).toEqual([]);
-    store.setLql('  status = Done  ');
-    expect(useBoardFilterStore.getState().lql).toBe('status = Done');
+  it('folds and unfolds lanes and resets them', () => {
+    useBoardLanes.getState().toggle('lane-1');
+    expect(useBoardLanes.getState().collapsed).toEqual(['lane-1']);
+    useBoardLanes.getState().toggle('lane-1');
+    expect(useBoardLanes.getState().collapsed).toEqual([]);
   });
 });
 

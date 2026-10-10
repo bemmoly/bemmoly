@@ -31,7 +31,7 @@ describe('AppearancePage', () => {
     );
     expect(screen.getByText('Custom · #e11d48 · light')).toBeDefined();
     const preview = screen.getByTestId('appearance-preview');
-    expect(preview.style.getPropertyValue('--ac-fill')).not.toBe('');
+    expect(preview.style.getPropertyValue('--acc-fill')).not.toBe('');
     expect(screen.getByText(/White text on #e11d48/)).toBeDefined();
   });
 });

@@ -13,7 +13,9 @@ const BASE = '/api/v1/work';
 
 /** The Backlog's read, nested under the work root so every work.* event refreshes it. */
 export const backlogKeys = {
-  backlog: (projectKey: string) => [...queryKeys.work(), 'backlog', projectKey] as const,
+  /** Every cached backlog, whatever its project. */
+  backlogs: () => [...queryKeys.work(), 'backlog'] as const,
+  backlog: (projectKey: string) => [...backlogKeys.backlogs(), projectKey] as const,
 };
 
 /**

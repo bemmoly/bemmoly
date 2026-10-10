@@ -42,7 +42,7 @@ describe('WorkflowEditor', () => {
     const canvas = await openEditor();
     fireEvent.click(within(canvas).getByRole('button', { name: /^In progress/ }));
     const panel = screen.getByRole('complementary', { name: 'Status' });
-    fireEvent.click(within(panel).getByRole('button', { name: '+ Add transition' }));
+    fireEvent.click(within(panel).getByRole('button', { name: 'Add transition' }));
     await choose(within(panel).getByRole('combobox', { name: 'Add transition to' }), 'Done');
 
     const label = await within(canvas).findByRole('button', { name: /^Done/, pressed: true });
@@ -61,10 +61,10 @@ describe('WorkflowEditor', () => {
     const canvas = await openEditor();
     fireEvent.click(within(canvas).getByRole('button', { name: 'Start work' }));
     const panel = screen.getByRole('complementary', { name: 'Transition' });
-    fireEvent.click(within(panel).getByRole('button', { name: '+ Add condition' }));
+    fireEvent.click(within(panel).getByRole('button', { name: 'Add condition' }));
     await choose(within(panel).getByRole('combobox', { name: 'Add condition' }), 'Field is set');
 
-    expect(within(panel).getByText('CONDITION')).toBeTruthy();
+    expect(within(panel).getByText('Condition')).toBeTruthy();
     expect(within(panel).getByText('Fill in Field.')).toBeTruthy();
     fireEvent.change(within(panel).getByRole('textbox', { name: 'Field *' }), {
       target: { value: 'pullRequest' },
@@ -80,20 +80,21 @@ describe('WorkflowEditor', () => {
       { timeout: 3000 },
     );
     fireEvent.click(within(panel).getByRole('button', { name: 'Remove Field is set' }));
-    expect(within(panel).queryByText('CONDITION')).toBeNull();
+    expect(within(panel).queryByText('Condition')).toBeNull();
   });
 
-  it('asks before Delete removes the focused status', async () => {
+  it('deletes the focused status at once and offers Undo', async () => {
     const canvas = await openEditor();
     const node = within(canvas).getByRole('button', { name: /^Backlog/ });
     fireEvent.keyDown(node, { key: 'Delete' });
-    const dialog = await screen.findByRole('dialog', { name: 'Delete status "Backlog"?' });
-    expect(within(dialog).getByText('The 1 transition into and out of it go too.')).toBeTruthy();
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Delete status' }));
     await waitFor(() =>
       expect(within(canvas).queryByRole('button', { name: /^Backlog/ })).toBeNull(),
     );
     expect(within(canvas).queryByRole('button', { name: 'Start work' })).toBeNull();
+    expect(await screen.findByText('Status "Backlog" deleted')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Undo' }));
+    expect(await within(canvas).findByRole('button', { name: /^Backlog/ })).toBeTruthy();
+    expect(within(canvas).getByRole('button', { name: 'Start work' })).toBeTruthy();
   });
 
   it('shows how many issues sit in each status', async () => {

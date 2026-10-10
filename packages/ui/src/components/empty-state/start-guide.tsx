@@ -33,7 +33,7 @@ export function StartGuide({ title, description, steps, art, className }: StartG
     <section
       aria-label={typeof title === 'string' ? title : undefined}
       className={cx(
-        'flex flex-col items-center gap-6 rounded-card border border-br bg-sf px-6 py-10 text-center motion-safe:animate-fade-in sm:px-10',
+        'flex flex-col items-center gap-6 rounded-card border border-line bg-card px-6 py-10 text-center motion-safe:animate-fade-in sm:px-10',
         className,
       )}
     >
@@ -43,8 +43,8 @@ export function StartGuide({ title, description, steps, art, className }: StartG
             {art}
           </div>
         )}
-        <h2 className="m-0 text-18 font-semibold tracking-title text-tx">{title}</h2>
-        {description && <p className="m-0 text-13h leading-body text-tx4">{description}</p>}
+        <h2 className="m-0 text-16 font-semibold tracking-title text-tx">{title}</h2>
+        {description && <p className="m-0 text-13 leading-body text-tx-3">{description}</p>}
       </div>
       <ol
         className={cx(
@@ -60,7 +60,7 @@ export function StartGuide({ title, description, steps, art, className }: StartG
               aria-current={current ? 'step' : undefined}
               className={cx(
                 'flex flex-col gap-2 rounded-card border p-4',
-                current ? 'border-ac-br bg-ac-bg2' : 'border-br bg-sf',
+                current ? 'border-acc-100 bg-acc-50' : 'border-line bg-card',
               )}
             >
               <span className="flex items-center gap-2">
@@ -69,10 +69,10 @@ export function StartGuide({ title, description, steps, art, className }: StartG
                   className={cx(
                     'flex size-5.5 shrink-0 items-center justify-center rounded-full text-11 font-semibold',
                     step.done
-                      ? 'bg-ok-bg text-ok-fg'
+                      ? 'bg-green-50 text-green-tx'
                       : current
-                        ? 'bg-ac-fill text-on-ac'
-                        : 'bg-chip text-tx4',
+                        ? 'bg-acc-fill text-on-acc'
+                        : 'bg-line-2 text-tx-3',
                   )}
                 >
                   {step.done ? <Icon name="check" size={12} /> : index + 1}
@@ -80,14 +80,14 @@ export function StartGuide({ title, description, steps, art, className }: StartG
                 <span
                   className={cx(
                     'text-13 font-semibold',
-                    step.done ? 'text-tx5 line-through' : 'text-tx',
+                    step.done ? 'text-tx-3 line-through' : 'text-tx',
                   )}
                 >
                   {step.title}
                 </span>
                 {step.done && <span className="sr-only">(done)</span>}
               </span>
-              <span className="text-12h leading-body text-tx4">{step.description}</span>
+              <span className="text-13 leading-body text-tx-3">{step.description}</span>
               {step.action && !step.done && <span className="mt-auto pt-1">{step.action}</span>}
             </li>
           );

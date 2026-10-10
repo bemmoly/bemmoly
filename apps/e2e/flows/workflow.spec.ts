@@ -26,7 +26,7 @@ test('a workflow change published in the editor is what the board follows', asyn
 
   await page.goto(`/work/workflows/${project.key}`);
   await page
-    .getByRole('row', { name: /PROJECT COPY/ })
+    .getByRole('row', { name: /This project/ })
     .getByRole('cell')
     .first()
     .click();
@@ -34,17 +34,17 @@ test('a workflow change published in the editor is what the board follows', asyn
 
   // In progress → Testing, for work that needs no review.
   await page.getByRole('button', { name: /^In progress In progress/ }).click();
-  await page.getByRole('button', { name: '+ Add transition' }).click();
+  await page.getByRole('button', { name: 'Add transition' }).click();
   await page.getByRole('combobox', { name: 'Add transition to' }).click();
   await page.getByRole('option', { name: 'Testing' }).click();
   await expect(page.getByText('No unpublished changes')).toBeHidden();
   await expect(page.getByText('Draft saved')).toBeVisible();
 
-  await page.getByRole('button', { name: 'Publish' }).click();
+  await page.getByRole('button', { name: 'Review and publish' }).click();
   const publish = page.getByRole('dialog', { name: /^Publish .* version 2\?$/ });
   await publish.getByRole('button', { name: 'Publish version 2' }).click();
   await expect(publish).toBeHidden();
-  await expect(page.getByText('Version 2 published')).toBeVisible();
+  await expect(page.getByText('v2 published')).toBeVisible();
   expect(await targets()).toContain('Testing');
 
   // The board takes the new transition the workflow just gained.
@@ -52,8 +52,12 @@ test('a workflow change published in the editor is what the board follows', asyn
   const column = (name: string) => page.getByRole('group', { name: `${name}, All issues` });
   const card = column('In progress').getByRole('button', { name: new RegExp(`^${issue.key} `) });
   await card.dragTo(column('Testing'));
-  await expect(column('Testing').getByRole('button', { name: issue.key })).toBeVisible();
+  await expect(
+    column('Testing').getByRole('button', { name: new RegExp(`^${issue.key} `) }),
+  ).toBeVisible();
   await expect.poll(async () => (await targets()).includes('Done')).toBe(true);
   await page.reload();
-  await expect(column('Testing').getByRole('button', { name: issue.key })).toBeVisible();
+  await expect(
+    column('Testing').getByRole('button', { name: new RegExp(`^${issue.key} `) }),
+  ).toBeVisible();
 });

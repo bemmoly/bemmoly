@@ -1,71 +1,74 @@
-import { formatRelative } from '@bemmoly/core-web';
-import { EmptyState } from '@bemmoly/ui';
+import { HeaderActions } from '@bemmoly/core-web';
 import { useIssue } from '../hooks/issue-detail.ts';
-import { keepLinksInApp } from '../hooks/issue-navigation.ts';
+import { keepLinksInApp, navigateBack, workPaths } from '../hooks/issue-navigation.ts';
 import { projectKeyOf } from '../hooks/issue-vocabulary.ts';
+import { useMediaQuery } from '../hooks/media-query.ts';
 import type { WorkScreenProps } from '../routes.tsx';
-import { IssuePageSkeleton } from '../skeletons/issue-skeleton.tsx';
+import { ISSUE_GRID, IssuePageSkeleton } from '../skeletons/issue-skeleton.tsx';
 import { useProject, useWorkRealtime } from '../shared/index.ts';
-import { DetailsCard } from './details-card.tsx';
+import { WorkPresence } from '../shared/work-presence.tsx';
 import { IssueBody } from './issue-body.tsx';
-import { IssueMoreMenu, IssueTrail, ShareButton, WatchButton } from './issue-header.tsx';
+import { IssueError } from './issue-error.tsx';
+import { IssueMoreMenu, IssueStepper, ShareButton, WatchButton } from './issue-header.tsx';
+import { useIssueNeighbours } from './issue-list-context.ts';
+import { useIssueShortcuts } from './issue-shortcuts.ts';
+import { useIssueInShell } from './issue-shell.tsx';
+import { IssueRail } from './issue-rail.tsx';
 
-const created = (iso: string) =>
-  new Date(iso).toLocaleDateString('en', { month: 'short', day: 'numeric' });
+/** Below this width the rail moves under the title, as one column. */
+const WIDE = '(min-width: 768px)';
 
 /**
- * The Issue page at /work/issue/PLT-204: the trail and page actions over a main column and the
- * 360px Details sidebar, 24px apart, within 1240px. The path's second segment is the issue key.
+ * The Issue page at /work/issue/PLT-204, in the frame's reading column: the issue as a document
+ * on the left and its rail on the right; on a phone, one column with the rail under the title.
+ * ↑↓ and j k step through the list the issue was opened from.
  */
 export default function IssueScreen({ projectKey: issueKey }: WorkScreenProps) {
-  const key = issueKey?.toUpperCase();
-  const query = useIssue(key);
+  const key = issueKey?.toUpperCase() ?? '';
+  const query = useIssue(key || undefined);
   const { project } = useProject(key ? projectKeyOf(key) : undefined);
   useWorkRealtime(query.data?.projectId);
   const issue = query.data;
+  useIssueInShell(issue, project?.name);
+  const neighbours = useIssueNeighbours(key);
+  useIssueShortcuts(neighbours);
+  const wide = useMediaQuery(WIDE);
 
   return (
-    <div className="min-h-0 flex-1 overflow-auto" onClick={keepLinksInApp}>
-      <div className="mx-auto flex max-w-310 flex-col gap-4 px-10 pt-5 pb-15">
-        {query.isPending && <IssuePageSkeleton />}
-        {query.isError && (
-          <EmptyState
-            title={`${key ?? 'This issue'} could not be opened`}
-            description={
-              query.error.message.includes('not found')
-                ? 'It may have been deleted or moved, or you may not have access to its project.'
-                : query.error.message
-            }
-          />
-        )}
-        {issue && (
-          <>
-            <div className="flex items-center gap-1.5">
-              <IssueTrail issue={issue} projectName={project?.name ?? projectKeyOf(issue.key)} />
-              <div className="ml-auto flex gap-1.5">
-                <WatchButton issue={issue} />
-                <ShareButton issueKey={issue.key} />
-                <IssueMoreMenu issue={issue} size="page" />
-              </div>
-            </div>
-            <div className="grid grid-cols-[minmax(0,1fr)_360px] items-start gap-6">
-              <div className="flex min-w-0 flex-col gap-5">
-                <IssueBody issue={issue} size="page" />
-              </div>
-              <aside className="sticky top-0 flex flex-col gap-3.5" aria-label="Issue details">
-                <DetailsCard issue={issue} size="page" />
-                <div className="flex flex-col gap-0.75 px-1 text-12 text-tx5">
-                  <span>
-                    Created {created(issue.createdAt)}
-                    {issue.reporter ? ` by ${issue.reporter.name}` : ''}
-                  </span>
-                  <span>Updated {formatRelative(issue.updatedAt)}</span>
-                </div>
+    <div onClick={keepLinksInApp}>
+      {query.isPending && <IssuePageSkeleton />}
+      {query.isError && (
+        <IssueError
+          issueKey={key}
+          error={query.error}
+          onRetry={() => void query.refetch()}
+          onBack={() => navigateBack(workPaths.board(projectKeyOf(key)))}
+        />
+      )}
+      {issue && (
+        <>
+          <WorkPresence projectId={issue.projectId} view={`issue:${issue.key}`} />
+          <HeaderActions>
+            {neighbours && <IssueStepper neighbours={neighbours} />}
+            <WatchButton issue={issue} />
+            <ShareButton issueKey={issue.key} />
+            <IssueMoreMenu issue={issue} size="page" />
+          </HeaderActions>
+          <div className={ISSUE_GRID}>
+            <article aria-label={`${issue.key} ${issue.title}`} className="min-w-0">
+              <IssueBody issue={issue} size="page" railInline={!wide} />
+            </article>
+            {wide && (
+              <aside
+                aria-label="Issue properties"
+                className="sticky top-4 -my-2 border-l border-line py-2 pl-6"
+              >
+                <IssueRail issue={issue} />
               </aside>
-            </div>
-          </>
-        )}
-      </div>
+            )}
+          </div>
+        </>
+      )}
     </div>
   );
 }

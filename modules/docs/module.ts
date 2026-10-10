@@ -19,20 +19,35 @@ export default defineModule({
   version: '0.2.0',
   coreApi: '^0.1.0',
   defaultAccess: 'teams',
+  icon: 'doc',
+  color: 'brand-2',
+  order: 20,
+  sidebar: {
+    path: '/docs',
+    add: { create: 'docs.create-space', label: 'New space' },
+  },
   changelog: await loadChangelogFolder(new URL('./changelog/', import.meta.url)),
   register(ctx) {
-    ctx.navigation.add({ id: 'docs.home', label: 'Docs', path: '/docs', placement: 'top' });
+    ctx.navigation.add({
+      id: 'docs.home',
+      label: 'Docs',
+      path: '/docs',
+      placement: 'top',
+      icon: 'doc',
+    });
     ctx.navigation.add({
       id: 'docs.create-page',
       label: 'Page',
       path: '/docs/create',
       placement: 'create',
+      icon: 'doc',
     });
     ctx.navigation.add({
       id: 'docs.create-space',
       label: 'Space',
       path: '/docs/spaces/new',
       placement: 'create',
+      icon: 'layers',
     });
     for (const capability of DOCS_CAPABILITIES) ctx.capabilities.add(capability);
     defineDocsSettings(ctx.settings);

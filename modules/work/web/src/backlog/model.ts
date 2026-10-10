@@ -9,12 +9,15 @@ import type {
 } from '@bemmoly/module-work/shared';
 import {
   avatarHue,
+  epicColor,
+  epicFill,
   initialsOf,
-  ISSUE_TYPES,
+  type EpicColor,
   type AvatarHue,
-  type IssueType,
+  type IssueTypeRef,
   type StatusCategory,
 } from '@bemmoly/ui';
+import { matchesFilters, type IssueFilters } from '../shared/issue-filters.ts';
 
 /*
  * The Backlog screen as plain data: containers in screen order, the names
@@ -46,12 +49,14 @@ export interface PersonLook {
 }
 
 export interface EpicLook extends EpicProgress {
+  /** The colour stored on the epic, the same one the Board and the Issue page paint. */
+  look: EpicColor;
   colorClassName: string;
 }
 
 export interface Lookups {
   statuses: ReadonlyMap<string, StatusLook>;
-  types: ReadonlyMap<string, IssueType>;
+  types: ReadonlyMap<string, IssueTypeRef>;
   people: ReadonlyMap<string, PersonLook>;
   epics: ReadonlyMap<string, EpicLook>;
 }
@@ -103,10 +108,9 @@ export function statusLooks(
   return looks;
 }
 
-export function typeLooks(types: readonly WorkIssueType[]): Map<string, IssueType> {
-  return new Map(
-    types.map((type) => [type.id, type.key in ISSUE_TYPES ? (type.key as IssueType) : 'task']),
-  );
+/** Each type as stored, so a custom type draws its own icon and colour. */
+export function typeLooks(types: readonly WorkIssueType[]): Map<string, IssueTypeRef> {
+  return new Map(types.map((type) => [type.id, type]));
 }
 
 /** The signed-in person wears the accent, as RS does in every mock. */
@@ -126,23 +130,12 @@ export function personLooks(
   );
 }
 
-/** Epic squares in panel order, the first four as the mock paints them. */
-export const EPIC_COLORS = [
-  'bg-ac',
-  'bg-violet',
-  'bg-sky-fg',
-  'bg-orange-fg',
-  'bg-green-fg',
-  'bg-pink-fg',
-  'bg-amber-fg',
-] as const;
-
 export function epicLooks(epics: readonly EpicProgress[]): Map<string, EpicLook> {
   return new Map(
-    epics.map((epic, index) => [
-      epic.id,
-      { ...epic, colorClassName: EPIC_COLORS[index % EPIC_COLORS.length] ?? 'bg-ac' },
-    ]),
+    epics.map((epic) => {
+      const look = epicColor(epic.color, epic.id);
+      return [epic.id, { ...epic, look, colorClassName: epicFill(look) }];
+    }),
   );
 }
 
@@ -157,36 +150,27 @@ export function epicMeta(epic: EpicProgress): string {
   return `${issues} · ${epic.done === 0 ? 'not started' : `${epic.done} done`}`;
 }
 
-export interface BacklogFilters {
-  text: string;
-  epicId: string | null;
-  typeIds: readonly string[];
-  /** User ids; "none" stands for unassigned. */
-  assigneeIds: readonly string[];
-}
-
-export const NO_FILTERS: BacklogFilters = { text: '', epicId: null, typeIds: [], assigneeIds: [] };
-
-export function isFiltered(filters: BacklogFilters): boolean {
-  return Boolean(
-    filters.text.trim() ||
-    filters.epicId ||
-    filters.typeIds.length > 0 ||
-    filters.assigneeIds.length > 0,
+/** Whether a row passes the shared filters; its blockers come with the backlog. */
+export function issueMatches(
+  issue: Issue,
+  filters: IssueFilters,
+  meId: string | undefined,
+  blocked: boolean,
+): boolean {
+  return matchesFilters(
+    {
+      key: issue.key,
+      title: issue.title,
+      assigneeId: issue.assigneeId,
+      parentId: issue.parentId,
+      typeId: issue.typeId,
+      labelIds: issue.labelIds,
+      blocked,
+      updatedAt: issue.updatedAt,
+    },
+    filters,
+    meId,
   );
-}
-
-export function matches(issue: Issue, filters: BacklogFilters): boolean {
-  const text = filters.text.trim().toLowerCase();
-  if (text && !issue.title.toLowerCase().includes(text) && !issue.key.toLowerCase().includes(text))
-    return false;
-  if (filters.epicId && issue.parentId !== filters.epicId) return false;
-  if (filters.typeIds.length > 0 && !filters.typeIds.includes(issue.typeId)) return false;
-  if (filters.assigneeIds.length > 0) {
-    const who = issue.assigneeId ?? 'none';
-    if (!filters.assigneeIds.includes(who)) return false;
-  }
-  return true;
 }
 
 export interface Counts {
@@ -222,4 +206,9 @@ export function sprintDates(sprint: Sprint): string | undefined {
 export function nextSprintName(projectKey: string, sprints: readonly { name: string }[]): string {
   const numbers = sprints.map((sprint) => Number(/(\d+)\s*$/.exec(sprint.name)?.[1] ?? 0));
   return `${projectKey} Sprint ${Math.max(0, ...numbers) + 1}`;
+}
+
+/** Issue keys in the order the list shows them: each sprint, then the backlog. */
+export function backlogIssueOrder(sections: readonly { visible: readonly Issue[] }[]): string[] {
+  return sections.flatMap((section) => section.visible.map((issue) => issue.key));
 }

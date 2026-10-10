@@ -129,14 +129,14 @@ export function ImportDialog({ open, onClose, space, parent = null }: ImportDial
           }}
         />
         {skipped > 0 && (
-          <p className="m-0 text-12 text-tx5">
+          <p className="m-0 text-12 text-tx-3">
             {skipped} {skipped === 1 ? 'file is' : 'files are'} not{' '}
             {format === 'markdown' ? 'Markdown' : 'HTML'} and {skipped === 1 ? 'stays' : 'stay'}{' '}
             out.
           </p>
         )}
         {(problem || run.isError) && (
-          <p role="alert" className="m-0 rounded-sm bg-danger/8 px-3 py-2 text-12h text-danger">
+          <p role="alert" className="m-0 rounded-chip bg-red/8 px-3 py-2 text-13 text-red">
             {problem ?? run.error?.message ?? 'The import did not go through.'}
           </p>
         )}

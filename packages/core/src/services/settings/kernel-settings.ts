@@ -44,8 +44,8 @@ export const KERNEL_SETTINGS: readonly SettingDefinition[] = [
   { key: 'appearance.theme', schema: presetName, default: 'classic' },
   {
     key: 'appearance.brandColor',
-    schema: z.string().regex(/^#[0-9a-fA-F]{6}$/, 'A hex colour such as #2456c9'),
-    default: '#2456c9',
+    schema: z.string().regex(/^#[0-9a-fA-F]{6}$/, 'A hex colour such as #2356c9'),
+    default: '#2356c9',
   },
   { key: 'appearance.font', schema: presetName, default: 'plex' },
   { key: 'appearance.logoKey', schema: z.string().max(512), default: '' },

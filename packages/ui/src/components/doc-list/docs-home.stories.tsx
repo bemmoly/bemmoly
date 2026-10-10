@@ -41,7 +41,7 @@ export const RecentList: Story = {
     const [tab, setTab] = useState<'recent' | 'starred' | 'drafts'>('recent');
     return (
       <Card className="m-4 w-170">
-        <div className="border-b border-br2 px-4">
+        <div className="border-b border-line-2 px-4">
           <Tabs
             size="sm"
             bordered={false}
@@ -83,7 +83,7 @@ export const Spaces: Story = {
     mock: [{ file: 'Bemmoly Docs.dc.html', x: 160, y: 330, w: 1120, h: 380, note: 'spaces' }],
   },
   render: () => (
-    <div className="grid w-280 grid-cols-3 gap-3 bg-bg p-4">
+    <div className="grid w-280 grid-cols-3 gap-3 bg-sunken p-4">
       <SpaceCard
         href="#"
         name="Engineering"
@@ -115,7 +115,7 @@ export const NeedsAttentionAndTemplates: Story = {
     mock: [{ file: 'Bemmoly Docs.dc.html', x: 854, y: 728, w: 426, h: 420, note: 'right column' }],
   },
   render: () => (
-    <div className="flex w-110 flex-col gap-5 bg-bg p-4">
+    <div className="flex w-110 flex-col gap-5 bg-sunken p-4">
       <Card>
         <CardHeader title="Needs attention" />
         <AttentionList>
@@ -141,7 +141,7 @@ export const NeedsAttentionAndTemplates: Story = {
 
 export const PickerCards: Story = {
   render: () => (
-    <div className="grid w-160 grid-cols-2 gap-2 bg-sf p-4">
+    <div className="grid w-160 grid-cols-2 gap-2 bg-card p-4">
       <TemplateCard blank name="Blank page" description="Start from an empty page." selected />
       <TemplateCard
         name="RFC / design doc"
@@ -154,7 +154,7 @@ export const PickerCards: Story = {
 
 export const StatusPills: Story = {
   render: () => (
-    <div className="flex gap-2 bg-sf p-4">
+    <div className="flex gap-2 bg-card p-4">
       {(Object.keys(PAGE_STATUS_LABELS) as PageStatus[]).map((status) => (
         <PageStatusPill key={status} status={status} />
       ))}

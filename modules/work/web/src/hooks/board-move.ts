@@ -81,10 +81,12 @@ export function useBoardMove(
     },
     // The issue's own reads go too: its transitions depend on the status it just left. The
     // board is read again only once the last pending move settles: a view fetched while
-    // others are in flight lacks them, and would put their cards back until they land.
+    // others are in flight lacks them, and would put their cards back until they land. A
+    // quick edit still in flight refreshes the views itself when it settles.
     onSettled: async (_data, _error, { plan }) => {
       await queryClient.invalidateQueries({ queryKey: workKeys.issue(plan.key) });
       if (queryClient.isMutating({ mutationKey }) > 1) return;
+      if (queryClient.isMutating({ mutationKey: workKeys.issueEdits() }) > 0) return;
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: viewsKey }),
         queryClient.invalidateQueries({ queryKey: workKeys.boardMetrics(boardId) }),

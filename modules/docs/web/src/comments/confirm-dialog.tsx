@@ -41,7 +41,7 @@ export function ConfirmDialog({
         </>
       }
     >
-      <div className="flex flex-col gap-2 text-13 leading-body text-tx2">{children}</div>
+      <div className="flex flex-col gap-2 text-13 leading-body text-tx-2">{children}</div>
     </Modal>
   );
 }

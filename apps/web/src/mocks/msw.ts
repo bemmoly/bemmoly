@@ -1,5 +1,6 @@
 import { bypass, http, HttpResponse, passthrough, ws, type AnyHandler } from 'msw';
 import type { MockApi } from './dispatch.ts';
+import { mockPresence } from './presence.ts';
 import type { MockResponse } from './types.ts';
 
 export interface MswOptions {
@@ -102,6 +103,9 @@ export function mswHandlers(api: MockApi, options: MswOptions): AnyHandler[] {
         if (data?.type === 'subscribe') {
           client.send(JSON.stringify({ type: 'subscribed', scope: data.scope }));
         }
+        // A real backend behind answers presence itself; two answers would fight.
+        const presence = options.fallback ? null : mockPresence(api.db, data);
+        if (presence) client.send(JSON.stringify(presence));
       });
     }),
   ];

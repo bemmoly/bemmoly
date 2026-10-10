@@ -13,7 +13,8 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@bemmoly/shared": "workspace:*"
+    "@bemmoly/shared": "workspace:*",
+    "@bemmoly/ui": "workspace:*"
   },
   "peerDependencies": {
     "react": "19.3.0"

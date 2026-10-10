@@ -1,4 +1,4 @@
-import { BacklogCreateRow, Input } from '@bemmoly/ui';
+import { Input, IssueCreateRow } from '@bemmoly/ui';
 import { useState, type FormEvent, type KeyboardEvent } from 'react';
 import { useBacklogUi } from '../hooks/backlog-store.ts';
 
@@ -23,7 +23,7 @@ export function InlineCreate({ containerId, onCreate, disabled }: InlineCreatePr
 
   if (!open) {
     return (
-      <BacklogCreateRow
+      <IssueCreateRow
         onCreate={() => {
           setError(null);
           setCreatingIn(containerId);
@@ -62,7 +62,10 @@ export function InlineCreate({ containerId, onCreate, disabled }: InlineCreatePr
   };
 
   return (
-    <form onSubmit={submit} className="flex flex-col gap-1 py-1.5 pr-3.5 pl-12.5">
+    <form
+      onSubmit={submit}
+      className="flex flex-col gap-1 border-b border-line-2 py-1.5 pr-6 pl-10"
+    >
       <Input
         autoFocus
         aria-label="New issue title"
@@ -77,7 +80,7 @@ export function InlineCreate({ containerId, onCreate, disabled }: InlineCreatePr
         }}
       />
       {error && (
-        <span role="alert" className="text-12 text-danger">
+        <span role="alert" className="text-12 text-red-tx">
           {error}
         </span>
       )}

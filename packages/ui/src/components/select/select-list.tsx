@@ -20,8 +20,8 @@ function SearchBox({ state, placeholder }: { state: SelectState; placeholder: st
   const ref = useRef<HTMLInputElement>(null);
   useEffect(() => ref.current?.focus(), []);
   return (
-    <div className="flex h-9 shrink-0 items-center gap-2 border-b border-br2 px-2.5">
-      <Icon name="search" className="text-tx5" />
+    <div className="flex h-9 shrink-0 items-center gap-2 border-b border-line-2 px-2.5">
+      <Icon name="search" className="text-tx-3" />
       <input
         ref={ref}
         type="text"
@@ -37,9 +37,9 @@ function SearchBox({ state, placeholder }: { state: SelectState; placeholder: st
         value={state.query}
         onChange={(event) => state.setQuery(event.target.value)}
         onKeyDown={state.onKeyDown}
-        className="h-full min-w-0 flex-1 border-0 bg-transparent p-0 font-sans text-13 text-tx outline-0 placeholder:text-tx5"
+        className="h-full min-w-0 flex-1 border-0 bg-transparent p-0 font-sans text-13 text-tx outline-0 placeholder:text-tx-3"
       />
-      {state.remote.loading && <Spinner label="Searching" className="text-tx5" />}
+      {state.remote.loading && <Spinner label="Searching" className="text-tx-3" />}
     </div>
   );
 }
@@ -65,8 +65,8 @@ function OptionRow({
       onPointerMove={() => !option.disabled && !active && state.setActiveValue(option.value)}
       onClick={() => state.choose(option)}
       className={cx(
-        'flex shrink-0 cursor-pointer items-center gap-2 rounded-sm px-2.5 py-2 text-13',
-        active ? 'bg-ac-bg font-medium text-ac' : 'text-tx',
+        'flex shrink-0 cursor-pointer items-center gap-2 rounded-chip px-2.5 py-2 text-13',
+        active ? 'bg-acc-50 font-medium text-acc' : 'text-tx',
         'aria-disabled:cursor-not-allowed aria-disabled:opacity-50',
       )}
     >
@@ -78,10 +78,10 @@ function OptionRow({
       <span className="flex min-w-0 flex-1 flex-col gap-0.5">
         <span className="truncate">{option.label}</span>
         {option.description && (
-          <span className="truncate text-12 font-normal text-tx5">{option.description}</span>
+          <span className="truncate text-12 font-normal text-tx-3">{option.description}</span>
         )}
       </span>
-      {selected && <Icon name="check" className="shrink-0 text-ac" />}
+      {selected && <Icon name="check" className="shrink-0 text-acc" />}
     </div>
   );
 }
@@ -93,7 +93,7 @@ function emptyText(state: SelectState): string {
 }
 
 /**
- * The Select's popover, drawn as the Doc Editor menu: 8px radius, br border, shadow-menu, 6px
+ * The Select's popover, drawn as the Doc Editor menu: 8px radius, br border, shadow-e2, 6px
  * padding, 8px 10px items with the active one in accent on ac-bg. The chosen option carries a
  * tick. Group labels are the menu's 11px capitals.
  */
@@ -160,8 +160,8 @@ export function SelectList({ state, label, labelledBy, searchPlaceholder }: Sele
                 id={headingId}
                 role="presentation"
                 className={cx(
-                  'px-2.5 py-1.5 text-11 font-medium tracking-caps text-tx5 uppercase',
-                  sectionIndex > 0 && 'mt-1 border-t border-br-row',
+                  'px-2.5 pt-2 pb-1 text-11 font-semibold text-tx-3',
+                  sectionIndex > 0 && 'mt-1 border-t border-line-2',
                 )}
               >
                 {section.label}
@@ -171,13 +171,13 @@ export function SelectList({ state, label, labelledBy, searchPlaceholder }: Sele
           );
         })}
         {view.shown === 0 && (
-          <div role="presentation" className="px-2.5 py-2 text-13 text-tx5">
+          <div role="presentation" className="px-2.5 py-2 text-13 text-tx-3">
             {emptyText(state)}
           </div>
         )}
       </div>
       {view.total > view.shown && (
-        <div className="shrink-0 border-t border-br2 px-3 py-2 text-12 text-tx5">
+        <div className="shrink-0 border-t border-line-2 px-3 py-2 text-12 text-tx-3">
           Showing {view.shown} of {view.total} · type to narrow
         </div>
       )}

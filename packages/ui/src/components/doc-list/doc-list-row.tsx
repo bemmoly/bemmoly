@@ -50,28 +50,28 @@ export function DocListRow({
       className={cx(
         'grid items-center',
         TRACKS,
-        'gap-2.5 border-b border-br-row px-4 py-2.5 text-13 text-tx no-underline last:border-b-0',
-        'hover:bg-bg2 hover:text-tx motion-safe:transition-colors',
+        'gap-2.5 border-b border-line-2 px-4 py-2.5 text-13 text-tx no-underline last:border-b-0',
+        'hover:bg-side hover:text-tx motion-safe:transition-colors',
         focusRingInset,
         className,
       )}
     >
-      <span aria-hidden className="flex justify-center text-tx4">
+      <span aria-hidden className="flex justify-center text-tx-3">
         <PageIcon value={icon} size={16} />
       </span>
       <span className="flex min-w-0 flex-col gap-0.5">
         <span className="truncate font-medium">{title || 'Untitled'}</span>
-        <span className="truncate text-12 text-tx5">
+        <span className="truncate text-12 text-tx-3">
           {place}
           {links && (
             <>
               {' · '}
-              <span className="text-ac">{links}</span>
+              <span className="text-acc">{links}</span>
             </>
           )}
         </span>
       </span>
-      <span className="flex min-w-0 items-center gap-1.5 text-12 text-tx3 max-sm:hidden">
+      <span className="flex min-w-0 items-center gap-1.5 text-12 text-tx-2 max-sm:hidden">
         {person && (
           <>
             <Avatar name={person.name} size={20} {...(person.hue ? { hue: person.hue } : {})} />
@@ -79,7 +79,7 @@ export function DocListRow({
           </>
         )}
       </span>
-      <span className="truncate text-12 text-tx5">{when}</span>
+      <span className="truncate text-12 text-tx-3">{when}</span>
     </a>
   );
 }
@@ -91,7 +91,7 @@ export function DocListRowSkeleton({ rows = 5 }: { rows?: number }) {
       {Array.from({ length: rows }, (_, index) => (
         <span
           key={index}
-          className={`grid items-center gap-2.5 border-b border-br-row px-4 py-2.5 last:border-b-0 ${TRACKS}`}
+          className={`grid items-center gap-2.5 border-b border-line-2 px-4 py-2.5 last:border-b-0 ${TRACKS}`}
         >
           <Skeleton width={14} height={16} shape="block" className="justify-self-center" />
           <span className="flex flex-col gap-1.5 py-0.5">

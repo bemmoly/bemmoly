@@ -19,9 +19,9 @@ export interface WorkflowCanvasProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 const MARKERS = [
-  ['workflow-arrow', 'fill-tx5'],
-  ['workflow-arrow-ac', 'fill-ac'],
-  ['workflow-arrow-danger', 'fill-danger'],
+  ['workflow-arrow', 'fill-tx-3'],
+  ['workflow-arrow-ac', 'fill-acc'],
+  ['workflow-arrow-danger', 'fill-red'],
 ] as const;
 
 /**
@@ -57,7 +57,7 @@ export function WorkflowCanvas({
       data-canvas-viewport=""
       onPointerDown={onPointerDown}
       className={cx(
-        'relative min-w-0 overflow-auto overscroll-x-contain rounded-card border border-br bg-sf',
+        'relative min-w-0 overflow-auto overscroll-x-contain rounded-card border border-line bg-card',
         panning ? 'cursor-grabbing select-none' : pannable && 'cursor-grab',
         className,
       )}
@@ -67,7 +67,7 @@ export function WorkflowCanvas({
       <div
         ref={surfaceRef}
         style={{
-          backgroundImage: 'radial-gradient(var(--br) 1px, transparent 1px)',
+          backgroundImage: 'radial-gradient(var(--line) 1px, transparent 1px)',
           backgroundSize: '20px 20px',
         }}
         className="relative h-139.5 w-full min-w-249.5"

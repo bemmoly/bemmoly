@@ -40,13 +40,18 @@ async function laneNames(
   ];
   switch (kind) {
     case 'epic': {
-      const epics = await sql<{ id: string; key: string; title: string; due_at: Date | null }[]>`
-        select id, key, title, due_at from issues
+      const epics = await sql<
+        { id: string; key: string; title: string; due_at: Date | null; color: string | null }[]
+      >`
+        select id, key, title, due_at, color from issues
         where id = any(${ids((entry) => entry.epicId)}::uuid[])
         order by rank collate "C", id`;
       const named = epics.map(
         (epic) =>
-          [epic.id, { key: epic.key, title: epic.title, dueAt: dueOf(epic.due_at) }] as const,
+          [
+            epic.id,
+            { key: epic.key, title: epic.title, dueAt: dueOf(epic.due_at), color: epic.color },
+          ] as const,
       );
       return { ...NO_NAMES, epics: new Map(named) };
     }

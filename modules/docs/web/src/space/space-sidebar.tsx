@@ -36,7 +36,7 @@ export const pageCountLabel = (count: number) => `${count} ${count === 1 ? 'page
 
 /**
  * The space sidebar of the Doc Editor mock, 260px on sf with a br rule: the space head
- * (which switches spaces), "Search this space", the page tree, and "+ New page" pinned to
+ * (which switches spaces), "Search this space", the page tree, and "New page" pinned to
  * the bottom over a br2 rule. The trash sits at the right of that last line.
  */
 export function SpaceSidebar({
@@ -66,7 +66,7 @@ export function SpaceSidebar({
           placeholder="Search this space"
           tone="subtle"
           wrapperClassName="h-7.5! gap-1.75! px-2.25!"
-          className="text-12h!"
+          className="text-13!"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           onKeyDown={(event) => event.key === 'Escape' && setQuery('')}
@@ -84,25 +84,26 @@ export function SpaceSidebar({
           />
         )}
       </nav>
-      <div className="flex items-center border-t border-br2 px-4 py-3 text-12h">
+      <div className="flex items-center border-t border-line-2 px-4 py-3 text-13">
         <button
           type="button"
           onClick={() => onCreatePage(null)}
-          className="cursor-pointer border-0 bg-transparent p-0 font-sans text-12h font-medium text-ac hover:text-ac-d"
+          className="inline-flex cursor-pointer items-center gap-1 border-0 bg-transparent p-0 font-sans text-13 font-medium text-acc hover:text-acc-600"
         >
-          + New page
+          <Icon name="plus" size={14} />
+          New page
         </button>
         <button
           type="button"
           onClick={() => setImporting(true)}
-          className="ml-auto cursor-pointer border-0 bg-transparent p-0 font-sans text-12h text-tx5 hover:text-tx3"
+          className="ml-auto cursor-pointer border-0 bg-transparent p-0 font-sans text-13 text-tx-3 hover:text-tx-2"
         >
           Import
         </button>
         <a
           href={docsPaths.trash(space.key)}
           aria-current={inTrash ? 'page' : undefined}
-          className="ml-3 flex items-center gap-1 text-tx5 no-underline hover:text-tx3 aria-[current=page]:text-ac"
+          className="ml-3 flex items-center gap-1 text-tx-3 no-underline hover:text-tx-2 aria-[current=page]:text-acc"
         >
           <Icon name="trash" size={14} />
           Trash

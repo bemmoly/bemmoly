@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { Icon } from '../../icons/icon.tsx';
 import { useState } from 'react';
 import { RuleChip, RuleRow } from './rule-chip.tsx';
 import { StatusNode, StatusNodeHandle, StatusPill, type WorkflowCategory } from './status-node.tsx';
@@ -18,8 +19,8 @@ const NODES: Record<string, [number, number, WorkflowCategory, number, string?]>
   Backlog: [110, 120, 'todo', 42],
   Selected: [300, 120, 'todo', 9],
   'In progress': [490, 120, 'progress', 4],
-  'Code review': [680, 120, 'progress', 2, 'bg-violet'],
-  Testing: [680, 300, 'progress', 2, 'bg-caution'],
+  'Code review': [680, 120, 'progress', 2, 'bg-epic-2'],
+  Testing: [680, 300, 'progress', 2, 'bg-amber'],
   Done: [870, 300, 'done', 9],
   "Won't do": [300, 420, 'done', 3],
 };
@@ -84,7 +85,7 @@ export const Canvas: Story = {
     const [selected, setSelected] = useState('Code review');
     const [wx, wy] = at("Won't do");
     return (
-      <div className="w-262 bg-bg p-6">
+      <div className="w-262 bg-sunken p-6">
         <WorkflowCanvas
           label="Software workflow"
           edges={
@@ -121,7 +122,7 @@ export const Canvas: Story = {
             );
           })}
           <TransitionLabel x={px(wx - 160)} y={py(wy - 62)}>
-            Any → Close
+            Any <Icon name="arrow" size={11} label="to" /> Close
           </TransitionLabel>
           <WorkflowLegend />
         </WorkflowCanvas>
@@ -134,7 +135,7 @@ export const Canvas: Story = {
 export const EditingStates: Story = {
   args: { name: 'Done', category: 'done', x: '50%', y: '50%' },
   render: () => (
-    <div className="w-262 bg-bg p-6">
+    <div className="w-262 bg-sunken p-6">
       <WorkflowCanvas
         label="Editing states"
         edges={
@@ -177,7 +178,7 @@ export const PanelPieces: Story = {
     ],
   },
   render: () => (
-    <div className="flex w-85 flex-col gap-4 bg-sf p-4 text-12h">
+    <div className="flex w-85 flex-col gap-4 bg-card p-4 text-13">
       <div className="flex flex-col gap-2">
         <span className="font-semibold">Transitions out</span>
         <TransitionRow onMore={() => {}}>Testing (Approve)</TransitionRow>
@@ -195,7 +196,7 @@ export const PanelPieces: Story = {
           block
           name="Code review"
           category="progress"
-          colorClassName="bg-violet"
+          colorClassName="bg-epic-2"
           count={2}
         />
         <span className="flex gap-1.5">

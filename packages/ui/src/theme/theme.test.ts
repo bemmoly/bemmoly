@@ -5,6 +5,7 @@ import {
   buildTheme,
   clearTheme,
   contrastCheck,
+  contrastRatio,
   toHexColors,
   whiteContrast,
 } from './index.ts';
@@ -57,25 +58,25 @@ describe('contrast check', () => {
 });
 
 describe('buildTheme', () => {
-  it('reproduces Classic neutrals and the Board formula for a blue brand', () => {
-    const t = buildTheme({ brand: '#2456c9', mode: 'light', surfaces: 'neutral', font: 'plex' });
+  it('reproduces Classic for the logo blue', () => {
+    const t = buildTheme({ brand: '#2356c9', mode: 'light', surfaces: 'neutral', font: 'plex' });
     expect(t.colors).toMatchObject(CLASSIC_NEUTRALS);
-    expect(t.colors.ac).toBe('#2456c9');
-    expect(t.colors['ac-fill']).toBe('#2456c9');
-    expect(t.colors['on-ac']).toBe('#fff');
-    expect(t.colors['ac-d']).toBe('color-mix(in oklab, #2456c9 75%, #000)');
-    expect(t.colors['ac-l']).toBe('color-mix(in oklab, #2456c9 55%, #fff)');
-    expect(t.colors.sf2).toBe(themeById('light').colors.sf2);
+    expect(t.colors.acc).toBe('#2356c9');
+    expect(t.colors['acc-fill']).toBe('#2356c9');
+    expect(t.colors['on-acc']).toBe('#fff');
+    expect(t.colors['acc-600']).toBe('color-mix(in oklab, #2356c9 75%, #000)');
+    expect(t.colors['acc-500']).toBe('color-mix(in oklab, #2356c9 55%, #fff)');
     expect(
-      channelDistance(t.colors['ac-bg'], themeById('light').colors['ac-bg']),
+      channelDistance(t.colors['acc-50'], themeById('light').colors['acc-50']),
     ).toBeLessThanOrEqual(4);
+    expect(t.elevation).toEqual(themeById('light').elevation);
   });
 
-  it('tints light surfaces toward the brand like the Board mock custom theme', () => {
+  it('tints light surfaces toward the brand', () => {
     const t = buildTheme({ brand: '#f97316', mode: 'light', surfaces: 'tinted', font: 'inter' });
-    expect(t.colors.bg).toBe(mixCss('#f97316', 5, '#f4f5f7'));
-    expect(t.colors.bg2).toBe(mixCss('#f97316', 3, '#f4f5f7'));
-    expect(t.colors.sf).toBe('#fff');
+    expect(t.colors.sunken).toBe(mixCss('#f97316', 5, CLASSIC_NEUTRALS.sunken));
+    expect(t.colors.side).toBe(mixCss('#f97316', 3, CLASSIC_NEUTRALS.side));
+    expect(t.colors.card).toBe('#ffffff');
     expect(t.fontUi.startsWith("'Inter Tight'")).toBe(true);
   });
 
@@ -87,36 +88,34 @@ describe('buildTheme', () => {
       font: 'plex',
     });
     expect(neutral.colors).toMatchObject(DARK_NEUTRALS);
-    expect(neutral.colors['ac-bg']).toBe(themeById('dark').colors['ac-bg']);
     const tinted = buildTheme({
       brand: '#7c3aed',
       mode: 'dark',
       surfaces: 'tinted',
       font: 'geist',
     });
-    expect(tinted.colors.bg).toBe(mixCss('#7c3aed', 6, '#0f1217'));
-    expect(tinted.colors.bg2).toBe(mixCss('#7c3aed', 8, '#0f1217'));
-    expect(tinted.colors.sf).toBe(mixCss('#7c3aed', 10, '#0f1217'));
-    expect(tinted.colors['ac-bg']).toBe(mixCss('#7c3aed', 18, tinted.colors.sf));
+    expect(tinted.colors.sunken).toBe(mixCss('#7c3aed', 6, DARK_NEUTRALS.sunken));
+    expect(tinted.colors.card).toBe(mixCss('#7c3aed', 10, DARK_NEUTRALS.card));
+    expect(tinted.colors['acc-50']).toBe(mixCss('#7c3aed', 16, tinted.colors.card));
     expect(tinted.mode).toBe('dark');
+    expect(tinted.elevation).toEqual(themeById('dark').elevation);
   });
 
   it('darkens the button fill when white text is between 3 and 4.5 to 1', () => {
     const t = buildTheme({ brand: '#e0632a', mode: 'light', surfaces: 'neutral', font: 'plex' });
     expect(t.contrast.level).toBe('darken');
-    expect(t.colors.ac).toBe('#e0632a');
-    expect(t.colors['ac-fill']).not.toBe('#e0632a');
-    expect(Number(whiteContrast(t.colors['ac-fill']))).toBeGreaterThanOrEqual(4.5);
-    expect(t.colors['on-ac']).toBe('#fff');
+    expect(t.colors['acc-fill']).not.toBe('#e0632a');
+    expect(Number(whiteContrast(t.colors['acc-fill']))).toBeGreaterThanOrEqual(4.5);
+    expect(t.colors['on-acc']).toBe('#fff');
   });
 
   it('uses dark button text and a darker link shade for light brands', () => {
     const t = buildTheme({ brand: '#f97316', mode: 'light', surfaces: 'neutral', font: 'plex' });
     expect(t.contrast.level).toBe('dark-text');
-    expect(t.colors['ac-fill']).toBe('#f97316');
-    expect(t.colors['on-ac']).toBe(CLASSIC_NEUTRALS.tx);
-    expect(Number(whiteContrast(t.colors.ac))).toBeGreaterThanOrEqual(4.5);
-    expect(t.colors.ai).toBe(t.colors.ac);
+    expect(t.colors['acc-fill']).toBe('#f97316');
+    expect(t.colors['on-acc']).toBe(CLASSIC_NEUTRALS.tx);
+    expect(Number(whiteContrast(t.colors.acc))).toBeGreaterThanOrEqual(4.5);
+    expect(t.colors.ai).toBe('#9a85ea');
   });
 
   it('rejects anything that is not six hex digits, like the mock hex field', () => {
@@ -125,28 +124,19 @@ describe('buildTheme', () => {
     ).toThrow(/six hex digits/);
   });
 
-  // Presets carry hand-tuned neutral scales the builder does not generate, so what is
-  // reproducible is the accent family: identical for light presets and Dark, and for
-  // Midnight and Ocean identical up to the surface the tints are mixed over.
-  it.each(PRESETS.slice(1).map((p) => [p.id, p] as const))(
-    'reproduces the %s preset accent tints from its accent',
+  it.each(PRESETS.map((p) => [p.id, p] as const))(
+    'builds a theme from the %s accent whose text passes on its surfaces',
     (_id, preset) => {
       const input = {
         brand: preset.accent[0],
         mode: preset.mode,
-        surfaces: 'neutral',
+        surfaces: 'tinted',
         font: preset.font,
       } as const;
       const t = buildTheme(input);
-      const colors = themeById(preset.id).colors;
-      const sameSurface = preset.mode === 'light' || preset.id === 'dark';
-      if (preset.id === 'dark') expect(t.colors).toMatchObject(DARK_NEUTRALS);
-      for (const token of ['ac-bg', 'ac-bg2', 'ac-br', 'ac-av', 'ac-mute'] as const) {
-        const expected = sameSurface
-          ? colors[token]
-          : colors[token].replace(preset.neutrals.sf, DARK_NEUTRALS.sf);
-        expect(t.colors[token]).toBe(expected);
-      }
+      for (const surface of [t.colors.canvas, t.colors.side, t.colors.sunken, t.colors.card])
+        for (const ink of [t.colors.tx, t.colors['tx-2'], t.colors['tx-3'], t.colors.acc])
+          expect(contrastRatio(ink, surface)).toBeGreaterThanOrEqual(4.5);
       expect(t.fontUi).toBe(themeById(preset.id).fontUi);
     },
   );
@@ -154,7 +144,7 @@ describe('buildTheme', () => {
   it('resolves every built colour to hex for email templates', () => {
     const t = buildTheme({ brand: '#0f766e', mode: 'dark', surfaces: 'tinted', font: 'source' });
     for (const [token, value] of Object.entries(toHexColors(t.colors))) {
-      if (token !== 'scrim') expect(value).toMatch(/^#[0-9a-f]{6}$/);
+      if (!value.startsWith('rgba(')) expect(value, token).toMatch(/^#[0-9a-f]{6}$/);
     }
   });
 });
@@ -164,12 +154,15 @@ describe('applyTheme', () => {
     const el = document.createElement('div');
     const t = buildTheme({ brand: '#7c3aed', mode: 'light', surfaces: 'neutral', font: 'geist' });
     applyTheme(el, t);
-    expect(el.style.getPropertyValue('--ac')).toBe('#7c3aed');
-    expect(el.style.getPropertyValue('--ai')).toBe('#7c3aed');
+    expect(el.style.getPropertyValue('--acc')).toBe('#7c3aed');
+    expect(el.style.getPropertyValue('--ac')).toBe('');
+    expect(el.style.getPropertyValue('--ai')).toBe('#9a85ea');
+    expect(el.style.getPropertyValue('--e2')).toContain('rgba');
     expect(el.style.getPropertyValue('--font-ui')).toContain('Geist');
     expect(el.dataset['theme']).toBe('custom');
     clearTheme(el, 'light');
-    expect(el.style.getPropertyValue('--ac')).toBe('');
+    expect(el.style.getPropertyValue('--acc')).toBe('');
+    expect(el.style.getPropertyValue('--e2')).toBe('');
     expect(el.dataset['theme']).toBe('light');
   });
 });

@@ -193,6 +193,6 @@ describe('emailTheme', () => {
   });
 
   it('falls back to the Classic accent for a malformed colour', () => {
-    expect(emailTheme({ ...brand, accent: 'orange' }).accent).toBe('#2456c9');
+    expect(emailTheme({ ...brand, accent: 'orange' }).accent).toBe('#2356c9');
   });
 });

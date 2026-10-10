@@ -10,6 +10,7 @@ import {
   issueTypesResponseSchema,
   projectSchema,
   putIssueTypeFieldsBodySchema,
+  reorderIssueTypesBodySchema,
   schemeDiffSchema,
   schemesResponseSchema,
   updateBoardBodySchema,
@@ -117,6 +118,15 @@ export function workSettingsEndpoints(http: Http) {
           method: 'PATCH',
           body: validated(updateIssueTypeBodySchema, body),
         }),
+      /** The project's whole type order, first to last. */
+      reorder: async (projectId: string, ids: string[]) =>
+        (
+          await http.request(
+            `${base}/projects/${enc(projectId)}/issue-types/reorder`,
+            issueTypesResponseSchema,
+            { method: 'POST', body: validated(reorderIssueTypesBodySchema, { ids }) },
+          )
+        ).items,
       fields: async (issueTypeId: string) =>
         (
           await http.request(

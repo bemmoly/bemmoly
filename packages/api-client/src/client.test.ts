@@ -172,6 +172,64 @@ describe('api client', () => {
   });
 });
 
+describe('notifications', () => {
+  const NOTE = '018f0000-0000-7000-8000-000000000020';
+  /** As the previous minor's server sends it: no `done`, no `snoozedUntil`. */
+  const legacyItem = {
+    id: NOTE,
+    ids: [NOTE],
+    kind: 'mention',
+    verb: 'mentioned you in',
+    summary: 'Aisha K. mentioned you in PLT-204',
+    actors: [{ id: null, name: 'Aisha K.' }],
+    actorCount: 1,
+    target: { kind: 'issue', id: 'PLT-204', label: 'PLT-204', url: null },
+    body: '',
+    read: false,
+    createdAt: '2026-10-07T09:00:00Z',
+  };
+
+  it('passes the view through and reads an older server’s items as open', async () => {
+    const seen = vi.fn();
+    server.use(
+      route.get(`${BASE}/api/v1/notifications`, ({ request }) => {
+        seen(new URL(request.url).searchParams.get('view'));
+        return HttpResponse.json({ items: [legacyItem], nextCursor: null, unreadCount: 1 });
+      }),
+    );
+    const api = createApiClient({ fetch: absolute });
+    const page = await api.notifications.list({ view: 'snoozed' });
+    expect(seen).toHaveBeenCalledWith('snoozed');
+    expect(page.items[0]).toMatchObject({ done: false, snoozedUntil: null });
+  });
+
+  it('patches done and snooze, keeps setRead working, and refuses an empty change', async () => {
+    const bodies: unknown[] = [];
+    server.use(
+      route.patch(`${BASE}/api/v1/notifications/${NOTE}`, async ({ request }) => {
+        const body = (await request.json()) as Record<string, unknown>;
+        bodies.push(body);
+        return HttpResponse.json({ ids: [NOTE], ...body });
+      }),
+    );
+    const api = createApiClient({ fetch: absolute });
+    await expect(api.notifications.update(NOTE, { done: true })).resolves.toEqual({
+      ids: [NOTE],
+      done: true,
+    });
+    await api.notifications.update(NOTE, { snoozedUntil: '2026-10-08T09:00:00Z' });
+    await api.notifications.setRead(NOTE, false);
+    expect(bodies).toEqual([
+      { done: true },
+      { snoozedUntil: '2026-10-08T09:00:00Z' },
+      { read: false },
+    ]);
+    await expect(api.notifications.update(NOTE, {})).rejects.toMatchObject({
+      code: 'validation_failed',
+    });
+  });
+});
+
 describe('query keys', () => {
   it('maps realtime events to the queries they make stale', () => {
     expect(keysForEvent('notifications')).toEqual([queryKeys.notifications.all()]);

@@ -39,7 +39,7 @@ export function CommentItem({
       <div className="flex min-w-0 items-center gap-2">
         <Avatar name={name} size={20} />
         <span className="truncate font-semibold text-tx">{name}</span>
-        <time dateTime={comment.createdAt} className="shrink-0 text-tx5" title={comment.createdAt}>
+        <time dateTime={comment.createdAt} className="shrink-0 text-tx-3" title={comment.createdAt}>
           {formatRelative(comment.createdAt)}
           {comment.editedAt ? ' · edited' : ''}
         </time>
@@ -72,7 +72,7 @@ export function CommentItem({
         <RichTextView
           doc={comment.body as RichTextDoc}
           size="comment"
-          className="text-12h leading-body text-tx"
+          className="text-13 leading-body text-tx"
         />
       )}
     </div>

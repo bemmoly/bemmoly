@@ -14,42 +14,42 @@ const LANES: [BoardLaneKind, string, string, Bars, Bars][] = [
     'none',
     'None',
     'One flat board.',
-    ['bg-br3', 'bg-br3', 'bg-br3'],
+    ['bg-line', 'bg-line', 'bg-line'],
     ['w-full', 'w-full', 'w-full'],
   ],
   [
     'epic',
     'Epic',
     'Group by parent epic. Shows epic progress per lane.',
-    ['bg-ac', 'bg-violet', 'bg-tx6'],
+    ['bg-epic-1', 'bg-epic-2', 'bg-tx-3'],
     ['w-[70%]', 'w-[55%]', 'w-[40%]'],
   ],
   [
     'assignee',
     'Assignee',
     'One lane per person, unassigned at the bottom.',
-    ['bg-ok-fg', 'bg-orange-fg', 'bg-violet-fg'],
+    ['bg-green-tx', 'bg-orange-fg', 'bg-violet-fg'],
     ['w-[60%]', 'w-[60%]', 'w-[60%]'],
   ],
   [
     'priority',
     'Priority',
     'Highest at top so urgent work is seen first.',
-    ['bg-danger-hi', 'bg-warn', 'bg-caution'],
+    ['bg-red-tx', 'bg-amber', 'bg-amber'],
     ['w-[30%]', 'w-[55%]', 'w-[85%]'],
   ],
   [
     'type',
     'Issue type',
     'Stories, bugs and tasks in separate lanes.',
-    ['bg-ok', 'bg-danger', 'bg-ac'],
+    ['bg-green', 'bg-red', 'bg-acc'],
     ['w-[65%]', 'w-[45%]', 'w-[70%]'],
   ],
   [
     'query',
     'Custom queries',
     'Define lanes with filter queries, e.g. "Expedite".',
-    ['bg-ac', 'bg-ac', 'bg-ac'],
+    ['bg-acc', 'bg-acc', 'bg-acc'],
     ['w-[45%]', 'w-[80%]', 'w-[30%]'],
   ],
 ];
@@ -90,14 +90,14 @@ export function LanesTab(props: LanesTabProps) {
               ))}
             </span>
             <span className="font-semibold">{name}</span>
-            <span className="text-12 leading-note text-tx4">{description}</span>
+            <span className="text-12 leading-note text-tx-3">{description}</span>
           </SelectableCard>
         ))}
       </div>
       {lanes.kind === 'query' && (
         <NamedQueries
           title="Custom lanes"
-          addLabel="+ Add lane"
+          addLabel="Add lane"
           noun="lane"
           items={lanes.queries}
           editable={editable}

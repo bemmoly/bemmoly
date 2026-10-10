@@ -7,8 +7,15 @@ import {
   ActivityItem,
   CommentComposer,
   ComposerPlaceholder,
+  ChecklistBlock,
   CriteriaRow,
   FieldList,
+  HistoryItem,
+  PropertyEmpty,
+  PropertyGroup,
+  PropertyRow,
+  PropertyValue,
+  SaveState,
   FieldPerson,
   FieldRow,
   LinkedIssueRow,
@@ -19,7 +26,6 @@ import {
   SubtaskRow,
   WatcherList,
 } from './issue-sections/index.ts';
-import { SchemeOverrideBanner } from './scheme-banner/index.ts';
 import {
   RuleRow,
   StatusNode,
@@ -97,6 +103,39 @@ describe('issue page components', () => {
     expect(screen.getByText('Lowest')).toBeTruthy();
   });
 
+  it('draws the rail groups, the checklist block, history lines and the saved state', async () => {
+    const onRetry = vi.fn();
+    const { container, rerender } = render(
+      <div>
+        <PropertyGroup title="Planning">
+          <PropertyRow label="Due date">
+            <PropertyValue aria-label="Due date: none. Change">
+              <PropertyEmpty>Add date</PropertyEmpty>
+            </PropertyValue>
+          </PropertyRow>
+        </PropertyGroup>
+        <ChecklistBlock title="Acceptance criteria" done={1} total={2} hint="Checks to tick">
+          <CriteriaRow checked>One</CriteriaRow>
+          <CriteriaRow checked={false}>Two</CriteriaRow>
+        </ChecklistBlock>
+        <HistoryItem person={AK} when="2h ago">
+          moved the issue
+        </HistoryItem>
+        <SaveState state="error" onRetry={onRetry} />
+      </div>,
+    );
+    await expectAccessible(container);
+    expect(screen.getByRole('region', { name: 'Planning' })).toBeTruthy();
+    expect(screen.getByText('Add date')).toBeTruthy();
+    expect(screen.getByLabelText('1 of 2 met').textContent).toBe('1 / 2');
+    expect(screen.queryByText('Checks to tick')).toBeNull();
+    expect(screen.getByText('moved the issue')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
+    expect(onRetry).toHaveBeenCalled();
+    rerender(<SaveState state="saved" />);
+    expect(screen.getByRole('status').textContent).toBe('Saved');
+  });
+
   it("lays out create form fields and the type's field table", async () => {
     const onRequired = vi.fn();
     const { container } = render(
@@ -133,15 +172,14 @@ describe('issue page components', () => {
     );
     fireEvent.click(screen.getByRole('switch', { name: 'Story points required' }));
     expect(onRequired).toHaveBeenCalledWith(true);
-    expect(screen.getByText('AI-FILLED')).toBeTruthy();
-    expect(screen.getByRole('img', { name: 'Incident' }).className).toContain('size-9');
+    expect(screen.getByText('AI-filled')).toBeTruthy();
+    expect(screen.getByRole('img', { name: 'Incident' }).getAttribute('width')).toBe('36');
   });
 });
 
 describe('settings components', () => {
-  it('draws the workflow canvas with a selected node and the scheme banner', async () => {
+  it('draws the workflow canvas with a selected node', async () => {
     const onPick = vi.fn();
-    const onDiff = vi.fn();
     const { container } = render(
       <div>
         <WorkflowCanvas
@@ -151,7 +189,7 @@ describe('settings components', () => {
           <StatusNode
             name="Code review"
             category="progress"
-            colorClassName="bg-violet"
+            colorClassName="bg-epic-2"
             count={2}
             x="50%"
             y="50%"
@@ -167,13 +205,6 @@ describe('settings components', () => {
         <TransitionRow onMore={() => {}}>Testing (Approve)</TransitionRow>
         <RuleRow kind="validator">Reviewer field is not empty</RuleRow>
         <StatusPill name="Backlog" category="todo" count={42} block />
-        <SchemeOverrideBanner
-          scheme="Org default: Software (Scrum)"
-          onPickScheme={() => {}}
-          overrideCount={1}
-          onViewDiff={onDiff}
-          onReset={() => {}}
-        />
       </div>,
     );
     await expectAccessible(container);
@@ -183,10 +214,6 @@ describe('settings components', () => {
     fireEvent.click(node);
     expect(onPick).toHaveBeenCalled();
     expect(container.querySelector('path[marker-end="url(#workflow-arrow-ac)"]')).toBeTruthy();
-    expect(screen.getByText('VALIDATOR').className).toContain('bg-st-qa-bg');
-    expect(screen.getByText('1 setting overridden on this project')).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: 'View diff' }));
-    expect(onDiff).toHaveBeenCalled();
-    expect(screen.getByRole('button', { name: 'Reset to org default' })).toBeTruthy();
+    expect(screen.getByText('Validator').className).toContain('bg-acc-50');
   });
 });

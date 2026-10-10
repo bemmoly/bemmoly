@@ -12,12 +12,12 @@
 /* Base element styles from the mocks; in the base layer so utilities always win. */
 @layer base {
   a {
-    color: var(--ac);
+    color: var(--acc);
     text-decoration: none;
   }
 
   a:hover {
-    color: var(--ac-d);
+    color: var(--acc-600);
   }
 
   button,

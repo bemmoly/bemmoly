@@ -3,6 +3,7 @@ import { isCapabilityOfModule, isKernelCapability } from '../capabilities/index.
 import { isModuleId } from '../modules/index.ts';
 import { apiErrorBodySchema } from './api/index.ts';
 import { modulesResponseSchema } from './modules/index.ts';
+import { presenceViewSchema, realtimeClientMessageSchema } from './realtime/index.ts';
 
 describe('shared schemas', () => {
   it('accepts the documented error body and rejects unknown codes', () => {
@@ -27,6 +28,15 @@ describe('shared schemas', () => {
       modulesResponseSchema.safeParse({ items: [{ id: 'Bad Id', version: '1', navigation: [] }] })
         .success,
     ).toBe(false);
+  });
+
+  it('accepts presence views as a name and a subject, never free text', () => {
+    for (const view of ['board', 'backlog', 'issue:PLT-204', 'page:0192f3a1-7c2e'])
+      expect(presenceViewSchema.safeParse(view).success).toBe(true);
+    for (const view of ['', 'Board', 'issue:', 'issue:PLT 204', 'a:b:c', `issue:${'x'.repeat(65)}`])
+      expect(presenceViewSchema.safeParse(view).success).toBe(false);
+    const join = { type: 'presence', scope: { kind: 'project', id: 'p1' }, view: 'board' };
+    expect(realtimeClientMessageSchema.parse(join)).toEqual(join);
   });
 
   it('checks module ids and capability namespaces', () => {

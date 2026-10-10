@@ -41,23 +41,23 @@ export function CommandPlan({
   return (
     <section
       aria-label="Plan"
-      className="flex flex-col gap-3 border-b border-br2 bg-ai-bg px-4 py-3.5"
+      className="flex flex-col gap-3 border-b border-line-2 bg-ai-50 px-4 py-3.5"
     >
-      <div className="flex items-center gap-2 text-12h font-semibold text-ai">
+      <div className="flex items-center gap-2 text-13 font-semibold text-ai-600">
         <AiDot />
         Plan
-        <span className="font-normal text-ai-mute">nothing happens until you confirm</span>
+        <span className="font-normal text-ai-600">nothing happens until you confirm</span>
       </div>
-      <div className="text-13h leading-brief text-tx">{summary}</div>
+      <div className="text-13 leading-brief text-tx">{summary}</div>
       <div
         role="table"
         aria-label="Plan steps"
-        className="overflow-hidden rounded-panel border border-ai-br2 bg-sf text-12h"
+        className="overflow-hidden rounded-control border border-ai-100 bg-card text-13"
       >
         <div
           role="row"
           style={COLUMNS}
-          className="grid gap-2.5 border-b border-br2 bg-sf2 px-3 py-1.75 text-11 font-medium tracking-caps text-tx5 uppercase"
+          className="grid gap-2.5 border-b border-line-2 bg-side px-3 py-1.75 text-11 font-semibold text-tx-3"
         >
           <span role="columnheader">Issue</span>
           <span role="columnheader">Change</span>
@@ -71,23 +71,23 @@ export function CommandPlan({
             key={index}
             role="row"
             style={COLUMNS}
-            className="grid items-center gap-2.5 border-b border-br-row px-3 py-2.25 last:border-b-0"
+            className="grid items-center gap-2.5 border-b border-line-2 px-3 py-2.25 last:border-b-0"
           >
-            <span role="cell" className="font-mono text-11h font-medium text-tx4">
+            <span role="cell" className="font-mono text-12 font-medium text-tx-3">
               {step.target}
             </span>
             <span role="cell">{step.change}</span>
-            <span role="cell" className="text-tx3">
+            <span role="cell" className="text-tx-2">
               {step.field}
             </span>
             <span
               role="cell"
               className={cx(
                 'text-right text-11 font-semibold',
-                step.allowed ? 'text-ok-fg' : 'text-danger',
+                step.allowed ? 'text-green-tx' : 'text-red',
               )}
             >
-              {step.allowed ? 'ALLOWED' : 'DENIED'}
+              {step.allowed ? 'Allowed' : 'Denied'}
             </span>
           </div>
         ))}
@@ -103,7 +103,7 @@ export function CommandPlan({
           Run {allowed} {allowed === 1 ? 'change' : 'changes'}
         </Button>
         {onEdit && <Button onClick={onEdit}>Edit plan</Button>}
-        <span className="ml-auto text-12 text-tx5">{footnote}</span>
+        <span className="ml-auto text-12 text-tx-3">{footnote}</span>
       </div>
     </section>
   );

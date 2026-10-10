@@ -18,7 +18,7 @@ type Story = StoryObj<typeof meta>;
 function IssuePanel({ variant }: { variant: 'docked' | 'overlay' }) {
   const [open, setOpen] = useState(true);
   return (
-    <div className="flex h-130 bg-bg">
+    <div className="flex h-130 bg-sunken">
       <div className="flex flex-1 items-start p-4">
         {!open && <Button onClick={() => setOpen(true)}>Open PLT-204</Button>}
       </div>
@@ -29,7 +29,7 @@ function IssuePanel({ variant }: { variant: 'docked' | 'overlay' }) {
         label="PLT-204 details"
         header={
           <>
-            <span className="size-2.5 rounded-chip bg-ac" />
+            <span className="size-2.5 rounded-chip bg-acc" />
             <span>Auth service</span>
             <span>/</span>
             <TypeGlyph type="story" />

@@ -119,7 +119,7 @@ export function RuleEditor({ rule, definition, kind, onChange, onRemove }: RuleE
     onChange(next);
   };
   return (
-    <div className="flex flex-col gap-2.5 rounded-control border border-br px-2.5 py-2 text-12h text-tx">
+    <div className="flex flex-col gap-2.5 rounded-control border border-line px-2.5 py-2 text-13 text-tx">
       <div className="flex items-start gap-2">
         <RuleChip kind={chipKind(definition?.kind ?? kind)} className="mt-px" />
         <span className="flex-1 leading-note">{sentence}</span>
@@ -131,7 +131,7 @@ export function RuleEditor({ rule, definition, kind, onChange, onRemove }: RuleE
         />
       </div>
       {fields.length > 0 && (
-        <div className="flex flex-col gap-2.5 border-t border-br2 pt-2.5">
+        <div className="flex flex-col gap-2.5 border-t border-line-2 pt-2.5">
           {fields.map((field) => (
             <ParamInput
               key={field.key}
@@ -143,10 +143,10 @@ export function RuleEditor({ rule, definition, kind, onChange, onRemove }: RuleE
         </div>
       )}
       {missing.length > 0 && (
-        <span className="text-12 text-danger">Fill in {missing.join(', ')}.</span>
+        <span className="text-12 text-red">Fill in {missing.join(', ')}.</span>
       )}
       {definition && !definition.available && (
-        <span className="text-12 text-tx5">
+        <span className="text-12 text-tx-3">
           This install cannot run this rule yet; moves it guards are refused.
         </span>
       )}

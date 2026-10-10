@@ -9,9 +9,9 @@ import Section from '../site/Section.astro';
 ---
 
 <Section title="Sizing and cost" id="sizing">
-  <div tabindex="0" class="overflow-x-auto rounded-card border border-br">
+  <div tabindex="0" class="overflow-x-auto rounded-card border border-line">
     <table class="w-full border-collapse text-left text-14">
-      <thead class="bg-sf2 text-12 font-semibold tracking-caps text-tx4 uppercase dark:bg-sf">
+      <thead class="bg-side text-12 font-semibold tracking-caps text-tx-3 uppercase dark:bg-card">
         <tr>
           <th class="px-3.5 py-2.5 font-semibold">Team</th>
           <th class="px-3.5 py-2.5 font-semibold">Server</th>
@@ -20,7 +20,7 @@ import Section from '../site/Section.astro';
       </thead>
       <tbody>
         {SIZING.map((row) => (
-          <tr class="border-t border-br-row align-top">
+          <tr class="border-t border-line-2 align-top">
             <td class="px-3.5 py-2.5 font-medium whitespace-nowrap text-tx">{row.team}</td>
             <td class="px-3.5 py-2.5 whitespace-nowrap">
               <span class="inline-flex items-center gap-2">

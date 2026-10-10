@@ -27,7 +27,7 @@ export function FiltersTab(props: FiltersTabProps) {
       />
       <NamedQueries
         title="Quick filters"
-        addLabel="+ Add quick filter"
+        addLabel="Add quick filter"
         noun="quick filter"
         items={filters}
         editable={editable}

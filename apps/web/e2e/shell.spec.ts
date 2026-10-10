@@ -7,22 +7,22 @@ test('the shell boots after the session and lazy-loads a module chunk', async ({
   await page.goto('/');
   expect((await modules).status()).toBe(200);
 
-  const header = page.getByRole('banner');
-  await expect(header.getByRole('link', { name: 'Bemmoly home' })).toBeVisible();
-  const nav = header.getByRole('navigation', { name: 'Main' });
-  await expect(nav.getByRole('link', { name: /Your work/ })).toHaveAttribute(
+  const sidebar = page.getByRole('complementary', { name: 'Sidebar' });
+  await expect(sidebar.getByRole('img', { name: 'Bemmoly' }).first()).toBeAttached();
+  await expect(sidebar.getByRole('link', { name: 'Home', exact: true })).toHaveAttribute(
     'aria-current',
     'page',
   );
   await expect(page.getByRole('heading', { name: /, Rohan$/ })).toBeVisible();
   await expect(page.locator('html')).toHaveAttribute('data-theme', /^(light|dark)$/);
+  await expect(page).toHaveTitle('Home · Acme Labs · Bemmoly');
 
-  await nav.getByRole('link', { name: /Sample/ }).click();
+  await sidebar.getByRole('link', { name: 'Sample' }).click();
   await expect(page).toHaveURL(/\/sample$/);
   await expect(page.locator('[data-module="sample"]')).toBeVisible();
 });
 
-test('the boot frame paints before the app runs and leaves once a page renders', async ({
+test('the boot frame paints the mark before the app runs and leaves once a page renders', async ({
   page,
 }) => {
   await useMockBackend(page, 'ready');
@@ -55,13 +55,22 @@ test('a deep link to a module route loads the shell', async ({ page }) => {
   await expect(page.locator('[data-module="sample"]')).toBeVisible();
 });
 
-test('an unknown address shows the not-found page inside the shell', async ({ page }) => {
+test('an unknown address shows the not-found page inside the frame', async ({ page }) => {
   await useMockBackend(page, 'ready');
   await page.goto('/nowhere/at/all');
   await expect(
     page.getByRole('heading', { name: 'There is nothing at this address' }),
   ).toBeVisible();
-  await expect(page.getByRole('banner')).toBeVisible();
+  await expect(page.getByRole('complementary', { name: 'Sidebar' })).toBeVisible();
+  const trail = page.getByRole('navigation', { name: 'Breadcrumb' });
+  await expect(trail.getByRole('link', { name: 'Home', exact: true })).not.toHaveAttribute(
+    'aria-current',
+  );
+  await expect(trail.getByRole('link', { name: 'Not found' })).toHaveAttribute(
+    'aria-current',
+    'page',
+  );
+  await expect(page).toHaveTitle('Not found · Acme Labs · Bemmoly');
 });
 
 test('the web app manifest and icons come from the brand files', async ({ request }) => {

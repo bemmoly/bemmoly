@@ -54,6 +54,16 @@ export default defineConfig(
     rules: reactHooks.configs.recommended.rules,
   },
   {
+    // Icons are drawn, never typed (ADR 0015): no glyph characters in rendered UI.
+    files: [
+      'apps/web/src/**/*.{ts,tsx}',
+      'packages/ui/src/**/*.{ts,tsx}',
+      'modules/*/web/**/*.{ts,tsx}',
+    ],
+    ignores: ['**/*.test.{ts,tsx}', 'apps/web/src/mocks/**'],
+    rules: { 'bemmoly/no-glyph-characters': 'error' },
+  },
+  {
     files: [
       '**/config/env.ts',
       '**/*.test.{ts,js}',

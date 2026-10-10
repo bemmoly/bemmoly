@@ -14,7 +14,7 @@ export function ResetPasswordPage() {
         <Notice tone="caution">
           Open the link from the reset email again, or ask for a new one.
         </Notice>
-        <Link to="/forgot-password" className="self-center text-12h font-medium">
+        <Link to="/forgot-password" className="self-center text-13 font-medium">
           Ask for a new link
         </Link>
       </AuthLayout>

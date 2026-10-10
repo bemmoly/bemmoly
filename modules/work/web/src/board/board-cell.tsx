@@ -1,10 +1,11 @@
-import { KanbanCell } from '@bemmoly/ui';
+import { KanbanCell, type EpicColor } from '@bemmoly/ui';
 import { Fragment, memo, useEffect, useRef, type ReactNode } from 'react';
 import { useBoardDragStore } from '../hooks/board-drag-store.ts';
 import type { ViewCard } from '../hooks/board-model.ts';
 import { cellId, useBoardWindowStore, useCellLimit } from '../hooks/board-window.ts';
 import { BoardCard } from './board-card.tsx';
-import { cls, useBoardShared } from './board-context.ts';
+import { ColumnCreate } from './column-create.tsx';
+import { useBoardShared } from './board-context.ts';
 
 export interface BoardCellProps {
   laneId: string;
@@ -12,12 +13,12 @@ export interface BoardCellProps {
   columnId: string;
   columnName: string;
   cards: readonly ViewCard[];
-  laneHue: number | null;
+  laneColor: EpicColor | null;
 }
 
 /** The 2px accent line where a carried card would land. */
 function DropLine() {
-  return <div aria-hidden className="-my-1.25 h-0.5 shrink-0 rounded-full bg-ac" />;
+  return <div aria-hidden className="-my-1.25 h-0.5 shrink-0 rounded-full bg-acc" />;
 }
 
 /** Grows the window when the end of a long cell scrolls into view. */
@@ -49,9 +50,9 @@ export const BoardCell = memo(function BoardCell({
   columnId,
   columnName,
   cards,
-  laneHue,
+  laneColor,
 }: BoardCellProps) {
-  const { actions } = useBoardShared();
+  const { actions, createIn, density } = useBoardShared();
   const cell = cellId(laneId, columnId);
   const limit = useCellLimit(cell);
   const carriedId = useBoardDragStore((state) =>
@@ -79,7 +80,7 @@ export const BoardCell = memo(function BoardCell({
           laneId={laneId}
           columnId={columnId}
           index={index}
-          laneHue={laneHue}
+          laneColor={laneColor}
         />
       </Fragment>,
     );
@@ -94,18 +95,30 @@ export const BoardCell = memo(function BoardCell({
           actions.dragOver(event, { laneId, columnId, index: cards.length });
       }}
       onDrop={actions.dropHere}
-      className={cls(refused && line !== null && 'border border-dashed border-warn bg-warn-bg')}
+      refused={refused && line !== null}
+      compact={density === 'compact'}
+      className="group/cell"
     >
       {/* Not a drop target of its own: under the pointer it would turn the drop into a cancel,
           and the refusal would go unsaid. */}
       {refused && line !== null && (
-        <p className="pointer-events-none m-0 px-2 py-1.5 text-11 font-medium text-warn-fg">
+        <p
+          role="status"
+          className="pointer-events-none m-0 px-2 py-1.5 text-12 font-medium text-amber-tx"
+        >
           {verdict.reason}
         </p>
       )}
       {items}
       {!refused && line !== null && line >= others && shown.length === cards.length && <DropLine />}
       {cards.length > limit && <MoreSentinel cell={cell} />}
+      {createIn && carriedId === null && (
+        <ColumnCreate
+          cell={cell}
+          columnName={columnName}
+          onCreate={(title) => createIn(laneId, columnId, title)}
+        />
+      )}
     </KanbanCell>
   );
 });

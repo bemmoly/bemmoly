@@ -76,6 +76,7 @@ export function sampleBacklog(): Backlog {
     ],
     issues: [issue(5, 'f'), issue(6, 'g'), issue(7, 'h')],
     epics: [],
+    blocked: {},
   };
 }
 

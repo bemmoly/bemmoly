@@ -1,12 +1,4 @@
 export {
-  SettingsNav,
-  SettingsNavItem,
-  SettingsNavSection,
-  type SettingsNavItemProps,
-  type SettingsNavProps,
-  type SettingsNavSectionProps,
-} from './settings-nav.tsx';
-export {
   SettingsContent,
   SettingsFrame,
   SettingsRow,

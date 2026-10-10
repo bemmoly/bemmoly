@@ -1,33 +1,23 @@
 import { isApiError } from '@bemmoly/api-client';
-import type { Project } from '@bemmoly/module-work/shared';
-import {
-  Button,
-  ConfirmChange,
-  PageHeader,
-  SchemeOverrideBanner,
-  SettingsContent,
-  SettingsFrame,
-} from '@bemmoly/ui';
+import { Button, ConfirmChange, PageTitle } from '@bemmoly/ui';
 import type { ReactNode } from 'react';
 import { NO_PROJECT_PERMISSION } from '../../hooks/settings-access.ts';
 import type { SchemeFlow } from '../../hooks/settings-scheme-flow.ts';
-import { onLinkClick } from '../../workflow/navigate.ts';
 import { DiffDialog, invertDiff } from '../diff-dialog.tsx';
+import { InheritanceNote } from '../inheritance-note.tsx';
 
 const failure = (error: unknown) =>
   error ? (
-    <p className="m-0 text-12h text-danger">
+    <p className="m-0 text-13 text-red">
       {isApiError(error) ? error.message : 'The change was not saved.'}
     </p>
   ) : undefined;
 
 export interface SchemePageProps {
-  project: Project | undefined;
   title: string;
   description: string;
   flow: SchemeFlow;
   canConfigure: boolean;
-  nav: ReactNode;
   children: ReactNode;
 }
 
@@ -35,63 +25,40 @@ export interface SchemePageProps {
  * The frame of a scheme page (Issue types, Fields): the header with Override
  * or Reset, the "Inherits from" banner with its diff, and the asks.
  */
-export function SchemePage({
-  project,
-  title,
-  description,
-  flow,
-  canConfigure,
-  nav,
-  children,
-}: SchemePageProps) {
+export function SchemePage({ title, description, flow, canConfigure, children }: SchemePageProps) {
   const overridden = flow.status?.overridden ?? false;
   const origin = flow.status?.originName ?? 'the org default';
   const locked = canConfigure ? undefined : NO_PROJECT_PERMISSION;
   return (
-    <SettingsFrame nav={nav}>
-      <SettingsContent width="narrow">
-        <PageHeader
-          variant="settings"
-          breadcrumbs={[
-            { label: 'Projects' },
-            ...(project
-              ? [
-                  {
-                    label: project.name,
-                    href: `/work/board/${project.key}`,
-                    linkProps: { onClick: onLinkClick(`/work/board/${project.key}`) },
-                  },
-                ]
-              : []),
-            { label: 'Settings' },
-            { label: title },
-          ]}
-          title={title}
-          description={description}
-          actions={
-            overridden ? (
-              <Button disabled={!canConfigure} title={locked} onClick={flow.startReset}>
-                Reset to org default
-              </Button>
-            ) : (
-              <Button
-                variant="primary"
-                disabled={!canConfigure}
-                title={locked}
-                onClick={flow.startOverride}
-              >
-                Override for this project
-              </Button>
-            )
-          }
-        />
-        <SchemeOverrideBanner
-          scheme={`Org default: ${origin}`}
-          overrideCount={flow.status?.overrideCount ?? 0}
-          onViewDiff={flow.viewDiff}
-        />
-        {children}
-      </SettingsContent>
+    <div className="flex flex-col gap-6">
+      <PageTitle
+        variant="settings"
+        title={title}
+        description={description}
+        actions={
+          overridden ? (
+            <Button disabled={!canConfigure} title={locked} onClick={flow.startReset}>
+              Reset to org default
+            </Button>
+          ) : (
+            <Button
+              variant="primary"
+              disabled={!canConfigure}
+              title={locked}
+              onClick={flow.startOverride}
+            >
+              Override for this project
+            </Button>
+          )
+        }
+      />
+      <InheritanceNote
+        origin={origin}
+        overridden={overridden}
+        changes={flow.status?.overrideCount ?? 0}
+        onCompare={flow.viewDiff}
+      />
+      {children}
       <DiffDialog
         open={flow.step === 'view'}
         title={`${title} overridden on this project`}
@@ -130,6 +97,6 @@ export function SchemePage({
         onConfirm={flow.confirmReset}
         onCancel={flow.close}
       />
-    </SettingsFrame>
+    </div>
   );
 }

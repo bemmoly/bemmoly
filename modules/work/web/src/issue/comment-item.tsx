@@ -1,6 +1,12 @@
 import type { Comment, RichText } from '@bemmoly/module-work/shared';
-import { formatRelative } from '@bemmoly/core-web';
-import { ActivityAction, ActivityItem, Menu, MenuItem, ReactionChip } from '@bemmoly/ui';
+import {
+  ActivityAction,
+  ActivityItem,
+  Menu,
+  MenuItem,
+  ReactionChip,
+  RelativeTime,
+} from '@bemmoly/ui';
 import { useState } from 'react';
 import type { Person } from '../hooks/issue-people.ts';
 import { CommentBox } from './comment-box.tsx';
@@ -54,7 +60,12 @@ export function CommentItem({ comment, replies = [], ...actions }: CommentItemPr
         size={size}
         person={{ name: author.name, ...(mine ? { hue: 'accent' as const } : {}) }}
         verb={comment.parentId ? 'replied' : 'commented'}
-        when={`${formatRelative(comment.createdAt)}${comment.editedAt ? ' · edited' : ''}`}
+        when={
+          <>
+            <RelativeTime iso={comment.createdAt} />
+            {comment.editedAt ? ' · edited' : ''}
+          </>
+        }
         reactions={
           reactions.length > 0
             ? reactions.map(([emoji, people]) => {

@@ -71,13 +71,14 @@ describe('RichTextSection', () => {
         <RichTextSection title="Description" size="page" doc={null} onSave={onSave} />
       </Providers>,
     );
-    fireEvent.click(screen.getByRole('button', { name: 'Add description…' }));
+    fireEvent.click(screen.getByRole('button', { name: /Describe the problem/ }));
     const { editor } = await editorNamed('Description');
     act(() => {
       editor.commands.setContent(written);
     });
-    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
-    await waitFor(() => expect(onSave).toHaveBeenCalledOnce());
+    // Nothing to press: it saves itself once typing pauses, and says so.
+    await waitFor(() => expect(onSave).toHaveBeenCalledOnce(), { timeout: 3000 });
+    expect(await screen.findByText('Saved')).toBeTruthy();
     const saved = onSave.mock.calls[0]![0]!;
     expect(saved).toEqual(editor.getJSON());
     expect(richTextToPlain(saved)).toBe(
@@ -98,8 +99,29 @@ describe('RichTextSection', () => {
     act(() => {
       editor.commands.clearContent(true);
     });
-    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
-    await waitFor(() => expect(onSave).toHaveBeenCalledWith(null));
+    await waitFor(() => expect(onSave).toHaveBeenCalledWith(null), { timeout: 3000 });
+  });
+
+  it('keeps the draft and offers Retry when the save fails', async () => {
+    let fail = true;
+    const onSave = vi.fn<(doc: RichText | null) => Promise<unknown>>(async () => {
+      if (fail) throw new Error('offline');
+    });
+    render(
+      <Providers>
+        <RichTextSection title="Description" size="page" doc={written} onSave={onSave} />
+      </Providers>,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Edit description' }));
+    const { editor } = await editorNamed('Description');
+    act(() => {
+      editor.commands.clearContent(true);
+    });
+    expect(await screen.findByText('Not saved', {}, { timeout: 3000 })).toBeTruthy();
+    fail = false;
+    fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
+    await waitFor(() => expect(screen.getByText('Saved')).toBeTruthy());
+    expect(onSave).toHaveBeenLastCalledWith(null);
   });
 });
 
@@ -111,7 +133,7 @@ describe('CommentBox', () => {
         <CommentBox viewer={{ id: IDS.rohan, name: 'Rohan S.', email: '' }} onSubmit={onSubmit} />
       </Providers>,
     );
-    fireEvent.click(screen.getByRole('button', { name: /Add a comment/ }));
+    fireEvent.click(screen.getByRole('button', { name: /Leave a comment/ }));
     const { editor } = await editorNamed('Comment');
     type(editor, 'cc @Ais');
     fireEvent.click(await screen.findByRole('option', { name: /Aisha K\./ }));

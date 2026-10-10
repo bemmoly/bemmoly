@@ -52,6 +52,7 @@ export {
   createModuleAccessResolver,
   createModuleAccessWriter,
   createRequestAuthorization,
+  createSubscriptionAuthorizer,
   type ModuleCatalog,
   type RequestAuthorization,
   type RequestContext,

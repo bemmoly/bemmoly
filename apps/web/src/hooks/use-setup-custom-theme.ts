@@ -4,7 +4,7 @@ import type { CustomThemeDraft } from '../store/setup.ts';
 import { HEX_ERROR, normalizeHex } from './use-appearance-draft.ts';
 
 /**
- * The custom builder's inputs on step 5, edited the way Settings › Appearance
+ * The custom build's inputs on the Look step, edited the way Settings › Appearance
  * edits them: a swatch or a valid hex sets the brand, and the hex field keeps
  * what was typed (with an error) until it is a colour.
  */

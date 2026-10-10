@@ -15,12 +15,15 @@ const asText = (value: unknown) =>
 /** One custom field's value in Details, edited the way its kind is. */
 export function CustomFieldValue({ field, value, onSave }: CustomFieldValueProps) {
   const text = asText(value);
+  const add = `Add ${field.name.toLowerCase()}`;
   switch (field.kind) {
     case 'select':
       return (
         <ChoiceField
           label={field.name}
           value={text || null}
+          placeholder={add}
+          clearLabel="Clear"
           options={field.options.map((option) => ({ value: option.value, label: option.label }))}
           onSave={onSave}
         />
@@ -38,7 +41,7 @@ export function CustomFieldValue({ field, value, onSave }: CustomFieldValueProps
           <ChoiceField
             label={`Add ${field.name.toLowerCase()}`}
             value={null}
-            noneLabel={chosen.length ? 'Add…' : 'None'}
+            placeholder={chosen.length ? 'Add' : add}
             options={field.options
               .filter((option) => !chosen.includes(option.value))
               .map((option) => ({ value: option.value, label: option.label }))}
@@ -49,12 +52,19 @@ export function CustomFieldValue({ field, value, onSave }: CustomFieldValueProps
     }
     case 'user':
       return (
-        <PersonField label={field.name} value={text || null} noneLabel="Nobody" onSave={onSave} />
+        <PersonField
+          label={field.name}
+          value={text || null}
+          placeholder={add}
+          clearLabel="Clear"
+          onSave={onSave}
+        />
       );
     case 'number':
       return (
         <InlineValue
           label={field.name}
+          placeholder={add}
           type="number"
           mono
           value={text}
@@ -66,6 +76,7 @@ export function CustomFieldValue({ field, value, onSave }: CustomFieldValueProps
       return (
         <InlineValue
           label={field.name}
+          placeholder={add}
           type="date"
           value={text.slice(0, 10)}
           display={formatDay(text || null) || null}
@@ -76,9 +87,10 @@ export function CustomFieldValue({ field, value, onSave }: CustomFieldValueProps
       return (
         <InlineValue
           label={field.name}
+          placeholder={add}
           type="url"
           value={text}
-          display={text ? <span className="truncate text-ac">{text}</span> : null}
+          display={text ? <span className="truncate text-acc">{text}</span> : null}
           validate={(next) => (next && !/^https?:\/\//.test(next) ? 'Start with https://' : null)}
           onSave={(next) => onSave(next || null)}
         />
@@ -87,6 +99,7 @@ export function CustomFieldValue({ field, value, onSave }: CustomFieldValueProps
       return (
         <InlineValue
           label={field.name}
+          placeholder={add}
           type={field.kind === 'datetime' ? 'datetime-local' : 'text'}
           value={text}
           onSave={(next) => onSave(next || null)}

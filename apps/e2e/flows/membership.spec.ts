@@ -33,13 +33,13 @@ test('a project stays out of sight for a non-member until they are added', async
   const samApi = await apiFor(run.member);
   await sam.goto('/work/projects');
   await expect(sam.getByRole('heading', { name: 'Projects' })).toBeVisible();
-  await expect(sam.getByRole('row', { name: new RegExp(`^${project.key} `) })).toHaveCount(0);
+  await expect(sam.getByRole('row', { name: new RegExp(project.name) })).toHaveCount(0);
   await sam.goto(`/work/issue/${issue.key}`);
   await expect(sam.getByText('You are not a member of this project')).toBeVisible();
   await expect(sam.getByRole('heading', { name: 'Quarterly access review' })).toHaveCount(0);
   await sam.goto(`/work/board/${project.key}`);
   await expect(sam.getByText(`There is no project ${project.key} you can see.`)).toBeVisible();
-  await expect(await paletteResults(sam, issue.key)).toContainText('Nothing matches.');
+  await expect(await paletteResults(sam, issue.key)).toContainText('Nothing matches');
   await expect(samApi.call('GET', `/work/issues/${issue.key}`)).rejects.toThrow(/ 40[34] /);
 
   // The admin adds Sam from the project's Members screen.
@@ -55,12 +55,12 @@ test('a project stays out of sight for a non-member until they are added', async
   await expect(dialog).toBeHidden();
   const added = page.getByRole('row', { name: new RegExp(`^${run.member.name}`) });
   await expect(
-    added.getByRole('combobox', { name: `Project role for ${run.member.name}` }),
+    added.getByRole('button', { name: new RegExp(`^Project role for ${run.member.name}`) }),
   ).toHaveText(/Member/);
 
   // Now Sam sees the project, opens its issue and finds it from the palette.
   await sam.goto('/work/projects');
-  await expect(sam.getByRole('row', { name: new RegExp(`^${project.key} `) })).toBeVisible();
+  await expect(sam.getByRole('row', { name: new RegExp(project.name) })).toBeVisible();
   await sam.goto(`/work/board/${project.key}`);
   await expect(sam.getByRole('button', { name: new RegExp(`^${issue.key} `) })).toBeVisible();
   await sam.goto(`/work/issue/${issue.key}`);

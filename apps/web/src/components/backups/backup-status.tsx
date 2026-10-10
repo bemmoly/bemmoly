@@ -16,10 +16,10 @@ export function BackupStatus({ parts, oneDisk }: BackupStatusProps) {
     <div className="flex flex-col gap-3">
       <Card className="flex items-center gap-2.5 px-4 py-3 text-13">
         <StatusCircle tone={healthy ? 'ok' : 'caution'} />
-        <p className="m-0 text-tx2">
+        <p className="m-0 text-tx-2">
           {parts.map((part, index) => (
             <Fragment key={part.text}>
-              {index > 0 ? <span className="text-tx5"> · </span> : null}
+              {index > 0 ? <span className="text-tx-3"> · </span> : null}
               <span className={part.caution ? 'font-medium text-amber-fg' : undefined}>
                 {part.text}
               </span>

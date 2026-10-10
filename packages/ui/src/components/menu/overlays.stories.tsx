@@ -58,7 +58,7 @@ export const SlashMenu: Story = {
 export const MenuInsideClippingCard: Story = {
   args: { trigger: () => null, children: null },
   render: () => (
-    <div className="flex h-16 w-120 items-center overflow-hidden rounded-card border border-br bg-sf px-4">
+    <div className="flex h-16 w-120 items-center overflow-hidden rounded-card border border-line bg-card px-4">
       <span className="flex-1">Priya N. · Member</span>
       <Menu
         align="end"
@@ -131,15 +131,15 @@ export const UnderlineTabs: Story = {
             { value: 'perms', label: 'Permissions', badge: '2 locked' },
           ]}
         />
-        <div className="rounded-card border border-br bg-sf">
+        <div className="rounded-card border border-line bg-card">
           <Tabs
             aria-label="My work"
             size="sm"
             bordered={false}
-            className="border-b border-br2 px-4"
+            className="border-b border-line-2 px-4"
             value={home}
             onChange={setHome}
-            end={<span className="text-12h font-medium text-ac">View all</span>}
+            end={<span className="text-13 font-medium text-acc">View all</span>}
             items={[
               { value: 'assigned', label: 'Assigned to me', count: 6 },
               { value: 'review', label: 'Waiting on me', count: 3 },
@@ -208,10 +208,10 @@ export const Tooltips: Story = {
   args: { trigger: () => null, children: null },
   render: () => (
     <div className="flex gap-3 pt-10">
-      <Tooltip content="Open full page">
+      <Tooltip label="Open full page">
         <IconButton label="Open full page" icon="expand" size="xs" />
       </Tooltip>
-      <Tooltip content="Time in column" side="bottom">
+      <Tooltip label="Time in column" side="bottom">
         <Button size="xs">3d</Button>
       </Tooltip>
     </div>

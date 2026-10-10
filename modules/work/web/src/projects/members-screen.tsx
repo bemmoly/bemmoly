@@ -1,15 +1,24 @@
 import type { ProjectMember } from '@bemmoly/module-work/shared';
-import { Button, ConfirmChange, EmptyState, PageHeader, SearchInput, useToast } from '@bemmoly/ui';
+import { HeaderActions } from '@bemmoly/core-web';
+import {
+  Button,
+  ConfirmChange,
+  EmptyState,
+  PageTitle,
+  SearchInput,
+  SegmentedControl,
+  useToast,
+} from '@bemmoly/ui';
 import { Icon } from '@bemmoly/ui/icons';
 import { useState } from 'react';
 import { useViewer } from '../hooks/issue-people.ts';
-import { linkTo, workPaths } from '../hooks/issue-navigation.ts';
 import type { WorkScreenProps } from '../routes.tsx';
 import { LineSkeleton } from '../skeletons/parts.tsx';
 import { useProject } from '../shared/use-project.ts';
 import { useWorkRealtime } from '../shared/use-work-realtime.ts';
 import { MembersAddDialog } from './members-add-dialog.tsx';
 import {
+  type MemberSegment,
   roleOptions,
   useMemberFilter,
   usePeopleToAdd,
@@ -17,11 +26,12 @@ import {
 } from './members-hooks.ts';
 import { MembersTable } from './members-table.tsx';
 
-/** A breadcrumb that moves the shell without a reload, as the other Work screens link. */
-const crumb = (label: string, path: string) => {
-  const { href, onClick } = linkTo(path);
-  return { label, href, linkProps: { onClick } };
-};
+const segmentLabel = (label: string, n: number) => (
+  <span className="tabular-nums">
+    {label}
+    {n > 0 && <span className="text-tx-3"> · {n}</span>}
+  </span>
+);
 
 const NO_ACCESS = 'You need "Configure project" here to change its members.';
 
@@ -59,39 +69,54 @@ export default function MembersScreen({ projectKey }: WorkScreenProps) {
   const failed = (error: Error | null) => error?.message ?? null;
 
   return (
-    <div className="min-h-0 flex-1 overflow-auto">
-      <div className="mx-auto flex max-w-310 flex-col gap-4 px-10 pt-5 pb-15">
-        <PageHeader
-          breadcrumbs={[
-            crumb('Projects', workPaths.projects()),
-            ...(project ? [crumb(name, workPaths.board(project.key))] : []),
-            { label: 'Members' },
-          ]}
+    <>
+      <HeaderActions>
+        <Button
+          variant="primary"
+          icon={<Icon name="plus" size={14} />}
+          disabled={!members.canManage}
+          title={members.canManage ? undefined : NO_ACCESS}
+          onClick={() => setAdding(true)}
+        >
+          Add people
+        </Button>
+      </HeaderActions>
+      <div className="flex flex-col gap-4">
+        <PageTitle
           title="Members"
           meta={
             members.list.isSuccess
               ? [`${count} ${count === 1 ? 'person' : 'people'}`]
-              : [<LineSkeleton key="count" width={52} size="text-12h" bar={8} />]
+              : [<LineSkeleton key="count" width={52} size="text-13" bar={8} />]
           }
-          description="Everyone here can open the project. Their project role decides what they can do in it."
-          actions={
-            <Button
-              variant="primary"
-              disabled={!members.canManage}
-              title={members.canManage ? undefined : NO_ACCESS}
-              onClick={() => setAdding(true)}
-            >
-              Add people
-            </Button>
-          }
+          description={`Everyone here can open ${name || 'the project'}. Their project role decides what they can change.`}
         />
-        <SearchInput
-          aria-label="Search members by name or email"
-          placeholder="Search by name or email"
-          wrapperClassName="w-65"
-          value={filter.query}
-          onChange={(event) => filter.setQuery(event.target.value)}
-        />
+        <div className="flex flex-wrap items-center gap-2">
+          <SearchInput
+            aria-label="Search members by name or email"
+            placeholder="Search members…"
+            wrapperClassName="w-full sm:w-65"
+            value={filter.query}
+            onChange={(event) => filter.setQuery(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === 'Escape' && filter.query) {
+                event.stopPropagation();
+                filter.setQuery('');
+              }
+            }}
+          />
+          <SegmentedControl<MemberSegment>
+            size="sm"
+            aria-label="Show"
+            value={filter.segment}
+            onChange={filter.setSegment}
+            options={[
+              { value: 'all', label: segmentLabel('All', filter.counts.all) },
+              { value: 'admins', label: segmentLabel('Admins', filter.counts.admins) },
+              { value: 'invited', label: segmentLabel('Invited', filter.counts.invited) },
+            ]}
+          />
+        </div>
         {members.list.isError ? (
           <EmptyState
             title="Members could not be loaded"
@@ -103,7 +128,7 @@ export default function MembersScreen({ projectKey }: WorkScreenProps) {
             roleOptions={roleOptions(members.roles)}
             canManage={members.canManage}
             loading={members.list.isPending}
-            filtered={filter.query.trim() !== ''}
+            filtered={filter.filtered}
             viewerId={viewer?.id ?? null}
             isLastAdmin={members.isLastAdmin}
             onRoleChange={(member, roleId) =>
@@ -180,6 +205,6 @@ export default function MembersScreen({ projectKey }: WorkScreenProps) {
           })
         }
       />
-    </div>
+    </>
   );
 }

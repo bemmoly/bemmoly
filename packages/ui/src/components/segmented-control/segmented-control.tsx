@@ -15,13 +15,13 @@ const SIZES: Record<
 > = {
   md: {
     track: 'rounded-control p-0.5',
-    item: 'flex-1 rounded-sm py-1.5 text-center font-medium',
+    item: 'flex-1 rounded-chip py-1.5 text-center font-medium',
     selected: '',
     idle: '',
   },
   sm: {
-    track: 'rounded-sm p-0.5 text-12',
-    item: 'rounded-xs px-2.25 py-0.75',
+    track: 'rounded-chip p-0.5 text-12',
+    item: 'rounded-chip px-2.25 py-0.75 whitespace-nowrap',
     selected: 'font-medium',
     idle: 'font-normal',
   },
@@ -65,7 +65,7 @@ export function SegmentedControl<V extends string>({
     refs.current[next]?.focus();
   };
   return (
-    <div role="radiogroup" {...aria} className={cx('flex bg-chip', s.track, className)}>
+    <div role="radiogroup" {...aria} className={cx('flex bg-line-2', s.track, className)}>
       {options.map((option, index) => {
         const selected = option.value === value;
         return (
@@ -84,8 +84,8 @@ export function SegmentedControl<V extends string>({
               'cursor-pointer border-0 font-sans',
               s.item,
               selected
-                ? cx('bg-sf text-tx shadow-seg', s.selected)
-                : cx('bg-transparent text-tx4', s.idle),
+                ? cx('bg-card text-tx shadow-e1', s.selected)
+                : cx('bg-transparent text-tx-3', s.idle),
               focusRing,
             )}
           >

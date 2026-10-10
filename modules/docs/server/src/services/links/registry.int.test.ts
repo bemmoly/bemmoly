@@ -96,7 +96,9 @@ describe('Docs in the kernel reference registries', () => {
     if (!harness) return ctx.skip(skipReason);
     const { as, users } = harness;
     let docsCtx: ModuleContext | undefined;
+    // The spy registers nothing, so it must not ask the shell for a sidebar "+" either.
     const spy: BemmolyModule = { ...docs, register: (c) => void (docsCtx = c) };
+    delete spy.sidebar;
     loadModules({
       available: [spy, trackerModule(() => undefined)],
       enabled: ['docs', 'tracker'],

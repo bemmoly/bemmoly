@@ -23,6 +23,15 @@ export function toHex(rgb: Rgb): string {
   return `#${rgb.map((c) => Math.round(clamp(c)).toString(16).padStart(2, '0')).join('')}`;
 }
 
+/** A colour as it shows over `surface`: an rgba() value is composited, anything else resolved. */
+export function flatten(value: string, surface: string): string {
+  const m = /^rgba\(([^)]+)\)$/.exec(value.trim());
+  if (!m) return resolveHex(value);
+  const [r = 0, g = 0, b = 0, a = 1] = (m[1] ?? '').split(',').map(Number);
+  const base = parseHex(resolveHex(surface)) as Rgb;
+  return toHex([r * a + base[0] * (1 - a), g * a + base[1] * (1 - a), b * a + base[2] * (1 - a)]);
+}
+
 export function isHex(value: string): boolean {
   return /^#[0-9a-f]{6}$/i.test(value.trim());
 }

@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import type { WorkflowRule } from '../../../shared/index.ts';
 import {
   addStatus,
@@ -28,20 +28,54 @@ import { useWorkflowValidation } from './workflow-validate.ts';
 /** Arrow keys move a focused node this far; with Shift, one unit for fine placement. */
 export const NUDGE = { step: 10, fine: 1 } as const;
 
+/** How many steps Undo can walk back; older ones fall off. */
+const HISTORY = 50;
+
+/** What a delete took, for the Undo toast: the item and the transitions it took along. */
+export interface DeletedItem {
+  kind: 'status' | 'transition';
+  name: string;
+  takes: number;
+}
+
 /**
  * Everything the workflow editor screen does, so its components only draw:
  * the published workflow, the draft and its autosave, the selection, every
- * edit, validation, and the delete that waits for confirmation.
+ * edit with an Undo history, validation, and deletes that happen at once
+ * (the draft is not live until it is published, so Undo beats a confirmation).
  */
-export function useWorkflowEditor(workflowId: string) {
+export function useWorkflowEditor(workflowId: string, onDeleted?: (item: DeletedItem) => void) {
+  const deleted = useRef(onDeleted);
+  deleted.current = onDeleted;
   const workflow = useQuery(workflowQuery(workflowId));
   const rules = useQuery(workflowRulesQuery());
   const counts = useQuery(workflowCountsQuery(workflowId));
   const draftState = useWorkflowDraft(workflowId);
   const validation = useWorkflowValidation(workflowId, draftState.flush);
   const [selection, setSelection] = useState<Selection>(null);
-  const [pendingDelete, setPendingDelete] = useState<Selection>(null);
-  const { edit, draft } = draftState;
+  const { edit: save, draft } = draftState;
+  const history = useRef<NonNullable<typeof draft>[]>([]);
+  const [undoable, setUndoable] = useState(0);
+  const edit = useCallback(
+    (change: Parameters<typeof save>[0]) =>
+      save((current) => {
+        const next = change(current);
+        if (next !== current) {
+          history.current = [...history.current, current].slice(-HISTORY);
+          setUndoable(history.current.length);
+        }
+        return next;
+      }),
+    [save],
+  );
+  const undo = useCallback(() => {
+    const previous = history.current.at(-1);
+    if (!previous) return;
+    history.current = history.current.slice(0, -1);
+    setUndoable(history.current.length);
+    setSelection(null);
+    save(() => previous);
+  }, [save]);
 
   const actions = useMemo(
     () => ({
@@ -77,43 +111,41 @@ export function useWorkflowEditor(workflowId: string) {
         edit((current) => updateRuleArgs(current, id, slot, index, args)),
       removeRule: (id: string, slot: RuleSlot, index: number) =>
         edit((current) => removeRule(current, id, slot, index)),
-      requestDelete: (target: Selection) => setPendingDelete(target),
-      cancelDelete: () => setPendingDelete(null),
     }),
     [edit],
   );
 
-  const confirmDelete = useCallback(() => {
-    const target = pendingDelete;
-    setPendingDelete(null);
-    if (!target) return;
-    edit((current) =>
-      target.kind === 'status'
-        ? removeStatus(current, target.id)
-        : removeTransition(current, target.id),
-    );
-    setSelection(null);
-  }, [edit, pendingDelete]);
-
-  /** What the delete confirmation names: the status and the transitions it takes along. */
-  const deleteTarget = useMemo(() => {
-    if (!pendingDelete || !draft) return null;
-    if (pendingDelete.kind === 'transition') {
-      const transition = transitionById(draft, pendingDelete.id);
-      return transition ? { kind: 'transition' as const, name: transition.name, takes: 0 } : null;
-    }
-    const status = statusById(draft, pendingDelete.id);
-    if (!status) return null;
-    const takes = draft.transitions.filter(
-      (transition) => transition.fromStatusId === status.id || transition.toStatusId === status.id,
-    ).length;
-    return {
-      kind: 'status' as const,
-      name: status.name,
-      takes,
-      issues: counts.data?.[status.id] ?? 0,
-    };
-  }, [counts.data, draft, pendingDelete]);
+  /** Deletes now and tells the caller what went, so it can offer Undo. */
+  const remove = useCallback(
+    (target: Selection): DeletedItem | null => {
+      if (!target || !draft) return null;
+      let item: DeletedItem | null = null;
+      if (target.kind === 'transition') {
+        const transition = transitionById(draft, target.id);
+        if (transition) item = { kind: 'transition', name: transition.name, takes: 0 };
+      } else {
+        const status = statusById(draft, target.id);
+        if (status)
+          item = {
+            kind: 'status',
+            name: status.name,
+            takes: draft.transitions.filter(
+              (t) => t.fromStatusId === status.id || t.toStatusId === status.id,
+            ).length,
+          };
+      }
+      if (!item) return null;
+      edit((current) =>
+        target.kind === 'status'
+          ? removeStatus(current, target.id)
+          : removeTransition(current, target.id),
+      );
+      setSelection(null);
+      deleted.current?.(item);
+      return item;
+    },
+    [draft, edit],
+  );
 
   return {
     workflow: workflow.data,
@@ -123,8 +155,8 @@ export function useWorkflowEditor(workflowId: string) {
     draftState,
     validation,
     selection,
-    actions: { ...actions, confirmDelete },
-    deleteTarget,
+    actions: { ...actions, requestDelete: remove, undo },
+    canUndo: undoable > 0,
   };
 }
 

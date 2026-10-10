@@ -1,4 +1,4 @@
-import type { NotificationChannel } from '@bemmoly/shared';
+import type { NotificationChannel, NotificationView } from '@bemmoly/shared';
 import type { SqlExecutor } from '../../contracts/sql.ts';
 import type { StoredNotification } from './grouping.ts';
 
@@ -34,11 +34,15 @@ interface RawNotification {
   reason: string | null;
   /** Strings: the pool is wrapped by Drizzle, which leaves timestamps unparsed. */
   read_at: string | null;
+  done_at: string | null;
+  snoozed_until: string | null;
   created_at: string;
 }
 
 const COLUMNS = `id, user_id, kind, actor_id, actor_name, target_kind, target_id, target_label,
-  target_url, body, reason, read_at, created_at`;
+  target_url, body, reason, read_at, done_at, snoozed_until, created_at`;
+
+const dateOrNull = (value: string | null) => (value === null ? null : new Date(value));
 
 function toStored(raw: RawNotification): StoredNotification {
   return {
@@ -53,7 +57,9 @@ function toStored(raw: RawNotification): StoredNotification {
     targetUrl: raw.target_url,
     body: raw.body,
     reason: raw.reason,
-    readAt: raw.read_at === null ? null : new Date(raw.read_at),
+    readAt: dateOrNull(raw.read_at),
+    doneAt: dateOrNull(raw.done_at),
+    snoozedUntil: dateOrNull(raw.snoozed_until),
     createdAt: new Date(raw.created_at),
   };
 }
@@ -75,14 +81,33 @@ export async function insertNotification(
   return inserted ? toStored(inserted) : null;
 }
 
+/**
+ * The rows a view shows at `now`. A snooze that has run out needs no write to
+ * end: the row simply matches `inbox` again.
+ */
+function inView(db: SqlExecutor, view: NotificationView, now: Date) {
+  const at = now.toISOString();
+  if (view === 'done') return db`and done_at is not null`;
+  if (view === 'snoozed') return db`and done_at is null and snoozed_until > ${at}::timestamptz`;
+  return db`and done_at is null and (snoozed_until is null or snoozed_until <= ${at}::timestamptz)`;
+}
+
 /** Newest first; uuidv7 ids are time-ordered, so the id is the keyset cursor. */
 export async function listNotifications(
   db: SqlExecutor,
-  query: { userId: string; cursor?: string | undefined; limit: number; unreadOnly: boolean },
+  query: {
+    userId: string;
+    cursor?: string | undefined;
+    limit: number;
+    unreadOnly: boolean;
+    view: NotificationView;
+    now: Date;
+  },
 ): Promise<{ rows: StoredNotification[]; hasMore: boolean }> {
   const rows = await db<RawNotification[]>`
     select ${db.unsafe(COLUMNS)} from notifications
      where user_id = ${query.userId}
+       ${inView(db, query.view, query.now)}
        ${query.cursor ? db`and id < ${query.cursor}` : db``}
        ${query.unreadOnly ? db`and read_at is null` : db``}
      order by id desc
@@ -90,9 +115,11 @@ export async function listNotifications(
   return { rows: rows.slice(0, query.limit).map(toStored), hasMore: rows.length > query.limit };
 }
 
-export async function countUnread(db: SqlExecutor, userId: string): Promise<number> {
+/** The badge: unread rows in the inbox view only, so done and snoozed rows never count. */
+export async function countUnread(db: SqlExecutor, userId: string, now: Date): Promise<number> {
   const [row] = await db<{ count: number }[]>`
-    select count(*)::int as count from notifications where user_id = ${userId} and read_at is null`;
+    select count(*)::int as count from notifications
+     where user_id = ${userId} and read_at is null ${inView(db, 'inbox', now)}`;
   return row?.count ?? 0;
 }
 
@@ -120,15 +147,19 @@ export async function setRead(
   return [input.id, ...updated.map((entry) => entry.id).filter((id) => id !== input.id)];
 }
 
-export async function markAllRead(db: SqlExecutor, userId: string): Promise<string[]> {
+/** Leaves snoozed rows alone so they still come back unread when their snooze ends. */
+export async function markAllRead(db: SqlExecutor, userId: string, now: Date): Promise<string[]> {
   const rows = await db<{ id: string }[]>`
     update notifications set read_at = now(), updated_at = now()
-     where user_id = ${userId} and read_at is null
+     where user_id = ${userId} and read_at is null ${inView(db, 'inbox', now)}
     returning id`;
   return rows.map((row) => row.id);
 }
 
-/** Locks the user's unsent digest rows so two digest runs cannot both send them. */
+/**
+ * Locks the user's unsent digest rows so two digest runs cannot both send them.
+ * A row snoozed past this run waits for a later digest instead of arriving early.
+ */
 export async function claimDigestRows(
   db: SqlExecutor,
   userId: string,
@@ -138,6 +169,7 @@ export async function claimDigestRows(
     select ${db.unsafe(COLUMNS)} from notifications
      where user_id = ${userId} and delivery = 'email_digest'
        and emailed_at is null and read_at is null
+       and done_at is null and (snoozed_until is null or snoozed_until <= now())
      order by id desc
      limit ${limit}
      for update skip locked`;

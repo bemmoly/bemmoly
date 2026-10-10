@@ -12,25 +12,31 @@ import {
   searchResponseSchema,
   unsubscriptionPreviewSchema,
   updateNotificationPreferencesRequestSchema,
+  updateNotificationRequestSchema,
   type NotificationsQuery,
   type SearchQuery,
   type UpdateNotificationPreferencesRequest,
+  type UpdateNotificationRequest,
 } from '@bemmoly/shared';
 import type { Http } from '../http.ts';
 import { enc, validated } from './validate.ts';
 
 export function messagingEndpoints(http: Http) {
+  /** Read, done (archive) or snooze one entry and its group; the inverse value is the undo. */
+  const update = async (id: string, patch: UpdateNotificationRequest) =>
+    http.request(`/api/v1/notifications/${enc(id)}`, markNotificationResponseSchema, {
+      method: 'PATCH',
+      body: validated(updateNotificationRequestSchema, patch),
+    });
   return {
     notifications: {
+      /** `view` is `inbox` unless given; `unreadCount` always counts the inbox. */
       list: async (query: NotificationsQuery = {}) =>
         http.request('/api/v1/notifications', notificationsPageSchema, {
           query: validated(notificationsQuerySchema, query),
         }),
-      setRead: async (id: string, read = true) =>
-        http.request(`/api/v1/notifications/${enc(id)}`, markNotificationResponseSchema, {
-          method: 'PATCH',
-          body: { read },
-        }),
+      update,
+      setRead: async (id: string, read = true) => update(id, { read }),
       readAll: async () =>
         http.request('/api/v1/notifications/read-all', readAllResponseSchema, { method: 'POST' }),
       preferences: async () =>

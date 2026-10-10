@@ -23,7 +23,7 @@ export const LINKED_PANEL: PanelSlot = {
   id: 'linked',
   label: 'Linked work',
   Component: ({ page }) => (
-    <div className="p-3.5 text-12h leading-body">
+    <div className="p-3.5 text-13 leading-body">
       <BacklinksSection pageId={page.id} />
     </div>
   ),

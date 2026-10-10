@@ -1,63 +1,97 @@
 import type { CSSProperties, HTMLAttributes, ReactNode } from 'react';
-import { Icon } from '../../icons/icon.tsx';
 import { cx } from '../../lib/cx.ts';
-import { focusRing } from '../../lib/focus.ts';
+import { IconButton } from '../button/icon-button.tsx';
+import { StatusGlyph, type StatusStage } from '../glyphs/glyphs.tsx';
 
-/** The board's column tracks: equal columns 12px apart, as the Board mock's grid. */
-export function kanbanGridStyle(columns: number): CSSProperties {
-  return { gridTemplateColumns: `repeat(${columns},minmax(0,1fr))` };
+/**
+ * The board's column tracks: equal columns 10px apart (docs/design/premium/kit.css, `.cols`).
+ * With `of` above `columns`, some columns are hidden: the rest keep the width they would have
+ * among all of them, so one column never stretches across the page.
+ */
+export function kanbanGridStyle(columns: number, of = columns): CSSProperties {
+  if (of <= columns) return { gridTemplateColumns: `repeat(${columns},minmax(0,1fr))` };
+  const gap = 'calc(var(--spacing) * 2.5)';
+  return {
+    gridTemplateColumns: `repeat(${columns},minmax(0,calc((100% - ${gap} * ${of - 1}) / ${of})))`,
+  };
 }
 
 export interface KanbanColumnHeaderProps {
-  name: ReactNode;
+  name: string;
+  /** Where the column's first status sits; draws the status glyph. */
+  stage: StatusStage;
   count: number;
-  /** The WIP limit; the count reads "n/limit" and turns warn with a badge when over. */
+  /** The WIP limit: a chip that turns amber once the count reaches it. */
   wipLimit?: number;
-  /** Adds an issue straight into this column. */
+  /** Adds an issue at the foot of this column. */
   onAdd?: () => void;
+  /** The column's ··· menu, already wired to its own trigger. */
+  menu?: ReactNode;
   className?: string;
 }
 
 /**
- * One column heading: 24px tall, 6px side padding, the name in 11.5px tracked capitals (tx3),
- * the mono count in tx5, then "WIP limit" in the warn pair when the column is over, and "+"
- * at the end in tx6.
+ * One column heading (kit.css `.colh`): 32px, the status glyph, the name in sentence case, the
+ * count, the WIP chip, and + and ··· that show on hover and keyboard focus.
  */
 export function KanbanColumnHeader({
   name,
+  stage,
   count,
   wipLimit,
   onAdd,
+  menu,
   className,
 }: KanbanColumnHeaderProps) {
+  const reached = wipLimit !== undefined && count >= wipLimit;
   const over = wipLimit !== undefined && count > wipLimit;
   return (
-    <div className={cx('flex h-6 items-center gap-2 px-1.5', className)}>
-      <span className="text-11h font-semibold tracking-label text-tx3 uppercase">{name}</span>
-      <span
-        aria-label={wipLimit === undefined ? `${count} issues` : `${count} of ${wipLimit} allowed`}
-        className={cx('font-mono text-11h font-medium', over ? 'text-warn-fg' : 'text-tx5')}
-      >
-        {wipLimit === undefined ? count : `${count}/${wipLimit}`}
-      </span>
-      {over && (
-        <span className="rounded-chip bg-warn-bg px-1.5 py-px text-10h font-medium text-warn-fg">
-          WIP limit
-        </span>
+    <div
+      className={cx(
+        'group/colh flex h-8 min-w-0 items-center gap-1.75 px-1 text-13 font-semibold text-tx',
+        className,
       )}
-      {onAdd && (
-        <button
-          type="button"
-          aria-label={`Add issue to ${typeof name === 'string' ? name : 'column'}`}
-          onClick={onAdd}
+    >
+      <StatusGlyph stage={stage} label={name} />
+      <span className="truncate" title={name}>
+        {name}
+      </span>
+      <span
+        aria-label={`${count} ${count === 1 ? 'issue' : 'issues'}`}
+        className="font-medium text-tx-3 tabular-nums"
+      >
+        {count}
+      </span>
+      {wipLimit !== undefined && (
+        <span
+          aria-label={over ? `Over the WIP limit of ${wipLimit}` : `WIP limit ${wipLimit}`}
           className={cx(
-            'ml-auto flex cursor-pointer items-center border-0 bg-transparent p-0 font-semibold text-tx6 hover:text-tx2',
-            focusRing,
+            'shrink-0 rounded-chip px-1.25 text-11 leading-4.25 font-semibold whitespace-nowrap tabular-nums',
+            reached
+              ? 'bg-amber-50 text-amber-tx'
+              : 'bg-sunken text-tx-3 ring-1 ring-line ring-inset',
           )}
         >
-          <Icon name="plus" size={14} />
-        </button>
+          {count} / {wipLimit} WIP
+        </span>
       )}
+      <span
+        className={cx(
+          'ml-auto flex shrink-0 gap-0.5 text-tx-3',
+          'opacity-0 group-focus-within/colh:opacity-100 group-hover/colh:opacity-100 has-[[aria-expanded=true]]:opacity-100 pointer-coarse:opacity-100',
+        )}
+      >
+        {onAdd && (
+          <IconButton
+            keys="C"
+            size="tool"
+            label={`New issue in ${name}`}
+            icon="plus"
+            onClick={onAdd}
+          />
+        )}
+        {menu}
+      </span>
     </div>
   );
 }
@@ -65,15 +99,22 @@ export function KanbanColumnHeader({
 export interface KanbanColumnHeadersProps {
   children: ReactNode;
   columns: number;
+  /** How many columns the board has when some are hidden; see kanbanGridStyle. */
+  of?: number;
   className?: string;
 }
 
-/** The sticky heading row over the lanes: the grid with 2px 11px 10px padding on the page bg. */
-export function KanbanColumnHeaders({ children, columns, className }: KanbanColumnHeadersProps) {
+/** The sticky heading row over the lanes, on the board's sunken canvas. */
+export function KanbanColumnHeaders({
+  children,
+  columns,
+  of,
+  className,
+}: KanbanColumnHeadersProps) {
   return (
     <div
-      style={kanbanGridStyle(columns)}
-      className={cx('sticky top-0 z-2 grid gap-3 bg-bg px-2.75 pt-0.5 pb-2.5', className)}
+      style={kanbanGridStyle(columns, of)}
+      className={cx('sticky top-0 z-2 grid gap-2.5 bg-sunken pt-1', className)}
     >
       {children}
     </div>
@@ -83,18 +124,20 @@ export function KanbanColumnHeaders({ children, columns, className }: KanbanColu
 export interface KanbanCellProps extends HTMLAttributes<HTMLDivElement> {
   /** Names the drop area, e.g. "In review, Auth service". */
   label: string;
-  /** A drag is over this cell: the dashed accent frame of the Board Settings drop zone. */
+  /** A drag is over this cell and may land: the dashed accent frame. */
   dropping?: boolean;
+  /** A drag is over this cell and the workflow refuses it: the dashed amber frame. */
+  refused?: boolean;
+  /** Compact cards sit 6px apart instead of 8px. */
+  compact?: boolean;
 }
 
-/**
- * The drop area of one column inside a lane: cards 8px apart, at least 44px tall, 6px radius.
- * The mock paints no idle background; the drop state is built from the Board Settings "Drop
- * status here" frame on the accent tint.
- */
+/** The drop area of one column inside a lane: cards 8px apart, 2px above and 8px below. */
 export function KanbanCell({
   label,
   dropping = false,
+  refused = false,
+  compact = false,
   className,
   children,
   ...rest
@@ -104,9 +147,11 @@ export function KanbanCell({
       role="group"
       aria-label={label}
       className={cx(
-        'flex min-h-11 flex-col gap-2 rounded-control motion-safe:transition-colors',
+        'flex min-h-11 min-w-0 flex-col rounded-card pt-0.5 pb-2 motion-safe:transition-colors',
+        compact ? 'gap-1.5' : 'gap-2',
         // An outline, not a border, so a drag over the cell never nudges its cards by a pixel.
-        dropping && 'bg-ac-bg2 outline-1 -outline-offset-1 outline-ac-br outline-dashed',
+        dropping && 'bg-acc-50 outline-1 -outline-offset-1 outline-acc-100 outline-dashed',
+        refused && 'bg-amber-50 outline-1 -outline-offset-1 outline-amber outline-dashed',
         className,
       )}
       {...rest}

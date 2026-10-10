@@ -44,7 +44,7 @@ export function BoardDialogs({
         busy={settings.save.isPending}
         error={
           settings.save.error ? (
-            <p className="m-0 text-12h text-danger">{failure(settings.save.error)}</p>
+            <p className="m-0 text-13 text-red">{failure(settings.save.error)}</p>
           ) : undefined
         }
         onConfirm={review.confirmSaveRisk}
@@ -66,7 +66,7 @@ export function BoardDialogs({
         busy={settings.reset.isPending}
         error={
           settings.reset.error ? (
-            <p className="m-0 text-12h text-danger">{failure(settings.reset.error)}</p>
+            <p className="m-0 text-13 text-red">{failure(settings.reset.error)}</p>
           ) : undefined
         }
         onConfirm={review.confirmReset}

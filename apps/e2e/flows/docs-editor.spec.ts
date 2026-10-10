@@ -41,7 +41,8 @@ test('a page is written, kept, renamed, read by its outline, reviewed and publis
   await title.fill('Session store RFC v2');
   await title.press('Enter');
   await expect(body(page)).toBeFocused();
-  const trail = page.getByRole('navigation', { name: 'Breadcrumb' });
+  // The frame's header names the page once it has loaded; the doc's own bar does too.
+  const trail = page.getByRole('navigation', { name: 'Breadcrumb' }).first();
   await expect(trail).toContainText('Session store RFC v2');
   await expect(
     page.getByRole('tree').getByRole('treeitem', { name: 'Session store RFC v2' }),

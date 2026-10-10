@@ -86,7 +86,7 @@ function Sidebar() {
   const items = useMemo(() => flatten(nodes, open), [nodes, open]);
   const eng = { id: '1', key: 'ENG', name: 'Engineering', tone: 'accent' as const };
   return (
-    <aside className="flex h-180 w-65 flex-col border-r border-br bg-sf">
+    <aside className="flex h-180 w-65 flex-col border-r border-line bg-card">
       <SpaceSwitcher
         current={eng}
         meta="184 pages"
@@ -140,8 +140,9 @@ function Sidebar() {
           onRenameCancel={() => setRenaming(null)}
         />
       </div>
-      <div className="mt-auto border-t border-br2 px-4 py-3 text-12h font-medium text-ac">
-        + New page
+      <div className="mt-auto flex items-center gap-1 border-t border-line-2 px-4 py-3 text-13 font-medium text-acc">
+        <Icon name="plus" size={14} />
+        New page
       </div>
     </aside>
   );

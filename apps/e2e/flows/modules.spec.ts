@@ -18,7 +18,7 @@ async function disableWork(page: Page) {
   const dialog = page.getByRole('dialog', { name: 'Disable Work?' });
   await dialog.getByRole('button', { name: 'Disable Work' }).click();
   await expect(dialog).toBeHidden();
-  await expect(workRow(page).getByRole('cell').nth(1)).toHaveText('DISABLED');
+  await expect(workRow(page).getByRole('cell').nth(1)).toHaveText('Disabled');
 }
 
 async function enableWork(page: Page) {
@@ -28,10 +28,12 @@ async function enableWork(page: Page) {
   await dialog.getByRole('radio', { name: /^Everyone/ }).click();
   await dialog.getByRole('button', { name: 'Enable Work' }).click();
   await expect(dialog).toBeHidden();
-  await expect(workRow(page).getByRole('cell').nth(1)).toHaveText('ENABLED');
+  await expect(workRow(page).getByRole('cell').nth(1)).toHaveText('Enabled');
 }
 
-const nav = (page: Page) => page.getByRole('banner').getByRole('navigation', { name: 'Main' });
+/** Work's section of the sidebar: there while Work is on, gone while it is off. */
+const workSection = (page: Page) =>
+  page.getByRole('complementary', { name: 'Sidebar' }).getByRole('region', { name: 'Work' });
 
 test('Work turns off and on twice from Settings › Modules and keeps its data', async ({
   page,
@@ -63,8 +65,7 @@ test('Work turns off and on twice from Settings › Modules and keeps its data',
       for (const viewer of [page, sam]) {
         await viewer.goto('/');
         await expect(viewer.getByRole('heading', { level: 1 })).toBeVisible();
-        await expect(nav(viewer).getByRole('link', { name: 'Board' })).toHaveCount(0);
-        await expect(nav(viewer).getByRole('link', { name: 'Backlog' })).toHaveCount(0);
+        await expect(workSection(viewer)).toHaveCount(0);
       }
       await expect(samApi.call('GET', `/work/issues/${keys[0]}`)).rejects.toThrow(/ 40[34] /);
       await sam.goto(`/work/board/${project.key}`);
@@ -75,7 +76,7 @@ test('Work turns off and on twice from Settings › Modules and keeps its data',
       await enableWork(page);
       for (const viewer of [page, sam]) {
         await viewer.goto('/');
-        await expect(nav(viewer).getByRole('link', { name: 'Board' })).toBeVisible();
+        await expect(workSection(viewer)).toBeVisible();
       }
       // Everything written before is back: the issues, their comment, and the key counter.
       await sam.goto(`/work/board/${project.key}`);

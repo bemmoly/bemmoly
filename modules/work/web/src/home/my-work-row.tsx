@@ -1,62 +1,44 @@
-import { formatRelative } from '@bemmoly/core-web';
-import {
-  ISSUE_TYPES,
-  KeyChip,
-  PriorityGlyph,
-  Skeleton,
-  StatusBadge,
-  TypeGlyph,
-  type IssueType,
-  type StatusCategory,
-} from '@bemmoly/ui';
+import { PriorityGlyph, RelativeTime, Skeleton, TypeGlyph } from '@bemmoly/ui';
 import type { MyIssue } from '../../../shared/index.ts';
+import { linkTo } from '../hooks/issue-navigation.ts';
+import { ROW_KEY } from './use-row-keys.ts';
 
-/** Work's three status categories, drawn with the chip colours the mocks give them. */
-const CATEGORY: Record<MyIssue['status']['category'], StatusCategory> = {
-  todo: 'todo',
-  in_progress: 'progress',
-  done: 'done',
-};
-
-const glyphType = (key: string): IssueType => (key in ISSUE_TYPES ? (key as IssueType) : 'task');
-
-/** "Due Oct 7" when the issue has a due date, else when it last changed. */
-function when(issue: MyIssue): string {
+/** "Due Oct 7" when the issue has a due date; otherwise when it last changed. */
+function When({ issue }: { issue: MyIssue }) {
   if (issue.dueAt) {
     const due = new Date(`${issue.dueAt}T00:00:00`);
-    return `Due ${due.toLocaleDateString('en', { month: 'short', day: 'numeric' })}`;
+    const text = `Due ${due.toLocaleDateString('en', { month: 'short', day: 'numeric' })}`;
+    return <span className="text-12 whitespace-nowrap text-tx-3 tabular-nums">{text}</span>;
   }
-  return `Updated ${formatRelative(issue.updatedAt)}`;
+  return (
+    <span className="text-12 whitespace-nowrap text-tx-3">
+      <span className="hidden sm:inline">Updated </span>
+      <RelativeTime iso={issue.updatedAt} />
+    </span>
+  );
 }
 
 export const issueHref = (key: string) => `/work/issue/${key}`;
 
-const ROW =
-  'grid grid-cols-[20px_84px_minmax(0,1fr)_120px_90px_28px] items-center gap-2.5 border-b border-br-row px-4 py-2.25 last:border-b-0';
+/** The list row of the review (kit.css `.lrow`): 36px, type, key, title, then its facts. */
+export const ROW =
+  'grid h-9 grid-cols-[16px_64px_minmax(0,1fr)_auto_16px] items-center gap-2.5 border-b border-line-2 px-3.5 last:border-b-0';
 
-/** One row of the Home mock's list: type, key, title, status, when, priority. */
+/** One of my issues: type, key, title, when, priority; the whole row opens the issue. */
 export function MyWorkRow({ issue }: { issue: MyIssue }) {
   return (
     <a
-      href={issueHref(issue.key)}
-      className={`${ROW} text-tx no-underline hover:bg-sf2 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ac motion-safe:transition-colors`}
+      {...linkTo(issueHref(issue.key))}
+      {...{ [ROW_KEY]: '' }}
+      className={`${ROW} text-13 text-tx no-underline hover:bg-hover focus-ring-inset`}
     >
-      <TypeGlyph type={glyphType(issue.type.key)} />
-      <KeyChip issueKey={issue.key} />
+      <TypeGlyph type={issue.type} />
+      <span className="font-mono text-11 text-tx-3">{issue.key}</span>
       <span className="truncate" title={issue.title}>
         {issue.title}
       </span>
-      <StatusBadge
-        category={CATEGORY[issue.status.category]}
-        label={issue.status.name}
-        className="justify-self-start"
-      />
-      <span className="truncate text-12 text-tx4 tabular-nums" title={when(issue)}>
-        {when(issue)}
-      </span>
-      <span className="text-center">
-        <PriorityGlyph priority={issue.priority} />
-      </span>
+      <When issue={issue} />
+      <PriorityGlyph priority={issue.priority} />
     </a>
   );
 }
@@ -66,15 +48,12 @@ const TITLES = ['62%', '48%', '70%', '54%'];
 /** A row while the lists load, as tall as a loaded one. */
 export function MyWorkRowSkeleton({ index }: { index: number }) {
   return (
-    <div aria-hidden className={`${ROW} text-13`}>
+    <div aria-hidden className={ROW}>
       <Skeleton width={14} height={14} className="rounded-chip" />
+      <Skeleton width={52} height={9} />
+      <Skeleton width={TITLES[index % TITLES.length]} height={10} />
       <Skeleton width={56} height={9} />
-      <span className="flex h-5.5 items-center">
-        <Skeleton width={TITLES[index % TITLES.length]} height={10} />
-      </span>
-      <Skeleton width={72} height={18} className="rounded-xs" />
-      <Skeleton width={64} height={9} />
-      <Skeleton width={12} height={10} className="justify-self-center" />
+      <Skeleton width={12} height={10} />
     </div>
   );
 }

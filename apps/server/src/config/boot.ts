@@ -62,7 +62,12 @@ export async function bootApplication(options: BootOptions): Promise<Booted> {
     ? createRealtimeService({
         sql: database.sql,
         logger: logger.child({ component: 'realtime' }),
-        hub: identity.moduleAccess ? { moduleAccess: identity.moduleAccess } : {},
+        hub: {
+          ...(identity.moduleAccess ? { moduleAccess: identity.moduleAccess } : {}),
+          ...(identity.authorizeSubscription
+            ? { authorizeSubscription: identity.authorizeSubscription }
+            : {}),
+        },
       })
     : undefined;
   const jobQueue = createJobQueueHandle();

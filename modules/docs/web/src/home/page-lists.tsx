@@ -72,7 +72,7 @@ export function PageLists({ spaces, person }: PageListsProps) {
 
   return (
     <Card className="overflow-hidden">
-      <div className="border-b border-br2 px-4">
+      <div className="border-b border-line-2 px-4">
         <Tabs
           size="sm"
           bordered={false}
@@ -108,7 +108,7 @@ export function PageLists({ spaces, person }: PageListsProps) {
           </div>
         )}
         {more?.hasNextPage && (
-          <div className="flex justify-center border-t border-br-row py-1.5">
+          <div className="flex justify-center border-t border-line-2 py-1.5">
             <Button
               size="sm"
               variant="ghost"

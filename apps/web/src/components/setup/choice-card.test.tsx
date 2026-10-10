@@ -42,7 +42,7 @@ describe('ChoiceCard', () => {
     expect(card.getAttribute('aria-disabled')).toBe('true');
     expect(card.getAttribute('aria-checked')).toBe('false');
     expect(card.hasAttribute('disabled')).toBe(false);
-    expect(screen.getByText('COMING SOON')).toBeTruthy();
+    expect(screen.getByText('Coming soon')).toBeTruthy();
     expect(screen.queryByText('RECOMMENDED')).toBeNull();
     await user.tab();
     expect(document.activeElement).toBe(card);

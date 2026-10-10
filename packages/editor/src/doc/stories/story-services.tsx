@@ -16,26 +16,26 @@ const ISSUES: Record<
   'PLT-204': {
     status: 'review',
     label: 'In review',
-    square: 'bg-ok',
+    square: 'bg-green',
     title: 'Session store migration to Postgres',
   },
   'PLT-218': {
     status: 'progress',
     label: 'In progress',
-    square: 'bg-ok',
+    square: 'bg-green',
     title: 'Rotate service tokens on every deploy',
   },
   'PLT-222': {
     status: 'todo',
     label: 'To do',
-    square: 'bg-ac',
+    square: 'bg-acc',
     title: 'Rate-limit token refresh endpoint',
   },
 };
 
 function LiveIssue({ issueKey }: { issueKey: string }): ReactNode {
   const issue = ISSUES[issueKey];
-  if (!issue) return <KeyChip inline issueKey={issueKey} typeClassName="bg-br3" />;
+  if (!issue) return <KeyChip inline issueKey={issueKey} typeClassName="bg-line" />;
   return (
     <KeyChip inline issueKey={issueKey} href="#" typeClassName={issue.square} title={issue.title}>
       <StatusBadge size="xs" category={issue.status} label={issue.label} className="font-sans" />
@@ -45,16 +45,16 @@ function LiveIssue({ issueKey }: { issueKey: string }): ReactNode {
 
 function LiveIssueTable({ title }: { title: string }) {
   return (
-    <div className="flex flex-col rounded-card border border-br text-13">
-      <div className="border-b border-br-row px-3 py-2 text-12h font-semibold text-tx3">
+    <div className="flex flex-col rounded-card border border-line text-13">
+      <div className="border-b border-line-2 px-3 py-2 text-13 font-semibold text-tx-2">
         {title || 'Issues'}
       </div>
       {Object.entries(ISSUES).map(([key, issue]) => (
         <div
           key={key}
-          className="flex items-center gap-3 border-b border-br-row px-3 py-2 last:border-b-0"
+          className="flex items-center gap-3 border-b border-line-2 px-3 py-2 last:border-b-0"
         >
-          <span className="w-16 font-mono text-11h text-tx4">{key}</span>
+          <span className="w-16 font-mono text-12 text-tx-3">{key}</span>
           <span className="min-w-0 flex-1 truncate">{issue.title}</span>
           <StatusBadge size="sm" category={issue.status} label={issue.label} />
         </div>

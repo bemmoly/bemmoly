@@ -1,12 +1,5 @@
 import { formatRelative } from '@bemmoly/core-web';
-import {
-  Badge,
-  Breadcrumbs,
-  EmptyState,
-  Table,
-  TableSkeleton,
-  type TableColumn,
-} from '@bemmoly/ui';
+import { Badge, EmptyState, PageTitle, Table, TableSkeleton, type TableColumn } from '@bemmoly/ui';
 import { Icon } from '@bemmoly/ui/icons';
 import type { Project, Workflow } from '../../../shared/index.ts';
 import { useWorkflowUsage } from '../hooks/workflow-usage.ts';
@@ -19,7 +12,7 @@ interface Row {
 
 const plural = (count: number, word: string) => `${count} ${word}${count === 1 ? '' : 's'}`;
 
-function columns(): TableColumn<Row>[] {
+function columns(projectId: string): TableColumn<Row>[] {
   return [
     {
       key: 'name',
@@ -30,22 +23,22 @@ function columns(): TableColumn<Row>[] {
           <span className="truncate font-medium text-tx" title={workflow.name}>
             {workflow.name}
           </span>
-          <Badge tone={workflow.projectId ? 'accent' : 'neutral'}>
-            {workflow.projectId ? 'PROJECT COPY' : 'ORG DEFAULT'}
-          </Badge>
+          <span className="shrink-0 text-12 text-tx-3">
+            {workflow.projectId ? 'This project' : 'Default'}
+          </span>
         </span>
       ),
     },
     {
       key: 'version',
       header: 'Version',
-      width: '150px',
+      width: '100px',
       render: ({ workflow }) => (
         <span className="flex items-center gap-2">
-          <span className="font-mono text-12">
+          <span className="font-mono text-12 tabular-nums">
             {workflow.publishedVersion > 0 ? `v${workflow.publishedVersion}` : 'Unpublished'}
           </span>
-          {workflow.hasDraft && <Badge tone="amber">DRAFT</Badge>}
+          {workflow.hasDraft && <Badge tone="amber">Draft</Badge>}
         </span>
       ),
     },
@@ -53,22 +46,32 @@ function columns(): TableColumn<Row>[] {
       key: 'projects',
       header: 'Projects using it',
       width: '200px',
+      hideOnPhone: true,
       render: ({ using }) => (
-        <span className="truncate text-tx3" title={using.map((project) => project.name).join(', ')}>
-          {using.length === 0
-            ? 'None'
-            : using.length <= 2
-              ? using.map((project) => project.key).join(', ')
-              : plural(using.length, 'project')}
+        <span
+          className="flex min-w-0 items-center gap-2 text-tx-2"
+          title={using.map((project) => project.name).join(', ')}
+        >
+          {using.some((project) => project.id === projectId) && (
+            <span className="size-1.5 shrink-0 rounded-full bg-acc" aria-label="Runs here" />
+          )}
+          <span className="truncate">
+            {using.length === 0
+              ? 'None'
+              : using.length <= 2
+                ? using.map((project) => project.key).join(', ')
+                : plural(using.length, 'project')}
+          </span>
         </span>
       ),
     },
     {
       key: 'published',
       header: 'Published',
-      width: '130px',
+      width: '110px',
+      hideOnPhone: true,
       render: ({ workflow }) => (
-        <span className="text-tx4">
+        <span className="text-tx-3">
           {workflow.publishedAt ? formatRelative(workflow.publishedAt) : 'Never'}
         </span>
       ),
@@ -77,8 +80,9 @@ function columns(): TableColumn<Row>[] {
 }
 
 /**
- * Work settings › Workflows: the org defaults and the project's own copy,
- * each with its published version and who runs it; a row opens the editor.
+ * Project settings › Workflow: the default and the project's own copy, each with its
+ * published version and who runs it (a dot marks the one this project runs); a row, or
+ * Enter on it, opens the editor.
  */
 export function WorkflowsList({
   project,
@@ -92,33 +96,21 @@ export function WorkflowsList({
     .filter((workflow) => workflow.projectId === null || workflow.projectId === project.id)
     .map((workflow) => ({ workflow, using: usage(workflow) }));
   return (
-    <div className="flex max-w-240 flex-col gap-5 px-6 pt-3.5 pb-12">
-      <div className="flex flex-col gap-3">
-        <Breadcrumbs
-          items={[
-            { label: 'Projects' },
-            { label: project.name },
-            { label: 'Settings' },
-            { label: 'Workflows' },
-          ]}
-        />
-        <div className="flex flex-col gap-1">
-          <h1 className="m-0 text-22 font-semibold tracking-title">Workflows</h1>
-          <p className="m-0 text-12h text-tx4">
-            Statuses and the transitions between them. A project runs its own copy when it has one,
-            and the org default otherwise.
-          </p>
-        </div>
-      </div>
+    <div className="flex flex-col gap-6">
+      <PageTitle
+        variant="settings"
+        title="Workflow"
+        description="Statuses and the moves between them. A project runs its own copy when it has one, and the default otherwise. Open one to edit a draft; publishing shows what changes first."
+      />
       {isPending ? (
         <TableSkeleton
           label="Loading workflows"
           rows={2}
           columns={[
             { width: 'minmax(0,1fr)' },
-            { width: '150px' },
+            { width: '100px' },
             { width: '200px' },
-            { width: '130px' },
+            { width: '110px' },
           ]}
         />
       ) : error ? (
@@ -130,7 +122,7 @@ export function WorkflowsList({
       ) : (
         <Table
           label="Workflows"
-          columns={columns()}
+          columns={columns(project.id)}
           rows={rows}
           rowKey={(row) => row.workflow.id}
           onRowClick={(row) => navigate(editorPath(row.workflow.id))}

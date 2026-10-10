@@ -16,6 +16,7 @@ interface EpicRow {
   key: string;
   title: string;
   status_id: string;
+  color: string | null;
   done: number;
   total: number;
   done_points: string;
@@ -40,7 +41,7 @@ export function createBacklogService(deps: PlanningDeps) {
         openSprints(sql, project.id),
       ]);
       const sprintIds = sprintRows.map((sprint) => sprint.id);
-      const [sets, rows, epics] = await Promise.all([
+      const [sets, rows, epics, blockers] = await Promise.all([
         statusSets(sql, project.id, boards[0] ? parseConfig(boards[0].config) : null),
         sql<IssueRow[]>`
           select ${sql.unsafe(ISSUE_COLUMNS)} from issues i
@@ -50,7 +51,7 @@ export function createBacklogService(deps: PlanningDeps) {
               where t.id = i.type_id and t.level = 'epic')
           order by i.rank, i.id`,
         sql<EpicRow[]>`
-          select e.id, e.key, e.title, e.status_id,
+          select e.id, e.key, e.title, e.status_id, e.color,
             count(c.id)::int as total,
             (count(c.id) filter (where cs.category = 'done'))::int as done,
             coalesce(sum(c.estimate), 0) as total_points,
@@ -63,17 +64,27 @@ export function createBacklogService(deps: PlanningDeps) {
           where e.project_id = ${project.id} and e.deleted_at is null and es.category <> 'done'
           group by e.id
           order by e.rank, e.id`,
+        sql<{ target_id: string; keys: string[] }[]>`
+          select bl.target_id, array_agg(bi.key order by bi.key) as keys
+          from issue_links bl
+          join issues t on t.id = bl.target_id and t.project_id = ${project.id}
+            and t.deleted_at is null
+          join issues bi on bi.id = bl.source_id and bi.deleted_at is null
+          join workflow_statuses bs on bs.id = bi.status_id and bs.category <> 'done'
+          where bl.kind = 'blocks'
+          group by bl.target_id`,
       ]);
       const grouped = groupBacklog(sprintRows.map(toSprint), rows.map(toIssue), sets.done);
       return {
         projectId: project.id,
         ...grouped,
+        blocked: Object.fromEntries(blockers.map((row) => [row.target_id, row.keys])),
         epics: epics.map((epic): EpicProgress => ({
           id: epic.id,
           key: epic.key,
           title: epic.title,
           statusId: epic.status_id,
-          color: null,
+          color: epic.color,
           done: epic.done,
           total: epic.total,
           donePoints: Number(epic.done_points),

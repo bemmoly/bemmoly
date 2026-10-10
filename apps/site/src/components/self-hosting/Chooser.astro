@@ -16,16 +16,16 @@ const ANSWERS = ['Yes', 'No'] as const;
 <div
   data-chooser
   hidden
-  class="flex flex-col gap-4 rounded-window border border-br bg-sf2 p-5 dark:bg-sf"
+  class="flex flex-col gap-4 rounded-window border border-line bg-side p-5 dark:bg-card"
 >
   <h3 class="text-17 font-semibold tracking-brand text-tx">Which should I pick?</h3>
   <div class="grid gap-4 sm:grid-cols-3">
     {QUESTIONS.map((question) => (
       <fieldset class="min-w-0">
-        <legend class="mb-2 text-14 font-medium text-tx2">{question.text}</legend>
-        <div class="flex rounded-control bg-chip p-0.5">
+        <legend class="mb-2 text-14 font-medium text-tx-2">{question.text}</legend>
+        <div class="flex rounded-control bg-line-2 p-0.5">
           {ANSWERS.map((answer) => (
-            <label class="flex-1 cursor-pointer rounded-sm py-1.5 text-center text-14 font-medium text-tx3 has-checked:bg-sf has-checked:text-tx has-checked:shadow-seg has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-ac">
+            <label class="flex-1 cursor-pointer rounded-chip py-1.5 text-center text-14 font-medium text-tx-2 has-checked:bg-card has-checked:text-tx has-checked:shadow-e1 has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-acc">
               <input
                 type="radio"
                 name={question.name}
@@ -39,7 +39,7 @@ const ANSWERS = ['Yes', 'No'] as const;
       </fieldset>
     ))}
   </div>
-  <p data-chooser-result aria-live="polite" class="text-14h leading-desc text-tx3">
+  <p data-chooser-result aria-live="polite" class="text-14h leading-desc text-tx-2">
     Answer the questions to see where to start.
   </p>
 </div>

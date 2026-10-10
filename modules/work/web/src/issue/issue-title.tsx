@@ -1,37 +1,55 @@
 import type { IssueDetail } from '@bemmoly/module-work/shared';
-import { AiSummary, DrawerTitle, useToast } from '@bemmoly/ui';
-import { useState } from 'react';
-import { useUpdateIssue } from '../hooks/issue-detail.ts';
+import { DrawerTitle } from '@bemmoly/ui';
+import { useLayoutEffect, useRef, useState } from 'react';
 import { cx } from './cx.ts';
+import { useIssueEdit } from './use-issue-edit.ts';
 
-const PAGE = 'm-0 text-24 leading-title font-semibold tracking-title text-pretty';
+/** The page title reads like a document's: the largest size, tight tracking, no frame. */
+const TYPE = {
+  page: 'text-24 leading-title font-semibold tracking-title',
+  panel: 'text-16 leading-title font-semibold tracking-brand',
+} as const;
 
-/** The title, 24px on the page and 18px in the slide-over; a click edits it in place. */
+/**
+ * The title, edited in place: a click puts the caret where the text was, with the same type
+ * and wrapping, so nothing moves. Enter or leaving the field saves, Escape puts it back.
+ */
 export function IssueTitle({ issue, size }: { issue: IssueDetail; size: 'page' | 'panel' }) {
   const [draft, setDraft] = useState<string | null>(null);
-  const update = useUpdateIssue(issue.key);
-  const toast = useToast();
+  const { edit } = useIssueEdit(issue.key);
+  const field = useRef<HTMLTextAreaElement>(null);
+
+  useLayoutEffect(() => {
+    const box = field.current;
+    if (!box) return;
+    box.style.height = '0px';
+    box.style.height = `${box.scrollHeight}px`;
+  }, [draft]);
 
   const commit = () => {
     const next = draft?.trim() ?? '';
     setDraft(null);
     if (!next || next === issue.title) return;
-    update.mutate(
-      { title: next },
-      {
-        onError: (error) =>
-          toast.show({ tone: 'danger', title: 'The title was not saved', body: error.message }),
-      },
-    );
+    edit({ body: { title: next }, what: 'The title' });
   };
+
+  const shared = cx(
+    '-mx-1.5 block w-[calc(100%+0.75rem)] rounded-control px-1.5 py-0.5 text-left font-sans text-tx text-pretty',
+    TYPE[size],
+  );
 
   if (draft !== null) {
     return (
       <textarea
+        ref={field}
         aria-label="Title"
         autoFocus
-        rows={2}
+        rows={1}
         value={draft}
+        onFocus={(event) => {
+          const end = event.currentTarget.value.length;
+          event.currentTarget.setSelectionRange(end, end);
+        }}
         onChange={(event) => setDraft(event.target.value.replace(/\n/g, ' '))}
         onBlur={commit}
         onKeyDown={(event) => {
@@ -39,39 +57,28 @@ export function IssueTitle({ issue, size }: { issue: IssueDetail; size: 'page' |
             event.preventDefault();
             commit();
           }
-          if (event.key === 'Escape') setDraft(null);
+          if (event.key === 'Escape') {
+            event.stopPropagation();
+            setDraft(null);
+          }
         }}
         className={cx(
-          'w-full resize-none rounded-control border border-ac bg-sf px-2 py-1 font-sans text-tx shadow-ring outline-0',
-          size === 'page' ? PAGE : 'text-18 leading-title font-semibold tracking-brand',
-          '-mx-2 -my-1',
+          shared,
+          'm-0 resize-none overflow-hidden border-0 bg-hover outline-2 outline-offset-0 outline-acc',
         )}
       />
     );
   }
 
-  const edit = () => setDraft(issue.title);
   const title = (
     <button
       type="button"
-      onClick={edit}
-      title="Edit the title"
-      className="-mx-1 cursor-text rounded-sm border-0 bg-transparent px-1 text-left text-tx hover:bg-bg2"
+      onClick={() => setDraft(issue.title)}
+      aria-label={`${issue.title}. Edit the title`}
+      className={cx(shared, 'cursor-text border-0 bg-transparent hover:bg-hover focus-ring')}
     >
       {issue.title}
     </button>
   );
-  return size === 'page' ? <h1 className={PAGE}>{title}</h1> : <DrawerTitle>{title}</DrawerTitle>;
-}
-
-/** The AI summary card in its empty state: AI is not part of this release. */
-export function SummaryPlaceholder({ size }: { size: 'page' | 'panel' }) {
-  return (
-    <AiSummary variant={size} source="not available yet">
-      <span className="text-tx4">
-        A summary of the comments, links and history will appear here once AI is turned on for this
-        workspace.
-      </span>
-    </AiSummary>
-  );
+  return size === 'page' ? <h1 className="m-0">{title}</h1> : <DrawerTitle>{title}</DrawerTitle>;
 }

@@ -1,88 +1,68 @@
-import { ISSUE_TYPE_LEVELS, type IssueTypeLevel } from '@bemmoly/module-work/shared';
-import { Badge, Button, ISSUE_TYPES, SettingsSection, Skeleton, TypeGlyph } from '@bemmoly/ui';
-import { useState, type ReactNode } from 'react';
+import { ISSUE_TYPE_LEVELS } from '@bemmoly/module-work/shared';
+import { Icon } from '@bemmoly/ui/icons';
+import { Button, useToast } from '@bemmoly/ui';
+import { useState } from 'react';
 import { useSettingsAccess } from '../../hooks/settings-access.ts';
 import { useSchemeFlow } from '../../hooks/settings-scheme-flow.ts';
 import { useIssueTypes } from '../../hooks/settings-schemes.ts';
 import { useProject } from '../../shared/index.ts';
 import { AddDialog } from './add-dialog.tsx';
+import { IssueTypesTable, LEVELS } from './issue-types-table.tsx';
 import { SchemePage } from './scheme-page.tsx';
 
-const LEVELS: Record<IssueTypeLevel, string> = {
-  epic: 'Epic level',
-  standard: 'Standard',
-  subtask: 'Subtask level',
-};
-
-const glyphOf = (key: string) => (key in ISSUE_TYPES ? (key as keyof typeof ISSUE_TYPES) : null);
-
 /**
- * Project settings › Issue types: the types the project offers, from the org
- * default until it is overridden, with a project's own types marked as the
- * Workflow mock's type list marks them.
+ * Project settings › Issue types: the types the project offers, from the org default until
+ * it is overridden. Once it is, they rename in place and reorder by drag or keyboard.
  */
-export function IssueTypesPage({
-  projectKey,
-  nav,
-}: {
-  projectKey: string | undefined;
-  nav: ReactNode;
-}) {
+export function IssueTypesPage({ projectKey }: { projectKey: string | undefined }) {
   const { project } = useProject(projectKey);
   const access = useSettingsAccess();
   const flow = useSchemeFlow(project?.id, 'issue_types');
   const types = useIssueTypes(project?.id);
+  const toast = useToast();
   const [adding, setAdding] = useState(false);
   const overridden = flow.status?.overridden ?? false;
+  const editable = overridden && access.configureProject;
+  const rows = types.list.data ?? [];
+  const failed = (title: string) => (error: Error) =>
+    toast.show({ tone: 'danger', title, body: error.message });
   return (
     <SchemePage
-      project={project}
       title="Issue types"
       description="The kinds of work this project tracks and how they nest: Epic › Story, Bug, Task, Incident › Subtask."
       flow={flow}
       canConfigure={access.configureProject}
-      nav={nav}
     >
-      <SettingsSection
-        title="Issue types"
-        hint={overridden ? undefined : 'Override the scheme to change them'}
-        layout="rows"
-        actions={
-          overridden && access.configureProject ? (
-            <Button size="xs" onClick={() => setAdding(true)}>
-              + Add
-            </Button>
-          ) : undefined
+      <div className="flex items-center gap-3">
+        <p className="m-0 flex-1 text-12 text-tx-3">
+          {editable
+            ? 'Click a name to rename it. Drag a row, or focus its grip and use the arrow keys, to change the order pickers show.'
+            : 'Override the scheme to rename, reorder or add types.'}
+        </p>
+        {editable && (
+          <Button size="xs" icon={<Icon name="plus" size={14} />} onClick={() => setAdding(true)}>
+            Add issue type
+          </Button>
+        )}
+      </div>
+      <IssueTypesTable
+        rows={rows}
+        loading={types.list.isPending}
+        editable={editable}
+        onRename={(type, name) =>
+          types.update.mutate(
+            { typeId: type.id, body: { name } },
+            { onError: failed(`${type.name} was not renamed`) },
+          )
         }
-      >
-        {types.list.isPending && <Skeleton className="my-2 h-20" />}
-        {(types.list.data ?? []).map((type) => {
-          const glyph = glyphOf(type.key);
-          return (
-            <div
-              key={type.id}
-              className="flex items-center gap-2.5 border-b border-br-row py-2.25 last:border-b-0"
-            >
-              {glyph ? (
-                <TypeGlyph type={glyph} size={18} />
-              ) : (
-                <span
-                  aria-hidden
-                  className="flex size-4.5 items-center justify-center rounded-chip bg-tx4 text-10 text-on-solid"
-                >
-                  {type.icon ?? '•'}
-                </span>
-              )}
-              <span className="flex min-w-0 flex-1 flex-col gap-px">
-                <span className="font-semibold">{type.name}</span>
-                <span className="text-11h text-tx5">{type.description ?? LEVELS[type.level]}</span>
-              </span>
-              <span className="text-12 text-tx5">{LEVELS[type.level]}</span>
-              {type.projectId && !type.originId && <Badge tone="accent">PROJECT</Badge>}
-            </div>
-          );
-        })}
-      </SettingsSection>
+        onMove={(from, to) => {
+          const ids = rows.map((row) => row.id);
+          const [moved] = ids.splice(from, 1);
+          if (!moved) return;
+          ids.splice(to, 0, moved);
+          types.reorder.mutate(ids, { onError: failed('The new order was not saved') });
+        }}
+      />
       <AddDialog
         open={adding}
         title="Add an issue type"

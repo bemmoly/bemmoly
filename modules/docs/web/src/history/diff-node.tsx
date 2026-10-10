@@ -98,28 +98,28 @@ export function blockShell(
       return <tr {...extra}>{children}</tr>;
     case 'tableCell':
       return (
-        <td className="border border-br px-2 py-1 align-top" {...extra}>
+        <td className="border border-line px-2 py-1 align-top" {...extra}>
           {children}
         </td>
       );
     case 'tableHeader':
       return (
         <th
-          className="border border-br bg-sf2 px-2 py-1 text-left align-top font-semibold"
+          className="border border-line bg-side px-2 py-1 text-left align-top font-semibold"
           {...extra}
         >
           {children}
         </th>
       );
     case 'horizontalRule':
-      return <hr className="border-br" {...extra} />;
+      return <hr className="border-line" {...extra} />;
     default:
       return (
         <div
-          className="flex flex-col gap-1 rounded-panel border border-br bg-sf2 px-3 py-2"
+          className="flex flex-col gap-1 rounded-control border border-line bg-side px-3 py-2"
           {...extra}
         >
-          <span className="text-11 font-medium tracking-caps text-tx5 uppercase">
+          <span className="text-11 font-medium tracking-caps text-tx-3 uppercase">
             {blockName(node.type)}
           </span>
           {children}
@@ -138,7 +138,7 @@ export function StaticNode({ node, extra }: { node: DiffNode; extra?: ShellProps
   }
   if (node.type === 'image') {
     const alt = String(node.attrs?.['alt'] ?? '');
-    return blockShell(node, <span className="text-tx4">{alt || 'An image'}</span>, extra);
+    return blockShell(node, <span className="text-tx-3">{alt || 'An image'}</span>, extra);
   }
   return blockShell(
     node,

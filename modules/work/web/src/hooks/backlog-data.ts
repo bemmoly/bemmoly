@@ -37,8 +37,11 @@ export interface BacklogData {
   epicTypeId: string | undefined;
   standardTypes: Array<{ id: string; name: string }>;
   people: Array<{ id: string; name: string }>;
+  /** The signed-in person, for "Only my issues" and "Assign to me". */
+  meId: string | undefined;
   isPending: boolean;
   error: Error | null;
+  refetch: () => Promise<unknown>;
 }
 
 /**
@@ -100,11 +103,13 @@ export function useBacklogData(pathKey: string | undefined): BacklogData {
     containers,
     lookups,
     cadenceDays: board?.config.cadenceDays ?? 14,
+    meId: me.data?.user.id,
     defaultTypeId: (standardTypes.find((type) => type.key === 'story') ?? standardTypes[0])?.id,
     epicTypeId: types.data?.find((type) => type.level === 'epic')?.id,
     standardTypes: standardTypes.map((type) => ({ id: type.id, name: type.name })),
     people: (users.data?.items ?? []).map((user) => ({ id: user.id, name: user.name })),
     isPending: projectPending || (enabled && backlog.isPending),
     error: backlog.error,
+    refetch: backlog.refetch,
   };
 }

@@ -1,6 +1,11 @@
 import type { Comment, IssueDetail } from '@bemmoly/module-work/shared';
-import { formatRelative } from '@bemmoly/core-web';
-import { ActivityItem, SectionHeading, SegmentedControl, Skeleton } from '@bemmoly/ui';
+import {
+  HistoryItem,
+  RelativeTime,
+  SectionHeading,
+  SegmentedControl,
+  SkeletonText,
+} from '@bemmoly/ui';
 import { useMemo, useState } from 'react';
 import {
   useAddComment,
@@ -12,9 +17,10 @@ import {
 } from '../hooks/issue-activity.ts';
 import { usePeople, useViewer } from '../hooks/issue-people.ts';
 import type { IssueVocabulary } from '../hooks/issue-vocabulary.ts';
-import { buildActivity, historyVerb, workVerb, type ActivityFilter } from './activity-feed.ts';
+import { buildActivity, workVerb, type ActivityFilter } from './activity-feed.ts';
 import { CommentBox } from './comment-box.tsx';
 import { CommentItem } from './comment-item.tsx';
+import { HistoryLine } from './history-line.tsx';
 import { LogWorkForm } from './log-work-form.tsx';
 
 const TABS: ReadonlyArray<{ value: ActivityFilter; label: string }> = [
@@ -31,9 +37,12 @@ export interface ActivitySectionProps {
   onCreateIssue?: (comment: Comment) => void;
 }
 
-/** Activity: the tabs, the composer and the merged feed, newest first. */
+/**
+ * Activity: the tabs (All by default, so the issue's history shows from the start), the
+ * composer and the merged feed, newest first.
+ */
 export function ActivitySection({ issue, vocabulary, size, onCreateIssue }: ActivitySectionProps) {
-  const [filter, setFilter] = useState<ActivityFilter>(size === 'page' ? 'all' : 'comments');
+  const [filter, setFilter] = useState<ActivityFilter>('all');
   const comments = useComments(issue.key);
   const history = useHistory(issue.key);
   const logs = useWorkLogs(issue.key);
@@ -53,7 +62,6 @@ export function ActivitySection({ issue, vocabulary, size, onCreateIssue }: Acti
     person: (id: string) => person(id).name,
   };
   const me = viewer ?? { id: '', name: 'You', email: '' };
-  const tabs = size === 'page' ? TABS : TABS.slice(1);
 
   return (
     <section className="flex flex-col gap-3" aria-label="Activity">
@@ -66,7 +74,7 @@ export function ActivitySection({ issue, vocabulary, size, onCreateIssue }: Acti
             aria-label="Show in activity"
             value={filter}
             onChange={setFilter}
-            options={tabs}
+            options={TABS}
           />
         }
       />
@@ -81,9 +89,13 @@ export function ActivitySection({ issue, vocabulary, size, onCreateIssue }: Acti
           />
         )
       )}
-      {loading && <Skeleton shape="block" height={56} />}
+      {loading && (
+        <div aria-busy="true">
+          <SkeletonText lines={3} />
+        </div>
+      )}
       {!loading && entries.length === 0 && (
-        <p className="m-0 text-12h text-tx5">
+        <p className="m-0 text-13 text-tx-3">
           {filter === 'work' ? 'No time logged yet.' : 'Nothing here yet.'}
         </p>
       )}
@@ -106,15 +118,20 @@ export function ActivitySection({ issue, vocabulary, size, onCreateIssue }: Acti
         }
         const who = entry.kind === 'history' ? entry.entry.actorId : entry.log.userId;
         return (
-          <ActivityItem
+          <HistoryItem
             key={entry.id}
-            size={size}
             person={{ name: person(who).name }}
-            verb={entry.kind === 'history' ? historyVerb(entry.entry, names) : workVerb(entry.log)}
-            when={formatRelative(entry.at)}
+            when={<RelativeTime iso={entry.at} />}
           >
-            {entry.kind === 'work' && entry.log.note ? entry.log.note : undefined}
-          </ActivityItem>
+            {entry.kind === 'history' ? (
+              <HistoryLine entry={entry.entry} vocabulary={vocabulary} names={names} />
+            ) : (
+              <>
+                {workVerb(entry.log)}
+                {entry.log.note ? <span className="text-tx-3"> · {entry.log.note}</span> : null}
+              </>
+            )}
+          </HistoryItem>
         );
       })}
     </section>

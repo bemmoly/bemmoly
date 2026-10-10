@@ -30,7 +30,7 @@ export function TwoLineCell({
 
 /** A small control or tag: a Select, a role picker, a method tag. */
 export function BoxCell({ width, height = 20 }: { width: number; height?: number }) {
-  return <Skeleton width={width} height={height} className="rounded-sm" />;
+  return <Skeleton width={width} height={height} className="rounded-chip" />;
 }
 
 /** The row menu's ··· button. */

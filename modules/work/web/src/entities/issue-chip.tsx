@@ -1,5 +1,14 @@
 import { navigateInApp } from '@bemmoly/core-web';
-import { KeyChip, Skeleton, StatusBadge, TypeGlyph, type IssueType } from '@bemmoly/ui';
+import {
+  KeyChip,
+  Skeleton,
+  StatusBadge,
+  StatusGlyph,
+  statusStage,
+  TypeGlyph,
+  typeLook,
+  type TypeColorToken,
+} from '@bemmoly/ui';
 import { useQuery } from '@tanstack/react-query';
 import type { MouseEvent } from 'react';
 import { issueHref } from '../home/my-work-row.tsx';
@@ -15,14 +24,14 @@ import { workKeys } from '../shared/keys.ts';
  * reader may not open prints as its bare key.
  */
 
-/** The type square's colour in the inline chip, by glyph. */
-const TYPE_SQUARE: Record<IssueType, string> = {
-  story: 'bg-ok',
-  bug: 'bg-danger',
-  task: 'bg-ac-fill',
-  epic: 'bg-violet',
-  incident: 'bg-warn',
-  subtask: 'bg-tx4',
+/** The type square's colour in the inline chip, by the type's colour. */
+const TYPE_SQUARE: Record<TypeColorToken, string> = {
+  'type-story': 'bg-type-story',
+  'type-bug': 'bg-type-bug',
+  'type-task': 'bg-type-task',
+  'type-epic': 'bg-type-epic',
+  'type-incident': 'bg-type-incident',
+  'type-subtask': 'bg-type-subtask',
 };
 
 export function useIssueSummary(key: string) {
@@ -51,7 +60,7 @@ export function IssueChip({ entityKey }: { entityKey: string }) {
         aria-busy={!isError}
         title={isError ? 'This issue was not found or is not shared with you' : undefined}
       >
-        <KeyChip issueKey={entityKey} inline className={isError ? 'text-tx4' : undefined} />
+        <KeyChip issueKey={entityKey} inline className={isError ? 'text-tx-3' : undefined} />
       </span>
     );
   }
@@ -62,7 +71,7 @@ export function IssueChip({ entityKey }: { entityKey: string }) {
       inline
       href={href}
       title={issue.title}
-      typeClassName={TYPE_SQUARE[typeGlyph(issue.type)]}
+      typeClassName={TYPE_SQUARE[typeLook(issue.type).color]}
       onClick={(event) => follow(event, href)}
     >
       <StatusBadge
@@ -75,7 +84,7 @@ export function IssueChip({ entityKey }: { entityKey: string }) {
 }
 
 const ROW =
-  'flex min-w-0 items-center gap-2.5 rounded-sm border border-br2 bg-sf px-3 py-2 text-13 text-tx no-underline';
+  'flex min-w-0 items-center gap-2.5 rounded-chip border border-line-2 bg-card px-3 py-2 text-13 text-tx no-underline';
 
 /** A "Linked" panel row: type, key, title and status, as one link to the issue. */
 export function IssueCard({ entityKey }: { entityKey: string }) {
@@ -91,7 +100,7 @@ export function IssueCard({ entityKey }: { entityKey: string }) {
   }
   if (isError || !issue) {
     return (
-      <div className={`${ROW} text-tx4`}>
+      <div className={`${ROW} text-tx-3`}>
         <KeyChip issueKey={entityKey} />
         <span className="truncate">Not found or not shared with you</span>
       </div>
@@ -102,18 +111,21 @@ export function IssueCard({ entityKey }: { entityKey: string }) {
     <a
       href={href}
       onClick={(event) => follow(event, href)}
-      className={`${ROW} hover:bg-sf2 focus-visible:outline-2 focus-visible:outline-ac motion-safe:transition-colors`}
+      className={`${ROW} hover:bg-side focus-ring motion-safe:transition-colors`}
     >
       <TypeGlyph type={typeGlyph(issue.type)} />
       <KeyChip issueKey={issue.key} />
       <span className="min-w-0 flex-1 truncate" title={issue.title}>
         {issue.title}
       </span>
-      <StatusBadge
-        size="sm"
-        category={statusTone(issue.status.category, issue.status.name)}
-        label={issue.status.name}
-      />
+      <span className="flex shrink-0 items-center gap-1.5 text-12 text-tx-2">
+        <StatusGlyph
+          stage={statusStage(issue.status.category, issue.status.name)}
+          size={12}
+          decorative
+        />
+        {issue.status.name}
+      </span>
     </a>
   );
 }

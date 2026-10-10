@@ -1,6 +1,8 @@
 import type {
   CreateFieldBody,
   CreateIssueTypeBody,
+  Field,
+  IssueType,
   SchemeKind,
   UpdateFieldBody,
   UpdateIssueTypeBody,
@@ -63,9 +65,26 @@ export function useIssueTypes(projectId: string | undefined) {
   const update = useMutation({
     mutationFn: ({ typeId, body }: { typeId: string; body: UpdateIssueTypeBody }) =>
       api.work.issueTypes.update(typeId, body),
+    onMutate: async ({ typeId, body }) => {
+      await queryClient.cancelQueries({ queryKey: workSettingsKeys.issueTypes(id) });
+      queryClient.setQueryData<IssueType[]>(workSettingsKeys.issueTypes(id), (items) =>
+        items?.map((item) => (item.id === typeId ? { ...item, ...body } : item)),
+      );
+    },
     onSettled: refresh,
   });
-  return { list, create, update };
+  /** Optimistic: the rows move at once and settle on the server's order. */
+  const reorder = useMutation({
+    mutationFn: (ids: string[]) => api.work.issueTypes.reorder(id, ids),
+    onMutate: async (ids) => {
+      await queryClient.cancelQueries({ queryKey: workSettingsKeys.issueTypes(id) });
+      queryClient.setQueryData<IssueType[]>(workSettingsKeys.issueTypes(id), (items) =>
+        items?.map((item) => ({ ...item, position: ids.indexOf(item.id) })),
+      );
+    },
+    onSettled: refresh,
+  });
+  return { list, create, update, reorder };
 }
 
 /** A project's custom fields: the org default ones until the scheme is overridden. */
@@ -85,6 +104,12 @@ export function useFields(projectId: string | undefined) {
   const update = useMutation({
     mutationFn: ({ fieldId, body }: { fieldId: string; body: UpdateFieldBody }) =>
       api.work.fields.update(fieldId, body),
+    onMutate: async ({ fieldId, body }) => {
+      await queryClient.cancelQueries({ queryKey: workSettingsKeys.fields(id) });
+      queryClient.setQueryData<Field[]>(workSettingsKeys.fields(id), (items) =>
+        items?.map((item) => (item.id === fieldId ? { ...item, ...body } : item)),
+      );
+    },
     onSettled: refresh,
   });
   return { list, create, update };

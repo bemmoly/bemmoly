@@ -41,7 +41,12 @@ export const sessionRoutes: MockRoute[] = [
     method: 'GET',
     pattern: '/api/v1/setup/status',
     anonymous: true,
-    handle: (_, db) => ok({ initialized: db.initialized, completedAt: completedAtOf(db) }),
+    handle: (_, db) =>
+      ok({
+        initialized: db.initialized,
+        completedAt: completedAtOf(db),
+        workspaceName: db.initialized ? workspaceLookOf(db).name : null,
+      }),
   },
   {
     method: 'POST',

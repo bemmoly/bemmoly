@@ -63,6 +63,17 @@ function epicTypeIds(db: MockDb): Set<string> {
   );
 }
 
+/**
+ * The colour stored on an epic: the palette in key order within its project, as the server's
+ * changeset paints existing epics, so the Board and the Backlog agree.
+ */
+export function mockEpicColor(epics: readonly { id: string; key: string }[], id: string) {
+  const number = (key: string) => Number(key.split('-').pop());
+  const ordered = [...epics].sort((a, b) => number(a.key) - number(b.key));
+  const index = ordered.findIndex((epic) => epic.id === id);
+  return index < 0 ? null : `epic-${(index % 8) + 1}`;
+}
+
 const points = (issues: BacklogIssueRow[]) =>
   Math.round(issues.reduce((sum, issue) => sum + (issue.estimate ?? 0), 0) * 100) / 100;
 
@@ -82,6 +93,7 @@ export function backlogResponse(db: MockDb) {
         a.id.localeCompare(b.id),
     );
   const planned = live.filter((issue) => !epicTypes.has(issue.typeId));
+  const allEpics = state.issues.filter((issue) => epicTypes.has(issue.typeId));
   const epics = live.filter((issue) => epicTypes.has(issue.typeId) && !done(issue));
   return {
     projectId: WORK_IDS.project,
@@ -95,6 +107,12 @@ export function backlogResponse(db: MockDb) {
       };
     }),
     issues: planned.filter((issue) => issue.sprintId === null && !done(issue)),
+    blocked: Object.fromEntries(
+      live.flatMap((issue) => {
+        const keys = (issue as { blockedBy?: string[] }).blockedBy ?? [];
+        return keys.length > 0 ? [[issue.id, keys]] : [];
+      }),
+    ),
     epics: epics.map((epic) => {
       const children = live.filter((issue) => issue.parentId === epic.id);
       const finished = children.filter(done);
@@ -103,7 +121,7 @@ export function backlogResponse(db: MockDb) {
         key: epic.key,
         title: epic.title,
         statusId: epic.statusId,
-        color: null,
+        color: mockEpicColor(allEpics, epic.id),
         done: finished.length,
         total: children.length,
         donePoints: points(finished),

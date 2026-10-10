@@ -1,15 +1,32 @@
-import type { KeyboardEvent, ReactNode } from 'react';
+import {
+  useRef,
+  useSyncExternalStore,
+  type KeyboardEvent,
+  type HTMLAttributes,
+  type MouseEvent,
+  type ReactNode,
+} from 'react';
 import { cx } from '../../lib/cx.ts';
 import { focusRingInset } from '../../lib/focus.ts';
 import { Button } from '../button/button.tsx';
+import { ALIGN, HEAD_ROW, TableHeading, type TableSort } from './table-head.tsx';
 
 export interface TableColumn<T> {
   key: string;
   header: ReactNode;
-  /** A CSS grid track, as in the mocks: "minmax(0,1.4fr)", "150px", "28px". */
+  /** A CSS grid track: "minmax(0,1.4fr)", "150px", "28px". */
   width: string;
   align?: 'start' | 'center' | 'end';
   render: (row: T) => ReactNode;
+  /** Dropped below 640px so a phone keeps the columns that identify the row. */
+  hideOnPhone?: boolean;
+  /**
+   * Secondary actions (a row's ··· menu): shown on row hover and keyboard focus, always on
+   * touch screens, so nothing is hidden from anyone.
+   */
+  reveal?: boolean;
+  /** The heading sorts by this column; the caller sorts the rows. */
+  sortable?: boolean;
 }
 
 export interface TableFooter {
@@ -29,25 +46,57 @@ export interface TableProps<T> {
   rows: readonly T[];
   rowKey: (row: T) => string;
   onRowClick?: (row: T) => void;
+  /** Right-click on a row, e.g. to open its ··· menu where the pointer is. */
+  onRowContextMenu?: (row: T, event: MouseEvent<HTMLElement>) => void;
   selectedKey?: string;
-  /** md: People users (10px 16px rows). sm: lists inside cards (9px 16px rows). */
+  /** Faded rows: archived ones, or a removal waiting on Undo. */
+  isMuted?: (row: T) => boolean;
+  /** md: 44px rows. sm: 40px rows for lists inside panels. */
   density?: 'md' | 'sm';
+  sort?: TableSort;
+  onSort?: (sort: TableSort) => void;
   footer?: TableFooter;
   /** Shown instead of rows when there are none, e.g. an EmptyState. */
   empty?: ReactNode;
+  /** Extra attributes per row, such as the drop handlers of a reorderable list. */
+  rowProps?: (row: T, index: number) => HTMLAttributes<HTMLDivElement> & { 'data-over'?: boolean };
   className?: string;
 }
 
-const ALIGN = {
-  start: 'justify-self-start text-left',
-  center: 'justify-self-center text-center',
-  end: 'justify-self-end text-right',
-};
+const PHONE = '(max-width: 639px)';
+
+function subscribePhone(onChange: () => void) {
+  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return () => {};
+  const query = window.matchMedia(PHONE);
+  query.addEventListener('change', onChange);
+  return () => query.removeEventListener('change', onChange);
+}
+
+function isPhone() {
+  return typeof window !== 'undefined' && typeof window.matchMedia === 'function'
+    ? window.matchMedia(PHONE).matches
+    : false;
+}
+
+/** Whether the viewport is phone-sized, for components that drop columns there. */
+export function usePhoneWidth(): boolean {
+  return useSyncExternalStore(subscribePhone, isPhone, () => false);
+}
 
 /**
- * The grid table of the People and Board Settings mocks: header on sf2 in 11px tracked capitals,
- * rows divided by br-row, columns as CSS grid tracks. Pagination is keyset: the footer asks for
- * the next page and never shows page numbers.
+ * A secondary control inside a row (a star, a grip): shown on the row's hover or focus, while
+ * its own menu is open, and always on touch screens.
+ */
+export const rowReveal =
+  'opacity-0 motion-safe:transition-opacity motion-safe:duration-100 group-hover/row:opacity-100 group-focus-within/row:opacity-100 focus-visible:opacity-100 aria-expanded:opacity-100 [@media(hover:none)]:opacity-100';
+
+const NAV_KEYS: Record<string, number> = { ArrowDown: 1, j: 1, ArrowUp: -1, k: -1 };
+
+/**
+ * The review's one table (`.tbl`): sentence-case headings in 12px tx-3 over a line, 44px rows
+ * divided by the lighter line, straight on the page with no card around it. Columns are CSS
+ * grid tracks. Rows that open move with ↑↓ or j k and open with Enter; headings can sort.
+ * Pagination is keyset: the footer asks for the next page and never shows page numbers.
  */
 export function Table<T>({
   label,
@@ -55,61 +104,82 @@ export function Table<T>({
   rows,
   rowKey,
   onRowClick,
+  onRowContextMenu,
   selectedKey,
+  isMuted,
   density = 'md',
+  sort,
+  onSort,
   footer,
   empty,
+  rowProps,
   className,
 }: TableProps<T>) {
-  const template = { gridTemplateColumns: columns.map((c) => c.width).join(' ') };
-  const rowPad = density === 'md' ? 'py-2.5' : 'py-2.25';
-  const onKey = (event: KeyboardEvent, row: T) => {
+  const body = useRef<HTMLDivElement>(null);
+  const phone = usePhoneWidth();
+  const shown = phone ? columns.filter((column) => !column.hideOnPhone) : columns;
+  const template = { gridTemplateColumns: shown.map((c) => c.width).join(' ') };
+  const rowHeight = density === 'md' ? 'min-h-11 py-1.5' : 'min-h-10 py-1';
+  const onKey = (event: KeyboardEvent<HTMLDivElement>, row: T) => {
+    if (event.target !== event.currentTarget) return;
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
       onRowClick?.(row);
+      return;
     }
+    const step = NAV_KEYS[event.key];
+    if (!step || event.metaKey || event.ctrlKey || event.altKey) return;
+    const all = [...(body.current?.querySelectorAll<HTMLElement>('[role="row"][tabindex]') ?? [])];
+    const next = all[all.indexOf(event.currentTarget) + step];
+    if (!next) return;
+    event.preventDefault();
+    next.focus();
   };
   return (
-    <div className={cx('overflow-hidden rounded-card border border-br bg-sf', className)}>
+    <div className={cx('min-w-0', className)}>
       <div role="table" aria-label={label} aria-rowcount={rows.length + 1}>
         <div role="rowgroup">
-          <div
-            role="row"
-            style={template}
-            className="grid items-end gap-3 border-b border-br2 bg-sf2 px-4 py-2.25 text-11 font-medium tracking-caps text-tx5 uppercase"
-          >
-            {columns.map((column) => (
-              <span key={column.key} role="columnheader" className={ALIGN[column.align ?? 'start']}>
-                {column.header}
-              </span>
+          <div role="row" style={template} className={HEAD_ROW}>
+            {shown.map((column) => (
+              <TableHeading key={column.key} column={column} sort={sort} onSort={onSort} />
             ))}
           </div>
         </div>
-        <div role="rowgroup">
-          {rows.map((row) => {
+        <div role="rowgroup" ref={body}>
+          {rows.map((row, index) => {
             const key = rowKey(row);
             const selected = key === selectedKey;
             return (
               <div
+                {...rowProps?.(row, index)}
                 key={key}
                 role="row"
                 aria-selected={onRowClick ? selected : undefined}
                 tabIndex={onRowClick ? 0 : undefined}
                 onClick={onRowClick ? () => onRowClick(row) : undefined}
+                onContextMenu={
+                  onRowContextMenu ? (event) => onRowContextMenu(row, event) : undefined
+                }
                 onKeyDown={onRowClick ? (event) => onKey(event, row) : undefined}
                 style={template}
                 className={cx(
-                  'grid items-center gap-3 border-b border-br-row px-4',
-                  rowPad,
-                  onRowClick && cx('cursor-pointer hover:bg-bg2', focusRingInset),
-                  selected && 'bg-ac-bg hover:bg-ac-bg',
+                  'group/row grid items-center gap-3 border-b border-line-2 px-3 hover:bg-hover',
+                  rowHeight,
+                  onRowClick && cx('cursor-pointer', focusRingInset),
+                  selected && 'bg-acc-50 hover:bg-acc-50',
+                  isMuted?.(row) && 'text-tx-3 [&_*]:text-tx-3',
+                  'data-[over=true]:shadow-[inset_0_2px_0_var(--acc)]',
                 )}
               >
-                {columns.map((column) => (
+                {shown.map((column) => (
                   <div
                     key={column.key}
                     role="cell"
-                    className={cx('min-w-0', ALIGN[column.align ?? 'start'])}
+                    className={cx(
+                      'min-w-0',
+                      ALIGN[column.align ?? 'start'],
+                      column.reveal && rowReveal,
+                    )}
                   >
                     {column.render(row)}
                   </div>
@@ -121,7 +191,7 @@ export function Table<T>({
       </div>
       {rows.length === 0 && empty}
       {footer && (footer.hasMore || footer.summary) && (
-        <div className="flex items-center gap-3 bg-sf2 px-4 py-2 text-12h text-tx4">
+        <div className="flex items-center gap-3 px-3 py-2 text-12 text-tx-3 tabular-nums">
           <span>{footer.summary}</span>
           {footer.hasMore && (
             <Button
@@ -138,3 +208,5 @@ export function Table<T>({
     </div>
   );
 }
+
+export type { SortDirection, TableSort } from './table-head.tsx';

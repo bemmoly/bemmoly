@@ -15,11 +15,11 @@ export const STATUS_LABELS: Record<StatusCategory, string> = {
 };
 
 const COLORS: Record<StatusCategory, string> = {
-  todo: 'bg-st-todo-bg text-st-todo-fg',
-  progress: 'bg-st-prog-bg text-st-prog-fg',
-  review: 'bg-st-rev-bg text-st-rev-fg',
-  qa: 'bg-st-qa-bg text-st-qa-fg',
-  done: 'bg-st-done-bg text-st-done-fg',
+  todo: 'bg-line-2 text-tx-2',
+  progress: 'bg-acc-50 text-acc',
+  review: 'bg-acc-50 text-acc',
+  qa: 'bg-acc-50 text-acc',
+  done: 'bg-green-50 text-green-tx',
 };
 
 export type StatusSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
@@ -31,16 +31,16 @@ export type StatusSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
  * xl: the Issue page status menu (32px, 0 12px).
  */
 const SIZES: Record<StatusSize, string> = {
-  xs: 'rounded-chip px-1.25 text-10 font-semibold',
+  xs: 'rounded-chip px-1.25 text-11 font-semibold',
   sm: 'rounded-chip px-1.5 py-0.5 text-11 font-semibold',
-  md: 'rounded-xs px-1.75 py-0.75 text-11 font-semibold tracking-status',
-  lg: 'h-7.5 gap-1.5 rounded-sm px-2.5 text-12 font-semibold tracking-status',
-  xl: 'h-control gap-1.5 rounded-sm px-3 text-12 font-semibold tracking-status',
+  md: 'rounded-chip px-1.75 py-0.75 text-11 font-semibold',
+  lg: 'h-7.5 gap-1.5 rounded-chip px-2.5 text-12 font-semibold',
+  xl: 'h-control gap-1.5 rounded-chip px-3 text-12 font-semibold',
 };
 
 interface StatusBase {
   category: StatusCategory;
-  /** The status name; defaults to the category name. Shown in capitals, as in the mocks. */
+  /** The status name; defaults to the category name. Sentence case, as the review asks. */
   label?: ReactNode;
   size?: StatusSize;
   className?: string;
@@ -52,7 +52,7 @@ export function StatusBadge({ category, label, size = 'md', className }: StatusB
   return (
     <span
       className={cx(
-        'inline-flex shrink-0 items-center whitespace-nowrap uppercase',
+        'inline-flex shrink-0 items-center whitespace-nowrap',
         COLORS[category],
         SIZES[size],
         className,
@@ -81,7 +81,7 @@ export function StatusButton({
       type="button"
       aria-haspopup="menu"
       className={cx(
-        'inline-flex shrink-0 cursor-pointer items-center border-0 font-sans whitespace-nowrap uppercase',
+        'inline-flex shrink-0 cursor-pointer items-center border-0 font-sans whitespace-nowrap',
         COLORS[category],
         SIZES[size],
         focusRing,

@@ -39,10 +39,10 @@ const STEPS = [
   class="flex scroll-mt-20 flex-col gap-6"
 >
   <div class="flex flex-col gap-2">
-    <h2 id="after-install-title" class="text-22 leading-title font-semibold tracking-title text-tx">
+    <h2 id="after-install-title" class="text-20 leading-title font-semibold tracking-title text-tx">
       After install
     </h2>
-    <p class="text-15 leading-desc text-tx3">
+    <p class="text-16 leading-desc text-tx-2">
       Whichever path you took, the rest happens in the browser.
     </p>
   </div>
@@ -52,11 +52,11 @@ const STEPS = [
         <div class="flex items-start gap-3">
           <StepNumber n={i + 1} />
           <div class="flex flex-col gap-1">
-            <h3 class="text-15 font-semibold text-tx">{step.title}</h3>
-            <p class="text-14h leading-desc text-tx3">{step.body}</p>
+            <h3 class="text-16 font-semibold text-tx">{step.title}</h3>
+            <p class="text-14h leading-desc text-tx-2">{step.body}</p>
           </div>
         </div>
-        <div class="overflow-hidden rounded-window border border-br bg-bg">
+        <div class="overflow-hidden rounded-window border border-line bg-sunken">
           <Picture
             src={step.image}
             alt={step.alt}

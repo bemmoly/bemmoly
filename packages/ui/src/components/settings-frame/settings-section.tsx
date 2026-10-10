@@ -2,7 +2,6 @@ import { useId, type FormEvent, type ReactNode } from 'react';
 import { Icon } from '../../icons/icon.tsx';
 import { cx } from '../../lib/cx.ts';
 import { Button } from '../button/button.tsx';
-import { Card } from '../card/card.tsx';
 
 export type SettingsSectionMode = 'read' | 'edit';
 
@@ -69,26 +68,31 @@ export function SettingsSection({
     if (dirty && !saving) onSave?.();
   };
   return (
-    <Card
+    <section
       id={id}
-      role="region"
       aria-labelledby={titleId}
-      className={cx('scroll-mt-6', editing && 'border-ac-br2 shadow-ring', className)}
+      className={cx(
+        'scroll-mt-6 overflow-hidden rounded-card bg-card shadow-e1',
+        editing && 'outline-2 outline-acc-100',
+        className,
+      )}
     >
       <div
         className={cx(
-          'flex items-center gap-2 border-b border-br2 px-4 font-semibold',
+          'flex flex-wrap items-center gap-x-2 gap-y-1 border-b border-line-2 px-4 text-13 font-semibold text-tx',
           mode ? 'min-h-11 py-2' : 'py-3',
         )}
       >
-        <span id={titleId}>{title}</span>
-        {hint && <span className="text-12 font-normal text-tx5">{hint}</span>}
+        <h2 id={titleId} className="m-0 text-13 font-semibold">
+          {title}
+        </h2>
+        {hint && <span className="text-12 font-normal text-tx-3">{hint}</span>}
         {editing && (
-          <span className="rounded-chip bg-ac-bg px-1.5 py-0.5 text-11 font-semibold tracking-caps text-ac uppercase">
+          <span className="inline-flex h-5 items-center rounded-chip bg-acc-50 px-1.75 text-12 font-medium text-acc">
             Editing
           </span>
         )}
-        <span className="ml-auto flex items-center gap-2 text-12h font-medium">
+        <span className="ml-auto flex items-center gap-2 text-13 font-medium">
           {actions}
           {mode === 'read' && onEdit && (
             <Button
@@ -107,8 +111,8 @@ export function SettingsSection({
       {editing ? (
         <form onSubmit={submit} noValidate>
           {body}
-          <div className="flex items-center gap-3 border-t border-br2 bg-sf2 px-4 py-2.5">
-            <span className="min-w-0 flex-1 text-12h text-tx4">
+          <div className="flex flex-wrap items-center gap-3 border-t border-line-2 bg-sunken px-4 py-2.5">
+            <span className="min-w-0 flex-1 text-12 text-tx-2">
               {note ?? (dirty ? 'You have unsaved changes.' : 'No changes yet.')}
             </span>
             <Button onClick={onCancel} disabled={saving}>
@@ -122,6 +126,6 @@ export function SettingsSection({
       ) : (
         body
       )}
-    </Card>
+    </section>
   );
 }

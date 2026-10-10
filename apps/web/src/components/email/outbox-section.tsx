@@ -16,14 +16,14 @@ const COLUMNS: TableColumn<Failure>[] = [
     key: 'subject',
     header: 'Subject',
     width: 'minmax(0,1.4fr)',
-    render: (row) => <span className="truncate text-tx2">{row.subject ?? '(no subject)'}</span>,
+    render: (row) => <span className="truncate text-tx-2">{row.subject ?? '(no subject)'}</span>,
   },
   {
     key: 'error',
     header: 'Last error',
     width: 'minmax(0,1.4fr)',
     render: (row) => (
-      <span title={row.lastError ?? undefined} className="truncate font-mono text-11 text-tx4">
+      <span title={row.lastError ?? undefined} className="truncate font-mono text-11 text-tx-3">
         {row.lastError ?? '—'}
       </span>
     ),
@@ -33,7 +33,7 @@ const COLUMNS: TableColumn<Failure>[] = [
     header: 'Tries',
     width: '48px',
     align: 'end',
-    render: (row) => <span className="font-mono text-11 text-tx4">{row.attempts ?? '—'}</span>,
+    render: (row) => <span className="font-mono text-11 text-tx-3">{row.attempts ?? '—'}</span>,
   },
   {
     key: 'failedAt',
@@ -41,7 +41,7 @@ const COLUMNS: TableColumn<Failure>[] = [
     width: '84px',
     align: 'end',
     render: (row) => (
-      <span className="text-12 text-tx4">
+      <span className="text-12 text-tx-3">
         {formatRelative(row.failedAt ?? row.createdAt ?? null)}
       </span>
     ),

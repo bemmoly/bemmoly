@@ -54,19 +54,19 @@ export function SpaceSwitcher({
             aria-label={`${current.name}, switch space`}
             className={cx(
               'group flex w-full cursor-pointer items-center gap-2.5 rounded-control border-0 bg-transparent px-2 py-2 text-left font-sans',
-              'hover:bg-bg2 aria-expanded:bg-bg2',
+              'hover:bg-side aria-expanded:bg-side',
               focusRingInset,
             )}
           >
             <SpaceTile name={current.name} spaceKey={current.key} tone={current.tone} size="sm" />
             <span className="flex min-w-0 flex-1 flex-col gap-px">
-              <span className="truncate text-13h font-semibold text-tx">{current.name}</span>
-              <span className="truncate text-12 text-tx4">{meta}</span>
+              <span className="truncate text-13 font-semibold text-tx">{current.name}</span>
+              <span className="truncate text-12 text-tx-3">{meta}</span>
             </span>
             <Icon
               name="caret"
               size={14}
-              className="text-tx5 opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 group-aria-expanded:opacity-100"
+              className="text-tx-3 opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 group-aria-expanded:opacity-100"
             />
           </button>
         )}

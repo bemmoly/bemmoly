@@ -1,6 +1,7 @@
-import { applyTheme, clearTheme } from '@bemmoly/ui/theme';
+import { applyTheme, clearTheme, themeStyle } from '@bemmoly/ui/theme';
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useMemo } from 'react';
+import { rememberBootLook } from '../lib/boot-frame.ts';
 import { resolveAppearance } from '../lib/theme.ts';
 import { useThemePreviewStore } from '../store/theme-preview.ts';
 import { useThemeStore } from '../store/theme.ts';
@@ -28,5 +29,12 @@ export function useThemeEffect(): void {
     root.dataset['mode'] = resolved.mode;
     if (resolved.kind === 'preset') clearTheme(root, resolved.id);
     else applyTheme(root, resolved.theme);
-  }, [resolved]);
+    // A look being tried on is not the person's; the boot frame keeps the saved one.
+    if (preview) return;
+    rememberBootLook(
+      resolved.kind === 'preset'
+        ? { theme: resolved.id, mode: resolved.mode }
+        : { theme: resolved.theme.id, mode: resolved.mode, vars: themeStyle(resolved.theme) },
+    );
+  }, [resolved, preview]);
 }

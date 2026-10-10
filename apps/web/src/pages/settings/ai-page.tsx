@@ -47,7 +47,7 @@ export function AiPage() {
               <Button variant="secondary" disabled>
                 Upload catalog file
               </Button>
-              <span className="text-12 text-tx5">{ai.uploadNote}</span>
+              <span className="text-12 text-tx-3">{ai.uploadNote}</span>
             </div>
           </SettingsSection>
           <ConnectionShell picker={picker} />
@@ -55,7 +55,7 @@ export function AiPage() {
             {ai.modelRoles.map((role) => (
               <SettingsRow
                 key={role.id}
-                title={<span className="text-tx4">{role.label}</span>}
+                title={<span className="text-tx-3">{role.label}</span>}
                 description={role.status}
               />
             ))}

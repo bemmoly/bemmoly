@@ -56,7 +56,7 @@ export const unsubscribeRoute = createRoute({
   ),
 });
 
-const STEPS = [1, 2, 3, 4, 5, 6] as const;
+const STEPS = [1, 2, 3, 4, 5, 6, 7] as const;
 
 export const setupRoute = createRoute({
   getParentRoute: () => rootRoute,

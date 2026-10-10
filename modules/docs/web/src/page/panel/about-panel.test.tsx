@@ -90,7 +90,7 @@ describe('the About panel', () => {
     usePageChrome.setState({ panel: ABOUT_PANEL });
     renderPage();
     const about = await panel();
-    fireEvent.click(within(about).getByRole('button', { name: '+ Add label' }));
+    fireEvent.click(within(about).getByRole('button', { name: 'Add label' }));
     const field = within(about).getByRole('combobox', { name: 'New label' });
     fireEvent.change(field, { target: { value: 'auth' } });
     fireEvent.keyDown(field, { key: 'Enter' });
@@ -103,7 +103,7 @@ describe('the About panel', () => {
     usePageChrome.setState({ panel: ABOUT_PANEL });
     renderPage();
     const about = await panel();
-    fireEvent.click(within(about).getByRole('button', { name: '+ Add reviewers' }));
+    fireEvent.click(within(about).getByRole('button', { name: 'Add reviewers' }));
     const dialog = await screen.findByRole('dialog', { name: 'Reviewers' });
     fireEvent.click(await within(dialog).findByRole('checkbox', { name: 'Rohan S.' }));
     fireEvent.click(within(dialog).getByRole('button', { name: 'Save reviewers' }));

@@ -23,14 +23,14 @@ const planned = path.status === 'launch';
   id={path.id}
   data-path={path.id}
   class:list={[
-    'group flex min-w-0 scroll-mt-20 flex-col gap-3.5 rounded-window border border-br bg-sf p-5 data-pick:border-ac data-pick:shadow-ring dark:border-edge-ac',
+    'group flex min-w-0 scroll-mt-20 flex-col gap-3.5 rounded-window border border-line bg-card p-5 data-pick:border-acc data-pick:shadow-ring dark:border-edge-ac',
     path.wide && 'md:col-span-2',
   ]}
 >
   <div class="flex items-start gap-3">
     <span
       aria-hidden="true"
-      class="flex size-9 shrink-0 items-center justify-center rounded-card border border-br bg-sf2 font-mono text-13 font-semibold text-ac dark:bg-bg"
+      class="flex size-9 shrink-0 items-center justify-center rounded-card border border-line bg-side font-mono text-13 font-semibold text-acc dark:bg-sunken"
     >
       {path.tile}
     </span>
@@ -44,7 +44,7 @@ const planned = path.status === 'launch';
       </div>
     </div>
   </div>
-  <p class="text-14h leading-desc text-pretty text-tx3">{path.body}</p>
+  <p class="text-14h leading-desc text-pretty text-tx-2">{path.body}</p>
   {path.code && (
     <CodeBlock
       code={path.code}
@@ -52,9 +52,9 @@ const planned = path.status === 'launch';
       label={planned ? 'Planned, not released yet' : undefined}
     />
   )}
-  {path.note && <p class="text-13h leading-brief text-tx4">{path.note}</p>}
+  {path.note && <p class="text-13 leading-brief text-tx-3">{path.note}</p>}
   {path.link && (
-    <a href={path.link.href} class="mt-auto text-13h font-medium">
+    <a href={path.link.href} class="mt-auto text-13 font-medium">
       {path.link.label} ↗
     </a>
   )}

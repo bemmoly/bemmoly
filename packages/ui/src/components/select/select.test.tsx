@@ -230,7 +230,7 @@ describe('Select', () => {
     render(<Harness variant="ghost" onPick={onPick} />);
     const box = screen.getByRole('combobox', { name: 'Starts on' });
     expect(box.className).toContain('border-transparent');
-    expect(box.className).not.toContain('border-br3 bg-sf');
+    expect(box.className).not.toContain('border-line bg-card');
     act(() => box.click());
     fireEvent.click(screen.getByRole('option', { name: 'Friday' }));
     expect(onPick).toHaveBeenCalledWith(expect.objectContaining({ value: 'fri' }));

@@ -12,16 +12,32 @@ describe('docs module', () => {
       name: 'Docs',
       version: '0.2.0',
       navigation: [
-        { id: 'docs.home', label: 'Docs', path: '/docs', placement: 'top' },
-        { id: 'docs.create-page', label: 'Page', path: '/docs/create', placement: 'create' },
+        { id: 'docs.home', label: 'Docs', path: '/docs', placement: 'top', icon: 'doc' },
+        {
+          id: 'docs.create-page',
+          label: 'Page',
+          path: '/docs/create',
+          placement: 'create',
+          icon: 'doc',
+        },
         {
           id: 'docs.create-space',
           label: 'Space',
           path: '/docs/spaces/new',
           placement: 'create',
+          icon: 'layers',
         },
       ],
       search: [{ kind: 'docs.page', label: 'Pages' }],
+      icon: 'doc',
+      color: 'brand-2',
+      order: 20,
+      sidebar: {
+        path: '/docs',
+        links: [],
+        primary: [],
+        add: { create: 'docs.create-space', label: 'New space' },
+      },
     });
     expect(docs.defaultAccess).toBe('teams');
   });

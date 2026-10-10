@@ -1,6 +1,6 @@
 import { useCallback, useRef, type PointerEvent as ReactPointerEvent, type RefObject } from 'react';
 import type { DropTarget } from '../backlog/move.ts';
-import { draggedIds } from './backlog-selection.ts';
+import { draggedIds } from './issue-selection.ts';
 import { rowAfter, screenOrder, type ContainerLayout } from './backlog-slots.ts';
 import { useBacklogUi } from './backlog-store.ts';
 

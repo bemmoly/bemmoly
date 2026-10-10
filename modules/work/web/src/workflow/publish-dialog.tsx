@@ -72,7 +72,7 @@ export function PublishDialog(props: PublishDialogProps) {
       busy={publisher.isPublishing}
       error={
         message ? (
-          <p role="alert" className="m-0 text-12h text-danger">
+          <p role="alert" className="m-0 text-13 text-red">
             {message}
           </p>
         ) : undefined
@@ -87,7 +87,7 @@ export function PublishDialog(props: PublishDialogProps) {
       }}
     >
       {problems.length > 0 && (
-        <ul className="m-0 flex list-disc flex-col gap-1 pl-5 text-13 text-danger">
+        <ul className="m-0 flex list-disc flex-col gap-1 pl-5 text-13 text-red">
           {problems.map((problem, index) => (
             <li key={`${problem.code}-${index}`}>{problem.message}</li>
           ))}

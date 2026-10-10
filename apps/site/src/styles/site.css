@@ -34,16 +34,15 @@
 }
 
 @theme inline {
-  --shadow-shot:
-    var(--shadow-card), 0 24px 60px color-mix(in srgb, var(--scrim) 26.667%, transparent);
+  --shadow-shot: var(--e1), 0 24px 60px color-mix(in srgb, var(--scrim) 26.667%, transparent);
   --shadow-shot-sm: 0 16px 40px color-mix(in srgb, var(--scrim) 22.222%, transparent);
-  --color-glass: color-mix(in srgb, var(--sf) 92%, transparent);
+  --color-glass: color-mix(in srgb, var(--card) 92%, transparent);
   /* Dark mode (Ocean) depth: everything is the accent at low alpha, never a grey. */
-  --color-edge-ac: color-mix(in srgb, var(--ac) 35%, transparent);
+  --color-edge-ac: color-mix(in srgb, var(--acc) 35%, transparent);
   --shadow-glow:
-    0 0 0 1px color-mix(in srgb, var(--ac) 8%, transparent),
-    0 24px 80px -12px color-mix(in srgb, var(--ac) 24%, transparent);
-  --shadow-glow-sm: 0 16px 48px -12px color-mix(in srgb, var(--ac) 20%, transparent);
+    0 0 0 1px color-mix(in srgb, var(--acc) 8%, transparent),
+    0 24px 80px -12px color-mix(in srgb, var(--acc) 24%, transparent);
+  --shadow-glow-sm: 0 16px 48px -12px color-mix(in srgb, var(--acc) 20%, transparent);
 }
 
 /*
@@ -65,7 +64,7 @@
     pointer-events: none;
     background: radial-gradient(
       ellipse at center,
-      color-mix(in oklab, var(--ac) 18%, transparent) 0%,
+      color-mix(in oklab, var(--acc) 18%, transparent) 0%,
       transparent 60%
     );
   }
@@ -74,7 +73,7 @@
 /* @bemmoly/ui's base rules, except that the Landing mock's page is white (sf), not bg. */
 html,
 body {
-  background: var(--sf);
+  background: var(--card);
 }
 
 body {
@@ -100,17 +99,17 @@ body {
 /* In the Ocean version the page is the deepest navy and raised surfaces use sf. */
 html[data-theme='dark'],
 html[data-theme='dark'] body {
-  background: var(--bg);
+  background: var(--sunken);
 }
 
 @layer base {
   a {
-    color: var(--ac);
+    color: var(--acc);
     text-decoration: none;
   }
 
   a:hover {
-    color: var(--ac-d);
+    color: var(--acc-600);
   }
 
   /* Links inside running text are underlined so they do not rely on colour alone. */
@@ -120,7 +119,7 @@ html[data-theme='dark'] body {
   }
 
   :focus-visible {
-    outline: 2px solid var(--ac);
+    outline: 2px solid var(--acc);
     outline-offset: 2px;
   }
 }

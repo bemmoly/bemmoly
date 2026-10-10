@@ -1,7 +1,7 @@
 import type { Project } from '@bemmoly/module-work/shared';
 import { IconButton, Menu, MenuItem, MenuSeparator, useToast } from '@bemmoly/ui';
 import { navigateTo, workPaths } from '../hooks/issue-navigation.ts';
-import { settingsPath } from '../settings/project-nav.tsx';
+import { settingsPath } from '../settings/pages.ts';
 import { workflowPaths } from '../workflow/navigate.ts';
 
 export interface BoardActionsMenuProps {

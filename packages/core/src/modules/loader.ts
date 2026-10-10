@@ -1,4 +1,4 @@
-import { isModuleId } from '@bemmoly/shared';
+import { isModuleId, KERNEL_CHORDS } from '@bemmoly/shared';
 import semver from 'semver';
 import type { EventBus } from '../contracts/event-bus.ts';
 import type { SqlClient } from '../clients/postgres.ts';
@@ -10,6 +10,7 @@ import { createModuleContext } from './context.ts';
 import { emptyContributions } from './contributions.ts';
 import { ModuleLoadError } from './errors.ts';
 import { createLocalEventBus } from './local-event-bus.ts';
+import { checkModuleLook } from './look.ts';
 import type { SettingsReader } from './registries.ts';
 import { ModuleRegistry } from './registry.ts';
 
@@ -73,6 +74,24 @@ export function orderByDependencies(modules: readonly BemmolyModule[]): BemmolyM
   return ordered;
 }
 
+/** Every "G, then a letter" chord goes to one place: the kernel's own first, then each module's. */
+function checkChords(registry: ModuleRegistry): void {
+  const owners = new Map<string, string>(KERNEL_CHORDS.map((chord) => [chord, 'the shell']));
+  for (const { module, contributions } of registry.list()) {
+    for (const entry of contributions.navigation) {
+      if (!entry.keys) continue;
+      const owner = owners.get(entry.keys);
+      if (owner) {
+        throw new ModuleLoadError(
+          `Module "${module.id}": the chord "${entry.keys}" is already used by ${owner}`,
+          module.id,
+        );
+      }
+      owners.set(entry.keys, `"${module.id}"`);
+    }
+  }
+}
+
 /** Validates the enabled set, then calls each module's register() in dependency order. */
 export function loadModules(options: LoadModulesOptions): ModuleRegistry {
   const available = indexAvailable(options.available);
@@ -105,7 +124,9 @@ export function loadModules(options: LoadModulesOptions): ModuleRegistry {
         peers: () => registry,
       }),
     );
+    checkModuleLook(module, contributions);
     registry.add(module, contributions);
   }
+  checkChords(registry);
   return registry;
 }

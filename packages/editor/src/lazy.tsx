@@ -35,12 +35,12 @@ function Fallback(props: RichTextEditorProps) {
   const content = props.initialDoc ? (
     <RichTextView doc={props.initialDoc} size={size} className={props.contentClassName} />
   ) : (
-    <div className={proseClass(size, cx('text-tx5', props.contentClassName))}>
+    <div className={proseClass(size, cx('text-tx-3', props.contentClassName))}>
       <p>{props.placeholder ?? ''}</p>
     </div>
   );
   const toolbar = (
-    <div aria-hidden className="flex flex-wrap items-center gap-2.5 text-12 text-tx5">
+    <div aria-hidden className="flex flex-wrap items-center gap-2.5 text-12 text-tx-3">
       {glyphs.map((glyph) => (
         <span key={glyph}>{glyph}</span>
       ))}

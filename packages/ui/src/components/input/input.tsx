@@ -1,4 +1,5 @@
 import type { InputHTMLAttributes, ReactNode, Ref } from 'react';
+import { Kbd } from '../kbd/kbd.tsx';
 import { Icon } from '../../icons/icon.tsx';
 import { cx } from '../../lib/cx.ts';
 
@@ -12,8 +13,8 @@ const SIZES: Record<InputSize, string> = {
 
 /** Shared by Input, Textarea and Select: the mock's bordered control and its focus state. */
 export const controlClass = cx(
-  'rounded-control border border-br3 text-13 text-tx',
-  'focus-within:border-ac focus-within:shadow-ring',
+  'rounded-control border border-line text-13 text-tx',
+  'focus-ring-within focus-within:border-acc',
   'has-disabled:cursor-not-allowed has-disabled:opacity-50',
 );
 
@@ -47,7 +48,11 @@ export function Input({
   ...rest
 }: InputProps) {
   const surface =
-    readOnly || tone === 'recessed' ? 'bg-sf2 text-tx3' : tone === 'subtle' ? 'bg-bg2' : 'bg-sf';
+    readOnly || tone === 'recessed'
+      ? 'bg-side text-tx-2'
+      : tone === 'subtle'
+        ? 'bg-side'
+        : 'bg-card';
   return (
     <div className={cx('flex items-center', SIZES[size], controlClass, surface, wrapperClassName)}>
       {prefix}
@@ -56,8 +61,8 @@ export function Input({
         readOnly={readOnly}
         data-autofocus={rest.autoFocus ? '' : undefined}
         className={cx(
-          'h-full min-w-0 flex-1 border-0 bg-transparent p-0 text-inherit outline-0 placeholder:text-tx5',
-          mono ? 'font-mono text-12h' : 'font-sans text-13',
+          'h-full min-w-0 flex-1 border-0 bg-transparent p-0 text-inherit outline-0 placeholder:text-tx-3',
+          mono ? 'font-mono text-13' : 'font-sans text-13',
           className,
         )}
         {...rest}
@@ -77,12 +82,9 @@ export function SearchInput({ hint, suffix, ...rest }: SearchInputProps) {
   return (
     <Input
       type="search"
-      prefix={<Icon name="search" className="text-tx5" />}
+      prefix={<Icon name="search" className="text-tx-3" />}
       suffix={
-        suffix ??
-        (hint ? (
-          <kbd className="ml-auto font-mono text-11 font-medium text-tx6">{hint}</kbd>
-        ) : undefined)
+        suffix ?? (hint ? <Kbd keys={hint} variant="plain" className="ml-auto" /> : undefined)
       }
       {...rest}
     />

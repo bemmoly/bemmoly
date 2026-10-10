@@ -1,5 +1,5 @@
 import type { IssueType, WorkflowStatus } from '@bemmoly/module-work/shared';
-import type { IssueType as GlyphType, RowStatus } from '@bemmoly/ui';
+import type { IssueTypeRef, RowStatus } from '@bemmoly/ui';
 import { useCallback } from 'react';
 import { statusTone, typeGlyph } from '../issue/vocabulary.ts';
 import { useIssueTypes, useStatuses } from './projects-catalog.ts';
@@ -9,7 +9,7 @@ export const projectKeyOf = (issueKey: string) => issueKey.split('-')[0] ?? '';
 
 export interface IssueVocabulary {
   type: (typeId: string) => IssueType | undefined;
-  glyph: (typeId: string) => GlyphType;
+  glyph: (typeId: string) => IssueTypeRef;
   status: (statusId: string) => WorkflowStatus | undefined;
   /** The badge of a row that carries only a status id. */
   rowStatus: (statusId: string) => RowStatus & { done: boolean };

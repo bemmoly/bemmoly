@@ -20,8 +20,8 @@ export const GET: APIRoute = () => {
     description: 'Keep your work in-house.',
     start_url: '/',
     display: 'browser',
-    background_color: classic.sf,
-    theme_color: classic.ac,
+    background_color: classic.card,
+    theme_color: classic.acc,
     icons: [
       icon(icon192.src, 192, 'any'),
       icon(icon512.src, 512, 'any'),

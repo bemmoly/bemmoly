@@ -14,7 +14,7 @@ test('a project is created with an owning team and its creator leads it', async 
   const key = uniqueKey('PRJ');
   const name = `Payments ${key}`;
   await page.goto('/work/projects');
-  await page.getByRole('button', { name: 'Create project' }).first().click();
+  await page.getByRole('button', { name: 'New project' }).click();
 
   const dialog = page.getByRole('dialog', { name: 'Create project' });
   await dialog.getByRole('textbox', { name: 'Name' }).fill(name);
@@ -23,15 +23,20 @@ test('a project is created with an owning team and its creator leads it', async 
   await dialog.getByRole('combobox', { name: 'Team' }).click();
   await page.getByRole('option', { name: run.team.name }).click();
   await expect(dialog.getByRole('combobox', { name: 'Team' })).toHaveText(run.team.name);
-  await expect(dialog.getByText(`Lead: ${run.admin.name}, the team's lead`)).toBeVisible();
+  await expect(
+    dialog.getByText(`${run.admin.name} leads the project, as the team's lead.`),
+  ).toBeVisible();
   await dialog.getByRole('button', { name: 'Create project' }).click();
   await expect(dialog).toBeHidden();
 
   await page.goto('/work/projects');
-  const row = page.getByRole('row', { name: new RegExp(`^${key} `) });
-  await expect(row.getByRole('cell').nth(1)).toHaveText(name);
-  await expect(row.getByRole('cell').nth(2)).toHaveText('Kanban');
-  await expect(row.getByRole('cell').nth(3)).toHaveText(run.team.name);
+  // Name leads the row; the key, lead, team and method follow it.
+  const row = page
+    .getByRole('row')
+    .filter({ has: page.getByRole('cell', { name: key, exact: true }) });
+  await expect(row.getByRole('cell').nth(1)).toContainText(name);
+  await expect(row.getByRole('cell').nth(4)).toContainText(run.team.name);
+  await expect(row.getByRole('cell').nth(5)).toContainText('Kanban');
 
   const project = await admin.call<{ teamId: string; method: string }>(
     'GET',

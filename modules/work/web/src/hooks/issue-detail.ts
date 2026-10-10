@@ -58,12 +58,3 @@ export function useUpdateIssue(key: string) {
     },
   });
 }
-
-/** Watch or stop watching; the count and the toggle follow the server. */
-export function useWatch(key: string) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (watching: boolean) => issues.watch(key, watching),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: issueKeys.detail(key) }),
-  });
-}

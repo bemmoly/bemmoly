@@ -8,7 +8,8 @@ describe('inbox hooks', () => {
   it('loads the inbox with its unread count', async () => {
     const { result } = await renderQueryHook(() => useInbox());
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(result.current.items).toHaveLength(4);
+    // The seed's inbox view: ten entries, two of them done.
+    expect(result.current.items).toHaveLength(8);
     expect(result.current.unreadCount).toBe(4);
   });
 

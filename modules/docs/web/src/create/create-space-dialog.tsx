@@ -39,7 +39,7 @@ function CreateSpaceForm({ open, onClose, onCreated }: CreateSpaceDialogProps) {
       footer={
         <>
           {errors.form && (
-            <span role="alert" className="mr-auto text-12h text-danger">
+            <span role="alert" className="mr-auto text-13 text-red">
               {errors.form}
             </span>
           )}
@@ -100,7 +100,7 @@ function CreateSpaceForm({ open, onClose, onCreated }: CreateSpaceDialogProps) {
                 aria-checked={draft.tone === tone}
                 aria-label={TONE_NAMES[tone]}
                 onClick={() => form.setTone(tone)}
-                className={`cursor-pointer rounded-card border-0 bg-transparent p-0.5 outline-offset-1 focus-visible:outline-2 focus-visible:outline-ac ${
+                className={`cursor-pointer rounded-card border-0 bg-transparent p-0.5 outline-offset-1 focus-ring ${
                   draft.tone === tone ? 'shadow-ring-ac' : 'hover:shadow-ring'
                 }`}
               >

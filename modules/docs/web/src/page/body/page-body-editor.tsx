@@ -45,7 +45,7 @@ function BodySkeleton() {
   return (
     <div role="status" aria-label="Loading the page body" className="flex flex-col gap-4.5">
       {[100, 96, 62].map((width) => (
-        <span key={width} className="flex h-[1lh] items-center text-15h leading-prose">
+        <span key={width} className="flex h-[1lh] items-center text-16 leading-prose">
           <Skeleton width={`${width}%`} height={11} />
         </span>
       ))}

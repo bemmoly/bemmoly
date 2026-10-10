@@ -1,9 +1,21 @@
-import { KanbanColumnHeader, KanbanColumnHeaders, Swimlane, SwimlaneHeader } from '@bemmoly/ui';
-import { memo, type ReactNode } from 'react';
-import { useBoardFilterStore } from '../hooks/board-filters.ts';
+import {
+  epicFill,
+  KanbanColumnHeader,
+  KanbanColumnHeaders,
+  Swimlane,
+  SwimlaneHeader,
+  type StatusStage,
+} from '@bemmoly/ui';
+import { memo, useMemo, useState, type ReactNode } from 'react';
+import { visibleColumns } from '../hooks/board-display.ts';
+import { useBoardDragStore } from '../hooks/board-drag-store.ts';
+import { useMediaQuery } from '../hooks/media-query.ts';
+import { PhoneColumns } from './phone-columns.tsx';
+import { useBoardLanes } from '../hooks/board-filters.ts';
 import type { BoardModel, ColumnModel, LaneModel } from '../hooks/board-model.ts';
+import { cellId } from '../hooks/board-window.ts';
 import { BoardCell } from './board-cell.tsx';
-import { laneFill } from './card-view.ts';
+import { useColumnCreate } from './column-create.tsx';
 
 /** "Oct 7" from an ISO date, in UTC so the day never shifts with the viewer's zone. */
 function shortDate(iso: string): string {
@@ -30,20 +42,24 @@ function laneProgress(lane: LaneModel, columns: readonly ColumnModel[]): number 
 const Lane = memo(function Lane({
   lane,
   columns,
+  of,
   kanban,
   open,
 }: {
   lane: LaneModel;
   columns: readonly ColumnModel[];
+  /** The board's column count, above `columns` while empty ones step aside. */
+  of: number;
   kanban: boolean;
   open: boolean;
 }) {
-  const toggle = useBoardFilterStore((state) => state.toggle);
+  const toggle = useBoardLanes((state) => state.toggle);
   const bodyId = `lane-${lane.id}`;
   return (
     <Swimlane
       id={bodyId}
       columns={columns.length}
+      of={of}
       open={open}
       header={
         <SwimlaneHeader
@@ -52,9 +68,9 @@ const Lane = memo(function Lane({
           meta={laneMeta(lane, kanban)}
           progress={laneProgress(lane, columns)}
           {...(lane.dueAt ? { due: `Due ${shortDate(lane.dueAt)}` } : {})}
-          colorClassName={laneFill(lane.hue)}
+          {...(lane.color ? { colorClassName: epicFill(lane.color) } : {})}
           open={open}
-          onToggle={() => toggle('collapsed', lane.id)}
+          onToggle={() => toggle(lane.id)}
           controls={bodyId}
         />
       }
@@ -67,7 +83,7 @@ const Lane = memo(function Lane({
           columnId={column.id}
           columnName={column.name}
           cards={lane.cells[column.id] ?? []}
-          laneHue={lane.hue}
+          laneColor={lane.color}
         />
       ))}
     </Swimlane>
@@ -79,35 +95,79 @@ export interface BoardGridProps {
   kanban: boolean;
   /** Drawn under the column headings in place of the lanes, when the board has no cards. */
   empty?: ReactNode;
+  /** Each column's status glyph, from its first status. */
+  stages: Readonly<Record<string, StatusStage>>;
+  /** Whether a column offers "New issue". */
+  canCreate: boolean;
+  /** Off, columns with no card after filters step aside (and come back while a card is carried). */
+  showEmptyColumns: boolean;
 }
 
 /**
  * The board body from the mock: the sticky column headings over the lanes, 10px apart, at
  * least 1260px wide so five columns never squeeze; the page scrolls sideways instead.
  */
-export function BoardGrid({ model, kanban, empty }: BoardGridProps) {
-  const collapsed = useBoardFilterStore((state) => state.collapsed);
+export function BoardGrid({
+  model,
+  kanban,
+  empty,
+  stages,
+  canCreate,
+  showEmptyColumns,
+}: BoardGridProps) {
+  const collapsed = useBoardLanes((state) => state.collapsed);
+  const carrying = useBoardDragStore((state) => state.carrying !== null);
+  const shown = useMemo(
+    () => visibleColumns(model.columns, showEmptyColumns, carrying),
+    [model.columns, showEmptyColumns, carrying],
+  );
+  const openCreate = useColumnCreate((state) => state.open);
+  const firstOpen = model.lanes.find((lane) => !collapsed.includes(lane.id)) ?? model.lanes[0];
+  // Phones show one column at a time, chosen from the status segments.
+  const phone = useMediaQuery('(max-width: 767px)', false);
+  const [phoneColumn, setPhoneColumn] = useState<string | null>(null);
+  const picked = shown.find((column) => column.id === phoneColumn) ?? shown[0];
+  const columns = useMemo(() => (phone && picked ? [picked] : shown), [phone, picked, shown]);
+  // Stepped-aside columns leave the rest at their usual width; a phone shows one column anyway.
+  const of = phone ? columns.length : model.columns.length;
   return (
-    <div className="flex min-w-315 flex-col">
-      <KanbanColumnHeaders columns={model.columns.length}>
-        {model.columns.map((column) => (
+    <div className="flex min-w-240 flex-col max-md:min-w-0">
+      {phone && (
+        <PhoneColumns
+          columns={shown}
+          stages={stages}
+          value={picked?.id ?? null}
+          onChange={setPhoneColumn}
+        />
+      )}
+      <KanbanColumnHeaders
+        columns={columns.length}
+        of={of}
+        className={phone ? 'hidden' : undefined}
+      >
+        {columns.map((column) => (
           <KanbanColumnHeader
             key={column.id}
             name={column.name}
+            stage={stages[column.id] ?? 'todo'}
             count={column.count}
             {...(column.wipLimit === null ? {} : { wipLimit: column.wipLimit })}
+            {...(canCreate && firstOpen
+              ? { onAdd: () => openCreate(cellId(firstOpen.id, column.id)) }
+              : {})}
           />
         ))}
       </KanbanColumnHeaders>
       {empty ? (
-        <div className="rounded-card border border-dashed border-br3 bg-sf">{empty}</div>
+        <div className="mt-2 rounded-card border border-dashed border-line bg-card">{empty}</div>
       ) : (
-        <div className="flex flex-col gap-2.5">
+        <div className="flex flex-col">
           {model.lanes.map((lane) => (
             <Lane
               key={lane.id}
               lane={lane}
-              columns={model.columns}
+              columns={columns}
+              of={of}
               kanban={kanban}
               open={!collapsed.includes(lane.id)}
             />

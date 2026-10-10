@@ -43,10 +43,10 @@ describe('historyVerb', () => {
   };
   it('reads as the mock words it', () => {
     expect(historyVerb(entry('statusId', 's1', 's2'), names)).toBe(
-      'changed status In progress → In review',
+      'changed status from In progress to In review',
     );
     expect(historyVerb(entry('priority', 'high', 'highest'), names)).toBe(
-      'changed priority High → Highest',
+      'changed priority from High to Highest',
     );
     expect(historyVerb(entry('assigneeId', null, 'u'), names)).toBe('assigned Jonas M.');
     expect(historyVerb(entry('sprintId', 'a', 'b'), names)).toBe('changed sprint');

@@ -57,7 +57,7 @@ export const InsightBar: Story = {
     mock: [{ file: 'Bemmoly Board.dc.html', x: 256, y: 168, w: 768, h: 60, note: 'sprint risk' }],
   },
   render: () => (
-    <div className="w-188 bg-bg p-1">
+    <div className="w-188 bg-sunken p-1">
       <AiInsightBar
         title="Sprint risk"
         onDismiss={noop}
@@ -127,7 +127,7 @@ export const AskButtons: Story = {
   },
   render: () => (
     <div className="flex items-center gap-3">
-      <AiAskButton shortcut="⌘K" />
+      <AiAskButton shortcut="Mod+K" />
       <AiAskButton label="Copilot" size="sm" pressed />
     </div>
   ),

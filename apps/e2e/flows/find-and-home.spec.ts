@@ -24,7 +24,7 @@ test('⌘K finds an issue by its key and opens it', async ({ page, admin }) => {
   await expect(results.getByRole('option', { name: new RegExp(`^${key} `) })).toBeVisible();
 });
 
-test('Home lists my work: assigned to me, reported by me and watching', async ({
+test('Home lists my issues: assigned, created and watching', async ({
   admin,
   run,
   pageAs,
@@ -46,22 +46,23 @@ test('Home lists my work: assigned to me, reported by me and watching', async ({
 
   const page = await pageAs(run.member);
   await page.goto('/');
-  const tabs = page.getByRole('tablist', { name: 'My work' });
-  const row = (key: string) => page.getByRole('link', { name: new RegExp(`${key}`) });
+  const tabs = page.getByRole('radiogroup', { name: 'Which issues' });
+  const card = page.getByRole('region', { name: 'My issues' });
+  const row = (key: string) => card.getByRole('link', { name: new RegExp(`${key}`) });
 
-  await expect(tabs.getByRole('tab', { name: /^Assigned to me/ })).toHaveAttribute(
-    'aria-selected',
+  await expect(tabs.getByRole('radio', { name: /^Assigned/ })).toHaveAttribute(
+    'aria-checked',
     'true',
   );
   await expect(row(assigned.key)).toBeVisible();
   await expect(row(reported.key)).toHaveCount(0);
 
-  await tabs.getByRole('tab', { name: /^Reported by me/ }).click();
+  await tabs.getByRole('radio', { name: /^Created/ }).click();
   await expect(row(reported.key)).toBeVisible();
   await expect(row(assigned.key)).toHaveCount(0);
 
   // Watching holds what Sam follows without being its reporter or assignee.
-  await tabs.getByRole('tab', { name: /^Watching/ }).click();
+  await tabs.getByRole('radio', { name: /^Watching/ }).click();
   await expect(row(watched.key)).toBeVisible();
   await expect(row(reported.key)).toHaveCount(0);
 

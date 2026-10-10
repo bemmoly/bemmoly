@@ -33,6 +33,7 @@ export interface IssueRow {
   deleted_at: Date | string | null;
   created_at: Date | string;
   updated_at: Date | string;
+  color?: string | null;
 }
 
 export const iso = (value: Date | string): string => new Date(value).toISOString();
@@ -50,7 +51,7 @@ export function issueColumns(sql: SqlClient): SqlFragment {
     issues.priority, issues.assignee_id, issues.reporter_id, issues.parent_id,
     issues.sprint_id, issues.estimate, issues.due_at, issues.fix_version_id,
     issues.component_id, issues.custom_fields, issues.rank, issues.status_changed_at,
-    issues.resolved_at, issues.deleted_at, issues.created_at, issues.updated_at,
+    issues.resolved_at, issues.deleted_at, issues.created_at, issues.updated_at, issues.color,
     coalesce((select array_agg(il.label_id order by il.id) from issue_labels il
       where il.issue_id = issues.id), '{}'::uuid[]) as label_ids`;
 }
@@ -77,6 +78,7 @@ export function toIssue(row: IssueRow): Issue {
     componentId: row.component_id,
     customFields: row.custom_fields,
     labelIds: row.label_ids,
+    color: row.color ?? null,
     rank: row.rank,
     statusChangedAt: iso(row.status_changed_at),
     resolvedAt: isoOrNull(row.resolved_at),

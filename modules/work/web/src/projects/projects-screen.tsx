@@ -1,156 +1,164 @@
 import type { Project } from '@bemmoly/module-work/shared';
-import { formatRelative } from '@bemmoly/core-web';
-import { Button, EmptyState, PageHeader, Table, TableSkeleton, Tag, useToast } from '@bemmoly/ui';
+import type { Team } from '@bemmoly/shared';
+import { HeaderActions, navigateInApp, openCreate, withCreate } from '@bemmoly/core-web';
+import { Button, EmptyState, TableSkeleton } from '@bemmoly/ui';
 import { Icon } from '@bemmoly/ui/icons';
-import { useQuery } from '@tanstack/react-query';
-import { navigateBack, navigateTo, workPaths } from '../hooks/issue-navigation.ts';
-import { useTeams } from '../hooks/projects-list.ts';
+import { useEffect } from 'react';
+import { navigateTo, workPaths } from '../hooks/issue-navigation.ts';
+import { usePeople } from '../hooks/issue-people.ts';
+import { useSettingsAccess } from '../hooks/settings-access.ts';
 import type { WorkScreenProps } from '../routes.tsx';
-import { LineSkeleton } from '../skeletons/parts.tsx';
-import { BoxCell, MenuCell, TwoLineCell } from '../skeletons/table-cells.tsx';
-import { projectsQuery } from '../shared/use-project.ts';
-import { CreateProjectDialog } from './create-project-dialog.tsx';
+import { MenuCell, TwoLineCell } from '../skeletons/table-cells.tsx';
+import { projectPaths } from './project-paths.ts';
 import { ProjectRowMenu } from './project-row-menu.tsx';
+import { useProjectStars } from './project-stars.ts';
+import { useProjectsData } from './projects-data.ts';
+import { ProjectsGrid } from './projects-grid.tsx';
+import { PROJECT_TRACKS, ProjectsTable, type ProjectRowActions } from './projects-table.tsx';
+import { ProjectsToolbar } from './projects-toolbar.tsx';
+import { useProjectsView, viewRows, type ProjectsViewState } from './projects-view.ts';
+
+const SKELETON = Object.values(PROJECT_TRACKS).map((width, index) =>
+  index === 1
+    ? { width, cell: <TwoLineCell width="40%" second="60%" avatar={28} /> }
+    : index === 8
+      ? { width, align: 'center' as const, cell: <MenuCell /> }
+      : { width },
+);
+
+/** What an empty list says depends on why it is empty. */
+function EmptyProjects({
+  view,
+  onCreate,
+  onClear,
+}: {
+  view: ProjectsViewState;
+  onCreate?: (() => void) | undefined;
+  onClear: () => void;
+}) {
+  if (view.q.trim())
+    return (
+      <EmptyState
+        icon={<Icon name="search" />}
+        title={`No projects match “${view.q.trim()}”`}
+        description="Search looks at names, keys and descriptions."
+        action={<Button onClick={onClear}>Clear search</Button>}
+      />
+    );
+  if (view.segment === 'starred')
+    return (
+      <EmptyState
+        icon={<Icon name="star" />}
+        title="No starred projects"
+        description="Star the projects you open most; they lead the sidebar."
+      />
+    );
+  if (view.segment === 'archived')
+    return (
+      <EmptyState
+        icon={<Icon name="archive" />}
+        title="Nothing archived"
+        description="Archived projects keep their issues and can be restored here."
+      />
+    );
+  return (
+    <EmptyState
+      icon={<Icon name="project" />}
+      title="No projects yet"
+      description="A project holds issues under one key, with its own board and backlog."
+      {...(onCreate
+        ? {
+            action: (
+              <Button variant="primary" onClick={onCreate}>
+                New project
+              </Button>
+            ),
+          }
+        : {})}
+    />
+  );
+}
 
 /**
- * The project list at /work/projects, with the create dialog open at /work/projects/new so
- * the top bar's Create menu can link to it. A row opens the project's board.
+ * All projects at /work/projects, as a table or a grid. New project opens its dialog over this
+ * page; the old /work/projects/new address becomes that. A row opens the project's board.
  */
 export default function ProjectsScreen({ projectKey: segment }: WorkScreenProps) {
-  const creating = segment === 'new';
-  const projects = useQuery(projectsQuery);
-  const teams = useTeams();
-  const toast = useToast();
-  const teamName = (id: string | null) => teams.data?.items.find((team) => team.id === id)?.name;
-  const rows = projects.data?.items ?? [];
+  const legacyNew = segment === 'new';
+  const data = useProjectsData();
+  const stars = useProjectStars();
+  const { view, update } = useProjectsView();
+  const { person } = usePeople();
+  const access = useSettingsAccess();
+  const create = () => openCreate('work.create-project');
 
-  const created = (project: Project) => {
-    toast.show({
-      tone: 'ok',
-      title: `Created ${project.name}`,
-      body: `Issues in it are numbered ${project.key}-1, ${project.key}-2 and on.`,
-    });
-    navigateTo(workPaths.board(project.key));
+  const active = data.projects.filter((project) => project.archivedAt === null);
+  const counts = {
+    all: active.length,
+    starred: active.filter((project) => stars.isStarred(project.key)).length,
+    archived: data.projects.length - active.length,
   };
+  const rows = viewRows(data.projects, view, stars.isStarred);
+  const actions: ProjectRowActions = {
+    isStarred: stars.isStarred,
+    toggleStar: stars.toggle,
+    teamOf: data.teamOf,
+    leadOf: (team: Team | undefined) => {
+      const id = team?.leadUserId ?? null;
+      return { id, name: id ? person(id).name : null };
+    },
+    open: (project: Project) =>
+      project.archivedAt === null
+        ? navigateTo(workPaths.board(project.key))
+        : navigateTo(projectPaths.settings(project.key)),
+    menu: (project: Project) => (
+      <ProjectRowMenu
+        project={project}
+        starred={stars.isStarred(project.key)}
+        canArchive={access.configureProject}
+        onStar={() => stars.toggle(project.key)}
+        onArchive={() => data.toggleArchive(project)}
+      />
+    ),
+  };
+  const empty = <EmptyProjects view={view} onCreate={create} onClear={() => update({ q: '' })} />;
+
+  useEffect(() => {
+    if (legacyNew)
+      navigateInApp(withCreate(workPaths.projects(), 'work.create-project'), { replace: true });
+  }, [legacyNew]);
 
   return (
-    <div className="min-h-0 flex-1 overflow-auto">
-      <div className="mx-auto flex max-w-310 flex-col gap-4 px-10 pt-5 pb-15">
-        <PageHeader
-          title="Projects"
-          meta={
-            projects.isSuccess
-              ? [`${rows.length} ${rows.length === 1 ? 'project' : 'projects'}`]
-              : [<LineSkeleton key="count" width={60} size="text-12h" bar={8} />]
-          }
-          actions={
-            <Button variant="primary" onClick={() => navigateTo(workPaths.newProject())}>
-              Create project
-            </Button>
-          }
-        />
-        {projects.isPending ? (
-          <TableSkeleton
-            label="Loading projects"
-            rows={3}
-            columns={[
-              { width: '90px', cell: <LineSkeleton width={32} bar={9} /> },
-              { width: 'minmax(0,1.6fr)', cell: <TwoLineCell width="32%" second="48%" /> },
-              { width: '110px', cell: <BoxCell width={48} /> },
-              { width: 'minmax(0,1fr)' },
-              { width: '120px' },
-              { width: '28px', align: 'center', cell: <MenuCell /> },
-            ]}
-          />
-        ) : projects.isError ? (
+    <>
+      <HeaderActions>
+        <Button variant="primary" icon={<Icon name="plus" size={14} />} onClick={create}>
+          New project
+        </Button>
+      </HeaderActions>
+      <div className="flex flex-col gap-4">
+        <h1 className="sr-only">Projects</h1>
+        <ProjectsToolbar view={view} counts={counts} onChange={update} />
+        {data.list.isPending ? (
+          <TableSkeleton label="Loading projects" rows={3} columns={SKELETON} />
+        ) : data.list.isError ? (
           <EmptyState
             icon={<Icon name="alert" />}
             title="Projects could not be loaded"
-            description={projects.error.message}
-            action={<Button onClick={() => void projects.refetch()}>Try again</Button>}
+            description={`${data.list.error.message} Check your connection, then try again.`}
+            action={<Button onClick={() => void data.list.refetch()}>Retry</Button>}
           />
+        ) : view.layout === 'grid' ? (
+          <ProjectsGrid rows={rows} actions={actions} empty={empty} />
         ) : (
-          <Table<Project>
-            label="Projects"
+          <ProjectsTable
             rows={rows}
-            rowKey={(project) => project.id}
-            onRowClick={(project) => navigateTo(workPaths.board(project.key))}
-            empty={
-              <EmptyState
-                icon={<Icon name="project" />}
-                title="No projects yet"
-                description="A project holds issues under one key, with its own board and backlog."
-                action={
-                  <Button variant="primary" onClick={() => navigateTo(workPaths.newProject())}>
-                    Create project
-                  </Button>
-                }
-              />
-            }
-            columns={[
-              {
-                key: 'key',
-                header: 'Key',
-                width: '90px',
-                render: (project) => (
-                  <span className="font-mono text-12 font-medium text-tx3">{project.key}</span>
-                ),
-              },
-              {
-                key: 'name',
-                header: 'Name',
-                width: 'minmax(0,1.6fr)',
-                render: (project) => (
-                  <span className="flex min-w-0 flex-col">
-                    <span className="truncate font-medium text-tx" title={project.name}>
-                      {project.name}
-                    </span>
-                    {project.description && (
-                      <span className="truncate text-12 text-tx5" title={project.description}>
-                        {project.description}
-                      </span>
-                    )}
-                  </span>
-                ),
-              },
-              {
-                key: 'method',
-                header: 'Method',
-                width: '110px',
-                render: (project) => <Tag>{project.method === 'scrum' ? 'Scrum' : 'Kanban'}</Tag>,
-              },
-              {
-                key: 'team',
-                header: 'Team',
-                width: 'minmax(0,1fr)',
-                render: (project) => (
-                  <span className="truncate text-tx2">{teamName(project.teamId) ?? '—'}</span>
-                ),
-              },
-              {
-                key: 'updated',
-                header: 'Updated',
-                width: '120px',
-                render: (project) => (
-                  <span className="text-12h text-tx4">{formatRelative(project.updatedAt)}</span>
-                ),
-              },
-              {
-                key: 'menu',
-                header: <span className="sr-only">Actions</span>,
-                width: '28px',
-                align: 'center',
-                render: (project) => <ProjectRowMenu project={project} />,
-              },
-            ]}
+            sort={view.sort}
+            onSort={(sort) => update({ sort })}
+            actions={actions}
+            empty={empty}
           />
         )}
       </div>
-      <CreateProjectDialog
-        open={creating}
-        onClose={() => navigateBack(workPaths.projects())}
-        onCreated={created}
-      />
-    </div>
+    </>
   );
 }

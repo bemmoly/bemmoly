@@ -64,7 +64,7 @@ export function CardsTab(props: CardsTabProps) {
               key={field}
               {...drag.item(index)}
               className={cx(
-                'flex items-center gap-2.5 border-b border-br-row py-2.25 last:border-b-0',
+                'flex items-center gap-2.5 border-b border-line-2 py-2.25 last:border-b-0',
                 drag.over === index && 'shadow-tab',
               )}
             >
@@ -77,7 +77,7 @@ export function CardsTab(props: CardsTabProps) {
                       'aria-label': `Move ${CARD_FIELD_LABELS[field]}`,
                     }
                   : {})}
-                className={cx('flex text-tx6', editable && 'cursor-grab')}
+                className={cx('flex text-tx-3', editable && 'cursor-grab')}
               >
                 <Icon name="drag" size={14} />
               </span>
@@ -94,12 +94,12 @@ export function CardsTab(props: CardsTabProps) {
                 }
               />
               <span className="flex-1 font-medium">{CARD_FIELD_LABELS[field]}</span>
-              <span className="text-12 text-tx5">{CARD_FIELD_KINDS[field]}</span>
+              <span className="text-12 text-tx-3">{CARD_FIELD_KINDS[field]}</span>
             </div>
           ))}
         </Card>
         <div className="flex flex-col gap-2.5">
-          <div className="text-12 font-medium tracking-caps text-tx5 uppercase">Preview</div>
+          <div className="text-12 font-semibold text-tx-3">Preview</div>
           <CardPreview
             fields={config.cardFields}
             colorRule={config.colorRule}

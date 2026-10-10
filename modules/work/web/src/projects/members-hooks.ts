@@ -71,16 +71,37 @@ export function useProjectMembers(projectKey: string | undefined) {
 export type ProjectMembers = ReturnType<typeof useProjectMembers>;
 
 /** The members table's search box: by name or email, on the loaded list. */
+export type MemberSegment = 'all' | 'admins' | 'invited';
+
+/** Search plus the All / Admins / Invited segments, applied on the client. */
 export function useMemberFilter(members: readonly ProjectMember[]) {
   const [query, setQuery] = useState('');
+  const [segment, setSegment] = useState<MemberSegment>('all');
   const needle = query.trim().toLowerCase();
-  const rows = needle
-    ? members.filter(
-        (member) =>
-          member.name.toLowerCase().includes(needle) || member.email.toLowerCase().includes(needle),
-      )
-    : members;
-  return { query, setQuery, rows };
+  const inSegment = (member: ProjectMember) =>
+    segment === 'all' ||
+    (segment === 'admins' ? member.roleKey === PROJECT_ADMIN : member.status === 'invited');
+  const rows = members.filter(
+    (member) =>
+      inSegment(member) &&
+      (!needle ||
+        member.name.toLowerCase().includes(needle) ||
+        member.email.toLowerCase().includes(needle)),
+  );
+  const counts = {
+    all: members.length,
+    admins: members.filter((member) => member.roleKey === PROJECT_ADMIN).length,
+    invited: members.filter((member) => member.status === 'invited').length,
+  };
+  return {
+    query,
+    setQuery,
+    segment,
+    setSegment,
+    rows,
+    counts,
+    filtered: !!needle || segment !== 'all',
+  };
 }
 
 /** Server search for people to add, leaving out who is already on the project. */

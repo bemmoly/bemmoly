@@ -38,7 +38,7 @@ export function draftChanges(published: Workflow, draft: EditorDraft): DraftChan
 
   const transitions = new Map(published.transitions.map((t) => [t.id, t]));
   const ends = (from: string | null, to: string) =>
-    `${from === null ? 'Any status' : (names.get(from) ?? '?')} → ${names.get(to) ?? '?'}`;
+    `${from === null ? 'Any status' : (names.get(from) ?? '?')} to ${names.get(to) ?? '?'}`;
   for (const transition of draft.transitions) {
     const old = transitions.get(transition.id);
     const label = `"${transition.name}" (${ends(transition.fromStatusId, transition.toStatusId)})`;

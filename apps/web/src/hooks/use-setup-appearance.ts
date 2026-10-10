@@ -15,7 +15,7 @@ import { useSettings, type SettingValues } from './use-setting.ts';
 import { clearThemePreview, useThemePreview } from './use-theme-preview.ts';
 import { useWorkspace, workspaceQuery } from './use-workspace.ts';
 
-/** What step 5 writes: the preset and its font, or the custom build's four inputs. */
+/** What the Look step writes: the preset and its font, or the custom build's four inputs. */
 export const THEME_KEYS = [
   'appearance.theme',
   'appearance.font',
@@ -29,9 +29,9 @@ type ThemeKey = (typeof THEME_KEYS)[number];
 /** The server names the Classic preset "classic"; the token package calls it "light". */
 const SERVER_ID: Partial<Record<PresetId, string>> = { light: 'classic' };
 
-/** The toggle under the tiles: it opens the custom builder in place, then offers the way back. */
+/** The brand color's toggle: it switches to the custom build in place, then offers the way back. */
 export const CUSTOM_THEME_TOGGLE = {
-  open: 'Build a custom theme with your brand color instead',
+  open: 'Use your brand color',
   close: 'Use a preset instead',
 } as const;
 
@@ -118,7 +118,7 @@ async function handOverToSavedLook(queryClient: QueryClient): Promise<void> {
 }
 
 /**
- * Step 5: pick a preset tile, or open the custom builder under the tiles, and
+ * The Look step: pick a preset tile, or use the brand color under the tiles, and
  * the whole page shows the choice at once; "Finish setup" saves it and moves
  * to the summary. Picking a tile again closes the builder and keeps what was
  * built. Leaving the step any other way (Skip, the rail, Back, a reload
@@ -149,6 +149,22 @@ export function useSetupAppearance(onSaved: () => void | Promise<void>) {
     toggleLabel: useCustom ? CUSTOM_THEME_TOGGLE.close : CUSTOM_THEME_TOGGLE.open,
     draft,
     custom,
+    /** Picking a swatch or typing a colour is choosing the brand color: it turns custom on. */
+    brand: {
+      pick: (brand: string) => {
+        custom.pickBrand(brand);
+        if (!useCustom) update({ useCustomTheme: true });
+      },
+      hex: {
+        ...custom.hex,
+        onChange: (text: string) => {
+          custom.hex.onChange(text);
+          if (!useCustom) update({ useCustomTheme: true });
+        },
+      },
+    },
+    /** The custom build's own scope, so its miniature shows it before it is chosen. */
+    customScope: themeScope(setupThemeDraft(selected, true, customTheme)),
     /** The builder's logo tile paints with the draft, as on the Appearance page. */
     scope: themeScope(draft),
     workspaceName: useWorkspace().name,

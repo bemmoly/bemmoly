@@ -16,9 +16,7 @@ interface ProviderPickerProps {
 }
 
 function GroupLabel({ children }: { children: string }) {
-  return (
-    <span className="text-11 font-semibold tracking-label text-tx5 uppercase">{children}</span>
-  );
+  return <span className="text-11 font-semibold text-tx-3">{children}</span>;
 }
 
 /**
@@ -29,7 +27,11 @@ export function ProviderPicker({ picker, choice, onPick, disabled }: ProviderPic
   return (
     <div className="flex flex-col gap-3">
       <GroupLabel>Popular</GroupLabel>
-      <div role="radiogroup" aria-label="Popular providers" className="grid grid-cols-3 gap-3">
+      <div
+        role="radiogroup"
+        aria-label="Popular providers"
+        className="grid grid-cols-2 gap-3 sm:grid-cols-3"
+      >
         {picker.popular.map((provider) => (
           <ChoiceCard
             key={provider.id}
@@ -60,7 +62,7 @@ export function ProviderPicker({ picker, choice, onPick, disabled }: ProviderPic
           icon={<Icon name="server" size={16} />}
           name={picker.local.name}
           description={LOCAL_DESCRIPTION}
-          badge="AIR-GAPPED"
+          badge="Air-gapped"
           selected={choice === picker.local.id}
           onSelect={() => onPick(picker.local.id)}
           disabled={disabled}

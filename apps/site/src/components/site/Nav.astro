@@ -3,24 +3,24 @@ import { DEMO_URL, NAV } from '../../lib/links.ts';
 import Logo from './Logo.astro';
 ---
 
-<header class="sticky top-0 z-5 flex h-16 items-center gap-7 border-b border-br-row bg-glass dark:border-br px-4 backdrop-blur-[8px] sm:px-6 lg:px-12">
+<header class="sticky top-0 z-5 flex h-16 items-center gap-7 border-b border-line-2 bg-glass dark:border-line px-4 backdrop-blur-[8px] sm:px-6 lg:px-12">
   <a href="/" aria-label="Bemmoly home" class="flex items-center">
     <Logo />
   </a>
   <nav aria-label="Main" class="ml-3 hidden gap-5.5 text-14 lg:flex">
     {NAV.map((link) => (
-      <a href={link.href} class="text-tx2 hover:text-tx">
+      <a href={link.href} class="text-tx-2 hover:text-tx">
         {link.label}
       </a>
     ))}
   </nav>
   <div class="ml-auto flex items-center gap-2.5 text-14">
-    <a href={DEMO_URL} class="hidden font-medium text-tx2 hover:text-tx sm:inline">
+    <a href={DEMO_URL} class="hidden font-medium text-tx-2 hover:text-tx sm:inline">
       Live demo
     </a>
     <a
       href="/self-hosting#recommended"
-      class="inline-flex h-9 items-center rounded-control bg-tx px-4 font-medium text-sf hover:text-sf dark:bg-ac-fill dark:text-on-ac dark:hover:text-on-ac"
+      class="inline-flex h-9 items-center rounded-control bg-tx px-4 font-medium text-card hover:text-card dark:bg-acc-fill dark:text-on-acc dark:hover:text-on-acc"
     >
       Deploy in 5 minutes
     </a>

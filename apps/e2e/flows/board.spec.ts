@@ -1,5 +1,8 @@
 import { expect, test, uniqueKey } from '../support/fixtures.ts';
 
+// Six columns beside the 240px sidebar: wide enough that the drag never needs to auto-scroll.
+test.use({ viewport: { width: 1680, height: 900 } });
+
 test('an issue moves across the board by drag and by keyboard, and a refused move says why', async ({
   page,
   admin,
@@ -15,11 +18,15 @@ test('an issue moves across the board by drag and by keyboard, and a refused mov
   await page.goto(`/work/board/${project.key}`);
   const card = page.getByRole('button', { name: `${issue.key} Ship the login page` });
   const column = (name: string) => page.getByRole('group', { name: `${name}, All issues` });
-  await expect(column('Backlog').getByRole('button', { name: issue.key })).toBeVisible();
+  await expect(
+    column('Backlog').getByRole('button', { name: new RegExp(`^${issue.key} `) }),
+  ).toBeVisible();
 
   // By pointer: Backlog → Selected, the workflow's "Select for sprint".
   await card.dragTo(column('Selected'));
-  await expect(column('Selected').getByRole('button', { name: issue.key })).toBeVisible();
+  await expect(
+    column('Selected').getByRole('button', { name: new RegExp(`^${issue.key} `) }),
+  ).toBeVisible();
   await expect.poll(async () => (await admin.issue(issue.key)).statusId).not.toBe(issue.statusId);
 
   // By keyboard: space picks it up, the right arrow carries it, space drops it.
@@ -27,7 +34,9 @@ test('an issue moves across the board by drag and by keyboard, and a refused mov
   await page.keyboard.press('Space');
   await page.keyboard.press('ArrowRight');
   await page.keyboard.press('Space');
-  await expect(column('In progress').getByRole('button', { name: issue.key })).toBeVisible();
+  await expect(
+    column('In progress').getByRole('button', { name: new RegExp(`^${issue.key} `) }),
+  ).toBeVisible();
   await expect(card).toBeFocused();
 
   // In progress → Testing skips code review, which the workflow has no transition for. Held
@@ -48,10 +57,16 @@ test('an issue moves across the board by drag and by keyboard, and a refused mov
   await page.mouse.up();
   const toast = page.getByRole('status').filter({ hasText: `${issue.key} cannot move to Testing` });
   await expect(toast).toContainText(reason);
-  await expect(column('In progress').getByRole('button', { name: issue.key })).toBeVisible();
-  await expect(column('Testing').getByRole('button', { name: issue.key })).toHaveCount(0);
+  await expect(
+    column('In progress').getByRole('button', { name: new RegExp(`^${issue.key} `) }),
+  ).toBeVisible();
+  await expect(
+    column('Testing').getByRole('button', { name: new RegExp(`^${issue.key} `) }),
+  ).toHaveCount(0);
 
   // The server agrees with the screen after a reload.
   await page.reload();
-  await expect(column('In progress').getByRole('button', { name: issue.key })).toBeVisible();
+  await expect(
+    column('In progress').getByRole('button', { name: new RegExp(`^${issue.key} `) }),
+  ).toBeVisible();
 });

@@ -2,8 +2,11 @@ import type { Page } from '@playwright/test';
 import { expect, test, uniqueKey } from '../support/fixtures.ts';
 
 async function openCreateForm(page: Page, projectName: string) {
-  await page.getByRole('banner').getByRole('button', { name: 'Create' }).click();
-  await page.getByRole('menuitem', { name: /^Issue/ }).click();
+  // New opens the dialog over the page you are on.
+  await page
+    .getByRole('complementary', { name: 'Sidebar' })
+    .getByRole('button', { name: 'New issue' })
+    .click();
   const form = page.getByRole('dialog', { name: 'Create issue' });
   await form.getByRole('combobox', { name: 'Project' }).click();
   await page.getByRole('option', { name: projectName }).click();
@@ -28,9 +31,10 @@ test('an issue created through the form gets the next gap-free key', async ({ pa
   await form.getByRole('textbox', { name: 'Acceptance criteria' }).fill('- A card payment settles');
   await form.getByRole('button', { name: 'Create issue' }).click();
   await expect(form).toBeHidden();
-  // The toast names the new key and the new issue opens.
+  // Creating keeps you on the board; the toast names the new key and opens it.
   const first = `${project.key}-1`;
-  await expect(page.getByRole('status').filter({ hasText: first })).toBeVisible();
+  await expect(page).toHaveURL(new RegExp(`/work/board/${project.key}$`));
+  await page.getByRole('button', { name: `Open ${first}` }).click();
   await expect(page).toHaveURL(new RegExp(`/work/issue/${first}$`));
   await expect(page.getByRole('heading', { name: 'Let people pay by card' })).toBeVisible();
 
@@ -40,7 +44,8 @@ test('an issue created through the form gets the next gap-free key', async ({ pa
   await second.getByRole('textbox', { name: 'Title' }).fill('Refunds show twice');
   await second.getByRole('button', { name: 'Create issue' }).click();
   await expect(second).toBeHidden();
-  await expect(page).toHaveURL(new RegExp(`/work/issue/${project.key}-2$`));
+  await expect(page).toHaveURL(new RegExp(`/work/issue/${first}$`));
+  await expect(page.getByRole('button', { name: `Open ${project.key}-2` })).toBeVisible();
 
   const created = await admin.issue(first);
   expect(created).toMatchObject({ title: 'Let people pay by card', estimate: 3, number: 1 });

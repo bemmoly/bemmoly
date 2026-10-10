@@ -1,24 +1,32 @@
-import type { StackPerson } from '@bemmoly/ui';
-import { avatarHue } from '@bemmoly/ui';
+import type { CardField } from '@bemmoly/module-work/shared';
+import { avatarHue, epicColor, statusStage, type EpicColor, type StatusStage } from '@bemmoly/ui';
 import { useEffect, useMemo } from 'react';
 import type { CardVocabulary } from '../board/card-view.ts';
+import type { MenuSprint } from '../shared/issue-actions-menu.tsx';
+import type { FilterOptions } from '../shared/issue-filter-bar.tsx';
+import { useIssueFilters } from '../shared/issue-filters.ts';
+import { setSearchParams, useSearchParam } from '../shared/url-state.ts';
 import { useBoardData, useBoardMatching } from './board-data.ts';
 import {
   cardMatches,
   hasClientFilters,
   quickFiltersOf,
   serverQuery,
-  useBoardFilterStore,
+  useBoardLanes,
 } from './board-filters.ts';
+import { useHiddenIssues } from './issue-quick-actions.ts';
 import type { LqlValueSources } from './board-lql.ts';
 import { compileColorRules } from './board-color-rules.ts';
-import { buildBoardModel } from './board-model.ts';
+import { useBoardDisplay } from './board-display.ts';
+import { buildBoardModel, type BoardGrouping, type ViewCard } from './board-model.ts';
 
 /*
  * The Board screen's state in one place: the data, the filters applied over it, the laid-out
  * model, and the names the cards, the filter menus and the LQL bar print. Components stay
  * presentational and read only this.
  */
+
+const NO_FIELDS: readonly CardField[] = [];
 
 const LANE_KINDS = {
   epic: 'Epic',
@@ -29,20 +37,35 @@ const LANE_KINDS = {
 } as const;
 
 export function useBoardScreen(projectKey: string | undefined) {
-  const filters = useBoardFilterStore();
+  const filterApi = useIssueFilters();
+  const filters = filterApi.filters;
+  const grouping: BoardGrouping = useSearchParam('group') === 'none' ? 'none' : 'lanes';
+  const setGrouping = (value: BoardGrouping) =>
+    setSearchParams({ group: value === 'none' ? 'none' : null });
   const data = useBoardData(projectKey);
   const boardConfig = data.view?.board.config;
   const quickFilters = useMemo(() => quickFiltersOf(boardConfig), [boardConfig]);
   const q = serverQuery(filters, quickFilters);
   const { matching, error: filterError } = useBoardMatching(data.board?.id, q);
   const kanban = data.project?.method === 'kanban';
-  const reset = filters.reset;
+  const resetLanes = useBoardLanes((state) => state.reset);
+  const hidden = useHiddenIssues((state) => state.keys);
 
-  useEffect(() => reset(), [data.board?.id, reset]);
+  useEffect(() => resetLanes(), [data.board?.id, resetLanes]);
+
+  const { view, meId } = data;
+  const display = useBoardDisplay(data.board?.id ?? '', meId, boardConfig?.cardFields ?? NO_FIELDS);
+  const keep = useMemo(() => {
+    if (!matching && !hasClientFilters(filters) && hidden.size === 0) return undefined;
+    return (card: ViewCard) =>
+      !hidden.has(card.key) &&
+      (!matching || matching.has(card.issueId)) &&
+      cardMatches(card, filters, meId);
+  }, [filters, matching, meId, hidden]);
 
   const model = useMemo(
-    () => (data.view ? buildBoardModel(data.view, filters.grouping) : null),
-    [data.view, filters.grouping],
+    () => (view ? buildBoardModel(view, grouping, keep) : null),
+    [view, grouping, keep],
   );
 
   const statuses = useMemo(
@@ -53,13 +76,20 @@ export function useBoardScreen(projectKey: string | undefined) {
     () => ({
       types: new Map(data.issueTypes.map((type) => [type.id, type])),
       people: new Map(data.people.map((person) => [person.id, person])),
-      labels: new Map(data.labels.map((label) => [label.id, label.name])),
+      labels: new Map(
+        data.labels.map((label) => [label.id, { name: label.name, color: label.color }]),
+      ),
       meId: data.meId,
-      fields: boardConfig?.cardFields ?? [],
+      shown: display.shown,
       colorRule: boardConfig?.colorRule ?? 'none',
       kanban,
       doneColumns: new Set(
         (boardConfig?.columns ?? []).filter((column) => column.done).map((column) => column.id),
+      ),
+      epicColors: new Map(
+        (data.view?.lanes ?? []).flatMap((lane): [string, EpicColor][] =>
+          lane.issueKey ? [[lane.id, epicColor(lane.color, lane.id)]] : [],
+        ),
       ),
       ruleColor: compileColorRules(boardConfig?.colorRules ?? [], {
         meId: data.meId,
@@ -80,52 +110,50 @@ export function useBoardScreen(projectKey: string | undefined) {
       statuses,
       boardConfig,
       kanban,
+      display.shown,
     ],
   );
 
-  const { view, meId } = data;
-  const { search, lql, quick, people: chosenPeople, epics, types, labels } = filters;
-  const isDimmed = useMemo(() => {
-    const client = { search, lql, quick, people: chosenPeople, epics, types, labels };
-    if (!matching && !hasClientFilters(client)) return undefined;
-    const cards = new Map(view?.cards.map((card) => [card.issueId, card]));
-    return (issueId: string) => {
-      if (matching && !matching.has(issueId)) return true;
-      const card = cards.get(issueId);
-      return card ? !cardMatches(card, client, meId) : false;
-    };
-  }, [search, lql, quick, chosenPeople, epics, types, labels, matching, view, meId]);
+  const shownTotal = model ? model.lanes.reduce((sum, lane) => sum + lane.count, 0) : 0;
 
-  const people = useMemo<StackPerson[]>(() => {
-    const onBoard = new Set(view?.cards.map((card) => card.assigneeId));
-    return data.people
-      .filter((person) => onBoard.has(person.id))
-      .map((person) => ({
-        id: person.id,
-        name: person.name,
-        hue: person.id === meId ? 'accent' : avatarHue(person.id),
-      }));
-  }, [data.people, view, meId]);
+  const stages = useMemo(() => {
+    const result: Record<string, StatusStage> = {};
+    for (const column of boardConfig?.columns ?? []) {
+      const first = column.statusIds.map((id) => statuses.get(id)).find(Boolean);
+      result[column.id] = column.done
+        ? 'done'
+        : first
+          ? statusStage(first.category, first.name)
+          : 'todo';
+    }
+    return result;
+  }, [boardConfig, statuses]);
 
-  const facets = useMemo(() => {
+  const filterOptions = useMemo<FilterOptions>(() => {
     const onBoard = <T>(ids: Iterable<T>) => new Set(ids);
     const typeIds = onBoard(view?.cards.map((card) => card.typeId) ?? []);
     const labelIds = onBoard(view?.cards.flatMap((card) => card.labelIds) ?? []);
+    const assignees = onBoard(view?.cards.map((card) => card.assigneeId) ?? []);
     return {
-      epics:
-        boardConfig?.lanes.kind === 'epic'
-          ? (view?.lanes ?? [])
-              .filter((lane) => lane.issueKey)
-              .map((lane) => ({ id: lane.id, label: lane.label }))
-          : [],
+      people: data.people
+        .filter((person) => assignees.has(person.id))
+        .map((person) => ({
+          id: person.id,
+          name: person.name,
+          hue: person.id === meId ? ('accent' as const) : avatarHue(person.id),
+        })),
+      epics: (view?.lanes ?? [])
+        .filter((lane) => lane.issueKey)
+        .map((lane) => ({ id: lane.id, name: lane.label, color: epicColor(lane.color, lane.id) })),
       types: data.issueTypes
         .filter((type) => typeIds.has(type.id))
-        .map((type) => ({ id: type.id, label: type.name })),
+        .map((type) => ({ id: type.id, name: type.name, look: type })),
       labels: data.labels
         .filter((label) => labelIds.has(label.id))
-        .map((label) => ({ id: label.id, label: label.name })),
+        .map((label) => ({ id: label.id, name: label.name })),
+      quick: quickFilters.map((chip) => ({ id: chip.id, name: chip.name })),
     };
-  }, [view, boardConfig, data.issueTypes, data.labels]);
+  }, [view, data.issueTypes, data.labels, data.people, meId, quickFilters]);
 
   const lqlSources = useMemo<LqlValueSources>(
     () => ({
@@ -140,18 +168,45 @@ export function useBoardScreen(projectKey: string | undefined) {
     [data.people, data.workflow, data.issueTypes, data.labels, view, data.sprint, data.project],
   );
 
+  // A Scrum card can leave the running sprint, which holds every card on the board, for a
+  // planned sprint or the Backlog.
+  const moveTargets = useMemo<MenuSprint[] | undefined>(
+    () =>
+      kanban || !data.project
+        ? undefined
+        : [
+            ...data.sprints.flatMap((sprint) =>
+              sprint.state === 'closed' || sprint.id === view?.sprintId
+                ? []
+                : [{ id: sprint.id, name: sprint.name }],
+            ),
+            { id: null, name: 'Backlog' },
+          ],
+    [kanban, data.project, data.sprints, view?.sprintId],
+  );
+
   const laneKind = boardConfig?.lanes.kind ?? 'none';
   return {
     ...data,
     filterError,
     model,
     vocab,
-    isDimmed,
     kanban,
+    defaultTypeId: (() => {
+      const standard = data.issueTypes.filter((type) => type.level === 'standard');
+      return (standard.find((type) => type.key === (kanban ? 'task' : 'story')) ?? standard[0])?.id;
+    })(),
     quickFilters,
-    people,
-    facets,
+    filterOptions,
+    filterApi,
+    filtered: filterApi.filtered,
+    shownTotal,
+    stages,
+    grouping,
+    setGrouping,
     lqlSources,
+    moveTargets,
+    display,
     serverQuery: q,
     laneLabel: laneKind === 'none' ? null : LANE_KINDS[laneKind],
   };

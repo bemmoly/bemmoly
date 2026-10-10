@@ -1,9 +1,10 @@
 import { cx } from '../../lib/cx.ts';
 
 /**
- * A space's colour. The Docs mock paints each space tile a solid colour with white initials;
- * these are the solid tokens closest to the mock's six (accent, violet, teal, rust, rose,
- * slate), so they hold in every preset and in dark mode.
+ * A space's colour. The Docs mock paints each space tile a solid colour with white initials:
+ * accent, violet, teal, rust, rose and slate. They come from the entity palette (the epic
+ * hues), never the signal reds and ambers, so a space never reads as a warning (ADR 0015). The
+ * stored names stay as they were, so existing spaces keep their choice.
  */
 export const SPACE_TONES = [
   'accent',
@@ -16,14 +17,25 @@ export const SPACE_TONES = [
 ] as const;
 export type SpaceTone = (typeof SPACE_TONES)[number];
 
+/** Each tone's entity palette hue; accent follows the theme, slate is the ink. */
+export const SPACE_TONE_HUES = {
+  accent: 'accent',
+  violet: 'epic-2',
+  green: 'epic-3',
+  orange: 'epic-4',
+  red: 'epic-6',
+  amber: 'epic-7',
+  slate: 'ink',
+} as const satisfies Record<SpaceTone, string>;
+
 const TONE_CLASSES: Record<SpaceTone, string> = {
-  accent: 'bg-ac-fill text-on-ac',
-  violet: 'bg-violet text-on-solid',
-  green: 'bg-ok text-on-solid',
-  orange: 'bg-warn text-on-solid',
-  red: 'bg-danger text-on-solid',
-  amber: 'bg-caution text-on-solid',
-  slate: 'bg-tx4 text-sf',
+  accent: 'bg-acc-fill text-on-acc',
+  violet: 'bg-epic-2 text-on-solid',
+  green: 'bg-epic-3 text-on-solid',
+  orange: 'bg-epic-4 text-on-solid',
+  red: 'bg-epic-6 text-on-solid',
+  amber: 'bg-epic-7 text-on-solid',
+  slate: 'bg-tx text-canvas',
 };
 
 /** A stored colour if it names a tone, else a stable tone from the space key. */
@@ -55,9 +67,9 @@ export type SpaceTileSize = 'xs' | 'sm' | 'md';
  * space in a menu or a picker row (20px, 9.5px), the avatar size of the same lists.
  */
 const SIZES: Record<SpaceTileSize, string> = {
-  md: 'size-8.5 rounded-panel text-13',
-  sm: 'size-7.5 rounded-panel text-12',
-  xs: 'size-5 rounded-xs text-9h',
+  md: 'size-8.5 rounded-control text-13',
+  sm: 'size-7.5 rounded-control text-12',
+  xs: 'size-5 rounded-chip text-11',
 };
 
 export interface SpaceTileProps {

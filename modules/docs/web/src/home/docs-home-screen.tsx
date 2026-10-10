@@ -68,7 +68,7 @@ export default function DocsHomeScreen(props: DocsScreenProps) {
         <header className="flex flex-wrap items-end gap-4">
           <div className="flex flex-col gap-1">
             <h1 className="m-0 text-24 font-semibold tracking-display text-tx">Docs</h1>
-            {spaces.isSuccess && <p className="m-0 text-13h text-tx4">{meta}</p>}
+            {spaces.isSuccess && <p className="m-0 text-13 text-tx-3">{meta}</p>}
           </div>
           <div className="ml-auto flex flex-wrap gap-2">
             <Button

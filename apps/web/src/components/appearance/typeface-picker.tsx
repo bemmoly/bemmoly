@@ -29,8 +29,8 @@ export function TypefacePicker({ value, onChange }: TypefacePickerProps) {
               role="radio"
               aria-checked={selected}
               onClick={() => onChange(font)}
-              className={`flex cursor-pointer flex-col gap-0.5 rounded-control border bg-sf px-2.5 py-2 text-left font-sans focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ac ${
-                selected ? 'border-ac shadow-ring' : 'border-br'
+              className={`flex cursor-pointer flex-col gap-0.5 rounded-control border bg-card px-2.5 py-2 text-left font-sans focus-ring ${
+                selected ? 'border-acc shadow-ring' : 'border-line'
               }`}
             >
               <span
@@ -40,7 +40,7 @@ export function TypefacePicker({ value, onChange }: TypefacePickerProps) {
               >
                 Ag
               </span>
-              <span className="text-11h text-tx4">{FONTS[font].name}</span>
+              <span className="text-12 text-tx-3">{FONTS[font].name}</span>
             </button>
           );
         })}

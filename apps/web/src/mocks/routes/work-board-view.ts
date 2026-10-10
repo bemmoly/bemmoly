@@ -1,6 +1,7 @@
 import type { MockDb } from '../db.ts';
 import type { MockIssue } from '../seed/work-board.ts';
 import { compileLql, type LqlContext } from './work-board-lql.ts';
+import { mockEpicColor } from './work-backlog-state.ts';
 import { sprintsOf } from './work-board-delegate.ts';
 import { boardState, projectRef, projectsOf, workflowOf } from './work-board-state.ts';
 import { workState, type Row } from './work-state.ts';
@@ -75,7 +76,16 @@ function lanes(db: MockDb, kind: string, used: Set<string>) {
     if (kind === 'epic') {
       const epics = boardState(db).issues.filter((issue) => isEpic(db, issue));
       return [
-        ...epics.map((e) => lane(e.id, e.title, { issueKey: e.key, dueAt: e.dueAt })),
+        ...epics.map((e) =>
+          lane(e.id, e.title, {
+            issueKey: e.key,
+            dueAt: e.dueAt,
+            color: mockEpicColor(
+              epics.filter((other) => other.projectId === e.projectId),
+              e.id,
+            ),
+          }),
+        ),
         lane('none', 'No epic'),
       ];
     }

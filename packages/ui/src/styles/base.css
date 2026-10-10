@@ -1,27 +1,48 @@
 /* Generated from src/tokens.ts by `pnpm --filter @bemmoly/ui tokens:css`. Do not edit. */
 :root {
   --text-base: 13px;
-  --text-nav: 13.5px;
+  --text-nav: 13px;
   --text-brand: 14px;
   --text-mono: 11px;
   --radius-control: 6px;
   --size-control: 32px;
   --size-topbar: 48px;
-  --shadow-card: 0 1px 2px rgba(16, 24, 40, 0.05);
-  --shadow-seg: 0 1px 1px rgba(0, 0, 0, 0.06);
-  --shadow-pop: 0 2px 8px rgba(16, 24, 40, 0.06);
-  --shadow-menu: 0 8px 24px rgba(16, 24, 40, 0.12);
-  --shadow-modal: 0 24px 64px rgba(16, 24, 40, 0.35), 0 0 0 1px rgba(16, 24, 40, 0.08);
-  --shadow-ring: 0 0 0 2px var(--ac-br);
-  --shadow-ring-ac: 0 0 0 2px var(--ac);
-  --shadow-ring-node: 0 0 0 3px var(--ac-br);
-  --shadow-tab: inset 0 -2px 0 var(--ac);
-  --shadow-radio: inset 0 0 0 4px var(--sf), inset 0 0 0 9px var(--ac-fill);
-  --shadow-halo: 0 0 0 1px var(--bg);
+  --brand-1: #2356c9;
+  --brand-2: #5b7be5;
+  --brand-3: #9a85ea;
+  --type-epic: #6e56cf;
+  --type-story: #1f9d55;
+  --type-task: #2356c9;
+  --type-bug: #e5484d;
+  --type-subtask: #0e9bb0;
+  --type-incident: #d46a2e;
+  --epic-1: #2356c9;
+  --epic-2: #6e56cf;
+  --epic-3: #0e9bb0;
+  --epic-4: #d46a2e;
+  --epic-5: #2f9e6e;
+  --epic-6: #c2536a;
+  --epic-7: #b7791f;
+  --epic-8: #9b4f96;
+  --avatar-green: #26855c;
+  --avatar-orange: #b85b27;
+  --avatar-violet: #875fca;
+  --avatar-pink: #bd5167;
+  --avatar-amber: #a36c1b;
+  --avatar-sky: #247cae;
+  --focus-width: 2px;
+  --focus-offset: 2px;
+  --shadow-ring: 0 0 0 2px var(--acc-100);
+  --shadow-ring-ac: 0 0 0 2px var(--acc);
+  --shadow-ring-node: 0 0 0 3px var(--acc-100);
+  --shadow-tab: inset 0 -2px 0 var(--acc);
+  --shadow-radio: inset 0 0 0 4px var(--card), inset 0 0 0 9px var(--acc-fill);
+  --shadow-halo: 0 0 0 1px var(--sunken);
   --duration-instant: 90ms;
-  --duration-fast: 150ms;
-  --duration-base: 200ms;
-  --duration-slow: 260ms;
+  --duration-fast: 120ms;
+  --duration-base: 160ms;
+  --duration-slow: 180ms;
+  --duration-exit: 100ms;
   --ease-standard: cubic-bezier(0.2, 0, 0, 1);
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-in: cubic-bezier(0.4, 0, 1, 1);
@@ -30,7 +51,7 @@
 
 body {
   margin: 0;
-  background: var(--bg);
+  background: var(--sunken);
   color: var(--tx);
   font-family: var(--font-ui);
   font-size: var(--text-base);
@@ -49,14 +70,14 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--br-off);
+  background: var(--line);
   background-clip: padding-box;
   border-radius: 6px;
   border: 2px solid transparent;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background-color: var(--tx6);
+  background-color: var(--tx-3);
 }
 
 ::-webkit-scrollbar-corner {
@@ -71,5 +92,13 @@ body {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+
+  :root {
+    --duration-instant: 0ms;
+    --duration-fast: 0ms;
+    --duration-base: 0ms;
+    --duration-slow: 0ms;
+    --duration-exit: 0ms;
   }
 }

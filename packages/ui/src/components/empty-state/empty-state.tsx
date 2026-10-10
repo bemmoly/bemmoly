@@ -55,7 +55,7 @@ export function EmptyState({
         <span
           aria-hidden
           className={cx(
-            'flex items-center justify-center rounded-panel bg-chip text-tx4',
+            'flex items-center justify-center rounded-control bg-line-2 text-tx-3',
             look.tile,
           )}
         >
@@ -63,7 +63,7 @@ export function EmptyState({
         </span>
       )}
       <Title className={cx('m-0 font-semibold text-tx', look.title)}>{title}</Title>
-      {description && <p className="m-0 max-w-90 text-12h leading-body text-tx4">{description}</p>}
+      {description && <p className="m-0 max-w-90 text-13 leading-body text-tx-3">{description}</p>}
       {action && <div className={size === 'sm' ? 'mt-1.5' : 'mt-2'}>{action}</div>}
     </div>
   );

@@ -37,6 +37,11 @@ export function workProjectCatalogEndpoints(http: Http) {
           body: validated(createProjectBodySchema, body),
           idempotent: true,
         }),
+      /** Archived projects leave every list but keep their issues; unarchive brings them back. */
+      archive: async (key: string) =>
+        http.request(project(key, '/archive'), projectSchema, { method: 'POST' }),
+      unarchive: async (key: string) =>
+        http.request(project(key, '/unarchive'), projectSchema, { method: 'POST' }),
       issueTypes: async (key: string) =>
         (await http.request(project(key, '/issue-types'), issueTypesResponseSchema)).items,
       fields: async (key: string) =>

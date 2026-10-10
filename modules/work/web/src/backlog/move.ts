@@ -69,7 +69,8 @@ function provisional(lower: Issue | undefined, upper: Issue | undefined, fallbac
   }
 }
 
-const sumPoints = (issues: readonly Issue[]) =>
+/** A container's committed points, to two decimals like the server. */
+export const sumPoints = (issues: readonly Issue[]) =>
   Math.round(issues.reduce((sum, issue) => sum + (issue.estimate ?? 0), 0) * 100) / 100;
 
 export function planMove(

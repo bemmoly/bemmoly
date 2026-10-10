@@ -33,16 +33,16 @@ export function ProviderList({
         value={query}
         onChange={(event) => onQuery(event.target.value)}
       />
-      <span className="text-12 text-tx5">
+      <span className="text-12 text-tx-3">
         {status} · {shown}
       </span>
       <div
         role="radiogroup"
         aria-label="All providers"
-        className="flex max-h-66 flex-col overflow-y-auto rounded-panel border border-br bg-sf"
+        className="flex max-h-66 flex-col overflow-y-auto rounded-control border border-line bg-card"
       >
         {results.length === 0 ? (
-          <span className="px-3 py-3 text-12h text-tx4">No provider matches “{query.trim()}”.</span>
+          <span className="px-3 py-3 text-13 text-tx-3">No provider matches “{query.trim()}”.</span>
         ) : (
           results.map((provider) => {
             const selected = provider.id === selectedId;
@@ -54,15 +54,15 @@ export function ProviderList({
                 aria-checked={selected}
                 disabled={disabled}
                 onClick={() => onPick(provider.id)}
-                className={`flex w-full shrink-0 cursor-pointer items-center gap-2.5 border-0 border-b border-br-row px-3 py-2 text-left font-sans text-13 outline-0 last:border-b-0 focus-visible:shadow-ring disabled:cursor-not-allowed ${
-                  selected ? 'bg-ac-bg2' : 'bg-transparent hover:bg-bg2'
+                className={`flex w-full shrink-0 cursor-pointer items-center gap-2.5 border-0 border-b border-line-2 px-3 py-2 text-left font-sans text-13 outline-0 last:border-b-0 focus-visible:shadow-ring disabled:cursor-not-allowed ${
+                  selected ? 'bg-acc-50' : 'bg-transparent hover:bg-side'
                 }`}
               >
                 <ProviderLogo id={provider.id} name={provider.name} />
-                <span className={`font-medium ${selected ? 'text-ac' : 'text-tx'}`}>
+                <span className={`font-medium ${selected ? 'text-acc' : 'text-tx'}`}>
                   {provider.name}
                 </span>
-                <span className="ml-auto font-mono text-12 text-tx4">{provider.id}</span>
+                <span className="ml-auto font-mono text-12 text-tx-3">{provider.id}</span>
               </button>
             );
           })

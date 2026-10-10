@@ -19,16 +19,16 @@ const copied = lines.map((line) => (line.startsWith('$ ') ? line.slice(2) : line
 
 <figure
   data-theme="dark"
-  class="m-0 min-w-0 overflow-hidden rounded-window border border-br bg-bg text-tx2"
+  class="m-0 min-w-0 overflow-hidden rounded-window border border-line bg-sunken text-tx-2"
 >
   {(label || copy) && (
-    <figcaption class="flex items-center gap-3 border-b border-br px-3 py-2.5 font-mono text-11h text-tx4">
+    <figcaption class="flex items-center gap-3 border-b border-line px-3 py-2.5 font-mono text-12 text-tx-3">
       {label}
       {copy && (
         <button
           type="button"
           data-copy={copied}
-          class="ml-auto cursor-pointer font-sans text-12h text-tx4 hover:text-tx2"
+          class="ml-auto cursor-pointer font-sans text-13 text-tx-3 hover:text-tx-2"
         >
           Copy
         </button>
@@ -39,7 +39,7 @@ const copied = lines.map((line) => (line.startsWith('$ ') ? line.slice(2) : line
     {lines.map((line) =>
       line.startsWith('$ ') ? (
         <span class="block whitespace-nowrap">
-          <span class="text-tx5" aria-hidden="true">
+          <span class="text-tx-3" aria-hidden="true">
             $
           </span>{' '}
           <span class="whitespace-pre" set:text={line.slice(2)} />

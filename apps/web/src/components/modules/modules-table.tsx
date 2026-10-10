@@ -1,12 +1,14 @@
-import type { AdminModule } from '@bemmoly/shared';
-import { Badge, Button, EmptyState, Table, type BadgeTone, type TableColumn } from '@bemmoly/ui';
+import { ModuleTile } from '@bemmoly/core-web';
+import type { AdminModule, ModuleManifest } from '@bemmoly/shared';
+import { Button, EmptyState, Table, type TableColumn } from '@bemmoly/ui';
 import { moduleName } from '../../hooks/use-admin-modules.ts';
+import { StatePill, type PillTone } from '../settings/state-pill.tsx';
 
-const CHANGELOG: Record<AdminModule['changelogState'], { label: string; tone: BadgeTone }> = {
-  current: { label: 'CURRENT', tone: 'ok' },
-  pending: { label: 'PENDING', tone: 'amber' },
-  failed: { label: 'FAILED', tone: 'warn' },
-  removed: { label: 'DATA REMOVED', tone: 'neutral' },
+const CHANGELOG: Record<AdminModule['changelogState'], { label: string; tone: PillTone }> = {
+  current: { label: 'Up to date', tone: 'ok' },
+  pending: { label: 'Pending', tone: 'warn' },
+  failed: { label: 'Failed', tone: 'red' },
+  removed: { label: 'Data removed', tone: 'neutral' },
 };
 
 interface ModulesTableProps {
@@ -17,6 +19,8 @@ interface ModulesTableProps {
   onEnable: (id: string) => void;
   onDisable: (id: string) => void;
   onRemoveData: (id: string) => void;
+  /** Enabled modules' manifests, for their tile's icon and colour. */
+  manifests?: readonly ModuleManifest[];
 }
 
 export function ModulesTable({
@@ -26,6 +30,7 @@ export function ModulesTable({
   onEnable,
   onDisable,
   onRemoveData,
+  manifests = [],
 }: ModulesTableProps) {
   const columns: TableColumn<AdminModule>[] = [
     {
@@ -33,16 +38,29 @@ export function ModulesTable({
       header: 'Module',
       width: 'minmax(0,1.5fr)',
       render: (module) => (
-        <div className="flex min-w-0 flex-col gap-0.5">
-          <span className="font-medium">{module.name}</span>
-          <span className="truncate text-12 text-tx5">
-            {module.dependsOn.length
-              ? `Depends on ${module.dependsOn.map(moduleName).join(', ')}`
-              : 'No dependencies'}
+        <div className="flex min-w-0 items-start gap-2.5">
+          <span className="mt-0.5 flex">
+            <ModuleTile
+              manifest={
+                manifests.find((entry) => entry.id === module.id) ?? {
+                  id: module.id,
+                  name: module.name,
+                }
+              }
+              size={26}
+            />
           </span>
-          {module.restartRequired ? (
-            <span className="text-12 text-amber-fg">Restart required to finish the change</span>
-          ) : null}
+          <div className="flex min-w-0 flex-col gap-0.5">
+            <span className="font-medium">{module.name}</span>
+            <span className="truncate text-12 text-tx-3">
+              {module.dependsOn.length
+                ? `Depends on ${module.dependsOn.map(moduleName).join(', ')}`
+                : 'No dependencies'}
+            </span>
+            {module.restartRequired ? (
+              <span className="text-12 text-amber-tx">Restart required to finish the change</span>
+            ) : null}
+          </div>
         </div>
       ),
     },
@@ -50,18 +68,28 @@ export function ModulesTable({
       key: 'state',
       header: 'State',
       width: '100px',
+      hideOnPhone: true,
       render: (module) =>
-        module.enabled ? <Badge tone="ok">ENABLED</Badge> : <Badge>DISABLED</Badge>,
+        module.enabled ? (
+          <StatePill tone="ok" stage="done">
+            Enabled
+          </StatePill>
+        ) : (
+          <StatePill tone="neutral" stage="todo">
+            Disabled
+          </StatePill>
+        ),
     },
     {
       key: 'version',
       header: 'Version',
       width: '120px',
+      hideOnPhone: true,
       render: (module) => (
         <div className="flex flex-col gap-0.5">
           <span className="font-mono text-12">{module.version}</span>
           {module.versionInstalled !== module.version ? (
-            <span className="text-12 text-tx5">
+            <span className="text-12 text-tx-3">
               {module.versionInstalled ? `${module.versionInstalled} installed` : 'Not installed'}
             </span>
           ) : null}
@@ -70,15 +98,16 @@ export function ModulesTable({
     },
     {
       key: 'changelog',
-      header: 'Changelog',
+      header: 'Schema',
       width: 'minmax(0,1fr)',
+      hideOnPhone: true,
       render: (module) => (
         <div className="flex flex-col items-start gap-0.5">
-          <Badge tone={CHANGELOG[module.changelogState].tone}>
+          <StatePill tone={CHANGELOG[module.changelogState].tone}>
             {CHANGELOG[module.changelogState].label}
-          </Badge>
+          </StatePill>
           {module.pendingChangesets > 0 ? (
-            <span className="text-12 text-tx5">
+            <span className="text-12 text-tx-3">
               {module.pendingChangesets} changeset{module.pendingChangesets === 1 ? '' : 's'}{' '}
               pending
             </span>
@@ -93,7 +122,7 @@ export function ModulesTable({
       align: 'end',
       render: (module) =>
         pinned ? (
-          <span className="text-12 text-tx5">Set by BEMMOLY_MODULES</span>
+          <span className="text-12 text-tx-3">Set by BEMMOLY_MODULES</span>
         ) : (
           <div className="flex items-center gap-1.5">
             {!module.enabled && module.changelogState !== 'removed' ? (

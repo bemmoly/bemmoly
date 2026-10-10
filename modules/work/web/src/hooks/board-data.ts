@@ -1,5 +1,5 @@
 import { queryKeys } from '@bemmoly/api-client';
-import type { BoardViewQuery } from '@bemmoly/module-work/shared';
+import type { BoardViewQuery, Sprint } from '@bemmoly/module-work/shared';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
 import { api, useProject, useWorkRealtime, workKeys } from '../shared/index.ts';
@@ -11,6 +11,7 @@ import { api, useProject, useWorkRealtime, workKeys } from '../shared/index.ts';
  */
 
 const PEOPLE = { limit: 100 } as const;
+const NO_SPRINTS: readonly Sprint[] = [];
 
 export function useBoardData(projectKey: string | undefined) {
   const { project, isPending: projectPending } = useProject(projectKey);
@@ -70,6 +71,7 @@ export function useBoardData(projectKey: string | undefined) {
     view: view.data,
     metrics: metrics.data,
     sprint: sprints.data?.find((sprint) => sprint.id === sprintId),
+    sprints: sprints.data ?? NO_SPRINTS,
     workflow: workflows.data?.[0],
     issueTypes: issueTypes.data ?? [],
     labels: labels.data ?? [],

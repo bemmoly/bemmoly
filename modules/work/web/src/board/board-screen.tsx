@@ -5,15 +5,29 @@ import { useId, useMemo } from 'react';
 import { useBoardActions } from '../hooks/board-actions.ts';
 import { useBoardVerdicts } from '../hooks/board-dnd.ts';
 import { useBoardDragStore } from '../hooks/board-drag-store.ts';
-import type { BoardModel } from '../hooks/board-model.ts';
+import { boardIssueOrder, doingPoints, type BoardModel } from '../hooks/board-model.ts';
+import {
+  boardCarrying,
+  clearBoardSelection,
+  useBoardSelect,
+  useBoardSelectionStore,
+} from '../hooks/board-selection.ts';
 import { useBoardScreen } from '../hooks/board-screen.ts';
-import { useBoardIssueSlideOver } from '../hooks/board-slide-over.ts';
+import { useIssueQuickActions } from '../hooks/issue-quick-actions.ts';
+import { DOCKED_SLIDE_OVER_QUERY, useMediaQuery } from '../hooks/media-query.ts';
+import { useIssuePeek } from '../shared/issue-peek.ts';
+import { useIssueFilters } from '../shared/issue-filters.ts';
+import { useRecordRecent, useScreenActions } from '@bemmoly/core-web';
 import { navigateTo, workPaths } from '../hooks/issue-navigation.ts';
 import { useSavedFilters } from '../hooks/saved-filters.ts';
-import { IssueSlideOver } from '../issue/index.ts';
+import { WorkPresence } from '../shared/work-presence.tsx';
+import { IssueBulkBar } from '../shared/issue-bulk-bar.tsx';
+import { IssueSlideOver, useRememberIssueList } from '../issue/index.ts';
 import type { WorkScreenProps } from '../routes.tsx';
 import { BoardSkeleton } from '../skeletons/board-skeleton.tsx';
 import { BoardContext, type BoardShared } from './board-context.ts';
+import { BoardDisplayMenu } from './board-display-menu.tsx';
+import { BoardEmpty } from './board-empty.tsx';
 import { BoardGrid } from './board-grid.tsx';
 import { BoardHeader } from './board-header.tsx';
 import { BoardToolbar } from './board-toolbar.tsx';
@@ -46,76 +60,121 @@ function BoardBody({
   view: BoardView;
   model: BoardModel;
 }) {
-  const slideOver = useBoardIssueSlideOver();
   const savedFilters = useSavedFilters(screen.project);
-  const actions = useBoardActions(model, view.board.id, slideOver.openIssue);
+  const quick = useIssueQuickActions();
+  const { clear } = useIssueFilters();
+  const docked = useMediaQuery(DOCKED_SLIDE_OVER_QUERY);
+  // Screen order: lane by lane, column by column, top to bottom, as j and k step.
+  const order = useMemo(() => boardIssueOrder(model), [model]);
+  const peek = useIssuePeek(() => order);
+  useRememberIssueList({
+    label: screen.sprint ? `${screen.sprint.name} board` : 'Board',
+    keys: order,
+  });
+
+  const actions = useBoardActions(model, view.board.id, peek.open);
+  const select = useBoardSelect(model, view.board.id);
+  const selectedIds = useBoardSelectionStore((state) => state.selection.ids);
+  const selectedKeys = useMemo(
+    () => order.filter((key) => selectedIds.includes(key)),
+    [order, selectedIds],
+  );
   const instructionsId = useId();
+  const project = screen.project;
+  const sprintId = screen.sprint?.id;
+  const firstStatus = (columnId: string) =>
+    view.board.config.columns.find((column) => column.id === columnId)?.statusIds[0];
+  const laneKind = view.board.config.lanes.kind;
+  const createIn = useMemo(() => {
+    const typeId = screen.defaultTypeId;
+    if (!project || !typeId) return undefined;
+    return (laneId: string, columnId: string, title: string) =>
+      quick.create(
+        {
+          projectId: project.id,
+          typeId,
+          title,
+          priority: 'medium',
+          ...(sprintId ? { sprintId } : {}),
+          ...(laneKind === 'epic' && laneId !== 'none' && laneId !== 'all'
+            ? { parentId: laneId }
+            : {}),
+          ...(laneKind === 'assignee' && laneId !== 'none' && laneId !== 'all'
+            ? { assigneeId: laneId }
+            : {}),
+        },
+        firstStatus(columnId),
+      );
+  }, [project, screen.defaultTypeId, sprintId, laneKind, quick, view.board.config]);
   const shared = useMemo<BoardShared>(
     () => ({
       actions,
       vocab: screen.vocab,
-      isDimmed: screen.isDimmed,
-      selectedKey: slideOver.issueKey,
+      quick,
+      select,
+      ...(screen.moveTargets ? { sprints: screen.moveTargets } : {}),
+      selectedKey: peek.issueKey,
+      density: screen.display.display.density,
       instructionsId,
+      ...(createIn ? { createIn } : {}),
     }),
-    [actions, screen.vocab, screen.isDimmed, slideOver.issueKey, instructionsId],
+    [
+      actions,
+      screen.vocab,
+      quick,
+      select,
+      screen.moveTargets,
+      peek.issueKey,
+      screen.display.display.density,
+      instructionsId,
+      createIn,
+    ],
   );
   const inFlight = model.lanes.reduce((sum, lane) => sum + lane.inFlight, 0);
-  const cards = model.lanes.reduce((sum, lane) => sum + lane.count, 0);
-  const project = screen.project;
   if (!project) return null;
   const empty =
-    cards > 0 ? undefined : screen.kanban ? (
-      <EmptyState
-        icon={<Icon name="board" />}
-        title="No issues on the board yet"
-        description="Create an issue and it lands in the first column."
-        action={
-          <Button variant="primary" onClick={() => navigateTo(workPaths.createIssue(project.key))}>
-            Create issue
-          </Button>
-        }
-      />
-    ) : (
-      <EmptyState
-        icon={<Icon name="sprint" />}
-        title={screen.sprint ? 'Nothing in this sprint yet' : 'No sprint is running'}
-        description={
-          screen.sprint
-            ? 'Plan the sprint from the backlog and its issues show up here.'
-            : 'Start a sprint from the backlog and its issues show up here.'
-        }
-        action={
-          <Button variant="primary" onClick={() => navigateTo(`/work/backlog/${project.key}`)}>
-            Open the backlog
-          </Button>
-        }
+    screen.shownTotal > 0 ? undefined : (
+      <BoardEmpty
+        projectKey={project.key}
+        cards={view.cards.length}
+        kanban={screen.kanban}
+        sprintRunning={screen.sprint !== undefined}
+        onClearFilters={clear}
       />
     );
   return (
     <div className="flex min-h-0 flex-1">
       <div className="flex min-w-0 flex-1 flex-col">
-        <div className="flex shrink-0 flex-col gap-3 bg-bg px-6 pt-3.5">
+        <div className="flex shrink-0 flex-col bg-canvas">
           <BoardHeader
             project={project}
             view={view}
             metrics={screen.metrics}
             sprint={screen.sprint}
             inFlight={inFlight}
+            doingPoints={doingPoints(model)}
           />
           <BoardToolbar
-            people={screen.people}
-            facets={screen.facets}
-            quickFilters={screen.quickFilters}
+            options={screen.filterOptions}
             laneLabel={screen.laneLabel}
+            grouping={screen.grouping}
+            onGrouping={screen.setGrouping}
             lqlSources={screen.lqlSources}
             lqlError={screen.filterError ? screen.filterError.message : null}
             savedFilters={savedFilters}
+            display={<BoardDisplayMenu display={screen.display} kanban={screen.kanban} />}
           />
         </div>
-        <div className="min-h-0 flex-1 overflow-auto px-6 pb-6">
+        <div className="min-h-0 flex-1 overflow-auto bg-sunken px-6 pb-6 max-md:px-4">
           <BoardContext.Provider value={shared}>
-            <BoardGrid model={model} kanban={screen.kanban} empty={empty} />
+            <BoardGrid
+              model={model}
+              kanban={screen.kanban}
+              empty={empty}
+              stages={screen.stages}
+              canCreate={createIn !== undefined}
+              showEmptyColumns={screen.display.display.showEmptyColumns}
+            />
           </BoardContext.Provider>
         </div>
         <p id={instructionsId} hidden>
@@ -126,17 +185,57 @@ function BoardBody({
         <BoardVerdicts model={model} />
       </div>
       <IssueSlideOver
-        issueKey={slideOver.issueKey}
-        onClose={slideOver.close}
-        variant={slideOver.variant}
+        issueKey={peek.issueKey}
+        onClose={peek.close}
+        variant={docked ? 'docked' : 'overlay'}
+        {...(peek.previous ? { onPrevious: peek.previous } : {})}
+        {...(peek.next ? { onNext: peek.next } : {})}
+      />
+      <IssueBulkBar
+        keys={selectedKeys}
+        meId={screen.meId}
+        {...(screen.moveTargets ? { sprints: screen.moveTargets } : {})}
+        actions={quick}
+        onClear={clearBoardSelection}
+        holdEscape={boardCarrying}
       />
     </div>
+  );
+}
+
+/** The board as a recent item and its palette actions, once its project is known. */
+function useBoardInShell(project: { key: string; name: string } | undefined) {
+  useRecordRecent(
+    project
+      ? {
+          id: `work.board:${project.key}`,
+          title: 'Board',
+          context: project.name,
+          path: workPaths.board(project.key),
+          look: { kind: 'icon', icon: 'board', moduleId: 'work' },
+          group: 'Boards',
+        }
+      : null,
+  );
+  useScreenActions(
+    project
+      ? [
+          {
+            id: 'work.go-backlog',
+            title: 'Go to backlog',
+            keys: 'G L',
+            look: { kind: 'icon', icon: 'backlog' },
+            run: () => navigateTo(workPaths.backlog(project.key)),
+          },
+        ]
+      : null,
   );
 }
 
 /** The Board: Scrum or Kanban, matching the Board mock, with live updates over the socket. */
 export default function BoardScreen({ projectKey }: WorkScreenProps) {
   const screen = useBoardScreen(projectKey);
+  useBoardInShell(screen.project);
   if (screen.isPending) return <BoardSkeleton />;
   if (screen.error) {
     return (
@@ -181,5 +280,10 @@ export default function BoardScreen({ projectKey }: WorkScreenProps) {
       />
     );
   }
-  return <BoardBody screen={screen} view={screen.view} model={screen.model} />;
+  return (
+    <>
+      <WorkPresence projectId={screen.project.id} view="board" />
+      <BoardBody screen={screen} view={screen.view} model={screen.model} />
+    </>
+  );
 }

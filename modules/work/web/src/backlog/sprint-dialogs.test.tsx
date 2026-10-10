@@ -145,7 +145,8 @@ describe('CompleteSprintDialog', () => {
     render(<Complete onClose={onClose} />, { wrapper: wrapper() });
     expect(screen.getByText('1 issue')).toBeTruthy();
     expect(screen.getByText('2 issues')).toBeTruthy();
-    expect(screen.getAllByText('3 pts')).toHaveLength(2);
+    expect(screen.getAllByText('3 points')).toHaveLength(2);
+    expect(screen.getByText('50% done')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Complete sprint' }));
     await waitFor(() => expect(onClose).toHaveBeenCalled());
     expect(calls).toEqual([

@@ -9,7 +9,7 @@ import {
   stepTarget,
 } from './board-drag.ts';
 import { EPIC, STATUS, testView } from './board-fixtures.ts';
-import { buildBoardModel, locateCard } from './board-model.ts';
+import { boardIssueOrder, buildBoardModel, locateCard } from './board-model.ts';
 
 const view = testView();
 const model = buildBoardModel(view);
@@ -215,8 +215,9 @@ describe('buildBoardModel', () => {
   it('splits lanes into rank-ordered cells with points and progress', () => {
     const [epic, none] = model.lanes;
     expect(epic?.cells['todo']?.map((entry) => entry.key)).toEqual(['PLT-10', 'PLT-11']);
-    expect(epic).toMatchObject({ count: 5, points: 12, donePoints: 5, inFlight: 2, hue: 0 });
-    expect(none).toMatchObject({ label: 'No epic', count: 1, hue: null });
+    expect(epic).toMatchObject({ count: 5, points: 12, donePoints: 5, inFlight: 2 });
+    expect(epic?.color).toMatch(/^epic-[1-8]$/);
+    expect(none).toMatchObject({ label: 'No epic', count: 1, color: null });
   });
 
   it('puts every card in one lane when grouping is off', () => {
@@ -227,5 +228,22 @@ describe('buildBoardModel', () => {
       'PLT-11',
       'PLT-15',
     ]);
+  });
+});
+
+describe('boardIssueOrder', () => {
+  it('lists cards lane by lane, column by column, as the screen shows them', () => {
+    const order = boardIssueOrder(model);
+    const firstLane = model.lanes[0];
+    const expected = model.columns.flatMap((column) =>
+      (firstLane?.cells[column.id] ?? []).map((card) => card.key),
+    );
+    expect(order.slice(0, expected.length)).toEqual(expected);
+    expect(order).toHaveLength(model.lanes.reduce((sum, lane) => sum + lane.count, 0));
+  });
+
+  it('leaves out the cards a filter hides', () => {
+    const kept = buildBoardModel(view, 'lanes', (card) => card.key !== 'PLT-10');
+    expect(boardIssueOrder(kept)).not.toContain('PLT-10');
   });
 });

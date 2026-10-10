@@ -51,7 +51,7 @@ function CreatePageForm({
       footer={
         <>
           {form.error && (
-            <span role="alert" className="mr-auto text-12h text-danger">
+            <span role="alert" className="mr-auto text-13 text-red">
               {form.error}
             </span>
           )}

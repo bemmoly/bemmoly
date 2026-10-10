@@ -2,7 +2,7 @@ import { formatDateTime } from '@bemmoly/core-web';
 import type { AuditEntry } from '@bemmoly/shared';
 import { EmptyState, Table, type TableColumn } from '@bemmoly/ui';
 
-const DASH = <span className="text-tx6">—</span>;
+const DASH = <span className="text-tx-3">—</span>;
 
 interface AuditTableProps {
   entries: readonly AuditEntry[];
@@ -27,7 +27,7 @@ export function AuditTable({
       header: 'When',
       width: '112px',
       render: (entry) => (
-        <time dateTime={entry.createdAt} className="text-tx2">
+        <time dateTime={entry.createdAt} className="text-tx-2">
           {formatDateTime(entry.createdAt)}
         </time>
       ),
@@ -36,6 +36,7 @@ export function AuditTable({
       key: 'actor',
       header: 'Actor',
       width: 'minmax(0,1fr)',
+      hideOnPhone: true,
       render: (entry) => <span className="block truncate font-medium">{actorOf(entry)}</span>,
     },
     {
@@ -48,9 +49,10 @@ export function AuditTable({
       key: 'target',
       header: 'Target',
       width: 'minmax(0,1.2fr)',
+      hideOnPhone: true,
       render: (entry) => (
         <span className="block truncate">
-          <span className="text-tx5">{entry.targetKind}</span>
+          <span className="text-tx-3">{entry.targetKind}</span>
           {entry.targetId ? (
             <span className="ml-1.5 font-mono text-12">{entry.targetId}</span>
           ) : null}
@@ -61,16 +63,18 @@ export function AuditTable({
       key: 'ip',
       header: 'IP',
       width: '96px',
+      hideOnPhone: true,
       render: (entry) =>
-        entry.ip ? <span className="font-mono text-12 text-tx3">{entry.ip}</span> : DASH,
+        entry.ip ? <span className="font-mono text-12 text-tx-2">{entry.ip}</span> : DASH,
     },
     {
       key: 'request',
       header: 'Request id',
       width: '112px',
+      hideOnPhone: true,
       render: (entry) =>
         entry.requestId ? (
-          <span className="block truncate font-mono text-12 text-tx4" title={entry.requestId}>
+          <span className="block truncate font-mono text-12 text-tx-3" title={entry.requestId}>
             {entry.requestId}
           </span>
         ) : (

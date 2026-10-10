@@ -59,9 +59,9 @@ const POLICIES = [
 
 export function AuthenticationPage() {
   return (
-    <SettingsPage title="Authentication" description="How people sign in to this workspace.">
+    <SettingsPage title="Sign-in and SSO" description="How people sign in to this workspace.">
       <div className="-mt-2 flex flex-col gap-5">
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid gap-3 sm:grid-cols-2">
           {METHODS.map((method) => (
             <AuthMethodCard key={method.id} method={method} />
           ))}
@@ -81,7 +81,7 @@ export function AuthenticationPage() {
               key={policy.title}
               title={policy.title}
               description={policy.description}
-              control={<span className="text-13 text-tx5">Off</span>}
+              control={<span className="text-13 text-tx-3">Off</span>}
             />
           ))}
         </SettingsSection>

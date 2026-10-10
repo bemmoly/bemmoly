@@ -1,15 +1,14 @@
 import { useSetupImport } from '../../hooks/use-setup-import.ts';
-import { Notice } from '../form.tsx';
 import { ChoiceCard } from './choice-card.tsx';
 import { IMPORT_MARKS } from './option-marks.tsx';
-import { StepFooter, type StepNav } from './step-footer.tsx';
+import { StepFooter, StepForm, type StepNav } from './step-footer.tsx';
 
-/** Step 2: the importers shown as coming soon, and Start clean picked. */
+/** Import: the importers shown as coming soon, and Start clean picked. */
 export function StepImport({ nav }: { nav: StepNav }) {
   const { sources, selected, select, notice, label, canStart, start } = useSetupImport(nav.next);
   return (
-    <>
-      <div role="radiogroup" aria-label="Import source" className="grid grid-cols-2 gap-3">
+    <StepForm label="Import" onSubmit={start}>
+      <div role="radiogroup" aria-label="Import source" className="grid gap-3 sm:grid-cols-2">
         {sources.map((source) => (
           <ChoiceCard
             key={source.id}
@@ -23,8 +22,8 @@ export function StepImport({ nav }: { nav: StepNav }) {
           />
         ))}
       </div>
-      <Notice>{notice}</Notice>
-      <StepFooter nav={nav} label={label} onPrimary={start} disabled={!canStart} />
-    </>
+      <p className="m-0 text-13 text-tx-3">{notice}</p>
+      <StepFooter nav={nav} label={label} disabled={!canStart} />
+    </StepForm>
   );
 }

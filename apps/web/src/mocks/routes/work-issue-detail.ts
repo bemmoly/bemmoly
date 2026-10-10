@@ -1,4 +1,5 @@
 import type { MockDb } from '../db.ts';
+import { mockEpicColor } from './work-backlog-state.ts';
 import type { IssuesState } from './work-issue-activity.ts';
 import { workState, type Row } from './work-state.ts';
 
@@ -27,6 +28,25 @@ function person(db: MockDb, id: unknown) {
   return user ? { id: user.id, name: user.name, email: user.email } : null;
 }
 
+/** The parent with its stored colour, the same one the Board and the Backlog paint. */
+function parentOf(db: MockDb, s: IssuesState, id: string) {
+  const parent = byId(s.issues, id) as Row;
+  const epicTypes = new Set(
+    workState(db)
+      .issueTypes.filter((type) => type['level'] === 'epic')
+      .map((type) => type.id),
+  );
+  const epics = s.issues
+    .filter(
+      (row) => epicTypes.has(String(row['typeId'])) && row['projectId'] === parent['projectId'],
+    )
+    .map((row) => ({ id: row.id, key: String(row['key']) }));
+  return {
+    ...issueRef(parent),
+    color: epicTypes.has(String(parent['typeId'])) ? mockEpicColor(epics, id) : null,
+  };
+}
+
 /** The detail response: the issue and every name the page prints beside a field. */
 export function issueDetail(db: MockDb, s: IssuesState, issue: Row) {
   const type = byId(workState(db).issueTypes, issue['typeId']);
@@ -46,7 +66,7 @@ export function issueDetail(db: MockDb, s: IssuesState, issue: Row) {
     status: { ...ref(status), category: status?.['category'], color: status?.['color'] ?? null },
     assignee: person(db, issue['assigneeId']),
     reporter: person(db, issue['reporterId']),
-    parent: issue['parentId'] ? issueRef(byId(s.issues, issue['parentId']) as Row) : null,
+    parent: issue['parentId'] ? parentOf(db, s, String(issue['parentId'])) : null,
     sprint: sprint ? { ...ref(sprint), state: sprint['state'] } : null,
     fixVersion: ref(byId(s.versions, issue['fixVersionId'])),
     labels: (issue['labelIds'] as string[]).flatMap((id) => {

@@ -19,7 +19,7 @@ export interface HistoryPanelProps {
   canEdit?: boolean;
 }
 
-const LABEL = 'text-11 font-medium tracking-caps text-tx5 uppercase';
+const LABEL = 'text-11 font-medium tracking-caps text-tx-3 uppercase';
 
 /** Arrow keys walk the version rows. */
 function walkRows(event: KeyboardEvent<HTMLElement>) {
@@ -86,7 +86,7 @@ export function HistoryPanel({ pageId, canEdit = true }: HistoryPanelProps) {
       .join(', ') + (revision.authorIds.length > 2 ? ` +${revision.authorIds.length - 2}` : '');
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col text-12h leading-body">
+    <div className="flex min-h-0 flex-1 flex-col text-13 leading-body">
       <div className="flex shrink-0 items-center gap-2 px-3.5 pt-3.5 pb-2">
         <span className={LABEL}>Version history</span>
         {canEdit && !naming && (

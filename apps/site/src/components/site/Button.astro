@@ -12,10 +12,10 @@ interface Props {
 const { variant, href } = Astro.props;
 const Tag = href ? 'a' : 'span';
 const classes = [
-  'inline-flex h-11.5 items-center gap-2 rounded-panel text-15 font-medium',
+  'inline-flex h-11.5 items-center gap-2 rounded-control text-16 font-medium',
   variant === 'primary'
-    ? 'bg-ac-fill px-5.5 text-on-ac hover:text-on-ac'
-    : 'border border-br3 bg-sf px-5 text-tx hover:text-tx dark:border-br',
+    ? 'bg-acc-fill px-5.5 text-on-acc hover:text-on-acc'
+    : 'border border-line bg-card px-5 text-tx hover:text-tx dark:border-line',
 ];
 ---
 

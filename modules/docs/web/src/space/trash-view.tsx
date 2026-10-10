@@ -50,7 +50,7 @@ export function TrashView() {
       <div className="mx-auto flex max-w-225 flex-col gap-5 px-5 pt-8 pb-15 md:px-10">
         <header className="flex flex-col gap-1">
           <h1 className="m-0 text-24 font-semibold tracking-display text-tx">Trash</h1>
-          <p className="m-0 text-13h text-tx4">
+          <p className="m-0 text-13 text-tx-3">
             Pages moved to the trash in {space.name}. Restoring a page brings back the pages under
             it.
           </p>
@@ -77,14 +77,14 @@ export function TrashView() {
               {pages.map((page) => (
                 <li
                   key={page.id}
-                  className="flex items-center gap-3 border-b border-br-row px-4 py-2.5 last:border-b-0"
+                  className="flex items-center gap-3 border-b border-line-2 px-4 py-2.5 last:border-b-0"
                 >
-                  <Icon name="doc" className="text-tx5" />
+                  <Icon name="doc" className="text-tx-3" />
                   <span className="flex min-w-0 flex-1 flex-col gap-0.5">
                     <span className="truncate text-13 font-medium text-tx">
                       {page.title || 'Untitled'}
                     </span>
-                    <span className="text-12 text-tx5">
+                    <span className="text-12 text-tx-3">
                       Moved to trash {page.deletedAt ? formatRelative(page.deletedAt) : ''}
                     </span>
                   </span>

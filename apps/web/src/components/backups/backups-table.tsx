@@ -1,7 +1,6 @@
 import { formatBytes, formatDateTime } from '@bemmoly/core-web';
 import type { Backup } from '@bemmoly/shared';
 import {
-  Badge,
   Button,
   buttonClassName,
   Card,
@@ -13,6 +12,7 @@ import {
 import { Icon } from '@bemmoly/ui/icons';
 import { LINK_ACTION } from '../actions.ts';
 import { KIND, STATUS, VERIFICATION, WHERE } from './backup-labels.ts';
+import { StatePill } from '../settings/state-pill.tsx';
 
 interface BackupsTableProps {
   backups: readonly Backup[];
@@ -46,32 +46,35 @@ export function BackupsTable(props: BackupsTableProps) {
       key: 'created',
       header: 'Created',
       width: '104px',
-      render: (backup) => <span className="text-tx2">{formatDateTime(backup.createdAt)}</span>,
+      render: (backup) => <span className="text-tx-2">{formatDateTime(backup.createdAt)}</span>,
     },
     {
       key: 'kind',
       header: 'Kind',
       width: '100px',
+      hideOnPhone: true,
       render: (backup) => (
         <div className="flex flex-col gap-0.5">
-          <span className="text-tx3">{KIND[backup.kind]}</span>
-          <span className="text-12 text-tx5">{backup.attachmentMode}</span>
+          <span className="text-tx-2">{KIND[backup.kind]}</span>
+          <span className="text-12 text-tx-3">{backup.attachmentMode}</span>
         </div>
       ),
     },
     {
       key: 'status',
       header: 'Status',
-      width: 'minmax(200px,1fr)',
+      width: 'minmax(120px,1fr)',
       render: (backup) => (
         <div className="flex min-w-0 flex-col items-start gap-0.5">
-          <Badge tone={STATUS[backup.status].tone}>{STATUS[backup.status].label}</Badge>
+          <StatePill tone={STATUS[backup.status].tone} stage={STATUS[backup.status].stage}>
+            {STATUS[backup.status].label}
+          </StatePill>
           {backup.error ? (
-            <span className="max-w-50 truncate text-12 text-danger" title={backup.error}>
+            <span className="max-w-50 truncate text-12 text-red" title={backup.error}>
               {backup.error}
             </span>
           ) : (
-            <span className="text-12 text-tx5">
+            <span className="text-12 text-tx-3">
               {backup.locations.map((location) => WHERE[location.destination]).join(' + ')}
               {backup.encrypted ? ' · encrypted' : ''}
             </span>
@@ -83,6 +86,7 @@ export function BackupsTable(props: BackupsTableProps) {
       key: 'size',
       header: 'Size',
       width: '72px',
+      hideOnPhone: true,
       align: 'end',
       render: (backup) => (
         <span className="font-mono text-12">
@@ -94,6 +98,7 @@ export function BackupsTable(props: BackupsTableProps) {
       key: 'version',
       header: 'Version',
       width: '56px',
+      hideOnPhone: true,
       render: (backup) => <span className="font-mono text-12">{backup.appVersion}</span>,
     },
     {
@@ -124,19 +129,20 @@ export function BackupsTable(props: BackupsTableProps) {
             </a>
           </div>
         ) : (
-          <span className="text-12 text-tx5">Not restorable</span>
+          <span className="text-12 text-tx-3">Not restorable</span>
         ),
     },
     {
       key: 'verification',
       header: 'Verification',
       width: '170px',
+      hideOnPhone: true,
       render: (backup) => (
         <div className="flex flex-col items-start gap-1">
           <span title={backup.verification.message ?? undefined}>
-            <Badge tone={VERIFICATION[backup.verification.state].tone}>
+            <StatePill tone={VERIFICATION[backup.verification.state].tone}>
               {VERIFICATION[backup.verification.state].label}
-            </Badge>
+            </StatePill>
           </span>
           {backup.status === 'succeeded' ? (
             <span className="flex items-center gap-1.5 text-12">
@@ -149,7 +155,7 @@ export function BackupsTable(props: BackupsTableProps) {
               >
                 Check archive
               </button>
-              <span className="text-tx6">·</span>
+              <span className="text-tx-3">·</span>
               <button
                 type="button"
                 className={LINK_ACTION}
@@ -172,7 +178,7 @@ export function BackupsTable(props: BackupsTableProps) {
         title="Backups"
         hint={<span className="whitespace-nowrap">{restorable} restorable</span>}
         actions={
-          <span className="font-normal text-tx4">
+          <span className="font-normal text-tx-3">
             Restore puts Bemmoly in maintenance mode, restores into a fresh database and keeps the
             replaced one for {props.keepDays} days.
           </span>
@@ -181,7 +187,7 @@ export function BackupsTable(props: BackupsTableProps) {
       <div className="overflow-x-auto">
         <Table
           label="Backups"
-          className="min-w-250 rounded-none! border-0!"
+          className="rounded-none! border-0! sm:min-w-250"
           columns={columns}
           rows={backups}
           rowKey={(backup) => backup.id}

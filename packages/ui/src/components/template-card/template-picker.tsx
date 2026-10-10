@@ -79,13 +79,13 @@ export function TemplatePicker({
     <div className={cx('flex flex-col gap-4', className)}>
       <div className={GRID}>{card(null)}</div>
       {error ? (
-        <p role="alert" className="m-0 text-12h text-danger">
+        <p role="alert" className="m-0 text-13 text-red">
           {error}
         </p>
       ) : loading ? (
         <div aria-hidden className={GRID}>
           {Array.from({ length: 4 }, (_, index) => (
-            <span key={index} className="flex gap-2.5 rounded-card border border-br p-3">
+            <span key={index} className="flex gap-2.5 rounded-card border border-line p-3">
               <Skeleton width={28} height={28} shape="block" />
               <span className="flex flex-1 flex-col gap-1.5 pt-0.5">
                 <Skeleton width="55%" height={11} />
@@ -97,7 +97,7 @@ export function TemplatePicker({
       ) : (
         groups(templates).map(([category, list]) => (
           <section key={category} aria-label={category} className="flex flex-col gap-2">
-            <h3 className="m-0 text-11 font-semibold tracking-caps text-tx5 uppercase">
+            <h3 className="m-0 text-11 font-semibold tracking-caps text-tx-3 uppercase">
               {category}
             </h3>
             <div className={GRID}>{list.map((template) => card(template))}</div>

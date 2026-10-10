@@ -1,9 +1,18 @@
-import { Drawer, EmptyState, FieldSwatch, IconButton, KeyChip, TypeGlyph } from '@bemmoly/ui';
+import {
+  Drawer,
+  epicColor,
+  epicFill,
+  FieldSwatch,
+  IconButton,
+  KeyChip,
+  TypeGlyph,
+} from '@bemmoly/ui';
 import { useState } from 'react';
 import { useIssue } from '../hooks/issue-detail.ts';
 import { keepLinksInApp, navigateTo, workPaths } from '../hooks/issue-navigation.ts';
 import { IssuePanelSkeleton } from '../skeletons/issue-skeleton.tsx';
 import { IssueBody } from './issue-body.tsx';
+import { IssueError } from './issue-error.tsx';
 import { IssueMoreMenu } from './issue-header.tsx';
 import { typeGlyph } from './vocabulary.ts';
 
@@ -16,6 +25,10 @@ export interface IssueSlideOverProps {
    * scrim, for narrow screens and pages without room beside them.
    */
   variant?: 'docked' | 'overlay';
+  /** Steps to the issue above in the list (↑ or k); absent at the top. */
+  onPrevious?: () => void;
+  /** Steps to the issue below in the list (↓ or j); absent at the bottom. */
+  onNext?: () => void;
 }
 
 /**
@@ -27,6 +40,8 @@ export function IssueSlideOver({
   issueKey: openKey,
   onClose,
   variant = 'docked',
+  onPrevious,
+  onNext,
 }: IssueSlideOverProps) {
   // The panel slides out after it is closed; it keeps showing the issue it had until it is gone.
   const [lastKey, setLastKey] = useState(openKey);
@@ -47,7 +62,9 @@ export function IssueSlideOver({
           <>
             {issue.parent && (
               <>
-                <FieldSwatch colorClassName="bg-ac" />
+                <FieldSwatch
+                  colorClassName={epicFill(epicColor(issue.parent.color, issue.parent.id))}
+                />
                 <span className="truncate">{issue.parent.title}</span>
                 <span aria-hidden>/</span>
               </>
@@ -62,6 +79,26 @@ export function IssueSlideOver({
       actions={
         issue && (
           <>
+            {(onPrevious || onNext) && (
+              <>
+                <IconButton
+                  keys="K"
+                  label="Previous issue"
+                  icon="arrow-up"
+                  size="xs"
+                  disabled={!onPrevious}
+                  onClick={onPrevious}
+                />
+                <IconButton
+                  keys="J"
+                  label="Next issue"
+                  icon="arrow-down"
+                  size="xs"
+                  disabled={!onNext}
+                  onClick={onNext}
+                />
+              </>
+            )}
             <IconButton
               label="Open full page"
               icon="expand"
@@ -80,9 +117,10 @@ export function IssueSlideOver({
       <div className="flex flex-col gap-4.5" onClick={keepLinksInApp}>
         {query.isPending && <IssuePanelSkeleton />}
         {query.isError && (
-          <EmptyState
-            title={`${issueKey ?? 'The issue'} could not be opened`}
-            description={query.error.message}
+          <IssueError
+            issueKey={issueKey ?? 'The issue'}
+            error={query.error}
+            onRetry={() => void query.refetch()}
           />
         )}
         {issue && <IssueBody issue={issue} size="panel" />}

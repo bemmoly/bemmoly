@@ -101,7 +101,7 @@ export function LqlFilterBar({
         onKeyDown={onKeyDown}
         onBlur={() => setListOpen(false)}
         onFocus={() => setListOpen(true)}
-        prefix={<span className="font-mono text-11 font-medium text-ac">LQL</span>}
+        prefix={<span className="font-mono text-11 font-medium text-acc">LQL</span>}
         suffix={
           <IconButton
             label="Close the LQL filter"
@@ -114,13 +114,13 @@ export function LqlFilterBar({
             }}
           />
         }
-        wrapperClassName={cls(message && 'border-warn')}
+        wrapperClassName={cls(message && 'border-amber')}
       />
       <div className="absolute top-full left-0 z-20 mt-1 flex w-full flex-col gap-1">
         {message && (
           <p
             role="alert"
-            className="m-0 rounded-sm border border-warn bg-warn-bg px-2 py-1 text-11 text-warn-fg"
+            className="m-0 rounded-chip border border-amber bg-amber-50 px-2 py-1 text-11 text-amber-tx"
           >
             {message}
           </p>
@@ -130,7 +130,7 @@ export function LqlFilterBar({
             id={listId}
             role="listbox"
             aria-label="Suggestions"
-            className="m-0 flex list-none flex-col rounded-card border border-br bg-sf p-1 shadow-menu"
+            className="m-0 flex list-none flex-col rounded-card border border-line bg-card p-1 shadow-e2"
           >
             {list.items.map((item, index) => (
               <li
@@ -143,13 +143,13 @@ export function LqlFilterBar({
                   pick(index);
                 }}
                 className={cls(
-                  'flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-12h',
-                  index === active ? 'bg-ac-bg text-ac' : 'text-tx2',
+                  'flex cursor-pointer items-center gap-2 rounded-chip px-2 py-1.5 text-13',
+                  index === active ? 'bg-acc-50 text-acc' : 'text-tx-2',
                 )}
               >
                 <span className="font-mono">{item.label}</span>
-                {item.detail && <span className="ml-auto text-11 text-tx5">{item.detail}</span>}
-                <span className="text-10 tracking-label text-tx6 uppercase">{item.kind}</span>
+                {item.detail && <span className="ml-auto text-11 text-tx-3">{item.detail}</span>}
+                <span className="text-11 text-tx-3">{item.kind}</span>
               </li>
             ))}
           </ul>

@@ -5,9 +5,9 @@ import type { ReactNode } from 'react';
 import { docsPaths, keepLinksInApp } from '../shared/navigation.ts';
 import { useBacklinks, useOutgoingLinks, usePageReferences } from './use-links.ts';
 
-const HEADING = 'm-0 text-11 font-medium tracking-caps text-tx5 uppercase';
+const HEADING = 'm-0 text-11 font-medium tracking-caps text-tx-3 uppercase';
 const CARD =
-  'flex flex-col gap-1 rounded-panel border border-br px-3 py-2.5 text-tx no-underline hover:border-br3 hover:bg-bg2 hover:text-tx focus-visible:outline-2 focus-visible:outline-ac motion-safe:transition-colors';
+  'flex flex-col gap-1 rounded-control border border-line px-3 py-2.5 text-tx no-underline hover:border-line hover:bg-side hover:text-tx focus-ring motion-safe:transition-colors';
 
 const LINK_KIND_WORDS = { mention: 'Mentioned', embed: 'Embedded', linked: 'Linked' } as const;
 
@@ -23,7 +23,7 @@ function Section({
   return (
     <section aria-label={title} className="flex flex-col gap-2">
       <h3 className={HEADING}>
-        {title} <span className="font-mono text-tx6">{count}</span>
+        {title} <span className="font-mono text-tx-3">{count}</span>
       </h3>
       <div className="flex flex-col gap-1.5">{children}</div>
     </section>
@@ -57,9 +57,9 @@ function RecordCard({
   return (
     <a href={record.path} className={CARD}>
       <span className="flex items-center gap-2">
-        <span className="font-mono text-11h font-medium text-tx4">{record.key ?? record.kind}</span>
+        <span className="font-mono text-12 font-medium text-tx-3">{record.key ?? record.kind}</span>
         {status && <StatusBadge size="sm" category={status.tone} label={status.name} />}
-        {kind && <span className="ml-auto text-11 text-tx5">{LINK_KIND_WORDS[kind]}</span>}
+        {kind && <span className="ml-auto text-11 text-tx-3">{LINK_KIND_WORDS[kind]}</span>}
       </span>
       <span className="line-clamp-2">{record.title || 'Untitled'}</span>
     </a>
@@ -71,13 +71,13 @@ function PageCard({ page }: { page: LinkedPage }) {
   return (
     <a href={docsPaths.page(page.pageId)} className={`${CARD} gap-0.5! py-2!`}>
       <span className="flex min-w-0 items-center gap-2">
-        <PageIcon value={page.icon} size={14} className="shrink-0 text-tx4" />
+        <PageIcon value={page.icon} size={14} className="shrink-0 text-tx-3" />
         <span className="truncate">{page.title || 'Untitled'}</span>
         {page.status !== 'published' && (
           <PageStatusPill status={page.status} className="ml-auto shrink-0" />
         )}
       </span>
-      <span className="text-11h text-tx5">
+      <span className="text-12 text-tx-3">
         {page.spaceKey} · {LINK_KIND_WORDS[page.kind]} here
       </span>
     </a>
@@ -111,7 +111,7 @@ export function BacklinksSection({ pageId }: { pageId: string }) {
     return (
       <section aria-label="Linked work" className="flex flex-col gap-1.5 pt-2">
         <h3 className={HEADING}>Linked work</h3>
-        <p className="m-0 text-12 text-tx5">
+        <p className="m-0 text-12 text-tx-3">
           {failed
             ? 'Links could not be loaded.'
             : 'Nothing links here yet. Mention this page in an issue or another page, and it shows up here.'}

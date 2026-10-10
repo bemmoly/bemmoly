@@ -82,16 +82,18 @@ describe('SavedFiltersMenu', () => {
     expect(await screen.findByText('Saved "Urgent"')).toBeTruthy();
   });
 
-  it('deletes my own filter after the confirmation', async () => {
+  it('deletes my own filter at once and offers Undo', async () => {
     show();
     const menu = await openMenu();
     fireEvent.click(await within(menu).findByRole('menuitem', { name: 'Rename or delete…' }));
     const dialog = await screen.findByRole('dialog', { name: 'My saved filters' });
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Delete' }));
-    const confirm = await screen.findByRole('dialog', { name: 'Delete "My open work"?' });
-    fireEvent.click(within(confirm).getByRole('button', { name: 'Delete filter' }));
     const mine = backend.state.filters[0]!.id;
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Delete' }));
     await waitFor(() => expect(backend.state.writes).toEqual([['DELETE', mine]]));
     expect(backend.state.filters.map((filter) => filter.name)).toEqual(['Waiting for review']);
+    fireEvent.click(await screen.findByRole('button', { name: 'Undo' }));
+    await waitFor(() =>
+      expect(backend.state.filters.map((filter) => filter.name)).toContain('My open work'),
+    );
   });
 });

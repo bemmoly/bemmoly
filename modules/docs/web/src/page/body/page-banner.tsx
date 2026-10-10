@@ -6,8 +6,8 @@ import { usePageScreen } from '../screen-context.ts';
 import { useChangeStatus, useTrashPage } from '../use-page-actions.ts';
 
 const TONES = {
-  warn: 'bg-warn-bg text-warn-fg',
-  quiet: 'bg-bg2 text-tx3',
+  warn: 'bg-amber-50 text-amber-tx',
+  quiet: 'bg-side text-tx-2',
 } as const;
 
 function Bar({
@@ -25,7 +25,7 @@ function Bar({
     <div
       role="status"
       className={cx(
-        'flex min-h-11 shrink-0 flex-wrap items-center gap-x-3 gap-y-1.5 border-b border-br px-4 py-1.5 text-12h sm:px-5',
+        'flex min-h-11 shrink-0 flex-wrap items-center gap-x-3 gap-y-1.5 border-b border-line px-4 py-1.5 text-13 sm:px-5',
         TONES[tone],
       )}
     >

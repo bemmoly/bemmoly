@@ -82,19 +82,19 @@ export function MethodTab(props: BoardTabProps) {
               aria-hidden
               className={cx(
                 'mt-px size-4 shrink-0 rounded-full border-[1.5px]',
-                method === id ? 'border-ac-fill shadow-radio' : 'border-br-ctl',
+                method === id ? 'border-acc-fill shadow-radio' : 'border-tx-3',
               )}
             />
             <span className="flex flex-col gap-0.75">
               <span className="font-semibold">{name}</span>
-              <span className="text-12h leading-note text-tx4">{description}</span>
+              <span className="text-13 leading-note text-tx-3">{description}</span>
             </span>
           </SelectableCard>
         ))}
       </div>
       {method === 'scrum' && (
         <Card className="overflow-hidden">
-          <div className="border-b border-br2 px-4 py-3 font-semibold">Sprints</div>
+          <div className="border-b border-line-2 px-4 py-3 font-semibold">Sprints</div>
           <div className="grid grid-cols-2 gap-3.5 px-4 py-3.5">
             <div className="flex flex-col gap-1.5">
               <span id="sprint-length" className="font-medium">
@@ -135,8 +135,8 @@ export function MethodTab(props: BoardTabProps) {
                           : undefined
                       }
                       className={cx(
-                        'flex-1 rounded-sm border-0 py-1.5 text-center font-sans text-12 font-semibold',
-                        on ? 'bg-ac-bg text-ac' : 'bg-chip text-tx5',
+                        'flex-1 rounded-chip border-0 py-1.5 text-center font-sans text-12 font-semibold',
+                        on ? 'bg-acc-50 text-acc' : 'bg-line-2 text-tx-3',
                         boardEditable ? 'cursor-pointer' : 'cursor-default',
                       )}
                     >
@@ -150,8 +150,8 @@ export function MethodTab(props: BoardTabProps) {
         </Card>
       )}
       <div className="flex flex-col gap-1">
-        <h3 className="m-0 text-15 font-semibold">Estimation</h3>
-        <p className="m-0 leading-body text-tx4">
+        <h3 className="m-0 text-16 font-semibold">Estimation</h3>
+        <p className="m-0 leading-body text-tx-3">
           What shows in the card badge and what velocity and burndown are measured in.
         </p>
       </div>
@@ -164,11 +164,11 @@ export function MethodTab(props: BoardTabProps) {
             onClick={boardEditable ? () => set({ estimationUnit: id }) : undefined}
             className={cx('gap-1.5 px-3.5 py-3', !boardEditable && 'cursor-default')}
           >
-            <span className="self-start rounded-pill bg-chip px-2 py-0.5 font-mono text-14 font-medium text-tx2">
+            <span className="self-start rounded-full bg-line-2 px-2 py-0.5 font-mono text-14 font-medium text-tx-2">
               {sample}
             </span>
             <span className="font-semibold">{name}</span>
-            <span className="text-12 leading-note text-tx4">{description}</span>
+            <span className="text-12 leading-note text-tx-3">{description}</span>
           </SelectableCard>
         ))}
       </div>

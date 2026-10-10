@@ -1,4 +1,5 @@
 import { Badge, Field, Input, RuleRow, Select, StatusDot, TransitionRow } from '@bemmoly/ui';
+import { Icon } from '@bemmoly/ui/icons';
 import { useState } from 'react';
 import type { WorkflowProblem, WorkflowRuleDefinition } from '../../../shared/index.ts';
 import type { WorkflowEditorModel } from '../hooks/workflow-editor.ts';
@@ -87,7 +88,8 @@ export function StatusPanel({ draft, status, registry, problems, actions }: Stat
             />
           ) : (
             <AddLink onClick={() => setAdding(true)} disabled={targets.length === 0}>
-              + Add transition
+              <Icon name="plus" size={14} />
+              Add transition
             </AddLink>
           )}
         </PanelSection>
@@ -111,7 +113,8 @@ export function StatusPanel({ draft, status, registry, problems, actions }: Stat
               if (first) actions.select({ kind: 'transition', id: first.id });
             }}
           >
-            + Add condition, validator or post-action
+            <Icon name="plus" size={14} />
+            Add condition, validator or post-action
           </AddLink>
           {into.length === 0 && <PanelNote>Add a transition into this status first.</PanelNote>}
         </PanelSection>

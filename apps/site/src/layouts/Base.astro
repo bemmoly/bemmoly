@@ -32,7 +32,7 @@ const { page, cta = false, noindex = false, faq, alternate } = Astro.props;
 const canonical = new URL(page.path, Astro.site).href;
 const image = new URL(socialPreview.src, Astro.site).href;
 const logo = new URL(icon512.src, Astro.site).href;
-const themeColor = themeById('light').colors.sf;
+const themeColor = themeById('light').colors.card;
 // The two IBM Plex Sans faces above the fold; the rest load on demand.
 const preloads = [plexSans400, plexSans600];
 const robots = noindex

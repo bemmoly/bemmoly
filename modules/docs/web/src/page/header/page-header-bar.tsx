@@ -9,10 +9,10 @@ import { MoreMenu, useCopyLink } from './more-menu.tsx';
 import { saveLine, saveState, spokenState } from './save-state.ts';
 import { StatusMenu } from './status-menu.tsx';
 
-const TONE = { quiet: 'text-tx5', busy: 'text-tx4', warn: 'text-warn-fg' } as const;
+const TONE = { quiet: 'text-tx-3', busy: 'text-tx-3', warn: 'text-amber-tx' } as const;
 
 /** Pressed panel toggles take the mock's open-panel look: accent ink on the accent wash. */
-const TOGGLE = 'aria-pressed:border-ac-br aria-pressed:bg-ac-bg aria-pressed:text-ac';
+const TOGGLE = 'aria-pressed:border-acc-100 aria-pressed:bg-acc-50 aria-pressed:text-acc';
 
 /** "Saved · Priya is editing" and the faces of everyone else on the page. */
 function Presence() {
@@ -82,7 +82,7 @@ export function PageHeaderBar() {
   const toggles = PANEL_SLOTS.filter((slot) => slot.header);
 
   return (
-    <header className="flex h-11 shrink-0 items-center gap-2.5 border-b border-br bg-sf px-4 text-12h text-tx4 sm:px-5">
+    <header className="flex h-11 shrink-0 items-center gap-2.5 border-b border-line bg-card px-4 text-13 text-tx-3 sm:px-5">
       <Breadcrumbs
         strongCurrent
         className="min-w-0 [&_li]:shrink-0 [&_li:last-child]:min-w-0 [&_li:last-child]:shrink [&_li:last-child>span]:block [&_li:last-child>span]:truncate [&_ol]:flex-nowrap max-md:[&_li:not(:last-child)]:hidden"

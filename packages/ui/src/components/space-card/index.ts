@@ -11,6 +11,7 @@ export {
   type SwitcherSpace,
 } from './space-switcher.tsx';
 export {
+  SPACE_TONE_HUES,
   SPACE_TONES,
   SpaceTile,
   spaceInitials,

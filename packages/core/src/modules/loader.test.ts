@@ -101,6 +101,60 @@ describe('loadModules', () => {
     expect(() => loadModules({ available: [badNav] })).toThrow(/must live under "\/work"/);
   });
 
+  it('lists the tile and sidebar section the shell draws the module with', () => {
+    const work = fakeModule('work', {
+      icon: 'board',
+      color: 'brand-1',
+      order: 10,
+      sidebar: {
+        path: '/work/projects',
+        links: [{ id: 'work.projects', label: 'All projects', path: '/work/projects' }],
+      },
+    });
+    expect(loadModules({ available: [work] }).manifests()[0]).toMatchObject({
+      icon: 'board',
+      color: 'brand-1',
+      order: 10,
+      sidebar: { path: '/work/projects', links: [{ label: 'All projects' }] },
+    });
+  });
+
+  it('keeps a sidebar section inside its module and its "+" on its own create entry', () => {
+    const outside = fakeModule('work', {
+      sidebar: { path: '/work', links: [{ id: 'x', label: 'X', path: '/docs/x' }] },
+    });
+    expect(() => loadModules({ available: [outside] })).toThrow(
+      /sidebar path "\/docs\/x" must live under "\/work"/,
+    );
+    const unknownAdd = fakeModule('work', {
+      sidebar: { path: '/work', add: { create: 'work.create-thing', label: 'New thing' } },
+    });
+    expect(() => loadModules({ available: [unknownAdd] })).toThrow(/not one of its create entries/);
+    const badColor = fakeModule('work', { color: '#ff0000' as never });
+    expect(() => loadModules({ available: [badColor] })).toThrow(/not a module colour/);
+  });
+
+  it('gives every G chord one place, keeping G H and G I for the shell', () => {
+    const chord = (id: string, keys: string) =>
+      fakeModule(id, {
+        register: (ctx) =>
+          ctx.navigation.add({
+            id: `${id}.x`,
+            label: 'X',
+            path: `/${id}`,
+            placement: 'command',
+            keys,
+          }),
+      });
+    expect(() => loadModules({ available: [chord('work', 'G H')] })).toThrow(/used by the shell/);
+    expect(() => loadModules({ available: [chord('work', 'G B'), chord('docs', 'G B')] })).toThrow(
+      /"G B" is already used by "work"/,
+    );
+    expect(
+      loadModules({ available: [chord('work', 'G B')] }).manifests()[0]?.navigation[0]?.keys,
+    ).toBe('G B');
+  });
+
   it('rejects two modules claiming the same route prefix', () => {
     const plugin = async () => undefined;
     const withRoute = (id: string) =>

@@ -65,7 +65,7 @@ export function whiteContrast(hex: string): number {
  */
 export function emailTheme(brand: EmailBrand): EmailTheme {
   const classic = themeById('light').colors;
-  const accent = HEX.test(brand.accent) ? brand.accent.toLowerCase() : classic.ac;
+  const accent = HEX.test(brand.accent) ? brand.accent.toLowerCase() : classic.acc;
   const contrast = whiteContrast(accent);
   const darker = mixHex(accent, '#000000', 0.75);
   const button = contrast >= 3 ? (contrast >= 4.5 ? accent : darker) : accent;
@@ -76,12 +76,12 @@ export function emailTheme(brand: EmailBrand): EmailTheme {
     link: contrast >= 4.5 ? accent : darker,
     tint: mixHex(accent, '#ffffff', 0.08),
     tintBorder: mixHex(accent, '#ffffff', 0.25),
-    page: classic.bg,
-    surface: classic.sf,
-    border: classic.br,
+    page: classic.sunken,
+    surface: classic.card,
+    border: classic.line,
     text: classic.tx,
-    textMuted: classic.tx3,
-    textSubtle: classic.tx5,
+    textMuted: classic['tx-2'],
+    textSubtle: classic['tx-3'],
     font: brand.fontStack,
     mono: MONO_STACK,
   };
@@ -89,7 +89,7 @@ export function emailTheme(brand: EmailBrand): EmailTheme {
 
 export const DEFAULT_BRAND: EmailBrand = {
   workspaceName: 'Bemmoly',
-  accent: themeById('light').colors.ac,
+  accent: themeById('light').colors.acc,
   logoUrl: null,
   fontStack: themeById('light').fontUi,
 };

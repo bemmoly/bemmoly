@@ -40,7 +40,7 @@ export function SpaceOverview() {
               <h1 className="m-0 truncate text-24 font-semibold tracking-display text-tx">
                 {space.name}
               </h1>
-              <p className="m-0 text-13h text-tx4">
+              <p className="m-0 text-13 text-tx-3">
                 {pageCountLabel(space.pageCount)} · {space.key}
                 {space.description ? ` · ${space.description}` : ''}
               </p>
@@ -54,7 +54,7 @@ export function SpaceOverview() {
         </header>
 
         <section aria-label="Pages" className="flex flex-col gap-3">
-          <h2 className="m-0 text-15 font-semibold text-tx">Pages</h2>
+          <h2 className="m-0 text-16 font-semibold text-tx">Pages</h2>
           {tree.isPending ? (
             <Card className="overflow-hidden">
               <DocListRowSkeleton rows={4} />

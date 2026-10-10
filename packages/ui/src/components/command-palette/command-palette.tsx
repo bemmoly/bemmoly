@@ -1,3 +1,4 @@
+import { Kbd } from '../kbd/kbd.tsx';
 import {
   createContext,
   useContext,
@@ -13,6 +14,7 @@ import {
 import { cx } from '../../lib/cx.ts';
 import { focusRing } from '../../lib/focus.ts';
 import { useDialog } from '../../lib/use-dialog.ts';
+import { Icon } from '../../icons/icon.tsx';
 import { AiDot } from '../ai-surface/ai-parts.tsx';
 
 const CommandContext = createContext<{ listId: string }>({ listId: '' });
@@ -25,6 +27,8 @@ export interface CommandPaletteProps {
   children: ReactNode;
   /** Render in place instead of as a modal: for stories, docs and screenshots. */
   inline?: boolean;
+  /** Tab (and Shift+Tab) moves between the type filters instead of leaving the input. */
+  onTab?: (backwards: boolean) => void;
 }
 
 const OPTION = '[role="option"]';
@@ -39,6 +43,7 @@ export function CommandPalette({
   label = 'Command palette',
   children,
   inline = false,
+  onTab,
 }: CommandPaletteProps) {
   const { ref, onBackdropClick } = useDialog(open && !inline, onClose);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -67,6 +72,10 @@ export function CommandPalette({
       event.preventDefault();
       const n = count();
       if (n) setActive((a) => (Math.min(a, n - 1) + (event.key === 'ArrowDown' ? 1 : n - 1)) % n);
+    } else if (event.key === 'Tab' && onTab) {
+      event.preventDefault();
+      setActive(0);
+      onTab(event.shiftKey);
     } else if (event.key === 'Escape' && inline) {
       onClose();
     } else if (event.key === 'Enter' && !event.metaKey && !event.ctrlKey) {
@@ -87,7 +96,7 @@ export function CommandPalette({
 
   if (!open) return null;
   const panel =
-    'w-190 max-w-[calc(100vw-32px)] flex-col overflow-hidden rounded-dialog border-0 bg-sf p-0 text-13 text-tx shadow-modal';
+    'w-165 max-w-[calc(100vw-32px)] flex-col overflow-hidden rounded-dialog border-0 bg-card p-0 text-13 text-tx shadow-e3';
   const content = <CommandContext.Provider value={{ listId }}>{children}</CommandContext.Provider>;
   if (inline) {
     return (
@@ -111,8 +120,8 @@ export function CommandPalette({
       onKeyDown={onKeyDown}
       onPointerMove={onPointerMove}
       className={cx(
-        'fixed top-24 left-1/2 m-0 -translate-x-1/2 open:flex',
-        'backdrop:bg-scrim backdrop:backdrop-blur-[1.5px]',
+        'fixed top-[min(110px,12vh)] left-1/2 m-0 -translate-x-1/2 open:flex',
+        'backdrop:bg-scrim',
         'motion-safe:animate-dialog-in backdrop:motion-safe:animate-fade-in',
         panel,
       )}
@@ -125,19 +134,25 @@ export function CommandPalette({
 export interface CommandInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'onChange'> {
   value: string;
   onValueChange: (value: string) => void;
+  /** AI is on: the lilac dot leads the input, which also takes requests. */
+  ai?: boolean;
 }
 
-/** 16px input after the 9px AI dot, with the esc key hint; 14px 16px over a br2 rule. */
+/**
+ * The 54px input row (docs/design/premium/screens.js, `screenPalette`): the search icon, or the
+ * AI dot when AI is on, then a 15px input and the Esc hint.
+ */
 export function CommandInput({
   value,
   onValueChange,
-  placeholder = 'Search, or tell Bemmoly what to do…',
+  ai = false,
+  placeholder = ai ? 'Search, or tell Bemmoly what to do…' : 'Search or run a command…',
   ...rest
 }: CommandInputProps) {
   const { listId } = useCommandContext();
   return (
-    <div className="flex items-center gap-2.5 border-b border-br2 px-4 py-3.5">
-      <AiDot size={9} />
+    <div className="flex h-13.5 shrink-0 items-center gap-2.5 border-b border-line px-4.5">
+      {ai ? <AiDot size={9} /> : <Icon name="search" size={18} className="text-tx-3" />}
       <input
         role="combobox"
         aria-expanded="true"
@@ -148,12 +163,10 @@ export function CommandInput({
         value={value}
         onChange={(event) => onValueChange(event.target.value)}
         placeholder={placeholder}
-        className="min-w-0 flex-1 border-0 bg-transparent px-0.5 py-px font-sans text-16 text-tx outline-0 placeholder:text-tx5"
+        className="min-w-0 flex-1 border-0 bg-transparent px-0.5 py-px font-sans text-16 text-tx outline-0 placeholder:text-tx-3"
         {...rest}
       />
-      <kbd className="rounded-xs border border-br px-1.5 py-0.5 font-mono text-11 font-medium text-tx5">
-        esc
-      </kbd>
+      <Kbd keys="Esc" />
     </div>
   );
 }
@@ -174,7 +187,7 @@ export function CommandScopes<V extends string>({
   context,
 }: CommandScopesProps<V>) {
   return (
-    <div className="flex items-center gap-1.5 border-b border-br2 px-4 py-2.5 text-12">
+    <div className="flex items-center gap-1.5 border-b border-line px-3.5 py-1.5 text-12">
       <div role="group" aria-label="Search in" className="flex gap-1.5">
         {scopes.map((scope) => {
           const on = scope.value === value;
@@ -185,8 +198,8 @@ export function CommandScopes<V extends string>({
               aria-pressed={on}
               onClick={() => onChange(scope.value)}
               className={cx(
-                'cursor-pointer rounded-dialog border px-2.5 py-1 font-sans text-12 font-medium',
-                on ? 'border-ac bg-ac-bg text-ac' : 'border-br bg-sf text-tx2',
+                'h-6 cursor-pointer rounded-full border-0 px-2.5 font-sans text-12 font-medium',
+                on ? 'bg-acc-50 text-acc' : 'bg-transparent text-tx-2 hover:bg-hover',
                 focusRing,
               )}
             >
@@ -195,7 +208,7 @@ export function CommandScopes<V extends string>({
           );
         })}
       </div>
-      {context && <span className="ml-auto text-tx5">{context}</span>}
+      {context && <span className="ml-auto text-tx-3">{context}</span>}
     </div>
   );
 }
@@ -207,20 +220,21 @@ export interface CommandFooterProps {
 }
 
 const DEFAULT_HINTS = [
-  { keys: '↑↓', label: 'navigate' },
-  { keys: '⏎', label: 'open' },
-  { keys: '⌘⏎', label: 'run' },
+  { keys: 'Up Down', label: 'move' },
+  { keys: 'Enter', label: 'open' },
+  { keys: 'Tab', label: 'filter by type' },
 ];
 
-/** Key hints on the sf2 bar: mono 11px keys in a bordered chip. */
+/**
+ * Key hints on the 38px footer bar, each a Kbd chip and its action, teaching the keyboard. A
+ * phone has no keyboard to teach, so the bar is left out there.
+ */
 export function CommandFooter({ hints = DEFAULT_HINTS, extra }: CommandFooterProps) {
   return (
-    <div className="flex items-center gap-3.5 border-t border-br2 bg-sf2 px-4 py-2.5 text-12 text-tx5">
+    <div className="hidden h-9.5 shrink-0 items-center sm:flex gap-3.5 border-t border-line bg-sunken px-4 text-12 text-tx-3">
       {hints.map((hint) => (
-        <span key={hint.keys}>
-          <kbd className="rounded-chip border border-br bg-sf px-1.25 py-px font-mono text-11 font-medium text-tx4">
-            {hint.keys}
-          </kbd>{' '}
+        <span key={hint.keys} className="inline-flex items-center gap-1.5">
+          <Kbd keys={hint.keys} />
           {hint.label}
         </span>
       ))}

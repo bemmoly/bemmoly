@@ -4,8 +4,8 @@ import { ControlSkeleton, HeaderSkeleton, LineSkeleton } from './parts.tsx';
 /** One column card of the Columns tab: grip and name, the WIP row, two status chips. */
 function ColumnCardSkeleton({ statuses }: { statuses: number }) {
   return (
-    <div className="flex min-h-64.5 flex-col rounded-card border border-br bg-sf">
-      <div className="flex flex-col gap-2 border-b border-br2 px-2.5 py-2.5">
+    <div className="flex min-h-64.5 flex-col rounded-card border border-line bg-card">
+      <div className="flex flex-col gap-2 border-b border-line-2 px-2.5 py-2.5">
         <LineSkeleton width={64} bar={9} />
         <span className="flex items-center gap-2">
           <Skeleton width={48} height={9} />
@@ -36,7 +36,7 @@ export function BoardSettingsSkeleton() {
     >
       <HeaderSkeleton actions={[142]} description gap="gap-1.5" />
       <Skeleton shape="block" height={52} className="rounded-card" />
-      <div className="flex gap-6 border-b border-br pb-3">
+      <div className="flex gap-6 border-b border-line pb-3">
         {[56, 76, 76, 40, 150].map((width, index) => (
           <LineSkeleton key={index} width={width} size="text-13" bar={9} />
         ))}
@@ -44,7 +44,7 @@ export function BoardSettingsSkeleton() {
       <div className="flex flex-col gap-3">
         <div className="flex items-start">
           <div className="flex flex-col gap-2">
-            <LineSkeleton width={80} size="text-15" bar={11} />
+            <LineSkeleton width={80} size="text-16" bar={11} />
             <LineSkeleton width={480} bar={9} />
           </div>
           <ControlSkeleton width={70} className="ml-auto" />
@@ -62,8 +62,8 @@ export function BoardSettingsSkeleton() {
 /** The preview rail beside Board settings: its header bar and a sketch of two lanes. */
 export function PreviewRailSkeleton() {
   return (
-    <div aria-hidden className="flex min-h-0 w-85 shrink-0 flex-col border-l border-br bg-sf">
-      <div className="flex items-center gap-2 border-b border-br2 px-4 py-3">
+    <div aria-hidden className="flex min-h-0 w-85 shrink-0 flex-col border-l border-line bg-card">
+      <div className="flex items-center gap-2 border-b border-line-2 px-4 py-3">
         <LineSkeleton width={56} bar={9} />
         <Skeleton width={90} height={8} />
         <Skeleton width={64} height={9} className="ml-auto" />
@@ -104,10 +104,10 @@ export function WorkflowEditorSkeleton() {
       className="flex min-h-0 flex-1 flex-col"
     >
       <div className="flex shrink-0 flex-col gap-3 px-6 pt-3.5 pb-3">
-        <LineSkeleton width={280} size="text-12h" bar={9} />
+        <LineSkeleton width={280} size="text-13" bar={9} />
         <div className="flex items-center gap-4">
-          <LineSkeleton width={190} size="text-22" bar={16} />
-          <Skeleton width={96} height={18} className="rounded-xs" />
+          <LineSkeleton width={190} size="text-20" bar={16} />
+          <Skeleton width={96} height={18} className="rounded-chip" />
           <Skeleton width={260} height={9} />
           <span className="ml-auto flex gap-2">
             <ControlSkeleton width={78} />
@@ -128,7 +128,7 @@ export function WorkflowEditorSkeleton() {
             </span>
           ))}
         </div>
-        <div className="flex w-85 shrink-0 flex-col gap-4 border-l border-br bg-sf px-4 py-3.5">
+        <div className="flex w-85 shrink-0 flex-col gap-4 border-l border-line bg-card px-4 py-3.5">
           <LineSkeleton width={140} size="text-14" bar={10} />
           <Skeleton width="80%" height={9} />
           <Skeleton width="64%" height={9} />

@@ -10,6 +10,7 @@ import {
 } from 'react';
 import { cx } from '../../lib/cx.ts';
 import { FloatingLayer } from '../../lib/floating.tsx';
+import { usePresence } from '../../lib/presence.ts';
 import { MenuContext } from './menu-context.ts';
 
 export interface MenuTriggerProps {
@@ -37,7 +38,9 @@ export interface MenuProps {
   className?: string;
 }
 
-const ITEM_SELECTOR = '[role="menuitem"]:not([aria-disabled="true"])';
+const ITEM_SELECTOR = ['menuitem', 'menuitemradio', 'menuitemcheckbox']
+  .map((role) => `[role="${role}"]:not([aria-disabled="true"])`)
+  .join(',');
 
 const itemsIn = (menu: HTMLElement | null) => [
   ...(menu?.querySelectorAll<HTMLElement>(ITEM_SELECTOR) ?? []),
@@ -53,10 +56,11 @@ function FocusOnOpen({ menuId, last }: { menuId: string; last: boolean }) {
 }
 
 /**
- * The popover menu of the Doc Editor: 8px radius, br border, shadow-menu, 6px padding. It is
- * portalled out of its trigger's container, so a table card or drawer never clips it. Arrow
- * keys, Home and End move between items, Enter and Space choose, Escape closes and returns
- * focus to the trigger, Tab and a click outside close.
+ * The popover menu: 8px radius, line border, e2 elevation, 6px padding. It is portalled out of
+ * its trigger's container, so a table card or drawer never clips it, scales in from the trigger
+ * and fades out in 100ms. Arrow keys, Home and End move between items, Enter and Space choose
+ * and return focus to the trigger, Escape closes and returns focus too, Tab and a click
+ * outside close without moving focus.
  */
 export function Menu({
   trigger,
@@ -73,6 +77,8 @@ export function Menu({
   const rootRef = useRef<HTMLDivElement>(null);
   const triggerId = useId();
   const menuId = useId();
+  // Stays mounted for its 100ms exit, then lets go.
+  const presence = usePresence(open);
 
   const close = useCallback(
     (refocus = true) => {
@@ -132,7 +138,7 @@ export function Menu({
         'aria-expanded': open,
         'aria-controls': open ? menuId : undefined,
       })}
-      {open && (
+      {presence.mounted && (
         <MenuContext.Provider value={{ close }}>
           <FloatingLayer
             ref={menuRef}
@@ -141,11 +147,12 @@ export function Menu({
             id={menuId}
             role="menu"
             aria-labelledby={triggerId}
+            data-state={presence.leaving ? 'closed' : 'open'}
             onKeyDown={onMenuKeyDown}
             className={cx('overflow-y-auto p-1.5', widthClassName)}
           >
             {children}
-            <FocusOnOpen menuId={menuId} last={focusLast} />
+            {open && <FocusOnOpen menuId={menuId} last={focusLast} />}
           </FloatingLayer>
         </MenuContext.Provider>
       )}

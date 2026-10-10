@@ -13,7 +13,7 @@ function Snippet({ html }: { html: string }) {
     <>
       {parts.map((part, index) => (
         <Fragment key={index}>
-          {index % 2 === 1 ? <mark className="bg-ac-bg2 text-tx">{part}</mark> : part}
+          {index % 2 === 1 ? <mark className="bg-acc-50 text-tx">{part}</mark> : part}
         </Fragment>
       ))}
     </>
@@ -57,14 +57,14 @@ export function SidebarSearch({ spaceId, q }: { spaceId: string; q: string }) {
         <li key={hit.id}>
           <a
             href={docsPaths.page(hit.id)}
-            className="flex flex-col gap-0.5 rounded-control px-2.5 py-1.5 text-13 text-tx2 no-underline hover:bg-bg2 hover:text-tx2"
+            className="flex flex-col gap-0.5 rounded-control px-2.5 py-1.5 text-13 text-tx-2 no-underline hover:bg-side hover:text-tx-2"
           >
             <span className="truncate font-medium text-tx">
               {hit.icon && !isIconName(hit.icon) ? `${hit.icon} ` : ''}
               {hit.title || 'Untitled'}
             </span>
             {hit.snippet && (
-              <span className="line-clamp-2 text-12 leading-note text-tx4">
+              <span className="line-clamp-2 text-12 leading-note text-tx-3">
                 <Snippet html={hit.snippet} />
               </span>
             )}

@@ -20,14 +20,9 @@ import { KeyChip } from './key-chip/key-chip.tsx';
 import { Logo } from './logo/logo.tsx';
 import { Dropdown } from './menu/dropdown-button.tsx';
 import { MenuItem } from './menu/menu-item.tsx';
-import { PageHeader } from './page-header/page-header.tsx';
+import { PageTitle } from './page-title/page-title.tsx';
 import { SegmentedControl } from './segmented-control/segmented-control.tsx';
 import { Select } from './select/select.tsx';
-import {
-  SettingsNav,
-  SettingsNavItem,
-  SettingsNavSection,
-} from './settings-frame/settings-nav.tsx';
 import { Skeleton } from './skeleton/skeleton.tsx';
 import { StatusBadge, StatusButton } from './status-badge/status-badge.tsx';
 import { Switch } from './switch/switch.tsx';
@@ -35,7 +30,6 @@ import { Tabs } from './tabs/tabs.tsx';
 import { Tag } from './tag/tag.tsx';
 import { Textarea } from './textarea/textarea.tsx';
 import { Toast } from './toast/toast.tsx';
-import { TopBar } from './top-bar/top-bar.tsx';
 
 const noop = () => {};
 
@@ -50,8 +44,8 @@ function Section({
 }) {
   return (
     <section className={wide ? 'col-span-2 flex flex-col gap-2' : 'flex flex-col gap-2'}>
-      <h2 className="m-0 text-11 font-medium tracking-caps text-tx5 uppercase">{title}</h2>
-      <div className="flex flex-wrap items-center gap-2.5 rounded-card border border-br bg-sf p-4">
+      <h2 className="m-0 text-11 font-medium tracking-caps text-tx-3 uppercase">{title}</h2>
+      <div className="flex flex-wrap items-center gap-2.5 rounded-card border border-line bg-card p-4">
         {children}
       </div>
     </section>
@@ -61,20 +55,7 @@ function Section({
 function Overview() {
   return (
     <div className="flex w-300 flex-col gap-6">
-      <TopBar
-        nav={[
-          { id: 'work', label: 'Your work' },
-          { id: 'projects', label: 'Projects', active: true },
-          { id: 'docs', label: 'Docs' },
-        ]}
-        onCreate={noop}
-        onSearch={noop}
-        onAsk={noop}
-        inboxCount={4}
-        onInbox={noop}
-        user={{ name: 'Rohan S.', initials: 'RS' }}
-      />
-      <PageHeader
+      <PageTitle
         breadcrumbs={[{ label: 'Projects' }, { label: 'Platform Core' }, { label: 'PLT board' }]}
         title="PLT Sprint 14"
         meta={['Sep 23 – Oct 7', '2 days remaining']}
@@ -158,7 +139,7 @@ function Overview() {
           </Dropdown>
         </Section>
         <Section title="AI surfaces" wide>
-          <AiAskButton shortcut="⌘K" />
+          <AiAskButton shortcut="Mod+K" />
           <AiInsightBar title="Sprint risk" onDismiss={noop} className="w-full">
             PLT-204 blocks 2 issues.
           </AiInsightBar>
@@ -194,16 +175,6 @@ function Overview() {
             title="No docs yet"
             description="Pages you edit show up here."
           />
-        </Section>
-        <Section title="Settings nav">
-          <SettingsNav title="Workspace settings" className="h-60">
-            <SettingsNavSection label="People">
-              <SettingsNavItem active count={42}>
-                Users
-              </SettingsNavItem>
-              <SettingsNavItem count={6}>Teams</SettingsNavItem>
-            </SettingsNavSection>
-          </SettingsNav>
         </Section>
         <Section title="Command palette" wide>
           <CommandPalette open inline onClose={noop}>

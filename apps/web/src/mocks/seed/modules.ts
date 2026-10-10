@@ -10,7 +10,7 @@ import { ago, uid } from './time.ts';
 
 interface Shipped {
   admin: Omit<AdminModule, 'enabled' | 'enabledAt' | 'versionInstalled' | 'changelogState'>;
-  /** The navigation the module registers, mirrored from its module.ts. */
+  /** The navigation and look the module registers, mirrored from its module.ts. */
   manifest: ModuleManifest;
   /** Minutes before now the seeded admin enabled it. */
   enabledMinutesAgo: number;
@@ -32,6 +32,10 @@ const SHIPPED: Shipped[] = [
       name: 'Sample',
       version: '0.1.0',
       navigation: [{ id: 'sample', label: 'Sample', path: '/sample', placement: 'top' }],
+      icon: 'box',
+      color: 'epic-4',
+      order: 90,
+      sidebar: { path: '/sample', links: [], primary: [] },
     },
     enabledMinutesAgo: 60 * 24 * 9,
   },
@@ -50,18 +54,64 @@ const SHIPPED: Shipped[] = [
       name: 'Work',
       version: '0.2.0',
       navigation: [
-        { id: 'work.board', label: 'Board', path: '/work/board', placement: 'top' },
-        { id: 'work.backlog', label: 'Backlog', path: '/work/backlog', placement: 'top' },
-        { id: 'work.projects', label: 'Projects', path: '/work/projects', placement: 'top' },
-        { id: 'work.create-issue', label: 'Issue', path: '/work/create', placement: 'create' },
+        { id: 'work.home', label: 'Work', path: '/work/board', placement: 'top', icon: 'board' },
+        {
+          id: 'work.board',
+          label: 'Board',
+          path: '/work/board',
+          placement: 'command',
+          icon: 'board',
+          keys: 'G B',
+        },
+        {
+          id: 'work.backlog',
+          label: 'Backlog',
+          path: '/work/backlog',
+          placement: 'command',
+          icon: 'backlog',
+          keys: 'G L',
+        },
+        {
+          id: 'work.projects',
+          label: 'Projects',
+          path: '/work/projects',
+          placement: 'command',
+          icon: 'layers',
+        },
+        {
+          id: 'work.create-issue',
+          label: 'Issue',
+          path: '/work/create',
+          placement: 'create',
+          icon: 'check',
+        },
         {
           id: 'work.create-project',
           label: 'Project',
           path: '/work/projects/new',
           placement: 'create',
+          icon: 'project',
         },
       ],
       search: [{ kind: 'work.issue', label: 'Issues' }],
+      icon: 'board',
+      color: 'brand-1',
+      order: 10,
+      sidebar: {
+        path: '/work/projects',
+        links: [
+          {
+            id: 'work.all-projects',
+            label: 'All projects',
+            path: '/work/projects',
+            icon: 'layers',
+          },
+        ],
+        primary: [
+          { id: 'work.my-issues', label: 'My issues', path: '/work/my-issues', icon: 'me' },
+        ],
+        add: { create: 'work.create-project', label: 'New project' },
+      },
     },
     enabledMinutesAgo: 60 * 24 * 3,
   },
@@ -80,16 +130,32 @@ const SHIPPED: Shipped[] = [
       name: 'Docs',
       version: '0.2.0',
       navigation: [
-        { id: 'docs.home', label: 'Docs', path: '/docs', placement: 'top' },
-        { id: 'docs.create-page', label: 'Page', path: '/docs/create', placement: 'create' },
+        { id: 'docs.home', label: 'Docs', path: '/docs', placement: 'top', icon: 'doc' },
+        {
+          id: 'docs.create-page',
+          label: 'Page',
+          path: '/docs/create',
+          placement: 'create',
+          icon: 'doc',
+        },
         {
           id: 'docs.create-space',
           label: 'Space',
           path: '/docs/spaces/new',
           placement: 'create',
+          icon: 'layers',
         },
       ],
       search: [{ kind: 'docs.page', label: 'Pages' }],
+      icon: 'doc',
+      color: 'brand-2',
+      order: 20,
+      sidebar: {
+        path: '/docs',
+        links: [],
+        primary: [],
+        add: { create: 'docs.create-space', label: 'New space' },
+      },
     },
     enabledMinutesAgo: 60 * 24 * 2,
   },

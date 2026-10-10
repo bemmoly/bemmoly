@@ -41,6 +41,27 @@ describe('home sections', () => {
     ]);
   });
 
+  it('puts a module\u2019s aside card in the narrow column and nothing for modules without one', async () => {
+    function Sprint() {
+      return <aside>Sprint card</aside>;
+    }
+    const registry = createHomeSectionRegistry({
+      work: async () => ({ default: MyWork, HomeAside: Sprint }),
+      docs: async () => ({ default: MyWork }),
+    });
+    const { container } = render(
+      <HomeSections
+        slot="aside"
+        modules={[manifest('docs'), manifest('work')]}
+        registry={registry}
+        loading={null}
+        failed={() => null}
+      />,
+    );
+    expect(await screen.findByText('Sprint card')).toBeTruthy();
+    expect(container.textContent).toBe('Sprint card');
+  });
+
   it('keeps Home working when one section fails', async () => {
     vi.spyOn(console, 'error').mockImplementation(() => undefined);
     const registry = createHomeSectionRegistry({

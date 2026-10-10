@@ -16,76 +16,102 @@ function Harness() {
 beforeEach(() => useSetupStore.getState().reset());
 
 describe('SetupPage', () => {
-  it('shows the Postgres 18 check and the admin form on a fresh install', async () => {
+  it('welcomes a fresh install with the health summary and the workspace step', async () => {
     mockApi.reset('fresh');
     await renderPage(() => <Harness />, '/setup', testQueryClient());
     expect(
-      await screen.findByRole('heading', { level: 1, name: 'Your server is up' }),
+      await screen.findByRole('heading', { level: 1, name: 'Welcome to Bemmoly' }),
     ).toBeTruthy();
-    const checks = screen.getByLabelText('Server checks');
+    const health = screen.getByRole('region', { name: 'Server health' });
+    // The SMTP warning opens the details on its own and says where to fix it.
+    const checks = await within(health).findByLabelText('Server checks');
     expect(within(checks).getByText('Postgres 18')).toBeTruthy();
-    expect(await within(checks).findByText('localhost:5432 · 12 ms')).toBeTruthy();
+    expect(within(checks).getByText('Configure later in Settings › Email')).toBeTruthy();
     expect(screen.getByLabelText('Workspace name')).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Create admin and continue' })).toBeTruthy();
+    expect(screen.getByLabelText('URL')).toHaveProperty('value', window.location.origin);
+    expect(screen.getByRole('button', { name: 'Continue' })).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Skip for now' })).toBeNull();
-    expect(screen.getByText('Step 1 of 6')).toBeTruthy();
-    const rail = screen.getByRole('navigation', { name: 'Setup steps' });
-    expect(
-      within(rail).getByText('Everything here can be changed later in Workspace settings.'),
-    ).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Back' })).toBeNull();
+    expect(screen.getAllByText('Step 1 of 7').length).toBeGreaterThan(0);
+    expect(screen.getByRole('navigation', { name: 'Setup steps' })).toBeTruthy();
   });
 
-  it('groups the admin form into the workspace and the account', async () => {
+  it('checks the workspace name on Continue without leaving the step', async () => {
     mockApi.reset('fresh');
-    await renderPage(() => <Harness />, '/setup', testQueryClient());
-    const workspace = await screen.findByRole('group', { name: 'Workspace' });
-    expect(workspace.getAttribute('aria-describedby')).toBeTruthy();
-    expect(within(workspace).getByLabelText('Workspace name')).toBeTruthy();
-    expect(within(workspace).getByLabelText('URL')).toHaveProperty('value', window.location.origin);
-    const account = screen.getByRole('group', { name: 'Your account' });
+    const user = userEvent.setup();
+    const { router } = await renderPage(() => <Harness />, '/setup', testQueryClient());
+    await user.click(await screen.findByRole('button', { name: 'Continue' }));
+    await waitFor(() =>
+      expect(screen.getByLabelText('Workspace name').getAttribute('aria-invalid')).toBe('true'),
+    );
+    expect(router.state.location.search).toEqual({});
+  });
+
+  it('creates the account with the workspace and moves to the import step', async () => {
+    mockApi.reset('fresh');
+    const user = userEvent.setup();
+    const { router } = await renderPage(() => <Harness />, '/setup', testQueryClient());
+    await user.type(await screen.findByLabelText('Workspace name'), 'Acme Labs');
+    await user.click(screen.getByRole('button', { name: 'Continue' }));
+
     expect(
-      ['Your name', 'Email', 'Password'].map((label) => within(account).getByLabelText(label)),
-    ).toHaveLength(3);
-    expect(within(account).queryByLabelText('Workspace name')).toBeNull();
+      await screen.findByRole('heading', { level: 1, name: 'Create your account' }),
+    ).toBeTruthy();
+    await user.type(screen.getByLabelText('Your name'), 'Rohan S.');
+    await user.type(screen.getByLabelText('Email'), 'rohan@acme.test');
+    const password = screen.getByLabelText('Password');
+    await user.type(password, 'a long enough password');
+    expect(password.getAttribute('type')).toBe('password');
+    await user.click(screen.getByRole('button', { name: 'Show password' }));
+    expect(password.getAttribute('type')).toBe('text');
+    await user.click(screen.getByRole('button', { name: 'Create account' }));
+
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Bring your data, or start clean' }),
+    ).toBeTruthy();
+    expect(mockApi.db.initialized).toBe(true);
+    expect(mockApi.db.settings['workspace.name']).toBe('Acme Labs');
+    expect(router.state.location.search).toEqual({ step: 3 });
+    const sources = screen.getByRole('radiogroup', { name: 'Import source' });
+    expect(
+      within(sources)
+        .getByRole('radio', { name: /Start clean/ })
+        .getAttribute('aria-checked'),
+    ).toBe('true');
+    expect(within(sources).getAllByText('Coming soon')).toHaveLength(3);
+    expect(screen.getByRole('button', { name: 'Skip for now' })).toBeTruthy();
   });
 
   it('heads the email invites with their defaults', async () => {
     mockApi.reset('wizard');
-    await renderPage(() => <Harness />, '/setup?step=3', testQueryClient());
-    const invites = await screen.findByRole('region', { name: 'Or invite by email' });
+    await renderPage(() => <Harness />, '/setup?step=4', testQueryClient());
+    const invites = await screen.findByRole('region', { name: 'Invite by email' });
     expect(within(invites).getByRole('heading', { level: 2 })).toBeTruthy();
-    expect(within(invites).getByText(/joins as a Viewer with no team/)).toBeTruthy();
     expect(within(invites).getByLabelText('Team')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Back' })).toBeTruthy();
   });
 
-  it('opens the custom theme builder on the appearance step instead of leaving it', async () => {
+  it('shows the brand color inline on the look step', async () => {
     mockApi.reset('wizard');
     const user = userEvent.setup();
-    const { router } = await renderPage(() => <Harness />, '/setup?step=5', testQueryClient());
-    const toggle = await screen.findByRole('button', {
-      name: 'Build a custom theme with your brand color instead',
-    });
-    expect(toggle.getAttribute('aria-expanded')).toBe('false');
+    const { router } = await renderPage(() => <Harness />, '/setup?step=6', testQueryClient());
+    const brand = await screen.findByRole('region', { name: 'Brand color' });
+    const toggle = within(brand).getByRole('button', { expanded: false });
     await user.click(toggle);
-    expect(router.state.location.search).toEqual({ step: 5 });
+    expect(router.state.location.search).toEqual({ step: 6 });
     expect(toggle.getAttribute('aria-expanded')).toBe('true');
-    expect(toggle.textContent).toBe('Use a preset instead');
-    expect(screen.getByText('Custom theme')).toBeTruthy();
-    expect(screen.getByLabelText('Brand color hex')).toBeTruthy();
     const tiles = screen.getByRole('radiogroup', { name: 'Theme' });
     expect(within(tiles).queryByRole('radio', { checked: true })).toBeNull();
     await user.click(within(tiles).getByRole('radio', { name: /Forest/ }));
-    expect(screen.queryByText('Custom theme')).toBeNull();
     expect(toggle.getAttribute('aria-expanded')).toBe('false');
   });
 
-  it('lists the summary as labels and values', async () => {
+  it('ends on a launchpad that lists the summary as labels and values', async () => {
     mockApi.reset('wizard');
-    await renderPage(() => <Harness />, '/setup?step=6', testQueryClient());
+    await renderPage(() => <Harness />, '/setup?step=7', testQueryClient());
     const summary = await screen.findByLabelText('Setup summary');
     expect(summary.tagName).toBe('DL');
     const terms = within(summary).getAllByRole('term');
-    // The last node is the label; the status circle before it is aria-hidden.
     expect(terms.map((term) => term.lastChild?.textContent)).toEqual([
       'Workspace',
       'Admin',
@@ -94,45 +120,10 @@ describe('SetupPage', () => {
       'AI',
       'Theme',
     ]);
-    expect(within(summary).getAllByRole('definition')[2]?.textContent).toBe('Skipped');
-  });
-
-  it('creates the admin and moves to the import step', async () => {
-    mockApi.reset('fresh');
-    const user = userEvent.setup();
-    const { router } = await renderPage(() => <Harness />, '/setup', testQueryClient());
-    await user.type(await screen.findByLabelText('Workspace name'), 'Acme Labs');
-    const url = screen.getByLabelText('URL');
-    await user.clear(url);
-    await user.type(url, 'https://bemmoly.example');
-    await user.type(screen.getByLabelText('Your name'), 'Rohan S.');
-    await user.type(screen.getByLabelText('Email'), 'rohan@acme.test');
-    await user.type(screen.getByLabelText('Password'), 'a long enough password');
-    await user.click(screen.getByRole('button', { name: 'Create admin and continue' }));
-
-    expect(
-      await screen.findByRole('heading', { level: 1, name: 'Bring your data, or start clean' }),
-    ).toBeTruthy();
-    expect(mockApi.db.initialized).toBe(true);
-    expect(mockApi.db.settings['workspace.name']).toBe('Acme Labs');
-    expect(router.state.location.search).toEqual({ step: 2 });
-    const sources = screen.getByRole('radiogroup', { name: 'Import source' });
-    const clean = within(sources).getByRole('radio', { name: /Start clean/ });
-    expect(clean.getAttribute('aria-checked')).toBe('true');
-    expect(within(sources).getAllByText('COMING SOON')).toHaveLength(3);
-    expect(screen.getByRole('button', { name: 'Continue' })).toHaveProperty('disabled', false);
-    expect(screen.getByRole('button', { name: 'Skip for now' })).toBeTruthy();
-    expect(screen.getByText('Step 2 of 6')).toBeTruthy();
-  });
-
-  it('keeps the form open and says why when a field is wrong', async () => {
-    mockApi.reset('fresh');
-    const user = userEvent.setup();
-    await renderPage(() => <Harness />, '/setup', testQueryClient());
-    await user.click(await screen.findByRole('button', { name: 'Create admin and continue' }));
-    await waitFor(() =>
-      expect(screen.getByLabelText('Email').getAttribute('aria-invalid')).toBe('true'),
-    );
-    expect(mockApi.db.initialized).toBe(false);
+    expect(within(summary).getAllByText('Do it now')).toHaveLength(2);
+    // The test router has none of these routes, so the cards render without an href.
+    expect(screen.getByText(/Turn on Work|Create your first project/)).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Open Bemmoly' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Back' })).toBeNull();
   });
 });
