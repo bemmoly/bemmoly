@@ -25,7 +25,7 @@ export function TocList({ outline, active, editor, onPin, onJump, className }: T
   const top = Math.min(...outline.map((entry) => entry.level));
   return (
     <nav aria-label="On this page" className={cx('flex flex-col gap-2', className)}>
-      <span className="text-11 font-medium tracking-caps text-tx-3 uppercase">On this page</span>
+      <span className="text-12 font-semibold text-tx-3">On this page</span>
       <ol className="m-0 flex list-none flex-col border-l border-line-2 p-0">
         {outline.map((entry) => {
           const current = entry.id === active;
