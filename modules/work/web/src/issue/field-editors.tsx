@@ -1,26 +1,37 @@
-import { Avatar, Input, PRIORITIES, PriorityGlyph, Select, type Priority } from '@bemmoly/ui';
-import type { SelectOption } from '@bemmoly/ui';
+import {
+  Avatar,
+  Input,
+  PRIORITIES,
+  PriorityGlyph,
+  propertyValueClass,
+  Select,
+  type Priority,
+  type SelectOption,
+} from '@bemmoly/ui';
 import { useState, type ReactNode } from 'react';
 import { personOption, usePeople } from '../hooks/issue-people.ts';
 import { cx } from './cx.ts';
 
 /*
- * The Details values, edited in place. Choices use the ghost Select, which reads as the value
- * until touched; free values swap to an input on click and save on Enter or blur.
+ * The rail's values, edited in place. Choices use the ghost Select, restyled as a property
+ * value: it reads as text with the hover overlay, and an empty one says "Add …". Free values
+ * swap to an input on click and save on Enter or blur.
  */
 
-/** Pulls a ghost control back so its text lines up with the label column and row height. */
-const ALIGN = '-my-1 -ml-2.25';
-const NONE = '';
+/** The ghost Select as a property value: the overlay, not a border, says it can change. */
+const PROPERTY_SELECT =
+  '-ml-1.5 h-auto! min-h-7 rounded-panel! px-1.5! py-1 text-13 hover:border-transparent! hover:bg-hover aria-expanded:bg-hover';
+const NONE = '__none';
 
 export interface ChoiceFieldProps {
   label: string;
   value: string | null;
   options: readonly SelectOption[];
   onSave: (value: string | null) => void;
-  /** Offers "None" to clear the field. */
-  clearable?: boolean;
-  noneLabel?: string;
+  /** Shown while empty: "Add version". */
+  placeholder?: string;
+  /** The option that empties the field: "No sprint". Leave out for a required field. */
+  clearLabel?: string;
   disabled?: boolean;
 }
 
@@ -29,20 +40,21 @@ export function ChoiceField({
   value,
   options,
   onSave,
-  clearable = true,
-  noneLabel = 'None',
+  placeholder = 'Add',
+  clearLabel,
   disabled,
 }: ChoiceFieldProps) {
-  const all = clearable ? [{ value: NONE, label: noneLabel }, ...options] : options;
+  const all = value && clearLabel ? [...options, { value: NONE, label: clearLabel }] : options;
   return (
     <Select
       variant="ghost"
       aria-label={label}
-      value={value ?? NONE}
+      value={value ?? ''}
+      placeholder={placeholder}
       options={all}
       disabled={disabled}
       searchable={all.length > 8}
-      className={cx(ALIGN, !value && 'text-tx5')}
+      className={PROPERTY_SELECT}
       onChange={(event) => onSave(event.value === NONE ? null : event.value)}
     />
   );
@@ -58,9 +70,10 @@ export function PersonField({
   label,
   value,
   onSave,
-  noneLabel = 'Unassigned',
+  placeholder = 'Add person',
+  clearLabel = 'Unassign',
   currentName,
-}: Omit<ChoiceFieldProps, 'options' | 'clearable'> & {
+}: Omit<ChoiceFieldProps, 'options'> & {
   /** The chosen person's name, shown before the people list has loaded or pages past them. */
   currentName?: string;
 }) {
@@ -70,18 +83,17 @@ export function PersonField({
     value && !listed.some((option) => option.value === value)
       ? [{ value, label: currentName ?? person(value).name }]
       : [];
-  const options = [{ value: NONE, label: noneLabel }, ...chosen, ...listed].map((option) =>
-    option.value ? withAvatar(option) : option,
-  );
+  const options = [...chosen, ...listed].map(withAvatar);
   return (
     <Select
       variant="ghost"
       aria-label={label}
-      value={value ?? NONE}
-      options={options}
+      value={value ?? ''}
+      placeholder={placeholder}
+      options={value ? [...options, { value: NONE, label: clearLabel }] : options}
       searchPlaceholder="Search people"
       loadOptions={async (q, signal) => (await loadOptions(q, signal)).map(withAvatar)}
-      className={cx(ALIGN, !value && 'text-tx5')}
+      className={PROPERTY_SELECT}
       onChange={(event) => onSave(event.value === NONE ? null : event.value)}
     />
   );
@@ -106,7 +118,7 @@ export function PriorityField({
       aria-label="Priority"
       value={value}
       options={PRIORITY_OPTIONS}
-      className={ALIGN}
+      className={PROPERTY_SELECT}
       onChange={(event) => onSave(event.value as Priority)}
     />
   );
@@ -118,6 +130,8 @@ export interface InlineValueProps {
   value: string;
   /** What the row shows at rest; the raw value when omitted. */
   display?: ReactNode;
+  /** Shown while empty: "Add date". */
+  placeholder?: string;
   type?: 'text' | 'number' | 'date' | 'url' | 'datetime-local';
   mono?: boolean;
   /** Returns an error message to keep the input open, or nothing to save. */
@@ -125,11 +139,12 @@ export interface InlineValueProps {
   onSave: (value: string) => void;
 }
 
-/** A free value: plain text at rest, an input while editing; Escape puts the old value back. */
+/** A free value: text at rest, an input while editing; Escape puts the old value back. */
 export function InlineValue({
   label,
   value,
   display,
+  placeholder = 'Add',
   type = 'text',
   mono,
   validate,
@@ -143,15 +158,11 @@ export function InlineValue({
     return (
       <button
         type="button"
-        aria-label={`${label}: ${value || 'none'}. Edit`}
+        aria-label={`${label}: ${value || 'empty'}. Change`}
         onClick={() => setDraft(value)}
-        className={cx(
-          '-mx-2 -my-0.5 min-w-0 cursor-pointer rounded-sm border-0 bg-transparent px-2 py-0.5 text-left font-sans text-12h text-tx hover:bg-bg2',
-          mono && 'font-mono',
-          !shown && 'text-tx5',
-        )}
+        className={cx(propertyValueClass, mono && 'font-mono tabular-nums', !shown && 'text-tx-3')}
       >
-        {shown ?? 'None'}
+        <span className="min-w-0 truncate">{shown ?? placeholder}</span>
       </button>
     );
   }
@@ -169,7 +180,7 @@ export function InlineValue({
   };
 
   return (
-    <span className="-my-1.5 flex w-full flex-col gap-1">
+    <span className="-ml-1.5 flex w-full flex-col gap-1">
       <Input
         aria-label={label}
         type={type}
@@ -182,13 +193,14 @@ export function InlineValue({
         onKeyDown={(event) => {
           if (event.key === 'Enter') commit();
           if (event.key === 'Escape') {
+            event.stopPropagation();
             setDraft(null);
             setError(null);
           }
         }}
         wrapperClassName="h-7.5 w-full"
       />
-      {error && <span className="text-11h text-danger">{error}</span>}
+      {error && <span className="text-11h text-red-tx">{error}</span>}
     </span>
   );
 }
