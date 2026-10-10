@@ -7,6 +7,7 @@ import {
   type ReactNode,
 } from 'react';
 import { Icon } from '../../icons/icon.tsx';
+import { isIconName } from '../../icons/page-icon.tsx';
 import { cx } from '../../lib/cx.ts';
 import { focusRingInset } from '../../lib/focus.ts';
 import { Spinner } from '../spinner/spinner.tsx';
@@ -166,7 +167,7 @@ export function PageTreeRow({
           />
         ) : null}
       </span>
-      {item.icon ? (
+      {item.icon && !isIconName(item.icon) ? (
         <span aria-hidden className="shrink-0 text-13 leading-none">
           {item.icon}
         </span>

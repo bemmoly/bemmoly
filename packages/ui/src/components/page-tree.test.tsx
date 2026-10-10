@@ -1,6 +1,7 @@
 import { act, createEvent, fireEvent, render, screen } from '@testing-library/react';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
+import { isIconName, PageIcon } from '../icons/index.ts';
 import { expectAccessible } from '../testing/a11y.ts';
 import { StartGuide } from './empty-state/index.ts';
 import { MenuItem } from './menu/index.ts';
@@ -177,5 +178,19 @@ describe('Docs navigation pieces', () => {
       'step',
     );
     expect(screen.getByText('(done)')).toBeTruthy();
+  });
+
+  it('draw stored icon names as icons, never as text', () => {
+    expect(isIconName('file-text')).toBe(true);
+    expect(isIconName('📝')).toBe(false);
+    const { container } = render(
+      <p>
+        <PageIcon value="file-text" />
+        <PageIcon value="📝" />
+        <PageIcon value="no-such-icon" />
+      </p>,
+    );
+    expect(container.textContent).toBe('📝');
+    expect(container.querySelectorAll('svg')).toHaveLength(2);
   });
 });

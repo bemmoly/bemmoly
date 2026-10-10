@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Icon } from '../../icons/icon.tsx';
+import { PageIcon } from '../../icons/page-icon.tsx';
 import { cx } from '../../lib/cx.ts';
 import { focusRingInset } from '../../lib/focus.ts';
 import { Avatar, type AvatarHue } from '../avatar/avatar.tsx';
@@ -8,10 +8,17 @@ import { Skeleton } from '../skeleton/skeleton.tsx';
 /** The Docs home list's tracks: icon, title and place, person, when. */
 export const DOC_LIST_TEMPLATE = '20px minmax(0,1fr) 130px 120px';
 
+/**
+ * The tracks as classes: the mock's four, and on a phone three, with the person dropped so
+ * the title keeps its room.
+ */
+const TRACKS =
+  'grid-cols-[20px_minmax(0,1fr)_130px_120px] max-sm:grid-cols-[20px_minmax(0,1fr)_auto]';
+
 export interface DocListRowProps {
   href: string;
   title: string;
-  /** An emoji the page carries; the doc icon otherwise. */
+  /** The page's emoji or icon name; the doc icon otherwise. */
   icon?: string | null;
   /** Where the page lives: "Engineering / Architecture". */
   place: ReactNode;
@@ -40,20 +47,17 @@ export function DocListRow({
   return (
     <a
       href={href}
-      style={{ gridTemplateColumns: DOC_LIST_TEMPLATE }}
       className={cx(
-        'grid items-center gap-2.5 border-b border-br-row px-4 py-2.5 text-13 text-tx no-underline last:border-b-0',
+        'grid items-center',
+        TRACKS,
+        'gap-2.5 border-b border-br-row px-4 py-2.5 text-13 text-tx no-underline last:border-b-0',
         'hover:bg-bg2 hover:text-tx motion-safe:transition-colors',
         focusRingInset,
         className,
       )}
     >
       <span aria-hidden className="flex justify-center text-tx4">
-        {icon ? (
-          <span className="text-14 leading-none">{icon}</span>
-        ) : (
-          <Icon name="doc" size={16} />
-        )}
+        <PageIcon value={icon} size={16} />
       </span>
       <span className="flex min-w-0 flex-col gap-0.5">
         <span className="truncate font-medium">{title || 'Untitled'}</span>
@@ -67,7 +71,7 @@ export function DocListRow({
           )}
         </span>
       </span>
-      <span className="flex min-w-0 items-center gap-1.5 text-12 text-tx3">
+      <span className="flex min-w-0 items-center gap-1.5 text-12 text-tx3 max-sm:hidden">
         {person && (
           <>
             <Avatar name={person.name} size={20} {...(person.hue ? { hue: person.hue } : {})} />
@@ -87,15 +91,14 @@ export function DocListRowSkeleton({ rows = 5 }: { rows?: number }) {
       {Array.from({ length: rows }, (_, index) => (
         <span
           key={index}
-          style={{ gridTemplateColumns: DOC_LIST_TEMPLATE }}
-          className="grid items-center gap-2.5 border-b border-br-row px-4 py-2.5 last:border-b-0"
+          className={`grid items-center gap-2.5 border-b border-br-row px-4 py-2.5 last:border-b-0 ${TRACKS}`}
         >
           <Skeleton width={14} height={16} shape="block" className="justify-self-center" />
           <span className="flex flex-col gap-1.5 py-0.5">
             <Skeleton width={`${70 - index * 7}%`} height={12} />
             <Skeleton width={`${40 - index * 3}%`} height={10} />
           </span>
-          <span className="flex items-center gap-1.5">
+          <span className="flex items-center gap-1.5 max-sm:hidden">
             <Skeleton width={20} height={20} shape="circle" />
             <Skeleton width={56} height={10} />
           </span>

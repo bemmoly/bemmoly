@@ -1,5 +1,6 @@
 import type { ButtonHTMLAttributes, ReactNode } from 'react';
 import { Icon } from '../../icons/icon.tsx';
+import { PageIcon } from '../../icons/page-icon.tsx';
 import { cx } from '../../lib/cx.ts';
 import { focusRing } from '../../lib/focus.ts';
 
@@ -74,11 +75,7 @@ export function TemplateCard({
           blank ? 'bg-ac-bg text-ac' : 'bg-chip text-tx4',
         )}
       >
-        {icon ? (
-          <span className="text-14 leading-none">{icon}</span>
-        ) : (
-          <Icon name={blank ? 'plus' : 'doc'} size={16} />
-        )}
+        {blank ? <Icon name="plus" size={16} /> : <PageIcon value={icon} size={16} />}
       </span>
       <span className="flex min-w-0 flex-col gap-0.5">
         <span className="flex items-center gap-1.5">

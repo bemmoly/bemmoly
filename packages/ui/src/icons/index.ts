@@ -9,3 +9,4 @@ export {
   type IconProps,
 } from './icon.tsx';
 export { SHAPES, type ShapeName } from './shapes.tsx';
+export { isIconName, PageIcon, type PageIconProps } from './page-icon.tsx';
