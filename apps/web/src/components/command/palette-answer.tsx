@@ -1,12 +1,13 @@
 import { describeSources, readAnswer } from '@bemmoly/shared';
-import { AiNotUseful, CommandAiNotice } from '@bemmoly/ui';
+import { AiAnswer, AiNotUseful, CommandAiNotice } from '@bemmoly/ui';
+import type { MouseEvent } from 'react';
 import type { AiAnswerState } from '../../hooks/use-ai-answer.ts';
 
 /*
- * A ⌘K question's answer: the sentences as they stream, each claim with its numbered sources,
- * uncited claims marked, and where it came from. Stands in until the shared AiAnswer card.
+ * A ⌘K question's answer, drawn with the shared AiAnswer card: the sentences as they stream,
+ * each claim with its numbered sources, uncited claims marked, and where it came from. A
+ * citation opens its source in place, closing the palette.
  */
-
 export function PaletteAnswer({
   answer,
   onOpen,
@@ -16,9 +17,6 @@ export function PaletteAnswer({
   onOpen: (href: string) => void;
   onNotUseful: () => void;
 }) {
-  const offered = new Set(answer.sources.map((source) => source.id));
-  const number = new Map(answer.sources.map((source, index) => [source.id, index + 1]));
-  const blocks = readAnswer(answer.text, offered);
   if (answer.outcome === 'no_sources') {
     return (
       <CommandAiNotice title="Nothing in your docs or issues answers that">
@@ -26,47 +24,34 @@ export function PaletteAnswer({
       </CommandAiNotice>
     );
   }
+  const offered = new Set(answer.sources.map((source) => source.id));
+  const sources = answer.sources.map((source) => ({
+    id: source.id,
+    title: source.title,
+    label: source.location.label,
+    href: source.href,
+    icon: source.kind === 'work.issue' ? ('subtasks' as const) : ('doc' as const),
+  }));
   const from = answer.streaming ? '' : describeSources(answer.sources, answer.cited);
+  const follow = (event: MouseEvent) => {
+    const link = (event.target as HTMLElement).closest('a');
+    const href = link?.getAttribute('href');
+    if (!href || event.metaKey || event.ctrlKey) return;
+    event.preventDefault();
+    onOpen(href);
+  };
   return (
-    <CommandAiNotice title={from ? `Answer from ${from}` : 'Answer'}>
-      <div
-        aria-live="polite"
-        aria-busy={answer.streaming || undefined}
-        className="flex flex-col gap-2"
-      >
-        {blocks.map((block, b) => (
-          <p key={b} className={block.kind === 'item' ? 'm-0 pl-3' : 'm-0'}>
-            {block.kind === 'item' && <span aria-hidden>• </span>}
-            {block.sentences.map((sentence, s) => (
-              <span key={s}>
-                {sentence.text}
-                {sentence.citations.map((id) => {
-                  const source = answer.sources.find((each) => each.id === id);
-                  return source ? (
-                    <button
-                      key={id}
-                      type="button"
-                      title={`${source.title} › ${source.location.label}`}
-                      onClick={() => onOpen(source.href)}
-                      className="mx-0.5 cursor-pointer border-0 bg-transparent p-0 align-super text-11 font-semibold text-ai-600 hover:underline"
-                    >
-                      {number.get(id)}
-                    </button>
-                  ) : null;
-                })}
-                {sentence.unsourced && !answer.streaming && (
-                  <span className="ml-1 text-11 font-medium text-tx-3">Unsourced</span>
-                )}{' '}
-              </span>
-            ))}
-          </p>
-        ))}
-        {!answer.streaming && answer.runId && (
-          <div>
-            <AiNotUseful onClick={onNotUseful} />
-          </div>
-        )}
-      </div>
-    </CommandAiNotice>
+    <div onClick={follow} className="border-b border-line-2">
+      <AiAnswer
+        variant="panel"
+        blocks={readAnswer(answer.text, offered)}
+        sources={sources}
+        streaming={answer.streaming}
+        {...(from ? { source: `from ${from}` } : {})}
+        {...(!answer.streaming && answer.runId
+          ? { actions: <AiNotUseful onClick={onNotUseful} /> }
+          : {})}
+      />
+    </div>
   );
 }
