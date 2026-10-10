@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { gunzipSync } from 'node:zlib';
 import { describe, expect, it } from 'vitest';
 import type { CatalogFetch, ModelsDevClient } from '../../../clients/models-dev.ts';
 import { safeSvg } from './bundled.ts';
@@ -168,6 +170,33 @@ describe('catalog data', () => {
     expect(safeSvg('<svg onload="alert(1)"></svg>')).toBeNull();
     expect(safeSvg('<svg><script>alert(1)</script></svg>')).toBeNull();
     expect(safeSvg('<html></html>')).toBeNull();
+  });
+
+  it('refuses logos that reach out or hide a scheme, and keeps self-contained ones', () => {
+    for (const svg of [
+      '<svg><a href="https://evil.test"><path/></a></svg>',
+      '<svg><use href="https://evil.test/sprite.svg#a"/></svg>',
+      '<svg><image xlink:href="https://evil.test/track.png"/></svg>',
+      '<svg><use href="&#106;avascript:alert(1)"/></svg>',
+      '<svg><animate attributeName="href" to="#x"/></svg>',
+      '<svg><set attributeName="href" to="#x"/></svg>',
+      '<svg><style>@import url(https://evil.test/a.css);</style></svg>',
+      '<svg><rect style="fill:url(https://evil.test/p)"/></svg>',
+      '<svg><image href="data:text/html;base64,PHNjcmlwdD4="/></svg>',
+    ]) {
+      expect(safeSvg(svg), svg).toBeNull();
+    }
+    expect(safeSvg('<svg><use href="#mark"/><rect fill="url(#g)"/></svg>')).not.toBeNull();
+    expect(safeSvg('<svg><image xlink:href="data:image/png;base64,iVBOR"/></svg>')).not.toBeNull();
+    expect(safeSvg('<svg><style>.a{fill:currentColor}</style></svg>')).not.toBeNull();
+  });
+
+  it('keeps every bundled logo', () => {
+    const logos = JSON.parse(
+      gunzipSync(readFileSync(new URL('./bundled/logos.json.gz', import.meta.url))).toString(),
+    ) as Record<string, string>;
+    const kept = Object.values(logos).filter((svg) => safeSvg(svg) !== null);
+    expect(kept.length).toBe(Object.keys(logos).length);
   });
 
   it('words relative times', () => {
