@@ -67,6 +67,10 @@ describe('the doc editor screen', () => {
     expect(within(props).getByText('rfc')).toBeTruthy();
     expect(within(props).getByText('1 min read')).toBeTruthy();
     expect(screen.getByRole('status', { name: '' }).textContent).toBe('Saved · Priya is editing');
+    // The faces are the header's facepile, as on Work's screens.
+    expect(
+      screen.getByRole('group', { name: 'Also here: Priya Nair · on this page' }),
+    ).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'Context' })).toBeTruthy();
   });
 
