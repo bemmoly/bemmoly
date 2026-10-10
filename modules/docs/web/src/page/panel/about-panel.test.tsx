@@ -2,7 +2,14 @@ import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { listed, space, startServer, summary } from '../../test-support.tsx';
-import { collabState, PAGE_ID, pageDetail, renderPage, ROHAN } from '../page-test-support.tsx';
+import {
+  collabState,
+  MEMBERS,
+  PAGE_ID,
+  pageDetail,
+  renderPage,
+  ROHAN,
+} from '../page-test-support.tsx';
 import { ABOUT_PANEL, usePageChrome } from '../screen-context.ts';
 
 const live = vi.hoisted(() => ({ state: null as unknown }));
@@ -17,6 +24,7 @@ const { calls } = startServer(
     HttpResponse.json(listed([summary('Architecture')])),
   ),
   http.get('*/api/v1/docs/home/starred', () => HttpResponse.json(listed([]))),
+  http.get('*/api/v1/docs/spaces/:key/members', () => HttpResponse.json(MEMBERS)),
   http.get('*/api/v1/docs/labels', () =>
     HttpResponse.json({ items: [{ name: 'auth', pageCount: 4 }], nextCursor: null }),
   ),
@@ -97,7 +105,7 @@ describe('the About panel', () => {
     const about = await panel();
     fireEvent.click(within(about).getByRole('button', { name: '+ Add reviewers' }));
     const dialog = await screen.findByRole('dialog', { name: 'Reviewers' });
-    fireEvent.click(within(dialog).getByRole('checkbox', { name: 'Rohan S.' }));
+    fireEvent.click(await within(dialog).findByRole('checkbox', { name: 'Rohan S.' }));
     fireEvent.click(within(dialog).getByRole('button', { name: 'Save reviewers' }));
     await waitFor(() => expect(calls.at(-1)?.body).toEqual({ reviewers: [ROHAN] }));
     expect(await within(about).findByText('Rohan S.')).toBeTruthy();

@@ -75,6 +75,7 @@ export function StatusMenu() {
       </Menu>
       <ReviewersDialog
         open={picking}
+        spaceKey={page.spaceKey}
         initial={page.reviewers}
         exclude={[page.ownerId, user?.id].filter((id): id is string => Boolean(id))}
         confirmLabel="Request review"

@@ -100,6 +100,7 @@ function ReviewersField() {
       )}
       <ReviewersDialog
         open={open}
+        spaceKey={page.spaceKey}
         initial={page.reviewers}
         exclude={page.ownerId ? [page.ownerId] : []}
         confirmLabel="Save reviewers"

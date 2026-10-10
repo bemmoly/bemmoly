@@ -5,6 +5,7 @@ import { listed, space, startServer, summary } from '../test-support.tsx';
 import {
   collabState,
   JONAS,
+  MEMBERS,
   PAGE_ID,
   pageDetail,
   priyaPeer,
@@ -24,6 +25,7 @@ const { server, calls } = startServer(
     HttpResponse.json(listed([summary('Architecture')])),
   ),
   http.get('*/api/v1/docs/home/starred', () => HttpResponse.json(listed([]))),
+  http.get('*/api/v1/docs/spaces/:key/members', () => HttpResponse.json(MEMBERS)),
   http.get('*/api/v1/docs/pages/:pageId/revisions', () => HttpResponse.json(listed([]))),
   http.patch('*/api/v1/docs/pages/:pageId', async ({ request }) => {
     page = { ...page, ...((await request.json()) as object) };
@@ -96,8 +98,11 @@ describe('the doc editor screen', () => {
     fireEvent.click(await screen.findByRole('button', { name: /Change status/ }));
     fireEvent.click(await screen.findByRole('menuitem', { name: 'Request review…' }));
     const dialog = await screen.findByRole('dialog', { name: 'Reviewers' });
+    const jonas = await within(dialog).findByRole('checkbox', { name: 'Jonas M.' });
+    // The owner does not review their own page; an invited person cannot review yet.
     expect(within(dialog).queryByRole('checkbox', { name: 'Priya N.' })).toBeNull();
-    fireEvent.click(within(dialog).getByRole('checkbox', { name: 'Jonas M.' }));
+    expect(within(dialog).queryByRole('checkbox', { name: 'Sam R.' })).toBeNull();
+    fireEvent.click(jonas);
     fireEvent.click(within(dialog).getByRole('button', { name: 'Request review' }));
     await waitFor(() => expect(screen.getAllByText('In review').length).toBeGreaterThan(0));
     expect(calls.map(({ method, path, body }) => [method, path.split('/').pop(), body])).toEqual([
@@ -129,7 +134,7 @@ describe('the doc editor screen', () => {
     const dialog = await screen.findByRole('dialog', { name: 'Reviewers' });
     const confirm = within(dialog).getByRole('button', { name: 'Request review' });
     expect((confirm as HTMLButtonElement).disabled).toBe(true);
-    fireEvent.click(within(dialog).getByRole('checkbox', { name: 'Jonas M.' }));
+    fireEvent.click(await within(dialog).findByRole('checkbox', { name: 'Jonas M.' }));
     fireEvent.click(confirm);
     expect((await within(dialog).findByRole('alert')).textContent).toBe(
       'Reviewers must be active members of the space',

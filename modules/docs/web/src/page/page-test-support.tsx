@@ -42,6 +42,38 @@ export const PEOPLE = [
   user(ROHAN, 'Rohan S.', 'rohan@acme.test'),
 ];
 
+/** GET /spaces/ENG/members: everyone may review but Sam, who is only invited. */
+export const MEMBERS = {
+  items: [
+    ...PEOPLE.map((person) => ({
+      userId: person.id,
+      name: person.name,
+      email: person.email,
+      status: 'active',
+      roleId: id(7901),
+      roleKey: 'member',
+      roleName: 'Member',
+      access: 'member',
+      canReview: true,
+      addedAt: at,
+    })),
+    {
+      userId: id(7104),
+      name: 'Sam R.',
+      email: 'sam@acme.test',
+      status: 'invited',
+      roleId: id(7901),
+      roleKey: 'member',
+      roleName: 'Member',
+      access: 'member',
+      canReview: false,
+      addedAt: at,
+    },
+  ],
+  roles: [{ id: id(7901), key: 'member', name: 'Member' }],
+  canManage: true,
+};
+
 export function pageDetail(overrides: Record<string, unknown> = {}) {
   return {
     id: PAGE_ID,
