@@ -31,7 +31,11 @@ function NewPage({ onClose, onCreated }: CreateOverlayProps) {
 /** A new space, then the space. */
 function NewSpace({ onClose, onCreated }: CreateOverlayProps) {
   return (
-    <CreateSpaceDialog open onClose={onClose} onCreated={(space) => onCreated(docsPaths.space(space.key))} />
+    <CreateSpaceDialog
+      open
+      onClose={onClose}
+      onCreated={(space) => onCreated(docsPaths.space(space.key))}
+    />
   );
 }
 

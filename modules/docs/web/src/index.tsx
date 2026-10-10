@@ -20,14 +20,22 @@ import { ScreenSkeleton } from './skeletons/docs-skeletons.tsx';
  */
 function useCreateRedirect(screen: string | undefined, segment: string | undefined) {
   const entry =
-    screen === 'create' ? 'docs.create-page' : screen === 'spaces' && segment === 'new' ? 'docs.create-space' : null;
+    screen === 'create'
+      ? 'docs.create-page'
+      : screen === 'spaces' && segment === 'new'
+        ? 'docs.create-space'
+        : null;
   useEffect(() => {
     if (entry) navigateInApp(withCreate(docsPaths.home(), entry), { replace: true });
   }, [entry]);
 }
 
 /** Docs, then the space on show; a page's own trail sits in its bar. */
-function useDocsCrumbs(manifest: ModuleChunkProps['manifest'], screen: string | undefined, segment: string | undefined) {
+function useDocsCrumbs(
+  manifest: ModuleChunkProps['manifest'],
+  screen: string | undefined,
+  segment: string | undefined,
+) {
   const space = useSpace(screen === 's' ? segment : undefined);
   const docs: PageCrumb = {
     label: manifest.name ?? 'Docs',

@@ -20,7 +20,10 @@ export function rememberProject(key: string): void {
 }
 
 /** The last project this person used, and a way to change it. */
-export function useProjectStore(): { projectKey: string | null; setProjectKey: (key: string | null) => void } {
+export function useProjectStore(): {
+  projectKey: string | null;
+  setProjectKey: (key: string | null) => void;
+} {
   const [projectKey] = usePreference<string | null>(CURRENT, null);
   return {
     projectKey,
