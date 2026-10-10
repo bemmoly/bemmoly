@@ -68,6 +68,8 @@ describe('work entity renderers', () => {
 
   it('searches issues as editor suggestions named by key', async () => {
     const items = await renderer!.search!('plt', new AbortController().signal);
-    expect(items).toEqual([{ id: 'PLT-204', label: 'PLT-204', description: issue.title }]);
+    expect(items).toEqual([
+      { id: 'PLT-204', label: 'PLT-204', description: issue.title, href: '/work/issue/PLT-204' },
+    ]);
   });
 });
