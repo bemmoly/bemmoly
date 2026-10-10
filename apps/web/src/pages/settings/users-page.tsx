@@ -147,11 +147,11 @@ export function UsersPage() {
   );
 }
 
+/** "All · 8", as every segmented count in the product reads. */
 function Count({ label, n }: { label: string; n: number }) {
   return (
-    <span className="inline-flex items-center gap-1.5">
-      {label}
-      <span className="text-tx-3 tabular-nums">{n}</span>
+    <span className="tabular-nums">
+      {label} · {n}
     </span>
   );
 }
