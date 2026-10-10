@@ -1,4 +1,5 @@
-import type { IssueType, Priority } from '../glyphs/glyphs.tsx';
+import { typeLook, type IssueTypeRef, type Priority } from '../glyphs/glyphs.tsx';
+import type { TypeColorToken } from '../../tokens/semantic.ts';
 
 /**
  * The Board Settings "Card color" rules: a 3px left stripe by priority (red to green), by issue
@@ -14,18 +15,18 @@ const PRIORITY_STRIPES: Record<Priority, string> = {
   lowest: 'border-l-tx5',
 };
 
-const TYPE_STRIPES: Record<IssueType, string> = {
-  story: 'border-l-type-story',
-  bug: 'border-l-type-bug',
-  task: 'border-l-type-task',
-  epic: 'border-l-type-epic',
-  incident: 'border-l-type-incident',
-  subtask: 'border-l-type-subtask',
+const TYPE_STRIPES: Record<TypeColorToken, string> = {
+  'type-story': 'border-l-type-story',
+  'type-bug': 'border-l-type-bug',
+  'type-task': 'border-l-type-task',
+  'type-epic': 'border-l-type-epic',
+  'type-incident': 'border-l-type-incident',
+  'type-subtask': 'border-l-type-subtask',
 };
 
 export interface StripeSource {
   priority: Priority;
-  type: IssueType;
+  type: IssueTypeRef;
   /** The epic's colour as a border utility, e.g. "border-l-epic-1" or "border-l-epic-2". */
   epicClassName?: string;
 }
@@ -33,7 +34,7 @@ export interface StripeSource {
 /** The border-left utility for a card under a colour rule, or undefined for no stripe. */
 export function cardStripe(rule: CardStripeRule, source: StripeSource): string | undefined {
   if (rule === 'priority') return PRIORITY_STRIPES[source.priority];
-  if (rule === 'type') return TYPE_STRIPES[source.type];
+  if (rule === 'type') return TYPE_STRIPES[typeLook(source.type).color];
   if (rule === 'epic') return source.epicClassName;
   return undefined;
 }

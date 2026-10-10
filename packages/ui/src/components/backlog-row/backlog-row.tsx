@@ -4,14 +4,14 @@ import { cx } from '../../lib/cx.ts';
 import { focusRingInset } from '../../lib/focus.ts';
 import { Avatar, type AvatarHue } from '../avatar/avatar.tsx';
 import { Badge } from '../badge/badge.tsx';
-import { PriorityGlyph, TypeGlyph, type IssueType, type Priority } from '../glyphs/glyphs.tsx';
+import { PriorityGlyph, TypeGlyph, type IssueTypeRef, type Priority } from '../glyphs/glyphs.tsx';
 import { KeyChip } from '../key-chip/key-chip.tsx';
 import { StatusBadge, type StatusCategory } from '../status-badge/status-badge.tsx';
 
 export interface BacklogRowProps {
   issueKey: string;
   title: ReactNode;
-  type: IssueType;
+  type: IssueTypeRef;
   priority: Priority;
   status: { category: StatusCategory; label?: ReactNode };
   /** The epic's name and colour square (a background utility such as bg-ac). */

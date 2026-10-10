@@ -3,7 +3,7 @@ import { cx } from '../../lib/cx.ts';
 import { focusRingInset } from '../../lib/focus.ts';
 import { Avatar, type AvatarHue } from '../avatar/avatar.tsx';
 import { Checkbox } from '../checkbox/checkbox.tsx';
-import { TypeGlyph, type IssueType } from '../glyphs/glyphs.tsx';
+import { TypeGlyph, type IssueTypeRef } from '../glyphs/glyphs.tsx';
 import { KeyChip } from '../key-chip/key-chip.tsx';
 import { StatusBadge, type StatusCategory } from '../status-badge/status-badge.tsx';
 
@@ -27,7 +27,7 @@ function RowStatusBadge({ status, wide }: { status: RowStatus; wide?: boolean })
 export interface SubtaskRowProps {
   issueKey: string;
   title: ReactNode;
-  type?: IssueType;
+  type?: IssueTypeRef;
   status: RowStatus;
   done?: boolean;
   assignee?: { name: string; initials?: string; hue?: AvatarHue };
@@ -76,11 +76,11 @@ export function SubtaskRow({
 
 export interface LinkedIssueRowProps extends Omit<
   AnchorHTMLAttributes<HTMLAnchorElement>,
-  'title'
+  'title' | 'type'
 > {
   issueKey: string;
   title: ReactNode;
-  type: IssueType;
+  type: IssueTypeRef;
   status: RowStatus;
 }
 

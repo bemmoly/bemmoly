@@ -4,7 +4,7 @@ import { cx } from '../../lib/cx.ts';
 import { focusRing } from '../../lib/focus.ts';
 import { Avatar, type AvatarHue } from '../avatar/avatar.tsx';
 import { Badge } from '../badge/badge.tsx';
-import { PriorityGlyph, TypeGlyph, type IssueType, type Priority } from '../glyphs/glyphs.tsx';
+import { PriorityGlyph, TypeGlyph, type IssueTypeRef, type Priority } from '../glyphs/glyphs.tsx';
 import { KeyChip } from '../key-chip/key-chip.tsx';
 import { Tag } from '../tag/tag.tsx';
 
@@ -17,7 +17,7 @@ export interface CardPerson {
 export interface KanbanCardProps {
   issueKey: string;
   title: ReactNode;
-  type: IssueType;
+  type: IssueTypeRef;
   priority: Priority;
   assignee?: CardPerson;
   labels?: readonly string[];

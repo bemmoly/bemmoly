@@ -46,6 +46,9 @@ export type IconName = ShapeName | GlyphName | KitIconName;
 
 const ALL: Record<IconName, LucideIcon> = { ...SHAPES, ...GLYPHS, ...KIT_ICONS };
 
+/** The drawing behind a name, for components that place an icon inside their own SVG. */
+export const iconComponent = (name: IconName): LucideIcon => ALL[name];
+
 export const ICON_NAMES = Object.keys(ALL) as IconName[];
 
 /**
