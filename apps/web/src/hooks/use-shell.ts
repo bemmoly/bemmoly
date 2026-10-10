@@ -3,6 +3,7 @@ import type { ModuleManifest, SidebarLink } from '@bemmoly/shared';
 import { PRESETS } from '@bemmoly/ui/tokens';
 import { useNavigate } from '@tanstack/react-router';
 import { useMemo } from 'react';
+import { customerLogo } from '../lib/customer-logo.ts';
 import { MODULE_CREATES } from '../lib/module-shell.ts';
 import { useThemeStore } from '../store/theme.ts';
 import { useUiStore } from '../store/ui.ts';
@@ -88,6 +89,8 @@ export function useShell() {
   return {
     me,
     workspace,
+    /** The workspace's own logo once one is uploaded; Bemmoly stays beside it either way. */
+    customLogo: customerLogo(workspace.name, workspace.appearance.logoKey),
     modules,
     unreadCount,
     creates,

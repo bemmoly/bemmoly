@@ -1,6 +1,7 @@
 import { knownIcon, SidebarRow, useFrame } from '@bemmoly/core-web';
+import { BrandRailFoot } from '@bemmoly/ui';
 import { useEffect } from 'react';
-import type { Shell } from '../../hooks/use-shell.ts';
+import { APP_VERSION, WHATS_NEW_URL, type Shell } from '../../hooks/use-shell.ts';
 import { MODULE_SIDEBARS } from '../../lib/module-shell.ts';
 import { useUiStore } from '../../store/ui.ts';
 import { ModuleSection } from './module-section.tsx';
@@ -10,7 +11,8 @@ import { SidebarFoot, SidebarTop, UserMenu, VersionLine } from './sidebar-parts.
  * The app sidebar (docs/design/premium/kit.js, `sidebar`): the brand block, Search and New,
  * Home, Inbox and what modules add beside them (My issues), each module's section, then
  * Settings, Help and shortcuts, the version line and the person. The same component draws the
- * 56px rail and the phone's sheet; only the frame's mode differs.
+ * 56px rail and the phone's sheet; only the frame's mode differs. Under a customer logo the rail
+ * keeps the Bemmoly mark at its foot, with the version and What's new.
  */
 export function AppSidebar({ shell }: { shell: Shell }) {
   const { mode } = useFrame();
@@ -59,8 +61,16 @@ export function AppSidebar({ shell }: { shell: Shell }) {
           keys="?"
           onSelect={() => setShortcutsOpen(true)}
         />
-        {rail ? null : <VersionLine />}
-        <div className={rail ? 'mt-1' : 'mt-1'}>
+        {rail ? (
+          <BrandRailFoot
+            customLogo={shell.customLogo}
+            version={APP_VERSION}
+            onWhatsNew={() => window.open(WHATS_NEW_URL, '_blank', 'noopener')}
+          />
+        ) : (
+          <VersionLine />
+        )}
+        <div className="mt-1">
           <UserMenu shell={shell} />
         </div>
       </SidebarFoot>

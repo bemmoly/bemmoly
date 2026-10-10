@@ -78,7 +78,7 @@ export function SidebarTop({ shell }: { shell: Shell }) {
             onClick={toggleSidebar}
             className="mb-2.5 grid cursor-pointer place-items-center rounded-card border-0 bg-transparent p-1 hover:bg-hover focus-ring"
           >
-            <BrandRailTop />
+            <BrandRailTop customLogo={shell.customLogo} />
           </button>
         </Tooltip>
         <Tooltip label="Search" keys="Mod+K" side="right">
@@ -96,6 +96,7 @@ export function SidebarTop({ shell }: { shell: Shell }) {
     <>
       <BrandBlock
         workspaceName={shell.workspace.name}
+        customLogo={shell.customLogo}
         workspaceMenu={<WorkspaceMenuItems shell={shell} />}
         sidebarToggle={
           mode === 'sheet' ? (
