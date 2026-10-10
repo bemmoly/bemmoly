@@ -1,6 +1,7 @@
 import { useId, type ReactNode } from 'react';
 import { Icon, type IconName } from '../../icons/icon.tsx';
 import { cx } from '../../lib/cx.ts';
+import { Kbd } from '../kbd/kbd.tsx';
 import { useCommandContext } from './command-palette.tsx';
 
 /** The results: up to 420px, scrolling. */
@@ -17,22 +18,19 @@ export function CommandList({
       id={listId}
       role="listbox"
       aria-label={label}
-      className="flex max-h-105 flex-col overflow-auto pb-1"
+      className="flex max-h-[min(440px,60vh)] flex-col overflow-auto p-1.5"
     >
       {children}
     </div>
   );
 }
 
-/** A labelled group: 11px tracked capitals in tx5, 10px 16px 4px. */
+/** A labelled group: the label once, 11px semibold in the muted ink, never repeated per row. */
 export function CommandGroup({ label, children }: { label: string; children: ReactNode }) {
   const id = useId();
   return (
     <div role="group" aria-labelledby={id}>
-      <div
-        id={id}
-        className="px-4 pt-2.5 pb-1 text-11 font-medium tracking-caps text-tx5 uppercase"
-      >
+      <div id={id} className="px-3.5 pt-2.5 pb-1 text-11 font-semibold text-tx-3">
         {label}
       </div>
       {children}
@@ -46,13 +44,15 @@ export interface CommandItemProps {
   /** Issue key in mono, before the title. */
   issueKey?: string;
   title: ReactNode;
-  /** Right side: "In review · Aisha", "⌘ N". */
+  /** Right side: "In review · Aisha", a status glyph. */
   meta?: ReactNode;
+  /** The shortcut that does the same, drawn as keys: "C", "G B". */
+  keys?: string;
   onSelect: () => void;
 }
 
-/** A result row: 8px 16px, 10px gaps; the active row is ac-bg (set by the palette). */
-export function CommandItem({ icon, issueKey, title, meta, onSelect }: CommandItemProps) {
+/** A 38px result row with its own icon; the active row takes the hover overlay (the palette sets it). */
+export function CommandItem({ icon, issueKey, title, meta, keys, onSelect }: CommandItemProps) {
   const id = useId();
   return (
     <div
@@ -60,12 +60,14 @@ export function CommandItem({ icon, issueKey, title, meta, onSelect }: CommandIt
       role="option"
       aria-selected="false"
       onClick={onSelect}
-      className="flex cursor-pointer items-center gap-2.5 px-4 py-2 text-tx aria-selected:bg-ac-bg motion-safe:transition-colors motion-safe:duration-(--duration-instant)"
+      className="flex h-9.5 shrink-0 cursor-pointer items-center gap-2.5 rounded-card px-3.5 text-tx aria-selected:bg-hover motion-safe:transition-colors motion-safe:duration-(--duration-instant)"
     >
-      {icon}
+      <span aria-hidden className="grid w-4.5 shrink-0 place-items-center text-tx-2">
+        {icon}
+      </span>
       {/* A key column wide enough for PLT-1234, so the titles of mixed projects line up. */}
       {issueKey && (
-        <span className="min-w-15 shrink-0 font-mono text-11h font-medium text-tx4">
+        <span className="min-w-15 shrink-0 font-mono text-11 font-medium text-tx-3">
           {issueKey}
         </span>
       )}
@@ -75,7 +77,14 @@ export function CommandItem({ icon, issueKey, title, meta, onSelect }: CommandIt
       >
         {title}
       </span>
-      {meta && <span className="shrink-0 text-12 text-tx5">{meta}</span>}
+      {meta && <span className="flex shrink-0 items-center gap-1.5 text-12 text-tx-3">{meta}</span>}
+      {keys && (
+        <span className="flex shrink-0 gap-1">
+          {keys.split(' ').map((key, index) => (
+            <Kbd key={index} keys={key} />
+          ))}
+        </span>
+      )}
     </div>
   );
 }
