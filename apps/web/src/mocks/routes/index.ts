@@ -2,6 +2,7 @@ import type { MockRoute } from '../types.ts';
 import { docsFindRoutes } from './docs-find.ts';
 import { docsHistoryRoutes } from './docs-history.ts';
 import { docsLibraryRoutes } from './docs-library.ts';
+import { docsMemberRoutes } from './docs-members.ts';
 import { docsMoveRoutes } from './docs-moves.ts';
 import { docsRoutes } from './docs.ts';
 import { operationsRoutes } from './operations.ts';
@@ -36,5 +37,6 @@ export const ROUTES: readonly MockRoute[] = [
   ...docsLibraryRoutes,
   ...docsMoveRoutes,
   ...docsFindRoutes,
+  ...docsMemberRoutes,
   ...docsHistoryRoutes,
 ];
