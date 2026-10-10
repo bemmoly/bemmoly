@@ -49,27 +49,26 @@ export function PreviewRail({ draft, boardHref }: { draft: BoardDraft; boardHref
   return (
     <aside
       aria-label="Board preview"
-      className="flex min-h-0 w-85 shrink-0 flex-col border-l border-br bg-sf"
+      className="flex min-h-0 w-68 shrink-0 flex-col border-l border-line bg-sunken max-lg:hidden"
     >
-      <div className="flex items-center gap-2 border-b border-br2 px-4 py-3 font-semibold">
-        Preview
-        <span className="text-12 font-normal text-tx5">updates as you edit</span>
+      <div className="flex items-center gap-2 px-5 pt-5 pb-1 text-14 font-semibold">
+        Live preview
         <a
           href={boardHref}
           onClick={onLinkClick(boardHref)}
-          className="ml-auto text-12 font-medium text-ac hover:text-ac-d"
+          className="ml-auto text-13 font-semibold text-ac hover:underline"
         >
           Open board
         </a>
       </div>
-      <div className="flex flex-col gap-3 overflow-auto p-3.5">
+      <div className="flex flex-col gap-3 overflow-auto px-5 pt-2 pb-5">
         <div
-          className="grid gap-1.25 text-9 font-semibold tracking-caps text-tx3 uppercase"
+          className="grid gap-1.25 text-11 font-medium text-tx-2"
           style={grid}
         >
           {config.columns.map((column) => (
             <div key={column.id} className="truncate px-0.5">
-              {column.name} <span className="font-medium text-tx5">{column.wipLimit ?? ''}</span>
+              {column.name} <span className="text-tx-3 tabular-nums">{column.wipLimit ?? ''}</span>
             </div>
           ))}
         </div>
@@ -120,7 +119,7 @@ export function PreviewRail({ draft, boardHref }: { draft: BoardDraft; boardHref
             </div>
           </div>
         ))}
-        <p className="m-0 pt-1 text-12 leading-body text-tx4">
+        <p className="m-0 pt-1 text-12 leading-body text-tx-3">
           {n} columns · lanes by {LANE_LABELS[config.lanes.kind].toLowerCase()} ·{' '}
           {METHOD_LABELS[method]} · {ESTIMATE_LABELS[config.estimationUnit].toLowerCase()}
         </p>
