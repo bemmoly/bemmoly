@@ -52,6 +52,19 @@ function readSentence(raw: string, offered: ReadonlySet<string>): AnswerSentence
 }
 
 /**
+ * The text of a "- ", "* ", "• ", "1. " or "1) " list line, or null for any other line. The
+ * marker is matched on its own and the rest is trimmed, so no pattern backtracks over spaces.
+ */
+function listItemText(line: string): string | null {
+  const trimmed = line.trimStart();
+  const marker = /^(?:[-*•]|\d+[.)])/.exec(trimmed);
+  if (!marker) return null;
+  const rest = trimmed.slice(marker[0].length);
+  if (!/^\s/.test(rest)) return null;
+  return rest.trim();
+}
+
+/**
  * The answer as blocks of sentences with their citations. Paragraphs split on blank lines and
  * "- " or "1. " lines become items. A partial answer (still streaming) reads the same way.
  */
@@ -66,10 +79,10 @@ export function readAnswer(text: string, offered: ReadonlySet<string>): AnswerBl
       paragraph = [];
     };
     for (const line of lines) {
-      const item = /^\s*(?:[-*•]|\d+[.)])\s+(.*)$/.exec(line);
-      if (item) {
+      const item = listItemText(line);
+      if (item !== null) {
         flush();
-        blocks.push({ kind: 'item', sentences: sentencesOf(item[1]!, offered) });
+        blocks.push({ kind: 'item', sentences: sentencesOf(item, offered) });
       } else {
         paragraph.push(line.trim());
       }

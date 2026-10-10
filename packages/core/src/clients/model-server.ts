@@ -62,10 +62,17 @@ function toModel(raw: RawModel): ServerModel | null {
   };
 }
 
+/** The base URL without trailing slashes, in one linear pass (no regex to backtrack on). */
+function withoutTrailingSlashes(url: string): string {
+  let end = url.length;
+  while (end > 0 && url[end - 1] === '/') end -= 1;
+  return url.slice(0, end);
+}
+
 export function createModelServerClient(): ModelServerClient {
   return {
     async listModels({ baseUrl, protocol, apiKey, headers, timeoutMs }) {
-      const url = `${baseUrl.replace(/\/+$/, '')}/models`;
+      const url = `${withoutTrailingSlashes(baseUrl)}/models`;
       const auth: Record<string, string> = apiKey
         ? protocol === 'anthropic-compatible'
           ? { 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' }
