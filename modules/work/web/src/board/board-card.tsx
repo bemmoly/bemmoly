@@ -1,4 +1,4 @@
-import { IconButton, IssueCard, Tooltip, type EpicColor, type Priority } from '@bemmoly/ui';
+import { IconButton, IssueCard, type EpicColor, type Priority } from '@bemmoly/ui';
 import { memo, useEffect, useLayoutEffect, useMemo, useRef, type CSSProperties } from 'react';
 import { useBoardDragStore } from '../hooks/board-drag-store.ts';
 import type { ViewCard } from '../hooks/board-model.ts';
@@ -104,29 +104,29 @@ export const BoardCard = memo(function BoardCard({
           carried === null && (
             <>
               {vocab.meId && card.assigneeId !== vocab.meId && (
-                <Tooltip label="Assign to me" keys="I">
-                  <IconButton
-                    size="tool"
-                    icon="user"
-                    label={`Assign ${card.key} to me`}
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      void quick.update([card.key], { assigneeId: vocab.meId ?? null });
-                    }}
-                  />
-                </Tooltip>
-              )}
-              <Tooltip label="Open in peek" keys="Enter">
                 <IconButton
+                  tip="Assign to me"
+                  keys="I"
                   size="tool"
-                  icon="expand"
-                  label={`Open ${card.key}`}
+                  icon="user"
+                  label={`Assign ${card.key} to me`}
                   onClick={(event) => {
                     event.stopPropagation();
-                    actions.open(card.key);
+                    void quick.update([card.key], { assigneeId: vocab.meId ?? null });
                   }}
                 />
-              </Tooltip>
+              )}
+              <IconButton
+                tip="Open in peek"
+                keys="Enter"
+                size="tool"
+                icon="expand"
+                label={`Open ${card.key}`}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  actions.open(card.key);
+                }}
+              />
               <IssueActionsMenu
                 issueKey={card.key}
                 assigneeId={card.assigneeId}

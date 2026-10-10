@@ -7,7 +7,6 @@ import {
   ListGroupLabel,
   SectionHeading,
   Select,
-  Tooltip,
   useToast,
 } from '@bemmoly/ui';
 import { Icon } from '@bemmoly/ui/icons';
@@ -137,14 +136,13 @@ export function LinksSection({
                 type={vocabulary.glyph(entry.issue.typeId)}
                 status={vocabulary.rowStatus(entry.issue.statusId)}
                 actions={
-                  <Tooltip label="Remove link">
-                    <IconButton
-                      label={`Remove the link to ${entry.issue.key}`}
-                      icon={<Icon name="close" size={13} />}
-                      size="xs"
-                      onClick={() => remove.mutate(entry)}
-                    />
-                  </Tooltip>
+                  <IconButton
+                    tip="Remove link"
+                    label={`Remove the link to ${entry.issue.key}`}
+                    icon={<Icon name="close" size={13} />}
+                    size="xs"
+                    onClick={() => remove.mutate(entry)}
+                  />
                 }
               />
             )),
@@ -174,14 +172,13 @@ export function LinksSection({
               onChange={(event) => link(event.value)}
               className="min-w-0 flex-1"
             />
-            <Tooltip label="Cancel" keys="Esc">
-              <IconButton
-                label="Cancel"
-                icon={<Icon name="close" size={13} />}
-                size="xs"
-                onClick={() => onAddingChange(false)}
-              />
-            </Tooltip>
+            <IconButton
+              keys="Esc"
+              label="Cancel"
+              icon={<Icon name="close" size={13} />}
+              size="xs"
+              onClick={() => onAddingChange(false)}
+            />
           </div>
         ) : (
           <button

@@ -6,7 +6,6 @@ import {
   FieldSwatch,
   IconButton,
   KeyChip,
-  Tooltip,
   TypeGlyph,
 } from '@bemmoly/ui';
 import { useState } from 'react';
@@ -82,24 +81,22 @@ export function IssueSlideOver({
           <>
             {(onPrevious || onNext) && (
               <>
-                <Tooltip label="Previous issue" keys="K">
-                  <IconButton
-                    label="Previous issue"
-                    icon="arrow-up"
-                    size="xs"
-                    disabled={!onPrevious}
-                    onClick={onPrevious}
-                  />
-                </Tooltip>
-                <Tooltip label="Next issue" keys="J">
-                  <IconButton
-                    label="Next issue"
-                    icon="arrow-down"
-                    size="xs"
-                    disabled={!onNext}
-                    onClick={onNext}
-                  />
-                </Tooltip>
+                <IconButton
+                  keys="K"
+                  label="Previous issue"
+                  icon="arrow-up"
+                  size="xs"
+                  disabled={!onPrevious}
+                  onClick={onPrevious}
+                />
+                <IconButton
+                  keys="J"
+                  label="Next issue"
+                  icon="arrow-down"
+                  size="xs"
+                  disabled={!onNext}
+                  onClick={onNext}
+                />
               </>
             )}
             <IconButton

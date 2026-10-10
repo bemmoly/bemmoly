@@ -2,7 +2,6 @@ import type { CSSProperties, HTMLAttributes, ReactNode } from 'react';
 import { cx } from '../../lib/cx.ts';
 import { IconButton } from '../button/icon-button.tsx';
 import { StatusGlyph, type StatusStage } from '../glyphs/glyphs.tsx';
-import { Tooltip } from '../tooltip/tooltip.tsx';
 
 /** The board's column tracks: equal columns 10px apart (docs/design/premium/kit.css, `.cols`). */
 export function kanbanGridStyle(columns: number): CSSProperties {
@@ -75,9 +74,13 @@ export function KanbanColumnHeader({
         )}
       >
         {onAdd && (
-          <Tooltip label={`New issue in ${name}`} keys="C">
-            <IconButton size="tool" label={`New issue in ${name}`} icon="plus" onClick={onAdd} />
-          </Tooltip>
+          <IconButton
+            keys="C"
+            size="tool"
+            label={`New issue in ${name}`}
+            icon="plus"
+            onClick={onAdd}
+          />
         )}
         {menu}
       </span>

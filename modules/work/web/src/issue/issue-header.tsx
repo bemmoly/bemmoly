@@ -1,5 +1,5 @@
 import type { IssueDetail } from '@bemmoly/module-work/shared';
-import { Button, IconButton, Menu, MenuItem, Modal, Tooltip, useToast } from '@bemmoly/ui';
+import { Button, IconButton, Menu, MenuItem, Modal, useToast } from '@bemmoly/ui';
 import { Icon } from '@bemmoly/ui/icons';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
@@ -90,14 +90,12 @@ export async function copyIssueLink(
 export function ShareButton({ issueKey }: { issueKey: string }) {
   const toast = useToast();
   return (
-    <Tooltip label="Copy link">
-      <IconButton
-        label="Copy link"
-        icon={<Icon name="link" size={15} />}
-        size="sm"
-        onClick={() => void copyIssueLink(issueKey, toast)}
-      />
-    </Tooltip>
+    <IconButton
+      label="Copy link"
+      icon={<Icon name="link" size={15} />}
+      size="sm"
+      onClick={() => void copyIssueLink(issueKey, toast)}
+    />
   );
 }
 
@@ -109,24 +107,22 @@ export function IssueStepper({ neighbours }: { neighbours: IssueNeighbours }) {
       <span className="mr-1 text-12 text-tx-3 tabular-nums" title={neighbours.label}>
         {neighbours.position} of {neighbours.total}
       </span>
-      <Tooltip label="Previous issue" keys="K">
-        <IconButton
-          label="Previous issue"
-          icon={<Icon name="arrow-up" size={15} />}
-          size="xs"
-          disabled={!neighbours.previous}
-          onClick={() => go(neighbours.previous)}
-        />
-      </Tooltip>
-      <Tooltip label="Next issue" keys="J">
-        <IconButton
-          label="Next issue"
-          icon={<Icon name="arrow-down" size={15} />}
-          size="xs"
-          disabled={!neighbours.next}
-          onClick={() => go(neighbours.next)}
-        />
-      </Tooltip>
+      <IconButton
+        keys="K"
+        label="Previous issue"
+        icon={<Icon name="arrow-up" size={15} />}
+        size="xs"
+        disabled={!neighbours.previous}
+        onClick={() => go(neighbours.previous)}
+      />
+      <IconButton
+        keys="J"
+        label="Next issue"
+        icon={<Icon name="arrow-down" size={15} />}
+        size="xs"
+        disabled={!neighbours.next}
+        onClick={() => go(neighbours.next)}
+      />
       <span aria-hidden className="mx-1.5 h-4 w-px bg-line" />
     </span>
   );

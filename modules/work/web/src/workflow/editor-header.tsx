@@ -62,8 +62,8 @@ export function EditorHeader(props: EditorHeaderProps) {
         </span>
         <div className="ml-auto flex flex-wrap items-center gap-2">
           <IconButton
-            label="Undo (⌘Z)"
-            title="Undo (⌘Z)"
+            label="Undo the last edit"
+            keys="Mod+Z"
             icon="undo"
             size="sm"
             disabled={!props.canUndo}

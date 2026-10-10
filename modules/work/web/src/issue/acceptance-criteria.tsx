@@ -1,13 +1,5 @@
 import type { RichText } from '@bemmoly/module-work/shared';
-import {
-  Button,
-  ChecklistBlock,
-  CriteriaRow,
-  IconButton,
-  Input,
-  Tooltip,
-  useToast,
-} from '@bemmoly/ui';
+import { Button, ChecklistBlock, CriteriaRow, IconButton, Input, useToast } from '@bemmoly/ui';
 import { Icon } from '@bemmoly/ui/icons';
 import { useRef, useState } from 'react';
 import { criteriaDoc, criteriaOf, type Criterion } from './criteria-doc.ts';
@@ -125,22 +117,20 @@ export function AcceptanceCriteria({ title, doc, onSave, readOnly }: AcceptanceC
                 actions={
                   !readOnly && (
                     <>
-                      <Tooltip label="Rename">
-                        <IconButton
-                          label={`Rename “${item.text}”`}
-                          icon={<Icon name="edit" size={13} />}
-                          size="xs"
-                          onClick={() => setRenaming(index)}
-                        />
-                      </Tooltip>
-                      <Tooltip label="Remove">
-                        <IconButton
-                          label={`Remove “${item.text}”`}
-                          icon={<Icon name="close" size={13} />}
-                          size="xs"
-                          onClick={() => remove(index)}
-                        />
-                      </Tooltip>
+                      <IconButton
+                        tip="Rename"
+                        label={`Rename “${item.text}”`}
+                        icon={<Icon name="edit" size={13} />}
+                        size="xs"
+                        onClick={() => setRenaming(index)}
+                      />
+                      <IconButton
+                        tip="Remove"
+                        label={`Remove “${item.text}”`}
+                        icon={<Icon name="close" size={13} />}
+                        size="xs"
+                        onClick={() => remove(index)}
+                      />
                     </>
                   )
                 }

@@ -1,6 +1,6 @@
 import { isEmptyDoc, preloadEditor, RichTextEditor, type RichTextDoc } from '@bemmoly/editor';
 import type { RichText } from '@bemmoly/module-work/shared';
-import { IconButton, Kbd, SaveState, SectionHeading, Tooltip } from '@bemmoly/ui';
+import { IconButton, Kbd, SaveState, SectionHeading } from '@bemmoly/ui';
 import { Icon } from '@bemmoly/ui/icons';
 import { useRef, useState, type FocusEvent, type MouseEvent } from 'react';
 import { useEditorSources } from '../hooks/editor-sources.ts';
@@ -77,15 +77,13 @@ export function RichTextSection({
       <span className="ml-auto flex items-center gap-1">
         <SaveState state={autosave.state} onRetry={() => void autosave.retry()} />
         {!readOnly && !editing && !empty && (
-          <Tooltip label={`Edit ${name}`}>
-            <IconButton
-              label={`Edit ${name}`}
-              icon={<Icon name="edit" size={14} />}
-              size="xs"
-              onClick={start}
-              onPointerEnter={preloadEditor}
-            />
-          </Tooltip>
+          <IconButton
+            label={`Edit ${name}`}
+            icon={<Icon name="edit" size={14} />}
+            size="xs"
+            onClick={start}
+            onPointerEnter={preloadEditor}
+          />
         )}
       </span>
     </div>
