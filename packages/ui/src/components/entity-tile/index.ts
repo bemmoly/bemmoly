@@ -1,1 +1,7 @@
-export { EntityTile, entityHue, type EntityTileProps, type EntityTone } from './entity-tile.tsx';
+export {
+  EntityTile,
+  entityHue,
+  type EntityHue,
+  type EntityTileProps,
+  type EntityTone,
+} from './entity-tile.tsx';

@@ -32,6 +32,8 @@ const HUES: Record<keyof typeof EPIC_COLORS, string> = {
   'epic-8': 'bg-epic-8',
 };
 
+export type EntityHue = keyof typeof EPIC_COLORS;
+
 /** A stable palette colour for a name, so a project keeps its hue across screens. */
 export function entityHue(seed: string): keyof typeof EPIC_COLORS {
   let hash = 0;
@@ -47,6 +49,8 @@ export interface EntityTileProps {
   /** An icon in place of a letter (a module's icon). */
   icon?: IconName;
   tone?: EntityTone;
+  /** A palette hue chosen for the thing (a space's stored colour); wins over the tone. */
+  hue?: EntityHue;
   /** A stored hex colour; wins over the tone. */
   color?: string | null;
   /** An uploaded logo, drawn in the same rounded square. */
@@ -68,6 +72,7 @@ export function EntityTile({
   letter,
   icon,
   tone,
+  hue,
   color,
   src,
   size = 18,
@@ -86,14 +91,15 @@ export function EntityTile({
       />
     );
   }
-  const hue = !tone && !color ? `${HUES[entityHue(name)]} text-on-solid` : undefined;
+  const fill =
+    hue || (!tone && !color) ? `${HUES[hue ?? entityHue(name)]} text-on-solid` : undefined;
   return (
     <span
       {...a11y}
       style={{ ...box, fontSize: Math.round(size * 0.52), ...(color ? { background: color } : {}) }}
       className={cx(
         'inline-grid shrink-0 place-items-center leading-none font-semibold',
-        color ? 'text-on-solid' : (hue ?? TONES[tone ?? 'accent']),
+        color ? 'text-on-solid' : (fill ?? TONES[tone ?? 'accent']),
         className,
       )}
     >

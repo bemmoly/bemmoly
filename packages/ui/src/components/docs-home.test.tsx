@@ -60,7 +60,9 @@ describe('Docs home components', () => {
     expect(spaceInitials('Company handbook')).toBe('CH');
     expect(spaceInitials('engineering')).toBe('EN');
     render(<SpaceTile name="Design" tone="red" size="sm" />);
-    expect(screen.getByText('DE').className).toMatch(/bg-danger/);
+    // A space never wears a signal colour: the stored 'red' is the palette's rose.
+    expect(screen.getByText('DE').className).toMatch(/bg-epic-6/);
+    expect(screen.getByText('DE').className).not.toMatch(/bg-danger|bg-red/);
   });
 
   it('marks the chosen template card and reports clicks', () => {
