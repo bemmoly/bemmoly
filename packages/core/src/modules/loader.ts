@@ -36,6 +36,11 @@ export interface LoadModulesOptions {
   collab?: CollabTransactor;
   /** What ctx.ai calls through once the server binds the runtime; see createAiHandle. */
   ai?: () => AiFacade | undefined;
+  /**
+   * The live module state, read on every event. A module's event handlers run only while it
+   * is enabled; omitted, every registered module hears every event.
+   */
+  isEnabled?: (moduleId: string) => boolean;
 }
 
 function indexAvailable(available: readonly BemmolyModule[]): Map<string, BemmolyModule> {
@@ -125,6 +130,7 @@ export function loadModules(options: LoadModulesOptions): ModuleRegistry {
         ...(options.database ? { database: options.database } : {}),
         ...(options.collab ? { collab: options.collab } : {}),
         ...(options.ai ? { ai: options.ai } : {}),
+        ...(options.isEnabled ? { isEnabled: options.isEnabled } : {}),
         peers: () => registry,
       }),
     );

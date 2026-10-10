@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { BemmolyModule } from './contract.ts';
 import { ModuleLoadError } from './errors.ts';
 import { loadModules } from './loader.ts';
+import { createLocalEventBus } from './local-event-bus.ts';
 
 function fakeModule(id: string, overrides: Partial<BemmolyModule> = {}): BemmolyModule {
   return {
@@ -172,5 +173,26 @@ describe('loadModules', () => {
     loadModules({ available: [probe] });
     loadModules({ available: [probe], editorEnabled: true });
     expect(seen).toEqual([false, true]);
+  });
+
+  it("runs a module's event handlers only while that module is enabled", async () => {
+    const events = createLocalEventBus();
+    const enabled = new Set(['work']);
+    const heard: string[] = [];
+    const listener = (id: string) =>
+      fakeModule(id, {
+        register: (ctx) => void ctx.events.subscribe('issue.changed', () => void heard.push(id)),
+      });
+    loadModules({
+      available: [listener('work'), listener('docs')],
+      events,
+      isEnabled: (id) => enabled.has(id),
+    });
+    const event = { kind: 'issue.changed', occurredAt: new Date(), payload: {} };
+    await events.publish(event);
+    expect(heard).toEqual(['work']);
+    enabled.add('docs');
+    await events.publish(event);
+    expect(heard).toEqual(['work', 'work', 'docs']);
   });
 });

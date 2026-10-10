@@ -30,6 +30,27 @@ export interface ModuleContextOptions {
   ai?: () => AiFacade | undefined;
   /** Every enabled module, for cross-module lookups; answers once loading finishes. */
   peers?: () => ModuleRegistry | undefined;
+  /**
+   * The live module state. Every module in the image registers, but a module's event
+   * handlers run only while it is enabled: a disabled module's tables may not exist yet.
+   */
+  isEnabled?: (moduleId: string) => boolean;
+}
+
+/** `ctx.events` for one module: it publishes freely, and hears events only while enabled. */
+function createModuleEvents(
+  moduleId: string,
+  events: EventBus,
+  isEnabled: ((moduleId: string) => boolean) | undefined,
+): EventBus {
+  if (!isEnabled) return events;
+  return {
+    publish: (event) => events.publish(event),
+    subscribe: (kind, handler) =>
+      events.subscribe(kind, async (event) => {
+        if (isEnabled(moduleId)) await handler(event);
+      }),
+  };
 }
 
 /** The jobs service also reads a request id for its logs. */
@@ -146,7 +167,7 @@ export function createModuleContext(
         return options.jobQueue.enqueue(name, payload ?? {}, enqueueOptions);
       },
     },
-    events: options.events,
+    events: createModuleEvents(module.id, options.events, options.isEnabled),
     search: {
       addIndexer: (indexer) => into.searchIndexers.push(indexer),
       addField: (field) => into.queryFields.push(field),

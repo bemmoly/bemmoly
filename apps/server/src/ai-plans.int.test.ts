@@ -48,10 +48,7 @@ describe('palette plans in the host', () => {
     const file = join(mkdtempSync(join(tmpdir(), 'bemmoly-plans-')), 'recording.json');
     writeFileSync(file, JSON.stringify(recording));
     app = await harness.boot('', { BEMMOLY_AI_RECORDING: file });
-    // Docs on too: with Work alone, creating an issue currently fails on this branch.
-    for (const id of ['work', 'docs']) {
-      await call('POST', `/admin/modules/${id}/enable`, { access: { mode: 'everyone' } });
-    }
+    await call('POST', '/admin/modules/work/enable', { access: { mode: 'everyone' } });
   });
 
   afterAll(async () => harness?.stop());
