@@ -61,7 +61,7 @@ function BodySkeleton() {
  */
 export function PageBodyEditor({ onEditor }: { onEditor: (editor: PageEditor | null) => void }) {
   const { page, collab, editable, editor } = usePageScreen();
-  const services = useDocServices(page.id);
+  const services = useDocServices(page.id, editable);
   const ready = bodyReady(collab);
   useArrowUpToTitle(editor);
   const stored = page.snapshot as RichTextDoc | null;

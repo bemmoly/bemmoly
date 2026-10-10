@@ -25,6 +25,8 @@ export interface EntitySearchItem {
   label: string;
   /** A second line, such as the title and status. */
   description?: string;
+  /** Where the record lives: what a document links selected words to. */
+  href?: string;
 }
 
 export type EntitySearch = (
