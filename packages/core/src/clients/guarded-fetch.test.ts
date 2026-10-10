@@ -31,9 +31,7 @@ describe('the fetch model providers call through', () => {
     await expect(guarded('http://169.254.169.254/v1/models')).rejects.toBeInstanceOf(
       PrivateAddressError,
     );
-    await expect(guarded('http://[fe80::1]/v1/models')).rejects.toBeInstanceOf(
-      PrivateAddressError,
-    );
+    await expect(guarded('http://[fe80::1]/v1/models')).rejects.toBeInstanceOf(PrivateAddressError);
     expect(base).toHaveBeenCalledTimes(2);
   });
 
