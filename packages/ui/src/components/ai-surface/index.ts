@@ -23,3 +23,9 @@ export {
   type AiAnswerSentence,
   type AiAnswerSourceItem,
 } from './ai-answer.tsx';
+export {
+  AiInsightBody,
+  type AiCitationLink,
+  type AiCitedPoint,
+  type AiInsightBodyProps,
+} from './ai-insight-body.tsx';

@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Button } from '../button/button.tsx';
 import { AiAnswer, type AiAnswerSourceItem } from './ai-answer.tsx';
 import { AiBrief, AiInsightBar, AiSuggestion, AiSummary } from './ai-cards.tsx';
+import { AiInsightBody } from './ai-insight-body.tsx';
 import { AiActionButton, AiAskButton, AiNotUseful } from './ai-parts.tsx';
 
 const meta = { title: 'Components/AI surfaces', component: AiSummary } satisfies Meta<
@@ -188,6 +189,47 @@ export const Answer: Story = {
         sources={answerSources}
         blocks={[{ kind: 'paragraph', sentences: [s('If error rates pass 0.5% after', [])] }]}
       />
+    </div>
+  ),
+};
+
+const citations = [
+  { id: 'c1', label: 'PLT-204', location: 'description', href: '#' },
+  { id: 'c2', label: "Jonas M.'s comment", location: 'Thursday', href: '#' },
+  { id: 'c3', label: 'PLT-211', location: 'blocked by this issue', href: '#' },
+];
+
+/** An insight card's body in each state: cited points, an unsourced claim, loading, failed. */
+export const InsightStates: Story = {
+  args: { children: null },
+  render: () => (
+    <div className="flex w-120 flex-col gap-4">
+      <AiSummary
+        variant="page"
+        source="by AI · from 14 comments, 1 doc"
+        actions={<AiNotUseful size="md" />}
+      >
+        <AiInsightBody
+          state="ready"
+          citations={citations}
+          points={[
+            { text: 'The only open item is review of PR #4821, waiting on Jonas.', cites: ['c2'] },
+            { text: 'PLT-211 is blocked on this merge.', cites: ['c1', 'c3'] },
+            { text: 'It should merge by Friday.', cites: [] },
+          ]}
+        />
+      </AiSummary>
+      <AiSummary variant="page" source="by AI">
+        <AiInsightBody state="loading" />
+      </AiSummary>
+      <AiSummary variant="page" title="TL;DR" source="by AI">
+        <AiInsightBody
+          state="failed"
+          failedLabel="Couldn’t get a TL;DR"
+          failedDetail="The provider returned a rate limit; try again in 30 seconds."
+          onRetry={noop}
+        />
+      </AiSummary>
     </div>
   ),
 };

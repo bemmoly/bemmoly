@@ -7,12 +7,12 @@ AI is optional, honest and visibly AI. Lilac marks it, and nothing appears while
 1. **Lilac means AI, and only AI.** The logo's `#9A85EA` (`brand-3`) is the AI colour. In UI it
    is the `ai` tokens:
 
-   | Token    | Use                                   |
-   | -------- | ------------------------------------- |
-   | `ai`     | Marks and fills: the AI dot, icons    |
-   | `ai-600` | AI text (4.5:1 on `ai-50`)            |
-   | `ai-100` | Borders of AI cards                   |
-   | `ai-50`  | Backgrounds of AI cards               |
+   | Token    | Use                                |
+   | -------- | ---------------------------------- |
+   | `ai`     | Marks and fills: the AI dot, icons |
+   | `ai-600` | AI text (4.5:1 on `ai-50`)         |
+   | `ai-100` | Borders of AI cards                |
+   | `ai-50`  | Backgrounds of AI cards            |
 
    Never use them for a brand flourish, a "new" badge, a module colour or an epic. Epics are
    `type-epic` violet `#6E56CF`, a different hue on purpose.
@@ -28,7 +28,8 @@ AI is optional, honest and visibly AI. Lilac marks it, and nothing appears while
 3. **Use the AI components.** From `@bemmoly/ui` · Story: Components/AI surfaces
    ([`ai-surface.stories.tsx`](../../../packages/ui/src/components/ai-surface/ai-surface.stories.tsx)):
    `AiSummary` (a TL;DR card), `AiInsightBar`, `AiBrief`, `AiSuggestion` (a proposed change with
-   Apply), `AiAnswer` (a cited answer), `AiActionButton`, `AiAskButton` (Ask AI, with its shortcut), `AiDot`, `AiNotUseful`.
+   Apply), `AiAnswer` (a cited answer), `AiActionButton`, `AiAskButton` (Ask AI, with its shortcut), `AiDot`, `AiNotUseful`,
+   and `AiInsightBody` (what goes inside a card: cited claims, the skeleton, the failed state).
    Toasts about AI output use `tone="ai"`. Inside `packages/ui`, the AI tokens are allowed only in
    `ai-surface/`, `command-palette/` and `toast/` (`rules.test.ts` fails anything else).
 
@@ -47,10 +48,20 @@ AI is optional, honest and visibly AI. Lilac marks it, and nothing appears while
    sentence without one carries a neutral "Unsourced" tag, and the cited places are listed
    under it once it finishes. When nothing in the workspace answers, say so plainly; never
    guess.
+8. **Cards cite too.** A summary, TL;DR, pulse or brief uses `AiInsightBody`: each claim
+   is followed by chips naming its sources (the issue, comment, section or page it rests on),
+   in the same chip style as `AiAnswer` but labelled, since a card has no sources list. A claim
+   the model could not source keeps the "Unsourced" tag; it is never hidden. Every card's
+   source line starts "by AI" and says what it read ("by AI · from 14 comments, 1 doc").
 
 ## Where AI appears today
 
 - The palette: the AI line and the plan preview (`CommandPlan`), in lilac, only with AI on.
+- Home: the morning brief (`AiBrief`) under the greeting.
+- Work: the issue summary (`AiSummary`, page and panel) on the issue page and slide-over, and the
+  sprint risk bar (`AiInsightBar`) on the Board and Backlog.
+- Docs: the TL;DR card, the About panel's consistency findings, and "Needs attention" rows for
+  pages whose consistency check found a contradiction (with the AI dot).
 - Docs (with #77): the TL;DR card, a comment's suggested fix with Apply fix, the / menu's AI
   group, Ask AI in the selection bubble.
 - Docs home: "Ask your docs", the question box with a streamed `AiAnswer` under it, only with
