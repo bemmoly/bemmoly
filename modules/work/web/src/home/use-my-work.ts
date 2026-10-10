@@ -51,6 +51,12 @@ export interface Mention {
  * The person's issue lists in one request, the mentions from their inbox, and which tab is
  * open. `limit` is per list: Home asks for six, My issues for the most the server gives.
  */
+/** An issue as Work names it in a notification ("issue"), or any other Work record. */
+const isWorkTarget = (target: { kind: string; url: string | null }) =>
+  target.kind === 'issue' ||
+  target.kind.startsWith('work.') ||
+  Boolean(target.url?.startsWith('/work/'));
+
 export function useMyWork(limit = 6) {
   const [tab, setTab] = useState<MyWorkTab>('assigned');
   const query = useQuery({
@@ -63,7 +69,7 @@ export function useMyWork(limit = 6) {
     enabled: tab === 'mentions',
   });
   const mentions: Mention[] = (inbox.data?.items ?? [])
-    .filter((item) => item.kind === 'mention' && item.target.kind.startsWith('work.'))
+    .filter((item) => item.kind === 'mention' && isWorkTarget(item.target))
     .map((item) => ({
       id: item.id,
       key: item.target.label,

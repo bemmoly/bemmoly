@@ -55,7 +55,8 @@ const mention = {
   summary: 'Priya N. mentioned you in PLT-218',
   actors: [{ id: null, name: 'Priya N.' }],
   actorCount: 1,
-  target: { kind: 'work.issue', id: 'x', label: 'PLT-218', url: '/work/issue/PLT-218' },
+  // As Work's server sends it: the issue's id, its key as the label.
+  target: { kind: 'issue', id: 'x', label: 'PLT-218', url: '/work/issue/PLT-218' },
   body: 'can you confirm the deploy hook?',
   read: false,
   done: false,
@@ -99,6 +100,10 @@ describe('My issues on Home', () => {
     expect(groups).toEqual(['In progress', 'To do']);
     const tabs = screen.getAllByRole('radio').map((tab) => tab.textContent);
     expect(tabs).toEqual(['Assigned · 2', 'Created · 0', 'Watching · 3', 'Mentions']);
+    expect(JSON.parse(sessionStorage.getItem('bemmoly.work.issue-list') ?? 'null')).toEqual({
+      label: 'My issues · Assigned',
+      keys: ['PLT-12', 'PLT-14'],
+    });
   });
 
   it('says what an empty tab means and lists mentions from the inbox', async () => {

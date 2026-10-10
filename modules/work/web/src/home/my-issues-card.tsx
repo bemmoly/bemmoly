@@ -2,6 +2,7 @@ import { openCreate } from '@bemmoly/core-web';
 import { Button, Kbd, RelativeTime, SegmentedControl, StatusGlyph, statusStage } from '@bemmoly/ui';
 import { Icon } from '@bemmoly/ui/icons';
 import { linkTo, workPaths } from '../hooks/issue-navigation.ts';
+import { useRememberIssueList } from '../issue/issue-list-context.ts';
 import { MyWorkRow, MyWorkRowSkeleton, ROW } from './my-work-row.tsx';
 import { MY_WORK_TABS, useMyWork, type Mention, type MyWorkTab } from './use-my-work.ts';
 
@@ -46,6 +47,16 @@ function MentionRow({ mention }: { mention: Mention }) {
 export function MyIssuesCard({ limit, full = false }: { limit: number; full?: boolean }) {
   const work = useMyWork(limit);
   const total = (tab: MyWorkTab) => (tab === 'mentions' ? undefined : work.lists?.[tab].total);
+  const shownMentions = work.mentions.slice(0, full ? 50 : limit);
+  // The issue page's j and k walk this list, in the order it is drawn, for the tab on show.
+  const keys =
+    work.tab === 'mentions'
+      ? shownMentions.flatMap((mention) => (mention.key ? [mention.key] : []))
+      : work.groups.flatMap((group) => group.issues.map((issue) => issue.key));
+  const tabLabel = MY_WORK_TABS.find((tab) => tab.value === work.tab)?.label ?? '';
+  useRememberIssueList(
+    work.isPending ? null : { label: `My issues · ${tabLabel}`, keys: [...new Set(keys)] },
+  );
   return (
     <section aria-label="My issues" className="overflow-hidden rounded-card bg-card shadow-e1">
       <div className="flex flex-wrap items-center gap-2.5 border-b border-line px-3.5 py-2">
@@ -83,9 +94,7 @@ export function MyIssuesCard({ limit, full = false }: { limit: number; full?: bo
         </div>
       ) : work.tab === 'mentions' ? (
         work.mentions.length > 0 ? (
-          work.mentions
-            .slice(0, full ? 50 : limit)
-            .map((mention) => <MentionRow key={mention.id} mention={mention} />)
+          shownMentions.map((mention) => <MentionRow key={mention.id} mention={mention} />)
         ) : (
           <p className="m-0 px-4 py-8 text-center text-13 text-tx-3">{EMPTY.mentions}</p>
         )
