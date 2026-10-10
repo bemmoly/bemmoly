@@ -16,6 +16,7 @@ import { useLocalSync } from '../collab/use-local-sync.ts';
 import { useDocStats } from './body/doc-stats.ts';
 import { PageBanner } from './body/page-banner.tsx';
 import { EmptyPageTemplates } from '../create/empty-page-templates.tsx';
+import { usePageCreateKeys } from '../create/use-page-create-keys.ts';
 import { ExportDialogHost } from '../transfer/export-dialog.tsx';
 import { PageBodyEditor } from './body/page-body-editor.tsx';
 import { PageHeading } from './body/page-heading.tsx';
@@ -122,6 +123,7 @@ export function PageFrame({ page }: { page: PageDetail }) {
   const panelDocked = docked && margin !== null && margin !== 'outline';
   useHashLanding(editor, outline);
   const { space } = useSpaceActions();
+  usePageCreateKeys(page, space.name, editable && !history);
   useRecordRecent({
     id: `docs.page:${page.id}`,
     title: page.title || 'Untitled',

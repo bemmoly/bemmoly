@@ -20,6 +20,7 @@ import { HomeLoading } from './home-loading.tsx';
 import { JumpBackIn } from './jump-back-in.tsx';
 import { PageLenses, type Lens } from './page-lenses.tsx';
 import { NeedsYou, SpacesList } from './side-panels.tsx';
+import { useDocsShortcutHelp } from '../shared/shortcut-help.ts';
 
 type Dialog = { kind: 'page' } | { kind: 'space' } | { kind: 'import' } | null;
 
@@ -61,6 +62,7 @@ export default function DocsHomeScreen(props: DocsScreenProps) {
     ? () => newPage.create({ spaceId: home.id, parentId: null, placeName: home.name })
     : null;
   useNewPageKey(open ? null : createHere);
+  useDocsShortcutHelp('home');
 
   const close = () => {
     setDialog(null);
