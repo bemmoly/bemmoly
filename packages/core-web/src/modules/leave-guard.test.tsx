@@ -45,7 +45,9 @@ describe('navigateInApp', () => {
     const navigator = vi.fn();
     setShellNavigator(navigator);
     navigateInApp('/work/board');
-    expect(navigator).toHaveBeenCalledWith('/work/board');
+    expect(navigator).toHaveBeenCalledWith('/work/board', {});
+    navigateInApp('/work/board/PLT', { replace: true });
+    expect(navigator).toHaveBeenLastCalledWith('/work/board/PLT', { replace: true });
   });
 
   it('pushes a history entry and a popstate without one', () => {

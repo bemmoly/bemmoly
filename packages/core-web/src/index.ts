@@ -53,6 +53,7 @@ export {
   type HomeSectionLoader,
   type HomeSectionProps,
   type HomeSectionRegistry,
+  type HomeSlot,
 } from './modules/home-sections.tsx';
 export { ModuleOutlet } from './modules/module-outlet.tsx';
 export {
@@ -74,3 +75,72 @@ export {
   type SettingsRequirement,
   type SettingsViewer,
 } from './settings/sections.ts';
+export { AppFrame, NARROW, PHONE, type AppFrameProps } from './shell/app-frame.tsx';
+export { BottomBar, type BottomBarItem } from './shell/bottom-bar.tsx';
+export {
+  CREATE_PARAM,
+  createDialogRegistry,
+  openCreate,
+  withCreate,
+  type CreateDialogRegistry,
+  type CreateOverlayProps,
+  type ModuleCreateDialogs,
+  type ModuleCreateLoader,
+} from './shell/create.tsx';
+export {
+  FrameContext,
+  isActivePath,
+  useFrame,
+  useFrameLink,
+  type FrameState,
+  type SidebarMode,
+} from './shell/frame-context.ts';
+export { typingInField, useGlobalKeys, type KeyBindings } from './shell/keys.ts';
+export {
+  createSidebarRegistry,
+  inSidebarOrder,
+  type ModuleSidebarLoader,
+  type ModuleSidebarProps,
+  type SidebarRegistry,
+} from './shell/module-sidebars.ts';
+export { knownIcon, moduleName, ModuleTile } from './shell/module-tile.tsx';
+export {
+  HeaderActions,
+  PageHeader,
+  useHeaderTrail,
+  type PageCrumb,
+  type PageHeaderProps,
+  type PageTab,
+} from './shell/page-header.tsx';
+export { PageLayout, useDocumentTitle, type PageLayoutProps } from './shell/page-layout.tsx';
+export {
+  readPreference,
+  setPreferenceOwner,
+  usePreference,
+  writePreference,
+} from './shell/person-store.ts';
+export {
+  forgetRecent,
+  recordRecent,
+  useRecents,
+  useRecordRecent,
+  type RecentItem,
+  type RecentLook,
+} from './shell/recents.ts';
+export {
+  useCurrentScreenActions,
+  useScreenActions,
+  useShortcutGroups,
+  useShortcutHelp,
+  type ScreenAction,
+  type ShortcutGroup,
+} from './shell/screen-actions.ts';
+export {
+  RAIL_BUTTON,
+  ROW,
+  SidebarHeading,
+  SidebarRow,
+  type SidebarHeadingProps,
+  type SidebarRowProps,
+} from './shell/sidebar/sidebar-row.tsx';
+export { SwitcherMenu, type SwitcherItem, type SwitcherMenuProps } from './shell/switcher-menu.tsx';

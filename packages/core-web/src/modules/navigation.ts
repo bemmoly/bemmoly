@@ -5,7 +5,8 @@
  * the history entry is the router's own.
  */
 
-export type ShellNavigator = (path: string) => void;
+/** replace: swap the current history entry instead of adding one (a redirect, closing a dialog). */
+export type ShellNavigator = (path: string, options?: { replace?: boolean }) => void;
 
 let shellNavigator: ShellNavigator | null = null;
 
@@ -18,11 +19,12 @@ export function setShellNavigator(next: ShellNavigator | null): void {
  * Moves to `path` without a reload. With no shell router (unit tests,
  * Storybook) it pushes a history entry and the popstate a router listens for.
  */
-export function navigateInApp(path: string): void {
+export function navigateInApp(path: string, options: { replace?: boolean } = {}): void {
   if (shellNavigator) {
-    shellNavigator(path);
+    shellNavigator(path, options);
     return;
   }
-  window.history.pushState(window.history.state, '', path);
+  if (options.replace) window.history.replaceState(window.history.state, '', path);
+  else window.history.pushState(window.history.state, '', path);
   window.dispatchEvent(new PopStateEvent('popstate', { state: window.history.state }));
 }
