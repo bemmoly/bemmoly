@@ -35,9 +35,10 @@ function useFocusOnRequest(ref: RefObject<HTMLElement | null>) {
 /**
  * The right margin docked beside the column, inside the page's scroll, so the outline can
  * stick and comment threads stay level with their passages. The page column moves left to
- * make room, so the margin never covers text.
+ * make room, so the margin never covers text. `float` hangs the bare outline off the
+ * column's right edge, so the column stays centred on the page.
  */
-export function DockedMargin() {
+export function DockedMargin({ float = false }: { float?: boolean }) {
   const slotProps = useSlotProps();
   const closeMargin = usePageChrome((state) => state.closeMargin);
   const ref = useRef<HTMLElement>(null);
@@ -54,7 +55,9 @@ export function DockedMargin() {
         'shrink-0',
         FADE_WHILE_TYPING,
         slot.bare
-          ? 'w-56 self-start'
+          ? float
+            ? 'absolute inset-y-0 left-full w-48 pl-4'
+            : 'w-56 self-start'
           : 'w-85 self-stretch border-l border-line bg-sunken motion-safe:animate-fade-in',
       )}
     >

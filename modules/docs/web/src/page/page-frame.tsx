@@ -47,6 +47,9 @@ import { usePageShortcuts } from './use-page-shortcuts.ts';
  */
 const DOCK_FROM = 1104;
 
+/** From here the column is centred on the page and the bare outline floats beside it. */
+const CENTRE_FROM = 1164;
+
 function useWiderThan(ref: RefObject<HTMLElement | null>, width: number): boolean {
   const [wide, setWide] = useState(false);
   // Measured before the first paint, so the rail is there (or not) from the start.
@@ -114,6 +117,7 @@ export function PageFrame({ page }: { page: PageDetail }) {
   const outline = useOutline(editor);
   const { active: activeHeading, pin: pinHeading } = useActiveHeading(scroller, editor, outline);
   const docked = useWiderThan(scroller, DOCK_FROM);
+  const roomy = useWiderThan(scroller, CENTRE_FROM);
   const mode = usePageChrome((state) => state.mode);
   const history = mode === 'history' && !page.deletedAt;
   const stats = useDocStats(editor, page.wordCount);
@@ -182,12 +186,13 @@ export function PageFrame({ page }: { page: PageDetail }) {
           >
             <PageBanner />
             <PageCoverBand />
-            {/* A panel margin sits at the right edge with the column centred in what is left; the
-                bare outline sits right beside the column. */}
+            {/* A panel margin sits at the right edge with the column centred in what is left. The
+                bare outline floats beside a centred column where there is room (the review's
+                page), and sits in the flow right beside it where there is not. */}
             <div className={cx('flex min-h-full', panelDocked ? '' : 'justify-center')}>
               <div
                 className={cx(
-                  'flex min-w-0 justify-center',
+                  'relative flex min-w-0 justify-center',
                   panelDocked ? 'flex-1' : 'max-w-[780px] flex-1',
                 )}
               >
@@ -203,8 +208,9 @@ export function PageFrame({ page }: { page: PageDetail }) {
                   <ExportDialogHost />
                   <Layers />
                 </article>
+                {docked && roomy && !panelDocked && <DockedMargin float />}
               </div>
-              {docked && <DockedMargin />}
+              {docked && (panelDocked || !roomy) && <DockedMargin />}
             </div>
           </div>
           {history && <HistoryBody />}
