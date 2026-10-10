@@ -1,7 +1,7 @@
 ---
-'@bemmoly/module-docs': minor
-'@bemmoly/core-web': minor
-'@bemmoly/ui': minor
+'@bemmoly/module-docs': patch
+'@bemmoly/core-web': patch
+'@bemmoly/ui': patch
 ---
 
 Docs now lives in the same frame as the rest of Bemmoly. Spaces are rows in the sidebar's Docs
