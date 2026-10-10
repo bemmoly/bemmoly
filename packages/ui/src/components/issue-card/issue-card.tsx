@@ -1,4 +1,4 @@
-import type { KeyboardEvent, ReactNode } from 'react';
+import type { KeyboardEvent, MouseEvent, ReactNode } from 'react';
 import { Icon } from '../../icons/icon.tsx';
 import { cx } from '../../lib/cx.ts';
 import { focusRing } from '../../lib/focus.ts';
@@ -26,13 +26,21 @@ export interface IssueCardProps {
   subtasks?: { done: number; total: number };
   /** Open in the peek: the accent ring. */
   selected?: boolean;
-  /** Part of a multi-selection: the accent tint and ring. */
+  /** Part of a multi-selection: the accent tint and ring, and the box ticked. */
   checked?: boolean;
   /**
    * An edit to it is on its way to the server: it dims after a beat, so an answer that comes
    * quickly shows nothing, and comes back the moment the answer lands.
    */
   pending?: boolean;
+  /**
+   * Shows the selection box over the type tile on hover and keyboard focus (always while
+   * anything is checked, and beside the tile on touch). It gets the click, so the handler can
+   * read Shift and Cmd / Ctrl.
+   */
+  onCheck?: (event: MouseEvent<HTMLElement>) => void;
+  /** Whether any card on the screen is checked; the boxes then stay visible. */
+  selecting?: boolean;
   /** A 3px left border from a colour rule; see cardStripe. */
   stripeClassName?: string;
   /**
@@ -44,6 +52,56 @@ export interface IssueCardProps {
   interactive?: boolean;
   onSelect?: () => void;
   className?: string;
+}
+
+/** Hover tools and the selection box: on hover, on focus inside the card or on its wrapper. */
+const REVEAL =
+  'opacity-0 group-hover/card:opacity-100 group-focus-within/card:opacity-100 in-focus-visible:opacity-100';
+
+interface SelectBoxProps {
+  issueKey: string;
+  checked: boolean;
+  visible: boolean;
+  onCheck: (event: MouseEvent<HTMLElement>) => void;
+}
+
+/**
+ * The selection box, laid over the type tile so showing it never moves the card's contents. Its
+ * hit area reaches 32px (44px on touch) past the 16px box. Touch has no hover, so there it sits
+ * beside the tile, always shown.
+ */
+function SelectBox({ issueKey, checked, visible, onCheck }: SelectBoxProps) {
+  return (
+    <button
+      type="button"
+      role="checkbox"
+      aria-checked={checked}
+      aria-label={`Select ${issueKey}`}
+      tabIndex={-1}
+      draggable={false}
+      onClick={(event) => {
+        event.stopPropagation();
+        onCheck(event);
+      }}
+      onMouseDown={(event) => {
+        // Shift-click would otherwise select the text between this card and the last one.
+        if (event.shiftKey) event.preventDefault();
+      }}
+      onPointerDown={(event) => event.stopPropagation()}
+      className={cx(
+        'absolute -top-px -left-px z-1 grid size-4 cursor-pointer place-items-center rounded-xs border-[1.5px] p-0',
+        'before:absolute before:-inset-2 pointer-coarse:relative pointer-coarse:top-0 pointer-coarse:left-0 pointer-coarse:before:-inset-3.5',
+        checked
+          ? 'border-acc-fill bg-acc-fill text-on-acc'
+          : 'border-tx-3 bg-card text-transparent',
+        !visible && cx(REVEAL, 'pointer-coarse:opacity-100'),
+        'motion-safe:transition-opacity',
+        focusRing,
+      )}
+    >
+      <Icon name="check" size={10} />
+    </button>
+  );
 }
 
 /**
@@ -66,6 +124,8 @@ export function IssueCard({
   selected = false,
   checked = false,
   pending = false,
+  onCheck,
+  selecting = false,
   stripeClassName,
   tools,
   onSelect,
@@ -88,9 +148,9 @@ export function IssueCard({
       onClick={onSelect}
       onKeyDown={onSelect ? onKeyDown : undefined}
       className={cx(
-        'group/card relative flex flex-col gap-2 rounded-card bg-card px-2.75 pt-2.5 pb-2.25 text-13 text-tx',
+        'group/card relative flex flex-col gap-2 rounded-card px-2.75 pt-2.5 pb-2.25 text-13 text-tx',
         'motion-safe:transition-[box-shadow,background-color,opacity]',
-        checked ? 'bg-acc-50 shadow-e1 ring-1 ring-acc-100' : 'shadow-e1',
+        checked ? 'bg-acc-50 shadow-e1 ring-1 ring-acc-100' : 'bg-card shadow-e1',
         pending && 'opacity-60 motion-safe:delay-(--duration-base)',
         selected && 'ring-2 ring-acc',
         interactive && 'hover:shadow-e1h',
@@ -109,7 +169,8 @@ export function IssueCard({
         <div
           className={cx(
             'absolute top-1.5 right-1.5 z-1 flex gap-0.5 rounded-panel bg-card p-0.5 text-tx-2 shadow-e1',
-            'opacity-0 group-focus-within/card:opacity-100 group-hover/card:opacity-100 has-[[aria-expanded=true]]:opacity-100',
+            REVEAL,
+            'has-[[aria-expanded=true]]:opacity-100',
             'motion-safe:transition-opacity pointer-coarse:opacity-100',
           )}
         >
@@ -127,7 +188,17 @@ export function IssueCard({
         </div>
       )}
       <div className="flex items-center gap-1.5 text-tx-3">
-        <TypeGlyph type={type} />
+        <span className="relative flex shrink-0 items-center gap-1.5">
+          {onCheck && (
+            <SelectBox
+              issueKey={issueKey}
+              checked={checked}
+              visible={checked || selecting}
+              onCheck={onCheck}
+            />
+          )}
+          <TypeGlyph type={type} />
+        </span>
         <span className="font-mono text-12 tracking-[-0.01em]">{issueKey}</span>
         {doc && (
           <span className="flex items-center gap-0.75 text-11 text-acc">
