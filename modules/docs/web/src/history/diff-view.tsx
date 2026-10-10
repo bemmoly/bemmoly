@@ -1,0 +1,144 @@
+import { proseClass } from '@bemmoly/editor';
+import type { BlockDiff, DocDiff } from '@bemmoly/module-docs/shared';
+import { EmptyState } from '@bemmoly/ui';
+import { useId, useState } from 'react';
+import { cx } from '../comments/cx.ts';
+import { attrSummary, DiffBlock } from './diff-blocks.tsx';
+import { blockName } from './diff-node.tsx';
+
+/*
+ * The compare's reading column: the page as it is in the newer version, with every change
+ * marked where it happened. Top-level blocks get a 3px gutter bar in their op's colour;
+ * nested ones (list items, rows, cells) are tinted in place. Long unchanged stretches fold
+ * to one line, keeping a block of context on each side.
+ */
+
+/** Unchanged blocks kept on each side of a change before the rest fold away. */
+const CONTEXT = 1;
+/** Fold only stretches longer than this. */
+const FOLD_OVER = 3;
+
+/** Colours by op, on every element that carries one, at any depth. */
+const OP_STYLES = cx(
+  '[&_[data-op=insert]]:bg-ok-bg/70',
+  '[&_[data-op=delete]]:bg-danger/8 [&_[data-op=delete]]:text-tx4 [&_[data-op=delete]]:line-through [&_[data-op=delete]]:decoration-danger/50',
+  '[&_[data-op=move]]:bg-violet-bg/40',
+  '[&_[data-op=move_source]]:rounded-xs [&_[data-op=move_source]]:border [&_[data-op=move_source]]:border-dashed [&_[data-op=move_source]]:border-violet-fg/40 [&_[data-op=move_source]]:px-2 [&_[data-op=move_source]]:py-1',
+  '[&_td[data-op=change]]:bg-amber-bg/60 [&_th[data-op=change]]:bg-amber-bg/60',
+  '[&_[data-flash]]:ring-2 [&_[data-flash]]:ring-ac [&_[data-flash]]:ring-offset-2 [&_[data-flash]]:ring-offset-sf',
+);
+
+const BARS: Record<BlockDiff['op'], string> = {
+  equal: 'before:bg-transparent',
+  insert: 'before:bg-ok',
+  delete: 'before:bg-danger',
+  change: 'before:bg-caution',
+  move: 'before:bg-violet',
+  move_source: 'before:bg-violet/40',
+};
+
+const OP_WORDS: Record<BlockDiff['op'], string> = {
+  equal: 'Unchanged',
+  insert: 'Added',
+  delete: 'Removed',
+  change: 'Edited',
+  move: 'Moved',
+  move_source: 'Moved away',
+};
+
+type Row =
+  | { kind: 'block'; block: BlockDiff; index: number }
+  | { kind: 'fold'; blocks: { block: BlockDiff; index: number }[] };
+
+/** Blocks in order, with long unchanged stretches folded. */
+export function foldRows(blocks: readonly BlockDiff[]): Row[] {
+  const rows: Row[] = [];
+  let run: { block: BlockDiff; index: number }[] = [];
+  const flush = (atStart: boolean, atEnd: boolean) => {
+    const keepHead = atStart ? 0 : CONTEXT;
+    const keepTail = atEnd ? 0 : CONTEXT;
+    const folded = run.length - keepHead - keepTail;
+    if (run.length > FOLD_OVER && folded > 1) {
+      run.slice(0, keepHead).forEach((entry) => rows.push({ kind: 'block', ...entry }));
+      rows.push({ kind: 'fold', blocks: run.slice(keepHead, run.length - keepTail) });
+      run.slice(run.length - keepTail).forEach((entry) => rows.push({ kind: 'block', ...entry }));
+    } else run.forEach((entry) => rows.push({ kind: 'block', ...entry }));
+    run = [];
+  };
+  blocks.forEach((block, index) => {
+    if (block.op === 'equal') {
+      run.push({ block, index });
+      return;
+    }
+    flush(rows.length === 0, false);
+    rows.push({ kind: 'block', block, index });
+  });
+  flush(rows.length === 0, true);
+  return rows;
+}
+
+function TopBlock({ block, prefix }: { block: BlockDiff; prefix: string }) {
+  const attrs = attrSummary(block);
+  return (
+    <div
+      data-diff-row={block.op}
+      className={cx(
+        'relative pl-4 before:absolute before:inset-y-0.5 before:left-0 before:w-0.75 before:rounded-full',
+        BARS[block.op],
+      )}
+    >
+      {block.op !== 'equal' && (
+        <span className="sr-only">
+          {OP_WORDS[block.op]} {blockName(block.type).toLowerCase()}:
+        </span>
+      )}
+      {attrs && (
+        <span className="mb-1 inline-flex rounded-chip bg-amber-bg px-1.5 py-px font-sans text-10h font-medium text-amber-fg">
+          {blockName(block.type)} · {attrs}
+        </span>
+      )}
+      <DiffBlock block={block} prefix={prefix} path="0" />
+    </div>
+  );
+}
+
+export function DiffView({ diff, className }: { diff: DocDiff; className?: string }) {
+  const prefix = useId().replace(/:/g, '');
+  const [open, setOpen] = useState<ReadonlySet<number>>(new Set());
+  const { inserted, deleted, changed, moved } = diff.stats;
+  if (diff.blocks.length === 0 || inserted + deleted + changed + moved === 0) {
+    return (
+      <EmptyState
+        title="No changes"
+        description="These two versions read the same, word for word."
+        className={className}
+      />
+    );
+  }
+  const rows = foldRows(diff.blocks);
+  return (
+    <div className={cx(proseClass('page'), OP_STYLES, 'gap-2.5! text-tx-body', className)}>
+      {rows.map((row, index) => {
+        if (row.kind === 'block')
+          return <TopBlock key={row.index} block={row.block} prefix={prefix} />;
+        const first = row.blocks[0]!.index;
+        if (open.has(first)) {
+          return row.blocks.map((entry) => (
+            <TopBlock key={entry.index} block={entry.block} prefix={prefix} />
+          ));
+        }
+        return (
+          <button
+            key={`fold-${index}`}
+            type="button"
+            onClick={() => setOpen(new Set([...open, first]))}
+            className="flex cursor-pointer items-center gap-2 rounded-sm border border-dashed border-br3 bg-sf2 px-3 py-1.5 font-sans text-12 text-tx4 hover:border-ac-br hover:text-ac focus-visible:outline-2 focus-visible:outline-ac"
+          >
+            <span aria-hidden>⋯</span>
+            {row.blocks.length} unchanged {row.blocks.length === 1 ? 'block' : 'blocks'}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
