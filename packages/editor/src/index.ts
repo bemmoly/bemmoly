@@ -28,7 +28,7 @@ export {
 } from './doc/services.ts';
 export type { EditorParts, RichTextEditorProps } from './editor-props.ts';
 export { DocEditor, preloadDocEditor } from './lazy-doc.tsx';
-export { preloadEditor, RichTextEditor } from './lazy.tsx';
+export { loadEditor, preloadEditor, RichTextEditor } from './lazy.tsx';
 export { proseClass } from './prose.ts';
 export type {
   EditorSources,
