@@ -1,6 +1,7 @@
 import type { FastifyPluginAsync } from 'fastify';
 import type { DocsControllers } from '../controllers/index.ts';
 import { libraryRoutes } from './library.routes.ts';
+import { commentsRoutes } from './comments.routes.ts';
 import { linksRoutes } from './links.routes.ts';
 import { pagesRoutes } from './pages.routes.ts';
 import { revisionsRoutes } from './revisions.routes.ts';
@@ -21,5 +22,6 @@ export function docsRoutes(controllers: DocsControllers): FastifyPluginAsync {
     await app.register(searchRoutes(controllers.search));
     await app.register(revisionsRoutes(controllers.revisions));
     await app.register(linksRoutes(controllers.links));
+    await app.register(commentsRoutes(controllers.comments));
   };
 }
