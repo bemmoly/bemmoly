@@ -44,7 +44,7 @@ export function CommentItem({
           {comment.editedAt ? ' · edited' : ''}
         </time>
         {mine && !editing && (
-          <span className="ml-auto opacity-0 group-focus-within/comment:opacity-100 group-hover/comment:opacity-100 motion-safe:transition-opacity">
+          <span className="ml-auto opacity-0 group-focus-within/comment:opacity-100 group-hover/comment:opacity-100 has-[[aria-expanded=true]]:opacity-100 motion-safe:transition-opacity">
             <Menu
               align="end"
               trigger={(props) => (
