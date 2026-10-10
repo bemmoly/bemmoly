@@ -42,6 +42,7 @@ export function SpaceOverview() {
         <HeaderActions>
           <Button
             variant="ghost"
+            className="max-sm:hidden!"
             icon={<Icon name="upload" size={14} />}
             onClick={() => setDialog('import')}
           >
@@ -50,7 +51,7 @@ export function SpaceOverview() {
           <Button
             variant="primary"
             icon={<Icon name="plus" size={15} />}
-            iconEnd={<Kbd keys="N" />}
+            iconEnd={<Kbd keys="N" className="max-sm:hidden!" />}
             onClick={() => createPage(null)}
           >
             New page
