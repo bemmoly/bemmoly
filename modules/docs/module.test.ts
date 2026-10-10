@@ -69,6 +69,14 @@ describe('docs module', () => {
       'docs.staleAfterDays',
       'docs.compactThreshold',
     ]);
-    expect(registry.routes().map((route) => route.prefix)).toEqual(['/docs']);
+    // The module's routes and the editor's AI routes, both under /docs.
+    expect(registry.routes().map((route) => route.prefix)).toEqual(['/docs', '/docs']);
+  });
+
+  it('registers the editor’s AI prompt files under its own id', () => {
+    const [loaded] = loadModules({ available: [docs] }).list();
+    const names = loaded?.contributions.aiPromptFiles.map((prompt) => prompt.name) ?? [];
+    expect(names).toEqual(expect.arrayContaining(['docs.autocomplete', 'docs.comment_fix']));
+    expect(names.filter((name) => name.startsWith('docs.write.'))).toHaveLength(10);
   });
 });

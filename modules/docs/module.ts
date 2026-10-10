@@ -1,5 +1,6 @@
 import { defineModule, loadChangelogFolder } from '@bemmoly/core';
 import { DOCS_CAPABILITIES } from './server/src/config/capabilities.ts';
+import { registerEditorAi } from './server/src/config/editor-ai.ts';
 import { defineDocsSettings } from './server/src/config/settings.ts';
 import { createDocsControllers } from './server/src/controllers/index.ts';
 import { compactJob, importJob, purgeTrashJob } from './server/src/config/jobs.ts';
@@ -70,5 +71,6 @@ export default defineModule({
     registerDocsSearch(ctx.search, services.search);
     registerDocsReferences(ctx, services.links);
     ctx.routes.add({ prefix: '/docs', plugin: docsRoutes(createDocsControllers(services)) });
+    registerEditorAi(ctx, services);
   },
 });
