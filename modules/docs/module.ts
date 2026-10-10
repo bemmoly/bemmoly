@@ -43,6 +43,7 @@ export default defineModule({
       jobs: ctx.jobs,
       settings: ctx.settings,
       entities: ctx.entities,
+      links: ctx.links,
       ...(ctx.database ? { database: ctx.database } : {}),
       ...(ctx.audit ? { audit: ctx.audit } : {}),
       ...(ctx.memberships ? { memberships: ctx.memberships } : {}),

@@ -93,13 +93,29 @@ export function createLinksService(deps: DocsServiceDeps) {
       return { items: await pagesLinkingTo(ctx, { kind: 'page', id: pageId }) };
     },
 
-    /** "Referenced in": issues and other records that point at the page. */
+    /**
+     * "Referenced in": records of other modules that point at the page. Edges stored here
+     * come first; then whatever other modules answer through the kernel's reference
+     * sources (Work's issues whose description links the page), each record once.
+     */
     async references(ctx: RequestContext, pageId: string): Promise<PageReferencesResponse> {
       await viewable(ctx, pageId);
       const items: PageReferencesResponse['items'] = [];
+      const seen = new Set<string>();
       for (const row of await foreignSources(sql(), pageId)) {
         const found = await record(ctx, row.source_kind, row.source_id);
-        if (found) items.push({ ...found, linkKind: row.kind });
+        if (!found) continue;
+        seen.add(`${found.kind}:${found.id}`);
+        items.push({ ...found, linkKind: row.kind });
+      }
+      const groups = (await deps.links?.referencesTo(ctx, { kind: 'page', id: pageId })) ?? [];
+      for (const group of groups) {
+        if (group.moduleId === 'docs') continue;
+        for (const item of group.items) {
+          if (seen.has(`${item.kind}:${item.id}`)) continue;
+          seen.add(`${item.kind}:${item.id}`);
+          items.push({ ...toRecord(item), linkKind: 'mention' });
+        }
       }
       return { items };
     },

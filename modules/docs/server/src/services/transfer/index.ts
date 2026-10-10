@@ -34,18 +34,23 @@ export function createTransferService(deps: DocsServiceDeps) {
 
   /** The job's work and the inline path's: write the pages, audit, wake the tree. */
   async function importNow(run: ImportRun, ctx?: RequestContext) {
-    const pages = await runImport(sql(), run, async (tx, actor, after) => {
-      await deps.audit?.record(
-        {
-          actor: ctx?.actor ?? actor,
-          action: 'space.pages_imported',
-          target: { kind: 'space', id: run.spaceId },
-          after,
-          ...(ctx?.requestId ? { meta: { requestId: ctx.requestId } } : {}),
-        },
-        tx,
-      );
-    });
+    const pages = await runImport(
+      sql(),
+      run,
+      async (tx, actor, after) => {
+        await deps.audit?.record(
+          {
+            actor: ctx?.actor ?? actor,
+            action: 'space.pages_imported',
+            target: { kind: 'space', id: run.spaceId },
+            after,
+            ...(ctx?.requestId ? { meta: { requestId: ctx.requestId } } : {}),
+          },
+          tx,
+        );
+      },
+      deps.entities,
+    );
     await publishChange(
       deps,
       DOCS_REALTIME_KINDS.tree,

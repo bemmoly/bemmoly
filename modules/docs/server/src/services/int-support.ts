@@ -57,6 +57,8 @@ export interface HarnessOptions {
   events?: DocsServiceDeps['events'];
   /** What large imports are queued on. */
   jobs?: DocsServiceDeps['jobs'];
+  /** What ctx.links.referencesTo answers, standing in for Work's reference source. */
+  links?: DocsServiceDeps['links'];
 }
 
 export async function startDocsHarness(options: HarnessOptions = {}): Promise<HarnessStart> {
@@ -89,6 +91,7 @@ export async function startDocsHarness(options: HarnessOptions = {}): Promise<Ha
     ...(options.entities ? { entities: options.entities } : {}),
     ...(options.events ? { events: options.events } : {}),
     ...(options.jobs ? { jobs: options.jobs } : {}),
+    ...(options.links ? { links: options.links } : {}),
   });
   const as = (userId: string): RequestContext => ({
     actor: { kind: 'user', id: userId },

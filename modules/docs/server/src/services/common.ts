@@ -6,6 +6,7 @@ import type {
   EntityRegistry,
   EventBus,
   JobRegistry,
+  LinkRegistry,
   RealtimePublisher,
   RequestContext,
   SettingsRegistry,
@@ -29,6 +30,8 @@ export interface DocsServiceDeps {
   settings?: Pick<SettingsRegistry, 'get'>;
   /** Other modules' records (issues) by key or id, without importing those modules. */
   entities?: Pick<EntityRegistry, 'resolve'> & Partial<Pick<EntityRegistry, 'resolveMany' | 'has'>>;
+  /** Other modules' records that point at a page (issues whose description links it). */
+  links?: Pick<LinkRegistry, 'referencesTo'>;
 }
 
 export const DOCS_MODULE = { kind: 'module', moduleId: 'docs' } as const;

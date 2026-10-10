@@ -3,6 +3,7 @@ import { fromConfluence, fromMarkdown, plainText, wordCount } from '@bemmoly/edi
 import { NotFoundError, ProviderError, ValidationError } from '@bemmoly/shared';
 import type { RichText } from '../../../../shared/common.ts';
 import type { ImportBody, ImportedPage } from '../../../../shared/transfer.ts';
+import type { DocsServiceDeps } from '../common.ts';
 import { bodyEdges, rewriteBodyLinks } from '../links/rewrite.ts';
 import { rankAmongSiblings } from '../pages/rank.ts';
 import { planImport, type PlannedPage } from './plan.ts';
@@ -65,6 +66,8 @@ export async function runImport(
   sql: SqlClient,
   run: ImportRun,
   audit: (tx: SqlExecutor, actor: Actor, after: unknown) => Promise<void>,
+  /** Resolves the issue keys an import names, so its embeds link once Work is on. */
+  entities?: DocsServiceDeps['entities'],
 ): Promise<ImportedPage[]> {
   const plan = planImport(run.format, run.files);
   return sql.begin(async (tx) => {
@@ -97,7 +100,12 @@ export async function runImport(
         update pages set snapshot = ${JSON.stringify(snapshot)}::jsonb,
           text = ${plainText(readable)}, word_count = ${wordCount(readable)}
         where id = ${id}`;
-      await rewriteBodyLinks(tx, id, await bodyEdges({}, snapshot, id), run.userId);
+      await rewriteBodyLinks(
+        tx,
+        id,
+        await bodyEdges(entities ? { entities } : {}, snapshot, id),
+        run.userId,
+      );
       imported.push({
         id,
         parentId: page.parentKey ? created.get(page.parentKey)!.id : (root?.id ?? null),

@@ -13,6 +13,7 @@ import {
   type DocsServiceDeps,
 } from '../common.ts';
 import type { PageCollab } from '../collab/index.ts';
+import { bodyEdges, rewriteBodyLinks } from '../links/rewrite.ts';
 import { loadDetail } from './detail.ts';
 import { rankAmongSiblings } from './rank.ts';
 import { pageById, toSummary } from './rows.ts';
@@ -80,6 +81,10 @@ export function createPagesService(deps: DocsServiceDeps, collab: PageCollab) {
         return created.id;
       });
       const row = await pageById(sql, id);
+      if (row.snapshot) {
+        const edges = await bodyEdges(deps, row.snapshot, id);
+        await rewriteBodyLinks(sql, id, edges, userId);
+      }
       await publishChange(deps, DOCS_REALTIME_KINDS.tree, row.space_id, [id]);
       return loadDetail(sql, row, userId);
     },
