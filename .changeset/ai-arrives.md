@@ -17,8 +17,8 @@ model running on your own network, and Bemmoly summarises your work where you re
 questions from your docs with their sources, drafts in the doc editor and plans changes from
 ⌘K that run only when you confirm them. **AI is off until an admin turns it on, and nothing
 changes for a workspace that leaves it off:** no AI surface is drawn, every AI endpoint except
-the Settings › AI switch refuses, and no workspace data is sent anywhere. The one AI task that runs with AI off is a daily download
-of the public model catalog, which carries no workspace data.
+the Settings › AI switch refuses, no AI background job runs, and the server makes no AI-related
+request to anyone.
 
 **Turning it on.** An admin opens Settings › AI and models (or the setup wizard's AI step, which
 also offers "Skip, no AI"), adds a provider from the catalog with its key, or a Local server by
@@ -81,7 +81,9 @@ summaries other people read and out of the answer index.
 **Budget and cost.** Every AI call is logged with its cost in `ai_runs`, and Settings › AI › Usage
 shows this month's spend by role, purpose and model. An optional monthly budget tells admins at
 80% and again at 100%, in the inbox and by email; at 100% it pauses the standard and strong roles
-until the 1st, and the screens that use them say so in plain words. Every prompt can be
+until the 1st, and the screens that use them say so in plain words. A call that is stopped or
+times out still counts, at an estimate of what was sent and received. Settings › System status
+shows this month's spend to people who configure AI. Every prompt can be
 overridden in Settings › AI › Prompts, compared with the default line by line and reset.
 
 Admins should know:
@@ -95,14 +97,22 @@ Admins should know:
   `ai.excludedSpaceIds` and `ai.excludedProjectIds` (none), `ai.perUserOptOutAllowed` (off),
   `ai.monthlyBudgetUsd` (no budget) and `ai.liveCatalog` (on), all edited in Settings › AI. The
   wizard's existing `ai.shareContent` and `ai.allowActions` now take effect.
-- **Environment:** one new optional key, `BEMMOLY_AI_RECORDING`, the absolute path of a JSON file
-  of canned AI replies for end-to-end tests and demos; when set no provider is ever called.
-  `BEMMOLY_ALLOW_PRIVATE_URLS` now also covers a catalog provider's base URL; a Local server may
-  always be on a private network.
-- **Permissions:** asking and drafting plans need "Use AI assist"; running a plan needs "Run AI
-  actions that change data" and "Let AI actions change data" on. Each step a plan makes writes an
+- **Environment:** two new optional keys. `BEMMOLY_RATE_LIMIT_AI_PER_USER` sets how many requests a
+  minute each person may make to each route that calls a model (60 by default; this covers answers,
+  plans, summary refreshes, ghost text, /ai writes, suggested fixes and an admin's provider tests).
+  `BEMMOLY_AI_RECORDING` is the absolute path of a JSON file of canned AI replies for end-to-end
+  tests and demos; when set, no provider is ever called.
+- **Network:** a provider's address is checked on every call, not only when it is saved, and a
+  provider that answers with a redirect is refused. A Local server may use loopback and your private
+  network but never link-local addresses such as cloud metadata; `BEMMOLY_ALLOW_PRIVATE_URLS` also
+  lets a catalog provider's base URL sit on a private network. Server logs for a failed call keep
+  the failure and the provider's words with any echoed key removed, never the prompt.
+- **Permissions:** every AI surface needs "Use AI assist" (roles without it, by default
+  contractors, see no AI); running a plan needs "Run AI actions that change data" and "Let AI
+  actions change data" on. Each step re-checks those permissions and the person's opt-out as it
+  runs, Undo checks the person may still make that change, and a plan expires after an hour. Each step a plan makes writes an
   audit row (`ai.plan.step_run`, actor kind `ai_plan`) that names the plan.
-- **Jobs:** `ai.catalog.refresh` (daily), `ai.insight`, `ai.brief` (hourly), `ai.plan.run`, and
+- **Jobs:** `ai.catalog.refresh` (daily, only while AI is on), `ai.insight`, `ai.brief` (hourly), `ai.plan.run`, and
   `ai.retrieval.index`, `ai.retrieval.reconcile` and `ai.retrieval.backfill` for the answer index.
 - **Notifications:** a new `ai_budget` kind reaches people who configure AI, by email by default.
 
