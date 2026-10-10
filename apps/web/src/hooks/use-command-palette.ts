@@ -15,6 +15,7 @@ import { useThemeStore } from '../store/theme.ts';
 import { useUiStore, type PaletteScope } from '../store/ui.ts';
 import { paletteItems, paletteScopes, recentItem, type PaletteItem } from './command-items.ts';
 import { useDirectory } from './use-directory.ts';
+import { inPlace, usePalettePlace } from './use-palette-place.ts';
 import { useShell } from './use-shell.ts';
 
 /** The Command mock's rule: a sentence that starts with a verb is a request, not a search. */
@@ -28,12 +29,12 @@ const EMPTY_LIMITS: Readonly<Record<string, number>> = { Recent: 5, Actions: 6, 
  * a 404 (a server without the search route) means "nothing" and the
  * directory still answers for people.
  */
-function useServerSearch(q: string) {
+function useServerSearch(q: string, limit: number) {
   return useQuery({
-    queryKey: queryKeys.search(q),
+    queryKey: [...queryKeys.search(q), limit],
     queryFn: async () => {
       try {
-        return (await api.search({ q, limit: 8 })).items;
+        return (await api.search({ q, limit })).items;
       } catch (error) {
         if (isApiError(error) && error.code === 'not_found') return [];
         throw error;
@@ -91,7 +92,9 @@ export function useCommandPalette() {
   const [scope, setScope] = useState<PaletteScope>(ui.paletteScope);
   const deferred = useDeferredValue(query.trim());
   const { directory } = useDirectory(shell.canInvite);
-  const server = useServerSearch(deferred);
+  const { place, clear: clearPlace } = usePalettePlace();
+  // Kept to a place, ask for more so the place's own results still fill the list.
+  const server = useServerSearch(deferred, place ? 24 : 8);
   const ai = shell.workspace.aiEnabled;
 
   const items = useMemo(
@@ -117,8 +120,8 @@ export function useCommandPalette() {
   const scopes = useMemo(() => paletteScopes(shell.modules), [shell.modules]);
   const group = scopes.find((entry) => entry.value === scope)?.group;
   const groups = useMemo(
-    () => arrange(items, recentItems, deferred, group),
-    [items, recentItems, deferred, group],
+    () => arrange(inPlace(items, place), recentItems, deferred, group),
+    [items, place, recentItems, deferred, group],
   );
 
   const open = (item: PaletteItem) => {
@@ -143,6 +146,8 @@ export function useCommandPalette() {
     scopes,
     cycleScope,
     groups,
+    place,
+    clearPlace,
     open,
     ai,
     close: ui.closePalette,
