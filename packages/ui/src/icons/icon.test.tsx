@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { IconButton } from '../components/button/icon-button.tsx';
 import { Icon, ICON_NAMES, ICON_SIZE } from './icon.tsx';
+import { formatPageIcon, isIconName, PageIcon, parsePageIcon } from './page-icon.tsx';
 
 describe('Icon', () => {
   it('draws every name as an SVG that inherits the text colour', () => {
@@ -61,5 +62,17 @@ describe('Icon', () => {
   it('gives an icon button its name from the label, not the drawing', () => {
     render(<IconButton label="Inbox" icon="inbox" badge={4} />);
     expect(screen.getByRole('button', { name: 'Inbox, 4' })).toBeDefined();
+  });
+});
+
+describe('PageIcon', () => {
+  it('reads a drawn icon with its tint, and never prints a name as text', () => {
+    expect(parsePageIcon('flag:epic-3')).toEqual({ name: 'flag', tint: 'epic-3' });
+    expect(parsePageIcon('flag')).toEqual({ name: 'flag', tint: null });
+    expect(parsePageIcon('📝')).toBeNull();
+    expect(isIconName('flag:epic-9')).toBe(false);
+    expect(formatPageIcon('flag', 'epic-3')).toBe('flag:epic-3');
+    const { container } = render(<PageIcon value="flag:epic-3" />);
+    expect(container.querySelector('svg')?.getAttribute('class')).toContain('text-epic-3');
   });
 });
