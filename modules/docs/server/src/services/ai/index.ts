@@ -143,6 +143,16 @@ export function registerDocsAi(
       consistencyGenerator,
     ),
   );
+  ctx.ai.addExclusionSource({
+    kind: 'space',
+    /** Every live space, for Settings › AI › Privacy's exclusion picker. */
+    async list() {
+      const db = sql();
+      if (!db) return [];
+      return db<{ id: string; name: string; key: string }[]>`
+        select id, name, key from spaces where archived_at is null order by key`;
+    },
+  });
   ctx.ai.addPromptFile({ name: 'docs.tldr', path: DOCS_PROMPT_FILES.tldr });
   ctx.ai.addPromptFile({ name: 'docs.consistency', path: DOCS_PROMPT_FILES.consistency });
 

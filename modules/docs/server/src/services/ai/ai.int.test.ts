@@ -79,6 +79,7 @@ beforeAll(async () => {
     addContextBuilder: (entry: never) => contributions.aiContextBuilders.push(entry),
     addInsightGenerator: (entry: never) => contributions.aiInsightGenerators.push(entry),
     addPromptFile: () => undefined,
+    addExclusionSource: () => undefined,
   } as unknown as ModuleContext['ai'];
   registerDocsAi({ ai: ctxAi, events }, { database: sql, entities });
   const work = emptyContributions();

@@ -88,6 +88,15 @@ export function registerWorkAi(
       purpose: 'pulse',
     }),
   );
+  ctx.ai.addExclusionSource({
+    kind: 'project',
+    /** Every live project, for Settings › AI › Privacy's exclusion picker. */
+    async list() {
+      if (!database) return [];
+      return database<{ id: string; name: string; key: string }[]>`
+        select id, name, key from projects where archived_at is null order by key`;
+    },
+  });
   ctx.ai.addPromptFile({ name: 'work.issue_summary', path: WORK_PROMPT_FILES.issueSummary });
   ctx.ai.addPromptFile({ name: 'work.sprint_pulse', path: WORK_PROMPT_FILES.sprintPulse });
 }

@@ -187,6 +187,7 @@ describe('the issue summary end to end', () => {
       addContextBuilder: (entry: never) => contributions.aiContextBuilders.push(entry),
       addInsightGenerator: (entry: never) => contributions.aiInsightGenerators.push(entry),
       addPromptFile: (file: { name: string }) => prompts.push(file.name),
+      addExclusionSource: () => undefined,
     } as unknown as ModuleContext['ai'];
     registerWorkAi({ ai }, harness.sql);
     expect(prompts).toEqual(['work.issue_summary', 'work.sprint_pulse']);
