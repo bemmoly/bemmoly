@@ -1,5 +1,6 @@
 import { IconButton } from '@bemmoly/ui';
 import type { ComponentType } from 'react';
+import { ConsistencyFindings } from '../ai-insights/consistency-findings.tsx';
 import { CommentLayer, CommentsRail, useOpenThreadCount } from '../comments/index.tsx';
 import { HistoryMode } from '../history/index.tsx';
 import { BacklinksSection } from '../links/index.ts';
@@ -49,7 +50,8 @@ export const LINKED_MARGIN: MarginSlot = {
           onClick={onClose}
         />
       </div>
-      <div className="p-3.5 text-13 leading-body">
+      <div className="flex flex-col gap-3 p-3.5 text-13 leading-body">
+        <ConsistencyFindings pageId={page.id} />
         <BacklinksSection pageId={page.id} />
       </div>
     </div>

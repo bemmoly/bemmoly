@@ -94,6 +94,21 @@ describe('the Docs home', () => {
     );
   });
 
+  it("marks a page that contradicts its issues as the AI's finding", async () => {
+    server.use(
+      http.get('*/api/v1/docs/home/attention', () =>
+        HttpResponse.json({
+          items: [{ kind: 'consistency', page: RFC, since: RFC.updatedAt, findings: 2 }],
+          staleAfterDays: 90,
+        }),
+      ),
+    );
+    renderHome();
+    const needs = await screen.findByRole('list', { name: 'Needs you' });
+    expect(needs.textContent).toContain('Contradicts its issues in 2 places · by AI');
+    expect(needs.querySelector('.bg-ai')).toBeTruthy();
+  });
+
   it('guides a first run when there are no spaces', async () => {
     server.use(http.get('*/api/v1/docs/spaces', () => HttpResponse.json(listed([]))));
     renderHome();
