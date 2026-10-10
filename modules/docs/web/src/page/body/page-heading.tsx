@@ -1,7 +1,7 @@
 import { formatRelative } from '@bemmoly/core-web';
 import { AiSummary } from '@bemmoly/ui';
 import { Fragment, type ReactNode } from 'react';
-import { usePeople } from '../../shared/people.ts';
+import { usePeople, useSession } from '../../shared/people.ts';
 import { usePageScreen } from '../screen-context.ts';
 import { readingTime } from './doc-stats.ts';
 import { PageTitle } from './page-title.tsx';
@@ -68,17 +68,18 @@ function MetaLine() {
 
 /**
  * Everything above the body: the facts as chips, the title, the line about the page and,
- * when the page has one, its generated TL;DR on the AI surface (the one place the AI accent
- * appears). The stored summary is printed as it is; generating it arrives with AI.
+ * when the page has one and the workspace has AI on, its generated TL;DR in the AI lilac.
+ * With AI off a stored summary stays unshown: the page never claims what the workspace lacks.
  */
 export function PageHeading() {
   const { page } = usePageScreen();
+  const { aiEnabled } = useSession();
   return (
     <>
       <Chips />
       <PageTitle />
       <MetaLine />
-      {page.tldr && (
+      {aiEnabled && page.tldr && (
         <AiSummary variant="page" title="TL;DR" source="generated · updates with the doc">
           {page.tldr}
         </AiSummary>

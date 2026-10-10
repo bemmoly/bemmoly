@@ -66,9 +66,14 @@ const { server, calls } = startServer(
 
 afterEach(() => useCommentUi.getState().reset(PAGE));
 
-function renderRail(canComment = true) {
+function renderRail(canComment = true, aiEnabled = true) {
   const client = newClient();
-  client.setQueryData(queryKeys.me(), { user: ME, capabilities: [], modules: [], workspace: {} });
+  client.setQueryData(queryKeys.me(), {
+    user: ME,
+    capabilities: [],
+    modules: [],
+    workspace: { aiEnabled },
+  });
   render(<CommentsRail pageId={PAGE} canComment={canComment} />, { wrapper: providers(client) });
   return client;
 }
@@ -84,6 +89,14 @@ describe('the comments rail', () => {
     expect(within(fifteen).queryByText('Text changed')).toBeNull();
     expect(within(card('Remove the legacy cookie path')).getByText('Text changed')).toBeTruthy();
     expect(screen.getByRole('radio', { name: 'Open (3)' })).toBeTruthy();
+  });
+
+  it('shows no suggested fix at all while the workspace has AI off', async () => {
+    renderRail(true, false);
+    await screen.findByText('stay valid for 15 minutes');
+    const fifteen = card('stay valid for 15 minutes');
+    expect(within(fifteen).queryByText(/Replace with/)).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Apply fix' })).toBeNull();
   });
 
   it('offers Apply fix only on a thread that carries a suggestion', async () => {

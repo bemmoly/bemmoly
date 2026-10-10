@@ -45,6 +45,8 @@ export function useSession() {
   return {
     user: data?.user ?? null,
     workspaceName: data?.workspace.name ?? null,
+    /** The workspace has an AI provider; no AI surface renders without it. */
+    aiEnabled: data?.workspace.aiEnabled === true,
     /** Workspace-level capabilities only; space rules are the server's to apply. */
     can: (capability: string) => capabilities.has(capability),
   };
