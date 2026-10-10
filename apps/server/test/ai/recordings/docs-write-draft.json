@@ -1,0 +1,13 @@
+{
+  "prompt": {
+    "id": "docs.write.draft",
+    "version": 1
+  },
+  "replies": {
+    "docs.write.draft": [
+      {
+        "text": "- Run the synthetic login monitor against staging before cutover and confirm zero session loss.\n- Load-test session reads from Postgres and check p95 stays under [target] ms.\n- Rehearse the rollback on staging: flip auth_pg_sessions off and confirm users stay signed in.\n- Owner: [owner]. Date: [date]."
+      }
+    ]
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "prompt": {
+    "id": "docs.write.shorten",
+    "version": 1
+  },
+  "replies": {
+    "docs.write.shorten": [
+      {
+        "text": "Above 0.5% errors after cutover, turn auth_pg_sessions off; sessions stay valid 15 minutes (PLT-204)."
+      }
+    ]
+  }
+}
