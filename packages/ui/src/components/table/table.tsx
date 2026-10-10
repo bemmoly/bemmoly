@@ -1,4 +1,4 @@
-import type { KeyboardEvent, ReactNode } from 'react';
+import { useSyncExternalStore, type KeyboardEvent, type ReactNode } from 'react';
 import { cx } from '../../lib/cx.ts';
 import { focusRingInset } from '../../lib/focus.ts';
 import { Button } from '../button/button.tsx';
@@ -10,6 +10,13 @@ export interface TableColumn<T> {
   width: string;
   align?: 'start' | 'center' | 'end';
   render: (row: T) => ReactNode;
+  /** Dropped below 640px so a phone keeps the columns that identify the row. */
+  hideOnPhone?: boolean;
+  /**
+   * Secondary actions (a row's ··· menu): shown on row hover and keyboard focus, always on
+   * touch screens, so nothing is hidden from anyone.
+   */
+  reveal?: boolean;
 }
 
 export interface TableFooter {
@@ -38,6 +45,29 @@ export interface TableProps<T> {
   className?: string;
 }
 
+const PHONE = '(max-width: 639px)';
+
+function subscribePhone(onChange: () => void) {
+  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return () => {};
+  const query = window.matchMedia(PHONE);
+  query.addEventListener('change', onChange);
+  return () => query.removeEventListener('change', onChange);
+}
+
+function isPhone() {
+  return typeof window !== 'undefined' && typeof window.matchMedia === 'function'
+    ? window.matchMedia(PHONE).matches
+    : false;
+}
+
+/** Whether the viewport is phone-sized, for components that drop columns there. */
+export function usePhoneWidth(): boolean {
+  return useSyncExternalStore(subscribePhone, isPhone, () => false);
+}
+
+const REVEAL =
+  'opacity-0 motion-safe:transition-opacity motion-safe:duration-100 group-hover/row:opacity-100 group-focus-within/row:opacity-100 [@media(hover:none)]:opacity-100';
+
 const ALIGN = {
   start: 'justify-self-start text-left',
   center: 'justify-self-center text-center',
@@ -45,9 +75,10 @@ const ALIGN = {
 };
 
 /**
- * The grid table of the People and Board Settings mocks: header on sf2 in 11px tracked capitals,
- * rows divided by br-row, columns as CSS grid tracks. Pagination is keyset: the footer asks for
- * the next page and never shows page numbers.
+ * The review's one table (`.tbl`): sentence-case headings in 12px tx-3 over a line, 44px rows
+ * divided by the lighter line, straight on the page with no card around it. Columns are CSS
+ * grid tracks. Pagination is keyset: the footer asks for the next page and never shows page
+ * numbers.
  */
 export function Table<T>({
   label,
@@ -61,8 +92,10 @@ export function Table<T>({
   empty,
   className,
 }: TableProps<T>) {
-  const template = { gridTemplateColumns: columns.map((c) => c.width).join(' ') };
-  const rowPad = density === 'md' ? 'py-2.5' : 'py-2.25';
+  const phone = usePhoneWidth();
+  const shown = phone ? columns.filter((column) => !column.hideOnPhone) : columns;
+  const template = { gridTemplateColumns: shown.map((c) => c.width).join(' ') };
+  const rowHeight = density === 'md' ? 'min-h-11 py-1.5' : 'min-h-10 py-1';
   const onKey = (event: KeyboardEvent, row: T) => {
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
@@ -70,15 +103,15 @@ export function Table<T>({
     }
   };
   return (
-    <div className={cx('overflow-hidden rounded-card border border-br bg-sf', className)}>
+    <div className={cx('min-w-0', className)}>
       <div role="table" aria-label={label} aria-rowcount={rows.length + 1}>
         <div role="rowgroup">
           <div
             role="row"
             style={template}
-            className="grid items-end gap-3 border-b border-br2 bg-sf2 px-4 py-2.25 text-11 font-medium tracking-caps text-tx5 uppercase"
+            className="grid h-8.5 items-center gap-3 border-b border-line px-3 text-12 font-medium text-tx-3"
           >
-            {columns.map((column) => (
+            {shown.map((column) => (
               <span key={column.key} role="columnheader" className={ALIGN[column.align ?? 'start']}>
                 {column.header}
               </span>
@@ -99,17 +132,21 @@ export function Table<T>({
                 onKeyDown={onRowClick ? (event) => onKey(event, row) : undefined}
                 style={template}
                 className={cx(
-                  'grid items-center gap-3 border-b border-br-row px-4',
-                  rowPad,
-                  onRowClick && cx('cursor-pointer hover:bg-hover', focusRingInset),
+                  'group/row grid items-center gap-3 border-b border-line-2 px-3 hover:bg-hover',
+                  rowHeight,
+                  onRowClick && cx('cursor-pointer', focusRingInset),
                   selected && 'bg-acc-50 hover:bg-acc-50',
                 )}
               >
-                {columns.map((column) => (
+                {shown.map((column) => (
                   <div
                     key={column.key}
                     role="cell"
-                    className={cx('min-w-0', ALIGN[column.align ?? 'start'])}
+                    className={cx(
+                      'min-w-0',
+                      ALIGN[column.align ?? 'start'],
+                      column.reveal && REVEAL,
+                    )}
                   >
                     {column.render(row)}
                   </div>
@@ -121,7 +158,7 @@ export function Table<T>({
       </div>
       {rows.length === 0 && empty}
       {footer && (footer.hasMore || footer.summary) && (
-        <div className="flex items-center gap-3 bg-sf2 px-4 py-2 text-12h text-tx4">
+        <div className="flex items-center gap-3 px-3 py-2 text-12 text-tx-3 tabular-nums">
           <span>{footer.summary}</span>
           {footer.hasMore && (
             <Button

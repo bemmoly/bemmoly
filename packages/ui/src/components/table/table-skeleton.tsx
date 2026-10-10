@@ -36,7 +36,7 @@ export function TableSkeletonLine({ width = '60%' }: { width?: string | number }
 }
 
 /**
- * The Table while its rows load: the same card, header bar and row tracks, with bars in place
+ * The Table while its rows load: the same header line and row tracks, with bars in place
  * of the headings and cells, so the loaded table replaces it without a shift.
  */
 export function TableSkeleton({
@@ -47,17 +47,12 @@ export function TableSkeleton({
   className,
 }: TableSkeletonProps) {
   const template = { gridTemplateColumns: columns.map((c) => c.width).join(' ') };
-  const rowPad = density === 'md' ? 'py-2.5' : 'py-2.25';
+  const rowHeight = density === 'md' ? 'min-h-11 py-1.5' : 'min-h-10 py-1';
   return (
-    <div
-      role="status"
-      aria-label={label}
-      aria-busy
-      className={cx('overflow-hidden rounded-card border border-br bg-sf', className)}
-    >
+    <div role="status" aria-label={label} aria-busy className={cx('min-w-0', className)}>
       <div
         style={template}
-        className="grid items-end gap-3 border-b border-br2 bg-sf2 px-4 py-2.25 text-11"
+        className="grid h-8.5 items-center gap-3 border-b border-line px-3 text-12"
       >
         {columns.map((column, index) => (
           <span
@@ -72,7 +67,7 @@ export function TableSkeleton({
         <div
           key={row}
           style={template}
-          className={cx('grid items-center gap-3 border-b border-br-row px-4', rowPad)}
+          className={cx('grid items-center gap-3 border-b border-line-2 px-3', rowHeight)}
         >
           {columns.map((column, index) => (
             <div key={index} className={cx('flex min-w-0', ALIGN[column.align ?? 'start'])}>

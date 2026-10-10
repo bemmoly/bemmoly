@@ -1,4 +1,10 @@
-export { Table, type TableColumn, type TableFooter, type TableProps } from './table.tsx';
+export {
+  Table,
+  usePhoneWidth,
+  type TableColumn,
+  type TableFooter,
+  type TableProps,
+} from './table.tsx';
 export {
   TableSkeleton,
   TableSkeletonLine,
