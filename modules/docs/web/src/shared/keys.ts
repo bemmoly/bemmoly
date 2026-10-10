@@ -25,4 +25,16 @@ export const docsKeys = {
   spaceSearch: (spaceId: string, q: string) =>
     [...queryKeys.docs(), 'space-search', spaceId, q] as const,
   people: () => [...queryKeys.docs(), 'people'] as const,
+  revisions: (pageId: string) => [...queryKeys.docs(), 'revisions', pageId] as const,
+  revision: (pageId: string, revisionId: string) =>
+    [...queryKeys.docs(), 'revisions', pageId, revisionId] as const,
+  compare: (pageId: string, from: string, to: string) =>
+    [...queryKeys.docs(), 'revisions', pageId, 'compare', from, to] as const,
+  comments: (pageId: string, resolved?: boolean) =>
+    [...queryKeys.docs(), 'comments', pageId, { resolved: resolved ?? null }] as const,
+  links: (pageId: string) => [...queryKeys.docs(), 'links', pageId] as const,
+  backlinks: (pageId: string) => [...queryKeys.docs(), 'backlinks', pageId] as const,
+  pageReferences: (pageId: string) => [...queryKeys.docs(), 'references', pageId] as const,
+  linkedDocs: (kind: string, ref: string) =>
+    [...queryKeys.docs(), 'linked-docs', kind, ref] as const,
 };

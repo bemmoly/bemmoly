@@ -1,6 +1,8 @@
 import { createApiClient } from '@bemmoly/api-client';
+import { docsHistoryEndpoints } from '../api/history.ts';
 import { docsLibraryEndpoints } from '../api/library.ts';
 import { docsPagesEndpoints } from '../api/pages.ts';
+import { docsTransferEndpoints } from '../api/transfer.ts';
 
 /**
  * The module's API client: the shell's generic client plus the Docs endpoints,
@@ -14,6 +16,8 @@ export const api = {
   docs: {
     ...docsPagesEndpoints(client.http),
     ...docsLibraryEndpoints(client.http),
+    ...docsHistoryEndpoints(client.http),
+    ...docsTransferEndpoints(client.http),
   },
 };
 
