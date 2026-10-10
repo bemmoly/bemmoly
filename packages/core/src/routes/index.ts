@@ -2,6 +2,7 @@ import websocket from '@fastify/websocket';
 import type { FastifyPluginAsync } from 'fastify';
 import { createAiPlansController } from '../controllers/ai-plans.controller.ts';
 import { createAiInsightsController } from '../controllers/ai-insights.controller.ts';
+import { createAiAnswersController } from '../controllers/ai-answers.controller.ts';
 import { createAuditController } from '../controllers/audit.controller.ts';
 import { createAuthzController } from '../controllers/authz.controller.ts';
 import { createCollabController } from '../controllers/collab.controller.ts';
@@ -29,6 +30,7 @@ import { createActorResolver, type ActorResolver } from '../middlewares/actor.ts
 import type { ModuleRegistry } from '../modules/registry.ts';
 import type { AiPlans } from '../services/ai/index.ts';
 import type { InsightsService } from '../services/ai/index.ts';
+import type { RetrievalService } from '../services/ai/index.ts';
 import type { CollabHost } from '../services/collab/index.ts';
 import type { IdentityDependencies } from '../services/identity/index.ts';
 import type { ModuleAdmin, ModuleState } from '../services/modules/index.ts';
@@ -39,6 +41,7 @@ import type { DatabaseProbe } from '../services/system/index.ts';
 import type { ScrapeDependencies } from '../services/telemetry/index.ts';
 import { aiPlansRoutes } from './ai-plans.routes.ts';
 import { aiInsightsRoutes } from './ai-insights.routes.ts';
+import { aiAnswersRoutes } from './ai-answers.routes.ts';
 import { auditRoutes } from './audit.routes.ts';
 import { authzRoutes } from './authz.routes.ts';
 import { collabRoutes } from './collab.routes.ts';
@@ -92,6 +95,8 @@ export interface KernelRouteDependencies {
   aiPlans?: AiPlans;
   /** The AI insight cache; /api/v1/ai/insights is mounted only when present. */
   insights?: InsightsService;
+  /** "Ask your docs" answers; mounted when the host wires retrieval. */
+  retrieval?: RetrievalService;
 }
 
 function identityAndAccessRoutes(deps: IdentityDependencies): FastifyPluginAsync {
@@ -184,6 +189,9 @@ export function kernelRoutes(deps: KernelRouteDependencies): FastifyPluginAsync 
         }
         if (deps.insights) {
           await api.register(aiInsightsRoutes(createAiInsightsController(deps.insights)));
+        }
+        if (deps.retrieval) {
+          await api.register(aiAnswersRoutes(createAiAnswersController(deps.retrieval)));
         }
         await api.register(moduleResourceRoutes(deps.modules, gate));
       },

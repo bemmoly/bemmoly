@@ -12,3 +12,4 @@ export type {
 } from './runtime/dependencies.ts';
 export * from './context/index.ts';
 export * from './insights/index.ts';
+export * from './retrieval/index.ts';

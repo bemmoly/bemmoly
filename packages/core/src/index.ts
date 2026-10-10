@@ -57,6 +57,14 @@ export {
   type ContextWriter,
   type InsightsService,
   type InsightsServiceDeps,
+  createRetrievalService,
+  fuseRankings,
+  RETRIEVAL_JOBS,
+  type RetrievalContext,
+  type RetrievalDependencies,
+  type RetrievalJob,
+  type RetrievalService,
+  type RetrievedChunk,
 } from './services/ai/index.ts';
 export * from './services/changelog/index.ts';
 export * from './services/collab/index.ts';
