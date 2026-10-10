@@ -15,7 +15,8 @@ import { Card, CardBody, CardHeader } from './card/index.ts';
 import { EmptyState } from './empty-state/index.ts';
 import { PriorityGlyph, TypeGlyph } from './glyphs/index.ts';
 import { KeyChip } from './key-chip/index.ts';
-import { Logo, WorkspaceMark } from './logo/index.ts';
+import { EntityTile } from './entity-tile/index.ts';
+import { Logo } from './logo/index.ts';
 import { Skeleton, SkeletonText } from './skeleton/index.ts';
 import { StatusBadge, StatusButton } from './status-badge/index.ts';
 import { Table } from './table/index.ts';
@@ -80,8 +81,24 @@ describe('display components', () => {
     expect(logo.className).toContain(
       'in-data-[theme=custom]:[&_.brand-mark-bg]:fill-(--brand-mark-bg)',
     );
-    render(<WorkspaceMark name="Acme Labs" />);
-    expect(screen.getByRole('img', { name: 'Acme Labs' }).textContent).toBe('A');
+  });
+
+  it('draws workspace, project, module and team tiles from one component', () => {
+    render(
+      <>
+        <EntityTile name="Acme Labs" tone="ink" decorative={false} size={32} />
+        <EntityTile name="Platform Core" decorative={false} />
+        <EntityTile name="Work" tone="work" icon="board" decorative={false} />
+        <EntityTile name="Payments" color="#c2536a" letter="PA" decorative={false} />
+      </>,
+    );
+    const workspace = screen.getByRole('img', { name: 'Acme Labs' });
+    expect(workspace.textContent).toBe('A');
+    expect(workspace.style.borderRadius).toBe('8.32px');
+    expect(workspace.className).toContain('bg-tx');
+    expect(screen.getByRole('img', { name: 'Platform Core' }).className).toMatch(/bg-epic-\d/);
+    expect(screen.getByRole('img', { name: 'Work' }).querySelector('svg')).not.toBeNull();
+    expect(screen.getByRole('img', { name: 'Payments' }).textContent).toBe('PA');
   });
 
   it('renders cards, empty states and AI surfaces accessibly', async () => {

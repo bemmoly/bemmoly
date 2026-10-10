@@ -8,7 +8,22 @@ import { useInbox } from '../hooks/use-notifications.ts';
 import { useMe } from '../hooks/use-session.ts';
 import { useWorkspace } from '../hooks/use-workspace.ts';
 import { HOME_SECTIONS } from '../lib/home-sections.ts';
-import { Button, Card, CardHeader, EmptyState } from '@bemmoly/ui';
+import {
+  Button,
+  Card,
+  CardHeader,
+  EmptyState,
+  EntityTile,
+  type EntityTileProps,
+} from '@bemmoly/ui';
+
+/** The module colours are the logo's: Work the blue, Docs the mid blue. */
+const moduleTile = (id: string): Pick<EntityTileProps, 'tone' | 'icon'> =>
+  id === 'work'
+    ? { tone: 'work', icon: 'board' }
+    : id === 'docs'
+      ? { tone: 'docs', icon: 'doc' }
+      : { tone: 'accent' };
 
 function greeting(now: Date): string {
   const hour = now.getHours();
@@ -79,9 +94,11 @@ export function HomePage() {
                         to={entry?.path ?? `/${module.id}`}
                         className="flex items-center gap-3 px-4 py-2.75 text-tx"
                       >
-                        <span className="grid size-7.5 place-items-center rounded-panel bg-ac text-12 font-semibold text-on-ac">
-                          {(entry?.label ?? module.id).slice(0, 2).toUpperCase()}
-                        </span>
+                        <EntityTile
+                          name={entry?.label ?? module.id}
+                          {...moduleTile(module.id)}
+                          size={30}
+                        />
                         <span className="flex flex-col gap-0.5">
                           <span className="font-semibold">{entry?.label ?? module.id}</span>
                           <span className="text-12 text-tx5">Version {module.version}</span>

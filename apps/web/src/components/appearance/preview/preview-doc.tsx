@@ -1,4 +1,4 @@
-import { AiSummary, Avatar, avatarHue, Tag, WorkspaceMark } from '@bemmoly/ui';
+import { AiSummary, Avatar, avatarHue, EntityTile, Tag } from '@bemmoly/ui';
 import { SAMPLE_PAGES } from './preview-data.ts';
 import { PreviewTopBar } from './preview-top-bar.tsx';
 
@@ -12,7 +12,7 @@ export function PreviewDoc() {
       <div className="flex min-h-0 flex-1">
         <aside className="flex w-60 shrink-0 flex-col gap-3.5 border-r border-br bg-sf px-2 py-4">
           <span className="flex items-center gap-2.5 px-2">
-            <WorkspaceMark name="Engineering" size={30} />
+            <EntityTile name="Engineering" tone="accent" size={30} />
             <span className="flex flex-col gap-px">
               <span className="text-13h font-semibold text-tx">Engineering</span>
               <span className="text-12 text-tx4">Doc space</span>

@@ -1,5 +1,11 @@
 import type { Project } from '@bemmoly/module-work/shared';
-import { SettingsNav, SettingsNavItem, SettingsNavSection, Skeleton } from '@bemmoly/ui';
+import {
+  EntityTile,
+  SettingsNav,
+  SettingsNavItem,
+  SettingsNavSection,
+  Skeleton,
+} from '@bemmoly/ui';
 import { LineSkeleton } from '../skeletons/parts.tsx';
 
 const initials = (name: string) =>
@@ -31,12 +37,11 @@ export function ProjectNav({ project }: { project: Project | undefined }) {
           </div>
         ) : (
           <div className="flex items-center gap-2.5 px-2 pt-0 pb-1">
-            <span
-              aria-hidden
-              className="flex size-8 shrink-0 items-center justify-center rounded-sm bg-ac-fill font-semibold text-on-ac"
-            >
-              {initials(project?.name ?? key)}
-            </span>
+            <EntityTile
+              name={project?.name ?? key}
+              letter={initials(project?.name ?? key)}
+              size={32}
+            />
             <span className="flex min-w-0 flex-col gap-px">
               <span className="truncate text-13h font-semibold">{project?.name ?? key}</span>
               <span className="text-12 text-tx4">

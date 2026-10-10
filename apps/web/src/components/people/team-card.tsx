@@ -1,4 +1,4 @@
-import { AvatarStack, Card } from '@bemmoly/ui';
+import { AvatarStack, Card, EntityTile } from '@bemmoly/ui';
 import { Link } from '@tanstack/react-router';
 import type { TeamCardView } from '../../hooks/use-teams.ts';
 import { LINK_ACTION } from '../actions.ts';
@@ -8,14 +8,7 @@ export function TeamCard({ team }: { team: TeamCardView }) {
   return (
     <Card className="flex flex-col gap-3 p-4">
       <div className="flex items-center gap-2.5">
-        <span
-          aria-hidden
-          // The team colour is the team's own data, not a theme token.
-          style={team.color ? { background: team.color } : undefined}
-          className={`flex size-8.5 shrink-0 items-center justify-center rounded-panel font-semibold text-on-solid ${team.color ? '' : 'bg-ac'}`}
-        >
-          {team.initials}
-        </span>
+        <EntityTile name={team.name} letter={team.initials} color={team.color} size={34} />
         <div className="flex min-w-0 flex-col gap-0.5">
           <span className="text-14 font-semibold">{team.name}</span>
           <span className="text-12 text-tx5">

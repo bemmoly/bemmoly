@@ -1,4 +1,4 @@
-import { WorkspaceMark } from '@bemmoly/ui';
+import { EntityTile } from '@bemmoly/ui';
 import type { ThemeScope } from '../../hooks/use-appearance-draft.ts';
 
 interface LogoRowProps {
@@ -21,7 +21,7 @@ export function LogoRow({ workspaceName, scope }: LogoRowProps) {
         className="flex cursor-not-allowed items-center gap-3 rounded-panel border border-dashed border-br-off bg-sf2 px-3 py-2.5"
       >
         <span {...scope} className="flex">
-          <WorkspaceMark name={workspaceName} size={36} />
+          <EntityTile name={workspaceName} tone="accent" size={36} decorative={false} />
         </span>
         <div className="flex flex-col gap-0.5">
           <span className="font-medium text-tx5">Upload SVG or PNG</span>

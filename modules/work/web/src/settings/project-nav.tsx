@@ -1,5 +1,5 @@
 import type { Project, SchemeKind, SchemeStatus } from '@bemmoly/module-work/shared';
-import { SettingsNav, SettingsNavItem, SettingsNavSection } from '@bemmoly/ui';
+import { EntityTile, SettingsNav, SettingsNavItem, SettingsNavSection } from '@bemmoly/ui';
 import { onLinkClick, workflowPaths } from '../workflow/navigate.ts';
 
 export const SETTINGS_PAGES = ['board', 'issue-types', 'fields'] as const;
@@ -64,9 +64,11 @@ export function ProjectSettingsNav({
       label="Project settings"
       title={
         <div className="flex items-center gap-2.5 px-2 pb-1">
-          <span className="flex size-8 shrink-0 items-center justify-center rounded-panel bg-linear-135 from-ac-fill to-ac-l font-semibold text-on-ac">
-            {tileOf(project?.name ?? '')}
-          </span>
+          <EntityTile
+            name={project?.name ?? 'Project'}
+            letter={tileOf(project?.name ?? '')}
+            size={32}
+          />
           <div className="flex min-w-0 flex-col gap-px">
             <span className="truncate text-13h font-semibold">{project?.name ?? 'Project'}</span>
             <span className="text-12 text-tx4">Project settings</span>

@@ -3,7 +3,6 @@ import type { CSSProperties } from 'react';
 import { buildTheme, themeStyle } from '../../theme/index.ts';
 import { PRESETS } from '../../tokens/presets.ts';
 import { Logo, type LogoTone } from './logo.tsx';
-import { WorkspaceMark } from './workspace-mark.tsx';
 
 const meta = {
   title: 'Components/Logo',
@@ -99,27 +98,6 @@ export const AcrossPresets: Story = {
           <Logo variant="lockup" />
         </div>
       ))}
-    </div>
-  ),
-};
-
-export const WorkspaceMarks: Story = {
-  parameters: {
-    mock: [
-      {
-        file: 'Bemmoly Appearance Settings.dc.html',
-        x: 300,
-        y: 560,
-        w: 420,
-        h: 70,
-        note: 'logo row',
-      },
-    ],
-  },
-  render: () => (
-    <div className="flex items-center gap-3">
-      <WorkspaceMark name="Acme Labs" />
-      <WorkspaceMark name="Engineering" size={30} />
     </div>
   ),
 };
