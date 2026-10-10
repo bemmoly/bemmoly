@@ -2,8 +2,8 @@ import type { Space } from '@bemmoly/module-docs/shared';
 import { Button, Drawer, EmptyState, type PageTreeItem } from '@bemmoly/ui';
 import { Icon } from '@bemmoly/ui/icons';
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
-import { CreatePageDialog } from '../create/create-page-dialog.tsx';
 import { CreateSpaceDialog } from '../create/create-space-dialog.tsx';
+import { useCreatePage } from '../create/use-create-page.ts';
 import { useSpace } from '../hooks/queries.ts';
 import { useDocsRealtime } from '../hooks/use-docs-realtime.ts';
 import { docsPaths, keepLinksInApp, navigateTo } from '../shared/navigation.ts';
@@ -14,7 +14,7 @@ import { useTreeOpen } from './tree-store.ts';
 
 interface SpaceActions {
   space: Space;
-  /** Opens the new-page picker at the root (null) or inside a page. */
+  /** Creates "Untitled" at the root (null) or inside a page, and opens it. */
   createPage: (parent: Pick<PageTreeItem, 'id' | 'title'> | null) => void;
 }
 
@@ -61,7 +61,7 @@ export function SpaceLayout({
     if (spaceKey && trail) reveal(spaceKey, trail.split('/'));
   }, [spaceKey, trail, reveal]);
   useDocsRealtime(space.data ? [space.data.id] : []);
-  const [creating, setCreating] = useState<{ id: string; title: string } | null | false>(false);
+  const newPage = useCreatePage();
   const [creatingSpace, setCreatingSpace] = useState(false);
   const [drawer, setDrawer] = useState(false);
   const { can } = useSession();
@@ -86,7 +86,14 @@ export function SpaceLayout({
 
   const actions: SpaceActions = {
     space: space.data,
-    createPage: (parent) => setCreating(parent ? { id: parent.id, title: parent.title } : null),
+    createPage: (parent) => {
+      setDrawer(false);
+      newPage.create({
+        spaceId: space.data.id,
+        parentId: parent?.id ?? null,
+        placeName: parent ? parent.title || 'Untitled' : space.data.name,
+      });
+    },
   };
   const sidebar = (
     <SpaceSidebar
@@ -128,18 +135,6 @@ export function SpaceLayout({
           {sidebar}
         </div>
       </Drawer>
-      <CreatePageDialog
-        open={creating !== false}
-        spaceId={space.data.id}
-        parentId={creating ? creating.id : null}
-        parentTitle={creating ? creating.title : null}
-        onClose={() => setCreating(false)}
-        onCreated={(page) => {
-          setCreating(false);
-          setDrawer(false);
-          navigateTo(docsPaths.page(page.id));
-        }}
-      />
       <CreateSpaceDialog
         open={creatingSpace}
         onClose={() => setCreatingSpace(false)}

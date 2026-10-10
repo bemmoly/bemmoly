@@ -14,6 +14,7 @@ import { useCollabUser } from '../collab/use-collab-user.ts';
 import { useLocalSync } from '../collab/use-local-sync.ts';
 import { useDocStats } from './body/doc-stats.ts';
 import { PageBanner } from './body/page-banner.tsx';
+import { EmptyPageTemplates } from '../create/empty-page-templates.tsx';
 import { PageBodyEditor } from './body/page-body-editor.tsx';
 import { PageHeading } from './body/page-heading.tsx';
 import { PageHeaderBar } from './header/page-header-bar.tsx';
@@ -158,6 +159,7 @@ export function PageFrame({ page }: { page: PageDetail }) {
               <article className="flex max-w-180 min-w-0 flex-1 flex-col gap-4.5 px-4 pt-8 pb-30 text-16 leading-prose text-tx sm:px-10 sm:pt-12">
                 <PageHeading />
                 <PageBodyEditor onEditor={setEditor} />
+                <EmptyPageTemplates />
                 <Layers />
               </article>
               {/* The rail keeps its width while empty, so the body never shifts when headings arrive. */}

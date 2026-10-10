@@ -31,6 +31,13 @@ export function navigateTo(path: string): void {
   );
 }
 
+/** As navigateTo, in place of the current entry: Back skips a page that no longer exists. */
+export function replaceWith(path: string): void {
+  const state = (window.history.state ?? {}) as RouterState;
+  const key = Math.random().toString(36).slice(2, 10);
+  window.history.replaceState({ ...state, key, __TSR_key: key }, '', path);
+}
+
 const plainClick = (event: MouseEvent<HTMLElement>) =>
   !event.defaultPrevented &&
   event.button === 0 &&
