@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { useSettingsAccess } from '../../hooks/settings-access.ts';
 import { useSchemeFlow } from '../../hooks/settings-scheme-flow.ts';
 import { useFields } from '../../hooks/settings-schemes.ts';
+import { useAiEnabled } from '../../issue/issue-ai-summary.tsx';
 import { useProject } from '../../shared/index.ts';
 import { AddDialog } from './add-dialog.tsx';
 import { FieldsTable, KINDS } from './fields-table.tsx';
@@ -20,6 +21,7 @@ export function FieldsPage({ projectKey }: { projectKey: string | undefined }) {
   const access = useSettingsAccess();
   const flow = useSchemeFlow(project?.id, 'fields');
   const fields = useFields(project?.id);
+  const aiEnabled = useAiEnabled();
   const toast = useToast();
   const [adding, setAdding] = useState(false);
   const overridden = flow.status?.overridden ?? false;
@@ -45,6 +47,7 @@ export function FieldsPage({ projectKey }: { projectKey: string | undefined }) {
         rows={fields.list.data ?? []}
         loading={fields.list.isPending}
         editable={editable}
+        aiEnabled={aiEnabled}
         onRename={(field, name) =>
           fields.update.mutate(
             { fieldId: field.id, body: { name } },

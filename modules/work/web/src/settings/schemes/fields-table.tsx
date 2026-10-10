@@ -19,17 +19,20 @@ export const KINDS: Record<FieldKind, string> = {
 
 /**
  * Custom fields as one table: the name renamed in place, its kind, its options, whether it
- * filters, and where it comes from. The AI mark is lilac, the one colour kept for AI.
+ * filters, and where it comes from. The AI mark is lilac, the one colour kept for AI, and is
+ * drawn only while AI is on: with it off, a field AI would fill is just a field.
  */
 export function FieldsTable({
   rows,
   loading,
   editable,
+  aiEnabled,
   onRename,
 }: {
   rows: readonly Field[];
   loading: boolean;
   editable: boolean;
+  aiEnabled: boolean;
   onRename: (field: Field, name: string) => void;
 }) {
   const columns: TableColumn<Field>[] = [
@@ -46,7 +49,7 @@ export function FieldsTable({
             onRename={(name) => onRename(field, name)}
             className="font-medium"
           />
-          {field.aiFill && (
+          {aiEnabled && field.aiFill && (
             <span
               className="flex shrink-0 items-center gap-1 text-12 text-ai-600"
               title="AI suggests a value"

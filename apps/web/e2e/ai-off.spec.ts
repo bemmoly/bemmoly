@@ -20,6 +20,7 @@ const SCREENS: readonly { path: string; title: RegExp }[] = [
   { path: '/work/backlog/PLT', title: /^Backlog · Platform Core/ },
   { path: '/work/issue/PLT-204', title: /^PLT-204 · / },
   { path: '/work/settings/PLT/board', title: / · Platform Core/ },
+  { path: '/work/settings/PLT/fields', title: /^Fields · Platform Core/ },
   { path: '/docs', title: /^Docs · / },
   { path: '/docs/s/ENG', title: /^Engineering · / },
   { path: `/docs/p/${RFC_PAGE_ID}`, title: /Bemmoly$/ },
