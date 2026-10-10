@@ -10,8 +10,9 @@ function When({ issue }: { issue: MyIssue }) {
     return <span className="text-12 whitespace-nowrap text-tx-3 tabular-nums">{text}</span>;
   }
   return (
-    <span className="text-12 text-tx-3">
-      Updated <RelativeTime iso={issue.updatedAt} />
+    <span className="text-12 whitespace-nowrap text-tx-3">
+      <span className="hidden sm:inline">Updated </span>
+      <RelativeTime iso={issue.updatedAt} />
     </span>
   );
 }

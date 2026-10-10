@@ -53,6 +53,7 @@ export function MyIssuesCard({ limit, full = false }: { limit: number; full?: bo
         <SegmentedControl
           size="sm"
           aria-label="Which issues"
+          className="max-w-full overflow-x-auto"
           value={work.tab}
           onChange={work.setTab}
           options={MY_WORK_TABS.map((tab) => ({

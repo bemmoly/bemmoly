@@ -21,7 +21,7 @@ const SIZES: Record<
   },
   sm: {
     track: 'rounded-sm p-0.5 text-12',
-    item: 'rounded-xs px-2.25 py-0.75',
+    item: 'rounded-xs px-2.25 py-0.75 whitespace-nowrap',
     selected: 'font-medium',
     idle: 'font-normal',
   },
