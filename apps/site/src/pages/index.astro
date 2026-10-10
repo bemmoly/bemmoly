@@ -1,23 +1,33 @@
 ---
-import AiSection from '../components/landing/AiSection.astro';
-import Configure from '../components/landing/Configure.astro';
+/**
+ * The homepage, from the site design review: the story is built around the three promises
+ * (100% open source, no pricing, no in-app purchases), stated in the hero, given a section of
+ * their own with proof, answered in the FAQ and repeated in the final call and the footer.
+ */
+import AiBand from '../components/landing/AiBand.astro';
 import Cta from '../components/landing/Cta.astro';
-import Features from '../components/landing/Features.astro';
+import Faq from '../components/landing/Faq.astro';
 import Hero from '../components/landing/Hero.astro';
-import LivePreview from '../components/landing/LivePreview.astro';
-import SelfHost from '../components/landing/SelfHost.astro';
+import Install from '../components/landing/Install.astro';
+import OpenSource from '../components/landing/OpenSource.astro';
+import Own from '../components/landing/Own.astro';
+import Promise from '../components/landing/Promise.astro';
+import Showcase from '../components/landing/Showcase.astro';
+import Switch from '../components/landing/Switch.astro';
+import { HOME_FAQ } from '../data/faq.ts';
 import { pageAt } from '../data/pages.ts';
 import Base from '../layouts/Base.astro';
 ---
 
-<Base page={pageAt('/')} cta>
+<Base page={pageAt('/')} faq={HOME_FAQ}>
   <Hero />
-  <div class="mx-auto w-full max-w-320 px-4 pb-20 sm:px-6 lg:px-12">
-    <LivePreview />
-  </div>
-  <Features />
-  <AiSection />
-  <SelfHost />
-  <Configure />
+  <Promise />
+  <Showcase />
+  <AiBand />
+  <Own />
+  <Install />
+  <Switch />
+  <OpenSource />
+  <Faq />
   <Cta slot="cta" />
 </Base>

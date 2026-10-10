@@ -1,0 +1,35 @@
+---
+/**
+ * The copy button every command uses (the site script's copy.ts). A drawn copy icon and
+ * "Copy"; after a press, a check and "Copied" for two seconds, announced to screen readers.
+ * If the clipboard is refused it selects `target`'s text and says which keys copy it. Drawn
+ * for dark command surfaces, where the overlay tokens are white at low alpha.
+ */
+import Icon from './Icon.astro';
+
+interface Props {
+  /** Exactly what lands on the clipboard: commands only, never the $ prompts. */
+  value: string;
+  /** The element whose text is selected when the clipboard is refused. */
+  target?: string;
+  size?: 'md' | 'sm';
+  class?: string;
+}
+
+const { value, target, size = 'md', class: className } = Astro.props;
+---
+
+<button
+  type="button"
+  data-copy={value}
+  data-copy-target={target}
+  class:list={[
+    'group inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-[7px] bg-hover font-sans font-medium whitespace-nowrap text-tx-2 hover:bg-press hover:text-tx data-[state=done]:text-green-tx',
+    size === 'md' ? 'h-9 px-3 text-13' : 'h-7.5 px-2.5 text-12',
+    className,
+  ]}
+>
+  <Icon name="copy" size={14} class="group-data-[state=done]:hidden" />
+  <Icon name="check" size={14} class="hidden group-data-[state=done]:inline-block" />
+  <span data-copy-label>Copy</span>
+</button>

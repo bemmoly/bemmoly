@@ -1,7 +1,8 @@
 /**
  * Size budget: the JavaScript each page loads, gzipped, inline and external, must stay under
- * 30 KB. Astro ships none by default; the scripts today are the inline copy button and the
- * self-hosting chooser. JSON-LD blocks are data the browser never runs, so they do not count.
+ * 30 KB. Astro ships none by default; the scripts today are the inline theme script, the site
+ * script (src/lib/client) and the self-hosting chooser. JSON-LD blocks are data the browser
+ * never runs, so they do not count.
  */
 import { readFileSync, readdirSync } from 'node:fs';
 import { gzipSync } from 'node:zlib';

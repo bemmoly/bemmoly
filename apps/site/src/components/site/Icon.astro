@@ -1,0 +1,33 @@
+---
+/**
+ * A drawn icon from the product's set (src/lib/icons.ts), as inline SVG rendered at build
+ * time. It takes the colour of the text around it. Without `label` it is decorative and
+ * hidden from assistive tech, as the product's Icon is.
+ */
+import { createElement } from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
+import { ICON_STROKE, siteIcon, type SiteIconName } from '../../lib/icons.ts';
+
+interface Props {
+  name: SiteIconName;
+  /** Width and height in px: 16 inline, 14 in small controls, 18 to 20 in tiles. */
+  size?: number;
+  label?: string;
+  class?: string;
+}
+
+const { name, size = 16, label, class: className } = Astro.props;
+const a11y = label ? { role: 'img', 'aria-label': label } : { 'aria-hidden': true as const };
+const svg = renderToStaticMarkup(
+  createElement(siteIcon(name), {
+    ...a11y,
+    size,
+    strokeWidth: ICON_STROKE,
+    absoluteStrokeWidth: true,
+    className: ['shrink-0', className].filter(Boolean).join(' '),
+    focusable: 'false',
+  }),
+);
+---
+
+<Fragment set:html={svg} />

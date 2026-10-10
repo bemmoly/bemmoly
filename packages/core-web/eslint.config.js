@@ -17,4 +17,10 @@ export default [
     ignores: ['**/*.test.{ts,tsx}'],
     rules: { 'bemmoly/no-glyph-characters': 'error' },
   },
+  {
+    // The root config's literal colour and font size rule, with paths relative to this package.
+    files: ['src/**/*.tsx'],
+    ignores: ['**/*.test.tsx', '**/*.stories.tsx', 'src/testing/**'],
+    rules: { 'bemmoly/no-literal-styles': 'error' },
+  },
 ];

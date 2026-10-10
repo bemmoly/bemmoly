@@ -19,4 +19,5 @@ accepted record is never edited except to mark it superseded.
 | [0012](0012-shared-editor-loaded-on-first-use.md)       | One shared editor package, loaded the first time an editor opens | accepted |
 | [0013](0013-modules-read-documents-with-the-editor-schema.md) | Module server code reads documents with the editor's schema | accepted |
 | [0014](0014-collab-host-in-the-kernel.md) | The collaboration host lives in the kernel; modules register kinds | accepted |
-| [0015](0015-premium-visual-system.md) | The design review is the source of truth for the shell and visual language | accepted |
+| [0015](0015-premium-visual-system.md) | The design review is the source of truth for the shell and visual language | superseded in part by 0016 |
+| [0016](0016-design-system-is-canonical.md) | One written design system is the canonical rulebook for UI | accepted |

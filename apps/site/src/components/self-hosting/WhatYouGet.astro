@@ -1,6 +1,7 @@
 ---
 /** One row that holds for every path, so the choice above is only about where it runs. */
 import { WHAT_YOU_GET } from '../../data/self-hosting.ts';
+import Icon from '../site/Icon.astro';
 ---
 
 <section
@@ -15,9 +16,7 @@ import { WHAT_YOU_GET } from '../../data/self-hosting.ts';
     {WHAT_YOU_GET.map((item) => (
       <li class="flex flex-col gap-1.5 rounded-window border border-line bg-side p-4 dark:bg-card">
         <span class="flex items-center gap-2 text-14 font-semibold text-tx">
-          <span aria-hidden="true" class="text-green">
-            ✓
-          </span>
+          <Icon name="check-circle" class="text-green-tx" />
           {item.title}
         </span>
         <span class="text-13 leading-brief text-tx-2">{item.body}</span>

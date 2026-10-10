@@ -1,0 +1,40 @@
+---
+/**
+ * The install command as the call to action, copy-first (site review, hero): a dark field with
+ * the prompt, the command as selectable text and the copy button. On a phone the command wraps
+ * instead of scrolling, so Copy is always in reach. Without the script the command is still
+ * text a visitor can select and copy.
+ */
+import { INSTALL_COMMAND } from '../../lib/links.ts';
+import CopyButton from './CopyButton.astro';
+
+interface Props {
+  /** A unique id for the command text, the clipboard fallback's selection. */
+  id: string;
+  command?: string;
+  size?: 'md' | 'lg';
+  class?: string;
+}
+
+const { id, command = INSTALL_COMMAND, size = 'md', class: className } = Astro.props;
+---
+
+<div
+  data-theme="dark"
+  class:list={[
+    'flex max-w-full items-start gap-3 rounded-[10px] bg-sunken py-2 pr-2 pl-4 text-left font-mono text-tx shadow-e1 sm:items-center',
+    size === 'lg' ? 'min-h-12 text-14 sm:min-h-14 sm:pl-5 sm:text-16' : 'min-h-12 text-14',
+    className,
+  ]}
+>
+  <span class="pt-1.75 text-tx-3 select-none sm:pt-0" aria-hidden="true">
+    $
+  </span>
+  <code
+    id={id}
+    class="min-w-0 flex-1 pt-1.75 break-all select-all sm:pt-0 sm:break-normal sm:whitespace-nowrap"
+  >
+    {command}
+  </code>
+  <CopyButton value={command} target={id} />
+</div>

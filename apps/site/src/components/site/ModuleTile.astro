@@ -1,0 +1,33 @@
+---
+/**
+ * A module's tile, as the product's sidebar draws it: the module's logo colour at the logo's
+ * own corner ratio (about 26%), with its drawn icon in white. Work is the brand blue, Docs the
+ * mid blue, AI the lilac, which means AI and nothing else (ADR 0015).
+ */
+import type { ModuleId } from '../../lib/icons.ts';
+import Icon from './Icon.astro';
+
+interface Props {
+  module: ModuleId;
+  /** 28 beside a name, 36 in a module card. */
+  size?: 28 | 36;
+}
+
+const MODULES = {
+  work: { fill: 'bg-brand-1', icon: 'board' },
+  docs: { fill: 'bg-brand-2', icon: 'doc' },
+  ai: { fill: 'bg-brand-3', icon: 'spark' },
+} as const;
+
+// The logo's corner ratio (about 26%), as classes: the strict HTML rules allow no inline style.
+const SIZES = { 28: 'size-7 rounded-[7.3px]', 36: 'size-9 rounded-[9.4px]' } as const;
+const { module, size = 28 } = Astro.props;
+const { fill, icon } = MODULES[module];
+---
+
+<span
+  aria-hidden="true"
+  class:list={['inline-grid shrink-0 place-items-center text-on-solid', fill, SIZES[size]]}
+>
+  <Icon name={icon} size={Math.round(size * 0.58)} />
+</span>

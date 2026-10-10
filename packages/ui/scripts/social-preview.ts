@@ -1,6 +1,6 @@
 /**
  * The Open Graph cards: the lockup, the tagline, a line about the product, the install
- * command and a framed slice of the Board mock, on the Classic page background. Every colour,
+ * command and a framed slice of the Board captured from the demo, on the Classic page background. Every colour,
  * radius and shadow comes from the tokens; the text is outlined from the self-hosted fonts.
  */
 import { readFileSync } from 'node:fs';
@@ -15,8 +15,9 @@ export interface PreviewInput {
   board?: URL;
 }
 
-export const HEADLINE = 'Keep your work in-house.';
-export const LINE = 'Open source, self-hosted, AI-first issues and docs for your whole company.';
+export const HEADLINE = 'Your work. Your platform.';
+// What it is, then the three promises; no claim the shipped product does not make good.
+export const LINE = 'Self-hosted issues and docs. Open source, no pricing, nothing to buy.';
 export const COMMAND = 'curl -fsSL https://get.bemmoly.com | sh';
 const FOOTER = 'bemmoly.com  ·  MIT licensed';
 
@@ -25,17 +26,16 @@ const body: TextStyle = { family: 'ibm-plex-sans', weight: 400, size: 26 };
 const code: TextStyle = { family: 'ibm-plex-mono', weight: 400, size: 20 };
 const footer: TextStyle = { family: 'ibm-plex-sans', weight: 400, size: 20 };
 
-/** The Board shots the landing page shows (2x), recaptured from the mocks. */
-export const BOARD = new URL('../../../apps/site/src/assets/screens/board.png', import.meta.url);
-export const BOARD_OCEAN = new URL(
-  '../../../apps/site/src/assets/screens/board-ocean.png',
-  import.meta.url,
-);
-const BOARD_SIZE = { width: 2364, height: 1372 };
+/** The Board from the demo build (2x), captured by `brand:captures`. */
+export const BOARD = new URL('../assets/brand/captures/board.png', import.meta.url);
+export const BOARD_OCEAN = new URL('../assets/brand/captures/board-ocean.png', import.meta.url);
 const MARGIN = 72;
 const LOCKUP_HEIGHT = 56;
 
 const px = (value: string) => Number.parseFloat(value);
+
+/** "Your work. Your platform." as its two sentences. */
+export const sentences = (text: string) => text.split(/(?<=\.) /);
 
 /** `0 1px 2px rgba(16,24,40,.05)` as an SVG drop shadow. */
 export function shadowFilter(id: string): string {
@@ -58,8 +58,9 @@ function lockupAt(input: PreviewInput, x: number, y: number): string {
 function copyBlock(input: PreviewInput, x: number, top: number, width: number) {
   const { colors } = input;
   // One sentence per line where they fit: the tagline reads as two beats.
-  const titles = HEADLINE.split(/(?<=\.) /).flatMap((sentence) => wrap(sentence, headline, width));
-  const lines = wrap(LINE, body, width);
+  const titles = sentences(HEADLINE).flatMap((sentence) => wrap(sentence, headline, width));
+  // The line breaks between its sentences too: what it is, then the promises.
+  const lines = sentences(LINE).flatMap((sentence) => wrap(sentence, body, width));
   const parts: string[] = [];
   let y = top;
   for (const title of titles) {
@@ -93,10 +94,12 @@ export function boardFrame(
   scale: number,
   from = { x: 0, y: 0 },
 ) {
-  const image = readFileSync(input.board ?? BOARD).toString('base64');
+  const png = readFileSync(input.board ?? BOARD);
+  const image = png.toString('base64');
   const radius = px(RADII.dialog);
-  const w = BOARD_SIZE.width * scale;
-  const h = BOARD_SIZE.height * scale;
+  // A PNG's width and height are the first two fields of its IHDR chunk.
+  const w = png.readUInt32BE(16) * scale;
+  const h = png.readUInt32BE(20) * scale;
   const x = frame.x - from.x * scale;
   const y = frame.y - from.y * scale;
   return [

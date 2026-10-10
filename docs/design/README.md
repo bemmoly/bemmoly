@@ -1,11 +1,22 @@
-# Design mocks
+# Design
 
-`premium/` holds the design review, the source of truth for the shell and the visual language
-(tokens, icons, glyphs, tiles, the brand block); see its README and ADR 0015. Where the review
-and a mock overlap, the review wins.
+**Start at [`system/`](system/README.md).** It is the design system: the single source of truth
+for how every Bemmoly screen looks, reads and behaves, with the tokens, components, interaction
+rules and the definition of done for UI (ADR 0016). Everything else in this folder is history and
+evidence it links to.
 
-`mocks/` holds the 17 product screens that are the pixel source of truth for everything the
-review does not draw.
+| Folder                     | What it is now                                                                  |
+| -------------------------- | ------------------------------------------------------------------------------- |
+| [`system/`](system/README.md) | **Canonical.** The rules, with real token names and imports                  |
+| [`premium/`](premium/README.md) | History and evidence: the design review (Current and Proposed), `kit.css`, `kit.js`, `content.js`, and the per-screen interaction notes in `premium/interaction/`, which new screens still extend |
+| `premium/docs/` (with #77) | History and evidence: the Docs review                                           |
+| [`mocks/`](mocks/README.md) | **Superseded** history: the first release's 17 screens. They hold only for internals nothing newer draws |
+
+## The first release's mocks (superseded)
+
+`mocks/` holds the 17 product screens the first releases were built from. Wherever the design
+system or the review covers a screen, those win and the mock is superseded; the mocks still hold
+only for internals nothing newer draws (the content of most settings pages, setup steps).
 Open `mocks/Bemmoly App.dc.html` in a browser; it links to every other screen. Under
 "Configuration and admin" it includes the three System settings screens:
 `Bemmoly Modules Settings.dc.html`, `Bemmoly Updates Settings.dc.html` and
@@ -13,8 +24,12 @@ Open `mocks/Bemmoly App.dc.html` in a browser; it links to every other screen. U
 Each file is self-contained HTML plus `support.js`; the data behind a screen lives in a
 `class Component extends DCLogic` block near the end of the file.
 
-`mocks-export.zip` is the original export. The extracted files are what the code is built from.
+`mocks-export.zip` is the original export. The extracted files are what the code was built from.
 Every mock carries the designed Bemmoly mark in place of the export's placeholder logo.
+
+## Deviation log (history)
+
+What the code shipped that differs from the mocks, kept as a record. It is not a source of rules.
 
 Changes the tech design has queued for the mocks (the design is otherwise followed exactly):
 

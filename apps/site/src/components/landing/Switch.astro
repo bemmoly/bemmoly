@@ -1,0 +1,62 @@
+---
+/**
+ * Bringing work in and taking it out, from the site review: import lowers the cost of trying,
+ * export removes the fear of being stuck. Other products appear only as import sources, the
+ * planned importer says "Planned" with no version, and configuration is compressed to one
+ * strip whose detail lives on the topic pages.
+ */
+import { CONFIGURE, SWITCH_TILES } from '../../data/landing.ts';
+import Badge from '../site/Badge.astro';
+import Icon from '../site/Icon.astro';
+import SectionHead from './SectionHead.astro';
+---
+
+<section id="switch" aria-labelledby="switch-title" class="bg-sunken py-18 md:py-24">
+  <SectionHead
+    eyebrow="Switching"
+    icon="import"
+    title="Bring what you have. Take it with you."
+    id="switch-title"
+  >
+    Start with the pages you already wrote. And if you ever leave, your pages leave with you, in
+    formats anything can read.
+  </SectionHead>
+  <ul class="mx-auto mt-10 grid max-w-300 gap-4 px-4 sm:grid-cols-2 sm:px-6 md:mt-11 lg:grid-cols-4 lg:px-8">
+    {SWITCH_TILES.map((tile) => (
+      <li class="flex flex-col gap-2.5 rounded-shot bg-card p-5.5 shadow-e1">
+        <span
+          class:list={[
+            'grid size-10 place-items-center rounded-[10px]',
+            tile.planned
+              ? 'bg-sunken text-tx shadow-[inset_0_0_0_1px_var(--line)]'
+              : 'bg-acc-50 text-acc',
+          ]}
+        >
+          <Icon name={tile.icon} size={19} />
+        </span>
+        <h3 class="text-16 font-semibold">{tile.title}</h3>
+        <p class="text-14h leading-brief text-tx-3">{tile.body}</p>
+        <Badge tone={tile.planned ? 'neutral' : 'ok'} pill class="mt-auto self-start">
+          {tile.planned ? 'Planned' : 'Available'}
+        </Badge>
+      </li>
+    ))}
+  </ul>
+  <div class="mx-auto mt-7 max-w-300 px-4 sm:px-6 lg:px-8">
+    <div class="grid gap-5 rounded-shot bg-card p-5 shadow-e1 sm:grid-cols-2 md:px-6 lg:grid-cols-[220px_repeat(4,1fr)] lg:items-center">
+      <div>
+        <h3 class="text-15 font-semibold">Configure without code</h3>
+        <p class="text-14 text-tx-3">Admins set it up; teams adjust it.</p>
+      </div>
+      {CONFIGURE.map((item) => (
+        <div class="flex items-start gap-2.5">
+          <Icon name={item.icon} size={17} class="mt-0.5 text-acc" />
+          <div>
+            <b class="text-14h font-medium">{item.title}</b>
+            <p class="text-13 text-tx-3">{item.body}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>

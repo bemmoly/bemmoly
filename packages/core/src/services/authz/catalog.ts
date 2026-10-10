@@ -33,7 +33,6 @@ const ONLY_ORG_ADMIN: Cells = [true, false, false, false, false];
 const KERNEL: ReadonlyArray<
   readonly [KernelCapability, string, string | null, 'Workspace' | 'AI', Cells]
 > = [
-  ['workspace.billing.manage', 'Manage billing and license', null, 'Workspace', ONLY_ORG_ADMIN],
   ['workspace.delete', 'Delete workspace', null, 'Workspace', ONLY_ORG_ADMIN],
   ['workspace.sso.configure', 'Configure SSO', null, 'Workspace', ONLY_ORG_ADMIN],
   [

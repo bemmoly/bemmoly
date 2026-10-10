@@ -1,0 +1,116 @@
+---
+/**
+ * What it is, from the site review: one line, three modules with honest states (Work
+ * available, Docs new in the release it shipped in, AI coming), then Work and Docs each with a
+ * real screen of the new UI and what it does today, nothing planned.
+ */
+import { DOCS_OUTCOMES, WORK_OUTCOMES } from '../../data/landing.ts';
+import { POSTERS, POSTER_WIDTHS } from '../../data/posters.ts';
+import { PREVIEWS } from '../../data/previews.ts';
+import { DOCS_SINCE, shippedLabel } from '../../lib/changelog.ts';
+import type { BadgeTone } from '../../lib/badge.ts';
+import Badge from '../site/Badge.astro';
+import type { ModuleId } from '../../lib/icons.ts';
+import ModuleTile from '../site/ModuleTile.astro';
+import Poster from '../site/Poster.astro';
+import SectionHead from './SectionHead.astro';
+import ShowcaseRow from './ShowcaseRow.astro';
+
+const docsLabel = shippedLabel(DOCS_SINCE);
+const MODULES: readonly {
+  id: ModuleId;
+  name: string;
+  badge: string;
+  tone: BadgeTone;
+  body: string;
+  href: string;
+}[] = [
+  {
+    id: 'work',
+    name: 'Work',
+    badge: 'Available',
+    tone: 'ok',
+    body: 'Issues, boards, backlog and sprints',
+    href: '/#work',
+  },
+  {
+    id: 'docs',
+    name: 'Docs',
+    badge: docsLabel,
+    tone: docsLabel === 'Available' ? 'ok' : 'accent',
+    body: 'Pages your team writes together',
+    href: '/#docs',
+  },
+  {
+    id: 'ai',
+    name: 'AI',
+    badge: 'Coming',
+    tone: 'ai',
+    body: 'Optional, any provider or none',
+    href: '/#ai',
+  },
+];
+const view = (id: 'board' | 'docs') => PREVIEWS.find((preview) => preview.id === id);
+const board = view('board');
+const page = view('docs');
+const sizes = '(min-width: 1248px) 724px, (min-width: 1024px) 58vw, calc(100vw - 32px)';
+---
+
+<section id="product" aria-labelledby="product-title" class="scroll-mt-16 py-18 md:py-24">
+  <SectionHead
+    eyebrow="What it is"
+    icon="modules"
+    title="One place for the work and the words about it."
+    id="product-title"
+    layout="split"
+  >
+    Issues and sprints next to the specs, RFCs and runbooks they come from. One sidebar, one search,
+    one set of permissions, on your server.
+  </SectionHead>
+  <ul class="mx-auto mt-10 grid max-w-300 gap-3 px-4 sm:px-6 md:grid-cols-3 md:gap-4 lg:px-8">
+    {MODULES.map((module) => (
+      <li>
+        <a
+          href={module.href}
+          class="flex items-center gap-3.5 rounded-shot bg-card px-4.5 py-4 text-tx no-underline! shadow-e1 hover:text-tx hover:shadow-e1h"
+        >
+          <ModuleTile module={module.id} size={36} />
+          <span class="flex min-w-0 flex-col gap-0.5">
+            <span class="flex items-center gap-2">
+              <b class="text-16 font-semibold">{module.name}</b>
+              <Badge tone={module.tone} pill>
+                {module.badge}
+              </Badge>
+            </span>
+            <span class="text-14 text-tx-3">{module.body}</span>
+          </span>
+        </a>
+      </li>
+    ))}
+  </ul>
+  <ShowcaseRow
+    id="work"
+    module="work"
+    name="Work"
+    badge="Available"
+    tone="ok"
+    title="Plan the sprint. Run the board."
+    outcomes={WORK_OUTCOMES}
+    demo={{ label: 'Open the board in the demo', href: board?.path ?? '/demo' }}
+  >
+    {board && <Poster {...POSTERS.board} alt={board.alt} widths={POSTER_WIDTHS} sizes={sizes} />}
+  </ShowcaseRow>
+  <ShowcaseRow
+    id="docs"
+    module="docs"
+    name="Docs"
+    badge={docsLabel}
+    tone={docsLabel === 'Available' ? 'ok' : 'accent'}
+    title="Write it down where the work lives."
+    outcomes={DOCS_OUTCOMES}
+    demo={{ label: 'Open a page in the demo', href: page?.path ?? '/demo' }}
+    flip
+  >
+    {page && <Poster {...POSTERS.docs} alt={page.alt} widths={POSTER_WIDTHS} sizes={sizes} />}
+  </ShowcaseRow>
+</section>

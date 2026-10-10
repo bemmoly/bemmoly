@@ -1,0 +1,107 @@
+---
+/**
+ * Install, from the site review: the right command for where you install, with enough context
+ * to trust it. Tabs for the four paths (kept in the address, #install-compose), commands that
+ * copy without their prompts and step by step where order matters, the download-then-read
+ * variant, and what the installer does, from its own code. No time is promised: nothing has
+ * measured an install yet.
+ */
+import { INSTALLER_STEPS, INSTALL_PATHS } from '../../data/landing.ts';
+import { INSTALL_READ_FIRST } from '../../lib/links.ts';
+import Badge from '../site/Badge.astro';
+import Button from '../site/Button.astro';
+import CodeBlock from '../site/CodeBlock.astro';
+import Icon from '../site/Icon.astro';
+---
+
+<section id="install" aria-labelledby="install-title" class="scroll-mt-16 py-18 md:py-24">
+  <div class="mx-auto grid max-w-300 gap-12 px-4 sm:px-6 lg:grid-cols-[minmax(0,680px)_1fr] lg:gap-16 lg:px-8">
+    <div class="flex min-w-0 flex-col">
+      <span class="inline-flex items-center gap-2 text-14 font-semibold text-acc">
+        <Icon name="terminal" size={15} />
+        Install
+      </span>
+      <h2
+        id="install-title"
+        class="mt-3 text-32 font-semibold tracking-section text-balance md:text-44"
+      >
+        One command, then your browser.
+      </h2>
+      <p class="mt-3.5 mb-6.5 text-16 leading-desc text-pretty text-tx-2 md:text-17">
+        Run it on a fresh Linux VM with 2 vCPU and 4 GB and a domain pointing at it. Already run
+        something? Pick it below; the image, backups and upgrades are the same everywhere.
+      </p>
+      <div data-tabgroup>
+        <div
+          data-tablist
+          data-label="Where you install"
+          class="-mx-4 flex gap-0.5 overflow-x-auto px-4 pb-1 sm:mx-0 sm:inline-flex sm:self-start sm:rounded-[10px] sm:bg-sunken sm:p-0.75 sm:shadow-[inset_0_0_0_1px_var(--line)]"
+        >
+          {INSTALL_PATHS.map((path, index) => (
+            <a
+              href={`/#install-${path.id}`}
+              id={`install-tab-${path.id}`}
+              data-tab
+              data-active={index === 0 ? '' : undefined}
+              class="inline-flex h-8 shrink-0 items-center gap-1.75 rounded-full px-3.25 text-14 font-medium whitespace-nowrap text-tx-2 shadow-[inset_0_0_0_1px_var(--line)] hover:text-tx data-active:bg-tx data-active:text-canvas data-active:shadow-none sm:rounded-[7px] sm:shadow-none sm:data-active:bg-card sm:data-active:text-tx sm:data-active:shadow-e1"
+            >
+              {path.title}
+              {path.badge && index === 0 && (
+                <span class="hidden sm:inline-flex">
+                  <Badge tone={path.badge.tone} pill class="h-4.5 text-11">
+                    {path.badge.label}
+                  </Badge>
+                </span>
+              )}
+            </a>
+          ))}
+        </div>
+        {INSTALL_PATHS.map((path) => (
+          <div
+            id={`install-${path.id}`}
+            data-tabpanel
+            class="mt-3.5 flex scroll-mt-24 flex-col gap-3"
+          >
+            <h3 class="sr-only">{path.title}</h3>
+            {path.badge && path.badge.tone === 'warn' && (
+              <Badge tone="warn" pill class="self-start">
+                {path.badge.label}
+              </Badge>
+            )}
+            {path.steps.map((step) => (
+              <>
+                <CodeBlock code={step.code} label={step.label} copy />
+                {step.note && <p class="text-14 leading-brief text-tx-2">{step.note}</p>}
+              </>
+            ))}
+            <p class="text-14 leading-brief text-tx-3">{path.note}</p>
+          </div>
+        ))}
+      </div>
+      <p class="mt-5 text-14 text-tx-3">
+        Prefer to read it first? Download it, read it, then run it:
+      </p>
+      <CodeBlock code={`$ ${INSTALL_READ_FIRST}`} label="Download, then read" copy class="mt-2" />
+    </div>
+    <div class="lg:pt-2">
+      <h3 class="text-15 font-semibold">What the installer does</h3>
+      <ol class="mt-4 flex flex-col gap-4">
+        {INSTALLER_STEPS.map((step, index) => (
+          <li class="grid grid-cols-[32px_1fr] gap-4">
+            <span class="grid size-7 place-items-center rounded-full bg-acc-50 text-13 font-semibold text-acc">
+              {index + 1}
+            </span>
+            <div class="flex flex-col gap-0.5">
+              <b class="text-15 font-semibold">{step.lead}</b>
+              <span class="text-14h leading-brief text-tx-3">{step.rest}</span>
+            </div>
+          </li>
+        ))}
+      </ol>
+      <Button variant="secondary" size="sm" href="/docs/install" class="mt-6.5">
+        <Icon name="guide" size={14} />
+        The full install guide
+      </Button>
+    </div>
+  </div>
+</section>

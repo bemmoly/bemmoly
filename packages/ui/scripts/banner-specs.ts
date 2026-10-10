@@ -29,6 +29,7 @@ const x: BannerSpec = {
     width: 540,
     headline: sans(64, 600),
     split: true,
+    splitLine: true,
     body: sans(24),
     code: mono(20),
   },
@@ -42,7 +43,7 @@ const x: BannerSpec = {
  * bottom-left on desktop and phones show only the middle, so text stays in the right
  * two-thirds, vertically centred. At this height the install pill would push the block out
  * of the band or squeeze the Board to a sliver, so the cover carries the tagline and the line
- * only, and the Board is cropped to its top bar and the first card column.
+ * only, and the Board is cropped to its project bar and the first card column.
  */
 const linkedinCompany: BannerSpec = {
   name: 'banner-linkedin-company-1128x191',
@@ -52,8 +53,8 @@ const linkedinCompany: BannerSpec = {
   safe: { x: 376, y: 24, w: 728, h: 143 },
   covered: [{ x: 0, y: 51, w: 270, h: 140 }],
   copy: { x: 384, width: 560, headline: sans(48, 600), split: false, body: sans(18) },
-  // From just before the top bar's Projects tab, so the slice opens on the first card column.
-  frame: { rect: { x: 968, y: 48, w: 200, h: 183 }, scale: 0.33, from: { x: 352, y: 0 } },
+  // From just right of the sidebar, so the slice opens on the project bar and the first column.
+  frame: { rect: { x: 968, y: 48, w: 200, h: 183 }, scale: 0.33, from: { x: 500, y: 0 } },
   domain: { style: sans(14), right: 1104, baseline: 36 },
   glow: { cx: 376, cy: 0, r: 760 },
 };
@@ -74,6 +75,7 @@ const linkedinPersonal: BannerSpec = {
     width: 560,
     headline: sans(56, 600),
     split: true,
+    splitLine: true,
     body: sans(22),
     code: mono(18),
   },
@@ -106,6 +108,7 @@ const buyMeACoffee: BannerSpec = {
     top: 32,
     headline: sans(64, 600),
     split: false,
+    splitLine: true,
     body: sans(22),
     code: mono(18),
   },
@@ -135,6 +138,7 @@ export const README_HERO: BannerSpec = {
     top: 112,
     headline: sans(60, 600),
     split: false,
+    splitLine: true,
     body: sans(24),
     code: mono(20),
   },

@@ -11,7 +11,7 @@ export const STATUS = {
   available: { label: `available in ${RELEASE.version}`, tone: 'ok' },
   ubuntu: { label: 'tested on Ubuntu', tone: 'accent' },
   offline: { label: 'built, untested offline', tone: 'warn' },
-  launch: { label: 'planned for 1.0', tone: 'neutral' },
+  launch: { label: 'planned', tone: 'neutral' },
 } as const satisfies Record<string, { label: string; tone: BadgeTone }>;
 
 export type StatusKey = keyof typeof STATUS;
@@ -41,7 +41,7 @@ export const SIZING = [
   {
     team: 'Up to 50 people',
     vm: '1 vCPU, 2 GB',
-    note: 'Comfortable; AI jobs run one at a time.',
+    note: 'Comfortable for a small team.',
   },
   {
     team: 'Up to 200 people',

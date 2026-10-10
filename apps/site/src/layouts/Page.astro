@@ -1,8 +1,8 @@
 ---
 /**
- * Text pages (self-hosting, docs, topic pages, security, changelog, community). No mock draws
- * them, so they reuse the Landing mock's type: the 36px section heading, the 16px/1.65 lede
- * and the 1160px column, narrowed to a 760px reading measure unless `wide` (pages laid out in
+ * Text pages (self-hosting, docs, topic pages, security, changelog, community). The site
+ * review's guide draws the title at the 44px section size (32px on a phone) over a 19px lede;
+ * the column is 1160px, narrowed to a 760px reading measure unless `wide` (pages laid out in
  * cards). Pages below a section (/docs/install) show the way back above the heading.
  */
 import { trailOf, type SitePage } from '../data/pages.ts';
@@ -53,8 +53,8 @@ const parents = trailOf(page.path).slice(1, -1);
           <span aria-current="page">{page.name}</span>
         </nav>
       )}
-      <h1 class="text-24 leading-heading font-semibold tracking-display">{heading}</h1>
-      <p class="text-16 leading-doc text-pretty text-tx-2">{lede}</p>
+      <h1 class="text-32 font-semibold tracking-section text-balance md:text-44">{heading}</h1>
+      <p class="text-17 leading-brief text-pretty text-tx-2 md:text-19">{lede}</p>
     </header>
     <slot />
   </article>
