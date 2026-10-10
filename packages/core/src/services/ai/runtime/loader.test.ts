@@ -3,7 +3,13 @@ import { createRequire } from 'node:module';
 import { describe, expect, it } from 'vitest';
 import allowList from './allow-list.json' with { type: 'json' };
 import credentialOptions from './credential-options.json' with { type: 'json' };
-import { factoryOptions, loaderKindOf, loadProvider, type ProviderConnection } from './loader.ts';
+import {
+  addressPolicyOf,
+  factoryOptions,
+  loaderKindOf,
+  loadProvider,
+  type ProviderConnection,
+} from './loader.ts';
 
 const manifest = JSON.parse(
   readFileSync(new URL('../../../../package.json', import.meta.url), 'utf8'),
@@ -107,5 +113,13 @@ describe('loader resolution', () => {
 
   it('refuses a compatible provider without a base URL', async () => {
     await expect(loadProvider(connection({ baseUrl: null }))).rejects.toThrow(/base URL/);
+  });
+});
+
+describe('where a provider may call', () => {
+  it('reads the policy from the provider kind and BEMMOLY_ALLOW_PRIVATE_URLS', () => {
+    expect(addressPolicyOf({ catalogId: 'openai' }, false)).toBe('public');
+    expect(addressPolicyOf({ catalogId: 'custom' }, false)).toBe('local');
+    expect(addressPolicyOf({ catalogId: 'openai' }, true)).toBe('any');
   });
 });

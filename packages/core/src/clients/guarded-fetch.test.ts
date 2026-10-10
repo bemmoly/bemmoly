@@ -1,5 +1,4 @@
 import { describe, expect, it, vi } from 'vitest';
-import { addressPolicyOf } from '../services/ai/runtime/loader.ts';
 import { createGuardedFetch, RedirectRefusedError } from './guarded-fetch.ts';
 import { PrivateAddressError } from './network.ts';
 
@@ -42,11 +41,5 @@ describe('the fetch model providers call through', () => {
       RedirectRefusedError,
     );
     expect(base.mock.calls[0]?.[1]).toMatchObject({ redirect: 'manual' });
-  });
-
-  it('reads the policy from the provider kind and BEMMOLY_ALLOW_PRIVATE_URLS', () => {
-    expect(addressPolicyOf({ catalogId: 'openai' }, false)).toBe('public');
-    expect(addressPolicyOf({ catalogId: 'custom' }, false)).toBe('local');
-    expect(addressPolicyOf({ catalogId: 'openai' }, true)).toBe('any');
   });
 });
