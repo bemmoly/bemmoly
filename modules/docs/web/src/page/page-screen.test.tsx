@@ -67,6 +67,21 @@ describe('the doc editor screen', () => {
     expect(screen.getByRole('heading', { name: 'Context' })).toBeTruthy();
   });
 
+  it('keeps a stored TL;DR unshown while the workspace has AI off', async () => {
+    page = pageDetail({ tldr: 'Sessions move to Postgres in two steps.' });
+    renderPage();
+    await title();
+    expect(screen.queryByText('TL;DR')).toBeNull();
+    expect(screen.queryByText('Sessions move to Postgres in two steps.')).toBeNull();
+  });
+
+  it('shows the TL;DR in the AI surface once the workspace has AI on', async () => {
+    page = pageDetail({ tldr: 'Sessions move to Postgres in two steps.' });
+    renderPage({ aiEnabled: true });
+    expect(await screen.findByText('Sessions move to Postgres in two steps.')).toBeTruthy();
+    expect(screen.getByText('TL;DR')).toBeTruthy();
+  });
+
   it('renames the page from its title and hands the caret on with Enter', async () => {
     renderPage();
     const field = await title();

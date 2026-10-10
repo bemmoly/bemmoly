@@ -1,6 +1,7 @@
 import type { PageComment, RichText } from '@bemmoly/module-docs/shared';
 import { ActivityAction, AiDot } from '@bemmoly/ui';
 import { useState, type KeyboardEvent, type ReactNode } from 'react';
+import { useSession } from '../shared/people.ts';
 import { CommentBox } from './comment-box.tsx';
 import { cx } from './cx.ts';
 import { CommentItem } from './comment-item.tsx';
@@ -57,7 +58,8 @@ function Quote({ comment }: { comment: PageComment }) {
 /**
  * One thread in the rail, the mock's card: br border, 7px radius, 10px 12px, the amber tint
  * when its text is in focus. The comments one under another (the first with its quote under
- * the name line), the AI fix when the thread carries one, and Apply fix · Reply · Resolve.
+ * the name line), the AI fix in lilac when the thread carries one and the workspace has AI on,
+ * and Apply fix · Reply · Resolve.
  * Enter or a click focuses its text.
  */
 export function CommentThread({
@@ -72,8 +74,11 @@ export function CommentThread({
   const [replying, setReplying] = useState(false);
   const [editing, setEditing] = useState<string | null>(null);
   const resolved = root.resolvedAt !== null;
+  const { aiEnabled } = useSession();
   const fix =
-    root.aiSuggestion && !root.aiSuggestion.appliedAt && root.anchor ? root.aiSuggestion : null;
+    aiEnabled && root.aiSuggestion && !root.aiSuggestion.appliedAt && root.anchor
+      ? root.aiSuggestion
+      : null;
 
   const onKeyDown = (event: KeyboardEvent<HTMLElement>) => {
     if (event.target !== event.currentTarget) return;
