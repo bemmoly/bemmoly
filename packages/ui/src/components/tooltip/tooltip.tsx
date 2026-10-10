@@ -36,6 +36,22 @@ const recently = () => performance.now() - lastClosedAt < TIMING.tooltipSkipMs;
 
 const GAP = 6;
 
+/**
+ * True unless the browser says the focus is not the keyboard's. Where focus was only
+ * dispatched (a test's synthetic event) the element is not :focus, and that counts as keyboard.
+ */
+function keyboardFocus(target: EventTarget): boolean {
+  if (!(target instanceof Element)) return false;
+  try {
+    return target.matches(':focus-visible') || !target.matches(':focus');
+  } catch {
+    return true;
+  }
+}
+
+/** The popover API puts the tip in the top layer; without it a fixed z-50 layer stands in. */
+const POPOVER = typeof HTMLElement !== 'undefined' && 'showPopover' in HTMLElement.prototype;
+
 interface TipProps extends Pick<TooltipProps, 'label' | 'keys'> {
   anchor: HTMLElement;
   side: NonNullable<TooltipProps['side']>;
@@ -51,6 +67,9 @@ function Tip({ anchor, side, id, label, keys }: TipProps) {
   useLayoutEffect(() => {
     const tip = ref.current;
     if (!tip) return;
+    // In the top layer, a tip inside a dialog is neither clipped by it nor placed relative to its
+    // transform, and never adds to its scroll size (which moved the dialog's own buttons).
+    if (POPOVER && !tip.matches(':popover-open')) tip.showPopover();
     // The wrapper is display: contents (no box of its own), so the control is what it points at.
     const box = (anchor.firstElementChild ?? anchor).getBoundingClientRect();
     const own = tip.getBoundingClientRect();
@@ -73,8 +92,9 @@ function Tip({ anchor, side, id, label, keys }: TipProps) {
       ref={ref}
       role="tooltip"
       id={id}
+      popover={POPOVER ? 'manual' : undefined}
       style={{ visibility: 'hidden' }}
-      className="pointer-events-none fixed top-0 left-0 z-50 inline-flex items-center gap-2 rounded-control bg-tx px-2 py-1 text-12 font-medium whitespace-nowrap text-canvas shadow-e2 motion-safe:animate-fade-in"
+      className="pointer-events-none fixed inset-auto top-0 left-0 z-50 m-0 inline-flex overflow-visible border-0 items-center gap-2 rounded-control bg-tx px-2 py-1 text-12 font-medium whitespace-nowrap text-canvas shadow-e2 motion-safe:animate-fade-in"
     >
       {label}
       {keys && (
@@ -140,9 +160,10 @@ export function Tooltip({
         pressed.current = true;
         hide();
       }}
-      onFocus={() => {
-        // Keyboard focus opens it at once; a click's focus does not cover the menu it opens.
-        if (!pressed.current) show(true);
+      onFocus={(event) => {
+        // Keyboard focus opens it at once. A click's focus, or a dialog focusing its first
+        // control on open, does not: the browser leaves those out of :focus-visible.
+        if (!pressed.current && keyboardFocus(event.target)) show(true);
       }}
       onBlur={() => {
         pressed.current = false;
