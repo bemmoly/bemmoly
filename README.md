@@ -5,7 +5,7 @@
   </picture>
 </p>
 
-<p align="center"><strong>Your work. Your platform.</strong></p>
+<p align="center"><strong>Keep your work in-house.</strong></p>
 
 <p align="center">
   <a href="https://bemmoly.com">Website</a> ·

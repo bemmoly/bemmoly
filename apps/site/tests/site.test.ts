@@ -29,7 +29,7 @@ afterAll(() => preview?.stop());
 describe('landing page', () => {
   it('renders the hero headline', async () => {
     const body = await (await fetch(`${preview.url}/`)).text();
-    expect(body).toMatch(/<h1\b[^>]*>\s*Your work\. Your platform\.\s*<\/h1>/);
+    expect(body).toMatch(/<h1\b[^>]*>\s*Keep your work in-house\.\s*<\/h1>/);
   });
 
   it('shows the installer one-liner and the Postgres 18 transcript', () => {

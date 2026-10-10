@@ -17,7 +17,7 @@ export const GET: APIRoute = ({ site }) => {
     '',
     '> Open source (MIT), self-hosted, AI-first work platform: issues, boards, sprints and docs',
     '> for a whole company, in one application image next to one Postgres on your own server,',
-    '> with no per-seat pricing. Your work. Your platform.',
+    '> with no per-seat pricing. Keep your work in-house.',
     '',
     `Bemmoly is built in the open at ${REPO_URL}. The current release is ${RELEASE.version}. It has`,
     'the foundation (the installer, the setup wizard, people, teams and roles, email and',

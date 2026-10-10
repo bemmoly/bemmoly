@@ -35,7 +35,7 @@ export interface BannerSpec {
   covered: readonly Rect[];
   copy: {
     x: number;
-    /** Wrap width for the line; the headline must fit it unwrapped. */
+    /** Wrap width for the line; a headline sentence wider than it wraps, balanced. */
     width: number;
     /** Where the headline may run wider than the line, above an avatar column. */
     headlineWidth?: number;
@@ -92,12 +92,19 @@ function balanced(text: string, style: TextStyle, width: number): string[] {
 function copyBlock(spec: BannerSpec, input: BannerInput, top: number) {
   const { colors } = input;
   const { x, width, headline, body, code } = spec.copy;
-  const titles = spec.copy.split ? HEADLINE.split(/(?<=\.) /) : [HEADLINE];
+  const headlineWidth = spec.copy.headlineWidth ?? width;
+  // A sentence wider than the room wraps, balanced, rather than shrinking the type.
+  const sentences = spec.copy.split ? HEADLINE.split(/(?<=\.) /) : [HEADLINE];
+  const titles = sentences.flatMap((sentence) =>
+    measure(sentence, headline) > headlineWidth
+      ? balanced(sentence, headline, headlineWidth)
+      : [sentence],
+  );
   const parts: string[] = [];
   const boxes: Rect[] = [];
   let y = top;
   for (const title of titles) {
-    if (measure(title, headline) > (spec.copy.headlineWidth ?? width))
+    if (measure(title, headline) > headlineWidth)
       throw new Error(`${spec.name}: "${title}" overflows`);
     y += headline.size;
     parts.push(`<path fill="${colors.tx}" d="${outline(title, headline, x, y)}"/>`);

@@ -17,7 +17,7 @@ export const GET: APIRoute = () => {
   const manifest = {
     name: 'Bemmoly',
     short_name: 'Bemmoly',
-    description: 'Your work. Your platform.',
+    description: 'Keep your work in-house.',
     start_url: '/',
     display: 'browser',
     background_color: classic.sf,

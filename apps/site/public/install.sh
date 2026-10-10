@@ -1,5 +1,5 @@
 #!/bin/sh
-# Bemmoly installer. Your work. Your platform.
+# Bemmoly installer. Keep your work in-house.
 #
 #   curl -fsSL https://get.bemmoly.com | sh
 #   curl -fsSL https://get.bemmoly.com | sh -s -- --domain bemmoly.example.com --yes
