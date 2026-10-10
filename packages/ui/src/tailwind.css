@@ -51,12 +51,12 @@
   --text-13h--line-height: normal;
   --text-15h: 16px;
   --text-15h--line-height: normal;
+  --radius-tick: 2px;
   --radius-chip: 4px;
   --radius-card: 8px;
   --radius-dialog: 12px;
   --radius-full: 9999px;
-  --radius-hair: 4px;
-  --radius-tick: 4px;
+  --radius-hair: 2px;
   --radius-xs: 4px;
   --radius-sm: 4px;
   --radius-panel: 6px;

@@ -47,8 +47,8 @@ component style, `kit.js` the icon, glyph, avatar, tile and brand-block drawings
    lilac (`--ai`, `--ai-600` for text, `--ai-100`, `--ai-50`).
 4. **A token diet.** Three text greys, every one at least 4.5:1 on every surface; two lines;
    three surfaces (`canvas`, `sunken`, `card`) plus the sidebar's `side` and the `hover` and
-   `press` overlays; type sizes 11/12/13/14/16/20/24; radii 4/6/8/12 and full; elevations
-   e1/e2/e3. The first release's names stay as aliases that resolve to the new values, so
+   `press` overlays; type sizes 11/12/13/14/16/20/24; radii 4/6/8/12 and full (with the review's own
+   2px kept for marks under 12px, such as epic swatches and progress bars); elevations e1/e2/e3. The first release's names stay as aliases that resolve to the new values, so
    contrast is fixed everywhere at once; a later change removes them. Canonical names are the
    ones in `kit.css`.
 5. **Icons are drawn, never typed.** One `Icon` component (Lucide, 16px, stroke 1.75) plus

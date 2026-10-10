@@ -50,8 +50,13 @@ export const TYPE_SCALE = {
   ),
 } as Readonly<Record<keyof typeof TYPE_STEPS | keyof typeof TYPE_ALIASES, string>>;
 
-/** Four radii and full: chips 4, controls 6, cards 8, dialogs 12. */
+/**
+ * Four radii and full: chips 4, controls 6, cards 8, dialogs 12. Marks smaller than 12px (epic
+ * swatches, progress bars) keep the review's 2px, so a square swatch still reads as a square
+ * beside a label's round dot.
+ */
 export const RADIUS_STEPS = {
+  tick: '2px',
   chip: '4px',
   control: '6px',
   card: '8px',
@@ -61,8 +66,7 @@ export const RADIUS_STEPS = {
 
 /** The first release's radii on the nearest step. */
 export const RADIUS_ALIASES = {
-  hair: 'chip',
-  tick: 'chip',
+  hair: 'tick',
   xs: 'chip',
   sm: 'chip',
   panel: 'control',

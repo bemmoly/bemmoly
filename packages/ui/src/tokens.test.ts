@@ -180,7 +180,7 @@ describe('design tokens', () => {
   it('keeps the type and radius scales to the diet, with old names on a step', () => {
     expect(Object.keys(TYPE_STEPS)).toEqual(['11', '12', '13', '14', '16', '20', '24']);
     expect(new Set(Object.values(TYPE_SCALE))).toEqual(new Set(Object.values(TYPE_STEPS)));
-    expect(Object.values(RADIUS_STEPS)).toEqual(['4px', '6px', '8px', '12px', '9999px']);
+    expect(Object.values(RADIUS_STEPS)).toEqual(['2px', '4px', '6px', '8px', '12px', '9999px']);
     expect(new Set(Object.values(RADII))).toEqual(new Set(Object.values(RADIUS_STEPS)));
   });
 });

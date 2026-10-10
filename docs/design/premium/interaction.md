@@ -47,10 +47,12 @@ assistive tech; it is a `<time>` with a machine-readable `dateTime`.
 heights and gaps, so nothing shifts when data lands. A loading region is `aria-busy`.
 
 **Menus.** A menu animates from its trigger, moves with the arrow keys, Home and End, chooses
-with Enter or Space, and closes with Escape or Tab. Closing returns focus to the trigger,
-whichever way it closed except a click elsewhere, which leaves focus where the click put it.
+with Enter or Space, and closes with Escape or Tab. Choosing an item or pressing Escape returns
+focus to the trigger; Tab moves on, and a click elsewhere leaves focus where the click put it.
+It fades out in 100ms.
 
 **Choices recorded.** The review's `kit.css` uses 7px radii on buttons and nav rows and 11.5 and
 12.5px text in places; the tokens follow its own foundations sheet instead (radii 4/6/8/12,
-sizes 11 to 24 in seven steps). Where a kit colour fails contrast it is lifted the smallest step
+sizes 11 to 24 in seven steps), keeping its 2px for marks under 12px so an epic's square
+swatch never reads as a label's dot. Where a kit colour fails contrast it is lifted the smallest step
 that passes (ADR 0015).
