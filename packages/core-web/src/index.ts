@@ -22,6 +22,12 @@ export {
   type ModuleChunkProps,
 } from './modules/chunks.ts';
 export {
+  preloadable,
+  useLoaded,
+  type ComponentLoader,
+  type Preloadable,
+} from './modules/preloadable.ts';
+export {
   createEntityRendererRegistry,
   EntityRenderersProvider,
   useEntityRenderer,
