@@ -1,6 +1,7 @@
 import type { DocServices, SuggestionItem } from '@bemmoly/editor';
 import { useMemo } from 'react';
 import { api } from '../../shared/api.ts';
+import { useIssueServices } from '../../shared/issue-services.tsx';
 import { docsPaths, navigateTo } from '../../shared/navigation.ts';
 
 /**
@@ -48,11 +49,13 @@ async function searchIssues(query: string): Promise<SuggestionItem[]> {
 
 /**
  * What the Docs page lends its editor: [[ page links from Docs search, @ people from the
- * workspace, # issues through the kernel's search registry, and in-app navigation for link
- * clicks. Uploads are absent (the kernel has no upload endpoint yet), so images go in by
- * link; issue chips print quietly without a renderer from Work; AI arrives with its runtime.
+ * workspace, live issue chips, tables and # search from whichever module owns issues (through
+ * the kernel's entity registry; the kernel's search stands in for # without one), and in-app
+ * navigation for link clicks. Uploads are absent (the kernel has no upload endpoint yet), so
+ * images go in by link; AI arrives with its runtime.
  */
 export function useDocServices(pageId: string): DocServices {
+  const issues = useIssueServices();
   return useMemo<DocServices>(
     () => ({
       searchPages: (query) => searchPages(query, pageId),
@@ -60,7 +63,8 @@ export function useDocServices(pageId: string): DocServices {
       searchPeople,
       searchIssues: (query) => searchIssues(query),
       onNavigate: navigateTo,
+      ...issues,
     }),
-    [pageId],
+    [pageId, issues],
   );
 }
