@@ -118,7 +118,7 @@ describe('Ask your docs on the Docs home', () => {
     renderHome({ ai: true });
     await askQuestion();
     const answer = await screen.findByRole('region', { name: 'AI answer' });
-    expect(await within(answer).findByText('from 1 page')).toBeTruthy();
+    expect(await within(answer).findByText('by AI · from 1 page')).toBeTruthy();
     const cite = within(answer).getByRole('link', { name: /Source 1: RFC: Move sessions/ });
     expect(cite.getAttribute('href')).toBe(`/docs/p/${PAGE}#rollback`);
     expect(within(answer).getByText('Unsourced')).toBeTruthy();

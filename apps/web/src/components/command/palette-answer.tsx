@@ -48,7 +48,7 @@ export function PaletteAnswer({
         blocks={readAnswer(answer.text, offered)}
         sources={sources}
         streaming={answer.streaming}
-        {...(from ? { source: `from ${from}` } : {})}
+        source={from ? `by AI · from ${from}` : 'by AI'}
         {...(!answer.streaming && answer.runId
           ? { actions: <AiNotUseful onClick={onNotUseful} /> }
           : {})}

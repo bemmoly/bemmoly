@@ -103,8 +103,11 @@ export function AskDocsResult({
       streaming={streaming}
       blocks={readAnswer(state.text, offered)}
       sources={state.sources.map(toItem)}
+      // Rule 5 of ai.md: the line says the answer is AI's, then what it was drawn from.
       source={
-        !streaming && cited.length > 0 ? `from ${describeSources(state.sources, cited)}` : null
+        !streaming && cited.length > 0
+          ? `by AI · from ${describeSources(state.sources, cited)}`
+          : 'by AI'
       }
       actions={
         state.phase === 'answered' ? (

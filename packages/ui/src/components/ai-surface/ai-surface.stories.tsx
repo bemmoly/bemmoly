@@ -161,7 +161,7 @@ export const Answer: Story = {
   render: () => (
     <div className="flex w-180 flex-col gap-4">
       <AiAnswer
-        source="from 2 pages, 1 issue"
+        source="by AI · from 2 pages, 1 issue"
         sources={answerSources}
         blocks={[
           {

@@ -12,7 +12,7 @@ test('asks the docs from the Docs home and opens the cited heading', async ({ pa
   await page.keyboard.press('Enter');
 
   const answer = panel.getByRole('region', { name: 'AI answer' });
-  await expect(answer.getByText('from 2 pages, 1 issue')).toBeVisible();
+  await expect(answer.getByText('by AI · from 2 pages, 1 issue')).toBeVisible();
   await expect(answer.getByText('Unsourced')).toBeVisible();
   await expect(answer.getByRole('button', { name: 'Not useful' })).toBeVisible();
 
