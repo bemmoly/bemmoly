@@ -105,11 +105,11 @@ export default function DocsHomeScreen(props: DocsScreenProps) {
           <Button
             variant="primary"
             icon={<Icon name="plus" size={15} />}
+            iconEnd={<Kbd keys="N" />}
             loading={newPage.isPending}
             onClick={() => createHere?.()}
           >
             New page
-            <Kbd keys="N" variant="plain" className="text-on-ac/75" />
           </Button>
         </HeaderActions>
       )}

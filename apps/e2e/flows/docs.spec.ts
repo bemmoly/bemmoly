@@ -56,14 +56,16 @@ test('a space is created, a page made from a template, reordered, starred, trash
   await spaceDialog.getByRole('button', { name: 'Create space' }).click();
   await expect(page).toHaveURL(new RegExp(`/docs/s/${key}$`));
   await expect(page.getByRole('heading', { name, level: 1 })).toBeVisible();
-  await expect(page.getByText('Nothing written here yet')).toBeVisible();
+  await expect(
+    page.getByRole('heading', { name: `Write the first page in ${name}` }),
+  ).toBeVisible();
 
   // The space is the open row in the sidebar, with one quiet row for its first page.
   await expect(spaceRow(page, name)).toHaveAttribute('aria-current', 'page');
   await expect(page.getByRole('button', { name: /^New page N$/ })).toBeVisible();
 
-  // The header's New page makes a page in place; a template from inside the empty page fills it.
-  await page.getByRole('button', { name: 'New page', exact: true }).click();
+  // Blank page makes a page in place; a template from inside the empty page fills it.
+  await page.getByRole('button', { name: /^Blank page/ }).click();
   await expect(page).toHaveURL(/\/docs\/p\/[0-9a-f-]{36}$/);
   await page
     .getByRole('region', { name: 'Start from a template' })
@@ -100,8 +102,10 @@ test('a space is created, a page made from a template, reordered, starred, trash
   await rowAction(page, 'Runbook', 'Star');
   await expect(page.getByText('Starred', { exact: true }).last()).toBeVisible();
   await page.goto('/docs');
-  await page.getByRole('tab', { name: 'Starred' }).click();
-  await expect(page.getByRole('tabpanel').getByRole('link', { name: /Runbook/ })).toBeVisible();
+  await page.getByRole('radio', { name: /^Starred/ }).click();
+  await expect(
+    page.getByRole('list', { name: 'Pages' }).getByRole('link', { name: /Runbook/ }),
+  ).toBeVisible();
 
   // Trash it, then restore it from the space's trash.
   await page.goto(`/docs/s/${key}`);
