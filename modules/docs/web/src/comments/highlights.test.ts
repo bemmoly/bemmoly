@@ -3,21 +3,34 @@ import { EditorState } from '@tiptap/pm/state';
 import { EditorView } from '@tiptap/pm/view';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { findQuote } from './anchor.ts';
-import { commentHighlightKey, commentHighlightPlugin } from './highlights.ts';
+import { CommentHighlighter, type HighlightUpdate } from './highlights.ts';
 
 const schema = editorSchema();
 const views: EditorView[] = [];
 afterEach(() => views.splice(0).forEach((view) => view.destroy()));
 
+/** A view drawing the highlighter as the live editor does: a direct prop, mapped per transaction. */
 function viewWith(text: string, onPick = vi.fn()) {
+  const highlighter = new CommentHighlighter(onPick);
   const doc = schema.nodeFromJSON({
     type: 'doc',
     content: [{ type: 'paragraph', content: [{ type: 'text', text }] }],
   });
-  const state = EditorState.create({ schema, doc, plugins: [commentHighlightPlugin(onPick)] });
-  const view = new EditorView(document.createElement('div'), { state });
+  const view: EditorView = new EditorView(document.createElement('div'), {
+    state: EditorState.create({ schema, doc }),
+    decorations: highlighter.decorations,
+    handleClick: highlighter.handleClick,
+    dispatchTransaction(tr) {
+      highlighter.map(tr);
+      view.updateState(view.state.apply(tr));
+    },
+  });
   views.push(view);
-  return { view, onPick };
+  const update = (change: HighlightUpdate) => {
+    highlighter.update(view.state.doc, change);
+    view.updateState(view.state);
+  };
+  return { view, onPick, update };
 }
 
 const marks = (view: EditorView) =>
@@ -29,38 +42,39 @@ const marks = (view: EditorView) =>
 
 describe('comment highlights', () => {
   it('draws each range with its thread id and the focused one stronger', () => {
-    const { view } = viewWith('Flip auth_pg_sessions off; sessions stay valid for 15 minutes.');
+    const { view, update } = viewWith(
+      'Flip auth_pg_sessions off; sessions stay valid for 15 minutes.',
+    );
     const ranges = [
       { id: 'a', ...findQuote(view.state.doc, 'auth_pg_sessions')! },
       { id: 'b', ...findQuote(view.state.doc, '15 minutes')! },
     ];
-    view.dispatch(view.state.tr.setMeta(commentHighlightKey, { ranges, active: 'b' }));
+    update({ ranges, active: 'b' });
     expect(marks(view)).toEqual([
       { id: 'a', text: 'auth_pg_sessions', active: false },
       { id: 'b', text: '15 minutes', active: true },
     ]);
+    update({ active: null });
+    expect(marks(view).map((mark) => mark.active)).toEqual([false, false]);
   });
 
   it('keeps a highlight on its words while text is typed before them', () => {
-    const { view } = viewWith('Keep Redis warm for 7 days.');
-    const range = findQuote(view.state.doc, 'warm')!;
-    view.dispatch(view.state.tr.setMeta(commentHighlightKey, { ranges: [{ id: 'a', ...range }] }));
+    const { view, update } = viewWith('Keep Redis warm for 7 days.');
+    update({ ranges: [{ id: 'a', ...findQuote(view.state.doc, 'warm')! }] });
     view.dispatch(view.state.tr.insertText('Please ', 1));
     expect(marks(view)).toEqual([{ id: 'a', text: 'warm', active: false }]);
   });
 
   it('never draws a range outside the document', () => {
-    const { view } = viewWith('Short');
-    view.dispatch(
-      view.state.tr.setMeta(commentHighlightKey, { ranges: [{ id: 'x', from: 2, to: 400 }] }),
-    );
+    const { view, update } = viewWith('Short');
+    update({ ranges: [{ id: 'x', from: 2, to: 400 }] });
     expect(marks(view)).toEqual([]);
   });
 
   it('names the thread under a click', () => {
-    const { view, onPick } = viewWith('Rollback is a flag flip.');
+    const { view, onPick, update } = viewWith('Rollback is a flag flip.');
     const range = findQuote(view.state.doc, 'flag flip')!;
-    view.dispatch(view.state.tr.setMeta(commentHighlightKey, { ranges: [{ id: 't1', ...range }] }));
+    update({ ranges: [{ id: 't1', ...range }] });
     view.someProp('handleClick', (handler) =>
       handler(view, range.from + 2, new MouseEvent('click')),
     );

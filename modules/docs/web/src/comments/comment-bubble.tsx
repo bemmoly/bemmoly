@@ -47,6 +47,8 @@ export function CommentBubble({ editor, onStart, disabled = false }: CommentBubb
     if (result.ok) {
       onStart(result.anchor);
       setShown(false);
+      // Typing now belongs to the comment box, never over the selected words in the page.
+      editor.view.dom.blur();
     } else {
       toast.show({ tone: 'info', title: REASONS[result.reason] });
     }
@@ -58,7 +60,8 @@ export function CommentBubble({ editor, onStart, disabled = false }: CommentBubb
     const { from, to } = editor.state.selection;
     const start = editor.view.coordsAtPos(from);
     const end = editor.view.coordsAtPos(to);
-    const box = el.getBoundingClientRect();
+    // Layout size, not the box mid pop-in animation, which is scaled down.
+    const box = { width: el.offsetWidth, height: el.offsetHeight };
     const sameLine = Math.abs(start.top - end.top) < 4;
     const centre = sameLine ? (start.left + end.right) / 2 : start.left + box.width / 2;
     const top = start.top - box.height - GAP;

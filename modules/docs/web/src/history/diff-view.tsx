@@ -24,6 +24,8 @@ const OP_STYLES = cx(
   '[&_[data-op=delete]]:bg-danger/8 [&_[data-op=delete]]:text-tx4 [&_[data-op=delete]]:line-through [&_[data-op=delete]]:decoration-danger/50',
   '[&_[data-op=move]]:bg-violet-bg/40',
   '[&_[data-op=move_source]]:rounded-xs [&_[data-op=move_source]]:border [&_[data-op=move_source]]:border-dashed [&_[data-op=move_source]]:border-violet-fg/40 [&_[data-op=move_source]]:px-2 [&_[data-op=move_source]]:py-1',
+  // The place a list item left is not a list item any more: it takes no number.
+  '[&_li[data-op=move_source]]:block',
   '[&_td[data-op=change]]:bg-amber-bg/60 [&_th[data-op=change]]:bg-amber-bg/60',
   '[&_[data-flash]]:ring-2 [&_[data-flash]]:ring-ac [&_[data-flash]]:ring-offset-2 [&_[data-flash]]:ring-offset-sf',
 );

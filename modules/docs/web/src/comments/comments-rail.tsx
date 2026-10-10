@@ -82,7 +82,7 @@ export function CommentsRail({ pageId, canComment = true }: CommentsRailProps) {
   }, [ui.draft]);
 
   useEffect(() => {
-    if (!ui.active || ui.focusFrom !== 'page') return;
+    if (!ui.active) return;
     const card = list.current?.querySelector<HTMLElement>(`[data-thread="${ui.active}"]`);
     card?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   }, [ui.active, ui.focusFrom, ui.focusTick]);
