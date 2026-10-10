@@ -102,5 +102,7 @@ describe('block keys and handles', () => {
     fireEvent.click(await screen.findByRole('menuitem', { name: /Delete/ }));
     await waitFor(() => expect(texts(editor)[0]).toBe('two'));
     expect(await screen.findByText('Block deleted')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Undo' }));
+    await waitFor(() => expect(texts(editor).slice(0, 2)).toEqual(['one', 'two']));
   });
 });
