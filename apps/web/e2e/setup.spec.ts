@@ -22,13 +22,19 @@ test('a fresh install walks from the welcome to the launchpad', async ({ page })
   await expect(
     page.getByRole('heading', { level: 1, name: 'Bring your data, or start clean' }),
   ).toBeVisible();
-  for (const title of ['Invite your team', 'AI, on your terms', 'Make it yours']) {
-    await page.getByRole('button', { name: 'Skip for now' }).click();
-    await expect(page.getByRole('heading', { level: 1, name: title })).toBeVisible();
+  // The AI step names its skip as the choice it is: no AI.
+  const steps = [
+    { skip: 'Skip for now', next: 'Invite your team' },
+    { skip: 'Skip for now', next: 'AI, on your terms' },
+    { skip: 'Skip, no AI', next: 'Make it yours' },
+  ];
+  for (const { skip, next } of steps) {
+    await page.getByRole('button', { name: skip }).click();
+    await expect(page.getByRole('heading', { level: 1, name: next })).toBeVisible();
   }
   await page.getByRole('button', { name: 'Back' }).click();
   await expect(page.getByRole('heading', { level: 1, name: 'AI, on your terms' })).toBeVisible();
-  await page.getByRole('button', { name: 'Skip for now' }).click();
+  await page.getByRole('button', { name: 'Skip, no AI' }).click();
   await page.getByRole('button', { name: 'Skip for now' }).click();
 
   await expect(page.getByRole('heading', { level: 1, name: 'You are all set' })).toBeVisible();
