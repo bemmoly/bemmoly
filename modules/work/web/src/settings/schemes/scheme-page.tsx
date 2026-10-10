@@ -3,7 +3,6 @@ import {
   Button,
   ConfirmChange,
   PageTitle,
-  SchemeOverrideBanner,
   SettingsContent,
   SettingsFrame,
 } from '@bemmoly/ui';
@@ -11,6 +10,7 @@ import type { ReactNode } from 'react';
 import { NO_PROJECT_PERMISSION } from '../../hooks/settings-access.ts';
 import type { SchemeFlow } from '../../hooks/settings-scheme-flow.ts';
 import { DiffDialog, invertDiff } from '../diff-dialog.tsx';
+import { InheritanceNote } from '../inheritance-note.tsx';
 
 const failure = (error: unknown) =>
   error ? (
@@ -65,10 +65,11 @@ export function SchemePage({
             )
           }
         />
-        <SchemeOverrideBanner
-          scheme={`Org default: ${origin}`}
-          overrideCount={flow.status?.overrideCount ?? 0}
-          onViewDiff={flow.viewDiff}
+        <InheritanceNote
+          origin={origin}
+          overridden={overridden}
+          changes={flow.status?.overrideCount ?? 0}
+          onCompare={flow.viewDiff}
         />
         {children}
       </SettingsContent>
