@@ -1,4 +1,3 @@
-import { issuesPageSchema } from '@bemmoly/module-work/shared';
 import { Skeleton } from '@bemmoly/ui';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../shared/api.ts';
@@ -16,10 +15,7 @@ const ROWS = 10;
 export function IssueTable({ query, title }: { query: string; title: string }) {
   const result = useQuery({
     queryKey: [...workKeys.all(), 'issue-query', query, ROWS] as const,
-    queryFn: () =>
-      api.http.request('/api/v1/work/issues/query', issuesPageSchema, {
-        query: { lql: query, limit: ROWS },
-      }),
+    queryFn: () => api.work.filters.run(query, ROWS),
     staleTime: 30_000,
     retry: false,
     enabled: query.trim().length > 0,
