@@ -1,16 +1,12 @@
 import { changeset } from '@bemmoly/core/changelog';
 import { sql } from 'drizzle-orm';
 
-/** Vector sizes of the embedding models people use; each gets its own partial HNSW index. */
-const INDEXED_DIMENSIONS = [384, 512, 768, 1024, 1536] as const;
-
 /*
  * Chunks of issues and pages as vectors, where in the record each came from (location: a
  * heading and anchor, a description or a comment, for citations), and the access metadata
  * retrieval filters on (module, project or space, author) so excluded and unreadable content
- * never comes back. The column is
- * an untyped vector because the size follows the embedding model; each common size has a
- * partial HNSW index over the cast, and a query uses it with
+ * never comes back. The column is an untyped vector because the size follows the embedding
+ * model; each common size has a partial HNSW index over the cast, and a query uses it with
  * `where dimensions = N order by embedding::vector(N) <=> $query`. Switching models reindexes.
  * pgvector ships in the pgvector/pgvector Postgres image every install runs.
  */
@@ -46,14 +42,22 @@ export default changeset({
         on embeddings (target_kind, target_id, model, chunk_index)`);
     await ctx.exec(sql`create index embeddings_space_id_idx on embeddings (space_id)`);
     await ctx.exec(sql`create index embeddings_project_id_idx on embeddings (project_id)`);
-    for (const size of INDEXED_DIMENSIONS) {
-      await ctx.exec(
-        sql.raw(`
-          create index embeddings_hnsw_${size}_idx on embeddings
-            using hnsw ((embedding::vector(${size})) vector_cosine_ops)
-            where dimensions = ${size}`),
-      );
-    }
+    // One partial HNSW index per common vector size (written out: no SQL built from strings).
+    await ctx.exec(sql`
+      create index embeddings_hnsw_384_idx on embeddings
+        using hnsw ((embedding::vector(384)) vector_cosine_ops) where dimensions = 384`);
+    await ctx.exec(sql`
+      create index embeddings_hnsw_512_idx on embeddings
+        using hnsw ((embedding::vector(512)) vector_cosine_ops) where dimensions = 512`);
+    await ctx.exec(sql`
+      create index embeddings_hnsw_768_idx on embeddings
+        using hnsw ((embedding::vector(768)) vector_cosine_ops) where dimensions = 768`);
+    await ctx.exec(sql`
+      create index embeddings_hnsw_1024_idx on embeddings
+        using hnsw ((embedding::vector(1024)) vector_cosine_ops) where dimensions = 1024`);
+    await ctx.exec(sql`
+      create index embeddings_hnsw_1536_idx on embeddings
+        using hnsw ((embedding::vector(1536)) vector_cosine_ops) where dimensions = 1536`);
   },
   down: async (ctx) => {
     await ctx.exec(sql`drop table embeddings`);
