@@ -141,7 +141,9 @@ describe('site', () => {
     expect(response.headers.get('x-robots-tag')).toBeNull();
     expect(response.headers.get('x-frame-options')).toBe('SAMEORIGIN');
     expect(response.headers.get('content-security-policy')).toContain("frame-ancestors 'self'");
-    expect(await response.text()).toContain('<link rel="canonical" href="https://bemmoly.com/demo"');
+    expect(await response.text()).toContain(
+      '<link rel="canonical" href="https://bemmoly.com/demo"',
+    );
   });
 
   it('answers every demo route with the demo page, kept out of search results', async () => {

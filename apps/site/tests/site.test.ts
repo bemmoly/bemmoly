@@ -3,6 +3,7 @@
  * renders its headline, every link on every page resolves, and the static files are there.
  */
 import { readdirSync, readFileSync } from 'node:fs';
+import { gzipSync } from 'node:zlib';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { CRAWLERS } from '../src/data/crawlers.ts';
 import { DEMO_PAGE, PAGES } from '../src/data/pages.ts';
@@ -44,13 +45,21 @@ describe('landing page', () => {
     expect(index).toMatch(/html\[data-theme=['"]?dark['"]?\][^{]*\{[^}]*--bg:#07111c/);
   });
 
-  it('ships no script beyond the inline copy button', () => {
+  it('ships only the inline copy button and the small preview script', () => {
     // JSON-LD is data, not code: it runs nothing and the CSP does not need to allow it.
     const scripts = scriptsOf(parsePage(html('index.html'))).filter(
       (script) => script.type !== 'application/ld+json',
     );
-    expect(scripts.filter((script) => script.src !== undefined)).toEqual([]);
-    expect(scripts.reduce((total, script) => total + script.body.length, 0)).toBeLessThan(1024);
+    const inline = scripts.filter((script) => script.src === undefined);
+    expect(inline.reduce((total, script) => total + script.body.length, 0)).toBeLessThan(1024);
+    // The previews' script (src/lib/preview.ts), a file the CSP's 'self' allows. The demo
+    // itself loads only when a visitor asks for it.
+    const external = scripts.flatMap((script) => script.src ?? []);
+    expect(external).toHaveLength(1);
+    expect(external[0]).toMatch(/^\/_astro\/[\w.-]+\.js$/);
+    const code = readFileSync(new URL(`.${external[0]}`, dist));
+    expect(gzipSync(code).length).toBeLessThan(2048);
+    expect(code.toString()).not.toContain('/demo/assets/');
   });
 });
 
@@ -67,7 +76,9 @@ describe('links', () => {
 
   it.each(links.filter((href) => href.startsWith('/')))('%s resolves', async (href) => {
     const [path, hash] = href.split('#') as [string, string | undefined];
-    const response = await fetch(`${preview.url}${path || '/'}`);
+    // A demo route is a state of the demo's one page, which Caddy serves for all of them.
+    const served = path.startsWith('/demo/') ? '/demo/index.html' : path || '/';
+    const response = await fetch(`${preview.url}${served}`);
     expect(response.status).toBe(200);
     if (hash) expect(ids(await response.text())).toContain(hash);
   });

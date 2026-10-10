@@ -5,7 +5,10 @@
  */
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { demoWorkspace } from '../../web/src/demo/workspace.ts';
+import { createMockApi } from '../../web/src/mocks/dispatch.ts';
 import { DEMO_PAGE } from '../src/data/pages.ts';
+import { PREVIEWS } from '../src/data/previews.ts';
 import { parsePage, scriptsOf } from './dom.ts';
 
 const dist = new URL('../dist/', import.meta.url);
@@ -47,6 +50,20 @@ describe('live demo', () => {
     expect(readdirSync(new URL('demo/brand/', dist)).filter((f) => f.endsWith('.png'))).toEqual(
       expect.not.arrayContaining([expect.stringMatching(/^banner-/)]),
     );
+  });
+
+  it.each(PREVIEWS)('the $id preview opens a route the demo has sample data for', (preview) => {
+    // The demo's own workspace and mock backend (apps/web), asked what the screen would ask.
+    const api = createMockApi(demoWorkspace());
+    const [, , , screen, key, id] = preview.path.split('/');
+    const asks: Record<string, string> = {
+      board: `/api/v1/work/projects/${key}/sprints`,
+      issue: `/api/v1/work/issues/${key}`,
+      workflows: `/api/v1/work/workflows/${id}`,
+    };
+    const ask = asks[screen ?? ''];
+    expect(ask, preview.path).toBeDefined();
+    expect(api.dispatch('GET', ask ?? '', undefined)?.status, preview.path).toBe(200);
   });
 
   it('is served as one page for every route, framed only by the site, indexed only at /demo', () => {
