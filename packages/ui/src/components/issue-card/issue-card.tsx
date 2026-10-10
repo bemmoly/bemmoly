@@ -37,8 +37,8 @@ export interface IssueCardProps {
    */
   pending?: boolean;
   /**
-   * Shows the selection box over the type tile on hover and keyboard focus (always while
-   * anything is checked, and beside the tile on touch). It gets the click, so the handler can
+   * Shows the round selection mark on the top-left corner on hover and keyboard focus (always
+   * while anything is checked, and always on touch). It gets the click, so the handler can
    * read Shift and Cmd / Ctrl.
    */
   onCheck?: (event: MouseEvent<HTMLElement>) => void;
@@ -71,9 +71,10 @@ interface SelectBoxProps {
 }
 
 /**
- * The selection box, laid over the type tile so showing it never moves the card's contents. Its
- * hit area reaches 32px (44px on touch) past the 16px box. Touch has no hover, so there it sits
- * beside the tile, always shown.
+ * The selection mark: a round check sitting on the card's top-left corner, so showing it never
+ * moves or covers the card's contents, and so a ticked card never reads as the square task tile.
+ * Its hit area reaches 34px (46px on touch) past the 18px mark. Touch has no hover, so there it
+ * is always shown.
  */
 function SelectBox({ issueKey, checked, visible, onCheck }: SelectBoxProps) {
   return (
@@ -94,11 +95,11 @@ function SelectBox({ issueKey, checked, visible, onCheck }: SelectBoxProps) {
       }}
       onPointerDown={(event) => event.stopPropagation()}
       className={cx(
-        'absolute -top-px -left-px z-1 grid size-4 cursor-pointer place-items-center rounded-xs border-[1.5px] p-0',
-        'before:absolute before:-inset-2 pointer-coarse:relative pointer-coarse:top-0 pointer-coarse:left-0 pointer-coarse:before:-inset-3.5',
+        'absolute -top-2 -left-2 z-2 grid size-4.5 cursor-pointer place-items-center rounded-full border-[1.5px] p-0 shadow-e1',
+        'before:absolute before:-inset-2 before:rounded-full pointer-coarse:before:-inset-3.5',
         checked
           ? 'border-acc-fill bg-acc-fill text-on-acc'
-          : 'border-tx-3 bg-card text-transparent',
+          : 'border-tx-3 bg-card text-transparent hover:text-tx-3',
         !visible && cx(REVEAL, 'pointer-coarse:opacity-100'),
         'motion-safe:transition-opacity',
         focusRing,
@@ -185,6 +186,14 @@ export function IssueCard({
           {tools}
         </div>
       )}
+      {onCheck && (
+        <SelectBox
+          issueKey={issueKey}
+          checked={checked}
+          visible={checked || selecting}
+          onCheck={onCheck}
+        />
+      )}
       {blockedBy && <BlockedChip by={blockedBy} />}
       <div
         className={cx(
@@ -203,17 +212,7 @@ export function IssueCard({
         </div>
       )}
       <div className="flex items-center gap-1.5 text-tx-3">
-        <span className="relative flex shrink-0 items-center gap-1.5">
-          {onCheck && (
-            <SelectBox
-              issueKey={issueKey}
-              checked={checked}
-              visible={checked || selecting}
-              onCheck={onCheck}
-            />
-          )}
-          <TypeGlyph type={type} />
-        </span>
+        <TypeGlyph type={type} />
         {showKey && <span className="font-mono text-12 tracking-[-0.01em]">{issueKey}</span>}
         {doc && (
           <span className="flex items-center gap-0.75 text-11 text-acc">
