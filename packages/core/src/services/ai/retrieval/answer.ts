@@ -106,6 +106,7 @@ export async function answerQuestion(
   const ai = deps.ai();
   await ai.assertAvailable('embedding', ctx.actor);
   await ai.assertAvailable('standard', ctx.actor);
+  await ctx.authz.authorize(ctx.actor, 'ai.assist.use', { kind: 'workspace' });
   const context = await retrieve(deps, ctx, {
     question: request.question,
     ...(request.kinds ? { kinds: request.kinds } : {}),

@@ -49,7 +49,7 @@ const activity = () =>
 
 const ctxFor = (id: string): RequestContext => ({
   actor: { kind: 'user', id },
-  authz: {} as RequestContext['authz'],
+  authz: { authorize: async () => undefined } as unknown as RequestContext['authz'],
 });
 
 beforeAll(async () => {

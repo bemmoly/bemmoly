@@ -121,6 +121,28 @@ describe('AI inside the editor', () => {
     expect(ai.calls.length).toBe(calls);
   });
 
+  it('refuses a person whose role may no longer use AI assist', async (ctx) => {
+    if (!harness) return ctx.skip(skipReason);
+    const { users, sql } = harness;
+    const { page } = await livePage('ROLE', 'Rollout plan');
+    const toggle = (allowed: boolean) => sql`
+      update role_capabilities set allowed = ${allowed}
+      where capability = 'ai.assist.use'
+        and role_id = (select role_id from users where id = ${users.member})`;
+    const calls = ai.calls.length;
+    await toggle(false);
+    try {
+      const response = await http.call(`/pages/${page.id}/completions`, {
+        as: users.member,
+        body: { before: 'Rollout plan' },
+      });
+      expect(response.statusCode).toBe(403);
+      expect(ai.calls.length).toBe(calls);
+    } finally {
+      await toggle(true);
+    }
+  });
+
   it('streams an /ai write as NDJSON and changes nothing on the page', async (ctx) => {
     if (!harness) return ctx.skip(skipReason);
     const { page, mo } = await livePage('WRITE', 'we moves sessions to postgres');

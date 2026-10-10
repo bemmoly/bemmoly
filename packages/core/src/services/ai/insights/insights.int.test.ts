@@ -62,9 +62,14 @@ const notes = () =>
     ],
   });
 
-const ctxFor = (id: string): RequestContext => ({
+/** A person; `mayUseAi` false is a role without "Use AI assist" (a contractor, by default). */
+const ctxFor = (id: string, mayUseAi = true): RequestContext => ({
   actor: { kind: 'user', id } satisfies Actor,
-  authz: {} as RequestContext['authz'],
+  authz: {
+    authorize: async (_actor: Actor, capability: string) => {
+      if (capability === 'ai.assist.use' && !mayUseAi) throw new ForbiddenError('No AI assist');
+    },
+  } as unknown as RequestContext['authz'],
 });
 
 const summary = (cites: string[]) => ({
@@ -183,7 +188,7 @@ describe('the insight cache against a real database', () => {
     expect(insight.content?.source.titlesOnly).toBe(true);
   });
 
-  it('refuses with AI off, for an opted-out person, an excluded project and a hidden target', async (ctx) => {
+  it('refuses with AI off, for an opted-out person, a role without AI assist, an excluded project and a hidden target', async (ctx) => {
     if (!sql) return ctx.skip(server.available ? 'no database' : server.reason);
     const reason = async (promise: Promise<unknown>) => {
       const error = await promise.catch((caught: unknown) => caught);
@@ -198,7 +203,11 @@ describe('the insight cache against a real database', () => {
     expect(await reason(t.insights.get(ctxFor(userId), 'issue_summary', noteId))).toEqual({
       reason: 'opted_out',
     });
-    ai.setPolicy({ actorOptedOut: false, excludedProjectIds: [projectId] });
+    ai.setPolicy({ actorOptedOut: false });
+    await expect(
+      t.insights.get(ctxFor(userId, false), 'issue_summary', noteId),
+    ).rejects.toBeInstanceOf(ForbiddenError);
+    ai.setPolicy({ excludedProjectIds: [projectId] });
     expect(await reason(t.insights.get(ctxFor(userId), 'issue_summary', noteId))).toEqual({
       reason: 'excluded',
     });

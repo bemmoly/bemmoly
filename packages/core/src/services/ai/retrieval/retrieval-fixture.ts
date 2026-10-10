@@ -167,7 +167,7 @@ export async function createFixture(serverUrl: string, dimensions = 8): Promise<
     contextFor: (userId) =>
       ({
         actor: { kind: 'user', id: userId },
-        authz: { modulesFor: async () => new Set(['wiki']) },
+        authz: { modulesFor: async () => new Set(['wiki']), authorize: async () => undefined },
         requestId: 'req-retrieval',
       }) as unknown as RequestContext,
     async close() {

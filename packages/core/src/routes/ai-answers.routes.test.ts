@@ -1,4 +1,4 @@
-import { isBemmolyError } from '@bemmoly/shared';
+import { ForbiddenError, isBemmolyError } from '@bemmoly/shared';
 import { aiAnswerEventSchema } from '@bemmoly/shared/ai-answers';
 import Fastify, { type FastifyInstance } from 'fastify';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -13,7 +13,7 @@ const STATUS: Record<string, number> = {
   UnauthenticatedError: 401,
 };
 
-async function build(ai: TestAi, signedIn = true): Promise<FastifyInstance> {
+async function build(ai: TestAi, signedIn = true, mayUseAi = true): Promise<FastifyInstance> {
   const app = Fastify();
   app.setErrorHandler((error: Error & { statusCode?: number }, _request, reply) => {
     const status = isBemmolyError(error) ? (STATUS[error.name] ?? 500) : (error.statusCode ?? 500);
@@ -25,7 +25,12 @@ async function build(ai: TestAi, signedIn = true): Promise<FastifyInstance> {
   app.addHook('onRequest', async (request) => {
     if (!signedIn) return;
     request.actor = { kind: 'user', id: 'u1' };
-    request.authz = { modulesFor: async () => new Set() } as unknown as RequestAuthorization;
+    request.authz = {
+      modulesFor: async () => new Set(),
+      authorize: async (_actor: unknown, capability: string) => {
+        if (capability === 'ai.assist.use' && !mayUseAi) throw new ForbiddenError('No AI assist');
+      },
+    } as unknown as RequestAuthorization;
   });
   const retrieval = createRetrievalService({
     sql: undefined as never,
@@ -67,6 +72,16 @@ describe('POST /api/v1/ai/answers', () => {
     });
     expect(response.statusCode).toBe(403);
     expect(response.json()).toMatchObject({ details: { reason: 'ai_off' } });
+  });
+
+  it('refuses before streaming a person whose role may not use AI assist', async () => {
+    app = await build(createTestAi(), true, false);
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/v1/ai/answers',
+      payload: { question: 'How do we roll back?' },
+    });
+    expect(response.statusCode).toBe(403);
   });
 
   it('streams NDJSON events, here the honest empty answer', async () => {

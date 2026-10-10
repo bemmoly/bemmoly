@@ -172,5 +172,12 @@ export async function getMe(
     ctx.authz.modulesFor(ctx.actor),
     readWorkspaceLook(deps.settings, deps.aiEnabled && (() => deps.aiEnabled!(ctx.actor))),
   ]);
-  return { user, capabilities: capabilities.sort(), modules: [...modules].sort(), workspace };
+  // AI surfaces are for people whose role may use AI assist; the AI endpoints refuse the rest.
+  const aiEnabled = workspace.aiEnabled && capabilities.includes('ai.assist.use');
+  return {
+    user,
+    capabilities: capabilities.sort(),
+    modules: [...modules].sort(),
+    workspace: { ...workspace, aiEnabled },
+  };
 }

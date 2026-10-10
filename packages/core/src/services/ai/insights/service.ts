@@ -106,11 +106,12 @@ export function createInsightsService(deps: InsightsServiceDeps) {
       ...options,
     });
 
-  /** AI on for this person, and the person may open the target. */
+  /** AI on for this person, their role may use AI assist, and they may open the target. */
   async function admit(ctx: RequestContext, resolved: ResolvedGenerator, targetId: string) {
     const policy = await deps.ai.policy(ctx.actor);
     if (!policy.enabled) throw aiRefusal('ai_off');
     if (policy.actorOptedOut) throw aiRefusal('opted_out');
+    await ctx.authz.authorize(ctx.actor, 'ai.assist.use', { kind: 'workspace' });
     if (!(await resolved.builder.canView(ctx, targetId))) {
       throw new NotFoundError('Not found');
     }
