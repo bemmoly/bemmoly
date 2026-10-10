@@ -47,6 +47,30 @@ sign-in. Module screens own what sits under the header; this file owns the heade
 - Tab titles read "page · context · Bemmoly". A page whose title has one part takes the
   workspace as context ("Inbox · Acme Labs · Bemmoly").
 
+### Presence: who else is here
+
+- **What it shows.** The other people on the same view of the same thing, before the header's
+  actions: Board, Backlog (the project; views `board`, `backlog`) and the Issue page (view
+  `issue:PLT-204`). Never yourself, on any of your tabs. Up to three 22px faces overlapping by
+  5px, each ringed in the header's canvas, earliest arrival first so faces do not reshuffle,
+  then a "+N" chip. Two tabs of one person on one view are one face.
+- **When.** Nothing is drawn while alone, while the screen loads, or while the socket is down
+  (rather than faces that may have gone). Faces fade in as people arrive (120–180ms, opacity
+  only; none under reduced motion) and leave at once. A tab hidden for three minutes stops
+  counting as here and comes back the moment it is looked at; a closed tab leaves at once.
+- **Tooltip.** On hover and on keyboard focus (each face is a tab stop): the name and where they
+  are, "Priya Nair · viewing PLT-204", "Aisha K. · on the board". The "+N" chip names up to five
+  more and counts the rest. Screen readers hear the whole group: "Also here: …".
+- **Phone.** Not shown; the header has no room and the slot is left out below 768px.
+- **Privacy.** Only people who can open the project (its members and org admins) can join its
+  presence or hear who is in it, the same check as its live updates. A view is a name and an
+  issue key, never free text; nothing about what someone types or selects is shared.
+- **Limits.** Presence is held by the app process a person is connected to, so an install
+  running several app processes shows only the people on the same one. One place per tab;
+  a tab may move a few dozen times a minute before moves are refused. People the workspace's
+  people list cannot name yet are left out. Peeking an issue from the Board keeps you on the
+  board: the Issue page counts those who opened the issue itself.
+
 ## Global keys
 
 | Key | Does |
