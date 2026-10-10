@@ -18,6 +18,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { cx } from '../lib/cx.ts';
+import { EDITOR_ICONS, type EditorIconName } from './editor-icons.tsx';
 import { KIT_ICONS, type KitIconName } from './kit.tsx';
 import { SHAPES, type ShapeName } from './shapes.tsx';
 
@@ -42,9 +43,9 @@ export const GLYPHS = {
 } satisfies Record<string, LucideIcon>;
 
 export type GlyphName = keyof typeof GLYPHS;
-export type IconName = ShapeName | GlyphName | KitIconName;
+export type IconName = ShapeName | GlyphName | KitIconName | EditorIconName;
 
-const ALL: Record<IconName, LucideIcon> = { ...SHAPES, ...GLYPHS, ...KIT_ICONS };
+const ALL: Record<IconName, LucideIcon> = { ...SHAPES, ...GLYPHS, ...KIT_ICONS, ...EDITOR_ICONS };
 
 /** The drawing behind a name, for components that place an icon inside their own SVG. */
 export const iconComponent = (name: IconName): LucideIcon => ALL[name];
