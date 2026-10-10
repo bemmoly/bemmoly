@@ -95,7 +95,15 @@ describe('docs with work', () => {
         }[]
       ).find((row) => row.id === page.id)?.issueKeys;
     expect((await links()).items).toMatchObject([
-      { kind: 'embed', record: { kind: 'issue', key: 'PLT-1', title: 'Warm the cache' } },
+      {
+        kind: 'embed',
+        record: {
+          kind: 'issue',
+          key: 'PLT-1',
+          title: 'Warm the cache',
+          data: { status: { category: 'todo' }, type: { key: 'task' } },
+        },
+      },
     ]);
     expect(await recentKeys()).toEqual(['PLT-1']);
 

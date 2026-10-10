@@ -51,6 +51,11 @@ export const linkedRecordSchema = z.object({
   key: z.string().optional(),
   title: z.string(),
   path: z.string(),
+  /**
+   * What the owning module tells renderers about the record, passed through untouched.
+   * For an issue from Work: { status: { name, category, color }, type, priority, projectId }.
+   */
+  data: z.record(z.string(), z.unknown()).optional(),
 });
 
 /** An outgoing edge: a page target carries `page`, any other carries `record`. */

@@ -31,6 +31,7 @@ const toRecord = (summary: EntitySummary): LinkedRecord => ({
   ...(summary.key ? { key: summary.key } : {}),
   title: summary.title,
   path: summary.path,
+  ...(summary.data ? { data: summary.data } : {}),
 });
 
 /**

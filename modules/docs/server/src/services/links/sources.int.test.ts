@@ -16,6 +16,7 @@ const ISSUE: EntitySummary = {
   key: 'PLT-7',
   title: 'Warm the cache',
   path: '/work/issue/PLT-7',
+  data: { status: { name: 'In review', category: 'in_progress' } },
 };
 const LINKING: EntitySummary = { ...ISSUE, id: ISSUE.id.replace('a1', 'b2'), key: 'PLT-8' };
 
@@ -68,7 +69,9 @@ describe('page references from other modules', () => {
     expect(edges).toEqual([{ target_id: ISSUE.id, kind: 'embed' }]);
 
     const outgoing = await services.links.outgoing(as(users.member), page.id);
-    expect(outgoing.items).toMatchObject([{ record: { key: 'PLT-7' }, kind: 'embed' }]);
+    expect(outgoing.items).toMatchObject([
+      { record: { key: 'PLT-7', data: { status: { name: 'In review' } } }, kind: 'embed' },
+    ]);
 
     const references = await services.links.references(as(users.member), page.id);
     expect(references.items).toEqual([
@@ -78,6 +81,7 @@ describe('page references from other modules', () => {
         key: 'PLT-8',
         title: LINKING.title,
         path: LINKING.path,
+        data: LINKING.data,
         linkKind: 'mention',
       },
     ]);
