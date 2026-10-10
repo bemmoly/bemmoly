@@ -184,4 +184,28 @@ describe('Table', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Load more' }));
     expect(onLoadMore).toHaveBeenCalled();
   });
+
+  it('moves between rows with j and k and sorts from a heading', () => {
+    const onSort = vi.fn();
+    render(
+      <Table
+        label="Users"
+        columns={columns.map((c) => ({ ...c, sortable: true }))}
+        rows={rows}
+        rowKey={(r) => r.id}
+        onRowClick={() => undefined}
+        sort={{ key: 'person', direction: 'asc' }}
+        onSort={onSort}
+      />,
+    );
+    const [, first, second] = screen.getAllByRole('row') as HTMLElement[];
+    first?.focus();
+    fireEvent.keyDown(first as HTMLElement, { key: 'j' });
+    expect(document.activeElement).toBe(second);
+    fireEvent.keyDown(second as HTMLElement, { key: 'ArrowUp' });
+    expect(document.activeElement).toBe(first);
+    expect(screen.getAllByRole('columnheader')[0]?.getAttribute('aria-sort')).toBe('ascending');
+    fireEvent.click(screen.getByRole('button', { name: 'Person' }));
+    expect(onSort).toHaveBeenCalledWith({ key: 'person', direction: 'desc' });
+  });
 });
