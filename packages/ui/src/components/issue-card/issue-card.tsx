@@ -213,11 +213,15 @@ export function IssueCard({
       )}
       <div className="flex items-center gap-1.5 text-tx-3">
         <TypeGlyph type={type} />
-        {showKey && <span className="font-mono text-12 tracking-[-0.01em]">{issueKey}</span>}
+        {showKey && (
+          <span className="shrink-0 font-mono text-12 tracking-[-0.01em] whitespace-nowrap">
+            {issueKey}
+          </span>
+        )}
         {doc && (
-          <span className="flex items-center gap-0.75 text-11 text-acc">
+          <span className="flex min-w-0 items-center gap-0.75 text-11 text-acc">
             <Icon name="doc" size={11} />
-            {doc}
+            <span className="truncate">{doc}</span>
           </span>
         )}
         {subtasks && (
