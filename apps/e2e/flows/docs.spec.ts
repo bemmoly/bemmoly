@@ -48,7 +48,8 @@ test('a space is created, a page made from a template, reordered, starred, trash
   await expect(page.getByText('Nothing written here yet')).toBeVisible();
 
   // A page from a template, through the picker.
-  await page.getByRole('button', { name: 'New page' }).click();
+  // The overview's own button; the space sidebar and the empty state offer the same picker.
+  await page.getByRole('button', { name: 'New page', exact: true }).last().click();
   const pageDialog = page.getByRole('dialog', { name: 'New page' });
   await pageDialog.getByRole('button', { name: /^Runbook/ }).click();
   await pageDialog.getByRole('button', { name: 'Create page' }).click();

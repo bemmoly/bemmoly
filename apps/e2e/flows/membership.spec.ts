@@ -39,7 +39,7 @@ test('a project stays out of sight for a non-member until they are added', async
   await expect(sam.getByRole('heading', { name: 'Quarterly access review' })).toHaveCount(0);
   await sam.goto(`/work/board/${project.key}`);
   await expect(sam.getByText(`There is no project ${project.key} you can see.`)).toBeVisible();
-  await expect(await paletteResults(sam, issue.key)).toContainText('Nothing matches.');
+  await expect(await paletteResults(sam, issue.key)).toContainText('Nothing matches');
   await expect(samApi.call('GET', `/work/issues/${issue.key}`)).rejects.toThrow(/ 40[34] /);
 
   // The admin adds Sam from the project's Members screen.

@@ -1,5 +1,8 @@
 import { expect, test, uniqueKey } from '../support/fixtures.ts';
 
+// Six columns beside the 240px sidebar: wide enough that the drag never needs to auto-scroll.
+test.use({ viewport: { width: 1680, height: 900 } });
+
 test('an issue moves across the board by drag and by keyboard, and a refused move says why', async ({
   page,
   admin,
