@@ -4,7 +4,11 @@ import type { MouseEvent } from 'react';
 export const workPaths = {
   issue: (key: string) => `/work/issue/${key}`,
   board: (projectKey: string) => `/work/board/${projectKey}`,
+  backlog: (projectKey: string) => `/work/backlog/${projectKey}`,
+  /** A project's settings open on their first section, Members. */
+  settings: (projectKey: string) => `/work/members/${projectKey}`,
   projects: () => '/work/projects',
+  myIssues: () => '/work/my-issues',
   newProject: () => '/work/projects/new',
   createIssue: (projectKey?: string) => `/work/create${projectKey ? `/${projectKey}` : ''}`,
 };
