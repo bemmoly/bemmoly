@@ -4,7 +4,9 @@ import { useSetupStore } from '../store/setup.ts';
 import { renderPage, testQueryClient } from '../test/render.tsx';
 import { mockApi } from '../test/setup.ts';
 import {
+  ACCOUNT_STEP,
   canSkip,
+  FIRST_ADMIN_STEP,
   LAST_STEP,
   railItems,
   resolveStep,
@@ -17,52 +19,80 @@ import {
 beforeEach(() => useSetupStore.getState().reset());
 
 describe('wizard steps', () => {
-  it('labels each step as the mock does', () => {
+  it('names every step and its primary', () => {
+    expect(SETUP_STEPS.map((step) => step.name)).toEqual([
+      'Workspace',
+      'Your account',
+      'Import',
+      'People',
+      'AI',
+      'Look',
+      'Done',
+    ]);
     expect(SETUP_STEPS.map((step) => step.nextLabel)).toEqual([
-      'Create admin and continue',
-      'Start import in background',
+      'Continue',
+      'Create account',
+      'Continue',
       'Continue',
       'Save AI settings',
       'Finish setup',
-      null,
+      'Open Bemmoly',
     ]);
-    expect(stepDef(4).title).toBe('AI, on your terms');
+    expect(stepDef(1).title).toBe('Welcome to Bemmoly');
+    expect(stepDef(5).title).toBe('AI, on your terms');
   });
 
-  it('allows skipping steps 2 to 5 only', () => {
-    expect([1, 2, 3, 4, 5, 6].map(canSkip)).toEqual([false, true, true, true, true, false]);
+  it('allows skipping import, people, AI and look only', () => {
+    expect([1, 2, 3, 4, 5, 6, 7].map(canSkip)).toEqual([
+      false,
+      false,
+      true,
+      true,
+      true,
+      true,
+      false,
+    ]);
   });
 
-  it('keeps everyone on step 1 until the admin exists, then resumes at 2', () => {
+  it('keeps everyone on workspace and account until the admin exists', () => {
     expect(resolveStep(4, false)).toBe(1);
-    expect(resolveStep(undefined, true)).toBe(2);
-    expect(resolveStep(1, true)).toBe(1);
+    expect(resolveStep(2, false)).toBe(1);
+    expect(resolveStep(2, false, null, true)).toBe(ACCOUNT_STEP);
+    expect(resolveStep(undefined, false, 2, true)).toBe(ACCOUNT_STEP);
+    expect(resolveStep(undefined, true)).toBe(FIRST_ADMIN_STEP);
+    expect(resolveStep(1, true)).toBe(FIRST_ADMIN_STEP);
     expect(resolveStep(9, true)).toBe(LAST_STEP);
   });
 
-  it('resumes at the last of steps 2 to 5 the admin was on', () => {
+  it('resumes at the last skippable step the admin was on', () => {
     expect(resolveStep(undefined, true, 5)).toBe(5);
-    expect(resolveStep(3, true, 5)).toBe(3);
-    expect(resolveStep(undefined, false, 5)).toBe(1);
-    expect([null, 1, 2, 4, 5, 6, 2.5].map(resumeStep)).toEqual([2, 2, 2, 4, 5, 2, 2]);
+    expect(resolveStep(4, true, 5)).toBe(4);
+    expect([null, 1, 2, 3, 6, 7, 2.5].map(resumeStep)).toEqual([3, 3, 3, 3, 6, 3, 3]);
   });
 
-  it('marks rail dots and only lets an admin jump between steps 1 to 5', () => {
-    const before = railItems(1, false);
-    expect(before.every((item) => !item.canVisit)).toBe(true);
-    const during = railItems(3, true);
+  it('fills circles as steps pass and leaves skipped ones empty', () => {
+    expect(railItems(1, false).every((item) => !item.canVisit)).toBe(true);
+    expect(railItems(2, false).map((item) => item.canVisit)[0]).toBe(true);
+    const during = railItems(5, true, [4]);
     expect(during.map((item) => item.state)).toEqual([
       'done',
       'done',
+      'done',
+      'skipped',
       'current',
       'upcoming',
       'upcoming',
-      'upcoming',
     ]);
-    expect(during.map((item) => item.marker)).toEqual(['1', '2', '3', '4', '5', '6']);
-    expect(during.map((item) => item.state).slice(0, 3)).toEqual(['done', 'done', 'current']);
-    expect(during.map((item) => item.canVisit)).toEqual([true, true, false, true, true, false]);
-    expect(railItems(6, true).every((item) => !item.canVisit)).toBe(true);
+    expect(during.map((item) => item.canVisit)).toEqual([
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      false,
+    ]);
+    expect(railItems(LAST_STEP, true).every((item) => !item.canVisit)).toBe(true);
   });
 });
 
@@ -81,7 +111,7 @@ describe('useSetupWizard', () => {
     await waitFor(() => expect(wizard?.loading).toBe(false));
     expect(wizard?.adminExists).toBe(true);
     expect(wizard?.signedIn).toBe(true);
-    expect(wizard?.counter).toBe('Step 3 of 6');
+    expect(wizard?.counter).toBe('Step 3 of 7');
     await act(async () => {
       await wizard?.next();
     });
