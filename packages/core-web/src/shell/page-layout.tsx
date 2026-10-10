@@ -29,14 +29,14 @@ export interface PageLayoutProps {
   children: ReactNode;
 }
 
-function titleFrom(header: PageHeaderProps, pathname: string): string[] {
+function titleFrom(header: PageHeaderProps, pathname: string, context?: string): string[] {
   const crumbs = header.crumbs;
   const last = crumbs.at(-1)?.label;
   const tab =
     header.tabs?.find((entry) => entry.id === header.activeTab) ??
     header.tabs?.find((entry) => isActivePath(pathname, entry.path));
   if (tab) return [tab.label, last ?? ''];
-  return [last ?? '', crumbs.at(-2)?.label ?? ''];
+  return [last ?? '', crumbs.at(-2)?.label ?? context ?? ''];
 }
 
 /**
@@ -44,18 +44,22 @@ function titleFrom(header: PageHeaderProps, pathname: string): string[] {
  * the header never scrolls away and no page grows a second scrollbar around the first.
  */
 export function PageLayout({ header, layout, title, children }: PageLayoutProps) {
-  const { pathname } = useFrame();
+  const { pathname, workspaceName } = useFrame();
   const [slot, setSlot] = useState<HTMLElement | null>(null);
   const [tail, setTail] = useState<readonly PageCrumb[] | null>(null);
   const crumbs = tail ? [...header.crumbs.slice(0, -1), ...tail] : header.crumbs;
-  useDocumentTitle(title ?? titleFrom(header, pathname));
+  // A page with a single part ("Inbox") takes the workspace as its context.
+  const parts = title ?? titleFrom(header, pathname, workspaceName);
+  useDocumentTitle(parts.filter(Boolean).length === 1 ? [...parts, workspaceName] : parts);
   return (
     <ActionsSlotProvider value={slot}>
       <TrailContext.Provider value={setTail}>
         <div className="flex min-h-0 min-w-0 flex-1 flex-col bg-canvas">
           <PageHeader {...header} crumbs={crumbs} onActionsSlot={setSlot} />
           {layout === 'full' ? (
-            <div className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-auto">{children}</div>
+            <div className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-auto">
+              {children}
+            </div>
           ) : (
             <div className="relative min-h-0 min-w-0 flex-1 overflow-y-auto" data-scroll-region>
               <div className="mx-auto flex w-full max-w-260 min-w-0 flex-col px-4 pt-6 pb-16 md:px-8 md:pt-8">

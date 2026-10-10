@@ -29,6 +29,8 @@ export interface AppFrameProps {
   sidebar: ReactNode;
   /** The phone's bottom bar. */
   bottomBar?: ReactNode;
+  /** The tab title's context for pages that name none of their own. */
+  workspaceName?: string;
   children: ReactNode;
 }
 
@@ -74,6 +76,7 @@ export function AppFrame({
   onCollapsedChange,
   sidebar,
   bottomBar,
+  workspaceName,
   children,
 }: AppFrameProps) {
   const phone = useMatches(`(max-width: ${PHONE - 1}px)`);
@@ -112,6 +115,7 @@ export function AppFrame({
       phone,
       pathname,
       navigate,
+      ...(workspaceName ? { workspaceName } : {}),
       openSheet: () => setSheet(true),
       toggleSidebar: () => {
         if (phone) setSheet((open) => !open);
@@ -119,7 +123,7 @@ export function AppFrame({
         else onCollapsedChange(!collapsed);
       },
     }),
-    [phone, narrow, pathname, navigate, collapsed, onCollapsedChange],
+    [phone, narrow, pathname, navigate, collapsed, onCollapsedChange, workspaceName],
   );
   const inMode = (mode: SidebarMode) => ({ ...base, mode });
 

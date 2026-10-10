@@ -18,6 +18,8 @@ export interface FrameState {
   openSheet: () => void;
   /** Folds or unfolds the sidebar, as [ does. */
   toggleSidebar: () => void;
+  /** The tab title's context for a page that names no other ("Inbox · Acme Labs · Bemmoly"). */
+  workspaceName?: string;
 }
 
 export const FrameContext = createContext<FrameState>({

@@ -101,6 +101,17 @@ describe('the page header', () => {
     expect(document.title).toBe('Board · Platform Core · Bemmoly');
   });
 
+  it('names the workspace in the tab title of a page with no other context', () => {
+    render(
+      <FrameContext.Provider value={frame({ pathname: '/inbox', workspaceName: 'Acme Labs' })}>
+        <PageLayout layout="full" header={{ crumbs: [{ label: 'Inbox', path: '/inbox' }] }}>
+          <p>Items</p>
+        </PageLayout>
+      </FrameContext.Provider>,
+    );
+    expect(document.title).toBe('Inbox · Acme Labs · Bemmoly');
+  });
+
   it('keeps only the current crumb on a phone, with the menu button', () => {
     const state = frame({ phone: true });
     render(

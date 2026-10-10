@@ -123,6 +123,7 @@ export function AppShell() {
       onCollapsedChange={setCollapsed}
       sidebar={settings ? <SettingsSidebar shell={shell} /> : <AppSidebar shell={shell} />}
       bottomBar={<PhoneBar shell={shell} />}
+      workspaceName={shell.workspace.name}
     >
       <ShellKeys shell={shell} />
       <ErrorBoundary
