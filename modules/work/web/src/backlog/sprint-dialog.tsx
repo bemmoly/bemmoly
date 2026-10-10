@@ -113,7 +113,9 @@ export function SprintDialog({
               {confirmDelete ? `Delete and move ${issues} to the backlog` : 'Delete sprint'}
             </Button>
           )}
-          <Button onClick={onClose}>Cancel</Button>
+          <Button variant="ghost" onClick={onClose}>
+            Cancel
+          </Button>
           <Button
             variant="primary"
             type="submit"
@@ -130,7 +132,7 @@ export function SprintDialog({
         <Field label="Sprint name">
           <Input value={name} onChange={(event) => setName(event.target.value)} />
         </Field>
-        <FormGrid columns={mode === 'edit' ? 3 : 2}>
+        <FormGrid columns={mode === 'edit' ? 3 : 2} className="max-sm:grid-cols-1">
           <FormGridItem>
             <Field label="Start date">
               <Input type="date" value={start} onChange={(event) => setStart(event.target.value)} />
@@ -159,7 +161,7 @@ export function SprintDialog({
           <Textarea rows={2} value={goal} onChange={(event) => setGoal(event.target.value)} />
         </Field>
         {error && (
-          <p role="alert" className="m-0 text-12h text-danger">
+          <p role="alert" className="m-0 text-12 text-red-tx">
             {error}
           </p>
         )}
