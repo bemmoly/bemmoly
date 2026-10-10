@@ -1,11 +1,11 @@
-import { IconButton, IssueCard, type EpicColor, type Priority } from '@bemmoly/ui';
+import { IconButton, IssueCard, type EpicColor } from '@bemmoly/ui';
 import { memo, useEffect, useLayoutEffect, useMemo, useRef, type CSSProperties } from 'react';
 import { useBoardDragStore } from '../hooks/board-drag-store.ts';
 import type { ViewCard } from '../hooks/board-model.ts';
 import { useIssuePending } from '../hooks/issue-edits.ts';
 import { clearBoardSelection, useBoardSelectionStore } from '../hooks/board-selection.ts';
 import { IssueActionsMenu, openRowMenu } from '../shared/issue-actions-menu.tsx';
-import { cardProps } from './card-view.ts';
+import { cardPriority, cardProps } from './card-view.ts';
 import { cls, FOCUS_RING, useBoardShared } from './board-context.ts';
 import { settle, takeLanding } from './landing.ts';
 
@@ -42,7 +42,8 @@ export const BoardCard = memo(function BoardCard({
   index,
   laneColor,
 }: BoardCardProps) {
-  const { actions, vocab, selectedKey, instructionsId, quick, select, sprints } = useBoardShared();
+  const { actions, vocab, selectedKey, instructionsId, quick, select, sprints, density } =
+    useBoardShared();
   const carried = useBoardDragStore((state) =>
     state.carrying?.issueId === card.issueId ? state.carrying.mode : null,
   );
@@ -121,6 +122,7 @@ export const BoardCard = memo(function BoardCard({
         pending={pending}
         checked={checked}
         selecting={selecting}
+        density={density}
         onCheck={(event) => select.check(event, card.key)}
         tools={
           carried === null && (
@@ -152,7 +154,7 @@ export const BoardCard = memo(function BoardCard({
               <IssueActionsMenu
                 issueKey={card.key}
                 assigneeId={card.assigneeId}
-                priority={props.priority as Priority}
+                priority={cardPriority(card)}
                 meId={vocab.meId}
                 actions={quick}
                 onOpen={() => actions.open(card.key)}

@@ -1,4 +1,5 @@
 import { createContext, useContext, type DragEvent, type KeyboardEvent } from 'react';
+import type { Density } from '../hooks/board-display.ts';
 import type { DropTarget } from '../hooks/board-drag.ts';
 import type { BoardSelectHandlers } from '../hooks/board-selection.ts';
 import type { MenuSprint } from '../shared/issue-actions-menu.tsx';
@@ -28,6 +29,8 @@ export interface BoardShared {
   select: BoardSelectHandlers;
   /** Where a card can move from its menu (Scrum only): the planned sprints and the Backlog. */
   sprints?: readonly MenuSprint[];
+  /** This person's card density on this board. */
+  density: Density;
   /** The issue open in the peek; its card carries the selected ring. */
   selectedKey: string | null;
   /** Creates an issue at the foot of a cell; absent when the person cannot create. */

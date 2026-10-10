@@ -1,8 +1,4 @@
-import type {
-  CardField,
-  CardColorRule,
-  IssueType as WorkIssueType,
-} from '@bemmoly/module-work/shared';
+import type { CardColorRule, IssueType as WorkIssueType } from '@bemmoly/module-work/shared';
 import type { User } from '@bemmoly/shared';
 import {
   avatarHue,
@@ -15,11 +11,12 @@ import {
   type LabelValue,
   type Priority,
 } from '@bemmoly/ui';
+import type { DisplayField } from '../hooks/board-display.ts';
 import type { ViewCard } from '../hooks/board-model.ts';
 
 /*
- * From a view card to what the design system's card draws, under the board's card fields and
- * colour rule. The names come from the vocabularies the board loaded once.
+ * From a view card to what the design system's card draws, under the fields this person shows
+ * (the board's card fields unless they chose otherwise) and the board's colour rule. The names come from the vocabularies the board loaded once.
  */
 
 /** A colour rule's stripe reads the card's --card-rule, set from the rule's colour. */
@@ -32,7 +29,8 @@ export interface CardVocabulary {
   people: ReadonlyMap<string, Pick<User, 'id' | 'name'>>;
   labels: ReadonlyMap<string, LabelValue>;
   meId: string | undefined;
-  fields: readonly CardField[];
+  /** The fields the cards draw: the board's card fields with this person's choices on top. */
+  shown: ReadonlySet<DisplayField>;
   colorRule: CardColorRule;
   /** Scrum cards show points; Kanban cards show the time in the column instead. */
   kanban: boolean;
@@ -56,6 +54,11 @@ export function personOf(vocab: CardVocabulary, userId: string | null): CardPers
   return { name, hue: userId === vocab.meId ? 'accent' : avatarHue(userId) };
 }
 
+/** The card's priority as the design system knows it; an unknown level reads as medium. */
+export function cardPriority(card: ViewCard): Priority {
+  return (PRIORITIES.has(card.priority) ? card.priority : 'medium') as Priority;
+}
+
 /** Days in the column at which the mock marks a card slow (its age rule is four or more). */
 const SLOW_DAYS = 4;
 
@@ -64,8 +67,8 @@ export function cardProps(
   vocab: CardVocabulary,
   laneColor: EpicColor | null,
 ): Omit<IssueCardProps, 'selected' | 'checked' | 'onSelect' | 'className' | 'tools'> {
-  const show = (field: CardField) => vocab.fields.includes(field);
-  const priority = (PRIORITIES.has(card.priority) ? card.priority : 'medium') as Priority;
+  const show = (field: DisplayField) => vocab.shown.has(field);
+  const priority = cardPriority(card);
   const type = glyphOf(vocab, card.typeId);
   const labels = card.labelIds
     .map((id) => vocab.labels.get(id))
@@ -73,15 +76,16 @@ export function cardProps(
   const done = vocab.doneColumns.has(card.columnId);
   return {
     issueKey: card.key,
+    showKey: show('key'),
     title: card.title,
     type,
-    priority,
+    ...(show('priority') ? { priority } : {}),
     ...(show('assignee') ? { assignee: personOf(vocab, card.assigneeId) } : {}),
     ...(show('labels') && labels.length > 0 ? { labels } : {}),
     ...(!vocab.kanban && show('estimate') && card.estimate !== null
       ? { estimate: card.estimate }
       : {}),
-    ...(vocab.kanban
+    ...(vocab.kanban && show('age')
       ? {
           age: done
             ? { label: 'Done', done: true }

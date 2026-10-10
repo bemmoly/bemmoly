@@ -1,5 +1,5 @@
 import { FilterChipButton } from '@bemmoly/ui';
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import type { LqlValueSources } from '../hooks/board-lql.ts';
 import type { BoardGrouping } from '../hooks/board-model.ts';
 import type { SavedFilters } from '../hooks/saved-filters.ts';
@@ -17,11 +17,13 @@ export interface BoardToolbarProps {
   lqlSources: LqlValueSources;
   lqlError: string | null;
   savedFilters: SavedFilters;
+  /** The Display menu, at the row's end. */
+  display?: ReactNode;
 }
 
 /**
  * The Board's filter row: the shared filter bar, with the query bar in place of search while
- * it is open, the saved filters, and Group set to the board's lanes or None.
+ * it is open, the saved filters, Group set to the board's lanes or None, and Display.
  */
 export function BoardToolbar({
   options,
@@ -31,6 +33,7 @@ export function BoardToolbar({
   lqlSources,
   lqlError,
   savedFilters,
+  display,
 }: BoardToolbarProps) {
   const { filters, setQuery } = useIssueFilters();
   const [lqlOpen, setLqlOpen] = useState(filters.lql !== '');
@@ -45,6 +48,7 @@ export function BoardToolbar({
     <IssueFilterBar<BoardGrouping>
       label="Filter this board"
       options={options}
+      display={display}
       searchSlot={
         lqlOpen ? (
           <div className="min-w-80 flex-1">

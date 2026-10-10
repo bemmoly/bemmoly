@@ -1,3 +1,4 @@
+import type { CardField } from '@bemmoly/module-work/shared';
 import { avatarHue, epicColor, statusStage, type EpicColor, type StatusStage } from '@bemmoly/ui';
 import { useEffect, useMemo } from 'react';
 import type { CardVocabulary } from '../board/card-view.ts';
@@ -16,6 +17,7 @@ import {
 import { useHiddenIssues } from './issue-quick-actions.ts';
 import type { LqlValueSources } from './board-lql.ts';
 import { compileColorRules } from './board-color-rules.ts';
+import { useBoardDisplay } from './board-display.ts';
 import { buildBoardModel, type BoardGrouping, type ViewCard } from './board-model.ts';
 
 /*
@@ -23,6 +25,8 @@ import { buildBoardModel, type BoardGrouping, type ViewCard } from './board-mode
  * model, and the names the cards, the filter menus and the LQL bar print. Components stay
  * presentational and read only this.
  */
+
+const NO_FIELDS: readonly CardField[] = [];
 
 const LANE_KINDS = {
   epic: 'Epic',
@@ -50,6 +54,7 @@ export function useBoardScreen(projectKey: string | undefined) {
   useEffect(() => resetLanes(), [data.board?.id, resetLanes]);
 
   const { view, meId } = data;
+  const display = useBoardDisplay(data.board?.id ?? '', meId, boardConfig?.cardFields ?? NO_FIELDS);
   const keep = useMemo(() => {
     if (!matching && !hasClientFilters(filters) && hidden.size === 0) return undefined;
     return (card: ViewCard) =>
@@ -75,7 +80,7 @@ export function useBoardScreen(projectKey: string | undefined) {
         data.labels.map((label) => [label.id, { name: label.name, color: label.color }]),
       ),
       meId: data.meId,
-      fields: boardConfig?.cardFields ?? [],
+      shown: display.shown,
       colorRule: boardConfig?.colorRule ?? 'none',
       kanban,
       doneColumns: new Set(
@@ -105,6 +110,7 @@ export function useBoardScreen(projectKey: string | undefined) {
       statuses,
       boardConfig,
       kanban,
+      display.shown,
     ],
   );
 
@@ -200,6 +206,7 @@ export function useBoardScreen(projectKey: string | undefined) {
     setGrouping,
     lqlSources,
     moveTargets,
+    display,
     serverQuery: q,
     laneLabel: laneKind === 'none' ? null : LANE_KINDS[laneKind],
   };

@@ -6,7 +6,9 @@ import {
   SwimlaneHeader,
   type StatusStage,
 } from '@bemmoly/ui';
-import { memo, useState, type ReactNode } from 'react';
+import { memo, useMemo, useState, type ReactNode } from 'react';
+import { visibleColumns } from '../hooks/board-display.ts';
+import { useBoardDragStore } from '../hooks/board-drag-store.ts';
 import { useMediaQuery } from '../hooks/media-query.ts';
 import { PhoneColumns } from './phone-columns.tsx';
 import { useBoardLanes } from '../hooks/board-filters.ts';
@@ -93,26 +95,40 @@ export interface BoardGridProps {
   stages: Readonly<Record<string, StatusStage>>;
   /** Whether a column offers "New issue". */
   canCreate: boolean;
+  /** Off, columns with no card after filters step aside (and come back while a card is carried). */
+  showEmptyColumns: boolean;
 }
 
 /**
  * The board body from the mock: the sticky column headings over the lanes, 10px apart, at
  * least 1260px wide so five columns never squeeze; the page scrolls sideways instead.
  */
-export function BoardGrid({ model, kanban, empty, stages, canCreate }: BoardGridProps) {
+export function BoardGrid({
+  model,
+  kanban,
+  empty,
+  stages,
+  canCreate,
+  showEmptyColumns,
+}: BoardGridProps) {
   const collapsed = useBoardLanes((state) => state.collapsed);
+  const carrying = useBoardDragStore((state) => state.carrying !== null);
+  const shown = useMemo(
+    () => visibleColumns(model.columns, showEmptyColumns, carrying),
+    [model.columns, showEmptyColumns, carrying],
+  );
   const openCreate = useColumnCreate((state) => state.open);
   const firstOpen = model.lanes.find((lane) => !collapsed.includes(lane.id)) ?? model.lanes[0];
   // Phones show one column at a time, chosen from the status segments.
   const phone = useMediaQuery('(max-width: 767px)', false);
   const [phoneColumn, setPhoneColumn] = useState<string | null>(null);
-  const picked = model.columns.find((column) => column.id === phoneColumn) ?? model.columns[0];
-  const columns = phone && picked ? [picked] : model.columns;
+  const picked = shown.find((column) => column.id === phoneColumn) ?? shown[0];
+  const columns = useMemo(() => (phone && picked ? [picked] : shown), [phone, picked, shown]);
   return (
     <div className="flex min-w-240 flex-col max-md:min-w-0">
       {phone && (
         <PhoneColumns
-          columns={model.columns}
+          columns={shown}
           stages={stages}
           value={picked?.id ?? null}
           onChange={setPhoneColumn}

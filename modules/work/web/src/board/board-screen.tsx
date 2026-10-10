@@ -26,6 +26,7 @@ import { IssueSlideOver, useRememberIssueList } from '../issue/index.ts';
 import type { WorkScreenProps } from '../routes.tsx';
 import { BoardSkeleton } from '../skeletons/board-skeleton.tsx';
 import { BoardContext, type BoardShared } from './board-context.ts';
+import { BoardDisplayMenu } from './board-display-menu.tsx';
 import { BoardEmpty } from './board-empty.tsx';
 import { BoardGrid } from './board-grid.tsx';
 import { BoardHeader } from './board-header.tsx';
@@ -113,6 +114,7 @@ function BoardBody({
       select,
       ...(screen.moveTargets ? { sprints: screen.moveTargets } : {}),
       selectedKey: peek.issueKey,
+      density: screen.display.display.density,
       instructionsId,
       ...(createIn ? { createIn } : {}),
     }),
@@ -123,6 +125,7 @@ function BoardBody({
       select,
       screen.moveTargets,
       peek.issueKey,
+      screen.display.display.density,
       instructionsId,
       createIn,
     ],
@@ -159,6 +162,7 @@ function BoardBody({
             lqlSources={screen.lqlSources}
             lqlError={screen.filterError ? screen.filterError.message : null}
             savedFilters={savedFilters}
+            display={<BoardDisplayMenu display={screen.display} kanban={screen.kanban} />}
           />
         </div>
         <div className="min-h-0 flex-1 overflow-auto bg-sunken px-6 pb-6 max-md:px-4">
@@ -169,6 +173,7 @@ function BoardBody({
               empty={empty}
               stages={screen.stages}
               canCreate={createIn !== undefined}
+              showEmptyColumns={screen.display.display.showEmptyColumns}
             />
           </BoardContext.Provider>
         </div>
