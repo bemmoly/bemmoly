@@ -13,6 +13,7 @@
     "./theme": "./src/theme/index.ts",
     "./icons": "./src/icons/index.ts",
     "./ai-answer": "./src/components/ai-surface/ai-answer.tsx",
+    "./ai-insight-body": "./src/components/ai-surface/ai-insight-body.tsx",
     "./time": "./src/lib/time.ts",
     "./theme.css": "./src/theme.css",
     "./tailwind.css": "./src/tailwind.css",

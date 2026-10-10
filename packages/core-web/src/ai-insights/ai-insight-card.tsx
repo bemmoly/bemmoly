@@ -5,7 +5,8 @@ import {
   type AiInsightKind,
   type AiNextStep,
 } from '@bemmoly/shared/ai-insights';
-import { AiActionButton, AiInsightBody, AiNotUseful, AiSummary } from '@bemmoly/ui';
+import { AiActionButton, AiNotUseful, AiSummary } from '@bemmoly/ui';
+import { AiInsightBody } from '@bemmoly/ui/ai-insight-body';
 import type { ReactNode } from 'react';
 import { navigateInApp } from '../modules/navigation.ts';
 import type { AiInsightHandle } from './use-ai-insight.ts';

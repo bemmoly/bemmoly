@@ -1,6 +1,7 @@
 import { InsightActions, insightPoints, useAiInsight } from '@bemmoly/core-web/ai-insights';
 import { navigateInApp } from '@bemmoly/core-web';
-import { AiActionButton, AiInsightBar, AiInsightBody } from '@bemmoly/ui';
+import { AiActionButton, AiInsightBar } from '@bemmoly/ui';
+import { AiInsightBody } from '@bemmoly/ui/ai-insight-body';
 import { useState } from 'react';
 import { useAiEnabled } from '../issue/issue-ai-summary.tsx';
 import { api } from './api.ts';

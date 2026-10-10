@@ -30,7 +30,8 @@ AI is optional, honest and visibly AI. Lilac marks it, and nothing appears while
    `AiSummary` (a TL;DR card), `AiInsightBar`, `AiBrief`, `AiSuggestion` (a proposed change with
    Apply), `AiAnswer` (a cited answer, from
    `@bemmoly/ui/ai-answer` so the shell's first load does not carry it), `AiActionButton`, `AiAskButton` (Ask AI, with its shortcut), `AiDot`, `AiNotUseful`,
-   and `AiInsightBody` (what goes inside a card: cited claims, the skeleton, the failed state).
+   and `AiInsightBody` (what goes inside a card: cited claims, the skeleton, the failed state;
+   from `@bemmoly/ui/ai-insight-body`, likewise).
    Toasts about AI output use `tone="ai"`. Inside `packages/ui`, the AI tokens are allowed only in
    `ai-surface/`, `command-palette/` and `toast/` (`rules.test.ts` fails anything else).
 
