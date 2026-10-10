@@ -34,6 +34,12 @@ export const PLAN_PROMPT_ID = 'ai.plan';
 
 const WORKSPACE = { kind: 'workspace' } as const;
 
+/**
+ * How long a confirmed plan stays runnable. Its previews ("Medium → High") describe the
+ * records as they were when it was drafted; after this, ask again rather than run stale steps.
+ */
+export const PLAN_RUNNABLE_MS = 60 * 60 * 1000;
+
 /** Read tool round trips while planning: enough to search, then open what it found. */
 const PLANNING_STEPS = 8;
 
@@ -147,6 +153,10 @@ export function createAiPlansService(deps: AiPlansDependencies) {
       if (!stored.plan.runnable) throw aiRefusal('actions_off');
       if (stored.plan.status !== 'proposed') {
         throw new ConflictError('This plan has already been run or cancelled');
+      }
+      const age = (deps.now?.() ?? new Date()).getTime() - Date.parse(stored.plan.createdAt);
+      if (age > PLAN_RUNNABLE_MS) {
+        throw new ConflictError('This plan is more than an hour old. Ask again for a fresh one.');
       }
       const allowed = stored.steps
         .filter((step) => step.permission === 'ALLOWED')

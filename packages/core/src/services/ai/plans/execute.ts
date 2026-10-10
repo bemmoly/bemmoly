@@ -23,6 +23,8 @@ const INTERRUPTED =
 const GONE = 'This kind of change is no longer available.';
 const UNEXPECTED = 'Something went wrong making this change.';
 const ACTIONS_OFF = 'AI actions that change data were turned off before this ran.';
+const MALFORMED = 'This change no longer fits what it changes. Ask again for a new plan.';
+const WORKSPACE = { kind: 'workspace' } as const;
 
 async function planStatus(sql: SqlExecutor, id: string): Promise<string | null> {
   const [row] = await sql<{ status: string }[]>`select status from ai_plans where id = ${id}`;
@@ -61,10 +63,20 @@ export function createPlanExecutor(deps: ExecutorDependencies) {
       await finishStep(sql, step.plan_id, step.step_index, { status: 'failed', error: GONE });
       return 'failed';
     }
+    // What the model wrote is parsed again as the tool's own input, never run as stored.
+    const parsed = tool.input.safeParse(step.args);
+    if (!parsed.success) {
+      await finishStep(sql, step.plan_id, step.step_index, { status: 'failed', error: MALFORMED });
+      await deps.announce(userId, step.plan_id);
+      return 'failed';
+    }
+    const args = parsed.data;
     try {
-      // The person's permissions may have changed since they confirmed; check again.
-      await tool.authorize(ctx, step.args);
-      const outcome = await tool.run(ctx, step.args);
+      // The person's permissions may have changed since they confirmed; check again, both
+      // the right to run AI actions at all and the right to make this change.
+      await ctx.authz.authorize(ctx.actor, 'ai.actions.run', WORKSPACE);
+      await tool.authorize(ctx, args);
+      const outcome = await tool.run(ctx, args);
       await finishStep(sql, step.plan_id, step.step_index, {
         status: 'done',
         undo: tool.undo ? (outcome.undo ?? null) : null,
@@ -123,7 +135,7 @@ export function createPlanExecutor(deps: ExecutorDependencies) {
           continue;
         }
         const policy = await deps.ai().policy({ kind: 'user', id: userId });
-        if (!policy.enabled || !policy.allowActions) {
+        if (!policy.enabled || !policy.allowActions || policy.actorOptedOut) {
           await finishStep(sql, planId, step.step_index, { status: 'failed', error: ACTIONS_OFF });
           failed += 1;
           continue;
@@ -145,6 +157,10 @@ export function createPlanExecutor(deps: ExecutorDependencies) {
         const tool = deps.tools.get(step.tool);
         if (tool?.kind !== 'write' || !tool.undo) continue;
         const ctx = contextOf(step.step_index);
+        // Putting a change back is a change too: the person must still be allowed to make it.
+        const parsed = tool.input.safeParse(step.args);
+        if (!parsed.success) continue;
+        await tool.authorize(ctx, parsed.data);
         await tool.undo(ctx, step.undo);
         await finishStep(sql, planId, step.step_index, { status: 'undone' });
         await deps.audit.record({

@@ -145,6 +145,54 @@ describe('plan → confirm → run', () => {
     expect((await h.titles()).slice(-2)).toEqual(['Session cleanup', 'Legacy cookie path']);
   });
 
+  it('checks the right to run AI actions again when the step runs, not only at confirm', async (ctx) => {
+    if (!h) return ctx.skip(skipped);
+    const harness = h;
+    const plan = await draft(harness, harness.users.member);
+    await harness.plans.service.run(harness.as(harness.users.member), plan.id, {});
+    const toggle = (allowed: boolean) => harness.sql`
+      update role_capabilities set allowed = ${allowed}
+      where capability = 'ai.actions.run'
+        and role_id = (select role_id from users where id = ${harness.users.member})`;
+    const before = await harness.titles();
+    await toggle(false);
+    try {
+      await harness.drain();
+    } finally {
+      await toggle(true);
+    }
+    const ran = await harness.plans.service.get(harness.as(harness.users.member), plan.id);
+    expect(ran.steps[0]?.status).toBe('failed');
+    expect(await harness.titles()).toEqual(before);
+  });
+
+  it('parses stored step arguments again, and fails a step they no longer fit', async (ctx) => {
+    if (!h) return ctx.skip(skipped);
+    const plan = await draft(h, h.users.member);
+    await h.plans.service.run(h.as(h.users.member), plan.id, {});
+    await h.sql`
+      update ai_plan_steps set args = ${JSON.stringify({ id: 'not-an-id', title: 42 })}::jsonb
+      where plan_id = ${plan.id} and step_index = 0`;
+    const before = await h.titles();
+    await h.drain();
+    const ran = await h.plans.service.get(h.as(h.users.member), plan.id);
+    expect(ran.steps[0]).toMatchObject({
+      status: 'failed',
+      error: expect.stringMatching(/no longer fits/),
+    });
+    expect(await h.titles()).toEqual(before);
+  });
+
+  it('refuses to run a plan drafted more than an hour ago', async (ctx) => {
+    if (!h) return ctx.skip(skipped);
+    const plan = await draft(h, h.users.member);
+    await h.sql`
+      update ai_plans set created_at = now() - interval '61 minutes' where id = ${plan.id}`;
+    await expect(h.plans.service.run(h.as(h.users.member), plan.id, {})).rejects.toThrow(
+      /more than an hour old/,
+    );
+  });
+
   it('cancels a plan before it runs', async (ctx) => {
     if (!h) return ctx.skip(skipped);
     const plan = await draft(h, h.users.admin);
