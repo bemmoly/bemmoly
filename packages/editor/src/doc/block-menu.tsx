@@ -93,8 +93,17 @@ export function BlockMenu({
         icon={<Icon name="trash-can" size={15} />}
         hint={keyLabel('Backspace')}
         onSelect={() => {
+          const stored = block.node.toJSON() as Record<string, unknown>;
           deleteBlock(editor, block);
-          toast?.undo({ title: 'Block deleted', onUndo: () => editor.commands.undo() });
+          // Put back this block only: an editor undo would take the person's other recent
+          // edits with it, and with others writing, the position may have moved a little.
+          toast?.undo({
+            title: 'Block deleted',
+            onUndo: () => {
+              const at = Math.min(block.pos, editor.state.doc.content.size);
+              editor.chain().focus().insertContentAt(at, stored).run();
+            },
+          });
         }}
       >
         Delete
