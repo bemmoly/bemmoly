@@ -177,7 +177,7 @@ export function AiAnswer({
       {!streaming && listed.length > 0 && (
         <div className="flex flex-col gap-1 border-t border-ai-100 pt-2">
           <span className="text-12 font-medium text-tx-2">Sources</span>
-          <ol className="m-0 flex list-none flex-col gap-0.5 p-0">
+          <ol className="m-0 flex list-none flex-col p-0">
             {listed.map((item) => (
               <li key={item.id} className="flex min-w-0 items-center gap-1.5 text-13">
                 <span className="w-4 shrink-0 text-right text-12 text-tx-2">
@@ -186,7 +186,10 @@ export function AiAnswer({
                 <Icon name={item.icon ?? 'doc'} size={13} className="shrink-0 text-tx-3" />
                 <a
                   href={item.href}
-                  className={cx('min-w-0 truncate text-tx-2 no-underline hover:text-tx', focusRing)}
+                  className={cx(
+                    'min-w-0 truncate py-1 text-tx-2 no-underline hover:text-tx',
+                    focusRing,
+                  )}
                 >
                   {item.title}
                   {item.label && item.label !== item.title && (
