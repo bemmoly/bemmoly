@@ -1,5 +1,6 @@
 /** Starts `astro preview` on a free port for the tests and stops it afterwards. */
 import { spawn, type ChildProcess } from 'node:child_process';
+import { get } from 'node:http';
 import { readFileSync } from 'node:fs';
 import { createServer } from 'node:net';
 import { fileURLToPath } from 'node:url';
@@ -19,6 +20,29 @@ async function freePort(): Promise<number> {
       const port = typeof address === 'object' && address ? address.port : 0;
       server.close(() => resolve(port));
     });
+  });
+}
+
+export interface Fetched {
+  status: number;
+  text: string;
+}
+
+/**
+ * GET on a connection of its own, closed once the answer is read. The preview drops a kept-alive
+ * socket after a few idle seconds, and fetch's pool would hand that dead socket to the next test
+ * ("other side closed"), so the site tests never share one.
+ */
+export function fetchFresh(url: string): Promise<Fetched> {
+  return new Promise((resolve, reject) => {
+    const request = get(url, { agent: false }, (response) => {
+      const chunks: Buffer[] = [];
+      response.on('data', (chunk: Buffer) => chunks.push(chunk));
+      response.once('end', () =>
+        resolve({ status: response.statusCode ?? 0, text: Buffer.concat(chunks).toString('utf8') }),
+      );
+    });
+    request.once('error', reject);
   });
 }
 
@@ -53,7 +77,7 @@ export async function startPreview(): Promise<Preview> {
   const deadline = Date.now() + START_TIMEOUT_MS;
   while (Date.now() < deadline && !exited) {
     try {
-      await fetch(url);
+      await fetchFresh(url);
       return { url, stop: () => child.kill() };
     } catch {
       await new Promise((resolve) => setTimeout(resolve, 200));

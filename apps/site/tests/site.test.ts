@@ -10,7 +10,7 @@ import { DEMO_PAGE, PAGES } from '../src/data/pages.ts';
 import { INDEXNOW_KEY } from '../src/lib/indexnow.ts';
 import { DEMO_URL, INSTALL_HREF, NAV, REPO_URL } from '../src/lib/links.ts';
 import { hrefsOf, idsOf, isSitePage, parsePage, scriptsOf } from './dom.ts';
-import { startPreview, type Preview } from './serve.ts';
+import { fetchFresh, startPreview, type Preview } from './serve.ts';
 
 const dist = new URL('../dist/', import.meta.url);
 const pages = readdirSync(dist, { recursive: true, encoding: 'utf8' }).filter(isSitePage);
@@ -27,7 +27,7 @@ afterAll(() => preview?.stop());
 
 describe('landing page', () => {
   it('renders the hero headline', async () => {
-    const body = await (await fetch(`${preview.url}/`)).text();
+    const body = (await fetchFresh(`${preview.url}/`)).text;
     expect(body).toMatch(/<h1\b[^>]*>\s*Your work\. Your platform\.\s*<\/h1>/);
   });
 
@@ -92,9 +92,9 @@ describe('links', () => {
     const [path, hash] = href.split('#') as [string, string | undefined];
     // A demo route is a state of the demo's one page, which Caddy serves for all of them.
     const served = path.startsWith('/demo/') ? '/demo/index.html' : path || '/';
-    const response = await fetch(`${preview.url}${served}`);
+    const response = await fetchFresh(`${preview.url}${served}`);
     expect(response.status).toBe(200);
-    if (hash) expect(ids(await response.text())).toContain(hash);
+    if (hash) expect(ids(response.text)).toContain(hash);
   });
 
   it('points outside the site only at the repository or a mail address', () => {
@@ -115,7 +115,7 @@ describe('static files', () => {
     '/changelog.xml',
     `/${INDEXNOW_KEY}.txt`,
   ])('%s is served', async (path) => {
-    expect((await fetch(`${preview.url}${path}`)).status).toBe(200);
+    expect((await fetchFresh(`${preview.url}${path}`)).status).toBe(200);
   });
 
   it('serves the installer from deploy/, byte for byte', () => {
