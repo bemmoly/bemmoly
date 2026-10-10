@@ -1,9 +1,10 @@
 import { queryKeys } from '@bemmoly/api-client';
 import { Menu } from '@bemmoly/ui';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import { describe, expect, it, vi } from 'vitest';
 import { id, newClient, providers, startServer } from '../test-support.tsx';
+import { ExportDialog, useExportDialog } from './export-dialog.tsx';
 import { ExportMenuItems } from './export-menu-items.tsx';
 import { ImportDialog } from './import-dialog.tsx';
 import { pickFiles, pickProblem, stripSharedRoot } from './read-files.ts';
@@ -51,9 +52,15 @@ describe('picking files to import', () => {
 });
 
 describe('export', () => {
-  const page = { id: PAGE, hasChildren: true, deletedAt: null } as never;
+  const page = {
+    id: PAGE,
+    title: 'Runbook',
+    hasChildren: true,
+    deletedAt: null,
+    snapshot: null,
+  } as never;
 
-  function renderMenu(capabilities: string[]) {
+  function renderDialog(capabilities: string[]) {
     const client = newClient();
     client.setQueryData(queryKeys.me(), {
       user: { id: id(901), name: 'R' },
@@ -61,13 +68,23 @@ describe('export', () => {
       modules: [],
       workspace: {},
     });
+    render(<ExportDialog open page={page} onClose={() => undefined} />, {
+      wrapper: providers(client),
+    });
+  }
+
+  it('opens Export… from the More menu', () => {
+    const client = newClient();
     render(
       <Menu defaultOpen trigger={(props) => <button {...props}>More</button>}>
         <ExportMenuItems page={page} />
       </Menu>,
       { wrapper: providers(client) },
     );
-  }
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Export…' }));
+    expect(useExportDialog.getState().open).toBe(true);
+    useExportDialog.getState().hide();
+  });
 
   it('downloads the page as Markdown from the export route', () => {
     const clicked = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function (
@@ -78,21 +95,21 @@ describe('export', () => {
       );
       expect(this.hasAttribute('download')).toBe(true);
     });
-    renderMenu([]);
-    fireEvent.click(screen.getByRole('menuitem', { name: /Export as Markdown/ }));
+    renderDialog([]);
+    fireEvent.click(screen.getByRole('button', { name: 'Export' }));
     expect(clicked).toHaveBeenCalledOnce();
     clicked.mockRestore();
   });
 
-  it('offers the subpages as a zip only to those who may export the space', () => {
-    renderMenu([]);
-    expect(screen.queryByRole('menuitem', { name: /with subpages/ })).toBeNull();
-    expect(screen.getAllByRole('menuitem')).toHaveLength(2);
-  });
-
-  it('offers both zips with the export right', () => {
-    renderMenu(['docs.space.export']);
-    expect(screen.getAllByRole('menuitem', { name: /with subpages/ })).toHaveLength(2);
+  it('offers the subpages only to those who may export the space, and not for PDF', () => {
+    renderDialog([]);
+    expect(screen.queryByRole('checkbox', { name: /pages under it/ })).toBeNull();
+    cleanup();
+    renderDialog(['docs.space.export']);
+    expect(screen.getByRole('checkbox', { name: /pages under it/ })).toBeTruthy();
+    fireEvent.click(screen.getByRole('radio', { name: /PDF/ }));
+    expect(screen.queryByRole('checkbox', { name: /pages under it/ })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Open print view' })).toBeTruthy();
   });
 });
 
@@ -131,7 +148,7 @@ describe('the import dialog', () => {
         },
       }),
     );
-    expect(await screen.findByText('Import started')).toBeTruthy();
+    expect(await screen.findByText('Importing 2 files into Engineering')).toBeTruthy();
   });
 
   it('switches to a Confluence export and keeps only its pages', async () => {
@@ -143,5 +160,36 @@ describe('the import dialog', () => {
     expect(await screen.findByText('home.html')).toBeTruthy();
     expect(screen.queryByText('readme.md')).toBeNull();
     expect(screen.getByRole('button', { name: 'Import 1 file' })).toBeTruthy();
+  });
+
+  it('lists what each file became when a small import lands, then opens the pages', async () => {
+    server.use(
+      http.post('*/api/v1/docs/spaces/:key/imports', () =>
+        HttpResponse.json(
+          {
+            status: 'completed',
+            pages: [
+              {
+                id: id(950),
+                parentId: null,
+                title: 'Intro',
+                path: 'intro.md',
+                status: 'draft',
+                placeholders: 2,
+              },
+            ],
+          },
+          { status: 201 },
+        ),
+      ),
+    );
+    renderDialog();
+    fireEvent.change(screen.getByLabelText('Files to import', { selector: 'input' }), {
+      target: { files: [file('intro.md', '# Intro')] },
+    });
+    fireEvent.click(await screen.findByRole('button', { name: 'Import 1 file' }));
+    const results = await screen.findByRole('list', { name: 'Imported pages' });
+    expect(results.textContent).toContain('2 macros kept as placeholders');
+    expect(screen.getByRole('button', { name: 'Open pages' })).toBeTruthy();
   });
 });
