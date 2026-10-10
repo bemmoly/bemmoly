@@ -1,4 +1,4 @@
-import { arrangePage, body, openLive, saveLine, settled } from '../support/docs.ts';
+import { arrangePage, body, openLive, saveLine, settled, typeAt } from '../support/docs.ts';
 import { expect, test, uniqueKey } from '../support/fixtures.ts';
 
 const SECTIONS = ['Context', 'Migration order', 'Rollback', 'Open questions'];
@@ -96,4 +96,65 @@ test('a page is written, kept, renamed, read by its outline, reviewed and publis
     status: 'published',
     reviewers: [reviewer.id],
   });
+});
+
+test('a writer formats from the bubble, links with ⌘K and moves blocks from the margin', async ({
+  page,
+  admin,
+}) => {
+  const doc = await arrangePage(admin, uniqueKey('E'), 'Writing surface');
+  await openLive(page, doc.id);
+  await body(page).click();
+  await page.keyboard.insertText('Redis stays warm for 7 days');
+  await page.keyboard.press('Enter');
+  await page.keyboard.insertText('Second line');
+
+  // Select the first line: the bubble offers the marks, and each applies at once.
+  // The DOM selection, not Shift+End, which reaches the document's end on macOS.
+  await body(page).evaluate((element) => {
+    (element as HTMLElement).focus();
+    const range = document.createRange();
+    range.selectNodeContents(element.querySelector('p')!);
+    getSelection()?.removeAllRanges();
+    getSelection()?.addRange(range);
+  });
+  const bubble = page.getByRole('toolbar', { name: 'Format' });
+  await expect(bubble).toBeVisible();
+  await bubble.getByRole('button', { name: 'Bold' }).click();
+  await expect(body(page).locator('p strong').first()).toHaveText('Redis stays warm for 7 days');
+  await bubble.getByRole('button', { name: 'Highlight' }).click();
+  await expect(body(page).locator('p mark').first()).toBeVisible();
+
+  // ⌘K links the selection to an address typed in place.
+  await page.keyboard.press('ControlOrMeta+k');
+  const field = page.getByRole('combobox', { name: 'Link address or page' });
+  await field.fill('example.org/runbook');
+  await field.press('Enter');
+  await expect(body(page).locator('a[href="https://example.org/runbook"]')).toBeVisible();
+
+  // Alt+Shift+↓ moves the block below its neighbour, once the text has its focus back.
+  await expect(body(page)).toBeFocused();
+  await page.keyboard.press('Alt+Shift+ArrowDown');
+  await expect(body(page).locator('p').first()).toHaveText('Second line');
+
+  // The / menu turns a heading back into text.
+  await typeAt(page, '', 0);
+  await page.keyboard.press('Enter');
+  await page.keyboard.type('## Decision');
+  await expect(body(page).getByRole('heading', { name: 'Decision' })).toBeVisible();
+  await page.keyboard.press('ArrowLeft', { delay: 0 });
+  for (let i = 1; i < 'Decision'.length; i += 1) await page.keyboard.press('ArrowLeft');
+  await page.keyboard.type('/text');
+  await expect(page.getByRole('listbox', { name: 'Blocks' })).toBeVisible();
+  await page.keyboard.press('Enter');
+  await expect(body(page).getByRole('heading', { name: 'Decision' })).toHaveCount(0);
+
+  // The grip's menu deletes a block at once, with Undo.
+  await body(page).locator('p').first().hover();
+  await page.getByRole('button', { name: /Move or change this paragraph/ }).click();
+  await page.getByRole('menuitem', { name: /Delete/ }).click();
+  await expect(page.getByText('Block deleted')).toBeVisible();
+  await page.getByRole('button', { name: 'Undo' }).click();
+  await expect(body(page).locator('p').first()).toHaveText('Second line');
+  await settled(page);
 });
