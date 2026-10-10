@@ -9,6 +9,7 @@
     "./tokens": "./src/tokens.ts",
     "./theme": "./src/theme/index.ts",
     "./icons": "./src/icons/index.ts",
+    "./time": "./src/lib/time.ts",
     "./theme.css": "./src/theme.css",
     "./tailwind.css": "./src/tailwind.css",
     "./fonts.css": "./src/fonts.css",
