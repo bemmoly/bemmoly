@@ -57,3 +57,4 @@ sizes 11 to 24 in seven steps), keeping its 2px for marks under 12px so an epic'
 swatch never reads as a label's dot. Where a kit colour fails contrast it is lifted the smallest step
 that passes (ADR 0015).
 - [Workspace settings](interaction/settings.md)
+- [Dialogs](interaction/dialogs.md): the modal, Create issue, sprint, saved filter, link, project dialogs.
