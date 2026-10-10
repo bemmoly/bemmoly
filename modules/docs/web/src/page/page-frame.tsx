@@ -86,7 +86,7 @@ export function PageFrame({ page }: { page: PageDetail }) {
   const readOnly = readOnlyOf(page, collab.status);
   const editable = !readOnly && collab.editable;
   const outline = useOutline(editor);
-  const activeHeading = useActiveHeading(scroller, editor, outline);
+  const { active: activeHeading, pin: pinHeading } = useActiveHeading(scroller, editor, outline);
   const outlineInRail = useWiderThan(scroller, RAIL_FROM);
   const stats = useDocStats(editor, page.wordCount);
   usePageShortcuts(collab.status, readOnly);
@@ -110,6 +110,7 @@ export function PageFrame({ page }: { page: PageDetail }) {
       focusBody,
       outline,
       activeHeading,
+      pinHeading,
       outlineInRail,
       stats,
     }),
@@ -122,6 +123,7 @@ export function PageFrame({ page }: { page: PageDetail }) {
       focusBody,
       outline,
       activeHeading,
+      pinHeading,
       outlineInRail,
       stats,
     ],
@@ -143,7 +145,12 @@ export function PageFrame({ page }: { page: PageDetail }) {
               {/* The rail keeps its width while empty, so the body never shifts when headings arrive. */}
               {outlineInRail && (
                 <aside className="sticky top-0 w-52 shrink-0 self-start pt-12 pr-6">
-                  <TocList outline={outline} active={activeHeading} editor={editor} />
+                  <TocList
+                    outline={outline}
+                    active={activeHeading}
+                    editor={editor}
+                    onPin={pinHeading}
+                  />
                 </aside>
               )}
             </div>

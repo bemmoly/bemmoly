@@ -78,8 +78,13 @@ export function StatusMenu() {
         initial={page.reviewers}
         exclude={[page.ownerId, user?.id].filter((id): id is string => Boolean(id))}
         confirmLabel="Request review"
+        required
+        error={change.error?.message ?? null}
         pending={change.isPending}
-        onClose={() => setPicking(false)}
+        onClose={() => {
+          change.reset();
+          setPicking(false);
+        }}
         onConfirm={(reviewers) =>
           change.mutate({ status: 'in_review', reviewers }, { onSuccess: () => setPicking(false) })
         }

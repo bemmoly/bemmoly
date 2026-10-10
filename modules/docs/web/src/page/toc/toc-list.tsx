@@ -6,6 +6,8 @@ export interface TocListProps {
   outline: readonly OutlineEntry[];
   active: string | null;
   editor: PageEditor | null;
+  /** Marks the heading jumped to as the one being read. */
+  onPin?: (id: string) => void;
   /** After a jump, e.g. to close the panel it sits in on a phone. */
   onJump?: () => void;
   className?: string;
@@ -18,7 +20,7 @@ const INDENT = ['pl-3', 'pl-6', 'pl-9'] as const;
  * with the accent bar the sidebar tree uses for the open page. A plain click scrolls smoothly
  * inside the page; the href still works for a new tab.
  */
-export function TocList({ outline, active, editor, onJump, className }: TocListProps) {
+export function TocList({ outline, active, editor, onPin, onJump, className }: TocListProps) {
   if (outline.length === 0) return null;
   const top = Math.min(...outline.map((entry) => entry.level));
   return (
@@ -36,6 +38,7 @@ export function TocList({ outline, active, editor, onJump, className }: TocListP
                   if (!editor || event.metaKey || event.ctrlKey || event.shiftKey) return;
                   event.preventDefault();
                   goToHeading(editor, entry);
+                  onPin?.(entry.id);
                   onJump?.();
                 }}
                 className={cx(

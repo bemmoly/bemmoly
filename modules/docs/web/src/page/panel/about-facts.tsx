@@ -103,8 +103,12 @@ function ReviewersField() {
         initial={page.reviewers}
         exclude={page.ownerId ? [page.ownerId] : []}
         confirmLabel="Save reviewers"
+        error={save.error?.message ?? null}
         pending={save.isPending}
-        onClose={() => setOpen(false)}
+        onClose={() => {
+          save.reset();
+          setOpen(false);
+        }}
         onConfirm={(reviewers) => save.mutate(reviewers, { onSuccess: () => setOpen(false) })}
       />
     </>

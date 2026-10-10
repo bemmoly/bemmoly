@@ -28,6 +28,8 @@ export interface PageScreenState {
   /** The live document's headings and the one being read. */
   outline: readonly OutlineEntry[];
   activeHeading: string | null;
+  /** Marks the heading the person just jumped to as the one being read. */
+  pinHeading: (id: string) => void;
   /** True when the outline has room for its own rail beside the body; else the panel shows it. */
   outlineInRail: boolean;
   /** Words and reading time of the live document. */

@@ -1,5 +1,5 @@
-import { headingIds } from '@bemmoly/editor/convert';
-import { useEffect, useState, type RefObject } from 'react';
+import { headingIds } from '@bemmoly/editor';
+import { useCallback, useEffect, useRef, useState, type RefObject } from 'react';
 import type { PageEditor } from '../screen-context.ts';
 
 export interface OutlineEntry {
@@ -84,16 +84,30 @@ export function headingElement(editor: PageEditor, entry: OutlineEntry): HTMLEle
 /** How far below the scroller's top a heading counts as the one being read. */
 const READING_LINE = 96;
 
+export interface ActiveHeading {
+  active: string | null;
+  /**
+   * Marks a heading as the one being read after a jump to it, even when the page cannot
+   * scroll it up to the line (the last sections of a short page); the person's next scroll
+   * hands the choice back to the scroll position.
+   */
+  pin: (id: string) => void;
+}
+
+const USER_INPUT = ['wheel', 'touchmove', 'keydown', 'pointerdown'] as const;
+
 /**
  * The heading being read: the last one whose top has passed a line near the top of the
- * scroller, updated once a frame while it scrolls. The first heading until any has passed.
+ * scroller, updated once a frame while it scrolls. The first heading until any has passed,
+ * and the last once the page is scrolled to its end.
  */
 export function useActiveHeading(
   scroller: RefObject<HTMLElement | null>,
   editor: PageEditor | null,
   outline: readonly OutlineEntry[],
-): string | null {
+): ActiveHeading {
   const [active, setActive] = useState<string | null>(null);
+  const pinned = useRef<string | null>(null);
   useEffect(() => {
     const root = scroller.current;
     if (!root || !editor || outline.length === 0) {
@@ -103,27 +117,41 @@ export function useActiveHeading(
     let frame = 0;
     const measure = () => {
       frame = 0;
+      if (pinned.current) {
+        setActive(pinned.current);
+        return;
+      }
       const line = root.getBoundingClientRect().top + READING_LINE;
       let current = outline[0]!.id;
       for (const entry of outline) {
         const element = headingElement(editor, entry);
         if (element && element.getBoundingClientRect().top <= line) current = entry.id;
       }
-      // At the very bottom the last heading is the one being read, even if it never reaches the line.
-      if (root.scrollTop + root.clientHeight >= root.scrollHeight - 2) current = outline.at(-1)!.id;
+      if (root.scrollTop > 0 && root.scrollTop + root.clientHeight >= root.scrollHeight - 4) {
+        current = outline.at(-1)!.id;
+      }
       setActive(current);
     };
     const onScroll = () => {
       if (!frame) frame = requestAnimationFrame(measure);
     };
+    const release = () => {
+      pinned.current = null;
+    };
     measure();
     root.addEventListener('scroll', onScroll, { passive: true });
+    for (const name of USER_INPUT) root.addEventListener(name, release, { passive: true });
     return () => {
       cancelAnimationFrame(frame);
       root.removeEventListener('scroll', onScroll);
+      for (const name of USER_INPUT) root.removeEventListener(name, release);
     };
   }, [scroller, editor, outline]);
-  return active;
+  const pin = useCallback((id: string) => {
+    pinned.current = id;
+    setActive(id);
+  }, []);
+  return { active, pin };
 }
 
 /** Scrolls a heading to the top of the reading area and puts its anchor in the address. */

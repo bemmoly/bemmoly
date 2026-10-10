@@ -32,6 +32,7 @@ function AboutTab({ onJump }: { onJump: () => void }) {
         <TocList
           outline={screen.outline}
           active={screen.activeHeading}
+          onPin={screen.pinHeading}
           editor={screen.editor}
           onJump={onJump}
           className="mt-1"

@@ -110,6 +110,32 @@ describe('the doc editor screen', () => {
     await waitFor(() => expect(calls.at(-1)?.body).toEqual({ status: 'published' }));
   });
 
+  it('needs a reviewer before a review, and says in the dialog what the server refused', async () => {
+    server.use(
+      http.put('*/api/v1/docs/pages/:pageId/reviewers', () =>
+        HttpResponse.json(
+          {
+            code: 'validation_failed',
+            message: 'Reviewers must be active members of the space',
+            requestId: 't',
+          },
+          { status: 400 },
+        ),
+      ),
+    );
+    renderPage();
+    fireEvent.click(await screen.findByRole('button', { name: /Change status/ }));
+    fireEvent.click(await screen.findByRole('menuitem', { name: 'Request review…' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Reviewers' });
+    const confirm = within(dialog).getByRole('button', { name: 'Request review' });
+    expect((confirm as HTMLButtonElement).disabled).toBe(true);
+    fireEvent.click(within(dialog).getByRole('checkbox', { name: 'Jonas M.' }));
+    fireEvent.click(confirm);
+    expect((await within(dialog).findByRole('alert')).textContent).toBe(
+      'Reviewers must be active members of the space',
+    );
+  });
+
   it('greys Publish for someone who may not publish', async () => {
     renderPage({ capabilities: [] });
     fireEvent.click(await screen.findByRole('button', { name: /Change status/ }));

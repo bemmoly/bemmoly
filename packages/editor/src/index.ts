@@ -5,6 +5,7 @@
  * documents outside an editor, is `@bemmoly/editor/schema`; text extraction, the links
  * graph and Markdown, HTML and Confluence conversion are `@bemmoly/editor/convert`.
  */
+export { headingIds } from './convert/outline.ts';
 export { isEmptyDoc } from './doc.ts';
 export type { DocEditorProps } from './doc/doc-editor-props.ts';
 export {

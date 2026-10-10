@@ -14,6 +14,10 @@ export interface ReviewersDialogProps {
   /** The owner and the signed-in person, who do not review their own page. */
   exclude?: readonly string[];
   pending?: boolean;
+  /** At least one reviewer: the server refuses a review with nobody named. */
+  required?: boolean;
+  /** Why the last attempt failed, shown above the buttons. */
+  error?: string | null;
   onConfirm: (reviewers: string[]) => void;
   onClose: () => void;
 }
@@ -35,8 +39,8 @@ function usePeopleList() {
 
 /**
  * Picks who reviews the page: the step between draft and in review, and the Reviewers row of
- * the About panel. A review can go out with nobody named; the page then waits in the space's
- * "needs attention" list for anyone with publish rights.
+ * the About panel. A review needs someone named, so Request review waits for a first pick;
+ * what the server refuses (someone who is not in the space) is said in the dialog itself.
  */
 export function ReviewersDialog(props: ReviewersDialogProps) {
   return props.open ? <ReviewersForm {...props} /> : null;
@@ -48,6 +52,8 @@ function ReviewersForm({
   confirmLabel,
   exclude = [],
   pending,
+  required = false,
+  error,
   onConfirm,
   onClose,
 }: ReviewersDialogProps) {
@@ -83,7 +89,17 @@ function ReviewersForm({
           <Button variant="ghost" onClick={onClose}>
             Cancel
           </Button>
-          <Button variant="primary" loading={pending} onClick={() => onConfirm(chosen)}>
+          {error && (
+            <span role="alert" className="mr-auto min-w-0 text-12h text-danger">
+              {error}
+            </span>
+          )}
+          <Button
+            variant="primary"
+            loading={pending}
+            disabled={required && chosen.length === 0}
+            onClick={() => onConfirm(chosen)}
+          >
             {confirmLabel}
           </Button>
         </>
