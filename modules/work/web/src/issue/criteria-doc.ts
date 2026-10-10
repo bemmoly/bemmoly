@@ -50,7 +50,8 @@ function collect(node: Node, out: Criterion[]): void {
   }
   if (node.type === 'paragraph' || node.type === 'heading') {
     const text = textOf(node).trim();
-    if (text) out.push({ text, checked: false, ...(node.content ? { content: node.content } : {}) });
+    if (text)
+      out.push({ text, checked: false, ...(node.content ? { content: node.content } : {}) });
     return;
   }
   for (const child of node.content ?? []) collect(child, out);

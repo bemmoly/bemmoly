@@ -1,11 +1,5 @@
 import { Icon } from '@bemmoly/ui/icons';
-import {
-  Menu,
-  MenuItem,
-  Select,
-  type LoadOptions,
-  type SelectOption,
-} from '@bemmoly/ui';
+import { Menu, MenuItem, Select, type LoadOptions, type SelectOption } from '@bemmoly/ui';
 import type { ReactNode } from 'react';
 import { cx } from '../issue/cx.ts';
 
@@ -170,7 +164,15 @@ export function ChipNumber({ name, value, onChange, invalid }: ChipNumberProps) 
 }
 
 /** The ··· chip: shows the fields the type has beyond the common ones. */
-export function ChipMore({ open, onToggle, count }: { open: boolean; onToggle: () => void; count: number }) {
+export function ChipMore({
+  open,
+  onToggle,
+  count,
+}: {
+  open: boolean;
+  onToggle: () => void;
+  count: number;
+}) {
   return (
     <button
       type="button"

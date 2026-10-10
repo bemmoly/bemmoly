@@ -14,11 +14,7 @@ import { SchemePage } from './scheme-page.tsx';
  * Project settings › Issue types: the types the project offers, from the org default until
  * it is overridden. Once it is, they rename in place and reorder by drag or keyboard.
  */
-export function IssueTypesPage({
-  projectKey,
-}: {
-  projectKey: string | undefined;
-}) {
+export function IssueTypesPage({ projectKey }: { projectKey: string | undefined }) {
   const { project } = useProject(projectKey);
   const access = useSettingsAccess();
   const flow = useSchemeFlow(project?.id, 'issue_types');

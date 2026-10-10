@@ -52,9 +52,7 @@ export function EditorHeader(props: EditorHeaderProps) {
         <h1 className="m-0 text-20 font-semibold tracking-title whitespace-nowrap">
           {workflow.name}
         </h1>
-        <span className="text-12 text-tx-3">
-          {workflow.projectId ? 'This project' : 'Default'}
-        </span>
+        <span className="text-12 text-tx-3">{workflow.projectId ? 'This project' : 'Default'}</span>
         <span className="min-w-0 truncate text-12 text-tx-3 tabular-nums">
           {facts.join(' · ')}
           <span aria-live="polite" className={saveState === 'error' ? 'text-danger' : undefined}>

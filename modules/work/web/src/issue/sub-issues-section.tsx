@@ -1,5 +1,12 @@
 import type { IssueDetail } from '@bemmoly/module-work/shared';
-import { EmptyHint, ListCard, ProgressBar, SectionHeading, SubtaskRow, useToast } from '@bemmoly/ui';
+import {
+  EmptyHint,
+  ListCard,
+  ProgressBar,
+  SectionHeading,
+  SubtaskRow,
+  useToast,
+} from '@bemmoly/ui';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSubtasks } from '../hooks/issue-detail.ts';
 import { workPaths } from '../hooks/issue-navigation.ts';

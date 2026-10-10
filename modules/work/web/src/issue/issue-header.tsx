@@ -165,7 +165,12 @@ export function IssueMoreMenu({ issue, size, onDeleted }: IssueMoreMenuProps) {
       <Menu
         align="end"
         trigger={(props) => (
-          <IconButton {...props} label="More actions" icon="more" size={size === 'page' ? 'sm' : 'xs'} />
+          <IconButton
+            {...props}
+            label="More actions"
+            icon="more"
+            size={size === 'page' ? 'sm' : 'xs'}
+          />
         )}
       >
         <MenuItem onSelect={() => void copyIssueLink(issue.key, toast)}>Copy link</MenuItem>

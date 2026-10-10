@@ -62,7 +62,10 @@ export function RichTextSection({
   const onBlur = (event: FocusEvent<HTMLDivElement>) => {
     const next = event.relatedTarget as Node | null;
     // Menus of the editor (slash, mentions) live in a portal; focus moving there stays inside.
-    if (next && (box.current?.contains(next) || (next as HTMLElement).closest?.('[role=listbox]'))) {
+    if (
+      next &&
+      (box.current?.contains(next) || (next as HTMLElement).closest?.('[role=listbox]'))
+    ) {
       return;
     }
     finish();

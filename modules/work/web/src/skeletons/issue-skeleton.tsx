@@ -2,9 +2,14 @@ import { Skeleton } from '@bemmoly/ui';
 import { ControlSkeleton, LineSkeleton } from './parts.tsx';
 
 /** The Issue page's two columns: the reading column and the 300px rail, 40px apart. */
-export const ISSUE_GRID = 'grid grid-cols-1 items-start gap-8 md:grid-cols-[minmax(0,1fr)_300px] md:gap-10';
+export const ISSUE_GRID =
+  'grid grid-cols-1 items-start gap-8 md:grid-cols-[minmax(0,1fr)_300px] md:gap-10';
 
-const VALUES = [[96, 120, 64, 88], [92, 104, 80, 72], [96, 84]] as const;
+const VALUES = [
+  [96, 120, 64, 88],
+  [92, 104, 80, 72],
+  [96, 84],
+] as const;
 
 /** The rail: the status button, its next transitions, then the three property groups. */
 function RailSkeleton() {

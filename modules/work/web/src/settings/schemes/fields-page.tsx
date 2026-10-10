@@ -15,11 +15,7 @@ import { SchemePage } from './scheme-page.tsx';
  * default until the scheme is overridden; then they rename in place. Their order is set per
  * issue type, in its create-form layout, so this table has none of its own.
  */
-export function FieldsPage({
-  projectKey,
-}: {
-  projectKey: string | undefined;
-}) {
+export function FieldsPage({ projectKey }: { projectKey: string | undefined }) {
   const { project } = useProject(projectKey);
   const access = useSettingsAccess();
   const flow = useSchemeFlow(project?.id, 'fields');
@@ -37,9 +33,7 @@ export function FieldsPage({
     >
       <div className="flex items-center gap-3">
         <p className="m-0 flex-1 text-12 text-tx-3">
-          {editable
-            ? 'Click a name to rename it.'
-            : 'Override the scheme to rename or add fields.'}
+          {editable ? 'Click a name to rename it.' : 'Override the scheme to rename or add fields.'}
         </p>
         {editable && (
           <Button size="xs" icon={<Icon name="plus" size={14} />} onClick={() => setAdding(true)}>

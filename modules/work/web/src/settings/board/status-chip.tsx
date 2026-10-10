@@ -78,7 +78,10 @@ export function StatusChip({
       )}
     >
       <StatusDot status={status} />
-      <span className={variant === 'column' ? 'min-w-0 flex-1 truncate' : undefined} title={status.name}>
+      <span
+        className={variant === 'column' ? 'min-w-0 flex-1 truncate' : undefined}
+        title={status.name}
+      >
         {status.name}
       </span>
       {variant === 'column' && count !== undefined && (

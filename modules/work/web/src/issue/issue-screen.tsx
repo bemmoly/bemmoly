@@ -18,7 +18,15 @@ import { IssueRail } from './issue-rail.tsx';
 const WIDE = '(min-width: 768px)';
 
 /** Why the issue did not open, in words a person can act on. */
-function IssueError({ issueKey, error, onRetry }: { issueKey: string; error: Error; onRetry: () => void }) {
+function IssueError({
+  issueKey,
+  error,
+  onRetry,
+}: {
+  issueKey: string;
+  error: Error;
+  onRetry: () => void;
+}) {
   const missing = /not found|404/i.test(error.message);
   const back = workPaths.board(projectKeyOf(issueKey));
   return (

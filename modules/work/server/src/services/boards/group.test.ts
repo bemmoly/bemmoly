@@ -45,7 +45,9 @@ const entry = (c: BoardCard, epicId: string | null = null, queryLane: number | n
   ({ card: c, epicId, queryLane }) satisfies GroupCard;
 
 const NAMES: LaneNames = {
-  epics: new Map([[EPIC, { key: 'PLT-1', title: 'Checkout', dueAt: '2026-11-01', color: 'epic-3' }]]),
+  epics: new Map([
+    [EPIC, { key: 'PLT-1', title: 'Checkout', dueAt: '2026-11-01', color: 'epic-3' }],
+  ]),
   users: new Map([
     [BEN, 'Ben'],
     [ANA, 'Ana'],

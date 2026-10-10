@@ -58,9 +58,7 @@ export function CreateFields({ form, options }: { form: Form; options: CreateOpt
     .map((user) => ({ ...personOption(user), icon: <Avatar name={user.name} size={16} /> }));
   const subtask = Boolean(draft.parentId) && !options.epics.some((e) => e.id === draft.parentId);
 
-  const extra = layout.rows.filter(
-    (row) => row.column === null && row.field.kind !== 'richtext',
-  );
+  const extra = layout.rows.filter((row) => row.column === null && row.field.kind !== 'richtext');
   const shown = extra.filter(
     (row) => more || row.required || errors[`customFields.${row.field.key}`],
   );

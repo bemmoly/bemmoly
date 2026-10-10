@@ -23,8 +23,8 @@ export function IssueAiSummary({ size }: { size: 'page' | 'panel' }) {
   return (
     <AiSummary variant={size} source="not written yet">
       <span className="text-tx-2">
-        Issue summaries are not written yet in this version. Until they are, ask Bemmoly about
-        this issue from search.
+        Issue summaries are not written yet in this version. Until they are, ask Bemmoly about this
+        issue from search.
       </span>
     </AiSummary>
   );

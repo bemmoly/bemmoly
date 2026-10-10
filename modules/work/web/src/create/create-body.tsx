@@ -113,7 +113,14 @@ interface DocumentSectionProps {
 }
 
 /** "Acceptance criteria · Required for stories", as a checklist in its own box. */
-function DocumentSection({ row, typeName, error, value, onChange, onSubmit }: DocumentSectionProps) {
+function DocumentSection({
+  row,
+  typeName,
+  error,
+  value,
+  onChange,
+  onSubmit,
+}: DocumentSectionProps) {
   const sources = useEditorSources();
   const { field, required } = row;
   const checklist = isChecklist(field.name);
@@ -122,10 +129,7 @@ function DocumentSection({ row, typeName, error, value, onChange, onSubmit }: Do
   return (
     <section
       aria-label={field.name}
-      className={cx(
-        'mt-1 rounded-card border px-3 py-2.5',
-        error ? 'border-red' : 'border-line',
-      )}
+      className={cx('mt-1 rounded-card border px-3 py-2.5', error ? 'border-red' : 'border-line')}
     >
       <div className="flex items-center gap-2 text-13">
         <Icon name={checklist ? 'checklist' : 'lines'} size={14} className="text-tx-3" />

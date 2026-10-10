@@ -85,7 +85,13 @@ export function RailProperties({ issue }: { issue: IssueDetail }) {
               edit({
                 body: { typeId: next.id },
                 shown: {
-                  type: { id: next.id, name: next.name, key: next.key, level: next.level, icon: next.icon },
+                  type: {
+                    id: next.id,
+                    name: next.name,
+                    key: next.key,
+                    level: next.level,
+                    icon: next.icon,
+                  },
                 },
                 what: 'The type',
               });
@@ -107,7 +113,11 @@ export function RailProperties({ issue }: { issue: IssueDetail }) {
           onSave={(id) => assign(id)}
         />
         {viewer && issue.assigneeId !== viewer.id && (
-          <button type="button" className={ASSIGN_ME} onClick={() => assign(viewer.id, viewer.name)}>
+          <button
+            type="button"
+            className={ASSIGN_ME}
+            onClick={() => assign(viewer.id, viewer.name)}
+          >
             Assign to me
           </button>
         )}

@@ -62,10 +62,7 @@ export function PreviewRail({ draft, boardHref }: { draft: BoardDraft; boardHref
         </a>
       </div>
       <div className="flex flex-col gap-3 overflow-auto px-5 pt-2 pb-5">
-        <div
-          className="grid gap-1.25 text-11 font-medium text-tx-2"
-          style={grid}
-        >
+        <div className="grid gap-1.25 text-11 font-medium text-tx-2" style={grid}>
           {config.columns.map((column) => (
             <div key={column.id} className="truncate px-0.5">
               {column.name} <span className="text-tx-3 tabular-nums">{column.wipLimit ?? ''}</span>

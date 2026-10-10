@@ -47,7 +47,10 @@ export function FieldsTable({
             className="font-medium"
           />
           {field.aiFill && (
-            <span className="flex shrink-0 items-center gap-1 text-12 text-ai-600" title="AI suggests a value">
+            <span
+              className="flex shrink-0 items-center gap-1 text-12 text-ai-600"
+              title="AI suggests a value"
+            >
               <Icon name="spark" size={12} />
               AI fills
             </span>

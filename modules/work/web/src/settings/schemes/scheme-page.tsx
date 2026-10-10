@@ -1,11 +1,5 @@
 import { isApiError } from '@bemmoly/api-client';
-import {
-  Button,
-  ConfirmChange,
-  PageTitle,
-  SettingsContent,
-  SettingsFrame,
-} from '@bemmoly/ui';
+import { Button, ConfirmChange, PageTitle, SettingsContent, SettingsFrame } from '@bemmoly/ui';
 import type { ReactNode } from 'react';
 import { NO_PROJECT_PERMISSION } from '../../hooks/settings-access.ts';
 import type { SchemeFlow } from '../../hooks/settings-scheme-flow.ts';
@@ -31,13 +25,7 @@ export interface SchemePageProps {
  * The frame of a scheme page (Issue types, Fields): the header with Override
  * or Reset, the "Inherits from" banner with its diff, and the asks.
  */
-export function SchemePage({
-  title,
-  description,
-  flow,
-  canConfigure,
-  children,
-}: SchemePageProps) {
+export function SchemePage({ title, description, flow, canConfigure, children }: SchemePageProps) {
   const overridden = flow.status?.overridden ?? false;
   const origin = flow.status?.originName ?? 'the org default';
   const locked = canConfigure ? undefined : NO_PROJECT_PERMISSION;

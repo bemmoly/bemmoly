@@ -93,7 +93,15 @@ export function useMemberFilter(members: readonly ProjectMember[]) {
     admins: members.filter((member) => member.roleKey === PROJECT_ADMIN).length,
     invited: members.filter((member) => member.status === 'invited').length,
   };
-  return { query, setQuery, segment, setSegment, rows, counts, filtered: !!needle || segment !== 'all' };
+  return {
+    query,
+    setQuery,
+    segment,
+    setSegment,
+    rows,
+    counts,
+    filtered: !!needle || segment !== 'all',
+  };
 }
 
 /** Server search for people to add, leaving out who is already on the project. */

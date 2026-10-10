@@ -1,5 +1,13 @@
 import type { RichText } from '@bemmoly/module-work/shared';
-import { Button, ChecklistBlock, CriteriaRow, IconButton, Input, Tooltip, useToast } from '@bemmoly/ui';
+import {
+  Button,
+  ChecklistBlock,
+  CriteriaRow,
+  IconButton,
+  Input,
+  Tooltip,
+  useToast,
+} from '@bemmoly/ui';
 import { Icon } from '@bemmoly/ui/icons';
 import { useRef, useState } from 'react';
 import { criteriaDoc, criteriaOf, type Criterion } from './criteria-doc.ts';

@@ -1,5 +1,14 @@
 import type { Project } from '@bemmoly/module-work/shared';
-import { Avatar, Button, EntityTile, Field, Input, Modal, Select, SelectableCard } from '@bemmoly/ui';
+import {
+  Avatar,
+  Button,
+  EntityTile,
+  Field,
+  Input,
+  Modal,
+  Select,
+  SelectableCard,
+} from '@bemmoly/ui';
 import { usePeople } from '../hooks/issue-people.ts';
 import { useCreateProject, useTeams } from '../hooks/projects-list.ts';
 
