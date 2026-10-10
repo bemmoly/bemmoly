@@ -1,4 +1,4 @@
-import { COMMENT_EVENT } from '@bemmoly/editor';
+import { COMMENT_EVENT, mountedDom } from '@bemmoly/editor';
 import { useToast } from '@bemmoly/ui';
 import { useCallback, useEffect } from 'react';
 import type { CommentAnchor } from '@bemmoly/module-docs/shared';
@@ -34,7 +34,7 @@ export function CommentBubble({ editor, onStart, disabled = false }: CommentBubb
     const result = captureAnchor(editor.state);
     if (result.ok) {
       onStart(result.anchor);
-      editor.view.dom.blur();
+      mountedDom(editor)?.blur();
     } else {
       toast.show({ tone: 'info', title: REASONS[result.reason] });
     }
@@ -48,7 +48,8 @@ export function CommentBubble({ editor, onStart, disabled = false }: CommentBubb
         start();
       }
     };
-    const dom = editor.view.dom;
+    const dom = mountedDom(editor);
+    if (!dom) return undefined;
     dom.addEventListener('keydown', onKey);
     dom.addEventListener(COMMENT_EVENT, start);
     return () => {

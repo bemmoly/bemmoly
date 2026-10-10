@@ -1,4 +1,4 @@
-import { DocEditor, RichTextView, type RichTextDoc } from '@bemmoly/editor';
+import { DocEditor, mountedDom, RichTextView, type RichTextDoc } from '@bemmoly/editor';
 import { Skeleton } from '@bemmoly/ui';
 import { useEffect } from 'react';
 import type { CollabPage } from '../../collab/use-collab-page.ts';
@@ -24,8 +24,8 @@ export function bodyReady(collab: Pick<CollabPage, 'status' | 'editable'>): bool
 /** ↑ on the first line of the body goes back up into the title, as ↓ in the title comes down. */
 function useArrowUpToTitle(editor: PageEditor | null) {
   useEffect(() => {
-    if (!editor) return undefined;
-    const dom = editor.view.dom;
+    const dom = mountedDom(editor);
+    if (!editor || !dom) return undefined;
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key !== 'ArrowUp' || event.shiftKey || event.metaKey || event.altKey) return;
       const { selection } = editor.state;

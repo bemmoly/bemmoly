@@ -1,3 +1,4 @@
+import { mountedDom } from '@bemmoly/editor';
 import { useEffect } from 'react';
 import { TYPING_ATTRIBUTE, usePageTyping, type PageEditor } from './screen-context.ts';
 
@@ -19,8 +20,8 @@ export function useTypingFlag(editor: PageEditor | null) {
   const setTyping = usePageTyping((state) => state.setTyping);
 
   useEffect(() => {
-    if (!editor) return undefined;
-    const dom = editor.view.dom;
+    const dom = mountedDom(editor);
+    if (!editor || !dom) return undefined;
     let origin: { x: number; y: number } | null = null;
     const onKey = (event: KeyboardEvent) => {
       if (writes(event) && editor.isEditable) {
