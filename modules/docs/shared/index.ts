@@ -6,6 +6,7 @@ export * from './diff/index.ts';
 export * from './home.ts';
 export * from './lexorank.ts';
 export * from './links.ts';
+export * from './members.ts';
 export * from './pages.ts';
 export * from './realtime.ts';
 export * from './revisions.ts';

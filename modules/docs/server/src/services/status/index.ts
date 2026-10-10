@@ -19,13 +19,15 @@ import {
 import { loadDetail } from '../pages/detail.ts';
 import { pageById } from '../pages/rows.ts';
 import { insertRevision } from '../revisions/write.ts';
+import { eligibleReviewers } from '../spaces/eligibility.ts';
 
 /*
  * The review flow: draft, in review, published, archived. Entering published
  * or archived needs docs.page.publish; the rest needs docs.page.edit.
  * Publishing writes a "publish" revision, so the history marks each release.
- * Reviewers must be members of the space, so a review request never names
- * someone who cannot open the page.
+ * Reviewers must be able to open the space's pages (members, and org admins,
+ * whom authorization lets into every space), so a review request never names
+ * someone who cannot open the page; GET .../members marks the same people.
  */
 export function createStatusService(deps: DocsServiceDeps) {
   return {
@@ -81,11 +83,7 @@ export function createStatusService(deps: DocsServiceDeps) {
       await ctx.authz.authorize(ctx.actor, 'docs.page.edit', spaceResource(page.space_id));
       const reviewers = [...new Set(body.reviewers)];
       if (reviewers.length > 0) {
-        const members = await sql<{ user_id: string }[]>`
-          select m.user_id from space_members m join users u on u.id = m.user_id
-          where m.space_id = ${page.space_id} and m.user_id = any(${reviewers}::uuid[])
-            and u.status = 'active'`;
-        const known = new Set(members.map((member) => member.user_id));
+        const known = await eligibleReviewers(ctx, sql, page.space_id, reviewers);
         const missing = reviewers.filter((userId) => !known.has(userId));
         if (missing.length > 0) {
           throw new ValidationError('Reviewers must be active members of the space', {

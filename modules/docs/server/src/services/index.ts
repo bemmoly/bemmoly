@@ -7,6 +7,7 @@ import { createPagesService } from './pages/index.ts';
 import { createRevisionsService } from './revisions/index.ts';
 import { createSearchService } from './search/index.ts';
 import { createSpacesService } from './spaces/index.ts';
+import { createSpaceMembersService } from './spaces/members.ts';
 import { createStarsLabelsService } from './stars-labels/index.ts';
 import { createStatusService } from './status/index.ts';
 import { createTemplatesService } from './templates/index.ts';
@@ -25,6 +26,7 @@ export function createDocsServices(deps: DocsServiceDeps) {
   return {
     collab,
     spaces: createSpacesService(deps),
+    members: createSpaceMembersService(deps),
     pages,
     tree: createTreeService(deps),
     status: createStatusService(deps),

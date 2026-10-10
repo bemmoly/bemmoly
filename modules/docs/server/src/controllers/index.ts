@@ -6,6 +6,7 @@ import { createPagesController } from './pages.controller.ts';
 import { createRevisionsController } from './revisions.controller.ts';
 import { createTransferController } from './transfer.controller.ts';
 import { createSearchController } from './search.controller.ts';
+import { createMembersController } from './members.controller.ts';
 import { createSpacesController } from './spaces.controller.ts';
 import { createTreeController } from './tree.controller.ts';
 
@@ -13,6 +14,7 @@ import { createTreeController } from './tree.controller.ts';
 export function createDocsControllers(services: DocsServices) {
   return {
     spaces: createSpacesController(services.spaces),
+    members: createMembersController(services.members),
     pages: createPagesController(services.pages),
     tree: createTreeController(services.tree, services.status),
     library: createLibraryController(services),

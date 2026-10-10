@@ -1,5 +1,6 @@
 import { decodeCursor, toPage, type RequestContext, type SqlExecutor } from '@bemmoly/core';
 import { ConflictError, NotFoundError, ProviderError } from '@bemmoly/shared';
+import { SPACE_ADMIN_ROLE_KEY } from '../../../../shared/members.ts';
 import type {
   CreateSpaceBody,
   ListSpacesQuery,
@@ -21,10 +22,13 @@ import {
 } from '../common.ts';
 import { SPACE_COLUMNS, spaceByRef, toSpace, type SpaceRow } from './rows.ts';
 
-/** The role a space's creator gets; spaces reuse the container admin system role. */
-const SPACE_ADMIN_ROLE_KEY = 'project_admin';
-
-/** A new space's first members: its creator as admin, and the owning team. */
+/*
+ * A new space's first members: its creator as space admin (the container
+ * admin system role), and the owning team. Teams follow the kernel's
+ * membership model: adding a team adds its people, each with a row of their
+ * own, so authorization and the reviewer check read one table. Moving the
+ * space to another team adds that team's people; nobody is removed.
+ */
 async function joinAsCreator(
   deps: DocsServiceDeps,
   ctx: RequestContext,
@@ -116,6 +120,10 @@ export function createSpacesService(deps: DocsServiceDeps) {
         if (!home) throw new NotFoundError('The home page must be a live page in this space');
       }
       const has = (field: keyof UpdateSpaceBody) => patch[field] !== undefined;
+      const joiningTeam = patch.teamId && patch.teamId !== before.team_id ? patch.teamId : null;
+      if (joiningTeam && deps.memberships) {
+        await deps.memberships.add('space', before.id, { teamIds: [joiningTeam] });
+      }
       await sql`
         update spaces set
           name = coalesce(${patch.name ?? null}, name),
