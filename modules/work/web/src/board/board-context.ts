@@ -26,10 +26,8 @@ export interface BoardShared {
   quick: IssueQuickActions;
   /** Picking cards for the bulk bar; the card's menu and keys act on the selection. */
   select: BoardSelectHandlers;
-  /** Where a card can move from its menu (Scrum only): the other sprints and the Backlog. */
+  /** Where a card can move from its menu (Scrum only): the planned sprints and the Backlog. */
   sprints?: readonly MenuSprint[];
-  /** The running sprint, which the menu leaves out of a single card's Move to. */
-  sprintId?: string;
   /** The issue open in the peek; its card carries the selected ring. */
   selectedKey: string | null;
   /** Creates an issue at the foot of a cell; absent when the person cannot create. */

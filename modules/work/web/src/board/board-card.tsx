@@ -42,8 +42,7 @@ export const BoardCard = memo(function BoardCard({
   index,
   laneColor,
 }: BoardCardProps) {
-  const { actions, vocab, selectedKey, instructionsId, quick, select, sprints, sprintId } =
-    useBoardShared();
+  const { actions, vocab, selectedKey, instructionsId, quick, select, sprints } = useBoardShared();
   const carried = useBoardDragStore((state) =>
     state.carrying?.issueId === card.issueId ? state.carrying.mode : null,
   );
@@ -157,7 +156,7 @@ export const BoardCard = memo(function BoardCard({
                 meId={vocab.meId}
                 actions={quick}
                 onOpen={() => actions.open(card.key)}
-                {...(sprints ? { sprints, sprintId: sprintId ?? null } : {})}
+                {...(sprints ? { sprints } : {})}
                 {...(checked ? { targets } : {})}
               />
             </>

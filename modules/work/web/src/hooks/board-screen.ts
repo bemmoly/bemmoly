@@ -162,18 +162,21 @@ export function useBoardScreen(projectKey: string | undefined) {
     [data.people, data.workflow, data.issueTypes, data.labels, view, data.sprint, data.project],
   );
 
-  // A Scrum card can leave the running sprint for a planned one or the Backlog.
+  // A Scrum card can leave the running sprint, which holds every card on the board, for a
+  // planned sprint or the Backlog.
   const moveTargets = useMemo<MenuSprint[] | undefined>(
     () =>
       kanban || !data.project
         ? undefined
         : [
             ...data.sprints.flatMap((sprint) =>
-              sprint.state === 'closed' ? [] : [{ id: sprint.id, name: sprint.name }],
+              sprint.state === 'closed' || sprint.id === view?.sprintId
+                ? []
+                : [{ id: sprint.id, name: sprint.name }],
             ),
             { id: null, name: 'Backlog' },
           ],
-    [kanban, data.project, data.sprints],
+    [kanban, data.project, data.sprints, view?.sprintId],
   );
 
   const laneKind = boardConfig?.lanes.kind ?? 'none';
