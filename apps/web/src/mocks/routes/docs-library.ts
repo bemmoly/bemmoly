@@ -1,5 +1,6 @@
 import { emit } from '../db.ts';
 import { notFound, ok, page, type MockRoute } from '../types.ts';
+import { placeOf } from './docs-find.ts';
 import { docsState, live, presentSummary, spaceByRef } from './docs-state.ts';
 
 /*
@@ -188,7 +189,7 @@ export const docsLibraryRoutes: MockRoute[] = [
       return ok({
         items: rows.map((row) => {
           const { id, spaceId, spaceKey, title, icon, status } = presentSummary(state, row);
-          return { id, spaceId, spaceKey, title, icon, status };
+          return { id, spaceId, spaceKey, title, icon, status, ...placeOf(state, row) };
         }),
       });
     },
