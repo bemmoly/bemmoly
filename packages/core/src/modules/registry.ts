@@ -1,4 +1,5 @@
 import { sidebarSectionSchema, type ModuleManifest } from '@bemmoly/shared';
+import type { RetrievalSourceDefinition } from '../contracts/retrieval.ts';
 import type { CollabDocumentDefinition } from './collab.ts';
 import type { BemmolyModule } from './contract.ts';
 import type { ModuleContributions } from './contributions.ts';
@@ -91,6 +92,10 @@ export class ModuleRegistry {
 
   referenceSources(): FromModule<ReferenceSourceDefinition>[] {
     return this.#collect((c) => c.referenceSources);
+  }
+
+  retrievalSources(): FromModule<RetrievalSourceDefinition>[] {
+    return this.#collect((c) => c.retrievalSources);
   }
 
   capabilities(): FromModule<CapabilityDefinition>[] {

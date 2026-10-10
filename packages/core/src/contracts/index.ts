@@ -10,6 +10,7 @@ export type * from './module-access.ts';
 export type * from './module-backup.ts';
 export type * from './object-store.ts';
 export type * from './realtime.ts';
+export type * from './retrieval.ts';
 export type * from './session-resolver.ts';
 export type * from './settings.ts';
 export type * from './sql.ts';

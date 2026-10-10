@@ -2,6 +2,7 @@ import type { CapabilityName, NavEntry, SearchResult } from '@bemmoly/shared';
 import type { FastifyPluginAsync } from 'fastify';
 import type { z } from 'zod';
 import type { AiFacade } from '../contracts/ai.ts';
+import type { RetrievalRegistry } from '../contracts/retrieval.ts';
 import type { SettingDefinition, SettingKey, SettingsKeys } from '../contracts/settings.ts';
 import type { RequestContext } from '../services/authz/index.ts';
 
@@ -246,7 +247,7 @@ export interface AiExclusionSourceDefinition {
  * before the server binds the runtime, every call refuses with ForbiddenError
  * `details.reason: 'ai_off'`.
  */
-export interface AiRegistry extends AiFacade {
+export interface AiRegistry extends AiFacade, RetrievalRegistry {
   addTool(tool: AiContribution): void;
   addContextBuilder(builder: AiContribution): void;
   addInsightGenerator(generator: AiContribution): void;

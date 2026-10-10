@@ -45,11 +45,21 @@ const disabledAi = createDisabledAi();
 
 /** `ctx.ai`: registries recorded into the module's contributions, calls through the facade. */
 function createModuleAi(
+  moduleId: string,
   into: ModuleContributions,
   bound: (() => AiFacade | undefined) | undefined,
 ): ModuleContext['ai'] {
   const facade = () => bound?.() ?? disabledAi;
   return {
+    addRetrievalSource(source) {
+      if (!source.kind.startsWith(`${moduleId}.`)) {
+        throw new ModuleLoadError(
+          `Module "${moduleId}": retrieval kind "${source.kind}" must be namespaced as "${moduleId}.<kind>"`,
+          moduleId,
+        );
+      }
+      into.retrievalSources.push(source);
+    },
     addTool: (tool) => into.aiTools.push(tool),
     addContextBuilder: (builder) => into.aiContextBuilders.push(builder),
     addInsightGenerator: (generator) => into.aiInsightGenerators.push(generator),
@@ -147,7 +157,7 @@ export function createModuleContext(
         into.searchProviders.push(provider);
       },
     },
-    ai: createModuleAi(into, options.ai),
+    ai: createModuleAi(module.id, into, options.ai),
     ...(options.editorEnabled
       ? {
           editor: {
