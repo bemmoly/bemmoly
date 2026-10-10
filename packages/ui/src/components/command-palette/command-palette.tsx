@@ -134,6 +134,8 @@ export function CommandPalette({
 export interface CommandInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'onChange'> {
   value: string;
   onValueChange: (value: string) => void;
+  /** Before the Esc hint: a chip naming the place the search keeps to. */
+  trailing?: ReactNode;
   /** AI is on: the lilac dot leads the input, which also takes requests. */
   ai?: boolean;
 }
@@ -147,6 +149,7 @@ export function CommandInput({
   onValueChange,
   ai = false,
   placeholder = ai ? 'Search, or tell Bemmoly what to do…' : 'Search or run a command…',
+  trailing,
   ...rest
 }: CommandInputProps) {
   const { listId } = useCommandContext();
@@ -166,6 +169,7 @@ export function CommandInput({
         className="min-w-0 flex-1 border-0 bg-transparent px-0.5 py-px font-sans text-16 text-tx outline-0 placeholder:text-tx-3"
         {...rest}
       />
+      {trailing}
       <Kbd keys="Esc" />
     </div>
   );
