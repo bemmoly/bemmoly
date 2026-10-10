@@ -140,3 +140,10 @@ export function locateCard(model: BoardModel, issueId: string) {
   }
   return null;
 }
+
+/** Issue keys in the order the board shows them: lane by lane, column by column, top down. */
+export function boardIssueOrder(model: BoardModel): string[] {
+  return model.lanes.flatMap((lane) =>
+    model.columns.flatMap((column) => (lane.cells[column.id] ?? []).map((card) => card.key)),
+  );
+}

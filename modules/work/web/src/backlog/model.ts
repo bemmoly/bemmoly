@@ -207,3 +207,20 @@ export function nextSprintName(projectKey: string, sprints: readonly { name: str
   const numbers = sprints.map((sprint) => Number(/(\d+)\s*$/.exec(sprint.name)?.[1] ?? 0));
   return `${projectKey} Sprint ${Math.max(0, ...numbers) + 1}`;
 }
+
+/** Issue keys in the order the list shows them: each sprint, then the backlog. */
+export function backlogIssueOrder(sections: readonly { visible: readonly Issue[] }[]): string[] {
+  return sections.flatMap((section) => section.visible.map((issue) => issue.key));
+}
+
+/** The epic palette's fill classes, for pickers that colour epics by position. */
+export const EPIC_COLORS = [
+  'bg-epic-1',
+  'bg-epic-2',
+  'bg-epic-3',
+  'bg-epic-4',
+  'bg-epic-5',
+  'bg-epic-6',
+  'bg-epic-7',
+  'bg-epic-8',
+] as const;

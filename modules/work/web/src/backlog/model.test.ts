@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { id, issue, sampleBacklog, sprint, STATUS } from './fixtures.test-helper.ts';
 import {
   BACKLOG_ID,
+  backlogIssueOrder,
   containersOf,
   countsOf,
   epicMeta,
@@ -142,5 +143,17 @@ describe('containers, sprints and epics', () => {
     expect(epicPercent({ ...epic, totalPoints: 0 })).toBeCloseTo(33.33, 1);
     expect(epicMeta(epic)).toBe('9 issues · 3 done');
     expect(epicMeta({ ...epic, done: 0 })).toBe('9 issues · not started');
+  });
+});
+
+describe('backlogIssueOrder', () => {
+  it('lists rows sprint by sprint, then the backlog', () => {
+    const sections = containersOf(sampleBacklog()).map((c) => ({ visible: c.issues }));
+    expect(backlogIssueOrder(sections)).toEqual(
+      sections.flatMap((section) => section.visible.map((issue) => issue.key)),
+    );
+    expect(backlogIssueOrder([{ visible: [] }, ...sections.slice(-1)])).toEqual(
+      sections.at(-1)?.visible.map((issue) => issue.key),
+    );
   });
 });

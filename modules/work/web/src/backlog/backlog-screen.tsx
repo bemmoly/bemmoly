@@ -13,14 +13,14 @@ import { useBacklogScreen } from '../hooks/backlog-screen.ts';
 import { useSprintActions } from '../hooks/backlog-sprints.ts';
 import { keepLinksInApp, navigateTo, workPaths } from '../hooks/issue-navigation.ts';
 import { useBacklogUi } from '../hooks/backlog-store.ts';
-import { IssueSlideOver } from '../issue/index.ts';
+import { IssueSlideOver, useRememberIssueList } from '../issue/index.ts';
 import type { WorkScreenProps } from '../routes.tsx';
 import { BacklogContainersSkeleton } from '../skeletons/backlog-skeleton.tsx';
 import { BacklogEpics } from './backlog-epics.tsx';
 import { BacklogToolbar } from './backlog-toolbar.tsx';
 import { CompleteSprintDialog } from './complete-sprint-dialog.tsx';
 import { DragOverlay } from './drag-overlay.tsx';
-import { BACKLOG_ID, nextSprintName, points } from './model.ts';
+import { BACKLOG_ID, backlogIssueOrder, nextSprintName, points } from './model.ts';
 import { SprintDialog } from './sprint-dialog.tsx';
 import { SprintSection } from './sprint-section.tsx';
 
@@ -76,6 +76,8 @@ export default function BacklogScreen({ projectKey: pathKey }: WorkScreenProps) 
   const quick = useIssueQuickActions();
   const docked = useMediaQuery(DOCKED_SLIDE_OVER_QUERY);
   const { peek, meId, lookups } = screen;
+  const order = useMemo(() => backlogIssueOrder(screen.sections), [screen.sections]);
+  useRememberIssueList(screen.project ? { label: 'Backlog', keys: order } : null);
 
   const sprints = screen.containers.flatMap((c) => (c.sprint ? [c.sprint] : []));
   const newSprintName = nextSprintName(projectKey, sprints);

@@ -5,7 +5,7 @@ import { useId, useMemo } from 'react';
 import { useBoardActions } from '../hooks/board-actions.ts';
 import { useBoardVerdicts } from '../hooks/board-dnd.ts';
 import { useBoardDragStore } from '../hooks/board-drag-store.ts';
-import type { BoardModel } from '../hooks/board-model.ts';
+import { boardIssueOrder, type BoardModel } from '../hooks/board-model.ts';
 import { useBoardScreen } from '../hooks/board-screen.ts';
 import { useIssueQuickActions } from '../hooks/issue-quick-actions.ts';
 import { DOCKED_SLIDE_OVER_QUERY, useMediaQuery } from '../hooks/media-query.ts';
@@ -14,7 +14,7 @@ import { useIssueFilters } from '../shared/issue-filters.ts';
 import { openCreate, useRecordRecent, useScreenActions } from '@bemmoly/core-web';
 import { navigateTo, workPaths } from '../hooks/issue-navigation.ts';
 import { useSavedFilters } from '../hooks/saved-filters.ts';
-import { IssueSlideOver } from '../issue/index.ts';
+import { IssueSlideOver, useRememberIssueList } from '../issue/index.ts';
 import type { WorkScreenProps } from '../routes.tsx';
 import { BoardSkeleton } from '../skeletons/board-skeleton.tsx';
 import { BoardContext, type BoardShared } from './board-context.ts';
@@ -55,11 +55,13 @@ function BoardBody({
   const { clear } = useIssueFilters();
   const docked = useMediaQuery(DOCKED_SLIDE_OVER_QUERY);
   // Screen order: lane by lane, column by column, top to bottom, as j and k step.
-  const peek = useIssuePeek(() =>
-    model.lanes.flatMap((lane) =>
-      model.columns.flatMap((column) => (lane.cells[column.id] ?? []).map((card) => card.key)),
-    ),
-  );
+  const order = useMemo(() => boardIssueOrder(model), [model]);
+  const peek = useIssuePeek(() => order);
+  useRememberIssueList({
+    label: screen.sprint ? `${screen.sprint.name} board` : 'Board',
+    keys: order,
+  });
+
   const actions = useBoardActions(model, view.board.id, peek.open);
   const instructionsId = useId();
   const project = screen.project;

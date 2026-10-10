@@ -9,7 +9,7 @@ import {
   stepTarget,
 } from './board-drag.ts';
 import { EPIC, STATUS, testView } from './board-fixtures.ts';
-import { buildBoardModel, locateCard } from './board-model.ts';
+import { boardIssueOrder, buildBoardModel, locateCard } from './board-model.ts';
 
 const view = testView();
 const model = buildBoardModel(view);
@@ -228,5 +228,22 @@ describe('buildBoardModel', () => {
       'PLT-11',
       'PLT-15',
     ]);
+  });
+});
+
+describe('boardIssueOrder', () => {
+  it('lists cards lane by lane, column by column, as the screen shows them', () => {
+    const order = boardIssueOrder(model);
+    const firstLane = model.lanes[0];
+    const expected = model.columns.flatMap((column) =>
+      (firstLane?.cells[column.id] ?? []).map((card) => card.key),
+    );
+    expect(order.slice(0, expected.length)).toEqual(expected);
+    expect(order).toHaveLength(model.lanes.reduce((sum, lane) => sum + lane.count, 0));
+  });
+
+  it('leaves out the cards a filter hides', () => {
+    const kept = buildBoardModel(view, 'lanes', (card) => card.key !== 'PLT-10');
+    expect(boardIssueOrder(kept)).not.toContain('PLT-10');
   });
 });
