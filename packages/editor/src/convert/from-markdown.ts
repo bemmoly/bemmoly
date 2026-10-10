@@ -158,13 +158,27 @@ function blocks(tokens: Token[]): RichTextNode[] {
       case 'table':
         return [table(token as Tokens.Table)];
       case 'html': {
-        const plain = decodeHTML((token as Tokens.HTML).text.replace(/<[^>]*>/g, '')).trim();
+        const plain = htmlText((token as Tokens.HTML).text);
         return plain ? [b.paragraph([b.text(plain)])] : [];
       }
       default:
         return [];
     }
   });
+}
+
+/**
+ * The words of a raw HTML block, kept as plain text. Entities are decoded first and tags are
+ * stripped until none are left, so nested or entity-encoded markup cannot survive as a tag;
+ * a stray angle bracket from a broken tag goes too.
+ */
+export function htmlText(html: string): string {
+  let text = decodeHTML(html);
+  for (let previous = ''; previous !== text;) {
+    previous = text;
+    text = text.replace(/<[^<>]*>/g, '');
+  }
+  return text.replace(/[<>]/g, '').trim();
 }
 
 /** Markdown as a document in the editor's schema. */

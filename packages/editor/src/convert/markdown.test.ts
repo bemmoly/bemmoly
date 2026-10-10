@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { EVERY_DOC_NODE } from '../testing/doc-fixture.ts';
 import { EVERY_NODE } from '../testing/fixture.ts';
 import type { RichTextDoc } from '../types.ts';
-import { fromMarkdown } from './from-markdown.ts';
+import { fromMarkdown, htmlText } from './from-markdown.ts';
 import { toMarkdown } from './to-markdown.ts';
 
 /**
@@ -145,5 +145,12 @@ describe('Markdown import', () => {
 
   it('gives an empty input one empty paragraph', () => {
     expect(fromMarkdown('')).toEqual({ type: 'doc', content: [{ type: 'paragraph' }] });
+  });
+
+  it('keeps only the words of raw HTML, even nested or entity-encoded tags', () => {
+    expect(htmlText('<p>Hello <b>there</b></p>')).toBe('Hello there');
+    expect(htmlText('<scr<script>ipt>alert(1)</script>')).toBe('alert(1)');
+    expect(htmlText('&lt;script&gt;x&lt;/script&gt; ok')).toBe('x ok');
+    expect(htmlText('a <img src=x onerror=y')).toBe('a img src=x onerror=y');
   });
 });
