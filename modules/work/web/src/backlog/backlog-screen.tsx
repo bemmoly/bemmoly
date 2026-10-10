@@ -7,15 +7,16 @@ import { setSearchParams, useSearchParam } from '../shared/url-state.ts';
 import { useIssueQuickActions } from '../hooks/issue-quick-actions.ts';
 import { DOCKED_SLIDE_OVER_QUERY, useMediaQuery } from '../hooks/media-query.ts';
 import { IssueActionsMenu, type MenuSprint } from '../shared/issue-actions-menu.tsx';
+import { IssueBulkBar } from '../shared/issue-bulk-bar.tsx';
 import type { FilterOptions } from '../shared/issue-filter-bar.tsx';
 import { useIssueFilters } from '../shared/issue-filters.ts';
 import { WorkPresence } from '../shared/work-presence.tsx';
-import { BacklogBulkBar } from './backlog-bulk-bar.tsx';
 import { BacklogRowContext, type BacklogRowShared } from './backlog-row-context.ts';
 import { useBacklogScreen } from '../hooks/backlog-screen.ts';
 import { useSprintActions } from '../hooks/backlog-sprints.ts';
 import { keepLinksInApp } from '../hooks/issue-navigation.ts';
 import { useBacklogUi } from '../hooks/backlog-store.ts';
+import { EMPTY_SELECTION } from '../hooks/issue-selection.ts';
 import { IssueSlideOver, useRememberIssueList } from '../issue/index.ts';
 import type { WorkScreenProps } from '../routes.tsx';
 import { BacklogContainersSkeleton } from '../skeletons/backlog-skeleton.tsx';
@@ -26,6 +27,9 @@ import { DragOverlay } from './drag-overlay.tsx';
 import { BACKLOG_ID, backlogIssueOrder, nextSprintName, points } from './model.ts';
 import { SprintDialog } from './sprint-dialog.tsx';
 import { SprintSection } from './sprint-section.tsx';
+
+const clearSelection = () => useBacklogUi.getState().setSelection(EMPTY_SELECTION);
+const backlogDragging = () => useBacklogUi.getState().drag !== null;
 
 type Dialog = { kind: 'start' | 'edit' | 'complete'; sprintId: string } | null;
 
@@ -243,7 +247,14 @@ export default function BacklogScreen({ projectKey: pathKey }: WorkScreenProps) 
         {...(peek.previous ? { onPrevious: peek.previous } : {})}
         {...(peek.next ? { onNext: peek.next } : {})}
       />
-      <BacklogBulkBar keys={selectedKeys} meId={meId} sprints={moveTargets} actions={quick} />
+      <IssueBulkBar
+        keys={selectedKeys}
+        meId={meId}
+        sprints={moveTargets}
+        actions={quick}
+        onClear={clearSelection}
+        holdEscape={backlogDragging}
+      />
       <DragOverlay
         previewRef={screen.previewRef}
         issueById={issueById}
