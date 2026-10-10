@@ -7,6 +7,7 @@
  */
 export { headingIds } from './convert/outline.ts';
 export { isEmptyDoc } from './doc.ts';
+export { mountedDom } from './mounted-dom.ts';
 export type { DocEditorProps } from './doc/doc-editor-props.ts';
 export {
   COMMENT_EVENT,

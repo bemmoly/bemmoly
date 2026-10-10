@@ -1,3 +1,4 @@
+import { mountedDom } from '@bemmoly/editor';
 import { useLayoutEffect, useState, type RefObject } from 'react';
 import type { PageEditor } from './highlights.ts';
 
@@ -65,7 +66,8 @@ export function useAnchorOffsets(
     if (typeof ResizeObserver === 'undefined') return undefined;
     const observer = new ResizeObserver(measure);
     observer.observe(element);
-    observer.observe(editor.view.dom);
+    const dom = mountedDom(editor);
+    if (dom) observer.observe(dom);
     return () => observer.disconnect();
   }, [editor, anchors, container, ...deps]);
   return offsets;
