@@ -3,6 +3,7 @@ import { parseOrThrow } from '@bemmoly/shared';
 import { AI_ANSWER_CONTENT_TYPE, aiAnswerRequestSchema } from '@bemmoly/shared/ai-answers';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import type { RetrievalService } from '../services/ai/index.ts';
+import { abortOnClose } from '../utils/abort-on-close.ts';
 import { contextOf } from './request-context.ts';
 
 /** One JSON event per line; the client reads them as they arrive. */
@@ -19,9 +20,8 @@ export function createAiAnswersController(service: RetrievalService) {
      */
     async create(request: FastifyRequest, reply: FastifyReply): Promise<Readable> {
       const body = parseOrThrow(aiAnswerRequestSchema, request.body);
-      const abort = new AbortController();
-      request.raw.once('close', () => abort.abort());
-      const events = await service.answer(contextOf(request), body, abort.signal);
+      const signal = abortOnClose(reply);
+      const events = await service.answer(contextOf(request), body, signal);
       void reply.type(AI_ANSWER_CONTENT_TYPE).header('cache-control', 'no-store');
       return Readable.from(lines(events));
     },
