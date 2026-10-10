@@ -1,0 +1,74 @@
+name: AI evals
+
+# The AI evals against a live provider (tech design §11.2). CI replays the recordings on every
+# pull request; this run asks a real model the same questions every night. It needs a key in
+# the BEMMOLY_EVAL_API_KEY secret (or provider JSON in BEMMOLY_EVAL_CREDENTIALS) and the
+# provider and model in the BEMMOLY_EVAL_PROVIDER and BEMMOLY_EVAL_MODEL repository variables;
+# without a key it skips with a notice. See docs/ai-evals.md.
+
+on:
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: ai-evals
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  TURBO_TELEMETRY_DISABLED: '1'
+
+jobs:
+  live:
+    name: Live AI evals
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      issues: write
+    env:
+      BEMMOLY_EVAL_API_KEY: ${{ secrets.BEMMOLY_EVAL_API_KEY }}
+      BEMMOLY_EVAL_CREDENTIALS: ${{ secrets.BEMMOLY_EVAL_CREDENTIALS }}
+      BEMMOLY_EVAL_PROVIDER: ${{ vars.BEMMOLY_EVAL_PROVIDER }}
+      BEMMOLY_EVAL_MODEL: ${{ vars.BEMMOLY_EVAL_MODEL }}
+      BEMMOLY_EVAL_BASE_URL: ${{ vars.BEMMOLY_EVAL_BASE_URL }}
+    steps:
+      - name: Is a provider configured?
+        id: provider
+        run: |
+          if [ -n "$BEMMOLY_EVAL_API_KEY$BEMMOLY_EVAL_CREDENTIALS" ] && [ -n "$BEMMOLY_EVAL_PROVIDER" ] && [ -n "$BEMMOLY_EVAL_MODEL" ]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "::notice title=No AI provider::Set the BEMMOLY_EVAL_API_KEY secret and the BEMMOLY_EVAL_PROVIDER and BEMMOLY_EVAL_MODEL variables to run the live evals; skipped."
+          fi
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        if: steps.provider.outputs.configured == 'true'
+        with:
+          persist-credentials: false
+
+      - uses: ./.github/actions/setup
+        if: steps.provider.outputs.configured == 'true'
+
+      - name: Evals against the live provider
+        if: steps.provider.outputs.configured == 'true'
+        env:
+          BEMMOLY_EVAL_LIVE: 'true'
+        run: |
+          # An unset variable arrives empty; the eval config treats a set-but-empty one as invalid.
+          [ -n "$BEMMOLY_EVAL_BASE_URL" ] || unset BEMMOLY_EVAL_BASE_URL
+          [ -n "$BEMMOLY_EVAL_CREDENTIALS" ] || unset BEMMOLY_EVAL_CREDENTIALS
+          [ -n "$BEMMOLY_EVAL_API_KEY" ] || unset BEMMOLY_EVAL_API_KEY
+          pnpm eval
+
+      - name: Report the failure
+        if: failure() && steps.provider.outputs.configured == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          bash .github/scripts/report-nightly-failure.sh 'Nightly AI evals failed' 'area: quality'

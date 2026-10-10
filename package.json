@@ -19,6 +19,7 @@
     "lint:root": "eslint --max-warnings 0 --no-error-on-unmatched-pattern eslint.config.js scripts",
     "test": "turbo run test",
     "test:integration": "turbo run test:integration",
+    "eval": "turbo run eval",
     "test:e2e": "turbo run test:e2e",
     "test:e2e:work": "turbo run test:e2e:work",
     "size": "turbo run size",

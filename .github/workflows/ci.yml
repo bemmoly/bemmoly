@@ -50,6 +50,9 @@ jobs:
       - name: Unit tests
         run: pnpm test
 
+      - name: AI evals against the recordings
+        run: pnpm eval
+
       - name: Lint workflows
         run: docker run --rm -v "$PWD:/repo" -w /repo "$ACTIONLINT_IMAGE" -color
 
