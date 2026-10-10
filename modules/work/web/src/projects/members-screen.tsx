@@ -1,6 +1,14 @@
 import type { ProjectMember } from '@bemmoly/module-work/shared';
 import { HeaderActions } from '@bemmoly/core-web';
-import { Button, ConfirmChange, EmptyState, PageTitle, SearchInput, useToast } from '@bemmoly/ui';
+import {
+  Button,
+  ConfirmChange,
+  EmptyState,
+  PageTitle,
+  SearchInput,
+  SegmentedControl,
+  useToast,
+} from '@bemmoly/ui';
 import { Icon } from '@bemmoly/ui/icons';
 import { useState } from 'react';
 import { useViewer } from '../hooks/issue-people.ts';
@@ -10,12 +18,20 @@ import { useProject } from '../shared/use-project.ts';
 import { useWorkRealtime } from '../shared/use-work-realtime.ts';
 import { MembersAddDialog } from './members-add-dialog.tsx';
 import {
+  type MemberSegment,
   roleOptions,
   useMemberFilter,
   usePeopleToAdd,
   useProjectMembers,
 } from './members-hooks.ts';
 import { MembersTable } from './members-table.tsx';
+
+const segmentLabel = (label: string, n: number) => (
+  <span className="tabular-nums">
+    {label}
+    {n > 0 && <span className="text-tx-3"> · {n}</span>}
+  </span>
+);
 
 const NO_ACCESS = 'You need "Configure project" here to change its members.';
 
@@ -73,15 +89,34 @@ export default function MembersScreen({ projectKey }: WorkScreenProps) {
               ? [`${count} ${count === 1 ? 'person' : 'people'}`]
               : [<LineSkeleton key="count" width={52} size="text-12h" bar={8} />]
           }
-          description="Everyone here can open the project. Their project role decides what they can do in it."
+          description={`Everyone here can open ${name || 'the project'}. Their project role decides what they can change.`}
         />
-        <SearchInput
-          aria-label="Search members by name or email"
-          placeholder="Search by name or email"
-          wrapperClassName="w-65"
-          value={filter.query}
-          onChange={(event) => filter.setQuery(event.target.value)}
-        />
+        <div className="flex flex-wrap items-center gap-2">
+          <SearchInput
+            aria-label="Search members by name or email"
+            placeholder="Search members…"
+            wrapperClassName="w-full sm:w-65"
+            value={filter.query}
+            onChange={(event) => filter.setQuery(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === 'Escape' && filter.query) {
+                event.stopPropagation();
+                filter.setQuery('');
+              }
+            }}
+          />
+          <SegmentedControl<MemberSegment>
+            size="sm"
+            aria-label="Show"
+            value={filter.segment}
+            onChange={filter.setSegment}
+            options={[
+              { value: 'all', label: segmentLabel('All', filter.counts.all) },
+              { value: 'admins', label: segmentLabel('Admins', filter.counts.admins) },
+              { value: 'invited', label: segmentLabel('Invited', filter.counts.invited) },
+            ]}
+          />
+        </div>
         {members.list.isError ? (
           <EmptyState
             title="Members could not be loaded"
@@ -93,7 +128,7 @@ export default function MembersScreen({ projectKey }: WorkScreenProps) {
             roleOptions={roleOptions(members.roles)}
             canManage={members.canManage}
             loading={members.list.isPending}
-            filtered={filter.query.trim() !== ''}
+            filtered={filter.filtered}
             viewerId={viewer?.id ?? null}
             isLastAdmin={members.isLastAdmin}
             onRoleChange={(member, roleId) =>
