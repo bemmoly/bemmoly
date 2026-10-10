@@ -8,7 +8,8 @@ test('the sidebar moves between Home, Inbox, a project and its views', async ({ 
   await page.goto('/');
   const sidebar = sidebarOf(page);
   await sidebar.getByRole('link', { name: /^Inbox/ }).click();
-  await expect(page).toHaveURL(/\/inbox$/);
+  // The item on show is kept in the address, so a refresh or a new arrival keeps it.
+  await expect(page).toHaveURL(/\/inbox(\?item=[\w-]+)?$/);
   await expect(page.getByRole('navigation', { name: 'Breadcrumb' })).toContainText('Inbox');
 
   await sidebar.getByRole('link', { name: 'Platform Core' }).click();
@@ -89,7 +90,8 @@ test.describe('on a phone', () => {
     await page.getByRole('button', { name: 'Open menu' }).click();
     const sheet = page.getByRole('dialog', { name: 'Menu' });
     await sheet.getByRole('link', { name: /^Inbox/ }).click();
-    await expect(page).toHaveURL(/\/inbox$/);
+    // The item on show is kept in the address, so a refresh or a new arrival keeps it.
+    await expect(page).toHaveURL(/\/inbox(\?item=[\w-]+)?$/);
     await expect(sheet).toBeHidden();
   });
 });

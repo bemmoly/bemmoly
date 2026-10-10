@@ -87,6 +87,13 @@ export function InboxPage() {
   const select = (item: Notification | undefined) =>
     item && setSearch({ ...search, item: item.id });
 
+  // The item shown without one in the address is written into it, so an item that arrives
+  // above it while the person reads never takes the selection (and is never read unseen).
+  const pinned = selected && selected.id !== search.item ? selected.id : null;
+  useEffect(() => {
+    if (pinned) setSearch({ ...search, item: pinned });
+  });
+
   // Opening an item reads it; the list says so at once.
   const selectedId = selected?.id;
   const selectedUnread = selected ? !selected.read : false;
