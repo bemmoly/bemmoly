@@ -38,8 +38,8 @@ export function InlineName({
         title={`${label} (click to rename)`}
         aria-label={label}
         className={cx(
-          '-mx-1 truncate rounded-sm px-1 text-left hover:bg-hover',
-          'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ac',
+          '-mx-1 truncate rounded-chip px-1 text-left hover:bg-hover',
+          'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-acc',
           className,
         )}
         onClick={() => setEditing(true)}
@@ -59,7 +59,7 @@ export function InlineName({
       value={draft}
       maxLength={60}
       className={cx(
-        '-mx-1 h-6 min-w-0 rounded-sm border border-ac bg-card px-1 text-tx outline-none',
+        '-mx-1 h-6 min-w-0 rounded-chip border border-acc bg-card px-1 text-tx outline-none',
         className,
       )}
       onChange={(event) => setDraft(event.target.value)}

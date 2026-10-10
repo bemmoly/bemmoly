@@ -47,7 +47,7 @@ function BodySkeleton({ page }: { page: boolean }) {
       <div className="flex flex-col gap-2.5">
         <LineSkeleton
           width={page ? '62%' : '76%'}
-          size={page ? 'text-24 leading-title' : 'text-18 leading-title'}
+          size={page ? 'text-24 leading-title' : 'text-16 leading-title'}
           bar={page ? 18 : 14}
         />
         <span className="flex gap-1">

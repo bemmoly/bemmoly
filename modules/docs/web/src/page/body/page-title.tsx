@@ -5,7 +5,7 @@ import { usePageScreen } from '../screen-context.ts';
 import { useUpdatePage } from '../use-page-actions.ts';
 
 /** The mock's title: 600 36px/1.15, -0.02em, tx. The field and the heading share it. */
-const TITLE = 'm-0 text-36 leading-display font-semibold tracking-display text-tx';
+const TITLE = 'm-0 text-24 leading-display font-semibold tracking-display text-tx';
 
 export const TITLE_FIELD_ID = 'page-title';
 
@@ -52,7 +52,7 @@ export function PageTitle() {
 
   if (!editable) {
     return (
-      <h1 className={cx(TITLE, 'text-pretty break-words', !page.title && 'text-tx6')}>
+      <h1 className={cx(TITLE, 'text-pretty break-words', !page.title && 'text-tx-3')}>
         {emoji && <span className="mr-3">{emoji}</span>}
         {page.title || 'Untitled'}
       </h1>
@@ -81,7 +81,7 @@ export function PageTitle() {
         className={cx(
           TITLE,
           'block min-w-0 flex-1 resize-none overflow-hidden border-0 bg-transparent p-0 font-sans [field-sizing:content]',
-          'caret-ac outline-0 placeholder:text-tx6',
+          'caret-acc outline-0 placeholder:text-tx-3',
         )}
       />
     </h1>

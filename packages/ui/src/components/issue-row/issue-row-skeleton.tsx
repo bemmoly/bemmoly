@@ -24,7 +24,7 @@ export function IssueRowSkeleton({
       className={cx('grid h-9 items-center gap-2.5 border-b border-line-2 pr-6 pl-4', className)}
     >
       <span />
-      <Skeleton width={16} height={16} className="rounded-xs" />
+      <Skeleton width={16} height={16} className="rounded-chip" />
       <Skeleton width={52} height={9} />
       <Skeleton width={TITLES[index % TITLES.length]} height={10} />
       {epic && <Skeleton width={84} height={9} />}

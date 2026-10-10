@@ -31,7 +31,7 @@ export const optionId = (listId: string, index: number) => `${listId}-option-${i
 
 /**
  * The open @, # or / list, drawn as the Doc Editor mock's menu: 320px, 8px radius, br border,
- * shadow-menu, 6px padding, 8px 10px rows with the active one in accent on ac-bg, and group
+ * shadow-e2, 6px padding, 8px 10px rows with the active one in accent on ac-bg, and group
  * labels in the menu's 11px capitals. Focus stays in the text; the editor points at the active
  * row with aria-activedescendant.
  */
@@ -62,7 +62,7 @@ export function SuggestionList({
       // Focus stays in the text, even for a click on a label or the scrollbar.
       onMouseDown={(event) => event.preventDefault()}
       className={cx(
-        'flex w-80 flex-col overflow-y-auto rounded-card border border-br bg-sf p-1.5 text-13 text-tx shadow-menu',
+        'flex w-80 flex-col overflow-y-auto rounded-card border border-line bg-card p-1.5 text-13 text-tx shadow-e2',
         page ? 'max-h-85 leading-prose' : 'max-h-80',
       )}
     >
@@ -77,8 +77,8 @@ export function SuggestionList({
             <div
               role="presentation"
               className={cx(
-                'px-2.5 py-1.5 text-11 font-medium tracking-caps text-tx5 uppercase',
-                index > 0 && 'mt-1 border-t border-br-row',
+                'px-2.5 py-1.5 text-11 font-medium tracking-caps text-tx-3 uppercase',
+                index > 0 && 'mt-1 border-t border-line-2',
               )}
             >
               {section.label}
@@ -96,13 +96,13 @@ export function SuggestionList({
                 onPointerMove={() => store.setActive(at)}
                 onClick={() => store.choose(at)}
                 className={cx(
-                  'flex shrink-0 cursor-pointer flex-col gap-0.5 rounded-sm px-2.5 py-2',
-                  active ? 'bg-ac-bg font-medium text-ac' : 'text-tx',
+                  'flex shrink-0 cursor-pointer flex-col gap-0.5 rounded-chip px-2.5 py-2',
+                  active ? 'bg-acc-50 font-medium text-acc' : 'text-tx',
                 )}
               >
                 <span className="truncate">{row.label}</span>
                 {row.description && (
-                  <span className="truncate text-12 font-normal text-tx5">{row.description}</span>
+                  <span className="truncate text-12 font-normal text-tx-3">{row.description}</span>
                 )}
               </div>
             );
@@ -110,7 +110,7 @@ export function SuggestionList({
         </div>
       ))}
       {open.items.length === 0 && (
-        <div role="presentation" className="px-2.5 py-2 text-13 text-tx5">
+        <div role="presentation" className="px-2.5 py-2 text-13 text-tx-3">
           {emptyText(open)}
         </div>
       )}

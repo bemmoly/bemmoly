@@ -7,7 +7,7 @@ import { useIssueEdit } from './use-issue-edit.ts';
 /** The page title reads like a document's: the largest size, tight tracking, no frame. */
 const TYPE = {
   page: 'text-24 leading-title font-semibold tracking-title',
-  panel: 'text-18 leading-title font-semibold tracking-brand',
+  panel: 'text-16 leading-title font-semibold tracking-brand',
 } as const;
 
 /**
@@ -34,7 +34,7 @@ export function IssueTitle({ issue, size }: { issue: IssueDetail; size: 'page' |
   };
 
   const shared = cx(
-    '-mx-1.5 block w-[calc(100%+0.75rem)] rounded-panel px-1.5 py-0.5 text-left font-sans text-tx text-pretty',
+    '-mx-1.5 block w-[calc(100%+0.75rem)] rounded-control px-1.5 py-0.5 text-left font-sans text-tx text-pretty',
     TYPE[size],
   );
 
@@ -64,7 +64,7 @@ export function IssueTitle({ issue, size }: { issue: IssueDetail; size: 'page' |
         }}
         className={cx(
           shared,
-          'm-0 resize-none overflow-hidden border-0 bg-hover outline-2 outline-offset-0 outline-ac',
+          'm-0 resize-none overflow-hidden border-0 bg-hover outline-2 outline-offset-0 outline-acc',
         )}
       />
     );

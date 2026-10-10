@@ -113,12 +113,16 @@ export function TableTools({
       aria-label="Table"
       onMouseDown={(event) => event.preventDefault()}
       style={{ top: box.top - origin.top - 6, left: box.left - origin.left }}
-      className="absolute z-10 flex -translate-y-full items-center gap-0.5 rounded-card border border-br bg-sf p-1 shadow-menu"
+      className="absolute z-10 flex -translate-y-full items-center gap-0.5 rounded-card border border-line bg-card p-1 shadow-e2"
     >
       {GROUPS.map((group, index) => (
         <Fragment key={index}>
           {index > 0 && (
-            <span role="separator" aria-orientation="vertical" className="mx-1 h-4 w-px bg-br2" />
+            <span
+              role="separator"
+              aria-orientation="vertical"
+              className="mx-1 h-4 w-px bg-line-2"
+            />
           )}
           {group.map((tool) => (
             <Button
@@ -130,7 +134,7 @@ export function TableTools({
               title={tool.label}
               disabled={!tool.can(editor)}
               onClick={() => tool.run(editor)}
-              className={cx(tool.danger && 'text-danger')}
+              className={cx(tool.danger && 'text-red')}
             >
               {tool.icon && <Icon name={tool.icon} size={12} />}
               {tool.short}

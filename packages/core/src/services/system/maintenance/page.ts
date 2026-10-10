@@ -18,7 +18,7 @@ export function renderMaintenancePage(state: MaintenanceState): string {
 <style>
   :root { color-scheme: light dark; --bg: #f7f8fa; --fg: #1d2330; --muted: #6b7483; --accent: #2356c9; }
   @media (prefers-color-scheme: dark) { :root { --bg: #14171d; --fg: #e8eaee; --muted: #9aa3b2; --accent: #7aa2ff; } }
-  body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: var(--bg); color: var(--fg);
+  body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: var(--sunken); color: var(--fg);
     font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
   main { max-width: 440px; padding: 32px 16px; text-align: center; }
   h1 { font-size: 20px; margin: 0 0 8px; }

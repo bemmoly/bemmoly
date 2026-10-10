@@ -6,7 +6,7 @@ import { focusRing } from '../../lib/focus.ts';
 export type CheckSize = 'sm' | 'md';
 
 /** 16px with a 10px tick (Board Settings card fields, Setup) or 18px with 11px (permission matrix). */
-const BOX: Record<CheckSize, string> = { sm: 'size-4 text-10', md: 'size-4.5 text-11' };
+const BOX: Record<CheckSize, string> = { sm: 'size-4 text-11', md: 'size-4.5 text-11' };
 
 interface ToggleInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'size' | 'type'> {
   size?: CheckSize;
@@ -39,7 +39,7 @@ function Labelled({
       {control}
       <span className="flex flex-col gap-0.5">
         <span className="font-medium text-tx">{label}</span>
-        {description && <span className="text-12 text-tx5">{description}</span>}
+        {description && <span className="text-12 text-tx-3">{description}</span>}
       </span>
     </label>
   );
@@ -64,8 +64,8 @@ export function Checkbox({
         type="checkbox"
         disabled={disabled}
         className={cx(
-          'peer m-0 size-full cursor-pointer appearance-none rounded-xs border-[1.5px] border-br-ctl bg-sf',
-          'checked:border-ac-fill checked:bg-ac-fill disabled:cursor-not-allowed disabled:opacity-55',
+          'peer m-0 size-full cursor-pointer appearance-none rounded-chip border-[1.5px] border-tx-3 bg-card',
+          'checked:border-acc-fill checked:bg-acc-fill disabled:cursor-not-allowed disabled:opacity-55',
           focusRing,
           className,
         )}
@@ -92,8 +92,8 @@ export function Radio({ label, description, className, disabled, ref, ...rest }:
       type="radio"
       disabled={disabled}
       className={cx(
-        'm-0 size-4 shrink-0 cursor-pointer appearance-none rounded-full border-[1.5px] border-br-ctl bg-sf',
-        'checked:border-ac-fill checked:shadow-radio disabled:cursor-not-allowed disabled:opacity-55',
+        'm-0 size-4 shrink-0 cursor-pointer appearance-none rounded-full border-[1.5px] border-tx-3 bg-card',
+        'checked:border-acc-fill checked:shadow-radio disabled:cursor-not-allowed disabled:opacity-55',
         focusRing,
         className,
       )}

@@ -120,12 +120,12 @@ export function LqlInput({
         onBlur={() => setCursor(null)}
         onKeyDown={onKeyDown}
         className={cx(
-          'w-full rounded-sm border bg-sf px-2 py-1.25 font-mono text-12 text-tx2 outline-0',
-          error ? 'border-danger' : 'border-br3 focus:border-ac',
+          'w-full rounded-chip border bg-card px-2 py-1.25 font-mono text-12 text-tx-2 outline-0',
+          error ? 'border-red' : 'border-line focus:border-acc',
         )}
       />
       {error && (
-        <span id={errorId} className="text-11h text-danger">
+        <span id={errorId} className="text-12 text-red">
           {error.message}
         </span>
       )}
@@ -134,7 +134,7 @@ export function LqlInput({
           id={listId}
           role="listbox"
           aria-label="Suggestions"
-          className="absolute top-full left-0 z-30 m-0 mt-1 flex max-h-60 min-w-60 list-none flex-col overflow-auto rounded-control border border-br bg-sf p-1 shadow-menu"
+          className="absolute top-full left-0 z-30 m-0 mt-1 flex max-h-60 min-w-60 list-none flex-col overflow-auto rounded-control border border-line bg-card p-1 shadow-e2"
         >
           {suggestions.map((suggestion, index) => (
             <li
@@ -148,13 +148,13 @@ export function LqlInput({
               }}
               onMouseEnter={() => setActive(index)}
               className={cx(
-                'flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1.25 text-12h',
-                index === active ? 'bg-ac-bg text-ac' : 'text-tx2',
+                'flex cursor-pointer items-center gap-2 rounded-chip px-2 py-1.25 text-13',
+                index === active ? 'bg-acc-50 text-acc' : 'text-tx-2',
               )}
             >
               <span className="font-mono">{suggestion.label}</span>
               {suggestion.detail && (
-                <span className="ml-auto pl-3 text-11h text-tx5">{suggestion.detail}</span>
+                <span className="ml-auto pl-3 text-12 text-tx-3">{suggestion.detail}</span>
               )}
             </li>
           ))}

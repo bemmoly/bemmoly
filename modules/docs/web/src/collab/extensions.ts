@@ -22,8 +22,8 @@ type AnyExtension = NonNullable<DocEditorProps['extensions']>[number];
 const FIELD = 'default';
 
 const CARET: Record<AvatarHue, { caret: string; label: string; selection: string }> = {
-  accent: { caret: 'border-ac', label: 'bg-ac-av text-ac', selection: 'bg-ac-av' },
-  grey: { caret: 'border-tx4', label: 'bg-chip text-tx3', selection: 'bg-chip' },
+  accent: { caret: 'border-acc', label: 'bg-acc-100 text-acc', selection: 'bg-acc-100' },
+  grey: { caret: 'border-tx-3', label: 'bg-line-2 text-tx-2', selection: 'bg-line-2' },
   green: { caret: 'border-green-fg', label: 'bg-green-bg text-green-fg', selection: 'bg-green-bg' },
   orange: {
     caret: 'border-orange-fg',

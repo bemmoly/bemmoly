@@ -18,9 +18,9 @@ export interface VersionRowProps {
 }
 
 const KIND_TONES: Record<RevisionSummary['kind'], string> = {
-  named: 'bg-ac-bg text-ac',
-  periodic: 'bg-chip text-tx3',
-  publish: 'bg-ok-bg text-ok-fg',
+  named: 'bg-acc-50 text-acc',
+  periodic: 'bg-line-2 text-tx-2',
+  publish: 'bg-green-50 text-green-tx',
   restore: 'bg-violet-bg text-violet-fg',
 };
 
@@ -41,8 +41,8 @@ export function VersionRow({
   return (
     <li
       className={cx(
-        'flex flex-col rounded-panel border motion-safe:transition-colors',
-        selected ? 'border-ac-br bg-ac-bg2' : 'border-transparent hover:bg-bg2',
+        'flex flex-col rounded-control border motion-safe:transition-colors',
+        selected ? 'border-acc-100 bg-acc-50' : 'border-transparent hover:bg-side',
       )}
     >
       <button
@@ -50,20 +50,20 @@ export function VersionRow({
         data-version={revision.id}
         aria-expanded={selected}
         onClick={onSelect}
-        className="flex cursor-pointer flex-col gap-1 rounded-panel border-0 bg-transparent px-3 py-2 text-left font-sans text-12h text-tx outline-0 focus-visible:ring-2 focus-visible:ring-ac"
+        className="flex cursor-pointer flex-col gap-1 rounded-control border-0 bg-transparent px-3 py-2 text-left font-sans text-13 text-tx outline-0 focus-visible:ring-2 focus-visible:ring-acc"
       >
         <span className="flex min-w-0 items-center gap-2">
           <span className="truncate font-medium">{revisionName(revision)}</span>
           <span
             className={cx(
-              'shrink-0 rounded-chip px-1.25 py-px text-10h font-medium',
+              'shrink-0 rounded-chip px-1.25 py-px text-11 font-medium',
               KIND_TONES[revision.kind],
             )}
           >
             {KIND_LABELS[revision.kind]}
           </span>
         </span>
-        <span className="truncate text-12 text-tx5">
+        <span className="truncate text-12 text-tx-3">
           <time dateTime={revision.createdAt} title={formatDateTime(revision.createdAt)}>
             {formatRelative(revision.createdAt)}
           </time>
@@ -73,7 +73,7 @@ export function VersionRow({
       </button>
       {selected && (
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 px-3 pb-2.5 text-12 motion-safe:animate-fade-in">
-          <ActivityAction className="font-medium text-ac!" onClick={onCompareNow}>
+          <ActivityAction className="font-medium text-acc!" onClick={onCompareNow}>
             Compare with now
           </ActivityAction>
           {onComparePrevious && (

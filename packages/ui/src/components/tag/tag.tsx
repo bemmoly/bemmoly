@@ -11,13 +11,13 @@ export type TagSize = 'sm' | 'md' | 'lg';
  */
 const SIZES: Record<TagSize, string> = {
   sm: 'rounded-chip px-1.5 py-0.5 text-11',
-  md: 'rounded-chip px-1.75 py-0.5 text-11h',
-  lg: 'rounded-xs px-2 py-0.75 text-12h',
+  md: 'rounded-chip px-1.75 py-0.5 text-12',
+  lg: 'rounded-chip px-2 py-0.75 text-13',
 };
 
 const TONES = {
-  neutral: 'bg-chip text-tx2',
-  accent: 'bg-ac-bg font-medium text-ac',
+  neutral: 'bg-line-2 text-tx-2',
+  accent: 'bg-acc-50 font-medium text-acc',
 } as const;
 
 export interface TagProps extends HTMLAttributes<HTMLSpanElement> {
@@ -54,7 +54,7 @@ export function Tag({
           onClick={onRemove}
           aria-label={removeLabel ?? `Remove ${typeof children === 'string' ? children : 'tag'}`}
           className={cx(
-            '-mr-0.5 cursor-pointer border-0 bg-transparent p-0 text-tx5 hover:text-tx2',
+            '-mr-0.5 cursor-pointer border-0 bg-transparent p-0 text-tx-3 hover:text-tx-2',
             focusRing,
           )}
         >

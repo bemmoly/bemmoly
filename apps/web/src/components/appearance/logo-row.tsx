@@ -18,14 +18,14 @@ export function LogoRow({ workspaceName, scope }: LogoRowProps) {
       <span className="font-medium">Logo</span>
       <div
         aria-disabled="true"
-        className="flex cursor-not-allowed items-center gap-3 rounded-panel border border-dashed border-br-off bg-sf2 px-3 py-2.5"
+        className="flex cursor-not-allowed items-center gap-3 rounded-control border border-dashed border-line bg-side px-3 py-2.5"
       >
         <span {...scope} className="flex">
           <EntityTile name={workspaceName} tone="accent" size={36} decorative={false} />
         </span>
         <div className="flex flex-col gap-0.5">
-          <span className="font-medium text-tx5">Upload SVG or PNG</span>
-          <span className="text-12 text-tx5">
+          <span className="font-medium text-tx-3">Upload SVG or PNG</span>
+          <span className="text-12 text-tx-3">
             Shown in the top bar and login page. Square, 128px minimum. Logo upload arrives in a
             later release.
           </span>

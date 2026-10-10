@@ -43,7 +43,7 @@ export function IssueTypesTable({
                 tabIndex={0}
                 aria-label={`Move ${type.name}; use the arrow keys`}
                 title="Drag to reorder, or use the arrow keys"
-                className={`flex cursor-grab text-tx-3 ${rowReveal} focus-visible:outline-2 focus-visible:outline-ac`}
+                className={`flex cursor-grab text-tx-3 ${rowReveal} focus-visible:outline-2 focus-visible:outline-acc`}
               >
                 <Icon name="drag" size={14} />
               </span>
@@ -86,7 +86,7 @@ export function IssueTypesTable({
       width: '96px',
       render: (type) =>
         type.projectId && !type.originId ? (
-          <span className="text-12 font-semibold text-ac">This project</span>
+          <span className="text-12 font-semibold text-acc">This project</span>
         ) : (
           <span className="text-12 text-tx-3">Default</span>
         ),

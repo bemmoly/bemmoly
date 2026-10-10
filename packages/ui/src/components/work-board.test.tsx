@@ -82,7 +82,7 @@ describe('board components', () => {
     expect(onToggle).toHaveBeenCalled();
     const card = screen.getByRole('button', { name: /Remove legacy cookie path/ });
     expectFocusRing(card);
-    expect(card.className).toContain('border-l-ok');
+    expect(card.className).toContain('border-l-green');
     expect(screen.getByText('Blocked by PLT-204')).toBeTruthy();
     fireEvent.keyDown(card, { key: 'Enter' });
     expect(onSelect).toHaveBeenCalledTimes(1);

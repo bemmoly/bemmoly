@@ -33,7 +33,7 @@ export function BlockedChip({ by, className }: { by: string; className?: string 
   return (
     <span
       className={cx(
-        'inline-flex h-4.5 shrink-0 items-center gap-1 self-start rounded-xs bg-red-50 px-1.5 text-11 font-semibold whitespace-nowrap text-red-tx',
+        'inline-flex h-4.5 shrink-0 items-center gap-1 self-start rounded-chip bg-red-50 px-1.5 text-11 font-semibold whitespace-nowrap text-red-tx',
         className,
       )}
     >

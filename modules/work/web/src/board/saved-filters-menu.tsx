@@ -33,7 +33,7 @@ export function SavedFiltersMenu({ filters, applied, onApply }: SavedFiltersMenu
         <Icon
           name="check"
           size={14}
-          className={filter.query === applied ? 'text-ac' : 'invisible'}
+          className={filter.query === applied ? 'text-acc' : 'invisible'}
         />
       }
       hint={filter.sharedWith.length > 0 && filters.mine.includes(filter) ? 'Shared' : undefined}
@@ -117,12 +117,12 @@ function NoSavedFilters() {
     >
       <span
         aria-hidden
-        className="mb-1 flex size-7 items-center justify-center rounded-panel bg-chip text-tx4"
+        className="mb-1 flex size-7 items-center justify-center rounded-control bg-line-2 text-tx-3"
       >
         <Icon name="filter" size={14} />
       </span>
       <span className="text-13 font-semibold text-tx">No saved filters yet</span>
-      <span className="text-12 leading-body text-tx4">
+      <span className="text-12 leading-body text-tx-3">
         Apply an LQL query, then save it to come back to it in one click.
       </span>
     </div>

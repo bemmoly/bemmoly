@@ -48,8 +48,8 @@ export function SpaceCard({
     <a
       href={href}
       className={cx(
-        'flex flex-col gap-3 rounded-card border border-br bg-sf p-4 text-tx no-underline',
-        'hover:border-br3 hover:text-tx motion-safe:transition-colors',
+        'flex flex-col gap-3 rounded-card border border-line bg-card p-4 text-tx no-underline',
+        'hover:border-line hover:text-tx motion-safe:transition-colors',
         focusRing,
         className,
       )}
@@ -58,19 +58,19 @@ export function SpaceCard({
         <SpaceTile name={name} {...(spaceKey ? { spaceKey } : {})} tone={tone} />
         <span className="flex min-w-0 flex-col gap-0.5">
           <span className="truncate text-14 font-semibold">{name}</span>
-          <span className="truncate text-12 text-tx5">{meta}</span>
+          <span className="truncate text-12 text-tx-3">{meta}</span>
         </span>
         {project && (
-          <span className="ml-auto rounded-chip bg-ac-bg px-1.75 py-0.5 text-11 font-semibold text-ac">
+          <span className="ml-auto rounded-chip bg-acc-50 px-1.75 py-0.5 text-11 font-semibold text-acc">
             PROJECT
           </span>
         )}
       </span>
       {pages.length > 0 && (
-        <span className="flex flex-col gap-1.25 text-12h text-tx2">
+        <span className="flex flex-col gap-1.25 text-13 text-tx-2">
           {pages.slice(0, 3).map((title, index) => (
             <span key={index} className="flex items-center gap-1.75 overflow-hidden">
-              <Icon name="doc" size={12} className="text-tx6" />
+              <Icon name="doc" size={12} className="text-tx-3" />
               <span className="truncate">{title || 'Untitled'}</span>
             </span>
           ))}
@@ -96,7 +96,7 @@ export function SpaceCard({
 /** A space card while the spaces load: the same box, tile, two lines and three page rows. */
 export function SpaceCardSkeleton() {
   return (
-    <span aria-hidden className="flex flex-col gap-3 rounded-card border border-br bg-sf p-4">
+    <span aria-hidden className="flex flex-col gap-3 rounded-card border border-line bg-card p-4">
       <span className="flex items-center gap-2.5">
         <Skeleton width={34} height={34} shape="block" />
         <span className="flex flex-col gap-1.5">

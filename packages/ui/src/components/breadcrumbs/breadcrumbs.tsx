@@ -30,7 +30,7 @@ export function Breadcrumbs({
 }: BreadcrumbsProps) {
   return (
     <nav aria-label="Breadcrumb" className={className}>
-      <ol className="m-0 flex list-none flex-wrap items-center gap-1.5 p-0 text-12h text-tx4">
+      <ol className="m-0 flex list-none flex-wrap items-center gap-1.5 p-0 text-13 text-tx-3">
         {items.map((item, index) => {
           const current = index === items.length - 1;
           const content = (
@@ -42,7 +42,7 @@ export function Breadcrumbs({
           return (
             <Fragment key={index}>
               {index > 0 && (
-                <li aria-hidden className="text-tx4">
+                <li aria-hidden className="text-tx-3">
                   /
                 </li>
               )}
@@ -62,7 +62,7 @@ export function Breadcrumbs({
                     href={item.href}
                     {...item.linkProps}
                     className={cx(
-                      'flex items-center gap-1.25 text-ac no-underline hover:text-ac-d',
+                      'flex items-center gap-1.25 text-acc no-underline hover:text-acc-600',
                       focusRing,
                     )}
                   >

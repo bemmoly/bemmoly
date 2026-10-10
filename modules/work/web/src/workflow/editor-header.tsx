@@ -43,7 +43,7 @@ export function EditorHeader(props: EditorHeaderProps) {
       <a
         href={props.listPath}
         onClick={onLinkClick(props.listPath)}
-        className="flex w-fit items-center gap-1 rounded-sm text-12 text-tx-3 hover:text-tx focus-ring"
+        className="flex w-fit items-center gap-1 rounded-chip text-12 text-tx-3 hover:text-tx focus-ring"
       >
         <Icon name="chevron" size={12} className="rotate-180" />
         All workflows
@@ -55,7 +55,7 @@ export function EditorHeader(props: EditorHeaderProps) {
         <span className="text-12 text-tx-3">{workflow.projectId ? 'This project' : 'Default'}</span>
         <span className="min-w-0 truncate text-12 text-tx-3 tabular-nums">
           {facts.join(' · ')}
-          <span aria-live="polite" className={saveState === 'error' ? 'text-danger' : undefined}>
+          <span aria-live="polite" className={saveState === 'error' ? 'text-red' : undefined}>
             {' · '}
             {SAVE_COPY[saveState]}
           </span>

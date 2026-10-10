@@ -48,7 +48,7 @@ export function PropertyRow({ label, children, className }: PropertyRowProps) {
  * shows that it can be changed. Pickers pass it as their trigger's className.
  */
 export const propertyValueClass = cx(
-  '-ml-1.5 inline-flex min-h-7 min-w-0 max-w-full cursor-pointer items-center gap-1.75 rounded-panel border-0 bg-transparent px-1.5 py-1 text-left font-sans text-13 text-tx hover:bg-hover aria-expanded:bg-hover',
+  '-ml-1.5 inline-flex min-h-7 min-w-0 max-w-full cursor-pointer items-center gap-1.75 rounded-control border-0 bg-transparent px-1.5 py-1 text-left font-sans text-13 text-tx hover:bg-hover aria-expanded:bg-hover',
   focusRing,
 );
 

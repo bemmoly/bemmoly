@@ -28,7 +28,7 @@ export interface ProgressBarProps {
 export function ProgressBar({
   value,
   size = 'sm',
-  fillClassName = 'bg-ok',
+  fillClassName = 'bg-green',
   label,
   className,
 }: ProgressBarProps) {
@@ -40,7 +40,7 @@ export function ProgressBar({
       aria-valuemin={0}
       aria-valuemax={100}
       aria-valuenow={pct}
-      className={cx('block shrink-0 overflow-hidden bg-trk', SIZES[size], className)}
+      className={cx('block shrink-0 overflow-hidden bg-line', SIZES[size], className)}
     >
       <span className={cx('block h-full', fillClassName)} style={{ width: `${pct}%` }} />
     </span>

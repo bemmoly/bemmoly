@@ -112,7 +112,7 @@ export function IssueRow({
             }}
             onPointerDown={(event) => event.stopPropagation()}
             className={cx(
-              'grid size-4 cursor-pointer place-items-center rounded-xs border-[1.5px] p-0',
+              'grid size-4 cursor-pointer place-items-center rounded-chip border-[1.5px] p-0',
               checked
                 ? 'border-acc-fill bg-acc-fill text-on-acc'
                 : 'border-tx-3 bg-card text-transparent',

@@ -26,12 +26,12 @@ const versionLabel = (revision: RevisionSummary) =>
 /** "2 added · 1 removed · 3 edited · 1 moved", each in its op's colour. */
 export function StatsLine({ stats }: { stats: DiffStats }) {
   const parts = [
-    { n: stats.inserted, word: 'added', tone: 'bg-ok' },
-    { n: stats.deleted, word: 'removed', tone: 'bg-danger' },
-    { n: stats.changed, word: 'edited', tone: 'bg-caution' },
+    { n: stats.inserted, word: 'added', tone: 'bg-green' },
+    { n: stats.deleted, word: 'removed', tone: 'bg-red' },
+    { n: stats.changed, word: 'edited', tone: 'bg-amber' },
     { n: stats.moved, word: 'moved', tone: 'bg-epic-2' },
   ].filter((part) => part.n > 0);
-  if (parts.length === 0) return <span className="text-tx5">No changes</span>;
+  if (parts.length === 0) return <span className="text-tx-3">No changes</span>;
   return (
     <span className="flex flex-wrap items-center gap-3">
       {parts.map((part) => (
@@ -87,7 +87,7 @@ export function CompareDialog({
     >
       {selection && (
         <div className="flex min-h-full flex-col gap-4">
-          <div className="flex flex-wrap items-center gap-2 text-12h text-tx3">
+          <div className="flex flex-wrap items-center gap-2 text-13 text-tx-2">
             <Select
               aria-label="Older version"
               size="sm"
@@ -106,7 +106,7 @@ export function CompareDialog({
               onChange={(event) => onChange({ ...selection, to: event.value })}
             />
           </div>
-          <div className="flex items-center border-b border-br-row pb-2 text-12 text-tx3">
+          <div className="flex items-center border-b border-line-2 pb-2 text-12 text-tx-2">
             {compare.data ? (
               <StatsLine stats={compare.data.diff.stats} />
             ) : (

@@ -108,7 +108,7 @@ function frameDemo(
   iframe.src = `${url.pathname}${url.search}`;
   iframe.title = 'Live demo of Bemmoly';
   iframe.className =
-    'absolute top-0 left-0 z-1 origin-top-left border-0 bg-bg opacity-0 motion-safe:transition-opacity motion-safe:duration-300';
+    'absolute top-0 left-0 z-1 origin-top-left border-0 bg-sunken opacity-0 motion-safe:transition-opacity motion-safe:duration-300';
   iframe.style.width = `${size.width}px`;
   iframe.style.height = `${size.height}px`;
   const fit = () => {

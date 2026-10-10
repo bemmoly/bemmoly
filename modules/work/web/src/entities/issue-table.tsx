@@ -22,10 +22,10 @@ export function IssueTable({ query, title }: { query: string; title: string }) {
   });
   const items = result.data?.items ?? [];
   return (
-    <figure className="m-0 flex flex-col gap-1.5 rounded-card border border-br2 bg-sf p-3">
-      <figcaption className="flex items-baseline justify-between gap-3 text-12 text-tx3">
+    <figure className="m-0 flex flex-col gap-1.5 rounded-card border border-line-2 bg-card p-3">
+      <figcaption className="flex items-baseline justify-between gap-3 text-12 text-tx-2">
         <span className="font-semibold text-tx">{title || 'Issues'}</span>
-        <code className="truncate font-mono text-11 text-tx4" title={query}>
+        <code className="truncate font-mono text-11 text-tx-3" title={query}>
           {query}
         </code>
       </figcaption>
@@ -36,9 +36,9 @@ export function IssueTable({ query, title }: { query: string; title: string }) {
           ))}
         </div>
       ) : result.isError ? (
-        <p className="m-0 text-12 text-tx4">This query could not be run: {result.error.message}</p>
+        <p className="m-0 text-12 text-tx-3">This query could not be run: {result.error.message}</p>
       ) : items.length === 0 ? (
-        <p className="m-0 text-12 text-tx4">No issues match this query.</p>
+        <p className="m-0 text-12 text-tx-3">No issues match this query.</p>
       ) : (
         <ul className="m-0 flex list-none flex-col gap-1.5 p-0">
           {items.map((issue) => (
@@ -49,7 +49,7 @@ export function IssueTable({ query, title }: { query: string; title: string }) {
         </ul>
       )}
       {result.data?.nextCursor && (
-        <p className="m-0 text-12 text-tx4">Showing the first {ROWS} issues.</p>
+        <p className="m-0 text-12 text-tx-3">Showing the first {ROWS} issues.</p>
       )}
     </figure>
   );

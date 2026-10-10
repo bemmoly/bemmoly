@@ -52,7 +52,7 @@ describe('display components', () => {
     );
     await expectAccessible(container);
     expect(screen.getByRole('img', { name: 'Highest priority' })).toBeTruthy();
-    expect(screen.getByText('In review').className).toContain('bg-st-rev-bg');
+    expect(screen.getByText('In review').className).toContain('bg-acc-50');
     expect(screen.getByRole('button', { name: 'Priya N.' }).getAttribute('aria-pressed')).toBe(
       'true',
     );

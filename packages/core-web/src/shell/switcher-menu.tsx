@@ -174,7 +174,7 @@ export function SwitcherMenu({
                   aria-selected={index === active}
                   onPointerMove={() => setActive(index)}
                   onClick={() => choose(item)}
-                  className={`flex h-8 cursor-pointer items-center gap-2 rounded-sm px-2.5 text-13 ${
+                  className={`flex h-8 cursor-pointer items-center gap-2 rounded-chip px-2.5 text-13 ${
                     index === active ? 'bg-hover text-tx' : 'text-tx-2'
                   }`}
                 >

@@ -48,12 +48,12 @@ export function DevMailboxPage() {
                     type="button"
                     onClick={() => setOpenId(item.id)}
                     aria-current={item.id === open?.id}
-                    className={`flex w-full cursor-pointer flex-col gap-0.5 border-0 border-b border-br-row px-4 py-2.5 text-left font-sans ${
-                      item.id === open?.id ? 'bg-ac-bg2' : 'bg-sf'
+                    className={`flex w-full cursor-pointer flex-col gap-0.5 border-0 border-b border-line-2 px-4 py-2.5 text-left font-sans ${
+                      item.id === open?.id ? 'bg-acc-50' : 'bg-card'
                     }`}
                   >
                     <span className="truncate font-medium text-tx">{item.subject}</span>
-                    <span className="text-12 text-tx5">
+                    <span className="text-12 text-tx-3">
                       {item.to} · {formatDateTime(item.capturedAt)}
                     </span>
                   </button>
@@ -65,10 +65,10 @@ export function DevMailboxPage() {
             <Card>
               <CardHeader title={open.subject} />
               <div className="flex flex-col gap-2 px-4 py-3.5">
-                <div className="text-12 text-tx5">
+                <div className="text-12 text-tx-3">
                   From {open.from} · to {open.to}
                 </div>
-                <pre className="m-0 font-mono text-12h leading-body whitespace-pre-wrap text-tx2">
+                <pre className="m-0 font-mono text-13 leading-body whitespace-pre-wrap text-tx-2">
                   {open.text ?? 'This message has an HTML body only.'}
                 </pre>
               </div>

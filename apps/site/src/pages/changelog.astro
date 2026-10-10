@@ -19,7 +19,7 @@ const formatDate = (iso: string) =>
   lede="Every release, newest first, in the words of its release notes: what changed, and the configuration and schema changes an admin should know about before updating."
   alternate={{ href: '/changelog.xml', type: 'application/rss+xml', title: 'Bemmoly releases' }}
 >
-  <p class="text-14h leading-desc text-tx3">
+  <p class="text-14h leading-desc text-tx-2">
     Follow along in a feed reader with the <a href="/changelog.xml">RSS feed</a>, or watch releases
     on <a href={`${REPO_URL}/releases`}>GitHub</a>, where each one lists its downloads and how to
     verify the signed images.
@@ -28,10 +28,10 @@ const formatDate = (iso: string) =>
     {RELEASES.map((release) => (
       <li
         id={releaseId(release.version)}
-        class="flex scroll-mt-20 flex-col gap-4 border-t border-br-row pt-6"
+        class="flex scroll-mt-20 flex-col gap-4 border-t border-line-2 pt-6"
       >
         <div class="flex flex-wrap items-center gap-3">
-          <h2 class="font-mono text-22 font-semibold text-tx">
+          <h2 class="font-mono text-20 font-semibold text-tx">
             <a
               href={`/changelog#${releaseId(release.version)}`}
               class="text-tx no-underline hover:text-tx"
@@ -39,7 +39,7 @@ const formatDate = (iso: string) =>
               {release.version}
             </a>
           </h2>
-          <span class="rounded-full bg-ok-bg px-2 py-0.5 text-11h font-semibold text-ok-fg">
+          <span class="rounded-full bg-green-50 px-2 py-0.5 text-12 font-semibold text-green-tx">
             {release.date ? (
               <time datetime={release.date}>{formatDate(release.date)}</time>
             ) : (
@@ -49,8 +49,8 @@ const formatDate = (iso: string) =>
         </div>
         {groupByKind(release.changes).map((group) => (
           <section class="flex flex-col gap-2">
-            <h3 class="text-15 font-semibold text-tx">{group.title}</h3>
-            <ul class="flex list-disc flex-col gap-3 pl-5 text-15 leading-desc text-tx3 [&_code]:font-mono [&_code]:text-13h [&_code]:text-tx [&_code]:wrap-anywhere">
+            <h3 class="text-16 font-semibold text-tx">{group.title}</h3>
+            <ul class="flex list-disc flex-col gap-3 pl-5 text-16 leading-desc text-tx-2 [&_code]:font-mono [&_code]:text-13 [&_code]:text-tx [&_code]:wrap-anywhere">
               {group.changes.map((change) => (
                 <li
                   class="pl-1 [&>*+*]:mt-2 [&_ul]:list-[circle] [&_ul]:pl-5"
@@ -61,18 +61,18 @@ const formatDate = (iso: string) =>
           </section>
         ))}
         {release.changes.length === 0 && (
-          <p class="text-15 leading-desc text-tx3">
+          <p class="text-16 leading-desc text-tx-2">
             A maintenance release with no notes of its own.
           </p>
         )}
       </li>
     ))}
   </ol>
-  <section aria-labelledby="next" class="flex flex-col gap-3 border-t border-br-row pt-6">
-    <h2 id="next" class="text-22 leading-title font-semibold tracking-title text-tx">
+  <section aria-labelledby="next" class="flex flex-col gap-3 border-t border-line-2 pt-6">
+    <h2 id="next" class="text-20 leading-title font-semibold tracking-title text-tx">
       Coming next
     </h2>
-    <ul class="flex list-disc flex-col gap-1.5 pl-5 text-15 leading-desc text-tx3">
+    <ul class="flex list-disc flex-col gap-1.5 pl-5 text-16 leading-desc text-tx-2">
       {UPCOMING.map((step) => (
         <li class="pl-1">
           <strong class="font-semibold text-tx">

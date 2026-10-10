@@ -20,8 +20,8 @@ const BASE = cx(
  * which is sized by its padding (6px 14px, 29px tall).
  */
 const SIZES: Record<ButtonSize, string> = {
-  xs: 'h-7 rounded-sm px-2.5 text-12h',
-  sm: 'h-7.5 rounded-sm px-2.5 text-13',
+  xs: 'h-7 rounded-chip px-2.5 text-13',
+  sm: 'h-7.5 rounded-chip px-2.5 text-13',
   md: 'h-control rounded-control text-13',
   lg: 'h-9.5 rounded-control text-14',
   bar: 'rounded-control py-1.5 text-13',
@@ -45,7 +45,7 @@ const PADDING: Partial<Record<`${ButtonVariant}-${ButtonSize}`, string>> = {
 
 const VARIANTS: Record<ButtonVariant, string> = {
   primary:
-    'border-0 bg-ac-fill text-on-ac enabled:hover:brightness-95 enabled:active:brightness-90',
+    'border-0 bg-acc-fill text-on-acc enabled:hover:brightness-95 enabled:active:brightness-90',
   // The hover and press overlays tint whatever the button sits on, the same on every surface.
   secondary: cx(
     'border border-line bg-card text-tx-2 enabled:hover:text-tx',
@@ -53,8 +53,7 @@ const VARIANTS: Record<ButtonVariant, string> = {
   ),
   ghost:
     'border-0 bg-transparent text-tx-2 enabled:hover:bg-hover enabled:hover:text-tx enabled:active:bg-press',
-  danger:
-    'border-0 bg-danger text-on-solid enabled:hover:brightness-95 enabled:active:brightness-90',
+  danger: 'border-0 bg-red text-on-solid enabled:hover:brightness-95 enabled:active:brightness-90',
 };
 
 export interface ButtonStyle {

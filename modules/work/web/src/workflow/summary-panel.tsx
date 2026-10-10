@@ -43,7 +43,7 @@ export function SummaryPanel({ name, version, problems, changes, select }: Summa
                       type="button"
                       disabled={!target}
                       onClick={() => target && select(target)}
-                      className="w-full cursor-pointer rounded-control border border-danger bg-sf px-2.5 py-2 text-left font-sans text-12h leading-note text-danger enabled:hover:bg-bg2 disabled:cursor-default focus-ring"
+                      className="w-full cursor-pointer rounded-control border border-red bg-card px-2.5 py-2 text-left font-sans text-13 leading-note text-red enabled:hover:bg-side disabled:cursor-default focus-ring"
                     >
                       {problem.message}
                     </button>
@@ -57,7 +57,7 @@ export function SummaryPanel({ name, version, problems, changes, select }: Summa
           {changes.length === 0 ? (
             <PanelNote>The draft matches version {version}.</PanelNote>
           ) : (
-            <ul className="m-0 flex list-disc flex-col gap-1 pl-4.5 leading-note text-tx2">
+            <ul className="m-0 flex list-disc flex-col gap-1 pl-4.5 leading-note text-tx-2">
               {changes.map((change) => (
                 <li key={change.key}>{change.text}</li>
               ))}

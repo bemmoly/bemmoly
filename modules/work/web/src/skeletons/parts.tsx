@@ -59,11 +59,11 @@ export function HeaderSkeleton({
 }) {
   return (
     <div className={`flex flex-col ${gap}`}>
-      <LineSkeleton width={200} size="text-12h" bar={9} />
+      <LineSkeleton width={200} size="text-13" bar={9} />
       <div className="flex items-start gap-4">
         <div className="flex flex-col gap-1">
-          <LineSkeleton width={180} size="text-22" bar={16} />
-          {subtitle && <LineSkeleton width={150} size="text-12h" bar={9} />}
+          <LineSkeleton width={180} size="text-20" bar={16} />
+          {subtitle && <LineSkeleton width={150} size="text-13" bar={9} />}
         </div>
         <span className="ml-auto flex items-center gap-2">
           {actions.map((width, index) => (

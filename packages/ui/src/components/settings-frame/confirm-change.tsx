@@ -70,7 +70,7 @@ function ConfirmBody(props: ConfirmChangeProps) {
         <p className="m-0 text-13 font-medium text-tx">What happens</p>
         <ul
           id={listId}
-          className="m-0 -mt-2 flex list-disc flex-col gap-1.5 pl-5 text-13 leading-body text-tx-body"
+          className="m-0 -mt-2 flex list-disc flex-col gap-1.5 pl-5 text-13 leading-body text-tx"
         >
           {consequences.map((line, index) => (
             <li key={index}>{line}</li>

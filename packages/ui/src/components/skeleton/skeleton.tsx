@@ -10,7 +10,7 @@ export interface SkeletonProps {
   className?: string;
 }
 
-const SHAPES = { line: 'rounded-tick', circle: 'rounded-full', block: 'rounded-panel' } as const;
+const SHAPES = { line: 'rounded-tick', circle: 'rounded-full', block: 'rounded-control' } as const;
 
 /**
  * Placeholder bars on the line colour. They pulse only when motion is allowed. Mark the loading region aria-busy; skeletons are hidden from

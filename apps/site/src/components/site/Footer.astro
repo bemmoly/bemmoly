@@ -17,7 +17,7 @@ interface Props {
 const { cta = false } = Astro.props;
 ---
 
-<footer class="border-t border-br-row dark:border-br dark:bg-sf">
+<footer class="border-t border-line-2 dark:border-line dark:bg-card">
   <slot />
   <nav
     aria-label="Guides"
@@ -27,15 +27,15 @@ const { cta = false } = Astro.props;
     ]}
   >
     {topics.map((page) => (
-      <a href={page.path} class="text-tx4 hover:text-tx2">
+      <a href={page.path} class="text-tx-3 hover:text-tx-2">
         {page.name}
       </a>
     ))}
   </nav>
-  <div class="mx-auto flex max-w-290 flex-wrap items-center gap-x-6 gap-y-3 px-4 pb-10 text-13 text-tx4 sm:px-6 lg:px-12">
+  <div class="mx-auto flex max-w-290 flex-wrap items-center gap-x-6 gap-y-3 px-4 pb-10 text-13 text-tx-3 sm:px-6 lg:px-12">
     <span class="font-semibold text-tx">Bemmoly</span>
     {FOOTER.map((link) => (
-      <a href={link.href} class="text-tx4 hover:text-tx2">
+      <a href={link.href} class="text-tx-3 hover:text-tx-2">
         {link.label}
       </a>
     ))}

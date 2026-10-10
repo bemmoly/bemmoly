@@ -55,7 +55,7 @@ function CollapseButton({ label }: { label: string }) {
         type="button"
         aria-label={label}
         onClick={toggleSidebar}
-        className="grid size-6.5 shrink-0 cursor-pointer place-items-center rounded-sm border-0 bg-transparent p-0 text-tx-3 hover:bg-hover hover:text-tx focus-ring"
+        className="grid size-6.5 shrink-0 cursor-pointer place-items-center rounded-chip border-0 bg-transparent p-0 text-tx-3 hover:bg-hover hover:text-tx focus-ring"
       >
         <Icon name="sidebar" size={16} />
       </button>
@@ -198,7 +198,7 @@ export function VersionLine() {
       href={WHATS_NEW_URL}
       target="_blank"
       rel="noopener"
-      className="mx-2 mt-1 mb-0.5 flex items-center gap-1.5 rounded-sm text-11 text-tx-3 no-underline hover:text-tx-2 focus-ring"
+      className="mx-2 mt-1 mb-0.5 flex items-center gap-1.5 rounded-chip text-11 text-tx-3 no-underline hover:text-tx-2 focus-ring"
     >
       <span>
         <b className="font-semibold text-tx-2">Bemmoly</b> {APP_VERSION}

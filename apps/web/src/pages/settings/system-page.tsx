@@ -71,7 +71,7 @@ export function SystemPage() {
                 },
               ]}
             />
-            <p className="m-0 text-12h text-tx5">
+            <p className="m-0 text-13 text-tx-3">
               Job queue figures arrive with the jobs dashboard.
             </p>
           </PageBlock>

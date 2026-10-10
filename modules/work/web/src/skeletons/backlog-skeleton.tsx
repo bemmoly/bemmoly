@@ -8,12 +8,12 @@ function ContainerSkeleton({ rows, active }: { rows: number; active?: boolean })
         <Skeleton width={14} height={14} />
         <Skeleton width={15} height={15} shape="circle" />
         <Skeleton width={96} height={10} />
-        {active && <Skeleton width={44} height={18} className="rounded-xs" />}
+        {active && <Skeleton width={44} height={18} className="rounded-chip" />}
         <Skeleton width={110} height={9} />
         <span className="ml-auto flex items-center gap-2.5">
           {active && <Skeleton width={90} height={4} className="rounded-[2px]" />}
           <Skeleton width={64} height={9} />
-          <Skeleton width={72} height={28} className="rounded-sm" />
+          <Skeleton width={72} height={28} className="rounded-chip" />
         </span>
       </div>
       {Array.from({ length: rows }, (_, index) => (

@@ -28,8 +28,8 @@ type Scope = (typeof SCOPES)[number]['value'];
 
 const Try = () => (
   <>
-    Try: <span className="text-ac">&quot;issues without a spec doc&quot;</span> ·{' '}
-    <span className="text-ac">&quot;what changed in auth this week&quot;</span>
+    Try: <span className="text-acc">&quot;issues without a spec doc&quot;</span> ·{' '}
+    <span className="text-acc">&quot;what changed in auth this week&quot;</span>
   </>
 );
 
@@ -52,7 +52,7 @@ function Palette({ plan, inline }: { plan: boolean; inline: boolean }) {
         onChange={setScope}
         context={
           <>
-            in Platform Core · <span className="text-ac">everywhere</span>
+            in Platform Core · <span className="text-acc">everywhere</span>
           </>
         }
       />
@@ -88,7 +88,7 @@ function Palette({ plan, inline }: { plan: boolean; inline: boolean }) {
             {
               target: 'both',
               change: (
-                <span className="text-tx3">
+                <span className="text-tx-2">
                   Comment: &quot;Moved to Sprint 15: blocked by PLT-204 (in review). — via Bemmoly
                   for Rohan&quot;
                 </span>
@@ -164,7 +164,7 @@ export const AsModal: Story = {
   args: { open: true, onClose: noop, children: null },
   parameters: { layout: 'fullscreen', mock: undefined },
   render: () => (
-    <div className="h-200 bg-bg p-6">
+    <div className="h-200 bg-sunken p-6">
       <Palette plan={false} inline={false} />
     </div>
   ),

@@ -78,7 +78,7 @@ export function LinkForm({ editor, onDone }: LinkFormProps) {
         wrapperClassName="min-w-0 flex-1"
       />
       {error && (
-        <span id={`${id}-error`} role="alert" className="text-12 text-danger">
+        <span id={`${id}-error`} role="alert" className="text-12 text-red">
           {error}
         </span>
       )}

@@ -35,7 +35,10 @@ function RailSkeleton() {
   return (
     <div className="flex flex-col gap-2.5" aria-hidden>
       {[0, 1, 2].map((key) => (
-        <div key={key} className="flex flex-col gap-2 rounded-panel border border-br px-3 py-2.5">
+        <div
+          key={key}
+          className="flex flex-col gap-2 rounded-control border border-line px-3 py-2.5"
+        >
           <Skeleton width="45%" />
           <Skeleton width="90%" />
           <Skeleton width="70%" />
@@ -115,7 +118,7 @@ export function CommentsRail({ pageId, canComment = true }: CommentsRailProps) {
 
   const openCount = filter === 'open' ? threads.length : undefined;
   return (
-    <div className="flex min-h-0 flex-1 flex-col text-12h leading-body">
+    <div className="flex min-h-0 flex-1 flex-col text-13 leading-body">
       <div className="flex shrink-0 items-center gap-2 px-3.5 pt-3.5">
         <SegmentedControl
           size="sm"
@@ -142,9 +145,9 @@ export function CommentsRail({ pageId, canComment = true }: CommentsRailProps) {
         {ui.draft && canComment && (
           <section
             aria-label="New comment"
-            className="flex flex-col gap-1.5 rounded-panel border border-amber-fg/30 bg-amber-bg/50 px-3 py-2.5 motion-safe:animate-rise"
+            className="flex flex-col gap-1.5 rounded-control border border-amber-fg/30 bg-amber-bg/50 px-3 py-2.5 motion-safe:animate-rise"
           >
-            <blockquote className="m-0 line-clamp-3 border-l-2 border-br3 pl-2 text-11h whitespace-pre-line text-tx5">
+            <blockquote className="m-0 line-clamp-3 border-l-2 border-line pl-2 text-12 whitespace-pre-line text-tx-3">
               {ui.draft.quote}
             </blockquote>
             <CommentBox

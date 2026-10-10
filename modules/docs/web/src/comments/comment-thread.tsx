@@ -33,17 +33,20 @@ function Quote({ comment }: { comment: PageComment }) {
   return (
     <blockquote
       className={cx(
-        'm-0 border-l-2 pl-2 text-11h leading-body text-tx5',
-        changed ? 'border-dashed border-br3' : 'border-br3',
+        'm-0 border-l-2 pl-2 text-12 leading-body text-tx-3',
+        changed ? 'border-dashed border-line' : 'border-line',
       )}
     >
       {changed && (
-        <span className="mr-1.5 inline-flex rounded-chip bg-chip px-1.25 py-px text-10h font-medium text-tx3">
+        <span className="mr-1.5 inline-flex rounded-chip bg-line-2 px-1.25 py-px text-11 font-medium text-tx-2">
           Text changed
         </span>
       )}
       <span
-        className={cx('line-clamp-3 whitespace-pre-line', changed && 'line-through decoration-tx6')}
+        className={cx(
+          'line-clamp-3 whitespace-pre-line',
+          changed && 'line-through decoration-tx-3',
+        )}
       >
         {comment.anchor.quote}
       </span>
@@ -111,22 +114,22 @@ export function CommentThread({
         }
       }}
       className={cx(
-        'flex cursor-default flex-col gap-1.5 rounded-panel border px-3 py-2.5 text-12h leading-body outline-0',
-        'motion-safe:animate-rise motion-safe:transition-colors focus-visible:border-ac',
-        active ? 'border-br bg-amber-bg/50' : 'border-br bg-sf',
+        'flex cursor-default flex-col gap-1.5 rounded-control border px-3 py-2.5 text-13 leading-body outline-0',
+        'motion-safe:animate-rise motion-safe:transition-colors focus-visible:border-acc',
+        active ? 'border-line bg-amber-bg/50' : 'border-line bg-card',
         resolved && 'opacity-80',
       )}
     >
       {item(root, replies.length, <Quote comment={root} />)}
       {replies.length > 0 && (
-        <div className="mt-1 flex flex-col gap-2.5 border-t border-br-row pt-2.5">
+        <div className="mt-1 flex flex-col gap-2.5 border-t border-line-2 pt-2.5">
           {replies.map((reply) => item(reply))}
         </div>
       )}
       {fix && !resolved && (
-        <div className="mt-0.5 flex items-start gap-2 rounded-sm border border-ai-br2 bg-ai-bg p-2">
+        <div className="mt-0.5 flex items-start gap-2 rounded-chip border border-ai-100 bg-ai-50 p-2">
           <AiDot className="mt-1.5" />
-          <span className="min-w-0 text-ai-tx">
+          <span className="min-w-0 text-tx">
             {fix.rationale ? `${fix.rationale} ` : ''}Replace with “{fix.replacement}”?
           </span>
         </div>
@@ -148,7 +151,7 @@ export function CommentThread({
           {fix && !resolved && (
             <ActivityAction
               disabled={busy}
-              className="font-medium text-ai-600! hover:text-ai-tx!"
+              className="font-medium text-ai-600! hover:text-tx!"
               onClick={() => on.onApplyFix(root)}
             >
               Apply fix

@@ -20,7 +20,7 @@ import { cx } from './cx.ts';
 
 /** The ghost Select as a property value: the overlay, not a border, says it can change. */
 const PROPERTY_SELECT =
-  '-ml-1.5 h-auto! min-h-7 rounded-panel! px-1.5! py-1 text-13 hover:border-transparent! hover:bg-hover aria-expanded:bg-hover';
+  '-ml-1.5 h-auto! min-h-7 rounded-control! px-1.5! py-1 text-13 hover:border-transparent! hover:bg-hover aria-expanded:bg-hover';
 const NONE = '__none';
 
 export interface ChoiceFieldProps {
@@ -200,7 +200,7 @@ export function InlineValue({
         }}
         wrapperClassName="h-7.5 w-full"
       />
-      {error && <span className="text-11h text-red-tx">{error}</span>}
+      {error && <span className="text-12 text-red-tx">{error}</span>}
     </span>
   );
 }

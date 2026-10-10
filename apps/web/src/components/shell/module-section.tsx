@@ -16,12 +16,12 @@ import { MODULE_CREATES, MODULE_SIDEBARS } from '../../lib/module-shell.ts';
 /** Two rows the height of the live ones, so the section does not jump when they land. */
 function RowsLoading() {
   const { mode } = useFrame();
-  if (mode === 'rail') return <Skeleton width={22} height={22} className="my-1.5 rounded-sm" />;
+  if (mode === 'rail') return <Skeleton width={22} height={22} className="my-1.5 rounded-chip" />;
   return (
     <div aria-hidden className="flex flex-col">
       {[96, 120].map((width) => (
         <div key={width} className="flex h-7.5 items-center gap-2 px-2">
-          <Skeleton width={18} height={18} className="rounded-sm" />
+          <Skeleton width={18} height={18} className="rounded-chip" />
           <Skeleton width={width} height={10} />
         </div>
       ))}

@@ -50,7 +50,7 @@ export interface PageHeaderProps {
 }
 
 const CRUMB =
-  'flex min-w-0 items-center gap-1.5 rounded-sm px-1.5 py-0.75 whitespace-nowrap text-tx-2 no-underline hover:bg-hover hover:text-tx focus-ring';
+  'flex min-w-0 items-center gap-1.5 rounded-chip px-1.5 py-0.75 whitespace-nowrap text-tx-2 no-underline hover:bg-hover hover:text-tx focus-ring';
 
 function CrumbLink({ crumb, here }: { crumb: PageCrumb; here: boolean }) {
   const link = useFrameLink(crumb.path);

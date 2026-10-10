@@ -34,7 +34,7 @@ export function RollbackCard({ overview, plan, busy, onRollback }: RollbackCardP
       />
       {updater.mode === 'in_app' ? null : (
         <div className="flex flex-col gap-2 py-2.5">
-          <p className="m-0 text-12h leading-body text-tx4">
+          <p className="m-0 text-13 leading-body text-tx-3">
             Run this on the server. It prints the same mode and what it loses, then asks you to
             confirm.
           </p>

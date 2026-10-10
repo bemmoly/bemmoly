@@ -54,7 +54,7 @@ export function ChecklistBlock({
         </span>
         {action && <span className="ml-auto flex items-center">{action}</span>}
       </div>
-      {total === 0 && hint && <p className="m-0 mt-1 ml-5.75 text-12h text-tx-3">{hint}</p>}
+      {total === 0 && hint && <p className="m-0 mt-1 ml-5.75 text-13 text-tx-3">{hint}</p>}
       {children && <div className="mt-1.5 -mx-1.5 flex flex-col">{children}</div>}
     </section>
   );

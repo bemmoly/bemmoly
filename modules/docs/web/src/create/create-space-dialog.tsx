@@ -39,7 +39,7 @@ function CreateSpaceForm({ open, onClose, onCreated }: CreateSpaceDialogProps) {
       footer={
         <>
           {errors.form && (
-            <span role="alert" className="mr-auto text-12h text-danger">
+            <span role="alert" className="mr-auto text-13 text-red">
               {errors.form}
             </span>
           )}

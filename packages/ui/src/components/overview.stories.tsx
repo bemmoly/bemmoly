@@ -44,8 +44,8 @@ function Section({
 }) {
   return (
     <section className={wide ? 'col-span-2 flex flex-col gap-2' : 'flex flex-col gap-2'}>
-      <h2 className="m-0 text-11 font-medium tracking-caps text-tx5 uppercase">{title}</h2>
-      <div className="flex flex-wrap items-center gap-2.5 rounded-card border border-br bg-sf p-4">
+      <h2 className="m-0 text-11 font-medium tracking-caps text-tx-3 uppercase">{title}</h2>
+      <div className="flex flex-wrap items-center gap-2.5 rounded-card border border-line bg-card p-4">
         {children}
       </div>
     </section>

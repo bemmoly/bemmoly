@@ -76,7 +76,7 @@ export function ComposerTool({ label, className, type = 'button', ...rest }: Com
       aria-label={label}
       title={label}
       className={cx(
-        'cursor-pointer rounded-xs border-0 bg-transparent p-0 font-sans text-12 text-tx4 hover:text-tx2',
+        'cursor-pointer rounded-chip border-0 bg-transparent p-0 font-sans text-12 text-tx-3 hover:text-tx-2',
         focusRing,
         className,
       )}

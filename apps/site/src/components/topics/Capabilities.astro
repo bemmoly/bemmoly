@@ -20,14 +20,14 @@ const { items } = Astro.props;
       <div class="flex items-center gap-2.5">
         <span
           aria-hidden="true"
-          class="flex size-9 items-center justify-center rounded-card border border-br bg-sf font-mono text-13 font-semibold text-ac dark:bg-bg"
+          class="flex size-9 items-center justify-center rounded-card border border-line bg-card font-mono text-13 font-semibold text-acc dark:bg-sunken"
         >
           {item.tile}
         </span>
         <Badge tone={AVAILABILITY[item.status].tone}>{AVAILABILITY[item.status].label}</Badge>
       </div>
       <h3 class="text-17 font-semibold tracking-brand text-tx">{item.title}</h3>
-      <p class="text-14h leading-desc text-pretty text-tx3">{item.body}</p>
+      <p class="text-14h leading-desc text-pretty text-tx-2">{item.body}</p>
     </div>
   ))}
 </div>

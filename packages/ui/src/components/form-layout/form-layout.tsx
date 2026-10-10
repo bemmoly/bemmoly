@@ -27,7 +27,7 @@ export function FormGridItem({ full, className, ...rest }: FormGridItemProps) {
 /** The red asterisk after a required field's label. */
 export function RequiredMark() {
   return (
-    <span aria-hidden className="text-danger">
+    <span aria-hidden className="text-red">
       {' '}
       *
     </span>
@@ -124,7 +124,7 @@ export function FieldLayoutRow({
             type="button"
             aria-label={`${label} actions`}
             onClick={onMore}
-            className="flex cursor-pointer rounded-xs border-0 bg-transparent p-0.5 text-tx-3 hover:text-tx focus-ring"
+            className="flex cursor-pointer rounded-chip border-0 bg-transparent p-0.5 text-tx-3 hover:text-tx focus-ring"
           >
             <Icon name="more" size={14} />
           </button>

@@ -177,7 +177,7 @@ export function IssueCard({
       {tools && (
         <div
           className={cx(
-            'absolute top-1.5 right-1.5 z-1 flex gap-0.5 rounded-panel bg-card p-0.5 text-tx-2 shadow-e1',
+            'absolute top-1.5 right-1.5 z-1 flex gap-0.5 rounded-control bg-card p-0.5 text-tx-2 shadow-e1',
             REVEAL,
             'has-[[aria-expanded=true]]:opacity-100',
             'motion-safe:transition-opacity pointer-coarse:opacity-100',

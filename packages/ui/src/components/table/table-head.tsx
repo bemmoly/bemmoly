@@ -57,7 +57,7 @@ export function TableHeading({
         type="button"
         onClick={() => onSort(next)}
         className={cx(
-          'group -mx-1 inline-flex cursor-pointer items-center gap-1 rounded-xs border-0 bg-transparent px-1 font-sans text-12 font-medium',
+          'group -mx-1 inline-flex cursor-pointer items-center gap-1 rounded-chip border-0 bg-transparent px-1 font-sans text-12 font-medium',
           active ? 'text-tx-2' : 'text-tx-3 hover:text-tx-2',
           focusRing,
         )}

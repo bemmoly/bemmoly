@@ -82,7 +82,7 @@ function ImagePicker({ onPick }: { onPick: (attrs: { src: string; alt: string })
         )}
       </div>
       {state === 'failed' && (
-        <span role="alert" className="text-12 text-danger">
+        <span role="alert" className="text-12 text-red">
           The upload did not finish. Try again.
         </span>
       )}

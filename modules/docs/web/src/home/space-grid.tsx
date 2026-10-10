@@ -37,7 +37,7 @@ function writersOf(
 export function SpaceGrid({ spaces, recent, person }: SpaceGridProps) {
   return (
     <section aria-labelledby="docs-spaces" className="flex flex-col gap-3">
-      <h2 id="docs-spaces" className="m-0 text-15 font-semibold text-tx">
+      <h2 id="docs-spaces" className="m-0 text-16 font-semibold text-tx">
         Spaces
       </h2>
       <div className={SPACE_GRID}>

@@ -8,19 +8,19 @@ import { INSTALL } from '../../data/landing.ts';
 import CopyScript from '../site/CopyScript.astro';
 ---
 
-<div class="max-w-full rounded-card border border-br">
+<div class="max-w-full rounded-card border border-line">
   <div
     data-theme="dark"
-    class="flex items-center gap-2.5 overflow-x-auto rounded-panel bg-bg px-3.5 dark:bg-sf py-2.5 font-mono text-13h font-medium text-tx"
+    class="flex items-center gap-2.5 overflow-x-auto rounded-control bg-sunken px-3.5 dark:bg-card py-2.5 font-mono text-13 font-medium text-tx"
   >
-    <span class="text-tx5" aria-hidden="true">
+    <span class="text-tx-3" aria-hidden="true">
       $
     </span>
     <code class="whitespace-nowrap select-all">{INSTALL}</code>
     <button
       type="button"
       data-copy={INSTALL}
-      class="ml-3.5 cursor-pointer border-l border-br3 pl-3.5 font-sans text-12h font-normal text-tx4 hover:text-tx2"
+      class="ml-3.5 cursor-pointer border-l border-line pl-3.5 font-sans text-13 font-normal text-tx-3 hover:text-tx-2"
     >
       Copy
     </button>

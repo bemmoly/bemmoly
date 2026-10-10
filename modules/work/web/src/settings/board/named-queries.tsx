@@ -49,13 +49,13 @@ export function NamedQueries(props: NamedQueriesProps) {
   };
   return (
     <Card className="overflow-hidden">
-      <div className="flex items-center border-b border-br2 px-4 py-3 font-semibold">
+      <div className="flex items-center border-b border-line-2 px-4 py-3 font-semibold">
         {props.title}
         {editable && (
           <button
             type="button"
             onClick={() => onChange([...items, { name: name(`New ${props.noun}`), query: '' }])}
-            className="ml-auto inline-flex cursor-pointer items-center gap-1 border-0 bg-transparent p-0 font-sans text-13 font-medium text-ac hover:text-ac-d"
+            className="ml-auto inline-flex cursor-pointer items-center gap-1 border-0 bg-transparent p-0 font-sans text-13 font-medium text-acc hover:text-acc-600"
           >
             <Icon name="plus" size={14} />
             {props.addLabel}
@@ -68,7 +68,7 @@ export function NamedQueries(props: NamedQueriesProps) {
             key={index}
             {...drag.item(index)}
             className={cx(
-              'flex items-start gap-2.5 border-b border-br-row py-2.5',
+              'flex items-start gap-2.5 border-b border-line-2 py-2.5',
               drag.over === index && 'shadow-tab',
             )}
           >
@@ -77,7 +77,7 @@ export function NamedQueries(props: NamedQueriesProps) {
               {...(editable
                 ? { tabIndex: 0, role: 'button', 'aria-label': `Move ${item.name}` }
                 : {})}
-              className={cx('flex pt-1.5 text-tx6', editable && 'cursor-grab')}
+              className={cx('flex pt-1.5 text-tx-3', editable && 'cursor-grab')}
             >
               <Icon name="drag" size={14} />
             </span>
@@ -86,7 +86,7 @@ export function NamedQueries(props: NamedQueriesProps) {
               value={item.name}
               readOnly={!editable}
               onChange={(event) => set(index, { name: event.target.value })}
-              className="w-40 shrink-0 rounded-sm border border-br3 bg-sf px-2 py-1.25 font-sans text-13 font-medium text-tx outline-0 focus:border-ac"
+              className="w-40 shrink-0 rounded-chip border border-line bg-card px-2 py-1.25 font-sans text-13 font-medium text-tx outline-0 focus:border-acc"
             />
             <LqlInput
               aria-label={`${item.name} query`}
@@ -103,14 +103,14 @@ export function NamedQueries(props: NamedQueriesProps) {
                 type="button"
                 aria-label={`Remove ${item.name}`}
                 onClick={() => onChange(items.filter((_, at) => at !== index))}
-                className="flex cursor-pointer border-0 bg-transparent pt-1.5 text-tx6 hover:text-tx2"
+                className="flex cursor-pointer border-0 bg-transparent pt-1.5 text-tx-3 hover:text-tx-2"
               >
                 <Icon name="close" size={13} />
               </button>
             )}
           </div>
         ))}
-        <div className="py-2.5 text-12 text-tx4">{props.footer}</div>
+        <div className="py-2.5 text-12 text-tx-3">{props.footer}</div>
       </div>
     </Card>
   );

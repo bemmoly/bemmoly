@@ -5,9 +5,9 @@ import { cx } from '../../lib/cx.ts';
 export type AttentionTone = 'warn' | 'caution' | 'accent';
 
 const DOTS: Record<AttentionTone, string> = {
-  warn: 'bg-warn',
-  caution: 'bg-caution',
-  accent: 'bg-ac',
+  warn: 'bg-amber',
+  caution: 'bg-amber',
+  accent: 'bg-acc',
 };
 
 export interface AttentionItemProps {
@@ -27,14 +27,14 @@ export function AttentionItem({ tone, children, meta, className }: AttentionItem
   return (
     <li
       className={cx(
-        'flex items-start gap-2.5 border-b border-br-row px-4 py-2.75 last:border-b-0',
+        'flex items-start gap-2.5 border-b border-line-2 px-4 py-2.75 last:border-b-0',
         className,
       )}
     >
       <span aria-hidden className={cx('mt-1.25 size-1.75 shrink-0 rounded-full', DOTS[tone])} />
-      <span className="flex min-w-0 flex-col gap-0.5 text-12h leading-note">
+      <span className="flex min-w-0 flex-col gap-0.5 text-13 leading-note">
         <span className="text-tx [&_b]:font-semibold">{children}</span>
-        {meta && <span className="text-tx5">{meta}</span>}
+        {meta && <span className="text-tx-3">{meta}</span>}
       </span>
     </li>
   );

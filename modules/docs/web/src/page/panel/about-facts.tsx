@@ -21,7 +21,7 @@ import { useSetReviewers, useUpdatePage } from '../use-page-actions.ts';
 import { LabelsField } from './labels-field.tsx';
 
 const LINK =
-  'inline-flex cursor-pointer items-center gap-1 rounded-xs border-0 bg-transparent px-1 py-0.5 font-sans text-12h font-medium text-ac hover:text-ac-d focus-visible:shadow-ring focus-visible:outline-0';
+  'inline-flex cursor-pointer items-center gap-1 rounded-chip border-0 bg-transparent px-1 py-0.5 font-sans text-13 font-medium text-acc hover:text-acc-600 focus-visible:shadow-ring focus-visible:outline-0';
 
 /** Everyone who wrote the page: its versions' authors, its creator and its last editor. */
 function useContributors(pageId: string, known: readonly (string | null)[]) {
@@ -52,7 +52,7 @@ function OwnerField() {
     return page.owner ? (
       <FieldPerson name={page.owner.name} hue={avatarHue(page.owner.id)} />
     ) : (
-      <span className="text-tx5">Nobody</span>
+      <span className="text-tx-3">Nobody</span>
     );
   }
   const options = (people.data?.items ?? []).map((user) => ({
@@ -93,7 +93,7 @@ function ReviewersField() {
       {page.reviewers.map((id) => (
         <FieldPerson key={id} name={person(id)?.name ?? 'Someone'} hue={avatarHue(id)} />
       ))}
-      {page.reviewers.length === 0 && !editable && <span className="text-tx5">Nobody</span>}
+      {page.reviewers.length === 0 && !editable && <span className="text-tx-3">Nobody</span>}
       {editable && (
         <button type="button" className={LINK} onClick={() => setOpen(true)}>
           {page.reviewers.length ? (
@@ -134,7 +134,7 @@ export function AboutFacts() {
   const contributors = useContributors(page.id, [page.createdBy, page.updatedBy, page.ownerId]);
   const by = (id: string | null) => (id ? ` by ${person(id)?.name ?? 'Someone'}` : '');
   return (
-    <FieldList size="panel" className="rounded-panel border border-br px-3 py-1">
+    <FieldList size="panel" className="rounded-control border border-line px-3 py-1">
       <FieldRow label="Status">
         <PageStatusPill status={page.status} />
       </FieldRow>
@@ -149,7 +149,7 @@ export function AboutFacts() {
       </FieldRow>
       <FieldRow label="Length">
         {stats.words.toLocaleString('en')} {stats.words === 1 ? 'word' : 'words'}
-        {stats.minutes > 0 && <span className="text-tx5">· {stats.minutes} min read</span>}
+        {stats.minutes > 0 && <span className="text-tx-3">· {stats.minutes} min read</span>}
       </FieldRow>
       <FieldRow label="Created">
         {shortDate(page.createdAt)}

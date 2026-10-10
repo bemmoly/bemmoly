@@ -23,7 +23,7 @@ export const Velocity: Story = {
     mock: [{ file: 'Bemmoly Board.dc.html', x: 536, y: 83, w: 504, h: 48, note: 'actions' }],
   },
   render: () => (
-    <div className="flex items-center gap-2 bg-bg p-2">
+    <div className="flex items-center gap-2 bg-sunken p-2">
       <MetricTile label="Velocity" value="14/23 pts">
         <ProgressBar value={61} size="md" label="Sprint progress" className="w-20" />
       </MetricTile>
@@ -38,7 +38,7 @@ export const Velocity: Story = {
 export const Flow: Story = {
   parameters: { mock: undefined },
   render: () => (
-    <div className="flex items-center gap-2 bg-bg p-2">
+    <div className="flex items-center gap-2 bg-sunken p-2">
       <MetricTile
         label="Flow"
         value={
@@ -64,7 +64,7 @@ export const Capacity: Story = {
     mock: [{ file: 'Bemmoly Backlog.dc.html', x: 1030, y: 652, w: 400, h: 40, note: 'Sprint 15' }],
   },
   render: () => (
-    <div className="flex flex-col gap-3 bg-sf p-3">
+    <div className="flex flex-col gap-3 bg-card p-3">
       <CapacityBar committed={19} capacity={22} label="Sprint 15 capacity" />
       <CapacityBar committed={27} capacity={22} label="Sprint 16 capacity" />
     </div>

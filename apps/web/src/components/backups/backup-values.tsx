@@ -75,10 +75,10 @@ export function DestinationValues({ localPath, configured, bucket }: Destination
   return (
     <>
       <LocalDiskRow localPath={localPath} />
-      <div className="flex items-center gap-3 border-t border-br-row pt-4">
+      <div className="flex items-center gap-3 border-t border-line-2 pt-4">
         <div className="flex min-w-0 flex-1 flex-col gap-0.5">
           <span className="font-medium">S3-compatible bucket</span>
-          <span className="text-12 text-tx5">
+          <span className="text-12 text-tx-3">
             {configured
               ? bucket
                 ? `A second copy goes to ${bucket}, encrypted.`

@@ -101,7 +101,7 @@ export function SprintHeader({
         aria-controls={controls}
         onClick={onToggle}
         className={cx(
-          'flex min-w-0 cursor-pointer items-center gap-2 rounded-xs border-0 bg-transparent p-0 text-left font-sans text-13 font-semibold text-tx',
+          'flex min-w-0 cursor-pointer items-center gap-2 rounded-chip border-0 bg-transparent p-0 text-left font-sans text-13 font-semibold text-tx',
           focusRingInset,
         )}
       >
@@ -120,7 +120,7 @@ export function SprintHeader({
       {chip && (
         <span
           className={cx(
-            'inline-flex h-4.5 shrink-0 items-center rounded-xs px-1.5 text-11 font-semibold',
+            'inline-flex h-4.5 shrink-0 items-center rounded-chip px-1.5 text-11 font-semibold',
             chip.className,
           )}
         >

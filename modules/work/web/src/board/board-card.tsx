@@ -27,7 +27,7 @@ const NONE: readonly string[] = [];
  */
 const CARRIED = {
   pointer: 'opacity-40 motion-safe:scale-[0.98]',
-  keyboard: 'shadow-menu motion-safe:-translate-y-0.5',
+  keyboard: 'shadow-e2 motion-safe:-translate-y-0.5',
 } as const;
 
 /**

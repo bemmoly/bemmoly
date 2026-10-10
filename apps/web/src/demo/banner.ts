@@ -11,13 +11,13 @@ export function showBanner(): HTMLElement {
   banner.id = 'demo-banner';
   banner.setAttribute('aria-label', 'About this demo');
   banner.className =
-    'flex h-(--demo-banner) shrink-0 items-center justify-center gap-2 border-b border-ac-br ' +
-    'bg-ac-bg px-4 text-12 whitespace-nowrap text-tx2';
+    'flex h-(--demo-banner) shrink-0 items-center justify-center gap-2 border-b border-acc-100 ' +
+    'bg-acc-50 px-4 text-12 whitespace-nowrap text-tx-2';
 
   const label = document.createElement('span');
-  label.className = 'inline-flex items-center gap-1.5 font-semibold text-ac';
+  label.className = 'inline-flex items-center gap-1.5 font-semibold text-acc';
   const dot = document.createElement('span');
-  dot.className = 'size-1.5 rounded-full bg-ac motion-safe:animate-pulse';
+  dot.className = 'size-1.5 rounded-full bg-acc motion-safe:animate-pulse';
   dot.setAttribute('aria-hidden', 'true');
   label.append(dot, 'Live demo');
 
@@ -31,7 +31,7 @@ export function showBanner(): HTMLElement {
 
   const separator = () => {
     const dotSeparator = document.createElement('span');
-    dotSeparator.className = 'text-tx4';
+    dotSeparator.className = 'text-tx-3';
     dotSeparator.setAttribute('aria-hidden', 'true');
     dotSeparator.textContent = '·';
     return dotSeparator;

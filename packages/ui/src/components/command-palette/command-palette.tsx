@@ -163,7 +163,7 @@ export function CommandInput({
         value={value}
         onChange={(event) => onValueChange(event.target.value)}
         placeholder={placeholder}
-        className="min-w-0 flex-1 border-0 bg-transparent px-0.5 py-px font-sans text-15 text-tx outline-0 placeholder:text-tx-3"
+        className="min-w-0 flex-1 border-0 bg-transparent px-0.5 py-px font-sans text-16 text-tx outline-0 placeholder:text-tx-3"
         {...rest}
       />
       <Kbd keys="Esc" />

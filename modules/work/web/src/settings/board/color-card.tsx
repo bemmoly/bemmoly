@@ -47,7 +47,7 @@ export function ColorCard(props: ColorCardProps) {
     onRules(rules.map((rule, at) => (at === index ? { ...rule, ...patch } : rule)));
   return (
     <Card className="overflow-hidden">
-      <div className="border-b border-br2 px-3.5 py-2.5 text-12h font-semibold">Card color</div>
+      <div className="border-b border-line-2 px-3.5 py-2.5 text-13 font-semibold">Card color</div>
       <div role="radiogroup" aria-label="Card color" className="flex flex-col gap-2 px-3.5 py-2.5">
         {PRESETS.map(([id, description]) => {
           const selected = props.colorRule === id;
@@ -67,24 +67,24 @@ export function ColorCard(props: ColorCardProps) {
               <span
                 aria-hidden
                 className={cx(
-                  'size-3.5 rounded-full border-[1.5px] bg-sf',
-                  selected ? 'border-ac-fill shadow-radio' : 'border-br-ctl',
+                  'size-3.5 rounded-full border-[1.5px] bg-card',
+                  selected ? 'border-acc-fill shadow-radio' : 'border-tx-3',
                 )}
               />
               <span className="font-medium">{COLOR_RULE_LABELS[id]}</span>
-              <span className="text-12 text-tx5">{description}</span>
+              <span className="text-12 text-tx-3">{description}</span>
             </button>
           );
         })}
       </div>
-      <div className="flex flex-col gap-2 border-t border-br2 px-3.5 py-2.5">
-        <div className="flex items-center text-12h font-semibold">
+      <div className="flex flex-col gap-2 border-t border-line-2 px-3.5 py-2.5">
+        <div className="flex items-center text-13 font-semibold">
           Color rules
           {editable && (
             <button
               type="button"
               onClick={() => onRules([...rules, { query: '', color: RULE_COLORS[0]?.hex ?? '' }])}
-              className="ml-auto inline-flex cursor-pointer items-center gap-1 border-0 bg-transparent p-0 font-sans text-12h font-medium text-ac hover:text-ac-d"
+              className="ml-auto inline-flex cursor-pointer items-center gap-1 border-0 bg-transparent p-0 font-sans text-13 font-medium text-acc hover:text-acc-600"
             >
               <Icon name="plus" size={14} />
               Add rule
@@ -127,14 +127,14 @@ export function ColorCard(props: ColorCardProps) {
                 type="button"
                 aria-label={`Remove color rule ${index + 1}`}
                 onClick={() => onRules(rules.filter((_, at) => at !== index))}
-                className="flex cursor-pointer border-0 bg-transparent pt-1.5 text-tx6 hover:text-tx2"
+                className="flex cursor-pointer border-0 bg-transparent pt-1.5 text-tx-3 hover:text-tx-2"
               >
                 <Icon name="close" size={13} />
               </button>
             )}
           </div>
         ))}
-        <span className="text-12 leading-note text-tx4">
+        <span className="text-12 leading-note text-tx-3">
           {rules.length === 0
             ? 'Paint a card when it matches a query, such as type = Bug.'
             : 'The first matching rule paints the stripe; other cards follow the preset above.'}

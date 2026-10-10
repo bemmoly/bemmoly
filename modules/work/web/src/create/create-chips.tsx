@@ -5,7 +5,7 @@ import { cx } from '../issue/cx.ts';
 
 /** The review's `.btn.sm`: 26px, 6px radius, a hairline, medium 12px. */
 export const CHIP =
-  'h-6.5 max-w-60 gap-1.5 rounded-panel border-line bg-card px-2 text-12 font-medium shadow-none';
+  'h-6.5 max-w-60 gap-1.5 rounded-control border-line bg-card px-2 text-12 font-medium shadow-none';
 
 const NONE = '__none';
 

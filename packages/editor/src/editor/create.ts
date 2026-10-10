@@ -37,8 +37,8 @@ const PROSEMIRROR = cx(
   'relative min-w-0 whitespace-break-spaces outline-0 [font-variant-ligatures:none]',
   '[&_[contenteditable=false]]:whitespace-normal',
   '[&_img.ProseMirror-separator]:inline [&_img.ProseMirror-separator]:m-0 [&_img.ProseMirror-separator]:border-0',
-  '[&_.ProseMirror-selectednode]:rounded-xs [&_.ProseMirror-selectednode]:bg-ac-bg',
-  '[&_.is-editor-empty:first-child]:before:pointer-events-none [&_.is-editor-empty:first-child]:before:float-left [&_.is-editor-empty:first-child]:before:h-0 [&_.is-editor-empty:first-child]:before:text-tx5 [&_.is-editor-empty:first-child]:before:content-[attr(data-placeholder)]',
+  '[&_.ProseMirror-selectednode]:rounded-chip [&_.ProseMirror-selectednode]:bg-acc-50',
+  '[&_.is-editor-empty:first-child]:before:pointer-events-none [&_.is-editor-empty:first-child]:before:float-left [&_.is-editor-empty:first-child]:before:h-0 [&_.is-editor-empty:first-child]:before:text-tx-3 [&_.is-editor-empty:first-child]:before:content-[attr(data-placeholder)]',
 );
 
 /** Suggestions never open inside code, where @ and # are just characters. */

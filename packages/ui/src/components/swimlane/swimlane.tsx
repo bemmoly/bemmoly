@@ -48,7 +48,7 @@ export function SwimlaneHeader({
       aria-controls={controls}
       onClick={onToggle}
       className={cx(
-        'flex h-8.5 w-full cursor-pointer items-center gap-2 rounded-panel border-0 bg-transparent px-1 text-left font-sans text-13 text-tx',
+        'flex h-8.5 w-full cursor-pointer items-center gap-2 rounded-control border-0 bg-transparent px-1 text-left font-sans text-13 text-tx',
         'hover:bg-hover motion-safe:transition-colors',
         focusRingInset,
         className,

@@ -44,7 +44,7 @@ function TeamPicker({ access }: { access: AccessChoice }) {
             ))}
           </div>
         ) : (
-          <span className="text-12 text-tx5">
+          <span className="text-12 text-tx-3">
             {empty ? 'Create a team under Users › Teams first.' : 'Pick at least one team.'}
           </span>
         )}
@@ -96,12 +96,12 @@ export function EnableModuleModal({
                   </Badge>
                 ) : null}
               </span>
-              <span className="text-12h leading-body text-tx4">{option.description}</span>
+              <span className="text-13 leading-body text-tx-3">{option.description}</span>
             </SelectableCard>
           ))}
         </div>
         {access.mode === 'teams' ? <TeamPicker access={access} /> : null}
-        <p className="m-0 text-12h leading-body text-tx4">{ACCESS_LATER}</p>
+        <p className="m-0 text-13 leading-body text-tx-3">{ACCESS_LATER}</p>
       </div>
     </Modal>
   );

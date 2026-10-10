@@ -67,7 +67,7 @@ export const FieldsTable: Story = {
     const update = (i: number, patch: Partial<{ required: boolean; onCard: boolean }>) =>
       setRows((r) => r.map((row, j) => (j === i ? { ...row, ...patch } : row)));
     return (
-      <div className="w-145 bg-bg">
+      <div className="w-145 bg-sunken">
         <Card>
           <FieldLayoutHeader />
           {rows.map((row, i) => (
@@ -80,7 +80,7 @@ export const FieldsTable: Story = {
               onMore={() => {}}
             />
           ))}
-          <div className="flex gap-3.5 px-3.5 py-2.5 text-12h font-medium text-ac">
+          <div className="flex gap-3.5 px-3.5 py-2.5 text-13 font-medium text-acc">
             <span className="inline-flex items-center gap-1">
               <Icon name="plus" size={14} />
               Add existing field
@@ -102,7 +102,7 @@ export const CreateForm: Story = {
   parameters: { mock: undefined },
   render: () => (
     <form
-      className="flex w-140 flex-col gap-4 rounded-card border border-br bg-sf p-4"
+      className="flex w-140 flex-col gap-4 rounded-card border border-line bg-card p-4"
       onSubmit={(e) => e.preventDefault()}
     >
       <FormGrid>

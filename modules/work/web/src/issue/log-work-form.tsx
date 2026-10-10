@@ -71,7 +71,7 @@ export function LogWorkForm({ issueKey }: { issueKey: string }) {
           Log
         </Button>
       </div>
-      {error && <span className="text-12 text-danger">{error}</span>}
+      {error && <span className="text-12 text-red">{error}</span>}
     </form>
   );
 }

@@ -95,9 +95,9 @@ $ sudo docker compose up -d`;
   </StatusNote>
 
   <Section title="What runs" id="services">
-    <div tabindex="0" class="overflow-x-auto rounded-card border border-br">
+    <div tabindex="0" class="overflow-x-auto rounded-card border border-line">
       <table class="w-full border-collapse text-left text-14">
-        <thead class="bg-sf2 text-12 font-semibold tracking-caps text-tx4 uppercase dark:bg-sf">
+        <thead class="bg-side text-12 font-semibold tracking-caps text-tx-3 uppercase dark:bg-card">
           <tr>
             <th class="px-3.5 py-2.5 font-semibold">Service</th>
             <th class="px-3.5 py-2.5 font-semibold">Profile</th>
@@ -106,7 +106,7 @@ $ sudo docker compose up -d`;
         </thead>
         <tbody>
           {SERVICES.map(([service, profile, body]) => (
-            <tr class="border-t border-br-row align-top">
+            <tr class="border-t border-line-2 align-top">
               <td class="px-3.5 py-2.5 whitespace-nowrap">
                 <code>{service}</code>
               </td>
@@ -138,9 +138,9 @@ $ sudo docker compose up -d`;
       Replace every <code>@…@</code> placeholder in <code>/var/bemmoly/.env</code>. These are the
       values the installer would write:
     </p>
-    <div tabindex="0" class="overflow-x-auto rounded-card border border-br">
+    <div tabindex="0" class="overflow-x-auto rounded-card border border-line">
       <table class="w-full border-collapse text-left text-14">
-        <thead class="bg-sf2 text-12 font-semibold tracking-caps text-tx4 uppercase dark:bg-sf">
+        <thead class="bg-side text-12 font-semibold tracking-caps text-tx-3 uppercase dark:bg-card">
           <tr>
             <th class="px-3.5 py-2.5 font-semibold">Setting</th>
             <th class="px-3.5 py-2.5 font-semibold">Value</th>
@@ -148,7 +148,7 @@ $ sudo docker compose up -d`;
         </thead>
         <tbody>
           {SETTINGS.map(([key, value]) => (
-            <tr class="border-t border-br-row align-top">
+            <tr class="border-t border-line-2 align-top">
               <td class="px-3.5 py-2.5">
                 <code>{key}</code>
               </td>

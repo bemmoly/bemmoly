@@ -28,9 +28,9 @@ function StripSkeleton() {
         </span>
       </div>
       <div className="flex h-11.5 shrink-0 items-center gap-2 border-b border-line px-6 max-md:px-4">
-        <Skeleton width={200} height={26} className="rounded-panel" />
-        <Skeleton width={72} height={26} className="rounded-panel" />
-        <Skeleton width={104} height={26} className="rounded-panel" />
+        <Skeleton width={200} height={26} className="rounded-control" />
+        <Skeleton width={72} height={26} className="rounded-control" />
+        <Skeleton width={104} height={26} className="rounded-control" />
         <Skeleton width={160} height={26} className="ml-auto rounded-card max-md:hidden" />
       </div>
     </>

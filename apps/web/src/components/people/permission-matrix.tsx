@@ -39,7 +39,7 @@ function Header({ roles, grid }: { roles: readonly Role[]; grid: CSSProperties }
         <span
           key={role.id}
           role="columnheader"
-          className={role.isSystem ? 'text-center' : 'text-center text-ac'}
+          className={role.isSystem ? 'text-center' : 'text-center text-acc'}
         >
           {role.name}
           {!role.isSystem && (
@@ -66,7 +66,7 @@ export function PermissionMatrix({ matrix }: { matrix: Matrix }) {
           <div key={group.name} role="rowgroup">
             <div
               role="row"
-              className="border-b border-br-row bg-bg2 px-4 py-2 text-12 font-semibold text-tx3"
+              className="border-b border-line-2 bg-side px-4 py-2 text-12 font-semibold text-tx-2"
             >
               <span role="rowheader">{group.name}</span>
             </div>
@@ -75,11 +75,11 @@ export function PermissionMatrix({ matrix }: { matrix: Matrix }) {
                 key={row.name}
                 role="row"
                 style={grid}
-                className="grid items-center border-b border-br-row px-4 py-2.25"
+                className="grid items-center border-b border-line-2 px-4 py-2.25"
               >
                 <div role="rowheader" className="flex flex-col gap-px">
                   <span className="font-medium">{row.label}</span>
-                  {row.description && <span className="text-12 text-tx5">{row.description}</span>}
+                  {row.description && <span className="text-12 text-tx-3">{row.description}</span>}
                 </div>
                 {roles.map((role) => (
                   <div key={role.id} role="cell" className="flex justify-center">

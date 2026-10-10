@@ -67,7 +67,7 @@ export function Toolbar({ id, editor, groups, context, label, controls, onEscape
       {groups.map((group, groupIndex) => (
         <Fragment key={groupIndex}>
           {groupIndex > 0 && (
-            <span role="separator" aria-orientation="vertical" className="h-3 w-px bg-br2" />
+            <span role="separator" aria-orientation="vertical" className="h-3 w-px bg-line-2" />
           )}
           {group.map((tool, i) => {
             const at = starts[groupIndex]! + i;
@@ -87,7 +87,7 @@ export function Toolbar({ id, editor, groups, context, label, controls, onEscape
                 className={cx(
                   tool.id === 'bold' && 'font-semibold',
                   tool.id === 'italic' && 'italic',
-                  pressed && 'text-ac hover:text-ac',
+                  pressed && 'text-acc hover:text-acc',
                 )}
               >
                 {tool.glyph}

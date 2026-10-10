@@ -12,8 +12,8 @@ export function Card({ radius = 'card', className, ...rest }: CardProps) {
   return (
     <div
       className={cx(
-        'overflow-hidden border border-br bg-sf',
-        radius === 'card' ? 'rounded-card' : 'rounded-panel',
+        'overflow-hidden border border-line bg-card',
+        radius === 'card' ? 'rounded-card' : 'rounded-control',
         className,
       )}
       {...rest}
@@ -35,16 +35,16 @@ export function CardHeader({ title, hint, actions, subtle, className, ...rest }:
   return (
     <div
       className={cx(
-        'flex items-center gap-2 border-b border-br2 font-semibold',
-        subtle ? 'bg-sf2 px-3.5 py-2.5' : 'px-4 py-3',
+        'flex items-center gap-2 border-b border-line-2 font-semibold',
+        subtle ? 'bg-side px-3.5 py-2.5' : 'px-4 py-3',
         className,
       )}
       {...rest}
     >
       <span>{title}</span>
-      {hint && <span className="text-12 font-normal text-tx5">{hint}</span>}
+      {hint && <span className="text-12 font-normal text-tx-3">{hint}</span>}
       {actions && (
-        <span className="ml-auto flex items-center gap-2 text-12h font-medium">{actions}</span>
+        <span className="ml-auto flex items-center gap-2 text-13 font-medium">{actions}</span>
       )}
     </div>
   );
@@ -79,8 +79,8 @@ export function SelectableCard({ selected, className, ...rest }: SelectableCardP
       role="radio"
       aria-checked={selected}
       className={cx(
-        'flex cursor-pointer flex-col gap-2 rounded-card border bg-sf p-4 text-left font-sans text-13 text-tx',
-        selected ? 'border-ac shadow-ring' : 'border-br',
+        'flex cursor-pointer flex-col gap-2 rounded-card border bg-card p-4 text-left font-sans text-13 text-tx',
+        selected ? 'border-acc shadow-ring' : 'border-line',
         focusRing,
         className,
       )}

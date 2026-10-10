@@ -102,15 +102,15 @@ export function CommandGlyph({
   round?: boolean;
 }) {
   const tones = {
-    neutral: 'bg-tx4 text-on-solid',
-    accent: 'bg-ac-fill text-on-ac',
-    ai: 'bg-ai text-on-ac',
+    neutral: 'bg-tx-3 text-on-solid',
+    accent: 'bg-acc-fill text-on-acc',
+    ai: 'bg-ai text-on-acc',
   };
   return (
     <span
       aria-hidden
       className={cx(
-        'inline-flex size-4 shrink-0 items-center justify-center text-9 leading-none font-semibold',
+        'inline-flex size-4 shrink-0 items-center justify-center text-11 leading-none font-semibold',
         round ? 'rounded-full' : 'rounded-chip',
         tones[tone],
       )}

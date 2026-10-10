@@ -6,30 +6,30 @@ import { sampleStripe } from './card-preview.tsx';
 
 /** The mock's two sample lanes per grouping, with their colour tokens. */
 const LANES: Record<BoardDraft['config']['lanes']['kind'], [string, string][]> = {
-  none: [['All issues', 'bg-ac']],
+  none: [['All issues', 'bg-acc']],
   epic: [
     ['Auth service', 'bg-epic-1'],
     ['Billing v2', 'bg-epic-2'],
   ],
   assignee: [
-    ['Priya N.', 'bg-ok-fg'],
+    ['Priya N.', 'bg-green-tx'],
     ['Aisha K.', 'bg-orange-fg'],
   ],
   priority: [
-    ['Highest', 'bg-danger-hi'],
-    ['High', 'bg-warn'],
+    ['Highest', 'bg-red-tx'],
+    ['High', 'bg-amber'],
   ],
   type: [
-    ['Story', 'bg-ok'],
-    ['Bug', 'bg-danger'],
+    ['Story', 'bg-green'],
+    ['Bug', 'bg-red'],
   ],
   query: [
-    ['Expedite', 'bg-ac'],
-    ['Customer bugs', 'bg-ac'],
+    ['Expedite', 'bg-acc'],
+    ['Customer bugs', 'bg-acc'],
   ],
 };
-const TYPE_DOTS = ['bg-ok', 'bg-danger', 'bg-ac'];
-const AVATARS = ['bg-green-bg', 'bg-orange-bg', 'bg-violet-bg', 'bg-ac-av'];
+const TYPE_DOTS = ['bg-green', 'bg-red', 'bg-acc'];
+const AVATARS = ['bg-green-bg', 'bg-orange-bg', 'bg-violet-bg', 'bg-acc-100'];
 
 /**
  * The live preview rail: the draft's columns and WIP limits over two sample
@@ -44,7 +44,7 @@ export function PreviewRail({ draft, boardHref }: { draft: BoardDraft; boardHref
   const stripe = sampleStripe(config.colorRule);
   const lanes =
     config.lanes.kind === 'query' && config.lanes.queries.length > 0
-      ? config.lanes.queries.slice(0, 2).map((lane): [string, string] => [lane.name, 'bg-ac'])
+      ? config.lanes.queries.slice(0, 2).map((lane): [string, string] => [lane.name, 'bg-acc'])
       : LANES[config.lanes.kind];
   return (
     <aside
@@ -56,7 +56,7 @@ export function PreviewRail({ draft, boardHref }: { draft: BoardDraft; boardHref
         <a
           href={boardHref}
           onClick={onLinkClick(boardHref)}
-          className="ml-auto text-13 font-semibold text-ac hover:underline"
+          className="ml-auto text-13 font-semibold text-acc hover:underline"
         >
           Open board
         </a>
@@ -70,12 +70,12 @@ export function PreviewRail({ draft, boardHref }: { draft: BoardDraft; boardHref
           ))}
         </div>
         {lanes.map(([name, color], li) => (
-          <div key={name} className="overflow-hidden rounded-control border border-br">
-            <div className="flex items-center gap-1.5 border-b border-br-row bg-sf2 px-2 py-1.25 text-11 font-semibold">
+          <div key={name} className="overflow-hidden rounded-control border border-line">
+            <div className="flex items-center gap-1.5 border-b border-line-2 bg-side px-2 py-1.25 text-11 font-semibold">
               <span aria-hidden className={cx('size-1.75 rounded-tick', color)} />
               {name}
             </div>
-            <div className="grid gap-1.25 bg-bg2 p-1.5" style={grid}>
+            <div className="grid gap-1.25 bg-side p-1.5" style={grid}>
               {config.columns.map((column, ci) => {
                 const count = ((li + ci) % 3 === 0 ? 2 : 1) - (ci === n - 1 && li ? 1 : 0);
                 return (
@@ -84,23 +84,25 @@ export function PreviewRail({ draft, boardHref }: { draft: BoardDraft; boardHref
                       <div
                         key={k}
                         className={cx(
-                          'flex flex-col gap-0.75 rounded-xs border border-br bg-sf p-1.25',
+                          'flex flex-col gap-0.75 rounded-chip border border-line bg-card p-1.25',
                           stripe && cx('border-l-[3px]', stripe),
                         )}
                       >
                         <div
-                          className="h-1 rounded-tick bg-br3"
+                          className="h-1 rounded-tick bg-line"
                           style={{ width: `${55 + ((ci * 17 + k * 23 + li * 11) % 40)}%` }}
                         />
                         <div className="flex items-center gap-0.75">
                           {on('type') && (
                             <span
-                              className={cx('size-1.5 rounded-hair', TYPE_DOTS[(ci + k) % 3])}
+                              className={cx('size-1.5 rounded-tick', TYPE_DOTS[(ci + k) % 3])}
                             />
                           )}
-                          {on('key') && <span className="h-1 w-4 rounded-tick bg-trk" />}
+                          {on('key') && <span className="h-1 w-4 rounded-tick bg-line" />}
                           <span className="ml-auto flex items-center gap-0.75">
-                            {on('estimate') && <span className="h-1.75 w-2.5 rounded-xs bg-chip" />}
+                            {on('estimate') && (
+                              <span className="h-1.75 w-2.5 rounded-chip bg-line-2" />
+                            )}
                             {on('assignee') && (
                               <span
                                 className={cx('size-2 rounded-full', AVATARS[(ci + li + k) % 4])}

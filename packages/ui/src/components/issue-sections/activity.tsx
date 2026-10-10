@@ -52,18 +52,18 @@ export function ActivityItem({
       <div
         className={cx(
           'flex min-w-0 flex-1 flex-col gap-1',
-          size === 'page' ? 'text-13 leading-brief' : 'text-12h leading-body',
+          size === 'page' ? 'text-13 leading-brief' : 'text-13 leading-body',
         )}
       >
         <div>
           <span className="font-semibold text-tx">{person.name}</span>{' '}
-          <span className="text-tx5">
+          <span className="text-tx-3">
             {verb} · {when}
           </span>
         </div>
-        {children && <div className="text-tx-body">{children}</div>}
+        {children && <div className="text-tx">{children}</div>}
         {reactions && <div className="flex flex-wrap gap-1 pt-0.5">{reactions}</div>}
-        {actions && <div className="flex gap-2.5 text-12 text-tx4">{actions}</div>}
+        {actions && <div className="flex gap-2.5 text-12 text-tx-3">{actions}</div>}
       </div>
     </article>
   );
@@ -109,7 +109,7 @@ export function ActivityAction({
     <button
       type={type}
       className={cx(
-        'cursor-pointer rounded-xs border-0 bg-transparent p-0 font-sans text-12 text-tx4 hover:text-tx2',
+        'cursor-pointer rounded-chip border-0 bg-transparent p-0 font-sans text-12 text-tx-3 hover:text-tx-2',
         focusRing,
         className,
       )}
@@ -148,10 +148,10 @@ export function ReactionChip({
       aria-pressed={reacted}
       onClick={onToggle}
       className={cx(
-        'inline-flex cursor-pointer items-center gap-1 rounded-pill border px-1.75 py-0.5 font-sans text-11',
+        'inline-flex cursor-pointer items-center gap-1 rounded-full border px-1.75 py-0.5 font-sans text-11',
         reacted
-          ? 'border-ac-br bg-ac-bg text-ac'
-          : 'border-transparent bg-chip text-tx2 hover:bg-trk',
+          ? 'border-acc-100 bg-acc-50 text-acc'
+          : 'border-transparent bg-line-2 text-tx-2 hover:bg-line',
         focusRing,
         className,
       )}

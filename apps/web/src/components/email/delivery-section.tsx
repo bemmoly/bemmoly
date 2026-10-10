@@ -13,7 +13,7 @@ export function DevMailboxNotice() {
   return (
     <Notice tone="caution">
       Mail goes to the dev mailbox on this server; nobody receives it.{' '}
-      <Link to="/dev/mailbox" className="font-medium text-ac">
+      <Link to="/dev/mailbox" className="font-medium text-acc">
         Open the dev mailbox
       </Link>
     </Notice>

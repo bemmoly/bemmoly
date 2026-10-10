@@ -20,21 +20,21 @@ const FOLD_OVER = 3;
 
 /** Colours by op, on every element that carries one, at any depth. */
 const OP_STYLES = cx(
-  '[&_[data-op=insert]]:bg-ok-bg/70',
-  '[&_[data-op=delete]]:bg-danger/8 [&_[data-op=delete]]:text-tx4 [&_[data-op=delete]]:line-through [&_[data-op=delete]]:decoration-danger/50',
+  '[&_[data-op=insert]]:bg-green-50/70',
+  '[&_[data-op=delete]]:bg-red/8 [&_[data-op=delete]]:text-tx-3 [&_[data-op=delete]]:line-through [&_[data-op=delete]]:decoration-red/50',
   '[&_[data-op=move]]:bg-violet-bg/40',
-  '[&_[data-op=move_source]]:rounded-xs [&_[data-op=move_source]]:border [&_[data-op=move_source]]:border-dashed [&_[data-op=move_source]]:border-violet-fg/40 [&_[data-op=move_source]]:px-2 [&_[data-op=move_source]]:py-1',
+  '[&_[data-op=move_source]]:rounded-chip [&_[data-op=move_source]]:border [&_[data-op=move_source]]:border-dashed [&_[data-op=move_source]]:border-violet-fg/40 [&_[data-op=move_source]]:px-2 [&_[data-op=move_source]]:py-1',
   // The place a list item left is not a list item any more: it takes no number.
   '[&_li[data-op=move_source]]:block',
   '[&_td[data-op=change]]:bg-amber-bg/60 [&_th[data-op=change]]:bg-amber-bg/60',
-  '[&_[data-flash]]:ring-2 [&_[data-flash]]:ring-ac [&_[data-flash]]:ring-offset-2 [&_[data-flash]]:ring-offset-sf',
+  '[&_[data-flash]]:ring-2 [&_[data-flash]]:ring-acc [&_[data-flash]]:ring-offset-2 [&_[data-flash]]:ring-offset-card',
 );
 
 const BARS: Record<BlockDiff['op'], string> = {
   equal: 'before:bg-transparent',
-  insert: 'before:bg-ok',
-  delete: 'before:bg-danger',
-  change: 'before:bg-caution',
+  insert: 'before:bg-green',
+  delete: 'before:bg-red',
+  change: 'before:bg-amber',
   move: 'before:bg-epic-2',
   move_source: 'before:bg-epic-2/40',
 };
@@ -95,7 +95,7 @@ function TopBlock({ block, prefix }: { block: BlockDiff; prefix: string }) {
         </span>
       )}
       {attrs && (
-        <span className="mb-1 inline-flex rounded-chip bg-amber-bg px-1.5 py-px font-sans text-10h font-medium text-amber-fg">
+        <span className="mb-1 inline-flex rounded-chip bg-amber-bg px-1.5 py-px font-sans text-11 font-medium text-amber-fg">
           {blockName(block.type)} · {attrs}
         </span>
       )}
@@ -119,7 +119,7 @@ export function DiffView({ diff, className }: { diff: DocDiff; className?: strin
   }
   const rows = foldRows(diff.blocks);
   return (
-    <div className={cx(proseClass('page'), OP_STYLES, 'gap-2.5! text-tx-body', className)}>
+    <div className={cx(proseClass('page'), OP_STYLES, 'gap-2.5! text-tx', className)}>
       {rows.map((row, index) => {
         if (row.kind === 'block')
           return <TopBlock key={row.index} block={row.block} prefix={prefix} />;
@@ -134,7 +134,7 @@ export function DiffView({ diff, className }: { diff: DocDiff; className?: strin
             key={`fold-${index}`}
             type="button"
             onClick={() => setOpen(new Set([...open, first]))}
-            className="flex cursor-pointer items-center gap-2 rounded-sm border border-dashed border-br3 bg-sf2 px-3 py-1.5 font-sans text-12 text-tx4 hover:border-ac-br hover:text-ac focus-ring"
+            className="flex cursor-pointer items-center gap-2 rounded-chip border border-dashed border-line bg-side px-3 py-1.5 font-sans text-12 text-tx-3 hover:border-acc-100 hover:text-acc focus-ring"
           >
             <span aria-hidden>⋯</span>
             {row.blocks.length} unchanged {row.blocks.length === 1 ? 'block' : 'blocks'}

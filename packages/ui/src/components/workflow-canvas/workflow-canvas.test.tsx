@@ -23,7 +23,7 @@ describe('workflow canvas editing states', () => {
     await expectAccessible(container);
     const node = screen.getByRole('button', { name: /Done/ });
     expect(node.getAttribute('aria-invalid')).toBe('true');
-    expect(node.className).toContain('border-danger');
+    expect(node.className).toContain('border-red');
     expect(node.textContent).toBe('DoneDone');
     expect(container.querySelector('path[marker-end="url(#workflow-arrow-danger)"]')).toBeTruthy();
     const label = screen.getByRole('button', { name: /^Pass QA\s*1 condition\s*2 post-actions$/ });

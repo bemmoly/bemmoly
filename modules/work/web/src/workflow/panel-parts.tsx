@@ -26,7 +26,7 @@ export function PanelHeader({
   chip?: ReactNode;
 }) {
   return (
-    <div className="flex items-center gap-2 border-b border-br2 px-4 py-3.5">
+    <div className="flex items-center gap-2 border-b border-line-2 px-4 py-3.5">
       {mark}
       <h2 className="m-0 min-w-0 truncate text-14 font-semibold">{title}</h2>
       {chip && <span className="ml-auto">{chip}</span>}
@@ -36,14 +36,14 @@ export function PanelHeader({
 
 /** The panel body: 14px 16px, 16px between sections, 12.5px text. */
 export function PanelBody({ children }: { children: ReactNode }) {
-  return <div className="flex flex-col gap-4 px-4 py-3.5 text-12h">{children}</div>;
+  return <div className="flex flex-col gap-4 px-4 py-3.5 text-13">{children}</div>;
 }
 
 /** A section: a semibold heading and its rows 8px apart. */
 export function PanelSection({ title, children }: { title: ReactNode; children: ReactNode }) {
   return (
     <section className="flex flex-col gap-2">
-      <h3 className="m-0 text-12h font-semibold">{title}</h3>
+      <h3 className="m-0 text-13 font-semibold">{title}</h3>
       {children}
     </section>
   );
@@ -59,8 +59,8 @@ export function AddLink({
     <button
       type="button"
       className={cx(
-        'inline-flex cursor-pointer items-center gap-1 self-start border-0 bg-transparent p-0 text-left font-sans text-12h font-medium disabled:cursor-not-allowed disabled:text-tx5',
-        tone === 'accent' ? 'text-ac hover:text-ac-d' : 'text-danger hover:text-danger-hi',
+        'inline-flex cursor-pointer items-center gap-1 self-start border-0 bg-transparent p-0 text-left font-sans text-13 font-medium disabled:cursor-not-allowed disabled:text-tx-3',
+        tone === 'accent' ? 'text-acc hover:text-acc-600' : 'text-red hover:text-red-tx',
         'focus-ring',
         className,
       )}
@@ -75,7 +75,7 @@ export function PanelProblems({ problems }: { problems: readonly WorkflowProblem
   return (
     <ul
       aria-label="Problems"
-      className="m-0 flex list-none flex-col gap-1.5 rounded-control border border-danger px-2.5 py-2 text-danger"
+      className="m-0 flex list-none flex-col gap-1.5 rounded-control border border-red px-2.5 py-2 text-red"
     >
       {problems.map((problem, index) => (
         <li key={`${problem.code}-${index}`} className="leading-note">
@@ -88,5 +88,5 @@ export function PanelProblems({ problems }: { problems: readonly WorkflowProblem
 
 /** A quiet note under a section, 12px tx5. */
 export function PanelNote({ children }: { children: ReactNode }) {
-  return <p className="m-0 text-12 leading-note text-tx5">{children}</p>;
+  return <p className="m-0 text-12 leading-note text-tx-3">{children}</p>;
 }

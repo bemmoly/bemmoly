@@ -74,7 +74,7 @@ export function SubtaskRow({
       <Tag
         href={href}
         className={cx(
-          'flex min-w-0 flex-1 items-center gap-2.5 self-stretch rounded-xs text-tx no-underline',
+          'flex min-w-0 flex-1 items-center gap-2.5 self-stretch rounded-chip text-tx no-underline',
           href && focusRingInset,
         )}
       >
@@ -123,7 +123,7 @@ export function LinkedIssueRow({
       <a
         href={href}
         className={cx(
-          'flex min-w-0 flex-1 items-center gap-2.5 self-stretch rounded-xs text-tx no-underline',
+          'flex min-w-0 flex-1 items-center gap-2.5 self-stretch rounded-chip text-tx no-underline',
           focusRingInset,
         )}
       >
@@ -162,7 +162,7 @@ export function CriteriaRow({
   return (
     <div
       className={cx(
-        'group/row flex min-h-8 items-center gap-2 rounded-panel px-1.5 hover:bg-hover',
+        'group/row flex min-h-8 items-center gap-2 rounded-control px-1.5 hover:bg-hover',
         className,
       )}
     >

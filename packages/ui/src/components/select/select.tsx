@@ -12,13 +12,13 @@ import { useSelect } from './use-select.ts';
  * medium). lg: the Setup form's 36px field, beside Input lg.
  */
 const SIZES: Record<SelectSize, string> = {
-  sm: 'h-6.5 gap-1.5 rounded-sm px-2.25 text-12h font-medium',
+  sm: 'h-6.5 gap-1.5 rounded-chip px-2.25 text-13 font-medium',
   md: 'h-control gap-1.5 rounded-control px-2.5 text-13',
   lg: 'h-9 gap-2 rounded-control px-3 text-13',
 };
 
 /** The ghost variant keeps the value's own weight and only shows its border when touched. */
-const GHOST = 'h-6.5 gap-1.5 rounded-sm px-2 border-transparent bg-transparent hover:border-br3';
+const GHOST = 'h-6.5 gap-1.5 rounded-chip px-2 border-transparent bg-transparent hover:border-line';
 const GHOST_CARET =
   'opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 group-aria-expanded:opacity-100';
 
@@ -93,8 +93,8 @@ export function Select({ ref, ...props }: SelectProps) {
         className={cx(
           'group inline-flex max-w-full min-w-0 shrink-0 cursor-pointer items-center border text-left font-sans text-tx outline-0',
           'focus-ring focus-visible:border-acc aria-expanded:border-acc aria-expanded:shadow-ring',
-          'aria-invalid:border-danger disabled:cursor-not-allowed disabled:opacity-50',
-          variant === 'ghost' ? GHOST : cx('border-br3 bg-sf', SIZES[size]),
+          'aria-invalid:border-red disabled:cursor-not-allowed disabled:opacity-50',
+          variant === 'ghost' ? GHOST : cx('border-line bg-card', SIZES[size]),
           wrapperClassName,
           className,
         )}
@@ -104,7 +104,7 @@ export function Select({ ref, ...props }: SelectProps) {
             {state.selected.icon}
           </span>
         )}
-        <span className={cx('min-w-0 flex-1 truncate', !state.selected && 'text-tx5')}>
+        <span className={cx('min-w-0 flex-1 truncate', !state.selected && 'text-tx-3')}>
           {state.selected?.label ?? placeholder ?? ''}
         </span>
         <Icon

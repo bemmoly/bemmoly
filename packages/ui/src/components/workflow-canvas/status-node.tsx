@@ -7,14 +7,14 @@ import { StatusGlyph, statusStage } from '../glyphs/status-glyph.tsx';
 export type WorkflowCategory = 'todo' | 'progress' | 'done';
 
 export const WORKFLOW_CATEGORY: Record<WorkflowCategory, { name: string; dot: string }> = {
-  todo: { name: 'To do', dot: 'bg-tx5' },
-  progress: { name: 'In progress', dot: 'bg-ac' },
-  done: { name: 'Done', dot: 'bg-ok' },
+  todo: { name: 'To do', dot: 'bg-tx-3' },
+  progress: { name: 'In progress', dot: 'bg-acc' },
+  done: { name: 'Done', dot: 'bg-green' },
 };
 
 export interface StatusDotProps {
   category: WorkflowCategory;
-  /** A status's own colour (bg-epic-2, bg-caution) in place of its category's. */
+  /** A status's own colour (bg-epic-2, bg-amber) in place of its category's. */
   colorClassName?: string;
   /** 8px in status pills, 9px on nodes, 10px in the panel heading. */
   size?: 8 | 9 | 10;
@@ -80,8 +80,8 @@ export function StatusNode({
       style={{ left: x, top: y, ...style }}
       className={cx(
         'absolute flex w-37.5 -translate-1/2 cursor-pointer flex-col gap-1 rounded-lg border bg-card px-3 py-2.5 text-left font-sans text-tx',
-        selected ? 'shadow-ring-node' : 'shadow-card',
-        invalid ? 'border-danger' : selected ? 'border-ac' : 'border-line',
+        selected && 'shadow-ring-node',
+        invalid ? 'border-red' : selected ? 'border-acc' : 'border-line',
         focusRing,
         className,
       )}
@@ -123,7 +123,7 @@ export function StatusNodeHandle({ x, y, className, style, ...rest }: StatusNode
       aria-hidden
       style={{ left: `calc(${x} + 75px)`, top: y, ...style }}
       className={cx(
-        'absolute size-2.5 -translate-1/2 cursor-crosshair rounded-full border-2 border-ac bg-sf active:bg-ac',
+        'absolute size-2.5 -translate-1/2 cursor-crosshair rounded-full border-2 border-acc bg-card active:bg-acc',
         className,
       )}
       {...rest}
@@ -154,14 +154,14 @@ export function StatusPill({
   return (
     <span
       className={cx(
-        'inline-flex items-center gap-1.5 rounded-control border border-br bg-sf text-12h text-tx',
+        'inline-flex items-center gap-1.5 rounded-control border border-line bg-card text-13 text-tx',
         block ? 'flex gap-2 px-2.25 py-1.75' : 'px-2.25 py-1',
         className,
       )}
     >
       <StatusDot category={category} colorClassName={colorClassName} size={8} />
       <span className={cx(block && 'flex-1')}>{name}</span>
-      {count !== undefined && <span className="font-mono text-11 text-tx5">{count}</span>}
+      {count !== undefined && <span className="font-mono text-11 text-tx-3">{count}</span>}
     </span>
   );
 }

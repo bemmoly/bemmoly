@@ -152,10 +152,10 @@ export function PageFrame({ page }: { page: PageDetail }) {
       <div className="relative flex min-h-0 flex-1 flex-col" data-page-id={page.id}>
         <PageHeaderBar />
         <div className="relative flex min-h-0 flex-1">
-          <div ref={scroller} className="min-h-0 min-w-0 flex-1 overflow-auto bg-sf">
+          <div ref={scroller} className="min-h-0 min-w-0 flex-1 overflow-auto bg-card">
             <PageBanner />
             <div className="flex justify-center gap-8">
-              <article className="flex max-w-180 min-w-0 flex-1 flex-col gap-4.5 px-4 pt-8 pb-30 text-15h leading-prose text-tx-body sm:px-10 sm:pt-12">
+              <article className="flex max-w-180 min-w-0 flex-1 flex-col gap-4.5 px-4 pt-8 pb-30 text-16 leading-prose text-tx sm:px-10 sm:pt-12">
                 <PageHeading />
                 <PageBodyEditor onEditor={setEditor} />
                 <Layers />

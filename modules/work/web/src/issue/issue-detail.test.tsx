@@ -59,7 +59,7 @@ describe('IssueSlideOver', () => {
       </Providers>,
     );
     const summary = await screen.findByRole('region', { name: 'AI summary' });
-    expect(summary.className).toContain('bg-ai-bg');
+    expect(summary.className).toContain('bg-ai-50');
   });
 
   it('assigns the issue to the viewer at once and rolls back when the server refuses', async () => {

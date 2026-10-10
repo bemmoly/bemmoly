@@ -55,7 +55,7 @@ export function SettingsFailure({ error, onRetry }: { error: unknown; onRetry?: 
       role="alert"
       className="flex flex-col items-start gap-3 rounded-card bg-card px-5 py-5 shadow-e1 sm:flex-row sm:items-center"
     >
-      <span className="grid size-9 shrink-0 place-items-center rounded-panel bg-red-50 text-red-tx">
+      <span className="grid size-9 shrink-0 place-items-center rounded-control bg-red-50 text-red-tx">
         <Icon name="warning" size={18} />
       </span>
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">

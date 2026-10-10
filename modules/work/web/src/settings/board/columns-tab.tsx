@@ -121,7 +121,7 @@ export function ColumnsTab(props: BoardTabProps) {
       <div
         className={cx(
           'flex flex-wrap items-center gap-2 rounded-lg border px-1 py-1 text-13',
-          overUnmapped ? 'border-ac shadow-ring' : 'border-transparent',
+          overUnmapped ? 'border-acc shadow-ring' : 'border-transparent',
         )}
         {...(editable && draggedStatus
           ? {
@@ -161,7 +161,7 @@ export function ColumnsTab(props: BoardTabProps) {
           <a
             href={workflowHref}
             onClick={onLinkClick(workflowHref)}
-            className="text-ac hover:underline"
+            className="text-acc hover:underline"
           >
             Workflow
           </a>

@@ -36,7 +36,7 @@ export function LoginPage() {
         <Button type="submit" variant="primary" size="lg" block disabled={form.mutation.isPending}>
           {form.mutation.isPending ? 'Signing in…' : 'Sign in'}
         </Button>
-        <Link to="/forgot-password" className="self-center text-12h font-medium">
+        <Link to="/forgot-password" className="self-center text-13 font-medium">
           Forgot your password?
         </Link>
       </form>

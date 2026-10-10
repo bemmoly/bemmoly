@@ -31,9 +31,9 @@ export function AiActionButton({
     <button
       type={type}
       className={cx(
-        'inline-flex shrink-0 cursor-pointer items-center border border-ai-br bg-sf font-sans font-medium whitespace-nowrap text-ai-600',
-        size === 'sm' ? 'rounded-xs px-2.25 py-1 text-12h' : 'rounded-xs px-2.5 py-1.25',
-        'enabled:hover:bg-ai-bg disabled:cursor-not-allowed disabled:opacity-50',
+        'inline-flex shrink-0 cursor-pointer items-center border border-ai-100 bg-card font-sans font-medium whitespace-nowrap text-ai-600',
+        size === 'sm' ? 'rounded-chip px-2.25 py-1 text-13' : 'rounded-chip px-2.5 py-1.25',
+        'enabled:hover:bg-ai-50 disabled:cursor-not-allowed disabled:opacity-50',
         focusRing,
         className,
       )}
@@ -53,8 +53,8 @@ export function AiNotUseful({
     <button
       type="button"
       className={cx(
-        'inline-flex shrink-0 cursor-pointer items-center rounded-xs border-0 bg-transparent font-sans text-tx4 hover:text-tx2',
-        size === 'sm' ? 'px-2.25 py-1 text-12h' : 'px-2.5 py-1.25',
+        'inline-flex shrink-0 cursor-pointer items-center rounded-chip border-0 bg-transparent font-sans text-tx-3 hover:text-tx-2',
+        size === 'sm' ? 'px-2.25 py-1 text-13' : 'px-2.5 py-1.25',
         focusRing,
         className,
       )}
@@ -91,11 +91,11 @@ export function AiAskButton({
       aria-pressed={pressed}
       aria-keyshortcuts={shortcut ? ariaKeyShortcuts(shortcut) : undefined}
       className={cx(
-        'inline-flex shrink-0 cursor-pointer items-center border border-ai-br font-sans font-medium whitespace-nowrap text-ai-600',
+        'inline-flex shrink-0 cursor-pointer items-center border border-ai-100 font-sans font-medium whitespace-nowrap text-ai-600',
         size === 'md'
           ? 'h-control gap-1.75 rounded-control px-3'
-          : 'h-7.5 gap-1.5 rounded-sm px-2.5',
-        size === 'md' || pressed ? 'bg-ai-tint' : 'bg-sf',
+          : 'h-7.5 gap-1.5 rounded-chip px-2.5',
+        size === 'md' || pressed ? 'bg-ai-50' : 'bg-card',
         focusRing,
         className,
       )}

@@ -24,7 +24,7 @@ function Fallback(props: DocEditorProps) {
   return (
     <div aria-busy="true" className={cx('min-w-0', props.contentClassName)}>
       {empty ? (
-        <div className={proseClass('doc', 'text-tx6')}>
+        <div className={proseClass('doc', 'text-tx-3')}>
           <p>{props.placeholder ?? docPlaceholder(Boolean(props.services?.ai))}</p>
         </div>
       ) : (

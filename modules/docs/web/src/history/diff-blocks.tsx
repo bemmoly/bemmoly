@@ -68,7 +68,7 @@ export function MoveLink({ block, target, end }: MoveLinkProps) {
     <button
       type="button"
       onClick={() => jumpTo(target)}
-      className="inline-flex cursor-pointer items-center gap-1.5 rounded-xs border-0 bg-transparent p-0 font-sans text-11h font-medium text-violet-fg hover:underline focus-ring"
+      className="inline-flex cursor-pointer items-center gap-1.5 rounded-chip border-0 bg-transparent p-0 font-sans text-12 font-medium text-violet-fg hover:underline focus-ring"
     >
       <Icon name={down === (end === 'move') ? 'arrow-up' : 'arrow-down'} size={12} />
       {label}

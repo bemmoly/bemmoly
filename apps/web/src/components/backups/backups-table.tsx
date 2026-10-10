@@ -46,7 +46,7 @@ export function BackupsTable(props: BackupsTableProps) {
       key: 'created',
       header: 'Created',
       width: '104px',
-      render: (backup) => <span className="text-tx2">{formatDateTime(backup.createdAt)}</span>,
+      render: (backup) => <span className="text-tx-2">{formatDateTime(backup.createdAt)}</span>,
     },
     {
       key: 'kind',
@@ -55,8 +55,8 @@ export function BackupsTable(props: BackupsTableProps) {
       hideOnPhone: true,
       render: (backup) => (
         <div className="flex flex-col gap-0.5">
-          <span className="text-tx3">{KIND[backup.kind]}</span>
-          <span className="text-12 text-tx5">{backup.attachmentMode}</span>
+          <span className="text-tx-2">{KIND[backup.kind]}</span>
+          <span className="text-12 text-tx-3">{backup.attachmentMode}</span>
         </div>
       ),
     },
@@ -70,11 +70,11 @@ export function BackupsTable(props: BackupsTableProps) {
             {STATUS[backup.status].label}
           </StatePill>
           {backup.error ? (
-            <span className="max-w-50 truncate text-12 text-danger" title={backup.error}>
+            <span className="max-w-50 truncate text-12 text-red" title={backup.error}>
               {backup.error}
             </span>
           ) : (
-            <span className="text-12 text-tx5">
+            <span className="text-12 text-tx-3">
               {backup.locations.map((location) => WHERE[location.destination]).join(' + ')}
               {backup.encrypted ? ' · encrypted' : ''}
             </span>
@@ -129,7 +129,7 @@ export function BackupsTable(props: BackupsTableProps) {
             </a>
           </div>
         ) : (
-          <span className="text-12 text-tx5">Not restorable</span>
+          <span className="text-12 text-tx-3">Not restorable</span>
         ),
     },
     {
@@ -155,7 +155,7 @@ export function BackupsTable(props: BackupsTableProps) {
               >
                 Check archive
               </button>
-              <span className="text-tx6">·</span>
+              <span className="text-tx-3">·</span>
               <button
                 type="button"
                 className={LINK_ACTION}
@@ -178,7 +178,7 @@ export function BackupsTable(props: BackupsTableProps) {
         title="Backups"
         hint={<span className="whitespace-nowrap">{restorable} restorable</span>}
         actions={
-          <span className="font-normal text-tx4">
+          <span className="font-normal text-tx-3">
             Restore puts Bemmoly in maintenance mode, restores into a fresh database and keeps the
             replaced one for {props.keepDays} days.
           </span>

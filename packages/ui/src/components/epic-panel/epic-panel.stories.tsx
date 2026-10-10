@@ -8,7 +8,7 @@ const meta = {
   args: {
     name: 'Auth service',
     epicKey: 'PLT-180',
-    colorClassName: 'bg-ac',
+    colorClassName: 'bg-acc',
     progress: 61,
     meta: '9 issues · due Oct 7',
   },
@@ -21,7 +21,7 @@ type Story = StoryObj<typeof meta>;
 export const Playground: Story = {};
 
 const EPICS = [
-  { key: 'PLT-180', name: 'Auth service', color: 'bg-ac', pct: 61, meta: '9 issues · due Oct 7' },
+  { key: 'PLT-180', name: 'Auth service', color: 'bg-acc', pct: 61, meta: '9 issues · due Oct 7' },
   {
     key: 'PLT-150',
     name: 'Billing v2',
@@ -54,7 +54,7 @@ export const Panel: Story = {
   render: function Render() {
     const [picked, setPicked] = useState<string | null>('PLT-150');
     return (
-      <div className="flex h-82.5 bg-bg">
+      <div className="flex h-82.5 bg-sunken">
         <EpicPanel onCreate={() => {}}>
           {EPICS.map((epic) => (
             <EpicItem

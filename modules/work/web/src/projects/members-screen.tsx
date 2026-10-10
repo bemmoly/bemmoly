@@ -87,7 +87,7 @@ export default function MembersScreen({ projectKey }: WorkScreenProps) {
           meta={
             members.list.isSuccess
               ? [`${count} ${count === 1 ? 'person' : 'people'}`]
-              : [<LineSkeleton key="count" width={52} size="text-12h" bar={8} />]
+              : [<LineSkeleton key="count" width={52} size="text-13" bar={8} />]
           }
           description={`Everyone here can open ${name || 'the project'}. Their project role decides what they can change.`}
         />

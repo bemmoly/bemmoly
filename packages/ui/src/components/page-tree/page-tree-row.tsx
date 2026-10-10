@@ -69,7 +69,7 @@ function RenameField({
         if (event.key === 'Enter') commit();
         if (event.key === 'Escape') onCancel();
       }}
-      className="h-5.5 min-w-0 flex-1 rounded-xs border border-ac bg-sf px-1 font-sans text-13 text-tx outline-none"
+      className="h-5.5 min-w-0 flex-1 rounded-chip border border-acc bg-card px-1 font-sans text-13 text-tx outline-none"
     />
   );
 }
@@ -124,8 +124,8 @@ export function PageTreeRow({
       style={{ paddingLeft: indent }}
       className={cx(
         'group/row relative flex h-7.25 cursor-pointer items-center gap-1.75 rounded-control py-1.5 pr-1.5 text-13 select-none',
-        active ? 'bg-ac-bg font-medium text-ac' : 'text-tx2 hover:bg-bg2',
-        drop === 'inside' && 'bg-ac-bg2 shadow-ring-ac',
+        active ? 'bg-acc-50 font-medium text-acc' : 'text-tx-2 hover:bg-side',
+        drop === 'inside' && 'bg-acc-50 shadow-ring-ac',
         dragging && 'opacity-50',
         focusRingInset,
       )}
@@ -136,11 +136,11 @@ export function PageTreeRow({
           data-drop-line={drop}
           style={{ left: indent - 4 }}
           className={cx(
-            'pointer-events-none absolute right-1 z-10 h-0.5 rounded-full bg-ac',
+            'pointer-events-none absolute right-1 z-10 h-0.5 rounded-full bg-acc',
             drop === 'before' ? '-top-px' : '-bottom-px',
           )}
         >
-          <span className="absolute -top-0.75 -left-1 size-2 rounded-full border-2 border-ac bg-sf" />
+          <span className="absolute -top-0.75 -left-1 size-2 rounded-full border-2 border-acc bg-card" />
         </span>
       ) : null}
       <span
@@ -151,8 +151,8 @@ export function PageTreeRow({
           onToggle();
         }}
         className={cx(
-          'flex w-2.25 shrink-0 items-center justify-center text-tx6',
-          item.hasChildren && 'hover:text-tx3',
+          'flex w-2.25 shrink-0 items-center justify-center text-tx-3',
+          item.hasChildren && 'hover:text-tx-2',
         )}
       >
         {item.loading ? (
@@ -184,7 +184,7 @@ export function PageTreeRow({
           onClick={(event) => event.preventDefault()}
           className="min-w-0 flex-1 truncate text-inherit no-underline hover:text-inherit"
         >
-          {item.title || <span className="text-tx5">Untitled</span>}
+          {item.title || <span className="text-tx-3">Untitled</span>}
         </a>
       )}
       {actions && !renaming ? (

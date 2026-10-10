@@ -90,7 +90,7 @@ export function CustomFieldValue({ field, value, onSave }: CustomFieldValueProps
           placeholder={add}
           type="url"
           value={text}
-          display={text ? <span className="truncate text-ac">{text}</span> : null}
+          display={text ? <span className="truncate text-acc">{text}</span> : null}
           validate={(next) => (next && !/^https?:\/\//.test(next) ? 'Start with https://' : null)}
           onSave={(next) => onSave(next || null)}
         />

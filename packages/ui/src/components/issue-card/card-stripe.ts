@@ -8,11 +8,11 @@ import type { TypeColorToken } from '../../tokens/semantic.ts';
 export type CardStripeRule = 'none' | 'priority' | 'type' | 'epic';
 
 const PRIORITY_STRIPES: Record<Priority, string> = {
-  highest: 'border-l-danger-hi',
-  high: 'border-l-warn',
-  medium: 'border-l-caution',
-  low: 'border-l-ok',
-  lowest: 'border-l-tx5',
+  highest: 'border-l-red-tx',
+  high: 'border-l-amber',
+  medium: 'border-l-amber',
+  low: 'border-l-green',
+  lowest: 'border-l-tx-3',
 };
 
 const TYPE_STRIPES: Record<TypeColorToken, string> = {

@@ -101,10 +101,10 @@ export const Ghost: Story = {
     mock: [{ file: 'Bemmoly Issue.dc.html', x: 941, y: 115, w: 358, h: 120, note: 'details' }],
   },
   render: () => (
-    <div className="grid w-90 grid-cols-[110px_1fr] items-center gap-y-0.5 text-12h">
-      <span className="text-tx4">Assignee</span>
+    <div className="grid w-90 grid-cols-[110px_1fr] items-center gap-y-0.5 text-13">
+      <span className="text-tx-3">Assignee</span>
       <Controlled aria-label="Assignee" variant="ghost" value="u0" options={PEOPLE} />
-      <span className="text-tx4">Role</span>
+      <span className="text-tx-3">Role</span>
       <Controlled aria-label="Role" variant="ghost" value="member" options={ROLES} />
     </div>
   ),
@@ -173,7 +173,7 @@ export const Grouped: Story = {
 /** The popover is portalled, so the card's overflow-hidden no longer cuts it off. */
 export const InsideAClippingCard: Story = {
   render: () => (
-    <div className="h-24 w-80 overflow-hidden rounded-card border border-br bg-sf p-3">
+    <div className="h-24 w-80 overflow-hidden rounded-card border border-line bg-card p-3">
       <Field label="Starts on">
         <Controlled
           value="tue"

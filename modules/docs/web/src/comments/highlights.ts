@@ -26,9 +26,9 @@ export interface HighlightUpdate {
   active?: string | null;
 }
 
-export const HIGHLIGHT_CLASS = 'rounded-xs bg-amber-bg motion-safe:transition-colors';
+export const HIGHLIGHT_CLASS = 'rounded-chip bg-amber-bg motion-safe:transition-colors';
 export const ACTIVE_CLASS =
-  'rounded-xs bg-amber-bg shadow-[0_0_0_2px_var(--color-amber-bg)] ring-1 ring-amber-fg/30';
+  'rounded-chip bg-amber-bg shadow-[0_0_0_2px_var(--color-amber-bg)] ring-1 ring-amber-fg/30';
 
 /** The highlighted ranges of one editor and the decorations drawn for them. */
 export class CommentHighlighter {

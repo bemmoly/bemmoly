@@ -8,7 +8,7 @@ import { InheritanceNote } from '../inheritance-note.tsx';
 
 const failure = (error: unknown) =>
   error ? (
-    <p className="m-0 text-12h text-danger">
+    <p className="m-0 text-13 text-red">
       {isApiError(error) ? error.message : 'The change was not saved.'}
     </p>
   ) : undefined;

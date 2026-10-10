@@ -44,7 +44,7 @@ export function ColumnCard(props: ColumnCardProps) {
     <div
       className={cx(
         'flex min-h-52 flex-col rounded-[10px] border bg-card',
-        accept && hovered ? 'border-ac shadow-ring' : 'border-line',
+        accept && hovered ? 'border-acc shadow-ring' : 'border-line',
       )}
       {...(accept
         ? {
@@ -84,8 +84,8 @@ export function ColumnCard(props: ColumnCardProps) {
             readOnly={!editable}
             onChange={(event) => props.onRename(event.target.value)}
             className={cx(
-              'min-w-0 flex-1 rounded-sm border border-transparent bg-transparent px-1 py-0.5 font-sans text-13 font-semibold text-tx outline-0',
-              editable && 'hover:border-line focus:border-ac',
+              'min-w-0 flex-1 rounded-chip border border-transparent bg-transparent px-1 py-0.5 font-sans text-13 font-semibold text-tx outline-0',
+              editable && 'hover:border-line focus:border-acc',
             )}
           />
           {editable && props.canRemove && (
@@ -94,7 +94,7 @@ export function ColumnCard(props: ColumnCardProps) {
               aria-label={`Remove ${column.name}`}
               title={`Remove ${column.name}`}
               onClick={props.onRemove}
-              className="flex cursor-pointer rounded-sm border-0 bg-transparent p-0.5 text-tx-3 hover:text-tx focus-ring"
+              className="flex cursor-pointer rounded-chip border-0 bg-transparent p-0.5 text-tx-3 hover:text-tx focus-ring"
             >
               <Icon name="close" size={13} />
             </button>
@@ -115,14 +115,14 @@ export function ColumnCard(props: ColumnCardProps) {
               }}
               onBlur={() => setWip(null)}
               className={cx(
-                'w-14 min-w-0 rounded-sm border border-line bg-transparent px-1.5 py-px text-12 text-tx tabular-nums outline-0 placeholder:text-tx-3 focus:border-ac',
+                'w-14 min-w-0 rounded-chip border border-line bg-transparent px-1.5 py-px text-12 text-tx tabular-nums outline-0 placeholder:text-tx-3 focus:border-acc',
                 !wipEditable && 'border-transparent px-0',
               )}
             />
           </label>
           {column.done && (
             <span
-              className="ml-auto flex shrink-0 text-ok-fg"
+              className="ml-auto flex shrink-0 text-green-tx"
               title="Resolves: issues here count as done"
             >
               <Icon name="check" size={13} />
@@ -147,7 +147,7 @@ export function ColumnCard(props: ColumnCardProps) {
         <div
           className={cx(
             'mt-auto rounded-md border border-dashed p-1.5 text-center text-12',
-            accept && hovered ? 'border-ac bg-ac-bg text-ac' : 'border-line text-tx-3',
+            accept && hovered ? 'border-acc bg-acc-50 text-acc' : 'border-line text-tx-3',
           )}
         >
           Drop a status

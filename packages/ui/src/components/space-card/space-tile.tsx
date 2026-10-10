@@ -67,9 +67,9 @@ export type SpaceTileSize = 'xs' | 'sm' | 'md';
  * space in a menu or a picker row (20px, 9.5px), the avatar size of the same lists.
  */
 const SIZES: Record<SpaceTileSize, string> = {
-  md: 'size-8.5 rounded-panel text-13',
-  sm: 'size-7.5 rounded-panel text-12',
-  xs: 'size-5 rounded-xs text-9h',
+  md: 'size-8.5 rounded-control text-13',
+  sm: 'size-7.5 rounded-control text-12',
+  xs: 'size-5 rounded-chip text-11',
 };
 
 export interface SpaceTileProps {

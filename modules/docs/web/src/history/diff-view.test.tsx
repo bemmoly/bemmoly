@@ -37,10 +37,10 @@ describe('the compare renderer', () => {
     expect(ops(container, 'insert')).toEqual(['A brand new closing thought.']);
     expect(ops(container, 'delete')).toEqual(['Drop this line.']);
     expect(container.querySelector('[data-diff-row="insert"]')?.className).toContain(
-      'before:bg-ok',
+      'before:bg-green',
     );
     expect(container.querySelector('[data-diff-row="delete"]')?.className).toContain(
-      'before:bg-danger',
+      'before:bg-red',
     );
   });
 

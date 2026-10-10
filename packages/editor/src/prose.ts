@@ -24,45 +24,45 @@ const BLOCKS = [
   '[&_ul[data-type=taskList]>li]:flex [&_ul[data-type=taskList]>li]:items-start [&_ul[data-type=taskList]>li]:gap-2',
   '[&_ul[data-type=taskList]>li>label]:flex [&_ul[data-type=taskList]>li>label]:h-lh [&_ul[data-type=taskList]>li>label]:shrink-0 [&_ul[data-type=taskList]>li>label]:items-center',
   '[&_ul[data-type=taskList]>li>div]:min-w-0 [&_ul[data-type=taskList]>li>div]:flex-1',
-  '[&_li[data-checked=true]>div]:text-tx5 [&_li[data-checked=true]>div]:line-through',
-  '[&_input[type=checkbox]]:m-0 [&_input[type=checkbox]]:accent-ac',
-  '[&_blockquote]:m-0 [&_blockquote]:border-l-3 [&_blockquote]:border-br3 [&_blockquote]:pl-3 [&_blockquote]:text-tx3',
+  '[&_li[data-checked=true]>div]:text-tx-3 [&_li[data-checked=true]>div]:line-through',
+  '[&_input[type=checkbox]]:m-0 [&_input[type=checkbox]]:accent-acc',
+  '[&_blockquote]:m-0 [&_blockquote]:border-l-3 [&_blockquote]:border-line [&_blockquote]:pl-3 [&_blockquote]:text-tx-2',
   '[&_pre]:m-0 [&_pre]:overflow-auto [&_pre]:font-mono [&_pre]:whitespace-pre-wrap',
-  '[&_code]:rounded-chip [&_code]:bg-chip [&_code]:px-1.25 [&_code]:py-px [&_code]:font-mono [&_code]:font-medium',
+  '[&_code]:rounded-chip [&_code]:bg-line-2 [&_code]:px-1.25 [&_code]:py-px [&_code]:font-mono [&_code]:font-medium',
   '[&_pre_code]:bg-transparent [&_pre_code]:p-0 [&_pre_code]:font-normal',
   '[&_hr]:m-0 [&_hr]:border-0 [&_hr]:border-t',
-  '[&_[data-type=mention]]:font-medium [&_[data-type=mention]]:text-ac',
+  '[&_[data-type=mention]]:font-medium [&_[data-type=mention]]:text-acc',
 ].join(' ');
 
 /** The measures of a description, a comment and a drawer: the Issue mock's. */
 const ISSUE = [
-  '[&_h1]:text-18 [&_h2]:text-16',
+  '[&_h1]:text-16 [&_h2]:text-16',
   '[&_ul]:gap-1 [&_ul]:pl-5 [&_ol]:gap-1 [&_ol]:pl-5 [&_li_ul]:mt-1 [&_li_ol]:mt-1',
-  '[&_pre]:rounded-sm [&_pre]:bg-chip [&_pre]:px-3 [&_pre]:py-2 [&_pre]:text-12h [&_code]:text-12h',
-  '[&_hr]:border-br2',
+  '[&_pre]:rounded-chip [&_pre]:bg-line-2 [&_pre]:px-3 [&_pre]:py-2 [&_pre]:text-13 [&_code]:text-13',
+  '[&_hr]:border-line-2',
 ].join(' ');
 
 /** The measures of a Docs page: the Doc Editor mock's. */
 const DOC = [
-  'gap-4.5 text-15h leading-prose text-tx-body',
-  '[&_h1]:mt-2.5 [&_h1]:text-26 [&_h1]:leading-title [&_h1]:tracking-title',
-  '[&_h2]:mt-2.5 [&_h2]:text-22 [&_h2]:leading-title [&_h2]:tracking-brand',
-  '[&_h3]:mt-1.5 [&_h3]:text-18 [&_h3]:leading-title',
+  'gap-4.5 text-16 leading-prose text-tx',
+  '[&_h1]:mt-2.5 [&_h1]:text-24 [&_h1]:leading-title [&_h1]:tracking-title',
+  '[&_h2]:mt-2.5 [&_h2]:text-20 [&_h2]:leading-title [&_h2]:tracking-brand',
+  '[&_h3]:mt-1.5 [&_h3]:text-16 [&_h3]:leading-title',
   '[&_ul]:gap-1.5 [&_ul]:pl-5.5 [&_ol]:gap-1.5 [&_ol]:pl-5.5 [&_li_ul]:mt-1.5 [&_li_ol]:mt-1.5',
-  '[&_code]:text-13h',
+  '[&_code]:text-13',
   // Link marks only (they carry rel=nofollow); chips that are links keep their own ink. The
   // faint underline tells a link from body text without colour, as WCAG 1.4.1 asks; the
   // accent alone is 1.9:1 against the body ink.
-  '[&_a[rel~=nofollow]]:text-ac [&_a[rel~=nofollow]]:underline [&_a[rel~=nofollow]]:decoration-ac/35 [&_a[rel~=nofollow]]:decoration-1 [&_a[rel~=nofollow]]:underline-offset-3',
-  '[&_a[rel~=nofollow]:hover]:text-ac-d [&_a[rel~=nofollow]:hover]:decoration-current',
-  '[&_pre]:rounded-card [&_pre]:border [&_pre]:border-br [&_pre]:bg-bg2 [&_pre]:px-4 [&_pre]:py-3 [&_pre]:text-13 [&_pre]:leading-body',
-  '[&_hr]:border-br-row',
+  '[&_a[rel~=nofollow]]:text-acc [&_a[rel~=nofollow]]:underline [&_a[rel~=nofollow]]:decoration-acc/35 [&_a[rel~=nofollow]]:decoration-1 [&_a[rel~=nofollow]]:underline-offset-3',
+  '[&_a[rel~=nofollow]:hover]:text-acc-600 [&_a[rel~=nofollow]:hover]:decoration-current',
+  '[&_pre]:rounded-card [&_pre]:border [&_pre]:border-line [&_pre]:bg-side [&_pre]:px-4 [&_pre]:py-3 [&_pre]:text-13 [&_pre]:leading-body',
+  '[&_hr]:border-line-2',
   CODE_TOKENS,
 ].join(' ');
 
 const SIZES: Record<ProseSize, string> = {
-  page: cx(ISSUE, 'gap-2.5 text-14 leading-doc text-tx-body'),
-  panel: cx(ISSUE, 'gap-2.5 text-13 leading-desc text-tx2'),
+  page: cx(ISSUE, 'gap-2.5 text-14 leading-doc text-tx'),
+  panel: cx(ISSUE, 'gap-2.5 text-13 leading-desc text-tx-2'),
   comment: cx(ISSUE, 'gap-1.5'),
   doc: DOC,
 };

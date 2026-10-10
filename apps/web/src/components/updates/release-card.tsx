@@ -8,7 +8,7 @@ import { Notice } from '../form.tsx';
 /** A command the admin runs by hand, in the mono face of the Setup mock's URL field. */
 export function CommandBlock({ command }: { command: string }) {
   return (
-    <pre className="m-0 overflow-x-auto rounded-control border border-br3 bg-sf2 px-3 py-2.5 font-mono text-12h text-tx3">
+    <pre className="m-0 overflow-x-auto rounded-control border border-line bg-side px-3 py-2.5 font-mono text-13 text-tx-2">
       {command}
     </pre>
   );
@@ -57,17 +57,17 @@ export function ReleaseCard({ overview, release, busy, onUpdate }: ReleaseCardPr
       />
       <CardBody className="flex flex-col gap-3">
         {release.rollback === 'restore' ? (
-          <p className="m-0 text-13 leading-body text-tx-body">
+          <p className="m-0 text-13 leading-body text-tx">
             Rolling back from this release would need a restore of the pre-update backup.
           </p>
         ) : (
-          <p className="m-0 text-13 leading-body text-tx-body">
+          <p className="m-0 text-13 leading-body text-tx">
             Rolling back from this release keeps your data: it swaps back to the current image.
           </p>
         )}
         <ReleaseWarnings release={release} />
-        <div className="flex flex-col gap-2.5 border-t border-br-row pt-4">
-          <p className="m-0 text-12h leading-body text-tx4">{updateModeCopy(updater.mode)}</p>
+        <div className="flex flex-col gap-2.5 border-t border-line-2 pt-4">
+          <p className="m-0 text-13 leading-body text-tx-3">{updateModeCopy(updater.mode)}</p>
           {updater.mode === 'in_app' ? (
             <div>
               <Button

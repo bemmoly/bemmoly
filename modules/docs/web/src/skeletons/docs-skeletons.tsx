@@ -33,8 +33,8 @@ export function PageRowsSkeleton({ rows = 5, label }: { rows?: number; label: st
   return (
     <div role="status" aria-label={label} className="flex flex-col">
       {Array.from({ length: rows }, (_, index) => (
-        <div key={index} className="flex items-center gap-2.5 border-b border-br px-3 py-2.5">
-          <Skeleton width={16} height={16} className="rounded-sm" />
+        <div key={index} className="flex items-center gap-2.5 border-b border-line px-3 py-2.5">
+          <Skeleton width={16} height={16} className="rounded-chip" />
           <Line width={`${40 + ((index * 17) % 35)}%`} />
           <span className="ml-auto">
             <Line width={64} size="text-12" bar={8} />
@@ -52,10 +52,10 @@ export function HomeSkeleton() {
       <div className="mx-auto flex max-w-300 flex-col gap-7 px-4 pt-8 sm:px-10">
         <div className="flex flex-col gap-1">
           <Line width={88} size="text-24" bar={18} />
-          <Line width={220} size="text-13h" />
+          <Line width={220} size="text-13" />
         </div>
         <div className="flex flex-col gap-3">
-          <Line width={64} size="text-15" bar={12} />
+          <Line width={64} size="text-16" bar={12} />
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {Array.from({ length: 3 }, (_, index) => (
               <SpaceCardSkeleton key={index} />
@@ -64,7 +64,7 @@ export function HomeSkeleton() {
         </div>
         <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
           <Card className="overflow-hidden">
-            <span className="flex h-10.5 items-center gap-5 border-b border-br2 px-6.5">
+            <span className="flex h-10.5 items-center gap-5 border-b border-line-2 px-6.5">
               <Skeleton width={48} height={10} />
               <Skeleton width={48} height={10} />
               <Skeleton width={40} height={10} />
@@ -80,7 +80,7 @@ export function HomeSkeleton() {
 /** The space sidebar: the switcher, the search box and a few tree rows. */
 function SidebarSkeleton() {
   return (
-    <aside className="hidden w-65 shrink-0 flex-col border-r border-br bg-sf md:flex">
+    <aside className="hidden w-65 shrink-0 flex-col border-r border-line bg-card md:flex">
       <SpaceSwitcherSkeleton />
       <span className="px-3 pb-2.5">
         <Skeleton height={30} shape="block" />
@@ -117,32 +117,32 @@ export function SpaceSkeleton() {
 export function PageSkeleton({ panel = false }: { panel?: boolean }) {
   return (
     <div role="status" aria-label="Loading page" className="flex min-h-0 min-w-0 flex-1 flex-col">
-      <div className="flex h-11 shrink-0 items-center gap-2.5 border-b border-br bg-sf px-5">
-        <Line width={220} size="text-12h" bar={9} />
+      <div className="flex h-11 shrink-0 items-center gap-2.5 border-b border-line bg-card px-5">
+        <Line width={220} size="text-13" bar={9} />
         <span className="ml-auto flex items-center gap-2">
           <Skeleton width={30} height={30} shape="block" />
           <Skeleton width={30} height={30} shape="block" />
         </span>
       </div>
       <div className="flex min-h-0 flex-1">
-        <div className="min-w-0 flex-1 overflow-hidden bg-sf">
+        <div className="min-w-0 flex-1 overflow-hidden bg-card">
           <div className="mx-auto flex max-w-180 flex-col gap-4.5 px-4 pt-8 sm:px-10 sm:pt-12">
             <span className="flex h-6.5 items-center gap-1.5">
               <Skeleton width={110} height={26} shape="block" />
               <Skeleton width={130} height={26} shape="block" />
             </span>
-            <Line width="55%" size="text-36 leading-display" bar={26} />
-            <span className="border-b border-br-row pb-1.5">
-              <Line width={260} size="text-12h" bar={9} />
+            <Line width="55%" size="text-24 leading-display" bar={26} />
+            <span className="border-b border-line-2 pb-1.5">
+              <Line width={260} size="text-13" bar={9} />
             </span>
             {[100, 96, 62, 100, 88].map((width, index) => (
-              <Line key={index} width={`${width}%`} size="text-15h" bar={11} />
+              <Line key={index} width={`${width}%`} size="text-16" bar={11} />
             ))}
           </div>
         </div>
         {panel && (
-          <div className="hidden w-85 shrink-0 flex-col gap-3 border-l border-br bg-sf xl:flex">
-            <span className="flex h-11 items-center gap-5 border-b border-br-row px-6">
+          <div className="hidden w-85 shrink-0 flex-col gap-3 border-l border-line bg-card xl:flex">
+            <span className="flex h-11 items-center gap-5 border-b border-line-2 px-6">
               <Skeleton width={44} height={10} />
               <Skeleton width={64} height={10} />
             </span>

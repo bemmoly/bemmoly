@@ -81,7 +81,7 @@ export function AuthenticationPage() {
               key={policy.title}
               title={policy.title}
               description={policy.description}
-              control={<span className="text-13 text-tx5">Off</span>}
+              control={<span className="text-13 text-tx-3">Off</span>}
             />
           ))}
         </SettingsSection>

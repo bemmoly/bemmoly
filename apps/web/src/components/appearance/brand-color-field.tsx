@@ -52,13 +52,13 @@ export function BrandColorField({ brand, hex, onPick }: BrandColorFieldProps) {
           prefix={
             <span
               aria-hidden="true"
-              className="size-4 shrink-0 rounded-xs"
+              className="size-4 shrink-0 rounded-chip"
               style={{ background: brand }}
             />
           }
         />
       </div>
-      <span id={`${id}-help`} className={`text-12 ${hex.error ? 'text-danger' : 'text-tx5'}`}>
+      <span id={`${id}-help`} className={`text-12 ${hex.error ? 'text-red' : 'text-tx-3'}`}>
         {hex.error ??
           'Used for primary buttons, links, selection and your logo tile. We derive hover, tint and dark variants automatically.'}
       </span>

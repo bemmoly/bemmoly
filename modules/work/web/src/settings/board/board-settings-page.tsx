@@ -136,7 +136,7 @@ export function BoardSettingsPage({ projectKey }: BoardSettingsPageProps) {
             <span className="flex items-center gap-1.5 whitespace-nowrap">
               {SECTION_TITLES[section]}
               {edits.unsaved.includes(section) && (
-                <span className="size-1.5 rounded-full bg-warn" title="Unsaved changes" />
+                <span className="size-1.5 rounded-full bg-amber" title="Unsaved changes" />
               )}
             </span>
           ),

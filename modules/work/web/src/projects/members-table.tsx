@@ -49,7 +49,7 @@ function MemberMenu({
           label={`Actions for ${member.name}`}
           icon="more"
           size="xs"
-          className="font-normal text-tx6"
+          className="font-normal text-tx-3"
         />
       )}
     >

@@ -43,9 +43,9 @@ export function PageTitle({
         className={cx('flex flex-wrap gap-x-4 gap-y-2', settings ? 'items-center' : 'items-start')}
       >
         <div className="flex min-w-0 flex-col gap-1">
-          <h1 className="m-0 text-22 font-semibold tracking-title text-balance">{title}</h1>
+          <h1 className="m-0 text-20 font-semibold tracking-title text-balance">{title}</h1>
           {meta && meta.length > 0 && (
-            <div className="flex flex-wrap items-center gap-2 text-12h text-tx4">
+            <div className="flex flex-wrap items-center gap-2 text-13 text-tx-3">
               {meta.map((item, index) => (
                 <Fragment key={index}>
                   {index > 0 && <span aria-hidden>·</span>}
@@ -61,7 +61,7 @@ export function PageTitle({
           </div>
         )}
       </div>
-      {description && <p className="m-0 max-w-160 text-13 leading-body text-tx4">{description}</p>}
+      {description && <p className="m-0 max-w-160 text-13 leading-body text-tx-3">{description}</p>}
     </header>
   );
 }

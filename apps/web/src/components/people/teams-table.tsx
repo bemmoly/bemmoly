@@ -171,7 +171,7 @@ export function TeamsSkeleton() {
           width: WIDTHS.team,
           cell: (
             <span className="flex w-full items-center gap-2.5">
-              <span className="size-6.5 shrink-0 rounded-panel bg-sunken" />
+              <span className="size-6.5 shrink-0 rounded-control bg-sunken" />
               <TableSkeletonLine width="50%" />
             </span>
           ),

@@ -31,7 +31,7 @@ export function SectionHeading({
   return (
     <div className="flex items-start gap-4">
       <div className="flex flex-1 flex-col gap-1">
-        <h2 className="m-0 flex items-center gap-2 text-15 font-semibold">
+        <h2 className="m-0 flex items-center gap-2 text-16 font-semibold">
           {title}
           {mode === 'edit' && (
             <span className="rounded-chip bg-acc-50 px-1.5 py-0.5 text-11 font-semibold text-acc">
@@ -39,7 +39,7 @@ export function SectionHeading({
             </span>
           )}
         </h2>
-        <p className="m-0 leading-body text-tx4">{description}</p>
+        <p className="m-0 leading-body text-tx-3">{description}</p>
       </div>
       {mode === 'edit' ? (
         actions
@@ -87,9 +87,9 @@ export function EditFooter({
     : null;
   const blocked = problems.length > 0;
   return (
-    <div className="flex flex-col gap-2 rounded-card border border-ac-br2 bg-sf2 px-4 py-2.5 shadow-ring">
+    <div className="flex flex-col gap-2 rounded-card border border-acc-100 bg-side px-4 py-2.5 shadow-ring">
       {(blocked || failure) && (
-        <ul role="alert" className="m-0 flex list-none flex-col gap-1 p-0 text-12h text-danger">
+        <ul role="alert" className="m-0 flex list-none flex-col gap-1 p-0 text-13 text-red">
           {failure && <li>{failure}</li>}
           {problems.map((problem) => (
             <li key={problem}>{problem}</li>
@@ -97,7 +97,7 @@ export function EditFooter({
         </ul>
       )}
       <div className="flex items-center gap-3">
-        <span className="min-w-0 flex-1 text-12h text-tx4">
+        <span className="min-w-0 flex-1 text-13 text-tx-3">
           {note ?? (dirty ? 'You have unsaved changes.' : 'No changes yet.')}
         </span>
         <Button onClick={onCancel} disabled={saving}>

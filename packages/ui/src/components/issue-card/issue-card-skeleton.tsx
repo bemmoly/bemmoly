@@ -34,7 +34,7 @@ export function IssueCardSkeleton({ lines = 1, labels = true, className }: Issue
       </div>
       {labels && <Skeleton width={46} height={20} className="rounded-full" />}
       <div className="flex h-5 items-center gap-1.5">
-        <Skeleton width={16} height={16} className="rounded-xs" />
+        <Skeleton width={16} height={16} className="rounded-chip" />
         <Skeleton width={52} height={9} />
         <Skeleton width={16} height={12} className="ml-auto" />
         <Skeleton width={18} height={18} className="rounded-full" />

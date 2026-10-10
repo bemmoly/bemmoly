@@ -23,7 +23,7 @@ export function DecisionHeader({
 }) {
   const pill = cx(STATE_PILL, DECISION_INK[state].pill);
   return (
-    <div className={cx(NODE_HEADER, 'text-tx5')}>
+    <div className={cx(NODE_HEADER, 'text-tx-3')}>
       <span className="text-11 font-medium tracking-caps uppercase">Decision</span>
       {onChange ? (
         <Menu
@@ -54,7 +54,7 @@ export function DecisionHeader({
       ) : (
         <span className={pill}>{DECISION_LABELS[state]}</span>
       )}
-      {decidedOn && <span className="font-normal text-tx5">{decidedOn}</span>}
+      {decidedOn && <span className="font-normal text-tx-3">{decidedOn}</span>}
     </div>
   );
 }

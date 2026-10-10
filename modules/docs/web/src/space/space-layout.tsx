@@ -101,11 +101,11 @@ export function SpaceLayout({
   return (
     <SpaceContext.Provider value={actions}>
       <div className="flex min-h-0 flex-1" onClick={keepLinksInApp}>
-        <aside className="hidden w-65 shrink-0 flex-col border-r border-br bg-sf md:flex">
+        <aside className="hidden w-65 shrink-0 flex-col border-r border-line bg-card md:flex">
           {sidebar}
         </aside>
         <div className="flex min-w-0 flex-1 flex-col">
-          <div className="flex items-center border-b border-br bg-sf px-4 py-2 md:hidden">
+          <div className="flex items-center border-b border-line bg-card px-4 py-2 md:hidden">
             <Button
               size="sm"
               variant="secondary"

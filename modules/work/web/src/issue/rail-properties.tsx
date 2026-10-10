@@ -17,7 +17,7 @@ import { useIssueEdit } from './use-issue-edit.ts';
 import { typeGlyph } from './vocabulary.ts';
 
 const ASSIGN_ME =
-  'cursor-pointer rounded-xs border-0 bg-transparent px-1 py-0.5 font-sans text-12 text-tx-3 hover:text-ac focus-ring';
+  'cursor-pointer rounded-chip border-0 bg-transparent px-1 py-0.5 font-sans text-12 text-tx-3 hover:text-acc focus-ring';
 
 /**
  * The Properties group: type, assignee (with Assign to me), priority, points, labels and the

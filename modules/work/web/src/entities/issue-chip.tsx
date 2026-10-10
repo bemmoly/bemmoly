@@ -60,7 +60,7 @@ export function IssueChip({ entityKey }: { entityKey: string }) {
         aria-busy={!isError}
         title={isError ? 'This issue was not found or is not shared with you' : undefined}
       >
-        <KeyChip issueKey={entityKey} inline className={isError ? 'text-tx4' : undefined} />
+        <KeyChip issueKey={entityKey} inline className={isError ? 'text-tx-3' : undefined} />
       </span>
     );
   }
@@ -84,7 +84,7 @@ export function IssueChip({ entityKey }: { entityKey: string }) {
 }
 
 const ROW =
-  'flex min-w-0 items-center gap-2.5 rounded-sm border border-br2 bg-sf px-3 py-2 text-13 text-tx no-underline';
+  'flex min-w-0 items-center gap-2.5 rounded-chip border border-line-2 bg-card px-3 py-2 text-13 text-tx no-underline';
 
 /** A "Linked" panel row: type, key, title and status, as one link to the issue. */
 export function IssueCard({ entityKey }: { entityKey: string }) {
@@ -100,7 +100,7 @@ export function IssueCard({ entityKey }: { entityKey: string }) {
   }
   if (isError || !issue) {
     return (
-      <div className={`${ROW} text-tx4`}>
+      <div className={`${ROW} text-tx-3`}>
         <KeyChip issueKey={entityKey} />
         <span className="truncate">Not found or not shared with you</span>
       </div>
@@ -111,7 +111,7 @@ export function IssueCard({ entityKey }: { entityKey: string }) {
     <a
       href={href}
       onClick={(event) => follow(event, href)}
-      className={`${ROW} hover:bg-sf2 focus-ring motion-safe:transition-colors`}
+      className={`${ROW} hover:bg-side focus-ring motion-safe:transition-colors`}
     >
       <TypeGlyph type={typeGlyph(issue.type)} />
       <KeyChip issueKey={issue.key} />

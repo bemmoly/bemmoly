@@ -93,7 +93,7 @@ export function FieldsTable({
       width: '96px',
       render: (field) =>
         field.projectId && !field.originId ? (
-          <span className="text-12 font-semibold text-ac">This project</span>
+          <span className="text-12 font-semibold text-acc">This project</span>
         ) : (
           <span className="text-12 text-tx-3">Default</span>
         ),

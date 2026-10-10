@@ -7,7 +7,7 @@ import { ABOUT_SLOTS, PANEL_SLOTS, type PanelSlot } from '../slots.ts';
 import { TocList } from '../toc/toc-list.tsx';
 import { AboutFacts } from './about-facts.tsx';
 
-const HEADING = 'text-11 font-medium tracking-caps text-tx5 uppercase';
+const HEADING = 'text-11 font-medium tracking-caps text-tx-3 uppercase';
 
 /** "Comments (3)", the mock's tab label, with the count the slot reports. */
 function SlotLabel({ slot, page }: { slot: PanelSlot; page: PageDetail }) {
@@ -25,7 +25,7 @@ function AboutTab({ onJump }: { onJump: () => void }) {
   const screen = usePageScreen();
   const slotProps = useSlotProps();
   return (
-    <div className="flex flex-col gap-3 p-3.5 text-12h leading-desc">
+    <div className="flex flex-col gap-3 p-3.5 text-13 leading-desc">
       <h2 className={cx('m-0', HEADING)}>About this page</h2>
       <AboutFacts />
       {!screen.outlineInRail && (
@@ -98,7 +98,7 @@ export function PagePanel() {
         ref={aside}
         aria-label="Page details"
         className={cx(
-          'absolute inset-y-0 right-0 z-30 flex w-full max-w-85 flex-col border-l border-br bg-sf shadow-modal',
+          'absolute inset-y-0 right-0 z-30 flex w-full max-w-85 flex-col border-l border-line bg-card shadow-e3',
           'motion-safe:animate-slide-in xl:static xl:z-auto xl:w-85 xl:shrink-0 xl:shadow-none xl:motion-safe:animate-none',
         )}
       >
@@ -109,7 +109,7 @@ export function PagePanel() {
           items={tabs}
           value={panel ?? ABOUT_PANEL}
           onChange={openPanel}
-          className="h-11 shrink-0 border-b border-br-row px-3.5"
+          className="h-11 shrink-0 border-b border-line-2 px-3.5"
           end={
             <IconButton
               label="Close panel"

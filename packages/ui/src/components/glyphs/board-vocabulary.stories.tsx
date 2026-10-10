@@ -33,7 +33,7 @@ export const CardFooter: Story = {
     mock: [{ file: 'Bemmoly Board.dc.html', x: 776, y: 402, w: 238, h: 96, note: 'PLT-204 card' }],
   },
   render: () => (
-    <div className="flex w-59.5 flex-col gap-2 rounded-control border border-ac bg-sf px-2.5 pt-2.5 pb-2 shadow-ring">
+    <div className="flex w-59.5 flex-col gap-2 rounded-control border border-acc bg-card px-2.5 pt-2.5 pb-2 shadow-ring">
       <div className="text-13 leading-card">Session store migration to Postgres</div>
       <div className="flex gap-1">
         <Tag>auth</Tag>
@@ -74,7 +74,7 @@ export const AllGlyphs: Story = {
       <div className="flex items-center gap-2">
         <KeyChip issueKey="PLT-204" />
         <KeyChip issueKey="PLT-204" size="md" />
-        <KeyChip issueKey="PLT-204" inline typeClassName="bg-ok" href="#plt-204">
+        <KeyChip issueKey="PLT-204" inline typeClassName="bg-green" href="#plt-204">
           <StatusBadge category="review" size="xs" />
         </KeyChip>
       </div>
@@ -108,7 +108,7 @@ export const FilterRow: Story = {
     const toggle = (id: string) =>
       setSelected((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]));
     return (
-      <div className="flex items-center gap-2 bg-bg p-2">
+      <div className="flex items-center gap-2 bg-sunken p-2">
         <AvatarStack
           label="Filter by assignee"
           people={PEOPLE}

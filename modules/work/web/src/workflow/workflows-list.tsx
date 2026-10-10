@@ -62,7 +62,7 @@ function columns(projectId: string): TableColumn<Row>[] {
           title={using.map((project) => project.name).join(', ')}
         >
           {using.some((project) => project.id === projectId) && (
-            <span className="size-1.5 shrink-0 rounded-full bg-ac" aria-label="Runs here" />
+            <span className="size-1.5 shrink-0 rounded-full bg-acc" aria-label="Runs here" />
           )}
           <span className="truncate">
             {using.length === 0

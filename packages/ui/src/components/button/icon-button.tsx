@@ -11,9 +11,9 @@ export type IconButtonSize = 'tool' | 'xs' | 'sm' | 'md';
  * help and settings; Board header ···).
  */
 const SIZES: Record<IconButtonSize, string> = {
-  tool: 'size-5.5 rounded-xs',
-  xs: 'size-7 rounded-sm',
-  sm: 'size-7.5 rounded-sm',
+  tool: 'size-5.5 rounded-chip',
+  xs: 'size-7 rounded-chip',
+  sm: 'size-7.5 rounded-chip',
   md: 'size-control rounded-control',
 };
 
@@ -61,7 +61,7 @@ export function IconButton({
       type={type}
       aria-label={hasBadge ? `${label}, ${badge}` : label}
       className={cx(
-        'relative inline-flex shrink-0 cursor-pointer items-center justify-center font-semibold text-tx2',
+        'relative inline-flex shrink-0 cursor-pointer items-center justify-center font-semibold text-tx-2',
         'disabled:cursor-not-allowed disabled:opacity-50',
         'motion-safe:transition-[color,background-color,translate] enabled:active:translate-y-px',
         SIZES[size],
@@ -75,7 +75,7 @@ export function IconButton({
       {hasBadge && (
         <span
           aria-hidden
-          className="absolute top-1.25 right-1.5 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-danger px-0.75 text-10 font-semibold text-on-solid"
+          className="absolute top-1.25 right-1.5 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-red px-0.75 text-11 font-semibold text-on-solid"
         >
           {badge}
         </span>

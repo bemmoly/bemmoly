@@ -30,7 +30,7 @@ export function SectionHeading({
       )}
     >
       <span>{title}</span>
-      {hint && <span className="ml-auto text-12 font-normal text-tx4">{hint}</span>}
+      {hint && <span className="ml-auto text-12 font-normal text-tx-3">{hint}</span>}
       {actions && <span className={cx('flex items-center', !hint && 'ml-auto')}>{actions}</span>}
     </div>
   );
@@ -105,7 +105,7 @@ export function SaveState({ state, onRetry, className }: SaveStateProps) {
               type="button"
               onClick={onRetry}
               className={cx(
-                'cursor-pointer rounded-xs border-0 bg-transparent p-0 font-sans text-12 font-medium text-tx underline',
+                'cursor-pointer rounded-chip border-0 bg-transparent p-0 font-sans text-12 font-medium text-tx underline',
                 focusRing,
               )}
             >
@@ -123,7 +123,7 @@ export function ListGroupLabel({ className, ...rest }: HTMLAttributes<HTMLDivEle
   return (
     <div
       className={cx(
-        'border-b border-br-row bg-sf2 px-3 py-1.75 text-12 font-medium text-tx4',
+        'border-b border-line-2 bg-side px-3 py-1.75 text-12 font-medium text-tx-3',
         className,
       )}
       {...rest}

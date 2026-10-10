@@ -33,7 +33,7 @@ export function FilterChipButton({
     <button
       type={type}
       className={cx(
-        'inline-flex h-6.5 shrink-0 cursor-pointer items-center gap-1.5 rounded-panel border border-dashed border-line bg-transparent px-2 font-sans text-13 whitespace-nowrap text-tx-2',
+        'inline-flex h-6.5 shrink-0 cursor-pointer items-center gap-1.5 rounded-control border border-dashed border-line bg-transparent px-2 font-sans text-13 whitespace-nowrap text-tx-2',
         'hover:bg-hover hover:text-tx aria-expanded:bg-hover aria-expanded:text-tx',
         focusRing,
         className,
@@ -61,7 +61,7 @@ export function AppliedFilterChip({ filter }: { filter: AppliedFilter }) {
   return (
     <span
       title={filter.description}
-      className="inline-flex h-6.5 max-w-60 shrink-0 items-center gap-1.5 rounded-panel border border-acc-100 bg-acc-50 pr-1 pl-2 text-13 whitespace-nowrap text-acc"
+      className="inline-flex h-6.5 max-w-60 shrink-0 items-center gap-1.5 rounded-control border border-acc-100 bg-acc-50 pr-1 pl-2 text-13 whitespace-nowrap text-acc"
     >
       {filter.icon}
       <span className="truncate">{filter.label}</span>
@@ -70,7 +70,7 @@ export function AppliedFilterChip({ filter }: { filter: AppliedFilter }) {
         onClick={filter.onRemove}
         aria-label={`Remove filter: ${filter.description}`}
         className={cx(
-          'grid size-4.5 cursor-pointer place-items-center rounded-xs border-0 bg-transparent p-0 text-acc opacity-70 hover:bg-acc-100 hover:opacity-100',
+          'grid size-4.5 cursor-pointer place-items-center rounded-chip border-0 bg-transparent p-0 text-acc opacity-70 hover:bg-acc-100 hover:opacity-100',
           focusRing,
         )}
       >
@@ -129,7 +129,7 @@ export function GroupSwitch<V extends string>({ options, value, onChange }: Grou
               onClick={() => onChange(option.value)}
               onKeyDown={(event) => onKeyDown(event, index)}
               className={cx(
-                'inline-flex h-6 cursor-pointer items-center rounded-panel border-0 px-2.5 font-sans text-13',
+                'inline-flex h-6 cursor-pointer items-center rounded-control border-0 px-2.5 font-sans text-13',
                 on
                   ? 'bg-card font-[550] text-tx shadow-e1'
                   : 'bg-transparent text-tx-2 hover:text-tx',
@@ -197,7 +197,7 @@ export function FilterBar({
       )}
     >
       {searchSlot ?? (
-        <label className="flex h-6.5 w-50 shrink-0 items-center gap-1.5 rounded-panel px-2 text-tx-3 focus-within:bg-hover max-md:w-36">
+        <label className="flex h-6.5 w-50 shrink-0 items-center gap-1.5 rounded-control px-2 text-tx-3 focus-within:bg-hover max-md:w-36">
           <Icon name="search" size={14} />
           <input
             ref={searchRef}
@@ -228,7 +228,7 @@ export function FilterBar({
           type="button"
           onClick={onClearAll}
           className={cx(
-            'h-6.5 shrink-0 cursor-pointer rounded-panel border-0 bg-transparent px-1.5 font-sans text-13 text-tx-3 hover:text-tx',
+            'h-6.5 shrink-0 cursor-pointer rounded-control border-0 bg-transparent px-1.5 font-sans text-13 text-tx-3 hover:text-tx',
             focusRing,
           )}
         >

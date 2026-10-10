@@ -55,9 +55,9 @@ export function MenuItem({
         if (!keepOpen) close();
       }}
       className={cx(
-        'flex w-full cursor-pointer items-center gap-2 rounded-sm border-0 bg-transparent px-2.5 py-2 text-left font-sans text-13 outline-0',
+        'flex w-full cursor-pointer items-center gap-2 rounded-chip border-0 bg-transparent px-2.5 py-2 text-left font-sans text-13 outline-0',
         focusRingInset,
-        tone === 'danger' ? 'text-danger' : 'text-tx',
+        tone === 'danger' ? 'text-red' : 'text-tx',
         'hover:bg-hover focus:bg-acc-50 focus:font-medium focus:text-acc',
         'aria-disabled:cursor-not-allowed aria-disabled:opacity-50',
       )}
@@ -89,7 +89,7 @@ export function MenuGroup({ label, children, separated }: MenuGroupProps) {
         id={id}
         className={cx(
           'px-2.5 pt-2 pb-1 text-11 font-semibold text-tx-3',
-          separated && 'mt-1 border-t border-br-row',
+          separated && 'mt-1 border-t border-line-2',
         )}
       >
         {label}
@@ -100,5 +100,5 @@ export function MenuGroup({ label, children, separated }: MenuGroupProps) {
 }
 
 export function MenuSeparator() {
-  return <div role="separator" className="my-1 border-t border-br-row" />;
+  return <div role="separator" className="my-1 border-t border-line-2" />;
 }

@@ -30,13 +30,13 @@ export function IssueTablePlaceholder({ query, title }: IssueTableAttrs) {
     <div className={PLACEHOLDER_CARD}>
       <span className={PLACEHOLDER_TITLE}>{title || 'Issue table'}</span>
       {query ? (
-        <code className="self-start rounded-chip bg-chip px-1.25 py-px font-mono text-12">
+        <code className="self-start rounded-chip bg-line-2 px-1.25 py-px font-mono text-12">
           {query}
         </code>
       ) : (
         <span>No filter yet.</span>
       )}
-      <span className="text-12 text-tx5">Live issues appear here when Work is enabled.</span>
+      <span className="text-12 text-tx-3">Live issues appear here when Work is enabled.</span>
     </div>
   );
 }

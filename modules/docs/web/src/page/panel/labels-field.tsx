@@ -56,7 +56,7 @@ export function LabelsField() {
     return labels.length ? (
       labels.map((label) => <Tag key={label}>{label}</Tag>)
     ) : (
-      <span className="text-tx5">None</span>
+      <span className="text-tx-3">None</span>
     );
   }
 
@@ -75,7 +75,7 @@ export function LabelsField() {
           <button
             type="button"
             onClick={() => setDraft('')}
-            className="inline-flex cursor-pointer items-center gap-1 rounded-xs border-0 bg-transparent px-1 py-0.5 font-sans text-12h font-medium text-ac hover:text-ac-d focus-visible:shadow-ring focus-visible:outline-0"
+            className="inline-flex cursor-pointer items-center gap-1 rounded-chip border-0 bg-transparent px-1 py-0.5 font-sans text-13 font-medium text-acc hover:text-acc-600 focus-visible:shadow-ring focus-visible:outline-0"
           >
             <Icon name="plus" size={14} />
             Add label
@@ -96,7 +96,7 @@ export function LabelsField() {
               if (draft.trim()) add(draft);
               setDraft(null);
             }}
-            className="h-6 w-28 rounded-xs border border-ac bg-sf px-1.5 font-sans text-12h text-tx shadow-ring outline-0"
+            className="h-6 w-28 rounded-chip border border-acc bg-card px-1.5 font-sans text-13 text-tx shadow-ring outline-0"
           />
           <datalist id={listId}>
             {offered.map((name) => (

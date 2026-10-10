@@ -49,18 +49,18 @@ function Picker({ backups, onClose, onPick }: Omit<RestorePickerProps, 'open'>) 
                 role="radio"
                 aria-checked={selected}
                 onClick={() => setChosen(backup.id)}
-                className={`flex cursor-pointer items-center gap-3 rounded-panel border bg-sf px-3 py-2.5 text-left font-sans text-13 outline-ac focus-visible:outline-2 focus-visible:outline-offset-1 ${selected ? 'border-ac shadow-ring' : 'border-br hover:bg-bg2'}`}
+                className={`flex cursor-pointer items-center gap-3 rounded-control border bg-card px-3 py-2.5 text-left font-sans text-13 outline-acc focus-visible:outline-2 focus-visible:outline-offset-1 ${selected ? 'border-acc shadow-ring' : 'border-line hover:bg-side'}`}
               >
                 <span
                   aria-hidden="true"
-                  className={`size-4 shrink-0 rounded-full ${selected ? 'border-5 border-ac' : 'border border-br3'}`}
+                  className={`size-4 shrink-0 rounded-full ${selected ? 'border-5 border-acc' : 'border border-line'}`}
                 />
                 <span className="flex min-w-0 flex-1 flex-col gap-0.5">
                   <span className="font-medium text-tx">
                     {formatDateTime(backup.createdAt)}
-                    {index === 0 ? <span className="font-normal text-tx5"> · newest</span> : null}
+                    {index === 0 ? <span className="font-normal text-tx-3"> · newest</span> : null}
                   </span>
-                  <span className="text-12 text-tx5">
+                  <span className="text-12 text-tx-3">
                     {KIND[backup.kind]} · {formatBytes(backup.sizeBytes)} · version{' '}
                     {backup.appVersion}
                   </span>

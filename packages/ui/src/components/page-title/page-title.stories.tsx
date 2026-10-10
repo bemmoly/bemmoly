@@ -20,7 +20,7 @@ export const Board: Story = {
     mock: [{ file: 'Bemmoly Board.dc.html', x: 248, y: 50, w: 784, h: 120, note: 'board header' }],
   },
   render: (args) => (
-    <div className="w-192 bg-bg px-6 pt-3.5">
+    <div className="w-192 bg-sunken px-6 pt-3.5">
       <PageTitle
         {...args}
         breadcrumbs={[{ label: 'Projects' }, { label: 'Platform Core' }, { label: 'PLT board' }]}
@@ -58,7 +58,7 @@ export const Settings: Story = {
     ],
   },
   render: (args) => (
-    <div className="w-260 bg-bg p-2">
+    <div className="w-260 bg-sunken p-2">
       <PageTitle
         {...args}
         variant="settings"
@@ -84,7 +84,7 @@ export const IssueBreadcrumbs: Story = {
     <Breadcrumbs
       items={[
         { label: 'Platform Core', href: '#board' },
-        { label: 'Auth service', icon: <span className="size-2.25 rounded-tick bg-ac" /> },
+        { label: 'Auth service', icon: <span className="size-2.25 rounded-tick bg-acc" /> },
         { label: <KeyChip issueKey="PLT-204" size="md" />, icon: <TypeGlyph type="story" /> },
       ]}
     />

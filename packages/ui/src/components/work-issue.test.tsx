@@ -214,6 +214,6 @@ describe('settings components', () => {
     fireEvent.click(node);
     expect(onPick).toHaveBeenCalled();
     expect(container.querySelector('path[marker-end="url(#workflow-arrow-ac)"]')).toBeTruthy();
-    expect(screen.getByText('Validator').className).toContain('bg-st-qa-bg');
+    expect(screen.getByText('Validator').className).toContain('bg-acc-50');
   });
 });

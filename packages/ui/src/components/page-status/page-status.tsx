@@ -16,10 +16,10 @@ export const PAGE_STATUS_LABELS: Record<PageStatus, string> = {
  * archived is quiet on the chip.
  */
 const TONES: Record<PageStatus, string> = {
-  draft: 'bg-st-todo-bg text-st-todo-fg',
-  in_review: 'bg-st-qa-bg text-st-qa-fg',
-  published: 'bg-st-done-bg text-st-done-fg',
-  archived: 'bg-chip text-tx5',
+  draft: 'bg-line-2 text-tx-2',
+  in_review: 'bg-acc-50 text-acc',
+  published: 'bg-green-50 text-green-tx',
+  archived: 'bg-line-2 text-tx-3',
 };
 
 export interface PageStatusPillProps {

@@ -66,7 +66,7 @@ export function KanbanColumnHeader({
         <span
           aria-label={over ? `Over the WIP limit of ${wipLimit}` : `WIP limit ${wipLimit}`}
           className={cx(
-            'shrink-0 rounded-xs px-1.25 text-11 leading-4.25 font-semibold whitespace-nowrap tabular-nums',
+            'shrink-0 rounded-chip px-1.25 text-11 leading-4.25 font-semibold whitespace-nowrap tabular-nums',
             reached
               ? 'bg-amber-50 text-amber-tx'
               : 'bg-sunken text-tx-3 ring-1 ring-line ring-inset',

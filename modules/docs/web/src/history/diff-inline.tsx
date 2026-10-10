@@ -19,10 +19,10 @@ const MARK_NAMES: Record<string, string> = {
   highlight: 'highlight',
 };
 
-export const INSERT_CLASS = 'rounded-xs bg-ok-bg text-ok-fg no-underline';
-export const DELETE_CLASS = 'rounded-xs bg-danger/10 text-danger line-through decoration-danger/60';
+export const INSERT_CLASS = 'rounded-chip bg-green-50 text-green-tx no-underline';
+export const DELETE_CLASS = 'rounded-chip bg-red/10 text-red line-through decoration-red/60';
 export const FORMAT_CLASS =
-  'underline decoration-caution decoration-dotted decoration-2 underline-offset-3';
+  'underline decoration-amber decoration-dotted decoration-2 underline-offset-3';
 
 function withMarks(content: ReactNode, marks: readonly DiffMark[]): ReactNode {
   return marks.reduce<ReactNode>((inner, mark) => {
@@ -40,7 +40,7 @@ function withMarks(content: ReactNode, marks: readonly DiffMark[]): ReactNode {
       case 'link':
         return (
           <span
-            className="text-ac underline decoration-ac/40 underline-offset-2"
+            className="text-acc underline decoration-acc/40 underline-offset-2"
             title={String(mark.attrs?.['href'] ?? '')}
           >
             {inner}
@@ -62,11 +62,13 @@ export function inlineNode(node: DiffNode): ReactNode {
       return <span data-type="mention">@{String(attrs['label'] ?? attrs['id'] ?? '')}</span>;
     case 'pageLink':
       return (
-        <span className="text-ac">{String(attrs['title'] ?? attrs['label'] ?? 'Linked page')}</span>
+        <span className="text-acc">
+          {String(attrs['title'] ?? attrs['label'] ?? 'Linked page')}
+        </span>
       );
     case 'issueEmbed':
       return (
-        <span className="font-mono text-tx2">
+        <span className="font-mono text-tx-2">
           {String(attrs['key'] ?? attrs['issueKey'] ?? 'Issue')}
         </span>
       );

@@ -48,7 +48,7 @@ describe('Docs home components', () => {
     await expectAccessible(container);
     expect(screen.getByText('PROJECT')).toBeTruthy();
     expect(screen.getAllByText('Untitled')).toHaveLength(2);
-    expect(screen.getByText('In review').className).toMatch(/bg-st-qa-bg/);
+    expect(screen.getByText('In review').className).toMatch(/bg-acc-50/);
     const hrefs = screen.getAllByRole('link').map((link) => link.getAttribute('href'));
     expect(hrefs).toEqual(['/docs/s/ENG', '/docs/p/1', '/docs/p/1']);
   });
@@ -62,7 +62,7 @@ describe('Docs home components', () => {
     render(<SpaceTile name="Design" tone="red" size="sm" />);
     // A space never wears a signal colour: the stored 'red' is the palette's rose.
     expect(screen.getByText('DE').className).toMatch(/bg-epic-6/);
-    expect(screen.getByText('DE').className).not.toMatch(/bg-danger|bg-red/);
+    expect(screen.getByText('DE').className).not.toMatch(/bg-red|bg-red/);
   });
 
   it('marks the chosen template card and reports clicks', () => {

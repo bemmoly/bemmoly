@@ -25,7 +25,7 @@ export const Playground: Story = {
     ],
   },
   render: (args) => (
-    <div className="flex h-topbar items-center bg-sf px-2">
+    <div className="flex h-topbar items-center bg-card px-2">
       <Logo {...args} />
     </div>
   ),
@@ -40,14 +40,14 @@ export const AllVariants: Story = {
         <div
           key={surface}
           data-theme={surface}
-          className="flex flex-col gap-3 rounded-card border border-br bg-bg p-4"
+          className="flex flex-col gap-3 rounded-card border border-line bg-sunken p-4"
         >
-          <span className="text-11 font-medium tracking-caps text-tx5 uppercase">
+          <span className="text-11 font-medium tracking-caps text-tx-3 uppercase">
             {surface} surface
           </span>
           {TONES.map((tone) => (
             <div key={tone} className="flex items-center gap-6">
-              <span className="w-12 font-mono text-11 text-tx4">{tone}</span>
+              <span className="w-12 font-mono text-11 text-tx-3">{tone}</span>
               <Logo variant="mark" tone={tone} />
               <Logo variant="wordmark" tone={tone} />
               <Logo variant="lockup" tone={tone} />
@@ -79,9 +79,9 @@ export const AcrossPresets: Story = {
         <div
           key={preset.id}
           data-theme={preset.id}
-          className="flex flex-col gap-3 rounded-card border border-br bg-sf p-4"
+          className="flex flex-col gap-3 rounded-card border border-line bg-card p-4"
         >
-          <span className="text-11 text-tx5">{preset.name}</span>
+          <span className="text-11 text-tx-3">{preset.name}</span>
           <Logo variant="lockup" />
         </div>
       ))}
@@ -90,9 +90,9 @@ export const AcrossPresets: Story = {
           key={theme.input.brand}
           data-theme={theme.id}
           style={customStyle(theme)}
-          className="flex flex-col gap-3 rounded-card border border-br bg-sf p-4"
+          className="flex flex-col gap-3 rounded-card border border-line bg-card p-4"
         >
-          <span className="text-11 text-tx5">
+          <span className="text-11 text-tx-3">
             Custom {theme.input.brand}, {theme.mode}
           </span>
           <Logo variant="lockup" />

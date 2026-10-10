@@ -88,12 +88,12 @@ export function BoardHeader({
       />
       <div className="flex min-w-0 flex-col">
         <div className="flex items-center gap-2">
-          <h1 className="m-0 truncate text-15 font-semibold tracking-[-0.01em]">
+          <h1 className="m-0 truncate text-16 font-semibold tracking-[-0.01em]">
             {kanban ? `${project.name} board` : (sprint?.name ?? 'No active sprint')}
           </h1>
           {!kanban && line?.remaining && (
             <span
-              className={`inline-flex h-4.5 shrink-0 items-center gap-1 rounded-xs px-1.5 text-11 font-semibold ${endsSoon ? 'bg-amber-50 text-amber-tx' : 'bg-sunken text-tx-2'}`}
+              className={`inline-flex h-4.5 shrink-0 items-center gap-1 rounded-chip px-1.5 text-11 font-semibold ${endsSoon ? 'bg-amber-50 text-amber-tx' : 'bg-sunken text-tx-2'}`}
             >
               <Icon name="clock" size={12} />
               {line.remaining}

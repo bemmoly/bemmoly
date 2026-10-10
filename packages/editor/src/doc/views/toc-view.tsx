@@ -49,7 +49,7 @@ export function TocList({
   onPick?: (index: number, event: MouseEvent<HTMLAnchorElement>) => void;
 }) {
   if (entries.length === 0) {
-    return <p className="m-0 text-tx5">Headings you add appear here.</p>;
+    return <p className="m-0 text-tx-3">Headings you add appear here.</p>;
   }
   const top = Math.min(...entries.map((entry) => entry.level));
   return (
