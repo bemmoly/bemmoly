@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { docToText, textToDoc } from './rich-text-convert.ts';
+import { typeLook } from '@bemmoly/ui';
 import { formatMinutes, parseDuration, statusTone, typeGlyph } from './vocabulary.ts';
 
 describe('issue vocabulary', () => {
@@ -12,9 +13,13 @@ describe('issue vocabulary', () => {
   });
 
   it('draws custom types by their level', () => {
-    expect(typeGlyph({ key: 'story' })).toBe('story');
-    expect(typeGlyph({ key: 'initiative', level: 'epic' })).toBe('epic');
-    expect(typeGlyph({ key: 'chore', level: 'standard' })).toBe('task');
+    expect(typeLook(typeGlyph({ key: 'story' })).mark).toEqual(typeLook('story').mark);
+    expect(typeLook(typeGlyph({ key: 'initiative', level: 'epic' })).color).toBe('type-epic');
+    expect(typeLook(typeGlyph({ key: 'chore', level: 'standard' })).color).toBe('type-task');
+    expect(typeLook(typeGlyph({ key: 'ops', icon: 'rocket', color: '#e0632a' }))).toMatchObject({
+      color: 'type-incident',
+      mark: { icon: 'rocket' },
+    });
     expect(typeGlyph(undefined)).toBe('task');
   });
 

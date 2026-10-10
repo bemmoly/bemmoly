@@ -8,7 +8,7 @@ import {
   avatarHue,
   cardStripe,
   type CardPerson,
-  type IssueType,
+  type IssueTypeRef,
   type KanbanCardProps,
   type Priority,
 } from '@bemmoly/ui';
@@ -50,14 +50,6 @@ const laneStripe = (hue: number | null) =>
 /** A colour rule's stripe reads the card's --card-rule, set from the rule's colour. */
 export const RULE_STRIPE = 'border-l-(--card-rule)';
 
-const GLYPHS: ReadonlySet<string> = new Set([
-  'story',
-  'bug',
-  'task',
-  'epic',
-  'incident',
-  'subtask',
-]);
 const PRIORITIES: ReadonlySet<string> = new Set(['highest', 'high', 'medium', 'low', 'lowest']);
 
 export interface CardVocabulary {
@@ -75,11 +67,9 @@ export interface CardVocabulary {
   ruleColor: (card: ViewCard) => string | null;
 }
 
-export function glyphOf(vocab: CardVocabulary, typeId: string): IssueType {
-  const type = vocab.types.get(typeId);
-  if (type && GLYPHS.has(type.key)) return type.key as IssueType;
-  if (type?.level === 'epic' || type?.level === 'subtask') return type.level;
-  return 'task';
+/** The card's type as stored, so a custom type draws its own icon and colour. */
+export function glyphOf(vocab: CardVocabulary, typeId: string): IssueTypeRef {
+  return vocab.types.get(typeId) ?? 'task';
 }
 
 export function personOf(vocab: CardVocabulary, userId: string | null): CardPerson | undefined {

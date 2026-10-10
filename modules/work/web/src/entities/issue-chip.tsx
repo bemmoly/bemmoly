@@ -1,5 +1,12 @@
 import { navigateInApp } from '@bemmoly/core-web';
-import { KeyChip, Skeleton, StatusBadge, TypeGlyph, type IssueType } from '@bemmoly/ui';
+import {
+  KeyChip,
+  Skeleton,
+  StatusBadge,
+  TypeGlyph,
+  typeLook,
+  type TypeColorToken,
+} from '@bemmoly/ui';
 import { useQuery } from '@tanstack/react-query';
 import type { MouseEvent } from 'react';
 import { issueHref } from '../home/my-work-row.tsx';
@@ -15,14 +22,14 @@ import { workKeys } from '../shared/keys.ts';
  * reader may not open prints as its bare key.
  */
 
-/** The type square's colour in the inline chip, by glyph. */
-const TYPE_SQUARE: Record<IssueType, string> = {
-  story: 'bg-type-story',
-  bug: 'bg-type-bug',
-  task: 'bg-type-task',
-  epic: 'bg-type-epic',
-  incident: 'bg-type-incident',
-  subtask: 'bg-type-subtask',
+/** The type square's colour in the inline chip, by the type's colour. */
+const TYPE_SQUARE: Record<TypeColorToken, string> = {
+  'type-story': 'bg-type-story',
+  'type-bug': 'bg-type-bug',
+  'type-task': 'bg-type-task',
+  'type-epic': 'bg-type-epic',
+  'type-incident': 'bg-type-incident',
+  'type-subtask': 'bg-type-subtask',
 };
 
 export function useIssueSummary(key: string) {
@@ -62,7 +69,7 @@ export function IssueChip({ entityKey }: { entityKey: string }) {
       inline
       href={href}
       title={issue.title}
-      typeClassName={TYPE_SQUARE[typeGlyph(issue.type)]}
+      typeClassName={TYPE_SQUARE[typeLook(issue.type).color]}
       onClick={(event) => follow(event, href)}
     >
       <StatusBadge

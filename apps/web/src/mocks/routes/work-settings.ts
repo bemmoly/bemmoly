@@ -234,8 +234,8 @@ export const workSettingsRoutes: MockRoute[] = [
   patchOf('fields', 'Field', 'fields'),
   createOf('issueTypes', 'issue-types', {
     description: null,
-    icon: '•',
-    color: '#6b7483',
+    icon: null,
+    color: null,
     level: 'standard',
     position: 99,
   }),

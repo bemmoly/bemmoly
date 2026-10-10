@@ -1,5 +1,5 @@
 import type { StatusCategory as WorkflowCategory } from '@bemmoly/module-work/shared';
-import { ISSUE_TYPES, type IssueType as GlyphType, type StatusCategory } from '@bemmoly/ui';
+import type { IssueTypeLike, IssueTypeRef, StatusCategory } from '@bemmoly/ui';
 
 /*
  * The design system paints five status tones and six type glyphs; the server knows three
@@ -18,13 +18,12 @@ export function statusTone(category: WorkflowCategory, name = ''): StatusCategor
   return 'progress';
 }
 
-/** A type's glyph by its key, falling back on its level for custom types. */
-export function typeGlyph(type: { key: string; level?: string } | undefined): GlyphType {
-  if (!type) return 'task';
-  if (type.key in ISSUE_TYPES) return type.key as GlyphType;
-  if (type.level === 'epic') return 'epic';
-  if (type.level === 'subtask') return 'subtask';
-  return 'task';
+/**
+ * A type as the glyph draws it: the stored type itself, so a custom type shows its own icon
+ * and colour (falling back on its level's look), or a task when the type is unknown.
+ */
+export function typeGlyph(type: IssueTypeLike | undefined): IssueTypeRef {
+  return type ?? 'task';
 }
 
 /** "4h", "1h 30m", "45m": minutes as the work log prints them. */

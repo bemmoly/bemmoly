@@ -10,9 +10,8 @@ import type {
 import {
   avatarHue,
   initialsOf,
-  ISSUE_TYPES,
   type AvatarHue,
-  type IssueType,
+  type IssueTypeRef,
   type StatusCategory,
 } from '@bemmoly/ui';
 
@@ -51,7 +50,7 @@ export interface EpicLook extends EpicProgress {
 
 export interface Lookups {
   statuses: ReadonlyMap<string, StatusLook>;
-  types: ReadonlyMap<string, IssueType>;
+  types: ReadonlyMap<string, IssueTypeRef>;
   people: ReadonlyMap<string, PersonLook>;
   epics: ReadonlyMap<string, EpicLook>;
 }
@@ -103,10 +102,9 @@ export function statusLooks(
   return looks;
 }
 
-export function typeLooks(types: readonly WorkIssueType[]): Map<string, IssueType> {
-  return new Map(
-    types.map((type) => [type.id, type.key in ISSUE_TYPES ? (type.key as IssueType) : 'task']),
-  );
+/** Each type as stored, so a custom type draws its own icon and colour. */
+export function typeLooks(types: readonly WorkIssueType[]): Map<string, IssueTypeRef> {
+  return new Map(types.map((type) => [type.id, type]));
 }
 
 /** The signed-in person wears the accent, as RS does in every mock. */

@@ -1,5 +1,5 @@
 import { ISSUE_TYPE_LEVELS, type IssueTypeLevel } from '@bemmoly/module-work/shared';
-import { Badge, Button, ISSUE_TYPES, SettingsSection, Skeleton, TypeGlyph } from '@bemmoly/ui';
+import { Badge, Button, SettingsSection, Skeleton, TypeGlyph } from '@bemmoly/ui';
 import { useState, type ReactNode } from 'react';
 import { useSettingsAccess } from '../../hooks/settings-access.ts';
 import { useSchemeFlow } from '../../hooks/settings-scheme-flow.ts';
@@ -13,8 +13,6 @@ const LEVELS: Record<IssueTypeLevel, string> = {
   standard: 'Standard',
   subtask: 'Subtask level',
 };
-
-const glyphOf = (key: string) => (key in ISSUE_TYPES ? (key as keyof typeof ISSUE_TYPES) : null);
 
 /**
  * Project settings › Issue types: the types the project offers, from the org
@@ -57,22 +55,12 @@ export function IssueTypesPage({
       >
         {types.list.isPending && <Skeleton className="my-2 h-20" />}
         {(types.list.data ?? []).map((type) => {
-          const glyph = glyphOf(type.key);
           return (
             <div
               key={type.id}
               className="flex items-center gap-2.5 border-b border-br-row py-2.25 last:border-b-0"
             >
-              {glyph ? (
-                <TypeGlyph type={glyph} size={18} />
-              ) : (
-                <span
-                  aria-hidden
-                  className="flex size-4.5 items-center justify-center rounded-chip bg-tx4 text-10 text-on-solid"
-                >
-                  {type.icon ?? '•'}
-                </span>
-              )}
+              <TypeGlyph type={type} size={18} />
               <span className="flex min-w-0 flex-1 flex-col gap-px">
                 <span className="font-semibold">{type.name}</span>
                 <span className="text-11h text-tx5">{type.description ?? LEVELS[type.level]}</span>

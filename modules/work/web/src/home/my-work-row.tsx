@@ -1,12 +1,10 @@
 import { formatRelative } from '@bemmoly/core-web';
 import {
-  ISSUE_TYPES,
   KeyChip,
   PriorityGlyph,
   Skeleton,
   StatusBadge,
   TypeGlyph,
-  type IssueType,
   type StatusCategory,
 } from '@bemmoly/ui';
 import type { MyIssue } from '../../../shared/index.ts';
@@ -17,8 +15,6 @@ const CATEGORY: Record<MyIssue['status']['category'], StatusCategory> = {
   in_progress: 'progress',
   done: 'done',
 };
-
-const glyphType = (key: string): IssueType => (key in ISSUE_TYPES ? (key as IssueType) : 'task');
 
 /** "Due Oct 7" when the issue has a due date, else when it last changed. */
 function when(issue: MyIssue): string {
@@ -41,7 +37,7 @@ export function MyWorkRow({ issue }: { issue: MyIssue }) {
       href={issueHref(issue.key)}
       className={`${ROW} text-tx no-underline hover:bg-sf2 focus-ring-inset motion-safe:transition-colors`}
     >
-      <TypeGlyph type={glyphType(issue.type.key)} />
+      <TypeGlyph type={issue.type} />
       <KeyChip issueKey={issue.key} />
       <span className="truncate" title={issue.title}>
         {issue.title}
