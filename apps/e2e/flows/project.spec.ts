@@ -14,7 +14,8 @@ test('a project is created with an owning team and its creator leads it', async 
   const key = uniqueKey('PRJ');
   const name = `Payments ${key}`;
   await page.goto('/work/projects');
-  await page.getByRole('button', { name: 'New project' }).click();
+  // The sidebar's Work heading has a "+" of the same name and job; this is the page's own.
+  await page.getByRole('main').getByRole('button', { name: 'New project' }).click();
 
   const dialog = page.getByRole('dialog', { name: 'Create project' });
   await dialog.getByRole('textbox', { name: 'Name' }).fill(name);
