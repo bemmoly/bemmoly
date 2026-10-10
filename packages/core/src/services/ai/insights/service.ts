@@ -1,13 +1,15 @@
 import {
   AI_INSIGHT_EVENT_KINDS,
-  aiInsightRequestedPayloadSchema,
-  aiInsightSchema,
   NotFoundError,
   type AiFeedback,
-  type AiInsight,
   type AiInsightKind,
-  type AiInsightState,
 } from '@bemmoly/shared';
+import {
+  aiInsightRequestedPayloadSchema,
+  aiInsightSchema,
+  type AiInsight,
+  type AiInsightState,
+} from '@bemmoly/shared/ai-insights';
 import { z } from 'zod';
 import type { AiFacade } from '../../../contracts/ai.ts';
 import type { EventBus } from '../../../contracts/event-bus.ts';

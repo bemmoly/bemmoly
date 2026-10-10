@@ -1,5 +1,5 @@
 import { readFile } from 'node:fs/promises';
-import { AI_INSIGHT_OUTPUT_SCHEMAS } from '@bemmoly/shared';
+import { AI_INSIGHT_OUTPUT_SCHEMAS } from '@bemmoly/shared/ai-insights';
 import { describe, expect, it } from 'vitest';
 import { parsePromptFile } from '../prompts/parse.ts';
 import { INSIGHT_PROMPT_FILES } from './index.ts';

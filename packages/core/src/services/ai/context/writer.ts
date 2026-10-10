@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import type { AiCitation } from '@bemmoly/shared';
+import type { AiCitation } from '@bemmoly/shared/ai-insights';
 import type { AiContentScope, AiPolicy } from '../../../contracts/ai.ts';
 import type { AiBuiltContext, AiContextAudience } from './types.ts';
 

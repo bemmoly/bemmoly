@@ -1,4 +1,4 @@
-import type { AiCitation } from '@bemmoly/shared';
+import type { AiCitation } from '@bemmoly/shared/ai-insights';
 
 /**
  * Keeps only the citations the context offered. A model may invent "[c99]"; that id is

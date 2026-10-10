@@ -8,11 +8,8 @@ import {
   type ModuleContext,
   type SqlExecutor,
 } from '@bemmoly/core';
-import {
-  AI_INSIGHT_EVENT_KINDS,
-  aiSourceChangedPayloadSchema,
-  type PageTldrOutput,
-} from '@bemmoly/shared';
+import { AI_INSIGHT_EVENT_KINDS } from '@bemmoly/shared';
+import { aiSourceChangedPayloadSchema, type PageTldrOutput } from '@bemmoly/shared/ai-insights';
 import type { DocsServiceDeps } from '../common.ts';
 import { createPageContextBuilder, createPagePairsBuilder } from './page-context.ts';
 import { createDocsActivitySource, createIssueLinksSource } from './related.ts';

@@ -2,7 +2,7 @@ export * from './answers.ts';
 export * from './catalog.ts';
 export * from './citations.ts';
 export * from './enums.ts';
-export * from './insights.ts';
+export * from './insight-kinds.ts';
 export * from './plans.ts';
 export * from './prompts.ts';
 export * from './providers.ts';

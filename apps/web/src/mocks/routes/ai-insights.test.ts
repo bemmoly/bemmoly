@@ -1,4 +1,4 @@
-import { aiInsightResponseSchema } from '@bemmoly/shared';
+import { aiInsightResponseSchema } from '@bemmoly/shared/ai-insights';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createMockApi } from '../dispatch.ts';
 import { MAIN_ISSUE_ID, RFC_PAGE_ID } from '../seed/ai-insights.ts';

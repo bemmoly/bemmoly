@@ -1,4 +1,4 @@
-import type { AiCitation, AiInsightSource } from '@bemmoly/shared';
+import type { AiCitation, AiInsightSource } from '@bemmoly/shared/ai-insights';
 import type { AiPolicy } from '../../../contracts/ai.ts';
 import type { RequestContext } from '../../authz/index.ts';
 import type { ContextWriter } from './writer.ts';

@@ -1,10 +1,10 @@
+import { parseOrThrow } from '@bemmoly/shared';
 import {
   aiInsightFeedbackBodySchema,
   aiInsightFeedbackParamsSchema,
   aiInsightParamsSchema,
-  parseOrThrow,
   type AiInsightResponse,
-} from '@bemmoly/shared';
+} from '@bemmoly/shared/ai-insights';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import type { InsightsService } from '../services/ai/index.ts';
 import { contextOf } from './request-context.ts';

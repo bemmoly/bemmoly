@@ -7,7 +7,6 @@
 import { accessEndpoints } from './endpoints/access.ts';
 import { aiEndpoints } from './endpoints/ai.ts';
 import { aiAnswerEndpoints } from './endpoints/ai-answers.ts';
-import { aiInsightEndpoints } from './endpoints/ai-insights.ts';
 import { aiPlanEndpoints } from './endpoints/ai-plans.ts';
 import { messagingEndpoints } from './endpoints/messaging.ts';
 import { operationsEndpoints } from './endpoints/operations.ts';
@@ -27,7 +26,6 @@ export function createApiClient(options: HttpOptions = {}) {
       ...aiEndpoints(http),
       ...aiAnswerEndpoints(http),
       plans: aiPlanEndpoints(http),
-      insights: aiInsightEndpoints(http),
     },
     ...peopleEndpoints(http),
     ...accessEndpoints(http),

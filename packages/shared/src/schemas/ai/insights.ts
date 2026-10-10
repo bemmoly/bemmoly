@@ -1,5 +1,8 @@
 import { z } from 'zod';
 import { aiFeedbackSchema } from './enums.ts';
+import { AI_INSIGHT_KINDS, type AiInsightKind } from './insight-kinds.ts';
+
+export * from './insight-kinds.ts';
 
 /**
  * Cached AI content (tech design 11.3 and 11.5): what a model wrote about one target, the
@@ -8,39 +11,12 @@ import { aiFeedbackSchema } from './enums.ts';
  * point with no valid citation is shown as unsourced rather than hidden.
  */
 
-export const AI_INSIGHT_KINDS = [
-  'issue_summary',
-  'page_tldr',
-  'sprint_pulse',
-  'morning_brief',
-  'consistency',
-] as const;
 export const aiInsightKindSchema = z.enum(AI_INSIGHT_KINDS);
-export type AiInsightKind = z.infer<typeof aiInsightKindSchema>;
 
 /** fresh: matches its inputs. refreshing: stale, a new one is on its way. pending: none yet. */
 export const AI_INSIGHT_STATES = ['ready', 'refreshing', 'pending', 'failed'] as const;
 export const aiInsightStateSchema = z.enum(AI_INSIGHT_STATES);
 export type AiInsightState = z.infer<typeof aiInsightStateSchema>;
-
-/** The realtime message a finished (or failed) regeneration publishes; ids hold the target. */
-export const AI_REALTIME_KINDS = { insight: 'ai.insight' } as const;
-
-/**
- * On the event bus: `requested` asks the kernel for a fresh insight; `sourceChanged` tells
- * other modules that records their insights read changed (Work's issues, for the pages that
- * name them), without either module importing the other.
- */
-export const AI_INSIGHT_EVENT_KINDS = {
-  requested: 'ai.insight.requested',
-  sourceChanged: 'ai.source.changed',
-} as const;
-
-export const aiSourceChangedPayloadSchema = z.object({
-  kind: z.string().min(1).max(40),
-  ids: z.array(z.uuid()).min(1).max(200),
-});
-export type AiSourceChangedPayload = z.infer<typeof aiSourceChangedPayloadSchema>;
 
 export const aiInsightRequestedPayloadSchema = z.object({
   kind: aiInsightKindSchema,
@@ -49,6 +25,13 @@ export const aiInsightRequestedPayloadSchema = z.object({
   quietSeconds: z.number().int().min(0).max(86_400).default(0),
 });
 export type AiInsightRequestedPayload = z.input<typeof aiInsightRequestedPayloadSchema>;
+
+/** The payload of `ai.source.changed`: which records of which kind changed. */
+export const aiSourceChangedPayloadSchema = z.object({
+  kind: z.string().min(1).max(40),
+  ids: z.array(z.uuid()).min(1).max(200),
+});
+export type AiSourceChangedPayload = z.infer<typeof aiSourceChangedPayloadSchema>;
 
 /** "c1" to "c999": the token a context block carries and the model cites. */
 export const aiCitationIdSchema = z.string().regex(/^c[1-9][0-9]{0,2}$/);

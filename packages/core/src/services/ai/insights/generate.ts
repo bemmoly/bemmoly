@@ -1,4 +1,5 @@
-import { AI_INSIGHT_OUTPUT_SCHEMAS, AI_REALTIME_KINDS, ProviderError } from '@bemmoly/shared';
+import { AI_REALTIME_KINDS, ProviderError } from '@bemmoly/shared';
+import { AI_INSIGHT_OUTPUT_SCHEMAS } from '@bemmoly/shared/ai-insights';
 import type { z } from 'zod';
 import type { AiFacade, AiPolicy } from '../../../contracts/ai.ts';
 import type { RealtimePublisher } from '../../../contracts/realtime.ts';

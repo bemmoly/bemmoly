@@ -1,4 +1,5 @@
-import type { AiCitation, AiInsightKind } from '@bemmoly/shared';
+import type { AiInsightKind } from '@bemmoly/shared';
+import type { AiCitation } from '@bemmoly/shared/ai-insights';
 import { DOCS_SPACE_IDS } from './docs.ts';
 import { uid } from './time.ts';
 import { issueId, SPRINT_IDS } from './work-issues.ts';

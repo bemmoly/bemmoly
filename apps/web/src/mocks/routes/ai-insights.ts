@@ -1,10 +1,5 @@
-import {
-  AI_INSIGHT_KINDS,
-  AI_REALTIME_KINDS,
-  aiInsightSchema,
-  type AiInsight,
-  type AiInsightKind,
-} from '@bemmoly/shared';
+import { AI_INSIGHT_KINDS, AI_REALTIME_KINDS, type AiInsightKind } from '@bemmoly/shared';
+import { aiInsightSchema, type AiInsight } from '@bemmoly/shared/ai-insights';
 import { currentUser, emit, type MockDb } from '../db.ts';
 import { cannedInsight } from '../seed/ai-insights.ts';
 import { newId } from '../seed/time.ts';

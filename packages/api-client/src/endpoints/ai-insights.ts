@@ -1,11 +1,10 @@
+import { type AiFeedback, type AiInsightKind } from '@bemmoly/shared';
 import {
   aiInsightFeedbackBodySchema,
   aiInsightResponseSchema,
-  type AiFeedback,
   type AiInsight,
-  type AiInsightKind,
   type AiInsightOf,
-} from '@bemmoly/shared';
+} from '@bemmoly/shared/ai-insights';
 import type { Http } from '../http.ts';
 import { enc, validated } from './validate.ts';
 
@@ -14,7 +13,9 @@ const INSIGHTS = '/api/v1/ai/insights';
 /**
  * Cached AI insights: an issue summary, a page TL;DR, a sprint pulse, the morning brief, a
  * consistency check. A read answers from the cache, stale content marked "refreshing" while
- * a new one is written; the realtime kind `ai.insight` says when to read again.
+ * a new one is written; the realtime kind `ai.insight` says when to read again. A subpath
+ * (`@bemmoly/api-client/ai-insights`), bound to a client's `http`, so the insight schemas load
+ * with the lazy screens that show insights and never in the shell's first bundle.
  */
 export function aiInsightEndpoints(http: Http) {
   return {
