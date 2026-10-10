@@ -10,6 +10,7 @@
     "test:e2e:work": "playwright test"
   },
   "devDependencies": {
+    "@axe-core/playwright": "4.13.0",
     "@bemmoly/core": "workspace:*",
     "@bemmoly/server": "workspace:*",
     "@bemmoly/web": "workspace:*",
