@@ -6,6 +6,7 @@ import { useCallback } from 'react';
 import { useTeams } from '../hooks/projects-list.ts';
 import { api } from '../shared/api.ts';
 import { workKeys } from '../shared/keys.ts';
+import { listEveryProject } from '../shared/use-project.ts';
 
 /** Every project, archived ones included; the page splits them into its segments. */
 export const allProjectsKey = () => [...workKeys.projects(), 'with-archived'] as const;
@@ -20,7 +21,7 @@ export function useProjectsData() {
   const toast = useToast();
   const list = useQuery({
     queryKey: allProjectsKey(),
-    queryFn: () => api.work.projectCatalog.list({ archived: true, limit: 100 }),
+    queryFn: () => listEveryProject(true),
   });
   const teams = useTeams();
   const teamOf = useCallback(

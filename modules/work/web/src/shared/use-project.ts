@@ -1,14 +1,39 @@
-import type { Project } from '@bemmoly/module-work/shared';
+import type { Project, ProjectsPage } from '@bemmoly/module-work/shared';
 import { queryOptions, useQuery } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { api } from './api.ts';
 import { workKeys } from './keys.ts';
 import { rememberProject, useProjectStore } from './project-store.ts';
 
+/** The server's largest page, and a ceiling of pages no real workspace reaches. */
+const PAGE = 200;
+const MOST_PAGES = 25;
+
+/**
+ * Every project this person can see, page after page: the switcher, the pickers and each
+ * project's screens find their project in it, so one cut off after the first page would
+ * leave a busy workspace's newest projects without a board.
+ */
+export async function listEveryProject(archived = false): Promise<ProjectsPage> {
+  const items: Project[] = [];
+  let cursor: string | null = null;
+  for (let page = 0; page < MOST_PAGES; page += 1) {
+    const next: ProjectsPage = await api.work.projects.list({
+      limit: PAGE,
+      archived,
+      ...(cursor ? { cursor } : {}),
+    });
+    items.push(...next.items);
+    cursor = next.nextCursor;
+    if (!cursor) break;
+  }
+  return { items, nextCursor: cursor };
+}
+
 /** The projects this person can see; small enough to hold whole for the picker. */
 export const projectsQuery = queryOptions({
   queryKey: workKeys.projects(),
-  queryFn: () => api.work.projects.list({ limit: 100 }),
+  queryFn: () => listEveryProject(),
 });
 
 export interface ProjectContext {
