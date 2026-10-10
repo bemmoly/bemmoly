@@ -23,7 +23,7 @@ export function SettingsFrame({ children, aside, className }: SettingsFrameProps
 export interface SettingsContentProps {
   children: ReactNode;
   /**
-   * wide: Workspace settings (1120px, 28px 40px 48px, 28px gap).
+   * wide: Workspace settings, the contained 1040px reading column (28px 32px 48px, 24px gap).
    * narrow: project settings beside a preview rail (960px, 28px 32px 60px, 24px gap).
    */
   width?: 'wide' | 'narrow';
@@ -35,7 +35,9 @@ export function SettingsContent({ children, width = 'wide', className }: Setting
     <div
       className={cx(
         'flex flex-col',
-        width === 'wide' ? 'max-w-280 gap-7 px-10 pt-7 pb-12' : 'max-w-240 gap-6 px-8 pt-7 pb-15',
+        width === 'wide'
+          ? 'mx-auto w-full max-w-260 gap-6 px-4 pt-5 pb-12 sm:px-8 sm:pt-7'
+          : 'max-w-240 gap-6 px-8 pt-7 pb-15',
         className,
       )}
     >
@@ -52,18 +54,18 @@ export interface SettingsRowProps {
   className?: string;
 }
 
-/** 10px rows divided by br-row: medium title, 12px tx5 description, control on the right. */
+/** 10px rows divided by the light line: medium title, 12px tx-3 description, control right. */
 export function SettingsRow({ title, description, control, className }: SettingsRowProps) {
   return (
     <div
       className={cx(
-        'flex items-center gap-3 border-b border-br-row py-2.5 last:border-b-0',
+        'flex flex-wrap items-center gap-3 border-b border-line-2 py-2.5 last:border-b-0',
         className,
       )}
     >
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
         <span className="font-medium">{title}</span>
-        {description && <span className="text-12 text-tx5">{description}</span>}
+        {description && <span className="text-12 text-tx-3">{description}</span>}
       </div>
       {control}
     </div>
