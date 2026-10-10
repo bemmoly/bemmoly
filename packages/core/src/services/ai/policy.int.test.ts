@@ -32,7 +32,7 @@ describe('AI policy, budget, prompts and "none" against a real database', () => 
     ).rejects.toMatchObject(off);
     await expect(ai.facade.embed({ purpose: 'embed', values: ['x'] })).rejects.toMatchObject(off);
     await expect(aiAdmin.assertAiOn(ai.facade, fx.member)).rejects.toMatchObject(off);
-    expect(await aiAdmin.getAiStatus(ai.facade, fx.member)).toMatchObject({
+    expect(await aiAdmin.getAiStatus(ai.context, ai.facade, fx.member)).toMatchObject({
       enabled: false,
       availableRoles: [],
     });
@@ -43,7 +43,9 @@ describe('AI policy, budget, prompts and "none" against a real database', () => 
       kind: 'ai.settings.changed',
       payload: { reasons: ['enabled'] },
     });
-    expect(await aiAdmin.getAiStatus(ai.facade, fx.member)).toMatchObject({ enabled: true });
+    expect(await aiAdmin.getAiStatus(ai.context, ai.facade, fx.member)).toMatchObject({
+      enabled: true,
+    });
   });
 
   it('logs every call to ai_runs with the prompt version, and takes feedback from its owner', async (ctx) => {
@@ -101,7 +103,7 @@ describe('AI policy, budget, prompts and "none" against a real database', () => 
     await expect(
       ai.facade.generate({ role: 'fast', purpose: 'qa', prompt: 'x' }),
     ).resolves.toBeTruthy();
-    const roles = await aiAdmin.getAiStatus(ai.facade, fx.member);
+    const roles = await aiAdmin.getAiStatus(ai.context, ai.facade, fx.member);
     expect(roles.availableRoles).toEqual(['fast', 'embedding']);
     // Last month's spend does not count.
     const lastMonth = await aiAdmin.getAiUsage(ai.context, fx.admin, { month: '2026-01' });
@@ -159,5 +161,22 @@ describe('AI policy, budget, prompts and "none" against a real database', () => 
     expect(await ai.facade.maySend({ authorId: fx.member.id })).toBe(false);
     expect(await ai.facade.enabled(fx.admin)).toBe(true);
     await aiAdmin.setAiPreferences(ai.context, ai.facade, fx.member, { optedOut: false });
+  });
+
+  it("keeps a person's ghost text switch on the server, apart from opting out", async (ctx) => {
+    if (!fx) return ctx.skip(skip);
+    const ai = fx.build({ recordingPath: recording });
+    expect(await aiAdmin.getAiStatus(ai.context, ai.facade, fx.member)).toMatchObject({
+      ghostText: true,
+    });
+    const off = await aiAdmin.setAiPreferences(ai.context, ai.facade, fx.member, {
+      ghostText: false,
+    });
+    expect(off).toMatchObject({ ghostText: false, optedOut: false });
+    // Another device asks the server and gets the same answer; others keep the default.
+    expect((await aiAdmin.getAiStatus(ai.context, ai.facade, fx.member)).ghostText).toBe(false);
+    expect((await aiAdmin.getAiStatus(ai.context, ai.facade, fx.admin)).ghostText).toBe(true);
+    await aiAdmin.setAiPreferences(ai.context, ai.facade, fx.member, { ghostText: true });
+    expect((await aiAdmin.getAiStatus(ai.context, ai.facade, fx.member)).ghostText).toBe(true);
   });
 });

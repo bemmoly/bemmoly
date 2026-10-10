@@ -104,6 +104,8 @@ export const aiStatusResponseSchema = z.object({
   /** This person turned AI off for themselves (only when the admin allows it). */
   optedOut: z.boolean(),
   optOutAllowed: z.boolean(),
+  /** This person's ghost text switch in the editor; on unless they turned it off. */
+  ghostText: z.boolean().default(true),
   allowActions: z.boolean(),
   /** Roles that can be called now: assigned, and not paused by the budget. */
   availableRoles: z.array(aiRoleSchema),
@@ -126,6 +128,17 @@ export const aiExclusionTargetsResponseSchema = z.object({
 });
 export type AiExclusionTargetsResponse = z.infer<typeof aiExclusionTargetsResponseSchema>;
 
-/** PUT /api/v1/ai/preferences: a person's own opt-out. */
-export const aiPreferencesBodySchema = z.object({ optedOut: z.boolean() });
+/**
+ * PUT /api/v1/ai/preferences: a person's own AI preferences. Send only what changes, and at
+ * least one of them.
+ */
+export const aiPreferencesBodySchema = z
+  .object({
+    optedOut: z.boolean().optional(),
+    /** Ghost text in the editor, on every device the person signs in from. */
+    ghostText: z.boolean().optional(),
+  })
+  .refine((body) => body.optedOut !== undefined || body.ghostText !== undefined, {
+    message: 'Send optedOut, ghostText or both',
+  });
 export type AiPreferencesBody = z.infer<typeof aiPreferencesBodySchema>;

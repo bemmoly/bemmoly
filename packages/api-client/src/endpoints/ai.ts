@@ -22,6 +22,7 @@ import {
   aiStatusResponseSchema,
   aiUsageResponseSchema,
   type AiModelRoleBody,
+  type AiPreferencesBody,
   type AiProviderCreateBody,
   type AiProviderUpdateBody,
   type AiRole,
@@ -45,6 +46,12 @@ export function aiEndpoints(http: Http) {
       http.send('/api/v1/ai/preferences', {
         method: 'PUT',
         body: validated(aiPreferencesBodySchema, { optedOut }),
+      }),
+    /** The person's own preferences that follow them across devices, such as ghost text. */
+    setPreferences: async (body: AiPreferencesBody) =>
+      http.send('/api/v1/ai/preferences', {
+        method: 'PUT',
+        body: validated(aiPreferencesBodySchema, body),
       }),
     settings: {
       get: async () => http.request(`${ADMIN}/settings`, aiSettingsResponseSchema),

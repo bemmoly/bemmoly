@@ -61,6 +61,23 @@ export async function setOptOut(
   }
 }
 
+/** This person's ghost text switch; on until they turn it off. */
+export async function readGhostText(sql: SqlExecutor, userId: string): Promise<boolean> {
+  const rows = await sql<{ ghost_text: boolean }[]>`
+    select ghost_text from ai_user_preferences where user_id = ${userId}`;
+  return rows[0]?.ghost_text ?? true;
+}
+
+export async function setGhostText(
+  sql: SqlExecutor,
+  userId: string,
+  ghostText: boolean,
+): Promise<void> {
+  await sql`
+    insert into ai_user_preferences (user_id, ghost_text) values (${userId}, ${ghostText})
+    on conflict (user_id) do update set ghost_text = excluded.ghost_text, updated_at = now()`;
+}
+
 /** Display names of active people, for name redaction. */
 export async function personNames(sql: SqlExecutor): Promise<string[]> {
   const rows = await sql<{ name: string }[]>`

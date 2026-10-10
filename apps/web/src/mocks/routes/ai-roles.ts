@@ -253,6 +253,7 @@ export const aiRoleRoutes: MockRoute[] = [
         enabled,
         optedOut,
         optOutAllowed: ai.settings.privacy.perUserOptOutAllowed,
+        ghostText: !(db.signedInAs && ai.ghostTextOff?.includes(db.signedInAs)),
         allowActions: ai.settings.privacy.allowActions,
         availableRoles:
           enabled && aiEnabledFor(db, db.signedInAs)
@@ -277,6 +278,11 @@ export const aiRoleRoutes: MockRoute[] = [
           'Your admin keeps AI on for everyone. Ask them if you want it off.',
         );
       }
+      if (parsed.data.ghostText !== undefined) {
+        ai.ghostTextOff = (ai.ghostTextOff ?? []).filter((id) => id !== me);
+        if (!parsed.data.ghostText) ai.ghostTextOff.push(me);
+      }
+      if (parsed.data.optedOut === undefined) return ok();
       ai.optedOut = ai.optedOut.filter((id) => id !== me);
       if (parsed.data.optedOut) ai.optedOut.push(me);
       emit(db, 'ai.changed', [me]);

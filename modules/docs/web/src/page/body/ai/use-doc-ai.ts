@@ -1,7 +1,7 @@
 import { ApiError, queryKeys } from '@bemmoly/api-client';
-import { usePreference } from '@bemmoly/core-web';
 import type { AiHandler, AiWriteEvent, AiWriteRequest } from '@bemmoly/editor';
-import { useQuery } from '@tanstack/react-query';
+import type { AiStatusResponse } from '@bemmoly/shared';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useMemo, useRef } from 'react';
 import type { AiWriteStreamEvent, DocsAiCommand } from '../../../../../shared/index.ts';
 import { useSpace } from '../../../hooks/queries.ts';
@@ -16,11 +16,37 @@ import { describeAiError, isAiRefusal } from './describe-ai-error.ts';
  * turned AI off for themselves: the editor then draws no AI group, no Ask AI and no ghost.
  */
 
-/** The person's own ghost text switch, kept per person on this device. */
-export const GHOST_TEXT_PREFERENCE = 'docs.ghost-text';
+function useAiStatus(enabled: boolean) {
+  return useQuery({
+    queryKey: queryKeys.ai.status(),
+    queryFn: () => api.ai.status(),
+    enabled,
+    staleTime: 60_000,
+  });
+}
 
-export function useGhostTextPreference() {
-  return usePreference<boolean>(GHOST_TEXT_PREFERENCE, true);
+/**
+ * The person's own ghost text switch, kept on the server (PUT /ai/preferences) so it follows
+ * them to every device. The switch flips at once and rolls back if the save fails.
+ */
+export function useGhostTextPreference(): [boolean, (on: boolean) => void] {
+  const { aiEnabled } = useSession();
+  const client = useQueryClient();
+  const status = useAiStatus(aiEnabled);
+  const mutation = useMutation({
+    mutationFn: (ghostText: boolean) => api.ai.setPreferences({ ghostText }),
+    onMutate: async (ghostText) => {
+      await client.cancelQueries({ queryKey: queryKeys.ai.status() });
+      const before = client.getQueryData<AiStatusResponse>(queryKeys.ai.status());
+      if (before) client.setQueryData(queryKeys.ai.status(), { ...before, ghostText });
+      return { before };
+    },
+    onError: (_error, _value, context) => {
+      if (context?.before) client.setQueryData(queryKeys.ai.status(), context.before);
+    },
+    onSettled: () => client.invalidateQueries({ queryKey: queryKeys.ai.status() }),
+  });
+  return [status.data?.ghostText ?? true, (on) => mutation.mutate(on)];
 }
 
 function toError(event: Extract<AiWriteStreamEvent, { type: 'error' }>): ApiError {
@@ -61,12 +87,7 @@ export interface DocAiOptions {
 export function useDocAi({ pageId, spaceKey, editable }: DocAiOptions): AiHandler | undefined {
   const { aiEnabled } = useSession();
   const space = useSpace(aiEnabled ? spaceKey : undefined);
-  const status = useQuery({
-    queryKey: queryKeys.ai.status(),
-    queryFn: () => api.ai.status(),
-    enabled: aiEnabled,
-    staleTime: 60_000,
-  });
+  const status = useAiStatus(aiEnabled);
   const [ghostOn] = useGhostTextPreference();
   /* A refusal (excluded, budget spent) stops ghost text asking again on every pause. */
   const ghostRefused = useRef(false);

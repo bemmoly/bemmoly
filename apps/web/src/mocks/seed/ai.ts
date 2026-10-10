@@ -20,6 +20,8 @@ export interface MockAi {
   roles: Record<AiRole, AiModelRole | null>;
   /** People who turned AI off for themselves. */
   optedOut: string[];
+  /** People who turned ghost text off; it follows them to every device. */
+  ghostTextOff?: string[];
   prompts: AiPrompt[];
   catalogFetchedAt: string | null;
   /** This month's usage from ai_runs, as the server aggregates it. */

@@ -108,6 +108,16 @@ describe('the AI mock', () => {
     ).toBe(403);
   });
 
+  it('keeps the ghost text switch per person, apart from opting out', () => {
+    const api = createMockApi('member');
+    const status = () =>
+      aiStatusResponseSchema.parse(call(api, 'GET', 'http://mock.local/api/v1/ai/status')?.body);
+    expect(status().ghostText).toBe(true);
+    call(api, 'PUT', 'http://mock.local/api/v1/ai/preferences', { ghostText: false });
+    expect(status()).toMatchObject({ ghostText: false, optedOut: false, enabled: true });
+    expect(call(api, 'PUT', 'http://mock.local/api/v1/ai/preferences', {})?.status).toBe(400);
+  });
+
   it('refuses the admin API to someone who cannot configure models', () => {
     const api = createMockApi('member');
     expect(call(api, 'GET', '/settings')?.status).toBe(403);

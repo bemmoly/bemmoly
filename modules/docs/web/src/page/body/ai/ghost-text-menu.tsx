@@ -4,8 +4,9 @@ import type { PageSlotProps } from '../../slots.ts';
 import { useDocAi, useGhostTextPreference } from './use-doc-ai.ts';
 
 /**
- * The More menu's ghost text switch: the person's own, on this device. Drawn only where the
- * editor has AI at all, so with AI off, for readers and in excluded spaces it is not there.
+ * The More menu's ghost text switch: the person's own, saved on the server so it follows
+ * them to every device. Drawn only where the editor has AI at all, so with AI off, for
+ * readers and in excluded spaces it is not there.
  */
 export function GhostTextMenuItem({ page, editable }: PageSlotProps) {
   const ai = useDocAi({ pageId: page.id, spaceKey: page.spaceKey, editable });

@@ -1,40 +1,56 @@
 import { ApiError, queryKeys } from '@bemmoly/api-client';
-import { writePreference } from '@bemmoly/core-web';
 import type { AiWriteEvent } from '@bemmoly/editor';
-import { act, renderHook } from '@testing-library/react';
+import type { AiStatusResponse } from '@bemmoly/shared';
+import { act, renderHook, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { api } from '../../../shared/api.ts';
 import { docsKeys } from '../../../shared/keys.ts';
 import { newClient, providers, space } from '../../../test-support.tsx';
 import { describeAiError } from './describe-ai-error.ts';
-import { GHOST_TEXT_PREFERENCE, useDocAi } from './use-doc-ai.ts';
+import { useDocAi, useGhostTextPreference } from './use-doc-ai.ts';
 
 afterEach(() => {
   vi.restoreAllMocks();
-  writePreference(GHOST_TEXT_PREFERENCE, true);
 });
 
 const PAGE = '0199c0de-0000-7000-8000-000000000071';
 
-function hook({ aiEnabled = true, editable = true, excluded = false, optedOut = false } = {}) {
-  const client = newClient();
-  client.setQueryData(queryKeys.me(), {
-    user: { id: 'u-1', name: 'Rohan' },
-    workspace: { name: 'Acme', aiEnabled },
-    capabilities: [],
-    modules: ['docs'],
-  });
-  client.setQueryData(docsKeys.space('ENG'), space({ aiExcluded: excluded }));
-  client.setQueryData(queryKeys.ai.status(), {
+interface Seed {
+  aiEnabled?: boolean;
+  editable?: boolean;
+  excluded?: boolean;
+  optedOut?: boolean;
+  ghostText?: boolean;
+}
+
+const status = ({ aiEnabled = true, optedOut = false, ghostText = true }: Seed = {}) =>
+  ({
     enabled: aiEnabled,
     optedOut,
     optOutAllowed: true,
+    ghostText,
     allowActions: true,
     availableRoles: ['fast', 'standard', 'strong'],
     budgetState: 'unlimited',
+  }) satisfies AiStatusResponse;
+
+function seeded(seed: Seed = {}) {
+  const client = newClient();
+  client.setQueryData(queryKeys.me(), {
+    user: { id: 'u-1', name: 'Rohan' },
+    workspace: { name: 'Acme', aiEnabled: seed.aiEnabled ?? true },
+    capabilities: [],
+    modules: ['docs'],
   });
+  client.setQueryData(docsKeys.space('ENG'), space({ aiExcluded: seed.excluded ?? false }));
+  client.setQueryData(queryKeys.ai.status(), status(seed));
+  return client;
+}
+
+function hook(seed: Seed = {}) {
+  const editable = seed.editable ?? true;
   return renderHook(() => useDocAi({ pageId: PAGE, spaceKey: 'ENG', editable }), {
-    wrapper: providers(client),
+    wrapper: providers(seeded(seed)),
   });
 }
 
@@ -59,11 +75,33 @@ describe('the Docs editor’s AI', () => {
     expect(hook().result.current).toBeDefined();
   });
 
-  it('follows the person’s ghost text switch', () => {
-    const { result } = hook();
-    expect(result.current?.ghostText).toBe(true);
-    act(() => writePreference(GHOST_TEXT_PREFERENCE, false));
-    expect(result.current?.ghostText).toBe(false);
+  it('follows the person’s ghost text switch from the server', () => {
+    expect(hook().result.current?.ghostText).toBe(true);
+    expect(hook({ ghostText: false }).result.current?.ghostText).toBe(false);
+  });
+
+  it('saves the ghost text switch on the server, and rolls it back if that fails', async () => {
+    // The server's copy: a refetch after each save reads it back.
+    let saved = true;
+    vi.spyOn(api.ai, 'status').mockImplementation(async () => ({
+      ...status(),
+      ghostText: saved,
+    }));
+    const save = vi.spyOn(api.ai, 'setPreferences').mockImplementation(async (body) => {
+      saved = body.ghostText ?? saved;
+    });
+    const client = seeded();
+    const { result } = renderHook(() => useGhostTextPreference(), { wrapper: providers(client) });
+    expect(result.current[0]).toBe(true);
+    act(() => result.current[1](false));
+    await waitFor(() => expect(result.current[0]).toBe(false));
+    expect(save).toHaveBeenCalledWith({ ghostText: false });
+    expect(client.getQueryData<AiStatusResponse>(queryKeys.ai.status())?.ghostText).toBe(false);
+
+    save.mockRejectedValueOnce(new ApiError(500, 'internal_error', 'down'));
+    act(() => result.current[1](true));
+    await waitFor(() => expect(save).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(result.current[0]).toBe(false));
   });
 
   it('streams a write, and turns an error line into an honest failure', async () => {

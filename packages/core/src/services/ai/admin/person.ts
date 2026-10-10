@@ -2,13 +2,14 @@ import {
   ForbiddenError,
   NotFoundError,
   type AiFeedback,
+  type AiPreferencesBody,
   type AiStatusResponse,
 } from '@bemmoly/shared';
 import type { AiFacade } from '../../../contracts/ai.ts';
 import type { Actor } from '../../../contracts/authz.ts';
 import { aiEnabledFor } from '../policy.ts';
 import { aiRefusal } from '../refusals.ts';
-import { setOptOut } from '../store/preferences.ts';
+import { readGhostText, setGhostText, setOptOut } from '../store/preferences.ts';
 import { setRunFeedback } from '../store/runs.ts';
 import { announceChange, userIdOf, type AiServiceContext } from './context.ts';
 
@@ -19,33 +20,45 @@ function personOf(actor: Actor): string {
 }
 
 /** GET /ai/status: what this person's client needs to draw (or hide) AI surfaces. */
-export async function getAiStatus(ai: AiFacade, actor: Actor): Promise<AiStatusResponse> {
+export async function getAiStatus(
+  ctx: Pick<AiServiceContext, 'sql'>,
+  ai: AiFacade,
+  actor: Actor,
+): Promise<AiStatusResponse> {
   const policy = await ai.policy(actor);
+  const userId = userIdOf(actor);
   return {
     enabled: aiEnabledFor(policy),
     optedOut: policy.actorOptedOut,
     optOutAllowed: policy.perUserOptOutAllowed,
+    ghostText: userId ? await readGhostText(ctx.sql, userId) : true,
     allowActions: policy.allowActions,
     availableRoles: policy.enabled && !policy.actorOptedOut ? [...policy.availableRoles] : [],
     budgetState: policy.budgetState,
   };
 }
 
-/** PUT /ai/preferences: turn AI off (or back on) for oneself, when the admin allows it. */
+/**
+ * PUT /ai/preferences: turn AI off (or back on) for oneself, when the admin allows it, and
+ * the ghost text switch, which follows the person to every device.
+ */
 export async function setAiPreferences(
   ctx: AiServiceContext,
   ai: AiFacade,
   actor: Actor,
-  body: { optedOut: boolean },
+  body: AiPreferencesBody,
 ): Promise<AiStatusResponse> {
   const userId = personOf(actor);
-  const policy = await ai.policy(actor);
-  if (body.optedOut && !policy.perUserOptOutAllowed) {
-    throw new ForbiddenError('Your admin has not allowed turning AI off per person');
+  if (body.optedOut !== undefined) {
+    const policy = await ai.policy(actor);
+    if (body.optedOut && !policy.perUserOptOutAllowed) {
+      throw new ForbiddenError('Your admin has not allowed turning AI off per person');
+    }
+    await setOptOut(ctx.sql, userId, body.optedOut);
+    await announceChange(ctx, actor, ['opt_out']);
   }
-  await setOptOut(ctx.sql, userId, body.optedOut);
-  await announceChange(ctx, actor, ['opt_out']);
-  return getAiStatus(ai, actor);
+  if (body.ghostText !== undefined) await setGhostText(ctx.sql, userId, body.ghostText);
+  return getAiStatus(ctx, ai, actor);
 }
 
 /** PUT /ai/runs/:id/feedback: "Not useful" (or useful) on one of this person's own runs. */

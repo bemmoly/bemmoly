@@ -141,7 +141,7 @@ export function createAiController(deps: AiControllerDependencies) {
       reply.code(204);
     },
 
-    status: async (r: FastifyRequest) => aiAdmin.getAiStatus(deps.ai.facade, await actor(r)),
+    status: async (r: FastifyRequest) => aiAdmin.getAiStatus(ctx, deps.ai.facade, await actor(r)),
     setPreferences: async (r: FastifyRequest) =>
       aiAdmin.setAiPreferences(
         ctx,
