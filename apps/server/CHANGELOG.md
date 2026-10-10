@@ -1,5 +1,16 @@
 # @bemmoly/server
 
+## 0.4.1
+
+### Patch Changes
+
+- Updated dependencies [db35948]
+  - @bemmoly/module-work@0.4.1
+  - @bemmoly/module-docs@0.4.1
+  - @bemmoly/core@0.4.1
+  - @bemmoly/module-sample@0.4.1
+  - @bemmoly/shared@0.4.1
+
 ## 0.4.0
 
 ### Patch Changes
