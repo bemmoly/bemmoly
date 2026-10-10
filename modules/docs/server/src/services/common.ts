@@ -28,7 +28,7 @@ export interface DocsServiceDeps {
   /** Reads the module's own settings (docs.compactThreshold). */
   settings?: Pick<SettingsRegistry, 'get'>;
   /** Other modules' records (issues) by key or id, without importing those modules. */
-  entities?: Pick<EntityRegistry, 'resolve'>;
+  entities?: Pick<EntityRegistry, 'resolve'> & Partial<Pick<EntityRegistry, 'resolveMany' | 'has'>>;
 }
 
 export const DOCS_MODULE = { kind: 'module', moduleId: 'docs' } as const;
