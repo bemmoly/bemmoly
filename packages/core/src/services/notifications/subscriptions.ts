@@ -28,7 +28,10 @@ export function subscribeNotificationEvents(
 
 const digestPayloadSchema = z.object({ userId: z.uuid() });
 
-/** `notifications.digest`: enqueued per user with a singleton key, so one waits at a time. */
+/**
+ * `notifications.digest`: enqueued per user with a singleton key, so one waits at a time. A
+ * digest only reads and queues an email, so digests for different people run four at once.
+ */
 export function registerNotificationJobs(
   jobs: JobQueue,
   notifications: NotificationsService,
@@ -39,6 +42,6 @@ export function registerNotificationJobs(
       const { userId } = digestPayloadSchema.parse(payload);
       await notifications.sendDigest(userId);
     },
-    { retryLimit: 3, retryDelaySeconds: 60, retryBackoff: true },
+    { retryLimit: 3, retryDelaySeconds: 60, retryBackoff: true, concurrency: 4 },
   );
 }
