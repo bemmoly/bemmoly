@@ -7,6 +7,16 @@ export interface CsrfOptions {
   publicUrl: string;
 }
 
+declare module 'fastify' {
+  interface FastifyContextConfig {
+    /**
+     * A form an outside system posts from another site by design (the SAML assertion
+     * consumer). The route must verify what it receives on its own terms.
+     */
+    crossSiteForm?: boolean;
+  }
+}
+
 const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
 
 /**
@@ -18,6 +28,7 @@ export const csrfProtection = fp<CsrfOptions>(
   async (app, options) => {
     app.addHook('onRequest', async (request) => {
       if (SAFE_METHODS.has(request.method) || request.headers.authorization) return;
+      if (request.routeOptions.config?.crossSiteForm === true) return;
       if (request.headers['sec-fetch-site'] === 'cross-site') {
         throw new ForbiddenError('Cross-site requests are not allowed');
       }

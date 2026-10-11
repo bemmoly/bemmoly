@@ -19,6 +19,7 @@ import { operationsRoutes } from './operations.ts';
 import { peopleRoutes } from './people.ts';
 import { sessionRoutes } from './session.ts';
 import { settingsRoutes } from './settings.ts';
+import { ssoRoutes } from './sso.ts';
 import { teamRoutes } from './teams.ts';
 import { workBacklogRoutes } from './work-backlog.ts';
 import { workBoardRoutes } from './work-board.ts';
@@ -36,6 +37,7 @@ export const ROUTES: readonly MockRoute[] = [
   ...apiTokenRoutes,
   ...teamRoutes,
   ...settingsRoutes,
+  ...ssoRoutes,
   ...aiAdminRoutes,
   ...aiProviderRoutes,
   ...aiRoleRoutes,

@@ -15,6 +15,7 @@ import { operationsEndpoints } from './endpoints/operations.ts';
 import { peopleEndpoints } from './endpoints/people.ts';
 import { authEndpoints, setupEndpoints } from './endpoints/session.ts';
 import { settingsEndpoints } from './endpoints/settings.ts';
+import { ssoEndpoints } from './endpoints/sso.ts';
 import { createHttp, type HttpOptions } from './http.ts';
 
 export function createApiClient(options: HttpOptions = {}) {
@@ -25,6 +26,7 @@ export function createApiClient(options: HttpOptions = {}) {
     auth: authEndpoints(http),
     settings: settingsEndpoints(http),
     imports: importEndpoints(http),
+    sso: ssoEndpoints(http),
     ai: {
       ...aiEndpoints(http),
       plans: aiPlanEndpoints(http),
@@ -50,6 +52,7 @@ export {
 } from './errors.ts';
 export { buildQuery, createHttp, type Http, type HttpOptions, type Query } from './http.ts';
 export { enc, validated } from './endpoints/validate.ts';
+export { ssoStartPath } from './endpoints/sso.ts';
 export type { AuditFilter, BackupsFilter } from './endpoints/operations.ts';
 export type { ListOptions, UsersFilter } from './endpoints/people.ts';
 export type { SettingRead } from './endpoints/settings.ts';

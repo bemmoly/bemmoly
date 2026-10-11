@@ -16,7 +16,25 @@ export async function errorHandler(
   } else {
     request.log.info({ code: body.code, status }, 'request rejected');
   }
+  if (request.url.startsWith('/scim/')) {
+    return reply
+      .code(status)
+      .headers(headers)
+      .type('application/scim+json')
+      .send(scimErrorBody(status, body));
+  }
   return reply.code(status).headers(headers).send(body);
+}
+
+/** RFC 7644 §3.12: identity providers read SCIM errors in their own shape. */
+function scimErrorBody(status: number, body: { message: string; details?: unknown }) {
+  const scimType = (body.details as { scimType?: unknown } | undefined)?.scimType;
+  return {
+    schemas: ['urn:ietf:params:scim:api:messages:2.0:Error'],
+    status: String(status),
+    detail: body.message,
+    ...(typeof scimType === 'string' ? { scimType } : {}),
+  };
 }
 
 export async function apiNotFoundHandler(request: FastifyRequest): Promise<never> {

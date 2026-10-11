@@ -5,6 +5,7 @@
  * shows without a date until it is added.
  */
 export const RELEASE_DATES: Readonly<Record<string, string>> = {
+  '0.6.0': '2026-10-11',
   '0.5.0': '2026-10-11',
   '0.4.0': '2026-10-10',
   '0.3.0': '2026-10-10',
@@ -25,6 +26,10 @@ export const RELEASE_DATES: Readonly<Record<string, string>> = {
  * words of their notes. A release without an entry here is listed by its first note instead.
  */
 export const RELEASE_TITLES: Readonly<Record<string, { title: string; summary: string }>> = {
+  '0.6.0': {
+    title: 'Imports, an MCP server and a self-updating updater',
+    summary: 'Images in docs, MCP for AI clients, and updates that keep the updater current',
+  },
   '0.5.0': {
     title: 'AI arrives, and it is optional',
     summary: 'Summaries with sources, answers from your docs, editor help and plans you confirm',
