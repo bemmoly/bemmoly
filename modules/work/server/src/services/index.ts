@@ -18,6 +18,7 @@ import { createFieldsService } from './fields/index.ts';
 import { createFiltersService } from './filters/index.ts';
 import { createHistoryService } from './history/index.ts';
 import { requireDatabase } from './issues/deps.ts';
+import { createIssueImportService } from './import/mcp/index.ts';
 import { createIssuesService } from './issues/index.ts';
 import { notify } from './issues/notify.ts';
 import { createLabelsService } from './labels/index.ts';
@@ -94,6 +95,7 @@ export function createWorkServices(deps: WorkServiceDeps) {
     versions: createVersionsService(deps),
     components: createComponentsService(deps),
     issues,
+    issueImport: createIssueImportService(deps),
     codeLinks: createCodeLinksService({
       ...(deps.database ? { database: deps.database } : {}),
       ...(deps.audit ? { audit: deps.audit } : {}),
