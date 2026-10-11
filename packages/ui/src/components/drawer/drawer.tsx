@@ -179,7 +179,7 @@ export function Drawer({
         onDoubleClick={resize.reset}
         className={cx(
           'absolute inset-y-0 -left-1 z-10 w-2 cursor-col-resize touch-none outline-0',
-          'after:absolute after:inset-y-0 after:left-[3px] after:w-0.5 after:bg-acc after:opacity-0 after:transition-opacity',
+          'after:absolute after:inset-y-0 after:left-[3px] after:w-0.5 after:bg-acc after:opacity-0 motion-safe:after:transition-opacity',
           'hover:after:opacity-100 focus-visible:after:opacity-100 active:after:opacity-100',
         )}
       />

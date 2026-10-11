@@ -70,9 +70,25 @@ describe('Modal and Drawer', () => {
     );
     await expectAccessible(container);
     const panel = screen.getByRole('complementary', { name: 'PLT-204 details' });
-    expect(panel.className).toContain('w-100');
+    expect(panel.style.width).toBe('400px');
     fireEvent.keyDown(panel, { key: 'Escape' });
     expect(onClose).toHaveBeenCalled();
+  });
+
+  it('widens the docked drawer from its edge with the arrow keys and resets on double-click', () => {
+    window.localStorage.removeItem('bemmoly.drawer.width');
+    render(
+      <Drawer open onClose={() => {}} label="PLT-204 details">
+        <DrawerTitle>Session store migration to Postgres</DrawerTitle>
+      </Drawer>,
+    );
+    const panel = screen.getByRole('complementary', { name: 'PLT-204 details' });
+    const edge = screen.getByRole('separator', { name: 'Resize panel' });
+    fireEvent.keyDown(edge, { key: 'ArrowLeft' });
+    expect(panel.style.width).toBe('416px');
+    expect(window.localStorage.getItem('bemmoly.drawer.width')).toBe('416');
+    fireEvent.doubleClick(edge);
+    expect(panel.style.width).toBe('400px');
   });
 });
 
