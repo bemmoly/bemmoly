@@ -5,8 +5,8 @@ const route = (name: string, p95: number) => ({ route: name, count: 100, p95, p9
 
 describe('capacity rules', () => {
   it('turns actions a second into people', () => {
-    expect(activeUsers(40)).toBe(600);
-    expect(companySize(40)).toBe(3000);
+    expect(activeUsers(80)).toBe(400);
+    expect(companySize(80)).toBe(2000);
   });
 
   it('judges a step by its worst budget and its errors', () => {

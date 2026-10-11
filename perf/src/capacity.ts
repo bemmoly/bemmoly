@@ -63,10 +63,13 @@ function readStep(dir: string, samples: SoakSample[]) {
     Object.entries(s).find(([name]) => /bemmoly-1$|app$/.test(name))?.[1];
   const db = (s: ReturnType<typeof containerStats>) =>
     Object.entries(s).find(([name]) => /db-1$|db$/.test(name))?.[1];
-  const hostLoad = readFileSync(join(dir, 'host-load.txt'), 'utf8')
+  // host-load.txt lines: "<time> <load> [<cpu idle %>]".
+  const hostLines = readFileSync(join(dir, 'host-load.txt'), 'utf8')
     .trim()
     .split('\n')
-    .map((line) => Number(line.split(' ')[1]));
+    .map((line) => line.split(' '));
+  const hostLoad = hostLines.map((fields) => Number(fields[1]));
+  const hostIdle = hostLines.map((fields) => (fields[2] === undefined ? NaN : Number(fields[2])));
   const requests = metrics['http_reqs']?.count ?? 0;
   const failedRate = metrics['http_req_failed']?.value ?? 0;
   const result = {
@@ -91,6 +94,8 @@ function readStep(dir: string, samples: SoakSample[]) {
     queueDepthMax: max(inStep.map((s) => s.queueDepth)),
     server5xx: inStep.reduce((t, s) => t + (s.window?.serverErrors ?? 0), 0),
     hostLoadMax: max(hostLoad),
+    hostIdleMinPercent:
+      max(hostIdle.map((v) => -v)) === null ? null : -(max(hostIdle.map((v) => -v)) as number),
   };
   return { ...result, verdict: stepVerdict(result) };
 }
@@ -100,9 +105,13 @@ function main() {
     options: { ramp: { type: 'string' }, size: { type: 'string' }, out: { type: 'string' } },
   });
   if (!values.ramp || !values.size) throw new Error('--ramp and --size are required');
-  const samples = readFileSync(join(values.ramp, 'monitor.jsonl'), 'utf8')
-    .trim()
-    .split('\n')
+  const samples = readdirSync(values.ramp)
+    .filter((name) => /^monitor.*\.jsonl$/.test(name))
+    .flatMap((name) =>
+      readFileSync(join(values.ramp as string, name), 'utf8')
+        .trim()
+        .split('\n'),
+    )
     .filter(Boolean)
     .map((line) => JSON.parse(line) as SoakSample);
   const steps = readdirSync(values.ramp)
@@ -126,11 +135,11 @@ function main() {
   const ms = (v: number | null | undefined) => (v === null || v === undefined ? '-' : v.toFixed(0));
   const route = (s: (typeof steps)[number], name: string) => s.routes.find((r) => r.route === name);
   const lines = [
-    `| Actions/s | Active users | Errors | Board p95 | Issue p95 | Suggest p95 | Search p95 | Page p95 | Page open p95 | Echo p95 | App CPU | DB CPU | RSS MB | DB MiB | Pool | Queue | Host load | Verdict |`,
-    `| ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |`,
+    `| Actions/s | Active users | Errors | Board p95 | Issue p95 | Suggest p95 | Search p95 | Page p95 | Page open p95 | Echo p95 | App CPU | DB CPU | RSS MB | DB MiB | Pool | Queue | Host load | Host idle | Verdict |`,
+    `| ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |`,
     ...steps.map(
       (s) =>
-        `| ${s.rate} | ${s.activeUsers} | ${(s.errorRate * 100).toFixed(2)}% | ${ms(route(s, 'GET /api/v1/work/boards/:id/view')?.p95)} | ${ms(route(s, 'GET /api/v1/work/issues/:key')?.p95)} | ${ms(route(s, 'GET /api/v1/work/search/suggest')?.p95)} | ${ms(route(s, 'GET /api/v1/search')?.p95)} | ${ms(route(s, 'GET /api/v1/docs/pages/:pageId')?.p95)} | ${ms(s.collabPageOpenP95)} | ${ms(s.collabEchoP95)} | ${ms(s.appCpuMaxPercent)}% | ${ms(s.dbCpuMaxPercent)}% | ${ms(s.appRssMaxMB)} | ${ms(s.dbMemMaxMiB)} | ${s.poolActiveMax ?? '-'}/${s.poolMax ?? '-'} | ${s.queueDepthMax ?? '-'} | ${s.hostLoadMax?.toFixed(1) ?? '-'} | ${s.verdict} |`,
+        `| ${s.rate} | ${s.activeUsers} | ${(s.errorRate * 100).toFixed(2)}% | ${ms(route(s, 'GET /api/v1/work/boards/:id/view')?.p95)} | ${ms(route(s, 'GET /api/v1/work/issues/:key')?.p95)} | ${ms(route(s, 'GET /api/v1/work/search/suggest')?.p95)} | ${ms(route(s, 'GET /api/v1/search')?.p95)} | ${ms(route(s, 'GET /api/v1/docs/pages/:pageId')?.p95)} | ${ms(s.collabPageOpenP95)} | ${ms(s.collabEchoP95)} | ${ms(s.appCpuMaxPercent)}% | ${ms(s.dbCpuMaxPercent)}% | ${ms(s.appRssMaxMB)} | ${ms(s.dbMemMaxMiB)} | ${s.poolActiveMax ?? '-'}/${s.poolMax ?? '-'} | ${s.queueDepthMax ?? '-'} | ${s.hostLoadMax?.toFixed(1) ?? '-'} | ${ms(s.hostIdleMinPercent)}% | ${s.verdict} |`,
     ),
   ];
   process.stdout.write(
