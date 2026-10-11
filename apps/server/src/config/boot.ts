@@ -24,6 +24,7 @@ import { wireCollab } from './collab.ts';
 import { connectDatabase, type DatabaseConnection } from './database.ts';
 import { identityWiring } from './identity.ts';
 import { createDataKernel, type DataKernel } from './kernel.ts';
+import { wireMcp } from './mcp.ts';
 import { wireRetrieval } from './retrieval.ts';
 import { wireKernelServices } from './services.ts';
 
@@ -150,6 +151,7 @@ export async function bootApplication(options: BootOptions): Promise<Booted> {
           logger,
         })
       : undefined;
+  const mcp = database && kernel ? wireMcp({ env, database, kernel, modules }) : undefined;
   const services =
     database && kernel && databaseUrl
       ? wireKernelServices({
@@ -177,6 +179,7 @@ export async function bootApplication(options: BootOptions): Promise<Booted> {
             ...services?.routes,
             ...ai?.routes,
             ...(retrieval ? { retrieval } : {}),
+            ...mcp,
             ...(collab ? { collab } : {}),
           },
         }
