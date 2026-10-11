@@ -44,6 +44,8 @@ describe('Button', () => {
     );
     const button = screen.getByRole('button');
     expect(button.getAttribute('aria-busy')).toBe('true');
+    // Busy is not unavailable: only a disabled button that is not loading fades.
+    expect(button.className).toContain('disabled:not-aria-busy:opacity-50');
     fireEvent.click(button);
     expect(onClick).not.toHaveBeenCalled();
   });

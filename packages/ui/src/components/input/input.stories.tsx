@@ -76,3 +76,17 @@ export const WithError: Story = {
     </Field>
   ),
 };
+
+/** The sign-in pages: 40px, and 46px with 16px text on phones (resize below 640px). */
+export const Touch: Story = {
+  render: () => (
+    <div className="flex w-95 flex-col gap-3 rounded-card border border-line bg-card p-5">
+      <Field label="Email">
+        <Input size="touch" type="email" name="email" defaultValue="rohan@acmelabs.dev" />
+      </Field>
+      <Field label="Email" hint="From the invitation.">
+        <Input size="touch" type="email" defaultValue="sam@acmelabs.dev" readOnly />
+      </Field>
+    </div>
+  ),
+};

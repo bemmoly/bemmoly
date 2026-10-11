@@ -20,6 +20,7 @@ export * from './components/filter-bar/index.ts';
 export * from './components/form-layout/index.ts';
 export * from './components/glyphs/index.ts';
 export * from './components/input/index.ts';
+export * from './components/password-input/index.ts';
 export * from './components/kbd/index.ts';
 export * from './components/issue-card/index.ts';
 export * from './components/issue-row/index.ts';
