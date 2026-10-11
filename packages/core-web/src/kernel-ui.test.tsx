@@ -58,9 +58,15 @@ describe('settings navigation', () => {
       'Workspace',
       'People',
       'Modules',
+      'Integrations',
       'System',
     ]);
     const items = flattenSettings(groups);
+    expect(items.find((item) => item.id === 'code-hosts')).toMatchObject({
+      path: '/settings/code-hosts',
+      label: 'Code hosts',
+    });
+    expect(settingsTrail(groups, '/settings/code-hosts')?.group.label).toBe('Integrations');
     expect(items.find((item) => item.id === 'users')).toMatchObject({
       label: 'Members',
       count: 42,
