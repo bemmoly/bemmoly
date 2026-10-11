@@ -54,7 +54,8 @@ Decided in [ADR 0016](../../adr/0016-design-system-is-canonical.md), which build
 ## What fails review on sight
 
 - A screen outside the frame: its own top bar, its own sidebar, a second scrollbar, no
-  `PageLayout` (the setup wizard and the pre-sign-in pages are the only standalone screens).
+  `PageLayout` (the setup wizard, the pre-sign-in pages and the MCP consent screen are the
+  only standalone screens).
 - A glyph character standing in for an icon (`✓ ✕ ▾ → ⌘ • ›`), outside `Kbd`. Lint fails it.
 - A literal colour (`#2356c9`, `rgb(…)`, `bg-[#…]`) or a literal font size (`text-[13px]`) in UI
   code. Lint fails it.

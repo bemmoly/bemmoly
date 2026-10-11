@@ -63,6 +63,7 @@ swatch never reads as a label's dot. Where a kit colour fails contrast it is lif
 that passes (ADR 0015).
 
 - [Workspace settings](interaction/settings.md)
+- [MCP sign-in](interaction/mcp-consent.md): the consent screen an MCP client opens, and Connected apps under Access tokens.
 - [Dialogs](interaction/dialogs.md): the modal, Create issue, sprint, saved filter, link, project dialogs.
 - [Setup wizard](interaction/setup.md)
 - [Settings › AI and the wizard's AI step](interaction/settings-ai.md): turning AI on, providers, model roles, privacy, budget, prompts, the personal opt-out.

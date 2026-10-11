@@ -13,6 +13,14 @@
   and who can sign in. Secrets are write-only: an empty field keeps the stored one.
 - **Destructive.** Deleting a provider and revoking a SCIM token confirm (secrets cannot come
   back). Requiring SSO confirms and names who keeps a password; turning it off applies at once.
+- **Break-glass admins.** Inside the policy card, every active org admin in a list: avatar,
+  name, a "Break-glass" badge or "No password", the email (or why the action is unavailable),
+  and "Make break-glass…" or "Remove…". Both confirm, naming the person and saying what changes
+  for them and that every other org admin is told. "Remove…" is disabled, with the reason in the
+  row, for the last one while single sign-on is required; "Make break-glass…" is disabled for an
+  admin who signs in only with single sign-on. The server enforces both, and refuses demoting or
+  deactivating the last one too. A toast confirms; the other admins get the `break_glass_changed`
+  notice in the inbox and by email at once.
 - **States.** Skeleton while loading; "Not set up" card with one action when there are no
   providers; the require switch is disabled with the reason until a test passes and a
   break-glass admin exists; people without `workspace.sso.configure` see who can change it.

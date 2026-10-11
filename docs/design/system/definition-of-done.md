@@ -7,7 +7,7 @@ it.
 ## Frame and layout
 
 - [ ] The screen sits in the frame through `PageLayout` (`full` or `contained`), or is one of the
-      recorded standalone screens (setup wizard, pre-sign-in pages).
+      recorded standalone screens (setup wizard, pre-sign-in pages, MCP consent).
 - [ ] One scroll region, owned by the layout; the header sticks; nothing scrolls sideways at 390px.
 - [ ] Page actions are in the header (`HeaderActions`); view tabs are `PageHeader` `tabs`.
 - [ ] The tab title reads "page · context · Bemmoly".

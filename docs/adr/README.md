@@ -30,3 +30,5 @@ accepted record is never edited except to mark it superseded.
 | [0023](0023-card-layout-is-the-boards-quick-filters-in-the-row.md) | Card layout is the board's; quick filters sit in the filter row | accepted |
 | [0024](0024-cli-follows-its-release.md) | The bemmoly command follows the release it manages | accepted |
 | [0025](0025-i18n-lingui-catalogs-per-namespace.md) | Text is ICU messages in per-namespace catalogs, on Lingui's runtime | accepted |
+| [0026](0026-mcp-clients-sign-in-with-oauth.md) | MCP clients sign in with OAuth, identified by client metadata documents | accepted |
+| [0027](0027-consent-screen-uses-the-sign-in-shell.md) | The MCP consent screen uses the sign-in shell | accepted |
