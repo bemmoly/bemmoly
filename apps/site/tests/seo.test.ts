@@ -6,7 +6,7 @@
  */
 import { readdirSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { PAGES, type SitePage } from '../src/data/pages.ts';
+import { ALTERNATIVES, PAGES, pageAt, type SitePage } from '../src/data/pages.ts';
 import { LATEST } from '../src/lib/changelog.ts';
 import { isSitePage, parsePage, scriptsOf } from './dom.ts';
 
@@ -179,7 +179,10 @@ describe('structured data', () => {
 
 /**
  * The owner's trademark rule: other products are named only as import sources ("Import from
- * Jira"). The allowed phrases are listed; anything else fails.
+ * Jira"). The allowed phrases are listed; anything else fails. The one exception is the two
+ * comparison pages (ALTERNATIVES): they may name the product they compare with and its maker,
+ * and every other page may carry only the link to them, under its exact short name (the
+ * footer's "Jira alternative"), and llms.txt only their own entries in its page list.
  */
 describe('other products', () => {
   const NAMES =
@@ -190,16 +193,60 @@ describe('other products', () => {
     /Import from Confluence/g,
     /the Jira and Confluence marks/g,
   ];
+  /** The names a comparison page may use: what it compares with, and nothing else. */
+  const COMPARED = /\b(Jira|Confluence|Atlassian)\b/g;
+  const comparisons = ALTERNATIVES.map(pageAt);
+  const escape = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  /** A link to a comparison page whose whole text is that page's short name. */
+  const links = comparisons.map(
+    (page) =>
+      new RegExp(`<a href="${escape(page.path)}"[^>]*>\\s*${escape(page.name)}\\s*</a>`, 'g'),
+  );
+  /** llms.txt's entry for a comparison page: "- [name](url): description". */
+  const entries = comparisons.map(
+    (page) =>
+      new RegExp(
+        `^- \\[${escape(page.name)}\\]\\(https://bemmoly\\.com${escape(page.path)}\\): .*$`,
+        'gm',
+      ),
+  );
   const textFiles = files.filter((file) => /\.(html|xml|txt|webmanifest|json)$/.test(file));
+  const comparisonFiles = new Set(comparisons.map((page) => fileOf(page.path)));
 
-  it.each(textFiles)('%s names no other product outside an import label', (file) => {
-    let text = decode(read(file));
-    for (const allowed of ALLOWED) text = text.replace(allowed, '');
+  it('has the two comparison pages, and they are built', () => {
+    expect(ALTERNATIVES).toEqual(['/jira-alternative', '/confluence-alternative']);
+    for (const file of comparisonFiles) expect(htmlFiles).toContain(file);
+  });
+
+  it.each(textFiles.filter((file) => !comparisonFiles.has(file)))(
+    '%s names no other product outside an import label',
+    (file) => {
+      let text = decode(read(file));
+      for (const allowed of [...ALLOWED, ...links, ...entries]) text = text.replace(allowed, '');
+      expect(text.match(NAMES) ?? []).toEqual([]);
+    },
+  );
+
+  it.each([...comparisonFiles])('%s names only the products it compares with', (file) => {
+    const text = decode(read(file)).replace(COMPARED, '');
     expect(text.match(NAMES) ?? []).toEqual([]);
   });
 
-  it('keeps names out of every address', () => {
-    const urls = PAGES.map((page) => page.path).join(' ');
+  it.each(comparisons)('$path leads with Bemmoly and carries the trademark note', (page) => {
+    const source = read(fileOf(page.path));
+    const h1 = parsePage(source).querySelector('h1')?.textContent.trim() ?? '';
+    expect(h1.startsWith('Bemmoly')).toBe(true);
+    expect(page.title.startsWith('Bemmoly')).toBe(true);
+    expect(decode(source)).toContain(
+      'Jira and Confluence are trademarks of Atlassian. Bemmoly is not affiliated with or endorsed by Atlassian.',
+    );
+    expect(source).not.toMatch(/<img[^>]+(atlassian|jira|confluence)/i);
+  });
+
+  it('keeps names out of every address but the comparison pages’ own paths', () => {
+    const urls = PAGES.map((page) => page.path)
+      .filter((path) => !(ALTERNATIVES as readonly string[]).includes(path))
+      .join(' ');
     expect(urls.match(new RegExp(NAMES.source, 'gi')) ?? []).toEqual([]);
   });
 });

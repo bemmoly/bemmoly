@@ -1,0 +1,25 @@
+---
+/** A real sequence, numbered: how moving in works, step by step, from the release notes. */
+import type { MigrationStep } from '../../data/alternatives.ts';
+import StepNumber from '../self-hosting/StepNumber.astro';
+
+interface Props {
+  steps: readonly MigrationStep[];
+}
+
+const { steps } = Astro.props;
+---
+
+<ol class="m-0 flex list-none flex-col gap-4 p-0">
+  {steps.map((step, index) => (
+    <li class="grid grid-cols-[22px_1fr] gap-3">
+      <span class="pt-0.5">
+        <StepNumber n={index + 1} />
+      </span>
+      <div class="flex flex-col gap-1">
+        <h3 class="text-16 font-semibold text-tx">{step.title}</h3>
+        <p>{step.body}</p>
+      </div>
+    </li>
+  ))}
+</ol>

@@ -1,0 +1,25 @@
+---
+/** The link from one comparison page to the other, above the usual "Read next" list. */
+import { ALTERNATIVES, pageAt, type PagePath } from '../../data/pages.ts';
+import Icon from '../site/Icon.astro';
+
+interface Props {
+  current: PagePath;
+}
+
+const { current } = Astro.props;
+const others = ALTERNATIVES.filter((path) => path !== current).map(pageAt);
+---
+
+{others.map((page) => (
+  <a
+    href={page.path}
+    class="flex items-start gap-3 rounded-card border border-line bg-card p-4 no-underline! shadow-e1 hover:bg-sunken"
+  >
+    <Icon name="arrow" size={16} class="mt-1 text-acc" />
+    <span class="flex flex-col gap-1">
+      <span class="text-16 font-semibold text-tx">{page.title}</span>
+      <span class="text-14h leading-desc text-tx-2">{page.description}</span>
+    </span>
+  </a>
+))}
