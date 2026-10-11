@@ -1,4 +1,4 @@
-import { sidebarSectionSchema, type ModuleManifest } from '@bemmoly/shared';
+import { moduleSettingsSchema, sidebarSectionSchema, type ModuleManifest } from '@bemmoly/shared';
 import type { RetrievalSourceDefinition } from '../contracts/retrieval.ts';
 import type { CollabDocumentDefinition } from './collab.ts';
 import type { BemmolyModule } from './contract.ts';
@@ -70,6 +70,7 @@ export class ModuleRegistry {
       ...(module.color ? { color: module.color } : {}),
       ...(module.order === undefined ? {} : { order: module.order }),
       ...(module.sidebar ? { sidebar: sidebarSectionSchema.parse(module.sidebar) } : {}),
+      ...(module.settings ? { settings: moduleSettingsSchema.parse(module.settings) } : {}),
       ...(contributions.searchProviders.length > 0
         ? {
             search: contributions.searchProviders.map(({ kind, label }) => ({ kind, label })),

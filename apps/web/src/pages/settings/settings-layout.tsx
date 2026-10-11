@@ -1,11 +1,17 @@
-import { PageLayout, settingsTrail, type PageCrumb, type PageTab } from '@bemmoly/core-web';
+import {
+  moduleSettingsOf,
+  PageLayout,
+  settingsTrail,
+  type PageCrumb,
+  type PageTab,
+} from '@bemmoly/core-web';
 import { Icon } from '@bemmoly/ui/icons';
 import { useQuery } from '@tanstack/react-query';
 import { Outlet, useRouterState } from '@tanstack/react-router';
 import { useSettingsGroups } from '../../components/shell/settings-sidebar.tsx';
 import { aiSettingsQuery, CONFIGURE_AI } from '../../hooks/use-ai-admin.ts';
 import { useMe } from '../../hooks/use-session.ts';
-import { useShell } from '../../hooks/use-shell.ts';
+import { useShell, type Shell } from '../../hooks/use-shell.ts';
 
 const AI_PATH = '/settings/ai';
 
@@ -34,11 +40,17 @@ function useAreaTabs(pathname: string): { tabs?: readonly PageTab[]; activeTab?:
 /**
  * Settings pages in the frame's content area: the sidebar shows the settings contents, the
  * header the trail "Settings / People / Teams", and each page its own blocks in the reading
- * column.
+ * column. A module's own settings bring their own layout (an editor goes full width), so
+ * under its path the layout steps aside.
  */
 export function SettingsLayout() {
   const shell = useShell();
   const pathname = useRouterState({ select: (state) => state.location.pathname });
+  if (moduleSettingsOf(shell.modules, pathname)) return <Outlet />;
+  return <KernelSettingsLayout shell={shell} pathname={pathname} />;
+}
+
+function KernelSettingsLayout({ shell, pathname }: { shell: Shell; pathname: string }) {
   const groups = useSettingsGroups(shell);
   const trail = settingsTrail(groups, pathname);
   const area = useAreaTabs(pathname);

@@ -119,39 +119,49 @@ const moduleName = (manifest: ModuleManifest) =>
   manifest.name ?? manifest.id.charAt(0).toUpperCase() + manifest.id.slice(1);
 
 /**
- * One row per enabled module, in sidebar order: its own settings pages when it registers
- * any, otherwise its row in Settings › Modules.
+ * One row per enabled module, in sidebar order: its own settings when its manifest declares
+ * them (or, from older servers, settings navigation entries), otherwise its row in
+ * Settings › Modules.
  */
 function moduleItems(manifests: readonly ModuleManifest[]): SettingsItem[] {
   const ordered = [...manifests].sort((a, b) => (a.order ?? 50) - (b.order ?? 50));
   return ordered.flatMap((manifest) => {
-    const entries = manifest.navigation.filter((entry) => entry.placement === 'settings');
     const icon = (manifest.icon ?? 'modules') as IconName;
+    const own = (id: string, label: string, path: string, requires: SettingsRequirement) => ({
+      ...item(id, label, path, icon, requires),
+      moduleId: manifest.id,
+    });
+    if (manifest.settings) {
+      const { path, requires } = manifest.settings;
+      return [own(`module:${manifest.id}`, moduleName(manifest), path, requires)];
+    }
+    const entries = manifest.navigation.filter((entry) => entry.placement === 'settings');
     if (entries.length === 0) {
       return [
-        {
-          ...item(
-            `module:${manifest.id}`,
-            moduleName(manifest),
-            `/settings/modules#${manifest.id}`,
-            icon,
-            MODULES,
-          ),
-          moduleId: manifest.id,
-        },
+        own(
+          `module:${manifest.id}`,
+          moduleName(manifest),
+          `/settings/modules#${manifest.id}`,
+          MODULES,
+        ),
       ];
     }
-    return entries.map((entry) => ({
-      ...item(
-        entry.id,
-        entries.length === 1 ? moduleName(manifest) : entry.label,
-        entry.path,
-        icon,
-        'admin',
-      ),
-      moduleId: manifest.id,
-    }));
+    return entries.map((entry) =>
+      own(entry.id, entries.length === 1 ? moduleName(manifest) : entry.label, entry.path, 'admin'),
+    );
   });
+}
+
+/** The module whose own settings hold this path, if any: its pages draw themselves. */
+export function moduleSettingsOf(
+  manifests: readonly ModuleManifest[],
+  pathname: string,
+): ModuleManifest | null {
+  return (
+    manifests.find(({ settings }) =>
+      settings ? pathname === settings.path || pathname.startsWith(`${settings.path}/`) : false,
+    ) ?? null
+  );
 }
 
 /** Per-item extras the shell knows: counts (members) and badges (an update's version). */

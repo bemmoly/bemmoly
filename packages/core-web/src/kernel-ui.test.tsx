@@ -3,7 +3,12 @@ import { describe, expect, it } from 'vitest';
 import { groupItems, rankItems, type CommandItem } from './command/rank.ts';
 import { formatBytes, formatRelative, initials } from './format.ts';
 import { actorLabel } from './inbox/group.ts';
-import { buildSettingsNav, flattenSettings, settingsTrail } from './settings/sections.ts';
+import {
+  buildSettingsNav,
+  flattenSettings,
+  moduleSettingsOf,
+  settingsTrail,
+} from './settings/sections.ts';
 
 const items: CommandItem[] = [
   { id: 'users', group: 'Settings', title: 'Users', href: '/settings/users' },
@@ -85,6 +90,33 @@ describe('settings navigation', () => {
     });
     expect(settingsTrail(groups, '/settings/users')?.group.label).toBe('People');
     expect(settingsTrail(groups, '/settings/modules')?.item.label).toBe('Manage modules');
+  });
+
+  it('opens a module settings area from its manifest, for admins only by default', () => {
+    const declared: ModuleManifest = {
+      id: 'work',
+      name: 'Work',
+      version: '0.2.0',
+      navigation: [],
+      icon: 'board',
+      settings: { path: '/settings/work', requires: 'admin' },
+    };
+    const admin = buildSettingsNav([declared], { isAdmin: true, capabilities: [] });
+    expect(admin.find((group) => group.id === 'modules')?.items[0]).toMatchObject({
+      id: 'module:work',
+      label: 'Work',
+      path: '/settings/work',
+      moduleId: 'work',
+    });
+    expect(settingsTrail(admin, '/settings/work/board')?.item.label).toBe('Work');
+    const member = buildSettingsNav([declared], {
+      isAdmin: false,
+      capabilities: ['work.project.configure'],
+    });
+    expect(flattenSettings(member).some((item) => item.moduleId === 'work')).toBe(false);
+    expect(moduleSettingsOf([declared], '/settings/work/fields')?.id).toBe('work');
+    expect(moduleSettingsOf([declared], '/settings/workspace')).toBeNull();
+    expect(moduleSettingsOf([work], '/settings/work/workflows')).toBeNull();
   });
 
   it('shows members only their own pages and what their capabilities allow', () => {

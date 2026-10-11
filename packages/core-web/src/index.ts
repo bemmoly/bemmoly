@@ -85,6 +85,12 @@ export {
 } from './modules/home-sections.tsx';
 export { ModuleOutlet } from './modules/module-outlet.tsx';
 export {
+  createSettingsRegistry,
+  type ModuleSettingsLoader,
+  type ModuleSettingsProps,
+  type SettingsRegistry,
+} from './modules/settings-chunks.ts';
+export {
   backoffDelay,
   RealtimeClient,
   type BackoffOptions,
@@ -100,6 +106,7 @@ export {
   canOpen,
   flattenSettings,
   KERNEL_SETTINGS,
+  moduleSettingsOf,
   settingsTrail,
   type SettingsDecorations,
   type SettingsGroup,
