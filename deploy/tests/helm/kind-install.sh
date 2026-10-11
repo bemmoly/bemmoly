@@ -129,7 +129,7 @@ helm test "${RELEASE}" --namespace "${NS}" --timeout 3m >/dev/null || fail 'helm
 pass 'helm test (readiness from inside the cluster)'
 
 # --- upgrade to the second chart version
-helm upgrade "${RELEASE}" "${WORK}/bemmoly-${TO}.tgz" --namespace "${NS}" --reuse-values --wait --timeout 10m >"${WORK}/helm.log" ||
+helm upgrade "${RELEASE}" "${WORK}/bemmoly-${TO}.tgz" --namespace "${NS}" --reset-then-reuse-values --wait --timeout 10m >"${WORK}/helm.log" ||
   fail "helm upgrade to chart ${TO} failed"
 k get events --field-selector "involvedObject.name=${RELEASE}-migrate" -o jsonpath='{.items[*].reason}' | grep -q Completed ||
   fail 'the pre-upgrade changeset Job did not complete'
@@ -176,9 +176,11 @@ k create deployment db --image=pgvector/pgvector:pg18 --port=5432 >/dev/null
 k set env deployment/db --from=secret/bemmoly --keys=POSTGRES_PASSWORD POSTGRES_USER=bemmoly POSTGRES_DB=bemmoly_db >/dev/null
 k expose deployment db --port=5432 >/dev/null
 k rollout status deployment/db --timeout 180s >/dev/null || fail 'the external Postgres did not start'
+# Not --wait: that chart's liveness probe can restart a first boot that is still running
+# changesets on a slow machine, which the startup probe in this chart fixes.
 helm install "${RELEASE}" "${WORK}/published.tgz" --namespace "${NS}" --set publicUrl="${BASE}" \
-  --set persistence.size=1Gi --wait --timeout 10m >/dev/null || fail "the published ${FROM} chart did not install"
-helm upgrade "${RELEASE}" "${WORK}/bemmoly-${TO}.tgz" --namespace "${NS}" --reuse-values \
+  --set persistence.size=1Gi >/dev/null || fail "the published ${FROM} chart did not install"
+helm upgrade "${RELEASE}" "${WORK}/bemmoly-${TO}.tgz" --namespace "${NS}" --reset-then-reuse-values \
   --set existingSecret=bemmoly --wait --timeout 10m >/dev/null || fail 'upgrading the published chart failed'
 [ "$(k exec "deploy/${RELEASE}-all" -- printenv BEMMOLY_VERSION)" = "${TO}" ] || fail "the published install is not on ${TO}"
 k exec "deploy/${RELEASE}-all" -- bemmoly-health || fail 'the upgraded published install is not healthy'

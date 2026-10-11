@@ -13,7 +13,7 @@ before any pod is replaced, adds a startup probe for long first boots, keeps the
 uninstall, and has `helm test`. Every value is documented in the chart's README, including why
 live collaboration needs one app replica for now. **Upgrading a release of an earlier chart**:
 it defaulted `existingSecret` to `bemmoly`; pass `--set existingSecret=bemmoly` with
-`--reuse-values`. The chart refuses to render until it knows which database to use.
+`--reset-then-reuse-values`. The chart refuses to render until it knows which database to use.
 
 New Terraform: a provider-free module that runs the installer on one VM through cloud-init, with
 inputs for the domain, the size, S3-compatible backups and SMTP, and thin examples for three

@@ -19,4 +19,4 @@ see each other's edits until they reload. Use one replica for now (README, "Repl
 {{- end }}
 
 Updates on Kubernetes: Settings › Updates shows the version, the notes and the command:
-  helm upgrade {{ .Release.Name }} <chart> --version <new> --reuse-values
+  helm upgrade {{ .Release.Name }} <chart> --version <new> --reset-then-reuse-values

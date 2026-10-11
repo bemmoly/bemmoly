@@ -89,8 +89,13 @@ connections after 60 seconds (NGINX-based ones) need a longer read timeout, for 
 Settings › Updates shows the new version, its notes and the command:
 
 ```sh
-helm upgrade bemmoly bemmoly-X.Y.Z.tgz --namespace bemmoly --reuse-values
+helm upgrade bemmoly bemmoly-X.Y.Z.tgz --namespace bemmoly --reset-then-reuse-values
 ```
+
+Use `--reset-then-reuse-values` (Helm 3.14 or later), not `--reuse-values`: it starts from
+the new chart's defaults and applies your values on top, so keys a newer chart adds have
+values. `--reuse-values` keeps only the old release's values, and the templates then miss
+the new keys.
 
 The pre-upgrade Job runs the new changesets while the old pods keep serving (every
 changeset stays compatible with the previous minor), then the pods roll one at a time.
@@ -101,7 +106,7 @@ or a restore is what `bemmoly-db plan` and Settings › Updates tell you.
 database option. Keep that Secret by passing it explicitly:
 
 ```sh
-helm upgrade bemmoly bemmoly-X.Y.Z.tgz --namespace bemmoly --reuse-values --set existingSecret=bemmoly
+helm upgrade bemmoly bemmoly-X.Y.Z.tgz --namespace bemmoly --reset-then-reuse-values --set existingSecret=bemmoly
 ```
 
 ## Uninstall
