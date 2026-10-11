@@ -31,17 +31,42 @@ setup() {
   }
 }
 
-@test "a rollback moves UPDATER_VERSION back with the app" {
+@test "a rollback keeps the updater on its newer release (ADR 0020)" {
   run cmd_rollback --yes
   [ "${status}" -eq 0 ]
   [ "$(env_get "${BEMMOLY_DIR}/.env" VERSION)" = 1.2.0 ]
-  [ "$(env_get "${BEMMOLY_DIR}/.env" UPDATER_VERSION)" = 1.2.0 ]
+  [ "$(env_get "${BEMMOLY_DIR}/.env" UPDATER_VERSION)" = 1.3.0 ]
   grep -qx 'updater rollback --expect schema' "${CALLS}"
-  grep -qx 'compose pull --policy missing updater' "${CALLS}"
+  ! grep -q 'compose pull' "${CALLS}"
   grep -qx 'compose up -d' "${CALLS}"
 }
 
-@test "an upgrade moves UPDATER_VERSION forward with the app" {
+@test "an upgrade by an updater with self-update leaves the move to it" {
+  run_updater() {
+    printf 'updater %s\n' "$*" >>"${CALLS}"
+    env_set "${BEMMOLY_DIR}/.env" VERSION "$2"
+    env_set "${BEMMOLY_DIR}/.env" UPDATER_VERSION "$2"
+  }
+  run cmd_upgrade 1.4.0 --yes
+  [ "${status}" -eq 0 ]
+  [ "$(env_get "${BEMMOLY_DIR}/.env" UPDATER_VERSION)" = 1.4.0 ]
+  ! grep -q 'compose pull' "${CALLS}"
+}
+
+@test "sync-updater falls back to Compose for an updater without self-update" {
+  printf 'VERSION=1.4.0\nUPDATER_VERSION=1.3.0\n' >"${BEMMOLY_DIR}/.env"
+  run_updater() {
+    printf 'updater %s\n' "$*" >>"${CALLS}"
+    return 2
+  }
+  run cmd_sync_updater
+  [ "${status}" -eq 0 ]
+  grep -qx 'updater self-update 1.4.0' "${CALLS}"
+  grep -qx 'compose pull --policy missing updater' "${CALLS}"
+  [ "$(env_get "${BEMMOLY_DIR}/.env" UPDATER_VERSION)" = 1.4.0 ]
+}
+
+@test "an upgrade by an older updater still moves UPDATER_VERSION forward" {
   run cmd_upgrade 1.4.0 --yes
   [ "${status}" -eq 0 ]
   [ "$(env_get "${BEMMOLY_DIR}/.env" UPDATER_VERSION)" = 1.4.0 ]
