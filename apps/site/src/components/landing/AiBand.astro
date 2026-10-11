@@ -1,10 +1,11 @@
 ---
 /**
- * AI, honestly: one band in the lilac that means AI and only AI, "Coming" with no version and
- * no picture until there is a real screen to capture. It answers "do I need AI?" and "will it
- * read my data?" with what is already true: setup and Settings record what AI may do.
+ * AI, honestly: one band in the lilac that means AI and only AI, its release read from the
+ * changelogs, and no picture until a real screen is captured. It answers "do I need AI?" and
+ * "will it read my data?" with what is true: it is off until an admin turns it on.
  */
 import { AI_DESIGNED } from '../../data/landing.ts';
+import { AI_SINCE, shippedLabel } from '../../lib/changelog.ts';
 import Badge from '../site/Badge.astro';
 import Icon from '../site/Icon.astro';
 import ModuleTile from '../site/ModuleTile.astro';
@@ -21,19 +22,19 @@ import ModuleTile from '../site/ModuleTile.astro';
         <ModuleTile module="ai" size={28} />
         <b class="text-15 font-semibold">AI</b>
         <Badge tone="ai" pill class="bg-card!">
-          Coming, optional
+          {shippedLabel(AI_SINCE)}, optional
         </Badge>
       </div>
       <h2
         id="ai-title"
         class="mt-4 mb-3 text-24 font-semibold tracking-sub text-balance md:text-32"
       >
-        AI comes later, and stays optional.
+        AI is here, and stays optional.
       </h2>
       <p class="text-16 leading-desc text-pretty text-tx-2">
         Bring any provider, a model on your own network, or none at all: everything on this page
-        works without it. You can already choose what AI may read and change, in setup and in
-        Settings, before it ever runs.
+        works without it. AI stays off until an admin turns it on, and Settings decides what it may
+        read and change before it ever runs.
       </p>
     </div>
     <div class="flex flex-col gap-3">
@@ -48,7 +49,7 @@ import ModuleTile from '../site/ModuleTile.astro';
               <span class="text-14 text-tx-3">{item.rest}</span>
             </span>
             <Badge tone="ai" pill>
-              Designed
+              {shippedLabel(AI_SINCE)}
             </Badge>
           </li>
         ))}
