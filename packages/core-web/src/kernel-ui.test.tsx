@@ -93,6 +93,7 @@ describe('settings navigation', () => {
     });
     expect(flattenSettings(groups).map((item) => item.id)).toEqual([
       'profile',
+      'access-tokens',
       'notifications',
       'appearance',
     ]);

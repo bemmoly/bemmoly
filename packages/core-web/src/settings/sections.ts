@@ -47,6 +47,7 @@ export const KERNEL_SETTINGS: readonly SettingsGroup[] = [
     label: 'Account',
     items: [
       item('profile', 'Profile', '/settings/profile', 'me', null),
+      item('access-tokens', 'Access tokens', '/settings/access-tokens', 'key', null),
       item('notifications', 'Notifications', '/settings/notifications', 'bell', null),
     ],
   },
@@ -64,6 +65,7 @@ export const KERNEL_SETTINGS: readonly SettingsGroup[] = [
       ),
       item('email', 'Email delivery', '/settings/email', 'mail', 'workspace.email.manage'),
       item('ai', 'AI and models', '/settings/ai', 'spark', 'ai.models.configure'),
+      item('mcp', 'MCP server', '/settings/mcp', 'link', SETTINGS),
     ],
   },
   {

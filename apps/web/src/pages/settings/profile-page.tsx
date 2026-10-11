@@ -27,6 +27,11 @@ export function ProfilePage() {
           control={<Link to="/settings/notifications">Open</Link>}
         />
         <SettingsRow
+          title="Access tokens"
+          description="Personal tokens that let AI clients, IDEs and scripts act as you."
+          control={<Link to="/settings/access-tokens">Manage</Link>}
+        />
+        <SettingsRow
           title="Theme"
           description="Light, dark or the workspace default, from the menu under your name."
         />

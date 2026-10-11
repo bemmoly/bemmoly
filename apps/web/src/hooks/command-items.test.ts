@@ -38,7 +38,7 @@ const titles = (items: ReturnType<typeof paletteItems>, group: string) =>
 describe('paletteItems', () => {
   it('offers members only their own settings, creating with C, and no people actions', () => {
     const items = paletteItems(sources());
-    expect(titles(items, 'Settings')).toEqual(['Profile', 'Notifications']);
+    expect(titles(items, 'Settings')).toEqual(['Profile', 'Access tokens', 'Notifications']);
     const create = items.find((item) => item.title === 'New issue');
     expect(create).toMatchObject({ group: 'Actions', keys: 'C', icon: 'plus' });
     expect(titles(items, 'Actions')).not.toContain('Invite people');
