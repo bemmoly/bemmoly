@@ -80,6 +80,7 @@ marked `TODO(deploy)`).
 | `deploy/compose/docker-compose.yml`   | Release asset                                                                       |
 | `deploy/helm/bemmoly/`                | Release asset (`helm package`)                                                      |
 | `deploy/scripts/airgap-bundle.sh`     | Release asset; called as `<script> <version> <output dir>`                          |
+| `deploy/scripts/release-cli.sh`       | Release asset `bemmoly-cli-X.Y.Z.tar.gz`, listed in the manifest; the updater image |
 | `deploy/scripts/smoke-test.sh`        | Nightly: wizard via API, upgrade, restore; called with `--base-url` and `--version` |
 | `deploy/release-manifest.schema.json` | Release: validates `release-manifest.json`                                          |
 
@@ -95,7 +96,9 @@ package together (one fixed group); the next run tags `vX.Y.Z` and publishes:
 - release notes from the changeset entries, listing new schema changesets (flagging slow and
   irreversible ones), configuration keys added or removed, and the rollback mode;
 - `release-manifest.json`, signed with `cosign sign-blob`, plus the installer, Compose file,
-  Helm chart and air-gap bundle from `deploy/`.
+  Helm chart and air-gap bundle from `deploy/`;
+- `bemmoly-cli-X.Y.Z.tar.gz`, the host `bemmoly` command, whose SHA-256 the signed manifest
+  lists so `bemmoly self-update` can trust it (ADR 0024).
 
 For the beta channel, enter pre mode (`pnpm changeset pre enter beta`) so versions come out as
 `X.Y.Z-beta.N`, or push a `vX.Y.Z-beta.N` tag by hand. The release tooling lives in

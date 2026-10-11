@@ -5,9 +5,12 @@
  *   node tools/release/src/cli.ts tag                           changesets publish step (tags locally)
  *   node tools/release/src/cli.ts notes --version X --image I --repository O/N --out notes.md
  *   node tools/release/src/cli.ts manifest --version X --notes-url U --app-image I
- *        --updater-image I [--app-digest D] [--updater-digest D] --out manifest.json
+ *        --updater-image I [--app-digest D] [--updater-digest D] [--cli-asset FILE]
+ *        --out manifest.json
  */
+import { createHash } from 'node:crypto';
 import { appendFileSync, existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { basename } from 'node:path';
 import { parseArgs } from 'node:util';
 import { collectChanges } from './changes.ts';
 import { diffConfig, ENV_EXAMPLE_PATH } from './config-changes.ts';
@@ -34,6 +37,7 @@ const { positionals, values } = parseArgs({
     'updater-image': { type: 'string' },
     'app-digest': { type: 'string' },
     'updater-digest': { type: 'string' },
+    'cli-asset': { type: 'string' },
   },
 });
 
@@ -66,6 +70,13 @@ function releaseFacts(release: Release) {
     readFileSync(ENV_EXAMPLE_PATH, 'utf8'),
   );
   return { schema, config, firstRelease: previous === undefined };
+}
+
+/** The bemmoly command's tarball, named and hashed as the release attaches it. */
+function cliAsset(path: string | undefined) {
+  if (!path) return undefined;
+  const sha256 = createHash('sha256').update(readFileSync(path)).digest('hex');
+  return { asset: basename(path), sha256 };
 }
 
 function write(text: string): void {
@@ -127,6 +138,7 @@ const commands: Record<string, () => void> = {
       updaterImage: required('updater-image'),
       appDigest: values['app-digest'],
       updaterDigest: values['updater-digest'],
+      cli: cliAsset(values['cli-asset']),
       ...releaseFacts(release),
     });
     write(JSON.stringify(manifest, null, 2));
