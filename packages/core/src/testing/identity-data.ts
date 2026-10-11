@@ -11,7 +11,8 @@ export async function resetIdentityData(sql: SqlClient): Promise<void> {
       TRUNCATE users, sessions, api_tokens, invitations, teams, team_members,
         password_reset_tokens, auth_identities, module_grants, project_members, space_members,
         project_role_capabilities, space_role_capabilities, rate_limit_buckets, auth_sso_flows,
-        auth_sso_assertions, scim_tokens, scim_resources CASCADE`);
+        auth_sso_assertions, scim_tokens, scim_resources, oauth_clients,
+        oauth_authorization_codes, oauth_grants, oauth_tokens CASCADE`);
     await tx.execute(drizzleSql`DELETE FROM auth_providers WHERE kind <> 'password'`);
     await tx.execute(drizzleSql`UPDATE auth_providers SET enabled = true WHERE kind = 'password'`);
     await tx.execute(drizzleSql`DELETE FROM audit_log`);
