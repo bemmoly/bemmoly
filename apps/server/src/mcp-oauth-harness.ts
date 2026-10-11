@@ -169,32 +169,43 @@ export function oauthSteps({ app, base }: OAuthRun) {
     return { preview: preview.json(), redirect, url };
   }
 
+  /** The host without a session or Origin, as a native client reaches it. */
+  const host = app.instance.app;
+
   /** A form post to the token or revocation endpoint, as a client sends it. */
   async function postForm(path: string, form: Record<string, string>) {
-    const response = await fetch(`${base}${path}`, {
+    const response = await host.inject({
       method: 'POST',
+      url: path,
       headers: { 'content-type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams(form).toString(),
+      payload: new URLSearchParams(form).toString(),
     });
-    const text = await response.text();
     return {
-      status: response.status,
-      headers: response.headers,
-      body: (text ? JSON.parse(text) : {}) as Record<string, unknown>,
+      status: response.statusCode,
+      headers: new Headers(response.headers as Record<string, string>),
+      body: (response.body ? JSON.parse(response.body) : {}) as Record<string, unknown>,
     };
   }
 
-  /** A raw MCP request with a bearer token. */
-  const listTools = (path: string, token: string) =>
-    fetch(`${base}/mcp${path}`, {
+  /** A raw MCP request with a bearer token; answers with the status and challenge. */
+  async function listTools(path: string, token: string) {
+    const response = await host.inject({
       method: 'POST',
+      url: `/mcp${path}`,
       headers: {
         authorization: `Bearer ${token}`,
         'content-type': 'application/json',
         accept: 'application/json, text/event-stream',
       },
-      body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/list' }),
+      payload: { jsonrpc: '2.0', id: 1, method: 'tools/list' },
     });
+    return {
+      status: response.statusCode,
+      headers: new Headers({
+        'www-authenticate': String(response.headers['www-authenticate'] ?? ''),
+      }),
+    };
+  }
 
   return { consent, connect, start, signIn, postForm, listTools };
 }
