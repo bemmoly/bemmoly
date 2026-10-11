@@ -1,0 +1,126 @@
+---
+/**
+ * The one way most people install, first and largest: what to have, the one command, the
+ * address it prints, and the installer's own output beside it. Every Install button on the
+ * site lands here (/self-hosting#install). The chooser can mark it (data-pick), as it marks the
+ * other cards. The options table is the installer's own --help (deploy/installer/lib/args.sh).
+ */
+import { INSTALL_BLOCK, REQUIREMENTS, STATUS } from '../../data/self-hosting.ts';
+import { INSTALL_HOST, RELEASES_URL } from '../../lib/links.ts';
+import Badge from '../site/Badge.astro';
+import CodeBlock from '../site/CodeBlock.astro';
+import Icon from '../site/Icon.astro';
+import Transcript from '../site/Transcript.astro';
+import StepNumber from './StepNumber.astro';
+
+const OPTIONS = [
+  ['--domain NAME', 'The hostname people will use. Asked for when you leave it out.'],
+  [
+    '--version X.Y.Z',
+    'The version to install, or latest or beta. The newest in the channel by default.',
+  ],
+  ['--channel stable|beta', 'The update channel. Stable by default.'],
+  ['--modules a,b', 'Pin the enabled modules, such as work,docs. By default an admin chooses.'],
+  ['--no-proxy', 'Leave out Caddy: you terminate HTTPS, and the app listens on port 8080.'],
+  ['--no-in-app-updates', 'Leave out the updater; update with sudo bemmoly upgrade.'],
+  ['--database-url URL', 'Use your own Postgres 18 with pgvector instead of the bundled one.'],
+  ['--dir PATH', 'The install folder. /var/bemmoly by default.'],
+  ['--yes', 'Ask nothing; stop when something is missing.'],
+] as const;
+const READ_FIRST = `$ curl -fsSL https://${INSTALL_HOST} -o install.sh
+$ less install.sh
+$ sudo sh install.sh --domain work.example.com`;
+---
+
+<section
+  id="install"
+  data-path="install"
+  aria-labelledby="recommended"
+  class="group flex scroll-mt-20 flex-col gap-7 rounded-dialog border border-line bg-card p-5 data-pick:border-acc data-pick:shadow-ring sm:p-7"
+>
+  <header class="flex flex-col gap-3">
+    <div class="flex flex-wrap items-center gap-2">
+      <Badge tone={STATUS.available.tone}>{STATUS.available.label}</Badge>
+      <Badge tone="accent">Recommended</Badge>
+      <span class="hidden group-data-pick:inline-flex">
+        <Badge tone="solid">Matches your answers</Badge>
+      </span>
+    </div>
+    <h2 id="recommended" class="text-24 leading-display font-semibold tracking-display text-tx">
+      Install with one command
+    </h2>
+  </header>
+
+  <div class="grid items-start gap-8 lg:grid-cols-2">
+    <ol class="flex min-w-0 flex-col gap-6">
+      <li id="requirements" class="flex scroll-mt-20 gap-3">
+        <StepNumber n={1} />
+        <div class="flex min-w-0 flex-col gap-2">
+          <h3 class="text-16 font-semibold text-tx">Get a Linux VM</h3>
+          <ul class="flex flex-col gap-1 text-14h leading-desc text-tx-2">
+            {REQUIREMENTS.map((line) => (
+              <li class="flex gap-2">
+                <Icon name="check-circle" class="mt-0.75 shrink-0 text-green-tx" />
+                {line}
+              </li>
+            ))}
+          </ul>
+          <p class="text-13 leading-brief text-tx-3">
+            Root or sudo, and outbound DNS and HTTPS. The installer checks each of these and stops
+            with the fix for anything missing; 2 GB of memory is its minimum.
+          </p>
+        </div>
+      </li>
+      <li class="flex gap-3">
+        <StepNumber n={2} />
+        <div class="flex min-w-0 flex-1 flex-col gap-2">
+          <h3 class="text-16 font-semibold text-tx">Run one command</h3>
+          <CodeBlock code={INSTALL_BLOCK} label="On the VM, as root or with sudo" copy />
+          <p class="text-13 leading-brief text-tx-3">
+            It downloads the installer of the newest release from <a href={RELEASES_URL}>GitHub</a>,
+            checks its SHA-256 checksum and runs it. Options such as{' '}
+            <code class="font-mono text-tx-2">--domain</code> go after
+            <code class="font-mono text-tx-2">sh -s --</code>.
+          </p>
+        </div>
+      </li>
+      <li class="flex gap-3">
+        <StepNumber n={3} />
+        <div class="flex min-w-0 flex-col gap-2">
+          <h3 class="text-16 font-semibold text-tx">Open the address it prints</h3>
+          <p class="text-14h leading-desc text-tx-2">
+            Open it to create the first admin, then turn on Work and Docs, as{' '}
+            <a href="/self-hosting#first-login">first login</a> describes.
+          </p>
+        </div>
+      </li>
+    </ol>
+    <Transcript />
+  </div>
+
+  <div class="grid items-start gap-8 lg:grid-cols-2">
+    <div class="flex min-w-0 flex-col gap-2">
+      <h3 class="text-16 font-semibold text-tx">Read it before you run it</h3>
+      <CodeBlock code={READ_FIRST} label="Download, read, then run" copy />
+    </div>
+    <div class="flex min-w-0 flex-col gap-2">
+      <h3 id="options" class="scroll-mt-20 text-16 font-semibold text-tx">
+        Installer options
+      </h3>
+      <div tabindex="0" class="overflow-x-auto rounded-card border border-line">
+        <table class="w-full border-collapse text-left text-13">
+          <tbody>
+            {OPTIONS.map(([option, body]) => (
+              <tr class="border-t border-line-2 align-top first:border-t-0">
+                <td class="px-3 py-2 whitespace-nowrap">
+                  <code class="font-mono text-tx">{option}</code>
+                </td>
+                <td class="px-3 py-2 text-tx-2">{body}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>

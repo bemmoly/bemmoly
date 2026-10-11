@@ -10,7 +10,8 @@ import StatusNote from '../../components/topics/StatusNote.astro';
 import { RELEASE } from '../../data/landing.ts';
 import { pageAt } from '../../data/pages.ts';
 import Page from '../../layouts/Page.astro';
-import { COMPOSE_URL, REPO_URL } from '../../lib/links.ts';
+import { COMPOSE_EDIT, COMPOSE_FILES, COMPOSE_START, COMPOSE_UPDATE } from '../../data/compose.ts';
+import { COMPOSE_URL, INSTALL_HREF } from '../../lib/links.ts';
 
 const SERVICES = [
   [
@@ -42,7 +43,7 @@ const SETTINGS = [
   ['POSTGRES_PASSWORD', 'A new password: openssl rand -hex 24.'],
   [
     'DATABASE_URL',
-    'postgres://bemmoly:PASSWORD@db:5432/bemmoly_db with the password above, or your own Postgres 18.',
+    'postgres://bemmoly:PASSWORD@db:5432/bemmoly_db with the password above, or your own Postgres 18 with pgvector.',
   ],
   [
     'PG_SHARED_BUFFERS, PG_EFFECTIVE_CACHE_SIZE',
@@ -64,21 +65,6 @@ const SETTINGS = [
     'Optional: pins the enabled modules. Empty lets an admin choose in Settings.',
   ],
 ] as const;
-
-const FILES = `$ git clone --depth 1 --branch v${RELEASE.version} ${REPO_URL}
-$ sudo install -d -m 755 /var/bemmoly
-$ sudo cp bemmoly/deploy/compose/docker-compose.yml bemmoly/deploy/compose/Caddyfile /var/bemmoly/
-$ sudo install -m 600 bemmoly/deploy/compose/env.template /var/bemmoly/.env
-$ cd /var/bemmoly
-$ sudo install -d -m 750 -o 10001 -g 10001 data backups
-$ sudo install -d -m 755 pg
-$ sudo install -d -m 700 caddy caddy/data caddy/config`;
-
-const START = `$ sudo docker compose up -d
-$ sudo docker compose ps`;
-
-const UPDATE = `$ sudo docker compose pull
-$ sudo docker compose up -d`;
 ---
 
 <Page
@@ -88,9 +74,9 @@ $ sudo docker compose up -d`;
 >
   <StatusNote>
     These steps use the files of release {RELEASE.version}. On a fresh VM the
-    <a href="/docs/install">one command</a> does all of this for you, adds the
-    <code class="font-mono text-tx">bemmoly</code> command for backups and upgrades, and is the path
-    tested end to end.
+    <a href={INSTALL_HREF}>one command</a> does all of this for you, adds the
+    <code class="font-mono text-tx">bemmoly</code> command for backups and upgrades, and is the
+    recommended path.
   </StatusNote>
 
   <Section title="What runs" id="services">
@@ -124,7 +110,7 @@ $ sudo docker compose up -d`;
   </Section>
 
   <Section title="1. Put the files in /var/bemmoly" id="files">
-    <CodeBlock code={FILES} label="On the server" copy />
+    <CodeBlock code={COMPOSE_FILES} label="On the server" copy />
     <p>
       The app runs as user 10001 inside its container, so <code>data</code> and
       <code>backups</code> belong to that id. Keep the folder at <code>/var/bemmoly</code>: the
@@ -134,9 +120,10 @@ $ sudo docker compose up -d`;
 
   <Section title="2. Fill in .env" id="settings">
     <p>
-      Replace every <code>@…@</code> placeholder in <code>/var/bemmoly/.env</code>. These are the
-      values the installer would write:
+      Nothing is running yet. Open <code>/var/bemmoly/.env</code> and replace every
+      <code>@…@</code> placeholder with the values the installer would write:
     </p>
+    <CodeBlock code={COMPOSE_EDIT} label="On the server" copy />
     <div tabindex="0" class="overflow-x-auto rounded-card border border-line">
       <table class="w-full border-collapse text-left text-14">
         <thead class="bg-side text-12 font-semibold tracking-caps text-tx-3 uppercase dark:bg-card">
@@ -164,7 +151,7 @@ $ sudo docker compose up -d`;
   </Section>
 
   <Section title="3. Start it" id="start">
-    <CodeBlock code={START} label="In /var/bemmoly" copy />
+    <CodeBlock code={COMPOSE_START} label="Once .env is filled in" copy />
     <p>
       The app waits for Postgres, applies its schema changes and starts; the first start can take a
       couple of minutes. Then open the domain to run the setup wizard and create the first admin.
@@ -175,8 +162,8 @@ $ sudo docker compose up -d`;
     <ul>
       <li>
         <strong>Your own Postgres:</strong> drop <code>db</code> from
-        <code>COMPOSE_PROFILES</code> and point <code>DATABASE_URL</code> at Postgres 18 (17 is
-        accepted with a warning). Add the pgvector extension too.
+        <code>COMPOSE_PROFILES</code> and point <code>DATABASE_URL</code> at Postgres 18 with the
+        pgvector extension; the schema changes need both.
       </li>
       <li>
         <strong>Your own HTTPS:</strong> drop <code>proxy</code>, set
@@ -197,7 +184,7 @@ $ sudo docker compose up -d`;
       backups, set <code>VERSION</code> and <code>UPDATER_VERSION</code> to the new release in
       <code>.env</code>, then pull and restart; the app applies the new schema changes as it starts.
     </p>
-    <CodeBlock code={UPDATE} label="In /var/bemmoly" copy />
+    <CodeBlock code={COMPOSE_UPDATE} label="On the server" copy />
     <p>
       The <a href="/changelog">changelog</a> lists what each release changes.
     </p>

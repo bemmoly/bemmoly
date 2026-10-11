@@ -14,7 +14,7 @@ export const HOME_FAQ: readonly FaqItem[] = [
   {
     question: 'What’s the catch?',
     answer:
-      'You run it. HTTPS, backups and updates are built in, but the machine is yours to keep alive, and help comes from GitHub issues rather than a support contract. It is also young: Work and Docs ship today; AI, single sign-on and Import from Jira are still on the roadmap, and every page of this site says which is which.',
+      'You run it. HTTPS, backups and updates are built in, but the machine is yours to keep alive, and help comes from GitHub issues rather than a support contract. It is also young: Work, Docs and optional AI ship today; single sign-on and Import from Jira are coming soon, and every page of this site says which is which.',
   },
   {
     question: 'Who maintains it?',
@@ -34,7 +34,7 @@ export const HOME_FAQ: readonly FaqItem[] = [
   {
     question: 'What do I need to run it?',
     answer:
-      'A Linux VM with 2 vCPU and 4 GB (enough for about 200 people; 2 GB is the minimum), a domain pointing at it, and ports 80 and 443. Ubuntu is tested end to end every night; Debian, Fedora and Amazon Linux are supported by the installer.',
+      'A Linux VM with 2 vCPU and 4 GB (the size we plan for about 200 people, an estimate until measured; 2 GB is the minimum), 10 GB of free disk, a domain pointing at it, and ports 80 and 443 free. The installer supports Ubuntu 22.04 or later, Debian 12 or later, Fedora 40 or later and Amazon Linux 2023.',
   },
   {
     question: 'How do upgrades and backups work?',
@@ -44,6 +44,6 @@ export const HOME_FAQ: readonly FaqItem[] = [
   {
     question: 'Do I need AI?',
     answer:
-      'No. AI features are not in Bemmoly yet, and when they come they stay optional: any provider, a model on your own network, or none.',
+      'No. AI shipped in 0.5 and is off until an admin turns it on in Settings › AI and models. Bring your own provider from the models.dev catalog or a model on your own network: summaries with sources, answers from your docs, help in the editor and plans you confirm, all drawn in lilac. Everything else works without it.',
   },
 ];

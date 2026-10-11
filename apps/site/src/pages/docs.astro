@@ -4,7 +4,7 @@ import { pageAt } from '../data/pages.ts';
 import Page from '../layouts/Page.astro';
 import { CONTRIBUTING_URL, REPO_URL, TECH_DESIGN_URL } from '../lib/links.ts';
 
-const guides = [pageAt('/docs/install'), pageAt('/docs/compose'), pageAt('/self-hosting')];
+const guides = [pageAt('/self-hosting'), pageAt('/docs/compose')];
 ---
 
 <Page
@@ -30,8 +30,9 @@ const guides = [pageAt('/docs/install'), pageAt('/docs/compose'), pageAt('/self-
       Once it is running, the <code>bemmoly</code> command on the server covers the day-to-day:
       <code>bemmoly status</code> and <code>bemmoly doctor</code> for health, then
       <code>bemmoly backup</code> and <code>bemmoly restore</code>, and then
-      <code>bemmoly upgrade</code> and <code>bemmoly rollback</code>, each with a backup first. The{' '}
-      <a href="/docs/install#after">install guide</a> lists them all.
+      <code>bemmoly upgrade</code> and <code>bemmoly rollback</code>, each with a backup first.{' '}
+      <a href="/self-hosting#cli">Self-hosting</a> lists them all, and{' '}
+      <a href="/self-hosting#troubleshooting">troubleshooting</a> starts from what you see.
     </p>
   </Section>
   <Section title="Understand it">

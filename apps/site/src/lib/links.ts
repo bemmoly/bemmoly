@@ -26,8 +26,7 @@ export interface NavLink {
 
 /**
  * Top navigation, from the site review. The site's own documentation is "Guides", so "Docs"
- * only ever means the product module; the addresses stay (/docs/install is in the installer's
- * messages).
+ * only ever means the product module. /self-hosting is the one install page.
  */
 export const NAV: readonly NavLink[] = [
   { label: 'Product', href: '/#product' },
@@ -36,8 +35,8 @@ export const NAV: readonly NavLink[] = [
   { label: 'Changelog', href: '/changelog' },
 ];
 
-/** Where "Install" goes from every page: the homepage's install section. */
-export const INSTALL_HREF = '/#install';
+/** Where every "Install" button and call to action goes, from every page. */
+export const INSTALL_HREF = '/self-hosting#install';
 
 export interface FooterColumn {
   title: string;
@@ -59,10 +58,10 @@ export const FOOTER_COLUMNS: readonly FooterColumn[] = [
   {
     title: 'Self-host',
     links: [
-      { label: 'Install guide', href: '/docs/install' },
+      { label: 'Install', href: INSTALL_HREF },
       { label: 'Docker Compose', href: '/docs/compose' },
-      { label: 'All the ways to run it', href: '/self-hosting' },
-      { label: 'Sizing', href: '/self-hosting#sizing' },
+      { label: 'Upgrade and back up', href: '/self-hosting#upgrade' },
+      { label: 'Troubleshooting', href: '/self-hosting#troubleshooting' },
       { label: 'Security', href: '/security' },
     ],
   },

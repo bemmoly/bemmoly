@@ -8,7 +8,7 @@ import { CONTRIBUTING_URL, REPO_URL, TECH_DESIGN_URL } from '../lib/links.ts';
 /**
  * /llms.txt (https://llmstxt.org): the site in the shape language models read best. Built
  * from the same data as the pages, so it cannot drift from them, and it separates what ships
- * today from what is planned, as the pages do.
+ * today from what is coming soon, as the pages do.
  */
 export const GET: APIRoute = ({ site }) => {
   const url = (path: string) => new URL(path, site).href;
@@ -25,8 +25,12 @@ export const GET: APIRoute = ({ site }) => {
     'the Work module (projects, issues with custom fields and visual workflows, Kanban and Scrum',
     'boards, the backlog and sprints, saved LQL filters and board metrics) and the Docs module',
     '(spaces, a live collaborative editor, comments, version history, live issue chips, Markdown',
-    'and HTML export, and Import from Confluence and Markdown). AI is not in Bemmoly yet. An admin',
-    'turns modules on in Settings › Modules. It installs on a fresh Linux VM (2 vCPU, 4 GB) with:',
+    'and HTML export, and Import from Confluence and Markdown). AI shipped in 0.5 and is optional:',
+    'it is off until an admin turns it on, works with a provider from the models.dev catalog or a',
+    'model on your own network, and offers summaries that cite their sources, answers from your',
+    'docs, help in the editor and plans from the command palette that run only when confirmed.',
+    'Modules start off; an admin turns them on in Settings › Manage modules. It installs on a',
+    `Linux VM (2 vCPU, 4 GB) with one command; the guide is ${url('/self-hosting#install')}:`,
     '',
     `    ${INSTALL}`,
     '',
@@ -34,7 +38,7 @@ export const GET: APIRoute = ({ site }) => {
     '',
     ...WHAT_YOU_GET.map(({ title, body }) => `- ${title}: ${body}`),
     '',
-    '## What comes next',
+    '## Coming soon',
     '',
     ...UPCOMING.map(({ title, scope }) => `- ${title}: ${scope}.`),
     '',

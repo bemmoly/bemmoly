@@ -76,7 +76,7 @@ describe('version', () => {
 
   it('is the version the home page, JSON-LD and install guide show', () => {
     expect(versionsIn(readable('index.html'))).toContain(LATEST.version);
-    expect(versionsIn(readable('docs/install.html'))).toContain(LATEST.version);
+    expect(versionsIn(readable('self-hosting.html'))).toContain(LATEST.version);
     const graph = scriptsOf(parsePage(read('index.html'))).find(
       (script) => script.type === 'application/ld+json',
     );

@@ -1,13 +1,13 @@
 ---
 /**
  * Install, from the site review: the right command for where you install, with enough context
- * to trust it. Tabs for the four paths (kept in the address, #install-compose), commands that
+ * to trust it. Tabs for the shipped paths (kept in the address, #install-compose), commands that
  * copy without their prompts and step by step where order matters, the download-then-read
  * variant, and what the installer does, from its own code. No time is promised: nothing has
  * measured an install yet.
  */
 import { INSTALLER_STEPS, INSTALL_PATHS } from '../../data/landing.ts';
-import { INSTALL_READ_FIRST } from '../../lib/links.ts';
+import { INSTALL_HREF, INSTALL_READ_FIRST } from '../../lib/links.ts';
 import Badge from '../site/Badge.astro';
 import Button from '../site/Button.astro';
 import CodeBlock from '../site/CodeBlock.astro';
@@ -63,11 +63,6 @@ import Icon from '../site/Icon.astro';
             class="mt-3.5 flex scroll-mt-24 flex-col gap-3"
           >
             <h3 class="sr-only">{path.title}</h3>
-            {path.badge && path.badge.tone === 'warn' && (
-              <Badge tone="warn" pill class="self-start">
-                {path.badge.label}
-              </Badge>
-            )}
             {path.steps.map((step) => (
               <>
                 <CodeBlock code={step.code} label={step.label} copy />
@@ -98,7 +93,7 @@ import Icon from '../site/Icon.astro';
           </li>
         ))}
       </ol>
-      <Button variant="secondary" size="sm" href="/docs/install" class="mt-6.5">
+      <Button variant="secondary" size="sm" href={INSTALL_HREF} class="mt-6.5">
         <Icon name="guide" size={14} />
         The full install guide
       </Button>

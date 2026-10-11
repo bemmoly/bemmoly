@@ -1,9 +1,8 @@
 ---
 /**
- * One "I already have…" card: the situation as its title, an honest status badge, what to
- * do, and the commands. Planned paths show their command without a Copy button. Drawn as
- * the Landing mock's configuration cards; the chooser's pick takes the Setup mock's
- * selected-card look (accent border and ring).
+ * One "Other ways to run it" card: the situation as its title, an honest status badge, what to
+ * do, and the commands, one block per step. A way that is coming soon shows no command. The
+ * chooser's pick takes the Setup mock's selected-card look (accent border and ring).
  */
 import type { PathOption } from '../../data/paths.ts';
 import { STATUS } from '../../data/self-hosting.ts';
@@ -17,7 +16,7 @@ interface Props {
 
 const { path } = Astro.props;
 const status = STATUS[path.status];
-const planned = path.status === 'launch';
+const external = path.link?.href.startsWith('http') ?? false;
 ---
 
 <li
@@ -46,18 +45,14 @@ const planned = path.status === 'launch';
     </div>
   </div>
   <p class="text-14h leading-desc text-pretty text-tx-2">{path.body}</p>
-  {path.code && (
-    <CodeBlock
-      code={path.code}
-      copy={path.copy ?? false}
-      label={planned ? 'Planned, not released yet' : undefined}
-    />
-  )}
+  {path.steps?.map((step) => (
+    <CodeBlock code={step.code} label={step.label} copy />
+  ))}
   {path.note && <p class="text-13 leading-brief text-tx-3">{path.note}</p>}
   {path.link && (
     <a href={path.link.href} class="mt-auto inline-flex items-center gap-1 text-13 font-medium">
       {path.link.label}
-      <Icon name="external" size={14} />
+      <Icon name={external ? 'external' : 'arrow'} size={14} />
     </a>
   )}
 </li>

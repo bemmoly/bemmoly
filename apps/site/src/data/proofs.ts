@@ -69,7 +69,7 @@ export const PROMISES: readonly DealPromise[] = [
       {
         label: 'A 2 vCPU, 4 GB VM',
         note: 'roughly $5–25 a month',
-        href: '/docs/install#requirements',
+        href: '/self-hosting#requirements',
       },
     ],
   },
@@ -95,8 +95,8 @@ export interface OwnFact {
   title: string;
   body: string;
   proof: Proof;
-  /** Only for what is not proven yet: amber, never green. */
-  untested?: string;
+  /** An AI fact: its icon takes the lilac that means AI, and nothing else. */
+  ai?: boolean;
 }
 
 /** "Yours to run": what self-hosting means in practice, each fact with its file. */
@@ -104,7 +104,7 @@ export const OWN: readonly OwnFact[] = [
   {
     icon: 'server',
     title: 'One VM, one Postgres',
-    body: 'One app image beside Postgres 18. No Redis, no search cluster. 2 vCPU and 4 GB is the size we plan for about 200 people.',
+    body: 'One app image beside Postgres 18. No Redis, no search cluster. 2 vCPU and 4 GB is the size we plan for about 200 people: an estimate, not yet measured.',
     proof: inFile(
       'docs/adr/0011-postgres-only.md',
       'Postgres is the only database',
@@ -152,16 +152,16 @@ export const OWN: readonly OwnFact[] = [
     ),
   },
   {
-    icon: 'wifi-off',
-    title: 'Runs without the internet',
-    body: 'Each release ships an offline bundle with the images, the installer and checksums. Docker must already be on the machine.',
+    icon: 'spark',
+    title: 'AI only if you want it',
+    body: 'AI is off until an admin turns it on and connects a provider, or a model on your own network. Until then, no AI request leaves the server.',
     proof: inFile(
-      'deploy/scripts/airgap-bundle.sh',
-      'bemmoly-airgap-',
-      'deploy/scripts/airgap-bundle.sh',
+      'packages/core/src/services/ai/settings.ts',
+      "{ key: 'ai.enabled', schema: z.boolean(), default: false }",
+      'packages/…/ai/settings.ts',
       '',
     ),
-    untested: 'Built, untested offline',
+    ai: true,
   },
 ];
 

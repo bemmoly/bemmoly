@@ -27,7 +27,7 @@ export const PAGES = [
     title: 'Bemmoly: self-hosted, open source project management',
     description:
       'Your work. Your platform. Issues, boards and docs on your own server: 100% open source (MIT), no pricing, no in-app purchases. One app image, one Postgres.',
-    updated: '2026-10-10',
+    updated: '2026-10-11',
     software: true,
   },
   {
@@ -36,7 +36,7 @@ export const PAGES = [
     title: 'Self-hosted project management, open source · Bemmoly',
     description:
       'Project management you run on your own server: issues, boards, sprints and docs in one MIT-licensed app, one container and one Postgres, with no per-seat fees.',
-    updated: '2026-10-10',
+    updated: '2026-10-11',
     software: true,
   },
   {
@@ -45,7 +45,7 @@ export const PAGES = [
     title: 'Open source issue tracker you host yourself · Bemmoly',
     description:
       'An MIT-licensed issue tracker for your own server: issue types, custom fields, visual workflows, a query language, saved filters and the history of every issue.',
-    updated: '2026-10-10',
+    updated: '2026-10-11',
     software: true,
   },
   {
@@ -54,7 +54,7 @@ export const PAGES = [
     title: 'Self-hosted Kanban and Scrum boards with sprints · Bemmoly',
     description:
       'Kanban or Scrum per project on your own server: columns mapped to statuses, WIP limits, swimlanes, a backlog with sprints, velocity, burndown and cycle time.',
-    updated: '2026-10-10',
+    updated: '2026-10-11',
     software: true,
   },
   {
@@ -63,16 +63,16 @@ export const PAGES = [
     title: 'On-premise project management: your data, your server',
     description:
       'Run Bemmoly on your own hardware or cloud: your data in your Postgres, verified and encrypted backups, signed updates, and nothing calls home by default.',
-    updated: '2026-10-10',
+    updated: '2026-10-11',
     software: true,
   },
   {
     path: '/self-hosting',
     name: 'Self-hosting',
-    title: 'Self-hosting: install Bemmoly on your own server',
+    title: 'Install Bemmoly on your own server: the self-hosting guide',
     description:
-      'Run Bemmoly on a fresh Linux VM with one command or start from your Docker Compose, Kubernetes, Postgres or offline setup. HTTPS, backups and upgrades built in.',
-    updated: '2026-10-10',
+      'Install Bemmoly on a Linux VM with one command, or with Docker Compose. Then first login, modules, optional AI, upgrades, backups, troubleshooting and sizing.',
+    updated: '2026-10-11',
     software: true,
   },
   {
@@ -81,16 +81,7 @@ export const PAGES = [
     title: 'Bemmoly docs: install, run and upgrade your own server',
     description:
       'Guides for running Bemmoly on your own server: the one-command install, Docker Compose by hand, backups, upgrades and rollback, and where the design lives.',
-    updated: '2026-10-10',
-  },
-  {
-    path: '/docs/install',
-    name: 'Install guide',
-    title: 'Install guide: Bemmoly on a Linux server in one command',
-    description:
-      'Step by step: pick a VM, point a domain at it, run one command and open the address it prints. What the installer checks, what it writes and what to do next.',
-    updated: '2026-10-10',
-    software: true,
+    updated: '2026-10-11',
   },
   {
     path: '/docs/compose',
@@ -98,7 +89,7 @@ export const PAGES = [
     title: 'Run Bemmoly with Docker Compose: a self-hosted setup guide',
     description:
       'Run Bemmoly from the Compose file the installer writes: four services, three of them optional, and one .env file. Every setting explained, then one command.',
-    updated: '2026-10-10',
+    updated: '2026-10-11',
   },
   {
     path: '/changelog',
@@ -140,7 +131,7 @@ export const DEMO_PAGE = {
   title: 'Live demo: Bemmoly issues, boards and sprints',
   description:
     'Click through Bemmoly in your browser: a sprint board, the backlog, issues and the workflow editor, on sample data that resets when you reload.',
-  updated: '2026-10-10',
+  updated: '2026-10-11',
 } as const satisfies SitePage;
 
 export function pageAt(path: PagePath): SitePage {
@@ -149,7 +140,7 @@ export function pageAt(path: PagePath): SitePage {
   return page;
 }
 
-/** Home, then each parent that is a page, then the page itself: /docs/install → Docs → Install. */
+/** Home, then each parent that is a page, then the page itself: /docs/compose → Docs → Compose. */
 export function trailOf(path: string): SitePage[] {
   const parts = path.split('/').filter(Boolean);
   const prefixes = ['/', ...parts.map((_, index) => `/${parts.slice(0, index + 1).join('/')}`)];
@@ -162,6 +153,6 @@ export const TOPICS: readonly PagePath[] = [
   '/open-source-issue-tracker',
   '/kanban-and-sprint-boards',
   '/on-premise',
-  '/docs/install',
+  '/self-hosting',
   '/docs/compose',
 ];

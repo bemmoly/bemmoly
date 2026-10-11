@@ -44,20 +44,14 @@ export const RELEASE_TITLES: Readonly<Record<string, { title: string; summary: s
 };
 
 /**
- * What is still to come, from the README's status table (tech design §24), with no release
- * numbers: a version promised for unbuilt work becomes false the day plans move (0.4 shipped
- * the new look, not the AI it was once promised). A row leaves this list in the change that
- * ships it.
+ * What is coming soon, with no dates or release numbers: a version promised for unbuilt work
+ * becomes false the day plans move. Worded as every page words it. A row leaves this list in
+ * the change that ships it.
  */
 export const ROADMAP = [
-  {
-    title: 'Import and integrations',
-    scope:
-      'Import from Jira, single sign-on (OIDC, SAML and SCIM), webhooks, automation, a roadmap',
-  },
-  {
-    title: 'Launch',
-    scope:
-      'a Helm chart and Terraform modules, a tested offline install, a PWA, and an accessibility and security review',
-  },
+  { title: 'Import from Jira', scope: 'bring projects and issues across, and CSV files too' },
+  { title: 'Single sign-on', scope: 'OIDC, SAML and SCIM' },
+  { title: 'Webhooks and automation', scope: 'rules that act on events or a schedule' },
+  { title: 'A roadmap view', scope: 'epics on a timeline' },
+  { title: 'Kubernetes and Terraform', scope: 'a Helm chart, and modules that create the VM' },
 ] as const;

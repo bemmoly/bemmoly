@@ -125,7 +125,8 @@ describe('site', () => {
 
   it.each([
     ['/docs.html', '/docs'],
-    ['/docs/install.html', '/docs/install'],
+    ['/docs/compose.html', '/docs/compose'],
+    ['/docs/install', '/self-hosting#install'],
     ['/docs/', '/docs'],
     ['/index.html', '/'],
   ])('redirects %s to the one address of the page, %s', async (path, location) => {
