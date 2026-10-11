@@ -14,6 +14,7 @@ export const KERNEL_NOTIFICATION_KINDS = [
   'backup_failed',
   'update_available',
   'ai_budget',
+  'break_glass_changed',
 ] as const;
 
 export type KernelNotificationKind = (typeof KERNEL_NOTIFICATION_KINDS)[number];
@@ -36,8 +37,8 @@ export type NotificationChannel = (typeof NOTIFICATION_CHANNELS)[number];
 export const notificationChannelSchema = z.enum(NOTIFICATION_CHANNELS);
 
 /**
- * Mentions, assignments, review requests, failures and a spent AI budget go at once; the
- * rest is batched.
+ * Mentions, assignments, review requests, failures, a spent AI budget and a change to who keeps
+ * a password while single sign-on is required go at once; the rest is batched.
  */
 export const IMMEDIATE_KINDS: readonly string[] = [
   'mention',
@@ -45,6 +46,7 @@ export const IMMEDIATE_KINDS: readonly string[] = [
   'review_request',
   'backup_failed',
   'ai_budget',
+  'break_glass_changed',
 ];
 
 export function defaultChannelFor(kind: string): NotificationChannel {

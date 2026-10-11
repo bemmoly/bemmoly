@@ -21,6 +21,7 @@ import {
   getSsoProvider,
   listSsoProviders,
   scimBaseUrl,
+  setBreakGlass,
   startTest,
   updateSsoPolicy,
   updateSsoProvider,
@@ -83,6 +84,20 @@ export function createSsoAdminController(deps: SsoDependencies) {
     async updatePolicy(request: FastifyRequest): Promise<SsoPolicy> {
       const input = parseOrThrow(updateSsoPolicySchema, request.body);
       return updateSsoPolicy(db, contextOf(request), input);
+    },
+
+    /** Marks an org admin break-glass; answers with the policy as it now stands. */
+    async addBreakGlass(request: FastifyRequest): Promise<SsoPolicy> {
+      const { id } = parseOrThrow(idParamsSchema, request.params);
+      const ctx = contextOf(request);
+      await setBreakGlass(deps, ctx, id, true);
+      return getSsoPolicy(db, ctx);
+    },
+
+    async removeBreakGlass(request: FastifyRequest, reply: FastifyReply): Promise<void> {
+      const { id } = parseOrThrow(idParamsSchema, request.params);
+      await setBreakGlass(deps, contextOf(request), id, false);
+      reply.code(204).send();
     },
 
     async listScimTokens(request: FastifyRequest): Promise<ScimTokensResponse> {

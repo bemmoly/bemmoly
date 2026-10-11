@@ -167,10 +167,19 @@ export const breakGlassAdminSchema = z.object({
   email: z.string(),
 });
 
+/** An active org admin, and whether they keep password sign-in while SSO is required. */
+export const ssoPolicyAdminSchema = breakGlassAdminSchema.extend({
+  breakGlass: z.boolean(),
+  /** Without a password sign-in there is nothing to fall back on, so they cannot be one. */
+  hasPassword: z.boolean(),
+});
+
 export const ssoPolicySchema = z.object({
   /** Password sign-in is off for everyone except break-glass accounts. */
   requireSso: z.boolean(),
   breakGlassAdmins: z.array(breakGlassAdminSchema),
+  /** Every active org admin, for marking and unmarking break-glass admins. */
+  admins: z.array(ssoPolicyAdminSchema),
 });
 
 export const updateSsoPolicySchema = z.object({ requireSso: z.boolean() });
@@ -251,6 +260,7 @@ export type SsoServiceProvider = z.infer<typeof ssoServiceProviderSchema>;
 export type SsoProvider = z.infer<typeof ssoProviderSchema>;
 export type SsoProvidersResponse = z.infer<typeof ssoProvidersResponseSchema>;
 export type BreakGlassAdmin = z.infer<typeof breakGlassAdminSchema>;
+export type SsoPolicyAdmin = z.infer<typeof ssoPolicyAdminSchema>;
 export type SsoPolicy = z.infer<typeof ssoPolicySchema>;
 export type UpdateSsoPolicyInput = z.infer<typeof updateSsoPolicySchema>;
 export type SsoSignInOption = z.infer<typeof ssoSignInOptionSchema>;

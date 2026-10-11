@@ -89,6 +89,8 @@ export function wireKernelServices(input: KernelServicesInput): KernelServices {
     routes: {
       sso: {
         db: database.db,
+        sql: database.sql,
+        events: kernel.events,
         secrets: createSecretBox(env.BEMMOLY_SECRET_KEY),
         publicUrl: env.BEMMOLY_PUBLIC_URL,
         // Identity providers are often self-hosted on the private network; link-local never.

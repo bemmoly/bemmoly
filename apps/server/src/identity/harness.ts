@@ -71,6 +71,8 @@ export async function startHarness(): Promise<HarnessResult> {
   });
   const sso: SsoDependencies = {
     db: createDatabase(sql),
+    sql,
+    events: bus,
     secrets: createSecretBox(randomBytes(32).toString('base64')),
     publicUrl: ORIGIN,
     addressPolicy: 'local',

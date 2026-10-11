@@ -22,6 +22,7 @@ import {
   type RequestContext,
 } from '../authz/index.ts';
 import { assertMayAssignRole, findRole } from './accounts.ts';
+import { assertBreakGlassRemains } from './break-glass.ts';
 import { loadUser, presentUsers } from './presenters.ts';
 import { revokeUserSessions } from './sessions.ts';
 
@@ -80,15 +81,23 @@ export async function updateUser(
   if (userId !== selfId(ctx) || roleChanges) {
     await ctx.authz.authorize(ctx.actor, MANAGE, { kind: 'workspace' });
   }
+  // Break-glass is an org admin's fallback, so it goes with the role.
+  let leavesBreakGlass = false;
   if (roleChanges && input.roleId) {
-    await assertMayAssignRole(ctx, await findRole(db, input.roleId));
+    const next = await findRole(db, input.roleId);
+    await assertMayAssignRole(ctx, next);
     await assertNotLastOrgAdmin(db, before, (await findRole(db, before.roleId)).key);
+    leavesBreakGlass = before.isBreakGlass && next.key !== ORG_ADMIN_ROLE_KEY;
+    if (leavesBreakGlass) await assertBreakGlassRemains(db, before);
   }
-  const changes = Object.fromEntries(
-    Object.entries(input).filter(
-      ([key, value]) => value !== undefined && value !== before[key as keyof User],
+  const changes = {
+    ...Object.fromEntries(
+      Object.entries(input).filter(
+        ([key, value]) => value !== undefined && value !== before[key as keyof User],
+      ),
     ),
-  ) as UpdateUserInput;
+    ...(leavesBreakGlass ? { isBreakGlass: false } : {}),
+  } as UpdateUserInput & { isBreakGlass?: boolean };
   if (Object.keys(changes).length === 0) return before;
   await db.transaction(async (tx) => {
     await tx
@@ -117,6 +126,7 @@ export async function deactivateUser(db: Database, ctx: RequestContext, userId: 
   const before = await getUser(db, userId);
   if (before.status === 'deactivated') return before;
   await assertNotLastOrgAdmin(db, before, (await findRole(db, before.roleId)).key);
+  await assertBreakGlassRemains(db, before);
   const now = new Date();
   await db.transaction(async (tx) => {
     await tx
