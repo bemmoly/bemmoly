@@ -38,6 +38,12 @@ describe('cross-module references', () => {
       label: 'Linked notes',
       referencesTo: async (_ctx, target) =>
         target.id === 'i-1' ? [{ kind: 'page', id: 'p-1', title: 'Spec', path: '/n/p-1' }] : [],
+      referencesToMany: async (_ctx, targets) =>
+        new Map(
+          targets.ids
+            .filter((id) => id === 'i-1')
+            .map((id) => [id, [{ kind: 'page', id: 'p-1', title: 'Spec', path: '/n/p-1' }]]),
+        ),
     });
   });
 
@@ -66,6 +72,32 @@ describe('cross-module references', () => {
     ]);
     expect(
       await tracker!.links.referencesTo(asPerson('ada'), { kind: 'issue', id: 'i-2' }),
+    ).toEqual([]);
+  });
+
+  it('asks about many records in one call per source that can, by record id', async () => {
+    const quiet = moduleNamed('quiet', (ctx) => {
+      ctx.links.addReferenceSource({
+        kind: 'quiet.note',
+        label: 'Notes',
+        referencesTo: async () => [{ kind: 'note', id: 'n-1', title: 'N', path: '/q' }],
+      });
+    });
+    loadModules({ available: [issues, pages, quiet] });
+    const groups = await tracker!.links.referencesToMany(asPerson('ada'), {
+      kind: 'issue',
+      ids: ['i-1', 'i-2'],
+    });
+    // The source that answers only one record at a time is left out of a list.
+    expect(groups.map((group) => [group.source, group.moduleId])).toEqual([
+      ['notes.page', 'notes'],
+    ]);
+    expect(groups[0]?.items.get('i-1')).toEqual([
+      { kind: 'page', id: 'p-1', title: 'Spec', path: '/n/p-1' },
+    ]);
+    expect(groups[0]?.items.has('i-2')).toBe(false);
+    expect(
+      await tracker!.links.referencesToMany(asPerson('ada'), { kind: 'issue', ids: [] }),
     ).toEqual([]);
   });
 

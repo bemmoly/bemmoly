@@ -1,4 +1,4 @@
-import type { AuditRecorder, RequestContext, SqlExecutor } from '@bemmoly/core';
+import type { AuditRecorder, LinkRegistry, RequestContext, SqlExecutor } from '@bemmoly/core';
 import { NotFoundError } from '@bemmoly/shared';
 import { WORK_REALTIME_KINDS, type WorkMethod } from '../../../../shared/index.ts';
 import type { IssueServiceDeps } from '../issues/index.ts';
@@ -13,6 +13,8 @@ import type { LqlService } from '../lql/index.ts';
 export interface PlanningDeps extends IssueServiceDeps {
   audit?: AuditRecorder;
   lql: LqlService;
+  /** Other modules' references to issues, for the cards' linked docs. */
+  links?: Pick<LinkRegistry, 'referencesToMany'>;
 }
 
 export interface PlanningProject {

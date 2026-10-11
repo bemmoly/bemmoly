@@ -20,5 +20,6 @@ export function registerDocsReferences(
     kind: 'docs.page',
     label: 'Linked docs',
     referencesTo: (requestCtx, target) => links.referencesTo(requestCtx, target),
+    referencesToMany: (requestCtx, targets) => links.referencesToMany(requestCtx, targets),
   });
 }

@@ -73,6 +73,41 @@ async function laneNames(
   }
 }
 
+/** The epics the cards roll up to, whatever the lanes, each once: the cards' statement read them. */
+function cardEpics(cards: readonly GroupCard[]): BoardView['epics'] {
+  const epics = new Map<string, BoardView['epics'][number]>();
+  for (const { epic } of cards) if (epic && !epics.has(epic.id)) epics.set(epic.id, epic);
+  return [...epics.values()];
+}
+
+/**
+ * The titles of the docs that link each card, asked of the other modules in one call per
+ * source and only when the board shows linked docs. Work's own references are not docs.
+ */
+async function withLinkedDocs(
+  deps: PlanningDeps,
+  ctx: RequestContext,
+  config: BoardConfig,
+  cards: GroupCard[],
+): Promise<GroupCard[]> {
+  if (!deps.links || !config.cardFields.includes('docs') || cards.length === 0) return cards;
+  const groups = await deps.links.referencesToMany(ctx, {
+    kind: 'issue',
+    ids: cards.map((entry) => entry.card.issueId),
+  });
+  const docs = new Map<string, string[]>();
+  for (const group of groups) {
+    if (group.moduleId === 'work') continue;
+    for (const [issueId, items] of group.items) {
+      docs.set(issueId, [...(docs.get(issueId) ?? []), ...items.map((item) => item.title)]);
+    }
+  }
+  return cards.map((entry) => {
+    const titles = docs.get(entry.card.issueId);
+    return titles ? { ...entry, card: { ...entry.card, docs: titles } } : entry;
+  });
+}
+
 export async function buildBoardView(
   deps: PlanningDeps,
   ctx: RequestContext,
@@ -107,11 +142,12 @@ export async function buildBoardView(
     computeBoardMetrics(sql, board, 6, now, project),
   ]);
   const names = await laneNames(sql, project, config.lanes.kind, cards);
-  const grouped = groupBoard(config, cards, names);
+  const grouped = groupBoard(config, await withLinkedDocs(deps, ctx, config, cards), names);
   return {
     board: view,
     sprintId,
     ...grouped,
+    epics: cardEpics(cards),
     metrics: {
       throughputPerWeek: metrics.throughputPerWeek,
       cycleTimeDays: metrics.cycleTimeDays,

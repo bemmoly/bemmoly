@@ -1,9 +1,6 @@
 import type { SqlExecutor } from '@bemmoly/core';
-import {
-  boardConfigSchema,
-  type BoardColumn,
-  type BoardConfig,
-} from '../../../../shared/boards.ts';
+import { defaultBoardConfig } from '../../../../shared/board-defaults.ts';
+import type { BoardConfig } from '../../../../shared/boards.ts';
 import { projectStatuses, type PlanningProject, type StatusRow } from './context.ts';
 import { BOARD_COLUMNS, parseConfig, projectBoards, type BoardRow } from './rows.ts';
 
@@ -13,41 +10,9 @@ import { BOARD_COLUMNS, parseConfig, projectBoards, type BoardRow } from './rows
  * by name, or else as one column per status with the done statuses together.
  */
 
-const slug = (name: string, taken: Set<string>): string => {
-  const base =
-    name
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-|-$/g, '') || 'column';
-  let id = base;
-  for (let n = 2; taken.has(id); n++) id = `${base}-${n}`;
-  taken.add(id);
-  return id;
-};
-
 /** One column per open status in workflow order, then one Done column for every done status. */
-export function defaultConfig(statuses: readonly StatusRow[]): BoardConfig {
-  const taken = new Set<string>();
-  const open = statuses.filter((status) => status.category !== 'done');
-  const done = statuses.filter((status) => status.category === 'done');
-  const columns: BoardColumn[] = open.map((status) => ({
-    id: slug(status.name, taken),
-    name: status.name,
-    statusIds: [status.id],
-  }));
-  if (done.length > 0) {
-    columns.push({
-      id: slug(done[0]?.name ?? 'Done', taken),
-      name: done[0]?.name ?? 'Done',
-      statusIds: done.map((status) => status.id),
-      done: true,
-    });
-  }
-  while (columns.length < 2) {
-    columns.push({ id: slug('Column', taken), name: 'Column', statusIds: [] });
-  }
-  return boardConfigSchema.parse({ columns });
-}
+export const defaultConfig = (statuses: readonly StatusRow[]): BoardConfig =>
+  defaultBoardConfig(statuses);
 
 /**
  * The org scheme's columns re-pointed at a project's statuses by name. Columns

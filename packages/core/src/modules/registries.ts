@@ -79,44 +79,7 @@ export interface EntityRegistry {
   has(kind: string): boolean;
 }
 
-export interface LinkKindDefinition {
-  kind: string;
-  label: string;
-  fromKinds: readonly string[];
-  toKinds: readonly string[];
-}
-
-/** The other end of a reference, as the module that owns it describes it. */
-export interface ReferenceTarget {
-  kind: string;
-  id: string;
-}
-
-/**
- * A module's answer to "what of yours points at this record?": Docs answers with the pages
- * that mention or embed an issue. Results are already filtered to what the person may see.
- */
-export interface ReferenceSourceDefinition {
-  /** Namespaced by module: "docs.page". */
-  kind: string;
-  /** What the group is called next to the record: "Linked docs". */
-  label: string;
-  referencesTo(ctx: RequestContext, target: ReferenceTarget): Promise<EntitySummary[]>;
-}
-
-export interface ReferenceGroup {
-  source: string;
-  label: string;
-  moduleId: string;
-  items: EntitySummary[];
-}
-
-export interface LinkRegistry {
-  add(link: LinkKindDefinition): void;
-  addReferenceSource(source: ReferenceSourceDefinition): void;
-  /** Every enabled module's references to the target, one group per source that has any. */
-  referencesTo(ctx: RequestContext, target: ReferenceTarget): Promise<ReferenceGroup[]>;
-}
+export type * from './link-registry.ts';
 
 /** Columns of the roles matrix in the People mock. */
 export type SystemRole = 'org_admin' | 'project_admin' | 'member' | 'viewer' | 'contractor';

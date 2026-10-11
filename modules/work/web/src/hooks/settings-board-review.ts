@@ -26,8 +26,8 @@ export function useBoardReview(settings: BoardSettings, onSaved: (section: Board
     });
 
   const resetChanges =
-    settings.stored && settings.orgConfig
-      ? boardConfigDiff(settings.stored.config, settings.orgConfig, settings.statusName)
+    settings.stored && settings.baseConfig
+      ? boardConfigDiff(settings.stored.config, settings.baseConfig, settings.statusName)
       : [];
 
   return {
@@ -65,7 +65,8 @@ export function useBoardReview(settings: BoardSettings, onSaved: (section: Board
       onClose: () => setReset(null),
       onConfirm: () => setReset('confirm'),
     },
-    resetRisk: reset === 'confirm' ? resetRisk(resetChanges.length) : null,
+    resetRisk:
+      reset === 'confirm' ? resetRisk(resetChanges.length, settings.orgBoard !== undefined) : null,
     confirmReset: () => settings.reset.mutate(undefined, { onSuccess: () => setReset(null) }),
     cancelReset: () => setReset(null),
 

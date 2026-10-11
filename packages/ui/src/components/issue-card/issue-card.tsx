@@ -2,9 +2,10 @@ import type { KeyboardEvent, MouseEvent, ReactNode } from 'react';
 import { Icon } from '../../icons/icon.tsx';
 import { cx } from '../../lib/cx.ts';
 import { focusRing } from '../../lib/focus.ts';
-import { PriorityGlyph, TypeGlyph, type IssueTypeRef, type Priority } from '../glyphs/glyphs.tsx';
+import type { IssueTypeRef, Priority } from '../glyphs/glyphs.tsx';
 import { Label, type LabelValue } from '../label/label.tsx';
-import { BlockedChip, IssueAssignee, Points, type CardPerson } from './issue-atoms.tsx';
+import { BlockedChip, type CardPerson } from './issue-atoms.tsx';
+import { IssueCardFooter, type IssueCardPart } from './issue-card-footer.tsx';
 
 export interface IssueCardProps {
   issueKey: string;
@@ -12,6 +13,8 @@ export interface IssueCardProps {
   showKey?: boolean;
   title: ReactNode;
   type: IssueTypeRef;
+  /** Draws the type tile; off, the card still uses the type for a "by type" stripe. */
+  showType?: boolean;
   /** The priority bars; undefined leaves the slot out. */
   priority?: Priority;
   /** The assignee; null draws the unassigned ring, undefined leaves the slot out. */
@@ -27,6 +30,14 @@ export interface IssueCardProps {
   /** A linked doc's short name ("RFC", "Spec") in the accent with a doc icon. */
   doc?: string;
   subtasks?: { done: number; total: number };
+  /** The due date as the board prints it ("Oct 6"), red once it has passed. */
+  due?: { label: string; overdue?: boolean };
+  /** The day the issue was created, as the board prints it. */
+  created?: string;
+  /** Who reported it: a smaller avatar before the assignee's. */
+  reporter?: CardPerson;
+  /** The footer parts in the board's order; each side of the footer keeps to it. */
+  order?: readonly IssueCardPart[];
   /** Open in the peek: the accent ring. */
   selected?: boolean;
   /** Part of a multi-selection: the accent tint and ring, and the box ticked. */
@@ -117,13 +128,15 @@ function SelectBox({ issueKey, checked, visible, onCheck }: SelectBoxProps) {
 /**
  * The one issue card (docs/design/premium/kit.css, `.card`): the title first, labels as outlined
  * pills, then the type tile and the key in mono, with priority, points and the assignee on the
- * right. Blocked is a 2.5px red edge and a small chip, so the eye lands on the work first.
+ * right. Blocked is a 2.5px red edge and a small chip, so the eye lands on the work first. Every
+ * part but the title is optional, so a board's card fields decide exactly what shows.
  */
 export function IssueCard({
   issueKey,
   showKey = true,
   title,
   type,
+  showType = true,
   priority,
   assignee,
   labels,
@@ -132,6 +145,10 @@ export function IssueCard({
   blockedBy,
   doc,
   subtasks,
+  due,
+  created,
+  reporter,
+  order,
   selected = false,
   checked = false,
   pending = false,
@@ -216,45 +233,22 @@ export function IssueCard({
           })}
         </div>
       )}
-      <div className="flex items-center gap-1.5 text-tx-3">
-        <TypeGlyph type={type} />
-        {showKey && (
-          <span className="shrink-0 font-mono text-12 tracking-[-0.01em] whitespace-nowrap">
-            {issueKey}
-          </span>
-        )}
-        {doc && (
-          <span className="flex min-w-0 items-center gap-0.75 text-11 text-acc">
-            <Icon name="doc" size={11} />
-            <span className="truncate">{doc}</span>
-          </span>
-        )}
-        {subtasks && (
-          <span
-            aria-label={`${subtasks.done} of ${subtasks.total} subtasks done`}
-            className="flex items-center gap-0.75 text-11 tabular-nums"
-          >
-            <Icon name="subtasks" size={11} />
-            {subtasks.done}/{subtasks.total}
-          </span>
-        )}
-        <span className="ml-auto flex items-center gap-1.5">
-          {priority && <PriorityGlyph priority={priority} />}
-          {estimate !== undefined && <Points value={estimate} />}
-          {age && (
-            <span
-              title="Time in column"
-              className={cx(
-                'text-11 font-medium tabular-nums',
-                age.slow ? 'text-amber-tx' : 'text-tx-3',
-              )}
-            >
-              {age.done ? <Icon name="check" size={12} label={age.label} /> : age.label}
-            </span>
-          )}
-          {assignee !== undefined && <IssueAssignee person={assignee} />}
-        </span>
-      </div>
+      <IssueCardFooter
+        issueKey={issueKey}
+        type={type}
+        showType={showType}
+        showKey={showKey}
+        priority={priority}
+        assignee={assignee}
+        estimate={estimate}
+        age={age}
+        doc={doc}
+        subtasks={subtasks}
+        due={due}
+        created={created}
+        reporter={reporter}
+        order={order}
+      />
     </div>
   );
 }

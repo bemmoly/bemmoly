@@ -9,4 +9,5 @@ export {
 } from './epic-color.ts';
 export { BlockedChip, IssueAssignee, Points, type CardPerson } from './issue-atoms.tsx';
 export { IssueCard, type IssueCardProps } from './issue-card.tsx';
+export { ISSUE_CARD_PARTS, type IssueCardPart } from './issue-card-footer.tsx';
 export { IssueCardSkeleton, type IssueCardSkeletonProps } from './issue-card-skeleton.tsx';

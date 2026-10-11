@@ -8,25 +8,11 @@ import type { ColumnModel } from './board-model.ts';
 
 /*
  * How cards look is the board's, set by project and org admins in Board settings › Cards, and
- * the same for everyone on the project. The only personal display choice left is whether empty
- * columns take room, kept in this browser per person and board. Views stored before cards
- * became the board's alone carried card fields and a density; those keys are dropped on read.
+ * the same for everyone on the project: a card draws exactly the board's card fields. The only
+ * personal display choice left is whether empty columns take room, kept in this browser per
+ * person and board. Views stored before cards became the board's alone carried card fields and
+ * a density; those keys are dropped on read and never reach a card.
  */
-
-/** The card fields the board draws, in the card's order. */
-export const DISPLAY_FIELDS = [
-  'key',
-  'priority',
-  'estimate',
-  'age',
-  'assignee',
-  'labels',
-  'blocked',
-  'docs',
-  'subtasks',
-] as const;
-
-export type DisplayField = (typeof DISPLAY_FIELDS)[number];
 
 const displaySchema = z.object({ showEmptyColumns: z.boolean() });
 
@@ -34,13 +20,9 @@ export type BoardDisplay = z.infer<typeof displaySchema>;
 
 export const DEFAULT_DISPLAY: BoardDisplay = { showEmptyColumns: true };
 
-/** The fields every card shows: the board's card fields, and the time in column on Kanban. */
-export function shownFields(boardFields: readonly CardField[]): ReadonlySet<DisplayField> {
-  return new Set(
-    DISPLAY_FIELDS.filter(
-      (field) => field === 'age' || (boardFields as readonly string[]).includes(field),
-    ),
-  );
+/** The fields every card shows: exactly the board's card fields, nothing added. */
+export function shownFields(boardFields: readonly CardField[]): ReadonlySet<CardField> {
+  return new Set(boardFields);
 }
 
 export function isCustomized(display: BoardDisplay): boolean {

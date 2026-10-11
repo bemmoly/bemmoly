@@ -49,4 +49,62 @@ describe('IssueCard', () => {
     render(<IssueCard {...base} density="compact" />);
     expect(screen.getByText('Structured logging').className).toContain('line-clamp-2');
   });
+
+  it('draws every part a board can show, and leaves out each one it is not given', () => {
+    const { container, rerender } = render(
+      <IssueCard
+        {...base}
+        estimate={3}
+        age={{ label: '2d' }}
+        doc="RFC"
+        subtasks={{ done: 1, total: 4 }}
+        due={{ label: 'Oct 6', overdue: true }}
+        created="Sep 28"
+        reporter={{ name: 'Priya N.' }}
+        assignee={{ name: 'Jonas M.' }}
+      />,
+    );
+    expect(screen.getByRole('img', { name: 'Story' })).toBeTruthy();
+    expect(screen.getByLabelText('3 points')).toBeTruthy();
+    expect(screen.getByText('2d')).toBeTruthy();
+    expect(screen.getByText('RFC')).toBeTruthy();
+    expect(screen.getByLabelText('1 of 4 subtasks done')).toBeTruthy();
+    expect(screen.getByLabelText('Due Oct 6, overdue').className).toContain('text-red-tx');
+    expect(screen.getByLabelText('Created Sep 28')).toBeTruthy();
+    expect(screen.getByRole('img', { name: 'Reported by Priya N.' })).toBeTruthy();
+    expect(screen.getByRole('img', { name: 'Jonas M.' })).toBeTruthy();
+
+    rerender(
+      <IssueCard
+        issueKey="PLT-241"
+        title="Structured logging"
+        type="story"
+        showType={false}
+        showKey={false}
+      />,
+    );
+    expect(screen.queryByRole('img')).toBeNull();
+    expect(container.textContent).toBe('Structured logging');
+  });
+
+  it('orders each side of the footer as the board lists its fields', () => {
+    const props = {
+      ...base,
+      estimate: 3,
+      due: { label: 'Oct 6' },
+      assignee: { name: 'Jonas M.' },
+    } as const;
+    const { rerender } = render(
+      <IssueCard {...props} order={['due', 'key', 'assignee', 'estimate']} />,
+    );
+    const left = () => screen.getByText('PLT-241').parentElement?.textContent ?? '';
+    expect(left().indexOf('Oct 6')).toBeLessThan(left().indexOf('PLT-241'));
+    const right = () =>
+      [...(screen.getByLabelText('3 points').parentElement?.children ?? [])].map((el) =>
+        el.getAttribute('aria-label'),
+      );
+    expect(right()).toEqual(['Jonas M.', '3 points', 'Medium priority']);
+    rerender(<IssueCard {...props} />);
+    expect(right()).toEqual(['Medium priority', '3 points', 'Jonas M.']);
+  });
 });

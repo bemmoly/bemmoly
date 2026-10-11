@@ -18,17 +18,12 @@ beforeEach(() => {
 afterEach(() => vi.restoreAllMocks());
 
 describe('shownFields', () => {
-  it("draws exactly the board's card fields, plus the time in column", () => {
-    expect([...shownFields([...BOARD_FIELDS])]).toEqual([
-      'key',
-      'priority',
-      'estimate',
-      'age',
-      'assignee',
-      'labels',
-    ]);
-    // A board that hides the key and priority hides them for everyone.
-    expect([...shownFields(['type'])]).toEqual(['age']);
+  it("draws exactly the board's card fields, nothing added", () => {
+    expect([...shownFields([...BOARD_FIELDS])]).toEqual([...BOARD_FIELDS]);
+    // A board that hides the key and priority hides them for everyone; the time in column
+    // shows only when the board lists it.
+    expect([...shownFields(['type'])]).toEqual(['type']);
+    expect([...shownFields(['due', 'age'])]).toEqual(['due', 'age']);
   });
 });
 

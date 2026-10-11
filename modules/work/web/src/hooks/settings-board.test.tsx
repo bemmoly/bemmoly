@@ -29,7 +29,7 @@ function wrapper({ children }: { children: ReactNode }) {
 async function loaded() {
   const hook = renderHook(() => useBoardSettings('PLT'), { wrapper });
   await waitFor(() => expect(hook.result.current.value).not.toBeNull());
-  await waitFor(() => expect(hook.result.current.orgConfig).not.toBeNull());
+  await waitFor(() => expect(hook.result.current.baseConfig).not.toBeNull());
   return hook;
 }
 
@@ -52,7 +52,43 @@ describe('useBoardSettings', () => {
     expect(result.current.overrides.map((row) => [row.label, row.after])).toEqual([
       ['Column "In progress"', 'In progress · WIP 4'],
     ]);
-    expect(result.current.orgConfig?.columns[0]?.statusIds).toEqual([S['Backlog'], S['Selected']]);
+    expect(result.current.baseConfig?.columns[0]?.statusIds).toEqual([S['Backlog'], S['Selected']]);
+  });
+
+  it("compares with Work's default board when the org has no board scheme", async () => {
+    holder.fake = createFakeWork('scrum', { withOrgBoard: false });
+    const { result } = await loaded();
+    expect(result.current.baseName).toBe('the default board');
+    // The default is one column per open status, then Done; the board differs in its columns.
+    expect(result.current.baseConfig?.columns.map((column) => column.name)).toEqual([
+      ...result.current.statuses.filter((s) => s.category !== 'done').map((s) => s.name),
+      'Done',
+    ]);
+    expect(result.current.baseConfig?.cardFields).toEqual([
+      'type',
+      'key',
+      'priority',
+      'labels',
+      'estimate',
+      'assignee',
+    ]);
+    const before = result.current.overrides.length;
+    expect(before).toBeGreaterThan(0);
+    // A saved card layout is a change from the default, and the note counts it.
+    act(() =>
+      result.current.updateConfig((config) => ({
+        ...config,
+        cardFields: ['type', 'key', 'labels', 'estimate', 'due'],
+        colorRule: 'priority',
+      })),
+    );
+    const prepared = result.current.prepare('cards');
+    if (prepared) act(() => result.current.save.mutate(prepared));
+    await waitFor(() => expect(result.current.save.isSuccess).toBe(true));
+    await waitFor(() => expect(result.current.overrides.length).toBe(before + 2));
+    expect(result.current.overrides.map((row) => row.label)).toEqual(
+      expect.arrayContaining(['Card fields', 'Card color']),
+    );
   });
 
   it('saves one tab and keeps the draft of another', async () => {

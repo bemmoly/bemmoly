@@ -22,9 +22,9 @@ export function BoardDialogs({
       <DiffDialog
         open={review.viewing}
         title="Board settings overridden on this project"
-        description={`Compared with the org default, ${schemeName}.`}
+        description={`Compared with ${schemeName}.`}
         entries={settings.overrides}
-        empty="This board matches the org default."
+        empty={`This board matches ${schemeName}.`}
         onClose={() => review.setViewing(false)}
       />
       <DiffDialog
@@ -52,9 +52,9 @@ export function BoardDialogs({
       />
       <DiffDialog
         {...review.resetReview}
-        title="Reset to the org default"
+        title={`Reset to ${schemeName}`}
         description={`Every setting below goes back to ${schemeName}.`}
-        empty="This board already matches the org default."
+        empty={`This board already matches ${schemeName}.`}
         confirmLabel="Continue"
       />
       <ConfirmChange

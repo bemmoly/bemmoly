@@ -72,18 +72,22 @@ export function methodRisk(
   };
 }
 
-/** Resetting drops every board setting this project changed, so it asks for a typed word. */
-export function resetRisk(changes: number): ChangeConfirm {
+/**
+ * Resetting drops every board setting this project changed, so it asks for a typed word. The
+ * default is the org's board scheme when there is one, else Work's default board.
+ */
+export function resetRisk(changes: number, org = true): ChangeConfirm {
+  const base = org ? 'org default' : 'default board';
   return {
-    title: 'Reset the board to the org default?',
+    title: `Reset the board to the ${base}?`,
     description: 'The diff above lists every setting that goes back.',
     consequences: [
-      `${changes} ${changes === 1 ? 'setting this project changed is' : 'settings this project changed are'} replaced by the org default.`,
+      `${changes} ${changes === 1 ? 'setting this project changed is' : 'settings this project changed are'} replaced by the ${base}.`,
       'Columns are matched to this project’s statuses by name; unmatched statuses leave the board.',
       'Personal filters and swimlane views of members are not touched.',
     ],
     confirmWord: 'reset',
-    confirmLabel: 'Reset to org default',
+    confirmLabel: `Reset to ${base}`,
     tone: 'danger',
   };
 }

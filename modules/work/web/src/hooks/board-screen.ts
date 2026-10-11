@@ -1,7 +1,7 @@
 import type { CardField } from '@bemmoly/module-work/shared';
 import { avatarHue, epicColor, statusStage, type EpicColor, type StatusStage } from '@bemmoly/ui';
 import { useEffect, useMemo, useRef } from 'react';
-import type { CardVocabulary } from '../board/card-view.ts';
+import { footerOrder, localDay, type CardVocabulary } from '../board/card-view.ts';
 import type { MenuSprint } from '../shared/issue-actions-menu.tsx';
 import type { FilterOptions } from '../shared/issue-filter-bar.tsx';
 import { useIssueFilters } from '../shared/issue-filters.ts';
@@ -84,11 +84,13 @@ export function useBoardScreen(projectKey: string | undefined) {
     () => new Map(data.workflow?.statuses.map((status) => [status.id, status])),
     [data.workflow],
   );
-  // The cards' names come from the lanes, not the cards: a drop replaces the view but keeps its
-  // lanes, so the vocabulary, and every card that reads it, stays put.
+  // The cards' names come from the lanes and the epics, not the cards: a drop replaces the view
+  // but keeps them, so the vocabulary, and every card that reads it, stays put.
   const viewLanes = view?.lanes;
-  const vocab = useMemo<CardVocabulary>(
-    () => ({
+  const viewEpics = view?.epics;
+  const vocab = useMemo<CardVocabulary>(() => {
+    const epics = new Map((viewEpics ?? []).map((epic) => [epic.id, epic]));
+    return {
       types: new Map(data.issueTypes.map((type) => [type.id, type])),
       people: new Map(data.people.map((person) => [person.id, person])),
       labels: new Map(
@@ -96,15 +98,17 @@ export function useBoardScreen(projectKey: string | undefined) {
       ),
       meId: data.meId,
       shown: display.shown,
+      order: footerOrder(boardConfig?.cardFields ?? NO_FIELDS),
       colorRule: boardConfig?.colorRule ?? 'none',
-      kanban,
       doneColumns: new Set(
         (boardConfig?.columns ?? []).filter((column) => column.done).map((column) => column.id),
       ),
+      today: localDay(),
       epicColors: new Map(
-        (viewLanes ?? []).flatMap((lane): [string, EpicColor][] =>
-          lane.issueKey ? [[lane.id, epicColor(lane.color, lane.id)]] : [],
-        ),
+        [...epics.values()].map((epic): [string, EpicColor] => [
+          epic.id,
+          epicColor(epic.color, epic.id),
+        ]),
       ),
       ruleColor: compileColorRules(boardConfig?.colorRules ?? [], {
         meId: data.meId,
@@ -113,21 +117,21 @@ export function useBoardScreen(projectKey: string | undefined) {
         typeName: (id) => data.issueTypes.find((type) => type.id === id)?.name,
         userName: (id) => data.people.find((person) => person.id === id)?.name,
         labelName: (id) => data.labels.find((label) => label.id === id)?.name,
-        issueKey: (id) => viewLanes?.find((lane) => lane.id === id)?.issueKey ?? undefined,
+        issueKey: (id) =>
+          epics.get(id)?.key ?? viewLanes?.find((lane) => lane.id === id)?.issueKey ?? undefined,
       }),
-    }),
-    [
-      data.issueTypes,
-      data.people,
-      data.labels,
-      data.meId,
-      viewLanes,
-      statuses,
-      boardConfig,
-      kanban,
-      display.shown,
-    ],
-  );
+    };
+  }, [
+    data.issueTypes,
+    data.people,
+    data.labels,
+    data.meId,
+    viewLanes,
+    viewEpics,
+    statuses,
+    boardConfig,
+    display.shown,
+  ]);
 
   const shownTotal = model ? model.lanes.reduce((sum, lane) => sum + lane.count, 0) : 0;
 

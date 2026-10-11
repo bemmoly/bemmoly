@@ -30,8 +30,8 @@ export interface BoardSettingsPageProps {
 }
 
 /**
- * Project settings › Board, from the Board Settings mock: the org default it
- * inherits with the diff, then one tab per part of the board. Each tab reads
+ * Project settings › Board, from the Board Settings mock: the default it
+ * starts from (the org's board scheme, or Work's default board) with the diff, then one tab per part of the board. Each tab reads
  * calmly until Edit, saves on its own after the diff is reviewed, and asks
  * before a change that takes cards off the board.
  */
@@ -66,7 +66,9 @@ export function BoardSettingsPage({ projectKey }: BoardSettingsPageProps) {
   );
 
   const project = settings.project;
-  const schemeName = settings.orgBoard?.name ?? 'the org default';
+  const schemeName = settings.orgBoard
+    ? `the org default, ${settings.orgBoard.name}`
+    : settings.baseName;
   const frame = (content: ReactNode, aside?: ReactNode) => (
     <SettingsFrame nav={null} aside={aside}>
       <SettingsContent width="narrow">{content}</SettingsContent>
@@ -126,7 +128,7 @@ export function BoardSettingsPage({ projectKey }: BoardSettingsPageProps) {
         }
       />
       <InheritanceNote
-        origin={schemeName}
+        origin={settings.baseName}
         changes={settings.overrides.length}
         onCompare={() => review.setViewing(true)}
       />

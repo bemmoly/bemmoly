@@ -86,3 +86,46 @@ export const States: Story = {
     </div>
   ),
 };
+
+/**
+ * A board's card fields: every part a board can show, a board that shows only the title and
+ * labels, and the footer in a board's own order (due date first, the assignee before points).
+ */
+export const BoardFields: Story = {
+  render: () => (
+    <div className="flex w-64 flex-col gap-2 bg-sunken p-3">
+      <IssueCard
+        issueKey="PLT-211"
+        title="Session cleanup background job"
+        type="story"
+        priority="medium"
+        labels={['infra']}
+        estimate={3}
+        age={{ label: '2d' }}
+        doc="RFC"
+        subtasks={{ done: 2, total: 5 }}
+        due={{ label: 'Oct 6', overdue: true }}
+        created="Sep 28"
+        reporter={{ name: 'Priya N.', hue: 'green' }}
+        assignee={{ name: 'Jonas M.', hue: 'violet' }}
+      />
+      <IssueCard
+        issueKey="PLT-212"
+        title="Rotate the signing keys"
+        type="task"
+        showType={false}
+        showKey={false}
+        labels={['security']}
+      />
+      <IssueCard
+        issueKey="PLT-213"
+        title="Archive closed sprints"
+        type="task"
+        due={{ label: 'Oct 20' }}
+        estimate={2}
+        assignee={{ name: 'Lena T.', hue: 'pink' }}
+        order={['due', 'key', 'assignee', 'estimate']}
+      />
+    </div>
+  ),
+};

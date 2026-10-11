@@ -100,6 +100,7 @@ export default defineModule({
       ...(ctx.database ? { database: ctx.database } : {}),
       ...(ctx.audit ? { audit: ctx.audit } : {}),
       ...(ctx.memberships ? { memberships: ctx.memberships } : {}),
+      links: ctx.links,
     });
     ctx.jobs.add({
       name: WORK_RANK_REBALANCE_JOB,

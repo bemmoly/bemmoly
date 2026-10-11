@@ -18,7 +18,10 @@ export const boardColumnSchema = z.object({
   done: z.boolean().default(false),
 });
 
-/** The card fields of the Board Settings mock, in its order. */
+/**
+ * The card fields of the Board Settings mock, in its order, then the time in column. A card
+ * draws exactly the fields its board lists, in that order, and nothing else.
+ */
 export const CARD_FIELDS = [
   'type',
   'key',
@@ -32,6 +35,7 @@ export const CARD_FIELDS = [
   'subtasks',
   'reporter',
   'created',
+  'age',
 ] as const;
 
 export const cardFieldSchema = z.enum(CARD_FIELDS);
@@ -126,6 +130,10 @@ export const boardCardSchema = z.object({
   docs: z.array(z.string()).default([]),
   /** Days since the status last changed. */
   ageDays: z.number().int().nonnegative(),
+  reporterId: z.uuid().nullable().default(null),
+  createdAt: z.iso.date().nullable().default(null),
+  /** The epic the card rolls up to, through its parent; the "by epic" stripe reads it. */
+  epicId: z.uuid().nullable().default(null),
 });
 
 export const boardViewSchema = z.object({
@@ -151,6 +159,10 @@ export const boardViewSchema = z.object({
     }),
   ),
   cards: z.array(boardCardSchema.extend({ columnId: z.string(), laneId: z.string() })),
+  /** The epics the cards roll up to, whatever the lanes: their key and stored colour. */
+  epics: z
+    .array(z.object({ id: z.uuid(), key: z.string(), color: z.string().nullable() }))
+    .default([]),
   metrics: z.object({
     throughputPerWeek: z.number().nonnegative(),
     cycleTimeDays: z.number().nonnegative().nullable(),

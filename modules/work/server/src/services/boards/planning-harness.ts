@@ -18,7 +18,7 @@ import {
 import type { CreateIssueBody, Issue, WorkMethod } from '../../../../shared/index.ts';
 import work from '../../../../module.ts';
 import { WORK_CAPABILITIES } from '../../config/capabilities.ts';
-import { createWorkServices, type WorkServices } from '../index.ts';
+import { createWorkServices, type WorkServiceDeps, type WorkServices } from '../index.ts';
 import type { PlanningDeps } from './context.ts';
 
 /*
@@ -52,7 +52,11 @@ export type PlanningStart = { planning: Planning } | { reason: string };
 
 /** `onQuery` sees every statement the services run, for a query-count budget. */
 export async function startPlanning(
-  options: { onQuery?: (statement: string) => void } = {},
+  options: {
+    onQuery?: (statement: string) => void;
+    /** Stands in for other modules' reference sources (Docs' linked docs). */
+    links?: WorkServiceDeps['links'];
+  } = {},
 ): Promise<PlanningStart> {
   const server: TestDatabase = await startTestDatabase();
   if (!server.available) return { reason: server.reason };
@@ -74,7 +78,13 @@ export async function startPlanning(
   const realtime = { publish: async (message: RealtimeMessage) => void messages.push(message) };
   const events = { publish: async () => undefined, subscribe: () => () => undefined };
   const audit = createAuditRecorder(sql);
-  const services = createWorkServices({ database: sql, realtime, events, audit });
+  const services = createWorkServices({
+    database: sql,
+    realtime,
+    events,
+    audit,
+    ...(options.links ? { links: options.links } : {}),
+  });
   const db = createDatabase(sql);
   const modules = {
     ids: () => ['work'],

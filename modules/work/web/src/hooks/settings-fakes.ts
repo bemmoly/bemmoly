@@ -35,7 +35,7 @@ function workflow(id: string, projectId: string | null, ids: (index: number) => 
   };
 }
 
-export function createFakeWork(method: Project['method'] = 'scrum') {
+export function createFakeWork(method: Project['method'] = 'scrum', { withOrgBoard = true } = {}) {
   const project: Project = {
     id: PROJECT_ID,
     key: 'PLT',
@@ -92,7 +92,7 @@ export function createFakeWork(method: Project['method'] = 'scrum') {
     },
     boards: {
       list: async () => [structuredClone(board)],
-      listOrg: async () => [structuredClone(orgBoard)],
+      listOrg: async () => (withOrgBoard ? [structuredClone(orgBoard)] : []),
       update: async (_id: string, body: { config?: BoardConfig }) => {
         writes.board.push(body);
         if (body.config) board.config = structuredClone(body.config);

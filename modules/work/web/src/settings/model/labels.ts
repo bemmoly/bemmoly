@@ -30,6 +30,7 @@ export const CARD_FIELD_LABELS: Record<CardField, string> = {
   subtasks: 'Subtask progress',
   reporter: 'Reporter',
   created: 'Created',
+  age: 'Time in column',
 };
 
 /** The right-hand note of each card field row: how the card shows it. */
@@ -46,6 +47,7 @@ export const CARD_FIELD_KINDS: Record<CardField, string> = {
   subtasks: 'text',
   reporter: 'avatar',
   created: 'text',
+  age: 'days',
 };
 
 export const COLOR_RULE_LABELS: Record<CardColorRule, string> = {
