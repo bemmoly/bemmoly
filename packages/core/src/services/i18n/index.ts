@@ -9,7 +9,7 @@ import { compileMessage } from '@lingui/message-utils/compileMessage';
 import email from './email.en.json' with { type: 'json' };
 
 /*
- * Text the server writes for people (ADR 0024): emails now, digests and notifications as they
+ * Text the server writes for people (ADR 0025): emails now, digests and notifications as they
  * move over. Same ICU messages and catalog layout as the web, compiled once per locale at
  * first use, since the server has no build step (ADR 0003). Errors are not translated here;
  * they carry a messageId and the client shows them in the reader's language.

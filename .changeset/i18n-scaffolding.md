@@ -21,4 +21,4 @@ their words from message catalogs (ICU, one per namespace, compiled at build tim
 bring their own through `@bemmoly/core-web`, and `?locale=en-XA` shows a screen in an accented,
 padded pseudo-language for checking layout. API error bodies may now carry `messageId` and
 `values` beside `message`; existing clients are unaffected. The password reset email is written
-through the server's catalog in the workspace's language. See `docs/i18n.md` and ADR 0024.
+through the server's catalog in the workspace's language. See `docs/i18n.md` and ADR 0025.

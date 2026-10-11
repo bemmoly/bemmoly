@@ -1,5 +1,5 @@
 /**
- * Which languages Bemmoly speaks (ADR 0024). English is the source: every message is written in
+ * Which languages Bemmoly speaks (ADR 0025). English is the source: every message is written in
  * English first and every other catalog is a translation of it. A locale ships when its catalogs
  * are complete; only shipped locales are offered to people.
  */

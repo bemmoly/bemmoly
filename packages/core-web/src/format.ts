@@ -2,7 +2,7 @@ import { formatDate, numberFormat } from '@bemmoly/ui/intl';
 
 /** Relative times live with RelativeTime in the UI kit, so a hover can show the date. */
 export { formatAbsolute, formatRelative } from '@bemmoly/ui/time';
-/** Every date and number goes through Intl in the person's locale (ADR 0024). */
+/** Every date and number goes through Intl in the person's locale (ADR 0025). */
 export { formatDate, formatNumber, useFormatLocale } from '@bemmoly/ui/intl';
 
 /** "Rohan S." → "RS"; "priya@acme.dev" → "P". */

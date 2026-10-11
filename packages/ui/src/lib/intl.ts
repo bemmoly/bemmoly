@@ -3,7 +3,7 @@ import { useSyncExternalStore } from 'react';
 /*
  * The locale every date, number and relative time is formatted in. The kit draws them
  * (RelativeTime), so it holds the locale; the shell's i18n runtime in @bemmoly/core-web sets it
- * whenever the person's language changes (ADR 0024). Formatters are built once per locale and
+ * whenever the person's language changes (ADR 0025). Formatters are built once per locale and
  * options, because Intl constructors are slow and lists render hundreds of times.
  */
 

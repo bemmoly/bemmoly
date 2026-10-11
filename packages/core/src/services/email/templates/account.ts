@@ -37,7 +37,7 @@ export interface PasswordResetEmailData {
   expiresAt: Date;
 }
 
-/** The worked example of an email written through the server catalog (ADR 0024). */
+/** The worked example of an email written through the server catalog (ADR 0025). */
 export function passwordResetEmail(frame: EmailFrame, data: PasswordResetEmailData): EmailContent {
   const { theme, brand, locale } = frame;
   const t = serverText(locale);

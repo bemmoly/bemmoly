@@ -1,5 +1,5 @@
 /**
- * Right-to-left readiness (ADR 0024): spacing, position, borders, radii and alignment use the
+ * Right-to-left readiness (ADR 0025): spacing, position, borders, radii and alignment use the
  * logical utilities that follow `<html dir>` (ms-, pe-, start-, end-, border-s, rounded-e,
  * text-start), so a right-to-left language mirrors the layout without a second stylesheet.
  * Applied with the literal-strings rule to the screens already extracted.

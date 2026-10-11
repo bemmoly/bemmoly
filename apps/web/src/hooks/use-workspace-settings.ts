@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { validateForm, type FieldErrors } from '../lib/errors.ts';
 import { useDraft, useSettings, valuesOf } from './use-setting.ts';
 
-/** The languages Bemmoly ships, each named in its own words (ADR 0024). */
+/** The languages Bemmoly ships, each named in its own words (ADR 0025). */
 export const LOCALES = SHIPPED_LOCALES.map((value) => ({ value, label: languageName(value) }));
 
 const KEYS = ['workspace.name', 'workspace.url', 'workspace.locale', 'workspace.timezone'] as const;

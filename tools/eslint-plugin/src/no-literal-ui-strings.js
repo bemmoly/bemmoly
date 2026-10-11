@@ -1,5 +1,5 @@
 /**
- * Words people read come from a message catalog (ADR 0024), never from a literal in the
+ * Words people read come from a message catalog (ADR 0025), never from a literal in the
  * component. Applied to the screens already extracted, so a new literal there fails review
  * while the rest of the product is still being moved over.
  *

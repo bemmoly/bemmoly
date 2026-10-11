@@ -40,7 +40,7 @@ export function compileOne(message: string, where: string): CompiledMessage {
 
 /**
  * The ICU messages of a catalog compiled to Lingui's runtime form, so the browser ships no
- * parser (ADR 0024). Throws on the first message that does not parse, naming it.
+ * parser (ADR 0025). Throws on the first message that does not parse, naming it.
  */
 export function compileCatalog(catalog: SourceCatalog, file: string): Record<string, unknown> {
   return Object.fromEntries(

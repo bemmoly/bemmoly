@@ -9,7 +9,7 @@ export interface BemmolyErrorOptions<C extends ErrorCode> {
   cause?: unknown;
   /**
    * The catalog id the message renders, so a client can show it in the person's language
-   * (ADR 0024). A custom message without one is shown as written.
+   * (ADR 0025). A custom message without one is shown as written.
    */
   messageId?: string;
   values?: MessageValues;

@@ -66,7 +66,7 @@ a capable colleague.
 
 ## Every word is a message
 
-UI text lives in message catalogs, not in components ([docs/i18n.md](../../i18n.md), ADR 0024).
+UI text lives in message catalogs, not in components ([docs/i18n.md](../../i18n.md), ADR 0025).
 Write each sentence whole, with values for what changes ("Welcome back, {name}."), plurals in
 ICU, and dates and numbers through the Intl helpers, so a translation can reorder it. Check a
 screen in the pseudo-locale (`?locale=en-XA`): text that stays plain English was missed, and

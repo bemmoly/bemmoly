@@ -3,7 +3,7 @@ import { setFormatLocale } from '@bemmoly/ui/intl';
 import { setupI18n, type Messages } from '@lingui/core';
 
 /*
- * The one i18n runtime (ADR 0024): Lingui's core, fed catalogs compiled at build time. Every
+ * The one i18n runtime (ADR 0025): Lingui's core, fed catalogs compiled at build time. Every
  * owner of UI text (the shell, the kernel UI, each module) defines its own namespace with its
  * English source imported statically, so the text arrives with the code that draws it, and
  * every other locale as a lazy chunk fetched only when a person picks that language. The kernel

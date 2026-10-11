@@ -12,7 +12,7 @@ export interface EmailFrame {
   unsubscribeUrl: string | null;
   /** Settings › Notifications in the app. */
   preferencesUrl: string | null;
-  /** The language the email is written in (ADR 0024); English when unset. */
+  /** The language the email is written in (ADR 0025); English when unset. */
   locale?: string;
 }
 

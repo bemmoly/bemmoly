@@ -97,7 +97,7 @@ export default defineConfig(
     rules: { 'bemmoly/no-literal-styles': ['error', { sizes: false }] },
   },
   {
-    // Screens whose text comes from a message catalog (ADR 0024, docs/i18n.md): a new literal
+    // Screens whose text comes from a message catalog (ADR 0025, docs/i18n.md): a new literal
     // string there fails, and layout uses logical properties so it mirrors right to left. Add
     // a file here once its strings are extracted. core-web lists its own the same way.
     files: [

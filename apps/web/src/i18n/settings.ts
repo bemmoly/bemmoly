@@ -1,5 +1,5 @@
 import { defineCatalog } from '@bemmoly/core-web';
 import source from './settings.en.json' with { type: 'json' };
 
-/** Settings' words, in the settings chunk. Profile is the first page extracted (ADR 0024). */
+/** Settings' words, in the settings chunk. Profile is the first page extracted (ADR 0025). */
 export const settingsText = defineCatalog('settings', source);

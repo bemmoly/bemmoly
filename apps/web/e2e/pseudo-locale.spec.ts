@@ -2,7 +2,7 @@ import { expect, test, type Page, type TestInfo } from '@playwright/test';
 import { useMockBackend } from './support/mock-backend.ts';
 
 /*
- * The shell in the pseudo-locale (en-XA, ADR 0024): every extracted word is accented, about 40%
+ * The shell in the pseudo-locale (en-XA, ADR 0025): every extracted word is accented, about 40%
  * longer and bracketed. Text that stayed English was never extracted; text that spills out of
  * its box or is cut off without an ellipsis breaks when a real language runs longer. Each
  * screen is attached as a screenshot to the report for a person to look over too.
