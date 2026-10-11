@@ -45,7 +45,7 @@ setup() {
 @test "the CLI prints its commands without root" {
   run bash "${DEPLOY_DIR}/cli/bemmoly" help
   [ "${status}" -eq 0 ]
-  for command in status doctor logs shell backup backups restore upgrade rollback db update-channel; do
+  for command in status doctor logs shell backup backups restore upgrade rollback sync-updater db update-channel; do
     [[ "${output}" == *"${command}"* ]]
   done
 }

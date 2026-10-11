@@ -8,6 +8,11 @@ export interface UpdaterContext {
   docker: DockerClient;
   log(message: string, details?: Record<string, unknown>): void;
   now(): Date;
+  /**
+   * `service`: this process is the long-running updater container, so it cannot replace its
+   * own image and hands that to a helper. Absent: a one-shot `updater-cli` run.
+   */
+  role?: 'service';
 }
 
 /** Records the current step in the state file the app and the progress page read. */

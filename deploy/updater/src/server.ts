@@ -10,11 +10,13 @@ import { createUpdaterController } from './controllers/updater.controller.ts';
 import { route } from './routes/updater.routes.ts';
 import type { UpdaterContext } from './services/context.ts';
 import { pruneImages } from './services/images.ts';
+import { reconcileHandoff } from './services/self-update.ts';
 import { readState } from './services/state.ts';
 
 const env = loadUpdaterEnv();
 const ctx: UpdaterContext = {
   env,
+  role: 'service',
   docker: createDockerClient(),
   now: () => new Date(),
   log(message, details) {
@@ -47,6 +49,11 @@ const server = createServer((request, response) => {
 server.requestTimeout = 30_000;
 server.listen(env.UPDATER_PORT, '0.0.0.0', () =>
   ctx.log(`updater listening on ${env.UPDATER_PORT}`),
+);
+
+// A hand-off to this updater that its helper did not finish is closed here.
+reconcileHandoff(ctx).catch((error: unknown) =>
+  ctx.log('hand-off check failed', { error: String(error) }),
 );
 
 // Image retention also runs when no update happens for a while.

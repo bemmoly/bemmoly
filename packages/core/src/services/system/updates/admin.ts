@@ -1,12 +1,15 @@
 import {
   ConflictError,
+  deriveUpdateProgress,
   ProviderError,
   ValidationError,
   type RollbackRequest,
   type UpdaterAccepted,
+  type UpdaterStatus,
   type UpdatesOverview,
 } from '@bemmoly/shared';
 import semver from 'semver';
+import { HttpStatusError } from '../../../clients/http-json.ts';
 import type { Actor } from '../../../contracts/authz.ts';
 import { SYSTEM_CAPABILITY } from '../authorize.ts';
 import type { SystemDependencies } from '../deps.ts';
@@ -20,15 +23,27 @@ async function requireSystem(deps: SystemDependencies, actor: Actor): Promise<vo
   await deps.authorize(actor, SYSTEM_CAPABILITY, { kind: 'workspace' });
 }
 
-async function updaterView(deps: SystemDependencies): Promise<UpdatesOverview['updater']> {
+/**
+ * The updater as Settings › Updates shows it. Progress comes from the state file, which the
+ * updater keeps writing while it hands over to its next version and does not answer; the
+ * live status says whether it is reachable and which release it is.
+ */
+async function updaterView(
+  deps: SystemDependencies,
+  file: UpdaterStatus | null,
+): Promise<UpdatesOverview['updater']> {
   const mode = deps.updater ? 'in_app' : 'cli';
   const command = 'sudo bemmoly upgrade';
-  if (!deps.updater) return { mode, command, state: 'idle', step: null };
+  const progress = file ? deriveUpdateProgress(file) : null;
+  const base = { mode, command, progress } as const;
+  const busy = file?.state === 'running';
+  if (!deps.updater) return { ...base, state: 'idle', step: null, version: null };
   try {
     const status = await deps.updater.status();
-    return { mode, command, state: status.state, step: status.step };
+    return { ...base, state: status.state, step: status.step, version: status.updaterVersion };
   } catch {
-    return { mode, command, state: 'unreachable', step: null };
+    if (busy) return { ...base, state: 'running', step: file.step, version: null };
+    return { ...base, state: 'unreachable', step: null, version: null };
   }
 }
 
@@ -38,12 +53,12 @@ export async function getUpdatesOverview(
   actor: Actor,
 ): Promise<UpdatesOverview> {
   await requireSystem(deps, actor);
-  const [channel, enabled, check, updater, view, rollback] = await Promise.all([
+  const updater = await readUpdaterState(deps.config.dataDir);
+  const [channel, enabled, check, view, rollback] = await Promise.all([
     readSetting(deps.settings, 'system.updates.channel'),
     readSetting(deps.settings, 'system.updates.check'),
     readUpdateCheckState(deps.config.dataDir),
-    readUpdaterState(deps.config.dataDir),
-    updaterView(deps),
+    updaterView(deps, updater),
     computeRollbackPlan(deps, { preferRestore: false }),
   ]);
   const current = deps.config.appVersion;
@@ -87,6 +102,12 @@ export async function checkUpdatesNow(
   return getUpdatesOverview(deps, actor);
 }
 
+function alreadyRunning(): ConflictError {
+  return new ConflictError(
+    'An update or rollback is already running. Its progress is on Settings › Updates.',
+  );
+}
+
 function cliOnly(command: string): ConflictError {
   return new ConflictError(
     `In-app updates are off on this install. On the server, run: ${command}`,
@@ -111,9 +132,12 @@ export async function applyUpdate(
     throw new ConflictError(`The available update is ${check.available.version}, not ${version}`);
   }
   if (!deps.updater) throw cliOnly(`sudo bemmoly upgrade ${version}`);
+  // One update at a time: the state file is shared by the in-app updater and the CLI.
+  if ((await readUpdaterState(deps.config.dataDir))?.state === 'running') throw alreadyRunning();
   try {
     await deps.updater.update(version);
   } catch (error) {
+    if (error instanceof HttpStatusError && error.status === 409) throw alreadyRunning();
     throw new ProviderError('The updater did not accept the update', {
       provider: 'updater',
       cause: error,
@@ -138,9 +162,11 @@ export async function requestRollback(
     });
   }
   if (!deps.updater) throw cliOnly('sudo bemmoly rollback');
+  if ((await readUpdaterState(deps.config.dataDir))?.state === 'running') throw alreadyRunning();
   try {
     await deps.updater.rollback({ expectedMode: plan.mode, preferRestore: request.preferRestore });
   } catch (error) {
+    if (error instanceof HttpStatusError && error.status === 409) throw alreadyRunning();
     throw new ProviderError('The updater did not accept the rollback', {
       provider: 'updater',
       cause: error,
