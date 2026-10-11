@@ -5,7 +5,7 @@ import { Link } from '@tanstack/react-router';
 import { useEffect, useRef, type ReactNode } from 'react';
 import { clock } from '../../lib/auth-errors.ts';
 import type { useLoginForm } from '../../hooks/use-auth-forms.ts';
-import { shellText } from '../../i18n/catalogs.ts';
+import { authText } from '../../i18n/auth.ts';
 import { AuthNote, AuthSmall, TextButton } from './auth-parts.tsx';
 
 type LoginForm = ReturnType<typeof useLoginForm>;
@@ -26,14 +26,14 @@ interface PasswordSignInProps {
 
 /** What went wrong, where it belongs: notes above the button, never a field error for these. */
 function FailureNote({ form, workspace }: { form: LoginForm; workspace: string }) {
-  const t = useT(shellText);
+  const t = useT(authText);
   const { failure, server } = form;
   if (server.down) {
     return (
       <AuthNote
         tone="danger"
         icon="cloud-off"
-        title={t('shell.signIn.unreachableTitle', { workspace })}
+        title={t('auth.signIn.unreachableTitle', { workspace })}
         actions={
           <>
             <Button
@@ -42,23 +42,23 @@ function FailureNote({ form, workspace }: { form: LoginForm; workspace: string }
               loading={server.checking}
               onClick={server.retryNow}
             >
-              {t('shell.signIn.tryNow')}
+              {t('auth.signIn.tryNow')}
             </Button>
-            <span className="text-12 text-tx-3">{t('shell.signIn.tellAdmin', { workspace })}</span>
+            <span className="text-12 text-tx-3">{t('auth.signIn.tellAdmin', { workspace })}</span>
           </>
         }
       >
-        {failure?.kind === 'timeout' ? t('shell.signIn.timeout') : t('shell.signIn.down')}{' '}
-        {t('shell.signIn.retrying', { seconds: server.secondsLeft || 20 })}
+        {failure?.kind === 'timeout' ? t('auth.signIn.timeout') : t('auth.signIn.down')}{' '}
+        {t('auth.signIn.retrying', { seconds: server.secondsLeft || 20 })}
       </AuthNote>
     );
   }
   if (!failure) return null;
   if (failure.kind === 'rate-limited') {
     return (
-      <AuthNote tone="caution" icon="clock" title={t('shell.signIn.rateLimitedTitle')}>
+      <AuthNote tone="caution" icon="clock" title={t('auth.signIn.rateLimitedTitle')}>
         {t.rich(
-          'shell.signIn.rateLimitedBody',
+          'auth.signIn.rateLimitedBody',
           { wait: clock(form.waitLeft) },
           {
             link: (text) => (
@@ -73,16 +73,16 @@ function FailureNote({ form, workspace }: { form: LoginForm; workspace: string }
   }
   if (failure.kind === 'sso-required') {
     return (
-      <AuthNote tone="neutral" icon="key" title={t('shell.signIn.ssoRequiredTitle')}>
-        {t('shell.signIn.ssoRequiredBody', { workspace })}
+      <AuthNote tone="neutral" icon="key" title={t('auth.signIn.ssoRequiredTitle')}>
+        {t('auth.signIn.ssoRequiredBody', { workspace })}
       </AuthNote>
     );
   }
   if (failure.kind === 'other') {
     return (
-      <AuthNote tone="danger" icon="warning" title={t('shell.signIn.failedTitle')}>
+      <AuthNote tone="danger" icon="warning" title={t('auth.signIn.failedTitle')}>
         {failure.message}
-        {failure.requestId ? ` ${t('shell.signIn.requestId', { id: failure.requestId })}` : ''}
+        {failure.requestId ? ` ${t('auth.signIn.requestId', { id: failure.requestId })}` : ''}
       </AuthNote>
     );
   }
@@ -97,18 +97,18 @@ export function DeactivatedNote({
   workspace: string;
   onStartOver: () => void;
 }) {
-  const t = useT(shellText);
+  const t = useT(authText);
   return (
     <>
       <AuthNote
         tone="neutral"
         icon="user-x"
-        title={t('shell.signIn.deactivatedTitle', { workspace })}
+        title={t('auth.signIn.deactivatedTitle', { workspace })}
       >
-        {t('shell.signIn.deactivatedBody', { workspace })}
+        {t('auth.signIn.deactivatedBody', { workspace })}
       </AuthNote>
       <p className="m-0 text-center text-13 text-tx-2">
-        <TextButton onClick={onStartOver}>{t('shell.signIn.differentAccount')}</TextButton>
+        <TextButton onClick={onStartOver}>{t('auth.signIn.differentAccount')}</TextButton>
       </p>
     </>
   );
@@ -127,7 +127,7 @@ export function PasswordSignIn({
   secondarySubmit = false,
   autoFocus = false,
 }: PasswordSignInProps) {
-  const t = useT(shellText);
+  const t = useT(authText);
   const passwordRef = useRef<HTMLInputElement>(null);
   const { selectPassword } = form;
   // Selected rather than cleared after a wrong password, so a near miss is one keystroke away.
@@ -139,10 +139,10 @@ export function PasswordSignIn({
   const error = (message: string | undefined): ReactNode =>
     message ? <span role="alert">{message}</span> : undefined;
   const label = form.pending
-    ? t('shell.signIn.signingIn')
+    ? t('auth.signIn.signingIn')
     : form.waitLeft > 0
-      ? t('shell.signIn.tryAgainIn', { wait: clock(form.waitLeft) })
-      : (submitLabel ?? t('shell.signIn.title'));
+      ? t('auth.signIn.tryAgainIn', { wait: clock(form.waitLeft) })
+      : (submitLabel ?? t('auth.signIn.title'));
   return (
     <form
       className="flex flex-col gap-4"
@@ -166,7 +166,7 @@ export function PasswordSignIn({
             hidden
           />
         ) : (
-          <Field label={t('shell.signIn.email')} error={error(form.errors['email'])}>
+          <Field label={t('auth.signIn.email')} error={error(form.errors['email'])}>
             <Input
               size="touch"
               type="email"
@@ -182,7 +182,7 @@ export function PasswordSignIn({
           </Field>
         )}
         <div className="flex flex-col gap-1.5">
-          <Field label={t('shell.signIn.password')} error={error(form.errors['password'])}>
+          <Field label={t('auth.signIn.password')} error={error(form.errors['password'])}>
             <PasswordInput
               ref={passwordRef}
               autoComplete="current-password"
@@ -199,7 +199,7 @@ export function PasswordSignIn({
               search={{ email: form.values.email || undefined }}
               className="self-end text-13 font-medium"
             >
-              {t('shell.signIn.forgot')}
+              {t('auth.signIn.forgot')}
             </Link>
           ) : null}
         </div>
@@ -220,7 +220,7 @@ export function PasswordSignIn({
       </fieldset>
       {form.slow ? (
         <div role="status">
-          <AuthSmall center>{t('shell.signIn.slow')}</AuthSmall>
+          <AuthSmall center>{t('auth.signIn.slow')}</AuthSmall>
         </div>
       ) : null}
     </form>

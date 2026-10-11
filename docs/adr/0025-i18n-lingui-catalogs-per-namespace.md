@@ -5,7 +5,7 @@
 - Changes: tech design §24 lists "i18n scaffolding" for 1.0 and §8 keeps `users.locale` and
   `workspace.locale`, without saying how text becomes translatable; this record decides it.
 - Evidence: the shell, sign-in and Settings › Profile extracted as the worked example;
-  `apps/web/e2e/pseudo-locale.spec.ts`; the web shell's initial JS at 242.4 KB of its 250 KB
+  `apps/web/e2e/pseudo-locale.spec.ts`; the web shell's initial JS at 243.5 KB of its 250 KB
   budget (238.9 KB before).
 
 ## Context
@@ -35,8 +35,8 @@ stopping the streams editing the UI at the same time. The constraints:
    ICU parser (a format we would own forever).
 2. **One catalog per namespace and locale.** A file is `…/i18n/<namespace>.<locale>.json`: one
    flat JSON object of id → ICU message. Ids are `<namespace>.<area>.<name>`
-   (`shell.signIn.title`). Namespaces are owned: `core` (core-web's frame), `shell` and
-   `settings` (apps/web), `errors` (packages/shared), `email` (packages/core), and one per module
+   (`auth.signIn.title`). Namespaces are owned: `core` (core-web's frame), `shell`, `auth`
+   and `settings` (apps/web), `errors` (packages/shared), `email` (packages/core), and one per module
    (`work`, `docs`) as each is extracted. English (`en`) is the source; every other file is a
    translation of it.
 3. **Modules bring their own catalogs through core-web.** `defineCatalog(namespace, english,
@@ -90,7 +90,7 @@ stopping the streams editing the UI at the same time. The constraints:
 
 ## Consequences
 
-- The shell's initial JS grows by about 3.4 KB gzip (the runtime, the shell's English catalog and
+- The shell's initial JS grows by about 4.6 KB gzip (the runtime, the shell's English catalog and
   the bindings); the pseudo-locale chunk (7.5 KB gzip) loads only when asked for.
 - Extraction is incremental: the shell, sign-in, Profile and the frame's labels now; Settings'
   other pages, modules, the setup wizard, the palette, empty states and server notification and

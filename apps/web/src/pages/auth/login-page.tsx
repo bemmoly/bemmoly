@@ -13,7 +13,7 @@ import { SignedInPane } from '../../components/auth/signed-in-pane.tsx';
 import { SsoButtons } from '../../components/sso/sso-buttons.tsx';
 import { useLoginForm } from '../../hooks/use-auth-forms.ts';
 import { useLastSignIn } from '../../hooks/use-last-sign-in.ts';
-import { shellText } from '../../i18n/catalogs.ts';
+import { authText } from '../../i18n/auth.ts';
 import {
   SSO_FAILURE_COPY,
   ssoFailureReason,
@@ -22,18 +22,18 @@ import {
 } from '../../hooks/use-sso-sign-in.ts';
 
 function ReasonNote({ reason, workspace }: { reason: string | undefined; workspace: string }) {
-  const t = useT(shellText);
+  const t = useT(authText);
   if (reason === 'signed-out') {
     return (
-      <AuthNote tone="info" icon="log-out" title={t('shell.signIn.signedOutTitle')}>
-        {t('shell.signIn.signedOutBody', { workspace })}
+      <AuthNote tone="info" icon="log-out" title={t('auth.signIn.signedOutTitle')}>
+        {t('auth.signIn.signedOutBody', { workspace })}
       </AuthNote>
     );
   }
   if (reason === 'expired') {
     return (
-      <AuthNote tone="caution" icon="clock" title={t('shell.signIn.expiredTitle')}>
-        {t('shell.signIn.expiredBody')}
+      <AuthNote tone="caution" icon="clock" title={t('auth.signIn.expiredTitle')}>
+        {t('auth.signIn.expiredBody')}
       </AuthNote>
     );
   }
@@ -47,14 +47,14 @@ function ReasonNote({ reason, workspace }: { reason: string | undefined; workspa
  * finish comes back here with its reason; an ended session or a sign-out says so.
  */
 export function LoginPage() {
-  const t = useT(shellText);
+  const t = useT(authText);
   const search = useSearch({ from: '/login' });
   const { redirect, reason, method } = search;
   const navigate = useNavigate();
   const sso = useSsoSignIn();
   const { last, forget } = useLastSignIn();
   const { name } = useAuthWorkspace();
-  const workspace = name ?? t('shell.signIn.thisWorkspace');
+  const workspace = name ?? t('auth.signIn.thisWorkspace');
   const remembered = reason && last?.email ? last : null;
   const form = useLoginForm(redirect, remembered?.email ?? '');
   const hasSso = sso.options.length > 0;
@@ -64,11 +64,11 @@ export function LoginPage() {
   const tried = sso.options.find((option) => option.id === last?.providerId) ?? null;
   const setMethod = (next: 'password' | undefined) =>
     void navigate({ to: '/login', search: { ...search, method: next, sso_error: undefined } });
-  const title = name ? t('shell.signIn.titleTo', { workspace: name }) : t('shell.signIn.title');
+  const title = name ? t('auth.signIn.titleTo', { workspace: name }) : t('auth.signIn.title');
 
   if (form.signedIn) {
     return (
-      <AuthShell title={t('shell.signIn.signedIn')}>
+      <AuthShell title={t('auth.signIn.signedIn')}>
         <SignedInPane name={form.signedIn.name} workspace={workspace} />
       </AuthShell>
     );
@@ -92,7 +92,7 @@ export function LoginPage() {
       actions={
         tried ? (
           <TextButton onClick={() => start(tried.id)}>
-            {t('shell.signIn.tryProviderAgain', { provider: tried.displayName })}
+            {t('auth.signIn.tryProviderAgain', { provider: tried.displayName })}
           </TextButton>
         ) : null
       }
@@ -112,22 +112,20 @@ export function LoginPage() {
 
   if (adminFallback) {
     return (
-      <AuthShell title={t('shell.signIn.adminTitle')}>
+      <AuthShell title={t('auth.signIn.adminTitle')}>
         <AuthHeading
-          title={t('shell.signIn.adminTitle')}
-          lede={t('shell.signIn.adminLede', { workspace })}
+          title={t('auth.signIn.adminTitle')}
+          lede={t('auth.signIn.adminLede', { workspace })}
         />
         <PasswordSignIn
           form={form}
           workspace={workspace}
           showForgot={false}
-          submitLabel={t('shell.signIn.withPassword')}
+          submitLabel={t('auth.signIn.withPassword')}
           autoFocus
         />
         <AuthAlt>
-          <TextButton onClick={() => setMethod(undefined)}>
-            {t('shell.signIn.backToSso')}
-          </TextButton>
+          <TextButton onClick={() => setMethod(undefined)}>{t('auth.signIn.backToSso')}</TextButton>
         </AuthAlt>
       </AuthShell>
     );
@@ -143,20 +141,20 @@ export function LoginPage() {
     <AuthShell title={title}>
       <ReasonNote reason={reason} workspace={workspace} />
       <AuthHeading
-        title={reason ? t('shell.signIn.again') : title}
+        title={reason ? t('auth.signIn.again') : title}
         lede={
           reason
             ? undefined
             : ssoOnly
-              ? t('shell.signIn.ssoOnlyLede', {
+              ? t('auth.signIn.ssoOnlyLede', {
                   workspace,
                   provider:
                     (sso.options.length === 1 ? sso.options[0]?.displayName : undefined) ??
-                    t('shell.signIn.singleSignOn'),
+                    t('auth.signIn.singleSignOn'),
                 })
               : hasSso
-                ? t('shell.signIn.workAccount', { workspace })
-                : t('shell.signIn.welcome')
+                ? t('auth.signIn.workAccount', { workspace })
+                : t('auth.signIn.welcome')
         }
       />
       {ssoNote}
@@ -173,22 +171,20 @@ export function LoginPage() {
       {ssoOnly ? (
         <>
           <AuthAlt>
-            {t('shell.signIn.adminWithoutSso')}{' '}
+            {t('auth.signIn.adminWithoutSso')}{' '}
             <TextButton onClick={() => setMethod('password')}>
-              {t('shell.signIn.usePassword')}
+              {t('auth.signIn.usePassword')}
             </TextButton>
           </AuthAlt>
         </>
       ) : rememberedSso ? null : (
         <>
-          {hasSso ? <OrRule>{t('shell.signIn.orWithEmail')}</OrRule> : null}
+          {hasSso ? <OrRule>{t('auth.signIn.orWithEmail')}</OrRule> : null}
           <PasswordSignIn
             form={form}
             workspace={workspace}
             hideEmail={Boolean(remembered)}
-            submitLabel={
-              reason === 'expired' ? t('shell.signIn.andGoBack') : t('shell.signIn.title')
-            }
+            submitLabel={reason === 'expired' ? t('auth.signIn.andGoBack') : t('auth.signIn.title')}
             secondarySubmit={hasSso}
             autoFocus={!hasSso}
           />
@@ -197,7 +193,7 @@ export function LoginPage() {
       {rememberedSso ? (
         <AuthAlt>
           <Link to="/login" search={{ redirect }}>
-            {t('shell.signIn.anotherWay')}
+            {t('auth.signIn.anotherWay')}
           </Link>
         </AuthAlt>
       ) : null}

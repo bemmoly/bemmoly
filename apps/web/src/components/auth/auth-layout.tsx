@@ -4,7 +4,7 @@ import { Icon } from '@bemmoly/ui/icons';
 import { useQuery } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 import { setupStatusQuery } from '../../hooks/use-session.ts';
-import { shellText } from '../../i18n/catalogs.ts';
+import { authText } from '../../i18n/auth.ts';
 import { customerLogo } from '../../lib/customer-logo.ts';
 import { AuthAside } from './auth-aside.tsx';
 
@@ -33,7 +33,7 @@ interface AuthShellProps {
  * and name lead and "Powered by Bemmoly" sits at the foot beside the host.
  */
 export function AuthShell({ title, children, workspaceName, wide }: AuthShellProps) {
-  const t = useT(shellText);
+  const t = useT(authText);
   const { name, logo, host } = useAuthWorkspace(workspaceName);
   // "Sign in to Acme Labs · Bemmoly", not the workspace twice.
   useDocumentTitle(name && !title.includes(name) ? [title, name] : [title]);
@@ -62,7 +62,7 @@ export function AuthShell({ title, children, workspaceName, wide }: AuthShellPro
         <footer className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 text-12 text-tx-3 max-sm:flex-col-reverse max-sm:items-start">
           {logo ? (
             <span className="inline-flex items-center gap-1.5">
-              {t.rich('shell.signIn.poweredBy', undefined, {
+              {t.rich('auth.signIn.poweredBy', undefined, {
                 brand: (text) => (
                   <>
                     <Logo size={13} label="" />
