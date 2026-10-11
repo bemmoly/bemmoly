@@ -4,7 +4,12 @@ import { NotFoundError, ProviderError, ValidationError } from '@bemmoly/shared';
 import type { RichText } from '../../../../shared/common.ts';
 import type { ImportBody, ImportedPage } from '../../../../shared/transfer.ts';
 import type { DocsServiceDeps } from '../common.ts';
-import { bodyEdges, rewriteBodyLinks } from '../links/rewrite.ts';
+import {
+  bodyReferences,
+  resolveBodyEdges,
+  rewriteBodyLinks,
+  type BodyReferences,
+} from '../links/rewrite.ts';
 import { rankAmongSiblings } from '../pages/rank.ts';
 import { planImport, type PlannedPage } from './plan.ts';
 
@@ -70,7 +75,8 @@ export async function runImport(
   entities?: DocsServiceDeps['entities'],
 ): Promise<ImportedPage[]> {
   const plan = planImport(run.format, run.files);
-  return sql.begin(async (tx) => {
+  const bodies: { id: string; references: BodyReferences }[] = [];
+  const imported = await sql.begin(async (tx) => {
     const [space] = await tx`select id from spaces where id = ${run.spaceId} for update`;
     if (!space) throw new NotFoundError('The space was not found');
     let root: { id: string; path: string } | null = null;
@@ -100,12 +106,7 @@ export async function runImport(
         update pages set snapshot = ${JSON.stringify(snapshot)}::jsonb,
           text = ${plainText(readable)}, word_count = ${wordCount(readable)}
         where id = ${id}`;
-      await rewriteBodyLinks(
-        tx,
-        id,
-        await bodyEdges(entities ? { entities } : {}, snapshot, id),
-        run.userId,
-      );
+      bodies.push({ id, references: bodyReferences(snapshot, id) });
       imported.push({
         id,
         parentId: page.parentKey ? created.get(page.parentKey)!.id : (root?.id ?? null),
@@ -125,4 +126,16 @@ export async function runImport(
     });
     return imported;
   });
+  // Issue keys resolve through Work on the pool, so the body links follow the commit, in one
+  // lookup for the whole import rather than one per page inside the transaction.
+  const edges = await resolveBodyEdges(
+    entities ? { entities } : {},
+    bodies.map((body) => body.references),
+  );
+  await sql.begin(async (tx) => {
+    for (const [index, body] of bodies.entries()) {
+      await rewriteBodyLinks(tx, body.id, edges[index] ?? [], run.userId);
+    }
+  });
+  return imported as ImportedPage[];
 }
