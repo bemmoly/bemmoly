@@ -27,7 +27,7 @@ interface Props {
 }
 
 const { page, noindex = false, faq, alternate } = Astro.props;
-// Page paths are the clean addresses Caddy serves (/docs, /docs/install, /).
+// Page paths are the clean addresses Caddy serves (/docs, /docs/compose, /).
 const canonical = new URL(page.path, Astro.site).href;
 const image = new URL(socialPreview.src, Astro.site).href;
 const logo = new URL(icon512.src, Astro.site).href;

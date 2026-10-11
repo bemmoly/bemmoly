@@ -64,3 +64,16 @@ export const PHONE_POSTER = {
   viewport: { width: 390, height: 844 },
   alt: 'The sprint board on a phone in the live demo, with the sprint’s progress and its columns.',
 } as const;
+
+/**
+ * The AI band's picture: an issue's AI summary card in the live demo, cropped with a margin of
+ * the page around it, in the lilac that means AI. AI is on in the demo, as an admin would turn
+ * it on; it is off on a fresh install.
+ */
+export const AI_POSTER = {
+  id: 'ai-summary',
+  path: '/demo/work/issue/PLT-204',
+  selector: 'section[aria-label="AI summary"]',
+  viewport: PREVIEW_VIEWPORT,
+  alt: 'An issue’s AI summary in the live demo: four sentences, each citing the comment, issue or page it came from, with Not useful beside it.',
+} as const;

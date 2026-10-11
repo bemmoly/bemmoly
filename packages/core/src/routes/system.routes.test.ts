@@ -1,13 +1,15 @@
 import { ForbiddenError, isBemmolyError, systemHealthResponseSchema } from '@bemmoly/shared';
 import Fastify, { type FastifyInstance } from 'fastify';
-import { mkdtemp } from 'node:fs/promises';
+import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import pino from 'pino';
 import { afterEach, describe, expect, it } from 'vitest';
+import { HttpStatusError } from '../clients/http-json.ts';
 import { createPgTools } from '../clients/pg-tools.ts';
 import type { SqlClient } from '../clients/postgres.ts';
 import { createTarTool } from '../clients/tar.ts';
+import type { UpdaterClient } from '../clients/updater.ts';
 import { maintenanceHook } from '../middlewares/maintenance.ts';
 import { ModuleRegistry } from '../modules/registry.ts';
 import { createMaintenanceReader, enterMaintenance } from '../services/system/index.ts';
@@ -29,7 +31,12 @@ const unreachableSql = (() => ({
     reject(new Error('no database in this test')),
 })) as unknown as SqlClient;
 
-async function build(options: { setupOpen?: boolean; signedIn?: boolean; allowed?: boolean }) {
+async function build(options: {
+  setupOpen?: boolean;
+  signedIn?: boolean;
+  allowed?: boolean;
+  updater?: UpdaterClient;
+}) {
   const dataDir = await mkdtemp(path.join(os.tmpdir(), 'bemmoly-routes-'));
   const system: SystemDependencies = {
     config: {
@@ -48,6 +55,7 @@ async function build(options: { setupOpen?: boolean; signedIn?: boolean; allowed
       if (!options.allowed) throw new ForbiddenError();
     },
     modules: () => [],
+    ...(options.updater ? { updater: options.updater } : {}),
   };
   const app = Fastify({ trustProxy: true });
   app.setErrorHandler((error: Error & { statusCode?: number }, request, reply) => {
@@ -152,6 +160,62 @@ describe('system routes', () => {
     });
     expect(response.statusCode).toBe(409);
     expect(response.json().message).toContain('sudo bemmoly upgrade 1.3.0');
+  });
+
+  it('refuses a second update while one runs, whoever started it (409)', async () => {
+    const asked: string[] = [];
+    let answer: Error | null = null;
+    const updater: UpdaterClient = {
+      status: () => Promise.reject(new Error('handing over')),
+      update: async (tag) => {
+        asked.push(tag);
+        if (answer) throw answer;
+      },
+      rollback: async () => undefined,
+    };
+    let dataDir: string;
+    ({ app, dataDir } = await build({ signedIn: true, allowed: true, updater }));
+    const apply = () =>
+      app!.inject({
+        method: 'POST',
+        url: '/api/v1/admin/updates/apply',
+        payload: { version: '1.3.0' },
+      });
+    // The updater itself says it is busy (two admins clicked at once).
+    answer = new HttpStatusError('http://updater:8090/v1/update', 409, '{}');
+    expect((await apply()).statusCode).toBe(409);
+    // The state file says an update runs: the updater is not even asked.
+    await mkdir(path.join(dataDir, 'updater'), { recursive: true });
+    await writeFile(
+      path.join(dataDir, 'updater', 'state.json'),
+      JSON.stringify({
+        state: 'running',
+        operation: 'update',
+        step: 'updater',
+        message: 'Moving the updater to 1.3.0',
+        current: '1.3.0',
+        previous: '1.2.0',
+        updatedAt: null,
+        preUpgradeBackupId: null,
+        history: [],
+        target: '1.3.0',
+        startedAt: '2026-10-11T10:00:00.000Z',
+      }),
+    );
+    const second = await apply();
+    expect(second.statusCode).toBe(409);
+    expect(second.json().message).toMatch(/already running/);
+    expect(asked).toEqual(['1.3.0']);
+    // Every admin who opens the page sees the same run, even while the updater hands over.
+    const overview = await app.inject({ url: '/api/v1/admin/updates' });
+    expect(overview.json().updater).toMatchObject({
+      state: 'running',
+      progress: { outcome: 'running', target: '1.3.0' },
+    });
+    expect(overview.json().updater.progress.steps.at(-1)).toEqual({
+      id: 'updater',
+      status: 'running',
+    });
   });
 
   it('stores an air-gapped bundle without parsing it', async () => {

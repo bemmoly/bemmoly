@@ -2,7 +2,7 @@
 /**
  * Bringing work in and taking it out, from the site review: import lowers the cost of trying,
  * export removes the fear of being stuck. Other products appear only as import sources, the
- * planned importer says "Planned" with no version, and configuration is compressed to one
+ * importer still to come says "Coming soon" with no version, and configuration is compressed to one
  * strip whose detail lives on the topic pages.
  */
 import { CONFIGURE, SWITCH_TILES } from '../../data/landing.ts';
@@ -27,7 +27,7 @@ import SectionHead from './SectionHead.astro';
         <span
           class:list={[
             'grid size-10 place-items-center rounded-[10px]',
-            tile.planned
+            tile.soon
               ? 'bg-sunken text-tx shadow-[inset_0_0_0_1px_var(--line)]'
               : 'bg-acc-50 text-acc',
           ]}
@@ -36,8 +36,8 @@ import SectionHead from './SectionHead.astro';
         </span>
         <h3 class="text-16 font-semibold">{tile.title}</h3>
         <p class="text-14h leading-brief text-tx-3">{tile.body}</p>
-        <Badge tone={tile.planned ? 'neutral' : 'ok'} pill class="mt-auto self-start">
-          {tile.planned ? 'Planned' : 'Available'}
+        <Badge tone={tile.soon ? 'neutral' : 'ok'} pill class="mt-auto self-start">
+          {tile.soon ? 'Coming soon' : 'Available'}
         </Badge>
       </li>
     ))}

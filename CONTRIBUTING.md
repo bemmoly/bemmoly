@@ -3,6 +3,25 @@
 Thank you for helping. The contributor contract is [AGENTS.md](AGENTS.md); it applies to every
 change, whether a person or an AI agent writes it. Read it before your first pull request.
 
+## Find something to work on
+
+- **Good first issues.** [`good first issue`](https://github.com/bemmoly/bemmoly/labels/good%20first%20issue)
+  marks small tasks with one obvious place to start; each names the files to read and what
+  "done" means. [`help wanted`](https://github.com/bemmoly/bemmoly/labels/help%20wanted) marks
+  larger ones the maintainers would welcome help with. Say on the issue that you are taking it,
+  so two people do not do the same work.
+- **Bugs.** Any open [`bug`](https://github.com/bemmoly/bemmoly/labels/bug) with steps to
+  reproduce is fair game. A failing test that reproduces it is a welcome pull request on its own.
+- **Docs and the guides.** Typos, unclear steps in the [install guide](https://bemmoly.com/docs/install)
+  and missing answers are small, useful first changes.
+- **Bigger changes.** Open an issue or a thread in
+  [Discussions › Ideas](https://github.com/bemmoly/bemmoly/discussions/categories/ideas) first.
+  A change that alters the technical design or the design system needs an ADR, and agreeing on
+  the shape before the code saves you a rewrite.
+
+Bemmoly is a young project with a small maintainer team. Reviews usually take a few days; a
+small pull request that follows AGENTS.md is reviewed fastest.
+
 ## Start in ten minutes
 
 ```sh
@@ -38,11 +57,13 @@ requires, and how to run each locally (Semgrep and gitleaks run from their Docke
 
 - Architecture: [docs/tech-design.html](docs/tech-design.html). Decisions that change it are
   recorded in [docs/adr](docs/adr).
-- Pixel source of truth: [docs/design/mocks](docs/design/mocks).
+- How every screen looks and behaves: the design system,
+  [docs/design/system](docs/design/system/README.md). The old mocks in `docs/design/mocks` are
+  history.
 - Commits follow Conventional Commits with one author and no attribution trailers (AGENTS.md,
   section 4).
-- Security issues go to the private address in [SECURITY.md](SECURITY.md), never to a public
-  issue.
+- Security issues go to GitHub's private vulnerability reporting, as [SECURITY.md](SECURITY.md)
+  describes, never to a public issue.
 - Everyone taking part follows the [Code of Conduct](CODE_OF_CONDUCT.md).
 
 ## Release notes
@@ -72,6 +93,9 @@ from `apps/server/.env.example`.
 
 ## Issues and labels
 
-Bug reports and feature requests use the issue forms. `good first issue` and `help wanted` are
-curated by maintainers, never applied automatically. Labels are defined in
+Bug reports and feature requests use the issue forms; questions go to
+[Discussions › Q&A](https://github.com/bemmoly/bemmoly/discussions/categories/q-a) (see
+[SUPPORT.md](SUPPORT.md)). `good first issue` and `help wanted` are curated by maintainers,
+never applied automatically: a maintainer files a good first issue with its own form, which
+asks for the task, where to start, what "done" means and who can help. Labels are defined in
 `.github/labels.json`; change them there, not in the GitHub UI.

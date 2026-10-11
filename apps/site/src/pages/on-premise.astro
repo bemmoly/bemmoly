@@ -4,13 +4,11 @@
  * today: storage and backups (packages/core services/storage, services/system/backups), the
  * opt-in update check, signed updates (deploy/updater) and the audit log.
  */
-import Badge from '../components/site/Badge.astro';
 import Section from '../components/site/Section.astro';
 import Capabilities from '../components/topics/Capabilities.astro';
 import InstallCta from '../components/topics/InstallCta.astro';
 import Related from '../components/topics/Related.astro';
 import { pageAt } from '../data/pages.ts';
-import { STATUS } from '../data/self-hosting.ts';
 import type { Capability } from '../data/topics.ts';
 import Page from '../layouts/Page.astro';
 
@@ -65,7 +63,7 @@ const CONTROLS: readonly Capability[] = [
     icon: 'key',
     title: 'Single sign-on',
     body: 'OIDC and SAML sign-in, and SCIM to keep people and groups in step with your directory.',
-    status: 'integrations',
+    status: 'soon',
   },
 ];
 ---
@@ -73,7 +71,7 @@ const CONTROLS: readonly Capability[] = [
 <Page
   page={pageAt('/on-premise')}
   heading="Your work data on your own server"
-  lede="Bemmoly runs where you put it: a VM in your own cloud account, a server in your rack, or a network with no way out. Your records, files, backups and keys stay in places you own, and the app calls no one you have not configured."
+  lede="Bemmoly runs where you put it: a VM in your own cloud account or a server in your rack. Your records, files, backups and keys stay in places you own, and the app calls no one you have not configured."
   wide
 >
   <Section title="Where everything lives">
@@ -107,8 +105,9 @@ const CONTROLS: readonly Capability[] = [
         <strong>Email</strong> goes through the mail server you configure, and nowhere until you do.
       </li>
       <li>
-        <strong>AI</strong>, once it ships, will talk only to the provider you connect, which can be
-        a model on your own network. Until you connect one, nothing is sent.
+        <strong>AI</strong> is off until an admin turns it on. Then it talks only to the provider
+        you connect, which can be a model on your own network, and you choose whether page and issue
+        content is sent and which spaces and projects are left out.
       </li>
       <li>
         <strong>Metrics</strong> for your own Prometheus sit behind a scrape token the installer
@@ -119,19 +118,6 @@ const CONTROLS: readonly Capability[] = [
 
   <Section title="Controls that ship today">
     <Capabilities items={CONTROLS} />
-  </Section>
-
-  <Section title="No internet at all">
-    <p class="flex flex-wrap items-center gap-2">
-      <Badge tone={STATUS.offline.tone}>{STATUS.offline.label}</Badge>
-    </p>
-    <p>
-      Every release has a bundle with the images, the installer, the Compose file and checksums.
-      Copy it to a machine that already has Docker and install with
-      <code>--image-archive</code>; later updates are uploaded the same way. The bundle is built for
-      each release but has not been tested on an offline network yet.
-      <a href="/self-hosting#air-gapped">Self-hosting</a> has the commands.
-    </p>
   </Section>
 
   <Section title="Reporting a security problem">

@@ -1,14 +1,18 @@
 ---
 /**
- * AI, honestly: one band in the lilac that means AI and only AI, its release read from the
- * changelogs, and no picture until a real screen is captured. It answers "do I need AI?" and
- * "will it read my data?" with what is true: it is off until an admin turns it on.
+ * AI, as it ships: one band in the lilac that means AI and only AI, its release read from the
+ * changelogs, what it does today (the release notes), and a real AI card captured from the
+ * live demo. It answers "do I need AI?" and "will it read my data?" with what is true: it is
+ * off until an admin turns it on, with the provider the admin chooses.
  */
-import { AI_DESIGNED } from '../../data/landing.ts';
+import { AI_FEATURES } from '../../data/landing.ts';
+import { AI_POSTER } from '../../data/previews.ts';
+import { AI_POSTERS } from '../../data/posters.ts';
 import { AI_SINCE, shippedLabel } from '../../lib/changelog.ts';
 import Badge from '../site/Badge.astro';
 import Icon from '../site/Icon.astro';
 import ModuleTile from '../site/ModuleTile.astro';
+import Poster from '../site/Poster.astro';
 ---
 
 <section
@@ -32,29 +36,37 @@ import ModuleTile from '../site/ModuleTile.astro';
         AI is here, and stays optional.
       </h2>
       <p class="text-16 leading-desc text-pretty text-tx-2">
-        Bring any provider, a model on your own network, or none at all: everything on this page
-        works without it. AI stays off until an admin turns it on, and Settings decides what it may
-        read and change before it ever runs.
+        It is off until an admin turns it on. Then bring a provider from the models.dev catalog or a
+        model on your own network; Settings decides what it may read and change. Everything else on
+        this page works without it.
       </p>
-    </div>
-    <div class="flex flex-col gap-3">
-      <ul class="flex flex-col gap-3">
-        {AI_DESIGNED.map((item) => (
-          <li class="flex items-center gap-3 rounded-shot bg-card px-4 py-3.5 shadow-[0_0_0_1px_var(--ai-100)]">
-            <span class="grid size-8 shrink-0 place-items-center rounded-card bg-ai-50 text-ai-600">
-              <Icon name="spark" size={16} />
+      <ul class="mt-5 flex flex-col gap-2.5">
+        {AI_FEATURES.map((item) => (
+          <li class="grid grid-cols-[22px_1fr] gap-2.5 text-15 leading-body text-tx-2">
+            <Icon name="spark" size={16} class="mt-0.75 text-ai-600" />
+            <span>
+              <b class="font-semibold text-tx">{item.lead}</b>, {item.rest}
             </span>
-            <span class="flex min-w-0 flex-1 flex-col">
-              <b class="text-15 font-semibold">{item.lead}</b>
-              <span class="text-14 text-tx-3">{item.rest}</span>
-            </span>
-            <Badge tone="ai" pill>
-              {shippedLabel(AI_SINCE)}
-            </Badge>
           </li>
         ))}
       </ul>
-      <p class="pl-1 text-13 text-tx-2">Lilac on this site means AI, and only AI.</p>
     </div>
+    <figure class="m-0 flex flex-col gap-3">
+      <div class="overflow-hidden rounded-shot bg-card shadow-[0_0_0_1px_var(--ai-100)]">
+        <Poster
+          {...AI_POSTERS}
+          alt={AI_POSTER.alt}
+          widths={[640, 1360]}
+          sizes="(min-width: 1024px) 520px, calc(100vw - 80px)"
+        />
+      </div>
+      <figcaption class="pl-1 text-13 text-tx-2">
+        An issue’s summary in the{' '}
+        <a href={AI_POSTER.path} class="font-medium text-tx underline">
+          live demo
+        </a>
+        , where AI is on. Lilac on this site means AI, and only AI.
+      </figcaption>
+    </figure>
   </div>
 </section>

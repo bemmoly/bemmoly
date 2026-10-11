@@ -3,6 +3,8 @@
  * and dark. tests/demo.test.ts checks every preview has both and that each route has data.
  */
 import type { ImageMetadata } from 'astro';
+import aiSummaryDark from '../assets/previews/ai-summary-dark.png';
+import aiSummary from '../assets/previews/ai-summary.png';
 import backlogDark from '../assets/previews/backlog-dark.png';
 import backlog from '../assets/previews/backlog.png';
 import boardDark from '../assets/previews/board-dark.png';
@@ -28,6 +30,8 @@ export const POSTERS: Readonly<Record<PreviewId, PosterPair>> = {
 };
 
 export const PHONE_POSTERS: PosterPair = { light: boardPhone, dark: boardPhoneDark };
+
+export const AI_POSTERS: PosterPair = { light: aiSummary, dark: aiSummaryDark };
 
 /** Widths for a desktop poster: a phone, the showcase's 724px at 1x and 2x, the hero at 2x. */
 export const POSTER_WIDTHS = [640, 1200, 1800, 2560] as const;

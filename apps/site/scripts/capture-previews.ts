@@ -2,7 +2,8 @@
  * Captures every product picture the site shows from the live demo, so the site always shows
  * the UI a visitor installs: each route in src/data/previews.ts at the preview viewport, and
  * the board at a phone's width for the phone poster, 2x, in the product's light and dark
- * themes (?theme=dark), saved to src/assets/previews/. The demo's banner is removed first,
+ * themes (?theme=dark), saved to src/assets/previews/, and the AI band's crop of an issue's
+ * AI summary (AI is on in the demo). The demo's banner is removed first,
  * since the demo framed on the homepage never shows it.
  *
  * Two sources, the same pictures:
@@ -15,7 +16,7 @@ import { existsSync, mkdirSync, readFileSync } from 'node:fs';
 import { extname } from 'node:path';
 import { parseArgs } from 'node:util';
 import { chromium, type Browser, type Page } from '@playwright/test';
-import { PHONE_POSTER, PREVIEW_VIEWPORT, PREVIEWS } from '../src/data/previews.ts';
+import { AI_POSTER, PHONE_POSTER, PREVIEW_VIEWPORT, PREVIEWS } from '../src/data/previews.ts';
 
 const dist = new URL('../dist/', import.meta.url);
 const out = new URL('../src/assets/previews/', import.meta.url);
@@ -55,7 +56,13 @@ async function serveBuilt(page: Page): Promise<void> {
 /** One context per theme and size, so a theme the demo remembers never leaks into the next. */
 async function capture(
   browser: Browser,
-  shot: { path: string; name: string; viewport: { width: number; height: number } },
+  shot: {
+    path: string;
+    name: string;
+    viewport: { width: number; height: number };
+    /** Crop to this element, with a margin of the page around it. */
+    selector?: string;
+  },
   theme: (typeof THEMES)[number],
 ): Promise<void> {
   const context = await browser.newContext({
@@ -73,9 +80,29 @@ async function capture(
     delete document.documentElement.dataset['demoBanner'];
   });
   await page.evaluate(() => document.fonts.ready);
+  // AI cards (sprint risk, a page's TL;DR, an issue's summary) land about a second after the
+  // page, as a real install's do; a poster never shows them half written.
+  await page
+    .waitForFunction(() => document.querySelector('[aria-busy="true"]') === null, null, {
+      timeout: 8000,
+    })
+    .catch(() => process.stdout.write(`still loading after 8s: ${shot.path}\n`));
   await page.waitForTimeout(600);
   const name = `${shot.name}${theme === 'dark' ? '-dark' : ''}.png`;
-  await page.screenshot({ path: new URL(name, out).pathname });
+  const box = shot.selector ? await page.locator(shot.selector).first().boundingBox() : null;
+  if (shot.selector && !box) throw new Error(`${shot.selector} is not on ${shot.path}`);
+  const margin = 20;
+  await page.screenshot({
+    path: new URL(name, out).pathname,
+    ...(box && {
+      clip: {
+        x: box.x - margin,
+        y: box.y - margin,
+        width: box.width + margin * 2,
+        height: box.height + margin * 2,
+      },
+    }),
+  });
   process.stdout.write(`${name}\n`);
   await context.close();
 }
@@ -88,6 +115,12 @@ const shots = [
     viewport: { ...PREVIEW_VIEWPORT },
   })),
   { path: PHONE_POSTER.path, name: PHONE_POSTER.id, viewport: { ...PHONE_POSTER.viewport } },
+  {
+    path: AI_POSTER.path,
+    name: AI_POSTER.id,
+    viewport: { ...AI_POSTER.viewport },
+    selector: AI_POSTER.selector,
+  },
 ];
 for (const theme of THEMES) {
   for (const shot of shots) await capture(browser, shot, theme);

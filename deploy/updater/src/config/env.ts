@@ -12,6 +12,15 @@ export const updaterEnvSchema = z.object({
   APP_SERVICE: z.string().min(1).default('bemmoly'),
   /** The only repository updates come from; the API takes a version, never an image. */
   BEMMOLY_IMAGE: z.string().min(1).default('ghcr.io/bemmoly/bemmoly'),
+  /** The updater's own repository; it moves itself to the release it installs (ADR 0020). */
+  UPDATER_IMAGE: z.string().min(1).default('ghcr.io/bemmoly/updater'),
+  UPDATER_SERVICE: z.string().min(1).default('updater'),
+  /** Set in the image at build time: the release this updater is. */
+  BEMMOLY_UPDATER_VERSION: z.string().min(1).optional(),
+  /** On by default; off keeps the updater on the version the admin pinned in UPDATER_VERSION. */
+  BEMMOLY_UPDATER_SELF_UPDATE: z.stringbool().default(true),
+  /** How long a new updater container has to answer /healthz before the old one is restored. */
+  UPDATER_READY_TIMEOUT_MS: z.coerce.number().int().min(5_000).default(60_000),
   /** Off by default: an image whose signature cannot be verified is refused. */
   BEMMOLY_ALLOW_UNSIGNED_UPDATES: flag,
   /** Air-gapped installs and tests: use images already loaded, never pull. */
