@@ -8,6 +8,7 @@ export * from './tokens/fonts.ts';
 export * from './tokens/metrics.ts';
 export * from './tokens/motion.ts';
 export * from './tokens/interaction.ts';
+export * from './tokens/print.ts';
 export * from './tokens/themes.ts';
 export {
   AVATAR_COLORS,
