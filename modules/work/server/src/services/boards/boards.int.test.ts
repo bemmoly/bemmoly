@@ -142,4 +142,68 @@ describe('boards against a real database', () => {
       planning.messages.filter((m) => m.kind === 'work.board' && m.ids.includes(board!.id)),
     ).not.toHaveLength(0);
   });
+
+  it('lets only project and org admins change how cards look', async (ctx) => {
+    if (!planning) return ctx.skip(skipReason);
+    const { services } = planning;
+    const admin = await planning.user('Pia');
+    const member = await planning.user('Max');
+    const viewer = await planning.user('Vic', 'viewer');
+    const orgAdmin = await planning.user('Ola', 'org_admin');
+    const projectId = await planning.project('CRD', 'scrum', [
+      [admin, 'project_admin'],
+      [member, 'member'],
+      [viewer, 'viewer'],
+    ]);
+    const [board] = await services.boards.listForProject(planning.ctx(member), projectId);
+    const cards = (change: Partial<BoardConfig>): { config: BoardConfig } => ({
+      config: { ...board!.config, ...change },
+    });
+    const changes: Partial<BoardConfig>[] = [
+      { cardFields: ['type', 'key'] },
+      { colorRule: 'priority' },
+      { colorRules: [{ query: 'priority = high', color: '#d14343' }] },
+    ];
+
+    for (const change of changes) {
+      for (const who of [member, viewer]) {
+        await expect(
+          services.boards.update(planning.ctx(who), board!.id, cards(change)),
+        ).rejects.toThrow(ForbiddenError);
+      }
+    }
+    expect((await services.boards.get(planning.ctx(member), board!.id)).config.cardFields).toEqual(
+      board!.config.cardFields,
+    );
+
+    const byAdmin = await services.boards.update(
+      planning.ctx(admin),
+      board!.id,
+      cards(changes[0]!),
+    );
+    const saved = await services.boards.update(planning.ctx(orgAdmin), board!.id, {
+      config: { ...byAdmin.config, ...changes[1] },
+    });
+    expect(saved.config.cardFields).toEqual(['type', 'key']);
+    expect(saved.config.colorRule).toBe('priority');
+
+    // The org default every project inherits is the org admin's alone.
+    const orgBoard =
+      (await services.boards.list(planning.ctx(member), undefined))[0] ??
+      (await services.boards.create(planning.ctx(orgAdmin), { name: 'Default board' }));
+    const orgCards = { config: { ...orgBoard.config, cardFields: ['type' as const] } };
+    await expect(
+      services.boards.update(planning.ctx(admin), orgBoard.id, orgCards),
+    ).rejects.toThrow(ForbiddenError);
+    await expect(
+      services.boards.update(planning.ctx(member), orgBoard.id, orgCards),
+    ).rejects.toThrow(ForbiddenError);
+    const orgSaved = await services.boards.update(planning.ctx(orgAdmin), orgBoard.id, orgCards);
+    expect(orgSaved.config.cardFields).toEqual(['type']);
+
+    // Every person reads the same cards: the view takes no card layout of its own.
+    const asMember = await services.boards.view(planning.ctx(member), board!.id, {});
+    const asAdmin = await services.boards.view(planning.ctx(admin), board!.id, {});
+    expect(asMember.board.config.cardFields).toEqual(asAdmin.board.config.cardFields);
+  });
 });

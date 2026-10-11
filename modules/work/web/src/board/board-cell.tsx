@@ -53,7 +53,7 @@ export const BoardCell = memo(function BoardCell({
   cards,
   laneColor,
 }: BoardCellProps) {
-  const { actions, createIn, density } = useBoardShared();
+  const { actions, createIn } = useBoardShared();
   const cell = cellId(laneId, columnId);
   const limit = useCellLimit(cell);
   const carriedId = useBoardDragStore((state) =>
@@ -97,7 +97,6 @@ export const BoardCell = memo(function BoardCell({
       }}
       onDrop={actions.dropHere}
       refused={refused && line !== null}
-      compact={density === 'compact'}
       className="group/cell"
     >
       {/* Not a drop target of its own: under the pointer it would turn the drop into a cancel,

@@ -20,6 +20,7 @@ import { useIssueFilters } from '../shared/issue-filters.ts';
 import { useRecordRecent, useScreenActions } from '@bemmoly/core-web';
 import { navigateTo, workPaths } from '../hooks/issue-navigation.ts';
 import { useSavedFilters } from '../hooks/saved-filters.ts';
+import { useSettingsAccess } from '../hooks/settings-access.ts';
 import { WorkPresence } from '../shared/work-presence.tsx';
 import { IssueBulkBar } from '../shared/issue-bulk-bar.tsx';
 import { IssueSlideOver, useRememberIssueList } from '../issue/index.ts';
@@ -64,6 +65,7 @@ function BoardBody({
   const savedFilters = useSavedFilters(screen.project);
   const quick = useIssueQuickActions();
   const { clear } = useIssueFilters();
+  const access = useSettingsAccess();
   const docked = useMediaQuery(DOCKED_SLIDE_OVER_QUERY);
   const touch = useMediaQuery('(pointer: coarse)', false);
   // Screen order: lane by lane, column by column, top to bottom, as j and k step.
@@ -116,21 +118,10 @@ function BoardBody({
       select,
       ...(screen.moveTargets ? { sprints: screen.moveTargets } : {}),
       touch,
-      density: screen.display.display.density,
       instructionsId,
       ...(createIn ? { createIn } : {}),
     }),
-    [
-      actions,
-      screen.vocab,
-      quick,
-      select,
-      screen.moveTargets,
-      touch,
-      screen.display.display.density,
-      instructionsId,
-      createIn,
-    ],
+    [actions, screen.vocab, quick, select, screen.moveTargets, touch, instructionsId, createIn],
   );
   const inFlight = model.lanes.reduce((sum, lane) => sum + lane.inFlight, 0);
   if (!project) return null;
@@ -164,7 +155,13 @@ function BoardBody({
             lqlSources={screen.lqlSources}
             lqlError={screen.filterError ? screen.filterError.message : null}
             savedFilters={savedFilters}
-            display={<BoardDisplayMenu display={screen.display} kanban={screen.kanban} />}
+            display={
+              <BoardDisplayMenu
+                display={screen.display}
+                projectKey={project.key}
+                canConfigure={access.configureBoard}
+              />
+            }
           />
         </div>
         <SprintPulse sprintId={screen.sprint?.id} className="bg-sunken px-6 pt-3 max-md:px-4" />

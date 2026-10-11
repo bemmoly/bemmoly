@@ -1,40 +1,32 @@
 import { Button, Menu, MenuGroup, MenuItem, MenuSeparator, Tooltip } from '@bemmoly/ui';
 import { Icon } from '@bemmoly/ui/icons';
-import { DISPLAY_FIELDS, type BoardDisplayApi, type DisplayField } from '../hooks/board-display.ts';
+import type { BoardDisplayApi } from '../hooks/board-display.ts';
+import { navigateTo } from '../hooks/issue-navigation.ts';
 
 export interface BoardDisplayMenuProps {
   display: BoardDisplayApi;
-  /** Kanban cards show the time in the column where Scrum cards show points. */
-  kanban: boolean;
+  projectKey: string;
+  /** Holds "Configure board": the menu links to the Cards tab instead of explaining it. */
+  canConfigure: boolean;
 }
 
-const FIELD_NAMES: Record<DisplayField, string> = {
-  key: 'Key',
-  priority: 'Priority',
-  estimate: 'Points',
-  age: 'Time in column',
-  assignee: 'Assignee',
-  labels: 'Labels',
-  blocked: 'Blocked by',
-  docs: 'Linked doc',
-  subtasks: 'Subtasks',
-};
+/** Project settings › Board › Cards, where card fields, order and colour are set. */
+export const cardSettingsPath = (projectKey: string) =>
+  `/work/settings/${projectKey}/board?tab=cards`;
 
 /**
- * Display, at the end of the Board's filter row: this person's card fields, density and empty
- * columns for this board. Every item keeps the menu open, so a few changes are one visit; the
- * board changes behind it as they are made. A dot on the button says the view is not the
- * board's own, and Reset brings it back.
+ * Display, at the end of the Board's filter row. Cards look the same for everyone on the
+ * project, as the board's settings draw them, so the only personal choice here is whether empty
+ * columns take room. Admins get a way to the card layout; everyone else is told where it is set.
+ * A dot on the button says the view is not the board's own, and Reset brings it back.
  */
-export function BoardDisplayMenu({ display, kanban }: BoardDisplayMenuProps) {
-  const fields = DISPLAY_FIELDS.filter((field) => field !== (kanban ? 'estimate' : 'age'));
-  const { shown, display: current } = display;
+export function BoardDisplayMenu({ display, projectKey, canConfigure }: BoardDisplayMenuProps) {
   return (
     <Menu
       align="end"
-      widthClassName="w-60 max-h-[min(520px,75vh)] overflow-y-auto"
+      widthClassName="w-64"
       trigger={(props) => (
-        <Tooltip label="Card fields, density and empty columns">
+        <Tooltip label="Empty columns and card layout">
           <Button {...props} size="sm" icon={<Icon name="sliders" size={14} />}>
             Display
             {display.customized && (
@@ -47,44 +39,30 @@ export function BoardDisplayMenu({ display, kanban }: BoardDisplayMenuProps) {
         </Tooltip>
       )}
     >
-      <MenuGroup label="Card fields">
-        {fields.map((field) => (
-          <MenuItem
-            key={field}
-            kind="checkbox"
-            keepOpen
-            checked={shown.has(field)}
-            onSelect={() => display.setField(field, !shown.has(field))}
-          >
-            {FIELD_NAMES[field]}
-          </MenuItem>
-        ))}
-      </MenuGroup>
-      <MenuGroup label="Density" separated>
-        <MenuItem
-          keepOpen
-          checked={current.density === 'comfortable'}
-          onSelect={() => display.setDensity('comfortable')}
-        >
-          Comfortable
-        </MenuItem>
-        <MenuItem
-          keepOpen
-          checked={current.density === 'compact'}
-          onSelect={() => display.setDensity('compact')}
-        >
-          Compact
-        </MenuItem>
-      </MenuGroup>
-      <MenuGroup label="Columns" separated>
+      <MenuGroup label="Columns">
         <MenuItem
           kind="checkbox"
           keepOpen
-          checked={current.showEmptyColumns}
-          onSelect={() => display.setShowEmptyColumns(!current.showEmptyColumns)}
+          checked={display.display.showEmptyColumns}
+          onSelect={() => display.setShowEmptyColumns(!display.display.showEmptyColumns)}
         >
           Show empty columns
         </MenuItem>
+      </MenuGroup>
+      <MenuGroup label="Cards" separated>
+        {canConfigure ? (
+          <MenuItem
+            icon={<Icon name="gear" size={14} />}
+            onSelect={() => navigateTo(cardSettingsPath(projectKey))}
+          >
+            Edit card layout in settings
+          </MenuItem>
+        ) : (
+          <p className="m-0 flex gap-2 px-2.5 py-1.5 text-12 text-tx-3">
+            <Icon name="lock" size={14} className="mt-px" />
+            Card layout is set by project admins for everyone on this board.
+          </p>
+        )}
       </MenuGroup>
       {display.customized && (
         <>

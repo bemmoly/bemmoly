@@ -1,5 +1,4 @@
 import { createContext, useContext, type DragEvent, type KeyboardEvent } from 'react';
-import type { Density } from '../hooks/board-display.ts';
 import type { DropTarget } from '../hooks/board-drag.ts';
 import type { BoardSelectHandlers } from '../hooks/board-selection.ts';
 import type { MenuSprint } from '../shared/issue-actions-menu.tsx';
@@ -33,8 +32,6 @@ export interface BoardShared {
   select: BoardSelectHandlers;
   /** Where a card can move from its menu (Scrum only): the planned sprints and the Backlog. */
   sprints?: readonly MenuSprint[];
-  /** This person's card density on this board. */
-  density: Density;
   /**
    * A touch screen has no hover, so every card shows its tools from the start; elsewhere a card
    * draws them the first time the pointer or the focus reaches it.

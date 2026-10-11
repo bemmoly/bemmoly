@@ -15,8 +15,8 @@ import type { DisplayField } from '../hooks/board-display.ts';
 import type { ViewCard } from '../hooks/board-model.ts';
 
 /*
- * From a view card to what the design system's card draws, under the fields this person shows
- * (the board's card fields unless they chose otherwise) and the board's colour rule. The names come from the vocabularies the board loaded once.
+ * From a view card to what the design system's card draws, under the board's card fields and
+ * colour rule, the same for everyone. The names come from the vocabularies the board loaded once.
  */
 
 /** A colour rule's stripe reads the card's --card-rule, set from the rule's colour. */
@@ -29,7 +29,7 @@ export interface CardVocabulary {
   people: ReadonlyMap<string, Pick<User, 'id' | 'name'>>;
   labels: ReadonlyMap<string, LabelValue>;
   meId: string | undefined;
-  /** The fields the cards draw: the board's card fields with this person's choices on top. */
+  /** The fields the cards draw: the board's card fields, set by admins in Board settings. */
   shown: ReadonlySet<DisplayField>;
   colorRule: CardColorRule;
   /** Scrum cards show points; Kanban cards show the time in the column instead. */

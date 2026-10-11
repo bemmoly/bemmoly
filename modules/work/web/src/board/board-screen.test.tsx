@@ -20,6 +20,23 @@ afterEach(() => {
 });
 
 describe('Board screen', () => {
+  it('shows quick filters as toggle chips in the filter row, kept in the address', async () => {
+    await renderBoard();
+    const row = screen.getByRole('group', { name: 'Quick filters' });
+    const names = within(row)
+      .getAllByRole('button')
+      .map((button) => button.textContent);
+    expect(names).toEqual(['Only my issues', 'Recently updated', 'Blocked', 'Bugs']);
+    const blocked = within(row).getByRole('button', { name: 'Blocked' });
+    fireEvent.click(blocked);
+    await waitFor(() => expect(window.location.search).toContain('quick=blocked'));
+    expect(within(row).getByRole('button', { name: 'Blocked' }).getAttribute('aria-pressed')).toBe(
+      'true',
+    );
+    fireEvent.click(within(row).getByRole('button', { name: 'Blocked' }));
+    await waitFor(() => expect(window.location.search).not.toContain('quick='));
+  });
+
   it('lays the view out in columns and lanes with WIP counts', async () => {
     await renderBoard();
     expect(screen.getByRole('group', { name: 'To do, Auth service' })).toBeTruthy();

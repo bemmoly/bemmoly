@@ -11,7 +11,13 @@ bar, one issue menu, one peek.
   (column, lane, sprint) is the shown issues. A filtered empty board says so and offers
   "Clear filters".
 - **/** focuses search; Esc in search clears it. Set filters are chips with a remove button;
-  Clear appears from two filters.
+  Clear appears from two filters (pressed quick filters count).
+- **Quick filters are in the row** (ADR 0023): "Only my issues", "Recently updated", "Blocked"
+  and, on the Board, the project's own from Board settings › Quick filters, each a toggle chip
+  right after search, pressed while on. Four fit (two on a phone); the rest sit behind "+N more",
+  a menu of checkboxes, and one that is on always stays in the row. They are not in the Filter
+  menu and do not repeat as removable chips. The row keeps its 46px and scrolls sideways on a
+  phone.
 - **Peek**: one click (or Enter) opens the issue beside the list at `?issue=KEY`. Back closes it,
   Forward reopens it, reload restores it. ↑↓ / j k step through issues in screen order; the
   panel header has the same arrows with tooltips. Closing returns focus to the card or row.
@@ -80,25 +86,20 @@ bar, one issue menu, one peek.
 
 ### Display
 
-- Job: make the board read the way this person works: fewer fields on a busy board, denser
-  cards on a small screen, no room spent on empty columns.
-- The Display button sits at the end of the filter row, with a tooltip ("Card fields, density
-  and empty columns") and an accent dot while the view differs from the board's own.
-- Card fields: Key, Priority, Points (Scrum) or Time in column (Kanban), Assignee, Labels,
-  Blocked by, Linked doc, Subtasks. The type tile and the title always show. Each is a
-  checkbox item; the menu stays open so several changes are one visit.
-- Density: Comfortable (today's card) or Compact (tighter padding and gaps, the title kept to
-  two lines, cards 6px apart). A compact card is still over 44px tall.
+- Job: personal view choices that do not change what a card is. Today that is one: whether
+  empty columns take room.
+- The Display button sits at the end of the filter row, with a tooltip ("Empty columns and card
+  layout") and an accent dot while the view differs from the board's own.
 - Show empty columns: off, columns with no card after filters step aside. They come back while
-  a card is carried, so it can still be dropped there, and when every column is empty.
-- Reset to the board's default appears once anything changed.
-- Decision: these are personal, per person and per board, kept in this browser (client state),
-  not in the board's settings, which the whole project shares and admins own. Untouched, the
-  board looks exactly as its settings draw it; a field set back to the board's own choice
-  follows the board again, so an admin's later change still reaches it. Storage that is
-  blocked, full or unreadable falls back to the board's look; nothing breaks.
-- Not offered: epic and due date on the card, because the card has no place for them yet (the
-  epic shows as the lane and the stripe).
+  a card is carried, so it can still be dropped there, and when every column is empty. Kept per
+  person and board in this browser; Reset to the board's default appears once it changed.
+- Cards: how cards look (fields, order, colour, colour rules) is the board's, set by project and
+  org admins in Board settings › Cards and the same for everyone (ADR 0023). Someone holding
+  "Configure board" sees "Edit card layout in settings", which opens that tab
+  (`?tab=cards`); everyone else reads "Card layout is set by project admins for everyone on
+  this board", with nothing to press. The server refuses card changes from anyone else (403).
+- History: until 0.10 Display offered personal card fields and a compact density, kept in the
+  browser. Those stored choices are now ignored; the empty-column choice carries over.
 
 ## Backlog
 
