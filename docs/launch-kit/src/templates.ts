@@ -6,6 +6,7 @@
  */
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
+import { INSTALL_COMMAND } from '../../../apps/site/src/lib/links.ts';
 
 const root = new URL('../../../', import.meta.url);
 const brand = (file: string): string =>
@@ -66,6 +67,8 @@ interface Cover {
   glimpse: { x: number; y: number; w: number; h: number; rotate: number; zoom: number; from: [number, number] };
   /** "bemmoly.com" above the headline, at this size: banners with no lockup name it here. */
   domain?: number;
+  /** The site's install command in a terminal chip, at this font size. */
+  install?: number;
 }
 
 const HERO = 'Issues and docs on your own server';
@@ -289,6 +292,7 @@ function cover(image: LaunchImage): string {
     <h1 style="font-size:${px(c.copy.h1)}">${image.headline}</h1>
     ${image.sub && c.copy.line ? `<p class="line" style="font-size:${px(c.copy.line)}">${image.sub}</p>` : ''}
     <ul class="promises row" style="font-size:${px(c.copy.promise)}">${PROMISES.map((p) => `<li><span class="tick">${CHECK}</span>${p}</li>`).join('')}</ul>
+    ${c.install ? `<p class="chip" style="font-size:${px(c.install)}"><span class="dim">$</span> ${INSTALL_COMMAND}</p>` : ''}
   </div>`;
   const glimpse = `<div class="glimpse" style="left:${px(g.x)};top:${px(g.y)};width:${px(g.w)};height:${px(g.h)};transform:rotate(${g.rotate}deg);background-image:url(${shot(image.shot!)});background-size:${px(g.zoom)} ${px(zh)};background-position:${px(-g.from[0] * g.zoom)} ${px(-g.from[1] * zh)}"></div>`;
   return `${glimpse}${copy}`;
@@ -349,6 +353,8 @@ h1{font-weight:600;letter-spacing:-0.02em;line-height:1.06;font-size:calc(var(--
 .glimpse{position:absolute;border-radius:14px;border:1px solid var(--line);background-color:#fff;background-repeat:no-repeat;
   box-shadow:0 24px 70px rgba(27,36,48,.18),0 2px 6px rgba(27,36,48,.06);transform-origin:left top}
 .domain{color:var(--b1);font-weight:600;margin-bottom:.5em}
+.chip{align-self:flex-start;margin-top:.9em;padding:.45em .9em;border-radius:.5em;background:#111418;color:#fff;font-family:PlexMono,monospace;font-weight:500;line-height:1.2;white-space:nowrap}
+.chip .dim{color:#8B95A5}
 body.dark{--tx:#E6E9EF;--tx2:#9AA3B2;--line:#2A3039;--bg:#111418;--b1:#5B7BE5;
   background:radial-gradient(120% 90% at 100% 0%,#1A2238 0%,rgba(26,34,56,0) 55%),var(--bg)}
 body.dark .glimpse{background-color:#111418;box-shadow:0 24px 70px rgba(0,0,0,.5)}
@@ -392,7 +398,8 @@ const README_COVER: Cover = {
 };
 
 const LINKEDIN_COMPANY_COVER: Cover = {
-  copy: { x: 300, width: 540, h1: 34, promise: 15 },
+  copy: { x: 296, width: 560, h1: 32, promise: 14.5, top: 22 },
+  install: 12.5,
   glimpse: { x: 860, y: 34, w: 330, h: 200, rotate: -3, zoom: 760, from: [0.33, 0.13] },
   domain: 13,
 };
@@ -486,7 +493,8 @@ export const BRAND: LaunchImage[] = [
     covered: [{ x: 0, y: 275, w: 480, h: 225 }],
     avatar: { x: 15, y: 363, size: 134, round: true },
     cover: {
-      copy: { x: 600, width: 860, h1: 60, line: 26, promise: 23, top: 92 },
+      copy: { x: 590, width: 870, h1: 58, line: 25, promise: 23, top: 72 },
+      install: 22,
       glimpse: { x: -60, y: 40, w: 560, h: 420, rotate: -3, zoom: 1180, from: [0.29, 0.09] },
       domain: 20,
     },

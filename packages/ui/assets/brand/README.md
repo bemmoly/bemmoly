@@ -120,13 +120,14 @@ All text sits inside the safe zone; only the background and the product glimpse 
 
 - **X header (1500 x 500).** The avatar covers the bottom-left (treated as the left 32% by the
   bottom 45%; on desktop a 134px circle from x 15 overlapping the bottom 70px) and phones crop
-  about 60px off the top and bottom. So the words and all three promises sit top-right, from
-  x 600 and between y 90 and 290, and the product glimpse takes the left, where the avatar may
+  about 60px off the top and bottom. So the words, all three promises and the install command
+  (`INSTALL_COMMAND` from `apps/site/src/lib/links.ts`) sit top-right, from x 590 and between
+  y 70 and 330, and the product glimpse takes the left, where the avatar may
   cover it.
 - **LinkedIn company cover (1128 x 191, and 4200 x 700).** The page logo overlaps about
   270 x 140 at the bottom-left on desktop and phones crop the sides, so the copy runs from x 300
-  to about x 750, vertically centred: bemmoly.com, the tagline on one line and the promises on
-  one row. The board glimpse sits at the right edge, where a phone's crop only trims it.
+  to about x 750, from the top: bemmoly.com, the tagline on one line, the promises on one row
+  and the install command in a terminal chip. The board glimpse sits at the right edge, where a phone's crop only trims it.
 - **LinkedIn personal banner (1584 x 396).** The profile photo overlaps about 400 x 300 at the
   bottom-left, so text stays right of x 470.
 - **Buy Me a Coffee cover (1600 x 400).** Size from Buy Me a Coffee's help page,
