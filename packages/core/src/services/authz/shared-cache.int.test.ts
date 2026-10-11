@@ -192,9 +192,11 @@ describe('the process authorization cache against Postgres', () => {
   it('stays quiet when a request only touches last-seen and last-used columns', async (ctx) => {
     if (!server.available) return ctx.skip();
     const userId = await person();
-    // A marker after the writes: once it arrives, any notification they sent has too.
+    // Drain: a marker after every earlier write, then time for anything still in flight.
+    const drained = notifications;
     await sql`select pg_notify(${AUTHZ_CHANNEL}, '')`;
-    await eventually(async () => notifications > 0);
+    await eventually(async () => notifications > drained);
+    await new Promise((resolve) => setTimeout(resolve, 200));
     const before = notifications;
     await sql`update users set last_seen_at = now(), updated_at = now() where id = ${userId}`;
     await sql`select pg_notify(${AUTHZ_CHANNEL}, '')`;
