@@ -24,11 +24,7 @@ export function NotFoundPage() {
         eyebrow="404"
         title="There is nothing at this address"
         actions={
-          <Button
-            variant="primary"
-            onClick={() => openPalette()}
-            iconEnd={<Kbd keys="Mod+K" />}
-          >
+          <Button variant="primary" onClick={() => openPalette()} iconEnd={<Kbd keys="Mod+K" />}>
             Search for it
           </Button>
         }
