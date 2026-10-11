@@ -15,6 +15,7 @@ import {
 import { Icon } from '@bemmoly/ui/icons';
 import type { ReactNode } from 'react';
 import { useDevMailbox } from '../../hooks/use-dev-mailbox.ts';
+import { ModeControl } from '../appearance/mode-control.tsx';
 import { APP_VERSION, WHATS_NEW_URL, type Shell } from '../../hooks/use-shell.ts';
 import { useUiStore } from '../../store/ui.ts';
 import { NewButton } from './new-button.tsx';
@@ -152,7 +153,7 @@ export function UserMenu({ shell }: { shell: Shell }) {
           </button>
         );
   return (
-    <Menu align="start" widthClassName="w-60" trigger={trigger}>
+    <Menu align="start" widthClassName="w-65" trigger={trigger}>
       <div className="flex flex-col gap-0.5 border-b border-line px-2.5 pt-1 pb-2">
         <span className="font-medium text-tx">{name}</span>
         <span className="truncate text-12 text-tx-3">{shell.me.user.email}</span>
@@ -169,25 +170,66 @@ export function UserMenu({ shell }: { shell: Shell }) {
           Dev mailbox
         </MenuItem>
       ) : null}
-      {shell.themes.length > 0 ? (
-        <MenuGroup label="Theme" separated>
-          {shell.themes.map((choice) => (
-            <MenuItem key={choice.id} checked={choice.checked} onSelect={choice.onSelect}>
-              {choice.label}
-            </MenuItem>
-          ))}
-          {shell.canManageAppearance ? (
-            <MenuItem onSelect={() => shell.go('/settings/appearance')}>
-              Workspace appearance…
-            </MenuItem>
-          ) : null}
-        </MenuGroup>
-      ) : null}
+      <ThemeMenuGroups shell={shell} />
       <MenuSeparator />
       <MenuItem icon={<Icon name="arrow-left" />} onSelect={shell.signOut}>
         Sign out
       </MenuItem>
     </Menu>
+  );
+}
+
+/**
+ * Mode, then (when the workspace allows it) Theme, as the review draws the user menu. The mode
+ * switch keeps its own arrow keys, so the menu's item navigation does not take them.
+ */
+function ThemeMenuGroups({ shell }: { shell: Shell }) {
+  return (
+    <>
+      <MenuGroup label="Mode" separated>
+        <div className="px-1.5 pt-0.5 pb-2" onKeyDown={(event) => event.stopPropagation()}>
+          <ModeControl compact value={shell.mode.value} onChange={shell.mode.set} />
+        </div>
+      </MenuGroup>
+      {shell.themes.length > 0 ? (
+        <MenuGroup label="Theme">
+          {shell.themes.map((choice) => (
+            <MenuItem
+              key={choice.id}
+              checked={choice.checked}
+              onSelect={choice.onSelect}
+              icon={<ThemeDot light={choice.dot.light} dark={choice.dot.dark} />}
+            >
+              {choice.label}
+              {choice.isWorkspace ? <span className="text-12 text-tx-3"> · workspace</span> : null}
+            </MenuItem>
+          ))}
+          {shell.canCreateTheme ? (
+            <MenuItem
+              icon={<Icon name="plus" />}
+              onSelect={() => shell.go('/settings/appearance/themes/new')}
+            >
+              Create your own theme…
+            </MenuItem>
+          ) : null}
+        </MenuGroup>
+      ) : null}
+      {shell.canManageAppearance ? (
+        <MenuItem icon={<Icon name="palette" />} onSelect={() => shell.go('/settings/appearance')}>
+          Workspace appearance…
+        </MenuItem>
+      ) : null}
+    </>
+  );
+}
+
+/** A theme's light fill and dark accent, half and half: the two designs it ships. */
+function ThemeDot({ light, dark }: { light: string; dark: string }) {
+  return (
+    <span aria-hidden="true" className="flex size-3 overflow-hidden rounded-full shadow-ring">
+      <span className="h-full w-1/2" style={{ background: light }} />
+      <span className="h-full w-1/2" style={{ background: dark }} />
+    </span>
   );
 }
 
