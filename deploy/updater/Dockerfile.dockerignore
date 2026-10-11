@@ -1,4 +1,5 @@
-# The updater needs the lockfile, the shared package and its own folder; nothing secret.
+# The updater needs the lockfile, the shared package, its own folder and the host bemmoly
+# command it stages (ADR 0024); nothing secret.
 **/.env
 **/.env.*
 **/node_modules
@@ -15,5 +16,6 @@ packages/core
 packages/ui
 deploy/compose
 deploy/installer
-deploy/cli
+!deploy/installer/lib/common.sh
+!deploy/installer/lib/preflight.sh
 deploy/tests
