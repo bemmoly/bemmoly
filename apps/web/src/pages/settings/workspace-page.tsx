@@ -7,11 +7,12 @@ import {
   SettingsValues,
   UnsavedChangesBar,
 } from '@bemmoly/ui';
+import { timezoneOptions } from '../../lib/timezones.ts';
+import { UrlHint } from '../../components/settings/change-url-dialog.tsx';
 import { SettingsPage } from '../../components/settings/settings-page.tsx';
 import { useSectionEdits } from '../../components/settings/use-section-edits.ts';
-import { LOCALES, TIMEZONES, useWorkspaceSettings } from '../../hooks/use-workspace-settings.ts';
+import { LOCALES, useWorkspaceSettings } from '../../hooks/use-workspace-settings.ts';
 
-const URL_HINT = 'Set by BEMMOLY_PUBLIC_URL on the server.';
 const TIMEZONE_HINT = 'Backups and digests run on this clock.';
 
 export function WorkspacePage() {
@@ -39,7 +40,7 @@ export function WorkspacePage() {
             {reading ? (
               <SettingsValues>
                 <SettingsValue label="Workspace name">{value.name}</SettingsValue>
-                <SettingsValue label="URL" mono hint={URL_HINT}>
+                <SettingsValue label="URL" mono hint={<UrlHint />}>
                   {value.url}
                 </SettingsValue>
                 <SettingsValue label="Language">
@@ -58,7 +59,7 @@ export function WorkspacePage() {
                     onChange={(event) => draft.update({ name: event.target.value })}
                   />
                 </Field>
-                <Field label="URL" hint={URL_HINT} error={errors['url']}>
+                <Field label="URL" hint={<UrlHint />} error={errors['url']}>
                   <Input size="lg" mono readOnly value={value.url} />
                 </Field>
                 <Field label="Language" error={errors['locale']}>
@@ -74,7 +75,7 @@ export function WorkspacePage() {
                     size="md"
                     searchable
                     searchPlaceholder="Search timezones"
-                    options={TIMEZONES.map((zone) => ({ value: zone, label: zone }))}
+                    options={timezoneOptions(value.timezone)}
                     value={value.timezone}
                     onChange={(event) => draft.update({ timezone: event.target.value })}
                   />
