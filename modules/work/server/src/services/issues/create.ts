@@ -11,7 +11,7 @@ import { richTextToPlain } from '../../../../shared/rich-text.ts';
 import { recordHistory } from '../history/index.ts';
 import { actorUserId, projectResource, requireDatabase, type IssueServiceDeps } from './deps.ts';
 import { publishIssueEvent } from './events.ts';
-import { loadFieldDefinitions, requiredFieldKeys, validateCustomFields } from './fields.ts';
+import { loadFieldDefinitions, requiredFields, validateCustomFields } from './fields.ts';
 import { notify, notifyDescriptionMentions, publishIssueChange } from './notify.ts';
 import { assertOwnReferences } from './references.ts';
 import { loadIssueById, toIssue } from './rows.ts';
@@ -51,6 +51,28 @@ export async function initialStatusId(tx: SqlExecutor, projectId: string): Promi
   return row.id;
 }
 
+/**
+ * The status a create asked for, when it is one of the project's workflow (its own, or the
+ * org default it inherits). Any status will do, with no transition: a create places an issue
+ * where it already stands, as an import does.
+ */
+async function startStatus(
+  tx: SqlExecutor,
+  projectId: string,
+  statusId: string | undefined,
+): Promise<{ id: string; done: boolean }> {
+  if (!statusId) return { id: await initialStatusId(tx, projectId), done: false };
+  const [row] = await tx<{ category: string }[]>`
+    select s.category from workflow_statuses s
+    where s.id = ${statusId} and s.workflow_id = (
+      select w.id from workflows w
+      where w.project_id = ${projectId} or w.project_id is null
+      order by w.project_id nulls last, w.id
+      limit 1)`;
+  if (!row) throw new ValidationError("The status is not part of the project's workflow");
+  return { id: statusId, done: row.category === 'done' };
+}
+
 async function projectKeyOf(tx: SqlExecutor, projectId: string): Promise<string> {
   const [row] = await tx<{ key: string }[]>`
     select key from projects where id = ${projectId} and archived_at is null`;
@@ -79,21 +101,30 @@ export async function createIssue(
 ): Promise<Issue> {
   const body = createIssueBodySchema.parse(input);
   await ctx.authz.authorize(ctx.actor, 'work.issue.edit', projectResource(body.projectId));
+  // Starting anywhere but the first status skips the workflow's transition rules, so only
+  // someone who configures the project may do it (an import, a migration).
+  if (body.statusId) {
+    await ctx.authz.authorize(ctx.actor, 'work.project.configure', projectResource(body.projectId));
+  }
   const sql = requireDatabase(deps);
   const actorId = actorUserId(ctx);
   const created = await sql.begin(async (tx) => {
-    const [projectKey, statusId] = await Promise.all([
+    const [projectKey, status] = await Promise.all([
       projectKeyOf(tx, body.projectId),
-      initialStatusId(tx, body.projectId),
+      startStatus(tx, body.projectId, body.statusId),
       assertOwnReferences(tx, body.projectId, body),
     ]);
     const definitions = await loadFieldDefinitions(tx, body.projectId);
     const customFields = validateCustomFields(definitions, body.customFields ?? {});
-    const missing = (await requiredFieldKeys(tx, body.typeId)).filter(
-      (key) => customFields[key] === undefined || customFields[key] === null,
+    const missing = (await requiredFields(tx, body.typeId)).filter(
+      ({ key }) => customFields[key] === undefined || customFields[key] === null,
     );
     if (missing.length > 0) {
-      throw new ValidationError('Required fields are missing', { details: { fields: missing } });
+      // Named in the message itself: an API or MCP client often shows only the message.
+      const names = missing.map((field) => `${field.name} (${field.key})`).join(', ');
+      throw new ValidationError(`Required fields are missing: ${names}`, {
+        details: { fields: missing.map((field) => field.key) },
+      });
     }
     if (body.startAt && body.dueAt && body.startAt > body.dueAt) {
       throw new ValidationError('An issue starts on or before its due date', {
@@ -109,15 +140,16 @@ export async function createIssue(
     const [row] = await tx<{ id: string }[]>`
       insert into issues (project_id, number, key, type_id, title, description, description_text,
         status_id, priority, assignee_id, reporter_id, parent_id, sprint_id, estimate, start_at,
-        due_at, fix_version_id, component_id, custom_fields, rank)
+        due_at, fix_version_id, component_id, custom_fields, rank, resolved_at)
       values (${body.projectId}, ${number}, ${`${projectKey}-${number}`}, ${body.typeId},
         ${body.title}, ${description ? JSON.stringify(description) : null}::jsonb,
-        ${richTextToPlain(description)}, ${statusId}, ${body.priority},
+        ${richTextToPlain(description)}, ${status.id}, ${body.priority},
         ${body.assigneeId ?? null}, ${actorId}, ${body.parentId ?? null},
         ${body.sprintId ?? null}, ${body.estimate ?? null}, ${body.startAt ?? null},
         ${body.dueAt ?? null},
         ${body.fixVersionId ?? null}, ${body.componentId ?? null},
-        ${JSON.stringify(customFields)}::jsonb, ${last(tail?.rank ?? undefined)})
+        ${JSON.stringify(customFields)}::jsonb, ${last(tail?.rank ?? undefined)},
+        case when ${status.done} then now() end)
       returning id`;
     if (!row) throw new NotFoundError('The issue was not stored');
     await paintNewEpic(tx, row.id);

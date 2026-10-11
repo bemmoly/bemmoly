@@ -109,7 +109,7 @@ export function HistoryMode({ pageId, canEdit = true, onExit }: HistoryModeProps
       <div className="flex min-w-0 flex-1 flex-col">
         <div className="flex min-h-12 shrink-0 flex-wrap items-center gap-2.5 border-b border-line bg-sunken px-6 py-2">
           <Icon name="clock" size={14} className="text-tx-3" />
-          <h2 className="m-0 text-13 font-semibold text-tx">Version history</h2>
+          <h1 className="m-0 text-13 font-semibold text-tx">Version history</h1>
           {options.length > 0 && from && (
             <Select
               aria-label="Version to compare"

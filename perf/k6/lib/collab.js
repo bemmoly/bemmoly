@@ -27,6 +27,20 @@ export const ackTime = new Trend('collab_ack', true);
 /** Share of keystrokes that reached the other person. */
 export const delivered = new Rate('collab_delivered');
 export const collabErrors = new Counter('collab_errors');
+
+/** Why a collab attempt failed, as `collab_errors{reason:…}` tags. */
+export const COLLAB_ERROR_REASONS = ['open_timeout', 'denied', 'socket_error', 'pair_not_ready'];
+
+/**
+ * No collab errors at all, plus one report-only threshold per reason, which is how k6 puts
+ * the breakdown in the summary.
+ */
+export const collabErrorThresholds = () => ({
+  collab_errors: ['count<1'],
+  ...Object.fromEntries(
+    COLLAB_ERROR_REASONS.map((reason) => [`collab_errors{reason:${reason}}`, ['count>=0']]),
+  ),
+});
 /** Broadcasts that carried more than one keystroke (the server merged neighbours). */
 export const mergedFrames = new Counter('collab_merged_frames');
 

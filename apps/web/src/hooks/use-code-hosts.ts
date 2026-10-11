@@ -3,6 +3,7 @@ import type {
   CodeHost,
   CodeHostTestResult,
   CreateCodeHostInput,
+  StartGithubAppInput,
   UpdateCodeHostInput,
 } from '@bemmoly/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -16,9 +17,14 @@ export const CODE_HOSTS_CAPABILITY = 'workspace.settings.manage';
 
 export const HOST_LABELS: Record<CodeHost['kind'], string> = { github: 'GitHub', gitlab: 'GitLab' };
 
+/** A GitHub App Bemmoly created that has not been installed on any repositories yet. */
+export const awaitingInstall = (host: CodeHost) =>
+  host.installUrl !== null && host.installationId === null;
+
 /** A host's state in words for its card: off, refusing, waiting for a first delivery, or fine. */
 export function hostState(host: CodeHost): { tone: PillTone; label: string } {
   if (!host.enabled) return { tone: 'neutral', label: 'Off' };
+  if (awaitingInstall(host)) return { tone: 'warn', label: 'Not installed' };
   if (host.lastError) return { tone: 'red', label: 'Needs attention' };
   if (!host.lastDelivery) return { tone: 'warn', label: 'No deliveries yet' };
   return { tone: 'ok', label: 'Receiving' };
@@ -64,6 +70,9 @@ export function useCodeHosts(enabled = true) {
     },
     onError: (error) => toast(describeError(error).message, 'danger'),
   });
+  const startGithubApp = useMutation({
+    mutationFn: (input: StartGithubAppInput) => api.codeHosts.startGithubApp(input),
+  });
   const backfill = useMutation({
     mutationFn: (id: string) => api.codeHosts.backfill(id),
     onSuccess: (result) =>
@@ -85,6 +94,9 @@ export function useCodeHosts(enabled = true) {
     test: (id: string) => test.mutate(id),
     testing: test.isPending ? (test.variables ?? null) : null,
     lastTest: (id: string): CodeHostTestResult | undefined => tests[id],
+    /** The manifest to post to GitHub; the rest of the trip is useGithubAppReturn. */
+    startGithubApp: (input: StartGithubAppInput) => startGithubApp.mutateAsync(input),
+    startingGithubApp: startGithubApp.isPending,
     backfill: (id: string) => backfill.mutate(id),
     backfilling: backfill.isPending ? (backfill.variables ?? null) : null,
   };

@@ -8,6 +8,7 @@ import { flatten as over, resolveHex } from './theme/color.ts';
 import { contrastRatio } from './theme/contrast.ts';
 import { RESERVED_HUES, reservedHue, themeChecks } from './theme/checks.ts';
 import {
+  AVATAR_COLORS,
   BRAND,
   COLOR_TOKENS,
   ELEVATIONS,
@@ -153,6 +154,12 @@ describe('design tokens', () => {
     for (const { colors } of RESOLVED_THEMES) {
       expect(colors.ai).toBe(BRAND['brand-3']);
       expect(colors.ai).not.toBe(colors.acc);
+    }
+  });
+
+  it('carries white initials at 4.5:1 on every avatar colour (ADR 0034)', () => {
+    for (const [token, hex] of Object.entries(AVATAR_COLORS)) {
+      expect(contrastRatio('#ffffff', hex), token).toBeGreaterThanOrEqual(4.5);
     }
   });
 

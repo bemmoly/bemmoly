@@ -32,13 +32,14 @@ export interface Row {
   result: 'pass' | 'fail' | 'report';
 }
 
-const REPORT_ONLY = 'max>=0';
+/** Thresholds that always hold: they only put a tagged sub-metric in the summary. */
+const REPORT_ONLY = /^(max|count)>=0$/;
 
 export function rowsOf(script: string, metrics: Record<string, Metric>): Row[] {
   const rows: Row[] = [];
   for (const [metric, data] of Object.entries(metrics)) {
     if (!data.thresholds) continue;
-    const budgets = Object.keys(data.thresholds).filter((t) => t !== REPORT_ONLY);
+    const budgets = Object.keys(data.thresholds).filter((t) => !REPORT_ONLY.test(t));
     const crossed = budgets.some((t) => data.thresholds?.[t]);
     const isTrend = data['p(95)'] !== undefined;
     // Rates export passes, fails and value (the share); counters count and rate (per second).

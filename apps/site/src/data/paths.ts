@@ -4,7 +4,9 @@
  * env template, the installer's options). A way that is not shipped and tested says "Coming
  * soon" and shows no command.
  */
+import { LATEST } from '../lib/changelog.ts';
 import type { SiteIconName } from '../lib/icons.ts';
+import { REPO_URL } from '../lib/links.ts';
 import { COMPOSE_EDIT, COMPOSE_FILES, COMPOSE_START } from './compose.ts';
 import type { StatusKey } from './self-hosting.ts';
 
@@ -68,16 +70,43 @@ export const PATHS: readonly PathOption[] = [
     id: 'helm',
     icon: 'hexagon',
     title: 'I run Kubernetes',
-    status: 'soon',
-    body: 'A Helm chart that runs the same image against your own Postgres.',
-    note: 'Until it ships, run the one command on a VM, or Compose.',
+    status: 'available',
+    body: 'A Helm chart that runs the same image, with Postgres in the chart for a small team or against your own Postgres 18 with pgvector.',
+    steps: [
+      {
+        code: `$ curl -fsSLO ${REPO_URL}/releases/download/v${LATEST.version}/bemmoly-${LATEST.version}.tgz`,
+        label: '1. Download the chart',
+      },
+      {
+        code: `$ helm install bemmoly bemmoly-${LATEST.version}.tgz --namespace bemmoly --create-namespace \\
+    --set postgresql.enabled=true \\
+    --set publicUrl=https://bemmoly.example.com \\
+    --set ingress.enabled=true --set ingress.host=bemmoly.example.com`,
+        label: '2. Install it, then open your address to create the first admin',
+      },
+    ],
+    note: 'Live editing needs one replica. For your own Postgres, set externalDatabase.url instead of postgresql.enabled.',
+    link: { label: 'Every chart value', href: `${REPO_URL}/tree/main/deploy/helm/bemmoly` },
   },
   {
     id: 'terraform',
     icon: 'globe',
     title: 'I want managed infrastructure',
-    status: 'soon',
-    body: 'Terraform modules that create the VM and run the installer for you.',
-    note: 'Until they ship, create the VM in your provider’s console and run the one command.',
+    status: 'available',
+    body: 'Terraform modules that create one VM and run the installer on it, with examples for the big clouds and smaller hosts.',
+    steps: [
+      {
+        code: `$ git clone --depth 1 --branch v${LATEST.version} ${REPO_URL}
+$ cd bemmoly/deploy/terraform/examples/aws`,
+        label: '1. Pick the example for your provider',
+      },
+      {
+        code: `$ terraform init
+$ terraform apply -var domain=bemmoly.example.com -var size=medium`,
+        label: '2. Create the VM; it installs Bemmoly and prints its address',
+      },
+    ],
+    note: 'Credentials come from your provider’s usual tools, never from these files.',
+    link: { label: 'The Terraform guide', href: `${REPO_URL}/tree/main/deploy/terraform` },
   },
 ];

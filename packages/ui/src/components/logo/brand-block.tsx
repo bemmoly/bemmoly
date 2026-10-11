@@ -22,6 +22,8 @@ export interface BrandBlockProps {
   onWorkspaceMenu?: () => void;
   /** The workspace menu's items: the line under the lockup (or the logo's name) opens them. */
   workspaceMenu?: ReactNode;
+  /** Goes to Home: the customer's name and "on Bemmoly" are both links home. */
+  onHome?: () => void;
   /** The sidebar's collapse button, drawn at the right of the block. */
   sidebarToggle?: ReactNode;
   className?: string;
@@ -75,6 +77,7 @@ export function BrandBlock({
   customLogo,
   onWorkspaceMenu,
   workspaceMenu,
+  onHome,
   sidebarToggle,
   className,
 }: BrandBlockProps) {
@@ -94,38 +97,68 @@ export function BrandBlock({
       )}
       <div className="flex min-w-0 flex-1 flex-col gap-1">
         {customLogo && workspaceMenu ? (
-          <Menu
-            widthClassName="w-60"
-            trigger={(props) => (
+          <span className="flex min-w-0 items-center gap-1">
+            {onHome ? (
               <button
                 type="button"
-                {...props}
-                aria-label={`${customLogo.name}, workspace menu`}
+                onClick={onHome}
                 className={cx(
                   LINE_BUTTON,
-                  'text-14 leading-tight font-semibold tracking-title text-tx',
+                  'text-14 leading-tight font-semibold tracking-title text-tx hover:text-tx',
                 )}
               >
                 <span className="truncate">{customLogo.name}</span>
-                <Icon name="caret" size={11} className="text-tx-3" />
               </button>
+            ) : (
+              <span className="truncate text-14 leading-tight font-semibold tracking-title text-tx">
+                {customLogo.name}
+              </span>
             )}
-          >
-            {workspaceMenu}
-          </Menu>
+            <Menu
+              widthClassName="w-60"
+              trigger={(props) => (
+                <button
+                  type="button"
+                  {...props}
+                  aria-label={`${customLogo.name}, workspace menu`}
+                  className={cx(LINE_BUTTON, 'text-tx-3')}
+                >
+                  <Icon name="caret" size={11} />
+                </button>
+              )}
+            >
+              {workspaceMenu}
+            </Menu>
+          </span>
         ) : customLogo ? (
           <span className="truncate text-14 leading-tight font-semibold tracking-title text-tx">
             {customLogo.name}
           </span>
+        ) : onHome ? (
+          <button
+            type="button"
+            onClick={onHome}
+            aria-label="Bemmoly, Home"
+            className={cx(LINE_BUTTON, 'my-0 self-start')}
+          >
+            <Logo variant="wordmark" trim size={15} />
+          </button>
         ) : (
           <Logo variant="wordmark" trim size={15} />
         )}
         <span className="flex min-w-0 items-center gap-1 text-12 text-tx-3">
           {customLogo ? (
-            <>
-              on <Logo size={11} label="" />
-              <b className="font-semibold text-tx-2">Bemmoly</b>
-            </>
+            onHome ? (
+              <button type="button" onClick={onHome} className={cx(LINE_BUTTON, 'gap-1')}>
+                on <Logo size={11} label="" />
+                <b className="font-semibold text-tx-2">Bemmoly</b>
+              </button>
+            ) : (
+              <>
+                on <Logo size={11} label="" />
+                <b className="font-semibold text-tx-2">Bemmoly</b>
+              </>
+            )
           ) : workspaceMenu ? (
             <Menu widthClassName="w-60" trigger={(props) => line(props)}>
               {workspaceMenu}

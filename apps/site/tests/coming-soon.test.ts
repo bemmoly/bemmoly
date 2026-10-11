@@ -9,7 +9,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import type { HtmlElement } from 'html-validate';
 import { describe, expect, it } from 'vitest';
 import { ROADMAP, SHIPPED, SHIPPED_ALIASES } from '../src/data/changelog.ts';
-import { RELEASES, UPCOMING } from '../src/lib/changelog.ts';
+import { NOTED_RELEASES, UPCOMING } from '../src/lib/changelog.ts';
 import { isSitePage, parsePage } from './dom.ts';
 
 const dist = new URL('../dist/', import.meta.url);
@@ -17,10 +17,10 @@ const pages = readdirSync(dist, { recursive: true, encoding: 'utf8' }).filter(is
 const llms = readFileSync(new URL('llms.txt', dist), 'utf8');
 
 const notesOf = (version: string) =>
-  RELEASES.find((release) => release.version === version)
+  NOTED_RELEASES.find((release) => release.version === version)
     ?.changes.flatMap((change) => change.paragraphs)
     .join('\n') ?? '';
-const allNotes = RELEASES.map((release) => notesOf(release.version)).join('\n');
+const allNotes = NOTED_RELEASES.map((release) => notesOf(release.version)).join('\n');
 
 const escape = (term: string) => term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const termPattern = (term: string) => new RegExp(`\\b${escape(term)}`, 'i');

@@ -39,6 +39,8 @@ export interface AiReadToolDefinition<Input = unknown> extends AiToolBase<Input>
 /** What a write leaves behind: undo data when it can be put back, and where to see it. */
 export interface AiWriteOutcome<Undo = unknown> {
   undo?: Undo | null;
+  /** What a caller needs back (a new issue's key and id); MCP returns it to the client. */
+  result?: Record<string, unknown>;
 }
 
 /** A change a plan proposes and a person runs. */

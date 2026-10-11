@@ -21,7 +21,8 @@ const BLOCKS = [
   '[&_ul]:m-0 [&_ul]:flex [&_ul]:list-disc [&_ul]:flex-col',
   '[&_ol]:m-0 [&_ol]:flex [&_ol]:list-decimal [&_ol]:flex-col',
   '[&_ul[data-type=taskList]]:list-none [&_ul[data-type=taskList]]:pl-0',
-  '[&_ul[data-type=taskList]>li]:flex [&_ul[data-type=taskList]>li]:items-start [&_ul[data-type=taskList]>li]:gap-2',
+  // Each task at least 24px tall, so neighbouring checkboxes keep 24px apart (WCAG 2.5.8).
+  '[&_ul[data-type=taskList]>li]:flex [&_ul[data-type=taskList]>li]:min-h-6 [&_ul[data-type=taskList]>li]:items-start [&_ul[data-type=taskList]>li]:gap-2',
   '[&_ul[data-type=taskList]>li>label]:flex [&_ul[data-type=taskList]>li>label]:h-lh [&_ul[data-type=taskList]>li>label]:shrink-0 [&_ul[data-type=taskList]>li>label]:items-center',
   '[&_ul[data-type=taskList]>li>div]:min-w-0 [&_ul[data-type=taskList]>li>div]:flex-1',
   '[&_li[data-checked=true]>div]:text-tx-3 [&_li[data-checked=true]>div]:line-through',

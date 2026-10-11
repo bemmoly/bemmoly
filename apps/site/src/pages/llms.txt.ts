@@ -1,4 +1,5 @@
 import type { APIRoute } from 'astro';
+import { AGENT_PROMPT_PATH } from '../data/agent-prompt.ts';
 import { INSTALL, RELEASE } from '../data/landing.ts';
 import { DEMO_PAGE, PAGES } from '../data/pages.ts';
 import { WHAT_YOU_GET } from '../data/self-hosting.ts';
@@ -16,7 +17,7 @@ export const GET: APIRoute = ({ site }) => {
     '# Bemmoly',
     '',
     '> Open source (MIT), self-hosted work platform: issues, boards, sprints and docs for a whole',
-    '> company, in one application image next to one Postgres on your own server. No pricing,',
+    '> company, in one application image next to one Postgres on your own server. No subscription,',
     '> no seat limits, no in-app purchases. Your work. Your platform.',
     '',
     `Bemmoly is built in the open at ${REPO_URL}. The current release is ${RELEASE.version}. It has`,
@@ -35,9 +36,11 @@ export const GET: APIRoute = ({ site }) => {
     'model on your own network, and offers summaries that cite their sources, answers from your',
     'docs, help in the editor and plans from the command palette that run only when confirmed.',
     'Modules start off; an admin turns them on in Settings › Manage modules. It installs on a',
-    `Linux VM (2 vCPU, 4 GB) with one command; the guide is ${url('/self-hosting#install')}:`,
+    `Linux VM (at least 1 vCPU and 2 GB) with one command; the guide is ${url('/self-hosting#install')}:`,
     '',
     `    ${INSTALL}`,
+    '',
+    `To have a coding agent install it, give it the prompt at ${url(AGENT_PROMPT_PATH)}.`,
     '',
     'Every install gets:',
     '',

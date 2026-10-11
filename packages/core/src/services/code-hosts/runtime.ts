@@ -28,7 +28,10 @@ export interface CodeHostRuntime {
  * The cloud products are public; a self-managed server or Enterprise Server usually sits on
  * the company network, so private addresses are fine, but never link-local metadata.
  */
-export function addressPolicyFor(rt: CodeHostRuntime, row: IntegrationRow): AddressPolicy {
+export function addressPolicyFor(
+  rt: Pick<CodeHostRuntime, 'allowPrivateUrls'>,
+  row: Pick<IntegrationRow, 'base_url'>,
+): AddressPolicy {
   if (rt.allowPrivateUrls) return 'any';
   return row.base_url ? 'local' : 'public';
 }

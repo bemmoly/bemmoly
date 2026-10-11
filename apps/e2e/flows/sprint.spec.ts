@@ -27,24 +27,24 @@ test('a sprint is planned in the backlog, started, and completed with its unfini
   const sprintName = `${project.key} Sprint 1`;
 
   await page.goto(`/work/backlog/${project.key}`);
-  const backlog = page.getByRole('listbox', { name: 'Backlog' });
-  await expect(backlog.getByRole('option')).toHaveCount(3);
+  const backlog = page.getByRole('grid', { name: 'Backlog' });
+  await expect(backlog.getByRole('row')).toHaveCount(3);
   await page.getByRole('button', { name: 'Create sprint' }).first().click();
-  const sprint = page.getByRole('listbox', { name: sprintName });
+  const sprint = page.getByRole('grid', { name: sprintName });
   await expect(
     page.getByText('Drag issues here from the backlog, or create one in the sprint.'),
   ).toBeVisible();
 
-  const row = (key: string) => page.getByRole('option', { name: new RegExp(` ${key} `) });
+  const row = (key: string) => page.getByRole('row', { name: new RegExp(` ${key} `) });
   await drag(
     page,
     row(login.key),
     page.getByText('Drag issues here from the backlog, or create one in the sprint.'),
   );
-  await expect(sprint.getByRole('option', { name: new RegExp(` ${login.key} `) })).toBeVisible();
+  await expect(sprint.getByRole('row', { name: new RegExp(` ${login.key} `) })).toBeVisible();
   await drag(page, row(receipts.key), sprint);
-  await expect(sprint.getByRole('option')).toHaveCount(2);
-  await expect(backlog.getByRole('option')).toHaveCount(1);
+  await expect(sprint.getByRole('row')).toHaveCount(2);
+  await expect(backlog.getByRole('row')).toHaveCount(1);
   await expect.poll(async () => (await admin.issue(receipts.key)).sprintId).not.toBeNull();
 
   await page.getByRole('button', { name: 'Start sprint' }).click();
@@ -70,10 +70,10 @@ test('a sprint is planned in the backlog, started, and completed with its unfini
   await complete.getByRole('button', { name: 'Complete sprint' }).click();
   await expect(complete).toBeHidden();
 
-  const next = page.getByRole('listbox', { name: `${project.key} Sprint 2` });
-  await expect(next.getByRole('option', { name: new RegExp(` ${receipts.key} `) })).toBeVisible();
-  await expect(page.getByRole('listbox', { name: sprintName })).toHaveCount(0);
-  await expect(backlog.getByRole('option', { name: new RegExp(` ${later.key} `) })).toBeVisible();
+  const next = page.getByRole('grid', { name: `${project.key} Sprint 2` });
+  await expect(next.getByRole('row', { name: new RegExp(` ${receipts.key} `) })).toBeVisible();
+  await expect(page.getByRole('grid', { name: sprintName })).toHaveCount(0);
+  await expect(backlog.getByRole('row', { name: new RegExp(` ${later.key} `) })).toBeVisible();
   const moved = await admin.issue(receipts.key);
   const finished = await admin.issue(login.key);
   expect(moved.sprintId).not.toBeNull();

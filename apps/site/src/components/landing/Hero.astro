@@ -4,9 +4,17 @@
  * company, it is yours and free, here is the command. The version chip reads the newest
  * release from the changelogs; the three ticks are the three promises, each linking to its
  * proof; Install (primary) and the live demo (secondary) are the calls to action, with the
- * one-line command to copy under them. Below it, the product in four views on wide
+ * install command to copy under them. A switch above the command trades it for the prompt that
+ * has a coding agent install it instead (data/agent-prompt.ts): the same decision, made the way
+ * the visitor already works. Below it, the product in four views on wide
  * screens, and the product's own phone layout on a phone.
  */
+import {
+  AGENT_PROMPT,
+  AGENT_PROMPT_LEAD,
+  AGENT_PROMPT_PATH,
+  INSTALL_MODES,
+} from '../../data/agent-prompt.ts';
 import { HERO_TICKS, RELEASE } from '../../data/landing.ts';
 import { PHONE_POSTER, PREVIEWS } from '../../data/previews.ts';
 import { PHONE_POSTERS } from '../../data/posters.ts';
@@ -65,24 +73,64 @@ const board = PREVIEWS[0]?.path ?? DEMO_URL;
         Try the live demo
       </Button>
     </div>
-    <CommandField id="hero-command" class="mt-3 w-full sm:w-auto md:mt-4" />
-    <p class="mt-3.5 hidden text-14 text-tx-3 md:block">
-      On a Linux VM with 2 vCPU and 4 GB, and a domain pointing at it.
-      <a href="/install.sh" class="underline underline-offset-3">
-        Read the script first
-      </a>
-    </p>
-    <p class="mt-2.5 flex flex-wrap justify-center gap-x-1 text-13 text-tx-3 md:hidden">
-      You run it on a Linux server.
-      <button
-        type="button"
-        data-share={INSTALL_COMMAND}
-        hidden
-        class="cursor-pointer text-acc underline underline-offset-3"
+    <div data-tabgroup class="mt-4 flex w-full flex-col items-center sm:w-auto md:mt-5">
+      <div
+        data-tablist
+        data-label="How you install"
+        class="inline-flex gap-0.5 rounded-[10px] bg-sunken p-0.75 shadow-[inset_0_0_0_1px_var(--line)]"
       >
-        <span data-copy-label>Share the command to your computer</span>
-      </button>
-    </p>
+        {INSTALL_MODES.map((mode, index) => (
+          <a
+            href={mode.href}
+            id={`hero-${mode.id}-tab`}
+            data-tab
+            data-active={index === 0 ? '' : undefined}
+            class="inline-flex h-7 items-center gap-1.5 rounded-[7px] px-3 text-13 font-medium whitespace-nowrap text-tx-2 hover:text-tx data-active:bg-card data-active:text-tx data-active:shadow-e1"
+          >
+            <Icon name={mode.icon} size={14} />
+            {mode.title}
+          </a>
+        ))}
+      </div>
+      <div data-tabpanel class="mt-2.5 flex w-full flex-col items-center">
+        <CommandField id="hero-command" class="w-full sm:w-130" />
+        <p class="mt-3.5 hidden text-14 text-tx-3 md:block">
+          On a Linux VM with at least 1 vCPU and 2 GB, and a domain pointing at it.
+          <a href="/install.sh" class="underline underline-offset-3">
+            Read the script first
+          </a>
+        </p>
+        <p class="mt-2.5 flex flex-wrap justify-center gap-x-1 text-13 text-tx-3 md:hidden">
+          You run it on a Linux server.
+          <button
+            type="button"
+            data-share={INSTALL_COMMAND}
+            hidden
+            class="cursor-pointer text-acc underline underline-offset-3"
+          >
+            <span data-copy-label>Share the command to your computer</span>
+          </button>
+        </p>
+      </div>
+      <div data-tabpanel hidden class="mt-2.5 w-full flex-col items-center [&:not([hidden])]:flex">
+        <CommandField
+          id="hero-agent"
+          command={AGENT_PROMPT_LEAD}
+          value={AGENT_PROMPT}
+          target="agent-prompt"
+          copyLabel="Copy prompt"
+          class="w-full sm:w-130"
+        />
+        <p class="mt-3.5 text-14 text-pretty text-tx-3">
+          Paste it into your coding agent. It asks where and at which address, then runs the same
+          installer.
+          <a href={AGENT_PROMPT_PATH} class="underline underline-offset-3">
+            Read the prompt
+          </a>
+        </p>
+      </div>
+      <pre id="agent-prompt" class="sr-only" aria-hidden="true">{AGENT_PROMPT}</pre>
+    </div>
   </div>
   <div class="mx-auto mt-11 hidden max-w-300 px-6 md:block lg:px-8">
     <ProductPreview />

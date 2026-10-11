@@ -28,6 +28,7 @@ export {
 } from './code-host-deliveries.ts';
 export {
   FAKE_CODE_HOST_TOKEN,
+  FAKE_GITHUB_APP,
   startFakeCodeHost,
   type FakeCodeHost,
   type FakeCodeHostOptions,

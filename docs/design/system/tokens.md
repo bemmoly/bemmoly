@@ -109,8 +109,9 @@ tones and page icon tints.
 ### Avatar hues (fixed)
 
 `avatar-green`, `avatar-orange`, `avatar-violet`, `avatar-pink`, `avatar-amber`, `avatar-sky`:
-solid fills with white initials at 4.5:1. The signed-in person wears the accent; everyone else's
-hue comes from their id (`avatarHue`). Only `Avatar` uses them.
+solid fills with white initials at 4.5:1 (`tokens.test.ts` checks each; amber was darkened to
+meet it in ADR 0034). The signed-in person wears the accent; everyone else's hue comes from
+their id (`avatarHue`). Only `Avatar` uses them.
 
 ### Brand and AI
 

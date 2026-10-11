@@ -71,6 +71,11 @@ export const createIssueBodySchema = issueFieldsSchema.partial().extend({
   typeId: z.uuid(),
   title: z.string().trim().min(1).max(500),
   priority: issuePrioritySchema.default('medium'),
+  /**
+   * Where the issue starts: any status of the project's workflow, as an import places issues
+   * where they already stand. Omitted, the workflow's first todo status.
+   */
+  statusId: z.uuid().optional(),
 });
 
 /**

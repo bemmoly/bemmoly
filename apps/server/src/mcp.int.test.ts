@@ -153,6 +153,66 @@ describe('mcp server', () => {
     }
   });
 
+  it('files Markdown pages into a space folder and finds them by space key', async (ctx) => {
+    if (!harness) return ctx.skip(skipReason);
+    const client = await connect(base, '', tokens.admin);
+    const json = <T>(result: object) => JSON.parse(textOf(result)) as T;
+    type Created = { id: string; parentId: string | null };
+    try {
+      const names = (await client.listTools()).tools.map((tool) => tool.name);
+      expect(names).toEqual(
+        expect.arrayContaining([
+          'docs.create_page',
+          'docs.update_page',
+          'docs.list_spaces',
+          'docs.list_tree',
+        ]),
+      );
+      const spaces = json<unknown[]>(
+        await client.callTool({ name: 'docs.list_spaces', arguments: {} }),
+      );
+      expect(spaces).toEqual(expect.arrayContaining([expect.objectContaining({ key: 'ENG' })]));
+      const folder = json<Created>(
+        await client.callTool({
+          name: 'docs.create_page',
+          arguments: { spaceKey: 'ENG', title: 'Billing service' },
+        }),
+      );
+      expect(folder).toMatchObject({ done: true, title: 'Billing service', spaceKey: 'ENG' });
+      const body = `## Runbook\n\n${'Restart the worker when the queue backs up. '.repeat(1000)}`;
+      const runbook = json<Created>(
+        await client.callTool({
+          name: 'docs.create_page',
+          arguments: { spaceKey: 'ENG', parentId: folder.id, title: 'Runbook', body },
+        }),
+      );
+      expect(runbook).toMatchObject({ parentId: folder.id, href: `/docs/p/${runbook.id}` });
+      const tree = json<{ pages: unknown[] }>(
+        await client.callTool({ name: 'docs.list_tree', arguments: { spaceKey: 'ENG' } }),
+      );
+      expect(tree.pages).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ id: folder.id, hasChildren: true, depth: 0 }),
+          expect.objectContaining({ id: runbook.id, parentId: folder.id, depth: 1 }),
+        ]),
+      );
+      const read = json<{ markdown: string }>(
+        await client.callTool({
+          name: 'docs.get_page',
+          arguments: { pageId: runbook.id, markdown: true },
+        }),
+      );
+      expect(read.markdown).toContain('## Runbook');
+      expect(read.markdown.length).toBeGreaterThan(40_000);
+      const found = json<{ id: string }[]>(
+        await client.callTool({ name: 'docs.search_pages', arguments: { q: 'ENG' } }),
+      );
+      expect(found.map((hit) => hit.id)).toContain(runbook.id);
+    } finally {
+      await client.close();
+    }
+  });
+
   it('hides write tools from a read-only token and refuses its writes', async (ctx) => {
     if (!harness) return ctx.skip(skipReason);
     const names = await toolNames(base, '', tokens.readOnly);

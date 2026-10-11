@@ -20,7 +20,7 @@ import {
   paletteKeystroke,
 } from './actions.js';
 import { BASE_THRESHOLDS, BUDGETS_MS, ENDPOINT_BUDGETS, SUMMARY_TREND_STATS } from './budgets.js';
-import { openPage, typeTogether } from './collab.js';
+import { collabErrorThresholds, openPage, typeTogether } from './collab.js';
 import { dataset, pageIds, pairForVu, personForIteration, pickFrom } from './config.js';
 import { weighted } from './scenarios.js';
 
@@ -100,7 +100,7 @@ export function workloadOptions(defaults) {
       ...(pairs > 0
         ? { collab_delivered: ['rate>0.999'], collab_remote_echo: [`p(95)<${BUDGETS_MS.pageOpen}`] }
         : {}),
-      collab_errors: ['count<1'],
+      ...collabErrorThresholds(),
     },
   };
 }

@@ -1,5 +1,14 @@
 # @bemmoly/eslint-plugin
 
+## 0.13.1
+
+### Patch Changes
+
+- 9288d90: The "Import from Jira" and "Import from Confluence" cards in Setup and Settings › Import
+  now show a neutral import icon instead of the vendor’s logos; the product names stay as plain
+  labels. A new lint rule, `bemmoly/no-atlassian-marks`, keeps the vendor’s logos out of the
+  codebase.
+
 ## 0.13.0
 
 No changes in this release.

@@ -8,7 +8,7 @@
  * package's changelog is missing from that list.
  */
 import { posix } from 'node:path';
-import { RELEASE_DATES, ROADMAP } from '../data/changelog.ts';
+import { RELEASE_DATES, ROADMAP, UNPUBLISHED } from '../data/changelog.ts';
 import { fetchPublishedVersion } from './clients/github.ts';
 
 export type ChangeKind = 'major' | 'minor' | 'patch';
@@ -139,15 +139,19 @@ const ORDER: readonly ChangeKind[] = ['major', 'minor', 'patch'];
 export function collectReleases(
   sources: readonly string[],
   dates: Readonly<Record<string, string>> = RELEASE_DATES,
+  /** A version tagged but never published, and the release that shipped its notes. */
+  unpublished: Readonly<Record<string, string>> = UNPUBLISHED,
 ): Release[] {
   const byVersion = new Map<string, Map<string, ReleaseChange>>();
   for (const source of sources) {
     // A release whose only notes are dependency bumps still shipped: the fixed group tags
     // every package, so it is the version the installer pulls even with nothing to list.
-    for (const [, version] of source.matchAll(/^## (\S+)\s*$/gm)) {
+    for (const [, tagged] of source.matchAll(/^## (\S+)\s*$/gm)) {
+      const version = tagged && (unpublished[tagged] ?? tagged);
       if (version && !byVersion.has(version)) byVersion.set(version, new Map());
     }
-    for (const { version, kind, id, paragraphs } of parseChangelog(source)) {
+    for (const { version: tagged, kind, id, paragraphs } of parseChangelog(source)) {
+      const version = unpublished[tagged] ?? tagged;
       const changes = byVersion.get(version) ?? new Map<string, ReleaseChange>();
       if (!changes.has(id)) changes.set(id, { kind, paragraphs });
       byVersion.set(version, changes);
@@ -176,11 +180,14 @@ export function releasedOnly(releases: readonly Release[], published: string | n
 /** The newest published release's version, asked once per build; null without an answer. */
 export const PUBLISHED_VERSION = await fetchPublishedVersion();
 
+/**
+ * Every version with notes, published or not, newest first. Checks of what the notes say read
+ * this, so they do not depend on whether GitHub had published the newest tag at build time.
+ */
+export const NOTED_RELEASES: readonly Release[] = collectReleases(Object.values(files));
+
 /** Every released version in the repository's changelogs, newest first. */
-export const RELEASES: readonly Release[] = releasedOnly(
-  collectReleases(Object.values(files)),
-  PUBLISHED_VERSION,
-);
+export const RELEASES: readonly Release[] = releasedOnly(NOTED_RELEASES, PUBLISHED_VERSION);
 
 /**
  * The newest release: the version the installer pulls today, and the one version every page,

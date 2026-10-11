@@ -7,10 +7,14 @@ import { serverFieldErrors } from '../../lib/errors.ts';
 import { FormError } from '../form.tsx';
 import { ChoiceCard } from '../setup/choice-card.tsx';
 import { CopyValue } from '../sso/copy-value.tsx';
+import { GithubAppDialog, ManagedAppFields } from './github-app-dialog.tsx';
 import { CredentialFields, ServerFields } from './host-fields.tsx';
 import { HostMark } from './host-mark.tsx';
 
-/** `new` picks the host; `new:<kind>` connects one; an integration id edits it. */
+/**
+ * `new` picks the host; `new:<kind>` connects one (GitHub in one click, `new:github:manual`
+ * by hand); an integration id edits it.
+ */
 export type HostDialogState = string | null;
 
 const EVENTS: Record<CodeHostKind, string> = {
@@ -46,6 +50,7 @@ function HostForm({ kind, host, hosts, onClose, onSaved }: HostFormProps) {
   const [saveError, setSaveError] = useState<unknown>(null);
   const busy = hosts.creating || hosts.updating;
   const product = HOST_LABELS[kind];
+  const managed = Boolean(host?.installUrl);
   const save = async () => {
     const input = form.build();
     if (!input) return;
@@ -77,8 +82,12 @@ function HostForm({ kind, host, hosts, onClose, onSaved }: HostFormProps) {
       }
     >
       <div className="flex flex-col gap-6">
-        <Step n={1} title={`Add a webhook in ${product}`}>
-          {host ? (
+        <Step n={1} title={managed ? 'Webhook' : `Add a webhook in ${product}`}>
+          {host && managed ? (
+            <p className="m-0 text-13 leading-body text-tx-3">
+              The app was created with its webhook; there is nothing to add.
+            </p>
+          ) : host ? (
             <>
               <CopyValue label="Payload URL" value={host.webhookUrl} />
               <p className="m-0 text-13 leading-body text-tx-3">
@@ -91,11 +100,15 @@ function HostForm({ kind, host, hosts, onClose, onSaved }: HostFormProps) {
             </p>
           )}
         </Step>
-        <Step n={2} title="Where it runs">
-          <ServerFields kind={kind} form={form} disabled={busy} />
+        <Step n={2} title={managed ? 'Name' : 'Where it runs'}>
+          <ServerFields kind={kind} form={form} disabled={busy} nameOnly={managed} />
         </Step>
         <Step n={3} title="API access">
-          <CredentialFields kind={kind} form={form} disabled={busy} />
+          {host && managed ? (
+            <ManagedAppFields host={host} />
+          ) : (
+            <CredentialFields kind={kind} form={form} disabled={busy} />
+          )}
         </Step>
         <FormError error={saveError} />
       </div>
@@ -139,7 +152,7 @@ function KindPicker({
 interface HostDialogProps {
   state: HostDialogState;
   hosts: CodeHosts;
-  onState: (state: HostDialogState) => void;
+  onState: (state: HostDialogState, replace?: boolean) => void;
 }
 
 /** Connect and edit live in the address (`?host=…`), so reload and Back keep the dialog. */
@@ -148,8 +161,17 @@ export function HostDialog({ state, hosts, onState }: HostDialogProps) {
   const close = () => onState(null);
   if (state === 'new')
     return <KindPicker onClose={close} onPick={(kind) => onState(`new:${kind}`)} />;
+  if (state === 'new:github') {
+    return (
+      <GithubAppDialog
+        hosts={hosts}
+        onClose={close}
+        onManual={() => onState('new:github:manual', true)}
+      />
+    );
+  }
   if (state.startsWith('new:')) {
-    const kind = state.slice(4);
+    const kind = state === 'new:github:manual' ? 'github' : state.slice(4);
     if (kind !== 'github' && kind !== 'gitlab') return null;
     return (
       <HostForm

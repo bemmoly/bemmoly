@@ -22,7 +22,7 @@ const FOLD_OVER = 3;
 /** Colours by op, on every element that carries one, at any depth. */
 const OP_STYLES = cx(
   '[&_[data-op=insert]]:bg-green-50/70',
-  '[&_[data-op=delete]]:bg-red/8 [&_[data-op=delete]]:text-tx-3 [&_[data-op=delete]]:line-through [&_[data-op=delete]]:decoration-red/50',
+  '[&_[data-op=delete]]:bg-red/8 [&_[data-op=delete]]:text-tx-2 [&_[data-op=delete]]:line-through [&_[data-op=delete]]:decoration-red/50',
   '[&_[data-op=move]]:bg-violet-bg/40',
   '[&_[data-op=move_source]]:rounded-chip [&_[data-op=move_source]]:border [&_[data-op=move_source]]:border-dashed [&_[data-op=move_source]]:border-violet-fg/40 [&_[data-op=move_source]]:px-2 [&_[data-op=move_source]]:py-1',
   // The place a list item left is not a list item any more: it takes no number.

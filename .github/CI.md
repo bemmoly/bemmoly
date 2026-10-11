@@ -6,28 +6,32 @@ protection matches checks by job name, so renaming a job means updating the sett
 
 ## Workflows
 
-| Workflow                        | Runs on                                       | Jobs (status check names)                                                                |
-| ------------------------------- | --------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| `ci.yml` (CI)                   | pull requests, merge queue, `main`            | **Fast checks**, **Full checks**, **Work end to end**, **Lighthouse**                    |
-| `security.yml` (Security)       | pull requests, merge queue, `main`, weekly    | **Security scans**, **Image scan**                                                       |
-| `release.yml` (Release)         | `main`, `v*` tags                             | Version pull request or tag, Plan the release, Image (app, updater), Publish the release |
-| `nightly.yml` (Nightly)         | 02:30 UTC daily, manual                       | Fresh VM install, Load budgets (k6)                                                      |
-| `soak.yml` (Soak)               | 03:00 UTC Sundays, manual                     | Soak (k6 and the monitor); 24 h on the `SOAK_RUNNER` self-hosted runner, else 5 h        |
-| `ai-evals.yml` (AI evals)       | 03:00 UTC daily, manual                       | Live AI evals (skips without a provider key)                                             |
-| `deploy-kits.yml` (Deploy kits) | changes to `deploy/`, 03:30 UTC daily, manual | Helm chart, Terraform modules, Offline install                                           |
-| `labels.yml` (Labels)           | changes to `.github/labels.json`              | Sync labels                                                                              |
+| Workflow                        | Runs on                                       | Jobs (status check names)                                                                        |
+| ------------------------------- | --------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| `ci.yml` (CI)                   | pull requests, merge queue, `main`            | **Fast checks**, **Full checks**, **Work end to end**, **Accessibility (theme)**, **Lighthouse** |
+| `security.yml` (Security)       | pull requests, merge queue, `main`, weekly    | **Security scans**, **Image scan**                                                               |
+| `release.yml` (Release)         | `main`, `v*` tags                             | Version pull request or tag, Plan the release, Image (app, updater), Publish the release         |
+| `nightly.yml` (Nightly)         | 02:30 UTC daily, manual                       | Fresh VM install, Load budgets (k6)                                                              |
+| `soak.yml` (Soak)               | 03:00 UTC Sundays, manual                     | Soak (k6 and the monitor); 24 h on the `SOAK_RUNNER` self-hosted runner, else 5 h                |
+| `ai-evals.yml` (AI evals)       | 03:00 UTC daily, manual                       | Live AI evals (skips without a provider key)                                                     |
+| `deploy-kits.yml` (Deploy kits) | changes to `deploy/`, 03:30 UTC daily, manual | Helm chart, Terraform modules, Offline install                                                   |
+| `labels.yml` (Labels)           | changes to `.github/labels.json`              | Sync labels                                                                                      |
 
 What each check runs:
 
 - **Fast checks**: `pnpm typecheck`, `pnpm lint` (layering, boundaries, 300-line limit),
   `pnpm format:check`, `pnpm i18n:check` (message catalogs well formed, shipped locales
   complete; see `docs/i18n.md`), `pnpm test`, `pnpm eval` (the AI evals against their recordings, no
-  key and no network; see `docs/ai-evals.md`) and actionlint over the workflows.
+  key and no network; see `docs/ai-evals.md`) and actionlint over the workflows. A gate job
+  over four parallel jobs: Typecheck; Lint, format, catalogs and workflows; Unit tests; AI evals.
 - **Full checks**: integration tests against `pgvector/pgvector:pg18`; the bemmoly command's
   self-update in a throwaway container (`pnpm --filter @bemmoly/deploy test:container`: the
   0.11.0 command refreshed, upgraded, and refusing bad signatures with the real cosign);
   `pnpm build` (server, web shell and Storybook), `pnpm size` (shell under 250 KB gzip),
-  Playwright end to end.
+  Playwright end to end. A gate job over parallel jobs: Integration tests in four shards
+  (`pnpm turbo run test:integration -- --shard=i/4`, each package's files split four ways),
+  the container test, Build and size budget, and End-to-end tests in three Playwright shards.
+  The gates run with `if: always()` and fail unless every job they need succeeded.
 - **Work end to end**: the Playwright suite in `apps/e2e` against a real install: the server
   from the checkout on the service Postgres, serving the built web app, with Work and Docs
   enabled for everyone through the CLI and people created through the setup and invitation
@@ -35,6 +39,11 @@ What each check runs:
   500-issue board to the budgets of tech design §20 (board view p95 under 80 ms; a dropped
   card painted within six frames). The budget numbers are printed in the job log. Its own job,
   so a failure there is not read as a Full checks failure.
+- **Accessibility (bemmoly | graphite | sand | pine | contrast)**: one runner per theme runs
+  `pnpm --filter @bemmoly/web test:a11y` with `A11Y_THEME` set: every screen through axe with
+  every rule on, colour contrast included, light and dark, desktop and 390px, on the dev mock
+  backend; the Bemmoly runner also runs the keyboard, focus and semantics checks. Any violation
+  fails. See `docs/accessibility-conformance.md`.
 - **Lighthouse**: the real server serves the built shell; first contentful paint must stay
   under 1.2 s, cold, on the 4G profile in `tools/lighthouse/lighthouserc.cjs`.
 - **Load budgets (k6)**, nightly: the server from `main` and Postgres pinned to two CPUs (the
@@ -61,7 +70,8 @@ What each check runs:
   Dockerfile it passes with a notice.
 
 Caches: the pnpm store (through `actions/setup-node`), the Turborepo cache (`.turbo/cache`,
-per job), Playwright browsers keyed by the Playwright version, and Docker layers for images.
+per job and shard, through the `turbo-cache` input of `.github/actions/setup`), Playwright browsers keyed
+by the Playwright version, and Docker layers for images.
 Every third-party action is pinned to a commit SHA with the version in a comment; Dependabot
 keeps both current.
 

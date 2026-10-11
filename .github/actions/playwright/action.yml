@@ -1,0 +1,42 @@
+name: Set up Playwright
+description: >-
+  Chromium for the Playwright version a package pins, cached by that version, with the
+  browser's system libraries.
+
+inputs:
+  package:
+    description: The workspace package that depends on @playwright/test, e.g. @bemmoly/web.
+    required: true
+  directory:
+    description: That package's directory, where the Playwright version is read.
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Read the Playwright version
+      id: playwright
+      shell: bash
+      working-directory: ${{ inputs.directory }}
+      run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> "$GITHUB_OUTPUT"
+
+    - name: Restore Playwright browsers
+      id: playwright-cache
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ~/.cache/ms-playwright
+        key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}
+
+    - name: Install the Playwright browser
+      if: steps.playwright-cache.outputs.cache-hit != 'true'
+      shell: bash
+      env:
+        PACKAGE: ${{ inputs.package }}
+      run: pnpm --filter "$PACKAGE" exec playwright install --with-deps chromium
+
+    - name: Install the browser's system libraries
+      if: steps.playwright-cache.outputs.cache-hit == 'true'
+      shell: bash
+      env:
+        PACKAGE: ${{ inputs.package }}
+      run: pnpm --filter "$PACKAGE" exec playwright install-deps chromium

@@ -75,11 +75,10 @@ export function useKeyboardMove({ layout, onDrop }: RowKeyOptions) {
         if (target.beforeId) revealRow(current, target.beforeId, false);
         return;
       }
-      ui.endDrag();
+      const drop = (event.key === ' ' || event.key === 'Enter') && drag.target;
+      ui.endDrag(Boolean(drop));
       const first = drag.ids[0];
-      if ((event.key === ' ' || event.key === 'Enter') && drag.target) {
-        onDrop(drag.ids, drag.target);
-      }
+      if (drop && drag.target) onDrop(drag.ids, drag.target);
       if (first) requestAnimationFrame(() => revealRow(layout(), first));
     };
     window.addEventListener('keydown', onKey, true);

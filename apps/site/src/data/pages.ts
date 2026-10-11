@@ -26,7 +26,7 @@ export const PAGES = [
     name: 'Bemmoly',
     title: 'Bemmoly: self-hosted, open source project management',
     description:
-      'Your work. Your platform. Issues, boards and docs on your own server: 100% open source (MIT), no pricing, no in-app purchases. One app image, one Postgres.',
+      'Your work. Your platform. Issues, boards and docs on your own server: 100% open source (MIT), no subscription, no in-app purchases. One app image, one Postgres.',
     updated: '2026-10-11',
     software: true,
   },

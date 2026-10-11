@@ -140,9 +140,13 @@ export async function callTool(
     if (definition.kind === 'read') return text(await definition.execute(session.ctx, parsed.data));
     await definition.authorize(session.ctx, parsed.data);
     const preview = await definition.describe(session.ctx, parsed.data).catch(() => null);
-    await definition.run(runContext(session), parsed.data);
+    const outcome = await definition.run(runContext(session), parsed.data);
     await services.auditWrite(session, tool.name, parsed.data);
-    return text({ done: true, ...(preview ? { change: preview } : {}) });
+    return text({
+      done: true,
+      ...(outcome.result ?? {}),
+      ...(preview ? { change: preview } : {}),
+    });
   } catch (error) {
     if (isExpectedToolError(error)) return text(error.message, true);
     throw error;

@@ -1,6 +1,5 @@
 import {
   aiToolContribution,
-  defineReadTool,
   defineWriteTool,
   requestToolInput,
   type AiToolDefinition,
@@ -9,16 +8,17 @@ import {
 import { z } from 'zod';
 import { createCommentBodySchema } from '../../../../shared/comments.ts';
 import { pageIdParamsSchema } from '../../../../shared/common.ts';
-import { searchPagesQuerySchema } from '../../../../shared/search.ts';
 import { setStatusBodySchema } from '../../../../shared/status.ts';
 import type { DocsServices } from '../index.ts';
+import { authoringTools } from './authoring.ts';
+import { browseTools } from './browse.ts';
+import { pageHref } from './common.ts';
 
 /*
- * What Docs offers the ⌘K planner: find and read pages, move a page through the review flow,
+ * What Docs offers the ⌘K planner and MCP clients: browse and read spaces and pages
+ * (browse.ts), write pages from Markdown (authoring.ts), move a page through the review flow,
  * and leave a comment. Each goes through the service the page screen calls, as the person.
  */
-
-const pageHref = (id: string) => `/docs/p/${id}`;
 
 const STATUS_NAMES: Readonly<Record<string, string>> = {
   draft: 'Draft',
@@ -39,39 +39,7 @@ const paragraph = (text: string) => ({
 });
 
 export function docsAiTools(services: DocsServices): AiToolDefinition[] {
-  const tools = [
-    defineReadTool({
-      name: 'docs_search_pages',
-      kind: 'read',
-      description: 'Find pages by words in their title or text. Returns id, title, space, status.',
-      input: searchPagesQuerySchema,
-      execute: async (ctx, query) =>
-        (await services.search.search(ctx, query)).map((hit) => ({
-          id: hit.id,
-          title: hit.title,
-          space: hit.spaceName,
-          status: hit.status,
-        })),
-    }),
-    defineReadTool({
-      name: 'docs_get_page',
-      kind: 'read',
-      description: 'One page by id: title, status, space, owner, labels and its TL;DR.',
-      input: pageIdParamsSchema,
-      execute: async (ctx, { pageId }) => {
-        const page = await services.pages.get(ctx, pageId);
-        return {
-          id: page.id,
-          title: page.title,
-          status: page.status,
-          spaceKey: page.spaceKey,
-          owner: page.owner?.name ?? null,
-          labels: page.labels,
-          tldr: page.tldr,
-          wordCount: page.wordCount,
-        };
-      },
-    }),
+  const review = [
     defineWriteTool<z.infer<typeof statusInput>, { pageId: string; status: string }>({
       name: 'docs_set_page_status',
       kind: 'write',
@@ -150,7 +118,7 @@ export function docsAiTools(services: DocsServices): AiToolDefinition[] {
       },
     }),
   ];
-  return tools as AiToolDefinition[];
+  return [...browseTools(services), ...authoringTools(services), ...(review as AiToolDefinition[])];
 }
 
 /** Registers Docs' planner tools with the kernel; the kernel never imports Docs. */

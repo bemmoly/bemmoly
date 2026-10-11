@@ -111,7 +111,7 @@ export function SprintSection({
         }
       >
         <div
-          role="listbox"
+          role="grid"
           aria-multiselectable
           aria-label={sprint?.name ?? 'Backlog'}
           className="flex flex-col"
