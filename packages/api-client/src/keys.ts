@@ -34,6 +34,13 @@ export const queryKeys = {
   capabilities: () => ['capabilities'] as const,
   moduleGrants: () => ['module-grants'] as const,
   apiTokens: () => ['api-tokens'] as const,
+  sso: {
+    all: () => ['sso'] as const,
+    signInOptions: () => ['sso', 'sign-in-options'] as const,
+    providers: () => ['sso', 'providers'] as const,
+    policy: () => ['sso', 'policy'] as const,
+    scimTokens: () => ['sso', 'scim-tokens'] as const,
+  },
   settings: {
     all: () => ['settings'] as const,
     many: (keys: readonly SettingKey[]) => ['settings', ...keys] as const,
