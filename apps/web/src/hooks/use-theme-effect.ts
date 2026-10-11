@@ -6,7 +6,7 @@ import { rememberBootLook } from '../lib/boot-frame.ts';
 import { resolveLook, type Look } from '../lib/theme.ts';
 import { useThemePreviewStore } from '../store/theme-preview.ts';
 import { useThemeStore } from '../store/theme.ts';
-import { meQuery } from './use-session.ts';
+import { meQuery, setupStatusQuery } from './use-session.ts';
 import { useSystemDark } from './use-system-dark.ts';
 import { workspaceQuery } from './use-workspace.ts';
 
@@ -17,6 +17,7 @@ import { workspaceQuery } from './use-workspace.ts';
 export function useLook(): Look {
   const { data: workspace } = useQuery({ ...workspaceQuery, enabled: false });
   const { data: me } = useQuery({ ...meQuery, enabled: false });
+  const { data: status } = useQuery({ ...setupStatusQuery, enabled: false });
   const mode = useThemeStore((state) => state.mode);
   const theme = useThemeStore((state) => state.theme);
   const preview = useThemePreviewStore((state) => state.preview);
@@ -30,8 +31,9 @@ export function useLook(): Look {
         customThemes: [...(appearance?.customThemes ?? []), ...(me?.customThemes ?? [])],
         preview,
         systemDark,
+        publicLook: status,
       }),
-    [appearance, me?.customThemes, mode, theme, preview, systemDark],
+    [appearance, me?.customThemes, mode, theme, preview, systemDark, status],
   );
 }
 
