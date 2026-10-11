@@ -19,6 +19,8 @@ interface BacklogUiState {
   projectKey: string | null;
   selection: Selection;
   drag: Drag | null;
+  /** How the last keyboard drag ended, so the drop (or the cancel) is read out too. */
+  ended: { drag: Drag; dropped: boolean } | null;
   showEpics: boolean;
   collapsed: Readonly<Record<string, boolean>>;
   /** The container whose inline create row is open. */
@@ -28,7 +30,7 @@ interface BacklogUiState {
   setSelection(selection: Selection): void;
   startDrag(ids: readonly string[], mode: Drag['mode'], target: DropTarget | null): void;
   setTarget(target: DropTarget | null): void;
-  endDrag(): void;
+  endDrag(dropped?: boolean): void;
   toggleEpics(): void;
   toggleCollapsed(containerId: string): void;
   setCreatingIn(containerId: string | null): void;
@@ -38,6 +40,7 @@ export const useBacklogUi = create<BacklogUiState>()((set) => ({
   projectKey: null,
   selection: EMPTY_SELECTION,
   drag: null,
+  ended: null,
   showEpics: true,
   collapsed: {},
   creatingIn: null,
@@ -56,7 +59,7 @@ export const useBacklogUi = create<BacklogUiState>()((set) => ({
   select: (id, modifiers, order) =>
     set((state) => ({ selection: nextSelection(state.selection, id, modifiers, order) })),
   setSelection: (selection) => set({ selection }),
-  startDrag: (ids, mode, target) => set({ drag: { ids, mode, target } }),
+  startDrag: (ids, mode, target) => set({ drag: { ids, mode, target }, ended: null }),
   setTarget: (target) =>
     set((state) => {
       if (!state.drag) return state;
@@ -65,7 +68,11 @@ export const useBacklogUi = create<BacklogUiState>()((set) => ({
         state.drag.target?.beforeId === target?.beforeId;
       return same ? state : { drag: { ...state.drag, target } };
     }),
-  endDrag: () => set({ drag: null }),
+  endDrag: (dropped = false) =>
+    set((state) => ({
+      drag: null,
+      ended: state.drag?.mode === 'keyboard' ? { drag: state.drag, dropped } : null,
+    })),
   toggleEpics: () => set((state) => ({ showEpics: !state.showEpics })),
   toggleCollapsed: (containerId) =>
     set((state) => ({

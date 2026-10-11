@@ -48,8 +48,10 @@ const stageOf = (look: StatusLook | undefined) =>
     : 'todo';
 
 /**
- * One issue in a container: the design system's row inside an option that
- * carries selection, focus, the drag handlers and the drop line. Each row
+ * One issue in a container: the design system's row inside a grid row that
+ * carries selection, focus, the drag handlers and the drop line. A grid, not a
+ * listbox: the row holds its own controls (the check and the menu), which an
+ * option may not. Each row
  * reads only its own slice of the drag and selection state, and draws its
  * menu only once someone reaches it.
  */
@@ -80,7 +82,7 @@ export const BacklogItem = memo(function BacklogItem({
 
   return (
     <div
-      role="option"
+      role="row"
       aria-selected={selected}
       tabIndex={entry ? 0 : -1}
       data-row-id={id}
@@ -104,23 +106,28 @@ export const BacklogItem = memo(function BacklogItem({
           className="pointer-events-none absolute inset-x-0 -top-px z-10 h-0.5 bg-acc"
         />
       )}
-      <IssueRow
-        issueKey={issue.key}
-        title={issue.title}
-        type={lookups.types.get(issue.typeId) ?? 'task'}
-        priority={issue.priority}
-        status={{ stage: stageOf(status), ...(status ? { label: status.label } : {}) }}
-        {...(epic ? { epic: { name: epic.title, color: epic.look } } : {})}
-        assignee={person ? { name: person.name, initials: person.initials, hue: person.hue } : null}
-        {...(issue.estimate !== null ? { estimate: issue.estimate } : {})}
-        {...(blocked[id]?.[0] ? { blockedBy: blocked[id][0] } : {})}
-        selected={open}
-        checked={selected}
-        pending={pending}
-        selecting={selecting}
-        onCheck={(event) => handlers.onCheck(event, id)}
-      />
+      <div role="gridcell">
+        <IssueRow
+          issueKey={issue.key}
+          title={issue.title}
+          type={lookups.types.get(issue.typeId) ?? 'task'}
+          priority={issue.priority}
+          status={{ stage: stageOf(status), ...(status ? { label: status.label } : {}) }}
+          {...(epic ? { epic: { name: epic.title, color: epic.look } } : {})}
+          assignee={
+            person ? { name: person.name, initials: person.initials, hue: person.hue } : null
+          }
+          {...(issue.estimate !== null ? { estimate: issue.estimate } : {})}
+          {...(blocked[id]?.[0] ? { blockedBy: blocked[id][0] } : {})}
+          selected={open}
+          checked={selected}
+          pending={pending}
+          selecting={selecting}
+          onCheck={(event) => handlers.onCheck(event, id)}
+        />
+      </div>
       <span
+        role="gridcell"
         onPointerDown={(event) => event.stopPropagation()}
         onKeyDown={(event) => event.stopPropagation()}
         onClick={(event) => event.stopPropagation()}
