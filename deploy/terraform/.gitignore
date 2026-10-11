@@ -1,0 +1,9 @@
+# Provider downloads, state and plans are per machine. The examples are templates, so their
+# lock files are left to whoever copies them.
+.terraform/
+.terraform.lock.hcl
+*.tfstate
+*.tfstate.*
+*.tfplan
+crash.log
+crash.*.log
