@@ -66,7 +66,9 @@ export const image: DocNode = {
     const src = attr(node, 'src');
     const alt = context.escape(attr(node, 'alt'));
     if (!SAFE_IMAGE_SRC.test(src)) return alt ? `<p>${alt}</p>` : '';
-    const shown = context.escape(context.imageSrc(src));
+    const chosen = context.imageSrc(src);
+    if (!chosen) return alt ? `<p class="image-alt">${alt}</p>` : '';
+    const shown = context.escape(chosen);
     return `<figure><img src="${shown}" alt="${alt}" loading="lazy"></figure>`;
   },
 };

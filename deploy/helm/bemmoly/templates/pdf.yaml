@@ -1,0 +1,113 @@
+{{- if .Values.pdf.enabled }}
+{{- $pdf := .Values.pdf -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "bemmoly.pdfHost" . }}
+  labels:
+    {{- include "bemmoly.labels" . | nindent 4 }}
+    app.kubernetes.io/component: pdf
+spec:
+  selector:
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: pdf
+  ports:
+    - { name: http, port: 3000, targetPort: http }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "bemmoly.pdfHost" . }}
+  labels:
+    {{- include "bemmoly.labels" . | nindent 4 }}
+    app.kubernetes.io/component: pdf
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: pdf
+  template:
+    metadata:
+      labels:
+        {{- include "bemmoly.labels" . | nindent 8 }}
+        app.kubernetes.io/component: pdf
+    spec:
+      automountServiceAccountToken: false
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        runAsUser: 1001
+        runAsGroup: 1001
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: pdf
+          image: {{ printf "%s:%s" $pdf.image.repository $pdf.image.tag | quote }}
+          imagePullPolicy: {{ $pdf.image.pullPolicy }}
+          # Kept in step with deploy/compose and the integration tests (ADR 0035).
+          args:
+            - gotenberg
+            - --api-timeout={{ $pdf.timeoutSeconds }}s
+            - --chromium-auto-start=true
+            - --chromium-disable-javascript=true
+            - --chromium-allow-list=^(file:///tmp/|data:)
+            - --chromium-deny-public-ips=true
+            - --chromium-deny-private-ips=true
+            - --chromium-host-resolver-rules=MAP * ~NOTFOUND
+            - --chromium-max-queue-size=8
+            - --chromium-restart-after=50
+            - --webhook-disable=true
+            - --prometheus-disable-collect=true
+          ports:
+            - { name: http, containerPort: 3000 }
+          readinessProbe:
+            httpGet: { path: /health, port: http }
+            periodSeconds: 10
+          livenessProbe:
+            httpGet: { path: /health, port: http }
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          securityContext:
+            {{- include "bemmoly.containerSecurityContext" . | nindent 12 }}
+            readOnlyRootFilesystem: true
+          resources:
+            {{- toYaml $pdf.resources | nindent 12 }}
+          volumeMounts:
+            - { name: tmp, mountPath: /tmp }
+            - { name: home, mountPath: /home/gotenberg }
+      volumes:
+        - name: tmp
+          emptyDir: { medium: Memory, sizeLimit: 256Mi }
+        - name: home
+          emptyDir: { sizeLimit: 64Mi }
+{{- if $pdf.networkPolicy }}
+---
+# Only the app's pods may call the renderer, and the renderer may call nothing.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "bemmoly.pdfHost" . }}
+  labels:
+    {{- include "bemmoly.labels" . | nindent 4 }}
+    app.kubernetes.io/component: pdf
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: pdf
+  policyTypes: [Ingress, Egress]
+  ingress:
+    - from:
+        - podSelector:
+            matchExpressions:
+              - { key: app.kubernetes.io/instance, operator: In, values: [{{ .Release.Name | quote }}] }
+              - { key: app.kubernetes.io/component, operator: NotIn, values: [pdf, postgres] }
+      ports:
+        - { port: http }
+  egress: []
+{{- end }}
+{{- end }}

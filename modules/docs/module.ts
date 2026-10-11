@@ -3,7 +3,13 @@ import { DOCS_CAPABILITIES } from './server/src/config/capabilities.ts';
 import { registerEditorAi } from './server/src/config/editor-ai.ts';
 import { defineDocsSettings } from './server/src/config/settings.ts';
 import { createDocsControllers } from './server/src/controllers/index.ts';
-import { compactJob, importJob, purgeTrashJob } from './server/src/config/jobs.ts';
+import {
+  compactJob,
+  exportPdfJob,
+  importJob,
+  purgeExportsJob,
+  purgeTrashJob,
+} from './server/src/config/jobs.ts';
 import { docsRoutes } from './server/src/routes/index.ts';
 import { registerDocsAiTools } from './server/src/services/ai-tools/index.ts';
 import { registerDocsMcp } from './server/src/services/mcp/index.ts';
@@ -73,6 +79,8 @@ export default defineModule({
       ...(ctx.database ? { database: ctx.database } : {}),
       ...(ctx.audit ? { audit: ctx.audit } : {}),
       ...(ctx.memberships ? { memberships: ctx.memberships } : {}),
+      ...(ctx.pdf ? { pdf: ctx.pdf } : {}),
+      ...(ctx.contextFor ? { contextFor: ctx.contextFor } : {}),
     });
     ctx.collab.add(services.collab.definition);
     ctx.files.addTarget(
@@ -81,6 +89,8 @@ export default defineModule({
     ctx.jobs.add(compactJob(services.collab));
     ctx.jobs.add(importJob(services.transfer));
     ctx.jobs.add(purgeTrashJob(services.pages));
+    ctx.jobs.add(exportPdfJob(services.pdfExport));
+    ctx.jobs.add(purgeExportsJob(services.pdfExport));
     registerDocsSearch(ctx.search, services.search);
     registerDocsRetrieval(ctx);
     registerDocsReferences(ctx, services.links);

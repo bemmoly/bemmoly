@@ -200,6 +200,26 @@ motion every duration is zero ([accessibility.md](accessibility.md#motion)).
   `focusRingInset`.
 - `TIMING.tooltipDelayMs` 400, `TIMING.tooltipSkipMs` 300, `TIMING.toastMs` 6000.
 
+## Print
+
+Paper is read at arm's length, so a printed page (a PDF export, or the browser's print view)
+has its own scale in points: `PRINT_TYPE`, `PRINT_LEADING`, `PRINT_SPACE`, `PRINT_MARGINS` and
+`PRINT_PAPERS` from `@bemmoly/ui/tokens` (ADR 0035). Colours on paper are always the Classic
+light theme's; no preset or dark mode follows a page out of the app.
+
+| Token              | Value        | Use                                               |
+| ------------------ | ------------ | ------------------------------------------------- |
+| `PRINT_TYPE.meta`  | 8pt          | The running title and page numbers                |
+| `PRINT_TYPE.small` | 9pt          | Code, tables, captions, issue chips               |
+| `PRINT_TYPE.body`  | 10.5pt / 1.55 | Body text                                        |
+| `PRINT_TYPE.h3`    | 12pt         | Third-level headings                              |
+| `PRINT_TYPE.h2`    | 14pt         | Section headings                                  |
+| `PRINT_TYPE.h1`    | 22pt         | The page title                                    |
+| `PRINT_MARGINS`    | 18mm × 16mm  | Top and bottom hold the header and footer         |
+| `PRINT_PAPERS`     | A4, Letter   | The two papers a PDF prints on                    |
+
+Story: Design system/Print.
+
 ## Themes and modes
 
 ADR 0021. A **theme** is a pair: a designed light and dark set of fifteen tokens (`canvas`,

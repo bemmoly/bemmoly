@@ -4,6 +4,11 @@ import { IMPORT_FORMATS, importFileSchema } from '../../../shared/transfer.ts';
 import { DOCS_COMPACT_JOB, type PageCollab } from '../services/collab/index.ts';
 import { DOCS_PURGE_JOB } from '../services/pages/purge.ts';
 import type { PagesService } from '../services/pages/index.ts';
+import {
+  DOCS_EXPORT_PDF_JOB,
+  DOCS_PURGE_EXPORTS_JOB,
+  type PdfExportService,
+} from '../services/pdf-export/index.ts';
 import { DOCS_IMPORT_JOB, type TransferService } from '../services/transfer/index.ts';
 
 const compactPayloadSchema = z.object({ pageId: z.uuid() });
@@ -60,6 +65,36 @@ export function purgeTrashJob(pages: Pick<PagesService, 'purgeExpiredTrash'>): J
     retryLimit: 2,
     handle: async () => {
       await pages.purgeExpiredTrash();
+    },
+  };
+}
+
+const exportPdfPayloadSchema = z.object({ exportId: z.uuid() });
+
+/**
+ * docs.export-pdf: renders a PDF queued by POST /pages/:pageId/exports. Enqueued with an
+ * idempotency key per export row, so one request renders once; a run finds a ready row and
+ * stops. One retry, since a render that timed out once usually times out again.
+ */
+export function exportPdfJob(pdfExport: Pick<PdfExportService, 'runQueued'>): JobDefinition {
+  return {
+    name: DOCS_EXPORT_PDF_JOB,
+    retryLimit: 1,
+    handle: async (payload) => {
+      await pdfExport.runQueued(exportPdfPayloadSchema.parse(payload).exportId);
+    },
+  };
+}
+
+/** docs.purge-exports: deletes PDFs past their day, hourly; a repeat run finds none. */
+export function purgeExportsJob(pdfExport: Pick<PdfExportService, 'purgeExpired'>): JobDefinition {
+  return {
+    name: DOCS_PURGE_EXPORTS_JOB,
+    schedule: '41 * * * *',
+    singleton: true,
+    retryLimit: 2,
+    handle: async () => {
+      await pdfExport.purgeExpired();
     },
   };
 }

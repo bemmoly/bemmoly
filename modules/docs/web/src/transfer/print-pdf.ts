@@ -1,18 +1,25 @@
 import type { RichTextDoc } from '@bemmoly/editor';
-import { toHtmlDocument } from '@bemmoly/editor/convert';
+import { toPrintDocument } from '@bemmoly/editor/print';
 
 /**
- * PDF goes through the browser's own print dialog ("Save as PDF"), so no PDF engine ships in
- * the app: the page is written as the same self-contained HTML the HTML export makes, with its
- * print rules, into a hidden frame that prints itself and goes away afterwards.
+ * PDF without the server's renderer goes through the browser's own print dialog ("Save as
+ * PDF"): the page is written as the same print document the renderer gets, with its print
+ * stylesheet, into a hidden frame that prints itself and goes away afterwards. Paper size and
+ * the running header are the browser's.
  */
-export function printAsPdf(doc: RichTextDoc | null, title: string, origin: string): Promise<void> {
-  const html = toHtmlDocument(doc, title || 'Untitled', {
+export function printAsPdf(
+  doc: RichTextDoc | null,
+  page: { id: string; title: string },
+  origin: string,
+): Promise<void> {
+  const title = page.title || 'Untitled';
+  const { html } = toPrintDocument(title, [{ id: page.id, title, doc, depth: 0 }], {
+    paper: 'a4',
     pageHref: (id) => `${origin}/docs/p/${id}`,
   });
   return new Promise((resolve, reject) => {
     const frame = document.createElement('iframe');
-    frame.title = `Print ${title || 'Untitled'}`;
+    frame.title = `Print ${title}`;
     frame.setAttribute('aria-hidden', 'true');
     frame.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;opacity:0';
     const done = () => {

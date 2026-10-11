@@ -67,6 +67,11 @@ tester.run('bemmoly/boundaries', boundaries, {
       options,
     },
     {
+      filename: at('modules/docs/server/src/services/pdf-export/render.ts'),
+      code: "import { toPrintDocument } from '@bemmoly/editor/print';",
+      options,
+    },
+    {
       filename: at('modules/docs/server/src/services/collab/seed.ts'),
       code: "import { editorSchema } from '@bemmoly/editor/schema';",
       options,

@@ -11,7 +11,7 @@ import { pageIdOf } from './pages.controller.ts';
 import { spaceRefOf } from './spaces.controller.ts';
 
 /** An attachment header any browser reads: an ASCII fallback and the UTF-8 name. */
-const disposition = (fileName: string) =>
+export const disposition = (fileName: string) =>
   `attachment; filename="${fileName.replace(/[^\x20-\x7e]|["\\]/g, '_')}"; ` +
   `filename*=UTF-8''${encodeURIComponent(fileName)}`;
 

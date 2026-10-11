@@ -130,6 +130,17 @@ export const envSchema = z.object({
   BEMMOLY_UPDATER_URL: z.url({ protocol: /^https?$/ }).optional(),
   UPDATER_TOKEN: z.string().min(32).optional(),
   BEMMOLY_PG_BIN_DIR: z.string().min(1).default('/usr/lib/postgresql/18/bin'),
+  /** The optional PDF renderer (headless Chromium); unset, PDF goes through the browser. */
+  BEMMOLY_PDF_URL: z.url({ protocol: /^https?$/ }).optional(),
+  /** Longest one PDF render may take, 5 s to 5 min. */
+  BEMMOLY_PDF_TIMEOUT_MS: z.coerce.number().int().min(5_000).max(300_000).default(60_000),
+  /** Largest PDF kept, 1 to 200 MiB; the HTML sent to the renderer has the same cap. */
+  BEMMOLY_PDF_MAX_BYTES: z.coerce
+    .number()
+    .int()
+    .min(1024 * 1024)
+    .max(200 * 1024 * 1024)
+    .default(50 * 1024 * 1024),
 });
 
 export type Env = z.output<typeof envSchema>;

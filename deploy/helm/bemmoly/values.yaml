@@ -100,6 +100,28 @@ resources:
   limits:
     memory: 1Gi
 
+# The optional PDF renderer (headless Chromium) behind Export as PDF (ADR 0035). Off: PDF is
+# the browser's print view. On: one Deployment and Service the app alone may reach; it
+# resolves no host and loads nothing but what the app sends, and a NetworkPolicy denies it
+# every egress (enforced where the cluster's network plugin supports NetworkPolicy).
+pdf:
+  enabled: false
+  image:
+    repository: gotenberg/gotenberg
+    tag: 8.37.0-chromium@sha256:0d28ae9a96441588ef739623726bd500ad0720b77266c6f1351a13e333fbd61c
+    pullPolicy: IfNotPresent
+  # Longest one render may take, in seconds; the app's own timeout follows it.
+  timeoutSeconds: 60
+  # Largest PDF kept, and largest HTML sent, in bytes.
+  maxBytes: 52428800
+  networkPolicy: true
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      memory: 1Gi
+
 # Extra environment for the app, e.g. LOG_LEVEL or OTEL_EXPORTER_OTLP_ENDPOINT.
 extraEnv: []
 # Extra Secrets or ConfigMaps to load whole, as envFrom entries.

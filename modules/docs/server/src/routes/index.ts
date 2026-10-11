@@ -7,6 +7,7 @@ import { membersRoutes } from './members.routes.ts';
 import { pagesRoutes } from './pages.routes.ts';
 import { revisionsRoutes } from './revisions.routes.ts';
 import { transferRoutes } from './transfer.routes.ts';
+import { pdfExportRoutes } from './pdf-export.routes.ts';
 import { searchRoutes } from './search.routes.ts';
 import { spacesRoutes } from './spaces.routes.ts';
 import { treeRoutes } from './tree.routes.ts';
@@ -27,5 +28,6 @@ export function docsRoutes(controllers: DocsControllers): FastifyPluginAsync {
     await app.register(linksRoutes(controllers.links));
     await app.register(commentsRoutes(controllers.comments));
     await app.register(transferRoutes(controllers.transfer));
+    await app.register(pdfExportRoutes(controllers.pdfExport));
   };
 }

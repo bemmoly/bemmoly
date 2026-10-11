@@ -6,9 +6,13 @@ export interface ExportOptions {
   issueHref?: (key: string) => string | null;
   /**
    * Where an image's source points in the export: a file beside it, a data: URI that embeds
-   * it, or null to keep the source as stored.
+   * it, null to keep the source as stored, or false to print its alt text instead.
    */
-  imageSrc?: (src: string) => string | null;
+  imageSrc?: (src: string) => string | null | false;
+  /** Code as highlighted, escaped markup; without it code prints plain. */
+  highlight?: (code: string, language: string | null) => string | null;
+  /** An issue's title and status for a static chip; without it the chip shows the key. */
+  issueSummary?: (key: string) => { title: string; status?: string } | null;
 }
 
 /** Links an export follows: the web, mail and paths inside the app. */
@@ -46,6 +50,7 @@ export const escapeLineStart = (line: string) =>
 /** An image's source in an export: the host's choice when it has one, else as stored. */
 export const imageSource = (src: string, options: ExportOptions): string => {
   const chosen = options.imageSrc?.(src);
+  if (chosen === false) return '';
   return chosen && (/^data:image\/(png|jpeg|gif|webp);base64,/.test(chosen) || safeHref(chosen))
     ? chosen
     : src;

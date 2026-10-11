@@ -9,6 +9,7 @@ export * from './lexorank.ts';
 export * from './links.ts';
 export * from './members.ts';
 export * from './pages.ts';
+export * from './pdf-export.ts';
 export * from './realtime.ts';
 export * from './revisions.ts';
 export * from './search.ts';

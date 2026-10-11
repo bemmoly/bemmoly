@@ -148,6 +148,21 @@ setup() {
   [ "$(env_get "${env}" BEMMOLY_DOMAIN)" = bemmoly.acme.dev ]
 }
 
+@test "a re-run keeps the PDF renderer profile turned on by hand" {
+  parse_args --domain bemmoly.acme.dev --version 1.2.0 --dir "${BATS_TEST_TMPDIR}/install"
+  mkdir -p "${INSTALL_DIR}"
+  MEM_MB=4096 tune_postgres
+  TLS_MODE=auto
+  new_env_file
+  env="${INSTALL_DIR}/.env"
+  env_set "${env}" COMPOSE_PROFILES db,proxy,updater,pdf
+  env_set "${env}" BEMMOLY_PDF_URL http://pdf:3000
+  parse_args --version 1.3.0 --dir "${INSTALL_DIR}"
+  update_env_file
+  [ "$(env_get "${env}" COMPOSE_PROFILES)" = db,proxy,updater,pdf ]
+  [ "$(env_get "${env}" BEMMOLY_PDF_URL)" = http://pdf:3000 ]
+}
+
 @test "a new .env has every key, fresh secrets and mode 600" {
   parse_args --domain bemmoly.acme.dev --modules work --version 1.2.0 --dir "${BATS_TEST_TMPDIR}/install"
   mkdir -p "${INSTALL_DIR}"

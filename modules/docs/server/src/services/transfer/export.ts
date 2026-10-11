@@ -1,5 +1,5 @@
 import { posix } from 'node:path';
-import type { RequestContext, SqlExecutor } from '@bemmoly/core';
+import type { EntitySummary, RequestContext, SqlExecutor } from '@bemmoly/core';
 import { collectReferences, slugify, toHtmlDocument, toMarkdown } from '@bemmoly/editor/convert';
 import type { RichText } from '../../../../shared/common.ts';
 import type { ExportQuery } from '../../../../shared/transfer.ts';
@@ -22,7 +22,7 @@ export interface ExportedFile {
   body: Buffer | string;
 }
 
-interface ExportPage {
+export interface ExportPage {
   id: string;
   parent_id: string | null;
   title: string;
@@ -50,11 +50,12 @@ function filePaths(pages: readonly ExportPage[], rootId: string, extension: stri
   return paths;
 }
 
-async function issueLinks(
+/** The issues the pages name by key, as the person may see them, for links and chips. */
+export async function resolveIssues(
   deps: Pick<DocsServiceDeps, 'entities'>,
   ctx: RequestContext,
   pages: readonly ExportPage[],
-): Promise<Map<string, string>> {
+): Promise<Map<string, EntitySummary>> {
   const keys = new Set(
     pages.flatMap((page) =>
       collectReferences(page.snapshot as Readable).flatMap((ref) =>
@@ -62,12 +63,12 @@ async function issueLinks(
       ),
     ),
   );
-  const links = new Map<string, string>();
+  const issues = new Map<string, EntitySummary>();
   for (const key of keys) {
     const issue = await deps.entities?.resolve('issue', { key }, ctx);
-    if (issue) links.set(key, issue.path);
+    if (issue) issues.set(key, issue);
   }
-  return links;
+  return issues;
 }
 
 /** The page and, for a subtree, every live page under it, parents before children. */
@@ -95,7 +96,7 @@ export async function renderExport(
   const root = pages[0]!;
   const extension = query.format === 'markdown' ? 'md' : 'html';
   const paths = filePaths(pages, root.id, extension);
-  const issues = await issueLinks(deps, ctx, pages);
+  const issues = await resolveIssues(deps, ctx, pages);
   const images = await collectImages(
     deps.files,
     ctx,
@@ -111,7 +112,7 @@ export async function renderExport(
         const relative = posix.relative(here, target);
         return relative.startsWith('../') ? relative : `./${relative}`;
       },
-      issueHref: (key: string) => issues.get(key) ?? null,
+      issueHref: (key: string) => issues.get(key)?.path ?? null,
       imageSrc: (src: string) => {
         const image = images.get(src);
         if (!image) return null;

@@ -8,6 +8,7 @@
     ".": "./src/index.ts",
     "./schema": "./src/schema/index.ts",
     "./convert": "./src/convert/index.ts",
+    "./print": "./src/convert/to-print.ts",
     "./markdown": "./src/convert/markdown-base.ts"
   },
   "scripts": {

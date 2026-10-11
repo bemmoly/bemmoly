@@ -1,5 +1,5 @@
 import { mergeAttributes, Node } from '@tiptap/core';
-import { attr, type DocNode } from './types.ts';
+import { attr, issueSummaryHtml, type DocNode } from './types.ts';
 
 /*
  * An issue as a block: the card embed of the Docs review's Linked work tab, with status,
@@ -76,7 +76,10 @@ export const issueCard: DocNode = {
   toHtml: (node, context) => {
     const key = context.escape(attr(node, 'key'));
     const href = context.issueHref(attr(node, 'key'));
-    const inner = href ? `<a href="${context.escape(href)}">${key}</a>` : key;
+    const summary = issueSummaryHtml(context, attr(node, 'key'));
+    const inner = href
+      ? `<a href="${context.escape(href)}">${key}</a>${summary}`
+      : `${key}${summary}`;
     return `<p class="issue-card">${inner}</p>`;
   },
 };

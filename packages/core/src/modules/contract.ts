@@ -1,3 +1,4 @@
+import type { PdfRenderer } from '../contracts/pdf.ts';
 import type { ModuleColor, ModuleSettingsInput, SidebarSectionInput } from '@bemmoly/shared';
 import type { SqlClient } from '../clients/postgres.ts';
 import type { AuditRecorder } from '../contracts/audit.ts';
@@ -91,6 +92,8 @@ export interface ModuleContext {
    * Its `authz` is the one requests get, so a job's writes are checked the same way.
    */
   contextFor?: ActorContextFactory;
+  /** The optional PDF renderer; absent unless BEMMOLY_PDF_URL names one. */
+  pdf?: PdfRenderer;
 }
 
 export type ActorContextFactory = (

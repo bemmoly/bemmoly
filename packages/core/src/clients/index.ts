@@ -79,3 +79,8 @@ export {
   type WebhookPost,
   type WebhookAnswer,
 } from './webhook-http.ts';
+export {
+  createPdfRendererClient,
+  PdfTooLargeError,
+  type PdfRendererConfig,
+} from './pdf-renderer.ts';

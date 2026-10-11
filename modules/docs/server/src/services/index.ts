@@ -12,6 +12,7 @@ import { createStarsLabelsService } from './stars-labels/index.ts';
 import { createStatusService } from './status/index.ts';
 import { createTemplatesService } from './templates/index.ts';
 import { createTransferService } from './transfer/index.ts';
+import { createPdfExportService } from './pdf-export/index.ts';
 import { createTreeService } from './tree/index.ts';
 
 export type { DocsServiceDeps } from './common.ts';
@@ -38,6 +39,7 @@ export function createDocsServices(deps: DocsServiceDeps) {
     links: createLinksService(deps),
     comments: createCommentsService(deps),
     transfer: createTransferService(deps),
+    pdfExport: createPdfExportService(deps),
   };
 }
 

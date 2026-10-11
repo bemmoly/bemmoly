@@ -19,6 +19,7 @@ async function tables(sql: Sql): Promise<string[]> {
 const DOCS_TABLES = [
   'links',
   'page_comments',
+  'page_exports',
   'page_labels',
   'page_revisions',
   'page_stars',

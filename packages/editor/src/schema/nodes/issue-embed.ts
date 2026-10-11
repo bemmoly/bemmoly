@@ -1,5 +1,5 @@
 import { mergeAttributes, Node } from '@tiptap/core';
-import { attr, type DocNode } from './types.ts';
+import { attr, issueSummaryHtml, type DocNode } from './types.ts';
 
 /*
  * An issue, by key, drawn live: its status and title come from Work through a renderer the
@@ -78,8 +78,9 @@ export const issueEmbed: DocNode = {
   toHtml: (node, context) => {
     const key = context.escape(attr(node, 'key'));
     const href = context.issueHref(attr(node, 'key'));
+    const summary = issueSummaryHtml(context, attr(node, 'key'));
     return href
-      ? `<a class="issue" href="${context.escape(href)}">${key}</a>`
-      : `<span class="issue">${key}</span>`;
+      ? `<a class="issue" href="${context.escape(href)}">${key}${summary}</a>`
+      : `<span class="issue">${key}${summary}</span>`;
   },
 };
