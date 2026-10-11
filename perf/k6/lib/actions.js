@@ -48,6 +48,10 @@ export function boardView(person, { verifyCards } = {}) {
   return response;
 }
 
+/** Any project's board, tagged so a Scrum sprint board and a Kanban board report apart. */
+export const boardOf = (person, project, endpoint) =>
+  get(person, `/work/boards/${project.boardId}/view`, endpoint);
+
 export const issueDetail = (person, key = pickFrom(issueKeys)) =>
   get(person, `/work/issues/${key}`, 'issue_detail');
 
