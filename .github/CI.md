@@ -6,15 +6,16 @@ protection matches checks by job name, so renaming a job means updating the sett
 
 ## Workflows
 
-| Workflow                  | Runs on                                    | Jobs (status check names)                                                                |
-| ------------------------- | ------------------------------------------ | ---------------------------------------------------------------------------------------- |
-| `ci.yml` (CI)             | pull requests, merge queue, `main`         | **Fast checks**, **Full checks**, **Work end to end**, **Lighthouse**                    |
-| `security.yml` (Security) | pull requests, merge queue, `main`, weekly | **Security scans**, **Image scan**                                                       |
-| `release.yml` (Release)   | `main`, `v*` tags                          | Version pull request or tag, Plan the release, Image (app, updater), Publish the release |
-| `nightly.yml` (Nightly)   | 02:30 UTC daily, manual                    | Fresh VM install, Load budgets (k6)                                                      |
-| `soak.yml` (Soak)         | 03:00 UTC Sundays, manual                  | Soak (k6 and the monitor); 24 h on the `SOAK_RUNNER` self-hosted runner, else 5 h        |
-| `ai-evals.yml` (AI evals) | 03:00 UTC daily, manual                    | Live AI evals (skips without a provider key)                                             |
-| `labels.yml` (Labels)     | changes to `.github/labels.json`           | Sync labels                                                                              |
+| Workflow                        | Runs on                                       | Jobs (status check names)                                                                |
+| ------------------------------- | --------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `ci.yml` (CI)                   | pull requests, merge queue, `main`            | **Fast checks**, **Full checks**, **Work end to end**, **Lighthouse**                    |
+| `security.yml` (Security)       | pull requests, merge queue, `main`, weekly    | **Security scans**, **Image scan**                                                       |
+| `release.yml` (Release)         | `main`, `v*` tags                             | Version pull request or tag, Plan the release, Image (app, updater), Publish the release |
+| `nightly.yml` (Nightly)         | 02:30 UTC daily, manual                       | Fresh VM install, Load budgets (k6)                                                      |
+| `soak.yml` (Soak)               | 03:00 UTC Sundays, manual                     | Soak (k6 and the monitor); 24 h on the `SOAK_RUNNER` self-hosted runner, else 5 h        |
+| `ai-evals.yml` (AI evals)       | 03:00 UTC daily, manual                       | Live AI evals (skips without a provider key)                                             |
+| `deploy-kits.yml` (Deploy kits) | changes to `deploy/`, 03:30 UTC daily, manual | Helm chart, Terraform modules, Offline install                                           |
+| `labels.yml` (Labels)           | changes to `.github/labels.json`              | Sync labels                                                                              |
 
 What each check runs:
 
@@ -45,6 +46,12 @@ What each check runs:
 - **Soak**, weekly: the mixed workload for 24 hours (5 on a hosted runner) while
   `perf/src/soak/monitor.ts` samples memory, heap, connections, queues, p95 per window and
   errors; any verdict that fails opens an issue.
+- **Helm chart**, **Terraform modules**, **Offline install** (Deploy kits, not required checks:
+  they run only when `deploy/` changes): `helm lint --strict` and `ct lint`, then
+  `deploy/tests/helm/kind-install.sh` installs, upgrades and uninstalls the chart on kind;
+  `deploy/terraform/check.sh` runs fmt, validate, `terraform test` with mocked providers and
+  TFLint; `deploy/tests/airgap/offline-install.sh` installs and upgrades from bundles on a
+  machine with `--network none`. All three use the two newest published releases.
 - **Security scans**: gitleaks over the tree and the new commits, `pnpm audit --audit-level=high`,
   `semgrep --test` on the custom rules, then a Semgrep scan with them (`tools/semgrep/rules`:
   SQL built from strings, raw `fetch` outside clients, `process.env` outside config, console).
@@ -88,17 +95,20 @@ These are planned paths. Each workflow step that needs one skips with a notice u
 file exists; if a file lands elsewhere, change the path at the top of the workflow (they are
 marked `TODO(deploy)`).
 
-| Path                                  | Used by                                                                             |
-| ------------------------------------- | ----------------------------------------------------------------------------------- |
-| `deploy/docker/Dockerfile`            | Image scan, Release (app image)                                                     |
-| `deploy/updater/Dockerfile`           | Release (updater image)                                                             |
-| `deploy/install.sh`                   | Release asset, Nightly installer test                                               |
-| `deploy/compose/docker-compose.yml`   | Release asset                                                                       |
-| `deploy/helm/bemmoly/`                | Release asset (`helm package`)                                                      |
-| `deploy/scripts/airgap-bundle.sh`     | Release asset; called as `<script> <version> <output dir>`                          |
-| `deploy/scripts/release-cli.sh`       | Release asset `bemmoly-cli-X.Y.Z.tar.gz`, listed in the manifest; the updater image |
-| `deploy/scripts/smoke-test.sh`        | Nightly: wizard via API, upgrade, restore; called with `--base-url` and `--version` |
-| `deploy/release-manifest.schema.json` | Release: validates `release-manifest.json`                                          |
+| Path                                     | Used by                                                                             |
+| ---------------------------------------- | ----------------------------------------------------------------------------------- |
+| `deploy/docker/Dockerfile`               | Image scan, Release (app image)                                                     |
+| `deploy/updater/Dockerfile`              | Release (updater image)                                                             |
+| `deploy/install.sh`                      | Release asset, Nightly installer test                                               |
+| `deploy/compose/docker-compose.yml`      | Release asset                                                                       |
+| `deploy/helm/bemmoly/`                   | Release asset (`helm package`)                                                      |
+| `deploy/scripts/airgap-bundle.sh`        | Release asset; called as `<script> <version> <output dir>`                          |
+| `deploy/scripts/release-cli.sh`          | Release asset `bemmoly-cli-X.Y.Z.tar.gz`, listed in the manifest; the updater image |
+| `deploy/scripts/smoke-test.sh`           | Nightly: wizard via API, upgrade, restore; called with `--base-url` and `--version` |
+| `deploy/release-manifest.schema.json`    | Release: validates `release-manifest.json`                                          |
+| `deploy/tests/helm/kind-install.sh`      | Deploy kits: the chart on kind; called as `<script> <from> <to>`                    |
+| `deploy/tests/airgap/offline-install.sh` | Deploy kits: offline install and upgrade; called with two bundle files              |
+| `deploy/terraform/check.sh`              | Deploy kits: fmt, validate, test and TFLint                                         |
 
 ## Releases
 

@@ -1,0 +1,155 @@
+name: Deploy kits
+
+# The other ways to run Bemmoly (tech design §18): the Helm chart on a real kind cluster, the
+# Terraform modules, and an offline install and upgrade from release bundles on a machine with
+# no network. Each job takes minutes, so they run when deploy/ changes, nightly and on demand,
+# against the two newest published releases.
+
+on:
+  pull_request:
+    paths:
+      - 'deploy/**'
+      - 'packages/core/src/services/ai/catalog/bundled/**'
+      - '.github/workflows/deploy-kits.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'deploy/**'
+      - '.github/workflows/deploy-kits.yml'
+  schedule:
+    - cron: '30 3 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-kits-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  KIND_VERSION: v0.33.0
+  KUBECTL_VERSION: v1.37.0
+  HELM_VERSION: v4.3.0
+  CT_VERSION: 3.14.0
+  CHART: deploy/helm/bemmoly
+
+jobs:
+  helm:
+    name: Helm chart
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: azure/setup-helm@9bc31f4ebc9c6b171d7bfbaa5d006ae7abdb4310 # v5.0.1
+        with:
+          version: ${{ env.HELM_VERSION }}
+
+      - uses: helm/chart-testing-action@6ec842c01de15ebb84c8627d2744a0c2f2755c9f # v2.8.0
+        with:
+          version: ${{ env.CT_VERSION }}
+
+      - uses: helm/kind-action@06c1ae10762d3b9c1644e7fe69596ae519e015a2 # v1.15.0
+        with:
+          version: ${{ env.KIND_VERSION }}
+          kubectl_version: ${{ env.KUBECTL_VERSION }}
+          install_only: true
+
+      - name: helm lint
+        run: helm lint --strict "$CHART" -f "$CHART/ci/bundled-postgres-values.yaml"
+
+      - name: chart-testing lint
+        run: >-
+          ct lint --charts "$CHART" --chart-dirs deploy/helm
+          --validate-maintainers=false --check-version-increment=false
+
+      - name: Render every mode
+        run: |
+          helm template t "$CHART" --set postgresql.enabled=true --set ingress.enabled=true \
+            --set ingress.tlsSecret=bemmoly-tls > /dev/null
+          helm template t "$CHART" --set mode=split --set replicas.worker=2 \
+            --set externalDatabase.url=postgres://u:p@db:5432/bemmoly_db > /dev/null
+          helm template t "$CHART" --set existingSecret=bemmoly --set persistence.enabled=false \
+            --set migrations.preUpgradeJob=false > /dev/null
+          if helm template t "$CHART" > /dev/null 2>&1; then
+            echo "::error::the chart rendered without a database"
+            exit 1
+          fi
+
+      - name: The two newest releases
+        id: versions
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tags=$(gh release list --repo "$GITHUB_REPOSITORY" --exclude-pre-releases --exclude-drafts \
+            --limit 2 --json tagName --jq '.[].tagName')
+          to=$(echo "$tags" | sed -n 1p)
+          from=$(echo "$tags" | sed -n 2p)
+          echo "to=${to#v}" >> "$GITHUB_OUTPUT"
+          echo "from=${from#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Install, upgrade and uninstall on kind
+        env:
+          FROM: ${{ steps.versions.outputs.from }}
+          TO: ${{ steps.versions.outputs.to }}
+        run: sh deploy/tests/helm/kind-install.sh "$FROM" "$TO"
+
+  terraform:
+    name: Terraform modules
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # fmt, init, validate, test (plans with mocked providers, no credentials) and TFLint,
+      # with the Terraform and TFLint images pinned in the script.
+      - name: fmt, validate, test and lint
+        run: sh deploy/terraform/check.sh
+
+  offline:
+    name: Offline install
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # Two bundles, their images loaded twice (here and on the test machine), need room.
+      - name: Free disk space
+        run: sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL
+
+      - name: The two newest releases
+        id: versions
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tags=$(gh release list --repo "$GITHUB_REPOSITORY" --exclude-pre-releases --exclude-drafts \
+            --limit 2 --json tagName --jq '.[].tagName')
+          to=$(echo "$tags" | sed -n 1p)
+          from=$(echo "$tags" | sed -n 2p)
+          echo "to=${to#v}" >> "$GITHUB_OUTPUT"
+          echo "from=${from#v}" >> "$GITHUB_OUTPUT"
+
+      # The published images with this checkout's installer, CLI and bundle layout.
+      - name: Build both bundles
+        env:
+          FROM: ${{ steps.versions.outputs.from }}
+          TO: ${{ steps.versions.outputs.to }}
+        run: |
+          sh deploy/scripts/airgap-bundle.sh "$FROM" bundles
+          sh deploy/scripts/airgap-bundle.sh "$TO" bundles
+          docker image prune --all --force > /dev/null
+
+      - name: Install and upgrade with --network none
+        env:
+          FROM: ${{ steps.versions.outputs.from }}
+          TO: ${{ steps.versions.outputs.to }}
+        run: >-
+          sh deploy/tests/airgap/offline-install.sh
+          "bundles/bemmoly-airgap-$FROM-amd64.tar.gz" "bundles/bemmoly-airgap-$TO-amd64.tar.gz"
