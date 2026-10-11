@@ -5,11 +5,11 @@ import {
   gitlabDelivery,
   startFakeCodeHost,
   type FakeCodeHost,
-  type FixtureDelivery,
 } from '@bemmoly/core/testing';
 import type { CodeHost, CodeHostDelivery } from '@bemmoly/shared';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { startBootHarness, type BootHarness, type SignedInApp } from './boot-harness.ts';
+import { codeLinkCalls } from './code-hosts/code-link-calls.ts';
 
 /*
  * Code links on the real boot path against real Postgres: a GitHub and a GitLab host
@@ -21,14 +21,6 @@ import { startBootHarness, type BootHarness, type SignedInApp } from './boot-har
 const SECRET = 'integration-test-webhook-secret';
 const KEYS = { 'ACME-1': 'DEV-1', 'ACME-2': 'DEV-2' };
 
-interface Link {
-  kind: string;
-  ref: string;
-  state: string | null;
-  checks: string | null;
-  review: string | null;
-}
-
 describe('code links', () => {
   let harness: BootHarness | undefined;
   let skipReason = '';
@@ -37,36 +29,7 @@ describe('code links', () => {
   let fake: FakeCodeHost;
   let github: CodeHost;
   let gitlab: CodeHost;
-
-  const call = async <T = Record<string, unknown>>(
-    method: string,
-    url: string,
-    payload?: unknown,
-  ) => {
-    const response = await app.inject({
-      method: method as 'GET',
-      url: `/api/v1${url}`,
-      ...(payload !== undefined ? { payload: payload as object } : {}),
-    });
-    return { status: response.statusCode, body: (response.body ? response.json() : null) as T };
-  };
-
-  /** As the host sends it: no cookie, no Origin, the raw signed bytes. */
-  const deliver = async (host: CodeHost, delivery: FixtureDelivery) => {
-    const response = await app.instance.app.inject({
-      method: 'POST',
-      url: `/api/v1/code-hosts/${host.id}/webhooks`,
-      headers: delivery.headers,
-      payload: delivery.body,
-    });
-    return { status: response.statusCode, body: response.json() as Record<string, unknown> };
-  };
-
-  const links = async (key: string) =>
-    (await call<{ items: Link[] }>('GET', `/work/issues/${key}/code-links`)).body.items;
-
-  const statusOf = async (key: string) =>
-    (await call<{ statusId: string }>('GET', `/work/issues/${key}`)).body.statusId;
+  const { call, deliver, links, statusOf, seedProject } = codeLinkCalls(() => app);
 
   beforeAll(async () => {
     const started = await startBootHarness();
@@ -78,22 +41,7 @@ describe('code links', () => {
     app = await harness.boot('', { BEMMOLY_ALLOW_PRIVATE_URLS: 'true' });
     sql = app.instance.database!.sql;
     fake = await startFakeCodeHost({ replace: KEYS });
-    await call('POST', '/admin/modules/work/enable', { access: { mode: 'everyone' } });
-    const project = await call<{ id: string }>('POST', '/work/projects', {
-      key: 'DEV',
-      name: 'Developer platform',
-    });
-    const types = (
-      await call<{ items: { id: string; key: string }[] }>('GET', '/work/projects/DEV/issue-types')
-    ).body.items;
-    for (const title of ['Session store to Postgres', 'Throttle exports']) {
-      const created = await call('POST', '/work/issues', {
-        projectId: project.body.id,
-        typeId: types.find((type) => type.key === 'task')?.id,
-        title,
-      });
-      expect(created.status, JSON.stringify(created.body)).toBe(201);
-    }
+    await seedProject();
   });
 
   afterAll(async () => {
