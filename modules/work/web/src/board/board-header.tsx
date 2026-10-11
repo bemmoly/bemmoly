@@ -22,7 +22,9 @@ function sprintLine(sprint: Sprint, now: number) {
       ? null
       : left > 0
         ? `${left} ${left === 1 ? 'day' : 'days'} remaining`
-        : 'Ends today';
+        : left === 0
+          ? 'Ends today'
+          : 'Overdue';
   return { dates, remaining, goal: sprint.goal ? `Goal: ${sprint.goal}` : null };
 }
 
@@ -78,7 +80,10 @@ export function BoardHeader({
   const peak = Math.max(1, ...history);
   const trend = flowTrend(flow.throughputHistory);
   const cycle = flow.cycleTimeDays;
-  const endsSoon = line?.remaining === 'Ends today' || line?.remaining === '1 day remaining';
+  const endsSoon =
+    line?.remaining === 'Overdue' ||
+    line?.remaining === 'Ends today' ||
+    line?.remaining === '1 day remaining';
   return (
     <div className="flex h-14 shrink-0 items-center gap-3 border-b border-line px-6 max-md:h-auto max-md:flex-wrap max-md:px-4 max-md:py-3">
       <Icon
