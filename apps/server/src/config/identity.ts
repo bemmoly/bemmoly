@@ -7,6 +7,7 @@ import {
   createSessionResolver,
   createSubscriptionAuthorizer,
   deleteExpiredSessions,
+  deleteExpiredSsoState,
   type Actor,
   type ActorResolver,
   type Authorize,
@@ -68,7 +69,10 @@ export function identityWiring(input?: IdentityWiringInput): IdentityWiring {
     moduleAccessWriter: createModuleAccessWriter(db),
     authorize: createAuthorize({ db, modules }),
     ...(input.backup ? { backup: input.backup } : {}),
-    housekeeping: [{ name: 'sessions', run: (now) => deleteExpiredSessions(db, now) }],
+    housekeeping: [
+      { name: 'sessions', run: (now) => deleteExpiredSessions(db, now) },
+      { name: 'sso-flows', run: (now) => deleteExpiredSsoState(db, now) },
+    ],
   };
 }
 

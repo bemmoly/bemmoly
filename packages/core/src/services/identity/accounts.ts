@@ -31,6 +31,22 @@ async function passwordProviderId(db: Database): Promise<string> {
   return provider.id;
 }
 
+/**
+ * "Require SSO for everyone" is the password provider row switched off: password sign-in
+ * then works only for break-glass accounts.
+ */
+export async function isPasswordSignInOff(db: Database): Promise<boolean> {
+  const [row] = await db
+    .select({ enabled: authProviders.enabled })
+    .from(authProviders)
+    .where(eq(authProviders.kind, 'password'))
+    .limit(1);
+  return row ? !row.enabled : false;
+}
+
+export const SSO_REQUIRED_MESSAGE =
+  'This workspace signs in with single sign-on; choose "Continue with SSO" instead';
+
 export async function emailTaken(db: Database, email: string): Promise<boolean> {
   const [row] = await db
     .select({ id: users.id })

@@ -1,5 +1,8 @@
+import { randomBytes } from 'node:crypto';
 import {
+  createDatabase,
   createIdentityDependencies,
+  createSecretBox,
   createLocalEventBus,
   createSqlClient,
   type DomainEvent,
@@ -8,6 +11,7 @@ import {
   type ModuleRegistry,
   type RateLimitEnv,
   type SqlClient,
+  type SsoDependencies,
 } from '@bemmoly/core';
 import {
   applyKernelChangelog,
@@ -28,6 +32,8 @@ export interface Harness {
   sql: SqlClient;
   modules: ModuleRegistry;
   identity: IdentityDependencies;
+  /** Single sign-on and SCIM, on a throwaway secret key. */
+  sso: SsoDependencies;
   events: DomainEvent[];
   bus: EventBus;
   app: FastifyInstance;
@@ -63,10 +69,16 @@ export async function startHarness(): Promise<HarnessResult> {
     settings: createMemorySettings({ 'workspace.name': 'Acme Labs' }),
     publicUrl: ORIGIN,
   });
+  const sso: SsoDependencies = {
+    db: createDatabase(sql),
+    secrets: createSecretBox(randomBytes(32).toString('base64')),
+    publicUrl: ORIGIN,
+    addressPolicy: 'local',
+  };
   const apps: FastifyInstance[] = [];
   const newApp = async (limits: RateLimitEnv = {}) => {
     const env = { ...TEST_ENV, ...limits };
-    const app = await buildApp({ env, modules, identity, logger: false });
+    const app = await buildApp({ env, modules, identity, kernel: { sso }, logger: false });
     apps.push(app);
     return app;
   };
@@ -77,6 +89,7 @@ export async function startHarness(): Promise<HarnessResult> {
       sql,
       modules,
       identity,
+      sso,
       events,
       bus,
       app,

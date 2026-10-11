@@ -1,6 +1,7 @@
 import {
   ConflictError,
   DEFAULT_ROLE_KEY,
+  ForbiddenError,
   NotFoundError,
   type AcceptInvitationInput,
   type CreateInvitationsInput,
@@ -15,7 +16,14 @@ import { invitations, roles, teams, users } from '../../models/identity/index.ts
 import { recordAudit, type RequestMeta } from '../audit/index.ts';
 import type { RequestContext } from '../authz/index.ts';
 import { createEmailConfigurationProbe } from '../email/index.ts';
-import { assertMayAssignRole, createAccount, findRole, findRoleByKey } from './accounts.ts';
+import {
+  assertMayAssignRole,
+  createAccount,
+  findRole,
+  findRoleByKey,
+  isPasswordSignInOff,
+  SSO_REQUIRED_MESSAGE,
+} from './accounts.ts';
 import { appLink, nowOf, type IdentityDependencies } from './deps.ts';
 import {
   INVITATION_CREATED,
@@ -199,6 +207,7 @@ export async function acceptInvitation(
   input: AcceptInvitationInput,
   client: ClientInfo & RequestMeta,
 ): Promise<{ user: User; session: IssuedSession }> {
+  if (await isPasswordSignInOff(deps.db)) throw new ForbiddenError(SSO_REQUIRED_MESSAGE);
   const now = nowOf(deps);
   const { session, userId } = await deps.db.transaction(async (tx) => {
     const [invitation] = await tx

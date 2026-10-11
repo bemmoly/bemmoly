@@ -93,7 +93,10 @@ const STRICT_PATHS = ['/auth/', '/setup/', '/email-unsubscriptions'];
  * (an office behind one NAT) locked everyone there out; they share the
  * per-person budget instead, which counts them per IP until someone signs in.
  */
-const BOOT_READS = ['/setup/status'];
+const BOOT_READS = ['/setup/status', '/auth/sso/providers'];
+
+/** SCIM lives outside the API prefix but is always budgeted, per address. */
+const SCIM_PREFIX = '/scim/v2/';
 
 /** Uploads write to disk, so they have a per-person budget of their own. */
 const UPLOAD_PATH = '/files';
@@ -160,7 +163,13 @@ export const rateLimiting = fp<RateLimitingOptions>(
         });
       }
       if (route.config.rateLimit !== undefined) return;
-      if (!path) {
+      if (route.url.startsWith(SCIM_PREFIX)) {
+        route.config.rateLimit = {
+          max: perActor.max,
+          timeWindow: perActor.windowMs,
+          keyGenerator: (request: FastifyRequest) => `scim|ip:${request.ip}`,
+        };
+      } else if (!path) {
         route.config.rateLimit = false;
       } else if (isAiRoute(method, path)) {
         route.config.rateLimit = {

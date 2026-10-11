@@ -1,5 +1,6 @@
 import {
   authenticateRequest,
+  createSecretBox,
   createUserDirectory,
   isSetupOpen,
   registerSystemJobs,
@@ -35,7 +36,7 @@ export interface KernelServices {
   /** Sign-in, people, roles and audit routes and the authentication middleware. */
   identity: IdentityDependencies & { sql: SqlClient };
   /** Route dependencies the kernel's own routes do not carry. */
-  routes: Pick<KernelRouteDependencies, 'emailNotifications' | 'system'>;
+  routes: Pick<KernelRouteDependencies, 'emailNotifications' | 'system' | 'sso'>;
 }
 
 /**
@@ -85,6 +86,13 @@ export function wireKernelServices(input: KernelServicesInput): KernelServices {
   return {
     identity: people,
     routes: {
+      sso: {
+        db: database.db,
+        secrets: createSecretBox(env.BEMMOLY_SECRET_KEY),
+        publicUrl: env.BEMMOLY_PUBLIC_URL,
+        // Identity providers are often self-hosted on the private network; link-local never.
+        addressPolicy: env.BEMMOLY_ALLOW_PRIVATE_URLS ? 'any' : 'local',
+      },
       emailNotifications: mail.routes,
       system: {
         system,
