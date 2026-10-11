@@ -34,7 +34,7 @@ export const HOME_FAQ: readonly FaqItem[] = [
   {
     question: 'What do I need to run it?',
     answer:
-      'A Linux VM with 2 vCPU and 4 GB (the size we plan for about 200 people, an estimate until measured; 2 GB is the minimum), 10 GB of free disk, a domain pointing at it, and ports 80 and 443 free. The installer supports Ubuntu 22.04 or later, Debian 12 or later, Fedora 40 or later and Amazon Linux 2023.',
+      'A Linux VM with at least 1 vCPU and 2 GB (2 vCPU and 4 GB is the size we plan for about 200 people, an estimate until measured), 10 GB of free disk, a domain pointing at it, and ports 80 and 443 free. The installer supports Ubuntu 22.04 or later, Debian 12 or later, Fedora 40 or later and Amazon Linux 2023.',
   },
   {
     question: 'How do upgrades and backups work?',

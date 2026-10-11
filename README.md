@@ -92,9 +92,9 @@ curl -fsSL https://get.bemmoly.com | sh
 About five minutes later the installer prints your address; open it to create the first admin.
 Prefer to read it first? `curl -fsSL https://get.bemmoly.com -o install.sh && less install.sh`.
 
-You need a VM with 2 vCPU and 4 GB of memory, root or sudo, 10 GB of free disk, ports 80 and
-443, and a domain pointing at the VM. Ubuntu is the main target; the installer also supports
-Debian, Fedora and Amazon Linux. It sets up Docker, Postgres, HTTPS, backups and updates, checks
+You need a VM with at least 1 vCPU and 2 GB of memory (2 vCPU and 4 GB for about 200 people),
+root or sudo, 10 GB of free disk, ports 80 and 443, and a domain pointing at the VM. Ubuntu is
+the main target; the installer also supports Debian, Fedora and Amazon Linux. It sets up Docker, Postgres, HTTPS, backups and updates, checks
 the requirements itself and prints the fix for anything missing. Docker Compose by hand and an
 existing Postgres are covered at [bemmoly.com/self-hosting](https://bemmoly.com/self-hosting#install).
 
