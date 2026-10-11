@@ -1,5 +1,5 @@
 import { queryKeys } from '@bemmoly/api-client';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { api } from '../lib/api.ts';
 import { customerLogo } from '../lib/customer-logo.ts';
@@ -7,6 +7,7 @@ import { describeError } from '../lib/errors.ts';
 import { logoFileProblem } from '../lib/logo-file.ts';
 import { toast, undoToast } from '../lib/toast.ts';
 import { useMe } from './use-session.ts';
+import { settingsQuery } from './use-setting.ts';
 import { useWorkspace } from './use-workspace.ts';
 
 /**
@@ -20,6 +21,8 @@ export function useWorkspaceLogo() {
   const workspace = useWorkspace();
   const logo = customerLogo(workspace.name, workspace.appearance.logoKey);
   const [error, setError] = useState<string | null>(null);
+  /** The stored key itself, which Undo writes back; /me may carry the logo in another form. */
+  const stored = useQuery(settingsQuery(['appearance.logoKey'])).data?.['appearance.logoKey'].value;
 
   const refresh = () =>
     Promise.all([
@@ -46,7 +49,7 @@ export function useWorkspaceLogo() {
 
   const remove = useMutation({
     mutationFn: async () => {
-      const previous = workspace.appearance.logoKey;
+      const previous = stored ?? null;
       await api.appearance.logo.remove();
       return previous;
     },

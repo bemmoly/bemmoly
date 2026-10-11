@@ -18,7 +18,7 @@ function Pane({ source, workspaceName, logo, mode }: LogoPreviewProps & { mode: 
       {...themeScope(source, mode)}
       inert
       data-testid={`logo-preview-${mode}`}
-      className="flex min-w-0 flex-1 overflow-hidden rounded-card border border-line bg-side font-sans text-13 text-tx"
+      className="flex min-h-28 min-w-0 overflow-hidden rounded-card border border-line bg-side font-sans text-13 text-tx"
     >
       <div className="min-w-0 flex-1 p-3">
         <BrandBlock workspaceName={workspaceName} customLogo={logo} />
@@ -41,7 +41,7 @@ export function LogoPreview(props: LogoPreviewProps) {
           ? `Sidebar preview: ${props.workspaceName}'s logo, then "on Bemmoly"`
           : 'Sidebar preview: the Bemmoly lockup'
       }
-      className="flex flex-col gap-2 sm:flex-row"
+      className="flex flex-col gap-2"
     >
       <Pane {...props} mode="light" />
       <Pane {...props} mode="dark" />

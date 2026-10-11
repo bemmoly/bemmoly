@@ -59,11 +59,11 @@ describe('AppearancePage', () => {
   });
 
   it('previews the uploaded logo in the sidebar and rail, and removes it', async () => {
-    const logoKey = seedAcmeLogo(mockApi.db);
+    seedAcmeLogo(mockApi.db);
     await renderPage(() => <AppearancePage />, '/settings/appearance');
     const light = await screen.findByTestId('logo-preview-light');
     expect(light.textContent).toMatch(/on\s+Bemmoly/);
-    expect(light.querySelectorAll(`img[src="${logoKey}"]`).length).toBe(2);
+    expect(light.querySelectorAll('img[src^="data:image/svg+xml"]').length).toBe(2);
     expect(screen.getByTestId('logo-preview-dark').dataset['mode']).toBe('dark');
     act(() => fireEvent.click(screen.getByRole('button', { name: 'Remove' })));
     await waitFor(() => expect(mockApi.db.settings['appearance.logoKey']).toBe(''));

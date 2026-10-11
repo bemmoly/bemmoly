@@ -58,7 +58,7 @@ export function LogoRow({ state, source }: LogoRowProps) {
                 <Icon name="image" size={18} />
               </span>
             )}
-            <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+            <div className="flex min-w-48 flex-1 flex-col gap-0.5">
               <span className="text-13 text-tx-2">
                 {state.logo ? 'Drop a new logo here to replace it' : 'Drop your logo here'}
               </span>

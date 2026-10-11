@@ -52,7 +52,7 @@ test('an admin uploads a logo, sees it in the sidebar, rail and sign-in, then re
   // Line one of the sidebar is the logo and name; "on Bemmoly" stays under it.
   await page.goto('/');
   const sidebar = page.getByRole('complementary').first();
-  await expect(sidebar.locator('img[src^="/api/v1/workspace/logo/"]').first()).toBeVisible();
+  await expect(sidebar.locator('img[src^="data:image/png"]').first()).toBeVisible();
   await expect(sidebar.getByText('on Bemmoly')).toBeVisible();
   await expect(page).toHaveTitle(/· Bemmoly$/);
 
@@ -75,6 +75,6 @@ test('an admin uploads a logo, sees it in the sidebar, rail and sign-in, then re
   await page.getByRole('button', { name: /Account: Rohan S\./ }).click();
   await page.getByRole('menuitem', { name: 'Sign out' }).click();
   await expect(page).toHaveURL(/\/login/);
-  await expect(page.locator(`img[src="${stored as string}"]`)).toBeVisible();
+  await expect(page.locator('img[src^="data:image/png"]')).toBeVisible();
   await expect(page.getByText(/Powered by/)).toBeVisible();
 });

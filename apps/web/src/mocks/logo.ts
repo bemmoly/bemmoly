@@ -122,6 +122,17 @@ export function storeMockLogo(db: MockDb, mime: LogoType, bytes: Uint8Array): st
   return logoKey;
 }
 
+/**
+ * What the page draws for a stored key. The mock answers fetch and XMLHttpRequest inside the
+ * page, but an <img> goes to the network, so /me and setup status carry the logo inline.
+ */
+export function mockLogoSrc(db: MockDb, logoKey: string): string {
+  const stored = db.logos?.[logoKey.slice(LOGO_PATH_PREFIX.length)];
+  return logoKey.startsWith(LOGO_PATH_PREFIX) && stored
+    ? `data:${stored.mime};base64,${stored.data}`
+    : logoKey;
+}
+
 /** GET /api/v1/workspace/logo/:file: the current logo's bytes, or null. */
 export function servedLogo(db: MockDb, url: string): { mime: string; bytes: Uint8Array } | null {
   const file = new URL(url, 'http://mock').pathname.slice(LOGO_PATH_PREFIX.length);
