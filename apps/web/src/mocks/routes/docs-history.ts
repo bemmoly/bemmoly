@@ -4,6 +4,7 @@ import { bodyOf, fail, notFound, ok, page, type MockRequest, type MockRoute } fr
 import { diffDocs, type PmNode } from './docs-diff.ts';
 import { docsCommentRoutes } from './docs-comments.ts';
 import { docsLinkRoutes } from './docs-links.ts';
+import { docsPdfRoutes } from './docs-pdf.ts';
 import { docsTransferRoutes } from './docs-transfer.ts';
 import {
   historyState,
@@ -149,4 +150,5 @@ export const docsHistoryRoutes: MockRoute[] = [
   ...docsCommentRoutes,
   ...docsLinkRoutes,
   ...docsTransferRoutes,
+  ...docsPdfRoutes,
 ];

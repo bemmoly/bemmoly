@@ -101,6 +101,8 @@ export interface MockDb {
   logos?: Record<string, { mime: string; data: string }>;
   /** `?down=1`: sign-in and /readyz answer 503, as a server that is restarting would. */
   authDown?: boolean;
+  /** `?pdf=on`: the install runs the optional PDF renderer. */
+  pdfRenderer?: boolean;
   /** Failed sign-ins per email (times in ms), for the server's per-account budget. */
   signInFailures?: Record<string, number[]>;
 }

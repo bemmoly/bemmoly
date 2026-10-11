@@ -30,6 +30,7 @@ const PROVIDERS = [
  *   is Okta as the only way in, with Rohan as the password fallback; `sso=google` is Google
  *   Workspace alone, a full-colour mark;
  * - `down=1`: the server stops answering sign-in and /readyz;
+ * - `pdf=on|off`: the optional PDF renderer runs, or not (Export as PDF);
  * - `deactivate=<email>`: that person's account is turned off.
  */
 export function applyAuthParams(db: MockDb, params: URLSearchParams): void {
@@ -45,6 +46,7 @@ export function applyAuthParams(db: MockDb, params: URLSearchParams): void {
   const sso = params.get('sso');
   if (sso) seedProviders(db, sso);
   if (params.has('down')) db.authDown = params.get('down') !== '0';
+  if (params.has('pdf')) db.pdfRenderer = params.get('pdf') === 'on';
   const off = params.get('deactivate')?.toLowerCase();
   const user = off ? db.users.find((entry) => entry.email === off) : undefined;
   if (user) user.status = 'deactivated';
