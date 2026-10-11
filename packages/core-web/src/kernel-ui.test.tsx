@@ -133,6 +133,9 @@ describe('formatting', () => {
     const name = `R${'@'.repeat(100_000)}\nx`;
     const start = performance.now();
     expect(initials(name)).toBe('R');
-    expect(performance.now() - start).toBeLessThan(50);
+    // A quadratic pass over 100,000 characters takes seconds (4 s for a backtracking regex on
+    // a fast laptop) and a linear one a few milliseconds. A 1 s bound still fails the first and
+    // holds on a loaded CI runner, where 50 ms did not.
+    expect(performance.now() - start).toBeLessThan(1_000);
   });
 });

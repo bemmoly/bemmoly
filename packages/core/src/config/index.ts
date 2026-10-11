@@ -6,7 +6,9 @@ export {
   loadEnv,
   parseDatabaseEnv,
   parseEnv,
+  storageS3ConfigOf,
   type DatabaseEnv,
+  type StorageS3Env,
   type Env,
 } from './env.ts';
 export { redactUrl } from './log-urls.ts';

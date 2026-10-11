@@ -6,7 +6,9 @@ import {
   StatusGlyph,
   statusStage,
   TypeGlyph,
+  type IssueTypeLike,
 } from '@bemmoly/ui';
+import type { StatusCategory } from '@bemmoly/module-work/shared';
 import { useQuery } from '@tanstack/react-query';
 import type { MouseEvent } from 'react';
 import { issueHref } from '../home/my-work-row.tsx';
@@ -97,6 +99,20 @@ export function IssueCard({ entityKey }: { entityKey: string }) {
       </div>
     );
   }
+  return <IssueRowLink issue={issue} />;
+}
+
+/** What a row draws: the issue page's detail and a query's summary both carry it. */
+export interface IssueRowFields {
+  key: string;
+  title: string;
+  type: IssueTypeLike;
+  status: { name: string; category: StatusCategory };
+  assignee: { name: string } | null;
+}
+
+/** The row itself, drawn from data already in hand; the Linked row and a document table share it. */
+export function IssueRowLink({ issue }: { issue: IssueRowFields }) {
   const href = issueHref(issue.key);
   return (
     <a

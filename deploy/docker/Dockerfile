@@ -55,21 +55,6 @@ RUN rm -rf node_modules \
  && ln -s ../../packages/core node_modules/@bemmoly/core
 
 FROM ${NODE_IMAGE} AS runtime
-# Empty unless the release names the version; the server then reports its package version.
-ARG BEMMOLY_VERSION=
-ARG REVISION=unknown
-ARG CREATED=unknown
-LABEL org.opencontainers.image.title="Bemmoly" \
-      org.opencontainers.image.description="Your work. Your platform. Self-hosted issues and docs." \
-      org.opencontainers.image.version="${BEMMOLY_VERSION:-unreleased}" \
-      org.opencontainers.image.revision="${REVISION}" \
-      org.opencontainers.image.created="${CREATED}" \
-      org.opencontainers.image.source="https://github.com/bemmoly/bemmoly" \
-      org.opencontainers.image.url="https://bemmoly.com" \
-      org.opencontainers.image.documentation="https://bemmoly.com/self-hosting#install" \
-      org.opencontainers.image.licenses="MIT" \
-      org.opencontainers.image.vendor="Bemmoly contributors"
-
 # Postgres 18 client tools from the PostgreSQL project's repository, so backups work
 # against the bundled database and any external one.
 RUN apt-get update \
@@ -102,6 +87,24 @@ COPY --from=server /src/modules ./modules
 COPY --from=web /src/apps/web/dist ./apps/web/dist
 COPY deploy/docker/bin/ /usr/local/bin/
 
+# Build metadata comes last, so a new commit or version never invalidates the cached layers
+# above. The release and image-scan workflows pass all three, and
+# deploy/scripts/check-image-labels.sh fails their builds when a label is missing or left
+# "unknown". BEMMOLY_VERSION is empty unless the release names the version; the server then
+# reports its package version.
+ARG BEMMOLY_VERSION=
+ARG REVISION=unknown
+ARG CREATED=unknown
+LABEL org.opencontainers.image.title="Bemmoly" \
+      org.opencontainers.image.description="Your work. Your platform. Self-hosted issues and docs." \
+      org.opencontainers.image.version="${BEMMOLY_VERSION:-unreleased}" \
+      org.opencontainers.image.revision="${REVISION}" \
+      org.opencontainers.image.created="${CREATED}" \
+      org.opencontainers.image.source="https://github.com/bemmoly/bemmoly" \
+      org.opencontainers.image.url="https://bemmoly.com" \
+      org.opencontainers.image.documentation="https://bemmoly.com/self-hosting#install" \
+      org.opencontainers.image.licenses="MIT" \
+      org.opencontainers.image.vendor="Bemmoly contributors"
 ENV BEMMOLY_VERSION=${BEMMOLY_VERSION} \
     BEMMOLY_PG_BIN_DIR=/usr/lib/postgresql/18/bin \
     BEMMOLY_DATA_DIR=/var/bemmoly/data \

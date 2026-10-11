@@ -96,6 +96,13 @@ jobs:
       - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
         if: steps.dockerfile.outputs.present == 'true'
 
+      - name: Build metadata (revision and build time for the OCI labels)
+        id: meta
+        if: steps.dockerfile.outputs.present == 'true'
+        run: |
+          echo "revision=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          echo "created=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
+
       - name: Build the image
         if: steps.dockerfile.outputs.present == 'true'
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
@@ -105,8 +112,15 @@ jobs:
           load: true
           push: false
           tags: bemmoly:scan
+          build-args: |
+            REVISION=${{ steps.meta.outputs.revision }}
+            CREATED=${{ steps.meta.outputs.created }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - name: Check the image labels (no "unknown" revision)
+        if: steps.dockerfile.outputs.present == 'true'
+        run: sh deploy/scripts/check-image-labels.sh bemmoly:scan
 
       - name: Trivy (fails on fixable high or critical)
         if: steps.dockerfile.outputs.present == 'true'

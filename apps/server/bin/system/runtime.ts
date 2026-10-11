@@ -2,6 +2,7 @@ import {
   createChangelogRunner,
   createDatabase,
   createNotifyPublisher,
+  createObjectStore,
   createSecretBox,
   createSettingsCatalog,
   createSettingsService,
@@ -19,7 +20,7 @@ import {
   type SqlClient,
   type SystemDependencies,
 } from '@bemmoly/core';
-import { loadEnv, type Env } from '@bemmoly/core/config';
+import { loadEnv, storageS3ConfigOf, type Env } from '@bemmoly/core/config';
 import { systemOnlyAuthorize } from '../../src/config/identity.ts';
 import { importAvailableModules } from '../../src/config/modules.ts';
 import { systemDependencies } from '../../src/config/system.ts';
@@ -78,6 +79,12 @@ export async function createRuntime(options: { humanLogs: boolean }): Promise<Ru
     modules: sourcesFromRegistry(registry),
     appVersion: appVersionOf(env),
   });
+  const s3 = storageS3ConfigOf(env);
+  const objectStore = createObjectStore({
+    backend: await settings.get('system.storage.backend'),
+    dataDir: env.BEMMOLY_DATA_DIR,
+    ...(s3 ? { s3 } : {}),
+  });
   const deps = systemDependencies({
     env: { ...env, DATABASE_URL: databaseUrl },
     sql,
@@ -87,6 +94,7 @@ export async function createRuntime(options: { humanLogs: boolean }): Promise<Ru
     settings,
     runner,
     enabledModules: () => enabled,
+    objectStore,
   });
   return { env, sql, deps, close: () => sql.end({ timeout: 5 }) };
 }

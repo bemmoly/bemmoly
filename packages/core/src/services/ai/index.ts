@@ -25,6 +25,9 @@ export { countModels as countCatalogModels, trimCatalog } from './catalog/trim.t
 export * from './plans/index.ts';
 export * from './tools/index.ts';
 export type {
+  AiBudgetGuard,
+  AiBudgetReservation,
+  AiBudgetRequest,
   AiNameSource,
   AiPolicySource,
   AiPromptSource,

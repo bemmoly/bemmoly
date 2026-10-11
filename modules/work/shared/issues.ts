@@ -125,6 +125,26 @@ export const issueDetailSchema = issueSchema.extend({
   watching: z.boolean(),
 });
 
+/**
+ * An issue as a row elsewhere draws it (a live table in a document): the key, the title and
+ * the names behind its type, status and assignee, so a page of rows is one request.
+ */
+export const issueSummarySchema = z.object({
+  id: z.uuid(),
+  key: issueKeySchema,
+  title: z.string(),
+  type: refSchema.extend({
+    key: slugKeySchema,
+    level: issueTypeLevelSchema,
+    icon: z.string().nullable(),
+  }),
+  status: refSchema.extend({ category: statusCategorySchema }),
+  assignee: refSchema.nullable(),
+});
+
+/** `GET /work/issues/summaries`: the page `/work/issues/query` returns, as summaries. */
+export const issueSummariesPageSchema = keysetPageSchema(issueSummarySchema);
+
 export const ISSUE_SORT_FIELDS = ['created', 'updated', 'priority', 'rank', 'due'] as const;
 
 export const issueSortSchema = z.enum(ISSUE_SORT_FIELDS);
@@ -175,3 +195,5 @@ export type AssignIssueBody = z.infer<typeof assignIssueBodySchema>;
 export type IssueDetail = z.infer<typeof issueDetailSchema>;
 export type IssueLinkView = z.infer<typeof issueLinkViewSchema>;
 export type IssuesPage = z.infer<typeof issuesPageSchema>;
+export type IssueSummary = z.infer<typeof issueSummarySchema>;
+export type IssueSummariesPage = z.infer<typeof issueSummariesPageSchema>;

@@ -5,6 +5,7 @@ import type { TarTool } from '../../clients/tar.ts';
 import type { UpdaterClient } from '../../clients/updater.ts';
 import type { Logger } from '../../config/logger.ts';
 import type { Authorize } from '../../contracts/authz.ts';
+import type { ObjectStore } from '../../contracts/object-store.ts';
 import type { EventBus } from '../../contracts/event-bus.ts';
 import type { RealtimePublisher } from '../../contracts/realtime.ts';
 import type { SettingsService } from '../../contracts/settings.ts';
@@ -80,6 +81,12 @@ export interface SystemDependencies {
   audit?: AuditActivity;
   email?: EmailConfigurationProbe;
   updater?: UpdaterClient;
+  /**
+   * Where uploaded files live (the kernel's object store, disk or S3). Backups read their
+   * attachments from it and restores write them back; absent means the disk store under
+   * config.dataDir.
+   */
+  objectStore?: ObjectStore;
   /** Builds the S3 client; tests replace it with a fake object store. */
   s3?: (config: S3BucketConfig) => S3Bucket;
   /**

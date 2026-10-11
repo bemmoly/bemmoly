@@ -63,7 +63,13 @@ export function estimateTokens(chars: number): number {
   return Math.ceil(Math.max(0, chars) / 4);
 }
 
-function inputCharsOf(input: LoggedInput): number {
+/** The characters a call sends: system, prompt, messages and embedded values. */
+export function inputCharsOf(input: {
+  system?: string | undefined;
+  prompt?: string | undefined;
+  messages?: readonly AiMessage[] | undefined;
+  values?: readonly string[] | undefined;
+}): number {
   return (
     (input.system?.length ?? 0) +
     (input.prompt?.length ?? 0) +

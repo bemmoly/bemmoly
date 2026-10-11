@@ -1,43 +1,40 @@
-import { readdir, stat } from 'node:fs/promises';
-import path from 'node:path';
+import type { ObjectStore } from '../../../contracts/object-store.ts';
 
 export const ATTACHMENTS_ARCHIVE = 'attachments.tar';
-/** The disk object store's root for attachments, under BEMMOLY_DATA_DIR. */
-export const ATTACHMENTS_SUBDIR = 'attachments';
+/**
+ * Every uploaded file's object key starts with this (Docs images, the workspace logo, Work
+ * attachments). Index entries and archive paths are the key without it, whichever store
+ * holds the bytes.
+ */
+export const ATTACHMENTS_PREFIX = 'attachments/';
 export const ATTACHMENTS_INDEX = 'attachments.index.json';
 /** A chain longer than this is cut with a full copy even inside the month. */
 const MAX_CHAIN = 45;
-
-export function attachmentsDir(dataDir: string): string {
-  return path.join(dataDir, ATTACHMENTS_SUBDIR);
-}
+const LIST_PAGE = 1_000;
 
 /** Relative path → size of every attachment file present now. */
 export type AttachmentIndex = Map<string, number>;
 
 /**
- * Walks the content-addressed attachment store. Files are written before their row
- * exists (§18), so taking the database dump first and listing files second means every
- * referenced file is in the list. Temporary files are skipped.
+ * Lists the content-addressed attachments in the object store, on disk or in S3. Files are
+ * written before their row exists (§18), so taking the database dump first and listing
+ * files second means every referenced file is in the list.
  */
-export async function scanAttachments(root: string): Promise<AttachmentIndex> {
+export async function scanAttachments(store: ObjectStore): Promise<AttachmentIndex> {
   const index: AttachmentIndex = new Map();
-  const walk = async (dir: string): Promise<void> => {
-    let entries;
-    try {
-      entries = await readdir(dir, { withFileTypes: true });
-    } catch (error) {
-      if ((error as NodeJS.ErrnoException).code === 'ENOENT') return;
-      throw error;
+  let cursor: string | undefined;
+  do {
+    const page = await store.list(ATTACHMENTS_PREFIX, {
+      limit: LIST_PAGE,
+      ...(cursor ? { cursor } : {}),
+    });
+    for (const item of page.items) {
+      if (item.key.startsWith(ATTACHMENTS_PREFIX)) {
+        index.set(item.key.slice(ATTACHMENTS_PREFIX.length), item.size);
+      }
     }
-    for (const entry of entries) {
-      if (entry.name.startsWith('.') || /\.(partial|tmp)$/.test(entry.name)) continue;
-      const full = path.join(dir, entry.name);
-      if (entry.isDirectory()) await walk(full);
-      else if (entry.isFile()) index.set(path.relative(root, full), (await stat(full)).size);
-    }
-  };
-  await walk(root);
+    cursor = page.nextCursor;
+  } while (cursor);
   return index;
 }
 
