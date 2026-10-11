@@ -42,7 +42,6 @@ export function workspaceLookOf(workspace: MeResponse['workspace']): WorkspaceLo
         'appearance.defaultMode': { value: appearance.defaultMode },
         'appearance.font': { value: appearance.font },
         'appearance.logoKey': { value: appearance.logoKey || undefined },
-        'appearance.personalThemes': { value: appearance.personalThemes },
       },
       appearance.customThemes,
     ),

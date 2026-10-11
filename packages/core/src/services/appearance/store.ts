@@ -1,5 +1,5 @@
 import type { AppearancePreference, CustomThemeRecord, SurfaceStyle } from '@bemmoly/shared';
-import { and, asc, eq, isNull, or } from 'drizzle-orm';
+import { and, asc, eq, isNull } from 'drizzle-orm';
 import type { Database } from '../../clients/drizzle.ts';
 import {
   customThemes,
@@ -29,32 +29,18 @@ export async function listWorkspaceThemes(db: Database): Promise<CustomThemeReco
   return rows.map(presentTheme);
 }
 
-/** One person's own custom themes, oldest first. */
-export async function listPersonalThemes(
-  db: Database,
-  userId: string,
-): Promise<CustomThemeRecord[]> {
-  const rows = await db
-    .select()
-    .from(customThemes)
-    .where(eq(customThemes.ownerId, userId))
-    .orderBy(asc(customThemes.id));
-  return rows.map(presentTheme);
-}
-
-/** A theme the person may see: a workspace one, or their own. */
-export async function findVisibleTheme(
+/**
+ * A workspace custom theme. Themes are the workspace admin's choice (ADR 0021), so a personal
+ * theme left from before is never found, edited or applied.
+ */
+export async function findWorkspaceTheme(
   db: Database,
   id: string,
-  userId: string | null,
 ): Promise<CustomThemeRow | undefined> {
-  const owner = userId
-    ? or(isNull(customThemes.ownerId), eq(customThemes.ownerId, userId))
-    : isNull(customThemes.ownerId);
   const [row] = await db
     .select()
     .from(customThemes)
-    .where(and(eq(customThemes.id, id), owner));
+    .where(and(eq(customThemes.id, id), isNull(customThemes.ownerId)));
   return row;
 }
 
@@ -65,7 +51,8 @@ export async function readPreference(db: Database, userId: string): Promise<Appe
     .where(eq(userAppearancePreferences.userId, userId));
   return {
     mode: (row?.mode as AppearancePreference['mode']) ?? null,
-    theme: row?.theme ?? null,
+    // Only the mode is personal; a theme stored before ADR 0021's amendment is ignored.
+    theme: null,
   };
 }
 

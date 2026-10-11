@@ -105,9 +105,8 @@ export function ForgotPasswordPage() {
       </form>
       {sso.options.length > 0 ? (
         <AuthSmall>
-          Signing in with{' '}
-          {sso.options.length === 1 ? sso.options[0]?.displayName : 'single sign-on'}? Your password
-          lives there; reset it with your identity provider instead.
+          Sign in with {sso.options.length === 1 ? sso.options[0]?.displayName : 'single sign-on'}?
+          Reset that password there, not here.
         </AuthSmall>
       ) : null}
       {BACK}

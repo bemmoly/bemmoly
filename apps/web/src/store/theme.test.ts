@@ -49,12 +49,9 @@ describe('resolveLook', () => {
     );
   });
 
-  it('honours a personal theme only while the workspace allows it', () => {
+  it('ignores a personal theme once signed in: the workspace admin sets the theme', () => {
     const personal = { mode: null, theme: 'pine' };
     expect(look({ appearance: workspace(), personal }).source.id).toBe('sand');
-    expect(look({ appearance: workspace({ personalThemes: true }), personal }).source.id).toBe(
-      'pine',
-    );
   });
 
   it('resolves a custom workspace theme and falls back to Bemmoly when it is gone', () => {

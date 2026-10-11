@@ -68,7 +68,7 @@ const CardFace = memo(function CardFace({
   checked,
   tools,
 }: CardFaceProps) {
-  const { vocab, select, density } = useBoardShared();
+  const { vocab, select } = useBoardShared();
   const selecting = useBoardSelectionStore((state) => state.selection.ids.length > 0);
   // Only a checked card follows the whole selection, so its menu can act on all of it.
   const targets = useBoardSelectionStore((state) => (checked ? state.selection.ids : NONE));
@@ -83,7 +83,6 @@ const CardFace = memo(function CardFace({
       pending={pending}
       checked={checked}
       selecting={selecting}
-      density={density}
       {...(boxed
         ? { onCheck: (event: MouseEvent<HTMLElement>) => select.check(event, card.key) }
         : {})}

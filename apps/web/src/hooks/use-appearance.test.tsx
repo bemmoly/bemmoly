@@ -17,7 +17,6 @@ describe('useAppearance', () => {
       theme: 'bemmoly',
       defaultMode: 'light',
       font: 'plex',
-      personalThemes: false,
     });
     expect(result.current.options.map((option) => option.ref)).toEqual([
       'bemmoly',
@@ -29,11 +28,10 @@ describe('useAppearance', () => {
     expect(result.current.draft.dirty).toBe(false);
   });
 
-  it('saves the theme, default mode, typeface and policy for the workspace', async () => {
+  it('saves the theme, default mode and typeface for the workspace', async () => {
     const { result, queryClient } = await renderQueryHook(() => useAppearance());
     await waitFor(() => expect(result.current.value).toBeDefined());
     act(() => result.current.update({ theme: 'pine', defaultMode: 'system', font: 'inter' }));
-    act(() => result.current.update({ personalThemes: true }));
     act(() => result.current.submit());
     await waitFor(() => expect(result.current.settings.save.isSuccess).toBe(true));
     expect(mockApi.db.settings).toMatchObject({
@@ -41,7 +39,6 @@ describe('useAppearance', () => {
       'appearance.customThemeId': null,
       'appearance.defaultMode': 'system',
       'appearance.font': 'inter',
-      'appearance.personalThemes': true,
     });
     await waitFor(() => expect(result.current.draft.dirty).toBe(false));
     await waitFor(() => expect(queryClient.isFetching()).toBe(0));

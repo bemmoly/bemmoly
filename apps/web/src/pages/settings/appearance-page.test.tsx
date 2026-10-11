@@ -81,4 +81,21 @@ describe('AppearancePage', () => {
     expect(preview.textContent).not.toContain('TL;DR');
     expect(preview.innerHTML).not.toMatch(/-ai(-\d+)?\b/);
   });
+
+  it('shows a member the workspace theme read-only and lets them choose only their mode', async () => {
+    mockApi.db.signedInAs = mockApi.db.users.find((user) => user.name.startsWith('Jonas'))!.id;
+    await renderPage(() => <AppearancePage />, '/settings/appearance');
+    expect(await screen.findByText('Your workspace admin sets the theme.')).toBeDefined();
+    const theme = screen.getByRole('radio', { name: 'Bemmoly' });
+    expect(theme.getAttribute('aria-checked')).toBe('true');
+    expect(theme.closest('fieldset')?.disabled).toBe(true);
+    expect(screen.queryByRole('radio', { name: 'Pine' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Save for workspace' })).toBeNull();
+
+    const mode = screen.getByRole('radiogroup', { name: 'Your mode' });
+    act(() => fireEvent.click(within(mode).getByRole('radio', { name: /Dark/ })));
+    await waitFor(() =>
+      expect(mockApi.db.appearancePreferences[mockApi.db.signedInAs!]?.mode).toBe('dark'),
+    );
+  });
 });

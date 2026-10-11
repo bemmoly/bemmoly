@@ -12,8 +12,8 @@ import { Kbd } from '../kbd/kbd.tsx';
 
 /*
  * The one filter bar Board and Backlog share (docs/design/premium/kit.css, `.tool`): search,
- * the filters that are set as removable chips, Filter and Saved views, then Group and Display
- * on the right. It is presentational; the screen owns the state, which lives in the URL.
+ * the quick filters as toggle chips, the filters that are set as removable chips, Filter and
+ * Saved views, then Group and Display on the right. It is presentational; the screen owns the state, which lives in the URL.
  */
 
 export interface FilterChipButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -159,6 +159,10 @@ export interface FilterBarProps {
   applied: readonly AppliedFilter[];
   /** Clears every filter; shown once two or more are set. */
   onClearAll?: () => void;
+  /** How many filters are set, when some are not chips in `applied` (pressed quick filters). */
+  activeCount?: number;
+  /** The quick filters as toggle chips (`QuickFilters`), right after search. */
+  quickFilters?: ReactNode;
   /** The Filter menu, already wired to a FilterChipButton trigger. */
   filterMenu?: ReactNode;
   /** The Saved views menu, already wired to its trigger. */
@@ -179,6 +183,8 @@ export function FilterBar({
   searchRef,
   applied,
   onClearAll,
+  activeCount,
+  quickFilters,
   filterMenu,
   savedViews,
   extra,
@@ -218,12 +224,13 @@ export function FilterBar({
         </label>
       )}
       <span aria-hidden className="h-4 w-px shrink-0 bg-line" />
+      {quickFilters}
       {applied.map((filter) => (
         <AppliedFilterChip key={filter.id} filter={filter} />
       ))}
       {filterMenu}
       {savedViews}
-      {onClearAll && applied.length > 1 && (
+      {onClearAll && (activeCount ?? applied.length) > 1 && (
         <button
           type="button"
           onClick={onClearAll}

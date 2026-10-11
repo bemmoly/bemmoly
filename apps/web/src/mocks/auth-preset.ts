@@ -27,7 +27,8 @@ const PROVIDERS = [
  * - `theme=pine&mode=dark`: the workspace look (a retired preset id maps to its theme);
  * - `logo=acme`: Acme Labs' own logo, so "Powered by Bemmoly" shows at the foot;
  * - `sso=1|3`: one provider (Okta) or three (Okta, Google Workspace, Entra ID); `sso=required`
- *   is Okta as the only way in, with Rohan as the password fallback;
+ *   is Okta as the only way in, with Rohan as the password fallback; `sso=google` is Google
+ *   Workspace alone, a full-colour mark;
  * - `down=1`: the server stops answering sign-in and /readyz;
  * - `deactivate=<email>`: that person's account is turned off.
  */
@@ -53,7 +54,8 @@ function seedProviders(db: MockDb, value: string) {
   const state = ssoOf(db);
   const count = value === '3' ? 3 : value === '0' ? 0 : 1;
   const now = new Date().toISOString();
-  state.providers = PROVIDERS.slice(0, count).map((provider) => ({
+  const chosen = value === 'google' ? PROVIDERS.slice(1, 2) : PROVIDERS.slice(0, count);
+  state.providers = chosen.map((provider) => ({
     // Fixed ids, so a remembered "Last used" provider survives a reload of the mock.
     id: provider.id,
     displayName: provider.displayName,

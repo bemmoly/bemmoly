@@ -177,6 +177,17 @@ describe('settings admin by key group', () => {
     );
   });
 
+  it('refuses the workspace theme to anyone without the appearance capability', async () => {
+    const { settings } = setup([
+      { key: 'appearance.theme', schema: z.string(), default: 'bemmoly' },
+    ]);
+    const memberAdmin = createSettingsAdmin({ settings, authorize: holding('ai.assist.use') });
+    await expect(memberAdmin.put(admin, 'appearance.theme', 'pine')).rejects.toBeInstanceOf(
+      ForbiddenError,
+    );
+    expect(await settings.get('appearance.theme')).toBe('bemmoly');
+  });
+
   it('keeps general settings to settings managers and the list from people with no manage capability', async () => {
     const { settings } = setup([
       { key: 'appearance.theme', schema: z.string(), default: 'classic' },

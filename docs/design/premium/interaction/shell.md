@@ -15,8 +15,15 @@ sign-in. Module screens own what sits under the header; this file owns the heade
   never a switcher), Search (⌘K) and New (C, with a menu of every create), Home / Inbox (unread
   pill) / My issues, then one section per module in manifest order (Work: the projects, the one
   in use opened to Board, Backlog and Settings; Docs: its spaces), then Settings, Help and
-  shortcuts, the version line ("Bemmoly 0.3.0 · What's new") and the person's menu (Profile,
-  Notification preferences, Theme, Sign out).
+  shortcuts, the version line ("Bemmoly 0.3.0 · What's new") and the person's row: their menu
+  (Profile, Notification preferences, Sign out) and, on its right, the Appearance button.
+- **Appearance button.** A 28px icon button showing the current mode (sun, moon or monitor),
+  tooltip "Appearance". It opens a popover anchored to it with Light, Dark and Match system as
+  menu radios; choosing applies at once and keeps the popover open. Arrow keys move, Escape
+  closes and returns focus to the button, the popover's scale-in drops under reduced motion. On
+  the 56px rail it stacks above the avatar and opens to the right; in the phone sheet it sits
+  beside the name as on desktop. Mode is the only personal choice: the workspace admin sets the
+  theme in Settings › Appearance (ADR 0021, amended).
 - **The project in use.** The path's project when it names one, else the person's last project
   while it still exists, else the first listed. The sidebar and Work's screens make the same
   choice, so a first visit to Inbox already shows a project's views.

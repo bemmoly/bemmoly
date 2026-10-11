@@ -15,7 +15,7 @@ import { updatesQuery } from '../../hooks/use-updates.ts';
 import type { Shell } from '../../hooks/use-shell.ts';
 import { viewerOf } from '../../lib/session.ts';
 import { useUiStore } from '../../store/ui.ts';
-import { SidebarFoot, SidebarTop, UserMenu } from './sidebar-parts.tsx';
+import { SidebarFoot, SidebarTop, AccountRow } from './sidebar-parts.tsx';
 
 const SYSTEM = 'workspace.system.manage';
 
@@ -116,7 +116,7 @@ export function SettingsSidebar({ shell }: { shell: Shell }) {
         ))}
       </nav>
       <SidebarFoot>
-        <UserMenu shell={shell} />
+        <AccountRow shell={shell} />
       </SidebarFoot>
     </>
   );

@@ -62,8 +62,7 @@ export function AcceptInvitationPage() {
         <>
           <SsoButtons options={sso.options} only autoFocus onStart={(id) => sso.start(id, '/')} />
           <AuthSmall>
-            Join with your {workspace} account at your identity provider, as {invitation.email}. No
-            new password needed.
+            Use the work account for {invitation.email}. No new password needed.
           </AuthSmall>
         </>
       ) : (

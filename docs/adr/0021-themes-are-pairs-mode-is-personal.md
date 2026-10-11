@@ -63,3 +63,21 @@ person, and "system" meant "workspace default", never the operating system.
   `data-mode='system'`; the typeface comes from `[data-font]`.
 - Emails use the workspace theme's light set (a custom theme's checked ramp, never the raw hex).
 - The demo takes `?theme=pine&mode=dark`; old preset ids still work.
+
+## Amendment (2026-10-11): only a workspace admin sets the theme
+
+The owner narrowed points 5 and 7: **the theme is the workspace's, set only by a workspace admin;
+the mode is the only personal appearance choice.**
+
+- Setting the workspace theme (the `appearance.*` settings and workspace custom themes) needs
+  `workspace.appearance.manage`, which only Org admin holds by default; anyone else gets 403.
+- Personal themes are retired. `PUT /me/appearance` refuses a `theme` with 403 and stores only
+  the mode; a theme stored before is ignored (`/me` reports `theme: null`). Creating a
+  `personal` custom theme is refused, and personal themes left from before are never listed,
+  edited or applied. `appearance.personalThemes` is inert and always reported `false`; it, the
+  `theme` column and the `personal` scope stay for the previous minor and are removed later.
+- The sidebar's Appearance button (beside the person's name) offers Light, Dark and Match
+  system only. Settings › Appearance shows a non-admin the workspace theme read-only with "Your
+  workspace admin sets the theme", beside their own mode.
+- Resolution once signed in: preview, the person's mode, then the workspace theme and default
+  mode. Before sign-in the device cache and the public look still apply.

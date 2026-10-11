@@ -14,14 +14,11 @@ import type { SettingsService } from '../../contracts/settings.ts';
 import { customThemes, type CustomThemeRow } from '../../models/index.ts';
 import { recordAudit } from '../audit/index.ts';
 import type { RequestContext } from '../authz/index.ts';
-import {
-  findVisibleTheme,
-  listPersonalThemes,
-  listWorkspaceThemes,
-  presentTheme,
-} from './store.ts';
+import { findWorkspaceTheme, listWorkspaceThemes, presentTheme } from './store.ts';
 
 export const MANAGE_APPEARANCE = 'workspace.appearance.manage' as const;
+
+export const ADMIN_SETS_THEME = 'Your workspace admin sets the theme';
 
 export interface AppearanceDeps {
   db: Database;
@@ -42,33 +39,12 @@ function assertChecked(brandColor: string, surface: CustomThemeRecord['surface']
   if (!built.pass) throw new ValidationError('This colour cannot be made to pass contrast');
 }
 
-/** Personal themes exist only while the workspace lets people pick their own theme. */
-async function assertPersonalAllowed(deps: AppearanceDeps): Promise<void> {
-  if (!(await deps.settings.get('appearance.personalThemes')))
-    throw new ForbiddenError('Your workspace does not let people pick their own theme');
-}
-
-/** Workspace themes need the appearance capability; personal ones only their owner. */
-async function assertMayEdit(deps: AppearanceDeps, ctx: RequestContext, row: CustomThemeRow) {
-  if (row.ownerId === null) {
-    await ctx.authz.authorize(ctx.actor, MANAGE_APPEARANCE, { kind: 'workspace' });
-    return;
-  }
-  if (row.ownerId !== personOf(ctx)) throw new NotFoundError('Theme not found');
-  await assertPersonalAllowed(deps);
-}
-
-/** The workspace's custom themes, then the person's own. */
+/** The workspace's custom themes; only a workspace admin sets the theme (ADR 0021). */
 export async function listCustomThemes(
   deps: AppearanceDeps,
-  ctx: RequestContext,
+  _ctx: RequestContext,
 ): Promise<CustomThemeRecord[]> {
-  const person = personOf(ctx);
-  const [workspace, personal] = await Promise.all([
-    listWorkspaceThemes(deps.db),
-    person ? listPersonalThemes(deps.db, person) : Promise.resolve([]),
-  ]);
-  return [...workspace, ...personal];
+  return listWorkspaceThemes(deps.db);
 }
 
 export async function createCustomTheme(
@@ -76,13 +52,9 @@ export async function createCustomTheme(
   ctx: RequestContext,
   input: CreateCustomThemeInput,
 ): Promise<CustomThemeRecord> {
+  if (input.scope === 'personal') throw new ForbiddenError(ADMIN_SETS_THEME);
+  await ctx.authz.authorize(ctx.actor, MANAGE_APPEARANCE, { kind: 'workspace' });
   const person = personOf(ctx);
-  if (input.scope === 'workspace') {
-    await ctx.authz.authorize(ctx.actor, MANAGE_APPEARANCE, { kind: 'workspace' });
-  } else {
-    if (!person) throw new ForbiddenError('Only a person has their own themes');
-    await assertPersonalAllowed(deps);
-  }
   const brandColor = input.brandColor.toLowerCase();
   assertChecked(brandColor, input.surface);
   return deps.db.transaction(async (tx) => {
@@ -92,7 +64,7 @@ export async function createCustomTheme(
         name: input.name,
         brandColor,
         surface: input.surface,
-        ownerId: input.scope === 'personal' ? person : null,
+        ownerId: null,
         createdBy: person,
       })
       .returning();
@@ -114,9 +86,9 @@ export async function updateCustomTheme(
   id: string,
   input: UpdateCustomThemeInput,
 ): Promise<CustomThemeRecord> {
-  const row = await findVisibleTheme(deps.db, id, personOf(ctx));
+  const row = await findWorkspaceTheme(deps.db, id);
   if (!row) throw new NotFoundError('Theme not found');
-  await assertMayEdit(deps, ctx, row);
+  await ctx.authz.authorize(ctx.actor, MANAGE_APPEARANCE, { kind: 'workspace' });
   const brandColor = (input.brandColor ?? row.brandColor).toLowerCase();
   const surface = input.surface ?? (row.surface as CustomThemeRecord['surface']);
   assertChecked(brandColor, surface);
@@ -138,7 +110,7 @@ export async function updateCustomTheme(
     return after;
   });
   // The previous minor and emails read the mirrored brand of the workspace default.
-  if (row.ownerId === null && (await deps.settings.get('appearance.customThemeId')) === id)
+  if ((await deps.settings.get('appearance.customThemeId')) === id)
     await deps.settings.set('appearance.brandColor', brandColor, ctx.actor);
   return theme;
 }
@@ -148,9 +120,9 @@ export async function deleteCustomTheme(
   ctx: RequestContext,
   id: string,
 ): Promise<void> {
-  const row = await findVisibleTheme(deps.db, id, personOf(ctx));
+  const row = await findWorkspaceTheme(deps.db, id);
   if (!row) throw new NotFoundError('Theme not found');
-  await assertMayEdit(deps, ctx, row);
+  await ctx.authz.authorize(ctx.actor, MANAGE_APPEARANCE, { kind: 'workspace' });
   const [theme, current] = await Promise.all([
     deps.settings.get('appearance.theme'),
     deps.settings.get('appearance.customThemeId'),

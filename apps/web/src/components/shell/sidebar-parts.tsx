@@ -6,7 +6,6 @@ import {
   IconButton,
   Kbd,
   Menu,
-  MenuGroup,
   MenuItem,
   MenuSeparator,
   Tooltip,
@@ -15,9 +14,9 @@ import {
 import { Icon } from '@bemmoly/ui/icons';
 import type { ReactNode } from 'react';
 import { useDevMailbox } from '../../hooks/use-dev-mailbox.ts';
-import { ModeControl } from '../appearance/mode-control.tsx';
 import { APP_VERSION, WHATS_NEW_URL, type Shell } from '../../hooks/use-shell.ts';
 import { useUiStore } from '../../store/ui.ts';
+import { AppearanceMenu } from './appearance-menu.tsx';
 import { NewButton } from './new-button.tsx';
 
 function openWhatsNew() {
@@ -123,7 +122,7 @@ export function SidebarTop({ shell }: { shell: Shell }) {
   );
 }
 
-/** The person: their row (or the rail's avatar) opens Profile, Theme and Sign out. */
+/** The person: their row (or the rail's avatar) opens Profile, notifications and Sign out. */
 export function UserMenu({ shell }: { shell: Shell }) {
   const { mode } = useFrame();
   const name = shell.me.user.name;
@@ -170,66 +169,11 @@ export function UserMenu({ shell }: { shell: Shell }) {
           Dev mailbox
         </MenuItem>
       ) : null}
-      <ThemeMenuGroups shell={shell} />
       <MenuSeparator />
       <MenuItem icon={<Icon name="arrow-left" />} onSelect={shell.signOut}>
         Sign out
       </MenuItem>
     </Menu>
-  );
-}
-
-/**
- * Mode, then (when the workspace allows it) Theme, as the review draws the user menu. The mode
- * switch keeps its own arrow keys, so the menu's item navigation does not take them.
- */
-function ThemeMenuGroups({ shell }: { shell: Shell }) {
-  return (
-    <>
-      <MenuGroup label="Mode" separated>
-        <div className="px-1.5 pt-0.5 pb-2" onKeyDown={(event) => event.stopPropagation()}>
-          <ModeControl compact value={shell.mode.value} onChange={shell.mode.set} />
-        </div>
-      </MenuGroup>
-      {shell.themes.length > 0 ? (
-        <MenuGroup label="Theme">
-          {shell.themes.map((choice) => (
-            <MenuItem
-              key={choice.id}
-              checked={choice.checked}
-              onSelect={choice.onSelect}
-              icon={<ThemeDot light={choice.dot.light} dark={choice.dot.dark} />}
-            >
-              {choice.label}
-              {choice.isWorkspace ? <span className="text-12 text-tx-3"> · workspace</span> : null}
-            </MenuItem>
-          ))}
-          {shell.canCreateTheme ? (
-            <MenuItem
-              icon={<Icon name="plus" />}
-              onSelect={() => shell.go('/settings/appearance/themes/new')}
-            >
-              Create your own theme…
-            </MenuItem>
-          ) : null}
-        </MenuGroup>
-      ) : null}
-      {shell.canManageAppearance ? (
-        <MenuItem icon={<Icon name="palette" />} onSelect={() => shell.go('/settings/appearance')}>
-          Workspace appearance…
-        </MenuItem>
-      ) : null}
-    </>
-  );
-}
-
-/** A theme's light fill and dark accent, half and half: the two designs it ships. */
-function ThemeDot({ light, dark }: { light: string; dark: string }) {
-  return (
-    <span aria-hidden="true" className="flex size-3 overflow-hidden rounded-full shadow-ring">
-      <span className="h-full w-1/2" style={{ background: light }} />
-      <span className="h-full w-1/2" style={{ background: dark }} />
-    </span>
   );
 }
 
@@ -263,6 +207,24 @@ export function SidebarFoot({ children }: { children: ReactNode }) {
       }
     >
       {children}
+    </div>
+  );
+}
+
+/**
+ * The footer's last row: the person's menu with the Appearance button on its right, or on the
+ * rail the avatar with the button stacked above it.
+ */
+export function AccountRow({ shell }: { shell: Shell }) {
+  const rail = useFrame().mode === 'rail';
+  return (
+    <div
+      className={rail ? 'flex flex-col-reverse items-center gap-1.5' : 'flex items-center gap-1'}
+    >
+      <div className={rail ? 'contents' : 'min-w-0 flex-1'}>
+        <UserMenu shell={shell} />
+      </div>
+      <AppearanceMenu shell={shell} />
     </div>
   );
 }

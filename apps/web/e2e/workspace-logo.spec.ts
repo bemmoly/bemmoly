@@ -75,6 +75,8 @@ test('an admin uploads a logo, sees it in the sidebar, rail and sign-in, then re
   await page.getByRole('button', { name: /Account: Rohan S\./ }).click();
   await page.getByRole('menuitem', { name: 'Sign out' }).click();
   await expect(page).toHaveURL(/\/login/);
+  // The sign-in page itself, not Settings on its way out: its banner leads with the logo.
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('Sign in');
   await expect(page.getByRole('banner').locator('img[src^="data:image/png"]')).toBeVisible();
   await expect(page.getByText(/Powered by/)).toBeVisible();
 });

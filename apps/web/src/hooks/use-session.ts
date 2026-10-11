@@ -1,7 +1,7 @@
 import { queryKeys } from '@bemmoly/api-client';
 import { queryOptions, useMutation, useQueryClient, useSuspenseQuery } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
-import { api } from '../lib/api.ts';
+import { api, markSession } from '../lib/api.ts';
 import { can, isOrgAdmin } from '../lib/session.ts';
 
 export const meQuery = queryOptions({
@@ -33,6 +33,7 @@ export function useSignOut() {
   return useMutation({
     mutationFn: () => api.auth.logout(),
     onSettled: async () => {
+      markSession(false);
       queryClient.clear();
       await navigate({ to: '/login', search: { reason: 'signed-out' } });
     },

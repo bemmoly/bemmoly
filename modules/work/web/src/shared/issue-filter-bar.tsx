@@ -7,6 +7,7 @@ import {
   Menu,
   MenuGroup,
   MenuItem,
+  QuickFilters,
   TypeGlyph,
   UnassignedAvatar,
   type AppliedFilter,
@@ -16,11 +17,14 @@ import {
   type IssueTypeRef,
 } from '@bemmoly/ui';
 import { useEffect, useRef, type ReactNode } from 'react';
+import { useMediaQuery } from '../hooks/media-query.ts';
 import { FACETS, useIssueFilters, type FacetKey } from './issue-filters.ts';
 
 /*
  * The filter row Board and Backlog share, over the one filter model in the address. Set
  * filters show as chips that remove themselves; the Filter menu adds them; "/" focuses search.
+ * Quick filters are toggle chips in the row itself, never behind a menu: fewer fit on a phone,
+ * and the rest wait behind "+N more".
  */
 
 export interface FilterOptions {
@@ -81,6 +85,7 @@ export function IssueFilterBar<G extends string>({
   const api = useIssueFilters();
   const { filters } = api;
   const searchRef = useSlashToSearch();
+  const phone = useMediaQuery('(max-width: 767px)', false);
 
   const nameOf = (facet: FacetKey, id: string): { name: string; icon?: ReactNode } => {
     if (facet === 'assignee') {
@@ -112,16 +117,13 @@ export function IssueFilterBar<G extends string>({
     return { name: options.labels.find((entry) => entry.id === id)?.name ?? 'A label' };
   };
 
+  const quickFilters = options.quick.map((entry) => ({
+    id: entry.id,
+    label: entry.name,
+    pressed: filters.quick.includes(entry.id),
+    onToggle: () => api.toggle('quick', entry.id),
+  }));
   const applied: AppliedFilter[] = [
-    ...filters.quick.map((id) => {
-      const name = options.quick.find((entry) => entry.id === id)?.name ?? id;
-      return {
-        id: `quick:${id}`,
-        label: name,
-        description: name,
-        onRemove: () => api.remove('quick', id),
-      };
-    }),
     ...FACETS.flatMap((facet) =>
       filters[facet].map((id) => {
         const { name, icon } = nameOf(facet, id);
@@ -171,21 +173,7 @@ export function IssueFilterBar<G extends string>({
         </FilterChipButton>
       )}
     >
-      {options.quick.length > 0 && (
-        <MenuGroup label="Quick filters">
-          {options.quick.map((entry) => (
-            <MenuItem
-              key={entry.id}
-              keepOpen
-              checked={filters.quick.includes(entry.id)}
-              onSelect={() => api.toggle('quick', entry.id)}
-            >
-              {entry.name}
-            </MenuItem>
-          ))}
-        </MenuGroup>
-      )}
-      <MenuGroup label="Assignee" separated>
+      <MenuGroup label="Assignee">
         {facetItems('assignee', [{ id: 'none', name: 'Unassigned' }, ...options.people])}
       </MenuGroup>
       {options.epics.length > 0 && (
@@ -210,8 +198,10 @@ export function IssueFilterBar<G extends string>({
     <FilterBar
       search={{ value: filters.q, onChange: api.setText, label, placeholder: 'Filter issues…' }}
       searchRef={searchRef}
+      quickFilters={<QuickFilters filters={quickFilters} maxVisible={phone ? 2 : 4} />}
       applied={applied}
       onClearAll={api.clear}
+      activeCount={applied.length + filters.quick.length}
       filterMenu={filterMenu}
       savedViews={savedViews}
       extra={extra}

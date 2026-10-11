@@ -2,7 +2,12 @@ import type { ModePreference } from '@bemmoly/shared';
 import { SegmentedControl } from '@bemmoly/ui';
 import { Icon, type IconName } from '@bemmoly/ui/icons';
 
-const MODES: readonly { value: ModePreference; label: string; short: string; icon: IconName }[] = [
+export const MODES: readonly {
+  value: ModePreference;
+  label: string;
+  short: string;
+  icon: IconName;
+}[] = [
   { value: 'light', label: 'Light', short: 'Light', icon: 'sun' },
   { value: 'dark', label: 'Dark', short: 'Dark', icon: 'moon' },
   { value: 'system', label: 'Match system', short: 'System', icon: 'monitor' },

@@ -9,10 +9,25 @@ export function setUnauthenticatedHandler(listener: Listener | null): void {
   onUnauthenticated = listener;
 }
 
+/**
+ * Whether this page has seen a signed-in session. A 401 means "your session ended" only then; a
+ * visitor who never signed in is sent to plain sign-in by the route guard instead.
+ */
+let hadSession = false;
+
+export function markSession(signedIn: boolean): void {
+  hadSession = signedIn;
+}
+
+/** A 401 reaches the router's handler once, and only after a real session. */
+export function reportUnauthenticated(error: ApiError): void {
+  if (!hadSession) return;
+  hadSession = false;
+  onUnauthenticated?.(error);
+}
+
 /** The one API client for the web app; every request goes through it. */
-export const api = createApiClient({
-  onUnauthenticated: (error) => onUnauthenticated?.(error),
-});
+export const api = createApiClient({ onUnauthenticated: reportUnauthenticated });
 
 export type Api = typeof api;
 
