@@ -95,9 +95,13 @@ describe('updates', () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     act(() => result.current.apply.mutate('0.1.2'));
     await waitFor(() => expect(result.current.running).toBe(true));
-    await waitFor(() => expect(result.current.overview?.current.version).toBe('0.1.2'), {
+    expect(result.current.dialog.watching).toBe(true);
+    // The mock walks one phase per read; read it through to the end.
+    for (let read = 0; read < 12; read += 1) mockApi.dispatch('GET', '/api/v1/admin/updates', null);
+    await waitFor(() => expect(result.current.progress?.outcome).toBe('succeeded'), {
       timeout: 5000,
     });
+    expect(result.current.overview?.current.version).toBe('0.1.2');
     expect(result.current.running).toBe(false);
     expect(result.current.overview?.rollback?.toVersion).toBe('0.1.1');
   });
