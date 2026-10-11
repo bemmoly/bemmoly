@@ -1,5 +1,11 @@
 # @bemmoly/i18n-tools
 
+## 0.13.1
+
+### Patch Changes
+
+- @bemmoly/shared@0.13.1
+
 ## 0.13.0
 
 ### Patch Changes
