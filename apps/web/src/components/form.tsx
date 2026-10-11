@@ -2,20 +2,29 @@ import { SkeletonText } from '@bemmoly/ui';
 import type { ReactNode } from 'react';
 import { describeError } from '../lib/errors.ts';
 
-/** A failed request in plain words, with the request id for support. */
-export function FormError({ error }: { error: unknown }) {
-  if (!error) return null;
-  const { message, requestId } = describeError(error);
+/** A failure in plain words, in the form's red box; FormError fills it from a request. */
+export function FormAlert({ children }: { children: ReactNode }) {
   return (
     <div
       role="alert"
       className="flex flex-col gap-1 rounded-control border border-red bg-side px-3 py-2.5 text-13 leading-body text-red-tx"
     >
+      {children}
+    </div>
+  );
+}
+
+/** A failed request in plain words, with the request id for support. */
+export function FormError({ error }: { error: unknown }) {
+  if (!error) return null;
+  const { message, requestId } = describeError(error);
+  return (
+    <FormAlert>
       <span>{message}</span>
       {requestId ? (
         <span className="font-mono text-11 opacity-80">Request id {requestId}</span>
       ) : null}
-    </div>
+    </FormAlert>
   );
 }
 

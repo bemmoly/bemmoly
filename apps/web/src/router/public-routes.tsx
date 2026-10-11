@@ -7,8 +7,10 @@ const text = (value: unknown) => (typeof value === 'string' && value ? value : u
 export const loginRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: 'login',
-  validateSearch: (search: Record<string, unknown>): { redirect?: string } => ({
+  validateSearch: (search: Record<string, unknown>): { redirect?: string; sso_error?: string } => ({
     redirect: text(search['redirect']),
+    // Set by a single sign-on that did not finish; the page explains the reason.
+    sso_error: text(search['sso_error']),
   }),
   beforeLoad: ({ context, search }) =>
     requireSignedOut(context.queryClient, search.redirect ?? '/'),

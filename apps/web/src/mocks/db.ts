@@ -18,6 +18,7 @@ import type {
   UpdatesOverview,
   User,
 } from '@bemmoly/shared';
+import type { MockSso } from './routes/sso.ts';
 import type { MockUpdateJob } from './routes/update-job.ts';
 import { seedAiOff, seedAiOn, type MockAi } from './seed/ai.ts';
 import { seedCapabilities, type CapabilityRow, type Cells } from './seed/capabilities.ts';
@@ -80,6 +81,8 @@ export interface MockDb {
   apiTokens: ApiToken[];
   /** Settings › AI: providers, roles, privacy, budget, prompts, people's opt-outs. */
   ai: MockAi;
+  /** Settings › Sign-in and SSO; created on first use (routes/sso.ts). */
+  sso?: MockSso;
   /** Realtime invalidations waiting for the socket bridge: [kind, userId, ids]. */
   outbound: Array<[string, string | null, string[]]>;
 }
