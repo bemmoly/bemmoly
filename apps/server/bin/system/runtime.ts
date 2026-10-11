@@ -17,6 +17,7 @@ import {
   sourcesFromRegistry,
   SYSTEM_SETTINGS,
   type Actor,
+  type KernelSettingsService,
   type SqlClient,
   type SystemDependencies,
 } from '@bemmoly/core';
@@ -30,6 +31,7 @@ export interface Runtime {
   env: Env;
   sql: SqlClient;
   deps: SystemDependencies;
+  settings: KernelSettingsService;
   close(): Promise<void>;
 }
 
@@ -100,5 +102,5 @@ export async function createRuntime(options: { humanLogs: boolean }): Promise<Ru
     enabledModules: () => enabled,
     objectStore,
   });
-  return { env, sql, deps, close: () => sql.end({ timeout: 5 }) };
+  return { env, sql, deps, settings, close: () => sql.end({ timeout: 5 }) };
 }
