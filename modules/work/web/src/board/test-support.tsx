@@ -94,7 +94,9 @@ export function renderScreen(projectKey: string) {
 
 export async function renderBoard() {
   renderScreen('PLT');
-  await screen.findByRole('heading', { name: 'Platform Core board' });
+  // The first render in a file loads the screen cold, which can pass the default second on a
+  // busy CI runner.
+  await screen.findByRole('heading', { name: 'Platform Core board' }, { timeout: 10_000 });
 }
 
 export const cardEl = (key: string) => {
