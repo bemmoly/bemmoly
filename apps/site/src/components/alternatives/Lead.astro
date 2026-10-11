@@ -1,0 +1,35 @@
+---
+/**
+ * The first lines under a comparison page's title: the three promises as ticks, each linking
+ * to its proof on the homepage, then the two ways on: install it, or click through the demo.
+ */
+import { HERO_TICKS } from '../../data/landing.ts';
+import { DEMO_URL, INSTALL_HREF } from '../../lib/links.ts';
+import Button from '../site/Button.astro';
+import Icon from '../site/Icon.astro';
+---
+
+<div class="flex max-w-190 flex-col gap-6">
+  <ul class="flex flex-col gap-2 text-14h text-tx-2 md:flex-row md:flex-wrap md:gap-x-6">
+    {HERO_TICKS.map((tick) => (
+      <li>
+        <a
+          href={tick.href}
+          class="inline-flex items-center gap-2 text-tx-2 no-underline! hover:text-tx"
+        >
+          <Icon name="check" size={15} class="text-acc" />
+          {tick.label}
+        </a>
+      </li>
+    ))}
+  </ul>
+  <div class="flex flex-col gap-2.5 sm:flex-row sm:gap-3">
+    <Button variant="primary" href={INSTALL_HREF}>
+      Install
+    </Button>
+    <Button variant="secondary" href={DEMO_URL}>
+      <Icon name="play" size={12} class="fill-current" />
+      Open the live demo
+    </Button>
+  </div>
+</div>

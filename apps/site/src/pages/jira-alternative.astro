@@ -1,0 +1,216 @@
+---
+/**
+ * Comparison page for people looking for an open source, self-hosted alternative to Jira.
+ * Bemmoly's facts come from the Work module's release notes (modules/work/CHANGELOG.md: 0.2.0
+ * for issues, workflows, the board and the backlog; 0.7.0 for Import from Jira) and the
+ * kernel's (single sign-on in 0.7.0); the other column only states what Atlassian publishes,
+ * with the link (src/data/alternatives.ts). The name appears in plain text only, never more
+ * prominent than Bemmoly, with the trademark note in the footer.
+ */
+import Section from '../components/site/Section.astro';
+import AlsoCompare from '../components/alternatives/AlsoCompare.astro';
+import Comparison from '../components/alternatives/Comparison.astro';
+import Lead from '../components/alternatives/Lead.astro';
+import Promises from '../components/alternatives/Promises.astro';
+import Shot from '../components/alternatives/Shot.astro';
+import Steps from '../components/alternatives/Steps.astro';
+import Capabilities from '../components/topics/Capabilities.astro';
+import Faq from '../components/topics/Faq.astro';
+import InstallCta from '../components/topics/InstallCta.astro';
+import Related from '../components/topics/Related.astro';
+import {
+  ATLASSIAN,
+  JIRA_COMPARISON,
+  OTHER_COLUMN,
+  TRADEMARK_NOTE,
+  type MigrationStep,
+} from '../data/alternatives.ts';
+import { RELEASE } from '../data/landing.ts';
+import { pageAt } from '../data/pages.ts';
+import type { Capability } from '../data/topics.ts';
+import Page from '../layouts/Page.astro';
+import type { FaqItem } from '../lib/structured-data.ts';
+
+const CAPABILITIES: readonly Capability[] = [
+  {
+    icon: 'sliders',
+    title: 'Issue types and custom fields',
+    body: 'Epic, story, bug, task, incident and subtask to start, or types of your own, each with its fields and create form.',
+    status: 'now',
+  },
+  {
+    icon: 'flow',
+    title: 'Workflows you draw',
+    body: 'Statuses and transitions in a visual editor, with conditions, validators and post-actions, checked before you publish.',
+    status: 'now',
+  },
+  {
+    icon: 'board',
+    title: 'Kanban and Scrum boards',
+    body: 'Columns mapped to statuses with WIP limits and swimlanes; velocity on Scrum boards, cycle time and throughput on Kanban.',
+    status: 'now',
+  },
+  {
+    icon: 'list',
+    title: 'Backlog and sprints',
+    body: 'Plan sprints against their capacity, drag issues between sprints and the backlog, then start and complete them.',
+    status: 'now',
+  },
+  {
+    icon: 'code',
+    title: 'A query language',
+    body: 'Filter any list with a short query that is checked and completed as you type, and save it for yourself or a team.',
+    status: 'now',
+  },
+  {
+    icon: 'people',
+    title: 'Projects, roles and audit',
+    body: 'Members with a role per project, custom roles with organisation-wide locks, and an audit log of every change.',
+    status: 'now',
+  },
+  {
+    icon: 'key',
+    title: 'Single sign-on and SCIM',
+    body: 'Any OpenID Connect provider or SAML 2.0, people placed in roles and teams from their groups, and SCIM 2.0 provisioning.',
+    status: 'now',
+  },
+  {
+    icon: 'doc',
+    title: 'Docs beside the issues',
+    body: 'Spaces of pages your team writes together, with issue chips and tables that show each issue’s live status.',
+    status: 'docs',
+  },
+  {
+    icon: 'spark',
+    title: 'AI with your own provider',
+    body: 'Off until an admin turns it on: issue summaries that cite their sources, and plans from ⌘K that run only when you confirm.',
+    status: 'ai',
+  },
+];
+
+const STEPS: readonly MigrationStep[] = [
+  {
+    title: 'Install Bemmoly and turn on Work',
+    body: 'One command on a Linux VM, then Settings › Manage modules. The setup wizard offers the import as one of its steps, too.',
+  },
+  {
+    title: 'Connect your site',
+    body: 'In Settings › Import, choose Import from Jira, then enter the site address (Cloud or Data Center) and an API token or personal access token. The token is stored encrypted and never shown again.',
+  },
+  {
+    title: 'See what will come across',
+    body: 'Before anything is written you see the projects and their counts, then how issue types, statuses and custom fields will land: matched, created or only reported.',
+  },
+  {
+    title: 'Run it and read the report',
+    body: 'The import runs in the background with live progress and can be cancelled. The report lists what was created, updated and skipped, and why.',
+  },
+  {
+    title: 'Run it again whenever you like',
+    body: 'Every imported record is remembered, so a second run updates what the first one made instead of copying it, and leaves alone anything edited in Bemmoly since.',
+  },
+];
+
+const FAQ: readonly FaqItem[] = [
+  {
+    question: 'Is Bemmoly really free?',
+    answer:
+      'Yes. Bemmoly is open source under the MIT license, with no pricing, no seat limits and no in-app purchases. Every feature is in the image you install; your only cost is the server it runs on.',
+  },
+  {
+    question: 'Can I bring my projects over from Jira?',
+    answer:
+      'Yes. Import from Jira brings projects with their keys and issue numbers, issue types, statuses, custom fields, versions, components, boards and sprints, and issues with their descriptions, comments, attachments, labels, parents and links, from Cloud or Data Center. Field kinds Work cannot hold are listed in the report instead.',
+  },
+  {
+    question: 'What happens to the people on my projects?',
+    answer:
+      'They are matched by email. Someone with no account in Bemmoly yet is added as invited, without an email being sent, and someone whose address the source site hides becomes a deactivated placeholder that keeps their name on what they wrote.',
+  },
+  {
+    question: 'Does it have Scrum and Kanban boards?',
+    answer:
+      'Yes, per project: columns mapped to workflow statuses, WIP limits, swimlanes and quick filters, the backlog with sprints, and velocity, cycle time and throughput.',
+  },
+  {
+    question: 'What do I need to run it?',
+    answer:
+      'A Linux VM with 2 vCPU and 4 GB of memory, the size we plan for about 200 people (an estimate until measured), and a domain pointing at it. The installer sets up Docker, Postgres 18, HTTPS, backups and updates.',
+  },
+  {
+    question: 'Is Bemmoly affiliated with Atlassian?',
+    answer:
+      'No. Bemmoly is an independent open source project. Jira is named here only to compare the two and to describe the import.',
+  },
+];
+---
+
+<Page
+  page={pageAt('/jira-alternative')}
+  heading="Bemmoly: the open-source, self-hosted alternative to Jira"
+  lede="Issues, workflows, Kanban and Scrum boards and sprints for your whole company, on a server you own. Bemmoly is MIT licensed, free for any number of people, and Import from Jira brings your projects across."
+  wide
+  faq={FAQ}
+  footnote={TRADEMARK_NOTE}
+>
+  <Lead />
+
+  <Promises />
+
+  <Section title="What you get today">
+    <p>
+      Everything below is in Bemmoly {RELEASE.version}, the release the installer pulls today. The
+      Work module is in every install and stays off until an admin turns it on.
+    </p>
+    <Capabilities items={CAPABILITIES} />
+  </Section>
+
+  <Shot
+    id="board"
+    caption="A sprint board in the live demo, on sample data that stays in your browser."
+    link="Drag a card yourself."
+  />
+
+  <Section title="Bemmoly and Jira, side by side">
+    <p>
+      Both track issues on boards. The difference is where it runs, who holds the data and what it
+      costs. Each cell links to the page that says so.
+    </p>
+    <Comparison
+      rows={JIRA_COMPARISON}
+      other={OTHER_COLUMN.jira}
+      caption="Bemmoly compared with Jira in Atlassian's cloud"
+    />
+    <p class="text-14h">On hosting choices, from Atlassian’s own announcements:</p>
+    <ul class="text-14h">
+      <li>
+        Support for its Server products ended on February 15, 2024.
+        <a href={ATLASSIAN.serverEnd.href}>Source</a>
+      </li>
+      <li>
+        Its Data Center products reach end of life in 2029, with Bitbucket and Bamboo as exceptions.
+        <a href={ATLASSIAN.dataCenterEnd.href}>Source</a>
+      </li>
+    </ul>
+    <p>Bemmoly is built to run on your own server from the first release.</p>
+  </Section>
+
+  <Section title="Moving your projects across">
+    <Steps steps={STEPS} />
+    <p>
+      Issues from any other tracker come in from a CSV file, one issue per row, with columns matched
+      by their headers.
+    </p>
+  </Section>
+
+  <Shot
+    id="backlog"
+    caption="The backlog in the live demo: the running sprint with its points, and what comes next."
+    link="Open the backlog."
+  />
+
+  <Faq items={FAQ} />
+  <InstallCta title="Run your issue tracker on your own server" demo />
+  <AlsoCompare current="/jira-alternative" />
+  <Related current="/jira-alternative" />
+</Page>

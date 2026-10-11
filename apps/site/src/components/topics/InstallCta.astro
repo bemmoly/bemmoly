@@ -1,17 +1,18 @@
 ---
 /**
  * The closing call to action of a topic page: the hero's install command, with the same copy
- * button, and the two ways on.
+ * button, and the two ways on; with `demo`, the live demo as a third.
  */
-import { INSTALL_HREF } from '../../lib/links.ts';
+import { DEMO_URL, INSTALL_HREF } from '../../lib/links.ts';
 import CommandField from '../site/CommandField.astro';
 import Button from '../site/Button.astro';
 
 interface Props {
   title?: string;
+  demo?: boolean;
 }
 
-const { title = 'Run it on your own server' } = Astro.props;
+const { title = 'Run it on your own server', demo = false } = Astro.props;
 ---
 
 <section
@@ -33,5 +34,10 @@ const { title = 'Run it on your own server' } = Astro.props;
     <Button variant="secondary" href="/self-hosting#other-paths">
       Other ways to run it
     </Button>
+    {demo && (
+      <Button variant="ghost" href={DEMO_URL}>
+        Open the live demo
+      </Button>
+    )}
   </div>
 </section>

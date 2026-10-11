@@ -1,0 +1,212 @@
+---
+/**
+ * Comparison page for people looking for an open source, self-hosted wiki in place of
+ * Confluence. Bemmoly's facts come from the Docs module's release notes
+ * (modules/docs/CHANGELOG.md: 0.3.0 for spaces, the editor, comments, history and the space
+ * export import; 0.5.0 for PDF through the browser; 0.7.0 for Import from Confluence); the
+ * other column only states what Atlassian publishes, with the link (src/data/alternatives.ts).
+ * The name appears in plain text only, never more prominent than Bemmoly, with the trademark
+ * note in the footer.
+ */
+import Section from '../components/site/Section.astro';
+import AlsoCompare from '../components/alternatives/AlsoCompare.astro';
+import Comparison from '../components/alternatives/Comparison.astro';
+import Lead from '../components/alternatives/Lead.astro';
+import Promises from '../components/alternatives/Promises.astro';
+import Shot from '../components/alternatives/Shot.astro';
+import Steps from '../components/alternatives/Steps.astro';
+import Capabilities from '../components/topics/Capabilities.astro';
+import Faq from '../components/topics/Faq.astro';
+import InstallCta from '../components/topics/InstallCta.astro';
+import Related from '../components/topics/Related.astro';
+import {
+  ATLASSIAN,
+  CONFLUENCE_COMPARISON,
+  OTHER_COLUMN,
+  TRADEMARK_NOTE,
+  type MigrationStep,
+} from '../data/alternatives.ts';
+import { RELEASE } from '../data/landing.ts';
+import { pageAt } from '../data/pages.ts';
+import type { Capability } from '../data/topics.ts';
+import Page from '../layouts/Page.astro';
+import type { FaqItem } from '../lib/structured-data.ts';
+
+const CAPABILITIES: readonly Capability[] = [
+  {
+    icon: 'layers',
+    title: 'Spaces and page trees',
+    body: 'Drag pages above, below or into one another, star them, and restore from each space’s trash. Space admins choose who is in.',
+    status: 'docs',
+  },
+  {
+    icon: 'people',
+    title: 'Writing together, live',
+    body: 'Several people on one page see each other’s named cursors and never overwrite each other; offline edits merge on return.',
+    status: 'docs',
+  },
+  {
+    icon: 'doc',
+    title: 'Blocks for real documents',
+    body: 'Type “/” for headings, callouts, decisions, tables, images, code coloured by language and a table of contents.',
+    status: 'docs',
+  },
+  {
+    icon: 'message',
+    title: 'Comments that stay put',
+    body: 'Comment on a page or on selected words; threads have replies and mentions, and follow their words through later edits.',
+    status: 'docs',
+  },
+  {
+    icon: 'clock',
+    title: 'Version history',
+    body: 'Compare any two versions block by block and word by word, and restore one as a live edit that is itself kept.',
+    status: 'docs',
+  },
+  {
+    icon: 'check',
+    title: 'Reviews and templates',
+    body: 'Ask for review and publish from the page’s status, and start from six templates: RFC, meeting notes, postmortem, spec, runbook and decision log.',
+    status: 'docs',
+  },
+  {
+    icon: 'link',
+    title: 'Issues inside the page',
+    body: 'With Work turned on, issue chips and tables from a saved filter show each issue’s live status.',
+    status: 'docs',
+  },
+  {
+    icon: 'export',
+    title: 'Export any time',
+    body: 'A page as Markdown or HTML, a page and its subpages as a zip, or PDF through your browser.',
+    status: 'docs',
+  },
+  {
+    icon: 'spark',
+    title: 'Ask your docs',
+    body: 'Off until an admin turns it on: answers with numbered citations from pages you can open, and a TL;DR on each page.',
+    status: 'ai',
+  },
+];
+
+const STEPS: readonly MigrationStep[] = [
+  {
+    title: 'Install Bemmoly and turn on Docs',
+    body: 'One command on a Linux VM, then Settings › Manage modules. The setup wizard offers the import as one of its steps, too.',
+  },
+  {
+    title: 'Connect your site',
+    body: 'In Settings › Import, choose Import from Confluence, then enter the site address (Cloud or Data Center) and an API token or personal access token. The token is stored encrypted and never shown again.',
+  },
+  {
+    title: 'See what will come across',
+    body: 'Before anything is written you see the spaces the site holds and their counts, so you choose what to bring.',
+  },
+  {
+    title: 'Run it and read the report',
+    body: 'Spaces and their page trees arrive with labels, threaded comments and attachments. Links are rewritten to the imported pages and issues, and macros Bemmoly has no block for are kept as labelled blocks rather than dropped.',
+  },
+  {
+    title: 'Run it again whenever you like',
+    body: 'Every imported record is remembered, so a second run updates what the first one made instead of copying it, and leaves alone anything edited in Bemmoly since.',
+  },
+];
+
+const FAQ: readonly FaqItem[] = [
+  {
+    question: 'Is Bemmoly a self-hosted wiki?',
+    answer:
+      'Yes. The Docs module is a wiki for your whole company that runs on your own server: spaces, page trees, a live collaborative editor, comments, version history and templates, stored in your own Postgres.',
+  },
+  {
+    question: 'Is Bemmoly really free?',
+    answer:
+      'Yes. Bemmoly is open source under the MIT license, with no pricing, no seat limits and no in-app purchases. Every feature is in the image you install; your only cost is the server it runs on.',
+  },
+  {
+    question: 'Can I bring my spaces over from Confluence?',
+    answer:
+      'Yes. Import from Confluence brings spaces and their page trees from Cloud or Data Center, with labels, threaded comments and attachments, and images show inline in the imported pages. If you have a space export instead, import its HTML pages from inside a space.',
+  },
+  {
+    question: 'What happens to macros?',
+    answer:
+      'Macros with a matching block become that block. Any other macro is kept as a labelled block where it stood, so nothing is silently lost and you can see what to tidy up.',
+  },
+  {
+    question: 'Can I get my pages out again?',
+    answer:
+      'Yes. Export a page as Markdown or self-contained HTML, a page and its subpages as a zip, or print it to PDF from your browser.',
+  },
+  {
+    question: 'Is Bemmoly affiliated with Atlassian?',
+    answer:
+      'No. Bemmoly is an independent open source project. Confluence is named here only to compare the two and to describe the import.',
+  },
+];
+---
+
+<Page
+  page={pageAt('/confluence-alternative')}
+  heading="Bemmoly: the open-source, self-hosted alternative to Confluence"
+  lede="A wiki for your whole company on a server you own: spaces and page trees, a live editor, comments that follow their words and the full history of every page. Bemmoly is MIT licensed, free for any number of people, and Import from Confluence brings your spaces across."
+  wide
+  faq={FAQ}
+  footnote={TRADEMARK_NOTE}
+>
+  <Lead />
+
+  <Promises />
+
+  <Section title="What you get today">
+    <p>
+      Everything below is in Bemmoly {RELEASE.version}, the release the installer pulls today. The
+      Docs module is in every install, works with or without Work, and stays off until an admin
+      turns it on.
+    </p>
+    <Capabilities items={CAPABILITIES} />
+  </Section>
+
+  <Shot
+    id="docs"
+    caption="An RFC page in the live demo, in its space’s page tree, with the issues it links to."
+    link="Open the page yourself."
+  />
+
+  <Section title="Bemmoly and Confluence, side by side">
+    <p>
+      Both keep a company’s pages in spaces. The difference is where it runs, who holds the data and
+      what it costs. Each cell links to the page that says so.
+    </p>
+    <Comparison
+      rows={CONFLUENCE_COMPARISON}
+      other={OTHER_COLUMN.confluence}
+      caption="Bemmoly compared with Confluence in Atlassian's cloud"
+    />
+    <p class="text-14h">On hosting choices, from Atlassian’s own announcements:</p>
+    <ul class="text-14h">
+      <li>
+        Support for its Server products ended on February 15, 2024.
+        <a href={ATLASSIAN.serverEnd.href}>Source</a>
+      </li>
+      <li>
+        Its Data Center products reach end of life in 2029, with Bitbucket and Bamboo as exceptions.
+        <a href={ATLASSIAN.dataCenterEnd.href}>Source</a>
+      </li>
+    </ul>
+    <p>Bemmoly is built to run on your own server from the first release.</p>
+  </Section>
+
+  <Section title="Moving your spaces across">
+    <Steps steps={STEPS} />
+    <p>
+      Notes kept as Markdown come in too: drop a folder into a space and its folders become parent
+      pages.
+    </p>
+  </Section>
+
+  <Faq items={FAQ} />
+  <InstallCta title="Run your company wiki on your own server" demo />
+  <AlsoCompare current="/confluence-alternative" />
+  <Related current="/confluence-alternative" />
+</Page>

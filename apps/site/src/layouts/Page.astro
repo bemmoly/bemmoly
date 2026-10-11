@@ -18,6 +18,7 @@ interface Props {
   noindex?: boolean;
   faq?: readonly FaqItem[];
   alternate?: { href: string; type: string; title: string };
+  footnote?: string;
 }
 
 const {
@@ -28,11 +29,12 @@ const {
   noindex = false,
   faq,
   alternate,
+  footnote,
 } = Astro.props;
 const parents = trailOf(page.path).slice(1, -1);
 ---
 
-<Base page={page} noindex={noindex} faq={faq} alternate={alternate}>
+<Base page={page} noindex={noindex} faq={faq} alternate={alternate} footnote={footnote}>
   <article
     class:list={[
       'mx-auto flex w-full flex-col gap-12 px-4 pt-16 pb-20 sm:px-6 lg:pt-20',

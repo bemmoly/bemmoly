@@ -1,0 +1,36 @@
+---
+/**
+ * One picture of the product on a comparison page: a poster captured from the live demo in
+ * light and dark (scripts/capture-previews.ts), with a caption that says what it shows and
+ * links to the same screen in the demo.
+ */
+import { POSTERS, POSTER_WIDTHS } from '../../data/posters.ts';
+import { PREVIEWS, type PreviewId } from '../../data/previews.ts';
+import Poster from '../site/Poster.astro';
+
+interface Props {
+  id: PreviewId;
+  caption: string;
+  link: string;
+}
+
+const { id, caption, link } = Astro.props;
+const preview = PREVIEWS.find((entry) => entry.id === id);
+---
+
+<figure class="m-0 flex flex-col gap-3">
+  <div class="overflow-hidden rounded-shot bg-card shadow-e3">
+    <Poster
+      {...POSTERS[id]}
+      alt={preview?.alt ?? ''}
+      widths={POSTER_WIDTHS}
+      sizes="(min-width: 1160px) 1064px, calc(100vw - 32px)"
+    />
+  </div>
+  <figcaption class="text-13 leading-brief text-tx-3">
+    {caption}
+    <a href={preview?.path} class="font-medium underline">
+      {link}
+    </a>
+  </figcaption>
+</figure>

@@ -24,9 +24,11 @@ interface Props {
   faq?: readonly FaqItem[];
   /** Extra <head> links, such as the changelog's feed. */
   alternate?: { href: string; type: string; title: string };
+  /** One line of notice in the footer, such as the comparison pages' trademark note. */
+  footnote?: string;
 }
 
-const { page, noindex = false, faq, alternate } = Astro.props;
+const { page, noindex = false, faq, alternate, footnote } = Astro.props;
 // Page paths are the clean addresses Caddy serves (/docs, /docs/compose, /).
 const canonical = new URL(page.path, Astro.site).href;
 const image = new URL(socialPreview.src, Astro.site).href;
@@ -102,7 +104,7 @@ const verification = [
     <main class="flex flex-1 flex-col">
       <slot />
     </main>
-    <Footer>
+    <Footer note={footnote}>
       <slot name="cta" />
     </Footer>
     <script>

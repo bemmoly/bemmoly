@@ -12,6 +12,8 @@ the product's visual system, ADR 0015); the first Landing mock
 | `/open-source-issue-tracker`      | Topic page: the Work module's release notes, tech design §14 and §16  |
 | `/kanban-and-sprint-boards`       | Topic page: the Work module's release notes (board, backlog, metrics) |
 | `/on-premise`                     | Topic page: the kernel's storage, backups, updater and audit log      |
+| `/jira-alternative`               | Comparison page: Work's release notes, Import from Jira, sources      |
+| `/confluence-alternative`         | Comparison page: Docs' release notes, Import from Confluence, sources |
 | `/self-hosting`                   | The one install page: `deploy/`, the CLI and tech design §18          |
 | `/docs`                           | The guides below, the README and the tech design                      |
 | `/docs/compose`                   | `deploy/compose` and how the installer fills in its `.env`            |
@@ -129,6 +131,13 @@ None of it tracks visitors: there is no analytics script, and the measures below
 - **Other products.** The owner's rule: no other product's name in copy, metadata, addresses or
   structured data, except as an import source ("Import from Jira"). `tests/seo.test.ts` checks
   every built text file against a list of names and the allowed phrases.
+- **Comparison pages.** `/jira-alternative` and `/confluence-alternative` are the one exception
+  (`ALTERNATIVES` in `src/data/pages.ts`): they may name the product they compare with and its
+  maker, the footer links to them by their short names, and llms.txt lists them. Everything else
+  stays strict, and the tests check each page leads with Bemmoly and carries the trademark note.
+  The comparison rows and Atlassian's source pages live in `src/data/alternatives.ts`; those
+  sources are the only links off the site besides the repository, and only on those two pages.
+  Read each source again before changing a row: Atlassian's plans and dates change.
 
 ### Crawlers and feeds
 
@@ -213,8 +222,13 @@ install, import and configure, open source, the FAQ and the final call. The copy
 - **No time promises.** No install time is published until the nightly install job measures one.
 - **Live facts.** The GitHub star count is fetched once per build (`src/lib/clients/github.ts`,
   5 s timeout); when the fetch fails the number is simply left out.
+- **Sponsor link.** Every page's footer has a quiet "Buy me a coffee" link to the project's
+  page (`SPONSOR_URL`, the `buy_me_a_coffee` handle in `.github/FUNDING.yml`), a plain link in a
+  new tab with no logo or script, under the line "Optional support for the project. It unlocks
+  nothing". `tests/promises.test.ts` keeps the URL in step with the funding file and the label
+  optional; it is the one external link besides the repository that every page may carry.
 - **Names.** Other products appear only as import sources ("Import from Confluence",
-  "Import from Jira"); `tests/seo.test.ts` enforces it.
+  "Import from Jira"), outside the two comparison pages; `tests/seo.test.ts` enforces it.
 
 ## Self-hosting page
 

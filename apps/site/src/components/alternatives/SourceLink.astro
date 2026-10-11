@@ -1,0 +1,17 @@
+---
+/** The page a comparison cell rests on, as a small link under the cell's words. */
+import type { Source } from '../../data/alternatives.ts';
+
+interface Props {
+  source: Source;
+}
+
+const { source } = Astro.props;
+---
+
+<a
+  href={source.href}
+  class="mt-1 block text-12 text-tx-3 underline decoration-line underline-offset-3 hover:text-tx-2"
+>
+  Source: {source.label}
+</a>

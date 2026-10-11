@@ -1,0 +1,62 @@
+---
+/**
+ * The side-by-side on a comparison page: Bemmoly first, then the other product's hosted
+ * service, each cell with the page that proves it. Only rows either side can check. On a
+ * phone each row stacks into a small card with the column names written in, so nothing
+ * scrolls sideways; from the small breakpoint up it is a plain three-column table.
+ */
+import type { ComparisonRow } from '../../data/alternatives.ts';
+import SourceLink from './SourceLink.astro';
+
+interface Props {
+  rows: readonly ComparisonRow[];
+  /** The other column's heading, such as "Jira (Atlassian cloud)". */
+  other: string;
+  caption: string;
+}
+
+const { rows, other, caption } = Astro.props;
+const cell = 'block px-4 pb-3 sm:table-cell sm:px-3.5 sm:py-3';
+const label = 'mb-0.5 block text-12 font-semibold text-tx-3 sm:hidden';
+---
+
+<div class="rounded-card border border-line">
+  <table class="block w-full border-collapse text-left text-14 sm:table">
+    <caption class="sr-only">{caption}</caption>
+    <thead class="hidden bg-side text-13 font-semibold text-tx-3 sm:table-header-group dark:bg-card">
+      <tr>
+        <th scope="col" class="w-[22%] px-3.5 py-2.5 font-semibold">
+          <span class="sr-only">Topic</span>
+        </th>
+        <th scope="col" class="w-[39%] px-3.5 py-2.5 font-semibold text-tx">
+          Bemmoly
+        </th>
+        <th scope="col" class="px-3.5 py-2.5 font-semibold">
+          {other}
+        </th>
+      </tr>
+    </thead>
+    <tbody class="block sm:table-row-group">
+      {rows.map((row, index) => (
+        <tr class:list={['block align-top sm:table-row', index > 0 && 'border-t border-line-2']}>
+          <th
+            scope="row"
+            class="block px-4 pt-3 pb-2 text-15 font-semibold text-tx sm:table-cell sm:px-3.5 sm:py-3 sm:text-14"
+          >
+            {row.topic}
+          </th>
+          <td class={cell}>
+            <span class={label}>Bemmoly</span>
+            <span class="text-tx">{row.bemmoly}</span>
+            {row.bemmolySource && <SourceLink source={row.bemmolySource} />}
+          </td>
+          <td class:list={[cell, 'pb-4']}>
+            <span class={label}>{other}</span>
+            {row.other}
+            {row.otherSource && <SourceLink source={row.otherSource} />}
+          </td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>

@@ -67,6 +67,24 @@ export const PAGES = [
     software: true,
   },
   {
+    path: '/jira-alternative',
+    name: 'Jira alternative',
+    title: 'Bemmoly: open source, self-hosted Jira alternative',
+    description:
+      'Bemmoly is a free, MIT-licensed Jira alternative you host yourself: issues, workflows, Kanban and Scrum boards and sprints, with Import from Jira.',
+    updated: '2026-10-11',
+    software: true,
+  },
+  {
+    path: '/confluence-alternative',
+    name: 'Confluence alternative',
+    title: 'Bemmoly: open source, self-hosted Confluence alternative',
+    description:
+      'A self-hosted wiki under the MIT license: spaces, live editing, comments and version history on your own server, with Import from Confluence.',
+    updated: '2026-10-11',
+    software: true,
+  },
+  {
     path: '/self-hosting',
     name: 'Self-hosting',
     title: 'Install Bemmoly on your own server: the self-hosting guide',
@@ -156,3 +174,12 @@ export const TOPICS: readonly PagePath[] = [
   '/self-hosting',
   '/docs/compose',
 ];
+
+/**
+ * The two comparison pages: the only pages that name another product outside an import label
+ * (tests/seo.test.ts). The footer links to them; they link to each other.
+ */
+export const ALTERNATIVES = [
+  '/jira-alternative',
+  '/confluence-alternative',
+] as const satisfies readonly PagePath[];

@@ -39,7 +39,8 @@ Every page is built around three promises, word for word:
 Where they appear: the hero's ticks, a section of their own with proof under each, the FAQ, the
 final call, the self-hosting guide's header and the footer line. The product must keep them
 true: anything in the app that suggests billing, licences to buy or an upgrade breaks a promise
-and fails review.
+and fails review. The site's one sponsor link (the footer's "Buy me a coffee") is labelled as
+optional support that unlocks nothing, a plain secondary link with no logo, never a price.
 
 ## Honest claims only, proven by code
 
@@ -58,7 +59,9 @@ and fails review.
   admin configures mail, backups and certificates elsewhere; say what stays and what you choose
   to send.
 - **Competitors appear only as import sources** ("Import from Confluence"), per
-  [content.md](content.md#other-products-names).
+  [content.md](content.md#other-products-names), except on the two comparison pages
+  (`/jira-alternative`, `/confluence-alternative`), which follow the trademark rules recorded
+  there and cite Atlassian's own pages for every fact about its products.
 - **No third-party scripts, no analytics, a strict CSP** (`tests/csp.test.ts`), and the
   performance budget holds.
 

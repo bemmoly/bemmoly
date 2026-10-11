@@ -1,0 +1,31 @@
+---
+/**
+ * The three promises, word for word and in the owner's order, each with the files that prove
+ * it (src/data/proofs.ts, kept honest by tests/promises.test.ts): the homepage's deal cards at
+ * the text pages' sizes.
+ */
+import { PROMISES } from '../../data/proofs.ts';
+import ProofLine from '../landing/ProofLine.astro';
+import Icon from '../site/Icon.astro';
+import Section from '../site/Section.astro';
+---
+
+<Section title="Open. Free. Nothing to buy." id="promises">
+  <p>What you install is the whole product, and it stays that way.</p>
+  <div class="grid gap-4 md:grid-cols-3">
+    {PROMISES.map((promise) => (
+      <article class="flex flex-col gap-3 rounded-shot bg-card p-5 shadow-e1 md:p-6">
+        <span class="grid size-9 place-items-center rounded-card bg-acc-50 text-acc">
+          <Icon name={promise.icon} size={18} />
+        </span>
+        <h3 class="text-17 font-semibold tracking-brand text-tx">{promise.title}</h3>
+        <p class="text-14h leading-desc text-pretty">{promise.body}</p>
+        <div class="mt-auto flex flex-col gap-1.5 border-t border-line-2 pt-3">
+          {promise.proofs.map((proof) => (
+            <ProofLine proof={proof} />
+          ))}
+        </div>
+      </article>
+    ))}
+  </div>
+</Section>

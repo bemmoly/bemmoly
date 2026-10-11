@@ -2,16 +2,18 @@
  * The proof behind the homepage's claims (src/data/proofs.ts). A proof that names a file must
  * point at that file in the repository, and the file must still contain the line it quotes:
  * the day a change removes the line, this fails and the site stops making the claim. The
- * built page must show every proof. Run `pnpm build` first for the last check.
+ * built page must show every proof, and every page's footer the optional sponsor link. Run
+ * `pnpm build` first for the last two checks.
  */
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { HOME_FAQ } from '../src/data/faq.ts';
 import { OWN, PROMISES, type Proof } from '../src/data/proofs.ts';
-import { REPO_URL, sourceUrl } from '../src/lib/links.ts';
-import { hrefsOf, parsePage } from './dom.ts';
+import { REPO_URL, SPONSOR_URL, sourceUrl } from '../src/lib/links.ts';
+import { hrefsOf, isSitePage, parsePage } from './dom.ts';
 
 const repo = new URL('../../../', import.meta.url);
+const dist = new URL('../dist/', import.meta.url);
 const proofs: Proof[] = [
   ...PROMISES.flatMap((promise) => promise.proofs),
   ...OWN.map((fact) => fact.proof),
@@ -69,6 +71,28 @@ describe('proofs', () => {
     for (const item of mentions) {
       expect(item.answer).toContain('optional');
       expect(item.answer).toContain('unlocks nothing');
+    }
+  });
+
+  it('links the footer to the funding page, as optional support that unlocks nothing', () => {
+    const funding = readFileSync(new URL('.github/FUNDING.yml', repo), 'utf8');
+    const handle = /^buy_me_a_coffee: (\S+)/m.exec(funding)?.[1];
+    expect(SPONSOR_URL).toBe(`https://buymeacoffee.com/${handle}`);
+    for (const file of readdirSync(dist, { recursive: true, encoding: 'utf8' }).filter(
+      isSitePage,
+    )) {
+      const footer = parsePage(readFileSync(new URL(file, dist), 'utf8')).querySelector('footer');
+      const links = footer?.querySelectorAll('a[data-sponsor]') ?? [];
+      expect(links, file).toHaveLength(1);
+      const link = links[0];
+      expect(link?.getAttribute('href')?.value).toBe(SPONSOR_URL);
+      expect(link?.getAttribute('rel')?.value).toContain('noopener');
+      expect(link?.querySelector('img')).toBeNull();
+      // The link and its note, read together: optional, unlocking nothing, never a sale.
+      const block = link?.parent?.textContent.replace(/\s+/g, ' ') ?? '';
+      expect(block).toContain('Buy me a coffee');
+      expect(block).toContain('Optional support for the project. It unlocks nothing');
+      expect(block).not.toMatch(/\b(premium|upgrade|unlock (more|features)|pro plan|price)\b/i);
     }
   });
 });
