@@ -1,7 +1,11 @@
 import type { Http } from '@bemmoly/api-client';
 import { enc, validated } from '@bemmoly/api-client';
 import {
+  exportOptionsSchema,
   exportQuerySchema,
+  pdfExportBodySchema,
+  pdfExportSchema,
+  type PdfExportBody,
   importBodySchema,
   importResultSchema,
   type ExportQuery,
@@ -25,6 +29,16 @@ export function docsTransferEndpoints(http: Http) {
           body: validated(importBodySchema, body),
           idempotent: true,
         }),
+      /** Whether this install renders PDFs; without it PDF is the browser's print view. */
+      options: async () => http.request(`${DOCS_BASE}/exports/options`, exportOptionsSchema),
+      /** Queues a PDF; asking twice for the same page as it is returns the same export. */
+      createPdf: async (pageId: string, body: PdfExportBody) =>
+        http.request(`${DOCS_BASE}/pages/${enc(pageId)}/exports`, pdfExportSchema, {
+          method: 'POST',
+          body: validated(pdfExportBodySchema, body),
+        }),
+      pdf: async (exportId: string) =>
+        http.request(`${DOCS_BASE}/exports/${enc(exportId)}`, pdfExportSchema),
     },
   };
 }

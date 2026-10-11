@@ -19,6 +19,8 @@ export const docsKeys = {
   treeLevel: (spaceRef: string, parentId: string | null) =>
     [...queryKeys.docs(), 'tree', spaceRef, parentId, 'level'] as const,
   page: (pageId: string) => [...queryKeys.docs(), 'page', pageId] as const,
+  /** Whether the install renders PDFs (the optional renderer). */
+  exportOptions: () => [...queryKeys.docs(), 'export-options'] as const,
   recent: (mine = false) => [...queryKeys.docs(), 'recent', { mine }] as const,
   starred: () => [...queryKeys.docs(), 'starred'] as const,
   attention: () => [...queryKeys.docs(), 'attention'] as const,
