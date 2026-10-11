@@ -1,4 +1,5 @@
 import type {
+  ActorContextFactory,
   AuditRecorder,
   ContainerMemberships,
   EventBus,
@@ -7,6 +8,7 @@ import type {
   RealtimePublisher,
   SqlClient,
 } from '@bemmoly/core';
+import { createAutomationService } from './automation/index.ts';
 import { createBacklogService } from './backlog/index.ts';
 import { createBoardsService } from './boards/index.ts';
 import { createCodeLinksService } from './code-links/index.ts';
@@ -15,7 +17,9 @@ import { createComponentsService } from './components/index.ts';
 import { createFieldsService } from './fields/index.ts';
 import { createFiltersService } from './filters/index.ts';
 import { createHistoryService } from './history/index.ts';
+import { requireDatabase } from './issues/deps.ts';
 import { createIssuesService } from './issues/index.ts';
+import { notify } from './issues/notify.ts';
 import { createLabelsService } from './labels/index.ts';
 import { createLinksService } from './links/index.ts';
 import { createLqlService } from './lql/index.ts';
@@ -39,6 +43,8 @@ export interface WorkServiceDeps {
   jobs?: JobRegistry;
   memberships?: ContainerMemberships;
   links?: Pick<LinkRegistry, 'referencesToMany'>;
+  /** Builds the automation actor's context for a run; present with a database. */
+  contextFor?: ActorContextFactory;
 }
 
 const noRealtime: RealtimePublisher = { publish: async () => undefined };
@@ -59,13 +65,32 @@ export function createWorkServices(deps: WorkServiceDeps) {
     workflow: workflow.gate,
   };
   const issues = createIssuesService(issueDeps);
+  const comments = createCommentsService(issueDeps);
+  const labels = createLabelsService(deps);
+  const automation = createAutomationService({
+    ...(deps.database ? { database: deps.database } : {}),
+    ...(deps.audit ? { audit: deps.audit } : {}),
+    ...(deps.jobs ? { jobs: deps.jobs } : {}),
+    ...(deps.contextFor ? { contextFor: deps.contextFor } : {}),
+    events: issueDeps.events,
+    lql,
+    services: {
+      issues,
+      comments,
+      labels,
+      workflow,
+      events: issueDeps.events,
+      notify: (ctx, issue, notice) =>
+        notify(issueDeps, ctx, requireDatabase(issueDeps), issue, notice),
+    },
+  });
   return {
     projects: createProjectsService(deps),
     members: createProjectMembersService(deps),
     schemes: createSchemesService(deps),
     types: createIssueTypesService(deps),
     fields: createFieldsService(deps),
-    labels: createLabelsService(deps),
+    labels,
     versions: createVersionsService(deps),
     components: createComponentsService(deps),
     issues,
@@ -75,11 +100,12 @@ export function createWorkServices(deps: WorkServiceDeps) {
       realtime: issueDeps.realtime,
       move: (ctx, key, statusId) => issues.update(ctx, key, { statusId }),
     }),
-    comments: createCommentsService(issueDeps),
+    comments,
     links: createLinksService(issueDeps),
     history: createHistoryService(issueDeps),
     search: createSearchService(issueDeps),
     myWork: createMyWorkService(issueDeps),
+    automation,
     workflow,
     lql,
     boards: createBoardsService({ ...deps, ...issueDeps, lql }),

@@ -21,6 +21,9 @@ export interface IssueRef {
 
 export const issuePath = (key: string): string => `/work/issue/${key}`;
 
+/** How inboxes name an automation rule's notifications. */
+export const AUTOMATION_ACTOR_NAME = 'Automation';
+
 export async function publishIssueChange(
   deps: Pick<IssueServiceDeps, 'realtime'>,
   tx: SqlExecutor,
@@ -43,7 +46,8 @@ export async function publishIssueChange(
   }
 }
 
-export type NotificationKind = 'assignment' | 'mention' | 'comment' | 'status_change';
+export type NotificationKind =
+  'assignment' | 'mention' | 'comment' | 'status_change' | 'watch_update';
 
 export interface Notice {
   kind: NotificationKind;
@@ -89,7 +93,9 @@ export async function notify(
   issue: IssueRef,
   notice: Notice,
 ): Promise<void> {
-  const actorId = actorUserId(ctx);
+  // A rule's owner hears of what the rule did; a person never hears of their own change.
+  const automated = ctx.actor.kind === 'automation';
+  const actorId = automated ? null : actorUserId(ctx);
   const recipientIds = await whoMayOpen(
     ctx,
     tx,
@@ -97,7 +103,7 @@ export async function notify(
     [...new Set(notice.recipientIds)].filter((id) => id !== actorId),
   );
   if (recipientIds.length === 0) return;
-  const name = await actorName(tx, actorId);
+  const name = automated ? AUTOMATION_ACTOR_NAME : await actorName(tx, actorId);
   const payload: NotificationRequestedPayload = {
     kind: notice.kind,
     recipientIds,
