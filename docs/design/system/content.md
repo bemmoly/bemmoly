@@ -64,6 +64,15 @@ a capable colleague.
 - Sign-in providers show their own mark on their own button (Google's "G") because the provider
   requires it; nothing else borrows a brand.
 
+## Every word is a message
+
+UI text lives in message catalogs, not in components ([docs/i18n.md](../../i18n.md), ADR 0024).
+Write each sentence whole, with values for what changes ("Welcome back, {name}."), plurals in
+ICU, and dates and numbers through the Intl helpers, so a translation can reorder it. Check a
+screen in the pseudo-locale (`?locale=en-XA`): text that stays plain English was missed, and
+text without its closing bracket is clipped. Layout uses logical sides (`ms-`, `end-`,
+`text-start`) so it mirrors right to left.
+
 ## Checks
 
 - Search the diff for `uppercase`, `Submit`, `OK<`, `!"` and `Oops`.
