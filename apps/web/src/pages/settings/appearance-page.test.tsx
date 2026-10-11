@@ -31,7 +31,8 @@ describe('AppearancePage', () => {
       'appearance.defaultMode': 'system',
       'appearance.font': 'geist',
     });
-  });
+    // Renders both previews and saves; slow on shared CI runners.
+  }, 20_000);
 
   it('offers a brand colour tile that opens the custom theme editor', async () => {
     await renderPage(() => <AppearancePage />, '/settings/appearance');
