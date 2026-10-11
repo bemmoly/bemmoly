@@ -1,9 +1,3 @@
-/**
- * The channel the 0114 triggers notify when a role, membership, grant, user or API token
- * changes. Every process listens and drops its whole authorization cache.
- */
-export const AUTHZ_CHANNEL = 'bemmoly_authz';
-
 /** How long an answer may be reused when no notification arrives (a lost LISTEN connection). */
 export const AUTHZ_CACHE_TTL_MS = 5_000;
 

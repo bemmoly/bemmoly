@@ -10,8 +10,7 @@ import { and, desc, eq, isNull } from 'drizzle-orm';
 import type { Database } from '../../clients/drizzle.ts';
 import { apiTokens, users } from '../../models/identity/index.ts';
 import { recordAudit } from '../audit/index.ts';
-import type { RequestContext } from '../authz/index.ts';
-import type { AuthorizationCache } from '../authz/shared-cache.ts';
+import type { AuthorizationCache, RequestContext } from '../authz/index.ts';
 import { presentApiToken } from './presenters.ts';
 import {
   PERSONAL_TOKEN_PREFIX,

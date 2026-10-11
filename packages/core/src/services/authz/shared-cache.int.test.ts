@@ -8,12 +8,16 @@ import { silentLogger } from '../../testing/fakes.ts';
 import { createIsolatedDatabase, type IsolatedDatabase } from '../../testing/isolated-database.ts';
 import { applyKernelChangelog } from '../../testing/kernel-changelog.ts';
 import { startTestDatabase, type TestDatabase } from '../../testing/postgres.ts';
-import { authenticateApiToken } from '../identity/api-tokens.ts';
-import { digestToken, generateToken, PERSONAL_TOKEN_PREFIX } from '../identity/tokens.ts';
-import { createRealtimeListener, type RealtimeListener } from '../realtime/listener.ts';
+import {
+  authenticateApiToken,
+  digestToken,
+  generateToken,
+  PERSONAL_TOKEN_PREFIX,
+} from '../identity/index.ts';
+import { AUTHZ_CHANNEL, createRealtimeListener, type RealtimeListener } from '../realtime/index.ts';
 import { createRequestAuthorization } from './authorize.ts';
 import type { ModuleCatalog } from './catalog.ts';
-import { AUTHZ_CHANNEL, AuthorizationCache } from './shared-cache.ts';
+import { AuthorizationCache } from './shared-cache.ts';
 
 /*
  * The process cache against real triggers: a write that takes access away reaches every

@@ -39,7 +39,6 @@ export {
 } from './subscriptions.ts';
 export {
   AUTHZ_CACHE_TTL_MS,
-  AUTHZ_CHANNEL,
   AuthorizationCache,
   processAuthorizationCache,
   type AuthorizationCacheOptions,

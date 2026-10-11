@@ -3,8 +3,7 @@ import type { SqlClient } from '../../clients/postgres.ts';
 import type { Logger } from '../../config/logger.ts';
 import type { Unsubscribe } from '../../contracts/event-bus.ts';
 import type { RealtimeMessage } from '../../contracts/realtime.ts';
-import { AUTHZ_CHANNEL } from '../authz/shared-cache.ts';
-import { DOMAIN_EVENTS_CHANNEL, REALTIME_CHANNEL } from './notify.ts';
+import { AUTHZ_CHANNEL, DOMAIN_EVENTS_CHANNEL, REALTIME_CHANNEL } from './notify.ts';
 
 export type MessageHandler = (message: RealtimeMessage) => Promise<void> | void;
 export type RawHandler = (payload: string) => Promise<void> | void;

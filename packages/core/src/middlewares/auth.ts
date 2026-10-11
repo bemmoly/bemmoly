@@ -6,10 +6,10 @@ import type { AuthenticateRequest } from '../contracts/authn.ts';
 import type { Actor } from '../contracts/authz.ts';
 import {
   createRequestAuthorization,
+  type AuthorizationCache,
   type ModuleCatalog,
   type RequestAuthorization,
 } from '../services/authz/index.ts';
-import type { AuthorizationCache } from '../services/authz/shared-cache.ts';
 import { authenticateApiToken, authenticateSession } from '../services/identity/index.ts';
 import {
   clearSessionCookie,

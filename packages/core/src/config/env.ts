@@ -96,6 +96,12 @@ export const envSchema = z.object({
     .optional(),
   BEMMOLY_BACKUP_PASSPHRASE: z.string().min(16).optional(),
   BEMMOLY_DB_AUTO_MIGRATE: z.stringbool().default(true),
+  /**
+   * Most connections the server's pool opens. Unset: four per CPU, at least 10 and at most 40,
+   * which keeps one process well under Postgres's default max_connections of 100. With several
+   * replicas, set it so replicas x this (plus the tools' few) stays under max_connections.
+   */
+  BEMMOLY_DB_POOL_MAX: z.coerce.number().int().min(2).max(1_000).optional(),
   /** Longest one statement may run on the server's pool. */
   BEMMOLY_DB_STATEMENT_TIMEOUT_MS: databaseTimeoutMs(10_000),
   /** Longest a pool connection may sit idle inside an open transaction before Postgres ends it. */
