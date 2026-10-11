@@ -1,0 +1,95 @@
+name: Soak
+
+# The weekly soak of tech design §22: the mixed workload for 24 hours against an install,
+# watched for memory growth, p95 drift, connections and queues that never drain, and errors
+# (perf/README.md). A hosted runner stops jobs at 6 hours, so the full 24 hours needs a
+# self-hosted runner: set the repository variable SOAK_RUNNER to its label. Without one the
+# soak runs 5 hours on a hosted runner. Failures open (or update) an issue.
+
+on:
+  schedule:
+    - cron: '0 3 * * 0'
+  workflow_dispatch:
+    inputs:
+      duration:
+        description: How long to hold the load (k6 duration, e.g. 24h, 45m)
+        default: ''
+
+concurrency:
+  group: soak
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  soak:
+    name: Soak (k6 and the monitor)
+    runs-on: ${{ vars.SOAK_RUNNER || 'ubuntu-latest' }}
+    timeout-minutes: ${{ vars.SOAK_RUNNER && 1560 || 350 }}
+    permissions:
+      contents: read
+      issues: write
+    env:
+      DURATION: ${{ inputs.duration || (vars.SOAK_RUNNER && '24h' || '5h') }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: ./.github/actions/setup
+
+      - id: install
+        uses: ./.github/actions/load-install
+
+      - name: Hold the mixed workload while the monitor samples the server
+        env:
+          BASE_URL: ${{ steps.install.outputs.base-url }}
+          CREDENTIALS: ${{ steps.install.outputs.credentials }}
+          DATASET: ${{ steps.install.outputs.dataset }}
+          K6_NETWORK: host
+          K6_CPUSET: '2,3'
+          OUT_DIR: ${{ runner.temp }}/soak-results
+        run: |
+          mkdir -p "$OUT_DIR"
+          # The token is expanded by the shell the monitor runs each scrape in.
+          # shellcheck disable=SC2016
+          node perf/src/soak/monitor.ts --interval 30 \
+            --metrics-cmd 'curl -fsS -H "Authorization: Bearer $METRICS_TOKEN" http://127.0.0.1:8080/metrics' \
+            --db-cmd "docker exec bemmoly-load-db psql -U bemmoly -d bemmoly_db -tAc \"select count(*) from pg_stat_activity where datname = 'bemmoly_db'\"" \
+            --out "$OUT_DIR/monitor.jsonl" --summary "$OUT_DIR/monitor-summary.json" \
+            2> "$OUT_DIR/monitor.log" &
+          monitor=$!
+          status=0
+          bash perf/run-k6.sh soak.js > "$OUT_DIR/soak.log" 2>&1 || status=$?
+          kill -INT "$monitor"
+          wait "$monitor" || true
+          node perf/src/report.ts "$OUT_DIR/soak.summary.json" > "$OUT_DIR/report.md" || status=1
+          {
+            echo "## Soak ($DURATION)"
+            cat "$OUT_DIR/report.md"
+            echo
+            echo '### Server over the run'
+            echo '```json'
+            cat "$OUT_DIR/monitor-summary.json"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          if grep -q '": false' <(jq '.verdicts' "$OUT_DIR/monitor-summary.json"); then status=1; fi
+          exit "$status"
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: soak-results
+          path: |
+            ${{ runner.temp }}/soak-results
+            ${{ runner.temp }}/server.log
+          retention-days: 30
+          if-no-files-found: ignore
+
+      - name: Report the failure
+        if: failure()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: bash .github/scripts/report-nightly-failure.sh 'Weekly soak failed' performance
