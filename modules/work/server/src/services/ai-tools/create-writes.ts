@@ -2,25 +2,74 @@ import { defineWriteTool, requestToolInput } from '@bemmoly/core';
 import { z } from 'zod';
 import { createCommentBodySchema } from '../../../../shared/comments.ts';
 import { issueKeyParamsSchema } from '../../../../shared/common.ts';
-import { createIssueBodySchema } from '../../../../shared/issues.ts';
+import { ValidationError } from '@bemmoly/shared';
+import type { RequestContext } from '@bemmoly/core';
+import { createIssueBodySchema, type CreateIssueBody } from '../../../../shared/issues.ts';
 import { projectResource } from '../issues/deps.ts';
 import type { WorkServices } from '../index.ts';
 import { issueHref, textDocument } from './common.ts';
+import { issueRefsInput, markdownSchema, projectById, resolveIssueRefs } from './resolve.ts';
 
 /*
- * Writes that add a record: a comment and an issue. The model writes plain words; the tool
+ * Writes that add a record: a comment and an issue. The model writes Markdown; the tool
  * makes the editor document, so the comment and description schemas stay the API's own apart
- * from the body, which is text here and rich text on the wire.
+ * from the body, which is text here and rich text on the wire. References a client knows by
+ * name (a status, a type, an assignee's email, a parent's key) resolve to the ids the API takes.
  */
 
 const commentInput = requestToolInput(
   issueKeyParamsSchema,
   createCommentBodySchema.omit({ body: true, parentId: true }),
-).extend({ text: z.string().trim().min(1).max(2000) });
+).extend({ text: markdownSchema.min(1).describe('The comment, in Markdown.') });
 
 const issueInput = createIssueBodySchema
-  .omit({ description: true, customFields: true, parentId: true })
-  .extend({ descriptionText: z.string().trim().max(4000).optional() });
+  .omit({ description: true, parentId: true, statusId: true, typeId: true })
+  .extend(issueRefsInput.shape)
+  .extend({
+    typeId: createIssueBodySchema.shape.typeId.optional(),
+    status: z
+      .string()
+      .trim()
+      .min(1)
+      .max(120)
+      .optional()
+      .describe("Starting status by name or id: any status of the project's workflow."),
+  });
+
+/** One line keeps its signature; longer Markdown gets it as its own paragraph, out of any block. */
+const signed = (text: string, attribution: string) =>
+  text.includes('\n') ? `${text}\n\n— ${attribution}` : `${text} — ${attribution}`;
+
+type IssueInput = z.infer<typeof issueInput>;
+
+/** The API's create body for the tool's arguments, every name resolved as the person. */
+async function createBody(
+  services: WorkServices,
+  ctx: RequestContext,
+  input: IssueInput,
+): Promise<CreateIssueBody> {
+  const { descriptionText, description, type, status, assigneeEmail, parentKey, ...rest } = input;
+  if (!rest.typeId && !type) throw new ValidationError('Give the issue type: typeId or type');
+  const project = await projectById(services, ctx, rest.projectId);
+  const refs = await resolveIssueRefs(services, ctx, project, {
+    descriptionText,
+    description,
+    type,
+    status,
+    assigneeEmail,
+    parentKey,
+  });
+  const typeId = refs.typeId ?? rest.typeId;
+  if (!typeId) throw new ValidationError('Give the issue type: typeId or type');
+  return {
+    ...rest,
+    typeId,
+    ...(refs.description ? { description: refs.description } : {}),
+    ...(refs.statusId ? { statusId: refs.statusId } : {}),
+    ...(refs.assigneeId ? { assigneeId: refs.assigneeId } : {}),
+    ...(refs.parentId ? { parentId: refs.parentId } : {}),
+  };
+}
 
 export function createWriteTools(services: WorkServices) {
   const addComment = defineWriteTool<z.infer<typeof commentInput>, { commentId: string }>({
@@ -36,7 +85,7 @@ export function createWriteTools(services: WorkServices) {
       const issue = await services.issues.get(ctx, key);
       return {
         target: issue.key,
-        change: text,
+        change: text.slice(0, 2000),
         field: 'Comment',
         from: null,
         to: null,
@@ -51,17 +100,20 @@ export function createWriteTools(services: WorkServices) {
       const comment = await services.comments.create(
         ctx,
         key,
-        { body: textDocument(`${text} — ${ctx.attribution}`) },
+        { body: textDocument(signed(text, ctx.attribution)) },
         { aiRunId: ctx.runId },
       );
-      return { undo: { commentId: comment.id } };
+      return {
+        undo: { commentId: comment.id },
+        result: { commentId: comment.id, key, href: issueHref(key) },
+      };
     },
     undo: async (ctx, { commentId }) => {
       await services.comments.remove(ctx, commentId);
     },
   });
 
-  const createIssue = defineWriteTool<z.infer<typeof issueInput>, { key: string }>({
+  const createIssue = defineWriteTool<IssueInput, { key: string }>({
     name: 'work_create_issue',
     kind: 'write',
     description:
@@ -83,13 +135,14 @@ export function createWriteTools(services: WorkServices) {
     },
     authorize: async (ctx, input) => {
       await ctx.authz.authorize(ctx.actor, 'work.issue.edit', projectResource(input.projectId));
+      await createBody(services, ctx, input);
     },
-    run: async (ctx, { descriptionText, ...input }) => {
-      const issue = await services.issues.create(ctx, {
-        ...input,
-        ...(descriptionText ? { description: textDocument(descriptionText) } : {}),
-      });
-      return { undo: { key: issue.key } };
+    run: async (ctx, input) => {
+      const issue = await services.issues.create(ctx, await createBody(services, ctx, input));
+      return {
+        undo: { key: issue.key },
+        result: { key: issue.key, id: issue.id, href: issueHref(issue.key) },
+      };
     },
     undo: async (ctx, { key }) => {
       await services.issues.remove(ctx, key);

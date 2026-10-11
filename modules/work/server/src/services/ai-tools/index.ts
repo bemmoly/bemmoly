@@ -2,7 +2,10 @@ import { aiToolContribution, type AiToolDefinition, type ModuleContext } from '@
 import type { WorkServices } from '../index.ts';
 import { createWriteTools } from './create-writes.ts';
 import { issueWriteTools } from './issue-writes.ts';
+import { linkWriteTools } from './link-writes.ts';
+import { projectTools } from './project-tools.ts';
 import { workReadTools } from './read.ts';
+import { updateWriteTools } from './update-writes.ts';
 import { workflowTools } from './workflow-writes.ts';
 
 /** Every tool Work offers the ⌘K planner. */
@@ -12,6 +15,9 @@ export function workAiTools(services: WorkServices): AiToolDefinition[] {
     ...issueWriteTools(services),
     ...createWriteTools(services),
     ...workflowTools(services),
+    ...updateWriteTools(services),
+    ...linkWriteTools(services),
+    ...projectTools(services),
   ] as AiToolDefinition[];
 }
 

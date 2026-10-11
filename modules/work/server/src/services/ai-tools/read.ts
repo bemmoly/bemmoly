@@ -5,6 +5,7 @@ import { listIssuesQuerySchema, type IssueDetail } from '../../../../shared/issu
 import { projectRefParamsSchema } from '../../../../shared/boards.ts';
 import { listSprintsQuerySchema } from '../../../../shared/sprints.ts';
 import type { WorkServices } from '../index.ts';
+import { descriptionOf, namesFor, typesWithFields } from './facts.ts';
 
 /*
  * What the palette's planner may look up in Work, as the person asking. Each input is the
@@ -45,7 +46,9 @@ export function workReadTools(services: WorkServices) {
       kind: 'read',
       description:
         'Find issues. q is an LQL query, for example: project = PLT AND status != Done, or ' +
-        'text ~ "cookie". Returns key, title and the ids of status, sprint and assignee.',
+        'text ~ "cookie". Returns key, title, type, parentKey, the ids of status, sprint and ' +
+        'assignee, and the description as Markdown (cut at 4000 characters, with ' +
+        'descriptionTruncated).',
       input: searchInput,
       execute: async (ctx, input) => {
         const page = await services.issues.list(ctx, {
@@ -54,13 +57,17 @@ export function workReadTools(services: WorkServices) {
           order: 'asc',
           deleted: false,
         });
+        const names = await namesFor(services, ctx, page.items);
         return page.items.map((issue) => ({
           key: issue.key,
           title: issue.title,
+          type: names.type(issue),
+          parentKey: names.parentKey(issue),
           statusId: issue.statusId,
           sprintId: issue.sprintId,
           assigneeId: issue.assigneeId,
           priority: issue.priority,
+          ...descriptionOf(issue),
         }));
       },
     }),
@@ -128,16 +135,18 @@ export function workReadTools(services: WorkServices) {
     defineReadTool({
       name: 'work_get_project',
       kind: 'read',
-      description: 'A project by key, with its id and issue types, for creating an issue.',
+      description:
+        'A project by key, with its id and issue types, for creating an issue. Each type ' +
+        'lists its custom fields (key, name, type, required, options): send them as ' +
+        'customFields keyed by field key, every required one included.',
       input: projectRefParamsSchema,
       execute: async (ctx, { key }) => {
         const project = await services.projects.get(ctx, key);
-        const types = await services.types.list(ctx, project.key);
         return {
           id: project.id,
           key: project.key,
           name: project.name,
-          issueTypes: types.items.map((type) => ({ id: type.id, name: type.name })),
+          issueTypes: await typesWithFields(services, ctx, project.key),
         };
       },
     }),
