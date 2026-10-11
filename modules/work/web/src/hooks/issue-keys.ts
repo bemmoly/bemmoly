@@ -12,6 +12,7 @@ export const issueKeys = {
   history: (key: string) => [...workKeys.issue(key), 'history'] as const,
   workLogs: (key: string) => [...workKeys.issue(key), 'work-logs'] as const,
   watchers: (key: string) => [...workKeys.issue(key), 'watchers'] as const,
+  codeLinks: (key: string) => [...workKeys.issue(key), 'code-links'] as const,
   subtasks: (issueId: string) => [...workKeys.all(), 'subtasks', issueId] as const,
   people: () => [...workKeys.all(), 'people'] as const,
   catalog: (projectKey: string, part: string) =>
