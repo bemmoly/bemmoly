@@ -1,35 +1,40 @@
 import {
   ANIMATIONS,
   COLOR_TOKENS,
-  DEFAULT_PRESET,
+  DEFAULT_THEME,
   EASE,
   ELEVATION_TOKENS,
   FIXED_COLORS,
   FOCUS,
+  FONT_IDS,
+  FONTS,
   KEYFRAMES,
   LEADING,
   METRICS,
+  MODE_TYPE_COLORS,
+  MONO_STACK,
   MOTION,
   RADII,
+  resolveSource,
   SHADOWS,
-  THEMES,
+  THEME_SOURCES,
   TRACKING,
   TYPE_SCALE,
   type ResolvedTheme,
+  type ThemeSource,
 } from './tokens.ts';
 
 const HEADER =
   '/* Generated from src/tokens.ts by `pnpm --filter @bemmoly/ui tokens:css`. Do not edit. */';
 
-type ThemeLike = Pick<ResolvedTheme, 'colors' | 'elevation' | 'fontUi' | 'fontCode' | 'mode'>;
+type ThemeLike = Pick<ResolvedTheme, 'colors' | 'elevation' | 'mode'>;
 
-/** The CSS custom properties of one theme, without selector. */
+/** The CSS custom properties of one theme in one mode, without selector. */
 export function themeDeclarations(theme: ThemeLike): string[] {
   return [
     ...COLOR_TOKENS.map((token) => `--${token}: ${theme.colors[token]};`),
+    ...Object.entries(MODE_TYPE_COLORS[theme.mode]).map(([token, value]) => `--${token}: ${value};`),
     ...ELEVATION_TOKENS.map((token) => `--${token}: ${theme.elevation[token]};`),
-    `--font-ui: ${theme.fontUi};`,
-    `--font-code: ${theme.fontCode};`,
     `color-scheme: ${theme.mode};`,
   ];
 }
@@ -62,6 +67,7 @@ export function renderBaseCss(): string {
     block(':root', [
       ...vars('', METRICS),
       ...vars('', FIXED_COLORS),
+      `--font-code: ${MONO_STACK};`,
       ...vars('', FOCUS),
       ...vars('shadow-', SHADOWS),
       ...vars('duration-', MOTION),
@@ -95,20 +101,50 @@ export function renderBaseCss(): string {
   return `${HEADER}\n${rules.join('\n\n')}\n`;
 }
 
-/** One preset's variables, keyed by `data-theme`; Classic also owns :root. */
-export function renderPresetCss(theme: ResolvedTheme): string {
-  const selector =
-    theme.id === DEFAULT_PRESET
-      ? `:root,\n[data-theme='${theme.id}']`
-      : `[data-theme='${theme.id}']`;
-  return `${HEADER}\n${block(selector, themeDeclarations(theme))}\n`;
+/**
+ * One theme in both modes, keyed by `data-theme` and `data-mode` (ADR 0021). Light is the
+ * theme's plain selector; `data-mode='dark'` takes the dark set, and `data-mode='system'`
+ * takes it only while the device prefers dark, so first paint follows the OS with no script.
+ * Bemmoly also owns :root, in either mode.
+ */
+export function renderThemeBlockCss(source: ThemeSource): string {
+  const own = `[data-theme='${source.id}']`;
+  const isDefault = source.id === DEFAULT_THEME;
+  const light = isDefault ? `:root,\n${own}` : own;
+  const dark = isDefault
+    ? `:root:not([data-theme])[data-mode='dark'],\n${own}[data-mode='dark']`
+    : `${own}[data-mode='dark']`;
+  const system = isDefault
+    ? `:root:not([data-theme])[data-mode='system'],\n  ${own}[data-mode='system']`
+    : `${own}[data-mode='system']`;
+  const darkLines = themeDeclarations(resolveSource(source, 'dark'));
+  return [
+    HEADER,
+    block(light, themeDeclarations(resolveSource(source, 'light'))),
+    '',
+    block(dark, darkLines),
+    '',
+    `@media (prefers-color-scheme: dark) {\n${block(system, darkLines, '  ')}\n}`,
+    '',
+  ].join('\n');
 }
 
-/** The theme.css entry point: imports the base rules and every preset. */
+/** The typeface is its own setting: `data-font` on the root picks one; Plex owns :root. */
+export function renderFontsCss(): string {
+  const rules = FONT_IDS.map((id) =>
+    block(id === 'plex' ? `:root,\n[data-font='${id}']` : `[data-font='${id}']`, [
+      `--font-ui: ${FONTS[id].stack};`,
+    ]),
+  );
+  return `${HEADER}\n${rules.join('\n\n')}\n`;
+}
+
+/** The theme.css entry point: imports the base rules, the typefaces and every theme. */
 export function renderThemeCss(): string {
   const imports = [
     "@import './styles/base.css';",
-    ...THEMES.map((theme) => `@import './styles/presets/${theme.id}.css';`),
+    "@import './styles/fonts.css';",
+    ...THEME_SOURCES.map((theme) => `@import './styles/themes/${theme.id}.css';`),
   ];
   return `${HEADER}\n${imports.join('\n')}\n`;
 }
@@ -138,7 +174,7 @@ const UTILITIES = [
   ]),
 ];
 
-/** Tailwind 4 theme: utilities resolve to the runtime variables, so presets switch without a rebuild. */
+/** Tailwind 4 theme: utilities resolve to the runtime variables, so themes switch without a rebuild. */
 export function renderTailwindCss(): string {
   const colors = [...COLOR_TOKENS, ...Object.keys(FIXED_COLORS)].map(
     (token) => `--color-${token}: var(--${token});`,
@@ -210,8 +246,9 @@ export function renderCssFiles(): Record<string, string> {
     'theme.css': renderThemeCss(),
     'tailwind.css': renderTailwindCss(),
     'styles/base.css': renderBaseCss(),
+    'styles/fonts.css': renderFontsCss(),
     ...Object.fromEntries(
-      THEMES.map((theme) => [`styles/presets/${theme.id}.css`, renderPresetCss(theme)]),
+      THEME_SOURCES.map((theme) => [`styles/themes/${theme.id}.css`, renderThemeBlockCss(theme)]),
     ),
   };
 }
