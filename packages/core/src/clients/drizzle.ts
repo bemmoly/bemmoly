@@ -2,6 +2,7 @@ import type { PgAsyncDatabase } from 'drizzle-orm/pg-core/async';
 import { drizzle, type PostgresJsQueryResultHKT } from 'drizzle-orm/postgres-js';
 import type postgres from 'postgres';
 import type { SqlExecutor } from '../contracts/sql.ts';
+import { transactionInScope } from './pool-guard.ts';
 import type { SqlClient } from './postgres.ts';
 
 /** A Drizzle database or an open transaction on it; services accept either. */
@@ -34,3 +35,12 @@ export function databaseOnTransaction(db: Database, transaction: SqlExecutor): D
   return createTransactionDatabase(pool, transaction as postgres.TransactionSql);
 }
 
+/**
+ * The database a read-only lookup should use right now: the transaction the calling code
+ * holds on this pool, or the pool itself when it holds none. See transactionInScope.
+ */
+export function databaseInScope(db: Database): Database {
+  const pool = (db as unknown as { $client: SqlClient }).$client;
+  const transaction = transactionInScope(pool);
+  return transaction ? createTransactionDatabase(pool, transaction) : db;
+}
