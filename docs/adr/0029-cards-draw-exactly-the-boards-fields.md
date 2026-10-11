@@ -1,6 +1,7 @@
 # ADR 0029: Cards draw exactly the board's card fields
 
-- Status: accepted
+- Status: accepted; decision 6 superseded in part by
+  [ADR 0030](0030-modules-own-an-org-defaults-page-in-settings.md) (the org default board is seeded)
 - Date: 2026-10-11
 - Changes: decision 1 of [ADR 0023](0023-card-layout-is-the-boards-quick-filters-in-the-row.md)
   ("plus the time in column on Kanban")

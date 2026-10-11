@@ -32,7 +32,9 @@ under it.
 
 - **Job:** see what the project tracks and adjust it once the scheme is the project's own.
 - Inheritance is one line on the accent wash: "Based on Software, with 3 changes for this
-  project · Compare" (Compare opens the diff). Unchanged schemes say so.
+  project · Compare" (Compare opens the diff). Unchanged schemes say so. Workspace admins also
+  get "Edit org default", a link to the same page in Settings › Work
+  ([settings-work.md](settings-work.md)).
 - Both are the one table style. Before overriding they read only, with a hint line saying
   what overriding unlocks.
 - **Rename in place:** click a name (or Tab to it and Enter), Enter or blur saves, Esc puts
@@ -46,7 +48,8 @@ under it.
 ## Board settings
 
 - **Job:** shape the board everyone on the project sees.
-- One-line inheritance note, then the sections as a segmented control (an amber dot marks a
+- One-line inheritance note (with "Edit org default" for workspace admins), then the sections as
+  a segmented control (an amber dot marks a
   section with unsaved changes), then the content.
 - **Columns:** all five fit at 1440px (each at least 140px; more columns or a phone scroll
   sideways). Each column shows its first status's glyph, the name, a compact "WIP" field that
@@ -55,6 +58,8 @@ under it.
   status". In edit mode the glyph becomes the grip (drag or ←→). Statuses left out are listed
   inline as "Not on the board", with "Statuses come from the Workflow".
 - **Preview rail:** "Live preview" on the sunken surface with Open board; hidden below 1024px.
+- **Reset to default** puts back what the project inherits and drops its override, so later
+  changes to the org default board reach it again (ADR 0030).
 
 ## Workflow list
 
