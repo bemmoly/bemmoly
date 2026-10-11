@@ -5,6 +5,7 @@ import type { Issue, UpdateIssueBody } from '../../../../shared/issues.ts';
 import { richTextToPlain } from '../../../../shared/rich-text.ts';
 import { recordHistory, type HistoryChange } from '../history/index.ts';
 import { actorUserId, projectResource, requireDatabase, type IssueServiceDeps } from './deps.ts';
+import { publishIssueUpdate } from './events.ts';
 import { loadFieldDefinitions, validateCustomFields } from './fields.ts';
 import { notify, notifyDescriptionMentions, publishIssueChange, watcherIds } from './notify.ts';
 import { assertOwnReferences } from './references.ts';
@@ -202,6 +203,7 @@ export async function updateIssue(
     if (changes.length === 0) return current;
     assertDatesOrdered(current, body);
     let statusName: string | null = null;
+    let statuses: { from: string; to: string } | null = null;
     if (body.statusId !== undefined && body.statusId !== current.statusId) {
       const category = await statusCategory(tx, body.statusId, row);
       // The gate authorises, runs the conditions and the validators, and hands
@@ -219,9 +221,11 @@ export async function updateIssue(
           resolved_at = case when ${category === 'done'} then now() else null end,
           updated_at = now()
         where id = ${row.id}`;
-      const [status] = await tx<{ name: string }[]>`
-        select name from workflow_statuses where id = ${body.statusId}`;
-      statusName = status?.name ?? null;
+      const names = await tx<{ id: string; name: string }[]>`
+        select id, name from workflow_statuses where id in (${current.statusId}, ${body.statusId})`;
+      const nameOf = (id: string) => names.find((status) => status.id === id)?.name ?? '';
+      statusName = nameOf(body.statusId) || null;
+      statuses = { from: nameOf(current.statusId), to: nameOf(body.statusId) };
     }
     await assertOwnReferences(tx, row.project_id, body);
     await writeScalars(tx, row, body);
@@ -235,6 +239,7 @@ export async function updateIssue(
       sprintIds: [current.sprintId, issue.sprintId],
     });
     await tellPeople(deps, ctx, tx, issue, current, changes, statusName);
+    await publishIssueUpdate(deps, ctx, tx, issue, changes, statuses);
     return issue;
   });
   if (postActions.length === 0) return updated as Issue;

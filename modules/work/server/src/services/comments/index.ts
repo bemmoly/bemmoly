@@ -1,5 +1,10 @@
 import { decodeCursor, toPage, type RequestContext, type SqlExecutor } from '@bemmoly/core';
-import { ForbiddenError, NotFoundError, ValidationError } from '@bemmoly/shared';
+import {
+  DOMAIN_EVENT_KINDS,
+  ForbiddenError,
+  NotFoundError,
+  ValidationError,
+} from '@bemmoly/shared';
 import type {
   Comment,
   CommentsPage,
@@ -16,6 +21,7 @@ import {
   requireDatabase,
   type IssueServiceDeps,
 } from '../issues/deps.ts';
+import { publishIssueEvent } from '../issues/events.ts';
 import { notify, publishIssueChange, watcherIds, type IssueRef } from '../issues/notify.ts';
 import { loadIssueById, loadIssueByKey, toIssue, type IssueRow } from '../issues/rows.ts';
 
@@ -149,6 +155,9 @@ export function createCommentsService(deps: IssueServiceDeps) {
         const comment = toComment(row);
         await publishIssueChange(deps, tx, issue);
         await tellPeople(deps, ctx, tx, issue, comment);
+        await publishIssueEvent(deps, ctx, tx, DOMAIN_EVENT_KINDS.issueCommented, issue, {
+          comment: { id: comment.id, excerpt: comment.bodyText.slice(0, 280) },
+        });
         return comment;
       });
       return created as Comment;
