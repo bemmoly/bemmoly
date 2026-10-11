@@ -7,6 +7,7 @@ import { createAiAnswersController } from '../controllers/ai-answers.controller.
 import { createAuditController } from '../controllers/audit.controller.ts';
 import { createAuthzController } from '../controllers/authz.controller.ts';
 import { createCollabController } from '../controllers/collab.controller.ts';
+import { createFilesController } from '../controllers/files.controller.ts';
 import { createHealthController } from '../controllers/health.controller.ts';
 import { createIdentityController } from '../controllers/identity.controller.ts';
 import { createMcpController } from '../controllers/mcp.controller.ts';
@@ -34,6 +35,7 @@ import type { AiPlans } from '../services/ai/index.ts';
 import type { InsightsService } from '../services/ai/index.ts';
 import type { RetrievalService } from '../services/ai/index.ts';
 import type { CollabHost } from '../services/collab/index.ts';
+import type { FilesService } from '../services/files/index.ts';
 import type { IdentityDependencies } from '../services/identity/index.ts';
 import type { McpService } from '../services/mcp/index.ts';
 import type { ModuleAdmin, ModuleState } from '../services/modules/index.ts';
@@ -53,6 +55,7 @@ import {
   emailNotificationRoutes,
   type EmailNotificationRouteDependencies,
 } from './email-notifications.routes.ts';
+import { filesRoutes } from './files.routes.ts';
 import { healthRoutes } from './health.routes.ts';
 import { identityRoutes } from './identity.routes.ts';
 import { mcpRoutes, type McpRateLimit } from './mcp.routes.ts';
@@ -106,6 +109,8 @@ export interface KernelRouteDependencies {
   retrieval?: RetrievalService;
   /** The built-in MCP server at /mcp; mounted when the host wires it (AI never gates it). */
   mcp?: { service: McpService; rateLimit?: McpRateLimit };
+  /** Uploaded files (images in pages); /api/v1/files is mounted only when present. */
+  files?: FilesService;
 }
 
 function identityAndAccessRoutes(deps: IdentityDependencies): FastifyPluginAsync {
@@ -209,6 +214,11 @@ export function kernelRoutes(deps: KernelRouteDependencies): FastifyPluginAsync 
         }
         if (deps.retrieval) {
           await api.register(aiAnswersRoutes(createAiAnswersController(deps.retrieval)));
+        }
+        if (deps.files) {
+          await api.register(
+            filesRoutes(createFilesController(deps.files), deps.files.maxBytes),
+          );
         }
         await api.register(moduleResourceRoutes(deps.modules, gate));
       },

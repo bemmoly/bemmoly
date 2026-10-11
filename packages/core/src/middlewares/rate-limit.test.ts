@@ -17,6 +17,7 @@ describe('rate limit budgets', () => {
       perAccount: { max: 10, windowMs: 900_000 },
       failedCredentialsPerIp: { max: 60, windowMs: 60_000 },
       aiPerActor: { max: 60, windowMs: 60_000 },
+      uploadsPerActor: { max: 30, windowMs: 60_000 },
     });
   });
 
