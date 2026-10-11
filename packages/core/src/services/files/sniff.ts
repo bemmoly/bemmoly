@@ -19,13 +19,14 @@ const GIF89 = ascii('GIF89a');
 const RIFF = ascii('RIFF');
 const WEBP = ascii('WEBP');
 
-export type Sniffed = { kind: 'image'; mime: UploadImageType } | { kind: 'svg' } | { kind: 'other' };
+export type Sniffed =
+  { kind: 'image'; mime: UploadImageType } | { kind: 'svg' } | { kind: 'other' };
 
 /** True when the start of the file reads as XML or SVG markup (after a BOM and whitespace). */
 function looksLikeSvg(bytes: Uint8Array): boolean {
   const head = new TextDecoder('utf-8', { fatal: false })
     .decode(bytes.subarray(0, 1024))
-    .replace(/^﻿/, '')
+    .replace(/^\uFEFF/, '')
     .trimStart()
     .toLowerCase();
   return head.startsWith('<?xml') || head.startsWith('<svg') || head.includes('<svg');

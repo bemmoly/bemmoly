@@ -69,11 +69,7 @@ const toUploaded = (row: FileRow): UploadedFile => ({
  * under the backed-up attachments folder before the row that names them, and serves them.
  */
 export function createFilesService(deps: FilesServiceDeps) {
-  async function access(
-    ctx: RequestContext,
-    kind: string,
-    targetId: string,
-  ): Promise<FileAccess> {
+  async function access(ctx: RequestContext, kind: string, targetId: string): Promise<FileAccess> {
     const target = deps.targets().find((candidate) => candidate.kind === kind);
     if (!target) throw new NotFoundError(`Nothing takes files of kind "${kind}"`);
     if (deps.isEnabled && !deps.isEnabled(target.moduleId)) {

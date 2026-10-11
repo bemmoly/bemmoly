@@ -32,10 +32,15 @@ const page = (id: string, parent: string | null, snapshot: RichText) => ({
 
 describe('uploaded images in exports', () => {
   it('embeds them in a self-contained HTML page, keeping what the person may not read', async () => {
-    const file = await renderExport({ files }, ctx, [page('Plan', null, withImages(MINE, HIDDEN))], {
-      format: 'html',
-      scope: 'page',
-    });
+    const file = await renderExport(
+      { files },
+      ctx,
+      [page('Plan', null, withImages(MINE, HIDDEN))],
+      {
+        format: 'html',
+        scope: 'page',
+      },
+    );
     const html = String(file.body);
     expect(html).toContain(`src="data:image/png;base64,${PNG.toString('base64')}"`);
     expect(html).toContain(`src="/api/v1/files/${HIDDEN}"`);

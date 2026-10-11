@@ -216,9 +216,7 @@ export function kernelRoutes(deps: KernelRouteDependencies): FastifyPluginAsync 
           await api.register(aiAnswersRoutes(createAiAnswersController(deps.retrieval)));
         }
         if (deps.files) {
-          await api.register(
-            filesRoutes(createFilesController(deps.files), deps.files.maxBytes),
-          );
+          await api.register(filesRoutes(createFilesController(deps.files), deps.files.maxBytes));
         }
         await api.register(moduleResourceRoutes(deps.modules, gate));
       },

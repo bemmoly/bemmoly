@@ -1,5 +1,10 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { BOOT_ORIGIN, startBootHarness, type BootHarness, type SignedInApp } from './boot-harness.ts';
+import {
+  BOOT_ORIGIN,
+  startBootHarness,
+  type BootHarness,
+  type SignedInApp,
+} from './boot-harness.ts';
 
 /*
  * Images in pages through the kernel's files API, on the real boot path: who may add and
@@ -80,7 +85,11 @@ describe('files api', () => {
         payload: body,
       });
     const read = (id: string, as?: string) =>
-      app.inject({ method: 'GET', url: `/api/v1/files/${id}`, ...(as ? { headers: { cookie: as } } : {}) });
+      app.inject({
+        method: 'GET',
+        url: `/api/v1/files/${id}`,
+        ...(as ? { headers: { cookie: as } } : {}),
+      });
 
     // The bytes decide: a PNG sent as SVG under a path-like name is stored as a PNG.
     const stored = await upload(PNG, undefined, '../../etc/diagram.svg', 'image/svg+xml');
@@ -119,7 +128,10 @@ describe('files api', () => {
     expect((await read(file.id, viewer.cookie)).statusCode).toBe(200);
     expect((await read(file.id, outsider.cookie)).statusCode).toBe(404);
     // Signed out: nothing.
-    const anonymous = await app.instance.app.inject({ method: 'GET', url: `/api/v1/files/${file.id}` });
+    const anonymous = await app.instance.app.inject({
+      method: 'GET',
+      url: `/api/v1/files/${file.id}`,
+    });
     expect(anonymous.statusCode).toBe(401);
     // A kind nothing registered.
     const unknown = await app.inject({
