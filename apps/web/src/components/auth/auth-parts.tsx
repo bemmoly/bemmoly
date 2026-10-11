@@ -91,13 +91,20 @@ export function OrRule({ children }: { children?: ReactNode }) {
 
 /** A centred line under the form: "Back to sign in", "Admin without single sign-on? …". */
 export function AuthAlt({ children }: { children: ReactNode }) {
-  return <p className="m-0 text-center text-13 text-tx-2">{children}</p>;
+  // A link in a sentence is underlined, not told apart by colour alone (WCAG 1.4.1).
+  return (
+    <p className="m-0 text-center text-13 text-tx-2 [&_a]:underline [&_a]:underline-offset-2">
+      {children}
+    </p>
+  );
 }
 
 /** Small print under a control. */
 export function AuthSmall({ children, center }: { children: ReactNode; center?: boolean }) {
   return (
-    <p className={`m-0 text-13 leading-body text-tx-3 ${center ? 'text-center' : ''}`}>
+    <p
+      className={`m-0 text-13 leading-body text-tx-3 [&_a]:underline [&_a]:underline-offset-2 ${center ? 'text-center' : ''}`}
+    >
       {children}
     </p>
   );

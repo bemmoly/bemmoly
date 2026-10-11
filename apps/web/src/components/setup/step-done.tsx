@@ -23,18 +23,21 @@ function Summary({ rows, leave }: { rows: readonly SummaryRow[]; leave: () => vo
             <StepCircle state={row.done ? 'done' : 'skipped'} size={16} />
             {row.label}
           </dt>
-          <dd className={`m-0 min-w-0 flex-1 ${row.done ? 'text-tx-2' : 'text-tx-3'}`}>
-            {row.value}
+          {/* The "later" link sits in the dd too: a dl row may hold only dt and dd. */}
+          <dd className="m-0 flex min-w-0 flex-1 flex-wrap items-center gap-x-2.5 gap-y-0.5">
+            <span className={`min-w-0 flex-1 ${row.done ? 'text-tx-2' : 'text-tx-3'}`}>
+              {row.value}
+            </span>
+            {row.later ? (
+              <Link
+                to={row.later.to}
+                onClick={leave}
+                className="shrink-0 rounded-chip text-13 font-medium text-acc hover:underline focus-ring"
+              >
+                {row.later.label}
+              </Link>
+            ) : null}
           </dd>
-          {row.later ? (
-            <Link
-              to={row.later.to}
-              onClick={leave}
-              className="shrink-0 rounded-chip text-13 font-medium text-acc hover:underline focus-ring"
-            >
-              {row.later.label}
-            </Link>
-          ) : null}
         </div>
       ))}
     </dl>

@@ -121,7 +121,7 @@ export function SprintCard({ className }: { className: string }) {
       <ProgressBar value={69} size="md" label="Sprint progress" />
       <div className="flex items-center justify-between text-11 text-tx-2 tabular-nums">
         <span>18 of 26 points done</span>
-        <span className="text-green">On track</span>
+        <span className="text-green-tx">On track</span>
       </div>
     </div>
   );
