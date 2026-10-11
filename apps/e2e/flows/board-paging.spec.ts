@@ -35,8 +35,11 @@ test('a long column loads a page at a time, and a change elsewhere patches one c
 
   // The first page, then the rest from the foot of the column; the count is every card.
   const more = page.getByRole('button', { name: 'Show 6 more in Backlog' });
-  await more.scrollIntoViewIfNeeded();
-  await expect(cards).toHaveCount(PAGE + 6, { timeout: 15_000 });
+  // Scrolling down the column: its window of drawn cards grows, then the foot reads the page.
+  await expect(async () => {
+    if ((await more.count()) > 0) await more.scrollIntoViewIfNeeded({ timeout: 1_000 });
+    await expect(cards).toHaveCount(PAGE + 6, { timeout: 1_000 });
+  }).toPass({ timeout: 15_000 });
   await expect(more).toHaveCount(0);
   expect(reads.some((url) => new URL(url).searchParams.get('column') !== null)).toBe(true);
 
