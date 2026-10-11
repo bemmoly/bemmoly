@@ -29,7 +29,8 @@ import { MembersTable } from './members-table.tsx';
 const segmentLabel = (label: string, n: number) => (
   <span className="tabular-nums">
     {label}
-    {n > 0 && <span className="text-tx-3"> · {n}</span>}
+    {/* The segment's own ink: tx-3 on the idle segment's grey is under 4.5:1. */}
+    {n > 0 && <span> · {n}</span>}
   </span>
 );
 

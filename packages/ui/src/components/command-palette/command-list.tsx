@@ -4,6 +4,9 @@ import { cx } from '../../lib/cx.ts';
 import { Kbd } from '../kbd/kbd.tsx';
 import { useCommandContext } from './command-palette.tsx';
 
+/** A row's muted ink: tx-3, and tx-2 on the active row (tx-3 on the hover tint is under 4.5:1). */
+const QUIET = 'text-tx-3 group-aria-selected:text-tx-2';
+
 /** The results: up to 420px, scrolling. */
 export function CommandList({
   children,
@@ -71,7 +74,7 @@ export function CommandItem({
       aria-selected="false"
       onClick={onSelect}
       className={cx(
-        'flex shrink-0 cursor-pointer items-center gap-2.5 rounded-card px-3.5 text-tx aria-selected:bg-hover motion-safe:transition-colors motion-safe:duration-(--duration-instant)',
+        'group flex shrink-0 cursor-pointer items-center gap-2.5 rounded-card px-3.5 text-tx aria-selected:bg-hover motion-safe:transition-colors motion-safe:duration-(--duration-instant)',
         detail ? 'min-h-13.5 py-2' : 'h-9.5',
       )}
     >
@@ -80,7 +83,7 @@ export function CommandItem({
       </span>
       {/* A key column wide enough for PLT-1234, so the titles of mixed projects line up. */}
       {issueKey && (
-        <span className="min-w-15 shrink-0 font-mono text-11 font-medium text-tx-3">
+        <span className={`min-w-15 shrink-0 font-mono text-11 font-medium ${QUIET}`}>
           {issueKey}
         </span>
       )}
@@ -88,9 +91,11 @@ export function CommandItem({
         <span className="truncate" title={typeof title === 'string' ? title : undefined}>
           {title}
         </span>
-        {detail && <span className="truncate text-13 text-tx-3">{detail}</span>}
+        {detail && <span className={`truncate text-13 ${QUIET}`}>{detail}</span>}
       </span>
-      {meta && <span className="flex shrink-0 items-center gap-1.5 text-12 text-tx-3">{meta}</span>}
+      {meta && (
+        <span className={`flex shrink-0 items-center gap-1.5 text-12 ${QUIET}`}>{meta}</span>
+      )}
       {keys && (
         <span className="flex shrink-0 gap-1">
           {keys.split(' ').map((key, index) => (
