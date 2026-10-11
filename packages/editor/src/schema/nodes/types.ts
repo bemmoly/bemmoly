@@ -30,6 +30,15 @@ export interface ExportContext {
   issueHref: (key: string) => string | null;
   /** Where an image's (safe) source points in this export. */
   imageSrc: (src: string) => string;
+  /** Code as highlighted, escaped markup, when the host colours code (print does). */
+  highlight?: (code: string, language: string | null) => string | null;
+  /** An issue's title and status, when the host resolved it, for a static chip. */
+  issueSummary?: (key: string) => IssueSummary | null;
+}
+
+export interface IssueSummary {
+  title: string;
+  status?: string;
 }
 
 export interface DocNode {
@@ -49,4 +58,14 @@ export interface DocNode {
 export function attr(node: RichTextNode, name: string, fallback = ''): string {
   const value = node.attrs?.[name];
   return typeof value === 'string' ? value : fallback;
+}
+
+/** An issue chip's title and status, escaped, when the host resolved the key; else nothing. */
+export function issueSummaryHtml(context: ExportContext, key: string): string {
+  const summary = context.issueSummary?.(key);
+  if (!summary) return '';
+  const status = summary.status
+    ? ` <span class="issue-status">${context.escape(summary.status)}</span>`
+    : '';
+  return ` <span class="issue-title">${context.escape(summary.title)}</span>${status}`;
 }

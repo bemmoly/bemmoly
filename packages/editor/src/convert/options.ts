@@ -9,6 +9,10 @@ export interface ExportOptions {
    * it, or null to keep the source as stored.
    */
   imageSrc?: (src: string) => string | null;
+  /** Code as highlighted, escaped markup; without it code prints plain. */
+  highlight?: (code: string, language: string | null) => string | null;
+  /** An issue's title and status for a static chip; without it the chip shows the key. */
+  issueSummary?: (key: string) => { title: string; status?: string } | null;
 }
 
 /** Links an export follows: the web, mail and paths inside the app. */

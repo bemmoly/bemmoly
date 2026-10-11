@@ -73,6 +73,8 @@ export const codeBlock: DocNode = {
   toHtml: (node, context) => {
     const language = codeLanguage(attr(node, 'language'));
     const cls = language ? ` class="language-${language}"` : '';
-    return `<pre><code${cls}>${context.escape(textOf(node))}</code></pre>`;
+    const code = textOf(node);
+    const body = context.highlight?.(code, language) ?? context.escape(code);
+    return `<pre><code${cls}>${body}</code></pre>`;
   },
 };

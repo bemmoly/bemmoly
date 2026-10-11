@@ -46,6 +46,8 @@ export function toHtml(doc: RichTextDoc | null | undefined, options: ExportOptio
     pageHref: (id) => safeHref(options.pageHref?.(id)),
     issueHref: (key) => safeHref(options.issueHref?.(key)),
     imageSrc: (src) => imageSource(src, options),
+    ...(options.highlight ? { highlight: options.highlight } : {}),
+    ...(options.issueSummary ? { issueSummary: options.issueSummary } : {}),
   };
 
   function inline(node: RichTextNode): string {
