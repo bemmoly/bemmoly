@@ -13,6 +13,7 @@ import { membersRoutes } from './members.routes.ts';
 import { metricsRoutes } from './metrics.routes.ts';
 import { myWorkRoutes } from './my-work.routes.ts';
 import { projectsRoutes } from './projects.routes.ts';
+import { roadmapRoutes } from './roadmap.routes.ts';
 import { schemesRoutes } from './schemes.routes.ts';
 import { sprintsRoutes } from './sprints.routes.ts';
 import { typesRoutes } from './types.routes.ts';
@@ -43,5 +44,6 @@ export function workRoutes(controllers: WorkControllers): FastifyPluginAsync {
     await app.register(filtersRoutes(controllers.filters));
     await app.register(metricsRoutes(controllers.metrics));
     await app.register(myWorkRoutes(controllers.myWork));
+    await app.register(roadmapRoutes(controllers.roadmap));
   };
 }

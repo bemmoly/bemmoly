@@ -21,6 +21,7 @@ import { createMetricsService } from './metrics/index.ts';
 import { createMyWorkService } from './my-work/index.ts';
 import { createProjectsService } from './projects/index.ts';
 import { createProjectMembersService } from './projects/members.ts';
+import { createRoadmapService } from './roadmap/index.ts';
 import { createSchemesService } from './schemes/index.ts';
 import { createSearchService } from './search/index.ts';
 import { createSprintsService } from './sprints/index.ts';
@@ -76,6 +77,7 @@ export function createWorkServices(deps: WorkServiceDeps) {
     backlog: createBacklogService({ ...deps, ...issueDeps, lql }),
     filters: createFiltersService({ ...deps, ...issueDeps, lql }),
     metrics: createMetricsService({ ...deps, ...issueDeps, lql }),
+    roadmap: createRoadmapService({ ...deps, ...issueDeps, lql }),
   };
 }
 

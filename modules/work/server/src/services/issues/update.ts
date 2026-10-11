@@ -97,11 +97,22 @@ async function statusCategory(tx: SqlExecutor, statusId: string, row: IssueRow):
   return status.category;
 }
 
-/** A start after the due date would draw the roadmap bar backwards; refuse it by name. */
+const dateValue = (value: unknown): string | null =>
+  typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : null;
+
+/**
+ * A start after the end would draw the roadmap bar backwards; refuse it by name. The end is
+ * the due date, or an epic's Target date field when it has no due date.
+ */
 function assertDatesOrdered(current: Issue, body: UpdateIssueBody): void {
   const start = body.startAt === undefined ? (current.startAt ?? null) : body.startAt;
   const due = body.dueAt === undefined ? current.dueAt : body.dueAt;
-  if (start && due && start > due) {
+  const target =
+    body.customFields && 'target_date' in body.customFields
+      ? body.customFields['target_date']
+      : current.customFields['target_date'];
+  const end = due ?? dateValue(target);
+  if (start && end && start > end) {
     throw new ValidationError('An issue starts on or before its due date', {
       details: { path: 'startAt' },
     });

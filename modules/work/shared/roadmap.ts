@@ -95,9 +95,13 @@ export const roadmapItemSchema = z.object({
   color: z.string().nullable(),
   statusCategory: statusCategorySchema.nullable(),
   versionStatus: versionStatusSchema.nullable(),
-  /** Stored dates: the start, and the due or release date. */
+  /** Stored dates: the start, and the target (an epic's Target date or due date) or release. */
   startAt: z.iso.date().nullable(),
   endAt: z.iso.date().nullable(),
+  /** Where the target is written when the bar moves: the epic's Target date field, its due date, or the version's release date. */
+  targetField: z.enum(['target_date', 'dueAt', 'releaseAt']),
+  /** The epic's Owner field. */
+  ownerId: z.uuid().nullable(),
   /** Where the bar is drawn: the stored dates, or what the work itself shows. */
   start: z.iso.date().nullable(),
   end: z.iso.date().nullable(),
