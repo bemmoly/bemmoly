@@ -116,6 +116,7 @@ export default defineModule({
       /** Reserved so a fire_automation post-action enqueues today; the engine lands later. */
       handle: async () => undefined,
     });
+    ctx.code.addConsumer(services.codeLinks.consumer);
     registerWorkSearch(ctx.search, services.search, ctx.database);
     registerWorkRetrieval(ctx);
     registerWorkReferences(ctx, ctx.database);
