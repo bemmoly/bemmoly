@@ -8,6 +8,7 @@ import { createDockerClient } from './clients/docker.ts';
 import { loadUpdaterEnv } from './config/env.ts';
 import { createUpdaterController } from './controllers/updater.controller.ts';
 import { route } from './routes/updater.routes.ts';
+import { stageCli } from './services/cli-stage.ts';
 import type { UpdaterContext } from './services/context.ts';
 import { pruneImages } from './services/images.ts';
 import { reconcileHandoff } from './services/self-update.ts';
@@ -54,6 +55,11 @@ server.listen(env.UPDATER_PORT, '0.0.0.0', () =>
 // A hand-off to this updater that its helper did not finish is closed here.
 reconcileHandoff(ctx).catch((error: unknown) =>
   ctx.log('hand-off check failed', { error: String(error) }),
+);
+
+// The host bemmoly command follows this updater's release on its next run (ADR 0024).
+stageCli(ctx).catch((error: unknown) =>
+  ctx.log('staging the bemmoly command failed', { error: String(error) }),
 );
 
 // Image retention also runs when no update happens for a while.

@@ -17,6 +17,8 @@ export const updaterEnvSchema = z.object({
   UPDATER_SERVICE: z.string().min(1).default('updater'),
   /** Set in the image at build time: the release this updater is. */
   BEMMOLY_UPDATER_VERSION: z.string().min(1).optional(),
+  /** The host bemmoly command of this release, built into the image (ADR 0024). */
+  BEMMOLY_CLI_BUNDLE: z.string().min(1).default('/app/cli/bemmoly-cli.tar.gz'),
   /** On by default; off keeps the updater on the version the admin pinned in UPDATER_VERSION. */
   BEMMOLY_UPDATER_SELF_UPDATE: z.stringbool().default(true),
   /** How long a new updater container has to answer /healthz before the old one is restored. */

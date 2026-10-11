@@ -27,6 +27,7 @@ env:
   # Paths owned by deploy/.
   INSTALLER: deploy/install.sh
   RELEASE_INSTALLER_SCRIPT: deploy/scripts/release-installer.sh
+  RELEASE_CLI_SCRIPT: deploy/scripts/release-cli.sh
   COMPOSE_FILE: deploy/compose/docker-compose.yml
   HELM_CHART: deploy/helm/bemmoly
   AIRGAP_SCRIPT: deploy/scripts/airgap-bundle.sh
@@ -283,6 +284,9 @@ jobs:
             --app-image "$IMAGE_NAMESPACE/bemmoly" --updater-image "$IMAGE_NAMESPACE/updater"
           if [ -f release/digest-app.txt ]; then set -- "$@" --app-digest "$(cat release/digest-app.txt)"; fi
           if [ -f release/digest-updater.txt ]; then set -- "$@" --updater-digest "$(cat release/digest-updater.txt)"; fi
+          # The bemmoly command: its checksum goes into the manifest the next step signs.
+          sh "$RELEASE_CLI_SCRIPT" "$VERSION" assets
+          set -- "$@" --cli-asset "assets/bemmoly-cli-$VERSION.tar.gz"
           node tools/release/src/cli.ts manifest "$@" --out assets/release-manifest.json
           cat release/notes.md >> "$GITHUB_STEP_SUMMARY"
 

@@ -194,17 +194,41 @@ schedule_backups() {
   note "Nightly backup scheduled 02:00 → ${INSTALL_DIR}/backups"
 }
 
+# The release the bemmoly command comes from: the bundle's, or "dev" from a checkout.
+cli_release() {
+  if semver_ok "${BEMMOLY_DEFAULT_VERSION:-}"; then printf '%s' "${BEMMOLY_DEFAULT_VERSION}"; else printf dev; fi
+}
+
 install_cli() {
   as_root install -d -m 755 /usr/local/lib/bemmoly
-  for name in common.sh preflight.sh cli-stack.sh cli-backups.sh cli-updates.sh; do
+  for name in common.sh preflight.sh cli-stack.sh cli-backups.sh cli-updates.sh cli-selfupdate.sh; do
     asset "${name}" | root_write "/usr/local/lib/bemmoly/${name}" 644
   done
   asset bemmoly | root_write /usr/local/bin/bemmoly 755
+  printf "%s\n" "$(cli_release)" | root_write /usr/local/lib/bemmoly/VERSION 644
   as_root install -d -m 755 /usr/share/bash-completion/completions
   asset completion.bash | root_write /usr/share/bash-completion/completions/bemmoly 644
   if [ "${INSTALL_DIR}" != /var/bemmoly ]; then
     printf 'BEMMOLY_DIR=%s\n' "${INSTALL_DIR}" | root_write /etc/default/bemmoly 644
   fi
+}
+
+# --refresh-cli: the bemmoly command of this installer's release, for an install whose
+# command predates self-update (ADR 0024). Images, .env and containers stay as they are.
+refresh_cli() {
+  as_root test -f "${INSTALL_DIR}/.env" ||
+    die "No Bemmoly install in ${INSTALL_DIR}" "Pass its folder with --dir, or install without --refresh-cli."
+  if [ -n "${VERSION}" ] && [ "$(cli_release)" != dev ] && [ "${VERSION}" != "$(cli_release)" ]; then
+    die "This installer carries the bemmoly command of $(cli_release), not ${VERSION}" \
+      "Run: curl -fsSL https://get.bemmoly.com | sh -s -- --refresh-cli --version ${VERSION}"
+  fi
+  step "Replacing the bemmoly command with $(cli_release)'s"
+  install_cli
+  step_done
+  app=$(as_root cat "${INSTALL_DIR}/.env" | env_get /dev/stdin VERSION)
+  success "The bemmoly command is $(cli_release); Bemmoly itself stays on ${app}"
+  say "  Check with 'sudo bemmoly version'. From now on 'sudo bemmoly upgrade' and in-app updates"
+  say "  keep the command on the app's release, and 'sudo bemmoly self-update' refreshes it."
 }
 
 # A re-run after the first admin exists: the app answers on loopback in every layout.

@@ -21,6 +21,17 @@ RUN --mount=type=cache,id=bemmoly-pnpm,target=/pnpm/store \
  && find packages deploy \( -name '*.test.ts' -o -name '*.test-support.ts' \) -delete \
  && rm -f deploy/updater/Dockerfile deploy/updater/Dockerfile.dockerignore
 
+# The host bemmoly command of this release, staged into the install folder on start so the
+# command follows in-app updates (ADR 0024). Same tarball layout as the release asset.
+FROM ${NODE_IMAGE} AS cli
+ARG BEMMOLY_VERSION=0.0.0-dev
+WORKDIR /src
+COPY deploy/cli ./deploy/cli
+COPY deploy/installer/lib/common.sh deploy/installer/lib/preflight.sh ./deploy/installer/lib/
+COPY deploy/scripts/release-cli.sh ./deploy/scripts/
+RUN sh deploy/scripts/release-cli.sh "$BEMMOLY_VERSION" /cli \
+ && mv "/cli/bemmoly-cli-$BEMMOLY_VERSION.tar.gz" /cli/bemmoly-cli.tar.gz
+
 FROM ${NODE_IMAGE} AS runtime
 RUN apt-get update \
  && apt-get install --yes --no-install-recommends ca-certificates tini \
@@ -48,6 +59,7 @@ WORKDIR /app
 COPY --from=build /src/node_modules ./node_modules
 COPY --from=build /src/packages/shared ./packages/shared
 COPY --from=build /src/deploy/updater ./deploy/updater
+COPY --from=cli /cli/bemmoly-cli.tar.gz /app/cli/bemmoly-cli.tar.gz
 COPY deploy/updater/bin/ /usr/local/bin/
 # Root inside the container is needed for the Docker socket; the container publishes no
 # port, mounts nothing but the socket and the install folder, and runs read-only.

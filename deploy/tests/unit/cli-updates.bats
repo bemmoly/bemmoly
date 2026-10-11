@@ -18,6 +18,8 @@ setup() {
   : >"${CALLS}"
   compose() { printf 'compose %s\n' "$*" >>"${CALLS}"; }
   in_app() { printf '{}'; }
+  # The command's own move is cli-self-update.bats's subject.
+  cli_follow_release() { printf 'cli follows %s\n' "$1" >>"${CALLS}"; }
   json_field() {
     case "$1" in mode) printf schema ;; summary) printf 'Reverse 2 changesets' ;; esac
   }
@@ -71,4 +73,13 @@ setup() {
   [ "${status}" -eq 0 ]
   [ "$(env_get "${BEMMOLY_DIR}/.env" UPDATER_VERSION)" = 1.4.0 ]
   [[ "${output}" == *"Bemmoly 1.4.0 is running"* ]]
+  grep -qx 'cli follows 1.4.0' "${CALLS}"
+}
+
+@test "an upgrade that rolled itself back leaves the bemmoly command alone" {
+  run_updater() { printf 'updater %s\n' "$*" >>"${CALLS}"; }
+  run cmd_upgrade 1.4.0 --yes
+  [ "$(env_get "${BEMMOLY_DIR}/.env" VERSION)" = 1.3.0 ]
+  refute() { if "$@"; then return 1; fi; }
+  refute grep -q 'cli follows' "${CALLS}"
 }

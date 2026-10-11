@@ -28,3 +28,4 @@ accepted record is never edited except to mark it superseded.
 | [0021](0021-themes-are-pairs-mode-is-personal.md) | Themes are pairs; mode is personal | accepted |
 | [0022](0022-sign-in-shell-and-bemmoly-once.md) | The sign-in shell, and Bemmoly appears once | accepted |
 | [0023](0023-card-layout-is-the-boards-quick-filters-in-the-row.md) | Card layout is the board's; quick filters sit in the filter row | accepted |
+| [0024](0024-cli-follows-its-release.md) | The bemmoly command follows the release it manages | accepted |

@@ -3,6 +3,7 @@
 #
 #   curl -fsSL https://get.bemmoly.com | sh
 #   curl -fsSL https://get.bemmoly.com | sh -s -- --domain bemmoly.example.com --yes
+#   curl -fsSL https://get.bemmoly.com | sh -s -- --refresh-cli   # only the bemmoly command
 #
 # Three ways this file runs:
 #   - from a checkout (sudo sh deploy/install.sh): it sources deploy/installer/lib;
@@ -98,12 +99,17 @@ bemmoly_install() {
   main() {
     parse_args "$@"
     : "${BEMMOLY_DEFAULT_VERSION:=}"
+    BEMMOLY_LOG="$(mktemp /tmp/bemmoly-install.XXXXXX)"
+    export BEMMOLY_LOG
+    if [ -n "${REFRESH_CLI}" ]; then
+      refresh_cli
+      rm -f "${BEMMOLY_LOG}"
+      return 0
+    fi
     if [ -z "${VERSION}" ]; then
       VERSION="${BEMMOLY_DEFAULT_VERSION}"
       [ -n "${VERSION}" ] || { [ "${CHANNEL}" = beta ] && VERSION=beta || VERSION=latest; }
     fi
-    BEMMOLY_LOG="$(mktemp /tmp/bemmoly-install.XXXXXX)"
-    export BEMMOLY_LOG
 
     run_preflight "${INSTALL_DIR}"
     note "Detected $(describe_machine)"

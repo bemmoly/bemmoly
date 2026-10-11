@@ -101,6 +101,9 @@ jobs:
           BEMMOLY_TEST_DATABASE_URL: postgres://bemmoly:bemmoly@localhost:5432/bemmoly_db
           BEMMOLY_TEST_PG_BIN_DIR: /usr/lib/postgresql/18/bin
 
+      - name: The bemmoly command follows its release, in a container
+        run: pnpm --filter @bemmoly/deploy test:container
+
       - name: Build (server, web shell and Storybook)
         run: pnpm build
 
