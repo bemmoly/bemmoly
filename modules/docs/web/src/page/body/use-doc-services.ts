@@ -3,6 +3,7 @@ import { useMemo } from 'react';
 import { api } from '../../shared/api.ts';
 import { useIssueServices } from '../../shared/issue-services.tsx';
 import { docsPaths, navigateTo } from '../../shared/navigation.ts';
+import { uploadPageImage } from './upload-image.ts';
 
 /**
  * The palette kind Work registers its issues under in the kernel's search registry. Docs asks
@@ -52,8 +53,8 @@ async function searchIssues(query: string): Promise<SuggestionItem[]> {
  * What the Docs page lends its editor: [[ page links from Docs search, @ people from the
  * workspace, live issue chips, tables and # search from whichever module owns issues (through
  * the kernel's entity registry; the kernel's search stands in for # without one), and in-app
- * navigation for link clicks. Uploads are absent (the kernel has no upload endpoint yet), so
- * images go in by link. AI (use-doc-ai.ts) is lent only while every AI surface may show.
+ * navigation for link clicks. Images upload as files of the page (the kernel's files API), so
+ * the page keeps only their URL. AI (use-doc-ai.ts) is lent only while every AI surface may show.
  */
 export function useDocServices(pageId: string, comments = false, ai?: AiHandler): DocServices {
   const issues = useIssueServices();
@@ -64,6 +65,7 @@ export function useDocServices(pageId: string, comments = false, ai?: AiHandler)
       searchPeople,
       searchIssues: (query) => searchIssues(query),
       onNavigate: navigateTo,
+      uploadImage: (file, options) => uploadPageImage(pageId, file, options),
       // Commenting needs edit rights, as the comment layer's canComment does.
       comments,
       ...issues,

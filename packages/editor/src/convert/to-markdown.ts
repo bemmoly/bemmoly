@@ -4,6 +4,7 @@ import type { RichTextDoc, RichTextNode } from '../types.ts';
 import {
   escapeLineStart,
   escapeMarkdown,
+  imageSource,
   safeHref,
   SAFE_LINK,
   type ExportOptions,
@@ -64,6 +65,7 @@ export function toMarkdown(doc: RichTextDoc | null | undefined, options: ExportO
     escape: (text) => text,
     pageHref: (id) => safeHref(options.pageHref?.(id)),
     issueHref: (key) => safeHref(options.issueHref?.(key)),
+    imageSrc: (src) => imageSource(src, options),
   };
 
   function inline(node: RichTextNode): string {

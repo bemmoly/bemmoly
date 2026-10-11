@@ -8,6 +8,7 @@ import { collabDocumentName, type CollabTransactor } from './collab.ts';
 import type { BemmolyModule, ModuleContext } from './contract.ts';
 import type { ModuleContributions } from './contributions.ts';
 import { ModuleLoadError } from './errors.ts';
+import type { FileReader } from './files.ts';
 import { createReferenceRegistries } from './references.ts';
 import type { SettingsReader, SettingsRegistry } from './registries.ts';
 import type { ModuleRegistry } from './registry.ts';
@@ -28,6 +29,8 @@ export interface ModuleContextOptions {
   collab?: CollabTransactor;
   /** The AI facade, read on every call so it can be bound after modules register. */
   ai?: () => AiFacade | undefined;
+  /** The files service, read on every call so it can be bound after modules register. */
+  files?: () => FileReader | undefined;
   /** Every enabled module, for cross-module lookups; answers once loading finishes. */
   peers?: () => ModuleRegistry | undefined;
   /**
@@ -228,6 +231,24 @@ export function createModuleContext(
           );
         }
         await options.collab.transact(collabDocumentName(kind, id), change, actor ?? null);
+      },
+    },
+    files: {
+      addTarget(definition) {
+        if (!definition.kind.startsWith(`${module.id}.`)) {
+          fail(`file target "${definition.kind}" must be namespaced as "${module.id}.<kind>"`);
+        }
+        into.fileTargets.push(definition);
+      },
+      async read(ctx, fileId) {
+        const reader = options.files?.();
+        if (!reader) {
+          throw new ModuleLoadError(
+            `Module "${module.id}": files are not available in this process`,
+            module.id,
+          );
+        }
+        return reader.read(ctx, fileId);
       },
     },
     realtime: options.realtime ?? noRealtime,

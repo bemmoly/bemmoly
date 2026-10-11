@@ -1,5 +1,6 @@
 import { FetchInterceptor } from '@mswjs/interceptors/fetch';
 import { WebSocketInterceptor } from '@mswjs/interceptors/WebSocket';
+import { XMLHttpRequestInterceptor } from '@mswjs/interceptors/XMLHttpRequest';
 import { defineNetwork, InterceptorSource } from 'msw/experimental';
 import { MOCK_SCENARIOS, type MockDb, type MockScenario } from './db.ts';
 import { createMockApi, type MockApi } from './dispatch.ts';
@@ -46,13 +47,18 @@ export async function startDevMocks(): Promise<void> {
   await enableMockNetwork(api, { fallback, onChange: save });
 }
 
-/** Answers the page's fetch and WebSocket calls from `api`, in the page itself. */
+/** Answers the page's fetch, XMLHttpRequest and WebSocket calls from `api`, in the page itself. */
 export async function enableMockNetwork(api: MockApi, options: MswOptions): Promise<void> {
   setProviderLogos(providerLogoUrl);
   const network = defineNetwork({
     sources: [
       new InterceptorSource({
-        interceptors: [new FetchInterceptor(), new WebSocketInterceptor()] as never,
+        // XMLHttpRequest too: uploads use it, so the browser reports their progress.
+        interceptors: [
+          new FetchInterceptor(),
+          new XMLHttpRequestInterceptor(),
+          new WebSocketInterceptor(),
+        ] as never,
       }),
     ],
     handlers: mswHandlers(api, options),

@@ -7,6 +7,7 @@ import { compactJob, importJob, purgeTrashJob } from './server/src/config/jobs.t
 import { docsRoutes } from './server/src/routes/index.ts';
 import { registerDocsAiTools } from './server/src/services/ai-tools/index.ts';
 import { registerDocsMcp } from './server/src/services/mcp/index.ts';
+import { createPageFiles } from './server/src/services/files/index.ts';
 import { createDocsServices } from './server/src/services/index.ts';
 import { registerDocsReferences } from './server/src/services/links/registry.ts';
 import { registerDocsSearch } from './server/src/services/palette/index.ts';
@@ -65,11 +66,15 @@ export default defineModule({
       entities: ctx.entities,
       links: ctx.links,
       ai: ctx.ai,
+      files: ctx.files,
       ...(ctx.database ? { database: ctx.database } : {}),
       ...(ctx.audit ? { audit: ctx.audit } : {}),
       ...(ctx.memberships ? { memberships: ctx.memberships } : {}),
     });
     ctx.collab.add(services.collab.definition);
+    ctx.files.addTarget(
+      createPageFiles(ctx.database ? { database: ctx.database } : {}, services.collab),
+    );
     ctx.jobs.add(compactJob(services.collab));
     ctx.jobs.add(importJob(services.transfer));
     ctx.jobs.add(purgeTrashJob(services.pages));

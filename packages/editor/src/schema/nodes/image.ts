@@ -56,15 +56,17 @@ export const image: DocNode = {
   name: 'image',
   extensions: () => [Image],
   plainText: (node) => attr(node, 'alt'),
-  toMarkdown: (node) => {
+  toMarkdown: (node, context) => {
     const src = attr(node, 'src');
     const alt = attr(node, 'alt').replace(/[[\]]/g, '');
-    return SAFE_IMAGE_SRC.test(src) ? `![${alt}](${src.replace(/[()\s]/g, encodeURI)})` : alt;
+    if (!SAFE_IMAGE_SRC.test(src)) return alt;
+    return `![${alt}](${context.imageSrc(src).replace(/[()\s]/g, encodeURI)})`;
   },
   toHtml: (node, context) => {
     const src = attr(node, 'src');
     const alt = context.escape(attr(node, 'alt'));
     if (!SAFE_IMAGE_SRC.test(src)) return alt ? `<p>${alt}</p>` : '';
-    return `<figure><img src="${context.escape(src)}" alt="${alt}" loading="lazy"></figure>`;
+    const shown = context.escape(context.imageSrc(src));
+    return `<figure><img src="${shown}" alt="${alt}" loading="lazy"></figure>`;
   },
 };

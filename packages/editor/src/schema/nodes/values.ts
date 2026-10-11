@@ -36,8 +36,11 @@ export function decisionHeading(state: string, decidedOn: string): string {
   return decidedOn ? `${label} · ${decidedOn}` : label;
 }
 
-/** Sources an image may load from: the web and paths inside the app. */
-export const SAFE_IMAGE_SRC = /^(https?:\/\/|\/(?!\/))/i;
+/**
+ * Sources an image may load from: the web, paths inside the app, and blob: URLs, which only
+ * the page that made them can read (the dev mock's uploads).
+ */
+export const SAFE_IMAGE_SRC = /^(https?:\/\/|\/(?!\/)|blob:)/i;
 
 const SOURCES: Record<string, string> = { confluence: 'Confluence', markdown: 'Markdown' };
 

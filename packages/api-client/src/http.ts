@@ -1,5 +1,6 @@
 import type { z } from 'zod';
 import { ApiError, errorFromResponse } from './errors.ts';
+import { xhrUpload, type UploadProgressOptions } from './xhr-upload.ts';
 
 export type QueryValue = string | number | boolean | readonly string[] | null | undefined;
 export type Query = Readonly<Record<string, QueryValue>>;
@@ -35,6 +36,8 @@ export interface Http {
     schema: S,
     file: Blob,
     query?: Query,
+    /** With onProgress, sent so the browser reports how much has gone. */
+    progress?: UploadProgressOptions,
   ): Promise<z.output<S>>;
   url(path: string, query?: Query): string;
   /**
@@ -176,8 +179,23 @@ export function createHttp(options: HttpOptions = {}): Http {
         reader.releaseLock();
       }
     },
-    async upload(path, schema, file, query) {
-      return this.request(path, schema, { method: 'POST', raw: file, ...(query ? { query } : {}) });
+    async upload(path, schema, file, query, progress) {
+      if (!progress?.onProgress || typeof XMLHttpRequest === 'undefined') {
+        return this.request(path, schema, {
+          method: 'POST',
+          raw: file,
+          ...(query ? { query } : {}),
+          ...(progress?.signal ? { signal: progress.signal } : {}),
+        });
+      }
+      const body = await xhrUpload(url(path, query), file, progress, options.onUnauthenticated);
+      const parsed = schema.safeParse(body);
+      if (!parsed.success) {
+        throw new ApiError(200, 'invalid_response', `Unexpected response from ${path}`, {
+          details: parsed.error.issues,
+        });
+      }
+      return parsed.data;
     },
   };
 }

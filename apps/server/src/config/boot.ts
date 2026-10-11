@@ -81,6 +81,7 @@ export async function bootApplication(options: BootOptions): Promise<Booted> {
   const aiHandle = createAiHandle();
   // Bound once the kernel reads the modules table; until then no module hears events.
   let moduleState: Pick<DataKernel['moduleState'], 'isEnabled'> | undefined;
+  let files: DataKernel['files'] | undefined;
   const modules = loadModules({
     available: options.available,
     enabled: database ? [] : env.BEMMOLY_MODULES,
@@ -89,6 +90,7 @@ export async function bootApplication(options: BootOptions): Promise<Booted> {
     settingsReader,
     collab: collabHandle,
     ai: () => aiHandle.bound(),
+    files: () => files,
     ...(realtime ? { realtime: realtime.publisher } : {}),
     ...(database
       ? {
@@ -121,6 +123,7 @@ export async function bootApplication(options: BootOptions): Promise<Booted> {
     settingsReader.bind(kernel.settings);
     catalog.bindState(kernel.moduleState);
     moduleState = kernel.moduleState;
+    files = kernel.files;
   }
   const collab =
     database && kernel

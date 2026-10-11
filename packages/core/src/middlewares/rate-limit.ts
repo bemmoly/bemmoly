@@ -25,6 +25,8 @@ export interface RateLimitBudgets {
   failedCredentialsPerIp: RateLimitBudget;
   /** Each route that calls a model, keyed by person: see rate-limit-ai.ts. */
   aiPerActor: RateLimitBudget;
+  /** File uploads (POST /files), keyed by person. */
+  uploadsPerActor: RateLimitBudget;
 }
 
 export interface RateLimitingOptions extends Partial<RateLimitBudgets> {
@@ -42,6 +44,8 @@ export const DEFAULT_PER_ACCOUNT: RateLimitBudget = { max: 10, windowMs: 15 * MI
 export const DEFAULT_FAILED_CREDENTIALS_PER_IP: RateLimitBudget = { max: 60, windowMs: MINUTE };
 /** About one model call a second per route: ghost text while someone types stays well under. */
 export const DEFAULT_AI_PER_ACTOR: RateLimitBudget = { max: 60, windowMs: MINUTE };
+/** A screenshot pasted every two seconds, all minute long, is still under it. */
+export const DEFAULT_UPLOADS_PER_ACTOR: RateLimitBudget = { max: 30, windowMs: MINUTE };
 
 export type RateLimitEnv = Partial<
   Pick<
@@ -51,6 +55,7 @@ export type RateLimitEnv = Partial<
     | 'BEMMOLY_RATE_LIMIT_AUTH_PER_ACCOUNT'
     | 'BEMMOLY_RATE_LIMIT_FAILED_CREDENTIALS_PER_IP'
     | 'BEMMOLY_RATE_LIMIT_AI_PER_USER'
+    | 'BEMMOLY_RATE_LIMIT_UPLOADS_PER_USER'
   >
 >;
 
@@ -68,6 +73,7 @@ export function rateLimitBudgets(env: RateLimitEnv): RateLimitBudgets {
       env.BEMMOLY_RATE_LIMIT_FAILED_CREDENTIALS_PER_IP,
     ),
     aiPerActor: withMax(DEFAULT_AI_PER_ACTOR, env.BEMMOLY_RATE_LIMIT_AI_PER_USER),
+    uploadsPerActor: withMax(DEFAULT_UPLOADS_PER_ACTOR, env.BEMMOLY_RATE_LIMIT_UPLOADS_PER_USER),
   };
 }
 
@@ -88,6 +94,9 @@ const STRICT_PATHS = ['/auth/', '/setup/', '/email-unsubscriptions'];
  * per-person budget instead, which counts them per IP until someone signs in.
  */
 const BOOT_READS = ['/setup/status'];
+
+/** Uploads write to disk, so they have a per-person budget of their own. */
+const UPLOAD_PATH = '/files';
 
 function actorKey(request: FastifyRequest): string {
   const actor = request.actor ?? null;
@@ -119,6 +128,7 @@ export const rateLimiting = fp<RateLimitingOptions>(
     const perAccount = options.perAccount ?? DEFAULT_PER_ACCOUNT;
     const failed = options.failedCredentialsPerIp ?? DEFAULT_FAILED_CREDENTIALS_PER_IP;
     const ai = options.aiPerActor ?? DEFAULT_AI_PER_ACTOR;
+    const uploads = options.uploadsPerActor ?? DEFAULT_UPLOADS_PER_ACTOR;
     const buckets = new RateLimitBuckets(options.sql, options.sweepProbability ?? 0.01);
     const failedKey = (request: FastifyRequest) => `credentials|ip:${request.ip}`;
 
@@ -157,6 +167,12 @@ export const rateLimiting = fp<RateLimitingOptions>(
           max: ai.max,
           timeWindow: ai.windowMs,
           keyGenerator: (request: FastifyRequest) => `ai|${actorKey(request)}`,
+        };
+      } else if (method === 'POST' && path === UPLOAD_PATH) {
+        route.config.rateLimit = {
+          max: uploads.max,
+          timeWindow: uploads.windowMs,
+          keyGenerator: (request: FastifyRequest) => `uploads|${actorKey(request)}`,
         };
       } else if (
         !(method === 'GET' && BOOT_READS.includes(path)) &&

@@ -92,6 +92,7 @@ export {
 } from './services/ai/index.ts';
 export * from './services/changelog/index.ts';
 export * from './services/collab/index.ts';
+export * from './services/files/index.ts';
 export * from './services/jobs/index.ts';
 export * from './services/modules/index.ts';
 export * from './services/realtime/index.ts';

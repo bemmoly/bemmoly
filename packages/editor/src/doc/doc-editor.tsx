@@ -15,6 +15,8 @@ import { BlockHandle } from './block-handle.tsx';
 import { BubbleMenu } from './bubble-menu.tsx';
 import { CodeTools } from './code-tools.tsx';
 import { TableTools } from './table-tools.tsx';
+import { PendingUploads } from './uploads/pending-uploads.tsx';
+import { UploadStore } from './uploads/upload-store.ts';
 
 const NO_SERVICES: DocServices = {};
 
@@ -36,6 +38,7 @@ export default function DocEditor(props: DocEditorProps) {
   const [store] = useState(() => new SuggestionStore());
   const [portals] = useState(() => new PortalStore());
   const [writes] = useState(() => new AiWriteStore());
+  const [uploads] = useState(() => new UploadStore());
   const host = useRef<HTMLDivElement>(null);
   const frame = useRef<HTMLDivElement>(null);
   const [linking, setLinking] = useState(false);
@@ -53,6 +56,7 @@ export default function DocEditor(props: DocEditorProps) {
         store,
         portals,
         writes,
+        uploads,
         extensions: props.extensions,
         onUpdate: (instance) =>
           latest.current.onChange?.(instance.isEmpty ? null : (instance.getJSON() as RichTextDoc)),
@@ -99,6 +103,7 @@ export default function DocEditor(props: DocEditorProps) {
         <div ref={host} className={props.contentClassName ?? 'min-w-0'} />
         <SuggestionList store={store} listId={listId} page />
         <NodeViewPortals store={portals} />
+        <PendingUploads editor={editor} store={uploads} services={services} />
         <TableTools editor={editor} host={frame} />
         <BlockHandle editor={editor} frame={frame} />
         <CodeTools editor={editor} host={frame} />

@@ -12,6 +12,7 @@ import { blockKeys } from './block-commands.ts';
 import { CodeHighlight } from './highlight.ts';
 import { imageDrop } from './image-drop.ts';
 import { PortalNodeView, type PortalStore } from './portals.ts';
+import type { UploadStore } from './uploads/upload-store.ts';
 import type { DocServices } from './services.ts';
 import { TABLE } from './styles.ts';
 import { docSlash, issueEmbeds, mentionOptions, pageLinks } from './suggestions.ts';
@@ -30,6 +31,8 @@ export interface CreateDocEditorOptions {
   portals: PortalStore;
   /** The suggestion card's state, shared with the / menu and Ask AI. */
   writes: AiWriteStore;
+  /** Images on their way in, drawn as placeholders until their upload finishes. */
+  uploads: UploadStore;
   /** More extensions, such as collaboration's; they may replace the initial content. */
   extensions?: readonly AnyExtension[] | undefined;
   onUpdate: (editor: Editor) => void;
@@ -121,7 +124,7 @@ export function createDocEditor(options: CreateDocEditorOptions): Editor {
       docSlash(store, services),
       pageLinks(store, services),
       issueEmbeds(store, services),
-      imageDrop(services),
+      imageDrop(services, options.uploads),
       CodeHighlight,
       blockKeys(() => store.isOpen),
       ...(options.keys ? [docKeys(options.keys, store)] : []),

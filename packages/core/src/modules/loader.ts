@@ -7,6 +7,7 @@ import type { RealtimePublisher } from '../contracts/realtime.ts';
 import type { AiFacade } from '../contracts/ai.ts';
 import type { CollabTransactor } from './collab.ts';
 import type { BemmolyModule } from './contract.ts';
+import type { FileReader } from './files.ts';
 import { createModuleContext } from './context.ts';
 import { emptyContributions } from './contributions.ts';
 import { ModuleLoadError } from './errors.ts';
@@ -36,6 +37,8 @@ export interface LoadModulesOptions {
   collab?: CollabTransactor;
   /** What ctx.ai calls through once the server binds the runtime; see createAiHandle. */
   ai?: () => AiFacade | undefined;
+  /** What ctx.files.read goes through once the server creates the files service. */
+  files?: () => FileReader | undefined;
   /**
    * The live module state, read on every event. A module's event handlers run only while it
    * is enabled; omitted, every registered module hears every event.
@@ -130,6 +133,7 @@ export function loadModules(options: LoadModulesOptions): ModuleRegistry {
         ...(options.database ? { database: options.database } : {}),
         ...(options.collab ? { collab: options.collab } : {}),
         ...(options.ai ? { ai: options.ai } : {}),
+        ...(options.files ? { files: options.files } : {}),
         ...(options.isEnabled ? { isEnabled: options.isEnabled } : {}),
         peers: () => registry,
       }),

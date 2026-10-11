@@ -4,6 +4,11 @@ export interface ExportOptions {
   pageHref?: (pageId: string) => string | null;
   /** An issue's URL by key. */
   issueHref?: (key: string) => string | null;
+  /**
+   * Where an image's source points in the export: a file beside it, a data: URI that embeds
+   * it, or null to keep the source as stored.
+   */
+  imageSrc?: (src: string) => string | null;
 }
 
 /** Links an export follows: the web, mail and paths inside the app. */
@@ -37,3 +42,11 @@ export const escapeLineStart = (line: string) =>
   line
     .replace(/^(\s*)(#{1,6}\s|>|[-+]\s|-{3,}\s*$|={3,}\s*$)/, '$1\\$2')
     .replace(/^(\s*\d+)([.)]\s)/, '$1\\$2');
+
+/** An image's source in an export: the host's choice when it has one, else as stored. */
+export const imageSource = (src: string, options: ExportOptions): string => {
+  const chosen = options.imageSrc?.(src);
+  return chosen && (/^data:image\/(png|jpeg|gif|webp);base64,/.test(chosen) || safeHref(chosen))
+    ? chosen
+    : src;
+};

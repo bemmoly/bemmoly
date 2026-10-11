@@ -2,6 +2,7 @@ import { bypass, http, HttpResponse, passthrough, ws, type AnyHandler } from 'ms
 import type { MockApi } from './dispatch.ts';
 import { mockPresence } from './presence.ts';
 import type { MockResponse } from './types.ts';
+import { mockUploadHandler } from './uploads.ts';
 
 export interface MswOptions {
   /** Ask the real server first and mock only routes it does not have yet (dev). */
@@ -90,6 +91,7 @@ export function mswHandlers(api: MockApi, options: MswOptions): AnyHandler[] {
     });
   }
   return [
+    mockUploadHandler(api, options.fallback),
     http.all(/\/(api\/v1\/|readyz$)/, async ({ request }) => {
       if (options.fallback) {
         const real = await fetch(bypass(request)).catch(() => null);

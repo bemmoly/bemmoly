@@ -24,3 +24,12 @@ export {
   type CollabTransactor,
 } from './collab.ts';
 export type * from './mcp.ts';
+export {
+  fileIdOf,
+  fileUrl,
+  type FileAccess,
+  type FileContent,
+  type FileReader,
+  type FilesRegistry,
+  type FileTargetDefinition,
+} from './files.ts';

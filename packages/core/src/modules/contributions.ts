@@ -3,6 +3,7 @@ import type { RetrievalSourceDefinition } from '../contracts/retrieval.ts';
 import type { SettingDefinition } from '../contracts/settings.ts';
 import type { CollabDocumentDefinition } from './collab.ts';
 import type { McpPromptDefinition, McpResourceDefinition } from './mcp.ts';
+import type { FileTargetDefinition } from './files.ts';
 import type {
   AiContribution,
   AiExclusionSourceDefinition,
@@ -45,6 +46,7 @@ export interface ModuleContributions {
   mcpResources: McpResourceDefinition[];
   mcpPrompts: McpPromptDefinition[];
   mcpTools: AiContribution[];
+  fileTargets: FileTargetDefinition[];
 }
 
 export function emptyContributions(): ModuleContributions {
@@ -73,5 +75,6 @@ export function emptyContributions(): ModuleContributions {
     mcpResources: [],
     mcpPrompts: [],
     mcpTools: [],
+    fileTargets: [],
   };
 }
