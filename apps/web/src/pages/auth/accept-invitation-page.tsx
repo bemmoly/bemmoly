@@ -1,83 +1,127 @@
+import { PASSWORD_MIN_LENGTH } from '@bemmoly/shared';
+import { Avatar, Button, Field, Input, PasswordInput } from '@bemmoly/ui';
+import { Icon } from '@bemmoly/ui/icons';
 import { Link } from '@tanstack/react-router';
+import { AuthHeading, AuthShell } from '../../components/auth/auth-layout.tsx';
+import { AuthAlt, AuthNote, AuthSmall } from '../../components/auth/auth-parts.tsx';
+import { FormError, Loading } from '../../components/form.tsx';
+import { SsoButtons } from '../../components/sso/sso-buttons.tsx';
 import { useFragmentToken } from '../../hooks/use-fragment-token.ts';
-import { AuthLayout } from '../../components/auth/auth-layout.tsx';
-import { FormError, Notice, Loading } from '../../components/form.tsx';
-import { useAcceptInvitation } from '../../hooks/use-auth-forms.ts';
+import { useAcceptInvitation } from '../../hooks/use-password-forms.ts';
+import { useSsoSignIn } from '../../hooks/use-sso-sign-in.ts';
 import { describeError } from '../../lib/errors.ts';
-import { Button, Input, Field } from '@bemmoly/ui';
 
+/**
+ * Join the workspace from an invitation. When single sign-on is set up the invitation is
+ * accepted through the identity provider only, with no new password; otherwise a name and a
+ * password, with the email fixed by the invitation.
+ */
 export function AcceptInvitationPage() {
   const token = useFragmentToken();
   const form = useAcceptInvitation(token);
+  const sso = useSsoSignIn();
   const { data: invitation, isPending, error } = form.invitation;
-  if (token && isPending)
+  if (token && (isPending || sso.query.isPending)) {
     return (
-      <AuthLayout title="Checking your invitation">
-        <Loading lines={3} />
-      </AuthLayout>
+      <AuthShell title="Checking your invitation">
+        <Loading label="Checking your invitation" lines={3} />
+      </AuthShell>
     );
+  }
   if (!invitation) {
     const reason = token
       ? describeError(error).message
       : 'This link is incomplete. Open it from the invitation email again.';
     return (
-      <AuthLayout title="This invitation cannot be used">
-        <Notice tone="caution">{reason} Ask the person who invited you to send a new one.</Notice>
-        <Link
-          to="/login"
-          search={{ redirect: undefined }}
-          className="self-center text-13 font-medium"
-        >
-          Go to sign in
-        </Link>
-      </AuthLayout>
+      <AuthShell title="This invitation can’t be used">
+        <AuthNote tone="caution" icon="mail" title="This invitation can’t be used">
+          {reason} Ask the person who invited you to send a new one from Settings › People.
+        </AuthNote>
+        <AuthAlt>
+          Already joined? <Link to="/login">Sign in</Link>
+        </AuthAlt>
+      </AuthShell>
     );
   }
+  const workspace = invitation.workspaceName;
+  const inviter = invitation.inviterName ?? 'An admin';
+  const viaSso = sso.options.length > 0;
   return (
-    <AuthLayout
-      title={`Join ${invitation.workspaceName}`}
-      workspaceName={invitation.workspaceName}
-      subtitle={
+    <AuthShell title={`Join ${workspace}`} workspaceName={workspace}>
+      <AuthHeading title={`Join ${workspace}`} />
+      <div className="flex items-center gap-3 rounded-card bg-acc-50 px-3.5 py-3">
+        <Avatar name={inviter} size={28} />
+        <p className="m-0 text-14 text-tx-2">
+          <b className="font-semibold text-tx">{inviter}</b> invited you to{' '}
+          <b className="font-semibold text-tx">{workspace}</b> as {invitation.roleName}
+          {invitation.teamName ? ` on ${invitation.teamName}` : ''}.
+        </p>
+      </div>
+      {viaSso ? (
         <>
-          {invitation.inviterName ?? 'An administrator'} invited you as{' '}
-          <b className="font-medium text-tx">{invitation.email}</b> with the {invitation.roleName}{' '}
-          role{invitation.teamName ? ` on ${invitation.teamName}` : ''}.
+          <SsoButtons options={sso.options} only autoFocus onStart={(id) => sso.start(id, '/')} />
+          <AuthSmall>
+            Join with your {workspace} account at your identity provider, as {invitation.email}. No
+            new password needed.
+          </AuthSmall>
         </>
-      }
-    >
-      <form className="flex flex-col gap-3.5" onSubmit={form.submit} noValidate>
-        <Field label="Your name" error={form.errors['name']}>
-          <Input
-            size="lg"
-            autoComplete="name"
-            autoFocus
-            value={form.values.name}
-            onChange={(event) => form.set('name')(event.target.value)}
-          />
-        </Field>
-        <Field label="Password" hint="At least 12 characters." error={form.errors['password']}>
-          <Input
-            size="lg"
-            type="password"
-            autoComplete="new-password"
-            value={form.values.password}
-            onChange={(event) => form.set('password')(event.target.value)}
-          />
-        </Field>
-        <Field label="Type it again" error={form.errors['confirm']}>
-          <Input
-            size="lg"
-            type="password"
-            autoComplete="new-password"
-            value={form.values.confirm}
-            onChange={(event) => form.set('confirm')(event.target.value)}
-          />
-        </Field>
-        <FormError error={form.mutation.error} />
-        <Button type="submit" variant="primary" size="lg" block disabled={form.mutation.isPending}>
-          Create account and join
-        </Button>
-      </form>
-    </AuthLayout>
+      ) : (
+        <form className="flex flex-col gap-4" onSubmit={form.submit} noValidate>
+          <Field label="Email" hint="From the invitation. You’ll sign in with it.">
+            <Input
+              size="touch"
+              type="email"
+              name="email"
+              autoComplete="username"
+              value={invitation.email}
+              readOnly
+              suffix={<Icon name="lock" size={14} className="text-tx-3" />}
+            />
+          </Field>
+          <Field
+            label="Your name"
+            error={
+              form.errors['name'] ? <span role="alert">{form.errors['name']}</span> : undefined
+            }
+          >
+            <Input
+              size="touch"
+              name="name"
+              autoComplete="name"
+              autoFocus
+              value={form.values.name}
+              onChange={(event) => form.set('name')(event.target.value)}
+            />
+          </Field>
+          <Field
+            label="Password"
+            hint={`At least ${PASSWORD_MIN_LENGTH} characters.`}
+            error={
+              form.errors['password'] ? (
+                <span role="alert">{form.errors['password']}</span>
+              ) : undefined
+            }
+          >
+            <PasswordInput
+              autoComplete="new-password"
+              meter
+              minLength={PASSWORD_MIN_LENGTH}
+              value={form.values.password}
+              onChange={(event) => form.set('password')(event.target.value)}
+            />
+          </Field>
+          <FormError error={form.mutation.error} />
+          <Button
+            type="submit"
+            variant="primary"
+            size="touch"
+            block
+            loading={form.mutation.isPending}
+          >
+            Join {workspace}
+          </Button>
+        </form>
+      )}
+    </AuthShell>
   );
 }
