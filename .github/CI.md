@@ -19,7 +19,8 @@ protection matches checks by job name, so renaming a job means updating the sett
 What each check runs:
 
 - **Fast checks**: `pnpm typecheck`, `pnpm lint` (layering, boundaries, 300-line limit),
-  `pnpm format:check`, `pnpm test`, `pnpm eval` (the AI evals against their recordings, no
+  `pnpm format:check`, `pnpm i18n:check` (message catalogs well formed, shipped locales
+  complete; see `docs/i18n.md`), `pnpm test`, `pnpm eval` (the AI evals against their recordings, no
   key and no network; see `docs/ai-evals.md`) and actionlint over the workflows.
 - **Full checks**: integration tests against `pgvector/pgvector:pg18`; the bemmoly command's
   self-update in a throwaway container (`pnpm --filter @bemmoly/deploy test:container`: the
@@ -133,7 +134,7 @@ cosign verify ghcr.io/bemmoly/bemmoly:X.Y.Z \
 ## Running the gates locally
 
 ```sh
-pnpm typecheck && pnpm lint && pnpm format:check && pnpm test
+pnpm typecheck && pnpm lint && pnpm format:check && pnpm i18n:check && pnpm test
 pnpm test:integration                       # Testcontainers, or BEMMOLY_TEST_DATABASE_URL
 pnpm build && pnpm size && pnpm test:e2e
 pnpm test:e2e:work                          # Testcontainers, or BEMMOLY_TEST_DATABASE_URL

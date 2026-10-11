@@ -1,6 +1,8 @@
+import { useT } from '@bemmoly/core-web';
 import { Avatar } from '@bemmoly/ui';
 import { Icon, type IconName } from '@bemmoly/ui/icons';
 import type { ReactNode } from 'react';
+import { authText } from '../../i18n/auth.ts';
 
 export type NoteTone = 'danger' | 'caution' | 'info' | 'neutral';
 
@@ -56,6 +58,7 @@ export function PersonRow({
   email: string;
   onForget: () => void;
 }) {
+  const t = useT(authText);
   return (
     <div className="flex items-center gap-3 rounded-card bg-card px-3 py-2.5 shadow-[inset_0_0_0_1px_var(--line)]">
       <Avatar name={name ?? email} size={32} />
@@ -66,20 +69,21 @@ export function PersonRow({
       <button
         type="button"
         onClick={onForget}
-        className="ml-auto shrink-0 cursor-pointer rounded-chip border-0 bg-transparent p-1 text-13 font-medium text-acc hover:text-acc-600 focus-visible:outline-2 focus-visible:outline-acc"
+        className="ms-auto shrink-0 cursor-pointer rounded-chip border-0 bg-transparent p-1 text-13 font-medium text-acc hover:text-acc-600 focus-visible:outline-2 focus-visible:outline-acc"
       >
-        Not you?
+        {t('auth.signIn.notYou')}
       </button>
     </div>
   );
 }
 
 /** The quiet rule between single sign-on and the password form. */
-export function OrRule({ children = 'or' }: { children?: ReactNode }) {
+export function OrRule({ children }: { children?: ReactNode }) {
+  const t = useT(authText);
   return (
     <div className="flex items-center gap-3 text-12 text-tx-3">
       <span aria-hidden="true" className="h-px flex-1 bg-line" />
-      {children}
+      {children ?? t('auth.signIn.or')}
       <span aria-hidden="true" className="h-px flex-1 bg-line" />
     </div>
   );

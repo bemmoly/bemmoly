@@ -25,7 +25,9 @@
     "size": "turbo run size",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "changeset": "changeset"
+    "changeset": "changeset",
+    "i18n:check": "node tools/i18n/src/cli.ts check",
+    "i18n:extract": "node tools/i18n/src/cli.ts extract"
   },
   "devDependencies": {
     "@changesets/cli": "3.0.3",

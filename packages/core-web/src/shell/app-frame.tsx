@@ -1,5 +1,7 @@
 import { SHEET_MOTION, useDialog, usePresence } from '@bemmoly/ui';
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
+import { core } from '../i18n/catalog.ts';
+import { useT } from '../i18n/use-t.ts';
 import { FrameContext, type FrameState, type SidebarMode } from './frame-context.ts';
 
 /** Below this width the sidebar folds to the rail by itself; below PHONE it becomes a sheet. */
@@ -34,7 +36,7 @@ export interface AppFrameProps {
   children: ReactNode;
 }
 
-const ASIDE = 'flex min-h-0 shrink-0 flex-col border-r border-line bg-side';
+const ASIDE = 'flex min-h-0 shrink-0 flex-col border-e border-line bg-side';
 
 /** The phone's sidebar: the full sidebar in a sheet from the left edge, over a scrim. */
 function SidebarSheet({
@@ -46,16 +48,17 @@ function SidebarSheet({
   onClose: () => void;
   children: ReactNode;
 }) {
+  const t = useT(core);
   const presence = usePresence(open);
   const { ref, onBackdropClick } = useDialog(presence.mounted, onClose);
   if (!presence.mounted) return null;
   return (
     <dialog
       ref={ref}
-      aria-label="Menu"
+      aria-label={t('core.frame.menu')}
       onClick={onBackdropClick}
       data-state={presence.leaving ? 'closed' : 'open'}
-      className={`m-0 mr-auto h-full max-h-full w-70 max-w-[85vw] flex-col border-0 border-r border-line bg-side p-0 text-13 text-tx open:flex [--slide-from:-24px] backdrop:bg-scrim ${SHEET_MOTION}`}
+      className={`m-0 me-auto h-full max-h-full w-70 max-w-[85vw] flex-col border-0 border-e border-line bg-side p-0 text-13 text-tx open:flex [--slide-from:-24px] backdrop:bg-scrim ${SHEET_MOTION}`}
     >
       {children}
     </dialog>
@@ -79,6 +82,7 @@ export function AppFrame({
   workspaceName,
   children,
 }: AppFrameProps) {
+  const t = useT(core);
   const phone = useMatches(`(max-width: ${PHONE - 1}px)`);
   const narrow = useMatches(`(max-width: ${NARROW - 1}px)`);
   const [sheet, setSheet] = useState(false);
@@ -136,7 +140,7 @@ export function AppFrame({
         <div className="relative flex min-h-0 flex-1">
           {phone ? null : (
             <aside
-              aria-label="Sidebar"
+              aria-label={t('core.frame.sidebar')}
               className={`${ASIDE} ${docked === 'rail' ? 'w-14 items-center px-0 pt-3 pb-2.5' : 'w-60 px-2 pt-2.5 pb-2'}`}
             >
               {sidebar}
@@ -146,7 +150,7 @@ export function AppFrame({
             <FrameContext.Provider value={inMode('full')}>
               <div
                 ref={peekRef}
-                className={`${ASIDE} absolute inset-y-0 left-0 z-30 w-60 px-2 pt-2.5 pb-2 shadow-e2 motion-safe:animate-slide-in [--slide-from:-24px]`}
+                className={`${ASIDE} absolute inset-y-0 start-0 z-30 w-60 px-2 pt-2.5 pb-2 shadow-e2 motion-safe:animate-slide-in [--slide-from:-24px]`}
               >
                 {sidebar}
               </div>

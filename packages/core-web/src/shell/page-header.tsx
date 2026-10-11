@@ -10,6 +10,8 @@ import {
   type ReactNode,
 } from 'react';
 import { createPortal } from 'react-dom';
+import { core } from '../i18n/catalog.ts';
+import { useT } from '../i18n/use-t.ts';
 import { isActivePath, useFrame, useFrameLink } from './frame-context.ts';
 import { SwitcherMenu, type SwitcherItem } from './switcher-menu.tsx';
 
@@ -57,6 +59,7 @@ const CRUMB =
   'flex min-w-0 items-center gap-1.5 rounded-chip px-1.5 py-0.75 whitespace-nowrap text-tx-2 no-underline hover:bg-hover hover:text-tx focus-ring';
 
 function CrumbLink({ crumb, here }: { crumb: PageCrumb; here: boolean }) {
+  const t = useT(core);
   const link = useFrameLink(crumb.path);
   const body = (
     <>
@@ -76,7 +79,7 @@ function CrumbLink({ crumb, here }: { crumb: PageCrumb; here: boolean }) {
           <button
             type="button"
             {...props}
-            aria-label={`${crumb.label}, switch`}
+            aria-label={t('core.header.switch', { label: crumb.label })}
             aria-current={here ? 'page' : undefined}
             className={`${CRUMB} cursor-pointer border-0 bg-transparent font-sans text-13 aria-[current=page]:font-medium aria-[current=page]:text-tx aria-expanded:bg-hover`}
           >
@@ -99,6 +102,7 @@ function CrumbLink({ crumb, here }: { crumb: PageCrumb; here: boolean }) {
 }
 
 function Tab({ tab, on }: { tab: PageTab; on: boolean }) {
+  const t = useT(core);
   const link = useFrameLink(tab.path);
   const anchor = (
     <a
@@ -111,7 +115,11 @@ function Tab({ tab, on }: { tab: PageTab; on: boolean }) {
     </a>
   );
   return tab.keys ? (
-    <Tooltip label={`Go to ${tab.label.toLowerCase()}`} keys={tab.keys} side="bottom">
+    <Tooltip
+      label={t('core.header.goTo', { view: tab.label.toLowerCase() })}
+      keys={tab.keys}
+      side="bottom"
+    >
       {anchor}
     </Tooltip>
   ) : (
@@ -190,6 +198,7 @@ export function PageHeader({
   onActionsSlot?: (element: HTMLElement | null) => void;
   onPresenceSlot?: (element: HTMLElement | null) => void;
 }) {
+  const t = useT(core);
   const { phone, pathname, openSheet } = useFrame();
   const shown = phone ? crumbs.slice(-1) : crumbs;
   const current =
@@ -197,11 +206,11 @@ export function PageHeader({
   const tabList =
     tabs && tabs.length > 0 ? (
       <nav
-        aria-label="Views"
+        aria-label={t('core.header.views')}
         className={
           phone
             ? 'flex h-10 shrink-0 items-center gap-0.5 overflow-x-auto border-b border-line px-3'
-            : 'ml-1.5 flex h-6 items-center gap-0.5 border-l border-line pl-3'
+            : 'ms-1.5 flex h-6 items-center gap-0.5 border-s border-line ps-3'
         }
       >
         {tabs.map((tab) => (
@@ -214,8 +223,15 @@ export function PageHeader({
       <header
         className={`flex h-13 shrink-0 items-center gap-2.5 border-b border-line bg-canvas px-3 md:px-6 ${className ?? ''}`}
       >
-        {phone ? <IconButton label="Open menu" icon="lines" size="sm" onClick={openSheet} /> : null}
-        <nav aria-label="Breadcrumb" className="min-w-0">
+        {phone ? (
+          <IconButton
+            label={t('core.header.openMenu')}
+            icon="lines"
+            size="sm"
+            onClick={openSheet}
+          />
+        ) : null}
+        <nav aria-label={t('core.header.breadcrumb')} className="min-w-0">
           <ol className="m-0 flex min-w-0 list-none items-center gap-1 p-0 text-13">
             {shown.map((crumb, index) => (
               <Fragment key={`${crumb.path}-${index}`}>
@@ -233,7 +249,7 @@ export function PageHeader({
         </nav>
         {trailing ? <div className="flex shrink-0 items-center">{trailing}</div> : null}
         {phone ? null : tabList}
-        <div className="ml-auto flex shrink-0 items-center gap-2">
+        <div className="ms-auto flex shrink-0 items-center gap-2">
           {phone ? null : presence}
           {phone ? null : <span ref={onPresenceSlot} className="flex items-center empty:hidden" />}
           {phone ? null : actions}

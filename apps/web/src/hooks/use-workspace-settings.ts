@@ -1,15 +1,12 @@
-import { SETTING_SCHEMAS } from '@bemmoly/shared';
+import { languageName } from '@bemmoly/core-web';
+import { SETTING_SCHEMAS, SHIPPED_LOCALES } from '@bemmoly/shared';
 import { useState } from 'react';
 import { z } from 'zod';
 import { validateForm, type FieldErrors } from '../lib/errors.ts';
 import { useDraft, useSettings, valuesOf } from './use-setting.ts';
 
-export const LOCALES = [
-  { value: 'en', label: 'English' },
-  { value: 'de', label: 'Deutsch' },
-  { value: 'fr', label: 'Français' },
-  { value: 'es', label: 'Español' },
-];
+/** The languages Bemmoly ships, each named in its own words (ADR 0025). */
+export const LOCALES = SHIPPED_LOCALES.map((value) => ({ value, label: languageName(value) }));
 
 const KEYS = ['workspace.name', 'workspace.url', 'workspace.locale', 'workspace.timezone'] as const;
 

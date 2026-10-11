@@ -1,5 +1,7 @@
 import { Icon, type IconName } from '@bemmoly/ui/icons';
 import type { ReactNode } from 'react';
+import { core } from '../i18n/catalog.ts';
+import { useT } from '../i18n/use-t.ts';
 import { isActivePath, useFrame, useFrameLink } from './frame-context.ts';
 
 export interface BottomBarItem {
@@ -13,6 +15,7 @@ export interface BottomBarItem {
 }
 
 function Item({ item }: { item: BottomBarItem }) {
+  const t = useT(core);
   const { pathname } = useFrame();
   const link = useFrameLink(item.path);
   const on = isActivePath(pathname, item.path, item.exact);
@@ -20,7 +23,9 @@ function Item({ item }: { item: BottomBarItem }) {
     <a
       {...link}
       aria-current={on ? 'page' : undefined}
-      aria-label={item.pill ? `${item.label}, ${item.pill} unread` : undefined}
+      aria-label={
+        item.pill ? t('core.frame.unread', { label: item.label, count: item.pill }) : undefined
+      }
       className="relative flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 text-11 text-tx-3 no-underline focus-ring-inset aria-[current=page]:text-acc"
     >
       <span className="relative">
@@ -32,7 +37,7 @@ function Item({ item }: { item: BottomBarItem }) {
         {item.pill ? (
           <span
             aria-hidden
-            className="absolute -top-0.5 -right-1 size-2 rounded-full bg-acc ring-2 ring-canvas"
+            className="absolute -top-0.5 -end-1 size-2 rounded-full bg-acc ring-2 ring-canvas"
           />
         ) : null}
       </span>
@@ -53,10 +58,11 @@ export function BottomBar({
   items: readonly BottomBarItem[];
   primary: ReactNode;
 }) {
+  const t = useT(core);
   const half = Math.ceil(items.length / 2);
   return (
     <nav
-      aria-label="Quick navigation"
+      aria-label={t('core.frame.quickNavigation')}
       className="flex h-16 shrink-0 items-stretch border-t border-line bg-canvas pb-[env(safe-area-inset-bottom)]"
     >
       {items.slice(0, half).map((item) => (

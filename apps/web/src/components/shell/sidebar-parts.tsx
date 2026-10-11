@@ -1,4 +1,4 @@
-import { RAIL_BUTTON, useFrame } from '@bemmoly/core-web';
+import { RAIL_BUTTON, useFrame, useT } from '@bemmoly/core-web';
 import {
   Avatar,
   BrandBlock,
@@ -15,6 +15,7 @@ import { Icon } from '@bemmoly/ui/icons';
 import type { ReactNode } from 'react';
 import { useDevMailbox } from '../../hooks/use-dev-mailbox.ts';
 import { APP_VERSION, WHATS_NEW_URL, type Shell } from '../../hooks/use-shell.ts';
+import { shellText } from '../../i18n/catalogs.ts';
 import { useUiStore } from '../../store/ui.ts';
 import { AppearanceMenu } from './appearance-menu.tsx';
 import { NewButton } from './new-button.tsx';
@@ -25,23 +26,24 @@ function openWhatsNew() {
 
 /** Settings, invite people, what's new and about: the workspace's menu, never a switcher. */
 function WorkspaceMenuItems({ shell }: { shell: Shell }) {
+  const t = useT(shellText);
   const setAboutOpen = useUiStore((state) => state.setAboutOpen);
   return (
     <>
       <MenuItem icon={<Icon name="settings" />} onSelect={() => shell.go('/settings/workspace')}>
-        Workspace settings
+        {t('shell.workspace.settings')}
       </MenuItem>
       {shell.canInvite ? (
         <MenuItem icon={<Icon name="people" />} onSelect={shell.invite}>
-          Invite people
+          {t('shell.workspace.invite')}
         </MenuItem>
       ) : null}
       <MenuSeparator />
       <MenuItem icon={<Icon name="spark" />} onSelect={openWhatsNew}>
-        What’s new
+        {t('shell.version.whatsNew')}
       </MenuItem>
       <MenuItem icon={<Icon name="info" />} onSelect={() => setAboutOpen(true)}>
-        About Bemmoly
+        {t('shell.workspace.about')}
       </MenuItem>
     </>
   );
@@ -65,24 +67,30 @@ function CollapseButton({ label }: { label: string }) {
 
 /** The top of the sidebar: the brand block, then Search and New. */
 export function SidebarTop({ shell }: { shell: Shell }) {
+  const t = useT(shellText);
   const { mode, toggleSidebar } = useFrame();
   // In the phone's sheet, [ and this button both close it.
   const closeSheet = toggleSidebar;
   if (mode === 'rail') {
     return (
       <div className="flex flex-col items-center gap-1">
-        <Tooltip label="Expand sidebar" keys="[" side="right">
+        <Tooltip label={t('shell.sidebar.expand')} keys="[" side="right">
           <button
             type="button"
-            aria-label="Expand sidebar"
+            aria-label={t('shell.sidebar.expand')}
             onClick={toggleSidebar}
             className="mb-2.5 grid cursor-pointer place-items-center rounded-card border-0 bg-transparent p-1 hover:bg-hover focus-ring"
           >
             <BrandRailTop customLogo={shell.customLogo} />
           </button>
         </Tooltip>
-        <Tooltip label="Search" keys="Mod+K" side="right">
-          <button type="button" aria-label="Search" onClick={shell.search} className={RAIL_BUTTON}>
+        <Tooltip label={t('shell.sidebar.search')} keys="Mod+K" side="right">
+          <button
+            type="button"
+            aria-label={t('shell.sidebar.search')}
+            onClick={shell.search}
+            className={RAIL_BUTTON}
+          >
             <Icon name="search" size={17} />
           </button>
         </Tooltip>
@@ -100,9 +108,14 @@ export function SidebarTop({ shell }: { shell: Shell }) {
         workspaceMenu={<WorkspaceMenuItems shell={shell} />}
         sidebarToggle={
           mode === 'sheet' ? (
-            <IconButton label="Close menu" icon="close" size="xs" onClick={closeSheet} />
+            <IconButton
+              label={t('shell.sidebar.closeMenu')}
+              icon="close"
+              size="xs"
+              onClick={closeSheet}
+            />
           ) : (
-            <CollapseButton label="Collapse sidebar" />
+            <CollapseButton label={t('shell.sidebar.collapse')} />
           )
         }
       />
@@ -110,10 +123,10 @@ export function SidebarTop({ shell }: { shell: Shell }) {
         <button
           type="button"
           onClick={shell.search}
-          className="flex h-7.5 min-w-0 flex-1 cursor-pointer items-center gap-2 rounded-control border-0 bg-card px-2 text-left font-sans text-13 text-tx-3 shadow-e1 hover:text-tx-2 focus-ring"
+          className="flex h-7.5 min-w-0 flex-1 cursor-pointer items-center gap-2 rounded-control border-0 bg-card px-2 text-start font-sans text-13 text-tx-3 shadow-e1 hover:text-tx-2 focus-ring"
         >
           <Icon name="search" size={15} />
-          <span className="flex-1">Search</span>
+          <span className="flex-1">{t('shell.sidebar.search')}</span>
           <Kbd keys="Mod+K" />
         </button>
         <NewButton shell={shell} />
@@ -125,6 +138,7 @@ export function SidebarTop({ shell }: { shell: Shell }) {
 /** The person: their row (or the rail's avatar) opens Profile, notifications and Sign out. */
 export function UserMenu({ shell }: { shell: Shell }) {
   const { mode } = useFrame();
+  const t = useT(shellText);
   const name = shell.me.user.name;
   const devMailbox = useDevMailbox(shell.me.can('workspace.email.manage'));
   const trigger =
@@ -133,7 +147,7 @@ export function UserMenu({ shell }: { shell: Shell }) {
           <button
             type="button"
             {...props}
-            aria-label={`Account: ${name}`}
+            aria-label={t('shell.account.label', { name })}
             className="grid cursor-pointer place-items-center rounded-full border-0 bg-transparent p-0 focus-ring"
           >
             <Avatar name={name} hue="accent" size={26} />
@@ -143,8 +157,8 @@ export function UserMenu({ shell }: { shell: Shell }) {
           <button
             type="button"
             {...props}
-            aria-label={`Account: ${name}`}
-            className="flex h-9 w-full min-w-0 cursor-pointer items-center gap-2 rounded-control border-0 bg-transparent px-2 text-left font-sans text-13 text-tx hover:bg-hover focus-ring-inset aria-expanded:bg-hover"
+            aria-label={t('shell.account.label', { name })}
+            className="flex h-9 w-full min-w-0 cursor-pointer items-center gap-2 rounded-control border-0 bg-transparent px-2 text-start font-sans text-13 text-tx hover:bg-hover focus-ring-inset aria-expanded:bg-hover"
           >
             <Avatar name={name} hue="accent" size={22} />
             <span className="min-w-0 flex-1 truncate font-medium">{name}</span>
@@ -159,19 +173,19 @@ export function UserMenu({ shell }: { shell: Shell }) {
       </div>
       <div className="h-1" />
       <MenuItem icon={<Icon name="me" />} onSelect={() => shell.go('/settings/profile')}>
-        Profile
+        {t('shell.account.profile')}
       </MenuItem>
       <MenuItem icon={<Icon name="bell" />} onSelect={() => shell.go('/settings/notifications')}>
-        Notification preferences
+        {t('shell.account.notifications')}
       </MenuItem>
       {devMailbox.enabled ? (
         <MenuItem icon={<Icon name="mail" />} onSelect={() => shell.go('/dev/mailbox')}>
-          Dev mailbox
+          {t('shell.account.devMailbox')}
         </MenuItem>
       ) : null}
       <MenuSeparator />
       <MenuItem icon={<Icon name="arrow-left" />} onSelect={shell.signOut}>
-        Sign out
+        {t('shell.account.signOut')}
       </MenuItem>
     </Menu>
   );
@@ -179,6 +193,7 @@ export function UserMenu({ shell }: { shell: Shell }) {
 
 /** "Bemmoly 0.3.0 · What's new" on every screen, under the footer rows. */
 export function VersionLine() {
+  const t = useT(shellText);
   return (
     <a
       href={WHATS_NEW_URL}
@@ -190,7 +205,7 @@ export function VersionLine() {
         <b className="font-semibold text-tx-2">Bemmoly</b> {APP_VERSION}
       </span>
       <span aria-hidden>·</span>
-      <span className="text-acc">What’s new</span>
+      <span className="text-acc">{t('shell.version.whatsNew')}</span>
     </a>
   );
 }

@@ -19,6 +19,7 @@ import { INTERNAL_ERROR_MESSAGE } from './error-mapping.ts';
 
 const failures: Record<string, () => unknown> = {
   'not-found': () => new NotFoundError('No such issue'),
+  gone: () => new NotFoundError(),
   forbidden: () => new ForbiddenError('No access', { code: 'module_access_denied' }),
   invalid: () => new ValidationError('Bad input', { details: { field: 'title' } }),
   conflict: () => new ConflictError('Changed since you loaded it'),
@@ -94,6 +95,16 @@ describe('error handler', () => {
     const crash = await app.inject({ url: '/api/v1/failures/crash' });
     expect(crash.json()).toMatchObject({ message: INTERNAL_ERROR_MESSAGE });
     expect(crash.body).not.toContain('hunter2');
+  });
+
+  it('names the catalog message a default message renders, and only then', async () => {
+    const app = await buildApp({ env: TEST_ENV, modules: modulesOf(thrower), logger: false });
+    const gone = (await app.inject({ url: '/api/v1/failures/gone' })).json();
+    expect(gone).toMatchObject({ messageId: 'errors.not_found' });
+    const custom = (await app.inject({ url: '/api/v1/failures/not-found' })).json();
+    expect(custom).not.toHaveProperty('messageId');
+    const crash = (await app.inject({ url: '/api/v1/failures/crash' })).json();
+    expect(crash).toMatchObject({ messageId: 'errors.internal_error' });
   });
 
   it('logs maintenance refusals as warnings and crashes as errors', async () => {

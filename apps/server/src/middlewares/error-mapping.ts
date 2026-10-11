@@ -96,6 +96,8 @@ function fromBemmolyError(error: BemmolyError, requestId: string): HttpError {
   }
   const body: ApiErrorBody = { code: error.code, message: error.message, requestId };
   if (error.details !== undefined) body.details = error.details;
+  if (error.messageId !== undefined) body.messageId = error.messageId;
+  if (error.values !== undefined) body.values = error.values;
   return { status, body, headers };
 }
 
@@ -110,6 +112,7 @@ export function toHttpError(error: unknown, requestId: string): HttpError {
       message: 'The request is not valid',
       details: { issues: toValidationIssues(error) },
       requestId,
+      messageId: 'errors.validation_failed',
     };
     return { status: 400, body, headers: {} };
   }
@@ -133,7 +136,12 @@ export function toHttpError(error: unknown, requestId: string): HttpError {
   }
   return {
     status: 500,
-    body: { code: 'internal_error', message: INTERNAL_ERROR_MESSAGE, requestId },
+    body: {
+      code: 'internal_error',
+      message: INTERNAL_ERROR_MESSAGE,
+      requestId,
+      messageId: 'errors.internal_error',
+    },
     headers: {},
   };
 }

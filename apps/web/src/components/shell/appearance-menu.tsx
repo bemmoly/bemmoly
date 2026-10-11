@@ -1,7 +1,8 @@
-import { useFrame } from '@bemmoly/core-web';
+import { useFrame, useT } from '@bemmoly/core-web';
 import { Menu, MenuGroup, MenuItem, Tooltip, type MenuTriggerProps } from '@bemmoly/ui';
 import { Icon } from '@bemmoly/ui/icons';
 import type { Shell } from '../../hooks/use-shell.ts';
+import { shellText } from '../../i18n/catalogs.ts';
 import { MODES } from '../appearance/mode-control.tsx';
 
 /**
@@ -11,14 +12,15 @@ import { MODES } from '../appearance/mode-control.tsx';
  * Settings › Appearance (ADR 0021).
  */
 export function AppearanceMenu({ shell }: { shell: Shell }) {
+  const t = useT(shellText);
   const rail = useFrame().mode === 'rail';
   const current = MODES.find((mode) => mode.value === shell.mode.value) ?? MODES[0]!;
   const trigger = (props: MenuTriggerProps) => (
-    <Tooltip label="Appearance" side={rail ? 'right' : 'top'}>
+    <Tooltip label={t('shell.appearance.label')} side={rail ? 'right' : 'top'}>
       <button
         type="button"
         {...props}
-        aria-label="Appearance"
+        aria-label={t('shell.appearance.label')}
         className="grid size-7 shrink-0 cursor-pointer place-items-center rounded-chip border-0 bg-transparent p-0 text-tx-3 hover:bg-hover hover:text-tx focus-ring aria-expanded:bg-hover aria-expanded:text-tx"
       >
         <Icon name={current.icon} size={16} />
@@ -27,7 +29,7 @@ export function AppearanceMenu({ shell }: { shell: Shell }) {
   );
   return (
     <Menu align={rail ? 'start' : 'end'} trigger={trigger}>
-      <MenuGroup label="Mode">
+      <MenuGroup label={t('shell.appearance.mode')}>
         {MODES.map((mode) => (
           <MenuItem
             key={mode.value}

@@ -46,6 +46,8 @@
     "@fastify/rate-limit": "11.2.0",
     "@fastify/websocket": "11.3.3",
     "@hocuspocus/server": "4.7.0",
+    "@lingui/core": "6.8.0",
+    "@lingui/message-utils": "6.8.0",
     "@modelcontextprotocol/sdk": "1.31.0",
     "@node-rs/argon2": "2.2.2",
     "@openrouter/ai-sdk-provider": "3.1.0",

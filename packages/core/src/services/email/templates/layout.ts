@@ -12,6 +12,8 @@ export interface EmailFrame {
   unsubscribeUrl: string | null;
   /** Settings › Notifications in the app. */
   preferencesUrl: string | null;
+  /** The language the email is written in (ADR 0025); English when unset. */
+  locale?: string;
 }
 
 /** A template's own part; the layout adds the header, reason line and footer. */
@@ -68,7 +70,7 @@ export function EmailLayout(props: { frame: EmailFrame; preview: string; childre
   };
   return h(
     Html,
-    { lang: 'en' },
+    { lang: props.frame.locale ?? 'en' },
     h(Head, null, h('meta', { name: 'color-scheme', content: 'light only' })),
     h(Preview, null, props.preview),
     h(

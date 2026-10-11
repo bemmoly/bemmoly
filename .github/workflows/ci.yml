@@ -47,6 +47,9 @@ jobs:
       - name: Format
         run: pnpm format:check
 
+      - name: Message catalogs
+        run: pnpm i18n:check
+
       - name: Unit tests
         run: pnpm test
 

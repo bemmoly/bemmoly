@@ -13,6 +13,7 @@ export {
   ValidationError,
   type BemmolyErrorOptions,
   type MaintenanceErrorOptions,
+  type MessageValues,
   type ProviderErrorOptions,
   type RateLimitedErrorOptions,
   type UnavailableErrorOptions,

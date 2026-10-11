@@ -16,7 +16,9 @@
   "dependencies": {
     "@bemmoly/api-client": "workspace:*",
     "@bemmoly/shared": "workspace:*",
-    "@bemmoly/ui": "workspace:*"
+    "@bemmoly/ui": "workspace:*",
+    "@lingui/core": "6.8.0",
+    "@lingui/message-utils": "6.8.0"
   },
   "peerDependencies": {
     "@tanstack/react-query": "5.104.1",

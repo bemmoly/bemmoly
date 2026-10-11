@@ -1,4 +1,5 @@
 import { createElement as h, Fragment } from 'react';
+import { serverText } from '../../i18n/index.ts';
 import type { EmailContent, EmailFrame } from './layout.ts';
 import { ActionButton, formatDateTime, Muted, Paragraph, Quote, Title } from './parts.ts';
 
@@ -36,25 +37,32 @@ export interface PasswordResetEmailData {
   expiresAt: Date;
 }
 
+/** The worked example of an email written through the server catalog (ADR 0025). */
 export function passwordResetEmail(frame: EmailFrame, data: PasswordResetEmailData): EmailContent {
-  const { theme, brand } = frame;
+  const { theme, brand, locale } = frame;
+  const t = serverText(locale);
+  const workspace = brand.workspaceName;
   return {
-    subject: `Reset your ${brand.workspaceName} password`,
-    preview: 'Choose a new password',
+    subject: t('email.passwordReset.subject', { workspace }),
+    preview: t('email.passwordReset.preview'),
     body: h(
       Fragment,
       null,
-      h(Title, { theme }, 'Reset your password'),
+      h(Title, { theme }, t('email.passwordReset.title')),
       h(
         Paragraph,
         { theme },
-        `${data.name ? `Hi ${data.name}, s` : 'S'}omeone asked to reset the password for your ${brand.workspaceName} account. Choose a new one with the button below.`,
+        t('email.passwordReset.body', {
+          named: data.name ? 'yes' : 'no',
+          name: data.name ?? '',
+          workspace,
+        }),
       ),
-      h(ActionButton, { theme, href: data.resetUrl }, 'Choose a new password'),
+      h(ActionButton, { theme, href: data.resetUrl }, t('email.passwordReset.action')),
       h(
         Muted,
         { theme },
-        `The link works once and expires ${formatDateTime(data.expiresAt)}. If you did not ask for this, ignore this email; your password stays the same.`,
+        t('email.passwordReset.expiry', { expires: formatDateTime(data.expiresAt, locale) }),
       ),
     ),
   };
