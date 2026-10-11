@@ -54,6 +54,7 @@ export function kindLabel(kind: string): string {
     status_change: 'Status changed',
     watch_update: 'Watching',
     ai_budget: 'AI budget',
+    break_glass_changed: 'Sign-in',
   };
   return labels[kind] ?? 'Update';
 }

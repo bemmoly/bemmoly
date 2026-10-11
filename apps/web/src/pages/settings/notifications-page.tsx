@@ -27,6 +27,10 @@ const KINDS: Record<string, { label: string; hint?: string }> = {
     label: 'AI budget alerts',
     hint: 'AI has used 80% or all of the monthly budget. Sent to people who configure AI.',
   },
+  break_glass_changed: {
+    label: 'Break-glass admin changes',
+    hint: 'Someone was made or removed as a break-glass admin. Sent to org admins.',
+  },
 };
 
 const labelOf = (kind: string) =>
