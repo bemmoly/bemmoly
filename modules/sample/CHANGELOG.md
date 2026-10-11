@@ -1,5 +1,14 @@
 # @bemmoly/module-sample
 
+## 0.7.0
+
+### Patch Changes
+
+- Updated dependencies [8559222]
+- Updated dependencies [65c412a]
+  - @bemmoly/core@0.7.0
+  - @bemmoly/shared@0.7.0
+
 ## 0.6.0
 
 ### Patch Changes

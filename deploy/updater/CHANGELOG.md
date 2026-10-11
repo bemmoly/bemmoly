@@ -1,5 +1,13 @@
 # @bemmoly/updater
 
+## 0.7.0
+
+### Patch Changes
+
+- Updated dependencies [8559222]
+- Updated dependencies [65c412a]
+  - @bemmoly/shared@0.7.0
+
 ## 0.6.0
 
 ### Minor Changes
