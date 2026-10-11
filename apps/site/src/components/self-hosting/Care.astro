@@ -17,6 +17,10 @@ const RESTORE = '$ sudo bemmoly restore <backup>';
 const COMMANDS = [
   ['status', 'Containers, version, database size, queue, last backup, certificate.'],
   ['doctor', 'Re-runs the installer’s checks and the app’s health checks, with fixes.'],
+  [
+    'tune [--yes]',
+    'After a resize, re-tunes Postgres for the new memory; asks before restarting it.',
+  ],
   ['logs [service] [-f]', 'Recent logs of bemmoly, db, proxy or updater.'],
   ['backup / backups', 'Take a backup now; list every backup with version, size and verification.'],
   [
