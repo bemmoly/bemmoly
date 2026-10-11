@@ -29,7 +29,7 @@ import { loadLookups, loadProject, reserveNumbers, type ImportLookups } from './
  * table so a batch sent twice updates instead of duplicating. Mappings are kept per project
  * under the source "mcp": an external key means one issue in one project. Writing as other
  * people and in the past is an import, so it takes the import capability on top of editing
- * the project's issues.
+ * and configuring the project.
  */
 
 export interface IssueImportDeps {
@@ -94,6 +94,8 @@ export function createIssueImportService(deps: IssueImportDeps) {
   async function authorize(ctx: RequestContext, projectKey: string) {
     const project = await loadProject(requireSql(deps), projectKey);
     await ctx.authz.authorize(ctx.actor, 'work.issue.edit', projectResource(project.id));
+    // Statuses are set directly, past the workflow's transition rules: a configure right.
+    await ctx.authz.authorize(ctx.actor, 'work.project.configure', projectResource(project.id));
     await ctx.authz.authorize(ctx.actor, IMPORT_CAPABILITY, WORKSPACE);
     return project;
   }

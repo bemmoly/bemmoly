@@ -162,6 +162,9 @@ describe('work_import_issues', () => {
   it('needs the import capability as well as editing the project', async (ctx) => {
     if (!h) return ctx.skip(skipped);
     await expect(
+      h.services.issueImport.run(h.as(h.users.member), { projectKey: 'TRP', issues: batch() }),
+    ).rejects.toBeInstanceOf(ForbiddenError);
+    await expect(
       h.services.issueImport.authorize(h.as(h.users.member), 'TRP'),
     ).rejects.toBeInstanceOf(ForbiddenError);
     await expect(
