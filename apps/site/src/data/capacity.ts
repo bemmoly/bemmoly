@@ -31,7 +31,13 @@ export interface ServerSize {
 }
 
 export interface Load {
-  p95Ms: { board: number; issue: number; search: number; docPage: number; issueEdit: number };
+  /** 95th-percentile times at a typical load (the 30 requests a second mixed and soak runs). */
+  typical: {
+    rps: number;
+    p95Ms: { board: number; issue: number; search: number; docPage: number; issueEdit: number };
+  };
+  /** 95th-percentile times at the limit, requestsPerSecond. */
+  atLimitP95Ms: { board: number; issue: number };
   soak: {
     minutes: number;
     rps: number;
