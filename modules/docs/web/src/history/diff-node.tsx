@@ -55,7 +55,13 @@ export function blockShell(
     case 'heading': {
       const level = Math.min(3, Math.max(1, Number(attrs['level'] ?? 2)));
       const Tag = `h${level}` as 'h1' | 'h2' | 'h3';
-      return <Tag {...extra}>{children}</Tag>;
+      // Drawn as a heading, not read as one: the diff shows excerpts around each change, so an
+      // h3 can stand without its h2, and the page's outline is Version history's, not these.
+      return (
+        <Tag role="presentation" {...extra}>
+          {children}
+        </Tag>
+      );
     }
     case 'codeBlock':
       return (
