@@ -63,7 +63,10 @@ export const AllVariants: Story = {
 
 /** Custom themes never recolour the mark either: it keeps its designed colours on all of them. */
 const CUSTOM_BRANDS = [
-  resolveSource(customThemeSource('teal', 'Teal', { brand: '#0f766e', surface: 'neutral' }), 'light'),
+  resolveSource(
+    customThemeSource('teal', 'Teal', { brand: '#0f766e', surface: 'neutral' }),
+    'light',
+  ),
   resolveSource(customThemeSource('rust', 'Rust', { brand: '#c2410c', surface: 'warm' }), 'dark'),
 ];
 

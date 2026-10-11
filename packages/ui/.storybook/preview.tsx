@@ -17,11 +17,13 @@ function useTheme(theme: string, mode: string) {
       root.dataset['mode'] = wanted;
       return;
     }
-    const source = customThemeSource('custom', 'Custom', { brand: CUSTOM_BRAND, surface: 'neutral' });
+    const source = customThemeSource('custom', 'Custom', {
+      brand: CUSTOM_BRAND,
+      surface: 'neutral',
+    });
     applyTheme(root, resolveSource(source, wanted));
   }, [theme, mode]);
 }
-
 
 const ThemeDecorator: Decorator = (Story, context) => {
   useTheme(
