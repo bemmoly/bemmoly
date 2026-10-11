@@ -1,0 +1,5 @@
+# chart-testing installs the chart once per file here. A bundled Postgres keeps the install
+# self-contained; the tests pod checks /readyz.
+postgresql:
+  enabled: true
+publicUrl: http://bemmoly.test

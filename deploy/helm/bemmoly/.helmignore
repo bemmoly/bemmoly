@@ -1,0 +1,4 @@
+ci/
+*.tgz
+.DS_Store
+README.md.orig

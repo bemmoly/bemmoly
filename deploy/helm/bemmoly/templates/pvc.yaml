@@ -1,0 +1,21 @@
+{{- if .Values.persistence.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "bemmoly.name" . }}-data
+  labels:
+    {{- include "bemmoly.labels" . | nindent 4 }}
+  {{- if .Values.persistence.keep }}
+  annotations:
+    # Attachments and local backups outlive an uninstall; delete the claim by hand.
+    helm.sh/resource-policy: keep
+  {{- end }}
+spec:
+  accessModes: [{{ include "bemmoly.accessMode" . }}]
+  resources:
+    requests:
+      storage: {{ .Values.persistence.size }}
+  {{- with .Values.persistence.storageClass }}
+  storageClassName: {{ . }}
+  {{- end }}
+{{- end }}

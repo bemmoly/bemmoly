@@ -1,0 +1,104 @@
+{{- if .Values.postgresql.enabled }}
+{{- $pg := .Values.postgresql -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "bemmoly.postgresHost" . }}
+  labels:
+    {{- include "bemmoly.labels" . | nindent 4 }}
+    app.kubernetes.io/component: postgres
+spec:
+  clusterIP: None
+  selector:
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: postgres
+  ports:
+    - { name: postgres, port: 5432, targetPort: postgres }
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "bemmoly.postgresHost" . }}
+  labels:
+    {{- include "bemmoly.labels" . | nindent 4 }}
+    app.kubernetes.io/component: postgres
+spec:
+  serviceName: {{ include "bemmoly.postgresHost" . }}
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: postgres
+  template:
+    metadata:
+      labels:
+        {{- include "bemmoly.labels" . | nindent 8 }}
+        app.kubernetes.io/component: postgres
+    spec:
+      enableServiceLinks: false
+      automountServiceAccountToken: false
+      # The image's entrypoint prepares the data folder as root, then runs as postgres.
+      securityContext:
+        fsGroup: 999
+        seccompProfile:
+          type: RuntimeDefault
+      terminationGracePeriodSeconds: 60
+      containers:
+        - name: postgres
+          image: {{ $pg.image.repository }}:{{ $pg.image.tag }}
+          imagePullPolicy: {{ $pg.image.pullPolicy }}
+          args:
+            - postgres
+            - -c
+            - shared_buffers={{ $pg.sharedBuffers }}
+            - -c
+            - effective_cache_size={{ $pg.effectiveCacheSize }}
+          env:
+            - { name: POSTGRES_USER, value: bemmoly }
+            - { name: POSTGRES_DB, value: bemmoly_db }
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "bemmoly.secretName" . }}
+                  key: POSTGRES_PASSWORD
+          ports:
+            - { name: postgres, containerPort: 5432 }
+          readinessProbe:
+            exec:
+              command: [pg_isready, -U, bemmoly, -d, bemmoly_db]
+            periodSeconds: 5
+          livenessProbe:
+            exec:
+              command: [pg_isready, -U, bemmoly, -d, bemmoly_db]
+            initialDelaySeconds: 30
+            periodSeconds: 20
+          resources:
+            {{- toYaml $pg.resources | nindent 12 }}
+          volumeMounts:
+            # Postgres 18 images keep data under /var/lib/postgresql/18/docker.
+            - { name: data, mountPath: /var/lib/postgresql }
+            - { name: shm, mountPath: /dev/shm }
+      volumes:
+        - name: shm
+          emptyDir: { medium: Memory, sizeLimit: 256Mi }
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+  # The claim outlives an uninstall, as StatefulSet claims do.
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: [ReadWriteOnce]
+        resources:
+          requests:
+            storage: {{ $pg.persistence.size }}
+        {{- with $pg.persistence.storageClass }}
+        storageClassName: {{ . }}
+        {{- end }}
+{{- end }}

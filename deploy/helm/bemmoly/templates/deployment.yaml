@@ -1,3 +1,4 @@
+{{- include "bemmoly.validate" . -}}
 {{- $roles := ternary (list "api" "worker") (list "all") (eq .Values.mode "split") -}}
 {{- range $role := $roles }}
 ---
@@ -10,6 +11,8 @@ metadata:
     app.kubernetes.io/component: {{ $role }}
 spec:
   replicas: {{ ternary $.Values.replicas.worker $.Values.replicas.api (eq $role "worker") }}
+  strategy:
+    {{- toYaml $.Values.updateStrategy | nindent 4 }}
   selector:
     matchLabels:
       app.kubernetes.io/instance: {{ $.Release.Name }}
@@ -19,33 +22,57 @@ spec:
       labels:
         {{- include "bemmoly.labels" $ | nindent 8 }}
         app.kubernetes.io/component: {{ $role }}
+        {{- with $.Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- with $.Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
     spec:
+      # Service links would put variables such as BEMMOLY_PORT into the app's environment.
+      enableServiceLinks: false
+      automountServiceAccountToken: false
       securityContext:
-        runAsUser: 10001
-        runAsGroup: 10001
-        fsGroup: 10001
+        {{- include "bemmoly.podSecurityContext" $ | nindent 8 }}
+      {{- with $.Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      # The app stops taking requests, closes collaboration sockets and stores pending
+      # document updates before it exits.
+      terminationGracePeriodSeconds: 40
       containers:
         - name: bemmoly
           image: {{ include "bemmoly.image" $ }}
           imagePullPolicy: {{ $.Values.image.pullPolicy }}
+          securityContext:
+            {{- include "bemmoly.containerSecurityContext" $ | nindent 12 }}
           envFrom:
-            - secretRef:
-                name: {{ $.Values.existingSecret }}
+            {{- include "bemmoly.envFrom" $ | nindent 12 }}
           env:
-            - { name: BEMMOLY_ROLE, value: {{ $role | quote }} }
-            - { name: BEMMOLY_PUBLIC_URL, value: {{ $.Values.publicUrl | quote }} }
-            - { name: BEMMOLY_MODULES, value: {{ $.Values.modules | quote }} }
-            - { name: BEMMOLY_DB_AUTO_MIGRATE, value: {{ $.Values.autoMigrate | quote }} }
-            - { name: BEMMOLY_TRUST_PROXY, value: "true" }
+            - name: BEMMOLY_ROLE
+              value: {{ $role | quote }}
+            - name: BEMMOLY_DB_AUTO_MIGRATE
+              value: {{ include "bemmoly.migrateAtBoot" $ | quote }}
+            {{- include "bemmoly.env" $ | nindent 12 }}
           ports:
             - { name: http, containerPort: 8080 }
+          # Pending changesets run before the server listens; the first boot of a new
+          # version may take minutes on a large database.
+          startupProbe:
+            httpGet: { path: /healthz, port: http }
+            periodSeconds: 5
+            failureThreshold: 120
           readinessProbe:
             httpGet: { path: /readyz, port: http }
             periodSeconds: 10
+            timeoutSeconds: 5
           livenessProbe:
             httpGet: { path: /healthz, port: http }
-            initialDelaySeconds: 60
             periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 3
           resources:
             {{- toYaml $.Values.resources | nindent 12 }}
           volumeMounts:
@@ -59,4 +86,16 @@ spec:
           {{- else }}
           emptyDir: {}
           {{- end }}
+      {{- with $.Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $.Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $.Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
 {{- end }}
