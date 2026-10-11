@@ -1,12 +1,13 @@
 import { emit, type MockDb } from '../db.ts';
 import { newId } from '../seed/time.ts';
 import * as seed from '../seed/work-issues.ts';
+import { datedVersions, seedRoadmapLinks } from '../seed/work-roadmap.ts';
 import { bodyOf, fail, invalid, notFound, ok, type MockRequest, type MockRoute } from '../types.ts';
 import { issueActivityRoutes, type IssuesState } from './work-issue-activity.ts';
 import { mockEpicColor } from './work-backlog-state.ts';
 import { issueDetail, statuses } from './work-issue-detail.ts';
 import { cardFields, issueStore, nextKey } from './work-issue-store.ts';
-import { touch, workState, type Row } from './work-state.ts';
+import { mergeCustomFields, touch, workState, type Row } from './work-state.ts';
 
 /*
  * The Issue page, the create form and the project list on the in-memory backend, by key as
@@ -22,13 +23,13 @@ function state(db: MockDb): IssuesState {
     current = {
       projects: seed.seedProjects(),
       issues: store.issues,
-      links: seed.seedLinks(),
+      links: [...seed.seedLinks(), ...seedRoadmapLinks(store.issues)],
       comments: seed.seedComments(),
       history: seed.seedHistory(),
       workLogs: seed.seedWorkLogs(),
       watchers: { [seed.issueId(204)]: [...seed.WATCHER_IDS] },
       labels: store.labels,
-      versions: seed.seedVersions(),
+      versions: datedVersions(seed.seedVersions()),
       sprints: store.sprints,
       counters: store.counters,
     };
@@ -52,6 +53,10 @@ function epicColorOf(db: MockDb, rows: readonly Row[], row: Row): string | null 
     .map((each) => ({ id: each.id, key: String(each['key']) }));
   return mockEpicColor(epics, row.id);
 }
+
+/** The versions and issue links the issue mock keeps, for the roadmap. */
+export const versionsOf = (db: MockDb) => state(db).versions;
+export const linksOf = (db: MockDb) => state(db).links;
 
 /** Issue id to the ids of the people watching it, for Home's "my work". */
 export const watchersOf = (db: MockDb) => state(db).watchers;
@@ -265,6 +270,7 @@ const issueRoutes: MockRoute[] = [
           record(db, issue, field, issue[field], value);
         }
       }
+      mergeCustomFields(issue, body);
       if (body['statusId'] && body['statusId'] !== issue['statusId']) {
         body['statusChangedAt'] = new Date().toISOString();
       }
