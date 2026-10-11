@@ -59,7 +59,7 @@ export async function bootApplication(options: BootOptions): Promise<Booted> {
   const { env } = options;
   const logger = createLogger(env);
   if (options.logger === false) logger.level = 'silent';
-  const database = connectDatabase(env);
+  const database = connectDatabase(env, logger.child({ component: 'database' }));
   const catalog = createEnabledModuleCatalog();
   const backup = createModuleDataBackupHandle();
   const identity = identityWiring(

@@ -33,6 +33,10 @@ const contextList = z
   )
   .pipe(z.array(z.string().regex(/^[a-z][a-z0-9-]*$/)).min(1));
 
+/** A database timeout in milliseconds, up to an hour; 0 switches it off. */
+const databaseTimeoutMs = (fallback: number) =>
+  z.coerce.number().int().min(0).max(3_600_000).default(fallback);
+
 /** A rate limit can be raised or lowered, never switched off. */
 const rateLimitMax = z.coerce.number().int().min(1).max(1_000_000).optional();
 
@@ -90,6 +94,17 @@ export const envSchema = z.object({
     .optional(),
   BEMMOLY_BACKUP_PASSPHRASE: z.string().min(16).optional(),
   BEMMOLY_DB_AUTO_MIGRATE: z.stringbool().default(true),
+  /** Longest one statement may run on the server's pool. */
+  BEMMOLY_DB_STATEMENT_TIMEOUT_MS: databaseTimeoutMs(10_000),
+  /** Longest a pool connection may sit idle inside an open transaction before Postgres ends it. */
+  BEMMOLY_DB_IDLE_IN_TRANSACTION_TIMEOUT_MS: databaseTimeoutMs(60_000),
+  /** Longest a request waits for a free pool connection before it fails with a 503. */
+  BEMMOLY_DB_ACQUIRE_TIMEOUT_MS: databaseTimeoutMs(10_000),
+  /**
+   * A pool query made while the same code holds one of the pool's transactions: `warn` logs
+   * it, `throw` refuses it (development and tests, where it must never happen).
+   */
+  BEMMOLY_DB_NESTED_ACQUIRE: z.enum(['warn', 'throw']).default('warn'),
   BEMMOLY_DB_CONTEXTS: contextList,
   BEMMOLY_BACKUP_DIR: z.string().min(1).default('/var/bemmoly/backups'),
   /** The release this image is; unset or empty means the server package's own version. */
