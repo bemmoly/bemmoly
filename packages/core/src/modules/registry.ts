@@ -1,5 +1,6 @@
 import { moduleSettingsSchema, sidebarSectionSchema, type ModuleManifest } from '@bemmoly/shared';
 import type { RetrievalSourceDefinition } from '../contracts/retrieval.ts';
+import type { CodeActivityConsumer } from './code.ts';
 import type { CollabDocumentDefinition } from './collab.ts';
 import type { BemmolyModule } from './contract.ts';
 import type { FileTargetDefinition } from './files.ts';
@@ -142,6 +143,11 @@ export class ModuleRegistry {
   /** Every module's `ctx.importers.add` contributions; Settings › Import offers these. */
   importers(): FromModule<ImporterDefinition>[] {
     return this.#collect((c) => c.importers);
+  }
+
+  /** Every module's `ctx.code.addConsumer` contributions; verified deliveries go to these. */
+  codeConsumers(): FromModule<CodeActivityConsumer>[] {
+    return this.#collect((c) => c.codeConsumers);
   }
 
   #collect<T extends object>(pick: (c: ModuleContributions) => readonly T[]): FromModule<T>[] {
