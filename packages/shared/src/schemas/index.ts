@@ -12,3 +12,4 @@ export * from './realtime/index.ts';
 export * from './settings/index.ts';
 export * from './system/index.ts';
 export * from './files/index.ts';
+export * from './webhooks/index.ts';

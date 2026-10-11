@@ -61,6 +61,13 @@ export const CARD_COLOR_RULES = ['none', 'priority', 'type', 'epic'] as const;
 export const cardColorRuleSchema = z.enum(CARD_COLOR_RULES);
 export type CardColorRule = z.infer<typeof cardColorRuleSchema>;
 
-export const AUTOMATION_RUN_STATUSES = ['queued', 'running', 'succeeded', 'failed'] as const;
+/** `skipped`: conditions not met, the rule turned off before it ran, or a loop stopped. */
+export const AUTOMATION_RUN_STATUSES = [
+  'queued',
+  'running',
+  'succeeded',
+  'failed',
+  'skipped',
+] as const;
 export const automationRunStatusSchema = z.enum(AUTOMATION_RUN_STATUSES);
 export type AutomationRunStatus = z.infer<typeof automationRunStatusSchema>;

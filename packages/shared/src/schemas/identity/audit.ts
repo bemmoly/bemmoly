@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { keysetPageSchema, keysetQuerySchema } from './common.ts';
 
-export const AUDIT_ACTOR_KINDS = ['user', 'ai_plan', 'system', 'api_token'] as const;
+export const AUDIT_ACTOR_KINDS = ['user', 'ai_plan', 'system', 'api_token', 'automation'] as const;
 
 export const auditActorKindSchema = z.enum(AUDIT_ACTOR_KINDS);
 
@@ -9,7 +9,7 @@ export const auditEntrySchema = z.object({
   id: z.uuid(),
   actorId: z.string().nullable(),
   actorKind: auditActorKindSchema,
-  /** The person a token or AI plan acted for. */
+  /** The person a token, an AI plan or an automation rule acted for. */
   actorUserId: z.uuid().nullable(),
   action: z.string(),
   targetKind: z.string(),
