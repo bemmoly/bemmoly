@@ -1,5 +1,14 @@
 # @bemmoly/server
 
+## 0.13.1
+
+### Patch Changes
+
+- @bemmoly/module-docs@0.13.1
+  - @bemmoly/module-work@0.13.1
+  - @bemmoly/core@0.13.1
+  - @bemmoly/shared@0.13.1
+
 ## 0.13.0
 
 ### Minor Changes

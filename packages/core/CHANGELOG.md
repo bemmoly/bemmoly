@@ -1,5 +1,13 @@
 # @bemmoly/core
 
+## 0.13.1
+
+### Patch Changes
+
+- Updated dependencies [9288d90]
+  - @bemmoly/ui@0.13.1
+  - @bemmoly/shared@0.13.1
+
 ## 0.13.0
 
 ### Minor Changes
