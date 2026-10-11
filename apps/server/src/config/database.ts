@@ -13,6 +13,15 @@ import { getMetrics, instrumentSqlClient, postgresPoolStats } from '@bemmoly/cor
 const APPLICATION_NAME = 'bemmoly-server';
 const MAX_CONNECTIONS = 10;
 
+/**
+ * Job handlers run on the same pool as requests. Where one process does both, jobs may hold
+ * at most 4 of its 10 connections, so a burst of jobs never makes a request wait for one; a
+ * worker-only process keeps 2 back for its health checks.
+ */
+export function jobHandlerLimit(role: Env['BEMMOLY_ROLE']): number {
+  return role === 'worker' ? MAX_CONNECTIONS - 2 : MAX_CONNECTIONS / 2 - 1;
+}
+
 export interface DatabaseConnection {
   sql: SqlClient;
   /** The one Drizzle instance on `sql`; every service that takes a Database gets this. */
