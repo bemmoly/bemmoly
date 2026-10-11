@@ -1,38 +1,32 @@
 import type { Decorator, Preview } from '@storybook/react-vite';
 import { useEffect } from 'react';
-import { applyTheme, buildTheme, clearTheme } from '../src/theme/index.ts';
-import { DEFAULT_PRESET, PRESETS } from '../src/tokens.ts';
+import { applyTheme, clearTheme, customThemeSource } from '../src/theme/index.ts';
+import { DEFAULT_THEME, resolveSource, THEME_SOURCES } from '../src/tokens.ts';
 import { SideBySide, type MockCrop } from './mock-frame.tsx';
 import './preview.css';
 
-/** The custom theme of the Themes mock (2i): a company's own orange on tinted surfaces. */
-const CUSTOM_BRAND = '#f97316';
+/** A custom theme as the generator builds it: a company's own teal on neutral surfaces. */
+const CUSTOM_BRAND = '#0f766e';
 
 function useTheme(theme: string, mode: string) {
   useEffect(() => {
     const root = document.documentElement;
-    const preset = PRESETS.find((p) => p.id === theme);
-    const wanted = mode === 'auto' ? (preset?.mode ?? 'light') : mode;
-    if (preset && preset.mode === wanted) {
-      clearTheme(root, preset.id);
+    const wanted = mode === 'dark' ? 'dark' : 'light';
+    if (theme !== 'custom') {
+      clearTheme(root, theme);
+      root.dataset['mode'] = wanted;
       return;
     }
-    applyTheme(
-      root,
-      buildTheme({
-        brand: preset?.accent[0] ?? CUSTOM_BRAND,
-        mode: wanted === 'dark' ? 'dark' : 'light',
-        surfaces: preset ? 'neutral' : 'tinted',
-        font: preset?.font ?? 'plex',
-      }),
-    );
+    const source = customThemeSource('custom', 'Custom', { brand: CUSTOM_BRAND, surface: 'neutral' });
+    applyTheme(root, resolveSource(source, wanted));
   }, [theme, mode]);
 }
 
+
 const ThemeDecorator: Decorator = (Story, context) => {
   useTheme(
-    String(context.globals['theme'] ?? DEFAULT_PRESET),
-    String(context.globals['mode'] ?? 'auto'),
+    String(context.globals['theme'] ?? DEFAULT_THEME),
+    String(context.globals['mode'] ?? 'light'),
   );
   return <Story />;
 };
@@ -51,24 +45,23 @@ const preview: Preview = {
   decorators: [MockDecorator, ThemeDecorator],
   globalTypes: {
     theme: {
-      description: 'Theme preset',
+      description: 'Theme',
       toolbar: {
         title: 'Theme',
         icon: 'paintbrush',
         items: [
-          ...PRESETS.map((p) => ({ value: p.id, title: `${p.name} (${p.mode})` })),
-          { value: 'custom', title: `Custom ${CUSTOM_BRAND}, tinted` },
+          ...THEME_SOURCES.map((t) => ({ value: t.id, title: t.name })),
+          { value: 'custom', title: `Custom ${CUSTOM_BRAND}` },
         ],
         dynamicTitle: true,
       },
     },
     mode: {
-      description: 'Light or dark; a preset in the other mode is rebuilt with buildTheme',
+      description: 'Light or dark: every theme is designed in both',
       toolbar: {
         title: 'Mode',
         icon: 'contrast',
         items: [
-          { value: 'auto', title: 'Preset mode' },
           { value: 'light', title: 'Light' },
           { value: 'dark', title: 'Dark' },
         ],
@@ -88,7 +81,7 @@ const preview: Preview = {
       },
     },
   },
-  initialGlobals: { theme: DEFAULT_PRESET, mode: 'auto', mock: 'side' },
+  initialGlobals: { theme: DEFAULT_THEME, mode: 'light', mock: 'side' },
   parameters: {
     layout: 'padded',
     // The design system's front page first; its rules live in docs/design/system.
