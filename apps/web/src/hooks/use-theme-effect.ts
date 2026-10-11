@@ -1,40 +1,69 @@
 import { applyTheme, clearTheme, themeStyle } from '@bemmoly/ui/theme';
+import { resolveSource } from '@bemmoly/ui/tokens';
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useMemo } from 'react';
 import { rememberBootLook } from '../lib/boot-frame.ts';
-import { resolveAppearance } from '../lib/theme.ts';
+import { resolveLook, type Look } from '../lib/theme.ts';
 import { useThemePreviewStore } from '../store/theme-preview.ts';
 import { useThemeStore } from '../store/theme.ts';
+import { meQuery } from './use-session.ts';
+import { useSystemDark } from './use-system-dark.ts';
 import { workspaceQuery } from './use-workspace.ts';
 
 /**
- * Applies the resolved look to <html>: a preset through `data-theme`, a custom
- * theme as inline tokens. `data-mode` records light or dark for anything that
- * needs to know. Reads the workspace look from the cache only; it never fetches.
- * A preview set through useThemePreview is applied by this same path.
+ * The look this person sees right now. Reads the workspace look and /me from the cache only;
+ * it never fetches, so it works before sign-in too, from the device cache.
+ */
+export function useLook(): Look {
+  const { data: workspace } = useQuery({ ...workspaceQuery, enabled: false });
+  const { data: me } = useQuery({ ...meQuery, enabled: false });
+  const mode = useThemeStore((state) => state.mode);
+  const theme = useThemeStore((state) => state.theme);
+  const preview = useThemePreviewStore((state) => state.preview);
+  const systemDark = useSystemDark();
+  const appearance = workspace?.appearance;
+  return useMemo(
+    () =>
+      resolveLook({
+        appearance,
+        personal: { mode, theme },
+        customThemes: [...(appearance?.customThemes ?? []), ...(me?.customThemes ?? [])],
+        preview,
+        systemDark,
+      }),
+    [appearance, me?.customThemes, mode, theme, preview, systemDark],
+  );
+}
+
+/**
+ * Applies the look to <html>: a built-in theme through `data-theme` and `data-mode`, a custom
+ * one as inline tokens, the typeface through `data-font`. Match system re-runs this whenever
+ * the device switches between light and dark.
  */
 export function useThemeEffect(): void {
-  const { data: workspace } = useQuery({ ...workspaceQuery, enabled: false });
-  const mode = useThemeStore((state) => state.mode);
-  const preset = useThemeStore((state) => state.preset);
-  const preview = useThemePreviewStore((state) => state.preview);
-  const appearance = workspace?.appearance;
-  const resolved = useMemo(
-    () => resolveAppearance(appearance, { mode, preset }, preview),
-    [appearance, mode, preset, preview],
-  );
+  const look = useLook();
+  const previewing = useThemePreviewStore((state) => state.preview !== null);
 
   useEffect(() => {
     const root = document.documentElement;
-    root.dataset['mode'] = resolved.mode;
-    if (resolved.kind === 'preset') clearTheme(root, resolved.id);
-    else applyTheme(root, resolved.theme);
+    root.dataset['font'] = look.font;
+    if (look.custom) {
+      applyTheme(root, resolveSource(look.source, look.mode));
+    } else {
+      clearTheme(root, look.source.id);
+      root.dataset['mode'] = look.mode;
+    }
     // A look being tried on is not the person's; the boot frame keeps the saved one.
-    if (preview) return;
+    if (previewing) return;
     rememberBootLook(
-      resolved.kind === 'preset'
-        ? { theme: resolved.id, mode: resolved.mode }
-        : { theme: resolved.theme.id, mode: resolved.mode, vars: themeStyle(resolved.theme) },
+      look.custom
+        ? {
+            theme: look.source.id,
+            mode: look.mode,
+            font: look.font,
+            vars: themeStyle(resolveSource(look.source, look.mode)),
+          }
+        : { theme: look.source.id, mode: look.preference, font: look.font },
     );
-  }, [resolved, preview]);
+  }, [look, previewing]);
 }

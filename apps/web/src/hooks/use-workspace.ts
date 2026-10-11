@@ -1,5 +1,5 @@
 import { queryKeys } from '@bemmoly/api-client';
-import { themeFontSchema, type MeResponse } from '@bemmoly/shared';
+import type { MeResponse } from '@bemmoly/shared';
 import { queryOptions, useQuery } from '@tanstack/react-query';
 import { api } from '../lib/api.ts';
 import {
@@ -35,16 +35,17 @@ export function workspaceLookOf(workspace: MeResponse['workspace']): WorkspaceLo
   return {
     name: workspace.name,
     aiEnabled: workspace.aiEnabled,
-    appearance: appearanceFrom({
-      'appearance.theme': { value: appearance.theme },
-      'appearance.brandColor': { value: appearance.brandColor },
-      'appearance.font': { value: themeFontSchema.safeParse(appearance.font).data },
-      'appearance.logoKey': { value: appearance.logoKey || undefined },
-      'appearance.mode': { value: appearance.mode },
-      'appearance.surfaces': { value: appearance.surfaces },
-      'appearance.memberModeSwitch': { value: appearance.memberModeSwitch },
-      'appearance.personalThemes': { value: appearance.personalThemes },
-    }),
+    appearance: appearanceFrom(
+      {
+        'appearance.theme': { value: appearance.theme },
+        'appearance.customThemeId': { value: appearance.customThemeId },
+        'appearance.defaultMode': { value: appearance.defaultMode },
+        'appearance.font': { value: appearance.font },
+        'appearance.logoKey': { value: appearance.logoKey || undefined },
+        'appearance.personalThemes': { value: appearance.personalThemes },
+      },
+      appearance.customThemes,
+    ),
   };
 }
 
