@@ -103,7 +103,15 @@ export const docsLibraryRoutes: MockRoute[] = [
   {
     method: 'GET',
     pattern: `${BASE}/templates`,
-    handle: (_request, db) => ok({ items: docsState(db).templates }),
+    handle: (request, db) => {
+      const spaceId = request.query.get('spaceId');
+      return ok({
+        items: docsState(db)
+          .templates.filter((item) => !item.archivedAt)
+          .filter((item) => item.spaceId === null || item.spaceId === spaceId)
+          .sort((a, b) => a.position - b.position),
+      });
+    },
   },
   {
     method: 'GET',
@@ -113,7 +121,10 @@ export const docsLibraryRoutes: MockRoute[] = [
         (item) => item.id === request.params['templateId'],
       );
       if (!template) return notFound('The template');
-      return ok({ ...template, snapshot: templateBody(template.description ?? '') });
+      return ok({
+        ...template,
+        snapshot: template.snapshot ?? templateBody(template.description ?? ''),
+      });
     },
   },
   {

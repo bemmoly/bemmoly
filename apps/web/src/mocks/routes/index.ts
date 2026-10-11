@@ -11,6 +11,7 @@ import { aiRoleRoutes } from './ai-roles.ts';
 import { docsFindRoutes } from './docs-find.ts';
 import { docsHistoryRoutes } from './docs-history.ts';
 import { docsLibraryRoutes } from './docs-library.ts';
+import { docsTemplateRoutes } from './docs-templates.ts';
 import { docsMemberRoutes } from './docs-members.ts';
 import { docsMoveRoutes } from './docs-moves.ts';
 import { docsEditorAiRoutes } from './docs-editor-ai.ts';
@@ -70,6 +71,7 @@ export const ROUTES: readonly MockRoute[] = [
   ...workWorkflowRoutes,
   ...docsRoutes,
   ...docsLibraryRoutes,
+  ...docsTemplateRoutes,
   ...docsMoveRoutes,
   ...docsFindRoutes,
   ...docsMemberRoutes,
