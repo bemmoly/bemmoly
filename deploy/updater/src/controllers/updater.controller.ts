@@ -7,6 +7,7 @@ import { timingSafeEqual } from 'node:crypto';
 import type { UpdaterContext } from '../services/context.ts';
 import { renderProgressPage } from '../services/progress-page.ts';
 import { runRollback } from '../services/rollback.ts';
+import { reconcileHandoff } from '../services/self-update.ts';
 import { readState } from '../services/state.ts';
 import { runUpdate } from '../services/update.ts';
 
@@ -31,15 +32,36 @@ function inBackground(
   work().catch((error: unknown) => ctx.log(`${label} ended with an error: ${String(error)}`));
 }
 
+/** How long a handed-off updater waits to be replaced before it says the hand-off failed. */
+export const HANDOFF_GRACE_MS = 12 * 60_000;
+
 export function createUpdaterController(ctx: UpdaterContext) {
   let busy = false;
   const exclusive = (label: string, work: () => Promise<UpdaterStatus>) => {
     busy = true;
-    inBackground(ctx, label, () => work().finally(() => (busy = false)));
+    inBackground(ctx, label, async () => {
+      let handedOff = false;
+      try {
+        const state = await work();
+        handedOff = state.selfUpdate?.outcome === 'handing_off';
+        return state;
+      } finally {
+        // After a hand-off this container is about to be replaced: it takes nothing new.
+        if (!handedOff) busy = false;
+        else
+          setTimeout(() => {
+            reconcileHandoff(ctx)
+              .catch((error: unknown) => ctx.log(`hand-off check failed: ${String(error)}`))
+              .finally(() => (busy = false));
+          }, HANDOFF_GRACE_MS).unref();
+      }
+    });
   };
   return {
     async status(): Promise<Reply> {
-      return { status: 200, body: await readState(ctx.env.BEMMOLY_DIR) };
+      const state = await readState(ctx.env.BEMMOLY_DIR);
+      const updaterVersion = ctx.env.BEMMOLY_UPDATER_VERSION ?? state.updaterVersion;
+      return { status: 200, body: { ...state, updaterVersion } };
     },
     async update(body: unknown): Promise<Reply> {
       const parsed = updaterUpdateRequestSchema.safeParse(body);

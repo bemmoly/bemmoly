@@ -12,6 +12,8 @@ export const UPDATER_STEPS = [
   'tag',
   'swap',
   'health',
+  /** The updater moves itself to the release it just installed (ADR 0020). */
+  'updater',
   'rollback',
   'restore',
   'done',
@@ -31,6 +33,18 @@ export const updaterHistoryEntrySchema = z.object({
   message: z.string().nullable(),
 });
 
+/**
+ * What became of the updater's own image after an update: moved to the release
+ * (`updated`), left on the version it had because the new one could not be pulled,
+ * verified or started (`kept`), or still being handed over to the new image (`handing_off`).
+ */
+export const updaterSelfUpdateSchema = z.object({
+  outcome: z.enum(['updated', 'kept', 'handing_off']),
+  from: z.string().nullable(),
+  to: z.string(),
+  message: z.string().nullable(),
+});
+
 export const updaterStatusSchema = z.object({
   state: z.enum(['idle', 'running', 'failed']),
   operation: z.enum(['update', 'rollback']).nullable(),
@@ -42,6 +56,14 @@ export const updaterStatusSchema = z.object({
   /** Pre-upgrade backup taken for the last update, used by a restore rollback. */
   preUpgradeBackupId: z.string().nullable(),
   history: z.array(updaterHistoryEntrySchema),
+  /** The version the running or last operation moved to, and when it started. */
+  target: z.string().nullable().default(null),
+  startedAt: z.iso.datetime().nullable().default(null),
+  /** The updater's own release; null from updaters that predate self-update. */
+  updaterVersion: z.string().nullable().default(null),
+  /** The updater's release before its last self-update, kept for a manual rollback. */
+  updaterPrevious: z.string().nullable().default(null),
+  selfUpdate: updaterSelfUpdateSchema.nullable().default(null),
 });
 
 export const updaterUpdateRequestSchema = z.object({
@@ -56,5 +78,6 @@ export const updaterRollbackRequestSchema = z.object({
 export type UpdaterStep = z.infer<typeof updaterStepSchema>;
 export type UpdaterHistoryEntry = z.infer<typeof updaterHistoryEntrySchema>;
 export type UpdaterStatus = z.infer<typeof updaterStatusSchema>;
+export type UpdaterSelfUpdate = z.infer<typeof updaterSelfUpdateSchema>;
 export type UpdaterUpdateRequest = z.infer<typeof updaterUpdateRequestSchema>;
 export type UpdaterRollbackRequest = z.infer<typeof updaterRollbackRequestSchema>;

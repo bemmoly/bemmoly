@@ -1,8 +1,12 @@
-/** Polls the app's /readyz on the internal network until it says ready or time runs out. */
+/**
+ * Polls a health URL on the internal network (the app's /readyz, or a new updater's
+ * /healthz) until it answers `{ status: expected }` or time runs out.
+ */
 export async function waitForReady(
   url: string,
   timeoutMs: number,
   isAlive: () => Promise<boolean>,
+  expected = 'ready',
 ): Promise<{ ready: boolean; detail: string }> {
   const deadline = Date.now() + timeoutMs;
   let detail = 'no answer yet';
@@ -11,7 +15,7 @@ export async function waitForReady(
     try {
       const response = await fetch(url, { signal: AbortSignal.timeout(5_000) });
       const body = (await response.json().catch(() => ({}))) as { status?: string };
-      if (response.ok && body.status === 'ready') return { ready: true, detail: 'ready' };
+      if (response.ok && body.status === expected) return { ready: true, detail: 'ready' };
       detail = `readyz answered ${response.status} ${body.status ?? ''}`.trim();
     } catch (error) {
       detail = error instanceof Error ? error.message : String(error);

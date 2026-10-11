@@ -3,4 +3,5 @@ export * from './health.ts';
 export * from './maintenance.ts';
 export * from './release-manifest.ts';
 export * from './updater.ts';
+export * from './update-progress.ts';
 export * from './updates.ts';

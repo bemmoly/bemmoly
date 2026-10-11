@@ -32,6 +32,11 @@ export const IDLE: UpdaterStatus = {
   updatedAt: null,
   preUpgradeBackupId: null,
   history: [],
+  target: null,
+  startedAt: null,
+  updaterVersion: null,
+  updaterPrevious: null,
+  selfUpdate: null,
 };
 
 async function writeAtomic(file: string, body: string, mode = 0o644): Promise<void> {
@@ -80,21 +85,45 @@ export async function setMaintenance(
   else await rm(file, { force: true });
 }
 
-/** Keeps VERSION in .env in step with the running image, so `compose up` agrees. */
-export async function writeVersion(bemmolyDir: string, version: string): Promise<void> {
+/** One KEY=value line of the install's .env, or null when it is not set. */
+export async function readEnvValue(bemmolyDir: string, key: string): Promise<string | null> {
+  const lines = (await readFile(statePaths(bemmolyDir).env, 'utf8').catch(() => '')).split('\n');
+  const line = lines.find((entry) => entry.startsWith(`${key}=`));
+  return line ? line.slice(key.length + 1) || null : null;
+}
+
+/** Sets one KEY=value line of the install's .env, keeping every other line as it is. */
+export async function writeEnvValue(bemmolyDir: string, key: string, value: string): Promise<void> {
   const file = statePaths(bemmolyDir).env;
   const lines = (await readFile(file, 'utf8')).split('\n');
-  const index = lines.findIndex((line) => line.startsWith('VERSION='));
-  if (index >= 0) lines[index] = `VERSION=${version}`;
-  else lines.splice(lines.length - 1, 0, `VERSION=${version}`);
+  const index = lines.findIndex((line) => line.startsWith(`${key}=`));
+  if (index >= 0) lines[index] = `${key}=${value}`;
+  else lines.splice(lines.length - 1, 0, `${key}=${value}`);
   await writeAtomic(file, lines.join('\n'), 0o600);
+}
+
+/** Keeps VERSION in .env in step with the running image, so `compose up` agrees. */
+export function writeVersion(bemmolyDir: string, version: string): Promise<void> {
+  return writeEnvValue(bemmolyDir, 'VERSION', version);
 }
 
 /**
  * One operation at a time across the service and the one-shot CLI. The host CLI, the
  * backup timer and the app's restore read the same file and wait while it is held.
  */
-export async function acquireLock(bemmolyDir: string): Promise<() => Promise<void>> {
+export async function acquireLock(bemmolyDir: string, waitMs = 0): Promise<() => Promise<void>> {
+  const deadline = Date.now() + waitMs;
+  for (;;) {
+    try {
+      return await takeLock(bemmolyDir);
+    } catch (error) {
+      if (Date.now() >= deadline || !/Another update/.test(String(error))) throw error;
+      await new Promise((resolve) => setTimeout(resolve, 1_000));
+    }
+  }
+}
+
+async function takeLock(bemmolyDir: string): Promise<() => Promise<void>> {
   const file = statePaths(bemmolyDir).lock;
   await mkdir(path.dirname(file), { recursive: true });
   try {
@@ -110,7 +139,7 @@ export async function acquireLock(bemmolyDir: string): Promise<() => Promise<voi
       });
     }
     await rm(file, { force: true });
-    return acquireLock(bemmolyDir);
+    return takeLock(bemmolyDir);
   }
   return () => rm(file, { force: true });
 }

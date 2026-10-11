@@ -11,6 +11,7 @@ import {
   writeState,
   writeVersion,
 } from './state.ts';
+import { selfUpdateStep } from './self-update.ts';
 import {
   appPort,
   commitSwap,
@@ -134,8 +135,9 @@ async function rollBackFailedUpdate(
 
 /**
  * update(tag): pre-upgrade backup → pull → verify signature → tag the changelog → swap →
- * wait for /readyz (3 minutes) → keep, or roll back automatically. Maintenance mode
- * covers the swap; the previous image stays for the rollback window.
+ * wait for /readyz (3 minutes) → keep, or roll back automatically → move the updater to
+ * the same release. Maintenance mode covers the swap; the previous image stays for the
+ * rollback window.
  */
 export async function runUpdate(ctx: UpdaterContext, tag: string): Promise<UpdaterStatus> {
   const release = await acquireLock(ctx.env.BEMMOLY_DIR);
@@ -150,7 +152,7 @@ export async function runUpdate(ctx: UpdaterContext, tag: string): Promise<Updat
 
     state = await enterStep(
       ctx,
-      state,
+      { ...state, target: tag, startedAt: ctx.now().toISOString(), selfUpdate: null },
       'update',
       'backup',
       `Backing up before updating ${from} → ${tag}`,
@@ -211,6 +213,7 @@ export async function runUpdate(ctx: UpdaterContext, tag: string): Promise<Updat
     }
     await commitSwap(ctx, handle);
     await writeVersion(ctx.env.BEMMOLY_DIR, tag);
+    await setMaintenance(ctx.env.BEMMOLY_DIR, null);
     state = withHistory(
       { ...state, state: 'idle', operation: null, step: 'done', message: `Updated to ${tag}` },
       {
@@ -228,6 +231,8 @@ export async function runUpdate(ctx: UpdaterContext, tag: string): Promise<Updat
     await pruneImages(ctx, state).catch((error: unknown) =>
       ctx.log(`image retention failed: ${String(error)}`),
     );
+    // The app is updated and healthy; the updater follows it (ADR 0020).
+    state = await selfUpdateStep(ctx, state, tag);
     return state;
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
