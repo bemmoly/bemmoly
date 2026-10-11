@@ -13,6 +13,44 @@ Sizing, from the tech design: up to 50 people on 1 vCPU and 2 GB; up to 200 on 2
 4 GB; up to 1,000 on 4 vCPU and 8 GB, with Postgres on its own machine recommended. Beyond
 that, Helm with a managed Postgres.
 
+## PDF export (optional)
+
+Docs' Export as PDF can use a headless Chromium renderer that runs beside the app as its own
+service ([ADR 0033](../docs/adr/0033-pdf-export-through-an-optional-renderer.md)). It is off
+by default so the app image stays small. Without it, the More menu has no Export as PDF and
+the export dialog's PDF choice opens the browser's print view, one page at a time.
+
+With it, people get a PDF file on A4 or Letter with the title and page numbers on every
+page, a contents page for a page and the pages under it, coloured code, tables, images and
+issue chips. One page downloads when it is ready; a bigger export arrives in the inbox with a
+link. Files are kept for a day.
+
+The renderer (`gotenberg/gotenberg:8.37.0-chromium`, pinned by digest) is locked down: no host
+name resolves, it loads nothing but the HTML the app sends (images travel inside it), JavaScript
+is off, and it runs non-root with a read-only file system, no Linux capabilities and memory and
+process limits, on a network with no route out. Allow about 1 GB of memory for it.
+
+**Compose** (the installer's `/var/bemmoly`): add `pdf` to `COMPOSE_PROFILES` and set the URL in
+`.env`, then restart:
+
+```sh
+# /var/bemmoly/.env
+COMPOSE_PROFILES=db,proxy,updater,pdf
+BEMMOLY_PDF_URL=http://pdf:3000
+# Optional: BEMMOLY_PDF_TIMEOUT_MS=60000, BEMMOLY_PDF_MAX_BYTES=52428800
+
+sudo bemmoly restart
+```
+
+**Helm**: `--set pdf.enabled=true`. The chart adds the renderer's Deployment and Service, sets
+`BEMMOLY_PDF_URL` on the app, and (with `pdf.networkPolicy`, on by default) a NetworkPolicy
+that lets only the app's pods in and the renderer nothing out. See the chart's
+[values](helm/bemmoly/README.md#values).
+
+**Air-gapped**: build the bundle with `BEMMOLY_AIRGAP_PDF=true` to carry the renderer image;
+its README.txt lists the three `.env` lines (the profile, `PDF_IMAGE` and the URL). Bundles
+built without it leave PDF as the browser's print view.
+
 ## Air-gapped installs
 
 Each release publishes `bemmoly-airgap-X.Y.Z-amd64.tar.gz` and `…-arm64.tar.gz`, each with a

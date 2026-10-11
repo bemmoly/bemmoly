@@ -23,6 +23,10 @@ helm.sh/chart: {{ printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" }}
 {{- printf "%s-postgres" (include "bemmoly.name" .) -}}
 {{- end -}}
 
+{{- define "bemmoly.pdfHost" -}}
+{{- printf "%s-pdf" (include "bemmoly.name" .) -}}
+{{- end -}}
+
 {{/* Changesets at boot; the 0.11 chart called this autoMigrate, which still wins when set. */}}
 {{- define "bemmoly.migrateAtBoot" -}}
 {{- if hasKey .Values "autoMigrate" -}}{{ .Values.autoMigrate }}{{- else -}}{{ .Values.migrations.atBoot }}{{- end -}}
@@ -59,6 +63,14 @@ helm.sh/chart: {{ printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" }}
   value: {{ .Values.modules | quote }}
 - name: BEMMOLY_TRUST_PROXY
   value: "true"
+{{- if .Values.pdf.enabled }}
+- name: BEMMOLY_PDF_URL
+  value: {{ printf "http://%s:3000" (include "bemmoly.pdfHost" .) | quote }}
+- name: BEMMOLY_PDF_TIMEOUT_MS
+  value: {{ mul .Values.pdf.timeoutSeconds 1000 | quote }}
+- name: BEMMOLY_PDF_MAX_BYTES
+  value: {{ .Values.pdf.maxBytes | int | quote }}
+{{- end }}
 {{- with .Values.extraEnv }}
 {{ toYaml . }}
 {{- end }}

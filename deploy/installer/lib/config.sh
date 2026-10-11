@@ -147,7 +147,12 @@ update_env_file() {
   as_root cat "${file}" >"${tmp}"
   env_set "${tmp}" VERSION "${VERSION}"
   env_set "${tmp}" UPDATER_VERSION "${VERSION}"
-  env_set "${tmp}" COMPOSE_PROFILES "$(compose_profiles)"
+  profiles=$(compose_profiles)
+  # The optional PDF renderer is turned on by hand in .env; a re-run keeps it.
+  case ",$(env_get "${tmp}" COMPOSE_PROFILES)," in
+    *,pdf,*) profiles="${profiles:+${profiles},}pdf" ;;
+  esac
+  env_set "${tmp}" COMPOSE_PROFILES "${profiles}"
   env_set "${tmp}" BEMMOLY_UPDATE_CHANNEL "${CHANNEL}"
   [ -z "${MODULES}" ] || env_set "${tmp}" BEMMOLY_MODULES "${MODULES}"
   [ -z "${IMAGE_ARCHIVE}" ] || env_set "${tmp}" BEMMOLY_UPDATER_LOCAL_IMAGES true

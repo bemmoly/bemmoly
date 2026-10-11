@@ -12,6 +12,7 @@
 #
 #   BEMMOLY_AIRGAP_SIGN=keyless   sign SHA256SUMS and the .tar.gz with cosign (the release does)
 #   BEMMOLY_AIRGAP_PULL=false     use images already loaded here instead of pulling
+#   BEMMOLY_AIRGAP_PDF=true       also carry the optional PDF renderer image (the pdf profile)
 #   BEMMOLY_AIRGAP_IMAGES_FROM=<images.tar>
 #                                 reuse the image archive of a published bundle (one platform),
 #                                 e.g. to test this checkout's installer against a release
@@ -27,12 +28,26 @@ PLATFORMS="${BEMMOLY_AIRGAP_PLATFORMS:-linux/amd64}"
 SIGN="${BEMMOLY_AIRGAP_SIGN:-}"
 PULL="${BEMMOLY_AIRGAP_PULL:-true}"
 IMAGES_FROM="${BEMMOLY_AIRGAP_IMAGES_FROM:-}"
+WITH_PDF="${BEMMOLY_AIRGAP_PDF:-false}"
 DEPLOY_DIR=$(cd "$(dirname "$0")/.." && pwd)
 REPO_DIR=$(cd "${DEPLOY_DIR}/.." && pwd)
 CATALOG_DIR="${REPO_DIR}/packages/core/src/services/ai/catalog/bundled"
 # Postgres and Caddy exactly as the Compose file names them, so the loaded tags match.
 THIRD_PARTY=$(sed -n 's/^    image: \([a-z][^$]*\)$/\1/p' "${DEPLOY_DIR}/compose/docker-compose.yml" | tr '\n' ' ')
 IMAGES="ghcr.io/bemmoly/bemmoly:${VERSION} ghcr.io/bemmoly/updater:${VERSION} ${THIRD_PARTY}"
+
+# The optional renderer, pinned by digest in the Compose file; carried by its tag, which the
+# offline install names in PDF_IMAGE.
+# shellcheck disable=SC2016 # a literal ${PDF_IMAGE:- in the Compose file, not an expansion
+PDF_REF=$(sed -n 's/^    image: \${PDF_IMAGE:-\(.*\)}$/\1/p' "${DEPLOY_DIR}/compose/docker-compose.yml")
+PDF_TAG="${PDF_REF%@*}"
+if [ "${WITH_PDF}" = true ]; then
+  [ -n "${PDF_REF}" ] || {
+    echo "airgap-bundle: no pdf image in the Compose file" >&2
+    exit 1
+  }
+  IMAGES="${IMAGES} ${PDF_TAG}"
+fi
 
 [ "$(printf '%s' "${THIRD_PARTY}" | wc -w)" -eq 2 ] || {
   echo "airgap-bundle: expected the db and proxy images in the Compose file, found: ${THIRD_PARTY}" >&2
@@ -58,11 +73,18 @@ for platform in ${PLATFORMS}; do
     cp "${IMAGES_FROM}" "${dir}/images.tar"
   else
     for image in ${IMAGES}; do
+      [ "${image}" = "${PDF_TAG}" ] && continue
       if [ "${PULL}" != false ]; then
         echo "→ ${image} (${platform})"
         docker pull --quiet --platform "${platform}" "${image}" >/dev/null
       fi
     done
+    # The renderer is pulled by its digest, then named by its tag for the archive.
+    if [ "${WITH_PDF}" = true ] && [ "${PULL}" != false ]; then
+      echo "→ ${PDF_REF} (${platform})"
+      docker pull --quiet --platform "${platform}" "${PDF_REF}" >/dev/null
+      docker tag "${PDF_REF}" "${PDF_TAG}"
+    fi
     # shellcheck disable=SC2046,SC2086 # one argument per image; the flag may be empty
     docker save $(save_platform_flag "${platform}") -o "${dir}/images.tar" ${IMAGES}
   fi
@@ -121,6 +143,17 @@ ready, then moves the installed bemmoly command to this release (${CLI}, checked
 against the signed release-manifest.json). images.txt lists every image with its digest;
 catalog/ holds the AI provider catalog this release ships with.
 EOF
+  if [ "${WITH_PDF}" = true ]; then
+    cat >>"${dir}/README.txt" <<EOF
+
+This bundle also carries the optional PDF renderer (${PDF_TAG}). To turn on Export as PDF,
+add these to /var/bemmoly/.env, then run: sudo bemmoly restart
+
+  COMPOSE_PROFILES=<the profiles already listed>,pdf
+  PDF_IMAGE=${PDF_TAG}
+  BEMMOLY_PDF_URL=http://pdf:3000
+EOF
+  fi
   (cd "${dir}" && find . -type f | sed 's|^\./||' | sort | xargs sha256sum >"${work}/SHA256SUMS")
   mv "${work}/SHA256SUMS" "${dir}/SHA256SUMS"
   if [ "${SIGN}" = keyless ]; then

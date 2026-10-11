@@ -6,6 +6,8 @@
 #   db       the bundled Postgres 18 (omit it and set DATABASE_URL for an external one)
 #   proxy    Caddy with automatic HTTPS (omitted with --no-proxy)
 #   updater  in-app updates (omitted with --no-in-app-updates; the CLI still works)
+#   pdf      the PDF renderer (headless Chromium) for Export as PDF; set
+#            BEMMOLY_PDF_URL=http://pdf:3000 with it. Without it PDF is the browser's print view.
 name: bemmoly
 
 services:
@@ -33,7 +35,7 @@ services:
       retries: 6
       start_period: 120s
     stop_grace_period: 30s
-    networks: [internal]
+    networks: [internal, pdf]
 
   db:
     image: pgvector/pgvector:pg18
@@ -104,8 +106,46 @@ services:
     security_opt: ['no-new-privileges:true']
     networks: [internal]
 
+  # Optional (ADR 0033). The app sends whole documents with images inline; the renderer
+  # resolves no host, loads nothing but data: and its own temp files, and sits alone on a
+  # network with no route out. Chromium is contained by the container: non-root, read-only,
+  # no capabilities, no new privileges, bounded memory and processes.
+  pdf:
+    image: ${PDF_IMAGE:-gotenberg/gotenberg:8.37.0-chromium@sha256:0d28ae9a96441588ef739623726bd500ad0720b77266c6f1351a13e333fbd61c}
+    profiles: [pdf]
+    restart: unless-stopped
+    command:
+      - gotenberg
+      - --api-timeout=60s
+      - --chromium-auto-start=true
+      - --chromium-disable-javascript=true
+      - --chromium-allow-list=^(file:///tmp/|data:)
+      - --chromium-deny-public-ips=true
+      - --chromium-deny-private-ips=true
+      - --chromium-host-resolver-rules=MAP * ~NOTFOUND
+      - --chromium-max-queue-size=8
+      - --chromium-restart-after=50
+      - --webhook-disable=true
+      - --prometheus-disable-collect=true
+    read_only: true
+    tmpfs: [/tmp, /home/gotenberg]
+    cap_drop: [ALL]
+    security_opt: ['no-new-privileges:true']
+    mem_limit: 1g
+    pids_limit: 512
+    healthcheck:
+      test: ['CMD', 'curl', '-fsS', 'http://127.0.0.1:3000/health']
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks: [pdf]
+
 # One network for the stack. It is not marked `internal: true` because the app reaches
 # AI providers and SMTP, and the updater verifies signatures; nothing on it is published
 # except the proxy's 80 and 443 (and the app on loopback).
 networks:
   internal: {}
+  # The renderer's own network: internal, so nothing on it reaches beyond the app.
+  pdf:
+    internal: true
