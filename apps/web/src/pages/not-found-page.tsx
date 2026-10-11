@@ -27,7 +27,7 @@ export function NotFoundPage() {
           <Button
             variant="primary"
             onClick={() => openPalette()}
-            iconEnd={<Kbd keys="Mod+K" className="border-on-acc/30 bg-transparent text-on-acc" />}
+            iconEnd={<Kbd keys="Mod+K" />}
           >
             Search for it
           </Button>

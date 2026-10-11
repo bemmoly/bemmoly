@@ -44,8 +44,11 @@ const PADDING: Partial<Record<`${ButtonVariant}-${ButtonSize}`, string>> = {
 };
 
 const VARIANTS: Record<ButtonVariant, string> = {
-  primary:
+  // A key hint inside a filled button takes the button's ink; the Kbd grey reads at 1.3:1 there.
+  primary: cx(
     'border-0 bg-acc-fill text-on-acc enabled:hover:brightness-95 enabled:active:brightness-90',
+    '[&_kbd]:border-on-acc/30 [&_kbd]:bg-transparent [&_kbd]:text-on-acc',
+  ),
   // The hover and press overlays tint whatever the button sits on, the same on every surface.
   secondary: cx(
     'border border-line bg-card text-tx-2 enabled:hover:text-tx',
@@ -53,7 +56,10 @@ const VARIANTS: Record<ButtonVariant, string> = {
   ),
   ghost:
     'border-0 bg-transparent text-tx-2 enabled:hover:bg-hover enabled:hover:text-tx enabled:active:bg-press',
-  danger: 'border-0 bg-red text-on-solid enabled:hover:brightness-95 enabled:active:brightness-90',
+  danger: cx(
+    'border-0 bg-red text-on-solid enabled:hover:brightness-95 enabled:active:brightness-90',
+    '[&_kbd]:border-on-solid/30 [&_kbd]:bg-transparent [&_kbd]:text-on-solid',
+  ),
 };
 
 export interface ButtonStyle {
