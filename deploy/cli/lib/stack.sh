@@ -1,5 +1,5 @@
 # shellcheck shell=bash
-# bemmoly: status, doctor, logs, shell, start/stop/restart, config, update-channel.
+# bemmoly: status, doctor, logs, shell, start/stop/restart, config, domain, update-channel.
 
 env_file() { printf '%s/.env' "${BEMMOLY_DIR}"; }
 env_value() { env_get "$(env_file)" "$1"; }
@@ -145,6 +145,9 @@ cmd_config() {
       if [[ "${key}" == BEMMOLY_SECRET_KEY || "${key}" == POSTGRES_PASSWORD ]]; then
         die "${key} cannot be changed here" "Changing it would lock you out of stored credentials or the database; see https://bemmoly.com/docs/compose#settings"
       fi
+      if [[ "${key}" == BEMMOLY_PUBLIC_URL || "${key}" == BEMMOLY_DOMAIN ]]; then
+        die "${key} changes with the domain" "Run: sudo bemmoly domain set NAME (it updates the URL, the certificate and checks the app comes back)"
+      fi
       cp "$(env_file)" "$(env_file).bak"
       env_set "$(env_file)" "${key}" "$3"
       compose up -d >>"${BEMMOLY_LOG}" 2>&1 || die "The stack did not restart with the new value" "The previous file is ${BEMMOLY_DIR}/.env.bak"
@@ -152,6 +155,93 @@ cmd_config() {
       ;;
     *) die "Usage: bemmoly config get KEY | config set KEY VALUE" "" ;;
   esac
+}
+
+# The hostname of the URL, without scheme, port or path.
+url_host() { sed -E 's#^[a-z]+://##; s#[:/].*$##' <<<"$1"; }
+
+# "auto" when NAME resolves to an address of this machine, "internal" otherwise (as the
+# installer decides: Caddy still tries a real certificate first and falls back).
+domain_tls_mode() {
+  case "$1" in
+    localhost | *.localhost | *.local | *.test | *.internal | *.lan) echo internal; return ;;
+  esac
+  [[ "$1" =~ ^[0-9.]+$ ]] && { echo internal; return; }
+  local address own
+  for address in $(getent ahostsv4 "$1" 2>/dev/null | awk '{ print $1 }' | sort -u); do
+    for own in $(hostname -I 2>/dev/null); do
+      [[ "${address}" == "${own}" ]] && { echo auto; return; }
+    done
+  done
+  echo internal
+}
+
+app_healthy_within() {
+  local waited=0 status
+  while ((waited < $1)); do
+    status=$(docker inspect --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' bemmoly-bemmoly-1 2>/dev/null || true)
+    [[ "${status}" == healthy ]] && return 0
+    sleep 3
+    waited=$((waited + 3))
+  done
+  return 1
+}
+
+# bemmoly domain [set NAME [--yes]]: the address people use. The URL, Caddy's domain and its
+# certificate mode change together, the app restarts (a few seconds), and the previous
+# values come back if it is not healthy within three minutes.
+cmd_domain() {
+  local file current
+  file=$(env_file)
+  current=$(env_value BEMMOLY_PUBLIC_URL)
+  if [[ $# -eq 0 ]]; then
+    say "URL: ${current}"
+    return 0
+  fi
+  [[ "$1" == set && $# -ge 2 ]] || die "Usage: bemmoly domain | domain set NAME [--yes]" ""
+  local name="$2"
+  [[ "${3:-}" == --yes ]] && ASSUME_YES=1
+  [[ "${name}" =~ ^[A-Za-z0-9]([A-Za-z0-9-]*[A-Za-z0-9])?(\.[A-Za-z0-9]([A-Za-z0-9-]*[A-Za-z0-9])?)*$ ]] ||
+    die "A domain is a hostname such as bemmoly.example.com (got ${name})" "Pass the name only, without https:// or a path."
+  refuse_during_update 'domain set'
+
+  local proxied='' url mode=''
+  [[ ",$(env_value COMPOSE_PROFILES)," == *",proxy,"* ]] && proxied=1
+  if [[ -n "${proxied}" ]]; then url="https://${name}"; else url="http://${name}:8080"; fi
+  if [[ "${url}" == "${current}" ]]; then
+    success "Bemmoly already answers at ${url}"
+    return 0
+  fi
+  if [[ -n "${proxied}" ]]; then
+    mode=$(domain_tls_mode "${name}")
+    [[ "${mode}" == auto ]] ||
+      warn "${name} does not point at this machine yet; it gets a self-signed certificate until its DNS A record does"
+  fi
+
+  say "Bemmoly will move from ${current} to ${url}."
+  say '  The app restarts and is unavailable for a few seconds.'
+  if [[ "$(url_host "${current}")" != "${name}" ]]; then
+    say '  Everyone signs in again at the new address.'
+    say '  Links in emails sent before now still point at the old one.'
+  fi
+  confirm 'Change the domain?'
+
+  cp "${file}" "${file}.bak"
+  env_set "${file}" BEMMOLY_PUBLIC_URL "${url}"
+  if [[ -n "${proxied}" ]]; then
+    env_set "${file}" BEMMOLY_DOMAIN "${name}"
+    env_set "${file}" BEMMOLY_TLS_MODE "${mode}"
+  fi
+  step 'Restarting with the new address'
+  if compose up -d >>"${BEMMOLY_LOG}" 2>&1 && app_healthy_within 180; then
+    step_done
+    success "Bemmoly is running at ${url}"
+    return 0
+  fi
+  step_done failed
+  cp "${file}.bak" "${file}"
+  compose up -d >>"${BEMMOLY_LOG}" 2>&1 || true
+  die "Bemmoly did not come back at ${url}; the previous address ${current} is restored" "See: sudo bemmoly logs bemmoly"
 }
 
 cmd_update_channel() {

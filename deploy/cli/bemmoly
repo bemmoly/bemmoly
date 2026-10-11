@@ -43,6 +43,7 @@ Usage: bemmoly <command> [options]
   start | stop | restart      the whole stack
   config get KEY              print a setting from .env (secrets are masked)
   config set KEY VALUE        change a setting in .env and restart what uses it
+  domain [set NAME] [--yes]   show or change the address; restarts the app, rolls back on failure
   backup [--if-older-than 36h]
   backups [list]              every backup with version, size and verification
   verify <backup> [--drill]   check checksums, or restore into a temporary database
@@ -70,6 +71,7 @@ main() {
     shell) cmd_shell "$@" ;;
     start | stop | restart) cmd_lifecycle "${command}" "$@" ;;
     config) cmd_config "$@" ;;
+    domain) cmd_domain "$@" ;;
     backup) cmd_backup "$@" ;;
     backups) cmd_backups "$@" ;;
     verify) cmd_verify "$@" ;;

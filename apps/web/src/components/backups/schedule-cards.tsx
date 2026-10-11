@@ -2,6 +2,7 @@ import type { BackupRetentionSettings, BackupScheduleSettings } from '@bemmoly/s
 import { Field, Input, Select, SettingsRow, Switch } from '@bemmoly/ui';
 import type { BackupProtection } from '../../hooks/use-backups-schedule.ts';
 import type { FieldErrors } from '../../lib/errors.ts';
+import { timezoneOptions } from '../../lib/timezones.ts';
 
 export const FREQUENCIES = [
   { value: 'hourly', label: 'Every hour' },
@@ -34,11 +35,10 @@ interface ScheduleFieldsProps {
   schedule: BackupScheduleSettings;
   update: (patch: Partial<BackupScheduleSettings>) => void;
   errors: FieldErrors;
-  timezones: readonly string[];
 }
 
 /** Editing the Schedule section: frequency, the weekday for weekly, time and timezone. */
-export function ScheduleFields({ schedule, update, errors, timezones }: ScheduleFieldsProps) {
+export function ScheduleFields({ schedule, update, errors }: ScheduleFieldsProps) {
   const hourly = schedule.frequency === 'hourly';
   return (
     <div className="grid grid-cols-2 gap-3.5">
@@ -75,7 +75,7 @@ export function ScheduleFields({ schedule, update, errors, timezones }: Schedule
       </Field>
       <Field label="Timezone" error={errors['schedule.timezone']}>
         <Select
-          options={timezones.map((zone) => ({ value: zone, label: zone }))}
+          options={timezoneOptions(schedule.timezone)}
           value={schedule.timezone}
           onChange={(event) => update({ timezone: event.target.value })}
         />
