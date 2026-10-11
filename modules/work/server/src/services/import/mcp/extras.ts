@@ -58,20 +58,23 @@ export async function writeImportedComments(
       'comment',
       keyed.map((item) => item.key),
     );
-    const fresh: { sourceId: string; targetId: string }[] = [];
+    const posted = new Set<string>();
     for (const { comment, key } of keyed) {
-      if (known.has(key) || fresh.some((item) => item.sourceId === key)) continue;
+      if (known.has(key) || posted.has(key)) continue;
+      posted.add(key);
       const matched = comment.authorEmail ? (users.get(comment.authorEmail) ?? null) : null;
       const body = commentBody(comment, matched);
-      const [row] = await sql<{ id: string }[]>`
-        insert into comments (target_kind, target_id, author_id, body, body_text, created_at,
-          updated_at)
-        values ('issue', ${id}, ${matched ?? callerId}::uuid, ${JSON.stringify(body)}::jsonb,
-          ${plainText(body)}, ${comment.createdAt}::timestamptz, ${comment.createdAt}::timestamptz)
-        returning id`;
-      if (row) fresh.push({ sourceId: key, targetId: row.id });
+      // The comment and its mapping commit together, so a retry never posts it twice.
+      await sql.begin(async (tx) => {
+        const [row] = await tx<{ id: string }[]>`
+          insert into comments (target_kind, target_id, author_id, body, body_text, created_at,
+            updated_at)
+          values ('issue', ${id}, ${matched ?? callerId}::uuid, ${JSON.stringify(body)}::jsonb,
+            ${plainText(body)}, ${comment.createdAt}::timestamptz, ${comment.createdAt}::timestamptz)
+          returning id`;
+        if (row) await mappings.set('comment', key, row.id, undefined, tx);
+      });
     }
-    await mappings.setMany('comment', fresh);
   }
 }
 

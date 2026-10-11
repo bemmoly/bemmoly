@@ -36,7 +36,7 @@ export async function writeComments(
       'comment',
       comments.map((comment) => comment.id),
     );
-    const fresh: { sourceId: string; targetId: string }[] = [];
+    let created = 0;
     for (const comment of comments) {
       const body = convertText(rows, comment.body ?? '');
       const authorId = await matchPerson(rows, comment.author);
@@ -56,15 +56,18 @@ export async function writeComments(
           continue;
         }
       }
-      const [row] = await sql<{ id: string }[]>`
-        insert into comments (target_kind, target_id, author_id, body, body_text, created_at)
-        values ('issue', ${id}, ${authorId}::uuid, ${JSON.stringify(body)}::jsonb, ${plainText(body)},
-          coalesce(${comment.created ?? null}::timestamptz, now()))
-        returning id`;
-      if (row) fresh.push({ sourceId: comment.id, targetId: row.id });
+      // The comment and its mapping commit together, so a retry never posts it twice.
+      await sql.begin(async (tx) => {
+        const [row] = await tx<{ id: string }[]>`
+          insert into comments (target_kind, target_id, author_id, body, body_text, created_at)
+          values ('issue', ${id}, ${authorId}::uuid, ${JSON.stringify(body)}::jsonb, ${plainText(body)},
+            coalesce(${comment.created ?? null}::timestamptz, now()))
+          returning id`;
+        if (row) await ctx.mappings.set('comment', comment.id, row.id, undefined, tx);
+      });
+      created += 1;
     }
-    await ctx.mappings.setMany('comment', fresh);
-    ctx.report.count('comments', 'created', fresh.length);
+    ctx.report.count('comments', 'created', created);
   }
 }
 
@@ -105,17 +108,19 @@ async function copyAttachment(
     contentType: attachment.mimeType ?? file.contentType,
   });
   const uploader = await matchPerson(rows, attachment.author);
-  const [row] = await sql<{ id: string }[]>`
-    insert into attachments (target_kind, target_id, storage_key, filename, mime, size, sha256,
-      uploaded_by, created_at)
-    values ('issue', ${issueId}, ${stored.storageKey}, ${attachment.filename.slice(0, 255) || 'file'},
-      ${(attachment.mimeType ?? file.contentType).slice(0, 255)}, ${stored.size}, ${stored.sha256},
-      ${uploader}::uuid, coalesce(${attachment.created ?? null}::timestamptz, now()))
-    returning id`;
-  if (row) {
-    await ctx.mappings.set('attachment', attachment.id, row.id);
-    ctx.report.count('attachments', 'created');
-  }
+  // The row and its mapping commit together, so a retry never indexes the file twice.
+  const made = await sql.begin(async (tx) => {
+    const [row] = await tx<{ id: string }[]>`
+      insert into attachments (target_kind, target_id, storage_key, filename, mime, size, sha256,
+        uploaded_by, created_at)
+      values ('issue', ${issueId}, ${stored.storageKey}, ${attachment.filename.slice(0, 255) || 'file'},
+        ${(attachment.mimeType ?? file.contentType).slice(0, 255)}, ${stored.size}, ${stored.sha256},
+        ${uploader}::uuid, coalesce(${attachment.created ?? null}::timestamptz, now()))
+      returning id`;
+    if (row) await ctx.mappings.set('attachment', attachment.id, row.id, undefined, tx);
+    return row;
+  });
+  if (made) ctx.report.count('attachments', 'created');
 }
 
 export async function writeAttachments(
