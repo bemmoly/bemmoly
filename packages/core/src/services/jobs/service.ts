@@ -123,6 +123,9 @@ export function createJobsService(options: JobsServiceOptions): JobsService {
         ...(registerOptions.concurrency !== undefined
           ? { concurrency: registerOptions.concurrency }
           : {}),
+        ...(registerOptions.expireInSeconds !== undefined
+          ? { expireInSeconds: registerOptions.expireInSeconds }
+          : {}),
       };
       definitions.set(name, job);
       const instance = boss;
