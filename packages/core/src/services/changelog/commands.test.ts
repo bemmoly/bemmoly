@@ -20,7 +20,7 @@ function fakeRunner(overrides: Partial<KernelChangelogRunner> = {}): KernelChang
 const deps = (runner: KernelChangelogRunner) => ({
   runner,
   contexts: ['production'],
-  enabledModules: ['sample'],
+  enabledModules: ['fixture'],
 });
 
 describe('runDbCommand', () => {
@@ -28,7 +28,7 @@ describe('runDbCommand', () => {
     const runner = fakeRunner();
     const result = await runDbCommand(['db', 'status'], deps(runner));
     expect(result).toEqual({ exitCode: 0, output: 'core: 1 pending\n  0004-users' });
-    expect(runner.status).toHaveBeenCalledWith({ contexts: ['production'], modules: ['sample'] });
+    expect(runner.status).toHaveBeenCalledWith({ contexts: ['production'], modules: ['fixture'] });
   });
 
   it('exits 1 when validation finds an error, and prints JSON on request', async () => {
@@ -47,9 +47,9 @@ describe('runDbCommand', () => {
   it('passes contexts and rollback targets through', async () => {
     const runner = fakeRunner();
     await runDbCommand(['db', 'plan', '--contexts', 'demo,test'], deps(runner));
-    expect(runner.plan).toHaveBeenCalledWith({ contexts: ['demo', 'test'], modules: ['sample'] });
-    await runDbCommand(['db', 'rollback', '--count', '2', '--module', 'sample'], deps(runner));
-    expect(runner.rollback).toHaveBeenCalledWith('sample', { count: 2 });
+    expect(runner.plan).toHaveBeenCalledWith({ contexts: ['demo', 'test'], modules: ['fixture'] });
+    await runDbCommand(['db', 'rollback', '--count', '2', '--module', 'fixture'], deps(runner));
+    expect(runner.rollback).toHaveBeenCalledWith('fixture', { count: 2 });
     await runDbCommand(['db', 'rollback', '--to-tag', '1.2.4', '--dry-run'], deps(runner));
     expect(runner.rollbackPlan).toHaveBeenCalledWith('*', { toTag: '1.2.4' });
   });

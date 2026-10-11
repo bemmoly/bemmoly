@@ -49,7 +49,7 @@ describe('capability matrix, org locks and module grants against a real database
       allowed: false,
       lockedByOrg: true,
     });
-    expect(cell(matrix.items, 'sample.view', memberRole)?.allowed).toBe(true);
+    expect(cell(matrix.items, 'fixture.view', memberRole)?.allowed).toBe(true);
     expect(matrix.items.map((item: MatrixItem) => item.name)).not.toContain(
       'workspace.billing.manage',
     );
@@ -130,39 +130,39 @@ describe('capability matrix, org locks and module grants against a real database
     const modulesOf = async (cookie: string) =>
       (await call(app, 'GET', '/me', { cookie })).json().modules as string[];
 
-    expect(await modulesOf(admin)).toEqual(['sample']);
+    expect(await modulesOf(admin)).toEqual(['fixture']);
     expect(await modulesOf(onTeam.cookie)).toEqual([]);
 
     const writer = createModuleAccessWriter(identity.db);
     const system = { kind: 'system', id: 'modules' } as const;
-    await writer.apply('sample', { mode: 'none' }, system);
+    await writer.apply('fixture', { mode: 'none' }, system);
     expect(await modulesOf(offTeam.cookie)).toEqual([]);
-    await writer.apply('sample', { mode: 'everyone' }, system);
-    await writer.apply('sample', { mode: 'everyone' }, system);
+    await writer.apply('fixture', { mode: 'everyone' }, system);
+    await writer.apply('fixture', { mode: 'everyone' }, system);
     const grants = (
-      await call(app, 'GET', '/module-grants?moduleId=sample', { cookie: admin })
+      await call(app, 'GET', '/module-grants?moduleId=fixture', { cookie: admin })
     ).json().items;
     expect(grants).toHaveLength(1);
-    expect(await modulesOf(offTeam.cookie)).toEqual(['sample']);
+    expect(await modulesOf(offTeam.cookie)).toEqual(['fixture']);
 
     await call(app, 'DELETE', `/module-grants/${grants[0].id}`, { cookie: admin });
     const byTeam = await call(app, 'POST', '/module-grants', {
       cookie: admin,
-      body: { moduleId: 'sample', subjectKind: 'team', subjectId: team.id },
+      body: { moduleId: 'fixture', subjectKind: 'team', subjectId: team.id },
     });
     expect(byTeam.statusCode).toBe(201);
-    expect(await modulesOf(onTeam.cookie)).toEqual(['sample']);
+    expect(await modulesOf(onTeam.cookie)).toEqual(['fixture']);
     expect(await modulesOf(offTeam.cookie)).toEqual([]);
 
     await call(app, 'POST', '/module-grants', {
       cookie: admin,
       body: {
-        moduleId: 'sample',
+        moduleId: 'fixture',
         subjectKind: 'role',
         subjectId: await roleId(app, admin, 'viewer'),
       },
     });
-    expect(await modulesOf(offTeam.cookie)).toEqual(['sample']);
+    expect(await modulesOf(offTeam.cookie)).toEqual(['fixture']);
 
     const disabled = await call(app, 'POST', '/module-grants', {
       cookie: admin,
@@ -185,19 +185,19 @@ describe('capability matrix, org locks and module grants against a real database
     const as = (userId: string) => ({ kind: 'user' as const, id: userId });
 
     await expect(
-      authz().authorize(as(member.userId), 'sample.view', { kind: 'module' }),
+      authz().authorize(as(member.userId), 'fixture.view', { kind: 'module' }),
     ).rejects.toMatchObject({
       code: 'module_access_denied',
     });
     await call(app, 'POST', '/module-grants', {
       cookie: admin,
-      body: { moduleId: 'sample', subjectKind: 'everyone' },
+      body: { moduleId: 'fixture', subjectKind: 'everyone' },
     });
     await expect(
-      authz().authorize(as(member.userId), 'sample.view', { kind: 'module' }),
+      authz().authorize(as(member.userId), 'fixture.view', { kind: 'module' }),
     ).resolves.toBeUndefined();
     await expect(
-      authz().authorize(as(contractor.userId), 'sample.view', { kind: 'module' }),
+      authz().authorize(as(contractor.userId), 'fixture.view', { kind: 'module' }),
     ).rejects.toMatchObject({
       code: 'forbidden',
     });

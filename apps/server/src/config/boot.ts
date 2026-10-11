@@ -36,6 +36,7 @@ export interface BootOptions {
   /** Every module package in the image. */
   available: readonly BemmolyModule[];
   webRoot?: string;
+  /** `false` silences the process; a stream receives every line, the kernel's and requests'. */
   logger?: BuildAppOptions['logger'];
   /** Tests serve MCP clients' metadata documents without a network; production fetches them. */
   fetchClientMetadata?: FetchClientMetadata;
@@ -60,7 +61,7 @@ export interface Booted {
  */
 export async function bootApplication(options: BootOptions): Promise<Booted> {
   const { env } = options;
-  const logger = createLogger(env);
+  const logger = createLogger(env, options.logger ? options.logger.stream : undefined);
   if (options.logger === false) logger.level = 'silent';
   const database = connectDatabase(env, logger.child({ component: 'database' }));
   const catalog = createEnabledModuleCatalog();

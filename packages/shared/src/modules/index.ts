@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const KNOWN_MODULE_IDS = ['work', 'docs', 'sample'] as const;
+export const KNOWN_MODULE_IDS = ['work', 'docs'] as const;
 
 export type KnownModuleId = (typeof KNOWN_MODULE_IDS)[number];
 

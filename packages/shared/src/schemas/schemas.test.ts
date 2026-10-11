@@ -17,9 +17,9 @@ describe('shared schemas', () => {
     const ok = {
       items: [
         {
-          id: 'sample',
+          id: 'fixture',
           version: '0.0.0',
-          navigation: [{ id: 'sample', label: 'Sample', path: '/sample', placement: 'top' }],
+          navigation: [{ id: 'fixture', label: 'Fixture', path: '/fixture', placement: 'top' }],
         },
       ],
     };

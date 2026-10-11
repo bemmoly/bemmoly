@@ -2,8 +2,8 @@
 
 Companion to `docs/tech-design.html` (v0.10, sections 8, 14 and 16) and the successor to
 `foundation.md`. The Work release is the first module built on the kernel 0.1 proved with the
-`sample` module. It ships as `modules/work`, imports only `@bemmoly/core`, and stays off until an
-admin enables it. Nothing in `packages/core` learns what an issue is.
+`sample` module (since replaced by a test-only fixture module that never ships). It ships as
+`modules/work`, imports only `@bemmoly/core`, and stays off until an admin enables it. Nothing in `packages/core` learns what an issue is.
 
 ## What you will be able to do with 0.2.0
 

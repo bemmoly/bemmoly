@@ -55,7 +55,7 @@ export const devMailboxRoute = createRoute({
 
 const modulePage = lazyRouteComponent(() => import('../pages/module-page.tsx'), 'ModulePage');
 
-/** Module areas are path-routed: /sample, /work/boards/12, … */
+/** Module areas are path-routed: /docs, /work/boards/12, … */
 export const moduleRoute = createRoute({
   getParentRoute: () => appRoute,
   path: '$moduleId',

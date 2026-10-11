@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { Writable } from 'node:stream';
 import { pino } from 'pino';
 import { describe, expect, it } from 'vitest';
-import { createLoggerOptions, hashUserId, REDACTED } from './logger.ts';
+import { createLogger, createLoggerOptions, hashUserId, REDACTED } from './logger.ts';
 
 const SECRET_KEY = Buffer.alloc(32, 7).toString('base64');
 
@@ -82,5 +82,15 @@ describe('logger', () => {
     ).toMatchObject({
       target: 'pino-pretty',
     });
+  });
+
+  it('writes redacted JSON lines to a destination, whatever the format', () => {
+    const { lines, stream } = capture();
+    const logger = createLogger({ LOG_LEVEL: 'warn', LOG_FORMAT: 'pretty' }, stream);
+    logger.info('below the level');
+    logger.warn({ password: 'hunter2' }, 'kept');
+    expect(lines.map((line) => JSON.parse(line))).toEqual([
+      expect.objectContaining({ level: 40, msg: 'kept', password: REDACTED }),
+    ]);
   });
 });

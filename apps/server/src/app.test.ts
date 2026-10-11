@@ -34,7 +34,7 @@ describe('buildApp', () => {
     expect(ready.json()).toMatchObject({ status: 'unavailable' });
   });
 
-  it('lists registered module manifests, including docs, sample and work', async () => {
+  it('lists the shipped module manifests, docs and work', async () => {
     const app = await buildApp({ env: TEST_ENV, modules: await shippedModules(), logger: false });
     const response = await app.inject({ method: 'GET', url: '/api/v1/modules' });
     expect(response.statusCode).toBe(200);
@@ -71,16 +71,6 @@ describe('buildApp', () => {
             primary: [],
             add: { create: 'docs.create-space', label: 'New space' },
           },
-        },
-        {
-          id: 'sample',
-          name: 'Sample',
-          version: '0.0.0',
-          navigation: [{ id: 'sample', label: 'Sample', path: '/sample', placement: 'top' }],
-          icon: 'box',
-          color: 'epic-4',
-          order: 90,
-          sidebar: { path: '/sample', links: [], primary: [] },
         },
         {
           id: 'work',
@@ -202,7 +192,7 @@ describe('buildApp', () => {
     const index = await app.inject({ url: '/' });
     expect(index.statusCode).toBe(200);
     expect(index.body).toContain('<title>Bemmoly</title>');
-    const deep = await app.inject({ url: '/sample' });
+    const deep = await app.inject({ url: '/work/board' });
     expect(deep.statusCode).toBe(200);
     expect(deep.headers['content-type']).toContain('text/html');
     const asset = await app.inject({ url: '/assets/index-abc.js' });

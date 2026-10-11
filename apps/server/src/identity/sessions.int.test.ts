@@ -99,7 +99,7 @@ describe('setup, sign-in and sessions against a real database', () => {
     const me = await call(app, 'GET', '/me', { cookie });
     expect(me.statusCode).toBe(200);
     expect(me.json().capabilities).toContain('workspace.roles.manage');
-    expect(me.json().modules).toEqual(['sample']);
+    expect(me.json().modules).toEqual(['fixture']);
 
     const [stored] = await harness.sql<{ token_hash: string }[]>`select token_hash from sessions`;
     expect(cookie).not.toContain(stored?.token_hash);

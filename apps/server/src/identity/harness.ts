@@ -61,7 +61,7 @@ export async function startHarness(): Promise<HarnessResult> {
       events.push(event);
     });
   }
-  const modules = await identityModules();
+  const modules = identityModules();
   const identity = createIdentityDependencies({
     sql,
     modules,
