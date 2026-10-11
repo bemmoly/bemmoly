@@ -12,6 +12,7 @@ import {
   createSettingsCatalog,
   createSettingsService,
   createSettingsStore,
+  deleteOldWebhookDeliveries,
   housekeepingJob,
   KERNEL_SETTINGS,
   loadKernelChangelog,
@@ -150,6 +151,7 @@ export async function createDataKernel(input: DataKernelInput): Promise<DataKern
       housekeepingJob(sql, logger, [
         ...(identity.housekeeping ?? []),
         { name: 'files', run: (now) => files.cleanup(now) },
+        { name: 'webhook-deliveries', run: (now) => deleteOldWebhookDeliveries(sql, now) },
       ]),
     ],
     ...(input.metrics ? { metrics: input.metrics.jobs } : {}),

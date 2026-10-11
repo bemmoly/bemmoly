@@ -34,6 +34,7 @@ import { createDataKernel, type DataKernel } from './kernel.ts';
 import { wireMcp } from './mcp.ts';
 import { wireRetrieval } from './retrieval.ts';
 import { wireKernelServices } from './services.ts';
+import { wireOutgoingWebhooks } from './webhooks.ts';
 
 export interface BootOptions {
   env: Env;
@@ -193,6 +194,10 @@ export async function bootApplication(options: BootOptions): Promise<Booted> {
             : {}),
         })
       : undefined;
+  const webhooks =
+    database && kernel
+      ? wireOutgoingWebhooks({ env, database, kernel, identity, logger })
+      : undefined;
   const services =
     database && kernel && databaseUrl
       ? wireKernelServices({
@@ -223,6 +228,7 @@ export async function bootApplication(options: BootOptions): Promise<Booted> {
             ...mcp,
             ...(imports ? { imports: imports.service } : {}),
             ...(codeHosts ? { codeHosts } : {}),
+            ...(webhooks ? { webhooks: webhooks.service } : {}),
             ...(collab ? { collab } : {}),
           },
         }
