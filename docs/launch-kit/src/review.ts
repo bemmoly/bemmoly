@@ -7,7 +7,7 @@ import { ALL, type LaunchImage, type Rect } from './templates.ts';
 
 const kit = new URL('../', import.meta.url);
 const esc = (s: string): string =>
-  s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
 /** posts.md's "## Heading" sections by heading. */
 const posts = new Map<string, string>();
@@ -48,8 +48,8 @@ function figure(i: LaunchImage): string {
       : []),
   ].join('');
   return `<figure>
-  <figcaption><strong>${esc(i.use)}</strong><span>${o.w} × ${o.h}</span><a href="${o.src}">${esc(o.src.replace(/^(\.\.\/)+/, ''))}</a></figcaption>
-  <div class="scroll"><div class="stage" style="width:${o.w}px"><img src="${o.src}" width="${o.w}" height="${o.h}" alt="${esc(`${i.platform} ${i.use}`)}">${zones}</div></div>
+  <figcaption><strong>${esc(i.use)}</strong><span>${o.w} × ${o.h}</span><a href="${esc(o.src)}">${esc(o.src.replace(/^(\.\.\/)+/, ''))}</a></figcaption>
+  <div class="scroll"><div class="stage" style="width:${o.w}px"><img src="${esc(o.src)}" width="${o.w}" height="${o.h}" alt="${esc(`${i.platform} ${i.use}`)}">${zones}</div></div>
 </figure>`;
 }
 
