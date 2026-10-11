@@ -23,6 +23,11 @@ import { applyContainerOverride, resolveOrgCell } from './policy.ts';
 export interface AuthzDependencies {
   db: Database;
   modules: ModuleCatalog;
+  /**
+   * The modules this request may reach at most, whatever the person's grants: a personal
+   * access token limited to Work, or an MCP connection to one module. Absent means no limit.
+   */
+  restrictModules?: readonly string[];
 }
 
 function userIdOf(actor: Actor): string {
@@ -66,12 +71,14 @@ export function createRequestAuthorization(deps: AuthzDependencies): RequestAuth
     return principal;
   };
 
+  const limit = deps.restrictModules ? new Set(deps.restrictModules) : null;
   const modulesOf = (principal: Principal) =>
-    memo(moduleSets, principal.userId, async () =>
-      principal.isOrgAdmin
+    memo(moduleSets, principal.userId, async () => {
+      const granted = principal.isOrgAdmin
         ? new Set(deps.modules.ids())
-        : loadGrantedModules(deps.db, principal, deps.modules.ids()),
-    );
+        : await loadGrantedModules(deps.db, principal, deps.modules.ids());
+      return limit ? new Set([...granted].filter((id) => limit.has(id))) : granted;
+    });
 
   const capabilitiesFor = (roleId: string, container: { kind: ContainerKind; id: string } | null) =>
     memo(capabilitySets, `${roleId}|${container?.kind ?? ''}|${container?.id ?? ''}`, async () => {
