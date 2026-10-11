@@ -12,9 +12,8 @@ the product's visual system, ADR 0015); the first Landing mock
 | `/open-source-issue-tracker`      | Topic page: the Work module's release notes, tech design §14 and §16  |
 | `/kanban-and-sprint-boards`       | Topic page: the Work module's release notes (board, backlog, metrics) |
 | `/on-premise`                     | Topic page: the kernel's storage, backups, updater and audit log      |
-| `/self-hosting`                   | Tech design §18 and the deploy status (see below)                     |
+| `/self-hosting`                   | The one install page: `deploy/`, the CLI and tech design §18          |
 | `/docs`                           | The guides below, the README and the tech design                      |
-| `/docs/install`                   | `deploy/install.sh`, the installer's options and checks, the CLI      |
 | `/docs/compose`                   | `deploy/compose` and how the installer fills in its `.env`            |
 | `/changelog`, `/changelog.xml`    | The packages' `CHANGELOG.md` files (see Changelog below), and RSS     |
 | `/security`                       | Renders the repository's `SECURITY.md`                                |
@@ -185,7 +184,7 @@ Coolify application and redeploy; every page then carries the tags. Both are emp
   preview), plus the 0.6 KB chooser on `/self-hosting`; Astro emits them as files under
   `/_astro/` that the CSP's `'self'` already allows.
 - Badges are `@bemmoly/ui`'s Badge tones (`src/lib/badge.ts`), since the site renders no React:
-  green is shipped, the accent is new, grey is planned, amber is untested, lilac is AI only.
+  green is shipped, the accent is new, grey is coming soon, lilac is AI only.
 
 ### Light and dark
 
@@ -219,24 +218,26 @@ install, import and configure, open source, the FAQ and the final call. The copy
 
 ## Self-hosting page
 
-`/self-hosting` leads with one recommended path (a fresh VM and the one command), then "I
-already have…" cards for the other paths, a three-question chooser that marks one of them, what
-every path gets, the first three setup steps and the sizing table. Every badge comes from
-`STATUS` in `src/data/self-hosting.ts`; update it there as the deploy work moves:
+`/self-hosting` is the one install page, and every Install button and call to action on the
+site goes to `/self-hosting#install` (`INSTALL_HREF`). In order: the one command (with the
+requirements, the read-first variant and the installer's options), other ways to run it with a
+two-question chooser, what happens, checking it is healthy, first login, turning on Work and
+Docs, AI (optional), upgrade, back up and restore, the `bemmoly` command, troubleshooting by
+symptom, and sizing. `/docs/install` answers with a 301 to `/self-hosting#install` (Caddyfile);
+`/docs/compose` stays the Compose reference. Every badge comes from `STATUS` in
+`src/data/self-hosting.ts`: "Available in X.Y.Z" or "Coming soon", nothing in between.
 
-| Path                          | Badge                       | Why                                                                                     |
-| ----------------------------- | --------------------------- | --------------------------------------------------------------------------------------- |
-| One command (recommended)     | available, tested on Ubuntu | Tested end to end on Ubuntu; Debian, Fedora and Amazon Linux are supported but untested |
-| I already run Docker Compose  | available                   | The installer's Compose file and env template                                           |
-| I run Kubernetes              | planned                     | The Helm chart is a skeleton                                                            |
-| I want managed infrastructure | planned                     | No Terraform modules yet                                                                |
-| My servers have no internet   | built, untested offline     | The air-gap bundle is built, not tested offline                                         |
-| I have my own Postgres        | available                   | `--database-url`; Postgres 18, 17 with a warning                                        |
+| Path                          | Badge       | Why                                                         |
+| ----------------------------- | ----------- | ----------------------------------------------------------- |
+| One command (recommended)     | available   | `deploy/install.sh` and the release's bundled installer     |
+| I already run Docker Compose  | available   | The installer's Compose file and env template, step by step |
+| I have my own Postgres        | available   | `--database-url`; Postgres 18 with pgvector                 |
+| I run Kubernetes              | coming soon | The Helm chart is a skeleton                                |
+| I want managed infrastructure | coming soon | No Terraform modules yet                                    |
 
-The cards' commands follow `deploy/` (the Compose folder, the chart, the bundle's README). Only
-commands that work today get a Copy button. The Compose card links to `deploy/compose` on
-`main`, which resolves once the deploy work is merged. Without JavaScript the chooser stays
-hidden and every card shows.
+The offline bundle is not on the site until an offline install is tested. The Compose
+commands live once, in `src/data/compose.ts`, one block per step, so nothing starts before
+`.env` is filled in.
 
 ## Notes on the build
 
