@@ -7,13 +7,16 @@
 import { LATEST } from '../lib/changelog.ts';
 import type { SiteIconName } from '../lib/icons.ts';
 import { INSTALL_COMMAND } from '../lib/links.ts';
+import { RELEASE_TITLES } from './changelog.ts';
 import { COMPOSE_EDIT, COMPOSE_FILES, COMPOSE_START } from './compose.ts';
 
-/** The newest release, from the release notes, and what it brought. */
+const LATEST_TITLE = RELEASE_TITLES[LATEST.version];
+
+/** The newest release, from the release notes, and what it brought (src/data/changelog.ts). */
 export const RELEASE = {
   version: LATEST.version,
-  note: 'AI arrives, and it is optional',
-  short: 'AI arrives',
+  note: LATEST_TITLE?.title ?? `Bemmoly ${LATEST.version}`,
+  short: LATEST_TITLE?.short ?? LATEST_TITLE?.title ?? `Bemmoly ${LATEST.version}`,
 };
 
 export const INSTALL = INSTALL_COMMAND;
@@ -149,19 +152,18 @@ export interface SwitchTile {
 export const SWITCH_TILES: readonly SwitchTile[] = [
   {
     icon: 'import',
+    title: 'Import from Jira',
+    body: 'Projects, issues, comments, attachments, boards and sprints from Cloud or Data Center, or issues from a CSV file.',
+  },
+  {
+    icon: 'import',
     title: 'Import from Confluence',
-    body: 'Space exports up to 10 MB, with unknown macros kept as labelled blocks.',
+    body: 'Spaces, page trees, comments and attachments from Cloud or Data Center, or a space export.',
   },
   {
     icon: 'doc',
     title: 'Markdown files and folders',
     body: 'Drop a folder; its folders become parent pages.',
-  },
-  {
-    icon: 'import',
-    title: 'Import from Jira',
-    body: 'Bring your projects and issues across, and CSV files too.',
-    soon: true,
   },
   {
     icon: 'export',
