@@ -56,6 +56,23 @@ export async function requireSession(queryClient: QueryClient, href: string): Pr
   return me;
 }
 
+/**
+ * The consent screen for an app connecting over MCP: it needs a signed-in person (password or
+ * single sign-on, then back here with the request intact), but not the app's frame, and an
+ * unfinished setup does not stand in the way.
+ */
+export async function requireConsentSession(
+  queryClient: QueryClient,
+  href: string,
+): Promise<MeResponse> {
+  const status = await queryClient.ensureQueryData(setupStatusQuery);
+  if (!status.initialized) throw redirect({ to: '/setup' });
+  const me = await sessionOrNull(queryClient);
+  if (!me) throw redirect({ to: '/login', search: { redirect: href } });
+  markSession(true);
+  return me;
+}
+
 /** Sign-in pages: a signed-in person goes straight in; a fresh install goes to the wizard. */
 export async function requireSignedOut(queryClient: QueryClient, target: string): Promise<void> {
   const status = await queryClient.ensureQueryData(setupStatusQuery);

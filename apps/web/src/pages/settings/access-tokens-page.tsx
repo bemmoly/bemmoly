@@ -2,6 +2,7 @@ import { Button, ConfirmChange, EmptyState } from '@bemmoly/ui';
 import { Icon } from '@bemmoly/ui/icons';
 import { useState } from 'react';
 import { FormError } from '../../components/form.tsx';
+import { ConnectedApps } from '../../components/tokens/connected-apps.tsx';
 import { SettingsPage } from '../../components/settings/settings-page.tsx';
 import { CreateTokenModal } from '../../components/tokens/create-token-modal.tsx';
 import { TokensSkeleton, TokensTable } from '../../components/tokens/tokens-table.tsx';
@@ -9,7 +10,8 @@ import { useApiTokens, useModuleNames } from '../../hooks/use-api-tokens.ts';
 
 /**
  * Account › Access tokens: personal tokens that let MCP clients, IDEs and scripts reach this
- * workspace as you, through the API and the MCP server. Each secret shows once, at creation.
+ * workspace as you, through the API and the MCP server (each secret shows once, at creation),
+ * and the apps connected by signing in over MCP.
  */
 export function AccessTokensPage() {
   const { query, tokens, revoking, ask, revoke } = useApiTokens();
@@ -42,6 +44,7 @@ export function AccessTokensPage() {
           />
         }
       />
+      <ConnectedApps moduleLabel={modules.label} />
       <CreateTokenModal
         open={creating}
         onClose={() => setCreating(false)}

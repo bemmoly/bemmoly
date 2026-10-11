@@ -14,6 +14,7 @@ import {
   SYSTEM_SETTINGS,
   type BemmolyModule,
   type CollabHost,
+  type FetchClientMetadata,
   type Imports,
 } from '@bemmoly/core';
 import { createLogger, type Env } from '@bemmoly/core/config';
@@ -36,6 +37,8 @@ export interface BootOptions {
   available: readonly BemmolyModule[];
   webRoot?: string;
   logger?: BuildAppOptions['logger'];
+  /** Tests serve MCP clients' metadata documents without a network; production fetches them. */
+  fetchClientMetadata?: FetchClientMetadata;
 }
 
 export interface Booted {
@@ -162,7 +165,18 @@ export async function bootApplication(options: BootOptions): Promise<Booted> {
           logger,
         })
       : undefined;
-  const mcp = database && kernel ? wireMcp({ env, database, kernel, modules }) : undefined;
+  const mcp =
+    database && kernel
+      ? wireMcp({
+          env,
+          database,
+          kernel,
+          modules,
+          ...(options.fetchClientMetadata
+            ? { fetchClientMetadata: options.fetchClientMetadata }
+            : {}),
+        })
+      : undefined;
   const services =
     database && kernel && databaseUrl
       ? wireKernelServices({

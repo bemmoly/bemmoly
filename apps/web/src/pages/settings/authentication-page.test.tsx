@@ -22,7 +22,8 @@ async function addOidcProvider(user: ReturnType<typeof userEvent.setup>) {
   return dialog;
 }
 
-describe('AuthenticationPage', () => {
+// Each test drives dialogs through several screens; shared CI runners take well over 5s.
+describe('AuthenticationPage', { timeout: 20_000 }, () => {
   it('starts with password on, single sign-on not set up and the policy locked', async () => {
     await renderPage(() => <AuthenticationPage />);
     expect(await screen.findByText('Password')).toBeTruthy();
@@ -87,6 +88,40 @@ describe('AuthenticationPage', () => {
     await user.click(within(shown).getByRole('button', { name: 'Done' }));
     const table = await screen.findByRole('table', { name: 'SCIM tokens' });
     expect(await within(table).findByText('Directory sync')).toBeTruthy();
+  });
+
+  it('makes and removes break-glass admins, naming each, and always keeps one', async () => {
+    const user = userEvent.setup();
+    const db = mockApi.db;
+    const adminRole = db.roles.find((role) => role.key === 'org_admin')!.id;
+    const lena = db.users.find((person) => person.name === 'Lena T.')!;
+    lena.roleId = adminRole;
+    ssoOf(db).requireSso = true;
+    await renderPage(() => <AuthenticationPage />);
+    const list = await screen.findByRole('list', { name: 'Org admins' });
+    const rohan = within(list).getByRole('button', { name: /^Remove… ?, Rohan S\.$/ });
+    expect(rohan.hasAttribute('disabled')).toBe(true);
+    expect(
+      within(list).getByText('The last break-glass admin stays while single sign-on is required.'),
+    ).toBeTruthy();
+
+    await user.click(within(list).getByRole('button', { name: /^Make break-glass… ?, Lena T\.$/ }));
+    const make = await screen.findByRole('dialog', { name: 'Make Lena T. a break-glass admin?' });
+    expect(within(make).getByText(/Every other org admin is told/)).toBeTruthy();
+    await user.click(within(make).getByRole('button', { name: 'Make break-glass admin' }));
+    await waitFor(() => expect(lena.isBreakGlass).toBe(true));
+
+    const enabled = await within(list).findByRole('button', { name: /^Remove… ?, Rohan S\.$/ });
+    await waitFor(() => expect(enabled.hasAttribute('disabled')).toBe(false));
+    await user.click(enabled);
+    const remove = await screen.findByRole('dialog', {
+      name: 'Remove Rohan S. as a break-glass admin?',
+    });
+    expect(within(remove).getByText(/can no longer sign in with a password/)).toBeTruthy();
+    await user.click(within(remove).getByRole('button', { name: 'Remove break-glass admin' }));
+    await waitFor(() =>
+      expect(db.users.find((person) => person.name === 'Rohan S.')?.isBreakGlass).toBe(false),
+    );
   });
 
   it('tells people without the capability who can change it', async () => {

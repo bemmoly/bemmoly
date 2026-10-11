@@ -9,25 +9,31 @@ const querySchema = z.object({ modules: z.string().max(500).optional() });
 type Token = Awaited<ReturnType<McpService['authenticate']>>;
 
 /**
- * /mcp sits outside the API prefix, so it reads its own Bearer token: in onRequest, before the
- * rate limiter keys the request by person. A refused token counts toward the per-IP budget
- * for refused credentials, like a refused API token.
+ * /mcp sits outside the API prefix, so it reads its own Bearer token (a personal access token
+ * or an OAuth access token): in onRequest, before the rate limiter keys the request by person.
+ * A refused token counts toward the per-IP budget for refused credentials, like a refused API
+ * token, and the 401 names the protected resource metadata so a client can sign in.
  */
 export function createMcpController(service: McpService) {
   const tokens = new WeakMap<FastifyRequest, Token>();
   return {
     async authenticate(request: FastifyRequest, reply: FastifyReply): Promise<void> {
       if (request.method !== 'POST') return;
+      const moduleId = paramsSchema.safeParse(request.params).data?.moduleId;
       try {
-        const token = await service.authenticate(request.headers.authorization);
+        const token = await service.authenticate(request.headers.authorization, moduleId);
         tokens.set(request, token);
         request.actor = token.actor;
         request.tokenScopes = token.scopes;
         request.tokenModules = token.modules;
       } catch (error) {
         if (error instanceof UnauthenticatedError) {
-          if (request.headers.authorization) request.credentialRejected = true;
-          reply.header('www-authenticate', 'Bearer realm="bemmoly"');
+          const presented = Boolean(request.headers.authorization);
+          if (presented) request.credentialRejected = true;
+          reply.header(
+            'www-authenticate',
+            service.challenge(moduleId, presented ? 'invalid_token' : undefined),
+          );
         }
         throw error;
       }

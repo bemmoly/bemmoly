@@ -34,6 +34,12 @@ export const queryKeys = {
   capabilities: () => ['capabilities'] as const,
   moduleGrants: () => ['module-grants'] as const,
   apiTokens: () => ['api-tokens'] as const,
+  oauth: {
+    all: () => ['oauth'] as const,
+    grants: () => ['oauth', 'grants'] as const,
+    /** One authorization request's consent screen, keyed by its query string. */
+    preview: (query: string) => ['oauth', 'preview', query] as const,
+  },
   sso: {
     all: () => ['sso'] as const,
     signInOptions: () => ['sso', 'sign-in-options'] as const,

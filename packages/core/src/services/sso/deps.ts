@@ -1,11 +1,17 @@
 import type { Database } from '../../clients/drizzle.ts';
 import type { AddressPolicy } from '../../clients/guarded-fetch.ts';
+import type { SqlClient } from '../../clients/postgres.ts';
+import type { EventBus } from '../../contracts/event-bus.ts';
 import type { SecretBox } from '../settings/index.ts';
 import { appLink } from '../identity/index.ts';
 import type { ServiceProviderUrls } from './protocol.ts';
 
 export interface SsoDependencies {
   db: Database;
+  /** The pool behind `db`: a break-glass change and its notification commit together. */
+  sql: SqlClient;
+  /** Tells the other admins when the break-glass admins change. */
+  events: EventBus;
   /** Seals provider configuration and per-flow secrets with BEMMOLY_SECRET_KEY. */
   secrets: SecretBox;
   /** BEMMOLY_PUBLIC_URL; callback URLs and the SAML entity id start here. */

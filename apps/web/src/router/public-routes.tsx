@@ -1,5 +1,5 @@
 import { createRoute, lazyRouteComponent } from '@tanstack/react-router';
-import { requireSetupOpen, requireSignedOut } from './guards.ts';
+import { requireConsentSession, requireSetupOpen, requireSignedOut } from './guards.ts';
 import { rootRoute } from './root.tsx';
 
 const text = (value: unknown) => (typeof value === 'string' && value ? value : undefined);
@@ -75,6 +75,20 @@ export const unsubscribeRoute = createRoute({
   ),
 });
 
+/**
+ * Where an MCP client sends the browser to sign in (the authorization endpoint). The page reads
+ * the request from the raw query; the server checks it again on every call.
+ */
+export const oauthAuthorizeRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: 'oauth/authorize',
+  beforeLoad: ({ context, location }) => requireConsentSession(context.queryClient, location.href),
+  component: lazyRouteComponent(
+    () => import('../pages/auth/oauth-consent-page.tsx'),
+    'OAuthConsentPage',
+  ),
+});
+
 const STEPS = [1, 2, 3, 4, 5, 6, 7] as const;
 
 export interface SetupSearch {
@@ -104,4 +118,5 @@ export const publicRoutes = [
   unsubscribeRoute,
   invitationRoute,
   setupRoute,
+  oauthAuthorizeRoute,
 ];

@@ -23,6 +23,12 @@ export {
 } from './drizzle.ts';
 export { HttpStatusError, requestJson, type JsonRequest } from './http-json.ts';
 export {
+  ClientMetadataError,
+  createClientMetadataFetch,
+  type ClientMetadataResponse,
+  type FetchClientMetadata,
+} from './client-metadata.ts';
+export {
   createRestClient,
   retryAfterMs,
   type RestClient,

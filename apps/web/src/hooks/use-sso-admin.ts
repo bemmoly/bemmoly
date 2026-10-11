@@ -2,6 +2,7 @@ import { queryKeys } from '@bemmoly/api-client';
 import type {
   CreateSsoProviderInput,
   SsoPolicy,
+  SsoPolicyAdmin,
   SsoProvider,
   UpdateSsoProviderInput,
 } from '@bemmoly/shared';
@@ -102,6 +103,35 @@ export function useSsoPolicy(enabled = true) {
 }
 
 export type SsoPolicyState = ReturnType<typeof useSsoPolicy>;
+
+/** Marking and unmarking break-glass admins; the policy answers with who keeps a password. */
+export function useBreakGlass() {
+  const client = useQueryClient();
+  const change = useMutation({
+    mutationFn: async ({ admin, breakGlass }: { admin: SsoPolicyAdmin; breakGlass: boolean }) => {
+      if (breakGlass) {
+        client.setQueryData(queryKeys.sso.policy(), await api.sso.addBreakGlass(admin.id));
+      } else {
+        await api.sso.removeBreakGlass(admin.id);
+      }
+    },
+    onSuccess: async (_, { admin, breakGlass }) => {
+      toast(
+        breakGlass
+          ? `${admin.name} is now a break-glass admin`
+          : `${admin.name} is no longer a break-glass admin`,
+      );
+      await client.invalidateQueries({ queryKey: queryKeys.sso.policy() });
+    },
+  });
+  return {
+    set: (admin: SsoPolicyAdmin, breakGlass: boolean) => change.mutateAsync({ admin, breakGlass }),
+    saving: change.isPending,
+    reset: change.reset,
+  };
+}
+
+export type BreakGlassState = ReturnType<typeof useBreakGlass>;
 
 /** SCIM bearer tokens: listed by prefix, the secret shown once on create. */
 export function useScimTokens(enabled = true) {

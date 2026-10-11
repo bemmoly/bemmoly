@@ -56,7 +56,11 @@ export function createMcpService(deps: McpDependencies) {
     },
   };
   return {
-    authenticate: (header: string | undefined) => authenticateMcpToken(deps, header),
+    authenticate: (header: string | undefined, moduleId?: string) =>
+      authenticateMcpToken(deps, header, moduleId),
+    /** The 401 challenge: Bearer, and where to find the authorization server when OAuth is on. */
+    challenge: (moduleId?: string, error?: string) =>
+      deps.oauth ? deps.oauth.challenge(moduleId, error) : 'Bearer realm="bemmoly"',
     /** Resolves the session first, so a refusal is an ordinary HTTP error before any MCP. */
     async prepare(request: Omit<McpRequest, 'raw'>) {
       const requested = requestedModules(request.moduleId, request.modulesQuery);

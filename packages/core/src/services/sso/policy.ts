@@ -7,35 +7,23 @@ import {
 } from '@bemmoly/shared';
 import { and, asc, eq, ne } from 'drizzle-orm';
 import type { Database } from '../../clients/drizzle.ts';
-import { authIdentities, authProviders, users } from '../../models/identity/index.ts';
+import { authProviders } from '../../models/identity/index.ts';
 import { recordAudit } from '../audit/index.ts';
 import type { RequestContext } from '../authz/index.ts';
-import { isPasswordSignInOff } from '../identity/index.ts';
+import { breakGlassAdmins, isPasswordSignInOff, orgAdminsForPolicy } from '../identity/index.ts';
+import { lockSignInPolicy } from './break-glass.ts';
 import { isSsoProtocol } from './protocol.ts';
 
 export { isPasswordSignInOff };
 
 const CONFIGURE = 'workspace.sso.configure' as const;
 
-/** Active break-glass accounts that can still sign in with a password. */
-async function breakGlassAdmins(db: Database) {
-  return db
-    .selectDistinct({ id: users.id, name: users.name, email: users.email })
-    .from(users)
-    .innerJoin(authIdentities, eq(authIdentities.userId, users.id))
-    .innerJoin(
-      authProviders,
-      and(eq(authProviders.id, authIdentities.providerId), eq(authProviders.kind, 'password')),
-    )
-    .where(and(eq(users.isBreakGlass, true), eq(users.status, 'active')))
-    .orderBy(asc(users.name));
-}
-
 export async function getSsoPolicy(db: Database, ctx: RequestContext): Promise<SsoPolicy> {
   await ctx.authz.authorize(ctx.actor, CONFIGURE, { kind: 'workspace' });
   return {
     requireSso: await isPasswordSignInOff(db),
     breakGlassAdmins: await breakGlassAdmins(db),
+    admins: await orgAdminsForPolicy(db),
   };
 }
 
@@ -63,24 +51,24 @@ export async function updateSsoPolicy(
   input: UpdateSsoPolicyInput,
 ): Promise<SsoPolicy> {
   await ctx.authz.authorize(ctx.actor, CONFIGURE, { kind: 'workspace' });
-  const before = await isPasswordSignInOff(db);
-  if (before !== input.requireSso) {
-    if (input.requireSso) await assertSafeToRequire(db);
-    await db.transaction(async (tx) => {
-      await tx
-        .update(authProviders)
-        .set({ enabled: !input.requireSso, updatedAt: new Date() })
-        .where(eq(authProviders.kind, 'password'));
-      await recordAudit(tx, {
-        actor: ctx.actor,
-        action: 'sso.policy_updated',
-        target: { kind: 'workspace' },
-        before: { requireSso: before },
-        after: { requireSso: input.requireSso },
-        meta: ctx,
-      });
+  await db.transaction(async (tx) => {
+    await lockSignInPolicy(tx);
+    const before = await isPasswordSignInOff(tx);
+    if (before === input.requireSso) return;
+    if (input.requireSso) await assertSafeToRequire(tx);
+    await tx
+      .update(authProviders)
+      .set({ enabled: !input.requireSso, updatedAt: new Date() })
+      .where(eq(authProviders.kind, 'password'));
+    await recordAudit(tx, {
+      actor: ctx.actor,
+      action: 'sso.policy_updated',
+      target: { kind: 'workspace' },
+      before: { requireSso: before },
+      after: { requireSso: input.requireSso },
+      meta: ctx,
     });
-  }
+  });
   return getSsoPolicy(db, ctx);
 }
 

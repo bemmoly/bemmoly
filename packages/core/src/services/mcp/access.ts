@@ -5,6 +5,7 @@ import type { Actor } from '../../contracts/authz.ts';
 import { users } from '../../models/identity/index.ts';
 import { createRequestAuthorization, type ModuleCatalog } from '../authz/index.ts';
 import { authenticateApiToken, type AuthenticatedToken } from '../identity/index.ts';
+import { ACCESS_TOKEN_PREFIX, grantActor, type OAuthService } from '../oauth/index.ts';
 import type { McpSession } from './types.ts';
 
 export interface McpAccessDeps {
@@ -13,25 +14,55 @@ export interface McpAccessDeps {
   isEnabled(moduleId: string): boolean;
   /** Settings › MCP: whether the server answers, and the modules it exposes (null: all). */
   settings(): Promise<{ enabled: boolean; modules: readonly string[] | null }>;
+  /** Access tokens from the OAuth flow; without it only personal access tokens connect. */
+  oauth?: OAuthService;
   now?: () => Date;
 }
 
 const BEARER = /^Bearer\s+(\S+)$/i;
 
+/**
+ * An OAuth access token, checked against the MCP address it was issued for: a token for
+ * `/mcp/work` does not open `/mcp` or `/mcp/docs`.
+ */
+async function fromOAuth(oauth: OAuthService, token: string, moduleId: string | undefined) {
+  const grant = await oauth.authenticate(token, moduleId);
+  if (!grant) {
+    throw new UnauthenticatedError('The access token is invalid, expired or revoked', {
+      details: { reason: 'invalid_token' },
+    });
+  }
+  return {
+    tokenId: grant.grantId,
+    userId: grant.userId,
+    scopes: grant.scopes,
+    modules: grant.modules,
+    actor: grantActor({ id: grant.grantId, userId: grant.userId }),
+  };
+}
+
 /** The token behind an Authorization header; throws 401 for a missing or refused one. */
 export async function authenticateMcpToken(
   deps: McpAccessDeps,
   header: string | undefined,
+  moduleId?: string,
 ): Promise<AuthenticatedToken & { actor: Actor }> {
   const token = header ? BEARER.exec(header)?.[1] : undefined;
   if (!token) {
     throw new UnauthenticatedError(
-      'Connect with a personal access token: "Authorization: Bearer <token>"',
+      deps.oauth
+        ? 'Sign in to connect, or send a personal access token: "Authorization: Bearer <token>"'
+        : 'Connect with a personal access token: "Authorization: Bearer <token>"',
     );
+  }
+  if (deps.oauth && token.startsWith(ACCESS_TOKEN_PREFIX)) {
+    return fromOAuth(deps.oauth, token, moduleId);
   }
   const resolved = await authenticateApiToken(deps.db, token, deps.now?.() ?? new Date());
   if (!resolved) {
-    throw new UnauthenticatedError('The access token is invalid, expired or revoked');
+    throw new UnauthenticatedError('The access token is invalid, expired or revoked', {
+      details: { reason: 'invalid_token' },
+    });
   }
   return {
     ...resolved,

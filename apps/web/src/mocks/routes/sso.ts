@@ -56,10 +56,32 @@ function presentConfig(config: Record<string, unknown>, previous?: SsoProvider['
   } as SsoProvider['config'];
 }
 
+/** Active org admins, as the policy lists them, with whether they keep a password. */
+export function policyAdmins(db: MockDb) {
+  const adminRole = db.roles.find((role) => role.key === 'org_admin')?.id;
+  return db.users
+    .filter((user) => user.status === 'active' && user.roleId === adminRole)
+    .map(({ id, name, email, isBreakGlass }) => ({
+      id,
+      name,
+      email,
+      breakGlass: isBreakGlass,
+      hasPassword: db.passwords[email] !== undefined,
+    }))
+    .sort((a, b) => a.name.localeCompare(b.name));
+}
+
 const breakGlass = (db: MockDb) =>
-  db.users
-    .filter((user) => user.isBreakGlass && user.status === 'active')
+  policyAdmins(db)
+    .filter((admin) => admin.breakGlass && admin.hasPassword)
     .map(({ id, name, email }) => ({ id, name, email }));
+
+/** The policy as GET /admin/sso/policy answers it. */
+export const policyOf = (db: MockDb) => ({
+  requireSso: ssoOf(db).requireSso,
+  breakGlassAdmins: breakGlass(db),
+  admins: policyAdmins(db),
+});
 
 /** Settings › Sign-in and SSO and the sign-in page's options, as the server answers them. */
 export const ssoRoutes: MockRoute[] = [
@@ -153,9 +175,7 @@ export const ssoRoutes: MockRoute[] = [
   {
     method: 'GET',
     pattern: '/api/v1/admin/sso/policy',
-    handle: needs((_, db) =>
-      ok({ requireSso: ssoOf(db).requireSso, breakGlassAdmins: breakGlass(db) }),
-    ),
+    handle: needs((_, db) => ok(policyOf(db))),
   },
   {
     method: 'PUT',
@@ -171,7 +191,7 @@ export const ssoRoutes: MockRoute[] = [
         );
       }
       sso.requireSso = requireSso;
-      return ok({ requireSso, breakGlassAdmins: breakGlass(db) });
+      return ok(policyOf(db));
     }),
   },
   {

@@ -35,7 +35,9 @@ mount it).
   still use the tokens, icons, tiles and the Bemmoly lockup. The pages before sign-in share
   `AuthShell` (`apps/web/src/components/auth/auth-layout.tsx`, ADR 0022): a form column, 480px
   under 1300px wide and 520px above, and from 1100px the product panel in the workspace's theme;
-  one column below, full-bleed on phones with `size="touch"` controls.
+  one column below, full-bleed on phones with `size="touch"` controls. The MCP consent screen
+  (`/oauth/authorize`, ADR 0027) uses the same shell: it needs a session, but the person
+  arrives from another app and leaves for it again.
 - **Failure stays in the frame.** Not found, a thrown page and a module chunk that fails to load
   render inside the frame, so the sidebar is still the way on.
 - **Phone.** Nothing scrolls the page sideways at 390px. The header keeps the current crumb;

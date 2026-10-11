@@ -101,8 +101,9 @@ export function McpConnectSection({ origin, modules }: ConnectProps) {
             onCopy={() => void clipboard.copy(url, 'Endpoint copied')}
           />
           <span className="text-12 leading-body text-tx-3">
-            Streamable HTTP. Each person signs in with their own access token in the Authorization
-            header.
+            Streamable HTTP. Clients that support sign-in only need this address: each person signs
+            in to this workspace and chooses what the client may do. Others send a personal access
+            token in the Authorization header.
           </span>
         </div>
         {modules.length > 0 ? (
@@ -132,8 +133,8 @@ export function McpConnectSection({ origin, modules }: ConnectProps) {
             onCopy={() => void clipboard.copy(snippet, 'Configuration copied')}
           />
           <span className="text-12 leading-body text-tx-3">
-            Paste this into your AI client or IDE’s MCP settings and replace the placeholder with a
-            token from your{' '}
+            For a client without sign-in: paste this into its MCP settings and replace the
+            placeholder with a token from your{' '}
             <Link to="/settings/access-tokens" className="text-acc">
               access tokens
             </Link>

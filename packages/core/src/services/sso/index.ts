@@ -20,6 +20,7 @@ export {
   type FlowOutcome,
   type StartedFlow,
 } from './flows.ts';
+export { setBreakGlass } from './break-glass.ts';
 export { getSsoPolicy, isPasswordSignInOff, listSignInOptions, updateSsoPolicy } from './policy.ts';
 export { SsoFailure, type ExternalIdentity, type SsoProtocolHandler } from './protocol.ts';
 export { forgetOidcDiscovery } from './protocols/oidc.ts';

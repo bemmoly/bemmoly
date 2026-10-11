@@ -6,6 +6,7 @@ export {
   revokeApiToken,
   type AuthenticatedToken,
 } from './api-tokens.ts';
+export { assertBreakGlassRemains, breakGlassAdmins, orgAdminsForPolicy } from './break-glass.ts';
 export { appLink, createIdentityDependencies, type IdentityDependencies } from './deps.ts';
 export {
   INVITATION_CREATED,

@@ -47,6 +47,10 @@ export function ssoRoutes(flows: SsoController, admin: SsoAdminController): Fast
     app.post('/admin/sso/providers/:id/tests', async (r, reply) => admin.startTest(r, reply));
     app.get('/admin/sso/policy', async (r) => admin.getPolicy(r));
     app.put('/admin/sso/policy', async (r) => admin.updatePolicy(r));
+    app.put('/admin/sso/break-glass-admins/:id', async (r) => admin.addBreakGlass(r));
+    app.delete('/admin/sso/break-glass-admins/:id', async (r, reply) =>
+      admin.removeBreakGlass(r, reply),
+    );
     app.get('/admin/scim-tokens', async (r) => admin.listScimTokens(r));
     app.post('/admin/scim-tokens', async (r, reply) => admin.createScimToken(r, reply));
     app.delete('/admin/scim-tokens/:id', async (r, reply) => admin.revokeScimToken(r, reply));

@@ -55,6 +55,14 @@ export function ssoEndpoints(http: Http) {
         method: 'PUT',
         body: validated(updateSsoPolicySchema, body),
       }),
+    /** Marks an org admin break-glass; answers with the policy as it now stands. */
+    addBreakGlass: async (userId: string) =>
+      http.request(`/api/v1/admin/sso/break-glass-admins/${enc(userId)}`, ssoPolicySchema, {
+        method: 'PUT',
+        body: {},
+      }),
+    removeBreakGlass: async (userId: string) =>
+      http.send(`/api/v1/admin/sso/break-glass-admins/${enc(userId)}`, { method: 'DELETE' }),
     scimTokens: async () => http.request('/api/v1/admin/scim-tokens', scimTokensResponseSchema),
     createScimToken: async (body: CreateScimTokenInput) =>
       http.request('/api/v1/admin/scim-tokens', createdScimTokenSchema, {

@@ -59,6 +59,8 @@ export const envSchema = z.object({
   BEMMOLY_RATE_LIMIT_AI_PER_USER: rateLimitMax,
   /** MCP requests per person per minute; unset keeps the default in routes/mcp.routes.ts. */
   BEMMOLY_RATE_LIMIT_MCP_PER_USER: rateLimitMax,
+  /** OAuth discovery, token and revocation requests per IP per minute; see routes/oauth.routes.ts. */
+  BEMMOLY_RATE_LIMIT_OAUTH_PER_IP: rateLimitMax,
   BEMMOLY_RATE_LIMIT_UPLOADS_PER_USER: rateLimitMax,
   /** Largest file upload (an image in a page) in bytes, 64 KiB to 100 MiB; unset: 10 MiB. */
   BEMMOLY_UPLOAD_MAX_BYTES: z.coerce
