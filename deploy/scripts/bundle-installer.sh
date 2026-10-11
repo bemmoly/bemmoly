@@ -41,7 +41,7 @@ BEMMOLY_BUNDLED=1
 BEMMOLY_DEFAULT_VERSION='${DEFAULT_VERSION}'
 EOF
 
-for lib in common args preflight docker config start; do
+for lib in common args preflight bundle docker config start; do
   printf '\n# --- installer/lib/%s.sh\n' "${lib}"
   strip_header "${DEPLOY_DIR}/installer/lib/${lib}.sh"
 done
@@ -53,6 +53,7 @@ emit_asset Caddyfile "${DEPLOY_DIR}/compose/Caddyfile"
 emit_asset env.template "${DEPLOY_DIR}/compose/env.template"
 emit_asset common.sh "${DEPLOY_DIR}/installer/lib/common.sh"
 emit_asset preflight.sh "${DEPLOY_DIR}/installer/lib/preflight.sh"
+emit_asset bundle.sh "${DEPLOY_DIR}/installer/lib/bundle.sh"
 for part in stack backups updates selfupdate; do
   emit_asset "cli-${part}.sh" "${DEPLOY_DIR}/cli/lib/${part}.sh"
 done

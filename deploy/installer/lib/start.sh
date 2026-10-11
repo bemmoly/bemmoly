@@ -201,7 +201,7 @@ cli_release() {
 
 install_cli() {
   as_root install -d -m 755 /usr/local/lib/bemmoly
-  for name in common.sh preflight.sh cli-stack.sh cli-backups.sh cli-updates.sh cli-selfupdate.sh; do
+  for name in common.sh preflight.sh bundle.sh cli-stack.sh cli-backups.sh cli-updates.sh cli-selfupdate.sh; do
     asset "${name}" | root_write "/usr/local/lib/bemmoly/${name}" 644
   done
   asset bemmoly | root_write /usr/local/bin/bemmoly 755

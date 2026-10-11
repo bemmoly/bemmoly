@@ -73,7 +73,7 @@ bemmoly_install() {
     if [ -z "${DEPLOY_DIR}" ] || [ ! -f "${DEPLOY_DIR}/installer/lib/common.sh" ]; then
       bootstrap "$@"
     fi
-    for lib in common args preflight docker config start; do
+    for lib in common args preflight bundle docker config start; do
       # shellcheck source=/dev/null
       . "${DEPLOY_DIR}/installer/lib/${lib}.sh"
     done
@@ -87,7 +87,7 @@ bemmoly_install() {
     fi
     case "$1" in
       docker-compose.yml | Caddyfile | env.template) cat "${DEPLOY_DIR}/compose/$1" ;;
-      common.sh | preflight.sh) cat "${DEPLOY_DIR}/installer/lib/$1" ;;
+      common.sh | preflight.sh | bundle.sh) cat "${DEPLOY_DIR}/installer/lib/$1" ;;
       cli-*.sh) cat "${DEPLOY_DIR}/cli/lib/${1#cli-}" ;;
       bemmoly) cat "${DEPLOY_DIR}/cli/bemmoly" ;;
       completion.bash) cat "${DEPLOY_DIR}/cli/completion.bash" ;;
@@ -98,19 +98,22 @@ bemmoly_install() {
 
   main() {
     parse_args "$@"
-    : "${BEMMOLY_DEFAULT_VERSION:=}"
     BEMMOLY_LOG="$(mktemp /tmp/bemmoly-install.XXXXXX)"
     export BEMMOLY_LOG
+    : "${BEMMOLY_DEFAULT_VERSION:=}"
     if [ -n "${REFRESH_CLI}" ]; then
       refresh_cli
       rm -f "${BEMMOLY_LOG}"
       return 0
     fi
+    # A bundle decides the version and the images, before preflight skips the DNS check.
+    bundle_home=''
+    [ ! -f "$0" ] || bundle_home=$(dirname "$0")
+    prepare_bundle "${bundle_home}"
     if [ -z "${VERSION}" ]; then
       VERSION="${BEMMOLY_DEFAULT_VERSION}"
       [ -n "${VERSION}" ] || { [ "${CHANNEL}" = beta ] && VERSION=beta || VERSION=latest; }
     fi
-
     run_preflight "${INSTALL_DIR}"
     note "Detected $(describe_machine)"
     ensure_docker
@@ -124,6 +127,7 @@ bemmoly_install() {
     final_message
     as_root install -m 600 "${BEMMOLY_LOG}" "${INSTALL_DIR}/install.log"
     rm -f "${BEMMOLY_LOG}"
+    [ -z "${BUNDLE_WORK:-}" ] || rm -rf "${BUNDLE_WORK}"
   }
 
   main "$@"

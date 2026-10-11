@@ -15,7 +15,11 @@ Options:
   --no-proxy             no Caddy: you terminate HTTPS; the app listens on port 8080
   --no-in-app-updates    no updater container; update with `sudo bemmoly upgrade`
   --database-url URL     use an existing Postgres 18+ with pgvector instead of the bundled one
-  --image-archive FILE   load images from a release bundle instead of pulling (air-gapped)
+  --bundle FILE          install offline from bemmoly-airgap-<version>-<arch>.tar.gz (or the
+                         folder it unpacks to); found by itself when install.sh sits in one
+  --trusted-root FILE    Sigstore trusted_root.json, to check a bundle's signature offline
+  --skip-signature-check you checked the bundle's signature on another machine
+  --image-archive FILE   load images from an images.tar instead of pulling (no checks)
   --dir PATH             install folder (default: /var/bemmoly)
   --refresh-cli          only replace the bemmoly command with this release's; the app,
                          its version and its settings are not touched
@@ -33,23 +37,27 @@ parse_args() {
   NO_UPDATER=''
   EXTERNAL_DATABASE_URL=''
   IMAGE_ARCHIVE=''
+  BUNDLE=''
+  BUNDLE_TRUSTED_ROOT=''
+  BUNDLE_SKIP_SIGNATURE=''
   INSTALL_DIR='/var/bemmoly'
   ASSUME_YES=''
   REFRESH_CLI=''
   while [ "$#" -gt 0 ]; do
     case "$1" in
-      --domain | --version | --channel | --modules | --database-url | --image-archive | --dir)
+      --domain | --version | --channel | --modules | --database-url | --image-archive | --bundle | --trusted-root | --dir)
         [ "$#" -ge 2 ] || die "$1 needs a value" "Run with --help to see every option."
         arg_value "$1" "$2"
         shift 2
         ;;
-      --domain=* | --version=* | --channel=* | --modules=* | --database-url=* | --image-archive=* | --dir=*)
+      --domain=* | --version=* | --channel=* | --modules=* | --database-url=* | --image-archive=* | --bundle=* | --trusted-root=* | --dir=*)
         arg_value "${1%%=*}" "${1#*=}"
         shift
         ;;
       --no-proxy) NO_PROXY=1; shift ;;
       --no-in-app-updates) NO_UPDATER=1; shift ;;
       --refresh-cli) REFRESH_CLI=1; shift ;;
+      --skip-signature-check) BUNDLE_SKIP_SIGNATURE=1; shift ;;
       --yes | -y) ASSUME_YES=1; shift ;;
       --help | -h) usage; exit 0 ;;
       *) die "Unknown option: $1" "Run with --help to see every option." ;;
@@ -66,6 +74,8 @@ arg_value() {
     --modules) MODULES="$2" ;;
     --database-url) EXTERNAL_DATABASE_URL="$2" ;;
     --image-archive) IMAGE_ARCHIVE="$2" ;;
+    --bundle) BUNDLE="$2" ;;
+    --trusted-root) BUNDLE_TRUSTED_ROOT="$2" ;;
     --dir) INSTALL_DIR="$2" ;;
   esac
 }
@@ -94,7 +104,16 @@ validate_args() {
     esac
   fi
   if [ -n "${IMAGE_ARCHIVE}" ] && [ ! -r "${IMAGE_ARCHIVE}" ]; then
-    die "Cannot read ${IMAGE_ARCHIVE}" "Pass the path of the bemmoly-airgap-<version>.tar bundle on this machine."
+    die "Cannot read ${IMAGE_ARCHIVE}" "Pass the path of images.tar from an unpacked bemmoly-airgap bundle, or use --bundle."
+  fi
+  if [ -n "${BUNDLE}" ] && [ -n "${IMAGE_ARCHIVE}" ]; then
+    die "--bundle and --image-archive do not go together" "Pass only --bundle; it holds the images."
+  fi
+  if [ -n "${BUNDLE}" ] && [ ! -r "${BUNDLE}" ]; then
+    die "Cannot read ${BUNDLE}" "Pass the path of the bemmoly-airgap-<version>-<arch>.tar.gz bundle on this machine."
+  fi
+  if [ -n "${BUNDLE_TRUSTED_ROOT}" ] && [ ! -r "${BUNDLE_TRUSTED_ROOT}" ]; then
+    die "Cannot read ${BUNDLE_TRUSTED_ROOT}" "Pass Sigstore's trusted_root.json, copied from a connected machine."
   fi
   case "${INSTALL_DIR}" in
     /*) ;;
