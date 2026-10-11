@@ -1,13 +1,20 @@
 /**
  * One version everywhere. The site's version is derived once, at build time, from the
- * packages' release notes (src/lib/changelog.ts, LATEST); every page, the JSON-LD, llms.txt
- * and the demo must name that release and no other. Only /changelog and its feed list the
+ * packages' release notes capped at the newest published GitHub release (src/lib/changelog.ts,
+ * LATEST); every page, the JSON-LD and llms.txt must name that release and no other. Only /changelog and its feed list the
  * older ones. Run `pnpm build` first.
  */
 import { readdirSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import type { HtmlElement } from 'html-validate';
-import { compareVersions, LATEST, RELEASES } from '../src/lib/changelog.ts';
+import {
+  compareVersions,
+  LATEST,
+  PUBLISHED_VERSION,
+  RELEASES,
+  releasedOnly,
+  type Release,
+} from '../src/lib/changelog.ts';
 import { parsePage, scriptsOf } from './dom.ts';
 
 const repo = new URL('../../../', import.meta.url);
@@ -83,9 +90,17 @@ describe('version', () => {
     expect(graph?.body).toContain(`"softwareVersion":"${LATEST.version}"`);
   });
 
-  it('is the version every product package carries, so the demo reports it too', () => {
-    // The changesets tool bumps @bemmoly/* as one fixed group; the demo build reads
-    // apps/web/package.json, so it reports the same release as the pages.
+  it('is the published release when GitHub answers, never a version only tagged', () => {
+    if (PUBLISHED_VERSION) expect(LATEST.version).toBe(PUBLISHED_VERSION);
+    const release = (version: string): Release => ({ version, date: null, changes: [] });
+    const notes = ['0.13.0', '0.12.0', '0.11.0'].map(release);
+    expect(releasedOnly(notes, '0.12.0').map((r) => r.version)).toEqual(['0.12.0', '0.11.0']);
+    expect(releasedOnly(notes, null).map((r) => r.version)).toEqual(['0.13.0', '0.12.0', '0.11.0']);
+  });
+
+  it('is never ahead of the product packages, which the changesets tool bumps first', () => {
+    // The fixed group moves @bemmoly/* together when the version pull request merges; the
+    // release is published after, so the packages may lead the site by one release, never trail.
     const manifests = [
       'apps/web',
       'apps/server',
@@ -96,18 +111,29 @@ describe('version', () => {
       'modules/work',
       'deploy',
     ];
-    for (const folder of manifests) {
-      const manifest = JSON.parse(readFileSync(new URL(`${folder}/package.json`, repo), 'utf8'));
-      expect((manifest as { version: string }).version, folder).toBe(LATEST.version);
-    }
+    const versions = manifests.map(
+      (folder) =>
+        (
+          JSON.parse(readFileSync(new URL(`${folder}/package.json`, repo), 'utf8')) as {
+            version: string;
+          }
+        ).version,
+    );
+    expect(new Set(versions).size).toBe(1);
+    expect(compareVersions(versions[0] ?? '', LATEST.version)).toBeLessThanOrEqual(0);
   });
 
-  it('is the version the demo build carries', () => {
+  it('bundles the demo with the version apps/web carries', () => {
+    // The demo is the shell built from main, so it reports the packages' version, which can
+    // lead the published release for the hours between a version bump and its publish.
+    const { version } = JSON.parse(
+      readFileSync(new URL('apps/web/package.json', repo), 'utf8'),
+    ) as { version: string };
     const assets = readdirSync(new URL('demo/assets/', dist)).filter((file) =>
       file.endsWith('.js'),
     );
     // The define in apps/web's vite.config.ts, whatever quotes the minifier picks.
-    const literals = ['`', '"', "'"].map((quote) => `version:${quote}${LATEST.version}${quote}`);
+    const literals = ['`', '"', "'"].map((quote) => `version:${quote}${version}${quote}`);
     const bundled = assets.some((file) => {
       const code = read(`demo/assets/${file}`);
       return literals.some((literal) => code.includes(literal));

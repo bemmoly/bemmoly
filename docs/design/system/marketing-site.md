@@ -39,8 +39,11 @@ Every page is built around three promises, word for word:
 Where they appear: the hero's ticks, a section of their own with proof under each, the FAQ, the
 final call, the self-hosting guide's header and the footer line. The product must keep them
 true: anything in the app that suggests billing, licences to buy or an upgrade breaks a promise
-and fails review. The site's one sponsor link (the footer's "Buy me a coffee") is labelled as
-optional support that unlocks nothing, a plain secondary link with no logo, never a price.
+and fails review. The sponsor links are labelled as optional support that unlocks nothing, with no logo and never
+a price: the footer's "Buy me a coffee" with that line, and the header's "Sponsor" (heart, a
+soft rose tint and hairline in the site-only `sponsor` tokens, never a filled red that outshouts
+Install; in the phone menu below 1024px), per [ADR 0033](../../adr/0033-the-site-header-carries-sponsor-in-rose.md).
+The header's order is Sponsor, then Live demo (outlined secondary), then Install (primary).
 
 ## Honest claims only, proven by code
 
@@ -53,6 +56,10 @@ optional support that unlocks nothing, a plain secondary link with no logo, neve
   described as coming.
 - **Status badges are honest**: available, new, coming soon. AI (shipped in 0.5) is one lilac
   band: optional, off until an admin turns it on, with a real AI card captured from the demo.
+- **One version, the published one.** Every version the site shows is `LATEST` from
+  `src/lib/changelog.ts`: the newest release in the changelogs, capped at the newest published
+  GitHub release, so a version that is bumped or tagged but not yet published never appears.
+  `tests/version-source.test.ts` fails on a hard-coded version outside `src/data/changelog.ts`.
 - **Estimates are labelled as estimates** until measured; then the measured figure replaces them
   at build time.
 - **No absolutes the code cannot back.** Not "your data never leaves your hardware" when the

@@ -12,19 +12,35 @@ export interface RepoFacts {
   stars: number;
 }
 
-async function fetchFacts(): Promise<RepoFacts | null> {
+async function getJson(url: string): Promise<unknown> {
   try {
-    const response = await fetch(API, {
+    const response = await fetch(url, {
       signal: AbortSignal.timeout(TIMEOUT_MS),
       headers: { Accept: 'application/vnd.github+json', 'User-Agent': 'bemmoly-site-build' },
     });
-    if (!response.ok) return null;
-    const body = (await response.json()) as { stargazers_count?: unknown };
-    const stars = body.stargazers_count;
-    return typeof stars === 'number' && Number.isInteger(stars) && stars >= 0 ? { stars } : null;
+    return response.ok ? await response.json() : null;
   } catch {
     return null;
   }
+}
+
+async function fetchFacts(): Promise<RepoFacts | null> {
+  const body = (await getJson(API)) as { stargazers_count?: unknown } | null;
+  const stars = body?.stargazers_count;
+  return typeof stars === 'number' && Number.isInteger(stars) && stars >= 0 ? { stars } : null;
+}
+
+/**
+ * The version of the newest published GitHub release ("v0.12.0" to "0.12.0"), or null. The
+ * release workflow's publish job is the only thing that creates one, after the images, notes
+ * and manifest are out, so a version that is tagged but not yet published never counts.
+ * Pre-releases and drafts are never "latest" on GitHub, so the beta channel never counts either.
+ */
+export async function fetchPublishedVersion(): Promise<string | null> {
+  const body = (await getJson(`${API}/releases/latest`)) as { tag_name?: unknown } | null;
+  const tag = body?.tag_name;
+  const match = typeof tag === 'string' ? /^v?(\d+\.\d+\.\d+)$/.exec(tag) : null;
+  return match?.[1] ?? null;
 }
 
 let facts: Promise<RepoFacts | null> | undefined;

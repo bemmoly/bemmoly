@@ -58,6 +58,14 @@
 
 @theme inline {
   --color-glass: color-mix(in srgb, var(--canvas) 92%, transparent);
+  /*
+   * Sponsor: the header's rose call to action, never a fill that outshouts Install. Aliases of
+   * the product's red text and tint, so light and dark both hold AA (5.2:1 on white, 5.5:1 on
+   * the dark canvas; tests/sponsor.test.ts checks it). For the sponsor link only, not errors.
+   */
+  --color-sponsor: var(--red-tx);
+  --color-sponsor-soft: var(--red-50);
+  --color-sponsor-line: color-mix(in srgb, var(--red-tx) 45%, transparent);
 }
 
 /* The product's page is canvas: white in light, #111418 in dark. */

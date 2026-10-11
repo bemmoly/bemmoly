@@ -9,6 +9,7 @@
  */
 import { posix } from 'node:path';
 import { RELEASE_DATES, ROADMAP } from '../data/changelog.ts';
+import { fetchPublishedVersion } from './clients/github.ts';
 
 export type ChangeKind = 'major' | 'minor' | 'patch';
 
@@ -161,11 +162,39 @@ export function collectReleases(
     .sort((a, b) => compareVersions(a.version, b.version));
 }
 
-/** Every release in the repository's changelogs, newest first. */
-export const RELEASES: readonly Release[] = collectReleases(Object.values(files));
+/**
+ * The releases that are out: every version in the notes up to the newest published GitHub
+ * release. The changesets tool writes a version's notes (and tags it) before the release
+ * workflow publishes it, and a publish can fail, so notes alone would show a version nobody
+ * can install. Without an answer from GitHub (offline, rate limited) every version counts.
+ */
+export function releasedOnly(releases: readonly Release[], published: string | null): Release[] {
+  if (!published) return [...releases];
+  return releases.filter((release) => compareVersions(release.version, published) >= 0);
+}
 
-/** The newest release: the version the installer pulls today. */
-export const LATEST: Release = RELEASES[0] ?? { version: '0.1.0', date: null, changes: [] };
+/** The newest published release's version, asked once per build; null without an answer. */
+export const PUBLISHED_VERSION = await fetchPublishedVersion();
+
+/** Every released version in the repository's changelogs, newest first. */
+export const RELEASES: readonly Release[] = releasedOnly(
+  collectReleases(Object.values(files)),
+  PUBLISHED_VERSION,
+);
+
+/**
+ * The newest release: the version the installer pulls today, and the one version every page,
+ * the JSON-LD and llms.txt show (tests/version.test.ts). Nothing else in the site may hard-code
+ * a version (tests/version-source.test.ts).
+ */
+export const LATEST: Release = latestOf(RELEASES);
+
+function latestOf(releases: readonly Release[]): Release {
+  const [latest] = releases;
+  // A build with no release to name fails, rather than inventing a version.
+  if (!latest) throw new Error('No released version in the changelogs');
+  return latest;
+}
 
 /** "0.3.0" → "0.3": how the site names the release a feature arrived in. */
 export const minorOf = (version: string) => version.split('.').slice(0, 2).join('.');
