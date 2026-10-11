@@ -5,7 +5,7 @@
 - **Primary job.** Decide which templates every space's template picker offers, in what order.
 - **Who.** People with `docs.templates.manage` ("Manage org templates" in Roles, org admins by
   default). The server refuses everyone else with 403; the row under Settings › Modules shows
-  only to the people the capability admits (the module declares it in its manifest, ADR 0029).
+  only to the people the capability admits (the module declares it in its manifest, ADR 0030).
   Spaces keep their own templates; a line under the title says so and they never show here.
 - **Layout.** `contained`. The title and its sentence, a search box beside an Active · Archived
   `SegmentedControl`, then the one `Table`: grip, name (icon, name, Built-in badge,
@@ -46,7 +46,7 @@
 
 - **Built-ins read only.** Until now an admin could rewrite a built-in in place. Settings ›
   Docs makes them read only (hide by archiving, or duplicate to edit), so the six stay what the
-  release notes describe and an upgrade can improve them. ADR 0030.
+  release notes describe and an upgrade can improve them. ADR 0031.
 - **The editor is the settings page in another state, not a dialog.** A template's body is a
   document; a dialog would squeeze the editor and nest its popovers inside a focus trap. The
   page swaps the table for the editor in the same reading column, with the trail ending in the

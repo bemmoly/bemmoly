@@ -1,4 +1,4 @@
-# ADR 0030: Org templates are managed in Settings › Docs; built-ins read only
+# ADR 0031: Org templates are managed in Settings › Docs; built-ins read only
 
 - Status: accepted
 - Date: 2026-10-11
@@ -29,7 +29,7 @@ could never improve it.
    `POST /api/v1/docs/templates` takes `spaceId: null` for an org template.
    `POST …/templates/:id/archive`, `…/restore` and `…/duplicate` and
    `PUT /api/v1/docs/org-templates/order` (every active org template, once) complete it. The
-   page is the Docs module's own settings (ADR 0029): the manifest declares
+   page is the Docs module's own settings (ADR 0030): the manifest declares
    `settings: { path: '/settings/docs', requires: 'docs.templates.manage' }` and
    `web/src/settings.tsx` draws it, so the row under Settings › Modules shows only to the people
    the capability admits.
