@@ -151,7 +151,7 @@ function ImageChrome({ node, editor, selected, updateAttributes }: NodeViewProps
   if (!editor.isEditable || !SAFE_IMAGE_SRC.test(src)) return <ImageFigure src={src} alt={alt} />;
   return (
     <figure
-      className={cx(IMAGE_FRAME, 'm-0')}
+      className={cx(IMAGE_FRAME, 'm-0 select-none')}
       onFocus={() => setEditing(true)}
       onBlur={(event) => {
         if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setEditing(false);

@@ -14,7 +14,13 @@ import type { UploadStore } from './uploads/upload-store.ts';
  * an upload service the editor leaves the event to the browser and ProseMirror.
  */
 
-type Meta = { add: { id: string; pos: number } } | { remove: string };
+type Meta =
+  | { add: { id: string; pos: number } }
+  /** `placed`: where its image went, so placeholders pasted before it stay before it. */
+  | { remove: string; placed?: { from: number; to: number } };
+
+/** Uploads are numbered as they start ("upload-3"); a paste of several keeps that order. */
+const seqOf = (id: unknown) => Number(String(id).split('-').pop());
 
 export const imageUploadKey = new PluginKey<DecorationSet>('imageUpload');
 
@@ -62,9 +68,10 @@ export async function runUpload(
       src: done.src,
       alt: done.alt ?? altFromName(entry.file.name),
     });
+    const at = betweenBlocks(view.state, pos);
     const tr: Transaction = view.state.tr
-      .insert(betweenBlocks(view.state, pos), image)
-      .setMeta(imageUploadKey, { remove: id });
+      .insert(at, image)
+      .setMeta(imageUploadKey, { remove: id, placed: { from: at, to: at + image.nodeSize } });
     view.dispatch(tr);
   } catch (error) {
     if (!view.isDestroyed) uploads.update(id, { error: message(error) });
@@ -119,13 +126,33 @@ export function imageDrop(services: () => DocServices, uploads: UploadStore) {
                 const { id, pos } = meta.add;
                 const element = uploads.find(id)?.element;
                 if (element) {
-                  const widget = Decoration.widget(pos, element, { id, key: id, side: -1 });
+                  const widget = Decoration.widget(pos, element, { id, key: id, side: 1 });
                   next = next.add(tr.doc, [widget]);
                 }
               } else if (meta && 'remove' in meta) {
                 next = next.remove(
                   next.find(undefined, undefined, (spec) => spec['id'] === meta.remove),
                 );
+                const { placed } = meta;
+                const earlier = placed
+                  ? next.find(
+                      placed.to,
+                      placed.to,
+                      (spec) => seqOf(spec['id']) < seqOf(meta.remove),
+                    )
+                  : [];
+                if (placed && earlier.length) {
+                  next = next.remove(earlier).add(
+                    tr.doc,
+                    earlier.map((widget) =>
+                      Decoration.widget(
+                        placed.from,
+                        uploads.find(String(widget.spec['id']))!.element,
+                        widget.spec,
+                      ),
+                    ),
+                  );
+                }
               }
               return next;
             },

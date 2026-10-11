@@ -99,6 +99,16 @@ describe('pasted and dropped images', () => {
     expect(images(editor)).toHaveLength(1);
   });
 
+  it('lands several images in the order they were pasted, whichever finishes first', async () => {
+    const { upload, calls } = controlledUpload();
+    const editor = await setup({ uploadImage: upload });
+    paste(editor, [png('first.png'), png('second.png')]);
+    await act(async () => calls[1]!.settle(true));
+    await act(async () => calls[0]!.settle(true));
+    await waitFor(() => expect(images(editor)).toHaveLength(2));
+    expect(images(editor).map((node) => node.attrs?.['alt'])).toEqual(['first', 'second']);
+  });
+
   it('leaves pastes alone when the host cannot store files', async () => {
     const editor = await setup({});
     expect(paste(editor, [png()])).toBe(false);

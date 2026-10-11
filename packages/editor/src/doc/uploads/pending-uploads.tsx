@@ -23,7 +23,7 @@ function UploadCard({
   const percent = Math.round((entry.progress ?? 0) * 100);
   return (
     <div
-      className={cx(PLACEHOLDER_CARD, 'my-2 gap-2')}
+      className={cx(PLACEHOLDER_CARD, 'my-2 gap-2 select-none')}
       data-upload-state={entry.error ? 'failed' : 'uploading'}
     >
       <div className="flex min-w-0 items-center justify-between gap-3">
