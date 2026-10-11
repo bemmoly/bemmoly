@@ -17,7 +17,10 @@ export interface JobRegisterOptions {
   retryLimit?: number;
   retryDelaySeconds?: number;
   retryBackoff?: boolean;
-  /** Maximum handlers of this job running at once in one process. */
+  /**
+   * Maximum handlers of this job running at once in one process; defaults to 1. A backlog
+   * drains without waiting between jobs either way, within the process-wide job limit.
+   */
   concurrency?: number;
   /** How long one run may take before the queue retries it; defaults to 15 minutes. */
   expireInSeconds?: number;

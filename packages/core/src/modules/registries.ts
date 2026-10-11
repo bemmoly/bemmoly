@@ -123,7 +123,10 @@ export interface JobDefinition {
   retryDelaySeconds?: number;
   /** Exponential backoff between retries; defaults to true. */
   retryBackoff?: boolean;
-  /** Handlers of this job running at once in one process; defaults to 1. */
+  /**
+   * Handlers running at once in one process; defaults to 1, right for heavy work. Cheap
+   * fan-out queues set more. A backlog drains without pauses within the process-wide cap.
+   */
   concurrency?: number;
 }
 
