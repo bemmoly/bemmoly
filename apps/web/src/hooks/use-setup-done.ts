@@ -99,7 +99,8 @@ export function summaryRows(input: {
       value: themeSummary(
         draft.theme,
         draft.themeSaved,
-        draft.useCustomTheme ? draft.customTheme : null,
+        draft.useCustomTheme ? draft.brand : null,
+        draft.defaultMode,
       ),
       done: draft.themeSaved,
       ...(draft.themeSaved ? {} : { later: { label: DO_IT_NOW, to: '/settings/appearance' } }),

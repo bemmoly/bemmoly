@@ -1,8 +1,7 @@
-import type { SurfaceTone, ThemeFont, ThemeMode } from '@bemmoly/shared';
-import { DEFAULT_PRESET, type PresetId } from '@bemmoly/ui/tokens';
+import type { ModePreference } from '@bemmoly/shared';
+import { DEFAULT_THEME, RETIRED_PRESETS, isThemeId, type ThemeId } from '@bemmoly/ui/tokens';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
-import { DEFAULT_BRAND } from '../components/appearance/brand-choices.ts';
 
 /** The import card picked on the Import step; null until one is picked. */
 export type ImportSourceId = 'jira' | 'confluence' | 'csv' | 'clean';
@@ -12,20 +11,8 @@ export type AiChoice = string;
 export const LOCAL_AI = 'local';
 export const NO_AI = 'none';
 
-/** The Look step's custom build: the Appearance page's custom theme inputs. */
-export interface CustomThemeDraft {
-  brand: string;
-  mode: ThemeMode;
-  surfaces: SurfaceTone;
-  font: ThemeFont;
-}
-
-export const INITIAL_CUSTOM_THEME: CustomThemeDraft = {
-  brand: DEFAULT_BRAND,
-  mode: 'light',
-  surfaces: 'neutral',
-  font: 'plex',
-};
+/** Where the Look step's brand colour starts: a teal clear of every reserved hue. */
+export const SETUP_BRAND = '#0f766e';
 
 export interface SetupDraft {
   /**
@@ -44,10 +31,12 @@ export interface SetupDraft {
   ai: AiChoice;
   shareContent: boolean;
   allowActions: boolean;
-  theme: PresetId;
-  /** Step 5 builds a custom theme instead of the preset; the build survives picking a tile. */
+  theme: ThemeId;
+  /** The workspace default mode; new workspaces follow each device (ADR 0021). */
+  defaultMode: ModePreference;
+  /** The Look step makes a custom theme from the brand colour instead of a built-in one. */
   useCustomTheme: boolean;
-  customTheme: CustomThemeDraft;
+  brand: string;
   /** The last of steps 2 to 5 the admin was on, so an interrupted wizard resumes there. */
   lastStep: number | null;
   /** Steps left with "Skip for now", drawn as empty circles until they are answered. */
@@ -75,14 +64,33 @@ export const INITIAL_SETUP_DRAFT: SetupDraft = {
   ai: NO_AI,
   shareContent: true,
   allowActions: true,
-  theme: DEFAULT_PRESET,
+  theme: DEFAULT_THEME,
+  defaultMode: 'system',
   useCustomTheme: false,
-  customTheme: INITIAL_CUSTOM_THEME,
+  brand: SETUP_BRAND,
   lastStep: null,
   skipped: [],
   aiSaved: false,
   themeSaved: false,
 };
+
+/** A stored draft from before themes: its preset as a theme, the rest as it was. */
+export function migrateSetupDraft(stored: unknown): SetupDraft {
+  const old = (stored ?? {}) as Partial<SetupDraft> & {
+    theme?: string;
+    customTheme?: { brand?: string };
+  };
+  const theme = isThemeId(old.theme)
+    ? old.theme
+    : (RETIRED_PRESETS[old.theme ?? '']?.theme ?? DEFAULT_THEME);
+  const { customTheme, ...rest } = old;
+  return {
+    ...INITIAL_SETUP_DRAFT,
+    ...rest,
+    theme,
+    brand: customTheme?.brand ?? old.brand ?? SETUP_BRAND,
+  };
+}
 
 /** The draft as stored: everything but the actions. */
 export function draftOf(state: SetupDraft): SetupDraft {
@@ -109,9 +117,11 @@ export const useSetupStore = create<SetupState>()(
     {
       name: 'bemmoly.setup',
       // 2: the workspace and the account became two steps, so stored step numbers moved.
-      version: 2,
+      // 3: presets became themes with a separate mode; the custom build became a brand colour.
+      version: 3,
       storage: createJSONStorage(() => localStorage),
       partialize: (state): SetupDraft => draftOf(state),
+      migrate: (stored) => migrateSetupDraft(stored),
     },
   ),
 );
