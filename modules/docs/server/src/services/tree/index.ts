@@ -16,7 +16,8 @@ import { spaceByRef } from '../spaces/rows.ts';
 
 /*
  * The tree reads one level at a time on the (space_id, parent_id, position,
- * id) index. A move rewrites the moved page's path prefix on its whole
+ * id) index; the parent is matched with = or is null, never is not distinct
+ * from, which the planner cannot use as an index key. A move rewrites the moved page's path prefix on its whole
  * subtree in one statement, so a subtree query stays a prefix scan.
  */
 export function createTreeService(deps: DocsServiceDeps) {
@@ -31,7 +32,7 @@ export function createTreeService(deps: DocsServiceDeps) {
         select ${sql.unsafe(SUMMARY_COLUMNS)}
         from pages p join spaces s on s.id = p.space_id
         where p.space_id = ${space.id}
-          and p.parent_id is not distinct from ${parentId}::uuid
+          and ${parentId === null ? sql`p.parent_id is null` : sql`p.parent_id = ${parentId}::uuid`}
           and p.deleted_at is null
           ${cursor ? sql`and (p.position, p.id) > (select position, id from pages where id = ${cursor})` : sql``}
         order by p.position, p.id
