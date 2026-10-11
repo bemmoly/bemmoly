@@ -6,6 +6,7 @@
  */
 import { accessEndpoints } from './endpoints/access.ts';
 import { aiEndpoints } from './endpoints/ai.ts';
+import { appearanceEndpoints } from './endpoints/appearance.ts';
 import { aiRunEndpoints } from './endpoints/ai-runs.ts';
 import { aiPlanEndpoints } from './endpoints/ai-plans.ts';
 import { filesEndpoints } from './endpoints/files.ts';
@@ -25,6 +26,7 @@ export function createApiClient(options: HttpOptions = {}) {
     setup: setupEndpoints(http),
     auth: authEndpoints(http),
     settings: settingsEndpoints(http),
+    appearance: appearanceEndpoints(http),
     imports: importEndpoints(http),
     sso: ssoEndpoints(http),
     ai: {

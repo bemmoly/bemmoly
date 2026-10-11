@@ -6,105 +6,98 @@ import { formattedCssFiles } from '../scripts/format-css.ts';
 import { renderCssFiles, renderTailwindCss } from './css.ts';
 import { flatten as over, resolveHex } from './theme/color.ts';
 import { contrastRatio } from './theme/contrast.ts';
+import { RESERVED_HUES, reservedHue, themeChecks } from './theme/checks.ts';
 import {
   BRAND,
   COLOR_TOKENS,
   ELEVATIONS,
   FIXED_COLOR_TOKENS,
-  PRESET_IDS,
+  MODE_TYPE_COLORS,
   RADII,
   RADIUS_STEPS,
-  themeById,
-  THEMES,
+  RESOLVED_THEMES,
+  RETIRED_PRESETS,
+  resolveTheme,
+  THEME_IDS,
+  THEME_SOURCES,
+  THEME_TOKENS,
   TYPE_COLORS,
   TYPE_SCALE,
   TYPE_STEPS,
 } from './tokens.ts';
 
-/** kit.css `.px`; tx-3 and todo are the two values lifted to pass contrast. */
-const KIT_LIGHT = {
-  canvas: '#ffffff',
-  side: '#f7f8fa',
-  sunken: '#f5f6f8',
-  card: '#ffffff',
-  hover: 'rgba(22,27,38,0.045)',
-  press: 'rgba(22,27,38,0.07)',
-  line: '#e7e9ee',
-  'line-2': '#f0f1f4',
-  tx: '#161b26',
-  'tx-2': '#4b5264',
-  'tx-3': '#697181',
-  acc: '#2356c9',
-  'acc-fill': '#2356c9',
-  'acc-500': '#5b7be5',
-  'acc-50': '#eef2fd',
-  'acc-100': '#dfe7fb',
-  'on-acc': '#fff',
-  ai: '#9a85ea',
-  'ai-50': '#f4f1fd',
-  todo: '#888f9c',
-  prog: '#2356c9',
-  done: '#1f9d55',
-  red: '#e5484d',
-  'red-50': '#fdeeee',
-  amber: '#d97706',
-  'amber-50': '#fff6e6',
-};
-
-/** kit.css `.px.dark`; tx-3 is lifted, and the accent is split into text and fill. */
-const KIT_DARK = {
-  canvas: '#111418',
-  side: '#0c0f13',
-  sunken: '#0e1115',
-  card: '#181c22',
-  hover: 'rgba(255,255,255,.05)',
-  press: 'rgba(255,255,255,.08)',
-  line: 'rgba(255,255,255,.08)',
-  'line-2': 'rgba(255,255,255,.05)',
-  tx: '#e8ebf1',
-  'tx-2': '#a8b0be',
-  'tx-3': '#7d8492',
-  'acc-500': '#7b95ec',
-  'acc-50': 'rgba(91,123,229,.14)',
-  'acc-100': 'rgba(91,123,229,.24)',
-  todo: '#6f7786',
-  prog: '#6f8ff0',
-  done: '#3fb67a',
-  'amber-50': 'rgba(217,119,6,.14)',
-  'red-50': 'rgba(229,72,77,.14)',
-};
-
 const surfacesOf = (c: Record<string, string>) => [c.canvas, c.side, c.sunken, c.card] as string[];
+const PAIRS = THEME_SOURCES.flatMap((source) =>
+  (['light', 'dark'] as const).map((mode) => [`${source.id} ${mode}`, source, mode] as const),
+);
+
+describe('themes', () => {
+  it('ships five themes, Bemmoly first', () => {
+    expect(THEME_IDS).toEqual(['bemmoly', 'graphite', 'sand', 'pine', 'contrast']);
+  });
+
+  it('makes every theme a pair: a designed light and dark set of the fifteen tokens', () => {
+    expect(THEME_TOKENS).toHaveLength(15);
+    for (const source of THEME_SOURCES)
+      for (const mode of ['light', 'dark'] as const)
+        expect(Object.keys(source[mode]).sort(), `${source.id} ${mode}`).toEqual(
+          [...THEME_TOKENS].sort(),
+        );
+  });
+
+  it.each(PAIRS)('%s passes all fourteen checks', (_, source, mode) => {
+    const checks = themeChecks(source[mode], mode, 'highContrast' in source);
+    expect(checks).toHaveLength(14);
+    for (const check of checks)
+      expect(check.ratio, `${check.label} (${check.pair})`).toBeGreaterThanOrEqual(check.min);
+  });
+
+  it('keeps every accent and primary fill out of the reserved hue bands', () => {
+    for (const source of THEME_SOURCES)
+      for (const mode of ['light', 'dark'] as const)
+        for (const token of ['acc', 'acc-fill'] as const)
+          expect(reservedHue(source[mode][token]), `${source.id} ${mode} ${token}`).toBeNull();
+  });
+
+  it('flags a colour in each reserved band and clears blues, teals and greys', () => {
+    expect(RESERVED_HUES).toHaveLength(4);
+    for (const hex of ['#e11d48', '#f97316', '#1f9d55', '#7c3aed'])
+      expect(reservedHue(hex), hex).not.toBeNull();
+    for (const hex of ['#2356c9', '#0f766e', '#17675a', '#111827'])
+      expect(reservedHue(hex), hex).toBeNull();
+  });
+
+  it('gives Bemmoly light the design review values, with the logo blue as the accent', () => {
+    const light = resolveTheme('bemmoly', 'light');
+    expect(light.colors.acc).toBe(BRAND['brand-1']);
+    expect(light.colors['acc-fill']).toBe(BRAND['brand-1']);
+    expect(light.colors.canvas).toBe('#ffffff');
+    expect(light.elevation).toEqual(ELEVATIONS.light);
+    expect(resolveTheme('bemmoly', 'dark').elevation).toEqual(ELEVATIONS.dark);
+  });
+
+  it('maps every retired preset to a theme in its old mode', () => {
+    expect(RETIRED_PRESETS).toMatchObject({
+      classic: { theme: 'bemmoly', mode: 'light' },
+      dark: { theme: 'bemmoly', mode: 'dark' },
+      slate: { theme: 'graphite', mode: 'light', font: 'inter' },
+      warm: { theme: 'sand', mode: 'light', font: 'source' },
+      midnight: { theme: 'bemmoly', mode: 'dark', font: 'geist' },
+      forest: { theme: 'pine', mode: 'light' },
+      ocean: { theme: 'bemmoly', mode: 'dark', font: 'inter' },
+      rose: { theme: 'bemmoly', mode: 'light', font: 'source' },
+    });
+  });
+
+  it('lifts the Task and Epic tiles in dark mode only', () => {
+    expect(MODE_TYPE_COLORS.light['type-task']).toBe(TYPE_COLORS['type-task']);
+    expect(MODE_TYPE_COLORS.dark['type-task']).toBe(BRAND['brand-2']);
+    expect(MODE_TYPE_COLORS.dark['type-epic']).not.toBe(TYPE_COLORS['type-epic']);
+  });
+});
 
 describe('design tokens', () => {
-  it('keeps the eight presets in order', () => {
-    expect(PRESET_IDS).toEqual([
-      'light',
-      'dark',
-      'slate',
-      'warm',
-      'midnight',
-      'forest',
-      'ocean',
-      'rose',
-    ]);
-  });
-
-  it('gives Classic the design review values, with the logo blue as the accent', () => {
-    expect(themeById('light').colors).toMatchObject(KIT_LIGHT);
-    expect(themeById('light').colors.acc).toBe(BRAND['brand-1']);
-    expect(themeById('light').elevation).toMatchObject(ELEVATIONS.light);
-  });
-
-  it('gives Dark the review dark values, its accent from the logo mid blue', () => {
-    const dark = themeById('dark').colors;
-    expect(dark).toMatchObject(KIT_DARK);
-    expect(dark['acc-500']).not.toBe(BRAND['brand-2']);
-    expect(dark['acc-fill']).toBe('#506ecf');
-    expect(themeById('dark').elevation.e2).toBe(ELEVATIONS.dark.e2);
-  });
-
-  it.each(THEMES.map((t) => [t.id, t] as const))(
+  it.each(RESOLVED_THEMES.map((t) => [`${t.id} ${t.mode}`, t] as const))(
     '%s: text greys pass 4.5:1 on every surface',
     (_, theme) => {
       const c = theme.colors as Record<string, string>;
@@ -117,16 +110,7 @@ describe('design tokens', () => {
     },
   );
 
-  it.each(THEMES.map((t) => [t.id, t] as const))(
-    '%s: tx-2 reads at 4.5:1 on a quiet chip track (line-2 over the card)',
-    (_, theme) => {
-      const c = theme.colors as Record<string, string>;
-      const track = over(c['line-2'] as string, c.card as string);
-      expect(contrastRatio(c['tx-2'] as string, track)).toBeGreaterThanOrEqual(4.5);
-    },
-  );
-
-  it.each(THEMES.map((t) => [t.id, t] as const))(
+  it.each(RESOLVED_THEMES.map((t) => [`${t.id} ${t.mode}`, t] as const))(
     '%s: tx-2, the quiet text inside an AI card, reads at 4.5:1 on its ai-50 fill',
     (_, theme) => {
       const c = theme.colors as Record<string, string>;
@@ -135,7 +119,7 @@ describe('design tokens', () => {
     },
   );
 
-  it.each(THEMES.map((t) => [t.id, t] as const))(
+  it.each(RESOLVED_THEMES.map((t) => [`${t.id} ${t.mode}`, t] as const))(
     '%s: accent fills, glyphs and signals hold contrast',
     (_, theme) => {
       const c = theme.colors as Record<string, string>;
@@ -166,7 +150,7 @@ describe('design tokens', () => {
   });
 
   it('keeps AI on the logo lilac, apart from the accent', () => {
-    for (const { colors } of THEMES) {
+    for (const { colors } of RESOLVED_THEMES) {
       expect(colors.ai).toBe(BRAND['brand-3']);
       expect(colors.ai).not.toBe(colors.acc);
     }
@@ -177,8 +161,8 @@ describe('design tokens', () => {
     expect(Object.values(renderCssFiles()).join('\n')).not.toMatch(/--violet:/);
   });
 
-  it('defines every colour token in every preset, each resolvable to a colour', () => {
-    for (const theme of THEMES) {
+  it('defines every colour token in every theme and mode, each resolvable to a colour', () => {
+    for (const theme of RESOLVED_THEMES) {
       for (const token of COLOR_TOKENS) {
         const value = theme.colors[token];
         expect(value, `${theme.id} ${token}`).toBeTruthy();
@@ -187,11 +171,11 @@ describe('design tokens', () => {
     }
   });
 
-  it('gives every font stack real fallbacks', () => {
-    for (const theme of THEMES) {
-      expect(theme.fontUi).toMatch(/system-ui, .*sans-serif$/);
-      expect(theme.fontCode).toMatch(/^'IBM Plex Mono', .*monospace$/);
-    }
+  it('keeps the typeface out of every theme block', () => {
+    const files = renderCssFiles();
+    for (const id of THEME_IDS) expect(files[`styles/themes/${id}.css`]).not.toContain('--font-');
+    expect(files['styles/fonts.css']).toMatch(/\[data-font='geist'\] \{\s*--font-ui: 'Geist'/);
+    expect(files['styles/base.css']).toMatch(/--font-code: 'IBM Plex Mono', .*monospace;/);
   });
 
   it('keeps the type and radius scales to the diet, with old names on a step', () => {
@@ -211,21 +195,30 @@ describe('generated CSS', () => {
     }
   });
 
-  it('declares every preset and removes the default Tailwind palette and scales', () => {
+  it('declares every theme in light, dark and system, and removes the Tailwind palette', () => {
     const files = renderCssFiles();
-    for (const id of PRESET_IDS)
-      expect(files[`styles/presets/${id}.css`]).toContain(`[data-theme='${id}']`);
+    for (const id of THEME_IDS) {
+      const css = files[`styles/themes/${id}.css`] as string;
+      expect(css).toContain(`[data-theme='${id}'][data-mode='dark']`);
+      expect(css).toMatch(
+        new RegExp(
+          `prefers-color-scheme: dark[\\s\\S]*\\[data-theme='${id}'\\]\\[data-mode='system'\\]`,
+        ),
+      );
+    }
     for (const reset of ['--color-*', '--text-*', '--radius-*', '--shadow-*']) {
       expect(renderTailwindCss()).toContain(`${reset}: initial;`);
     }
   });
 
-  it('declares the fixed families once, on :root, so no preset can recolour them', () => {
+  it('declares the fixed families once, on :root, so no theme can recolour them', () => {
     const files = renderCssFiles();
+    const perMode = Object.keys(MODE_TYPE_COLORS.dark);
     for (const token of FIXED_COLOR_TOKENS) {
       expect(files['styles/base.css']).toContain(`--${token}:`);
-      for (const id of PRESET_IDS)
-        expect(files[`styles/presets/${id}.css`]).not.toContain(`--${token}:`);
+      if (perMode.includes(token)) continue;
+      for (const id of THEME_IDS)
+        expect(files[`styles/themes/${id}.css`]).not.toContain(`--${token}:`);
     }
     expect(files['styles/base.css']).toContain(`--type-epic: ${TYPE_COLORS['type-epic']}`);
   });

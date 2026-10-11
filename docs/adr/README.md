@@ -25,3 +25,5 @@ accepted record is never edited except to mark it superseded.
 | [0018](0018-ai-code-behind-subpath-exports.md) | AI code a lazy screen needs sits behind its own subpath export | accepted |
 | [0019](0019-ai-writes-only-through-a-confirmed-plan.md) | AI changes data only through a step a person confirmed | accepted |
 | [0020](0020-updater-updates-itself.md) | The updater moves itself to the release it installs | accepted |
+| [0021](0021-themes-are-pairs-mode-is-personal.md) | Themes are pairs; mode is personal | accepted |
+| [0022](0022-sign-in-shell-and-bemmoly-once.md) | The sign-in shell, and Bemmoly appears once | accepted |

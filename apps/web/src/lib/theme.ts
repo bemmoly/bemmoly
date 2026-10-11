@@ -1,75 +1,119 @@
+import type { CustomThemeRecord, ModePreference } from '@bemmoly/shared';
+import { customThemeSource } from '@bemmoly/ui/theme';
+import {
+  DEFAULT_THEME,
+  isThemeId,
+  RETIRED_PRESETS,
+  themeSource,
+  type FontId,
+  type ThemeMode,
+  type ThemeSource,
+} from '@bemmoly/ui/tokens';
 import type { Appearance } from './appearance.ts';
-import { PRESETS, type PresetId } from '@bemmoly/ui/tokens';
-import { buildTheme, type BuiltTheme } from '@bemmoly/ui/theme';
 
-/**
- * "system" is no personal choice (the menu's "Workspace default"): the
- * workspace look, or Classic light before one exists. It never follows the OS.
- */
-export type PersonalMode = 'system' | 'light' | 'dark';
+/** A theme someone can pick: a built-in id, or `custom:<id>` for a saved custom theme. */
+export type ThemeRef = string;
 
-export interface PersonalTheme {
-  mode: PersonalMode;
-  preset: PresetId | null;
+export const CUSTOM_PREFIX = 'custom:';
+
+export const customRef = (id: string): ThemeRef => `${CUSTOM_PREFIX}${id}`;
+
+/** A person's own choice; null means the workspace's. Stored on their account (ADR 0021). */
+export interface PersonalAppearance {
+  mode: ModePreference | null;
+  theme: ThemeRef | null;
 }
 
-export type ResolvedAppearance =
-  | { kind: 'preset'; id: PresetId; mode: 'light' | 'dark' }
-  | { kind: 'custom'; theme: BuiltTheme; mode: 'light' | 'dark' };
+export const NO_PERSONAL_APPEARANCE: PersonalAppearance = { mode: null, theme: null };
 
-/** No personal choice: what a fresh device starts with. */
-export const NO_PERSONAL_THEME: PersonalTheme = { mode: 'system', preset: null };
+/** What a page is trying on before it is saved: any part of the look. */
+export interface LookPreview {
+  source?: ThemeSource;
+  mode?: ModePreference;
+  font?: FontId;
+}
 
-const presetById = (id: string) => PRESETS.find((preset) => preset.id === id);
+/** The look to paint: one theme in one mode, with the typeface beside it. */
+export interface Look {
+  source: ThemeSource;
+  /** Whether the theme is a custom one, applied as inline tokens. */
+  custom: boolean;
+  /** The choice, which may be "system"… */
+  preference: ModePreference;
+  /** …and what it comes to on this device right now. */
+  mode: ThemeMode;
+  font: FontId;
+}
 
-function fromPreset(id: string, mode?: 'light' | 'dark'): ResolvedAppearance {
-  const preset = presetById(id) ?? PRESETS[0];
-  if (!mode || preset.mode === mode) return { kind: 'preset', id: preset.id, mode: preset.mode };
-  if (preset.id === 'light' || preset.id === 'dark')
-    return fromPreset(mode === 'dark' ? 'dark' : 'light');
-  const theme = buildTheme({
-    brand: preset.accent[0],
+/** A retired preset id (old device caches, old links) as the theme it became. */
+export function normalizeThemeRef(ref: string | null | undefined): ThemeRef | null {
+  if (!ref) return null;
+  if (ref.startsWith(CUSTOM_PREFIX) || isThemeId(ref)) return ref;
+  return RETIRED_PRESETS[ref]?.theme ?? null;
+}
+
+/** The workspace's chosen theme as a reference. */
+export function workspaceRef(appearance: Appearance): ThemeRef {
+  if (appearance.theme === 'custom' && appearance.customThemeId)
+    return customRef(appearance.customThemeId);
+  return normalizeThemeRef(appearance.theme) ?? DEFAULT_THEME;
+}
+
+/** The source a reference names among the themes this person can see; Bemmoly when gone. */
+export function sourceOf(ref: ThemeRef, customThemes: readonly CustomThemeRecord[]): ThemeSource {
+  if (!ref.startsWith(CUSTOM_PREFIX)) return themeSource(ref);
+  const id = ref.slice(CUSTOM_PREFIX.length);
+  const record = customThemes.find((theme) => theme.id === id);
+  if (!record) return themeSource(DEFAULT_THEME);
+  return customThemeSource(id, record.name, { brand: record.brandColor, surface: record.surface });
+}
+
+export interface LookInputs {
+  /** The workspace look; undefined before sign-in (login, setup). */
+  appearance: Appearance | undefined;
+  personal: PersonalAppearance;
+  /** Every custom theme this person can see: the workspace's and their own. */
+  customThemes: readonly CustomThemeRecord[];
+  preview?: LookPreview | null;
+  /** The device prefers dark right now (matchMedia). */
+  systemDark: boolean;
+  /**
+   * Before sign-in: the workspace's built-in theme and default mode from setup status, so the
+   * sign-in pages wear the workspace's look.
+   */
+  publicLook?: { theme?: string | null; defaultMode?: ModePreference | null } | null;
+}
+
+/**
+ * Resolution, once for the theme and once for the mode: preview, then the person (their mode
+ * always; their theme only while the workspace allows it), then the workspace, then Bemmoly
+ * following the device.
+ */
+export function resolveLook(inputs: LookInputs): Look {
+  const { appearance, personal, customThemes, preview, systemDark, publicLook } = inputs;
+  const allowed = appearance ? appearance.personalThemes : true;
+  const personalRef = allowed ? normalizeThemeRef(personal.theme) : null;
+  const publicRef = normalizeThemeRef(publicLook?.theme);
+  const ref =
+    personalRef ??
+    (appearance
+      ? workspaceRef(appearance)
+      : publicRef && !publicRef.startsWith(CUSTOM_PREFIX)
+        ? publicRef
+        : DEFAULT_THEME);
+  const source = preview?.source ?? sourceOf(ref, customThemes);
+  const preference =
+    preview?.mode ??
+    personal.mode ??
+    appearance?.defaultMode ??
+    publicLook?.defaultMode ??
+    'system';
+  const mode: ThemeMode = preference === 'system' ? (systemDark ? 'dark' : 'light') : preference;
+  return {
+    source,
+    custom: !isThemeId(source.id),
+    preference,
     mode,
-    surfaces: 'neutral',
-    font: preset.font,
-  });
-  return { kind: 'custom', theme, mode };
-}
-
-/** A preset exactly as it ships, in its own mode. */
-export function presetLook(id: PresetId): ResolvedAppearance {
-  return fromPreset(id);
-}
-
-/**
- * What this person sees: the workspace look, then their own light/dark choice
- * when the policy allows it, then their own preset when personal themes are on.
- * Before a workspace look exists (setup, sign-in) only an explicit personal
- * choice applies, and with none the page is Classic light whatever the OS says.
- * A preview (a look tried on before it is saved) wins over all of it.
- */
-export function resolveAppearance(
-  appearance: Appearance | undefined,
-  personal: PersonalTheme,
-  preview: ResolvedAppearance | null = null,
-): ResolvedAppearance {
-  if (preview) return preview;
-  if (!appearance) {
-    if (personal.preset) return fromPreset(personal.preset);
-    return fromPreset(personal.mode === 'dark' ? 'dark' : 'light');
-  }
-  if (appearance.policy.personalThemes && personal.preset) return fromPreset(personal.preset);
-  const override =
-    appearance.policy.memberModeSwitch && personal.mode !== 'system' ? personal.mode : undefined;
-  if (appearance.preset === 'custom' && appearance.custom) {
-    const custom = { ...appearance.custom, mode: override ?? appearance.custom.mode };
-    const theme = buildTheme({
-      brand: custom.brandColor,
-      mode: custom.mode,
-      surfaces: custom.surfaces,
-      font: custom.font,
-    });
-    return { kind: 'custom', theme, mode: custom.mode };
-  }
-  return fromPreset(appearance.preset, override);
+    font: preview?.font ?? appearance?.font ?? 'plex',
+  };
 }

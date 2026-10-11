@@ -25,7 +25,7 @@ export interface RateLimitBudgets {
   failedCredentialsPerIp: RateLimitBudget;
   /** Each route that calls a model, keyed by person: see rate-limit-ai.ts. */
   aiPerActor: RateLimitBudget;
-  /** File uploads (POST /files), keyed by person. */
+  /** File uploads (POST /files, POST /workspace/logo), keyed by person. */
   uploadsPerActor: RateLimitBudget;
 }
 
@@ -77,11 +77,17 @@ export function rateLimitBudgets(env: RateLimitEnv): RateLimitBudgets {
   };
 }
 
-function rateLimited(ttlMs: number): RateLimitedError {
+/** The sign-in route, whose refusal the sign-in page shows word for word. */
+const SIGN_IN_PATH = '/auth/login';
+
+function rateLimited(ttlMs: number, path = ''): RateLimitedError {
   const retryAfterSeconds = Math.max(1, Math.ceil(ttlMs / 1000));
-  return new RateLimitedError(`Too many requests; try again in ${retryAfterSeconds} seconds`, {
-    retryAfterSeconds,
-  });
+  const message =
+    path === SIGN_IN_PATH
+      ? `Too many sign-in attempts. Try again in ${retryAfterSeconds} seconds.`
+      : `Too many requests; try again in ${retryAfterSeconds} seconds`;
+  // In the body as well as Retry-After, so a page can count down without reading headers.
+  return new RateLimitedError(message, { retryAfterSeconds, details: { retryAfterSeconds } });
 }
 
 /** Anonymous by design, so budgeted per IP: sign-in, setup and email unsubscribe links. */
@@ -99,7 +105,7 @@ const BOOT_READS = ['/setup/status', '/auth/sso/providers'];
 const SCIM_PREFIX = '/scim/v2/';
 
 /** Uploads write to disk, so they have a per-person budget of their own. */
-const UPLOAD_PATH = '/files';
+const UPLOAD_PATHS = ['/files', '/workspace/logo'];
 
 function actorKey(request: FastifyRequest): string {
   const actor = request.actor ?? null;
@@ -159,7 +165,7 @@ export const rateLimiting = fp<RateLimitingOptions>(
           if (account === undefined) return;
           const key = accountBucketKey(`${method} ${route.url}`, account);
           const { count, ttlMs } = await buckets.hit(key, perAccount.windowMs);
-          if (count > perAccount.max) throw rateLimited(ttlMs);
+          if (count > perAccount.max) throw rateLimited(ttlMs, path);
         });
       }
       if (route.config.rateLimit !== undefined) return;
@@ -177,7 +183,7 @@ export const rateLimiting = fp<RateLimitingOptions>(
           timeWindow: ai.windowMs,
           keyGenerator: (request: FastifyRequest) => `ai|${actorKey(request)}`,
         };
-      } else if (method === 'POST' && path === UPLOAD_PATH) {
+      } else if (method === 'POST' && UPLOAD_PATHS.includes(path)) {
         route.config.rateLimit = {
           max: uploads.max,
           timeWindow: uploads.windowMs,
@@ -201,7 +207,8 @@ export const rateLimiting = fp<RateLimitingOptions>(
       timeWindow: perActor.windowMs,
       keyGenerator: actorKey,
       store: storeClass(buckets),
-      errorResponseBuilder: (_request, context) => rateLimited(context.ttl),
+      errorResponseBuilder: (request, context) =>
+        rateLimited(context.ttl, request.routeOptions.url?.slice(apiPrefix.length)),
     });
   },
   { name: 'bemmoly-rate-limiting', fastify: '5.x' },

@@ -1,19 +1,22 @@
 /**
- * The colour families that do not follow the preset's accent (ADR 0015). Values come from
+ * The colour families no theme changes (ADR 0015, ADR 0021). Values come from
  * docs/design/premium/kit.css; where a kit value fails the 4.5:1 text or 3:1 graphic contrast
  * the product promises, it is lifted the smallest step that passes, and the comment says so.
  */
 import { mixCss } from '../theme/color.ts';
 import type { ElevationSet, Hue, ThemeMode } from './names.ts';
 
-/** The logo's three colours. Fixed: no preset or custom theme changes them, nor the mark. */
+/** The logo's three colours. Fixed: no theme, custom or not, changes them, nor the mark. */
 export const BRAND = {
   'brand-1': '#2356c9',
   'brand-2': '#5b7be5',
   'brand-3': '#9a85ea',
 } as const;
 
-/** Issue type tiles. Fixed across presets and modes so a type never shares a status colour. */
+/**
+ * Issue type tiles. Fixed across themes so a type never shares a status colour; the light
+ * values sit on :root and dark mode lifts Task and Epic (MODE_TYPE_COLORS).
+ */
 export const TYPE_COLORS = {
   'type-epic': '#6e56cf',
   'type-story': '#1f9d55',
@@ -81,8 +84,14 @@ export function overlays(mode: ThemeMode, ink: string) {
   return { hover: translucent(ink, 0.045), press: translucent(ink, 0.07) };
 }
 
-/** Lines in dark themes are white hairlines, so they sit right on any dark surface. */
-export const DARK_LINES = { line: 'rgba(255,255,255,.08)', 'line-2': 'rgba(255,255,255,.05)' };
+/**
+ * The two type tiles that drop under 3:1 on dark cards at their light value: dark mode lifts
+ * Task to the logo's brand-2 and Epic a step lighter. Emitted in every theme's mode blocks.
+ */
+export const MODE_TYPE_COLORS = {
+  light: { 'type-task': TYPE_COLORS['type-task'], 'type-epic': TYPE_COLORS['type-epic'] },
+  dark: { 'type-task': BRAND['brand-2'], 'type-epic': '#7d68d8' },
+} as const;
 
 /** Status categories, signal colours and AI, per mode. */
 export const MODE_COLORS = {
@@ -107,7 +116,8 @@ export const MODE_COLORS = {
     'ai-50': '#f4f1fd',
   },
   dark: {
-    todo: '#6f7786',
+    // #6f7786 is under 3:1 on the lighter dark cards; lifted the least that passes on all.
+    todo: '#7a8291',
     prog: '#6f8ff0',
     done: '#3fb67a',
     red: '#e5484d',

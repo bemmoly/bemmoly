@@ -10,3 +10,5 @@ export {
   type SettingsListResponse,
 } from './settings.ts';
 export { workspaceLookSchema, type WorkspaceLook } from './workspace.ts';
+export * from './themes.ts';
+export * from './logo.ts';

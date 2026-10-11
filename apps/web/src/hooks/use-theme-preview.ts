@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import type { ResolvedAppearance } from '../lib/theme.ts';
+import type { LookPreview } from '../lib/theme.ts';
 import { useThemePreviewStore } from '../store/theme-preview.ts';
 
 /**
@@ -7,7 +7,7 @@ import { useThemePreviewStore } from '../store/theme-preview.ts';
  * null shows the saved look. Leaving the component, by any route, drops the
  * preview. Pass a memoised value so the page is not re-themed on every render.
  */
-export function useThemePreview(preview: ResolvedAppearance | null): void {
+export function useThemePreview(preview: LookPreview | null): void {
   const setPreview = useThemePreviewStore((state) => state.setPreview);
   useEffect(() => {
     setPreview(preview);

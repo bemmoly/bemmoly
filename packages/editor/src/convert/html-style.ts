@@ -1,4 +1,4 @@
-import { themeById } from '@bemmoly/ui/tokens';
+import { FONTS, MONO_STACK, resolveTheme } from '@bemmoly/ui/tokens';
 
 /*
  * The stylesheet an HTML export carries inline, so the file reads the same opened from a
@@ -8,10 +8,10 @@ import { themeById } from '@bemmoly/ui/tokens';
  */
 
 export function exportStylesheet(): string {
-  const theme = themeById('light');
-  const c = theme.colors;
+  const c = resolveTheme('bemmoly', 'light').colors;
+  const fontUi = FONTS.plex.stack;
   return [
-    `body{margin:0;background:${c.card};color:${c.tx};font:15.5px/1.7 ${theme.fontUi}}`,
+    `body{margin:0;background:${c.card};color:${c.tx};font:15.5px/1.7 ${fontUi}}`,
     `article{max-width:720px;margin:0 auto;padding:48px 40px 96px;display:flex;flex-direction:column;gap:18px}`,
     `article>*{margin:0}`,
     `h1{font-size:36px;line-height:1.15;letter-spacing:-.02em;font-weight:600;color:${c.tx}}`,
@@ -21,7 +21,7 @@ export function exportStylesheet(): string {
     `ul,ol{padding-left:22px;display:flex;flex-direction:column;gap:6px}`,
     `ul.tasks{list-style:none;padding-left:0}`,
     `a{color:${c.acc};text-decoration:none}`,
-    `code{font:500 13.5px ${theme.fontCode};background:${c['line-2']};padding:1px 5px;border-radius:3px}`,
+    `code{font:500 13.5px ${MONO_STACK};background:${c['line-2']};padding:1px 5px;border-radius:3px}`,
     `pre{background:${c['line-2']};border-radius:5px;padding:10px 14px;overflow:auto}`,
     `pre code{background:none;padding:0;font-weight:400}`,
     `blockquote{border-left:3px solid ${c.line};padding-left:12px;color:${c['tx-2']}}`,
@@ -39,7 +39,7 @@ export function exportStylesheet(): string {
     `.decision{border:1px solid ${c.line};border-left:3px solid ${c.green};border-radius:8px;padding:12px 16px}`,
     `.decision-label{font-size:12.5px;font-weight:600;color:${c['green-tx']};margin:0 0 4px}`,
     `.mention,.page-link{color:${c.acc};font-weight:500}`,
-    `.issue{font:500 12px ${theme.fontCode};border:1px solid ${c.line};border-radius:4px;padding:1px 7px}`,
+    `.issue{font:500 12px ${MONO_STACK};border:1px solid ${c.line};border-radius:4px;padding:1px 7px}`,
     `.issue-table,.unsupported{border:1px dashed ${c.line};border-radius:8px;padding:12px 16px;color:${c['tx-3']};font-size:13.5px}`,
     `nav.toc{font-size:13.5px}nav.toc ul{list-style:none;padding-left:0;gap:2px}`,
     `.toc-2{margin-left:16px}.toc-3{margin-left:32px}`,

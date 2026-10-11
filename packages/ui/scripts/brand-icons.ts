@@ -7,13 +7,13 @@
  */
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { Resvg } from '@resvg/resvg-js';
-import { themeById } from '../src/tokens.ts';
+import { resolveTheme } from '../src/tokens.ts';
 import { writeBanners } from './brand-banners.ts';
 import { squareCard, wideCard } from './social-preview.ts';
 
 const brand = new URL('../assets/brand/', import.meta.url);
 const out = new URL('generated/', brand);
-const classic = themeById('light').colors;
+const classic = resolveTheme('bemmoly', 'light').colors;
 
 const read = (name: string) => readFileSync(new URL(name, brand), 'utf8');
 

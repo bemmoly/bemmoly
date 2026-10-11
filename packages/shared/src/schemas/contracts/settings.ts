@@ -12,15 +12,15 @@ import { hexColorSchema } from './common.ts';
 
 export const themeFontSchema = z.enum(['plex', 'inter', 'source', 'geist']);
 export const themeModeSchema = z.enum(['light', 'dark']);
+/** A mode choice: light, dark, or follow the device live (ADR 0021). */
+export const modePreferenceSchema = z.enum(['light', 'dark', 'system']);
+/** The retired custom builder's surface tone; kept while the previous minor reads it. */
 export const surfaceToneSchema = z.enum(['neutral', 'tinted']);
-
-/** The custom builder's inputs; buildTheme turns them into the full token set. */
-export const customThemeSchema = z.object({
-  brandColor: hexColorSchema,
-  mode: themeModeSchema,
-  surfaces: surfaceToneSchema,
-  font: themeFontSchema,
-});
+/** Which built-in theme lends a custom theme its surfaces. */
+export const surfaceStyleSchema = z.enum(['neutral', 'warm']);
+/** The five built-in themes, and "custom" for a saved custom theme (ADR 0021). */
+export const builtInThemeIds = ['bemmoly', 'graphite', 'sand', 'pine', 'contrast'] as const;
+export const workspaceThemeSchema = z.enum([...builtInThemeIds, 'custom']);
 
 /**
  * Keys under /api/v1/admin/settings/:key and the value each holds. Kernel
@@ -38,12 +38,17 @@ export const SETTING_SCHEMAS = {
   'email.from': z.string(),
   'email.replyTo': z.string().nullable(),
   'email.digestMinutes': z.number().int().min(1).max(1440),
-  /** A preset id (the server calls Classic "classic"), or "custom". */
+  /** A built-in theme id, or "custom" with appearance.customThemeId naming which one. */
   'appearance.theme': z.string().min(1),
+  /** The custom theme's brand, mirrored so the previous minor still renders something close. */
   'appearance.brandColor': hexColorSchema,
   'appearance.font': themeFontSchema,
   'appearance.logoKey': z.string().max(512),
-  /** Assumed: the custom builder's mode and surface tone, and the member policy. */
+  /** What people see until they choose a mode; new workspaces follow the device. */
+  'appearance.defaultMode': modePreferenceSchema,
+  /** The workspace custom theme in use when appearance.theme is "custom". */
+  'appearance.customThemeId': z.uuid().nullable(),
+  /** Retired with the presets; still written for the previous minor, read by nothing new. */
   'appearance.mode': themeModeSchema,
   'appearance.surfaces': surfaceToneSchema,
   'appearance.memberModeSwitch': z.boolean(),
@@ -79,5 +84,7 @@ export type SettingValue<K extends SettingKey> = z.infer<(typeof SETTING_SCHEMAS
 
 export type ThemeFont = z.infer<typeof themeFontSchema>;
 export type ThemeMode = z.infer<typeof themeModeSchema>;
+export type ModePreference = z.infer<typeof modePreferenceSchema>;
 export type SurfaceTone = z.infer<typeof surfaceToneSchema>;
-export type CustomTheme = z.infer<typeof customThemeSchema>;
+export type SurfaceStyle = z.infer<typeof surfaceStyleSchema>;
+export type WorkspaceTheme = z.infer<typeof workspaceThemeSchema>;

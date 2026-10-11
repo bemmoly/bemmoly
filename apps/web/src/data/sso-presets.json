@@ -13,8 +13,8 @@
       "id": "entra-id",
       "name": "Microsoft Entra ID",
       "protocol": "oidc",
-      "logo": null,
-      "logoStyle": "mask",
+      "logo": "microsoft",
+      "logoStyle": "image",
       "issuerUrl": "https://login.microsoftonline.com/{tenant-id}/v2.0",
       "help": "Register an app for web sign-in, replace {tenant-id} with your directory's id, and add a client secret."
     },

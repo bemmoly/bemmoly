@@ -1,10 +1,10 @@
 import { create } from 'zustand';
-import type { ResolvedAppearance } from '../lib/theme.ts';
+import type { LookPreview } from '../lib/theme.ts';
 
 interface ThemePreviewState {
   /** The look being tried on, above every other source while set. */
-  preview: ResolvedAppearance | null;
-  setPreview(preview: ResolvedAppearance | null): void;
+  preview: LookPreview | null;
+  setPreview(preview: LookPreview | null): void;
 }
 
 /**

@@ -1,13 +1,15 @@
 import { inSidebarOrder, moduleName, openCreate, type ScreenAction } from '@bemmoly/core-web';
 import type { ModuleManifest, SidebarLink } from '@bemmoly/shared';
-import { PRESETS } from '@bemmoly/ui/tokens';
 import { useNavigate } from '@tanstack/react-router';
 import { useMemo } from 'react';
 import { customerLogo } from '../lib/customer-logo.ts';
 import { MODULE_CREATES } from '../lib/module-shell.ts';
-import { useThemeStore } from '../store/theme.ts';
+import { workspaceRef } from '../lib/theme.ts';
 import { useUiStore } from '../store/ui.ts';
 import { useModules } from './use-modules.ts';
+import { useAppearanceSync, usePersonalAppearance } from './use-personal-appearance.ts';
+import { useLook } from './use-theme-effect.ts';
+import { themeOptions } from './use-theme-options.ts';
 import { useInbox } from './use-notifications.ts';
 import { useMe, useSignOut } from './use-session.ts';
 import { useWorkspace } from './use-workspace.ts';
@@ -24,6 +26,10 @@ export interface CreateEntry {
 export interface ThemeChoice {
   id: string;
   label: string;
+  /** The theme the workspace uses, which a person follows by picking it. */
+  isWorkspace: boolean;
+  /** Its light fill and dark accent, for the menu's half-and-half dot. */
+  dot: { light: string; dark: string };
   checked: boolean;
   onSelect: () => void;
 }
@@ -43,8 +49,10 @@ export function useShell() {
   const signOut = useSignOut();
   const openPalette = useUiStore((state) => state.openPalette);
   const requestInvite = useUiStore((state) => state.requestInvite);
-  const { mode, preset, setMode, setPreset } = useThemeStore();
-  const policy = workspace.appearance.policy;
+  useAppearanceSync(me);
+  const personal = usePersonalAppearance();
+  const look = useLook();
+  const appearance = workspace.appearance;
   const go = (to: string) => void navigate({ to });
 
   /** The module's dialog over this page when it ships one; its old page otherwise. */
@@ -64,27 +72,18 @@ export function useShell() {
     (module.sidebar?.primary ?? []).map((link) => ({ ...link, moduleId: module.id })),
   );
 
-  const themes: ThemeChoice[] = [
-    ...(policy.memberModeSwitch
-      ? (['light', 'dark', 'system'] as const).map((value) => ({
-          id: `mode-${value}`,
-          label: value === 'system' ? 'Workspace default' : value === 'light' ? 'Light' : 'Dark',
-          checked: mode === value && !preset,
-          onSelect: () => {
-            setPreset(null);
-            setMode(value);
-          },
-        }))
-      : []),
-    ...(policy.personalThemes
-      ? PRESETS.filter((entry) => entry.id !== 'light' && entry.id !== 'dark').map((entry) => ({
-          id: `preset-${entry.id}`,
-          label: entry.name,
-          checked: preset === entry.id,
-          onSelect: () => setPreset(entry.id),
-        }))
-      : []),
-  ];
+  // A person's own theme list, only while the workspace lets them pick one (ADR 0021).
+  const followed = workspaceRef(appearance);
+  const themes: ThemeChoice[] = appearance.personalThemes
+    ? themeOptions([...appearance.customThemes, ...me.customThemes]).map((option) => ({
+        id: option.ref,
+        label: option.source.name,
+        isWorkspace: option.ref === followed,
+        dot: { light: option.source.light['acc-fill'], dark: option.source.dark.acc },
+        checked: option.source.id === look.source.id,
+        onSelect: () => personal.setTheme(option.ref === followed ? null : option.ref),
+      }))
+    : [];
 
   return {
     me,
@@ -98,6 +97,9 @@ export function useShell() {
     primaryCreate: creates[0] ?? null,
     primary,
     themes,
+    /** Mode is always the person's own: Light, Dark or Match system. */
+    mode: { value: look.preference, set: personal.setMode },
+    canCreateTheme: appearance.personalThemes,
     canInvite: me.can('workspace.roles.manage'),
     canManageAppearance: me.can('workspace.appearance.manage'),
     invite: () => {

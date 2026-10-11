@@ -69,7 +69,7 @@ export interface SelectableCardProps extends ButtonHTMLAttributes<HTMLButtonElem
 }
 
 /**
- * Option cards (theme presets, importers, swimlane and estimation choices): selected shows the
+ * Option cards (themes, importers, swimlane and estimation choices): selected shows the
  * accent border and the 2px ac-br ring. Use inside a role="radiogroup" for single choice.
  */
 export function SelectableCard({ selected, className, ...rest }: SelectableCardProps) {

@@ -4,11 +4,13 @@ import { focusRing } from '../../lib/focus.ts';
 import { Spinner } from '../spinner/spinner.tsx';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
-export type ButtonSize = 'xs' | 'sm' | 'md' | 'lg' | 'bar';
+export type ButtonSize = 'xs' | 'sm' | 'md' | 'lg' | 'bar' | 'touch';
 
 const BASE = cx(
   'inline-flex shrink-0 cursor-pointer items-center justify-center gap-1.5 font-sans font-medium',
-  'whitespace-nowrap select-none disabled:cursor-not-allowed disabled:opacity-50',
+  'whitespace-nowrap select-none disabled:cursor-not-allowed disabled:not-aria-busy:opacity-50',
+  // A loading button is busy, not unavailable: its label and spinner keep full contrast.
+  'aria-busy:cursor-progress',
   // Colours ease on hover; a press sets the button down by a pixel.
   'motion-safe:transition-[color,background-color,border-color,box-shadow,filter,translate] enabled:active:translate-y-px',
   focusRing,
@@ -25,6 +27,8 @@ const SIZES: Record<ButtonSize, string> = {
   md: 'h-control rounded-control text-13',
   lg: 'h-9.5 rounded-control text-14',
   bar: 'rounded-control py-1.5 text-13',
+  /** The sign-in pages: 40px, and 46px with 16px text on phones. */
+  touch: 'h-10 rounded-control text-14 max-sm:h-11.5 max-sm:text-16',
 };
 
 /** Primary buttons carry more padding than bordered ones at the same height, as in the mocks. */
@@ -41,6 +45,10 @@ const PADDING: Partial<Record<`${ButtonVariant}-${ButtonSize}`, string>> = {
   'secondary-bar': 'px-3.5',
   'ghost-bar': 'px-3.5',
   'danger-bar': 'px-3.5',
+  'primary-touch': 'px-4',
+  'secondary-touch': 'px-3.5',
+  'ghost-touch': 'px-3.5',
+  'danger-touch': 'px-4',
 };
 
 const VARIANTS: Record<ButtonVariant, string> = {

@@ -2,6 +2,7 @@ import { FetchInterceptor } from '@mswjs/interceptors/fetch';
 import { WebSocketInterceptor } from '@mswjs/interceptors/WebSocket';
 import { XMLHttpRequestInterceptor } from '@mswjs/interceptors/XMLHttpRequest';
 import { defineNetwork, InterceptorSource } from 'msw/experimental';
+import { applyAuthParams } from './auth-preset.ts';
 import { MOCK_SCENARIOS, type MockDb, type MockScenario } from './db.ts';
 import { createMockApi, type MockApi } from './dispatch.ts';
 import { providerLogoUrl } from '../lib/provider-logos.ts';
@@ -42,6 +43,8 @@ export async function startDevMocks(): Promise<void> {
   if (params.has('real')) sessionStorage.setItem(REAL_KEY, params.get('real') ?? 'on');
   const fallback = sessionStorage.getItem(REAL_KEY) !== 'off';
   const api = createMockApi(isScenario(requested) ? requested : (load() ?? 'ready'));
+  // `?sso=3&logo=acme&theme=pine&mode=dark` and the rest: see auth-preset.ts.
+  applyAuthParams(api.db, params);
   const save = () => sessionStorage.setItem(STORAGE_KEY, JSON.stringify(api.db));
   save();
   await enableMockNetwork(api, { fallback, onChange: save });

@@ -7,7 +7,7 @@ import icon512 from '@bemmoly/ui/brand/generated/icon-512.png';
 import socialPreview from '@bemmoly/ui/brand/generated/social-preview.png';
 import plexSans400 from '@fontsource/ibm-plex-sans/files/ibm-plex-sans-latin-400-normal.woff2?url';
 import plexSans600 from '@fontsource/ibm-plex-sans/files/ibm-plex-sans-latin-600-normal.woff2?url';
-import { themeById } from '@bemmoly/ui/tokens';
+import { resolveTheme } from '@bemmoly/ui/tokens';
 import { SITE_BING_VERIFICATION, SITE_GOOGLE_VERIFICATION } from 'astro:env/server';
 import Footer from '../components/site/Footer.astro';
 import Nav from '../components/site/Nav.astro';
@@ -33,8 +33,8 @@ const image = new URL(socialPreview.src, Astro.site).href;
 const logo = new URL(icon512.src, Astro.site).href;
 // The browser's own chrome matches the page in both versions.
 const themeColors = {
-  light: themeById('light').colors.canvas,
-  dark: themeById('dark').colors.canvas,
+  light: resolveTheme('bemmoly', 'light').colors.canvas,
+  dark: resolveTheme('bemmoly', 'dark').colors.canvas,
 };
 // The two IBM Plex Sans faces above the fold; the rest load on demand.
 const preloads = [plexSans400, plexSans600];

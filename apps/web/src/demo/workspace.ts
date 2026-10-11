@@ -1,5 +1,5 @@
-import { PRESETS } from '@bemmoly/ui/tokens';
-import { createMockDb, type MockDb } from '../mocks/db.ts';
+import { applyAuthParams } from '../mocks/auth-preset.ts';
+import { createMockDb, MOCK_SCENARIOS, type MockDb, type MockScenario } from '../mocks/db.ts';
 import { atRelease } from './release.ts';
 
 /**
@@ -10,22 +10,25 @@ import { atRelease } from './release.ts';
  * developer example: an install leaves it off, so a visitor never sees it, not even in
  * Settings › Modules.
  *
- * `?theme=<preset>` (for example `ocean`) starts the workspace in that preset, so the site's
- * previews can match the page around them. With a `version`, the install reports that release
- * everywhere (release.ts).
+ * `?theme=pine&mode=dark` starts the workspace in that theme and mode, so the site's previews
+ * can match the page around them. A retired preset id (`?theme=ocean`) still works: it maps to
+ * its theme in its old mode. `?logo=acme` starts with Acme Labs' own logo, so a preview can show
+ * the customer brand block ("on Bemmoly" under it). `?mock=signed-out` opens the sign-in pages,
+ * and `?sso=1|3|required` gives them single sign-on (mocks/auth-preset.ts). With a `version`, the install reports that
+ * release everywhere.
  */
 export function demoWorkspace(options: { search?: string; version?: string } = {}): MockDb {
   const { search = '', version } = options;
-  const db = createMockDb('ready');
+  const params = new URLSearchParams(search);
+  const asked = params.get('mock') as MockScenario | null;
+  // `?mock=signed-out` opens the sign-in pages; the demo never runs the first-run wizard.
+  const scenario = asked && MOCK_SCENARIOS.includes(asked) && asked !== 'fresh' ? asked : 'ready';
+  const db = createMockDb(scenario);
   if (version) atRelease(db, version);
   const example = (id: string) => id === 'sample';
   db.manifests = db.manifests.filter((manifest) => !example(manifest.id));
   db.grants = db.grants.filter((grant) => !example(grant.moduleId));
   db.adminModules = db.adminModules.filter((module) => !example(module.id));
-  const preset = PRESETS.find((entry) => entry.id === new URLSearchParams(search).get('theme'));
-  if (preset && preset.id !== 'light') {
-    db.settings['appearance.theme'] = preset.id;
-    db.settings['appearance.mode'] = preset.mode;
-  }
+  applyAuthParams(db, params);
   return db;
 }

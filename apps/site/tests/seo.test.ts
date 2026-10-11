@@ -21,7 +21,7 @@ const meta = (source: string, attribute: 'name' | 'property', key: string) =>
 const decode = (text: string) =>
   text
     .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
+    .replace(/&#39;|&apos;/g, "'")
     .replace(/&lt;/g, '<')
     .replace(/&gt;/g, '>')
     .replace(/&amp;/g, '&');

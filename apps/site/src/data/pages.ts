@@ -35,7 +35,7 @@ export const PAGES = [
     name: 'Self-hosted project management',
     title: 'Self-hosted project management, open source · Bemmoly',
     description:
-      'Project management you run on your own server: issues, boards, sprints and docs in one MIT-licensed app, one container and one Postgres, with no per-seat fees.',
+      'Project management on your own server: issues, boards, sprints and docs in one MIT-licensed app, with imports, single sign-on and no per-seat fees.',
     updated: '2026-10-11',
     software: true,
   },
@@ -62,7 +62,7 @@ export const PAGES = [
     name: 'On-premise',
     title: 'On-premise project management: your data, your server',
     description:
-      'Run Bemmoly on your own hardware or cloud: your data in your Postgres, verified and encrypted backups, signed updates, and nothing calls home by default.',
+      'Run Bemmoly on your own hardware or cloud: your data in your Postgres, single sign-on, verified and encrypted backups, signed updates, and no calls home.',
     updated: '2026-10-11',
     software: true,
   },

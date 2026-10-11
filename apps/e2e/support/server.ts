@@ -43,6 +43,8 @@ export function writeServerEnv(databaseUrl: string, port: number): string {
     // budget; the default 600 a minute is a real person's ceiling, not two parallel workers'.
     BEMMOLY_RATE_LIMIT_PER_USER: '6000',
     BEMMOLY_RATE_LIMIT_AI_PER_USER: '600',
+    // Every browser in the suite signs in from 127.0.0.1, so the sign-in flows share one address.
+    BEMMOLY_RATE_LIMIT_AUTH_PER_IP: '300',
     PORT: String(port),
     LOG_LEVEL: 'warn',
   };

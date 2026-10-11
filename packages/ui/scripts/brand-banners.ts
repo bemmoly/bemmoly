@@ -7,7 +7,7 @@
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { Resvg } from '@resvg/resvg-js';
-import { themeById } from '../src/tokens.ts';
+import { RETIRED_PRESETS, resolveTheme } from '../src/tokens.ts';
 import { checkZones, composeBanner, debugOverlay } from './banner-layout.ts';
 import { BANNERS, README_HERO } from './banner-specs.ts';
 import { BOARD, BOARD_OCEAN, wideCard } from './social-preview.ts';
@@ -21,10 +21,11 @@ const THEMES = [
   { suffix: '-ocean', preset: 'ocean', board: BOARD_OCEAN },
 ] as const;
 
+/** The retired preset names the generated files carry, read through their theme and mode. */
 function colorsOf(preset: string) {
-  const theme = themeById(preset);
-  if (theme.id !== preset) throw new Error(`No "${preset}" preset in the tokens`);
-  return theme.colors;
+  const look = RETIRED_PRESETS[preset];
+  if (!look) throw new Error(`No "${preset}" preset in the tokens`);
+  return resolveTheme(look.theme, look.mode).colors;
 }
 
 function png(svg: string, width: number): Buffer {

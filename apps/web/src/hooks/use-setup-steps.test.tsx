@@ -4,15 +4,7 @@ import { INITIAL_SETUP_DRAFT, useSetupStore } from '../store/setup.ts';
 import { useThemePreviewStore } from '../store/theme-preview.ts';
 import { renderQueryHook } from '../test/render.tsx';
 import { mockApi } from '../test/setup.ts';
-import {
-  CUSTOM_THEME_TOGGLE,
-  presetIdFromSetting,
-  THEME_CHOICES,
-  themeSettingId,
-  themeSettingValues,
-  themeSummary,
-  useSetupAppearance,
-} from './use-setup-appearance.ts';
+import { SETUP_THEMES, themeSummary, useSetupAppearance } from './use-setup-appearance.ts';
 import { invitesLine, summaryRows, useSetupDone } from './use-setup-done.ts';
 import { importSummary } from './use-setup-import.ts';
 import { workspaceQuery } from './use-workspace.ts';
@@ -22,77 +14,68 @@ const preview = () => useThemePreviewStore.getState().preview;
 beforeEach(() => useSetupStore.getState().reset());
 
 describe('appearance step', () => {
-  it('writes the server id for Classic and the token id for the rest', () => {
-    expect(THEME_CHOICES).toHaveLength(8);
-    expect(themeSettingId('light')).toBe('classic');
-    expect(themeSettingId('warm')).toBe('warm');
-    expect(presetIdFromSetting('classic')).toBe('light');
-    expect(presetIdFromSetting('rose')).toBe('rose');
-    expect(presetIdFromSetting('custom')).toBe('light');
-    expect(themeSettingValues('warm')).toEqual({
-      'appearance.theme': 'warm',
-      'appearance.font': 'source',
-    });
+  it('offers the five themes and starts on Bemmoly, following the device', () => {
+    expect(SETUP_THEMES.map((theme) => theme.id)).toEqual([
+      'bemmoly',
+      'graphite',
+      'sand',
+      'pine',
+      'contrast',
+    ]);
+    expect(INITIAL_SETUP_DRAFT).toMatchObject({ theme: 'bemmoly', defaultMode: 'system' });
   });
 
-  it('saves the picked preset and its font on Finish setup', async () => {
+  it('saves the picked theme and default mode on Finish setup', async () => {
     const onSaved = vi.fn();
     const { result } = await renderQueryHook(() => useSetupAppearance(onSaved));
-    act(() => result.current.select('midnight'));
-    act(() => result.current.submit());
-    await waitFor(() => expect(onSaved).toHaveBeenCalledTimes(1));
-    expect(mockApi.db.settings['appearance.theme']).toBe('midnight');
-    expect(mockApi.db.settings['appearance.font']).toBe('geist');
-    expect(useSetupStore.getState().themeSaved).toBe(true);
-  });
-
-  it('previews the picked preset on the whole page and drops it on leaving', async () => {
-    const { result, unmount } = await renderQueryHook(() => useSetupAppearance(vi.fn()));
-    expect(preview()).toMatchObject({ kind: 'preset', id: 'light' });
-    act(() => result.current.select('ocean'));
-    expect(preview()).toMatchObject({ kind: 'preset', id: 'ocean', mode: 'dark' });
-    unmount();
-    expect(preview()).toBeNull();
-    expect(mockApi.db.settings['appearance.theme']).not.toBe('ocean');
-  });
-
-  it('builds a custom theme in place, previews it and saves it on Finish setup', async () => {
-    const onSaved = vi.fn();
-    const { result } = await renderQueryHook(() => useSetupAppearance(onSaved));
-    expect(result.current.toggleLabel).toBe(CUSTOM_THEME_TOGGLE.open);
-    act(() => result.current.toggleCustom());
-    expect(result.current.customOpen).toBe(true);
-    expect(result.current.selected).toBeNull();
-    expect(result.current.toggleLabel).toBe(CUSTOM_THEME_TOGGLE.close);
-    act(() => result.current.custom.hex.onChange('7C3AED'));
-    act(() => result.current.custom.setMode('dark'));
-    act(() => result.current.custom.setFont('geist'));
-    expect(preview()).toMatchObject({ kind: 'custom', mode: 'dark' });
+    act(() => result.current.select('pine'));
+    act(() => result.current.setMode('dark'));
     act(() => result.current.submit());
     await waitFor(() => expect(onSaved).toHaveBeenCalledTimes(1));
     expect(mockApi.db.settings).toMatchObject({
-      'appearance.theme': 'custom',
-      'appearance.brandColor': '#7c3aed',
-      'appearance.mode': 'dark',
-      'appearance.surfaces': 'neutral',
-      'appearance.font': 'geist',
+      'appearance.theme': 'pine',
+      'appearance.customThemeId': null,
+      'appearance.defaultMode': 'dark',
     });
-    const { theme, themeSaved, customTheme } = useSetupStore.getState();
-    expect(themeSummary(theme, themeSaved, customTheme)).toBe(
-      'Custom · #7c3aed · dark · members may switch light/dark',
-    );
+    expect(useSetupStore.getState().themeSaved).toBe(true);
   });
 
-  it('closes the builder and previews the preset when a tile is picked again', async () => {
-    const { result } = await renderQueryHook(() => useSetupAppearance(vi.fn()));
-    act(() => result.current.toggleCustom());
-    act(() => result.current.custom.pickBrand('#0f766e'));
-    act(() => result.current.select('warm'));
-    expect(result.current.customOpen).toBe(false);
-    expect(result.current.selected).toBe('warm');
-    expect(preview()).toMatchObject({ kind: 'preset', id: 'warm' });
-    act(() => result.current.toggleCustom());
-    expect(result.current.custom.value.brand).toBe('#0f766e');
+  it('previews the picked theme and mode on the whole page and drops it on leaving', async () => {
+    const { result, unmount } = await renderQueryHook(() => useSetupAppearance(vi.fn()));
+    expect(preview()).toMatchObject({ mode: 'system' });
+    expect(preview()?.source?.id).toBe('bemmoly');
+    act(() => result.current.select('graphite'));
+    act(() => result.current.setMode('dark'));
+    expect(preview()).toMatchObject({ mode: 'dark' });
+    expect(preview()?.source?.id).toBe('graphite');
+    unmount();
+    expect(preview()).toBeNull();
+    expect(mockApi.db.settings['appearance.theme']).not.toBe('graphite');
+  });
+
+  it('turns a typed brand colour into the workspace custom theme on Finish setup', async () => {
+    const onSaved = vi.fn();
+    const { result } = await renderQueryHook(() => useSetupAppearance(onSaved));
+    act(() => result.current.hex.onChange('#12'));
+    expect(result.current.hex.error).not.toBeNull();
+    expect(result.current.custom).toBe(false);
+    act(() => result.current.hex.onChange('0F766E'));
+    expect(result.current.custom).toBe(true);
+    expect(result.current.selected).toBeNull();
+    expect(preview()?.source?.light.acc).toBe('#0f766e');
+    act(() => result.current.submit());
+    await waitFor(() => expect(onSaved).toHaveBeenCalledTimes(1));
+    const [created] = mockApi.db.customThemes;
+    expect(created).toMatchObject({ brandColor: '#0f766e', scope: 'workspace' });
+    expect(mockApi.db.settings).toMatchObject({
+      'appearance.theme': 'custom',
+      'appearance.customThemeId': created?.id,
+      'appearance.brandColor': '#0f766e',
+    });
+    const { theme, themeSaved, brand, defaultMode } = useSetupStore.getState();
+    expect(themeSummary(theme, themeSaved, brand, defaultMode)).toBe(
+      'Your brand colour · #0f766e · Match system by default',
+    );
   });
 
   it('hands over from the preview to the saved workspace look on Finish setup', async () => {
@@ -101,11 +84,11 @@ describe('appearance step', () => {
       shownOnSave = preview();
     });
     const { result, queryClient } = await renderQueryHook(() => useSetupAppearance(onSaved));
-    act(() => result.current.select('forest'));
+    act(() => result.current.select('sand'));
     act(() => result.current.submit());
     await waitFor(() => expect(onSaved).toHaveBeenCalledTimes(1));
     expect(shownOnSave).toBeNull();
-    expect(queryClient.getQueryData(workspaceQuery.queryKey)?.appearance.preset).toBe('forest');
+    expect(queryClient.getQueryData(workspaceQuery.queryKey)?.appearance.theme).toBe('sand');
   });
 });
 
@@ -133,13 +116,13 @@ describe('summary', () => {
 
   it('marks setup finished once on arrival', async () => {
     mockApi.reset('wizard');
-    useSetupStore.getState().update({ themeSaved: true, theme: 'forest' });
+    useSetupStore.getState().update({ themeSaved: true, theme: 'pine' });
     const { result } = await renderQueryHook(() => useSetupDone());
     await waitFor(() => expect(result.current.complete.isSuccess).toBe(true));
     expect(typeof mockApi.db.settings['setup.completedAt']).toBe('string');
     await waitFor(() => expect(result.current.loading).toBe(false));
     const theme = result.current.rows.find((row) => row.key === 'theme');
-    expect(theme?.value).toBe('Forest · members may switch light/dark');
+    expect(theme?.value).toBe('Pine · Match system by default');
     expect(result.current.rows[0]?.value).toContain('Acme Labs');
     act(() => result.current.leave());
     expect(useSetupStore.getState().theme).toBe(INITIAL_SETUP_DRAFT.theme);

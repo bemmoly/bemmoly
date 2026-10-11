@@ -29,7 +29,10 @@ export function meHandler(capabilities: string[]) {
         url: 'http://bemmoly.test',
         aiEnabled: false,
         appearance: {
-          theme: 'classic',
+          theme: 'bemmoly',
+          customThemeId: null,
+          defaultMode: 'light',
+          customThemes: [],
           brandColor: '#2456c9',
           font: 'plex',
           logoKey: '',
@@ -39,6 +42,8 @@ export function meHandler(capabilities: string[]) {
           personalThemes: false,
         },
       },
+      preferences: { appearance: { mode: null, theme: null } },
+      customThemes: [],
     }),
   );
 }

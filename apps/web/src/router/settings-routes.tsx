@@ -86,6 +86,19 @@ const pages = [
     () => import('../pages/settings/appearance-page.tsx'),
     'AppearancePage',
   ),
+  // Anyone signed in may open the editor: it offers personal themes when the workspace allows.
+  page(
+    'profile',
+    'appearance/themes/new',
+    () => import('../pages/settings/custom-theme-page.tsx'),
+    'CustomThemePage',
+  ),
+  page(
+    'profile',
+    'appearance/themes/$themeId',
+    () => import('../pages/settings/custom-theme-page.tsx'),
+    'CustomThemePage',
+  ),
   page('email', 'email', () => import('../pages/settings/email-page.tsx'), 'EmailPage'),
   page('ai', 'ai', () => import('../pages/settings/ai/ai-setup-page.tsx'), 'AiSetupPage'),
   page(

@@ -4,6 +4,7 @@ import { Icon } from '@bemmoly/ui/icons';
 import { lazy, Suspense } from 'react';
 import { InboxPreview } from '../components/home/inbox-preview.tsx';
 import { JumpBackIn } from '../components/home/jump-back-in.tsx';
+import { SetupChecklist } from '../components/home/setup-checklist.tsx';
 import { useInbox } from '../hooks/use-notifications.ts';
 import { useShell } from '../hooks/use-shell.ts';
 import { useStarterModules } from '../hooks/use-starter-modules.ts';
@@ -117,6 +118,7 @@ export function HomePage() {
             {needs === null ? '' : ` · ${needsLine(needs)}`}
           </p>
         </div>
+        <SetupChecklist />
         {shell.workspace.aiEnabled && (
           <Suspense fallback={null}>
             <MorningBrief userId={shell.me.user.id} />

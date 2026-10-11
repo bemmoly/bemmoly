@@ -7,6 +7,12 @@ vi.mock('./presenters.ts', () => ({
   presentUsers: () => [],
 }));
 
+vi.mock('../appearance/index.ts', () => ({
+  listWorkspaceThemes: async () => [],
+  listPersonalThemes: async () => [],
+  readPreference: async () => ({ mode: null, theme: null }),
+}));
+
 const settings = { get: async () => null, getMany: async () => ({}) };
 
 function contextWith(capabilities: string[]): RequestContext {

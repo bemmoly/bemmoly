@@ -1,5 +1,5 @@
 import { Logo } from '@bemmoly/ui';
-import type { ThemeScope } from '../../hooks/use-appearance-draft.ts';
+import type { ThemeScope } from '../../lib/theme-scope.ts';
 
 const COLUMNS = [
   { tone: 'bg-todo', cards: [1, 0] },
@@ -19,8 +19,8 @@ function MiniCard({ avatar }: { avatar: boolean }) {
 }
 
 /**
- * The proposed Board in miniature, painted by the theme itself: the scope sets the preset's (or
- * the custom build's) tokens on this element, and every part below uses token classes, so the
+ * The proposed Board in miniature, painted by the theme itself: the scope sets the theme's (built-in
+ * or custom) tokens on this element, and every part below uses token classes, so the
  * tile is the real look, not a drawing of it. The mark keeps its own colours on every theme.
  */
 export function BoardMiniature({ scope }: { scope: ThemeScope }) {

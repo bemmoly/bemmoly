@@ -2,6 +2,7 @@ import { queryKeys, ssoStartPath } from '@bemmoly/api-client';
 import { ssoFailureReasonSchema, type SsoFailureReason } from '@bemmoly/shared';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../lib/api.ts';
+import { readLastSignIn, rememberSignIn } from './use-last-sign-in.ts';
 
 /** What the sign-in page says for each closed reason a single sign-on can fail with. */
 export const SSO_FAILURE_COPY: Record<SsoFailureReason, string> = {
@@ -23,6 +24,23 @@ export const SSO_FAILURE_COPY: Record<SsoFailureReason, string> = {
   disabled: 'That sign-in method has been turned off. Choose another, or ask your admin.',
 };
 
+/** The note's title, naming the provider when this device knows which one was tried. */
+export function ssoFailureTitle(reason: SsoFailureReason, provider: string | null): string {
+  const who = provider ?? 'Your identity provider';
+  if (reason === 'expired' || reason === 'state_mismatch' || reason === 'replayed') {
+    return 'That sign-in didn’t finish';
+  }
+  if (reason === 'not_provisioned' || reason === 'deactivated' || reason === 'disabled') {
+    return `${who} signed you in, but this workspace didn’t`;
+  }
+  return `${who} didn’t sign you in`;
+}
+
+export function ssoFailureReason(reason: unknown): SsoFailureReason | null {
+  const parsed = ssoFailureReasonSchema.safeParse(reason);
+  return parsed.success ? parsed.data : null;
+}
+
 export function ssoFailureMessage(reason: unknown): string | null {
   const parsed = ssoFailureReasonSchema.safeParse(reason);
   return parsed.success ? SSO_FAILURE_COPY[parsed.data] : null;
@@ -43,6 +61,13 @@ export function useSsoSignIn() {
     requireSso: query.data?.requireSso ?? false,
     /** A full navigation: the server redirects on to the identity provider. */
     start: (providerId: string, returnTo?: string) => {
+      const last = readLastSignIn();
+      rememberSignIn({
+        method: 'sso',
+        providerId,
+        email: last?.email ?? null,
+        name: last?.name ?? null,
+      });
       window.location.assign(ssoStartPath(providerId, returnTo));
     },
   };

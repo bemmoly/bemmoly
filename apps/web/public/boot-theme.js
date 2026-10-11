@@ -10,7 +10,10 @@
     if (!look || typeof look !== 'object') return;
     var root = document.documentElement;
     if (typeof look.theme === 'string') root.dataset.theme = look.theme;
-    if (look.mode === 'light' || look.mode === 'dark') root.dataset.mode = look.mode;
+    if (look.mode === 'light' || look.mode === 'dark' || look.mode === 'system') {
+      root.dataset.mode = look.mode;
+    }
+    if (typeof look.font === 'string') root.dataset.font = look.font;
     var vars = look.vars && typeof look.vars === 'object' ? look.vars : {};
     for (var name in vars) {
       if (name.indexOf('--') === 0 || name === 'color-scheme') {
