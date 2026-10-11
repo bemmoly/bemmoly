@@ -1,0 +1,25 @@
+{
+  "name": "@bemmoly/i18n-tools",
+  "version": "0.11.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "description": "Message catalogs: the build-time compiler (a Vite plugin) and the extract and check commands",
+  "exports": {
+    "./vite": "./src/vite-plugin.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "lint": "eslint --max-warnings 0 .",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@bemmoly/shared": "workspace:*",
+    "@lingui/message-utils": "6.8.0"
+  },
+  "devDependencies": {
+    "@types/node": "26.6.4",
+    "vite": "8.3.3",
+    "vitest": "5.0.3"
+  }
+}

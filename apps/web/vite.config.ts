@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
+import { messageCatalogs } from '@bemmoly/i18n-tools/vite';
 import { defineConfig } from 'vite';
 import { bootFrame } from './boot-frame.ts';
 import { brandAssets } from './brand-assets.ts';
@@ -26,6 +27,7 @@ export default defineConfig(({ command, mode }) => {
   return {
     base: demo ? DEMO_BASE : '/',
     plugins: [
+      messageCatalogs(),
       react(),
       tailwindcss(),
       brandAssets(brand('generated')),
