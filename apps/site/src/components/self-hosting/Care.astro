@@ -96,6 +96,13 @@ const SYMPTOMS = [
   </p>
   <CodeBlock code={RESTORE} label="On the server" copy />
   <p>
+    Every backup holds the database and the files people uploaded: page images, the workspace logo
+    and issue attachments. That holds wherever the uploads live. On the server's disk they are read
+    from the data folder; in an S3-compatible bucket (set by the <code>BEMMOLY_STORAGE_S3_*</code>
+    keys) they are copied out of the bucket into the backup, so a backup never depends on the bucket
+    surviving. A restore puts the uploads back where the workspace keeps them now, disk or bucket.
+  </p>
+  <p>
     A restored workspace needs the <code>.env</code> it was backed up with, which backups do not
     contain, so keep that file somewhere safe.
   </p>

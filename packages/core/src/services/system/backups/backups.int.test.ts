@@ -4,6 +4,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createSqlClient } from '../../../clients/postgres.ts';
 import { startTestDatabase, type TestDatabase } from '../../../testing/postgres.ts';
 import { applyKernelChangelog } from '../../../testing/kernel-changelog.ts';
+import { createDiskObjectStore } from '../../storage/index.ts';
 import { scanAttachments } from './attachments.ts';
 import { createBackupRepository } from './repository.ts';
 import { mountBackup, restoreBackup, unmountBackup } from './restore.ts';
@@ -91,14 +92,17 @@ describe('backups against a real Postgres 18 with pg_dump and pg_restore', () =>
 
       // Lose data, then restore the second backup from the encrypted remote copy only.
       await sql`delete from issues where id > 10`;
-      await rm(path.join(dataDir, 'attachments'), { recursive: true, force: true });
+      await rm(path.join(dataDir, 'objects', 'attachments'), { recursive: true, force: true });
       const remoteOnly = { ...deps, destinations: async () => [remote] };
       const restored = await restoreBackup(remoteOnly, second.setName);
       expect(restored.rowCounts).toMatchObject({ users: 12, issues: 42 });
       expect(restored.attachmentsRestored).toBe(3);
-      expect([...(await scanAttachments(path.join(dataDir, 'attachments'))).keys()].sort()).toEqual(
-        ['aa/aa11', 'bb/bb22', 'cc/cc33'],
-      );
+      const uploads = createDiskObjectStore({ root: dataDir });
+      expect([...(await scanAttachments(uploads)).keys()].sort()).toEqual([
+        'aa/aa11',
+        'bb/bb22',
+        'cc/cc33',
+      ]);
       const [count] = await sql<{ n: number }[]>`select count(*)::int as n from issues`;
       expect(count?.n).toBe(42);
       // The restored snapshot saw this backup as running; the re-index completes it.
