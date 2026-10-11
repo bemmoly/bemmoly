@@ -25,6 +25,7 @@ export {
   type DocServices,
   type IssueTableAttrs,
   type UploadedImage,
+  type UploadOptions,
 } from './doc/services.ts';
 export type { EditorParts, RichTextEditorProps } from './editor-props.ts';
 export { DocEditor, preloadDocEditor } from './lazy-doc.tsx';

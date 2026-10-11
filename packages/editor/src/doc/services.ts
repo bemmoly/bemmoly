@@ -20,6 +20,12 @@ export interface UploadedImage {
   alt?: string;
 }
 
+export interface UploadOptions {
+  /** How much has gone, 0..1, or null while that is unknown. */
+  onProgress?: (fraction: number | null) => void;
+  signal?: AbortSignal;
+}
+
 export {
   DEFAULT_AI_COMMANDS,
   DEFAULT_SELECTION_COMMANDS,
@@ -48,8 +54,11 @@ export interface DocServices {
   searchIssues?: SuggestionSearch;
   /** People for @mentions. */
   searchPeople?: SuggestionSearch;
-  /** Stores a file and returns its URL; without it images are added by link only. */
-  uploadImage?: (file: File) => Promise<UploadedImage>;
+  /**
+   * Stores a file and returns its URL, which is all the page keeps; without it images are
+   * added by link only. A failure rejects with an Error whose message the editor shows.
+   */
+  uploadImage?: (file: File, options?: UploadOptions) => Promise<UploadedImage>;
   /** AI: the / menu's AI group, Ask AI and ghost text; each is hidden without it. */
   ai?: AiHandler;
   /** A link click inside the page, so in-app paths move without a reload. */
