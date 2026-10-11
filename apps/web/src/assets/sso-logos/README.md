@@ -21,7 +21,7 @@ colours as Microsoft's sign-in branding guidance asks. It is four squares in the
 colours, written by hand for this repository on 2026-10-11.
 
 The one-colour marks (`okta.svg`, `keycloak.svg`, `authentik.svg`) are copied unchanged from
-simple-icons 16.32.0 (CC0 1.0), the package the import cards already use.
+simple-icons 16.32.0 (CC0 1.0), the package the code-host marks already use.
 
 ## Trademarks
 

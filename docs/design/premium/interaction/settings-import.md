@@ -15,7 +15,8 @@ what happened afterwards.
 
 1. **Choose a source.** Option cards (`SelectableCard` through the wizard's `ChoiceCard`) for the
    sources the enabled modules offer: Jira and CSV file from Work, Confluence from Docs. Each
-   card shows the source's mark, name and what it brings.
+   card shows a design-system icon (the neutral `import` icon for Jira and Confluence, never
+   their logos), the name and what it brings.
 2. **Connect.** A section drawn from the source's field list: URLs in mono, a `Select` for
    choices, a native file picker for CSV, secrets as password fields with "Stored encrypted;
    never shown again." under them. Fields with `showWhen` appear only while the other field

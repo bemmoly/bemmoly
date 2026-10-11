@@ -37,3 +37,4 @@ accepted record is never edited except to mark it superseded.
 | [0030](0030-modules-own-an-org-defaults-page-in-settings.md) | Modules own an org defaults page in Settings | accepted |
 | [0031](0031-org-templates-are-managed-in-settings-built-ins-read-only.md) | Org templates are managed in Settings › Docs; built-ins read only | accepted |
 | [0032](0032-job-workers-drain-continuously-under-a-process-cap.md) | Job workers drain continuously, under one cap per process | accepted |
+| [0033](0033-the-site-header-carries-sponsor-in-rose.md) | The site header carries Sponsor, in rose | accepted |

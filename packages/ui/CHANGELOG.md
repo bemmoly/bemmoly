@@ -1,5 +1,13 @@
 # @bemmoly/ui
 
+## 0.13.1
+
+### Patch Changes
+
+- 9288d90: The Jira and Confluence import cards in Setup and Settings › Import now show a neutral import
+  icon instead of Atlassian's logos; the product names stay as plain labels. A new lint rule,
+  `bemmoly/no-atlassian-marks`, keeps Atlassian-family logos out of the codebase.
+
 ## 0.13.0
 
 ### Minor Changes

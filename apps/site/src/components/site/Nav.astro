@@ -1,12 +1,14 @@
 ---
 /**
  * The site's header, from the site review: the lockup, four links, a GitHub chip with the star
- * count fetched at build time (no number at all when the fetch fails), a quiet Live demo and
- * one primary, Install. Below 1024px the links move into a menu sheet (a modal dialog, so
- * focus stays inside and Esc closes it); Install stays in the bar.
+ * count fetched at build time (no number at all when the fetch fails), then the calls to action:
+ * Sponsor (a rose outline, set a little apart; optional support that unlocks nothing), Live
+ * demo (secondary, outlined) and Install (the one primary). Below 1024px the links, Live demo
+ * and Sponsor move into a menu sheet (a modal dialog, so focus stays inside and Esc closes it);
+ * Install stays in the bar.
  */
 import { formatCount, repoFacts } from '../../lib/clients/github.ts';
-import { DEMO_URL, INSTALL_HREF, NAV, REPO_URL } from '../../lib/links.ts';
+import { DEMO_URL, INSTALL_HREF, NAV, REPO_URL, SPONSOR_URL } from '../../lib/links.ts';
 import Icon from './Icon.astro';
 import Logo from './Logo.astro';
 
@@ -46,8 +48,18 @@ const starLabel = facts ? `Bemmoly on GitHub, ${facts.stars} stars` : 'Bemmoly o
         )}
       </a>
       <a
+        href={SPONSOR_URL}
+        target="_blank"
+        rel="noopener"
+        data-sponsor
+        class="mr-2 hidden h-8.5 items-center gap-1.5 rounded-card bg-sponsor-soft px-3 text-14 font-medium text-sponsor shadow-[inset_0_0_0_1px_var(--color-sponsor-line)] hover:text-sponsor hover:shadow-[inset_0_0_0_1px_var(--color-sponsor)] lg:inline-flex"
+      >
+        <Icon name="heart" size={14} class="fill-current" />
+        Sponsor
+      </a>
+      <a
         href={DEMO_URL}
-        class="hidden h-8.5 items-center rounded-card px-3 text-14 font-medium text-tx-2 hover:bg-hover hover:text-tx lg:inline-flex"
+        class="hidden h-8.5 items-center rounded-card bg-card px-3.5 text-14 font-medium text-tx shadow-[inset_0_0_0_1px_var(--line)] hover:bg-sunken hover:text-tx lg:inline-flex"
       >
         Live demo
       </a>
@@ -98,6 +110,16 @@ const starLabel = facts ? `Bemmoly on GitHub, ${facts.stars} stars` : 'Bemmoly o
         class="flex h-12 items-center rounded-card px-3 text-16 text-tx hover:bg-hover hover:text-tx"
       >
         Live demo
+      </a>
+      <a
+        href={SPONSOR_URL}
+        target="_blank"
+        rel="noopener"
+        data-sponsor
+        class="flex h-12 items-center gap-2.5 rounded-card px-3 text-16 text-sponsor hover:bg-sponsor-soft hover:text-sponsor"
+      >
+        <Icon name="heart" size={17} class="fill-current" />
+        Sponsor
       </a>
       <a
         href={REPO_URL}

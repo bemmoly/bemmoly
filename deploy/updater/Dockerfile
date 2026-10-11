@@ -27,7 +27,7 @@ FROM ${NODE_IMAGE} AS cli
 ARG BEMMOLY_VERSION=0.0.0-dev
 WORKDIR /src
 COPY deploy/cli ./deploy/cli
-COPY deploy/installer/lib/common.sh deploy/installer/lib/preflight.sh ./deploy/installer/lib/
+COPY deploy/installer/lib/common.sh deploy/installer/lib/preflight.sh deploy/installer/lib/bundle.sh ./deploy/installer/lib/
 COPY deploy/scripts/release-cli.sh ./deploy/scripts/
 RUN sh deploy/scripts/release-cli.sh "$BEMMOLY_VERSION" /cli \
  && mv "/cli/bemmoly-cli-$BEMMOLY_VERSION.tar.gz" /cli/bemmoly-cli.tar.gz
