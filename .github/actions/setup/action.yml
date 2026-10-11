@@ -1,10 +1,17 @@
 name: Set up the workspace
-description: pnpm from packageManager, Node from .nvmrc with the pnpm store cached, frozen install.
+description: >-
+  pnpm from packageManager, Node from .nvmrc with the pnpm store cached, frozen install, and
+  optionally the Turborepo cache restored under a per-job key.
 
 inputs:
   install:
     description: Run pnpm install --frozen-lockfile after setting up the tools.
     default: 'true'
+  turbo-cache:
+    description: >-
+      Restore and save .turbo/cache under this name, unique per job and shard so parallel jobs
+      never overwrite each other's entry. Empty skips the Turborepo cache.
+    default: ''
 
 runs:
   using: composite
@@ -20,3 +27,11 @@ runs:
       if: inputs.install == 'true'
       shell: bash
       run: pnpm install --frozen-lockfile
+
+    - name: Restore the Turborepo cache
+      if: inputs.turbo-cache != ''
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: .turbo/cache
+        key: turbo-${{ inputs.turbo-cache }}-${{ runner.os }}-${{ github.sha }}
+        restore-keys: turbo-${{ inputs.turbo-cache }}-${{ runner.os }}-
