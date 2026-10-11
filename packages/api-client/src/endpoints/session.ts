@@ -6,6 +6,8 @@ import {
   loginRequestSchema,
   meResponseSchema,
   passwordResetCompleteSchema,
+  passwordResetPreviewResponseSchema,
+  passwordResetPreviewSchema,
   passwordResetRequestSchema,
   readinessResponseSchema,
   sessionsResponseSchema,
@@ -48,8 +50,15 @@ export function authEndpoints(http: Http) {
         method: 'POST',
         body: validated(passwordResetRequestSchema, body),
       }),
+    /** Whose account a reset link is for; the link stays usable. */
+    previewPasswordReset: async (token: string) =>
+      http.request('/api/v1/auth/password-reset/preview', passwordResetPreviewResponseSchema, {
+        method: 'POST',
+        body: validated(passwordResetPreviewSchema, { token }),
+      }),
+    /** Saves the password and signs in on this browser. */
     completePasswordReset: async (body: PasswordResetComplete) =>
-      http.send('/api/v1/auth/password-reset/complete', {
+      http.request('/api/v1/auth/password-reset/complete', authUserResponseSchema, {
         method: 'POST',
         body: validated(passwordResetCompleteSchema, body),
       }),
