@@ -75,6 +75,6 @@ test('an admin uploads a logo, sees it in the sidebar, rail and sign-in, then re
   await page.getByRole('button', { name: /Account: Rohan S\./ }).click();
   await page.getByRole('menuitem', { name: 'Sign out' }).click();
   await expect(page).toHaveURL(/\/login/);
-  await expect(page.locator('img[src^="data:image/png"]')).toBeVisible();
+  await expect(page.getByRole('banner').locator('img[src^="data:image/png"]')).toBeVisible();
   await expect(page.getByText(/Powered by/)).toBeVisible();
 });
