@@ -44,7 +44,7 @@ sent to the browser. Calls to a hosted site may only reach public addresses and 
 site may be on the local network; `BEMMOLY_ALLOW_PRIVATE_URLS` lifts that, as it does for AI
 providers.
 
-Admins: the schema adds the kernel changeset `0500-import-jobs` (the `import_jobs` and
+Admins: the schema adds the kernel changeset `0501-import-jobs` (the `import_jobs` and
 `import_mappings` tables). It is reversible and quick. Importing requires the Work module for
 Jira and CSV and the Docs module for Confluence. Images inside imported pages show their file
 name for now; the files themselves are copied into storage.
