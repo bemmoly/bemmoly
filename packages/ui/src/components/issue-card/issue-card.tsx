@@ -77,7 +77,8 @@ interface SelectBoxProps {
  * The selection mark: a round check sitting on the card's top-left corner, so showing it never
  * moves or covers the card's contents, and so a ticked card never reads as the square task tile.
  * Its hit area reaches 34px (46px on touch) past the 18px mark. Touch has no hover, so there it
- * is always shown.
+ * is always shown, and so it moves inside the card (which makes room for it) instead of hanging
+ * off a corner that a phone's narrow column leaves no gutter for.
  */
 function SelectBox({ issueKey, checked, visible, onCheck }: SelectBoxProps) {
   return (
@@ -98,7 +99,7 @@ function SelectBox({ issueKey, checked, visible, onCheck }: SelectBoxProps) {
       }}
       onPointerDown={(event) => event.stopPropagation()}
       className={cx(
-        'absolute -top-2 -left-2 z-2 grid size-4.5 cursor-pointer place-items-center rounded-full border-[1.5px] p-0 shadow-e1',
+        'absolute -top-2 -left-2 z-2 grid pointer-coarse:top-2.75 pointer-coarse:left-2.25 size-4.5 cursor-pointer place-items-center rounded-full border-[1.5px] p-0 shadow-e1',
         'before:absolute before:-inset-2 before:rounded-full pointer-coarse:before:-inset-3.5',
         checked
           ? 'border-acc-fill bg-acc-fill text-on-acc'
@@ -168,6 +169,7 @@ export function IssueCard({
         interactive && 'hover:shadow-e1h',
         stripeClassName && cx('border-l-[3px]', stripeClassName),
         onSelect && cx('cursor-pointer', focusRing),
+        onCheck && 'pointer-coarse:pl-8.5',
         className,
       )}
     >
