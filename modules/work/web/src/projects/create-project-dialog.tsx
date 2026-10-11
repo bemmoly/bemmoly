@@ -11,6 +11,9 @@ import {
 } from '@bemmoly/ui';
 import { usePeople } from '../hooks/issue-people.ts';
 import { useCreateProject, useTeams } from '../hooks/projects-list.ts';
+import { onLinkClick } from '../workflow/navigate.ts';
+
+const NEW_TEAM_HREF = '/settings/teams?new=1';
 
 const METHODS = [
   {
@@ -48,6 +51,7 @@ function CreateProjectForm({ open, onClose, onCreated }: CreateProjectDialogProp
   const { draft, errors } = form;
   const team = teams.data?.items.find((item) => item.id === draft.teamId);
   const lead = team?.leadUserId ? person(team.leadUserId).name : null;
+  const noTeams = teams.isSuccess && teams.data.items.length === 0;
 
   return (
     <Modal
@@ -133,13 +137,28 @@ function CreateProjectForm({ open, onClose, onCreated }: CreateProjectDialogProp
         </div>
         <Field
           label="Team"
-          hint={lead ? undefined : 'The team that owns the project; its lead leads it.'}
+          hint={
+            noTeams ? (
+              <>
+                No teams yet; the project can start without one.{' '}
+                <a
+                  href={NEW_TEAM_HREF}
+                  onClick={onLinkClick(NEW_TEAM_HREF)}
+                  className="font-semibold text-acc hover:underline"
+                >
+                  Create a team
+                </a>
+              </>
+            ) : lead ? undefined : (
+              'The team that owns the project; its lead leads it.'
+            )
+          }
         >
           <Select
             value={draft.teamId}
-            placeholder="No team yet"
+            placeholder="No team"
             options={[
-              { value: '', label: 'No team yet' },
+              { value: '', label: 'No team' },
               ...(teams.data?.items ?? []).map((item) => ({ value: item.id, label: item.name })),
             ]}
             onChange={(event) => form.set('teamId', event.value)}

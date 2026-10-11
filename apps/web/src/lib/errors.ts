@@ -8,6 +8,7 @@ const COPY: Partial<Record<string, string>> = {
   forbidden: 'You do not have access to do that. Ask an org admin.',
   module_access_denied: 'You do not have access to this module. Ask an org admin.',
   invalid_response: 'The server answered in a way this page did not expect. Reload and try again.',
+  client_error: 'Something went wrong on this page. Reload and try again.',
   internal_error: 'Something went wrong on our side. Quote the request id when you report it.',
 };
 

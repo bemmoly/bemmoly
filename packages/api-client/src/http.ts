@@ -58,6 +58,34 @@ function assertRelativePath(path: string): void {
   }
 }
 
+/**
+ * A random v4 UUID. crypto.randomUUID exists only in secure contexts (HTTPS or localhost),
+ * so a server reached over plain HTTP on a LAN address falls back to getRandomValues.
+ */
+export function randomKey(): string {
+  if (typeof crypto.randomUUID === 'function') return crypto.randomUUID();
+  const bytes = crypto.getRandomValues(new Uint8Array(16));
+  bytes[6] = ((bytes[6] ?? 0) & 0x0f) | 0x40;
+  bytes[8] = ((bytes[8] ?? 0) & 0x3f) | 0x80;
+  const hex = Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+}
+
+const UNEXPECTED = 'The server answered in a way this page did not expect. Reload and try again.';
+
+/** Anything that is not already an ApiError becomes one, so screens never show a raw JS error. */
+function asApiError(cause: unknown): ApiError {
+  if (cause instanceof ApiError) return cause;
+  return new ApiError(
+    0,
+    'client_error',
+    'Something went wrong on this page. Reload and try again.',
+    {
+      cause,
+    },
+  );
+}
+
 export function buildQuery(query: Query | undefined): string {
   if (!query) return '';
   const params = new URLSearchParams();
@@ -94,10 +122,19 @@ export function createHttp(options: HttpOptions = {}): Http {
   };
 
   async function open(path: string, init: RequestOptions, accept: string): Promise<Response> {
+    try {
+      return await openUnsafe(path, init, accept);
+    } catch (cause) {
+      if (init.signal?.aborted) throw cause;
+      throw asApiError(cause);
+    }
+  }
+
+  async function openUnsafe(path: string, init: RequestOptions, accept: string): Promise<Response> {
     const headers: Record<string, string> = { accept };
     if (init.raw) headers['content-type'] = 'application/octet-stream';
     else if (init.body !== undefined) headers['content-type'] = 'application/json';
-    if (init.idempotent) headers['idempotency-key'] = crypto.randomUUID();
+    if (init.idempotent) headers['idempotency-key'] = randomKey();
     let response: Response;
     try {
       response = await doFetch(url(path, init.query), {
@@ -127,7 +164,7 @@ export function createHttp(options: HttpOptions = {}): Http {
     return readJson(await open(path, init, 'application/json'));
   }
 
-  function parseLine<S extends z.ZodType>(path: string, schema: S, line: string): z.output<S> {
+  function parseLine<S extends z.ZodType>(schema: S, line: string): z.output<S> {
     let value: unknown;
     try {
       value = JSON.parse(line) as unknown;
@@ -136,7 +173,7 @@ export function createHttp(options: HttpOptions = {}): Http {
     }
     const parsed = schema.safeParse(value);
     if (!parsed.success) {
-      throw new ApiError(200, 'invalid_response', `Unexpected stream line from ${path}`);
+      throw new ApiError(200, 'invalid_response', UNEXPECTED);
     }
     return parsed.data;
   }
@@ -147,7 +184,7 @@ export function createHttp(options: HttpOptions = {}): Http {
       const body = await call(path, init);
       const parsed = schema.safeParse(body);
       if (!parsed.success) {
-        throw new ApiError(200, 'invalid_response', `Unexpected response from ${path}`, {
+        throw new ApiError(200, 'invalid_response', UNEXPECTED, {
           details: parsed.error.issues,
         });
       }
@@ -170,11 +207,11 @@ export function createHttp(options: HttpOptions = {}): Http {
           while (end >= 0) {
             const line = buffer.slice(0, end).trim();
             buffer = buffer.slice(end + 1);
-            if (line) yield parseLine(path, schema, line);
+            if (line) yield parseLine(schema, line);
             end = buffer.indexOf('\n');
           }
         }
-        if (buffer.trim()) yield parseLine(path, schema, buffer.trim());
+        if (buffer.trim()) yield parseLine(schema, buffer.trim());
       } finally {
         reader.releaseLock();
       }
@@ -191,7 +228,7 @@ export function createHttp(options: HttpOptions = {}): Http {
       const body = await xhrUpload(url(path, query), file, progress, options.onUnauthenticated);
       const parsed = schema.safeParse(body);
       if (!parsed.success) {
-        throw new ApiError(200, 'invalid_response', `Unexpected response from ${path}`, {
+        throw new ApiError(200, 'invalid_response', UNEXPECTED, {
           details: parsed.error.issues,
         });
       }
