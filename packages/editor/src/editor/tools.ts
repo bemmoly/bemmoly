@@ -178,6 +178,11 @@ export const SLASH_BLOCKS: readonly SlashBlock[] = [
   { id: 'blockquote', label: 'Quote', run: (c) => c.toggleBlockquote() },
   { id: 'codeBlock', label: 'Code block', run: (c) => c.toggleCodeBlock() },
   { id: 'horizontalRule', label: 'Divider', run: (c) => c.setHorizontalRule() },
+  {
+    id: 'table',
+    label: 'Table',
+    run: (c) => c.insertTable({ rows: 3, cols: 3, withHeaderRow: true }),
+  },
 ];
 
 /** The blocks whose name starts a word matching the query, case-insensitively. */

@@ -1,5 +1,7 @@
 import type { Editor } from '@tiptap/core';
 import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
+import { BlockHandle } from '../doc/block-handle.tsx';
+import { TableTools } from '../doc/table-tools.tsx';
 import type { EditorParts, RichTextEditorProps } from '../editor-props.ts';
 import type { RichTextDoc } from '../types.ts';
 import { createEditor } from './create.ts';
@@ -39,6 +41,7 @@ export default function RichTextEditor(props: RichTextEditorProps) {
   const [store] = useState(() => new SuggestionStore());
   const [linking, setLinking] = useState(false);
   const host = useRef<HTMLDivElement>(null);
+  const frame = useRef<HTMLDivElement>(null);
 
   const editor = useMountedEditor(
     () =>
@@ -91,7 +94,11 @@ export default function RichTextEditor(props: RichTextEditorProps) {
 
   const content = (
     <>
-      <div ref={host} className="min-w-0" />
+      <div ref={frame} className="relative min-w-0">
+        <div ref={host} className="min-w-0" />
+        <TableTools editor={editor} host={frame} />
+        {blocks && <BlockHandle editor={editor} frame={frame} gripOnly />}
+      </div>
       <SuggestionList store={store} listId={listId} />
     </>
   );

@@ -1,5 +1,6 @@
 import type { RequestContext } from '@bemmoly/core';
 import type { AiPlanStepPreview } from '@bemmoly/shared';
+import { fromMarkdownBase } from '@bemmoly/editor/convert';
 import type { RichText } from '../../../../shared/common.ts';
 import type { IssueDetail } from '../../../../shared/issues.ts';
 import { projectResource } from '../issues/deps.ts';
@@ -38,15 +39,9 @@ export function fieldPreview(
   };
 }
 
-/** Plain words as the editor's document: one paragraph per line. */
+/** An AI's words, which are Markdown, as the editor's document. */
 export function textDocument(text: string): RichText {
-  return {
-    type: 'doc',
-    content: text
-      .split(/\n+/)
-      .filter((line) => line.trim())
-      .map((line) => ({ type: 'paragraph', content: [{ type: 'text', text: line }] })),
-  };
+  return fromMarkdownBase(text) as RichText;
 }
 
 export const priorityName = (priority: string) =>

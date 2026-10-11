@@ -14,6 +14,7 @@ import { placeBeside, useBlockTarget } from './use-block-target.ts';
  * menu there; the grip drags the block (ProseMirror's own drop, with the accent drop line) and
  * opens the block menu. They show for the hovered block and for a selected block (Esc selects
  * the block the caret is in), so the keyboard reaches them too. Read-only pages have none.
+ * Grip only (a card's description) keeps just the drag, in a 22px margin (the drawer's gutter).
  */
 
 const BUTTON = cx(
@@ -54,9 +55,11 @@ function startDrag(editor: Editor, block: BlockRef, event: DragEvent<HTMLButtonE
 export function BlockHandle({
   editor,
   frame,
+  gripOnly = false,
 }: {
   editor: Editor;
   frame: RefObject<HTMLElement | null>;
+  gripOnly?: boolean;
 }) {
   useEditorState(editor);
   const { hovered, held, hold } = useBlockTarget(editor, frame);
@@ -64,9 +67,45 @@ export function BlockHandle({
   const host = frame.current;
   if (!block || !host || !editor.isEditable || editor.isDestroyed) return null;
   // While its menu is open the handle stays where the menu was opened from.
-  const place = held ?? placeBeside(editor, block, host);
+  const place = held ?? placeBeside(editor, block, host, gripOnly ? 22 : 52);
   if (!place) return null;
   const name = block.node.type.name;
+  const grip = (props: Record<string, unknown>) => (
+    <GripTip>
+      <button
+        type="button"
+        {...props}
+        aria-label={`Move or change this ${name === 'paragraph' ? 'paragraph' : 'block'}`}
+        draggable
+        onDragStart={(event) => startDrag(editor, block, event)}
+        className={cx(BUTTON, 'cursor-grab active:cursor-grabbing')}
+      >
+        <Icon name="drag" size={14} />
+      </button>
+    </GripTip>
+  );
+  if (gripOnly) {
+    return (
+      <div
+        data-block-handle=""
+        style={{ top: place.top, left: place.left }}
+        className="absolute z-10 flex max-sm:hidden"
+      >
+        <Tooltip label="Drag to move">
+          <button
+            type="button"
+            aria-label={`Move this ${name === 'paragraph' ? 'paragraph' : 'block'}`}
+            draggable
+            onMouseDown={(event) => event.preventDefault()}
+            onDragStart={(event) => startDrag(editor, block, event)}
+            className={cx(BUTTON, 'cursor-grab active:cursor-grabbing')}
+          >
+            <Icon name="drag" size={14} />
+          </button>
+        </Tooltip>
+      </div>
+    );
+  }
   return (
     <div
       data-block-handle=""
@@ -91,20 +130,7 @@ export function BlockHandle({
         editor={editor}
         block={block}
         onOpenChange={(open) => hold(open ? { block, top: place.top, left: place.left } : null)}
-        trigger={(props) => (
-          <GripTip>
-            <button
-              type="button"
-              {...props}
-              aria-label={`Move or change this ${name === 'paragraph' ? 'paragraph' : 'block'}`}
-              draggable
-              onDragStart={(event) => startDrag(editor, block, event)}
-              className={cx(BUTTON, 'cursor-grab active:cursor-grabbing')}
-            >
-              <Icon name="drag" size={14} />
-            </button>
-          </GripTip>
-        )}
+        trigger={grip}
       />
     </div>
   );

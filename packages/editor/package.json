@@ -7,7 +7,8 @@
   "exports": {
     ".": "./src/index.ts",
     "./schema": "./src/schema/index.ts",
-    "./convert": "./src/convert/index.ts"
+    "./convert": "./src/convert/index.ts",
+    "./markdown": "./src/convert/markdown-base.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit -p tsconfig.json",
