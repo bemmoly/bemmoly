@@ -7,6 +7,9 @@ updater_image() {
     sed 's|^:|ghcr.io/bemmoly/updater:|'
 }
 
+# More -e options for the one-off updater container; a later -e wins over an earlier one.
+UPDATER_ENV_OVERRIDES=()
+
 run_updater() {
   local network
   network=$(docker inspect --format '{{range $name, $_ := .NetworkSettings.Networks}}{{$name}} {{end}}' bemmoly-bemmoly-1 2>/dev/null | awk '{ print $1 }')
@@ -21,6 +24,7 @@ run_updater() {
     -e BEMMOLY_UPDATER_SELF_UPDATE="$(env_value BEMMOLY_UPDATER_SELF_UPDATE)" \
     -e BEMMOLY_ALLOW_UNSIGNED_UPDATES="$(env_value BEMMOLY_ALLOW_UNSIGNED_UPDATES)" \
     -e BEMMOLY_UPDATER_LOCAL_IMAGES="$(env_value BEMMOLY_UPDATER_LOCAL_IMAGES)" \
+    "${UPDATER_ENV_OVERRIDES[@]}" \
     "$(updater_image)" updater-cli "$@"
 }
 
@@ -42,14 +46,28 @@ latest_available() {
 }
 
 cmd_upgrade() {
-  local version=''
+  local version='' bundle=''
   ASSUME_YES=''
   while [[ $# -gt 0 ]]; do
     case "$1" in
       --yes | -y) ASSUME_YES=1; shift ;;
+      --bundle | --trusted-root)
+        [[ $# -ge 2 ]] || die "$1 needs a value" "Run: bemmoly help"
+        if [[ "$1" == --bundle ]]; then bundle="$2"; else BUNDLE_TRUSTED_ROOT="$2"; fi
+        shift 2
+        ;;
+      --bundle=*) bundle="${1#--bundle=}"; shift ;;
+      --trusted-root=*) BUNDLE_TRUSTED_ROOT="${1#--trusted-root=}"; shift ;;
+      --skip-signature-check) BUNDLE_SKIP_SIGNATURE=1; shift ;;
+      -*) die "Unknown option for upgrade: $1" "Run: bemmoly help" ;;
       *) version="${1#v}"; shift ;;
     esac
   done
+  if [[ -n "${bundle}" ]]; then
+    [[ -z "${version}" ]] || die "Pass a version or --bundle, not both" "The bundle decides the version."
+    upgrade_from_bundle "${bundle}"
+    return
+  fi
   if [[ -z "${version}" ]]; then
     version=$(latest_available)
     [[ -n "${version}" ]] || die "No newer version is available on the $(env_value BEMMOLY_UPDATE_CHANNEL) channel" \

@@ -157,6 +157,15 @@ cmd_config() {
   esac
 }
 
+# bemmoly settings import FILE: email and backup settings from a JSON object, as Terraform's
+# cloud-init writes them. The app checks every value before it writes any.
+cmd_settings() {
+  [[ "${1:-}" == import && -n "${2:-}" ]] || die "Usage: bemmoly settings import FILE" \
+    'FILE is a JSON object such as {"email.smtp.host": "smtp.example.com"}; see https://bemmoly.com/self-hosting'
+  [[ -r "$2" ]] || die "Cannot read $2" "Pass the path of the settings file on this machine."
+  in_app bemmoly-system settings-import <"$2"
+}
+
 # The hostname of the URL, without scheme, port or path.
 url_host() { sed -E 's#^[a-z]+://##; s#[:/].*$##' <<<"$1"; }
 

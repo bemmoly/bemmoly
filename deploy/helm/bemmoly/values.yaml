@@ -1,42 +1,112 @@
-# Bemmoly on Kubernetes: external Postgres 18 (with pgvector), the app as one Deployment
-# (role all) or split into api and worker. This chart is a starting point for 0.1.0.
+# Bemmoly on Kubernetes. Every key is described in README.md beside this file.
+#
+# Pick a database first; the chart refuses to render without one:
+#   postgresql.enabled=true     a bundled Postgres 18 with pgvector (one StatefulSet)
+#   externalDatabase.url        your own Postgres 18 with pgvector and pg_trgm
+#   existingSecret              a Secret you manage that already holds DATABASE_URL
 
 image:
   repository: ghcr.io/bemmoly/bemmoly
   # Defaults to the chart's appVersion.
   tag: ''
   pullPolicy: IfNotPresent
+imagePullSecrets: []
 
 # all: one Deployment does everything. split: an api Deployment and a worker Deployment.
 mode: all
 replicas:
+  # Live collaboration on /collab needs one replica for now (see README, "Replicas").
   api: 1
   worker: 1
 
-# A Secret you create with DATABASE_URL, BEMMOLY_SECRET_KEY and BEMMOLY_BACKUP_PASSPHRASE
-# (and BEMMOLY_METRICS_TOKEN if Prometheus scrapes /metrics). Keep a copy outside the cluster.
-existingSecret: bemmoly
-
 publicUrl: https://bemmoly.example.com
+# Pins the enabled modules, e.g. "work,docs"; empty lets the setup wizard and Settings choose.
 modules: ''
-# Changesets run at boot by default; set false when a pre-upgrade job runs them.
-autoMigrate: true
+
+# A Secret you create, holding DATABASE_URL and BEMMOLY_SECRET_KEY (and, optionally,
+# BEMMOLY_BACKUP_PASSPHRASE, BEMMOLY_METRICS_TOKEN, and POSTGRES_PASSWORD when the bundled
+# Postgres is on). Empty: the chart generates one and keeps it across upgrades and uninstalls.
+existingSecret: ''
+
+externalDatabase:
+  # postgres://user:password@host:5432/bemmoly_db; stored in the generated Secret.
+  url: ''
+
+postgresql:
+  # A single Postgres 18 with pgvector, for small installs and trials. Production clusters
+  # usually run a managed Postgres or an operator and use externalDatabase.url instead.
+  enabled: false
+  image:
+    repository: pgvector/pgvector
+    tag: pg18
+    pullPolicy: IfNotPresent
+  persistence:
+    size: 10Gi
+    storageClass: ''
+  # Tuned for the 4 GB class of machine in the sizing table; raise both with the limits.
+  sharedBuffers: 256MB
+  effectiveCacheSize: 768MB
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      memory: 1Gi
+
+migrations:
+  # Changesets run when a pod starts, under an advisory lock, so several pods are safe.
+  atBoot: true
+  # Also run them in a pre-upgrade hook Job: a changeset that fails stops `helm upgrade`
+  # before any running pod is replaced.
+  preUpgradeJob: true
+  activeDeadlineSeconds: 900
 
 persistence:
   enabled: true
   size: 20Gi
   storageClass: ''
+  # ReadWriteOnce for mode all; split mode needs ReadWriteMany so api and worker share files.
+  accessMode: ''
+  # Keep the volume (attachments, local backups) when the release is uninstalled.
+  keep: true
 
 service:
+  type: ClusterIP
   port: 80
+  annotations: {}
+  # ClientIP pins each client to one pod. See README, "Replicas", before relying on it.
+  sessionAffinity: None
 
 ingress:
   enabled: false
   className: ''
   host: bemmoly.example.com
+  # For cert-manager: { cert-manager.io/cluster-issuer: letsencrypt } and a tlsSecret name.
   annotations: {}
   tlsSecret: ''
 
+# Rolling updates start the new pod before stopping the old one. With a ReadWriteOnce volume
+# on a multi-node cluster, use type: Recreate so the new pod can attach the volume.
+updateStrategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxSurge: 1
+    maxUnavailable: 0
+
 resources:
-  requests: { cpu: 250m, memory: 512Mi }
-  limits: { memory: 1Gi }
+  requests:
+    cpu: 250m
+    memory: 512Mi
+  limits:
+    memory: 1Gi
+
+# Extra environment for the app, e.g. LOG_LEVEL or OTEL_EXPORTER_OTLP_ENDPOINT.
+extraEnv: []
+# Extra Secrets or ConfigMaps to load whole, as envFrom entries.
+extraEnvFrom: []
+
+podAnnotations: {}
+podLabels: {}
+nodeSelector: {}
+tolerations: []
+affinity: {}

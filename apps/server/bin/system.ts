@@ -28,6 +28,7 @@ const USAGE = `Usage: bemmoly-system <command> [options]
   update-check                         fetch the release manifest now
   prune                                apply backup retention now
   sync-index                           add rows for backup sets found on disk or in S3
+  settings-import                      set email and backup settings from a JSON object on stdin
   maintenance on <reason> [message] [--step text] | maintenance off
 
 Options: --json  print one JSON document`;

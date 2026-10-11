@@ -69,6 +69,11 @@ ensure_docker() {
     step_done "already installed"
     return 0
   fi
+  # Docker's repositories are out of reach without internet.
+  if [ -n "${IMAGE_ARCHIVE:-}" ]; then
+    die "Docker Engine and the Compose plugin are not installed" \
+      "Install them from your package mirror (docker-ce and docker-compose-plugin, or docker.io and docker-compose-v2), then run the installer again."
+  fi
   case "${OS_FAMILY}" in
     ubuntu | debian) apt_install_docker ;;
     fedora) dnf_install_docker ;;

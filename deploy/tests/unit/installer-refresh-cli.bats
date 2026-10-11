@@ -85,7 +85,7 @@ setup() {
   [ "$(cat "${out}/bemmoly-cli/VERSION")" = 0.12.0 ]
   [ -x "${out}/bemmoly-cli/bemmoly" ]
   [ "$(cd "${out}/bemmoly-cli/lib" && ls | tr '\n' ' ')" = \
-    'cli-backups.sh cli-selfupdate.sh cli-stack.sh cli-updates.sh common.sh preflight.sh ' ]
+    'bundle.sh cli-backups.sh cli-offline.sh cli-selfupdate.sh cli-stack.sh cli-updates.sh common.sh preflight.sh ' ]
   run sh "${DEPLOY_DIR}/scripts/release-cli.sh" 'not-a-version' "${out}"
   [ "${status}" -eq 1 ]
 }

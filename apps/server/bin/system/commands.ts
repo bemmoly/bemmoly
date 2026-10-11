@@ -19,6 +19,7 @@ import {
 import { backupKindSchema } from '@bemmoly/shared';
 import { appVersionOf } from '../../src/config/version.ts';
 import { CLI_ACTOR, UsageError, type Runtime } from './runtime.ts';
+import { importSettings, readStdin } from './settings-import.ts';
 
 export interface CommandInput {
   args: string[];
@@ -139,6 +140,7 @@ export const COMMANDS: Record<string, Command> = {
   'update-check': (runtime) => checkForUpdates(runtime.deps, { force: true }),
   prune: (runtime) => pruneBackups(runtime.deps),
   'sync-index': async (runtime) => ({ added: await syncBackupIndex(runtime.deps) }),
+  'settings-import': async (runtime) => importSettings(runtime.settings, await readStdin()),
   maintenance: async (runtime, input) => {
     const mode = required(input.args, 0, 'on or off');
     if (mode === 'off') {

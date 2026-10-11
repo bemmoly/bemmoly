@@ -31,7 +31,8 @@ tree="${work}/bemmoly-cli"
 mkdir -p "${tree}/lib"
 cp "${DEPLOY_DIR}/cli/bemmoly" "${tree}/bemmoly"
 cp "${DEPLOY_DIR}/cli/completion.bash" "${tree}/completion.bash"
-cp "${DEPLOY_DIR}/installer/lib/common.sh" "${DEPLOY_DIR}/installer/lib/preflight.sh" "${tree}/lib/"
+cp "${DEPLOY_DIR}/installer/lib/common.sh" "${DEPLOY_DIR}/installer/lib/preflight.sh" \
+  "${DEPLOY_DIR}/installer/lib/bundle.sh" "${tree}/lib/"
 for part in "${DEPLOY_DIR}"/cli/lib/*.sh; do
   cp "${part}" "${tree}/lib/cli-$(basename "${part}")"
 done

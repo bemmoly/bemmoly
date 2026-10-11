@@ -310,9 +310,12 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      # The air-gap bundles carry a keyless signature over their SHA256SUMS, and each .tar.gz
+      # gets its own (.sigstore.json) and a .sha256, made by the cosign installed above.
       - name: Collect the deploy assets
         env:
           BEMMOLY_AIRGAP_PLATFORMS: linux/amd64 linux/arm64
+          BEMMOLY_AIRGAP_SIGN: keyless
         run: |
           cp release/sbom-*.spdx.json assets/ 2>/dev/null || echo "::notice::No SBOMs: no image was built."
           cp "$INSTALLER" assets/install.sh

@@ -136,6 +136,7 @@ new_env_file() {
   export TPL_PG_SHARED_BUFFERS="${PG_SHARED_BUFFERS}" TPL_PG_EFFECTIVE_CACHE_SIZE="${PG_EFFECTIVE_CACHE_SIZE}"
   if [ -n "${NO_UPDATER}" ]; then export TPL_UPDATER_URL=''; else export TPL_UPDATER_URL='http://updater:8090'; fi
   export TPL_MODULES="${MODULES}"
+  if [ -n "${IMAGE_ARCHIVE}" ]; then export TPL_UPDATER_LOCAL_IMAGES=true; else export TPL_UPDATER_LOCAL_IMAGES=false; fi
   asset env.template | render_template | root_write "${INSTALL_DIR}/.env" 600
 }
 
@@ -149,6 +150,7 @@ update_env_file() {
   env_set "${tmp}" COMPOSE_PROFILES "$(compose_profiles)"
   env_set "${tmp}" BEMMOLY_UPDATE_CHANNEL "${CHANNEL}"
   [ -z "${MODULES}" ] || env_set "${tmp}" BEMMOLY_MODULES "${MODULES}"
+  [ -z "${IMAGE_ARCHIVE}" ] || env_set "${tmp}" BEMMOLY_UPDATER_LOCAL_IMAGES true
   if [ -n "${DOMAIN_GIVEN:-}" ]; then
     env_set "${tmp}" BEMMOLY_DOMAIN "${DOMAIN}"
     env_set "${tmp}" BEMMOLY_TLS_MODE "${TLS_MODE}"
