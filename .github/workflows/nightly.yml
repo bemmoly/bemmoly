@@ -22,7 +22,6 @@ permissions:
 env:
   IMAGE: ghcr.io/bemmoly/bemmoly
   IMAGE_TAG: ${{ inputs.image-tag || 'latest' }}
-  K6_IMAGE: grafana/k6:2.3.0
   # Scripts owned by deploy/. The smoke test completes the wizard through the API, backs up
   # and restores; with --upgrade-to it also upgrades and rolls back.
   INSTALLER: deploy/install.sh
@@ -104,24 +103,10 @@ jobs:
   load:
     name: Load budgets (k6)
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 75
     permissions:
       contents: read
       issues: write
-    services:
-      postgres:
-        image: pgvector/pgvector:pg18
-        env:
-          POSTGRES_USER: bemmoly
-          POSTGRES_PASSWORD: bemmoly
-          POSTGRES_DB: bemmoly_db
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U bemmoly -d bemmoly_db"
-          --health-interval 2s
-          --health-timeout 3s
-          --health-retries 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -129,33 +114,41 @@ jobs:
 
       - uses: ./.github/actions/setup
 
-      - name: Start the server
-        env:
-          DATABASE_URL: postgres://bemmoly:bemmoly@localhost:5432/bemmoly_db
-          BEMMOLY_PUBLIC_URL: http://127.0.0.1:8080
-          LOG_LEVEL: warn
-        run: |
-          BEMMOLY_SECRET_KEY="$(openssl rand -base64 32)" nohup node apps/server/src/server.ts > server.log 2>&1 &
-          for _ in $(seq 1 60); do
-            if curl -fsS http://127.0.0.1:8080/healthz > /dev/null; then exit 0; fi
-            sleep 1
-          done
-          cat server.log
-          exit 1
+      # Postgres and the server on CPUs 0-1 (the 2 vCPU reference VM's share), k6 on 2-3.
+      - id: install
+        uses: ./.github/actions/load-install
 
-      - name: k6 against the budgets
-        run: >-
-          docker run --rm --network host -v "$PWD/tools/k6:/scripts:ro" -v "$PWD:/out"
-          "$K6_IMAGE" run -e BASE_URL=http://127.0.0.1:8080
-          --summary-export /out/k6-summary.json /scripts/budgets.js
+      - name: k6 against the budgets of tech design §20
+        env:
+          BASE_URL: ${{ steps.install.outputs.base-url }}
+          CREDENTIALS: ${{ steps.install.outputs.credentials }}
+          DATASET: ${{ steps.install.outputs.dataset }}
+          OUT_DIR: ${{ runner.temp }}/load-results
+          K6_NETWORK: host
+          K6_CPUSET: '2,3'
+          METRICS_CMD: >-
+            curl -fsS -H "Authorization: Bearer $METRICS_TOKEN" http://127.0.0.1:8080/metrics
+        run: |
+          status=0
+          bash perf/run-suite.sh || status=$?
+          {
+            echo '## Load budgets (tech design §20)'
+            cat "$OUT_DIR/report.md"
+            for table in "$OUT_DIR"/*.server.md; do
+              echo
+              echo "### Server-side latency: $(basename "$table" .server.md)"
+              cat "$table"
+            done
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit "$status"
 
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
-          name: k6-summary
+          name: load-results
           path: |
-            k6-summary.json
-            server.log
+            ${{ runner.temp }}/load-results
+            ${{ runner.temp }}/server.log
           retention-days: 30
           if-no-files-found: ignore
 

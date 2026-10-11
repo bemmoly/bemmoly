@@ -22,7 +22,7 @@ rules:
         # web app's mock server, which forwards a Request to the real backend as it is.
         - /apps/site/tests/**
         - /apps/web/src/mocks/**
-        - /tools/k6/**
+        - /perf/k6/**
         - /tools/semgrep/**
     pattern-either:
       - pattern: fetch(...)

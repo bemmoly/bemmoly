@@ -116,5 +116,10 @@ export default defineConfig(
     files: ['scripts/**'],
     rules: { 'no-console': 'off' },
   },
+  {
+    // k6 scripts run in k6's JavaScript runtime, not Node, with its own globals.
+    files: ['perf/k6/**/*.js'],
+    languageOptions: { globals: { __ENV: 'readonly', __VU: 'readonly', open: 'readonly' } },
+  },
   prettier,
 );
