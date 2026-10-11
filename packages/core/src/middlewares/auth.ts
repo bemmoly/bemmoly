@@ -9,6 +9,7 @@ import {
   type ModuleCatalog,
   type RequestAuthorization,
 } from '../services/authz/index.ts';
+import type { AuthorizationCache } from '../services/authz/shared-cache.ts';
 import { authenticateApiToken, authenticateSession } from '../services/identity/index.ts';
 import {
   clearSessionCookie,
@@ -52,6 +53,11 @@ export interface AuthenticationOptions {
    */
   anonymousPaths?: readonly string[];
   now?: () => Date;
+  /**
+   * The process-wide authorization cache (the server passes processAuthorizationCache). Absent:
+   * every request reads roles, memberships, grants and tokens from the database.
+   */
+  authzCache?: AuthorizationCache;
 }
 
 const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
@@ -105,7 +111,7 @@ async function fromBearer(
 ) {
   const token = BEARER.exec(header)?.[1];
   if (!token) throw new UnauthenticatedError('Send API tokens as "Authorization: Bearer <token>"');
-  const resolved = await authenticateApiToken(options.db, token, now);
+  const resolved = await authenticateApiToken(options.db, token, now, options.authzCache);
   if (!resolved) {
     request.credentialRejected = true;
     throw new UnauthenticatedError('The API token is invalid, expired or revoked');
@@ -121,6 +127,7 @@ async function fromBearer(
       db: options.db,
       modules: options.modules,
       restrictModules: resolved.modules,
+      ...(options.authzCache ? { shared: options.authzCache } : {}),
     });
   }
 }
@@ -169,7 +176,11 @@ export const authentication = fp<AuthenticationOptions>(
     app.decorateRequest('credentialRejected', false);
     app.addHook('onRequest', async (request, reply) => {
       const now = options.now ? options.now() : new Date();
-      request.authz = createRequestAuthorization({ db: options.db, modules: options.modules });
+      request.authz = createRequestAuthorization({
+        db: options.db,
+        modules: options.modules,
+        ...(options.authzCache ? { shared: options.authzCache } : {}),
+      });
       // Outside the API prefix a Bearer header belongs to that route's own
       // scheme (the /metrics scrape token), never to an API token.
       const header = isUnderApi(request, apiPrefix) ? request.headers.authorization : undefined;

@@ -13,6 +13,7 @@ import {
   createSettingsReaderHandle,
   EMAIL_SETTING_DEFINITIONS,
   loadModules,
+  processAuthorizationCache,
   SYSTEM_SETTINGS,
   type Actor,
   type BemmolyModule,
@@ -91,6 +92,10 @@ export async function bootApplication(options: BootOptions): Promise<Booted> {
         },
       })
     : undefined;
+  // Authorization lookups are shared across requests only where the bemmoly_authz
+  // notifications can reach this process to empty them (shared-cache.ts).
+  const authzCache = realtime ? processAuthorizationCache : undefined;
+  realtime?.listener.onAuthorizationChange(() => processAuthorizationCache.clear());
   const jobQueue = createJobQueueHandle();
   const settingsReader = createSettingsReaderHandle();
   const collabHandle = createCollabHandle();
@@ -125,7 +130,11 @@ export async function bootApplication(options: BootOptions): Promise<Booted> {
           isEnabled: (moduleId: string) => moduleState?.isEnabled(moduleId) ?? false,
           contextFor: (actor: Actor, context?: { requestId?: string }) => ({
             actor,
-            authz: createRequestAuthorization({ db: database.db, modules: catalog }),
+            authz: createRequestAuthorization({
+              db: database.db,
+              modules: catalog,
+              ...(authzCache ? { shared: authzCache } : {}),
+            }),
             ...(context?.requestId ? { requestId: context.requestId } : {}),
           }),
         }
@@ -246,6 +255,7 @@ export async function bootApplication(options: BootOptions): Promise<Booted> {
         }
       : {}),
     ...(services ? { identity: services.identity } : {}),
+    ...(authzCache ? { authzCache } : {}),
   });
   // Before the HTTP server closes: sockets close, pending edits run their hooks and every
   // queued update reaches the database while the pool is still open.

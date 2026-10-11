@@ -21,6 +21,7 @@ import {
   type RoleMatrix,
 } from './loaders.ts';
 import { applyContainerOverride, resolveOrgCell } from './policy.ts';
+import type { AuthorizationCache } from './shared-cache.ts';
 
 export interface AuthzDependencies {
   db: Database;
@@ -30,6 +31,12 @@ export interface AuthzDependencies {
    * access token limited to Work, or an MCP connection to one module. Absent means no limit.
    */
   restrictModules?: readonly string[];
+  /**
+   * The process-wide cache shared by every request (shared-cache.ts). Consulted only for
+   * lookups on the pool: inside a transaction from `within`, the transaction's own writes
+   * must be seen, so those lookups go to the database.
+   */
+  shared?: AuthorizationCache;
 }
 
 function userIdOf(actor: Actor): string {
@@ -59,7 +66,7 @@ interface Caches {
  * matrices and resolved capability sets are cached for its lifetime.
  */
 export function createRequestAuthorization(deps: AuthzDependencies): RequestAuthorization {
-  return bind(deps, deps.db, {
+  return bind(deps, deps.db, deps.shared ?? null, {
     principals: new Map(),
     moduleSets: new Map(),
     matrices: new Map(),
@@ -69,7 +76,12 @@ export function createRequestAuthorization(deps: AuthzDependencies): RequestAuth
 }
 
 /** The checks with every lookup on `db`: the pool, or a transaction from `within`. */
-function bind(deps: AuthzDependencies, db: Database, caches: Caches): RequestAuthorization {
+function bind(
+  deps: AuthzDependencies,
+  db: Database,
+  shared: AuthorizationCache | null,
+  caches: Caches,
+): RequestAuthorization {
   const { principals, moduleSets, matrices, capabilitySets, memberships } = caches;
   const catalog = new Map(capabilityCatalog(deps.modules).map((entry) => [entry.name, entry]));
 
@@ -81,37 +93,61 @@ function bind(deps: AuthzDependencies, db: Database, caches: Caches): RequestAut
     }
     return value;
   };
+  /** Through the process cache first, when there is one; `key` names the lookup and its inputs. */
+  const viaShared = <T>(key: string, load: () => Promise<T>) =>
+    shared ? () => shared.memo(key, load) : load;
+  const limitKey = deps.restrictModules ? [...deps.restrictModules].sort().join(',') : '*';
 
   const principalOf = async (actor: Actor): Promise<Principal> => {
     const userId = userIdOf(actor);
-    const principal = await memo(principals, userId, () => loadPrincipal(db, userId));
+    const principal = await memo(
+      principals,
+      userId,
+      viaShared(`principal|${userId}`, () => loadPrincipal(db, userId)),
+    );
     if (!principal) throw new ForbiddenError('This account is not active');
     return principal;
   };
 
   const limit = deps.restrictModules ? new Set(deps.restrictModules) : null;
   const modulesOf = (principal: Principal) =>
-    memo(moduleSets, principal.userId, async () => {
-      const granted = principal.isOrgAdmin
-        ? new Set(deps.modules.ids())
-        : await loadGrantedModules(db, principal, deps.modules.ids());
-      return limit ? new Set([...granted].filter((id) => limit.has(id))) : granted;
-    });
+    memo(
+      moduleSets,
+      principal.userId,
+      viaShared(
+        `modules|${principal.userId}|${limitKey}|${deps.modules.ids().join(',')}`,
+        async () => {
+          const granted = principal.isOrgAdmin
+            ? new Set(deps.modules.ids())
+            : await loadGrantedModules(db, principal, deps.modules.ids());
+          return limit ? new Set([...granted].filter((id) => limit.has(id))) : granted;
+        },
+      ),
+    );
 
-  const capabilitiesFor = (roleId: string, container: { kind: ContainerKind; id: string } | null) =>
-    memo(capabilitySets, `${roleId}|${container?.kind ?? ''}|${container?.id ?? ''}`, async () => {
-      const matrix = await memo(matrices, roleId, () => loadRoleMatrix(db, roleId));
-      if (!matrix) return new Set<string>();
-      const overrides = container
-        ? await loadOverrides(db, container.kind, container.id, roleId)
-        : new Map<string, boolean>();
-      const granted = new Set<string>();
-      for (const [name, entry] of catalog) {
-        const org = resolveOrgCell(matrix.role, entry, matrix.cells.get(name));
-        if (applyContainerOverride(org, overrides.get(name))) granted.add(name);
-      }
-      return granted;
-    });
+  const capabilitiesFor = (
+    roleId: string,
+    container: { kind: ContainerKind; id: string } | null,
+  ) => {
+    const key = `${roleId}|${container?.kind ?? ''}|${container?.id ?? ''}`;
+    return memo(
+      capabilitySets,
+      key,
+      viaShared(`capabilities|${key}|${deps.modules.ids().join(',')}`, async () => {
+        const matrix = await memo(matrices, roleId, () => loadRoleMatrix(db, roleId));
+        if (!matrix) return new Set<string>();
+        const overrides = container
+          ? await loadOverrides(db, container.kind, container.id, roleId)
+          : new Map<string, boolean>();
+        const granted = new Set<string>();
+        for (const [name, entry] of catalog) {
+          const org = resolveOrgCell(matrix.role, entry, matrix.cells.get(name));
+          if (applyContainerOverride(org, overrides.get(name))) granted.add(name);
+        }
+        return granted;
+      }),
+    );
+  };
 
   const checkModule = async (principal: Principal, moduleId: string) => {
     if (!deps.modules.ids().includes(moduleId)) {
@@ -139,7 +175,9 @@ function bind(deps: AuthzDependencies, db: Database, caches: Caches): RequestAut
       const membership = await memo(
         memberships,
         `${container.kind}|${container.id}|${principal.userId}`,
-        () => loadMembershipRole(db, container.kind, container.id, principal.userId),
+        viaShared(`membership|${container.kind}|${container.id}|${principal.userId}`, () =>
+          loadMembershipRole(db, container.kind, container.id, principal.userId),
+        ),
       );
       if (!membership) throw new ForbiddenError(`You are not a member of this ${container.kind}`);
       roleId = membership;
@@ -217,7 +255,7 @@ function bind(deps: AuthzDependencies, db: Database, caches: Caches): RequestAut
       return wanted.filter((id) => allowed.has(id));
     },
     within(transaction: SqlExecutor) {
-      return bind(deps, databaseOnTransaction(deps.db, transaction), caches);
+      return bind(deps, databaseOnTransaction(deps.db, transaction), null, caches);
     },
   };
 }

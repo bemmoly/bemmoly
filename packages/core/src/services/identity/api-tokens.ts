@@ -6,11 +6,12 @@ import {
   type CreateApiTokenInput,
   type CreatedApiToken,
 } from '@bemmoly/shared';
-import { and, desc, eq, gt, isNull, or } from 'drizzle-orm';
+import { and, desc, eq, isNull } from 'drizzle-orm';
 import type { Database } from '../../clients/drizzle.ts';
 import { apiTokens, users } from '../../models/identity/index.ts';
 import { recordAudit } from '../audit/index.ts';
 import type { RequestContext } from '../authz/index.ts';
+import type { AuthorizationCache } from '../authz/shared-cache.ts';
 import { presentApiToken } from './presenters.ts';
 import {
   PERSONAL_TOKEN_PREFIX,
@@ -100,29 +101,51 @@ export interface AuthenticatedToken {
   modules: string[] | null;
 }
 
-/** Resolves a Bearer token; null when unknown, revoked, expired, or the owner is not active. */
-export async function authenticateApiToken(
-  db: Database,
-  token: string,
-  now: Date,
-): Promise<AuthenticatedToken | null> {
-  if (!token.startsWith(PERSONAL_TOKEN_PREFIX)) return null;
+interface TokenLookup {
+  token: typeof apiTokens.$inferSelect;
+  status: string;
+}
+
+async function findToken(db: Database, digest: string): Promise<TokenLookup | null> {
   const [row] = await db
     .select({ token: apiTokens, status: users.status })
     .from(apiTokens)
     .innerJoin(users, eq(users.id, apiTokens.userId))
-    .where(
-      and(
-        eq(apiTokens.tokenHash, digestToken(token)),
-        isNull(apiTokens.revokedAt),
-        or(isNull(apiTokens.expiresAt), gt(apiTokens.expiresAt, now)),
-      ),
-    )
+    .where(and(eq(apiTokens.tokenHash, digest), isNull(apiTokens.revokedAt)))
     .limit(1);
-  if (!row || row.status !== 'active') return null;
+  return row ?? null;
+}
+
+/**
+ * Resolves a Bearer token; null when unknown, revoked, expired, or the owner is not active.
+ * With `cache` (the server's process cache) a known token is looked up at most once per TTL;
+ * revoking it or deactivating its owner clears the cache when that write commits, and
+ * expiry is checked against `now` on every call, cached or not.
+ */
+export async function authenticateApiToken(
+  db: Database,
+  token: string,
+  now: Date,
+  cache?: AuthorizationCache,
+): Promise<AuthenticatedToken | null> {
+  if (!token.startsWith(PERSONAL_TOKEN_PREFIX)) return null;
+  const digest = digestToken(token);
+  const key = `token|${digest}`;
+  const row = cache
+    ? await cache.memo(key, () => findToken(db, digest))
+    : await findToken(db, digest);
+  // Unknown tokens are not kept, so guessing cannot fill the cache.
+  if (!row) {
+    cache?.forget(key);
+    return null;
+  }
+  if (row.token.expiresAt && row.token.expiresAt.getTime() <= now.getTime()) return null;
+  if (row.status !== 'active') return null;
   const lastUsed = row.token.lastUsedAt?.getTime() ?? 0;
   if (now.getTime() - lastUsed > LAST_USED_INTERVAL_MS) {
     await db.update(apiTokens).set({ lastUsedAt: now }).where(eq(apiTokens.id, row.token.id));
+    // The cached row would otherwise ask for this write again on every request.
+    row.token.lastUsedAt = now;
   }
   return {
     tokenId: row.token.id,
