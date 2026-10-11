@@ -1,6 +1,8 @@
-import { fieldErrors, isApiError } from '@bemmoly/api-client';
+import { fieldErrors, isApiError, type ApiError } from '@bemmoly/api-client';
+import { translate } from '@bemmoly/core-web';
 import { toValidationIssues } from '@bemmoly/shared';
 import type { z } from 'zod';
+import '../i18n/catalogs.ts';
 
 const COPY: Partial<Record<string, string>> = {
   network_error: 'Bemmoly could not reach the server. Check your connection and try again.',
@@ -17,13 +19,20 @@ export interface ErrorView {
   requestId: string | undefined;
 }
 
+/** The server's message in the person's language, when the body names a message we know. */
+function serverMessage(error: ApiError): string {
+  if (!error.messageId) return error.message;
+  const text = translate(error.messageId, error.values);
+  return text === error.messageId ? error.message : text;
+}
+
 /** Plain-words copy for any failure; the server's own message wins when it has one. */
 export function describeError(error: unknown): ErrorView {
   if (isApiError(error)) {
     const copy = COPY[error.code];
     const useServer = error.code !== 'internal_error' && error.status !== 0 && error.message;
     return {
-      message: useServer ? error.message : (copy ?? error.message),
+      message: useServer ? serverMessage(error) : (copy ?? error.message),
       requestId: error.requestId,
     };
   }

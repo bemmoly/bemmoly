@@ -1,6 +1,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './app.tsx';
+import { startLocale } from './lib/locale.ts';
 
 /** Renders the app into #root; the boot frame stays on top until the router renders a page. */
 export async function mount(): Promise<void> {
@@ -12,6 +13,7 @@ export async function mount(): Promise<void> {
     const { startDevMocks } = await import('./mocks/browser.ts');
     await startDevMocks();
   }
+  await startLocale();
   const container = document.getElementById('root');
   if (!container) throw new Error('Missing #root element');
   createRoot(container).render(

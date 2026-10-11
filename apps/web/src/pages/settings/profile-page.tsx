@@ -1,18 +1,48 @@
-import { Avatar, Card, SettingsRow, Switch } from '@bemmoly/ui';
+import { useT } from '@bemmoly/core-web';
+import { Avatar, Card, Select, SettingsRow, Switch } from '@bemmoly/ui';
 import { Link } from '@tanstack/react-router';
 import { SettingsPage } from '../../components/settings/settings-page.tsx';
 import { useAiOptOut } from '../../hooks/use-ai-opt-out.ts';
+import { useLanguage } from '../../hooks/use-language.ts';
 import { useMe } from '../../hooks/use-session.ts';
+import { settings } from '../../i18n/settings.ts';
+
+/** The person's language, saved on their account; Automatic follows the browser. */
+function LanguageRow() {
+  const t = useT(settings);
+  const language = useLanguage();
+  return (
+    <SettingsRow
+      title={t('settings.profile.language')}
+      description={t('settings.profile.languageHint')}
+      control={
+        <Select
+          size="md"
+          aria-label={t('settings.profile.language')}
+          options={language.options}
+          value={language.value}
+          disabled={language.pending}
+          onChange={(event) => language.set(event.value)}
+        />
+      }
+    />
+  );
+}
 
 /**
  * Account › Profile, where the user menu's Profile leads: who you are signed in as, and where
  * your own preferences live. Editing the name and password arrives with the account settings.
+ * The worked example of an extracted settings page (docs/i18n.md).
  */
 export function ProfilePage() {
+  const t = useT(settings);
   const me = useMe();
   const ai = useAiOptOut();
   return (
-    <SettingsPage title="Profile" description="Who you are signed in as in this workspace.">
+    <SettingsPage
+      title={t('settings.profile.title')}
+      description={t('settings.profile.description')}
+    >
       <Card className="flex items-center gap-4 px-5 py-4">
         <Avatar name={me.user.name} hue="accent" size={48} />
         <div className="flex min-w-0 flex-col gap-0.5">
@@ -21,27 +51,28 @@ export function ProfilePage() {
         </div>
       </Card>
       <Card className="px-5 py-1">
+        <LanguageRow />
         <SettingsRow
-          title="Notifications"
-          description="What reaches your inbox and your email, and when the daily summary arrives."
-          control={<Link to="/settings/notifications">Open</Link>}
+          title={t('settings.profile.notifications')}
+          description={t('settings.profile.notificationsHint')}
+          control={<Link to="/settings/notifications">{t('settings.profile.open')}</Link>}
         />
         <SettingsRow
-          title="Access tokens"
-          description="Personal tokens that let MCP clients, IDEs and scripts act as you."
-          control={<Link to="/settings/access-tokens">Manage</Link>}
+          title={t('settings.profile.tokens')}
+          description={t('settings.profile.tokensHint')}
+          control={<Link to="/settings/access-tokens">{t('settings.profile.manage')}</Link>}
         />
         <SettingsRow
-          title="Theme"
-          description="Light, dark or the workspace default, from the menu under your name."
+          title={t('settings.profile.theme')}
+          description={t('settings.profile.themeHint')}
         />
         {ai.shown ? (
           <SettingsRow
-            title="Use AI features"
-            description="Summaries, suggestions and the palette’s AI. Off hides them for you, and keeps what you write out of summaries others ask for, except titles."
+            title={t('settings.profile.ai')}
+            description={t('settings.profile.aiHint')}
             control={
               <Switch
-                aria-label="Use AI features"
+                aria-label={t('settings.profile.ai')}
                 checked={ai.useAi}
                 disabled={ai.pending}
                 onCheckedChange={ai.set}

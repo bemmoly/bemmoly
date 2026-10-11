@@ -4,7 +4,7 @@ import { richText, type RichTags } from './rich.tsx';
 import { getLocale, onLocaleChange, translate, type Catalog } from './runtime.ts';
 
 export interface Translate<Id extends string> {
-  /** The message in the person's language: `t('shell.nav.home')`, `t('…count', { count })`. */
+  /** The message in the person's language: `t('core.header.views')`, `t('…count', { count })`. */
   (id: Id, values?: MessageValues): string;
   /**
    * A message with tags, each drawn by its function: "<link>Reset your password</link>" with

@@ -1,0 +1,18 @@
+{
+  "settings.profile.ai": "Use AI features",
+  "settings.profile.aiHint": "Summaries, suggestions and the palette’s AI. Off hides them for you, and keeps what you write out of summaries others ask for, except titles.",
+  "settings.profile.description": "Who you are signed in as in this workspace.",
+  "settings.profile.language": "Language",
+  "settings.profile.languageAuto": "Automatic ({language})",
+  "settings.profile.languageHint": "The language Bemmoly uses for you, and how dates and numbers read, on every device.",
+  "settings.profile.languagePseudo": "Pseudo-locale, for testing layout",
+  "settings.profile.manage": "Manage",
+  "settings.profile.notifications": "Notifications",
+  "settings.profile.notificationsHint": "What reaches your inbox and your email, and when the daily summary arrives.",
+  "settings.profile.open": "Open",
+  "settings.profile.theme": "Theme",
+  "settings.profile.themeHint": "Light, dark or the workspace default, from the menu under your name.",
+  "settings.profile.title": "Profile",
+  "settings.profile.tokens": "Access tokens",
+  "settings.profile.tokensHint": "Personal tokens that let MCP clients, IDEs and scripts act as you."
+}
