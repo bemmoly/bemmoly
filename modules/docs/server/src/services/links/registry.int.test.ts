@@ -82,6 +82,22 @@ describe('Docs in the kernel reference registries', () => {
       await tracker!.links.referencesTo(as(users.outsider), { kind: 'issue', id: ISSUE_ID }),
     ).toEqual([]);
 
+    // A board asks for all its cards at once: one answer per issue that has linked docs.
+    const other = '0193a1b2-0000-7000-8000-0000000000ab';
+    const many = await tracker!.links.referencesToMany(as(users.member), {
+      kind: 'issue',
+      ids: [ISSUE_ID, other],
+    });
+    expect(many.map((group) => group.source)).toEqual(['docs.page']);
+    expect(many[0]?.items.get(ISSUE_ID)?.map((item) => item.title)).toEqual(['Spec']);
+    expect(many[0]?.items.has(other)).toBe(false);
+    expect(
+      await tracker!.links.referencesToMany(as(users.outsider), {
+        kind: 'issue',
+        ids: [ISSUE_ID],
+      }),
+    ).toEqual([]);
+
     expect(await tracker!.entities.resolve('page', { id: spec.id }, as(users.viewer))).toEqual({
       kind: 'page',
       id: spec.id,

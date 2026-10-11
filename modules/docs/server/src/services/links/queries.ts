@@ -75,6 +75,32 @@ export async function pagesPointingAt(
     limit ${limit}`;
 }
 
+/**
+ * The same for many targets of one kind in one statement: each target's live pages, its most
+ * recently linked first, each page once per target. A board asks this for all its cards.
+ */
+export async function pagesPointingAtMany(
+  sql: SqlExecutor,
+  kind: LinkNodeKind,
+  ids: readonly string[],
+  visible: string[] | null,
+): Promise<(LinkedPageRow & { target_id: string })[]> {
+  return sql<(LinkedPageRow & { target_id: string })[]>`
+    select target_id, page_id, space_key, title, icon, status, kind from (
+      select distinct on (l.target_id, p.id) l.target_id, p.id as page_id, s.key as space_key,
+        p.title, p.icon, p.status, l.kind, l.created_at
+      from links l
+      join pages p on p.id = l.source_id and p.deleted_at is null
+      join spaces s on s.id = p.space_id
+      where l.source_kind = 'page' and l.target_kind = ${kind}
+        and l.target_id = any(${ids}::uuid[])
+        ${visible ? sql`and p.space_id = any(${visible}::uuid[])` : sql``}
+      order by l.target_id, p.id,
+        array_position(array['embed', 'mention', 'linked'], l.kind), l.created_at desc
+    ) edges
+    order by target_id, created_at desc, page_id`;
+}
+
 /** Edges into the page from records other modules own (an issue linking a spec). */
 export async function foreignSources(
   sql: SqlExecutor,

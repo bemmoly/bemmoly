@@ -21,7 +21,13 @@ import {
 } from '../common.ts';
 import { pageById } from '../pages/rows.ts';
 import { pagePath } from '../palette/index.ts';
-import { foreignSources, outgoingRows, pagesPointingAt, toLinkedPage } from './queries.ts';
+import {
+  foreignSources,
+  outgoingRows,
+  pagesPointingAt,
+  pagesPointingAtMany,
+  toLinkedPage,
+} from './queries.ts';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -215,6 +221,31 @@ export function createLinksService(deps: DocsServiceDeps) {
         title: page.title,
         path: pagePath(page.pageId),
       }));
+    },
+
+    /** "docs.page" for many records of one kind at once, in one statement. */
+    async referencesToMany(
+      ctx: RequestContext,
+      targets: { kind: string; ids: readonly string[] },
+    ): Promise<Map<string, EntitySummary[]>> {
+      const ids = targets.ids.filter((id) => UUID.test(id));
+      const byTarget = new Map<string, EntitySummary[]>();
+      if ((targets.kind !== 'issue' && targets.kind !== 'page') || ids.length === 0) {
+        return byTarget;
+      }
+      const visible = await visibleSpaceIds(sql(), ctx);
+      for (const row of await pagesPointingAtMany(sql(), targets.kind, ids, visible)) {
+        const list = byTarget.get(row.target_id) ?? [];
+        list.push({
+          kind: 'page',
+          id: row.page_id,
+          key: row.space_key,
+          title: row.title,
+          path: pagePath(row.page_id),
+        });
+        byTarget.set(row.target_id, list);
+      }
+      return byTarget;
     },
   };
 }
