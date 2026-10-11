@@ -29,7 +29,7 @@ export function IssueTypesPage({ projectKey }: { projectKey: string | undefined 
   return (
     <SchemePage
       title="Issue types"
-      description="The kinds of work this project tracks and how they nest: Epic › Story, Bug, Task, Incident › Subtask."
+      description="The kinds of work this project tracks and how they nest: epics hold stories, bugs, tasks and incidents, and those hold subtasks."
       flow={flow}
       canConfigure={access.configureProject}
     >
