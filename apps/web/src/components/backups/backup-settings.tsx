@@ -1,7 +1,6 @@
 import { ConfirmChange, SettingsSection, UnsavedChangesBar } from '@bemmoly/ui';
 import { destinationRisk, protectionRisk, retentionRisk } from '../../hooks/use-backups-risks.ts';
 import type { BackupSection, useBackupSchedule } from '../../hooks/use-backups-schedule.ts';
-import { TIMEZONES } from '../../hooks/use-workspace-settings.ts';
 import { useConfirmChange } from '../settings/use-confirm-change.ts';
 import { useSectionEdits } from '../settings/use-section-edits.ts';
 import {
@@ -86,7 +85,6 @@ export function BackupSettings({ form, localPath, bucket, paused }: BackupSettin
               schedule={policy.schedule}
               update={form.updateSchedule}
               errors={form.errors}
-              timezones={TIMEZONES}
             />
           )}
         </SettingsSection>
