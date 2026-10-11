@@ -68,6 +68,36 @@ setup() {
   [ "$(env_get "${BEMMOLY_DIR}/.env" UPDATER_VERSION)" = 1.4.0 ]
 }
 
+@test "sync-updater hides an older updater's usage line and leaves the app running" {
+  printf 'VERSION=1.4.0\nUPDATER_VERSION=1.3.0\n' >"${BEMMOLY_DIR}/.env"
+  run_updater() {
+    printf 'updater %s\n' "$*" >>"${CALLS}"
+    printf 'Usage: updater-cli upgrade <version> | rollback | status | prune\n' >&2
+    return 2
+  }
+  run cmd_sync_updater
+  [ "${status}" -eq 0 ]
+  [[ "${output}" != *"Usage:"* ]]
+  [[ "${output}" == *"The updater is on 1.4.0"* ]]
+  grep -q 'Usage: updater-cli' "${BEMMOLY_LOG}"
+  # Only the updater is recreated: a bare `compose up -d` restarts the app, which reads .env.
+  grep -qx 'compose up -d --no-deps updater' "${CALLS}"
+  refute() { if "$@"; then return 1; fi; }
+  refute grep -qx 'compose up -d' "${CALLS}"
+}
+
+@test "sync-updater still shows the errors of an updater that knows self-update" {
+  printf 'VERSION=1.4.0\nUPDATER_VERSION=1.3.0\n' >"${BEMMOLY_DIR}/.env"
+  run_updater() {
+    printf 'signature check failed\n' >&2
+    return 3
+  }
+  run cmd_sync_updater
+  [ "${status}" -ne 0 ]
+  [[ "${output}" == *"signature check failed"* ]]
+  [[ "${output}" == *"The updater stays on 1.3.0"* ]]
+}
+
 @test "an upgrade by an older updater still moves UPDATER_VERSION forward" {
   run cmd_upgrade 1.4.0 --yes
   [ "${status}" -eq 0 ]
