@@ -10,22 +10,37 @@ import {
   useT,
 } from '@bemmoly/core-web';
 import { Outlet, useNavigate, useRouterState } from '@tanstack/react-router';
-import { lazy, Suspense, useCallback, useEffect, useMemo } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { useRealtimeSync } from '../../hooks/use-shell-effects.ts';
 import { useShell, type Shell } from '../../hooks/use-shell.ts';
 import { shellText } from '../../i18n/catalogs.ts';
 import { ENTITY_RENDERERS } from '../../lib/entity-renderers.ts';
 import { useUiStore } from '../../store/ui.ts';
 import { PageFailure } from '../page-failure.tsx';
-import { AboutDialog } from './about-dialog.tsx';
 import { AppSidebar } from './app-sidebar.tsx';
 import { CreateHost } from './create-host.tsx';
 import { NewButton } from './new-button.tsx';
-import { SettingsSidebar } from './settings-sidebar.tsx';
-import { ShortcutsOverlay, shellShortcuts } from './shortcuts-overlay.tsx';
+import { shellShortcuts } from './shell-shortcuts.ts';
 
 const CommandPaletteHost = lazy(() => import('../command/command-palette-host.tsx'));
 const PlanFollower = lazy(() => import('../command/plan-follower.tsx'));
+const ShortcutsOverlay = lazy(async () => ({
+  default: (await import('./shortcuts-overlay.tsx')).ShortcutsOverlay,
+}));
+// Settings' sidebar arrives with the settings pages, which load its chunk anyway.
+const SettingsSidebar = lazy(async () => ({
+  default: (await import('./settings-sidebar.tsx')).SettingsSidebar,
+}));
+const AboutDialog = lazy(async () => ({
+  default: (await import('./about-dialog.tsx')).AboutDialog,
+}));
+
+/** True from the first time `open` is, so a dialog loads on first use and then stays to close. */
+function useOpenedOnce(open: boolean): boolean {
+  const [opened, setOpened] = useState(open);
+  if (open && !opened) setOpened(true);
+  return opened;
+}
 
 /** The frame's keys: they need its sidebar toggle, so they live inside it. */
 function ShellKeys({ shell }: { shell: Shell }) {
@@ -98,6 +113,8 @@ export function AppShell() {
   const paletteOpen = useUiStore((state) => state.paletteOpen);
   const aiPlanId = useUiStore((state) => state.aiPlanId);
   const setAppPath = useUiStore((state) => state.setAppPath);
+  const shortcutsOpened = useOpenedOnce(useUiStore((state) => state.shortcutsOpen));
+  const aboutOpened = useOpenedOnce(useUiStore((state) => state.aboutOpen));
   const [collapsed, setCollapsed] = usePreference('sidebar.collapsed', false);
   const settings = pathname === '/settings' || pathname.startsWith('/settings/');
   const go = useCallback((path: string) => void navigate({ to: path }), [navigate]);
@@ -126,7 +143,15 @@ export function AppShell() {
       navigate={go}
       collapsed={collapsed}
       onCollapsedChange={setCollapsed}
-      sidebar={settings ? <SettingsSidebar shell={shell} /> : <AppSidebar shell={shell} />}
+      sidebar={
+        settings ? (
+          <Suspense fallback={null}>
+            <SettingsSidebar shell={shell} />
+          </Suspense>
+        ) : (
+          <AppSidebar shell={shell} />
+        )
+      }
       bottomBar={<PhoneBar shell={shell} />}
       workspaceName={shell.workspace.name}
     >
@@ -143,8 +168,16 @@ export function AppShell() {
         </EntityRenderersProvider>
       </ErrorBoundary>
       <CreateHost />
-      <ShortcutsOverlay groups={shortcuts} />
-      <AboutDialog workspaceName={shell.workspace.name} />
+      {shortcutsOpened ? (
+        <Suspense fallback={null}>
+          <ShortcutsOverlay groups={shortcuts} />
+        </Suspense>
+      ) : null}
+      {aboutOpened ? (
+        <Suspense fallback={null}>
+          <AboutDialog workspaceName={shell.workspace.name} />
+        </Suspense>
+      ) : null}
       {paletteOpen ? (
         <Suspense fallback={null}>
           <CommandPaletteHost />
