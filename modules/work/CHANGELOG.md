@@ -1,5 +1,42 @@
 # @bemmoly/module-work
 
+## 0.6.0
+
+### Minor Changes
+
+- 4cbf7a1: Bemmoly now has a built-in MCP server, so AI desktop apps, coding agents and IDEs can work in
+  your workspace as you. Point a client at `/mcp` for every module, or at `/mcp/work` or
+  `/mcp/docs` for one. It offers search, the Work and Docs tools the palette uses, issues,
+  projects, spaces and pages as readable resources, and two prompts. Every call runs with your
+  permissions, writes land in the audit log, and requests are rate limited.
+
+  An admin turns it on, and picks the modules it exposes, in Settings › MCP server. It is off by
+  default, and the AI settings do not affect it. Everyone can create personal access tokens in
+  Settings › Access tokens: read only or read and write, for every module or only some, shown once
+  and stored as a hash. A token limited to some modules is held to them in the REST API too. See
+  `docs/mcp.md` to connect a client.
+
+### Patch Changes
+
+- aff36d5: A fresh install's empty Home now offers admins one button, "Turn on Work and Docs", which
+  turns both modules on with nobody granted yet; it is hidden when the image pins the module
+  set. A sprint past its end date says Overdue on the board, as it already did on Home.
+  Settings › Modules no longer calls a module that never ran "Up to date" or offers to remove
+  data it does not have. Key hints inside filled buttons are readable, the AI insight bar's text
+  wraps on phones instead of truncating to a letter, card selection marks sit inside the card on
+  touch screens, Home stops suggesting a keyboard shortcut on phones, and the issue types table
+  keeps descriptions inside their column on phones.
+- Updated dependencies [4e0e170]
+- Updated dependencies [aff36d5]
+- Updated dependencies [4cbf7a1]
+- Updated dependencies [c4215a9]
+  - @bemmoly/core@0.6.0
+  - @bemmoly/shared@0.6.0
+  - @bemmoly/api-client@0.6.0
+  - @bemmoly/editor@0.6.0
+  - @bemmoly/ui@0.6.0
+  - @bemmoly/core-web@0.6.0
+
 ## 0.5.0
 
 ### Minor Changes

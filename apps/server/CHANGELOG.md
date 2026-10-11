@@ -1,5 +1,50 @@
 # @bemmoly/server
 
+## 0.6.0
+
+### Minor Changes
+
+- 4e0e170: Images go into Docs pages by upload, not only by link. Paste a screenshot, drop a file, or pick
+  Image from the / menu: the image uploads with its progress shown where it will land, a failed
+  upload says why and offers Try again, and everyone else on the page sees it arrive live. A
+  selected image's alt text is edited in place.
+
+  Images are stored by Bemmoly as files of the page: people who can edit the page add them, people
+  who can read it see them, and nobody else can open them. PNG, JPEG, GIF and WebP are accepted,
+  checked by their content rather than their name; SVG is refused. Uploaded images are kept under
+  the data directory's attachments folder, so backups include them, and an image no page, version
+  or template refers to any more is removed after a day by the housekeeping job. A page exported
+  as HTML carries its images inside it, a page and its children exported as a folder carry them in
+  an `images/` folder, and a single Markdown file keeps links to them.
+
+  Configuration: `BEMMOLY_UPLOAD_MAX_BYTES` sets the largest upload (10 MiB by default) and
+  `BEMMOLY_RATE_LIMIT_UPLOADS_PER_USER` the uploads a person may make per minute (30 by default).
+  Schema: kernel changeset `0500-files` adds the `files` table (additive, fast).
+
+- 4cbf7a1: Bemmoly now has a built-in MCP server, so AI desktop apps, coding agents and IDEs can work in
+  your workspace as you. Point a client at `/mcp` for every module, or at `/mcp/work` or
+  `/mcp/docs` for one. It offers search, the Work and Docs tools the palette uses, issues,
+  projects, spaces and pages as readable resources, and two prompts. Every call runs with your
+  permissions, writes land in the audit log, and requests are rate limited.
+
+  An admin turns it on, and picks the modules it exposes, in Settings › MCP server. It is off by
+  default, and the AI settings do not affect it. Everyone can create personal access tokens in
+  Settings › Access tokens: read only or read and write, for every module or only some, shown once
+  and stored as a hash. A token limited to some modules is held to them in the REST API too. See
+  `docs/mcp.md` to connect a client.
+
+### Patch Changes
+
+- Updated dependencies [4e0e170]
+- Updated dependencies [aff36d5]
+- Updated dependencies [4cbf7a1]
+- Updated dependencies [c4215a9]
+  - @bemmoly/core@0.6.0
+  - @bemmoly/shared@0.6.0
+  - @bemmoly/module-docs@0.6.0
+  - @bemmoly/module-work@0.6.0
+  - @bemmoly/module-sample@0.6.0
+
 ## 0.5.0
 
 ### Minor Changes
