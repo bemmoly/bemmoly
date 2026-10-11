@@ -22,7 +22,8 @@ async function addOidcProvider(user: ReturnType<typeof userEvent.setup>) {
   return dialog;
 }
 
-describe('AuthenticationPage', () => {
+// Each test drives dialogs through several screens; shared CI runners take well over 5s.
+describe('AuthenticationPage', { timeout: 20_000 }, () => {
   it('starts with password on, single sign-on not set up and the policy locked', async () => {
     await renderPage(() => <AuthenticationPage />);
     expect(await screen.findByText('Password')).toBeTruthy();
