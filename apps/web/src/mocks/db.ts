@@ -3,6 +3,7 @@ import type {
   AppearancePreference,
   CustomThemeRecord,
   ApiToken,
+  OAuthGrant,
   AuditEntry,
   Backup,
   DevMailbox,
@@ -85,6 +86,8 @@ export interface MockDb {
   ai: MockAi;
   /** Settings › Sign-in and SSO; created on first use (routes/sso.ts). */
   sso?: MockSso;
+  /** Apps connected over MCP sign-in; created on first use (routes/oauth.ts). */
+  oauthGrants?: OAuthGrant[];
   /** Realtime invalidations waiting for the socket bridge: [kind, userId, ids]. */
   outbound: Array<[string, string | null, string[]]>;
   /** Custom themes; ownerId null is a workspace theme (ADR 0021). */
