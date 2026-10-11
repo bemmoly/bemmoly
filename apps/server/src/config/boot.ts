@@ -111,6 +111,7 @@ export async function bootApplication(options: BootOptions): Promise<Booted> {
       ? {
           pdf: createPdfRendererClient({
             baseUrl: env.BEMMOLY_PDF_URL,
+            publicUrl: env.BEMMOLY_PUBLIC_URL,
             timeoutMs: env.BEMMOLY_PDF_TIMEOUT_MS,
             maxHtmlBytes: env.BEMMOLY_PDF_MAX_BYTES,
             maxPdfBytes: env.BEMMOLY_PDF_MAX_BYTES,

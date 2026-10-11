@@ -16,5 +16,7 @@ export interface PdfRenderInput {
  * caller that has none falls back instead of failing.
  */
 export interface PdfRenderer {
+  /** The app's public URL: links on paper must be absolute to be followed. */
+  readonly publicUrl: string;
   render(input: PdfRenderInput): Promise<Buffer>;
 }

@@ -11,6 +11,8 @@ import { HttpStatusError } from './http-json.ts';
 export interface PdfRendererConfig {
   /** e.g. http://pdf:3000 on the Compose network. */
   baseUrl: string;
+  /** The app's public URL, handed to callers for absolute links. */
+  publicUrl: string;
   /** The whole render, upload to last byte. */
   timeoutMs: number;
   /** Bigger HTML is refused before it is sent; a bigger PDF is refused as it arrives. */
@@ -56,6 +58,7 @@ const htmlBlob = (html: string) => new Blob([html], { type: 'text/html' });
 export function createPdfRendererClient(config: PdfRendererConfig): PdfRenderer {
   const url = new URL('/forms/chromium/convert/html', config.baseUrl).toString();
   return {
+    publicUrl: config.publicUrl,
     async render(input: PdfRenderInput) {
       if (Buffer.byteLength(input.html) > config.maxHtmlBytes) {
         throw new PdfTooLargeError(`The page is over ${config.maxHtmlBytes} bytes to print`);

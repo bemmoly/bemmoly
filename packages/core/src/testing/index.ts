@@ -39,6 +39,12 @@ export { createMemorySettings } from './memory-settings.ts';
 export { POSTGRES_TEST_IMAGE, startTestDatabase, type TestDatabase } from './postgres.ts';
 export { S3_TEST_IMAGE, startTestS3, type TestS3, type TestS3Credentials } from './s3.ts';
 export {
+  PDF_RENDERER_COMMAND,
+  PDF_RENDERER_IMAGE,
+  startTestPdfRenderer,
+  type TestPdfRenderer,
+} from './pdf-renderer.ts';
+export {
   createQueryCounter,
   expectMaxQueries,
   QueryBudgetExceededError,
