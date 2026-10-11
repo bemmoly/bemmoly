@@ -1,7 +1,9 @@
 import {
   ValidationError,
   type PasswordResetComplete,
+  type PasswordResetPreviewResponse,
   type PasswordResetRequest,
+  type User,
 } from '@bemmoly/shared';
 import { and, eq, gt, isNull } from 'drizzle-orm';
 import type { Actor } from '../../contracts/authz.ts';
@@ -17,7 +19,13 @@ import {
 import { findPasswordAccount } from './login.ts';
 import { hashPassword } from './passwords.ts';
 import { generateToken, digestToken } from './tokens.ts';
-import { revokeUserSessions } from './sessions.ts';
+import { loadUser } from './presenters.ts';
+import {
+  createSession,
+  revokeUserSessions,
+  type ClientInfo,
+  type IssuedSession,
+} from './sessions.ts';
 import { inSharedTransaction } from './transaction.ts';
 
 /** Anonymous requests are attributed to the system in the audit log. */
@@ -80,15 +88,48 @@ export async function requestPasswordReset(
   });
 }
 
-/** Sets the new password, spends the link and signs the person out everywhere. */
+const INVALID_LINK = 'This reset link is invalid or has expired';
+
+/**
+ * Whose account a live reset link is for, so the page can say so; it does not spend the link.
+ * A dead link answers as completing it would.
+ */
+export async function previewPasswordReset(
+  deps: Pick<IdentityDependencies, 'db' | 'now'>,
+  token: string,
+): Promise<PasswordResetPreviewResponse> {
+  const now = nowOf(deps);
+  const [row] = await deps.db
+    .select({ email: users.email, status: users.status })
+    .from(passwordResetTokens)
+    .innerJoin(users, eq(users.id, passwordResetTokens.userId))
+    .where(
+      and(
+        eq(passwordResetTokens.tokenHash, digestToken(token)),
+        isNull(passwordResetTokens.usedAt),
+        gt(passwordResetTokens.expiresAt, now),
+      ),
+    )
+    .limit(1);
+  if (!row || row.status !== 'active') {
+    throw new ValidationError(INVALID_LINK, { code: 'bad_request' });
+  }
+  return { email: row.email };
+}
+
+/**
+ * Sets the new password, spends the link, signs the person out everywhere else and opens a
+ * session here, so saving the password is also signing in.
+ */
 export async function completePasswordReset(
   deps: Pick<IdentityDependencies, 'db' | 'now'>,
   input: PasswordResetComplete,
-  meta: RequestMeta,
-): Promise<void> {
+  client: ClientInfo & RequestMeta,
+): Promise<{ user: User; session: IssuedSession }> {
   const now = nowOf(deps);
   const passwordHash = await hashPassword(input.password);
-  await deps.db.transaction(async (tx) => {
+  const meta = client;
+  const { userId, session } = await deps.db.transaction(async (tx) => {
     const [spent] = await tx
       .update(passwordResetTokens)
       .set({ usedAt: now, updatedAt: now })
@@ -104,9 +145,7 @@ export async function completePasswordReset(
       ? await tx.select().from(users).where(eq(users.id, spent.userId)).limit(1)
       : [];
     if (!spent || !user || user.status !== 'active') {
-      throw new ValidationError('This reset link is invalid or has expired', {
-        code: 'bad_request',
-      });
+      throw new ValidationError(INVALID_LINK, { code: 'bad_request' });
     }
     const account = await findPasswordAccount(tx, user.email);
     if (!account) throw new ValidationError('This account does not sign in with a password');
@@ -121,5 +160,15 @@ export async function completePasswordReset(
       target: { kind: 'user', id: user.id },
       meta,
     });
+    const issued = await createSession(tx, {
+      userId: user.id,
+      privilegeVersion: user.privilegeVersion,
+      client,
+      now,
+    });
+    return { userId: user.id, session: issued };
   });
+  const user = await loadUser(deps.db, userId);
+  if (!user) throw new ValidationError(INVALID_LINK, { code: 'bad_request' });
+  return { user, session };
 }

@@ -21,6 +21,10 @@ export function identityRoutes(
     app.post('/auth/password-reset', ANONYMOUS, async (req, reply) =>
       identity.requestPasswordReset(req, reply),
     );
+    // A POST, so the link token never lands in an access log.
+    app.post('/auth/password-reset/preview', ANONYMOUS, async (req) =>
+      identity.previewPasswordReset(req),
+    );
     app.post('/auth/password-reset/complete', ANONYMOUS, async (req, reply) =>
       identity.completePasswordReset(req, reply),
     );
