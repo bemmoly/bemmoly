@@ -1,11 +1,26 @@
 export {
   createSqlClient,
+  DEFAULT_ACQUIRE_TIMEOUT_MS,
+  DEFAULT_IDLE_IN_TRANSACTION_TIMEOUT_MS,
+  DEFAULT_STATEMENT_TIMEOUT_MS,
   pingDatabase,
   TimeoutError,
   type SqlClient,
   type SqlClientOptions,
 } from './postgres.ts';
-export { createDatabase, createTransactionDatabase, type Database } from './drizzle.ts';
+export {
+  NestedPoolAcquireError,
+  transactionInScope,
+  type NestedAcquirePolicy,
+  type PoolEvent,
+} from './pool-guard.ts';
+export {
+  createDatabase,
+  createTransactionDatabase,
+  databaseInScope,
+  databaseOnTransaction,
+  type Database,
+} from './drizzle.ts';
 export { HttpStatusError, requestJson, type JsonRequest } from './http-json.ts';
 export {
   createRestClient,

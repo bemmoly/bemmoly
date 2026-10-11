@@ -79,7 +79,8 @@ describe('tool commands', () => {
 
 describe('the / menu', () => {
   it('matches block names by the start of a word', () => {
-    expect(slashMatches('').length).toBe(8);
+    expect(slashMatches('').length).toBe(9);
+    expect(slashMatches('tab').map((block) => block.id)).toEqual(['table']);
     expect(slashMatches('li').map((b) => b.label)).toEqual(['Bulleted list', 'Numbered list']);
     expect(slashMatches('CODE').map((b) => b.id)).toEqual(['codeBlock']);
     expect(slashMatches('zzz')).toEqual([]);

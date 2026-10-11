@@ -76,7 +76,8 @@ describe('conditions', () => {
     const matches = vi.fn(async () => true);
     const rc = contextWith({ lql: { matches } });
     expect(await check('lql_query', { query: 'priority = high' }, rc)).toEqual({ ok: true });
-    expect(matches).toHaveBeenCalledWith(rc.ctx, issue.id, 'priority = high');
+    // On the move's own transaction, so the query sees the issue as the move leaves it.
+    expect(matches).toHaveBeenCalledWith(rc.ctx, issue.id, 'priority = high', rc.sql);
     expect(parseRuleArgs(findRule('lql_query')!, { query: 'priority =' })).toMatchObject({
       ok: false,
     });

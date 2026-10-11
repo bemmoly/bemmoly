@@ -141,6 +141,7 @@ export {
   createModuleAccessWriter,
   createRequestAuthorization,
   createSubscriptionAuthorizer,
+  scopeToTransaction,
   type ModuleCatalog,
   type RequestAuthorization,
   type RequestContext,

@@ -29,6 +29,65 @@ local_only_name() {
   printf '%s' "$1" | grep -Eq '^[0-9.]+$'
 }
 
+# The address people reach this machine on: the public one when a lookup service answers,
+# the first local one otherwise.
+public_ip() {
+  curl -fsS4 --max-time 5 https://api.ipify.org 2>/dev/null \
+    || hostname -I 2>/dev/null | awk '{ print $1 }'
+}
+
+# Best guess at the DNS zone: the last two labels (bemmoly.acme.com gives acme.com).
+dns_zone() {
+  printf '%s' "$1" | awk -F. '{ if (NF <= 2) print $0; else print $(NF-1) "." $NF }'
+}
+
+# The record name inside the zone: "bemmoly" for bemmoly.acme.com, "@" for acme.com.
+dns_record_name() {
+  zone_name=$(dns_zone "$1")
+  if [ "$1" = "${zone_name}" ]; then echo '@'; else printf '%s\n' "${1%."${zone_name}"}"; fi
+}
+
+dns_on_cloudflare() {
+  have dig && dig +short NS "$1" 2>/dev/null | grep -q '\.ns\.cloudflare\.com\.\?$'
+}
+
+dns_points_here() {
+  getent ahostsv4 "$1" 2>/dev/null | awk '{ print $1 }' | grep -qx "$2"
+}
+
+# Shows the A record to add, with a Cloudflare link when the zone lives there, and waits
+# for the user to add it. Install goes on either way; the certificate follows the record.
+dns_guide() {
+  if [ -n "${NO_PROXY}" ] || local_only_name "${DOMAIN}"; then return; fi
+  server_ip=$(public_ip)
+  [ -n "${server_ip}" ] || return
+  if dns_points_here "${DOMAIN}" "${server_ip}"; then
+    success "${DOMAIN} already points at this server (${server_ip})"
+    return
+  fi
+  zone=$(dns_zone "${DOMAIN}")
+  say ''
+  say "  Point ${DOMAIN} at this server"
+  say "  Add this record where you manage DNS for ${zone}:"
+  say ''
+  printf '    %-6s %-20s %-16s %s\n' Type Name Value TTL
+  printf '    %-6s %-20s %-16s %s\n' A "$(dns_record_name "${DOMAIN}")" "${server_ip}" Auto
+  say ''
+  if dns_on_cloudflare "${zone}"; then
+    say "  ${zone} is on Cloudflare. Add the record there:"
+    say "    https://dash.cloudflare.com/?to=/:account/${zone}/dns/records"
+    say '  Set Proxy status to "DNS only" (grey cloud) so the certificate can be issued.'
+    say ''
+  fi
+  interactive || return
+  ask '  Press Enter once the record is added (or now, to add it later): ' >/dev/null
+  if dns_points_here "${DOMAIN}" "${server_ip}"; then
+    success "${DOMAIN} points at this server"
+  else
+    note "${DOMAIN} does not point here yet; DNS can take a few minutes. The certificate stays self-signed until it does, then a real one is issued by itself."
+  fi
+}
+
 # "auto" when the name already resolves to an address of this machine; "internal" when it
 # does not (yet), or is local-only. Caddy tries a real certificate first in both cases.
 tls_mode_for() {
@@ -124,6 +183,7 @@ configure() {
     DOMAIN=$(as_root cat "${INSTALL_DIR}/.env" | env_get /dev/stdin BEMMOLY_DOMAIN)
   fi
   choose_domain
+  dns_guide
   TLS_MODE=$(tls_mode_for "${DOMAIN}")
   tune_postgres
   write_install_files

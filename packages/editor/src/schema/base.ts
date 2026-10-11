@@ -7,8 +7,9 @@ import { Highlight } from './highlight.ts';
 import { ReferenceLinks, type ReferenceLinkOptions } from './references.ts';
 
 /*
- * The base set: Work's descriptions and comments. Its own file, so Work's editor chunk loads
- * these extensions and none of the Docs nodes the full schema adds.
+ * The base set: Work's descriptions and comments, whose editor adds tables (editor/create.ts).
+ * Its own file, so Work's editor chunk loads these extensions and none of the other Docs nodes
+ * the full schema adds.
  */
 
 export interface SchemaOptions {

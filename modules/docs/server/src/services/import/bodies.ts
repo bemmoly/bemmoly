@@ -134,14 +134,9 @@ export async function writeBody(
         content_updated_at = now(), updated_at = now()
       where id = ${pageId}`;
   }
-  await deps.sql.begin(async (tx) => {
-    await rewriteBodyLinks(
-      tx,
-      pageId,
-      await bodyEdges(deps.entities ? { entities: deps.entities } : {}, snapshot, pageId),
-      ctx.actorUserId,
-    );
-  });
+  // Resolved before the transaction: issue keys resolve through Work on the pool.
+  const edges = await bodyEdges(deps.entities ? { entities: deps.entities } : {}, snapshot, pageId);
+  await deps.sql.begin((tx) => rewriteBodyLinks(tx, pageId, edges, ctx.actorUserId));
   const labels = (page.metadata?.labels?.results ?? [])
     .map((label) => label.name.trim().slice(0, 60))
     .filter(Boolean);

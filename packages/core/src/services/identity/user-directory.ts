@@ -1,17 +1,20 @@
 import { inArray } from 'drizzle-orm';
-import type { Database } from '../../clients/drizzle.ts';
+import { databaseInScope, type Database } from '../../clients/drizzle.ts';
 import type { UserDirectory } from '../../contracts/users.ts';
 import { users } from '../../models/identity/index.ts';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-/** Read-only lookup for services that address people, such as notifications. */
+/**
+ * Read-only lookup for services that address people, such as notifications. Notification
+ * dispatch runs inside the publisher's transaction, so the lookup joins it.
+ */
 export function createUserDirectory(db: Database): UserDirectory {
   return {
     async findByIds(ids) {
       const wanted = [...new Set(ids.filter((id) => UUID.test(id)))];
       if (wanted.length === 0) return [];
-      const rows = await db
+      const rows = await databaseInScope(db)
         .select({ id: users.id, email: users.email, name: users.name, status: users.status })
         .from(users)
         .where(inArray(users.id, wanted));

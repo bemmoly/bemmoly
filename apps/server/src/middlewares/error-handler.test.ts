@@ -7,6 +7,7 @@ import {
   NotFoundError,
   ProviderError,
   RateLimitedError,
+  UnavailableError,
   ValidationError,
   apiErrorBodySchema,
 } from '@bemmoly/shared';
@@ -25,6 +26,19 @@ const failures: Record<string, () => unknown> = {
   limited: () => new RateLimitedError('Slow down', { retryAfterSeconds: 12 }),
   provider: () => new ProviderError('SMTP relay timed out', { provider: 'smtp' }),
   maintenance: () => new MaintenanceError('Restoring a backup', { retryAfterSeconds: 30 }),
+  starved: () =>
+    // How the ORM hands back a query whose wait for a pool connection timed out.
+    Object.assign(new Error('Failed query: select 1'), {
+      name: 'DrizzleQueryError',
+      cause: new UnavailableError(undefined, { retryAfterSeconds: 5 }),
+    }),
+  'statement-timeout': () =>
+    Object.assign(new Error('canceling statement due to statement timeout'), {
+      name: 'PostgresError',
+      code: '57014',
+    }),
+  'connection-lost': () =>
+    Object.assign(new Error('write CONNECTION_CLOSED'), { code: 'CONNECTION_CLOSED' }),
   zod: () => z.object({ title: z.string() }).parse({}),
   crash: () => new Error('database password is hunter2'),
 };
@@ -56,6 +70,9 @@ describe('error handler', () => {
     ['limited', 429, 'rate_limited'],
     ['provider', 502, 'provider_error'],
     ['maintenance', 503, 'maintenance'],
+    ['starved', 503, 'unavailable'],
+    ['statement-timeout', 503, 'unavailable'],
+    ['connection-lost', 503, 'unavailable'],
     ['zod', 400, 'validation_failed'],
     ['crash', 500, 'internal_error'],
   ])('maps %s to %i %s with the shared body', async (kind, status, code) => {
@@ -71,6 +88,8 @@ describe('error handler', () => {
     const app = await buildApp({ env: TEST_ENV, modules: modulesOf(thrower), logger: false });
     const limited = await app.inject({ url: '/api/v1/failures/limited' });
     expect(limited.headers['retry-after']).toBe('12');
+    const starved = await app.inject({ url: '/api/v1/failures/starved' });
+    expect(starved.headers['retry-after']).toBe('5');
     const invalid = await app.inject({ url: '/api/v1/failures/invalid' });
     expect(invalid.json()).toMatchObject({ details: { field: 'title' } });
     const crash = await app.inject({ url: '/api/v1/failures/crash' });
@@ -105,6 +124,8 @@ describe('error handler', () => {
     };
     expect(await levelOf('maintenance')).toBe(40);
     expect(await levelOf('crash')).toBe(50);
+    // A starved pool is an outage in the making: loud, not a warning.
+    expect(await levelOf('starved')).toBe(50);
   });
 
   it('maps malformed JSON bodies to bad_request', async () => {

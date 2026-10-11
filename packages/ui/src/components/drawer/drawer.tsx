@@ -38,7 +38,8 @@ function Panel({
           <IconButton label="Close" icon="close" size="xs" onClick={onClose} />
         </div>
       </div>
-      <div className="flex min-h-0 flex-1 flex-col gap-4.5 overflow-auto px-5 pt-4 pb-6">
+      {/* relative: absolute content (sr-only text, hover tools) scrolls and clips here, not the page. */}
+      <div className="relative flex min-h-0 flex-1 flex-col gap-4.5 overflow-auto px-5 pt-4 pb-6">
         {children}
       </div>
     </>

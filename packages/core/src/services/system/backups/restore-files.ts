@@ -49,9 +49,12 @@ export async function restoreIntoNewDatabase(
   const url = urlForDatabase(deps.config.databaseUrl, name);
   try {
     await deps.pgTools.restore(url, dumpFile);
+    // Counting a large restored database outlasts the request pool's limits.
     const restored = createSqlClient(url, {
       maxConnections: 1,
       applicationName: 'bemmoly-restore',
+      statementTimeoutMs: 0,
+      idleInTransactionTimeoutMs: 0,
     });
     try {
       const counts = await restored.begin((tx) => countKeyTables(tx));

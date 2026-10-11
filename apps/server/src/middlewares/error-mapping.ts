@@ -8,6 +8,7 @@ import {
   RateLimitedError,
   toValidationIssues,
   UnauthenticatedError,
+  UnavailableError,
   ValidationError,
   type ApiErrorBody,
   type ErrorCode,
@@ -30,7 +31,39 @@ const STATUS_BY_ERROR: ReadonlyArray<[abstract new (...args: never[]) => Bemmoly
   [RateLimitedError, 429],
   [ProviderError, 502],
   [MaintenanceError, 503],
+  [UnavailableError, 503],
 ];
+
+/** Postgres ended a statement or a session on one of its timeouts: busy, not broken. */
+const DATABASE_TIMEOUT_CODES = new Set(['57014', '25P03', '57P05']);
+/** What the driver reports when Postgres ended the session under it, idle timeout included. */
+const CONNECTION_LOST = 'CONNECTION_CLOSED';
+const DATABASE_RETRY_AFTER_SECONDS = 5;
+const MAX_CAUSE_DEPTH = 5;
+
+/**
+ * A starved pool or a database timeout, however deeply the ORM wrapped it: the request
+ * fails with a typed 503 the client can retry, not an internal error.
+ */
+function unavailableCause(error: unknown): UnavailableError | undefined {
+  let current: unknown = error;
+  for (let depth = 0; current && depth < MAX_CAUSE_DEPTH; depth += 1) {
+    if (current instanceof UnavailableError) return current;
+    const { name, code, cause } = current as { name?: unknown; code?: unknown; cause?: unknown };
+    const timedOut =
+      (name === 'PostgresError' && typeof code === 'string' && DATABASE_TIMEOUT_CODES.has(code)) ||
+      code === CONNECTION_LOST;
+    if (timedOut) {
+      return new UnavailableError(undefined, {
+        retryAfterSeconds: DATABASE_RETRY_AFTER_SECONDS,
+        details: { reason: 'database_timeout' },
+        cause: current,
+      });
+    }
+    current = cause;
+  }
+  return undefined;
+}
 
 const CLIENT_ERROR_CODES: Readonly<Record<number, ErrorCode>> = {
   401: 'unauthenticated',
@@ -54,7 +87,9 @@ function fromBemmolyError(error: BemmolyError, requestId: string): HttpError {
   const status = STATUS_BY_ERROR.find(([type]) => error instanceof type)?.[1] ?? 500;
   const headers: Record<string, string> = {};
   if (
-    (error instanceof RateLimitedError || error instanceof MaintenanceError) &&
+    (error instanceof RateLimitedError ||
+      error instanceof MaintenanceError ||
+      error instanceof UnavailableError) &&
     error.retryAfterSeconds !== undefined
   ) {
     headers['retry-after'] = String(error.retryAfterSeconds);
@@ -68,6 +103,8 @@ function fromBemmolyError(error: BemmolyError, requestId: string): HttpError {
 
 /** The one mapping from thrown errors to HTTP status codes and the error body. */
 export function toHttpError(error: unknown, requestId: string): HttpError {
+  const unavailable = unavailableCause(error);
+  if (unavailable) return fromBemmolyError(unavailable, requestId);
   if (isBemmolyError(error)) return fromBemmolyError(error, requestId);
   if (error instanceof ZodError) {
     const body = {

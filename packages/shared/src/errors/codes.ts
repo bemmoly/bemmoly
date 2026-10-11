@@ -13,6 +13,7 @@ export const ERROR_CODES = [
   'rate_limited',
   'provider_error',
   'maintenance',
+  'unavailable',
   'internal_error',
 ] as const;
 

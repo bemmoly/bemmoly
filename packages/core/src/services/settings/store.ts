@@ -1,6 +1,6 @@
 import { eq } from 'drizzle-orm';
 import { isDeepStrictEqual } from 'node:util';
-import { createDatabase, type Database } from '../../clients/drizzle.ts';
+import { createDatabase, databaseInScope, type Database } from '../../clients/drizzle.ts';
 import type { SqlClient } from '../../clients/postgres.ts';
 import type { Actor } from '../../contracts/authz.ts';
 import { settings, type SettingRow } from '../../models/settings.ts';
@@ -42,8 +42,14 @@ async function locked(tx: Database, key: string): Promise<SettingRow | undefined
 export function createSettingsStore(sql: SqlClient): SettingsStore {
   const db = createDatabase(sql);
   return {
+    // A cache miss can come from deep inside any transaction (an email's brand, say), so the
+    // read joins the caller's transaction rather than asking the pool for a second connection.
     async get(key) {
-      const [row] = await db.select().from(settings).where(eq(settings.key, key)).limit(1);
+      const [row] = await databaseInScope(db)
+        .select()
+        .from(settings)
+        .where(eq(settings.key, key))
+        .limit(1);
       return row;
     },
     list: () => db.select().from(settings),

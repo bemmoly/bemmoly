@@ -35,6 +35,7 @@ describe('retrieval indexing', () => {
   beforeEach(async () => {
     if (!f) return;
     await f.sql`delete from embeddings`;
+    await f.sql`delete from pending_embeddings`;
     f.ai.setPolicy({
       enabled: true,
       shareContent: true,
@@ -157,7 +158,7 @@ describe('retrieval indexing', () => {
     expect(f.ai.embedded).toEqual([]);
   });
 
-  it('turns change messages into one waiting job per record set and backfills on demand', async (ctx) => {
+  it('turns change messages into one waiting drain and backfills on demand', async (ctx) => {
     if (!f) return ctx.skip(skip ?? 'no database');
     f.jobs.queued.length = 0;
     const message = { kind: 'wiki.page', ids: [P_ROLLBACK], spaceId: SPACE_OPEN };

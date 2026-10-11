@@ -77,19 +77,27 @@ describe('telemetry against a real database', () => {
       return ctx.skip(database.available ? 'no client' : database.reason);
     const client = raw;
     const stats = postgresPoolStats(client, { applicationName: APPLICATION_NAME, max: 3 });
-    await client.begin(async (tx) => {
+    // Hold a transaction open from outside it: the scrape must come from another connection.
+    let opened!: () => void;
+    let finish!: () => void;
+    const ready = new Promise<void>((resolve) => (opened = resolve));
+    const held = new Promise<void>((resolve) => (finish = resolve));
+    const transaction = client.begin(async (tx) => {
       await tx`select 1`;
-      const reserved = await client.reserve();
-      try {
-        const snapshot = await stats();
-        expect(snapshot.max).toBe(3);
-        expect(snapshot.idleInTransaction).toBeGreaterThanOrEqual(1);
-        expect(snapshot.active + snapshot.idle + snapshot.idleInTransaction).toBeGreaterThanOrEqual(
-          1,
-        );
-      } finally {
-        reserved.release();
-      }
+      opened();
+      await held;
     });
+    await ready;
+    try {
+      const snapshot = await stats();
+      expect(snapshot.max).toBe(3);
+      expect(snapshot.idleInTransaction).toBeGreaterThanOrEqual(1);
+      expect(snapshot.active + snapshot.idle + snapshot.idleInTransaction).toBeGreaterThanOrEqual(
+        1,
+      );
+    } finally {
+      finish();
+      await transaction;
+    }
   });
 });

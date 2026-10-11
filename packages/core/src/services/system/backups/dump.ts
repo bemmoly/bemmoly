@@ -37,8 +37,10 @@ export async function dumpDatabase(
   file: string,
 ): Promise<DumpResult> {
   return sql.begin('isolation level repeatable read read only', async (tx) => {
-    // Counting large tables outlasts the request pool's statement timeout.
+    // Counting large tables outlasts the request pool's statement timeout, and the snapshot
+    // sits idle while pg_dump reads through it, which the idle-transaction timeout would end.
     await tx`set local statement_timeout = 0`;
+    await tx`set local idle_in_transaction_session_timeout = 0`;
     const [snapshot] = await tx<{ id: string }[]>`select pg_export_snapshot() as id`;
     const [version] = await tx<{ server_version: string }[]>`show server_version`;
     const rowCounts = await countKeyTables(tx);

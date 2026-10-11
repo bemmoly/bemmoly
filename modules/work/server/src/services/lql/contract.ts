@@ -1,4 +1,4 @@
-import type { RequestContext, SqlFragment } from '@bemmoly/core';
+import type { RequestContext, SqlExecutor, SqlFragment } from '@bemmoly/core';
 import type { LqlFieldCatalog, Query } from '@bemmoly/shared';
 
 /**
@@ -8,6 +8,12 @@ import type { LqlFieldCatalog, Query } from '@bemmoly/shared';
  * against this shape; the lql service is its one implementation.
  */
 export interface LqlEvaluator {
-  matches(ctx: RequestContext, issueId: string, query: string): Promise<boolean>;
+  /** `transaction`, when given, is where every read runs: the caller's open transaction. */
+  matches(
+    ctx: RequestContext,
+    issueId: string,
+    query: string,
+    transaction?: SqlExecutor,
+  ): Promise<boolean>;
   where(ctx: RequestContext, query: Query, catalog: LqlFieldCatalog): SqlFragment;
 }

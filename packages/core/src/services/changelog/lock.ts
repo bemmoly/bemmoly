@@ -15,8 +15,9 @@ export async function withChangelogLock<T>(
 ): Promise<T> {
   const connection = await sql.reserve();
   try {
-    // Changesets may run long; the pool's statement timeout does not apply here.
+    // Changesets may run long; the pool's request timeouts do not apply here.
     await connection`set statement_timeout = 0`;
+    await connection`set idle_in_transaction_session_timeout = 0`;
     await connection`select pg_advisory_lock(${CHANGELOG_LOCK_KEY}::bigint)`;
     try {
       await ensureChangelogTable(connection);
@@ -26,6 +27,7 @@ export async function withChangelogLock<T>(
     }
   } finally {
     await connection`reset statement_timeout`.catch(() => undefined);
+    await connection`reset idle_in_transaction_session_timeout`.catch(() => undefined);
     connection.release();
   }
 }
