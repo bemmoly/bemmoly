@@ -135,7 +135,7 @@ export function McpConnectSection({ origin, modules }: ConnectProps) {
           <span className="text-12 leading-body text-tx-3">
             For a client without sign-in: paste this into its MCP settings and replace the
             placeholder with a token from your{' '}
-            <Link to="/settings/access-tokens" className="text-acc">
+            <Link to="/settings/access-tokens" className="text-acc underline underline-offset-2">
               access tokens
             </Link>
             .

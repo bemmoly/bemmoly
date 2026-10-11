@@ -161,7 +161,7 @@ export function ColumnsTab(props: BoardTabProps) {
           <a
             href={workflowHref}
             onClick={onLinkClick(workflowHref)}
-            className="text-acc hover:underline"
+            className="text-acc underline underline-offset-2"
           >
             Workflow
           </a>
