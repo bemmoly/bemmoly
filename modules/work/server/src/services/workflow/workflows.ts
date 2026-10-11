@@ -130,6 +130,12 @@ export function createWorkflowReads(deps: WorkflowServiceDeps) {
         where id = ${id}`;
       return draft;
     },
+
+    /** Drops the unpublished draft, so the published version is all that is left. */
+    async discardDraft(ctx: RequestContext, id: string): Promise<void> {
+      await getRow(ctx, id, 'configure');
+      await db()`update workflows set draft = null, updated_at = now() where id = ${id}`;
+    },
   };
 }
 
