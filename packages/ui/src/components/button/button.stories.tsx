@@ -56,7 +56,7 @@ export const Sizes: Story = {
   },
   render: () => (
     <div className="flex flex-col items-start gap-3">
-      {(['xs', 'sm', 'md', 'lg'] as const).map((size) => (
+      {(['xs', 'sm', 'md', 'lg', 'touch'] as const).map((size) => (
         <div key={size} className="flex items-center gap-2">
           <Button variant="primary" size={size}>
             Create admin and continue

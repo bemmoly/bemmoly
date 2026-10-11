@@ -40,7 +40,8 @@ switcher.
 - Use: `Button` for every labelled action. `variant`: `primary` (one per view: the action the
   screen exists for), `secondary` (default), `ghost` (quiet, in toolbars and rows), `danger`
   (destructive, in its confirmation). `size`: `md` (32px) default, `sm`/`xs` in rows, `lg` in
-  setup and dialogs' main action. `loading` keeps the label and shows a spinner.
+  setup and dialogs' main action, `touch` on the sign-in pages (40px; 46px with 16px text on
+  phones). `loading` keeps the label and shows a spinner at full contrast (busy, not faded).
 - `IconButton` for icon-only actions: `label` is required and becomes its tooltip; pass `keys`
   for the shortcut and `tip` when the label is long.
 - Not: a `<button>` with custom classes, a link styled as a button for an action, two primaries.
@@ -61,8 +62,24 @@ switcher.
   `<select>`.
 - `Switch` applies at once (settings toggles); `Checkbox` is chosen then saved (forms, selection).
 - `SegmentedControl` for two to five exclusive views ("All · 8").
+- `Input size="touch"` on the sign-in pages: 40px, and 46px with 16px text under 640px so a
+  phone never zooms into the field.
 - States: rest, hover, focus ring, error (`red` border and `red-tx` message), disabled,
   read-only (`sunken`), loading options ("Searching…"), no matches.
+
+### PasswordInput
+
+`import { PasswordInput, passwordStrength } from '@bemmoly/ui'` · Story:
+Components/PasswordInput ([`password-input.stories.tsx`](../../../packages/ui/src/components/password-input/password-input.stories.tsx))
+
+- Use: every password field, inside `Field`. `autoComplete` is required:
+  `current-password` to sign in, `new-password` to set one (reset, invitation, setup). It sets
+  `name="password"`, so password managers save and fill it.
+- A show or hide button (`aria-pressed`, "Show password"), a "Caps Lock is on" line while the key
+  is on, and `meter` for the strength meter under a new password. Both lines join the input's
+  description. The meter is a guide; the length policy is the only rule.
+- Not: `Input type="password"`, a second "Type it again" field (show or hide replaces it), or a
+  strength rule that refuses a long passphrase.
 
 ### Menu, MenuItem, MenuGroup, MenuSeparator, Dropdown
 

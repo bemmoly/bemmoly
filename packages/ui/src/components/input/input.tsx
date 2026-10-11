@@ -3,12 +3,23 @@ import { Kbd } from '../kbd/kbd.tsx';
 import { Icon } from '../../icons/icon.tsx';
 import { cx } from '../../lib/cx.ts';
 
-export type InputSize = 'md' | 'lg';
+export type InputSize = 'md' | 'lg' | 'touch';
 
-/** The control box: 32px with 10px padding (search boxes, Board Settings) or 36px with 12px (Setup form). */
+/**
+ * The control box: 32px with 10px padding (search boxes, Board Settings), 36px with 12px (Setup
+ * form), or `touch` on the sign-in pages: 40px, and 46px with 16px text on phones so the
+ * browser does not zoom into the field.
+ */
 const SIZES: Record<InputSize, string> = {
   md: 'h-control px-2.5 gap-2',
   lg: 'h-9 px-3 gap-2',
+  touch: 'h-10 px-3 gap-2 max-sm:h-11.5',
+};
+
+const TEXT: Record<InputSize, string> = {
+  md: 'text-13',
+  lg: 'text-13',
+  touch: 'text-14 max-sm:text-16',
 };
 
 /** Shared by Input, Textarea and Select: the mock's bordered control and its focus state. */
@@ -62,7 +73,8 @@ export function Input({
         data-autofocus={rest.autoFocus ? '' : undefined}
         className={cx(
           'h-full min-w-0 flex-1 border-0 bg-transparent p-0 text-inherit outline-0 placeholder:text-tx-3',
-          mono ? 'font-mono text-13' : 'font-sans text-13',
+          mono ? 'font-mono' : 'font-sans',
+          TEXT[size],
           className,
         )}
         {...rest}
