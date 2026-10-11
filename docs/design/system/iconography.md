@@ -15,8 +15,8 @@ Foundations/Icons ([`icon.stories.tsx`](../../../packages/ui/src/icons/icon.stor
 ```
 
 - **Lucide only**, behind the design system's names: `SHAPES` (product nouns: `board`,
-  `backlog`, `doc`, `inbox`, `settings`, …), `GLYPHS` (the controls: `search`, `caret`,
-  `chevron`, `close`, `more`, `check`, `plus`, `enter`, `external`, …), `KIT_ICONS` (`home`, `me`,
+  `backlog`, `doc`, `inbox`, `settings`, `import` (an import source's tile, never its vendor's
+  logo), …), `GLYPHS` (the controls: `search`, `caret`, `chevron`, `close`, `more`, `check`, `plus`, `enter`, `external`, …), `KIT_ICONS` (`home`, `me`,
   `bell`, `layers`, `tag`, `warning`, `info`, `undo`, `snooze`, `sun`, `moon`, `monitor` (the
   three modes: Light, Dark, Match system), …) and, with #77,
   `EDITOR_ICONS` (`text`, `heading`, `highlight`, `strike`, `row-add`, `trash-can`, …).

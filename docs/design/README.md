@@ -51,8 +51,9 @@ into `Bemmoly Setup.dc.html`:
   so they are shorter than in the mock. The "Or invite by email" card is a proper section with a
   heading and a defaults line; the delivery note sits under the role and team pickers.
 - Option tiles on the import, sign-on and provider cards and in the provider list show logos
-  (models.dev provider marks, simple-icons import marks, Google's sign-in "G") or design-system
-  glyphs instead of initials. Initials remain the fallback.
+  (models.dev provider marks, Google's sign-in "G") or design-system
+  glyphs instead of initials (Jira and Confluence take the neutral `import` icon: Atlassian's
+  logos need their written approval, so none is drawn). Initials remain the fallback.
 - Step 5 and Settings › Appearance: clicking a theme tile previews that theme on the whole page
   at once; Save or Finish makes it permanent, Back, Skip or Discard reverts it. The mocks show no
   state for this.
@@ -71,7 +72,7 @@ folded back into the mocks:
   Custom theme card from the Appearance Settings mock under the tiles, previewed on the whole
   page; it reads "Use a preset instead" while open and no tile is selected then.
 - Option tiles: logos are drawn in full colour, provider marks in the primary text colour on the
-  chip, import marks in their brand colour (adjusted to at least 3:1 on dark presets), the
+  chip, import sources in the neutral `import` icon (no Atlassian logo or colour), the
   Google G in its own colours. Coming-soon cards fade as a whole at 60% with the badge at full
   strength. Settings stay closed until setup is finished.
 - Dropdowns: every select is one custom listbox. Open state (not in any mock): the Doc Editor

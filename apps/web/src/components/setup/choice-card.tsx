@@ -1,6 +1,5 @@
 import { Badge, SelectableCard } from '@bemmoly/ui';
 import type { ReactNode } from 'react';
-import { markFill } from '../../lib/logo-colors.ts';
 
 /**
  * How a coming-soon option is muted: tile, name and description fade together, so the logo
@@ -32,21 +31,16 @@ export function BrandTile({ initials, icon }: BrandTileProps) {
 
 /**
  * A one-colour logo file used as a mask, so the fill is ours whatever colour the file was
- * drawn in. A mark with a published brand colour is painted in it (adjusted per light or dark
- * until it holds 3:1 on every preset's tile); a monochrome mark, such as the models.dev
- * provider logos, is painted in the primary text colour at full strength.
+ * drawn in: the primary text colour at full strength unless `fill` says otherwise, as for the
+ * models.dev provider logos.
  */
-export function LogoMask({ url, brand, fill }: { url: string; brand?: string; fill?: string }) {
+export function LogoMask({ url, fill }: { url: string; fill?: string }) {
   return (
     <span
       aria-hidden="true"
       data-logo={url}
-      data-brand={brand}
-      className={`size-4.5 mask-contain mask-center mask-no-repeat ${brand ? '' : (fill ?? 'bg-tx')}`}
-      style={{
-        maskImage: `url("${url}")`,
-        ...(brand ? { backgroundColor: markFill(brand) } : {}),
-      }}
+      className={`size-4.5 mask-contain mask-center mask-no-repeat ${fill ?? 'bg-tx'}`}
+      style={{ maskImage: `url("${url}")` }}
     />
   );
 }

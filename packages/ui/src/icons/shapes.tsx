@@ -9,6 +9,7 @@ import {
   Download,
   FileText,
   FolderKanban,
+  Import,
   Inbox,
   KeyRound,
   ListFilter,
@@ -67,6 +68,8 @@ export const SHAPES = {
   /** Backups: put a backup back in place of the live workspace. */
   restore: ArchiveRestore,
   download: Download,
+  /** Import sources (Jira, Confluence): an arrow into a box, never the vendor's logo. */
+  import: Import,
   /** Settings › Modules, and the Create menu's empty state. */
   modules: Blocks,
   /** Board cards: the mock's ☑ before the subtask count. */
