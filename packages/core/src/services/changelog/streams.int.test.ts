@@ -51,7 +51,7 @@ describe('changelog runner: every kernel stream together', () => {
       [],
     );
     const prefixes = new Set(kernel.map((changeset) => changeset.id.slice(0, 2)));
-    expect([...prefixes]).toEqual(['00', '01', '02', '03', '04', '05', '06']);
+    expect([...prefixes]).toEqual(['00', '01', '02', '03', '04', '05', '06', '07']);
   });
 
   it('applies 00xx through 05xx in order from empty, and nothing on a second run', async (ctx) => {

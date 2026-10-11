@@ -9,6 +9,7 @@ import type {
 } from '@bemmoly/core';
 import { createBacklogService } from './backlog/index.ts';
 import { createBoardsService } from './boards/index.ts';
+import { createCodeLinksService } from './code-links/index.ts';
 import { createCommentsService } from './comments/index.ts';
 import { createComponentsService } from './components/index.ts';
 import { createFieldsService } from './fields/index.ts';
@@ -57,6 +58,7 @@ export function createWorkServices(deps: WorkServiceDeps) {
     ...(deps.jobs ? { jobs: deps.jobs } : {}),
     workflow: workflow.gate,
   };
+  const issues = createIssuesService(issueDeps);
   return {
     projects: createProjectsService(deps),
     members: createProjectMembersService(deps),
@@ -66,7 +68,13 @@ export function createWorkServices(deps: WorkServiceDeps) {
     labels: createLabelsService(deps),
     versions: createVersionsService(deps),
     components: createComponentsService(deps),
-    issues: createIssuesService(issueDeps),
+    issues,
+    codeLinks: createCodeLinksService({
+      ...(deps.database ? { database: deps.database } : {}),
+      ...(deps.audit ? { audit: deps.audit } : {}),
+      realtime: issueDeps.realtime,
+      move: (ctx, key, statusId) => issues.update(ctx, key, { statusId }),
+    }),
     comments: createCommentsService(issueDeps),
     links: createLinksService(issueDeps),
     history: createHistoryService(issueDeps),

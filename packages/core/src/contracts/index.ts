@@ -2,6 +2,7 @@ export type * from './ai.ts';
 export type * from './audit.ts';
 export type * from './authn.ts';
 export type * from './authz.ts';
+export type * from './code-hosts.ts';
 export type * from './email-sender.ts';
 export type * from './event-bus.ts';
 export type * from './importer.ts';

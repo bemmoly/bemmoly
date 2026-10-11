@@ -17,6 +17,21 @@ export {
   type CollabTestClientOptions,
 } from './collab-client.ts';
 export { resetIdentityData } from './identity-data.ts';
+export {
+  codeHostFixture,
+  githubDelivery,
+  githubSignature,
+  gitlabDelivery,
+  type FixtureDelivery,
+  type GithubFixture,
+  type GitlabFixture,
+} from './code-host-deliveries.ts';
+export {
+  FAKE_CODE_HOST_TOKEN,
+  startFakeCodeHost,
+  type FakeCodeHost,
+  type FakeCodeHostOptions,
+} from './fake-code-host.ts';
 export { createIsolatedDatabase, type IsolatedDatabase } from './isolated-database.ts';
 export { applyKernelChangelog, kernelChangelogRunner } from './kernel-changelog.ts';
 export { createMemorySettings } from './memory-settings.ts';

@@ -1,0 +1,34 @@
+{
+  "object_kind": "pipeline",
+  "object_attributes": {
+    "id": 310045,
+    "iid": 812,
+    "ref": "acme-2-export-throttle",
+    "tag": false,
+    "sha": "da1560886d4f094c3e6c9ef40349f7d38b5d27d7",
+    "source": "merge_request_event",
+    "status": "failed",
+    "detailed_status": "failed",
+    "stages": ["test", "build"],
+    "created_at": "2026-10-05 12:31:20 UTC",
+    "finished_at": "2026-10-05 12:39:02 UTC",
+    "duration": 462
+  },
+  "merge_request": {
+    "id": 99817,
+    "iid": 57,
+    "title": "ACME-2 throttle the export endpoint",
+    "source_branch": "acme-2-export-throttle",
+    "target_branch": "main",
+    "state": "opened",
+    "url": "https://gitlab.acme.dev/acme/platform/web/-/merge_requests/57"
+  },
+  "user": { "id": 11, "name": "Jonas M.", "username": "jonas.m" },
+  "project": {
+    "id": 2048,
+    "name": "Web",
+    "web_url": "https://gitlab.acme.dev/acme/platform/web",
+    "path_with_namespace": "acme/platform/web"
+  },
+  "builds": []
+}

@@ -1,0 +1,37 @@
+{
+  "object_kind": "push",
+  "event_name": "push",
+  "before": "95790bf891e76fee5e1747ab589903a6a1f80f22",
+  "after": "da1560886d4f094c3e6c9ef40349f7d38b5d27d7",
+  "ref": "refs/heads/acme-2-export-throttle",
+  "checkout_sha": "da1560886d4f094c3e6c9ef40349f7d38b5d27d7",
+  "user_id": 11,
+  "user_name": "Jonas M.",
+  "user_username": "jonas.m",
+  "project_id": 2048,
+  "project": {
+    "id": 2048,
+    "name": "Web",
+    "web_url": "https://gitlab.acme.dev/acme/platform/web",
+    "path_with_namespace": "acme/platform/web",
+    "default_branch": "main"
+  },
+  "commits": [
+    {
+      "id": "da1560886d4f094c3e6c9ef40349f7d38b5d27d7",
+      "message": "Throttle exports per person (ACME-2)\n",
+      "title": "Throttle exports per person (ACME-2)",
+      "timestamp": "2026-10-05T12:31:05+00:00",
+      "url": "https://gitlab.acme.dev/acme/platform/web/-/commit/da1560886d4f094c3e6c9ef40349f7d38b5d27d7",
+      "author": { "name": "Jonas M.", "email": "[REDACTED]" },
+      "added": [],
+      "modified": ["app/exports/limiter.rb"],
+      "removed": []
+    }
+  ],
+  "total_commits_count": 1,
+  "repository": {
+    "name": "Web",
+    "homepage": "https://gitlab.acme.dev/acme/platform/web"
+  }
+}

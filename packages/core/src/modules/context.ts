@@ -252,6 +252,14 @@ export function createModuleContext(
         return reader.read(ctx, fileId);
       },
     },
+    code: {
+      addConsumer(consumer) {
+        if (!consumer.id.startsWith(`${module.id}.`)) {
+          fail(`code consumer "${consumer.id}" must be namespaced as "${module.id}.<name>"`);
+        }
+        into.codeConsumers.push(consumer);
+      },
+    },
     realtime: options.realtime ?? noRealtime,
     ...(options.database
       ? {

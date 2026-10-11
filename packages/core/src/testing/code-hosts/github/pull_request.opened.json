@@ -1,0 +1,52 @@
+{
+  "action": "opened",
+  "number": 4821,
+  "pull_request": {
+    "url": "https://api.github.com/repos/acme/api/pulls/4821",
+    "id": 2071234567,
+    "node_id": "PR_kwDOAbCdEf5_aBcD",
+    "html_url": "https://github.com/acme/api/pull/4821",
+    "number": 4821,
+    "state": "open",
+    "locked": false,
+    "title": "Session store to Postgres",
+    "user": { "login": "aisha-k", "id": 5811001, "type": "User" },
+    "body": "Moves sessions off Redis.\n\nPart of ACME-1. Rollback plan in the runbook.",
+    "created_at": "2026-10-01T09:12:44Z",
+    "updated_at": "2026-10-01T09:12:44Z",
+    "closed_at": null,
+    "merged_at": null,
+    "merge_commit_sha": null,
+    "requested_reviewers": [],
+    "labels": [],
+    "draft": false,
+    "head": {
+      "label": "acme:feat/acme-1-pg-sessions",
+      "ref": "feat/acme-1-pg-sessions",
+      "sha": "9f2c1d7e8b6a5f4e3d2c1b0a9f8e7d6c5b4a3f2e"
+    },
+    "base": {
+      "label": "acme:main",
+      "ref": "main",
+      "sha": "1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b"
+    },
+    "merged": false,
+    "mergeable": null,
+    "comments": 0,
+    "review_comments": 0,
+    "commits": 3,
+    "additions": 412,
+    "deletions": 97,
+    "changed_files": 11
+  },
+  "repository": {
+    "id": 702345678,
+    "name": "api",
+    "full_name": "acme/api",
+    "private": true,
+    "html_url": "https://github.com/acme/api",
+    "default_branch": "main"
+  },
+  "sender": { "login": "aisha-k", "id": 5811001, "type": "User" },
+  "installation": { "id": 51234567 }
+}

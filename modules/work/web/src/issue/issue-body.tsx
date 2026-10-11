@@ -7,6 +7,7 @@ import { useCustomFields } from '../hooks/issue-fields.ts';
 import { projectKeyOf, useIssueVocabulary } from '../hooks/issue-vocabulary.ts';
 import { AcceptanceCriteria } from './acceptance-criteria.tsx';
 import { ActivitySection } from './activity-section.tsx';
+import { DevelopmentSection } from './development-section.tsx';
 import { IssueAiSummary } from './issue-ai-summary.tsx';
 import { IssueRail } from './issue-rail.tsx';
 import { IssueTitle } from './issue-title.tsx';
@@ -35,7 +36,7 @@ const CRITERIA_KEY = 'acceptance_criteria';
 /**
  * Everything the Issue page and the peek share, in the review's order: the title, the
  * sub-issue, link and attach actions, the AI summary when AI is on, the description, the
- * acceptance criteria, sub-issues, links and activity.
+ * acceptance criteria, sub-issues, links, development (linked code) and activity.
  */
 export function IssueBody({ issue, size, railInline = size === 'panel' }: IssueBodyProps) {
   const [creating, setCreating] = useState<Creating | null>(null);
@@ -140,6 +141,7 @@ export function IssueBody({ issue, size, railInline = size === 'panel' }: IssueB
         adding={addingLink}
         onAddingChange={setAddingLink}
       />
+      <DevelopmentSection issue={issue} size={size} />
       <ActivitySection
         issue={issue}
         vocabulary={vocabulary}

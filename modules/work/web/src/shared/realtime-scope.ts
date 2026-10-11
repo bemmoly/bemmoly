@@ -30,6 +30,7 @@ const PROJECT_CONFIGURATION = new Set([
   'boards',
   'schemes',
   'fields',
+  'code-transitions',
 ]);
 
 export function changedBy(kind: string, key: QueryKey, boardMoving: boolean): boolean {

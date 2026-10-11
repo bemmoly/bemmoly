@@ -24,6 +24,7 @@ export {
   type CollabTransactor,
 } from './collab.ts';
 export type * from './mcp.ts';
+export type * from './code.ts';
 export {
   fileIdOf,
   fileUrl,

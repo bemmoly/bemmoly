@@ -1,6 +1,7 @@
 import type { NavEntry } from '@bemmoly/shared';
 import type { RetrievalSourceDefinition } from '../contracts/retrieval.ts';
 import type { SettingDefinition } from '../contracts/settings.ts';
+import type { CodeActivityConsumer } from './code.ts';
 import type { CollabDocumentDefinition } from './collab.ts';
 import type { McpPromptDefinition, McpResourceDefinition } from './mcp.ts';
 import type { FileTargetDefinition } from './files.ts';
@@ -47,6 +48,7 @@ export interface ModuleContributions {
   mcpPrompts: McpPromptDefinition[];
   mcpTools: AiContribution[];
   fileTargets: FileTargetDefinition[];
+  codeConsumers: CodeActivityConsumer[];
 }
 
 export function emptyContributions(): ModuleContributions {
@@ -76,5 +78,6 @@ export function emptyContributions(): ModuleContributions {
     mcpPrompts: [],
     mcpTools: [],
     fileTargets: [],
+    codeConsumers: [],
   };
 }

@@ -1,0 +1,33 @@
+{
+  "object_kind": "merge_request",
+  "event_type": "merge_request",
+  "user": { "id": 12, "name": "Rohan S.", "username": "rohan.s", "avatar_url": null },
+  "project": {
+    "id": 2048,
+    "name": "Web",
+    "web_url": "https://gitlab.acme.dev/acme/platform/web",
+    "path_with_namespace": "acme/platform/web",
+    "default_branch": "main"
+  },
+  "object_attributes": {
+    "id": 99817,
+    "iid": 57,
+    "title": "ACME-2 throttle the export endpoint",
+    "description": "Adds a per-person budget to exports.",
+    "state": "merged",
+    "draft": false,
+    "work_in_progress": false,
+    "source_branch": "acme-2-export-throttle",
+    "target_branch": "main",
+    "merge_status": "can_be_merged",
+    "url": "https://gitlab.acme.dev/acme/platform/web/-/merge_requests/57",
+    "created_at": "2026-10-05 10:02:11 UTC",
+    "updated_at": "2026-10-06T14:30:00Z",
+    "action": "merge"
+  },
+  "labels": [],
+  "repository": {
+    "name": "Web",
+    "homepage": "https://gitlab.acme.dev/acme/platform/web"
+  }
+}

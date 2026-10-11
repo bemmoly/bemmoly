@@ -10,6 +10,16 @@ export {
 } from './activity.tsx';
 export { ChecklistBlock, type ChecklistBlockProps } from './checklist-block.tsx';
 export {
+  CODE_REVIEW_LABELS,
+  CODE_STATE_LABELS,
+  CodeLinkRow,
+  type CodeChecks,
+  type CodeLinkKind,
+  type CodeLinkRowProps,
+  type CodeLinkState,
+  type CodeReview,
+} from './code-link-row.tsx';
+export {
   CommentComposer,
   ComposerPlaceholder,
   ComposerTool,

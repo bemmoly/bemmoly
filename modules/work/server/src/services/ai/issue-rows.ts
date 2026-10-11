@@ -152,12 +152,39 @@ export async function readBlockers(sql: SqlExecutor, issueId: string): Promise<L
     limit 20`;
 }
 
+export interface PullRequestFacts {
+  id: string;
+  ref: string;
+  title: string;
+  url: string;
+  repository: string;
+  state: string | null;
+  checks: string | null;
+  review: string | null;
+  updatedAt: string;
+}
+
+/** Pull requests linked by key from a code host, open ones first. */
+export async function readLinkedPullRequests(
+  sql: SqlExecutor,
+  issueId: string,
+  limit: number,
+): Promise<PullRequestFacts[]> {
+  return sql<PullRequestFacts[]>`
+    select id, ref, title, url, repository, state, checks, review,
+      source_updated_at::text as "updatedAt"
+    from code_links where issue_id = ${issueId} and kind = 'pull_request'
+    order by case when state in ('open', 'draft') then 0 else 1 end, source_updated_at desc
+    limit ${limit}`;
+}
+
 /** The latest change anything in the issue's context made, for quiet periods. */
 export async function issueLastChangedAt(sql: SqlExecutor, issueId: string): Promise<Date | null> {
   const [row] = await sql<{ at: string | null }[]>`
     select greatest(
       (select updated_at from issues where id = ${issueId}),
-      (select max(created_at) from comments where target_kind = 'issue' and target_id = ${issueId})
+      (select max(created_at) from comments where target_kind = 'issue' and target_id = ${issueId}),
+      (select max(updated_at) from code_links where issue_id = ${issueId})
     )::text as at`;
   return row?.at ? new Date(row.at) : null;
 }

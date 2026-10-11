@@ -2,6 +2,7 @@ import type { WorkServices } from '../services/index.ts';
 import { createActivityController } from './activity.controller.ts';
 import { createBacklogController } from './backlog.controller.ts';
 import { createBoardsController } from './boards.controller.ts';
+import { createCodeLinksController } from './code-links.controller.ts';
 import { createComponentsController } from './components.controller.ts';
 import { createFieldsController } from './fields.controller.ts';
 import { createFiltersController } from './filters.controller.ts';
@@ -41,6 +42,7 @@ export function createWorkControllers(services: WorkServices) {
     metrics: createMetricsController(services.metrics),
     myWork: createMyWorkController(services.myWork),
     roadmap: createRoadmapController(services.roadmap),
+    codeLinks: createCodeLinksController(services.codeLinks),
   };
 }
 

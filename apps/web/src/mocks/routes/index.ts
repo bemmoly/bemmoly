@@ -2,6 +2,7 @@ import { logoRoutes } from '../logo.ts';
 import type { MockRoute } from '../types.ts';
 import { apiTokenRoutes } from './api-tokens.ts';
 import { appearanceRoutes } from './appearance.ts';
+import { codeHostRoutes } from './code-hosts.ts';
 import { aiAdminRoutes } from './ai-admin.ts';
 import { aiInsightRoutes } from './ai-insights.ts';
 import { aiPlanRoutes } from './ai-plans.ts';
@@ -29,6 +30,7 @@ import { ssoRoutes } from './sso.ts';
 import { teamRoutes } from './teams.ts';
 import { workBacklogRoutes } from './work-backlog.ts';
 import { workBoardRoutes } from './work-board.ts';
+import { workCodeLinkRoutes } from './work-code-links.ts';
 import { workFilterRoutes } from './work-filters.ts';
 import { workIssuesRoutes } from './work-issues.ts';
 import { workMembersRoutes } from './work-members.ts';
@@ -59,6 +61,8 @@ export const ROUTES: readonly MockRoute[] = [
   ...notificationRoutes,
   ...operationsRoutes,
   ...importRoutes,
+  ...codeHostRoutes,
+  ...workCodeLinkRoutes,
   ...workBacklogRoutes,
   ...workBoardRoutes,
   ...workFilterRoutes,

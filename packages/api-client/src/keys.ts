@@ -70,6 +70,11 @@ export const queryKeys = {
     list: () => ['imports', 'list'] as const,
     detail: (id: string) => ['imports', 'job', id] as const,
   },
+  codeHosts: {
+    all: () => ['code-hosts'] as const,
+    list: () => ['code-hosts', 'list'] as const,
+    deliveries: (id: string) => ['code-hosts', 'deliveries', id] as const,
+  },
   updates: () => ['updates'] as const,
   system: () => ['system'] as const,
   audit: {

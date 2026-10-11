@@ -13,6 +13,7 @@ import {
   loadModules,
   SYSTEM_SETTINGS,
   type BemmolyModule,
+  type CodeHosts,
   type CollabHost,
   type FetchClientMetadata,
   type Imports,
@@ -22,6 +23,7 @@ import { getMetrics } from '@bemmoly/core/telemetry';
 import type { FastifyInstance } from 'fastify';
 import { buildApp, type BuildAppOptions } from '../app.ts';
 import { wireAi } from './ai.ts';
+import { wireCodeHostIntegrations } from './code-hosts.ts';
 import { wireCollab } from './collab.ts';
 import { connectDatabase, type DatabaseConnection } from './database.ts';
 import { identityWiring } from './identity.ts';
@@ -50,6 +52,8 @@ export interface Booted {
   collab?: CollabHost;
   /** Settings › Import's service and runner; present with a database. */
   imports?: Imports;
+  /** Code hosts' service, webhook receiver and backfill; present with a database. */
+  codeHosts?: CodeHosts;
 }
 
 /**
@@ -153,6 +157,10 @@ export async function bootApplication(options: BootOptions): Promise<Booted> {
     database && kernel
       ? wireImporters({ env, database, kernel, identity, modules, logger })
       : undefined;
+  const codeHosts =
+    database && kernel
+      ? wireCodeHostIntegrations({ env, database, kernel, identity, modules, catalog, logger })
+      : undefined;
   const retrieval =
     database && kernel && realtime
       ? wireRetrieval({
@@ -207,6 +215,7 @@ export async function bootApplication(options: BootOptions): Promise<Booted> {
             ...(retrieval ? { retrieval } : {}),
             ...mcp,
             ...(imports ? { imports: imports.service } : {}),
+            ...(codeHosts ? { codeHosts } : {}),
             ...(collab ? { collab } : {}),
           },
         }
@@ -222,5 +231,6 @@ export async function bootApplication(options: BootOptions): Promise<Booted> {
     ...(kernel ? { kernel } : {}),
     ...(collab ? { collab } : {}),
     ...(imports ? { imports } : {}),
+    ...(codeHosts ? { codeHosts } : {}),
   };
 }

@@ -109,6 +109,21 @@ Not a keyboard key; that is `Kbd`.
 `ChecklistBlock`, `SaveState` · Story: Components/IssueSections. Values edit in place; an empty
 value reads "Add …"; every edit shows at once and rolls back with a toast on refusal.
 
+### CodeLinkRow
+
+`import { CodeLinkRow, CODE_STATE_LABELS, CODE_REVIEW_LABELS } from '@bemmoly/ui'` · Story:
+Components/IssueSections/Development
+([`code-link-row.stories.tsx`](../../../packages/ui/src/components/issue-sections/code-link-row.stories.tsx))
+
+- Use: a pull request, branch or commit in an issue's Development section, inside a
+  `ListCard`, grouped with `ListGroupLabel` when more than one kind is listed.
+- Drawing: the state icon (`pull-request` in `prog` when open, `pull-request-draft` and
+  `pull-request-closed` in `tx-3`, `merged` in `done`; `branch` and `commit` in `tx-3`), the
+  reference in mono, the title, the repository from 640px, the checks mark (`check` green,
+  `close` red, `clock` amber, each named), the review in words and the state in words.
+- Not: a capitalised state pill, purple for merged (lilac is AI's), or colour alone.
+  The row opens the code host in a new tab and says so to assistive tech.
+
 ### WorkflowCanvas
 
 `WorkflowCanvas`, `StatusNode`, `TransitionEdge`, `RuleChip`, `WorkflowLegend` · Story:

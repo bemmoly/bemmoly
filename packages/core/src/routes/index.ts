@@ -7,6 +7,7 @@ import { createAiInsightsController } from '../controllers/ai-insights.controlle
 import { createAiAnswersController } from '../controllers/ai-answers.controller.ts';
 import { createAuditController } from '../controllers/audit.controller.ts';
 import { createAuthzController } from '../controllers/authz.controller.ts';
+import { createCodeHostsController } from '../controllers/code-hosts.controller.ts';
 import { createCollabController } from '../controllers/collab.controller.ts';
 import { createFilesController } from '../controllers/files.controller.ts';
 import { createWorkspaceLogoController } from '../controllers/workspace-logo.controller.ts';
@@ -42,6 +43,7 @@ import type { ModuleRegistry } from '../modules/registry.ts';
 import type { AiPlans } from '../services/ai/index.ts';
 import type { InsightsService } from '../services/ai/index.ts';
 import type { RetrievalService } from '../services/ai/index.ts';
+import type { CodeHosts } from '../services/code-hosts/index.ts';
 import type { CollabHost } from '../services/collab/index.ts';
 import type { FilesService } from '../services/files/index.ts';
 import type { IdentityDependencies } from '../services/identity/index.ts';
@@ -62,6 +64,7 @@ import { aiInsightsRoutes } from './ai-insights.routes.ts';
 import { aiAnswersRoutes } from './ai-answers.routes.ts';
 import { auditRoutes } from './audit.routes.ts';
 import { authzRoutes } from './authz.routes.ts';
+import { codeHostsRoutes } from './code-hosts.routes.ts';
 import { collabRoutes } from './collab.routes.ts';
 import {
   emailNotificationRoutes,
@@ -139,6 +142,8 @@ export interface KernelRouteDependencies {
   logoStore?: { store: ObjectStore; spoolDir: string };
   /** Settings › Import (/admin/imports); mounted when the host wires the importers. */
   imports?: ImportService;
+  /** Settings › Integrations › Code hosts and the hosts' webhooks; with the importers. */
+  codeHosts?: CodeHosts;
 }
 
 function identityAndAccessRoutes(
@@ -264,6 +269,9 @@ export function kernelRoutes(deps: KernelRouteDependencies): FastifyPluginAsync 
         }
         if (deps.imports) {
           await api.register(importsRoutes(createImportsController(deps.imports, actorOf)));
+        }
+        if (deps.codeHosts) {
+          await api.register(codeHostsRoutes(createCodeHostsController(deps.codeHosts, actorOf)));
         }
         if (deps.retrieval) {
           await api.register(aiAnswersRoutes(createAiAnswersController(deps.retrieval)));
