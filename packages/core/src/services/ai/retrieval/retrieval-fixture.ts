@@ -13,7 +13,11 @@ import { applyKernelChangelog } from '../../../testing/kernel-changelog.ts';
 import type { RequestContext } from '../../authz/index.ts';
 import { parsePromptFile } from '../prompts/parse.ts';
 import { createTestAi, type TestAi } from '../test-ai.ts';
-import { createRetrievalService, type RetrievalService } from './index.ts';
+import {
+  createRetrievalService,
+  type RetrievalDependencies,
+  type RetrievalService,
+} from './index.ts';
 import { ANSWER_PROMPT_FILE } from './prompt.ts';
 
 /*
@@ -33,7 +37,11 @@ export interface WikiPage {
 }
 
 export interface Fixture {
+  /** The isolated database, for a test that runs a real queue on it. */
+  url: string;
   sql: SqlClient;
+  /** What `service` was built from, to build another over a different queue. */
+  deps: RetrievalDependencies;
   ai: TestAi;
   jobs: FakeJobQueue;
   service: RetrievalService;
@@ -143,17 +151,20 @@ export async function createFixture(serverUrl: string, dimensions = 8): Promise<
   const jobs = fakeJobQueue();
   const box: { fixture?: Fixture } = {};
   const current = () => box.fixture!;
-  const service = createRetrievalService({
+  const deps: RetrievalDependencies = {
     sql,
     ai: () => ai,
     sources: () => [wikiSource(current)],
     keyword: () => [wikiKeyword(current)],
     isEnabled: () => true,
     jobs,
-  });
+  };
+  const service = createRetrievalService(deps);
   for (const job of service.jobs()) jobs.register(job.name, (payload) => job.handle(payload));
   box.fixture = {
+    url: database.url,
     sql,
+    deps,
     ai,
     jobs,
     service,

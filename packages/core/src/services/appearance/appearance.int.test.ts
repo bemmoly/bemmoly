@@ -15,6 +15,9 @@ import {
   type AppearanceDeps,
 } from './index.ts';
 
+/** The last kernel changeset before 0600-appearance-themes. */
+const BEFORE_THEMES = '0501-import-jobs';
+
 describe('themes and modes against a real database', () => {
   let server: TestDatabase;
   let database: IsolatedDatabase | undefined;
@@ -43,8 +46,9 @@ describe('themes and modes against a real database', () => {
     sql = createSqlClient(database.url, { maxConnections: 4 });
     const runner = await kernelChangelogRunner(sql);
     await runner.update({ contexts: ['test'] });
-    // Back to the previous minor's schema, with a workspace on the retired Warm preset.
-    await runner.rollback('core', { count: 1 });
+    // Back to the schema before the themes changeset, with a workspace on the retired Warm
+    // preset; named by id so later changesets do not move the target.
+    await runner.rollback('core', { toId: BEFORE_THEMES });
     for (const name of ['ada', 'bo']) {
       const [row] = await sql<{ id: string }[]>`
         insert into users (email, name, role_id)
@@ -79,7 +83,7 @@ describe('themes and modes against a real database', () => {
   it('turns a stored custom brand into a workspace custom theme, and rolls back', async () => {
     if (!server.available) return;
     const runner = await kernelChangelogRunner(sql);
-    await runner.rollback('core', { count: 1 });
+    await runner.rollback('core', { toId: BEFORE_THEMES });
     expect(await setting('appearance.theme')).toBe('warm');
     await sql`delete from settings where key in ('appearance.theme', 'appearance.font')`;
     await sql`insert into settings (key, value) values

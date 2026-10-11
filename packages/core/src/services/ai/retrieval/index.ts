@@ -5,7 +5,8 @@ import type { RequestContext } from '../../authz/index.ts';
 import { answerQuestion } from './answer.ts';
 import type { RetrievalDependencies } from './deps.ts';
 import { indexRecords } from './indexer.ts';
-import { followRealtime, followSettings, retrievalJobs } from './jobs.ts';
+import { followRealtime, followSettings } from './follow.ts';
+import { retrievalJobs } from './jobs.ts';
 import { backfillStep, reconcileIndex, type BackfillCursor } from './reconcile.ts';
 import { retrieve, type RetrieveInput } from './retrieve.ts';
 
@@ -32,7 +33,7 @@ export function createRetrievalService(deps: RetrievalDependencies) {
     reconcile: () => reconcileIndex(deps),
     backfillStep: (cursor: BackfillCursor) => backfillStep(deps, cursor),
     jobs: () => retrievalJobs(deps),
-    /** Wire to the realtime listener: modules' invalidations become index jobs. */
+    /** Wire to the realtime listener: modules' invalidations mark records for the drain. */
     handleRealtime: (message: RealtimeMessage) => followRealtime(deps, message),
     /** Wire to `ai.settings.changed` on the kernel event bus. */
     handleSettingsChanged: (event: DomainEvent) => followSettings(deps, event),
