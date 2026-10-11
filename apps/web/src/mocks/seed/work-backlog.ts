@@ -1,5 +1,5 @@
 import { USER_IDS } from './people.ts';
-import { ago, uid } from './time.ts';
+import { ago, dayFromToday, uid } from './time.ts';
 import { STATUS_IDS, WORK_IDS, type StatusName } from './work-settings.ts';
 import { SPRINT_IDS } from './work-issues.ts';
 import { TYPE_IDS } from './work-types.ts';
@@ -263,21 +263,21 @@ export function seedBacklogSprints(): BacklogSprintRow[] {
       BACKLOG_SPRINT_IDS.sprint13,
       'PLT Sprint 13',
       'closed',
-      ['2026-09-09', '2026-09-23'],
+      [dayFromToday(-22), dayFromToday(-8)],
       22,
     ),
     sprint(
       BACKLOG_SPRINT_IDS.sprint14,
       'PLT Sprint 14',
       'active',
-      ['2026-09-23', '2026-10-07'],
+      [dayFromToday(-8), dayFromToday(6)],
       24,
     ),
     sprint(
       BACKLOG_SPRINT_IDS.sprint15,
       'PLT Sprint 15',
       'future',
-      ['2026-10-07', '2026-10-21'],
+      [dayFromToday(6), dayFromToday(20)],
       22,
     ),
   ];
