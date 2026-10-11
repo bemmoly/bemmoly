@@ -1,5 +1,6 @@
 import type { UpdatesOverview } from '@bemmoly/shared';
 import { useEffect, useState } from 'react';
+import { api } from '../lib/api.ts';
 
 /** How often Settings › Updates reads the overview while an update runs. */
 export const UPDATE_POLL_MS = 1000;
@@ -19,9 +20,8 @@ function readReloaded(): string | null {
 /** Resolves once /readyz answers ready, checking every second; the app is restarting. */
 export async function waitForReady(signal: AbortSignal, poll = UPDATE_POLL_MS): Promise<void> {
   while (!signal.aborted) {
-    const response = await fetch('/readyz', { cache: 'no-store', signal }).catch(() => null);
-    const body = response?.ok ? ((await response.json().catch(() => null)) as unknown) : null;
-    if ((body as { status?: string } | null)?.status === 'ready') return;
+    const answer = await api.setup.readiness().catch(() => null);
+    if (answer?.status === 'ready') return;
     await new Promise((resolve) => setTimeout(resolve, poll));
   }
 }
