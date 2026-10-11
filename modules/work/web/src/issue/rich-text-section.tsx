@@ -7,6 +7,7 @@ import { useEditorSources } from '../hooks/editor-sources.ts';
 import { cx } from './cx.ts';
 import { RichTextView } from './rich-text.tsx';
 import { useAutosave } from './use-autosave.ts';
+import { useMarkdownDoc } from './use-markdown-doc.ts';
 
 export interface RichTextSectionProps {
   title: string;
@@ -39,6 +40,8 @@ export function RichTextSection({
 }: RichTextSectionProps) {
   const [editing, setEditing] = useState(false);
   const sources = useEditorSources();
+  // Markdown saved as plain lines opens formatted, so the editor shows what the view does.
+  const shown = useMarkdownDoc(doc);
   const box = useRef<HTMLDivElement>(null);
   const autosave = useAutosave((next: RichTextDoc | null) =>
     onSave(isEmptyDoc(next) ? null : (next as RichText)),
@@ -108,7 +111,7 @@ export function RichTextSection({
           <RichTextEditor
             label={title}
             placeholder={placeholder}
-            initialDoc={doc as RichTextDoc | null | undefined}
+            initialDoc={shown as RichTextDoc | null | undefined}
             blocks
             autoFocus
             size={size}
@@ -166,7 +169,7 @@ export function RichTextSection({
             !showTitle && !readOnly && 'pr-10',
           )}
         >
-          <RichTextView doc={doc} size={size} />
+          <RichTextView doc={shown} size={size} />
         </div>
       )}
     </section>

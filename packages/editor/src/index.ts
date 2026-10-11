@@ -3,10 +3,12 @@
  * read-only view, the types and lazy editors whose ProseMirror code loads on first use (the
  * comment and description editor, and the Docs page editor). The schema, for reading
  * documents outside an editor, is `@bemmoly/editor/schema`; text extraction, the links
- * graph and Markdown, HTML and Confluence conversion are `@bemmoly/editor/convert`.
+ * graph and Markdown, HTML and Confluence conversion are `@bemmoly/editor/convert`; Markdown
+ * folded into the base set Work's editor holds is `@bemmoly/editor/markdown`.
  */
 export { headingIds } from './convert/outline.ts';
 export { isEmptyDoc } from './doc.ts';
+export { looksLikeMarkdown, plainMarkdown } from './markdown-lines.ts';
 export { mountedDom } from './mounted-dom.ts';
 export type { DocEditorProps } from './doc/doc-editor-props.ts';
 export {

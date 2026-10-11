@@ -3,6 +3,7 @@ import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-libra
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { EditorSources, RichTextDoc, RichTextNode } from '../types.ts';
 import RichTextEditor from './rich-text-editor.tsx';
+import { SLASH_BLOCKS } from './tools.ts';
 
 afterEach(cleanup);
 
@@ -124,6 +125,41 @@ describe('RichTextEditor', () => {
     });
     type(editor, 'PLT-9 ');
     expect(editor.getJSON().content![0]!.content![0]!.marks).toEqual([{ type: 'code' }]);
+  });
+
+  it('turns Markdown typed at the start of a line into its block', async () => {
+    const { editor } = await setup({ blocks: true });
+    act(() => editor.commands.focus());
+    type(editor, '## Change');
+    expect(editor.getJSON().content?.[0]).toMatchObject({ type: 'heading', attrs: { level: 2 } });
+  });
+
+  it('formats pasted Markdown', async () => {
+    const { editor } = await setup({ blocks: true });
+    act(() => editor.view.pasteText('## Change\n\n- one\n- two\n\nUses `randomUUID`.'));
+    const content = editor.getJSON().content ?? [];
+    expect(content.map((node) => node.type)).toEqual(['heading', 'bulletList', 'paragraph']);
+    expect(content[2]?.content?.[1]).toMatchObject({
+      text: 'randomUUID',
+      marks: [{ type: 'code' }],
+    });
+  });
+
+  it('inserts the / menu table and gives it the table tools', async () => {
+    const { editor, onChange } = await setup({ blocks: true });
+    const block = SLASH_BLOCKS.find((entry) => entry.id === 'table')!;
+    act(() => void block.run(editor.chain().focus()).run());
+    await waitFor(() => expect(editor.isActive('table')).toBe(true));
+    expect(screen.getByRole('toolbar', { name: 'Table' })).toBeTruthy();
+    type(editor, 'buyer');
+    const saved = onChange.mock.calls.at(-1)?.[0];
+    expect(saved?.content?.map((node) => node.type)).toContain('table');
+  });
+
+  it('formats a pasted Markdown table as a table', async () => {
+    const { editor } = await setup({ blocks: true });
+    act(() => editor.view.pasteText('| service | result |\n| --- | --- |\n| buyer | 606 pass |'));
+    expect(editor.getJSON().content?.[0]?.type).toBe('table');
   });
 
   it('links issue keys in pasted text', async () => {

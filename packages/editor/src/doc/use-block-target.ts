@@ -22,11 +22,12 @@ function blockUnder(editor: Editor, y: number): BlockRef | null {
   return blockAt(editor, hit.inside >= 0 ? hit.inside : hit.pos);
 }
 
-/** Beside the block's first line, in the 52px margin left of the text column. */
+/** Beside the block's first line, in the margin (52px by default) left of the text column. */
 export function placeBeside(
   editor: Editor,
   block: BlockRef,
   host: HTMLElement,
+  margin = 52,
 ): HandlePlace | null {
   const dom = editor.view.nodeDOM(block.pos);
   if (!(dom instanceof HTMLElement)) return null;
@@ -34,7 +35,7 @@ export function placeBeside(
   const origin = host.getBoundingClientRect();
   const line = parseFloat(getComputedStyle(dom).lineHeight) || 25;
   const top = box.top - origin.top + Math.max(0, (Math.min(line, box.height) - 25) / 2);
-  return { top, left: box.left - origin.left - 52 };
+  return { top, left: box.left - origin.left - margin };
 }
 
 /** The held block where it is after others' edits (or an Undo) moved it; gone if deleted. */

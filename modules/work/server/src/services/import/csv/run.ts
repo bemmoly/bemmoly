@@ -4,7 +4,7 @@ import type {
   ImportRunContext,
   SqlClient,
 } from '@bemmoly/core';
-import { fromMarkdown, plainText } from '@bemmoly/editor/convert';
+import { fromMarkdownBase, plainText } from '@bemmoly/editor/convert';
 import { PROJECT_ADMIN_ROLE_KEY } from '../../../../../shared/members.ts';
 import { writeLinks } from '../jira/links.ts';
 import { ensureStatuses } from '../jira/project-setup.ts';
@@ -165,7 +165,9 @@ export async function runCsv(
               name: value,
             })
           : null;
-      const description = cell(row, 'description') ? fromMarkdown(cell(row, 'description')) : null;
+      const description = cell(row, 'description')
+        ? fromMarkdownBase(cell(row, 'description'))
+        : null;
       const estimate = Number(cell(row, 'estimate'));
       const due = /^\d{4}-\d{2}-\d{2}/.exec(cell(row, 'due'))?.[0] ?? null;
       const created = Date.parse(cell(row, 'created'));

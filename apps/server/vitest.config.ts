@@ -4,7 +4,8 @@ export default defineConfig({
   test: {
     include: ['src/**/*.test.ts'],
     exclude: ['src/**/*.int.test.ts'],
-    // Several tests build the whole app with every module, which takes ~6 s on CI runners.
-    testTimeout: 15_000,
+    // Several tests build the whole app with every module. The first build in a file also pays
+    // the cold import of every module, which has passed 15 s on a busy CI runner.
+    testTimeout: 30_000,
   },
 });
