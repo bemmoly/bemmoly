@@ -51,6 +51,12 @@ export const queryKeys = {
     all: () => ['backups'] as const,
     list: (filter: BackupsFilter = {}) => ['backups', 'list', filter] as const,
   },
+  imports: {
+    all: () => ['imports'] as const,
+    sources: () => ['imports', 'sources'] as const,
+    list: () => ['imports', 'list'] as const,
+    detail: (id: string) => ['imports', 'job', id] as const,
+  },
   updates: () => ['updates'] as const,
   system: () => ['system'] as const,
   audit: {
