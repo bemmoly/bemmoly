@@ -121,7 +121,6 @@ export default defineModule({
       name: WORK_AUTOMATION_RUN_JOB,
       // A run records its own failure; retrying would repeat actions that already happened.
       retryLimit: 0,
-      concurrency: 4,
       handle: (payload, job) => services.automation.handleJob(payload, job.requestId),
     });
     ctx.code.addConsumer(services.codeLinks.consumer);

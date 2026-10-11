@@ -60,6 +60,9 @@ export function wireWebhooks(wiring: WebhooksWiring): Webhooks {
     ...wiring.tuning,
   };
   const deliverer = createDeliverer(deps);
+  // Each attempt is one delivery row and one POST: safe side by side (the failure count and
+  // auto-disable are single conditional updates), and one slow receiver must not hold up the
+  // others for its whole timeout. Retries are the handler's own backoff, never the queue's.
   wiring.jobs.register(
     WEBHOOK_DELIVER_JOB,
     async (payload) => deliverer.attempt(payloadSchema.parse(payload).deliveryId),
