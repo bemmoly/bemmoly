@@ -108,7 +108,7 @@ export function createConfluenceClient(options: ConfluenceClientOptions) {
       all<ConfluenceSpace>('rest/api/space', { type: 'global', expand: 'description.plain' }),
     async countPages(spaceKey: string): Promise<number> {
       const page = await rest.getJson<Results<unknown>>('rest/api/search', {
-        cql: `space = "${spaceKey.replace(/"/g, '\\"')}" and type = page`,
+        cql: `space = "${spaceKey.replace(/[\\"]/g, '\\$&')}" and type = page`,
         limit: 0,
       });
       return page.totalSize ?? page.size ?? 0;

@@ -7,7 +7,7 @@ const COUNTED_PROJECTS = 200;
 const COUNT_CONCURRENCY = 6;
 
 export const projectJql = (key: string) =>
-  `project = "${key.replace(/"/g, '\\"')}" order by created asc`;
+  `project = "${key.replace(/[\\"]/g, '\\$&')}" order by created asc`;
 
 /** Runs `work` over items, a few at a time, keeping order. */
 export async function inBatches<T, R>(
