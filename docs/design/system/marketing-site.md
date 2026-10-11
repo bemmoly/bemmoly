@@ -33,7 +33,7 @@ never drift from what a visitor installs.
 Every page is built around three promises, word for word:
 
 1. **100% open source.** MIT, every feature, no open-core edition.
-2. **No pricing.** No plans, tiers, seat limits or trial. The only cost is the server you run.
+2. **No subscription.** No plans, tiers, seat limits or trial. The only cost is the server you run.
 3. **No in-app purchases.** No paywalls, upsells, add-ons or sales calls, now or later.
 
 Where they appear: the hero's ticks, a section of their own with proof under each, the FAQ, the
