@@ -88,15 +88,22 @@ describe('the budget guard against a real database', () => {
   it('lets only the calls that fit through when ten race at the limit', async (ctx) => {
     if (!fx) return ctx.skip(skip);
     gate = new Promise<void>((resolve) => (open = resolve));
+    let refusedSoFar = 0;
     const settled = Array.from({ length: 10 }, () =>
       facade.generate({ ...CALL, maxOutputTokens: 100 }).then(
         (result) => ({ ok: true as const, result }),
-        (error: unknown) => ({ ok: false as const, error }),
+        (error: unknown) => {
+          refusedSoFar += 1;
+          return { ok: false as const, error };
+        },
       ),
     );
     // $9.50 spent: holds of $0.20 take it to 9.70, 9.90 and 10.10; the rest see it spent.
+    // The gate stays shut until every call has had its answer: once the three finish, their
+    // real cost ($0.045) leaves room again, so a call still queued for the lock would pass.
     await vi.waitFor(async () => {
       expect(calls).toHaveLength(3);
+      expect(refusedSoFar).toBe(7);
       expect(await reservations()).toEqual({ live: 3, amount: 0.6 });
     });
     open();
