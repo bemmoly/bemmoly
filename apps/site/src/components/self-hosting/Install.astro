@@ -26,6 +26,10 @@ const OPTIONS = [
   ['--database-url URL', 'Use your own Postgres 18 with pgvector instead of the bundled one.'],
   ['--dir PATH', 'The install folder. /var/bemmoly by default.'],
   ['--yes', 'Ask nothing; stop when something is missing.'],
+  [
+    '--refresh-cli',
+    'Only replace the bemmoly command with this release’s. The app and its settings stay as they are.',
+  ],
 ] as const;
 const READ_FIRST = `$ curl -fsSL https://${INSTALL_HOST} -o install.sh
 $ less install.sh

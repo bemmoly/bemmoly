@@ -213,6 +213,24 @@ install_cli() {
   fi
 }
 
+# --refresh-cli: the bemmoly command of this installer's release, for an install whose
+# command predates self-update (ADR 0024). Images, .env and containers stay as they are.
+refresh_cli() {
+  as_root test -f "${INSTALL_DIR}/.env" ||
+    die "No Bemmoly install in ${INSTALL_DIR}" "Pass its folder with --dir, or install without --refresh-cli."
+  if [ -n "${VERSION}" ] && [ "$(cli_release)" != dev ] && [ "${VERSION}" != "$(cli_release)" ]; then
+    die "This installer carries the bemmoly command of $(cli_release), not ${VERSION}" \
+      "Run: curl -fsSL https://get.bemmoly.com | sh -s -- --refresh-cli --version ${VERSION}"
+  fi
+  step "Replacing the bemmoly command with $(cli_release)'s"
+  install_cli
+  step_done
+  app=$(as_root cat "${INSTALL_DIR}/.env" | env_get /dev/stdin VERSION)
+  success "The bemmoly command is $(cli_release); Bemmoly itself stays on ${app}"
+  say "  Check with 'sudo bemmoly version'. From now on 'sudo bemmoly upgrade' and in-app updates"
+  say "  keep the command on the app's release, and 'sudo bemmoly self-update' refreshes it."
+}
+
 # A re-run after the first admin exists: the app answers on loopback in every layout.
 setup_done() {
   curl -fsS --max-time 5 http://127.0.0.1:8080/api/v1/setup/status 2>/dev/null | grep -q '"initialized":true'

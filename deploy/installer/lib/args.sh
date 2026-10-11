@@ -17,6 +17,8 @@ Options:
   --database-url URL     use an existing Postgres 18+ with pgvector instead of the bundled one
   --image-archive FILE   load images from a release bundle instead of pulling (air-gapped)
   --dir PATH             install folder (default: /var/bemmoly)
+  --refresh-cli          only replace the bemmoly command with this release's; the app,
+                         its version and its settings are not touched
   --yes                  do not ask; fail when something is missing
   --help                 this text
 EOF
@@ -33,6 +35,7 @@ parse_args() {
   IMAGE_ARCHIVE=''
   INSTALL_DIR='/var/bemmoly'
   ASSUME_YES=''
+  REFRESH_CLI=''
   while [ "$#" -gt 0 ]; do
     case "$1" in
       --domain | --version | --channel | --modules | --database-url | --image-archive | --dir)
@@ -46,6 +49,7 @@ parse_args() {
         ;;
       --no-proxy) NO_PROXY=1; shift ;;
       --no-in-app-updates) NO_UPDATER=1; shift ;;
+      --refresh-cli) REFRESH_CLI=1; shift ;;
       --yes | -y) ASSUME_YES=1; shift ;;
       --help | -h) usage; exit 0 ;;
       *) die "Unknown option: $1" "Run with --help to see every option." ;;
@@ -96,4 +100,9 @@ validate_args() {
     /*) ;;
     *) die "--dir must be an absolute path (got ${INSTALL_DIR})" "For example --dir /srv/bemmoly." ;;
   esac
+  if [ -n "${REFRESH_CLI}" ] &&
+    [ -n "${DOMAIN}${MODULES}${NO_PROXY}${NO_UPDATER}${EXTERNAL_DATABASE_URL}${IMAGE_ARCHIVE}" ]; then
+    die "--refresh-cli only replaces the bemmoly command and takes no install options" \
+      "Run it with --dir, --version and --yes only."
+  fi
 }
