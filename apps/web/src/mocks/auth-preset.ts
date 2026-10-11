@@ -2,15 +2,22 @@ import { isThemeId, RETIRED_PRESETS } from '@bemmoly/ui/tokens';
 import type { MockDb } from './db.ts';
 import { ssoOf } from './routes/sso.ts';
 import { seedAcmeLogo } from './seed/logo.ts';
-import { newId } from './seed/time.ts';
 
 const MODES = ['light', 'dark', 'system'] as const;
 
 /** The providers `?sso=` seeds, from the presets the sign-in page knows marks for. */
 const PROVIDERS = [
-  { displayName: 'Okta', preset: 'okta' },
-  { displayName: 'Google Workspace', preset: 'google-workspace' },
-  { displayName: 'Microsoft Entra ID', preset: 'entra-id' },
+  { id: '0192a000-0000-7000-8000-000000000001', displayName: 'Okta', preset: 'okta' },
+  {
+    id: '0192a000-0000-7000-8000-000000000002',
+    displayName: 'Google Workspace',
+    preset: 'google-workspace',
+  },
+  {
+    id: '0192a000-0000-7000-8000-000000000003',
+    displayName: 'Microsoft Entra ID',
+    preset: 'entra-id',
+  },
 ] as const;
 
 /**
@@ -47,7 +54,8 @@ function seedProviders(db: MockDb, value: string) {
   const count = value === '3' ? 3 : value === '0' ? 0 : 1;
   const now = new Date().toISOString();
   state.providers = PROVIDERS.slice(0, count).map((provider) => ({
-    id: newId(),
+    // Fixed ids, so a remembered "Last used" provider survives a reload of the mock.
+    id: provider.id,
     displayName: provider.displayName,
     protocol: 'oidc' as const,
     preset: provider.preset,

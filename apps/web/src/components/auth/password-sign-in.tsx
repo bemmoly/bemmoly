@@ -144,7 +144,17 @@ export function PasswordSignIn({
         disabled={down}
         className={`m-0 flex flex-col gap-4 border-0 p-0 ${down ? 'opacity-55' : ''}`}
       >
-        {hideEmail ? null : (
+        {hideEmail ? (
+          // The remembered person's address, for password managers to fill against.
+          <input
+            type="email"
+            name="email"
+            autoComplete="username"
+            value={form.values.email}
+            readOnly
+            hidden
+          />
+        ) : (
           <Field label="Email" error={error(form.errors['email'])}>
             <Input
               size="touch"
