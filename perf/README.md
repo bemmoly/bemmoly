@@ -137,3 +137,41 @@ k6 pinned to CPUs 2-3, setup finished through the API, then the steps above with
 `K6_NETWORK=host`. The weekly **Soak** runs 24 hours on a self-hosted runner named by the
 repository variable `SOAK_RUNNER` (a hosted runner stops at 6 hours, so it runs 5 there).
 Both put the results table in the job summary and open an issue on a regression.
+
+## Results on the reference VM
+
+Bemmoly 0.12.0 on the 2 vCPU / 4 GB reference VM (Lima on an Apple Silicon laptop), the
+sample dataset seeded, 2026-10-11. Verdicts use the server's own p95 per route (from the
+latency histogram, so bucket-interpolated); k6's client-side p95 through the VM's port forward
+is in brackets. Each run is the one where the laptop's 1-minute load stayed under 10; runs
+the laptop disturbed (load 24–88) were discarded and repeated.
+
+| Budget (§20)                                | Target   | p50 ms                   | p95 ms      | p99 ms | Result |
+| ------------------------------------------- | -------- | ------------------------ | ----------- | ------ | ------ |
+| Board view API, 500 issues (10/s)           | < 80 ms  | 16.8                     | 24.2 (20.0) | 24.9   | pass   |
+| Issue detail API (30/s)                     | < 40 ms  | 7.1                      | 9.8 (9.2)   | 15.2   | pass   |
+| ⌘K: Work suggestions, per keystroke         | < 100 ms | 6.6                      | 15.3 (13.1) | 23.5   | pass   |
+| ⌘K: every module's search, per keystroke    | < 100 ms | 7.1                      | 18.9 (16.7) | 24.0   | pass   |
+| Issue search                                | < 100 ms | 7.1                      | 20.4 (16.9) | 24.7   | pass   |
+| Page open, collab connect + snapshot (5/s)  | < 150 ms | (9.0)                    | (13.0)      | (29.1) | pass   |
+| Page detail API, the REST half of page open | < 150 ms | 7.3                      | 13.9 (13.3) | 23.4   | pass   |
+| Two people typing, keystroke to the other   | < 150 ms | (3)                      | (5)         | (8)    | pass   |
+| Memory, steady (45-minute soak)             | < 512 MB | max RSS 507 MB (484 MiB) |             |        | pass   |
+| 10,000-issue Jira import (§24)              | < 30 min | 20.1 s                   |             |        | pass   |
+
+- **Collab:** 3,076 of 3,076 keystrokes reached the other person; the page-open budget has no
+  server-side number because it is a WebSocket.
+- **Mixed workload** (10 minutes, 40 actions a second with concurrent writes, page opens and
+  three pairs typing; 29,344 requests): every budget held. Server p95: board 24.7 ms, issue
+  9.8, suggest 9.9, search 21.6, page 9.9, issue edit 16.2. No failed requests, no
+  idle-in-transaction sessions, no 5xx: the 0.12.0 fix for the connection-pool deadlock holds.
+- **Import:** 10,000 issues, 20,000 comments and 9,999 links from the fake Jira Cloud site on
+  the local network, with nothing skipped; server RSS peaked at 445 MB. A real site adds its
+  own latency and rate limits, so expect it slower, but far inside 30 minutes.
+- **Soak** (45 minutes of the soak mix, 98,590 requests): no errors, p95 24 → 27 ms (drift
+  12%), heap steady (130–230 MB), database connections flat at 16. RSS rose from 485 to
+  507 MB after warm-up, about 25–30 MB an hour; 45 minutes cannot tell a slow leak from
+  warm-up, so the weekly 24-hour soak decides. The laptop was busy for most of it (1-minute
+  load above 10 in 124 of 182 samples), which shows in the p99s, not in the verdicts.
+- Queue depth reads about 200 after write-heavy runs: scheduled notification digests waiting
+  for their time, not a backlog.
