@@ -1,4 +1,5 @@
-import { FONTS, PRESET_IDS, PRESETS, themeById } from '@bemmoly/ui/tokens';
+import { buildCustomTheme } from '@bemmoly/ui/custom-theme';
+import { FONTS, themeSource } from '@bemmoly/ui/tokens';
 import { z } from 'zod';
 import type { SettingsService } from '../../contracts/settings.ts';
 import { DEFAULT_BRAND, type EmailBrand } from './templates/index.ts';
@@ -6,7 +7,7 @@ import { DEFAULT_BRAND, type EmailBrand } from './templates/index.ts';
 /**
  * Appearance keys are owned by the appearance settings, not by email, so they
  * are read untyped and parsed here: a missing or malformed value falls back to
- * the Classic preset instead of breaking every email.
+ * Bemmoly's light set instead of breaking every email.
  */
 export const APPEARANCE_KEYS = {
   theme: 'appearance.theme',
@@ -17,7 +18,7 @@ export const APPEARANCE_KEYS = {
 
 type UntypedGet = (key: string) => Promise<unknown>;
 
-const themeIdSchema = z.union([z.enum(PRESET_IDS as [string, ...string[]]), z.literal('custom')]);
+const themeIdSchema = z.string().min(1);
 const hexSchema = z.string().regex(/^#[0-9a-fA-F]{6}$/);
 const fontSchema = z.enum(Object.keys(FONTS) as [keyof typeof FONTS, ...(keyof typeof FONTS)[]]);
 const logoKeySchema = z.string().min(1).nullable();
@@ -50,13 +51,16 @@ export async function loadEmailBrand(
     read(get, APPEARANCE_KEYS.font, fontSchema),
     read(get, APPEARANCE_KEYS.logoKey, logoKeySchema),
   ]);
-  const preset = PRESETS.find((candidate) => candidate.id === themeId);
-  const accent =
-    themeId === 'custom' && brandColor ? brandColor : themeById(preset?.id ?? 'light').colors.acc;
+  // A custom theme's brand is mirrored into appearance.brandColor; its light set is generated
+  // and checked the same way the app does it.
+  const colors =
+    themeId === 'custom' && brandColor
+      ? buildCustomTheme({ brand: brandColor, surface: 'neutral' }).light
+      : themeSource(themeId ?? 'bemmoly').light;
   return {
     workspaceName: workspaceName ?? DEFAULT_BRAND.workspaceName,
-    accent,
+    colors,
     logoUrl: logoKey ? resolveLogoUrl(logoKey) : null,
-    fontStack: FONTS[font ?? preset?.font ?? 'plex'].stack,
+    fontStack: FONTS[font ?? 'plex'].stack,
   };
 }
