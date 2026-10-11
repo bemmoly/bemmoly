@@ -45,7 +45,7 @@ export function createAppRouter(queryClient: QueryClient) {
     const here = router.state.location;
     if (here.pathname === '/login' || here.pathname.startsWith('/setup')) return;
     queryClient.removeQueries({ queryKey: ['session'] });
-    void router.navigate({ to: '/login', search: { redirect: here.href } });
+    void router.navigate({ to: '/login', search: { redirect: here.href, reason: 'expired' } });
   });
   return router;
 }
