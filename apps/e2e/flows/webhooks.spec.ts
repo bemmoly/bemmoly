@@ -15,7 +15,7 @@ test('an admin adds a webhook, keeps its secret and sees a test send fail', asyn
   const form = page.getByRole('dialog');
   await form.getByRole('textbox', { name: 'Name' }).fill('Release notes bot');
   await form.getByRole('textbox', { name: 'URL' }).fill('http://127.0.0.1:9/hooks');
-  // A rare event, so the other flows' issues never queue deliveries to this address.
+  // A rare event, so few of the other flows' changes queue deliveries to this address.
   await form.getByRole('checkbox', { name: 'Sprint completed' }).check();
   await form.getByRole('button', { name: 'Create webhook' }).click();
   await expect(form.getByText(/private address 127\.0\.0\.1/)).toBeVisible();
@@ -30,7 +30,9 @@ test('an admin adds a webhook, keeps its secret and sees a test send fail', asyn
   await page.getByRole('button', { name: 'Send test' }).first().click();
   const result = page.getByRole('status').filter({ hasText: 'No answer' });
   await expect(result).toBeVisible({ timeout: 30_000 });
-  await expect(page.getByRole('table', { name: 'Deliveries' }).getByRole('row')).toHaveCount(2);
+  // Other flows may complete a sprint meanwhile; the test send is the one row to look for.
+  const deliveries = page.getByRole('table', { name: 'Deliveries' });
+  await expect(deliveries.getByRole('row', { name: /Test send/ })).toHaveCount(1);
 
   const id = new URL(page.url()).pathname.split('/').at(-1);
   await admin.call('DELETE', `/admin/webhooks/${id}`);
