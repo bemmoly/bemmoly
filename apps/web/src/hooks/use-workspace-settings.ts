@@ -4,7 +4,6 @@ import { z } from 'zod';
 import { validateForm, type FieldErrors } from '../lib/errors.ts';
 import { useDraft, useSettings, valuesOf } from './use-setting.ts';
 
-
 export const LOCALES = [
   { value: 'en', label: 'English' },
   { value: 'de', label: 'Deutsch' },
