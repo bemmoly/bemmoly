@@ -20,8 +20,11 @@ What each check runs:
 - **Fast checks**: `pnpm typecheck`, `pnpm lint` (layering, boundaries, 300-line limit),
   `pnpm format:check`, `pnpm test`, `pnpm eval` (the AI evals against their recordings, no
   key and no network; see `docs/ai-evals.md`) and actionlint over the workflows.
-- **Full checks**: integration tests against `pgvector/pgvector:pg18`, `pnpm build` (server,
-  web shell and Storybook), `pnpm size` (shell under 250 KB gzip), Playwright end to end.
+- **Full checks**: integration tests against `pgvector/pgvector:pg18`; the bemmoly command's
+  self-update in a throwaway container (`pnpm --filter @bemmoly/deploy test:container`: the
+  0.11.0 command refreshed, upgraded, and refusing bad signatures with the real cosign);
+  `pnpm build` (server, web shell and Storybook), `pnpm size` (shell under 250 KB gzip),
+  Playwright end to end.
 - **Work end to end**: the Playwright suite in `apps/e2e` against a real install: the server
   from the checkout on the service Postgres, serving the built web app, with Work and Docs
   enabled for everyone through the CLI and people created through the setup and invitation
