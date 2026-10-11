@@ -3,7 +3,7 @@ import { languageName, pickLocale, rememberDeviceLocale, useT } from '@bemmoly/c
 import { PSEUDO_LOCALE, SHIPPED_LOCALES, type MeResponse } from '@bemmoly/shared';
 import type { SelectOption } from '@bemmoly/ui';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { settings } from '../i18n/settings.ts';
+import { settingsText } from '../i18n/settings.ts';
 import { api } from '../lib/api.ts';
 import { describeError } from '../lib/errors.ts';
 import { showLocale } from '../lib/locale.ts';
@@ -20,7 +20,7 @@ export const AUTOMATIC = 'auto';
  */
 export function useLanguage() {
   const me = useMe();
-  const t = useT(settings);
+  const t = useT(settingsText);
   const client = useQueryClient();
   const saved = me.user.locale;
   const mutation = useMutation({

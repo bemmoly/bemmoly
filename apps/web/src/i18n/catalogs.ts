@@ -10,7 +10,7 @@ import shellSource from './shell.en.json' with { type: 'json' };
  */
 
 /** The frame around every page: sidebar, menus, the phone bar, and sign-in. */
-export const shell = defineCatalog('shell', shellSource);
+export const shellText = defineCatalog('shell', shellSource);
 
 /** The server's own messages, named by the messageId on an error body. */
-export const serverErrors = defineCatalog('errors', errors);
+export const errorsText = defineCatalog('errors', errors);

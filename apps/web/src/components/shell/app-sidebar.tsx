@@ -1,7 +1,8 @@
-import { knownIcon, SidebarRow, useFrame, useSidebarFocusOwner } from '@bemmoly/core-web';
+import { knownIcon, SidebarRow, useFrame, useSidebarFocusOwner, useT } from '@bemmoly/core-web';
 import { BrandRailFoot } from '@bemmoly/ui';
 import { useEffect } from 'react';
 import { APP_VERSION, WHATS_NEW_URL, type Shell } from '../../hooks/use-shell.ts';
+import { shellText } from '../../i18n/catalogs.ts';
 import { MODULE_SIDEBARS } from '../../lib/module-shell.ts';
 import { useUiStore } from '../../store/ui.ts';
 import { ModuleSection } from './module-section.tsx';
@@ -15,6 +16,7 @@ import { SidebarFoot, SidebarTop, AccountRow, VersionLine } from './sidebar-part
  * keeps the Bemmoly mark at its foot, with the version and What's new.
  */
 export function AppSidebar({ shell }: { shell: Shell }) {
+  const t = useT(shellText);
   const { mode } = useFrame();
   const rail = mode === 'rail';
   const setShortcutsOpen = useUiStore((state) => state.setShortcutsOpen);
@@ -31,13 +33,20 @@ export function AppSidebar({ shell }: { shell: Shell }) {
     <>
       <SidebarTop shell={shell} />
       <nav
-        aria-label="Main"
+        aria-label={t('shell.nav.main')}
         hidden={Boolean(focused)}
         className={`flex flex-col gap-0.5 ${rail ? 'items-center' : ''}`}
       >
-        <SidebarRow label="Home" icon="home" path="/" exact keys="G H" testId="nav-home" />
         <SidebarRow
-          label="Inbox"
+          label={t('shell.nav.home')}
+          icon="home"
+          path="/"
+          exact
+          keys="G H"
+          testId="nav-home"
+        />
+        <SidebarRow
+          label={t('shell.nav.inbox')}
           icon="inbox"
           path="/inbox"
           keys="G I"
@@ -63,9 +72,14 @@ export function AppSidebar({ shell }: { shell: Shell }) {
         )}
       </div>
       <SidebarFoot>
-        <SidebarRow label="Settings" icon="settings" path="/settings" testId="nav-settings" />
         <SidebarRow
-          label="Help and shortcuts"
+          label={t('shell.nav.settings')}
+          icon="settings"
+          path="/settings"
+          testId="nav-settings"
+        />
+        <SidebarRow
+          label={t('shell.nav.help')}
           icon="help"
           keys="?"
           onSelect={() => setShortcutsOpen(true)}

@@ -1,7 +1,8 @@
-import { knownIcon, useFrame } from '@bemmoly/core-web';
+import { knownIcon, useFrame, useT } from '@bemmoly/core-web';
 import { Menu, MenuItem, Tooltip } from '@bemmoly/ui';
 import { Icon } from '@bemmoly/ui/icons';
 import type { Shell } from '../../hooks/use-shell.ts';
+import { shellText } from '../../i18n/catalogs.ts';
 
 const FILL =
   'grid cursor-pointer place-items-center border-0 bg-acc-fill p-0 text-on-acc shadow-e1 hover:brightness-110 active:brightness-95 focus-ring';
@@ -12,6 +13,7 @@ const FILL =
  * the enabled modules make. With no module on it explains where creating comes from.
  */
 export function NewButton({ shell, size = 30 }: { shell: Shell; size?: number }) {
+  const t = useT(shellText);
   const { mode } = useFrame();
   const first = shell.primaryCreate;
   const others = shell.creates.slice(1);
@@ -24,7 +26,7 @@ export function NewButton({ shell, size = 30 }: { shell: Shell; size?: number })
           <button
             type="button"
             {...props}
-            aria-label="New"
+            aria-label={t('shell.new.label')}
             style={{ width: size, height: size }}
             className={`${FILL} rounded-control`}
           >
@@ -33,21 +35,20 @@ export function NewButton({ shell, size = 30 }: { shell: Shell; size?: number })
         )}
       >
         <div className="flex flex-col gap-1 px-2.5 py-2 text-12 text-tx-2">
-          <b className="text-13 font-semibold text-tx">Nothing to create yet</b>
-          Issues, docs and other work come from modules.{' '}
+          <b className="text-13 font-semibold text-tx">{t('shell.new.nothingTitle')}</b>
           {shell.me.can('workspace.modules.manage')
-            ? 'Enable one and what it makes shows up here.'
-            : 'Once an admin enables one, what it makes shows up here.'}
+            ? t('shell.new.nothingAdmin')
+            : t('shell.new.nothingMember')}
         </div>
         {shell.me.can('workspace.modules.manage') ? (
           <MenuItem icon={<Icon name="modules" />} onSelect={() => shell.go('/settings/modules')}>
-            Open Settings › Modules
+            {t('shell.new.openModules')}
           </MenuItem>
         ) : null}
       </Menu>
     );
   }
-  const label = `New ${first.label.toLowerCase()}`;
+  const label = t('shell.new.thing', { thing: first.label.toLowerCase() });
   const main = (
     <Tooltip label={label} keys="C" side={mode === 'rail' ? 'right' : 'top'}>
       <button
@@ -55,7 +56,7 @@ export function NewButton({ shell, size = 30 }: { shell: Shell; size?: number })
         aria-label={label}
         onClick={first.open}
         style={{ width: size, height: size }}
-        className={`${FILL} ${others.length > 0 && mode !== 'rail' ? 'rounded-l-control' : 'rounded-control'}`}
+        className={`${FILL} ${others.length > 0 && mode !== 'rail' ? 'rounded-s-control' : 'rounded-control'}`}
       >
         <Icon name="plus" size={16} />
       </button>
@@ -72,9 +73,9 @@ export function NewButton({ shell, size = 30 }: { shell: Shell; size?: number })
           <button
             type="button"
             {...props}
-            aria-label="More to create"
+            aria-label={t('shell.new.more')}
             style={{ height: size }}
-            className={`${FILL} w-6 rounded-r-control border-l border-on-acc/25`}
+            className={`${FILL} w-6 rounded-e-control border-s border-on-acc/25`}
           >
             <Icon name="caret" size={12} />
           </button>
@@ -87,7 +88,7 @@ export function NewButton({ shell, size = 30 }: { shell: Shell; size?: number })
             onSelect={entry.open}
             {...(index === 0 ? { hint: 'C' } : {})}
           >
-            New {entry.label.toLowerCase()}
+            {t('shell.new.thing', { thing: entry.label.toLowerCase() })}
           </MenuItem>
         ))}
       </Menu>

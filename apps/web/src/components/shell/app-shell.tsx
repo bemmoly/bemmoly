@@ -7,11 +7,13 @@ import {
   useFrame,
   useGlobalKeys,
   usePreference,
+  useT,
 } from '@bemmoly/core-web';
 import { Outlet, useNavigate, useRouterState } from '@tanstack/react-router';
 import { lazy, Suspense, useCallback, useEffect, useMemo } from 'react';
 import { useRealtimeSync } from '../../hooks/use-shell-effects.ts';
 import { useShell, type Shell } from '../../hooks/use-shell.ts';
+import { shellText } from '../../i18n/catalogs.ts';
 import { ENTITY_RENDERERS } from '../../lib/entity-renderers.ts';
 import { useUiStore } from '../../store/ui.ts';
 import { PageFailure } from '../page-failure.tsx';
@@ -52,12 +54,13 @@ function ShellKeys({ shell }: { shell: Shell }) {
 
 /** The phone's bottom bar: Home, Inbox, New, what modules add (My issues) and the first area. */
 function PhoneBar({ shell }: { shell: Shell }) {
+  const t = useT(shellText);
   const area = shell.modules[0];
   const items = [
-    { id: 'home', label: 'Home', icon: 'home' as const, path: '/', exact: true },
+    { id: 'home', label: t('shell.nav.home'), icon: 'home' as const, path: '/', exact: true },
     {
       id: 'inbox',
-      label: 'Inbox',
+      label: t('shell.nav.inbox'),
       icon: 'inbox' as const,
       path: '/inbox',
       ...(shell.unreadCount > 0 ? { pill: shell.unreadCount } : {}),

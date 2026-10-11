@@ -5,11 +5,11 @@ import { SettingsPage } from '../../components/settings/settings-page.tsx';
 import { useAiOptOut } from '../../hooks/use-ai-opt-out.ts';
 import { useLanguage } from '../../hooks/use-language.ts';
 import { useMe } from '../../hooks/use-session.ts';
-import { settings } from '../../i18n/settings.ts';
+import { settingsText } from '../../i18n/settings.ts';
 
 /** The person's language, saved on their account; Automatic follows the browser. */
 function LanguageRow() {
-  const t = useT(settings);
+  const t = useT(settingsText);
   const language = useLanguage();
   return (
     <SettingsRow
@@ -35,7 +35,7 @@ function LanguageRow() {
  * The worked example of an extracted settings page (docs/i18n.md).
  */
 export function ProfilePage() {
-  const t = useT(settings);
+  const t = useT(settingsText);
   const me = useMe();
   const ai = useAiOptOut();
   return (
