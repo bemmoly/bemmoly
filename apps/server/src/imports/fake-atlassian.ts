@@ -255,7 +255,12 @@ export async function startFakeSite(options: FakeSiteOptions): Promise<FakeSite>
     }
     if (media) {
       res.writeHead(200, { 'content-type': 'image/png' });
-      return res.end(Buffer.from('fake-png-bytes-0'));
+      return res.end(
+        Buffer.concat([
+          Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+          Buffer.from('fakepng!'),
+        ]),
+      );
     }
     handle(req, url)
       .then(([status, body, headers]) => send(res, status, body, origin, headers))

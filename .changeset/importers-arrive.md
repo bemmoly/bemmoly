@@ -46,5 +46,5 @@ providers.
 
 Admins: the schema adds the kernel changeset `0501-import-jobs` (the `import_jobs` and
 `import_mappings` tables). It is reversible and quick. Importing requires the Work module for
-Jira and CSV and the Docs module for Confluence. Images inside imported pages show their file
-name for now; the files themselves are copied into storage.
+Jira and CSV and the Docs module for Confluence. Images attached to Confluence pages show inline
+in the imported pages; other attachments are copied into storage.

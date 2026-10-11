@@ -29,6 +29,8 @@ export interface BodyContext {
   pages: Map<string, string>;
   people: Map<string, { id: string; label: string } | null>;
   siteHost: string;
+  /** The current page's attachment file names to the URL each image is served at. */
+  attachments: Map<string, string>;
 }
 
 const hash = (text: string) => createHash('sha256').update(text).digest('hex').slice(0, 32);
@@ -86,6 +88,7 @@ export function convertBody(body: BodyContext, spaceKey: string, storage: string
     },
     resolveUser: (account) => body.people.get(account) ?? null,
     rewriteLink: (href) => rewriteLink(body, href),
+    resolveAttachment: (fileName) => body.attachments.get(fileName) ?? null,
   }) as RichText;
 }
 

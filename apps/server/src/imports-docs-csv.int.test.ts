@@ -107,6 +107,14 @@ describe('Confluence and CSV import', () => {
     const [attachment] = await sql<{ meta: Record<string, unknown> }[]>`
       select meta from import_mappings where kind = 'attachment' and source = 'confluence'`;
     expect(attachment!.meta).toMatchObject({ filename: 'flow.png', mime: 'image/png', size: 16 });
+    const fileId = String(attachment!.meta['fileId']);
+    expect(deploy).toContain(`"src":"/api/v1/files/${fileId}"`);
+    const [file] = await sql<{ target_kind: string; target_id: string }[]>`
+      select target_kind, target_id from files where id = ${fileId}`;
+    expect(file).toEqual({
+      target_kind: 'docs.page',
+      target_id: byTitle.get('Deploy runbook')!.id,
+    });
     expect(done.report.warnings).toContain('Inline comments were imported as page comments.');
   });
 

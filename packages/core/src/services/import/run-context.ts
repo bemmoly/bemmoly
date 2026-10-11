@@ -3,6 +3,7 @@ import type { ImportReport } from '@bemmoly/shared';
 import type { SqlClient } from '../../clients/postgres.ts';
 import type { ImportRunContext, ImportSourceContext } from '../../contracts/importer.ts';
 import type { ObjectStore } from '../../contracts/object-store.ts';
+import { safeFileName, sniffImage } from '../files/index.ts';
 import { assertObjectKey } from '../storage/index.ts';
 import { createMappingStore } from './mappings.ts';
 import { createPeopleMatcher } from './people.ts';
@@ -117,6 +118,19 @@ export function createRunContext(input: RunContextInput): RunContextHandle {
           { signal: input.signal },
         );
         return { storageKey, sha256, size: bytes.byteLength };
+      },
+      async storeImage({ bytes, name, target }) {
+        const sniffed = sniffImage(bytes);
+        if (sniffed.kind !== 'image') return null;
+        const stored = await ctx.files.store({ bytes, contentType: sniffed.mime });
+        const [row] = await sql<{ id: string }[]>`
+          insert into files (target_kind, target_id, storage_key, filename, mime, size, sha256,
+            uploaded_by)
+          values (${target.kind}, ${target.id}, ${stored.storageKey},
+            ${safeFileName(name, sniffed.mime)}, ${sniffed.mime}, ${stored.size},
+            ${stored.sha256}, ${job.created_by}::uuid)
+          returning id`;
+        return row?.id ?? null;
       },
     },
   };

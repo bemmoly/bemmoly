@@ -90,6 +90,15 @@ export interface ImportRunContext extends ImportPlanContext {
   };
   files: {
     store(input: { bytes: Uint8Array; contentType: string }): Promise<StoredImportFile>;
+    /**
+     * An image as a served file of a module's file target (a page), so content can show it
+     * at fileUrl(id). Null when the bytes are not an image the files service accepts.
+     */
+    storeImage(input: {
+      bytes: Uint8Array;
+      name: string;
+      target: { kind: string; id: string };
+    }): Promise<string | null>;
   };
 }
 

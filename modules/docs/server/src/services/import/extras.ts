@@ -1,4 +1,5 @@
-import { HttpStatusError, type SqlClient } from '@bemmoly/core';
+import { fileUrl, HttpStatusError, type SqlClient } from '@bemmoly/core';
+import { DOCS_PAGE_KIND } from '../collab/index.ts';
 import { plainText } from '@bemmoly/editor/convert';
 import { personFor, convertBody, type BodyContext } from './bodies.ts';
 
@@ -57,15 +58,18 @@ export async function copyAttachments(
   body: BodyContext,
   sourcePageId: string,
   pageId: string,
-): Promise<void> {
+): Promise<Map<string, string>> {
   const { ctx } = body;
+  const urls = new Map<string, string>();
   const attachments = await body.client.attachments(sourcePageId);
-  if (!attachments.length) return;
+  if (!attachments.length) return urls;
   const known = await ctx.mappings.getMany(
     'attachment',
     attachments.map((attachment) => attachment.id),
   );
   for (const attachment of attachments) {
+    const fileId = known.get(attachment.id)?.meta['fileId'];
+    if (typeof fileId === 'string') urls.set(attachment.title, fileUrl(fileId));
     if (known.has(attachment.id)) continue;
     const size = attachment.extensions?.fileSize ?? 0;
     if (size > ATTACHMENT_MAX_BYTES) {
@@ -84,15 +88,21 @@ export async function copyAttachments(
     }
     const mime =
       attachment.extensions?.mediaType ?? attachment.metadata?.mediaType ?? file.contentType;
-    const stored = await ctx.files.store({ bytes: file.bytes, contentType: mime });
+    const image = mime.startsWith('image/')
+      ? await ctx.files.storeImage({
+          bytes: file.bytes,
+          name: attachment.title,
+          target: { kind: DOCS_PAGE_KIND, id: pageId },
+        })
+      : null;
+    const stored = image ? null : await ctx.files.store({ bytes: file.bytes, contentType: mime });
+    if (image) urls.set(attachment.title, fileUrl(image));
     await ctx.mappings.set('attachment', attachment.id, pageId, {
       filename: attachment.title,
       mime,
-      ...stored,
+      ...(image ? { fileId: image, size: file.bytes.byteLength } : stored),
     });
     ctx.report.count('attachments', 'created');
   }
-  ctx.report.warn(
-    'Attachments were copied into storage; pages show images by file name until Docs serves uploads.',
-  );
+  return urls;
 }
