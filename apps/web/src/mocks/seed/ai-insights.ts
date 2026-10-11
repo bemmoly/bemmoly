@@ -160,7 +160,7 @@ const SPRINT_14: CannedInsight = {
   output: {
     risk: 'at_risk',
     headline: {
-      text: 'PLT-204 has been in review 3 days and blocks 2 issues (5 pts). At current pace the sprint lands at 19/23 pts.',
+      text: 'PLT-204 has been in review 3 days and blocks 2 issues (5 pts). At current pace the sprint lands near 38 of its 48 points.',
       cites: ['c1', 'c2'],
     },
     next: [{ label: 'Open PLT-204', cite: 'c2' }],
@@ -188,7 +188,7 @@ const BRIEF: CannedInsight = {
       },
       { text: 'The Auth service RFC has 3 open comments from Jonas.', cites: ['c2'] },
       {
-        text: 'Sprint 14 is tracking 19 of 23 points; PLT-211 and PLT-219 look unlikely to land.',
+        text: 'Sprint 14 has 9 of 48 points done with a week to go; PLT-211 and PLT-219 look unlikely to land.',
         cites: ['c3', 'c4'],
       },
     ],
