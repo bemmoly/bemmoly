@@ -6,6 +6,7 @@ import { createDocsControllers } from './server/src/controllers/index.ts';
 import { compactJob, importJob, purgeTrashJob } from './server/src/config/jobs.ts';
 import { docsRoutes } from './server/src/routes/index.ts';
 import { registerDocsAiTools } from './server/src/services/ai-tools/index.ts';
+import { registerDocsMcp } from './server/src/services/mcp/index.ts';
 import { createDocsServices } from './server/src/services/index.ts';
 import { registerDocsReferences } from './server/src/services/links/registry.ts';
 import { registerDocsSearch } from './server/src/services/palette/index.ts';
@@ -76,6 +77,7 @@ export default defineModule({
     registerDocsRetrieval(ctx);
     registerDocsReferences(ctx, services.links);
     registerDocsAiTools(ctx.ai, services);
+    registerDocsMcp(ctx.mcp, services);
     registerDocsAi(ctx, {
       entities: ctx.entities,
       ...(ctx.database ? { database: ctx.database } : {}),

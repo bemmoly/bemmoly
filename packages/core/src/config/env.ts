@@ -53,6 +53,8 @@ export const envSchema = z.object({
   BEMMOLY_RATE_LIMIT_AUTH_PER_ACCOUNT: rateLimitMax,
   BEMMOLY_RATE_LIMIT_FAILED_CREDENTIALS_PER_IP: rateLimitMax,
   BEMMOLY_RATE_LIMIT_AI_PER_USER: rateLimitMax,
+  /** MCP requests per person per minute; unset keeps the default in routes/mcp.routes.ts. */
+  BEMMOLY_RATE_LIMIT_MCP_PER_USER: rateLimitMax,
   /** Document messages per /collab socket per 10 s (awareness counts apart); unset: the default. */
   BEMMOLY_RATE_LIMIT_COLLAB_MESSAGES: rateLimitMax,
   /** Largest /collab message in bytes, 64 KiB to 16 MiB; unset keeps the 2 MiB default. */

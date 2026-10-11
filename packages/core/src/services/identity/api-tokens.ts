@@ -46,6 +46,7 @@ export async function createApiToken(
         tokenHash: digestToken(token),
         tokenPrefix: token.slice(0, PERSONAL_TOKEN_VISIBLE_CHARS),
         scopes: [...new Set(input.scopes)],
+        modules: input.modules ? [...new Set(input.modules)] : null,
         expiresAt: input.expiresAt ? new Date(input.expiresAt) : null,
       })
       .returning();
@@ -95,6 +96,8 @@ export interface AuthenticatedToken {
   tokenId: string;
   userId: string;
   scopes: ApiTokenScope[];
+  /** The modules the token is limited to; null for every module the owner can open. */
+  modules: string[] | null;
 }
 
 /** Resolves a Bearer token; null when unknown, revoked, expired, or the owner is not active. */
@@ -125,5 +128,6 @@ export async function authenticateApiToken(
     tokenId: row.token.id,
     userId: row.token.userId,
     scopes: presentApiToken(row.token).scopes,
+    modules: row.token.modules ?? null,
   };
 }

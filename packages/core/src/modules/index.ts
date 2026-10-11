@@ -23,3 +23,4 @@ export {
   type CollabRegistry,
   type CollabTransactor,
 } from './collab.ts';
+export type * from './mcp.ts';

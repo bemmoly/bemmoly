@@ -63,6 +63,12 @@ function page<const P extends string>(
 const pages = [
   page('profile', 'profile', () => import('../pages/settings/profile-page.tsx'), 'ProfilePage'),
   page(
+    'access-tokens',
+    'access-tokens',
+    () => import('../pages/settings/access-tokens-page.tsx'),
+    'AccessTokensPage',
+  ),
+  page(
     'notifications',
     'notifications',
     () => import('../pages/settings/notifications-page.tsx'),
@@ -95,6 +101,7 @@ const pages = [
     () => import('../pages/settings/ai/ai-prompts-page.tsx'),
     'AiPromptsPage',
   ),
+  page('mcp', 'mcp', () => import('../pages/settings/mcp-page.tsx'), 'McpPage'),
   page('users', 'users', () => import('../pages/settings/users-page.tsx'), 'UsersPage'),
   page('teams', 'teams', () => import('../pages/settings/teams-page.tsx'), 'TeamsPage'),
   page('roles', 'roles', () => import('../pages/settings/roles-page.tsx'), 'RolesPage'),

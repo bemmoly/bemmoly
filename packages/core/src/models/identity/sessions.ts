@@ -46,6 +46,8 @@ export const apiTokens = pgTable(
     tokenHash: text('token_hash').notNull(),
     tokenPrefix: text('token_prefix').notNull(),
     scopes: text('scopes').array().notNull(),
+    /** Null: every module the owner can open. */
+    modules: text('modules').array(),
     lastUsedAt: timestampTz('last_used_at'),
     expiresAt: timestampTz('expires_at'),
     revokedAt: timestampTz('revoked_at'),

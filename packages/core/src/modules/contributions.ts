@@ -2,6 +2,7 @@ import type { NavEntry } from '@bemmoly/shared';
 import type { RetrievalSourceDefinition } from '../contracts/retrieval.ts';
 import type { SettingDefinition } from '../contracts/settings.ts';
 import type { CollabDocumentDefinition } from './collab.ts';
+import type { McpPromptDefinition, McpResourceDefinition } from './mcp.ts';
 import type {
   AiContribution,
   AiExclusionSourceDefinition,
@@ -41,6 +42,9 @@ export interface ModuleContributions {
   importers: ImporterDefinition[];
   settings: SettingDefinition[];
   collabDocuments: CollabDocumentDefinition[];
+  mcpResources: McpResourceDefinition[];
+  mcpPrompts: McpPromptDefinition[];
+  mcpTools: AiContribution[];
 }
 
 export function emptyContributions(): ModuleContributions {
@@ -66,5 +70,8 @@ export function emptyContributions(): ModuleContributions {
     importers: [],
     settings: [],
     collabDocuments: [],
+    mcpResources: [],
+    mcpPrompts: [],
+    mcpTools: [],
   };
 }

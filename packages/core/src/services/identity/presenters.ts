@@ -76,6 +76,7 @@ export function presentApiToken(row: ApiTokenRow): ApiToken {
     scopes: row.scopes.filter((scope): scope is ApiToken['scopes'][number] =>
       ['read', 'write'].includes(scope),
     ),
+    modules: row.modules ?? null,
     lastUsedAt: iso(row.lastUsedAt),
     expiresAt: iso(row.expiresAt),
     createdAt: row.createdAt.toISOString(),

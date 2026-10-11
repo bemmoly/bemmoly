@@ -29,6 +29,8 @@ declare module 'fastify' {
     sessionId: string | null;
     /** Scopes of the API token behind a Bearer request. */
     tokenScopes: readonly ApiTokenScope[] | null;
+    /** The modules the API token behind a Bearer request is limited to; null for all. */
+    tokenModules: readonly string[] | null;
     /** A session cookie or API token was looked up and refused; the rate limiter counts these. */
     credentialRejected: boolean;
   }
@@ -113,6 +115,14 @@ async function fromBearer(
   }
   request.actor = { kind: 'api_token', id: resolved.tokenId, userId: resolved.userId };
   request.tokenScopes = resolved.scopes;
+  request.tokenModules = resolved.modules;
+  if (resolved.modules) {
+    request.authz = createRequestAuthorization({
+      db: options.db,
+      modules: options.modules,
+      restrictModules: resolved.modules,
+    });
+  }
 }
 
 async function fromCookie(
@@ -155,6 +165,7 @@ export const authentication = fp<AuthenticationOptions>(
     app.decorateRequest('authz', null);
     app.decorateRequest('sessionId', null);
     app.decorateRequest('tokenScopes', null);
+    app.decorateRequest('tokenModules', null);
     app.decorateRequest('credentialRejected', false);
     app.addHook('onRequest', async (request, reply) => {
       const now = options.now ? options.now() : new Date();
