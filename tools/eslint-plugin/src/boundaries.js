@@ -3,11 +3,15 @@ import { classifyFile, classifyImport } from './classify.js';
 const SERVER_ALLOWED = new Set(['core', 'shared']);
 const WEB_ALLOWED = new Set(['core', 'shared', 'ui', 'core-web', 'editor', 'api-client']);
 /**
- * The editor's server-safe entries: the schema and the converters have no React and no DOM,
- * so a module's server and shared code may read documents with them. The package root (the
- * React editor) stays web-only.
+ * The editor's server-safe entries: the schema, the converters and the print document have no
+ * React and no DOM, so a module's server and shared code may read documents with them. The
+ * package root (the React editor) stays web-only.
  */
-const SERVER_SUBPATHS = new Set(['@bemmoly/editor/schema', '@bemmoly/editor/convert']);
+const SERVER_SUBPATHS = new Set([
+  '@bemmoly/editor/schema',
+  '@bemmoly/editor/convert',
+  '@bemmoly/editor/print',
+]);
 
 const hasSegment = (rel, name) => rel.split('/').slice(0, -1).includes(name);
 

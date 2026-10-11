@@ -93,4 +93,13 @@ describe('print document', () => {
     expect(html).toContain('<table>');
     expect(html).toContain('class="callout callout-info"');
   });
+
+  it('prints the alt text of an image the host does not embed, never its address', () => {
+    const { html } = toPrintDocument('T', [page('p1', 'T', EVERY_DOC_NODE)], {
+      paper: 'a4',
+      imageSrc: () => false,
+    });
+    expect(html).toContain('<p class="image-alt">Cutover flow</p>');
+    expect(html).not.toContain('example.org/flow.png');
+  });
 });

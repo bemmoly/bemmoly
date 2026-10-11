@@ -68,6 +68,7 @@ export function printStylesheet(paper: PrintPaper): string {
     `nav.contents{break-after:page}nav.contents h1{font-size:${t.h2}}`,
     `nav.contents ol{list-style:none;padding-left:0;gap:4pt}nav.contents a{color:${c.tx}}`,
     `.depth-1{margin-left:12pt}.depth-2{margin-left:24pt}.depth-3{margin-left:36pt}`,
+    `.image-alt{color:${c['tx-3']};font-style:italic;font-size:${t.small}}`,
     `pre,table,figure,blockquote,.callout,.decision,.issue-card,img{break-inside:avoid}`,
     `.hljs-comment,.hljs-quote{color:${c['tx-3']};font-style:italic}`,
     `.hljs-keyword,.hljs-selector-tag,.hljs-literal{color:${c.acc}}`,

@@ -28,7 +28,7 @@ export interface ExportContext {
   pageHref: (pageId: string) => string | null;
   /** Where an issue key points, when the host knows. */
   issueHref: (key: string) => string | null;
-  /** Where an image's (safe) source points in this export. */
+  /** Where an image's (safe) source points in this export; empty prints its alt text. */
   imageSrc: (src: string) => string;
   /** Code as highlighted, escaped markup, when the host colours code (print does). */
   highlight?: (code: string, language: string | null) => string | null;
