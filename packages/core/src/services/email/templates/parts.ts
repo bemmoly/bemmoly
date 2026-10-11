@@ -92,13 +92,22 @@ export function TargetLink(props: {
   );
 }
 
-const DATE_FORMAT = new Intl.DateTimeFormat('en-GB', {
-  dateStyle: 'medium',
-  timeStyle: 'short',
-  timeZone: 'UTC',
-});
+const DATE_FORMATS = new Map<string, Intl.DateTimeFormat>();
 
-/** Emails are read later and elsewhere, so times carry their zone. */
-export function formatDateTime(date: Date): string {
-  return `${DATE_FORMAT.format(date)} UTC`;
+/**
+ * Emails are read later and elsewhere, so times carry their zone. English keeps the
+ * day-month-year order it always had ("11 Oct 2026, 14:32 UTC"); other languages use theirs.
+ */
+export function formatDateTime(date: Date, locale = 'en'): string {
+  const tag = locale === 'en' ? 'en-GB' : locale;
+  let format = DATE_FORMATS.get(tag);
+  if (!format) {
+    format = new Intl.DateTimeFormat(tag, {
+      dateStyle: 'medium',
+      timeStyle: 'short',
+      timeZone: 'UTC',
+    });
+    DATE_FORMATS.set(tag, format);
+  }
+  return `${format.format(date)} UTC`;
 }

@@ -4,6 +4,7 @@ import {
   passwordResetRequestedPayloadSchema,
 } from '@bemmoly/shared';
 import type { SqlExecutor } from '../../contracts/sql.ts';
+import { serverText } from '../i18n/index.ts';
 import { frameEmail, type EmailContext } from './context.ts';
 import { queueEmail } from './outbox/queue.ts';
 import { invitationEmail, passwordResetEmail, renderEmail } from './templates/index.ts';
@@ -43,7 +44,10 @@ export async function queuePasswordResetEmail(
   const reset = parseOrThrow(passwordResetRequestedPayloadSchema, input);
   const { frame, headers } = await frameEmail(
     ctx,
-    "You're receiving this because someone asked to reset the password for this address.",
+    (_brand, locale) => {
+      const t = serverText(locale);
+      return t('email.passwordReset.reason');
+    },
     null,
   );
   const email = await renderEmail(frame, passwordResetEmail(frame, reset));

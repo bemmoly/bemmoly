@@ -1,0 +1,9 @@
+{
+  "email.passwordReset.action": "Choose a new password",
+  "email.passwordReset.body": "{named, select, yes {Hi {name}, someone} other {Someone}} asked to reset the password for your {workspace} account. Choose a new one with the button below.",
+  "email.passwordReset.expiry": "The link works once and expires {expires}. If you did not ask for this, ignore this email; your password stays the same.",
+  "email.passwordReset.preview": "Choose a new password",
+  "email.passwordReset.reason": "You're receiving this because someone asked to reset the password for this address.",
+  "email.passwordReset.subject": "Reset your {workspace} password",
+  "email.passwordReset.title": "Reset your password"
+}

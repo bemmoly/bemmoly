@@ -573,6 +573,12 @@ importers:
       '@hocuspocus/server':
         specifier: 4.7.0
         version: 4.7.0(y-protocols@1.0.7(yjs@13.6.32))(yjs@13.6.32)
+      '@lingui/core':
+        specifier: 6.8.0
+        version: 6.8.0(@babel/core@7.29.7)
+      '@lingui/message-utils':
+        specifier: 6.8.0
+        version: 6.8.0
       '@modelcontextprotocol/sdk':
         specifier: 1.31.0
         version: 1.31.0(zod@4.6.5)

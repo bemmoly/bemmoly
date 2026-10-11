@@ -7,6 +7,7 @@ import type { SettingsService } from '../../contracts/settings.ts';
 import type { SqlExecutor } from '../../contracts/sql.ts';
 import type { UserDirectory } from '../../contracts/users.ts';
 import { trimLeadingSlashes, trimTrailingSlashes } from '../../utils/slashes.ts';
+import { serverLocale } from '../i18n/index.ts';
 import { loadEmailBrand, type LogoUrlResolver } from './brand.ts';
 import type { MailboxStore } from './mailbox.ts';
 import type { DrainDependencies, DrainPolicy } from './outbox/drain.ts';
@@ -54,22 +55,35 @@ export function absoluteUrl(publicUrl: string, path: string): string {
   return `${trimTrailingSlashes(publicUrl)}/${trimLeadingSlashes(path)}`;
 }
 
+/** The workspace's language, the default for every email until recipients' own are passed. */
+async function workspaceLocale(ctx: EmailContext): Promise<string> {
+  try {
+    return serverLocale(await ctx.settings.get('workspace.locale'));
+  } catch {
+    return serverLocale();
+  }
+}
+
 /**
- * The frame every email shares: brand and theme from settings, the reason line,
- * and, for anything a preference governs, the unsubscribe link and headers.
+ * The frame every email shares: brand and theme from settings, the language, the reason
+ * line, and, for anything a preference governs, the unsubscribe link and headers.
  */
 export async function frameEmail(
   ctx: EmailContext,
-  reason: string | ((brand: EmailBrand) => string),
+  reason: string | ((brand: EmailBrand, locale: string) => string),
   unsubscribe: UnsubscribeClaim | null,
 ): Promise<FramedEmail> {
-  const brand = await loadEmailBrand(ctx.settings, ctx.resolveLogoUrl);
+  const [brand, locale] = await Promise.all([
+    loadEmailBrand(ctx.settings, ctx.resolveLogoUrl),
+    workspaceLocale(ctx),
+  ]);
   const links = unsubscribe ? unsubscribeLinks(ctx.publicUrl, ctx.signer.sign(unsubscribe)) : null;
   return {
     frame: {
       brand,
       theme: emailTheme(brand),
-      reason: typeof reason === 'string' ? reason : reason(brand),
+      locale,
+      reason: typeof reason === 'string' ? reason : reason(brand, locale),
       unsubscribeUrl: links?.pageUrl ?? null,
       preferencesUrl: unsubscribe ? absoluteUrl(ctx.publicUrl, '/settings/notifications') : null,
     },
