@@ -19,7 +19,7 @@ export const INSTALL_BLOCK = `$ ${INSTALL_COMMAND}`;
 
 /** The three things to have before running the installer (deploy/installer/lib/preflight.sh). */
 export const REQUIREMENTS = [
-  'A Linux VM with 2 vCPU and 4 GB of memory, and 10 GB of free disk',
+  'A Linux VM with at least 1 vCPU and 2 GB of memory, and 10 GB of free disk',
   'Ubuntu 22.04+, Debian 12+, Fedora 40+ or Amazon Linux 2023',
   'A domain pointing at it, and ports 80 and 443 free',
 ];
