@@ -13,13 +13,20 @@ import {
   readBlockers,
   readHistorySince,
   readIssueFacts,
+  readLinkedPullRequests,
   readRecentComments,
   type HistoryFacts,
   type IssueFacts,
+  type PullRequestFacts,
 } from './issue-rows.ts';
 
 /** How much of an issue the summary reads. */
-export const ISSUE_CONTEXT_LIMITS = { comments: 12, history: 20, chars: 14_000 } as const;
+export const ISSUE_CONTEXT_LIMITS = {
+  comments: 12,
+  history: 20,
+  pullRequests: 5,
+  chars: 14_000,
+} as const;
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const day = (iso: string | null) => (iso ? iso.slice(0, 10) : null);
@@ -41,6 +48,19 @@ function fieldsLine(issue: IssueFacts): string {
     `in this status since ${day(issue.statusChangedAt)}`,
   ];
   return parts.filter(Boolean).join(' · ');
+}
+
+/** "#4821 · Session store to Postgres · merged · checks passing · approved". */
+function pullRequestLine(pull: PullRequestFacts): string {
+  const parts = [
+    `${pull.ref} in ${pull.repository}`,
+    pull.title,
+    pull.state,
+    pull.checks ? `checks ${pull.checks}` : null,
+    pull.review ? pull.review.replaceAll('_', ' ') : null,
+    `updated ${day(pull.updatedAt)}`,
+  ];
+  return `Pull request ${parts.filter(Boolean).join(' · ')}`;
 }
 
 const FIELD_NAMES: Record<string, string> = {
@@ -118,6 +138,21 @@ async function writeIssue(
     });
   }
 
+  const pulls = await readLinkedPullRequests(sql, issue.id, ISSUE_CONTEXT_LIMITS.pullRequests);
+  if (pulls.length > 0) writer.heading('Linked pull requests');
+  for (const pull of pulls) {
+    writer.cite({
+      kind: 'pr',
+      objectId: pull.id,
+      label: pull.ref,
+      location: pull.repository,
+      href: pull.url || null,
+      line: pullRequestLine(pull),
+      scope,
+      counts: 'PRs',
+    });
+  }
+
   const { comments, total } = await readRecentComments(
     sql,
     issue.id,
@@ -162,7 +197,8 @@ async function writeIssue(
 
 /**
  * issueContext (tech design 11.3): title, description, fields, the last comments, history
- * since the last summary, blockers and, through Docs, the linked pages' TL;DRs. An issue in
+ * since the last summary, blockers, linked pull requests with their state and, through Docs,
+ * the linked pages' TL;DRs. An issue in
  * an excluded project is refused, never summarised from its title alone.
  */
 export function createIssueContextBuilder(
