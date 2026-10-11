@@ -1,9 +1,9 @@
 ---
 /**
  * Bringing work in and taking it out, from the site review: import lowers the cost of trying,
- * export removes the fear of being stuck. Other products appear only as import sources, the
- * importer still to come says "Coming soon" with no version, and configuration is compressed to one
- * strip whose detail lives on the topic pages.
+ * export removes the fear of being stuck. Other products appear only as import sources ("Import
+ * from Jira"), anything still to come says "Coming soon" with no version, and configuration is
+ * compressed to one strip whose detail lives on the topic pages.
  */
 import { CONFIGURE, SWITCH_TILES } from '../../data/landing.ts';
 import Badge from '../site/Badge.astro';
@@ -18,8 +18,9 @@ import SectionHead from './SectionHead.astro';
     title="Bring what you have. Take it with you."
     id="switch-title"
   >
-    Start with the pages you already wrote. And if you ever leave, your pages leave with you, in
-    formats anything can read.
+    Start with the projects and pages you already have: an admin sees what will come across before
+    anything is written. And if you ever leave, your pages leave with you, in formats anything can
+    read.
   </SectionHead>
   <ul class="mx-auto mt-10 grid max-w-300 gap-4 px-4 sm:grid-cols-2 sm:px-6 md:mt-11 lg:grid-cols-4 lg:px-8">
     {SWITCH_TILES.map((tile) => (
