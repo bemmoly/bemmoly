@@ -54,6 +54,10 @@ export async function createRuntime(options: { humanLogs: boolean }): Promise<Ru
     applicationName: 'bemmoly-system',
     maxConnections: 4,
     statementTimeoutMs: 0,
+    // Changesets and backups run long; one operator's command, not a pool of requests.
+    idleInTransactionTimeoutMs: 0,
+    acquireTimeoutMs: 0,
+    nestedAcquire: 'warn',
   });
   const logger = createStderrLogger(
     { LOG_LEVEL: env.LOG_LEVEL === 'debug' ? 'debug' : 'warn', LOG_FORMAT: 'json' },

@@ -166,6 +166,7 @@ export function createModuleContext(
           ...(sendOptions?.idempotencyKey ? { key: sendOptions.idempotencyKey } : {}),
           ...(sendOptions?.startAfter !== undefined ? { startAfter: sendOptions.startAfter } : {}),
           ...(sendOptions?.requestId ? { requestId: sendOptions.requestId } : {}),
+          ...(sendOptions?.transaction ? { transaction: sendOptions.transaction } : {}),
         };
         return options.jobQueue.enqueue(name, payload ?? {}, enqueueOptions);
       },

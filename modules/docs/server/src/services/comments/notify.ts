@@ -1,10 +1,6 @@
 import type { RequestContext, SqlExecutor } from '@bemmoly/core';
 import { collectReferences } from '@bemmoly/editor/convert';
-import {
-  ForbiddenError,
-  NOTIFICATION_EVENT_KINDS,
-  type NotificationRequestedPayload,
-} from '@bemmoly/shared';
+import { NOTIFICATION_EVENT_KINDS, type NotificationRequestedPayload } from '@bemmoly/shared';
 import type { RichText } from '../../../../shared/common.ts';
 import { spaceResource, userIdOf, type DocsServiceDeps } from '../common.ts';
 import { pagePath } from '../palette/index.ts';
@@ -38,17 +34,17 @@ export function mentionedIds(body: RichText | null | undefined): string[] {
   return [...new Set(refs.flatMap((ref) => (ref.kind === 'user' ? [ref.id] : [])))];
 }
 
-async function whoMayOpen(ctx: RequestContext, spaceId: string, ids: readonly string[]) {
-  const allowed: string[] = [];
-  for (const id of ids) {
-    try {
-      await ctx.authz.authorize({ kind: 'user', id }, 'docs.page.view', spaceResource(spaceId));
-      allowed.push(id);
-    } catch (error) {
-      if (!(error instanceof ForbiddenError)) throw error;
-    }
-  }
-  return allowed;
+/**
+ * One set-based check on the transaction: a check per recipient on the pool would hold the
+ * comment's connection while waiting for another, and starve the pool under load.
+ */
+function whoMayOpen(
+  ctx: RequestContext,
+  tx: SqlExecutor,
+  spaceId: string,
+  ids: readonly string[],
+): Promise<string[]> {
+  return ctx.authz.within(tx).whoCan(ids, 'docs.page.view', spaceResource(spaceId));
 }
 
 export async function notifyComment(
@@ -61,7 +57,7 @@ export async function notifyComment(
   if (!deps.events) return;
   const actorId = userIdOf(ctx);
   const candidates = [...new Set(notice.recipientIds)].filter((id) => id !== actorId);
-  const recipientIds = await whoMayOpen(ctx, page.spaceId, candidates);
+  const recipientIds = await whoMayOpen(ctx, tx, page.spaceId, candidates);
   if (recipientIds.length === 0) return;
   const [actor] = actorId
     ? await tx<{ name: string }[]>`select name from users where id = ${actorId}`

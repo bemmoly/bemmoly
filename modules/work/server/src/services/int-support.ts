@@ -12,6 +12,7 @@ import {
   type RealtimeMessage,
   type RequestContext,
   type SqlClient,
+  type SqlClientOptions,
 } from '@bemmoly/core';
 import { createIsolatedDatabase, startTestDatabase } from '@bemmoly/core/testing';
 import work from '../../../module.ts';
@@ -67,11 +68,17 @@ async function seedPerson(sql: SqlClient, email: string, roleKey: string): Promi
   return row.id;
 }
 
-export async function startWorkHarness(): Promise<HarnessStart> {
+/** Pool settings a test may change: the deadlock tests run on a pool of two. */
+export type HarnessPool = Pick<
+  SqlClientOptions,
+  'maxConnections' | 'acquireTimeoutMs' | 'nestedAcquire' | 'onPoolEvent'
+>;
+
+export async function startWorkHarness(pool: HarnessPool = {}): Promise<HarnessStart> {
   const server = await startTestDatabase();
   if (!server.available) return { available: false, reason: server.reason };
   const database = await createIsolatedDatabase(server.url);
-  const sql = createSqlClient(database.url, { maxConnections: 24 });
+  const sql = createSqlClient(database.url, { maxConnections: 24, ...pool });
   const runner = createChangelogRunner({
     sql,
     kernel: await loadKernelChangelog(),

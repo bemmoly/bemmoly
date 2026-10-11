@@ -103,6 +103,27 @@ export class MaintenanceError extends BemmolyError<'maintenance'> {
   }
 }
 
+export interface UnavailableErrorOptions extends BemmolyErrorOptions<'unavailable'> {
+  retryAfterSeconds?: number;
+}
+
+/**
+ * Bemmoly cannot serve the request right now (no database connection came free in time, a
+ * statement ran out of time) but will again shortly. Mapped to 503 with Retry-After.
+ */
+export class UnavailableError extends BemmolyError<'unavailable'> {
+  override readonly name = 'UnavailableError';
+  readonly retryAfterSeconds: number | undefined;
+
+  constructor(
+    message = 'Bemmoly is too busy to answer right now. Try again in a moment.',
+    options: UnavailableErrorOptions = {},
+  ) {
+    super(message, 'unavailable', options);
+    this.retryAfterSeconds = options.retryAfterSeconds;
+  }
+}
+
 export interface ProviderErrorOptions extends BemmolyErrorOptions<'provider_error'> {
   provider?: string;
 }

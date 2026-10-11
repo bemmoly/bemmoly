@@ -22,6 +22,7 @@ const DEV_VALUES: Record<string, string> = {
   LOG_FORMAT: 'pretty',
   BEMMOLY_TRUST_PROXY: 'false',
   BEMMOLY_DB_CONTEXTS: 'demo',
+  BEMMOLY_DB_NESTED_ACQUIRE: 'throw',
 };
 
 function log(message: string): void {

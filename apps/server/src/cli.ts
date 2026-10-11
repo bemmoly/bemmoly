@@ -41,6 +41,10 @@ const sql = createSqlClient(env.DATABASE_URL, {
   applicationName: 'bemmoly-db',
   maxConnections: 3,
   statementTimeoutMs: 0,
+  // Changesets and backups run long; one operator's command, not a pool of requests.
+  idleInTransactionTimeoutMs: 0,
+  acquireTimeoutMs: 0,
+  nestedAcquire: 'warn',
 });
 const logger = createLogger({ LOG_LEVEL: 'fatal', LOG_FORMAT: 'json' });
 const registry = loadModules({ available: await importAvailableModules() });

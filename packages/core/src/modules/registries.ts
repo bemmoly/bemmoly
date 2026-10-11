@@ -4,6 +4,7 @@ import type { z } from 'zod';
 import type { AiFacade } from '../contracts/ai.ts';
 import type { RetrievalRegistry } from '../contracts/retrieval.ts';
 import type { SettingDefinition, SettingKey, SettingsKeys } from '../contracts/settings.ts';
+import type { SqlExecutor } from '../contracts/sql.ts';
 import type { RequestContext } from '../services/authz/index.ts';
 
 export interface RouteDefinition {
@@ -170,6 +171,12 @@ export interface SendJobOptions {
   startAfter?: Date | number;
   /** Carried into the handler's logs so a job can be traced to its request. */
   requestId?: string;
+  /**
+   * The caller's open transaction: the job is enqueued in it and commits or rolls back with
+   * it. Required when sending from inside one, which must never ask the pool for another
+   * connection.
+   */
+  transaction?: SqlExecutor;
 }
 
 export interface JobRegistry {

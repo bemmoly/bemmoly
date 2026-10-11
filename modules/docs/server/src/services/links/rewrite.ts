@@ -43,37 +43,62 @@ async function issueIds(
   return ids;
 }
 
-/**
- * Resolves the body's references to edges; run outside a transaction, it may ask Work. An
- * issue embed is an "embed" of its issue; an issue table is a live query, so only the keys
- * its query names outright become "mention" edges, never the rows it happens to return.
- */
-export async function bodyEdges(
-  deps: Pick<DocsServiceDeps, 'entities'>,
-  snapshot: RichText,
-  pageId: string,
-): Promise<BodyEdge[]> {
-  const edges = new Map<string, BodyEdge>();
-  const add = (edge: BodyEdge) =>
-    edges.set(`${edge.targetKind}:${edge.targetId}:${edge.kind}`, edge);
+/** What a body names, before any issue key is turned into an id. */
+export interface BodyReferences {
+  edges: BodyEdge[];
+  issues: { key: string; kind: LinkKind }[];
+}
+
+/** The body's references, read without asking anyone: safe inside a transaction. */
+export function bodyReferences(snapshot: RichText, pageId: string): BodyReferences {
+  const edges: BodyEdge[] = [];
   const issues: { key: string; kind: LinkKind }[] = [];
   for (const ref of collectReferences(snapshot as Parameters<typeof collectReferences>[0])) {
     if (ref.kind === 'page' && UUID.test(ref.id) && ref.id !== pageId) {
-      add({ targetKind: 'page', targetId: ref.id, kind: 'mention' });
+      edges.push({ targetKind: 'page', targetId: ref.id, kind: 'mention' });
     } else if (ref.kind === 'issue') {
       issues.push({ key: ref.key.trim().toUpperCase(), kind: 'embed' });
     } else if (ref.kind === 'issueQuery') {
       for (const key of keysInQuery(ref.query)) issues.push({ key, kind: 'mention' });
     }
   }
-  if (issues.length === 0 || !deps.entities) return [...edges.values()];
-  if (deps.entities.has && !deps.entities.has('issue')) return [...edges.values()];
-  const ids = await issueIds(deps.entities, [...new Set(issues.map((issue) => issue.key))]);
-  for (const issue of issues) {
-    const id = ids.get(issue.key);
-    if (id) add({ targetKind: 'issue', targetId: id, kind: issue.kind });
-  }
-  return [...edges.values()];
+  return { edges, issues };
+}
+
+/**
+ * Turns many bodies' references into edges with one issue lookup; run outside a transaction,
+ * since it may ask Work. An issue embed is an "embed" of its issue; an issue table is a live
+ * query, so only the keys its query names outright become "mention" edges, never the rows it
+ * happens to return.
+ */
+export async function resolveBodyEdges(
+  deps: Pick<DocsServiceDeps, 'entities'>,
+  bodies: readonly BodyReferences[],
+): Promise<BodyEdge[][]> {
+  const keys = [...new Set(bodies.flatMap((body) => body.issues.map((issue) => issue.key)))];
+  const lookup = deps.entities && (!deps.entities.has || deps.entities.has('issue'));
+  const ids = keys.length > 0 && lookup ? await issueIds(deps.entities!, keys) : new Map();
+  return bodies.map((body) => {
+    const edges = new Map<string, BodyEdge>();
+    const add = (edge: BodyEdge) =>
+      edges.set(`${edge.targetKind}:${edge.targetId}:${edge.kind}`, edge);
+    for (const edge of body.edges) add(edge);
+    for (const issue of body.issues) {
+      const id = ids.get(issue.key);
+      if (id) add({ targetKind: 'issue', targetId: id, kind: issue.kind });
+    }
+    return [...edges.values()];
+  });
+}
+
+/** One body's edges; see resolveBodyEdges. */
+export async function bodyEdges(
+  deps: Pick<DocsServiceDeps, 'entities'>,
+  snapshot: RichText,
+  pageId: string,
+): Promise<BodyEdge[]> {
+  const [edges] = await resolveBodyEdges(deps, [bodyReferences(snapshot, pageId)]);
+  return edges ?? [];
 }
 
 /**
