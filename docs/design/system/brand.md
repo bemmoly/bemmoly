@@ -21,7 +21,7 @@ Use it through the component, never as an `<img>` in product UI:
 ```tsx
 import { Logo } from '@bemmoly/ui';
 
-<Logo variant="lockup" size={20} />        // sidebar, sign-in before a workspace name
+<Logo variant="lockup" size={20} />        // sidebar, and sign-in without a custom logo
 <Logo variant="mark" size={16} label="" /> // beside text that already says Bemmoly
 ```
 
@@ -61,10 +61,16 @@ import { BrandBlock, BrandRailFoot, BrandRailTop } from '@bemmoly/ui';
 4. **No workspace switcher, ever.** One install is one workspace (there is no workspaces table).
    The name under the lockup opens the workspace menu: Workspace settings, Invite people,
    What's new, About. Nothing anywhere offers to switch or add a workspace.
-5. **The name survives off the sidebar.** Sign-in shows the workspace, then "Powered by" and the
-   mark (the lockup leads before the workspace has a name); the tab title ends "· Bemmoly"
-   (`useDocumentTitle`); the sidebar foot shows "Bemmoly 0.4.0 · What's new"; email footers
-   name Bemmoly; the boot screen paints the mark.
+5. **The name survives off the sidebar, and appears once before sign-in** (ADR 0022). Every
+   page before sign-in (`AuthShell`: sign-in, single sign-on, reset, invitations, the first
+   sign-in welcome) shows Bemmoly exactly once. **No custom logo:** the Bemmoly lockup at the
+   top-left, with no "Powered by" and no initial tile; the workspace name goes in the heading
+   ("Sign in to Acme Labs"). **Custom logo:** the customer's logo and name at the top-left, and
+   "Powered by Bemmoly" with the mark at the foot. The foot shows only the lock and the host
+   (`work.acmelabs.dev`), plus "Powered by Bemmoly" when a custom logo leads; never "own
+   server" or any other line. Elsewhere the tab title ends "· Bemmoly" (`useDocumentTitle`); the
+   sidebar foot shows "Bemmoly 0.4.0 · What's new"; email footers name Bemmoly; the boot screen
+   paints the mark.
 6. **Where the customer logo comes from.** Settings › Appearance › Logo (needs
    `workspace.appearance.manage`): a PNG, SVG or WebP up to 1 MB, square or near-square (longest
    side at most 1.25 × the shortest), rasters at least 128 px. SVGs with anything active or

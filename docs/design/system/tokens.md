@@ -186,7 +186,9 @@ that are not elevation: `shadow-ring` (soft accent), `shadow-ring-ac` (solid acc
 
 Easings: `ease-standard` (moving within the page), `ease-out` (arriving), `ease-in` (leaving),
 `ease-settle` (a dropped card). Animations: `animate-fade-in/out`, `pop-in`, `dialog-in/out`,
-`slide-in/out`, `toast-in/out`, `rise`, `settle`; for overlays use `DIALOG_MOTION` and
+`slide-in/out`, `toast-in/out`, `rise`, `settle`, and `drift` (the sign-in panel's ambient float,
+about 13s, set per card with `--drift-x`, `--drift-y` and `--drift-period`; never on anything a
+person reads or uses, ADR 0022); for overlays use `DIALOG_MOTION` and
 `SHEET_MOTION` from `@bemmoly/ui`. Every animation sits behind `motion-safe:`; under reduced
 motion every duration is zero ([accessibility.md](accessibility.md#motion)).
 
