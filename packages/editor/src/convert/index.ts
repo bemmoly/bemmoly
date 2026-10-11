@@ -4,6 +4,8 @@
  * same. No React and no DOM: everything here runs in Node.
  */
 export { fromConfluence, type ConfluenceOptions } from './from-confluence.ts';
+export { fromAdf, type AdfNode, type AdfOptions } from './from-adf.ts';
+export { fromJiraWiki, type JiraWikiOptions } from './from-jira-wiki.ts';
 export { fromMarkdown } from './from-markdown.ts';
 export type { ExportOptions } from './options.ts';
 export {
