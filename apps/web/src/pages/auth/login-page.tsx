@@ -1,90 +1,194 @@
-import { Button, Field, Input } from '@bemmoly/ui';
-import { Link, useSearch } from '@tanstack/react-router';
-import { useState } from 'react';
-import { AuthLayout } from '../../components/auth/auth-layout.tsx';
-import { FormAlert, FormError } from '../../components/form.tsx';
-import { OrDivider, SsoButtons } from '../../components/sso/sso-buttons.tsx';
+import { Link, useNavigate, useSearch } from '@tanstack/react-router';
+import { AuthHeading, AuthShell, useAuthWorkspace } from '../../components/auth/auth-layout.tsx';
+import {
+  AuthAlt,
+  AuthNote,
+  AuthSmall,
+  OrRule,
+  PersonRow,
+  TextButton,
+} from '../../components/auth/auth-parts.tsx';
+import { DeactivatedNote, PasswordSignIn } from '../../components/auth/password-sign-in.tsx';
+import { SignedInPane } from '../../components/auth/signed-in-pane.tsx';
+import { SsoButtons } from '../../components/sso/sso-buttons.tsx';
 import { useLoginForm } from '../../hooks/use-auth-forms.ts';
-import { ssoFailureMessage, useSsoSignIn } from '../../hooks/use-sso-sign-in.ts';
+import { useLastSignIn } from '../../hooks/use-last-sign-in.ts';
+import {
+  SSO_FAILURE_COPY,
+  ssoFailureReason,
+  ssoFailureTitle,
+  useSsoSignIn,
+} from '../../hooks/use-sso-sign-in.ts';
 
-function PasswordForm({ redirect }: { redirect: string | undefined }) {
-  const form = useLoginForm(redirect);
-  return (
-    <form className="flex flex-col gap-3.5" onSubmit={form.submit} noValidate>
-      <Field label="Email" error={form.errors['email']}>
-        <Input
-          size="lg"
-          type="email"
-          autoComplete="username"
-          autoFocus
-          value={form.values.email}
-          onChange={(event) => form.set('email')(event.target.value)}
-        />
-      </Field>
-      <Field label="Password" error={form.errors['password']}>
-        <Input
-          size="lg"
-          type="password"
-          autoComplete="current-password"
-          value={form.values.password}
-          onChange={(event) => form.set('password')(event.target.value)}
-        />
-      </Field>
-      <FormError error={form.mutation.error} />
-      <Button type="submit" variant="primary" size="lg" block disabled={form.mutation.isPending}>
-        {form.mutation.isPending ? 'Signing in…' : 'Sign in'}
-      </Button>
-      <Link to="/forgot-password" className="self-center text-13 font-medium">
-        Forgot your password?
-      </Link>
-    </form>
-  );
+function ReasonNote({ reason, workspace }: { reason: string | undefined; workspace: string }) {
+  if (reason === 'signed-out') {
+    return (
+      <AuthNote tone="info" icon="log-out" title="You’re signed out">
+        You signed out of {workspace} on this browser.
+      </AuthNote>
+    );
+  }
+  if (reason === 'expired') {
+    return (
+      <AuthNote tone="caution" icon="clock" title="Your session ended">
+        For security, sessions end after a while or when an admin signs you out. Sign in to go back
+        to where you were; everything you saved is still there.
+      </AuthNote>
+    );
+  }
+  return null;
 }
 
 /**
- * Sign in: "Continue with SSO" first when an identity provider is set up, then the password
- * form. While single sign-on is required the password form folds away behind a quiet link for
- * break-glass admins. A single sign-on that did not finish comes back here with its reason.
+ * Sign in to the workspace. Single sign-on comes first when it is set up, with the method this
+ * device used last focused and badged. When single sign-on is required the password form is
+ * gone, and admins kept as a fallback reach it at ?method=password. A sign-on that did not
+ * finish comes back here with its reason; an ended session or a sign-out says so.
  */
 export function LoginPage() {
-  const { redirect, sso_error: ssoError } = useSearch({ from: '/login' });
+  const search = useSearch({ from: '/login' });
+  const { redirect, reason, method } = search;
+  const navigate = useNavigate();
   const sso = useSsoSignIn();
-  const [passwordOpen, setPasswordOpen] = useState(false);
-  const failure = ssoFailureMessage(ssoError);
+  const { last, forget } = useLastSignIn();
+  const { name } = useAuthWorkspace();
+  const workspace = name ?? 'this workspace';
+  const remembered = reason && last?.email ? last : null;
+  const form = useLoginForm(redirect, remembered?.email ?? '');
   const hasSso = sso.options.length > 0;
-  const passwordFolded = hasSso && sso.requireSso && !passwordOpen;
-  return (
-    <AuthLayout
-      title="Sign in"
-      subtitle={
-        hasSso
-          ? 'Sign in to your workspace with your work account.'
-          : 'Sign in to your workspace with the email and password your admin set up for you.'
+  const ssoOnly = hasSso && sso.requireSso;
+  const adminFallback = ssoOnly && method === 'password';
+  const failure = ssoFailureReason(search.sso_error);
+  const tried = sso.options.find((option) => option.id === last?.providerId) ?? null;
+  const setMethod = (next: 'password' | undefined) =>
+    void navigate({ to: '/login', search: { ...search, method: next, sso_error: undefined } });
+  const title = name ? `Sign in to ${name}` : 'Sign in';
+
+  if (form.signedIn) {
+    return (
+      <AuthShell title="Signed in">
+        <SignedInPane name={form.signedIn.name} workspace={workspace} />
+      </AuthShell>
+    );
+  }
+
+  // Which ways in exist decides what takes the focus, so the form waits for the answer.
+  if (sso.query.isPending) {
+    return (
+      <AuthShell title={title}>
+        <AuthHeading title={title} />
+      </AuthShell>
+    );
+  }
+
+  const start = (id: string) => sso.start(id, redirect);
+  const ssoNote = failure ? (
+    <AuthNote
+      tone="danger"
+      icon="warning"
+      title={ssoFailureTitle(failure, tried?.displayName ?? null)}
+      actions={
+        tried ? (
+          <TextButton onClick={() => start(tried.id)}>Try {tried.displayName} again</TextButton>
+        ) : null
       }
     >
-      {failure ? <FormAlert>{failure}</FormAlert> : null}
+      {SSO_FAILURE_COPY[failure]}
+    </AuthNote>
+  ) : null;
+
+  if (form.failure?.kind === 'deactivated') {
+    return (
+      <AuthShell title={title}>
+        <AuthHeading title={title} />
+        <DeactivatedNote workspace={workspace} onStartOver={form.startOver} />
+      </AuthShell>
+    );
+  }
+
+  if (adminFallback) {
+    return (
+      <AuthShell title="Admin sign-in">
+        <AuthHeading
+          title="Admin sign-in"
+          lede={`Single sign-on is required for ${workspace}. Only admins kept as a fallback can use a password.`}
+        />
+        <PasswordSignIn
+          form={form}
+          workspace={workspace}
+          showForgot={false}
+          submitLabel="Sign in with password"
+          autoFocus
+        />
+        <AuthAlt>
+          <TextButton onClick={() => setMethod(undefined)}>Back to single sign-on</TextButton>
+        </AuthAlt>
+      </AuthShell>
+    );
+  }
+
+  const person = remembered ? (
+    <PersonRow name={remembered.name} email={remembered.email ?? ''} onForget={forget} />
+  ) : null;
+  const rememberedSso = remembered?.method === 'sso' && Boolean(tried);
+  const providers = rememberedSso && tried ? [tried] : sso.options;
+
+  return (
+    <AuthShell title={title}>
+      <ReasonNote reason={reason} workspace={workspace} />
+      <AuthHeading
+        title={reason ? 'Sign in again' : title}
+        lede={
+          reason
+            ? undefined
+            : ssoOnly
+              ? `${workspace} signs everyone in through ${sso.options.length === 1 ? sso.options[0]?.displayName : 'single sign-on'}.`
+              : hasSso
+                ? `Use your ${workspace} work account.`
+                : 'Welcome back.'
+        }
+      />
+      {ssoNote}
+      {person}
       {hasSso ? (
         <SsoButtons
-          options={sso.options}
-          primary={sso.requireSso}
-          onStart={(id) => sso.start(id, redirect)}
+          options={providers}
+          only={ssoOnly}
+          lastUsedId={last?.method === 'sso' ? last.providerId : null}
+          autoFocus
+          onStart={start}
         />
       ) : null}
-      {passwordFolded ? (
-        <Button
-          variant="ghost"
-          size="sm"
-          className="self-center"
-          onClick={() => setPasswordOpen(true)}
-        >
-          Sign in with a password (break-glass admins)
-        </Button>
-      ) : (
+      {ssoOnly ? (
         <>
-          {hasSso ? <OrDivider /> : null}
-          <PasswordForm redirect={redirect} />
+          <AuthSmall>
+            You’ll come back here signed in. Your password is managed by your identity provider, so
+            reset it there.
+          </AuthSmall>
+          <AuthAlt>
+            Admin without single sign-on?{' '}
+            <TextButton onClick={() => setMethod('password')}>Use a password</TextButton>
+          </AuthAlt>
+        </>
+      ) : rememberedSso ? null : (
+        <>
+          {hasSso ? <OrRule>or with email</OrRule> : null}
+          <PasswordSignIn
+            form={form}
+            workspace={workspace}
+            hideEmail={Boolean(remembered)}
+            submitLabel={reason === 'expired' ? 'Sign in and go back' : 'Sign in'}
+            autoFocus={!hasSso}
+          />
         </>
       )}
-    </AuthLayout>
+      {rememberedSso ? (
+        <AuthAlt>
+          <Link to="/login" search={{ redirect }}>
+            Sign in another way
+          </Link>
+        </AuthAlt>
+      ) : null}
+    </AuthShell>
   );
 }
