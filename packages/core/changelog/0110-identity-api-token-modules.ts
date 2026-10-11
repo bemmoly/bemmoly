@@ -6,7 +6,7 @@ import { sql } from 'drizzle-orm';
  * see Work. Null keeps today's meaning: every module the owner can open.
  */
 export default changeset({
-  id: '0500-mcp-token-modules',
+  id: '0110-identity-api-token-modules',
   author: 'keerthi',
   description: 'Let personal access tokens be limited to some modules',
   up: async (ctx) => {
