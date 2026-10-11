@@ -1,0 +1,27 @@
+---
+/**
+ * How big a server Bemmoly needs, rendered from src/data/capacity.json: the answer as three
+ * cards, then how it was measured and what each size costs by cloud.
+ */
+import SizeCards from '../components/sizing/SizeCards.astro';
+import SizeDetails from '../components/sizing/SizeDetails.astro';
+import { pageAt } from '../data/pages.ts';
+import Page from '../layouts/Page.astro';
+import { INSTALL_HREF } from '../lib/links.ts';
+---
+
+<Page
+  page={pageAt('/sizing')}
+  heading="How big a server do I need?"
+  lede="For most teams, a 2 vCPU, 4 GB server. These are load-tested numbers, and anything not yet measured says so."
+  wide
+>
+  <SizeCards />
+  <SizeDetails />
+  <p class="text-16 text-tx-2">
+    Ready?{' '}
+    <a href={INSTALL_HREF} class="text-acc underline underline-offset-2">
+      Install
+    </a>
+  </p>
+</Page>

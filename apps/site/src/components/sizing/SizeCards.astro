@@ -1,0 +1,69 @@
+---
+/**
+ * Three server sizes as cards, from capacity.json: one plain answer each (how many people),
+ * what it held, and the lowest listed price. A size still under test says so instead of a
+ * number. Stacks on phones, three across from md.
+ */
+import { CAPACITY, cheapest, fmt, money, sizeName } from '../../data/capacity.ts';
+import Badge from '../site/Badge.astro';
+---
+
+<div class="grid gap-4 md:grid-cols-3">
+  {CAPACITY.sizes.map((size) => {
+    const from = cheapest(size);
+    return (
+      <div
+        data-size={`${size.cpu}-${size.ramGb}`}
+        class:list={[
+          'flex flex-col gap-5 rounded-card border bg-card p-6',
+          size.recommended ? 'border-acc ring-1 ring-acc' : 'border-line',
+        ]}
+      >
+        <div class="flex min-h-5.5 items-center justify-between gap-3">
+          <p class="text-14 font-medium text-tx-2">{sizeName(size)}</p>
+          {size.recommended && <Badge tone="accent">Recommended</Badge>}
+        </div>
+        {size.users ? (
+          <p class="text-24 leading-title font-semibold tracking-title text-tx">
+            Up to ~<span data-capacity>{fmt(size.users.upTo)}</span> people
+          </p>
+        ) : (
+          <p class="text-24 leading-title font-semibold tracking-title text-tx-3">Being measured</p>
+        )}
+        <div class="flex flex-col gap-1 text-15 text-tx-2">
+          {size.issues !== null && size.docs !== null ? (
+            <>
+              <p>
+                <span data-capacity>{fmt(size.issues)}</span> issues
+              </p>
+              <p>
+                <span data-capacity>{fmt(size.docs)}</span> doc pages
+              </p>
+            </>
+          ) : (
+            <>
+              <p>Load test running now</p>
+              <p>Numbers land here when it ends</p>
+            </>
+          )}
+        </div>
+        {from && (
+          <p class="mt-auto border-t border-line-2 pt-4 text-14 text-tx-3">
+            from{' '}
+            <span class="inline-flex items-baseline">
+              <span class="text-16 font-semibold text-tx" data-price>
+                {money(from)}
+              </span>
+              <span>/month</span>
+            </span>
+          </p>
+        )}
+      </div>
+    );
+  })}
+</div>
+<p class="text-14 text-tx-3">
+  Measured on one server from the one-command install. The number of people is an estimate from the
+  measured load, and the assumption behind it is written out under How we measured on the sizing
+  page.
+</p>
