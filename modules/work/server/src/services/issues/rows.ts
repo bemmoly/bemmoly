@@ -20,6 +20,7 @@ export interface IssueRow {
   parent_id: string | null;
   sprint_id: string | null;
   estimate: string | number | null;
+  start_at?: string | Date | null;
   due_at: string | Date | null;
   fix_version_id: string | null;
   component_id: string | null;
@@ -37,7 +38,7 @@ export interface IssueRow {
 export const ISSUE_COLUMNS = `
   i.id, i.project_id, i.number, i.key, i.type_id, i.title, i.description, i.description_text,
   i.status_id, i.priority, i.assignee_id, i.reporter_id, i.parent_id, i.sprint_id, i.estimate,
-  i.due_at, i.fix_version_id, i.component_id, i.custom_fields, i.rank, i.status_changed_at,
+  i.start_at, i.due_at, i.fix_version_id, i.component_id, i.custom_fields, i.rank, i.status_changed_at,
   i.resolved_at, i.deleted_at, i.created_at, i.updated_at, i.color,
   (select array_agg(il.label_id order by il.id) from issue_labels il where il.issue_id = i.id)
     as label_ids`;
@@ -60,6 +61,7 @@ export const toIssue = (row: IssueRow): Issue => ({
   parentId: row.parent_id,
   sprintId: row.sprint_id,
   estimate: row.estimate === null ? null : Number(row.estimate),
+  startAt: row.start_at ? dateOnly(row.start_at) : null,
   dueAt: row.due_at === null ? null : dateOnly(row.due_at),
   fixVersionId: row.fix_version_id,
   componentId: row.component_id,

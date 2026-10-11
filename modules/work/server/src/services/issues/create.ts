@@ -93,6 +93,11 @@ export async function createIssue(
     if (missing.length > 0) {
       throw new ValidationError('Required fields are missing', { details: { fields: missing } });
     }
+    if (body.startAt && body.dueAt && body.startAt > body.dueAt) {
+      throw new ValidationError('An issue starts on or before its due date', {
+        details: { path: 'startAt' },
+      });
+    }
     // The counter lock serialises creates in a project, so the tail is read
     // under it: read before, two creates in flight would append the same rank.
     const number = await allocateNumber(tx, body.projectId);
@@ -101,13 +106,14 @@ export async function createIssue(
     const description = body.description ?? null;
     const [row] = await tx<{ id: string }[]>`
       insert into issues (project_id, number, key, type_id, title, description, description_text,
-        status_id, priority, assignee_id, reporter_id, parent_id, sprint_id, estimate, due_at,
-        fix_version_id, component_id, custom_fields, rank)
+        status_id, priority, assignee_id, reporter_id, parent_id, sprint_id, estimate, start_at,
+        due_at, fix_version_id, component_id, custom_fields, rank)
       values (${body.projectId}, ${number}, ${`${projectKey}-${number}`}, ${body.typeId},
         ${body.title}, ${description ? JSON.stringify(description) : null}::jsonb,
         ${richTextToPlain(description)}, ${statusId}, ${body.priority},
         ${body.assigneeId ?? null}, ${actorId}, ${body.parentId ?? null},
-        ${body.sprintId ?? null}, ${body.estimate ?? null}, ${body.dueAt ?? null},
+        ${body.sprintId ?? null}, ${body.estimate ?? null}, ${body.startAt ?? null},
+        ${body.dueAt ?? null},
         ${body.fixVersionId ?? null}, ${body.componentId ?? null},
         ${JSON.stringify(customFields)}::jsonb, ${last(tail?.rank ?? undefined)})
       returning id`;

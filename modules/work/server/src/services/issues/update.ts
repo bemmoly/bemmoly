@@ -24,6 +24,7 @@ type Scalar = keyof Pick<
   | 'parentId'
   | 'sprintId'
   | 'estimate'
+  | 'startAt'
   | 'dueAt'
   | 'fixVersionId'
   | 'componentId'
@@ -37,6 +38,7 @@ const COLUMNS: Record<Scalar, string> = {
   parentId: 'parent_id',
   sprintId: 'sprint_id',
   estimate: 'estimate',
+  startAt: 'start_at',
   dueAt: 'due_at',
   fixVersionId: 'fix_version_id',
   componentId: 'component_id',
@@ -93,6 +95,17 @@ async function statusCategory(tx: SqlExecutor, statusId: string, row: IssueRow):
       select workflow_id from workflow_statuses where id = ${row.status_id})`;
   if (!status) throw new ValidationError('The status is not part of this workflow');
   return status.category;
+}
+
+/** A start after the due date would draw the roadmap bar backwards; refuse it by name. */
+function assertDatesOrdered(current: Issue, body: UpdateIssueBody): void {
+  const start = body.startAt === undefined ? (current.startAt ?? null) : body.startAt;
+  const due = body.dueAt === undefined ? current.dueAt : body.dueAt;
+  if (start && due && start > due) {
+    throw new ValidationError('An issue starts on or before its due date', {
+      details: { path: 'startAt' },
+    });
+  }
 }
 
 async function writeScalars(tx: SqlExecutor, row: IssueRow, body: UpdateIssueBody) {
@@ -176,6 +189,7 @@ export async function updateIssue(
     const current = toIssue(row);
     const changes = diffIssue(current, body);
     if (changes.length === 0) return current;
+    assertDatesOrdered(current, body);
     let statusName: string | null = null;
     if (body.statusId !== undefined && body.statusId !== current.statusId) {
       const category = await statusCategory(tx, body.statusId, row);

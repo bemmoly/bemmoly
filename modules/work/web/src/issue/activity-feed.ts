@@ -64,6 +64,7 @@ const FIELD_NAMES: Record<string, string> = {
   parentId: 'parent',
   typeId: 'type',
   labelIds: 'labels',
+  startAt: 'start date',
   dueAt: 'due date',
   estimate: 'estimate',
   description: 'the description',

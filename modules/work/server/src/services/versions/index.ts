@@ -1,5 +1,5 @@
 import { decodeCursor, toPage, type RequestContext } from '@bemmoly/core';
-import { ProviderError } from '@bemmoly/shared';
+import { ProviderError, ValidationError } from '@bemmoly/shared';
 import type {
   CreateVersionBody,
   ListVersionsQuery,
@@ -23,6 +23,8 @@ interface VersionRow {
   project_id: string;
   name: string;
   description: string | null;
+  /** Absent on rows read before the roadmap's changeset. */
+  start_at?: Date | string | null;
   release_at: Date | string | null;
   status: Version['status'];
   released_at: Date | string | null;
@@ -30,15 +32,28 @@ interface VersionRow {
   updated_at: Date | string;
 }
 
-const COLUMNS = `id, project_id, name, description, release_at::text as release_at, status,
-  released_at, created_at, updated_at`;
+const COLUMNS = `id, project_id, name, description, start_at::text as start_at,
+  release_at::text as release_at, status, released_at, created_at, updated_at`;
+
+const day = (value: Date | string | null | undefined): string | null =>
+  value === null || value === undefined ? null : String(value).slice(0, 10);
+
+/** A start after the release would draw a bar backwards; say so rather than store it. */
+function assertOrdered(startAt: string | null, releaseAt: string | null): void {
+  if (startAt && releaseAt && startAt > releaseAt) {
+    throw new ValidationError('A version starts on or before its release date', {
+      details: { path: 'startAt' },
+    });
+  }
+}
 
 const toVersion = (row: VersionRow): Version => ({
   id: row.id,
   projectId: row.project_id,
   name: row.name,
   description: row.description,
-  releaseAt: row.release_at === null ? null : String(row.release_at).slice(0, 10),
+  startAt: day(row.start_at),
+  releaseAt: day(row.release_at),
   status: row.status,
   releasedAt: row.released_at ? iso(row.released_at) : null,
   createdAt: iso(row.created_at),
@@ -84,9 +99,9 @@ export function createVersionsService(deps: CatalogDeps) {
         body.name,
         () =>
           sql<VersionRow[]>`
-          insert into versions (project_id, name, description, release_at)
+          insert into versions (project_id, name, description, start_at, release_at)
           values (${project.id}, ${body.name}, ${body.description ?? null},
-            ${body.releaseAt ?? null}::date)
+            ${body.startAt ?? null}::date, ${body.releaseAt ?? null}::date)
           returning ${sql.unsafe(COLUMNS)}`,
       );
       if (!row) throw new ProviderError('The version was not stored');
@@ -103,6 +118,10 @@ export function createVersionsService(deps: CatalogDeps) {
       const sql = requireDatabase(deps);
       const project = await authorizedProject(ctx, sql, key, 'work.project.configure');
       const before = await existing(project.id, id);
+      assertOrdered(
+        body.startAt === undefined ? day(before.start_at) : body.startAt,
+        body.releaseAt === undefined ? day(before.release_at) : body.releaseAt,
+      );
       const status = body.status ?? before.status;
       const [row] = await storing(
         'version',
@@ -113,6 +132,8 @@ export function createVersionsService(deps: CatalogDeps) {
             name = coalesce(${body.name ?? null}, name),
             description = case when ${body.description !== undefined}
               then ${body.description ?? null} else description end,
+            start_at = case when ${body.startAt !== undefined}
+              then ${body.startAt ?? null}::date else start_at end,
             release_at = case when ${body.releaseAt !== undefined}
               then ${body.releaseAt ?? null}::date else release_at end,
             status = ${status},
