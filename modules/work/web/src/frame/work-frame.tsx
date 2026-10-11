@@ -42,6 +42,12 @@ export const settingsTabs = (key: string): PageTab[] => [
   { id: 'fields', label: 'Fields', icon: 'list', path: settingsPath(key, 'fields') },
   { id: 'workflow', label: 'Workflow', icon: 'workflow', path: workflowPaths.list(key) },
   { id: 'board', label: 'Board', icon: 'board', path: settingsPath(key, 'board') },
+  {
+    id: 'development',
+    label: 'Development',
+    icon: 'branch',
+    path: settingsPath(key, 'development'),
+  },
 ];
 
 /** Where the switcher sends you in another project: the same screen, or its board. */
@@ -162,7 +168,8 @@ export function useWorkFrame(
           : 'board';
   const editing = name === 'workflows' && rest[0];
   const wide =
-    editing || (name === 'settings' && !['issue-types', 'fields'].includes(rest[0] ?? ''));
+    editing ||
+    (name === 'settings' && !['issue-types', 'fields', 'development'].includes(rest[0] ?? ''));
   return {
     layout: wide ? 'full' : 'contained',
     header: {

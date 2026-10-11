@@ -1,5 +1,5 @@
 /** The project settings pages the settings screen draws; Members and Workflow have their own. */
-export const SETTINGS_PAGES = ['board', 'issue-types', 'fields'] as const;
+export const SETTINGS_PAGES = ['board', 'issue-types', 'fields', 'development'] as const;
 export type SettingsPage = (typeof SETTINGS_PAGES)[number];
 
 export const isSettingsPage = (value: string | undefined): value is SettingsPage =>
