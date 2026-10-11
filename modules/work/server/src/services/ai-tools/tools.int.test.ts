@@ -114,7 +114,7 @@ describe('Work tools over MCP', () => {
     });
     const long = `## Steps\n\n${'- Open the cart and press save.\n'.repeat(1500)}`;
     expect(long.length).toBeGreaterThan(40_000);
-    const outcome = await write('work_create_issue', {
+    const args = {
       projectId: plt.id,
       typeId: bugTypeId,
       title: 'Crash on save',
@@ -123,7 +123,10 @@ describe('Work tools over MCP', () => {
       description: long,
       assigneeEmail: 'MO@example.test',
       parentKey: epic.result?.['key'],
-    });
+    };
+    // A later status skips the workflow's rules: a member may not, a project admin may.
+    await expect(write('work_create_issue', args)).rejects.toThrow(/permission/);
+    const outcome = await write('work_create_issue', args, h.users.admin);
     const key = String(outcome.result?.['key']);
     expect(outcome.result).toEqual({ key, id: expect.any(String), href: `/work/issue/${key}` });
     const issue = await h.services.issues.get(h.as(h.users.member), key);

@@ -101,6 +101,11 @@ export async function createIssue(
 ): Promise<Issue> {
   const body = createIssueBodySchema.parse(input);
   await ctx.authz.authorize(ctx.actor, 'work.issue.edit', projectResource(body.projectId));
+  // Starting anywhere but the first status skips the workflow's transition rules, so only
+  // someone who configures the project may do it (an import, a migration).
+  if (body.statusId) {
+    await ctx.authz.authorize(ctx.actor, 'work.project.configure', projectResource(body.projectId));
+  }
   const sql = requireDatabase(deps);
   const actorId = actorUserId(ctx);
   const created = await sql.begin(async (tx) => {
