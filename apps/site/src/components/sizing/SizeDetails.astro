@@ -4,10 +4,19 @@
  * people estimate's assumption, and per-cloud prices for every size. Folded by default so
  * the cards stay the answer.
  */
-import { CAPACITY, MEASURED, byPrice, fmt, money, sizeName } from '../../data/capacity.ts';
+import {
+  CAPACITY,
+  MEASURED,
+  byPrice,
+  peopleOf,
+  fmt,
+  money,
+  sizeName,
+} from '../../data/capacity.ts';
 
 const range = ([low, high]: [number, number]) => `${fmt(low)}–${fmt(high)}`;
 const cell = 'px-3.5 py-2.5';
+const people = MEASURED ? peopleOf(MEASURED) : null;
 const IMPORT_LABEL = 'An Import from Jira';
 ---
 
@@ -35,19 +44,13 @@ const IMPORT_LABEL = 'An Import from Jira';
             <span data-capacity>{MEASURED.load.data.importSeconds}</span> seconds.
           </li>
           <li>
-            Sustained <span data-capacity>{range(MEASURED.load.sustainedRps)}</span> requests a
-            second with every page fast: 95% of requests answered within{' '}
+            Held <span data-capacity>{MEASURED.requestsPerSecond}</span> requests a second with
+            every page fast: 95% of requests answered within{' '}
             <span data-capacity>{MEASURED.load.p95Ms.board}</span> ms for a board,{' '}
             <span data-capacity>{MEASURED.load.p95Ms.issue}</span> ms for an issue,{' '}
             <span data-capacity>{MEASURED.load.p95Ms.search}</span> ms for search,{' '}
             <span data-capacity>{MEASURED.load.p95Ms.docPage}</span> ms for a doc page and{' '}
             <span data-capacity>{MEASURED.load.p95Ms.issueEdit}</span> ms for an issue edit.
-          </li>
-          <li>
-            At <span data-capacity>{MEASURED.load.overload.rps}</span> requests a second it slowed
-            to <span data-capacity>{range(MEASURED.load.overload.p95Ms)}</span> ms with{' '}
-            <span data-capacity>{MEASURED.load.overload.errors}</span> errors; the limit is{' '}
-            {MEASURED.load.overload.bottleneck}.
           </li>
           <li>
             A <span data-capacity>{MEASURED.load.soak.minutes}</span>-minute run at{' '}
@@ -65,7 +68,10 @@ const IMPORT_LABEL = 'An Import from Jira';
         </ul>
       )}
       <p>
-        <strong>The people estimate.</strong> {CAPACITY.assumption}
+        <strong>The people estimate.</strong> {CAPACITY.assumption.text} So{' '}
+        <span data-capacity>{MEASURED?.requestsPerSecond}</span> requests a second is about{' '}
+        <span data-people>{fmt(people?.atOnce ?? 0)}</span> people active at once, or an
+        organisation of about <span data-people>{fmt(people?.organisation ?? 0)}</span>.
       </p>
       {MEASURED && <p>{MEASURED.notes}</p>}
     </div>

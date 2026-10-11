@@ -4,13 +4,14 @@
  * what it held, and the lowest listed price. A size still under test says so instead of a
  * number. Stacks on phones, three across from md.
  */
-import { CAPACITY, cheapest, fmt, money, sizeName } from '../../data/capacity.ts';
+import { CAPACITY, cheapest, peopleOf, fmt, money, sizeName } from '../../data/capacity.ts';
 import Badge from '../site/Badge.astro';
 ---
 
 <div class="grid gap-4 md:grid-cols-3">
   {CAPACITY.sizes.map((size) => {
     const from = cheapest(size);
+    const people = peopleOf(size);
     return (
       <div
         data-size={`${size.cpu}-${size.ramGb}`}
@@ -23,9 +24,12 @@ import Badge from '../site/Badge.astro';
           <p class="text-14 font-medium text-tx-2">{sizeName(size)}</p>
           {size.recommended && <Badge tone="accent">Recommended</Badge>}
         </div>
-        {size.users ? (
-          <p class="text-24 leading-title font-semibold tracking-title text-tx">
-            Up to ~<span data-capacity>{fmt(size.users.upTo)}</span> people
+        {people ? (
+          <p class="text-24 leading-title font-semibold tracking-title text-balance text-tx">
+            Up to ~<span data-people>{fmt(people.atOnce)}</span> people at once
+            <span class="mt-1 block text-16 font-medium text-tx-2">
+              teams of ~<span data-people>{fmt(people.organisation)}</span>
+            </span>
           </p>
         ) : (
           <p class="text-24 leading-title font-semibold tracking-title text-tx-3">Being measured</p>

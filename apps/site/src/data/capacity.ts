@@ -21,7 +21,8 @@ export interface ServerSize {
   ramGb: number;
   status: CapacityStatus;
   recommended: boolean;
-  users: { upTo: number; activeAtOnce: [number, number]; organisation: [number, number] } | null;
+  /** The highest measured load within the latency budget; null while measuring. */
+  requestsPerSecond: number | null;
   issues: number | null;
   docs: number | null;
   load: Load | null;
@@ -30,9 +31,7 @@ export interface ServerSize {
 }
 
 export interface Load {
-  sustainedRps: [number, number];
   p95Ms: { board: number; issue: number; search: number; docPage: number; issueEdit: number };
-  overload: { rps: number; p95Ms: [number, number]; errors: number; bottleneck: string };
   soak: {
     minutes: number;
     rps: number;
@@ -57,7 +56,7 @@ export interface Load {
 export const CAPACITY = data as {
   setup: string;
   priceNote: string;
-  assumption: string;
+  assumption: { requestsPerActiveUserPerSecond: number; activeShare: number; text: string };
   sizes: ServerSize[];
 };
 
@@ -82,3 +81,17 @@ export function cheapest(size: ServerSize): Price | undefined {
 export const MEASURED = CAPACITY.sizes.find(
   (size): size is ServerSize & { load: Load } => size.status === 'measured' && size.load !== null,
 );
+
+/** Round down to two significant figures, so an estimate never rounds up. */
+const floorRound = (value: number) => {
+  const step = 10 ** Math.max(0, Math.floor(Math.log10(value)) - 1);
+  return Math.floor(value / step) * step;
+};
+
+/** People a size serves, computed from its measured load and the written-out assumption. */
+export function peopleOf(size: ServerSize): { atOnce: number; organisation: number } | null {
+  if (size.requestsPerSecond === null) return null;
+  const { requestsPerActiveUserPerSecond, activeShare } = CAPACITY.assumption;
+  const atOnce = floorRound(size.requestsPerSecond / requestsPerActiveUserPerSecond);
+  return { atOnce, organisation: floorRound(atOnce / activeShare) };
+}

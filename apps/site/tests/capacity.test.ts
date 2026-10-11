@@ -5,7 +5,7 @@
  */
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { CAPACITY, fmt, money } from '../src/data/capacity.ts';
+import { CAPACITY, fmt, money, peopleOf } from '../src/data/capacity.ts';
 import { parsePage } from './dom.ts';
 
 const dist = new URL('../dist/', import.meta.url);
@@ -33,11 +33,32 @@ describe('capacity.json', () => {
       expect(['measured', 'measuring']).toContain(size.status);
       expect(size.prices.length).toBeGreaterThan(0);
       if (size.status === 'measuring') {
-        expect([size.users, size.issues, size.docs, size.load]).toEqual([null, null, null, null]);
+        expect([size.requestsPerSecond, size.issues, size.docs, size.load]).toEqual([
+          null,
+          null,
+          null,
+          null,
+        ]);
       }
     }
     expect(CAPACITY.sizes.filter((s) => s.recommended)).toHaveLength(1);
     expect(CAPACITY.priceNote).toMatch(/checked \w+ \d{4}, excluding storage, bandwidth and tax/);
+  });
+});
+
+describe('people estimate', () => {
+  it('turns 80 requests a second into about 400 at once and teams of about 2,000', () => {
+    expect(peopleOf({ ...CAPACITY.sizes[0]!, requestsPerSecond: 80 })).toEqual({
+      atOnce: 400,
+      organisation: 2000,
+    });
+  });
+
+  it('rounds down', () => {
+    expect(peopleOf({ ...CAPACITY.sizes[0]!, requestsPerSecond: 93 })).toEqual({
+      atOnce: 460,
+      organisation: 2300,
+    });
   });
 });
 
@@ -57,6 +78,18 @@ describe.each(['sizing.html', 'self-hosting.html'])('%s', (file) => {
       expect(values, element.textContent).toContain(element.textContent.trim());
   });
 
+  it('computes every people figure from the measured load and the assumption', () => {
+    const computed = new Set(
+      CAPACITY.sizes.flatMap((size) => {
+        const people = peopleOf(size);
+        return people ? [fmt(people.atOnce), fmt(people.organisation)] : [];
+      }),
+    );
+    const marked = page.querySelectorAll('[data-people]');
+    expect(marked.length).toBeGreaterThan(0);
+    for (const element of marked) expect(computed).toContain(element.textContent.trim());
+  });
+
   it('prints only prices that are in capacity.json', () => {
     for (const element of page.querySelectorAll('[data-price]')) {
       expect(prices).toContain(element.textContent.trim());
@@ -66,7 +99,7 @@ describe.each(['sizing.html', 'self-hosting.html'])('%s', (file) => {
   it('puts no unmarked number on a size card', () => {
     for (const card of page.querySelectorAll('[data-size]')) {
       let text = card.textContent;
-      for (const marked of card.querySelectorAll('[data-capacity], [data-price]')) {
+      for (const marked of card.querySelectorAll('[data-capacity], [data-price], [data-people]')) {
         text = text.replace(marked.textContent, '');
       }
       // Only the card's own size label (vCPU and GB) may remain.
