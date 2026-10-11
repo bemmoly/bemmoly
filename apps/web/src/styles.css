@@ -27,3 +27,14 @@
     font: inherit;
   }
 }
+
+/* The sign-in panel's backdrop: a faint grid in the line colour, fading out from the middle. */
+@layer components {
+  .auth-grid {
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size: 32px 32px;
+    mask-image: radial-gradient(70% 60% at 50% 50%, black, transparent);
+  }
+}

@@ -1,10 +1,8 @@
 /* Generated from src/tokens.ts by `pnpm --filter @bemmoly/ui tokens:css`. Do not edit. */
 @import './styles/base.css';
-@import './styles/presets/light.css';
-@import './styles/presets/dark.css';
-@import './styles/presets/slate.css';
-@import './styles/presets/warm.css';
-@import './styles/presets/midnight.css';
-@import './styles/presets/forest.css';
-@import './styles/presets/ocean.css';
-@import './styles/presets/rose.css';
+@import './styles/fonts.css';
+@import './styles/themes/bemmoly.css';
+@import './styles/themes/graphite.css';
+@import './styles/themes/sand.css';
+@import './styles/themes/pine.css';
+@import './styles/themes/contrast.css';

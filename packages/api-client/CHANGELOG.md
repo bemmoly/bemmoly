@@ -1,5 +1,147 @@
 # @bemmoly/api-client
 
+## 0.10.0
+
+### Minor Changes
+
+- e6982a1: Redesigned sign-in. Every page before sign-in has a form column and, on wide screens, a glimpse
+  of the product in the workspace's own theme and mode. Bemmoly appears once: its lockup leads
+  when there is no custom logo; with one, the customer's logo leads and "Powered by Bemmoly" sits
+  at the foot. Single sign-on comes first, with the provider this device used last marked and
+  focused; when single sign-on is required, admins kept as a fallback sign in at
+  `/login?method=password`. Errors say what happened: a wrong password marks the field, a rate
+  limit counts down, a deactivated account says who can turn it back on, a server that is down is
+  retried every 20 seconds without losing what was typed, and a refused single sign-on names the
+  provider. Signing out or an ended session says why and remembers the person on this device.
+  Forgot password carries the email over and offers a resend; reset names the account, takes one
+  password with a strength meter and signs in when saved; invitations accept through the provider
+  when single sign-on is set up. An admin whose setup is unfinished is welcomed on first sign-in
+  and can skip setup, with the remaining steps on Home. New: `PasswordInput` and a `touch` size in
+  `@bemmoly/ui`; setup status adds `theme` and `defaultMode`; `POST
+/api/v1/auth/password-reset/preview`; completing a reset returns the user and a session; sign-in
+  refusals carry a `reason`. No schema or configuration change.
+
+### Patch Changes
+
+- Updated dependencies [e6982a1]
+  - @bemmoly/shared@0.10.0
+
+## 0.9.0
+
+### Minor Changes
+
+- 250098f: Workspace logo upload. Admins with the appearance capability can upload a PNG, SVG or WebP logo
+  in Settings › Appearance (up to 1 MB, square or near-square, at least 128 px; SVGs with scripts
+  or links are refused), with a live preview of the sidebar and the collapsed rail in light and
+  dark, and Replace and Remove with Undo. The logo takes line one of the sidebar ("on Bemmoly"
+  stays under it), leads the collapsed rail with the Bemmoly mark at its foot, leads the sign-in
+  page above "Powered by Bemmoly", and appears in emails when the workspace URL is https. The
+  favicon and tab title stay Bemmoly. New endpoints: `POST` and `DELETE /api/v1/workspace/logo`,
+  and an anonymous, cached `GET /api/v1/workspace/logo/:file`; setup status now includes
+  `logoUrl`. No schema or configuration change.
+
+### Patch Changes
+
+- Updated dependencies [250098f]
+  - @bemmoly/shared@0.9.0
+
+## 0.8.0
+
+### Minor Changes
+
+- 31f9a87: Themes and modes. The eight presets become five themes, each designed in light **and** dark:
+  Bemmoly (the default, the logo's blue), Graphite, Sand, Pine and High contrast. Mode is now its own
+  choice: Light, Dark or Match system, which really follows the computer's setting, live. Each
+  person's mode is saved on their account and follows them to every device; the workspace sets the
+  default theme and the default mode (new workspaces follow the system). The typeface is a separate
+  setting. Admins can make a **custom theme** from one brand colour and a surface style: Bemmoly
+  builds checked light and dark versions, adjusts them until text and buttons pass contrast, warns
+  when the colour is close to one that already means something (errors, warnings, done, AI), and
+  never recolours the logo. A custom theme can be the workspace default, and when personal themes
+  are on, people can pick any theme, or make their own, from the user menu. In dark mode Task and
+  Epic tiles are lighter so they stay readable.
+
+  Upgrading changes nobody's look: Classic, Dark, Midnight, Ocean and Rose become Bemmoly in their
+  old mode, Slate becomes Graphite, Warm becomes Sand and Forest becomes Pine; each workspace keeps
+  its mode as the default mode and keeps its typeface. A custom brand colour becomes a workspace
+  custom theme. Choices saved in a browser move to the account on the next sign-in.
+
+  Admins: the schema adds the kernel changeset `0600-appearance-themes` (the `custom_themes` and
+  `user_appearance_preferences` tables, and a rewrite of the stored `appearance.*` settings). It is
+  reversible and quick. New settings: `appearance.defaultMode` and `appearance.customThemeId`.
+  `appearance.mode`, `appearance.surfaces` and `appearance.memberModeSwitch` are no longer used and
+  will be removed in a later release. New endpoints: `GET`/`PUT /api/v1/me/appearance` and
+  `/api/v1/themes`. The demo takes `?theme=pine&mode=dark`.
+
+### Patch Changes
+
+- Updated dependencies [31f9a87]
+  - @bemmoly/shared@0.8.0
+
+## 0.7.0
+
+### Minor Changes
+
+- 8559222: Bring your work with you: Import from Jira and Confluence, or from a CSV file. An admin opens
+  Settings › Import (or the setup wizard's import step, which is the same flow), picks a source,
+  enters the site address and an API token or personal access token, and sees what the site holds
+  before anything is written: projects or spaces with their counts, then how issue types,
+  statuses and custom fields will land (matched, created or only reported). The import runs as a
+  background job with live progress and can be cancelled; at the end a report lists what was
+  created, updated and skipped, and why.
+
+  **Import from Jira** (Cloud and Data Center): projects with their keys and issue numbers kept, issue types
+  and statuses mapped to Work's (statuses Work lacks are added to the project's own workflow),
+  custom fields matched by name or created as project fields (kinds Work cannot hold are
+  reported), versions, components, boards and sprints, and issues with their descriptions,
+  comments, attachments, labels, parents and links. People are matched by email; someone with no
+  account here is added as invited (no email is sent), and someone whose address the source site hides becomes
+  a deactivated placeholder that keeps their name on what they wrote.
+
+  **Import from Confluence** (Cloud and Data Center): spaces and their page trees, pages converted from
+  storage format with links rewritten to the imported pages and issues, unknown macros kept as
+  labelled blocks, labels, threaded comments and attachments.
+
+  **CSV**: one issue per row into a project, columns matched by header, so exports from most
+  trackers work as they are.
+
+  **Safe to run again.** Every imported record is remembered, so running an import again updates
+  what the first run made instead of copying it, and anything edited in Bemmoly since is left
+  alone and named in the report. A run that fails part way records why and resumes from where it
+  stopped. In our test against a local stand-in for a 10,000-issue project (20,000 comments,
+  10,000 links), the whole import took about two minutes on a laptop.
+
+  Credentials are stored encrypted with the install's secret key and are never shown again or
+  sent to the browser. Calls to a hosted site may only reach public addresses and a Data Center
+  site may be on the local network; `BEMMOLY_ALLOW_PRIVATE_URLS` lifts that, as it does for AI
+  providers.
+
+  Admins: the schema adds the kernel changeset `0501-import-jobs` (the `import_jobs` and
+  `import_mappings` tables). It is reversible and quick. Import from Jira and from CSV
+  requires the Work module, and Import from Confluence the Docs module. Images attached to imported pages show inline
+  in the imported pages; other attachments are copied into storage.
+
+- 65c412a: Single sign-on and SCIM provisioning. Admins add identity providers in Settings › Sign-in and
+  SSO (or in the setup wizard): any OpenID Connect provider through its discovery URL, or SAML
+  2.0 with signed assertions. People are created on first sign-in with a default role, linked to
+  an existing account by verified email, and placed in roles and teams from their groups. A test
+  sign-in checks a provider without signing anyone in. "Require single sign-on for everyone"
+  turns password sign-in off except for break-glass admins; personal access tokens keep working
+  and are stopped by revoking them or deactivating the person. SCIM 2.0 at `/scim/v2` creates,
+  updates and deactivates people and keeps teams in step, with an audit row for every change.
+
+  Schema: changeset `0111-identity-sso` adds columns to `auth_providers` and the tables
+  `auth_sso_flows`, `auth_sso_assertions`, `scim_tokens` and `scim_resources` (reversible).
+  Configuration: no new keys. Identity providers on private networks are allowed; link-local
+  addresses are refused unless `BEMMOLY_ALLOW_PRIVATE_URLS` is set. Provider secrets are
+  encrypted with `BEMMOLY_SECRET_KEY`.
+
+### Patch Changes
+
+- Updated dependencies [8559222]
+- Updated dependencies [65c412a]
+  - @bemmoly/shared@0.7.0
+
 ## 0.6.0
 
 ### Minor Changes

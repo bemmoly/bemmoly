@@ -2,7 +2,7 @@
  * Captures every product picture the site shows from the live demo, so the site always shows
  * the UI a visitor installs: each route in src/data/previews.ts at the preview viewport, and
  * the board at a phone's width for the phone poster, 2x, in the product's light and dark
- * themes (?theme=dark), saved to src/assets/previews/, and the AI band's crop of an issue's
+ * modes (?mode=dark), saved to src/assets/previews/, and the AI band's crop of an issue's
  * AI summary (AI is on in the demo). The demo's banner is removed first,
  * since the demo framed on the homepage never shows it.
  *
@@ -73,7 +73,7 @@ async function capture(
   });
   const page = await context.newPage();
   if (origin === BUILT) await serveBuilt(page);
-  await page.goto(`${origin}${shot.path}?theme=${theme}`);
+  await page.goto(`${origin}${shot.path}?theme=bemmoly&mode=${theme}`);
   await page.waitForLoadState('networkidle');
   await page.evaluate(() => {
     document.getElementById('demo-banner')?.remove();

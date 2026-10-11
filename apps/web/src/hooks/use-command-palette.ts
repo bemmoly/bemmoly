@@ -11,12 +11,12 @@ import { useNavigate } from '@tanstack/react-router';
 import { useDeferredValue, useMemo, useState } from 'react';
 import { api } from '../lib/api.ts';
 import { viewerOf } from '../lib/session.ts';
-import { useThemeStore } from '../store/theme.ts';
 import { useUiStore, type PaletteScope } from '../store/ui.ts';
 import { paletteItems, paletteScopes, recentItem, type PaletteItem } from './command-items.ts';
 import { useDirectory } from './use-directory.ts';
 import { usePaletteAi } from './use-palette-ai.ts';
 import { inPlace, usePalettePlace } from './use-palette-place.ts';
+import { usePersonalAppearance } from './use-personal-appearance.ts';
 import { useShell } from './use-shell.ts';
 
 /** What the empty palette shows before anything is typed, per group. */
@@ -83,7 +83,7 @@ export function useCommandPalette() {
   const shell = useShell();
   const navigate = useNavigate();
   const ui = useUiStore();
-  const setMode = useThemeStore((state) => state.setMode);
+  const { setMode } = usePersonalAppearance();
   const screenActions = useCurrentScreenActions();
   const recents = useRecents(12);
   const [query, setQuery] = useState('');

@@ -18,10 +18,30 @@ describe('demoWorkspace', () => {
     expect(api.dispatch('GET', '/api/v1/work/projects', undefined)?.status).toBe(200);
   });
 
-  it('starts in the preset ?theme names, and ignores one it does not know', () => {
-    expect(demoWorkspace({ search: '?theme=ocean' }).settings['appearance.theme']).toBe('ocean');
-    expect(demoWorkspace({ search: '?theme=ocean' }).settings['appearance.mode']).toBe('dark');
-    expect(demoWorkspace({ search: '?theme=neon' }).settings['appearance.theme']).toBe('classic');
+  it('starts in the theme and mode ?theme and ?mode name, and ignores ones it does not know', () => {
+    const pine = demoWorkspace({ search: '?theme=pine&mode=dark' }).settings;
+    expect(pine['appearance.theme']).toBe('pine');
+    expect(pine['appearance.defaultMode']).toBe('dark');
+    expect(demoWorkspace({ search: '?mode=system' }).settings['appearance.defaultMode']).toBe(
+      'system',
+    );
+    const neon = demoWorkspace({ search: '?theme=neon&mode=dim' }).settings;
+    expect(neon['appearance.theme']).toBe('bemmoly');
+    expect(neon['appearance.defaultMode']).toBe('light');
+  });
+
+  it('starts with the Acme logo for ?logo=acme and without one otherwise', () => {
+    expect(demoWorkspace({ search: '?logo=acme' }).settings['appearance.logoKey']).toMatch(
+      /^\/api\/v1\/workspace\/logo\/[0-9a-f]{64}\.svg$/,
+    );
+    expect(demoWorkspace({ search: '?logo=other' }).settings['appearance.logoKey']).toBe('');
+  });
+
+  it('maps a retired preset in an old link to its theme, mode and typeface', () => {
+    const ocean = demoWorkspace({ search: '?theme=ocean' }).settings;
+    expect(ocean['appearance.theme']).toBe('bemmoly');
+    expect(ocean['appearance.defaultMode']).toBe('dark');
+    expect(ocean['appearance.font']).toBe('inter');
   });
 
   it('reports the release it was built from and no other version', () => {

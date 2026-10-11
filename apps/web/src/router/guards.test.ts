@@ -21,13 +21,20 @@ describe('requireSession while setup is unfinished', () => {
     mockApi.reset('wizard');
     useSetupStore.getState().update({ lastStep: 5 });
     const target = await redirectOf(requireSession(testQueryClient(), '/settings/appearance'));
-    expect(target).toMatchObject({ to: '/setup', search: { step: 5 } });
+    expect(target).toMatchObject({ to: '/setup', search: { step: 5, welcome: true } });
   });
 
   it('starts at the import step when no step is remembered', async () => {
     mockApi.reset('wizard');
     const target = await redirectOf(requireSession(testQueryClient(), '/settings/appearance'));
     expect(target).toMatchObject({ to: '/setup', search: { step: 3 } });
+  });
+
+  it('lets an admin who skipped setup in, and Home lists what is left', async () => {
+    mockApi.reset('wizard');
+    useSetupStore.getState().update({ setupSkipped: true });
+    const me = await requireSession(testQueryClient(), '/');
+    expect(me.user.email).toBe('rohan@acmelabs.dev');
   });
 
   it('lets everyone in once setup is finished', async () => {

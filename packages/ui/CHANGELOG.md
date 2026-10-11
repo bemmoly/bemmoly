@@ -1,5 +1,62 @@
 # @bemmoly/ui
 
+## 0.10.0
+
+### Minor Changes
+
+- e6982a1: Redesigned sign-in. Every page before sign-in has a form column and, on wide screens, a glimpse
+  of the product in the workspace's own theme and mode. Bemmoly appears once: its lockup leads
+  when there is no custom logo; with one, the customer's logo leads and "Powered by Bemmoly" sits
+  at the foot. Single sign-on comes first, with the provider this device used last marked and
+  focused; when single sign-on is required, admins kept as a fallback sign in at
+  `/login?method=password`. Errors say what happened: a wrong password marks the field, a rate
+  limit counts down, a deactivated account says who can turn it back on, a server that is down is
+  retried every 20 seconds without losing what was typed, and a refused single sign-on names the
+  provider. Signing out or an ended session says why and remembers the person on this device.
+  Forgot password carries the email over and offers a resend; reset names the account, takes one
+  password with a strength meter and signs in when saved; invitations accept through the provider
+  when single sign-on is set up. An admin whose setup is unfinished is welcomed on first sign-in
+  and can skip setup, with the remaining steps on Home. New: `PasswordInput` and a `touch` size in
+  `@bemmoly/ui`; setup status adds `theme` and `defaultMode`; `POST
+/api/v1/auth/password-reset/preview`; completing a reset returns the user and a session; sign-in
+  refusals carry a `reason`. No schema or configuration change.
+
+## 0.9.0
+
+No changes in this release.
+
+## 0.8.0
+
+### Minor Changes
+
+- 31f9a87: Themes and modes. The eight presets become five themes, each designed in light **and** dark:
+  Bemmoly (the default, the logo's blue), Graphite, Sand, Pine and High contrast. Mode is now its own
+  choice: Light, Dark or Match system, which really follows the computer's setting, live. Each
+  person's mode is saved on their account and follows them to every device; the workspace sets the
+  default theme and the default mode (new workspaces follow the system). The typeface is a separate
+  setting. Admins can make a **custom theme** from one brand colour and a surface style: Bemmoly
+  builds checked light and dark versions, adjusts them until text and buttons pass contrast, warns
+  when the colour is close to one that already means something (errors, warnings, done, AI), and
+  never recolours the logo. A custom theme can be the workspace default, and when personal themes
+  are on, people can pick any theme, or make their own, from the user menu. In dark mode Task and
+  Epic tiles are lighter so they stay readable.
+
+  Upgrading changes nobody's look: Classic, Dark, Midnight, Ocean and Rose become Bemmoly in their
+  old mode, Slate becomes Graphite, Warm becomes Sand and Forest becomes Pine; each workspace keeps
+  its mode as the default mode and keeps its typeface. A custom brand colour becomes a workspace
+  custom theme. Choices saved in a browser move to the account on the next sign-in.
+
+  Admins: the schema adds the kernel changeset `0600-appearance-themes` (the `custom_themes` and
+  `user_appearance_preferences` tables, and a rewrite of the stored `appearance.*` settings). It is
+  reversible and quick. New settings: `appearance.defaultMode` and `appearance.customThemeId`.
+  `appearance.mode`, `appearance.surfaces` and `appearance.memberModeSwitch` are no longer used and
+  will be removed in a later release. New endpoints: `GET`/`PUT /api/v1/me/appearance` and
+  `/api/v1/themes`. The demo takes `?theme=pine&mode=dark`.
+
+## 0.7.0
+
+No changes in this release.
+
 ## 0.6.0
 
 ### Patch Changes

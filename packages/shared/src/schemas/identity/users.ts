@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { workspaceLookSchema } from '../settings/workspace.ts';
+import { appearancePreferenceSchema, customThemeSchema } from '../settings/themes.ts';
 import { keysetPageSchema, keysetQuerySchema, personNameSchema } from './common.ts';
 
 export const USER_STATUSES = ['active', 'invited', 'deactivated'] as const;
@@ -56,6 +57,10 @@ export const meResponseSchema = z.object({
   modules: z.array(z.string()),
   /** The workspace's name and look, for everyone signed in. */
   workspace: workspaceLookSchema,
+  /** The person's own choices, stored on their account and followed on every device. */
+  preferences: z.object({ appearance: appearancePreferenceSchema }),
+  /** Their own custom themes; workspace ones come with the workspace look. */
+  customThemes: z.array(customThemeSchema),
 });
 
 export type User = z.infer<typeof userSchema>;

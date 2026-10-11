@@ -4,13 +4,26 @@ import { rootRoute } from './root.tsx';
 
 const text = (value: unknown) => (typeof value === 'string' && value ? value : undefined);
 
+const REASONS = ['expired', 'signed-out'] as const;
+
+export interface LoginSearch {
+  redirect?: string;
+  sso_error?: string;
+  method?: 'password';
+  reason?: (typeof REASONS)[number];
+}
+
 export const loginRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: 'login',
-  validateSearch: (search: Record<string, unknown>): { redirect?: string; sso_error?: string } => ({
+  validateSearch: (search: Record<string, unknown>): LoginSearch => ({
     redirect: text(search['redirect']),
     // Set by a single sign-on that did not finish; the page explains the reason.
     sso_error: text(search['sso_error']),
+    // The admin fallback's password form while single sign-on is required.
+    method: search['method'] === 'password' ? 'password' : undefined,
+    // Why the person is here again: their session ended, or they signed out.
+    reason: REASONS.find((reason) => reason === search['reason']),
   }),
   beforeLoad: ({ context, search }) =>
     requireSignedOut(context.queryClient, search.redirect ?? '/'),
@@ -20,6 +33,10 @@ export const loginRoute = createRoute({
 export const forgotPasswordRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: 'forgot-password',
+  // Carried over from the sign-in form, so nobody types their address twice.
+  validateSearch: (search: Record<string, unknown>): { email?: string } => ({
+    email: text(search['email']),
+  }),
   component: lazyRouteComponent(
     () => import('../pages/auth/forgot-password-page.tsx'),
     'ForgotPasswordPage',
@@ -60,12 +77,21 @@ export const unsubscribeRoute = createRoute({
 
 const STEPS = [1, 2, 3, 4, 5, 6, 7] as const;
 
+export interface SetupSearch {
+  step?: number;
+  /** The first sign-in of an admin whose setup is unfinished: the welcome comes first. */
+  welcome?: boolean;
+}
+
 export const setupRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: 'setup',
-  validateSearch: (search: Record<string, unknown>): { step?: number } => {
+  validateSearch: (search: Record<string, unknown>): SetupSearch => {
     const step = Number(search['step']);
-    return { step: STEPS.includes(step as (typeof STEPS)[number]) ? step : undefined };
+    return {
+      step: STEPS.includes(step as (typeof STEPS)[number]) ? step : undefined,
+      welcome: search['welcome'] === true || search['welcome'] === 'true' ? true : undefined,
+    };
   },
   beforeLoad: ({ context }) => requireSetupOpen(context.queryClient),
   component: lazyRouteComponent(() => import('../pages/setup/setup-page.tsx'), 'SetupPage'),

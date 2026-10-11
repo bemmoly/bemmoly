@@ -4,6 +4,7 @@ import type { QueryClient } from '@tanstack/react-query';
 import { redirect } from '@tanstack/react-router';
 import { meQuery, setupStatusQuery } from '../hooks/use-session.ts';
 import { resumeStep } from '../hooks/use-setup-wizard.ts';
+import { rememberPerson } from '../hooks/use-last-sign-in.ts';
 import { isOrgAdmin } from '../lib/session.ts';
 import { useSetupStore } from '../store/setup.ts';
 
@@ -32,18 +33,22 @@ export async function wizardPending(queryClient: QueryClient, me: MeResponse): P
 
 /**
  * Bootstrap order from the identity stream: setup status, then /me, then everything else.
- * The app stays closed to an admin until the wizard is finished (every step but the first
- * can be skipped, so nobody is stuck); a stray visit returns them to the step they were on.
+ * An admin whose setup is unfinished meets the welcome first, which continues the wizard
+ * where they left it or skips it; once skipped on this device the app opens and Home lists
+ * the steps that are left.
  */
 export async function requireSession(queryClient: QueryClient, href: string): Promise<MeResponse> {
   const status = await queryClient.ensureQueryData(setupStatusQuery);
   if (!status.initialized) throw redirect({ to: '/setup' });
   const me = await sessionOrNull(queryClient);
   if (!me) throw redirect({ to: '/login', search: { redirect: href } });
-  if (await wizardPending(queryClient, me)) {
+  // The sign-in page greets this person by name next time, on this device only.
+  rememberPerson(me.user);
+  const setup = useSetupStore.getState();
+  if (!setup.setupSkipped && (await wizardPending(queryClient, me))) {
     throw redirect({
       to: '/setup',
-      search: { step: resumeStep(useSetupStore.getState().lastStep) },
+      search: { step: resumeStep(setup.lastStep), welcome: true },
     });
   }
   return me;

@@ -5,23 +5,26 @@ import {
   type ElevationSet,
   type ThemeMode,
 } from '../tokens/names.ts';
+import { MODE_TYPE_COLORS } from '../tokens/semantic.ts';
 import { resolveHex } from './color.ts';
 
-/** What applyTheme needs: a preset from THEMES or the result of buildTheme. */
+/**
+ * What applyTheme needs: a resolved theme in one mode. The typeface is not part of a theme
+ * (ADR 0021); it is set apart with `data-font`.
+ */
 export interface ThemeTokens {
   id: string;
   mode: ThemeMode;
   colors: ColorSet;
   elevation: ElevationSet;
-  fontUi: string;
-  fontCode: string;
 }
+
+const TYPE_TOKENS = Object.keys(MODE_TYPE_COLORS.light);
 
 const PROPERTY_NAMES = [
   ...COLOR_TOKENS.map((token) => `--${token}`),
+  ...TYPE_TOKENS.map((token) => `--${token}`),
   ...ELEVATION_TOKENS.map((token) => `--${token}`),
-  '--font-ui',
-  '--font-code',
   'color-scheme',
 ];
 
@@ -29,27 +32,28 @@ const PROPERTY_NAMES = [
 export function themeStyle(theme: ThemeTokens): Record<string, string> {
   const style: Record<string, string> = {};
   for (const token of COLOR_TOKENS) style[`--${token}`] = theme.colors[token];
+  for (const [token, value] of Object.entries(MODE_TYPE_COLORS[theme.mode]))
+    style[`--${token}`] = value;
   for (const token of ELEVATION_TOKENS) style[`--${token}`] = theme.elevation[token];
-  style['--font-ui'] = theme.fontUi;
-  style['--font-code'] = theme.fontCode;
   style['color-scheme'] = theme.mode;
   return style;
 }
 
 /**
  * Applies a theme to an element (usually document.documentElement) as inline custom
- * properties, which override the preset blocks in theme.css. `data-theme` is set so CSS and
- * tests can tell which theme is active.
+ * properties, which override the theme blocks in theme.css. Custom themes reach the page this
+ * way; `data-theme` and `data-mode` are set so CSS and tests can tell what is active.
  */
 export function applyTheme(el: HTMLElement, theme: ThemeTokens): void {
   for (const [name, value] of Object.entries(themeStyle(theme))) el.style.setProperty(name, value);
   el.dataset['theme'] = theme.id;
+  el.dataset['mode'] = theme.mode;
 }
 
-/** Removes what applyTheme set, falling back to the `data-theme` preset in theme.css. */
-export function clearTheme(el: HTMLElement, presetId?: string): void {
+/** Removes what applyTheme set, falling back to the theme blocks in theme.css. */
+export function clearTheme(el: HTMLElement, themeId?: string): void {
   for (const name of PROPERTY_NAMES) el.style.removeProperty(name);
-  if (presetId) el.dataset['theme'] = presetId;
+  if (themeId) el.dataset['theme'] = themeId;
   else delete el.dataset['theme'];
 }
 

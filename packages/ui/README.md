@@ -1,6 +1,6 @@
 # @bemmoly/ui
 
-The Bemmoly design system: tokens, the theme builder, the icon set, the logo and the components
+The Bemmoly design system: tokens, the five themes and the custom theme generator, the icon set, the logo and the components
 every screen is built from. Everything here is ported from the mocks in `docs/design/mocks`,
 which are the pixel source of truth.
 
@@ -9,11 +9,11 @@ which are the pixel source of truth.
 | Import                     | What it gives you                                                                            |
 | -------------------------- | -------------------------------------------------------------------------------------------- |
 | `@bemmoly/ui`              | Components (and, for compatibility, the tokens).                                             |
-| `@bemmoly/ui/tokens`       | Token names, presets, `THEMES`, `themeById`, scales.                                         |
-| `@bemmoly/ui/theme`        | `buildTheme`, `contrastCheck`, `applyTheme`, `clearTheme`, `themeStyle`, `toHexColors`.      |
+| `@bemmoly/ui/tokens`       | Token names, `THEME_SOURCES`, `resolveTheme`, `RETIRED_PRESETS`, scales.                     |
+| `@bemmoly/ui/theme`        | `buildCustomTheme`, `themeChecks`, `reservedHue`, `applyTheme`, `themeStyle`, `toHexColors`. |
 | `@bemmoly/ui/icons`        | `Icon` and the typed `IconName` set.                                                         |
 | `@bemmoly/ui/tailwind.css` | The Tailwind 4 theme. Import after `tailwindcss`; it removes the default palette and scales. |
-| `@bemmoly/ui/theme.css`    | Every preset as CSS variables, keyed by `data-theme` on any element (Classic on `:root`).    |
+| `@bemmoly/ui/theme.css`    | Every theme × mode, keyed by `data-theme` and `data-mode`, plus `data-font` typefaces.       |
 | `@bemmoly/ui/fonts.css`    | The self-hosted typefaces.                                                                   |
 | `@bemmoly/ui/brand/*`      | Brand files and the generated favicons and app icons (see `assets/brand/README.md`).         |
 
@@ -56,30 +56,28 @@ toasts may use them; a test enforces it. Non-AI notes that look similar use the 
 - Say what the AI read ("from 14 comments, 2 PRs") and that nothing runs until a person confirms.
 - Every AI answer offers "Not useful".
 
-## Theme builder
+## Themes and the custom theme generator
+
+ADR 0021. Five themes (Bemmoly, Graphite, Sand, Pine, High contrast), each a designed light and
+dark set of fifteen tokens in `src/tokens/themes.ts`. Mode (`light`, `dark`, `system`) and the
+typeface are separate choices: `data-mode` and `data-font` on the root.
 
 ```ts
-import { applyTheme, buildTheme } from '@bemmoly/ui/theme';
+import { buildCustomTheme, customThemeSource, applyTheme } from '@bemmoly/ui/theme';
+import { resolveSource } from '@bemmoly/ui/tokens';
 
-const theme = buildTheme({ brand: '#f97316', mode: 'light', surfaces: 'tinted', font: 'inter' });
-theme.contrast; // { ratio: '2.8', level: 'dark-text', message: '#f97316 is too light for white text …' }
-applyTheme(document.documentElement, theme);
+const built = buildCustomTheme({ brand: '#0f766e', surface: 'neutral' });
+built.pass; // true: all fourteen checks pass in both modes, for any input
+built.guard; // null, or the reserved hue band the brand sits in (a warning, never a block)
+const source = customThemeSource(id, 'Acme', { brand: '#0f766e', surface: 'neutral' });
+applyTheme(document.documentElement, resolveSource(source, 'dark'));
 ```
 
-- `buildTheme({ brand, mode: 'light' | 'dark', surfaces: 'neutral' | 'tinted', font })` returns the
-  full token set with the custom branch of the Board mock's theme table: accent tints by its
-  `color-mix` formula, Classic or Dark neutrals, brand-tinted surfaces, darker and lighter accents.
-- `contrastCheck(brand)` is the Appearance mock's `lum` and `ratio`, ported exactly, with its three
-  messages. The builder keeps each message's promise: a mid-contrast brand (3 to 4.5:1) gets a darker
-  button fill (`ac-fill`); a light brand gets dark button text (`on-ac`) and, in light mode, a darker
-  link shade (`ac`).
-- `applyTheme(el, theme)` writes the tokens as inline custom properties; `clearTheme(el, presetId)`
-  returns to a preset; `themeStyle(theme)` gives the same as a style object; `toHexColors` resolves
-  `color-mix()` values to hex for email.
-
-Classic stays as exact hex. Its accent tints are hand-picked in the Board mock's `:root` block and
-sit 3 to 17 steps per channel from the formula; the test records this. The other presets carry
-hand-tuned neutral scales; the builder reproduces their accent tints (tested), not their neutrals.
+- `themeChecks(set, mode, highContrast)` runs the fourteen checks of the theme review; the token
+  tests run them on every theme and mode, and the generator and the server run them on custom
+  themes.
+- The generator keeps the surfaces of the chosen style (`neutral` from Bemmoly, `warm` from
+  Sand) and moves only the accent tokens, the least that passes. It never touches the logo.
 
 ## Storybook
 

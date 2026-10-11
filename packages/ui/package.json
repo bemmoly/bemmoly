@@ -1,6 +1,6 @@
 {
   "name": "@bemmoly/ui",
-  "version": "0.6.0",
+  "version": "0.10.0",
   "private": true,
   "license": "MIT",
   "type": "module",
@@ -11,6 +11,7 @@
     ".": "./src/index.ts",
     "./tokens": "./src/tokens.ts",
     "./theme": "./src/theme/index.ts",
+    "./custom-theme": "./src/theme/custom.ts",
     "./icons": "./src/icons/index.ts",
     "./ai-answer": "./src/components/ai-surface/ai-answer.tsx",
     "./ai-insight-body": "./src/components/ai-surface/ai-insight-body.tsx",

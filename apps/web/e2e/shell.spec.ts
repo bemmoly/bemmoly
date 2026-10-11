@@ -14,7 +14,8 @@ test('the shell boots after the session and lazy-loads a module chunk', async ({
     'page',
   );
   await expect(page.getByRole('heading', { name: /, Rohan$/ })).toBeVisible();
-  await expect(page.locator('html')).toHaveAttribute('data-theme', /^(light|dark)$/);
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'bemmoly');
+  await expect(page.locator('html')).toHaveAttribute('data-mode', /^(light|dark)$/);
   await expect(page).toHaveTitle('Home · Acme Labs · Bemmoly');
 
   await sidebar.getByRole('link', { name: 'Sample' }).click();

@@ -66,11 +66,14 @@ export async function login(
     throw new UnauthenticatedError(WRONG_CREDENTIALS);
   }
   if (account.status !== 'active') {
-    throw new UnauthenticatedError('This account has been deactivated');
+    // A reason the sign-in page can name; given only after the right password.
+    throw new UnauthenticatedError('This account has been deactivated', {
+      details: { reason: 'deactivated' },
+    });
   }
   // Checked after the password, so the answer never tells a guesser the account exists.
   if (!account.passwordSignIn && !account.isBreakGlass) {
-    throw new ForbiddenError(SSO_REQUIRED_MESSAGE);
+    throw new ForbiddenError(SSO_REQUIRED_MESSAGE, { details: { reason: 'sso_required' } });
   }
   const now = nowOf(deps);
   const session = await deps.db.transaction(async (tx) => {

@@ -5,6 +5,7 @@
  * shows without a date until it is added.
  */
 export const RELEASE_DATES: Readonly<Record<string, string>> = {
+  '0.7.0': '2026-10-11',
   '0.6.0': '2026-10-11',
   '0.5.0': '2026-10-11',
   '0.4.0': '2026-10-10',
@@ -25,10 +26,18 @@ export const RELEASE_DATES: Readonly<Record<string, string>> = {
  * A title and one line for the releases the homepage lists under "Recent releases", in the
  * words of their notes. A release without an entry here is listed by its first note instead.
  */
-export const RELEASE_TITLES: Readonly<Record<string, { title: string; summary: string }>> = {
+export const RELEASE_TITLES: Readonly<
+  Record<string, { title: string; summary: string; short?: string }>
+> = {
+  '0.7.0': {
+    title: 'Imports and single sign-on',
+    short: 'Imports and SSO',
+    summary: 'Import from Jira and Confluence, or from CSV, plus OIDC, SAML and SCIM',
+  },
   '0.6.0': {
-    title: 'Imports, an MCP server and a self-updating updater',
-    summary: 'Images in docs, MCP for AI clients, and updates that keep the updater current',
+    title: 'Image uploads, an MCP server and an updater that updates itself',
+    summary:
+      'Images uploaded into docs, MCP for AI clients, and updates that keep the updater current',
   },
   '0.5.0': {
     title: 'AI arrives, and it is optional',
@@ -49,14 +58,39 @@ export const RELEASE_TITLES: Readonly<Record<string, { title: string; summary: s
 };
 
 /**
+ * What has shipped that the site once listed as coming soon, with the release that brought it
+ * and the words its release notes use. tests/claims.test.ts checks each against those notes and
+ * fails the build if any page puts one of these terms next to "Coming soon".
+ */
+export const SHIPPED = [
+  { title: 'Import from Jira', since: '0.7.0', terms: ['Jira'] },
+  { title: 'Import from Confluence', since: '0.7.0', terms: ['Confluence'] },
+  { title: 'CSV import', since: '0.7.0', terms: ['CSV'] },
+  { title: 'Single sign-on', since: '0.7.0', terms: ['single sign-on', 'OpenID Connect', 'SAML'] },
+  { title: 'SCIM provisioning', since: '0.7.0', terms: ['SCIM'] },
+  { title: 'Image uploads in Docs', since: '0.6.0', terms: ['upload'] },
+  { title: 'An MCP server', since: '0.6.0', terms: ['MCP'] },
+] as const;
+
+/** Words for the shipped items that the notes spell differently, still never "Coming soon". */
+export const SHIPPED_ALIASES = ['OIDC', 'SSO'] as const;
+
+/**
  * What is coming soon, with no dates or release numbers: a version promised for unbuilt work
  * becomes false the day plans move. Worded as every page words it. A row leaves this list in
- * the change that ships it.
+ * the change that ships it; `terms` are the words its release note will use, and the claims
+ * test fails while a release note already uses them.
  */
 export const ROADMAP = [
-  { title: 'Import from Jira', scope: 'bring projects and issues across, and CSV files too' },
-  { title: 'Single sign-on', scope: 'OIDC, SAML and SCIM' },
-  { title: 'Webhooks and automation', scope: 'rules that act on events or a schedule' },
-  { title: 'A roadmap view', scope: 'epics on a timeline' },
-  { title: 'Kubernetes and Terraform', scope: 'a Helm chart, and modules that create the VM' },
+  {
+    title: 'Webhooks and automation',
+    scope: 'rules that act on events or a schedule',
+    terms: ['webhook'],
+  },
+  { title: 'A roadmap view', scope: 'epics on a timeline', terms: ['roadmap view'] },
+  {
+    title: 'Kubernetes and Terraform',
+    scope: 'a Helm chart, and modules that create the VM',
+    terms: ['Terraform', 'Helm chart'],
+  },
 ] as const;

@@ -1,3 +1,5 @@
+import { buildCustomTheme } from '@bemmoly/ui/custom-theme';
+import { themeSource } from '@bemmoly/ui/tokens';
 import { describe, expect, it } from 'vitest';
 import {
   backupFailedEmail,
@@ -15,7 +17,7 @@ import {
 
 const brand = {
   workspaceName: 'Acme Labs',
-  accent: '#f97316',
+  colors: buildCustomTheme({ brand: '#f97316', surface: 'neutral' }).light,
   logoUrl: null,
   fontStack: "'IBM Plex Sans', system-ui, sans-serif",
 };
@@ -170,29 +172,19 @@ describe('email templates', () => {
 });
 
 describe('emailTheme', () => {
-  it('keeps a dark brand colour for buttons with white text', () => {
-    expect(emailTheme({ ...brand, accent: '#2456c9' })).toMatchObject({
-      button: '#2456c9',
+  it('takes every colour from the theme light set', () => {
+    expect(emailTheme({ ...brand, colors: themeSource('pine').light })).toMatchObject({
+      button: '#17675a',
       onButton: '#ffffff',
-      link: '#2456c9',
+      link: '#17675a',
+      page: themeSource('pine').light.sunken,
     });
   });
 
-  it('darkens a mid-tone brand colour so white text stays readable', () => {
-    const theme = emailTheme({ ...brand, accent: '#16a34a' });
-    expect(theme.button).not.toBe('#16a34a');
+  it('uses the checked custom ramp, never the raw brand, for a light brand colour', () => {
+    const theme = emailTheme(brand);
+    expect(theme.button).not.toBe('#f97316');
+    expect(theme.link).not.toBe('#f97316');
     expect(theme.onButton).toBe('#ffffff');
-  });
-
-  it('uses dark text on a brand colour too light for white, and a darker link', () => {
-    for (const accent of ['#f97316', '#fde68a']) {
-      const theme = emailTheme({ ...brand, accent });
-      expect(theme.onButton).not.toBe('#ffffff');
-      expect(theme.link).not.toBe(accent);
-    }
-  });
-
-  it('falls back to the Classic accent for a malformed colour', () => {
-    expect(emailTheme({ ...brand, accent: 'orange' }).accent).toBe('#2356c9');
   });
 });

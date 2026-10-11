@@ -1,16 +1,12 @@
-import type { SettingKey } from '@bemmoly/shared';
-import { PRESETS } from '@bemmoly/ui/tokens';
+import type { CustomThemeRecord, SettingKey } from '@bemmoly/shared';
 import { describe, expect, it } from 'vitest';
 import { APPEARANCE_KEYS, type AppearanceKey } from '../lib/appearance.ts';
 import {
   appearanceDescription,
   draftFrom,
+  draftPreview,
   draftWrites,
   normalizeHex,
-  previewLabel,
-  themeOptions,
-  themeScope,
-  toAppearance,
   type AppearanceDraft,
 } from './use-appearance-draft.ts';
 import type { SettingReads } from './use-setting.ts';
@@ -24,143 +20,77 @@ function readsOf(values: Partial<Record<SettingKey, unknown>>): SettingReads<App
   ) as SettingReads<AppearanceKey>;
 }
 
+const ACME: CustomThemeRecord = {
+  id: '0199c0de-0000-7000-8000-00000000a001',
+  name: 'Acme',
+  brandColor: '#0f766e',
+  surface: 'neutral',
+  scope: 'workspace',
+  createdAt: '2026-10-01T00:00:00.000Z',
+  updatedAt: '2026-10-01T00:00:00.000Z',
+};
+
 const BASE: AppearanceDraft = {
-  preset: 'light',
-  brand: '#f97316',
-  mode: 'light',
-  surfaces: 'neutral',
+  theme: 'bemmoly',
+  defaultMode: 'system',
   font: 'plex',
-  memberModeSwitch: true,
   personalThemes: false,
 };
 
 describe('appearance draft', () => {
-  it('reads the server\'s "classic" as the Classic preset and keeps the stored brand', () => {
+  it('starts new workspaces on Bemmoly following the device', () => {
+    expect(draftFrom(readsOf({}), [])).toEqual(BASE);
+  });
+
+  it('reads a retired preset as its theme and keeps the font apart', () => {
     const draft = draftFrom(
-      readsOf({ 'appearance.theme': 'classic', 'appearance.brandColor': '#2456c9' }),
+      readsOf({ 'appearance.theme': 'warm', 'appearance.font': 'source' }),
+      [],
     );
-    expect(draft.preset).toBe('light');
-    expect(draft.brand).toBe('#2456c9');
-    expect(toAppearance(draft).custom).toBeNull();
+    expect(draft).toMatchObject({ theme: 'sand', font: 'source' });
   });
 
-  it('reads a custom theme with its builder inputs', () => {
+  it('reads a custom default as a reference to that theme', () => {
     const draft = draftFrom(
-      readsOf({
-        'appearance.theme': 'custom',
-        'appearance.brandColor': '#7c3aed',
-        'appearance.mode': 'dark',
-        'appearance.surfaces': 'tinted',
-        'appearance.font': 'geist',
-      }),
+      readsOf({ 'appearance.theme': 'custom', 'appearance.customThemeId': ACME.id }),
+      [ACME],
     );
-    expect(draft).toMatchObject({
-      preset: 'custom',
-      brand: '#7c3aed',
-      mode: 'dark',
-      font: 'geist',
+    expect(draft.theme).toBe(`custom:${ACME.id}`);
+    expect(draftPreview(draft, [ACME]).source?.name).toBe('Acme');
+  });
+
+  it('writes a built-in theme with no custom id, and a custom one with its mirrored brand', () => {
+    expect(draftWrites({ ...BASE, theme: 'pine', defaultMode: 'dark' }, [ACME])).toEqual({
+      'appearance.theme': 'pine',
+      'appearance.customThemeId': null,
+      'appearance.defaultMode': 'dark',
+      'appearance.font': 'plex',
+      'appearance.personalThemes': false,
     });
-    expect(toAppearance(draft).custom).toEqual({
-      brandColor: '#7c3aed',
-      mode: 'dark',
-      surfaces: 'tinted',
-      font: 'geist',
-    });
-  });
-
-  it('falls back to Classic for a preset it does not know', () => {
-    expect(draftFrom(readsOf({ 'appearance.theme': 'neon' })).preset).toBe('light');
-  });
-
-  it('keeps the builder inputs when moving between a preset and Custom', () => {
-    const custom = { ...BASE, preset: 'custom', brand: '#e11d48', mode: 'dark' as const };
-    const preset = { ...custom, preset: 'ocean' };
-    expect(toAppearance(preset).custom).toBeNull();
-    expect(toAppearance({ ...preset, preset: 'custom' }).custom?.brandColor).toBe('#e11d48');
-  });
-});
-
-describe('hex input', () => {
-  it('accepts six hex digits with or without #, in any case', () => {
-    expect(normalizeHex('#F97316')).toBe('#f97316');
-    expect(normalizeHex(' f97316 ')).toBe('#f97316');
-  });
-
-  it('rejects anything else', () => {
-    expect(normalizeHex('#f9731')).toBeNull();
-    expect(normalizeHex('#f973166')).toBeNull();
-    expect(normalizeHex('orange')).toBeNull();
-    expect(normalizeHex('')).toBeNull();
-  });
-});
-
-describe('writes', () => {
-  it('maps Classic to the server id and writes the preset font, without a brand colour', () => {
-    const writes = draftWrites(BASE);
-    expect(writes['appearance.theme']).toBe('classic');
-    expect(writes['appearance.font']).toBe('plex');
-    expect(writes).not.toHaveProperty('appearance.brandColor');
-    expect(writes['appearance.mode']).toBe('light');
-    expect(writes['appearance.memberModeSwitch']).toBe(true);
-    expect(writes['appearance.personalThemes']).toBe(false);
-  });
-
-  it('writes a preset with the font it ships with', () => {
-    const ocean = PRESETS.find((preset) => preset.id === 'ocean');
-    const writes = draftWrites({ ...BASE, preset: 'ocean', font: 'geist' });
-    expect(writes['appearance.theme']).toBe('ocean');
-    expect(writes['appearance.font']).toBe(ocean?.font);
-  });
-
-  it('writes every builder input for Custom', () => {
-    const writes = draftWrites({
-      ...BASE,
-      preset: 'custom',
-      brand: '#0f766e',
-      mode: 'dark',
-      surfaces: 'tinted',
-      font: 'inter',
-      personalThemes: true,
-    });
-    expect(writes).toMatchObject({
+    expect(draftWrites({ ...BASE, theme: `custom:${ACME.id}` }, [ACME])).toMatchObject({
       'appearance.theme': 'custom',
+      'appearance.customThemeId': ACME.id,
       'appearance.brandColor': '#0f766e',
-      'appearance.mode': 'dark',
-      'appearance.surfaces': 'tinted',
-      'appearance.font': 'inter',
-      'appearance.personalThemes': true,
     });
   });
-});
 
-describe('theme tiles and preview', () => {
-  it('lists the eight presets, then Custom painted with the draft brand', () => {
-    const options = themeOptions({ ...BASE, mode: 'dark' });
-    expect(options).toHaveLength(9);
-    expect(options[0]).toMatchObject({ id: 'light', name: 'Classic', mode: 'Light' });
-    expect(options.find((option) => option.id === 'ocean')?.mode).toBe('Dark');
-    expect(options[8]).toMatchObject({ id: 'custom', name: 'Custom', mode: 'Dark' });
-    expect(options[8]?.colors.ac).toBe('#f97316');
+  it('falls back to Bemmoly when the custom default is gone', () => {
+    expect(draftWrites({ ...BASE, theme: `custom:${ACME.id}` }, [])).toMatchObject({
+      'appearance.theme': 'bemmoly',
+      'appearance.customThemeId': null,
+    });
   });
 
-  it('labels the preview as the mock does', () => {
-    expect(previewLabel({ ...BASE, preset: 'custom' })).toBe('Custom · #f97316 · light');
-    expect(previewLabel({ ...BASE, preset: 'ocean' })).toBe('Ocean preset');
+  it('accepts a hex with or without # in any case, and nothing else', () => {
+    expect(normalizeHex(' F97316 ')).toBe('#f97316');
+    expect(normalizeHex('#0F766E')).toBe('#0f766e');
+    expect(normalizeHex('#12')).toBeNull();
+    expect(normalizeHex('orange')).toBeNull();
   });
 
-  it('themes the preview by data-theme for a preset and by built tokens for Custom', () => {
-    expect(themeScope({ ...BASE, preset: 'forest' })).toEqual({ 'data-theme': 'forest' });
-    const scope = themeScope({ ...BASE, preset: 'custom', mode: 'dark' });
-    expect(scope['data-theme']).toBeUndefined();
-    expect(scope.style).toMatchObject({ '--acc': '#f97316', colorScheme: 'dark' });
-  });
-
-  it('only promises a personal light/dark choice while members may switch', () => {
-    expect(appearanceDescription('Acme Labs', true)).toBe(
-      'Sets the default look for everyone in Acme Labs. People can still choose light or dark for themselves in their profile.',
-    );
-    expect(appearanceDescription('Acme Labs', false)).toBe(
-      'Sets the default look for everyone in Acme Labs.',
+  it('says mode stays personal', () => {
+    expect(appearanceDescription('Acme Labs')).toBe(
+      'The default look for everyone in Acme Labs. Each person can still pick Light, Dark or Match system for themselves.',
     );
   });
 });

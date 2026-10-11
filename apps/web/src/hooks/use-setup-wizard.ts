@@ -73,9 +73,10 @@ export const SETUP_STEPS: readonly SetupStep[] = [
   {
     n: 6,
     name: 'Look',
-    sub: 'Theme and brand color',
+    sub: 'Theme and default mode',
     title: 'Make it yours',
-    subtitle: 'Pick a theme or use your brand color. Everyone sees it by default.',
+    subtitle:
+      'Pick a theme and a default mode. Everyone sees this until they choose their own mode.',
     nextLabel: 'Finish setup',
     canSkip: true,
   },

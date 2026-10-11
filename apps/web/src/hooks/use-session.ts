@@ -34,7 +34,7 @@ export function useSignOut() {
     mutationFn: () => api.auth.logout(),
     onSettled: async () => {
       queryClient.clear();
-      await navigate({ to: '/login' });
+      await navigate({ to: '/login', search: { reason: 'signed-out' } });
     },
   });
 }

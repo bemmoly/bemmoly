@@ -16,11 +16,15 @@ the text colour through a mask.
 - Fetched on 2026-10-08. The editor metadata, ids, group transforms and the empty bounding
   path were removed; the four coloured paths and the copyright line are unchanged.
 
+`microsoft.svg` is the four-square Microsoft mark for Entra ID, drawn as an image in its own
+colours as Microsoft's sign-in branding guidance asks. It is four squares in the published
+colours, written by hand for this repository on 2026-10-11.
+
 The one-colour marks (`okta.svg`, `keycloak.svg`, `authentik.svg`) are copied unchanged from
 simple-icons 16.32.0 (CC0 1.0), the package the import cards already use.
 
 ## Trademarks
 
-Each mark is a trademark of its owner (the "G" logo of Google LLC). A mark is used only to
+Each mark is a trademark of its owner (the "G" logo of Google LLC, the four-square logo of Microsoft Corporation). A mark is used only to
 identify that sign-in option, and does not imply endorsement of, or affiliation with, Bemmoly.
 These files are not covered by the repository's MIT licence.

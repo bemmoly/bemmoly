@@ -62,6 +62,11 @@ export const KEYFRAMES: Readonly<Record<string, Readonly<Record<string, string>>
     from: 'transform: translateY(-2px) scale(1.02); box-shadow: var(--e2);',
     to: 'transform: none;',
   },
+  /**
+   * The sign-in panel's product glimpse: a card floats a few pixels and back, slowly. Ambient
+   * only, never on anything someone reads or uses (ADR 0022).
+   */
+  drift: { to: 'translate: var(--drift-x, 0) var(--drift-y, -6px);' },
 };
 
 /** Tailwind's animate-<name> utilities: keyframe, duration, easing and fill. */
@@ -77,4 +82,5 @@ export const ANIMATIONS = {
   'toast-out': 'toast-out var(--duration-exit) var(--ease-in) forwards',
   rise: 'rise var(--duration-base) var(--ease-out) both',
   settle: 'settle var(--duration-slow) var(--ease-settle) both',
+  drift: 'drift var(--drift-period, 13s) ease-in-out infinite alternate',
 } as const;

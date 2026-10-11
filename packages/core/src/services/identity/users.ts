@@ -11,6 +11,7 @@ import { and, asc, eq, gt, ilike, isNull, or, type SQL } from 'drizzle-orm';
 import type { Database } from '../../clients/drizzle.ts';
 import { apiTokens, users } from '../../models/identity/index.ts';
 import { decodeCursor, toPage } from '../../utils/keyset.ts';
+import { listPersonalThemes, listWorkspaceThemes, readPreference } from '../appearance/index.ts';
 import { recordAudit } from '../audit/index.ts';
 import { readWorkspaceLook } from '../settings/index.ts';
 import type { IdentityDependencies } from './deps.ts';
@@ -167,11 +168,18 @@ export async function getMe(
   ctx: RequestContext,
 ): Promise<MeResponse> {
   const user = await getUser(deps.db, selfId(ctx));
-  const [capabilities, modules, workspace] = await Promise.all([
+  const [capabilities, modules, workspaceThemes, appearance, customThemes] = await Promise.all([
     ctx.authz.workspaceCapabilities(ctx.actor),
     ctx.authz.modulesFor(ctx.actor),
-    readWorkspaceLook(deps.settings, deps.aiEnabled && (() => deps.aiEnabled!(ctx.actor))),
+    listWorkspaceThemes(deps.db),
+    readPreference(deps.db, user.id),
+    listPersonalThemes(deps.db, user.id),
   ]);
+  const workspace = await readWorkspaceLook(
+    deps.settings,
+    deps.aiEnabled && (() => deps.aiEnabled!(ctx.actor)),
+    workspaceThemes,
+  );
   // AI surfaces are for people whose role may use AI assist; the AI endpoints refuse the rest.
   const aiEnabled = workspace.aiEnabled && capabilities.includes('ai.assist.use');
   return {
@@ -179,5 +187,7 @@ export async function getMe(
     capabilities: capabilities.sort(),
     modules: [...modules].sort(),
     workspace: { ...workspace, aiEnabled },
+    preferences: { appearance },
+    customThemes,
   };
 }

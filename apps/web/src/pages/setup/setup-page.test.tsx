@@ -110,19 +110,29 @@ describe('SetupPage', () => {
     expect(screen.getByRole('button', { name: 'Back' })).toBeTruthy();
   });
 
-  it('shows the brand color inline on the look step', async () => {
+  it('offers the five themes, a brand colour and the default mode on the look step', async () => {
     mockApi.reset('wizard');
     const user = userEvent.setup();
     const { router } = await renderPage(() => <Harness />, '/setup?step=6', await setupClient());
-    const brand = await screen.findByRole('region', { name: 'Brand color' });
-    const toggle = within(brand).getByRole('button', { expanded: false });
-    await user.click(toggle);
+    const tiles = await screen.findByRole('radiogroup', { name: 'Theme' });
+    expect(within(tiles).getAllByRole('radio')).toHaveLength(6);
+    expect(within(tiles).getByRole('radio', { name: 'Bemmoly' }).getAttribute('aria-checked')).toBe(
+      'true',
+    );
+    await user.type(screen.getByRole('textbox', { name: 'Brand colour hex' }), '{Backspace}0');
+    expect(
+      within(tiles)
+        .getByRole('radio', { name: /Your brand colour/ })
+        .getAttribute('aria-checked'),
+    ).toBe('true');
+    await user.click(within(tiles).getByRole('radio', { name: 'Pine' }));
     expect(router.state.location.search).toEqual({ step: 6 });
-    expect(toggle.getAttribute('aria-expanded')).toBe('true');
-    const tiles = screen.getByRole('radiogroup', { name: 'Theme' });
-    expect(within(tiles).queryByRole('radio', { checked: true })).toBeNull();
-    await user.click(within(tiles).getByRole('radio', { name: /Forest/ }));
-    expect(toggle.getAttribute('aria-expanded')).toBe('false');
+    const mode = screen.getByRole('radiogroup', { name: 'Default mode' });
+    expect(
+      within(mode)
+        .getByRole('radio', { name: /Match system/ })
+        .getAttribute('aria-checked'),
+    ).toBe('true');
   });
 
   it('ends on a launchpad that lists the summary as labels and values', async () => {

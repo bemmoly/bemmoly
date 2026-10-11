@@ -1,6 +1,7 @@
 import {
   ConflictError,
   type CreateFirstAdminInput,
+  LOGO_PATH_PREFIX,
   type SetupStatusResponse,
   type User,
 } from '@bemmoly/shared';
@@ -27,12 +28,25 @@ async function anyUserExists(db: Database): Promise<boolean> {
 export async function getSetupStatus(
   deps: Pick<IdentityDependencies, 'db' | 'settings'>,
 ): Promise<SetupStatusResponse> {
-  const [initialized, completedAt, workspaceName] = await Promise.all([
+  const [initialized, completedAt, workspaceName, logoKey, theme, defaultMode] = await Promise.all([
     anyUserExists(deps.db),
     deps.settings.get('setup.completedAt'),
     deps.settings.get('workspace.name'),
+    deps.settings.get('appearance.logoKey'),
+    deps.settings.get('appearance.theme'),
+    deps.settings.get('appearance.defaultMode'),
   ]);
-  return { initialized, completedAt, workspaceName: initialized ? workspaceName || null : null };
+  return {
+    initialized,
+    completedAt,
+    workspaceName: initialized ? workspaceName || null : null,
+    // Only a logo this install serves: the sign-in page's CSP allows no other image.
+    logoUrl: initialized && logoKey.startsWith(LOGO_PATH_PREFIX) ? logoKey : null,
+    // Anyone who signs in sees these; neither names a person or a project. A custom theme's
+    // colours stay behind sign-in, so the pages before it wear Bemmoly's default instead.
+    theme: initialized && theme !== 'custom' ? theme : null,
+    defaultMode: initialized ? defaultMode : null,
+  };
 }
 
 /** True until the first admin exists; the wizard's health checks are anonymous until then. */

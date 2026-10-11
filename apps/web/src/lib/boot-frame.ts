@@ -4,16 +4,18 @@ const BOOT_FRAME_ID = 'boot';
 export const BOOT_LOOK_KEY = 'bemmoly.boot-look';
 
 export interface BootLook {
-  /** The preset id, or a custom theme's id. */
+  /** The theme id, or a custom theme's id. */
   theme: string;
-  mode: 'light' | 'dark';
-  /** A custom theme's custom properties; a preset needs none. */
+  /** "system" lets theme.css follow the device before any script runs. */
+  mode: 'light' | 'dark' | 'system';
+  font?: string;
+  /** A custom theme's custom properties; a built-in theme needs none. */
   vars?: Record<string, string>;
 }
 
 /**
  * Remembers the look just applied, so the next load paints its boot frame in it rather than
- * in Classic light. Storage may be blocked; the boot frame then keeps the default look.
+ * in Bemmoly light. Storage may be blocked; the boot frame then keeps the default look.
  */
 export function rememberBootLook(look: BootLook): void {
   try {

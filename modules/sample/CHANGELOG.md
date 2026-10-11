@@ -1,5 +1,38 @@
 # @bemmoly/module-sample
 
+## 0.10.0
+
+### Patch Changes
+
+- Updated dependencies [e6982a1]
+  - @bemmoly/core@0.10.0
+  - @bemmoly/shared@0.10.0
+
+## 0.9.0
+
+### Patch Changes
+
+- Updated dependencies [250098f]
+  - @bemmoly/core@0.9.0
+  - @bemmoly/shared@0.9.0
+
+## 0.8.0
+
+### Patch Changes
+
+- Updated dependencies [31f9a87]
+  - @bemmoly/core@0.8.0
+  - @bemmoly/shared@0.8.0
+
+## 0.7.0
+
+### Patch Changes
+
+- Updated dependencies [8559222]
+- Updated dependencies [65c412a]
+  - @bemmoly/core@0.7.0
+  - @bemmoly/shared@0.7.0
+
 ## 0.6.0
 
 ### Patch Changes

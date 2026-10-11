@@ -31,8 +31,11 @@ mount it).
 - **Settings mode.** Under `/settings` the same sidebar lists the settings pages with
   "Back to app" and Esc at the top. There is no separate settings shell.
 - **Standalone screens.** Only the setup wizard (no workspace exists yet) and the pages before
-  sign-in (sign-in, reset, invitation) sit outside the frame. They still use the tokens, icons,
-  tiles and the Bemmoly lockup.
+  sign-in (sign-in, reset, invitation, the first-sign-in welcome) sit outside the frame. They
+  still use the tokens, icons, tiles and the Bemmoly lockup. The pages before sign-in share
+  `AuthShell` (`apps/web/src/components/auth/auth-layout.tsx`, ADR 0022): a form column, 480px
+  under 1300px wide and 520px above, and from 1100px the product panel in the workspace's theme;
+  one column below, full-bleed on phones with `size="touch"` controls.
 - **Failure stays in the frame.** Not found, a thrown page and a module chunk that fails to load
   render inside the frame, so the sidebar is still the way on.
 - **Phone.** Nothing scrolls the page sideways at 390px. The header keeps the current crumb;

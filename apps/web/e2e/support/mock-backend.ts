@@ -1,6 +1,7 @@
 import type { Page, WebSocketRoute } from '@playwright/test';
 import type { MockScenario } from '../../src/mocks/db.ts';
 import { createMockApi, type MockApi } from '../../src/mocks/dispatch.ts';
+import { LOGO_FILE_PATH, LOGO_UPLOAD_PATH, servedLogo, uploadLogo } from '../../src/mocks/logo.ts';
 
 export interface MockBackend {
   api: MockApi;
@@ -68,6 +69,19 @@ export async function useMockBackend(
       // A download or a streamed reply: sent as written, all at once.
       await route.fulfill({ status: result.status, body: result.body, headers: result.headers });
     } else await route.fulfill({ status: result.status, json: result.body });
+  });
+
+  // Registered last, so it is asked first: the logo's body is bytes, not JSON.
+  await page.route(LOGO_UPLOAD_PATH, async (route) => {
+    if (route.request().method() !== 'POST') return route.fallback();
+    const bytes = new Uint8Array(route.request().postDataBuffer() ?? Buffer.alloc(0));
+    const result = uploadLogo(api.db, bytes);
+    await route.fulfill({ status: result.status, json: result.body });
+  });
+  await page.route(LOGO_FILE_PATH, async (route) => {
+    const logo = servedLogo(api.db, route.request().url());
+    if (!logo) await route.fulfill({ status: 404, body: '' });
+    else await route.fulfill({ body: Buffer.from(logo.bytes), contentType: logo.mime });
   });
 
   return {

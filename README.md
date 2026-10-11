@@ -40,14 +40,21 @@ app.
 - **No in-app purchases.** Nothing in the app is locked or upsold. The Buy Me a Coffee button
   on this repository is an optional way to support the project, and it unlocks nothing.
 
-## What ships in 0.5.0
+## What ships in 0.7.0
 
 - **Work**: projects with members, issues with types, custom fields and history, workflows with
   a visual editor, Kanban and Scrum boards, the backlog and sprints, LQL and saved filters, and
   "My work" on Home.
 - **Docs**: spaces and a page tree, a live collaborative editor with named cursors, revisions,
-  comments, issue links that show live status, and import from Markdown and Confluence exports
-  with export to Markdown and HTML.
+  comments, images uploaded by paste, drop or the / menu, issue links that show live status,
+  Markdown folder import, and export to Markdown and HTML.
+- **Imports**: an admin opens Settings › Import (or the setup wizard's import step), picks Import
+  from Jira, Import from Confluence or a CSV file, and sees what the site holds and how issue
+  types, statuses and custom fields will land before anything is written. Jira Cloud and Data
+  Center bring projects, issues, comments, attachments, boards and sprints into Work; Confluence
+  Cloud, Data Center or a space export bring spaces, page trees, comments and attachments into
+  Docs. The import runs in the background with live progress, can be cancelled, is safe to run
+  again, and ends with a report of what was created, updated and skipped.
 - **AI, optional**: off until an admin turns it on, and nothing changes for a workspace that
   leaves it off. Bring any provider in the [models.dev](https://models.dev) catalog, a gateway,
   or a model running on your own network. Then Bemmoly summarises issues, sprints and pages with
@@ -55,6 +62,14 @@ app.
   text in the doc editor, and turns a request in ⌘K into a plan of changes that runs only when
   you confirm it. Admins choose what content is sent, which spaces and projects are excluded,
   and a monthly budget.
+- **Single sign-on and SCIM**: any OpenID Connect provider through its discovery URL, or SAML
+  2.0 with signed assertions. People are created on first sign-in, linked by verified email and
+  placed in roles and teams from their groups; an admin can require single sign-on for everyone,
+  with break-glass admins kept. SCIM 2.0 at `/scim/v2` creates, updates and deactivates people
+  and keeps teams in step, with an audit row for every change.
+- **An MCP server**: point an AI desktop app, coding agent or IDE at `/mcp` (or `/mcp/work`,
+  `/mcp/docs`) and it works in your workspace as you, with your permissions, rate limited and in
+  the audit log.
 - **The platform under them**: a setup wizard, people, roles and a capability matrix, email
   and notifications, an Inbox, ⌘K search, an audit log, Prometheus metrics, automatic HTTPS,
   nightly verified backups, and one-click updates with automatic rollback.
@@ -115,12 +130,13 @@ backups it makes.
 | 0.3      | **Docs**: spaces, the page tree, a collaborative editor, revisions, comments          |
 | 0.4      | **The redesign**: one shell for Work and Docs, the logo's colours, drawn icons        |
 | 0.5      | **AI, optional**: summaries with sources, answers from your docs, editor and ⌘K plans |
+| 0.6      | **Image uploads** in Docs, an **MCP server**, and an updater that updates itself      |
+| 0.7      | **Imports** from Jira, Confluence and CSV, and **single sign-on** with SCIM           |
 
 **Coming soon**, not in the app yet:
 
-- Import from Jira and CSV
-- Single sign-on: OIDC, SAML and SCIM
 - Webhooks and automation rules
+- A roadmap view: epics on a timeline
 - Kubernetes (a supported Helm chart) and Terraform modules for AWS, GCP and Hetzner
 - A tested offline (air-gapped) install, a PWA, and an accessibility and security review
   before 1.0

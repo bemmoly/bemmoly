@@ -21,7 +21,7 @@ Use it through the component, never as an `<img>` in product UI:
 ```tsx
 import { Logo } from '@bemmoly/ui';
 
-<Logo variant="lockup" size={20} />        // sidebar, sign-in before a workspace name
+<Logo variant="lockup" size={20} />        // sidebar, and sign-in without a custom logo
 <Logo variant="mark" size={16} label="" /> // beside text that already says Bemmoly
 ```
 
@@ -61,29 +61,47 @@ import { BrandBlock, BrandRailFoot, BrandRailTop } from '@bemmoly/ui';
 4. **No workspace switcher, ever.** One install is one workspace (there is no workspaces table).
    The name under the lockup opens the workspace menu: Workspace settings, Invite people,
    What's new, About. Nothing anywhere offers to switch or add a workspace.
-5. **The name survives off the sidebar.** Sign-in shows the workspace, then "Powered by" and the
-   mark (the lockup leads before the workspace has a name); the tab title ends "· Bemmoly"
-   (`useDocumentTitle`); the sidebar foot shows "Bemmoly 0.4.0 · What's new"; email footers
-   name Bemmoly; the boot screen paints the mark.
-6. **Honest about the licence.** MIT lets a fork remove any of this. The aim is a default good
+5. **The name survives off the sidebar, and appears once before sign-in** (ADR 0022). Every
+   page before sign-in (`AuthShell`: sign-in, single sign-on, reset, invitations, the first
+   sign-in welcome) shows Bemmoly exactly once. **No custom logo:** the Bemmoly lockup at the
+   top-left, with no "Powered by" and no initial tile; the workspace name goes in the heading
+   ("Sign in to Acme Labs"). **Custom logo:** the customer's logo and name at the top-left, and
+   "Powered by Bemmoly" with the mark at the foot. The foot shows only the lock and the host
+   (`work.acmelabs.dev`), plus "Powered by Bemmoly" when a custom logo leads; never "own
+   server" or any other line. Elsewhere the tab title ends "· Bemmoly" (`useDocumentTitle`); the
+   sidebar foot shows "Bemmoly 0.4.0 · What's new"; email footers name Bemmoly; the boot screen
+   paints the mark.
+6. **Where the customer logo comes from.** Settings › Appearance › Logo (needs
+   `workspace.appearance.manage`): a PNG, SVG or WebP up to 1 MB, square or near-square (longest
+   side at most 1.25 × the shortest), rasters at least 128 px. SVGs with anything active or
+   anything that reaches out are refused. It is served from this origin
+   (`/api/v1/workspace/logo/<sha256>.<ext>`), so the CSP never needs an outside image. The row
+   previews the real `BrandBlock` and rail in light and dark and says "on Bemmoly" stays. It
+   never reaches the favicon, the tab title or the mark; emails show it above "Sent by Bemmoly
+   for <workspace>".
+7. **Honest about the licence.** MIT lets a fork remove any of this. The aim is a default good
    enough that nobody wants to.
 
 ## Logo colours are the system
 
-The mark's three colours are fixed tokens (`BRAND` in `src/tokens/semantic.ts`); no preset or
-custom theme changes them.
+The mark's three colours are fixed tokens (`BRAND` in `src/tokens/semantic.ts`); no theme,
+custom or built-in, and no mode changes them, and the mark never takes a theme colour (ADR 0021).
 
 | Token     | Hex       | Its one job                                                        |
 | --------- | --------- | ------------------------------------------------------------------ |
-| `brand-1` | `#2356C9` | Classic's accent, and the Work module's colour                     |
-| `brand-2` | `#5B7BE5` | The Docs module's colour, and the base of the dark accent          |
+| `brand-1` | `#2356C9` | Bemmoly's light accent, and the Work module's colour               |
+| `brand-2` | `#5B7BE5` | The Docs module's colour, the base of the dark accent, dark Task   |
 | `brand-3` | `#9A85EA` | AI, and only AI (lilac; `ai` tokens carry it in the UI, see [ai.md](ai.md)) |
 
 - Work's tile is `EntityTile tone="work"` (`bg-brand-1`); Docs' is `tone="docs"` (`bg-brand-2`);
   AI's is `tone="ai"` (`bg-brand-3`). Module manifests name the colour as a token, never a hex:
   `color: 'brand-1'` (see [layout.md](layout.md#module-sidebar-contributions)).
-- Interactive accent uses the `acc` tokens, not `brand-*`: a preset or custom theme may change
-  the accent, but never the module or AI colours.
+- Interactive accent uses the `acc` tokens, not `brand-*`: a theme may change the accent, but
+  never the module or AI colours. Theme accents come from the logo (Bemmoly, Sand, High
+  contrast), are ink (Graphite), or sit outside every reserved hue (Pine); see
+  [tokens.md](tokens.md#themes-and-modes).
+- A custom theme's brand colour reaches links, buttons and selection only, through the checked
+  ramp the generator builds. It never recolours the logo, the brand block or a module tile.
 - Epics have their own violet, `type-epic` / `epic-2` `#6E56CF`, so they never read as AI.
 - A new module takes an epic hue (`epic-1` to `epic-8`) or `accent`, never a logo colour that
   is already taken.

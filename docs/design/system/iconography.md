@@ -17,7 +17,8 @@ Foundations/Icons ([`icon.stories.tsx`](../../../packages/ui/src/icons/icon.stor
 - **Lucide only**, behind the design system's names: `SHAPES` (product nouns: `board`,
   `backlog`, `doc`, `inbox`, `settings`, …), `GLYPHS` (the controls: `search`, `caret`,
   `chevron`, `close`, `more`, `check`, `plus`, `enter`, `external`, …), `KIT_ICONS` (`home`, `me`,
-  `bell`, `layers`, `tag`, `warning`, `info`, `undo`, `snooze`, …) and, with #77,
+  `bell`, `layers`, `tag`, `warning`, `info`, `undo`, `snooze`, `sun`, `moon`, `monitor` (the
+  three modes: Light, Dark, Match system), …) and, with #77,
   `EDITOR_ICONS` (`text`, `heading`, `highlight`, `strike`, `row-add`, `trash-can`, …).
 - **Sizes** (`ICON_SIZE`): `inline` 16px in buttons, rows, menus and dropdown carets; `bar` 18px
   in the sidebar and rail; `small` 14px in small controls. Screens use only these three; a

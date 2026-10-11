@@ -30,6 +30,8 @@
   --avatar-pink: #bd5167;
   --avatar-amber: #a36c1b;
   --avatar-sky: #247cae;
+  --font-code:
+    'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
   --focus-width: 2px;
   --focus-offset: 2px;
   --shadow-ring: 0 0 0 2px var(--acc-100);

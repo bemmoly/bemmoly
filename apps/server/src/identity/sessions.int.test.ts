@@ -29,6 +29,9 @@ describe('setup, sign-in and sessions against a real database', () => {
       initialized: false,
       completedAt: null,
       workspaceName: null,
+      logoUrl: null,
+      theme: null,
+      defaultMode: null,
     });
 
     const created = await call(app, 'POST', '/setup/admin', {
@@ -44,6 +47,9 @@ describe('setup, sign-in and sessions against a real database', () => {
       initialized: true,
       completedAt: null,
       workspaceName: 'Acme',
+      logoUrl: null,
+      theme: 'bemmoly',
+      defaultMode: 'system',
     });
 
     const again = await call(app, 'POST', '/setup/admin', {

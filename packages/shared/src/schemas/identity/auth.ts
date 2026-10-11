@@ -21,6 +21,11 @@ export const passwordResetCompleteSchema = z.object({
   password: passwordSchema,
 });
 
+/** Names the account a reset link is for, without spending it. */
+export const passwordResetPreviewSchema = z.object({ token: z.string().min(16).max(200) });
+
+export const passwordResetPreviewResponseSchema = z.object({ email: z.string() });
+
 export const sessionSchema = z.object({
   id: z.uuid(),
   ip: z.string().nullable(),
@@ -45,6 +50,8 @@ export type AuthUserResponse = z.infer<typeof authUserResponseSchema>;
 export type LogoutRequest = z.infer<typeof logoutRequestSchema>;
 export type PasswordResetRequest = z.infer<typeof passwordResetRequestSchema>;
 export type PasswordResetComplete = z.infer<typeof passwordResetCompleteSchema>;
+export type PasswordResetPreview = z.infer<typeof passwordResetPreviewSchema>;
+export type PasswordResetPreviewResponse = z.infer<typeof passwordResetPreviewResponseSchema>;
 export type Session = z.infer<typeof sessionSchema>;
 export type SessionsResponse = z.infer<typeof sessionsResponseSchema>;
 export type AcceptInvitationInput = z.infer<typeof acceptInvitationSchema>;
