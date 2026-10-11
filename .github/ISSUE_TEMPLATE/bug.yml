@@ -5,8 +5,16 @@ body:
   - type: markdown
     attributes:
       value: |
-        Thanks for reporting. Security problems go to the private address in SECURITY.md,
-        not here. Remove secrets, tokens and personal data from anything you paste.
+        Thanks for reporting. Security problems go to GitHub's private reporting (SECURITY.md),
+        not here. Questions go to Discussions › Q&A. Remove secrets, tokens and personal data
+        from anything you paste.
+  - type: checkboxes
+    id: searched
+    attributes:
+      label: Before you file
+      options:
+        - label: I searched the open and closed issues and did not find this one.
+          required: true
   - type: textarea
     id: what-happened
     attributes:
@@ -35,21 +43,28 @@ body:
     attributes:
       label: Version
       description: Shown in Settings › System, or by `bemmoly status`.
-      placeholder: 0.1.0
+      placeholder: 0.5.0
     validations:
       required: true
   - type: dropdown
     id: install
     attributes:
-      label: How Bemmoly is installed
+      label: Where you saw it
       options:
-        - Installer (Compose with Caddy)
+        - The live demo (bemmoly.com/demo)
+        - Installer (curl get.bemmoly.com, Compose with Caddy)
         - Docker Compose by hand
         - Helm
         - Air-gapped bundle
         - Running from source (pnpm dev)
     validations:
       required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Server and browser
+      description: The server's OS and size for install problems; the browser and version for UI problems.
+      placeholder: Ubuntu 24.04, 2 vCPU, 4 GB; Firefox 140
   - type: textarea
     id: logs
     attributes:

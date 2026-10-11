@@ -63,9 +63,8 @@ Settings › Rules › Rulesets (or Branches › Branch protection rules) for `m
 Skipped steps inside a required job (for example the image scan before a Dockerfile exists)
 still report success, so turning protection on early does not block anyone.
 
-CODEOWNERS names placeholder teams under `@bemmoly`. Create the teams, or replace them with
-people, before enabling "Require review from Code Owners"; GitHub ignores owners it cannot
-resolve.
+CODEOWNERS names the maintainers by GitHub username for every folder. Add a team there only
+after it exists under `@bemmoly` with write access; GitHub ignores owners it cannot resolve.
 
 ## Paths CI expects from `deploy/`
 
