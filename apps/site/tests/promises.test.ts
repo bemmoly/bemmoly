@@ -95,4 +95,25 @@ describe('proofs', () => {
       expect(block).not.toMatch(/\b(premium|upgrade|unlock (more|features)|pro plan|price)\b/i);
     }
   });
+
+  it('puts Sponsor in the header bar and its phone menu, and nowhere else outside the footer', () => {
+    for (const file of readdirSync(dist, { recursive: true, encoding: 'utf8' }).filter(
+      isSitePage,
+    )) {
+      const page = parsePage(readFileSync(new URL(file, dist), 'utf8'));
+      const header = page.querySelector('header');
+      const links = header?.querySelectorAll('a[data-sponsor]') ?? [];
+      // One in the bar (wide screens), one in the menu sheet (phones).
+      expect(links, file).toHaveLength(2);
+      for (const link of links) {
+        expect(link.getAttribute('href')?.value).toBe(SPONSOR_URL);
+        expect(link.getAttribute('rel')?.value).toContain('noopener');
+        expect(link.querySelector('img')).toBeNull();
+        expect(link.textContent.trim()).toBe('Sponsor');
+      }
+      const everywhere = page.querySelectorAll('a[data-sponsor]');
+      const footer = page.querySelector('footer')?.querySelectorAll('a[data-sponsor]') ?? [];
+      expect(everywhere.length, file).toBe(links.length + footer.length);
+    }
+  });
 });
