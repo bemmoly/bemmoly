@@ -18,6 +18,7 @@ import type {
   UpdatesOverview,
   User,
 } from '@bemmoly/shared';
+import type { MockUpdateJob } from './routes/update-job.ts';
 import { seedAiOff, seedAiOn, type MockAi } from './seed/ai.ts';
 import { seedCapabilities, type CapabilityRow, type Cells } from './seed/capabilities.ts';
 import { seedAudit, seedBackups, seedOutbox, seedSystem, seedUpdates } from './seed/operations.ts';
@@ -72,6 +73,8 @@ export interface MockDb {
   mailbox: DevMailbox['items'];
   backups: Backup[];
   updates: UpdatesOverview;
+  /** The in-app update the mock is walking through, phase by phase. */
+  updateJob: MockUpdateJob | null;
   system: SystemHealthResponse;
   audit: AuditEntry[];
   apiTokens: ApiToken[];
@@ -134,6 +137,7 @@ export function createMockDb(scenario: MockScenario = 'ready'): MockDb {
     mailbox: [],
     backups,
     updates: seedUpdates(),
+    updateJob: null,
     system: seedSystem(),
     audit: fresh ? [] : seedAudit(),
     apiTokens: [],
