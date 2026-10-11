@@ -58,6 +58,7 @@
   --animate-toast-out: toast-out var(--duration-exit) var(--ease-in) forwards;
   --animate-rise: rise var(--duration-base) var(--ease-out) both;
   --animate-settle: settle var(--duration-slow) var(--ease-settle) both;
+  --animate-drift: drift var(--drift-period, 13s) ease-in-out infinite alternate;
 
   @keyframes fade-in {
     from {
@@ -134,6 +135,12 @@
     }
     to {
       transform: none;
+    }
+  }
+
+  @keyframes drift {
+    to {
+      translate: var(--drift-x, 0) var(--drift-y, -6px);
     }
   }
 }

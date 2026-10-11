@@ -57,9 +57,7 @@ describe('PasswordInput', () => {
       </Field>,
     );
     await expectAccessible(container);
-    expect(screen.getByLabelText('New password').getAttribute('autocomplete')).toBe(
-      'new-password',
-    );
+    expect(screen.getByLabelText('New password').getAttribute('autocomplete')).toBe('new-password');
     expect(screen.getByText(/Strength:/).textContent).toMatch(/strong/);
   });
 });
