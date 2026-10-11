@@ -34,11 +34,15 @@ interface CardRow {
   due_at: Date | string | null;
   parent_id: string | null;
   status_changed_at: Date | string;
+  reporter_id: string | null;
+  created_at: Date | string;
   label_ids: string[];
   blocked_by: string[];
   subtasks_done: number;
   subtasks_total: number;
   epic_id: string | null;
+  epic_key: string | null;
+  epic_color: string | null;
   query_lane: number | null;
 }
 
@@ -72,8 +76,14 @@ function toCard(row: CardRow, now: number): GroupCard {
     parentId: row.parent_id,
     docs: [],
     ageDays: Math.max(0, Math.floor((now - new Date(row.status_changed_at).getTime()) / DAY)),
+    reporterId: row.reporter_id,
+    createdAt: isoDay(row.created_at),
+    epicId: row.epic_id,
   };
-  return { card, epicId: row.epic_id, queryLane: row.query_lane };
+  const epic = row.epic_id
+    ? { id: row.epic_id, key: row.epic_key ?? '', color: row.epic_color }
+    : null;
+  return { card, epicId: row.epic_id, epic, queryLane: row.query_lane };
 }
 
 /**
@@ -101,7 +111,8 @@ export async function loadCards(
     with board as materialized (
       select issues.id, issues.key, issues.title, issues.type_id, issues.status_id,
         issues.priority, issues.assignee_id, issues.estimate, issues.rank, issues.due_at,
-        issues.parent_id, issues.status_changed_at, ${lanes} as query_lane
+        issues.parent_id, issues.status_changed_at, issues.reporter_id, issues.created_at,
+        ${lanes} as query_lane
       from issues
       where issues.project_id = ${project.id} and issues.deleted_at is null
         and issues.status_id = any(${statusIds}::uuid[])
@@ -136,7 +147,7 @@ export async function loadCards(
     select board.*, coalesce(labels.label_ids, '{}') as label_ids,
       coalesce(blockers.keys, '{}') as blocked_by,
       coalesce(children.done, 0) as subtasks_done, coalesce(children.total, 0) as subtasks_total,
-      epic.id as epic_id
+      epic.id as epic_id, epic.key as epic_key, epic.color as epic_color
     from board
     left join labels on labels.issue_id = board.id
     left join blockers on blockers.target_id = board.id

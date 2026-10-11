@@ -1,3 +1,4 @@
+import type { EntitySummary, LinkRegistry } from '@bemmoly/core';
 import { createQueryCounter, expectMaxQueries } from '@bemmoly/core/testing';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import type { BoardView } from '../../../../shared/boards.ts';
@@ -13,13 +14,37 @@ import { startPlanning, type Planning } from './planning-harness.ts';
 /** On a warm metrics cache: the board, the membership check, the project, the cards, the cache. */
 const VIEW_BUDGET = 5;
 
+/** Docs that link an issue, as the Docs module would answer through the kernel, by issue id. */
+const linked = new Map<string, string[]>();
+const page = (title: string): EntitySummary => ({
+  kind: 'page',
+  id: title,
+  title,
+  path: `/docs/${title}`,
+});
+const links: Pick<LinkRegistry, 'referencesToMany'> = {
+  referencesToMany: async (_ctx, targets) => {
+    const items = new Map<string, EntitySummary[]>();
+    for (const id of targets.ids) {
+      const titles = linked.get(id);
+      if (titles) items.set(id, titles.map(page));
+    }
+    // Work's own references to an issue are other issues, never docs.
+    const own = new Map(targets.ids.map((id) => [id, [page('Another issue')]]));
+    return [
+      { source: 'work.issue', label: 'Issues', moduleId: 'work', items: own },
+      { source: 'docs.page', label: 'Linked docs', moduleId: 'docs', items },
+    ];
+  },
+};
+
 describe('the board view against a real database', () => {
   const counter = createQueryCounter();
   let planning: Planning | undefined;
   let skipReason = '';
 
   beforeAll(async () => {
-    const started = await startPlanning({ onQuery: counter.record });
+    const started = await startPlanning({ onQuery: counter.record, links });
     if ('planning' in started) planning = started.planning;
     else skipReason = started.reason;
   });
@@ -100,6 +125,44 @@ describe('the board view against a real database', () => {
     const ranks = view.cards.map((entry) => entry.rank);
     expect(ranks).toEqual([...ranks].sort());
     expect(view.lanes.map((lane) => lane.label)).toEqual(['Checkout', 'No epic']);
+    expect(pay).toMatchObject({ epicId: epic.id, reporterId: ana });
+    expect(pay?.createdAt).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    expect(view.epics).toEqual([{ id: epic.id, key: epic.key, color: expect.anything() }]);
+
+    // The card layout saved in settings is the one the view hands every card, and the epic
+    // the "by epic" stripe paints from is there whatever the lanes.
+    const saved = await services.boards.update(as, board!.id, {
+      config: {
+        ...view.board.config,
+        lanes: { ...view.board.config.lanes, kind: 'none' },
+        cardFields: ['labels', 'estimate', 'due', 'age'],
+        colorRule: 'epic',
+        colorRules: [{ query: 'priority = High', color: '#c42d2d' }],
+      },
+    });
+    const flat = await services.boards.view(as, board!.id, {});
+    expect(flat.board.config).toEqual(saved.config);
+    expect(flat.board.config).toMatchObject({
+      cardFields: ['labels', 'estimate', 'due', 'age'],
+      colorRule: 'epic',
+    });
+    expect(flat.cards.find((entry) => entry.key === card.key)).toMatchObject({
+      epicId: epic.id,
+      laneId: 'all',
+    });
+    expect(flat.epics.map((entry) => entry.key)).toEqual([epic.key]);
+    // Linked docs are asked for only while the board shows them.
+    linked.set(card.id, ['Payments RFC', 'Refund spec']);
+    expect(flat.cards.find((entry) => entry.key === card.key)?.docs).toEqual([]);
+    await services.boards.update(as, board!.id, {
+      config: { ...saved.config, cardFields: ['docs'] },
+    });
+    const withDocs = await services.boards.view(as, board!.id, {});
+    expect(withDocs.cards.find((entry) => entry.key === card.key)?.docs).toEqual([
+      'Payments RFC',
+      'Refund spec',
+    ]);
+    expect(withDocs.cards.find((entry) => entry.key === open.key)?.docs).toEqual([]);
   });
 
   it('reads a board of many cards in as many statements as a board of one', async (ctx) => {

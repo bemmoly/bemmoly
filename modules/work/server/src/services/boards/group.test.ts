@@ -38,6 +38,9 @@ const card = (key: string, statusId: string, extra: Partial<BoardCard> = {}): Bo
   parentId: null,
   docs: [],
   ageDays: 0,
+  reporterId: null,
+  createdAt: null,
+  epicId: null,
   ...extra,
 });
 

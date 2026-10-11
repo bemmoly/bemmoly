@@ -1,4 +1,5 @@
 import type { MockDb } from '../db.ts';
+import { ago } from '../seed/time.ts';
 import type { MockIssue } from '../seed/work-board.ts';
 import { compileLql, type LqlContext } from './work-board-lql.ts';
 import { mockEpicColor } from './work-backlog-state.ts';
@@ -134,6 +135,11 @@ export function boardView(db: MockDb, board: Row, q: string | null) {
     .filter((issue) => columnOf.has(issue.statusId) && (!filter || filter.test(issue)))
     .sort((a, b) => (a.rank < b.rank ? -1 : a.rank > b.rank ? 1 : 0));
   const kind = config.lanes.kind;
+  const byId = new Map(issues.map((issue) => [issue.id, issue]));
+  const epicOf = (issue: MockIssue) => {
+    const parent = issue.parentId ? byId.get(issue.parentId) : undefined;
+    return parent && isEpic(db, parent) ? parent : undefined;
+  };
   const cards = shown.map((issue) => ({
     issueId: issue.id,
     key: issue.key,
@@ -151,6 +157,9 @@ export function boardView(db: MockDb, board: Row, q: string | null) {
     parentId: issue.parentId,
     docs: issue.docs,
     ageDays: Math.floor((Date.now() - Date.parse(issue.statusChangedAt)) / DAY),
+    reporterId: null,
+    createdAt: ago(60 * 24 * 20).slice(0, 10),
+    epicId: epicOf(issue)?.id ?? null,
     columnId: columnOf.get(issue.statusId) ?? '',
     laneId: laneOf(kind, issue),
   }));
@@ -168,6 +177,19 @@ export function boardView(db: MockDb, board: Row, q: string | null) {
       }),
       lanes: lanes(db, kind, new Set(cards.map((card) => card.laneId))),
       cards,
+      epics: [
+        ...new Map(
+          shown.flatMap((issue) => {
+            const epic = epicOf(issue);
+            if (!epic) return [];
+            const siblings = issues.filter(
+              (other) => other.projectId === epic.projectId && isEpic(db, other),
+            );
+            const entry = { id: epic.id, key: epic.key, color: mockEpicColor(siblings, epic.id) };
+            return [[epic.id, entry] as const];
+          }),
+        ).values(),
+      ],
       metrics: boardMetrics(db, board, scoped, sprintId),
     },
   } as const;

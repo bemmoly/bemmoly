@@ -94,7 +94,8 @@ bar, one issue menu, one peek.
   a card is carried, so it can still be dropped there, and when every column is empty. Kept per
   person and board in this browser; Reset to the board's default appears once it changed.
 - Cards: how cards look (fields, order, colour, colour rules) is the board's, set by project and
-  org admins in Board settings › Cards and the same for everyone (ADR 0023). Someone holding
+  org admins in Board settings › Cards and the same for everyone (ADR 0023). A card draws
+  exactly those fields in that order, the time in column included only when listed (ADR 0024). Someone holding
   "Configure board" sees "Edit card layout in settings", which opens that tab
   (`?tab=cards`); everyone else reads "Card layout is set by project admins for everyone on
   this board", with nothing to press. The server refuses card changes from anyone else (403).

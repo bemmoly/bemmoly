@@ -51,6 +51,7 @@ function valuesOf(field: string, card: ViewCard, names: RuleNames): Values {
     case 'label':
       return card.labelIds.flatMap((id) => lower(names.labelName(id)) ?? []);
     case 'epic':
+      return card.epicId ? lower(names.issueKey(card.epicId)) : [];
     case 'parent':
       return card.parentId ? lower(names.issueKey(card.parentId)) : [];
     case 'estimate':

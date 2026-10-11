@@ -31,6 +31,9 @@ export function card(n: number, fields: Partial<Card> = {}): Card {
     parentId: EPIC,
     docs: [],
     ageDays: 1,
+    reporterId: null,
+    createdAt: '2026-10-01',
+    epicId: fields.parentId === undefined ? EPIC : fields.parentId,
     columnId: 'todo',
     laneId: EPIC,
     ...fields,
@@ -84,6 +87,7 @@ export function testView(cards: Card[] = defaultCards()): BoardView {
       { id: 'none', label: 'No epic', color: null, issueKey: null, dueAt: null },
     ],
     cards,
+    epics: [{ id: EPIC, key: 'PLT-1', color: null }],
     metrics: {
       throughputPerWeek: 4,
       cycleTimeDays: 3,

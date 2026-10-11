@@ -173,6 +173,7 @@ export function createBoardsService(deps: PlanningDeps) {
           columns: [],
           lanes: [],
           cards: [],
+          epics: [],
           metrics: {
             throughputPerWeek: 0,
             cycleTimeDays: null,

@@ -3,6 +3,7 @@ import type {
   ContainerMemberships,
   EventBus,
   JobRegistry,
+  LinkRegistry,
   RealtimePublisher,
   SqlClient,
 } from '@bemmoly/core';
@@ -36,6 +37,7 @@ export interface WorkServiceDeps {
   events?: EventBus;
   jobs?: JobRegistry;
   memberships?: ContainerMemberships;
+  links?: Pick<LinkRegistry, 'referencesToMany'>;
 }
 
 const noRealtime: RealtimePublisher = { publish: async () => undefined };

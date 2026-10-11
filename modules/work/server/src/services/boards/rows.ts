@@ -1,5 +1,6 @@
 import type { SqlExecutor } from '@bemmoly/core';
 import { NotFoundError } from '@bemmoly/shared';
+import { readBoardConfig } from '../../../../shared/board-defaults.ts';
 import { boardConfigSchema, type Board, type BoardConfig } from '../../../../shared/boards.ts';
 import { iso } from '../issues/deps.ts';
 
@@ -17,11 +18,12 @@ export const BOARD_COLUMNS = 'id, project_id, origin_id, name, config, created_a
 
 /**
  * Stored configs are parsed on the way out, so a board written before a
- * field existed reads with that field's default instead of failing.
+ * field existed reads with that field's default instead of failing, and one
+ * written by a newer version reads without the card fields this one lacks.
  */
 export function parseConfig(value: unknown): BoardConfig {
-  const parsed = boardConfigSchema.safeParse(value);
-  if (parsed.success) return parsed.data;
+  const parsed = readBoardConfig(value);
+  if (parsed) return parsed;
   return boardConfigSchema.parse({
     columns: [
       { id: 'todo', name: 'To do', statusIds: [] },
