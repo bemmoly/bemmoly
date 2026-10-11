@@ -20,9 +20,20 @@ const cells = [
   { label: 'Latest release', value: LATEST.version },
   ...(facts ? [{ label: 'Stars', value: facts.stars.toLocaleString('en-GB') }] : []),
 ];
-const recent = RELEASES.filter((release) => RELEASE_TITLES[release.version])
+// Every minor release is listed, the newest always first: one without a written title reads
+// as its version and the first sentence of its first note, so a release never falls off.
+const firstSentence = (text: string) => (text.split(/(?<=\.)\s/)[0] ?? text).slice(0, 120);
+const recent = RELEASES.filter(
+  (release) => RELEASE_TITLES[release.version] ?? release.version.endsWith('.0'),
+)
   .slice(0, 3)
-  .map((release) => ({ ...release, ...RELEASE_TITLES[release.version] }));
+  .map((release) => ({
+    ...release,
+    ...(RELEASE_TITLES[release.version] ?? {
+      title: `Bemmoly ${release.version}`,
+      summary: firstSentence(release.changes[0]?.paragraphs[0] ?? 'See the changelog'),
+    }),
+  }));
 const HELP: readonly { icon: SiteIconName; lead: string; rest: string; href: string }[] = [
   {
     icon: 'star',
