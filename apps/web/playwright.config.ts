@@ -16,7 +16,12 @@ export default defineConfig({
   projects: [
     { name: 'chromium', use: { ...devices['Desktop Chrome'] }, testIgnore: 'a11y/**' },
     // The WCAG 2.2 AA audit: its own CI job, one theme per runner (A11Y_THEME), see a11y/.
-    { name: 'a11y', use: { ...devices['Desktop Chrome'] }, testMatch: 'a11y/**/*.spec.ts' },
+    {
+      name: 'a11y',
+      // A step that cannot happen fails in seconds, not at the end of a group's whole budget.
+      use: { ...devices['Desktop Chrome'], actionTimeout: 10_000 },
+      testMatch: 'a11y/**/*.spec.ts',
+    },
   ],
   webServer: {
     command: 'node ../server/src/server.ts',

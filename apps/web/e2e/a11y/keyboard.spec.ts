@@ -20,10 +20,7 @@ async function focused(page: Page) {
 }
 
 // Colour plays no part here, so CI runs these once, on the Bemmoly theme's runner.
-test.skip(
-  A11Y_THEME !== undefined && A11Y_THEME !== 'bemmoly',
-  'theme-independent',
-);
+test.skip(A11Y_THEME !== undefined && A11Y_THEME !== 'bemmoly', 'theme-independent');
 
 test.beforeEach(async ({ page }) => {
   await closeCollab(page);

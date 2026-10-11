@@ -37,8 +37,13 @@ const editorReady = (page: Page) =>
   ).toBeVisible();
 
 const margin = (name: string) => async (page: Page) => {
-  await page.getByRole('button', { name, exact: true }).click();
-  await expect(page.getByRole('complementary', { name }).first()).toBeVisible();
+  await page
+    .getByRole('button', { name: new RegExp(`^${name}`) })
+    .first()
+    .click();
+  // A margin on wide screens, a sheet on a phone.
+  const panel = page.getByRole('complementary', { name }).or(page.getByRole('dialog', { name }));
+  await expect(panel.first()).toBeVisible();
 };
 
 export const SIGNED_OUT: readonly Screen[] = [
@@ -140,8 +145,14 @@ export const DOCS: readonly Screen[] = [
     path: `/docs/p/${RFC_PAGE_ID}`,
     ready: editorReady,
     open: async (page) => {
-      await page.getByRole('button', { name: 'Version history' }).click();
-      await expect(page.getByRole('complementary', { name: 'Versions' })).toBeVisible();
+      // On a phone, history moves into the page's ··· menu.
+      const button = page.getByRole('button', { name: 'Version history' });
+      if (await button.isVisible()) await button.click();
+      else {
+        await page.getByRole('button', { name: 'More actions' }).click();
+        await page.getByRole('menuitem', { name: /Version history/ }).click();
+      }
+      await expect(page.getByRole('heading', { name: 'Version history', level: 1 })).toBeVisible();
     },
   },
 ];
