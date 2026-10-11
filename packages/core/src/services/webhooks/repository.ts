@@ -7,6 +7,7 @@ import {
   type WebhookFormat,
 } from '@bemmoly/shared';
 import type { SqlExecutor } from '../../contracts/sql.ts';
+import { decodeCursor, toPage } from '../../utils/keyset.ts';
 
 export interface WebhookRow {
   id: string;
@@ -130,18 +131,16 @@ export async function listDeliveries(
   webhookId: string,
   query: { cursor?: string | undefined; limit: number; status?: WebhookDeliveryStatus | undefined },
 ): Promise<{ items: WebhookDelivery[]; nextCursor: string | null }> {
+  const cursor = decodeCursor(query.cursor);
   const rows = await sql<DeliveryRow[]>`
     select * from webhook_deliveries
     where webhook_id = ${webhookId}
       ${query.status ? sql`and status = ${query.status}` : sql``}
-      ${query.cursor ? sql`and id < ${query.cursor}` : sql``}
+      ${cursor ? sql`and id < ${cursor}` : sql``}
     order by id desc
     limit ${query.limit + 1}`;
-  const page = rows.slice(0, query.limit);
-  return {
-    items: page.map(toDelivery),
-    nextCursor: rows.length > query.limit ? (page.at(-1)?.id ?? null) : null,
-  };
+  const page = toPage(rows, query.limit);
+  return { items: page.rows.map(toDelivery), nextCursor: page.nextCursor };
 }
 
 const RETENTION_DAYS = 30;
