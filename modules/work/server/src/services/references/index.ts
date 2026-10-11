@@ -38,6 +38,13 @@ const ENTITY_COLUMNS = `i.id, i.key, i.title, i.project_id, i.priority,
   s.name as status, s.category as status_category, s.color as status_color,
   t.key as type_key, t.name as type_name, t.icon as type_icon, t.color as type_color`;
 
+/**
+ * The page ids an issue's description links: every pageLink node's attrs.pageId, at any
+ * depth. Changeset 0024 indexes exactly this expression (GIN, jsonb_path_ops), so it is
+ * written into the query as text, never as a parameter, and must not change on its own.
+ */
+export const LINKED_PAGE_IDS = `jsonb_path_query_array(i.description, '$.** ? (@.type == "pageLink").attrs.pageId')`;
+
 const toEntity = (row: IssueEntityRow): EntitySummary => ({
   kind: 'issue',
   id: row.id,
@@ -121,10 +128,7 @@ export function createIssueReferences(database: SqlClient | undefined) {
         left join issue_types t on t.id = i.type_id
         where i.deleted_at is null
           and (${projects === null} or i.project_id = any(${projects ?? []}::uuid[]))
-          and i.description is not null
-          and jsonb_path_exists(i.description,
-            '$.** ? (@.type == "pageLink" && @.attrs.pageId == $page)',
-            jsonb_build_object('page', ${target.id}::text))
+          and ${db.unsafe(LINKED_PAGE_IDS)} @> jsonb_build_array(${target.id}::text)
         order by i.updated_at desc, i.id
         limit 100`;
       return (await viewable(ctx, rows)).map(toEntity);
