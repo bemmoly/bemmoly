@@ -3,6 +3,7 @@ export * from './automation-args.ts';
 export * from './automation.ts';
 export * from './backlog.ts';
 export * from './board-defaults.ts';
+export * from './board-paging.ts';
 export * from './boards.ts';
 export * from './code-links.ts';
 export * from './comments.ts';

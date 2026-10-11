@@ -1,5 +1,6 @@
 import { hexColorSchema, listSchema, timestampSchema } from '@bemmoly/shared';
 import { z } from 'zod';
+import { BOARD_PAGE_MAX, BOARD_PATCH_MAX } from './board-paging.ts';
 import { nameSchema, shortNameSchema } from './common.ts';
 import { boardLaneKindSchema, cardColorRuleSchema, estimationUnitSchema } from './enums.ts';
 
@@ -145,6 +146,8 @@ export const boardViewSchema = z.object({
       count: z.number().int().nonnegative(),
       wipLimit: z.number().int().nullable(),
       overWip: z.boolean(),
+      /** Where the column's next page starts; null once every card of it is in this view. */
+      nextCursor: z.string().nullable().default(null),
     }),
   ),
   lanes: z.array(
@@ -175,10 +178,27 @@ export const boardViewSchema = z.object({
   }),
 });
 
+/** Issue ids, comma separated in a query string. */
+const issueIdsSchema = z
+  .string()
+  .transform((value) => value.split(',').filter(Boolean))
+  .pipe(z.array(z.uuid()).min(1).max(BOARD_PATCH_MAX));
+
 export const boardViewQuerySchema = z.object({
   sprintId: z.uuid().optional(),
   /** An LQL quick filter applied on top of the board's own scope. */
   q: z.string().trim().max(4000).optional(),
+  /** Cards per column; BOARD_PAGE_SIZE when left out. Counts always cover every card. */
+  limit: z.coerce.number().int().min(1).max(BOARD_PAGE_MAX).optional(),
+  /** One column's next page: the column and the cursor its last page ended with. */
+  column: z.string().min(1).max(64).optional(),
+  cursor: z.string().min(1).max(200).optional(),
+  /**
+   * Only these cards, wherever they sit, with every column's count: what a realtime change
+   * to them needs to patch a board already on screen. An id missing from the answer is a
+   * card that left the board.
+   */
+  issueIds: issueIdsSchema.optional(),
 });
 
 export const boardsResponseSchema = listSchema(boardSchema);
@@ -195,4 +215,5 @@ export type UpdateBoardBody = z.input<typeof updateBoardBodySchema>;
 export type BoardCard = z.infer<typeof boardCardSchema>;
 export type BoardView = z.infer<typeof boardViewSchema>;
 export type BoardViewQuery = z.infer<typeof boardViewQuerySchema>;
+export type BoardViewQueryInput = z.input<typeof boardViewQuerySchema>;
 export type ListBoardsQuery = z.infer<typeof listBoardsQuerySchema>;

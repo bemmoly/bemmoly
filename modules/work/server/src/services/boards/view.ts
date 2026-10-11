@@ -1,4 +1,6 @@
 import type { RequestContext, SqlClient, SqlFragment } from '@bemmoly/core';
+import { ValidationError } from '@bemmoly/shared';
+import { pageBoardCards, readBoardCursor } from '../../../../shared/board-paging.ts';
 import type { BoardConfig, BoardView, BoardViewQuery } from '../../../../shared/boards.ts';
 import { computeBoardMetrics } from '../metrics/index.ts';
 import { activeSprint } from '../sprints/rows.ts';
@@ -80,20 +82,23 @@ function cardEpics(cards: readonly GroupCard[]): BoardView['epics'] {
   return [...epics.values()];
 }
 
+type Placed = BoardView['cards'][number];
+
 /**
  * The titles of the docs that link each card, asked of the other modules in one call per
- * source and only when the board shows linked docs. Work's own references are not docs.
+ * source and only when the board shows linked docs. Work's own references are not docs. Only
+ * the cards in the answer are asked about, so a long board costs one page of them.
  */
 async function withLinkedDocs(
   deps: PlanningDeps,
   ctx: RequestContext,
   config: BoardConfig,
-  cards: GroupCard[],
-): Promise<GroupCard[]> {
+  cards: Placed[],
+): Promise<Placed[]> {
   if (!deps.links || !config.cardFields.includes('docs') || cards.length === 0) return cards;
   const groups = await deps.links.referencesToMany(ctx, {
     kind: 'issue',
-    ids: cards.map((entry) => entry.card.issueId),
+    ids: cards.map((card) => card.issueId),
   });
   const docs = new Map<string, string[]>();
   for (const group of groups) {
@@ -102,10 +107,25 @@ async function withLinkedDocs(
       docs.set(issueId, [...(docs.get(issueId) ?? []), ...items.map((item) => item.title)]);
     }
   }
-  return cards.map((entry) => {
-    const titles = docs.get(entry.card.issueId);
-    return titles ? { ...entry, card: { ...entry.card, docs: titles } } : entry;
+  return cards.map((card) => {
+    const titles = docs.get(card.issueId);
+    return titles ? { ...card, docs: titles } : card;
   });
+}
+
+/**
+ * The cards the answer carries: the named ones wherever they sit (a realtime patch), else a
+ * page of every column, or the next page of one.
+ */
+function shownCards(cards: Placed[], columnIds: readonly string[], query: BoardViewQuery) {
+  if (query.issueIds) {
+    const wanted = new Set(query.issueIds);
+    return { cards: cards.filter((card) => wanted.has(card.issueId)), next: new Map() };
+  }
+  if (query.cursor && !query.column) throw new ValidationError('A cursor pages one column');
+  const cursor = query.cursor ? readBoardCursor(query.cursor) : null;
+  if (query.cursor && !cursor) throw new ValidationError('The cursor is not one this board gave');
+  return pageBoardCards(cards, columnIds, { limit: query.limit, column: query.column, cursor });
 }
 
 export async function buildBoardView(
@@ -142,11 +162,21 @@ export async function buildBoardView(
     computeBoardMetrics(sql, board, 6, now, project),
   ]);
   const names = await laneNames(sql, project, config.lanes.kind, cards);
-  const grouped = groupBoard(config, await withLinkedDocs(deps, ctx, config, cards), names);
+  const grouped = groupBoard(config, cards, names);
+  const shown = shownCards(
+    grouped.cards,
+    grouped.columns.map((column) => column.id),
+    query,
+  );
   return {
     board: view,
     sprintId,
-    ...grouped,
+    columns: grouped.columns.map((column) => ({
+      ...column,
+      nextCursor: shown.next.get(column.id) ?? null,
+    })),
+    lanes: grouped.lanes,
+    cards: await withLinkedDocs(deps, ctx, config, shown.cards),
     epics: cardEpics(cards),
     metrics: {
       throughputPerWeek: metrics.throughputPerWeek,
