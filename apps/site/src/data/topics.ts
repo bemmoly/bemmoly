@@ -6,12 +6,12 @@
  */
 import type { BadgeTone } from '../lib/badge.ts';
 import type { SiteIconName } from '../lib/icons.ts';
-import { DOCS_SINCE, shippedLabel } from '../lib/changelog.ts';
+import { AI_SINCE, DOCS_SINCE, shippedLabel } from '../lib/changelog.ts';
 
 export const AVAILABILITY = {
   now: { label: 'available now', tone: 'ok' },
   docs: { label: shippedLabel(DOCS_SINCE).toLowerCase(), tone: 'ok' },
-  ai: { label: 'AI, coming', tone: 'ai' },
+  ai: { label: `AI, ${shippedLabel(AI_SINCE).toLowerCase()}`, tone: 'ai' },
   integrations: { label: 'planned', tone: 'neutral' },
   launch: { label: 'planned', tone: 'neutral' },
   planned: { label: 'planned', tone: 'neutral' },

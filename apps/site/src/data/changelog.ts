@@ -5,6 +5,7 @@
  * shows without a date until it is added.
  */
 export const RELEASE_DATES: Readonly<Record<string, string>> = {
+  '0.5.0': '2026-10-11',
   '0.4.0': '2026-10-10',
   '0.3.0': '2026-10-10',
   '0.2.2': '2026-10-10',
@@ -24,6 +25,10 @@ export const RELEASE_DATES: Readonly<Record<string, string>> = {
  * words of their notes. A release without an entry here is listed by its first note instead.
  */
 export const RELEASE_TITLES: Readonly<Record<string, { title: string; summary: string }>> = {
+  '0.5.0': {
+    title: 'AI arrives, and it is optional',
+    summary: 'Summaries with sources, answers from your docs, editor help and plans you confirm',
+  },
   '0.4.0': {
     title: 'A quieter, premium look',
     summary: 'One sidebar for Work and Docs, the logo’s colours, drawn icons and a new setup',
@@ -45,11 +50,6 @@ export const RELEASE_TITLES: Readonly<Record<string, { title: string; summary: s
  * ships it.
  */
 export const ROADMAP = [
-  {
-    title: 'AI, optional',
-    scope:
-      'summaries that cite their sources, answers from your docs, a ⌘K palette that shows its plan before it acts; any provider, a model on your own network, or none',
-  },
   {
     title: 'Import and integrations',
     scope:

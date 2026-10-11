@@ -1,13 +1,13 @@
 ---
 /**
  * What it is, from the site review: one line, three modules with honest states (Work
- * available, Docs new in the release it shipped in, AI coming), then Work and Docs each with a
+ * available, Docs and AI marked new in the release each shipped in), then Work and Docs each with a
  * real screen of the new UI and what it does today, nothing planned.
  */
 import { DOCS_OUTCOMES, WORK_OUTCOMES } from '../../data/landing.ts';
 import { POSTERS, POSTER_WIDTHS } from '../../data/posters.ts';
 import { PREVIEWS } from '../../data/previews.ts';
-import { DOCS_SINCE, shippedLabel } from '../../lib/changelog.ts';
+import { AI_SINCE, DOCS_SINCE, shippedLabel } from '../../lib/changelog.ts';
 import type { BadgeTone } from '../../lib/badge.ts';
 import Badge from '../site/Badge.astro';
 import type { ModuleId } from '../../lib/icons.ts';
@@ -44,7 +44,7 @@ const MODULES: readonly {
   {
     id: 'ai',
     name: 'AI',
-    badge: 'Coming',
+    badge: shippedLabel(AI_SINCE),
     tone: 'ai',
     body: 'Optional, any provider or none',
     href: '/#ai',

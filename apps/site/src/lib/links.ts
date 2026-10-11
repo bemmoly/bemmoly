@@ -51,7 +51,7 @@ export const FOOTER_COLUMNS: readonly FooterColumn[] = [
     links: [
       { label: 'Work', href: '/#work' },
       { label: 'Docs', href: '/#docs' },
-      { label: 'AI (coming)', href: '/#ai' },
+      { label: 'AI (optional)', href: '/#ai' },
       { label: 'Live demo', href: DEMO_URL },
       { label: 'Changelog', href: '/changelog' },
     ],

@@ -193,6 +193,14 @@ export function shippedLabel(since: string | null): string {
 /** The release Docs first shipped in, from the module's own changelog. */
 export const DOCS_SINCE = firstReleaseIn('modules/docs/CHANGELOG.md');
 
+/** The release AI first shipped in: the oldest release whose notes open with "AI arrives". */
+export const AI_SINCE =
+  [...RELEASES]
+    .reverse()
+    .find((release) =>
+      release.changes.some((change) => change.paragraphs[0]?.startsWith('AI arrives')),
+    )?.version ?? null;
+
 /** What is still to come, without release numbers (src/data/changelog.ts). */
 export const UPCOMING = ROADMAP;
 

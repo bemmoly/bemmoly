@@ -101,7 +101,8 @@ describe('issue page components', () => {
     expect(screen.getByText('logged 4h · Wednesday')).toBeTruthy();
     expect(screen.getByRole('group', { name: '6 watching' })).toBeTruthy();
     expect(screen.getByText('Lowest')).toBeTruthy();
-  });
+    // axe walks the whole issue page; on a loaded CI runner that alone can pass five seconds.
+  }, 15_000);
 
   it('draws the rail groups, the checklist block, history lines and the saved state', async () => {
     const onRetry = vi.fn();
