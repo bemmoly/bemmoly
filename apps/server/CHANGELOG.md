@@ -1,5 +1,80 @@
 # @bemmoly/server
 
+## 0.12.0
+
+### Patch Changes
+
+- 403ef1d: Bemmoly is ready to speak other languages. Settings › Profile has a Language setting, saved on
+  your account so every device follows it: Automatic follows your browser, or pick a language.
+  English is the only language shipped so far, so nothing reads differently today; dates, times and
+  numbers now follow your language through the browser's own formatting. Settings › Workspace
+  offers only the languages Bemmoly ships.
+
+  For people building Bemmoly: the sidebar, menus, page header, phone bar, sign-in and Profile read
+  their words from message catalogs (ICU, one per namespace, compiled at build time), modules can
+  bring their own through `@bemmoly/core-web`, and `?locale=en-XA` shows a screen in an accented,
+  padded pseudo-language for checking layout. API error bodies may now carry `messageId` and
+  `values` beside `message`; existing clients are unaffected. The password reset email is written
+  through the server's catalog in the workspace's language. See `docs/i18n.md` and ADR 0025.
+
+- 7ca4a6a: Backups now include every uploaded file (page images, the workspace logo, issue attachments)
+  and restores put them back. Before this, uploads were left out of backups: the backup read a
+  folder the uploads are not stored in. Take a fresh backup after updating; older backups do not
+  contain uploads.
+
+  Uploads can now live in an S3-compatible bucket (AWS S3, R2, MinIO, B2): set the
+  `system.storage.backend` setting to `s3` and the new `BEMMOLY_STORAGE_S3_BUCKET`,
+  `BEMMOLY_STORAGE_S3_REGION`, `BEMMOLY_STORAGE_S3_ENDPOINT`, `BEMMOLY_STORAGE_S3_ACCESS_KEY_ID`,
+  `BEMMOLY_STORAGE_S3_SECRET_ACCESS_KEY`, `BEMMOLY_STORAGE_S3_FORCE_PATH_STYLE` and
+  `BEMMOLY_STORAGE_S3_PREFIX` keys. Backups copy the bucket's uploads into every backup, and a
+  restore writes them back to the bucket. Existing files are not moved between backends.
+
+  The monthly AI budget can no longer be overshot by calls made at the same time: standard and
+  strong calls reserve their estimated cost before they run, so calls at the limit are refused
+  with "budget reached" instead of all going through.
+
+  Live issue tables in documents load in one request instead of one per row. A page's
+  "Referenced in" list finds linking issues through an index instead of scanning every issue.
+  `GET /teams/:id` reports the team's real `memberCount` instead of 0.
+
+  Release images now carry the commit SHA and build time in their OCI labels
+  (`org.opencontainers.image.revision` and `.created`) instead of "unknown".
+
+  Schema changes: kernel changeset `0410-ai-budget-reservations` adds the
+  `ai_budget_reservations` table (reversible). Work changeset
+  `0024-work-issues-linked-pages-index` builds a GIN index on `issues` concurrently (reversible);
+  on a large workspace it reads every issue once while it builds, without blocking writes.
+
+- ea2125f: Fixes a hang where a busy install stopped answering altogether. When several members at once
+  changed issue statuses, commented on issues or pages, or edited issues that tell watchers,
+  each of those requests held a database connection while waiting for a second one; with ten at
+  once every connection waited on another, and every request hung until Postgres was restarted.
+  Those requests now do all their work on the one connection they hold, and the same is true of
+  notification emails, settings reads, transition conditions, board ranking and Docs imports.
+
+  A starved database pool can no longer hang the install. A request that waits too long for a
+  connection now fails with a 503 (`unavailable`, with Retry-After) and an error in the server
+  log, and the install recovers on its own as soon as connections come free. Statement and idle
+  transaction timeouts end anything stuck on the database side.
+
+  New settings in `.env` (milliseconds; 0 switches one off): `BEMMOLY_DB_STATEMENT_TIMEOUT_MS`
+  (default 10000), `BEMMOLY_DB_IDLE_IN_TRANSACTION_TIMEOUT_MS` (default 60000),
+  `BEMMOLY_DB_ACQUIRE_TIMEOUT_MS` (default 10000), and `BEMMOLY_DB_NESTED_ACQUIRE` (`warn` by
+  default; `throw` for development). Changesets, backups, restores and the `bemmoly` command line
+  keep their own, longer limits. No schema change.
+
+- Updated dependencies [b769aed]
+- Updated dependencies [403ef1d]
+- Updated dependencies [7ca4a6a]
+- Updated dependencies [0194a84]
+- Updated dependencies [ea2125f]
+- Updated dependencies [51ca8f4]
+  - @bemmoly/shared@0.12.0
+  - @bemmoly/core@0.12.0
+  - @bemmoly/module-work@0.12.0
+  - @bemmoly/module-docs@0.12.0
+  - @bemmoly/module-sample@0.12.0
+
 ## 0.11.0
 
 ### Patch Changes
