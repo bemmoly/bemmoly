@@ -26,6 +26,16 @@ describe('the AI triggers on Work changes', () => {
     expect(SPRINT_PULSE_QUIET_SECONDS).toBe(300);
   });
 
+  it('splits a long id list so each event fits in one notification', async () => {
+    const { events, realtime } = setup();
+    const ids = Array.from({ length: 250 }, () => crypto.randomUUID());
+    await realtime.publish({ kind: 'work.issue', ids, projectId: 'p1' });
+    const sent = events.map((event) => (event.payload as { ids: string[] }).ids);
+    expect(sent.map((chunk) => chunk.length)).toEqual([100, 100, 50]);
+    expect(sent.flat()).toEqual(ids);
+    for (const event of events) expect(JSON.stringify(event).length).toBeLessThan(7_900);
+  });
+
   it('tells other modules an issue changed, and stays quiet for other kinds', async () => {
     const { events, realtime } = setup();
     await realtime.publish({ kind: 'work.issue', ids: ['i1'], projectId: 'p1' });
