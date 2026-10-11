@@ -71,6 +71,28 @@ Stories: Components/KanbanColumn, Components/Swimlane, Components/SprintHeader, 
 Epic colour comes from `epicColor(stored, id)` and is the same on every screen. WIP reached and
 "ends today" are amber; refused drops are an amber dashed cell with the reason inside.
 
+### Roadmap timeline
+
+`TimelineHeader`, `TimelineGrid`, `TimelineBar`, `DependencyLines`, `ForecastChip`, and the axis
+helpers `timelineScale`, `timelineTicks`, `dayOfIso`, `shortDate` · Story: Components/Timeline
+([`timeline.stories.tsx`](../../../packages/ui/src/components/timeline/timeline.stories.tsx)).
+
+- Use: the Roadmap only (`../premium/interaction/roadmap.md`). Days are UTC day numbers; a zoom
+  (`weeks`, `months`, `quarters`) sets a day's width. The header is months over weeks, or
+  quarters over months; today is the accent line and chip.
+- `TimelineBar`: one button per item. An epic is its own hue (`epic-N` at 15%, the done share
+  at 30%, its name inside when it fits); a version is neutral with a release mark. Past the
+  target, a hatched amber stretch to the forecast; under it, the forecast whisker (quiet ink,
+  amber when at risk or late). Grips show on hover, focus and touch only when it can move.
+- `ForecastChip`: the forecast in words: On track (green), At risk and Late (amber), Done (the
+  status glyph), and quiet text for no target, too early to tell and no issues. Never lilac:
+  the forecast is arithmetic, not AI.
+- `DependencyLines`: elbows from a blocker's end to the waiting bar's start, amber and dashed
+  when the plan has the waiting item start first. Decorative; rows say it in words.
+- Not: a second chart style for dates, red for lateness, or violet for anything but an epic.
+- States: pending (dims after a beat), dragging (lifted, dates above it), no stored start
+  (faded edge), no target (dashed outline), child bars (10px, no label).
+
 ### KeyChip
 
 `import { KeyChip } from '@bemmoly/ui'`. An issue key (PLT-204), mono, `tx-3` on cards and rows.

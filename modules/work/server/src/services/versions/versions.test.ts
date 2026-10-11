@@ -24,6 +24,22 @@ describe('versions service', () => {
     expect(page.items[0]).toMatchObject({ releaseAt: '2026-11-02', releasedAt: null });
   });
 
+  it('reads the start date beside the release date', async () => {
+    const sql = fakeSql([[project], [{ ...version, start_at: '2026-10-05' }]]);
+    const service = createVersionsService({ database: sql.client });
+    const page = await service.list(contextWhere(true), 'PLT', { limit: 50 });
+    expect(page.items[0]).toMatchObject({ startAt: '2026-10-05', releaseAt: '2026-11-02' });
+  });
+
+  it('refuses a start after the release, before writing anything', async () => {
+    const sql = fakeSql([[project], [version]]);
+    const service = createVersionsService({ database: sql.client });
+    await expect(
+      service.update(contextWhere(true), 'PLT', version.id, { startAt: '2026-11-09' }),
+    ).rejects.toMatchObject({ name: 'ValidationError', details: { path: 'startAt' } });
+    expect(sql.statements).toHaveLength(2);
+  });
+
   it('names the audit row after the new status when the status changes', async () => {
     const released = {
       ...version,

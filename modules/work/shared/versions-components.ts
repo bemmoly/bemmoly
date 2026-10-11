@@ -9,6 +9,8 @@ export const versionSchema = z.object({
   projectId: z.uuid(),
   name: z.string(),
   description: z.string().nullable(),
+  /** When work toward the release begins; with releaseAt, the version's roadmap bar. */
+  startAt: z.iso.date().nullable().optional(),
   releaseAt: z.iso.date().nullable(),
   status: versionStatusSchema,
   releasedAt: timestampSchema.nullable(),
@@ -19,6 +21,7 @@ export const versionSchema = z.object({
 export const createVersionBodySchema = z.object({
   name: shortNameSchema,
   description: z.string().trim().max(500).optional(),
+  startAt: z.iso.date().optional(),
   releaseAt: z.iso.date().optional(),
 });
 
@@ -26,6 +29,7 @@ export const updateVersionBodySchema = z
   .object({
     name: shortNameSchema,
     description: z.string().trim().max(500).nullable(),
+    startAt: z.iso.date().nullable(),
     releaseAt: z.iso.date().nullable(),
     status: versionStatusSchema,
   })

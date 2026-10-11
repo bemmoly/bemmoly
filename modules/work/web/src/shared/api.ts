@@ -7,6 +7,7 @@ import {
   workIssueEndpoints,
   workMembersEndpoints,
   workProjectCatalogEndpoints,
+  workRoadmapEndpoints,
   workMyWorkEndpoints,
   workSettingsEndpoints,
   workWorkflowEndpoints,
@@ -43,6 +44,7 @@ export const api = {
     myWork: workMyWorkEndpoints(client.http),
     members: workMembersEndpoints(client.http),
     filters: workFiltersEndpoints(client.http),
+    ...workRoadmapEndpoints(client.http),
   },
 };
 

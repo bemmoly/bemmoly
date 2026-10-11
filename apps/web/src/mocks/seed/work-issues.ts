@@ -39,6 +39,7 @@ export function seedVersions(): Row[] {
     name,
     description: null,
     status,
+    startAt: null,
     releaseAt: null,
     releasedAt: null,
     ...stamp(30 * DAY),

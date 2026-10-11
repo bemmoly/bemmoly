@@ -52,6 +52,7 @@ export * from './components/tabs/index.ts';
 export * from './components/tag/index.ts';
 export * from './components/template-card/index.ts';
 export * from './components/textarea/index.ts';
+export * from './components/timeline/index.ts';
 export * from './components/toast/index.ts';
 export * from './components/tooltip/index.ts';
 export * from './components/workflow-canvas/index.ts';

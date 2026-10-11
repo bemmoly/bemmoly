@@ -33,6 +33,8 @@ export const issueSchema = z.object({
   parentId: z.uuid().nullable(),
   sprintId: z.uuid().nullable(),
   estimate: z.number().nonnegative().nullable(),
+  /** When the work is planned to begin; with dueAt, the issue's bar on the roadmap. */
+  startAt: z.iso.date().nullable().optional(),
   dueAt: z.iso.date().nullable(),
   fixVersionId: z.uuid().nullable(),
   componentId: z.uuid().nullable(),
@@ -56,6 +58,7 @@ const issueFieldsSchema = z.object({
   parentId: z.uuid().nullable(),
   sprintId: z.uuid().nullable(),
   estimate: z.number().nonnegative().max(1_000_000).nullable(),
+  startAt: z.iso.date().nullable(),
   dueAt: z.iso.date().nullable(),
   fixVersionId: z.uuid().nullable(),
   componentId: z.uuid().nullable(),

@@ -57,6 +57,8 @@ export interface CreateIssueOptions {
   parentId?: string;
   /** Defaults from where the person started; a description may come as plain text. */
   initial?: CreateInitial;
+  /** The kind of type picked first: the Roadmap's New epic starts on the epic type. */
+  level?: 'epic' | 'standard';
 }
 
 export type CreateInitial = Partial<Omit<CreateDraft, 'description'>> & {
@@ -104,7 +106,12 @@ export function draftValue(draft: CreateDraft, row: LayoutField): unknown {
  * the layout's required flags, and the create call. The server numbers the issue under the
  * project's counter lock, so the key in the toast is the next one without gaps.
  */
-export function useCreateIssue({ projectKey: startKey, parentId, initial }: CreateIssueOptions) {
+export function useCreateIssue({
+  projectKey: startKey,
+  parentId,
+  initial,
+  level = 'standard',
+}: CreateIssueOptions) {
   const [projectKey, setProjectKey] = useState(startKey);
   const [typeId, setTypeId] = useState<string | undefined>(undefined);
   const [draft, setDraft] = useState<CreateDraft>(() => startDraft(initial, parentId));
@@ -126,8 +133,8 @@ export function useCreateIssue({ projectKey: startKey, parentId, initial }: Crea
   );
   useEffect(() => {
     if (choices.some((type) => type.id === typeId)) return;
-    setTypeId((choices.find((type) => type.level === 'standard') ?? choices[0])?.id);
-  }, [choices, typeId]);
+    setTypeId((choices.find((type) => type.level === level) ?? choices[0])?.id);
+  }, [choices, typeId, level]);
 
   const set = <K extends keyof CreateDraft>(key: K, value: CreateDraft[K]) => {
     setDraft((current) => ({ ...current, [key]: value }));

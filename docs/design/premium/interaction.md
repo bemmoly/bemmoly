@@ -69,6 +69,7 @@ that passes (ADR 0015).
 - [Settings › AI and the wizard's AI step](interaction/settings-ai.md): turning AI on, providers, model roles, privacy, budget, prompts, the personal opt-out.
 - [Issue page](interaction/issue.md)
 - [Board and Backlog](interaction/board-backlog.md)
+- [Roadmap](interaction/roadmap.md): epics and versions on a timeline, rescheduling, the forecast and its panel.
 - [Projects and project settings](interaction/projects-settings.md)
 - [Shell](interaction/shell.md): the frame, sidebar and rail, header, global keys, palette, Home, Inbox, sign-in, boot, not found.
 - [Integration](interaction/integration.md): choices made bringing the streams together, the token alias removal, what is left.

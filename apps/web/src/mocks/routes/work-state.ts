@@ -44,3 +44,11 @@ export const PROJECT_CONFIGURE = 'work.project.configure';
 
 export const touch = <T extends Row>(row: T, patch: Partial<T>): T =>
   Object.assign(row, patch, { updatedAt: new Date().toISOString() });
+
+/** Custom field values in a PATCH merge into the stored ones, as the server's jsonb || does. */
+export function mergeCustomFields(issue: Row, body: Partial<Row>): void {
+  const fields = body['customFields'];
+  if (fields && typeof fields === 'object') {
+    body['customFields'] = { ...(issue['customFields'] as object), ...fields };
+  }
+}

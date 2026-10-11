@@ -3,6 +3,7 @@ import { seedBacklogIssues, seedBacklogSprints } from './work-backlog.ts';
 import { seedPlatformIssues } from './work-board-plt.ts';
 import { seedSupportIssues } from './work-board-sup.ts';
 import { seedIssues, type Row } from './work-issues.ts';
+import { seedRoadmapIssues } from './work-roadmap.ts';
 
 /*
  * One set of Work issues for every mock screen. The Issue, Backlog and Board
@@ -45,7 +46,13 @@ function overlay(target: Row, source: Row): void {
 }
 
 export function seedWorkIssues(): Row[] {
-  const sources = [seedIssues(), seedBacklogIssues(), seedPlatformIssues(), seedSupportIssues()];
+  const sources = [
+    seedIssues(),
+    seedBacklogIssues(),
+    seedPlatformIssues(),
+    seedSupportIssues(),
+    seedRoadmapIssues(),
+  ];
   const byKey = new Map<string, Row>();
   /** Each seed's id for an issue, to the id the merged row keeps. */
   const canonical = new Map<string, string>();
