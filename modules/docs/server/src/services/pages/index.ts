@@ -1,6 +1,7 @@
 import type { RequestContext, SqlExecutor } from '@bemmoly/core';
 import { plainText, wordCount } from '@bemmoly/editor/convert';
 import { ConflictError, NotFoundError, ProviderError } from '@bemmoly/shared';
+import { DOMAIN_EVENT_KINDS } from '@bemmoly/shared/webhooks';
 import type { RichText } from '../../../../shared/common.ts';
 import type { CreatePageBody, PageDetail, UpdatePageBody } from '../../../../shared/pages.ts';
 import {
@@ -15,6 +16,7 @@ import {
 import type { PageCollab } from '../collab/index.ts';
 import { bodyEdges, rewriteBodyLinks } from '../links/rewrite.ts';
 import { loadDetail } from './detail.ts';
+import { publishPageEvent } from './events.ts';
 import { rankAmongSiblings } from './rank.ts';
 import { pageById, toSummary } from './rows.ts';
 import { createPurgeService } from './purge.ts';
@@ -138,6 +140,9 @@ export function createPagesService(deps: DocsServiceDeps, collab: PageCollab) {
         after: toSummary(row),
       });
       await publishChange(deps, DOCS_REALTIME_KINDS.page, row.space_id, [id]);
+      await sql.begin((tx) =>
+        publishPageEvent(deps, tx, DOMAIN_EVENT_KINDS.pageUpdated, id, ctx.actor),
+      );
       if (patch.title !== undefined || has('icon')) {
         await publishChange(deps, DOCS_REALTIME_KINDS.tree, row.space_id, [id]);
       }

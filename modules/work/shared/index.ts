@@ -1,4 +1,5 @@
 export * from './activity.ts';
+export * from './automation-args.ts';
 export * from './automation.ts';
 export * from './backlog.ts';
 export * from './board-defaults.ts';

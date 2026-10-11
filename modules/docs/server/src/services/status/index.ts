@@ -1,5 +1,6 @@
 import type { RequestContext } from '@bemmoly/core';
 import { ConflictError, ValidationError } from '@bemmoly/shared';
+import { DOMAIN_EVENT_KINDS } from '@bemmoly/shared/webhooks';
 import type { PageDetail } from '../../../../shared/pages.ts';
 import {
   canTransition,
@@ -17,6 +18,7 @@ import {
   type DocsServiceDeps,
 } from '../common.ts';
 import { loadDetail } from '../pages/detail.ts';
+import { publishPageEvent } from '../pages/events.ts';
 import { pageById } from '../pages/rows.ts';
 import { insertRevision } from '../revisions/write.ts';
 import { eligibleReviewers } from '../spaces/eligibility.ts';
@@ -56,6 +58,7 @@ export function createStatusService(deps: DocsServiceDeps) {
           where id = ${id}`;
         if (body.status === 'published') {
           await insertRevision(tx, { pageId: id, kind: 'publish', createdBy: userIdOf(ctx) });
+          await publishPageEvent(deps, tx, DOMAIN_EVENT_KINDS.pagePublished, id, ctx.actor);
         }
       });
       const after = await pageById(sql, id);

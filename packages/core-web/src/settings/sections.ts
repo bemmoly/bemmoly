@@ -67,6 +67,7 @@ export const KERNEL_SETTINGS: readonly SettingsGroup[] = [
       item('email', 'Email delivery', '/settings/email', 'mail', 'workspace.email.manage'),
       item('ai', 'AI and models', '/settings/ai', 'spark', 'ai.models.configure'),
       item('mcp', 'MCP server', '/settings/mcp', 'link', SETTINGS),
+      item('webhooks', 'Webhooks', '/settings/webhooks', 'globe', SETTINGS),
     ],
   },
   {

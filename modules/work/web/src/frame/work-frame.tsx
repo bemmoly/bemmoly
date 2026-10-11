@@ -48,6 +48,7 @@ export const settingsTabs = (key: string): PageTab[] => [
     icon: 'branch',
     path: settingsPath(key, 'development'),
   },
+  { id: 'automation', label: 'Automation', icon: 'zap', path: settingsPath(key, 'automation') },
 ];
 
 /** Where the switcher sends you in another project: the same screen, or its board. */
@@ -169,7 +170,8 @@ export function useWorkFrame(
   const editing = name === 'workflows' && rest[0];
   const wide =
     editing ||
-    (name === 'settings' && !['issue-types', 'fields', 'development'].includes(rest[0] ?? ''));
+    (name === 'settings' &&
+      !['issue-types', 'fields', 'development', 'automation'].includes(rest[0] ?? ''));
   return {
     layout: wide ? 'full' : 'contained',
     header: {

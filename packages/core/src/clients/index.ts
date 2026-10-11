@@ -71,3 +71,11 @@ export {
 } from './s3-bucket.ts';
 export { createTarTool, type TarOptions, type TarTool } from './tar.ts';
 export { createUpdaterClient, type UpdaterClient, type UpdaterClientConfig } from './updater.ts';
+export {
+  createWebhookClient,
+  WebhookTimeoutError,
+  type WebhookClient,
+  type WebhookClientOptions,
+  type WebhookPost,
+  type WebhookAnswer,
+} from './webhook-http.ts';

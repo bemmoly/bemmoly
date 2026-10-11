@@ -414,6 +414,9 @@ importers:
       '@tanstack/react-virtual':
         specifier: 3.14.13
         version: 3.14.13(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      cron-parser:
+        specifier: 5.10.1
+        version: 5.10.1
       fastify:
         specifier: 5.12.5
         version: 5.12.5

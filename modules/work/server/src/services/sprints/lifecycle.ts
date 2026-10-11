@@ -1,5 +1,6 @@
 import type { RequestContext, SqlExecutor } from '@bemmoly/core';
 import { ConflictError, NotFoundError, ValidationError } from '@bemmoly/shared';
+import { DOMAIN_EVENT_KINDS } from '@bemmoly/shared/webhooks';
 import type { CompleteSprintBody, Sprint, StartSprintBody } from '../../../../shared/sprints.ts';
 import { completeSprintBodySchema } from '../../../../shared/sprints.ts';
 import { audit, publishPlanningChange, type PlanningDeps } from '../boards/context.ts';
@@ -7,6 +8,7 @@ import { parseConfig, projectBoards } from '../boards/rows.ts';
 import { recordHistory } from '../history/index.ts';
 import { actorUserId, projectResource, requireDatabase } from '../issues/deps.ts';
 import { statusSets } from '../metrics/load.ts';
+import { publishSprintEvent } from './events.ts';
 import { loadSprint, SPRINT_COLUMNS, toSprint, type SprintRow } from './rows.ts';
 import {
   commitmentOf,
@@ -92,6 +94,7 @@ export async function startSprint(
       boardIds: boards.map((board) => board.id),
       sprintIds: [id],
     });
+    await publishSprintEvent(deps, ctx, tx, DOMAIN_EVENT_KINDS.sprintStarted, after);
     return started as SprintRow;
   });
   return toSprint(row as SprintRow);
@@ -168,6 +171,13 @@ export async function completeSprint(
       boardIds: boards.map((board) => board.id),
       sprintIds: target ? [id, target] : [id],
     });
+    await publishSprintEvent(
+      deps,
+      ctx,
+      tx,
+      DOMAIN_EVENT_KINDS.sprintCompleted,
+      toSprint(closed as SprintRow),
+    );
     return closed as SprintRow;
   });
   return toSprint(row as SprintRow);

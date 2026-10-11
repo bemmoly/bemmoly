@@ -6,7 +6,7 @@ import type { JobQueue } from '../contracts/jobs.ts';
 import type { RealtimePublisher } from '../contracts/realtime.ts';
 import type { AiFacade } from '../contracts/ai.ts';
 import type { CollabTransactor } from './collab.ts';
-import type { BemmolyModule } from './contract.ts';
+import type { ActorContextFactory, BemmolyModule } from './contract.ts';
 import type { FileReader } from './files.ts';
 import { createModuleContext } from './context.ts';
 import { emptyContributions } from './contributions.ts';
@@ -44,6 +44,8 @@ export interface LoadModulesOptions {
    * is enabled; omitted, every registered module hears every event.
    */
   isEnabled?: (moduleId: string) => boolean;
+  /** What ctx.contextFor builds a job's request context with; see createModuleContext. */
+  contextFor?: ActorContextFactory;
 }
 
 function indexAvailable(available: readonly BemmolyModule[]): Map<string, BemmolyModule> {
@@ -135,6 +137,7 @@ export function loadModules(options: LoadModulesOptions): ModuleRegistry {
         ...(options.ai ? { ai: options.ai } : {}),
         ...(options.files ? { files: options.files } : {}),
         ...(options.isEnabled ? { isEnabled: options.isEnabled } : {}),
+        ...(options.contextFor ? { contextFor: options.contextFor } : {}),
         peers: () => registry,
       }),
     );

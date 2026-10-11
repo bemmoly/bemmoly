@@ -28,6 +28,8 @@ import { oauthRoutes } from './oauth.ts';
 import { ssoBreakGlassRoutes } from './sso-break-glass.ts';
 import { ssoRoutes } from './sso.ts';
 import { teamRoutes } from './teams.ts';
+import { webhookRoutes } from './webhooks.ts';
+import { workAutomationRoutes } from './work-automation.ts';
 import { workBacklogRoutes } from './work-backlog.ts';
 import { workBoardRoutes } from './work-board.ts';
 import { workCodeLinkRoutes } from './work-code-links.ts';
@@ -63,6 +65,7 @@ export const ROUTES: readonly MockRoute[] = [
   ...importRoutes,
   ...codeHostRoutes,
   ...workCodeLinkRoutes,
+  ...webhookRoutes,
   ...workBacklogRoutes,
   ...workBoardRoutes,
   ...workFilterRoutes,
@@ -73,6 +76,7 @@ export const ROUTES: readonly MockRoute[] = [
   ...workSettingsRoutes,
   ...workSettingsBoardRoutes,
   ...workWorkflowRoutes,
+  ...workAutomationRoutes,
   ...docsRoutes,
   ...docsLibraryRoutes,
   ...docsTemplateRoutes,

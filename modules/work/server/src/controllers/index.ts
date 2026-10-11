@@ -1,5 +1,6 @@
 import type { WorkServices } from '../services/index.ts';
 import { createActivityController } from './activity.controller.ts';
+import { createAutomationController } from './automation.controller.ts';
 import { createBacklogController } from './backlog.controller.ts';
 import { createBoardsController } from './boards.controller.ts';
 import { createCodeLinksController } from './code-links.controller.ts';
@@ -43,6 +44,7 @@ export function createWorkControllers(services: WorkServices) {
     myWork: createMyWorkController(services.myWork),
     roadmap: createRoadmapController(services.roadmap),
     codeLinks: createCodeLinksController(services.codeLinks),
+    automation: createAutomationController(services.automation),
   };
 }
 

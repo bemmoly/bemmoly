@@ -1,5 +1,6 @@
 import { createApiClient } from '@bemmoly/api-client';
 import {
+  workAutomationEndpoints,
   workBoardIssuesEndpoints,
   workBoardsEndpoints,
   workCodeLinkEndpoints,
@@ -47,6 +48,7 @@ export const api = {
     members: workMembersEndpoints(client.http),
     filters: workFiltersEndpoints(client.http),
     ...workRoadmapEndpoints(client.http),
+    automation: workAutomationEndpoints(client.http),
   },
 };
 

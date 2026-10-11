@@ -1,3 +1,4 @@
+export { automationKeys, workAutomationEndpoints } from './automation.ts';
 export { backlogKeys, workBacklogEndpoints } from './backlog.ts';
 export { workBoardIssuesEndpoints } from './board-issues.ts';
 export { workBoardsEndpoints, type ProjectsFilter } from './boards.ts';

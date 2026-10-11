@@ -72,6 +72,7 @@ that passes (ADR 0015).
 - [Roadmap](interaction/roadmap.md): epics and versions on a timeline, rescheduling, the forecast and its panel.
 - [Projects and project settings](interaction/projects-settings.md)
 - [Settings › Work: the org defaults](interaction/settings-work.md): issue types, fields, workflow and board every project inherits until it overrides them.
+- [Settings › Webhooks and project settings › Automation](interaction/webhooks-automation.md): outgoing webhooks, the signing secret, the delivery log, rules, the rule builder and the run log.
 - [Shell](interaction/shell.md): the frame, sidebar and rail, header, global keys, palette, Home, Inbox, sign-in, boot, not found.
 - [Integration](interaction/integration.md): choices made bringing the streams together, the token alias removal, what is left.
 - [Docs: frame and tree](interaction/docs-frame.md): the space tree in the sidebar, focus mode, the one header, layouts, errors in the frame, AI gating.

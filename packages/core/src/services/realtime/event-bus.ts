@@ -18,9 +18,10 @@ const envelopeSchema = z.object({
     occurredAt: z.iso.datetime(),
     actor: z
       .object({
-        kind: z.enum(['user', 'api_token', 'ai_plan', 'system']),
+        kind: z.enum(['user', 'api_token', 'ai_plan', 'system', 'automation']),
         id: z.string(),
         userId: z.string().optional(),
+        chain: z.array(z.string()).optional(),
       })
       .optional(),
     entity: z.object({ kind: z.string(), id: z.string() }).optional(),

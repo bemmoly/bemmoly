@@ -6,5 +6,8 @@
 /** Rewrites the lexorank of a project's issues when ranks grow long. */
 export const WORK_RANK_REBALANCE_JOB = 'work.rank.rebalance';
 
-/** Runs one automation rule for an issue; the engine arrives in a later release. */
+/** Runs one queued automation run, or a workflow post-action's rule for an issue. */
 export const WORK_AUTOMATION_RUN_JOB = 'work.automation.run';
+
+/** Every minute: queues a run for each scheduled rule whose time came. */
+export const WORK_AUTOMATION_SCHEDULE_JOB = 'work.automation.schedule';

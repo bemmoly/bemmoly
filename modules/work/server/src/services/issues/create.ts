@@ -1,5 +1,6 @@
 import type { RequestContext, SqlExecutor } from '@bemmoly/core';
 import { NotFoundError, ValidationError } from '@bemmoly/shared';
+import { DOMAIN_EVENT_KINDS } from '@bemmoly/shared/webhooks';
 import {
   createIssueBodySchema,
   type CreateIssueBody,
@@ -9,6 +10,7 @@ import { last } from '../../../../shared/lexorank.ts';
 import { richTextToPlain } from '../../../../shared/rich-text.ts';
 import { recordHistory } from '../history/index.ts';
 import { actorUserId, projectResource, requireDatabase, type IssueServiceDeps } from './deps.ts';
+import { publishIssueEvent } from './events.ts';
 import { loadFieldDefinitions, requiredFieldKeys, validateCustomFields } from './fields.ts';
 import { notify, notifyDescriptionMentions, publishIssueChange } from './notify.ts';
 import { assertOwnReferences } from './references.ts';
@@ -139,6 +141,7 @@ export async function createIssue(
       });
     }
     await notifyDescriptionMentions(deps, ctx, tx, issue, null);
+    await publishIssueEvent(deps, ctx, tx, DOMAIN_EVENT_KINDS.issueCreated, issue);
     return issue;
   });
   return created as Issue;

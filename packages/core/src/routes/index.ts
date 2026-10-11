@@ -35,6 +35,7 @@ import {
   createSystemController,
   type SystemControllerDependencies,
 } from '../controllers/system.controller.ts';
+import { createWebhooksController } from '../controllers/webhooks.controller.ts';
 import type { ModuleAccessResolver } from '../contracts/module-access.ts';
 import type { ObjectStore } from '../contracts/object-store.ts';
 import type { SessionResolver } from '../contracts/session-resolver.ts';
@@ -57,6 +58,7 @@ import type { SettingsAdmin } from '../services/settings/index.ts';
 import { SCIM_PATH, type SsoDependencies } from '../services/sso/index.ts';
 import type { DatabaseProbe } from '../services/system/index.ts';
 import type { ScrapeDependencies } from '../services/telemetry/index.ts';
+import type { WebhookAdmin } from '../services/webhooks/index.ts';
 import { aiAdminRoutes, aiPersonRoutes } from './ai.routes.ts';
 import { appearanceRoutes } from './appearance.routes.ts';
 import { aiPlansRoutes } from './ai-plans.routes.ts';
@@ -85,6 +87,7 @@ import { searchRoutes } from './search.routes.ts';
 import { ssoRoutes } from './sso.routes.ts';
 import { adminSettingsRoutes } from './settings.routes.ts';
 import { systemRoutes } from './system.routes.ts';
+import { webhooksRoutes } from './webhooks.routes.ts';
 
 export const API_PREFIX = '/api/v1';
 
@@ -144,6 +147,8 @@ export interface KernelRouteDependencies {
   imports?: ImportService;
   /** Settings › Integrations › Code hosts and the hosts' webhooks; with the importers. */
   codeHosts?: CodeHosts;
+  /** Settings › Webhooks (/admin/webhooks); mounted when the host wires outgoing webhooks. */
+  webhooks?: WebhookAdmin;
 }
 
 function identityAndAccessRoutes(
@@ -272,6 +277,9 @@ export function kernelRoutes(deps: KernelRouteDependencies): FastifyPluginAsync 
         }
         if (deps.codeHosts) {
           await api.register(codeHostsRoutes(createCodeHostsController(deps.codeHosts, actorOf)));
+        }
+        if (deps.webhooks) {
+          await api.register(webhooksRoutes(createWebhooksController(deps.webhooks, actorOf)));
         }
         if (deps.retrieval) {
           await api.register(aiAnswersRoutes(createAiAnswersController(deps.retrieval)));

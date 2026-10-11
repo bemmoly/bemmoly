@@ -3,12 +3,14 @@ import {
   createChangelogRunner,
   createContainerMemberships,
   createDatabase,
+  createLocalEventBus,
   createRequestAuthorization,
   createSqlClient,
   loadKernelChangelog,
   loadModules,
   type Actor,
   type DomainEvent,
+  type EventBus,
   type RealtimeMessage,
   type RequestContext,
   type SqlClient,
@@ -38,6 +40,8 @@ export interface WorkHarness {
   services: WorkServices;
   users: { admin: string; member: string; outsider: string };
   events: DomainEvent[];
+  /** The bus the services publish on; a test may subscribe (the automation engine, say). */
+  bus: EventBus;
   realtime: RealtimeMessage[];
   jobs: SentJob[];
   /** A request context for the person, with a fresh per-request authorization. */
@@ -95,13 +99,26 @@ export async function startWorkHarness(pool: HarnessPool = {}): Promise<HarnessS
   const catalog = loadModules({ available: [work], enabled: ['work'] });
   const db = createDatabase(sql);
   const events: DomainEvent[] = [];
+  const local = createLocalEventBus();
+  const bus: EventBus = {
+    async publish(event) {
+      events.push(event);
+      await local.publish(event);
+    },
+    subscribe: (kind, handler) => local.subscribe(kind, handler),
+  };
   const realtime: RealtimeMessage[] = [];
   const jobs: SentJob[] = [];
+  const context = (actor: Actor): RequestContext => ({
+    actor,
+    authz: createRequestAuthorization({ db, modules: catalog }),
+  });
   const services = createWorkServices({
     database: sql,
     audit: createAuditRecorder(sql),
     memberships: createContainerMemberships(sql),
-    events: { publish: async (event) => void events.push(event), subscribe: () => () => undefined },
+    events: bus,
+    contextFor: context,
     realtime: { publish: async (message) => void realtime.push(message) },
     jobs: {
       add: () => undefined,
@@ -110,10 +127,6 @@ export async function startWorkHarness(pool: HarnessPool = {}): Promise<HarnessS
         return name;
       },
     },
-  });
-  const context = (actor: Actor): RequestContext => ({
-    actor,
-    authz: createRequestAuthorization({ db, modules: catalog }),
   });
   const as = (userId: string): RequestContext => context({ kind: 'user', id: userId });
   const [task] = await sql<{ id: string }[]>`
@@ -126,6 +139,7 @@ export async function startWorkHarness(pool: HarnessPool = {}): Promise<HarnessS
       services,
       users,
       events,
+      bus,
       realtime,
       jobs,
       as,

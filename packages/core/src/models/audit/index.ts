@@ -11,8 +11,10 @@ export const auditLog = pgTable(
   {
     id: primaryId(),
     actorId: text('actor_id'),
-    actorKind: text('actor_kind', { enum: ['user', 'ai_plan', 'system', 'api_token'] }).notNull(),
-    /** The person a token or AI plan acted for. */
+    actorKind: text('actor_kind', {
+      enum: ['user', 'ai_plan', 'system', 'api_token', 'automation'],
+    }).notNull(),
+    /** The person a token, an AI plan or an automation rule acted for. */
     actorUserId: uuid('actor_user_id'),
     action: text('action').notNull(),
     targetKind: text('target_kind').notNull(),
@@ -30,7 +32,7 @@ export const auditLog = pgTable(
     index('audit_log_actor_idx').on(t.actorId, t.id),
     check(
       'audit_log_actor_kind_check',
-      sql`${t.actorKind} in ('user', 'ai_plan', 'system', 'api_token')`,
+      sql`${t.actorKind} in ('user', 'ai_plan', 'system', 'api_token', 'automation')`,
     ),
   ],
 );

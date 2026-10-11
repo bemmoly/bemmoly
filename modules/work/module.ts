@@ -6,7 +6,12 @@ import { registerWorkAiTools } from './server/src/services/ai-tools/index.ts';
 import { registerWorkMcp } from './server/src/services/mcp/index.ts';
 import { workRoutes } from './server/src/routes/index.ts';
 import { createWorkServices } from './server/src/services/index.ts';
-import { WORK_AUTOMATION_RUN_JOB, WORK_RANK_REBALANCE_JOB } from './server/src/services/jobs.ts';
+import { subscribeAutomation } from './server/src/services/automation/index.ts';
+import {
+  WORK_AUTOMATION_RUN_JOB,
+  WORK_AUTOMATION_SCHEDULE_JOB,
+  WORK_RANK_REBALANCE_JOB,
+} from './server/src/services/jobs.ts';
 import { createCsvImporter } from './server/src/services/import/csv/index.ts';
 import { createJiraImporter } from './server/src/services/import/jira/index.ts';
 import { registerWorkSearch } from './server/src/services/palette/index.ts';
@@ -103,6 +108,7 @@ export default defineModule({
       ...(ctx.audit ? { audit: ctx.audit } : {}),
       ...(ctx.memberships ? { memberships: ctx.memberships } : {}),
       links: ctx.links,
+      ...(ctx.contextFor ? { contextFor: ctx.contextFor } : {}),
     });
     ctx.jobs.add({
       name: WORK_RANK_REBALANCE_JOB,
@@ -113,10 +119,18 @@ export default defineModule({
     });
     ctx.jobs.add({
       name: WORK_AUTOMATION_RUN_JOB,
-      /** Reserved so a fire_automation post-action enqueues today; the engine lands later. */
-      handle: async () => undefined,
+      // A run records its own failure; retrying would repeat actions that already happened.
+      retryLimit: 0,
+      handle: (payload, job) => services.automation.handleJob(payload, job.requestId),
     });
     ctx.code.addConsumer(services.codeLinks.consumer);
+    ctx.jobs.add({
+      name: WORK_AUTOMATION_SCHEDULE_JOB,
+      schedule: '* * * * *',
+      singleton: true,
+      handle: async () => void (await services.automation.tick()),
+    });
+    subscribeAutomation(ctx.events, services.automation);
     registerWorkSearch(ctx.search, services.search, ctx.database);
     registerWorkRetrieval(ctx);
     registerWorkReferences(ctx, ctx.database);
