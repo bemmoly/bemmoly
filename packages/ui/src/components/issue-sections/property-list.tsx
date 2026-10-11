@@ -19,7 +19,9 @@ export function PropertyGroup({ title, children, className, ...rest }: PropertyG
       className={cx('flex flex-col border-t border-line py-3.5', className)}
       {...rest}
     >
-      <h3 className="m-0 mb-1 text-11 font-semibold text-tx-3">{title}</h3>
+      {/* h2: the rail's groups sit right under the issue's title (h1 on the page, h2 in the
+          peek), and on a phone they come before any other section heading. */}
+      <h2 className="m-0 mb-1 text-11 font-semibold text-tx-3">{title}</h2>
       {children}
     </section>
   );

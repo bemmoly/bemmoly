@@ -12,7 +12,8 @@
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "lint": "eslint --max-warnings 0 .",
     "test": "vitest run",
-    "test:e2e": "playwright test",
+    "test:e2e": "playwright test --project=chromium",
+    "test:a11y": "playwright test --project=a11y",
     "size": "size-limit"
   },
   "dependencies": {
@@ -29,6 +30,7 @@
     "zustand": "5.0.15"
   },
   "devDependencies": {
+    "@axe-core/playwright": "4.13.0",
     "@bemmoly/i18n-tools": "workspace:*",
     "@mswjs/interceptors": "0.45.7",
     "@playwright/test": "1.63.0",

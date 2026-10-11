@@ -70,7 +70,7 @@ export function BackupsTable(props: BackupsTableProps) {
             {STATUS[backup.status].label}
           </StatePill>
           {backup.error ? (
-            <span className="max-w-50 truncate text-12 text-red" title={backup.error}>
+            <span className="max-w-50 truncate text-12 text-red-tx" title={backup.error}>
               {backup.error}
             </span>
           ) : (

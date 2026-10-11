@@ -54,7 +54,7 @@ export const AVATAR_COLORS = {
   'avatar-orange': '#b85b27',
   'avatar-violet': '#875fca',
   'avatar-pink': '#bd5167',
-  'avatar-amber': '#a36c1b',
+  'avatar-amber': '#a06a1a',
   'avatar-sky': '#247cae',
 } as const;
 

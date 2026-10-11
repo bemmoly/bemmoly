@@ -14,6 +14,9 @@ export function TargetMark({ item, size = 14 }: { item: Notification; size?: num
   return <Icon name="bell" size={size} className="text-tx-3" />;
 }
 
+/** Muted text that steps up to tx-2 on the selected row: tx-3 on the accent tint is under 4.5:1. */
+const QUIET = 'text-tx-3 group-aria-selected:text-tx-2';
+
 export const rowId = (id: string) => `inbox-row-${id}`;
 
 function Row({
@@ -41,7 +44,7 @@ function Row({
       aria-selected={selected}
       data-unread={!item.read || undefined}
       onClick={onSelect}
-      className="grid cursor-pointer grid-cols-[26px_minmax(0,1fr)_auto] gap-2.5 px-4.5 py-2.5 hover:bg-hover aria-selected:bg-acc-50 aria-selected:shadow-[inset_2px_0_0_var(--acc)]"
+      className="group grid cursor-pointer grid-cols-[26px_minmax(0,1fr)_auto] gap-2.5 px-4.5 py-2.5 hover:bg-hover aria-selected:bg-acc-50 aria-selected:shadow-[inset_2px_0_0_var(--acc)]"
     >
       <Avatar
         name={item.actors[0]?.name ?? 'Bemmoly'}
@@ -50,7 +53,7 @@ function Row({
       />
       <div className="flex min-w-0 flex-col gap-0.5">
         <span className="truncate text-13">
-          <b className="font-medium">{who}</b> <span className="text-tx-3">{item.verb}</span>
+          <b className="font-medium">{who}</b> <span className={QUIET}>{item.verb}</span>
         </span>
         <span
           className={`flex min-w-0 items-center gap-1.5 text-13 ${item.read ? 'text-tx-2' : 'font-medium text-tx'}`}
@@ -58,11 +61,13 @@ function Row({
           <TargetMark item={item} />
           <span className="truncate">{item.target.label ?? item.summary}</span>
         </span>
-        {item.body ? <span className="truncate text-13 text-tx-3">{item.body}</span> : null}
+        {item.body ? <span className={`truncate text-13 ${QUIET}`}>{item.body}</span> : null}
       </div>
       <div className="flex flex-col items-end gap-2">
-        <RelativeTime iso={item.createdAt} className="text-12 text-tx-3" />
-        {item.read ? null : <span aria-label="Unread" className="size-1.75 rounded-full bg-acc" />}
+        <RelativeTime iso={item.createdAt} className={`text-12 ${QUIET}`} />
+        {item.read ? null : (
+          <span role="img" aria-label="Unread" className="size-1.75 rounded-full bg-acc" />
+        )}
       </div>
     </div>
   );

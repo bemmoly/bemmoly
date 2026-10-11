@@ -307,6 +307,59 @@ jobs:
           retention-days: 7
           if-no-files-found: ignore
 
+  a11y:
+    name: Accessibility (${{ matrix.theme }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        theme: [bemmoly, graphite, sand, pine, contrast]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: ./.github/actions/setup
+
+      - name: Build the web shell
+        run: pnpm turbo run build --filter=@bemmoly/web
+
+      - name: Read the Playwright version
+        id: playwright
+        working-directory: apps/web
+        run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> "$GITHUB_OUTPUT"
+
+      - name: Restore Playwright browsers
+        id: playwright-cache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}
+
+      - name: Install the Playwright browser
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: pnpm --filter @bemmoly/web exec playwright install --with-deps chromium
+
+      - name: Install the browser's system libraries
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: pnpm --filter @bemmoly/web exec playwright install-deps chromium
+
+      # Every screen through axe (all rules, contrast included) in this theme, light and dark,
+      # at desktop and 390px, then the keyboard, focus and semantics checks. Any violation fails.
+      - name: WCAG 2.2 AA audit
+        run: pnpm --filter @bemmoly/web test:a11y
+        env:
+          A11Y_THEME: ${{ matrix.theme }}
+
+      - name: Upload the Playwright report
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: a11y-report-${{ matrix.theme }}
+          path: apps/web/test-results
+          retention-days: 7
+
   lighthouse:
     name: Lighthouse
     runs-on: ubuntu-latest

@@ -74,7 +74,7 @@ export function AskDocsPanel({ isAdmin, recentPages }: AskDocsPanelProps) {
                 key={example}
                 type="button"
                 onClick={() => askExample(example)}
-                className="cursor-pointer border-0 bg-transparent p-0 font-sans text-12 text-tx-2 underline decoration-line underline-offset-2 hover:text-tx"
+                className="inline-flex min-h-6 cursor-pointer items-center rounded-chip border-0 bg-transparent p-0 font-sans text-12 text-tx-2 underline decoration-line underline-offset-2 hover:text-tx focus-ring"
               >
                 {example}
               </button>

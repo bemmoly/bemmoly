@@ -6,16 +6,16 @@ protection matches checks by job name, so renaming a job means updating the sett
 
 ## Workflows
 
-| Workflow                        | Runs on                                       | Jobs (status check names)                                                                |
-| ------------------------------- | --------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| `ci.yml` (CI)                   | pull requests, merge queue, `main`            | **Fast checks**, **Full checks**, **Work end to end**, **Lighthouse**                    |
-| `security.yml` (Security)       | pull requests, merge queue, `main`, weekly    | **Security scans**, **Image scan**                                                       |
-| `release.yml` (Release)         | `main`, `v*` tags                             | Version pull request or tag, Plan the release, Image (app, updater), Publish the release |
-| `nightly.yml` (Nightly)         | 02:30 UTC daily, manual                       | Fresh VM install, Load budgets (k6)                                                      |
-| `soak.yml` (Soak)               | 03:00 UTC Sundays, manual                     | Soak (k6 and the monitor); 24 h on the `SOAK_RUNNER` self-hosted runner, else 5 h        |
-| `ai-evals.yml` (AI evals)       | 03:00 UTC daily, manual                       | Live AI evals (skips without a provider key)                                             |
-| `deploy-kits.yml` (Deploy kits) | changes to `deploy/`, 03:30 UTC daily, manual | Helm chart, Terraform modules, Offline install                                           |
-| `labels.yml` (Labels)           | changes to `.github/labels.json`              | Sync labels                                                                              |
+| Workflow                        | Runs on                                       | Jobs (status check names)                                                                        |
+| ------------------------------- | --------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| `ci.yml` (CI)                   | pull requests, merge queue, `main`            | **Fast checks**, **Full checks**, **Work end to end**, **Accessibility (theme)**, **Lighthouse** |
+| `security.yml` (Security)       | pull requests, merge queue, `main`, weekly    | **Security scans**, **Image scan**                                                               |
+| `release.yml` (Release)         | `main`, `v*` tags                             | Version pull request or tag, Plan the release, Image (app, updater), Publish the release         |
+| `nightly.yml` (Nightly)         | 02:30 UTC daily, manual                       | Fresh VM install, Load budgets (k6)                                                              |
+| `soak.yml` (Soak)               | 03:00 UTC Sundays, manual                     | Soak (k6 and the monitor); 24 h on the `SOAK_RUNNER` self-hosted runner, else 5 h                |
+| `ai-evals.yml` (AI evals)       | 03:00 UTC daily, manual                       | Live AI evals (skips without a provider key)                                                     |
+| `deploy-kits.yml` (Deploy kits) | changes to `deploy/`, 03:30 UTC daily, manual | Helm chart, Terraform modules, Offline install                                                   |
+| `labels.yml` (Labels)           | changes to `.github/labels.json`              | Sync labels                                                                                      |
 
 What each check runs:
 
@@ -39,6 +39,11 @@ What each check runs:
   500-issue board to the budgets of tech design §20 (board view p95 under 80 ms; a dropped
   card painted within six frames). The budget numbers are printed in the job log. Its own job,
   so a failure there is not read as a Full checks failure.
+- **Accessibility (bemmoly | graphite | sand | pine | contrast)**: one runner per theme runs
+  `pnpm --filter @bemmoly/web test:a11y` with `A11Y_THEME` set: every screen through axe with
+  every rule on, colour contrast included, light and dark, desktop and 390px, on the dev mock
+  backend; the Bemmoly runner also runs the keyboard, focus and semantics checks. Any violation
+  fails. See `docs/accessibility-conformance.md`.
 - **Lighthouse**: the real server serves the built shell; first contentful paint must stay
   under 1.2 s, cold, on the 4G profile in `tools/lighthouse/lighthouserc.cjs`.
 - **Load budgets (k6)**, nightly: the server from `main` and Postgres pinned to two CPUs (the

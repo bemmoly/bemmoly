@@ -99,7 +99,10 @@ export function HistoryItem({ person, children, when, className }: HistoryItemPr
   );
 }
 
-/** A borderless 12px tx4 action under a comment: Reply, React, Create issue from this. */
+/**
+ * A borderless 12px tx4 action under a comment: Reply, React, Create issue from this. Its box
+ * is 24px tall (WCAG 2.5.8) and gives the extra back to the line, so the row does not grow.
+ */
 export function ActivityAction({
   className,
   type = 'button',
@@ -109,7 +112,7 @@ export function ActivityAction({
     <button
       type={type}
       className={cx(
-        'cursor-pointer rounded-chip border-0 bg-transparent p-0 font-sans text-12 text-tx-3 hover:text-tx-2',
+        '-my-1 inline-flex min-h-6 cursor-pointer items-center rounded-chip border-0 bg-transparent p-0 font-sans text-12 text-tx-3 hover:text-tx-2',
         focusRing,
         className,
       )}
@@ -148,7 +151,8 @@ export function ReactionChip({
       aria-pressed={reacted}
       onClick={onToggle}
       className={cx(
-        'inline-flex cursor-pointer items-center gap-1 rounded-full border px-1.75 py-0.5 font-sans text-11',
+        // 24px tall: the WCAG 2.2 target size.
+        'inline-flex h-6 cursor-pointer items-center gap-1 rounded-full border px-1.75 font-sans text-11',
         reacted
           ? 'border-acc-100 bg-acc-50 text-acc'
           : 'border-transparent bg-line-2 text-tx-2 hover:bg-line',

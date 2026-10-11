@@ -22,10 +22,12 @@ export function CopyField({ label, value, copied, onCopy, multiline }: CopyField
         multiline ? 'flex-col items-stretch' : 'items-center'
       }`}
     >
+      {/* Focusable, so a keyboard can scroll a long value sideways (WCAG 2.1.1). */}
       {multiline ? (
         <pre
           aria-label={label}
-          className="m-0 overflow-x-auto px-2 py-1.5 font-mono text-12 leading-body text-tx select-all"
+          tabIndex={0}
+          className="m-0 overflow-x-auto px-2 py-1.5 focus-ring-inset font-mono text-12 leading-body text-tx select-all"
         >
           {value}
         </pre>

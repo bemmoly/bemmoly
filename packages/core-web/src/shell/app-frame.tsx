@@ -38,6 +38,29 @@ export interface AppFrameProps {
 
 const ASIDE = 'flex min-h-0 shrink-0 flex-col border-e border-line bg-side';
 
+/** The id the skip link lands on: the page, past the sidebar. */
+export const MAIN_ID = 'main';
+
+/**
+ * The first stop on Tab: a link past the sidebar to the page (WCAG 2.4.1). Hidden until it has
+ * focus, then drawn over the frame's top-left corner as a control.
+ */
+function SkipLink() {
+  const t = useT(core);
+  return (
+    <a
+      href={`#${MAIN_ID}`}
+      onClick={(event) => {
+        event.preventDefault();
+        document.getElementById(MAIN_ID)?.focus();
+      }}
+      className="sr-only rounded-control bg-card px-3 py-1.5 text-13 font-medium text-tx shadow-e2 focus-ring focus:not-sr-only focus:fixed focus:start-2 focus:top-2 focus:z-50"
+    >
+      {t('core.frame.skip')}
+    </a>
+  );
+}
+
 /** The phone's sidebar: the full sidebar in a sheet from the left edge, over a scrim. */
 function SidebarSheet({
   open,
@@ -133,6 +156,7 @@ export function AppFrame({
 
   return (
     <FrameContext.Provider value={inMode(docked)}>
+      <SkipLink />
       <div
         className="flex h-screen min-w-0 flex-col bg-canvas text-tx"
         data-sidebar={phone ? 'sheet' : docked}
@@ -156,7 +180,12 @@ export function AppFrame({
               </div>
             </FrameContext.Provider>
           ) : null}
-          <main className="flex min-h-0 min-w-0 flex-1 flex-col" data-testid="main">
+          <main
+            id={MAIN_ID}
+            tabIndex={-1}
+            className="flex min-h-0 min-w-0 flex-1 flex-col outline-none"
+            data-testid="main"
+          >
             {children}
           </main>
         </div>

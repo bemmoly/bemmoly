@@ -100,7 +100,7 @@ export function VersionTimeline(props: VersionTimelineProps) {
         data-version={revision.id}
         aria-pressed={selected === revision.id}
         onClick={() => onSelect(revision)}
-        className="flex w-full cursor-pointer items-start gap-2.5 rounded-card border-0 bg-transparent px-2.5 py-2 text-left font-sans text-13 text-tx hover:bg-hover focus-visible:shadow-ring focus-visible:outline-0 aria-pressed:bg-acc-50"
+        className="group flex w-full cursor-pointer items-start gap-2.5 rounded-card border-0 bg-transparent px-2.5 py-2 text-left font-sans text-13 text-tx hover:bg-hover focus-visible:shadow-ring focus-visible:outline-0 aria-pressed:bg-acc-50"
       >
         <span
           aria-hidden
@@ -113,7 +113,8 @@ export function VersionTimeline(props: VersionTimelineProps) {
           <span className={cx('truncate', quiet ? 'font-normal' : 'font-semibold')}>
             {revisionName(revision)}
           </span>
-          <span className="flex items-center gap-1.5 text-12 text-tx-3">
+          {/* tx-2 on the chosen version: tx-3 on the accent tint is under 4.5:1. */}
+          <span className="flex items-center gap-1.5 text-12 text-tx-3 group-aria-pressed:text-tx-2">
             {name && author && <Avatar name={name} hue={avatarHue(author)} size={16} />}
             {name && <span className="truncate">{name} ·</span>}
             <RelativeTime iso={revision.createdAt} />

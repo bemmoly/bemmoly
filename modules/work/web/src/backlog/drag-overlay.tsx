@@ -24,20 +24,26 @@ function describe(
 /**
  * The chip that follows the pointer while rows are dragged (positioned by
  * the drag hook, not by renders) and the polite announcement of a keyboard
- * move: what was picked up and where it would land.
+ * move: what was picked up, where it would land, and where it landed.
  */
 export function DragOverlay({ previewRef, issueById, containerName }: DragOverlayProps) {
   const drag = useBacklogUi((state) => state.drag);
+  const ended = useBacklogUi((state) => state.ended);
   const first = drag ? issueById(drag.ids[0] ?? '') : undefined;
   const more = drag ? drag.ids.length - 1 : 0;
-  const picked = drag
-    ? `${drag.ids.length === 1 && first ? first.key : `${drag.ids.length} issues`}`
-    : '';
+  const nameOf = (ids: readonly string[]) => {
+    const one = ids.length === 1 ? issueById(ids[0] ?? '') : undefined;
+    return one ? one.key : `${ids.length} issues`;
+  };
   const announcement =
     drag?.mode === 'keyboard'
-      ? `Picked up ${picked}. ${describe(drag.target, issueById, containerName)} ` +
+      ? `Picked up ${nameOf(drag.ids)}. ${describe(drag.target, issueById, containerName)} ` +
         'Arrow keys move, space drops, Escape cancels.'
-      : '';
+      : !drag && ended
+        ? ended.dropped
+          ? `Dropped ${nameOf(ended.drag.ids)}. ${describe(ended.drag.target, issueById, containerName)}`
+          : `Cancelled. ${nameOf(ended.drag.ids)} stays where it was.`
+        : '';
 
   return (
     <>
