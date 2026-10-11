@@ -118,11 +118,11 @@ export function useBoardSettings(projectKey: string | undefined) {
     onSettled: refresh,
   });
 
-  /** Puts the org default back: its columns matched to this project's statuses by name. */
+  /** Puts the default back: the org's columns matched to this project's statuses by name. */
   const reset = useMutation({
     mutationFn: async () => {
-      if (!board || !data.orgConfig) throw new Error('The org default board is not loaded yet');
-      return api.work.boards.update(board.id, { config: data.orgConfig });
+      if (!board || !data.baseConfig) throw new Error('The default board is not loaded yet');
+      return api.work.boards.update(board.id, { config: data.baseConfig });
     },
     onSuccess: () => setDraft(null),
     onSettled: refresh,

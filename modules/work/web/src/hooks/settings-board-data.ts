@@ -1,3 +1,4 @@
+import { defaultBoardConfig } from '@bemmoly/module-work/shared';
 import { useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
 import { workSettingsKeys, workWorkflowKeys } from '../api/index.ts';
@@ -8,10 +9,13 @@ import type { BoardDraft } from '../settings/model/sections.ts';
 import { api, useProject } from '../shared/index.ts';
 
 /**
- * Everything Board settings read: the project and its board, the org default
- * board it is compared with, the workflow's statuses with their issue counts,
- * and the project's fields for LQL. Counts are optional; without them the
- * page still edits, it only cannot say how many cards a change hides.
+ * Everything Board settings read: the project and its board, the default it
+ * is compared with and resets to, the workflow's statuses with their issue
+ * counts, and the project's fields for LQL. The default is the org default
+ * board scheme when the org has one, else Work's own default board for the
+ * project's statuses, which is what the server made the board from. Counts
+ * are optional; without them the page still edits, it only cannot say how
+ * many cards a change hides.
  */
 export function useBoardSettingsData(projectKey: string | undefined) {
   const projectContext = useProject(projectKey);
@@ -70,14 +74,16 @@ export function useBoardSettingsData(projectKey: string | undefined) {
       for (const status of flow.statuses) names.set(status.id, status.name);
     for (const status of statuses) names.set(status.id, status.name);
     const statusName = (id: string) => names.get(id) ?? 'Unknown status';
-    const orgConfig =
-      orgBoard && statuses.length > 0
-        ? adoptOrgConfig(orgBoard.config, statusName, statuses)
-        : null;
+    const baseConfig =
+      !orgBoards.isSuccess || statuses.length === 0
+        ? null
+        : orgBoard
+          ? adoptOrgConfig(orgBoard.config, statusName, statuses)
+          : defaultBoardConfig(statuses);
     const overrides =
-      orgConfig && board ? boardConfigDiff(orgConfig, board.config, statusName) : [];
-    return { statusName, orgConfig, overrides };
-  }, [orgWorkflows.data, statuses, orgBoard, board]);
+      baseConfig && board ? boardConfigDiff(baseConfig, board.config, statusName) : [];
+    return { statusName, baseConfig, overrides };
+  }, [orgWorkflows.data, statuses, orgBoards.isSuccess, orgBoard, board]);
 
   const stored = useMemo<BoardDraft | null>(
     () => (board && project ? { config: board.config, method: project.method } : null),
@@ -89,6 +95,8 @@ export function useBoardSettingsData(projectKey: string | undefined) {
     project,
     board,
     orgBoard,
+    /** What the page calls the default: the org's board scheme by name, or Work's own. */
+    baseName: orgBoard ? orgBoard.name : 'the default board',
     workflow,
     stored,
     statuses,
