@@ -161,7 +161,8 @@ export default function RoadmapScreen({ projectKey }: WorkScreenProps) {
   }
   return (
     <>
-      <NewEpic projectKey={createIn} />
+      {/* An empty roadmap's own New epic is the one primary action; the header waits. */}
+      {data.view.items.length > 0 && <NewEpic projectKey={createIn} />}
       <RoadmapBody view={data.view} oneProject={data.oneProject} projectKey={createIn} />
     </>
   );
