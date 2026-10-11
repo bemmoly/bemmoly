@@ -7,6 +7,7 @@ import type {
   EntitySummary,
   LinkRegistry,
   ReferenceGroup,
+  ReferenceGroupMany,
 } from './registries.ts';
 import type { ModuleRegistry } from './registry.ts';
 
@@ -65,6 +66,22 @@ export function createReferenceRegistries(
         for (const source of loaded().referenceSources()) {
           const items = await source.referencesTo(ctx, target);
           if (items.length === 0) continue;
+          groups.push({
+            source: source.kind,
+            label: source.label,
+            moduleId: source.moduleId,
+            items,
+          });
+        }
+        return groups;
+      },
+      async referencesToMany(ctx, targets) {
+        const groups: ReferenceGroupMany[] = [];
+        if (targets.ids.length === 0) return groups;
+        for (const source of loaded().referenceSources()) {
+          if (!source.referencesToMany) continue;
+          const items = await source.referencesToMany(ctx, targets);
+          if (items.size === 0) continue;
           groups.push({
             source: source.kind,
             label: source.label,
