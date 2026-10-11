@@ -49,11 +49,18 @@ describe('metrics', () => {
     const metrics = createMetrics();
     metrics.database.observePool(() => ({ max: 10, active: 2, idle: 3, idleInTransaction: 1 }));
     let depth = 4;
-    metrics.jobs.observeQueueDepth(async () => ({ 'system.backup': depth, 'email.send': 0 }));
+    metrics.jobs.observeQueueDepth(async () => ({
+      'system.backup': { ready: depth, delayed: 0 },
+      'email.send': { ready: 0, delayed: 0 },
+      'notifications.digest': { ready: 0, delayed: 200 },
+    }));
     let text = await metrics.render();
     expect(valueOf(text, 'bemmoly_db_pool_connections{state="active"}')).toBe(2);
     expect(valueOf(text, 'bemmoly_db_pool_connections{state="idle_in_transaction"}')).toBe(1);
     expect(valueOf(text, 'bemmoly_job_queue_depth{queue="system.backup"}')).toBe(4);
+    // Scheduled digests are not a backlog: they show apart from the depth.
+    expect(valueOf(text, 'bemmoly_job_queue_depth{queue="notifications.digest"}')).toBe(0);
+    expect(valueOf(text, 'bemmoly_job_queue_delayed{queue="notifications.digest"}')).toBe(200);
     depth = 0;
     text = await metrics.render();
     expect(valueOf(text, 'bemmoly_job_queue_depth{queue="system.backup"}')).toBe(0);

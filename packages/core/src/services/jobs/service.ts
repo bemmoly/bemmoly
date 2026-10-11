@@ -5,6 +5,7 @@ import type { JobQueue } from '../../contracts/jobs.ts';
 import type { RealtimeMessage } from '../../contracts/realtime.ts';
 import type { ModuleRegistry } from '../../modules/registry.ts';
 import type { JobDefinition } from '../../modules/registries.ts';
+import { readQueueDepths } from './depth.ts';
 import { createEnqueue, type KernelEnqueueOptions } from './enqueue.ts';
 import { noJobMetrics, type JobMetricsHook } from './metrics.ts';
 import { logQueueError } from './queue-errors.ts';
@@ -171,11 +172,9 @@ export function createJobsService(options: JobsServiceOptions): JobsService {
       for (const job of definitions.values()) await createQueue(instance, job);
       boss = instance;
       enqueue = createEnqueue(options.sql, instance);
-      metrics.observeQueueDepth(async () => {
-        if (!boss) return {};
-        const queues = await boss.getQueues([...definitions.keys()]);
-        return Object.fromEntries(queues.map((queue) => [queue.name, queue.queuedCount]));
-      });
+      metrics.observeQueueDepth(async () =>
+        boss ? readQueueDepths(options.sql, [...definitions.keys()]) : {},
+      );
       if (worker) {
         for (const job of definitions.values())
           if (!owned.has(job.name)) await activate(instance, job);

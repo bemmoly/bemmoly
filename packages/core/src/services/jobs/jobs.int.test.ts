@@ -5,6 +5,7 @@ import { loadModules } from '../../modules/loader.ts';
 import { createIsolatedDatabase, type IsolatedDatabase } from '../../testing/isolated-database.ts';
 import { startTestDatabase, type TestDatabase } from '../../testing/postgres.ts';
 import { createChangelogRunner, loadKernelChangelog } from '../changelog/index.ts';
+import { readQueueDepths } from './depth.ts';
 import { runHousekeeping } from './housekeeping.ts';
 import { createJobsService, type JobsService } from './service.ts';
 
@@ -94,6 +95,21 @@ describe('jobs on pg-boss against a real database', () => {
     expect(otherUser).toEqual(expect.any(String));
     expect(await jobs.enqueue('test.digest', {}, { key: 'import-7' })).toEqual(expect.any(String));
     expect(await jobs.enqueue('test.digest', {}, { key: 'import-7' })).toBeNull();
+  });
+
+  it('counts only jobs due now as queue depth; scheduled ones are delayed', async (ctx) => {
+    if (!sql) return ctx.skip(server.available ? 'no database' : server.reason);
+    const jobs = service('api');
+    jobs.register('test.depth', async () => undefined);
+    jobs.register('test.idle', async () => undefined);
+    await jobs.start([]);
+    await jobs.enqueue('test.depth', {});
+    await jobs.enqueue('test.depth', {}, { startAfter: 3600 });
+    await jobs.enqueue('test.depth', {}, { startAfter: 7200 });
+    expect(await readQueueDepths(sql, ['test.depth', 'test.idle'])).toEqual({
+      'test.depth': { ready: 1, delayed: 2 },
+      'test.idle': { ready: 0, delayed: 0 },
+    });
   });
 
   it('enqueues inside the caller’s transaction: rolled back, the job never existed', async (ctx) => {
