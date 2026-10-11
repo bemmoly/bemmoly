@@ -1,9 +1,15 @@
-import { UnauthenticatedError, type LoginRequest, type User } from '@bemmoly/shared';
+import {
+  ForbiddenError,
+  UnauthenticatedError,
+  type LoginRequest,
+  type User,
+} from '@bemmoly/shared';
 import { and, eq, sql } from 'drizzle-orm';
 import type { Database } from '../../clients/drizzle.ts';
 import { authIdentities, authProviders, users } from '../../models/identity/index.ts';
 import { recordAudit } from '../audit/index.ts';
 import type { RequestContext } from '../authz/index.ts';
+import { SSO_REQUIRED_MESSAGE } from './accounts.ts';
 import { nowOf, type IdentityDependencies } from './deps.ts';
 import { burnPasswordCheck, verifyPassword } from './passwords.ts';
 import { loadUser } from './presenters.ts';
@@ -26,6 +32,8 @@ export async function findPasswordAccount(db: Database, email: string) {
       name: users.name,
       email: users.email,
       privilegeVersion: users.privilegeVersion,
+      isBreakGlass: users.isBreakGlass,
+      passwordSignIn: authProviders.enabled,
       identityId: authIdentities.id,
       passwordHash: authIdentities.passwordHash,
     })
@@ -59,6 +67,10 @@ export async function login(
   }
   if (account.status !== 'active') {
     throw new UnauthenticatedError('This account has been deactivated');
+  }
+  // Checked after the password, so the answer never tells a guesser the account exists.
+  if (!account.passwordSignIn && !account.isBreakGlass) {
+    throw new ForbiddenError(SSO_REQUIRED_MESSAGE);
   }
   const now = nowOf(deps);
   const session = await deps.db.transaction(async (tx) => {
