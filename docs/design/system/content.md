@@ -49,7 +49,10 @@ a capable colleague.
 
 - **Competitor and vendor names appear only as import or source labels**: "Import from Jira",
   "Import from Confluence". Never in comparisons, marketing claims, empty states, tooltips or
-  placeholder text, and never as a product's logo outside its import card.
+  placeholder text. **No Atlassian-family logo anywhere** (Jira, Confluence, Trello, Bitbucket
+  and the rest): their guidelines need written approval, so import cards show the neutral
+  `import` icon beside the plain name. `bemmoly/no-atlassian-marks` fails a family logo file,
+  a simple-icons import of one, or a component named for one (`JiraLogo`).
 - **One recorded exception: the site's two comparison pages**, `/jira-alternative` and
   `/confluence-alternative` (the owner's call, for people searching for a self-hosted
   alternative). There, and in the footer links to them, the names appear as plain referential

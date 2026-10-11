@@ -34,6 +34,7 @@ export default defineConfig(
     rules: {
       'max-lines': ['error', { max: 300, skipBlankLines: false, skipComments: false }],
       'bemmoly/boundaries': ['error', { root }],
+      'bemmoly/no-atlassian-marks': 'error',
       'no-console': 'error',
       'no-restricted-properties': [
         'error',
