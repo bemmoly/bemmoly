@@ -934,7 +934,7 @@ export default changeset({
 
 <!-- ===================================================== 12 -->
 <h2 id="jobs">13. Background jobs and realtime without Redis</h2>
-<p>Everything slow or external runs as a job. In the default install the worker loop runs inside the single process with a concurrency cap; <code>BEMMOLY_ROLE=worker</code> starts a process that only runs jobs.</p>
+<p>Everything slow or external runs as a job. In the default install the worker loop runs inside the single process with a concurrency cap; <code>BEMMOLY_ROLE=worker</code> starts a process that only runs jobs. Each queue runs one fetch loop per unit of its <code>concurrency</code> (1 by default) and fetches again at once while there is work, polling every 2 s only when it is empty; the cap keeps job handlers below the request pool (4 of 10 connections in a single process). See ADR 0032.</p>
 <table>
   <tr><th style="width:230px">Job</th><th>Trigger</th><th>Notes</th></tr>
   <tr><td><code>email.send</code></td><td>Outbox rows</td><td>Batched, retried, singleton per outbox row.</td></tr>
