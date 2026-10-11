@@ -20,4 +20,16 @@ describe('Retry-After on ApiError', () => {
     expect(error.code).toBe('rate_limited');
     expect(error.retryAfterSeconds).toBe(17);
   });
+
+  it('keeps the message id and values a translating client needs', () => {
+    const error = errorFromResponse(new Response(null, { status: 404 }), {
+      code: 'not_found',
+      message: 'The resource was not found',
+      requestId: 'req-2',
+      messageId: 'errors.not_found',
+      values: { kind: 'issue' },
+    });
+    expect(error.messageId).toBe('errors.not_found');
+    expect(error.values).toEqual({ kind: 'issue' });
+  });
 });

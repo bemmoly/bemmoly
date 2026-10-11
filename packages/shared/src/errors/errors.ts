@@ -1,9 +1,18 @@
 import type { ErrorCode } from './codes.ts';
 
+/** Values for a message's placeholders: "{count, plural, …}" takes count. */
+export type MessageValues = Record<string, string | number>;
+
 export interface BemmolyErrorOptions<C extends ErrorCode> {
   code?: C;
   details?: unknown;
   cause?: unknown;
+  /**
+   * The catalog id the message renders, so a client can show it in the person's language
+   * (ADR 0024). A custom message without one is shown as written.
+   */
+  messageId?: string;
+  values?: MessageValues;
 }
 
 /**
@@ -13,11 +22,21 @@ export interface BemmolyErrorOptions<C extends ErrorCode> {
 export abstract class BemmolyError<C extends ErrorCode = ErrorCode> extends Error {
   readonly code: C;
   readonly details: unknown;
+  /** The default message is `errors.<code>` in packages/shared/src/i18n/errors.en.json. */
+  readonly messageId: string | undefined;
+  readonly values: MessageValues | undefined;
 
-  protected constructor(message: string, code: C, options: BemmolyErrorOptions<C> = {}) {
-    super(message, options.cause === undefined ? undefined : { cause: options.cause });
+  protected constructor(
+    message: string | undefined,
+    fallback: string,
+    code: C,
+    options: BemmolyErrorOptions<C> = {},
+  ) {
+    super(message ?? fallback, options.cause === undefined ? undefined : { cause: options.cause });
     this.code = options.code ?? code;
     this.details = options.details;
+    this.messageId = options.messageId ?? (message === undefined ? `errors.${code}` : undefined);
+    this.values = options.values;
   }
 }
 
@@ -25,19 +44,16 @@ export abstract class BemmolyError<C extends ErrorCode = ErrorCode> extends Erro
 export class UnauthenticatedError extends BemmolyError<'unauthenticated'> {
   override readonly name = 'UnauthenticatedError';
 
-  constructor(message = 'Sign in to continue', options?: BemmolyErrorOptions<'unauthenticated'>) {
-    super(message, 'unauthenticated', options);
+  constructor(message?: string, options?: BemmolyErrorOptions<'unauthenticated'>) {
+    super(message, 'Sign in to continue', 'unauthenticated', options);
   }
 }
 
 export class NotFoundError extends BemmolyError<'not_found' | 'module_not_enabled'> {
   override readonly name = 'NotFoundError';
 
-  constructor(
-    message = 'The resource was not found',
-    options?: BemmolyErrorOptions<'not_found' | 'module_not_enabled'>,
-  ) {
-    super(message, 'not_found', options);
+  constructor(message?: string, options?: BemmolyErrorOptions<'not_found' | 'module_not_enabled'>) {
+    super(message, 'The resource was not found', 'not_found', options);
   }
 }
 
@@ -45,10 +61,10 @@ export class ForbiddenError extends BemmolyError<'forbidden' | 'module_access_de
   override readonly name = 'ForbiddenError';
 
   constructor(
-    message = 'You do not have access to this resource',
+    message?: string,
     options?: BemmolyErrorOptions<'forbidden' | 'module_access_denied'>,
   ) {
-    super(message, 'forbidden', options);
+    super(message, 'You do not have access to this resource', 'forbidden', options);
   }
 }
 
@@ -56,21 +72,18 @@ export class ValidationError extends BemmolyError<'validation_failed' | 'bad_req
   override readonly name = 'ValidationError';
 
   constructor(
-    message = 'The request is not valid',
+    message?: string,
     options?: BemmolyErrorOptions<'validation_failed' | 'bad_request'>,
   ) {
-    super(message, 'validation_failed', options);
+    super(message, 'The request is not valid', 'validation_failed', options);
   }
 }
 
 export class ConflictError extends BemmolyError<'conflict'> {
   override readonly name = 'ConflictError';
 
-  constructor(
-    message = 'The resource changed or already exists',
-    options?: BemmolyErrorOptions<'conflict'>,
-  ) {
-    super(message, 'conflict', options);
+  constructor(message?: string, options?: BemmolyErrorOptions<'conflict'>) {
+    super(message, 'The resource changed or already exists', 'conflict', options);
   }
 }
 
@@ -82,8 +95,8 @@ export class RateLimitedError extends BemmolyError<'rate_limited'> {
   override readonly name = 'RateLimitedError';
   readonly retryAfterSeconds: number | undefined;
 
-  constructor(message = 'Too many requests', options: RateLimitedErrorOptions = {}) {
-    super(message, 'rate_limited', options);
+  constructor(message?: string, options: RateLimitedErrorOptions = {}) {
+    super(message, 'Too many requests', 'rate_limited', options);
     this.retryAfterSeconds = options.retryAfterSeconds;
   }
 }
@@ -97,8 +110,8 @@ export class MaintenanceError extends BemmolyError<'maintenance'> {
   override readonly name = 'MaintenanceError';
   readonly retryAfterSeconds: number | undefined;
 
-  constructor(message = 'Bemmoly is under maintenance', options: MaintenanceErrorOptions = {}) {
-    super(message, 'maintenance', options);
+  constructor(message?: string, options: MaintenanceErrorOptions = {}) {
+    super(message, 'Bemmoly is under maintenance', 'maintenance', options);
     this.retryAfterSeconds = options.retryAfterSeconds;
   }
 }
@@ -112,8 +125,8 @@ export class ProviderError extends BemmolyError<'provider_error'> {
   override readonly name = 'ProviderError';
   readonly provider: string | undefined;
 
-  constructor(message = 'An external provider failed', options: ProviderErrorOptions = {}) {
-    super(message, 'provider_error', options);
+  constructor(message?: string, options: ProviderErrorOptions = {}) {
+    super(message, 'An external provider failed', 'provider_error', options);
     this.provider = options.provider;
   }
 }

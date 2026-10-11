@@ -1,0 +1,11 @@
+{
+  "errors.conflict": "The resource changed or already exists",
+  "errors.forbidden": "You do not have access to this resource",
+  "errors.internal_error": "Something went wrong on our side. Quote the request id when you report it.",
+  "errors.maintenance": "Bemmoly is under maintenance",
+  "errors.not_found": "The resource was not found",
+  "errors.provider_error": "An external provider failed",
+  "errors.rate_limited": "Too many requests",
+  "errors.unauthenticated": "Sign in to continue",
+  "errors.validation_failed": "The request is not valid"
+}

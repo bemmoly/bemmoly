@@ -1,4 +1,4 @@
-import { apiErrorBodySchema, type ErrorCode } from '@bemmoly/shared';
+import { apiErrorBodySchema, type ErrorCode, type MessageValues } from '@bemmoly/shared';
 
 /**
  * Codes outside the shared enum: no server, an unexpected body, a failure in the browser
@@ -32,6 +32,9 @@ export class ApiError extends Error {
   readonly requestId: string | undefined;
   /** Seconds to wait before trying again, from Retry-After on a 429 or 503. */
   readonly retryAfterSeconds: number | undefined;
+  /** The catalog id the server's message renders, for showing it in the person's language. */
+  readonly messageId: string | undefined;
+  readonly values: MessageValues | undefined;
 
   constructor(
     status: number,
@@ -42,6 +45,8 @@ export class ApiError extends Error {
       requestId?: string | undefined;
       cause?: unknown;
       retryAfterSeconds?: number | undefined;
+      messageId?: string | undefined;
+      values?: MessageValues | undefined;
     } = {},
   ) {
     super(message, options.cause === undefined ? undefined : { cause: options.cause });
@@ -50,6 +55,8 @@ export class ApiError extends Error {
     this.details = options.details;
     this.requestId = options.requestId;
     this.retryAfterSeconds = options.retryAfterSeconds;
+    this.messageId = options.messageId;
+    this.values = options.values;
   }
 }
 
@@ -91,6 +98,8 @@ export function errorFromResponse(response: Response, body: unknown): ApiError {
       details: parsed.data.details,
       requestId: parsed.data.requestId,
       retryAfterSeconds,
+      messageId: parsed.data.messageId,
+      values: parsed.data.values,
     });
   }
   const code = CODE_BY_STATUS[response.status] ?? 'internal_error';

@@ -7,7 +7,8 @@
   "exports": {
     ".": "./src/index.ts",
     "./ai-insights": "./src/schemas/ai/insights.ts",
-    "./ai-answers": "./src/ai-answers.ts"
+    "./ai-answers": "./src/ai-answers.ts",
+    "./i18n/*": "./src/i18n/*"
   },
   "scripts": {
     "typecheck": "tsc --noEmit -p tsconfig.json",

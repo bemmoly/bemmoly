@@ -1,5 +1,6 @@
 export * from './capabilities/index.ts';
 export * from './errors/index.ts';
+export * from './i18n/locales.ts';
 export * from './lql/index.ts';
 export * from './modules/index.ts';
 export * from './schemas/index.ts';
