@@ -164,3 +164,10 @@ export {
   type McpService,
 } from './services/mcp/index.ts';
 export { DEFAULT_MCP_RATE_LIMIT, type McpRateLimit } from './routes/mcp.routes.ts';
+export {
+  deleteExpiredSsoState,
+  forgetOidcDiscovery,
+  safeReturnTo,
+  serviceProviderUrls,
+  type SsoDependencies,
+} from './services/sso/index.ts';
