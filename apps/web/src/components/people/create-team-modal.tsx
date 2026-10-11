@@ -1,5 +1,6 @@
 import { Button, Field, Input, Modal, Select } from '@bemmoly/ui';
 import { useCreateTeam } from '../../hooks/use-teams.ts';
+import { FormError } from '../form.tsx';
 
 /** "Create team": name, lead and the role people get when they join. */
 export function CreateTeamModal({ open, onClose }: { open: boolean; onClose: () => void }) {
@@ -68,6 +69,7 @@ export function CreateTeamModal({ open, onClose }: { open: boolean; onClose: () 
             />
           </Field>
         </div>
+        <FormError error={create.formError} />
       </form>
     </Modal>
   );
