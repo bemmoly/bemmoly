@@ -66,6 +66,8 @@ function RoadmapBody({
   return (
     <div className="flex min-h-0 flex-1">
       <div className="flex min-w-0 flex-1 flex-col">
+        {/* The trail names the screen; the heading gives it to a screen reader's outline. */}
+        <h1 className="sr-only">Roadmap</h1>
         <RoadmapToolbar
           view={view}
           state={state}

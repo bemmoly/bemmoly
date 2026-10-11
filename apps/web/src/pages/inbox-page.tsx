@@ -250,6 +250,7 @@ export function InboxPage() {
       header={header}
       title={[view === 'inbox' ? 'Inbox' : `Inbox · ${view}`]}
     >
+      <h1 className="sr-only">Inbox</h1>
       {phone ? (
         <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">{detail ?? list}</div>
       ) : (
