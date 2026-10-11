@@ -38,7 +38,8 @@ const MODULES = 'workspace.modules.manage';
 
 /**
  * The kernel's settings pages in the design review's order (docs/design/premium/kit.js,
- * `settingsSidebar`): Account is everyone's own, then Workspace, People, Modules and System.
+ * `settingsSidebar`): Account is everyone's own, then Workspace, People, Modules, Integrations
+ * and System.
  * Each enabled module's settings join the Modules group from its manifest.
  */
 export const KERNEL_SETTINGS: readonly SettingsGroup[] = [
@@ -91,6 +92,11 @@ export const KERNEL_SETTINGS: readonly SettingsGroup[] = [
       item('modules', 'Manage modules', '/settings/modules', 'modules', MODULES),
       item('import', 'Import', '/settings/import', 'upload', 'admin'),
     ],
+  },
+  {
+    id: 'integrations',
+    label: 'Integrations',
+    items: [item('code-hosts', 'Code hosts', '/settings/code-hosts', 'branch', SETTINGS)],
   },
   {
     id: 'system',

@@ -7,8 +7,9 @@ title, description and criteria in place; assign (Assign to me sits beside the a
 
 **Layout.** The `contained` reading column: the body on the left (title, ghost actions of one
 size, the AI summary when AI is on, description, acceptance criteria, sub-issues, links,
-activity) and the rail on the right (status, then Properties, Planning and People groups). On
-phones the rail sits under the title as one column.
+development (linked code, see settings-code-hosts.md), activity) and the rail on the right
+(status, then Properties, Planning and People groups). On phones the rail sits under the title
+as one column.
 
 **Editing.**
 - Title: a click turns the 26px heading into a field of the same type, caret at the end. Enter
