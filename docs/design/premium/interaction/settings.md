@@ -30,12 +30,14 @@ the content beneath the header.
 
 ## Page notes
 
-- **Profile.** Who you are signed in as; links to Notifications and the personal theme menu.
+- **Profile.** Who you are signed in as; links to Notifications.
 - **Notifications.** One row per event with a delivery select; the digest cadence below.
 - **General.** Workspace name, URL (set by the server, shown read-only with where it comes from),
   language and timezone.
 - **Appearance.** Theme presets with a live BrandBlock preview. The logo row explains that "on
-  Bemmoly" and the mark stay with a custom logo; custom themes never recolour the mark.
+  Bemmoly" and the mark stay with a custom logo; custom themes never recolour the mark. Only a
+  workspace admin edits it; anyone else sees the workspace theme read-only with "Your workspace
+  admin sets the theme" and their own mode control (ADR 0021, amended).
 - **Email delivery.** Transport, sender and digests, a test send, and the outbox with failures named.
 - **AI and models.** Works without AI; popular providers as tiles, the full catalog searchable.
 - **Members.** Search, status segments, role and team filters, a quiet role menu per row, invite in

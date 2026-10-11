@@ -16,7 +16,7 @@ mount it).
 │ Docs: spaces and pages       │  (full: the screen's panes; contained: 1040)  │
 │ Settings · Help              │                                               │
 │ Bemmoly 0.4.0 · What's new   │                                               │
-│ person menu                  │                                               │
+│ person menu   · Appearance   │                                               │
 └──────────────────────────────┴───────────────────────────────────────────────┘
 ```
 

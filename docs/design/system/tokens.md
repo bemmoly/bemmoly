@@ -204,7 +204,8 @@ motion every duration is zero ([accessibility.md](accessibility.md#motion)).
 ADR 0021. A **theme** is a pair: a designed light and dark set of fifteen tokens (`canvas`,
 `side`, `sunken`, `card`, `line`, `line-2`, `tx`, `tx-2`, `tx-3`, `acc`, `acc-500`, `acc-50`,
 `acc-100`, `acc-fill`, `on-acc`), in `src/tokens/themes.ts`. **Mode** (`light`, `dark`, `system`)
-and the **typeface** are separate choices. Nothing a theme does reaches the brand, AI, status,
+and the **typeface** are separate choices. The theme and typeface are the workspace's, set only by
+a workspace admin; the mode is the person's own (ADR 0021, amended). Nothing a theme does reaches the brand, AI, status,
 signal, type, epic or avatar colours, the type scale, radius or spacing.
 
 | Theme         | Tag        | Light accent / fill   | Dark accent / fill    |
