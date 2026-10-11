@@ -5,6 +5,7 @@
  * shows without a date until it is added.
  */
 export const RELEASE_DATES: Readonly<Record<string, string>> = {
+  '0.13.1': '2026-10-11',
   '0.7.0': '2026-10-11',
   '0.6.0': '2026-10-11',
   '0.5.0': '2026-10-11',
@@ -29,6 +30,12 @@ export const RELEASE_DATES: Readonly<Record<string, string>> = {
 export const RELEASE_TITLES: Readonly<
   Record<string, { title: string; summary: string; short?: string }>
 > = {
+  '0.13.1': {
+    title: 'A roadmap, webhooks and code links',
+    short: 'Roadmap and webhooks',
+    summary:
+      'A roadmap view, outgoing webhooks, code host links, and tested Kubernetes and Terraform paths',
+  },
   '0.7.0': {
     title: 'Imports and single sign-on',
     short: 'Imports and SSO',
@@ -70,9 +77,9 @@ export const SHIPPED = [
   { title: 'SCIM provisioning', since: '0.7.0', terms: ['SCIM'] },
   { title: 'Image uploads in Docs', since: '0.6.0', terms: ['upload'] },
   { title: 'An MCP server', since: '0.6.0', terms: ['MCP'] },
-  { title: 'Webhooks and automation', since: '0.13.0', terms: ['webhook'] },
-  { title: 'A roadmap view', since: '0.13.0', terms: ['roadmap'] },
-  { title: 'Kubernetes and Terraform', since: '0.13.0', terms: ['Terraform', 'Helm chart'] },
+  { title: 'Webhooks and automation', since: '0.13.1', terms: ['webhook'] },
+  { title: 'A roadmap view', since: '0.13.1', terms: ['roadmap'] },
+  { title: 'Kubernetes and Terraform', since: '0.13.1', terms: ['Terraform', 'Helm chart'] },
 ] as const;
 
 /** Words for the shipped items that the notes spell differently, still never "Coming soon". */
@@ -91,3 +98,12 @@ export const ROADMAP = [
     terms: ['web push'],
   },
 ] as const;
+
+/**
+ * Versions that were tagged but never published, each with the release that shipped its notes.
+ * 0.13.0's release failed and 0.13.1 fixed it, so nobody can install 0.13.0: the site lists its
+ * notes under 0.13.1.
+ */
+export const UNPUBLISHED: Readonly<Record<string, string>> = {
+  '0.13.0': '0.13.1',
+};
