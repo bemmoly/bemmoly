@@ -9,7 +9,7 @@ _bemmoly() {
   local current previous
   current="${COMP_WORDS[COMP_CWORD]}"
   previous="${COMP_WORDS[COMP_CWORD - 1]}"
-  local commands='status doctor logs shell start stop restart config domain backup backups verify restore upgrade rollback sync-updater db update-channel help'
+  local commands='status doctor logs shell start stop restart config domain backup backups verify restore upgrade rollback sync-updater self-update version db update-channel help'
   if [[ "${COMP_CWORD}" -eq 1 ]]; then
     mapfile -t COMPREPLY < <(compgen -W "${commands}" -- "${current}")
     return
@@ -31,6 +31,7 @@ _bemmoly() {
       ;;
     rollback) mapfile -t COMPREPLY < <(compgen -W '--prefer-restore --yes' -- "${current}") ;;
     db) mapfile -t COMPREPLY < <(compgen -W 'status validate plan history tag rollback' -- "${current}") ;;
+    self-update) mapfile -t COMPREPLY < <(compgen -W '--from' -- "${current}") ;;
     update-channel) mapfile -t COMPREPLY < <(compgen -W 'stable beta' -- "${current}") ;;
   esac
 }

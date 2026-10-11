@@ -194,12 +194,18 @@ schedule_backups() {
   note "Nightly backup scheduled 02:00 → ${INSTALL_DIR}/backups"
 }
 
+# The release the bemmoly command comes from: the bundle's, or "dev" from a checkout.
+cli_release() {
+  if semver_ok "${BEMMOLY_DEFAULT_VERSION:-}"; then printf '%s' "${BEMMOLY_DEFAULT_VERSION}"; else printf dev; fi
+}
+
 install_cli() {
   as_root install -d -m 755 /usr/local/lib/bemmoly
-  for name in common.sh preflight.sh cli-stack.sh cli-backups.sh cli-updates.sh; do
+  for name in common.sh preflight.sh cli-stack.sh cli-backups.sh cli-updates.sh cli-selfupdate.sh; do
     asset "${name}" | root_write "/usr/local/lib/bemmoly/${name}" 644
   done
   asset bemmoly | root_write /usr/local/bin/bemmoly 755
+  printf "%s\n" "$(cli_release)" | root_write /usr/local/lib/bemmoly/VERSION 644
   as_root install -d -m 755 /usr/share/bash-completion/completions
   asset completion.bash | root_write /usr/share/bash-completion/completions/bemmoly 644
   if [ "${INSTALL_DIR}" != /var/bemmoly ]; then

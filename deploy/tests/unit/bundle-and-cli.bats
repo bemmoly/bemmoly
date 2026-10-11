@@ -11,7 +11,7 @@ setup() {
   sh -n "${bundle}"
   grep -q "^BEMMOLY_DEFAULT_VERSION='1.2.0'$" "${bundle}"
   for asset in docker-compose.yml Caddyfile env.template common.sh preflight.sh \
-    cli-stack.sh cli-backups.sh cli-updates.sh bemmoly completion.bash \
+    cli-stack.sh cli-backups.sh cli-updates.sh cli-selfupdate.sh bemmoly completion.bash \
     bemmoly-backup.service bemmoly-backup.timer; do
     grep -q "^    ${asset})$" "${bundle}"
   done
@@ -60,7 +60,7 @@ setup() {
 @test "the CLI prints its commands without root" {
   run bash "${DEPLOY_DIR}/cli/bemmoly" help
   [ "${status}" -eq 0 ]
-  for command in status doctor logs shell backup backups restore upgrade rollback sync-updater db update-channel; do
+  for command in status doctor logs shell backup backups restore upgrade rollback sync-updater self-update version db update-channel; do
     [[ "${output}" == *"${command}"* ]]
   done
 }

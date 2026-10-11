@@ -64,6 +64,8 @@ cmd_upgrade() {
     # An updater with self-update has already moved itself (ADR 0020); an older one has not.
     [[ "$(env_value UPDATER_VERSION)" == "${version}" ]] || follow_app_version
     success "Bemmoly ${version} is running"
+    # The bemmoly command follows the release it now manages, then runs again (ADR 0024).
+    cli_follow_release "${version}"
   fi
 }
 
