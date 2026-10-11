@@ -21,7 +21,7 @@ const LOCKUP = brand('lockup-color.svg');
 const LOCKUP_LIGHT = brand('lockup-light.svg');
 const MARK = brand('mark-color.svg');
 
-export const PROMISES = ['100% open source', 'No pricing', 'No in-app purchases'] as const;
+export const PROMISES = ['100% open source', 'No subscription', 'No in-app purchases'] as const;
 
 type Layout = 'split' | 'stack' | 'cover' | 'thumb' | 'shotled' | 'install' | 'themes';
 

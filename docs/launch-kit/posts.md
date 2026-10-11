@@ -55,7 +55,7 @@ image and one Postgres, and one command installs it:
 You can try it without installing at https://bemmoly.com/demo. That's the real app on sample
 data, running in your browser against a mocked backend.
 
-Three promises: 100% open source (MIT, no open core, no enterprise edition), no pricing (no
+Three promises: 100% open source (MIT, no open core, no enterprise edition), no subscription (no
 seats, plans or licence key), and no in-app purchases (nothing is locked).
 
 What's in 0.13.1:
@@ -120,7 +120,7 @@ https://bemmoly.com/self-hosting#install
   check
 - Five themes in light and dark, and your own logo
 
-**Promises:** 100% open source (MIT), no pricing, no in-app purchases. No telemetry.
+**Promises:** 100% open source (MIT), no subscription, no in-app purchases. No telemetry.
 
 Running Kubernetes? There's a Helm chart, and Terraform modules that set up a VM and run the
 installer.
@@ -144,10 +144,10 @@ Images: `images/producthunt-thumbnail.png` (240 × 240) and the gallery
 
 Self-hosted issues and docs. Open source, nothing to buy
 
-**Description** (252 of 260 characters):
+**Description** (257 of 260 characters):
 
 Your team's issues and docs in one app on your own server: boards, sprints, a collaborative
-editor, Jira and Confluence import, and optional AI with your own provider. MIT, no pricing, no
+editor, Jira and Confluence import, and optional AI with your own provider. MIT, no subscription, no
 in-app purchases. Try the live demo or install with one command.
 
 **First comment (maker):**
@@ -164,7 +164,7 @@ What's in it today (0.13.1):
 - AI, optional: off until you turn it on. Your provider or a local model. Summaries cite their
   sources.
 
-Three promises: 100% open source (MIT), no pricing, no in-app purchases.
+Three promises: 100% open source (MIT), no subscription, no in-app purchases.
 
 Try the demo, no sign-up: https://bemmoly.com/demo
 Install: https://bemmoly.com/self-hosting#install
@@ -185,7 +185,7 @@ Images: post 1 `images/x-post-1-hero.png`, post 3 `images/x-post-2-docs.png`, po
 **1/7**
 Bemmoly is out: self-hosted issues and docs for your whole team.
 
-100% open source. No pricing. No in-app purchases.
+100% open source. No subscription. No in-app purchases.
 
 One Docker image, one Postgres, one command.
 
@@ -246,7 +246,7 @@ optional AI that uses the provider you choose and stays off until an admin turns
 coming from Jira and Confluence can import their projects and spaces, and single sign-on is
 included.
 
-Three promises: 100% open source, no pricing, no in-app purchases. The only cost is the server
+Three promises: 100% open source, no subscription, no in-app purchases. The only cost is the server
 you run it on.
 
 Try the live demo in your browser: https://bemmoly.com/demo

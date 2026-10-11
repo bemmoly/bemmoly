@@ -1,7 +1,7 @@
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="./packages/ui/assets/brand/generated/readme-hero-dark.png">
-    <img alt="Bemmoly: Your work. Your platform. Self-hosted issues and docs. 100% open source, no pricing, no in-app purchases." src="./packages/ui/assets/brand/generated/readme-hero.png" width="100%">
+    <img alt="Bemmoly: Your work. Your platform. Self-hosted issues and docs. 100% open source, no subscription, no in-app purchases." src="./packages/ui/assets/brand/generated/readme-hero.png" width="100%">
   </picture>
 </p>
 

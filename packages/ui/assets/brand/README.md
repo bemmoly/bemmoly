@@ -75,7 +75,7 @@ The social previews, profile banners, README hero and repository social preview 
 by the same generator as the launch kit, `docs/launch-kit/src/render.ts`: HTML and CSS
 templates (`docs/launch-kit/src/templates.ts`, the `BRAND` list) rendered to PNG with
 Playwright at each platform's exact size. Every one is light, uses the logo's colours only,
-and carries the three promises as drawn check marks: 100% open source, No pricing, No in-app
+and carries the three promises as drawn check marks: 100% open source, No subscription, No in-app
 purchases. The product in them is a real capture of the demo (`docs/launch-kit/src/shots`),
 never a mock; on the banners it is a tilted glimpse of the board rather than a full frame.
 
