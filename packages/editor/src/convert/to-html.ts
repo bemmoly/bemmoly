@@ -2,7 +2,7 @@ import { docNode } from '../schema/nodes/registry.ts';
 import type { ExportContext } from '../schema/nodes/types.ts';
 import type { RichTextDoc, RichTextNode } from '../types.ts';
 import { exportStylesheet } from './html-style.ts';
-import { escapeHtml, safeHref, SAFE_LINK, type ExportOptions } from './options.ts';
+import { escapeHtml, imageSource, safeHref, SAFE_LINK, type ExportOptions } from './options.ts';
 import { buildToc, headingIds } from './text.ts';
 
 /*
@@ -45,6 +45,7 @@ export function toHtml(doc: RichTextDoc | null | undefined, options: ExportOptio
     escape: escapeHtml,
     pageHref: (id) => safeHref(options.pageHref?.(id)),
     issueHref: (key) => safeHref(options.issueHref?.(key)),
+    imageSrc: (src) => imageSource(src, options),
   };
 
   function inline(node: RichTextNode): string {

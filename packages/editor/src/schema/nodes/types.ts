@@ -28,6 +28,8 @@ export interface ExportContext {
   pageHref: (pageId: string) => string | null;
   /** Where an issue key points, when the host knows. */
   issueHref: (key: string) => string | null;
+  /** Where an image's (safe) source points in this export. */
+  imageSrc: (src: string) => string;
 }
 
 export interface DocNode {

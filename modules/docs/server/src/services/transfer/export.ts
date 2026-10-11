@@ -6,6 +6,7 @@ import type { ExportQuery } from '../../../../shared/transfer.ts';
 import type { DocsServiceDeps } from '../common.ts';
 import { pagePath } from '../palette/index.ts';
 import { createZip } from '../../utils/zip.ts';
+import { collectImages, dataUri } from './export-images.ts';
 
 /*
  * Turning pages into files. Each page is one file named after its title; a page with
@@ -86,7 +87,7 @@ export async function pagesToExport(
 }
 
 export async function renderExport(
-  deps: Pick<DocsServiceDeps, 'entities'>,
+  deps: Pick<DocsServiceDeps, 'entities' | 'files'>,
   ctx: RequestContext,
   pages: readonly ExportPage[],
   query: ExportQuery,
@@ -95,6 +96,12 @@ export async function renderExport(
   const extension = query.format === 'markdown' ? 'md' : 'html';
   const paths = filePaths(pages, root.id, extension);
   const issues = await issueLinks(deps, ctx, pages);
+  const images = await collectImages(
+    deps.files,
+    ctx,
+    pages.map((page) => page.snapshot),
+  );
+  const folder = query.scope !== 'page';
   const render = (page: ExportPage) => {
     const here = posix.dirname(paths.get(page.id)!);
     const options = {
@@ -105,6 +112,12 @@ export async function renderExport(
         return relative.startsWith('../') ? relative : `./${relative}`;
       },
       issueHref: (key: string) => issues.get(key) ?? null,
+      imageSrc: (src: string) => {
+        const image = images.get(src);
+        if (!image) return null;
+        if (folder) return `./${posix.relative(here, image.path)}`.replace(/^\.\/\.\.\//, '../');
+        return query.format === 'html' ? dataUri(image) : null;
+      },
     };
     const title = page.title || 'Untitled';
     return query.format === 'markdown'
@@ -122,6 +135,9 @@ export async function renderExport(
   return {
     fileName: `${slugify(root.title || 'untitled')}.zip`,
     contentType: 'application/zip',
-    body: createZip(pages.map((page) => ({ name: paths.get(page.id)!, data: render(page) }))),
+    body: createZip([
+      ...pages.map((page) => ({ name: paths.get(page.id)!, data: render(page) })),
+      ...[...images.values()].map((image) => ({ name: image.path, data: image.data })),
+    ]),
   };
 }
