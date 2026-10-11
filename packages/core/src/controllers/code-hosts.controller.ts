@@ -1,7 +1,11 @@
 import {
+  completeGithubAppSchema,
   createCodeHostSchema,
+  githubAppFormQuerySchema,
   idParamsSchema,
+  installGithubAppSchema,
   parseOrThrow,
+  startGithubAppSchema,
   updateCodeHostSchema,
   type CodeHost,
   type CodeHostBackfill,
@@ -9,6 +13,8 @@ import {
   type CodeHostsResponse,
   type CodeHostTestResult,
   type CodeWebhookReceipt,
+  type GithubAppCreated,
+  type GithubAppStart,
 } from '@bemmoly/shared';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import type { ActorResolver } from '../middlewares/actor.ts';
@@ -47,6 +53,37 @@ export function createCodeHostsController(codeHosts: CodeHosts, actorOf: ActorRe
       const result = await service.test(await actorOf(request), idOf(request));
       reply.code(201);
       return result;
+    },
+    async startGithubApp(request: FastifyRequest, reply: FastifyReply): Promise<GithubAppStart> {
+      const body = parseOrThrow(startGithubAppSchema, request.body);
+      const manifest = await service.startGithubApp(await actorOf(request), body);
+      reply.code(201);
+      return manifest;
+    },
+    /** An HTML page, not JSON: the browser lands on it and it posts the manifest to GitHub. */
+    async githubAppForm(request: FastifyRequest, reply: FastifyReply): Promise<FastifyReply> {
+      const { state } = parseOrThrow(githubAppFormQuerySchema, request.query);
+      const page = await service.githubAppForm(await actorOf(request), state);
+      return reply
+        .header('content-security-policy', page.contentSecurityPolicy)
+        .header('cache-control', 'no-store')
+        .type('text/html; charset=utf-8')
+        .send(page.html);
+    },
+    async completeGithubApp(
+      request: FastifyRequest,
+      reply: FastifyReply,
+    ): Promise<GithubAppCreated> {
+      const body = parseOrThrow(completeGithubAppSchema, request.body);
+      const created = await service.completeGithubApp(await actorOf(request), body);
+      reply.code(201);
+      return created;
+    },
+    async installGithubApp(request: FastifyRequest, reply: FastifyReply): Promise<CodeHost> {
+      const body = parseOrThrow(installGithubAppSchema, request.body);
+      const host = await service.installGithubApp(await actorOf(request), idOf(request), body);
+      reply.code(201);
+      return host;
     },
     async backfill(request: FastifyRequest, reply: FastifyReply): Promise<CodeHostBackfill> {
       const result = await service.backfill(await actorOf(request), idOf(request));

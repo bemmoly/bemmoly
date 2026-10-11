@@ -39,5 +39,16 @@ export function codeHostsRoutes(c: CodeHostsController): FastifyPluginAsync {
     app.get('/admin/code-hosts/:id/deliveries', async (r) => c.deliveries(r));
     app.post('/admin/code-hosts/:id/tests', async (r, reply) => c.test(r, reply));
     app.post('/admin/code-hosts/:id/backfills', async (r, reply) => c.backfill(r, reply));
+    app.post('/admin/code-hosts/github-app-manifests', async (r, reply) =>
+      c.startGithubApp(r, reply),
+    );
+    // Opened by the browser itself (a page, not a JSON call), under the admin's session.
+    app.get('/admin/code-hosts/github-app-manifests', async (r, reply) =>
+      c.githubAppForm(r, reply),
+    );
+    app.post('/admin/code-hosts/github-apps', async (r, reply) => c.completeGithubApp(r, reply));
+    app.post('/admin/code-hosts/:id/installations', async (r, reply) =>
+      c.installGithubApp(r, reply),
+    );
   };
 }

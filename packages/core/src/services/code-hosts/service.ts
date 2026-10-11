@@ -4,13 +4,20 @@ import {
   type CodeHostBackfill,
   type CodeHostDelivery,
   type CodeHostTestResult,
+  type CompleteGithubApp,
   type CreateCodeHost,
+  type GithubAppCreated,
+  type GithubAppStart,
+  type InstallGithubApp,
+  type StartGithubApp,
   type UpdateCodeHost,
 } from '@bemmoly/shared';
 import type { AuditRecorder } from '../../contracts/audit.ts';
 import type { Actor, Authorize } from '../../contracts/authz.ts';
 import type { JobQueue } from '../../contracts/jobs.ts';
 import { CODE_HOST_BACKFILL_JOB } from './backfill.ts';
+import { createGithubAppFlow } from './github-app-flow.ts';
+import type { GithubAppPage } from './github-app-page.ts';
 import { applyDelivery } from './receive.ts';
 import { codeHostDriver } from './registry.ts';
 import { addressPolicyFor, type CodeHostRuntime } from './runtime.ts';
@@ -83,7 +90,30 @@ export function createCodeHostService(deps: CodeHostServiceDeps) {
     await deps.audit.record({ actor, action, target: { kind: 'integration', id: row.id }, after });
   }
 
+  const githubApp = createGithubAppFlow(deps, { presentOne, audit });
+
   return {
+    /** Connect GitHub in one click: the manifest, GitHub's code, then the installation. */
+    async startGithubApp(actor: Actor, input: StartGithubApp): Promise<GithubAppStart> {
+      await deps.authorize(actor, CAPABILITY, workspace);
+      return githubApp.start(actor, input);
+    },
+
+    async githubAppForm(actor: Actor, state: string): Promise<GithubAppPage> {
+      await deps.authorize(actor, CAPABILITY, workspace);
+      return githubApp.form(actor, state);
+    },
+
+    async completeGithubApp(actor: Actor, input: CompleteGithubApp): Promise<GithubAppCreated> {
+      await deps.authorize(actor, CAPABILITY, workspace);
+      return githubApp.complete(actor, input);
+    },
+
+    async installGithubApp(actor: Actor, id: string, input: InstallGithubApp): Promise<CodeHost> {
+      await deps.authorize(actor, CAPABILITY, workspace);
+      return githubApp.install(actor, id, input);
+    },
+
     async list(actor: Actor): Promise<CodeHost[]> {
       await deps.authorize(actor, CAPABILITY, workspace);
       return present(await sql<IntegrationRow[]>`select * from integrations order by created_at`);

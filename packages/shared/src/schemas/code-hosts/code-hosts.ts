@@ -27,7 +27,7 @@ export type CodeReviewState = z.infer<typeof codeReviewStateSchema>;
 export const CODE_HOST_AUTH_MODES = ['app', 'token'] as const;
 export const codeHostAuthModeSchema = z.enum(CODE_HOST_AUTH_MODES);
 
-const numericId = z
+export const numericIdSchema = z
   .string()
   .trim()
   .regex(/^\d{1,20}$/, 'A number, as the host shows it');
@@ -50,8 +50,8 @@ export const codeHostCredentialsInputSchema = z.discriminatedUnion('mode', [
   }),
   z.object({
     mode: z.literal('app'),
-    appId: numericId,
-    installationId: numericId,
+    appId: numericIdSchema,
+    installationId: numericIdSchema,
     privateKey: pemPrivateKey.optional(),
   }),
 ]);
@@ -136,6 +136,8 @@ export const codeHostSchema = z.object({
   authMode: codeHostAuthModeSchema,
   appId: z.string().nullable(),
   installationId: z.string().nullable(),
+  /** Where the app Bemmoly created is installed or its repositories changed; null otherwise. */
+  installUrl: z.string().nullable(),
   hasCredentials: z.boolean(),
   hasWebhookSecret: z.boolean(),
   repositories: z.array(z.string()),

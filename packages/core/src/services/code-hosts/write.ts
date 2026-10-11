@@ -17,6 +17,7 @@ interface IntegrationColumns {
   authMode: 'app' | 'token';
   appId: string | null;
   installationId: string | null;
+  appSlug: string | null;
   repositories: string[];
   enabled: boolean;
   sealed: string;
@@ -53,7 +54,7 @@ export function mergeSecrets(
 
 const appIds = (credentials: CodeHostCredentialsInput) =>
   credentials.mode === 'app'
-    ? { appId: credentials.appId, installationId: credentials.installationId }
+    ? { appId: credentials.appId, installationId: credentials.installationId || null }
     : { appId: null, installationId: null };
 
 export function createColumns(
@@ -67,6 +68,7 @@ export function createColumns(
     baseUrl: body.baseUrl,
     authMode: body.credentials.mode,
     ...appIds(body.credentials),
+    appSlug: null,
     repositories: body.repositories,
     enabled: body.enabled,
     sealed: sealHostSecrets(box, id, secrets),
@@ -90,6 +92,8 @@ export function updateColumns(
     baseUrl: body.baseUrl === undefined ? row.base_url : body.baseUrl,
     authMode: credentials.mode,
     ...appIds(credentials),
+    // The slug names the app Bemmoly created; another app, or a token, has none.
+    appSlug: credentials.mode === 'app' && credentials.appId === row.app_id ? row.app_slug : null,
     repositories: body.repositories ?? row.repositories,
     enabled: body.enabled ?? row.enabled,
     sealed: sealHostSecrets(box, row.id, secrets),
@@ -105,9 +109,10 @@ export async function insertIntegration(
 ): Promise<void> {
   await sql`
     insert into integrations (id, kind, name, base_url, auth_mode, app_id, installation_id,
-      repositories, secrets_encrypted, enabled, created_by)
+      app_slug, repositories, secrets_encrypted, enabled, created_by)
     values (${id}, ${kind}, ${columns.name}, ${columns.baseUrl}, ${columns.authMode},
-      ${columns.appId}, ${columns.installationId}, ${columns.repositories}::text[],
+      ${columns.appId}, ${columns.installationId}, ${columns.appSlug},
+      ${columns.repositories}::text[],
       ${columns.sealed}, ${columns.enabled}, ${createdBy})`;
 }
 
@@ -119,7 +124,7 @@ export async function updateIntegration(
   await sql`
     update integrations set name = ${columns.name}, base_url = ${columns.baseUrl},
       auth_mode = ${columns.authMode}, app_id = ${columns.appId},
-      installation_id = ${columns.installationId},
+      installation_id = ${columns.installationId}, app_slug = ${columns.appSlug},
       repositories = ${columns.repositories}::text[], secrets_encrypted = ${columns.sealed},
       enabled = ${columns.enabled}, updated_at = now()
     where id = ${id}`;

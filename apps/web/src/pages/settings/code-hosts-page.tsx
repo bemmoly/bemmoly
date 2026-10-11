@@ -6,11 +6,12 @@ import { DeliveriesDialog } from '../../components/code-hosts/deliveries-dialog.
 import { HostCard } from '../../components/code-hosts/host-card.tsx';
 import { HostDialog } from '../../components/code-hosts/host-dialog.tsx';
 import { HostTile } from '../../components/code-hosts/host-mark.tsx';
-import { Notice } from '../../components/form.tsx';
+import { FormError, Notice } from '../../components/form.tsx';
 import { AuthMethodCard } from '../../components/people/auth-method-card.tsx';
 import { SettingsPage } from '../../components/settings/settings-page.tsx';
 import { SettingsSkeleton } from '../../components/settings/settings-states.tsx';
 import { CODE_HOSTS_CAPABILITY, HOST_LABELS, useCodeHosts } from '../../hooks/use-code-hosts.ts';
+import { useGithubAppReturn } from '../../hooks/use-github-app-return.ts';
 import { useSearchParam } from '../../hooks/use-search-param.ts';
 import { useMe } from '../../hooks/use-session.ts';
 import { describeError } from '../../lib/errors.ts';
@@ -27,6 +28,7 @@ export function CodeHostsPage() {
   const hosts = useCodeHosts(allowed);
   const [hostParam, setHost] = useSearchParam('host');
   const [deliveriesParam, setDeliveries] = useSearchParam('deliveries');
+  const github = useGithubAppReturn(allowed);
   const [removing, setRemoving] = useState<CodeHost | null>(null);
   const [removeError, setRemoveError] = useState<string | null>(null);
   const add = () => setHost('new');
@@ -59,6 +61,9 @@ export function CodeHostsPage() {
     >
       {allowed ? (
         <>
+          {github.working && <Notice>{github.working}</Notice>}
+          {github.notice && <Notice tone="caution">{github.notice}</Notice>}
+          <FormError error={github.error} />
           <section aria-label="Code hosts" className="grid gap-3 sm:grid-cols-2">
             {hosts.items.map((host) => (
               <HostCard
@@ -83,7 +88,7 @@ export function CodeHostsPage() {
                     state={{ tone: 'neutral', label: 'Not connected' }}
                     description={
                       kind === 'github'
-                        ? 'github.com or Enterprise Server, as a GitHub App or with a token.'
+                        ? 'github.com or Enterprise Server. One click creates a GitHub App for Bemmoly.'
                         : 'gitlab.com or self-managed, with a project or group access token.'
                     }
                     actions={

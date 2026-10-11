@@ -1,5 +1,8 @@
 import {
+  completeGithubAppSchema,
   createCodeHostSchema,
+  installGithubAppSchema,
+  startGithubAppSchema,
   updateCodeHostSchema,
   type CodeHost,
   type CodeHostDelivery,
@@ -36,6 +39,76 @@ function record(db: MockDb, host: CodeHost, entry: Omit<CodeHostDelivery, 'id' |
   return delivery;
 }
 
+/** The mock's GitHub App: created from any code, installed on two repositories. */
+const MOCK_APP_SLUG = 'bemmoly-demo';
+
+const githubAppRoutes: MockRoute[] = [
+  {
+    method: 'POST',
+    pattern: '/api/v1/admin/code-hosts/github-app-manifests',
+    handle: needs((request) => {
+      const parsed = startGithubAppSchema.safeParse(request.body);
+      if (!parsed.success) return invalid('organization', 'Check the organization name');
+      const owner = parsed.data.organization ? `organizations/${parsed.data.organization}/` : '';
+      return ok(
+        {
+          url: `https://github.com/${owner}settings/apps/new?state=mock`,
+          manifest: JSON.stringify({ name: 'Bemmoly demo', url: MOCK_WEBHOOK_ORIGIN }),
+          webhooks: true,
+        },
+        201,
+      );
+    }),
+  },
+  {
+    method: 'POST',
+    pattern: '/api/v1/admin/code-hosts/github-apps',
+    handle: needs((request, db) => {
+      if (!completeGithubAppSchema.safeParse(request.body).success) {
+        return invalid('code', 'GitHub sent no code');
+      }
+      const id = newId();
+      const now = new Date().toISOString();
+      const installUrl = `https://github.com/apps/${MOCK_APP_SLUG}/installations/new`;
+      const host: CodeHost = {
+        id,
+        kind: 'github',
+        name: 'GitHub',
+        baseUrl: null,
+        webhookUrl: `${MOCK_WEBHOOK_ORIGIN}/api/v1/code-hosts/${id}/webhooks`,
+        authMode: 'app',
+        appId: '987654',
+        installationId: null,
+        installUrl,
+        hasCredentials: true,
+        hasWebhookSecret: true,
+        repositories: [],
+        enabled: true,
+        lastDelivery: null,
+        lastError: null,
+        createdAt: now,
+        updatedAt: now,
+      };
+      codeHostsOf(db).hosts.push(host);
+      return ok({ host, installUrl }, 201);
+    }),
+  },
+  {
+    method: 'POST',
+    pattern: '/api/v1/admin/code-hosts/:id/installations',
+    handle: needs((request, db) => {
+      const host = find(db, request.params['id']);
+      if (!host) return notFound('The code host');
+      const parsed = installGithubAppSchema.safeParse(request.body);
+      if (!parsed.success) return invalid('installationId', 'GitHub sent no installation');
+      host.installationId = parsed.data.installationId;
+      host.repositories = ['acme/api', 'acme/web'];
+      host.updatedAt = new Date().toISOString();
+      return ok(host, 201);
+    }),
+  },
+];
+
 /** Settings › Integrations › Code hosts, as the server answers it. No host is ever called. */
 export const codeHostRoutes: MockRoute[] = [
   {
@@ -64,6 +137,7 @@ export const codeHostRoutes: MockRoute[] = [
         authMode: credentials.mode,
         appId: credentials.mode === 'app' ? credentials.appId : null,
         installationId: credentials.mode === 'app' ? credentials.installationId : null,
+        installUrl: null,
         hasCredentials: true,
         hasWebhookSecret: true,
         repositories: body.repositories,
@@ -169,4 +243,5 @@ export const codeHostRoutes: MockRoute[] = [
       return ok({ queued: true, repositories: host.repositories.length }, 202);
     }),
   },
+  ...githubAppRoutes,
 ];

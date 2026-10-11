@@ -107,6 +107,7 @@ export function seedCodeHosts(withHost: boolean): MockCodeHosts {
         authMode: 'app',
         appId: '412345',
         installationId: '51234567',
+        installUrl: 'https://github.com/apps/bemmoly-acme/installations/new',
         hasCredentials: true,
         hasWebhookSecret: true,
         repositories: ['acme/api', 'acme/web'],
