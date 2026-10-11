@@ -5,7 +5,7 @@
 - **Primary job.** Decide which templates every space's template picker offers, in what order.
 - **Who.** People with `docs.templates.manage` ("Manage org templates" in Roles, org admins by
   default). The server refuses everyone else with 403; the row under Settings › Modules shows
-  only to the people the capability admits (the module declares it in its manifest, ADR 0025).
+  only to the people the capability admits (the module declares it in its manifest, ADR 0029).
   Spaces keep their own templates; a line under the title says so and they never show here.
 - **Layout.** `contained`. The title and its sentence, a search box beside an Active · Archived
   `SegmentedControl`, then the one `Table`: grip, name (icon, name, Built-in badge,
