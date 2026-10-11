@@ -74,7 +74,9 @@ jobs:
             sleep 2
           done
           curl -fsS http://localhost:8080/readyz
-          curl -fsS http://localhost:8080/api/v1/modules
+          # The modules API needs a session; the wizard's status is anonymous by design and
+          # still proves the API answers on a fresh install.
+          curl -fsS http://localhost:8080/api/v1/setup/status | grep -q '"initialized":false'
 
       - name: Container logs
         if: failure() && steps.image.outputs.published == 'true'
