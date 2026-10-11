@@ -115,6 +115,18 @@ const pages = [
     'AiPromptsPage',
   ),
   page('mcp', 'mcp', () => import('../pages/settings/mcp-page.tsx'), 'McpPage'),
+  page(
+    'webhooks',
+    'webhooks',
+    () => import('../pages/settings/webhooks/webhooks-page.tsx'),
+    'WebhooksPage',
+  ),
+  page(
+    'webhooks',
+    'webhooks/$webhookId',
+    () => import('../pages/settings/webhooks/webhook-page.tsx'),
+    'WebhookPage',
+  ),
   page('users', 'users', () => import('../pages/settings/users-page.tsx'), 'UsersPage'),
   page('teams', 'teams', () => import('../pages/settings/teams-page.tsx'), 'TeamsPage'),
   page('roles', 'roles', () => import('../pages/settings/roles-page.tsx'), 'RolesPage'),
