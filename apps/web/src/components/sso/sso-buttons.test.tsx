@@ -38,6 +38,20 @@ describe('SsoButtons', () => {
     expect(document.activeElement).toBe(last);
     expect(screen.getByRole('button', { name: 'Continue with Staff' })).toBeTruthy();
   });
+
+  it('fills the first provider as the primary action and outlines the rest', () => {
+    render(
+      <SsoButtons
+        options={[option('a', 'Google Workspace'), option('b', 'Okta')]}
+        onStart={() => undefined}
+      />,
+    );
+    const first = screen.getByRole('button', { name: 'Continue with Google Workspace' });
+    const second = screen.getByRole('button', { name: 'Continue with Okta' });
+    expect(first.className).toContain('bg-acc-fill');
+    expect(second.className).not.toContain('bg-acc-fill');
+    expect(second.className).toContain('border-line');
+  });
 });
 
 describe('sign-in failure copy', () => {
