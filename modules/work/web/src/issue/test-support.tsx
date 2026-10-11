@@ -153,7 +153,10 @@ export const me = (aiEnabled: boolean) => ({
     url: 'http://bemmoly.test',
     aiEnabled,
     appearance: {
-      theme: 'classic',
+      theme: 'bemmoly',
+      customThemeId: null,
+      defaultMode: 'light',
+      customThemes: [],
       brandColor: '#2356C9',
       font: 'inter',
       logoKey: '',
@@ -163,6 +166,8 @@ export const me = (aiEnabled: boolean) => ({
       personalThemes: true,
     },
   },
+  preferences: { appearance: { mode: null, theme: null } },
+  customThemes: [],
 });
 
 /** The routes every Issue screen reads; tests add or replace handlers for their case. */

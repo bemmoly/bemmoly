@@ -22,7 +22,8 @@ const toggle = <IconButton label="Collapse sidebar" icon="sidebar" size="xs" />;
 
 const Side = ({ children, dark }: { children: React.ReactNode; dark?: boolean }) => (
   <div
-    data-theme={dark ? 'dark' : 'light'}
+    data-theme="bemmoly"
+    data-mode={dark ? 'dark' : 'light'}
     className="w-60 rounded-card bg-side px-2 pt-2.5 pb-2 shadow-e1"
   >
     {children}

@@ -68,7 +68,7 @@ export interface PaletteSources {
   run: {
     invite: () => void;
     shortcuts: () => void;
-    mode: (mode: 'light' | 'dark') => void;
+    mode: (mode: 'light' | 'dark' | 'system') => void;
     signOut: () => void;
   };
 }
@@ -220,6 +220,11 @@ export function paletteItems(sources: PaletteSources): PaletteItem[] {
       icon: 'sun',
       keywords: ['theme'],
       run: () => sources.run.mode('light'),
+    }),
+    action('system', 'Match system light or dark', {
+      icon: 'monitor',
+      keywords: ['theme', 'mode', 'auto'],
+      run: () => sources.run.mode('system'),
     }),
     action('shortcuts', 'Keyboard shortcuts', {
       icon: 'help',

@@ -175,5 +175,9 @@ export const CONFIGURE: readonly { icon: SiteIconName; title: string; body: stri
   { icon: 'flow', title: 'Workflows', body: 'statuses and transitions per project' },
   { icon: 'sliders', title: 'Issue types and fields', body: 'org defaults, project overrides' },
   { icon: 'lock', title: 'Roles', body: 'five built in, plus your own, with org locks' },
-  { icon: 'palette', title: 'Themes', body: 'eight presets and your brand colour' },
+  {
+    icon: 'palette',
+    title: 'Themes',
+    body: 'five themes in light and dark, and your brand colour',
+  },
 ];

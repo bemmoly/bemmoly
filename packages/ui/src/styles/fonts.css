@@ -1,0 +1,25 @@
+/* Generated from src/tokens.ts by `pnpm --filter @bemmoly/ui tokens:css`. Do not edit. */
+:root,
+[data-font='plex'] {
+  --font-ui:
+    'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+    sans-serif;
+}
+
+[data-font='inter'] {
+  --font-ui:
+    'Inter Tight', 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue',
+    Arial, sans-serif;
+}
+
+[data-font='source'] {
+  --font-ui:
+    'Source Sans 3', 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, sans-serif;
+}
+
+[data-font='geist'] {
+  --font-ui:
+    'Geist', 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+    sans-serif;
+}

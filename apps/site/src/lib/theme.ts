@@ -1,7 +1,7 @@
 /**
  * The theme variables the site needs, built from @bemmoly/ui's tokens at build time and
- * inlined in every page, so the site cannot drift from the product. Two presets only, the
- * product's own light and dark (ADR 0015), so visitors do not download the other six.
+ * inlined in every page, so the site cannot drift from the product. One theme only, Bemmoly,
+ * in its light and dark sets (ADR 0021), so visitors do not download the other four.
  *
  * - Light on :root.
  * - Dark when the visitor's system asks for it, unless they chose light in the footer
@@ -15,30 +15,32 @@ import {
   ELEVATIONS,
   FIXED_COLORS,
   FOCUS,
+  FONTS,
   METRICS,
+  MODE_TYPE_COLORS,
+  MONO_STACK,
   MOTION,
+  resolveTheme,
   SHADOWS,
-  themeById,
   type ResolvedTheme,
 } from '@bemmoly/ui/tokens';
 
 const vars = (prefix: string, scale: Readonly<Record<string, string>>) =>
   Object.entries(scale).map(([name, value]) => `--${prefix}${name}:${value};`);
 
-/** One preset's colours, elevations and fonts, as declarations. */
+/** One theme mode's colours and elevations, as declarations; dark lifts Task and Epic. */
 export function declarations(theme: ResolvedTheme): string {
   return [
     ...COLOR_TOKENS.map((token) => `--${token}:${theme.colors[token]};`),
+    ...vars('', MODE_TYPE_COLORS[theme.mode]),
     ...vars('', ELEVATIONS[theme.mode]),
-    `--font-ui:${theme.fontUi};`,
-    `--font-code:${theme.fontCode};`,
     `color-scheme:${theme.mode};`,
   ].join('');
 }
 
 export function themeCss(): string {
-  const light = themeById('light');
-  const dark = declarations(themeById('dark'));
+  const light = resolveTheme('bemmoly', 'light');
+  const dark = declarations(resolveTheme('bemmoly', 'dark'));
   const base = [
     ...vars('', METRICS),
     ...vars('', FIXED_COLORS),
@@ -46,6 +48,8 @@ export function themeCss(): string {
     ...vars('shadow-', SHADOWS),
     ...vars('duration-', MOTION),
     ...vars('ease-', EASE),
+    `--font-ui:${FONTS.plex.stack};`,
+    `--font-code:${MONO_STACK};`,
   ];
   return [
     `:root{${base.join('')}${declarations(light)}}`,

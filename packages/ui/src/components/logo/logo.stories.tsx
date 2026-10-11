@@ -1,7 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import type { CSSProperties } from 'react';
-import { buildTheme, themeStyle } from '../../theme/index.ts';
-import { PRESETS } from '../../tokens/presets.ts';
+import { customThemeSource, themeStyle } from '../../theme/index.ts';
+import { resolveSource } from '../../tokens/resolve.ts';
+import { THEME_SOURCES } from '../../tokens/themes.ts';
 import { Logo, type LogoTone } from './logo.tsx';
 
 const meta = {
@@ -60,40 +61,48 @@ export const AllVariants: Story = {
   ),
 };
 
-/** Custom brand themes are the one case where the mark takes the workspace's colours. */
+/** Custom themes never recolour the mark either: it keeps its designed colours on all of them. */
 const CUSTOM_BRANDS = [
-  buildTheme({ brand: '#0f766e', mode: 'light', surfaces: 'neutral', font: 'plex' }),
-  buildTheme({ brand: '#c2410c', mode: 'dark', surfaces: 'neutral', font: 'plex' }),
+  resolveSource(
+    customThemeSource('teal', 'Teal', { brand: '#0f766e', surface: 'neutral' }),
+    'light',
+  ),
+  resolveSource(customThemeSource('rust', 'Rust', { brand: '#c2410c', surface: 'warm' }), 'dark'),
 ];
 
-/** The builder's tokens as React style: CSS variables, and color-scheme under React's name. */
+/** The theme's tokens as React style: CSS variables, and color-scheme under React's name. */
 function customStyle(theme: (typeof CUSTOM_BRANDS)[number]): CSSProperties {
   const { 'color-scheme': colorScheme, ...variables } = themeStyle(theme);
   return { ...variables, colorScheme } as CSSProperties;
 }
 
-export const AcrossPresets: Story = {
+export const AcrossThemes: Story = {
   render: () => (
     <div className="grid grid-cols-4 gap-3">
-      {PRESETS.map((preset) => (
-        <div
-          key={preset.id}
-          data-theme={preset.id}
-          className="flex flex-col gap-3 rounded-card border border-line bg-card p-4"
-        >
-          <span className="text-11 text-tx-3">{preset.name}</span>
-          <Logo variant="lockup" />
-        </div>
-      ))}
+      {THEME_SOURCES.flatMap((theme) =>
+        (['light', 'dark'] as const).map((mode) => (
+          <div
+            key={`${theme.id}-${mode}`}
+            data-theme={theme.id}
+            data-mode={mode}
+            className="flex flex-col gap-3 rounded-card border border-line bg-card p-4"
+          >
+            <span className="text-11 text-tx-3">
+              {theme.name}, {mode}
+            </span>
+            <Logo variant="lockup" />
+          </div>
+        )),
+      )}
       {CUSTOM_BRANDS.map((theme) => (
         <div
-          key={theme.input.brand}
+          key={theme.id}
           data-theme={theme.id}
           style={customStyle(theme)}
           className="flex flex-col gap-3 rounded-card border border-line bg-card p-4"
         >
           <span className="text-11 text-tx-3">
-            Custom {theme.input.brand}, {theme.mode}
+            Custom {theme.name}, {theme.mode}
           </span>
           <Logo variant="lockup" />
         </div>

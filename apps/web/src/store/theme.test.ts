@@ -1,79 +1,100 @@
-import type { Appearance } from '../lib/appearance.ts';
+import type { CustomThemeRecord } from '@bemmoly/shared';
 import { describe, expect, it } from 'vitest';
-import { NO_PERSONAL_THEME, presetLook, resolveAppearance } from '../lib/theme.ts';
-import { isPresetId, useThemeStore } from './theme.ts';
+import { DEFAULT_APPEARANCE, type Appearance } from '../lib/appearance.ts';
+import { NO_PERSONAL_APPEARANCE, normalizeThemeRef, resolveLook } from '../lib/theme.ts';
+import { migrateDeviceTheme, useThemeStore } from './theme.ts';
 
 const workspace = (patch: Partial<Appearance> = {}): Appearance => ({
-  preset: 'ocean',
-  custom: null,
-  logoKey: null,
-  policy: { memberModeSwitch: true, personalThemes: false },
+  ...DEFAULT_APPEARANCE,
+  theme: 'sand',
+  defaultMode: 'light',
   ...patch,
 });
 
-describe('resolveAppearance', () => {
-  it('renders Classic light before a workspace look exists, with no personal choice', () => {
-    expect(useThemeStore.getInitialState()).toMatchObject({ mode: 'system', preset: null });
-    expect(resolveAppearance(undefined, { mode: 'system', preset: null })).toEqual({
-      kind: 'preset',
-      id: 'light',
-      mode: 'light',
-    });
+const acme: CustomThemeRecord = {
+  id: '0199c0de-0000-7000-8000-00000000a001',
+  name: 'Acme',
+  brandColor: '#0f766e',
+  surface: 'warm',
+  scope: 'workspace',
+  createdAt: '2026-10-01T00:00:00.000Z',
+  updatedAt: '2026-10-01T00:00:00.000Z',
+};
+
+const look = (inputs: Partial<Parameters<typeof resolveLook>[0]>) =>
+  resolveLook({
+    appearance: undefined,
+    personal: NO_PERSONAL_APPEARANCE,
+    customThemes: [],
+    systemDark: false,
+    ...inputs,
   });
 
-  it('honours an explicit personal choice before a workspace look exists', () => {
-    expect(resolveAppearance(undefined, { mode: 'dark', preset: null })).toMatchObject({
-      id: 'dark',
-    });
-    expect(resolveAppearance(undefined, { mode: 'system', preset: 'forest' })).toMatchObject({
-      id: 'forest',
-    });
+describe('resolveLook', () => {
+  it('is Bemmoly following the device before a workspace look exists', () => {
+    expect(useThemeStore.getInitialState()).toMatchObject({ mode: null, theme: null });
+    expect(look({})).toMatchObject({ preference: 'system', mode: 'light', font: 'plex' });
+    expect(look({}).source.id).toBe('bemmoly');
+    expect(look({ systemDark: true }).mode).toBe('dark');
   });
 
-  it('uses the workspace preset and lets members override light or dark', () => {
-    expect(resolveAppearance(workspace(), { mode: 'system', preset: null })).toMatchObject({
-      kind: 'preset',
-      id: 'ocean',
-    });
-    const light = resolveAppearance(workspace(), { mode: 'light', preset: null });
-    expect(light).toMatchObject({ kind: 'custom', mode: 'light' });
+  it('uses the workspace theme and default mode, and the person’s own mode always', () => {
+    const base = look({ appearance: workspace() });
+    expect(base.source.id).toBe('sand');
+    expect(base.mode).toBe('light');
+    const own = look({ appearance: workspace(), personal: { mode: 'system', theme: null } });
+    expect(own).toMatchObject({ preference: 'system', mode: 'light' });
+    expect(look({ appearance: workspace(), personal: { mode: 'dark', theme: null } }).mode).toBe(
+      'dark',
+    );
   });
 
-  it('ignores personal choices the policy does not allow', () => {
-    const locked = workspace({ policy: { memberModeSwitch: false, personalThemes: false } });
-    expect(resolveAppearance(locked, { mode: 'light', preset: 'rose' })).toMatchObject({
-      id: 'ocean',
-    });
-    const open = workspace({ policy: { memberModeSwitch: true, personalThemes: true } });
-    expect(resolveAppearance(open, { mode: 'system', preset: 'rose' })).toMatchObject({
-      id: 'rose',
-    });
+  it('honours a personal theme only while the workspace allows it', () => {
+    const personal = { mode: null, theme: 'pine' };
+    expect(look({ appearance: workspace(), personal }).source.id).toBe('sand');
+    expect(look({ appearance: workspace({ personalThemes: true }), personal }).source.id).toBe(
+      'pine',
+    );
   });
 
-  it('shows a preview above the workspace look and every personal choice', () => {
-    const preview = presetLook('midnight');
-    const open = workspace({ policy: { memberModeSwitch: true, personalThemes: true } });
-    expect(resolveAppearance(open, { mode: 'light', preset: 'rose' }, preview)).toBe(preview);
-    expect(resolveAppearance(undefined, NO_PERSONAL_THEME, preview)).toBe(preview);
-    expect(resolveAppearance(open, { mode: 'light', preset: 'rose' }, null)).toMatchObject({
-      id: 'rose',
-    });
+  it('resolves a custom workspace theme and falls back to Bemmoly when it is gone', () => {
+    const appearance = workspace({ theme: 'custom', customThemeId: acme.id });
+    const found = look({ appearance, customThemes: [acme] });
+    expect(found).toMatchObject({ custom: true });
+    expect(found.source.name).toBe('Acme');
+    expect(found.source.light.canvas).toBe('#fffdf9');
+    expect(look({ appearance }).source.id).toBe('bemmoly');
   });
 
-  it('builds a custom workspace theme from the brand colour', () => {
-    const custom = workspace({
-      preset: 'custom',
-      custom: { brandColor: '#f97316', mode: 'light', surfaces: 'neutral', font: 'geist' },
+  it('lets a preview win over everything', () => {
+    const preview = { mode: 'dark' as const, font: 'geist' as const };
+    expect(look({ appearance: workspace(), preview })).toMatchObject({
+      mode: 'dark',
+      font: 'geist',
     });
-    const resolved = resolveAppearance(custom, { mode: 'dark', preset: null });
-    expect(resolved.kind).toBe('custom');
-    expect(resolved.mode).toBe('dark');
   });
 });
 
-describe('isPresetId', () => {
-  it('accepts only known presets', () => {
-    expect(isPresetId('midnight')).toBe(true);
-    expect(isPresetId('neon')).toBe(false);
+describe('the device cache', () => {
+  it('maps the old per-device presets to a theme in their old mode', () => {
+    expect(migrateDeviceTheme({ mode: 'system', preset: null })).toEqual({
+      mode: null,
+      theme: null,
+    });
+    expect(migrateDeviceTheme({ mode: 'system', preset: 'ocean' })).toEqual({
+      mode: 'dark',
+      theme: 'bemmoly',
+    });
+    expect(migrateDeviceTheme({ mode: 'light', preset: 'forest' })).toEqual({
+      mode: 'light',
+      theme: 'pine',
+    });
+  });
+
+  it('reads retired ids in links and caches as their theme', () => {
+    expect(normalizeThemeRef('warm')).toBe('sand');
+    expect(normalizeThemeRef('graphite')).toBe('graphite');
+    expect(normalizeThemeRef(`custom:${acme.id}`)).toBe(`custom:${acme.id}`);
+    expect(normalizeThemeRef('nope')).toBeNull();
   });
 });

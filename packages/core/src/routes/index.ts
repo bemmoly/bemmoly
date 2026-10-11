@@ -1,6 +1,7 @@
 import websocket from '@fastify/websocket';
 import type { FastifyPluginAsync } from 'fastify';
 import { createAiController, type AiControllerDependencies } from '../controllers/ai.controller.ts';
+import { createAppearanceController } from '../controllers/appearance.controller.ts';
 import { createAiPlansController } from '../controllers/ai-plans.controller.ts';
 import { createAiInsightsController } from '../controllers/ai-insights.controller.ts';
 import { createAiAnswersController } from '../controllers/ai-answers.controller.ts';
@@ -51,6 +52,7 @@ import { SCIM_PATH, type SsoDependencies } from '../services/sso/index.ts';
 import type { DatabaseProbe } from '../services/system/index.ts';
 import type { ScrapeDependencies } from '../services/telemetry/index.ts';
 import { aiAdminRoutes, aiPersonRoutes } from './ai.routes.ts';
+import { appearanceRoutes } from './appearance.routes.ts';
 import { aiPlansRoutes } from './ai-plans.routes.ts';
 import { aiInsightsRoutes } from './ai-insights.routes.ts';
 import { aiAnswersRoutes } from './ai-answers.routes.ts';
@@ -131,8 +133,10 @@ function identityAndAccessRoutes(deps: IdentityDependencies): FastifyPluginAsync
   const people = createPeopleController(deps);
   const authz = createAuthzController(deps);
   const audit = createAuditController(deps.db);
+  const appearance = createAppearanceController(deps);
   return async (api) => {
     await api.register(identityRoutes(identity, people));
+    await api.register(appearanceRoutes(appearance));
     await api.register(authzRoutes(authz));
     await api.register(auditRoutes(audit));
   };

@@ -1,17 +1,29 @@
-import { Button } from '@bemmoly/ui';
-import { CustomThemeCard } from '../../components/appearance/custom-theme-card.tsx';
+import { Button, SegmentedControl, Switch } from '@bemmoly/ui';
+import { Icon } from '@bemmoly/ui/icons';
+import { FONT_IDS, FONTS } from '@bemmoly/ui/tokens';
+import { useNavigate } from '@tanstack/react-router';
+import { AppearanceRow } from '../../components/appearance/appearance-row.tsx';
 import { LivePreview } from '../../components/appearance/live-preview.tsx';
-import { PolicyCard } from '../../components/appearance/policy-card.tsx';
-import { ThemeCard } from '../../components/appearance/theme-card.tsx';
+import { ModeControl } from '../../components/appearance/mode-control.tsx';
+import { BrandTile, ThemeGrid } from '../../components/appearance/theme-grid.tsx';
 import { Notice } from '../../components/form.tsx';
 import { SettingsPage } from '../../components/settings/settings-page.tsx';
 import { NO_APPEARANCE_PERMISSION, useAppearance } from '../../hooks/use-appearance.ts';
+import { CUSTOM_PREFIX } from '../../lib/theme.ts';
 
-/** Settings › Appearance, from the Appearance Settings mock. */
+const FONT_OPTIONS = FONT_IDS.map((id) => ({ value: id, label: FONTS[id].name }));
+
+/** Settings › Appearance: theme, default mode, typeface and the members policy (ADR 0021). */
 export function AppearancePage() {
   const state = useAppearance();
-  const { value, canManage, draft } = state;
+  const navigate = useNavigate();
+  const { value, canManage, draft, source } = state;
   const locked = !canManage;
+  const editing = value?.theme.startsWith(CUSTOM_PREFIX)
+    ? value.theme.slice(CUSTOM_PREFIX.length)
+    : null;
+  const open = (id: string) =>
+    void navigate({ to: '/settings/appearance/themes/$themeId', params: { themeId: id } });
   return (
     <SettingsPage
       breadcrumb
@@ -35,47 +47,115 @@ export function AppearancePage() {
         </>
       }
     >
-      {value ? (
-        <>
-          {locked ? <Notice tone="caution">{NO_APPEARANCE_PERMISSION}</Notice> : null}
-          <div className="grid grid-cols-[400px_612px] items-start gap-7">
-            <div className="flex flex-col gap-5">
-              <ThemeCard
-                options={state.options}
-                selected={value.preset}
-                onSelect={state.selectTheme}
-                disabled={locked}
-              />
-              <CustomThemeCard
-                value={value}
-                active={state.isCustom}
-                disabled={locked}
-                workspaceName={state.workspaceName}
-                scope={state.preview.scope}
-                hex={state.hex}
-                contrast={state.contrast}
-                onPickBrand={state.pickBrand}
-                onMode={state.setMode}
-                onSurfaces={state.setSurfaces}
-                onFont={state.setFont}
-              />
-              <PolicyCard
-                memberModeSwitch={value.memberModeSwitch}
-                personalThemes={value.personalThemes}
-                disabled={locked}
-                onChange={state.setPolicy}
-              />
-            </div>
-            <LivePreview
-              label={state.preview.label}
-              view={state.preview.view}
-              onView={state.preview.setView}
-              scope={state.preview.scope}
-              workspaceName={state.workspaceName}
-              aiEnabled={state.aiEnabled}
-            />
+      {value && source ? (
+        <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_360px]">
+          <div className="min-w-0">
+            {locked ? <Notice tone="caution">{NO_APPEARANCE_PERMISSION}</Notice> : null}
+            <AppearanceRow
+              label="Theme"
+              help="Every theme comes in light and dark. Pick the look; the mode is a separate choice."
+            >
+              {() => (
+                <div className="flex flex-col gap-2.5">
+                  <ThemeGrid
+                    options={state.options}
+                    selected={value.theme}
+                    onSelect={(theme) => state.update({ theme })}
+                    disabled={locked}
+                    extra={
+                      canManage ? (
+                        <BrandTile
+                          title="Your brand colour"
+                          description="One hex; we build the light and dark versions and check contrast."
+                          action={
+                            <Button
+                              size="sm"
+                              variant="secondary"
+                              icon={<Icon name="plus" />}
+                              onClick={() =>
+                                void navigate({ to: '/settings/appearance/themes/new' })
+                              }
+                            >
+                              Add brand colour
+                            </Button>
+                          }
+                        />
+                      ) : null
+                    }
+                  />
+                  {editing && canManage ? (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="self-start"
+                      icon={<Icon name="edit" />}
+                      onClick={() => open(editing)}
+                    >
+                      Edit {source.name}
+                    </Button>
+                  ) : null}
+                </div>
+              )}
+            </AppearanceRow>
+            <AppearanceRow
+              label="Default mode"
+              help="What new people and signed-out pages see until someone chooses."
+            >
+              {() => (
+                <div className="flex flex-col items-start gap-2">
+                  <fieldset disabled={locked} className="m-0 border-0 p-0">
+                    <ModeControl
+                      aria-label="Default mode"
+                      value={value.defaultMode}
+                      onChange={(defaultMode) => state.update({ defaultMode })}
+                    />
+                  </fieldset>
+                  <span className="text-12 text-tx-3">
+                    Stored on the workspace. A person’s own choice is stored on their account and
+                    follows them to every device.
+                  </span>
+                </div>
+              )}
+            </AppearanceRow>
+            <AppearanceRow
+              label="Typeface"
+              help="Separate from the theme, so changing the look never swaps the font."
+            >
+              {() => (
+                <fieldset disabled={locked} className="m-0 min-w-0 border-0 p-0">
+                  <SegmentedControl
+                    aria-label="Typeface"
+                    size="sm"
+                    className="w-fit max-w-full overflow-x-auto"
+                    options={FONT_OPTIONS}
+                    value={value.font}
+                    onChange={(font) => state.update({ font })}
+                  />
+                </fieldset>
+              )}
+            </AppearanceRow>
+            <AppearanceRow label="Members" help="Mode is always personal. Themes can be too.">
+              {() => (
+                <label className="flex items-center gap-2.5">
+                  <Switch
+                    aria-label="Let people pick their own theme"
+                    checked={value.personalThemes}
+                    disabled={locked}
+                    onCheckedChange={(personalThemes) => state.update({ personalThemes })}
+                  />
+                  Let people pick their own theme
+                </label>
+              )}
+            </AppearanceRow>
           </div>
-        </>
+          <LivePreview
+            source={source}
+            view={state.preview.view}
+            onView={state.preview.setView}
+            workspaceName={state.workspaceName}
+            aiEnabled={state.aiEnabled}
+          />
+        </div>
       ) : null}
     </SettingsPage>
   );

@@ -1,75 +1,77 @@
-import type { CustomTheme, SettingKey, SettingValue } from '@bemmoly/shared';
+import type { CustomThemeRecord, ModePreference, SettingKey, SettingValue } from '@bemmoly/shared';
+import { FONT_IDS, RETIRED_PRESETS, type FontId } from '@bemmoly/ui/tokens';
 
-/** The workspace look, assembled from the appearance.* settings keys. */
+/** The workspace look, assembled from the appearance.* settings keys (ADR 0021). */
 export interface Appearance {
-  /** A preset id, or "custom". */
-  preset: string;
-  custom: CustomTheme | null;
+  /** A built-in theme id, or "custom" with customThemeId naming which. */
+  theme: string;
+  customThemeId: string | null;
+  defaultMode: ModePreference;
+  font: FontId;
   logoKey: string | null;
-  policy: { memberModeSwitch: boolean; personalThemes: boolean };
+  personalThemes: boolean;
+  /** The workspace's own custom themes. */
+  customThemes: CustomThemeRecord[];
 }
 
 export const APPEARANCE_KEYS = [
   'appearance.theme',
-  'appearance.brandColor',
+  'appearance.customThemeId',
+  'appearance.defaultMode',
   'appearance.font',
   'appearance.logoKey',
-  'appearance.mode',
-  'appearance.surfaces',
-  'appearance.memberModeSwitch',
   'appearance.personalThemes',
+  'appearance.brandColor',
 ] as const satisfies readonly SettingKey[];
 
 export type AppearanceKey = (typeof APPEARANCE_KEYS)[number];
-type Reads = { [K in AppearanceKey]?: { value: SettingValue<K> | undefined } };
-
-/** The data kernel names the Classic preset "classic"; the design tokens call it "light". */
-export const SERVER_CLASSIC = 'classic';
+type Reads = { [K in AppearanceKey]?: { value: SettingValue<K> | null | undefined } };
 
 export const DEFAULT_APPEARANCE: Appearance = {
-  preset: 'light',
-  custom: null,
+  theme: 'bemmoly',
+  customThemeId: null,
+  defaultMode: 'system',
+  font: 'plex',
   logoKey: null,
-  policy: { memberModeSwitch: true, personalThemes: false },
+  personalThemes: false,
+  customThemes: [],
 };
 
-export function appearanceFrom(reads: Reads): Appearance {
-  const stored = reads['appearance.theme']?.value ?? DEFAULT_APPEARANCE.preset;
-  const preset = stored === SERVER_CLASSIC ? 'light' : stored;
-  const brandColor = reads['appearance.brandColor']?.value ?? null;
+const isFont = (value: unknown): value is FontId => (FONT_IDS as unknown[]).includes(value);
+
+export function appearanceFrom(reads: Reads, customThemes: CustomThemeRecord[] = []): Appearance {
+  const stored = reads['appearance.theme']?.value ?? DEFAULT_APPEARANCE.theme;
+  const font = reads['appearance.font']?.value;
   return {
-    preset,
-    custom:
-      preset === 'custom' && brandColor
-        ? {
-            brandColor,
-            mode: reads['appearance.mode']?.value ?? 'light',
-            surfaces: reads['appearance.surfaces']?.value ?? 'neutral',
-            font: reads['appearance.font']?.value ?? 'plex',
-          }
-        : null,
-    logoKey: reads['appearance.logoKey']?.value ?? null,
-    policy: {
-      memberModeSwitch: reads['appearance.memberModeSwitch']?.value ?? true,
-      personalThemes: reads['appearance.personalThemes']?.value ?? false,
-    },
+    // A retired preset still stored (an old mock seed, a skipped migration) reads as its theme.
+    theme: RETIRED_PRESETS[stored]?.theme ?? stored,
+    customThemeId: reads['appearance.customThemeId']?.value ?? null,
+    defaultMode: reads['appearance.defaultMode']?.value ?? DEFAULT_APPEARANCE.defaultMode,
+    font: isFont(font) ? font : 'plex',
+    logoKey: reads['appearance.logoKey']?.value || null,
+    personalThemes: reads['appearance.personalThemes']?.value ?? false,
+    customThemes,
   };
 }
 
 /**
- * The keys and values to write for an appearance; the font follows the preset
- * unless custom. A preset writes no brand colour (the key holds hex only), so
- * the last custom brand is still there when someone returns to Custom.
+ * The keys and values to write for an appearance. A custom default also mirrors its brand into
+ * appearance.brandColor, which the previous minor and emails read.
  */
-export function appearanceWrites(appearance: Appearance, presetFont: string) {
-  const custom = appearance.custom;
+export function appearanceWrites(appearance: Appearance) {
+  const custom =
+    appearance.theme === 'custom'
+      ? appearance.customThemes.find((theme) => theme.id === appearance.customThemeId)
+      : undefined;
   return [
-    ['appearance.theme', appearance.preset === 'light' ? SERVER_CLASSIC : appearance.preset],
+    [
+      'appearance.theme',
+      custom ? 'custom' : appearance.theme === 'custom' ? 'bemmoly' : appearance.theme,
+    ],
+    ['appearance.customThemeId', custom ? custom.id : null],
     ...(custom ? ([['appearance.brandColor', custom.brandColor]] as const) : []),
-    ['appearance.font', custom?.font ?? presetFont],
-    ['appearance.mode', custom?.mode ?? 'light'],
-    ['appearance.surfaces', custom?.surfaces ?? 'neutral'],
-    ['appearance.memberModeSwitch', appearance.policy.memberModeSwitch],
-    ['appearance.personalThemes', appearance.policy.personalThemes],
+    ['appearance.defaultMode', appearance.defaultMode],
+    ['appearance.font', appearance.font],
+    ['appearance.personalThemes', appearance.personalThemes],
   ] as const;
 }

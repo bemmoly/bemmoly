@@ -53,7 +53,10 @@ export function filtersBackend() {
     url: ORIGIN,
     aiEnabled: false,
     appearance: {
-      theme: 'classic',
+      theme: 'bemmoly',
+      customThemeId: null,
+      defaultMode: 'light',
+      customThemes: [],
       brandColor: '#2456c9',
       font: 'plex',
       logoKey: '',
@@ -75,7 +78,14 @@ export function filtersBackend() {
   });
   const handlers = [
     http.get(`${ORIGIN}/api/v1/me`, () =>
-      HttpResponse.json({ user, capabilities: [], modules: ['work'], workspace }),
+      HttpResponse.json({
+        user,
+        capabilities: [],
+        modules: ['work'],
+        workspace,
+        preferences: { appearance: { mode: null, theme: null } },
+        customThemes: [],
+      }),
     ),
     http.get(`${ORIGIN}/api/v1/teams`, () =>
       HttpResponse.json({

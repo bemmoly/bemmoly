@@ -7,6 +7,15 @@
 
 export type ThemeMode = 'light' | 'dark';
 
+/** What a person or workspace chooses: a mode, or "system" to follow the device live. */
+export type ModePreference = ThemeMode | 'system';
+
+export const MODE_PREFERENCES = [
+  'light',
+  'dark',
+  'system',
+] as const satisfies readonly ModePreference[];
+
 /** Three surfaces, the sidebar's own, and the hover and press overlays drawn on any of them. */
 export const SURFACE_TOKENS = ['canvas', 'side', 'sunken', 'card', 'hover', 'press'] as const;
 
@@ -81,10 +90,38 @@ export const COLOR_TOKENS = [...CANONICAL_COLOR_TOKENS, ...HUE_TOKENS] as const;
 export type ColorToken = (typeof COLOR_TOKENS)[number];
 export type ColorSet = Readonly<Record<ColorToken, string>>;
 
-/** The reduced neutral set each preset states. */
-export type Neutrals = Readonly<
-  Record<'canvas' | 'side' | 'sunken' | 'card' | 'line' | 'line-2' | 'tx' | 'tx-2' | 'tx-3', string>
->;
+/** The neutral tokens a theme states: four surfaces, two lines, three text greys. */
+export const NEUTRAL_TOKENS = [
+  'canvas',
+  'side',
+  'sunken',
+  'card',
+  'line',
+  'line-2',
+  'tx',
+  'tx-2',
+  'tx-3',
+] as const;
+export type NeutralToken = (typeof NEUTRAL_TOKENS)[number];
+export type Neutrals = Readonly<Record<NeutralToken, string>>;
+
+/** The accent tokens a theme states. */
+export const THEME_ACCENT_TOKENS = [
+  'acc',
+  'acc-500',
+  'acc-50',
+  'acc-100',
+  'acc-fill',
+  'on-acc',
+] as const;
+
+/**
+ * The fifteen tokens a theme varies, and nothing else (ADR 0021): every other colour is fixed
+ * per mode, and the typeface is its own setting.
+ */
+export const THEME_TOKENS = [...NEUTRAL_TOKENS, ...THEME_ACCENT_TOKENS] as const;
+export type ThemeToken = (typeof THEME_TOKENS)[number];
+export type ThemeSet = Readonly<Record<ThemeToken, string>>;
 
 /** Elevations, per theme mode. */
 export const ELEVATION_TOKENS = ['e1', 'e1h', 'e2', 'e3'] as const;

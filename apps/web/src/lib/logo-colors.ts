@@ -1,5 +1,5 @@
 import { flatten, luminance, mixHex } from '@bemmoly/ui/theme';
-import { PRESETS, themeById } from '@bemmoly/ui/tokens';
+import { resolveTheme, THEME_SOURCES, themeSource } from '@bemmoly/ui/tokens';
 
 type Mode = 'light' | 'dark';
 
@@ -22,17 +22,15 @@ export function contrastRatio(a: string, b: string): number {
   return (high + 0.05) / (low + 0.05);
 }
 
-/** The tile colour of every preset in a mode: what a mark can sit on. */
+/** The tile colour of every theme in a mode: what a mark can sit on. */
 export function chipsOf(mode: Mode): string[] {
-  return PRESETS.filter((preset) => preset.mode === mode).map((preset) => {
-    const { colors } = themeById(preset.id);
+  return THEME_SOURCES.map((source) => {
+    const { colors } = resolveTheme(source.id, mode);
     return flatten(colors['line-2'], colors.card);
   });
 }
 
-const textOf = (mode: Mode) =>
-  (PRESETS.find((preset) => preset.id === (mode === 'dark' ? 'dark' : 'light')) ?? PRESETS[0])
-    .neutrals.tx;
+const textOf = (mode: Mode) => themeSource('bemmoly')[mode].tx;
 
 /**
  * How far a brand may be mixed toward the text colour before it stops reading as the brand:

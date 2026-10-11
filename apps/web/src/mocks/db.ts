@@ -1,5 +1,7 @@
 import type {
   AdminModule,
+  AppearancePreference,
+  CustomThemeRecord,
   ApiToken,
   AuditEntry,
   Backup,
@@ -85,6 +87,10 @@ export interface MockDb {
   sso?: MockSso;
   /** Realtime invalidations waiting for the socket bridge: [kind, userId, ids]. */
   outbound: Array<[string, string | null, string[]]>;
+  /** Custom themes; ownerId null is a workspace theme (ADR 0021). */
+  customThemes: Array<CustomThemeRecord & { ownerId: string | null }>;
+  /** Each person's own mode and theme, by user id. */
+  appearancePreferences: Record<string, AppearancePreference>;
 }
 
 // Plain words, not random-looking: the schemas only need 16 characters, and a secret
@@ -147,6 +153,8 @@ export function createMockDb(scenario: MockScenario = 'ready'): MockDb {
     // A set-up install shows AI on with a provider, as the demo does; the wizard starts off.
     ai: fresh || scenario === 'wizard' ? seedAiOff() : seedAiOn(),
     outbound: [],
+    customThemes: [],
+    appearancePreferences: {},
   };
 }
 
