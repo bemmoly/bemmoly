@@ -155,3 +155,10 @@ export {
   type InvitationCreatedPayload,
   type PasswordResetRequestedPayload,
 } from './services/identity/index.ts';
+export {
+  createMcpService,
+  mcpToolName,
+  type McpDependencies,
+  type McpService,
+} from './services/mcp/index.ts';
+export { DEFAULT_MCP_RATE_LIMIT, type McpRateLimit } from './routes/mcp.routes.ts';

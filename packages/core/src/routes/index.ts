@@ -9,6 +9,7 @@ import { createAuthzController } from '../controllers/authz.controller.ts';
 import { createCollabController } from '../controllers/collab.controller.ts';
 import { createHealthController } from '../controllers/health.controller.ts';
 import { createIdentityController } from '../controllers/identity.controller.ts';
+import { createMcpController } from '../controllers/mcp.controller.ts';
 import { createMetricsController } from '../controllers/metrics.controller.ts';
 import {
   createModuleAdminController,
@@ -34,6 +35,7 @@ import type { InsightsService } from '../services/ai/index.ts';
 import type { RetrievalService } from '../services/ai/index.ts';
 import type { CollabHost } from '../services/collab/index.ts';
 import type { IdentityDependencies } from '../services/identity/index.ts';
+import type { McpService } from '../services/mcp/index.ts';
 import type { ModuleAdmin, ModuleState } from '../services/modules/index.ts';
 import type { RealtimeHub, RealtimeMetricsHook } from '../services/realtime/index.ts';
 import { createSearchService } from '../services/search/index.ts';
@@ -53,6 +55,7 @@ import {
 } from './email-notifications.routes.ts';
 import { healthRoutes } from './health.routes.ts';
 import { identityRoutes } from './identity.routes.ts';
+import { mcpRoutes, type McpRateLimit } from './mcp.routes.ts';
 import { metricsRoutes } from './metrics.routes.ts';
 import { adminModulesRoutes, moduleResourceRoutes, modulesRoutes } from './modules.routes.ts';
 import { realtimeRoutes } from './realtime.routes.ts';
@@ -101,6 +104,8 @@ export interface KernelRouteDependencies {
   insights?: InsightsService;
   /** "Ask your docs" answers; mounted when the host wires retrieval. */
   retrieval?: RetrievalService;
+  /** The built-in MCP server at /mcp; mounted when the host wires it (AI never gates it). */
+  mcp?: { service: McpService; rateLimit?: McpRateLimit };
 }
 
 function identityAndAccessRoutes(deps: IdentityDependencies): FastifyPluginAsync {
@@ -141,6 +146,9 @@ export function kernelRoutes(deps: KernelRouteDependencies): FastifyPluginAsync 
   return async (app) => {
     await app.register(healthRoutes(health));
     if (metrics) await app.register(metricsRoutes(metrics));
+    if (deps.mcp) {
+      await app.register(mcpRoutes(createMcpController(deps.mcp.service), deps.mcp.rateLimit));
+    }
     if (deps.realtime || deps.collab) {
       // One socket server for both endpoints: the plugin owns the HTTP upgrade event, so it
       // is registered once, with the larger limit, and /ws checks its own smaller one.
