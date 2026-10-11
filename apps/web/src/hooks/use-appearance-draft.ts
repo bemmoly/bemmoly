@@ -21,7 +21,6 @@ export interface AppearanceDraft {
   theme: ThemeRef;
   defaultMode: ModePreference;
   font: FontId;
-  personalThemes: boolean;
 }
 
 export function draftFrom(
@@ -33,7 +32,6 @@ export function draftFrom(
     theme: workspaceRef(appearance),
     defaultMode: appearance.defaultMode,
     font: appearance.font,
-    personalThemes: appearance.personalThemes,
   };
 }
 
@@ -48,7 +46,6 @@ export function toAppearance(
     defaultMode: draft.defaultMode,
     font: draft.font,
     logoKey: null,
-    personalThemes: draft.personalThemes,
     customThemes,
   };
 }

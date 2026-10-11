@@ -86,13 +86,13 @@ export interface LookInputs {
 
 /**
  * Resolution, once for the theme and once for the mode: preview, then the person (their mode
- * always; their theme only while the workspace allows it), then the workspace, then Bemmoly
+ * only; the workspace admin sets the theme, ADR 0021), then the workspace, then Bemmoly
  * following the device.
  */
 export function resolveLook(inputs: LookInputs): Look {
   const { appearance, personal, customThemes, preview, systemDark, publicLook } = inputs;
-  const allowed = appearance ? appearance.personalThemes : true;
-  const personalRef = allowed ? normalizeThemeRef(personal.theme) : null;
+  // Before sign-in the device's cached theme may stand in; signed in, the admin's theme wins.
+  const personalRef = appearance ? null : normalizeThemeRef(personal.theme);
   const publicRef = normalizeThemeRef(publicLook?.theme);
   const ref =
     personalRef ??

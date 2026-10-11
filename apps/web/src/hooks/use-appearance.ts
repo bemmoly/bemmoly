@@ -26,8 +26,8 @@ export const NO_APPEARANCE_PERMISSION =
   'Only people who can set appearance and themes can change these.';
 
 /**
- * Settings › Appearance: a draft of the workspace look (theme, default mode, typeface and the
- * personal themes policy), previewed on the whole page while it differs from what is stored,
+ * Settings › Appearance: a draft of the workspace look (theme, default mode and typeface),
+ * previewed on the whole page while it differs from what is stored,
  * and saved for everyone. Discard or leaving the page returns to the saved look.
  */
 export function useAppearance() {

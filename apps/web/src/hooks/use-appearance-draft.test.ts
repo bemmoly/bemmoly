@@ -34,7 +34,6 @@ const BASE: AppearanceDraft = {
   theme: 'bemmoly',
   defaultMode: 'system',
   font: 'plex',
-  personalThemes: false,
 };
 
 describe('appearance draft', () => {
@@ -65,7 +64,6 @@ describe('appearance draft', () => {
       'appearance.customThemeId': null,
       'appearance.defaultMode': 'dark',
       'appearance.font': 'plex',
-      'appearance.personalThemes': false,
     });
     expect(draftWrites({ ...BASE, theme: `custom:${ACME.id}` }, [ACME])).toMatchObject({
       'appearance.theme': 'custom',
