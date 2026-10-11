@@ -1,5 +1,5 @@
 import type { RequestContext, ResourceRef, SqlExecutor } from '@bemmoly/core';
-import { ConflictError } from '@bemmoly/shared';
+import { ConflictError, ForbiddenError } from '@bemmoly/shared';
 import type { SchemeKind } from '../../../../shared/schemes.ts';
 import { projectByKey, projectResource, WORK_MODULE, type ProjectRow } from './rows.ts';
 
@@ -33,12 +33,25 @@ export async function resolveScope(
   };
 }
 
-/** Reading needs issue view; changing a scheme needs project configuration. */
+/**
+ * The org defaults reach every project that has not overridden them, so only a workspace admin
+ * changes them. A capability is not enough: a workspace role such as project admin can hold
+ * "Configure project" on the module without being trusted with every other project.
+ */
+export async function authorizeOrgDefaults(ctx: RequestContext): Promise<void> {
+  await ctx.authz.authorize(ctx.actor, 'work.issue.view', WORK_MODULE);
+  if (!(await ctx.authz.isOrgAdmin(ctx.actor))) {
+    throw new ForbiddenError('Only workspace admins can change the org defaults');
+  }
+}
+
+/** Reading needs issue view; changing a project's scheme needs project configuration. */
 export async function authorizeScope(
   ctx: RequestContext,
   scope: SchemeScope,
   write: boolean,
 ): Promise<void> {
+  if (write && !scope.project) return authorizeOrgDefaults(ctx);
   await ctx.authz.authorize(
     ctx.actor,
     write ? 'work.project.configure' : 'work.issue.view',

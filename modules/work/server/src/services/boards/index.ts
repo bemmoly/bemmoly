@@ -19,6 +19,8 @@ import {
   type PlanningDeps,
 } from './context.ts';
 import { defaultConfig, ensureProjectBoards } from './defaults.ts';
+import { changeOrgDefaultBoard, ensureOrgBoard, orgStatuses } from './org-default.ts';
+import { authorizeOrgDefaults } from '../projects/scope.ts';
 import { BOARD_COLUMNS, loadBoard, projectBoards, toBoard, type BoardRow } from './rows.ts';
 import { buildBoardView } from './view.ts';
 
@@ -29,11 +31,7 @@ const resourceOf = (projectId: string | null) =>
 
 /** Statuses a board in this scope may map: the project's workflow, or the org default ones. */
 async function allowedStatuses(sql: SqlExecutor, projectId: string | null) {
-  if (projectId) return projectStatuses(sql, projectId);
-  return sql<{ id: string; name: string; category: 'todo'; position: number }[]>`
-    select s.id, s.name, s.category, s.position from workflow_statuses s
-    join workflows w on w.id = s.workflow_id where w.project_id is null
-    order by w.id, s.position, s.id`;
+  return projectId ? projectStatuses(sql, projectId) : orgStatuses(sql);
 }
 
 /** Board configuration: columns, WIP, lanes, quick filters, cards and colours, and the view. */
@@ -47,13 +45,19 @@ export function createBoardsService(deps: PlanningDeps) {
     for (const { query } of queries) deps.lql.parse(query, catalog);
   }
 
+  /** A project's board needs the capability there; the org default board, a workspace admin. */
   async function authorizeWrite(
     ctx: RequestContext,
     projectId: string | null,
     capability: CapabilityName,
   ) {
+    if (!projectId) return authorizeOrgDefaults(ctx);
     await ctx.authz.authorize(ctx.actor, capability, resourceOf(projectId));
   }
+
+  /** A write to the org default board reaches the projects following it; a project's is its own. */
+  const inScope = <T>(tx: SqlExecutor, projectId: string | null, change: () => Promise<T>) =>
+    projectId ? change() : changeOrgDefaultBoard(deps, tx, change);
 
   /** A project's boards; a project's first read creates its board from the org scheme. */
   async function listForProject(ctx: RequestContext, projectRef: string): Promise<Board[]> {
@@ -71,11 +75,14 @@ export function createBoardsService(deps: PlanningDeps) {
   return {
     listForProject,
 
-    /** Boards of a project by id, or the org default board scheme without one. */
+    /** Boards of a project by id, or the org default board scheme, made on its first read. */
     async list(ctx: RequestContext, projectId: string | undefined): Promise<Board[]> {
       if (projectId) return listForProject(ctx, projectId);
       await ctx.authz.authorize(ctx.actor, 'work.issue.view', MODULE_RESOURCE);
-      return (await projectBoards(requireDatabase(deps), null)).map(toBoard);
+      const sql = requireDatabase(deps);
+      const rows = await projectBoards(sql, null);
+      if (rows.length > 0) return rows.map(toBoard);
+      return ((await sql.begin((tx) => ensureOrgBoard(deps, tx))) as BoardRow[]).map(toBoard);
     },
 
     async get(ctx: RequestContext, id: string): Promise<Board> {
@@ -93,20 +100,22 @@ export function createBoardsService(deps: PlanningDeps) {
         ? boardConfigSchema.parse(body.config)
         : defaultConfig(await allowedStatuses(sql, projectId));
       await validate(sql, projectId, config);
-      const row = await sql.begin(async (tx) => {
-        const [created] = await tx<BoardRow[]>`
+      const row = await sql.begin(async (tx) =>
+        inScope(tx, projectId, async () => {
+          const [created] = await tx<BoardRow[]>`
           insert into boards (project_id, name, config)
           values (${projectId}, ${body.name}, ${JSON.stringify(config)}::jsonb)
           returning ${tx.unsafe(BOARD_COLUMNS)}`;
-        const board = toBoard(created as BoardRow);
-        await audit(deps, ctx, tx, {
-          action: 'board.created',
-          target: { kind: 'board', id: board.id },
-          after: board,
-        });
-        await publishPlanningChange(deps, tx, projectId, { boardIds: [board.id] });
-        return created as BoardRow;
-      });
+          const board = toBoard(created as BoardRow);
+          await audit(deps, ctx, tx, {
+            action: 'board.created',
+            target: { kind: 'board', id: board.id },
+            after: board,
+          });
+          await publishPlanningChange(deps, tx, projectId, { boardIds: [board.id] });
+          return created as BoardRow;
+        }),
+      );
       return toBoard(row as BoardRow);
     },
 
@@ -126,22 +135,24 @@ export function createBoardsService(deps: PlanningDeps) {
         wipOnly ? 'work.board.wip' : 'work.board.configure',
       );
       if (body.config) await validate(sql, current.project_id, config);
-      const row = await sql.begin(async (tx) => {
-        await loadBoard(tx, id, { lock: true });
-        const [updated] = await tx<BoardRow[]>`
+      const row = await sql.begin(async (tx) =>
+        inScope(tx, current.project_id, async () => {
+          await loadBoard(tx, id, { lock: true });
+          const [updated] = await tx<BoardRow[]>`
           update boards set name = ${body.name ?? before.name},
             config = ${JSON.stringify(config)}::jsonb, updated_at = now()
           where id = ${id}
           returning ${tx.unsafe(BOARD_COLUMNS)}`;
-        await audit(deps, ctx, tx, {
-          action: 'board.updated',
-          target: { kind: 'board', id },
-          before,
-          after: toBoard(updated as BoardRow),
-        });
-        await publishPlanningChange(deps, tx, current.project_id, { boardIds: [id] });
-        return updated as BoardRow;
-      });
+          await audit(deps, ctx, tx, {
+            action: 'board.updated',
+            target: { kind: 'board', id },
+            before,
+            after: toBoard(updated as BoardRow),
+          });
+          await publishPlanningChange(deps, tx, current.project_id, { boardIds: [id] });
+          return updated as BoardRow;
+        }),
+      );
       return toBoard(row as BoardRow);
     },
 
@@ -149,16 +160,18 @@ export function createBoardsService(deps: PlanningDeps) {
       const sql = requireDatabase(deps);
       const current = await loadBoard(sql, id);
       await authorizeWrite(ctx, current.project_id, 'work.board.configure');
-      await sql.begin(async (tx) => {
-        await tx`delete from boards where id = ${id}`;
-        await tx`delete from sprint_metrics where scope_kind = 'board' and scope_id = ${id}`;
-        await audit(deps, ctx, tx, {
-          action: 'board.deleted',
-          target: { kind: 'board', id },
-          before: toBoard(current),
-        });
-        await publishPlanningChange(deps, tx, current.project_id, { boardIds: [id] });
-      });
+      await sql.begin(async (tx) =>
+        inScope(tx, current.project_id, async () => {
+          await tx`delete from boards where id = ${id}`;
+          await tx`delete from sprint_metrics where scope_kind = 'board' and scope_id = ${id}`;
+          await audit(deps, ctx, tx, {
+            action: 'board.deleted',
+            target: { kind: 'board', id },
+            before: toBoard(current),
+          });
+          await publishPlanningChange(deps, tx, current.project_id, { boardIds: [id] });
+        }),
+      );
     },
 
     /** Columns, lanes and cards in rank order, narrowed by an optional LQL quick filter. */

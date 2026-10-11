@@ -6,6 +6,7 @@ import {
   schemeKindSchema,
   type SchemeDiff,
   type SchemesResponse,
+  type SchemeUsagesResponse,
 } from '../../../shared/schemes.ts';
 import type { SchemesService } from '../services/schemes/index.ts';
 
@@ -15,6 +16,9 @@ export function createSchemesController(service: SchemesService) {
   const scheme = (request: FastifyRequest) => parseOrThrow(kindParams, request.params);
 
   return {
+    async usage(request: FastifyRequest): Promise<SchemeUsagesResponse> {
+      return service.usage(contextOf(request));
+    },
     async list(request: FastifyRequest): Promise<SchemesResponse> {
       const { key } = parseOrThrow(projectRefParamsSchema, request.params);
       return service.list(contextOf(request), key);

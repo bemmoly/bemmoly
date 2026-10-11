@@ -55,9 +55,33 @@ export const schemeStatusSchema = z.object({
 
 export const schemesResponseSchema = z.object({ items: z.array(schemeStatusSchema) });
 
+/** A project that runs its own version of an org default. */
+export const schemeOverriderSchema = z.object({
+  id: z.uuid(),
+  key: z.string(),
+  name: z.string(),
+});
+
+/**
+ * One org default and who it reaches, for the org settings pages: "Used by 12 projects; 2 have
+ * their own version". Archived projects are left out of both counts.
+ */
+export const schemeUsageSchema = z.object({
+  kind: schemeKindSchema,
+  originName: z.string(),
+  /** Every active project: those following the default and those with their own version. */
+  projects: z.number().int().nonnegative(),
+  overriders: z.array(schemeOverriderSchema),
+});
+
+export const schemeUsagesResponseSchema = z.object({ items: z.array(schemeUsageSchema) });
+
 export type SchemeOverrideMark = z.infer<typeof schemeOverrideMarkSchema>;
 export type SchemeChange = z.infer<typeof schemeChangeSchema>;
 export type SchemeDiffEntry = z.infer<typeof schemeDiffEntrySchema>;
 export type SchemeDiff = z.infer<typeof schemeDiffSchema>;
 export type SchemeStatus = z.infer<typeof schemeStatusSchema>;
 export type SchemesResponse = z.infer<typeof schemesResponseSchema>;
+export type SchemeOverrider = z.infer<typeof schemeOverriderSchema>;
+export type SchemeUsage = z.infer<typeof schemeUsageSchema>;
+export type SchemeUsagesResponse = z.infer<typeof schemeUsagesResponseSchema>;

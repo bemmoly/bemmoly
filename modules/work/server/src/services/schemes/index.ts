@@ -12,6 +12,7 @@ import {
   type SchemeDiff,
   type SchemeKind,
   type SchemesResponse,
+  type SchemeUsagesResponse,
 } from '../../../../shared/schemes.ts';
 import { ensureProjectBoards } from '../boards/defaults.ts';
 import { PROJECT_CHANGED } from '../projects/index.ts';
@@ -29,8 +30,10 @@ import {
   dropProjectWorkflow,
   ownWorkflow,
 } from '../workflow/project-copy.ts';
+import { authorizeOrgDefaults } from '../projects/scope.ts';
 import { inheritedBoardConfig, schemeState } from './compare.ts';
 import { overrideFields, overrideTypes, resetFields, resetTypes } from './copy-types.ts';
+import { schemeUsages } from './usage.ts';
 
 export interface SchemesServiceDeps {
   database?: SqlClient;
@@ -86,7 +89,9 @@ export function createSchemesService(deps: SchemesServiceDeps) {
   async function change(ctx: RequestContext, ref: string, kind: SchemeKind, override: boolean) {
     const sql = db();
     const project = await projectByKey(sql, ref);
-    await ctx.authz.authorize(ctx.actor, 'work.project.configure', projectResource(project.id));
+    // The board is "Configure board"'s, as every other change to it is; the rest the project's.
+    const capability = kind === 'board' ? 'work.board.configure' : 'work.project.configure';
+    await ctx.authz.authorize(ctx.actor, capability, projectResource(project.id));
     await sql.begin(async (tx) => {
       const [locked] = await tx<ProjectRow[]>`
         select ${tx.unsafe(PROJECT_COLUMNS)} from projects where id = ${project.id} for update`;
@@ -133,6 +138,12 @@ export function createSchemesService(deps: SchemesServiceDeps) {
   }
 
   return {
+    /** Each org default with the active projects it reaches; workspace admins only. */
+    async usage(ctx: RequestContext): Promise<SchemeUsagesResponse> {
+      await authorizeOrgDefaults(ctx);
+      return { items: await schemeUsages(db()) };
+    },
+
     async list(ctx: RequestContext, ref: string): Promise<SchemesResponse> {
       const project = await readable(ctx, ref);
       const items = [];

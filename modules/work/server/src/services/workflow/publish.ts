@@ -13,7 +13,7 @@ import {
   type WorkflowRow,
 } from './rows.ts';
 import { validateDraft } from './validate.ts';
-import { requireDatabase, resourceOf } from './workflows.ts';
+import { authorizeConfigure, requireDatabase } from './workflows.ts';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -121,7 +121,7 @@ export function createWorkflowPublisher(deps: WorkflowServiceDeps) {
     async publish(ctx: RequestContext, id: string, body: PublishWorkflowBody): Promise<Workflow> {
       const sql = requireDatabase(deps);
       const head = await loadWorkflow(sql, id);
-      await ctx.authz.authorize(ctx.actor, 'work.project.configure', resourceOf(head));
+      await authorizeConfigure(ctx, head);
       const actorId = ctx.actor.kind === 'user' ? ctx.actor.id : (ctx.actor.userId ?? null);
       const published = await sql.begin(async (tx) => {
         await lockWorkflow(tx, id);
