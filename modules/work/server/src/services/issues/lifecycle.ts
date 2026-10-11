@@ -105,7 +105,7 @@ export async function rankIssue(
       await deps.jobs.send(
         WORK_RANK_REBALANCE_JOB,
         { projectId: row.project_id },
-        { idempotencyKey: `rebalance:${row.project_id}` },
+        { idempotencyKey: `rebalance:${row.project_id}`, transaction: tx },
       );
     }
     return issue;

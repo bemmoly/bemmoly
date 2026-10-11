@@ -67,8 +67,8 @@ export function createLqlService(deps: LqlServiceDeps) {
     ctx: RequestContext,
     text: string,
     projectId: string | null,
+    sql: SqlClient = db(),
   ): Promise<Compiled & { access: SqlFragment }> {
-    const sql = db();
     const catalog = await loadCatalog(sql, projectId);
     const query = parseOrReject(text, catalog);
     return {
@@ -82,12 +82,14 @@ export function createLqlService(deps: LqlServiceDeps) {
       const sql = db();
       return compileWhere(sql, query, catalog, valueContext(sql, ctx));
     },
-    async matches(ctx, issueId, text) {
-      const sql = db();
+    async matches(ctx, issueId, text, transaction) {
+      // A transition's condition runs inside the move's transaction: read there, so the
+      // query sees the issue as this move leaves it and takes no second connection.
+      const sql = (transaction as SqlClient | undefined) ?? db();
       const [issue] = await sql<{ project_id: string }[]>`
         select project_id from issues where id = ${issueId}::uuid`;
       if (!issue) return false;
-      const compiled = await compile(ctx, text, issue.project_id);
+      const compiled = await compile(ctx, text, issue.project_id, sql);
       const [row] = await sql<{ matches: boolean }[]>`
         select exists (select 1 from issues
           where issues.id = ${issueId}::uuid and ${compiled.where}) as matches`;

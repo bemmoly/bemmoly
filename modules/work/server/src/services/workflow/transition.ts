@@ -1,4 +1,4 @@
-import type { RequestContext, SqlExecutor } from '@bemmoly/core';
+import { scopeToTransaction, type RequestContext, type SqlExecutor } from '@bemmoly/core';
 import { ForbiddenError, NotFoundError, ValidationError } from '@bemmoly/shared';
 import type { AvailableTransition, WorkflowRule } from '../../../../shared/index.ts';
 import type { TransitionGate, TransitionResult, WorkflowIssue } from './contract.ts';
@@ -116,7 +116,9 @@ export function createTransitionGate(deps: WorkflowServiceDeps): TransitionGate 
       return result;
     },
 
-    async transition(ctx, issue, toStatusId, submitted, sql): Promise<TransitionResult> {
+    async transition(caller, issue, toStatusId, submitted, sql): Promise<TransitionResult> {
+      // Inside the caller's transaction every check runs on it, never on the pool.
+      const ctx = sql ? scopeToTransaction(caller, sql) : caller;
       await ctx.authz.authorize(ctx.actor, 'work.issue.transition', project(issue));
       const executor = sql ?? requireDatabase(deps);
       const graph = await graphFor(executor, issue);

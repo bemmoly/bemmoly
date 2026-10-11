@@ -11,7 +11,13 @@ import type {
  * SQL; the request context carries the actor that access filters need.
  */
 export interface LqlEvaluator {
-  matches(ctx: RequestContext, issueId: string, query: string): Promise<boolean>;
+  /** `transaction`, when given, is where every read runs: the caller's open transaction. */
+  matches(
+    ctx: RequestContext,
+    issueId: string,
+    query: string,
+    transaction?: SqlExecutor,
+  ): Promise<boolean>;
 }
 
 /** What the conditions read about an issue, so a rule file never writes SQL. */

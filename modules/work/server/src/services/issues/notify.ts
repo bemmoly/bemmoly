@@ -1,9 +1,5 @@
 import type { RequestContext, SqlExecutor } from '@bemmoly/core';
-import {
-  ForbiddenError,
-  NOTIFICATION_EVENT_KINDS,
-  type NotificationRequestedPayload,
-} from '@bemmoly/shared';
+import { NOTIFICATION_EVENT_KINDS, type NotificationRequestedPayload } from '@bemmoly/shared';
 import type { RichText } from '../../../../shared/common.ts';
 import { WORK_REALTIME_KINDS } from '../../../../shared/realtime.ts';
 import { mentionedUserIds } from '../../../../shared/rich-text.ts';
@@ -73,27 +69,17 @@ export async function watcherIds(tx: SqlExecutor, issueId: string): Promise<stri
 /**
  * The recipients who may open the issue. A mention names anyone and a watch
  * outlives a membership, but neither is a key to the project: the inbox row
- * and the email carry the key, the title and the comment.
+ * and the email carry the key, the title and the comment. One set-based check
+ * on the transaction: a check per recipient on the pool would hold this
+ * transaction's connection while waiting for another, and starve the pool.
  */
-async function whoMayOpen(
+function whoMayOpen(
   ctx: RequestContext,
+  tx: SqlExecutor,
   projectId: string,
   userIds: readonly string[],
 ): Promise<string[]> {
-  const allowed: string[] = [];
-  for (const id of userIds) {
-    try {
-      await ctx.authz.authorize(
-        { kind: 'user', id },
-        'work.issue.view',
-        projectResource(projectId),
-      );
-      allowed.push(id);
-    } catch (error) {
-      if (!(error instanceof ForbiddenError)) throw error;
-    }
-  }
-  return allowed;
+  return ctx.authz.within(tx).whoCan(userIds, 'work.issue.view', projectResource(projectId));
 }
 
 export async function notify(
@@ -106,6 +92,7 @@ export async function notify(
   const actorId = actorUserId(ctx);
   const recipientIds = await whoMayOpen(
     ctx,
+    tx,
     issue.projectId,
     [...new Set(notice.recipientIds)].filter((id) => id !== actorId),
   );
