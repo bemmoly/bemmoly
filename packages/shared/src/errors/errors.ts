@@ -128,11 +128,13 @@ export class UnavailableError extends BemmolyError<'unavailable'> {
   override readonly name = 'UnavailableError';
   readonly retryAfterSeconds: number | undefined;
 
-  constructor(
-    message = 'Bemmoly is too busy to answer right now. Try again in a moment.',
-    options: UnavailableErrorOptions = {},
-  ) {
-    super(message, 'unavailable', options);
+  constructor(message?: string, options: UnavailableErrorOptions = {}) {
+    super(
+      message,
+      'Bemmoly is too busy to answer right now. Try again in a moment.',
+      'unavailable',
+      options,
+    );
     this.retryAfterSeconds = options.retryAfterSeconds;
   }
 }

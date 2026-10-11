@@ -7,5 +7,6 @@
   "errors.provider_error": "An external provider failed",
   "errors.rate_limited": "Too many requests",
   "errors.unauthenticated": "Sign in to continue",
+  "errors.unavailable": "Bemmoly is too busy to answer right now. Try again in a moment.",
   "errors.validation_failed": "The request is not valid"
 }
