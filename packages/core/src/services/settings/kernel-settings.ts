@@ -11,6 +11,8 @@ declare module '../../contracts/settings.ts' {
     'appearance.logoKey': string;
     'system.storage.backend': 'disk' | 's3';
     'system.jobs.housekeeping.schedule': string;
+    'appearance.defaultMode': 'light' | 'dark' | 'system';
+    'appearance.customThemeId': string | null;
     'appearance.mode': 'light' | 'dark';
     'appearance.surfaces': 'neutral' | 'tinted';
     'appearance.memberModeSwitch': boolean;
@@ -32,9 +34,9 @@ export const cronSchema = z
   .trim()
   .regex(/^(\S+\s+){4}\S+$/, 'Use a five-field cron expression, e.g. "0 * * * *"');
 
-const presetName = z
+const themeName = z
   .string()
-  .regex(/^[a-z][a-z0-9-]{0,39}$/, 'A preset or font id, e.g. "classic"');
+  .regex(/^[a-z][a-z0-9-]{0,39}$/, 'A theme or font id, e.g. "bemmoly"');
 
 /**
  * Settings the kernel owns. Other kernel services pass their own lists (for
@@ -43,17 +45,28 @@ const presetName = z
 export const KERNEL_SETTINGS: readonly SettingDefinition[] = [
   { key: 'workspace.name', schema: z.string().trim().min(1).max(80), default: 'Bemmoly' },
   { key: 'workspace.url', schema: z.union([z.literal(''), z.url()]), default: '' },
-  { key: 'appearance.theme', schema: presetName, default: 'classic' },
+  { key: 'appearance.theme', schema: themeName, default: 'bemmoly' },
   {
     key: 'appearance.brandColor',
     schema: z.string().regex(/^#[0-9a-fA-F]{6}$/, 'A hex colour such as #2356c9'),
     default: '#2356c9',
   },
-  { key: 'appearance.font', schema: presetName, default: 'plex' },
+  { key: 'appearance.font', schema: themeName, default: 'plex' },
+  // New workspaces follow each device; upgraded ones keep their old preset's mode (0600).
+  {
+    key: 'appearance.defaultMode',
+    schema: SETTING_SCHEMAS['appearance.defaultMode'],
+    default: 'system',
+  },
+  {
+    key: 'appearance.customThemeId',
+    schema: SETTING_SCHEMAS['appearance.customThemeId'],
+    default: null,
+  },
   { key: 'appearance.logoKey', schema: z.string().max(512), default: '' },
   { key: 'system.storage.backend', schema: z.enum(['disk', 's3']), default: 'disk' },
   { key: 'system.jobs.housekeeping.schedule', schema: cronSchema, default: '0 * * * *' },
-  // The custom theme builder's mode and surfaces and the member policy, as the web shell edits them.
+  // Retired with the presets (ADR 0021); kept while the previous minor reads them.
   { key: 'appearance.mode', schema: SETTING_SCHEMAS['appearance.mode'], default: 'light' },
   {
     key: 'appearance.surfaces',
