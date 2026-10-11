@@ -74,6 +74,8 @@ interface Cover {
 }
 
 const HERO = 'Issues and docs on your own server';
+/** The release the launch announces, above the hero headline. */
+const LAUNCH = 'Bemmoly 1.0';
 
 export const IMAGES: LaunchImage[] = [
   {
@@ -84,6 +86,7 @@ export const IMAGES: LaunchImage[] = [
     width: 1600,
     height: 900,
     layout: 'split',
+    kicker: LAUNCH,
     headline: HERO,
     sub: 'Boards, sprints and docs in one app. One command to install.',
     shot: 'board',
@@ -122,6 +125,7 @@ export const IMAGES: LaunchImage[] = [
     width: 1200,
     height: 627,
     layout: 'split',
+    kicker: LAUNCH,
     headline: HERO,
     shot: 'board',
   },
@@ -134,6 +138,7 @@ export const IMAGES: LaunchImage[] = [
     width: 1200,
     height: 1200,
     layout: 'stack',
+    kicker: LAUNCH,
     headline: HERO,
     shot: 'board',
   },
@@ -152,6 +157,7 @@ export const IMAGES: LaunchImage[] = [
     width: 1270,
     height: 760,
     layout: 'split',
+    kicker: LAUNCH,
     headline: HERO,
     sub: 'Open source, with nothing to buy. Ever.',
     shot: 'board',
