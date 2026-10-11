@@ -1,0 +1,33 @@
+# `helm test <release>`: the Service answers /readyz with "ready", from inside the cluster.
+# It runs the app image's own Node, so the test pulls nothing new.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {{ include "bemmoly.name" . }}-test-readiness
+  labels:
+    {{- include "bemmoly.labels" . | nindent 4 }}
+    app.kubernetes.io/component: test
+  annotations:
+    helm.sh/hook: test
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+spec:
+  restartPolicy: Never
+  automountServiceAccountToken: false
+  securityContext:
+    {{- include "bemmoly.podSecurityContext" . | nindent 4 }}
+  containers:
+    - name: readiness
+      image: {{ include "bemmoly.image" . }}
+      imagePullPolicy: {{ .Values.image.pullPolicy }}
+      securityContext:
+        {{- include "bemmoly.containerSecurityContext" . | nindent 8 }}
+      command:
+        - node
+        - --input-type=module
+        - --eval
+        - |
+          const url = 'http://{{ include "bemmoly.name" . }}:{{ .Values.service.port }}/readyz';
+          const response = await fetch(url, { signal: AbortSignal.timeout(10000) });
+          const body = await response.json();
+          console.log(url, response.status, JSON.stringify(body));
+          process.exit(response.ok && body.status === 'ready' ? 0 : 1);

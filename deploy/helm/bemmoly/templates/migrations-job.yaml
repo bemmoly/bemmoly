@@ -1,0 +1,55 @@
+{{- if .Values.migrations.preUpgradeJob }}
+# Runs the new version's pending changesets before Helm replaces any pod. The pods that keep
+# serving meanwhile are the previous version, which every changeset must stay compatible with.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "bemmoly.name" . }}-migrate
+  labels:
+    {{- include "bemmoly.labels" . | nindent 4 }}
+    app.kubernetes.io/component: migrate
+  annotations:
+    helm.sh/hook: pre-upgrade
+    helm.sh/hook-weight: '0'
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+spec:
+  backoffLimit: 0
+  activeDeadlineSeconds: {{ .Values.migrations.activeDeadlineSeconds }}
+  ttlSecondsAfterFinished: 86400
+  template:
+    metadata:
+      labels:
+        {{- include "bemmoly.labels" . | nindent 8 }}
+        app.kubernetes.io/component: migrate
+    spec:
+      restartPolicy: Never
+      enableServiceLinks: false
+      automountServiceAccountToken: false
+      securityContext:
+        {{- include "bemmoly.podSecurityContext" . | nindent 8 }}
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: migrate
+          image: {{ include "bemmoly.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args: [bemmoly-db, update]
+          securityContext:
+            {{- include "bemmoly.containerSecurityContext" . | nindent 12 }}
+          envFrom:
+            {{- include "bemmoly.envFrom" . | nindent 12 }}
+          env:
+            {{- include "bemmoly.env" . | nindent 12 }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}
