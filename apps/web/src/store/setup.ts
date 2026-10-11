@@ -44,6 +44,8 @@ export interface SetupDraft {
   /** Whether the AI and Look steps were saved or skipped, so the summary says what happened. */
   aiSaved: boolean;
   themeSaved: boolean;
+  /** The admin chose "Skip setup" on the welcome: the app opens and Home lists what is left. */
+  setupSkipped: boolean;
 }
 
 interface SetupState extends SetupDraft {
@@ -72,6 +74,7 @@ export const INITIAL_SETUP_DRAFT: SetupDraft = {
   skipped: [],
   aiSaved: false,
   themeSaved: false,
+  setupSkipped: false,
 };
 
 /** A stored draft from before themes: its preset as a theme, the rest as it was. */
