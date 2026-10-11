@@ -111,6 +111,14 @@ describe('buildApp', () => {
               keys: 'G L',
             },
             {
+              id: 'work.roadmap',
+              label: 'Roadmap',
+              path: '/work/roadmap',
+              placement: 'command',
+              icon: 'roadmap',
+              keys: 'G R',
+            },
+            {
               id: 'work.projects',
               label: 'Projects',
               path: '/work/projects',
@@ -145,6 +153,7 @@ describe('buildApp', () => {
                 path: '/work/projects',
                 icon: 'layers',
               },
+              { id: 'work.roadmap', label: 'Roadmap', path: '/work/roadmap', icon: 'roadmap' },
             ],
             primary: [
               { id: 'work.my-issues', label: 'My issues', path: '/work/my-issues', icon: 'me' },

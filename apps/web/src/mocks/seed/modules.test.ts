@@ -23,7 +23,7 @@ describe('the mock module seed', () => {
     expect(
       work?.navigation.filter((nav) => nav.placement === 'top').map((nav) => nav.label),
     ).toEqual(['Work']);
-    expect(work?.sidebar?.links.map((link) => link.label)).toEqual(['All projects']);
+    expect(work?.sidebar?.links.map((link) => link.label)).toEqual(['All projects', 'Roadmap']);
     expect(api.db.grants.filter((grant) => grant.moduleId === 'work')).toMatchObject([
       { subjectKind: 'team' },
     ]);
