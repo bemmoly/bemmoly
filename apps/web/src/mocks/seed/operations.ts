@@ -105,6 +105,8 @@ export function seedUpdates(): UpdatesOverview {
       command: 'sudo bemmoly upgrade 0.1.2',
       state: 'idle',
       step: null,
+      progress: null,
+      version: null,
     },
   };
 }
