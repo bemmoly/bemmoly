@@ -6,16 +6,16 @@ protection matches checks by job name, so renaming a job means updating the sett
 
 ## Workflows
 
-| Workflow                        | Runs on                                       | Jobs (status check names)                                                                |
-| ------------------------------- | --------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| Workflow                        | Runs on                                       | Jobs (status check names)                                                                        |
+| ------------------------------- | --------------------------------------------- | ------------------------------------------------------------------------------------------------ |
 | `ci.yml` (CI)                   | pull requests, merge queue, `main`            | **Fast checks**, **Full checks**, **Work end to end**, **Accessibility (theme)**, **Lighthouse** |
-| `security.yml` (Security)       | pull requests, merge queue, `main`, weekly    | **Security scans**, **Image scan**                                                       |
-| `release.yml` (Release)         | `main`, `v*` tags                             | Version pull request or tag, Plan the release, Image (app, updater), Publish the release |
-| `nightly.yml` (Nightly)         | 02:30 UTC daily, manual                       | Fresh VM install, Load budgets (k6)                                                      |
-| `soak.yml` (Soak)               | 03:00 UTC Sundays, manual                     | Soak (k6 and the monitor); 24 h on the `SOAK_RUNNER` self-hosted runner, else 5 h        |
-| `ai-evals.yml` (AI evals)       | 03:00 UTC daily, manual                       | Live AI evals (skips without a provider key)                                             |
-| `deploy-kits.yml` (Deploy kits) | changes to `deploy/`, 03:30 UTC daily, manual | Helm chart, Terraform modules, Offline install                                           |
-| `labels.yml` (Labels)           | changes to `.github/labels.json`              | Sync labels                                                                              |
+| `security.yml` (Security)       | pull requests, merge queue, `main`, weekly    | **Security scans**, **Image scan**                                                               |
+| `release.yml` (Release)         | `main`, `v*` tags                             | Version pull request or tag, Plan the release, Image (app, updater), Publish the release         |
+| `nightly.yml` (Nightly)         | 02:30 UTC daily, manual                       | Fresh VM install, Load budgets (k6)                                                              |
+| `soak.yml` (Soak)               | 03:00 UTC Sundays, manual                     | Soak (k6 and the monitor); 24 h on the `SOAK_RUNNER` self-hosted runner, else 5 h                |
+| `ai-evals.yml` (AI evals)       | 03:00 UTC daily, manual                       | Live AI evals (skips without a provider key)                                                     |
+| `deploy-kits.yml` (Deploy kits) | changes to `deploy/`, 03:30 UTC daily, manual | Helm chart, Terraform modules, Offline install                                                   |
+| `labels.yml` (Labels)           | changes to `.github/labels.json`              | Sync labels                                                                                      |
 
 What each check runs:
 

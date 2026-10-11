@@ -34,6 +34,13 @@ async function check(page: Page, screen: Screen, theme: string, mode: 'light' | 
   await screen.ready?.(page);
   await screen.open?.(page);
   await expect(page.locator('html')).toHaveAttribute('data-mode', mode);
+  // Lazy content past the title (a list behind its skeleton) has landed once the h1 has; a
+  // screen with none still goes to axe, which reports it.
+  await page
+    .getByRole('heading', { level: 1 })
+    .first()
+    .waitFor({ state: 'attached', timeout: 5_000 })
+    .catch(() => undefined);
   // Entrances settle before axe reads colours: reduced motion makes them instant.
   await page.waitForTimeout(300);
   return audit(page);
