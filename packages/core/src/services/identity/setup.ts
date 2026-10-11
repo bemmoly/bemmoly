@@ -28,15 +28,14 @@ async function anyUserExists(db: Database): Promise<boolean> {
 export async function getSetupStatus(
   deps: Pick<IdentityDependencies, 'db' | 'settings'>,
 ): Promise<SetupStatusResponse> {
-  const [initialized, completedAt, workspaceName, logoKey, theme, defaultMode] =
-    await Promise.all([
-      anyUserExists(deps.db),
-      deps.settings.get('setup.completedAt'),
-      deps.settings.get('workspace.name'),
-      deps.settings.get('appearance.logoKey'),
-      deps.settings.get('appearance.theme'),
-      deps.settings.get('appearance.defaultMode'),
-    ]);
+  const [initialized, completedAt, workspaceName, logoKey, theme, defaultMode] = await Promise.all([
+    anyUserExists(deps.db),
+    deps.settings.get('setup.completedAt'),
+    deps.settings.get('workspace.name'),
+    deps.settings.get('appearance.logoKey'),
+    deps.settings.get('appearance.theme'),
+    deps.settings.get('appearance.defaultMode'),
+  ]);
   return {
     initialized,
     completedAt,
