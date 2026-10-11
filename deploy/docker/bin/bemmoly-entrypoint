@@ -26,14 +26,30 @@ wait_for_database() {
   return 0
 }
 
+# Postgres 18 (uuidv7()) with pgvector, before any changeset; bemmoly-db update checks again.
+check_database() {
+  major=$("${BEMMOLY_PG_BIN_DIR}/psql" --dbname="${DATABASE_URL}" --quiet --no-psqlrc --tuples-only \
+    --no-align --command "select current_setting('server_version_num')::int / 10000" 2>/dev/null) || major=''
+  if [ -z "${major}" ]; then
+    log "could not read the Postgres version; check DATABASE_URL (bemmoly doctor)"
+    exit 1
+  fi
+  if [ "${major}" -lt 18 ]; then
+    log "Postgres ${major} is too old; Bemmoly needs Postgres 18 or later with pgvector. Fix: upgrade to Postgres 18 with pgvector (the pgvector/pgvector:pg18 image)"
+    exit 1
+  fi
+}
+
 create_extensions() {
-  # The bundled database user owns the database; on an external database the
-  # extensions may need a superuser, so a failure is a warning, not a stop.
-  if ! "${BEMMOLY_PG_BIN_DIR}/psql" --dbname="${DATABASE_URL}" --quiet --no-psqlrc \
+  # Both are required: changesets create vector columns and trigram indexes. On an
+  # external database creating them may need a superuser.
+  if ! output=$("${BEMMOLY_PG_BIN_DIR}/psql" --dbname="${DATABASE_URL}" --quiet --no-psqlrc \
     --set ON_ERROR_STOP=1 \
     --command 'create extension if not exists pg_trgm' \
-    --command 'create extension if not exists vector' >/dev/null 2>&1; then
-    log "could not create the pg_trgm and vector extensions; semantic search stays off until a superuser runs: create extension vector"
+    --command 'create extension if not exists vector' 2>&1 >/dev/null); then
+    log "could not create the pg_trgm and vector extensions: ${output}"
+    log "Bemmoly needs pgvector and pg_trgm. Fix: install pgvector on the database server (the pgvector/pgvector:pg18 image has it), or have a superuser run: create extension pg_trgm; create extension vector;"
+    exit 1
   fi
 }
 
@@ -54,7 +70,7 @@ run_changesets() {
 
 demo() {
   log "--demo (an embedded Postgres with sample data) is not built into this image yet."
-  log "Try Bemmoly locally with the Compose quickstart instead: https://bemmoly.com/docs/try-locally"
+  log "Try Bemmoly locally with the Compose quickstart instead: https://bemmoly.com/docs/compose"
   exit 64
 }
 
@@ -89,6 +105,7 @@ case "${1:-}" in
 esac
 
 if wait_for_database; then
+  check_database
   create_extensions
   run_changesets
 fi

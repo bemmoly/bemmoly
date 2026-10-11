@@ -143,7 +143,7 @@ cmd_config() {
       [[ $# -ge 3 ]] || die "config set needs a value" "Run: bemmoly config set ${key} VALUE"
       refuse_during_update 'config set'
       if [[ "${key}" == BEMMOLY_SECRET_KEY || "${key}" == POSTGRES_PASSWORD ]]; then
-        die "${key} cannot be changed here" "Changing it would lock you out of stored credentials or the database; see https://bemmoly.com/docs/rotate-secrets"
+        die "${key} cannot be changed here" "Changing it would lock you out of stored credentials or the database; see https://bemmoly.com/docs/compose#settings"
       fi
       cp "$(env_file)" "$(env_file).bak"
       env_set "$(env_file)" "${key}" "$3"

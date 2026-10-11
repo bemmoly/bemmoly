@@ -42,6 +42,21 @@ setup() {
   grep -qx 'https://github.com/bemmoly/bemmoly/releases/latest/download/bemmoly-installer.sh' "${BATS_TEST_TMPDIR}/urls"
 }
 
+@test "a download cut short runs nothing; the whole script runs from its last line" {
+  [ "$(tail -n 1 "${DEPLOY_DIR}/install.sh")" = 'bemmoly_install "$@"' ]
+  bin="${BATS_TEST_TMPDIR}/bin"
+  mkdir -p "${bin}"
+  printf '#!/bin/sh\necho called >>"%s/calls"\nexit 22\n' "${BATS_TEST_TMPDIR}" >"${bin}/curl"
+  chmod +x "${bin}/curl"
+  total=$(wc -l <"${DEPLOY_DIR}/install.sh")
+  for keep in 20 60 $((total - 1)); do
+    head -n "${keep}" "${DEPLOY_DIR}/install.sh" >"${BATS_TEST_TMPDIR}/partial.sh"
+    run env PATH="${bin}:${PATH}" sh -s -- --yes <"${BATS_TEST_TMPDIR}/partial.sh"
+    [ ! -e "${BATS_TEST_TMPDIR}/calls" ]
+    [[ "${output}" != *"Could not download"* ]]
+  done
+}
+
 @test "the CLI prints its commands without root" {
   run bash "${DEPLOY_DIR}/cli/bemmoly" help
   [ "${status}" -eq 0 ]

@@ -65,4 +65,4 @@ printf '    *) die "Unknown installer asset $1" "This is a bug in the installer;
 
 printf '\n# --- install.sh\n'
 # The entry without its header, the BEMMOLY_BUNDLED default and the checkout-only sourcing.
-sed -e '1,/^set -eu$/d' -e '/^BEMMOLY_BUNDLED=/d' "${DEPLOY_DIR}/install.sh"
+sed -e '1,/^set -eu$/d' -e '/^ *BEMMOLY_BUNDLED=/d' "${DEPLOY_DIR}/install.sh"

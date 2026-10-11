@@ -51,6 +51,68 @@ wait_healthy() {
   return 1
 }
 
+DB_IMAGE=pgvector/pgvector:pg18
+MIN_POSTGRES_MAJOR=18
+
+# "major|vector|trgm" for the --database-url server, e.g. "18|t|t": with the host's
+# psql, else with the psql in the bundled database image.
+query_external_database() {
+  query="select current_setting('server_version_num')::int / 10000,
+    exists(select 1 from pg_available_extensions where name = 'vector'),
+    exists(select 1 from pg_available_extensions where name = 'pg_trgm')"
+  if have psql; then
+    PGCONNECT_TIMEOUT=10 psql --dbname="${EXTERNAL_DATABASE_URL}" --no-psqlrc --tuples-only \
+      --no-align --field-separator='|' --command="${query}" 2>>"${BEMMOLY_LOG}"
+  else
+    as_root docker run --rm --network host -e PGCONNECT_TIMEOUT=10 "${DB_IMAGE}" \
+      psql --dbname="${EXTERNAL_DATABASE_URL}" --no-psqlrc --tuples-only --no-align \
+      --field-separator='|' --command="${query}" 2>>"${BEMMOLY_LOG}"
+  fi
+}
+
+# Why a "major|vector|trgm" answer cannot run Bemmoly: the message, then the fix, one
+# per line; nothing when it can.
+database_requirement_problem() {
+  major="${1%%|*}"
+  rest="${1#*|}"
+  vector="${rest%%|*}"
+  trgm="${rest#*|}"
+  if [ "${major}" -lt "${MIN_POSTGRES_MAJOR}" ]; then
+    printf 'The database at --database-url runs Postgres %s; Bemmoly needs Postgres %s or later with pgvector\n' "${major}" "${MIN_POSTGRES_MAJOR}"
+    printf 'Upgrade it to Postgres %s with pgvector (the %s image), or install without --database-url to use the bundled database.\n' "${MIN_POSTGRES_MAJOR}" "${DB_IMAGE}"
+    return 0
+  fi
+  missing=''
+  [ "${vector}" = t ] || missing='pgvector'
+  [ "${trgm}" = t ] || missing="${missing:+${missing} and }pg_trgm"
+  if [ -n "${missing}" ]; then
+    printf 'The database at --database-url (Postgres %s) does not have %s installed; Bemmoly needs it\n' "${major}" "${missing}"
+    printf 'Install %s on the database server (the %s image has both), or install without --database-url.\n' "${missing}" "${DB_IMAGE}"
+  fi
+}
+
+# Before anything is written: the schema needs uuidv7() (Postgres 18) and pgvector.
+check_external_database() {
+  [ -n "${EXTERNAL_DATABASE_URL}" ] || return 0
+  step "Checking the database at --database-url"
+  if ! have psql && [ -n "${IMAGE_ARCHIVE}" ] && ! as_root docker image inspect "${DB_IMAGE}" >/dev/null 2>&1; then
+    step_done skipped
+    warn "No psql here to check the database with; Bemmoly checks for Postgres ${MIN_POSTGRES_MAJOR} with pgvector when it starts."
+    return 0
+  fi
+  answer=$(query_external_database | tr -d ' ' | head -n 1) || answer=''
+  case "${answer}" in
+    [0-9]*'|'[tf]'|'[tf]) ;;
+    *) die "Could not query the database at --database-url" \
+      "Check the URL, the password and that this machine can reach the database." ;;
+  esac
+  problem=$(database_requirement_problem "${answer}")
+  if [ -n "${problem}" ]; then
+    die "$(printf '%s\n' "${problem}" | sed -n 1p)" "$(printf '%s\n' "${problem}" | sed -n 2p)"
+  fi
+  step_done "Postgres ${answer%%|*}, pgvector"
+}
+
 start_stack() {
   if [ -n "${IMAGE_ARCHIVE}" ]; then
     step "Loading images from $(basename "${IMAGE_ARCHIVE}")"

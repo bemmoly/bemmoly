@@ -6,6 +6,7 @@
  * The deploy CLI's `bemmoly db …` runs this inside the app container.
  */
 import {
+  assertPostgresSupported,
   createChangelogRunner,
   createDatabase,
   createModuleAccessWriter,
@@ -18,6 +19,7 @@ import {
   loadKernelChangelog,
   loadModules,
   MODULES_USAGE,
+  PostgresRequirementError,
   readEnabledModuleIds,
   runDbCommand,
   runModulesCommand,
@@ -75,6 +77,8 @@ async function modulesCommand() {
 }
 
 try {
+  // Before a changeset runs: 0.5's schema needs Postgres 18 (uuidv7()) and pgvector.
+  if (argv[0] === 'db' && argv[1] === 'update') await assertPostgresSupported(sql);
   const result =
     argv[0] === 'modules'
       ? await modulesCommand()
@@ -87,6 +91,10 @@ try {
         });
   process.stdout.write(`${result.output}\n`);
   process.exitCode = result.exitCode;
+} catch (error) {
+  if (!(error instanceof PostgresRequirementError)) throw error;
+  process.stderr.write(`${error.message}\n`);
+  process.exitCode = 1;
 } finally {
   await sql.end({ timeout: 5 });
 }

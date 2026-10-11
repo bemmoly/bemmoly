@@ -66,7 +66,7 @@ LABEL org.opencontainers.image.title="Bemmoly" \
       org.opencontainers.image.created="${CREATED}" \
       org.opencontainers.image.source="https://github.com/bemmoly/bemmoly" \
       org.opencontainers.image.url="https://bemmoly.com" \
-      org.opencontainers.image.documentation="https://bemmoly.com/docs/install" \
+      org.opencontainers.image.documentation="https://bemmoly.com/self-hosting#install" \
       org.opencontainers.image.licenses="MIT" \
       org.opencontainers.image.vendor="Bemmoly contributors"
 
