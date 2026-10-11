@@ -40,12 +40,12 @@ describe('the page’s editor services', () => {
     expect(result.current.pageHref?.('p-2')).toBe('/docs/p/p-2');
   });
 
-  it('keeps placeholders without one, and # falls back to the kernel search', () => {
+  it('keeps placeholders without one, lends uploads, and # falls back to the kernel search', () => {
     const { result } = renderHook(() => useDocServices('page-1'));
     expect(result.current.renderIssue).toBeUndefined();
     expect(result.current.renderIssueTable).toBeUndefined();
     expect(result.current.searchIssues).toBeTypeOf('function');
-    expect(result.current.uploadImage).toBeUndefined();
+    expect(result.current.uploadImage).toBeTypeOf('function');
     expect(result.current.ai).toBeUndefined();
   });
 });
