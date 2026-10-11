@@ -19,7 +19,7 @@ import { EXPORT_COLUMNS, toPdfExport, type ExportRow } from './rows.ts';
 export const DOCS_EXPORT_PDF_JOB = 'docs.export-pdf';
 export const DOCS_PURGE_EXPORTS_JOB = 'docs.purge-exports';
 
-/** A render that takes longer than this also tells the person in their inbox. */
+/** An export that took longer than this from the request also tells the person in their inbox. */
 const SLOW_RENDER_MS = 10_000;
 
 /**
@@ -128,7 +128,6 @@ export function createPdfExportService(deps: DocsServiceDeps) {
       if (!row || row.status === 'ready') return;
       if (!deps.contextFor) throw new ProviderError('PDF exports need the job context');
       const ctx = deps.contextFor({ kind: 'user', id: row.requested_by });
-      const started = Date.now();
       try {
         const page = await pageById(sql(), row.page_id);
         await ctx.authz.authorize(ctx.actor, 'docs.page.view', spaceResource(page.space_id));
@@ -139,7 +138,10 @@ export function createPdfExportService(deps: DocsServiceDeps) {
           set status = 'ready', pdf = ${pdf}, size = ${pdf.byteLength}, pages = ${pages.length},
             error = null, updated_at = now()
           where id = ${row.id}`;
-        if (row.scope === 'subtree' || Date.now() - started > SLOW_RENDER_MS) {
+        if (
+          row.scope === 'subtree' ||
+          Date.now() - new Date(row.created_at).getTime() > SLOW_RENDER_MS
+        ) {
           await notifyExportReady(deps, {
             ...row,
             pageId: page.id,
