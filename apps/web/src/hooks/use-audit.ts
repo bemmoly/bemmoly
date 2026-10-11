@@ -44,6 +44,7 @@ export function actorName(entry: AuditEntry, byId: ReadonlyMap<string, User>): s
   const person = byId.get(entry.actorUserId ?? entry.actorId ?? '')?.name;
   if (entry.actorKind === 'api_token') return person ? `API token · ${person}` : 'API token';
   if (entry.actorKind === 'ai_plan') return person ? `AI plan · ${person}` : 'AI plan';
+  if (entry.actorKind === 'automation') return person ? `Automation · ${person}` : 'Automation';
   return person ?? 'Unknown person';
 }
 

@@ -7,11 +7,13 @@ import {
   createLocalEventBus,
   createMaintenanceReader,
   createModuleDataBackupHandle,
+  createRequestAuthorization,
   createRealtimeService,
   createSettingsReaderHandle,
   EMAIL_SETTING_DEFINITIONS,
   loadModules,
   SYSTEM_SETTINGS,
+  type Actor,
   type BemmolyModule,
   type CodeHosts,
   type CollabHost,
@@ -108,6 +110,11 @@ export async function bootApplication(options: BootOptions): Promise<Booted> {
       ? {
           database: database.sql,
           isEnabled: (moduleId: string) => moduleState?.isEnabled(moduleId) ?? false,
+          contextFor: (actor: Actor, context?: { requestId?: string }) => ({
+            actor,
+            authz: createRequestAuthorization({ db: database.db, modules: catalog }),
+            ...(context?.requestId ? { requestId: context.requestId } : {}),
+          }),
         }
       : {}),
   });

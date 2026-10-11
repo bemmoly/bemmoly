@@ -5,7 +5,7 @@ import type { EventBus } from '../contracts/event-bus.ts';
 import type { EnqueueOptions, JobQueue } from '../contracts/jobs.ts';
 import type { RealtimePublisher } from '../contracts/realtime.ts';
 import { collabDocumentName, type CollabTransactor } from './collab.ts';
-import type { BemmolyModule, ModuleContext } from './contract.ts';
+import type { ActorContextFactory, BemmolyModule, ModuleContext } from './contract.ts';
 import type { ModuleContributions } from './contributions.ts';
 import { ModuleLoadError } from './errors.ts';
 import type { FileReader } from './files.ts';
@@ -38,6 +38,8 @@ export interface ModuleContextOptions {
    * handlers run only while it is enabled: a disabled module's tables may not exist yet.
    */
   isEnabled?: (moduleId: string) => boolean;
+  /** Builds the context a job acts in for an actor; present with a database. */
+  contextFor?: ActorContextFactory;
 }
 
 /** `ctx.events` for one module: it publishes freely, and hears events only while enabled. */
@@ -261,6 +263,7 @@ export function createModuleContext(
       },
     },
     realtime: options.realtime ?? noRealtime,
+    ...(options.contextFor ? { contextFor: options.contextFor } : {}),
     ...(options.database
       ? {
           database: options.database,

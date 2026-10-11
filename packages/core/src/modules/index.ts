@@ -1,5 +1,6 @@
 export {
   defineModule,
+  type ActorContextFactory,
   type BemmolyModule,
   type ModuleContext,
   type ModuleDefaultAccess,
