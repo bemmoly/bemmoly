@@ -4,6 +4,7 @@ export {
   Icon,
   ICON_NAMES,
   ICON_SIZE,
+  iconComponent,
   type GlyphName,
   type IconName,
   type IconProps,
