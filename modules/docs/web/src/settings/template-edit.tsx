@@ -31,7 +31,7 @@ export function TemplateEdit({ form, autoFocus }: { form: TemplateForm; autoFocu
             value={draft.name}
             maxLength={120}
             autoFocus={autoFocus}
-            placeholder="Architecture decision"
+            placeholder="Such as Architecture decision"
             onChange={(event) => change({ name: event.target.value })}
           />
         </Field>

@@ -49,11 +49,9 @@ export function fieldSummary(field: TemplateField): string {
 function ChoicesInput({
   field,
   onChange,
-  className,
 }: {
   field: TemplateField;
   onChange: (options: string[]) => void;
-  className?: string;
 }) {
   const [text, setText] = useState(() => optionsText(field));
   return (
@@ -65,7 +63,6 @@ function ChoicesInput({
         setText(event.target.value);
         onChange(parseOptions(event.target.value));
       }}
-      className={className}
     />
   );
 }
@@ -120,14 +117,16 @@ export function FieldsEditor({
           aria-label={`Field ${index + 1}`}
           className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-2 sm:grid-cols-[minmax(0,1fr)_120px_minmax(0,1fr)_auto]"
         >
-          <Input
-            aria-label="Field label"
-            placeholder="Label, such as Status"
-            value={field.label}
-            maxLength={60}
-            onChange={(event) => set(index, { label: event.target.value })}
-          />
-          <span className="row-start-2 sm:row-start-auto">
+          <span className="order-1 min-w-0">
+            <Input
+              aria-label="Field label"
+              placeholder="Label, such as Status"
+              value={field.label}
+              maxLength={60}
+              onChange={(event) => set(index, { label: event.target.value })}
+            />
+          </span>
+          <span className="order-3 col-span-2 sm:order-2 sm:col-span-1">
             <Select
               aria-label="Field kind"
               value={field.kind}
@@ -135,22 +134,24 @@ export function FieldsEditor({
               onChange={(event) => set(index, { kind: event.value as TemplateField['kind'] })}
             />
           </span>
-          {field.kind === 'select' ? (
-            <ChoicesInput
-              key={`${index}:${field.key}`}
-              field={field}
-              onChange={(options) => set(index, { options })}
-              className="col-span-2 row-start-3 sm:col-span-1 sm:row-start-auto"
+          <span
+            className={`order-4 col-span-2 min-w-0 sm:order-3 sm:col-span-1 ${field.kind === 'select' ? '' : 'hidden sm:block'}`}
+          >
+            {field.kind === 'select' && (
+              <ChoicesInput
+                key={`${index}:${field.key}`}
+                field={field}
+                onChange={(options) => set(index, { options })}
+              />
+            )}
+          </span>
+          <span className="order-2 sm:order-4">
+            <IconButton
+              label={`Remove ${field.label || 'this field'}`}
+              icon={<Icon name="close" />}
+              onClick={() => onChange(fields.filter((_, at) => at !== index))}
             />
-          ) : (
-            <span className="hidden sm:block" />
-          )}
-          <IconButton
-            label={`Remove ${field.label || 'this field'}`}
-            icon={<Icon name="close" />}
-            onClick={() => onChange(fields.filter((_, at) => at !== index))}
-            className="col-start-2 row-start-1 sm:col-start-auto sm:row-start-auto"
-          />
+          </span>
         </div>
       ))}
       {fields.length < MOST_FIELDS && (
