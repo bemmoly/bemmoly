@@ -52,7 +52,7 @@ export const SIZING = [
   {
     team: 'Beyond',
     vm: 'Kubernetes',
-    note: 'Several replicas and a managed Postgres.',
-    status: 'soon' as StatusKey,
+    note: 'The Helm chart, with its own Postgres or yours; live collaboration needs one app replica for now.',
+    status: 'available' as StatusKey,
   },
 ];

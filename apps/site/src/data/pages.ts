@@ -27,7 +27,7 @@ export const PAGES = [
     title: 'Bemmoly: self-hosted, open source project management',
     description:
       'Your work. Your platform. Issues, boards and docs on your own server: 100% open source (MIT), no subscription, no in-app purchases. One app image, one Postgres.',
-    updated: '2026-10-11',
+    updated: '2026-10-12',
     software: true,
   },
   {
@@ -90,7 +90,7 @@ export const PAGES = [
     title: 'Install Bemmoly on your own server: the self-hosting guide',
     description:
       'Install Bemmoly on a Linux VM with one command, or with Docker Compose. Then first login, modules, optional AI, upgrades, backups, troubleshooting and sizing.',
-    updated: '2026-10-11',
+    updated: '2026-10-12',
     software: true,
   },
   {

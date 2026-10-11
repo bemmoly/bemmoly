@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { collectChanges } from './changes.ts';
 import { diffConfig } from './config-changes.ts';
 import { buildManifest } from './manifest.ts';
-import { renderNotes } from './notes.ts';
+import { kindTitle, renderNotes } from './notes.ts';
 import { describeChangeset, isChangesetFile, rollbackMode } from './schema-changes.ts';
 import { parseRelease } from './version.ts';
 
@@ -74,6 +74,55 @@ describe('release notes', () => {
     ]);
     expect(changes.patch).toEqual(['Fix the theme switcher losing the preset on reload']);
     expect(collectChanges([SERVER_CHANGELOG], '0.3.0').minor).toEqual([]);
+  });
+
+  it('keeps every paragraph and list of a note, inside its list item', () => {
+    const changelog = `# @bemmoly/server
+
+## 1.0.0
+
+### Major Changes
+
+- 1a2b3c4: **Bemmoly 1.0.** The headline.
+
+  - **Work**: boards and sprints
+  - **Docs**: pages
+
+  The closing paragraph.
+
+### Minor Changes
+
+- 5d6e7f8: Webhooks
+  Schema: none.
+`;
+    const changes = collectChanges([changelog], '1.0.0');
+    expect(changes.major).toEqual([
+      '**Bemmoly 1.0.** The headline.\n\n- **Work**: boards and sprints\n- **Docs**: pages\n\nThe closing paragraph.',
+    ]);
+    expect(changes.minor).toEqual(['Webhooks\nSchema: none.']);
+    const notes = renderNotes({
+      release: parseRelease('1.0.0'),
+      changes,
+      schema: [],
+      config: { added: [], removed: [] },
+      image: 'ghcr.io/bemmoly/bemmoly',
+      repository: 'bemmoly/bemmoly',
+      firstRelease: false,
+    });
+    expect(notes).toContain(
+      '### Highlights\n\n- **Bemmoly 1.0.** The headline.\n\n  - **Work**: boards and sprints\n  - **Docs**: pages\n\n  The closing paragraph.\n',
+    );
+    expect(notes).not.toContain('Breaking changes');
+  });
+
+  it('calls a major note a breaking change, except on 1.0.0', () => {
+    expect(kindTitle('major', parseRelease('1.0.0'))).toBe('Highlights');
+    expect(kindTitle('major', parseRelease('1.0.0-beta.2'))).toBe('Highlights');
+    expect(kindTitle('major', parseRelease('2.0.0'))).toBe('Breaking changes');
+    expect(kindTitle('major', parseRelease('1.0.1'))).toBe('Breaking changes');
+    expect(kindTitle('major', parseRelease('0.14.0'))).toBe('Breaking changes');
+    expect(kindTitle('minor', parseRelease('1.0.0'))).toBe('New');
+    expect(kindTitle('patch', parseRelease('1.0.0'))).toBe('Fixes');
   });
 
   it('flags schema changesets that are slow or irreversible', () => {

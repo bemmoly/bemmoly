@@ -3,9 +3,10 @@
  * Bringing work in and taking it out, from the site review: import lowers the cost of trying,
  * export removes the fear of being stuck. Other products appear only as import sources ("Import
  * from Jira"), anything still to come says "Coming soon" with no version, and configuration is
- * compressed to one strip whose detail lives on the topic pages.
+ * compressed to one strip whose detail lives on the topic pages, with a second strip for what it
+ * connects to.
  */
-import { CONFIGURE, SWITCH_TILES } from '../../data/landing.ts';
+import { CONFIGURE, CONNECT, SWITCH_TILES } from '../../data/landing.ts';
 import Badge from '../site/Badge.astro';
 import Icon from '../site/Icon.astro';
 import SectionHead from './SectionHead.astro';
@@ -50,6 +51,23 @@ import SectionHead from './SectionHead.astro';
         <p class="text-14 text-tx-3">Admins set it up; teams adjust it.</p>
       </div>
       {CONFIGURE.map((item) => (
+        <div class="flex items-start gap-2.5">
+          <Icon name={item.icon} size={17} class="mt-0.5 text-acc" />
+          <div>
+            <b class="text-14h font-medium">{item.title}</b>
+            <p class="text-13 text-tx-3">{item.body}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+  <div class="mx-auto mt-4 max-w-300 px-4 sm:px-6 lg:px-8">
+    <div class="grid gap-5 rounded-shot bg-card p-5 shadow-e1 sm:grid-cols-2 md:px-6 lg:grid-cols-[220px_repeat(4,1fr)] lg:items-center">
+      <div>
+        <h3 class="text-15 font-semibold">Connect what you use</h3>
+        <p class="text-14 text-tx-3">Sign-in, events and code, in Settings.</p>
+      </div>
+      {CONNECT.map((item) => (
         <div class="flex items-start gap-2.5">
           <Icon name={item.icon} size={17} class="mt-0.5 text-acc" />
           <div>

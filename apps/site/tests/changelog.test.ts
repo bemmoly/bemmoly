@@ -10,7 +10,9 @@ import {
   CHANGELOG_GLOB,
   collectReleases,
   compareVersions,
+  groupByKind,
   inlineMarkdown,
+  kindTitle,
   paragraphHtml,
   parseChangelog,
   RELEASES,
@@ -44,6 +46,23 @@ Requests\` with a header.
 - Updated dependencies [b98d0c0]
   - @bemmoly/shared@0.1.4
 `;
+
+describe('headings', () => {
+  it('lists a major note as breaking, except the 1.0 headline', () => {
+    expect(kindTitle('major', '2.0.0')).toBe('Breaking changes');
+    expect(kindTitle('major', '1.0.0')).toBe('Highlights');
+    expect(kindTitle('major', '1.0.0-beta.1')).toBe('Highlights');
+    expect(kindTitle('minor', '1.0.0')).toBe('New');
+    const groups = groupByKind(
+      [
+        { kind: 'minor', paragraphs: ['Webhooks'] },
+        { kind: 'major', paragraphs: ['The headline'] },
+      ],
+      '1.0.0',
+    );
+    expect(groups.map((group) => group.title)).toEqual(['Highlights', 'New']);
+  });
+});
 
 describe('parser', () => {
   it('keeps wrapped lines and paragraphs together and drops dependency noise', () => {

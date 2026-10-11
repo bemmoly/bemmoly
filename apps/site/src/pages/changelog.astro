@@ -47,7 +47,7 @@ const formatDate = (iso: string) =>
             )}
           </span>
         </div>
-        {groupByKind(release.changes).map((group) => (
+        {groupByKind(release.changes, release.version).map((group) => (
           <section class="flex flex-col gap-2">
             <h3 class="text-16 font-semibold text-tx">{group.title}</h3>
             <ul class="flex list-disc flex-col gap-3 pl-5 text-16 leading-desc text-tx-2 [&_code]:font-mono [&_code]:text-13 [&_code]:text-tx [&_code]:wrap-anywhere">

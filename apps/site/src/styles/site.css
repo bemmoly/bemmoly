@@ -66,6 +66,13 @@
   --color-sponsor: var(--red-tx);
   --color-sponsor-soft: var(--red-50);
   --color-sponsor-line: color-mix(in srgb, var(--red-tx) 45%, transparent);
+  /*
+   * Star: the header's "Star on GitHub" link, the sponsor link's shape in amber. Aliases of the
+   * product's amber text and tint, AA in light and dark (tests/sponsor.test.ts checks it).
+   */
+  --color-star: var(--amber-tx);
+  --color-star-soft: var(--amber-50);
+  --color-star-line: color-mix(in srgb, var(--amber-tx) 45%, transparent);
 }
 
 /* The product's page is canvas: white in light, #111418 in dark. */

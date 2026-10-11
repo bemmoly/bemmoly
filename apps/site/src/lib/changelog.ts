@@ -229,13 +229,22 @@ export function shippedLabel(since: string | null): string {
 /** The release Docs first shipped in, from the module's own changelog. */
 export const DOCS_SINCE = firstReleaseIn('modules/docs/CHANGELOG.md');
 
+/**
+ * The oldest published release with a note that opens with `opening`, or null while none has
+ * it: copy about a feature waits for the release that ships it, not for the merge.
+ */
+export function shippedIn(opening: string): string | null {
+  return (
+    [...RELEASES]
+      .reverse()
+      .find((release) =>
+        release.changes.some((change) => change.paragraphs[0]?.startsWith(opening)),
+      )?.version ?? null
+  );
+}
+
 /** The release AI first shipped in: the oldest release whose notes open with "AI arrives". */
-export const AI_SINCE =
-  [...RELEASES]
-    .reverse()
-    .find((release) =>
-      release.changes.some((change) => change.paragraphs[0]?.startsWith('AI arrives')),
-    )?.version ?? null;
+export const AI_SINCE = shippedIn('AI arrives');
 
 /** What is still to come, without release numbers (src/data/changelog.ts). */
 export const UPCOMING = ROADMAP;
@@ -270,20 +279,7 @@ export function paragraphHtml(paragraph: string): string {
   return `<ul>${items.join('')}</ul>`;
 }
 
-export const KIND_TITLES: Readonly<Record<ChangeKind, string>> = {
-  major: 'Breaking changes',
-  minor: 'New',
-  patch: 'Fixes and improvements',
-};
-
-/** A release's changes under their headings, breaking changes first. */
-export function groupByKind(changes: readonly ReleaseChange[]) {
-  return ORDER.map((kind) => ({
-    kind,
-    title: KIND_TITLES[kind],
-    changes: changes.filter((change) => change.kind === kind),
-  })).filter((group) => group.changes.length > 0);
-}
+export { groupByKind, KIND_TITLES, kindTitle } from './release-headings.ts';
 
 /** The anchor of a release on /changelog: v0-1-7, since ids keep to letters, digits and dashes. */
 export const releaseId = (version: string) => `v${version.replace(/[^\w-]/g, '-')}`;

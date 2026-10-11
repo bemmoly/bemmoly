@@ -1,5 +1,6 @@
 /**
- * The header's Sponsor link is rose text on a rose tint (ADR 0033). Its colours are site-only
+ * The header's Sponsor link is rose text on a rose tint (ADR 0033), and its Star on GitHub link
+ * amber text on an amber tint. Its colours are site-only
  * aliases of the product's red-tx and red-50 (src/styles/site.css), so this checks the text
  * holds AA (4.5:1) on the canvas and on the tint, in light and in dark.
  */
@@ -38,6 +39,8 @@ describe('sponsor colours', () => {
     const css = readFileSync(new URL('../src/styles/site.css', import.meta.url), 'utf8');
     expect(css).toContain('--color-sponsor: var(--red-tx);');
     expect(css).toContain('--color-sponsor-soft: var(--red-50);');
+    expect(css).toContain('--color-star: var(--amber-tx);');
+    expect(css).toContain('--color-star-soft: var(--amber-50);');
   });
 
   it.each(['light', 'dark'] as const)('hold AA in %s', (mode) => {
@@ -45,6 +48,15 @@ describe('sponsor colours', () => {
     const canvas = parse(colors.canvas);
     const text = parse(colors['red-tx']);
     const tint = over(parse(colors['red-50']), canvas);
+    expect(contrast(text, canvas)).toBeGreaterThanOrEqual(4.5);
+    expect(contrast(text, tint)).toBeGreaterThanOrEqual(4.5);
+  });
+
+  it.each(['light', 'dark'] as const)('the star link holds AA in %s', (mode) => {
+    const { colors } = resolveTheme('bemmoly', mode);
+    const canvas = parse(colors.canvas);
+    const text = parse(colors['amber-tx']);
+    const tint = over(parse(colors['amber-50']), canvas);
     expect(contrast(text, canvas)).toBeGreaterThanOrEqual(4.5);
     expect(contrast(text, tint)).toBeGreaterThanOrEqual(4.5);
   });

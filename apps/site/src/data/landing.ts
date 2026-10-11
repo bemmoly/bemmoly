@@ -4,7 +4,7 @@
  * (src/lib/changelog.ts) and nothing unreleased carries one. The claims with a file behind
  * them live in proofs.ts; the questions in faq.ts.
  */
-import { LATEST } from '../lib/changelog.ts';
+import { LATEST, shippedIn } from '../lib/changelog.ts';
 import type { SiteIconName } from '../lib/icons.ts';
 import { INSTALL_COMMAND } from '../lib/links.ts';
 import { RELEASE_TITLES } from './changelog.ts';
@@ -39,6 +39,8 @@ export const WORK_OUTCOMES: readonly Outcome[] = [
   { lead: 'Your workflow', rest: 'drawn in a visual editor, with conditions and post-actions' },
   { lead: 'Find anything', rest: 'with a query language, saved filters and the command palette' },
   { lead: 'Configure, then lock', rest: 'org defaults, project overrides and custom roles' },
+  { lead: 'A roadmap', rest: 'epics on a timeline, with a forecast from your team’s own pace' },
+  { lead: 'Automation rules', rest: 'a trigger, conditions in LQL, then the actions to take' },
 ];
 
 /** Docs, from the 0.3 release notes: shipped, nothing planned. */
@@ -168,7 +170,9 @@ export const SWITCH_TILES: readonly SwitchTile[] = [
   {
     icon: 'export',
     title: 'Export, any time',
-    body: 'A page as Markdown or HTML, or a page and its subpages as a zip; PDF through your browser.',
+    body: shippedIn('Docs pages export to PDF')
+      ? 'A page as Markdown or HTML, or a page and its subpages as a zip; PDF from the optional renderer or your browser.'
+      : 'A page as Markdown or HTML, or a page and its subpages as a zip; PDF through your browser.',
   },
 ];
 
@@ -180,6 +184,20 @@ export const CONFIGURE: readonly { icon: SiteIconName; title: string; body: stri
   {
     icon: 'palette',
     title: 'Themes',
-    body: 'five themes in light and dark, and your brand colour',
+    body: 'five themes in light and dark, your brand colour and your logo',
   },
+];
+
+/** What it connects to, from the release notes that shipped each (0.6, 0.7 and 0.13). */
+export const CONNECT: readonly { icon: SiteIconName; title: string; body: string }[] = [
+  { icon: 'shield', title: 'Single sign-on', body: 'OpenID Connect or SAML, and SCIM 2.0' },
+  { icon: 'zap', title: 'Webhooks', body: 'signed with HMAC-SHA256, with a delivery log' },
+  {
+    icon: 'pull-request',
+    title: 'Code hosts',
+    body: shippedIn('Connect GitHub in one click')
+      ? 'GitHub in one click, or GitLab: pull requests on the issue'
+      : 'GitHub or GitLab: pull requests on the issue',
+  },
+  { icon: 'puzzle', title: 'An MCP server', body: 'AI clients work as you, with your permissions' },
 ];

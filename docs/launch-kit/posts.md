@@ -1,13 +1,14 @@
 # Bemmoly launch posts
 
-Final copy for the public launch, written against Bemmoly 0.13.1, the newest published release.
-Every claim here is in a published release note or the README; nothing below is planned work
+Final copy for the public launch, written against Bemmoly 1.0.0. Post it once the 1.0.0 release
+is published on GitHub and bemmoly.com names it. Every claim here is in a release note or the README; nothing below is planned work
 described as shipped. Images for each post are in [images/](images/) and on the review page,
 [index.html](index.html).
 
 Facts these posts rely on:
 
-- Version 0.13.1. MIT. Self-hosted: one Docker image and one Postgres.
+- Version 1.0.0. MIT. Self-hosted: one Docker image and one Postgres. From 1.0, Semantic
+  Versioning's usual rules, and updates and rollbacks safe within one minor (AGENTS.md §6).
 - Work: projects, custom workflows, Kanban and Scrum boards, backlog and sprints, a query
   language and saved filters.
 - Docs: spaces, a page tree, a real-time collaborative editor, revisions, comments, image
@@ -20,8 +21,10 @@ Facts these posts rely on:
 - Operations: automatic HTTPS, nightly verified backups, updates from the app with automatic
   rollback, signed images. No telemetry.
 - Shipped in 0.13.1: automation rules in Work, outgoing webhooks signed with HMAC-SHA256, a
-  roadmap view with forecasts from the team's own pace, and tested Kubernetes (Helm chart) and
-  Terraform paths.
+  roadmap view with forecasts from the team's own pace, code host links from GitHub and GitLab,
+  and tested Kubernetes (Helm chart) and Terraform paths.
+- New in 1.0.0: GitHub connected in one click, PDF export of Docs pages with the optional PDF
+  renderer, and an accessibility pass to WCAG 2.2 AA.
 - Coming soon (no dates): an installable app with web push notifications.
 
 Links:
@@ -58,7 +61,7 @@ data, running in your browser against a mocked backend.
 Three promises: 100% open source (MIT, no open core, no enterprise edition), no subscription (no
 seats, plans or licence key), and no in-app purchases (nothing is locked).
 
-What's in 0.13.1:
+What's in 1.0:
 
 - Work: projects, custom workflows, Kanban and Scrum boards, backlog and sprints, a query
   language and saved filters.
@@ -70,6 +73,8 @@ What's in 0.13.1:
   network. Summaries cite their sources, and admins choose what content is sent.
 - Automation rules (a trigger, conditions, actions), outgoing webhooks signed with HMAC-SHA256,
   and a roadmap view that forecasts when epics land from your team's own pace.
+- Pull requests, branches and commits from GitHub (connected in one click) or GitLab, on the
+  issue they name.
 - A built-in MCP server, so agents and IDEs can work in your workspace with your permissions.
 - Operations: automatic HTTPS, nightly verified backups, updates from the app that roll back on
   their own if the new version isn't healthy, signed images, no telemetry. A Helm chart and
@@ -77,7 +82,7 @@ What's in 0.13.1:
 
 Not there yet: an installable app with web push notifications.
 
-It's a young project and I'd value blunt feedback, especially on installing it on your distro
+It's 1.0 today and I'd value blunt feedback, especially on installing it on your distro
 and on what's missing before you'd move a team over. Ideas and questions:
 https://github.com/bemmoly/bemmoly/discussions. Bugs:
 https://github.com/bemmoly/bemmoly/issues.
@@ -94,8 +99,8 @@ Image: `images/reddit-selfhosted.png` (1920 × 1080).
 
 **Body:**
 
-I've been building Bemmoly, a self-hosted place for a team's issues and docs. It's at 0.13.1
-and I'm opening it up today.
+I've been building Bemmoly, a self-hosted place for a team's issues and docs. 1.0 is out
+today.
 
 **Try it first:** https://bemmoly.com/demo is the real app on sample data, in your browser.
 
@@ -112,6 +117,7 @@ https://bemmoly.com/self-hosting#install
 
 - Work: boards, backlog, sprints, custom workflows, filters, a roadmap view
 - Automation rules and signed outgoing webhooks
+- GitHub (one click) and GitLab links on issues
 - Docs: collaborative editor, page tree, revisions, comments, image uploads
 - Import from Jira, Confluence or CSV
 - SSO (OIDC, SAML) and SCIM, not behind a paywall, because there isn't one
@@ -155,10 +161,10 @@ in-app purchases. Try the live demo or install with one command.
 Hi Product Hunt, I'm Keerthi. I made Bemmoly because I wanted our issues and specs in one place
 we own: our server, our Postgres, our backups.
 
-What's in it today (0.13.1):
+What's in 1.0:
 
 - Work: Kanban and Scrum boards, backlog, sprints, custom workflows, a roadmap view
-- Automation rules and signed webhooks
+- Automation rules, signed webhooks, and GitHub or GitLab links
 - Docs: real-time editor, page tree, revisions, comments, live issue links
 - Import from Jira, Confluence or CSV, and SSO with SCIM included
 - AI, optional: off until you turn it on. Your provider or a local model. Summaries cite their
@@ -169,7 +175,7 @@ Three promises: 100% open source (MIT), no subscription, no in-app purchases.
 Try the demo, no sign-up: https://bemmoly.com/demo
 Install: https://bemmoly.com/self-hosting#install
 
-It's young, and the roadmap is shaped by what people ask for. Tell me what's missing in
+What comes after 1.0 is shaped by what people ask for. Tell me what's missing in
 GitHub Discussions (https://github.com/bemmoly/bemmoly/discussions), or file a bug in GitHub
 issues (https://github.com/bemmoly/bemmoly/issues). If you'd like to support the work, there's
 an optional Buy me a coffee (https://buymeacoffee.com/bemmoly); it unlocks nothing, because
@@ -183,7 +189,7 @@ Images: post 1 `images/x-post-1-hero.png`, post 3 `images/x-post-2-docs.png`, po
 `images/x-post-3-ai.png` (1600 × 900). Profile header: `packages/ui/assets/brand/generated/x-header-UPLOAD-3000x1000.png` (upload; 1500 × 500 display).
 
 **1/7**
-Bemmoly is out: self-hosted issues and docs for your whole team.
+Bemmoly 1.0 is out: self-hosted issues and docs for your whole team.
 
 100% open source. No subscription. No in-app purchases.
 
@@ -194,7 +200,7 @@ Work: Kanban and Scrum boards, backlog, sprints, custom workflows and a query la
 
 Docs: a real-time editor with a page tree, revisions, comments and live issue links.
 
-New in 0.13.1: a roadmap view, automation rules and signed webhooks.
+Plus a roadmap, automation rules, signed webhooks and code host links.
 
 Same app, same sidebar.
 
@@ -222,7 +228,7 @@ Install guide: https://bemmoly.com/self-hosting#install
 Code (MIT): https://github.com/bemmoly/bemmoly
 
 **7/7**
-It's young, and I want to hear what's missing.
+It's 1.0, and I want to hear what's missing.
 Ideas: https://github.com/bemmoly/bemmoly/discussions
 Bugs: https://github.com/bemmoly/bemmoly/issues
 
@@ -238,7 +244,7 @@ beside them. Company page cover: `packages/ui/assets/brand/generated/linkedin-co
 
 **Post:**
 
-Today I'm opening up Bemmoly, an open source (MIT) app for a team's issues and docs that runs on
+Today I'm releasing Bemmoly 1.0, an open source (MIT) app for a team's issues and docs that runs on
 your own server.
 
 It has boards, a backlog, sprints and a roadmap, automation rules and webhooks, a collaborative docs editor with live issue links, and
@@ -252,8 +258,8 @@ you run it on.
 Try the live demo in your browser: https://bemmoly.com/demo
 Install it with one command: https://bemmoly.com/self-hosting#install
 
-It's a young project. The latest release, 0.13.1, added a roadmap view, automation rules and
-signed webhooks, and I'd like your feedback to shape what follows: share ideas in GitHub Discussions
+Today's release is 1.0.0, after a roadmap view, automation rules, signed webhooks and code host
+links landed, and I'd like your feedback to shape what follows: share ideas in GitHub Discussions
 (https://github.com/bemmoly/bemmoly/discussions) or report a bug in GitHub issues
 (https://github.com/bemmoly/bemmoly/issues).
 
