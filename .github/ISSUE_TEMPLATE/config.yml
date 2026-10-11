@@ -4,5 +4,11 @@ contact_links:
     url: https://github.com/bemmoly/bemmoly/security/advisories/new
     about: Privately, never in a public issue. See SECURITY.md.
   - name: Ask a question
-    url: https://github.com/bemmoly/bemmoly/discussions
-    about: Questions and ideas that are not yet a concrete change go to Discussions.
+    url: https://github.com/bemmoly/bemmoly/discussions/categories/q-a
+    about: How to install, configure or use Bemmoly. Answers are marked, so the next person finds them.
+  - name: Share an idea
+    url: https://github.com/bemmoly/bemmoly/discussions/categories/ideas
+    about: An idea that is not yet a concrete change.
+  - name: Try the live demo
+    url: https://bemmoly.com/demo
+    about: The app in your browser on sample data, no install and no sign-up.

@@ -18,7 +18,7 @@ body:
     id: start-here
     attributes:
       label: Where to start
-      description: Files, the section of the tech design or AGENTS.md, and the mock if it is UI.
+      description: Files, the section of the tech design or AGENTS.md, and the design system page if it is UI.
     validations:
       required: true
   - type: textarea
