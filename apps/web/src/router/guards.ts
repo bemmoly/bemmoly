@@ -5,6 +5,7 @@ import { redirect } from '@tanstack/react-router';
 import { meQuery, setupStatusQuery } from '../hooks/use-session.ts';
 import { resumeStep } from '../hooks/use-setup-wizard.ts';
 import { rememberPerson } from '../hooks/use-last-sign-in.ts';
+import { markSession } from '../lib/api.ts';
 import { isOrgAdmin } from '../lib/session.ts';
 import { useSetupStore } from '../store/setup.ts';
 
@@ -42,6 +43,7 @@ export async function requireSession(queryClient: QueryClient, href: string): Pr
   if (!status.initialized) throw redirect({ to: '/setup' });
   const me = await sessionOrNull(queryClient);
   if (!me) throw redirect({ to: '/login', search: { redirect: href } });
+  markSession(true);
   // The sign-in page greets this person by name next time, on this device only.
   rememberPerson(me.user);
   const setup = useSetupStore.getState();
