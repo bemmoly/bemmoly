@@ -44,7 +44,7 @@
 
 - **Built-ins read only.** Until now an admin could rewrite a built-in in place. Settings ›
   Docs makes them read only (hide by archiving, or duplicate to edit), so the six stay what the
-  release notes describe and an upgrade can improve them. ADR 0024.
+  release notes describe and an upgrade can improve them. ADR 0030.
 - **The editor is the settings page in another state, not a dialog.** A template's body is a
   document; a dialog would squeeze the editor and nest its popovers inside a focus trap. The
   page swaps the table for the editor in the same reading column, with the trail ending in the
