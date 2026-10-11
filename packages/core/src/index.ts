@@ -166,6 +166,15 @@ export {
 } from './services/mcp/index.ts';
 export { DEFAULT_MCP_RATE_LIMIT, type McpRateLimit } from './routes/mcp.routes.ts';
 export {
+  ACCESS_TOKEN_TTL_MS,
+  createOAuthService,
+  deleteExpiredOAuthState,
+  REFRESH_TOKEN_TTL_MS,
+  type OAuthDependencies,
+  type OAuthService,
+} from './services/oauth/index.ts';
+export { DEFAULT_OAUTH_RATE_LIMIT, type OAuthRateLimit } from './routes/oauth.routes.ts';
+export {
   deleteExpiredSsoState,
   forgetOidcDiscovery,
   safeReturnTo,

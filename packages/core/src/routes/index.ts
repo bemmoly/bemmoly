@@ -13,6 +13,7 @@ import { createWorkspaceLogoController } from '../controllers/workspace-logo.con
 import { createHealthController } from '../controllers/health.controller.ts';
 import { createIdentityController } from '../controllers/identity.controller.ts';
 import { createMcpController } from '../controllers/mcp.controller.ts';
+import { createOAuthController } from '../controllers/oauth.controller.ts';
 import { createImportsController } from '../controllers/imports.controller.ts';
 import { createMetricsController } from '../controllers/metrics.controller.ts';
 import {
@@ -45,6 +46,7 @@ import type { CollabHost } from '../services/collab/index.ts';
 import type { FilesService } from '../services/files/index.ts';
 import type { IdentityDependencies } from '../services/identity/index.ts';
 import type { McpService } from '../services/mcp/index.ts';
+import type { OAuthService } from '../services/oauth/index.ts';
 import type { ImportService } from '../services/import/index.ts';
 import type { ModuleAdmin, ModuleState } from '../services/modules/index.ts';
 import type { RealtimeHub, RealtimeMetricsHook } from '../services/realtime/index.ts';
@@ -70,6 +72,7 @@ import { workspaceLogoRoutes } from './workspace-logo.routes.ts';
 import { healthRoutes } from './health.routes.ts';
 import { identityRoutes } from './identity.routes.ts';
 import { mcpRoutes, type McpRateLimit } from './mcp.routes.ts';
+import { oauthApiRoutes, oauthServerRoutes, type OAuthRateLimit } from './oauth.routes.ts';
 import { importsRoutes } from './imports.routes.ts';
 import { metricsRoutes } from './metrics.routes.ts';
 import { adminModulesRoutes, moduleResourceRoutes, modulesRoutes } from './modules.routes.ts';
@@ -124,7 +127,12 @@ export interface KernelRouteDependencies {
   /** "Ask your docs" answers; mounted when the host wires retrieval. */
   retrieval?: RetrievalService;
   /** The built-in MCP server at /mcp; mounted when the host wires it (AI never gates it). */
-  mcp?: { service: McpService; rateLimit?: McpRateLimit };
+  mcp?: {
+    service: McpService;
+    rateLimit?: McpRateLimit;
+    /** Sign-in for MCP clients: discovery, /oauth/*, the consent and connected-app routes. */
+    oauth?: { service: OAuthService; rateLimit?: OAuthRateLimit };
+  };
   /** Uploaded files (images in pages); /api/v1/files is mounted only when present. */
   files?: FilesService;
   /** Where the workspace logo is stored; /api/v1/workspace/logo is mounted with identity. */
@@ -172,6 +180,7 @@ export function kernelRoutes(deps: KernelRouteDependencies): FastifyPluginAsync 
     isEnabled: (id: string) => (state ? state.isEnabled(id) : deps.modules.has(id)),
     ...(deps.moduleAccess && identified ? { access: deps.moduleAccess, actorOf } : {}),
   };
+  const oauth = deps.mcp?.oauth ? createOAuthController(deps.mcp.oauth.service) : undefined;
   const search = createSearchController(
     createSearchService({
       providers: () => deps.modules.searchProviders(),
@@ -184,6 +193,7 @@ export function kernelRoutes(deps: KernelRouteDependencies): FastifyPluginAsync 
     if (deps.mcp) {
       await app.register(mcpRoutes(createMcpController(deps.mcp.service), deps.mcp.rateLimit));
     }
+    if (oauth) await app.register(oauthServerRoutes(oauth, deps.mcp?.oauth?.rateLimit));
     if (deps.realtime || deps.collab) {
       // One socket server for both endpoints: the plugin owns the HTTP upgrade event, so it
       // is registered once, with the larger limit, and /ws checks its own smaller one.
@@ -228,6 +238,7 @@ export function kernelRoutes(deps: KernelRouteDependencies): FastifyPluginAsync 
             ssoRoutes(createSsoController(deps.sso), createSsoAdminController(deps.sso)),
           );
         }
+        if (oauth) await api.register(oauthApiRoutes(oauth));
         if (deps.moduleAdmin) {
           await api.register(
             adminModulesRoutes(createModuleAdminController(deps.moduleAdmin, actorOf)),

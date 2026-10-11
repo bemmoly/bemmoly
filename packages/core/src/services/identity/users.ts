@@ -9,7 +9,7 @@ import {
 } from '@bemmoly/shared';
 import { and, asc, eq, gt, ilike, isNull, or, type SQL } from 'drizzle-orm';
 import type { Database } from '../../clients/drizzle.ts';
-import { apiTokens, users } from '../../models/identity/index.ts';
+import { apiTokens, oauthGrants, users } from '../../models/identity/index.ts';
 import { decodeCursor, toPage } from '../../utils/keyset.ts';
 import { listWorkspaceThemes, readPreference } from '../appearance/index.ts';
 import { recordAudit } from '../audit/index.ts';
@@ -128,6 +128,10 @@ export async function deactivateUser(db: Database, ctx: RequestContext, userId: 
       .update(apiTokens)
       .set({ revokedAt: now, updatedAt: now })
       .where(and(eq(apiTokens.userId, userId), isNull(apiTokens.revokedAt)));
+    await tx
+      .update(oauthGrants)
+      .set({ revokedAt: now, updatedAt: now })
+      .where(and(eq(oauthGrants.userId, userId), isNull(oauthGrants.revokedAt)));
     await bumpPrivilegeVersion(tx, { userIds: [userId] });
     await recordAudit(tx, {
       actor: ctx.actor,
