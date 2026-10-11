@@ -1,4 +1,4 @@
-# ADR 0034: PDF export through an optional renderer, the print view without it
+# ADR 0035: PDF export through an optional renderer, the print view without it
 
 - Status: accepted
 - Date: 2026-10-11

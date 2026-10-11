@@ -204,7 +204,7 @@ motion every duration is zero ([accessibility.md](accessibility.md#motion)).
 
 Paper is read at arm's length, so a printed page (a PDF export, or the browser's print view)
 has its own scale in points: `PRINT_TYPE`, `PRINT_LEADING`, `PRINT_SPACE`, `PRINT_MARGINS` and
-`PRINT_PAPERS` from `@bemmoly/ui/tokens` (ADR 0034). Colours on paper are always the Classic
+`PRINT_PAPERS` from `@bemmoly/ui/tokens` (ADR 0035). Colours on paper are always the Classic
 light theme's; no preset or dark mode follows a page out of the app.
 
 | Token              | Value        | Use                                               |

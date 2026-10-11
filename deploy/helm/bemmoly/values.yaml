@@ -100,7 +100,7 @@ resources:
   limits:
     memory: 1Gi
 
-# The optional PDF renderer (headless Chromium) behind Export as PDF (ADR 0034). Off: PDF is
+# The optional PDF renderer (headless Chromium) behind Export as PDF (ADR 0035). Off: PDF is
 # the browser's print view. On: one Deployment and Service the app alone may reach; it
 # resolves no host and loads nothing but what the app sends, and a NetworkPolicy denies it
 # every egress (enforced where the cluster's network plugin supports NetworkPolicy).

@@ -39,4 +39,4 @@ accepted record is never edited except to mark it superseded.
 | [0032](0032-job-workers-drain-continuously-under-a-process-cap.md) | Job workers drain continuously, under one cap per process | accepted |
 | [0033](0033-the-site-header-carries-sponsor-in-rose.md) | The site header carries Sponsor, in rose | accepted |
 | [0034](0034-avatar-amber-darkened-to-carry-white-initials.md) | Avatar amber is darkened to carry white initials at 4.5:1 | accepted |
-| [0034](0034-pdf-export-through-an-optional-renderer.md) | PDF export through an optional renderer, the print view without it | accepted |
+| [0035](0035-pdf-export-through-an-optional-renderer.md) | PDF export through an optional renderer, the print view without it | accepted |

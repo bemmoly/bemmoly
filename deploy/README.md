@@ -16,7 +16,7 @@ that, Helm with a managed Postgres.
 ## PDF export (optional)
 
 Docs' Export as PDF can use a headless Chromium renderer that runs beside the app as its own
-service ([ADR 0034](../docs/adr/0034-pdf-export-through-an-optional-renderer.md)). It is off
+service ([ADR 0035](../docs/adr/0035-pdf-export-through-an-optional-renderer.md)). It is off
 by default so the app image stays small. Without it, the More menu has no Export as PDF and
 the export dialog's PDF choice opens the browser's print view, one page at a time.
 

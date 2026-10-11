@@ -4,7 +4,7 @@ import type { PdfRenderer } from '../contracts/pdf.ts';
 import { adoptDockerCliContext } from './docker-context.ts';
 
 /**
- * The PDF renderer the deploy kits run (ADR 0034), pinned by digest, started with the same
+ * The PDF renderer the deploy kits run (ADR 0035), pinned by digest, started with the same
  * locked-down flags: no host resolves, nothing but data: and its own temp files loads, and
  * JavaScript is off. Keep these in step with deploy/compose and the Helm chart.
  */

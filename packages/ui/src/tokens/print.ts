@@ -2,7 +2,7 @@
  * Print tokens: how a page reads on paper (a PDF export, or the browser's print view). Paper
  * is read at arm's length in points, not pixels, so print has its own small type scale and
  * page box. Colours are the Classic light theme's (a printed page never follows a workspace
- * preset or dark mode); these are only sizes, measures and the paper itself (ADR 0034).
+ * preset or dark mode); these are only sizes, measures and the paper itself (ADR 0035).
  */
 
 /** Five sizes: running header and footer, captions and code, body, section, title. */
