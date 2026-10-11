@@ -28,6 +28,16 @@ export const releaseChangesetSchema = z.object({
 });
 
 /**
+ * The host bemmoly command of a release (ADR 0024): the tarball attached to the release and
+ * its SHA-256. The manifest is signed, so this checksum is what `bemmoly self-update` trusts.
+ * Absent from releases made before the command could update itself.
+ */
+export const releaseCliSchema = z.object({
+  asset: z.string().regex(/^bemmoly-cli-[0-9A-Za-z.-]+\.tar\.gz$/),
+  sha256: z.string().regex(/^[0-9a-f]{64}$/),
+});
+
+/**
  * One release, as tools/release writes it to the GitHub release (release-manifest.json,
  * signed keyless with a detached release-manifest.json.sigstore.json bundle). The
  * daily update check fetches the newest one per channel. Documented as JSON Schema in
@@ -39,6 +49,7 @@ export const releaseManifestSchema = z.object({
   publishedAt: z.iso.datetime(),
   notesUrl: z.url(),
   images: z.object({ app: releaseImageSchema, updater: releaseImageSchema }),
+  cli: releaseCliSchema.optional(),
   /** The rollback mode this release implies on its own: restore once anything is irreversible. */
   rollback: z.enum(['code', 'restore']),
   schemaChangesets: z.array(releaseChangesetSchema),

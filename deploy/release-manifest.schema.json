@@ -68,6 +68,20 @@
       },
       "required": ["app", "updater"]
     },
+    "cli": {
+      "type": "object",
+      "properties": {
+        "asset": {
+          "type": "string",
+          "pattern": "^bemmoly-cli-[0-9A-Za-z.-]+\\.tar\\.gz$"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      },
+      "required": ["asset", "sha256"]
+    },
     "rollback": {
       "type": "string",
       "enum": ["code", "restore"]
