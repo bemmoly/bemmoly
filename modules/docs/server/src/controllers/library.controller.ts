@@ -19,8 +19,10 @@ import {
   createFromTemplateBodySchema,
   createTemplateBodySchema,
   listTemplatesQuerySchema,
+  reorderTemplatesBodySchema,
   templateIdParamsSchema,
   updateTemplateBodySchema,
+  type OrgTemplate,
   type TemplateDetail,
   type TemplateSummary,
 } from '../../../shared/templates.ts';
@@ -86,6 +88,24 @@ export function createLibraryController(services: LibraryServices) {
     async removeTemplate(request: FastifyRequest, reply: FastifyReply): Promise<void> {
       await services.templates.remove(contextOf(request), templateIdOf(request));
       reply.code(204);
+    },
+    async listOrgTemplates(request: FastifyRequest): Promise<{ items: OrgTemplate[] }> {
+      return { items: await services.templates.listOrg(contextOf(request)) };
+    },
+    async reorderOrgTemplates(request: FastifyRequest, reply: FastifyReply): Promise<void> {
+      const body = parseOrThrow(reorderTemplatesBodySchema, request.body);
+      await services.templates.reorder(contextOf(request), body);
+      reply.code(204);
+    },
+    async archiveTemplate(request: FastifyRequest): Promise<OrgTemplate> {
+      return services.templates.archive(contextOf(request), templateIdOf(request));
+    },
+    async restoreTemplate(request: FastifyRequest): Promise<OrgTemplate> {
+      return services.templates.restore(contextOf(request), templateIdOf(request));
+    },
+    async duplicateTemplate(request: FastifyRequest, reply: FastifyReply): Promise<TemplateDetail> {
+      reply.code(201);
+      return services.templates.duplicate(contextOf(request), templateIdOf(request));
     },
     async createFromTemplate(request: FastifyRequest, reply: FastifyReply): Promise<PageDetail> {
       const body = parseOrThrow(createFromTemplateBodySchema, request.body);

@@ -1,11 +1,20 @@
 import { listSchema, timestampSchema } from '@bemmoly/shared';
 import { z } from 'zod';
-import { iconSchema, nameSchema, pageTitleSchema, richTextSchema } from './common.ts';
+import {
+  docsPersonSchema,
+  iconSchema,
+  nameSchema,
+  pageTitleSchema,
+  richTextSchema,
+} from './common.ts';
 
 /*
  * Templates: GET /api/v1/docs/templates?spaceId= lists the org templates plus
- * the space's own; POST/PATCH/DELETE manage a space's templates;
+ * the space's own; POST/PATCH/DELETE manage them (spaceId null is org-wide);
  * POST /api/v1/docs/templates/:templateId/pages creates a page from one.
+ * Settings › Docs manages the org-wide ones: GET /api/v1/docs/org-templates
+ * lists them with the archived, PUT /api/v1/docs/org-templates/order sets
+ * their order, and POST …/templates/:templateId/{archive,restore,duplicate}.
  */
 
 export const templateFieldSchema = z.object({
@@ -39,7 +48,8 @@ export const listTemplatesQuerySchema = z.object({
 });
 
 export const createTemplateBodySchema = z.object({
-  spaceId: z.uuid(),
+  /** The space the template belongs to; null makes it org-wide (Settings › Docs). */
+  spaceId: z.uuid().nullable(),
   name: nameSchema,
   description: z.string().trim().max(500).optional(),
   icon: iconSchema.optional(),
@@ -61,6 +71,21 @@ export const createFromTemplateBodySchema = z.object({
 
 export const templatesResponseSchema = listSchema(templateSummarySchema);
 
+/** An org template as Settings › Docs lists it: how often it was used, who made it, archived. */
+export const orgTemplateSchema = templateSummarySchema.extend({
+  /** Pages made from it, trashed ones included. */
+  usedBy: z.number().int().nonnegative(),
+  createdBy: docsPersonSchema.nullable(),
+  archivedAt: timestampSchema.nullable(),
+});
+
+export const orgTemplatesResponseSchema = listSchema(orgTemplateSchema);
+
+/** The org templates' new order, every active one exactly once, first to last. */
+export const reorderTemplatesBodySchema = z.object({
+  ids: z.array(z.uuid()).min(1).max(500),
+});
+
 export const templateIdParamsSchema = z.object({ templateId: z.uuid() });
 
 export type TemplateField = z.infer<typeof templateFieldSchema>;
@@ -71,3 +96,6 @@ export type CreateTemplateBody = z.input<typeof createTemplateBodySchema>;
 export type UpdateTemplateBody = z.infer<typeof updateTemplateBodySchema>;
 export type CreateFromTemplateBody = z.input<typeof createFromTemplateBodySchema>;
 export type TemplatesResponse = z.infer<typeof templatesResponseSchema>;
+export type OrgTemplate = z.infer<typeof orgTemplateSchema>;
+export type OrgTemplatesResponse = z.infer<typeof orgTemplatesResponseSchema>;
+export type ReorderTemplatesBody = z.infer<typeof reorderTemplatesBodySchema>;

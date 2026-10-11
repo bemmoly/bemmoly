@@ -4,15 +4,19 @@ import {
   attentionQuerySchema,
   attentionResponseSchema,
   createFromTemplateBodySchema,
+  createTemplateBodySchema,
   homePagesSchema,
   labelsResponseSchema,
   labelSuggestQuerySchema,
   labelSuggestResponseSchema,
   listTemplatesQuerySchema,
+  orgTemplateSchema,
+  orgTemplatesResponseSchema,
   pageDetailSchema,
   pageSearchResponseSchema,
   pageSuggestResponseSchema,
   recentPagesQuerySchema,
+  reorderTemplatesBodySchema,
   searchPagesQuerySchema,
   setLabelsBodySchema,
   starredPagesQuerySchema,
@@ -20,20 +24,24 @@ import {
   suggestPagesQuerySchema,
   templateDetailSchema,
   templatesResponseSchema,
+  updateTemplateBodySchema,
   type AttentionQuery,
   type CreateFromTemplateBody,
+  type CreateTemplateBody,
   type LabelSuggestQuery,
   type ListTemplatesQuery,
   type RecentPagesQuery,
   type SearchPagesQuery,
   type StarredPagesQuery,
   type SuggestPagesQuery,
+  type UpdateTemplateBody,
 } from '../../../shared/index.ts';
 import { DOCS_BASE } from './pages.ts';
 
 /** The Docs home lists, stars, labels, templates and search. */
 export function docsLibraryEndpoints(http: Http) {
   const page = (id: string, rest: string) => `${DOCS_BASE}/pages/${enc(id)}${rest}`;
+  const template = (id: string, rest = '') => `${DOCS_BASE}/templates/${enc(id)}${rest}`;
   return {
     home: {
       recent: async (query: Partial<RecentPagesQuery> = {}) =>
@@ -75,13 +83,39 @@ export function docsLibraryEndpoints(http: Http) {
             query: validated(listTemplatesQuerySchema, query),
           })
         ).items,
-      get: async (id: string) =>
-        http.request(`${DOCS_BASE}/templates/${enc(id)}`, templateDetailSchema),
+      get: async (id: string) => http.request(template(id), templateDetailSchema),
       createPage: async (id: string, body: CreateFromTemplateBody) =>
-        http.request(`${DOCS_BASE}/templates/${enc(id)}/pages`, pageDetailSchema, {
+        http.request(template(id, '/pages'), pageDetailSchema, {
           method: 'POST',
           body: validated(createFromTemplateBodySchema, body),
           idempotent: true,
+        }),
+      create: async (body: CreateTemplateBody) =>
+        http.request(`${DOCS_BASE}/templates`, templateDetailSchema, {
+          method: 'POST',
+          body: validated(createTemplateBodySchema, body),
+          idempotent: true,
+        }),
+      update: async (id: string, body: UpdateTemplateBody) =>
+        http.request(template(id), templateDetailSchema, {
+          method: 'PATCH',
+          body: validated(updateTemplateBodySchema, body),
+        }),
+      archive: async (id: string) =>
+        http.request(template(id, '/archive'), orgTemplateSchema, { method: 'POST' }),
+      restore: async (id: string) =>
+        http.request(template(id, '/restore'), orgTemplateSchema, { method: 'POST' }),
+      duplicate: async (id: string) =>
+        http.request(template(id, '/duplicate'), templateDetailSchema, { method: 'POST' }),
+    },
+    /** Settings › Docs: the org-wide templates with the archived ones, and their order. */
+    orgTemplates: {
+      list: async () =>
+        (await http.request(`${DOCS_BASE}/org-templates`, orgTemplatesResponseSchema)).items,
+      reorder: async (ids: readonly string[]) =>
+        http.send(`${DOCS_BASE}/org-templates/order`, {
+          method: 'PUT',
+          body: validated(reorderTemplatesBodySchema, { ids: [...ids] }),
         }),
     },
     search: {

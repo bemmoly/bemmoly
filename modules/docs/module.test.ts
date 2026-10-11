@@ -38,6 +38,7 @@ describe('docs module', () => {
         primary: [],
         add: { create: 'docs.create-space', label: 'New space' },
       },
+      settings: { path: '/settings/docs', requires: 'docs.templates.manage' },
     });
     expect(docs.defaultAccess).toBe('teams');
   });
@@ -53,6 +54,7 @@ describe('docs module', () => {
       'docs.page.delete',
       'docs.page.publish',
       'docs.space.export',
+      'docs.templates.manage',
     ]);
     expect(capabilities.every((capability) => capability.group === 'Docs')).toBe(true);
     const view = capabilities.find((capability) => capability.name === 'docs.page.view');

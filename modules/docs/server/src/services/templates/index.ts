@@ -1,20 +1,17 @@
-import type { RequestContext, SqlExecutor } from '@bemmoly/core';
-import { ConflictError, NotFoundError, ProviderError } from '@bemmoly/shared';
-import type { RichText } from '../../../../shared/common.ts';
+import type { RequestContext } from '@bemmoly/core';
+import { NotFoundError, ProviderError } from '@bemmoly/shared';
 import type { PageDetail } from '../../../../shared/pages.ts';
 import type {
   CreateFromTemplateBody,
   CreateTemplateBody,
   ListTemplatesQuery,
   TemplateDetail,
-  TemplateField,
   TemplateSummary,
   UpdateTemplateBody,
 } from '../../../../shared/templates.ts';
 import {
   DOCS_MODULE,
   DOCS_REALTIME_KINDS,
-  iso,
   publishChange,
   recordAudit,
   requireDatabase,
@@ -23,54 +20,24 @@ import {
   type DocsServiceDeps,
 } from '../common.ts';
 import type { PagesService } from '../pages/index.ts';
-
-interface TemplateRow {
-  id: string;
-  space_id: string | null;
-  key: string | null;
-  name: string;
-  description: string | null;
-  icon: string | null;
-  category: string | null;
-  fields: TemplateField[];
-  is_builtin: boolean;
-  position: number;
-  snapshot: RichText;
-  created_at: Date | string;
-  updated_at: Date | string;
-}
-
-const toSummary = (row: TemplateRow): TemplateSummary => ({
-  id: row.id,
-  spaceId: row.space_id,
-  key: row.key,
-  name: row.name,
-  description: row.description,
-  icon: row.icon,
-  category: row.category,
-  fields: row.fields,
-  isBuiltin: row.is_builtin,
-  position: row.position,
-  createdAt: iso(row.created_at),
-  updatedAt: iso(row.updated_at),
-});
-
-const toDetail = (row: TemplateRow): TemplateDetail => ({
-  ...toSummary(row),
-  snapshot: row.snapshot,
-});
-
-async function templateById(sql: SqlExecutor, id: string): Promise<TemplateRow> {
-  const [row] = await sql<TemplateRow[]>`
-    select * from templates where id = ${id} and archived_at is null`;
-  if (!row) throw new NotFoundError('The template was not found');
-  return row;
-}
+import { createOrgTemplates } from './org.ts';
+import {
+  anyTemplateById,
+  assertEditable,
+  authorizeTemplateWrite,
+  canWriteTemplate,
+  templateById,
+  toDetail,
+  toSummary,
+  type TemplateRow,
+} from './rows.ts';
 
 /*
- * Org templates (space_id null, the six built-ins among them) are readable
- * by anyone with Docs; a space's own templates by its members, and only its
- * configurers change them. Built-ins are never deleted, only edited.
+ * Org templates (space_id null, the six built-ins among them) are readable by
+ * anyone with Docs and changed only by those who manage org templates
+ * (docs.templates.manage, org admins by default); a space's own templates are
+ * read by its members and changed by its configurers. Built-ins read only:
+ * they are ordered, archived or duplicated, never rewritten or deleted.
  */
 export function createTemplatesService(deps: DocsServiceDeps & { pages: PagesService }) {
   const authorizeRead = async (ctx: RequestContext, spaceId: string | null) =>
@@ -80,14 +47,13 @@ export function createTemplatesService(deps: DocsServiceDeps & { pages: PagesSer
       spaceId ? spaceResource(spaceId) : DOCS_MODULE,
     );
 
-  const authorizeWrite = async (ctx: RequestContext, row: Pick<TemplateRow, 'space_id'>) =>
-    ctx.authz.authorize(
-      ctx.actor,
-      row.space_id ? 'docs.space.configure' : 'workspace.settings.manage',
-      row.space_id ? spaceResource(row.space_id) : { kind: 'workspace', moduleId: 'docs' },
-    );
+  const changed = async (spaceId: string | null, id: string) => {
+    if (spaceId) await publishChange(deps, DOCS_REALTIME_KINDS.templates, spaceId, [id]);
+  };
 
   return {
+    ...createOrgTemplates(deps),
+
     async list(ctx: RequestContext, query: ListTemplatesQuery): Promise<TemplateSummary[]> {
       await authorizeRead(ctx, query.spaceId ?? null);
       const sql = requireDatabase(deps);
@@ -99,33 +65,40 @@ export function createTemplatesService(deps: DocsServiceDeps & { pages: PagesSer
       return rows.map(toSummary);
     },
 
+    /** An active template for anyone who may read it; an archived one only for its managers. */
     async get(ctx: RequestContext, id: string): Promise<TemplateDetail> {
-      const row = await templateById(requireDatabase(deps), id);
-      await authorizeRead(ctx, row.space_id);
+      const row = await anyTemplateById(requireDatabase(deps), id);
+      if (row.archived_at) {
+        if (!(await canWriteTemplate(ctx, row))) {
+          throw new NotFoundError('The template was not found');
+        }
+      } else {
+        await authorizeRead(ctx, row.space_id);
+      }
       return toDetail(row);
     },
 
     async create(ctx: RequestContext, body: CreateTemplateBody): Promise<TemplateDetail> {
       const sql = requireDatabase(deps);
-      await authorizeWrite(ctx, { space_id: body.spaceId });
+      await authorizeTemplateWrite(ctx, { space_id: body.spaceId });
       const [row] = await sql<TemplateRow[]>`
         insert into templates (space_id, name, description, icon, category, snapshot, fields,
           position, created_by)
         values (${body.spaceId}, ${body.name}, ${body.description ?? null}, ${body.icon ?? null},
           ${body.category ?? null}, ${JSON.stringify(body.snapshot)}::jsonb,
           ${JSON.stringify(body.fields ?? [])}::jsonb,
-          (select coalesce(max(position) + 1, 0) from templates where space_id = ${body.spaceId}),
+          (select coalesce(max(position) + 1, 0) from templates
+           where space_id is not distinct from ${body.spaceId}::uuid),
           ${userIdOf(ctx)}::uuid)
         returning *`;
       if (!row) throw new ProviderError('The template was not stored');
-      const after = toSummary(row);
       await recordAudit(deps, ctx, {
         action: 'template.created',
         kind: 'template',
         id: row.id,
-        after,
+        after: toSummary(row),
       });
-      await publishChange(deps, DOCS_REALTIME_KINDS.templates, body.spaceId, [row.id]);
+      await changed(body.spaceId, row.id);
       return toDetail(row);
     },
 
@@ -136,7 +109,8 @@ export function createTemplatesService(deps: DocsServiceDeps & { pages: PagesSer
     ): Promise<TemplateDetail> {
       const sql = requireDatabase(deps);
       const before = await templateById(sql, id);
-      await authorizeWrite(ctx, before);
+      await authorizeTemplateWrite(ctx, before);
+      assertEditable(before);
       const has = (field: keyof UpdateTemplateBody) => patch[field] !== undefined;
       const [row] = await sql<TemplateRow[]>`
         update templates set
@@ -157,16 +131,15 @@ export function createTemplatesService(deps: DocsServiceDeps & { pages: PagesSer
         before: toSummary(before),
         after: toSummary(row),
       });
-      if (row.space_id)
-        await publishChange(deps, DOCS_REALTIME_KINDS.templates, row.space_id, [id]);
+      await changed(row.space_id, id);
       return toDetail(row);
     },
 
     async remove(ctx: RequestContext, id: string): Promise<void> {
       const sql = requireDatabase(deps);
       const row = await templateById(sql, id);
-      await authorizeWrite(ctx, row);
-      if (row.is_builtin) throw new ConflictError('Built-in templates can be edited, not deleted');
+      await authorizeTemplateWrite(ctx, row);
+      assertEditable(row);
       await sql`delete from templates where id = ${id}`;
       await recordAudit(deps, ctx, {
         action: 'template.deleted',
@@ -174,8 +147,7 @@ export function createTemplatesService(deps: DocsServiceDeps & { pages: PagesSer
         id,
         before: toSummary(row),
       });
-      if (row.space_id)
-        await publishChange(deps, DOCS_REALTIME_KINDS.templates, row.space_id, [id]);
+      await changed(row.space_id, id);
     },
 
     /** A new page that starts as a copy of the template's document, titled after it by default. */

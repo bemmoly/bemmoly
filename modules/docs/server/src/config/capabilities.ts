@@ -11,6 +11,7 @@ const defaults = ([orgAdmin, projectAdmin, member, viewer, contractor]: Cells) =
     contractor,
   }) satisfies Readonly<Record<SystemRole, boolean>>;
 
+const ORG_ADMINS: Cells = [true, false, false, false, false];
 const ADMINS: Cells = [true, true, false, false, false];
 const CONTRIBUTORS: Cells = [true, true, true, false, true];
 const COLLEAGUES: Cells = [true, true, true, false, false];
@@ -19,7 +20,8 @@ const EVERYONE: Cells = [true, true, true, true, true];
 /**
  * The Docs rows of the roles matrix: the "Docs" group of the People mock, plus
  * the rows the services need that the mock folds into them (viewing pages,
- * configuring a space, deleting a page). No Docs row is locked by default.
+ * configuring a space, deleting a page, the org-wide templates in Settings › Docs). No Docs
+ * row is locked by default.
  */
 const CAPABILITIES: ReadonlyArray<readonly [string, string, string | null, Cells]> = [
   ['docs.space.create', 'Create spaces', null, ADMINS],
@@ -29,6 +31,7 @@ const CAPABILITIES: ReadonlyArray<readonly [string, string, string | null, Cells
   ['docs.page.delete', 'Delete pages', 'Soft delete, 30-day recovery', COLLEAGUES],
   ['docs.page.publish', 'Publish and restrict pages', null, COLLEAGUES],
   ['docs.space.export', 'Export space', null, ADMINS],
+  ['docs.templates.manage', 'Manage org templates', 'Add, edit, order and archive', ORG_ADMINS],
 ];
 
 export const DOCS_CAPABILITIES: readonly CapabilityDefinition[] = CAPABILITIES.map(
