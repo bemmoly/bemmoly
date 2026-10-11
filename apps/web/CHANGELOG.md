@@ -1,5 +1,29 @@
 # @bemmoly/web
 
+## 0.11.0
+
+### Minor Changes
+
+- 50fff66: Appearance moves out of the sidebar's person menu into a small Appearance button beside your
+  name (stacked above your avatar on the collapsed rail). It offers Light, Dark and Match system.
+
+  Only a workspace admin now sets the theme. Personal themes are retired: `PUT /me/appearance`
+  refuses a theme with 403 and stores only the mode, a personal theme saved before is ignored, and
+  personal custom themes can no longer be created. In Settings › Appearance, people who are not
+  admins see the workspace theme read-only beside their own mode. The "Let people pick their own
+  theme" switch is gone; `appearance.personalThemes` is now inert and always reported as false.
+  No schema change.
+
+### Patch Changes
+
+- bc72030: Sign-in: a smaller product panel showing Work, Docs, Inbox and AI; single sign-on is the filled primary action; tighter helper copy.
+- Updated dependencies [50fff66]
+- Updated dependencies [1aca27c]
+  - @bemmoly/shared@0.11.0
+  - @bemmoly/ui@0.11.0
+  - @bemmoly/api-client@0.11.0
+  - @bemmoly/core-web@0.11.0
+
 ## 0.10.0
 
 ### Minor Changes
