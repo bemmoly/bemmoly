@@ -36,6 +36,8 @@ describe('buildCustomTheme', () => {
         expect(theme.pass).toBe(true);
       }
     },
+    // About 3,000 theme builds; shared CI runners take well over the 5s default.
+    30_000,
   );
 
   it('keeps the surfaces of the chosen style and only moves the accent tokens', () => {
