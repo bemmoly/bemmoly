@@ -112,6 +112,7 @@ const pages = [
     'AuthenticationPage',
   ),
   page('modules', 'modules', () => import('../pages/settings/modules-page.tsx'), 'ModulesPage'),
+  page('import', 'import', () => import('../pages/settings/import-page.tsx'), 'ImportPage'),
   page('backups', 'backups', () => import('../pages/settings/backups-page.tsx'), 'BackupsPage'),
   page('updates', 'updates', () => import('../pages/settings/updates-page.tsx'), 'UpdatesPage'),
   page('system', 'system', () => import('../pages/settings/system-page.tsx'), 'SystemPage'),

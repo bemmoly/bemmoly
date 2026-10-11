@@ -4,6 +4,7 @@ export * from './contracts/index.ts';
 export * from './email/index.ts';
 export * from './health/index.ts';
 export * from './identity/index.ts';
+export * from './imports/index.ts';
 export * from './modules/index.ts';
 export * from './notifications/index.ts';
 export * from './realtime/index.ts';

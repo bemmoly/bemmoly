@@ -1,0 +1,116 @@
+{
+  "currentUser": {
+    "accountId": "acc-admin",
+    "email": "rohan@acmelabs.dev",
+    "displayName": "Rohan S."
+  },
+  "spaces": [
+    {
+      "id": 1,
+      "key": "ENG",
+      "name": "Engineering",
+      "type": "global",
+      "description": { "plain": { "value": "How we build." } }
+    },
+    { "id": 2, "key": "HR", "name": "People team", "type": "global" }
+  ],
+  "users": {
+    "acc-ada": { "accountId": "acc-ada", "email": "ada@example.test", "displayName": "Ada L." },
+    "acc-grace": { "accountId": "acc-grace", "displayName": "Grace H." }
+  },
+  "pages": {
+    "ENG": [
+      {
+        "id": "100",
+        "title": "Engineering home",
+        "ancestors": [],
+        "version": { "number": 3 },
+        "history": {
+          "createdBy": { "accountId": "acc-admin" },
+          "createdDate": "2026-01-01T10:00:00.000Z"
+        },
+        "body": {
+          "storage": {
+            "value": "<h1>Welcome</h1><p>Start with the <ac:link><ri:page ri:content-title=\"Runbooks\" /><ac:plain-text-link-body><![CDATA[runbooks]]></ac:plain-text-link-body></ac:link>.</p>"
+          }
+        },
+        "metadata": { "labels": { "results": [{ "name": "home" }] } }
+      },
+      {
+        "id": "102",
+        "title": "Deploy runbook",
+        "ancestors": [{ "id": "100" }, { "id": "101" }],
+        "version": { "number": 7 },
+        "history": {
+          "createdBy": { "accountId": "acc-ada" },
+          "createdDate": "2026-02-01T10:00:00.000Z"
+        },
+        "body": {
+          "storage": {
+            "value": "<p>Owner: <ac:link><ri:user ri:account-id=\"acc-ada\" /></ac:link>. Back to <a href=\"{{SITE}}/wiki/spaces/ENG/pages/100/Engineering+home\">home</a>, tracked in <a href=\"{{SITE}}/browse/OPS-2\">OPS-2</a>.</p><ac:structured-macro ac:name=\"jira\"><ac:parameter ac:name=\"key\">OPS-2</ac:parameter></ac:structured-macro><ac:structured-macro ac:name=\"info\"><ac:rich-text-body><p>Deploys freeze on Fridays.</p></ac:rich-text-body></ac:structured-macro><ac:structured-macro ac:name=\"roadmap\"><ac:parameter ac:name=\"timeline\">q3</ac:parameter></ac:structured-macro><p><ac:image><ri:attachment ri:filename=\"flow.png\" /></ac:image></p>"
+          }
+        },
+        "metadata": { "labels": { "results": [{ "name": "runbook" }, { "name": "ops" }] } }
+      },
+      {
+        "id": "101",
+        "title": "Runbooks",
+        "ancestors": [{ "id": "100" }],
+        "version": { "number": 1 },
+        "history": {
+          "createdBy": { "accountId": "acc-grace" },
+          "createdDate": "2026-01-15T10:00:00.000Z"
+        },
+        "body": { "storage": { "value": "<p>Every runbook lives under this page.</p>" } },
+        "metadata": { "labels": { "results": [] } }
+      }
+    ],
+    "HR": [
+      {
+        "id": "200",
+        "title": "Onboarding",
+        "ancestors": [],
+        "version": { "number": 1 },
+        "body": {
+          "storage": {
+            "value": "<p>Read the <ac:link><ri:page ri:space-key=\"ENG\" ri:content-title=\"Engineering home\" /></ac:link> page first.</p>"
+          }
+        }
+      }
+    ]
+  },
+  "comments": {
+    "102": [
+      {
+        "id": "cc-1",
+        "ancestors": [],
+        "history": {
+          "createdBy": { "accountId": "acc-ada" },
+          "createdDate": "2026-02-02T10:00:00.000Z"
+        },
+        "body": { "storage": { "value": "<p>Should we add the rollback steps?</p>" } },
+        "extensions": { "location": "footer" }
+      },
+      {
+        "id": "cc-2",
+        "ancestors": [{ "id": "cc-1", "type": "comment" }],
+        "history": {
+          "createdBy": { "accountId": "acc-grace" },
+          "createdDate": "2026-02-03T10:00:00.000Z"
+        },
+        "body": { "storage": { "value": "<p>Yes, below the deploy section.</p>" } },
+        "extensions": { "location": "inline" }
+      }
+    ]
+  },
+  "attachments": {
+    "102": [
+      {
+        "id": "att-1",
+        "title": "flow.png",
+        "extensions": { "mediaType": "image/png", "fileSize": 12 },
+        "_links": { "download": "/download/attachments/102/flow.png?version=1" }
+      }
+    ]
+  }
+}

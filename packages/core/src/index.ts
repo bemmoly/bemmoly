@@ -98,6 +98,7 @@ export * from './services/modules/index.ts';
 export * from './services/realtime/index.ts';
 export * from './services/settings/index.ts';
 export * from './services/storage/index.ts';
+export * from './services/import/index.ts';
 export * from './services/system/index.ts';
 export type { EmailNotificationRouteDependencies } from './routes/email-notifications.routes.ts';
 export type { SystemControllerDependencies } from './controllers/system.controller.ts';

@@ -87,7 +87,10 @@ export const KERNEL_SETTINGS: readonly SettingsGroup[] = [
   {
     id: 'modules',
     label: 'Modules',
-    items: [item('modules', 'Manage modules', '/settings/modules', 'modules', MODULES)],
+    items: [
+      item('modules', 'Manage modules', '/settings/modules', 'modules', MODULES),
+      item('import', 'Import', '/settings/import', 'upload', 'admin'),
+    ],
   },
   {
     id: 'system',

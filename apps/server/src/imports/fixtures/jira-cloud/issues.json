@@ -1,0 +1,248 @@
+[
+  {
+    "id": "20001",
+    "key": "OPS-1",
+    "fields": {
+      "summary": "Payments revamp",
+      "issuetype": { "id": "1", "name": "Epic", "hierarchyLevel": 1 },
+      "status": { "id": "11", "name": "In Progress", "statusCategory": { "key": "indeterminate" } },
+      "priority": { "name": "High" },
+      "assignee": {
+        "accountId": "acc-ada",
+        "emailAddress": "ada@example.test",
+        "displayName": "Ada L."
+      },
+      "reporter": {
+        "accountId": "acc-admin",
+        "emailAddress": "rohan@acmelabs.dev",
+        "displayName": "Rohan S."
+      },
+      "labels": ["payments"],
+      "fixVersions": [{ "id": "301" }],
+      "components": [{ "id": "400" }],
+      "created": "2026-07-01T10:00:00.000+0000",
+      "updated": "2026-08-20T10:00:00.000+0000",
+      "description": {
+        "type": "doc",
+        "version": 1,
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              { "type": "text", "text": "Owned by " },
+              { "type": "mention", "attrs": { "id": "acc-ada", "text": "@Ada L." } },
+              { "type": "text", "text": "; first slice is " },
+              { "type": "inlineCard", "attrs": { "url": "{{SITE}}/browse/OPS-2" } }
+            ]
+          },
+          { "type": "extension", "attrs": { "extensionKey": "roadmap-planner" } }
+        ]
+      },
+      "customfield_10050": { "value": "Gold" },
+      "customfield_10060": { "id": "team-7", "title": "Payments squad" },
+      "comment": {
+        "total": 1,
+        "maxResults": 1,
+        "comments": [
+          {
+            "id": "c-1",
+            "author": { "accountId": "acc-grace", "displayName": "Grace H." },
+            "created": "2026-07-02T09:00:00.000+0000",
+            "body": {
+              "type": "doc",
+              "version": 1,
+              "content": [
+                {
+                  "type": "paragraph",
+                  "content": [{ "type": "text", "text": "Looks right to me." }]
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "attachment": [],
+      "issuelinks": []
+    }
+  },
+  {
+    "id": "20002",
+    "key": "OPS-2",
+    "fields": {
+      "summary": "Card tokenisation",
+      "issuetype": { "id": "2", "name": "Story", "hierarchyLevel": 0 },
+      "status": { "id": "12", "name": "In Review", "statusCategory": { "key": "indeterminate" } },
+      "priority": { "name": "Medium" },
+      "assignee": {
+        "accountId": "acc-ada",
+        "emailAddress": "ada@example.test",
+        "displayName": "Ada L."
+      },
+      "reporter": {
+        "accountId": "acc-admin",
+        "emailAddress": "rohan@acmelabs.dev",
+        "displayName": "Rohan S."
+      },
+      "parent": { "id": "20001", "key": "OPS-1" },
+      "labels": ["payments", "security"],
+      "fixVersions": [{ "id": "301" }],
+      "components": [],
+      "created": "2026-07-03T10:00:00.000+0000",
+      "updated": "2026-08-21T10:00:00.000+0000",
+      "description": {
+        "type": "doc",
+        "version": 1,
+        "content": [
+          {
+            "type": "heading",
+            "attrs": { "level": 2 },
+            "content": [{ "type": "text", "text": "Scope" }]
+          },
+          {
+            "type": "bulletList",
+            "content": [
+              {
+                "type": "listItem",
+                "content": [
+                  {
+                    "type": "paragraph",
+                    "content": [
+                      { "type": "text", "text": "Vault the PAN", "marks": [{ "type": "strong" }] }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "customfield_10016": 5,
+      "customfield_10020": [
+        { "id": 5, "name": "Sprint 1", "state": "closed" },
+        { "id": 6, "name": "Sprint 2", "state": "active" }
+      ],
+      "customfield_10080": { "value": "Sev 1" },
+      "comment": {
+        "total": 3,
+        "maxResults": 1,
+        "comments": [
+          {
+            "id": "c-2",
+            "author": { "accountId": "acc-ada" },
+            "created": "2026-07-04T09:00:00.000+0000",
+            "body": {
+              "type": "doc",
+              "version": 1,
+              "content": [
+                { "type": "paragraph", "content": [{ "type": "text", "text": "Starting today." }] }
+              ]
+            }
+          }
+        ]
+      },
+      "attachment": [
+        {
+          "id": "900",
+          "filename": "diagram.png",
+          "mimeType": "image/png",
+          "size": 16,
+          "content": "{{SITE}}/rest/api/3/attachment/content/900",
+          "author": { "accountId": "acc-ada" },
+          "created": "2026-07-05T09:00:00.000+0000"
+        }
+      ],
+      "issuelinks": [
+        {
+          "id": "500",
+          "type": { "name": "Blocks", "inward": "is blocked by", "outward": "blocks" },
+          "outwardIssue": { "id": "20003", "key": "OPS-3" }
+        },
+        {
+          "id": "501",
+          "type": { "name": "Relates", "inward": "relates to", "outward": "relates to" },
+          "outwardIssue": { "id": "29999", "key": "XYZ-9" }
+        }
+      ]
+    }
+  },
+  {
+    "id": "20003",
+    "key": "OPS-3",
+    "fields": {
+      "summary": "Refund rounding is off by a cent",
+      "issuetype": { "id": "3", "name": "Bug", "hierarchyLevel": 0 },
+      "status": { "id": "10", "name": "To Do", "statusCategory": { "key": "new" } },
+      "priority": { "name": "Highest" },
+      "assignee": null,
+      "reporter": { "accountId": "acc-grace", "displayName": "Grace H." },
+      "labels": ["payments", "bug"],
+      "fixVersions": [],
+      "components": [{ "id": "400" }],
+      "created": "2026-07-06T10:00:00.000+0000",
+      "updated": "2026-07-06T10:00:00.000+0000",
+      "duedate": "2026-09-30",
+      "description": null,
+      "customfield_10070": "Fixed in 2.1",
+      "comment": { "total": 0, "maxResults": 0, "comments": [] },
+      "attachment": [],
+      "issuelinks": [
+        {
+          "id": "500",
+          "type": { "name": "Blocks", "inward": "is blocked by", "outward": "blocks" },
+          "inwardIssue": { "id": "20002", "key": "OPS-2" }
+        }
+      ]
+    }
+  },
+  {
+    "id": "20005",
+    "key": "OPS-5",
+    "fields": {
+      "summary": "Write tests for the vault client",
+      "issuetype": { "id": "4", "name": "Sub-task", "subtask": true, "hierarchyLevel": -1 },
+      "status": { "id": "13", "name": "Done", "statusCategory": { "key": "done" } },
+      "priority": { "name": "Low" },
+      "assignee": {
+        "accountId": "acc-ada",
+        "emailAddress": "ada@example.test",
+        "displayName": "Ada L."
+      },
+      "reporter": {
+        "accountId": "acc-ada",
+        "emailAddress": "ada@example.test",
+        "displayName": "Ada L."
+      },
+      "parent": { "id": "20002", "key": "OPS-2" },
+      "labels": [],
+      "created": "2026-07-07T10:00:00.000+0000",
+      "updated": "2026-07-08T10:00:00.000+0000",
+      "resolutiondate": "2026-07-08T10:00:00.000+0000",
+      "description": null,
+      "comment": { "total": 0, "comments": [] },
+      "attachment": [],
+      "issuelinks": []
+    }
+  },
+  {
+    "id": "20006",
+    "key": "OPS-6",
+    "fields": {
+      "summary": "Spike: compare vault providers",
+      "issuetype": { "id": "5", "name": "Spike", "hierarchyLevel": 0 },
+      "status": { "id": "10", "name": "To Do", "statusCategory": { "key": "new" } },
+      "priority": { "name": "Trivial" },
+      "reporter": {
+        "accountId": "acc-admin",
+        "emailAddress": "rohan@acmelabs.dev",
+        "displayName": "Rohan S."
+      },
+      "labels": ["research"],
+      "created": "2026-07-09T10:00:00.000+0000",
+      "updated": "2026-07-09T10:00:00.000+0000",
+      "description": null,
+      "comment": { "total": 0, "comments": [] },
+      "attachment": [],
+      "issuelinks": []
+    }
+  }
+]

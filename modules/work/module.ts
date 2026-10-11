@@ -1,4 +1,4 @@
-import { defineModule, loadChangelogFolder } from '@bemmoly/core';
+import { defineModule, importerContribution, loadChangelogFolder } from '@bemmoly/core';
 import { WORK_CAPABILITIES } from './server/src/config/capabilities.ts';
 import { defineWorkSettings } from './server/src/config/settings.ts';
 import { createWorkControllers } from './server/src/controllers/index.ts';
@@ -7,6 +7,8 @@ import { registerWorkMcp } from './server/src/services/mcp/index.ts';
 import { workRoutes } from './server/src/routes/index.ts';
 import { createWorkServices } from './server/src/services/index.ts';
 import { WORK_AUTOMATION_RUN_JOB, WORK_RANK_REBALANCE_JOB } from './server/src/services/jobs.ts';
+import { createCsvImporter } from './server/src/services/import/csv/index.ts';
+import { createJiraImporter } from './server/src/services/import/jira/index.ts';
 import { registerWorkSearch } from './server/src/services/palette/index.ts';
 import { registerWorkAi, withAiTriggers } from './server/src/services/ai/index.ts';
 import { registerWorkReferences } from './server/src/services/references/index.ts';
@@ -108,6 +110,12 @@ export default defineModule({
     registerWorkAiTools(ctx.ai, services);
     registerWorkMcp(ctx.mcp, services);
     registerWorkAi(ctx, ctx.database);
+    const importDeps = {
+      ...(ctx.database ? { database: ctx.database } : {}),
+      ...(ctx.memberships ? { memberships: ctx.memberships } : {}),
+    };
+    ctx.importers.add(importerContribution(createJiraImporter(importDeps)));
+    ctx.importers.add(importerContribution(createCsvImporter(importDeps)));
     ctx.routes.add({ prefix: '/work', plugin: workRoutes(createWorkControllers(services)) });
   },
 });

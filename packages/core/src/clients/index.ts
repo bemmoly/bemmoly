@@ -8,6 +8,13 @@ export {
 export { createDatabase, createTransactionDatabase, type Database } from './drizzle.ts';
 export { HttpStatusError, requestJson, type JsonRequest } from './http-json.ts';
 export {
+  createRestClient,
+  retryAfterMs,
+  type RestClient,
+  type RestClientOptions,
+  type RestQuery,
+} from './rest.ts';
+export {
   createModelServerClient,
   type ModelServerClient,
   type ServerModel,
