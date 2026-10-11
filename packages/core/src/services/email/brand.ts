@@ -32,11 +32,27 @@ async function read<T>(get: UntypedGet, key: string, schema: z.ZodType<T>): Prom
   }
 }
 
-/** Turns the stored logo key into a URL a mail client can fetch; null shows the initial tile. */
-export type LogoUrlResolver = (logoKey: string) => string | null;
+/**
+ * Turns the stored logo key into a URL a mail client can fetch; null shows the initial tile.
+ * `workspaceUrl` is where people open Bemmoly (workspace.url), when it is set.
+ */
+export type LogoUrlResolver = (logoKey: string, workspaceUrl?: string) => string | null;
 
-export function defaultLogoUrl(logoKey: string): string | null {
-  return /^https:\/\//.test(logoKey) ? logoKey : null;
+/**
+ * An uploaded logo is stored as the path this install serves it from, so a mail client reaches
+ * it under the workspace's URL; an absolute https key is used as it is. Anything else, or a
+ * workspace without an https URL, draws the initial tile instead of a broken image.
+ */
+export function defaultLogoUrl(logoKey: string, workspaceUrl?: string): string | null {
+  if (/^https:\/\//.test(logoKey)) return logoKey;
+  if (!logoKey.startsWith('/') || logoKey.startsWith('//')) return null;
+  if (!workspaceUrl || !/^https:\/\//.test(workspaceUrl)) return null;
+  try {
+    return new URL(logoKey.slice(1), workspaceUrl.endsWith('/') ? workspaceUrl : `${workspaceUrl}/`)
+      .href;
+  } catch {
+    return null;
+  }
 }
 
 export async function loadEmailBrand(
@@ -44,8 +60,9 @@ export async function loadEmailBrand(
   resolveLogoUrl: LogoUrlResolver = defaultLogoUrl,
 ): Promise<EmailBrand> {
   const get = settings.get.bind(settings) as unknown as UntypedGet;
-  const [workspaceName, themeId, brandColor, font, logoKey] = await Promise.all([
+  const [workspaceName, workspaceUrl, themeId, brandColor, font, logoKey] = await Promise.all([
     read(get, 'workspace.name', z.string().min(1)),
+    read(get, 'workspace.url', z.string()),
     read(get, APPEARANCE_KEYS.theme, themeIdSchema),
     read(get, APPEARANCE_KEYS.brandColor, hexSchema),
     read(get, APPEARANCE_KEYS.font, fontSchema),
@@ -60,7 +77,7 @@ export async function loadEmailBrand(
   return {
     workspaceName: workspaceName ?? DEFAULT_BRAND.workspaceName,
     colors,
-    logoUrl: logoKey ? resolveLogoUrl(logoKey) : null,
+    logoUrl: logoKey ? resolveLogoUrl(logoKey, workspaceUrl) : null,
     fontStack: FONTS[font ?? 'plex'].stack,
   };
 }

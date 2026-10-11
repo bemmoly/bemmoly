@@ -9,6 +9,7 @@ import { createAuditController } from '../controllers/audit.controller.ts';
 import { createAuthzController } from '../controllers/authz.controller.ts';
 import { createCollabController } from '../controllers/collab.controller.ts';
 import { createFilesController } from '../controllers/files.controller.ts';
+import { createWorkspaceLogoController } from '../controllers/workspace-logo.controller.ts';
 import { createHealthController } from '../controllers/health.controller.ts';
 import { createIdentityController } from '../controllers/identity.controller.ts';
 import { createMcpController } from '../controllers/mcp.controller.ts';
@@ -33,6 +34,7 @@ import {
   type SystemControllerDependencies,
 } from '../controllers/system.controller.ts';
 import type { ModuleAccessResolver } from '../contracts/module-access.ts';
+import type { ObjectStore } from '../contracts/object-store.ts';
 import type { SessionResolver } from '../contracts/session-resolver.ts';
 import { createActorResolver, type ActorResolver } from '../middlewares/actor.ts';
 import type { ModuleRegistry } from '../modules/registry.ts';
@@ -64,6 +66,7 @@ import {
   type EmailNotificationRouteDependencies,
 } from './email-notifications.routes.ts';
 import { filesRoutes } from './files.routes.ts';
+import { workspaceLogoRoutes } from './workspace-logo.routes.ts';
 import { healthRoutes } from './health.routes.ts';
 import { identityRoutes } from './identity.routes.ts';
 import { mcpRoutes, type McpRateLimit } from './mcp.routes.ts';
@@ -124,11 +127,16 @@ export interface KernelRouteDependencies {
   mcp?: { service: McpService; rateLimit?: McpRateLimit };
   /** Uploaded files (images in pages); /api/v1/files is mounted only when present. */
   files?: FilesService;
+  /** Where the workspace logo is stored; /api/v1/workspace/logo is mounted with identity. */
+  logoStore?: { store: ObjectStore; spoolDir: string };
   /** Settings › Import (/admin/imports); mounted when the host wires the importers. */
   imports?: ImportService;
 }
 
-function identityAndAccessRoutes(deps: IdentityDependencies): FastifyPluginAsync {
+function identityAndAccessRoutes(
+  deps: IdentityDependencies,
+  logoStore?: KernelRouteDependencies['logoStore'],
+): FastifyPluginAsync {
   const identity = createIdentityController(deps);
   const people = createPeopleController(deps);
   const authz = createAuthzController(deps);
@@ -137,6 +145,11 @@ function identityAndAccessRoutes(deps: IdentityDependencies): FastifyPluginAsync
   return async (api) => {
     await api.register(identityRoutes(identity, people));
     await api.register(appearanceRoutes(appearance));
+    if (logoStore) {
+      await api.register(
+        workspaceLogoRoutes(createWorkspaceLogoController({ ...deps, ...logoStore })),
+      );
+    }
     await api.register(authzRoutes(authz));
     await api.register(auditRoutes(audit));
   };
@@ -208,7 +221,8 @@ export function kernelRoutes(deps: KernelRouteDependencies): FastifyPluginAsync 
       async (api) => {
         await api.register(modulesRoutes(modules));
         await api.register(searchRoutes(search));
-        if (deps.identity) await api.register(identityAndAccessRoutes(deps.identity));
+        if (deps.identity)
+          await api.register(identityAndAccessRoutes(deps.identity, deps.logoStore));
         if (deps.sso) {
           await api.register(
             ssoRoutes(createSsoController(deps.sso), createSsoAdminController(deps.sso)),

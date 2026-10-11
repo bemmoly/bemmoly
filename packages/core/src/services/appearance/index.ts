@@ -10,3 +10,12 @@ export {
   updateCustomTheme,
   type AppearanceDeps,
 } from './themes.ts';
+export { checkLogo, logoError, type CheckedLogo } from './logo-image.ts';
+export {
+  LOGO_PREFIX,
+  readWorkspaceLogo,
+  removeWorkspaceLogo,
+  uploadWorkspaceLogo,
+  type ServedLogo,
+  type WorkspaceLogoDeps,
+} from './logo.ts';

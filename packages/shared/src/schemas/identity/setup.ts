@@ -11,6 +11,11 @@ export const setupStatusResponseSchema = z.object({
    * wizard has named it. Older servers leave it out.
    */
   workspaceName: z.string().nullable().optional(),
+  /**
+   * The workspace's own logo, a same-origin path, for the sign-in pages; null without one.
+   * Older servers leave it out.
+   */
+  logoUrl: z.string().nullable().optional(),
 });
 
 export const createFirstAdminSchema = z.object({

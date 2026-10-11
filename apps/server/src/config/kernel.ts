@@ -179,6 +179,7 @@ export async function createDataKernel(input: DataKernelInput): Promise<DataKern
       ...(identity.sessions ? { sessions: identity.sessions } : {}),
       ...(identity.moduleAccess ? { moduleAccess: identity.moduleAccess } : {}),
       files,
+      logoStore: { store: objectStore, spoolDir: spoolDirectory(env.BEMMOLY_DATA_DIR) },
     },
     runner,
     settings,
