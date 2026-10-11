@@ -1,0 +1,122 @@
+{
+  "myself": {
+    "name": "rohan",
+    "key": "JIRAUSER100",
+    "emailAddress": "rohan@acmelabs.dev",
+    "displayName": "Rohan S."
+  },
+  "projects": [{ "id": "11000", "key": "LEGACY_1", "name": "Legacy billing" }],
+  "project": {
+    "LEGACY_1": {
+      "id": "11000",
+      "key": "LEGACY_1",
+      "name": "Legacy billing",
+      "issueTypes": [
+        { "id": "1", "name": "Task", "subtask": false },
+        { "id": "2", "name": "Bug", "subtask": false }
+      ]
+    }
+  },
+  "statuses": {
+    "LEGACY_1": [
+      {
+        "id": "1",
+        "name": "Task",
+        "statuses": [
+          { "id": "1", "name": "Open", "statusCategory": { "key": "new" } },
+          { "id": "6", "name": "Closed", "statusCategory": { "key": "done" } }
+        ]
+      }
+    ]
+  },
+  "fields": [
+    {
+      "id": "customfield_10100",
+      "name": "Epic Link",
+      "custom": true,
+      "schema": { "type": "any", "custom": "com.pyxis.greenhopper.jira:gh-epic-link" }
+    },
+    {
+      "id": "customfield_10101",
+      "name": "Sprint",
+      "custom": true,
+      "schema": {
+        "type": "array",
+        "items": "string",
+        "custom": "com.pyxis.greenhopper.jira:gh-sprint"
+      }
+    }
+  ],
+  "versions": { "LEGACY_1": [] },
+  "components": { "LEGACY_1": [] },
+  "boards": { "LEGACY_1": [{ "id": 7, "name": "Legacy kanban", "type": "kanban" }] },
+  "boardColumns": {
+    "7": [
+      { "name": "Open", "statuses": [{ "id": "1" }] },
+      { "name": "Closed", "statuses": [{ "id": "6" }] }
+    ]
+  },
+  "sprints": {},
+  "issues": [
+    {
+      "id": "30001",
+      "key": "LEGACY_1-1",
+      "fields": {
+        "summary": "Migrate invoices",
+        "issuetype": { "id": "1", "name": "Task" },
+        "status": { "id": "1", "name": "Open", "statusCategory": { "key": "new" } },
+        "priority": { "name": "Major" },
+        "assignee": {
+          "name": "ada",
+          "key": "JIRAUSER200",
+          "emailAddress": "ada@example.test",
+          "displayName": "Ada L."
+        },
+        "reporter": {
+          "name": "rohan",
+          "key": "JIRAUSER100",
+          "emailAddress": "rohan@acmelabs.dev",
+          "displayName": "Rohan S."
+        },
+        "labels": ["billing"],
+        "created": "2025-01-10T10:00:00.000+0000",
+        "description": "h2. Plan\n* Export from the *old* system\n* Import with [the tool|https://example.test/tool]\n\n{code}\nmigrate --dry-run\n{code}",
+        "comment": {
+          "total": 1,
+          "comments": [
+            {
+              "id": "dc-1",
+              "author": { "name": "ada", "key": "JIRAUSER200", "displayName": "Ada L." },
+              "body": "Done on staging, [~rohan] please check.",
+              "created": "2025-01-11T10:00:00.000+0000"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "30002",
+      "key": "LEGACY_1-2",
+      "fields": {
+        "summary": "Close old accounts",
+        "issuetype": { "id": "2", "name": "Bug" },
+        "status": { "id": "6", "name": "Closed", "statusCategory": { "key": "done" } },
+        "priority": { "name": "Minor" },
+        "reporter": {
+          "name": "rohan",
+          "key": "JIRAUSER100",
+          "emailAddress": "rohan@acmelabs.dev",
+          "displayName": "Rohan S."
+        },
+        "created": "2025-01-12T10:00:00.000+0000",
+        "resolutiondate": "2025-01-13T10:00:00.000+0000",
+        "customfield_10100": "LEGACY_1-1",
+        "customfield_10101": [
+          "com.atlassian.greenhopper.service.sprint.Sprint@1a2b[id=3,rapidViewId=7,state=CLOSED,name=Old sprint]"
+        ],
+        "description": null,
+        "comment": { "total": 0, "comments": [] }
+      }
+    }
+  ]
+}
