@@ -29,7 +29,7 @@ else
   exit 1
 fi
 
-posix="install.sh $(find installer scripts docker/bin updater/bin tests/smoke tests/container -type f \( -name '*.sh' -o -path '*/bin/*' \) 2>/dev/null | sort | tr '\n' ' ')"
+posix="install.sh $(find installer scripts docker/bin updater/bin tests/smoke tests/container tests/helm -type f \( -name '*.sh' -o -path '*/bin/*' \) 2>/dev/null | sort | tr '\n' ' ')"
 bash_files="cli/bemmoly $(find cli/lib -name '*.sh' | sort | tr '\n' ' ') cli/completion.bash"
 
 status=0
