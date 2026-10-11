@@ -1,9 +1,13 @@
 import { randomUUID } from 'node:crypto';
 import { searchRequestQuerySchema } from '@bemmoly/shared';
 import { z } from 'zod';
-import { defineReadTool, isAiToolDefinition } from '../ai/tools/define.ts';
-import { isExpectedToolError } from '../ai/tools/registry.ts';
-import type { AiToolDefinition, AiToolRunContext } from '../ai/tools/types.ts';
+import {
+  defineReadTool,
+  isAiToolDefinition,
+  isExpectedToolError,
+  type AiToolDefinition,
+  type AiToolRunContext,
+} from '../ai/index.ts';
 import { mcpToolName } from './names.ts';
 import { KERNEL_NAMESPACE, type McpServices, type McpSession } from './types.ts';
 
@@ -82,7 +86,8 @@ export function toolsFor(services: McpServices, session: McpSession): McpTool[] 
 
 function inputSchemaOf(definition: AiToolDefinition): McpToolListing['inputSchema'] {
   const schema = z.toJSONSchema(definition.input, { io: 'input', unrepresentable: 'any' });
-  const { $schema: _ignored, ...rest } = schema as Record<string, unknown>;
+  const rest: Record<string, unknown> = { ...schema };
+  delete rest.$schema;
   return { ...rest, type: 'object' };
 }
 

@@ -4,7 +4,7 @@ import type { Database } from '../../clients/drizzle.ts';
 import type { Actor } from '../../contracts/authz.ts';
 import { users } from '../../models/identity/index.ts';
 import { createRequestAuthorization, type ModuleCatalog } from '../authz/index.ts';
-import { authenticateApiToken, type AuthenticatedToken } from '../identity/api-tokens.ts';
+import { authenticateApiToken, type AuthenticatedToken } from '../identity/index.ts';
 import type { McpSession } from './types.ts';
 
 export interface McpAccessDeps {

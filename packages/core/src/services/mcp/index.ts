@@ -2,7 +2,7 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 import type { Actor } from '../../contracts/authz.ts';
 import { recordAudit } from '../audit/index.ts';
 import type { ModuleCatalog } from '../authz/index.ts';
-import type { AuthenticatedToken } from '../identity/api-tokens.ts';
+import type { AuthenticatedToken } from '../identity/index.ts';
 import { createSearchService } from '../search/index.ts';
 import type { FromModule } from '../../modules/registry.ts';
 import type { SearchProviderDefinition } from '../../modules/registries.ts';
