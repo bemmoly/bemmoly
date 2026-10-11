@@ -89,6 +89,16 @@ export async function authorizeTemplateWrite(
   await ctx.authz.authorize(ctx.actor, MANAGE_ORG_TEMPLATES, DOCS_MODULE);
 }
 
+/** The same question as authorizeTemplateWrite, answered rather than thrown. */
+export async function canWriteTemplate(
+  ctx: RequestContext,
+  row: Pick<TemplateRow, 'space_id'>,
+): Promise<boolean> {
+  return row.space_id
+    ? ctx.authz.can(ctx.actor, 'docs.space.configure', spaceResource(row.space_id))
+    : ctx.authz.can(ctx.actor, MANAGE_ORG_TEMPLATES, DOCS_MODULE);
+}
+
 /** A built-in reads only: it can be ordered, archived or duplicated, never rewritten. */
 export function assertEditable(row: Pick<TemplateRow, 'is_builtin'>): void {
   if (row.is_builtin) {

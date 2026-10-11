@@ -23,6 +23,9 @@ export const docsKeys = {
   starred: () => [...queryKeys.docs(), 'starred'] as const,
   attention: () => [...queryKeys.docs(), 'attention'] as const,
   templates: (spaceId: string | null) => [...queryKeys.docs(), 'templates', spaceId] as const,
+  /** Settings › Docs: the org templates with their use and the archived ones. */
+  orgTemplates: () => [...queryKeys.docs(), 'templates', 'org'] as const,
+  template: (id: string) => [...queryKeys.docs(), 'template', id] as const,
   trash: (spaceRef: string) => [...queryKeys.docs(), 'trash', spaceRef] as const,
   spaceSearch: (spaceId: string, q: string) =>
     [...queryKeys.docs(), 'space-search', spaceId, q] as const,

@@ -22,8 +22,10 @@ import {
 import type { PagesService } from '../pages/index.ts';
 import { createOrgTemplates } from './org.ts';
 import {
+  anyTemplateById,
   assertEditable,
   authorizeTemplateWrite,
+  canWriteTemplate,
   templateById,
   toDetail,
   toSummary,
@@ -63,9 +65,16 @@ export function createTemplatesService(deps: DocsServiceDeps & { pages: PagesSer
       return rows.map(toSummary);
     },
 
+    /** An active template for anyone who may read it; an archived one only for its managers. */
     async get(ctx: RequestContext, id: string): Promise<TemplateDetail> {
-      const row = await templateById(requireDatabase(deps), id);
-      await authorizeRead(ctx, row.space_id);
+      const row = await anyTemplateById(requireDatabase(deps), id);
+      if (row.archived_at) {
+        if (!(await canWriteTemplate(ctx, row))) {
+          throw new NotFoundError('The template was not found');
+        }
+      } else {
+        await authorizeRead(ctx, row.space_id);
+      }
       return toDetail(row);
     },
 

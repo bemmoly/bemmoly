@@ -158,6 +158,13 @@ describe('org templates', () => {
     });
     expect(fromArchived.statusCode).toBe(404);
     expect((await orgList(users().admin)).items?.at(-1)?.id).toBe(adr.id);
+    // Its managers can still preview it in Settings › Docs; nobody else finds it.
+    expect((await http.call('GET', `/templates/${adr.id}`, { as: users().admin })).statusCode).toBe(
+      200,
+    );
+    expect(
+      (await http.call('GET', `/templates/${adr.id}`, { as: users().member })).statusCode,
+    ).toBe(404);
 
     expect((await restore(users().member)).statusCode).toBe(403);
     const restored = await restore(users().admin);
