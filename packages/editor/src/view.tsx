@@ -129,14 +129,13 @@ function block(node: RichTextNode, key: number, context: PrintContext, id?: stri
       return (
         <li key={key} data-checked={String(checked)} data-type="taskItem">
           <label>
+            {/* Disabled, not just read-only: the view cannot change it, so it is no click
+                target (WCAG 2.5.8) and is read as unavailable, with its state. */}
             <input
               type="checkbox"
               checked={checked}
-              readOnly
-              tabIndex={-1}
-              aria-readonly
+              disabled
               aria-label={checked ? 'Done' : 'Not done'}
-              onClick={(event) => event.preventDefault()}
             />
             <span />
           </label>

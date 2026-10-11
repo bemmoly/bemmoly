@@ -39,7 +39,7 @@ export function Label({ name, color, onRemove, className }: LabelProps) {
           onClick={onRemove}
           aria-label={`Remove label ${name}`}
           className={cx(
-            '-mr-0.5 inline-flex cursor-pointer rounded-full border-0 bg-transparent p-0 text-tx-3 hover:text-tx',
+            '-mr-1.75 -ml-2.25 inline-flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-full border-0 bg-transparent p-0 text-tx-3 hover:text-tx',
             focusRing,
           )}
         >
