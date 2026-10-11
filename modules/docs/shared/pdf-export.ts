@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { timestampSchema } from '@bemmoly/shared';
 
 /*
- * PDF exports, when the install runs the optional PDF renderer (ADR 0033).
+ * PDF exports, when the install runs the optional PDF renderer (ADR 0034).
  *   GET  /api/v1/docs/exports/options
  *        { pdf: true } when the renderer is configured; the web hides "Export as PDF" without it.
  *   POST /api/v1/docs/pages/:pageId/exports        { scope, paper }

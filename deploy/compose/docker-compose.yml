@@ -106,7 +106,7 @@ services:
     security_opt: ['no-new-privileges:true']
     networks: [internal]
 
-  # Optional (ADR 0033). The app sends whole documents with images inline; the renderer
+  # Optional (ADR 0034). The app sends whole documents with images inline; the renderer
   # resolves no host, loads nothing but data: and its own temp files, and sits alone on a
   # network with no route out. Chromium is contained by the container: non-root, read-only,
   # no capabilities, no new privileges, bounded memory and processes.

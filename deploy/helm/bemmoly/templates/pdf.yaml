@@ -48,7 +48,7 @@ spec:
         - name: pdf
           image: {{ printf "%s:%s" $pdf.image.repository $pdf.image.tag | quote }}
           imagePullPolicy: {{ $pdf.image.pullPolicy }}
-          # Kept in step with deploy/compose and the integration tests (ADR 0033).
+          # Kept in step with deploy/compose and the integration tests (ADR 0034).
           args:
             - gotenberg
             - --api-timeout={{ $pdf.timeoutSeconds }}s

@@ -23,7 +23,7 @@ export const DOCS_PURGE_EXPORTS_JOB = 'docs.purge-exports';
 const SLOW_RENDER_MS = 10_000;
 
 /**
- * PDF exports through the optional renderer (ADR 0033). A request writes a row and queues
+ * PDF exports through the optional renderer (ADR 0034). A request writes a row and queues
  * docs.export-pdf under an idempotency key, so a retried request or a double click renders
  * once; the job renders as the person who asked, with their access, and keeps the PDF for a
  * day. Only that person reads the export.
