@@ -45,7 +45,7 @@ export const users = pgTable(
   ],
 );
 
-/** Configured sign-in methods. Only `password` is implemented; OIDC and SAML fields are reserved. */
+/** Configured sign-in methods: the one password row, and one row per SSO identity provider. */
 export const authProviders = pgTable(
   'auth_providers',
   {
@@ -55,7 +55,14 @@ export const authProviders = pgTable(
     configEncrypted: text('config_encrypted'),
     autoProvision: boolean('auto_provision').notNull().default(false),
     defaultRoleId: uuid('default_role_id').references(() => roles.id, { onDelete: 'set null' }),
+    /** SSO group to team mappings, `[{ group, teamId }]`. */
     groupMappings: jsonb('group_mappings').notNull().default({}),
+    /** SSO group to org role mappings, `[{ group, roleId }]`. */
+    roleMappings: jsonb('role_mappings').notNull().default([]),
+    /** Email domains an SSO sign-in may come from; empty allows any. */
+    allowedDomains: jsonb('allowed_domains').notNull().default([]),
+    preset: text('preset'),
+    lastTest: jsonb('last_test'),
     enabled: boolean('enabled').notNull().default(true),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
