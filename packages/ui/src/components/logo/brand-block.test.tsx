@@ -52,6 +52,13 @@ describe('BrandBlock', () => {
     expect(screen.getByRole('menuitem', { name: 'Workspace settings' })).toBeTruthy();
   });
 
+  it('goes Home from the Bemmoly wordmark without a customer logo', () => {
+    const onHome = vi.fn();
+    render(<BrandBlock workspaceName="Acme Labs" onHome={onHome} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Bemmoly, Home' }));
+    expect(onHome).toHaveBeenCalledOnce();
+  });
+
   it('puts the mark at the top of the rail, or at its foot under a customer logo', () => {
     const plain = render(
       <>

@@ -134,6 +134,15 @@ export function BrandBlock({
           <span className="truncate text-14 leading-tight font-semibold tracking-title text-tx">
             {customLogo.name}
           </span>
+        ) : onHome ? (
+          <button
+            type="button"
+            onClick={onHome}
+            aria-label="Bemmoly, Home"
+            className={cx(LINE_BUTTON, 'my-0 self-start')}
+          >
+            <Logo variant="wordmark" trim size={15} />
+          </button>
         ) : (
           <Logo variant="wordmark" trim size={15} />
         )}

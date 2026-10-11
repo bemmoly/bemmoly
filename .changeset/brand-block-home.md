@@ -3,5 +3,5 @@
 '@bemmoly/web': patch
 ---
 
-Under a customer logo, the sidebar's name and "on Bemmoly" now go to Home; the caret beside the
-name opens the workspace menu.
+The sidebar's brand goes to Home: the Bemmoly wordmark, or under a customer logo their name and
+"on Bemmoly"; the caret beside the name opens the workspace menu.
