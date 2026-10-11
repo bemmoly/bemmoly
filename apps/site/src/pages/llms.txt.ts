@@ -1,4 +1,5 @@
 import type { APIRoute } from 'astro';
+import { AGENT_PROMPT_PATH } from '../data/agent-prompt.ts';
 import { INSTALL, RELEASE } from '../data/landing.ts';
 import { DEMO_PAGE, PAGES } from '../data/pages.ts';
 import { WHAT_YOU_GET } from '../data/self-hosting.ts';
@@ -35,9 +36,11 @@ export const GET: APIRoute = ({ site }) => {
     'model on your own network, and offers summaries that cite their sources, answers from your',
     'docs, help in the editor and plans from the command palette that run only when confirmed.',
     'Modules start off; an admin turns them on in Settings › Manage modules. It installs on a',
-    `Linux VM (2 vCPU, 4 GB) with one command; the guide is ${url('/self-hosting#install')}:`,
+    `Linux VM (at least 1 vCPU and 2 GB) with one command; the guide is ${url('/self-hosting#install')}:`,
     '',
     `    ${INSTALL}`,
+    '',
+    `To have a coding agent install it, give it the prompt at ${url(AGENT_PROMPT_PATH)}.`,
     '',
     'Every install gets:',
     '',

@@ -12,11 +12,13 @@ interface Props {
   value: string;
   /** The element whose text is selected when the clipboard is refused. */
   target?: string;
+  /** The resting label, when "Copy" alone would not say what is copied. */
+  label?: string;
   size?: 'md' | 'sm';
   class?: string;
 }
 
-const { value, target, size = 'md', class: className } = Astro.props;
+const { value, target, label = 'Copy', size = 'md', class: className } = Astro.props;
 ---
 
 <button
@@ -31,5 +33,5 @@ const { value, target, size = 'md', class: className } = Astro.props;
 >
   <Icon name="copy" size={14} class="group-data-[state=done]:hidden" />
   <Icon name="check" size={14} class="hidden group-data-[state=done]:inline-block" />
-  <span data-copy-label>Copy</span>
+  <span data-copy-label>{label}</span>
 </button>

@@ -3,7 +3,9 @@
  * The install command as the call to action, copy-first (site review, hero): a dark field with
  * the prompt, the command as selectable text and the copy button. On a phone the command wraps
  * instead of scrolling, so Copy is always in reach. Without the script the command is still
- * text a visitor can select and copy.
+ * text a visitor can select and copy. With `value` it shows a one-line preview and copies the
+ * whole text instead (the agent prompt); `target` then names where the whole text is kept for
+ * the clipboard fallback.
  */
 import { INSTALL_COMMAND } from '../../lib/links.ts';
 import CopyButton from './CopyButton.astro';
@@ -12,11 +14,23 @@ interface Props {
   /** A unique id for the command text, the clipboard fallback's selection. */
   id: string;
   command?: string;
+  /** What Copy puts on the clipboard, when it is more than the line shown. */
+  value?: string;
+  target?: string;
+  copyLabel?: string;
   size?: 'md' | 'lg';
   class?: string;
 }
 
-const { id, command = INSTALL_COMMAND, size = 'md', class: className } = Astro.props;
+const {
+  id,
+  command = INSTALL_COMMAND,
+  value,
+  target = id,
+  copyLabel,
+  size = 'md',
+  class: className,
+} = Astro.props;
 ---
 
 <div
@@ -27,14 +41,21 @@ const { id, command = INSTALL_COMMAND, size = 'md', class: className } = Astro.p
     className,
   ]}
 >
-  <span class="pt-1.75 text-tx-3 select-none sm:pt-0" aria-hidden="true">
-    $
-  </span>
+  {value === undefined && (
+    <span class="pt-1.75 text-tx-3 select-none sm:pt-0" aria-hidden="true">
+      $
+    </span>
+  )}
   <code
     id={id}
-    class="min-w-0 flex-1 pt-1.75 break-all select-all sm:pt-0 sm:break-normal sm:whitespace-nowrap"
+    class:list={[
+      'min-w-0 flex-1 pt-1.75 sm:pt-0',
+      value === undefined
+        ? 'break-all select-all sm:break-normal sm:whitespace-nowrap'
+        : 'truncate text-tx-2',
+    ]}
   >
     {command}
   </code>
-  <CopyButton value={command} target={id} />
+  <CopyButton value={value ?? command} target={target} label={copyLabel} />
 </div>
