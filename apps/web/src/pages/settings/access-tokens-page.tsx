@@ -8,7 +8,7 @@ import { TokensSkeleton, TokensTable } from '../../components/tokens/tokens-tabl
 import { useApiTokens, useModuleNames } from '../../hooks/use-api-tokens.ts';
 
 /**
- * Account › Access tokens: personal tokens that let AI clients, IDEs and scripts reach this
+ * Account › Access tokens: personal tokens that let MCP clients, IDEs and scripts reach this
  * workspace as you, through the API and the MCP server. Each secret shows once, at creation.
  */
 export function AccessTokensPage() {
@@ -23,7 +23,7 @@ export function AccessTokensPage() {
   return (
     <SettingsPage
       title="Access tokens"
-      description="Tokens let AI clients, IDEs and scripts act as you, through the API and the MCP server. A token never has more access than you do."
+      description="Tokens let MCP clients, IDEs and scripts act as you, through the API and the MCP server. A token never has more access than you do."
       loading={query.isPending}
       skeleton={<TokensSkeleton />}
       error={query.error}

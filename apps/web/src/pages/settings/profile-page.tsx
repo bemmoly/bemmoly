@@ -28,7 +28,7 @@ export function ProfilePage() {
         />
         <SettingsRow
           title="Access tokens"
-          description="Personal tokens that let AI clients, IDEs and scripts act as you."
+          description="Personal tokens that let MCP clients, IDEs and scripts act as you."
           control={<Link to="/settings/access-tokens">Manage</Link>}
         />
         <SettingsRow

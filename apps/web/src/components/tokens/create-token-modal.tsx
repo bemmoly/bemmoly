@@ -66,7 +66,7 @@ export function CreateTokenModal({ open, onClose, modules }: CreateTokenModalPro
       onClose={create.close}
       width="md"
       title="Create access token"
-      description="AI clients, IDEs and scripts use a token to act as you. It can never do more than you can."
+      description="MCP clients, IDEs and scripts use a token to act as you. It can never do more than you can."
       footer={
         <>
           <Button onClick={create.close}>Cancel</Button>
