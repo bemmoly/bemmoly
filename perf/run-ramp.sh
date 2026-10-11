@@ -9,7 +9,8 @@
 # Page opens scale with the rate (one a second per 40 actions) and so do the pairs typing
 # (one per 40 actions, at least 3). STOP_ERROR_RATE (default 0.01) ends the ramp after a
 # step whose failed-request rate is above it. Optional DB_CMD and STATS_CMD go to the monitor,
-# and HOST_LOAD_CMD (default: the 1-minute load average here) is sampled every 10 s.
+# and HOST_LOAD_CMD (default: the 1-minute load average here; it may add the host's CPU idle
+# percent as a second field) is sampled every 10 s.
 set -uo pipefail
 
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -19,13 +20,15 @@ STEP_DURATION="${STEP_DURATION:-5m}"
 STOP_ERROR_RATE="${STOP_ERROR_RATE:-0.01}"
 HOST_LOAD_CMD="${HOST_LOAD_CMD:-uptime | sed -E 's/.*load averages?: *([0-9.]+).*/\1/'}"
 mkdir -p "${OUT_DIR}"
+# One monitor file per invocation, so re-running a step keeps the earlier samples.
+run_id="$(date -u +%H%M%S)"
 
 monitor_args=(--metrics-cmd "${METRICS_CMD}" --interval 15)
 [[ -n "${DB_CMD:-}" ]] && monitor_args+=(--db-cmd "${DB_CMD}")
 [[ -n "${STATS_CMD:-}" ]] && monitor_args+=(--stats-cmd "${STATS_CMD}")
 node "${here}/src/soak/monitor.ts" "${monitor_args[@]}" \
-  --out "${OUT_DIR}/monitor.jsonl" --summary "${OUT_DIR}/monitor-summary.json" \
-  2> "${OUT_DIR}/monitor.log" &
+  --out "${OUT_DIR}/monitor-${run_id}.jsonl" --summary "${OUT_DIR}/monitor-${run_id}-summary.json" \
+  2> "${OUT_DIR}/monitor-${run_id}.log" &
 monitor=$!
 trap 'kill -INT "${monitor}" 2>/dev/null; wait "${monitor}" 2>/dev/null' EXIT
 

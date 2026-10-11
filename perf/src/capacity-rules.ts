@@ -1,16 +1,16 @@
 /*
  * The rules a capacity ramp is judged by, and how a rate of actions becomes people.
  *
- * Users: an active person does about one action every 15 seconds (open a board or an issue,
- * type in ⌘K, edit, comment), and about a fifth of a company is active at the same moment.
- * Both are assumptions, stated wherever the numbers are published.
+ * Users: an active person makes about 0.2 requests a second (one action every 5 seconds, once
+ * page loads and realtime refetches are counted), and a fifth of an organisation is active at
+ * the same moment. Both are assumptions, the same ones the site publishes.
  */
 
-export const SECONDS_PER_ACTION = 15;
+export const REQUESTS_PER_ACTIVE_USER_PER_SECOND = 0.2;
 export const ACTIVE_SHARE = 0.2;
 
 export const activeUsers = (actionsPerSecond: number) =>
-  Math.round(actionsPerSecond * SECONDS_PER_ACTION);
+  Math.round(actionsPerSecond / REQUESTS_PER_ACTIVE_USER_PER_SECOND);
 export const companySize = (actionsPerSecond: number) =>
   Math.round(activeUsers(actionsPerSecond) / ACTIVE_SHARE);
 
