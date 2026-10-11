@@ -39,16 +39,20 @@ export async function writeComments(
     const snapshot = convertBody(body, spaceKey, comment.body?.storage?.value ?? '');
     const authorId = await personFor(body, comment.history?.createdBy);
     if (comment.extensions?.location === 'inline') inline += 1;
-    const [row] = await sql<{ id: string }[]>`
-      insert into page_comments (page_id, parent_id, author_id, body, body_text, created_at)
-      values (${pageId}, ${parentSource ? made.get(parentSource.id)! : null}::uuid,
-        ${authorId}::uuid, ${JSON.stringify(snapshot)}::jsonb,
-        ${plainText(snapshot as Parameters<typeof plainText>[0])},
-        coalesce(${comment.history?.createdDate ?? null}::timestamptz, now()))
-      returning id`;
+    // The comment and its mapping commit together, so a retry never posts it twice.
+    const row = await sql.begin(async (tx) => {
+      const [inserted] = await tx<{ id: string }[]>`
+        insert into page_comments (page_id, parent_id, author_id, body, body_text, created_at)
+        values (${pageId}, ${parentSource ? made.get(parentSource.id)! : null}::uuid,
+          ${authorId}::uuid, ${JSON.stringify(snapshot)}::jsonb,
+          ${plainText(snapshot as Parameters<typeof plainText>[0])},
+          coalesce(${comment.history?.createdDate ?? null}::timestamptz, now()))
+        returning id`;
+      if (inserted) await ctx.mappings.set('comment', comment.id, inserted.id, {}, tx);
+      return inserted;
+    });
     if (!row) continue;
     made.set(comment.id, row.id);
-    await ctx.mappings.set('comment', comment.id, row.id);
     ctx.report.count('comments', 'created');
   }
   if (inline) ctx.report.warn('Inline comments were imported as page comments.');
