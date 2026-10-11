@@ -49,11 +49,18 @@ Foundations/Glyphs, Components/Board vocabulary
 
 ### FilterBar
 
-`import { FilterBar, FilterChipButton, AppliedFilterChip, GroupSwitch } from '@bemmoly/ui'` ·
+`import { FilterBar, FilterChipButton, AppliedFilterChip, GroupSwitch, QuickFilters, QuickFilterChip } from '@bemmoly/ui'` ·
 Story: Components/FilterBar ([`filter-bar.stories.tsx`](../../../packages/ui/src/components/filter-bar/filter-bar.stories.tsx))
 
 - Use: the one filter row on Board, Backlog and any list that filters: search (focus with `/`),
-  the Filter menu, applied chips each removable, Clear from two, saved views, Group, Display.
+  the quick filters, applied chips each removable, the Filter menu, saved views, Clear from two,
+  Group, Display.
+- Quick filters (`QuickFilters`, ADR 0023): one solid toggle chip per quick filter, right after
+  search, never inside the Filter menu. Off is `border-line` and `tx-2`; on is the accent tint
+  (`bg-acc-50`, `border-acc-100`, `text-acc`) with a check and `aria-pressed`. Up to four in the
+  row (two on a phone), the rest behind a dashed "+N more" menu; one that is on always shows.
+- Display holds personal view choices only (empty columns). How cards look is the board's,
+  set in Board settings › Cards; never offer card fields or density per person.
 - Rules: filters live in the URL; filters hide, never fade; counts follow what is shown.
 
 ### Board and backlog parts
