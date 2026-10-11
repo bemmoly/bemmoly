@@ -30,7 +30,7 @@ exploited, we will work with you on a shorter timeline.
 
 ## Supported versions
 
-Before 1.0, only the latest minor release receives security fixes.
+Security fixes are released as patches on the current minor release ([AGENTS.md §6](https://github.com/bemmoly/bemmoly/blob/main/AGENTS.md#6-versioning-and-releases)); older minors do not receive them.
 
 ## Scope
 

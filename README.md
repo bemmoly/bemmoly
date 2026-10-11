@@ -40,14 +40,16 @@ app.
 - **No in-app purchases.** Nothing in the app is locked or upsold. The Buy Me a Coffee button
   on this repository is an optional way to support the project, and it unlocks nothing.
 
-## What ships in 0.7.0
+## What ships in 1.0
 
 - **Work**: projects with members, issues with types, custom fields and history, workflows with
-  a visual editor, Kanban and Scrum boards, the backlog and sprints, LQL and saved filters, and
-  "My work" on Home.
+  a visual editor, Kanban and Scrum boards, the backlog and sprints, LQL and saved filters,
+  "My work" on Home, a roadmap of epics and versions on a timeline with a forecast from your
+  team's own pace, and automation rules (a trigger, LQL conditions and actions, with a run log).
 - **Docs**: spaces and a page tree, a live collaborative editor with named cursors, revisions,
   comments, images uploaded by paste, drop or the / menu, issue links that show live status,
-  Markdown folder import, and export to Markdown and HTML.
+  Markdown folder import, and export to Markdown and HTML, or to PDF with the optional PDF
+  renderer (otherwise through the browser's print view).
 - **Imports**: an admin opens Settings › Import (or the setup wizard's import step), picks Import
   from Jira, Import from Confluence or a CSV file, and sees what the site holds and how issue
   types, statuses and custom fields will land before anything is written. Jira Cloud and Data
@@ -70,6 +72,14 @@ app.
 - **An MCP server**: point an AI desktop app, coding agent or IDE at `/mcp` (or `/mcp/work`,
   `/mcp/docs`) and it works in your workspace as you, with your permissions, rate limited and in
   the audit log.
+- **Webhooks and code hosts**: outgoing webhooks for issue, sprint and page events, signed with
+  HMAC-SHA256, retried, and logged per delivery; GitHub (connected in one click, on github.com
+  or Enterprise Server) and GitLab show the pull requests, branches and commits that name an
+  issue in its Development section.
+- **Your look**: five themes, each in light and dark, your brand colour, and your own logo in
+  the sidebar, on the sign-in page and in emails. Every screen is checked against WCAG 2.2 AA.
+- **Ways to run it**: the one-command installer on a VM, Docker Compose, your own Postgres, a
+  Helm chart for Kubernetes, or the Terraform module that runs the installer on one VM.
 - **The platform under them**: a setup wizard, people, roles and a capability matrix, email
   and notifications, an Inbox, ⌘K search, an audit log, Prometheus metrics, automatic HTTPS,
   nightly verified backups, and one-click updates with automatic rollback.
@@ -117,12 +127,13 @@ From the [live demo](https://bemmoly.com/demo), in the light and dark themes.
   <img alt="An RFC page in Docs, in its space's page tree, with linked issues showing their live status" src="./apps/site/src/assets/previews/docs.png">
 </picture>
 
-## Status: young, and honest about it
+## Status
 
-Bemmoly is new. 0.1.0 shipped in October 2026 and releases come quickly. Before 1.0, a minor
-version may change behaviour and its notes say so; every update backs up first and rolls back
-on its own if the app is not healthy. Run it for real work if you like, and keep the nightly
-backups it makes.
+Bemmoly 1.0 is out. 0.1.0 shipped in October 2026, and from 1.0 versions follow Semantic
+Versioning's usual rules. Every release runs against the previous minor's database and
+tolerates the previous minor's clients, so updates and rollbacks are safe within one minor,
+and security fixes ship as patches on the current minor ([AGENTS.md §6](AGENTS.md#6-versioning-and-releases)).
+Every update backs up first and rolls back on its own if the app is not healthy.
 
 | Released | Scope                                                                                 |
 | -------- | ------------------------------------------------------------------------------------- |
@@ -132,14 +143,13 @@ backups it makes.
 | 0.5      | **AI, optional**: summaries with sources, answers from your docs, editor and ⌘K plans |
 | 0.6      | **Image uploads** in Docs, an **MCP server**, and an updater that updates itself      |
 | 0.7      | **Imports** from Jira, Confluence and CSV, and **single sign-on** with SCIM           |
+| 0.8–0.12 | **Themes** in light and dark, a **workspace logo**, a new sign-in, a Language setting |
+| 0.13     | A **roadmap**, **automation rules**, **webhooks**, **code hosts**, Helm and Terraform |
+| 1.0      | GitHub in one click, PDF export, WCAG 2.2 AA, and the 1.0 compatibility promise       |
 
 **Coming soon**, not in the app yet:
 
-- Webhooks and automation rules
-- A roadmap view: epics on a timeline
-- Kubernetes (a supported Helm chart) and Terraform modules for AWS, GCP and Hetzner
-- A tested offline (air-gapped) install, a PWA, and an accessibility and security review
-  before 1.0
+- An installable app (PWA) with web push notifications
 
 The plan for each release is in section 24 of the [technical design](docs/tech-design.html).
 
