@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { modePreferenceSchema } from '../contracts/settings.ts';
 import { emailSchema, passwordSchema, personNameSchema } from './common.ts';
 
 export const setupStatusResponseSchema = z.object({
@@ -16,6 +17,12 @@ export const setupStatusResponseSchema = z.object({
    * Older servers leave it out.
    */
   logoUrl: z.string().nullable().optional(),
+  /**
+   * The workspace's built-in theme and default mode, so the sign-in pages wear the workspace's
+   * look; null before setup or while a custom theme is chosen. Older servers leave them out.
+   */
+  theme: z.string().max(64).nullable().optional(),
+  defaultMode: modePreferenceSchema.nullable().optional(),
 });
 
 export const createFirstAdminSchema = z.object({
