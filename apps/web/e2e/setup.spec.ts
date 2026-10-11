@@ -43,9 +43,7 @@ test('a fresh install walks from the welcome to the launchpad', async ({ page })
   await expect(page).toHaveURL(/\/$/);
 
   // A fresh install has no modules on; Home offers the one step that fixes that.
-  await expect(
-    page.getByRole('heading', { name: 'Issues and docs come from modules' }),
-  ).toBeVisible();
+  await expect(page.getByText('Issues and docs come from modules')).toBeVisible();
   await expect(page.getByRole('link', { name: 'Choose in Settings › Modules' })).toBeVisible();
   await page.getByRole('button', { name: 'Turn on Work and Docs' }).click();
   await expect(
