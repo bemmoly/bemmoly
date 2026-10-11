@@ -1,9 +1,15 @@
 ---
-import AfterInstall from '../components/self-hosting/AfterInstall.astro';
+/**
+ * The one self-hosting and install page: every Install button on the site lands on #install.
+ * In order: the one command, the other ways to run it, what happens, checking it is healthy,
+ * first login, modules, AI (optional), upgrades, backups, the bemmoly command, troubleshooting
+ * and sizing. /docs/install redirects here (Caddyfile); /docs/compose is the Compose reference.
+ */
+import Care from '../components/self-hosting/Care.astro';
+import Install from '../components/self-hosting/Install.astro';
 import Paths from '../components/self-hosting/Paths.astro';
-import Recommended from '../components/self-hosting/Recommended.astro';
+import Run from '../components/self-hosting/Run.astro';
 import Sizing from '../components/self-hosting/Sizing.astro';
-import WhatYouGet from '../components/self-hosting/WhatYouGet.astro';
 import StatusNote from '../components/topics/StatusNote.astro';
 import Page from '../layouts/Page.astro';
 import { RELEASE } from '../data/landing.ts';
@@ -12,20 +18,18 @@ import { pageAt } from '../data/pages.ts';
 
 <Page
   page={pageAt('/self-hosting')}
-  lede="Bemmoly is one container next to one Postgres. For almost everyone the answer is one command on a fresh VM; if you already run something, start from that instead."
+  heading="Install and run Bemmoly on your own server"
+  lede="Bemmoly is one container next to one Postgres. For almost everyone that means one command on a fresh Linux VM. Free, open source and yours: no pricing, no seat limits, nothing to buy."
   wide
 >
   <StatusNote>
-    Bemmoly {RELEASE.version} is the foundation (the installer, the setup wizard, people and roles,
-    backups and updates), the Work module, with issues, boards, the backlog and sprints, and the
-    Docs module. The badges say where each way to run it stands; the{' '}
-    <a href="/docs/install">install guide</a>
-    walks through the recommended path, and the <a href="/changelog">changelog</a> lists every
-    release.
+    The installer pulls the newest stable release, {RELEASE.version} today: the foundation (setup,
+    people and roles, email, backups and updates), Work, Docs and optional AI. The badges say where
+    each way to run it stands, and the <a href="/changelog">changelog</a> lists every release.
   </StatusNote>
-  <Recommended />
+  <Install />
   <Paths />
-  <WhatYouGet />
-  <AfterInstall />
+  <Run />
+  <Care />
   <Sizing />
 </Page>

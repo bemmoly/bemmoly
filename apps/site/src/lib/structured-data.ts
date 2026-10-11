@@ -72,7 +72,7 @@ const software: SoftwareApplication = {
   isAccessibleForFree: true,
   offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
   downloadUrl: RELEASES_URL,
-  installUrl: `${SITE_URL}/docs/install`,
+  installUrl: `${SITE_URL}/self-hosting#install`,
   releaseNotes: `${SITE_URL}/changelog`,
   memoryRequirements: '2 GB minimum, 4 GB recommended',
   storageRequirements: '10 GB',

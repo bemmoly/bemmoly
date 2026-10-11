@@ -46,10 +46,12 @@ and fails review.
 - **Every claim a sceptic would doubt links to the file that proves it**: `src/data/proofs.ts`
   names the file and quotes the line, and `tests/promises.test.ts` fails the build the day the
   file loses that line, so the site stops making the claim. A new claim adds its proof there.
-- **No future versions as promises.** Unbuilt work is "planned" in the neutral badge, never "in
-  0.5". A version number on unbuilt work becomes false the day plans move.
-- **Status badges are honest**: available, new, untested, planned. AI is one lilac "coming,
-  optional" band, with no picture until a real screen exists.
+- **Shipped and verified, or coming soon.** Unbuilt work is "Coming soon" in the neutral badge,
+  never "in 0.6" and never with a date. Work that is built but not tested is not on the site at
+  all until a test proves it. `tests/claims.test.ts` fails on "untested", "planned" or AI
+  described as coming.
+- **Status badges are honest**: available, new, coming soon. AI (shipped in 0.5) is one lilac
+  band: optional, off until an admin turns it on, with a real AI card captured from the demo.
 - **Estimates are labelled as estimates** until measured; then the measured figure replaces them
   at build time.
 - **No absolutes the code cannot back.** Not "your data never leaves your hardware" when the

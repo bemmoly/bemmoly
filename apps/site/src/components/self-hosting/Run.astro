@@ -1,0 +1,94 @@
+---
+/**
+ * After the command: what the installer does (deploy/install.sh and installer/lib), how to
+ * check the install is healthy (the bemmoly command, /healthz, Settings › System status), the
+ * setup wizard (apps/web use-setup-wizard), turning modules on, and AI, which is optional and
+ * off until an admin turns it on (the 0.5.0 release notes).
+ */
+import { WHAT_YOU_GET } from '../../data/self-hosting.ts';
+import CodeBlock from '../site/CodeBlock.astro';
+import Icon from '../site/Icon.astro';
+import Section from '../site/Section.astro';
+
+const HEALTH = `$ sudo bemmoly status
+$ sudo bemmoly doctor
+$ curl -fsS https://work.example.com/healthz`;
+---
+
+<Section title="What happens" id="what-it-does">
+  <ul>
+    <li>Checks the machine: the system, memory, disk, ports 80 and 443, and DNS.</li>
+    <li>Installs Docker Engine and the Compose plugin if they are missing, or uses yours.</li>
+    <li>
+      Writes <code>/var/bemmoly</code>: the Compose file, the Caddyfile, a <code>.env</code> with
+      freshly generated secrets, and the <code>data</code> and <code>backups</code> folders.
+    </li>
+    <li>
+      Starts Postgres 18 and the app, which applies its schema changes as it starts, then asks for a
+      certificate for your domain.
+    </li>
+    <li>
+      Schedules the nightly backup, installs the <code>bemmoly</code> command and prints your
+      address.
+    </li>
+  </ul>
+  <p>
+    If the domain does not point at the machine yet, it starts with a self-signed certificate, and a
+    real one follows by itself once DNS does. Keep a copy of <code>/var/bemmoly/.env</code>
+    somewhere safe: it holds the key that decrypts stored credentials and the backup passphrase, and
+    backups do not contain it.
+  </p>
+  <ul class="grid list-none! gap-3 pl-0! sm:grid-cols-2 lg:grid-cols-5">
+    {WHAT_YOU_GET.map((item) => (
+      <li class="flex flex-col gap-1.5 rounded-window border border-line bg-side p-4 pl-4! dark:bg-card">
+        <span class="flex items-center gap-2 text-14 font-semibold text-tx">
+          <Icon name="check-circle" class="text-green-tx" />
+          {item.title}
+        </span>
+        <span class="text-13 leading-brief text-tx-2">{item.body}</span>
+      </li>
+    ))}
+  </ul>
+</Section>
+
+<Section title="Check it is healthy" id="health">
+  <CodeBlock code={HEALTH} label="On the server; use your own domain" copy />
+  <p>
+    <code>bemmoly status</code> shows the containers, the version, the database size, the queue, the
+    last backup and the certificate. <code>bemmoly doctor</code> runs the installer’s checks and the
+    app’s health checks again and says how to fix what fails. <code>/healthz</code> answers when the
+    app is up. In the app, Settings › System status shows the same checks.
+  </p>
+</Section>
+
+<Section title="First login" id="first-login">
+  <p>
+    The first visit runs the setup wizard: name the workspace, create your admin account on your
+    server, bring your data or start clean, invite your team, choose what AI may do or skip it, and
+    pick the workspace’s look. Everything can be changed later in Settings. Invitations go out
+    through your mail server, set in Settings › Email delivery.
+  </p>
+</Section>
+
+<Section title="Turn on Work and Docs" id="modules">
+  <p>
+    <strong>Modules start switched off.</strong> To track issues or write pages, open Settings ›
+    Manage modules, turn on Work, Docs or both, and choose who can use each: nobody yet, everyone,
+    or specific teams. Until then, people see the shell without them.
+  </p>
+</Section>
+
+<Section title="Set up AI (optional)" id="ai">
+  <p>
+    Bemmoly works fully without AI, and AI stays off until an admin turns it on. To use it, open
+    Settings › AI and models, add a provider from the models.dev catalog with its key, or a model on
+    your own network by its address, and press Test connection. Pick a model for each role, then
+    turn AI on for the workspace.
+  </p>
+  <p>
+    Then summaries with their sources, answers from your docs, help in the editor and plans you
+    confirm appear, all drawn in lilac. Settings decides whether page and issue content is sent,
+    which spaces and projects are excluded, whether AI may change data, and a monthly budget. Turned
+    off again, every AI surface disappears and nothing more is sent.
+  </p>
+</Section>

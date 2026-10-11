@@ -3,6 +3,7 @@
  * The closing call to action of a topic page: the hero's install command, with the same copy
  * button, and the two ways on.
  */
+import { INSTALL_HREF } from '../../lib/links.ts';
 import CommandField from '../site/CommandField.astro';
 import Button from '../site/Button.astro';
 
@@ -26,7 +27,7 @@ const { title = 'Run it on your own server' } = Astro.props;
   </p>
   <CommandField id="install-cta-command" />
   <div class="flex flex-wrap gap-3">
-    <Button variant="primary" href="/docs/install">
+    <Button variant="primary" href={INSTALL_HREF}>
       Read the install guide
     </Button>
     <Button variant="secondary" href="/self-hosting#other-paths">

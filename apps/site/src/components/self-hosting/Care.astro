@@ -1,0 +1,138 @@
+---
+/**
+ * Looking after an install: upgrades and rollback (deploy/updater, cli/lib/updates.sh),
+ * backups and restore (cli/lib/backups.sh, the backup schedule in packages/shared), the
+ * bemmoly command (deploy/cli/bemmoly), and troubleshooting by symptom, each fix taken from
+ * the message the installer or the CLI prints for it.
+ */
+import CodeBlock from '../site/CodeBlock.astro';
+import Section from '../site/Section.astro';
+
+const UPGRADE = `$ sudo bemmoly upgrade
+$ sudo bemmoly rollback`;
+const BACKUP = `$ sudo bemmoly backup
+$ sudo bemmoly backups`;
+const RESTORE = '$ sudo bemmoly restore <backup>';
+
+const COMMANDS = [
+  ['status', 'Containers, version, database size, queue, last backup, certificate.'],
+  ['doctor', 'Re-runs the installer’s checks and the app’s health checks, with fixes.'],
+  ['logs [service] [-f]', 'Recent logs of bemmoly, db, proxy or updater.'],
+  ['backup / backups', 'Take a backup now; list every backup with version, size and verification.'],
+  [
+    'verify <backup> [--drill]',
+    'Check a backup’s checksums, or restore it into a temporary database.',
+  ],
+  [
+    'restore <backup|file|s3-url>',
+    'Restore a backup; --mount attaches one read-only beside the live data.',
+  ],
+  ['upgrade [version]', 'Backup, pull, verify, swap, health check; rolls back if the check fails.'],
+  ['rollback', 'Go back to the previous version, saying first exactly what it keeps.'],
+  ['config get | set KEY', 'Read or change a setting in .env and restart what uses it.'],
+  ['update-channel [stable|beta]', 'Show or change the update channel.'],
+] as const;
+
+const SYMPTOMS = [
+  [
+    'The installer says port 80 or 443 is in use',
+    'Another web server holds it; sudo ss -ltnp shows which. Stop it, or re-run with --no-proxy and put Bemmoly behind it on port 8080.',
+  ],
+  [
+    'It cannot resolve ghcr.io',
+    'Check the DNS servers in /etc/resolv.conf and that outbound port 53 and HTTPS are open.',
+  ],
+  [
+    'It says the machine needs 2 GB, or 10 GB of disk',
+    'Resize the VM, or pick a folder on a larger disk with --dir; backups live there too.',
+  ],
+  [
+    'The browser warns about the certificate',
+    'The domain does not point at the server yet, so the certificate is self-signed for now. Fix the DNS record; a real certificate follows by itself.',
+  ],
+  [
+    'Bemmoly did not become healthy',
+    'Run sudo bemmoly logs bemmoly to see why, and sudo bemmoly doctor for the fix.',
+  ],
+  [
+    'Invitations do not arrive',
+    'Set up your mail server in Settings › Email delivery and send a test message from there.',
+  ],
+  [
+    'Work or Docs is missing',
+    'Modules start off. Turn them on in Settings › Manage modules and choose who can use each.',
+  ],
+  [
+    'There is no AI anywhere',
+    'AI is off until an admin turns it on in Settings › AI and models. People whose role lacks “Use AI assist” never see it.',
+  ],
+] as const;
+---
+
+<Section title="Upgrade" id="upgrade">
+  <p>
+    Settings › Updates shows the release notes and updates with one click. Every update takes a
+    backup first, checks the image’s signature, and rolls back by itself if the app is not healthy
+    within three minutes; you can roll back for 7 days. Checking for new releases is off until an
+    admin turns it on there. From the server:
+  </p>
+  <CodeBlock code={UPGRADE} label="On the server" copy />
+  <p>
+    With Compose and no updater, follow <a href="/docs/compose#updating">updating</a> in the Docker
+    Compose guide. The <a href="/changelog">changelog</a> lists what each release changes.
+  </p>
+</Section>
+
+<Section title="Back up and restore" id="backups">
+  <p>
+    A backup runs every night at 02:00, kept 7 days, 4 weeks and 3 months, each checked as it is
+    written and test-restored every week. Add an S3-compatible bucket in Settings › Storage and
+    backups and copies go there too, encrypted with your backup passphrase. Take or list backups at
+    any time:
+  </p>
+  <CodeBlock code={BACKUP} label="On the server" copy />
+  <p>
+    To restore one, by the name <code>bemmoly backups</code> lists:
+  </p>
+  <CodeBlock code={RESTORE} label="On the server" copy />
+  <p>
+    A restored workspace needs the <code>.env</code> it was backed up with, which backups do not
+    contain, so keep that file somewhere safe.
+  </p>
+</Section>
+
+<Section title="The bemmoly command" id="cli">
+  <p>
+    The installer puts <code>bemmoly</code> in <code>/usr/local/bin</code>. It asks for sudo itself;{' '}
+    <code>bemmoly help</code> lists everything.
+  </p>
+  <div tabindex="0" class="overflow-x-auto rounded-card border border-line">
+    <table class="w-full border-collapse text-left text-14">
+      <tbody>
+        {COMMANDS.map(([command, body]) => (
+          <tr class="border-t border-line-2 align-top first:border-t-0">
+            <td class="px-3.5 py-2.5 whitespace-nowrap">
+              <code>bemmoly {command}</code>
+            </td>
+            <td class="px-3.5 py-2.5">{body}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</Section>
+
+<Section title="Troubleshooting" id="troubleshooting">
+  <dl class="flex flex-col gap-4">
+    {SYMPTOMS.map(([symptom, fix]) => (
+      <div class="flex flex-col gap-1">
+        <dt class="font-semibold text-tx">{symptom}</dt>
+        <dd>{fix}</dd>
+      </div>
+    ))}
+  </dl>
+  <p>
+    Still stuck? <code>sudo bemmoly doctor</code> explains most problems, and{' '}
+    <a href="https://github.com/bemmoly/bemmoly/issues">GitHub issues</a> is where to ask.
+  </p>
+</Section>

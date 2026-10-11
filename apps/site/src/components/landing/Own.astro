@@ -2,11 +2,10 @@
 /**
  * "Yours to run. Yours to keep.": the self-hosting promise on the product's dark surfaces, as
  * the app's dark mode draws them, in both versions of the page. Six facts, each verified in
- * the code, each with the file that proves it (src/data/proofs.ts). What is not proven yet says
- * so in amber.
+ * the code, each with the file that proves it (src/data/proofs.ts). Nothing unproven is here;
+ * the AI fact takes the lilac that means AI.
  */
 import { OWN } from '../../data/proofs.ts';
-import Badge from '../site/Badge.astro';
 import Icon from '../site/Icon.astro';
 import ProofLine from './ProofLine.astro';
 import SectionHead from './SectionHead.astro';
@@ -31,16 +30,14 @@ import SectionHead from './SectionHead.astro';
   <ul class="mx-auto mt-10 grid max-w-300 gap-4 px-4 sm:px-6 md:mt-12 md:grid-cols-2 lg:grid-cols-3 lg:gap-5 lg:px-8">
     {OWN.map((fact) => (
       <li class="flex flex-col gap-3 rounded-shot bg-card p-6 pb-5 shadow-e1">
-        <div class="flex items-center gap-3">
-          <span class="grid size-10 place-items-center rounded-[10px] bg-acc-50 text-acc">
-            <Icon name={fact.icon} size={19} />
-          </span>
-          {fact.untested && (
-            <Badge tone="warn" pill>
-              {fact.untested}
-            </Badge>
-          )}
-        </div>
+        <span
+          class:list={[
+            'grid size-10 place-items-center rounded-[10px]',
+            fact.ai ? 'bg-ai-50 text-ai-600' : 'bg-acc-50 text-acc',
+          ]}
+        >
+          <Icon name={fact.icon} size={19} />
+        </span>
         <h3 class="text-17 font-semibold tracking-brand">{fact.title}</h3>
         <p class="text-15 leading-desc text-pretty text-tx-2">{fact.body}</p>
         <div class="mt-auto">

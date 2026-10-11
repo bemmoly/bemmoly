@@ -63,6 +63,10 @@ http://www.bemmoly.com {
 	# One address per page, as the canonical links say: /docs, never /docs.html, /docs/ or
 	# /index.html. Redirects run before try_files, so its internal .html rewrite is not caught.
 	redir /index.html / 301
+	# The install guide moved into the one self-hosting page; old links and the installer's
+	# messages keep working.
+	redir /docs/install /self-hosting#install 301
+	redir /docs/install.html /self-hosting#install 301
 	@html path_regexp html ^(/.+)\.html$
 	redir @html {re.html.1} 301
 	@slash path_regexp slash ^(/.+)/$
