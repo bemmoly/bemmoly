@@ -4,7 +4,8 @@
 
 - **Primary job.** Decide which templates every space's template picker offers, in what order.
 - **Who.** People with `docs.templates.manage` ("Manage org templates" in Roles, org admins by
-  default). The server refuses everyone else with 403; the page is not in their sidebar.
+  default). The server refuses everyone else with 403; the row under Settings › Modules shows
+  only to the people the capability admits (the module declares it in its manifest, ADR 0025).
   Spaces keep their own templates; a line under the title says so and they never show here.
 - **Layout.** `contained`. The title and its sentence, a search box beside an Active · Archived
   `SegmentedControl`, then the one `Table`: grip, name (icon, name, Built-in badge,
@@ -24,10 +25,11 @@
 - **Reorder.** Drag a row by its grip, or focus the grip and press ↑ or ↓. Only in Active and
   only while the search box is empty, since a filtered list has no whole order to save. The
   order is the picker's order; it is saved at once and rolls back with a toast if refused.
-- **Editor.** Name, description, category (a `Select` of the categories in use plus a typed
-  one), icon (the page icon picker), the fields the new page's form asks for (label, kind,
-  options for a choice), and the body in the Docs editor. Save template and Cancel sit in the
-  header; Mod+Enter saves from any field; leaving with changes asks once.
+- **Editor.** Name, category (typed; it groups the picker), description, icon (the page icon
+  picker), the fields the new page's form asks for (label, kind, choices for a choice), and the
+  body in the Docs editor, inside the template's settings section with Cancel and Save at its
+  foot (read-then-edit). Mod+Enter saves from any field. Cancel with changes discards them at
+  once with an Undo toast that brings the draft back.
 - **Keys.** ↑↓ or J K move through rows, Enter opens the read view; on a grip ↑↓ move the row;
   Esc leaves the editor or the read view for the list (and from the list, settings for the app);
   Mod+Enter saves the editor. No new single-letter keys.

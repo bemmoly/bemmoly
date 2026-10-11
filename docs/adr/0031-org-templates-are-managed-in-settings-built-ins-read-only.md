@@ -29,8 +29,10 @@ could never improve it.
    `POST /api/v1/docs/templates` takes `spaceId: null` for an org template.
    `POST …/templates/:id/archive`, `…/restore` and `…/duplicate` and
    `PUT /api/v1/docs/org-templates/order` (every active org template, once) complete it. The
-   page is the Docs module's settings section, reached through the module settings mechanism
-   rather than a kernel page.
+   page is the Docs module's own settings (ADR 0025): the manifest declares
+   `settings: { path: '/settings/docs', requires: 'docs.templates.manage' }` and
+   `web/src/settings.tsx` draws it, so the row under Settings › Modules shows only to the people
+   the capability admits.
 3. **Archive, not delete.** Archiving sets `archived_at`: the template leaves every picker, cannot
    start a page (404) and stays readable only to its managers. Restore clears it. Both are
    reversible, so the screen offers Undo and never confirms. Delete stays for custom templates

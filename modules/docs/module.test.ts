@@ -38,6 +38,7 @@ describe('docs module', () => {
         primary: [],
         add: { create: 'docs.create-space', label: 'New space' },
       },
+      settings: { path: '/settings/docs', requires: 'docs.templates.manage' },
     });
     expect(docs.defaultAccess).toBe('teams');
   });

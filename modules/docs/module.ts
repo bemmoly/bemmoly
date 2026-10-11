@@ -33,6 +33,8 @@ export default defineModule({
     path: '/docs',
     add: { create: 'docs.create-space', label: 'New space' },
   },
+  // Settings › Docs: the org templates, for whoever may manage them (org admins by default).
+  settings: { path: '/settings/docs', requires: 'docs.templates.manage' },
   changelog: await loadChangelogFolder(new URL('./changelog/', import.meta.url)),
   register(ctx) {
     ctx.navigation.add({

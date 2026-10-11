@@ -166,6 +166,7 @@ const SHIPPED: Shipped[] = [
         primary: [],
         add: { create: 'docs.create-space', label: 'New space' },
       },
+      settings: { path: '/settings/docs', requires: 'docs.templates.manage' },
     },
     enabledMinutesAgo: 60 * 24 * 2,
   },
