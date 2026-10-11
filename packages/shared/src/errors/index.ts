@@ -9,11 +9,13 @@ export {
   ProviderError,
   RateLimitedError,
   UnauthenticatedError,
+  UnavailableError,
   ValidationError,
   type BemmolyErrorOptions,
   type MaintenanceErrorOptions,
   type ProviderErrorOptions,
   type RateLimitedErrorOptions,
+  type UnavailableErrorOptions,
 } from './errors.ts';
 export {
   ERROR_REFERENCE_LABEL,
