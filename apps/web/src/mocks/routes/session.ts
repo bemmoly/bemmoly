@@ -1,10 +1,4 @@
-import type {
-  AcceptInvitationInput,
-  CreateFirstAdminInput,
-  LoginRequest,
-  PasswordResetComplete,
-} from '@bemmoly/shared';
-import { restarting } from './update-job.ts';
+import type { AcceptInvitationInput, CreateFirstAdminInput } from '@bemmoly/shared';
 import { audit, capabilitiesOf, currentUser, type MockDb } from '../db.ts';
 import { makeUser, ROLE_IDS } from '../seed/people.ts';
 import { newId } from '../seed/time.ts';
@@ -17,6 +11,12 @@ function signIn(db: MockDb, userId: string, status = 200) {
   const user = db.users.find((entry) => entry.id === userId);
   if (user) user.lastSeenAt = new Date().toISOString();
   return { status, body: { user } };
+}
+
+/** The theme setup status reports: a built-in one, or null while a custom theme is chosen. */
+function publicTheme(db: MockDb): string | null {
+  const theme = workspaceLookOf(db).appearance.theme;
+  return theme === 'custom' ? null : theme;
 }
 
 export function capture(db: MockDb, to: string, subject: string, text: string) {
@@ -35,15 +35,6 @@ export function capture(db: MockDb, to: string, subject: string, text: string) {
 export const sessionRoutes: MockRoute[] = [
   {
     method: 'GET',
-    pattern: '/readyz',
-    anonymous: true,
-    handle: (_, db) =>
-      restarting(db)
-        ? { status: 503, body: { status: 'starting' } }
-        : ok({ status: 'ready', checks: { database: { status: 'ok', latencyMs: 12 } } }),
-  },
-  {
-    method: 'GET',
     pattern: '/api/v1/setup/status',
     anonymous: true,
     handle: (_, db) =>
@@ -52,6 +43,8 @@ export const sessionRoutes: MockRoute[] = [
         completedAt: completedAtOf(db),
         workspaceName: db.initialized ? workspaceLookOf(db).name : null,
         logoUrl: (db.initialized && workspaceLookOf(db).appearance.logoKey) || null,
+        theme: db.initialized ? publicTheme(db) : null,
+        defaultMode: db.initialized ? workspaceLookOf(db).appearance.defaultMode : null,
       }),
   },
   {
@@ -79,19 +72,6 @@ export const sessionRoutes: MockRoute[] = [
   },
   {
     method: 'POST',
-    pattern: '/api/v1/auth/login',
-    anonymous: true,
-    handle: (request, db) => {
-      const body = bodyOf<LoginRequest>(request);
-      const user = db.users.find((entry) => entry.email === body.email?.toLowerCase());
-      if (!user || db.passwords[user.email] !== body.password || user.status !== 'active') {
-        return fail(401, 'unauthenticated', 'Email or password is incorrect');
-      }
-      return signIn(db, user.id);
-    },
-  },
-  {
-    method: 'POST',
     pattern: '/api/v1/auth/logout',
     handle: (_, db) => {
       db.signedInAs = null;
@@ -115,20 +95,6 @@ export const sessionRoutes: MockRoute[] = [
         );
       }
       return { status: 202 };
-    },
-  },
-  {
-    method: 'POST',
-    pattern: '/api/v1/auth/password-reset/complete',
-    anonymous: true,
-    handle: (request, db) => {
-      const body = bodyOf<PasswordResetComplete>(request);
-      const email = body.token ? db.resetTokens[body.token] : undefined;
-      if (!email || !body.password)
-        return fail(400, 'bad_request', 'This reset link has expired. Ask for a new one.');
-      db.passwords[email] = body.password;
-      delete db.resetTokens[body.token as string];
-      return ok();
     },
   },
   {

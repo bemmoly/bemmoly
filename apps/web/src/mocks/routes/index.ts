@@ -20,6 +20,7 @@ import { notificationRoutes } from './notifications.ts';
 import { operationsRoutes } from './operations.ts';
 import { peopleRoutes } from './people.ts';
 import { sessionRoutes } from './session.ts';
+import { signInRoutes } from './sign-in.ts';
 import { settingsRoutes } from './settings.ts';
 import { ssoRoutes } from './sso.ts';
 import { teamRoutes } from './teams.ts';
@@ -34,6 +35,7 @@ import { workSettingsRoutes } from './work-settings.ts';
 import { workWorkflowRoutes } from './work-workflows.ts';
 
 export const ROUTES: readonly MockRoute[] = [
+  ...signInRoutes,
   ...sessionRoutes,
   ...peopleRoutes,
   ...apiTokenRoutes,

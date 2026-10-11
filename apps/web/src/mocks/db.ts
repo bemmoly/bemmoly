@@ -93,6 +93,10 @@ export interface MockDb {
   appearancePreferences: Record<string, AppearancePreference>;
   /** Uploaded workspace logos by served file name, base64; created on first upload. */
   logos?: Record<string, { mime: string; data: string }>;
+  /** `?down=1`: sign-in and /readyz answer 503, as a server that is restarting would. */
+  authDown?: boolean;
+  /** Failed sign-ins per email (times in ms), for the server's per-account budget. */
+  signInFailures?: Record<string, number[]>;
 }
 
 // Plain words, not random-looking: the schemas only need 16 characters, and a secret

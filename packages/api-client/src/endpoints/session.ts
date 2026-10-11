@@ -38,10 +38,12 @@ export function setupEndpoints(http: Http) {
 /** Sign-in flows; anonymous by design and rate limited per IP on the server. */
 export function authEndpoints(http: Http) {
   return {
-    login: async (body: LoginRequest) =>
+    /** `signal` lets the sign-in page give up on a server that never answers. */
+    login: async (body: LoginRequest, options: { signal?: AbortSignal } = {}) =>
       http.request('/api/v1/auth/login', authUserResponseSchema, {
         method: 'POST',
         body: validated(loginRequestSchema, body),
+        ...(options.signal ? { signal: options.signal } : {}),
       }),
     logout: async (everywhere = false) =>
       http.send('/api/v1/auth/logout', { method: 'POST', body: everywhere ? { everywhere } : {} }),
