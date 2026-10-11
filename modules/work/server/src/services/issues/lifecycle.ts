@@ -67,6 +67,26 @@ async function neighbourRank(
 }
 
 /**
+ * The first rank after `upper` in the project, the issue's own aside. A drop with only the
+ * issue above it is a drop at the end of what someone sees, and a board pages its columns: a
+ * rank after every issue would carry the card past the cards not loaded yet. Ranks are one
+ * order across the project, so landing before the next one keeps every list's order.
+ */
+async function nextRank(
+  tx: SqlExecutor,
+  projectId: string,
+  issueId: string,
+  upper: string,
+): Promise<string | null> {
+  const [row] = await tx<{ rank: string }[]>`
+    select rank from issues
+    where project_id = ${projectId} and id <> ${issueId} and deleted_at is null
+      and rank collate "C" > ${upper}
+    order by rank collate "C" limit 1`;
+  return row?.rank ?? null;
+}
+
+/**
  * Drops the issue between `beforeIssueId` (the one above it) and
  * `afterIssueId` (the one below it); either may be absent at a list's edge.
  * Long ranks enqueue the project's rebalance so the next drops stay short.
@@ -86,7 +106,9 @@ export async function rankIssue(
       neighbourRank(tx, row.project_id, body.beforeIssueId),
       neighbourRank(tx, row.project_id, body.afterIssueId),
     ]);
-    const rank = between(upper, lower);
+    const below =
+      upper !== null && lower === null ? await nextRank(tx, row.project_id, row.id, upper) : lower;
+    const rank = between(upper, below);
     const sprintId = body.sprintId === undefined ? row.sprint_id : body.sprintId;
     await tx`
       update issues set rank = ${rank}, sprint_id = ${sprintId}, updated_at = now()
