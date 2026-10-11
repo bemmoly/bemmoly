@@ -1,6 +1,6 @@
 import { Editor } from '@tiptap/core';
 import { describe, expect, it } from 'vitest';
-import { plainMarkdown } from '../markdown-lines.ts';
+import { looksLikeMarkdown, plainMarkdown } from '../markdown-lines.ts';
 import { baseExtensions } from '../schema/base.ts';
 import { table } from '../schema/nodes/table.ts';
 import type { RichTextDoc } from '../types.ts';
@@ -12,6 +12,21 @@ const lines = (...text: string[]): RichTextDoc => ({
 });
 
 const types = (doc: RichTextDoc) => (doc.content ?? []).map((node) => node.type);
+
+describe('looksLikeMarkdown', () => {
+  it('spots rules and table rows, and stays fast on long hostile lines', () => {
+    expect(looksLikeMarkdown(['---'])).toBe(true);
+    expect(looksLikeMarkdown(['| a | b |  '])).toBe(true);
+    expect(looksLikeMarkdown(['just words'])).toBe(false);
+    const started = performance.now();
+    looksLikeMarkdown([
+      `${'-'.repeat(50_000)}${' '.repeat(50_000)}x`,
+      '['.repeat(50_000),
+      `[a](${'('.repeat(50_000)}`,
+    ]);
+    expect(performance.now() - started).toBeLessThan(200);
+  });
+});
 
 describe('plainMarkdown', () => {
   it('reads Markdown typed into plain paragraphs back as one source', () => {

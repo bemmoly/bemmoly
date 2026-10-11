@@ -6,8 +6,15 @@ import type { RichTextDoc, RichTextNode } from './types.ts';
  * them without loading a parser, so the reader sees headings and tables, not the marks.
  */
 
-const BLOCK_LINE = /^(#{1,6}\s|[-*+]\s|\d+[.)]\s|>\s?|```|~~~|\|.*\||-{3,}\s*$|\*{3,}\s*$)/;
-const INLINE = /(\*\*[^*\n]+\*\*|`[^`\n]+`|\[[^\]\n]+\]\([^)\s]+\))/;
+// Lines come from clients, so block checks run on the trimmed line without backtracking.
+const BLOCK_LINE = /^(#{1,6}\s|[-*+]\s|\d+[.)]\s|>|```|~~~)/;
+const RULE = /^(-{3,}|\*{3,})$/;
+
+/** A table row: starts and ends with a pipe. */
+const isRow = (line: string) => line.length > 1 && line.startsWith('|') && line.endsWith('|');
+// Link text and target both stop at "[", so each scan ends at the next bracket and a line of
+// repeated "[" or "[!](" stays linear.
+const INLINE = /(\*\*[^*\n]+\*\*|`[^`\n]+`|\[[^[\]\n]+\]\([^()[\]\s]+\))/;
 
 const isPlain = (node: RichTextNode) =>
   node.type === 'text' && !node.marks?.length && typeof node.text === 'string';
@@ -31,7 +38,10 @@ export function plainMarkdown(doc: RichTextDoc | null | undefined): string | nul
 
 /** True when some line opens a Markdown block or carries bold, code or a link. */
 export function looksLikeMarkdown(lines: readonly string[]): boolean {
-  return lines.some((line) => BLOCK_LINE.test(line.trimStart()) || INLINE.test(line));
+  return lines.some((line) => {
+    const trimmed = line.trim();
+    return BLOCK_LINE.test(trimmed) || RULE.test(trimmed) || isRow(trimmed) || INLINE.test(line);
+  });
 }
 
 const TABLE = /^\s*\|/;
