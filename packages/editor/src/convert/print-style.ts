@@ -81,14 +81,25 @@ export function printStylesheet(paper: PrintPaper): string {
   ].join('\n');
 }
 
-/** Chromium's running header: the document's title. Its own styles, as the header has none. */
-export function printHeaderTemplate(title: string, escape: (text: string) => string): string {
+/*
+ * Chromium draws the running header and footer as their own small documents in the page
+ * margin. They inherit nothing, so each carries its stylesheet and an explicit size.
+ */
+function runningLine(inner: string): string {
   const c = resolveTheme('bemmoly', 'light').colors;
-  return `<html><body style="margin:0;width:100%;font:${PRINT_TYPE.meta} ${FONTS.plex.stack};color:${c['tx-3']};padding:0 ${PRINT_MARGINS.side}"><div style="overflow:hidden;white-space:nowrap;text-overflow:ellipsis">${escape(title)}</div></body></html>`;
+  const css = [
+    `html,body{margin:0;padding:0}`,
+    `.line{box-sizing:border-box;width:100%;padding:0 ${PRINT_MARGINS.side};font-family:${FONTS.plex.stack};font-size:${PRINT_TYPE.meta};color:${c['tx-3']};text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;-webkit-print-color-adjust:exact}`,
+  ].join('');
+  return `<!doctype html><html><head><style>${css}</style></head><body><div class="line">${inner}</div></body></html>`;
 }
 
-/** Chromium's running footer: "3 / 12", the classes Chromium fills in. */
+/** The running header: the document's title. */
+export function printHeaderTemplate(title: string, escape: (text: string) => string): string {
+  return runningLine(escape(title));
+}
+
+/** The running footer: "3 / 12", from the classes Chromium fills in. */
 export function printFooterTemplate(): string {
-  const c = resolveTheme('bemmoly', 'light').colors;
-  return `<html><body style="margin:0;width:100%;font:${PRINT_TYPE.meta} ${FONTS.plex.stack};color:${c['tx-3']};padding:0 ${PRINT_MARGINS.side};text-align:right"><span class="pageNumber"></span> / <span class="totalPages"></span></body></html>`;
+  return runningLine('<span class="pageNumber"></span> / <span class="totalPages"></span>');
 }
