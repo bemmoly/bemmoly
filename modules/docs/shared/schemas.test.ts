@@ -7,6 +7,7 @@ import {
   getPageQuerySchema,
   movePageBodySchema,
   pageSummarySchema,
+  reorderTemplatesBodySchema,
   setLabelsBodySchema,
   spaceKeySchema,
   treeQuerySchema,
@@ -37,6 +38,17 @@ describe('docs shared schemas', () => {
     expect(
       createTemplateBodySchema.parse({ spaceId: id, name: 'ADR', snapshot: { type: 'doc' } }),
     ).toMatchObject({ fields: [] });
+  });
+
+  it('takes a null space for an org-wide template and a whole order of ids', () => {
+    expect(
+      createTemplateBodySchema.parse({ spaceId: null, name: 'ADR', snapshot: { type: 'doc' } }),
+    ).toMatchObject({ spaceId: null, fields: [] });
+    expect(
+      createTemplateBodySchema.safeParse({ name: 'ADR', snapshot: { type: 'doc' } }).success,
+    ).toBe(false);
+    expect(reorderTemplatesBodySchema.safeParse({ ids: [id, other] }).success).toBe(true);
+    expect(reorderTemplatesBodySchema.safeParse({ ids: [] }).success).toBe(false);
   });
 
   it('reads query flags as people write them', () => {

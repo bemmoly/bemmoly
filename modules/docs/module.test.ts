@@ -53,6 +53,7 @@ describe('docs module', () => {
       'docs.page.delete',
       'docs.page.publish',
       'docs.space.export',
+      'docs.templates.manage',
     ]);
     expect(capabilities.every((capability) => capability.group === 'Docs')).toBe(true);
     const view = capabilities.find((capability) => capability.name === 'docs.page.view');

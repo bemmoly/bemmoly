@@ -1,7 +1,10 @@
 import type { FastifyPluginAsync } from 'fastify';
 import type { LibraryController } from '../controllers/library.controller.ts';
 
-/** The Docs home lists, stars, labels and templates, under /api/v1/docs. */
+/**
+ * The Docs home lists, stars, labels and templates, under /api/v1/docs. The org-templates
+ * routes are Settings › Docs: the org list with the archived ones, and their order.
+ */
 export function libraryRoutes(controller: LibraryController): FastifyPluginAsync {
   return async (app) => {
     app.get('/home/recent', async (request) => controller.recent(request));
@@ -20,6 +23,19 @@ export function libraryRoutes(controller: LibraryController): FastifyPluginAsync
     );
     app.post('/templates/:templateId/pages', async (request, reply) =>
       controller.createFromTemplate(request, reply),
+    );
+    app.post('/templates/:templateId/archive', async (request) =>
+      controller.archiveTemplate(request),
+    );
+    app.post('/templates/:templateId/restore', async (request) =>
+      controller.restoreTemplate(request),
+    );
+    app.post('/templates/:templateId/duplicate', async (request, reply) =>
+      controller.duplicateTemplate(request, reply),
+    );
+    app.get('/org-templates', async (request) => controller.listOrgTemplates(request));
+    app.put('/org-templates/order', async (request, reply) =>
+      controller.reorderOrgTemplates(request, reply),
     );
   };
 }
