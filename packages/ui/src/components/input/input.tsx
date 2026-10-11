@@ -26,6 +26,8 @@ const TEXT: Record<InputSize, string> = {
 export const controlClass = cx(
   'rounded-control border border-line text-13 text-tx',
   'focus-ring-within focus-within:border-acc',
+  // Field marks its control invalid; the box says so too.
+  'has-aria-invalid:border-red',
   'has-disabled:cursor-not-allowed has-disabled:opacity-50',
 );
 

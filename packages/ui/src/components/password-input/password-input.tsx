@@ -117,7 +117,10 @@ export function PasswordInput({
             {[0, 1, 2, 3].map((bar) => (
               <span
                 key={bar}
-                className={cx('h-1 flex-1 rounded-full', bar < score ? METER_TONE[score] : 'bg-line')}
+                className={cx(
+                  'h-1 flex-1 rounded-full',
+                  bar < score ? METER_TONE[score] : 'bg-line',
+                )}
               />
             ))}
           </span>

@@ -51,6 +51,7 @@ import {
   MessageSquare,
   Minus,
   Monitor,
+  MousePointer2,
   Moon,
   Option,
   Palette,
@@ -118,6 +119,8 @@ export const KIT_ICONS = {
   'cloud-off': CloudOff,
   'user-x': UserX,
   'circle-check': CircleCheck,
+  /** Someone else's cursor in a document. */
+  pointer: MousePointer2,
   building: Building2,
   zap: Zap,
   bookmark: Bookmark,
