@@ -3,7 +3,7 @@ import { expect, test } from '../support/fixtures.ts';
 
 /**
  * Single sign-on end to end: an admin adds an OpenID Connect provider (a fake one on this
- * machine), and someone new signs in through "Continue with SSO" in a signed-out browser, is
+ * machine), and someone new signs in through "Continue with Acme sign-in" in a signed-out browser, is
  * provisioned on the way, and lands where they were going.
  */
 test.describe('single sign-on', () => {
@@ -33,7 +33,7 @@ test.describe('single sign-on', () => {
       });
       const page = await context.newPage();
       await page.goto('/login?redirect=%2Fsettings%2Fprofile');
-      await page.getByRole('button', { name: 'Continue with SSO' }).click();
+      await page.getByRole('button', { name: 'Continue with Acme sign-in' }).click();
       await page.waitForURL(/\/settings\/profile/);
       await expect(page.getByText(email).first()).toBeVisible();
       const request = fake.authorizations.at(-1);
@@ -42,8 +42,9 @@ test.describe('single sign-on', () => {
       await page.context().clearCookies();
       fake.tamper = { audience: 'someone-else' };
       await page.goto('/login');
-      await page.getByRole('button', { name: 'Continue with SSO' }).click();
+      await page.getByRole('button', { name: 'Continue with Acme sign-in' }).click();
       await expect(page.getByRole('alert')).toContainText('did not verify');
+      await expect(page.getByRole('alert')).toContainText('Acme sign-in didn’t sign you in');
       await context.close();
     } finally {
       fake.tamper = {};
