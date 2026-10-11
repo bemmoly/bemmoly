@@ -6,18 +6,19 @@ test('a stranger is sent to sign in, then back to where they were going', async 
   await useMockBackend(page, 'signed-out');
   await page.goto('/settings/notifications');
   await expect(page).toHaveURL(/\/login\?redirect=/);
-  // The customer's workspace leads the card; Bemmoly stays under it.
-  await expect(page.getByText('Acme Labs')).toBeVisible();
-  await expect(page.getByText(/Powered by/)).toBeVisible();
-  await expect(page).toHaveTitle('Sign in · Acme Labs · Bemmoly');
+  // No logo in this workspace: the Bemmoly lockup leads and the heading offers to go back.
+  await expect(page.getByRole('banner').getByRole('img', { name: 'Bemmoly' })).toBeVisible();
+  await expect(page.getByRole('heading', { level: 1, name: 'Sign in again' })).toBeVisible();
+  await expect(page).toHaveTitle(/Sign in.*Acme Labs/);
 
+  const submit = page.getByRole('button', { name: /^Sign in and go back/ });
   await page.getByLabel('Email').fill('rohan@acmelabs.dev');
-  await page.getByLabel('Password').fill('not the password');
-  await page.getByRole('button', { name: 'Sign in' }).click();
-  await expect(page.getByRole('alert')).toContainText('Email or password is incorrect');
+  await page.getByLabel('Password', { exact: true }).fill('not the password');
+  await submit.click();
+  await expect(page.getByRole('alert')).toContainText('That email and password don’t match');
 
-  await page.getByLabel('Password').fill(MOCK_PASSWORD);
-  await page.getByRole('button', { name: 'Sign in' }).click();
+  await page.getByLabel('Password', { exact: true }).fill(MOCK_PASSWORD);
+  await submit.click();
   await expect(page).toHaveURL(/\/settings\/notifications$/);
   await expect(page.getByRole('heading', { name: 'Notifications' })).toBeVisible();
 });
@@ -25,7 +26,7 @@ test('a stranger is sent to sign in, then back to where they were going', async 
 test('the login form checks fields before sending', async ({ page }) => {
   await useMockBackend(page, 'signed-out');
   await page.goto('/login');
-  await page.getByRole('button', { name: 'Sign in' }).click();
+  await page.getByRole('button', { name: /^Sign in/ }).click();
   await expect(page.getByText('Enter your password')).toBeVisible();
 });
 
@@ -33,15 +34,15 @@ test('a password reset link from the email sets a new password', async ({ page }
   const backend = await useMockBackend(page, 'signed-out');
   await page.goto('/forgot-password');
   await page.getByLabel('Email').fill('rohan@acmelabs.dev');
-  await page.getByRole('button', { name: 'Send reset link' }).click();
-  await expect(page.getByText(/a reset link is on its way/)).toBeVisible();
+  await page.getByRole('button', { name: /^Email me a link/ }).click();
+  await expect(page.getByText(/a link to choose a new one is on its way/)).toBeVisible();
 
   await page.goto(`/reset-password#token=${RESET_TOKEN}`);
   await expect(page).toHaveURL(/\/reset-password$/);
   await page.getByLabel('New password', { exact: true }).fill('a much longer password');
-  await page.getByLabel('Type it again').fill('a much longer password');
-  await page.getByRole('button', { name: 'Save password and sign in' }).click();
-  await expect(page).toHaveURL(/\/login/);
+  await page.getByRole('button', { name: /^Save password and sign in/ }).click();
+  // Saving signs the person in and opens the workspace.
+  await expect(page).toHaveURL(/:\d+\/$/);
   expect(backend.api.db.passwords['rohan@acmelabs.dev']).toBe('a much longer password');
 });
 
@@ -51,8 +52,7 @@ test('an invitation link creates the account and signs the person in', async ({ 
   await expect(page.getByRole('heading', { name: 'Join Acme Labs' })).toBeVisible();
   await page.getByLabel('Your name').fill('Sam R.');
   await page.getByLabel('Password', { exact: true }).fill('sams own password');
-  await page.getByLabel('Type it again').fill('sams own password');
-  await page.getByRole('button', { name: 'Create account and join' }).click();
+  await page.getByRole('button', { name: /^Join Acme Labs/ }).click();
   await expect(page.getByRole('heading', { name: /, Sam$/ })).toBeVisible();
 });
 
