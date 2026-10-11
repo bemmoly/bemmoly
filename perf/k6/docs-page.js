@@ -7,7 +7,7 @@
  */
 import { pageDetail } from './lib/actions.js';
 import { BUDGETS_MS } from './lib/budgets.js';
-import { openPage } from './lib/collab.js';
+import { collabErrorThresholds, openPage } from './lib/collab.js';
 import { pageIds, personForIteration, pickFrom } from './lib/config.js';
 import { budgetOptions } from './lib/scenarios.js';
 
@@ -18,7 +18,7 @@ export const options = budgetOptions({
   endpoints: ['page_detail'],
   extraThresholds: {
     'collab_page_open{phase:measure}': [`p(95)<${BUDGETS_MS.pageOpen}`],
-    collab_errors: ['count<1'],
+    ...collabErrorThresholds(),
   },
 });
 
