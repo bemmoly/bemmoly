@@ -28,6 +28,16 @@ function sample(
 }
 
 describe('soak summary', () => {
+  it('reads scheduled jobs as drained: only ready jobs are a backlog', () => {
+    const samples = Array.from({ length: 10 }, (_, m) => ({
+      ...sample(m, 300, 120, 40),
+      queueDelayed: 200,
+    }));
+    expect(summarise(samples).verdicts.queuesDrained).toBe(true);
+    const backlogged = [...samples.slice(0, -1), { ...samples.at(-1)!, queueDepth: 3 }];
+    expect(summarise(backlogged).verdicts.queuesDrained).toBe(false);
+  });
+
   it('fits a slope in units per hour', () => {
     expect(slopePerHour([0, 1, 2].map((h) => ({ hours: h, value: 100 + 10 * h })))).toBeCloseTo(10);
   });

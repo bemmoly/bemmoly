@@ -22,11 +22,19 @@ export interface DatabaseMetrics {
   observePool(source: MetricSource<DatabasePoolStats>): void;
 }
 
+/** Jobs waiting in one queue: due now, or held back until a later start time. */
+export interface QueueDepth {
+  /** Created or retry, start time reached: a backlog when it stays above zero. */
+  ready: number;
+  /** Created or retry, start time in the future (schedules, retry backoff): not a backlog. */
+  delayed: number;
+}
+
 export type JobOutcome = 'completed' | 'failed' | 'retried' | 'expired';
 
 export interface JobMetrics {
-  /** Register a source of queue depth (jobs waiting) keyed by queue name. */
-  observeQueueDepth(source: MetricSource<Readonly<Record<string, number>>>): void;
+  /** Register a source of queue depth (jobs ready and delayed) keyed by queue name. */
+  observeQueueDepth(source: MetricSource<Readonly<Record<string, QueueDepth>>>): void;
   /** Start timing one job; call the returned function exactly once with its outcome. */
   startJob(queue: string): (outcome: JobOutcome) => void;
   /** Record a job whose duration was measured elsewhere. */

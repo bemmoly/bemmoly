@@ -67,6 +67,7 @@ describe('GET /metrics', () => {
     for (const name of [
       'bemmoly_db_pool_connections',
       'bemmoly_job_queue_depth',
+      'bemmoly_job_queue_delayed',
       'bemmoly_job_duration_seconds',
       'bemmoly_websocket_connections',
       'bemmoly_backup_last_success_age_seconds',

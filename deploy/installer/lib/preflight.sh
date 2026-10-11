@@ -32,6 +32,15 @@ detect_resources() {
   MEM_MB=$(awk '/^MemTotal:/ { printf "%d", $2 / 1024 }' /proc/meminfo)
 }
 
+# Postgres memory settings for MEM_MB: shared_buffers an eighth (at least 128 MB),
+# effective_cache_size three eighths, so the app and the page cache share the machine
+# (4 GB gives 512MB and 1536MB, as in the design). The installer writes them to .env; `bemmoly doctor`
+# compares them with this machine and `bemmoly tune` re-applies them.
+tune_postgres() {
+  PG_SHARED_BUFFERS="$((MEM_MB / 8 < 128 ? 128 : MEM_MB / 8))MB"
+  PG_EFFECTIVE_CACHE_SIZE="$((MEM_MB * 3 / 8))MB"
+}
+
 describe_machine() {
   printf '%s, %s vCPU, %s GB' "${OS_NAME}" "${CPU_COUNT}" "$(((MEM_MB + 512) / 1024))"
 }

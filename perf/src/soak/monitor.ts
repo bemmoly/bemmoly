@@ -69,6 +69,7 @@ function sampleOf(at: Date, before: Sample[] | null, after: Sample[]): SoakSampl
       idleInTransaction: pool('idle_in_transaction'),
     },
     queueDepth: sum(after, 'bemmoly_job_queue_depth'),
+    queueDelayed: sum(after, 'bemmoly_job_queue_delayed'),
     busyQueues: busy,
     websockets: first(after, 'bemmoly_websocket_connections') ?? null,
     window,

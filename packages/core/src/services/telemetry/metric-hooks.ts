@@ -6,6 +6,7 @@ import type {
   DatabasePoolStats,
   JobMetrics,
   MetricSource,
+  QueueDepth,
   RealtimeMetrics,
 } from '../../contracts/telemetry.ts';
 
@@ -68,19 +69,45 @@ export function createDatabaseMetrics(registry: Registry, read: SourceReader): D
 }
 
 export function createJobMetrics(registry: Registry, read: SourceReader): JobMetrics {
-  let depthSource: MetricSource<Readonly<Record<string, number>>> | undefined;
-  new Gauge({
-    name: 'bemmoly_job_queue_depth',
-    help: 'Jobs waiting to run, by queue.',
-    labelNames: ['queue'],
-    registers: [registry],
-    async collect() {
-      await read('job_queue_depth', depthSource, (depths) => {
-        this.reset();
-        for (const [queue, depth] of Object.entries(depths)) this.set({ queue }, depth);
+  let depthSource: MetricSource<Readonly<Record<string, QueueDepth>>> | undefined;
+  // Prometheus collects gauges concurrently, so both share one read of the source per scrape:
+  // the first to ask starts it, the second awaits the same promise.
+  let pending: Promise<Readonly<Record<string, QueueDepth>> | undefined> | undefined;
+  const depths = () => {
+    pending ??= (async () => {
+      let value: Readonly<Record<string, QueueDepth>> | undefined;
+      await read('job_queue_depth', depthSource, (next) => {
+        value = next;
       });
-    },
-  });
+      return value;
+    })().finally(() => {
+      pending = undefined;
+    });
+    return pending;
+  };
+  const queueGauge = (name: string, help: string, pick: (depth: QueueDepth) => number) =>
+    new Gauge({
+      name,
+      help,
+      labelNames: ['queue'],
+      registers: [registry],
+      async collect() {
+        const current = await depths();
+        if (!current) return;
+        this.reset();
+        for (const [queue, depth] of Object.entries(current)) this.set({ queue }, pick(depth));
+      },
+    });
+  queueGauge(
+    'bemmoly_job_queue_depth',
+    'Jobs ready to run now and not yet started, by queue.',
+    (depth) => depth.ready,
+  );
+  queueGauge(
+    'bemmoly_job_queue_delayed',
+    'Jobs scheduled to start later (schedules, retry backoff), by queue; not a backlog.',
+    (depth) => depth.delayed,
+  );
   const duration = new Histogram({
     name: 'bemmoly_job_duration_seconds',
     help: 'Job run time by queue and outcome.',

@@ -21,7 +21,7 @@ fi
 . "${SHARED_LIB}/preflight.sh"
 # shellcheck source=../installer/lib/bundle.sh
 . "${SHARED_LIB}/bundle.sh"
-for part in stack backups updates selfupdate offline; do
+for part in stack backups updates selfupdate offline tune; do
   # shellcheck source=/dev/null
   . "${CLI_LIB}/${CLI_PREFIX}${part}.sh"
 done
@@ -41,6 +41,8 @@ Usage: bemmoly <command> [options]
 
   status                      containers, version, database size, queue, last backup, certificate
   doctor                      re-run the installer's checks and the app's health checks, with fixes
+  tune [--yes]                re-apply the Postgres tuning for this machine's memory (after a
+                              resize); asks before restarting the database
   logs [service] [-f]         recent logs (bemmoly, db, proxy, updater)
   shell [service]             a shell in a container; `bemmoly shell db` opens psql
   start | stop | restart      the whole stack
@@ -78,6 +80,7 @@ main() {
   case "${command}" in
     status) cmd_status "$@" ;;
     doctor) cmd_doctor "$@" ;;
+    tune) cmd_tune "$@" ;;
     logs) cmd_logs "$@" ;;
     shell) cmd_shell "$@" ;;
     start | stop | restart) cmd_lifecycle "${command}" "$@" ;;

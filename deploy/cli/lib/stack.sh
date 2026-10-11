@@ -89,6 +89,7 @@ cmd_doctor() {
     # shellcheck disable=SC2086
     if (${check}) 2>&1; then success "${check#check_}"; else failed=1; fi
   done
+  if ! check_postgres_tuning; then failed=1; else success postgres_tuning; fi
   if ! systemctl is-active --quiet docker 2>/dev/null; then
     warn 'Docker is not running. Fix: sudo systemctl start docker'
     failed=1

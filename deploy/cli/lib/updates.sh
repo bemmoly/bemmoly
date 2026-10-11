@@ -97,10 +97,18 @@ cmd_sync_updater() {
     return
   fi
   say "Moving the updater $(env_value UPDATER_VERSION) → ${version}."
-  local code=0
-  run_updater self-update "${version}" || code=$?
-  # 2: the installed updater does not know self-update yet.
-  [[ "${code}" -eq 2 ]] && follow_app_version
+  local code=0 errors
+  errors=$(mktemp)
+  run_updater self-update "${version}" 2>"${errors}" || code=$?
+  # 2: the installed updater does not know self-update yet and printed its usage line, which
+  # is not this command's; anything else it wrote to stderr is.
+  if [[ "${code}" -eq 2 ]]; then
+    cat "${errors}" >>"${BEMMOLY_LOG}"
+    follow_app_version
+  else
+    cat "${errors}" >&2
+  fi
+  rm -f "${errors}"
   if [[ "$(env_value UPDATER_VERSION)" == "${version}" ]]; then
     success "The updater is on ${version}"
   else
@@ -109,13 +117,14 @@ cmd_sync_updater() {
 }
 
 # For an updater that predates self-update: Compose pulls updater:<VERSION> from the official
-# registry, as the installer did; a failed pull keeps the updater that is installed.
+# registry, as the installer did; a failed pull keeps the updater that is installed. Only the
+# updater is recreated: the app reads .env too, so a plain `up -d` would restart it as well.
 follow_app_version() {
   env_set "$(env_file)" UPDATER_VERSION "$(env_value VERSION)"
   if ! compose pull --policy missing updater >>"${BEMMOLY_LOG}" 2>&1; then
     env_set "$(env_file)" UPDATER_VERSION "$(docker inspect --format '{{index .Config.Labels "org.opencontainers.image.version"}}' bemmoly-updater-1 2>/dev/null || env_value VERSION)"
   fi
-  compose up -d >>"${BEMMOLY_LOG}" 2>&1 || true
+  compose up -d --no-deps updater >>"${BEMMOLY_LOG}" 2>&1 || true
 }
 
 cmd_rollback() {

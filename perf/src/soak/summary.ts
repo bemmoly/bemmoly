@@ -23,7 +23,10 @@ export interface SoakSample {
     max: number | null;
     idleInTransaction: number | null;
   };
+  /** Jobs ready to run now (bemmoly_job_queue_depth); what "queues drained" checks. */
   queueDepth: number;
+  /** Jobs scheduled for later (bemmoly_job_queue_delayed); never a backlog. Absent in old runs. */
+  queueDelayed?: number;
   busyQueues: Record<string, number>;
   websockets: number | null;
   window: WindowCounts | null;
@@ -123,6 +126,7 @@ export function summarise(samples: SoakSample[]) {
       heapNotClimbing: heap.perHour === null || heap.perHour < MAX_HEAP_GROWTH_MB_PER_HOUR,
       p95DriftUnder25Percent: drift === null || drift < MAX_P95_DRIFT,
       errorRateUnder1Percent: errorRate < 0.01,
+      // Ready jobs only: scheduled digests and retries backing off wait by design.
       queuesDrained: (samples.at(-1)?.queueDepth ?? 0) === 0,
     },
   };
