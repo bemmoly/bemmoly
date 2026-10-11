@@ -143,9 +143,7 @@ function CreateIssueForm(props: CreateIssueDialogProps) {
               loading={form.isSubmitting}
               disabled={!project || !form.typeId}
               onClick={() => void submit()}
-              iconEnd={
-                <Kbd keys="Mod+Enter" variant="plain" className="opacity-80 max-sm:hidden" />
-              }
+              iconEnd={<Kbd keys="Mod+Enter" variant="plain" className="max-sm:hidden" />}
             >
               Create issue
             </Button>

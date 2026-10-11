@@ -151,7 +151,8 @@ export function ReactionChip({
       aria-pressed={reacted}
       onClick={onToggle}
       className={cx(
-        'inline-flex cursor-pointer items-center gap-1 rounded-full border px-1.75 py-0.5 font-sans text-11',
+        // 24px tall: the WCAG 2.2 target size.
+        'inline-flex h-6 cursor-pointer items-center gap-1 rounded-full border px-1.75 font-sans text-11',
         reacted
           ? 'border-acc-100 bg-acc-50 text-acc'
           : 'border-transparent bg-line-2 text-tx-2 hover:bg-line',
