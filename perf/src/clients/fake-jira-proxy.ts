@@ -1,6 +1,11 @@
 import { createServer, request, type IncomingMessage, type Server } from 'node:http';
 import type { AddressInfo } from 'node:net';
-import { rewriteRequest, rewriteResponse } from '../jira/rewrite.ts';
+import {
+  DEFAULT_TARGET,
+  rewriteRequest,
+  rewriteResponse,
+  type ImportTarget,
+} from '../jira/rewrite.ts';
 
 /*
  * A reverse proxy in front of the fake Jira site, which listens only on loopback: it answers
@@ -20,13 +25,20 @@ export interface ProxyStats {
   bytesOut: number;
 }
 
-export async function startProxy(target: string, host: string, port: number) {
+export async function startProxy(
+  target: string,
+  host: string,
+  port: number,
+  project: ImportTarget = DEFAULT_TARGET,
+) {
   const upstream = new URL(target);
   const stats: ProxyStats = { requests: 0, bytesOut: 0 };
   const server: Server = createServer(async (req, res) => {
     stats.requests += 1;
     const body = await readAll(req);
-    const forwarded = body.length ? Buffer.from(rewriteRequest(body.toString('utf8'))) : body;
+    const forwarded = body.length
+      ? Buffer.from(rewriteRequest(body.toString('utf8'), project))
+      : body;
     const headers = { ...req.headers, host: upstream.host };
     delete headers['content-length'];
     if (forwarded.length) headers['content-length'] = String(forwarded.length);
@@ -35,14 +47,14 @@ export async function startProxy(target: string, host: string, port: number) {
         hostname: upstream.hostname,
         port: upstream.port,
         method: req.method,
-        path: rewriteRequest(req.url ?? '/'),
+        path: rewriteRequest(req.url ?? '/', project),
         headers,
         timeout: TIMEOUT_MS,
       },
       async (answer) => {
         const raw = await readAll(answer);
         const json = (answer.headers['content-type'] ?? '').includes('json');
-        const out = json ? Buffer.from(rewriteResponse(raw.toString('utf8'))) : raw;
+        const out = json ? Buffer.from(rewriteResponse(raw.toString('utf8'), project)) : raw;
         // The body is re-sent whole, so it carries a length and not the upstream's chunking.
         const replyHeaders = { ...answer.headers, 'content-length': String(out.length) };
         delete replyHeaders['transfer-encoding'];
