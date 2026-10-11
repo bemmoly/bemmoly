@@ -50,6 +50,15 @@ a capable colleague.
 - **Competitor and vendor names appear only as import or source labels**: "Import from Jira",
   "Import from Confluence". Never in comparisons, marketing claims, empty states, tooltips or
   placeholder text, and never as a product's logo outside its import card.
+- **One recorded exception: the site's two comparison pages**, `/jira-alternative` and
+  `/confluence-alternative` (the owner's call, for people searching for a self-hosted
+  alternative). There, and in the footer links to them, the names appear as plain referential
+  words under Atlassian's trademark guidelines: Bemmoly leads every heading and title and is never
+  less prominent; no Atlassian logo, colour, screenshot or look-alike styling; no mark in a domain
+  or subdomain (paths only); the footer carries "Jira and Confluence are trademarks of Atlassian.
+  Bemmoly is not affiliated with or endorsed by Atlassian."; and every statement about the other
+  product is a fact its maker publishes, linked to the page that says it, with nothing
+  disparaging. `apps/site/tests/seo.test.ts` keeps every other page to import labels.
 - AI providers and models come from the models.dev catalog at run time; no file names a vendor
   (AGENTS.md, AI). The UI shows the catalog's names as data.
 - Sign-in providers show their own mark on their own button (Google's "G") because the provider

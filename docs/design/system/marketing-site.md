@@ -58,7 +58,9 @@ and fails review.
   admin configures mail, backups and certificates elsewhere; say what stays and what you choose
   to send.
 - **Competitors appear only as import sources** ("Import from Confluence"), per
-  [content.md](content.md#other-products-names).
+  [content.md](content.md#other-products-names), except on the two comparison pages
+  (`/jira-alternative`, `/confluence-alternative`), which follow the trademark rules recorded
+  there and cite Atlassian's own pages for every fact about its products.
 - **No third-party scripts, no analytics, a strict CSP** (`tests/csp.test.ts`), and the
   performance budget holds.
 
