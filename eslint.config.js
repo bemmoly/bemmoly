@@ -97,6 +97,18 @@ export default defineConfig(
     rules: { 'bemmoly/no-literal-styles': ['error', { sizes: false }] },
   },
   {
+    // Screens whose text comes from a message catalog (ADR 0024, docs/i18n.md): a new literal
+    // string there fails, and layout uses logical properties so it mirrors right to left. Add
+    // a file here once its strings are extracted. core-web lists its own the same way.
+    files: [
+      'apps/web/src/components/shell/{app-shell,app-sidebar,appearance-menu,new-button,sidebar-parts}.tsx',
+      'apps/web/src/components/auth/{auth-layout,auth-parts,password-sign-in,signed-in-pane}.tsx',
+      'apps/web/src/pages/auth/login-page.tsx',
+      'apps/web/src/pages/settings/profile-page.tsx',
+    ],
+    rules: { 'bemmoly/no-literal-ui-strings': 'error', 'bemmoly/logical-properties': 'error' },
+  },
+  {
     // The one place Lucide is imported: the icon set maps it onto the design system's names.
     files: ['packages/ui/src/icons/**'],
     rules: { 'no-restricted-imports': 'off' },

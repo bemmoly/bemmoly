@@ -23,4 +23,9 @@ export default [
     ignores: ['**/*.test.tsx', '**/*.stories.tsx', 'src/testing/**'],
     rules: { 'bemmoly/no-literal-styles': 'error' },
   },
+  {
+    // The root config's extracted-screens rules (ADR 0024), for the kernel's frame.
+    files: ['src/shell/{app-frame,bottom-bar,page-header}.tsx'],
+    rules: { 'bemmoly/no-literal-ui-strings': 'error', 'bemmoly/logical-properties': 'error' },
+  },
 ];
