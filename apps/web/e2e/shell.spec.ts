@@ -80,3 +80,53 @@ test('the web app manifest and icons come from the brand files', async ({ reques
   expect((await request.get('/brand/icon-192.png')).status()).toBe(200);
   expect((await request.get('/brand/favicon.svg')).status()).toBe(200);
 });
+
+test('the Appearance button beside the person offers Light, Dark and Match system only', async ({
+  page,
+}) => {
+  await useMockBackend(page, 'ready');
+  await page.goto('/');
+  const sidebar = page.getByRole('complementary', { name: 'Sidebar' });
+
+  // The person's menu carries no appearance choices any more.
+  await sidebar.getByRole('button', { name: /Account: Rohan S\./ }).click();
+  await expect(page.getByRole('menuitem', { name: 'Sign out' })).toBeVisible();
+  await expect(page.getByRole('menuitemradio')).toHaveCount(0);
+  await page.keyboard.press('Escape');
+
+  const button = sidebar.getByRole('button', { name: 'Appearance' });
+  await button.focus();
+  await page.keyboard.press('Enter');
+  const menu = page.getByRole('menu', { name: 'Appearance' });
+  await expect(menu.getByRole('menuitemradio')).toHaveText(['Light', 'Dark', 'Match system']);
+  await expect(menu.getByText('Pine')).toHaveCount(0);
+  await expect(menu.getByRole('menuitemradio', { name: 'Light' })).toBeFocused();
+  await page.keyboard.press('ArrowDown');
+  await page.keyboard.press('Enter');
+  await expect(page.locator('html')).toHaveAttribute('data-mode', 'dark');
+  await expect(menu.getByRole('menuitemradio', { name: 'Dark' })).toHaveAttribute(
+    'aria-checked',
+    'true',
+  );
+  await page.keyboard.press('Escape');
+  await expect(menu).toHaveCount(0);
+  await expect(button).toBeFocused();
+
+  // On the rail the button stays, stacked above the avatar.
+  await page.keyboard.press('[');
+  await expect(page.locator('[data-sidebar="rail"]')).toBeVisible();
+  await sidebar.getByRole('button', { name: 'Appearance' }).click();
+  await menu.getByRole('menuitemradio', { name: 'Light' }).click();
+  await expect(page.locator('html')).toHaveAttribute('data-mode', 'light');
+});
+
+test('on a phone the Appearance button sits beside the person in the sheet', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await useMockBackend(page, 'ready');
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Open menu' }).click();
+  const sheet = page.getByRole('dialog', { name: 'Menu' });
+  await sheet.getByRole('button', { name: 'Appearance' }).click();
+  await page.getByRole('menuitemradio', { name: 'Dark' }).click();
+  await expect(page.locator('html')).toHaveAttribute('data-mode', 'dark');
+});

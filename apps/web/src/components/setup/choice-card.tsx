@@ -36,13 +36,13 @@ export function BrandTile({ initials, icon }: BrandTileProps) {
  * until it holds 3:1 on every preset's tile); a monochrome mark, such as the models.dev
  * provider logos, is painted in the primary text colour at full strength.
  */
-export function LogoMask({ url, brand }: { url: string; brand?: string }) {
+export function LogoMask({ url, brand, fill }: { url: string; brand?: string; fill?: string }) {
   return (
     <span
       aria-hidden="true"
       data-logo={url}
       data-brand={brand}
-      className={`size-4.5 mask-contain mask-center mask-no-repeat ${brand ? '' : 'bg-tx'}`}
+      className={`size-4.5 mask-contain mask-center mask-no-repeat ${brand ? '' : (fill ?? 'bg-tx')}`}
       style={{
         maskImage: `url("${url}")`,
         ...(brand ? { backgroundColor: markFill(brand) } : {}),

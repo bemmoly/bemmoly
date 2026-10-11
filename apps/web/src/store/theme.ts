@@ -2,11 +2,10 @@ import type { ModePreference } from '@bemmoly/shared';
 import { RETIRED_PRESETS } from '@bemmoly/ui/tokens';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
-import type { PersonalAppearance, ThemeRef } from '../lib/theme.ts';
+import type { PersonalAppearance } from '../lib/theme.ts';
 
 interface ThemeState extends PersonalAppearance {
   setMode(mode: ModePreference | null): void;
-  setTheme(theme: ThemeRef | null): void;
   /** Replaces the cache with what the account says (/me). */
   hydrate(value: PersonalAppearance): void;
 }
@@ -35,7 +34,6 @@ export const useThemeStore = create<ThemeState>()(
       mode: null,
       theme: null,
       setMode: (mode) => set({ mode }),
-      setTheme: (theme) => set({ theme }),
       hydrate: ({ mode, theme }) => set({ mode, theme }),
     }),
     {

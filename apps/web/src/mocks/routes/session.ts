@@ -4,7 +4,7 @@ import { makeUser, ROLE_IDS } from '../seed/people.ts';
 import { newId } from '../seed/time.ts';
 import { bodyOf, fail, invalid, ok, type MockRoute } from '../types.ts';
 import { completedAtOf, workspaceLookOf } from '../workspace-look.ts';
-import { personalThemesOf, preferenceOf } from './appearance.ts';
+import { preferenceOf } from './appearance.ts';
 
 function signIn(db: MockDb, userId: string, status = 200) {
   db.signedInAs = userId;
@@ -158,7 +158,7 @@ export const sessionRoutes: MockRoute[] = [
         modules: db.manifests.map((m) => m.id),
         workspace: workspaceLookOf(db),
         preferences: { appearance: preferenceOf(db) },
-        customThemes: personalThemesOf(db),
+        customThemes: [],
       });
     },
   },

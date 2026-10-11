@@ -16,6 +16,8 @@ interface PasswordSignInProps {
   /** The remembered person stands in for the email field. */
   hideEmail?: boolean;
   submitLabel?: string;
+  /** Single sign-on leads on this page, so the password submit steps back to secondary. */
+  secondarySubmit?: boolean;
   /** Focus the email field (or the password, when the email is known) on arrival. */
   autoFocus?: boolean;
 }
@@ -115,6 +117,7 @@ export function PasswordSignIn({
   showForgot = true,
   hideEmail = false,
   submitLabel = 'Sign in',
+  secondarySubmit = false,
   autoFocus = false,
 }: PasswordSignInProps) {
   const passwordRef = useRef<HTMLInputElement>(null);
@@ -194,7 +197,7 @@ export function PasswordSignIn({
         </div>
         <Button
           type="submit"
-          variant="primary"
+          variant={secondarySubmit ? 'secondary' : 'primary'}
           size="touch"
           block
           loading={form.pending}

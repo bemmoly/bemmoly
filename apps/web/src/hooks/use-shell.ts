@@ -4,12 +4,10 @@ import { useNavigate } from '@tanstack/react-router';
 import { useMemo } from 'react';
 import { customerLogo } from '../lib/customer-logo.ts';
 import { MODULE_CREATES } from '../lib/module-shell.ts';
-import { workspaceRef } from '../lib/theme.ts';
 import { useUiStore } from '../store/ui.ts';
 import { useModules } from './use-modules.ts';
 import { useAppearanceSync, usePersonalAppearance } from './use-personal-appearance.ts';
 import { useLook } from './use-theme-effect.ts';
-import { themeOptions } from './use-theme-options.ts';
 import { useInbox } from './use-notifications.ts';
 import { useMe, useSignOut } from './use-session.ts';
 import { useWorkspace } from './use-workspace.ts';
@@ -21,17 +19,6 @@ export interface CreateEntry {
   moduleId: string;
   icon: string | undefined;
   open: () => void;
-}
-
-export interface ThemeChoice {
-  id: string;
-  label: string;
-  /** The theme the workspace uses, which a person follows by picking it. */
-  isWorkspace: boolean;
-  /** Its light fill and dark accent, for the menu's half-and-half dot. */
-  dot: { light: string; dark: string };
-  checked: boolean;
-  onSelect: () => void;
 }
 
 /** The release this build is, for the sidebar footer's version line. */
@@ -52,7 +39,6 @@ export function useShell() {
   useAppearanceSync(me);
   const personal = usePersonalAppearance();
   const look = useLook();
-  const appearance = workspace.appearance;
   const go = (to: string) => void navigate({ to });
 
   /** The module's dialog over this page when it ships one; its old page otherwise. */
@@ -72,19 +58,6 @@ export function useShell() {
     (module.sidebar?.primary ?? []).map((link) => ({ ...link, moduleId: module.id })),
   );
 
-  // A person's own theme list, only while the workspace lets them pick one (ADR 0021).
-  const followed = workspaceRef(appearance);
-  const themes: ThemeChoice[] = appearance.personalThemes
-    ? themeOptions([...appearance.customThemes, ...me.customThemes]).map((option) => ({
-        id: option.ref,
-        label: option.source.name,
-        isWorkspace: option.ref === followed,
-        dot: { light: option.source.light['acc-fill'], dark: option.source.dark.acc },
-        checked: option.source.id === look.source.id,
-        onSelect: () => personal.setTheme(option.ref === followed ? null : option.ref),
-      }))
-    : [];
-
   return {
     me,
     workspace,
@@ -96,12 +69,9 @@ export function useShell() {
     /** C and the New button: the first module's first create entry (Work's new issue). */
     primaryCreate: creates[0] ?? null,
     primary,
-    themes,
     /** Mode is always the person's own: Light, Dark or Match system. */
     mode: { value: look.preference, set: personal.setMode },
-    canCreateTheme: appearance.personalThemes,
     canInvite: me.can('workspace.roles.manage'),
-    canManageAppearance: me.can('workspace.appearance.manage'),
     invite: () => {
       requestInvite(true);
       go('/settings/users');

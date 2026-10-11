@@ -1,15 +1,13 @@
 import { queryKeys } from '@bemmoly/api-client';
-import type { CustomThemeScope, SurfaceStyle } from '@bemmoly/shared';
+import type { SurfaceStyle } from '@bemmoly/shared';
 import { buildCustomTheme, customThemeSource } from '@bemmoly/ui/theme';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import { useMemo, useState } from 'react';
 import { api } from '../lib/api.ts';
 import { describeError } from '../lib/errors.ts';
-import { customRef } from '../lib/theme.ts';
 import { toast } from '../lib/toast.ts';
 import { HEX_ERROR, normalizeHex } from './use-appearance-draft.ts';
-import { usePersonalAppearance } from './use-personal-appearance.ts';
 import { useMe } from './use-session.ts';
 import { useWorkspace } from './use-workspace.ts';
 
@@ -30,47 +28,35 @@ export function useCustomThemeEditor(themeId: string | null) {
   const workspace = useWorkspace();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const personal = usePersonalAppearance();
   const canManage = me.can('workspace.appearance.manage');
-  const allowPersonal = workspace.appearance.personalThemes;
-  const existing = [...workspace.appearance.customThemes, ...me.customThemes].find(
-    (theme) => theme.id === themeId,
-  );
+  const existing = workspace.appearance.customThemes.find((theme) => theme.id === themeId);
   const [name, setName] = useState(existing?.name ?? '');
   const [hexText, setHexText] = useState(existing?.brandColor ?? START_BRAND);
   const [brand, setBrand] = useState(existing?.brandColor ?? START_BRAND);
   const [surface, setSurface] = useState<SurfaceStyle>(existing?.surface ?? 'neutral');
-  const [scope, setScope] = useState<CustomThemeScope>(
-    existing?.scope ?? (canManage ? 'workspace' : 'personal'),
-  );
   const built = useMemo(() => buildCustomTheme({ brand, surface }), [brand, surface]);
   const source = useMemo(
     () => customThemeSource(themeId ?? 'draft', name || 'Custom', { brand, surface }),
     [themeId, name, brand, surface],
   );
-  const mayEdit = existing
-    ? existing.scope === 'workspace'
-      ? canManage
-      : allowPersonal
-    : canManage || allowPersonal;
+  const mayEdit = canManage;
 
   const done = async () => {
     await Promise.all([
       queryClient.invalidateQueries({ queryKey: queryKeys.me() }),
       queryClient.invalidateQueries({ queryKey: queryKeys.settings.all() }),
     ]);
-    await navigate({ to: canManage ? '/settings/appearance' : '/' });
+    await navigate({ to: '/settings/appearance' });
   };
   const save = useMutation({
     mutationFn: async () => {
       const body = { name: name.trim(), brandColor: brand, surface };
       if (existing) return api.appearance.themes.update(existing.id, body);
-      return api.appearance.themes.create({ ...body, scope });
+      return api.appearance.themes.create({ ...body, scope: 'workspace' });
     },
     onSuccess: async (theme) => {
-      if (theme.scope === 'personal' && !existing) personal.setTheme(customRef(theme.id));
       toast(
-        theme.scope === 'workspace' && !existing
+        !existing
           ? `${theme.name} saved. Pick it under Theme to make it the workspace default.`
           : `${theme.name} saved`,
       );
@@ -92,7 +78,6 @@ export function useCustomThemeEditor(themeId: string | null) {
     missing: themeId !== null && !existing,
     mayEdit,
     canManage,
-    allowPersonal,
     name,
     setName,
     nameError: name.trim() === '' ? 'Give the theme a name' : null,
@@ -112,8 +97,6 @@ export function useCustomThemeEditor(themeId: string | null) {
     },
     surface,
     setSurface,
-    scope,
-    setScope,
     built,
     source,
     save,

@@ -25,7 +25,7 @@ export function workspaceLookOf(db: MockDb): WorkspaceLook {
       defaultMode: MODES.find((mode) => mode === settings['appearance.defaultMode']) ?? 'system',
       font: (FONT_IDS as string[]).includes(font) ? (font as FontId) : 'plex',
       logoKey: mockLogoSrc(db, text('appearance.logoKey', '')),
-      personalThemes: settings['appearance.personalThemes'] === true,
+      personalThemes: false,
       customThemes: workspaceThemesOf(db),
       brandColor: text('appearance.brandColor', '#2356c9'),
       mode: settings['appearance.mode'] === 'dark' ? 'dark' : 'light',

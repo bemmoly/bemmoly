@@ -15,7 +15,7 @@ export async function readWorkspaceLook(
   /** The workspace's custom themes, read by the appearance service. */
   customThemes: CustomThemeRecord[] = [],
 ): Promise<WorkspaceLook> {
-  const [name, url, providerId, theme, customThemeId, defaultMode, font, logoKey, personal] =
+  const [name, url, providerId, theme, customThemeId, defaultMode, font, logoKey] =
     await Promise.all([
       settings.get('workspace.name'),
       settings.get('workspace.url'),
@@ -25,7 +25,6 @@ export async function readWorkspaceLook(
       settings.get('appearance.defaultMode'),
       settings.get('appearance.font'),
       settings.get('appearance.logoKey'),
-      settings.get('appearance.personalThemes'),
     ]);
   const [brandColor, mode, surfaces, members] = await Promise.all([
     settings.get('appearance.brandColor'),
@@ -43,7 +42,8 @@ export async function readWorkspaceLook(
       defaultMode,
       font: isFont(font) ? font : 'plex',
       logoKey,
-      personalThemes: personal,
+      // Only a workspace admin sets the theme (ADR 0021); kept for the previous minor's clients.
+      personalThemes: false,
       customThemes,
       brandColor,
       mode,

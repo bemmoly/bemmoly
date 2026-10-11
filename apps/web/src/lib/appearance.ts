@@ -9,7 +9,6 @@ export interface Appearance {
   defaultMode: ModePreference;
   font: FontId;
   logoKey: string | null;
-  personalThemes: boolean;
   /** The workspace's own custom themes. */
   customThemes: CustomThemeRecord[];
 }
@@ -20,7 +19,6 @@ export const APPEARANCE_KEYS = [
   'appearance.defaultMode',
   'appearance.font',
   'appearance.logoKey',
-  'appearance.personalThemes',
   'appearance.brandColor',
 ] as const satisfies readonly SettingKey[];
 
@@ -33,7 +31,6 @@ export const DEFAULT_APPEARANCE: Appearance = {
   defaultMode: 'system',
   font: 'plex',
   logoKey: null,
-  personalThemes: false,
   customThemes: [],
 };
 
@@ -49,7 +46,6 @@ export function appearanceFrom(reads: Reads, customThemes: CustomThemeRecord[] =
     defaultMode: reads['appearance.defaultMode']?.value ?? DEFAULT_APPEARANCE.defaultMode,
     font: isFont(font) ? font : 'plex',
     logoKey: reads['appearance.logoKey']?.value || null,
-    personalThemes: reads['appearance.personalThemes']?.value ?? false,
     customThemes,
   };
 }
@@ -72,6 +68,5 @@ export function appearanceWrites(appearance: Appearance) {
     ...(custom ? ([['appearance.brandColor', custom.brandColor]] as const) : []),
     ['appearance.defaultMode', appearance.defaultMode],
     ['appearance.font', appearance.font],
-    ['appearance.personalThemes', appearance.personalThemes],
   ] as const;
 }

@@ -5,7 +5,7 @@ import { APP_VERSION, WHATS_NEW_URL, type Shell } from '../../hooks/use-shell.ts
 import { MODULE_SIDEBARS } from '../../lib/module-shell.ts';
 import { useUiStore } from '../../store/ui.ts';
 import { ModuleSection } from './module-section.tsx';
-import { SidebarFoot, SidebarTop, UserMenu, VersionLine } from './sidebar-parts.tsx';
+import { SidebarFoot, SidebarTop, AccountRow, VersionLine } from './sidebar-parts.tsx';
 
 /**
  * The app sidebar (docs/design/premium/kit.js, `sidebar`): the brand block, Search and New,
@@ -80,7 +80,7 @@ export function AppSidebar({ shell }: { shell: Shell }) {
           <VersionLine />
         )}
         <div className="mt-1">
-          <UserMenu shell={shell} />
+          <AccountRow shell={shell} />
         </div>
       </SidebarFoot>
     </>

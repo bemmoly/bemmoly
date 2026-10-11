@@ -5,15 +5,12 @@ import type {
   UpdateAppearancePreferenceInput,
   UpdateCustomThemeInput,
 } from '@bemmoly/shared';
-import { isThemeId } from '@bemmoly/ui/tokens';
 import { audit, can, type MockDb } from '../db.ts';
 import { newId } from '../seed/time.ts';
 import { bodyOf, fail, ok, type MockRoute } from '../types.ts';
 
 const MANAGE = 'workspace.appearance.manage';
-const NO_PERSONAL = 'Your workspace does not let people pick their own theme.';
-
-const personalAllowed = (db: MockDb) => db.settings['appearance.personalThemes'] === true;
+const ADMIN_SETS_THEME = 'Your workspace admin sets the theme';
 
 type Stored = MockDb['customThemes'][number];
 
@@ -23,26 +20,21 @@ function recordOf(theme: Stored): CustomThemeRecord {
   return { id, name, brandColor, surface, scope, createdAt, updatedAt };
 }
 
-/** Workspace themes and the signed-in person's own, as the server lists them. */
+/** The workspace's custom themes; only a workspace admin sets the theme (ADR 0021). */
 export function visibleThemes(db: MockDb): CustomThemeRecord[] {
-  return db.customThemes
-    .filter((theme) => theme.ownerId === null || theme.ownerId === db.signedInAs)
-    .map(recordOf);
+  return db.customThemes.filter((theme) => theme.ownerId === null).map(recordOf);
 }
 
-export function personalThemesOf(db: MockDb): CustomThemeRecord[] {
-  return visibleThemes(db).filter((theme) => theme.scope === 'personal');
-}
-
+/** Only the mode is personal; a stored theme is ignored. */
 export function preferenceOf(db: MockDb): AppearancePreference {
-  return db.appearancePreferences[db.signedInAs ?? ''] ?? { mode: null, theme: null };
+  const stored = db.appearancePreferences[db.signedInAs ?? ''];
+  return { mode: stored?.mode ?? null, theme: null };
 }
 
 function editable(db: MockDb, id: string) {
-  const theme = db.customThemes.find((entry) => entry.id === id);
-  if (!theme || (theme.ownerId !== null && theme.ownerId !== db.signedInAs)) return null;
-  if (theme.ownerId === null && !can(db, MANAGE)) return 'forbidden' as const;
-  if (theme.ownerId !== null && !personalAllowed(db)) return 'forbidden' as const;
+  const theme = db.customThemes.find((entry) => entry.id === id && entry.ownerId === null);
+  if (!theme) return null;
+  if (!can(db, MANAGE)) return 'forbidden' as const;
   return theme;
 }
 
@@ -54,15 +46,9 @@ export const appearanceRoutes: MockRoute[] = [
     pattern: '/api/v1/me/appearance',
     handle: (request, db) => {
       const patch = bodyOf<UpdateAppearancePreferenceInput>(request);
-      if (patch.theme) {
-        if (!personalAllowed(db)) return fail(403, 'forbidden', NO_PERSONAL);
-        const custom = patch.theme.startsWith('custom:');
-        const known = custom
-          ? visibleThemes(db).some((theme) => `custom:${theme.id}` === patch.theme)
-          : isThemeId(patch.theme);
-        if (!known) return fail(422, 'validation_failed', 'That theme does not exist.');
-      }
-      const next = { ...preferenceOf(db), ...patch };
+      if (patch.theme) return fail(403, 'forbidden', ADMIN_SETS_THEME);
+      const before = preferenceOf(db);
+      const next = { mode: patch.mode === undefined ? before.mode : patch.mode, theme: null };
       db.appearancePreferences[db.signedInAs ?? ''] = next;
       return ok(next);
     },
@@ -73,10 +59,9 @@ export const appearanceRoutes: MockRoute[] = [
     pattern: '/api/v1/themes',
     handle: (request, db) => {
       const body = bodyOf<CreateCustomThemeInput>(request);
-      if (body.scope === 'workspace' && !can(db, MANAGE))
+      if (body.scope === 'personal') return fail(403, 'forbidden', ADMIN_SETS_THEME);
+      if (!can(db, MANAGE))
         return fail(403, 'forbidden', 'Only people who can set appearance can add themes.');
-      if (body.scope === 'personal' && !personalAllowed(db))
-        return fail(403, 'forbidden', NO_PERSONAL);
       if (!body.name?.trim() || !body.brandColor || !body.surface || !body.scope)
         return fail(422, 'validation_failed', 'Give the theme a name, a colour and surfaces.');
       const now = new Date().toISOString();
@@ -88,7 +73,7 @@ export const appearanceRoutes: MockRoute[] = [
         scope: body.scope,
         createdAt: now,
         updatedAt: now,
-        ownerId: body.scope === 'personal' ? db.signedInAs : null,
+        ownerId: null,
       };
       db.customThemes.push(theme);
       audit(db, 'custom_theme.created', 'custom_theme', theme.id);

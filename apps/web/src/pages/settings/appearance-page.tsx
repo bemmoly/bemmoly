@@ -1,22 +1,32 @@
-import { Button, SegmentedControl, Switch } from '@bemmoly/ui';
+import { Button, SegmentedControl } from '@bemmoly/ui';
 import { Icon } from '@bemmoly/ui/icons';
 import { FONT_IDS, FONTS } from '@bemmoly/ui/tokens';
 import { useNavigate } from '@tanstack/react-router';
 import { AppearanceRow } from '../../components/appearance/appearance-row.tsx';
 import { LivePreview } from '../../components/appearance/live-preview.tsx';
 import { LogoRow } from '../../components/appearance/logo-row.tsx';
+import { MemberAppearance } from '../../components/appearance/member-appearance.tsx';
 import { ModeControl } from '../../components/appearance/mode-control.tsx';
 import { BrandTile, ThemeGrid } from '../../components/appearance/theme-grid.tsx';
 import { Notice } from '../../components/form.tsx';
 import { SettingsPage } from '../../components/settings/settings-page.tsx';
 import { NO_APPEARANCE_PERMISSION, useAppearance } from '../../hooks/use-appearance.ts';
+import { useMe } from '../../hooks/use-session.ts';
 import { useWorkspaceLogo } from '../../hooks/use-workspace-logo.ts';
 import { CUSTOM_PREFIX } from '../../lib/theme.ts';
 
 const FONT_OPTIONS = FONT_IDS.map((id) => ({ value: id, label: FONTS[id].name }));
 
-/** Settings › Appearance: theme, logo, default mode, typeface and the members policy (ADR 0021). */
+/**
+ * Settings › Appearance. A workspace admin sets the theme, logo, default mode and typeface; anyone
+ * else sees the theme read-only beside their own mode (ADR 0021).
+ */
 export function AppearancePage() {
+  const canManage = useMe().can('workspace.appearance.manage');
+  return canManage ? <WorkspaceAppearance /> : <MemberAppearance />;
+}
+
+function WorkspaceAppearance() {
   const state = useAppearance();
   const logo = useWorkspaceLogo();
   const navigate = useNavigate();
@@ -136,19 +146,6 @@ export function AppearancePage() {
                     onChange={(font) => state.update({ font })}
                   />
                 </fieldset>
-              )}
-            </AppearanceRow>
-            <AppearanceRow label="Members" help="Mode is always personal. Themes can be too.">
-              {() => (
-                <label className="flex items-center gap-2.5">
-                  <Switch
-                    aria-label="Let people pick their own theme"
-                    checked={value.personalThemes}
-                    disabled={locked}
-                    onCheckedChange={(personalThemes) => state.update({ personalThemes })}
-                  />
-                  Let people pick their own theme
-                </label>
               )}
             </AppearanceRow>
           </div>

@@ -3,7 +3,6 @@ import { AuthHeading, AuthShell, useAuthWorkspace } from '../../components/auth/
 import {
   AuthAlt,
   AuthNote,
-  AuthSmall,
   OrRule,
   PersonRow,
   TextButton,
@@ -161,10 +160,6 @@ export function LoginPage() {
       ) : null}
       {ssoOnly ? (
         <>
-          <AuthSmall>
-            You’ll come back here signed in. Your password is managed by your identity provider, so
-            reset it there.
-          </AuthSmall>
           <AuthAlt>
             Admin without single sign-on?{' '}
             <TextButton onClick={() => setMethod('password')}>Use a password</TextButton>
@@ -178,6 +173,7 @@ export function LoginPage() {
             workspace={workspace}
             hideEmail={Boolean(remembered)}
             submitLabel={reason === 'expired' ? 'Sign in and go back' : 'Sign in'}
+            secondarySubmit={hasSso}
             autoFocus={!hasSso}
           />
         </>

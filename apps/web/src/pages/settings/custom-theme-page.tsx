@@ -73,23 +73,6 @@ function Fields({ editor }: { editor: CustomThemeEditor }) {
           onPick={editor.pick}
         />
       </div>
-      {editor.isNew && editor.canManage && editor.allowPersonal ? (
-        <div className="flex flex-col gap-2 md:col-span-2">
-          <span id="theme-scope" className="font-medium">
-            Who can use it
-          </span>
-          <SegmentedControl
-            aria-labelledby="theme-scope"
-            className="w-80"
-            options={[
-              { value: 'workspace', label: 'Everyone' },
-              { value: 'personal', label: 'Just me' },
-            ]}
-            value={editor.scope}
-            onChange={editor.setScope}
-          />
-        </div>
-      ) : null}
     </div>
   );
 }
@@ -124,12 +107,9 @@ export function CustomThemePage() {
       }
     >
       {editor.missing ? (
-        <Notice tone="caution">This theme was deleted, or it is someone else’s.</Notice>
+        <Notice tone="caution">This theme was deleted.</Notice>
       ) : !editor.mayEdit ? (
-        <Notice tone="caution">
-          Your workspace does not let people make their own themes. Ask an admin to turn on personal
-          themes in Settings › Appearance.
-        </Notice>
+        <Notice tone="caution">Your workspace admin sets the theme.</Notice>
       ) : (
         <div className="flex max-w-260 flex-col gap-4">
           <Fields editor={editor} />

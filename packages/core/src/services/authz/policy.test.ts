@@ -28,6 +28,13 @@ describe('resolveOrgCell', () => {
     expect(resolveOrgCell(orgAdmin, undefined, undefined).allowed).toBe(true);
   });
 
+  it('gives the workspace theme to Org admin alone by default', () => {
+    const look = entry('workspace.appearance.manage');
+    expect(resolveOrgCell(orgAdmin, look, undefined).allowed).toBe(true);
+    for (const key of ['project_admin', 'member', 'viewer', 'contractor'])
+      expect(resolveOrgCell({ key, isSystem: true }, look, undefined).allowed).toBe(false);
+  });
+
   it('prefers the stored row, then the system default, then no', () => {
     const ai = entry('ai.actions.run');
     expect(resolveOrgCell(member, ai, { allowed: false, lockedByOrg: false }).allowed).toBe(false);
