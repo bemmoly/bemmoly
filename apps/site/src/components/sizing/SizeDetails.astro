@@ -44,13 +44,18 @@ const IMPORT_LABEL = 'An Import from Jira';
             <span data-capacity>{MEASURED.load.data.importSeconds}</span> seconds.
           </li>
           <li>
-            Held <span data-capacity>{MEASURED.requestsPerSecond}</span> requests a second with
-            every page fast: 95% of requests answered within{' '}
-            <span data-capacity>{MEASURED.load.p95Ms.board}</span> ms for a board,{' '}
-            <span data-capacity>{MEASURED.load.p95Ms.issue}</span> ms for an issue,{' '}
-            <span data-capacity>{MEASURED.load.p95Ms.search}</span> ms for search,{' '}
-            <span data-capacity>{MEASURED.load.p95Ms.docPage}</span> ms for a doc page and{' '}
-            <span data-capacity>{MEASURED.load.p95Ms.issueEdit}</span> ms for an issue edit.
+            Typical speed at <span data-capacity>{MEASURED.load.typical.rps}</span> requests a
+            second: 95% of requests answered within{' '}
+            <span data-capacity>{MEASURED.load.typical.p95Ms.board}</span> ms for a board,{' '}
+            <span data-capacity>{MEASURED.load.typical.p95Ms.issue}</span> ms for an issue,{' '}
+            <span data-capacity>{MEASURED.load.typical.p95Ms.search}</span> ms for search,{' '}
+            <span data-capacity>{MEASURED.load.typical.p95Ms.docPage}</span> ms for a doc page and{' '}
+            <span data-capacity>{MEASURED.load.typical.p95Ms.issueEdit}</span> ms for an issue edit.
+          </li>
+          <li>
+            At the limit, <span data-capacity>{MEASURED.requestsPerSecond}</span> requests a second:
+            95% within <span data-capacity>{MEASURED.load.atLimitP95Ms.board}</span> ms for a board
+            and <span data-capacity>{MEASURED.load.atLimitP95Ms.issue}</span> ms for an issue.
           </li>
           <li>
             A <span data-capacity>{MEASURED.load.soak.minutes}</span>-minute run at{' '}

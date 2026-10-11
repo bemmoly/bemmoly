@@ -27,8 +27,8 @@
         },
         {
           "provider": "DigitalOcean",
-          "instance": "Basic Droplet 2 GB (1 vCPU)",
-          "monthly": 12,
+          "instance": "Basic Droplet 2 vCPU, 2 GB",
+          "monthly": 18,
           "currency": "USD"
         },
         {
@@ -45,8 +45,8 @@
         },
         {
           "provider": "Azure",
-          "instance": "B1ms (1 vCPU)",
-          "monthly": 15,
+          "instance": "B2als v2 (2 vCPU, 4 GB; no exact 2 GB match)",
+          "monthly": 27,
           "currency": "USD"
         }
       ]
@@ -60,12 +60,19 @@
       "issues": 31384,
       "docs": 400,
       "load": {
-        "p95Ms": {
-          "board": 25,
-          "issue": 10,
-          "search": 22,
-          "docPage": 10,
-          "issueEdit": 16
+        "typical": {
+          "rps": 30,
+          "p95Ms": {
+            "board": 25,
+            "issue": 10,
+            "search": 22,
+            "docPage": 10,
+            "issueEdit": 16
+          }
+        },
+        "atLimitP95Ms": {
+          "board": 68,
+          "issue": 32
         },
         "soak": {
           "minutes": 45,
