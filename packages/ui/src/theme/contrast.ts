@@ -4,7 +4,7 @@
  * digits), its `ratio` (white against the brand, rounded with toFixed(1)) and its three
  * messages, chosen on the rounded ratio as the mock does.
  */
-import { mixHex } from './color.ts';
+import { mixHex, resolveHex } from './color.ts';
 
 export type ContrastLevel = 'pass' | 'darken' | 'dark-text';
 
@@ -23,6 +23,15 @@ export function luminance(hex: string): number {
     return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
   }) as [number, number, number];
   return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
+/** The WCAG contrast ratio of two colours (hex or color-mix()), unrounded. */
+export function contrastRatio(a: string, b: string): number {
+  const [hi, lo] = [luminance(resolveHex(a)), luminance(resolveHex(b))].sort((x, y) => y - x) as [
+    number,
+    number,
+  ];
+  return (hi + 0.05) / (lo + 0.05);
 }
 
 /** White text on `hex`, rounded to one decimal like the mock. */

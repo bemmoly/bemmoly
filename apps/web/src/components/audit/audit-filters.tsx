@@ -63,7 +63,7 @@ export function AuditFiltersBar({
         value={filters.since}
         onChange={(event) => onChange({ since: event.target.value })}
       />
-      <span className="text-12h text-tx5">to</span>
+      <span className="text-13 text-tx-3">to</span>
       <Input
         type="date"
         aria-label="Until"

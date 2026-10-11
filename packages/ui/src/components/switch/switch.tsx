@@ -44,7 +44,7 @@ export function Switch({
       }}
       className={cx(
         'relative inline-flex shrink-0 cursor-pointer rounded-full border-0 p-0',
-        checked ? 'bg-ac-fill' : 'bg-br-off',
+        checked ? 'bg-acc-fill' : 'bg-line',
         'disabled:cursor-not-allowed disabled:opacity-55',
         s.track,
         focusRing,

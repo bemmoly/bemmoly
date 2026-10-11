@@ -25,7 +25,7 @@ function names(sections: readonly UnsavedSection[]) {
       {index > 0 ? (index === sections.length - 1 ? ' and ' : ', ') : null}
       <a
         href={`#${section.id}`}
-        className="font-medium text-ac hover:text-ac-d"
+        className="font-medium text-acc hover:text-acc-600"
         onClick={(event) => {
           // Scrolls in place: a hash change would count as leaving the page for a router.
           event.preventDefault();
@@ -54,13 +54,13 @@ export function UnsavedChangesBar({
     <div
       role={leaving ? 'alert' : 'status'}
       aria-label="Unsaved changes"
-      className="sticky bottom-4 z-20 flex items-center gap-3 rounded-card border border-caution bg-sf px-4 py-3 text-13 shadow-pop"
+      className="sticky bottom-4 z-20 flex items-center gap-3 rounded-card border border-amber bg-card px-4 py-3 text-13 shadow-e2"
     >
-      <span aria-hidden="true" className="size-1.75 shrink-0 rounded-full bg-caution" />
-      <p className="m-0 min-w-0 flex-1 leading-body text-tx-body">
+      <span aria-hidden="true" className="size-1.75 shrink-0 rounded-full bg-amber" />
+      <p className="m-0 min-w-0 flex-1 leading-body text-tx">
         {leaving ? 'Leave without saving? ' : 'Unsaved changes in '}
         {leaving ? <>Changes in {names(sections)} are not saved.</> : <>{names(sections)}.</>}{' '}
-        <span className="text-tx4">Save or cancel each section.</span>
+        <span className="text-tx-3">Save or cancel each section.</span>
       </p>
       {leaving ? (
         <>

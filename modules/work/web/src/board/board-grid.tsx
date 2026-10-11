@@ -1,0 +1,199 @@
+import {
+  epicFill,
+  KanbanColumnHeader,
+  KanbanColumnHeaders,
+  Swimlane,
+  SwimlaneHeader,
+  type StatusStage,
+} from '@bemmoly/ui';
+import { memo, useMemo, useState, type ReactNode } from 'react';
+import { visibleColumns } from '../hooks/board-display.ts';
+import { useBoardDragStore } from '../hooks/board-drag-store.ts';
+import { useMediaQuery } from '../hooks/media-query.ts';
+import { PhoneColumns } from './phone-columns.tsx';
+import { useBoardLanes } from '../hooks/board-filters.ts';
+import type { BoardModel, ColumnModel, LaneModel } from '../hooks/board-model.ts';
+import { cellId } from '../hooks/board-window.ts';
+import { BoardCell } from './board-cell.tsx';
+import { useColumnCreate } from './column-create.tsx';
+
+/** "Oct 7" from an ISO date, in UTC so the day never shifts with the viewer's zone. */
+function shortDate(iso: string): string {
+  return new Date(`${iso}T00:00:00Z`).toLocaleDateString('en', {
+    month: 'short',
+    day: 'numeric',
+    timeZone: 'UTC',
+  });
+}
+
+function laneMeta(lane: LaneModel, kanban: boolean): string {
+  const issues = `${lane.count} ${lane.count === 1 ? 'issue' : 'issues'}`;
+  return kanban ? `${issues} · ${lane.inFlight} in flight` : `${issues} · ${lane.points} pts`;
+}
+
+function laneProgress(lane: LaneModel, columns: readonly ColumnModel[]): number {
+  if (lane.points > 0) return (lane.donePoints / lane.points) * 100;
+  const done = columns
+    .filter((column) => column.done)
+    .reduce((sum, column) => sum + (lane.cells[column.id]?.length ?? 0), 0);
+  return lane.count > 0 ? (done / lane.count) * 100 : 0;
+}
+
+const Lane = memo(function Lane({
+  lane,
+  columns,
+  of,
+  kanban,
+  open,
+}: {
+  lane: LaneModel;
+  columns: readonly ColumnModel[];
+  /** The board's column count, above `columns` while empty ones step aside. */
+  of: number;
+  kanban: boolean;
+  open: boolean;
+}) {
+  const toggle = useBoardLanes((state) => state.toggle);
+  const bodyId = `lane-${lane.id}`;
+  return (
+    <Swimlane
+      id={bodyId}
+      columns={columns.length}
+      of={of}
+      open={open}
+      header={
+        <SwimlaneHeader
+          name={lane.label}
+          {...(lane.issueKey ? { laneKey: lane.issueKey } : {})}
+          meta={laneMeta(lane, kanban)}
+          progress={laneProgress(lane, columns)}
+          {...(lane.dueAt ? { due: `Due ${shortDate(lane.dueAt)}` } : {})}
+          {...(lane.color ? { colorClassName: epicFill(lane.color) } : {})}
+          open={open}
+          onToggle={() => toggle(lane.id)}
+          controls={bodyId}
+        />
+      }
+    >
+      {columns.map((column) => (
+        <BoardCell
+          key={column.id}
+          laneId={lane.id}
+          laneLabel={lane.label}
+          columnId={column.id}
+          columnName={column.name}
+          cards={lane.cells[column.id] ?? []}
+          laneColor={lane.color}
+        />
+      ))}
+    </Swimlane>
+  );
+});
+
+/** A column's heading; it redraws only when its own count, name or glyph changes. */
+const ColumnHeading = memo(function ColumnHeading({
+  column,
+  stage,
+  createLane,
+}: {
+  column: ColumnModel;
+  stage: StatusStage;
+  /** The lane "New issue" adds to, the first open one; absent when the person cannot create. */
+  createLane: string | undefined;
+}) {
+  const openCreate = useColumnCreate((state) => state.open);
+  return (
+    <KanbanColumnHeader
+      name={column.name}
+      stage={stage}
+      count={column.count}
+      {...(column.wipLimit === null ? {} : { wipLimit: column.wipLimit })}
+      {...(createLane === undefined
+        ? {}
+        : { onAdd: () => openCreate(cellId(createLane, column.id)) })}
+    />
+  );
+});
+
+export interface BoardGridProps {
+  model: BoardModel;
+  kanban: boolean;
+  /** Drawn under the column headings in place of the lanes, when the board has no cards. */
+  empty?: ReactNode;
+  /** Each column's status glyph, from its first status. */
+  stages: Readonly<Record<string, StatusStage>>;
+  /** Whether a column offers "New issue". */
+  canCreate: boolean;
+  /** Off, columns with no card after filters step aside (and come back while a card is carried). */
+  showEmptyColumns: boolean;
+}
+
+/**
+ * The board body from the mock: the sticky column headings over the lanes, 10px apart, at
+ * least 1260px wide so five columns never squeeze; the page scrolls sideways instead.
+ */
+export function BoardGrid({
+  model,
+  kanban,
+  empty,
+  stages,
+  canCreate,
+  showEmptyColumns,
+}: BoardGridProps) {
+  const collapsed = useBoardLanes((state) => state.collapsed);
+  const carrying = useBoardDragStore((state) => state.carrying !== null);
+  const shown = useMemo(
+    () => visibleColumns(model.columns, showEmptyColumns, carrying),
+    [model.columns, showEmptyColumns, carrying],
+  );
+  const firstOpen = model.lanes.find((lane) => !collapsed.includes(lane.id)) ?? model.lanes[0];
+  // Phones show one column at a time, chosen from the status segments.
+  const phone = useMediaQuery('(max-width: 767px)', false);
+  const [phoneColumn, setPhoneColumn] = useState<string | null>(null);
+  const picked = shown.find((column) => column.id === phoneColumn) ?? shown[0];
+  const columns = useMemo(() => (phone && picked ? [picked] : shown), [phone, picked, shown]);
+  // Stepped-aside columns leave the rest at their usual width; a phone shows one column anyway.
+  const of = phone ? columns.length : model.columns.length;
+  return (
+    <div className="flex min-w-240 flex-col max-md:min-w-0">
+      {phone && (
+        <PhoneColumns
+          columns={shown}
+          stages={stages}
+          value={picked?.id ?? null}
+          onChange={setPhoneColumn}
+        />
+      )}
+      <KanbanColumnHeaders
+        columns={columns.length}
+        of={of}
+        className={phone ? 'hidden' : undefined}
+      >
+        {columns.map((column) => (
+          <ColumnHeading
+            key={column.id}
+            column={column}
+            stage={stages[column.id] ?? 'todo'}
+            createLane={canCreate ? firstOpen?.id : undefined}
+          />
+        ))}
+      </KanbanColumnHeaders>
+      {empty ? (
+        <div className="mt-2 rounded-card border border-dashed border-line bg-card">{empty}</div>
+      ) : (
+        <div className="flex flex-col">
+          {model.lanes.map((lane) => (
+            <Lane
+              key={lane.id}
+              lane={lane}
+              columns={columns}
+              of={of}
+              kanban={kanban}
+              open={!collapsed.includes(lane.id)}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}

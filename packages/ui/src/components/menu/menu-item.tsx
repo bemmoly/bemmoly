@@ -1,5 +1,7 @@
 import { useId, type ReactNode } from 'react';
+import { Icon } from '../../icons/icon.tsx';
 import { cx } from '../../lib/cx.ts';
+import { focusRingInset } from '../../lib/focus.ts';
 import { useMenu } from './menu-context.ts';
 
 export interface MenuItemProps {
@@ -14,6 +16,16 @@ export interface MenuItemProps {
   tone?: 'default' | 'danger';
   /** Keep the menu open after choosing (toggles in a filter menu). */
   keepOpen?: boolean;
+  /**
+   * One choice of several (a theme, a callout colour): the item becomes a menuitemradio and the
+   * chosen one shows a tick in place of the hint.
+   */
+  checked?: boolean;
+  /**
+   * With `checked`: "radio" picks one of a group; "checkbox" turns one setting on or off
+   * independently of its neighbours (which card fields show), as a menuitemcheckbox.
+   */
+  kind?: 'radio' | 'checkbox';
 }
 
 /** 8px 10px, 5px radius; the highlighted item is accent on ac-bg, medium weight. */
@@ -25,12 +37,16 @@ export function MenuItem({
   disabled,
   tone = 'default',
   keepOpen,
+  checked,
+  kind = 'radio',
 }: MenuItemProps) {
+  const choice = checked !== undefined;
   const { close } = useMenu();
   return (
     <button
       type="button"
-      role="menuitem"
+      role={choice ? (kind === 'checkbox' ? 'menuitemcheckbox' : 'menuitemradio') : 'menuitem'}
+      aria-checked={choice ? checked : undefined}
       tabIndex={-1}
       aria-disabled={disabled || undefined}
       onClick={() => {
@@ -39,15 +55,20 @@ export function MenuItem({
         if (!keepOpen) close();
       }}
       className={cx(
-        'flex w-full cursor-pointer items-center gap-2 rounded-sm border-0 bg-transparent px-2.5 py-2 text-left font-sans text-13 outline-0',
-        tone === 'danger' ? 'text-danger' : 'text-tx',
-        'hover:bg-bg2 focus:bg-ac-bg focus:font-medium focus:text-ac',
+        'flex w-full cursor-pointer items-center gap-2 rounded-chip border-0 bg-transparent px-2.5 py-2 text-left font-sans text-13 outline-0',
+        focusRingInset,
+        tone === 'danger' ? 'text-red' : 'text-tx',
+        'hover:bg-hover focus:bg-acc-50 focus:font-medium focus:text-acc',
         'aria-disabled:cursor-not-allowed aria-disabled:opacity-50',
       )}
     >
       {icon}
       <span className="min-w-0 flex-1 truncate">{children}</span>
-      {hint && <span className="text-12 font-normal text-tx5">{hint}</span>}
+      {checked ? (
+        <Icon name="check" className="text-acc" />
+      ) : (
+        hint && <span className="text-12 font-normal text-tx-3">{hint}</span>
+      )}
     </button>
   );
 }
@@ -67,8 +88,8 @@ export function MenuGroup({ label, children, separated }: MenuGroupProps) {
       <div
         id={id}
         className={cx(
-          'px-2.5 py-1.5 text-11 font-medium tracking-caps text-tx5 uppercase',
-          separated && 'mt-1 border-t border-br-row',
+          'px-2.5 pt-2 pb-1 text-11 font-semibold text-tx-3',
+          separated && 'mt-1 border-t border-line-2',
         )}
       >
         {label}
@@ -79,5 +100,5 @@ export function MenuGroup({ label, children, separated }: MenuGroupProps) {
 }
 
 export function MenuSeparator() {
-  return <div role="separator" className="my-1 border-t border-br-row" />;
+  return <div role="separator" className="my-1 border-t border-line-2" />;
 }

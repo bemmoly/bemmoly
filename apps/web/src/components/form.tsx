@@ -2,20 +2,29 @@ import { SkeletonText } from '@bemmoly/ui';
 import type { ReactNode } from 'react';
 import { describeError } from '../lib/errors.ts';
 
+/** A failure in plain words, in the form's red box; FormError fills it from a request. */
+export function FormAlert({ children }: { children: ReactNode }) {
+  return (
+    <div
+      role="alert"
+      className="flex flex-col gap-1 rounded-control border border-red bg-side px-3 py-2.5 text-13 leading-body text-red-tx"
+    >
+      {children}
+    </div>
+  );
+}
+
 /** A failed request in plain words, with the request id for support. */
 export function FormError({ error }: { error: unknown }) {
   if (!error) return null;
   const { message, requestId } = describeError(error);
   return (
-    <div
-      role="alert"
-      className="flex flex-col gap-1 rounded-panel border border-danger bg-sf2 px-3 py-2.5 text-12h leading-body text-danger-hi"
-    >
+    <FormAlert>
       <span>{message}</span>
       {requestId ? (
         <span className="font-mono text-11 opacity-80">Request id {requestId}</span>
       ) : null}
-    </div>
+    </FormAlert>
   );
 }
 
@@ -30,14 +39,14 @@ export function Notice({
   children: ReactNode;
   tone?: 'accent' | 'caution';
 }) {
-  const look = tone === 'accent' ? 'border-ac-br2 bg-ac-bg2' : 'border-caution bg-amber-bg';
+  const look = tone === 'accent' ? 'border-acc-100 bg-acc-50' : 'border-amber bg-amber-bg';
   return (
     <div
-      className={`flex items-center gap-2.5 rounded-panel border px-3 py-2.5 text-12h leading-body text-tx-body ${look}`}
+      className={`flex items-center gap-2.5 rounded-control border px-3 py-2.5 text-13 leading-body text-tx ${look}`}
     >
       <span
         aria-hidden="true"
-        className={`size-1.75 shrink-0 rounded-full ${tone === 'accent' ? 'bg-ac' : 'bg-caution'}`}
+        className={`size-1.75 shrink-0 rounded-full ${tone === 'accent' ? 'bg-acc' : 'bg-amber'}`}
       />
       <span>{children}</span>
     </div>

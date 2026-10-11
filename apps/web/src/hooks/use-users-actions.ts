@@ -4,7 +4,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { api } from '../lib/api.ts';
 import { describeError } from '../lib/errors.ts';
-import { toast } from '../lib/toast.ts';
+import { toast, undoToast } from '../lib/toast.ts';
 import { invitationsQuery } from './use-people.ts';
 
 /** The newest invitation for this address that is neither accepted nor revoked. */
@@ -51,20 +51,30 @@ export function useUserActions(roles: readonly Role[]) {
     toast(message);
   };
 
+  /** A role change applies at once; Undo puts the previous role back. */
   const changeRole = useMutation({
-    mutationFn: ({ user, roleId }: { user: User; roleId: string }) =>
+    mutationFn: ({ user, roleId }: { user: User; roleId: string; undoing?: boolean }) =>
       api.users.update(user.id, { roleId }),
-    onSuccess: async (user) => {
+    onSuccess: async (updated, { user, undoing }) => {
       await queryClient.invalidateQueries({ queryKey: queryKeys.me() });
-      const role = roles.find((entry) => entry.id === user.roleId);
-      await done(`${user.name} is now ${role?.name ?? 'in a new role'}`)();
+      await refresh();
+      const role = roles.find((entry) => entry.id === updated.roleId);
+      const message = `${updated.name} is now ${role?.name ?? 'in a new role'}`;
+      if (undoing) return toast(message);
+      undoToast(message, () =>
+        changeRole.mutate({ user: updated, roleId: user.roleId, undoing: true }),
+      );
     },
     onError,
   });
 
+  /** Deactivating is reversible, so it happens at once with Undo rather than asking first. */
   const deactivate = useMutation({
     mutationFn: (user: User) => api.users.deactivate(user.id),
-    onSuccess: (user) => done(`${user.name} deactivated`)(),
+    onSuccess: async (user) => {
+      await refresh();
+      undoToast(`${user.name} deactivated`, () => reactivate.mutate(user));
+    },
     onError,
   });
 

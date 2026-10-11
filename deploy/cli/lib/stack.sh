@@ -143,7 +143,7 @@ cmd_config() {
       [[ $# -ge 3 ]] || die "config set needs a value" "Run: bemmoly config set ${key} VALUE"
       refuse_during_update 'config set'
       if [[ "${key}" == BEMMOLY_SECRET_KEY || "${key}" == POSTGRES_PASSWORD ]]; then
-        die "${key} cannot be changed here" "Changing it would lock you out of stored credentials or the database; see https://bemmoly.com/docs/rotate-secrets"
+        die "${key} cannot be changed here" "Changing it would lock you out of stored credentials or the database; see https://bemmoly.com/docs/compose#settings"
       fi
       if [[ "${key}" == BEMMOLY_PUBLIC_URL || "${key}" == BEMMOLY_DOMAIN ]]; then
         die "${key} changes with the domain" "Run: sudo bemmoly domain set NAME (it updates the URL, the certificate and checks the app comes back)"

@@ -1,0 +1,154 @@
+import { Editor, Extension, type AnyExtension, type NodeViewRendererProps } from '@tiptap/core';
+import { Placeholder } from '@tiptap/extensions';
+import { cx } from '../cx.ts';
+import type { SuggestionStore } from '../editor/suggestion-store.ts';
+import { proseClass } from '../prose.ts';
+import { docExtensions } from '../schema/index.ts';
+import type { RichTextDoc } from '../types.ts';
+import { ghostText } from './ai/ghost-text.ts';
+import { aiWrite } from './ai/write-plugin.ts';
+import type { AiWriteStore } from './ai/write-store.ts';
+import { blockKeys } from './block-commands.ts';
+import { CodeHighlight } from './highlight.ts';
+import { imageDrop } from './image-drop.ts';
+import { PortalNodeView, type PortalStore } from './portals.ts';
+import type { UploadStore } from './uploads/upload-store.ts';
+import type { DocServices } from './services.ts';
+import { TABLE } from './styles.ts';
+import { docSlash, issueEmbeds, mentionOptions, pageLinks } from './suggestions.ts';
+import { NODE_VIEWS } from './views/registry.ts';
+
+export interface CreateDocEditorOptions {
+  id: string;
+  label: string;
+  placeholder: string;
+  initialDoc?: RichTextDoc | null | undefined;
+  autoFocus?: boolean | undefined;
+  editable: boolean;
+  /** The host's services as they are now. */
+  services: () => DocServices;
+  store: SuggestionStore;
+  portals: PortalStore;
+  /** The suggestion card's state, shared with the / menu and Ask AI. */
+  writes: AiWriteStore;
+  /** Images on their way in, drawn as placeholders until their upload finishes. */
+  uploads: UploadStore;
+  /** More extensions, such as collaboration's; they may replace the initial content. */
+  extensions?: readonly AnyExtension[] | undefined;
+  onUpdate: (editor: Editor) => void;
+  /** What the page's own keys ask of the component around the editor. */
+  keys?: DocEditorKeys | undefined;
+}
+
+export interface DocEditorKeys {
+  /** ⌘K: the link field over the selection, or at the caret. */
+  link: () => void;
+  /** Alt+F10: focus into the selection bubble, as the composer's toolbar takes it. */
+  toolbar: () => void;
+}
+
+/** ⌘K and Alt+F10, ported from the composer's keys (editor/create.ts). */
+function docKeys(keys: DocEditorKeys, store: SuggestionStore) {
+  return Extension.create({
+    name: 'docKeys',
+    addKeyboardShortcuts() {
+      return {
+        'Mod-k': () => {
+          if (store.isOpen || !this.editor.isEditable) return false;
+          keys.link();
+          return true;
+        },
+        'Alt-F10': () => {
+          keys.toolbar();
+          return true;
+        },
+      };
+    },
+  });
+}
+
+/** ProseMirror's own base styles as classes, plus the empty-line hint the mock shows. */
+const PROSEMIRROR = cx(
+  'relative min-w-0 whitespace-break-spaces outline-0 [font-variant-ligatures:none]',
+  '[&_[contenteditable=false]]:whitespace-normal',
+  '[&_img.ProseMirror-separator]:inline [&_img.ProseMirror-separator]:m-0 [&_img.ProseMirror-separator]:border-0',
+  '[&_.ProseMirror-selectednode]:rounded-card [&_.ProseMirror-selectednode]:shadow-ring',
+  '[&_.ProseMirror-gapcursor]:relative [&_.ProseMirror-gapcursor]:after:absolute [&_.ProseMirror-gapcursor]:after:-top-0.5 [&_.ProseMirror-gapcursor]:after:block [&_.ProseMirror-gapcursor]:after:w-5 [&_.ProseMirror-gapcursor]:after:border-t [&_.ProseMirror-gapcursor]:after:border-tx',
+  '[&_.is-empty]:before:pointer-events-none [&_.is-empty]:before:float-left [&_.is-empty]:before:h-0 [&_.is-empty]:before:text-tx-3 [&_.is-empty]:before:content-[attr(data-placeholder)]',
+  '[&_.tableWrapper]:min-w-0 [&_.tableWrapper]:overflow-x-auto',
+  // Room above the code for its language and Copy (code-tools.tsx).
+  '[&_pre]:pt-10',
+  '[&_[data-type=pageLink]]:cursor-pointer [&_[data-type=pageLink]]:text-acc',
+  '[&_[data-type=unsupportedBlock]]:rounded-card [&_[data-type=unsupportedBlock]]:border [&_[data-type=unsupportedBlock]]:border-dashed [&_[data-type=unsupportedBlock]]:border-line [&_[data-type=unsupportedBlock]]:bg-side [&_[data-type=unsupportedBlock]]:px-4 [&_[data-type=unsupportedBlock]]:py-3 [&_[data-type=unsupportedBlock]]:text-13 [&_[data-type=unsupportedBlock]]:text-tx-3',
+);
+
+/**
+ * The schema's extensions as the editor draws them: a portal node view on each node that has
+ * one, and the table carrying its classes (the schema's table has none, as exports style
+ * their own).
+ */
+function withViews(extensions: AnyExtension[], portals: PortalStore): AnyExtension[] {
+  return extensions.map((extension) => {
+    if (extension.name === 'table') {
+      return extension.configure({ HTMLAttributes: { class: TABLE }, renderWrapper: true });
+    }
+    const spec = NODE_VIEWS[extension.name];
+    if (!spec || extension.type !== 'node') return extension;
+    return extension.extend({
+      addNodeView: () => (props: NodeViewRendererProps) => new PortalNodeView(props, spec, portals),
+    });
+  });
+}
+
+/** The Docs editor: every registered node, the / [[ # @ lists and code colours. */
+export function createDocEditor(options: CreateDocEditorOptions): Editor {
+  const { store, services } = options;
+  // Collaboration brings Yjs undo; ProseMirror's history beside it would undo other people's edits.
+  const collaborative = (options.extensions ?? []).some(
+    (extension) => extension.name === 'collaboration',
+  );
+  const schema = docExtensions({
+    mention: mentionOptions(store, services),
+    references: { pattern: null, suggestion: null },
+    history: !collaborative,
+  });
+  return new Editor({
+    element: null,
+    injectCSS: false,
+    editable: options.editable,
+    content: options.initialDoc ?? '',
+    autofocus: options.autoFocus ? 'end' : false,
+    extensions: [
+      ...withViews(schema, options.portals),
+      Placeholder.configure({ placeholder: options.placeholder, showOnlyCurrent: true }),
+      docSlash(store, services),
+      pageLinks(store, services),
+      issueEmbeds(store, services),
+      imageDrop(services, options.uploads),
+      CodeHighlight,
+      blockKeys(() => store.isOpen),
+      ...(options.keys ? [docKeys(options.keys, store)] : []),
+      // Made with the editor and asleep until the host lends AI: nothing is added to it later.
+      ghostText({ handler: () => services().ai }),
+      aiWrite({ store: options.writes }),
+      ...(options.extensions ?? []),
+    ],
+    editorProps: {
+      attributes: {
+        id: options.id,
+        role: 'textbox',
+        'aria-multiline': 'true',
+        'aria-label': options.label,
+        class: proseClass('doc', PROSEMIRROR),
+      },
+      handleClickOn: (_view, _pos, node, _nodePos, event) => {
+        if (node.type.name !== 'pageLink') return false;
+        const href = services().pageHref?.(String(node.attrs['pageId'] ?? ''));
+        if (!href || !(event.metaKey || event.ctrlKey || !options.editable)) return false;
+        services().onNavigate?.(href);
+        return true;
+      },
+    },
+    onUpdate: ({ editor }) => options.onUpdate(editor),
+  });
+}

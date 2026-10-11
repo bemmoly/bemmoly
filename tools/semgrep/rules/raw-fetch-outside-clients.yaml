@@ -10,6 +10,9 @@ rules:
       exclude:
         - '**/clients/**'
         - /packages/api-client/**
+        # A module's typed API client, the module-side half of packages/api-client: its
+        # endpoint files call the shared client's http.request, never fetch directly.
+        - /modules/*/web/src/api/**
         - '**/*.test.ts'
         - '**/*.test.tsx'
         - '**/*.int.test.ts'

@@ -8,6 +8,7 @@ import {
   loadTransitions,
   loadWorkflow,
   toWorkflow,
+  WORKFLOW_COLUMNS,
   type StatusRow,
   type WorkflowRow,
 } from './rows.ts';
@@ -38,20 +39,23 @@ async function upsertStatuses(
   for (const status of draft.statuses) {
     const color = status.color ?? null;
     const roles = status.allowedRoleIds ?? [];
+    const x = status.x ?? null;
+    const y = status.y ?? null;
     if (isExisting(status.id, existing)) {
       await sql`
         update workflow_statuses
         set name = ${status.name}, category = ${status.category}, color = ${color},
-          position = ${status.position}, allowed_role_ids = ${roles}, updated_at = now()
+          position = ${status.position}, allowed_role_ids = ${roles}, x = ${x}, y = ${y},
+          updated_at = now()
         where id = ${status.id}`;
       ids.set(status.id, status.id.toLowerCase());
       continue;
     }
     const [row] = await sql<{ id: string }[]>`
       insert into workflow_statuses (workflow_id, name, category, color, position,
-        allowed_role_ids)
+        allowed_role_ids, x, y)
       values (${workflowId}, ${status.name}, ${status.category}, ${color}, ${status.position},
-        ${roles})
+        ${roles}, ${x}, ${y})
       returning id`;
     if (row) ids.set(status.id, row.id);
   }
@@ -137,10 +141,10 @@ export function createWorkflowPublisher(deps: WorkflowServiceDeps) {
         await retireStatuses(tx, removed, body.statusMapping ?? {}, ids, actorId);
         const [next] = await tx<WorkflowRow[]>`
           update workflows
-          set published_version = published_version + 1, draft = null, updated_at = now()
+          set published_version = published_version + 1, published_at = now(), draft = null,
+            updated_at = now()
           where id = ${id}
-          returning id, project_id, origin_id, name, published_version, draft, created_at,
-            updated_at`;
+          returning ${tx.unsafe(WORKFLOW_COLUMNS)}`;
         return toWorkflow(
           next as WorkflowRow,
           await loadStatuses(tx, id),

@@ -5,6 +5,7 @@ import { PassThrough } from 'node:stream';
 import { text } from 'node:stream/consumers';
 import { pipeline } from 'node:stream/promises';
 import { createS3Bucket } from '../../../clients/s3-bucket.ts';
+import { trimSlashes, trimTrailingSlashes } from '../../../utils/slashes.ts';
 import type { SystemDependencies } from '../deps.ts';
 import { readSetting } from '../settings.ts';
 import { createDigestStream } from '../utils/hashing.ts';
@@ -32,7 +33,7 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 async function fromS3Url(deps: SystemDependencies, ref: string): Promise<SetSource> {
   const url = new URL(ref);
-  const parts = url.pathname.replace(/^\/+|\/+$/g, '').split('/');
+  const parts = trimSlashes(url.pathname).split('/');
   const setName = parts.pop() ?? '';
   const settings = await readSetting(deps.settings, 'system.backups.s3');
   if (!settings) {
@@ -58,7 +59,7 @@ async function fromS3Url(deps: SystemDependencies, ref: string): Promise<SetSour
 export async function resolveSetSource(deps: SystemDependencies, ref: string): Promise<SetSource> {
   if (ref.startsWith('s3://')) return fromS3Url(deps, ref);
   if (ref.startsWith('/')) {
-    const folder = ref.endsWith(MANIFEST_FILE) ? path.dirname(ref) : ref.replace(/\/+$/, '');
+    const folder = ref.endsWith(MANIFEST_FILE) ? path.dirname(ref) : trimTrailingSlashes(ref);
     return {
       destination: createLocalDestination(path.dirname(folder)),
       setName: path.basename(folder),

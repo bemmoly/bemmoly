@@ -1,11 +1,13 @@
 {
   "name": "@bemmoly/shared",
-  "version": "0.1.4",
+  "version": "0.6.0",
   "private": true,
   "license": "MIT",
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./ai-insights": "./src/schemas/ai/insights.ts",
+    "./ai-answers": "./src/ai-answers.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit -p tsconfig.json",

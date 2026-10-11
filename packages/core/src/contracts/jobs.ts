@@ -19,6 +19,8 @@ export interface JobRegisterOptions {
   retryBackoff?: boolean;
   /** Maximum handlers of this job running at once in one process. */
   concurrency?: number;
+  /** How long one run may take before the queue retries it; defaults to 15 minutes. */
+  expireInSeconds?: number;
 }
 
 export interface EnqueueOptions {

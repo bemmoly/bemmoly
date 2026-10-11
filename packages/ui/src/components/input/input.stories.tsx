@@ -16,7 +16,7 @@ export const SetupForm: Story = {
     mock: [{ file: 'Bemmoly Setup.dc.html', x: 480, y: 433, w: 720, h: 268, note: 'step 1 form' }],
   },
   render: () => (
-    <div className="grid w-180 grid-cols-2 gap-3.5 rounded-card border border-br bg-sf p-5">
+    <div className="grid w-180 grid-cols-2 gap-3.5 rounded-card border border-line bg-card p-5">
       <Field label="Workspace name">
         <Input size="lg" defaultValue="Acme Labs" />
       </Field>

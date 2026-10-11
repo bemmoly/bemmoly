@@ -13,23 +13,23 @@ It replaces the placeholder "B" glyph on an accent tile.
 
 ## Variants
 
-| File             | What it is                                                           |
-| ---------------- | -------------------------------------------------------------------- |
-| `mark-*.svg`     | The four-tile mark (top bar, favicon, app icons).                    |
-| `wordmark-*.svg` | The "Bemmoly" lettering alone.                                       |
-| `lockup-*.svg`   | Mark and wordmark side by side, 9px apart (the top bar brand block). |
+| File             | What it is                                                                                                            |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `mark-*.svg`     | The four-tile mark (top bar, favicon, app icons).                                                                     |
+| `wordmark-*.svg` | The "Bemmoly" lettering alone.                                                                                        |
+| `lockup-*.svg`   | Mark and wordmark side by side, 10 units apart, the lettering at 115% so the word carries beside the mark (ADR 0015). |
 
 Each comes in four tones:
 
-| Suffix   | Use                                                         | Colours                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| -------- | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `-color` | Default in the app (`tone="auto"`).                         | Blue tiles `var(--brand-mark-bg, #2356C9)`, mid tile `var(--brand-mark-mid, #5B7BE5)`, lilac tile `var(--brand-mark-fg, #9A85EA)`, lettering `currentColor` (`Logo` sets it to `--tx`). The designed colours are the default on every preset. Only under a custom brand theme (`data-theme="custom"`) does `Logo` recolour the tiles: `--ac`, `--ac-l`, and the brand colour mixed 45% with `--sf` (lighter in light mode, toward the surface in dark mode). This replaces the placeholder's "accent tile and on-accent glyph" rule. |
-| `-dark`  | On light backgrounds where CSS variables are not available. | Tiles `#1b2430`, `#4b5565` (mid), `#8690a0` (lilac); lettering `#1b2430`.                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| `-light` | On dark backgrounds.                                        | Tiles white at 100%, 80% (mid) and 60% (lilac); white lettering.                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| `-mono`  | One colour (print, embossing, single-colour UI).            | Everything `currentColor`; tiles at 100%, 75% (mid) and 55% (lilac) opacity so the groups still read.                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| Suffix   | Use                                                         | Colours                                                                                                                                                                                                                                                                                                                   |
+| -------- | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `-color` | Default in the app (`tone="auto"`).                         | Blue tiles `var(--brand-mark-bg, #2356C9)`, mid tile `var(--brand-mark-mid, #5B7BE5)`, lilac tile `var(--brand-mark-fg, #9A85EA)`, lettering `currentColor` (`Logo` sets it to `--tx`). `Logo` draws every tile in its designed colour on every preset and every custom theme: themes never recolour the mark (ADR 0015). |
+| `-dark`  | On light backgrounds where CSS variables are not available. | Tiles `#1b2430`, `#4b5565` (mid), `#8690a0` (lilac); lettering `#1b2430`.                                                                                                                                                                                                                                                 |
+| `-light` | On dark backgrounds.                                        | Tiles white at 100%, 80% (mid) and 60% (lilac); white lettering.                                                                                                                                                                                                                                                          |
+| `-mono`  | One colour (print, embossing, single-colour UI).            | Everything `currentColor`; tiles at 100%, 75% (mid) and 55% (lilac) opacity so the groups still read.                                                                                                                                                                                                                     |
 
 The app's CSP refuses inline style attributes, so `Logo` rewrites each `style="fill: var(--x, #hex)"`
-into `class="x" fill="#hex"` before inlining a file; the class is what a custom theme recolours.
+into `fill="#hex"` before inlining a file.
 
 ## Contract
 
@@ -52,24 +52,38 @@ Keep this stable so a replacement drops in without code changes:
 
 ## Pending
 
-- The lilac `#9A85EA` is reserved as the future AI accent; the `--ai` tokens will be revisited when the AI release is designed, and are not tied to the mark today.
+- The logo's colours are the product's colour system (ADR 0015): `#2356C9` is the accent and Work, `#5B7BE5` Docs and the dark accent, `#9A85EA` AI only (the `--brand-1/2/3` and `--ai` tokens).
 
 ## Generated files (`generated/`, committed)
 
 Built from `mark-color.svg` (its designed colours) and `lockup-color.svg`; the plates use the Classic
 preset surface and the designed blue:
 
-| File                                             | Size        | Use                                                                                                                                                                                                                                                                     |
-| ------------------------------------------------ | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `favicon.svg`                                    | vector      | `<link rel="icon" type="image/svg+xml">`; the mark on transparent                                                                                                                                                                                                       |
-| `favicon-32.png`                                 | 32          | `<link rel="icon" sizes="32x32">`; mark at 72% on a white rounded square                                                                                                                                                                                                |
-| `apple-touch-icon.png`                           | 180         | `<link rel="apple-touch-icon">`; mark at 72% on a full-bleed white square (iOS rounds it and would paint transparent corners black)                                                                                                                                     |
-| `icon-192.png`, `icon-512.png`                   | 192, 512    | PWA manifest, `"purpose": "any"`; mark at 72% on a white rounded square                                                                                                                                                                                                 |
-| `icon-maskable-192.png`, `icon-maskable-512.png` | 192, 512    | PWA manifest, `"purpose": "maskable"`; solid `#2356C9`, mark at 64% inside the safe zone with the blue tiles white, the mid tile 80% white and the lilac kept                                                                                                           |
-| `social-preview.png`                             | 1200 x 630  | `og:image` and `twitter:image`: lockup, tagline, one line about the product, the install command and a framed slice of the Board shot (`apps/site/src/assets/screens/board.png`) on the Classic background with an accent glow; composed by `scripts/social-preview.ts` |
-| `social-preview-square.png`                      | 1080 x 1080 | The same elements stacked (lockup, copy, Board) for platforms that crop square                                                                                                                                                                                          |
+| File                                             | Size        | Use                                                                                                                                                                                                                                                                   |
+| ------------------------------------------------ | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `favicon.svg`                                    | vector      | `<link rel="icon" type="image/svg+xml">`; the mark on transparent                                                                                                                                                                                                     |
+| `favicon-32.png`                                 | 32          | `<link rel="icon" sizes="32x32">`; mark at 72% on a white rounded square                                                                                                                                                                                              |
+| `apple-touch-icon.png`                           | 180         | `<link rel="apple-touch-icon">`; mark at 72% on a full-bleed white square (iOS rounds it and would paint transparent corners black)                                                                                                                                   |
+| `icon-192.png`, `icon-512.png`                   | 192, 512    | PWA manifest, `"purpose": "any"`; mark at 72% on a white rounded square                                                                                                                                                                                               |
+| `icon-maskable-192.png`, `icon-maskable-512.png` | 192, 512    | PWA manifest, `"purpose": "maskable"`; solid `#2356C9`, mark at 64% inside the safe zone with the blue tiles white, the mid tile 80% white and the lilac kept                                                                                                         |
+| `social-preview.png`                             | 1200 x 630  | `og:image` and `twitter:image`: lockup, tagline, one line about the product, the install command and a framed slice of the Board captured from the demo (`captures/board.png`) on the Classic background with an accent glow; composed by `scripts/social-preview.ts` |
+| `social-preview-square.png`                      | 1080 x 1080 | The same elements stacked (lockup, copy, Board) for platforms that crop square                                                                                                                                                                                        |
 
 The app imports them through the package export `@bemmoly/ui/brand/generated/<file>`.
+
+## Captures (`captures/`, committed)
+
+`board.png` and `board-ocean.png` are the Board of the demo build (`apps/web`, `--mode demo`) at
+the homepage previews' viewport, 1280 x 744 at 2x (2560 x 1488), in Classic and in Ocean. Every
+social preview and banner frames a slice of them. `scripts/brand-captures.ts` takes them from a
+running demo, removes the demo banner and blanks the sidebar's version line, so the images do
+not go stale with a release:
+
+```sh
+pnpm --filter @bemmoly/web exec vite --mode demo --port 5431   # in another terminal
+pnpm --filter @bemmoly/ui brand:captures   # --url to point at another demo address
+pnpm --filter @bemmoly/ui brand:icons
+```
 
 ## Banners
 
@@ -84,6 +98,11 @@ The banners carry **no mark and no wordmark**: each platform shows the mark as t
 picture beside the banner, so the only name on them is "bemmoly.com", small, in a corner. The
 README hero and the repository social preview are shown with no avatar beside them, so those
 two keep the lockup.
+
+The copy is `HEADLINE` and `LINE` in `scripts/social-preview.ts`: "Your work. Your platform."
+over "Self-hosted issues and docs. Open source, no pricing, nothing to buy." It makes no claim
+the shipped product does not keep and carries no version number. The lilac tile of the mark is
+the only lilac on any of these images; the glow is the accent.
 
 Regenerate after changing the copy, a capture or a token:
 

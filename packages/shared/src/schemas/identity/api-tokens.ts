@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { moduleIdSchema } from '../../modules/index.ts';
 
 /** `read` allows GET and HEAD; `write` allows every method. Capabilities still apply on top. */
 export const API_TOKEN_SCOPES = ['read', 'write'] as const;
@@ -9,6 +10,11 @@ export const createApiTokenSchema = z.object({
   name: z.string().trim().min(1).max(100),
   scopes: z.array(apiTokenScopeSchema).min(1).max(API_TOKEN_SCOPES.length),
   expiresAt: z.iso.datetime({ offset: true }).nullable().optional(),
+  /**
+   * The modules the token may reach (`["work"]`); null or absent means every module the owner
+   * can open. Module access and capabilities still apply on top.
+   */
+  modules: z.array(moduleIdSchema).min(1).max(32).nullable().optional(),
 });
 
 export const apiTokenSchema = z.object({
@@ -17,6 +23,8 @@ export const apiTokenSchema = z.object({
   /** First characters of the secret, so a person can tell tokens apart. */
   prefix: z.string(),
   scopes: z.array(apiTokenScopeSchema),
+  /** Null: every module the owner can open. */
+  modules: z.array(z.string()).nullable(),
   lastUsedAt: z.string().nullable(),
   expiresAt: z.string().nullable(),
   createdAt: z.string(),

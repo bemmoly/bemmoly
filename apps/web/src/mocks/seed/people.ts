@@ -1,4 +1,4 @@
-import type { ModuleGrant, Role, Team, TeamMember, User } from '@bemmoly/shared';
+import type { Role, Team, TeamMember, User } from '@bemmoly/shared';
 import { ago, uid } from './time.ts';
 
 /** Data from the People mock's DCLogic block, in the identity stream's shapes. */
@@ -134,17 +134,4 @@ export function seedTeams(): { teams: Team[]; members: TeamMember[] } {
     user.teamIds.map((teamId) => ({ teamId, userId: user.id, createdAt: ago(60 * 24 * 10) })),
   );
   return { teams, members };
-}
-
-export function seedGrants(): ModuleGrant[] {
-  return [
-    {
-      id: uid(60),
-      moduleId: 'sample',
-      subjectKind: 'everyone',
-      subjectId: null,
-      grantedBy: USER_IDS.rohan,
-      createdAt: ago(60 * 24 * 3),
-    },
-  ];
 }

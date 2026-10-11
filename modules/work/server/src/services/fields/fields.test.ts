@@ -50,11 +50,12 @@ describe('fields service', () => {
     ).rejects.toBeInstanceOf(ConflictError);
   });
 
-  it('refuses writes without the configure capability before touching the database', async () => {
-    const sql = fakeSql([]);
+  it('refuses writes without the configure capability before changing anything', async () => {
+    const sql = fakeSql([[{ project_id: null }]]);
     await expect(
       createFieldsService({ database: sql.client }).remove(contextWhere(false), null, fieldId),
     ).rejects.toBeInstanceOf(ForbiddenError);
-    expect(sql.statements).toEqual([]);
+    expect(sql.statements).toHaveLength(1);
+    expect(sql.statements[0]).toContain('select project_id from');
   });
 });

@@ -1,29 +1,35 @@
 ---
-import AfterInstall from '../components/self-hosting/AfterInstall.astro';
+/**
+ * The one self-hosting and install page: every Install button on the site lands on #install.
+ * In order: the one command, the other ways to run it, what happens, checking it is healthy,
+ * first login, modules, AI (optional), upgrades, backups, the bemmoly command, troubleshooting
+ * and sizing. /docs/install redirects here (Caddyfile); /docs/compose is the Compose reference.
+ */
+import Care from '../components/self-hosting/Care.astro';
+import Install from '../components/self-hosting/Install.astro';
 import Paths from '../components/self-hosting/Paths.astro';
-import Recommended from '../components/self-hosting/Recommended.astro';
+import Run from '../components/self-hosting/Run.astro';
 import Sizing from '../components/self-hosting/Sizing.astro';
-import WhatYouGet from '../components/self-hosting/WhatYouGet.astro';
-import CopyScript from '../components/site/CopyScript.astro';
+import StatusNote from '../components/topics/StatusNote.astro';
 import Page from '../layouts/Page.astro';
 import { RELEASE } from '../data/landing.ts';
-import { REPO_URL } from '../lib/links.ts';
+import { pageAt } from '../data/pages.ts';
 ---
 
 <Page
-  title="Self-hosting"
-  description="Run Bemmoly on a fresh Linux VM with one command, or start from the Docker Compose, Kubernetes, Postgres or offline setup you already have. HTTPS, backups and upgrades are built in."
-  lede="Bemmoly is one container next to one Postgres. For almost everyone the answer is one command on a fresh VM; if you already run something, start from that instead."
+  page={pageAt('/self-hosting')}
+  heading="Install and run Bemmoly on your own server"
+  lede="Bemmoly is one container next to one Postgres. For almost everyone that means one command on a fresh Linux VM. Free, open source and yours: no pricing, no seat limits, nothing to buy."
   wide
 >
-  <p class="max-w-190 rounded-card border border-br bg-sf2 px-4 py-3 text-14h leading-desc text-tx3 dark:bg-sf">
-    Version {RELEASE.version} is still being built. The badges say where each option stands for it;
-    follow progress on <a href={REPO_URL}>GitHub</a> and in the <a href="/changelog">changelog</a>.
-  </p>
-  <Recommended />
+  <StatusNote>
+    The installer pulls the newest stable release, {RELEASE.version} today: the foundation (setup,
+    people and roles, email, backups and updates), Work, Docs and optional AI. The badges say where
+    each way to run it stands, and the <a href="/changelog">changelog</a> lists every release.
+  </StatusNote>
+  <Install />
   <Paths />
-  <WhatYouGet />
-  <AfterInstall />
+  <Run />
+  <Care />
   <Sizing />
-  <CopyScript />
 </Page>

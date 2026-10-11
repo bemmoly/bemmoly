@@ -14,18 +14,27 @@ export interface StoredNotification {
   body: string;
   reason: string | null;
   readAt: Date | null;
+  doneAt: Date | null;
+  snoozedUntil: Date | null;
   createdAt: Date;
 }
 
 function groupKey(row: StoredNotification): string {
-  return [row.kind, row.targetKind, row.targetId, row.readAt ? 'read' : 'unread'].join('\u0000');
+  return [
+    row.kind,
+    row.targetKind,
+    row.targetId,
+    row.readAt ? 'read' : 'unread',
+    row.doneAt ? 'done' : 'open',
+    row.snoozedUntil?.toISOString() ?? '',
+  ].join('\u0000');
 }
 
 /**
  * Read-time grouping, so writes stay one row per event: rows of one page with
- * the same kind and target (and read state) become one entry, newest first,
- * "Aisha K. and 2 others commented on PLT-204". A group may continue on the
- * next page; it is grouped again there.
+ * the same kind and target (and read, done and snooze state) become one entry,
+ * newest first, "Aisha K. and 2 others commented on PLT-204". A group may
+ * continue on the next page; it is grouped again there.
  */
 export function groupNotifications(rows: readonly StoredNotification[]): NotificationItem[] {
   const groups = new Map<string, StoredNotification[]>();
@@ -62,6 +71,8 @@ export function groupNotifications(rows: readonly StoredNotification[]): Notific
       },
       body: newest.body,
       read: newest.readAt !== null,
+      done: newest.doneAt !== null,
+      snoozedUntil: newest.snoozedUntil?.toISOString() ?? null,
       createdAt: newest.createdAt.toISOString(),
     };
   });

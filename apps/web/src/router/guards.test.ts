@@ -27,7 +27,7 @@ describe('requireSession while setup is unfinished', () => {
   it('starts at the import step when no step is remembered', async () => {
     mockApi.reset('wizard');
     const target = await redirectOf(requireSession(testQueryClient(), '/settings/appearance'));
-    expect(target).toMatchObject({ to: '/setup', search: { step: 2 } });
+    expect(target).toMatchObject({ to: '/setup', search: { step: 3 } });
   });
 
   it('lets everyone in once setup is finished', async () => {

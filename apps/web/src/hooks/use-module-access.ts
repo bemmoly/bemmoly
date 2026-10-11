@@ -39,11 +39,14 @@ export function modulesForUser(user: Subject, grants: readonly ModuleGrant[]): s
   return [...ids].sort();
 }
 
-/** A module's name from its top navigation entry, or its id when it has none. */
+/**
+ * A module's name from its manifest. A server that sends no name falls back
+ * to the id, capitalised: a top navigation entry names a screen (Work's is
+ * "Board"), not the module.
+ */
 export function moduleLabel(id: string, manifests: readonly ModuleManifest[] = []): string {
   const manifest = manifests.find((entry) => entry.id === id);
-  const entry = manifest?.navigation.find((nav) => nav.placement === 'top');
-  return entry?.label ?? id.charAt(0).toUpperCase() + id.slice(1);
+  return manifest?.name ?? id.charAt(0).toUpperCase() + id.slice(1);
 }
 
 export interface SubjectNames {

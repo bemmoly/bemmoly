@@ -56,7 +56,7 @@ export function VersionCard(props: VersionCardProps) {
       <SettingsRow
         title={
           <>
-            Running <span className="font-mono text-12h">{current.version}</span>
+            Running <span className="font-mono text-13">{current.version}</span>
           </>
         }
         description={checkedLine(checks)}

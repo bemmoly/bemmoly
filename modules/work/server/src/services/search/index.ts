@@ -74,7 +74,7 @@ export function createSearchService(deps: Pick<IssueServiceDeps, 'database'>) {
       return rows.map(toHit);
     },
 
-    /** Key prefix first, then title prefix, then anywhere in the title: what ⌘K shows. */
+    /** The exact key, then key prefix, title prefix and anywhere in the title: what ⌘K shows. */
     async suggest(ctx: RequestContext, query: SuggestQuery): Promise<Suggestion[]> {
       const sql = requireDatabase(deps);
       await ctx.authz.authorize(ctx.actor, 'work.issue.view', MODULE_RESOURCE);
@@ -86,8 +86,8 @@ export function createSearchService(deps: Pick<IssueServiceDeps, 'database'>) {
         where i.deleted_at is null
           and (i.key ilike ${`${term}%`} or i.title ilike ${`%${term}%`})
           and (${projects === null} or i.project_id = any(${projects ?? []}::uuid[]))
-        order by (i.key ilike ${`${term}%`}) desc, (i.title ilike ${`${term}%`}) desc,
-          i.updated_at desc
+        order by (i.key = ${query.q.toUpperCase()}) desc, (i.key ilike ${`${term}%`}) desc,
+          (i.title ilike ${`${term}%`}) desc, i.updated_at desc
         limit ${query.limit}`;
       return rows.map(toSuggestion);
     },

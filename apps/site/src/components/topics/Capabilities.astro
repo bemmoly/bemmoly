@@ -1,0 +1,34 @@
+---
+/**
+ * A grid of capabilities (a drawn icon in an accent tile, 17px title, 14.5px body), with a status
+ * badge on every item so a topic page cannot present planned work as shipped. Plain blocks
+ * rather than a list, so a Section's list styles do not turn the grid into bullets.
+ */
+import { AVAILABILITY, type Capability } from '../../data/topics.ts';
+import Badge from '../site/Badge.astro';
+import Icon from '../site/Icon.astro';
+
+interface Props {
+  items: readonly Capability[];
+}
+
+const { items } = Astro.props;
+---
+
+<div class="grid gap-x-10 gap-y-8 sm:grid-cols-2 lg:grid-cols-3">
+  {items.map((item) => (
+    <div class="flex flex-col gap-2.5">
+      <div class="flex items-center gap-2.5">
+        <span
+          aria-hidden="true"
+          class="flex size-9 items-center justify-center rounded-card bg-acc-50 text-acc"
+        >
+          <Icon name={item.icon} size={18} />
+        </span>
+        <Badge tone={AVAILABILITY[item.status].tone}>{AVAILABILITY[item.status].label}</Badge>
+      </div>
+      <h3 class="text-17 font-semibold tracking-brand text-tx">{item.title}</h3>
+      <p class="text-14h leading-desc text-pretty text-tx-2">{item.body}</p>
+    </div>
+  ))}
+</div>

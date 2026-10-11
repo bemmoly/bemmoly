@@ -61,8 +61,46 @@ tester.run('bemmoly/boundaries', boundaries, {
       options,
     },
     { filename: at('apps/web/src/main.tsx'), code: "import React from 'react';", options },
+    {
+      filename: at('modules/docs/server/src/services/collab/extract.ts'),
+      code: "import { plainText } from '@bemmoly/editor/convert';",
+      options,
+    },
+    {
+      filename: at('modules/docs/server/src/services/collab/seed.ts'),
+      code: "import { editorSchema } from '@bemmoly/editor/schema';",
+      options,
+    },
+    {
+      filename: at('modules/docs/shared/outline.ts'),
+      code: "export { buildToc } from '@bemmoly/editor/convert';",
+      options,
+    },
+    {
+      filename: at('modules/docs/web/src/page/page-screen.tsx'),
+      code: "import { DocEditor } from '@bemmoly/editor';",
+      options,
+    },
   ],
   invalid: [
+    {
+      filename: at('modules/docs/server/src/services/collab/extract.ts'),
+      code: "import { DocEditor } from '@bemmoly/editor';",
+      options,
+      errors: [{ messageId: 'moduleWorkspace' }],
+    },
+    {
+      filename: at('modules/docs/shared/pages.ts'),
+      code: "const editor = () => import('@bemmoly/editor');",
+      options,
+      errors: [{ messageId: 'moduleWorkspace' }],
+    },
+    {
+      filename: at('modules/docs/server/src/services/collab/extract.ts'),
+      code: "import { x } from '@bemmoly/editor/src/convert/text.ts';",
+      options,
+      errors: [{ messageId: 'deepImport' }],
+    },
     {
       filename: at('modules/work/server/src/services/issues.ts'),
       code: "import { page } from '@bemmoly/module-docs';",

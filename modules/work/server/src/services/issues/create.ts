@@ -10,7 +10,8 @@ import { richTextToPlain } from '../../../../shared/rich-text.ts';
 import { recordHistory } from '../history/index.ts';
 import { actorUserId, projectResource, requireDatabase, type IssueServiceDeps } from './deps.ts';
 import { loadFieldDefinitions, requiredFieldKeys, validateCustomFields } from './fields.ts';
-import { notify, publishIssueChange } from './notify.ts';
+import { notify, notifyDescriptionMentions, publishIssueChange } from './notify.ts';
+import { assertOwnReferences } from './references.ts';
 import { loadIssueById, toIssue } from './rows.ts';
 
 /**
@@ -55,11 +56,18 @@ async function projectKeyOf(tx: SqlExecutor, projectId: string): Promise<string>
   return row.key;
 }
 
-async function assertTypeInProject(tx: SqlExecutor, projectId: string, typeId: string) {
-  const [row] = await tx<{ id: string }[]>`
-    select id from issue_types
-    where id = ${typeId} and (project_id = ${projectId} or project_id is null)`;
-  if (!row) throw new ValidationError('The issue type does not belong to this project');
+/**
+ * A new epic takes the next colour of the palette in its project, so two
+ * epics side by side never share one until the palette runs out.
+ */
+async function paintNewEpic(tx: SqlExecutor, issueId: string): Promise<void> {
+  await tx`
+    update issues i set color = 'epic-' || ((
+      select count(*) from issues e
+      join issue_types t on t.id = e.type_id and t.level = 'epic'
+      where e.project_id = i.project_id and e.id <> i.id) % 8 + 1)
+    where i.id = ${issueId} and i.color is null
+      and exists (select 1 from issue_types t where t.id = i.type_id and t.level = 'epic')`;
 }
 
 export async function createIssue(
@@ -75,7 +83,7 @@ export async function createIssue(
     const [projectKey, statusId] = await Promise.all([
       projectKeyOf(tx, body.projectId),
       initialStatusId(tx, body.projectId),
-      assertTypeInProject(tx, body.projectId, body.typeId),
+      assertOwnReferences(tx, body.projectId, body),
     ]);
     const definitions = await loadFieldDefinitions(tx, body.projectId);
     const customFields = validateCustomFields(definitions, body.customFields ?? {});
@@ -85,9 +93,11 @@ export async function createIssue(
     if (missing.length > 0) {
       throw new ValidationError('Required fields are missing', { details: { fields: missing } });
     }
+    // The counter lock serialises creates in a project, so the tail is read
+    // under it: read before, two creates in flight would append the same rank.
+    const number = await allocateNumber(tx, body.projectId);
     const [tail] = await tx<{ rank: string | null }[]>`
       select max(rank) as rank from issues where project_id = ${body.projectId}`;
-    const number = await allocateNumber(tx, body.projectId);
     const description = body.description ?? null;
     const [row] = await tx<{ id: string }[]>`
       insert into issues (project_id, number, key, type_id, title, description, description_text,
@@ -102,6 +112,7 @@ export async function createIssue(
         ${JSON.stringify(customFields)}::jsonb, ${last(tail?.rank ?? undefined)})
       returning id`;
     if (!row) throw new NotFoundError('The issue was not stored');
+    await paintNewEpic(tx, row.id);
     for (const labelId of body.labelIds ?? []) {
       await tx`insert into issue_labels (issue_id, label_id) values (${row.id}, ${labelId})`;
     }
@@ -121,6 +132,7 @@ export async function createIssue(
         dedupeKey: `issue:${issue.id}:assigned:${issue.assigneeId}:created`,
       });
     }
+    await notifyDescriptionMentions(deps, ctx, tx, issue, null);
     return issue;
   });
   return created as Issue;

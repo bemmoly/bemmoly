@@ -6,7 +6,10 @@ test('a stranger is sent to sign in, then back to where they were going', async 
   await useMockBackend(page, 'signed-out');
   await page.goto('/settings/notifications');
   await expect(page).toHaveURL(/\/login\?redirect=/);
-  await expect(page.getByText('Your work. Your platform.')).toBeVisible();
+  // The customer's workspace leads the card; Bemmoly stays under it.
+  await expect(page.getByText('Acme Labs')).toBeVisible();
+  await expect(page.getByText(/Powered by/)).toBeVisible();
+  await expect(page).toHaveTitle('Sign in · Acme Labs · Bemmoly');
 
   await page.getByLabel('Email').fill('rohan@acmelabs.dev');
   await page.getByLabel('Password').fill('not the password');

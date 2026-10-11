@@ -2,6 +2,12 @@ import { classifyFile, classifyImport } from './classify.js';
 
 const SERVER_ALLOWED = new Set(['core', 'shared']);
 const WEB_ALLOWED = new Set(['core', 'shared', 'ui', 'core-web', 'editor', 'api-client']);
+/**
+ * The editor's server-safe entries: the schema and the converters have no React and no DOM,
+ * so a module's server and shared code may read documents with them. The package root (the
+ * React editor) stays web-only.
+ */
+const SERVER_SUBPATHS = new Set(['@bemmoly/editor/schema', '@bemmoly/editor/convert']);
 
 const hasSegment = (rel, name) => rel.split('/').slice(0, -1).includes(name);
 
@@ -50,6 +56,7 @@ export const boundaries = {
         if (file.inApp && target.moduleId) return report('appImportsModule');
         if (file.moduleId) {
           const allowed = file.moduleWeb ? WEB_ALLOWED : SERVER_ALLOWED;
+          if (!file.moduleWeb && SERVER_SUBPATHS.has(specifier)) return;
           if (target.moduleId !== file.moduleId && !allowed.has(target.name))
             return report('moduleWorkspace');
         }

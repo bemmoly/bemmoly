@@ -2,7 +2,7 @@ import type { RequestContext, SqlClient, SqlExecutor } from '@bemmoly/core';
 import { ConflictError, NotFoundError, ProviderError } from '@bemmoly/shared';
 import type { CreateFieldBody, Field, UpdateFieldBody } from '../../../../shared/issue-types.ts';
 import { iso } from '../projects/rows.ts';
-import { authorizeScope, resolveScope, writableProjectId } from '../projects/scope.ts';
+import { authorizeScope, resolveScope, scopeOfRow, writableProjectId } from '../projects/scope.ts';
 
 export interface FieldsServiceDeps {
   database?: SqlClient;
@@ -61,7 +61,8 @@ export function createFieldsService(deps: FieldsServiceDeps) {
 
   async function forWrite(ctx: RequestContext, projectKey: string | null, id?: string) {
     const sql = db();
-    const scope = await resolveScope(sql, 'fields', projectKey);
+    const ref = id ? await scopeOfRow(sql, 'fields', projectKey, id) : projectKey;
+    const scope = await resolveScope(sql, 'fields', ref);
     await authorizeScope(ctx, scope, true);
     const projectId = writableProjectId(scope, 'fields');
     if (id) {

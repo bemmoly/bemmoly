@@ -8,6 +8,8 @@ import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { request } from 'node:http';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { PAGES } from '../src/data/pages.ts';
+import { parsePage, scriptsOf } from './dom.ts';
 
 const image = process.env.SITE_IMAGE ?? 'bemmoly-site:dev';
 let container = '';
@@ -81,6 +83,11 @@ describe('installer', () => {
     const response = await asHost('get.bemmoly.com', '/docs');
     expect(response.headers.get('location')).toBe('https://bemmoly.com/docs');
   });
+
+  it('keeps the script out of search results', async () => {
+    expect((await asHost('get.bemmoly.com', '/')).headers.get('x-robots-tag')).toBe('noindex');
+    expect((await get('/install.sh')).headers.get('x-robots-tag')).toBe('noindex');
+  });
 });
 
 describe('site', () => {
@@ -90,15 +97,12 @@ describe('site', () => {
     expect(response.headers.get('location')).toBe('https://bemmoly.com/security');
   });
 
-  it.each(['/', '/self-hosting', '/security', '/changelog', '/docs', '/community'])(
-    '%s is a page with a short cache',
-    async (path) => {
-      const response = await asHost('bemmoly.com', path);
-      expect(response.status).toBe(200);
-      expect(response.headers.get('content-type')).toBe('text/html; charset=utf-8');
-      expect(response.headers.get('cache-control')).toBe('public, max-age=300, must-revalidate');
-    },
-  );
+  it.each(PAGES.map((page) => page.path))('%s is a page with a short cache', async (path) => {
+    const response = await asHost('bemmoly.com', path);
+    expect(response.status).toBe(200);
+    expect(response.headers.get('content-type')).toBe('text/html; charset=utf-8');
+    expect(response.headers.get('cache-control')).toBe('public, max-age=300, must-revalidate');
+  });
 
   it('caches hashed assets for a year and compresses', async () => {
     const html = await (await get('/')).text();
@@ -115,6 +119,57 @@ describe('site', () => {
     expect(await response.text()).toContain('Page not found');
   });
 
+  it('answers the error page itself with a 404', async () => {
+    expect((await get('/404')).status).toBe(404);
+  });
+
+  it.each([
+    ['/docs.html', '/docs'],
+    ['/docs/compose.html', '/docs/compose'],
+    ['/docs/install', '/self-hosting#install'],
+    ['/docs/', '/docs'],
+    ['/index.html', '/'],
+  ])('redirects %s to the one address of the page, %s', async (path, location) => {
+    const response = await get(path);
+    expect(response.status).toBe(301);
+    expect(response.headers.get('location')).toBe(location);
+  });
+
+  it('serves the live demo at /demo, indexable, framable by the site alone', async () => {
+    const response = await get('/demo');
+    expect(response.status).toBe(200);
+    expect(response.headers.get('content-type')).toBe('text/html; charset=utf-8');
+    expect(response.headers.get('x-robots-tag')).toBeNull();
+    expect(response.headers.get('x-frame-options')).toBe('SAMEORIGIN');
+    expect(response.headers.get('content-security-policy')).toContain("frame-ancestors 'self'");
+    expect(await response.text()).toContain(
+      '<link rel="canonical" href="https://bemmoly.com/demo"',
+    );
+  });
+
+  it('answers every demo route with the demo page, kept out of search results', async () => {
+    const landing = await (await get('/demo')).text();
+    const response = await get('/demo/work/board/PLT');
+    expect(response.status).toBe(200);
+    expect(response.headers.get('x-robots-tag')).toBe('noindex');
+    expect(await response.text()).toBe(landing);
+    expect((await get('/demo/')).headers.get('location')).toBe('/demo');
+  });
+
+  it("caches the demo's hashed files for a year, and a missing one is a 404", async () => {
+    const landing = await (await get('/demo')).text();
+    const script = /src="(\/demo\/assets\/[^"]+\.js)"/.exec(landing)?.[1] ?? '';
+    const response = await get(script);
+    expect(response.status).toBe(200);
+    expect(response.headers.get('cache-control')).toBe('public, max-age=31536000, immutable');
+    expect((await get('/demo/assets/missing.js')).status).toBe(404);
+  });
+
+  it('serves the changelog feed as RSS', async () => {
+    const response = await get('/changelog.xml');
+    expect(response.headers.get('content-type')).toBe('application/rss+xml; charset=utf-8');
+  });
+
   it('sends the security headers, and the CSP allows exactly the inline script', async () => {
     const response = await get('/');
     for (const header of [
@@ -127,9 +182,12 @@ describe('site', () => {
     expect(response.headers.get('x-frame-options')).toBe('DENY');
     expect(response.headers.get('server')).toBeNull();
     const html = await response.text();
-    const scripts = [...html.matchAll(/<script\b(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/g)];
+    // JSON-LD is data the browser never runs, so the CSP needs no hash for it.
+    const inline = scriptsOf(parsePage(html)).filter(
+      (script) => script.src === undefined && script.type !== 'application/ld+json',
+    );
     const csp = response.headers.get('content-security-policy') ?? '';
-    for (const [, body = ''] of scripts) {
+    for (const { body } of inline) {
       const hash = createHash('sha256').update(body).digest('base64');
       expect(csp).toContain(`'sha256-${hash}'`);
     }

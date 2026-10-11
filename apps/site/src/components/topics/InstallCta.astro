@@ -1,0 +1,37 @@
+---
+/**
+ * The closing call to action of a topic page: the hero's install command, with the same copy
+ * button, and the two ways on.
+ */
+import { INSTALL_HREF } from '../../lib/links.ts';
+import CommandField from '../site/CommandField.astro';
+import Button from '../site/Button.astro';
+
+interface Props {
+  title?: string;
+}
+
+const { title = 'Run it on your own server' } = Astro.props;
+---
+
+<section
+  aria-labelledby="install-cta"
+  class="flex flex-col items-start gap-5 rounded-dialog border border-line bg-side p-5 sm:p-7 dark:bg-card"
+>
+  <h2 id="install-cta" class="text-20 leading-title font-semibold tracking-title text-tx">
+    {title}
+  </h2>
+  <p class="max-w-175 text-16 leading-desc text-tx-2">
+    On a fresh Linux VM with a domain pointing at it, one command installs Docker, Postgres,
+    automatic HTTPS, nightly backups and the updater, then prints the address to open.
+  </p>
+  <CommandField id="install-cta-command" />
+  <div class="flex flex-wrap gap-3">
+    <Button variant="primary" href={INSTALL_HREF}>
+      Read the install guide
+    </Button>
+    <Button variant="secondary" href="/self-hosting#other-paths">
+      Other ways to run it
+    </Button>
+  </div>
+</section>

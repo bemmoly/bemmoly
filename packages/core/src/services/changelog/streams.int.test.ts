@@ -6,6 +6,9 @@ import { freshDatabase, tableExists, type Fresh } from './test-support.ts';
 import { structuralProblems } from './validate.ts';
 
 const LATER_STREAM_TABLES = [
+  'ai_providers',
+  'ai_runs',
+  'embeddings',
   'users',
   'sessions',
   'roles',
@@ -17,6 +20,8 @@ const LATER_STREAM_TABLES = [
   'notifications',
   'notification_preferences',
   'backups',
+  'import_jobs',
+  'import_mappings',
 ];
 
 describe('changelog runner: every kernel stream together', () => {
@@ -46,10 +51,10 @@ describe('changelog runner: every kernel stream together', () => {
       [],
     );
     const prefixes = new Set(kernel.map((changeset) => changeset.id.slice(0, 2)));
-    expect([...prefixes]).toEqual(['00', '01', '02', '03']);
+    expect([...prefixes]).toEqual(['00', '01', '02', '03', '04', '05']);
   });
 
-  it('applies 00xx, 01xx, 02xx then 03xx from empty, and nothing on a second run', async (ctx) => {
+  it('applies 00xx through 05xx in order from empty, and nothing on a second run', async (ctx) => {
     if (!fresh) return ctx.skip(server.available ? 'no database' : server.reason);
     const kernel = await loadKernelChangelog();
     const runner = await runnerOn(fresh);
@@ -93,9 +98,13 @@ describe('changelog runner: every kernel stream together', () => {
     ]) {
       expect(allowed(capability)).toEqual(['org_admin']);
     }
-    const [locked] = await sql<{ count: number }[]>`
-      select count(distinct capability)::int as count from role_capabilities where locked_by_org`;
-    expect(locked?.count).toBe(4);
+    const locked = await sql<{ capability: string }[]>`
+      select distinct capability from role_capabilities where locked_by_org order by capability`;
+    expect(locked.map((row) => row.capability)).toEqual([
+      'workspace.delete',
+      'workspace.roles.manage',
+      'workspace.sso.configure',
+    ]);
   });
 
   it('keeps the audit log append-only', async (ctx) => {

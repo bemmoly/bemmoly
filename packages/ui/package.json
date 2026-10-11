@@ -1,14 +1,20 @@
 {
   "name": "@bemmoly/ui",
-  "version": "0.1.4",
+  "version": "0.6.0",
   "private": true,
   "license": "MIT",
   "type": "module",
+  "sideEffects": [
+    "**/*.css"
+  ],
   "exports": {
     ".": "./src/index.ts",
     "./tokens": "./src/tokens.ts",
     "./theme": "./src/theme/index.ts",
     "./icons": "./src/icons/index.ts",
+    "./ai-answer": "./src/components/ai-surface/ai-answer.tsx",
+    "./ai-insight-body": "./src/components/ai-surface/ai-insight-body.tsx",
+    "./time": "./src/lib/time.ts",
     "./theme.css": "./src/theme.css",
     "./tailwind.css": "./src/tailwind.css",
     "./fonts.css": "./src/fonts.css",
@@ -23,7 +29,8 @@
     "test": "vitest run",
     "brand:marks": "node scripts/brand-marks.ts",
     "brand:icons": "node scripts/brand-icons.ts",
-    "brand:banners": "node scripts/brand-banners.ts"
+    "brand:banners": "node scripts/brand-banners.ts",
+    "brand:captures": "node scripts/brand-captures.ts"
   },
   "dependencies": {
     "@fontsource/geist": "5.3.0",
@@ -38,6 +45,7 @@
     "react-dom": "19.3.0"
   },
   "devDependencies": {
+    "@playwright/test": "1.63.0",
     "@resvg/resvg-js": "2.6.2",
     "@storybook/react-vite": "10.6.1",
     "@tailwindcss/vite": "4.3.3",

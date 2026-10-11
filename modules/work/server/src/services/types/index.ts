@@ -8,7 +8,7 @@ import type {
   ReorderIssueTypesBody,
   UpdateIssueTypeBody,
 } from '../../../../shared/issue-types.ts';
-import { authorizeScope, resolveScope, writableProjectId } from '../projects/scope.ts';
+import { authorizeScope, resolveScope, scopeOfRow, writableProjectId } from '../projects/scope.ts';
 import { putLayout, readLayout } from './layout.ts';
 import {
   ISSUE_TYPE_COLUMNS,
@@ -35,9 +35,10 @@ export function createIssueTypesService(deps: IssueTypesServiceDeps) {
     return deps.database;
   };
 
-  async function forWrite(ctx: RequestContext, projectKey: string | null) {
+  async function forWrite(ctx: RequestContext, projectKey: string | null, id?: string) {
     const sql = db();
-    const scope = await resolveScope(sql, 'issue_types', projectKey);
+    const ref = id ? await scopeOfRow(sql, 'issue_types', projectKey, id) : projectKey;
+    const scope = await resolveScope(sql, 'issue_types', ref);
     await authorizeScope(ctx, scope, true);
     return { sql, projectId: writableProjectId(scope, 'issue_types') };
   }
@@ -81,7 +82,7 @@ export function createIssueTypesService(deps: IssueTypesServiceDeps) {
       id: string,
       patch: UpdateIssueTypeBody,
     ): Promise<IssueType> {
-      const { sql, projectId } = await forWrite(ctx, projectKey);
+      const { sql, projectId } = await forWrite(ctx, projectKey, id);
       await issueTypeIn(sql, projectId, id);
       const [row] = await sql<IssueTypeRow[]>`
         update issue_types set
@@ -124,7 +125,7 @@ export function createIssueTypesService(deps: IssueTypesServiceDeps) {
 
     /** Issues keep their type_id, so a type in use cannot go; the database says which. */
     async remove(ctx: RequestContext, projectKey: string | null, id: string): Promise<void> {
-      const { sql, projectId } = await forWrite(ctx, projectKey);
+      const { sql, projectId } = await forWrite(ctx, projectKey, id);
       await issueTypeIn(sql, projectId, id);
       try {
         await sql`delete from issue_types where id = ${id}`;
@@ -142,7 +143,8 @@ export function createIssueTypesService(deps: IssueTypesServiceDeps) {
       id: string,
     ): Promise<{ items: IssueTypeField[] }> {
       const sql = db();
-      const scope = await resolveScope(sql, 'issue_types', projectKey);
+      const ref = await scopeOfRow(sql, 'issue_types', projectKey, id);
+      const scope = await resolveScope(sql, 'issue_types', ref);
       await authorizeScope(ctx, scope, false);
       await issueTypeIn(sql, scope.rowsProjectId, id);
       return { items: await readLayout(sql, id) };
@@ -154,7 +156,7 @@ export function createIssueTypesService(deps: IssueTypesServiceDeps) {
       id: string,
       body: PutIssueTypeFieldsBody,
     ): Promise<{ items: IssueTypeField[] }> {
-      const { sql, projectId } = await forWrite(ctx, projectKey);
+      const { sql, projectId } = await forWrite(ctx, projectKey, id);
       await issueTypeIn(sql, projectId, id);
       return { items: await putLayout(sql, id, body.items) };
     },

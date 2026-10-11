@@ -1,14 +1,15 @@
-import type { UpdaterStatus } from '@bemmoly/shared';
+import type { UpdaterStatus, UpdaterStep } from '@bemmoly/shared';
 
 const escape = (value: string) => value.replace(/[&<>"']/g, (char) => `&#${char.charCodeAt(0)};`);
 
-const STEP_LABELS: Record<string, string> = {
+const STEP_LABELS: Record<UpdaterStep, string> = {
   backup: 'Backing up',
   pull: 'Downloading the new version',
   verify: 'Checking the signature',
   tag: 'Marking the database',
   swap: 'Starting the new version',
   health: 'Waiting for it to answer',
+  updater: 'Updating the updater',
   rollback: 'Rolling back',
   restore: 'Restoring the backup',
   done: 'Done',
@@ -19,7 +20,7 @@ const STEP_LABELS: Record<string, string> = {
  * It reveals nothing beyond the step and refreshes until the app answers again.
  */
 export function renderProgressPage(state: UpdaterStatus): string {
-  const step = state.step ? (STEP_LABELS[state.step] ?? state.step) : 'Starting';
+  const step = state.step ? STEP_LABELS[state.step] : 'Starting';
   const target = state.operation === 'rollback' ? 'Rolling back' : 'Updating';
   return `<!doctype html>
 <html lang="en">

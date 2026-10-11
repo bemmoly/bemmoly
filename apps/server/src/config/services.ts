@@ -1,9 +1,11 @@
 import {
   authenticateRequest,
+  createSecretBox,
   createUserDirectory,
   isSetupOpen,
   registerSystemJobs,
   wireEmailNotifications,
+  type Actor,
   type IdentityDependencies,
   type KernelRouteDependencies,
   type ModuleCatalog,
@@ -25,6 +27,8 @@ export interface KernelServicesInput {
   modules: ModuleCatalog;
   /** The handle the module admin was built with; bound to the system service here. */
   backup: ModuleDataBackupHandle;
+  /** /me's workspace.aiEnabled for one person, from the AI runtime. */
+  aiEnabled?: (actor: Actor) => Promise<boolean>;
   logger: Logger;
 }
 
@@ -32,7 +36,7 @@ export interface KernelServices {
   /** Sign-in, people, roles and audit routes and the authentication middleware. */
   identity: IdentityDependencies & { sql: SqlClient };
   /** Route dependencies the kernel's own routes do not carry. */
-  routes: Pick<KernelRouteDependencies, 'emailNotifications' | 'system'>;
+  routes: Pick<KernelRouteDependencies, 'emailNotifications' | 'system' | 'sso'>;
 }
 
 /**
@@ -50,6 +54,7 @@ export function wireKernelServices(input: KernelServicesInput): KernelServices {
     events: kernel.events,
     settings: kernel.settings,
     publicUrl: env.BEMMOLY_PUBLIC_URL,
+    ...(input.aiEnabled ? { aiEnabled: input.aiEnabled } : {}),
   });
   const mail = wireEmailNotifications({
     env,
@@ -81,6 +86,13 @@ export function wireKernelServices(input: KernelServicesInput): KernelServices {
   return {
     identity: people,
     routes: {
+      sso: {
+        db: database.db,
+        secrets: createSecretBox(env.BEMMOLY_SECRET_KEY),
+        publicUrl: env.BEMMOLY_PUBLIC_URL,
+        // Identity providers are often self-hosted on the private network; link-local never.
+        addressPolicy: env.BEMMOLY_ALLOW_PRIVATE_URLS ? 'any' : 'local',
+      },
       emailNotifications: mail.routes,
       system: {
         system,

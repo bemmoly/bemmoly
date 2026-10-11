@@ -33,17 +33,20 @@ export const backlogSchema = z.object({
   sprints: z.array(backlogSprintSchema),
   issues: z.array(issueSchema),
   epics: z.array(epicProgressSchema),
+  /** The keys of the open issues blocking each issue, by issue id; rows show a red lock. */
+  blocked: z.record(z.string(), z.array(z.string())).default({}),
 });
 
 /**
- * `POST /work/issues/:key/move`: the drop target. The issue lands after
- * `afterIssueId` and before `beforeIssueId`, either of which may be absent at
- * the ends of a list; `sprintId` moves it between containers (null is the
- * backlog) and is left out to rank within the current one.
+ * `POST /work/issues/:key/move`: the drop target. `beforeIssueId` is the row
+ * that ends up above the issue and `afterIssueId` the row below it, either of
+ * which may be absent at the ends of a list; `sprintId` moves it between
+ * containers (null is the backlog) and is left out to rank within the current
+ * one.
  */
 export const moveIssueBodySchema = rankIssueBodySchema;
 
 export type BacklogSprint = z.infer<typeof backlogSprintSchema>;
 export type EpicProgress = z.infer<typeof epicProgressSchema>;
 export type Backlog = z.infer<typeof backlogSchema>;
-export type MoveIssueBody = z.infer<typeof moveIssueBodySchema>;
+export type MoveIssueBody = z.input<typeof moveIssueBodySchema>;

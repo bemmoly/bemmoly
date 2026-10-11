@@ -4,8 +4,20 @@ export {
   Icon,
   ICON_NAMES,
   ICON_SIZE,
+  iconComponent,
   type GlyphName,
   type IconName,
   type IconProps,
 } from './icon.tsx';
+export { KIT_ICONS, type KitIconName } from './kit.tsx';
 export { SHAPES, type ShapeName } from './shapes.tsx';
+export {
+  formatPageIcon,
+  isIconName,
+  PAGE_ICON_TINTS,
+  PageIcon,
+  pageIconTintClass,
+  parsePageIcon,
+  type PageIconProps,
+  type PageIconTint,
+} from './page-icon.tsx';

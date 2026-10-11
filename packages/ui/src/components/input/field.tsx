@@ -32,7 +32,7 @@ export function Field({ label, hint, error, children, className }: FieldProps) {
       </label>
       {control}
       {message && (
-        <span id={messageId} className={cx('text-12', error ? 'text-danger' : 'text-tx5')}>
+        <span id={messageId} className={cx('text-12', error ? 'text-red' : 'text-tx-3')}>
           {message}
         </span>
       )}

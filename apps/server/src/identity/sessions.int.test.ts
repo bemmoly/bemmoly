@@ -28,6 +28,7 @@ describe('setup, sign-in and sessions against a real database', () => {
     expect((await call(app, 'GET', '/setup/status')).json()).toEqual({
       initialized: false,
       completedAt: null,
+      workspaceName: null,
     });
 
     const created = await call(app, 'POST', '/setup/admin', {
@@ -42,6 +43,7 @@ describe('setup, sign-in and sessions against a real database', () => {
     expect((await call(app, 'GET', '/setup/status')).json()).toEqual({
       initialized: true,
       completedAt: null,
+      workspaceName: 'Acme',
     });
 
     const again = await call(app, 'POST', '/setup/admin', {

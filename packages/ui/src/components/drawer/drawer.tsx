@@ -1,5 +1,7 @@
 import type { KeyboardEvent, ReactNode } from 'react';
 import { cx } from '../../lib/cx.ts';
+import { SHEET_MOTION } from '../../lib/motion.ts';
+import { usePresence } from '../../lib/presence.ts';
 import { useDialog } from '../../lib/use-dialog.ts';
 import { IconButton } from '../button/icon-button.tsx';
 
@@ -29,9 +31,9 @@ function Panel({
 }: Pick<DrawerProps, 'header' | 'actions' | 'onClose' | 'children'>) {
   return (
     <>
-      <div className="flex shrink-0 items-center gap-2 border-b border-br2 px-4 py-3 text-12h text-tx4">
+      <div className="flex shrink-0 items-center gap-2 border-b border-line-2 px-4 py-3 text-13 text-tx-3">
         <div className="flex min-w-0 items-center gap-2">{header}</div>
-        <div className="ml-auto flex items-center gap-1 font-semibold text-tx2">
+        <div className="ml-auto flex items-center gap-1 font-semibold text-tx-2">
           {actions}
           <IconButton label="Close" icon="close" size="xs" onClick={onClose} />
         </div>
@@ -54,17 +56,21 @@ export function Drawer({
   variant = 'docked',
   className,
 }: DrawerProps) {
-  const { ref, onBackdropClick } = useDialog(open && variant === 'overlay', onClose);
-  if (!open) return null;
+  const presence = usePresence(open);
+  const { ref, onBackdropClick } = useDialog(presence.mounted && variant === 'overlay', onClose);
+  if (!presence.mounted) return null;
+  const state = presence.leaving ? 'closed' : 'open';
   if (variant === 'overlay') {
     return (
       <dialog
         ref={ref}
         aria-label={label}
         onClick={onBackdropClick}
+        data-state={state}
         className={cx(
-          'm-0 ml-auto h-full max-h-full w-100 max-w-full flex-col border-0 border-l border-br bg-sf p-0 text-13 text-tx open:flex',
+          'm-0 ml-auto h-full max-h-full w-100 max-w-full flex-col border-0 border-l border-line bg-card p-0 text-13 text-tx open:flex',
           'backdrop:bg-scrim',
+          SHEET_MOTION,
           className,
         )}
       >
@@ -84,8 +90,10 @@ export function Drawer({
     <aside
       aria-label={label}
       onKeyDown={onKeyDown}
+      data-state={state}
       className={cx(
-        'flex min-h-0 w-100 shrink-0 flex-col border-l border-br bg-sf text-13 text-tx',
+        'flex min-h-0 w-100 shrink-0 flex-col border-l border-line bg-card text-13 text-tx',
+        SHEET_MOTION,
         className,
       )}
     >
@@ -101,7 +109,7 @@ export function DrawerTitle({ children, className }: { children: ReactNode; clas
   return (
     <h2
       className={cx(
-        'm-0 text-18 leading-title font-semibold tracking-brand text-pretty',
+        'm-0 text-16 leading-title font-semibold tracking-brand text-pretty',
         className,
       )}
     >

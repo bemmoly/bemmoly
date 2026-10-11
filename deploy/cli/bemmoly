@@ -52,6 +52,7 @@ Usage: bemmoly <command> [options]
   restore --unmount <database>
   upgrade [version] [--yes]   backup, pull, verify, swap, health check; rolls back on failure
   rollback [--prefer-restore] [--yes]
+  sync-updater                move the updater to the app's release (pull, verify, swap)
   db <command>                the changelog runner: status, validate, plan, history, tag
   update-channel [stable|beta]
 EOF
@@ -77,6 +78,7 @@ main() {
     restore) cmd_restore "$@" ;;
     upgrade) cmd_upgrade "$@" ;;
     rollback) cmd_rollback "$@" ;;
+    sync-updater) cmd_sync_updater "$@" ;;
     db) cmd_db "$@" ;;
     update-channel) cmd_update_channel "$@" ;;
     help | --help | -h) usage ;;

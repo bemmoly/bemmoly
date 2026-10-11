@@ -1,4 +1,10 @@
-import { COLOR_TOKENS, type ColorSet, type ThemeMode } from '../tokens/names.ts';
+import {
+  COLOR_TOKENS,
+  ELEVATION_TOKENS,
+  type ColorSet,
+  type ElevationSet,
+  type ThemeMode,
+} from '../tokens/names.ts';
 import { resolveHex } from './color.ts';
 
 /** What applyTheme needs: a preset from THEMES or the result of buildTheme. */
@@ -6,12 +12,14 @@ export interface ThemeTokens {
   id: string;
   mode: ThemeMode;
   colors: ColorSet;
+  elevation: ElevationSet;
   fontUi: string;
   fontCode: string;
 }
 
 const PROPERTY_NAMES = [
   ...COLOR_TOKENS.map((token) => `--${token}`),
+  ...ELEVATION_TOKENS.map((token) => `--${token}`),
   '--font-ui',
   '--font-code',
   'color-scheme',
@@ -21,6 +29,7 @@ const PROPERTY_NAMES = [
 export function themeStyle(theme: ThemeTokens): Record<string, string> {
   const style: Record<string, string> = {};
   for (const token of COLOR_TOKENS) style[`--${token}`] = theme.colors[token];
+  for (const token of ELEVATION_TOKENS) style[`--${token}`] = theme.elevation[token];
   style['--font-ui'] = theme.fontUi;
   style['--font-code'] = theme.fontCode;
   style['color-scheme'] = theme.mode;

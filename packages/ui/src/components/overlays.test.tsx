@@ -40,6 +40,27 @@ describe('Modal and Drawer', () => {
     expect(onClose).toHaveBeenCalled();
   });
 
+  it('keeps its name with a custom header and holds the footer outside the scroll', () => {
+    render(
+      <Modal
+        open
+        onClose={() => undefined}
+        title="Create issue"
+        header={<div>Platform Core</div>}
+        footer={<Button>Create issue</Button>}
+        width="composer"
+      >
+        Body
+      </Modal>,
+    );
+    const dialog = screen.getByRole('dialog', { name: 'Create issue' });
+    expect(dialog.className).toContain('w-180');
+    expect(dialog.className).toContain('max-sm:h-dvh');
+    const body = screen.getByText('Body');
+    expect(body.className).toContain('overflow-auto');
+    expect(body.contains(screen.getByRole('button', { name: 'Create issue' }))).toBe(false);
+  });
+
   it('docks the drawer beside content and closes it with Escape', async () => {
     const onClose = vi.fn();
     const { container } = render(
@@ -150,7 +171,7 @@ describe('Toast and Tooltip', () => {
 
   it('describes its trigger on focus', () => {
     render(
-      <Tooltip content="Open full page">
+      <Tooltip label="Open full page">
         <button type="button">Expand</button>
       </Tooltip>,
     );
@@ -188,6 +209,19 @@ describe('CommandPalette', () => {
     expect(first).not.toHaveBeenCalled();
   });
 
+  it('closes the combobox while a plan or an answer stands in for the list', async () => {
+    render(
+      <CommandPalette open onClose={() => {}}>
+        <CommandInput value="move it" onValueChange={() => {}} ai expanded={false} />
+        <p>The plan goes here.</p>
+      </CommandPalette>,
+    );
+    const input = screen.getByRole('combobox');
+    expect(input.getAttribute('aria-expanded')).toBe('false');
+    expect(input.hasAttribute('aria-controls')).toBe(false);
+    await expectAccessible(screen.getByRole('dialog', { name: 'Command palette' }));
+  });
+
   it('shows the plan with its permission verdicts and runs only allowed steps', () => {
     const onRun = vi.fn();
     render(
@@ -200,7 +234,7 @@ describe('CommandPalette', () => {
         onRun={onRun}
       />,
     );
-    expect(screen.getByText('DENIED')).toBeTruthy();
+    expect(screen.getByText('Denied')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: /Run 1 change/ }));
     expect(onRun).toHaveBeenCalled();
   });

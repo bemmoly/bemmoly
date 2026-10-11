@@ -1,5 +1,6 @@
 import { keysetPageSchema, keysetQuerySchema, timestampSchema } from '@bemmoly/shared';
 import { z } from 'zod';
+import { queryFlagSchema } from './common.ts';
 import { workMethodSchema } from './enums.ts';
 
 /** Two to ten capitals or digits, starting with a letter, as in "PLT-142". */
@@ -46,7 +47,7 @@ export const projectKeyParamsSchema = z.object({ key: projectKeySchema });
 
 export const listProjectsQuerySchema = keysetQuerySchema.extend({
   teamId: z.uuid().optional(),
-  archived: z.coerce.boolean().default(false),
+  archived: queryFlagSchema.default(false),
 });
 
 export const projectsPageSchema = keysetPageSchema(projectSchema);

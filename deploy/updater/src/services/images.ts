@@ -4,11 +4,20 @@ import type { UpdaterContext } from './context.ts';
 
 export type Verification = 'verified' | 'unverified' | 'local';
 
-/** The image for a version: always the official repository, never one the caller names. */
-export function imageFor(ctx: UpdaterContext, version: string): string {
+function releaseVersion(version: string): string {
   if (!/^\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?$/.test(version))
     throw new Error(`${version} is not a release version`);
-  return `${ctx.env.BEMMOLY_IMAGE}:${version}`;
+  return version;
+}
+
+/** The image for a version: always the official repository, never one the caller names. */
+export function imageFor(ctx: UpdaterContext, version: string): string {
+  return `${ctx.env.BEMMOLY_IMAGE}:${releaseVersion(version)}`;
+}
+
+/** The updater's own image for a release, from its official repository. */
+export function updaterImageFor(ctx: UpdaterContext, version: string): string {
+  return `${ctx.env.UPDATER_IMAGE}:${releaseVersion(version)}`;
 }
 
 /** Pulls the image, or with BEMMOLY_UPDATER_LOCAL_IMAGES requires it to be loaded already. */

@@ -6,6 +6,7 @@ export function ErrorPage({ error, reset }: ErrorComponentProps) {
   const router = useRouter();
   return (
     <PageFailure
+      framed
       error={error}
       onRetry={() => {
         reset();

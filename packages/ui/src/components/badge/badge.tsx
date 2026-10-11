@@ -5,14 +5,14 @@ export type BadgeTone =
   'neutral' | 'accent' | 'ok' | 'warn' | 'violet' | 'amber' | 'solid' | 'outline';
 
 const TONES: Record<BadgeTone, string> = {
-  neutral: 'bg-chip text-tx3',
-  accent: 'bg-ac-bg text-ac',
-  ok: 'bg-ok-bg text-ok-fg',
-  warn: 'bg-warn-bg text-warn-fg',
-  violet: 'bg-st-rev-bg text-st-rev-fg',
-  amber: 'bg-st-qa-bg text-st-qa-fg',
-  solid: 'bg-ac-fill text-on-ac',
-  outline: 'border border-br3 text-tx5',
+  neutral: 'bg-line-2 text-tx-2',
+  accent: 'bg-acc-50 text-acc',
+  ok: 'bg-green-50 text-green-tx',
+  warn: 'bg-amber-50 text-amber-tx',
+  violet: 'bg-acc-50 text-acc',
+  amber: 'bg-acc-50 text-acc',
+  solid: 'bg-acc-fill text-on-acc',
+  outline: 'border border-line text-tx-3',
 };
 
 /**
@@ -21,7 +21,7 @@ const TONES: Record<BadgeTone, string> = {
  */
 const VARIANTS = {
   label: 'rounded-chip px-1.75 py-0.5 text-11 font-semibold',
-  count: 'rounded-pill px-1.5 py-px font-mono text-11 font-medium',
+  count: 'rounded-full px-1.5 py-px font-mono text-11 font-medium',
 } as const;
 
 export interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {

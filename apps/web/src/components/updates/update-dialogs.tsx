@@ -48,11 +48,11 @@ export function UpdateModal({
         <ReleaseWarnings release={release} />
         {cliCommand ? (
           <>
-            <p className="m-0 text-13 leading-body text-tx-body">{updateModeCopy('cli')}</p>
+            <p className="m-0 text-13 leading-body text-tx">{updateModeCopy('cli')}</p>
             <CommandBlock command={cliCommand} />
           </>
         ) : (
-          <p className="m-0 text-13 leading-body text-tx-body">{updateModeCopy('in_app')}</p>
+          <p className="m-0 text-13 leading-body text-tx">{updateModeCopy('in_app')}</p>
         )}
         <FormError error={error} />
       </div>
@@ -108,8 +108,8 @@ export function RollbackModal({
             confirm again.
           </Notice>
         ) : null}
-        <p className="m-0 text-13 leading-body text-tx-body">{copy.summary}</p>
-        <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5 text-13 leading-body text-tx-body">
+        <p className="m-0 text-13 leading-body text-tx">{copy.summary}</p>
+        <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5 text-13 leading-body text-tx">
           {copy.details.map((line) => (
             <li key={line}>{line}</li>
           ))}

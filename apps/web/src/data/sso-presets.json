@@ -1,0 +1,67 @@
+{
+  "presets": [
+    {
+      "id": "google-workspace",
+      "name": "Google Workspace",
+      "protocol": "oidc",
+      "logo": "google-g",
+      "logoStyle": "image",
+      "issuerUrl": "https://accounts.google.com",
+      "help": "Create an OAuth client of type Web application in your Google Cloud project, then paste its client ID and secret."
+    },
+    {
+      "id": "entra-id",
+      "name": "Microsoft Entra ID",
+      "protocol": "oidc",
+      "logo": null,
+      "logoStyle": "mask",
+      "issuerUrl": "https://login.microsoftonline.com/{tenant-id}/v2.0",
+      "help": "Register an app for web sign-in, replace {tenant-id} with your directory's id, and add a client secret."
+    },
+    {
+      "id": "okta",
+      "name": "Okta",
+      "protocol": "oidc",
+      "logo": "okta",
+      "logoStyle": "mask",
+      "issuerUrl": "https://{your-org}.okta.com",
+      "help": "Create an OIDC web app integration and paste its client ID and secret. SAML works too: choose Other SAML 2.0."
+    },
+    {
+      "id": "keycloak",
+      "name": "Keycloak",
+      "protocol": "oidc",
+      "logo": "keycloak",
+      "logoStyle": "mask",
+      "issuerUrl": "https://{host}/realms/{realm}",
+      "help": "Create a confidential OpenID Connect client in your realm and copy its secret from the Credentials tab."
+    },
+    {
+      "id": "authentik",
+      "name": "Authentik",
+      "protocol": "oidc",
+      "logo": "authentik",
+      "logoStyle": "mask",
+      "issuerUrl": "https://{host}/application/o/{slug}/",
+      "help": "Create an OAuth2/OpenID provider and an application for it, then paste the client ID and secret."
+    },
+    {
+      "id": "oidc",
+      "name": "Other OpenID Connect",
+      "protocol": "oidc",
+      "logo": null,
+      "logoStyle": "mask",
+      "issuerUrl": "",
+      "help": "Any provider that publishes /.well-known/openid-configuration under its issuer URL."
+    },
+    {
+      "id": "saml",
+      "name": "Other SAML 2.0",
+      "protocol": "saml",
+      "logo": null,
+      "logoStyle": "mask",
+      "issuerUrl": "",
+      "help": "Paste the identity provider's entity ID, single sign-on URL and signing certificate from its metadata."
+    }
+  ]
+}

@@ -1,13 +1,9 @@
 import type {
-  AdminModule,
   HealthCheck,
-  ModuleManifest,
-  Notification,
   NotificationChannel,
   NotificationPreferences,
   SettingKey,
 } from '@bemmoly/shared';
-import { USER_IDS } from './people.ts';
 import { ago } from './time.ts';
 
 /** The Setup mock's first step, with Postgres 18 as the tech design queues. */
@@ -24,7 +20,7 @@ export function seedChecks(): HealthCheck[] {
       fix: { label: 'Configure', href: '/settings/email' },
     },
     { id: 'https', name: 'HTTPS', status: 'ok', detail: "Let's Encrypt · auto-renew" },
-    { id: 'backups', name: 'Backups', status: 'ok', detail: 'nightly → /var/bemmoly/backups' },
+    { id: 'backups', name: 'Backups', status: 'ok', detail: 'nightly to /var/bemmoly/backups' },
   ];
 }
 
@@ -41,7 +37,7 @@ export function seedSettings(complete: boolean): Partial<Record<SettingKey, unkn
     'email.digestMinutes': 10,
     'appearance.theme': 'classic',
     'appearance.font': 'plex',
-    'appearance.brandColor': '#2456c9',
+    'appearance.brandColor': '#2356c9',
     'appearance.logoKey': '',
     'appearance.mode': 'light',
     'appearance.surfaces': 'neutral',
@@ -65,85 +61,6 @@ export const SECRET_KEYS: ReadonlySet<SettingKey> = new Set([
   'email.smtp.password',
   'system.backups.s3',
 ]);
-
-/** A fresh install enables nothing; the seeded workspace had Sample enabled by its admin. */
-export function seedAdminModules(enabled = true): AdminModule[] {
-  return [
-    {
-      id: 'sample',
-      name: 'Sample',
-      version: '0.1.0',
-      enabled,
-      enabledAt: enabled ? ago(60 * 24 * 9) : null,
-      versionInstalled: enabled ? '0.1.0' : null,
-      changelogState: enabled ? 'current' : 'pending',
-      pendingChangesets: enabled ? 0 : 1,
-      dependsOn: [],
-      defaultAccess: 'none',
-      restartRequired: false,
-    },
-  ];
-}
-
-export function seedManifests(enabled = true): ModuleManifest[] {
-  if (!enabled) return [];
-  return [
-    {
-      id: 'sample',
-      version: '0.1.0',
-      navigation: [{ id: 'sample', label: 'Sample', path: '/sample', placement: 'top' }],
-    },
-  ];
-}
-
-type NoteSeed = [string, keyof typeof USER_IDS, string, string, string, string, number];
-const NOTES: NoteSeed[] = [
-  [
-    'n-1',
-    'aisha',
-    'Aisha K.',
-    'requested your review on',
-    'PLT-204',
-    'Backfill finished on staging, 0 mismatches across 2.1M rows.',
-    180,
-  ],
-  [
-    'n-2',
-    'jonas',
-    'Jonas M.',
-    'commented on',
-    'Auth service RFC',
-    'Rollback section says 15 min but the flag TTL is 30. Which is it?',
-    300,
-  ],
-  [
-    'n-3',
-    'priya',
-    'Priya N.',
-    'mentioned you in',
-    'PLT-218',
-    '@Rohan can you confirm the deploy hook fires before the health check?',
-    60 * 26,
-  ],
-  ['n-4', 'lena', 'Lena T.', 'moved', 'PLT-226', 'In progress → In review', 60 * 27],
-];
-
-/** The Home mock's inbox block, already grouped the way the server groups. */
-export function seedNotifications(): Notification[] {
-  return NOTES.map(([id, key, name, verb, target, body, minutes]) => ({
-    id,
-    ids: [id],
-    kind: 'mention',
-    verb,
-    summary: `${name} ${verb} ${target}`,
-    actors: [{ id: USER_IDS[key], name }],
-    actorCount: 1,
-    target: { kind: 'issue', id: target, label: target, url: null },
-    body,
-    read: false,
-    createdAt: ago(minutes),
-  }));
-}
 
 export function seedPreferences(): NotificationPreferences {
   const kind = (

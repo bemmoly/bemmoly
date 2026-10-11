@@ -6,8 +6,8 @@ export type KeyChipSize = 'sm' | 'md';
 
 /** sm: cards and rows (11.5px tx4). md: drawer header and breadcrumbs (12px tx2). */
 const SIZES: Record<KeyChipSize, string> = {
-  sm: 'text-11h text-tx4',
-  md: 'text-12 text-tx2',
+  sm: 'text-12 text-tx-3',
+  md: 'text-12 text-tx-2',
 };
 
 export interface KeyChipProps extends AnchorHTMLAttributes<HTMLAnchorElement> {
@@ -35,7 +35,7 @@ export function KeyChip({
 }: KeyChipProps) {
   const classes = inline
     ? cx(
-        'inline-flex items-center gap-1.25 rounded-xs border border-br3 bg-sf px-1.75 py-px align-middle',
+        'inline-flex items-center gap-1.25 rounded-chip border border-line bg-card px-1.75 py-px align-middle',
         'font-mono text-12 font-medium text-tx no-underline',
       )
     : cx('font-mono font-medium whitespace-nowrap no-underline', SIZES[size]);

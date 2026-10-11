@@ -1,18 +1,19 @@
 import { contextOf } from '@bemmoly/core';
 import { parseOrThrow } from '@bemmoly/shared';
 import type { FastifyReply, FastifyRequest } from 'fastify';
+import { projectRefParamsSchema } from '../../../shared/boards.ts';
 import {
   createProjectBodySchema,
   listProjectsQuerySchema,
-  projectKeyParamsSchema,
   updateProjectBodySchema,
   type Project,
   type ProjectsPage,
 } from '../../../shared/projects.ts';
 import type { ProjectsService } from '../services/projects/index.ts';
 
+/** The project's key, or its id: settings screens hold ids, links hold keys. */
 export const keyOf = (request: FastifyRequest) =>
-  parseOrThrow(projectKeyParamsSchema, request.params).key;
+  parseOrThrow(projectRefParamsSchema, request.params).key;
 
 export function createProjectsController(service: ProjectsService) {
   return {

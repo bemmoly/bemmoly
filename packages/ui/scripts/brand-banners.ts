@@ -56,7 +56,7 @@ export function writeBanners(debugDir?: string): string[] {
         write(`${spec.name}${suffix}${at}.png`, png(svg, spec.width * scale));
       }
       if (debugDir) {
-        const marks = { safe: colors.ok, covered: colors.danger };
+        const marks = { safe: colors.green, covered: colors.red };
         const review = debugOverlay(svg, spec, boxes, marks);
         writeFileSync(
           resolve(debugDir, `${spec.name}${suffix}.debug.png`),

@@ -28,7 +28,8 @@ export const createIssueTypeBodySchema = z.object({
   key: slugKeySchema,
   name: shortNameSchema,
   description: z.string().trim().max(500).optional(),
-  icon: z.string().trim().max(8).optional(),
+  /** An icon name from the design system's set, such as "rocket". */
+  icon: z.string().trim().max(40).optional(),
   color: hexColorSchema.optional(),
   level: issueTypeLevelSchema.default('standard'),
   position: z.number().int().min(0).optional(),

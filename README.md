@@ -1,118 +1,161 @@
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="./packages/ui/assets/brand/generated/readme-hero-ocean.png">
-    <img alt="Bemmoly: open source, self-hosted, AI-first issues and docs for your whole company. Install with curl -fsSL https://get.bemmoly.com | sh" src="./packages/ui/assets/brand/generated/readme-hero.png" width="100%">
+    <img alt="Bemmoly: Your work. Your platform. Self-hosted issues and docs. Open source, no pricing, nothing to buy. Install with curl -fsSL https://get.bemmoly.com | sh" src="./packages/ui/assets/brand/generated/readme-hero.png" width="100%">
   </picture>
 </p>
 
 <p align="center"><strong>Your work. Your platform.</strong></p>
 
 <p align="center">
+  <a href="https://bemmoly.com/demo"><strong>Live demo</strong></a> ·
+  <a href="https://bemmoly.com">Website</a> ·
+  <a href="https://bemmoly.com/self-hosting#install">Install guide</a> ·
+  <a href="https://bemmoly.com/changelog">Changelog</a> ·
+  <a href="https://github.com/bemmoly/bemmoly/discussions">Discussions</a>
+</p>
+
+<p align="center">
   <a href="https://github.com/bemmoly/bemmoly/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/bemmoly/bemmoly/ci.yml?branch=main&label=CI"></a>
   <a href="https://github.com/bemmoly/bemmoly/actions/workflows/security.yml"><img alt="Security" src="https://img.shields.io/github/actions/workflow/status/bemmoly/bemmoly/security.yml?branch=main&label=Security"></a>
   <a href="./LICENSE"><img alt="Licence: MIT" src="https://img.shields.io/badge/licence-MIT-blue"></a>
-  <a href="https://github.com/bemmoly/bemmoly/tags"><img alt="Latest release" src="https://img.shields.io/github/v/tag/bemmoly/bemmoly?label=release"></a>
-  <a href="https://bemmoly.com/self-hosting"><img alt="Deploy in 5 minutes" src="https://img.shields.io/badge/deploy-in%205%20minutes-blue"></a>
+  <a href="https://github.com/bemmoly/bemmoly/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/bemmoly/bemmoly?label=release"></a>
+  <a href="https://bemmoly.com/self-hosting#install"><img alt="Install: one command" src="https://img.shields.io/badge/install-one%20command-blue"></a>
 </p>
 
-Bemmoly is open source, self-hosted, AI-first issues and docs for your whole company. Plan
-sprints on a board, write the spec next to the issue it explains, and ask questions of
-everything your team has written, all in one app that runs on your own server. Your data stays
-in your Postgres, behind your login, under your backups.
+Bemmoly is self-hosted issues and docs for your whole team. Plan sprints on a board, write the
+spec next to the issue it explains, and, if you want it, let AI summarise and answer from
+everything your team has written. It all runs on your own server: your data stays in your
+Postgres, behind your login, under your backups.
 
-It is one app image and one Postgres, installed with one command on a $20 server and upgraded
-from inside the app. Every module ships in the image; turn on the ones you use. It is MIT
-licensed and free forever, with no licence or per-seat fee on top of your server. Imports from
-Jira and Confluence (from 0.5) bring your existing projects and pages with you.
+It is one app image and one Postgres, installed with one command and updated from inside the
+app.
 
-## Quick start
+## Three promises
 
-On a fresh Linux VM with a domain pointing at it:
+- **100% open source.** MIT licensed. Every feature is in this repository and in the image you
+  install. There is no open core, no enterprise edition and no licence key.
+- **No pricing.** No plans, no per-seat fee, no user limit. Your only cost is the server you
+  run it on.
+- **No in-app purchases.** Nothing in the app is locked or upsold. The Buy Me a Coffee button
+  on this repository is an optional way to support the project, and it unlocks nothing.
+
+## What ships in 0.5.0
+
+- **Work**: projects with members, issues with types, custom fields and history, workflows with
+  a visual editor, Kanban and Scrum boards, the backlog and sprints, LQL and saved filters, and
+  "My work" on Home.
+- **Docs**: spaces and a page tree, a live collaborative editor with named cursors, revisions,
+  comments, issue links that show live status, and import from Markdown and Confluence exports
+  with export to Markdown and HTML.
+- **AI, optional**: off until an admin turns it on, and nothing changes for a workspace that
+  leaves it off. Bring any provider in the [models.dev](https://models.dev) catalog, a gateway,
+  or a model running on your own network. Then Bemmoly summarises issues, sprints and pages with
+  the source of every claim, answers questions from your docs with citations, suggests and edits
+  text in the doc editor, and turns a request in ⌘K into a plan of changes that runs only when
+  you confirm it. Admins choose what content is sent, which spaces and projects are excluded,
+  and a monthly budget.
+- **The platform under them**: a setup wizard, people, roles and a capability matrix, email
+  and notifications, an Inbox, ⌘K search, an audit log, Prometheus metrics, automatic HTTPS,
+  nightly verified backups, and one-click updates with automatic rollback.
+
+Work and Docs ship in every install; an admin turns modules on in Settings › Modules. See the
+[changelog](https://bemmoly.com/changelog) for every release.
+
+## Try it
+
+**In your browser, no install:** [bemmoly.com/demo](https://bemmoly.com/demo) runs the real app
+on sample data, entirely in your browser, with AI on. Nothing is sent anywhere and a reload
+starts over.
+
+**On your own server:** on a fresh Linux VM with a domain pointing at it, run
 
 ```sh
 curl -fsSL https://get.bemmoly.com | sh
 ```
 
 About five minutes later the installer prints your address; open it to create the first admin.
+Prefer to read it first? `curl -fsSL https://get.bemmoly.com -o install.sh && less install.sh`.
 
-Requirements:
-
-- A VM with 2 vCPU and 4 GB of memory (enough for about 200 people)
-- Ubuntu (Debian, Fedora and Amazon Linux are supported but not yet tested end to end)
-- Root or sudo, 10 GB of free disk, ports 80 and 443, and a domain pointing at the VM
-
-The installer sets up Docker, Postgres, HTTPS, backups and updates; it checks the
-requirements itself and prints the fix for anything missing. Docker Compose, Kubernetes (Helm), an existing
-Postgres and offline installs are covered at
-[bemmoly.com/self-hosting](https://bemmoly.com/self-hosting).
-
-## What you get
-
-- **Automatic HTTPS.** Certificates are requested and renewed for you.
-- **Backups with retention and verification.** Nightly, kept 7 days, 4 weeks and 3 months,
-  and verified.
-- **One-command upgrades and rollback.** A failed health check rolls back on its own, and you
-  can roll back by hand for 7 days.
-- **In-app updater.** Read the release notes, then update with one click.
-- **Modules.** Every module ships in the one image; enable and disable them in Settings.
-- **SSO-ready identity.** Sessions, roles and a capability matrix today; OIDC, SAML and SCIM
-  plug into the same identity in 0.5.
-- **Audit log.** Who changed what, when and from where, with before and after, exportable
-  as CSV.
-- **Metrics.** Prometheus metrics and structured logs, with optional OpenTelemetry.
-
-## Status
-
-**0.1.0 is the foundation release.** It contains the kernel and its module system, the setup
-wizard, people and roles, email and notifications, backups and updates, the design system
-(tokens, the theme presets, components in Storybook) and the marketing site. It has no issues,
-boards or docs yet: those are the next releases.
-
-| Release | Scope                                                                                      |
-| ------- | ------------------------------------------------------------------------------------------ |
-| 0.2     | **Work**: projects, issues, workflows, boards, backlog and sprints, filters, search        |
-| 0.3     | **Docs**: spaces, the page tree, a collaborative editor, revisions, comments, templates    |
-| 0.4     | **AI**: summaries, ask-your-docs with citations, the ⌘K palette with plans, any provider   |
-| 0.5     | **Import and integrations**: importers, OIDC, SAML and SCIM, webhooks, automation, roadmap |
-| 1.0     | **Launch**: Helm and Terraform, air-gap bundle, PWA, accessibility and security review     |
-
-The plan for each release, and what it must prove before it ships, is in section 24 of the
-[technical design](docs/tech-design.html).
+You need a VM with 2 vCPU and 4 GB of memory, root or sudo, 10 GB of free disk, ports 80 and
+443, and a domain pointing at the VM. Ubuntu is the main target; the installer also supports
+Debian, Fedora and Amazon Linux. It sets up Docker, Postgres, HTTPS, backups and updates, checks
+the requirements itself and prints the fix for anything missing. Docker Compose by hand and an
+existing Postgres are covered at [bemmoly.com/self-hosting](https://bemmoly.com/self-hosting#install).
 
 ## Screenshots
 
-These come from the product design; the Board arrives with 0.2 and ⌘K with 0.4.
+From the [live demo](https://bemmoly.com/demo), in the light and dark themes.
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="./apps/site/src/assets/screens/board-ocean.png">
-  <img alt="The Board: a sprint board with the issue panel open and an AI summary of the issue" src="./apps/site/src/assets/screens/board.png">
+  <source media="(prefers-color-scheme: dark)" srcset="./apps/site/src/assets/previews/board-dark.png">
+  <img alt="The Platform team's sprint board: one sidebar for Work and Docs, columns by status with a WIP limit, epics as swimlanes" src="./apps/site/src/assets/previews/board.png">
 </picture>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="./apps/site/src/assets/screens/command-ocean.png">
-  <img alt="The command palette turning a request into a plan of changes that waits for confirmation" src="./apps/site/src/assets/screens/command.png" width="66%">
+  <source media="(prefers-color-scheme: dark)" srcset="./apps/site/src/assets/previews/issue-dark.png">
+  <img alt="An issue with its acceptance criteria and sub-issues, beside its fields" src="./apps/site/src/assets/previews/issue.png">
 </picture>
 
-<img alt="Step one of the setup wizard: the workspace name, address and first admin" src="./apps/site/src/assets/setup/admin.png" width="66%">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="./apps/site/src/assets/previews/docs-dark.png">
+  <img alt="An RFC page in Docs, in its space's page tree, with linked issues showing their live status" src="./apps/site/src/assets/previews/docs.png">
+</picture>
+
+## Status: young, and honest about it
+
+Bemmoly is new. 0.1.0 shipped in October 2026 and releases come quickly. Before 1.0, a minor
+version may change behaviour and its notes say so; every update backs up first and rolls back
+on its own if the app is not healthy. Run it for real work if you like, and keep the nightly
+backups it makes.
+
+| Released | Scope                                                                                 |
+| -------- | ------------------------------------------------------------------------------------- |
+| 0.2      | **Work**: projects, issues, workflows, boards, backlog and sprints, filters           |
+| 0.3      | **Docs**: spaces, the page tree, a collaborative editor, revisions, comments          |
+| 0.4      | **The redesign**: one shell for Work and Docs, the logo's colours, drawn icons        |
+| 0.5      | **AI, optional**: summaries with sources, answers from your docs, editor and ⌘K plans |
+
+**Coming soon**, not in the app yet:
+
+- Import from Jira and CSV
+- Single sign-on: OIDC, SAML and SCIM
+- Webhooks and automation rules
+- Kubernetes (a supported Helm chart) and Terraform modules for AWS, GCP and Hetzner
+- A tested offline (air-gapped) install, a PWA, and an accessibility and security review
+  before 1.0
+
+The plan for each release is in section 24 of the [technical design](docs/tech-design.html).
+
+## Privacy
+
+- **The product sends nothing to us.** There is no telemetry. The daily check for new
+  releases is off until an admin turns it on in Settings, and then it only downloads the
+  release manifest from GitHub. With AI off, the server makes no AI-related request to anyone.
+  Everything else that leaves your server is what you configure: your mail server, a backup
+  bucket, your AI provider, the certificate authority for HTTPS, and a tracing collector of
+  your own.
+- **The website and the demo collect nothing.** bemmoly.com serves no analytics, no cookies
+  and no third-party scripts (its Content-Security-Policy allows only its own files), and the
+  demo keeps its sample data in your browser's memory.
 
 ## Architecture
 
-Bemmoly is a TypeScript monorepo: a Fastify host boots the kernel (identity, permissions,
-settings, notifications, jobs, realtime, search, the AI runtime) and loads each enabled module,
-and a React shell loads one chunk per module. Postgres is the only datastore, holding the data,
-the job queue, full-text search and vector embeddings. Modules talk to each other only through
+A TypeScript monorepo: a Fastify host boots the kernel (identity, permissions, settings,
+notifications, jobs, realtime, search, the AI runtime) and loads each enabled module, and a
+React shell loads one chunk per module. Postgres is the only datastore, holding the data, the
+job queue, full-text search and vector embeddings. Modules talk to each other only through
 kernel registries and events, so each can be turned off without breaking the rest.
 
 - Technical design: [docs/tech-design.html](docs/tech-design.html) (open in a browser)
-- Product design mocks: [docs/design/mocks](docs/design/mocks) (open `Bemmoly App.dc.html`)
-- Foundation release plan: [docs/plan/foundation.md](docs/plan/foundation.md)
+- Design system: [docs/design/system](docs/design/system/README.md)
 - Decisions since the design: [docs/adr](docs/adr)
 
 ## Contributing
 
-Start with [AGENTS.md](AGENTS.md), the contract for every change, whether a person or an AI
-agent writes it, and [CONTRIBUTING.md](CONTRIBUTING.md) for the checks to run before a pull
-request. You need Node 24, pnpm 11 and Docker (for Postgres); then it takes ten minutes:
+Contributions are welcome, from people and from AI agents alike. Start with
+[CONTRIBUTING.md](CONTRIBUTING.md), which points at good first issues, and
+[AGENTS.md](AGENTS.md), the contract for every change. You need Node 24, pnpm 11 and Docker:
 
 ```sh
 nvm use            # Node 24, from .nvmrc
@@ -123,11 +166,16 @@ pnpm dev           # Postgres 18 in Docker, server on :8080, web on :5173
 
 Open http://localhost:5173. A devcontainer (and Codespaces) has all of it ready.
 
-## Security
+## Help and security
 
-Report vulnerabilities privately as described in [SECURITY.md](SECURITY.md). Please do not open
-a public issue for a security bug.
+- Questions and ideas: [Discussions](https://github.com/bemmoly/bemmoly/discussions); bugs:
+  [issues](https://github.com/bemmoly/bemmoly/issues/new/choose). [SUPPORT.md](SUPPORT.md)
+  says what goes where.
+- Security problems: privately, through
+  [GitHub's private vulnerability reporting](https://github.com/bemmoly/bemmoly/security/advisories/new),
+  as [SECURITY.md](SECURITY.md) describes. Please do not open a public issue.
+- Everyone taking part follows the [Code of Conduct](CODE_OF_CONDUCT.md).
 
 ## Licence
 
-[MIT](LICENSE). Bemmoly is free to use, change and self-host, forever.
+[MIT](LICENSE). Free to use, change and self-host, for any number of people, forever.

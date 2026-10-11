@@ -1,5 +1,5 @@
-import { luminance, mixHex } from '@bemmoly/ui/theme';
-import { PRESETS } from '@bemmoly/ui/tokens';
+import { flatten, luminance, mixHex } from '@bemmoly/ui/theme';
+import { PRESETS, themeById } from '@bemmoly/ui/tokens';
 
 type Mode = 'light' | 'dark';
 
@@ -24,7 +24,10 @@ export function contrastRatio(a: string, b: string): number {
 
 /** The tile colour of every preset in a mode: what a mark can sit on. */
 export function chipsOf(mode: Mode): string[] {
-  return PRESETS.filter((preset) => preset.mode === mode).map((preset) => preset.neutrals.chip);
+  return PRESETS.filter((preset) => preset.mode === mode).map((preset) => {
+    const { colors } = themeById(preset.id);
+    return flatten(colors['line-2'], colors.card);
+  });
 }
 
 const textOf = (mode: Mode) =>

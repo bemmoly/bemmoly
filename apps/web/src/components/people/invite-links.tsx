@@ -56,7 +56,7 @@ export function InviteLinks({ links, emailConfigured }: InviteLinksProps) {
           </li>
         ))}
       </ul>
-      <p className="m-0 text-12 leading-body text-tx5">{LINK_NOTE}</p>
+      <p className="m-0 text-12 leading-body text-tx-3">{LINK_NOTE}</p>
     </div>
   );
 }

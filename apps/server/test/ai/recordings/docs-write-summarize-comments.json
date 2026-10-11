@@ -1,0 +1,13 @@
+{
+  "prompt": {
+    "id": "docs.write.summarize-comments",
+    "version": 1
+  },
+  "replies": {
+    "docs.write.summarize-comments": [
+      {
+        "text": "- Is the session TTL after rollback 15 minutes, or 30 as the flag in code says? (Jonas M.)\n- Who owns step 4, removing the legacy cookie path, and which issue tracks it? (Jonas M.)"
+      }
+    ]
+  }
+}

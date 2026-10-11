@@ -18,7 +18,7 @@ COPY packages/shared ./packages/shared
 COPY deploy/updater ./deploy/updater
 RUN --mount=type=cache,id=bemmoly-pnpm,target=/pnpm/store \
     pnpm install --frozen-lockfile --prod --store-dir "$PNPM_STORE" --filter "@bemmoly/updater..." \
- && find packages deploy -name '*.test.ts' -delete \
+ && find packages deploy \( -name '*.test.ts' -o -name '*.test-support.ts' \) -delete \
  && rm -f deploy/updater/Dockerfile deploy/updater/Dockerfile.dockerignore
 
 FROM ${NODE_IMAGE} AS runtime
@@ -37,6 +37,10 @@ RUN apt-get update \
  && apt-get install --yes --no-install-recommends ca-certificates tini \
  && rm -rf /var/lib/apt/lists/*
 COPY --from=cosign /ko-app/cosign /usr/local/bin/cosign
+# The container runs read-only with /tmp as its only writable path; cosign caches
+# Sigstore's trust root here instead of ~/.sigstore.
+ENV TUF_ROOT=/tmp/sigstore \
+    BEMMOLY_UPDATER_VERSION=${BEMMOLY_VERSION}
 WORKDIR /app
 COPY --from=build /src/node_modules ./node_modules
 COPY --from=build /src/packages/shared ./packages/shared

@@ -46,9 +46,11 @@ export function richTextToPlain(doc: RichText | null | undefined): string {
     if (node.type && BLOCK_NODES.has(node.type)) out += '\n';
   };
   walk(doc as Node, append);
+  // One pass over each whitespace run: a run that holds a line break becomes one
+  // break, any other run has its spaces and tabs collapsed. (The two-regex version
+  // with \s*\n\s* backtracked polynomially on long runs of whitespace.)
   return out
-    .replace(/[ \t]+/g, ' ')
-    .replace(/\s*\n\s*/g, '\n')
+    .replace(/\s+/g, (run) => (run.includes('\n') ? '\n' : run.replace(/[ \t]+/g, ' ')))
     .trim();
 }
 

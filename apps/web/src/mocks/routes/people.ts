@@ -6,7 +6,6 @@ import {
   type CreateInvitationsInput,
   type CreateModuleGrantInput,
   type CreateRoleInput,
-  type CreateTeamInput,
   type PutRoleCapabilitiesInput,
   type UpdateUserInput,
   type User,
@@ -171,38 +170,6 @@ export const peopleRoutes: MockRoute[] = [
       audit(db, 'invitation.link_issued', 'invitation', invitation.id);
       return ok({ ...invitation, acceptUrl }, 201);
     }),
-  },
-  { method: 'GET', pattern: '/api/v1/teams', handle: (_, db) => ok({ items: db.teams }) },
-  {
-    method: 'POST',
-    pattern: '/api/v1/teams',
-    handle: needs(PEOPLE, (request, db) => {
-      const body = bodyOf<CreateTeamInput>(request);
-      if (!body.name?.trim()) return invalid('name', 'Name the team');
-      if (db.teams.some((team) => team.name.toLowerCase() === body.name?.toLowerCase())) {
-        return fail(409, 'conflict', `A team called ${body.name} already exists.`);
-      }
-      const now = new Date().toISOString();
-      const team = {
-        id: newId(),
-        name: body.name.trim(),
-        color: body.color ?? null,
-        leadUserId: body.leadUserId ?? null,
-        defaultRoleId: body.defaultRoleId ?? null,
-        memberCount: 0,
-        createdAt: now,
-        updatedAt: now,
-      };
-      db.teams.push(team);
-      audit(db, 'team.created', 'team', team.id);
-      return ok(team, 201);
-    }),
-  },
-  {
-    method: 'GET',
-    pattern: '/api/v1/teams/:id/members',
-    handle: (request, db) =>
-      ok({ items: db.teamMembers.filter((member) => member.teamId === request.params['id']) }),
   },
   { method: 'GET', pattern: '/api/v1/roles', handle: (_, db) => ok({ items: db.roles }) },
   {

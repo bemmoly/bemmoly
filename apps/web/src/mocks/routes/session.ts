@@ -4,6 +4,7 @@ import type {
   LoginRequest,
   PasswordResetComplete,
 } from '@bemmoly/shared';
+import { restarting } from './update-job.ts';
 import { audit, capabilitiesOf, currentUser, type MockDb } from '../db.ts';
 import { makeUser, ROLE_IDS } from '../seed/people.ts';
 import { newId } from '../seed/time.ts';
@@ -35,13 +36,21 @@ export const sessionRoutes: MockRoute[] = [
     method: 'GET',
     pattern: '/readyz',
     anonymous: true,
-    handle: () => ok({ status: 'ready', checks: { database: { status: 'ok', latencyMs: 12 } } }),
+    handle: (_, db) =>
+      restarting(db)
+        ? { status: 503, body: { status: 'starting' } }
+        : ok({ status: 'ready', checks: { database: { status: 'ok', latencyMs: 12 } } }),
   },
   {
     method: 'GET',
     pattern: '/api/v1/setup/status',
     anonymous: true,
-    handle: (_, db) => ok({ initialized: db.initialized, completedAt: completedAtOf(db) }),
+    handle: (_, db) =>
+      ok({
+        initialized: db.initialized,
+        completedAt: completedAtOf(db),
+        workspaceName: db.initialized ? workspaceLookOf(db).name : null,
+      }),
   },
   {
     method: 'POST',

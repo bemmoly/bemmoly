@@ -84,10 +84,10 @@ export function AvatarStack({
       })}
       {extra > 0 && (
         <span
+          style={{ width: size, height: size, fontSize: Math.round(size * 0.42) }}
           className={cx(
-            '-ml-1.5 inline-flex shrink-0 items-center justify-center rounded-full border-2 bg-trk font-semibold text-tx2',
-            ring === 'bg' ? 'border-bg' : 'border-sf',
-            size >= 30 ? 'size-7.5 text-11' : 'size-6.5 text-10',
+            '-ml-1.5 inline-flex shrink-0 items-center justify-center rounded-full border-2 bg-line-2 font-semibold text-tx-2',
+            ring === 'bg' ? 'border-sunken' : 'border-card',
           )}
           aria-label={`${extra} more`}
         >

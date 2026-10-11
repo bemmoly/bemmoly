@@ -1,76 +1,96 @@
+import type { PickerCard } from '../components/import/source-picker.tsx';
 import { useSetupStore, type ImportSourceId } from '../store/setup.ts';
+import { useImportFlow } from './use-import-flow.ts';
 
-export interface ImportSource {
-  id: ImportSourceId;
-  initials: string;
-  name: string;
-  description: string;
-  /** Shown but not selectable until its importer ships. */
-  comingSoon: boolean;
-}
+export const START_CLEAN: PickerCard = {
+  id: 'clean',
+  initials: '+',
+  name: 'Start clean',
+  description: 'Begin with an empty workspace and add projects when you are ready.',
+};
 
-/** The four cards of the mock's import step, in its order and words. */
-export const IMPORT_SOURCES: readonly ImportSource[] = [
+/**
+ * The importers as the wizard shows them before their module is on: visible, not pickable,
+ * each badge naming the module it waits for.
+ */
+export const WAITING_SOURCES: readonly PickerCard[] = [
   {
     id: 'jira',
-    initials: 'JC',
-    name: 'Jira Cloud or Server',
-    description: 'Projects, issues, sprints, boards, workflows, custom fields, attachments.',
-    comingSoon: true,
+    initials: 'JI',
+    name: 'Jira',
+    description: 'Projects, issues, comments, attachments and people.',
+    unavailable: 'Needs Work',
   },
   {
     id: 'confluence',
     initials: 'CF',
     name: 'Confluence',
-    description:
-      'Spaces, page trees, versions, comments, attachments. Jira macros become live issue links.',
-    comingSoon: true,
+    description: 'Spaces, page trees, pages and their comments.',
+    unavailable: 'Needs Docs',
   },
   {
     id: 'csv',
     initials: 'CSV',
-    name: 'CSV or Linear / Trello / Asana export',
-    description: 'Map columns to fields. Good for lighter tools.',
-    comingSoon: true,
-  },
-  {
-    id: 'clean',
-    initials: '—',
-    name: 'Start clean',
-    description: 'Begin with an empty workspace and add projects when you are ready.',
-    comingSoon: false,
+    name: 'CSV file',
+    description: 'Issues from a spreadsheet export.',
+    unavailable: 'Needs Work',
   },
 ];
 
-export const IMPORT_NOTICE =
-  'Importers arrive in a later release, and you can run them later from Settings. Start clean for now.';
+export const IMPORT_WAITING_NOTICE =
+  'Importers run once Work or Docs is turned on. Continue for now, then import from Settings › Import.';
 
-/** The primary button while Start clean is the only card that can be picked. */
-export const START_CLEAN_LABEL = 'Continue';
+export const IMPORT_READY_NOTICE =
+  'An import keeps running while you finish setup; its report waits in Settings › Import.';
+
+const NAMES: Record<string, string> = { jira: 'Jira', confluence: 'Confluence', csv: 'CSV file' };
 
 /** The Done step's import line. */
 export function importSummary(source: ImportSourceId | null): string {
   if (!source) return 'Skipped';
   if (source === 'clean') return 'Start clean';
-  const name = IMPORT_SOURCES.find((entry) => entry.id === source)?.name ?? source;
-  return `${name} (importers arrive in a later release)`;
+  return `${NAMES[source] ?? source} (report in Settings › Import)`;
 }
 
+const isSourceId = (id: string): id is ImportSourceId =>
+  ['jira', 'confluence', 'csv', 'clean'].includes(id);
+
 /**
- * Step 2: the importers are coming soon, so Start clean is the one choice and is picked from
- * the start. Continue records it; Skip for now leaves the step unanswered.
+ * Import: the same flow as Settings › Import, plus Start clean, which is picked until another
+ * card is. Sources come from the modules that are on; when none is (or the list cannot be
+ * read yet), the importers show as waiting and Continue moves on.
  */
 export function useSetupImport(next: () => void) {
   const update = useSetupStore((state) => state.update);
+  const flow = useImportFlow();
+  const offered = flow.items.length > 0;
+  const selected = flow.source?.id ?? 'clean';
+  const cards: PickerCard[] = [
+    ...(offered
+      ? flow.items.map((source) => ({
+          id: source.id,
+          name: source.label,
+          description: source.description,
+          initials: source.label.slice(0, 2).toUpperCase(),
+        }))
+      : WAITING_SOURCES),
+    START_CLEAN,
+  ];
   return {
-    sources: IMPORT_SOURCES,
-    selected: 'clean' as ImportSourceId,
-    notice: IMPORT_NOTICE,
-    label: START_CLEAN_LABEL,
+    flow,
+    cards,
+    selected,
+    loading: flow.sources.isPending && flow.sources.fetchStatus !== 'idle',
+    notice: offered ? IMPORT_READY_NOTICE : IMPORT_WAITING_NOTICE,
+    label: 'Continue',
     canStart: true,
-    select: (id: ImportSourceId) => update({ importSource: id }),
+    select: (id: string) => {
+      if (id === 'clean') flow.startOver();
+      else flow.pick(id);
+      if (isSourceId(id)) update({ importSource: id });
+    },
     start: () => {
-      update({ importSource: 'clean' });
+      update({ importSource: isSourceId(selected) ? selected : 'clean' });
       next();
     },
   };

@@ -54,14 +54,14 @@ function ModuleSection({ access, section }: { access: Access; section: Section }
   return (
     <section aria-label={section.label} className="flex flex-col gap-2">
       <h3 className="m-0 text-13 font-semibold">{section.label}</h3>
-      <div className="flex flex-col rounded-panel border border-br">
+      <div className="flex flex-col rounded-control border border-line">
         {section.grants.length === 0 && (
-          <p className="m-0 px-3 py-2.5 text-12 text-tx5">Nobody can open this module yet.</p>
+          <p className="m-0 px-3 py-2.5 text-12 text-tx-3">Nobody can open this module yet.</p>
         )}
         {section.grants.map((grant) => (
           <div
             key={grant.id}
-            className="flex items-center gap-2 border-b border-br-row px-3 py-2 last:border-b-0"
+            className="flex items-center gap-2 border-b border-line-2 px-3 py-2 last:border-b-0"
           >
             <span className="min-w-0 flex-1 truncate">{grant.label}</span>
             {access.canManage && (
@@ -94,7 +94,7 @@ export function ModuleAccessDrawer({ open, onClose }: { open: boolean; onClose: 
       variant="overlay"
       header={<span className="text-13 font-semibold text-tx">Module access</span>}
     >
-      <p className="m-0 text-12h leading-body text-tx4">
+      <p className="m-0 text-13 leading-body text-tx-3">
         A person sees a module only when a grant reaches them. Roles still decide what they can do
         inside it.
       </p>

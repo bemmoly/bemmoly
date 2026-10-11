@@ -6,7 +6,8 @@ import { richTextToPlain } from '../../../../shared/rich-text.ts';
 import { recordHistory, type HistoryChange } from '../history/index.ts';
 import { actorUserId, projectResource, requireDatabase, type IssueServiceDeps } from './deps.ts';
 import { loadFieldDefinitions, validateCustomFields } from './fields.ts';
-import { notify, publishIssueChange, watcherIds } from './notify.ts';
+import { notify, notifyDescriptionMentions, publishIssueChange, watcherIds } from './notify.ts';
+import { assertOwnReferences } from './references.ts';
 import { loadIssueById, loadIssueByKey, toIssue, type IssueRow } from './rows.ts';
 
 /*
@@ -73,6 +74,18 @@ export function diffIssue(current: Issue, body: UpdateIssueBody): HistoryChange[
   return changes;
 }
 
+/** What the PATCH sets beside the status, so a validator sees a field filled in the same move. */
+function submittedFields(body: UpdateIssueBody): Record<string, unknown> {
+  const submitted: Record<string, unknown> = { ...body.customFields };
+  for (const field of Object.keys(COLUMNS) as Scalar[]) {
+    if (body[field] === undefined) continue;
+    submitted[field] = body[field];
+    submitted[COLUMNS[field]] = body[field];
+  }
+  if (body.labelIds !== undefined) submitted['labelIds'] = body.labelIds;
+  return submitted;
+}
+
 async function statusCategory(tx: SqlExecutor, statusId: string, row: IssueRow): Promise<string> {
   const [status] = await tx<{ category: string }[]>`
     select s.category from workflow_statuses s
@@ -118,9 +131,13 @@ async function tellPeople(
   ctx: RequestContext,
   tx: SqlExecutor,
   issue: Issue,
+  previous: Issue,
   changes: readonly HistoryChange[],
   statusName: string | null,
 ) {
+  if (changes.some((change) => change.field === 'description')) {
+    await notifyDescriptionMentions(deps, ctx, tx, issue, previous.description);
+  }
   const assigned = changes.find((change) => change.field === 'assigneeId');
   if (assigned && typeof assigned.to === 'string') {
     await notify(deps, ctx, tx, issue, {
@@ -134,7 +151,7 @@ async function tellPeople(
     await notify(deps, ctx, tx, issue, {
       kind: 'status_change',
       recipientIds: await watcherIds(tx, issue.id),
-      body: `${issue.title} → ${statusName}`,
+      body: `${issue.title} moved to ${statusName}`,
       dedupeKey: `issue:${issue.id}:status:${issue.statusId}:${issue.statusChangedAt}`,
     });
   }
@@ -164,7 +181,13 @@ export async function updateIssue(
       const category = await statusCategory(tx, body.statusId, row);
       // The gate authorises, runs the conditions and the validators, and hands
       // back what must run after the move. It throws a typed error when blocked.
-      const move = await deps.workflow.transition(ctx, row, body.statusId, {}, tx);
+      const move = await deps.workflow.transition(
+        ctx,
+        row,
+        body.statusId,
+        submittedFields(body),
+        tx,
+      );
       postActions = move.postActions;
       await tx`
         update issues set status_id = ${body.statusId}, status_changed_at = now(),
@@ -175,6 +198,7 @@ export async function updateIssue(
         select name from workflow_statuses where id = ${body.statusId}`;
       statusName = status?.name ?? null;
     }
+    await assertOwnReferences(tx, row.project_id, body);
     await writeScalars(tx, row, body);
     await recordHistory(tx, row.id, actorId, changes);
     const issue = toIssue(await loadIssueById(tx, row.id));
@@ -185,12 +209,18 @@ export async function updateIssue(
       board: boardChange,
       sprintIds: [current.sprintId, issue.sprintId],
     });
-    await tellPeople(deps, ctx, tx, issue, changes, statusName);
+    await tellPeople(deps, ctx, tx, issue, current, changes, statusName);
     return issue;
   });
-  if (postActions.length > 0) {
-    // Post-actions run after the status change is committed, on the row as it now stands.
-    await deps.workflow.runPostActions(ctx, await loadIssueByKey(sql, key), postActions);
-  }
-  return updated as Issue;
+  if (postActions.length === 0) return updated as Issue;
+  // Post-actions run after the status change is committed, on the row as it now stands.
+  await deps.workflow.runPostActions(ctx, await loadIssueByKey(sql, key), postActions);
+  // They may have changed the assignee, sprint or resolution: answer with the row
+  // as they left it, and tell the open screens, which saw only the move.
+  const settled = toIssue(await loadIssueByKey(sql, key));
+  await publishIssueChange(deps, sql, settled, {
+    board: true,
+    sprintIds: [(updated as Issue).sprintId, settled.sprintId],
+  });
+  return settled;
 }

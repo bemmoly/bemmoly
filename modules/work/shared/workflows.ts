@@ -28,6 +28,9 @@ export const workflowStatusSchema = z.object({
   color: z.string().nullable(),
   position: z.number().int(),
   allowedRoleIds: z.array(z.uuid()),
+  /** Centre of the node on the editor canvas as published; absent or null lays it out by column. */
+  x: z.number().nullable().optional(),
+  y: z.number().nullable().optional(),
 });
 
 export const workflowTransitionSchema = z.object({
@@ -47,6 +50,8 @@ export const workflowSchema = z.object({
   originId: z.uuid().nullable(),
   name: z.string(),
   publishedVersion: z.number().int(),
+  /** When the current version was published; null before the first publish or from older servers. */
+  publishedAt: timestampSchema.nullable().optional(),
   hasDraft: z.boolean(),
   statuses: z.array(workflowStatusSchema),
   transitions: z.array(workflowTransitionSchema),

@@ -17,6 +17,8 @@ run_updater() {
     -e UPDATER_TOKEN="$(env_value UPDATER_TOKEN)" \
     -e BEMMOLY_DIR="${BEMMOLY_DIR}" \
     -e BEMMOLY_IMAGE="$(env_value BEMMOLY_IMAGE)" \
+    -e UPDATER_IMAGE="$(env_value UPDATER_IMAGE)" \
+    -e BEMMOLY_UPDATER_SELF_UPDATE="$(env_value BEMMOLY_UPDATER_SELF_UPDATE)" \
     -e BEMMOLY_ALLOW_UNSIGNED_UPDATES="$(env_value BEMMOLY_ALLOW_UNSIGNED_UPDATES)" \
     -e BEMMOLY_UPDATER_LOCAL_IMAGES="$(env_value BEMMOLY_UPDATER_LOCAL_IMAGES)" \
     "$(updater_image)" updater-cli "$@"
@@ -59,13 +61,35 @@ cmd_upgrade() {
   confirm 'Upgrade now?'
   run_updater upgrade "${version}"
   if [[ "$(env_value VERSION)" == "${version}" ]]; then
-    follow_app_version
+    # An updater with self-update has already moved itself (ADR 0020); an older one has not.
+    [[ "$(env_value UPDATER_VERSION)" == "${version}" ]] || follow_app_version
     success "Bemmoly ${version} is running"
   fi
 }
 
-# The updater container follows the app's VERSION, after an upgrade and after a rollback;
-# a failed pull keeps the updater that is installed.
+# bemmoly sync-updater: moves the updater to the app's release. The installed updater pulls,
+# verifies and swaps its successor; one that predates self-update is moved by Compose.
+cmd_sync_updater() {
+  local version
+  version=$(env_value VERSION)
+  if [[ "$(env_value UPDATER_VERSION)" == "${version}" ]]; then
+    success "The updater is already on ${version}"
+    return
+  fi
+  say "Moving the updater $(env_value UPDATER_VERSION) → ${version}."
+  local code=0
+  run_updater self-update "${version}" || code=$?
+  # 2: the installed updater does not know self-update yet.
+  [[ "${code}" -eq 2 ]] && follow_app_version
+  if [[ "$(env_value UPDATER_VERSION)" == "${version}" ]]; then
+    success "The updater is on ${version}"
+  else
+    die "The updater stays on $(env_value UPDATER_VERSION)" "See: sudo bemmoly logs updater"
+  fi
+}
+
+# For an updater that predates self-update: Compose pulls updater:<VERSION> from the official
+# registry, as the installer did; a failed pull keeps the updater that is installed.
 follow_app_version() {
   env_set "$(env_file)" UPDATER_VERSION "$(env_value VERSION)"
   if ! compose pull --policy missing updater >>"${BEMMOLY_LOG}" 2>&1; then
@@ -94,7 +118,8 @@ cmd_rollback() {
   say "${summary}"
   confirm 'Roll back now?'
   run_updater rollback --expect "${expect}" "${args[@]}"
-  follow_app_version
+  # The updater stays on its newer release: it rolls back and updates older versions alike.
+  compose up -d >>"${BEMMOLY_LOG}" 2>&1 || true
   success "Rolled back; Bemmoly $(env_value VERSION) is running"
 }
 

@@ -1,0 +1,20 @@
+[
+  "@ai-sdk/amazon-bedrock",
+  "@ai-sdk/anthropic",
+  "@ai-sdk/azure",
+  "@ai-sdk/cerebras",
+  "@ai-sdk/cohere",
+  "@ai-sdk/deepinfra",
+  "@ai-sdk/gateway",
+  "@ai-sdk/google",
+  "@ai-sdk/google-vertex",
+  "@ai-sdk/google-vertex/anthropic",
+  "@ai-sdk/groq",
+  "@ai-sdk/mistral",
+  "@ai-sdk/openai",
+  "@ai-sdk/openai-compatible",
+  "@ai-sdk/perplexity",
+  "@ai-sdk/togetherai",
+  "@ai-sdk/xai",
+  "@openrouter/ai-sdk-provider"
+]

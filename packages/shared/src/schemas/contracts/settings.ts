@@ -66,6 +66,10 @@ export const SETTING_SCHEMAS = {
   'system.backups.verification': backupVerificationSettingsSchema,
   'system.updates.channel': releaseChannelSchema,
   'system.updates.check': z.boolean(),
+  /** Settings › MCP: the built-in MCP server, off until an admin turns it on. */
+  'mcp.enabled': z.boolean(),
+  /** The modules MCP clients may reach; null exposes every enabled module. */
+  'mcp.modules': z.array(z.string()).nullable(),
   /** Assumed: set by the wizard's last step; the shell resumes the wizard until it exists. */
   'setup.completedAt': z.string().nullable(),
 } as const;

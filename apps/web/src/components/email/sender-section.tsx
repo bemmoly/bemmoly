@@ -62,7 +62,7 @@ export function SenderFields({ value, errors, onChange }: SenderFieldsProps) {
           size="lg"
           inputMode="numeric"
           wrapperClassName="w-40"
-          suffix={<span className="text-tx5">minutes</span>}
+          suffix={<span className="text-tx-3">minutes</span>}
           value={value.digestMinutes}
           onChange={(event) => onChange({ digestMinutes: event.target.value })}
         />

@@ -47,7 +47,12 @@ export function useMarkRead() {
     onError: rollback,
     onSettled: settle,
   });
-  return { markRead, readAll };
+  /** Back to unread, to come back to it; only this row, not its group. */
+  const markUnread = useMutation({
+    mutationFn: (id: string) => api.notifications.setRead(id, false),
+    onSettled: settle,
+  });
+  return { markRead, markUnread, readAll };
 }
 
 export const preferencesQuery = queryOptions({

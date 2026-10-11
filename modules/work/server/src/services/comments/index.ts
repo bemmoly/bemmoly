@@ -116,7 +116,13 @@ export function createCommentsService(deps: IssueServiceDeps) {
       return { items: page.rows.map(toComment), nextCursor: page.nextCursor };
     },
 
-    async create(ctx: RequestContext, key: string, body: CreateCommentBody): Promise<Comment> {
+    /** `aiRunId` marks a comment a plan wrote, so the AI accent and the audit trail follow it. */
+    async create(
+      ctx: RequestContext,
+      key: string,
+      body: CreateCommentBody,
+      options: { aiRunId?: string | null } = {},
+    ): Promise<Comment> {
       const sql = requireDatabase(deps);
       const found = await loadIssueByKey(sql, key);
       await ctx.authz.authorize(ctx.actor, 'work.issue.edit', projectResource(found.project_id));
@@ -130,9 +136,11 @@ export function createCommentsService(deps: IssueServiceDeps) {
           }
         }
         const [row] = await tx<CommentRow[]>`
-          insert into comments (target_kind, target_id, parent_id, author_id, body, body_text)
+          insert into comments (target_kind, target_id, parent_id, author_id, body, body_text,
+            ai_run_id)
           values ('issue', ${issue.id}, ${body.parentId ?? null}, ${authorId},
-            ${JSON.stringify(body.body)}::jsonb, ${richTextToPlain(body.body)})
+            ${JSON.stringify(body.body)}::jsonb, ${richTextToPlain(body.body)},
+            ${options.aiRunId ?? null})
           returning ${tx.unsafe(COLUMNS)}`;
         if (!row) throw new NotFoundError('The comment was not stored');
         await tx`

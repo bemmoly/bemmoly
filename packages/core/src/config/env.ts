@@ -33,6 +33,9 @@ const contextList = z
   )
   .pipe(z.array(z.string().regex(/^[a-z][a-z0-9-]*$/)).min(1));
 
+/** A rate limit can be raised or lowered, never switched off. */
+const rateLimitMax = z.coerce.number().int().min(1).max(1_000_000).optional();
+
 export const envSchema = z.object({
   DATABASE_URL: z.url({ protocol: /^postgres(ql)?$/ }).optional(),
   BEMMOLY_SECRET_KEY: base64Key,
@@ -44,7 +47,42 @@ export const envSchema = z.object({
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug']).default('info'),
   LOG_FORMAT: z.enum(['json', 'pretty']).default('json'),
   BEMMOLY_TRUST_PROXY: z.stringbool().default(false),
+  /** Rate limit maxima; unset keeps the defaults in middlewares/rate-limit.ts. */
+  BEMMOLY_RATE_LIMIT_PER_USER: rateLimitMax,
+  BEMMOLY_RATE_LIMIT_AUTH_PER_IP: rateLimitMax,
+  BEMMOLY_RATE_LIMIT_AUTH_PER_ACCOUNT: rateLimitMax,
+  BEMMOLY_RATE_LIMIT_FAILED_CREDENTIALS_PER_IP: rateLimitMax,
+  BEMMOLY_RATE_LIMIT_AI_PER_USER: rateLimitMax,
+  /** MCP requests per person per minute; unset keeps the default in routes/mcp.routes.ts. */
+  BEMMOLY_RATE_LIMIT_MCP_PER_USER: rateLimitMax,
+  BEMMOLY_RATE_LIMIT_UPLOADS_PER_USER: rateLimitMax,
+  /** Largest file upload (an image in a page) in bytes, 64 KiB to 100 MiB; unset: 10 MiB. */
+  BEMMOLY_UPLOAD_MAX_BYTES: z.coerce
+    .number()
+    .int()
+    .min(64 * 1024)
+    .max(100 * 1024 * 1024)
+    .optional(),
+  /** Document messages per /collab socket per 10 s (awareness counts apart); unset: the default. */
+  BEMMOLY_RATE_LIMIT_COLLAB_MESSAGES: rateLimitMax,
+  /** Largest /collab message in bytes, 64 KiB to 16 MiB; unset keeps the 2 MiB default. */
+  BEMMOLY_COLLAB_MAX_MESSAGE_BYTES: z.coerce
+    .number()
+    .int()
+    .min(64 * 1024)
+    .max(16 * 1024 * 1024)
+    .optional(),
   BEMMOLY_ALLOW_PRIVATE_URLS: z.stringbool().default(false),
+  /**
+   * Absolute path of a JSON file of canned AI replies (the recorded provider). When set, no AI
+   * provider is ever called: for end-to-end tests and demos only. Empty or unset: off.
+   */
+  BEMMOLY_AI_RECORDING: z
+    .string()
+    .trim()
+    .optional()
+    .transform((value) => value || undefined)
+    .refine((value) => value === undefined || value.startsWith('/'), 'must be an absolute path'),
   OTEL_EXPORTER_OTLP_ENDPOINT: z.url().optional(),
   BEMMOLY_METRICS_TOKEN: z
     .string()

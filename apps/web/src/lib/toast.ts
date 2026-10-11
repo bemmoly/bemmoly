@@ -12,3 +12,8 @@ export function registerToast(next: Show | null): void {
 export function toast(title: string, tone: 'ok' | 'danger' | 'info' = 'ok'): void {
   show?.({ title, tone });
 }
+
+/** A reversible change that already happened, with Undo for about six seconds. */
+export function undoToast(title: string, onUndo: () => void): void {
+  show?.({ title, action: { label: 'Undo', onClick: onUndo } });
+}

@@ -14,36 +14,11 @@ import { describeError, serverFieldErrors, validateForm } from '../lib/errors.ts
 import { useSetupStore } from '../store/setup.ts';
 import { toast } from '../lib/toast.ts';
 
-export const SSO_NOTE =
-  'Single sign-on arrives in a later release. Invite by email now; people can switch later.';
 export const EMAIL_NOTE =
   'Invitations are sent through the email settings; in development they appear in the dev mailbox.';
 export const INVITE_HELPER =
   'Everyone you add here joins as a Viewer with no team, unless you pick otherwise below.';
 export const PASTE_PLACEHOLDER = 'Paste more, comma or newline separated…';
-
-/**
- * The two SSO cards from the mock, marked coming soon until single sign-on ships. The mock's
- * RECOMMENDED badge and connect buttons return with it; recommending an option that cannot be
- * picked yet would only compete with the coming-soon badge.
- */
-export const SSO_OPTIONS = [
-  {
-    id: 'google',
-    initials: 'G',
-    name: 'Google Workspace',
-    description: 'Anyone with an account on your domain can sign in. New users become Viewers.',
-  },
-  {
-    id: 'oidc',
-    initials: 'ID',
-    name: 'Okta, Entra, SAML, OIDC',
-    description:
-      'Any standards-based identity provider, with SCIM provisioning and group → team mapping.',
-  },
-] as const;
-
-export type SsoOptionId = (typeof SSO_OPTIONS)[number]['id'];
 
 const SEPARATOR = /[\s,;]+/;
 
@@ -73,7 +48,7 @@ export function invitationsSentMessage(count: number): string {
   return count === 1 ? '1 invitation sent' : `${count} invitations sent`;
 }
 
-/** Step 3: email chips, role and team, and sending the invitations on Continue. */
+/** People: email chips, role and team, and sending the invitations on Continue. */
 export function useSetupInvites(onDone: () => void | Promise<void>) {
   const queryClient = useQueryClient();
   const emails = useSetupStore((state) => state.emails);

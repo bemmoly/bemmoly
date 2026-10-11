@@ -16,11 +16,21 @@ type Screen = LazyExoticComponent<ComponentType<WorkScreenProps>>;
  */
 export const WORK_SCREENS: Readonly<Record<string, Screen>> = {
   board: lazy(() => import('./board/board-screen.tsx')),
+  issue: lazy(() => import('./issue/issue-screen.tsx')),
+  create: lazy(() => import('./create/create-screen.tsx')),
+  projects: lazy(() => import('./projects/projects-screen.tsx')),
+  members: lazy(() => import('./projects/members-screen.tsx')),
+  workflows: lazy(() => import('./workflow/workflows-screen.tsx')),
+  settings: lazy(() => import('./settings/settings-screen.tsx')),
+  backlog: lazy(() => import('./backlog/backlog-screen.tsx')),
+  'my-issues': lazy(() => import('./home/my-issues-screen.tsx')),
 };
 
 /** "/board/PLT/x" → the Board screen with projectKey "PLT" and rest ["x"]. */
 export function resolveWorkRoute(subpath: string) {
   const [screen = 'board', projectKey, ...rest] = subpath.split('/').filter(Boolean);
   const Screen = WORK_SCREENS[screen];
-  return Screen ? { Screen, props: { projectKey, rest } satisfies WorkScreenProps } : null;
+  return Screen
+    ? { Screen, name: screen, props: { projectKey, rest } satisfies WorkScreenProps }
+    : null;
 }

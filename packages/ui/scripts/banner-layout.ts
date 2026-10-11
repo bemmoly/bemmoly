@@ -11,6 +11,7 @@ import {
   COMMAND,
   HEADLINE,
   LINE,
+  sentences,
   shadowFilter,
   type PreviewInput,
 } from './social-preview.ts';
@@ -35,7 +36,7 @@ export interface BannerSpec {
   covered: readonly Rect[];
   copy: {
     x: number;
-    /** Wrap width for the line; the headline must fit it unwrapped. */
+    /** Wrap width for the line; a headline sentence wider than it wraps, balanced. */
     width: number;
     /** Where the headline may run wider than the line, above an avatar column. */
     headlineWidth?: number;
@@ -44,6 +45,8 @@ export interface BannerSpec {
     headline: TextStyle;
     /** One sentence per line, as the social preview has it. */
     split: boolean;
+    /** The line broken between its sentences too, where the height allows it. */
+    splitLine?: boolean;
     body: TextStyle;
     /** The install pill, or none where it cannot be read at the platform's size. */
     code?: TextStyle;
@@ -92,12 +95,19 @@ function balanced(text: string, style: TextStyle, width: number): string[] {
 function copyBlock(spec: BannerSpec, input: BannerInput, top: number) {
   const { colors } = input;
   const { x, width, headline, body, code } = spec.copy;
-  const titles = spec.copy.split ? HEADLINE.split(/(?<=\.) /) : [HEADLINE];
+  const headlineWidth = spec.copy.headlineWidth ?? width;
+  // A sentence wider than the room wraps, balanced, rather than shrinking the type.
+  const heads = spec.copy.split ? sentences(HEADLINE) : [HEADLINE];
+  const titles = heads.flatMap((sentence) =>
+    measure(sentence, headline) > headlineWidth
+      ? balanced(sentence, headline, headlineWidth)
+      : [sentence],
+  );
   const parts: string[] = [];
   const boxes: Rect[] = [];
   let y = top;
   for (const title of titles) {
-    if (measure(title, headline) > (spec.copy.headlineWidth ?? width))
+    if (measure(title, headline) > headlineWidth)
       throw new Error(`${spec.name}: "${title}" overflows`);
     y += headline.size;
     parts.push(`<path fill="${colors.tx}" d="${outline(title, headline, x, y)}"/>`);
@@ -105,17 +115,21 @@ function copyBlock(spec: BannerSpec, input: BannerInput, top: number) {
     y += headline.size * 0.125;
   }
   y += headline.size * 0.25;
-  for (const line of balanced(LINE, body, width)) {
+  // Where there is room, the line breaks between its sentences: what it is, then the promises.
+  const lines = spec.copy.splitLine
+    ? sentences(LINE).flatMap((sentence) => balanced(sentence, body, width))
+    : balanced(LINE, body, width);
+  for (const line of lines) {
     y += body.size * 1.3;
     const baseline = y - body.size * 0.3;
-    parts.push(`<path fill="${colors.tx2}" d="${outline(line, body, x, baseline)}"/>`);
+    parts.push(`<path fill="${colors['tx-2']}" d="${outline(line, body, x, baseline)}"/>`);
     boxes.push(textBox(x, baseline, line, body));
   }
   if (code) {
     y += code.size * 1.4;
     const pill = { x, y, w: measure(COMMAND, code) + code.size * 2, h: code.size * 2.4 };
     parts.push(
-      `<rect x="${pill.x}" y="${pill.y}" width="${pill.w}" height="${pill.h}" rx="${px(RADII.card)}" fill="${colors.sf}" stroke="${colors.br}"/>`,
+      `<rect x="${pill.x}" y="${pill.y}" width="${pill.w}" height="${pill.h}" rx="${px(RADII.card)}" fill="${colors.card}" stroke="${colors.line}"/>`,
       `<path fill="${colors.tx}" d="${outline(COMMAND, code, x + code.size, y + code.size * 1.55)}"/>`,
     );
     boxes.push(pill);
@@ -150,18 +164,18 @@ export function composeBanner(spec: BannerSpec, input: BannerInput) {
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}">`,
     '<defs>',
     `<radialGradient id="glow" cx="${glow.cx}" cy="${glow.cy}" r="${glow.r}" gradientUnits="userSpaceOnUse">`,
-    `<stop offset="0" stop-color="${colors.ac}" stop-opacity="0.14"/>`,
-    `<stop offset="1" stop-color="${colors.ac}" stop-opacity="0"/>`,
+    `<stop offset="0" stop-color="${colors.acc}" stop-opacity="0.14"/>`,
+    `<stop offset="1" stop-color="${colors.acc}" stop-opacity="0"/>`,
     '</radialGradient>',
     shadowFilter('shadow'),
     '</defs>',
-    `<rect width="${width}" height="${height}" fill="${colors.bg}"/>`,
+    `<rect width="${width}" height="${height}" fill="${colors.sunken}"/>`,
     `<rect width="${width}" height="${height}" fill="url(#glow)"/>`,
     boardFrame(input, spec.frame.rect, spec.frame.scale, spec.frame.from),
     brand?.svg ?? '',
     copy.svg,
     domain
-      ? `<path fill="${colors.tx3}" d="${outline(DOMAIN, domain.style, domainX, domain.baseline)}"/>`
+      ? `<path fill="${colors['tx-2']}" d="${outline(DOMAIN, domain.style, domainX, domain.baseline)}"/>`
       : '',
     '</svg>',
   ].join('');

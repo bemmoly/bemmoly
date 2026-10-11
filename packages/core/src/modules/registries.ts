@@ -1,8 +1,10 @@
-import type { CapabilityName, NavEntry } from '@bemmoly/shared';
+import type { CapabilityName, NavEntry, SearchResult } from '@bemmoly/shared';
 import type { FastifyPluginAsync } from 'fastify';
 import type { z } from 'zod';
-import type { Actor } from '../contracts/authz.ts';
+import type { AiFacade } from '../contracts/ai.ts';
+import type { RetrievalRegistry } from '../contracts/retrieval.ts';
 import type { SettingDefinition, SettingKey, SettingsKeys } from '../contracts/settings.ts';
+import type { RequestContext } from '../services/authz/index.ts';
 
 export interface RouteDefinition {
   /** Mounted under /api/v1, e.g. "/issues". */
@@ -20,6 +22,11 @@ export interface EntitySummary {
   key?: string;
   title: string;
   path: string;
+  /**
+   * Facts a renderer shows beside the title, owned by the serving module and
+   * passed through untouched: an issue's status, type and priority.
+   */
+  data?: Record<string, unknown>;
 }
 
 export interface SearchDocument {
@@ -30,16 +37,45 @@ export interface SearchDocument {
   containerId?: string;
 }
 
+/** A record named by its id or by its human key ("PLT-204"). */
+export type EntityLookup = { id: string } | { key: string };
+
 export interface EntityDefinition {
   kind: string;
   renderer: string;
-  resolve(ref: { id: string } | { key: string }): Promise<EntitySummary | null>;
-  canView(actor: Actor, id: string): Promise<boolean>;
+  resolve(ref: EntityLookup): Promise<EntitySummary | null>;
+  /**
+   * Many records by id or key in one round trip, for lists. With a context,
+   * only those the person may open. Without it the registry falls back to
+   * resolve and canView per record.
+   */
+  resolveMany?(refs: readonly EntityLookup[], ctx?: RequestContext): Promise<EntitySummary[]>;
+  /** Whether the person behind the request may open the record. */
+  canView(ctx: RequestContext, id: string): Promise<boolean>;
   buildSearchDocument?(id: string): Promise<SearchDocument | null>;
 }
 
 export interface EntityRegistry {
   add(entity: EntityDefinition): void;
+  /**
+   * Resolves a record any enabled module registered, so one module can name another's records
+   * without importing it. With a request context the result is only what that person may see;
+   * without one it is a trusted server-side lookup (a background job reading a document). Null
+   * when no enabled module serves the kind or the record is not there.
+   */
+  resolve(kind: string, ref: EntityLookup, ctx?: RequestContext): Promise<EntitySummary | null>;
+  /**
+   * resolve for a list: the records found, each at most once, in no set
+   * order; the ones the person may not open are left out. Empty when no
+   * enabled module serves the kind.
+   */
+  resolveMany(
+    kind: string,
+    refs: readonly EntityLookup[],
+    ctx?: RequestContext,
+  ): Promise<EntitySummary[]>;
+  /** Whether an enabled module serves the kind, so callers can keep a placeholder otherwise. */
+  has(kind: string): boolean;
 }
 
 export interface LinkKindDefinition {
@@ -49,8 +85,36 @@ export interface LinkKindDefinition {
   toKinds: readonly string[];
 }
 
+/** The other end of a reference, as the module that owns it describes it. */
+export interface ReferenceTarget {
+  kind: string;
+  id: string;
+}
+
+/**
+ * A module's answer to "what of yours points at this record?": Docs answers with the pages
+ * that mention or embed an issue. Results are already filtered to what the person may see.
+ */
+export interface ReferenceSourceDefinition {
+  /** Namespaced by module: "docs.page". */
+  kind: string;
+  /** What the group is called next to the record: "Linked docs". */
+  label: string;
+  referencesTo(ctx: RequestContext, target: ReferenceTarget): Promise<EntitySummary[]>;
+}
+
+export interface ReferenceGroup {
+  source: string;
+  label: string;
+  moduleId: string;
+  items: EntitySummary[];
+}
+
 export interface LinkRegistry {
   add(link: LinkKindDefinition): void;
+  addReferenceSource(source: ReferenceSourceDefinition): void;
+  /** Every enabled module's references to the target, one group per source that has any. */
+  referencesTo(ctx: RequestContext, target: ReferenceTarget): Promise<ReferenceGroup[]>;
 }
 
 /** Columns of the roles matrix in the People mock. */
@@ -129,9 +193,33 @@ export interface QueryFieldDefinition {
   entityKinds: readonly string[];
 }
 
+/** What a provider is asked: the words typed and how many results its group may show. */
+export interface SearchProviderQuery {
+  q: string;
+  limit: number;
+}
+
+/**
+ * Answers ⌘K for one kind of the module's records. The kernel calls it only
+ * for people with access to the module, with their request context, so the
+ * provider applies its own container rules (project membership, say) as it
+ * does for its own endpoints. Results carry their own href into the module.
+ */
+export interface SearchProviderDefinition {
+  /** Namespaced by module: "work.issue". */
+  kind: string;
+  /** The palette group and scope its results show under: "Issues". */
+  label: string;
+  search(
+    ctx: RequestContext,
+    query: SearchProviderQuery,
+  ): Promise<Omit<SearchResult, 'kind' | 'group'>[]>;
+}
+
 export interface SearchRegistry {
   addIndexer(indexer: SearchIndexerDefinition): void;
   addField(field: QueryFieldDefinition): void;
+  addProvider(provider: SearchProviderDefinition): void;
 }
 
 export interface AiContribution {
@@ -140,11 +228,32 @@ export interface AiContribution {
   definition: unknown;
 }
 
-export interface AiRegistry {
+/** A space or project Settings › AI › Privacy can exclude, as a module lists it. */
+export interface AiExclusionTarget {
+  id: string;
+  name: string;
+  key: string | null;
+}
+
+/** Lists one kind of container (Docs' spaces, Work's projects) for the exclusion picker. */
+export interface AiExclusionSourceDefinition {
+  kind: 'space' | 'project';
+  list(): Promise<readonly AiExclusionTarget[]>;
+}
+
+/**
+ * What a module sees as `ctx.ai`: the registries it contributes to at boot, and the facade
+ * (`generate`, `stream`, `embed`, `enabled`, `policy`) it calls at run time. With AI off, or
+ * before the server binds the runtime, every call refuses with ForbiddenError
+ * `details.reason: 'ai_off'`.
+ */
+export interface AiRegistry extends AiFacade, RetrievalRegistry {
   addTool(tool: AiContribution): void;
   addContextBuilder(builder: AiContribution): void;
   addInsightGenerator(generator: AiContribution): void;
+  /** A Markdown prompt file with frontmatter; its id must start with "<module id>.". */
   addPromptFile(prompt: { name: string; path: string }): void;
+  addExclusionSource(source: AiExclusionSourceDefinition): void;
 }
 
 export interface EditorContribution {

@@ -68,6 +68,15 @@ export { runScheduledDrill, verifyBackup, type VerifyResult } from './backups/ve
 
 export { getSystemHealth } from './health/system-health.ts';
 export type { HttpsSignal } from './health/checks.ts';
+export {
+  assertPostgresSupported,
+  MIN_POSTGRES_MAJOR,
+  PostgresRequirementError,
+  postgresRequirementProblem,
+  readPostgresServer,
+  type PostgresRequirementProblem,
+  type PostgresServerInfo,
+} from './health/postgres-requirement.ts';
 
 export {
   assertNoUpdaterOperation,

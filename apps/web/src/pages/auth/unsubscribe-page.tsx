@@ -46,7 +46,7 @@ export function UnsubscribePage() {
         </Notice>
       ) : (
         <>
-          <p className="m-0 text-12h leading-body text-tx3">
+          <p className="m-0 text-13 leading-body text-tx-2">
             Stop sending email for “{label}”? Other notifications are not affected.
           </p>
           <FormError error={confirm.error} />
@@ -61,7 +61,7 @@ export function UnsubscribePage() {
           </Button>
         </>
       )}
-      <Link to="/settings/notifications" className="self-center text-12h font-medium">
+      <Link to="/settings/notifications" className="self-center text-13 font-medium">
         Open notification settings
       </Link>
     </AuthLayout>

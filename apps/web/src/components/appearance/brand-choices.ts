@@ -7,7 +7,7 @@ export const BRAND_CHOICES = [
   '#f97316',
   '#e11d48',
   '#7c3aed',
-  '#2456c9',
+  '#2356c9',
   '#0f766e',
   '#111827',
 ] as const;

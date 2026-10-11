@@ -4,7 +4,7 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { DEFAULT_BRAND } from '../components/appearance/brand-choices.ts';
 
-/** The import card picked on step 2; null until one is picked. */
+/** The import card picked on the Import step; null until one is picked. */
 export type ImportSourceId = 'jira' | 'confluence' | 'csv' | 'clean';
 
 /** A catalog provider id, the local server, or no AI at all. */
@@ -12,7 +12,7 @@ export type AiChoice = string;
 export const LOCAL_AI = 'local';
 export const NO_AI = 'none';
 
-/** Step 5's custom build: the Appearance page's custom theme inputs. */
+/** The Look step's custom build: the Appearance page's custom theme inputs. */
 export interface CustomThemeDraft {
   brand: string;
   mode: ThemeMode;
@@ -28,8 +28,15 @@ export const INITIAL_CUSTOM_THEME: CustomThemeDraft = {
 };
 
 export interface SetupDraft {
+  /**
+   * The first step's answers, held until the account step creates the admin with them. The
+   * password is never kept here.
+   */
+  workspaceName: string;
+  /** Null until edited: the field starts at the address the browser used. */
+  workspaceUrl: string | null;
   importSource: ImportSourceId | null;
-  /** Addresses shown as chips on step 3, not yet invited. */
+  /** Addresses shown as chips on the People step, not yet invited. */
   emails: string[];
   roleId: string | null;
   teamId: string | null;
@@ -43,7 +50,9 @@ export interface SetupDraft {
   customTheme: CustomThemeDraft;
   /** The last of steps 2 to 5 the admin was on, so an interrupted wizard resumes there. */
   lastStep: number | null;
-  /** Whether steps 4 and 5 were saved or skipped, so the summary says what happened. */
+  /** Steps left with "Skip for now", drawn as empty circles until they are answered. */
+  skipped: number[];
+  /** Whether the AI and Look steps were saved or skipped, so the summary says what happened. */
   aiSaved: boolean;
   themeSaved: boolean;
 }
@@ -56,6 +65,8 @@ interface SetupState extends SetupDraft {
 }
 
 export const INITIAL_SETUP_DRAFT: SetupDraft = {
+  workspaceName: '',
+  workspaceUrl: null,
   importSource: null,
   emails: [],
   roleId: null,
@@ -68,13 +79,21 @@ export const INITIAL_SETUP_DRAFT: SetupDraft = {
   useCustomTheme: false,
   customTheme: INITIAL_CUSTOM_THEME,
   lastStep: null,
+  skipped: [],
   aiSaved: false,
   themeSaved: false,
 };
 
+/** The draft as stored: everything but the actions. */
+export function draftOf(state: SetupDraft): SetupDraft {
+  return Object.fromEntries(
+    (Object.keys(INITIAL_SETUP_DRAFT) as (keyof SetupDraft)[]).map((key) => [key, state[key]]),
+  ) as unknown as SetupDraft;
+}
+
 /**
- * Choices made in the wizard before they are saved. Session storage, so a
- * reload keeps them but a new tab or a later sign-in starts fresh.
+ * Choices made in the wizard before they are saved. Local storage, so closing the tab and
+ * coming back later resumes at the step that was left; reaching the summary clears it.
  */
 export const useSetupStore = create<SetupState>()(
   persist(
@@ -89,24 +108,10 @@ export const useSetupStore = create<SetupState>()(
     }),
     {
       name: 'bemmoly.setup',
-      version: 1,
-      storage: createJSONStorage(() => sessionStorage),
-      partialize: (state): SetupDraft => ({
-        importSource: state.importSource,
-        emails: state.emails,
-        roleId: state.roleId,
-        teamId: state.teamId,
-        invitesSent: state.invitesSent,
-        ai: state.ai,
-        shareContent: state.shareContent,
-        allowActions: state.allowActions,
-        theme: state.theme,
-        useCustomTheme: state.useCustomTheme,
-        customTheme: state.customTheme,
-        lastStep: state.lastStep,
-        aiSaved: state.aiSaved,
-        themeSaved: state.themeSaved,
-      }),
+      // 2: the workspace and the account became two steps, so stored step numbers moved.
+      version: 2,
+      storage: createJSONStorage(() => localStorage),
+      partialize: (state): SetupDraft => draftOf(state),
     },
   ),
 );

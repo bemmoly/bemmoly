@@ -5,7 +5,10 @@ import {
   createModuleAccessResolver,
   createModuleAccessWriter,
   createSessionResolver,
+  createSubscriptionAuthorizer,
   deleteExpiredSessions,
+  deleteExpiredSsoState,
+  type Actor,
   type ActorResolver,
   type Authorize,
   type Database,
@@ -19,6 +22,7 @@ import {
   type SessionResolver,
   type SettingsService,
   type SqlClient,
+  type SubscriptionAuthorizer,
 } from '@bemmoly/core';
 import { ForbiddenError } from '@bemmoly/shared';
 
@@ -32,6 +36,8 @@ export interface IdentityWiring {
   authenticate?: ActorResolver;
   sessions?: SessionResolver;
   moduleAccess?: ModuleAccessResolver;
+  /** Who may listen to a project or space over /ws, for invalidations and presence. */
+  authorizeSubscription?: SubscriptionAuthorizer;
   moduleAccessWriter?: ModuleAccessWriter;
   authorize: Authorize;
   backup?: ModuleDataBackup;
@@ -59,10 +65,14 @@ export function identityWiring(input?: IdentityWiringInput): IdentityWiring {
     authenticate: authenticateRequest,
     sessions: createSessionResolver({ db, publicUrl }),
     moduleAccess: createModuleAccessResolver({ db, modules }),
+    authorizeSubscription: createSubscriptionAuthorizer(db),
     moduleAccessWriter: createModuleAccessWriter(db),
     authorize: createAuthorize({ db, modules }),
     ...(input.backup ? { backup: input.backup } : {}),
-    housekeeping: [{ name: 'sessions', run: (now) => deleteExpiredSessions(db, now) }],
+    housekeeping: [
+      { name: 'sessions', run: (now) => deleteExpiredSessions(db, now) },
+      { name: 'sso-flows', run: (now) => deleteExpiredSsoState(db, now) },
+    ],
   };
 }
 
@@ -71,6 +81,8 @@ export interface IdentityRoutesInput extends IdentityWiringInput {
   events: EventBus;
   /** The kernel's database-backed settings (workspace.name, workspace.url). */
   settings: SettingsService;
+  /** /me's workspace.aiEnabled for one person, from the AI runtime. */
+  aiEnabled?: (actor: Actor) => Promise<boolean>;
 }
 
 /** Sign-in, people, roles and audit; built after the kernel so they use its settings. */

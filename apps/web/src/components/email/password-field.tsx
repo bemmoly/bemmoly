@@ -28,7 +28,7 @@ export function PasswordField({
         <span className="font-medium text-tx">Password</span>
         <div className="flex h-9 items-center gap-3">
           <Badge tone="ok">Set</Badge>
-          <span className="text-12 text-tx5">Stored encrypted; it is never shown again.</span>
+          <span className="text-12 text-tx-3">Stored encrypted; it is never shown again.</span>
           <button type="button" className={`ml-auto ${LINK_ACTION}`} onClick={onReplace}>
             Replace
           </button>

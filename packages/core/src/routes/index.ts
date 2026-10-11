@@ -1,15 +1,31 @@
+import websocket from '@fastify/websocket';
 import type { FastifyPluginAsync } from 'fastify';
+import { createAiController, type AiControllerDependencies } from '../controllers/ai.controller.ts';
+import { createAiPlansController } from '../controllers/ai-plans.controller.ts';
+import { createAiInsightsController } from '../controllers/ai-insights.controller.ts';
+import { createAiAnswersController } from '../controllers/ai-answers.controller.ts';
 import { createAuditController } from '../controllers/audit.controller.ts';
 import { createAuthzController } from '../controllers/authz.controller.ts';
+import { createCollabController } from '../controllers/collab.controller.ts';
+import { createFilesController } from '../controllers/files.controller.ts';
 import { createHealthController } from '../controllers/health.controller.ts';
 import { createIdentityController } from '../controllers/identity.controller.ts';
+import { createMcpController } from '../controllers/mcp.controller.ts';
+import { createImportsController } from '../controllers/imports.controller.ts';
 import { createMetricsController } from '../controllers/metrics.controller.ts';
 import {
   createModuleAdminController,
   createModulesController,
 } from '../controllers/modules.controller.ts';
 import { createPeopleController } from '../controllers/people.controller.ts';
-import { createRealtimeController } from '../controllers/realtime.controller.ts';
+import {
+  createRealtimeController,
+  REALTIME_MAX_MESSAGE_BYTES,
+} from '../controllers/realtime.controller.ts';
+import { createScimController } from '../controllers/scim.controller.ts';
+import { createSearchController } from '../controllers/search.controller.ts';
+import { createSsoAdminController } from '../controllers/sso-admin.controller.ts';
+import { createSsoController } from '../controllers/sso.controller.ts';
 import { createSettingsController } from '../controllers/settings.controller.ts';
 import {
   createSystemController,
@@ -19,23 +35,43 @@ import type { ModuleAccessResolver } from '../contracts/module-access.ts';
 import type { SessionResolver } from '../contracts/session-resolver.ts';
 import { createActorResolver, type ActorResolver } from '../middlewares/actor.ts';
 import type { ModuleRegistry } from '../modules/registry.ts';
+import type { AiPlans } from '../services/ai/index.ts';
+import type { InsightsService } from '../services/ai/index.ts';
+import type { RetrievalService } from '../services/ai/index.ts';
+import type { CollabHost } from '../services/collab/index.ts';
+import type { FilesService } from '../services/files/index.ts';
 import type { IdentityDependencies } from '../services/identity/index.ts';
+import type { McpService } from '../services/mcp/index.ts';
+import type { ImportService } from '../services/import/index.ts';
 import type { ModuleAdmin, ModuleState } from '../services/modules/index.ts';
 import type { RealtimeHub, RealtimeMetricsHook } from '../services/realtime/index.ts';
+import { createSearchService } from '../services/search/index.ts';
 import type { SettingsAdmin } from '../services/settings/index.ts';
+import { SCIM_PATH, type SsoDependencies } from '../services/sso/index.ts';
 import type { DatabaseProbe } from '../services/system/index.ts';
 import type { ScrapeDependencies } from '../services/telemetry/index.ts';
+import { aiAdminRoutes, aiPersonRoutes } from './ai.routes.ts';
+import { aiPlansRoutes } from './ai-plans.routes.ts';
+import { aiInsightsRoutes } from './ai-insights.routes.ts';
+import { aiAnswersRoutes } from './ai-answers.routes.ts';
 import { auditRoutes } from './audit.routes.ts';
 import { authzRoutes } from './authz.routes.ts';
+import { collabRoutes } from './collab.routes.ts';
 import {
   emailNotificationRoutes,
   type EmailNotificationRouteDependencies,
 } from './email-notifications.routes.ts';
+import { filesRoutes } from './files.routes.ts';
 import { healthRoutes } from './health.routes.ts';
 import { identityRoutes } from './identity.routes.ts';
+import { mcpRoutes, type McpRateLimit } from './mcp.routes.ts';
+import { importsRoutes } from './imports.routes.ts';
 import { metricsRoutes } from './metrics.routes.ts';
 import { adminModulesRoutes, moduleResourceRoutes, modulesRoutes } from './modules.routes.ts';
 import { realtimeRoutes } from './realtime.routes.ts';
+import { scimRoutes } from './scim.routes.ts';
+import { searchRoutes } from './search.routes.ts';
+import { ssoRoutes } from './sso.routes.ts';
 import { adminSettingsRoutes } from './settings.routes.ts';
 import { systemRoutes } from './system.routes.ts';
 
@@ -62,14 +98,32 @@ export interface KernelRouteDependencies {
   realtime?: RealtimeHub;
   /** The observability service's `getMetrics().realtime`. */
   realtimeMetrics?: RealtimeMetricsHook;
+  /** The collaboration host; /collab is mounted only when present. */
+  collab?: CollabHost;
   /** Identity, authorization and audit routes; mounted only when a database is configured. */
   identity?: IdentityDependencies;
+  /** Single sign-on (/api/v1/auth/sso, /api/v1/admin/sso) and SCIM (/scim/v2); with identity. */
+  sso?: SsoDependencies;
   /** Mounted when the host wires email and notifications. */
   emailNotifications?: EmailNotificationRouteDependencies;
   /** Serves /metrics when given; the route answers 404 until a token is configured. */
   metrics?: ScrapeDependencies;
   /** Backups, updates and system health; mounted when the host wires the system service. */
   system?: SystemControllerDependencies;
+  /** Settings › AI (/admin/ai) and a person's AI status; mounted with the AI runtime. */
+  ai?: AiControllerDependencies;
+  /** The ⌘K palette's plans (/ai/plans); mounted when the host wires the AI runtime. */
+  aiPlans?: AiPlans;
+  /** The AI insight cache; /api/v1/ai/insights is mounted only when present. */
+  insights?: InsightsService;
+  /** "Ask your docs" answers; mounted when the host wires retrieval. */
+  retrieval?: RetrievalService;
+  /** The built-in MCP server at /mcp; mounted when the host wires it (AI never gates it). */
+  mcp?: { service: McpService; rateLimit?: McpRateLimit };
+  /** Uploaded files (images in pages); /api/v1/files is mounted only when present. */
+  files?: FilesService;
+  /** Settings › Import (/admin/imports); mounted when the host wires the importers. */
+  imports?: ImportService;
 }
 
 function identityAndAccessRoutes(deps: IdentityDependencies): FastifyPluginAsync {
@@ -101,9 +155,40 @@ export function kernelRoutes(deps: KernelRouteDependencies): FastifyPluginAsync 
     isEnabled: (id: string) => (state ? state.isEnabled(id) : deps.modules.has(id)),
     ...(deps.moduleAccess && identified ? { access: deps.moduleAccess, actorOf } : {}),
   };
+  const search = createSearchController(
+    createSearchService({
+      providers: () => deps.modules.searchProviders(),
+      isEnabled: gate.isEnabled,
+    }),
+  );
   return async (app) => {
     await app.register(healthRoutes(health));
     if (metrics) await app.register(metricsRoutes(metrics));
+    if (deps.mcp) {
+      await app.register(mcpRoutes(createMcpController(deps.mcp.service), deps.mcp.rateLimit));
+    }
+    if (deps.realtime || deps.collab) {
+      // One socket server for both endpoints: the plugin owns the HTTP upgrade event, so it
+      // is registered once, with the larger limit, and /ws checks its own smaller one.
+      const maxPayload = Math.max(
+        REALTIME_MAX_MESSAGE_BYTES,
+        deps.collab?.limits.maxMessageBytes ?? 0,
+      );
+      await app.register(websocket, { options: { maxPayload } });
+    }
+    if (deps.sso) {
+      await app.register(scimRoutes(createScimController(deps.sso)), { prefix: SCIM_PATH });
+    }
+    if (deps.collab) {
+      await app.register(
+        collabRoutes(
+          createCollabController({
+            host: deps.collab,
+            ...(deps.sessions ? { sessions: deps.sessions } : {}),
+          }),
+        ),
+      );
+    }
     if (deps.realtime) {
       await app.register(
         realtimeRoutes(
@@ -118,7 +203,13 @@ export function kernelRoutes(deps: KernelRouteDependencies): FastifyPluginAsync 
     await app.register(
       async (api) => {
         await api.register(modulesRoutes(modules));
+        await api.register(searchRoutes(search));
         if (deps.identity) await api.register(identityAndAccessRoutes(deps.identity));
+        if (deps.sso) {
+          await api.register(
+            ssoRoutes(createSsoController(deps.sso), createSsoAdminController(deps.sso)),
+          );
+        }
         if (deps.moduleAdmin) {
           await api.register(
             adminModulesRoutes(createModuleAdminController(deps.moduleAdmin, actorOf)),
@@ -131,6 +222,26 @@ export function kernelRoutes(deps: KernelRouteDependencies): FastifyPluginAsync 
           await api.register(emailNotificationRoutes(deps.emailNotifications));
         }
         if (deps.system) await api.register(systemRoutes(createSystemController(deps.system)));
+        if (deps.ai) {
+          const ai = createAiController(deps.ai);
+          await api.register(aiAdminRoutes(ai));
+          await api.register(aiPersonRoutes(ai));
+        }
+        if (deps.aiPlans) {
+          await api.register(aiPlansRoutes(createAiPlansController(deps.aiPlans.service)));
+        }
+        if (deps.insights) {
+          await api.register(aiInsightsRoutes(createAiInsightsController(deps.insights)));
+        }
+        if (deps.imports) {
+          await api.register(importsRoutes(createImportsController(deps.imports, actorOf)));
+        }
+        if (deps.retrieval) {
+          await api.register(aiAnswersRoutes(createAiAnswersController(deps.retrieval)));
+        }
+        if (deps.files) {
+          await api.register(filesRoutes(createFilesController(deps.files), deps.files.maxBytes));
+        }
         await api.register(moduleResourceRoutes(deps.modules, gate));
       },
       { prefix: API_PREFIX },

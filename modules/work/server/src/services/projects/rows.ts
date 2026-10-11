@@ -36,14 +36,18 @@ export const toProject = (row: ProjectRow): Project => ({
 export const PROJECT_COLUMNS = `id, key, name, description, team_id, method, scheme_overrides,
   default_space_id, archived_at, created_at, updated_at`;
 
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 /**
- * The project every project-scoped service starts from; the key is the URL
- * segment so a wrong key is a 404 before any capability check names it.
+ * The project every project-scoped service starts from. The URL segment is
+ * its key ("PLT") or its id, since links hold keys and settings hold ids; a
+ * wrong one is a 404 before any capability check names it.
  */
-export async function projectByKey(sql: SqlExecutor, key: string): Promise<ProjectRow> {
+export async function projectByKey(sql: SqlExecutor, ref: string): Promise<ProjectRow> {
   const [row] = await sql<ProjectRow[]>`
-    select ${sql.unsafe(PROJECT_COLUMNS)} from projects where key = ${key}`;
-  if (!row) throw new NotFoundError(`Project ${key} was not found`);
+    select ${sql.unsafe(PROJECT_COLUMNS)} from projects
+    where ${UUID.test(ref) ? sql`id = ${ref}::uuid` : sql`key = ${ref.trim().toUpperCase()}`}`;
+  if (!row) throw new NotFoundError(`Project ${ref} was not found`);
   return row;
 }
 

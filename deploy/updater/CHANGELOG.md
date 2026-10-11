@@ -1,5 +1,79 @@
 # @bemmoly/updater
 
+## 0.6.0
+
+### Minor Changes
+
+- c4215a9: The updater now moves itself to the release it installs, verified with cosign like the app image, so updater fixes reach existing installs (ADR 0020). `bemmoly upgrade` does the same, and `bemmoly sync-updater` moves an older updater once. Clicking Update opens a dialog with each step's live status; every admin sees a running update, a second one is refused, and the page reloads onto the new version when it is ready.
+
+### Patch Changes
+
+- Updated dependencies [4e0e170]
+- Updated dependencies [4cbf7a1]
+- Updated dependencies [c4215a9]
+  - @bemmoly/shared@0.6.0
+
+## 0.5.0
+
+### Patch Changes
+
+- Updated dependencies [0a04d0d]
+- Updated dependencies [fc28637]
+- Updated dependencies [9911c5f]
+  - @bemmoly/shared@0.5.0
+
+## 0.4.0
+
+### Patch Changes
+
+- Updated dependencies [8f4df5f]
+  - @bemmoly/shared@0.4.0
+
+## 0.3.0
+
+### Patch Changes
+
+- @bemmoly/shared@0.3.0
+
+## 0.2.2
+
+### Patch Changes
+
+- @bemmoly/shared@0.2.2
+
+## 0.2.1
+
+### Patch Changes
+
+- @bemmoly/shared@0.2.1
+
+## 0.2.0
+
+### Patch Changes
+
+- Updated dependencies [51cd3ae]
+- Updated dependencies [e2aa5d2]
+  - @bemmoly/shared@0.2.0
+
+## 0.1.7
+
+### Patch Changes
+
+- 1830ed0: Fix in-app updates failing at the verify step with "mkdir /root/.sigstore: read-only file system". The updater runs on a read-only filesystem, and the signature check could not cache Sigstore's trust root. It now caches it in /tmp. Installs on 0.1.6 or older update once with `sudo bemmoly upgrade` to get the fixed updater; from then on, Update in Settings › Updates works.
+- @bemmoly/shared@0.1.7
+
+## 0.1.6
+
+### Patch Changes
+
+- @bemmoly/shared@0.1.6
+
+## 0.1.5
+
+### Patch Changes
+
+- @bemmoly/shared@0.1.5
+
 ## 0.1.4
 
 ### Patch Changes

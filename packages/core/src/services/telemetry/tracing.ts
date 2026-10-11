@@ -1,4 +1,5 @@
 import type { Env } from '../../config/env.ts';
+import { trimTrailingSlashes } from '../../utils/slashes.ts';
 
 export type TracingConfig = Pick<Env, 'OTEL_EXPORTER_OTLP_ENDPOINT'> & {
   serviceVersion?: string;
@@ -23,7 +24,7 @@ export function isTracingEnabled(): boolean {
 
 /** OTEL_EXPORTER_OTLP_ENDPOINT is the collector's base URL; traces go to its /v1/traces. */
 export function tracesUrl(endpoint: string): string {
-  return `${endpoint.replace(/\/+$/, '')}/v1/traces`;
+  return `${trimTrailingSlashes(endpoint)}/v1/traces`;
 }
 
 const pathOf = (url: string | undefined) => (url ?? '').split('?')[0] ?? '';

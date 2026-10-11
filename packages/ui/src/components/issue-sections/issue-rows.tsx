@@ -1,43 +1,61 @@
-import type { AnchorHTMLAttributes, ElementType, ReactNode } from 'react';
+import type { ElementType, ReactNode } from 'react';
 import { cx } from '../../lib/cx.ts';
 import { focusRingInset } from '../../lib/focus.ts';
 import { Avatar, type AvatarHue } from '../avatar/avatar.tsx';
 import { Checkbox } from '../checkbox/checkbox.tsx';
-import { TypeGlyph, type IssueType } from '../glyphs/glyphs.tsx';
+import { StatusGlyph } from '../glyphs/status-glyph.tsx';
+import { TypeGlyph, type IssueTypeRef } from '../glyphs/glyphs.tsx';
 import { KeyChip } from '../key-chip/key-chip.tsx';
-import { StatusBadge, type StatusCategory } from '../status-badge/status-badge.tsx';
+import { STATUS_LABELS, type StatusCategory } from '../status-badge/status-badge.tsx';
 
 export interface RowStatus {
   category: StatusCategory;
   label?: ReactNode;
 }
 
-/** The status badge at the end of a row: 11px, 2px 7px, 3px radius, at least 70px wide. */
-function RowStatusBadge({ status, wide }: { status: RowStatus; wide?: boolean }) {
+/** The status at the end of a row: the glyph and the status's name, as list rows show it. */
+function RowStatusMark({ status }: { status: RowStatus }) {
+  const name = status.label ?? STATUS_LABELS[status.category];
   return (
-    <StatusBadge
-      category={status.category}
-      label={status.label}
-      size="sm"
-      className={cx('px-1.75', wide && 'min-w-17.5 justify-center')}
-    />
+    <span className="inline-flex shrink-0 items-center gap-1.5 text-12 text-tx-2">
+      <StatusGlyph
+        stage={status.category}
+        size={13}
+        {...(typeof name === 'string' ? { label: name } : {})}
+      />
+      <span className="hidden max-w-28 truncate sm:inline">{name}</span>
+    </span>
+  );
+}
+
+const ROW =
+  'group/row flex min-h-9 items-center gap-2.5 border-b border-line-2 px-3 text-13 text-tx';
+
+/** Secondary actions at the end of a row: shown on hover and focus, always on touch screens. */
+function RowActions({ children }: { children: ReactNode }) {
+  return (
+    <span className="flex shrink-0 items-center opacity-100 motion-safe:transition-opacity motion-safe:duration-(--duration-base) pointer-fine:opacity-0 pointer-fine:group-focus-within/row:opacity-100 pointer-fine:group-hover/row:opacity-100">
+      {children}
+    </span>
   );
 }
 
 export interface SubtaskRowProps {
   issueKey: string;
   title: ReactNode;
-  type?: IssueType;
+  type?: IssueTypeRef;
   status: RowStatus;
   done?: boolean;
   assignee?: { name: string; initials?: string; hue?: AvatarHue };
   href?: string;
+  /** A remove or more button, revealed on hover and focus. */
+  actions?: ReactNode;
   className?: string;
 }
 
 /**
- * A subtask on the Issue page: 9px 12px over a br-row rule (8px in the drawer), the type tile,
- * the key, the title (struck through in tx5 when done), the 22px avatar and the status.
+ * A sub-issue on the Issue page: a 36px list row with the type tile, the key, the title (struck
+ * through in tx-3 when done), the avatar and the status glyph with its name.
  */
 export function SubtaskRow({
   issueKey,
@@ -47,21 +65,25 @@ export function SubtaskRow({
   done = false,
   assignee,
   href,
+  actions,
   className,
 }: SubtaskRowProps) {
-  const Tag: ElementType = href ? 'a' : 'div';
+  const Tag: ElementType = href ? 'a' : 'span';
   return (
-    <Tag
-      href={href}
-      className={cx(
-        'flex items-center gap-2.5 border-b border-br-row px-3 py-2.25 text-13 text-tx no-underline',
-        href && cx('hover:bg-bg2', focusRingInset),
-        className,
-      )}
-    >
-      <TypeGlyph type={type} />
-      <KeyChip issueKey={issueKey} />
-      <span className={cx('flex-1', done && 'text-tx5 line-through')}>{title}</span>
+    <div className={cx(ROW, href && 'hover:bg-hover', className)}>
+      <Tag
+        href={href}
+        className={cx(
+          'flex min-w-0 flex-1 items-center gap-2.5 self-stretch rounded-chip text-tx no-underline',
+          href && focusRingInset,
+        )}
+      >
+        <TypeGlyph type={type} />
+        <KeyChip issueKey={issueKey} />
+        <span className={cx('min-w-0 flex-1 truncate', done && 'text-tx-3 line-through')}>
+          {title}
+        </span>
+      </Tag>
       {assignee && (
         <Avatar
           name={assignee.name}
@@ -69,44 +91,49 @@ export function SubtaskRow({
           {...(assignee.initials ? { initials: assignee.initials } : {})}
         />
       )}
-      <RowStatusBadge status={status} wide />
-    </Tag>
+      <RowStatusMark status={status} />
+      {actions && <RowActions>{actions}</RowActions>}
+    </div>
   );
 }
 
-export interface LinkedIssueRowProps extends Omit<
-  AnchorHTMLAttributes<HTMLAnchorElement>,
-  'title'
-> {
+export interface LinkedIssueRowProps {
   issueKey: string;
   title: ReactNode;
-  type: IssueType;
+  type: IssueTypeRef;
   status: RowStatus;
+  href: string;
+  /** Remove the link, revealed on hover and focus. */
+  actions?: ReactNode;
+  className?: string;
 }
 
-/** A linked issue under its group label: the same row as a subtask, as a link. */
+/** A linked issue under its group label: the same row as a sub-issue. */
 export function LinkedIssueRow({
   issueKey,
   title,
   type,
   status,
+  href,
+  actions,
   className,
-  ...rest
 }: LinkedIssueRowProps) {
   return (
-    <a
-      className={cx(
-        'flex items-center gap-2.5 border-b border-br-row px-3 py-2.25 text-13 text-tx no-underline hover:bg-bg2',
-        focusRingInset,
-        className,
-      )}
-      {...rest}
-    >
-      <TypeGlyph type={type} />
-      <KeyChip issueKey={issueKey} />
-      <span className="flex-1">{title}</span>
-      <RowStatusBadge status={status} />
-    </a>
+    <div className={cx(ROW, 'hover:bg-hover', className)}>
+      <a
+        href={href}
+        className={cx(
+          'flex min-w-0 flex-1 items-center gap-2.5 self-stretch rounded-chip text-tx no-underline',
+          focusRingInset,
+        )}
+      >
+        <TypeGlyph type={type} />
+        <KeyChip issueKey={issueKey} />
+        <span className="min-w-0 flex-1 truncate">{title}</span>
+      </a>
+      <RowStatusMark status={status} />
+      {actions && <RowActions>{actions}</RowActions>}
+    </div>
   );
 }
 
@@ -115,34 +142,46 @@ export interface CriteriaRowProps {
   checked: boolean;
   onCheckedChange?: (checked: boolean) => void;
   disabled?: boolean;
+  /** Edit and remove, revealed on hover and focus. */
+  actions?: ReactNode;
   className?: string;
 }
 
 /**
- * One acceptance criterion as a checklist row. No mock shows the checklist form; it is built
- * from the subtask row and the Board Settings 16px checkbox, with the done text struck through.
+ * One acceptance criterion: the 16px checkbox and its text, struck through in tx-3 once met.
+ * The text is the checkbox's label, so a click anywhere on it ticks the criterion.
  */
 export function CriteriaRow({
   children,
   checked,
   onCheckedChange,
   disabled,
+  actions,
   className,
 }: CriteriaRowProps) {
   return (
-    <label
+    <div
       className={cx(
-        'flex cursor-pointer items-center gap-2.5 border-b border-br-row px-3 py-2.25 text-13 text-tx',
-        disabled && 'cursor-not-allowed',
+        'group/row flex min-h-8 items-center gap-2 rounded-control px-1.5 hover:bg-hover',
         className,
       )}
     >
-      <Checkbox
-        checked={checked}
-        disabled={disabled}
-        onChange={(event) => onCheckedChange?.(event.target.checked)}
-      />
-      <span className={cx('flex-1', checked && 'text-tx5 line-through')}>{children}</span>
-    </label>
+      <label
+        className={cx(
+          'flex min-w-0 flex-1 cursor-pointer items-center gap-2.5 py-1.5 text-13 text-tx',
+          disabled && 'cursor-not-allowed',
+        )}
+      >
+        <Checkbox
+          checked={checked}
+          disabled={disabled}
+          onChange={(event) => onCheckedChange?.(event.target.checked)}
+        />
+        <span className={cx('min-w-0 flex-1', checked && 'text-tx-3 line-through')}>
+          {children}
+        </span>
+      </label>
+      {actions && <RowActions>{actions}</RowActions>}
+    </div>
   );
 }

@@ -1,6 +1,8 @@
 import type { EnableModuleBody, ModuleAccessChoice, RollbackMode } from '@bemmoly/shared';
+import { shippedManifest } from '../seed/modules.ts';
 import { newId } from '../seed/time.ts';
 import { audit, can, emit, type MockDb } from '../db.ts';
+import { readUpdateJob, startUpdateJob } from './update-job.ts';
 import { bodyOf, fail, notFound, ok, page, type MockRoute } from '../types.ts';
 import {
   enterMaintenance,
@@ -63,17 +65,15 @@ function setModuleState(db: MockDb, id: string, enabled: boolean, access?: Modul
   }
   if (!enabled) db.manifests = db.manifests.filter((entry) => entry.id !== id);
   else if (!db.manifests.some((entry) => entry.id === id)) {
-    const label = id.charAt(0).toUpperCase() + id.slice(1);
-    db.manifests.push({
-      id,
-      version: module.version,
-      navigation: [{ id, label, path: `/${id}`, placement: 'top' }],
-    });
+    db.manifests.push(shippedManifest(id) ?? { id, version: module.version, navigation: [] });
   }
   audit(db, enabled ? 'module.enabled' : 'module.disabled', 'module', id);
   emit(db, 'modules.changed', [id]);
   return ok(module);
 }
+
+const ALREADY_RUNNING =
+  'An update or rollback is already running. Its progress is on Settings › Updates.';
 
 export const operationsRoutes: MockRoute[] = [
   {
@@ -203,7 +203,7 @@ export const operationsRoutes: MockRoute[] = [
   {
     method: 'GET',
     pattern: '/api/v1/admin/updates',
-    handle: adminOnly((_, db) => ok(overview(db))),
+    handle: adminOnly((_, db) => readUpdateJob(db) ?? ok(overview(db))),
   },
   {
     method: 'POST',
@@ -237,9 +237,8 @@ export const operationsRoutes: MockRoute[] = [
             },
           );
         }
-        db.updates.updater = { ...updater, state: 'running', step: 'backup' };
-        enterMaintenance(db, `Backing up, then updating to ${version}…`);
-        audit(db, 'update.started', 'system', version);
+        if (updater.state === 'running') return fail(409, 'conflict', ALREADY_RUNNING);
+        startUpdateJob(db, version);
         return ok({ accepted: true, operation: 'update', target: version }, 202);
       }),
     ),
@@ -249,6 +248,7 @@ export const operationsRoutes: MockRoute[] = [
     pattern: '/api/v1/admin/updates/rollback',
     handle: adminOnly(
       writable((request, db) => {
+        if (db.updates.updater.state === 'running') return fail(409, 'conflict', ALREADY_RUNNING);
         const plan = db.updates.rollback;
         if (!plan) return fail(409, 'conflict', 'There is no earlier version to roll back to.');
         if (bodyOf<{ expectedMode: RollbackMode }>(request).expectedMode !== plan.mode) {

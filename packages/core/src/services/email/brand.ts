@@ -52,7 +52,7 @@ export async function loadEmailBrand(
   ]);
   const preset = PRESETS.find((candidate) => candidate.id === themeId);
   const accent =
-    themeId === 'custom' && brandColor ? brandColor : themeById(preset?.id ?? 'light').colors.ac;
+    themeId === 'custom' && brandColor ? brandColor : themeById(preset?.id ?? 'light').colors.acc;
   return {
     workspaceName: workspaceName ?? DEFAULT_BRAND.workspaceName,
     accent,

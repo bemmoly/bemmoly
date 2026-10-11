@@ -2,117 +2,110 @@
  * Turns a preset (or the custom builder's inputs) into the full colour set. Presets and
  * custom themes go through the same derivations, so a token added here reaches all of them.
  */
-import { mixCss } from '../theme/color.ts';
+import { mixCss, mixHex, resolveHex } from '../theme/color.ts';
+import { contrastCheck, contrastRatio, darkenForWhiteText } from '../theme/contrast.ts';
 import { FONTS, MONO_STACK } from './fonts.ts';
 import {
   HUES,
-  type AccentTints,
+  type CanonicalColorToken,
   type ColorSet,
-  type ColorToken,
-  type NeutralScale,
+  type ElevationSet,
+  type Neutrals,
   type ThemeMode,
 } from './names.ts';
 import { PRESETS, type PresetId, type PresetSource } from './presets.ts';
-import { HUE_PAIRS, PAIRS, SCRIM, SIGNAL_SOLIDS, pair } from './semantic.ts';
+import { ELEVATIONS, HUE_PAIRS, MODE_COLORS, SCRIM, overlays, pair } from './semantic.ts';
 
-/** Text on an accent fill, as in the mock's primary button. */
+/** Text on an accent fill. */
 export const ON_ACCENT = '#fff';
 
-/** The Board mock's derivation of accent tints from the accent and the surface. */
-export function accentTints(accent: string, mode: ThemeMode, surface: string): AccentTints {
+/** Text on a fill too light for white: Classic's primary ink. */
+export const DARK_ON_ACCENT = '#161b26';
+
+/** The lightest (light themes) or darkest (dark themes) step of `color` toward `ink` that
+ * reaches `min` against every surface. Returns `color` itself when it already does. */
+export function withContrast(color: string, ink: string, surfaces: string[], min = 4.5): string {
+  const passes = (c: string) => surfaces.every((s) => contrastRatio(c, s) >= min);
+  if (passes(color)) return color;
+  for (let keep = 98; keep >= 0; keep -= 2) {
+    const step = mixHex(resolveHex(ink), 100 - keep, resolveHex(color));
+    if (passes(step)) return step;
+  }
+  return resolveHex(ink);
+}
+
+/** Accent tints over the card: 50 is a selected row, 100 a selected border. */
+export function accentTints(accent: string, mode: ThemeMode, card: string) {
   const dark = mode === 'dark';
-  const base = dark ? surface : '#fff';
   return {
-    'ac-bg': mixCss(accent, dark ? 18 : 9, base),
-    'ac-bg2': mixCss(accent, dark ? 10 : 5, base),
-    'ac-br': mixCss(accent, dark ? 35 : 22, base),
-    'ac-av': mixCss(accent, dark ? 30 : 18, base),
-    'ac-mute': mixCss(accent, 55, base),
+    'acc-50': mixCss(accent, dark ? 16 : 8, card),
+    'acc-100': mixCss(accent, dark ? 28 : 15, card),
   };
 }
 
 export interface ColorInputs {
   mode: ThemeMode;
-  /** [accent, darker accent, lighter accent]; tints derive from the first. */
+  /** [accent, pressed accent, light accent]. */
   accent: readonly [string, string, string];
+  neutrals: Neutrals;
+  exact?: PresetSource['exact'];
   /** Fill behind on-accent text when it must differ from the accent (mid-contrast brands). */
   fill?: string;
-  neutrals: NeutralScale;
-  exact?: PresetSource['exact'];
   /** Accent used for text and lines when it must differ from the fill (light brands). */
   text?: string;
   /** Text on accent fills. */
   onAccent?: string;
 }
 
+/** The fill behind on-accent text and the text on it, following the Appearance contrast rule. */
+export function accentFill(brand: string): { fill: string; onAccent: string } {
+  const { level } = contrastCheck(brand);
+  if (level === 'darken') return { fill: darkenForWhiteText(brand), onAccent: ON_ACCENT };
+  if (level === 'dark-text') return { fill: brand, onAccent: DARK_ON_ACCENT };
+  return { fill: brand, onAccent: ON_ACCENT };
+}
+
 export function resolveColors(input: ColorInputs): ColorSet {
   const { mode, neutrals: nt, exact } = input;
-  const [brand, acD, acL] = input.accent;
-  const ac = input.text ?? brand;
-  const fill = input.fill ?? brand;
-  const dark = mode === 'dark';
-  const base = dark ? nt.sf : '#fff';
-  const tints = exact?.tints ?? accentTints(brand, mode, nt.sf);
-  const pick = (token: string, derived: string) => exact?.values?.[token] ?? derived;
+  const [brand, pressed, light] = input.accent;
+  const surfaces = [nt.canvas, nt.side, nt.sunken, nt.card];
+  const tints = accentTints(brand, mode, nt.card);
+  const policy = accentFill(brand);
+  const modeColors = MODE_COLORS[mode];
 
-  const acBr2 = pick('ac-br2', mixCss(brand, dark ? 28 : 17.5, base, 'srgb'));
-  const extras = {
-    sf2: pick('sf2', mixCss(nt.bg2, 80, nt.sf, 'srgb')),
-    'br-row': pick('br-row', mixCss(nt.br2, 50, nt.chip, 'srgb')),
-    'br-ctl': pick('br-ctl', mixCss(nt.tx6, 25, nt.br3, 'srgb')),
-    'br-off': pick('br-off', mixCss(nt.tx6, 13, nt.br3, 'srgb')),
-    'tx-body': pick('tx-body', mixCss(nt.tx, 50, nt.tx2, 'srgb')),
+  const canonical: Record<CanonicalColorToken, string> = {
+    canvas: nt.canvas,
+    side: nt.side,
+    sunken: nt.sunken,
+    card: nt.card,
+    ...overlays(mode, resolveHex(nt.tx)),
+    line: nt.line,
+    'line-2': nt['line-2'],
+    tx: nt.tx,
+    'tx-2': withContrast(nt['tx-2'], nt.tx, surfaces),
+    'tx-3': withContrast(nt['tx-3'], nt.tx, surfaces),
+    acc: input.text ?? withContrast(brand, nt.tx, surfaces),
+    'acc-600': pressed,
+    'acc-500': light,
+    'acc-100': exact?.['acc-100'] ?? tints['acc-100'],
+    'acc-50': exact?.['acc-50'] ?? tints['acc-50'],
+    'acc-fill': input.fill ?? exact?.['acc-fill'] ?? policy.fill,
+    'on-acc': input.onAccent ?? policy.onAccent,
+    ...modeColors,
+    'on-solid': '#fff',
+    scrim: SCRIM,
   };
-  const [okBg, okFg] = pair(PAIRS.ok, mode, nt.sf);
-  const [warnBg, warnFg] = pair(PAIRS.warn, mode, nt.sf);
-  const [revBg, revFg] = pair(PAIRS.rev, mode, nt.sf);
-  const [qaBg, qaFg] = pair(PAIRS.qa, mode, nt.sf);
+
   const hues = Object.fromEntries(
     HUES.flatMap((hue) => {
-      const [bg, fg] = pair(HUE_PAIRS[hue], mode, nt.sf);
+      const [bg, fg] = pair(HUE_PAIRS[hue], mode, nt.card);
       return [
         [`${hue}-bg`, bg],
         [`${hue}-fg`, fg],
       ];
     }),
   );
-
-  const colors: Record<ColorToken, string> = {
-    ac,
-    'ac-d': acD,
-    'ac-l': acL,
-    ...tints,
-    'ac-br2': acBr2,
-    'ac-fill': fill,
-    'on-ac': input.onAccent ?? ON_ACCENT,
-    ...nt,
-    ...extras,
-    ai: ac,
-    'ai-mute': tints['ac-mute'],
-    'ai-bg': tints['ac-bg2'],
-    'ai-tint': tints['ac-bg'],
-    'ai-br': tints['ac-br'],
-    'ai-br2': acBr2,
-    'ai-tx': extras['tx-body'],
-    ...SIGNAL_SOLIDS,
-    'ok-fg': okFg,
-    'ok-bg': okBg,
-    'warn-fg': warnFg,
-    'warn-bg': warnBg,
-    scrim: SCRIM,
-    'st-todo-bg': nt.chip,
-    'st-todo-fg': nt.tx3,
-    'st-prog-bg': tints['ac-bg'],
-    'st-prog-fg': ac,
-    'st-rev-bg': revBg,
-    'st-rev-fg': revFg,
-    'st-qa-bg': qaBg,
-    'st-qa-fg': qaFg,
-    'st-done-bg': okBg,
-    'st-done-fg': okFg,
-    ...(hues as Record<`${(typeof HUES)[number]}-${'bg' | 'fg'}`, string>),
-  };
-  return colors;
+  return { ...canonical, ...hues } as ColorSet;
 }
 
 export interface ResolvedTheme {
@@ -120,6 +113,7 @@ export interface ResolvedTheme {
   name: string;
   mode: ThemeMode;
   colors: ColorSet;
+  elevation: ElevationSet;
   fontUi: string;
   fontCode: string;
 }
@@ -135,6 +129,7 @@ export function resolvePreset(preset: PresetSource): ResolvedTheme {
       neutrals: preset.neutrals,
       ...(preset.exact ? { exact: preset.exact } : {}),
     }),
+    elevation: ELEVATIONS[preset.mode],
     fontUi: FONTS[preset.font].stack,
     fontCode: MONO_STACK,
   };

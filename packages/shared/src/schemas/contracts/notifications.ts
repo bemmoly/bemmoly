@@ -1,5 +1,10 @@
 import { z } from 'zod';
-import { notificationSchema } from '../notifications/api.ts';
+import {
+  notificationPatchBodySchema,
+  notificationPatchResponseSchema,
+  notificationSchema,
+  notificationViewSchema,
+} from '../notifications/api.ts';
 import { notificationChannelSchema } from '../notifications/kinds.ts';
 import { pageSchema } from './common.ts';
 
@@ -13,16 +18,17 @@ export const notificationsQuerySchema = z.object({
   cursor: z.string().min(1).optional(),
   limit: z.number().int().min(1).max(200).optional(),
   unread: z.boolean().optional(),
+  /** Omitted means `inbox` on the server. */
+  view: notificationViewSchema.optional(),
 });
 
 export const notificationsPageSchema = pageSchema(notificationSchema).extend({
   unreadCount: z.number().int().nonnegative(),
 });
 
-export const markNotificationResponseSchema = z.object({
-  ids: z.array(z.string()),
-  read: z.boolean(),
-});
+export const updateNotificationRequestSchema = notificationPatchBodySchema;
+
+export const markNotificationResponseSchema = notificationPatchResponseSchema;
 
 export const readAllResponseSchema = z.object({ updated: z.number().int().nonnegative() });
 
@@ -51,6 +57,8 @@ export const updateNotificationPreferencesRequestSchema = z.object({
 export type Notification = z.infer<typeof notificationSchema>;
 export type NotificationsQuery = z.infer<typeof notificationsQuerySchema>;
 export type NotificationsPage = z.infer<typeof notificationsPageSchema>;
+export type UpdateNotificationRequest = z.input<typeof updateNotificationRequestSchema>;
+export type MarkNotificationResponse = z.infer<typeof markNotificationResponseSchema>;
 export type DigestSettings = z.infer<typeof digestSettingsSchema>;
 export type NotificationPreferences = z.infer<typeof notificationPreferencesSchema>;
 export type UpdateNotificationPreferencesRequest = z.infer<

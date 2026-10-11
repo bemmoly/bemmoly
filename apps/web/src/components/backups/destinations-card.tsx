@@ -1,6 +1,7 @@
-import { Badge, Button, Checkbox, Field, Input } from '@bemmoly/ui';
+import { Button, Checkbox, Field, Input } from '@bemmoly/ui';
 import type { S3Edit, S3Form } from '../../hooks/use-backups-schedule.ts';
 import type { FieldErrors } from '../../lib/errors.ts';
+import { StatePill } from '../settings/state-pill.tsx';
 
 interface DestinationFieldsProps {
   /** Where the newest backup's local copy sits, when there is one. */
@@ -40,7 +41,7 @@ export function LocalDiskRow({ localPath }: { localPath: string | null }) {
     <div className="flex items-center gap-3">
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
         <span className="font-medium">Local disk</span>
-        <span className="truncate text-12 text-tx5">
+        <span className="truncate text-12 text-tx-3">
           Every backup is written here first
           {localPath ? (
             <>
@@ -50,7 +51,7 @@ export function LocalDiskRow({ localPath }: { localPath: string | null }) {
           ) : null}
         </span>
       </div>
-      <Badge tone="ok">ALWAYS ON</Badge>
+      <StatePill tone="ok">Always on</StatePill>
     </div>
   );
 }
@@ -71,17 +72,17 @@ export function DestinationFields({
   return (
     <>
       <LocalDiskRow localPath={localPath} />
-      <div className="flex items-center gap-3 border-t border-br-row pt-4">
+      <div className="flex items-center gap-3 border-t border-line-2 pt-4">
         <div className="flex min-w-0 flex-1 flex-col gap-0.5">
           <span className="font-medium">S3-compatible bucket</span>
-          <span className="text-12 text-tx5">
+          <span className="text-12 text-tx-3">
             A second copy off this machine, always encrypted. Stored as one secret: it is never
             shown again, only replaced.
           </span>
         </div>
-        <Badge tone={configured && s3.mode !== 'remove' ? 'ok' : 'neutral'}>
+        <StatePill tone={configured && s3.mode !== 'remove' ? 'ok' : 'neutral'}>
           {state.toUpperCase()}
-        </Badge>
+        </StatePill>
         {s3.mode === 'keep' ? (
           <>
             {configured ? (

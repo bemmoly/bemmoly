@@ -3,18 +3,21 @@
  * renders its headline, every link on every page resolves, and the static files are there.
  */
 import { readdirSync, readFileSync } from 'node:fs';
+import { gzipSync } from 'node:zlib';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { REPO_URL } from '../src/lib/links.ts';
-import { startPreview, type Preview } from './serve.ts';
+import { CRAWLERS } from '../src/data/crawlers.ts';
+import { DEMO_PAGE, PAGES } from '../src/data/pages.ts';
+import { INDEXNOW_KEY } from '../src/lib/indexnow.ts';
+import { DEMO_URL, INSTALL_HREF, NAV, REPO_URL } from '../src/lib/links.ts';
+import { hrefsOf, idsOf, isSitePage, parsePage, scriptsOf } from './dom.ts';
+import { fetchFresh, startPreview, type Preview } from './serve.ts';
 
 const dist = new URL('../dist/', import.meta.url);
-const pages = readdirSync(dist).filter((file) => file.endsWith('.html'));
+const pages = readdirSync(dist, { recursive: true, encoding: 'utf8' }).filter(isSitePage);
 const html = (page: string) => readFileSync(new URL(page, dist), 'utf8');
 
-const hrefs = (source: string) =>
-  [...source.matchAll(/<a\b[^>]*\bhref="([^"]+)"/g)].map((match) => match[1] as string);
-const ids = (source: string) =>
-  new Set([...source.matchAll(/\bid="([^"]+)"/g)].map((match) => match[1] as string));
+const hrefs = (source: string) => hrefsOf(parsePage(source));
+const ids = (source: string) => idsOf(parsePage(source));
 
 let preview: Preview;
 beforeAll(async () => {
@@ -24,31 +27,53 @@ afterAll(() => preview?.stop());
 
 describe('landing page', () => {
   it('renders the hero headline', async () => {
-    const body = await (await fetch(`${preview.url}/`)).text();
+    const body = (await fetchFresh(`${preview.url}/`)).text;
     expect(body).toMatch(/<h1\b[^>]*>\s*Your work\. Your platform\.\s*<\/h1>/);
   });
 
-  it('shows the installer one-liner and the Postgres 18 transcript', () => {
+  it('states the three promises in the hero, in a section of their own and in the footer', () => {
+    const page = parsePage(html('index.html'));
+    const text = (selector: string) => page.querySelector(selector)?.textContent ?? '';
+    for (const promise of ['100% open source', 'No pricing', 'No in-app purchases']) {
+      expect(text('main section'), promise).toContain(promise);
+      expect(text('#promise'), promise).toContain(promise);
+    }
+    expect(text('footer')).toContain('No in-app purchases');
+  });
+
+  it('copies the installer one-liner, and promises no install time nothing measured', () => {
     const index = html('index.html');
-    expect(index).toContain('curl -fsSL https://get.bemmoly.com | sh');
-    expect(index).toContain('Installing Postgres 18');
+    expect(index).toContain('data-copy="curl -fsSL https://get.bemmoly.com | sh"');
+    expect(index).not.toMatch(/\b(5|five) min/i);
     expect(index).not.toContain('bemmoly.dev');
   });
 
-  it('is light for every visitor, with Ocean only behind data-theme="dark"', () => {
+  it("follows the system into the product's dark theme, unless the visitor chose light", () => {
     const index = html('index.html');
-    expect(index).not.toContain('prefers-color-scheme');
-    expect(index).toContain('<meta name="color-scheme" content="light">');
-    expect(index).toMatch(/html\[data-theme=['"]?dark['"]?\][^{]*\{[^}]*--bg:#07111c/);
+    expect(index).toContain('<meta name="color-scheme" content="light dark">');
+    // The product's dark surfaces (ADR 0015), never a retired preset's navy.
+    expect(index).toMatch(
+      /@media \(prefers-color-scheme:dark\)\{:root:not\(\[data-theme='light'\]\)\{[^}]*--canvas:#111418/,
+    );
+    expect(index).toMatch(/\[data-theme='dark'\]\{[^}]*--card:#181c22/);
+    expect(index).not.toContain('#07111c');
   });
 
-  it('ships no script beyond the inline copy button', () => {
-    const index = html('index.html');
-    expect(index).not.toMatch(/<script\b[^>]*\bsrc=/);
-    const inline = [...index.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g)];
-    expect(inline.map((match) => match[1]?.length ?? 0).reduce((a, b) => a + b, 0)).toBeLessThan(
-      1024,
+  it('ships only the inline theme script and the one small site script', () => {
+    // JSON-LD is data, not code: it runs nothing and the CSP does not need to allow it.
+    const scripts = scriptsOf(parsePage(html('index.html'))).filter(
+      (script) => script.type !== 'application/ld+json',
     );
+    const inline = scripts.filter((script) => script.src === undefined);
+    expect(inline.reduce((total, script) => total + script.body.length, 0)).toBeLessThan(512);
+    // The site script (src/lib/client): menu, theme, copy, tabs and previews, a file the
+    // CSP's 'self' allows. The demo itself loads only when a visitor asks for it.
+    const external = scripts.flatMap((script) => script.src ?? []);
+    expect(external).toHaveLength(1);
+    expect(external[0]).toMatch(/^\/_astro\/[\w.-]+\.js$/);
+    const code = readFileSync(new URL(`.${external[0]}`, dist));
+    expect(gzipSync(code).length).toBeLessThan(3 * 1024);
+    expect(code.toString()).not.toContain('/demo/assets/');
   });
 });
 
@@ -57,7 +82,7 @@ describe('links', () => {
 
   it('finds the navigation on every page', () => {
     for (const page of pages) {
-      for (const href of ['/#product', '/self-hosting', '/docs', '/community', REPO_URL]) {
+      for (const href of [...NAV.map((link) => link.href), INSTALL_HREF, DEMO_URL, REPO_URL]) {
         expect(hrefs(html(page)), `${page} links to ${href}`).toContain(href);
       }
     }
@@ -65,9 +90,11 @@ describe('links', () => {
 
   it.each(links.filter((href) => href.startsWith('/')))('%s resolves', async (href) => {
     const [path, hash] = href.split('#') as [string, string | undefined];
-    const response = await fetch(`${preview.url}${path || '/'}`);
+    // A demo route is a state of the demo's one page, which Caddy serves for all of them.
+    const served = path.startsWith('/demo/') ? '/demo/index.html' : path || '/';
+    const response = await fetchFresh(`${preview.url}${served}`);
     expect(response.status).toBe(200);
-    if (hash) expect(ids(await response.text())).toContain(hash);
+    if (hash) expect(ids(response.text)).toContain(hash);
   });
 
   it('points outside the site only at the repository or a mail address', () => {
@@ -79,12 +106,17 @@ describe('links', () => {
 });
 
 describe('static files', () => {
-  it.each(['/install.sh', '/robots.txt', '/sitemap-index.xml', '/site.webmanifest'])(
-    '%s is served',
-    async (path) => {
-      expect((await fetch(`${preview.url}${path}`)).status).toBe(200);
-    },
-  );
+  it.each([
+    '/install.sh',
+    '/robots.txt',
+    '/sitemap-index.xml',
+    '/site.webmanifest',
+    '/llms.txt',
+    '/changelog.xml',
+    `/${INDEXNOW_KEY}.txt`,
+  ])('%s is served', async (path) => {
+    expect((await fetchFresh(`${preview.url}${path}`)).status).toBe(200);
+  });
 
   it('serves the installer from deploy/, byte for byte', () => {
     const script = readFileSync(new URL('install.sh', dist), 'utf8');
@@ -101,5 +133,49 @@ describe('static files', () => {
       /property="og:image" content="https:\/\/bemmoly\.com\/_astro\/social-preview\.[\w-]+\.png"/,
     );
     expect(index).toContain('<link rel="canonical" href="https://bemmoly.com/">');
+  });
+});
+
+describe('indexing', () => {
+  it('invites every search engine and AI crawler, and points at the sitemap', () => {
+    const robots = readFileSync(new URL('robots.txt', dist), 'utf8');
+    expect(robots).toContain('User-agent: *\nAllow: /');
+    for (const { agents } of CRAWLERS) {
+      for (const agent of agents) expect(robots).toContain(`User-agent: ${agent}`);
+    }
+    expect(robots).not.toContain('Disallow');
+    expect(robots).toContain('Sitemap: https://bemmoly.com/sitemap-index.xml');
+  });
+
+  it('lists every page in the sitemap with the day its words changed, and not the 404 page', () => {
+    const sitemap = readFileSync(new URL('sitemap-0.xml', dist), 'utf8');
+    for (const { path, updated } of [...PAGES, DEMO_PAGE]) {
+      expect(sitemap).toContain(
+        `<url><loc>https://bemmoly.com${path}</loc><lastmod>${updated}T00:00:00.000Z</lastmod></url>`,
+      );
+    }
+    expect(sitemap.match(/<url>/g)).toHaveLength(PAGES.length + 1);
+    expect(sitemap).not.toContain('/404');
+  });
+
+  it('serves llms.txt in the llmstxt.org shape with every page', () => {
+    const llms = readFileSync(new URL('llms.txt', dist), 'utf8');
+    expect(llms.startsWith('# Bemmoly\n\n> ')).toBe(true);
+    for (const { path, name } of [...PAGES, DEMO_PAGE]) {
+      expect(llms).toContain(`- [${name}](https://bemmoly.com${path})`);
+    }
+  });
+
+  it('serves the IndexNow key at the path the protocol expects', () => {
+    expect(readFileSync(new URL(`${INDEXNOW_KEY}.txt`, dist), 'utf8')).toBe(INDEXNOW_KEY);
+  });
+
+  it('marks pages indexable, the 404 page not, and carries structured data', () => {
+    for (const page of pages) {
+      const source = html(page);
+      const expected = page === '404.html' ? 'noindex, follow' : 'index, follow';
+      expect(source, page).toContain(`<meta name="robots" content="${expected}`);
+      expect(source, page).toContain('<script type="application/ld+json">');
+    }
   });
 });

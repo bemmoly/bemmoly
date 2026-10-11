@@ -1,19 +1,20 @@
-import type { ButtonHTMLAttributes, ReactNode } from 'react';
+import type { ButtonHTMLAttributes, HTMLAttributes, ReactNode } from 'react';
 import { cx } from '../../lib/cx.ts';
 import { focusRing } from '../../lib/focus.ts';
+import { StatusGlyph, statusStage } from '../glyphs/status-glyph.tsx';
 
 /** The three categories the workflow canvas colours by: tx5, the accent and ok. */
 export type WorkflowCategory = 'todo' | 'progress' | 'done';
 
 export const WORKFLOW_CATEGORY: Record<WorkflowCategory, { name: string; dot: string }> = {
-  todo: { name: 'To do', dot: 'bg-tx5' },
-  progress: { name: 'In progress', dot: 'bg-ac' },
-  done: { name: 'Done', dot: 'bg-ok' },
+  todo: { name: 'To do', dot: 'bg-tx-3' },
+  progress: { name: 'In progress', dot: 'bg-acc' },
+  done: { name: 'Done', dot: 'bg-green' },
 };
 
 export interface StatusDotProps {
   category: WorkflowCategory;
-  /** A status's own colour (bg-violet, bg-caution) in place of its category's. */
+  /** A status's own colour (bg-epic-2, bg-amber) in place of its category's. */
   colorClassName?: string;
   /** 8px in status pills, 9px on nodes, 10px in the panel heading. */
   size?: 8 | 9 | 10;
@@ -40,10 +41,13 @@ export function StatusDot({ category, colorClassName, size = 9, className }: Sta
 export interface StatusNodeProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'name'> {
   name: ReactNode;
   category: WorkflowCategory;
+  /** Ignored on nodes: the glyph is coloured by category only, so any workflow reads alike. */
   colorClassName?: string;
-  /** Issues in this status now. */
-  count: number;
+  /** Issues in this status now; the line shows the category alone while it is unknown. */
+  count?: number;
   selected?: boolean;
+  /** A problem from validation names this status: the danger border in place of br3. */
+  invalid?: boolean;
   /** Centre of the node in canvas percentages, as the mock positions them. */
   x: string;
   y: string;
@@ -57,9 +61,10 @@ export interface StatusNodeProps extends Omit<ButtonHTMLAttributes<HTMLButtonEle
 export function StatusNode({
   name,
   category,
-  colorClassName,
+  colorClassName: _ownColor,
   count,
   selected = false,
+  invalid = false,
   x,
   y,
   className,
@@ -71,23 +76,58 @@ export function StatusNode({
     <button
       type={type}
       aria-pressed={selected}
+      aria-invalid={invalid || undefined}
       style={{ left: x, top: y, ...style }}
       className={cx(
-        'absolute flex w-37.5 -translate-1/2 cursor-pointer flex-col gap-1 rounded-card border-[1.5px] bg-sf px-3 py-2.5 text-left font-sans text-tx',
-        selected ? 'border-ac shadow-ring-node' : 'border-br3 shadow-card',
+        'absolute flex w-37.5 -translate-1/2 cursor-pointer flex-col gap-1 rounded-card border bg-card px-3 py-2.5 text-left font-sans text-tx',
+        selected && 'shadow-ring-node',
+        invalid ? 'border-red' : selected ? 'border-acc' : 'border-line',
         focusRing,
         className,
       )}
       {...rest}
     >
       <span className="flex items-center gap-1.75">
-        <StatusDot category={category} colorClassName={colorClassName} />
-        <span className="text-12h font-semibold">{name}</span>
+        <StatusGlyph
+          stage={statusStage(
+            category === 'progress' ? 'in_progress' : category,
+            typeof name === 'string' ? name : '',
+          )}
+          size={13}
+          decorative
+        />
+        <span className="text-13 font-semibold">{name}</span>
       </span>
-      <span className="text-11 text-tx5">
-        {WORKFLOW_CATEGORY[category].name} · {count} issues
+      <span className="text-11 text-tx-3">
+        {WORKFLOW_CATEGORY[category].name}
+        {count === undefined ? '' : ` · ${count} ${count === 1 ? 'issue' : 'issues'}`}
       </span>
     </button>
+  );
+}
+
+export interface StatusNodeHandleProps extends HTMLAttributes<HTMLSpanElement> {
+  /** The node's centre in canvas percentages; the handle sits on its right edge. */
+  x: string;
+  y: string;
+}
+
+/**
+ * The connector on a node's right edge that a transition is drawn from: a 10px accent ring on
+ * the surface, filled while pressed. Pointer only; the side panel's "Add transition" is the
+ * keyboard path, so it stays out of the tab order.
+ */
+export function StatusNodeHandle({ x, y, className, style, ...rest }: StatusNodeHandleProps) {
+  return (
+    <span
+      aria-hidden
+      style={{ left: `calc(${x} + 75px)`, top: y, ...style }}
+      className={cx(
+        'absolute size-2.5 -translate-1/2 cursor-crosshair rounded-full border-2 border-acc bg-card active:bg-acc',
+        className,
+      )}
+      {...rest}
+    />
   );
 }
 
@@ -114,14 +154,14 @@ export function StatusPill({
   return (
     <span
       className={cx(
-        'inline-flex items-center gap-1.5 rounded-control border border-br bg-sf text-12h text-tx',
+        'inline-flex items-center gap-1.5 rounded-control border border-line bg-card text-13 text-tx',
         block ? 'flex gap-2 px-2.25 py-1.75' : 'px-2.25 py-1',
         className,
       )}
     >
       <StatusDot category={category} colorClassName={colorClassName} size={8} />
       <span className={cx(block && 'flex-1')}>{name}</span>
-      {count !== undefined && <span className="font-mono text-11 text-tx5">{count}</span>}
+      {count !== undefined && <span className="font-mono text-11 text-tx-3">{count}</span>}
     </span>
   );
 }

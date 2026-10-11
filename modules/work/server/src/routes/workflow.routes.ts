@@ -9,6 +9,7 @@ export function workflowRoutes(controller: WorkflowController): FastifyPluginAsy
     app.get('/workflows/:id', async (request) => controller.get(request));
     app.patch('/workflows/:id', async (request) => controller.update(request));
     app.get('/workflows/:id/statuses', async (request) => controller.statuses(request));
+    app.get('/workflows/:id/status-counts', async (request) => controller.statusCounts(request));
     app.get('/workflows/:id/transitions', async (request) => controller.transitions(request));
     app.get('/workflows/:id/draft', async (request) => controller.getDraft(request));
     app.put('/workflows/:id/draft', async (request) => controller.putDraft(request));

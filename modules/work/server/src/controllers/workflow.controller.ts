@@ -8,10 +8,12 @@ import {
   publishWorkflowBodySchema,
   putWorkflowDraftBodySchema,
   updateWorkflowBodySchema,
+  workflowStatusCountsQuerySchema,
   type IssueTransitionsResponse,
   type Workflow,
   type WorkflowDraft,
   type WorkflowRulesResponse,
+  type WorkflowStatusCounts,
   type WorkflowStatus,
   type WorkflowTransition,
   type WorkflowValidationResponse,
@@ -28,6 +30,10 @@ export function createWorkflowController(service: WorkflowService) {
     async list(request: FastifyRequest): Promise<{ items: Workflow[] }> {
       const { projectId } = parseOrThrow(listQuery, request.query);
       return { items: await service.list(contextOf(request), projectId) };
+    },
+    async statusCounts(request: FastifyRequest): Promise<WorkflowStatusCounts> {
+      const { projectId } = parseOrThrow(workflowStatusCountsQuerySchema, request.query);
+      return service.statusCounts(contextOf(request), id(request), projectId);
     },
     async get(request: FastifyRequest): Promise<Workflow> {
       return service.get(contextOf(request), id(request));

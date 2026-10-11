@@ -1,9 +1,11 @@
 import {
+  assertPostgresSupported,
   createChangelogRunner,
   createJobsService,
   createModuleAdmin,
   createModuleState,
   createModuleStateStore,
+  createFilesService,
   createObjectStore,
   createSecretBox,
   createSettingsAdmin,
@@ -14,7 +16,9 @@ import {
   KERNEL_SETTINGS,
   loadKernelChangelog,
   sourcesFromRegistry,
+  spoolDirectory,
   type ClusterEventBus,
+  type FilesService,
   type JobMetricsHook,
   type JobQueueHandle,
   type JobsService,
@@ -31,6 +35,7 @@ import {
   type SqlClient,
 } from '@bemmoly/core';
 import type { Env, Logger } from '@bemmoly/core/config';
+import { DEFAULT_UPLOAD_MAX_BYTES } from '@bemmoly/shared';
 import type { IdentityWiring } from './identity.ts';
 import { appVersionOf } from './version.ts';
 
@@ -44,6 +49,7 @@ export interface DataKernelInput {
     | 'BEMMOLY_DB_AUTO_MIGRATE'
     | 'BEMMOLY_DB_CONTEXTS'
     | 'BEMMOLY_VERSION'
+    | 'BEMMOLY_UPLOAD_MAX_BYTES'
   > & { DATABASE_URL: string };
   sql: SqlClient;
   /** Every module in the image, registered with the realtime event bus and job queue. */
@@ -64,6 +70,8 @@ export interface DataKernel {
   settings: KernelSettingsService;
   moduleState: ModuleState;
   objectStore: ObjectStore;
+  /** Images people add to pages: stored, served and cleaned up by the kernel. */
+  files: FilesService;
   /** The JobQueue other kernel services register on and enqueue through. */
   jobs: JobsService;
   realtime: RealtimePublisher;
@@ -79,6 +87,8 @@ export interface DataKernel {
  */
 export async function createDataKernel(input: DataKernelInput): Promise<DataKernel> {
   const { env, sql, modules, realtime, identity, logger } = input;
+  // Postgres 18 with pgvector, checked before any changeset can fail halfway.
+  await assertPostgresSupported(sql);
   const contexts = env.BEMMOLY_DB_CONTEXTS;
   const runner = createChangelogRunner({
     sql,
@@ -111,6 +121,19 @@ export async function createDataKernel(input: DataKernelInput): Promise<DataKern
     realtime: realtime.publisher,
     logger,
   });
+  const objectStore = createObjectStore({
+    backend: await settings.get('system.storage.backend'),
+    dataDir: env.BEMMOLY_DATA_DIR,
+  });
+  const files = createFilesService({
+    sql,
+    store: objectStore,
+    spoolDir: spoolDirectory(env.BEMMOLY_DATA_DIR),
+    targets: () => modules.fileTargets(),
+    isEnabled: (moduleId) => moduleState.isEnabled(moduleId),
+    maxBytes: env.BEMMOLY_UPLOAD_MAX_BYTES ?? DEFAULT_UPLOAD_MAX_BYTES,
+    logger: logger.child({ component: 'files' }),
+  });
   const jobs = createJobsService({
     sql,
     databaseUrl: env.DATABASE_URL,
@@ -118,7 +141,12 @@ export async function createDataKernel(input: DataKernelInput): Promise<DataKern
     logger: logger.child({ component: 'jobs' }),
     modules,
     settings,
-    kernelJobs: [housekeepingJob(sql, logger, identity.housekeeping)],
+    kernelJobs: [
+      housekeepingJob(sql, logger, [
+        ...(identity.housekeeping ?? []),
+        { name: 'files', run: (now) => files.cleanup(now) },
+      ]),
+    ],
     ...(input.metrics ? { metrics: input.metrics.jobs } : {}),
   });
   input.jobQueue.bind(jobs);
@@ -139,10 +167,6 @@ export async function createDataKernel(input: DataKernelInput): Promise<DataKern
     ...(identity.moduleAccessWriter ? { access: identity.moduleAccessWriter } : {}),
     ...(identity.backup ? { backup: identity.backup } : {}),
   });
-  const objectStore = createObjectStore({
-    backend: await settings.get('system.storage.backend'),
-    dataDir: env.BEMMOLY_DATA_DIR,
-  });
 
   return {
     routes: {
@@ -154,11 +178,13 @@ export async function createDataKernel(input: DataKernelInput): Promise<DataKern
       ...(identity.authenticate ? { authenticate: identity.authenticate } : {}),
       ...(identity.sessions ? { sessions: identity.sessions } : {}),
       ...(identity.moduleAccess ? { moduleAccess: identity.moduleAccess } : {}),
+      files,
     },
     runner,
     settings,
     moduleState,
     objectStore,
+    files,
     jobs,
     realtime: realtime.publisher,
     events: realtime.events,

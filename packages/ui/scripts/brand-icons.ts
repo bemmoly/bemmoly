@@ -68,14 +68,14 @@ const ACCENT = '#2356C9';
 mkdirSync(out, { recursive: true });
 const source = read('mark-color.svg');
 const favicon = resolveColors(source, classic.tx);
-const icon = plate(favicon, ICON_SCALE, classic.sf, ICON_RADIUS);
+const icon = plate(favicon, ICON_SCALE, classic.card, ICON_RADIUS);
 const maskable = plate(onAccent(source), MASKABLE_SCALE, ACCENT, 0);
 const preview = { lockup: resolveColors(read('lockup-color.svg'), classic.tx), colors: classic };
 const files: Record<string, string | Buffer> = {
   'favicon.svg': favicon,
   'favicon-32.png': png(icon, 32),
   // iOS rounds the corners itself and paints transparent ones black, so this plate is square.
-  'apple-touch-icon.png': png(plate(favicon, ICON_SCALE, classic.sf, 0), 180),
+  'apple-touch-icon.png': png(plate(favicon, ICON_SCALE, classic.card, 0), 180),
   'icon-192.png': png(icon, 192),
   'icon-512.png': png(icon, 512),
   'icon-maskable-192.png': png(maskable, 192),

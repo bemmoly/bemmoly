@@ -38,6 +38,7 @@ export const EMAIL_CHANGESET_IDS = [
   '0200-email-outbox',
   '0201-notifications',
   '0202-notification-preferences',
+  '0203-notification-triage',
 ];
 
 export const PUBLIC_URL = 'https://bemmoly.example.com';

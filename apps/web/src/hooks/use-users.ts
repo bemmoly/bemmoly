@@ -138,12 +138,11 @@ export function useUsers(initialTeamId = '') {
   const invitationIds = new Set(invited.map((row) => row.id));
   const teamNames = new Map(teams.map((team) => [team.id, team.name]));
 
+  const counts = { ...directory.counts, invited: directory.counts.invited + invited.length };
   return {
     canManage,
-    summary: directorySummary({
-      ...directory.counts,
-      invited: directory.counts.invited + invited.length,
-    }),
+    counts,
+    summary: directorySummary(counts),
     /** True for a row that is a pending invitation rather than an account. */
     isInvitation: (user: User) => invitationIds.has(user.id),
     list,

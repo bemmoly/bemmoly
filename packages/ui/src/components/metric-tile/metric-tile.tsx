@@ -16,7 +16,7 @@ export interface MetricTileProps {
   className?: string;
 }
 
-const TONES = { default: 'text-tx', ok: 'text-ok', warn: 'text-warn-fg' } as const;
+const TONES = { default: 'text-tx', ok: 'text-green', warn: 'text-amber-tx' } as const;
 
 /**
  * A tile of the Board header's metrics strip: 32px tall, 10px side padding, 8px between parts,
@@ -36,11 +36,11 @@ export function MetricTile({
   return (
     <div
       className={cx(
-        'flex h-control items-center gap-2 rounded-control border border-br3 bg-sf px-2.5 text-12h',
+        'flex h-control items-center gap-2 rounded-control border border-line bg-card px-2.5 text-13',
         className,
       )}
     >
-      <span className="text-tx4">{label}</span>
+      <span className="text-tx-3">{label}</span>
       {childrenFirst ? children : figure}
       {childrenFirst ? figure : children}
     </div>
@@ -63,7 +63,7 @@ export function MetricSparkline({ values, recent = 3, label, className }: Metric
       {values.map((value, index) => (
         <span
           key={index}
-          className={cx('w-1', index >= first ? 'bg-ac' : 'bg-ac-mute')}
+          className={cx('w-1', index >= first ? 'bg-acc' : 'bg-acc-500')}
           style={{ height: `${Math.max(0, Math.min(100, value))}%` }}
         />
       ))}
@@ -101,7 +101,7 @@ export function CapacityBar({
   return (
     <span className={cx('inline-flex items-center gap-2', className)}>
       {showText && (
-        <span className={cx('text-12', over ? 'text-warn-fg' : 'text-ok-fg')}>
+        <span className={cx('text-12', over ? 'text-amber-tx' : 'text-green-tx')}>
           {committed} of {capacity} {unit} capacity
         </span>
       )}
@@ -109,7 +109,7 @@ export function CapacityBar({
         value={pct}
         size="md"
         label={label}
-        fillClassName={over ? 'bg-warn' : 'bg-ok'}
+        fillClassName={over ? 'bg-amber' : 'bg-green'}
         className="w-20"
       />
     </span>

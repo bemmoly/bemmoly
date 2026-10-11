@@ -1,7 +1,8 @@
 import { randomBytes } from 'node:crypto';
 import { defineConfig, devices } from '@playwright/test';
 
-const PORT = 4318;
+/** A fixed port; BEMMOLY_WEB_E2E_PORT moves it for machines that must keep to a range. */
+const PORT = Number(process.env['BEMMOLY_WEB_E2E_PORT'] ?? 4318);
 const baseURL = `http://127.0.0.1:${PORT}`;
 
 /** The server serves the built shell, as in production; run `pnpm build` first. */

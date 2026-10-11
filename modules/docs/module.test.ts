@@ -1,0 +1,82 @@
+import { loadModules } from '@bemmoly/core';
+import { moduleManifestSchema } from '@bemmoly/shared';
+import { describe, expect, it } from 'vitest';
+import docs from './module.ts';
+
+describe('docs module', () => {
+  it('loads through the kernel and exposes a valid manifest', () => {
+    const registry = loadModules({ available: [docs] });
+    const [manifest] = registry.manifests();
+    expect(moduleManifestSchema.parse(manifest)).toMatchObject({
+      id: 'docs',
+      name: 'Docs',
+      version: '0.2.0',
+      navigation: [
+        { id: 'docs.home', label: 'Docs', path: '/docs', placement: 'top', icon: 'doc' },
+        {
+          id: 'docs.create-page',
+          label: 'Page',
+          path: '/docs/create',
+          placement: 'create',
+          icon: 'doc',
+        },
+        {
+          id: 'docs.create-space',
+          label: 'Space',
+          path: '/docs/spaces/new',
+          placement: 'create',
+          icon: 'layers',
+        },
+      ],
+      search: [{ kind: 'docs.page', label: 'Pages' }],
+      icon: 'doc',
+      color: 'brand-2',
+      order: 20,
+      sidebar: {
+        path: '/docs',
+        links: [],
+        primary: [],
+        add: { create: 'docs.create-space', label: 'New space' },
+      },
+    });
+    expect(docs.defaultAccess).toBe('teams');
+  });
+
+  it('declares the Docs rows of the roles matrix under its own namespace', () => {
+    const registry = loadModules({ available: [docs] });
+    const capabilities = registry.capabilities();
+    expect(capabilities.map((capability) => capability.name)).toEqual([
+      'docs.space.create',
+      'docs.space.configure',
+      'docs.page.view',
+      'docs.page.edit',
+      'docs.page.delete',
+      'docs.page.publish',
+      'docs.space.export',
+    ]);
+    expect(capabilities.every((capability) => capability.group === 'Docs')).toBe(true);
+    const view = capabilities.find((capability) => capability.name === 'docs.page.view');
+    expect(Object.values(view?.defaults ?? {}).every(Boolean)).toBe(true);
+    const edit = capabilities.find((capability) => capability.name === 'docs.page.edit');
+    expect(edit?.defaults.viewer).toBe(false);
+    expect(edit?.defaults.contractor).toBe(true);
+  });
+
+  it('contributes its settings and the /docs routes', () => {
+    const registry = loadModules({ available: [docs] });
+    const [loaded] = registry.list();
+    expect(loaded?.contributions.settings.map((setting) => setting.key)).toEqual([
+      'docs.staleAfterDays',
+      'docs.compactThreshold',
+    ]);
+    // The module's routes and the editor's AI routes, both under /docs.
+    expect(registry.routes().map((route) => route.prefix)).toEqual(['/docs', '/docs']);
+  });
+
+  it('registers the editor’s AI prompt files under its own id', () => {
+    const [loaded] = loadModules({ available: [docs] }).list();
+    const names = loaded?.contributions.aiPromptFiles.map((prompt) => prompt.name) ?? [];
+    expect(names).toEqual(expect.arrayContaining(['docs.autocomplete', 'docs.comment_fix']));
+    expect(names.filter((name) => name.startsWith('docs.write.'))).toHaveLength(10);
+  });
+});

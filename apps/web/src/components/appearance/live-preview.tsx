@@ -11,19 +11,28 @@ interface LivePreviewProps {
   onView: (view: PreviewView) => void;
   scope: ThemeScope;
   workspaceName: string;
+  aiEnabled: boolean;
 }
 
 /**
  * The live preview: a 1440x900 screen built from the real components, themed
  * with the draft and scaled to 0.425 so it fits the 612px column. The screen
  * is inert: it is a picture of the app, not a second copy to click through.
+ * Like the app, it draws its AI cards only while AI is on.
  */
-export function LivePreview({ label, view, onView, scope, workspaceName }: LivePreviewProps) {
+export function LivePreview({
+  label,
+  view,
+  onView,
+  scope,
+  workspaceName,
+  aiEnabled,
+}: LivePreviewProps) {
   return (
     <div className="sticky top-0 flex flex-col gap-2.5">
       <div className="flex items-center gap-2.5 font-semibold">
         Live preview
-        <span className="text-12 font-normal text-tx5">{label}</span>
+        <span className="text-12 font-normal text-tx-3">{label}</span>
         <SegmentedControl
           aria-label="Preview screen"
           size="sm"
@@ -36,17 +45,17 @@ export function LivePreview({ label, view, onView, scope, workspaceName }: LiveP
       <div
         role="img"
         aria-label={`Preview of the ${view} screen: ${label}`}
-        className="relative aspect-[8/5] w-full overflow-hidden rounded-card border border-br bg-sf shadow-card"
+        className="relative aspect-[8/5] w-full overflow-hidden rounded-card bg-card shadow-e1"
       >
         <div
           {...scope}
           inert
           aria-hidden="true"
           data-testid="appearance-preview"
-          className="absolute top-0 left-0 h-225 w-360 origin-top-left scale-[0.425] bg-bg font-sans text-13 text-tx"
+          className="absolute top-0 left-0 h-225 w-360 origin-top-left scale-[0.425] bg-sunken font-sans text-13 text-tx"
         >
-          {view === 'board' ? <PreviewBoard /> : null}
-          {view === 'doc' ? <PreviewDoc /> : null}
+          {view === 'board' ? <PreviewBoard aiEnabled={aiEnabled} /> : null}
+          {view === 'doc' ? <PreviewDoc aiEnabled={aiEnabled} /> : null}
           {view === 'login' ? <PreviewLogin workspaceName={workspaceName} /> : null}
         </div>
       </div>

@@ -1,15 +1,18 @@
 import {
+  boardMetricsSchema,
   boardSchema,
   boardsResponseSchema,
   boardViewQuerySchema,
   boardViewSchema,
   listProjectsQuerySchema,
+  listSprintsQuerySchema,
   projectsPageSchema,
   sprintsResponseSchema,
   updateBoardBodySchema,
   workflowsResponseSchema,
   type BoardViewQuery,
   type ListProjectsQuery as ListProjectsOutput,
+  type ListSprintsQuery,
   type UpdateBoardBody,
 } from '../../../shared/index.ts';
 import type { Http } from '@bemmoly/api-client';
@@ -22,7 +25,7 @@ export type ProjectsFilter = Partial<
 
 const BASE = '/api/v1/work';
 
-/** The Board screen's reads: projects, boards and the one-call view, plus the config write. */
+/** The Board screen's reads: projects, boards, the one-call view and metrics, plus the config write. */
 export function workBoardsEndpoints(http: Http) {
   return {
     projects: {
@@ -46,14 +49,21 @@ export function workBoardsEndpoints(http: Http) {
           query: validated(boardViewQuerySchema, query),
           ...options,
         }),
+      /** Velocity, burndown, cycle time and throughput, cached on the server per board. */
+      metrics: async (id: string) =>
+        http.request(`${BASE}/boards/${enc(id)}/metrics`, boardMetricsSchema),
     },
     sprints: {
-      list: async (projectId: string) =>
-        http.request(`${BASE}/projects/${enc(projectId)}/sprints`, sprintsResponseSchema),
+      list: async (projectId: string, query: Partial<ListSprintsQuery> = {}) =>
+        http.request(`${BASE}/projects/${enc(projectId)}/sprints`, sprintsResponseSchema, {
+          query: validated(listSprintsQuerySchema, query),
+        }),
     },
-    workflows: {
+    /** The workflows a project uses; the board reads status names from them. */
+    projectWorkflows: {
       list: async (projectId: string) =>
-        http.request(`${BASE}/projects/${enc(projectId)}/workflows`, workflowsResponseSchema),
+        (await http.request(`${BASE}/workflows`, workflowsResponseSchema, { query: { projectId } }))
+          .items,
     },
   };
 }

@@ -22,10 +22,13 @@ WORKDIR /src
 COPY pnpm-lock.yaml pnpm-workspace.yaml .pnpmfile.cjs package.json ./
 RUN pnpm fetch --store-dir "$PNPM_STORE"
 
-# The web shell, built with its dev dependencies.
+# The web shell, built with its dev dependencies. The shell bundles every module's web
+# chunk from modules/*/web/src, so each module and its workspace dependencies (such as
+# @bemmoly/editor) are installed too. Selecting by package name is what pulls those in.
 FROM pnpm AS web
 COPY . .
-RUN pnpm install --offline --frozen-lockfile --store-dir "$PNPM_STORE" --filter "@bemmoly/web..." \
+RUN pnpm install --offline --frozen-lockfile --store-dir "$PNPM_STORE" \
+      --filter "@bemmoly/web..." --filter "@bemmoly/module-*..." \
  && pnpm --filter @bemmoly/web build
 
 # The server and the packages it loads, production dependencies only. Internal packages
@@ -38,6 +41,11 @@ COPY packages/core ./packages/core
 COPY packages/shared ./packages/shared
 # The email templates read the theme tokens from the design system at runtime.
 COPY packages/ui ./packages/ui
+# Docs reads and writes page bodies on the server with the editor's schema and converters;
+# its web-side workspace dependencies come along so the install can link them.
+COPY packages/editor ./packages/editor
+COPY packages/api-client ./packages/api-client
+COPY packages/core-web ./packages/core-web
 COPY modules ./modules
 RUN rm -rf node_modules \
  && pnpm install --offline --frozen-lockfile --prod --store-dir "$PNPM_STORE" --filter "@bemmoly/server..." \
@@ -58,7 +66,7 @@ LABEL org.opencontainers.image.title="Bemmoly" \
       org.opencontainers.image.created="${CREATED}" \
       org.opencontainers.image.source="https://github.com/bemmoly/bemmoly" \
       org.opencontainers.image.url="https://bemmoly.com" \
-      org.opencontainers.image.documentation="https://bemmoly.com/docs/install" \
+      org.opencontainers.image.documentation="https://bemmoly.com/self-hosting#install" \
       org.opencontainers.image.licenses="MIT" \
       org.opencontainers.image.vendor="Bemmoly contributors"
 

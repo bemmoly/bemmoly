@@ -105,6 +105,8 @@ export function seedUpdates(): UpdatesOverview {
       command: 'sudo bemmoly upgrade 0.1.2',
       state: 'idle',
       step: null,
+      progress: null,
+      version: null,
     },
   };
 }
@@ -142,7 +144,7 @@ export function seedSystem(): SystemHealthResponse {
         id: 'backups',
         name: 'Backups',
         status: 'ok',
-        value: `nightly → ${LOCAL_BACKUPS}`,
+        value: `nightly to ${LOCAL_BACKUPS}`,
         fix: null,
       },
     ],

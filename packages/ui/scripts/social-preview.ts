@@ -1,22 +1,23 @@
 /**
  * The Open Graph cards: the lockup, the tagline, a line about the product, the install
- * command and a framed slice of the Board mock, on the Classic page background. Every colour,
+ * command and a framed slice of the Board captured from the demo, on the Classic page background. Every colour,
  * radius and shadow comes from the tokens; the text is outlined from the self-hosted fonts.
  */
 import { readFileSync } from 'node:fs';
-import { RADII, SHADOWS } from '../src/tokens.ts';
+import { ELEVATIONS, RADII } from '../src/tokens.ts';
 import { measure, outline, wrap, type TextStyle } from './outline-text.ts';
 
 export interface PreviewInput {
   /** The -color lockup with its colours resolved. */
   lockup: string;
-  colors: Record<'bg' | 'sf' | 'br' | 'tx' | 'tx2' | 'tx3' | 'ac', string>;
+  colors: Record<'sunken' | 'card' | 'line' | 'tx' | 'tx-2' | 'acc', string>;
   /** The Board capture to frame; the light one unless a preset has its own. */
   board?: URL;
 }
 
 export const HEADLINE = 'Your work. Your platform.';
-export const LINE = 'Open source, self-hosted, AI-first issues and docs for your whole company.';
+// What it is, then the three promises; no claim the shipped product does not make good.
+export const LINE = 'Self-hosted issues and docs. Open source, no pricing, nothing to buy.';
 export const COMMAND = 'curl -fsSL https://get.bemmoly.com | sh';
 const FOOTER = 'bemmoly.com  ·  MIT licensed';
 
@@ -25,21 +26,22 @@ const body: TextStyle = { family: 'ibm-plex-sans', weight: 400, size: 26 };
 const code: TextStyle = { family: 'ibm-plex-mono', weight: 400, size: 20 };
 const footer: TextStyle = { family: 'ibm-plex-sans', weight: 400, size: 20 };
 
-/** The Board shots the landing page shows (2x), recaptured from the mocks. */
-export const BOARD = new URL('../../../apps/site/src/assets/screens/board.png', import.meta.url);
-export const BOARD_OCEAN = new URL(
-  '../../../apps/site/src/assets/screens/board-ocean.png',
-  import.meta.url,
-);
-const BOARD_SIZE = { width: 2364, height: 1372 };
+/** The Board from the demo build (2x), captured by `brand:captures`. */
+export const BOARD = new URL('../assets/brand/captures/board.png', import.meta.url);
+export const BOARD_OCEAN = new URL('../assets/brand/captures/board-ocean.png', import.meta.url);
 const MARGIN = 72;
 const LOCKUP_HEIGHT = 56;
 
 const px = (value: string) => Number.parseFloat(value);
 
+/** "Your work. Your platform." as its two sentences. */
+export const sentences = (text: string) => text.split(/(?<=\.) /);
+
 /** `0 1px 2px rgba(16,24,40,.05)` as an SVG drop shadow. */
 export function shadowFilter(id: string): string {
-  const [x = '0', y = '0', blur = '0', ...rest] = SHADOWS.card.split(' ');
+  // The drop of e1, without its 1px ring: the frame draws its own outline.
+  const drop = ELEVATIONS.light.e1.split(',0 0 0')[0] ?? ELEVATIONS.light.e1;
+  const [x = '0', y = '0', blur = '0', ...rest] = drop.split(' ');
   const rgba = /rgba\(([^)]+)\)/.exec(rest.join(' '))?.[1]?.split(',') ?? [];
   const [r = '0', g = '0', b = '0', a = '1'] = rgba.map((part) => part.trim());
   return `<filter id="${id}" x="-10%" y="-10%" width="120%" height="120%"><feDropShadow dx="${px(x)}" dy="${px(y)}" stdDeviation="${px(blur) / 2}" flood-color="rgb(${r},${g},${b})" flood-opacity="${Number(a)}"/></filter>`;
@@ -56,8 +58,9 @@ function lockupAt(input: PreviewInput, x: number, y: number): string {
 function copyBlock(input: PreviewInput, x: number, top: number, width: number) {
   const { colors } = input;
   // One sentence per line where they fit: the tagline reads as two beats.
-  const titles = HEADLINE.split(/(?<=\.) /).flatMap((sentence) => wrap(sentence, headline, width));
-  const lines = wrap(LINE, body, width);
+  const titles = sentences(HEADLINE).flatMap((sentence) => wrap(sentence, headline, width));
+  // The line breaks between its sentences too: what it is, then the promises.
+  const lines = sentences(LINE).flatMap((sentence) => wrap(sentence, body, width));
   const parts: string[] = [];
   let y = top;
   for (const title of titles) {
@@ -68,12 +71,12 @@ function copyBlock(input: PreviewInput, x: number, top: number, width: number) {
   y += 16;
   for (const line of lines) {
     y += 34;
-    parts.push(`<path fill="${colors.tx2}" d="${outline(line, body, x, y - 8)}"/>`);
+    parts.push(`<path fill="${colors['tx-2']}" d="${outline(line, body, x, y - 8)}"/>`);
   }
   y += 28;
   const pillWidth = measure(COMMAND, code) + 40;
   parts.push(
-    `<rect x="${x}" y="${y}" width="${pillWidth}" height="48" rx="${px(RADII.card)}" fill="${colors.sf}" stroke="${colors.br}"/>`,
+    `<rect x="${x}" y="${y}" width="${pillWidth}" height="48" rx="${px(RADII.card)}" fill="${colors.card}" stroke="${colors.line}"/>`,
     `<path fill="${colors.tx}" d="${outline(COMMAND, code, x + 20, y + 31)}"/>`,
   );
   y += 48;
@@ -91,17 +94,19 @@ export function boardFrame(
   scale: number,
   from = { x: 0, y: 0 },
 ) {
-  const image = readFileSync(input.board ?? BOARD).toString('base64');
+  const png = readFileSync(input.board ?? BOARD);
+  const image = png.toString('base64');
   const radius = px(RADII.dialog);
-  const w = BOARD_SIZE.width * scale;
-  const h = BOARD_SIZE.height * scale;
+  // A PNG's width and height are the first two fields of its IHDR chunk.
+  const w = png.readUInt32BE(16) * scale;
+  const h = png.readUInt32BE(20) * scale;
   const x = frame.x - from.x * scale;
   const y = frame.y - from.y * scale;
   return [
     `<clipPath id="board"><rect x="${frame.x}" y="${frame.y}" width="${frame.w}" height="${frame.h}" rx="${radius}"/></clipPath>`,
-    `<rect x="${frame.x}" y="${frame.y}" width="${frame.w}" height="${frame.h}" rx="${radius}" fill="${input.colors.sf}" filter="url(#shadow)"/>`,
+    `<rect x="${frame.x}" y="${frame.y}" width="${frame.w}" height="${frame.h}" rx="${radius}" fill="${input.colors.card}" filter="url(#shadow)"/>`,
     `<image clip-path="url(#board)" x="${x}" y="${y}" width="${w}" height="${h}" href="data:image/png;base64,${image}"/>`,
-    `<rect x="${frame.x + 0.5}" y="${frame.y + 0.5}" width="${frame.w - 1}" height="${frame.h - 1}" rx="${radius}" fill="none" stroke="${input.colors.br}"/>`,
+    `<rect x="${frame.x + 0.5}" y="${frame.y + 0.5}" width="${frame.w - 1}" height="${frame.h - 1}" rx="${radius}" fill="none" stroke="${input.colors.line}"/>`,
   ].join('');
 }
 
@@ -111,12 +116,12 @@ function canvas(input: PreviewInput, width: number, height: number, content: str
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}">`,
     '<defs>',
     `<radialGradient id="glow" cx="0" cy="0" r="${width * 0.7}" gradientUnits="userSpaceOnUse">`,
-    `<stop offset="0" stop-color="${colors.ac}" stop-opacity="0.14"/>`,
-    `<stop offset="1" stop-color="${colors.ac}" stop-opacity="0"/>`,
+    `<stop offset="0" stop-color="${colors.acc}" stop-opacity="0.14"/>`,
+    `<stop offset="1" stop-color="${colors.acc}" stop-opacity="0"/>`,
     '</radialGradient>',
     shadowFilter('shadow'),
     '</defs>',
-    `<rect width="${width}" height="${height}" fill="${colors.bg}"/>`,
+    `<rect width="${width}" height="${height}" fill="${colors.sunken}"/>`,
     `<rect width="${width}" height="${height}" fill="url(#glow)"/>`,
     ...content,
     '</svg>',
@@ -138,7 +143,7 @@ export function wideCard(input: PreviewInput, width = 1200, height = 630): strin
   return canvas(input, width, height, [
     lockupAt(input, MARGIN, MARGIN),
     copyBlock(input, MARGIN, top, column).svg,
-    `<path fill="${input.colors.tx3}" d="${outline(FOOTER, footer, MARGIN, footerBaseline)}"/>`,
+    `<path fill="${input.colors['tx-2']}" d="${outline(FOOTER, footer, MARGIN, footerBaseline)}"/>`,
     boardFrame(input, { x: left, y: 150, w: width - left + 40, h: height - 110 }, 0.42),
   ]);
 }
@@ -151,7 +156,7 @@ export function squareCard(input: PreviewInput): string {
   const footerWidth = measure(FOOTER, footer);
   return canvas(input, 1080, 1080, [
     lockupAt(input, MARGIN, MARGIN),
-    `<path fill="${input.colors.tx3}" d="${outline(FOOTER, footer, 1080 - MARGIN - footerWidth, MARGIN + 36)}"/>`,
+    `<path fill="${input.colors['tx-2']}" d="${outline(FOOTER, footer, 1080 - MARGIN - footerWidth, MARGIN + 36)}"/>`,
     copy.svg,
     boardFrame(
       input,

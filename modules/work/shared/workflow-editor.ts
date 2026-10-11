@@ -40,6 +40,9 @@ export const workflowStatusCountsSchema = z.object({
   counts: z.record(z.string(), z.number().int().nonnegative()),
 });
 
+/** Narrows the counts to one project, as Board settings asks for its own board. */
+export const workflowStatusCountsQuerySchema = z.object({ projectId: z.uuid().optional() });
+
 export type RuleParam = z.infer<typeof ruleParamSchema>;
 export type RuleCatalogEntry = z.infer<typeof ruleCatalogEntrySchema>;
 export type RuleCatalogResponse = z.infer<typeof ruleCatalogResponseSchema>;

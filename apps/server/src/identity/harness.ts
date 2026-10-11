@@ -1,12 +1,17 @@
+import { randomBytes } from 'node:crypto';
 import {
+  createDatabase,
   createIdentityDependencies,
+  createSecretBox,
   createLocalEventBus,
   createSqlClient,
   type DomainEvent,
   type EventBus,
   type IdentityDependencies,
   type ModuleRegistry,
+  type RateLimitEnv,
   type SqlClient,
+  type SsoDependencies,
 } from '@bemmoly/core';
 import {
   applyKernelChangelog,
@@ -27,11 +32,14 @@ export interface Harness {
   sql: SqlClient;
   modules: ModuleRegistry;
   identity: IdentityDependencies;
+  /** Single sign-on and SCIM, on a throwaway secret key. */
+  sso: SsoDependencies;
   events: DomainEvent[];
   bus: EventBus;
   app: FastifyInstance;
   /** A second app on the same database, as a second replica would be. */
-  newApp(): Promise<FastifyInstance>;
+  /** Another replica on the same database; rate limit maxima can be set as the env would. */
+  newApp(limits?: RateLimitEnv): Promise<FastifyInstance>;
   reset(): Promise<void>;
   stop(): Promise<void>;
 }
@@ -61,9 +69,16 @@ export async function startHarness(): Promise<HarnessResult> {
     settings: createMemorySettings({ 'workspace.name': 'Acme Labs' }),
     publicUrl: ORIGIN,
   });
+  const sso: SsoDependencies = {
+    db: createDatabase(sql),
+    secrets: createSecretBox(randomBytes(32).toString('base64')),
+    publicUrl: ORIGIN,
+    addressPolicy: 'local',
+  };
   const apps: FastifyInstance[] = [];
-  const newApp = async () => {
-    const app = await buildApp({ env: TEST_ENV, modules, identity, logger: false });
+  const newApp = async (limits: RateLimitEnv = {}) => {
+    const env = { ...TEST_ENV, ...limits };
+    const app = await buildApp({ env, modules, identity, kernel: { sso }, logger: false });
     apps.push(app);
     return app;
   };
@@ -74,6 +89,7 @@ export async function startHarness(): Promise<HarnessResult> {
       sql,
       modules,
       identity,
+      sso,
       events,
       bus,
       app,
@@ -98,6 +114,8 @@ export interface CallOptions {
   body?: unknown;
   origin?: string | null;
   headers?: Record<string, string>;
+  /** The client address; requests come from 127.0.0.1 otherwise. */
+  remoteAddress?: string;
 }
 
 /** An API call as the web app makes it: same-origin, JSON, with the session cookie. */
@@ -115,6 +133,7 @@ export async function call(
     method,
     url: `/api/v1${url}`,
     headers,
+    ...(options.remoteAddress ? { remoteAddress: options.remoteAddress } : {}),
     ...(options.body === undefined ? {} : { payload: options.body as object }),
   });
 }

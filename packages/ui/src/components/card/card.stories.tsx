@@ -29,16 +29,16 @@ export const Inbox: Story = {
             </Badge>
           </span>
         }
-        actions={<span className="font-normal text-tx4">Mark all read</span>}
+        actions={<span className="font-normal text-tx-3">Mark all read</span>}
       />
-      <div className="flex gap-2.5 border-b border-br-row bg-ac-bg2 px-4 py-2.75 text-12h leading-note">
+      <div className="flex gap-2.5 border-b border-line-2 bg-acc-50 px-4 py-2.75 text-13 leading-note">
         <Avatar name="Aisha K." initials="AK" hue="orange" size={26} />
         <div className="flex min-w-0 flex-col gap-0.75">
           <div>
-            <b>Aisha K.</b> requested your review on <span className="text-ac">PLT-204</span>
+            <b>Aisha K.</b> requested your review on <span className="text-acc">PLT-204</span>
           </div>
-          <div className="truncate text-tx3">Backfill finished on staging, 0 mismatches.</div>
-          <div className="text-11h text-tx5">3h ago</div>
+          <div className="truncate text-tx-2">Backfill finished on staging, 0 mismatches.</div>
+          <div className="text-12 text-tx-3">3h ago</div>
         </div>
       </div>
     </Card>
@@ -53,8 +53,8 @@ export const DetailsPanel: Story = {
   },
   render: () => (
     <Card radius="panel" className="w-89">
-      <CardHeader subtle title="Details" actions={<Icon name="caret-up" className="text-tx5" />} />
-      <CardBody layout="list" className="text-12h">
+      <CardHeader subtle title="Details" actions={<Icon name="caret-up" className="text-tx-3" />} />
+      <CardBody layout="list" className="text-13">
         Assignee, reporter, priority…
       </CardBody>
     </Card>
@@ -81,7 +81,7 @@ export const Selectable: Story = {
         {['scrum', 'kanban'].map((id) => (
           <SelectableCard key={id} selected={value === id} onClick={() => setValue(id)}>
             <span className="font-semibold capitalize">{id}</span>
-            <span className="text-12h text-tx4">
+            <span className="text-13 text-tx-3">
               {id === 'scrum'
                 ? 'Sprints, backlog, velocity and burndown.'
                 : 'Continuous flow, WIP limits, cycle time.'}

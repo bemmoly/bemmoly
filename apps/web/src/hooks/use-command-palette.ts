@@ -1,5 +1,11 @@
 import { isApiError, queryKeys } from '@bemmoly/api-client';
-import { groupItems, rankItems } from '@bemmoly/core-web';
+import {
+  groupItems,
+  rankItems,
+  useCurrentScreenActions,
+  useRecents,
+  type CommandGroup,
+} from '@bemmoly/core-web';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import { useDeferredValue, useMemo, useState } from 'react';
@@ -7,28 +13,26 @@ import { api } from '../lib/api.ts';
 import { viewerOf } from '../lib/session.ts';
 import { useThemeStore } from '../store/theme.ts';
 import { useUiStore, type PaletteScope } from '../store/ui.ts';
-import { paletteItems, type PaletteItem } from './command-items.ts';
+import { paletteItems, paletteScopes, recentItem, type PaletteItem } from './command-items.ts';
 import { useDirectory } from './use-directory.ts';
-import { useModules } from './use-modules.ts';
-import { useMe, useSignOut } from './use-session.ts';
+import { usePaletteAi } from './use-palette-ai.ts';
+import { inPlace, usePalettePlace } from './use-palette-place.ts';
+import { useShell } from './use-shell.ts';
 
-export const SCOPES: ReadonlyArray<{ value: PaletteScope; label: string; group?: string }> = [
-  { value: 'all', label: 'All' },
-  { value: 'people', label: 'People', group: 'People' },
-  { value: 'settings', label: 'Settings', group: 'Settings' },
-  { value: 'actions', label: 'Actions', group: 'Actions' },
-];
+/** What the empty palette shows before anything is typed, per group. */
+const EMPTY_LIMITS: Readonly<Record<string, number>> = { Recent: 5, Actions: 6, Navigation: 8 };
 
-/** The Command mock's rule: a sentence that starts with a verb is a request, not a search. */
-const COMMAND = /^(move|assign|close|set|change|reopen|add|remove|rename)\b/;
-
-/** Server search when the server has it; a 404 means "not yet" and the directory still answers. */
-function useServerSearch(q: string) {
+/**
+ * Server search across every module search provider the person can reach;
+ * a 404 (a server without the search route) means "nothing" and the
+ * directory still answers for people.
+ */
+function useServerSearch(q: string, limit: number) {
   return useQuery({
-    queryKey: queryKeys.search(q, ['user']),
+    queryKey: [...queryKeys.search(q), limit],
     queryFn: async () => {
       try {
-        return (await api.search({ q, kinds: ['user'], limit: 8 })).items;
+        return (await api.search({ q, limit })).items;
       } catch (error) {
         if (isApiError(error) && error.code === 'not_found') return [];
         throw error;
@@ -39,51 +43,108 @@ function useServerSearch(q: string) {
   });
 }
 
+/** The groups to show: the empty state's three, or everything ranked against the query. */
+function arrange(
+  items: readonly PaletteItem[],
+  recents: readonly PaletteItem[],
+  query: string,
+  group: string | undefined,
+): CommandGroup<PaletteItem>[] {
+  const scoped = (list: readonly PaletteItem[]) =>
+    group ? list.filter((item) => item.group === group) : list;
+  if (!query) {
+    if (group) {
+      // A type filter with nothing typed: what was opened recently of that type, then the rest.
+      const recentOfType = recents.filter((item) => item.kindGroup === group);
+      return groupItems(
+        [...recentOfType, ...scoped(items).filter((item) => !item.fromServer)].slice(0, 30),
+      );
+    }
+    const shown = [
+      ...recents.slice(0, EMPTY_LIMITS['Recent']),
+      ...items.filter((item) => item.group === 'Actions').slice(0, EMPTY_LIMITS['Actions']),
+      ...items.filter((item) => item.group === 'Navigation').slice(0, EMPTY_LIMITS['Navigation']),
+    ];
+    return groupItems(shown);
+  }
+  // Providers already matched and ranked their results; ⌘K ranks only its own items.
+  const found = query.length >= 2 ? scoped(items).filter((item) => item.fromServer) : [];
+  const ownRecents = group ? recents.filter((item) => item.kindGroup === group) : recents;
+  const local = rankItems(query, [
+    ...ownRecents,
+    ...scoped(items).filter((item) => !item.fromServer),
+  ]);
+  const seen = new Set(found.map((item) => item.href));
+  const unique = local.filter((item) => item.group !== 'Recent' || !seen.has(item.href));
+  return groupItems([...found, ...unique.slice(0, 30)]);
+}
+
 export function useCommandPalette() {
-  const me = useMe();
+  const shell = useShell();
   const navigate = useNavigate();
   const ui = useUiStore();
   const setMode = useThemeStore((state) => state.setMode);
-  const signOut = useSignOut();
-  const { data: modules = [] } = useModules();
+  const screenActions = useCurrentScreenActions();
+  const recents = useRecents(12);
   const [query, setQuery] = useState('');
   const [scope, setScope] = useState<PaletteScope>(ui.paletteScope);
   const deferred = useDeferredValue(query.trim());
-  const canManagePeople = me.can('workspace.roles.manage');
-  const { directory } = useDirectory(canManagePeople);
-  const server = useServerSearch(deferred);
+  const { directory } = useDirectory(shell.canInvite);
+  const { place, clear: clearPlace } = usePalettePlace();
+  // Kept to a place, ask for more so the place's own results still fill the list.
+  const server = useServerSearch(deferred, place ? 24 : 8);
+  const aiOn = shell.workspace.aiEnabled;
 
   const items = useMemo(
     () =>
       paletteItems({
-        viewer: viewerOf(me),
-        canManagePeople,
-        modules,
+        viewer: viewerOf(shell.me),
+        canManagePeople: shell.canInvite,
+        modules: shell.modules,
         users: directory.users,
         searchHits: server.data ?? [],
+        screenActions,
+        creates: shell.creates,
         run: {
           invite: () => ui.requestInvite(true),
-          inbox: () => ui.setInboxOpen(true),
+          shortcuts: () => ui.setShortcutsOpen(true),
           mode: setMode,
-          signOut: () => signOut.mutate(),
+          signOut: shell.signOut,
         },
       }),
-    [me, canManagePeople, modules, directory, server.data, ui, setMode, signOut],
+    [shell, directory, server.data, screenActions, ui, setMode],
+  );
+  const recentItems = useMemo(() => recents.map(recentItem), [recents]);
+  const scopes = useMemo(() => paletteScopes(shell.modules), [shell.modules]);
+  const group = scopes.find((entry) => entry.value === scope)?.group;
+  const groups = useMemo(
+    () => arrange(inPlace(items, place), recentItems, deferred, group),
+    [items, place, recentItems, deferred, group],
   );
 
-  const group = SCOPES.find((entry) => entry.value === scope)?.group;
-  const groups = useMemo(() => {
-    const scoped = group ? items.filter((item) => item.group === group) : items;
-    const ranked = rankItems(deferred, scoped);
-    const shown = deferred ? ranked : ranked.filter((item) => item.group !== 'People' || group);
-    return groupItems(shown.slice(0, 30));
-  }, [items, group, deferred]);
+  const ai = usePaletteAi({
+    enabled: aiOn,
+    query,
+    you: shell.me.user.name.split(' ')[0] ?? shell.me.user.name,
+    isAdmin: shell.me.can('ai.models.configure'),
+    open: (href) => {
+      ui.closePalette();
+      void navigate({ to: href });
+    },
+  });
 
   const open = (item: PaletteItem) => {
     ui.closePalette();
-    if (item.group === 'People') ui.setUserSearch(item.title);
+    if (item.person) ui.setUserSearch(item.title);
     item.run?.();
     if (item.href) void navigate({ to: item.href });
+  };
+
+  /** Tab moves to the next type filter, Shift+Tab to the one before. */
+  const cycleScope = (backwards: boolean) => {
+    const index = scopes.findIndex((entry) => entry.value === scope);
+    const next = scopes[(index + (backwards ? scopes.length - 1 : 1)) % scopes.length];
+    if (next) setScope(next.value);
   };
 
   return {
@@ -91,9 +152,14 @@ export function useCommandPalette() {
     setQuery,
     scope,
     setScope,
+    scopes,
+    cycleScope,
     groups,
+    place,
+    clearPlace,
     open,
+    ai,
     close: ui.closePalette,
-    isCommand: COMMAND.test(query.trim().toLowerCase()),
+    openShortcuts: () => ui.setShortcutsOpen(true),
   };
 }

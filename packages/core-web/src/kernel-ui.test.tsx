@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { groupItems, rankItems, type CommandItem } from './command/rank.ts';
 import { formatBytes, formatRelative, initials } from './format.ts';
 import { actorLabel } from './inbox/group.ts';
-import { buildSettingsNav, flattenSettings } from './settings/sections.ts';
+import { buildSettingsNav, flattenSettings, settingsTrail } from './settings/sections.ts';
 
 const items: CommandItem[] = [
   { id: 'users', group: 'Settings', title: 'Users', href: '/settings/users' },
@@ -42,16 +42,49 @@ describe('settings navigation', () => {
     ],
   };
 
-  it('gives admins every group with module groups before System', () => {
-    const groups = buildSettingsNav([work], { isAdmin: true, capabilities: [] }, { users: 42 });
+  it('gives admins every group, with each module settings row under Modules', () => {
+    const groups = buildSettingsNav(
+      [work],
+      { isAdmin: true, capabilities: [] },
+      { counts: { users: 42 }, badges: { updates: '0.2.3' } },
+    );
     expect(groups.map((group) => group.label)).toEqual([
-      'Personal',
-      'General',
+      'Account',
+      'Workspace',
       'People',
-      'Projects',
+      'Modules',
       'System',
     ]);
-    expect(flattenSettings(groups).find((item) => item.id === 'users')?.count).toBe(42);
+    const items = flattenSettings(groups);
+    expect(items.find((item) => item.id === 'users')).toMatchObject({
+      label: 'Members',
+      count: 42,
+    });
+    expect(items.find((item) => item.id === 'updates')?.badge).toBe('0.2.3');
+    expect(groups[3]?.items.map((item) => [item.label, item.path])).toEqual([
+      ['Work', '/settings/work/workflows'],
+      ['Manage modules', '/settings/modules'],
+      ['Import', '/settings/import'],
+    ]);
+    expect(items.every((item) => item.icon.length > 0)).toBe(true);
+  });
+
+  it('lists a module without settings pages as its row in Settings › Modules', () => {
+    const docs: ModuleManifest = {
+      id: 'docs',
+      name: 'Docs',
+      version: '0.1.0',
+      navigation: [],
+      icon: 'doc',
+    };
+    const groups = buildSettingsNav([docs], { isAdmin: true, capabilities: [] });
+    expect(groups.find((group) => group.id === 'modules')?.items[0]).toMatchObject({
+      label: 'Docs',
+      path: '/settings/modules#docs',
+      icon: 'doc',
+    });
+    expect(settingsTrail(groups, '/settings/users')?.group.label).toBe('People');
+    expect(settingsTrail(groups, '/settings/modules')?.item.label).toBe('Manage modules');
   });
 
   it('shows members only their own pages and what their capabilities allow', () => {
@@ -59,7 +92,12 @@ describe('settings navigation', () => {
       isAdmin: false,
       capabilities: ['workspace.appearance.manage'],
     });
-    expect(flattenSettings(groups).map((item) => item.id)).toEqual(['notifications', 'appearance']);
+    expect(flattenSettings(groups).map((item) => item.id)).toEqual([
+      'profile',
+      'access-tokens',
+      'notifications',
+      'appearance',
+    ]);
   });
 });
 
@@ -86,7 +124,15 @@ describe('formatting', () => {
   it('builds initials and byte sizes', () => {
     expect(initials('Rohan S.')).toBe('RS');
     expect(initials('priya@acme.dev')).toBe('P');
+    expect(initials('rohan.shah@acme.dev')).toBe('RS');
     expect(formatBytes(38_000_000_000)).toBe('38 GB');
     expect(formatBytes(1_400_000_000)).toBe('1.4 GB');
+  });
+
+  it('builds initials in linear time from a long run of @ signs', () => {
+    const name = `R${'@'.repeat(100_000)}\nx`;
+    const start = performance.now();
+    expect(initials(name)).toBe('R');
+    expect(performance.now() - start).toBeLessThan(50);
   });
 });

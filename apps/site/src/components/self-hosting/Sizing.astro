@@ -1,7 +1,7 @@
 ---
 /**
- * Tech design §18's sizing table, and what the "$20 server" on the landing page means. The
- * table scrolls on phones, so its wrapper is focusable for keyboard users.
+ * Tech design §18's sizing table, labelled as the estimate it is until a load test measures
+ * it. The table scrolls on phones, so its wrapper is focusable for keyboard users.
  */
 import { SIZING, STATUS } from '../../data/self-hosting.ts';
 import Badge from '../site/Badge.astro';
@@ -9,9 +9,10 @@ import Section from '../site/Section.astro';
 ---
 
 <Section title="Sizing and cost" id="sizing">
-  <div tabindex="0" class="overflow-x-auto rounded-card border border-br">
+  <p>These are the design’s planning figures: estimates until they are measured under load.</p>
+  <div tabindex="0" class="overflow-x-auto rounded-card border border-line">
     <table class="w-full border-collapse text-left text-14">
-      <thead class="bg-sf2 text-12 font-semibold tracking-caps text-tx4 uppercase dark:bg-sf">
+      <thead class="bg-side text-13 font-semibold text-tx-3 dark:bg-card">
         <tr>
           <th class="px-3.5 py-2.5 font-semibold">Team</th>
           <th class="px-3.5 py-2.5 font-semibold">Server</th>
@@ -20,7 +21,7 @@ import Section from '../site/Section.astro';
       </thead>
       <tbody>
         {SIZING.map((row) => (
-          <tr class="border-t border-br-row align-top">
+          <tr class="border-t border-line-2 align-top">
             <td class="px-3.5 py-2.5 font-medium whitespace-nowrap text-tx">{row.team}</td>
             <td class="px-3.5 py-2.5 whitespace-nowrap">
               <span class="inline-flex items-center gap-2">
@@ -37,7 +38,7 @@ import Section from '../site/Section.astro';
     </table>
   </div>
   <p>
-    The “$20 server” is the second row: a 2 vCPU, 4 GB VM lists at roughly $5 to $25 a month with
-    common cloud and VPS providers, and Bemmoly adds no licence or per-seat fee on top.
+    A 2 vCPU, 4 GB VM lists at roughly $5 to $25 a month with common cloud and VPS providers, and
+    Bemmoly adds no licence or per-seat fee on top.
   </p>
 </Section>

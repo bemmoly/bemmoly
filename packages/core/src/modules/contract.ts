@@ -1,8 +1,13 @@
+import type { ModuleColor, SidebarSectionInput } from '@bemmoly/shared';
 import type { SqlClient } from '../clients/postgres.ts';
 import type { AuditRecorder } from '../contracts/audit.ts';
 import type { Changelog } from '../contracts/changelog.ts';
 import type { EventBus } from '../contracts/event-bus.ts';
+import type { ContainerMemberships } from '../contracts/memberships.ts';
 import type { RealtimePublisher } from '../contracts/realtime.ts';
+import type { CollabRegistry } from './collab.ts';
+import type { McpRegistry } from './mcp.ts';
+import type { FilesRegistry } from './files.ts';
 import type {
   AiRegistry,
   CapabilityRegistry,
@@ -32,6 +37,14 @@ export interface BemmolyModule {
   dependsOn?: readonly string[];
   /** Initial module_grants row when the module is enabled. */
   defaultAccess: ModuleDefaultAccess;
+  /** Its tile's icon in the sidebar, menus and Settings › Modules: an icon name. */
+  icon?: string;
+  /** Its tile's colour: a logo colour, the accent or an epic hue, never a hex. */
+  color?: ModuleColor;
+  /** Where its sidebar section and menu entries sit, lowest first. */
+  order?: number;
+  /** Its one section in the app sidebar; every path lives under /<id>. */
+  sidebar?: SidebarSectionInput;
   /** This module's ordered changesets, tracked per module in schema_changelog. */
   changelog: Changelog;
   /** Everything the module provides is registered here, once, at boot. */
@@ -48,16 +61,24 @@ export interface ModuleContext {
   events: EventBus;
   search: SearchRegistry;
   ai: AiRegistry;
+  /** Resources, prompts and MCP-only tools for the built-in MCP server. */
+  mcp: McpRegistry;
   /** Present only when an editor-owning module is enabled. */
   editor?: EditorRegistry;
   importers: ImporterRegistry;
   settings: SettingsRegistry;
+  /** Collaborative documents served over /collab, and server-side edits to them. */
+  collab: CollabRegistry;
+  /** Targets people upload files into (a page); the kernel stores and serves the bytes. */
+  files: FilesRegistry;
   /** Invalidation messages for WebSocket clients; a no-op without a database. */
   realtime: RealtimePublisher;
   /** The kernel's Postgres pool for the module's own tables; absent without DATABASE_URL. */
   database?: SqlClient;
   /** Writes the kernel's audit log; present whenever the database is. */
   audit?: AuditRecorder;
+  /** Project and space membership; present whenever the database is. */
+  memberships?: ContainerMemberships;
 }
 
 /** Identity helper so a module manifest is checked against the contract. */

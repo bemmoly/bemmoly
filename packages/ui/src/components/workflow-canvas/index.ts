@@ -9,9 +9,11 @@ export {
 export {
   StatusDot,
   StatusNode,
+  StatusNodeHandle,
   StatusPill,
   WORKFLOW_CATEGORY,
   type StatusDotProps,
+  type StatusNodeHandleProps,
   type StatusNodeProps,
   type StatusPillProps,
   type WorkflowCategory,
@@ -20,10 +22,10 @@ export {
   TransitionEdge,
   TransitionLabel,
   TransitionRow,
-  WorkflowCanvas,
   WorkflowLegend,
   type TransitionEdgeProps,
   type TransitionLabelProps,
   type TransitionRowProps,
-  type WorkflowCanvasProps,
 } from './edges.tsx';
+export { revealInCanvas, type CanvasRegion } from './canvas-viewport.ts';
+export { WorkflowCanvas, type WorkflowCanvasProps } from './workflow-canvas.tsx';

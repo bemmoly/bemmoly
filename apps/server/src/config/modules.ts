@@ -5,6 +5,7 @@ import type { BemmolyModule } from '@bemmoly/core';
  * and never imports a module directly; which ones run is BEMMOLY_MODULES.
  */
 export const MODULE_PACKAGES: readonly string[] = [
+  '@bemmoly/module-docs',
   '@bemmoly/module-sample',
   '@bemmoly/module-work',
 ];

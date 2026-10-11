@@ -60,6 +60,11 @@ export const boardConfigSchema = z.object({
     .array(cardFieldSchema)
     .default(['type', 'key', 'priority', 'labels', 'estimate', 'assignee']),
   colorRule: cardColorRuleSchema.default('none'),
+  /** Card colour rules: the first whose LQL condition matches paints the card's stripe. */
+  colorRules: z
+    .array(z.object({ query: z.string().trim().min(1).max(4000), color: hexColorSchema }))
+    .max(20)
+    .default([]),
   estimationUnit: estimationUnitSchema.default('points'),
   /** Sprint length in days for Scrum boards. */
   cadenceDays: z.number().int().min(1).max(60).default(14),
@@ -88,6 +93,9 @@ export const createBoardBodySchema = z.object({
   /** Absent for the org default board scheme. */
   projectId: z.uuid().optional(),
 });
+
+/** `/projects/:key/...` under boards, sprints and the backlog: a project key or its id. */
+export const projectRefParamsSchema = z.object({ key: z.string().trim().min(1).max(64) });
 
 export const listBoardsQuerySchema = z.object({
   /** A project's boards; absent lists the org default board scheme. */
@@ -135,7 +143,7 @@ export const boardViewSchema = z.object({
     z.object({
       id: z.string(),
       label: z.string(),
-      /** A palette name the screens map to a colour (ac, violet, tx6), or null for none. */
+      /** The epic's stored palette colour (epic-1 … epic-8), or null for lanes without one. */
       color: z.string().nullable(),
       /** The epic's key and due date when the lane is an epic; the lane header shows both. */
       issueKey: z.string().nullable().default(null),
@@ -165,6 +173,7 @@ export const boardsResponseSchema = listSchema(boardSchema);
 
 export type BoardColumn = z.input<typeof boardColumnSchema>;
 export type CardField = z.infer<typeof cardFieldSchema>;
+export type CardColorRuleEntry = BoardConfig['colorRules'][number];
 export type BoardLanes = z.input<typeof boardLanesSchema>;
 export type BoardConfig = z.infer<typeof boardConfigSchema>;
 export type BoardConfigInput = z.input<typeof boardConfigSchema>;

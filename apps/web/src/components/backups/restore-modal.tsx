@@ -46,14 +46,14 @@ export function RestoreModal({
       onCancel={onClose}
       onConfirm={onConfirm}
     >
-      <dl className="m-0 grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-1 rounded-panel border border-br2 bg-sf2 px-3 py-2.5 text-12h">
-        <dt className="text-tx4">Backup</dt>
-        <dd className="m-0 text-tx2">
+      <dl className="m-0 grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-1 rounded-control border border-line-2 bg-side px-3 py-2.5 text-13">
+        <dt className="text-tx-3">Backup</dt>
+        <dd className="m-0 text-tx-2">
           {KIND[backup.kind]} · {formatBytes(backup.sizeBytes)} · version{' '}
           <span className="font-mono text-12">{backup.appVersion}</span>
         </dd>
-        <dt className="text-tx4">Id</dt>
-        <dd className="m-0 truncate font-mono text-12 text-tx2 select-all">{backup.id}</dd>
+        <dt className="text-tx-3">Id</dt>
+        <dd className="m-0 truncate font-mono text-12 text-tx-2 select-all">{backup.id}</dd>
       </dl>
     </ConfirmChange>
   );

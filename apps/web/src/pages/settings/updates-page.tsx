@@ -1,11 +1,12 @@
 import type { UpdatesOverview } from '@bemmoly/shared';
-import { Card, ConfirmChange } from '@bemmoly/ui';
+import { Button, Card, ConfirmChange } from '@bemmoly/ui';
 import { Notice } from '../../components/form.tsx';
 import { SettingsPage } from '../../components/settings/settings-page.tsx';
 import { MaintenanceNotice } from '../../components/system/maintenance-notice.tsx';
 import { CommandBlock, ReleaseCard } from '../../components/updates/release-card.tsx';
 import { RollbackCard } from '../../components/updates/rollback-card.tsx';
 import { RollbackModal, UpdateModal } from '../../components/updates/update-dialogs.tsx';
+import { UpdateProgressModal } from '../../components/updates/update-progress.tsx';
 import { VersionCard } from '../../components/updates/version-card.tsx';
 import { channelRisk, useUpdateSettings } from '../../hooks/use-updates-settings.ts';
 import { useUpdates } from '../../hooks/use-updates.ts';
@@ -36,17 +37,22 @@ export function UpdatesPage() {
       title="Updates"
       description="Every module ships in the image, so one update moves the whole workspace forward. A backup is taken first, and rollback stays available for seven days."
       loading={updates.isPending}
-      error={updates.error}
+      // A failed refetch while the app restarts keeps the page (and the Update dialog) up.
+      error={overview ? null : updates.error}
     >
       {overview && updater ? (
         <>
           <MaintenanceNotice active={maintenance.active} message={maintenance.message} />
-          {updater.state === 'running' ? (
-            <div role="status">
+          {updater.state === 'running' && !dialog.kind ? (
+            <div role="status" className="flex flex-col items-start gap-2">
               <Notice>
-                The updater is working{updater.step ? `: ${updater.step}` : ''}. This page checks
-                every few seconds.
+                {updates.progress?.outcome === 'running'
+                  ? `Bemmoly is updating to ${updates.progress.target ?? 'a new version'}. Updates and rollbacks wait until it finishes.`
+                  : 'The updater is working. This page checks every few seconds.'}
               </Notice>
+              {updates.progress?.outcome === 'running' ? (
+                <Button onClick={dialog.watch}>Show progress</Button>
+              ) : null}
             </div>
           ) : null}
           {updater.state === 'failed' ? (
@@ -97,7 +103,7 @@ export function UpdatesPage() {
               onUpdate={() => dialog.open('update')}
             />
           ) : (
-            <Card className="px-4 py-3 text-13 text-tx3">{availabilityLine(overview)}</Card>
+            <Card className="px-4 py-3 text-13 text-tx-2">{availabilityLine(overview)}</Card>
           )}
           {overview.rollback ? (
             <RollbackCard
@@ -107,7 +113,21 @@ export function UpdatesPage() {
               onRollback={() => dialog.open('rollback')}
             />
           ) : null}
-          {dialog.kind === 'update' ? (
+          {dialog.kind === 'update' && dialog.watching ? (
+            <UpdateProgressModal
+              target={
+                updates.progress?.target ??
+                updates.apply.variables ??
+                overview.available?.version ??
+                overview.current.version
+              }
+              from={updates.progress?.from ?? overview.current.version}
+              progress={updates.progress}
+              restarting={updates.restarting}
+              onClose={dialog.close}
+            />
+          ) : null}
+          {dialog.kind === 'update' && !dialog.watching ? (
             <UpdateModal
               overview={overview}
               busy={updates.apply.isPending}

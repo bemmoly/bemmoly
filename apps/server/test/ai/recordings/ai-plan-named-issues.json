@@ -1,0 +1,24 @@
+{
+  "prompt": { "id": "ai.plan", "version": 1 },
+  "replies": {
+    "ai.plan": [
+      {
+        "toolCalls": [{ "toolName": "work_list_sprints", "input": { "projectKey": "PLT" } }]
+      },
+      {
+        "toolCalls": [
+          { "toolName": "work_move_to_sprint", "input": { "key": "PLT-211", "sprintId": "s-15" } },
+          { "toolName": "work_move_to_sprint", "input": { "key": "PLT-219", "sprintId": "s-15" } },
+          {
+            "toolName": "work_add_comment",
+            "input": { "key": "PLT-211", "body": "Moved to Sprint 15: this waits on PLT-204." }
+          },
+          {
+            "toolName": "work_add_comment",
+            "input": { "key": "PLT-219", "body": "Moved to Sprint 15: this waits on PLT-204." }
+          }
+        ]
+      }
+    ]
+  }
+}

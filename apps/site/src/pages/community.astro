@@ -1,12 +1,12 @@
 ---
 import Section from '../components/site/Section.astro';
+import { pageAt } from '../data/pages.ts';
 import Page from '../layouts/Page.astro';
 import { CODE_OF_CONDUCT_URL, CONTRIBUTING_URL, ISSUES_URL, REPO_URL } from '../lib/links.ts';
 ---
 
 <Page
-  title="Community"
-  description="Where to ask questions, report bugs and help build Bemmoly."
+  page={pageAt('/community')}
   lede="Bemmoly is built in the open under the MIT license. Here is where to talk to the people building it."
 >
   <Section title="GitHub" id="github">
@@ -14,12 +14,6 @@ import { CODE_OF_CONDUCT_URL, CONTRIBUTING_URL, ISSUES_URL, REPO_URL } from '../
       The code, the plans and the design live in <a href={REPO_URL}>github.com/bemmoly/bemmoly</a>.
       Report bugs and ask for features in <a href={ISSUES_URL}>issues</a>. Security problems go
       privately, as described on the <a href="/security">security page</a>.
-    </p>
-  </Section>
-  <Section title="Discord" id="discord">
-    <p>
-      A Discord server for questions and show-and-tell is planned. The invite link is not published
-      yet; it will appear here.
     </p>
   </Section>
   <Section title="Contributing" id="contributing">

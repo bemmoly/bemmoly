@@ -12,7 +12,7 @@ export function PageBlock({
 }) {
   return (
     <section aria-labelledby={id} className="flex flex-col gap-3">
-      <h2 id={id} className="m-0 text-15 font-semibold tracking-title">
+      <h2 id={id} className="m-0 text-16 font-semibold tracking-title">
         {title}
       </h2>
       {children}

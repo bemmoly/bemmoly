@@ -1,4 +1,4 @@
-import { ROLE_IDS } from './people.ts';
+import { ROLE_IDS, TEAM_IDS } from './people.ts';
 import { ago, uid } from './time.ts';
 
 /*
@@ -105,14 +105,36 @@ const TRANSITIONS: TransitionSeed[] = [
   [null, "Won't do", 'Close'],
 ];
 
-const codeReviewRules: WorkTransitionRow['rules'] = {
-  conditions: [{ name: 'pr_linked', args: {} }],
-  validators: [{ name: 'field_not_empty', args: { field: 'reviewer' } }],
-  postActions: [
-    { name: 'notify', args: { who: 'reviewers' } },
-    { name: 'start_timer', args: { name: 'review' } },
-  ],
+type Rules = WorkTransitionRow['rules'];
+
+/** Names and arguments from the server's rules registry, which seed/work-rules.ts mirrors. */
+const RULES: Partial<Record<string, Rules>> = {
+  'Open PR': {
+    conditions: [{ name: 'field_set', args: { field: 'pullRequest' } }],
+    validators: [{ name: 'required_fields', args: { fields: ['reviewer'] } }],
+    postActions: [],
+  },
+  'Pass QA': {
+    conditions: [{ name: 'subtasks_done', args: {} }],
+    validators: [],
+    postActions: [{ name: 'set_resolution', args: { resolved: true } }],
+  },
+  'Fail QA': {
+    conditions: [],
+    validators: [{ name: 'comment_required', args: { minLength: 10 } }],
+    postActions: [],
+  },
+  Close: {
+    conditions: [],
+    validators: [{ name: 'comment_required', args: { minLength: 1 } }],
+    postActions: [
+      { name: 'clear_sprint', args: {} },
+      { name: 'set_resolution', args: { resolved: true } },
+    ],
+  },
 };
+
+const noRules = (): Rules => ({ conditions: [], validators: [], postActions: [] });
 
 export function seedWorkTransitions(workflowId: string): WorkTransitionRow[] {
   return TRANSITIONS.map(([from, to, name], position) => ({
@@ -121,26 +143,10 @@ export function seedWorkTransitions(workflowId: string): WorkTransitionRow[] {
     fromStatusId: from ? STATUS_IDS[from] : null,
     toStatusId: STATUS_IDS[to],
     name,
-    rules:
-      to === 'Code review'
-        ? codeReviewRules
-        : { conditions: [], validators: [], postActions: [{ name: 'record_history', args: {} }] },
+    rules: structuredClone(RULES[name] ?? noRules()),
     position,
   }));
 }
-
-/** "Backlog · 42 issues": the counts on the canvas nodes and the column status pills. */
-export const STATUS_COUNTS: Record<string, number> = {
-  [STATUS_IDS.Backlog]: 42,
-  [STATUS_IDS.Selected]: 9,
-  [STATUS_IDS['In progress']]: 4,
-  [STATUS_IDS['Code review']]: 2,
-  [STATUS_IDS['Design review']]: 0,
-  [STATUS_IDS.Testing]: 2,
-  [STATUS_IDS.Done]: 9,
-  [STATUS_IDS["Won't do"]]: 3,
-  [STATUS_IDS.Duplicate]: 1,
-};
 
 export function seedWorkProject() {
   return {
@@ -148,7 +154,7 @@ export function seedWorkProject() {
     key: 'PLT',
     name: 'Platform Core',
     description: 'The platform team',
-    teamId: null,
+    teamId: TEAM_IDS.platform,
     method: 'scrum',
     /** Fields and the board are project copies; types and the workflow inherit. */
     schemeOverrides: { fields: true, board: true },
@@ -242,6 +248,7 @@ export function seedWorkWorkflows() {
     originId,
     name: 'Software workflow',
     publishedVersion: 3,
+    publishedAt: stamp.updatedAt,
     hasDraft: false,
     draft: null as unknown,
     statuses: seedWorkStatuses(id),

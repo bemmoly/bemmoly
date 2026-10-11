@@ -1,5 +1,45 @@
 # @bemmoly/release-tools
 
+## 0.6.0
+
+No changes in this release.
+
+## 0.5.0
+
+No changes in this release.
+
+## 0.4.0
+
+No changes in this release.
+
+## 0.3.0
+
+No changes in this release.
+
+## 0.2.2
+
+No changes in this release.
+
+## 0.2.1
+
+No changes in this release.
+
+## 0.2.0
+
+No changes in this release.
+
+## 0.1.7
+
+No changes in this release.
+
+## 0.1.6
+
+No changes in this release.
+
+## 0.1.5
+
+No changes in this release.
+
 ## 0.1.4
 
 No changes in this release.

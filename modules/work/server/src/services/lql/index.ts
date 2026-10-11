@@ -73,7 +73,7 @@ export function createLqlService(deps: LqlServiceDeps) {
     const query = parseOrReject(text, catalog);
     return {
       ...compileQuery(sql, query, catalog, valueContext(sql, ctx)),
-      access: await accessFilter(sql, ctx),
+      access: (await accessFilter(sql, ctx)).fragment,
     };
   }
 

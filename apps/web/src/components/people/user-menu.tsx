@@ -23,7 +23,7 @@ export function UserMenu({ user, actions }: { user: User; actions: UserMenuActio
           label={`Actions for ${user.name}`}
           icon="more"
           size="xs"
-          className="font-normal text-tx6"
+          className="font-normal text-tx-3"
         />
       )}
     >

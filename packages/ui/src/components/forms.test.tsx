@@ -30,7 +30,7 @@ describe('Button', () => {
   it('uses the accent fill and the measured sizes', () => {
     render(<Button variant="primary">Create</Button>);
     const button = screen.getByRole('button');
-    expect(button.className).toContain('bg-ac-fill');
+    expect(button.className).toContain('bg-acc-fill');
     expect(button.className).toContain('h-control');
     expect(button.className).toContain('px-3.5');
   });
@@ -73,7 +73,7 @@ describe('form controls', () => {
     const search = screen.getByRole('searchbox');
     expect(search.getAttribute('aria-invalid')).toBe('true');
     expect(screen.getByLabelText('Workspace name').closest('div')?.className).toContain(
-      'focus-within:border-ac',
+      'focus-within:border-acc',
     );
     expectFocusRing(screen.getByRole('checkbox'));
     expectFocusRing(screen.getByRole('radio'));
@@ -86,7 +86,7 @@ describe('form controls', () => {
       </Field>,
     );
     const input = screen.getByLabelText('URL');
-    expect(input.closest('div')?.className).toContain('bg-sf2');
+    expect(input.closest('div')?.className).toContain('bg-side');
     expect(input.hasAttribute('readonly')).toBe(false);
   });
 

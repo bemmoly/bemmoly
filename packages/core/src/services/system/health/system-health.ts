@@ -22,7 +22,7 @@ export async function checkBackups(deps: SystemDependencies): Promise<SystemChec
   const schedule = await readSetting(deps.settings, 'system.backups.schedule');
   const s3 = await readSetting(deps.settings, 'system.backups.s3');
   const where = s3?.enabled ? `${deps.config.backupDir} + S3` : deps.config.backupDir;
-  const value = `${describeFrequency(schedule)} → ${where}`;
+  const value = `${describeFrequency(schedule)} to ${where}`;
   const fixHref = '/settings/storage';
   try {
     const repository = createBackupRepository(deps.sql);

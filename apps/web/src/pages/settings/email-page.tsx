@@ -55,7 +55,7 @@ export function EmailPage() {
 
   return (
     <SettingsPage
-      title="Email and notifications"
+      title="Email delivery"
       description="How Bemmoly sends notification and invitation email: the relay it hands mail to, the address it comes from and how often digests go out."
       loading={email.settings.isPending}
       error={email.settings.error}

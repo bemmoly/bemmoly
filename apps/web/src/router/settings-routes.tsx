@@ -10,9 +10,11 @@ function firstPage(me: MeResponse): string {
   return (items.find((item) => item.id === 'users') ?? items[0])?.path ?? '/';
 }
 
-const requirement = (id: string) =>
-  KERNEL_SETTINGS.flatMap((group) => group.items).find((item) => item.id === id)?.requires ??
-  'admin';
+/** What a page needs; null (everyone signed in, Profile and Notifications) must stay null. */
+function requirement(id: string) {
+  const item = KERNEL_SETTINGS.flatMap((group) => group.items).find((entry) => entry.id === id);
+  return item ? item.requires : 'admin';
+}
 
 function guard(id: string) {
   return ({ context }: { context: { me: MeResponse } }) => {
@@ -59,6 +61,13 @@ function page<const P extends string>(
 }
 
 const pages = [
+  page('profile', 'profile', () => import('../pages/settings/profile-page.tsx'), 'ProfilePage'),
+  page(
+    'access-tokens',
+    'access-tokens',
+    () => import('../pages/settings/access-tokens-page.tsx'),
+    'AccessTokensPage',
+  ),
   page(
     'notifications',
     'notifications',
@@ -78,7 +87,21 @@ const pages = [
     'AppearancePage',
   ),
   page('email', 'email', () => import('../pages/settings/email-page.tsx'), 'EmailPage'),
-  page('ai', 'ai', () => import('../pages/settings/ai-page.tsx'), 'AiPage'),
+  page('ai', 'ai', () => import('../pages/settings/ai/ai-setup-page.tsx'), 'AiSetupPage'),
+  page(
+    'ai',
+    'ai/privacy',
+    () => import('../pages/settings/ai/ai-privacy-page.tsx'),
+    'AiPrivacyPage',
+  ),
+  page('ai', 'ai/usage', () => import('../pages/settings/ai/ai-usage-page.tsx'), 'AiUsagePage'),
+  page(
+    'ai',
+    'ai/prompts',
+    () => import('../pages/settings/ai/ai-prompts-page.tsx'),
+    'AiPromptsPage',
+  ),
+  page('mcp', 'mcp', () => import('../pages/settings/mcp-page.tsx'), 'McpPage'),
   page('users', 'users', () => import('../pages/settings/users-page.tsx'), 'UsersPage'),
   page('teams', 'teams', () => import('../pages/settings/teams-page.tsx'), 'TeamsPage'),
   page('roles', 'roles', () => import('../pages/settings/roles-page.tsx'), 'RolesPage'),
@@ -89,6 +112,7 @@ const pages = [
     'AuthenticationPage',
   ),
   page('modules', 'modules', () => import('../pages/settings/modules-page.tsx'), 'ModulesPage'),
+  page('import', 'import', () => import('../pages/settings/import-page.tsx'), 'ImportPage'),
   page('backups', 'backups', () => import('../pages/settings/backups-page.tsx'), 'BackupsPage'),
   page('updates', 'updates', () => import('../pages/settings/updates-page.tsx'), 'UpdatesPage'),
   page('system', 'system', () => import('../pages/settings/system-page.tsx'), 'SystemPage'),

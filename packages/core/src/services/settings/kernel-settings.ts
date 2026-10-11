@@ -21,6 +21,8 @@ declare module '../../contracts/settings.ts' {
     'ai.shareContent': boolean;
     'ai.allowActions': boolean;
     'setup.completedAt': string | null;
+    'mcp.enabled': boolean;
+    'mcp.modules': string[] | null;
   }
 }
 
@@ -44,8 +46,8 @@ export const KERNEL_SETTINGS: readonly SettingDefinition[] = [
   { key: 'appearance.theme', schema: presetName, default: 'classic' },
   {
     key: 'appearance.brandColor',
-    schema: z.string().regex(/^#[0-9a-fA-F]{6}$/, 'A hex colour such as #2456c9'),
-    default: '#2456c9',
+    schema: z.string().regex(/^#[0-9a-fA-F]{6}$/, 'A hex colour such as #2356c9'),
+    default: '#2356c9',
   },
   { key: 'appearance.font', schema: presetName, default: 'plex' },
   { key: 'appearance.logoKey', schema: z.string().max(512), default: '' },
@@ -68,4 +70,7 @@ export const KERNEL_SETTINGS: readonly SettingDefinition[] = [
   { key: 'ai.allowActions', schema: z.boolean(), default: false },
   // Written by the wizard's last step; the shell resumes the wizard until it is set.
   { key: 'setup.completedAt', schema: z.iso.datetime().nullable(), default: null },
+  // The built-in MCP server is off until an admin turns it on; AI settings never gate it.
+  { key: 'mcp.enabled', schema: SETTING_SCHEMAS['mcp.enabled'], default: false },
+  { key: 'mcp.modules', schema: SETTING_SCHEMAS['mcp.modules'], default: null },
 ];

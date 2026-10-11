@@ -62,4 +62,68 @@ describe('repository ESLint config', () => {
     );
     expect(ids).toEqual([]);
   });
+
+  it('fails a glyph character set as an icon in UI code', async () => {
+    const ids = await ruleIds(
+      'packages/ui/src/components/fixture.tsx',
+      'export const Done = () => <span>✓</span>;\n',
+    );
+    expect(ids).toContain('bemmoly/no-glyph-characters');
+  });
+
+  it('fails a literal colour or font size in a module screen', async () => {
+    const ids = await ruleIds(
+      'modules/sample/web/src/fixture.tsx',
+      'export const Title = () => <h1 className="text-[28px] bg-[#2356c9]">Board</h1>;\n',
+    );
+    expect(ids).toContain('bemmoly/no-literal-styles');
+  });
+
+  it('fails a literal colour in a shell component', async () => {
+    const ids = await ruleIds(
+      'packages/core-web/src/shell/fixture.tsx',
+      "export const Dot = () => <span style={{ color: '#e5484d' }} />;\n",
+    );
+    expect(ids).toContain('bemmoly/no-literal-styles');
+  });
+
+  it('fails a Lucide import outside the icon set', async () => {
+    const ids = await ruleIds(
+      'modules/sample/web/src/fixture.tsx',
+      "import { Check } from 'lucide-react';\nexport const C = () => <Check />;\n",
+    );
+    expect(ids).toContain('no-restricted-imports');
+  });
+
+  it('lets the icon set import Lucide', async () => {
+    const ids = await ruleIds(
+      'packages/ui/src/icons/fixture.tsx',
+      "import { Check } from 'lucide-react';\nexport const C = Check;\n",
+    );
+    expect(ids).not.toContain('no-restricted-imports');
+  });
+
+  it('fails a literal colour on a marketing site page', async () => {
+    const ids = await ruleIds(
+      'apps/site/src/components/fixture.astro',
+      '<div class="bg-[#2356c9]">Install</div>\n',
+    );
+    expect(ids).toContain('bemmoly/no-literal-styles');
+  });
+
+  it("lets only the site's icon set import Lucide", async () => {
+    const code = "import { Star } from 'lucide-react';\nexport const S = Star;\n";
+    expect(await ruleIds('apps/site/src/lib/icons.ts', code)).not.toContain(
+      'no-restricted-imports',
+    );
+    expect(await ruleIds('apps/site/src/lib/fixture.ts', code)).toContain('no-restricted-imports');
+  });
+
+  it('lets a story pass a label its stored colour', async () => {
+    const ids = await ruleIds(
+      'packages/ui/src/components/fixture.stories.tsx',
+      'export const L = () => <Label name="api" color="#2b8fc9" />;\n',
+    );
+    expect(ids).not.toContain('bemmoly/no-literal-styles');
+  });
 });

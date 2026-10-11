@@ -10,11 +10,10 @@ export interface SkeletonProps {
   className?: string;
 }
 
-const SHAPES = { line: 'rounded-tick', circle: 'rounded-full', block: 'rounded-panel' } as const;
+const SHAPES = { line: 'rounded-tick', circle: 'rounded-full', block: 'rounded-control' } as const;
 
 /**
- * Placeholder bars on the trk colour, the bars of the Board Settings live preview. They pulse
- * only when motion is allowed. Mark the loading region aria-busy; skeletons are hidden from
+ * Placeholder bars on the line colour. They pulse only when motion is allowed. Mark the loading region aria-busy; skeletons are hidden from
  * assistive tech.
  */
 export function Skeleton({
@@ -26,7 +25,7 @@ export function Skeleton({
   return (
     <span
       aria-hidden
-      className={cx('block shrink-0 bg-trk motion-safe:animate-pulse', SHAPES[shape], className)}
+      className={cx('block shrink-0 bg-line motion-safe:animate-pulse', SHAPES[shape], className)}
       style={{ width, height }}
     />
   );

@@ -18,17 +18,16 @@ import type {
   UpdatesOverview,
   User,
 } from '@bemmoly/shared';
+import type { MockSso } from './routes/sso.ts';
+import type { MockUpdateJob } from './routes/update-job.ts';
+import { seedAiOff, seedAiOn, type MockAi } from './seed/ai.ts';
 import { seedCapabilities, type CapabilityRow, type Cells } from './seed/capabilities.ts';
 import { seedAudit, seedBackups, seedOutbox, seedSystem, seedUpdates } from './seed/operations.ts';
-import { ROLE_IDS, seedGrants, seedRoles, seedTeams, seedUsers, USER_IDS } from './seed/people.ts';
+import { seedAdminModules, seedGrants, seedManifests } from './seed/modules.ts';
+import { ROLE_IDS, seedRoles, seedTeams, seedUsers, USER_IDS } from './seed/people.ts';
+import { seedNotifications } from './seed/notifications.ts';
 import { newId } from './seed/time.ts';
-import {
-  seedAdminModules,
-  seedManifests,
-  seedNotifications,
-  seedPreferences,
-  seedSettings,
-} from './seed/workspace.ts';
+import { seedPreferences, seedSettings } from './seed/workspace.ts';
 
 /**
  * fresh: no admin yet, the wizard runs. ready: set up, signed in as the admin.
@@ -75,9 +74,15 @@ export interface MockDb {
   mailbox: DevMailbox['items'];
   backups: Backup[];
   updates: UpdatesOverview;
+  /** The in-app update the mock is walking through, phase by phase. */
+  updateJob: MockUpdateJob | null;
   system: SystemHealthResponse;
   audit: AuditEntry[];
   apiTokens: ApiToken[];
+  /** Settings › AI: providers, roles, privacy, budget, prompts, people's opt-outs. */
+  ai: MockAi;
+  /** Settings › Sign-in and SSO; created on first use (routes/sso.ts). */
+  sso?: MockSso;
   /** Realtime invalidations waiting for the socket bridge: [kind, userId, ids]. */
   outbound: Array<[string, string | null, string[]]>;
 }
@@ -135,9 +140,12 @@ export function createMockDb(scenario: MockScenario = 'ready'): MockDb {
     mailbox: [],
     backups,
     updates: seedUpdates(),
+    updateJob: null,
     system: seedSystem(),
     audit: fresh ? [] : seedAudit(),
     apiTokens: [],
+    // A set-up install shows AI on with a provider, as the demo does; the wizard starts off.
+    ai: fresh || scenario === 'wizard' ? seedAiOff() : seedAiOn(),
     outbound: [],
   };
 }

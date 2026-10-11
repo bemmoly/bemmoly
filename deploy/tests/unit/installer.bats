@@ -226,3 +226,50 @@ final_message_for() {
   [[ "${output}" == *"Open it to sign in."* ]]
   [[ "${output}" == *"until bemmoly.acme.dev points at this machine; a real one follows by itself."* ]]
 }
+
+@test "an external database must be Postgres 18 with pgvector and pg_trgm" {
+  [ -z "$(database_requirement_problem '18|t|t')" ]
+  [ -z "$(database_requirement_problem '19|t|t')" ]
+
+  run database_requirement_problem '17|t|t'
+  [[ "${output}" == *"runs Postgres 17; Bemmoly needs Postgres 18"* ]]
+  [[ "${output}" == *"pgvector/pgvector:pg18"* ]]
+
+  run database_requirement_problem '18|f|t'
+  [[ "${output}" == *"does not have pgvector installed"* ]]
+
+  run database_requirement_problem '18|f|f'
+  [[ "${output}" == *"pgvector and pg_trgm"* ]]
+}
+
+@test "--database-url is checked before anything is written, and fails with a fix" {
+  parse_args --database-url postgres://u:p@db.internal:5432/bemmoly_db
+  query_external_database() { printf ' 17 | t | t\n'; }
+  run check_external_database
+  [ "${status}" -eq 1 ]
+  [[ "${output}" == *"runs Postgres 17"* ]]
+  [[ "${output}" == *"Fix: Upgrade it to Postgres 18"* ]]
+
+  query_external_database() { return 2; }
+  run check_external_database
+  [ "${status}" -eq 1 ]
+  [[ "${output}" == *"Could not query the database"* ]]
+
+  query_external_database() { printf '18|t|t\n'; }
+  run check_external_database
+  [ "${status}" -eq 0 ]
+  [[ "${output}" == *"Postgres 18, pgvector"* ]]
+}
+
+@test "without --database-url the bundled database is not queried" {
+  parse_args
+  query_external_database() { echo queried; return 1; }
+  run check_external_database
+  [ "${status}" -eq 0 ]
+  [ -z "${output}" ]
+}
+
+@test "install.sh checks the external database before configuring" {
+  body=$(sed -n '/^ *main() {/,/^  }/p' "${DEPLOY_DIR}/install.sh")
+  [[ "${body}" == *"ensure_docker"*"check_external_database"*"configure"* ]]
+}

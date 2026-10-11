@@ -1,6 +1,7 @@
 # dependencies and build output
 node_modules/
 dist/
+dist-demo/
 build/
 .turbo/
 coverage/
@@ -30,3 +31,9 @@ k6-summary.json
 
 # local tool configuration
 .claude/
+
+# end-to-end run state (server env, sessions, logs)
+apps/e2e/.state/
+
+# agent screenshots taken while checking UI (never committed)
+.agent-shots/

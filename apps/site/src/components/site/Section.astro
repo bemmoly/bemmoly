@@ -14,8 +14,8 @@ const { title, id } = Astro.props;
 
 <section
   id={id}
-  class="flex scroll-mt-20 flex-col gap-3 text-15 leading-desc text-tx3 [&_code]:font-mono [&_code]:text-13h [&_code]:text-tx [&_li]:pl-1 [&_strong]:font-semibold [&_strong]:text-tx [&_ul]:flex [&_ul]:list-disc [&_ul]:flex-col [&_ul]:gap-1.5 [&_ul]:pl-5"
+  class="flex scroll-mt-20 flex-col gap-3 text-16 leading-desc text-tx-2 [&_code]:font-mono [&_code]:text-13 [&_code]:text-tx [&_li]:pl-1 [&_strong]:font-semibold [&_strong]:text-tx [&_ul]:flex [&_ul]:list-disc [&_ul]:flex-col [&_ul]:gap-1.5 [&_ul]:pl-5"
 >
-  <h2 class="text-22 leading-title font-semibold tracking-title text-tx">{title}</h2>
+  <h2 class="text-20 leading-title font-semibold tracking-title text-tx">{title}</h2>
   <slot />
 </section>

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { updateProgressSchema } from './update-progress.ts';
 import { releaseChangesetSchema, releaseChannelSchema, semverSchema } from './release-manifest.ts';
 
 export const rollbackModeSchema = z.enum(['code', 'schema', 'restore']);
@@ -61,6 +62,10 @@ export const updatesOverviewSchema = z.object({
     command: z.string(),
     state: z.enum(['idle', 'running', 'failed', 'unreachable']),
     step: z.string().nullable(),
+    /** The latest update's steps, read from the updater's state file; the dialog draws them. */
+    progress: updateProgressSchema.nullable(),
+    /** The updater's own release; null when it predates self-update or is unreachable. */
+    version: z.string().nullable(),
   }),
 });
 

@@ -1,0 +1,16 @@
+{
+  "prompt": {
+    "id": "docs.comment_fix",
+    "version": 1
+  },
+  "replies": {
+    "docs.comment_fix": [
+      {
+        "object": {
+          "replacement": "stay valid for 30 minutes",
+          "rationale": "The flag TTL in code is 30 minutes, so the passage now says 30."
+        }
+      }
+    ]
+  }
+}

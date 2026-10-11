@@ -1,23 +1,35 @@
 import { useRealtime, type RealtimeEvent } from '@bemmoly/core-web';
-import type { RealtimeScope } from '@bemmoly/shared';
+import { queryKeys } from '@bemmoly/api-client';
+import { AI_REALTIME_KINDS, type RealtimeScope } from '@bemmoly/shared';
 import { useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
 import { realtimeUrl } from './api.ts';
 import { workKeys } from './keys.ts';
+import { changedBy } from './realtime-scope.ts';
 
 /**
  * Subscribes to a project's realtime scope while a Work screen is open and
  * invalidates the project's queries on every event. The shell's socket covers
  * workspace events; project events arrive only for subscribed projects, so
  * each screen opens this one for the project it shows. Events carry ids only;
- * the data always comes back through the REST API.
+ * the data always comes back through the REST API, for the reads the event
+ * can have changed.
  */
 export function useWorkRealtime(projectId: string | undefined) {
   const queryClient = useQueryClient();
   const onEvent = useCallback(
     (event: RealtimeEvent) => {
+      if (event.kind === AI_REALTIME_KINDS.insight) {
+        // A summary, TL;DR, pulse or check about something in this scope was rewritten.
+        void queryClient.invalidateQueries({ queryKey: queryKeys.ai.insights() });
+        return;
+      }
       if (!event.kind.startsWith('work.')) return;
-      void queryClient.invalidateQueries({ queryKey: workKeys.all() });
+      const moving = queryClient.isMutating({ mutationKey: workKeys.boardMoves() }) > 0;
+      void queryClient.invalidateQueries({
+        queryKey: workKeys.all(),
+        predicate: (query) => changedBy(event.kind, query.queryKey, moving),
+      });
     },
     [queryClient],
   );

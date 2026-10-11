@@ -2,16 +2,14 @@
 
 ## Reporting a vulnerability
 
-Report security issues privately, by either:
+Report security issues privately through GitHub's private vulnerability reporting:
+**[Report a vulnerability](https://github.com/bemmoly/bemmoly/security/advisories/new)**
+(the repository's **Security** tab › **Report a vulnerability**). Only the maintainers see the
+report, and the fix and the advisory are prepared with you in the same private thread.
 
-- GitHub's private vulnerability reporting: **Security › Report a vulnerability** on the
-  repository, or
-- email to **security@bemmoly.example**.
-
-> **Placeholder.** `security@bemmoly.example` is not a working address yet; until it is
-> replaced, use GitHub's private reporting. See "For maintainers" below.
-
-Do not open a public issue, discussion or pull request for a security bug.
+Do not open a public issue, discussion or pull request for a security bug. If you cannot use
+GitHub's private reporting, open an issue that asks the maintainers for a private contact and
+says nothing about the problem itself.
 
 Include what you found, the version or commit, steps to reproduce, and the impact you expect.
 If you can, propose a fix or a mitigation. If an error message showed a reference (a request
@@ -34,6 +32,14 @@ exploited, we will work with you on a shorter timeline.
 
 Before 1.0, only the latest minor release receives security fixes.
 
+## Scope
+
+In scope: the application image and the updater image, the installer
+(`get.bemmoly.com`, `deploy/install.sh`), the `bemmoly` CLI, the Compose files and the Helm
+chart in `deploy/`, and the website at `bemmoly.com`. The live demo at `bemmoly.com/demo` runs
+entirely in your browser on sample data with no server behind it, so a finding there matters
+when it also applies to an installed workspace; say whether you checked.
+
 ## Verifying a release
 
 Every release image is signed with cosign (keyless, from the release workflow) and carries an
@@ -45,14 +51,3 @@ in-app updater refuses images whose signature does not verify.
 Dependency audit (`pnpm audit`, failing on high), secret scanning (gitleaks), Semgrep rules for
 SQL built from strings and raw HTTP calls, and an image scan (Trivy) block merges. Dependabot
 proposes dependency updates weekly. Details are in `.github/CI.md`.
-
-## For maintainers: setting the reporting address
-
-Before the first public release:
-
-1. Replace `security@bemmoly.example` above with a mailbox at least two maintainers read
-   (a group alias, not a personal address). Search the repository for `bemmoly.example` to find
-   every placeholder; CODE_OF_CONDUCT.md has its own.
-2. Turn on private vulnerability reporting in the repository settings
-   (Settings › Code security › Private vulnerability reporting).
-3. Remove the placeholder notice in the same change.

@@ -1,4 +1,4 @@
-export { emailTaken } from './accounts.ts';
+export { emailTaken, isPasswordSignInOff, SSO_REQUIRED_MESSAGE } from './accounts.ts';
 export {
   authenticateApiToken,
   createApiToken,
@@ -25,14 +25,16 @@ export {
   previewInvitation,
   revokeInvitation,
 } from './invitations.ts';
-export { login, logout } from './login.ts';
+export { findPasswordAccount, login, logout } from './login.ts';
 export { listMySessions, revokeMySession } from './my-sessions.ts';
 export { completePasswordReset, requestPasswordReset } from './password-reset.ts';
 export { ARGON2_OPTIONS, hashPassword, verifyPassword } from './passwords.ts';
-export { API_TOKEN_PREFIX, generateSecret, hashSecret } from './secrets.ts';
+export { PERSONAL_TOKEN_PREFIX, digestsEqual, digestToken, generateToken } from './tokens.ts';
 export { createSessionResolver } from './session-resolver.ts';
 export {
   authenticateSession,
+  createSession,
+  revokeSession,
   deleteExpiredSessions,
   revokeUserSessions,
   rotateSession,

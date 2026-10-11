@@ -1,0 +1,71 @@
+import { queryKeys } from '@bemmoly/api-client';
+import type { CreateImportBody, ImportJob, ImportJobStatus } from '@bemmoly/shared';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { api } from '../lib/api.ts';
+
+/** How often a queued or running job is read again. */
+export const IMPORT_POLL_MS = 1000;
+
+const ACTIVE: readonly ImportJobStatus[] = ['queued', 'running'];
+export const isActive = (status: ImportJobStatus | undefined) =>
+  status !== undefined && ACTIVE.includes(status);
+
+/** The sources the enabled modules offer; empty when none is enabled. */
+export function useImportSources(enabled = true) {
+  return useQuery({
+    queryKey: queryKeys.imports.sources(),
+    queryFn: () => api.imports.sources(),
+    enabled,
+    retry: false,
+  });
+}
+
+/**
+ * The latest imports, newest first, to reopen one. The open job is polled on its own, so its
+ * fresher copy stands in for the listed one and the two never disagree.
+ */
+export function useImportJobs(open?: ImportJob) {
+  const query = useQuery({
+    queryKey: queryKeys.imports.list(),
+    queryFn: () => api.imports.list(),
+  });
+  const items = (query.data?.items ?? []).map((job) => (job.id === open?.id ? open : job));
+  return { ...query, items };
+}
+
+/** One job, read every second while it is queued or running. */
+export function useImportJob(id: string | null) {
+  return useQuery({
+    queryKey: queryKeys.imports.detail(id ?? ''),
+    queryFn: () => api.imports.get(id ?? ''),
+    enabled: id !== null,
+    refetchInterval: (query) => (isActive(query.state.data?.status) ? IMPORT_POLL_MS : false),
+  });
+}
+
+/** Connect, plan, run and cancel: each answers with the job, which replaces the cached one. */
+export function useImportActions(onCreated: (job: ImportJob) => void) {
+  const client = useQueryClient();
+  const store = (job: ImportJob) => {
+    client.setQueryData(queryKeys.imports.detail(job.id), job);
+    void client.invalidateQueries({ queryKey: queryKeys.imports.list() });
+  };
+  const create = useMutation({
+    mutationFn: (body: CreateImportBody) => api.imports.create(body),
+    onSuccess: (job) => {
+      store(job);
+      onCreated(job);
+    },
+  });
+  const plan = useMutation({
+    mutationFn: ({ id, containers }: { id: string; containers: string[] }) =>
+      api.imports.update(id, { containers }),
+    onSuccess: store,
+  });
+  const run = useMutation({ mutationFn: (id: string) => api.imports.run(id), onSuccess: store });
+  const cancel = useMutation({
+    mutationFn: (id: string) => api.imports.cancel(id),
+    onSuccess: store,
+  });
+  return { create, plan, run, cancel };
+}

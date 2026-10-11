@@ -38,6 +38,8 @@ export const notifications = pgTable(
     dedupeKey: text('dedupe_key'),
     readAt: timestamp('read_at', { withTimezone: true }),
     emailedAt: timestamp('emailed_at', { withTimezone: true }),
+    doneAt: timestamp('done_at', { withTimezone: true }),
+    snoozedUntil: timestamp('snoozed_until', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
@@ -47,6 +49,9 @@ export const notifications = pgTable(
       sql`${table.delivery} in ('inapp', 'email_immediate', 'email_digest')`,
     ),
     index('notifications_user_id_idx').on(table.userId, table.id.desc()),
+    index('notifications_inbox_idx')
+      .on(table.userId, table.id.desc())
+      .where(sql`${table.doneAt} is null`),
     index('notifications_unread_idx')
       .on(table.userId)
       .where(sql`${table.readAt} is null`),

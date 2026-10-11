@@ -45,8 +45,9 @@ interface SprintDates {
   endsAt: string | null;
 }
 
+/** Compared as instants, since two offsets can spell the same moment differently. */
 const endsAfterStart = (dates: SprintDates) =>
-  !dates.startsAt || !dates.endsAt || dates.endsAt > dates.startsAt;
+  !dates.startsAt || !dates.endsAt || Date.parse(dates.endsAt) > Date.parse(dates.startsAt);
 
 export const createSprintBodySchema = z
   .object({

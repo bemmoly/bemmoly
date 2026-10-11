@@ -2,31 +2,23 @@ import type { HTMLAttributes } from 'react';
 import { cx } from '../../lib/cx.ts';
 import { HUES, type Hue } from '../../tokens/names.ts';
 
-/** Accent is the current user (RS in the mocks); grey is someone without a colour yet (SR). */
+/** Accent is the signed-in person; grey is someone without a colour yet. */
 export type AvatarHue = Hue | 'accent' | 'grey';
 
-const HUE_CLASSES: Record<AvatarHue, string> = {
-  accent: 'bg-ac-av text-ac',
-  grey: 'bg-chip text-tx3',
-  green: 'bg-green-bg text-green-fg',
-  orange: 'bg-orange-bg text-orange-fg',
-  violet: 'bg-violet-bg text-violet-fg',
-  pink: 'bg-pink-bg text-pink-fg',
-  amber: 'bg-amber-bg text-amber-fg',
-  sky: 'bg-sky-bg text-sky-fg',
+/** Solid mid-tone fills with white initials, readable at 16px and on light or dark. */
+const FILLS: Record<AvatarHue, string> = {
+  accent: 'bg-acc-fill text-on-acc',
+  grey: 'bg-tx-3 text-on-solid',
+  green: 'bg-avatar-green text-on-solid',
+  orange: 'bg-avatar-orange text-on-solid',
+  violet: 'bg-avatar-violet text-on-solid',
+  pink: 'bg-avatar-pink text-on-solid',
+  amber: 'bg-avatar-amber text-on-solid',
+  sky: 'bg-avatar-sky text-on-solid',
 };
 
-export type AvatarSize = 20 | 22 | 24 | 26 | 28 | 30;
-
-/** Diameter and initials size pairs used across the mocks. */
-const SIZES: Record<AvatarSize, string> = {
-  20: 'size-5 text-9h',
-  22: 'size-5.5 text-10',
-  24: 'size-6 text-9h',
-  26: 'size-6.5 text-10',
-  28: 'size-7 text-10h',
-  30: 'size-7.5 text-11',
-};
+/** Any diameter in px; the review uses 16 to 30. */
+export type AvatarSize = number;
 
 /** A stable colour for a person, so the same name always gets the same hue. */
 export function avatarHue(key: string): Hue {
@@ -54,26 +46,28 @@ export interface AvatarProps extends HTMLAttributes<HTMLSpanElement> {
   initials?: string;
   hue?: AvatarHue;
   size?: AvatarSize;
-  /** 12px initials at 30px, as the top bar user avatar has. */
-  prominent?: boolean;
   /** A 2px ring in the given surface colour, used when avatars overlap. */
   ring?: 'sf' | 'bg' | 'ac';
 }
 
 const RINGS = {
-  sf: 'border-2 border-sf',
-  bg: 'border-2 border-bg',
-  ac: 'border-2 border-ac',
+  sf: 'border-2 border-card',
+  bg: 'border-2 border-sunken',
+  ac: 'border-2 border-acc',
 } as const;
 
+/**
+ * A person as a solid circle with white initials at 42% of its size
+ * (docs/design/premium/kit.js, `av`).
+ */
 export function Avatar({
   name,
   initials,
   hue,
   size = 22,
-  prominent,
   ring,
   className,
+  style,
   ...rest
 }: AvatarProps) {
   return (
@@ -81,10 +75,10 @@ export function Avatar({
       role="img"
       aria-label={name}
       title={name}
+      style={{ width: size, height: size, fontSize: Math.round(size * 0.42), ...style }}
       className={cx(
-        'inline-flex shrink-0 items-center justify-center rounded-full leading-none font-semibold',
-        prominent && size === 30 ? 'size-7.5 text-12' : SIZES[size],
-        HUE_CLASSES[hue ?? avatarHue(name)],
+        'inline-flex shrink-0 items-center justify-center rounded-full leading-none font-semibold tracking-[.01em]',
+        FILLS[hue ?? avatarHue(name)],
         ring && RINGS[ring],
         className,
       )}
@@ -92,5 +86,32 @@ export function Avatar({
     >
       <span aria-hidden>{initials ?? initialsOf(name)}</span>
     </span>
+  );
+}
+
+export interface UnassignedAvatarProps {
+  size?: AvatarSize;
+  /** What assistive tech hears; "Unassigned" by default. */
+  label?: string;
+  className?: string;
+}
+
+/** Nobody yet: a dashed ring in the muted ink, the size of an avatar beside it. */
+export function UnassignedAvatar({
+  size = 22,
+  label = 'Unassigned',
+  className,
+}: UnassignedAvatarProps) {
+  return (
+    <span
+      role="img"
+      aria-label={label}
+      title={label}
+      style={{ width: size, height: size }}
+      className={cx(
+        'inline-block shrink-0 rounded-full border-[1.5px] border-dashed border-tx-3 opacity-60',
+        className,
+      )}
+    />
   );
 }

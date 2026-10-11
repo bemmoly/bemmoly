@@ -26,7 +26,7 @@ export function AcceptInvitationPage() {
         <Link
           to="/login"
           search={{ redirect: undefined }}
-          className="self-center text-12h font-medium"
+          className="self-center text-13 font-medium"
         >
           Go to sign in
         </Link>
@@ -36,6 +36,7 @@ export function AcceptInvitationPage() {
   return (
     <AuthLayout
       title={`Join ${invitation.workspaceName}`}
+      workspaceName={invitation.workspaceName}
       subtitle={
         <>
           {invitation.inviterName ?? 'An administrator'} invited you as{' '}

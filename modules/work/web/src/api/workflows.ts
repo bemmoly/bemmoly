@@ -1,7 +1,7 @@
 import {
   publishWorkflowBodySchema,
   putWorkflowDraftBodySchema,
-  ruleCatalogResponseSchema,
+  workflowRulesResponseSchema,
   workflowSchema,
   workflowsResponseSchema,
   workflowStatusCountsSchema,
@@ -15,9 +15,15 @@ import { enc, validated } from '@bemmoly/api-client';
 const base = '/api/v1/work';
 
 export const workWorkflowKeys = {
-  list: (projectId: string) => ['work', 'project', projectId, 'workflows'] as const,
+  /** Every workflow the person can see, or the org defaults plus one project's own. */
+  list: (projectId?: string) => ['work', 'workflows', projectId ?? 'all'] as const,
   one: (workflowId: string) => ['work', 'workflow', workflowId] as const,
-  counts: (workflowId: string) => ['work', 'workflow', workflowId, 'counts'] as const,
+  draft: (workflowId: string) => ['work', 'workflow', workflowId, 'draft'] as const,
+  /** Every project's counts, or one project's; invalidating without a project reaches both. */
+  counts: (workflowId: string, projectId?: string) =>
+    projectId
+      ? (['work', 'workflow', workflowId, 'counts', projectId] as const)
+      : (['work', 'workflow', workflowId, 'counts'] as const),
   rules: () => ['work', 'workflow-rules'] as const,
 };
 
@@ -28,19 +34,30 @@ export const workWorkflowKeys = {
  */
 export function workWorkflowEndpoints(http: Http) {
   return {
-    list: async (projectId: string) =>
-      (await http.request(`${base}/projects/${enc(projectId)}/workflows`, workflowsResponseSchema))
-        .items,
+    /** With a project id: the org defaults and that project's own; without: every workflow. */
+    list: async (projectId?: string) =>
+      (
+        await http.request(`${base}/workflows`, workflowsResponseSchema, {
+          query: projectId ? { projectId } : {},
+        })
+      ).items,
     get: async (workflowId: string) =>
       http.request(`${base}/workflows/${enc(workflowId)}`, workflowSchema),
-    /** The editor state, including the draft when one is saved. */
+    /** The editor state: the saved draft, or the published workflow when none is saved. */
     draft: async (workflowId: string) =>
-      http.request(`${base}/workflows/${enc(workflowId)}/draft`, putWorkflowDraftBodySchema),
+      (await http.request(`${base}/workflows/${enc(workflowId)}/draft`, putWorkflowDraftBodySchema))
+        .draft,
     putDraft: async (workflowId: string, body: PutWorkflowDraftBody) =>
-      http.request(`${base}/workflows/${enc(workflowId)}/draft`, putWorkflowDraftBodySchema, {
-        method: 'PUT',
-        body: validated(putWorkflowDraftBodySchema, body),
-      }),
+      (
+        await http.request(
+          `${base}/workflows/${enc(workflowId)}/draft`,
+          putWorkflowDraftBodySchema,
+          {
+            method: 'PUT',
+            body: validated(putWorkflowDraftBodySchema, body),
+          },
+        )
+      ).draft,
     validate: async (workflowId: string) =>
       http.request(
         `${base}/workflows/${enc(workflowId)}/validate`,
@@ -52,15 +69,17 @@ export function workWorkflowEndpoints(http: Http) {
         method: 'POST',
         body: validated(publishWorkflowBodySchema, body),
       }),
-    statusCounts: async (workflowId: string) =>
+    /** Issues per status the person can see; a project id narrows it to that project's issues. */
+    statusCounts: async (workflowId: string, projectId?: string) =>
       (
         await http.request(
           `${base}/workflows/${enc(workflowId)}/status-counts`,
           workflowStatusCountsSchema,
+          { query: projectId ? { projectId } : {} },
         )
       ).counts,
-    /** Conditions, validators and post-actions the rules registry offers. */
+    /** Conditions, validators and post-actions the rules registry offers, params as JSON Schema. */
     rules: async () =>
-      (await http.request(`${base}/workflow-rules`, ruleCatalogResponseSchema)).items,
+      (await http.request(`${base}/workflow-rules`, workflowRulesResponseSchema)).items,
   };
 }

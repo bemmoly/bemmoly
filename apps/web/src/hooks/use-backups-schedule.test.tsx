@@ -108,7 +108,7 @@ describe('changes that need a confirmation', () => {
     const risk = retentionRisk(retention, { ...retention, daily: 3 });
     expect(risk?.confirmWord).toBe('confirm');
     expect(risk?.consequences[0]).toBe(
-      `Daily: ${retention.daily} → 3 kept. Up to ${retention.daily - 3} older daily backups are deleted.`,
+      `Daily: ${retention.daily} to 3 kept. Up to ${retention.daily - 3} older daily backups are deleted.`,
     );
   });
 

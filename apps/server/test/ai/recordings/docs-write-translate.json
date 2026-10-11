@@ -1,0 +1,13 @@
+{
+  "prompt": {
+    "id": "docs.write.translate",
+    "version": 1
+  },
+  "replies": {
+    "docs.write.translate": [
+      {
+        "text": "If the error rate exceeds 0.5% after the cutover, we turn auth_pg_sessions off. Redis stays warm for 7 days."
+      }
+    ]
+  }
+}

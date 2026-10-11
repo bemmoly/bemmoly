@@ -1,5 +1,93 @@
 # @bemmoly/module-sample
 
+## 0.6.0
+
+### Patch Changes
+
+- Updated dependencies [4e0e170]
+- Updated dependencies [4cbf7a1]
+- Updated dependencies [c4215a9]
+  - @bemmoly/core@0.6.0
+  - @bemmoly/shared@0.6.0
+
+## 0.5.0
+
+### Patch Changes
+
+- Updated dependencies [0a04d0d]
+- Updated dependencies [fc28637]
+- Updated dependencies [9911c5f]
+  - @bemmoly/core@0.5.0
+  - @bemmoly/shared@0.5.0
+
+## 0.4.0
+
+### Patch Changes
+
+- Updated dependencies [2ab05df]
+- Updated dependencies [8f4df5f]
+  - @bemmoly/core@0.4.0
+  - @bemmoly/shared@0.4.0
+
+## 0.3.0
+
+### Patch Changes
+
+- Updated dependencies [27dec1d]
+- Updated dependencies [27dec1d]
+  - @bemmoly/core@0.3.0
+  - @bemmoly/shared@0.3.0
+
+## 0.2.2
+
+### Patch Changes
+
+- @bemmoly/core@0.2.2
+  - @bemmoly/shared@0.2.2
+
+## 0.2.1
+
+### Patch Changes
+
+- @bemmoly/core@0.2.1
+  - @bemmoly/shared@0.2.1
+
+## 0.2.0
+
+### Patch Changes
+
+- Updated dependencies [dcbcae4]
+- Updated dependencies [7d09c70]
+- Updated dependencies [51cd3ae]
+- Updated dependencies [e2aa5d2]
+- Updated dependencies [158db6a]
+- Updated dependencies [d313831]
+  - @bemmoly/core@0.2.0
+  - @bemmoly/shared@0.2.0
+
+## 0.1.7
+
+### Patch Changes
+
+- @bemmoly/core@0.1.7
+  - @bemmoly/shared@0.1.7
+
+## 0.1.6
+
+### Patch Changes
+
+- Updated dependencies [a13da15]
+  - @bemmoly/core@0.1.6
+  - @bemmoly/shared@0.1.6
+
+## 0.1.5
+
+### Patch Changes
+
+- Updated dependencies [0278663]
+  - @bemmoly/core@0.1.5
+  - @bemmoly/shared@0.1.5
+
 ## 0.1.4
 
 ### Patch Changes

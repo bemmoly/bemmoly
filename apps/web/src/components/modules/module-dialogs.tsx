@@ -27,7 +27,7 @@ export function DisableModuleModal({ module, busy, onClose, onConfirm }: Disable
         </>
       }
     >
-      <p className="m-0 text-13 leading-body text-tx-body">
+      <p className="m-0 text-13 leading-body text-tx">
         {name} disappears from the navigation for everyone and its pages stop answering. Its tables,
         files and history stay in the database untouched. Removing that data is a separate step.
       </p>
@@ -80,13 +80,13 @@ export function RemoveDataModal({
           if (canRemove) onConfirm();
         }}
       >
-        <p className="m-0 text-13 leading-body text-tx-body">
+        <p className="m-0 text-13 leading-body text-tx">
           Every issue, page or record {name} holds is deleted, and the action is written to the
           audit log. Take a backup first if you might want it back: restoring that backup is the
           only way to recover it.
         </p>
         {module.enabled ? (
-          <p className="m-0 text-12h text-danger">Disable {name} before removing its data.</p>
+          <p className="m-0 text-13 text-red">Disable {name} before removing its data.</p>
         ) : null}
         <Field label={`Type ${module.id} to confirm`}>
           <Input

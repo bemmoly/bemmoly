@@ -2,6 +2,7 @@ import {
   decodeCursor,
   toPage,
   type AuditRecorder,
+  type ContainerMemberships,
   type RealtimePublisher,
   type RequestContext,
   type SqlClient,
@@ -14,6 +15,7 @@ import type {
   ProjectsPage,
   UpdateProjectBody,
 } from '../../../../shared/projects.ts';
+import { joinAsCreator, visibleProjectIds } from './membership-defaults.ts';
 import {
   auditMeta,
   PROJECT_COLUMNS,
@@ -28,6 +30,7 @@ export interface ProjectsServiceDeps {
   database?: SqlClient;
   audit?: AuditRecorder;
   realtime?: RealtimePublisher;
+  memberships?: ContainerMemberships;
 }
 
 const UNIQUE_VIOLATION = '23505';
@@ -99,11 +102,13 @@ export function createProjectsService(deps: ProjectsServiceDeps) {
       await ctx.authz.authorize(ctx.actor, 'work.issue.view', WORK_MODULE);
       const sql = db();
       const cursor = decodeCursor(query.cursor);
+      const visible = await visibleProjectIds(sql, ctx);
       const rows = await sql<ProjectRow[]>`
         select ${sql.unsafe(PROJECT_COLUMNS)}
         from projects
         where (${query.archived} or archived_at is null)
           and (${query.teamId ?? null}::uuid is null or team_id = ${query.teamId ?? null})
+          and (${visible === null} or id = any(${visible ?? []}::uuid[]))
           ${cursor ? sql`and id > ${cursor}` : sql``}
         order by id
         limit ${query.limit + 1}`;
@@ -119,8 +124,8 @@ export function createProjectsService(deps: ProjectsServiceDeps) {
 
     /**
      * A new project inherits every org default by having no override, so
-     * only the project and its issue counter are written, in one transaction
-     * with the audit row.
+     * only the project, its issue counter and its first members are written,
+     * in one transaction with the audit row.
      */
     async create(ctx: RequestContext, body: CreateProjectBody): Promise<Project> {
       await ctx.authz.authorize(ctx.actor, 'work.project.create', WORK_MODULE);
@@ -135,6 +140,7 @@ export function createProjectsService(deps: ProjectsServiceDeps) {
             returning ${tx.unsafe(PROJECT_COLUMNS)}`;
           if (!created) throw new ProviderError('The project was not stored');
           await tx`insert into project_counters (project_id) values (${created.id})`;
+          await joinAsCreator(deps.memberships, ctx, tx, created);
           await deps.audit?.record(
             {
               actor: ctx.actor,

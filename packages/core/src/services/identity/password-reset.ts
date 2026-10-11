@@ -16,7 +16,7 @@ import {
 } from './events.ts';
 import { findPasswordAccount } from './login.ts';
 import { hashPassword } from './passwords.ts';
-import { generateSecret, hashSecret } from './secrets.ts';
+import { generateToken, digestToken } from './tokens.ts';
 import { revokeUserSessions } from './sessions.ts';
 import { inSharedTransaction } from './transaction.ts';
 
@@ -36,7 +36,7 @@ export async function requestPasswordReset(
   const account = await findPasswordAccount(deps.db, input.email);
   if (!account || account.status !== 'active') return;
   const now = nowOf(deps);
-  const token = generateSecret();
+  const token = generateToken();
   const expiresAt = new Date(now.getTime() + PASSWORD_RESET_TTL_MS);
   await inSharedTransaction(deps.sql, async (tx, executor) => {
     await tx
@@ -49,7 +49,7 @@ export async function requestPasswordReset(
       .insert(passwordResetTokens)
       .values({
         userId: account.userId,
-        tokenHash: hashSecret(token),
+        tokenHash: digestToken(token),
         expiresAt,
         requestedIp: meta.ip ?? null,
       })
@@ -94,7 +94,7 @@ export async function completePasswordReset(
       .set({ usedAt: now, updatedAt: now })
       .where(
         and(
-          eq(passwordResetTokens.tokenHash, hashSecret(input.token)),
+          eq(passwordResetTokens.tokenHash, digestToken(input.token)),
           isNull(passwordResetTokens.usedAt),
           gt(passwordResetTokens.expiresAt, now),
         ),

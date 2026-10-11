@@ -5,8 +5,10 @@ body:
   - type: markdown
     attributes:
       value: |
-        Bemmoly is built from a technical design and a set of screen mocks. Requests that fit
-        them are easiest to take on; ones that change them need an ADR first (docs/adr).
+        Check the roadmap in the README first; it may already be planned. Bemmoly is built from
+        a technical design (docs/tech-design.html) and a design system (docs/design/system).
+        Requests that fit them are easiest to take on; ones that change them need an ADR first
+        (docs/adr). Not sure yet? Start in Discussions › Ideas.
   - type: textarea
     id: problem
     attributes:

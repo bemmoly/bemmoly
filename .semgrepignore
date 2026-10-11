@@ -1,6 +1,7 @@
 # Paths Semgrep never scans in CI. Rule-specific exemptions live in each rule's `paths`.
 node_modules/
 **/dist/
+**/dist-demo/
 **/storybook-static/
 **/coverage/
 **/playwright-report/

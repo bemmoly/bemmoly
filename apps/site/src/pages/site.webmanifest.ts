@@ -17,11 +17,11 @@ export const GET: APIRoute = () => {
   const manifest = {
     name: 'Bemmoly',
     short_name: 'Bemmoly',
-    description: 'Your work. Your platform.',
+    description: 'Your work. Your platform. Open source issues and docs on your own server.',
     start_url: '/',
     display: 'browser',
-    background_color: classic.sf,
-    theme_color: classic.ac,
+    background_color: classic.card,
+    theme_color: classic.acc,
     icons: [
       icon(icon192.src, 192, 'any'),
       icon(icon512.src, 512, 'any'),

@@ -1,16 +1,7 @@
 import type { MockDb } from '../db.ts';
-import {
-  seedWorkBoards,
-  seedWorkProject,
-  seedWorkWorkflows,
-  STATUS_COUNTS,
-} from '../seed/work-settings.ts';
-import {
-  seedWorkFields,
-  seedWorkIssueTypes,
-  seedWorkRules,
-  seedWorkTypeFields,
-} from '../seed/work-types.ts';
+import { seedWorkBoards, seedWorkProject, seedWorkWorkflows } from '../seed/work-settings.ts';
+import { seedWorkRules } from '../seed/work-rules.ts';
+import { seedWorkFields, seedWorkIssueTypes, seedWorkTypeFields } from '../seed/work-types.ts';
 
 export type Row = Record<string, unknown> & { id: string };
 
@@ -22,7 +13,6 @@ export interface WorkState {
   fields: Row[];
   typeFields: Row[];
   rules: Row[];
-  statusCounts: Record<string, number>;
 }
 
 /**
@@ -43,8 +33,7 @@ export function workState(db: MockDb): WorkState {
       issueTypes: seedWorkIssueTypes() as Row[],
       fields: seedWorkFields() as Row[],
       typeFields: seedWorkTypeFields() as Row[],
-      rules: seedWorkRules().map((rule, index) => ({ ...rule, id: String(index) })),
-      statusCounts: { ...STATUS_COUNTS },
+      rules: seedWorkRules().map((rule) => ({ ...rule, id: rule.name })),
     };
     states.set(db, state);
   }

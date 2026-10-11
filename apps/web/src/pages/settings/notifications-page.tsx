@@ -23,6 +23,10 @@ const KINDS: Record<string, { label: string; hint?: string }> = {
   comment: { label: 'Comments on things you watch' },
   status_change: { label: 'Status changes on things you watch' },
   system: { label: 'Workspace notices', hint: 'Updates, backups and security notices.' },
+  ai_budget: {
+    label: 'AI budget alerts',
+    hint: 'AI has used 80% or all of the monthly budget. Sent to people who configure AI.',
+  },
 };
 
 const labelOf = (kind: string) =>

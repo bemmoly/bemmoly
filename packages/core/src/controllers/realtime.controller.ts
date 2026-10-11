@@ -6,6 +6,8 @@ import type { SessionResolver } from '../contracts/session-resolver.ts';
 import type { RealtimeHub, RealtimeMetricsHook } from '../services/realtime/index.ts';
 
 const HEARTBEAT_MS = 30_000;
+/** Hub messages are small JSON; the socket server's limit is larger because /collab shares it. */
+export const REALTIME_MAX_MESSAGE_BYTES = 16 * 1024;
 
 export interface RealtimeControllerDeps {
   hub: RealtimeHub;
@@ -48,7 +50,11 @@ export function createRealtimeController(deps: RealtimeControllerDeps) {
       socket.on('pong', () => {
         alive = true;
       });
-      socket.on('message', (data) => {
+      socket.on('message', (data: Buffer) => {
+        if (data.byteLength > REALTIME_MAX_MESSAGE_BYTES) {
+          socket.close(1009, 'message too big');
+          return;
+        }
         client.receive(String(data)).catch((error: unknown) => {
           request.log.warn({ err: error }, 'realtime message handling failed');
         });

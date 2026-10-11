@@ -152,7 +152,7 @@ describe('theme tiles and preview', () => {
     expect(themeScope({ ...BASE, preset: 'forest' })).toEqual({ 'data-theme': 'forest' });
     const scope = themeScope({ ...BASE, preset: 'custom', mode: 'dark' });
     expect(scope['data-theme']).toBeUndefined();
-    expect(scope.style).toMatchObject({ '--ac': '#f97316', colorScheme: 'dark' });
+    expect(scope.style).toMatchObject({ '--acc': '#f97316', colorScheme: 'dark' });
   });
 
   it('only promises a personal light/dark choice while members may switch', () => {

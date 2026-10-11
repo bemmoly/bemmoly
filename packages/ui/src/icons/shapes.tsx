@@ -5,10 +5,13 @@ import {
   ChartColumn,
   ChartGantt,
   Circle,
+  CircleAlert,
   Download,
   FileText,
+  FolderKanban,
   Inbox,
   KeyRound,
+  ListFilter,
   ListTodo,
   Package,
   Pencil,
@@ -16,9 +19,13 @@ import {
   Settings,
   SquareCheck,
   SquareKanban,
+  Star,
   SunMoon,
   Table2,
   Timer,
+  Trash2,
+  Users,
+  Workflow,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -66,6 +73,16 @@ export const SHAPES = {
   subtasks: SquareCheck,
   /** Workflow: the mock's → before a transition's target. */
   arrow: ArrowRight,
+  /** Empty states: no project yet, no members, no saved filters, no workflows, a failed load. */
+  project: FolderKanban,
+  people: Users,
+  filter: ListFilter,
+  workflow: Workflow,
+  alert: CircleAlert,
+  /** Docs: star a page; the home's Starred list. */
+  star: Star,
+  /** Docs: move a page to the trash, and the space's trash. */
+  trash: Trash2,
 } satisfies Record<string, LucideIcon>;
 
 export type ShapeName = keyof typeof SHAPES;

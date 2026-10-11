@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { IconButton } from '../components/button/icon-button.tsx';
 import { Icon, ICON_NAMES, ICON_SIZE } from './icon.tsx';
+import { formatPageIcon, isIconName, PageIcon, parsePageIcon } from './page-icon.tsx';
 
 describe('Icon', () => {
   it('draws every name as an SVG that inherits the text colour', () => {
@@ -32,17 +33,19 @@ describe('Icon', () => {
     expect(sizes).toEqual(['16', '16', '18', '14']);
   });
 
-  it('draws chevrons a little heavier than other icons', () => {
+  it('draws every icon, chevrons included, with the 1.75px stroke', () => {
     const { container } = render(
       <>
         <Icon name="caret" />
-        <Icon name="inbox" />
+        <Icon name="inbox" size={ICON_SIZE.bar} />
+        <Icon name="zap" />
       </>,
     );
-    const strokes = [...container.querySelectorAll('svg')].map((svg) =>
-      Number(svg.getAttribute('stroke-width')),
+    // Lucide scales the stroke into its 24-unit viewBox so it draws at 1.75 screen pixels.
+    const strokes = [...container.querySelectorAll('svg')].map(
+      (svg) => (Number(svg.getAttribute('stroke-width')) * Number(svg.getAttribute('width'))) / 24,
     );
-    expect(strokes[0]).toBeGreaterThan(strokes[1] ?? 0);
+    expect(strokes).toEqual([1.75, 1.75, 1.75]);
   });
 
   it('is hidden from assistive tech unless it has a label', () => {
@@ -59,5 +62,17 @@ describe('Icon', () => {
   it('gives an icon button its name from the label, not the drawing', () => {
     render(<IconButton label="Inbox" icon="inbox" badge={4} />);
     expect(screen.getByRole('button', { name: 'Inbox, 4' })).toBeDefined();
+  });
+});
+
+describe('PageIcon', () => {
+  it('reads a drawn icon with its tint, and never prints a name as text', () => {
+    expect(parsePageIcon('flag:epic-3')).toEqual({ name: 'flag', tint: 'epic-3' });
+    expect(parsePageIcon('flag')).toEqual({ name: 'flag', tint: null });
+    expect(parsePageIcon('📝')).toBeNull();
+    expect(isIconName('flag:epic-9')).toBe(false);
+    expect(formatPageIcon('flag', 'epic-3')).toBe('flag:epic-3');
+    const { container } = render(<PageIcon value="flag:epic-3" />);
+    expect(container.querySelector('svg')?.getAttribute('class')).toContain('text-epic-3');
   });
 });

@@ -2,13 +2,11 @@
 /** Renders the repository's SECURITY.md so the policy has one source. */
 import { Content } from '../../../../SECURITY.md';
 import Prose from '../components/site/Prose.astro';
+import { pageAt } from '../data/pages.ts';
 import Base from '../layouts/Base.astro';
 ---
 
-<Base
-  title="Security"
-  description="How to report a vulnerability in Bemmoly privately, what happens next, and which versions receive security fixes."
->
+<Base page={pageAt('/security')}>
   <article class="mx-auto w-full max-w-190 px-4 pt-16 pb-20 sm:px-6 lg:pt-20">
     <Prose>
       <Content />

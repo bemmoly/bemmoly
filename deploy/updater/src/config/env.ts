@@ -12,6 +12,15 @@ export const updaterEnvSchema = z.object({
   APP_SERVICE: z.string().min(1).default('bemmoly'),
   /** The only repository updates come from; the API takes a version, never an image. */
   BEMMOLY_IMAGE: z.string().min(1).default('ghcr.io/bemmoly/bemmoly'),
+  /** The updater's own repository; it moves itself to the release it installs (ADR 0020). */
+  UPDATER_IMAGE: z.string().min(1).default('ghcr.io/bemmoly/updater'),
+  UPDATER_SERVICE: z.string().min(1).default('updater'),
+  /** Set in the image at build time: the release this updater is. */
+  BEMMOLY_UPDATER_VERSION: z.string().min(1).optional(),
+  /** On by default; off keeps the updater on the version the admin pinned in UPDATER_VERSION. */
+  BEMMOLY_UPDATER_SELF_UPDATE: z.stringbool().default(true),
+  /** How long a new updater container has to answer /healthz before the old one is restored. */
+  UPDATER_READY_TIMEOUT_MS: z.coerce.number().int().min(5_000).default(60_000),
   /** Off by default: an image whose signature cannot be verified is refused. */
   BEMMOLY_ALLOW_UNSIGNED_UPDATES: flag,
   /** Air-gapped installs and tests: use images already loaded, never pull. */
@@ -25,6 +34,11 @@ export const updaterEnvSchema = z.object({
     ),
   COSIGN_OIDC_ISSUER: z.url().default('https://token.actions.githubusercontent.com'),
   COSIGN_BINARY: z.string().default('/usr/local/bin/cosign'),
+  /**
+   * Where cosign caches Sigstore's trust root. The container's filesystem is read-only
+   * apart from /tmp, and cosign's default (~/.sigstore) cannot be created there.
+   */
+  TUF_ROOT: z.string().min(1).default('/tmp/sigstore'),
   READY_TIMEOUT_MS: z.coerce.number().int().min(10_000).default(180_000),
   RETENTION_DAYS: z.coerce.number().int().min(1).max(90).default(7),
   LOG_LEVEL: z.enum(['error', 'warn', 'info', 'debug']).default('info'),
@@ -37,7 +51,11 @@ export function loadUpdaterEnv(): UpdaterEnv {
   const result = updaterEnvSchema.safeParse(
     Object.fromEntries(Object.entries(process.env).filter(([, value]) => Boolean(value))),
   );
-  if (result.success) return result.data;
+  if (result.success) {
+    // cosign reads TUF_ROOT from the environment it inherits from this process.
+    process.env['TUF_ROOT'] = result.data.TUF_ROOT;
+    return result.data;
+  }
   const problems = result.error.issues.map(
     (issue) => `  - ${issue.path.join('.')}: ${issue.message}`,
   );

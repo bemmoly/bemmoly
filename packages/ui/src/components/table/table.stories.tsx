@@ -88,7 +88,7 @@ const COLUMNS: TableColumn<User>[] = [
         <Avatar name={u.name} initials={u.id} hue={u.hue} size={30} />
         <div className="flex min-w-0 flex-col gap-px">
           <span className="font-medium">{u.name}</span>
-          <span className="truncate text-12 text-tx5">{u.email}</span>
+          <span className="truncate text-12 text-tx-3">{u.email}</span>
         </div>
       </div>
     ),
@@ -119,14 +119,14 @@ const COLUMNS: TableColumn<User>[] = [
     key: 'auth',
     header: 'Auth',
     width: '110px',
-    render: (u) => <span className="text-12 text-tx3">{u.auth}</span>,
+    render: (u) => <span className="text-12 text-tx-2">{u.auth}</span>,
   },
   {
     key: 'last',
     header: 'Last active',
     width: '110px',
     render: (u) => (
-      <span className={u.stale ? 'text-12 text-warn-fg' : 'text-12 text-tx4'}>{u.last}</span>
+      <span className={u.stale ? 'text-12 text-amber-tx' : 'text-12 text-tx-3'}>{u.last}</span>
     ),
   },
   {
@@ -134,7 +134,7 @@ const COLUMNS: TableColumn<User>[] = [
     header: '',
     width: '28px',
     align: 'center',
-    render: () => <Icon name="more" className="text-tx6" label="More" />,
+    render: () => <Icon name="more" className="text-tx-3" label="More" />,
   },
 ];
 

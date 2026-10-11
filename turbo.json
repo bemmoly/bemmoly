@@ -16,9 +16,41 @@
       "dependsOn": ["^build"],
       "outputs": ["dist/**", "storybook-static/**"]
     },
-    "@bemmoly/site#build": {
+    "@bemmoly/web#build": {
+      "dependsOn": ["^build"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/modules/*/package.json",
+        "$TURBO_ROOT$/modules/*/web/**",
+        "$TURBO_ROOT$/modules/*/shared/**",
+        "$TURBO_ROOT$/packages/editor/package.json",
+        "$TURBO_ROOT$/packages/editor/src/**"
+      ],
+      "outputs": ["dist/**"]
+    },
+    "@bemmoly/web#build:demo": {
       "dependsOn": [],
-      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/SECURITY.md"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/modules/*/package.json",
+        "$TURBO_ROOT$/modules/*/web/**",
+        "$TURBO_ROOT$/modules/*/shared/**",
+        "$TURBO_ROOT$/packages/editor/package.json",
+        "$TURBO_ROOT$/packages/editor/src/**"
+      ],
+      "outputs": ["dist-demo/**"]
+    },
+    "@bemmoly/site#build": {
+      "dependsOn": ["@bemmoly/web#build:demo"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/SECURITY.md",
+        "$TURBO_ROOT$/apps/*/CHANGELOG.md",
+        "$TURBO_ROOT$/packages/*/CHANGELOG.md",
+        "$TURBO_ROOT$/modules/*/CHANGELOG.md",
+        "$TURBO_ROOT$/deploy/CHANGELOG.md",
+        "$TURBO_ROOT$/deploy/updater/CHANGELOG.md"
+      ],
       "outputs": ["dist/**"]
     },
     "typecheck": {
@@ -35,6 +67,10 @@
     "@bemmoly/site#test": {
       "dependsOn": ["@bemmoly/site#build"]
     },
+    "eval": {
+      "cache": false,
+      "env": ["BEMMOLY_EVAL_*"]
+    },
     "test:integration": {
       "cache": false,
       "env": ["BEMMOLY_TEST_DATABASE_URL", "DOCKER_HOST", "TESTCONTAINERS_*"]
@@ -42,6 +78,11 @@
     "test:e2e": {
       "dependsOn": ["build"],
       "cache": false
+    },
+    "test:e2e:work": {
+      "dependsOn": ["^build"],
+      "cache": false,
+      "env": ["CI", "BEMMOLY_TEST_DATABASE_URL", "DOCKER_HOST", "TESTCONTAINERS_*"]
     },
     "size": {
       "dependsOn": ["build"]

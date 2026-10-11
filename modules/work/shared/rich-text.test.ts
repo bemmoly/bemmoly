@@ -49,4 +49,25 @@ describe('rich text helpers', () => {
     expect(mentionedUserIds(doc)).toEqual([aisha, jonas]);
     expect(mentionedUserIds(null)).toEqual([]);
   });
+
+  it('collapses long whitespace runs in linear time', () => {
+    const doc = {
+      type: 'doc',
+      content: [
+        { type: 'paragraph', content: [{ type: 'text', text: `a${' \n'.repeat(50_000)}b` }] },
+      ],
+    };
+    const started = performance.now();
+    expect(richTextToPlain(doc as never)).toBe('a\nb');
+    expect(performance.now() - started).toBeLessThan(50);
+  });
+
+  it('keeps the plain-text shadow it produced before', () => {
+    const text = 'one  two\t\tthree \n\n  four\n';
+    const doc = {
+      type: 'doc',
+      content: [{ type: 'paragraph', content: [{ type: 'text', text }] }],
+    };
+    expect(richTextToPlain(doc as never)).toBe('one two three\nfour');
+  });
 });

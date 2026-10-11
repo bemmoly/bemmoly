@@ -6,6 +6,11 @@ export const setupStatusResponseSchema = z.object({
   initialized: z.boolean(),
   /** When the wizard's last step finished (setup.completedAt); null until then. */
   completedAt: z.string().nullable(),
+  /**
+   * The workspace's name, for the sign-in pages before anyone is signed in; null before the
+   * wizard has named it. Older servers leave it out.
+   */
+  workspaceName: z.string().nullable().optional(),
 });
 
 export const createFirstAdminSchema = z.object({

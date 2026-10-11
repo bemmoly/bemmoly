@@ -21,6 +21,8 @@ function row(overrides: Partial<StoredNotification>): StoredNotification {
     body: '',
     reason: null,
     readAt: null,
+    doneAt: null,
+    snoozedUntil: null,
     createdAt: new Date('2026-10-07T09:00:00Z'),
     ...overrides,
   };
@@ -60,6 +62,23 @@ describe('read-time grouping', () => {
     ]);
     expect(items.map((item) => item.read)).toEqual([true, false, false]);
     expect(items[2]?.summary).toBe('Bemmoly reported a failed backup: Nightly backup');
+  });
+
+  it('reports done and snooze, and keeps rows snoozed to different times apart', () => {
+    const until = new Date('2026-10-08T09:00:00Z');
+    const items = groupNotifications([
+      row({ doneAt: new Date(), readAt: new Date() }),
+      row({ readAt: new Date() }),
+      row({ snoozedUntil: until }),
+      row({ snoozedUntil: until }),
+      row({ snoozedUntil: new Date('2026-10-09T09:00:00Z') }),
+    ]);
+    expect(items.map((item) => [item.done, item.snoozedUntil, item.ids.length])).toEqual([
+      [true, null, 1],
+      [false, null, 1],
+      [false, '2026-10-08T09:00:00.000Z', 2],
+      [false, '2026-10-09T09:00:00.000Z', 1],
+    ]);
   });
 
   it('phrases two actors with "and"', () => {

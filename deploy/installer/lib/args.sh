@@ -14,7 +14,7 @@ Options:
   --modules a,b          pin the enabled modules, e.g. work,docs (default: chosen in the wizard)
   --no-proxy             no Caddy: you terminate HTTPS; the app listens on port 8080
   --no-in-app-updates    no updater container; update with `sudo bemmoly upgrade`
-  --database-url URL     use an existing Postgres 18 instead of the bundled one
+  --database-url URL     use an existing Postgres 18+ with pgvector instead of the bundled one
   --image-archive FILE   load images from a release bundle instead of pulling (air-gapped)
   --dir PATH             install folder (default: /var/bemmoly)
   --yes                  do not ask; fail when something is missing

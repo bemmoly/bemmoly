@@ -1,6 +1,6 @@
 import { keysetPageSchema, keysetQuerySchema, timestampSchema } from '@bemmoly/shared';
 import { z } from 'zod';
-import { issueKeySchema, richTextSchema, slugKeySchema } from './common.ts';
+import { issueKeySchema, queryFlagSchema, richTextSchema, slugKeySchema } from './common.ts';
 import {
   issueLinkKindSchema,
   issuePrioritySchema,
@@ -38,6 +38,8 @@ export const issueSchema = z.object({
   componentId: z.uuid().nullable(),
   customFields: z.record(z.string(), z.unknown()),
   labelIds: z.array(z.uuid()),
+  /** An epic's stored palette colour ('epic-1' … 'epic-8'); null on every other issue. */
+  color: z.string().nullable().optional(),
   rank: lexorankSchema,
   statusChangedAt: timestampSchema,
   resolvedAt: timestampSchema.nullable(),
@@ -111,7 +113,8 @@ export const issueDetailSchema = issueSchema.extend({
   status: refSchema.extend({ category: statusCategorySchema, color: z.string().nullable() }),
   assignee: userRefSchema.nullable(),
   reporter: userRefSchema.nullable(),
-  parent: issueRefSchema.nullable(),
+  /** The parent; an epic brings its stored palette colour. */
+  parent: issueRefSchema.extend({ color: z.string().nullable().default(null) }).nullable(),
   sprint: refSchema.extend({ state: sprintStateSchema }).nullable(),
   fixVersion: refSchema.nullable(),
   labels: z.array(refSchema.extend({ color: z.string().nullable() })),
@@ -139,13 +142,15 @@ export const listIssuesQuerySchema = keysetQuerySchema.extend({
   parentId: z.uuid().optional(),
   sort: issueSortSchema.default('rank'),
   order: z.enum(['asc', 'desc']).default('asc'),
-  deleted: z.coerce.boolean().default(false),
+  deleted: queryFlagSchema.default(false),
 });
 
 /** Where a dragged issue lands: between its new neighbours, either of which may be absent. */
 export const rankIssueBodySchema = z
   .object({
+    /** The row that ends up above the issue (the smaller rank); null at the top. */
     beforeIssueId: z.uuid().nullable().default(null),
+    /** The row that ends up below the issue (the larger rank); null at the end. */
     afterIssueId: z.uuid().nullable().default(null),
     sprintId: z.uuid().nullable().optional(),
   })

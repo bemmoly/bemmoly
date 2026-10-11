@@ -10,6 +10,7 @@ const VERBS: Readonly<Record<string, string>> = {
   watch_update: 'updated',
   backup_failed: 'reported a failed backup:',
   update_available: 'found an update:',
+  ai_budget: 'says AI has used',
 };
 
 const LABELS: Readonly<Record<string, string>> = {
@@ -21,6 +22,7 @@ const LABELS: Readonly<Record<string, string>> = {
   watch_update: 'Updates to things you watch',
   backup_failed: 'Failed backups',
   update_available: 'Available updates',
+  ai_budget: 'AI budget alerts',
   [DIGEST_SCOPE]: 'The notification digest',
 };
 
@@ -53,6 +55,8 @@ export function reasonFor(kind: string, targetLabel: string, override?: string |
     case 'backup_failed':
     case 'update_available':
       return because('you administer this workspace');
+    case 'ai_budget':
+      return because('you can configure AI for this workspace');
     default:
       return because(`your notification settings send "${labelFor(kind)}" by email`);
   }

@@ -29,13 +29,13 @@ export const AllSizes: Story = {
     ],
   },
   render: () => (
-    <div className="flex flex-col gap-3 bg-sf p-3">
+    <div className="flex flex-col gap-3 bg-card p-3">
       {(['xs', 'sm', 'md'] as const).map((size) => (
         <div key={size} className="flex items-center gap-2">
           {CATEGORIES.map((c) => (
             <StatusBadge key={c} category={c} size={size} />
           ))}
-          <span className="text-11 text-tx5">{size}</span>
+          <span className="text-11 text-tx-3">{size}</span>
         </div>
       ))}
       <div className="flex items-center gap-2">

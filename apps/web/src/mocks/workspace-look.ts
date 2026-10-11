@@ -1,5 +1,6 @@
 import type { WorkspaceLook } from '@bemmoly/shared';
 import type { MockDb } from './db.ts';
+import { aiEnabledFor } from './routes/ai-state.ts';
 
 /** What /me carries as `workspace`, from the mock's settings with the kernel's defaults. */
 export function workspaceLookOf(db: MockDb): WorkspaceLook {
@@ -11,10 +12,10 @@ export function workspaceLookOf(db: MockDb): WorkspaceLook {
   return {
     name: text('workspace.name', 'Bemmoly'),
     url: text('workspace.url', ''),
-    aiEnabled: Boolean(settings['ai.providerId']),
+    aiEnabled: aiEnabledFor(db, db.signedInAs),
     appearance: {
       theme: text('appearance.theme', 'classic'),
-      brandColor: text('appearance.brandColor', '#2456c9'),
+      brandColor: text('appearance.brandColor', '#2356c9'),
       font: text('appearance.font', 'plex'),
       logoKey: text('appearance.logoKey', ''),
       mode: settings['appearance.mode'] === 'dark' ? 'dark' : 'light',

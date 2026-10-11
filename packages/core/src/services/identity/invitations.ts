@@ -1,6 +1,7 @@
 import {
   ConflictError,
   DEFAULT_ROLE_KEY,
+  ForbiddenError,
   NotFoundError,
   type AcceptInvitationInput,
   type CreateInvitationsInput,
@@ -15,7 +16,14 @@ import { invitations, roles, teams, users } from '../../models/identity/index.ts
 import { recordAudit, type RequestMeta } from '../audit/index.ts';
 import type { RequestContext } from '../authz/index.ts';
 import { createEmailConfigurationProbe } from '../email/index.ts';
-import { assertMayAssignRole, createAccount, findRole, findRoleByKey } from './accounts.ts';
+import {
+  assertMayAssignRole,
+  createAccount,
+  findRole,
+  findRoleByKey,
+  isPasswordSignInOff,
+  SSO_REQUIRED_MESSAGE,
+} from './accounts.ts';
 import { appLink, nowOf, type IdentityDependencies } from './deps.ts';
 import {
   INVITATION_CREATED,
@@ -24,7 +32,7 @@ import {
   type InvitationCreatedPayload,
 } from './events.ts';
 import { loadUser, presentInvitation } from './presenters.ts';
-import { generateSecret, hashSecret } from './secrets.ts';
+import { generateToken, digestToken } from './tokens.ts';
 import { createSession, type ClientInfo, type IssuedSession } from './sessions.ts';
 import { inSharedTransaction } from './transaction.ts';
 
@@ -79,14 +87,14 @@ export async function createInvitations(
       .where(and(pending, inArray(sql`lower(${invitations.email})`, emails)));
     const created: { row: typeof invitations.$inferSelect; acceptUrl: string }[] = [];
     for (const email of emails) {
-      const token = generateSecret();
+      const token = generateToken();
       const [row] = await tx
         .insert(invitations)
         .values({
           email,
           roleId: role.id,
           teamId: team?.id ?? null,
-          tokenHash: hashSecret(token),
+          tokenHash: digestToken(token),
           invitedBy: inviterId,
           expiresAt,
         })
@@ -156,7 +164,11 @@ export async function revokeInvitation(db: Database, ctx: RequestContext, id: st
 const INVALID = 'This invitation is invalid or has expired';
 
 function validByToken(token: string, now: Date) {
-  return and(eq(invitations.tokenHash, hashSecret(token)), pending, gt(invitations.expiresAt, now));
+  return and(
+    eq(invitations.tokenHash, digestToken(token)),
+    pending,
+    gt(invitations.expiresAt, now),
+  );
 }
 
 /** What the accept page shows. Anonymous: the token is the credential. */
@@ -195,6 +207,7 @@ export async function acceptInvitation(
   input: AcceptInvitationInput,
   client: ClientInfo & RequestMeta,
 ): Promise<{ user: User; session: IssuedSession }> {
+  if (await isPasswordSignInOff(deps.db)) throw new ForbiddenError(SSO_REQUIRED_MESSAGE);
   const now = nowOf(deps);
   const { session, userId } = await deps.db.transaction(async (tx) => {
     const [invitation] = await tx

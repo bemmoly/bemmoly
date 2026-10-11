@@ -22,6 +22,11 @@ export function moduleGate(moduleId: string, deps: ModuleGateDeps) {
         code: 'module_not_enabled',
       });
     }
+    if (request.tokenModules && !request.tokenModules.includes(moduleId)) {
+      throw new ForbiddenError(`This API token cannot reach the ${moduleId} module`, {
+        code: 'module_access_denied',
+      });
+    }
     if (!deps.access || !deps.actorOf) return;
     const actor = await deps.actorOf(request);
     if (!(await deps.access.canAccess(actor, moduleId))) {

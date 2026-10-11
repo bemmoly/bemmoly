@@ -41,3 +41,20 @@ project, and hard-coding a list would need a release for every new model.
   re-implemented per vendor, forever.
 - **An agent framework.** Brings abstractions the product does not want.
 - **A proxy service in another language.** Breaks the one-image promise.
+
+## Implementation notes (0.5)
+
+- **The allow-list is data.** `services/ai/runtime/allow-list.json` lists the provider packages
+  the image ships. Which credential fills which factory option is mapped by the suffix of the
+  catalog's env names, in `credential-options.json`. The loader picks a package's `create…`
+  factory without knowing its name. The Popular row, role hints and curated embedding models
+  live in `catalog/overrides.json`. Package names appear only in these data files and in
+  `packages/core/package.json`. The Semgrep rule `bemmoly-ai-sdk-outside-runtime` fails any
+  SDK or provider import outside the runtime folder.
+- **The bundled catalog** is `catalog/bundled/catalog.json.gz` (trimmed api.json) plus
+  `logos.json.gz`, refreshed by `pnpm ai:catalog` (scripts/ai-catalog.ts) before each release.
+  Logos are third-party SVG served from our origin: anything active in one is refused, and the
+  response carries a sandboxing CSP.
+- **Tests never reach a provider.** `createTestAi()` runs the real facade over the SDK's mock
+  models. `BEMMOLY_AI_RECORDING` makes a running server answer from a JSON recording for
+  end-to-end tests.

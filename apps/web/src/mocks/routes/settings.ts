@@ -5,8 +5,10 @@ import {
 } from '@bemmoly/shared';
 import { audit, can, capabilitiesOf, currentUser, emit, type MockDb } from '../db.ts';
 import { SECRET_KEYS } from '../seed/workspace.ts';
-import { bodyOf, fail, invalid, notFound, ok, page, type MockRoute } from '../types.ts';
+import { bodyOf, fail, invalid, notFound, ok, type MockRoute } from '../types.ts';
 import { capture } from './session.ts';
+import { docsSearchHits } from './docs-find.ts';
+import { workSearchHits } from './work-search.ts';
 
 const isKey = (key: string): key is SettingKey => key in SETTING_SCHEMAS;
 
@@ -181,43 +183,6 @@ export const settingsRoutes: MockRoute[] = [
   },
   {
     method: 'GET',
-    pattern: '/api/v1/notifications',
-    handle: (request, db) => {
-      const unread = request.query.get('unread') === 'true';
-      const items = db.notifications.filter((entry) => !unread || !entry.read);
-      return ok({
-        ...page(items, request),
-        unreadCount: db.notifications.filter((entry) => !entry.read).length,
-      });
-    },
-  },
-  {
-    method: 'PATCH',
-    pattern: '/api/v1/notifications/:id',
-    handle: (request, db) => {
-      const item = db.notifications.find((entry) => entry.id === request.params['id']);
-      if (!item) return notFound('That notification');
-      item.read = bodyOf<{ read: boolean }>(request).read ?? true;
-      emit(db, 'notifications', item.ids);
-      return ok({ ids: item.ids, read: item.read });
-    },
-  },
-  {
-    method: 'POST',
-    pattern: '/api/v1/notifications/read-all',
-    handle: (_, db) => {
-      const unread = db.notifications.filter((entry) => !entry.read);
-      for (const item of unread) item.read = true;
-      emit(
-        db,
-        'notifications',
-        unread.map((entry) => entry.id),
-      );
-      return ok({ updated: unread.length });
-    },
-  },
-  {
-    method: 'GET',
     pattern: '/api/v1/notification-preferences',
     handle: (_, db) => ok(db.preferences),
   },
@@ -247,7 +212,7 @@ export const settingsRoutes: MockRoute[] = [
           subtitle: user.email,
           href: '/settings/users',
         }));
-      return ok({ items });
+      return ok({ items: [...workSearchHits(db, q), ...docsSearchHits(db, q), ...items] });
     },
   },
 ];

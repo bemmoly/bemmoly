@@ -1,14 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { Icon } from '../../icons/icon.tsx';
 import { useState } from 'react';
-import { RuleRow } from './rule-chip.tsx';
-import { StatusNode, StatusPill, type WorkflowCategory } from './status-node.tsx';
-import {
-  TransitionEdge,
-  TransitionLabel,
-  TransitionRow,
-  WorkflowCanvas,
-  WorkflowLegend,
-} from './edges.tsx';
+import { RuleChip, RuleRow } from './rule-chip.tsx';
+import { StatusNode, StatusNodeHandle, StatusPill, type WorkflowCategory } from './status-node.tsx';
+import { TransitionEdge, TransitionLabel, TransitionRow, WorkflowLegend } from './edges.tsx';
+import { WorkflowCanvas } from './workflow-canvas.tsx';
 
 const meta = { title: 'Components/WorkflowCanvas', component: StatusNode } satisfies Meta<
   typeof StatusNode
@@ -23,8 +19,8 @@ const NODES: Record<string, [number, number, WorkflowCategory, number, string?]>
   Backlog: [110, 120, 'todo', 42],
   Selected: [300, 120, 'todo', 9],
   'In progress': [490, 120, 'progress', 4],
-  'Code review': [680, 120, 'progress', 2, 'bg-violet'],
-  Testing: [680, 300, 'progress', 2, 'bg-caution'],
+  'Code review': [680, 120, 'progress', 2, 'bg-epic-2'],
+  Testing: [680, 300, 'progress', 2, 'bg-amber'],
   Done: [870, 300, 'done', 9],
   "Won't do": [300, 420, 'done', 3],
 };
@@ -89,7 +85,7 @@ export const Canvas: Story = {
     const [selected, setSelected] = useState('Code review');
     const [wx, wy] = at("Won't do");
     return (
-      <div className="w-262 bg-bg p-6">
+      <div className="w-262 bg-sunken p-6">
         <WorkflowCanvas
           label="Software workflow"
           edges={
@@ -126,13 +122,44 @@ export const Canvas: Story = {
             );
           })}
           <TransitionLabel x={px(wx - 160)} y={py(wy - 62)}>
-            Any → Close
+            Any <Icon name="arrow" size={11} label="to" /> Close
           </TransitionLabel>
           <WorkflowLegend />
         </WorkflowCanvas>
       </div>
     );
   },
+};
+
+/** The editor's states the mock does not draw: a problem, a selected edge with its rule chips, the connector. */
+export const EditingStates: Story = {
+  args: { name: 'Done', category: 'done', x: '50%', y: '50%' },
+  render: () => (
+    <div className="w-262 bg-sunken p-6">
+      <WorkflowCanvas
+        label="Editing states"
+        edges={
+          <>
+            <TransitionEdge d="M375 120 L 545 120" highlighted />
+            <TransitionEdge d="M300 148 L 300 392" invalid />
+          </>
+        }
+      >
+        <StatusNode name="Testing" category="progress" count={2} x="30%" y={py(120)} selected />
+        <StatusNodeHandle x="30%" y={py(120)} />
+        <StatusNode name="Done" category="done" x="62%" y={py(120)} />
+        <StatusNode name="Won't do" category="done" x="30%" y={py(420)} invalid />
+        <TransitionLabel x="46%" y={py(104)} interactive selected>
+          Pass QA
+          <RuleChip kind="condition" count={1} />
+          <RuleChip kind="post" count={1} />
+        </TransitionLabel>
+        <TransitionLabel x="36%" y={py(270)} interactive invalid>
+          Give up
+        </TransitionLabel>
+      </WorkflowCanvas>
+    </div>
+  ),
 };
 
 /** The side panel pieces: transitions out, the three rule kinds, and the Board Settings status pills. */
@@ -151,7 +178,7 @@ export const PanelPieces: Story = {
     ],
   },
   render: () => (
-    <div className="flex w-85 flex-col gap-4 bg-sf p-4 text-12h">
+    <div className="flex w-85 flex-col gap-4 bg-card p-4 text-13">
       <div className="flex flex-col gap-2">
         <span className="font-semibold">Transitions out</span>
         <TransitionRow onMore={() => {}}>Testing (Approve)</TransitionRow>
@@ -169,7 +196,7 @@ export const PanelPieces: Story = {
           block
           name="Code review"
           category="progress"
-          colorClassName="bg-violet"
+          colorClassName="bg-epic-2"
           count={2}
         />
         <span className="flex gap-1.5">

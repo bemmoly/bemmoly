@@ -79,7 +79,7 @@ export const DangerousChange: Story = {
       title="Lower retention?"
       description="Fewer backups are kept from the next prune on."
       consequences={[
-        'Daily backups kept: 7 → 3. Up to 4 older daily backups are deleted at the next prune.',
+        'Daily backups kept: 7 to 3. Up to 4 older daily backups are deleted at the next prune.',
         'Deleted backups cannot be restored.',
       ]}
       confirmWord="confirm"

@@ -18,7 +18,6 @@ const GROUPS: Array<{ group: string; moduleId: string | null; rows: Seed[] }> = 
     group: 'Workspace',
     moduleId: null,
     rows: [
-      ['workspace.billing.manage', 'Manage billing and license', null, [1, 0, 0, 0, 0]],
       ['workspace.delete', 'Delete workspace', null, [1, 0, 0, 0, 0]],
       ['workspace.sso.configure', 'Configure SSO', null, [1, 0, 0, 0, 0]],
       [
@@ -69,6 +68,9 @@ const GROUPS: Array<{ group: string; moduleId: string | null; rows: Seed[] }> = 
       ['docs.page.edit', 'Edit pages', null, [1, 1, 1, 0, 1]],
       ['docs.page.publish', 'Publish and restrict pages', null, [1, 1, 1, 0, 0]],
       ['docs.space.export', 'Export space', null, [1, 1, 0, 0, 0]],
+      ['docs.space.configure', 'Configure space', 'Name, members, templates', [1, 1, 0, 0, 0]],
+      ['docs.page.view', 'View pages', null, [1, 1, 1, 1, 1]],
+      ['docs.page.delete', 'Delete pages', 'Soft delete, 30-day recovery', [1, 1, 1, 0, 0]],
     ],
   },
   {
@@ -87,12 +89,7 @@ const GROUPS: Array<{ group: string; moduleId: string | null; rows: Seed[] }> = 
   },
 ];
 
-const LOCKED = new Set([
-  'workspace.billing.manage',
-  'workspace.delete',
-  'workspace.sso.configure',
-  'workspace.roles.manage',
-]);
+const LOCKED = new Set(['workspace.delete', 'workspace.sso.configure', 'workspace.roles.manage']);
 
 const COLUMNS = [
   ROLE_IDS.admin,

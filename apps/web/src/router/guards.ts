@@ -57,7 +57,7 @@ export async function requireSignedOut(queryClient: QueryClient, target: string)
   if (me) throw redirect({ to: safeRedirect(target) });
 }
 
-/** The wizard: step 1 before an admin exists, steps 2 to 6 for that admin until finished. */
+/** The wizard: workspace and account before an admin exists, the rest for that admin until finished. */
 export async function requireSetupOpen(queryClient: QueryClient): Promise<MeResponse | null> {
   const status = await queryClient.ensureQueryData(setupStatusQuery);
   if (!status.initialized) return null;

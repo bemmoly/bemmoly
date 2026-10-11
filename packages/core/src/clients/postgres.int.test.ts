@@ -1,4 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { assertPostgresSupported } from '../services/system/index.ts';
 import { startTestDatabase, type TestDatabase } from '../testing/postgres.ts';
 import { createSqlClient, pingDatabase, type SqlClient } from './postgres.ts';
 
@@ -32,5 +33,13 @@ describe('postgres client against a real database', () => {
     const [vector] = await sql<{ available: boolean }[]>`
       select exists(select 1 from pg_available_extensions where name = 'vector') as available`;
     expect(vector?.available).toBe(true);
+  });
+
+  it('passes the boot requirement check the server runs before changesets', async (ctx) => {
+    if (!database.available || !sql)
+      return ctx.skip(database.available ? 'no client' : database.reason);
+    const info = await assertPostgresSupported(sql);
+    expect(info.major).toBeGreaterThanOrEqual(18);
+    expect(info).toMatchObject({ vector: true, trgm: true });
   });
 });

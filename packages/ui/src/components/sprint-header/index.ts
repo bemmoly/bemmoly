@@ -1,7 +1,10 @@
 export {
   SprintContainer,
   SprintHeader,
+  SprintProgress,
   type SprintContainerProps,
-  type SprintCounts,
   type SprintHeaderProps,
+  type SprintKind,
+  type SprintPoints,
+  type SprintProgressProps,
 } from './sprint-header.tsx';

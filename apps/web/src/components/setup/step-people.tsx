@@ -1,56 +1,46 @@
-import { Card } from '@bemmoly/ui';
-import { SSO_NOTE, SSO_OPTIONS, useSetupInvites } from '../../hooks/use-setup-invites.ts';
-import { Notice } from '../form.tsx';
+import { useSetupInvites } from '../../hooks/use-setup-invites.ts';
 import { InviteLinks } from '../people/invite-links.tsx';
-import { BrandTile, COMING_SOON_MUTE, ComingSoonBadge } from './choice-card.tsx';
 import { InviteByEmail } from './invite-by-email.tsx';
-import { SSO_MARKS } from './option-marks.tsx';
-import { StepFooter, type StepNav } from './step-footer.tsx';
+import { SetupSso } from './setup-sso.tsx';
+import { StepFooter, StepForm, type StepNav } from './step-footer.tsx';
 
-/** The two single sign-on cards from the mock, with their logos, marked coming soon. */
-function SsoCards() {
-  return (
-    <div className="grid grid-cols-2 gap-3">
-      {SSO_OPTIONS.map((option) => (
-        <Card key={option.id} className="flex flex-col gap-2 p-4" aria-disabled="true">
-          <span className="flex items-center gap-2.5">
-            <span className={`flex items-center gap-2.5 ${COMING_SOON_MUTE}`}>
-              <BrandTile initials={option.initials} icon={SSO_MARKS[option.id]} />
-              <span className="text-14 font-semibold">{option.name}</span>
-            </span>
-            <ComingSoonBadge />
-          </span>
-          <span className={`text-12h leading-body text-tx4 ${COMING_SOON_MUTE}`}>
-            {option.description}
-          </span>
-        </Card>
-      ))}
-    </div>
-  );
+function sendLabel(count: number): string {
+  if (count === 0) return 'Continue';
+  return count === 1 ? 'Send 1 invitation' : `Send ${count} invitations`;
 }
 
-/** Step 3: SSO cards (off), then the invite-by-email card. */
+/**
+ * People: invite by email first, then connect single sign-on. The primary says what it will
+ * do: send the invitations, or just continue.
+ */
 export function StepPeople({ nav }: { nav: StepNav }) {
   const invites = useSetupInvites(nav.next);
+  const pending = invites.emails.length + (invites.text.trim() ? 1 : 0);
   return (
-    <>
-      <SsoCards />
-      <Notice>{SSO_NOTE}</Notice>
+    <StepForm
+      label="People"
+      onSubmit={invites.issued ? invites.finish : invites.submit}
+      busy={invites.mutation.isPending}
+    >
       <InviteByEmail invites={invites} />
       {invites.issued ? (
-        <Card className="flex flex-col gap-3 p-5">
-          <h2 className="m-0 text-14 font-semibold text-tx">Invitations sent</h2>
+        <section aria-labelledby="setup-issued" className="flex flex-col gap-3">
+          <h2 id="setup-issued" className="m-0 text-13 font-semibold text-tx">
+            Invitations sent
+          </h2>
           <InviteLinks
             links={invites.issued.items}
             emailConfigured={invites.issued.emailConfigured}
           />
-        </Card>
-      ) : null}
+        </section>
+      ) : (
+        <SetupSso />
+      )}
       <StepFooter
         nav={nav}
-        onPrimary={invites.issued ? invites.finish : invites.submit}
+        label={invites.issued ? 'Continue' : sendLabel(pending)}
         loading={invites.mutation.isPending}
       />
-    </>
+    </StepForm>
   );
 }

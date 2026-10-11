@@ -13,7 +13,7 @@ export function FieldList({ size = 'page', className, ...rest }: FieldListProps)
     <dl
       data-size={size}
       className={cx(
-        'm-0 grid grid-cols-[110px_1fr] items-center gap-y-0.5 text-12h text-tx',
+        'm-0 grid grid-cols-[110px_1fr] items-center gap-y-0.5 text-13 text-tx',
         size === 'page' ? 'px-3.5 py-1.5' : 'px-3 py-1.5',
         className,
       )}
@@ -33,7 +33,7 @@ export function FieldRow({ label, children, className }: FieldRowProps) {
   const pad = 'py-1.75 in-data-[size=panel]:py-1.5';
   return (
     <>
-      <dt className={cx('text-tx4', pad)}>{label}</dt>
+      <dt className={cx('text-tx-3', pad)}>{label}</dt>
       <dd className={cx('m-0 flex min-w-0 flex-wrap items-center gap-1.5', pad, className)}>
         {children}
       </dd>
@@ -89,7 +89,7 @@ export function WatcherList({ people, total, className }: WatcherListProps) {
           {...(person.initials ? { initials: person.initials } : {})}
         />
       ))}
-      <span className="ml-1 text-12 text-tx5">{count} watching</span>
+      <span className="ml-1 text-12 text-tx-3">{count} watching</span>
     </span>
   );
 }

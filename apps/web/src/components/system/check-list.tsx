@@ -28,12 +28,12 @@ export function CheckList({ label, rows }: { label: string; rows: readonly Check
         {rows.map((row) => (
           <li
             key={row.id}
-            className="flex items-center gap-2.5 border-b border-br-row py-2.5 text-12h"
+            className="flex items-center gap-2.5 border-b border-line-2 py-2.5 text-13"
           >
             {row.tone ? <StatusCircle tone={row.tone} /> : <span className="size-4 shrink-0" />}
             <span className="w-50 shrink-0 font-medium">{row.name}</span>
             <span
-              className={`min-w-0 truncate text-tx4 ${row.prose ? 'text-12h' : 'font-mono text-12'}`}
+              className={`min-w-0 truncate text-tx-3 ${row.prose ? 'text-13' : 'font-mono text-12'}`}
             >
               {row.value}
             </span>
@@ -42,7 +42,7 @@ export function CheckList({ label, rows }: { label: string; rows: readonly Check
                 {row.link.label}
               </RouterLink>
             ) : row.hint ? (
-              <span className="ml-auto max-w-80 shrink-0 text-right text-12 text-tx5">
+              <span className="ml-auto max-w-80 shrink-0 text-right text-12 text-tx-3">
                 {row.hint}
               </span>
             ) : null}

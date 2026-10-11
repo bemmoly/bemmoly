@@ -2,10 +2,12 @@ import { SettingsPage } from '../../components/settings/settings-page.tsx';
 import { CheckList } from '../../components/system/check-list.tsx';
 import { MaintenanceNotice } from '../../components/system/maintenance-notice.tsx';
 import { PageBlock } from '../../components/system/page-block.tsx';
+import { useAiSpendRow } from '../../hooks/use-ai-spend.ts';
 import { checkTone, formatUptime, ROLE_WORDS, useSystem } from '../../hooks/use-system.ts';
 
 export function SystemPage() {
   const { status, lastBackup, maintenance, isPending, error } = useSystem();
+  const aiSpend = useAiSpendRow();
   return (
     <SettingsPage
       title="System status"
@@ -63,15 +65,10 @@ export function SystemPage() {
                   ...(lastBackup ? { tone: lastBackup.tone } : {}),
                   link: { label: 'Backups', href: '/settings/backups' },
                 },
-                {
-                  id: 'ai-spend',
-                  name: 'AI spend',
-                  value: 'Available with the AI runtime',
-                  prose: true,
-                },
+                ...(aiSpend ? [aiSpend] : []),
               ]}
             />
-            <p className="m-0 text-12h text-tx5">
+            <p className="m-0 text-13 text-tx-3">
               Job queue figures arrive with the jobs dashboard.
             </p>
           </PageBlock>

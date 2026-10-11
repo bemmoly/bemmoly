@@ -8,18 +8,27 @@ protection matches checks by job name, so renaming a job means updating the sett
 
 | Workflow                  | Runs on                                    | Jobs (status check names)                                                                |
 | ------------------------- | ------------------------------------------ | ---------------------------------------------------------------------------------------- |
-| `ci.yml` (CI)             | pull requests, merge queue, `main`         | **Fast checks**, **Full checks**, **Lighthouse**                                         |
+| `ci.yml` (CI)             | pull requests, merge queue, `main`         | **Fast checks**, **Full checks**, **Work end to end**, **Lighthouse**                    |
 | `security.yml` (Security) | pull requests, merge queue, `main`, weekly | **Security scans**, **Image scan**                                                       |
 | `release.yml` (Release)   | `main`, `v*` tags                          | Version pull request or tag, Plan the release, Image (app, updater), Publish the release |
 | `nightly.yml` (Nightly)   | 02:30 UTC daily, manual                    | Fresh VM install, Load budgets (k6)                                                      |
+| `ai-evals.yml` (AI evals) | 03:00 UTC daily, manual                    | Live AI evals (skips without a provider key)                                             |
 | `labels.yml` (Labels)     | changes to `.github/labels.json`           | Sync labels                                                                              |
 
 What each check runs:
 
 - **Fast checks**: `pnpm typecheck`, `pnpm lint` (layering, boundaries, 300-line limit),
-  `pnpm format:check`, `pnpm test`, and actionlint over the workflows.
+  `pnpm format:check`, `pnpm test`, `pnpm eval` (the AI evals against their recordings, no
+  key and no network; see `docs/ai-evals.md`) and actionlint over the workflows.
 - **Full checks**: integration tests against `pgvector/pgvector:pg18`, `pnpm build` (server,
   web shell and Storybook), `pnpm size` (shell under 250 KB gzip), Playwright end to end.
+- **Work end to end**: the Playwright suite in `apps/e2e` against a real install: the server
+  from the checkout on the service Postgres, serving the built web app, with Work and Docs
+  enabled for everyone through the CLI and people created through the setup and invitation
+  endpoints. It runs the Work and Docs flows, turns Work off and on twice from Settings › Modules, and holds a
+  500-issue board to the budgets of tech design §20 (board view p95 under 80 ms; a dropped
+  card painted within six frames). The budget numbers are printed in the job log. Its own job,
+  so a failure there is not read as a Full checks failure.
 - **Lighthouse**: the real server serves the built shell; first contentful paint must stay
   under 1.2 s, cold, on the 4G profile in `tools/lighthouse/lighthouserc.cjs`.
 - **Security scans**: gitleaks over the tree and the new commits, `pnpm audit --audit-level=high`,
@@ -42,6 +51,7 @@ Settings › Rules › Rulesets (or Branches › Branch protection rules) for `m
 - Require status checks to pass, with branches up to date. Required checks:
   - `Fast checks`
   - `Full checks`
+  - `Work end to end`
   - `Lighthouse`
   - `Security scans`
   - `Image scan`
@@ -53,9 +63,8 @@ Settings › Rules › Rulesets (or Branches › Branch protection rules) for `m
 Skipped steps inside a required job (for example the image scan before a Dockerfile exists)
 still report success, so turning protection on early does not block anyone.
 
-CODEOWNERS names placeholder teams under `@bemmoly`. Create the teams, or replace them with
-people, before enabling "Require review from Code Owners"; GitHub ignores owners it cannot
-resolve.
+CODEOWNERS names the maintainers by GitHub username for every folder. Add a team there only
+after it exists under `@bemmoly` with write access; GitHub ignores owners it cannot resolve.
 
 ## Paths CI expects from `deploy/`
 
@@ -106,6 +115,7 @@ cosign verify ghcr.io/bemmoly/bemmoly:X.Y.Z \
 pnpm typecheck && pnpm lint && pnpm format:check && pnpm test
 pnpm test:integration                       # Testcontainers, or BEMMOLY_TEST_DATABASE_URL
 pnpm build && pnpm size && pnpm test:e2e
+pnpm test:e2e:work                          # Testcontainers, or BEMMOLY_TEST_DATABASE_URL
 pnpm audit --audit-level=high
 
 # Semgrep: rule tests, then the scan CI runs
