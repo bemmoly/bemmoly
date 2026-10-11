@@ -5,6 +5,7 @@ import { createCodeHostRest } from '../../../clients/code-host-rest.ts';
 import { bodyDigest, hmacSha256Hex, safeEqual } from '../signature.ts';
 import {
   headerOf,
+  withoutTrailingSlashes,
   type CodeHostDriver,
   type HostApiOptions,
   type HostConnection,
@@ -23,11 +24,10 @@ const API_VERSION = '2022-11-28';
 const JWT_LIFETIME_SECONDS = 9 * 60;
 
 export function githubApiUrl(baseUrl: string | null): string {
-  return baseUrl ? `${baseUrl.replace(/\/+$/, '')}/api/v3` : 'https://api.github.com';
+  return baseUrl ? `${withoutTrailingSlashes(baseUrl)}/api/v3` : 'https://api.github.com';
 }
 
-const base64url = (value: string | Buffer) =>
-  Buffer.from(value).toString('base64').replace(/=+$/, '').replace(/\+/g, '-').replace(/\//g, '_');
+const base64url = (value: string | Buffer) => Buffer.from(value).toString('base64url');
 
 /** The RS256 JWT a GitHub App signs with its private key to ask for an installation token. */
 export function githubAppJwt(appId: string, privateKey: string, nowSeconds: number): string {

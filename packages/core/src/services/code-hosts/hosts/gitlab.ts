@@ -5,6 +5,7 @@ import { createCodeHostRest } from '../../../clients/code-host-rest.ts';
 import { bodyDigest, safeEqual } from '../signature.ts';
 import {
   headerOf,
+  withoutTrailingSlashes,
   type CodeHostDriver,
   type HostApiOptions,
   type HostConnection,
@@ -18,7 +19,7 @@ import { gitlabRequestSchema, parseGitlabEvent, requestActivity } from './gitlab
  */
 
 export function gitlabApiUrl(baseUrl: string | null): string {
-  return `${(baseUrl ?? 'https://gitlab.com').replace(/\/+$/, '')}/api/v4`;
+  return `${withoutTrailingSlashes(baseUrl ?? 'https://gitlab.com')}/api/v4`;
 }
 
 const userSchema = z.object({ username: z.string() });

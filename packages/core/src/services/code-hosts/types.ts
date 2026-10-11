@@ -81,5 +81,12 @@ export function headerOf(request: WebhookRequest, name: string): string | undefi
   return Array.isArray(value) ? value[0] : value;
 }
 
+/** A base URL without trailing slashes; a loop, not a regex, since the URL is the admin's. */
+export function withoutTrailingSlashes(url: string): string {
+  let end = url.length;
+  while (end > 0 && url[end - 1] === '/') end -= 1;
+  return url.slice(0, end);
+}
+
 /** The first line of a commit message, as its title. */
 export const firstLine = (text: string): string => text.split('\n', 1)[0]?.trim() ?? '';

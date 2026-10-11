@@ -1,7 +1,8 @@
 import { generateKeyPairSync, createVerify } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
 import { githubDelivery, gitlabDelivery } from '../../testing/code-host-deliveries.ts';
-import { githubAppJwt } from './hosts/github.ts';
+import { githubApiUrl, githubAppJwt } from './hosts/github.ts';
+import { gitlabApiUrl } from './hosts/gitlab.ts';
 import { codeHostDriver } from './registry.ts';
 import type { WebhookRequest } from './types.ts';
 
@@ -100,6 +101,15 @@ describe('delivery ids', () => {
     const id = github.deliveryId(asRequest({ ...delivery, headers }));
     expect(id).toMatch(/^sha256:[0-9a-f]{64}$/);
     expect(github.deliveryId(asRequest({ ...delivery, headers }))).toBe(id);
+  });
+});
+
+describe('API addresses', () => {
+  it('finds the API under the server address, whatever slashes it ends with', () => {
+    expect(githubApiUrl(null)).toBe('https://api.github.com');
+    expect(githubApiUrl('https://github.acme.dev//')).toBe('https://github.acme.dev/api/v3');
+    expect(gitlabApiUrl(null)).toBe('https://gitlab.com/api/v4');
+    expect(gitlabApiUrl('https://gitlab.acme.dev/')).toBe('https://gitlab.acme.dev/api/v4');
   });
 });
 
