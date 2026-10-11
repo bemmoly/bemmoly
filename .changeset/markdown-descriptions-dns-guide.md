@@ -1,5 +1,5 @@
 ---
-'@bemmoly/work': minor
+'@bemmoly/module-work': minor
 '@bemmoly/editor': minor
 '@bemmoly/ui': patch
 '@bemmoly/deploy': minor
