@@ -65,6 +65,7 @@ describe('buildApp', () => {
           icon: 'doc',
           color: 'brand-2',
           order: 20,
+          settings: { path: '/settings/docs', requires: 'docs.templates.manage' },
           sidebar: {
             path: '/docs',
             links: [],
@@ -134,6 +135,7 @@ describe('buildApp', () => {
           icon: 'board',
           color: 'brand-1',
           order: 10,
+          settings: { path: '/settings/work', requires: 'admin' },
           sidebar: {
             path: '/work/projects',
             links: [
