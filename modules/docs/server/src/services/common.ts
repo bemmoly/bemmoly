@@ -6,6 +6,7 @@ import type {
   ContainerMemberships,
   EntityRegistry,
   EventBus,
+  FilesRegistry,
   JobRegistry,
   LinkRegistry,
   RealtimePublisher,
@@ -35,6 +36,8 @@ export interface DocsServiceDeps {
   links?: Pick<LinkRegistry, 'referencesTo'>;
   /** Whether AI is on for a person, so AI-made attention items show only then. */
   ai?: Pick<AiFacade, 'policy'>;
+  /** Uploaded images, read for exports that carry them. */
+  files?: Pick<FilesRegistry, 'read'>;
 }
 
 export const DOCS_MODULE = { kind: 'module', moduleId: 'docs' } as const;
