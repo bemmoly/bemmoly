@@ -34,6 +34,7 @@ export function AcceptInvitationPage() {
       : 'This link is incomplete. Open it from the invitation email again.';
     return (
       <AuthShell title="This invitation can’t be used">
+        <AuthHeading title="Join the workspace" />
         <AuthNote tone="caution" icon="mail" title="This invitation can’t be used">
           {reason} Ask the person who invited you to send a new one from Settings › People.
         </AuthNote>

@@ -10,6 +10,7 @@ import { useResetPasswordForm } from '../../hooks/use-password-forms.ts';
 function DeadLink({ incomplete }: { incomplete: boolean }) {
   return (
     <AuthShell title="This link can’t be used">
+      <AuthHeading title="Reset your password" />
       <AuthNote
         tone="caution"
         icon="clock"
