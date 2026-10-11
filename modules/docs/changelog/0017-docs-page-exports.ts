@@ -4,7 +4,7 @@ import { changeset, sql } from '@bemmoly/core/changelog';
  * PDF exports rendered in the background. One row per request, found again by its
  * idempotency key, so a retried request or a double click renders once. The PDF is kept in
  * the row for a day (bounded by BEMMOLY_PDF_MAX_BYTES) and only the person who asked reads
- * it; the nightly purge deletes expired rows. A new table, so the previous minor never sees it.
+ * it; an hourly job deletes expired rows. A new table, so the previous minor never sees it.
  */
 export default changeset({
   id: '0017-docs-page-exports',

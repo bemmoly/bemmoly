@@ -60,7 +60,7 @@ the person's print settings.
 
 - The app image is unchanged in size; an install that wants server PDFs pulls one more image.
 - The PDF bytes live in Postgres for a day. `BEMMOLY_PDF_MAX_BYTES` (50 MiB by default) bounds
-  one row, and the nightly purge removes expired rows.
+  one row, and the hourly docs.purge-exports job removes expired rows.
 - Gotenberg runs Chromium inside its container without Chromium's own setuid sandbox, as
   containerised Chromium usually does; isolation is the container's and the network's. An
   operator who wants more can run the service under gVisor or a stricter seccomp profile.
