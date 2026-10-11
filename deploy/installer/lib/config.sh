@@ -101,12 +101,8 @@ tls_mode_for() {
   echo internal
 }
 
-# shared_buffers an eighth of memory, effective_cache_size three eighths: the app and the
-# page cache share the machine (4 GB gives 512MB and 1536MB, as in the design).
-tune_postgres() {
-  PG_SHARED_BUFFERS="$((MEM_MB / 8 < 128 ? 128 : MEM_MB / 8))MB"
-  PG_EFFECTIVE_CACHE_SIZE="$((MEM_MB * 3 / 8))MB"
-}
+# tune_postgres (shared_buffers and effective_cache_size from memory) lives in preflight.sh,
+# which the bemmoly command shares, so `bemmoly doctor` and `bemmoly tune` use the same rule.
 
 compose_profiles() {
   profiles=''

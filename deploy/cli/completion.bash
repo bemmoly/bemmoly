@@ -9,7 +9,7 @@ _bemmoly() {
   local current previous
   current="${COMP_WORDS[COMP_CWORD]}"
   previous="${COMP_WORDS[COMP_CWORD - 1]}"
-  local commands='status doctor logs shell start stop restart config settings domain backup backups verify restore upgrade rollback sync-updater self-update version db update-channel help'
+  local commands='status doctor tune logs shell start stop restart config settings domain backup backups verify restore upgrade rollback sync-updater self-update version db update-channel help'
   if [[ "${COMP_CWORD}" -eq 1 ]]; then
     mapfile -t COMPREPLY < <(compgen -W "${commands}" -- "${current}")
     return
