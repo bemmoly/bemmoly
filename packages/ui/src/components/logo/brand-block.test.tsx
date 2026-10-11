@@ -35,6 +35,30 @@ describe('BrandBlock', () => {
     expect(container.querySelector('img')?.getAttribute('src')).toBe(ACME.src);
   });
 
+  it('goes Home from the customer name and from "on Bemmoly", leaving the caret to the menu', () => {
+    const onHome = vi.fn();
+    render(
+      <BrandBlock
+        workspaceName="Acme Labs"
+        customLogo={ACME}
+        onHome={onHome}
+        workspaceMenu={<MenuItem onSelect={() => undefined}>Workspace settings</MenuItem>}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Acme Labs' }));
+    fireEvent.click(screen.getByRole('button', { name: /on\s*Bemmoly/ }));
+    expect(onHome).toHaveBeenCalledTimes(2);
+    fireEvent.click(screen.getByRole('button', { name: 'Acme Labs, workspace menu' }));
+    expect(screen.getByRole('menuitem', { name: 'Workspace settings' })).toBeTruthy();
+  });
+
+  it('goes Home from the Bemmoly wordmark without a customer logo', () => {
+    const onHome = vi.fn();
+    render(<BrandBlock workspaceName="Acme Labs" onHome={onHome} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Bemmoly, Home' }));
+    expect(onHome).toHaveBeenCalledOnce();
+  });
+
   it('puts the mark at the top of the rail, or at its foot under a customer logo', () => {
     const plain = render(
       <>

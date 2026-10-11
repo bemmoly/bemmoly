@@ -103,7 +103,14 @@ Names are namespaced by module, so a client connected to one module sees only th
   `docs.search_pages`, `docs.get_page`, `docs.set_page_status`, …). Write tools are listed only
   for read-and-write tokens. Your client asks you before running a tool; Bemmoly then runs it
   through the same services and checks as the UI, signs comments "via MCP for <you>", and writes
-  an audit row (`mcp.tool_called`) for every write.
+  an audit row (`mcp.tool_called`) for every write. A write that makes something returns it:
+  `work.create_issue` answers with the new issue's `key`, `id` and `href`.
+- **Moving issues in.** `work.list_projects`, `work.create_project`, `work.get_project` (each
+  issue type with its fields and which are required) and `work.list_statuses` give a client what
+  it needs to create issues right the first time. `work.create_issue` takes the type by name,
+  `customFields` by field key, a starting `status` by name (any status of the workflow, so done
+  work arrives done), `assigneeEmail`, `parentKey` and a Markdown description; then
+  `work.update_issue`, `work.delete_issue` and `work.link_issues` tidy up.
 - **Resources.** `bemmoly://work/projects/{key}`, `bemmoly://work/issues/{key}`,
   `bemmoly://docs/spaces/{key}` and `bemmoly://docs/pages/{id}`, as Markdown. Projects and spaces
   are listed; issues and pages are reachable through the templates.

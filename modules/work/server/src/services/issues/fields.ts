@@ -12,6 +12,7 @@ import type { FieldKind, FieldOption } from '../../../../shared/index.ts';
 
 interface FieldRow {
   key: string;
+  name: string;
   kind: FieldKind;
   options: FieldOption[];
   project_id: string | null;
@@ -52,11 +53,17 @@ export async function loadFieldDefinitions(
   projectId: string,
 ): Promise<Map<string, FieldRow>> {
   const rows = await sql<FieldRow[]>`
-    select key, kind, options, project_id from fields
+    select key, name, kind, options, project_id from fields
     where project_id = ${projectId} or project_id is null
     order by project_id nulls first`;
   return new Map(rows.map((row) => [row.key, row]));
 }
+
+/** What a value must be, with the choices of a select so a client can fix it in one go. */
+const expected = (field: FieldRow): string =>
+  field.kind === 'select' || field.kind === 'multiselect'
+    ? `Expected a ${field.kind} value, one of ${optionValues(field).join(', ')}`
+    : `Expected a ${field.kind} value`;
 
 /** Throws a ValidationError naming every value that does not fit its field. */
 export function validateCustomFields(
@@ -77,18 +84,24 @@ export function validateCustomFields(
     }
     const result = schemaFor(field).safeParse(value);
     if (result.success) clean[key] = result.data;
-    else issues.push({ path: key, message: `Expected a ${field.kind} value` });
+    else issues.push({ path: key, message: expected(field) });
   }
   if (issues.length > 0) {
-    throw new ValidationError('Some custom fields are not valid', { details: { issues } });
+    const named = issues.map((issue) => `${issue.path}: ${issue.message}`).join('; ');
+    throw new ValidationError(`Some custom fields are not valid: ${named}`, {
+      details: { issues },
+    });
   }
   return clean;
 }
 
 /** The fields the type's create-form layout marks required, for a create. */
-export async function requiredFieldKeys(sql: SqlExecutor, typeId: string): Promise<string[]> {
-  const rows = await sql<{ key: string }[]>`
-    select f.key from issue_type_fields itf join fields f on f.id = itf.field_id
-    where itf.issue_type_id = ${typeId} and itf.required`;
-  return rows.map((row) => row.key);
+export async function requiredFields(
+  sql: SqlExecutor,
+  typeId: string,
+): Promise<{ key: string; name: string }[]> {
+  return sql<{ key: string; name: string }[]>`
+    select f.key, f.name from issue_type_fields itf join fields f on f.id = itf.field_id
+    where itf.issue_type_id = ${typeId} and itf.required
+    order by itf.position, f.key`;
 }

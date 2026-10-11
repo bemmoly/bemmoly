@@ -106,6 +106,7 @@ export function SidebarTop({ shell }: { shell: Shell }) {
         workspaceName={shell.workspace.name}
         customLogo={shell.customLogo}
         workspaceMenu={<WorkspaceMenuItems shell={shell} />}
+        onHome={() => shell.go('/')}
         sidebarToggle={
           mode === 'sheet' ? (
             <IconButton
