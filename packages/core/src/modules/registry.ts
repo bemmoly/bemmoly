@@ -4,6 +4,7 @@ import type { CollabDocumentDefinition } from './collab.ts';
 import type { BemmolyModule } from './contract.ts';
 import type { ModuleContributions } from './contributions.ts';
 import { ModuleLoadError } from './errors.ts';
+import type { McpPromptDefinition, McpResourceDefinition } from './mcp.ts';
 import type {
   AiContribution,
   AiExclusionSourceDefinition,
@@ -116,6 +117,19 @@ export class ModuleRegistry {
   /** Spaces and projects Settings › AI › Privacy can exclude, per module. */
   aiExclusionSources(): FromModule<AiExclusionSourceDefinition>[] {
     return this.#collect((c) => c.aiExclusionSources);
+  }
+
+  /** What modules offer MCP clients besides their AI tools. */
+  mcpResources(): FromModule<McpResourceDefinition>[] {
+    return this.#collect((c) => c.mcpResources);
+  }
+
+  mcpPrompts(): FromModule<McpPromptDefinition>[] {
+    return this.#collect((c) => c.mcpPrompts);
+  }
+
+  mcpTools(): FromModule<AiContribution>[] {
+    return this.#collect((c) => c.mcpTools);
   }
 
   #collect<T extends object>(pick: (c: ModuleContributions) => readonly T[]): FromModule<T>[] {

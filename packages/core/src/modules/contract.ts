@@ -6,6 +6,7 @@ import type { EventBus } from '../contracts/event-bus.ts';
 import type { ContainerMemberships } from '../contracts/memberships.ts';
 import type { RealtimePublisher } from '../contracts/realtime.ts';
 import type { CollabRegistry } from './collab.ts';
+import type { McpRegistry } from './mcp.ts';
 import type {
   AiRegistry,
   CapabilityRegistry,
@@ -59,6 +60,8 @@ export interface ModuleContext {
   events: EventBus;
   search: SearchRegistry;
   ai: AiRegistry;
+  /** Resources, prompts and MCP-only tools for the built-in MCP server. */
+  mcp: McpRegistry;
   /** Present only when an editor-owning module is enabled. */
   editor?: EditorRegistry;
   importers: ImporterRegistry;

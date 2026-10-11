@@ -179,6 +179,24 @@ export function createModuleContext(
       },
     },
     ai: createModuleAi(module.id, into, options.ai),
+    mcp: {
+      addResource(resource) {
+        if (!resource.name.startsWith(`${module.id}.`)) {
+          fail(`MCP resource "${resource.name}" must be namespaced as "${module.id}.<name>"`);
+        }
+        if (!resource.uriTemplate.startsWith(`bemmoly://${module.id}/`)) {
+          fail(`MCP resource "${resource.name}" must live under "bemmoly://${module.id}/"`);
+        }
+        into.mcpResources.push(resource);
+      },
+      addPrompt(prompt) {
+        if (!prompt.name.startsWith(`${module.id}.`)) {
+          fail(`MCP prompt "${prompt.name}" must be namespaced as "${module.id}.<name>"`);
+        }
+        into.mcpPrompts.push(prompt);
+      },
+      addTool: (tool) => into.mcpTools.push(tool),
+    },
     ...(options.editorEnabled
       ? {
           editor: {
