@@ -30,6 +30,8 @@ export interface ConfluenceOptions {
   resolveUser?: (accountId: string) => { id: string; label: string } | null;
   /** An attachment's file name as the URL it was uploaded to. */
   resolveAttachment?: (fileName: string) => string | null;
+  /** A link's address as it should read after the import (a page or issue moved here). */
+  rewriteLink?: (href: string) => string | null;
 }
 
 const INLINE = new Set(['text', 'hardBreak', 'mention', 'pageLink', 'issueEmbed']);
@@ -72,7 +74,11 @@ export function fromConfluence(xhtml: string, options: ConfluenceOptions = {}): 
       return [b.text(label || title, marks)];
     }
     if (user) {
-      const found = options.resolveUser?.(attribute(user, 'ri:account-id'));
+      const account =
+        attribute(user, 'ri:account-id') ||
+        attribute(user, 'ri:userkey') ||
+        attribute(user, 'ri:username');
+      const found = options.resolveUser?.(account);
       if (found) return [{ type: 'mention', attrs: { id: found.id, label: found.label } }];
       return [b.text(`@${label || 'someone'}`, marks)];
     }
@@ -160,7 +166,7 @@ export function fromConfluence(xhtml: string, options: ConfluenceOptions = {}): 
       case 'hr':
         return [{ type: 'horizontalRule' }];
       case 'a': {
-        const href = attribute(node, 'href');
+        const href = options.rewriteLink?.(attribute(node, 'href')) ?? attribute(node, 'href');
         const linked = SAFE_LINK.test(href) ? [...marks, b.linkMark(href)] : marks;
         return childrenOf(node).flatMap((child) => convert(child, linked));
       }
