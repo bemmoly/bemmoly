@@ -22,6 +22,6 @@ summary now reads linked pull requests. New API: `/api/v1/admin/code-hosts` and 
 webhook `POST /api/v1/code-hosts/:id/webhooks`; `GET /api/v1/work/issues/:key/code-links`;
 `GET` and `PUT /api/v1/work/projects/:key/code-transitions`. Schema: kernel changeset
 `0700-integrations` (integrations, integration_deliveries) and Work changeset
-`0024-work-code-links` (code_links, code_transitions); both add tables only. Credentials are
+`0025-work-code-links` (code_links, code_transitions); both add tables only. Credentials are
 sealed with `BEMMOLY_SECRET_KEY`; self-managed hosts on private addresses work as they do for
 identity providers, and `BEMMOLY_ALLOW_PRIVATE_URLS` widens that. No new configuration keys.
