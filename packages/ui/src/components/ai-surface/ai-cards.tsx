@@ -72,7 +72,11 @@ export interface AiInsightBarProps {
   className?: string;
 }
 
-/** The Board's risk bar: white, ai-br border with a 3px AI rule on the left, one line. */
+/**
+ * The Board's risk bar: white, ai-br border with a 3px AI rule on the left, one line. On a
+ * phone the text takes its own full-width line under the title and actions, so it is read
+ * rather than truncated to a letter.
+ */
 export function AiInsightBar({
   title,
   children,
@@ -84,7 +88,7 @@ export function AiInsightBar({
     <section
       aria-label={typeof title === 'string' ? title : 'AI insight'}
       className={cx(
-        'flex items-center gap-3 rounded-control border border-l-3 border-ai-100 border-l-ai bg-card py-2.25 pr-3 pl-3.5 text-13',
+        'flex items-center gap-3 rounded-control border border-l-3 border-ai-100 border-l-ai bg-card py-2.25 pr-3 pl-3.5 text-13 max-sm:flex-wrap max-sm:gap-y-1.5',
         className,
       )}
     >
@@ -92,7 +96,9 @@ export function AiInsightBar({
         <AiDot />
         {title}
       </span>
-      <span className="min-w-0 truncate text-tx-2">{children}</span>
+      <span className="min-w-0 truncate text-tx-2 max-sm:order-last max-sm:w-full max-sm:whitespace-normal">
+        {children}
+      </span>
       <div className="ml-auto flex shrink-0 items-center gap-1.5 whitespace-nowrap">
         {actions}
         {onDismiss && (
