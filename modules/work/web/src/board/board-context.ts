@@ -39,6 +39,8 @@ export interface BoardShared {
   touch: boolean;
   /** Creates an issue at the foot of a cell; absent when the person cannot create. */
   createIn?: (laneId: string, columnId: string, title: string) => Promise<unknown>;
+  /** Reads a column's next page into the board; absent until the board knows its view. */
+  loadMore?: (columnId: string) => Promise<void>;
   /** The id of the hidden text that explains the keyboard to screen readers. */
   instructionsId: string;
 }

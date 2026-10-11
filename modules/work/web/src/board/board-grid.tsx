@@ -45,6 +45,7 @@ const Lane = memo(function Lane({
   of,
   kanban,
   open,
+  foot,
 }: {
   lane: LaneModel;
   columns: readonly ColumnModel[];
@@ -52,6 +53,8 @@ const Lane = memo(function Lane({
   of: number;
   kanban: boolean;
   open: boolean;
+  /** The last open lane: its cells end with each column's "Show more". */
+  foot: boolean;
 }) {
   const toggle = useBoardLanes((state) => state.toggle);
   const bodyId = `lane-${lane.id}`;
@@ -84,6 +87,7 @@ const Lane = memo(function Lane({
           columnName={column.name}
           cards={lane.cells[column.id] ?? []}
           laneColor={lane.color}
+          more={foot ? column.more : 0}
         />
       ))}
     </Swimlane>
@@ -147,6 +151,7 @@ export function BoardGrid({
     [model.columns, showEmptyColumns, carrying],
   );
   const firstOpen = model.lanes.find((lane) => !collapsed.includes(lane.id)) ?? model.lanes[0];
+  const lastOpen = model.lanes.findLast((lane) => !collapsed.includes(lane.id));
   // Phones show one column at a time, chosen from the status segments.
   const phone = useMediaQuery('(max-width: 767px)', false);
   const [phoneColumn, setPhoneColumn] = useState<string | null>(null);
@@ -190,6 +195,7 @@ export function BoardGrid({
               of={of}
               kanban={kanban}
               open={!collapsed.includes(lane.id)}
+              foot={lane === lastOpen}
             />
           ))}
         </div>
