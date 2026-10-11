@@ -77,6 +77,11 @@ export interface LookInputs {
   preview?: LookPreview | null;
   /** The device prefers dark right now (matchMedia). */
   systemDark: boolean;
+  /**
+   * Before sign-in: the workspace's built-in theme and default mode from setup status, so the
+   * sign-in pages wear the workspace's look.
+   */
+  publicLook?: { theme?: string | null; defaultMode?: ModePreference | null } | null;
 }
 
 /**
@@ -85,12 +90,24 @@ export interface LookInputs {
  * following the device.
  */
 export function resolveLook(inputs: LookInputs): Look {
-  const { appearance, personal, customThemes, preview, systemDark } = inputs;
+  const { appearance, personal, customThemes, preview, systemDark, publicLook } = inputs;
   const allowed = appearance ? appearance.personalThemes : true;
   const personalRef = allowed ? normalizeThemeRef(personal.theme) : null;
-  const ref = personalRef ?? (appearance ? workspaceRef(appearance) : DEFAULT_THEME);
+  const publicRef = normalizeThemeRef(publicLook?.theme);
+  const ref =
+    personalRef ??
+    (appearance
+      ? workspaceRef(appearance)
+      : publicRef && !publicRef.startsWith(CUSTOM_PREFIX)
+        ? publicRef
+        : DEFAULT_THEME);
   const source = preview?.source ?? sourceOf(ref, customThemes);
-  const preference = preview?.mode ?? personal.mode ?? appearance?.defaultMode ?? 'system';
+  const preference =
+    preview?.mode ??
+    personal.mode ??
+    appearance?.defaultMode ??
+    publicLook?.defaultMode ??
+    'system';
   const mode: ThemeMode = preference === 'system' ? (systemDark ? 'dark' : 'light') : preference;
   return {
     source,
