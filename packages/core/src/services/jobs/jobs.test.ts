@@ -8,7 +8,7 @@ import { wrapHandler } from './handler.ts';
 function job(data: unknown): Job<unknown> {
   return {
     id: 'job-1',
-    name: 'sample.ping',
+    name: 'fixture.ping',
     data,
     expireInSeconds: 60,
     heartbeatSeconds: null,
@@ -21,7 +21,7 @@ describe('wrapHandler', () => {
   it('unwraps the envelope and passes the request id', async () => {
     const handle = vi.fn(async () => undefined);
     await wrapHandler(
-      { name: 'sample.ping', handle },
+      { name: 'fixture.ping', handle },
       pino({ level: 'silent' }),
     )([job({ payload: { a: 1 }, requestId: 'req-1' })]);
     expect(handle).toHaveBeenCalledWith(

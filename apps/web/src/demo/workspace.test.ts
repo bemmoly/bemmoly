@@ -3,13 +3,11 @@ import { createMockApi } from '../mocks/dispatch.ts';
 import { demoWorkspace } from './workspace.ts';
 
 describe('demoWorkspace', () => {
-  it('starts signed in, with every shipped module on except the developer sample', () => {
+  it('starts signed in, with every shipped module on', () => {
     const db = demoWorkspace();
     expect(db.signedInAs).not.toBeNull();
-    expect(db.manifests.map((manifest) => manifest.id)).toContain('work');
-    expect(db.manifests.map((manifest) => manifest.id)).not.toContain('sample');
-    expect(db.adminModules.map((module) => module.id)).not.toContain('sample');
-    expect(db.grants.some((grant) => grant.moduleId === 'sample')).toBe(false);
+    expect(db.manifests.map((manifest) => manifest.id)).toEqual(['work', 'docs']);
+    expect(db.adminModules.map((module) => module.id)).toEqual(['work', 'docs']);
   });
 
   it('answers the session and Work from memory', () => {

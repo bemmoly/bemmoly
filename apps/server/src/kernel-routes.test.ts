@@ -15,8 +15,7 @@ import { createLogger } from '@bemmoly/core/config';
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { buildApp } from './app.ts';
-import { importAvailableModules } from './config/modules.ts';
-import { TEST_ENV } from './test-support.ts';
+import { modulesWithFixture, TEST_ENV } from './test-support.ts';
 
 const admin: Actor = { kind: 'user', id: 'admin' };
 const logger = createLogger({ LOG_LEVEL: 'fatal', LOG_FORMAT: 'json' });
@@ -43,10 +42,10 @@ function memorySettings(): SettingsStore {
 }
 
 async function app(options: { signedIn: boolean }) {
-  const registry = loadModules({ available: await importAvailableModules() });
+  const registry = loadModules({ available: await modulesWithFixture() });
   const store = createMemoryModuleStateStore();
   // Nothing is enabled on a fresh install; these tests start from an admin having enabled it.
-  await store.upsert('sample', { enabled: true });
+  await store.upsert('fixture', { enabled: true });
   const state = createModuleState({ registry, store, contexts: ['test'], pinned: [], logger });
   await state.initialize({ migrate: false });
   const authorize = async () => undefined;
@@ -107,17 +106,17 @@ describe('kernel admin routes', () => {
 
   it('gates a disabled module with 404 module_not_enabled and re-opens it on enable', async () => {
     const server = await app({ signedIn: true });
-    expect((await server.inject({ url: '/api/v1/sample/items' })).statusCode).toBe(502);
+    expect((await server.inject({ url: '/api/v1/fixture/items' })).statusCode).toBe(502);
     const disabled = await server.inject({
       method: 'POST',
-      url: '/api/v1/admin/modules/sample/disable',
+      url: '/api/v1/admin/modules/fixture/disable',
     });
-    expect(disabled.json()).toMatchObject({ id: 'sample', enabled: false });
-    const gated = await server.inject({ url: '/api/v1/sample/greeting' });
+    expect(disabled.json()).toMatchObject({ id: 'fixture', enabled: false });
+    const gated = await server.inject({ url: '/api/v1/fixture/greeting' });
     expect(gated.statusCode).toBe(404);
     expect(gated.json()).toMatchObject({ code: 'module_not_enabled' });
     expect((await server.inject({ url: '/api/v1/modules' })).json()).toEqual({ items: [] });
-    await server.inject({ method: 'POST', url: '/api/v1/admin/modules/sample/enable' });
+    await server.inject({ method: 'POST', url: '/api/v1/admin/modules/fixture/enable' });
     expect((await server.inject({ url: '/api/v1/modules' })).json().items).toHaveLength(1);
   });
 });

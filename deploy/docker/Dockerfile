@@ -50,7 +50,7 @@ COPY modules ./modules
 RUN rm -rf node_modules \
  && pnpm install --offline --frozen-lockfile --prod --store-dir "$PNPM_STORE" --filter "@bemmoly/server..." \
  && find apps packages modules -name '*.test.ts' -delete \
- && rm -rf packages/core/src/testing \
+ && rm -rf packages/core/src/testing apps/server/src/test-fixtures \
  && mkdir -p node_modules/@bemmoly \
  && ln -s ../../packages/core node_modules/@bemmoly/core
 

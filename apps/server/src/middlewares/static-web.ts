@@ -22,7 +22,7 @@ export function hasWebBuild(root: string): boolean {
 
 /**
  * Serves the web build under `/`. Unknown non-API GETs fall back to index.html
- * so client-side routes such as /sample load the shell.
+ * so client-side routes such as /work/board load the shell.
  */
 export async function registerWebApp(app: FastifyInstance, root: string): Promise<void> {
   await app.register(fastifyStatic, {

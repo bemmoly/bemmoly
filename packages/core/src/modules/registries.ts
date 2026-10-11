@@ -108,7 +108,7 @@ export interface JobContext {
 }
 
 export interface JobDefinition {
-  /** Namespaced by owner: "system.housekeeping", "sample.ping". */
+  /** Namespaced by owner: "system.housekeeping", "docs.purge-trash". */
   name: string;
   handle(payload: unknown, ctx: JobContext): Promise<void>;
   /** Cron expression for scheduled jobs. */

@@ -24,11 +24,11 @@ describe('home sections', () => {
     const load = vi.fn(async () => ({ default: MyWork }));
     const registry = createHomeSectionRegistry({ work: load, docs: load });
     expect(registry.has('work')).toBe(true);
-    expect(registry.resolve('sample')).toBeNull();
+    expect(registry.resolve('fixture')).toBeNull();
     expect(registry.resolve('work')).toBe(registry.resolve('work'));
     render(
       <HomeSections
-        modules={[manifest('docs'), manifest('sample'), manifest('work')]}
+        modules={[manifest('docs'), manifest('fixture'), manifest('work')]}
         registry={registry}
         loading={<p>Loading</p>}
         failed={() => null}

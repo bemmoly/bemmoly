@@ -7,7 +7,7 @@ import { grantLabel, moduleLabel, useModuleAccess } from './use-module-access.ts
 
 describe('module access editor', () => {
   it('names modules and grants in plain words', () => {
-    expect(moduleLabel('sample', [])).toBe('Sample');
+    expect(moduleLabel('docs', [])).toBe('Docs');
     const work = {
       id: 'work',
       version: '0.2.0',
@@ -33,28 +33,28 @@ describe('module access editor', () => {
 
   it('adds a team grant and removes the everyone grant', async () => {
     const { result } = await renderQueryHook(() => useModuleAccess());
-    const sample = () => result.current.sections.find((section) => section.id === 'sample');
-    await waitFor(() => expect(sample()?.grants).toHaveLength(1));
-    expect(sample()?.grants[0]?.label).toBe('Everyone');
-    expect(result.current.everyoneGranted('sample')).toBe(true);
+    const docs = () => result.current.sections.find((section) => section.id === 'docs');
+    await waitFor(() => expect(docs()?.grants).toHaveLength(1));
+    expect(docs()?.grants[0]?.label).toBe('Everyone');
+    expect(result.current.everyoneGranted('docs')).toBe(true);
 
-    act(() => result.current.setDraft('sample', { kind: 'team' }));
-    await waitFor(() => expect(result.current.subjectOptions('sample', 'team')).toHaveLength(6));
-    act(() => result.current.setDraft('sample', { subjectId: TEAM_IDS.mobile }));
-    act(() => result.current.submit('sample'));
-    await waitFor(() => expect(sample()?.grants).toHaveLength(2));
-    expect(result.current.subjectOptions('sample', 'team')).toHaveLength(5);
+    act(() => result.current.setDraft('docs', { kind: 'team' }));
+    await waitFor(() => expect(result.current.subjectOptions('docs', 'team')).toHaveLength(6));
+    act(() => result.current.setDraft('docs', { subjectId: TEAM_IDS.mobile }));
+    act(() => result.current.submit('docs'));
+    await waitFor(() => expect(docs()?.grants).toHaveLength(2));
+    expect(result.current.subjectOptions('docs', 'team')).toHaveLength(5);
     expect(mockApi.db.grants.at(-1)).toMatchObject({
-      moduleId: 'sample',
+      moduleId: 'docs',
       subjectKind: 'team',
       subjectId: TEAM_IDS.mobile,
     });
 
-    const everyone = sample()?.grants.find((g) => g.subjectKind === 'everyone');
+    const everyone = docs()?.grants.find((g) => g.subjectKind === 'everyone');
     act(() => result.current.remove.mutate(everyone!));
-    await waitFor(() => expect(sample()?.grants).toHaveLength(1));
+    await waitFor(() => expect(docs()?.grants).toHaveLength(1));
     expect(
-      mockApi.db.grants.some((g) => g.moduleId === 'sample' && g.subjectKind === 'everyone'),
+      mockApi.db.grants.some((g) => g.moduleId === 'docs' && g.subjectKind === 'everyone'),
     ).toBe(false);
   });
 });

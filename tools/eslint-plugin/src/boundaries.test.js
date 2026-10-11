@@ -151,7 +151,7 @@ tester.run('bemmoly/boundaries', boundaries, {
     },
     {
       filename: at('apps/server/src/server.ts'),
-      code: "import sample from '@bemmoly/module-sample';",
+      code: "import work from '@bemmoly/module-work';",
       options,
       errors: [{ messageId: 'appImportsModule' }],
     },

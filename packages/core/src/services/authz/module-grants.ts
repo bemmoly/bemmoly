@@ -35,6 +35,7 @@ function presentGrant(row: ModuleGrantRow): ModuleGrant {
 
 export async function listModuleGrants(
   db: Database,
+  modules: ModuleCatalog,
   ctx: RequestContext,
   query: ListModuleGrantsQuery,
 ): Promise<ModuleGrant[]> {
@@ -44,7 +45,8 @@ export async function listModuleGrants(
     .from(moduleGrants)
     .where(query.moduleId ? eq(moduleGrants.moduleId, query.moduleId) : undefined)
     .orderBy(asc(moduleGrants.id));
-  return rows.map(presentGrant);
+  const installed = modules.installed ? new Set(modules.installed()) : null;
+  return rows.filter((row) => !installed || installed.has(row.moduleId)).map(presentGrant);
 }
 
 export async function getModuleGrant(db: Database, ctx: RequestContext, id: string) {

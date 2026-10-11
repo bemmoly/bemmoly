@@ -37,7 +37,8 @@ Storybook showing every component next to its mock, ADR-0001, CONTRIBUTING, SECU
 
 Not in 0.1.0: issues, boards, docs, AI generation, importers, SSO, integrations. The module system
 is proven with a throwaway `sample` module that registers a route, a nav entry, a capability, a
-job and a changeset.
+job and a changeset. (That module has since left the product; the same contract is now
+proven by a test-only fixture module, `apps/server/src/test-fixtures/module`, that never ships.)
 
 ## Order of work
 

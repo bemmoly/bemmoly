@@ -122,9 +122,13 @@ export function createLoggerOptions(config: LoggerConfig): LoggerOptions {
   };
 }
 
-/** JSON lines in production; pretty output when LOG_FORMAT=pretty (set by `pnpm dev`). */
-export function createLogger(config: LoggerConfig): Logger {
-  return pino(createLoggerOptions(config));
+/**
+ * JSON lines in production; pretty output when LOG_FORMAT=pretty (set by `pnpm dev`). A
+ * `destination` (a test capturing the lines) takes JSON lines in place of the format's own.
+ */
+export function createLogger(config: LoggerConfig, destination?: NodeJS.WritableStream): Logger {
+  const options = createLoggerOptions(config);
+  return destination ? pino({ ...options, transport: undefined }, destination) : pino(options);
 }
 
 export type { Logger };

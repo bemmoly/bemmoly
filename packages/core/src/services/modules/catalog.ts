@@ -32,6 +32,7 @@ export function createEnabledModuleCatalog(): EnabledModuleCatalog {
       state = bound;
     },
     ids: () => (state ? state.enabledIds() : loaded().ids()),
+    installed: () => loaded().ids(),
     capabilities: () =>
       loaded()
         .capabilities()

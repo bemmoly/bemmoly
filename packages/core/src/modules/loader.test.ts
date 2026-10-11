@@ -32,16 +32,16 @@ function fakeModule(id: string, overrides: Partial<BemmolyModule> = {}): Bemmoly
 
 describe('loadModules', () => {
   it('registers every available module and lists manifests', () => {
-    const registry = loadModules({ available: [fakeModule('sample'), fakeModule('docs')] });
-    expect(registry.ids()).toEqual(['sample', 'docs']);
+    const registry = loadModules({ available: [fakeModule('fixture'), fakeModule('docs')] });
+    expect(registry.ids()).toEqual(['fixture', 'docs']);
     expect(registry.manifests()[0]).toEqual({
-      id: 'sample',
-      name: 'Sample',
+      id: 'fixture',
+      name: 'Fixture',
       version: '0.1.0',
-      navigation: [{ id: 'sample', label: 'SAMPLE', path: '/sample', placement: 'top' }],
+      navigation: [{ id: 'fixture', label: 'FIXTURE', path: '/fixture', placement: 'top' }],
     });
     expect(registry.capabilities().map((c) => [c.moduleId, c.name])).toEqual([
-      ['sample', 'sample.view'],
+      ['fixture', 'fixture.view'],
       ['docs', 'docs.view'],
     ]);
   });

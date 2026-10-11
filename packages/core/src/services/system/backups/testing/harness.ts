@@ -80,7 +80,7 @@ export async function createHarness(input: {
     tar: createTarTool(),
     logger: pino({ level: 'silent' }),
     authorize: async () => undefined,
-    modules: () => ['sample'],
+    modules: () => ['fixture'],
     destinations: async () => [local, ...input.destinations()],
     ...(input.objectStore ? { objectStore: input.objectStore } : {}),
   };
