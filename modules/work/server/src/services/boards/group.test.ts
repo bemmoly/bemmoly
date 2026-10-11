@@ -76,9 +76,9 @@ describe('groupBoard', () => {
       ['PLT-6', 'done', 'all'],
     ]);
     expect(view.columns).toEqual([
-      { id: 'todo', count: 1, wipLimit: null, overWip: false },
-      { id: 'doing', count: 2, wipLimit: 1, overWip: true },
-      { id: 'done', count: 1, wipLimit: null, overWip: false },
+      { id: 'todo', count: 1, wipLimit: null, overWip: false, nextCursor: null },
+      { id: 'doing', count: 2, wipLimit: 1, overWip: true, nextCursor: null },
+      { id: 'done', count: 1, wipLimit: null, overWip: false, nextCursor: null },
     ]);
     expect(view.lanes.map((lane) => lane.id)).toEqual(['all']);
   });
