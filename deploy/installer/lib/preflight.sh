@@ -36,6 +36,8 @@ detect_resources() {
 # effective_cache_size three eighths, so the app and the page cache share the machine
 # (4 GB gives 512MB and 1536MB, as in the design). The installer writes them to .env; `bemmoly doctor`
 # compares them with this machine and `bemmoly tune` re-applies them.
+# max_connections stays at Postgres's 100: the one app container's pool opens at most 40
+# (BEMMOLY_DB_POOL_MAX, four per CPU from 10), which leaves room for the CLI and backups.
 tune_postgres() {
   PG_SHARED_BUFFERS="$((MEM_MB / 8 < 128 ? 128 : MEM_MB / 8))MB"
   PG_EFFECTIVE_CACHE_SIZE="$((MEM_MB * 3 / 8))MB"

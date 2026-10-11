@@ -7,23 +7,42 @@ import {
   type PoolEvent,
   type SqlClient,
 } from '@bemmoly/core';
+import { availableParallelism } from 'node:os';
 import type { Env, Logger } from '@bemmoly/core/config';
 import { getMetrics, instrumentSqlClient, postgresPoolStats } from '@bemmoly/core/telemetry';
 
 const APPLICATION_NAME = 'bemmoly-server';
-const MAX_CONNECTIONS = 10;
+const MIN_POOL = 10;
+/** One process at most: well under Postgres's default max_connections of 100. */
+const MAX_DEFAULT_POOL = 40;
+const CONNECTIONS_PER_CPU = 4;
+
+/**
+ * The pool's size: BEMMOLY_DB_POOL_MAX when set, otherwise four connections per CPU between
+ * 10 and 40. Requests spend most of their time waiting on Postgres, so a fixed 10 left CPUs
+ * idle on bigger machines while requests queued for a connection.
+ */
+export function poolSize(
+  env: Partial<Pick<Env, 'BEMMOLY_DB_POOL_MAX'>> = {},
+  cpus: number = availableParallelism(),
+): number {
+  if (env.BEMMOLY_DB_POOL_MAX !== undefined) return env.BEMMOLY_DB_POOL_MAX;
+  return Math.min(MAX_DEFAULT_POOL, Math.max(MIN_POOL, cpus * CONNECTIONS_PER_CPU));
+}
 
 /**
  * Job handlers run on the same pool as requests. Where one process does both, jobs may hold
- * at most 4 of its 10 connections, so a burst of jobs never makes a request wait for one; a
- * worker-only process keeps 2 back for its health checks.
+ * a little under half of it (4 of 10), so a burst of jobs never makes a request wait for a
+ * connection; a worker-only process keeps 2 back for its health checks.
  */
-export function jobHandlerLimit(role: Env['BEMMOLY_ROLE']): number {
-  return role === 'worker' ? MAX_CONNECTIONS - 2 : MAX_CONNECTIONS / 2 - 1;
+export function jobHandlerLimit(role: Env['BEMMOLY_ROLE'], connections: number): number {
+  return Math.max(1, role === 'worker' ? connections - 2 : Math.floor(connections / 2) - 1);
 }
 
 export interface DatabaseConnection {
   sql: SqlClient;
+  /** How many connections the pool may open (poolSize). */
+  maxConnections: number;
   /** The one Drizzle instance on `sql`; every service that takes a Database gets this. */
   db: Database;
   probe: DatabaseProbe;
@@ -36,6 +55,7 @@ type PoolEnv = Pick<
   | 'BEMMOLY_DB_IDLE_IN_TRANSACTION_TIMEOUT_MS'
   | 'BEMMOLY_DB_ACQUIRE_TIMEOUT_MS'
   | 'BEMMOLY_DB_NESTED_ACQUIRE'
+  | 'BEMMOLY_DB_POOL_MAX'
 >;
 
 /**
@@ -63,10 +83,11 @@ export function connectDatabase(
   logger?: Logger,
 ): DatabaseConnection | undefined {
   if (!env.DATABASE_URL) return undefined;
+  const maxConnections = poolSize(env);
   const sql = instrumentSqlClient(
     createSqlClient(env.DATABASE_URL, {
       applicationName: APPLICATION_NAME,
-      maxConnections: MAX_CONNECTIONS,
+      maxConnections,
       ...(env.BEMMOLY_DB_STATEMENT_TIMEOUT_MS === undefined
         ? {}
         : { statementTimeoutMs: env.BEMMOLY_DB_STATEMENT_TIMEOUT_MS }),
@@ -83,10 +104,11 @@ export function connectDatabase(
     }),
   );
   getMetrics().database.observePool(
-    postgresPoolStats(sql, { applicationName: APPLICATION_NAME, max: MAX_CONNECTIONS }),
+    postgresPoolStats(sql, { applicationName: APPLICATION_NAME, max: maxConnections }),
   );
   return {
     sql,
+    maxConnections,
     db: createDatabase(sql),
     probe: { ping: (timeoutMs) => pingDatabase(sql, timeoutMs) },
   };

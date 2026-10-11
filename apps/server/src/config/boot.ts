@@ -147,6 +147,7 @@ export async function bootApplication(options: BootOptions): Promise<Booted> {
       ? await createDataKernel({
           env: { ...env, DATABASE_URL: databaseUrl },
           sql: database.sql,
+          poolConnections: database.maxConnections,
           modules,
           realtime,
           jobQueue,
