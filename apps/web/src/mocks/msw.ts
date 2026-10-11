@@ -60,7 +60,10 @@ export function toResponse(result: MockResponse): Response {
   if (result.headers && typeof result.body === 'string') {
     return new HttpResponse(result.body, { status: result.status, headers: result.headers });
   }
-  return HttpResponse.json(result.body as Record<string, unknown>, { status: result.status });
+  return HttpResponse.json(result.body as Record<string, unknown>, {
+    status: result.status,
+    ...(result.headers ? { headers: result.headers } : {}),
+  });
 }
 
 const realtime = ws.link(/\/ws$/);
