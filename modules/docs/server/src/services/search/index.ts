@@ -15,9 +15,10 @@ import {
 
 /*
  * Keyword search ranks the trigger-maintained search_vector (title A, labels
- * B, body D); the palette's lookup reads the trigram index on title so it
- * answers inside the 100 ms budget. Both see only the spaces the actor is a
- * member of and never a page in the trash or in an archived space.
+ * B, body D); a query that is a space's key or name also lists that space's
+ * pages, ranked below the text matches, so "TRP" finds the TRP docs. The
+ * palette's lookup reads the trigram index on title so it answers inside the
+ * 100 ms budget. Both see only the spaces the actor is a member of and never a page in the trash or in an archived space.
  */
 
 interface SuggestionRow {
@@ -70,7 +71,8 @@ export function createSearchService(deps: DocsServiceDeps) {
         from pages p join spaces s on s.id = p.space_id
           left join pages up on up.id = p.parent_id, q
         where p.deleted_at is null and s.archived_at is null
-          and p.search_vector @@ q.query
+          and (p.search_vector @@ q.query
+            or upper(s.key) = upper(${query.q}) or lower(s.name) = lower(${query.q}))
           and (${spaces === null} or p.space_id = any(${spaces ?? []}::uuid[]))
         order by rank desc, p.updated_at desc, p.id desc
         limit ${query.limit}`;
