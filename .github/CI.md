@@ -34,8 +34,10 @@ What each check runs:
 - **Security scans**: gitleaks over the tree and the new commits, `pnpm audit --audit-level=high`,
   `semgrep --test` on the custom rules, then a Semgrep scan with them (`tools/semgrep/rules`:
   SQL built from strings, raw `fetch` outside clients, `process.env` outside config, console).
-- **Image scan**: builds the application image and fails on fixable high or critical findings
-  from Trivy. Until `deploy/` adds the Dockerfile it passes with a notice.
+- **Image scan**: builds the application image with the commit's revision and build time,
+  fails when its OCI labels are missing or left "unknown" (`deploy/scripts/check-image-labels.sh`),
+  and fails on fixable high or critical findings from Trivy. Until `deploy/` adds the
+  Dockerfile it passes with a notice.
 
 Caches: the pnpm store (through `actions/setup-node`), the Turborepo cache (`.turbo/cache`,
 per job), Playwright browsers keyed by the Playwright version, and Docker layers for images.
@@ -91,6 +93,9 @@ package together (one fixed group); the next run tags `vX.Y.Z` and publishes:
 
 - `ghcr.io/bemmoly/bemmoly` and `ghcr.io/bemmoly/updater` for `linux/amd64` and `linux/arm64`,
   tagged `X.Y.Z`, `X.Y` and `latest` (stable) or `X.Y.Z-beta.N` and `beta` (beta channel);
+- OCI labels with the version, the full commit SHA as `org.opencontainers.image.revision` and
+  the build time as `org.opencontainers.image.created`, checked on every platform before the
+  image is signed (a label left "unknown" fails the release);
 - a keyless cosign signature and an SPDX SBOM (syft) attested on each image;
 - release notes from the changeset entries, listing new schema changesets (flagging slow and
   irreversible ones), configuration keys added or removed, and the rollback mode;
