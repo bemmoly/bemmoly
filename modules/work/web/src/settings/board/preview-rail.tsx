@@ -36,7 +36,14 @@ const AVATARS = ['bg-green-bg', 'bg-orange-bg', 'bg-violet-bg', 'bg-acc-100'];
  * lanes of sketched cards, as the mock draws them. The cards are a sketch,
  * not data; they follow the card fields and colour of the draft.
  */
-export function PreviewRail({ draft, boardHref }: { draft: BoardDraft; boardHref: string }) {
+export function PreviewRail({
+  draft,
+  boardHref,
+}: {
+  draft: BoardDraft;
+  /** The project's board; the org default has none of its own to open. */
+  boardHref: string | null;
+}) {
   const { config, method } = draft;
   const n = config.columns.length;
   const grid = { gridTemplateColumns: `repeat(${n}, minmax(0, 1fr))` };
@@ -53,13 +60,15 @@ export function PreviewRail({ draft, boardHref }: { draft: BoardDraft; boardHref
     >
       <div className="flex items-center gap-2 px-5 pt-5 pb-1 text-14 font-semibold">
         Live preview
-        <a
-          href={boardHref}
-          onClick={onLinkClick(boardHref)}
-          className="ml-auto text-13 font-semibold text-acc hover:underline"
-        >
-          Open board
-        </a>
+        {boardHref ? (
+          <a
+            href={boardHref}
+            onClick={onLinkClick(boardHref)}
+            className="ml-auto text-13 font-semibold text-acc hover:underline"
+          >
+            Open board
+          </a>
+        ) : null}
       </div>
       <div className="flex flex-col gap-3 overflow-auto px-5 pt-2 pb-5">
         <div className="grid gap-1.25 text-11 font-medium text-tx-2" style={grid}>

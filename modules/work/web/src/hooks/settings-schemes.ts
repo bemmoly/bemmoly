@@ -47,14 +47,33 @@ export function useSchemeDiff(projectId: string | undefined, kind: SchemeKind, o
   });
 }
 
-/** A project's issue types: the org default ones until the scheme is overridden. */
-export function useIssueTypes(projectId: string | undefined) {
+/**
+ * Each org default with the active projects following it and those running their own
+ * version, for the org settings pages. Workspace admins only; others never ask.
+ */
+export function useSchemeUsage(kind: SchemeKind, enabled: boolean) {
+  const usage = useQuery({
+    queryKey: workSettingsKeys.usage(),
+    queryFn: () => api.work.schemes.usage(),
+    enabled,
+  });
+  return { ...usage, item: usage.data?.find((row) => row.kind === kind) };
+}
+
+/**
+ * Where a scheme hook reads: a project's id, null for the org defaults, or undefined while
+ * the project is still loading (nothing is asked yet).
+ */
+type SchemeTarget = string | null | undefined;
+
+/** A project's issue types (the org default ones until the scheme is overridden), or the org's. */
+export function useIssueTypes(projectId: SchemeTarget) {
   const queryClient = useQueryClient();
-  const id = projectId ?? '';
+  const id = projectId ?? null;
   const list = useQuery({
     queryKey: workSettingsKeys.issueTypes(id),
     queryFn: () => api.work.issueTypes.list(id),
-    enabled: Boolean(projectId),
+    enabled: projectId !== undefined,
     select: (items) => [...items].sort((a, b) => a.position - b.position),
   });
   const refresh = () => queryClient.invalidateQueries({ queryKey: workKeys.all() });
@@ -87,14 +106,14 @@ export function useIssueTypes(projectId: string | undefined) {
   return { list, create, update, reorder };
 }
 
-/** A project's custom fields: the org default ones until the scheme is overridden. */
-export function useFields(projectId: string | undefined) {
+/** A project's custom fields (the org default ones until it overrides them), or the org's. */
+export function useFields(projectId: SchemeTarget) {
   const queryClient = useQueryClient();
-  const id = projectId ?? '';
+  const id = projectId ?? null;
   const list = useQuery({
     queryKey: workSettingsKeys.fields(id),
     queryFn: () => api.work.fields.list(id),
-    enabled: Boolean(projectId),
+    enabled: projectId !== undefined,
   });
   const refresh = () => queryClient.invalidateQueries({ queryKey: workKeys.all() });
   const create = useMutation({

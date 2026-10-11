@@ -36,6 +36,8 @@ export default defineModule({
     primary: [{ id: 'work.my-issues', label: 'My issues', path: '/work/my-issues', icon: 'me' }],
     add: { create: 'work.create-project', label: 'New project' },
   },
+  /** The org defaults every project inherits until it overrides them; workspace admins only. */
+  settings: { path: '/settings/work' },
   changelog: await loadChangelogFolder(new URL('./changelog/', import.meta.url)),
   register(ctx) {
     /** One top-level area; the sidebar section draws the projects and their views. */

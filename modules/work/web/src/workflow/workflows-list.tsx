@@ -1,6 +1,7 @@
 import { formatRelative } from '@bemmoly/core-web';
 import { Badge, EmptyState, PageTitle, Table, TableSkeleton, type TableColumn } from '@bemmoly/ui';
 import { Icon } from '@bemmoly/ui/icons';
+import type { ReactNode } from 'react';
 import type { Project, Workflow } from '../../../shared/index.ts';
 import { useWorkflowUsage } from '../hooks/workflow-usage.ts';
 import { navigate } from './navigate.ts';
@@ -12,7 +13,7 @@ interface Row {
 
 const plural = (count: number, word: string) => `${count} ${word}${count === 1 ? '' : 's'}`;
 
-function columns(projectId: string): TableColumn<Row>[] {
+function columns(projectId: string | null): TableColumn<Row>[] {
   return [
     {
       key: 'name',
@@ -80,28 +81,38 @@ function columns(projectId: string): TableColumn<Row>[] {
 }
 
 /**
- * Project settings › Workflow: the default and the project's own copy, each with its
- * published version and who runs it (a dot marks the one this project runs); a row, or
- * Enter on it, opens the editor.
+ * Workflow, in a project's settings or as the org default. In a project: the default and the
+ * project's own copy, each with its published version and who runs it (a dot marks the one
+ * this project runs). As the org default (project null): the default alone, with every
+ * project that runs it. A row, or Enter on it, opens the editor.
  */
 export function WorkflowsList({
   project,
   editorPath,
+  note,
 }: {
-  project: Project;
+  project: Project | null;
   editorPath: (workflowId: string) => string;
+  /** Under the title: which projects the org default reaches, on the org page. */
+  note?: ReactNode;
 }) {
   const { workflows, usage, isPending, error } = useWorkflowUsage();
+  const projectId = project?.id ?? null;
   const rows = workflows
-    .filter((workflow) => workflow.projectId === null || workflow.projectId === project.id)
+    .filter((workflow) => workflow.projectId === null || workflow.projectId === projectId)
     .map((workflow) => ({ workflow, using: usage(workflow) }));
   return (
     <div className="flex flex-col gap-6">
       <PageTitle
         variant="settings"
         title="Workflow"
-        description="Statuses and the moves between them. A project runs its own copy when it has one, and the default otherwise. Open one to edit a draft; publishing shows what changes first."
+        description={
+          project
+            ? 'Statuses and the moves between them. A project runs its own copy when it has one, and the default otherwise. Open one to edit a draft; publishing shows what changes first.'
+            : 'Statuses and the moves between them that every project runs until it copies its own. Open it to edit a draft; publishing shows what changes, and for which projects, first.'
+        }
       />
+      {note}
       {isPending ? (
         <TableSkeleton
           label="Loading workflows"
@@ -122,7 +133,7 @@ export function WorkflowsList({
       ) : (
         <Table
           label="Workflows"
-          columns={columns(project.id)}
+          columns={columns(projectId)}
           rows={rows}
           rowKey={(row) => row.workflow.id}
           onRowClick={(row) => navigate(editorPath(row.workflow.id))}

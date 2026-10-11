@@ -48,6 +48,8 @@ const DAY_NAMES: Record<(typeof WORKING_DAYS)[number], string> = {
 /** The Method and estimation tab: Scrum or Kanban, sprint cadence and working days, the unit. */
 export function MethodTab(props: BoardTabProps) {
   const { settings, mode, access } = props;
+  // Each project picks Scrum or Kanban for itself; the org default sets only what follows.
+  const org = props.scope.kind === 'org';
   const value = settings.value;
   if (!value) return null;
   const { config, method } = value;
@@ -61,38 +63,44 @@ export function MethodTab(props: BoardTabProps) {
   return (
     <div className="flex flex-col gap-4">
       <SectionHeading
-        title="Method"
-        description="Scrum runs in time-boxed sprints with a backlog and velocity. Kanban is continuous flow with WIP limits and cycle time. You can switch later; history is kept."
+        title={org ? 'Sprints' : 'Method'}
+        description={
+          org
+            ? 'Each project picks Scrum or Kanban for itself. Projects that run Scrum start from this sprint length and these working days.'
+            : 'Scrum runs in time-boxed sprints with a backlog and velocity. Kanban is continuous flow with WIP limits and cycle time. You can switch later; history is kept.'
+        }
         mode={mode}
         locked={access.configureBoard || access.configureProject ? undefined : NO_BOARD_PERMISSION}
         onEdit={props.onEdit}
       />
-      <div role="radiogroup" aria-label="Method" className="grid grid-cols-2 gap-2.5">
-        {METHODS.map(([id, name, description]) => (
-          <SelectableCard
-            key={id}
-            selected={method === id}
-            aria-disabled={!methodEditable}
-            onClick={
-              methodEditable ? () => settings.update((d) => ({ ...d, method: id })) : undefined
-            }
-            className={cx('flex-row gap-3 px-4 py-3.5', !methodEditable && 'cursor-default')}
-          >
-            <span
-              aria-hidden
-              className={cx(
-                'mt-px size-4 shrink-0 rounded-full border-[1.5px]',
-                method === id ? 'border-acc-fill shadow-radio' : 'border-tx-3',
-              )}
-            />
-            <span className="flex flex-col gap-0.75">
-              <span className="font-semibold">{name}</span>
-              <span className="text-13 leading-note text-tx-3">{description}</span>
-            </span>
-          </SelectableCard>
-        ))}
-      </div>
-      {method === 'scrum' && (
+      {org ? null : (
+        <div role="radiogroup" aria-label="Method" className="grid grid-cols-2 gap-2.5">
+          {METHODS.map(([id, name, description]) => (
+            <SelectableCard
+              key={id}
+              selected={method === id}
+              aria-disabled={!methodEditable}
+              onClick={
+                methodEditable ? () => settings.update((d) => ({ ...d, method: id })) : undefined
+              }
+              className={cx('flex-row gap-3 px-4 py-3.5', !methodEditable && 'cursor-default')}
+            >
+              <span
+                aria-hidden
+                className={cx(
+                  'mt-px size-4 shrink-0 rounded-full border-[1.5px]',
+                  method === id ? 'border-acc-fill shadow-radio' : 'border-tx-3',
+                )}
+              />
+              <span className="flex flex-col gap-0.75">
+                <span className="font-semibold">{name}</span>
+                <span className="text-13 leading-note text-tx-3">{description}</span>
+              </span>
+            </SelectableCard>
+          ))}
+        </div>
+      )}
+      {(org || method === 'scrum') && (
         <Card className="overflow-hidden">
           <div className="border-b border-line-2 px-4 py-3 font-semibold">Sprints</div>
           <div className="grid grid-cols-2 gap-3.5 px-4 py-3.5">

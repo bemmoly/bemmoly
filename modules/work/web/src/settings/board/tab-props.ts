@@ -1,9 +1,12 @@
 import type { SettingsSectionMode } from '@bemmoly/ui';
 import type { SettingsAccess } from '../../hooks/settings-access.ts';
 import type { BoardSettings } from '../../hooks/settings-board.ts';
+import type { SettingsScope } from '../pages.ts';
 
 /** What every Board settings tab gets from the page: the settings, its edit state and access. */
 export interface BoardTabProps {
+  /** The org default board, or one project's. */
+  scope: SettingsScope;
   settings: BoardSettings;
   mode: SettingsSectionMode;
   access: SettingsAccess;

@@ -1,6 +1,6 @@
 import type { WorkScreenProps } from '../routes.tsx';
 import { BoardSettingsPage } from './board/board-settings-page.tsx';
-import { isSettingsPage, type SettingsPage } from './pages.ts';
+import { isSettingsPage, projectScope, type SettingsPage } from './pages.ts';
 import { FieldsPage } from './schemes/fields-page.tsx';
 import { IssueTypesPage } from './schemes/issue-types-page.tsx';
 
@@ -11,7 +11,8 @@ import { IssueTypesPage } from './schemes/issue-types-page.tsx';
  */
 export default function SettingsScreen({ projectKey, rest }: WorkScreenProps) {
   const page: SettingsPage = isSettingsPage(rest[0]) ? rest[0] : 'board';
-  if (page === 'issue-types') return <IssueTypesPage projectKey={projectKey} />;
-  if (page === 'fields') return <FieldsPage projectKey={projectKey} />;
-  return <BoardSettingsPage projectKey={projectKey} />;
+  const scope = projectScope(projectKey);
+  if (page === 'issue-types') return <IssueTypesPage scope={scope} />;
+  if (page === 'fields') return <FieldsPage scope={scope} />;
+  return <BoardSettingsPage scope={scope} />;
 }

@@ -6,6 +6,7 @@ import { columnProblems } from '../settings/model/columns.ts';
 import { boardConfigDiff } from '../settings/model/diff.ts';
 import { configLqlProblems } from '../settings/model/lql.ts';
 import { columnsRisk, methodRisk, type ChangeConfirm } from '../settings/model/risks.ts';
+import type { SettingsScope } from '../settings/pages.ts';
 import {
   BOARD_SECTIONS,
   discardSection,
@@ -33,10 +34,12 @@ export interface PreparedSave {
 /**
  * Board settings: the stored board, one draft across the tabs and a save per
  * tab. A tab's save sends the stored config with only that tab's settings
- * from the draft, so another tab's unsaved edits are never sent with it.
+ * from the draft, so another tab's unsaved edits are never sent with it. The
+ * org default board saves the same way; the server carries it to every
+ * project that follows it.
  */
-export function useBoardSettings(projectKey: string | undefined) {
-  const data = useBoardSettingsData(projectKey);
+export function useBoardSettings(scope: SettingsScope) {
+  const data = useBoardSettingsData(scope);
   const queryClient = useQueryClient();
   const [draft, setDraft] = useState<BoardDraft | null>(null);
   const { stored, board, project } = data;
@@ -94,15 +97,18 @@ export function useBoardSettings(projectKey: string | undefined) {
 
   const save = useMutation({
     mutationFn: async (prepared: PreparedSave) => {
-      if (!board || !project || !stored) throw new Error('The board is not loaded yet');
-      if (prepared.method !== stored.method) {
+      if (!board || !stored) throw new Error('The board is not loaded yet');
+      if (project && prepared.method !== stored.method) {
         await api.work.projects.update(project.id, { method: prepared.method });
       }
       const changedConfig = JSON.stringify(prepared.config) !== JSON.stringify(stored.config);
       return changedConfig ? api.work.boards.update(board.id, { config: prepared.config }) : board;
     },
     onSuccess: (saved, prepared) => {
-      queryClient.setQueryData(workSettingsKeys.boards(saved.projectId ?? ''), (rows: unknown) =>
+      const key = saved.projectId
+        ? workSettingsKeys.boards(saved.projectId)
+        : workSettingsKeys.orgBoards();
+      queryClient.setQueryData(key, (rows: unknown) =>
         Array.isArray(rows) ? rows.map((row) => (row.id === saved.id ? saved : row)) : rows,
       );
       setDraft((current) =>
@@ -118,11 +124,14 @@ export function useBoardSettings(projectKey: string | undefined) {
     onSettled: refresh,
   });
 
-  /** Puts the default back: the org's columns matched to this project's statuses by name. */
+  /**
+   * Puts the org default back, its columns matched to this project's statuses by name, and
+   * drops the project's override, so later changes to the default reach it again.
+   */
   const reset = useMutation({
     mutationFn: async () => {
-      if (!board || !data.baseConfig) throw new Error('The default board is not loaded yet');
-      return api.work.boards.update(board.id, { config: data.baseConfig });
+      if (!project) throw new Error('The project is not loaded yet');
+      await api.work.schemes.reset(project.id, 'board');
     },
     onSuccess: () => setDraft(null),
     onSettled: refresh,
