@@ -1,6 +1,7 @@
 import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import type { BemmolyModule } from '@bemmoly/core';
 import { parseEnv } from '@bemmoly/core/config';
 import {
   createIsolatedDatabase,
@@ -20,19 +21,30 @@ export interface SignedInApp {
   instance: Booted;
 }
 
+export interface HarnessBootOptions {
+  /** The modules in the image; the shipped ones unless a test adds the fixture. */
+  available?: readonly BemmolyModule[];
+  /** Receives the process's log lines at LOG_LEVEL (`fatal` unless `env` sets it). */
+  logs?: NodeJS.WritableStream;
+}
+
 export interface BootHarness {
   /**
    * Boots the whole host on the shared database, signed in as the first admin. `env` adds
-   * keys such as BEMMOLY_AI_RECORDING.
+   * keys such as BEMMOLY_AI_RECORDING; `options` override the harness defaults.
    */
-  boot(pinned?: string, env?: Readonly<Record<string, string>>): Promise<SignedInApp>;
+  boot(
+    pinned?: string,
+    env?: Readonly<Record<string, string>>,
+    options?: HarnessBootOptions,
+  ): Promise<SignedInApp>;
   stop(): Promise<void>;
 }
 
 export type BootHarnessResult =
   { available: true; harness: BootHarness } | { available: false; reason: string };
 
-export interface BootHarnessOptions {
+export interface BootHarnessOptions extends HarnessBootOptions {
   /** BEMMOLY_PUBLIC_URL, and the Origin every injected request carries. */
   origin?: string;
   /** Serves MCP clients' metadata documents without a network. */
@@ -41,9 +53,9 @@ export interface BootHarnessOptions {
 
 /** Real Postgres and the real boot path, as `bemmoly` starts in production. */
 export async function startBootHarness(
-  options: BootHarnessOptions = {},
+  defaults: BootHarnessOptions = {},
 ): Promise<BootHarnessResult> {
-  const origin = options.origin ?? BOOT_ORIGIN;
+  const origin = defaults.origin ?? BOOT_ORIGIN;
   const server: TestDatabase = await startTestDatabase();
   if (!server.available) return { available: false, reason: server.reason };
   const database: IsolatedDatabase = await createIsolatedDatabase(server.url);
@@ -52,8 +64,10 @@ export async function startBootHarness(
   return {
     available: true,
     harness: {
-      async boot(pinned = '', extra = {}) {
+      async boot(pinned = '', extra = {}, overrides = {}) {
+        const options = { ...defaults, ...overrides };
         const env = parseEnv({
+          LOG_LEVEL: 'fatal',
           ...extra,
           DATABASE_URL: database.url,
           BEMMOLY_SECRET_KEY: Buffer.alloc(32, 8).toString('base64'),
@@ -61,12 +75,11 @@ export async function startBootHarness(
           BEMMOLY_DATA_DIR: mkdtempSync(join(tmpdir(), 'bemmoly-data-')),
           BEMMOLY_DB_CONTEXTS: 'test',
           BEMMOLY_MODULES: pinned,
-          LOG_LEVEL: 'fatal',
         });
         const instance = await bootApplication({
           env,
-          available: await importAvailableModules(),
-          logger: false,
+          available: options.available ?? (await importAvailableModules()),
+          logger: options.logs ? { stream: options.logs } : false,
           ...(options.fetchClientMetadata
             ? { fetchClientMetadata: options.fetchClientMetadata }
             : {}),

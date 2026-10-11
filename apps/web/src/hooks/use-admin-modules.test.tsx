@@ -8,9 +8,9 @@ import { mockApi } from '../test/setup.ts';
 import { canRemoveData, useAdminModules } from './use-admin-modules.ts';
 import { useModules } from './use-modules.ts';
 
-const sample = (): AdminModule => {
-  const found = mockApi.db.adminModules.find((module) => module.id === 'sample');
-  if (!found) throw new Error('the ready scenario seeds the sample module');
+const docs = (): AdminModule => {
+  const found = mockApi.db.adminModules.find((module) => module.id === 'docs');
+  if (!found) throw new Error('the ready scenario seeds the docs module');
   return found;
 };
 
@@ -21,60 +21,60 @@ describe('admin modules', () => {
       nav: useModules(),
     }));
     await waitFor(() => expect(result.current.admin.isSuccess).toBe(true));
-    await waitFor(() => expect(result.current.nav.data?.map((m) => m.id)).toContain('sample'));
+    await waitFor(() => expect(result.current.nav.data?.map((m) => m.id)).toContain('docs'));
 
-    act(() => result.current.admin.setEnabled.mutate({ id: 'sample', enabled: false }));
+    act(() => result.current.admin.setEnabled.mutate({ id: 'docs', enabled: false }));
     await waitFor(() => expect(result.current.admin.setEnabled.isSuccess).toBe(true));
-    expect(sample().enabled).toBe(false);
-    expect(result.current.admin.modules[0]?.enabled).toBe(false);
-    await waitFor(() => expect(result.current.nav.data?.map((m) => m.id)).not.toContain('sample'));
+    expect(docs().enabled).toBe(false);
+    expect(result.current.admin.modules.find((m) => m.id === 'docs')?.enabled).toBe(false);
+    await waitFor(() => expect(result.current.nav.data?.map((m) => m.id)).not.toContain('docs'));
 
-    act(() => result.current.admin.setEnabled.mutate({ id: 'sample', enabled: true }));
-    await waitFor(() => expect(sample().enabled).toBe(true));
-    await waitFor(() => expect(result.current.nav.data?.map((m) => m.id)).toContain('sample'));
-    expect(result.current.admin.modules[0]?.enabled).toBe(true);
+    act(() => result.current.admin.setEnabled.mutate({ id: 'docs', enabled: true }));
+    await waitFor(() => expect(docs().enabled).toBe(true));
+    await waitFor(() => expect(result.current.nav.data?.map((m) => m.id)).toContain('docs'));
+    expect(result.current.admin.modules.find((m) => m.id === 'docs')?.enabled).toBe(true);
   });
 
   it('asks who can use a module before enabling it, nobody by default', async () => {
-    sample().enabled = false;
+    docs().enabled = false;
     mockApi.db.grants = [];
     await renderPage(() => <ModulesPage />);
-    fireEvent.click(await screen.findByRole('button', { name: 'Enable Sample' }));
-    expect(await screen.findByText('Who can use Sample?')).toBeTruthy();
+    fireEvent.click(await screen.findByRole('button', { name: 'Enable Docs' }));
+    expect(await screen.findByText('Who can use Docs?')).toBeTruthy();
     expect(screen.getByText(/Users › Module access/)).toBeTruthy();
     const nobody = screen.getByRole('radio', { name: /Nobody yet/ });
     expect(nobody.getAttribute('aria-checked')).toBe('true');
 
     // The table's button and the dialog's share a name; the dialog's comes last.
-    const confirm = () => screen.getAllByRole('button', { name: 'Enable Sample' }).at(-1)!;
+    const confirm = () => screen.getAllByRole('button', { name: 'Enable Docs' }).at(-1)!;
     fireEvent.click(screen.getByRole('radio', { name: /Specific teams/ }));
     expect(confirm().hasAttribute('disabled')).toBe(true);
     fireEvent.click(screen.getByRole('combobox', { name: 'Add a team' }));
     fireEvent.click(screen.getByRole('option', { name: 'Mobile' }));
     expect(screen.getByRole('button', { name: 'Remove Mobile' })).toBeTruthy();
     fireEvent.click(confirm());
-    await waitFor(() => expect(sample().enabled).toBe(true));
+    await waitFor(() => expect(docs().enabled).toBe(true));
     expect(mockApi.db.grants.map((grant) => [grant.subjectKind, grant.subjectId])).toEqual([
       ['team', TEAM_IDS.mobile],
     ]);
   });
 
   it('enables with no grants when the admin keeps Nobody yet', async () => {
-    sample().enabled = false;
+    docs().enabled = false;
     mockApi.db.grants = [];
     const { result } = await renderQueryHook(() => useAdminModules());
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    act(() => result.current.dialog.open('enable', 'sample'));
+    act(() => result.current.dialog.open('enable', 'docs'));
     expect(result.current.access.choice).toEqual({ mode: 'none' });
     act(() =>
       result.current.setEnabled.mutate({
-        id: 'sample',
+        id: 'docs',
         enabled: true,
         access: result.current.access.choice,
       }),
     );
     await waitFor(() => expect(result.current.setEnabled.isSuccess).toBe(true));
-    expect(sample().enabled).toBe(true);
+    expect(docs().enabled).toBe(true);
     expect(mockApi.db.grants).toEqual([]);
   });
 
@@ -82,48 +82,48 @@ describe('admin modules', () => {
     mockApi.db.modulesPinned = true;
     const { result } = await renderQueryHook(() => useAdminModules());
     await waitFor(() => expect(result.current.pinned).toBe(true));
-    act(() => result.current.setEnabled.mutate({ id: 'sample', enabled: false }));
+    act(() => result.current.setEnabled.mutate({ id: 'docs', enabled: false }));
     await waitFor(() => expect(result.current.setEnabled.isError).toBe(true));
-    expect(sample().enabled).toBe(true);
+    expect(docs().enabled).toBe(true);
   });
 
   it('shows the page read-only with the BEMMOLY_MODULES notice when pinned', async () => {
     mockApi.db.modulesPinned = true;
     await renderPage(() => <ModulesPage />);
     expect(await screen.findByText(/BEMMOLY_MODULES is set on the server/)).toBeTruthy();
-    expect(screen.queryByRole('button', { name: /disable sample/i })).toBeNull();
-    expect(screen.getAllByText('Set by BEMMOLY_MODULES')).toHaveLength(3);
+    expect(screen.queryByRole('button', { name: /disable docs/i })).toBeNull();
+    expect(screen.getAllByText('Set by BEMMOLY_MODULES')).toHaveLength(2);
   });
 
   it('allows removing data only when unpinned, disabled and the id is typed exactly', () => {
-    const off = { ...sample(), enabled: false };
-    expect(canRemoveData(off, 'sample', false)).toBe(true);
-    expect(canRemoveData(off, ' sample ', false)).toBe(true);
-    expect(canRemoveData(off, 'Sample', false)).toBe(false);
-    expect(canRemoveData(off, 'samp', false)).toBe(false);
-    expect(canRemoveData(off, 'sample', true)).toBe(false);
-    expect(canRemoveData({ ...off, enabled: true }, 'sample', false)).toBe(false);
+    const off = { ...docs(), enabled: false };
+    expect(canRemoveData(off, 'docs', false)).toBe(true);
+    expect(canRemoveData(off, ' docs ', false)).toBe(true);
+    expect(canRemoveData(off, 'Docs', false)).toBe(false);
+    expect(canRemoveData(off, 'doc', false)).toBe(false);
+    expect(canRemoveData(off, 'docs', true)).toBe(false);
+    expect(canRemoveData({ ...off, enabled: true }, 'docs', false)).toBe(false);
   });
 
   it('removes a disabled module’s data after the typed confirmation', async () => {
-    sample().enabled = false;
+    docs().enabled = false;
     const { result } = await renderQueryHook(() => useAdminModules());
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    act(() => result.current.dialog.open('remove', 'sample'));
+    act(() => result.current.dialog.open('remove', 'docs'));
     expect(result.current.dialog.canRemove).toBe(false);
-    act(() => result.current.dialog.setTyped('sample'));
+    act(() => result.current.dialog.setTyped('docs'));
     expect(result.current.dialog.canRemove).toBe(true);
-    act(() => result.current.removeData.mutate({ id: 'sample', confirm: 'sample' }));
+    act(() => result.current.removeData.mutate({ id: 'docs', confirm: 'docs' }));
     await waitFor(() => expect(result.current.removeData.isSuccess).toBe(true));
-    expect(sample().changelogState).toBe('removed');
+    expect(docs().changelogState).toBe('removed');
     expect(result.current.dialog.kind).toBeNull();
   });
 
   it('refuses to remove data from an enabled module', async () => {
     const { result } = await renderQueryHook(() => useAdminModules());
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    act(() => result.current.removeData.mutate({ id: 'sample', confirm: 'sample' }));
+    act(() => result.current.removeData.mutate({ id: 'docs', confirm: 'docs' }));
     await waitFor(() => expect(result.current.removeData.isError).toBe(true));
-    expect(sample().changelogState).toBe('current');
+    expect(docs().changelogState).toBe('current');
   });
 });

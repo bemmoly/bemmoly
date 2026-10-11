@@ -19,7 +19,7 @@ async function ruleIds(rel, code) {
 describe('repository ESLint config', () => {
   it('fails a module that imports another module', async () => {
     const ids = await ruleIds(
-      'modules/sample/server/src/services/fixture.ts',
+      'modules/work/server/src/services/fixture.ts',
       "import { docs } from '@bemmoly/module-docs';\nexport const value = docs;\n",
     );
     expect(ids).toContain('bemmoly/boundaries');
@@ -36,7 +36,7 @@ describe('repository ESLint config', () => {
   it('fails an app that imports a module package', async () => {
     const ids = await ruleIds(
       'apps/server/src/fixture.ts',
-      "import sample from '@bemmoly/module-sample';\nexport default sample;\n",
+      "import work from '@bemmoly/module-work';\nexport default work;\n",
     );
     expect(ids).toContain('bemmoly/boundaries');
   });
@@ -57,7 +57,7 @@ describe('repository ESLint config', () => {
 
   it('passes a module that stays inside its folder and the kernel', async () => {
     const ids = await ruleIds(
-      'modules/sample/server/src/services/fixture.ts',
+      'modules/work/server/src/services/fixture.ts',
       "import { defineModule } from '@bemmoly/core';\nimport { local } from './local.ts';\nexport const value = [defineModule, local];\n",
     );
     expect(ids).toEqual([]);
@@ -73,7 +73,7 @@ describe('repository ESLint config', () => {
 
   it('fails a literal colour or font size in a module screen', async () => {
     const ids = await ruleIds(
-      'modules/sample/web/src/fixture.tsx',
+      'modules/work/web/src/fixture.tsx',
       'export const Title = () => <h1 className="text-[28px] bg-[#2356c9]">Board</h1>;\n',
     );
     expect(ids).toContain('bemmoly/no-literal-styles');
@@ -89,7 +89,7 @@ describe('repository ESLint config', () => {
 
   it('fails a Lucide import outside the icon set', async () => {
     const ids = await ruleIds(
-      'modules/sample/web/src/fixture.tsx',
+      'modules/work/web/src/fixture.tsx',
       "import { Check } from 'lucide-react';\nexport const C = () => <Check />;\n",
     );
     expect(ids).toContain('no-restricted-imports');

@@ -83,7 +83,7 @@ export function createAuthzController({ db, modules }: AuthzControllerDependenci
 
     async listModuleGrants(request: FastifyRequest): Promise<ModuleGrantsResponse> {
       const query = parseOrThrow(listModuleGrantsQuerySchema, request.query);
-      return { items: await listModuleGrants(db, contextOf(request), query) };
+      return { items: await listModuleGrants(db, modules, contextOf(request), query) };
     },
 
     async getModuleGrant(request: FastifyRequest): Promise<ModuleGrant> {

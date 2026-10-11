@@ -60,9 +60,9 @@ demo first, or the build stops and says so.
   workspace, in memory only, so a reload starts over, and shows the slim banner ("Live demo ·
   data resets on reload · Install Bemmoly"). The demo code is behind the build-time `__DEMO__`
   flag and compiled out of the install build.
-- **Modules.** Every module the mocks ship is enabled (except the developer Sample), and the
-  shell bundles every `modules/*/web` chunk, so a module's screens reach the demo when its mock
-  handlers land, with no change to the demo or the image.
+- **Modules.** Every module the mocks ship is enabled, and the shell bundles every
+  `modules/*/web` chunk, so a module's screens reach the demo when its mock handlers land, with
+  no change to the demo or the image.
 - **Base path.** The router's `basepath` is vite's `base` (`/` on installs, `/demo/` here); the
   demo also keeps module chunks' root-relative `pushState` and links under `/demo`.
 - **One version.** The demo reports the release in `apps/web/package.json`, which the changesets

@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-/** `workspace.name`, `sample.greeting`: an owner (kernel area or module id), a dot, a name. */
+/** `workspace.name`, `docs.staleAfterDays`: an owner (kernel area or module id), a dot, a name. */
 export const SETTING_KEY_PATTERN = /^[a-z][a-z0-9-]*(\.[a-zA-Z0-9-]+)+$/;
 
 export const settingKeySchema = z

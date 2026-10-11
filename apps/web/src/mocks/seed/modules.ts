@@ -5,7 +5,7 @@ import { ago, uid } from './time.ts';
 /*
  * The modules this mock install ships, as the server would list them. A
  * fresh install enables none; the seeded workspace is what an admin leaves
- * behind after enabling Sample for everyone and Work for the Platform team.
+ * behind after enabling Work for the Platform team and Docs for everyone.
  */
 
 interface Shipped {
@@ -17,28 +17,6 @@ interface Shipped {
 }
 
 const SHIPPED: Shipped[] = [
-  {
-    admin: {
-      id: 'sample',
-      name: 'Sample',
-      version: '0.1.0',
-      pendingChangesets: 1,
-      dependsOn: [],
-      defaultAccess: 'none',
-      restartRequired: false,
-    },
-    manifest: {
-      id: 'sample',
-      name: 'Sample',
-      version: '0.1.0',
-      navigation: [{ id: 'sample', label: 'Sample', path: '/sample', placement: 'top' }],
-      icon: 'box',
-      color: 'epic-4',
-      order: 90,
-      sidebar: { path: '/sample', links: [], primary: [] },
-    },
-    enabledMinutesAgo: 60 * 24 * 9,
-  },
   {
     admin: {
       id: 'work',
@@ -187,14 +165,6 @@ export function seedManifests(enabled = true): ModuleManifest[] {
 /** The access the seeded admin chose when enabling each module. */
 export function seedGrants(): ModuleGrant[] {
   return [
-    {
-      id: uid(60),
-      moduleId: 'sample',
-      subjectKind: 'everyone',
-      subjectId: null,
-      grantedBy: USER_IDS.rohan,
-      createdAt: ago(60 * 24 * 3),
-    },
     {
       id: uid(61),
       moduleId: 'work',

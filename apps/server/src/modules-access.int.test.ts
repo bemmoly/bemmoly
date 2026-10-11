@@ -1,5 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { startBootHarness, type BootHarness, type SignedInApp } from './boot-harness.ts';
+import { modulesWithFixture } from './test-support.ts';
 
 type Grant = { subjectKind: string; subjectId: string | null };
 
@@ -8,7 +9,7 @@ describe('enabling a module grants only the access the admin chose', () => {
   let skipReason = '';
 
   beforeAll(async () => {
-    const started = await startBootHarness();
+    const started = await startBootHarness({ available: await modulesWithFixture() });
     if (started.available) harness = started.harness;
     else skipReason = started.reason;
   });
@@ -18,13 +19,13 @@ describe('enabling a module grants only the access the admin chose', () => {
   const enable = (app: SignedInApp, payload?: Record<string, unknown>) =>
     app.inject({
       method: 'POST',
-      url: '/api/v1/admin/modules/sample/enable',
+      url: '/api/v1/admin/modules/fixture/enable',
       ...(payload ? { payload } : {}),
     });
   const disable = (app: SignedInApp) =>
-    app.inject({ method: 'POST', url: '/api/v1/admin/modules/sample/disable' });
+    app.inject({ method: 'POST', url: '/api/v1/admin/modules/fixture/disable' });
   const grants = async (app: SignedInApp): Promise<Grant[]> =>
-    (await app.inject({ url: '/api/v1/module-grants?moduleId=sample' }))
+    (await app.inject({ url: '/api/v1/module-grants?moduleId=fixture' }))
       .json()
       .items.map(({ subjectKind, subjectId }: Grant) => ({ subjectKind, subjectId }));
   const audited = async (app: SignedInApp) => {
@@ -44,7 +45,7 @@ describe('enabling a module grants only the access the admin chose', () => {
 
     const bare = await enable(app);
     expect(bare.statusCode).toBe(200);
-    expect(bare.json()).toMatchObject({ id: 'sample', enabled: true });
+    expect(bare.json()).toMatchObject({ id: 'fixture', enabled: true });
     expect(await grants(app)).toEqual([]);
 
     await disable(app);
@@ -55,8 +56,8 @@ describe('enabling a module grants only the access the admin chose', () => {
     const noTeams = await enable(app, { access: { mode: 'teams', teamIds: [] } });
     expect(noTeams.statusCode).toBe(400);
     const modules = (await app.inject({ url: '/api/v1/admin/modules' })).json();
-    const sample = modules.items.find((item: { id: string }) => item.id === 'sample');
-    expect(sample).toMatchObject({ id: 'sample', enabled: false });
+    const fixture = modules.items.find((item: { id: string }) => item.id === 'fixture');
+    expect(fixture).toMatchObject({ id: 'fixture', enabled: false });
 
     expect((await enable(app, { access: { mode: 'teams', teamIds: [team.id] } })).statusCode).toBe(
       200,
@@ -79,8 +80,8 @@ describe('enabling a module grants only the access the admin chose', () => {
     expect(
       rows.filter((row) => row.action === 'module_grant.created').map((row) => row.after),
     ).toEqual([
-      { moduleId: 'sample', subjectKind: 'team', subjectId: team.id, reason: 'module_enabled' },
-      { moduleId: 'sample', subjectKind: 'everyone', subjectId: null, reason: 'module_enabled' },
+      { moduleId: 'fixture', subjectKind: 'team', subjectId: team.id, reason: 'module_enabled' },
+      { moduleId: 'fixture', subjectKind: 'everyone', subjectId: null, reason: 'module_enabled' },
     ]);
   });
 });

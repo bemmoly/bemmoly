@@ -6,6 +6,11 @@ import type { FromModule } from '../../modules/registry.ts';
 export interface ModuleCatalog {
   ids(): string[];
   capabilities(): FromModule<CapabilityDefinition>[];
+  /**
+   * Every module in the image, enabled or not. Grants kept for a module a later image no
+   * longer ships stay stored but are not listed. Absent, every grant is listed.
+   */
+  installed?(): string[];
 }
 
 export interface CatalogEntry {

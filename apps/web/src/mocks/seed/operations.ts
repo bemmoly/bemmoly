@@ -183,7 +183,7 @@ const AUDIT: AuditRow[] = [
   ['user', USER_IDS.rohan, 'user.invited', 'invitation', 'sam@acmelabs.dev', 60 * 50],
   ['system', null, 'backup.completed', 'backup', BACKUP_IDS.preUpgrade, 60 * 52],
   ['user', USER_IDS.rohan, 'setting.updated', 'setting', 'appearance.theme', 60 * 60],
-  ['api_token', uid(80), 'module.enabled', 'module', 'sample', 60 * 72],
+  ['api_token', uid(80), 'module.enabled', 'module', 'docs', 60 * 72],
   ['system', null, 'backup.failed', 'backup', BACKUP_IDS.failed, 60 * 79],
   ['user', USER_IDS.rohan, 'user.role_changed', 'user', 'Dev P.', 60 * 80],
   ['user', USER_IDS.maya, 'session.created', 'session', null, 60 * 96],

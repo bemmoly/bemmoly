@@ -18,9 +18,9 @@ test('the shell boots after the session and lazy-loads a module chunk', async ({
   await expect(page.locator('html')).toHaveAttribute('data-mode', /^(light|dark)$/);
   await expect(page).toHaveTitle('Home · Acme Labs · Bemmoly');
 
-  await sidebar.getByRole('link', { name: 'Sample' }).click();
-  await expect(page).toHaveURL(/\/sample$/);
-  await expect(page.locator('[data-module="sample"]')).toBeVisible();
+  await sidebar.getByRole('link', { name: 'Docs home' }).click();
+  await expect(page).toHaveURL(/\/docs$/);
+  await expect(page.locator('[data-module="docs"]')).toBeVisible();
 });
 
 test('the boot frame paints the mark before the app runs and leaves once a page renders', async ({
@@ -52,8 +52,8 @@ function hexToRgb(hex: string): string {
 
 test('a deep link to a module route loads the shell', async ({ page }) => {
   await useMockBackend(page, 'ready');
-  await page.goto('/sample');
-  await expect(page.locator('[data-module="sample"]')).toBeVisible();
+  await page.goto('/work/board');
+  await expect(page.locator('[data-module="work"]')).toBeVisible();
 });
 
 test('an unknown address shows the not-found page inside the frame', async ({ page }) => {
