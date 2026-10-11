@@ -1,6 +1,7 @@
 import { aiToolContribution, type AiToolDefinition, type ModuleContext } from '@bemmoly/core';
 import type { WorkServices } from '../index.ts';
 import { createWriteTools } from './create-writes.ts';
+import { importWriteTools } from './import-writes.ts';
 import { issueWriteTools } from './issue-writes.ts';
 import { workReadTools } from './read.ts';
 import { workflowTools } from './workflow-writes.ts';
@@ -12,6 +13,7 @@ export function workAiTools(services: WorkServices): AiToolDefinition[] {
     ...issueWriteTools(services),
     ...createWriteTools(services),
     ...workflowTools(services),
+    ...importWriteTools(services),
   ] as AiToolDefinition[];
 }
 
