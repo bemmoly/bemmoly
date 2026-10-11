@@ -65,7 +65,15 @@ import { BrandBlock, BrandRailFoot, BrandRailTop } from '@bemmoly/ui';
    mark (the lockup leads before the workspace has a name); the tab title ends "· Bemmoly"
    (`useDocumentTitle`); the sidebar foot shows "Bemmoly 0.4.0 · What's new"; email footers
    name Bemmoly; the boot screen paints the mark.
-6. **Honest about the licence.** MIT lets a fork remove any of this. The aim is a default good
+6. **Where the customer logo comes from.** Settings › Appearance › Logo (needs
+   `workspace.appearance.manage`): a PNG, SVG or WebP up to 1 MB, square or near-square (longest
+   side at most 1.25 × the shortest), rasters at least 128 px. SVGs with anything active or
+   anything that reaches out are refused. It is served from this origin
+   (`/api/v1/workspace/logo/<sha256>.<ext>`), so the CSP never needs an outside image. The row
+   previews the real `BrandBlock` and rail in light and dark and says "on Bemmoly" stays. It
+   never reaches the favicon, the tab title or the mark; emails show it above "Sent by Bemmoly
+   for <workspace>".
+7. **Honest about the licence.** MIT lets a fork remove any of this. The aim is a default good
    enough that nobody wants to.
 
 ## Logo colours are the system
