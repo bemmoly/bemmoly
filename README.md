@@ -1,7 +1,7 @@
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="./packages/ui/assets/brand/generated/readme-hero-ocean.png">
-    <img alt="Bemmoly: Your work. Your platform. Self-hosted issues and docs. Open source, no pricing, nothing to buy. Install with curl -fsSL https://get.bemmoly.com | sh" src="./packages/ui/assets/brand/generated/readme-hero.png" width="100%">
+    <source media="(prefers-color-scheme: dark)" srcset="./packages/ui/assets/brand/generated/readme-hero-dark.png">
+    <img alt="Bemmoly: Your work. Your platform. Self-hosted issues and docs. 100% open source, no pricing, no in-app purchases." src="./packages/ui/assets/brand/generated/readme-hero.png" width="100%">
   </picture>
 </p>
 

@@ -1,5 +1,5 @@
 /**
- * Captures the real product from a running demo build into src/shots/, 2x, with the demo
+ * Captures the real product from a running demo build into src/shots/, 3x, with the demo
  * banner removed and the sidebar's version line hidden, so a picture never names a release:
  *
  *   pnpm --filter @bemmoly/web exec vite --mode demo --port 5500
@@ -51,7 +51,7 @@ try {
   for (const shot of SHOTS) {
     const context = await browser.newContext({
       viewport: { width: 1280, height: 744 },
-      deviceScaleFactor: 2,
+      deviceScaleFactor: 3,
       reducedMotion: 'reduce',
       colorScheme: shot.mode,
     });

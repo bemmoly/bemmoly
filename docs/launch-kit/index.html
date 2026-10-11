@@ -31,35 +31,86 @@ aside{background:var(--sf);border:1px solid var(--line);border-radius:10px;paddi
 @media (min-width:1280px){aside{position:sticky;top:16px;max-height:calc(100vh - 32px);overflow:auto}}
 pre{white-space:pre-wrap;word-break:break-word;margin:0;font:13.5px/1.55 "IBM Plex Mono",ui-monospace,monospace}
 .none{color:var(--tx2)}
+.stage{position:relative}
+.stage .safe,.stage .covered,.stage .avatar{position:absolute;display:none;pointer-events:none}
+.stage .avatar{background:#fff;border:4px solid #fff;border-radius:12px;box-shadow:0 0 0 2px #DC2626}
+.stage .avatar.round{border-radius:50%}
+.stage .safe{outline:2px dashed #1F9D55;background:rgba(31,157,85,.08)}
+.stage .covered{background:rgba(220,38,38,.28);outline:2px solid #DC2626}
+body.zones .stage .safe,body.zones .stage .covered,body.zones .stage .avatar{display:block}
+label.toggle{display:inline-flex;gap:8px;align-items:center;margin-top:12px;font-weight:500}
 </style>
 </head>
 <body>
 <header>
 <h1>Bemmoly launch kit</h1>
-<p>Every image at its real size, labelled with its platform and pixel size, beside the post it goes with. Images are rendered from <code>src/</code> with <code>node docs/launch-kit/src/render.ts</code>; the copy is <a href="posts.md">posts.md</a>.</p>
-<nav><a href="#x">X</a><a href="#linkedin">LinkedIn</a><a href="#product-hunt">Product Hunt</a><a href="#reddit">Reddit</a><a href="#hacker-news">Hacker News</a></nav>
+<p>Every launch image and brand social asset at its real size, labelled with its platform and pixel size, beside the post it goes with. Images are rendered from <code>src/</code> with <code>node docs/launch-kit/src/render.ts</code>; the copy is <a href="posts.md">posts.md</a>.</p>
+<label class="toggle"><input type="checkbox" id="zones"> Show safe areas</label>
+<nav><a href="#brand">Brand</a><a href="#x">X</a><a href="#linkedin">LinkedIn</a><a href="#product-hunt">Product Hunt</a><a href="#reddit">Reddit</a><a href="#hacker-news">Hacker News</a></nav>
 </header>
+<section id="brand">
+<h2>Brand</h2>
+<div class="cols">
+  <div class="images"><figure>
+  <figcaption><strong>og:image and twitter:image for bemmoly.com</strong><span>1200 × 630</span><a href="../../packages/ui/assets/brand/generated/social-preview.png">packages/ui/assets/brand/generated/social-preview.png</a></figcaption>
+  <div class="scroll"><div class="stage" style="width:1200px"><img src="../../packages/ui/assets/brand/generated/social-preview.png" width="1200" height="630" alt="Brand og:image and twitter:image for bemmoly.com"></div></div>
+</figure>
+<figure>
+  <figcaption><strong>Square social preview</strong><span>1080 × 1080</span><a href="../../packages/ui/assets/brand/generated/social-preview-square.png">packages/ui/assets/brand/generated/social-preview-square.png</a></figcaption>
+  <div class="scroll"><div class="stage" style="width:1080px"><img src="../../packages/ui/assets/brand/generated/social-preview-square.png" width="1080" height="1080" alt="Brand Square social preview"></div></div>
+</figure>
+<figure>
+  <figcaption><strong>GitHub repository social preview (upload the 2560 x 1280 file)</strong><span>1280 × 640</span><a href="../../packages/ui/assets/brand/generated/github-social-preview-1280x640.png">packages/ui/assets/brand/generated/github-social-preview-1280x640.png</a></figcaption>
+  <div class="scroll"><div class="stage" style="width:1280px"><img src="../../packages/ui/assets/brand/generated/github-social-preview-1280x640.png" width="1280" height="640" alt="Brand GitHub repository social preview (upload the 2560 x 1280 file)"><span class="safe" style="left:40px;top:40px;width:1200px;height:560px"></span></div></div>
+</figure>
+<figure>
+  <figcaption><strong>README hero, light</strong><span>1280 × 400</span><a href="../../packages/ui/assets/brand/generated/readme-hero.png">packages/ui/assets/brand/generated/readme-hero.png</a></figcaption>
+  <div class="scroll"><div class="stage" style="width:1280px"><img src="../../packages/ui/assets/brand/generated/readme-hero.png" width="1280" height="400" alt="Brand README hero, light"></div></div>
+</figure>
+<figure>
+  <figcaption><strong>README hero, dark (shown under dark mode)</strong><span>1280 × 400</span><a href="../../packages/ui/assets/brand/generated/readme-hero-dark.png">packages/ui/assets/brand/generated/readme-hero-dark.png</a></figcaption>
+  <div class="scroll"><div class="stage" style="width:1280px"><img src="../../packages/ui/assets/brand/generated/readme-hero-dark.png" width="1280" height="400" alt="Brand README hero, dark (shown under dark mode)"></div></div>
+</figure>
+<figure>
+  <figcaption><strong>X profile header (upload the 3000 x 1000 file)</strong><span>1500 × 500</span><a href="../../packages/ui/assets/brand/generated/banner-x-1500x500.png">packages/ui/assets/brand/generated/banner-x-1500x500.png</a></figcaption>
+  <div class="scroll"><div class="stage" style="width:1500px"><img src="../../packages/ui/assets/brand/generated/banner-x-1500x500.png" width="1500" height="500" alt="Brand X profile header (upload the 3000 x 1000 file)"><span class="safe" style="left:560px;top:60px;width:900px;height:380px"></span><span class="covered" style="left:0px;top:275px;width:480px;height:225px"></span><span class="avatar round" style="left:15px;top:363px;width:134px;height:134px"></span></div></div>
+</figure>
+<figure>
+  <figcaption><strong>LinkedIn company page cover</strong><span>1128 × 191</span><a href="../../packages/ui/assets/brand/generated/banner-linkedin-company-1128x191.png">packages/ui/assets/brand/generated/banner-linkedin-company-1128x191.png</a></figcaption>
+  <div class="scroll"><div class="stage" style="width:1128px"><img src="../../packages/ui/assets/brand/generated/banner-linkedin-company-1128x191.png" width="1128" height="191" alt="Brand LinkedIn company page cover"><span class="safe" style="left:290px;top:20px;width:560px;height:151px"></span><span class="covered" style="left:0px;top:51px;width:270px;height:140px"></span><span class="avatar" style="left:24px;top:95px;width:120px;height:120px"></span></div></div>
+</figure>
+<figure>
+  <figcaption><strong>LinkedIn company cover: the file to upload (rendered at 1128 x 188, 3.72x)</strong><span>4200 × 700</span><a href="../../packages/ui/assets/brand/generated/linkedin-cover-UPLOAD-4200x700.png">packages/ui/assets/brand/generated/linkedin-cover-UPLOAD-4200x700.png</a></figcaption>
+  <div class="scroll"><div class="stage" style="width:4200px"><img src="../../packages/ui/assets/brand/generated/linkedin-cover-UPLOAD-4200x700.png" width="4200" height="700" alt="Brand LinkedIn company cover: the file to upload (rendered at 1128 x 188, 3.72x)"><span class="safe" style="left:1079.787234042553px;top:74.46808510638297px;width:2085.1063829787236px;height:551.063829787234px"></span><span class="covered" style="left:0px;top:186.17021276595744px;width:1005.3191489361702px;height:513.8297872340426px"></span><span class="avatar" style="left:89.36170212765957px;top:346.27659574468083px;width:446.8085106382979px;height:446.8085106382979px"></span></div></div>
+</figure>
+<figure>
+  <figcaption><strong>LinkedIn personal profile background</strong><span>1584 × 396</span><a href="../../packages/ui/assets/brand/generated/banner-linkedin-personal-1584x396.png">packages/ui/assets/brand/generated/banner-linkedin-personal-1584x396.png</a></figcaption>
+  <div class="scroll"><div class="stage" style="width:1584px"><img src="../../packages/ui/assets/brand/generated/banner-linkedin-personal-1584x396.png" width="1584" height="396" alt="Brand LinkedIn personal profile background"><span class="safe" style="left:470px;top:32px;width:640px;height:332px"></span><span class="covered" style="left:0px;top:96px;width:400px;height:300px"></span><span class="avatar round" style="left:40px;top:200px;width:300px;height:300px"></span></div></div>
+</figure>
+<figure>
+  <figcaption><strong>Buy Me a Coffee page cover</strong><span>1600 × 400</span><a href="../../packages/ui/assets/brand/generated/banner-buymeacoffee-1600x400.png">packages/ui/assets/brand/generated/banner-buymeacoffee-1600x400.png</a></figcaption>
+  <div class="scroll"><div class="stage" style="width:1600px"><img src="../../packages/ui/assets/brand/generated/banner-buymeacoffee-1600x400.png" width="1600" height="400" alt="Brand Buy Me a Coffee page cover"><span class="safe" style="left:48px;top:24px;width:1504px;height:236px"></span><span class="covered" style="left:587px;top:150px;width:427px;height:250px"></span><span class="covered" style="left:0px;top:260px;width:1600px;height:140px"></span></div></div>
+</figure></div>
+  <aside><h3>Brand assets</h3><p>Profile banners, the README hero and the social previews, in <code>packages/ui/assets/brand/generated</code>. Turn on safe areas to see where each platform crops or covers: green is where text must stay, red is covered by the avatar or page logo, and the white shape is the avatar itself.</p></aside>
+</div>
+</section>
 <section id="x">
 <h2>X</h2>
 <div class="cols">
   <div class="images"><figure>
   <figcaption><strong>Post image (thread opener)</strong><span>1600 × 900</span><a href="images/x-post-1-hero.png">images/x-post-1-hero.png</a></figcaption>
-  <div class="scroll"><img src="images/x-post-1-hero.png" width="1600" height="900" alt="X Post image (thread opener)"></div>
+  <div class="scroll"><div class="stage" style="width:1600px"><img src="images/x-post-1-hero.png" width="1600" height="900" alt="X Post image (thread opener)"></div></div>
 </figure>
 <figure>
   <figcaption><strong>Post image (Docs)</strong><span>1600 × 900</span><a href="images/x-post-2-docs.png">images/x-post-2-docs.png</a></figcaption>
-  <div class="scroll"><img src="images/x-post-2-docs.png" width="1600" height="900" alt="X Post image (Docs)"></div>
+  <div class="scroll"><div class="stage" style="width:1600px"><img src="images/x-post-2-docs.png" width="1600" height="900" alt="X Post image (Docs)"></div></div>
 </figure>
 <figure>
   <figcaption><strong>Post image (AI)</strong><span>1600 × 900</span><a href="images/x-post-3-ai.png">images/x-post-3-ai.png</a></figcaption>
-  <div class="scroll"><img src="images/x-post-3-ai.png" width="1600" height="900" alt="X Post image (AI)"></div>
-</figure>
-<figure>
-  <figcaption><strong>Profile header banner</strong><span>1500 × 500</span><a href="images/x-header.png">images/x-header.png</a></figcaption>
-  <div class="scroll"><img src="images/x-header.png" width="1500" height="500" alt="X Profile header banner"></div>
+  <div class="scroll"><div class="stage" style="width:1600px"><img src="images/x-post-3-ai.png" width="1600" height="900" alt="X Post image (AI)"></div></div>
 </figure></div>
   <aside><h3>X thread</h3><pre>Images: post 1 `images/x-post-1-hero.png`, post 3 `images/x-post-2-docs.png`, post 4
-`images/x-post-3-ai.png` (1600 × 900). Profile header: `images/x-header.png` (1500 × 500).
+`images/x-post-3-ai.png` (1600 × 900). Profile header: `packages/ui/assets/brand/generated/x-header-UPLOAD-3000x1000.png` (upload; 1500 × 500 display).
 
 **1/7**
 Bemmoly is out: self-hosted issues and docs for your whole team.
@@ -111,18 +162,14 @@ Optional support, unlocks nothing: https://buymeacoffee.com/bemmoly</pre></aside
 <div class="cols">
   <div class="images"><figure>
   <figcaption><strong>Post image</strong><span>1200 × 627</span><a href="images/linkedin-post.png">images/linkedin-post.png</a></figcaption>
-  <div class="scroll"><img src="images/linkedin-post.png" width="1200" height="627" alt="LinkedIn Post image"></div>
-</figure>
-<figure>
-  <figcaption><strong>Company page cover</strong><span>1128 × 191</span><a href="images/linkedin-cover.png">images/linkedin-cover.png</a></figcaption>
-  <div class="scroll"><img src="images/linkedin-cover.png" width="1128" height="191" alt="LinkedIn Company page cover"></div>
+  <div class="scroll"><div class="stage" style="width:1200px"><img src="images/linkedin-post.png" width="1200" height="627" alt="LinkedIn Post image"></div></div>
 </figure>
 <figure>
   <figcaption><strong>Square post image</strong><span>1200 × 1200</span><a href="images/linkedin-square.png">images/linkedin-square.png</a></figcaption>
-  <div class="scroll"><img src="images/linkedin-square.png" width="1200" height="1200" alt="LinkedIn Square post image"></div>
+  <div class="scroll"><div class="stage" style="width:1200px"><img src="images/linkedin-square.png" width="1200" height="1200" alt="LinkedIn Square post image"></div></div>
 </figure></div>
   <aside><h3>LinkedIn</h3><pre>Image: `images/linkedin-post.png` (1200 × 627), or `images/linkedin-square.png`
-(1200 × 1200). Company page cover: `images/linkedin-cover.png` (1128 × 191).
+(1200 × 1200). Company page cover: `packages/ui/assets/brand/generated/linkedin-cover-UPLOAD-4200x700.png` (upload; shown at 1128 × 191).
 
 **Post:**
 
@@ -153,31 +200,31 @@ your feedback to shape what follows: share ideas in GitHub Discussions
 <div class="cols">
   <div class="images"><figure>
   <figcaption><strong>Thumbnail</strong><span>240 × 240</span><a href="images/producthunt-thumbnail.png">images/producthunt-thumbnail.png</a></figcaption>
-  <div class="scroll"><img src="images/producthunt-thumbnail.png" width="240" height="240" alt="Product Hunt Thumbnail"></div>
+  <div class="scroll"><div class="stage" style="width:240px"><img src="images/producthunt-thumbnail.png" width="240" height="240" alt="Product Hunt Thumbnail"></div></div>
 </figure>
 <figure>
   <figcaption><strong>Gallery 1: the promise</strong><span>1270 × 760</span><a href="images/producthunt-1-promise.png">images/producthunt-1-promise.png</a></figcaption>
-  <div class="scroll"><img src="images/producthunt-1-promise.png" width="1270" height="760" alt="Product Hunt Gallery 1: the promise"></div>
+  <div class="scroll"><div class="stage" style="width:1270px"><img src="images/producthunt-1-promise.png" width="1270" height="760" alt="Product Hunt Gallery 1: the promise"></div></div>
 </figure>
 <figure>
   <figcaption><strong>Gallery 2: Work</strong><span>1270 × 760</span><a href="images/producthunt-2-work.png">images/producthunt-2-work.png</a></figcaption>
-  <div class="scroll"><img src="images/producthunt-2-work.png" width="1270" height="760" alt="Product Hunt Gallery 2: Work"></div>
+  <div class="scroll"><div class="stage" style="width:1270px"><img src="images/producthunt-2-work.png" width="1270" height="760" alt="Product Hunt Gallery 2: Work"></div></div>
 </figure>
 <figure>
   <figcaption><strong>Gallery 3: Docs</strong><span>1270 × 760</span><a href="images/producthunt-3-docs.png">images/producthunt-3-docs.png</a></figcaption>
-  <div class="scroll"><img src="images/producthunt-3-docs.png" width="1270" height="760" alt="Product Hunt Gallery 3: Docs"></div>
+  <div class="scroll"><div class="stage" style="width:1270px"><img src="images/producthunt-3-docs.png" width="1270" height="760" alt="Product Hunt Gallery 3: Docs"></div></div>
 </figure>
 <figure>
   <figcaption><strong>Gallery 4: AI</strong><span>1270 × 760</span><a href="images/producthunt-4-ai.png">images/producthunt-4-ai.png</a></figcaption>
-  <div class="scroll"><img src="images/producthunt-4-ai.png" width="1270" height="760" alt="Product Hunt Gallery 4: AI"></div>
+  <div class="scroll"><div class="stage" style="width:1270px"><img src="images/producthunt-4-ai.png" width="1270" height="760" alt="Product Hunt Gallery 4: AI"></div></div>
 </figure>
 <figure>
   <figcaption><strong>Gallery 5: self-hosting</strong><span>1270 × 760</span><a href="images/producthunt-5-install.png">images/producthunt-5-install.png</a></figcaption>
-  <div class="scroll"><img src="images/producthunt-5-install.png" width="1270" height="760" alt="Product Hunt Gallery 5: self-hosting"></div>
+  <div class="scroll"><div class="stage" style="width:1270px"><img src="images/producthunt-5-install.png" width="1270" height="760" alt="Product Hunt Gallery 5: self-hosting"></div></div>
 </figure>
 <figure>
   <figcaption><strong>Gallery 6: themes and branding</strong><span>1270 × 760</span><a href="images/producthunt-6-themes.png">images/producthunt-6-themes.png</a></figcaption>
-  <div class="scroll"><img src="images/producthunt-6-themes.png" width="1270" height="760" alt="Product Hunt Gallery 6: themes and branding"></div>
+  <div class="scroll"><div class="stage" style="width:1270px"><img src="images/producthunt-6-themes.png" width="1270" height="760" alt="Product Hunt Gallery 6: themes and branding"></div></div>
 </figure></div>
   <aside><h3>Product Hunt</h3><pre>Images: `images/producthunt-thumbnail.png` (240 × 240) and the gallery
 `images/producthunt-1-promise.png` to `images/producthunt-6-themes.png` (1270 × 760), in order.
@@ -224,7 +271,7 @@ nothing is locked.</pre></aside>
 <div class="cols">
   <div class="images"><figure>
   <figcaption><strong>r/selfhosted post image</strong><span>1920 × 1080</span><a href="images/reddit-selfhosted.png">images/reddit-selfhosted.png</a></figcaption>
-  <div class="scroll"><img src="images/reddit-selfhosted.png" width="1920" height="1080" alt="Reddit r/selfhosted post image"></div>
+  <div class="scroll"><div class="stage" style="width:1920px"><img src="images/reddit-selfhosted.png" width="1920" height="1080" alt="Reddit r/selfhosted post image"></div></div>
 </figure></div>
   <aside><h3>r/selfhosted</h3><pre>Image: `images/reddit-selfhosted.png` (1920 × 1080).
 
@@ -318,5 +365,8 @@ https://github.com/bemmoly/bemmoly/issues.
 Stack: TypeScript, Fastify, React, and Postgres (with pgvector) as the only datastore.</pre></aside>
 </div>
 </section>
+<script>
+document.getElementById('zones').addEventListener('change', (e) => document.body.classList.toggle('zones', e.target.checked));
+</script>
 </body>
 </html>

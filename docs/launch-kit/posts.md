@@ -172,7 +172,7 @@ nothing is locked.
 ## X thread
 
 Images: post 1 `images/x-post-1-hero.png`, post 3 `images/x-post-2-docs.png`, post 4
-`images/x-post-3-ai.png` (1600 × 900). Profile header: `images/x-header.png` (1500 × 500).
+`images/x-post-3-ai.png` (1600 × 900). Profile header: `packages/ui/assets/brand/generated/x-header-UPLOAD-3000x1000.png` (upload; 1500 × 500 display).
 
 **1/7**
 Bemmoly is out: self-hosted issues and docs for your whole team.
@@ -223,7 +223,7 @@ Optional support, unlocks nothing: https://buymeacoffee.com/bemmoly
 ## LinkedIn
 
 Image: `images/linkedin-post.png` (1200 × 627), or `images/linkedin-square.png`
-(1200 × 1200). Company page cover: `images/linkedin-cover.png` (1128 × 191).
+(1200 × 1200). Company page cover: `packages/ui/assets/brand/generated/linkedin-cover-UPLOAD-4200x700.png` (upload; shown at 1128 × 191).
 
 **Post:**
 

@@ -59,100 +59,79 @@ Keep this stable so a replacement drops in without code changes:
 Built from `mark-color.svg` (its designed colours) and `lockup-color.svg`; the plates use the Classic
 preset surface and the designed blue:
 
-| File                                             | Size        | Use                                                                                                                                                                                                                                                                   |
-| ------------------------------------------------ | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `favicon.svg`                                    | vector      | `<link rel="icon" type="image/svg+xml">`; the mark on transparent                                                                                                                                                                                                     |
-| `favicon-32.png`                                 | 32          | `<link rel="icon" sizes="32x32">`; mark at 72% on a white rounded square                                                                                                                                                                                              |
-| `apple-touch-icon.png`                           | 180         | `<link rel="apple-touch-icon">`; mark at 72% on a full-bleed white square (iOS rounds it and would paint transparent corners black)                                                                                                                                   |
-| `icon-192.png`, `icon-512.png`                   | 192, 512    | PWA manifest, `"purpose": "any"`; mark at 72% on a white rounded square                                                                                                                                                                                               |
-| `icon-maskable-192.png`, `icon-maskable-512.png` | 192, 512    | PWA manifest, `"purpose": "maskable"`; solid `#2356C9`, mark at 64% inside the safe zone with the blue tiles white, the mid tile 80% white and the lilac kept                                                                                                         |
-| `social-preview.png`                             | 1200 x 630  | `og:image` and `twitter:image`: lockup, tagline, one line about the product, the install command and a framed slice of the Board captured from the demo (`captures/board.png`) on the Classic background with an accent glow; composed by `scripts/social-preview.ts` |
-| `social-preview-square.png`                      | 1080 x 1080 | The same elements stacked (lockup, copy, Board) for platforms that crop square                                                                                                                                                                                        |
+| File                                             | Size     | Use                                                                                                                                                           |
+| ------------------------------------------------ | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `favicon.svg`                                    | vector   | `<link rel="icon" type="image/svg+xml">`; the mark on transparent                                                                                             |
+| `favicon-32.png`                                 | 32       | `<link rel="icon" sizes="32x32">`; mark at 72% on a white rounded square                                                                                      |
+| `apple-touch-icon.png`                           | 180      | `<link rel="apple-touch-icon">`; mark at 72% on a full-bleed white square (iOS rounds it and would paint transparent corners black)                           |
+| `icon-192.png`, `icon-512.png`                   | 192, 512 | PWA manifest, `"purpose": "any"`; mark at 72% on a white rounded square                                                                                       |
+| `icon-maskable-192.png`, `icon-maskable-512.png` | 192, 512 | PWA manifest, `"purpose": "maskable"`; solid `#2356C9`, mark at 64% inside the safe zone with the blue tiles white, the mid tile 80% white and the lilac kept |
 
 The app imports them through the package export `@bemmoly/ui/brand/generated/<file>`.
 
-## Captures (`captures/`, committed)
+## Social previews and banners
 
-`board.png` and `board-ocean.png` are the Board of the demo build (`apps/web`, `--mode demo`) at
-the homepage previews' viewport, 1280 x 744 at 2x (2560 x 1488), in Classic and in Ocean. Every
-social preview and banner frames a slice of them. `scripts/brand-captures.ts` takes them from a
-running demo, removes the demo banner and blanks the sidebar's version line, so the images do
-not go stale with a release:
+The social previews, profile banners, README hero and repository social preview are rendered
+by the same generator as the launch kit, `docs/launch-kit/src/render.ts`: HTML and CSS
+templates (`docs/launch-kit/src/templates.ts`, the `BRAND` list) rendered to PNG with
+Playwright at each platform's exact size. Every one is light, uses the logo's colours only,
+and carries the three promises as drawn check marks: 100% open source, No pricing, No in-app
+purchases. The product in them is a real capture of the demo (`docs/launch-kit/src/shots`),
+never a mock; on the banners it is a tilted glimpse of the board rather than a full frame.
 
-```sh
-pnpm --filter @bemmoly/web exec vite --mode demo --port 5431   # in another terminal
-pnpm --filter @bemmoly/ui brand:captures   # --url to point at another demo address
-pnpm --filter @bemmoly/ui brand:icons
-```
+Profile banners carry **no mark and no wordmark**: each platform shows the mark as the avatar
+beside them, so "bemmoly.com" sits above the tagline instead. The README hero and the social
+previews are shown with no avatar beside them, so they keep the lockup. The copy is "Your work.
+Your platform." over "Self-hosted issues and docs." with no version number.
 
-## Banners
+Sharpness: the demo is captured at 3x and the upload files are rendered at 2x to 3.7x from the
+same templates, so the product is always downscaled, never enlarged. Tilts are 3 degrees and no
+filter touches a screenshot.
 
-Profile banners, the README hero and the repository social preview, composed by
-`scripts/brand-banners.ts` from the same parts as the social preview: the tagline, the line
-about the product, the install command in a pill, the Board shot in a card frame bleeding off
-the right edge and the accent glow, with every colour from the tokens and the text outlined
-from the self-hosted IBM Plex. Each is rendered in the Classic light preset (the approved
-look) and in Ocean with the Ocean Board capture (`-ocean`, for comparison).
-
-The banners carry **no mark and no wordmark**: each platform shows the mark as the profile
-picture beside the banner, so the only name on them is "bemmoly.com", small, in a corner. The
-README hero and the repository social preview are shown with no avatar beside them, so those
-two keep the lockup.
-
-The copy is `HEADLINE` and `LINE` in `scripts/social-preview.ts`: "Your work. Your platform."
-over "Self-hosted issues and docs. Open source, no pricing, nothing to buy." It makes no claim
-the shipped product does not keep and carries no version number. The lilac tile of the mark is
-the only lilac on any of these images; the glow is the accent.
-
-Regenerate after changing the copy, a capture or a token:
+Regenerate after a UI, copy or token change:
 
 ```sh
-pnpm --filter @bemmoly/ui brand:banners      # banners only
-pnpm --filter @bemmoly/ui brand:icons        # icons, social preview and banners
-pnpm --filter @bemmoly/ui brand:banners --debug /tmp/banners   # also writes review copies
+pnpm --filter @bemmoly/web exec vite --mode demo --port 5500   # in another terminal
+pnpm --filter @bemmoly/ui brand:captures   # real screenshots of the demo
+pnpm --filter @bemmoly/ui brand:banners    # these files only
+node docs/launch-kit/src/render.ts         # captures, these files and the launch kit
 ```
 
-`--debug` writes copies with the safe zone dashed, the covered areas shaded and each text box
-traced. They are for review only; do not commit them. The script refuses to render a banner
-whose text leaves its safe zone, sits under a covered area or runs into the Board frame, so a
-copy or size change that breaks a rule fails the build instead of shipping.
+`docs/launch-kit/index.html` shows every file at real size with a "Show safe areas" toggle:
+green is where text must stay, red is what the platform covers, and the white shape is the
+avatar or page logo itself.
 
-| File                                           | Size                    | Where it goes                                                     |
-| ---------------------------------------------- | ----------------------- | ----------------------------------------------------------------- |
-| `banner-x-1500x500.png`, `@2x`                 | 1500 x 500, 3000 x 1000 | X profile header                                                  |
-| `banner-linkedin-company-1128x191.png`         | 1128 x 191              | LinkedIn company page cover                                       |
-| `banner-linkedin-personal-1584x396.png`, `@2x` | 1584 x 396, 3168 x 792  | LinkedIn personal profile background                              |
-| `banner-buymeacoffee-1600x400.png`             | 1600 x 400              | Buy Me a Coffee page cover                                        |
-| `readme-hero.png`                              | 1280 x 400              | Top of the repository README (light; `-ocean` under dark mode)    |
-| `github-social-preview-1280x640.png`           | 1280 x 640              | Repository Settings › General › Social preview (uploaded by hand) |
-
-Each has a `-ocean` twin (`banner-x-1500x500-ocean.png`, `banner-x-1500x500-ocean@2x.png`, and
-so on). The 2x files are for X and LinkedIn personal, which downscale a larger upload.
+| File                                           | Size                   | Where it goes                                                                                   |
+| ---------------------------------------------- | ---------------------- | ----------------------------------------------------------------------------------------------- |
+| `social-preview.png`                           | 1200 x 630             | `og:image` and `twitter:image` for bemmoly.com                                                  |
+| `social-preview-square.png`                    | 1080 x 1080            | Platforms that crop square                                                                      |
+| `github-social-preview-UPLOAD-2560x1280.png`   | 2560 x 1280            | Repository Settings › General › Social preview: the file to upload (`-1280x640` is the preview) |
+| `readme-hero.png`, `readme-hero-dark.png`      | 1280 x 400             | Top of the repository README, light and under dark mode                                         |
+| `x-header-UPLOAD-3000x1000.png`                | 3000 x 1000            | X profile header: the file to upload (`banner-x-1500x500.png` is the preview)                   |
+| `linkedin-cover-UPLOAD-4200x700.png`           | 4200 x 700             | LinkedIn company page cover: the file to upload                                                 |
+| `linkedin-cover-UPLOAD-3384x573.png`           | 3384 x 573             | The same cover at 3x of 1128 x 191, if LinkedIn asks for that ratio                             |
+| `banner-linkedin-company-1128x191.png`         | 1128 x 191             | Preview of the LinkedIn cover at its display size; do not upload                                |
+| `banner-linkedin-personal-1584x396.png`, `@2x` | 1584 x 396, 3168 x 792 | LinkedIn personal profile background                                                            |
+| `banner-buymeacoffee-1600x400.png`             | 1600 x 400             | Buy Me a Coffee page cover                                                                      |
 
 ### Safe zones
 
-All text sits inside the safe zone; only the glow and the Board frame reach the edges.
+All text sits inside the safe zone; only the background and the product glimpse reach the edges.
 
-- **X header (1500 x 500).** Phones crop the top and bottom, so text stays in the central
-  1500 x 360 band (y 70 to 430). On desktop the avatar overlaps the bottom-left 420 x 420, so
-  the copy starts at x 480. "bemmoly.com" is top-right, above the frame.
-- **LinkedIn company cover (1128 x 191).** The page logo overlaps about 270 x 140 at the
-  bottom-left and phones show only the middle, so text stays in the right two-thirds (from x
-  376), vertically centred: the tagline at 48px on one line and the line at 18px on two. The
-  **install pill is dropped**: under the tagline and the line it would push the block past the
-  191px height, and putting the line on one row to make room would squeeze the Board to a
-  sliver. The Board is cropped to its top bar and the first column, starting at the Projects tab.
-- **LinkedIn personal banner (1584 x 396).** The profile photo overlaps about 400 x 300 at
-  the bottom-left, so text stays right of x 480.
+- **X header (1500 x 500).** The avatar covers the bottom-left (treated as the left 32% by the
+  bottom 45%; on desktop a 134px circle from x 15 overlapping the bottom 70px) and phones crop
+  about 60px off the top and bottom. So the words and all three promises sit top-right, from
+  x 600 and between y 90 and 290, and the product glimpse takes the left, where the avatar may
+  cover it.
+- **LinkedIn company cover (1128 x 191, and 4200 x 700).** The page logo overlaps about
+  270 x 140 at the bottom-left on desktop and phones crop the sides, so the copy runs from x 300
+  to about x 750, vertically centred: bemmoly.com, the tagline on one line and the promises on
+  one row. The board glimpse sits at the right edge, where a phone's crop only trims it.
+- **LinkedIn personal banner (1584 x 396).** The profile photo overlaps about 400 x 300 at the
+  bottom-left, so text stays right of x 470.
 - **Buy Me a Coffee cover (1600 x 400).** Size from Buy Me a Coffee's help page,
-  [How to set up your Buy Me a Coffee page](https://help.buymeacoffee.com/en/articles/10184401-how-to-set-up-your-buy-me-a-coffee-page)
-  ("1600px wide by 400px tall"). The page does not document overlaps, so they were measured on
-  a live creator page: on phones (up to about 960px wide) the whole cover is shown with the
-  round avatar centred over its bottom, covering x 587 to 1014 from y 157; on desktop there is
-  no avatar on the cover, but the page's cards cover it from about y 270 at the narrowest
-  desktop width. So text stays above y 260, and left of the avatar column below y 150: the
-  tagline runs on one line across the top and the line and the pill sit at the left.
-- **README hero (1280 x 400).** GitHub shows it about 900px wide, so the type is sized for
-  0.7x: the 60px tagline, 24px line and 20px command read as about 42, 17 and 14px.
-- **Repository social preview (1280 x 640).** The 1200 x 630 social preview's composition at
-  GitHub's 2:1 size; the frame keeps its width and the copy column takes the extra.
+  [How to set up your Buy Me a Coffee page](https://help.buymeacoffee.com/en/articles/10184401-how-to-set-up-your-buy-me-a-coffee-page).
+  Measured on a live page: on phones the avatar is centred over x 587 to 1014 from y 157, and
+  on desktop the page's cards cover it from about y 270. So all text stays above y 150.
+- **README hero (1280 x 400).** GitHub shows it about 900px wide, so the type is sized to read
+  at 0.7x.
