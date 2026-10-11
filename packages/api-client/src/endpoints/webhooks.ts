@@ -13,15 +13,25 @@ import {
   type CreateWebhookDeliveryBody,
   type ListWebhookDeliveriesQuery,
   type UpdateWebhookBody,
-} from '@bemmoly/shared';
+} from '@bemmoly/shared/webhooks';
 import type { Http } from '../http.ts';
 import { enc, validated } from './validate.ts';
 
 const WEBHOOKS = '/api/v1/admin/webhooks';
 
+/** TanStack Query keys for webhooks; the root clears every list, catalog and log. */
+export const webhookKeys = {
+  all: () => ['webhooks'] as const,
+  list: () => ['webhooks', 'list'] as const,
+  catalog: () => ['webhooks', 'catalog'] as const,
+  targets: () => ['webhooks', 'targets'] as const,
+  deliveries: (id: string) => ['webhooks', id, 'deliveries'] as const,
+};
+
 /**
  * Settings › Webhooks: endpoints, the event and format catalog, a webhook's delivery log,
- * a test send and a redelivery. Create and rotate answer with the secret, once.
+ * a test send and a redelivery. Create and rotate answer with the secret, once. A subpath
+ * export, so only the screens that use it carry its schemas (ADR 0018).
  */
 export function webhookEndpoints(http: Http) {
   return {

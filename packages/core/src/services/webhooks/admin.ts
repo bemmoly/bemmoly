@@ -1,8 +1,8 @@
 import { randomUUID } from 'node:crypto';
+import { ValidationError } from '@bemmoly/shared';
 import {
   createWebhookBodySchema,
   updateWebhookBodySchema,
-  ValidationError,
   WEBHOOK_EVENTS,
   WEBHOOK_FORMATS,
   type CreateWebhookBody,
@@ -14,7 +14,7 @@ import {
   type WebhookDeliveryStatus,
   type WebhookTarget,
   type WebhookWithSecret,
-} from '@bemmoly/shared';
+} from '@bemmoly/shared/webhooks';
 import { assertAddressAllowed } from '../../clients/guarded-fetch.ts';
 import type { Actor } from '../../contracts/authz.ts';
 import {

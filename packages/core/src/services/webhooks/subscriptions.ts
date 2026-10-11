@@ -4,7 +4,7 @@ import {
   WEBHOOK_EVENT_KINDS,
   WEBHOOK_REQUESTED_EVENT,
   webhookRequestedPayloadSchema,
-} from '@bemmoly/shared';
+} from '@bemmoly/shared/webhooks';
 import type { DomainEvent, EventBus, Unsubscribe } from '../../contracts/event-bus.ts';
 import type { SqlExecutor } from '../../contracts/sql.ts';
 import { settingsOf, WEBHOOK_DELIVER_JOB, type WebhookDeps } from './context.ts';

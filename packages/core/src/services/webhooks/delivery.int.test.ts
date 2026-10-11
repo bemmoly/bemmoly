@@ -1,4 +1,5 @@
-import { NOTIFICATION_EVENT_KINDS, WEBHOOK_HEADERS } from '@bemmoly/shared';
+import { NOTIFICATION_EVENT_KINDS } from '@bemmoly/shared';
+import { WEBHOOK_HEADERS } from '@bemmoly/shared/webhooks';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import type { DomainEvent } from '../../contracts/event-bus.ts';
 import { startTestDatabase, type TestDatabase } from '../../testing/postgres.ts';

@@ -1,4 +1,5 @@
-import { isApiError, queryKeys } from '@bemmoly/api-client';
+import { isApiError } from '@bemmoly/api-client';
+import { webhookKeys } from '@bemmoly/api-client/webhooks';
 import {
   WEBHOOK_EVENTS,
   WEBHOOK_FORMATS,
@@ -6,17 +7,17 @@ import {
   type WebhookDelivery,
   type WebhookDeliveryStatus,
   type WebhookWithSecret,
-} from '@bemmoly/shared';
+} from '@bemmoly/shared/webhooks';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import type { PillTone } from '../components/settings/state-pill.tsx';
-import { api } from '../lib/api.ts';
 import { toast } from '../lib/toast.ts';
+import { webhooksApi } from '../lib/webhooks-api.ts';
 
 /** The secret is shown once and never cached. */
 const withoutSecret = ({ secret: _secret, ...webhook }: WebhookWithSecret): Webhook => webhook;
 
-export const webhookKey = (id: string) => [...queryKeys.webhooks.all(), 'one', id] as const;
+export const webhookKey = (id: string) => [...webhookKeys.all(), 'one', id] as const;
 
 /** "chat.acmelabs.dev": the receiving host, which tells two webhooks apart at a glance. */
 export function urlHost(url: string): string {
@@ -76,8 +77,8 @@ export const isForbidden = (error: unknown) => isApiError(error) && error.status
 /** Settings › Webhooks: every webhook of the workspace. */
 export function useWebhooks() {
   const query = useQuery({
-    queryKey: queryKeys.webhooks.list(),
-    queryFn: () => api.webhooks.list(),
+    queryKey: webhookKeys.list(),
+    queryFn: () => webhooksApi.list(),
   });
   return { query, webhooks: query.data?.items ?? [] };
 }
@@ -91,18 +92,18 @@ export function useWebhook(id: string) {
   const key = webhookKey(id);
   const query = useQuery({
     queryKey: key,
-    queryFn: () => api.webhooks.get(id),
+    queryFn: () => webhooksApi.get(id),
     initialData: () =>
       client
-        .getQueryData<{ items: Webhook[] }>(queryKeys.webhooks.list())
+        .getQueryData<{ items: Webhook[] }>(webhookKeys.list())
         ?.items.find((webhook) => webhook.id === id),
   });
-  const refresh = () => client.invalidateQueries({ queryKey: queryKeys.webhooks.all() });
+  const refresh = () => client.invalidateQueries({ queryKey: webhookKeys.all() });
   const [secret, setSecret] = useState<WebhookWithSecret | null>(null);
   const [test, setTest] = useState<WebhookDelivery | null>(null);
 
   const setEnabled = useMutation({
-    mutationFn: (enabled: boolean) => api.webhooks.update(id, { enabled }),
+    mutationFn: (enabled: boolean) => webhooksApi.update(id, { enabled }),
     onMutate: (enabled) => {
       const before = client.getQueryData<Webhook>(key);
       if (before) {
@@ -128,16 +129,16 @@ export function useWebhook(id: string) {
   });
 
   const ping = useMutation({
-    mutationFn: () => api.webhooks.deliver(id, { kind: 'ping' }),
+    mutationFn: () => webhooksApi.deliver(id, { kind: 'ping' }),
     onSuccess: (delivery) => {
       setTest(delivery);
-      void client.invalidateQueries({ queryKey: queryKeys.webhooks.deliveries(id) });
+      void client.invalidateQueries({ queryKey: webhookKeys.deliveries(id) });
     },
     onError: (error) => toast(`The test was not sent. ${error.message}`, 'danger'),
   });
 
   const rotate = useMutation({
-    mutationFn: () => api.webhooks.rotateSecret(id),
+    mutationFn: () => webhooksApi.rotateSecret(id),
     onSuccess: (webhook) => {
       setSecret(webhook);
       client.setQueryData(key, withoutSecret(webhook));
@@ -145,10 +146,10 @@ export function useWebhook(id: string) {
   });
 
   const remove = useMutation({
-    mutationFn: () => api.webhooks.remove(id),
+    mutationFn: () => webhooksApi.remove(id),
     onSuccess: async () => {
       client.removeQueries({ queryKey: key });
-      await client.invalidateQueries({ queryKey: queryKeys.webhooks.list() });
+      await client.invalidateQueries({ queryKey: webhookKeys.list() });
       toast(`${query.data?.name ?? 'Webhook'} deleted`);
     },
   });

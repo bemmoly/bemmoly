@@ -1,8 +1,8 @@
+import { parseOrThrow } from '@bemmoly/shared';
 import {
   createWebhookBodySchema,
   createWebhookDeliveryBodySchema,
   listWebhookDeliveriesQuerySchema,
-  parseOrThrow,
   updateWebhookBodySchema,
   webhookIdParamsSchema,
   type Webhook,
@@ -11,7 +11,7 @@ import {
   type WebhookDelivery,
   type WebhookTarget,
   type WebhookWithSecret,
-} from '@bemmoly/shared';
+} from '@bemmoly/shared/webhooks';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import type { ActorResolver } from '../middlewares/actor.ts';
 import type { WebhookAdmin } from '../services/webhooks/index.ts';

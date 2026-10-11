@@ -1,4 +1,5 @@
-import { ForbiddenError, ValidationError, WEBHOOK_HEADERS } from '@bemmoly/shared';
+import { ForbiddenError, ValidationError } from '@bemmoly/shared';
+import { WEBHOOK_HEADERS } from '@bemmoly/shared/webhooks';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { startTestDatabase, type TestDatabase } from '../../testing/postgres.ts';
 import { startWebhooksHarness, type WebhooksHarness } from '../../testing/webhooks-harness.ts';

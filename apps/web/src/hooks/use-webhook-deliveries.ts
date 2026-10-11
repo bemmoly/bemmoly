@@ -1,9 +1,9 @@
-import { queryKeys } from '@bemmoly/api-client';
+import { webhookKeys } from '@bemmoly/api-client/webhooks';
 import {
   WEBHOOK_DELIVERY_STATUSES,
   type WebhookDelivery,
   type WebhookDeliveryStatus,
-} from '@bemmoly/shared';
+} from '@bemmoly/shared/webhooks';
 import {
   keepPreviousData,
   useInfiniteQuery,
@@ -11,8 +11,8 @@ import {
   useQueryClient,
 } from '@tanstack/react-query';
 import { useMemo } from 'react';
-import { api } from '../lib/api.ts';
 import { toast } from '../lib/toast.ts';
+import { webhooksApi } from '../lib/webhooks-api.ts';
 import { useSearchParam } from './use-search-param.ts';
 
 const PAGE = 25;
@@ -32,9 +32,9 @@ export function useWebhookDeliveries(webhookId: string) {
   const [openId, setOpenId] = useSearchParam('delivery');
   const status: DeliveryFilter = isDeliveryStatus(statusParam) ? statusParam : 'all';
   const log = useInfiniteQuery({
-    queryKey: [...queryKeys.webhooks.deliveries(webhookId), status],
+    queryKey: [...webhookKeys.deliveries(webhookId), status],
     queryFn: ({ pageParam }) =>
-      api.webhooks.deliveries(webhookId, {
+      webhooksApi.deliveries(webhookId, {
         limit: PAGE,
         ...(status === 'all' ? {} : { status }),
         ...(pageParam ? { cursor: pageParam } : {}),
@@ -47,10 +47,10 @@ export function useWebhookDeliveries(webhookId: string) {
 
   const redeliver = useMutation({
     mutationFn: (delivery: WebhookDelivery) =>
-      api.webhooks.deliver(webhookId, { kind: 'redelivery', deliveryId: delivery.id }),
+      webhooksApi.deliver(webhookId, { kind: 'redelivery', deliveryId: delivery.id }),
     onSuccess: async () => {
       toast('Redelivery queued');
-      await client.invalidateQueries({ queryKey: queryKeys.webhooks.deliveries(webhookId) });
+      await client.invalidateQueries({ queryKey: webhookKeys.deliveries(webhookId) });
     },
     onError: (error) => toast(`Couldn't redeliver. ${error.message}`, 'danger'),
   });

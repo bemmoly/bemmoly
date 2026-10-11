@@ -1,4 +1,4 @@
-import type { Webhook } from '@bemmoly/shared';
+import type { Webhook } from '@bemmoly/shared/webhooks';
 import { RelativeTime, Table, type TableColumn } from '@bemmoly/ui';
 import { Icon } from '@bemmoly/ui/icons';
 import type { ReactNode } from 'react';

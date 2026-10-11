@@ -1,4 +1,4 @@
-import { queryKeys } from '@bemmoly/api-client';
+import { webhookEndpoints, webhookKeys } from '@bemmoly/api-client/webhooks';
 import type { SelectOption } from '@bemmoly/ui';
 import { useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
@@ -6,6 +6,8 @@ import { usePeople } from '../../hooks/issue-people.ts';
 import { useFields, useIssueTypes, useLabels, useStatuses } from '../../hooks/projects-catalog.ts';
 import { api } from '../../shared/index.ts';
 import { checkLql, settingsCatalog } from '../model/lql.ts';
+
+const webhooksApi = webhookEndpoints(api.http);
 
 const names = (values: Iterable<string>): SelectOption[] =>
   [...new Set(values)].map((name) => ({ value: name, label: name }));
@@ -29,8 +31,8 @@ export function useRuleOptions(projectKey: string | undefined, projectId: string
   const types = useIssueTypes(projectKey);
   const people = usePeople();
   const targets = useQuery({
-    queryKey: queryKeys.webhooks.targets(),
-    queryFn: () => api.webhooks.targets(),
+    queryKey: webhookKeys.targets(),
+    queryFn: () => webhooksApi.targets(),
     staleTime: 60_000,
   });
   const statuses = useMemo(

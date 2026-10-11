@@ -1,5 +1,6 @@
 import type { RequestContext, SqlExecutor } from '@bemmoly/core';
-import { ConflictError, DOMAIN_EVENT_KINDS, NotFoundError, ValidationError } from '@bemmoly/shared';
+import { ConflictError, NotFoundError, ValidationError } from '@bemmoly/shared';
+import { DOMAIN_EVENT_KINDS } from '@bemmoly/shared/webhooks';
 import type { CompleteSprintBody, Sprint, StartSprintBody } from '../../../../shared/sprints.ts';
 import { completeSprintBodySchema } from '../../../../shared/sprints.ts';
 import { audit, publishPlanningChange, type PlanningDeps } from '../boards/context.ts';

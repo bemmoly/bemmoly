@@ -1,4 +1,4 @@
-import { WEBHOOK_EVENTS, WEBHOOK_FORMATS } from '@bemmoly/shared';
+import { WEBHOOK_EVENTS, WEBHOOK_FORMATS } from '@bemmoly/shared/webhooks';
 import { act, waitFor } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { WEBHOOK_IDS } from '../mocks/seed/webhooks.ts';

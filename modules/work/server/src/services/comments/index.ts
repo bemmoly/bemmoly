@@ -1,10 +1,6 @@
 import { decodeCursor, toPage, type RequestContext, type SqlExecutor } from '@bemmoly/core';
-import {
-  DOMAIN_EVENT_KINDS,
-  ForbiddenError,
-  NotFoundError,
-  ValidationError,
-} from '@bemmoly/shared';
+import { ForbiddenError, NotFoundError, ValidationError } from '@bemmoly/shared';
+import { DOMAIN_EVENT_KINDS } from '@bemmoly/shared/webhooks';
 import type {
   Comment,
   CommentsPage,

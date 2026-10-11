@@ -1,4 +1,5 @@
-import { ForbiddenError, ValidationError, WEBHOOK_REQUESTED_EVENT } from '@bemmoly/shared';
+import { ForbiddenError, ValidationError } from '@bemmoly/shared';
+import { WEBHOOK_REQUESTED_EVENT } from '@bemmoly/shared/webhooks';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import type { Project } from '../../../../shared/projects.ts';
 import { startWorkHarness, type WorkHarness } from '../int-support.ts';

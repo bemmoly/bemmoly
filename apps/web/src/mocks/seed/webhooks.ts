@@ -3,7 +3,7 @@ import {
   type Webhook,
   type WebhookDelivery,
   type WebhookDeliveryStatus,
-} from '@bemmoly/shared';
+} from '@bemmoly/shared/webhooks';
 import { ago, ahead, uid } from './time.ts';
 
 /*

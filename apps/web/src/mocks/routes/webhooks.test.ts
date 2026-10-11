@@ -1,4 +1,4 @@
-import type { Webhook, WebhookDelivery } from '@bemmoly/shared';
+import type { Webhook, WebhookDelivery } from '@bemmoly/shared/webhooks';
 import { describe, expect, it } from 'vitest';
 import { createMockApi } from '../dispatch.ts';
 import { WEBHOOK_IDS } from '../seed/webhooks.ts';

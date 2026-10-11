@@ -1,4 +1,4 @@
-import type { DomainEventKind, WebhookFormat, WebhookFormatPreset } from '@bemmoly/shared';
+import type { DomainEventKind, WebhookFormat, WebhookFormatPreset } from '@bemmoly/shared/webhooks';
 import { Checkbox, Radio } from '@bemmoly/ui';
 import { formatPreview, type EventGroup } from '../../../hooks/use-webhook-form.ts';
 

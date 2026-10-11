@@ -1,5 +1,5 @@
 import type { RequestContext, SqlExecutor } from '@bemmoly/core';
-import { DOMAIN_EVENT_KINDS } from '@bemmoly/shared';
+import { DOMAIN_EVENT_KINDS } from '@bemmoly/shared/webhooks';
 import type { Sprint } from '../../../../shared/sprints.ts';
 import type { IssueServiceDeps } from '../issues/deps.ts';
 

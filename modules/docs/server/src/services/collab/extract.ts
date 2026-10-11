@@ -1,6 +1,6 @@
 import type { Actor, CollabChange } from '@bemmoly/core';
 import { plainText, wordCount } from '@bemmoly/editor/convert';
-import { DOMAIN_EVENT_KINDS } from '@bemmoly/shared';
+import { DOMAIN_EVENT_KINDS } from '@bemmoly/shared/webhooks';
 import {
   DOCS_REALTIME_KINDS,
   publishChange,

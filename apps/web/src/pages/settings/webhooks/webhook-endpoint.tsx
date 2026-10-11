@@ -1,4 +1,8 @@
-import { WEBHOOK_AUTO_DISABLE_AFTER, type Webhook, type WebhookDelivery } from '@bemmoly/shared';
+import {
+  WEBHOOK_AUTO_DISABLE_AFTER,
+  type Webhook,
+  type WebhookDelivery,
+} from '@bemmoly/shared/webhooks';
 import {
   Button,
   IconButton,

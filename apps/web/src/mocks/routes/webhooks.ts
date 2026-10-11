@@ -7,7 +7,7 @@ import {
   WEBHOOK_MAX_ATTEMPTS,
   type Webhook,
   type WebhookDelivery,
-} from '@bemmoly/shared';
+} from '@bemmoly/shared/webhooks';
 import { audit, can, type MockDb } from '../db.ts';
 import { newId } from '../seed/time.ts';
 import { mockSecret, seedDeliveries, seedWebhooks, type StoredWebhook } from '../seed/webhooks.ts';

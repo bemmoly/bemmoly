@@ -1,11 +1,11 @@
+import { NotFoundError } from '@bemmoly/shared';
 import {
-  NotFoundError,
   type Webhook,
   type WebhookDelivery,
   type WebhookDeliveryStatus,
   type WebhookEnvelope,
   type WebhookFormat,
-} from '@bemmoly/shared';
+} from '@bemmoly/shared/webhooks';
 import type { SqlExecutor } from '../../contracts/sql.ts';
 import { decodeCursor, toPage } from '../../utils/keyset.ts';
 

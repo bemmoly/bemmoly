@@ -1,22 +1,22 @@
-import { queryKeys } from '@bemmoly/api-client';
+import { webhookKeys } from '@bemmoly/api-client/webhooks';
+import { type ModuleManifest } from '@bemmoly/shared';
 import {
   createWebhookBodySchema,
   WEBHOOK_EVENTS,
   WEBHOOK_FORMATS,
   type CreateWebhookBody,
   type DomainEventKind,
-  type ModuleManifest,
   type Webhook,
   type WebhookCatalog,
   type WebhookFormat,
   type WebhookFormatPreset,
   type WebhookWithSecret,
-} from '@bemmoly/shared';
+} from '@bemmoly/shared/webhooks';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
-import { api } from '../lib/api.ts';
 import { serverFieldErrors, validateForm, type FieldErrors } from '../lib/errors.ts';
 import { toast } from '../lib/toast.ts';
+import { webhooksApi } from '../lib/webhooks-api.ts';
 import { useModules } from './use-modules.ts';
 import { webhookKey } from './use-webhooks.ts';
 
@@ -103,8 +103,8 @@ export function useWebhookForm(editing: Webhook | null, onClose: () => void) {
   const [errors, setErrors] = useState<FieldErrors>({});
   const [created, setCreated] = useState<WebhookWithSecret | null>(null);
   const catalog = useQuery({
-    queryKey: queryKeys.webhooks.catalog(),
-    queryFn: () => api.webhooks.catalog(),
+    queryKey: webhookKeys.catalog(),
+    queryFn: () => webhooksApi.catalog(),
     staleTime: 5 * 60_000,
   });
   const modules = useModules();
@@ -114,10 +114,10 @@ export function useWebhookForm(editing: Webhook | null, onClose: () => void) {
   const save = useMutation({
     mutationFn: async (body: CreateWebhookBody) =>
       editing
-        ? { webhook: await api.webhooks.update(editing.id, body), created: null }
-        : { webhook: null, created: await api.webhooks.create(body) },
+        ? { webhook: await webhooksApi.update(editing.id, body), created: null }
+        : { webhook: null, created: await webhooksApi.create(body) },
     onSuccess: async ({ webhook, created: made }) => {
-      await client.invalidateQueries({ queryKey: queryKeys.webhooks.all() });
+      await client.invalidateQueries({ queryKey: webhookKeys.all() });
       if (made) return setCreated(made);
       if (!webhook) return undefined;
       client.setQueryData(webhookKey(webhook.id), webhook);

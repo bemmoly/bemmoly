@@ -1,4 +1,4 @@
-import { WEBHOOK_AUTO_DISABLE_AFTER, WEBHOOK_MAX_ATTEMPTS } from '@bemmoly/shared';
+import { WEBHOOK_AUTO_DISABLE_AFTER, WEBHOOK_MAX_ATTEMPTS } from '@bemmoly/shared/webhooks';
 import type { Logger } from 'pino';
 import type { SqlClient } from '../../clients/postgres.ts';
 import type { WebhookClient } from '../../clients/webhook-http.ts';

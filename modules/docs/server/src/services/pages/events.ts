@@ -1,5 +1,5 @@
 import type { Actor, SqlExecutor } from '@bemmoly/core';
-import { DOMAIN_EVENT_KINDS } from '@bemmoly/shared';
+import { DOMAIN_EVENT_KINDS } from '@bemmoly/shared/webhooks';
 import type { DocsServiceDeps } from '../common.ts';
 import { pagePath } from '../palette/index.ts';
 import { pageById } from './rows.ts';

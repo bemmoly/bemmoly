@@ -1,4 +1,4 @@
-import { WEBHOOK_REQUESTED_EVENT, type WebhookRequestedPayload } from '@bemmoly/shared';
+import { WEBHOOK_REQUESTED_EVENT, type WebhookRequestedPayload } from '@bemmoly/shared/webhooks';
 import {
   AUTOMATION_ACTIONS,
   sendWebhookArgsSchema,

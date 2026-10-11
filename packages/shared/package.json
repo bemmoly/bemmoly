@@ -8,7 +8,8 @@
     ".": "./src/index.ts",
     "./ai-insights": "./src/schemas/ai/insights.ts",
     "./ai-answers": "./src/ai-answers.ts",
-    "./i18n/*": "./src/i18n/*"
+    "./i18n/*": "./src/i18n/*",
+    "./webhooks": "./src/schemas/webhooks/index.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit -p tsconfig.json",

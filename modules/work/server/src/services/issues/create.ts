@@ -1,5 +1,6 @@
 import type { RequestContext, SqlExecutor } from '@bemmoly/core';
-import { DOMAIN_EVENT_KINDS, NotFoundError, ValidationError } from '@bemmoly/shared';
+import { NotFoundError, ValidationError } from '@bemmoly/shared';
+import { DOMAIN_EVENT_KINDS } from '@bemmoly/shared/webhooks';
 import {
   createIssueBodySchema,
   type CreateIssueBody,

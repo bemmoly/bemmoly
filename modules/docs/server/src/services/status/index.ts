@@ -1,5 +1,6 @@
 import type { RequestContext } from '@bemmoly/core';
-import { ConflictError, DOMAIN_EVENT_KINDS, ValidationError } from '@bemmoly/shared';
+import { ConflictError, ValidationError } from '@bemmoly/shared';
+import { DOMAIN_EVENT_KINDS } from '@bemmoly/shared/webhooks';
 import type { PageDetail } from '../../../../shared/pages.ts';
 import {
   canTransition,

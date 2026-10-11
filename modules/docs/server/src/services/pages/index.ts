@@ -1,6 +1,7 @@
 import type { RequestContext, SqlExecutor } from '@bemmoly/core';
 import { plainText, wordCount } from '@bemmoly/editor/convert';
-import { ConflictError, DOMAIN_EVENT_KINDS, NotFoundError, ProviderError } from '@bemmoly/shared';
+import { ConflictError, NotFoundError, ProviderError } from '@bemmoly/shared';
+import { DOMAIN_EVENT_KINDS } from '@bemmoly/shared/webhooks';
 import type { RichText } from '../../../../shared/common.ts';
 import type { CreatePageBody, PageDetail, UpdatePageBody } from '../../../../shared/pages.ts';
 import {

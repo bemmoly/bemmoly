@@ -1,4 +1,4 @@
-import { WEBHOOK_HEADERS, WEBHOOK_PAYLOAD_VERSION } from '@bemmoly/shared';
+import { WEBHOOK_HEADERS, WEBHOOK_PAYLOAD_VERSION } from '@bemmoly/shared/webhooks';
 import { RedirectRefusedError } from '../../clients/guarded-fetch.ts';
 import { HostLookupError, PrivateAddressError } from '../../clients/network.ts';
 import { WebhookTimeoutError } from '../../clients/webhook-http.ts';

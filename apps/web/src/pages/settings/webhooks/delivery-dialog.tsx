@@ -1,4 +1,4 @@
-import type { WebhookDelivery } from '@bemmoly/shared';
+import type { WebhookDelivery } from '@bemmoly/shared/webhooks';
 import {
   Button,
   formatAbsolute,

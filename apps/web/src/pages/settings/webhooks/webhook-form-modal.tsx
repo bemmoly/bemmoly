@@ -1,4 +1,4 @@
-import type { Webhook } from '@bemmoly/shared';
+import type { Webhook } from '@bemmoly/shared/webhooks';
 import { Button, Checkbox, Field, Input, Modal, SkeletonText } from '@bemmoly/ui';
 import type { KeyboardEvent } from 'react';
 import { FormError } from '../../../components/form.tsx';

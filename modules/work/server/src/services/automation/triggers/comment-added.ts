@@ -1,4 +1,4 @@
-import { DOMAIN_EVENT_KINDS } from '@bemmoly/shared';
+import { DOMAIN_EVENT_KINDS } from '@bemmoly/shared/webhooks';
 import type { z } from 'zod';
 import { AUTOMATION_TRIGGERS, commentAddedArgsSchema } from '../../../../../shared/index.ts';
 import type { TriggerDefinition } from '../contract.ts';

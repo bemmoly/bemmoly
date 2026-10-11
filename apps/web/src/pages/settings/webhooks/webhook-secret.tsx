@@ -1,4 +1,4 @@
-import { WEBHOOK_HEADERS, WEBHOOK_SIGNATURE_TOLERANCE_SECONDS } from '@bemmoly/shared';
+import { WEBHOOK_HEADERS, WEBHOOK_SIGNATURE_TOLERANCE_SECONDS } from '@bemmoly/shared/webhooks';
 import { Button, Modal } from '@bemmoly/ui';
 import { Notice } from '../../../components/form.tsx';
 import { CopyField } from '../../../components/settings/copy-field.tsx';

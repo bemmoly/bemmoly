@@ -1,6 +1,6 @@
 import { verifyWebhookSignature } from '@bemmoly/core';
 import { startWebhookReceiver, type WebhookReceiver } from '@bemmoly/core/testing';
-import { WEBHOOK_HEADERS } from '@bemmoly/shared';
+import { WEBHOOK_HEADERS } from '@bemmoly/shared/webhooks';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { startBootHarness, type BootHarness, type SignedInApp } from './boot-harness.ts';
 

@@ -1,4 +1,4 @@
-import { DOMAIN_EVENT_KINDS } from '@bemmoly/shared';
+import { DOMAIN_EVENT_KINDS } from '@bemmoly/shared/webhooks';
 import {
   AUTOMATION_TRIGGERS,
   fieldChangedArgsSchema,

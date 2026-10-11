@@ -1,5 +1,5 @@
 import type { RequestContext, SqlExecutor } from '@bemmoly/core';
-import { DOMAIN_EVENT_KINDS } from '@bemmoly/shared';
+import { DOMAIN_EVENT_KINDS } from '@bemmoly/shared/webhooks';
 import type { Issue } from '../../../../shared/issues.ts';
 import type { HistoryChange } from '../history/index.ts';
 import type { IssueServiceDeps } from './deps.ts';

@@ -5,7 +5,7 @@ import {
   WEBHOOK_PAYLOAD_VERSION,
   type WebhookEnvelope,
   type WebhookFormat,
-} from '@bemmoly/shared';
+} from '@bemmoly/shared/webhooks';
 import type { DomainEvent } from '../../contracts/event-bus.ts';
 
 /** The test send's event name, and its fixed message. */

@@ -1,5 +1,5 @@
 import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
-import { WEBHOOK_SIGNATURE_TOLERANCE_SECONDS } from '@bemmoly/shared';
+import { WEBHOOK_SIGNATURE_TOLERANCE_SECONDS } from '@bemmoly/shared/webhooks';
 
 /** The sealed secret's associated data, so it opens only as a webhook secret. */
 export const SECRET_CONTEXT = 'webhooks.secret';
