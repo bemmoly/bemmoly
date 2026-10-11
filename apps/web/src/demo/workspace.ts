@@ -1,6 +1,8 @@
-import { PRESETS } from '@bemmoly/ui/tokens';
+import { isThemeId, RETIRED_PRESETS } from '@bemmoly/ui/tokens';
 import { createMockDb, type MockDb } from '../mocks/db.ts';
 import { atRelease } from './release.ts';
+
+const MODES = ['light', 'dark', 'system'] as const;
 
 /**
  * The demo's workspace: the mock backend's signed-in "ready" install (Acme Labs, its people,
@@ -10,9 +12,9 @@ import { atRelease } from './release.ts';
  * developer example: an install leaves it off, so a visitor never sees it, not even in
  * Settings › Modules.
  *
- * `?theme=<preset>` (for example `ocean`) starts the workspace in that preset, so the site's
- * previews can match the page around them. With a `version`, the install reports that release
- * everywhere (release.ts).
+ * `?theme=pine&mode=dark` starts the workspace in that theme and mode, so the site's previews
+ * can match the page around them. A retired preset id (`?theme=ocean`) still works: it maps to
+ * its theme in its old mode. With a `version`, the install reports that release everywhere.
  */
 export function demoWorkspace(options: { search?: string; version?: string } = {}): MockDb {
   const { search = '', version } = options;
@@ -22,10 +24,13 @@ export function demoWorkspace(options: { search?: string; version?: string } = {
   db.manifests = db.manifests.filter((manifest) => !example(manifest.id));
   db.grants = db.grants.filter((grant) => !example(grant.moduleId));
   db.adminModules = db.adminModules.filter((module) => !example(module.id));
-  const preset = PRESETS.find((entry) => entry.id === new URLSearchParams(search).get('theme'));
-  if (preset && preset.id !== 'light') {
-    db.settings['appearance.theme'] = preset.id;
-    db.settings['appearance.mode'] = preset.mode;
-  }
+  const params = new URLSearchParams(search);
+  const asked = params.get('theme') ?? '';
+  const retired = RETIRED_PRESETS[asked];
+  const theme = isThemeId(asked) ? asked : retired?.theme;
+  if (theme) db.settings['appearance.theme'] = theme;
+  if (retired) db.settings['appearance.font'] = retired.font;
+  const mode = MODES.find((entry) => entry === params.get('mode')) ?? retired?.mode;
+  if (mode) db.settings['appearance.defaultMode'] = mode;
   return db;
 }

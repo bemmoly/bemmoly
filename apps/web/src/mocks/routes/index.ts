@@ -1,5 +1,6 @@
 import type { MockRoute } from '../types.ts';
 import { apiTokenRoutes } from './api-tokens.ts';
+import { appearanceRoutes } from './appearance.ts';
 import { aiAdminRoutes } from './ai-admin.ts';
 import { aiInsightRoutes } from './ai-insights.ts';
 import { aiPlanRoutes } from './ai-plans.ts';
@@ -38,6 +39,7 @@ export const ROUTES: readonly MockRoute[] = [
   ...teamRoutes,
   ...settingsRoutes,
   ...ssoRoutes,
+  ...appearanceRoutes,
   ...aiAdminRoutes,
   ...aiProviderRoutes,
   ...aiRoleRoutes,
