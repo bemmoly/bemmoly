@@ -37,6 +37,7 @@ const SHOTS: Shot[] = [
   { name: 'issue', path: '/work/issue/PLT-204', mode: 'light' },
   { name: 'docs', path: RFC_PAGE, mode: 'light' },
   { name: 'backlog', path: '/work/backlog/PLT', mode: 'light' },
+  { name: 'roadmap', path: '/work/roadmap/PLT', mode: 'light' },
   { name: 'appearance', path: '/settings/appearance', mode: 'light' },
   {
     name: 'ai-summary',

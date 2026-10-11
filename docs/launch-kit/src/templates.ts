@@ -45,6 +45,8 @@ export interface LaunchImage {
   /** Extra renders at these device scales, saved as `<id>@<n>x.png` (or `as` when given). */
   scales?: { scale: number; as?: string }[];
   dark?: boolean;
+  /** Show the site's install command in a terminal chip under the promises. */
+  install?: boolean;
   /** Where text must stay, and what the platform covers (its avatar or page logo). */
   safe?: Rect;
   covered?: Rect[];
@@ -76,6 +78,7 @@ const HERO = 'Issues and docs on your own server';
 export const IMAGES: LaunchImage[] = [
   {
     id: 'x-post-1-hero',
+    install: true,
     platform: 'X',
     use: 'Post image (thread opener)',
     width: 1600,
@@ -112,6 +115,8 @@ export const IMAGES: LaunchImage[] = [
   },
   {
     id: 'linkedin-post',
+    install: true,
+    scales: [{ scale: 3 }, { scale: 2, as: 'linkedin-post-UPLOAD-2400x1254' }],
     platform: 'LinkedIn',
     use: 'Post image',
     width: 1200,
@@ -122,6 +127,8 @@ export const IMAGES: LaunchImage[] = [
   },
   {
     id: 'linkedin-square',
+    install: true,
+    scales: [{ scale: 3 }, { scale: 1.8, as: 'linkedin-square-UPLOAD-2160x2160' }],
     platform: 'LinkedIn',
     use: 'Square post image',
     width: 1200,
@@ -157,8 +164,8 @@ export const IMAGES: LaunchImage[] = [
     height: 760,
     layout: 'stack',
     kicker: 'Work',
-    headline: 'Boards, backlog, sprints, your workflows',
-    shot: 'backlog',
+    headline: 'Boards, sprints, a roadmap and automation',
+    shot: 'roadmap',
   },
   {
     id: 'producthunt-3-docs',
@@ -209,6 +216,7 @@ export const IMAGES: LaunchImage[] = [
   },
   {
     id: 'reddit-selfhosted',
+    install: true,
     platform: 'Reddit',
     use: 'r/selfhosted post image',
     width: 1920,
@@ -223,6 +231,9 @@ const CHECK =
 
 const promises = (): string =>
   `<ul class="promises">${PROMISES.map((p) => `<li><span class="tick">${CHECK}</span>${p}</li>`).join('')}</ul>`;
+
+const chip = (image: LaunchImage): string =>
+  image.install ? `<p class="chip"><span class="dim">$</span> ${INSTALL_COMMAND}</p>` : '';
 
 const kicker = (image: LaunchImage): string =>
   image.kicker ? `<p class="kicker${image.ai ? ' ai' : ''}">${image.kicker}</p>` : '';
@@ -239,14 +250,14 @@ function body(image: LaunchImage): string {
     case 'split':
       return `<div class="split">
         <div class="copy"><div class="lockup">${LOCKUP}</div>${kicker(image)}<h1>${image.headline}</h1>
-          ${image.sub ? `<p class="sub">${image.sub}</p>` : ''}${promises()}</div>
+          ${image.sub ? `<p class="sub">${image.sub}</p>` : ''}${promises()}${chip(image)}</div>
         ${frame(image.shot!, 'split-shot')}
         ${image.inset ? frame(image.inset, 'inset') : ''}
       </div>`;
     case 'stack':
       return `<div class="stack">
-        <div class="head"><div class="lockup">${LOCKUP}</div>${kicker(image)}<h1>${image.headline}</h1>${promises()}</div>
-        ${frame(image.shot!, 'stack-shot')}
+        <div class="head"><div class="lockup">${LOCKUP}</div>${kicker(image)}<h1>${image.headline}</h1>${promises()}${chip(image)}</div>
+        ${frame(image.shot!, `stack-shot${image.install ? ' low' : ''}`)}
       </div>`;
     case 'themes':
       return `<div class="stack">
@@ -259,7 +270,7 @@ function body(image: LaunchImage): string {
         <div class="copy"><div class="lockup">${LOCKUP}</div>${kicker(image)}<h1>${image.headline}</h1>${promises()}</div>
         <div class="terminal" data-theme="dark">
           <div class="bar"><i></i><i></i><i></i></div>
-          <pre><span class="dim">$</span> curl -fsSL https://get.bemmoly.com | sh</pre>
+          <pre><span class="dim">$</span> ${INSTALL_COMMAND}</pre>
           <ul class="facts">
             <li>One Docker image and one Postgres</li>
             <li>Automatic HTTPS with Caddy</li>
@@ -272,8 +283,8 @@ function body(image: LaunchImage): string {
       </div>`;
     case 'shotled':
       return `<div class="shotled">
-        ${frame(image.shot!, 'led-shot')}
-        <div class="strip"><div class="lockup">${LOCKUP}</div><h1>Self-hosted issues and docs</h1>${promises()}</div>
+        ${frame(image.shot!, `led-shot${image.install ? ' low' : ''}`)}
+        <div class="strip${image.install ? ' tall' : ''}"><div class="lockup">${LOCKUP}</div><div class="words"><h1>Self-hosted issues and docs</h1>${chip(image)}</div>${promises()}</div>
       </div>`;
   }
 }
@@ -355,6 +366,19 @@ h1{font-weight:600;letter-spacing:-0.02em;line-height:1.06;font-size:calc(var(--
 .domain{color:var(--b1);font-weight:600;margin-bottom:.5em}
 .chip{align-self:flex-start;margin-top:.9em;padding:.45em .9em;border-radius:.5em;background:#111418;color:#fff;font-family:PlexMono,monospace;font-weight:500;line-height:1.2;white-space:nowrap}
 .chip .dim{color:#8B95A5}
+/* the install chip on post images, sized to read in a feed */
+.split .chip,.stack .chip,.strip .chip{display:inline-block;margin-top:calc(var(--u)*32px);font-size:calc(var(--u)*23px);padding:.5em .85em}
+.split .copy{z-index:2}
+.stack .chip{margin-top:calc(var(--u)*24px);font-size:calc(var(--u)*28px)}
+.stack-shot.low{top:calc(var(--u)*430px)}
+.strip .words{flex:1;display:flex;flex-direction:column;align-items:flex-start;gap:calc(var(--u)*12px)}
+.strip .chip{margin:0;font-size:calc(var(--u)*22px)}
+.strip .promises li{white-space:nowrap}
+.strip.tall .promises{gap:calc(var(--u)*22px)}
+.strip.tall .promises li{font-size:calc(var(--u)*22px);gap:calc(var(--u)*10px)}
+.strip.tall .tick{width:calc(var(--u)*24px);height:calc(var(--u)*24px)}
+.strip.tall{height:calc(var(--u)*130px);bottom:calc(var(--u)*30px)}
+.led-shot.low{bottom:calc(var(--u)*190px)}
 body.dark{--tx:#E6E9EF;--tx2:#9AA3B2;--line:#2A3039;--bg:#111418;--b1:#5B7BE5;
   background:radial-gradient(120% 90% at 100% 0%,#1A2238 0%,rgba(26,34,56,0) 55%),var(--bg)}
 body.dark .glimpse{background-color:#111418;box-shadow:0 24px 70px rgba(0,0,0,.5)}
@@ -381,7 +405,7 @@ body.dark .glimpse{background-color:#111418;box-shadow:0 24px 70px rgba(0,0,0,.5
 .strip{position:absolute;left:calc(var(--u)*72px);right:calc(var(--u)*72px);bottom:calc(var(--u)*40px);height:calc(var(--u)*70px);
   display:flex;align-items:center;gap:calc(var(--u)*40px)}
 .strip .lockup svg{height:calc(var(--u)*36px)}
-.strip h1{font-size:calc(var(--u)*36px);flex:1}
+.strip h1{font-size:calc(var(--u)*36px)}
 .strip .promises{flex-direction:row;margin:0;gap:calc(var(--u)*28px)}
 .strip .promises li{font-size:calc(var(--u)*26px)}
 .strip .tick{width:calc(var(--u)*28px);height:calc(var(--u)*28px)}
