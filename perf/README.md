@@ -105,7 +105,7 @@ the app) and back to empty afterwards.
 seconds, two pairs typing) for `DURATION` (default 24h). Alongside, `src/soak/monitor.ts`
 samples the server every `--interval` seconds and writes one JSON line per sample: RSS, heap,
 event-loop lag, the database pool, open Postgres connections (`--db-cmd`), job queue depth
-per queue, WebSockets, and for the window since the last sample the API requests, 4xx, 5xx,
+per queue (jobs ready now; jobs scheduled for later are sampled apart as `queueDelayed`), WebSockets, and for the window since the last sample the API requests, 4xx, 5xx,
 429s and p50/p95/p99 from the latency histogram. On Ctrl-C or at `--duration` it writes a
 summary: first and last tenth, peak and growth per hour for memory and heap, p95 drift, peak
 connections and queue depth, the error rate, and verdicts (Node under 512 MB, heap not
