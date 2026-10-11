@@ -80,6 +80,7 @@ export function wireKernelServices(input: KernelServicesInput): KernelServices {
     events: kernel.events,
     jobs: kernel.jobs,
     realtime: kernel.realtime,
+    objectStore: kernel.objectStore,
   });
   input.backup.bind(system);
   registerSystemJobs(kernel.jobs, system);

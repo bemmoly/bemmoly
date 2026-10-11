@@ -1,5 +1,5 @@
 import { existsSync } from 'node:fs';
-import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import pino from 'pino';
@@ -7,6 +7,8 @@ import { createPgTools, type PgTools } from '../../../../clients/pg-tools.ts';
 import { createSqlClient, type SqlClient } from '../../../../clients/postgres.ts';
 import { runProcess } from '../../../../clients/process.ts';
 import { createTarTool } from '../../../../clients/tar.ts';
+import type { ObjectStore } from '../../../../contracts/object-store.ts';
+import { createDiskObjectStore } from '../../../storage/index.ts';
 import type { SystemDependencies } from '../../deps.ts';
 import { createLocalDestination } from '../destinations/local.ts';
 import type { BackupDestination } from '../destinations/types.ts';
@@ -49,6 +51,8 @@ export async function createHarness(input: {
   pgTools: PgTools;
   destinations: () => BackupDestination[];
   passphrase?: string;
+  /** Where uploads live; the disk store under the data dir when absent. */
+  objectStore?: ObjectStore;
 }): Promise<Harness> {
   const name = `bemmoly_it_${Math.random().toString(36).slice(2, 10)}`;
   await withAdmin(input.serverUrl, async (admin) => {
@@ -58,7 +62,7 @@ export async function createHarness(input: {
   const root = await mkdtemp(path.join(os.tmpdir(), 'bemmoly-backups-'));
   const dataDir = path.join(root, 'data');
   const backupDir = path.join(root, 'backups');
-  await mkdir(path.join(dataDir, 'attachments'), { recursive: true });
+  await mkdir(dataDir, { recursive: true });
   const sql = createSqlClient(databaseUrl, { maxConnections: 4, statementTimeoutMs: 0 });
   const local = createLocalDestination(backupDir);
   const deps: SystemDependencies = {
@@ -78,12 +82,16 @@ export async function createHarness(input: {
     authorize: async () => undefined,
     modules: () => ['sample'],
     destinations: async () => [local, ...input.destinations()],
+    ...(input.objectStore ? { objectStore: input.objectStore } : {}),
   };
   return { deps, sql, databaseUrl, dataDir, backupDir, local };
 }
 
+/** An upload as the files service stores it: an object under attachments/ in the disk store. */
 export async function writeAttachment(dataDir: string, name: string, body: string): Promise<void> {
-  const file = path.join(dataDir, 'attachments', name.slice(0, 2), name);
-  await mkdir(path.dirname(file), { recursive: true });
-  await writeFile(file, body);
+  await createDiskObjectStore({ root: dataDir }).put({
+    key: `attachments/${name.slice(0, 2)}/${name}`,
+    body: Buffer.from(body),
+    contentType: 'application/octet-stream',
+  });
 }

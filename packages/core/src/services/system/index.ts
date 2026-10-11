@@ -27,7 +27,7 @@ export {
   requestVerify,
   startManualBackup,
 } from './backups/admin.ts';
-export { ATTACHMENTS_SUBDIR, attachmentsDir } from './backups/attachments.ts';
+export { ATTACHMENTS_PREFIX } from './backups/attachments.ts';
 export {
   createLocalDestination,
   createS3Destination,

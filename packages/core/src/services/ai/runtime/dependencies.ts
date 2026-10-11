@@ -30,6 +30,27 @@ export interface AiPolicySource {
   policy(actor: Actor | null): Promise<AiPolicy>;
 }
 
+/** What a call asks the budget guard to hold while it runs. */
+export interface AiBudgetRequest {
+  role: AiRole;
+  estimateUsd: number;
+  /** After this the hold stops counting, released or not. */
+  ttlMs: number;
+}
+
+export interface AiBudgetReservation {
+  release(): Promise<void>;
+}
+
+/**
+ * Holds part of the monthly budget for a call in flight, so concurrent calls see each other
+ * before their cost is recorded. The database-backed one serialises every process.
+ */
+export interface AiBudgetGuard {
+  /** Throws the budget_reached refusal at or over the budget; null when no budget is set. */
+  reserve(request: AiBudgetRequest): Promise<AiBudgetReservation | null>;
+}
+
 export interface AiPromptSource {
   render(id: string, variables: Readonly<Record<string, string>>): Promise<AiRenderedPrompt>;
 }

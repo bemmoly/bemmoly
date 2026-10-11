@@ -9,6 +9,7 @@ import {
   type Database,
   type EventBus,
   type JobEnqueuer,
+  type ObjectStore,
   type KernelChangelogRunner,
   type RealtimePublisher,
   type SettingsService,
@@ -32,6 +33,8 @@ export interface SystemWiringInput {
   events?: EventBus;
   jobs?: JobEnqueuer;
   realtime?: RealtimePublisher;
+  /** Where uploads live, disk or S3; backups copy their attachments from it. */
+  objectStore?: ObjectStore;
 }
 
 /**
@@ -70,6 +73,7 @@ export function systemDependencies(input: SystemWiringInput): SystemDependencies
     ...(input.events ? { events: input.events } : {}),
     ...(input.jobs ? { jobs: input.jobs } : {}),
     ...(input.realtime ? { realtime: input.realtime } : {}),
+    ...(input.objectStore ? { objectStore: input.objectStore } : {}),
     ...(env.BEMMOLY_UPDATER_URL && env.UPDATER_TOKEN
       ? {
           updater: createUpdaterClient({

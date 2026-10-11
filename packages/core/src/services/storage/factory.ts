@@ -17,7 +17,11 @@ export interface ObjectStoreSelection {
 const FACTORIES: Record<StorageBackend, (selection: ObjectStoreSelection) => ObjectStore> = {
   disk: (selection) => createDiskObjectStore({ root: selection.dataDir }),
   s3: (selection) => {
-    if (!selection.s3) throw new TypeError('The s3 backend needs its configuration');
+    if (!selection.s3) {
+      throw new TypeError(
+        'The s3 storage backend needs BEMMOLY_STORAGE_S3_BUCKET and its credentials in the environment',
+      );
+    }
     return createS3ObjectStore(selection.s3);
   },
 };

@@ -1,12 +1,12 @@
 import { createModelServerClient } from '../../clients/model-server.ts';
 import { createModelsDevClient, type ModelsDevClient } from '../../clients/models-dev.ts';
+import type { SqlClient } from '../../clients/postgres.ts';
 import type { Logger } from '../../config/logger.ts';
 import type { AiFacade } from '../../contracts/ai.ts';
 import type { ClusterEventBus, EventBus } from '../../contracts/event-bus.ts';
 import type { JobQueue } from '../../contracts/jobs.ts';
 import type { RealtimePublisher } from '../../contracts/realtime.ts';
 import type { SettingsService } from '../../contracts/settings.ts';
-import type { SqlExecutor } from '../../contracts/sql.ts';
 import type { AiExclusionSourceDefinition } from '../../modules/registries.ts';
 import type { SecretBox } from '../settings/index.ts';
 import { AI_SETTINGS_CHANGED, type AiServiceContext } from './admin/context.ts';
@@ -17,12 +17,14 @@ import { createPromptService, type ModulePromptFile } from './prompts/service.ts
 import { createAiFacade } from './runtime/facade.ts';
 import { createDbModelSource } from './runtime/model-source.ts';
 import { createRecordedModelSource, readRecording } from './runtime/recorded.ts';
+import { createDbBudgetGuard } from './budget-guard.ts';
 import { watchBudget } from './budget-watch.ts';
 import { personNames } from './store/preferences.ts';
 import { insertRun } from './store/runs.ts';
 
 export interface AiServiceDependencies {
-  sql: SqlExecutor;
+  /** The pool: the budget guard opens its own short transactions. */
+  sql: SqlClient;
   secrets: SecretBox;
   settings: SettingsService;
   authorize: AiServiceContext['authorize'];
@@ -102,6 +104,7 @@ export function createAiService(deps: AiServiceDependencies): AiService {
     policy,
     prompts,
     names: { names: () => personNames(deps.sql) },
+    budget: createDbBudgetGuard({ sql: deps.sql, settings: deps.settings }),
     runs: {
       async record(run) {
         const id = await insertRun(deps.sql, run);

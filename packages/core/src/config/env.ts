@@ -92,6 +92,18 @@ export const envSchema = z.object({
   BEMMOLY_DB_AUTO_MIGRATE: z.stringbool().default(true),
   BEMMOLY_DB_CONTEXTS: contextList,
   BEMMOLY_BACKUP_DIR: z.string().min(1).default('/var/bemmoly/backups'),
+  /**
+   * Uploaded files in an S3-compatible bucket, used when the system.storage.backend
+   * setting is s3. Backups copy the bucket's attachments into every backup either way.
+   */
+  BEMMOLY_STORAGE_S3_BUCKET: z.string().min(3).optional(),
+  BEMMOLY_STORAGE_S3_REGION: z.string().min(1).default('us-east-1'),
+  /** Empty for the provider's default endpoint; set for any other S3-compatible service. */
+  BEMMOLY_STORAGE_S3_ENDPOINT: z.url({ protocol: /^https?$/ }).optional(),
+  BEMMOLY_STORAGE_S3_ACCESS_KEY_ID: z.string().min(1).optional(),
+  BEMMOLY_STORAGE_S3_SECRET_ACCESS_KEY: z.string().min(1).optional(),
+  BEMMOLY_STORAGE_S3_FORCE_PATH_STYLE: z.stringbool().default(false),
+  BEMMOLY_STORAGE_S3_PREFIX: z.string().optional(),
   /** The release this image is; unset or empty means the server package's own version. */
   BEMMOLY_VERSION: z
     .string()
@@ -104,6 +116,37 @@ export const envSchema = z.object({
 });
 
 export type Env = z.output<typeof envSchema>;
+
+export type StorageS3Env = Pick<
+  Env,
+  | 'BEMMOLY_STORAGE_S3_BUCKET'
+  | 'BEMMOLY_STORAGE_S3_REGION'
+  | 'BEMMOLY_STORAGE_S3_ENDPOINT'
+  | 'BEMMOLY_STORAGE_S3_ACCESS_KEY_ID'
+  | 'BEMMOLY_STORAGE_S3_SECRET_ACCESS_KEY'
+  | 'BEMMOLY_STORAGE_S3_FORCE_PATH_STYLE'
+  | 'BEMMOLY_STORAGE_S3_PREFIX'
+>;
+
+/** The S3 object store's settings from the environment, or null when no bucket is set. */
+export function storageS3ConfigOf(env: StorageS3Env) {
+  if (!env.BEMMOLY_STORAGE_S3_BUCKET) return null;
+  if (!env.BEMMOLY_STORAGE_S3_ACCESS_KEY_ID || !env.BEMMOLY_STORAGE_S3_SECRET_ACCESS_KEY) {
+    throw new EnvError([
+      'BEMMOLY_STORAGE_S3_ACCESS_KEY_ID and BEMMOLY_STORAGE_S3_SECRET_ACCESS_KEY: required with BEMMOLY_STORAGE_S3_BUCKET',
+    ]);
+  }
+  return {
+    ...(env.BEMMOLY_STORAGE_S3_ENDPOINT ? { endpoint: env.BEMMOLY_STORAGE_S3_ENDPOINT } : {}),
+    region: env.BEMMOLY_STORAGE_S3_REGION,
+    bucket: env.BEMMOLY_STORAGE_S3_BUCKET,
+    forcePathStyle: env.BEMMOLY_STORAGE_S3_FORCE_PATH_STYLE,
+    accessKeyId: env.BEMMOLY_STORAGE_S3_ACCESS_KEY_ID,
+    secretAccessKey: env.BEMMOLY_STORAGE_S3_SECRET_ACCESS_KEY,
+    ...(env.BEMMOLY_STORAGE_S3_PREFIX ? { prefix: env.BEMMOLY_STORAGE_S3_PREFIX } : {}),
+    timeoutMs: 120_000,
+  };
+}
 
 export class EnvError extends Error {
   override readonly name = 'EnvError';

@@ -23,7 +23,7 @@ describe('the morning brief', () => {
     expect(screen.getAllByRole('link', { name: 'PLT-204' }).length).toBeGreaterThan(0);
     expect(screen.getByRole('button', { name: 'Review PLT-204' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Not useful' })).toBeTruthy();
-  }, 10_000);
+  });
 
   it('is not drawn on Home, nor its chunk loaded, while AI is off', async () => {
     aiOf(mockApi.db).settings.privacy.enabled = false;

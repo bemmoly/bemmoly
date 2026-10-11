@@ -22,6 +22,13 @@ RUN --mount=type=cache,id=bemmoly-pnpm,target=/pnpm/store \
  && rm -f deploy/updater/Dockerfile deploy/updater/Dockerfile.dockerignore
 
 FROM ${NODE_IMAGE} AS runtime
+RUN apt-get update \
+ && apt-get install --yes --no-install-recommends ca-certificates tini \
+ && rm -rf /var/lib/apt/lists/*
+COPY --from=cosign /ko-app/cosign /usr/local/bin/cosign
+# Build metadata comes last, so a new commit or version never invalidates the cached layers
+# above. The release workflow passes all three; deploy/scripts/check-image-labels.sh fails
+# its build when a label is missing or left "unknown".
 ARG BEMMOLY_VERSION=0.0.0-dev
 ARG REVISION=unknown
 ARG CREATED=unknown
@@ -33,10 +40,6 @@ LABEL org.opencontainers.image.title="Bemmoly updater" \
       org.opencontainers.image.source="https://github.com/bemmoly/bemmoly" \
       org.opencontainers.image.licenses="MIT" \
       org.opencontainers.image.vendor="Bemmoly contributors"
-RUN apt-get update \
- && apt-get install --yes --no-install-recommends ca-certificates tini \
- && rm -rf /var/lib/apt/lists/*
-COPY --from=cosign /ko-app/cosign /usr/local/bin/cosign
 # The container runs read-only with /tmp as its only writable path; cosign caches
 # Sigstore's trust root here instead of ~/.sigstore.
 ENV TUF_ROOT=/tmp/sigstore \

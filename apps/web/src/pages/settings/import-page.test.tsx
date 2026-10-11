@@ -43,7 +43,7 @@ describe('Settings › Import', () => {
     expect(within(report).getByText('and 3 more')).toBeDefined();
     expect(within(report).getByRole('button', { name: 'Run again' })).toBeDefined();
     expect(within(report).getByText(/updates what this import made/)).toBeDefined();
-  }, 10_000);
+  });
 
   it('says why the connection was refused, beside the form', async () => {
     await connectToJira('wrong');

@@ -34,7 +34,7 @@ import {
   type SettingDefinition,
   type SqlClient,
 } from '@bemmoly/core';
-import type { Env, Logger } from '@bemmoly/core/config';
+import { storageS3ConfigOf, type Env, type Logger, type StorageS3Env } from '@bemmoly/core/config';
 import { DEFAULT_UPLOAD_MAX_BYTES } from '@bemmoly/shared';
 import type { IdentityWiring } from './identity.ts';
 import { appVersionOf } from './version.ts';
@@ -50,7 +50,8 @@ export interface DataKernelInput {
     | 'BEMMOLY_DB_CONTEXTS'
     | 'BEMMOLY_VERSION'
     | 'BEMMOLY_UPLOAD_MAX_BYTES'
-  > & { DATABASE_URL: string };
+  > &
+    StorageS3Env & { DATABASE_URL: string };
   sql: SqlClient;
   /** Every module in the image, registered with the realtime event bus and job queue. */
   modules: ModuleRegistry;
@@ -121,9 +122,11 @@ export async function createDataKernel(input: DataKernelInput): Promise<DataKern
     realtime: realtime.publisher,
     logger,
   });
+  const s3 = storageS3ConfigOf(env);
   const objectStore = createObjectStore({
     backend: await settings.get('system.storage.backend'),
     dataDir: env.BEMMOLY_DATA_DIR,
+    ...(s3 ? { s3 } : {}),
   });
   const files = createFilesService({
     sql,

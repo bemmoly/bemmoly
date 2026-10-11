@@ -40,6 +40,13 @@ export {
   latestPrereleaseManifestUrl,
   MANIFEST_ASSET,
 } from './release-manifest.ts';
-export { createS3Bucket, type S3Bucket, type S3BucketConfig } from './s3-bucket.ts';
+export {
+  createS3Bucket,
+  isMissingObject,
+  type S3Bucket,
+  type S3BucketConfig,
+  type S3ListPage,
+  type S3ObjectInfo,
+} from './s3-bucket.ts';
 export { createTarTool, type TarOptions, type TarTool } from './tar.ts';
 export { createUpdaterClient, type UpdaterClient, type UpdaterClientConfig } from './updater.ts';

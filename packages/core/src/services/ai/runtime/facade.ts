@@ -19,8 +19,10 @@ import type {
   AiStreamResult,
 } from '../../../contracts/ai.ts';
 import { aiRefusal } from '../refusals.ts';
+import { estimateCallUsd, reserveBudget } from './budget.ts';
 import {
   DEFAULT_TIMEOUT_MS,
+  type AiBudgetGuard,
   type AiNameSource,
   type AiPolicySource,
   type AiPromptSource,
@@ -38,6 +40,8 @@ export interface AiFacadeDependencies {
   runs: AiRunRecorder;
   prompts: AiPromptSource;
   names?: AiNameSource;
+  /** Holds budget for standard and strong calls in flight; without it only the policy gates. */
+  budget?: AiBudgetGuard;
   /** SDK-level retries on rate limits, timeouts and 5xx (with the provider's retry-after). */
   maxRetries?: number;
 }
@@ -96,11 +100,28 @@ export function createAiFacade(deps: AiFacadeDependencies): AiFacade {
       middleware: [redaction.middleware],
     });
     const log = createRunLog(deps.runs, input, resolved);
-    return { resolved, model, log };
+    // Last, so nothing between reserving and running can fail and leave the hold behind.
+    const reservation = await reserveBudget(
+      deps.budget,
+      input.role,
+      estimateCallUsd(resolved.capabilities, input, maxOutputTokensOf(input, resolved)),
+      timeoutOf(input),
+    );
+    // Called after the run is recorded, so the call is never counted zero times.
+    const release = async () => reservation?.release();
+    return { resolved, model, log, release };
+  }
+
+  function maxOutputTokensOf(input: AnyInput, resolved: ResolvedLanguageModel) {
+    return input.maxOutputTokens ?? resolved.defaults.maxOutputTokens;
+  }
+
+  function timeoutOf(input: AnyInput) {
+    return input.timeoutMs ?? DEFAULT_TIMEOUT_MS[input.role];
   }
 
   function callSettings(input: AnyInput, resolved: ResolvedLanguageModel) {
-    const maxOutputTokens = input.maxOutputTokens ?? resolved.defaults.maxOutputTokens;
+    const maxOutputTokens = maxOutputTokensOf(input, resolved);
     const temperature = input.temperature ?? resolved.defaults.temperature;
     return {
       ...(input.system !== undefined ? { system: input.system } : {}),
@@ -126,7 +147,7 @@ export function createAiFacade(deps: AiFacadeDependencies): AiFacade {
       ...callSettings(input, resolved),
       ...(tools ? { tools } : {}),
       ...(input.schema ? { output: Output.object({ schema: input.schema as never }) } : {}),
-      abortSignal: signalOf(input, input.timeoutMs ?? DEFAULT_TIMEOUT_MS[input.role]),
+      abortSignal: signalOf(input, timeoutOf(input)),
     });
   }
 
@@ -153,13 +174,15 @@ export function createAiFacade(deps: AiFacadeDependencies): AiFacade {
       )) as never;
     } catch (error) {
       throw await log.failure(error, input.signal, repaired);
+    } finally {
+      await prepared.release();
     }
   }
 
   async function stream<O>(raw: AiGenerateInput<O>): Promise<AiStreamResult<O>> {
     const input = raw as AnyInput;
     const prepared = await prepare(input);
-    const { resolved, model, log } = prepared;
+    const { resolved, model, log, release } = prepared;
     const tools = toolsOf(input);
     let streamError: unknown;
     let streamedChars = 0;
@@ -169,7 +192,7 @@ export function createAiFacade(deps: AiFacadeDependencies): AiFacade {
       ...callSettings(input, resolved),
       ...(tools ? { tools } : {}),
       ...(input.schema ? { output: Output.object({ schema: input.schema as never }) } : {}),
-      abortSignal: signalOf(input, input.timeoutMs ?? DEFAULT_TIMEOUT_MS[input.role]),
+      abortSignal: signalOf(input, timeoutOf(input)),
       onChunk: ({ chunk }) => {
         if (chunk.type === 'text-delta') streamedChars += chunk.text.length;
       },
@@ -195,6 +218,8 @@ export function createAiFacade(deps: AiFacadeDependencies): AiFacade {
         );
       } catch (error) {
         throw await log.failure(streamError ?? error, input.signal, false, streamedChars);
+      } finally {
+        await release();
       }
     })();
     // The caller may only read the stream; the result still settles and records the run.

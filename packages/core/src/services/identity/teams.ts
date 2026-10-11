@@ -7,7 +7,7 @@ import {
   type TeamMember,
   type UpdateTeamInput,
 } from '@bemmoly/shared';
-import { and, asc, eq, ne, sql } from 'drizzle-orm';
+import { and, asc, eq, getTableName, ne, sql } from 'drizzle-orm';
 import type { Database } from '../../clients/drizzle.ts';
 import {
   moduleGrants,
@@ -22,7 +22,12 @@ import { bumpPrivilegeVersion, type RequestContext } from '../authz/index.ts';
 
 const MANAGE = 'workspace.roles.manage' as const;
 
-const memberCount = sql<number>`(select count(*)::int from team_members m where m.team_id = ${teams.id})`;
+/*
+ * The outer column is named by hand: in a filtered select Drizzle prints `${teams.id}` as a
+ * bare "id", which inside this subquery is team_members.id, so every team counted 0.
+ */
+const memberCount = sql<number>`(select count(*)::int from team_members m
+  where m.team_id = ${sql.identifier(getTableName(teams))}.${sql.identifier(teams.id.name)})`;
 
 function presentTeam(row: TeamRow, count: number): Team {
   return {

@@ -1,16 +1,13 @@
 import type { BackupKind } from '@bemmoly/shared';
-import { createWriteStream } from 'node:fs';
 import { mkdir, rm } from 'node:fs/promises';
 import path from 'node:path';
 import type { SystemDependencies } from '../deps.ts';
 import { publishSystemEvent } from '../events.ts';
 import { readSetting } from '../settings.ts';
 import { diskSpace, formatBytes, requiredBackupSpace } from '../utils/disk.ts';
-import { createDigestStream } from '../utils/hashing.ts';
+import { attachmentStore, stageAttachments } from './attachment-files.ts';
 import {
-  ATTACHMENTS_ARCHIVE,
   ATTACHMENTS_INDEX,
-  attachmentsDir,
   planAttachments,
   scanAttachments,
   serializeIndex,
@@ -22,7 +19,7 @@ import { buildManifest, setNameFor } from './manifest.ts';
 import { loadPreviousBackup } from './previous.ts';
 import { pruneBackups } from './prune.ts';
 import { createBackupRepository, type BackupRecord } from './repository.ts';
-import { DATABASE_PART, storeSet, type StagedPart, type StoredVariant } from './store-set.ts';
+import { DATABASE_PART, storeSet, type StoredVariant } from './store-set.ts';
 
 export interface RunBackupRequest {
   kind: BackupKind;
@@ -36,25 +33,6 @@ export interface RunBackupRequest {
 
 export class BackupRefusedError extends Error {
   override readonly name = 'BackupRefusedError';
-}
-
-async function stageAttachments(
-  deps: SystemDependencies,
-  staging: string,
-  files: readonly string[],
-): Promise<StagedPart | null> {
-  if (files.length === 0) return null;
-  const file = path.join(staging, ATTACHMENTS_ARCHIVE);
-  const digest = createDigestStream();
-  const out = createWriteStream(file, { mode: 0o640 });
-  const written = new Promise<void>((resolve, reject) => {
-    out.once('finish', resolve);
-    out.once('error', reject);
-  });
-  digest.pipe(out);
-  await deps.tar.create(attachmentsDir(deps.config.dataDir), files, digest);
-  await written;
-  return { path: file, name: ATTACHMENTS_ARCHIVE, digest: digest.digest() };
 }
 
 /** Tells open Settings › Storage and backups pages to refetch; never fails a backup. */
@@ -128,7 +106,7 @@ export async function runBackup(
     await deps.pgTools.list(dumpFile);
 
     const destinations = await resolveDestinations(deps);
-    const current = await scanAttachments(attachmentsDir(deps.config.dataDir));
+    const current = await scanAttachments(attachmentStore(deps));
     const plan = planAttachments({
       setName: record.setName,
       current,

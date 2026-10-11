@@ -9,6 +9,7 @@ import {
 import { createTestInsights, moduleWithAi, type TestInsights } from '../../../testing/insights.ts';
 import { applyKernelChangelog } from '../../../testing/kernel-changelog.ts';
 import { startTestDatabase, type TestDatabase } from '../../../testing/postgres.ts';
+import { createQueryCounter, expectMaxQueries } from '../../../testing/query-count.ts';
 import type { RequestContext } from '../../authz/index.ts';
 import { createContextWriter, defineContextBuilder } from '../context/index.ts';
 import { createTestAi, type TestAi } from '../test-ai.ts';
@@ -18,6 +19,7 @@ const SECRET = 'the secret rollback plan';
 let server: TestDatabase;
 let database: IsolatedDatabase | undefined;
 let sql: SqlClient | undefined;
+const queries = createQueryCounter();
 let userId = '';
 
 /** A one-table fake module: a note with a body, in a project, by an author. */
@@ -85,7 +87,7 @@ beforeAll(async () => {
   server = await startTestDatabase();
   if (!server.available) return;
   database = await createIsolatedDatabase(server.url);
-  sql = createSqlClient(database.url, { maxConnections: 4 });
+  sql = createSqlClient(database.url, { maxConnections: 4, onQuery: queries.record });
   await applyKernelChangelog(sql);
   await sql`create table test_notes (id uuid primary key default uuidv7(), title text not null,
     body text not null, project_id uuid not null)`;
@@ -120,7 +122,7 @@ beforeEach(async () => {
 });
 
 describe('the insight cache against a real database', () => {
-  it('queues the first summary, then serves it from cache in under 10 ms', async (ctx) => {
+  it('queues the first summary, then serves it from cache', async (ctx) => {
     if (!sql) return ctx.skip(server.available ? 'no database' : server.reason);
     const first = await t.insights.get(ctxFor(userId), 'issue_summary', noteId);
     expect(first).toMatchObject({ state: 'pending', content: null, id: null });
@@ -130,15 +132,14 @@ describe('the insight cache against a real database', () => {
     expect(await t.drain()).toBe(1);
     expect(t.realtime).toEqual([{ kind: 'ai.insight', ids: [noteId], projectId }]);
 
-    const timings: number[] = [];
+    // Served from cache, measured as work done rather than milliseconds, which a loaded CI
+    // runner cannot promise: the stored insight and the input it hashes, no model call, no job.
     let ready;
     for (let n = 0; n < 5; n += 1) {
-      const started = performance.now();
-      ready = await t.insights.get(ctxFor(userId), 'issue_summary', noteId);
-      timings.push(performance.now() - started);
+      ready = await expectMaxQueries(queries, 2, () =>
+        t.insights.get(ctxFor(userId), 'issue_summary', noteId),
+      );
     }
-    timings.sort((a, b) => a - b);
-    expect(timings[2]).toBeLessThan(10);
     expect(ready).toMatchObject({ state: 'ready', kind: 'issue_summary' });
     expect(ready!.content?.citations.map((c) => c.objectId)).toEqual([noteId]);
     expect(ready!.content?.source).toEqual({ counts: { notes: 1 }, titlesOnly: false });

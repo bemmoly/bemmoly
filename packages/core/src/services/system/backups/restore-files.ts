@@ -3,7 +3,7 @@ import { mkdir, rm } from 'node:fs/promises';
 import path from 'node:path';
 import { createSqlClient } from '../../../clients/postgres.ts';
 import type { SystemDependencies } from '../deps.ts';
-import { attachmentsDir } from './attachments.ts';
+import { attachmentStore, importAttachments } from './attachment-files.ts';
 import { countKeyTables } from './dump.ts';
 import { fetchPart, readSetManifest, type SetSource } from './fetch-set.ts';
 import type { BackupManifest } from './manifest.ts';
@@ -73,14 +73,17 @@ export async function restoreIntoNewDatabase(
   }
 }
 
-/** Extracts every attachment archive in the manifest's chain, oldest first. */
+/**
+ * Extracts every attachment archive in the manifest's chain, oldest first, then puts the
+ * files back into the object store, so a restore brings uploads back on disk or in S3.
+ */
 export async function restoreAttachments(
   deps: SystemDependencies,
   source: SetSource,
   manifest: BackupManifest,
   staging: string,
 ): Promise<number> {
-  const root = attachmentsDir(deps.config.dataDir);
+  const root = path.join(staging, 'attachments');
   await mkdir(root, { recursive: true });
   let extracted = 0;
   for (const setName of manifest.attachments.chain) {
@@ -99,5 +102,7 @@ export async function restoreAttachments(
     await rm(file, { force: true });
     extracted += linkManifest.attachments.fileCount;
   }
+  await importAttachments(attachmentStore(deps), root);
+  await rm(root, { recursive: true, force: true });
   return extracted;
 }
