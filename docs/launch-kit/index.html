@@ -1,0 +1,381 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bemmoly launch kit</title>
+<style>
+:root{--bg:#F6F7FA;--sf:#FFFFFF;--tx:#1B2430;--tx2:#5A6472;--line:#DDE2EA;--acc:#2356C9;color-scheme:light dark}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#111418;--sf:#191D23;--tx:#E6E9EF;--tx2:#9AA3B2;--line:#2A3039;--acc:#7F98EC}}
+:root[data-theme="dark"]{--bg:#111418;--sf:#191D23;--tx:#E6E9EF;--tx2:#9AA3B2;--line:#2A3039;--acc:#7F98EC}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.5 "IBM Plex Sans",system-ui,sans-serif}
+header,section{max-width:1960px;margin:0 auto;padding:24px 16px}
+@media (min-width:768px){header,section{padding:32px 40px}}
+h1{font-size:28px;margin:0 0 4px}
+h2{font-size:22px;margin:0 0 16px;border-top:1px solid var(--line);padding-top:24px}
+h3{font-size:15px;margin:0 0 8px}
+header p{color:var(--tx2);margin:0;max-width:72ch}
+nav{display:flex;flex-wrap:wrap;gap:8px 16px;margin-top:12px}
+a{color:var(--acc)}
+.cols{display:grid;gap:24px}
+@media (min-width:1280px){.cols{grid-template-columns:minmax(0,1fr) 440px;align-items:start}}
+.images{min-width:0;display:flex;flex-direction:column;gap:28px}
+figure{margin:0;min-width:0}
+figcaption{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:baseline;margin-bottom:8px;font-size:14px}
+figcaption span{color:var(--tx2);font-variant-numeric:tabular-nums}
+figcaption a{font-size:13px}
+.scroll{overflow-x:auto;max-width:100%}
+.scroll img{display:block;max-width:none;outline:1px solid var(--line)}
+aside{background:var(--sf);border:1px solid var(--line);border-radius:10px;padding:16px;min-width:0}
+@media (min-width:1280px){aside{position:sticky;top:16px;max-height:calc(100vh - 32px);overflow:auto}}
+pre{white-space:pre-wrap;word-break:break-word;margin:0;font:13.5px/1.55 "IBM Plex Mono",ui-monospace,monospace}
+.none{color:var(--tx2)}
+.stage{position:relative}
+.stage .safe,.stage .covered,.stage .avatar{position:absolute;display:none;pointer-events:none}
+.stage .avatar{background:#fff;border:4px solid #fff;border-radius:12px;box-shadow:0 0 0 2px #DC2626}
+.stage .avatar.round{border-radius:50%}
+.stage .safe{outline:2px dashed #1F9D55;background:rgba(31,157,85,.08)}
+.stage .covered{background:rgba(220,38,38,.28);outline:2px solid #DC2626}
+body.zones .stage .safe,body.zones .stage .covered,body.zones .stage .avatar{display:block}
+label.toggle{display:inline-flex;gap:8px;align-items:center;margin-top:12px;font-weight:500}
+</style>
+</head>
+<body>
+<header>
+<h1>Bemmoly launch kit</h1>
+<p>Every launch image and brand social asset at its real size, labelled with its platform and pixel size, beside the post it goes with. Images are rendered from <code>src/</code> with <code>node docs/launch-kit/src/render.ts</code>; the copy is <a href="posts.md">posts.md</a>.</p>
+<label class="toggle"><input type="checkbox" id="zones"> Show safe areas</label>
+<nav><a href="#brand">Brand</a><a href="#x">X</a><a href="#linkedin">LinkedIn</a><a href="#product-hunt">Product Hunt</a><a href="#reddit">Reddit</a><a href="#hacker-news">Hacker News</a></nav>
+</header>
+<section id="brand">
+<h2>Brand</h2>
+<div class="cols">
+  <div class="images"><figure>
+  <figcaption><strong>og:image and twitter:image for bemmoly.com</strong><span>1200 × 630</span><a href="../../packages/ui/assets/brand/generated/social-preview.png">packages/ui/assets/brand/generated/social-preview.png</a></figcaption>
+  <div class="scroll"><div class="stage" style="width:1200px"><img src="../../packages/ui/assets/brand/generated/social-preview.png" width="1200" height="630" alt="Brand og:image and twitter:image for bemmoly.com"></div></div>
+</figure>
+<figure>
+  <figcaption><strong>Square social preview</strong><span>1080 × 1080</span><a href="../../packages/ui/assets/brand/generated/social-preview-square.png">packages/ui/assets/brand/generated/social-preview-square.png</a></figcaption>
+  <div class="scroll"><div class="stage" style="width:1080px"><img src="../../packages/ui/assets/brand/generated/social-preview-square.png" width="1080" height="1080" alt="Brand Square social preview"></div></div>
+</figure>
+<figure>
+  <figcaption><strong>GitHub repository social preview (upload the 2560 x 1280 file)</strong><span>1280 × 640</span><a href="../../packages/ui/assets/brand/generated/github-social-preview-1280x640.png">packages/ui/assets/brand/generated/github-social-preview-1280x640.png</a></figcaption>
+  <div class="scroll"><div class="stage" style="width:1280px"><img src="../../packages/ui/assets/brand/generated/github-social-preview-1280x640.png" width="1280" height="640" alt="Brand GitHub repository social preview (upload the 2560 x 1280 file)"><span class="safe" style="left:40px;top:40px;width:1200px;height:560px"></span></div></div>
+</figure>
+<figure>
+  <figcaption><strong>README hero, light</strong><span>1280 × 400</span><a href="../../packages/ui/assets/brand/generated/readme-hero.png">packages/ui/assets/brand/generated/readme-hero.png</a></figcaption>
+  <div class="scroll"><div class="stage" style="width:1280px"><img src="../../packages/ui/assets/brand/generated/readme-hero.png" width="1280" height="400" alt="Brand README hero, light"></div></div>
+</figure>
+<figure>
+  <figcaption><strong>README hero, dark (shown under dark mode)</strong><span>1280 × 400</span><a href="../../packages/ui/assets/brand/generated/readme-hero-dark.png">packages/ui/assets/brand/generated/readme-hero-dark.png</a></figcaption>
+  <div class="scroll"><div class="stage" style="width:1280px"><img src="../../packages/ui/assets/brand/generated/readme-hero-dark.png" width="1280" height="400" alt="Brand README hero, dark (shown under dark mode)"></div></div>
+</figure>
+<figure>
+  <figcaption><strong>X profile header (upload the 3000 x 1000 file)</strong><span>1500 × 500</span><a href="../../packages/ui/assets/brand/generated/banner-x-1500x500.png">packages/ui/assets/brand/generated/banner-x-1500x500.png</a></figcaption>
+  <div class="scroll"><div class="stage" style="width:1500px"><img src="../../packages/ui/assets/brand/generated/banner-x-1500x500.png" width="1500" height="500" alt="Brand X profile header (upload the 3000 x 1000 file)"><span class="safe" style="left:560px;top:60px;width:900px;height:380px"></span><span class="covered" style="left:0px;top:275px;width:480px;height:225px"></span><span class="avatar round" style="left:15px;top:363px;width:134px;height:134px"></span></div></div>
+</figure>
+<figure>
+  <figcaption><strong>LinkedIn company page cover</strong><span>1128 × 191</span><a href="../../packages/ui/assets/brand/generated/banner-linkedin-company-1128x191.png">packages/ui/assets/brand/generated/banner-linkedin-company-1128x191.png</a></figcaption>
+  <div class="scroll"><div class="stage" style="width:1128px"><img src="../../packages/ui/assets/brand/generated/banner-linkedin-company-1128x191.png" width="1128" height="191" alt="Brand LinkedIn company page cover"><span class="safe" style="left:290px;top:20px;width:560px;height:151px"></span><span class="covered" style="left:0px;top:51px;width:270px;height:140px"></span><span class="avatar" style="left:24px;top:95px;width:120px;height:120px"></span></div></div>
+</figure>
+<figure>
+  <figcaption><strong>LinkedIn company cover: the file to upload (rendered at 1128 x 188, 3.72x)</strong><span>4200 × 700</span><a href="../../packages/ui/assets/brand/generated/linkedin-cover-UPLOAD-4200x700.png">packages/ui/assets/brand/generated/linkedin-cover-UPLOAD-4200x700.png</a></figcaption>
+  <div class="scroll"><div class="stage" style="width:4200px"><img src="../../packages/ui/assets/brand/generated/linkedin-cover-UPLOAD-4200x700.png" width="4200" height="700" alt="Brand LinkedIn company cover: the file to upload (rendered at 1128 x 188, 3.72x)"><span class="safe" style="left:1079.787234042553px;top:74.46808510638297px;width:2085.1063829787236px;height:551.063829787234px"></span><span class="covered" style="left:0px;top:186.17021276595744px;width:1005.3191489361702px;height:513.8297872340426px"></span><span class="avatar" style="left:89.36170212765957px;top:346.27659574468083px;width:446.8085106382979px;height:446.8085106382979px"></span></div></div>
+</figure>
+<figure>
+  <figcaption><strong>LinkedIn personal profile background</strong><span>1584 × 396</span><a href="../../packages/ui/assets/brand/generated/banner-linkedin-personal-1584x396.png">packages/ui/assets/brand/generated/banner-linkedin-personal-1584x396.png</a></figcaption>
+  <div class="scroll"><div class="stage" style="width:1584px"><img src="../../packages/ui/assets/brand/generated/banner-linkedin-personal-1584x396.png" width="1584" height="396" alt="Brand LinkedIn personal profile background"><span class="safe" style="left:470px;top:32px;width:640px;height:332px"></span><span class="covered" style="left:0px;top:96px;width:400px;height:300px"></span><span class="avatar round" style="left:40px;top:200px;width:300px;height:300px"></span></div></div>
+</figure>
+<figure>
+  <figcaption><strong>Buy Me a Coffee page cover</strong><span>1600 × 400</span><a href="../../packages/ui/assets/brand/generated/banner-buymeacoffee-1600x400.png">packages/ui/assets/brand/generated/banner-buymeacoffee-1600x400.png</a></figcaption>
+  <div class="scroll"><div class="stage" style="width:1600px"><img src="../../packages/ui/assets/brand/generated/banner-buymeacoffee-1600x400.png" width="1600" height="400" alt="Brand Buy Me a Coffee page cover"><span class="safe" style="left:48px;top:24px;width:1504px;height:236px"></span><span class="covered" style="left:587px;top:150px;width:427px;height:250px"></span><span class="covered" style="left:0px;top:260px;width:1600px;height:140px"></span></div></div>
+</figure></div>
+  <aside><h3>Brand assets</h3><p>Profile banners, the README hero and the social previews, in <code>packages/ui/assets/brand/generated</code>. Turn on safe areas to see where each platform crops or covers: green is where text must stay, red is covered by the avatar or page logo, and the white shape is the avatar itself.</p></aside>
+</div>
+</section>
+<section id="x">
+<h2>X</h2>
+<div class="cols">
+  <div class="images"><figure>
+  <figcaption><strong>Post image (thread opener)</strong><span>1600 × 900</span><a href="images/x-post-1-hero.png">images/x-post-1-hero.png</a></figcaption>
+  <div class="scroll"><div class="stage" style="width:1600px"><img src="images/x-post-1-hero.png" width="1600" height="900" alt="X Post image (thread opener)"></div></div>
+</figure>
+<figure>
+  <figcaption><strong>Post image (Docs)</strong><span>1600 × 900</span><a href="images/x-post-2-docs.png">images/x-post-2-docs.png</a></figcaption>
+  <div class="scroll"><div class="stage" style="width:1600px"><img src="images/x-post-2-docs.png" width="1600" height="900" alt="X Post image (Docs)"></div></div>
+</figure>
+<figure>
+  <figcaption><strong>Post image (AI)</strong><span>1600 × 900</span><a href="images/x-post-3-ai.png">images/x-post-3-ai.png</a></figcaption>
+  <div class="scroll"><div class="stage" style="width:1600px"><img src="images/x-post-3-ai.png" width="1600" height="900" alt="X Post image (AI)"></div></div>
+</figure></div>
+  <aside><h3>X thread</h3><pre>Images: post 1 `images/x-post-1-hero.png`, post 3 `images/x-post-2-docs.png`, post 4
+`images/x-post-3-ai.png` (1600 × 900). Profile header: `packages/ui/assets/brand/generated/x-header-UPLOAD-3000x1000.png` (upload; 1500 × 500 display).
+
+**1/7**
+Bemmoly is out: self-hosted issues and docs for your whole team.
+
+100% open source. No subscription. No in-app purchases.
+
+One Docker image, one Postgres, one command.
+
+**2/7**
+Work: Kanban and Scrum boards, backlog, sprints, custom workflows and a query language.
+
+Docs: a real-time editor with a page tree, revisions, comments and live issue links.
+
+New in 0.13.1: a roadmap view, automation rules and signed webhooks.
+
+Same app, same sidebar.
+
+**3/7**
+Moving over? Import from Jira, Confluence or CSV, and see what will land before anything is
+written.
+
+SSO (OIDC, SAML) and SCIM are included. There's no enterprise tier to put them in.
+
+**4/7**
+AI is optional and off until an admin turns it on.
+
+Bring your own provider or a model on your network. Summaries cite the comments, issues and
+pages they came from.
+
+**5/7**
+Self-hosting is the point: automatic HTTPS, nightly verified backups, updates from the app that
+roll back if unhealthy, signed images, no telemetry.
+
+curl -fsSL https://get.bemmoly.com | sh
+
+**6/7**
+Try it in your browser, no sign-up: https://bemmoly.com/demo
+Install guide: https://bemmoly.com/self-hosting#install
+Code (MIT): https://github.com/bemmoly/bemmoly
+
+**7/7**
+It's young, and I want to hear what's missing.
+Ideas: https://github.com/bemmoly/bemmoly/discussions
+Bugs: https://github.com/bemmoly/bemmoly/issues
+
+Optional support, unlocks nothing: https://buymeacoffee.com/bemmoly</pre></aside>
+</div>
+</section>
+<section id="linkedin">
+<h2>LinkedIn</h2>
+<div class="cols">
+  <div class="images"><figure>
+  <figcaption><strong>Post image</strong><span>1200 × 627</span><a href="images/linkedin-post.png">images/linkedin-post.png</a></figcaption>
+  <div class="scroll"><div class="stage" style="width:1200px"><img src="images/linkedin-post.png" width="1200" height="627" alt="LinkedIn Post image"></div></div>
+</figure>
+<figure>
+  <figcaption><strong>Square post image</strong><span>1200 × 1200</span><a href="images/linkedin-square.png">images/linkedin-square.png</a></figcaption>
+  <div class="scroll"><div class="stage" style="width:1200px"><img src="images/linkedin-square.png" width="1200" height="1200" alt="LinkedIn Square post image"></div></div>
+</figure></div>
+  <aside><h3>LinkedIn</h3><pre>Image (upload these): `images/linkedin-post-UPLOAD-2400x1254.png` (shown at 1200 × 627), or
+`images/linkedin-square-UPLOAD-2160x2160.png` (shown at 1200 × 1200). Previews at 1x and 3x sit
+beside them. Company page cover: `packages/ui/assets/brand/generated/linkedin-cover-UPLOAD-4200x700.png` (upload; shown at 1128 × 191).
+
+**Post:**
+
+Today I'm opening up Bemmoly, an open source (MIT) app for a team's issues and docs that runs on
+your own server.
+
+It has boards, a backlog, sprints and a roadmap, automation rules and webhooks, a collaborative docs editor with live issue links, and
+optional AI that uses the provider you choose and stays off until an admin turns it on. Teams
+coming from Jira and Confluence can import their projects and spaces, and single sign-on is
+included.
+
+Three promises: 100% open source, no subscription, no in-app purchases. The only cost is the server
+you run it on.
+
+Try the live demo in your browser: https://bemmoly.com/demo
+Install it with one command: https://bemmoly.com/self-hosting#install
+
+It's a young project. The latest release, 0.13.1, added a roadmap view, automation rules and
+signed webhooks, and I'd like your feedback to shape what follows: share ideas in GitHub Discussions
+(https://github.com/bemmoly/bemmoly/discussions) or report a bug in GitHub issues
+(https://github.com/bemmoly/bemmoly/issues).
+
+#opensource #selfhosted #projectmanagement</pre></aside>
+</div>
+</section>
+<section id="product-hunt">
+<h2>Product Hunt</h2>
+<div class="cols">
+  <div class="images"><figure>
+  <figcaption><strong>Thumbnail</strong><span>240 × 240</span><a href="images/producthunt-thumbnail.png">images/producthunt-thumbnail.png</a></figcaption>
+  <div class="scroll"><div class="stage" style="width:240px"><img src="images/producthunt-thumbnail.png" width="240" height="240" alt="Product Hunt Thumbnail"></div></div>
+</figure>
+<figure>
+  <figcaption><strong>Gallery 1: the promise</strong><span>1270 × 760</span><a href="images/producthunt-1-promise.png">images/producthunt-1-promise.png</a></figcaption>
+  <div class="scroll"><div class="stage" style="width:1270px"><img src="images/producthunt-1-promise.png" width="1270" height="760" alt="Product Hunt Gallery 1: the promise"></div></div>
+</figure>
+<figure>
+  <figcaption><strong>Gallery 2: Work</strong><span>1270 × 760</span><a href="images/producthunt-2-work.png">images/producthunt-2-work.png</a></figcaption>
+  <div class="scroll"><div class="stage" style="width:1270px"><img src="images/producthunt-2-work.png" width="1270" height="760" alt="Product Hunt Gallery 2: Work"></div></div>
+</figure>
+<figure>
+  <figcaption><strong>Gallery 3: Docs</strong><span>1270 × 760</span><a href="images/producthunt-3-docs.png">images/producthunt-3-docs.png</a></figcaption>
+  <div class="scroll"><div class="stage" style="width:1270px"><img src="images/producthunt-3-docs.png" width="1270" height="760" alt="Product Hunt Gallery 3: Docs"></div></div>
+</figure>
+<figure>
+  <figcaption><strong>Gallery 4: AI</strong><span>1270 × 760</span><a href="images/producthunt-4-ai.png">images/producthunt-4-ai.png</a></figcaption>
+  <div class="scroll"><div class="stage" style="width:1270px"><img src="images/producthunt-4-ai.png" width="1270" height="760" alt="Product Hunt Gallery 4: AI"></div></div>
+</figure>
+<figure>
+  <figcaption><strong>Gallery 5: self-hosting</strong><span>1270 × 760</span><a href="images/producthunt-5-install.png">images/producthunt-5-install.png</a></figcaption>
+  <div class="scroll"><div class="stage" style="width:1270px"><img src="images/producthunt-5-install.png" width="1270" height="760" alt="Product Hunt Gallery 5: self-hosting"></div></div>
+</figure>
+<figure>
+  <figcaption><strong>Gallery 6: themes and branding</strong><span>1270 × 760</span><a href="images/producthunt-6-themes.png">images/producthunt-6-themes.png</a></figcaption>
+  <div class="scroll"><div class="stage" style="width:1270px"><img src="images/producthunt-6-themes.png" width="1270" height="760" alt="Product Hunt Gallery 6: themes and branding"></div></div>
+</figure></div>
+  <aside><h3>Product Hunt</h3><pre>Images: `images/producthunt-thumbnail.png` (240 × 240) and the gallery
+`images/producthunt-1-promise.png` to `images/producthunt-6-themes.png` (1270 × 760), in order.
+
+**Name:** Bemmoly
+
+**Tagline** (56 of 60 characters):
+
+Self-hosted issues and docs. Open source, nothing to buy
+
+**Description** (257 of 260 characters):
+
+Your team's issues and docs in one app on your own server: boards, sprints, a collaborative
+editor, Jira and Confluence import, and optional AI with your own provider. MIT, no subscription, no
+in-app purchases. Try the live demo or install with one command.
+
+**First comment (maker):**
+
+Hi Product Hunt, I'm Keerthi. I made Bemmoly because I wanted our issues and specs in one place
+we own: our server, our Postgres, our backups.
+
+What's in it today (0.13.1):
+
+- Work: Kanban and Scrum boards, backlog, sprints, custom workflows, a roadmap view
+- Automation rules and signed webhooks
+- Docs: real-time editor, page tree, revisions, comments, live issue links
+- Import from Jira, Confluence or CSV, and SSO with SCIM included
+- AI, optional: off until you turn it on. Your provider or a local model. Summaries cite their
+  sources.
+
+Three promises: 100% open source (MIT), no subscription, no in-app purchases.
+
+Try the demo, no sign-up: https://bemmoly.com/demo
+Install: https://bemmoly.com/self-hosting#install
+
+It's young, and the roadmap is shaped by what people ask for. Tell me what's missing in
+GitHub Discussions (https://github.com/bemmoly/bemmoly/discussions), or file a bug in GitHub
+issues (https://github.com/bemmoly/bemmoly/issues). If you'd like to support the work, there's
+an optional Buy me a coffee (https://buymeacoffee.com/bemmoly); it unlocks nothing, because
+nothing is locked.</pre></aside>
+</div>
+</section>
+<section id="reddit">
+<h2>Reddit</h2>
+<div class="cols">
+  <div class="images"><figure>
+  <figcaption><strong>r/selfhosted post image</strong><span>1920 × 1080</span><a href="images/reddit-selfhosted.png">images/reddit-selfhosted.png</a></figcaption>
+  <div class="scroll"><div class="stage" style="width:1920px"><img src="images/reddit-selfhosted.png" width="1920" height="1080" alt="Reddit r/selfhosted post image"></div></div>
+</figure></div>
+  <aside><h3>r/selfhosted</h3><pre>Image: `images/reddit-selfhosted.png` (1920 × 1080).
+
+**Title:** Bemmoly: self-hosted issues and docs in one Docker image and one Postgres (MIT, no paid tier, optional AI with your own provider)
+
+**Body:**
+
+I've been building Bemmoly, a self-hosted place for a team's issues and docs. It's at 0.13.1
+and I'm opening it up today.
+
+**Try it first:** https://bemmoly.com/demo is the real app on sample data, in your browser.
+
+**Install** on a VM with a domain pointing at it:
+
+    curl -fsSL https://get.bemmoly.com | sh
+
+The installer sets up Docker, Postgres with pgvector, Caddy with automatic HTTPS, nightly
+backups with a weekly verification, and the updater. Prefer to wire it yourself? There's a plain
+Docker Compose file, and it can use an existing Postgres. Full guide:
+https://bemmoly.com/self-hosting#install
+
+**What's in it**
+
+- Work: boards, backlog, sprints, custom workflows, filters, a roadmap view
+- Automation rules and signed outgoing webhooks
+- Docs: collaborative editor, page tree, revisions, comments, image uploads
+- Import from Jira, Confluence or CSV
+- SSO (OIDC, SAML) and SCIM, not behind a paywall, because there isn't one
+- AI, **optional and off by default**: your own provider key or a local model server
+- Updates from inside the app, signed images (cosign), automatic rollback on a failed health
+  check
+- Five themes in light and dark, and your own logo
+
+**Promises:** 100% open source (MIT), no subscription, no in-app purchases. No telemetry.
+
+Running Kubernetes? There's a Helm chart, and Terraform modules that set up a VM and run the
+installer.
+
+**Not there yet:** an installable app with web push. Keep the backups it makes.
+
+Repo: https://github.com/bemmoly/bemmoly. Feature ideas and "here's how I'd run it" go to
+Discussions (https://github.com/bemmoly/bemmoly/discussions); "it broke on my distro" goes to
+Issues (https://github.com/bemmoly/bemmoly/issues). Both are very welcome.</pre></aside>
+</div>
+</section>
+<section id="hacker-news">
+<h2>Hacker News</h2>
+<div class="cols">
+  <div class="images"><p class="none">No image: Show HN posts are text only.</p></div>
+  <aside><h3>Show HN</h3><pre>Image: none.
+
+**Title:** Show HN: Bemmoly – self-hosted issues and docs, MIT, no paid tier
+
+**URL:** https://github.com/bemmoly/bemmoly
+
+**First comment:**
+
+Hi HN, I'm Keerthi. Bemmoly is a self-hosted app for a team's issues and docs: boards, a
+backlog and sprints, and docs pages that sit next to the issues they explain. It's one Docker
+image and one Postgres, and one command installs it:
+
+    curl -fsSL https://get.bemmoly.com | sh
+
+(or read the script first: `curl -fsSL https://get.bemmoly.com -o install.sh`)
+
+You can try it without installing at https://bemmoly.com/demo. That's the real app on sample
+data, running in your browser against a mocked backend.
+
+Three promises: 100% open source (MIT, no open core, no enterprise edition), no subscription (no
+seats, plans or licence key), and no in-app purchases (nothing is locked).
+
+What's in 0.13.1:
+
+- Work: projects, custom workflows, Kanban and Scrum boards, backlog and sprints, a query
+  language and saved filters.
+- Docs: spaces, a page tree, a real-time collaborative editor, revisions, comments, image
+  uploads and live issue links.
+- Import from Jira, Confluence or CSV, with a preview of what lands before anything is written.
+- Single sign-on (OIDC, SAML) and SCIM provisioning, at no extra cost, because there is no cost.
+- AI, optional: off until an admin turns it on. Use your own provider or a model on your own
+  network. Summaries cite their sources, and admins choose what content is sent.
+- Automation rules (a trigger, conditions, actions), outgoing webhooks signed with HMAC-SHA256,
+  and a roadmap view that forecasts when epics land from your team's own pace.
+- A built-in MCP server, so agents and IDEs can work in your workspace with your permissions.
+- Operations: automatic HTTPS, nightly verified backups, updates from the app that roll back on
+  their own if the new version isn't healthy, signed images, no telemetry. A Helm chart and
+  Terraform modules if you'd rather not use the installer.
+
+Not there yet: an installable app with web push notifications.
+
+It's a young project and I'd value blunt feedback, especially on installing it on your distro
+and on what's missing before you'd move a team over. Ideas and questions:
+https://github.com/bemmoly/bemmoly/discussions. Bugs:
+https://github.com/bemmoly/bemmoly/issues.
+
+Stack: TypeScript, Fastify, React, and Postgres (with pgvector) as the only datastore.</pre></aside>
+</div>
+</section>
+<script>
+document.getElementById('zones').addEventListener('change', (e) => document.body.classList.toggle('zones', e.target.checked));
+</script>
+</body>
+</html>

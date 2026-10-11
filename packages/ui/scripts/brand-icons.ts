@@ -1,6 +1,6 @@
 /**
- * Generates favicons, PWA icons and the social preview from the brand files in assets/brand,
- * then the banners (brand-banners.ts).
+ * Generates favicons and PWA icons from the brand files in assets/brand. The social previews
+ * and banners come from `brand:banners` (docs/launch-kit/src/render.ts).
  * Run `pnpm --filter @bemmoly/ui brand:icons` after replacing a brand file; the output in
  * assets/brand/generated is committed. The mark keeps its designed colours; the plates behind
  * it come from the Classic preset in tokens.ts.
@@ -8,8 +8,6 @@
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { Resvg } from '@resvg/resvg-js';
 import { resolveTheme } from '../src/tokens.ts';
-import { writeBanners } from './brand-banners.ts';
-import { squareCard, wideCard } from './social-preview.ts';
 
 const brand = new URL('../assets/brand/', import.meta.url);
 const out = new URL('generated/', brand);
@@ -70,7 +68,6 @@ const source = read('mark-color.svg');
 const favicon = resolveColors(source, classic.tx);
 const icon = plate(favicon, ICON_SCALE, classic.card, ICON_RADIUS);
 const maskable = plate(onAccent(source), MASKABLE_SCALE, ACCENT, 0);
-const preview = { lockup: resolveColors(read('lockup-color.svg'), classic.tx), colors: classic };
 const files: Record<string, string | Buffer> = {
   'favicon.svg': favicon,
   'favicon-32.png': png(icon, 32),
@@ -80,8 +77,5 @@ const files: Record<string, string | Buffer> = {
   'icon-512.png': png(icon, 512),
   'icon-maskable-192.png': png(maskable, 192),
   'icon-maskable-512.png': png(maskable, 512),
-  'social-preview.png': png(wideCard(preview), 1200),
-  'social-preview-square.png': png(squareCard(preview), 1080),
 };
 for (const [name, data] of Object.entries(files)) writeFileSync(new URL(name, out), data);
-writeBanners();
