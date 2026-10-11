@@ -14,12 +14,13 @@ import {
   type LqlFieldCatalog,
   type Query,
 } from '@bemmoly/shared';
-import type { IssueQueryParams, IssuesPage } from '../../../../shared/index.ts';
+import type { IssueQueryParams, IssueSummariesPage, IssuesPage } from '../../../../shared/index.ts';
 import { accessFilter, userIdOf } from './access.ts';
 import { loadCatalog } from './catalog.ts';
 import { compileQuery, compileWhere, type CompileCatalog, type Compiled } from './compile.ts';
 import type { LqlEvaluator } from './contract.ts';
 import { issueColumns, toIssue, type IssueRow } from './rows.ts';
+import { summaryColumns, toIssueSummary, type IssueSummaryRow } from './summaries.ts';
 import type { ValueContext } from './values.ts';
 
 export type { LqlEvaluator } from './contract.ts';
@@ -107,31 +108,48 @@ export function createLqlService(deps: LqlServiceDeps) {
      * for any ORDER BY whose directions agree.
      */
     async query(ctx: RequestContext, params: IssueQueryParams): Promise<IssuesPage> {
-      const projectId = params.projectId ?? null;
-      await ctx.authz.authorize(
-        ctx.actor,
-        'work.issue.view',
-        projectId
-          ? { kind: 'project', id: projectId, moduleId: 'work' }
-          : { kind: 'module', moduleId: 'work' },
-      );
-      const sql = db();
-      const compiled = await compile(ctx, params.lql, projectId);
-      const cursor = decodeCursor(params.cursor);
-      const keys = compiled.sortKeys.reduce((acc, key) => sql`${acc}, ${key}`);
-      const rows = await sql<IssueRow[]>`
-        select ${issueColumns(sql)} from issues
-        where issues.deleted_at is null
-          and ${compiled.access}
-          and (${projectId}::uuid is null or issues.project_id = ${projectId}::uuid)
-          and ${compiled.where}
-          ${cursor ? continuation(sql, keys, compiled, cursor) : sql``}
-        order by ${compiled.orderBy}
-        limit ${params.limit + 1}`;
-      const page = toPage(rows, params.limit);
+      const page = await run<IssueRow>(ctx, params, issueColumns);
       return { items: page.rows.map(toIssue), nextCursor: page.nextCursor };
     },
+
+    /**
+     * The same page as `query`, each issue with the names a row prints (type,
+     * status, assignee) resolved in the same statement, so a live table is one request.
+     */
+    async summaries(ctx: RequestContext, params: IssueQueryParams): Promise<IssueSummariesPage> {
+      const page = await run<IssueSummaryRow>(ctx, params, summaryColumns);
+      return { items: page.rows.map(toIssueSummary), nextCursor: page.nextCursor };
+    },
   };
+
+  async function run<Row extends { id: string }>(
+    ctx: RequestContext,
+    params: IssueQueryParams,
+    columns: (sql: SqlClient) => SqlFragment,
+  ) {
+    const projectId = params.projectId ?? null;
+    await ctx.authz.authorize(
+      ctx.actor,
+      'work.issue.view',
+      projectId
+        ? { kind: 'project', id: projectId, moduleId: 'work' }
+        : { kind: 'module', moduleId: 'work' },
+    );
+    const sql = db();
+    const compiled = await compile(ctx, params.lql, projectId);
+    const cursor = decodeCursor(params.cursor);
+    const keys = compiled.sortKeys.reduce((acc, key) => sql`${acc}, ${key}`);
+    const rows = await sql<Row[]>`
+      select ${columns(sql)} from issues
+      where issues.deleted_at is null
+        and ${compiled.access}
+        and (${projectId}::uuid is null or issues.project_id = ${projectId}::uuid)
+        and ${compiled.where}
+        ${cursor ? continuation(sql, keys, compiled, cursor) : sql``}
+      order by ${compiled.orderBy}
+      limit ${params.limit + 1}`;
+    return toPage(rows, params.limit);
+  }
 }
 
 function continuation(

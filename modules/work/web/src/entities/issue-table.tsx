@@ -2,20 +2,21 @@ import { Skeleton } from '@bemmoly/ui';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../shared/api.ts';
 import { workKeys } from '../shared/keys.ts';
-import { IssueCard } from './issue-chip.tsx';
+import { IssueRowLink } from './issue-chip.tsx';
 
 /** Rows a document table shows, so a broad query never turns a page into a backlog. */
 const ROWS = 10;
 
 /**
  * A saved LQL query drawn live inside a document: its title, the first rows
- * the reader may see (Work's query endpoint keeps to their projects) and a
- * note when there are more. A query Work cannot read shows its error, not a crash.
+ * the reader may see (Work's summaries endpoint keeps to their projects and
+ * brings each row's type, status and assignee, so the table is one request)
+ * and a note when there are more. A query Work cannot read shows its error, not a crash.
  */
 export function IssueTable({ query, title }: { query: string; title: string }) {
   const result = useQuery({
-    queryKey: [...workKeys.all(), 'issue-query', query, ROWS] as const,
-    queryFn: () => api.work.filters.run(query, ROWS),
+    queryKey: [...workKeys.all(), 'issue-summaries', query, ROWS] as const,
+    queryFn: () => api.work.filters.summaries(query, ROWS),
     staleTime: 30_000,
     retry: false,
     enabled: query.trim().length > 0,
@@ -43,7 +44,7 @@ export function IssueTable({ query, title }: { query: string; title: string }) {
         <ul className="m-0 flex list-none flex-col gap-1.5 p-0">
           {items.map((issue) => (
             <li key={issue.id}>
-              <IssueCard entityKey={issue.key} />
+              <IssueRowLink issue={issue} />
             </li>
           ))}
         </ul>

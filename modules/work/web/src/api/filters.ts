@@ -1,5 +1,6 @@
 import {
   createSavedFilterBodySchema,
+  issueSummariesPageSchema,
   issuesPageSchema,
   savedFilterSchema,
   savedFiltersResponseSchema,
@@ -38,5 +39,10 @@ export function workFiltersEndpoints(http: Http) {
     /** Runs an LQL query, keeping to the projects the caller may read. */
     run: async (lql: string, limit: number) =>
       http.request('/api/v1/work/issues/query', issuesPageSchema, { query: { lql, limit } }),
+    /** The same query as `run`, each issue with the type, status and assignee a row draws. */
+    summaries: async (lql: string, limit: number) =>
+      http.request('/api/v1/work/issues/summaries', issueSummariesPageSchema, {
+        query: { lql, limit },
+      }),
   };
 }
