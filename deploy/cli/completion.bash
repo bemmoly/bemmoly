@@ -36,6 +36,13 @@ _bemmoly() {
       if [[ "${previous}" == --unmount ]]; then return; fi
       mapfile -t COMPREPLY < <(compgen -W "$(_bemmoly_backups) --mount --unmount --drill --yes" -- "${current}")
       ;;
+    upgrade)
+      if [[ "${previous}" == --bundle || "${previous}" == --trusted-root ]]; then
+        mapfile -t COMPREPLY < <(compgen -f -- "${current}")
+      else
+        mapfile -t COMPREPLY < <(compgen -W '--bundle --trusted-root --skip-signature-check --yes' -- "${current}")
+      fi
+      ;;
     rollback) mapfile -t COMPREPLY < <(compgen -W '--prefer-restore --yes' -- "${current}") ;;
     db) mapfile -t COMPREPLY < <(compgen -W 'status validate plan history tag rollback' -- "${current}") ;;
     self-update) mapfile -t COMPREPLY < <(compgen -W '--from' -- "${current}") ;;

@@ -19,7 +19,9 @@ fi
 . "${SHARED_LIB}/common.sh"
 # shellcheck source=../installer/lib/preflight.sh
 . "${SHARED_LIB}/preflight.sh"
-for part in stack backups updates selfupdate; do
+# shellcheck source=../installer/lib/bundle.sh
+. "${SHARED_LIB}/bundle.sh"
+for part in stack backups updates selfupdate offline; do
   # shellcheck source=/dev/null
   . "${CLI_LIB}/${CLI_PREFIX}${part}.sh"
 done
@@ -53,6 +55,8 @@ Usage: bemmoly <command> [options]
   restore --mount <backup>    attach a backup read-only as a second database
   restore --unmount <database>
   upgrade [version] [--yes]   backup, pull, verify, swap, health check; rolls back on failure
+  upgrade --bundle FILE [--yes] [--trusted-root FILE] [--skip-signature-check]
+                              the same from a release bundle, without internet access
   rollback [--prefer-restore] [--yes]
   sync-updater                move the updater to the app's release (pull, verify, swap)
   self-update [version] [--from FOLDER]
