@@ -5,15 +5,15 @@ import { UsageTables } from '../../../components/ai/usage-tables.tsx';
 import { SettingsPage } from '../../../components/settings/settings-page.tsx';
 import { SettingsSkeleton } from '../../../components/settings/settings-states.tsx';
 import { useAiAdminSettings } from '../../../hooks/use-ai-admin.ts';
-import { api } from '../../../lib/api.ts';
 import { AI_PAGE_DESCRIPTION, AI_PAGE_TITLE } from './ai-setup-page.tsx';
+import { aiAdminApi } from '../../../lib/ai-admin-api.ts';
 
 /** Settings › AI › Usage: the monthly budget and this month's spend from every AI call. */
 export function AiUsagePage() {
   const admin = useAiAdminSettings();
   const usage = useQuery({
     queryKey: queryKeys.ai.usage(),
-    queryFn: () => api.ai.usage(),
+    queryFn: () => aiAdminApi.usage(),
     enabled: admin.canConfigure,
   });
   return (

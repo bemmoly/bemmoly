@@ -1,26 +1,26 @@
 import { queryKeys } from '@bemmoly/api-client';
 import type { AiPrivacy, AiSettingsResponse, AiSettingsUpdateBody } from '@bemmoly/shared';
 import { queryOptions, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { api } from '../lib/api.ts';
 import { describeError } from '../lib/errors.ts';
 import { toast, undoToast } from '../lib/toast.ts';
 import { useMe } from './use-session.ts';
+import { aiAdminApi } from '../lib/ai-admin-api.ts';
 
 export const CONFIGURE_AI = 'ai.models.configure';
 
 export const aiSettingsQuery = queryOptions({
   queryKey: queryKeys.ai.settings(),
-  queryFn: () => api.ai.settings.get(),
+  queryFn: () => aiAdminApi.settings.get(),
 });
 
 export const aiProvidersQuery = queryOptions({
   queryKey: queryKeys.ai.providers(),
-  queryFn: () => api.ai.providers.list(),
+  queryFn: () => aiAdminApi.providers.list(),
 });
 
 export const aiRolesQuery = queryOptions({
   queryKey: queryKeys.ai.roles(),
-  queryFn: () => api.ai.roles.list(),
+  queryFn: () => aiAdminApi.roles.list(),
 });
 
 /** Merges a change into the cached settings, the way the server will. */
@@ -70,7 +70,7 @@ export function useAiAdminSettings() {
   const canConfigure = me.can(CONFIGURE_AI);
   const query = useQuery({ ...aiSettingsQuery, enabled: canConfigure });
   const mutation = useMutation({
-    mutationFn: (body: AiSettingsUpdateBody) => api.ai.settings.update(body),
+    mutationFn: (body: AiSettingsUpdateBody) => aiAdminApi.settings.update(body),
     onMutate: async (body) => {
       await client.cancelQueries({ queryKey: queryKeys.ai.settings() });
       const before = client.getQueryData<AiSettingsResponse>(queryKeys.ai.settings());

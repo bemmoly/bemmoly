@@ -2,10 +2,10 @@ import { queryKeys } from '@bemmoly/api-client';
 import type { AiBudgetStatus } from '@bemmoly/shared';
 import { useQuery } from '@tanstack/react-query';
 import type { CheckRow } from '../components/system/check-list.tsx';
-import { api } from '../lib/api.ts';
 import { formatUsd } from '../lib/ai-format.ts';
 import { aiSettingsQuery, CONFIGURE_AI } from './use-ai-admin.ts';
 import { useMe } from './use-session.ts';
+import { aiAdminApi } from '../lib/ai-admin-api.ts';
 
 const SETTINGS_AI = { label: 'AI and models', href: '/settings/ai' };
 const USAGE = { label: 'Usage', href: '/settings/ai/usage' };
@@ -29,7 +29,7 @@ export function useAiSpendRow(): CheckRow | null {
   const on = settings.data?.privacy.enabled ?? false;
   const usage = useQuery({
     queryKey: queryKeys.ai.usage(),
-    queryFn: () => api.ai.usage(),
+    queryFn: () => aiAdminApi.usage(),
     enabled: canConfigure && on,
   });
   if (!canConfigure) return null;

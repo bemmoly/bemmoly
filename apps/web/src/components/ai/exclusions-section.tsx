@@ -3,7 +3,7 @@ import type { AiExclusionTarget, AiPrivacy } from '@bemmoly/shared';
 import { Select, SettingsSection, Skeleton, Tag } from '@bemmoly/ui';
 import { useQuery } from '@tanstack/react-query';
 import type { AiAdminSettings } from '../../hooks/use-ai-admin.ts';
-import { api } from '../../lib/api.ts';
+import { aiAdminApi } from '../../lib/ai-admin-api.ts';
 
 const KINDS = {
   space: {
@@ -107,7 +107,7 @@ function ExclusionRow({
 export function ExclusionsSection({ admin }: { admin: AiAdminSettings }) {
   const targets = useQuery({
     queryKey: queryKeys.ai.exclusionTargets(),
-    queryFn: () => api.ai.exclusionTargets(),
+    queryFn: () => aiAdminApi.exclusionTargets(),
   });
   return (
     <SettingsSection title="Never send" layout="rows">

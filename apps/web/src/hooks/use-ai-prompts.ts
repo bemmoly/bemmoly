@@ -1,9 +1,9 @@
 import { queryKeys } from '@bemmoly/api-client';
 import type { AiPrompt, AiPromptDiffLine } from '@bemmoly/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { api } from '../lib/api.ts';
 import { describeError } from '../lib/errors.ts';
 import { toast, undoToast } from '../lib/toast.ts';
+import { aiAdminApi } from '../lib/ai-admin-api.ts';
 
 /** Every {{variable}} a template uses that the prompt does not declare. */
 export function unknownVariables(prompt: AiPrompt, template: string): string[] {
@@ -60,7 +60,7 @@ export function useAiPrompts(enabled = true) {
   const client = useQueryClient();
   const list = useQuery({
     queryKey: queryKeys.ai.prompts(),
-    queryFn: () => api.ai.prompts.list(),
+    queryFn: () => aiAdminApi.prompts.list(),
     enabled,
   });
   const refresh = async (id: string) => {
@@ -69,14 +69,14 @@ export function useAiPrompts(enabled = true) {
   };
   const save = useMutation({
     mutationFn: ({ id, template }: { id: string; template: string }) =>
-      api.ai.prompts.override(id, template),
+      aiAdminApi.prompts.override(id, template),
     onSuccess: async (_prompt, { id }) => {
       await refresh(id);
       toast('Prompt override saved');
     },
   });
   const reset = useMutation({
-    mutationFn: (prompt: AiPrompt) => api.ai.prompts.reset(prompt.id),
+    mutationFn: (prompt: AiPrompt) => aiAdminApi.prompts.reset(prompt.id),
     onSuccess: async (_data, prompt) => {
       await refresh(prompt.id);
       const before = prompt.override?.template;

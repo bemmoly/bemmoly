@@ -8,10 +8,10 @@ import type {
 } from '@bemmoly/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
-import { api } from '../lib/api.ts';
 import { describeError } from '../lib/errors.ts';
 import { toast } from '../lib/toast.ts';
 import type { PillTone } from '../components/settings/state-pill.tsx';
+import { codeHostsApi } from '../lib/code-hosts-api.ts';
 
 export const CODE_HOSTS_CAPABILITY = 'workspace.settings.manage';
 
@@ -36,12 +36,12 @@ export function useCodeHosts(enabled = true) {
   const [tests, setTests] = useState<Record<string, CodeHostTestResult>>({});
   const query = useQuery({
     queryKey: queryKeys.codeHosts.list(),
-    queryFn: () => api.codeHosts.list(),
+    queryFn: () => codeHostsApi.list(),
     enabled,
   });
   const refresh = () => client.invalidateQueries({ queryKey: queryKeys.codeHosts.all() });
   const create = useMutation({
-    mutationFn: (input: CreateCodeHostInput) => api.codeHosts.create(input),
+    mutationFn: (input: CreateCodeHostInput) => codeHostsApi.create(input),
     onSuccess: async (host) => {
       toast(`${host.name} connected`);
       await refresh();
@@ -49,21 +49,21 @@ export function useCodeHosts(enabled = true) {
   });
   const update = useMutation({
     mutationFn: ({ id, input }: { id: string; input: UpdateCodeHostInput }) =>
-      api.codeHosts.update(id, input),
+      codeHostsApi.update(id, input),
     onSuccess: async (host) => {
       toast(`${host.name} saved`);
       await refresh();
     },
   });
   const remove = useMutation({
-    mutationFn: (id: string) => api.codeHosts.remove(id),
+    mutationFn: (id: string) => codeHostsApi.remove(id),
     onSuccess: async () => {
       toast('Code host removed');
       await refresh();
     },
   });
   const test = useMutation({
-    mutationFn: (id: string) => api.codeHosts.test(id),
+    mutationFn: (id: string) => codeHostsApi.test(id),
     onSuccess: async (result, id) => {
       setTests((previous) => ({ ...previous, [id]: result }));
       await refresh();
@@ -71,10 +71,10 @@ export function useCodeHosts(enabled = true) {
     onError: (error) => toast(describeError(error).message, 'danger'),
   });
   const startGithubApp = useMutation({
-    mutationFn: (input: StartGithubAppInput) => api.codeHosts.startGithubApp(input),
+    mutationFn: (input: StartGithubAppInput) => codeHostsApi.startGithubApp(input),
   });
   const backfill = useMutation({
-    mutationFn: (id: string) => api.codeHosts.backfill(id),
+    mutationFn: (id: string) => codeHostsApi.backfill(id),
     onSuccess: (result) =>
       toast(
         result.queued
@@ -108,7 +108,7 @@ export type CodeHosts = ReturnType<typeof useCodeHosts>;
 export function useCodeHostDeliveries(id: string | null) {
   return useQuery({
     queryKey: queryKeys.codeHosts.deliveries(id ?? ''),
-    queryFn: () => api.codeHosts.deliveries(id ?? ''),
+    queryFn: () => codeHostsApi.deliveries(id ?? ''),
     enabled: Boolean(id),
   });
 }

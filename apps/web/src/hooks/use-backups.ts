@@ -3,11 +3,11 @@ import { formatRelative } from '@bemmoly/core-web';
 import type { Backup, BackupScheduleSettings } from '@bemmoly/shared';
 import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
-import { api } from '../lib/api.ts';
 import { describeError } from '../lib/errors.ts';
 import { toast } from '../lib/toast.ts';
 import { useSystemMaintenance } from './use-system-maintenance.ts';
 import { VERIFICATION_WORDS } from './use-system.ts';
+import { operationsAdminApi } from '../lib/operations-admin-api.ts';
 
 const PAGE = 25;
 const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -69,7 +69,7 @@ export function useBackups() {
   };
 
   const run = useMutation({
-    mutationFn: () => api.backups.run(),
+    mutationFn: () => operationsAdminApi.backups.run(),
     onSuccess: async (backup) => {
       await refresh();
       toast(backup.status === 'succeeded' ? 'Backup finished' : 'Backup started');
@@ -79,7 +79,7 @@ export function useBackups() {
 
   const verify = useMutation({
     mutationFn: ({ id, depth }: { id: string; depth: 'list' | 'restore' }) =>
-      api.backups.verify(id, depth),
+      operationsAdminApi.backups.verify(id, depth),
     onSuccess: async (_, { depth }) => {
       await refresh();
       toast(depth === 'list' ? 'Archive checked' : 'Restore drill started', 'info');
@@ -88,7 +88,7 @@ export function useBackups() {
   });
 
   const restore = useMutation({
-    mutationFn: (id: string) => api.backups.restore(id),
+    mutationFn: (id: string) => operationsAdminApi.backups.restore(id),
     onSuccess: async () => {
       setRestoreId(null);
       await refresh();
@@ -100,7 +100,7 @@ export function useBackups() {
   const query = useInfiniteQuery({
     queryKey: queryKeys.backups.list({ limit: PAGE }),
     queryFn: ({ pageParam }) =>
-      api.backups.list({ limit: PAGE, ...(pageParam ? { cursor: pageParam } : {}) }),
+      operationsAdminApi.backups.list({ limit: PAGE, ...(pageParam ? { cursor: pageParam } : {}) }),
     initialPageParam: '',
     getNextPageParam: (last) => last.nextCursor ?? undefined,
     refetchInterval: maintenance.poll,
@@ -132,6 +132,6 @@ export function useBackups() {
       },
       close: () => setRestoreId(null),
     },
-    downloadUrl: (id: string) => api.backups.downloadUrl(id),
+    downloadUrl: (id: string) => operationsAdminApi.backups.downloadUrl(id),
   };
 }

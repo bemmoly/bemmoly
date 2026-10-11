@@ -6,7 +6,8 @@ import {
 } from '@bemmoly/shared';
 
 const AI_INSIGHT_KIND = AI_REALTIME_KINDS.insight;
-import type { AuditFilter, BackupsFilter } from './endpoints/operations.ts';
+import type { BackupsFilter } from './endpoints/operations-admin.ts';
+import type { AuditFilter } from './endpoints/operations.ts';
 import type { UsersFilter } from './endpoints/people.ts';
 
 /**

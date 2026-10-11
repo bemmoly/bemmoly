@@ -4,6 +4,7 @@ import { keepPreviousData, useInfiniteQuery } from '@tanstack/react-query';
 import { useEffect, useMemo, useState } from 'react';
 import { api } from '../lib/api.ts';
 import { useDirectory } from './use-directory.ts';
+import { operationsAdminApi } from '../lib/operations-admin-api.ts';
 
 const PAGE = 50;
 /** Typing an action prefix waits this long before asking the server. */
@@ -61,7 +62,11 @@ export function useAuditLog() {
   const list = useInfiniteQuery({
     queryKey: queryKeys.audit.list(query),
     queryFn: ({ pageParam }) =>
-      api.audit.list({ ...query, limit: PAGE, ...(pageParam ? { cursor: pageParam } : {}) }),
+      operationsAdminApi.audit.list({
+        ...query,
+        limit: PAGE,
+        ...(pageParam ? { cursor: pageParam } : {}),
+      }),
     initialPageParam: '',
     getNextPageParam: (last) => last.nextCursor ?? undefined,
     placeholderData: keepPreviousData,

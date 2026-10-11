@@ -6,9 +6,9 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRef } from 'react';
 import type { AiAdminSettings } from '../../hooks/use-ai-admin.ts';
 import { aiCatalogQuery } from '../../hooks/use-ai-catalog.ts';
-import { api } from '../../lib/api.ts';
 import { describeError } from '../../lib/errors.ts';
 import { toast } from '../../lib/toast.ts';
+import { aiAdminApi } from '../../lib/ai-admin-api.ts';
 
 /** The status line's dot: green while live, grey when the catalog is a stored copy. */
 export function CatalogStatusLine({ status }: { status: AiCatalogStatus }) {
@@ -40,7 +40,7 @@ export function CatalogSection({ admin }: { admin: AiAdminSettings }) {
   const catalog = useQuery(aiCatalogQuery);
   const input = useRef<HTMLInputElement>(null);
   const upload = useMutation({
-    mutationFn: async (file: File) => api.ai.catalog.upload(await readCatalogFile(file)),
+    mutationFn: async (file: File) => aiAdminApi.catalog.upload(await readCatalogFile(file)),
     onSuccess: async (status) => {
       toast(`Catalog updated · ${status.providerCount} providers, ${status.modelCount} models`);
       await client.invalidateQueries({ queryKey: queryKeys.ai.all() });

@@ -8,11 +8,11 @@ import {
   type AiRole,
 } from '@bemmoly/shared';
 import { useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
-import { api } from '../lib/api.ts';
 import { describeError } from '../lib/errors.ts';
 import { toast, undoToast } from '../lib/toast.ts';
 import { aiProvidersQuery, aiRolesQuery } from './use-ai-admin.ts';
 import { catalogModelsQuery } from './use-ai-catalog.ts';
+import { aiAdminApi } from '../lib/ai-admin-api.ts';
 
 export const ROLE_COPY: Record<AiRole, { label: string; description: string }> = {
   fast: {
@@ -115,9 +115,9 @@ export function useAiRoles(enabled = true) {
   const { models, loading } = useRoleModels(list);
   const assign = useMutation({
     mutationFn: async ({ role, value }: { role: AiRole; value: string | null }) => {
-      if (value === null) return api.ai.roles.clear(role);
+      if (value === null) return aiAdminApi.roles.clear(role);
       const { providerId, model } = parseOption(value);
-      return api.ai.roles.assign(role, {
+      return aiAdminApi.roles.assign(role, {
         providerId,
         model,
         reasoningEffort: null,
@@ -170,7 +170,7 @@ export function useAiRoles(enabled = true) {
       const model = suggestedModel(role, models);
       if (!model) continue;
       filled += 1;
-      await api.ai.roles.assign(role, {
+      await aiAdminApi.roles.assign(role, {
         providerId: provider.id,
         model: model.id,
         reasoningEffort: null,

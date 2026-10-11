@@ -1,57 +1,20 @@
 import {
   applyUpdateRequestSchema,
-  auditLogPageSchema,
-  backupListResponseSchema,
-  backupSchema,
   catalogUploadResponseSchema,
-  listAuditLogQuerySchema,
   rollbackRequestSchema,
   systemHealthResponseSchema,
   updaterAcceptedSchema,
   updatesOverviewSchema,
-  verifyBackupRequestSchema,
-  type BackupKind,
   type ListAuditLogQuery,
   type RollbackMode,
 } from '@bemmoly/shared';
 import type { Http } from '../http.ts';
-import { enc, validated } from './validate.ts';
+import { validated } from './validate.ts';
 
-export interface BackupsFilter {
-  cursor?: string;
-  limit?: number;
-  kind?: BackupKind;
-}
-
-/** The operations stream's endpoints, all gated by workspace.system.manage. */
+/** The operations stream's endpoints, all gated by workspace.system.manage. Backups
+ * and the audit log read live in `operations-admin.ts`, out of the shell's first load. */
 export function operationsEndpoints(http: Http) {
   return {
-    backups: {
-      list: async (filter: BackupsFilter = {}) =>
-        http.request('/api/v1/admin/backups', backupListResponseSchema, {
-          query: { cursor: filter.cursor, limit: filter.limit, kind: filter.kind },
-        }),
-      get: async (id: string) => http.request(`/api/v1/admin/backups/${enc(id)}`, backupSchema),
-      run: async () =>
-        http.request('/api/v1/admin/backups', backupSchema, {
-          method: 'POST',
-          body: {},
-          idempotent: true,
-        }),
-      /** 202: the server enters maintenance and restores; the page shows the banner. */
-      restore: async (id: string) =>
-        http.send(`/api/v1/admin/backups/${enc(id)}/restore`, {
-          method: 'POST',
-          body: { confirm: true },
-        }),
-      /** `list` checks the archive; `restore` is the full restore drill. */
-      verify: async (id: string, depth: 'list' | 'restore' = 'restore') =>
-        http.send(`/api/v1/admin/backups/${enc(id)}/verify`, {
-          method: 'POST',
-          body: validated(verifyBackupRequestSchema, { depth }),
-        }),
-      downloadUrl: (id: string) => http.url(`/api/v1/admin/backups/${enc(id)}/download`),
-    },
     updates: {
       overview: async () => http.request('/api/v1/admin/updates', updatesOverviewSchema),
       /** Fetches the release list now; the answer is the refreshed overview. */
@@ -80,10 +43,6 @@ export function operationsEndpoints(http: Http) {
       health: async () => http.request('/api/v1/admin/system', systemHealthResponseSchema),
     },
     audit: {
-      list: async (query: AuditFilter = {}) =>
-        http.request('/api/v1/audit-log', auditLogPageSchema, {
-          query: validated(listAuditLogQuerySchema, { ...query, format: 'json' }),
-        }),
       /** The same endpoint with format=csv, for a download link; no paging. */
       exportUrl: (query: AuditFilter = {}) =>
         http.url('/api/v1/audit-log', {
