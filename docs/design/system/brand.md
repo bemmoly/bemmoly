@@ -70,20 +70,24 @@ import { BrandBlock, BrandRailFoot, BrandRailTop } from '@bemmoly/ui';
 
 ## Logo colours are the system
 
-The mark's three colours are fixed tokens (`BRAND` in `src/tokens/semantic.ts`); no preset or
-custom theme changes them.
+The mark's three colours are fixed tokens (`BRAND` in `src/tokens/semantic.ts`); no theme,
+custom or built-in, and no mode changes them, and the mark never takes a theme colour (ADR 0021).
 
 | Token     | Hex       | Its one job                                                        |
 | --------- | --------- | ------------------------------------------------------------------ |
-| `brand-1` | `#2356C9` | Classic's accent, and the Work module's colour                     |
-| `brand-2` | `#5B7BE5` | The Docs module's colour, and the base of the dark accent          |
+| `brand-1` | `#2356C9` | Bemmoly's light accent, and the Work module's colour               |
+| `brand-2` | `#5B7BE5` | The Docs module's colour, the base of the dark accent, dark Task   |
 | `brand-3` | `#9A85EA` | AI, and only AI (lilac; `ai` tokens carry it in the UI, see [ai.md](ai.md)) |
 
 - Work's tile is `EntityTile tone="work"` (`bg-brand-1`); Docs' is `tone="docs"` (`bg-brand-2`);
   AI's is `tone="ai"` (`bg-brand-3`). Module manifests name the colour as a token, never a hex:
   `color: 'brand-1'` (see [layout.md](layout.md#module-sidebar-contributions)).
-- Interactive accent uses the `acc` tokens, not `brand-*`: a preset or custom theme may change
-  the accent, but never the module or AI colours.
+- Interactive accent uses the `acc` tokens, not `brand-*`: a theme may change the accent, but
+  never the module or AI colours. Theme accents come from the logo (Bemmoly, Sand, High
+  contrast), are ink (Graphite), or sit outside every reserved hue (Pine); see
+  [tokens.md](tokens.md#themes-and-modes).
+- A custom theme's brand colour reaches links, buttons and selection only, through the checked
+  ramp the generator builds. It never recolours the logo, the brand block or a module tile.
 - Epics have their own violet, `type-epic` / `epic-2` `#6E56CF`, so they never read as AI.
 - A new module takes an epic hue (`epic-1` to `epic-8`) or `accent`, never a logo colour that
   is already taken.

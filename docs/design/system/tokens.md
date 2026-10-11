@@ -2,8 +2,9 @@
 
 The canonical names, and nothing else. Values live in `packages/ui/src/tokens/*.ts`
 (`@bemmoly/ui/tokens`); `theme.css` and `tailwind.css` are generated from them by
-`pnpm --filter @bemmoly/ui tokens:css`, and a test fails if they drift. Values below are Classic
-(light) and Dark; the six other presets keep the same names.
+`pnpm --filter @bemmoly/ui tokens:css`, and a test fails if they drift. Values below are the
+Bemmoly theme in light and dark; the other themes keep the same names (see
+[Themes and modes](#themes-and-modes)).
 
 ## How to use a token
 
@@ -37,8 +38,8 @@ Rules:
 | `card`    | `#ffffff` | `#181c22` | Cards, menus, dialogs, popovers                            |
 | `hover`   | ink 4.5%  | white 5%  | Overlay on any surface under the pointer (`bg-hover`)      |
 | `press`   | ink 7%    | white 8%  | Overlay while pressed or open (`bg-press`)                 |
-| `line`    | `#e7e9ee` | white 8%  | Borders: cards, inputs, the header rule                    |
-| `line-2`  | `#f0f1f4` | white 5%  | Dividers inside a card, table row rules, quiet chips       |
+| `line`    | `#e3e6ec` | `#2a2f38` | Borders: cards, inputs, the header rule                    |
+| `line-2`  | `#eef0f3` | `#20242b` | Dividers inside a card, table row rules, quiet chips       |
 | `scrim`   | `rgba(16,24,40,.45)` | same | Behind dialogs and sheets. Flat, never blurred       |
 
 ### Text
@@ -47,7 +48,7 @@ Rules:
 | ------ | --------- | --------- | ------------------------------------------------------ |
 | `tx`   | `#161b26` | `#e8ebf1` | Titles, primary text, values                           |
 | `tx-2` | `#4b5264` | `#a8b0be` | Secondary text, labels, inactive tabs                  |
-| `tx-3` | `#697181` | `#7d8492` | Meta: keys, timestamps, counts, placeholders, carets   |
+| `tx-3` | `#697181` | `#858c9a` | Meta: keys, timestamps, counts, placeholders, carets   |
 
 Every one passes 4.5:1 on every surface of every preset (`tokens.test.ts`). There is no fourth
 grey. A disabled control fades as a whole (`disabled:opacity-50`), never with a lighter grey.
@@ -89,10 +90,12 @@ behind `-tx` text. Never put `red` text on `red-50`; use `red-tx`.
 A status is coloured by its category only, whatever its name, so custom workflows read right.
 Draw it with `StatusGlyph`, never a coloured pill.
 
-### Type colours (fixed across presets and modes)
+### Type colours (fixed across themes)
 
 `type-epic` `#6e56cf`, `type-story` `#1f9d55`, `type-task` `#2356c9`, `type-bug` `#e5484d`,
-`type-subtask` `#0e9bb0`, `type-incident` `#d46a2e`. Only `TypeGlyph` uses them. Custom types
+`type-subtask` `#0e9bb0`, `type-incident` `#d46a2e`. Dark mode lifts `type-task` to `#5b7be5`
+(`brand-2`) and `type-epic` to `#7d68d8` so both hold 3:1 on dark cards (`MODE_TYPE_COLORS`).
+Only `TypeGlyph` uses them. Custom types
 pick from `TYPE_COLOR_CHOICES`.
 
 ### Epic palette (fixed)
@@ -194,10 +197,38 @@ motion every duration is zero ([accessibility.md](accessibility.md#motion)).
   `focusRingInset`.
 - `TIMING.tooltipDelayMs` 400, `TIMING.tooltipSkipMs` 300, `TIMING.toastMs` 6000.
 
-## Presets and custom themes
+## Themes and modes
 
-Eight presets (`PRESETS`): Classic and Dark carry the review's values exactly; Slate, Warm,
-Midnight, Forest, Ocean and Rose keep their accent and face and project onto the same names. A
-custom theme is `buildTheme({ brand, mode, surfaces, font })` from `@bemmoly/ui/theme`. Screens
-never set theme colours themselves, and nothing a theme does reaches the brand, type, epic or
-avatar colours.
+ADR 0021. A **theme** is a pair: a designed light and dark set of fifteen tokens (`canvas`,
+`side`, `sunken`, `card`, `line`, `line-2`, `tx`, `tx-2`, `tx-3`, `acc`, `acc-500`, `acc-50`,
+`acc-100`, `acc-fill`, `on-acc`), in `src/tokens/themes.ts`. **Mode** (`light`, `dark`, `system`)
+and the **typeface** are separate choices. Nothing a theme does reaches the brand, AI, status,
+signal, type, epic or avatar colours, the type scale, radius or spacing.
+
+| Theme         | Tag        | Light accent / fill   | Dark accent / fill    |
+| ------------- | ---------- | --------------------- | --------------------- |
+| Bemmoly       | Default    | `#2356c9` / `#2356c9` | `#7b95ec` / `#4a68d0` |
+| Graphite      | Neutral    | `#2356c9` / `#27272a` | `#8fa6f2` / `#e4e4e7` |
+| Sand          | Warm       | `#2356c9` / `#2356c9` | `#7b95ec` / `#4a68d0` |
+| Pine          | Green      | `#17675a` / `#17675a` | `#5fc0a8` / `#1d7a69` |
+| High contrast | Accessible | `#1a44a6` / `#1a44a6` | `#a3b6f6` / `#a3b6f6` |
+
+- `theme.css` keys each theme by `data-theme` and `data-mode` on any element; `data-mode='system'`
+  follows `prefers-color-scheme`. `data-font` picks the typeface. Bemmoly light owns `:root`.
+- Every set passes the fourteen checks of `themeChecks` (`@bemmoly/ui/theme`); High contrast is
+  held to 7:1 text and 3:1 control borders. `tokens.test.ts` runs them on every theme and mode.
+- **Reserved hues**: no accent may sit in these bands, because they already mean something.
+
+| Hue band  | Means                     |
+| --------- | ------------------------- |
+| 340°–12°  | Errors, Bug, Blocked      |
+| 18°–50°   | Warnings, Incident        |
+| 120°–155° | Done, Story, success      |
+| 255°–290° | AI (lilac), Epic (violet) |
+
+- **Custom themes**: `buildCustomTheme({ brand, surface })` keeps the surfaces of `neutral`
+  (Bemmoly) or `warm` (Sand) and moves only the accent tokens, the least that passes all fourteen
+  checks, in both modes. A brand in a reserved band gets a warning, never a block. A saved custom
+  theme becomes a theme source with `customThemeSource` and is applied as inline tokens.
+- Screens never set theme colours themselves. Previews paint an element with `themeScope` (web)
+  or `data-theme` and `data-mode`.
