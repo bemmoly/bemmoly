@@ -16,6 +16,7 @@ export * from './my-work.ts';
 export * from './projects.ts';
 export * from './realtime.ts';
 export * from './rich-text.ts';
+export * from './roadmap.ts';
 export * from './schemes.ts';
 export * from './search.ts';
 export * from './sprints.ts';
