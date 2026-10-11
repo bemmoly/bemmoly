@@ -222,6 +222,11 @@ install, import and configure, open source, the FAQ and the final call. The copy
 - **No time promises.** No install time is published until the nightly install job measures one.
 - **Live facts.** The GitHub star count is fetched once per build (`src/lib/clients/github.ts`,
   5 s timeout); when the fetch fails the number is simply left out.
+- **Sponsor link.** Every page's footer has a quiet "Buy me a coffee" link to the project's
+  page (`SPONSOR_URL`, the `buy_me_a_coffee` handle in `.github/FUNDING.yml`), a plain link in a
+  new tab with no logo or script, under the line "Optional support for the project. It unlocks
+  nothing". `tests/promises.test.ts` keeps the URL in step with the funding file and the label
+  optional; it is the one external link besides the repository that every page may carry.
 - **Names.** Other products appear only as import sources ("Import from Confluence",
   "Import from Jira"), outside the two comparison pages; `tests/seo.test.ts` enforces it.
 

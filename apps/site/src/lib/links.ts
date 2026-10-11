@@ -16,6 +16,11 @@ export const RELEASES_URL = `${REPO_URL}/releases/latest`;
 export const COMPOSE_URL = `${REPO_URL}/tree/main/deploy/compose`;
 /** A file in the repository, as a proof link: the line a claim rests on lives there. */
 export const sourceUrl = (path: string) => `${REPO_URL}/blob/main/${path}`;
+/**
+ * The project's Buy Me a Coffee page: the `buy_me_a_coffee` handle in .github/FUNDING.yml
+ * (tests/promises.test.ts keeps the two in step). Optional support that unlocks nothing.
+ */
+export const SPONSOR_URL = 'https://buymeacoffee.com/bemmoly';
 /** The live demo: apps/web's demo build, served by this site (scripts/bundle-demo.ts). */
 export const DEMO_URL = '/demo';
 

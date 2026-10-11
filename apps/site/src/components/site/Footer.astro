@@ -5,10 +5,12 @@
  * and a base line with the three promises, the version from the build and the theme control.
  * The theme control needs the site script, so it stays hidden until that script shows it.
  * A page may add one line of notice under the base line (the comparison pages' trademark note).
+ * Under the brand line, a quiet link to the project's Buy Me a Coffee page, labelled as the
+ * optional support it is: it unlocks nothing, so it never reads as a price or a purchase.
  */
 import { ALTERNATIVES, pageAt, TOPICS } from '../../data/pages.ts';
 import { LATEST } from '../../lib/changelog.ts';
-import { FOOTER_COLUMNS } from '../../lib/links.ts';
+import { FOOTER_COLUMNS, SPONSOR_URL } from '../../lib/links.ts';
 import Icon from './Icon.astro';
 import Logo from './Logo.astro';
 
@@ -42,6 +44,21 @@ const THEMES = [
       <p class="max-w-65 text-14 leading-brief text-tx-3">
         Your work. Your platform. Issues and docs for your whole company, on your own server.
       </p>
+      <div class="mt-2 flex flex-col items-start gap-1.5">
+        <a
+          href={SPONSOR_URL}
+          target="_blank"
+          rel="noopener"
+          data-sponsor
+          class="inline-flex h-8.5 items-center gap-2 rounded-card bg-card px-3.5 text-14 font-medium text-tx shadow-e1 hover:bg-sunken hover:text-tx"
+        >
+          <Icon name="heart" size={14} class="text-acc" />
+          Buy me a coffee
+        </a>
+        <p class="max-w-65 text-12 leading-brief text-tx-3">
+          Optional support for the project. It unlocks nothing: every feature is already yours.
+        </p>
+      </div>
     </div>
     <div class="grid grid-cols-2 gap-x-8 gap-y-10 sm:grid-cols-4 md:contents">
       {columns.map((column) => (
