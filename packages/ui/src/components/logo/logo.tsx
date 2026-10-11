@@ -1,5 +1,14 @@
+import { useEffect, useSyncExternalStore } from 'react';
 import { cx } from '../../lib/cx.ts';
-import { BRAND_FILES, decorative, trimmed, type LogoVariant } from './brand-files.ts';
+import {
+  brandFileNow,
+  decorative,
+  loadBrandFile,
+  subscribeBrandFiles,
+  trimmed,
+  type LogoFileTone,
+  type LogoVariant,
+} from './brand-files.ts';
 
 export type LogoTone = 'auto' | 'light' | 'dark' | 'mono';
 
@@ -20,6 +29,20 @@ export interface LogoProps {
   className?: string;
 }
 
+/**
+ * The file's markup, read on first use. Until it arrives the wrapper holds the logo's height and
+ * its accessible name, so nothing moves and assistive tech already hears it.
+ */
+function useBrandFile(variant: LogoVariant, tone: LogoFileTone): string {
+  const read = () => brandFileNow(variant, tone) ?? '';
+  const svg = useSyncExternalStore(subscribeBrandFiles, read, read);
+  useEffect(() => {
+    if (brandFileNow(variant, tone) === undefined)
+      loadBrandFile(variant, tone).catch(() => undefined);
+  }, [variant, tone]);
+  return svg;
+}
+
 /** The only component that draws the Bemmoly logo. It renders the files in assets/brand. */
 export function Logo({
   variant = 'mark',
@@ -29,7 +52,7 @@ export function Logo({
   trim,
   className,
 }: LogoProps) {
-  const file = BRAND_FILES[variant][tone === 'auto' ? 'color' : tone];
+  const file = useBrandFile(variant, tone === 'auto' ? 'color' : tone);
   const svg = trim ? trimmed(file) : file;
   const a11y = label ? { role: 'img', 'aria-label': label } : { 'aria-hidden': true };
   return (

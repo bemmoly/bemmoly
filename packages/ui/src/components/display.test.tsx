@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { expectAccessible } from '../testing/a11y.ts';
 import {
@@ -64,14 +64,17 @@ describe('display components', () => {
     expect(initialsOf('rohan@acmelabs.dev')).toBe('RO');
   });
 
-  it('renders the logo from the brand files in its own colours on every theme', () => {
+  it('renders the logo from the brand files in its own colours on every theme', async () => {
     render(
       <div data-theme="custom">
         <Logo variant="lockup" />
       </div>,
     );
     const logo = screen.getByRole('img', { name: 'Bemmoly' });
-    expect(logo.querySelector('svg')?.getAttribute('aria-hidden')).toBe('true');
+    // The file is its own chunk; the wrapper holds the name and the height until it lands.
+    await waitFor(() =>
+      expect(logo.querySelector('svg')?.getAttribute('aria-hidden')).toBe('true'),
+    );
     // The CSP refuses inline style attributes, and no theme may recolour the mark: each tile
     // carries its designed colour as a plain fill.
     expect(logo.innerHTML).not.toContain('style=');
