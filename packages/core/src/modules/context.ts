@@ -1,3 +1,4 @@
+import type { PdfRenderer } from '../contracts/pdf.ts';
 import { isCapabilityOfModule, navEntrySchema } from '@bemmoly/shared';
 import type { SqlClient } from '../clients/postgres.ts';
 import type { AiFacade } from '../contracts/ai.ts';
@@ -40,6 +41,8 @@ export interface ModuleContextOptions {
   isEnabled?: (moduleId: string) => boolean;
   /** Builds the context a job acts in for an actor; present with a database. */
   contextFor?: ActorContextFactory;
+  /** The optional PDF renderer; absent unless one is configured. */
+  pdf?: PdfRenderer;
 }
 
 /** `ctx.events` for one module: it publishes freely, and hears events only while enabled. */
@@ -264,6 +267,7 @@ export function createModuleContext(
     },
     realtime: options.realtime ?? noRealtime,
     ...(options.contextFor ? { contextFor: options.contextFor } : {}),
+    ...(options.pdf ? { pdf: options.pdf } : {}),
     ...(options.database
       ? {
           database: options.database,

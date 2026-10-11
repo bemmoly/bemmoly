@@ -7,6 +7,7 @@ import {
   createLocalEventBus,
   createMaintenanceReader,
   createModuleDataBackupHandle,
+  createPdfRendererClient,
   createRequestAuthorization,
   createRealtimeService,
   createSettingsReaderHandle,
@@ -106,6 +107,16 @@ export async function bootApplication(options: BootOptions): Promise<Booted> {
     collab: collabHandle,
     ai: () => aiHandle.bound(),
     files: () => files,
+    ...(env.BEMMOLY_PDF_URL
+      ? {
+          pdf: createPdfRendererClient({
+            baseUrl: env.BEMMOLY_PDF_URL,
+            timeoutMs: env.BEMMOLY_PDF_TIMEOUT_MS,
+            maxHtmlBytes: env.BEMMOLY_PDF_MAX_BYTES,
+            maxPdfBytes: env.BEMMOLY_PDF_MAX_BYTES,
+          }),
+        }
+      : {}),
     ...(realtime ? { realtime: realtime.publisher } : {}),
     ...(database
       ? {

@@ -1,3 +1,4 @@
+import type { PdfRenderer } from '../contracts/pdf.ts';
 import { isModuleId, KERNEL_CHORDS } from '@bemmoly/shared';
 import semver from 'semver';
 import type { EventBus } from '../contracts/event-bus.ts';
@@ -46,6 +47,8 @@ export interface LoadModulesOptions {
   isEnabled?: (moduleId: string) => boolean;
   /** What ctx.contextFor builds a job's request context with; see createModuleContext. */
   contextFor?: ActorContextFactory;
+  /** The optional PDF renderer every module sees as ctx.pdf. */
+  pdf?: PdfRenderer;
 }
 
 function indexAvailable(available: readonly BemmolyModule[]): Map<string, BemmolyModule> {
@@ -138,6 +141,7 @@ export function loadModules(options: LoadModulesOptions): ModuleRegistry {
         ...(options.files ? { files: options.files } : {}),
         ...(options.isEnabled ? { isEnabled: options.isEnabled } : {}),
         ...(options.contextFor ? { contextFor: options.contextFor } : {}),
+        ...(options.pdf ? { pdf: options.pdf } : {}),
         peers: () => registry,
       }),
     );
