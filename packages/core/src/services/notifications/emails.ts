@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import {
+  aiBudgetEmail,
   backupFailedEmail,
   notificationEmail,
   updateAvailableEmail,
@@ -7,6 +8,12 @@ import {
 } from '../email/index.ts';
 import { SYSTEM_ACTOR, verbFor } from './copy.ts';
 import type { StoredNotification } from './grouping.ts';
+
+const aiBudgetData = z.object({
+  state: z.enum(['warning', 'paused']),
+  headline: z.string().min(1),
+  detail: z.string().min(1),
+});
 
 const backupFailedData = z.object({
   error: z.string().min(1),
@@ -36,6 +43,15 @@ export function immediateEmailContent(
       return backupFailedEmail(frame, {
         ...parsed.data,
         backupsUrl: absoluteUrl('/settings/backups'),
+      });
+    }
+  }
+  if (row.kind === 'ai_budget') {
+    const parsed = aiBudgetData.safeParse(data);
+    if (parsed.success) {
+      return aiBudgetEmail(frame, {
+        ...parsed.data,
+        usageUrl: row.targetUrl ?? absoluteUrl('/settings/ai/usage'),
       });
     }
   }

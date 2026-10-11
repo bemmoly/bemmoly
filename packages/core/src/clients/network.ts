@@ -31,6 +31,19 @@ export function isPrivateAddress(address: string): boolean {
   return privateRanges.check(address, family === 4 ? 'ipv4' : 'ipv6');
 }
 
+const linkLocal = new BlockList();
+linkLocal.addSubnet('169.254.0.0', 16, 'ipv4');
+linkLocal.addSubnet('fe80::', 10, 'ipv6');
+
+/** Link-local addresses: where cloud metadata services answer, IPv4-mapped IPv6 included. */
+export function isLinkLocalAddress(address: string): boolean {
+  const mapped = /^::ffff:(\d+\.\d+\.\d+\.\d+)$/i.exec(address)?.[1];
+  if (mapped) return linkLocal.check(mapped, 'ipv4');
+  const family = isIP(address);
+  if (family === 0) return false;
+  return linkLocal.check(address, family === 4 ? 'ipv4' : 'ipv6');
+}
+
 export class PrivateAddressError extends Error {
   override readonly name = 'PrivateAddressError';
 }

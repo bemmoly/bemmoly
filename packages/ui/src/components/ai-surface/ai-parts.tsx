@@ -53,7 +53,7 @@ export function AiNotUseful({
     <button
       type="button"
       className={cx(
-        'inline-flex shrink-0 cursor-pointer items-center rounded-chip border-0 bg-transparent font-sans text-tx-3 hover:text-tx-2',
+        'inline-flex shrink-0 cursor-pointer items-center rounded-chip border-0 bg-transparent font-sans text-tx-2 hover:text-tx',
         size === 'sm' ? 'px-2.25 py-1 text-13' : 'px-2.5 py-1.25',
         focusRing,
         className,

@@ -50,8 +50,9 @@ export function PageLayout({ header, layout, title, children }: PageLayoutProps)
   const [presenceSlot, setPresenceSlot] = useState<HTMLElement | null>(null);
   const [tail, setTail] = useState<readonly PageCrumb[] | null>(null);
   const crumbs = tail ? [...header.crumbs.slice(0, -1), ...tail] : header.crumbs;
-  // A page with a single part ("Inbox") takes the workspace as its context.
-  const parts = title ?? titleFrom(header, pathname, workspaceName);
+  // The tab names what the header names: a screen's refined trail (a doc page's own title)
+  // replaces the route's placeholder there too. A single part ("Inbox") takes the workspace.
+  const parts = title ?? titleFrom({ ...header, crumbs }, pathname, workspaceName);
   useDocumentTitle(parts.filter(Boolean).length === 1 ? [...parts, workspaceName] : parts);
   return (
     <ActionsSlotProvider value={slot}>

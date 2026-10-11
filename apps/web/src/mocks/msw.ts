@@ -30,8 +30,31 @@ async function readBody(request: Request): Promise<unknown> {
   }
 }
 
+/** A body that arrives line by line, `delayMs` apart: a streamed AI reply. */
+function lineStream(text: string, delayMs: number): ReadableStream<Uint8Array> {
+  const encoder = new TextEncoder();
+  const lines = text.split(/(?<=\n)/);
+  return new ReadableStream({
+    async pull(controller) {
+      const line = lines.shift();
+      if (line === undefined) {
+        controller.close();
+        return;
+      }
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
+      controller.enqueue(encoder.encode(line));
+    },
+  });
+}
+
 export function toResponse(result: MockResponse): Response {
   if (result.body === undefined) return new HttpResponse(null, { status: result.status });
+  if (result.lineDelayMs && typeof result.body === 'string') {
+    return new HttpResponse(lineStream(result.body, result.lineDelayMs), {
+      status: result.status,
+      ...(result.headers ? { headers: result.headers } : {}),
+    });
+  }
   if (result.headers && typeof result.body === 'string') {
     return new HttpResponse(result.body, { status: result.status, headers: result.headers });
   }

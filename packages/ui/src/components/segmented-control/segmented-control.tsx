@@ -85,7 +85,7 @@ export function SegmentedControl<V extends string>({
               s.item,
               selected
                 ? cx('bg-card text-tx shadow-e1', s.selected)
-                : cx('bg-transparent text-tx-3', s.idle),
+                : cx('bg-transparent text-tx-2', s.idle),
               focusRing,
             )}
           >

@@ -1,8 +1,10 @@
 import type { NavEntry } from '@bemmoly/shared';
+import type { RetrievalSourceDefinition } from '../contracts/retrieval.ts';
 import type { SettingDefinition } from '../contracts/settings.ts';
 import type { CollabDocumentDefinition } from './collab.ts';
 import type {
   AiContribution,
+  AiExclusionSourceDefinition,
   CapabilityDefinition,
   EditorContribution,
   EntityDefinition,
@@ -32,6 +34,8 @@ export interface ModuleContributions {
   aiContextBuilders: AiContribution[];
   aiInsightGenerators: AiContribution[];
   aiPromptFiles: { name: string; path: string }[];
+  aiExclusionSources: AiExclusionSourceDefinition[];
+  retrievalSources: RetrievalSourceDefinition[];
   editorNodes: EditorContribution[];
   editorSlashCommands: EditorContribution[];
   importers: ImporterDefinition[];
@@ -55,6 +59,8 @@ export function emptyContributions(): ModuleContributions {
     aiContextBuilders: [],
     aiInsightGenerators: [],
     aiPromptFiles: [],
+    aiExclusionSources: [],
+    retrievalSources: [],
     editorNodes: [],
     editorSlashCommands: [],
     importers: [],

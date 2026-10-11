@@ -136,4 +136,33 @@ describe('what email and notifications build on, against a real database', () =>
       await app.close();
     }
   });
+
+  it('gives each route that calls a model its own, smaller per-person budget', async (ctx) => {
+    if (!harness) return ctx.skip(skipReason);
+    const app = Fastify({ logger: false });
+    app.setErrorHandler(errorHandler);
+    await app.register(rateLimiting, {
+      sql: harness.identity.sql,
+      perActor: { max: 50, windowMs: 60_000 },
+      aiPerActor: { max: 2, windowMs: 60_000 },
+    });
+    app.post('/api/v1/ai/answers', async () => ({ ok: true }));
+    app.post('/api/v1/docs/pages/:pageId/completions', async () => ({ ok: true }));
+    app.get('/api/v1/work/issues', async () => ({ ok: true }));
+    try {
+      const ask = () => app.inject({ method: 'POST', url: '/api/v1/ai/answers' });
+      expect((await ask()).statusCode).toBe(200);
+      expect((await ask()).statusCode).toBe(200);
+      const refused = await ask();
+      expect(refused.statusCode).toBe(429);
+      expect(refused.json().code).toBe('rate_limited');
+      const ghost = () => app.inject({ method: 'POST', url: '/api/v1/docs/pages/p1/completions' });
+      expect((await ghost()).statusCode).toBe(200);
+      for (let read = 0; read < 5; read += 1) {
+        expect((await app.inject({ url: '/api/v1/work/issues' })).statusCode).toBe(200);
+      }
+    } finally {
+      await app.close();
+    }
+  });
 });

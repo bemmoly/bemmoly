@@ -14,9 +14,12 @@ import { RichTextView } from './view.tsx';
 const load = () => import('./doc/doc-editor.tsx');
 const Editor = lazy(load);
 
-/** Starts fetching the Docs editor chunk; safe to call any number of times. */
-export function preloadDocEditor(): void {
-  void load();
+/**
+ * Starts fetching the Docs editor chunk; safe to call any number of times. Resolves once the
+ * chunk is in, so a caller that must not see the read-only fallback (a test) can await it.
+ */
+export async function preloadDocEditor(): Promise<void> {
+  await load();
 }
 
 function Fallback(props: DocEditorProps) {

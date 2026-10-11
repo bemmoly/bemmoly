@@ -81,19 +81,29 @@ describe('the doc editor screen', () => {
     expect(header?.className).toContain('[:root[data-doc-typing]_&]:opacity-0');
   });
 
-  it('keeps a stored TL;DR unshown while the workspace has AI off', async () => {
+  it('keeps the TL;DR unshown, and unasked for, while the workspace has AI off', async () => {
+    let asked = false;
+    server.use(
+      http.get('*/api/v1/ai/insights/page_tldr/:id', () => {
+        asked = true;
+        return HttpResponse.json(tldr());
+      }),
+    );
     page = pageDetail({ tldr: 'Sessions move to Postgres in two steps.' });
     renderPage();
     await title();
     expect(screen.queryByText('TL;DR')).toBeNull();
     expect(screen.queryByText('Sessions move to Postgres in two steps.')).toBeNull();
+    expect(asked).toBe(false);
   });
 
-  it('shows the TL;DR in the AI surface once the workspace has AI on', async () => {
-    page = pageDetail({ tldr: 'Sessions move to Postgres in two steps.' });
+  it('shows the cited TL;DR in the AI surface once the workspace has AI on', async () => {
+    server.use(http.get('*/api/v1/ai/insights/page_tldr/:id', () => HttpResponse.json(tldr())));
     renderPage({ aiEnabled: true });
     expect(await screen.findByText('Sessions move to Postgres in two steps.')).toBeTruthy();
     expect(screen.getByText('TL;DR')).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'Rollback' })).toBeTruthy();
+    expect(screen.getByText('by AI · from 4 sections')).toBeTruthy();
   });
 
   it('renames the page from its title and hands the caret on with Enter', async () => {
@@ -257,3 +267,32 @@ describe('the doc editor screen', () => {
     expect(await within(trail).findByRole('link', { name: 'Page not found' })).toBeTruthy();
   });
 });
+
+function tldr() {
+  return {
+    insight: {
+      id: '018f0000-0000-7000-8000-0000000000a3',
+      kind: 'page_tldr',
+      targetKind: 'page',
+      targetId: PAGE_ID,
+      state: 'ready',
+      error: null,
+      generatedAt: '2026-10-10T09:00:00.000Z',
+      feedback: null,
+      content: {
+        output: { points: [{ text: 'Sessions move to Postgres in two steps.', cites: ['c1'] }] },
+        citations: [
+          {
+            id: 'c1',
+            kind: 'section',
+            objectId: PAGE_ID,
+            label: 'Rollback',
+            location: 'Rollback',
+            href: `/docs/p/${PAGE_ID}#rollback`,
+          },
+        ],
+        source: { counts: { sections: 4 }, titlesOnly: false },
+      },
+    },
+  };
+}

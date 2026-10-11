@@ -17,7 +17,8 @@
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "lint": "eslint --max-warnings 0 .",
     "test": "vitest run",
-    "test:integration": "vitest run --config vitest.integration.config.ts"
+    "test:integration": "vitest run --config vitest.integration.config.ts",
+    "eval": "vitest run --config vitest.eval.config.ts"
   },
   "dependencies": {
     "@fastify/static": "10.1.5",

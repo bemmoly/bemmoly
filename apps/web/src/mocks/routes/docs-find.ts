@@ -1,6 +1,8 @@
 import { can, emit, type MockDb } from '../db.ts';
 import { bodyOf, fail, notFound, ok, type MockRoute } from '../types.ts';
 import { docsState, live, presentSummary } from './docs-state.ts';
+import { cannedInsight } from '../seed/ai-insights.ts';
+import { aiEnabledFor } from './ai-state.ts';
 
 /*
  * Search, labels and the Docs home's "needs attention" on the in-memory
@@ -162,8 +164,26 @@ export const docsFindRoutes: MockRoute[] = [
         )
         .map((row) => ({ kind: 'stale', page: presentSummary(state, row), since: row.updatedAt }));
       const limit = Number(request.query.get('limit') ?? 10);
+      const checked = aiEnabledFor(db, me)
+        ? state.pages
+            .filter((row) => live(row) && (row.ownerId === me || row.reviewers.includes(me)))
+            .flatMap((row) => {
+              const { output } = cannedInsight('consistency', row.id, null);
+              const findings = (output as { findings: unknown[] }).findings.length;
+              return findings > 0
+                ? [
+                    {
+                      kind: 'consistency',
+                      page: presentSummary(state, row),
+                      since: row.updatedAt,
+                      findings,
+                    },
+                  ]
+                : [];
+            })
+        : [];
       return ok({
-        items: [...reviews, ...stale].slice(0, limit),
+        items: [...reviews, ...stale, ...checked].slice(0, limit),
         staleAfterDays: STALE_AFTER_DAYS,
       });
     },

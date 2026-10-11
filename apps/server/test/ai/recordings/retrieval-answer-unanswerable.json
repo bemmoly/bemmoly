@@ -1,0 +1,6 @@
+{
+  "prompt": { "id": "retrieval.answer", "version": 1 },
+  "replies": {
+    "retrieval.answer": [{ "text": "NO_ANSWER" }]
+  }
+}

@@ -33,6 +33,7 @@ import { DragOverlay } from './drag-overlay.tsx';
 import { BACKLOG_ID, backlogIssueOrder, nextSprintName, points } from './model.ts';
 import { SprintDialog } from './sprint-dialog.tsx';
 import { SprintSection } from './sprint-section.tsx';
+import { SprintPulse } from '../shared/sprint-pulse.tsx';
 
 const clearSelection = () => useBacklogUi.getState().setSelection(EMPTY_SELECTION);
 const NO_BLOCKERS: Readonly<Record<string, readonly string[]>> = {};
@@ -180,6 +181,13 @@ export default function BacklogScreen({ projectKey: pathKey }: WorkScreenProps) 
       </HeaderActions>
       <div className="flex min-h-0 min-w-0 flex-1 flex-col">
         <BacklogToolbar options={options} />
+        <SprintPulse
+          sprintId={
+            screen.sections.find(({ container }) => container.sprint?.state === 'active')?.container
+              .id
+          }
+          className="px-6 pt-3 pb-2 max-md:px-4"
+        />
         <div className="flex min-h-0 flex-1">
           {showEpics && epicTypeId !== undefined && (
             <BacklogEpics

@@ -2,7 +2,8 @@ import type { IconName } from '@bemmoly/ui/icons';
 import type { Editor, Range } from '@tiptap/core';
 import type { SuggestionRow } from '../editor/suggestion-store.ts';
 import { BLOCK_TYPES } from './block-types.ts';
-import { DEFAULT_AI_COMMANDS, type DocServices } from './services.ts';
+import { runAiCommand } from './ai/run-command.ts';
+import { DEFAULT_AI_COMMANDS, type AiCommand, type DocServices } from './services.ts';
 
 /*
  * The Docs / menu of the review's Writing tab: Basic blocks first, then AI in lilac (only when
@@ -182,29 +183,37 @@ const FROM_WORK: readonly DocSlashItem[] = [
   },
 ];
 
-/** The context an /ai command runs with: the block's text and any selection. */
-function runAi(commandId: string) {
+/** An /ai row: the typed "/ai" goes, then the command runs where the caret stands. */
+function runAi(command: AiCommand) {
   return (editor: Editor, range: Range, services: DocServices) => {
     start(editor, range).run();
-    const { state } = editor;
-    const { from, to, $from } = state.selection;
-    services.ai?.run(commandId, {
-      blockText: $from.parent.textContent,
-      selectionText: state.doc.textBetween(from, to, '\n'),
-      insertText: (text) => editor.chain().focus().insertContent(text).run(),
-    });
+    runAiCommand(editor, command, services.ai);
   };
 }
+
+const AI_LINES: Record<string, string> = {
+  continue: 'Writes on from where you are',
+  'summarize-comments': 'The questions still open in the comments',
+  'create-issues': 'Drafts the issues this section asks for',
+  summarize: 'A short summary of this section',
+  draft: 'A first draft under this heading',
+  improve: 'Clearer wording for this line',
+  shorten: 'The same point in fewer words',
+  'fix-grammar': 'Spelling and grammar, nothing else',
+  translate: 'This line in English',
+  table: 'This line’s facts as a table',
+};
 
 /** Every row the host's services allow, in the menu's group order. */
 export function docSlashItems(services: DocServices): DocSlashItem[] {
   const ai = services.ai
     ? (services.ai.commands ?? DEFAULT_AI_COMMANDS).map((command): DocSlashItem => ({
-        ...command,
-        description: 'Writes with AI; you review it first',
+        id: command.id,
+        label: command.label,
+        description: AI_LINES[command.id] ?? 'Writes with AI; you review it first',
         icon: 'spark',
         group: 'AI',
-        run: runAi(command.id),
+        run: runAi(command),
       }))
     : [];
   return [...BASIC, ...ai, ...INSERT, ...FROM_WORK].filter(

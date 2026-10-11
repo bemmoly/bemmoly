@@ -51,8 +51,13 @@ describe('IssueSlideOver', () => {
     expect(screen.queryByRole('region', { name: /AI summary/ })).toBeNull();
   });
 
-  it('shows the AI summary in lilac only when the workspace has AI on', async () => {
-    server.use(http.get('*/api/v1/me', () => HttpResponse.json(me(true))));
+  it('shows the AI summary in lilac, cited, only when the workspace has AI on', async () => {
+    server.use(
+      http.get('*/api/v1/me', () => HttpResponse.json(me(true))),
+      http.get('*/api/v1/ai/insights/issue_summary/:id', ({ params }) =>
+        HttpResponse.json({ insight: summaryOf(String(params['id'])) }),
+      ),
+    );
     render(
       <Providers>
         <IssueSlideOver issueKey="PLT-204" onClose={() => undefined} />
@@ -60,6 +65,10 @@ describe('IssueSlideOver', () => {
     );
     const summary = await screen.findByRole('region', { name: 'AI summary' });
     expect(summary.className).toContain('bg-ai-50');
+    expect(await screen.findByText('Review of PR 4821 waits on Jonas.')).toBeTruthy();
+    expect(screen.getByRole('link', { name: "Jonas M.'s comment" })).toBeTruthy();
+    expect(screen.getByText('by AI · from 14 comments')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Not useful' })).toBeTruthy();
   });
 
   it('assigns the issue to the viewer at once and rolls back when the server refuses', async () => {
@@ -171,3 +180,30 @@ describe('StatusMenu', () => {
     );
   });
 });
+
+function summaryOf(targetId: string) {
+  return {
+    id: '018f0000-0000-7000-8000-0000000000a1',
+    kind: 'issue_summary',
+    targetKind: 'issue',
+    targetId,
+    state: 'ready',
+    error: null,
+    generatedAt: '2026-10-10T09:00:00.000Z',
+    feedback: null,
+    content: {
+      output: { points: [{ text: 'Review of PR 4821 waits on Jonas.', cites: ['c1'] }], next: [] },
+      citations: [
+        {
+          id: 'c1',
+          kind: 'comment',
+          objectId: 'k1',
+          label: "Jonas M.'s comment",
+          location: null,
+          href: '/work/issue/PLT-204',
+        },
+      ],
+      source: { counts: { comments: 14 }, titlesOnly: false },
+    },
+  };
+}

@@ -1,0 +1,28 @@
+{
+  "prompt": {
+    "id": "docs.consistency",
+    "version": 1
+  },
+  "replies": {
+    "docs.consistency": [
+      {
+        "object": {
+          "findings": [
+            {
+              "claim": "Sessions issued by the new service stay valid for 15 minutes.",
+              "location": {
+                "heading": "Rollback",
+                "paragraph": 6
+              },
+              "issueKey": "PLT-204",
+              "field": "description",
+              "issueValue": "The auth_pg_sessions flag keeps sessions for 30 minutes after it is turned off.",
+              "confidence": 0.92,
+              "cites": ["c3", "c1"]
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

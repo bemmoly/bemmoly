@@ -2,11 +2,14 @@ import { defineModule, loadChangelogFolder } from '@bemmoly/core';
 import { WORK_CAPABILITIES } from './server/src/config/capabilities.ts';
 import { defineWorkSettings } from './server/src/config/settings.ts';
 import { createWorkControllers } from './server/src/controllers/index.ts';
+import { registerWorkAiTools } from './server/src/services/ai-tools/index.ts';
 import { workRoutes } from './server/src/routes/index.ts';
 import { createWorkServices } from './server/src/services/index.ts';
 import { WORK_AUTOMATION_RUN_JOB, WORK_RANK_REBALANCE_JOB } from './server/src/services/jobs.ts';
 import { registerWorkSearch } from './server/src/services/palette/index.ts';
+import { registerWorkAi, withAiTriggers } from './server/src/services/ai/index.ts';
 import { registerWorkReferences } from './server/src/services/references/index.ts';
+import { registerWorkRetrieval } from './server/src/services/retrieval/index.ts';
 
 /**
  * Issues, boards, backlogs, sprints and workflows. Off until an admin enables
@@ -79,7 +82,7 @@ export default defineModule({
     for (const capability of WORK_CAPABILITIES) ctx.capabilities.add(capability);
     defineWorkSettings(ctx.settings);
     const services = createWorkServices({
-      realtime: ctx.realtime,
+      realtime: withAiTriggers(ctx.realtime, ctx.events),
       events: ctx.events,
       jobs: ctx.jobs,
       ...(ctx.database ? { database: ctx.database } : {}),
@@ -99,7 +102,10 @@ export default defineModule({
       handle: async () => undefined,
     });
     registerWorkSearch(ctx.search, services.search, ctx.database);
+    registerWorkRetrieval(ctx);
     registerWorkReferences(ctx, ctx.database);
+    registerWorkAiTools(ctx.ai, services);
+    registerWorkAi(ctx, ctx.database);
     ctx.routes.add({ prefix: '/work', plugin: workRoutes(createWorkControllers(services)) });
   },
 });

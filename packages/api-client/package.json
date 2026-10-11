@@ -5,7 +5,9 @@
   "license": "MIT",
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./ai-insights": "./src/endpoints/ai-insights.ts",
+    "./ai-answers": "./src/endpoints/ai-answers.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit -p tsconfig.json",

@@ -1,5 +1,5 @@
 import type { AttentionItem, Space } from '@bemmoly/module-docs/shared';
-import { Button, Card, RelativeTime } from '@bemmoly/ui';
+import { AiDot, Button, Card, RelativeTime } from '@bemmoly/ui';
 import { Icon, PageIcon } from '@bemmoly/ui/icons';
 import { useAttention } from '../hooks/home-queries.ts';
 import { docsPaths } from '../shared/navigation.ts';
@@ -17,17 +17,26 @@ function NeedRow({
   person: (id: string | null) => DocsPersonView | null;
 }) {
   const owner = person(item.page.ownerId);
+  const findings = item.findings ?? 0;
   const why =
     item.kind === 'review'
       ? `${owner?.name ?? 'Someone'} asked you to review`
-      : 'Not updated for a while';
+      : item.kind === 'consistency'
+        ? `Contradicts its issues in ${findings} place${findings === 1 ? '' : 's'} · by AI`
+        : 'Not updated for a while';
   return (
     <a
       href={docsPaths.page(item.page.id)}
       data-list-row
       className="flex items-center gap-2.5 border-b border-line-2 px-3.5 py-2.5 text-tx no-underline outline-0 last:border-b-0 hover:bg-hover focus-visible:bg-hover"
     >
-      <Icon name={item.kind === 'review' ? 'eye' : 'clock'} size={15} className="text-tx-3" />
+      {item.kind === 'consistency' ? (
+        <span className="flex size-4 shrink-0 items-center justify-center">
+          <AiDot />
+        </span>
+      ) : (
+        <Icon name={item.kind === 'review' ? 'eye' : 'clock'} size={15} className="text-tx-3" />
+      )}
       <span className="flex min-w-0 flex-1 flex-col text-13">
         <span className="truncate text-tx-3">{why}</span>
         <span className="flex min-w-0 items-center gap-1.5 font-semibold">

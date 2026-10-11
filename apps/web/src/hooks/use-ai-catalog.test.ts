@@ -1,8 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
   BUNDLED_CATALOG,
-  catalogStatus,
-  connectionShell,
   initialsOf,
   LOCAL_SERVER,
   popularProviders,
@@ -14,10 +12,6 @@ import {
 const byName = (a: string, b: string) => a.localeCompare(b, 'en', { sensitivity: 'base' });
 
 describe('AI catalog', () => {
-  it('says where the catalog came from', () => {
-    expect(catalogStatus(BUNDLED_CATALOG)).toBe('Offline · bundled with 0.1.0');
-  });
-
   it('orders the Popular row by the catalog list and drops unknown ids', () => {
     const popular = popularProviders(BUNDLED_CATALOG).map((provider) => provider.id);
     expect(popular).toEqual(BUNDLED_CATALOG.popular);
@@ -50,28 +44,6 @@ describe('AI catalog', () => {
     expect(providerFor(BUNDLED_CATALOG, 'none')).toBeNull();
     expect(providerFor(BUNDLED_CATALOG, null)).toBeNull();
     expect(providerFor(BUNDLED_CATALOG, 'unknown')).toBeNull();
-  });
-
-  it('builds a disabled connection form with one secret field per catalog entry', () => {
-    const withBase = BUNDLED_CATALOG.providers.find(
-      (provider) => provider.api && provider.env.length > 1,
-    );
-    const shell = connectionShell({
-      id: 'x',
-      name: 'X',
-      env: ['X_KEY', 'X_REGION'],
-      api: 'https://x.example/v1',
-      doc: 'https://x.example/docs',
-      npm: 'x',
-    });
-    expect(shell.fields).toEqual([
-      { name: 'X_KEY', type: 'password' },
-      { name: 'X_REGION', type: 'password' },
-    ]);
-    expect(shell.baseUrl).toBe('https://x.example/v1');
-    expect(shell.disabled).toBe(true);
-    expect(shell.note).toContain('later release');
-    expect(connectionShell(withBase ?? LOCAL_SERVER).baseUrl).toBe(withBase?.api ?? '');
   });
 
   it('makes two-letter tiles', () => {

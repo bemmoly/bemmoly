@@ -17,8 +17,10 @@ export {
 export type { EmailContent, EmailFrame } from './layout.ts';
 export { renderEmail, type RenderedEmail } from './render.ts';
 export {
+  aiBudgetEmail,
   backupFailedEmail,
   updateAvailableEmail,
+  type AiBudgetEmailData,
   type BackupFailedEmailData,
   type UpdateAvailableEmailData,
 } from './system.ts';

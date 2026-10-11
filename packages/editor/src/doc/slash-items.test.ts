@@ -3,7 +3,7 @@ import type { DocServices } from './services.ts';
 import { docSlashItems, filterSlashItems } from './slash-items.ts';
 
 const labels = (query: string, ai = true) =>
-  filterSlashItems(docSlashItems(ai ? { ai: { run: vi.fn() } } : {}), query).map(
+  filterSlashItems(docSlashItems(ai ? { ai: {} } : {}), query).map(
     (item) => `${item.group}: ${item.label}`,
   );
 
@@ -16,7 +16,7 @@ describe('the / menu rows', () => {
   });
 
   it('gives every row an icon and a second line', () => {
-    for (const item of docSlashItems({ ai: { run: vi.fn() } })) {
+    for (const item of docSlashItems({ ai: {} })) {
       expect(item.icon).toBeTruthy();
       expect(item.description).toBeTruthy();
     }
@@ -24,6 +24,7 @@ describe('the / menu rows', () => {
 
   it('keeps each group together and puts label matches before word matches', () => {
     expect(labels('table')).toEqual([
+      'AI: Turn into a table',
       'Insert: Table',
       'Insert: Table of contents',
       'From Work: Issue table from filter',
@@ -32,7 +33,6 @@ describe('the / menu rows', () => {
     expect(c.filter((row) => row.startsWith('AI'))).toEqual([
       'AI: Continue writing',
       'AI: Create issues from this section',
-      'AI: Check consistency with linked issues',
       'AI: Summarize open questions from comments',
     ]);
   });

@@ -1,0 +1,13 @@
+{
+  "prompt": {
+    "id": "docs.write.summarize",
+    "version": 1
+  },
+  "replies": {
+    "docs.write.summarize": [
+      {
+        "text": "If error rates pass 0.5% after cutover, the team flips auth_pg_sessions off and sessions stay valid for 15 minutes, so nobody is logged out. Redis stays warm for 7 days, and on-call follows the Session migration runbook."
+      }
+    ]
+  }
+}

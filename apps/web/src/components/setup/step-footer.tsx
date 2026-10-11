@@ -80,13 +80,15 @@ interface StepFooterProps {
   loading?: boolean;
   /** A failed save: said in plain words, with Retry (the same submit). */
   error?: unknown;
+  /** Overrides "Skip for now" where skipping is itself a choice ("Skip, no AI"). */
+  skipLabel?: string;
 }
 
 /**
  * Every step's footer: Back on the left, then "Skip for now" where skipping is allowed and the
  * primary on the right. The primary shows progress while saving and is the Enter target.
  */
-export function StepFooter({ nav, label, disabled, loading, error }: StepFooterProps) {
+export function StepFooter({ nav, label, disabled, loading, error, skipLabel }: StepFooterProps) {
   const failure = error ? describeError(error) : null;
   return (
     <div className="flex flex-col gap-3 pt-1">
@@ -114,7 +116,7 @@ export function StepFooter({ nav, label, disabled, loading, error }: StepFooterP
         </span>
         {nav.canSkip ? (
           <Button type="button" variant="ghost" onClick={nav.skip}>
-            Skip for now
+            {skipLabel ?? 'Skip for now'}
           </Button>
         ) : null}
         <Button

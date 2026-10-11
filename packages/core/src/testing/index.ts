@@ -1,4 +1,16 @@
 export {
+  createEvalAi,
+  createTestAi,
+  EvalSetupError,
+  loadEvalPrompts,
+  type EvalAi,
+  type EvalPrompts,
+  type EvalProvider,
+  type TestAi,
+  type TestAiOptions,
+  type TestAiReply,
+} from '../services/ai/index.ts';
+export {
   connectCollabClient,
   eventually,
   type CollabTestClient,
@@ -15,3 +27,9 @@ export {
   QueryBudgetExceededError,
   type QueryCounter,
 } from './query-count.ts';
+export {
+  createTestInsights,
+  moduleWithAi,
+  type RecordedJob,
+  type TestInsights,
+} from './insights.ts';

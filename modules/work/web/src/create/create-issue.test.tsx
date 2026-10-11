@@ -1,10 +1,14 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
-import { describe, expect, it, vi } from 'vitest';
+import { loadEditor } from '@bemmoly/editor';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { issue, IDS, Providers, startServer } from '../issue/test-support.tsx';
 import { CreateIssueDialog } from './create-issue-dialog.tsx';
 
 const server = startServer();
+
+// The editor is a lazy chunk; loaded once here, its import never races the queries below.
+beforeAll(() => loadEditor());
 
 interface EditorHandle {
   chain: () => { focus: (at: 'end') => { insertContent: (text: string) => { run: () => void } } };

@@ -12,12 +12,14 @@ protection matches checks by job name, so renaming a job means updating the sett
 | `security.yml` (Security) | pull requests, merge queue, `main`, weekly | **Security scans**, **Image scan**                                                       |
 | `release.yml` (Release)   | `main`, `v*` tags                          | Version pull request or tag, Plan the release, Image (app, updater), Publish the release |
 | `nightly.yml` (Nightly)   | 02:30 UTC daily, manual                    | Fresh VM install, Load budgets (k6)                                                      |
+| `ai-evals.yml` (AI evals) | 03:00 UTC daily, manual                    | Live AI evals (skips without a provider key)                                             |
 | `labels.yml` (Labels)     | changes to `.github/labels.json`           | Sync labels                                                                              |
 
 What each check runs:
 
 - **Fast checks**: `pnpm typecheck`, `pnpm lint` (layering, boundaries, 300-line limit),
-  `pnpm format:check`, `pnpm test`, and actionlint over the workflows.
+  `pnpm format:check`, `pnpm test`, `pnpm eval` (the AI evals against their recordings, no
+  key and no network; see `docs/ai-evals.md`) and actionlint over the workflows.
 - **Full checks**: integration tests against `pgvector/pgvector:pg18`, `pnpm build` (server,
   web shell and Storybook), `pnpm size` (shell under 250 KB gzip), Playwright end to end.
 - **Work end to end**: the Playwright suite in `apps/e2e` against a real install: the server

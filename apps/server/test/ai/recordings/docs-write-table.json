@@ -1,0 +1,13 @@
+{
+  "prompt": {
+    "id": "docs.write.table",
+    "version": 1
+  },
+  "replies": {
+    "docs.write.table": [
+      {
+        "text": "| Step | Change | Issue |\n| --- | --- | --- |\n| 1 | Dual-write sessions to Redis and Postgres behind auth_pg_sessions | PLT-204 |\n| 2 | Rotate service tokens on every deploy | PLT-218 |\n| 3 | Rate-limit the refresh endpoint before GA | PLT-222 |\n| 4 | Remove the legacy cookie path | none yet |"
+      }
+    ]
+  }
+}

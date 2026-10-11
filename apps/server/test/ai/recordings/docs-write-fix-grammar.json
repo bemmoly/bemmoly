@@ -1,0 +1,13 @@
+{
+  "prompt": {
+    "id": "docs.write.fix-grammar",
+    "version": 1
+  },
+  "replies": {
+    "docs.write.fix-grammar": [
+      {
+        "text": "If error rates exceed 0.5% after cutover, flip auth_pg_sessions off. Sessions issued by the new service stay valid for 15 minutes, so users aren't logged out."
+      }
+    ]
+  }
+}

@@ -65,6 +65,7 @@ that passes (ADR 0015).
 - [Workspace settings](interaction/settings.md)
 - [Dialogs](interaction/dialogs.md): the modal, Create issue, sprint, saved filter, link, project dialogs.
 - [Setup wizard](interaction/setup.md)
+- [Settings › AI and the wizard's AI step](interaction/settings-ai.md): turning AI on, providers, model roles, privacy, budget, prompts, the personal opt-out.
 - [Issue page](interaction/issue.md)
 - [Board and Backlog](interaction/board-backlog.md)
 - [Projects and project settings](interaction/projects-settings.md)

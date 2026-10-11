@@ -1,109 +1,190 @@
 import type { ReactNode } from 'react';
 import { Icon } from '../../icons/icon.tsx';
-import { cx } from '../../lib/cx.ts';
-import { AiDot } from '../ai-surface/ai-parts.tsx';
+import { AiDot, AiNotUseful } from '../ai-surface/ai-parts.tsx';
 import { Button } from '../button/button.tsx';
+import { ProgressBar } from '../progress-bar/progress-bar.tsx';
+import { CommandPlanRow, PLAN_GRID, type PlanStep } from './command-plan-row.tsx';
 
-export interface PlanStep {
-  /** Issue key or "both". */
-  target: string;
-  change: ReactNode;
-  field: ReactNode;
-  allowed: boolean;
-}
+export type { PlanStep, PlanStepStatus } from './command-plan-row.tsx';
+
+/**
+ * Where the plan is: drawn up and waiting (`ready`), drawn up but never runnable (`preview`,
+ * AI actions off), `running`, or finished: `done`, `failed` (a step failed) or `cancelled`.
+ */
+export type CommandPlanState = 'ready' | 'preview' | 'running' | 'done' | 'failed' | 'cancelled';
 
 export interface CommandPlanProps {
   /** The plan in one sentence, in the first person of the person asking. */
   summary: ReactNode;
   steps: readonly PlanStep[];
-  onRun: () => void;
+  state?: CommandPlanState;
+  onRun?: () => void;
+  /** Edit plan: choose which allowed steps to keep. */
   onEdit?: () => void;
-  running?: boolean;
+  editing?: boolean;
+  /** The ids of the steps kept while editing. */
+  kept?: ReadonlySet<string | number>;
+  onToggle?: (id: string | number) => void;
+  onStop?: () => void;
+  /** Puts back what ran; shown once something ran that can be undone. */
+  onUndo?: () => void;
+  onNotUseful?: () => void;
+  /** A request is in flight (run, stop or undo): its button shows progress. */
+  busy?: boolean;
   /** The note at the right of the actions. */
   footnote?: ReactNode;
 }
 
-const COLUMNS = { gridTemplateColumns: '90px minmax(0,1fr) 150px 90px' };
+const idOf = (step: PlanStep, index: number) => step.id ?? index;
+const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
+
+function heading(state: CommandPlanState, steps: readonly PlanStep[]) {
+  const chosen = steps.filter((step) => !['proposed', 'skipped'].includes(step.status ?? ''));
+  const made = chosen.filter((step) => step.status === 'done').length;
+  const failed = chosen.filter((step) => step.status === 'failed').length;
+  const undone = chosen.filter((step) => step.status === 'undone').length;
+  if (undone > 0 && made === 0 && ['done', 'failed', 'cancelled'].includes(state)) {
+    return ['Undone', `${plural(undone, 'change')} put back`];
+  }
+  switch (state) {
+    case 'ready':
+      return ['Plan', 'nothing happens until you confirm'];
+    case 'preview':
+      return ['Preview only', 'AI actions that change data are turned off'];
+    case 'running':
+      return ['Running', `${made} of ${plural(chosen.length, 'change')} made`];
+    case 'done':
+      return ['Done', `${plural(made, 'change')} made`];
+    case 'failed':
+      return ['Finished', `${made} of ${chosen.length} made, ${failed} failed`];
+    case 'cancelled':
+      return [
+        'Stopped',
+        `${made} of ${plural(chosen.length, 'change')} made before you stopped it`,
+      ];
+  }
+}
 
 /**
- * The AI plan of the Command mock: nothing runs until the person confirms. Each step says
- * whether their permissions allow it. Runs only the allowed steps.
+ * The AI plan of the Command mock: nothing runs until the person confirms, each step says
+ * whether their permissions allow it, and only the allowed steps they keep run. While it runs
+ * each row shows its progress; after, Undo puts back what can be put back.
  */
 export function CommandPlan({
   summary,
   steps,
+  state = 'ready',
   onRun,
   onEdit,
-  running,
-  footnote = 'Uses your permissions. Logged in the audit trail.',
+  editing = false,
+  kept,
+  onToggle,
+  onStop,
+  onUndo,
+  onNotUseful,
+  busy = false,
+  footnote,
 }: CommandPlanProps) {
-  const allowed = steps.filter((step) => step.allowed).length;
+  const allowed = steps.filter((step) => step.allowed);
+  const runnable = editing
+    ? allowed.filter((step) => kept?.has(idOf(step, steps.indexOf(step)))).length
+    : allowed.length;
+  const denied = steps.length - allowed.length;
+  const [title, detail] = heading(state, steps);
+  const chosen = steps.filter((step) => !['proposed', 'skipped'].includes(step.status ?? ''));
+  const finished = chosen.filter((step) => ['done', 'failed'].includes(step.status ?? ''));
+  const note =
+    footnote ??
+    (state === 'ready' && denied > 0
+      ? `${plural(denied, "change you can't make", "changes you can't make")} will be left out.`
+      : state === 'ready'
+        ? 'Uses your permissions. Logged in the audit trail.'
+        : state === 'running'
+          ? 'Keeps running if you close this.'
+          : 'Logged in the audit trail.');
   return (
     <section
       aria-label="Plan"
+      aria-busy={state === 'running' || undefined}
       className="flex flex-col gap-3 border-b border-line-2 bg-ai-50 px-4 py-3.5"
     >
       <div className="flex items-center gap-2 text-13 font-semibold text-ai-600">
         <AiDot />
-        Plan
-        <span className="font-normal text-ai-600">nothing happens until you confirm</span>
+        {title}
+        <span className="font-normal text-ai-600" aria-live="polite">
+          {detail}
+        </span>
       </div>
       <div className="text-13 leading-brief text-tx">{summary}</div>
-      <div
-        role="table"
-        aria-label="Plan steps"
-        className="overflow-hidden rounded-control border border-ai-100 bg-card text-13"
-      >
+      {steps.length > 0 && (
         <div
-          role="row"
-          style={COLUMNS}
-          className="grid gap-2.5 border-b border-line-2 bg-side px-3 py-1.75 text-11 font-semibold text-tx-3"
+          role="table"
+          aria-label="Plan steps"
+          className="overflow-hidden rounded-control border border-ai-100 bg-card text-13"
         >
-          <span role="columnheader">Issue</span>
-          <span role="columnheader">Change</span>
-          <span role="columnheader">Field</span>
-          <span role="columnheader">
-            <span className="sr-only">Permission</span>
-          </span>
-        </div>
-        {steps.map((step, index) => (
           <div
-            key={index}
             role="row"
-            style={COLUMNS}
-            className="grid items-center gap-2.5 border-b border-line-2 px-3 py-2.25 last:border-b-0"
+            className={`${PLAN_GRID} border-b border-line-2 bg-side px-3 py-1.75 text-11 font-semibold text-tx-3`}
           >
-            <span role="cell" className="font-mono text-12 font-medium text-tx-3">
-              {step.target}
+            <span role="columnheader">Issue</span>
+            <span role="columnheader">Change</span>
+            <span role="columnheader" className="hidden sm:block">
+              Field
             </span>
-            <span role="cell">{step.change}</span>
-            <span role="cell" className="text-tx-2">
-              {step.field}
-            </span>
-            <span
-              role="cell"
-              className={cx(
-                'text-right text-11 font-semibold',
-                step.allowed ? 'text-green-tx' : 'text-red',
-              )}
-            >
-              {step.allowed ? 'Allowed' : 'Denied'}
+            <span role="columnheader">
+              <span className="sr-only">Permission</span>
             </span>
           </div>
-        ))}
-      </div>
-      <div className="flex items-center gap-2">
-        <Button
-          variant="primary"
-          loading={running ?? false}
-          disabled={allowed === 0}
-          onClick={onRun}
-          iconEnd={<Icon name="enter" className="ml-0.5 opacity-75" />}
-        >
-          Run {allowed} {allowed === 1 ? 'change' : 'changes'}
-        </Button>
-        {onEdit && <Button onClick={onEdit}>Edit plan</Button>}
-        <span className="ml-auto text-12 text-tx-3">{footnote}</span>
+          {steps.map((step, index) => {
+            const id = idOf(step, index);
+            return (
+              <CommandPlanRow
+                key={id}
+                step={step}
+                editing={editing && state === 'ready'}
+                kept={kept?.has(id) ?? true}
+                onToggle={() => onToggle?.(id)}
+              />
+            );
+          })}
+        </div>
+      )}
+      {state === 'running' && (
+        <ProgressBar
+          label="Plan progress"
+          value={chosen.length ? (finished.length / chosen.length) * 100 : 0}
+          fillClassName="bg-ai"
+        />
+      )}
+      <div className="flex flex-wrap items-center gap-2">
+        {state === 'ready' && onRun && (
+          <Button
+            variant="primary"
+            loading={busy}
+            disabled={runnable === 0}
+            onClick={onRun}
+            iconEnd={<Icon name="enter" className="ml-0.5 opacity-75" />}
+          >
+            Run {plural(runnable, 'change')}
+          </Button>
+        )}
+        {state === 'ready' && onEdit && (
+          <Button onClick={onEdit} aria-pressed={editing}>
+            {editing ? 'Done editing' : 'Edit plan'}
+          </Button>
+        )}
+        {state === 'running' && onStop && (
+          <Button onClick={onStop} loading={busy}>
+            Stop
+          </Button>
+        )}
+        {['done', 'failed', 'cancelled'].includes(state) && onUndo && (
+          <Button onClick={onUndo} loading={busy} icon={<Icon name="undo" size={14} />}>
+            Undo
+          </Button>
+        )}
+        {onNotUseful && state !== 'running' && <AiNotUseful onClick={onNotUseful} />}
+        <span className="ml-auto text-12 text-tx-2">{note}</span>
       </div>
     </section>
   );

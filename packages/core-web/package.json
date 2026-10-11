@@ -5,7 +5,8 @@
   "license": "MIT",
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./ai-insights": "./src/ai-insights/index.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit -p tsconfig.json",
@@ -13,13 +14,16 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@bemmoly/api-client": "workspace:*",
     "@bemmoly/shared": "workspace:*",
     "@bemmoly/ui": "workspace:*"
   },
   "peerDependencies": {
+    "@tanstack/react-query": "5.104.1",
     "react": "19.3.0"
   },
   "devDependencies": {
+    "@tanstack/react-query": "5.104.1",
     "@testing-library/react": "16.3.3",
     "@types/node": "26.6.4",
     "@types/react": "19.3.0",

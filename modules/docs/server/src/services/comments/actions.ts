@@ -116,7 +116,7 @@ export function createCommentActions(
     },
 
     /**
-     * Stores a suggested fix on an inline thread, for the AI runtime (0.4) to call; there is
+     * Stores a suggested fix on an inline thread, for the AI runtime (0.5) to call; there is
      * no route. A space marked ai_excluded never receives one.
      */
     async attachSuggestion(commentId: string, suggestion: AiSuggestion): Promise<PageComment> {

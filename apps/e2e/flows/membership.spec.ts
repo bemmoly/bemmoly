@@ -19,9 +19,11 @@ test('a project stays out of sight for a non-member until they are added', async
   pageAs,
   apiFor,
 }) => {
+  // A name of its own: Sam was added to the projects earlier runs left behind.
+  const key = uniqueKey('MBR');
   const project = await admin.createProject({
-    key: uniqueKey('MBR'),
-    name: 'Membership flow',
+    key,
+    name: `Membership flow ${key}`,
     method: 'kanban',
     teamId: run.team.id,
   });

@@ -99,7 +99,11 @@ export function useCommentActions(pageId: string) {
       void queryClient.invalidateQueries({ queryKey: docsKeys.page(pageId) });
     },
   });
-  return { create, update, remove, resolve, reopen, applyFix };
+  const suggestFix = useMutation({
+    mutationFn: (id: string) => api.docs.ai.suggestFix(id),
+    ...options,
+  });
+  return { create, update, remove, resolve, reopen, applyFix, suggestFix };
 }
 
 export type CommentActions = ReturnType<typeof useCommentActions>;

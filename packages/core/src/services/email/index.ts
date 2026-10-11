@@ -21,6 +21,7 @@ export {
   type EmailConfig,
 } from './settings.ts';
 export {
+  aiBudgetEmail,
   backupFailedEmail,
   DIGEST_LINE_LIMIT,
   digestEmail,

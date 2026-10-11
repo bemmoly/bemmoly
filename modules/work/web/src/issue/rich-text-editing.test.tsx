@@ -1,6 +1,7 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
-import { describe, expect, it, vi } from 'vitest';
+import { loadEditor } from '@bemmoly/editor';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { mentionedUserIds, richTextToPlain, type RichText } from '../../../shared/index.ts';
 import { CommentBox } from './comment-box.tsx';
 import { IssueSlideOver } from './issue-slide-over.tsx';
@@ -8,6 +9,9 @@ import { RichTextSection } from './rich-text-section.tsx';
 import { IDS, Providers, startServer } from './test-support.tsx';
 
 const server = startServer();
+
+// The editor is a lazy chunk; loaded once here, its import never races the queries below.
+beforeAll(() => loadEditor());
 
 /** The part of the editor instance these tests drive; Tiptap puts it on the text box. */
 interface EditorHandle {
@@ -22,7 +26,7 @@ interface EditorHandle {
 
 /** The editor behind a named text box, once its lazy chunk has loaded. */
 async function editorNamed(name: string) {
-  const box = await screen.findByRole('textbox', { name }, { timeout: 5000 });
+  const box = await screen.findByRole('textbox', { name });
   return { box, editor: (box as HTMLElement & { editor: EditorHandle }).editor };
 }
 

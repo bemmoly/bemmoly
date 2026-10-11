@@ -7,6 +7,7 @@ import {
   createSessionResolver,
   createSubscriptionAuthorizer,
   deleteExpiredSessions,
+  type Actor,
   type ActorResolver,
   type Authorize,
   type Database,
@@ -76,6 +77,8 @@ export interface IdentityRoutesInput extends IdentityWiringInput {
   events: EventBus;
   /** The kernel's database-backed settings (workspace.name, workspace.url). */
   settings: SettingsService;
+  /** /me's workspace.aiEnabled for one person, from the AI runtime. */
+  aiEnabled?: (actor: Actor) => Promise<boolean>;
 }
 
 /** Sign-in, people, roles and audit; built after the kernel so they use its settings. */

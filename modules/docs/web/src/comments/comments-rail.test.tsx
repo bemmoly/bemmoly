@@ -1,7 +1,8 @@
 import { queryKeys } from '@bemmoly/api-client';
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
-import { afterEach, describe, expect, it } from 'vitest';
+import { loadEditor } from '@bemmoly/editor';
+import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { id, listed, newClient, providers, startServer } from '../test-support.tsx';
 import { useCommentUi } from './comment-store.ts';
 import { CommentsRail, sortThreads } from './comments-rail.tsx';
@@ -64,6 +65,8 @@ const { server, calls } = startServer(
   ),
 );
 
+// The reply box's editor is a lazy chunk; loaded once here, its import never races the queries.
+beforeAll(() => loadEditor());
 afterEach(() => useCommentUi.getState().reset(PAGE));
 
 function renderRail(canComment = true, aiEnabled = true) {
@@ -196,7 +199,7 @@ describe('the comments rail', () => {
     renderRail();
     await screen.findByText(/Which is it\?/);
     fireEvent.click(within(card('Looks good overall.')).getByRole('button', { name: 'Reply' }));
-    const box = await screen.findByRole('textbox', { name: 'Reply' }, { timeout: 5000 });
+    const box = await screen.findByRole('textbox', { name: 'Reply' });
     const editor = (
       box as HTMLElement & { editor: { commands: { setContent(doc: unknown): void } } }
     ).editor;

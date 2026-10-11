@@ -3,7 +3,9 @@ import { WebSocketInterceptor } from '@mswjs/interceptors/WebSocket';
 import { defineNetwork, InterceptorSource } from 'msw/experimental';
 import { MOCK_SCENARIOS, type MockDb, type MockScenario } from './db.ts';
 import { createMockApi, type MockApi } from './dispatch.ts';
+import { providerLogoUrl } from '../lib/provider-logos.ts';
 import { mswHandlers, type MswOptions } from './msw.ts';
+import { setProviderLogos } from './seed/ai-catalog.ts';
 
 const STORAGE_KEY = 'bemmoly.mock-db';
 const REAL_KEY = 'bemmoly.mock-real';
@@ -46,6 +48,7 @@ export async function startDevMocks(): Promise<void> {
 
 /** Answers the page's fetch and WebSocket calls from `api`, in the page itself. */
 export async function enableMockNetwork(api: MockApi, options: MswOptions): Promise<void> {
+  setProviderLogos(providerLogoUrl);
   const network = defineNetwork({
     sources: [
       new InterceptorSource({

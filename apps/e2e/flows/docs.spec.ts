@@ -108,7 +108,10 @@ test('a space is created, a page made from a template, reordered, starred, trash
   await page.goto('/docs');
   await page.getByRole('radio', { name: /^Starred/ }).click();
   await expect(
-    page.getByRole('list', { name: 'Pages' }).getByRole('link', { name: /Runbook/ }),
+    // Earlier runs starred their own Runbooks: this one is in this run's space.
+    page
+      .getByRole('list', { name: 'Pages' })
+      .getByRole('link', { name: new RegExp(`^Runbook .*${name}`) }),
   ).toBeVisible();
 
   // Trash it, then restore it from the space's trash.

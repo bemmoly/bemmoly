@@ -1,0 +1,13 @@
+{
+  "prompt": { "id": "ai.plan", "version": 1 },
+  "replies": {
+    "ai.plan": [
+      {
+        "toolCalls": [{ "toolName": "work_get_issue", "input": { "key": "PLT-204" } }]
+      },
+      {
+        "text": "Sprint 14 has 14 of its 23 committed points still open; nothing needs to change to answer that."
+      }
+    ]
+  }
+}

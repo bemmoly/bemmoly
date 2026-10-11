@@ -72,6 +72,7 @@ export function AppearancePage() {
               onView={state.preview.setView}
               scope={state.preview.scope}
               workspaceName={state.workspaceName}
+              aiEnabled={state.aiEnabled}
             />
           </div>
         </>

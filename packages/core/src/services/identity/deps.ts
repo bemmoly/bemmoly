@@ -1,5 +1,6 @@
 import { createDatabase, type Database } from '../../clients/drizzle.ts';
 import type { SqlClient } from '../../clients/postgres.ts';
+import type { Actor } from '../../contracts/authz.ts';
 import type { EventBus } from '../../contracts/event-bus.ts';
 import type { SettingsService } from '../../contracts/settings.ts';
 import type { ModuleCatalog } from '../authz/index.ts';
@@ -22,6 +23,11 @@ export interface IdentityDependencies {
   publicUrl: string;
   /** Injected so tests can move time; defaults to the wall clock. */
   now?: () => Date;
+  /**
+   * Whether AI is on for this person (/me's workspace.aiEnabled): on for the workspace, a
+   * language role assigned, and not opted out. Bound by the AI runtime.
+   */
+  aiEnabled?: (actor: Actor) => Promise<boolean>;
 }
 
 export function nowOf(deps: Pick<IdentityDependencies, 'now'>): Date {

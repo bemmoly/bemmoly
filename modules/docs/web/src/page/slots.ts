@@ -8,6 +8,7 @@ import {
   HISTORY_MODE,
   LINKED_MARGIN,
 } from '../page-slots/index.tsx';
+import { GhostTextMenuItem } from './body/ai/ghost-text-menu.tsx';
 import type { MarginId, PageEditor } from './screen-context.ts';
 import { OUTLINE_MARGIN } from './toc/outline-margin.tsx';
 
@@ -72,7 +73,7 @@ export const HISTORY_SLOT: ModeSlot = HISTORY_MODE;
  * Rows of the More menu between the built-in actions and Move to trash: export, for one.
  * Each renders MenuItem elements; it may use hooks and returns null to hide itself.
  */
-export const MENU_SLOTS: readonly ComponentType<PageSlotProps>[] = [EXPORT_MENU];
+export const MENU_SLOTS: readonly ComponentType<PageSlotProps>[] = [EXPORT_MENU, GhostTextMenuItem];
 
 /**
  * What a part puts on the body itself, whichever margin is open: highlights, markers, a

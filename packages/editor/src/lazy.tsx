@@ -19,6 +19,14 @@ export function preloadEditor(): void {
   void load();
 }
 
+/**
+ * Resolves once the editor chunk is in, for a caller that must not see the read-only fallback
+ * (a test, before it types into an editor). preloadEditor stays void for event handlers.
+ */
+export async function loadEditor(): Promise<void> {
+  await load();
+}
+
 const GLYPHS = ['B', 'I', '@', 'Link', 'Code'];
 const BLOCK_GLYPHS = ['Heading', 'List', 'Numbered', 'Checklist', 'Quote', 'Code block'];
 

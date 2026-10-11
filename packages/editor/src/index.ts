@@ -13,17 +13,22 @@ export {
   COMMENT_EVENT,
   COMMENT_KEYS,
   DEFAULT_AI_COMMANDS,
+  DEFAULT_SELECTION_COMMANDS,
   docPlaceholder,
+  GHOST_TIMEOUT_MS,
   type AiCommand,
   type AiCommandContext,
+  type AiCompleteRequest,
   type AiHandler,
+  type AiWriteEvent,
+  type AiWriteRequest,
   type DocServices,
   type IssueTableAttrs,
   type UploadedImage,
 } from './doc/services.ts';
 export type { EditorParts, RichTextEditorProps } from './editor-props.ts';
 export { DocEditor, preloadDocEditor } from './lazy-doc.tsx';
-export { preloadEditor, RichTextEditor } from './lazy.tsx';
+export { loadEditor, preloadEditor, RichTextEditor } from './lazy.tsx';
 export { proseClass } from './prose.ts';
 export type {
   EditorSources,

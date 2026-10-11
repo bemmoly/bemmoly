@@ -1,0 +1,28 @@
+{
+  "prompt": {
+    "id": "docs.tldr",
+    "version": 1
+  },
+  "replies": {
+    "docs.tldr": [
+      {
+        "object": {
+          "points": [
+            {
+              "text": "Move sessions from Redis to Postgres behind auth_pg_sessions: dual-write, cut reads, keep Redis warm 7 days.",
+              "cites": ["c1", "c3", "c5"]
+            },
+            {
+              "text": "Rollback is a flag flip if error rates exceed 0.5% after cutover.",
+              "cites": ["c4"]
+            },
+            {
+              "text": "Open question: the session TTL after rollback, 15 or 30 minutes.",
+              "cites": ["c4", "c8"]
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

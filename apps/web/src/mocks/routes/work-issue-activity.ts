@@ -186,6 +186,18 @@ export function issueActivityRoutes({ state, issueOf, statuses }: Deps): MockRou
       },
     },
     {
+      method: 'DELETE',
+      pattern: '/api/v1/work/comments/:id',
+      handle: (request, db) => {
+        const row = comment(db, request.params['id']);
+        if (!row) return notFound('Comment');
+        const s = state(db);
+        s.comments = s.comments.filter((each) => each !== row);
+        emit(db, 'work.comment.deleted', [String(row['targetId'])]);
+        return ok();
+      },
+    },
+    {
       method: 'PUT',
       pattern: '/api/v1/work/comments/:id/reactions',
       handle: (request, db) => {

@@ -1,9 +1,16 @@
 import type { MockRoute } from '../types.ts';
+import { aiAdminRoutes } from './ai-admin.ts';
+import { aiInsightRoutes } from './ai-insights.ts';
+import { aiPlanRoutes } from './ai-plans.ts';
+import { aiProviderRoutes } from './ai-providers.ts';
+import { aiAnswerRoutes } from './ai-answers.ts';
+import { aiRoleRoutes } from './ai-roles.ts';
 import { docsFindRoutes } from './docs-find.ts';
 import { docsHistoryRoutes } from './docs-history.ts';
 import { docsLibraryRoutes } from './docs-library.ts';
 import { docsMemberRoutes } from './docs-members.ts';
 import { docsMoveRoutes } from './docs-moves.ts';
+import { docsEditorAiRoutes } from './docs-editor-ai.ts';
 import { docsRoutes } from './docs.ts';
 import { notificationRoutes } from './notifications.ts';
 import { operationsRoutes } from './operations.ts';
@@ -26,6 +33,12 @@ export const ROUTES: readonly MockRoute[] = [
   ...peopleRoutes,
   ...teamRoutes,
   ...settingsRoutes,
+  ...aiAdminRoutes,
+  ...aiProviderRoutes,
+  ...aiRoleRoutes,
+  ...aiPlanRoutes,
+  ...aiInsightRoutes,
+  ...aiAnswerRoutes,
   ...notificationRoutes,
   ...operationsRoutes,
   ...workBacklogRoutes,
@@ -43,4 +56,5 @@ export const ROUTES: readonly MockRoute[] = [
   ...docsFindRoutes,
   ...docsMemberRoutes,
   ...docsHistoryRoutes,
+  ...docsEditorAiRoutes,
 ];

@@ -30,7 +30,7 @@ in your Postgres, behind your login, under your backups.
 It is one app image and one Postgres, installed with one command on a $20 server and upgraded
 from inside the app. Every module ships in the image; turn on the ones you use. It is MIT
 licensed and free forever, with no licence or per-seat fee on top of your server. Imports from
-Jira and Confluence (from 0.5) bring your existing projects and pages with you.
+Jira and Confluence (from 0.6) bring your existing projects and pages with you.
 
 ## Quick start
 
@@ -64,7 +64,7 @@ Postgres and offline installs are covered at
 - **In-app updater.** Read the release notes, then update with one click.
 - **Modules.** Every module ships in the one image; enable and disable them in Settings.
 - **SSO-ready identity.** Sessions, roles and a capability matrix today; OIDC, SAML and SCIM
-  plug into the same identity in 0.5.
+  plug into the same identity in 0.6.
 - **Audit log.** Who changed what, when and from where, with before and after, exportable
   as CSV.
 - **Metrics.** Prometheus metrics and structured logs, with optional OpenTelemetry.
@@ -82,9 +82,10 @@ browser on sample data.
 | Release | Scope                                                                                      |
 | ------- | ------------------------------------------------------------------------------------------ |
 | 0.2     | **Work** (released): projects, issues, workflows, boards, backlog and sprints, filters     |
-| 0.3     | **Docs**: spaces, the page tree, a collaborative editor, revisions, comments, templates    |
-| 0.4     | **AI**: summaries, ask-your-docs with citations, the ⌘K palette with plans, any provider   |
-| 0.5     | **Import and integrations**: importers, OIDC, SAML and SCIM, webhooks, automation, roadmap |
+| 0.3     | **Docs** (released): spaces, the page tree, a collaborative editor, revisions, comments    |
+| 0.4     | **Premium redesign** (released): one shell, the logo's colours, drawn icons                |
+| 0.5     | **AI**: summaries, ask-your-docs with citations, the ⌘K palette with plans, any provider   |
+| 0.6     | **Import and integrations**: importers, OIDC, SAML and SCIM, webhooks, automation, roadmap |
 | 1.0     | **Launch**: Helm and Terraform, air-gap bundle, PWA, accessibility and security review     |
 
 The plan for each release, and what it must prove before it ships, is in section 24 of the
@@ -93,7 +94,7 @@ The plan for each release, and what it must prove before it ships, is in section
 ## Screenshots
 
 These come from the product design: the board shipped in 0.2 (without the AI summary, which
-arrives with AI in 0.4), and the ⌘K command bar's plans arrive in 0.4. The
+arrives with AI in 0.5), and the ⌘K command bar's plans arrive in 0.5. The
 [live demo](https://bemmoly.com/demo) shows the app as it ships.
 
 <picture>

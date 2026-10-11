@@ -1,0 +1,13 @@
+{
+  "prompt": {
+    "id": "docs.autocomplete",
+    "version": 1
+  },
+  "replies": {
+    "docs.autocomplete": [
+      {
+        "text": " keep Redis warm for 7 days so sessions survive the switch back."
+      }
+    ]
+  }
+}

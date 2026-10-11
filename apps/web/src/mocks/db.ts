@@ -18,6 +18,7 @@ import type {
   UpdatesOverview,
   User,
 } from '@bemmoly/shared';
+import { seedAiOff, seedAiOn, type MockAi } from './seed/ai.ts';
 import { seedCapabilities, type CapabilityRow, type Cells } from './seed/capabilities.ts';
 import { seedAudit, seedBackups, seedOutbox, seedSystem, seedUpdates } from './seed/operations.ts';
 import { seedAdminModules, seedGrants, seedManifests } from './seed/modules.ts';
@@ -74,6 +75,8 @@ export interface MockDb {
   system: SystemHealthResponse;
   audit: AuditEntry[];
   apiTokens: ApiToken[];
+  /** Settings › AI: providers, roles, privacy, budget, prompts, people's opt-outs. */
+  ai: MockAi;
   /** Realtime invalidations waiting for the socket bridge: [kind, userId, ids]. */
   outbound: Array<[string, string | null, string[]]>;
 }
@@ -134,6 +137,8 @@ export function createMockDb(scenario: MockScenario = 'ready'): MockDb {
     system: seedSystem(),
     audit: fresh ? [] : seedAudit(),
     apiTokens: [],
+    // A set-up install shows AI on with a provider, as the demo does; the wizard starts off.
+    ai: fresh || scenario === 'wizard' ? seedAiOff() : seedAiOn(),
     outbound: [],
   };
 }

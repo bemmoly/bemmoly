@@ -4,8 +4,11 @@ import { PreviewSidebar } from './preview-sidebar.tsx';
 
 const ACTIVE_PAGE = 'Auth service RFC';
 
-/** A representative doc page: the sidebar, the space's page tree, then a page with an AI TL;DR. */
-export function PreviewDoc() {
+/**
+ * A representative doc page: the sidebar, the space's page tree, then a page with an AI TL;DR
+ * (only while AI is on).
+ */
+export function PreviewDoc({ aiEnabled }: { aiEnabled: boolean }) {
   return (
     <div className="flex h-full">
       <PreviewSidebar active="docs" />
@@ -43,10 +46,12 @@ export function PreviewDoc() {
                 In review
               </Tag>
             </span>
-            <AiSummary variant="page" title="TL;DR" source="from the page and 14 comments">
-              Move sessions into Postgres behind a flag, migrate in two batches, and keep the old
-              path for one release so a rollback is a flag flip.
-            </AiSummary>
+            {aiEnabled ? (
+              <AiSummary variant="page" title="TL;DR" source="from the page and 14 comments">
+                Move sessions into Postgres behind a flag, migrate in two batches, and keep the old
+                path for one release so a rollback is a flag flip.
+              </AiSummary>
+            ) : null}
             <span className="text-16 font-semibold text-tx">Why now</span>
             <p className="m-0 leading-body text-tx">
               The auth service keeps sessions in a separate store that we back up by hand. Moving

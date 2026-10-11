@@ -1,10 +1,12 @@
 import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { optionId, SuggestionList } from '../editor/suggestion-list.tsx';
 import { SuggestionStore } from '../editor/suggestion-store.ts';
+import { AiWriteCard } from './ai/write-card.tsx';
+import { AiWriteStore } from './ai/write-store.ts';
 import { useMountedEditor } from '../editor/use-editor.ts';
 import type { RichTextDoc } from '../types.ts';
 import { DocServicesContext } from './context.ts';
-import { docPlaceholder } from './services.ts';
+import { docPlaceholder, type DocServices } from './services.ts';
 import { createDocEditor } from './create-doc-editor.ts';
 import type { DocEditorProps } from './doc-editor-props.ts';
 import { NodeViewPortals } from './node-view-portals.tsx';
@@ -14,7 +16,7 @@ import { BubbleMenu } from './bubble-menu.tsx';
 import { CodeTools } from './code-tools.tsx';
 import { TableTools } from './table-tools.tsx';
 
-const NO_SERVICES = {};
+const NO_SERVICES: DocServices = {};
 
 /**
  * The Docs editor: a page's body with every registered node, the / menu, [[ page links,
@@ -33,6 +35,7 @@ export default function DocEditor(props: DocEditorProps) {
   const listId = `${id}-list`;
   const [store] = useState(() => new SuggestionStore());
   const [portals] = useState(() => new PortalStore());
+  const [writes] = useState(() => new AiWriteStore());
   const host = useRef<HTMLDivElement>(null);
   const frame = useRef<HTMLDivElement>(null);
   const [linking, setLinking] = useState(false);
@@ -49,6 +52,7 @@ export default function DocEditor(props: DocEditorProps) {
         services: () => latest.current.services ?? NO_SERVICES,
         store,
         portals,
+        writes,
         extensions: props.extensions,
         onUpdate: (instance) =>
           latest.current.onChange?.(instance.isEmpty ? null : (instance.getJSON() as RichTextDoc)),
@@ -99,6 +103,7 @@ export default function DocEditor(props: DocEditorProps) {
         <BlockHandle editor={editor} frame={frame} />
         <CodeTools editor={editor} host={frame} />
         <BubbleMenu editor={editor} services={services} linking={linking} setLinking={setLinking} />
+        {services.ai && <AiWriteCard editor={editor} store={writes} services={services} />}
       </div>
     </DocServicesContext.Provider>
   );

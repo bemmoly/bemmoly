@@ -1,0 +1,13 @@
+{
+  "prompt": {
+    "id": "docs.write.create-issues",
+    "version": 1
+  },
+  "replies": {
+    "docs.write.create-issues": [
+      {
+        "text": "- [ ] Remove the legacy cookie path — Drop the monolith cookie fallback once sessions are served from Postgres.\n- [ ] Track step 4 of the rollout — The rollout plan has no issue for removing the legacy cookie path yet."
+      }
+    ]
+  }
+}

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { parseEnv } from '../config/env.ts';
 import { accountBucketKey, accountOfRoute } from './rate-limit-accounts.ts';
+import { isAiRoute } from './rate-limit-ai.ts';
 import { rateLimitBudgets } from './rate-limit.ts';
 
 const required = {
@@ -15,6 +16,7 @@ describe('rate limit budgets', () => {
       strictPerIp: { max: 10, windowMs: 60_000 },
       perAccount: { max: 10, windowMs: 900_000 },
       failedCredentialsPerIp: { max: 60, windowMs: 60_000 },
+      aiPerActor: { max: 60, windowMs: 60_000 },
     });
   });
 
@@ -24,6 +26,27 @@ describe('rate limit budgets', () => {
     expect(() => parseEnv({ ...required, BEMMOLY_RATE_LIMIT_AUTH_PER_IP: '0' })).toThrow(
       /BEMMOLY_RATE_LIMIT_AUTH_PER_IP/,
     );
+  });
+});
+
+describe('the AI budget', () => {
+  it('covers the routes that call a model, and nothing else', () => {
+    for (const path of [
+      '/ai/answers',
+      '/ai/plans',
+      '/ai/insights/:kind/:targetId/refresh',
+      '/admin/ai/providers/:id/test',
+      '/admin/ai/providers/:id/discover',
+      '/admin/ai/provider-tests',
+      '/docs/pages/:pageId/completions',
+      '/docs/pages/:pageId/ai-writes',
+      '/docs/comments/:commentId/suggest-fix',
+    ]) {
+      expect(isAiRoute('POST', path), path).toBe(true);
+    }
+    expect(isAiRoute('GET', '/ai/insights/:kind/:targetId')).toBe(false);
+    expect(isAiRoute('POST', '/ai/plans/:id/run')).toBe(false);
+    expect(isAiRoute('POST', '/work/issues')).toBe(false);
   });
 });
 

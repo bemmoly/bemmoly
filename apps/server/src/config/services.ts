@@ -4,6 +4,7 @@ import {
   isSetupOpen,
   registerSystemJobs,
   wireEmailNotifications,
+  type Actor,
   type IdentityDependencies,
   type KernelRouteDependencies,
   type ModuleCatalog,
@@ -25,6 +26,8 @@ export interface KernelServicesInput {
   modules: ModuleCatalog;
   /** The handle the module admin was built with; bound to the system service here. */
   backup: ModuleDataBackupHandle;
+  /** /me's workspace.aiEnabled for one person, from the AI runtime. */
+  aiEnabled?: (actor: Actor) => Promise<boolean>;
   logger: Logger;
 }
 
@@ -50,6 +53,7 @@ export function wireKernelServices(input: KernelServicesInput): KernelServices {
     events: kernel.events,
     settings: kernel.settings,
     publicUrl: env.BEMMOLY_PUBLIC_URL,
+    ...(input.aiEnabled ? { aiEnabled: input.aiEnabled } : {}),
   });
   const mail = wireEmailNotifications({
     env,

@@ -1,0 +1,23 @@
+rules:
+  - id: bemmoly-ai-sdk-outside-runtime
+    languages: [typescript, javascript]
+    severity: ERROR
+    message: >-
+      The AI SDK has exactly one integration point: packages/core/src/services/ai/runtime.
+      Call the AI facade (ctx.ai, or the kernel's AiFacade) instead of importing the SDK or a
+      provider package. Provider packages are loaded by name from runtime/allow-list.json,
+      which is data, so no source file names a vendor. (AGENTS.md §2, AI; ADR 0006)
+    paths:
+      exclude:
+        - /packages/core/src/services/ai/runtime/**
+        - /tools/semgrep/**
+    pattern-either:
+      - pattern: import $X from 'ai'
+      - pattern: import { ... } from 'ai'
+      - pattern: import * as $X from 'ai'
+      - pattern: import type { ... } from 'ai'
+      - pattern: import $X from 'ai/$SUB'
+      - pattern: import { ... } from 'ai/$SUB'
+      - pattern: import('ai')
+      - pattern-regex: from\s+['"](@ai-sdk/[^'"]+|ai/[^'"]+|@openrouter/ai-sdk-provider)['"]
+      - pattern-regex: import\(\s*['"](@ai-sdk/[^'"]+|@openrouter/ai-sdk-provider)['"]\s*\)

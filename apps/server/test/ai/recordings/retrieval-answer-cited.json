@@ -1,0 +1,10 @@
+{
+  "prompt": { "id": "retrieval.answer", "version": 1 },
+  "replies": {
+    "retrieval.answer": [
+      {
+        "text": "The Auth service RFC says sessions issued by the new service stay valid for 15 minutes after auth_pg_sessions is turned off [c1]. The runbook and PLT-204 say the flag keeps sessions working for 30 minutes [c2, c3]. The two disagree, so check the flag TTL in auth/flags.go before relying on either [c2]."
+      }
+    ]
+  }
+}

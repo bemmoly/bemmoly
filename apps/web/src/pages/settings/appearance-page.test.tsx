@@ -1,5 +1,6 @@
 import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
+import { aiOf } from '../../mocks/routes/ai-state.ts';
 import { renderPage } from '../../test/render.tsx';
 import { mockApi } from '../../test/setup.ts';
 import { AppearancePage } from './appearance-page.tsx';
@@ -33,5 +34,25 @@ describe('AppearancePage', () => {
     const preview = screen.getByTestId('appearance-preview');
     expect(preview.style.getPropertyValue('--acc-fill')).not.toBe('');
     expect(screen.getByText(/White text on #e11d48/)).toBeDefined();
+  });
+
+  it('previews the AI risk bar and TL;DR only while AI is on', async () => {
+    await renderPage(() => <AppearancePage />, '/settings/appearance');
+    const preview = await screen.findByTestId('appearance-preview');
+    await waitFor(() => expect(preview.textContent).toContain('Sprint risk'));
+    act(() => fireEvent.click(screen.getByRole('radio', { name: 'Doc' })));
+    expect(preview.textContent).toContain('TL;DR');
+  });
+
+  it('draws no AI sample in the preview while AI is off', async () => {
+    aiOf(mockApi.db).settings.privacy.enabled = false;
+    await renderPage(() => <AppearancePage />, '/settings/appearance');
+    const preview = await screen.findByTestId('appearance-preview');
+    await screen.findByRole('radio', { name: /^Ocean/ });
+    expect(preview.textContent).not.toContain('Sprint risk');
+    act(() => fireEvent.click(screen.getByRole('radio', { name: 'Doc' })));
+    expect(preview.textContent).toContain('Auth service RFC');
+    expect(preview.textContent).not.toContain('TL;DR');
+    expect(preview.innerHTML).not.toMatch(/-ai(-\d+)?\b/);
   });
 });

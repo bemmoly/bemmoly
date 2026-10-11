@@ -47,21 +47,15 @@ describe('the / menu', () => {
 
   it('shows the AI group after Basic blocks when the host lends a handler, and /ai lists it', async () => {
     const run = vi.fn();
-    const { box, editor } = await setup({ services: { ai: { run } } });
+    const commands = [{ id: 'continue', label: 'Continue writing', run }];
+    const { box, editor } = await setup({ services: { ai: { commands } } });
     type(editor, '/');
     const groups = (await screen.findAllByRole('group')).map((g) => g.getAttribute('aria-label'));
     expect(groups.slice(0, 2)).toEqual(['Basic blocks', 'AI']);
     type(editor, 'ai');
-    await waitFor(() =>
-      expect(optionNames()).toEqual([
-        'Continue writing',
-        'Summarize open questions from comments',
-        'Create issues from this section',
-        'Check consistency with linked issues',
-      ]),
-    );
+    await waitFor(() => expect(optionNames()).toEqual(['Continue writing']));
     fireEvent.keyDown(box, { key: 'Enter' });
-    expect(run).toHaveBeenCalledWith('continue', expect.objectContaining({ blockText: '' }));
+    expect(run).toHaveBeenCalledWith(expect.objectContaining({ blockText: '' }));
   });
 
   it('filters as you type and inserts the chosen block from the keyboard', async () => {

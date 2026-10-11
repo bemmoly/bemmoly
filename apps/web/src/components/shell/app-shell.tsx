@@ -23,6 +23,7 @@ import { SettingsSidebar } from './settings-sidebar.tsx';
 import { ShortcutsOverlay, shellShortcuts } from './shortcuts-overlay.tsx';
 
 const CommandPaletteHost = lazy(() => import('../command/command-palette-host.tsx'));
+const PlanFollower = lazy(() => import('../command/plan-follower.tsx'));
 
 /** The frame's keys: they need its sidebar toggle, so they live inside it. */
 function ShellKeys({ shell }: { shell: Shell }) {
@@ -92,6 +93,7 @@ export function AppShell() {
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (state) => state.location.pathname });
   const paletteOpen = useUiStore((state) => state.paletteOpen);
+  const aiPlanId = useUiStore((state) => state.aiPlanId);
   const setAppPath = useUiStore((state) => state.setAppPath);
   const [collapsed, setCollapsed] = usePreference('sidebar.collapsed', false);
   const settings = pathname === '/settings' || pathname.startsWith('/settings/');
@@ -143,6 +145,10 @@ export function AppShell() {
       {paletteOpen ? (
         <Suspense fallback={null}>
           <CommandPaletteHost />
+        </Suspense>
+      ) : aiPlanId ? (
+        <Suspense fallback={null}>
+          <PlanFollower id={aiPlanId} />
         </Suspense>
       ) : null}
     </AppFrame>

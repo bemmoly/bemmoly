@@ -8,6 +8,7 @@ import {
   loadKernelChangelog,
   loadModules,
   type RealtimeMessage,
+  type Actor,
   type RequestContext,
   type SqlClient,
 } from '@bemmoly/core';
@@ -31,6 +32,8 @@ export interface DocsHarness {
   realtime: RealtimeMessage[];
   /** A request context for the person, with a fresh per-request authorization. */
   as(userId: string): RequestContext;
+  /** The same for any actor: an AI plan acting for a person, say. */
+  context(actor: Actor): RequestContext;
   /** A space created by the admin, with the member (member role) and viewer (viewer role) in it. */
   space(key: string): Promise<Space>;
   /** Audit actions recorded so far, oldest first. */
@@ -59,6 +62,8 @@ export interface HarnessOptions {
   jobs?: DocsServiceDeps['jobs'];
   /** What ctx.links.referencesTo answers, standing in for Work's reference source. */
   links?: DocsServiceDeps['links'];
+  /** The AI facade the services read the policy from (a test fake). */
+  ai?: DocsServiceDeps['ai'];
 }
 
 export async function startDocsHarness(options: HarnessOptions = {}): Promise<HarnessStart> {
@@ -92,11 +97,13 @@ export async function startDocsHarness(options: HarnessOptions = {}): Promise<Ha
     ...(options.events ? { events: options.events } : {}),
     ...(options.jobs ? { jobs: options.jobs } : {}),
     ...(options.links ? { links: options.links } : {}),
+    ...(options.ai ? { ai: options.ai } : {}),
   });
-  const as = (userId: string): RequestContext => ({
-    actor: { kind: 'user', id: userId },
+  const context = (actor: Actor): RequestContext => ({
+    actor,
     authz: createRequestAuthorization({ db, modules: catalog }),
   });
+  const as = (userId: string): RequestContext => context({ kind: 'user', id: userId });
   return {
     available: true,
     harness: {
@@ -105,6 +112,7 @@ export async function startDocsHarness(options: HarnessOptions = {}): Promise<Ha
       users,
       realtime,
       as,
+      context,
       async space(key) {
         const space = await services.spaces.create(as(users.admin), { key, name: key });
         for (const [userId, role] of [

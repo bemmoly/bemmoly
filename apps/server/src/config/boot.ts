@@ -1,4 +1,6 @@
 import {
+  AI_SETTING_DEFINITIONS,
+  createAiHandle,
   createCollabHandle,
   createEnabledModuleCatalog,
   createJobQueueHandle,
@@ -17,10 +19,12 @@ import { createLogger, type Env } from '@bemmoly/core/config';
 import { getMetrics } from '@bemmoly/core/telemetry';
 import type { FastifyInstance } from 'fastify';
 import { buildApp, type BuildAppOptions } from '../app.ts';
+import { wireAi } from './ai.ts';
 import { wireCollab } from './collab.ts';
 import { connectDatabase, type DatabaseConnection } from './database.ts';
 import { identityWiring } from './identity.ts';
 import { createDataKernel, type DataKernel } from './kernel.ts';
+import { wireRetrieval } from './retrieval.ts';
 import { wireKernelServices } from './services.ts';
 
 export interface BootOptions {
@@ -73,6 +77,9 @@ export async function bootApplication(options: BootOptions): Promise<Booted> {
   const jobQueue = createJobQueueHandle();
   const settingsReader = createSettingsReaderHandle();
   const collabHandle = createCollabHandle();
+  const aiHandle = createAiHandle();
+  // Bound once the kernel reads the modules table; until then no module hears events.
+  let moduleState: Pick<DataKernel['moduleState'], 'isEnabled'> | undefined;
   const modules = loadModules({
     available: options.available,
     enabled: database ? [] : env.BEMMOLY_MODULES,
@@ -80,8 +87,14 @@ export async function bootApplication(options: BootOptions): Promise<Booted> {
     jobQueue,
     settingsReader,
     collab: collabHandle,
+    ai: () => aiHandle.bound(),
     ...(realtime ? { realtime: realtime.publisher } : {}),
-    ...(database ? { database: database.sql } : {}),
+    ...(database
+      ? {
+          database: database.sql,
+          isEnabled: (moduleId: string) => moduleState?.isEnabled(moduleId) ?? false,
+        }
+      : {}),
   });
   catalog.bindRegistry(modules);
   const databaseUrl = env.DATABASE_URL;
@@ -94,7 +107,11 @@ export async function bootApplication(options: BootOptions): Promise<Booted> {
           realtime,
           jobQueue,
           identity,
-          settingDefinitions: [...EMAIL_SETTING_DEFINITIONS, ...SYSTEM_SETTINGS],
+          settingDefinitions: [
+            ...EMAIL_SETTING_DEFINITIONS,
+            ...SYSTEM_SETTINGS,
+            ...AI_SETTING_DEFINITIONS,
+          ],
           metrics: { jobs: getMetrics().jobs, realtime: getMetrics().realtime },
           logger,
         })
@@ -102,6 +119,7 @@ export async function bootApplication(options: BootOptions): Promise<Booted> {
   if (kernel) {
     settingsReader.bind(kernel.settings);
     catalog.bindState(kernel.moduleState);
+    moduleState = kernel.moduleState;
   }
   const collab =
     database && kernel
@@ -115,6 +133,23 @@ export async function bootApplication(options: BootOptions): Promise<Booted> {
           logger,
         })
       : undefined;
+  const ai =
+    database && kernel
+      ? await wireAi({ env, database, kernel, identity, modules, handle: aiHandle, logger })
+      : undefined;
+  const retrieval =
+    database && kernel && realtime
+      ? wireRetrieval({
+          sql: database.sql,
+          modules,
+          moduleState: kernel.moduleState,
+          jobs: kernel.jobs,
+          listener: realtime.listener,
+          events: kernel.events,
+          ai: () => aiHandle.current(),
+          logger,
+        })
+      : undefined;
   const services =
     database && kernel && databaseUrl
       ? wireKernelServices({
@@ -124,6 +159,7 @@ export async function bootApplication(options: BootOptions): Promise<Booted> {
           identity,
           modules: catalog,
           backup,
+          aiEnabled: (actor) => aiHandle.enabledFor(actor),
           logger,
         })
       : undefined;
@@ -135,7 +171,15 @@ export async function bootApplication(options: BootOptions): Promise<Booted> {
     ...(options.logger !== undefined ? { logger: options.logger } : {}),
     ...(database ? { database: database.probe } : {}),
     ...(kernel
-      ? { kernel: { ...kernel.routes, ...services?.routes, ...(collab ? { collab } : {}) } }
+      ? {
+          kernel: {
+            ...kernel.routes,
+            ...services?.routes,
+            ...ai?.routes,
+            ...(retrieval ? { retrieval } : {}),
+            ...(collab ? { collab } : {}),
+          },
+        }
       : {}),
     ...(services ? { identity: services.identity } : {}),
   });

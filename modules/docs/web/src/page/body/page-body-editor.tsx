@@ -6,6 +6,7 @@ import { cx } from '../cx.ts';
 import { usePageScreen, type PageEditor } from '../screen-context.ts';
 import { useTypingFlag } from '../use-typing-flag.ts';
 import { TITLE_FIELD_ID } from './page-title.tsx';
+import { useDocAi } from './ai/use-doc-ai.ts';
 import { useDocServices } from './use-doc-services.ts';
 
 /** Headings stop below the top edge when the outline scrolls to them. */
@@ -62,7 +63,8 @@ function BodySkeleton() {
  */
 export function PageBodyEditor({ onEditor }: { onEditor: (editor: PageEditor | null) => void }) {
   const { page, collab, editable, editor } = usePageScreen();
-  const services = useDocServices(page.id, editable);
+  const ai = useDocAi({ pageId: page.id, spaceKey: page.spaceKey, editable });
+  const services = useDocServices(page.id, editable, ai);
   const ready = bodyReady(collab);
   useArrowUpToTitle(editor);
   useTypingFlag(editor);

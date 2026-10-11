@@ -18,6 +18,8 @@ interface UiState {
   inviteRequested: boolean;
   /** The last page outside Settings, where "Back to app" returns. */
   appPath: string;
+  /** The palette plan in view or still running, followed after the palette closes. */
+  aiPlanId: string | null;
   requestInvite(requested: boolean): void;
   openPalette(scope?: PaletteScope): void;
   closePalette(): void;
@@ -26,6 +28,7 @@ interface UiState {
   setAboutOpen(open: boolean): void;
   setUserSearch(value: string): void;
   setAppPath(path: string): void;
+  setAiPlanId(id: string | null): void;
 }
 
 export const useUiStore = create<UiState>()((set) => ({
@@ -36,6 +39,7 @@ export const useUiStore = create<UiState>()((set) => ({
   userSearch: '',
   inviteRequested: false,
   appPath: '/',
+  aiPlanId: null,
   requestInvite: (requested) => set({ inviteRequested: requested }),
   openPalette: (scope = 'all') =>
     set({ paletteOpen: true, paletteScope: scope, shortcutsOpen: false }),
@@ -50,4 +54,5 @@ export const useUiStore = create<UiState>()((set) => ({
   setAboutOpen: (open) => set({ aboutOpen: open }),
   setUserSearch: (value) => set({ userSearch: value }),
   setAppPath: (path) => set({ appPath: path }),
+  setAiPlanId: (id) => set({ aiPlanId: id }),
 }));

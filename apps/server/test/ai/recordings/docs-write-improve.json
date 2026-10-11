@@ -1,0 +1,13 @@
+{
+  "prompt": {
+    "id": "docs.write.improve",
+    "version": 1
+  },
+  "replies": {
+    "docs.write.improve": [
+      {
+        "text": "If the error rate goes above 0.5% after cutover, turn auth_pg_sessions off. Sessions from the new service stay valid for 15 minutes, so nobody is logged out (PLT-204)."
+      }
+    ]
+  }
+}

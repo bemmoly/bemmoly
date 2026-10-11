@@ -1,4 +1,6 @@
 import { createApiClient } from '@bemmoly/api-client';
+import { aiAnswerEndpoints } from '@bemmoly/api-client/ai-answers';
+import { docsEditorAiEndpoints } from '../api/editor-ai.ts';
 import { docsHistoryEndpoints } from '../api/history.ts';
 import { docsLibraryEndpoints } from '../api/library.ts';
 import { docsPagesEndpoints } from '../api/pages.ts';
@@ -14,12 +16,14 @@ const client = createApiClient();
 
 export const api = {
   ...client,
+  ai: { ...client.ai, ...aiAnswerEndpoints(client.http) },
   docs: {
     ...docsPagesEndpoints(client.http),
     ...docsLibraryEndpoints(client.http),
     ...docsHistoryEndpoints(client.http),
     ...docsTransferEndpoints(client.http),
     ...docsMembersEndpoints(client.http),
+    ...docsEditorAiEndpoints(client.http),
   },
 };
 

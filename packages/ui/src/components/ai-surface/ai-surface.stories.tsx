@@ -1,6 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Button } from '../button/button.tsx';
+import { AiAnswer, type AiAnswerSourceItem } from './ai-answer.tsx';
 import { AiBrief, AiInsightBar, AiSuggestion, AiSummary } from './ai-cards.tsx';
+import { AiInsightBody } from './ai-insight-body.tsx';
 import { AiActionButton, AiAskButton, AiNotUseful } from './ai-parts.tsx';
 
 const meta = { title: 'Components/AI surfaces', component: AiSummary } satisfies Meta<
@@ -113,6 +115,17 @@ export const Suggestion: Story = {
       <AiSuggestion variant="card" onAccept={noop} onDismiss={noop} className="w-120">
         Code says 30 (auth/flags.go:41). Update the doc to 30 minutes?
       </AiSuggestion>
+      <AiSuggestion
+        variant="card"
+        stacked
+        acceptLabel="Apply fix"
+        onAccept={noop}
+        dismissLabel="Not useful"
+        onDismiss={noop}
+        className="w-70"
+      >
+        Code says 30 (auth/flags.go:41). Replace with “stay valid for 30 minutes”?
+      </AiSuggestion>
     </div>
   ),
 };
@@ -129,6 +142,133 @@ export const AskButtons: Story = {
     <div className="flex items-center gap-3">
       <AiAskButton shortcut="Mod+K" />
       <AiAskButton label="Copilot" size="sm" pressed />
+    </div>
+  ),
+};
+
+const RFC = 'RFC: Move sessions to Postgres';
+const answerSources: AiAnswerSourceItem[] = [
+  { id: 'c1', title: RFC, label: 'Rollback', href: '#rollback' },
+  { id: 'c2', title: RFC, label: 'Backfill', href: '#backfill' },
+  { id: 'c3', title: 'Auth service runbook', label: 'Auth service runbook', href: '#runbook' },
+  {
+    id: 'c4',
+    title: 'PLT-204 Session store migration',
+    label: 'Description',
+    href: '#plt-204',
+    icon: 'subtasks',
+  },
+];
+
+const s = (text: string, citations: string[] = [], unsourced = false) => ({
+  text,
+  citations,
+  unsourced,
+});
+
+/** No mock draws an answer; the cards above set its look (tech design §11.3 sets its parts). */
+export const Answer: Story = {
+  args: { children: null },
+  render: () => (
+    <div className="flex w-180 flex-col gap-4">
+      <AiAnswer
+        source="by AI · from 2 pages, 1 issue"
+        sources={answerSources}
+        blocks={[
+          {
+            kind: 'paragraph',
+            sentences: [
+              s('If error rates pass 0.5% after the cutover, flip auth_pg_sessions off.', ['c1']),
+              s('Redis stays warm for 7 days.', ['c1', 'c3']),
+            ],
+          },
+          {
+            kind: 'item',
+            sentences: [s('Re-run the backfill once errors are back down.', ['c2'])],
+          },
+          { kind: 'item', sentences: [s('PLT-204 tracks the dual-write.', ['c4'])] },
+          {
+            kind: 'item',
+            sentences: [s('Most teams flip the flag back within the hour.', [], true)],
+          },
+        ]}
+        actions={<AiNotUseful />}
+      />
+      <AiAnswer
+        variant="panel"
+        streaming
+        sources={answerSources}
+        blocks={[{ kind: 'paragraph', sentences: [s('If error rates pass 0.5% after', [])] }]}
+      />
+    </div>
+  ),
+};
+
+const citations = [
+  { id: 'c1', label: 'PLT-204', location: 'description', href: '#' },
+  { id: 'c2', label: "Jonas M.'s comment", location: 'Thursday', href: '#' },
+  { id: 'c3', label: 'PLT-211', location: 'blocked by this issue', href: '#' },
+];
+
+/** An insight card's body in each state: cited points, an unsourced claim, loading, failed. */
+export const InsightStates: Story = {
+  args: { children: null },
+  render: () => (
+    <div className="flex w-120 flex-col gap-4">
+      <AiSummary
+        variant="page"
+        source="by AI · from 14 comments, 1 doc"
+        actions={<AiNotUseful size="md" />}
+      >
+        <AiInsightBody
+          state="ready"
+          citations={citations}
+          points={[
+            { text: 'The only open item is review of PR #4821, waiting on Jonas.', cites: ['c2'] },
+            { text: 'PLT-211 is blocked on this merge.', cites: ['c1', 'c3'] },
+            { text: 'It should merge by Friday.', cites: [] },
+          ]}
+        />
+      </AiSummary>
+      <AiSummary variant="page" source="by AI">
+        <AiInsightBody state="loading" />
+      </AiSummary>
+      <AiSummary variant="page" title="TL;DR" source="by AI">
+        <AiInsightBody
+          state="failed"
+          failedLabel="Couldn’t get a TL;DR"
+          failedDetail="The provider returned a rate limit; try again in 30 seconds."
+          onRetry={noop}
+        />
+      </AiSummary>
+    </div>
+  ),
+};
+
+/** The sprint risk bar drawing an insight inline: its one line, loading and failed. */
+export const InsightBarStates: Story = {
+  args: { children: null },
+  render: () => (
+    <div className="flex w-188 flex-col gap-3 bg-sunken p-1">
+      <AiInsightBar title="Sprint risk" actions={<AiNotUseful />} onDismiss={noop}>
+        <AiInsightBody
+          inline
+          state="ready"
+          citations={citations}
+          points={[
+            { text: 'PLT-204 has been in review 3 days and blocks 2 issues.', cites: ['c1'] },
+          ]}
+        />
+      </AiInsightBar>
+      <AiInsightBar title="Sprint risk">
+        <AiInsightBody inline state="loading" />
+      </AiInsightBar>
+      <AiInsightBar
+        title="Sprint risk"
+        actions={<AiActionButton onClick={noop}>Try again</AiActionButton>}
+      >
+        <AiInsightBody inline state="failed" failedLabel="Couldn’t get the sprint risk" />
+      </AiInsightBar>
     </div>
   ),
 };

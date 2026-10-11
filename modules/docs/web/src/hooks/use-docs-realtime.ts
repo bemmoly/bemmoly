@@ -1,5 +1,6 @@
 import { useRealtime, type RealtimeEvent } from '@bemmoly/core-web';
-import type { RealtimeScope } from '@bemmoly/shared';
+import { queryKeys } from '@bemmoly/api-client';
+import { AI_REALTIME_KINDS, type RealtimeScope } from '@bemmoly/shared';
 import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useMemo } from 'react';
 import { realtimeUrl } from '../shared/api.ts';
@@ -15,6 +16,11 @@ export function useDocsRealtime(spaceIds: readonly string[]) {
   const queryClient = useQueryClient();
   const onEvent = useCallback(
     (event: RealtimeEvent) => {
+      if (event.kind === AI_REALTIME_KINDS.insight) {
+        // A summary, TL;DR, pulse or check about something in this scope was rewritten.
+        void queryClient.invalidateQueries({ queryKey: queryKeys.ai.insights() });
+        return;
+      }
       if (!event.kind.startsWith('docs.')) return;
       void queryClient.invalidateQueries({ queryKey: docsKeys.all() });
     },

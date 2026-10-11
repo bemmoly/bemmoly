@@ -1,5 +1,4 @@
-import { AiSummary } from '@bemmoly/ui';
-import { useSession } from '../../shared/people.ts';
+import { PageTldr } from '../../ai-insights/page-tldr.tsx';
 import { usePageScreen } from '../screen-context.ts';
 import { PageIdentity } from './page-identity.tsx';
 import { PageTitle } from './page-title.tsx';
@@ -18,12 +17,11 @@ export function shortDate(iso: string, now: Date = new Date()): string {
 /**
  * Everything above the body, as the review draws the page column: the icon (with Add icon
  * and Add cover on hover while either is missing), the 36px title, the one properties row
- * and a hairline. When the page has one and the workspace has AI on, its generated TL;DR
- * follows in the AI lilac; with AI off a stored summary stays unshown.
+ * and a hairline. With AI on, the page's TL;DR follows in the AI lilac; with AI off nothing
+ * of it is drawn.
  */
 export function PageHeading() {
   const { page } = usePageScreen();
-  const { aiEnabled } = useSession();
   return (
     <header className="group/heading flex flex-col">
       <PageIdentity />
@@ -32,11 +30,7 @@ export function PageHeading() {
       </div>
       <PropertiesRow />
       <div aria-hidden className="mt-3.5 mb-1.5 h-px bg-line" />
-      {aiEnabled && page.tldr && (
-        <AiSummary variant="page" title="TL;DR" source="generated · updates with the doc">
-          {page.tldr}
-        </AiSummary>
-      )}
+      <PageTldr pageId={page.id} />
     </header>
   );
 }

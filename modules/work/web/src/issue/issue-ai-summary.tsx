@@ -1,9 +1,9 @@
 import { queryKeys } from '@bemmoly/api-client';
-import { AiSummary } from '@bemmoly/ui';
+import { AiInsightCard, useAiInsight } from '@bemmoly/core-web/ai-insights';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../shared/api.ts';
 
-/** True once the workspace has an AI provider, read from the shell's cached session. */
+/** True once the workspace has AI on for this person, read from the shell's cached session. */
 export function useAiEnabled(): boolean {
   const { data } = useQuery({
     queryKey: queryKeys.me(),
@@ -14,18 +14,24 @@ export function useAiEnabled(): boolean {
 }
 
 /**
- * The AI summary, in lilac (ADR 0015), only when the workspace has AI turned on. Without AI it
- * takes no room at all: the page never advertises a feature the workspace does not have.
+ * The issue's AI summary (tech design 11.3), on the page and in the slide-over, only while
+ * AI is on: what it stands on, who it waits on, what it blocks, each claim linked to the
+ * comment, issue or doc it came from. Without AI it takes no room at all.
  */
-export function IssueAiSummary({ size }: { size: 'page' | 'panel' }) {
-  const enabled = useAiEnabled();
-  if (!enabled) return null;
+export function IssueAiSummary({ issueId, size }: { issueId: string; size: 'page' | 'panel' }) {
+  const aiEnabled = useAiEnabled();
+  const handle = useAiInsight({
+    http: api.http,
+    kind: 'issue_summary',
+    targetId: issueId,
+    aiEnabled,
+  });
   return (
-    <AiSummary variant={size} source="not written yet">
-      <span className="text-tx-2">
-        Issue summaries are not written yet in this version. Until they are, ask Bemmoly about this
-        issue from search.
-      </span>
-    </AiSummary>
+    <AiInsightCard
+      handle={handle}
+      variant={size}
+      title="Summary"
+      failedLabel="Couldn’t get a summary"
+    />
   );
 }

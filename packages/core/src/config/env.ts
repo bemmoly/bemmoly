@@ -52,6 +52,7 @@ export const envSchema = z.object({
   BEMMOLY_RATE_LIMIT_AUTH_PER_IP: rateLimitMax,
   BEMMOLY_RATE_LIMIT_AUTH_PER_ACCOUNT: rateLimitMax,
   BEMMOLY_RATE_LIMIT_FAILED_CREDENTIALS_PER_IP: rateLimitMax,
+  BEMMOLY_RATE_LIMIT_AI_PER_USER: rateLimitMax,
   /** Document messages per /collab socket per 10 s (awareness counts apart); unset: the default. */
   BEMMOLY_RATE_LIMIT_COLLAB_MESSAGES: rateLimitMax,
   /** Largest /collab message in bytes, 64 KiB to 16 MiB; unset keeps the 2 MiB default. */
@@ -62,6 +63,16 @@ export const envSchema = z.object({
     .max(16 * 1024 * 1024)
     .optional(),
   BEMMOLY_ALLOW_PRIVATE_URLS: z.stringbool().default(false),
+  /**
+   * Absolute path of a JSON file of canned AI replies (the recorded provider). When set, no AI
+   * provider is ever called: for end-to-end tests and demos only. Empty or unset: off.
+   */
+  BEMMOLY_AI_RECORDING: z
+    .string()
+    .trim()
+    .optional()
+    .transform((value) => value || undefined)
+    .refine((value) => value === undefined || value.startsWith('/'), 'must be an absolute path'),
   OTEL_EXPORTER_OTLP_ENDPOINT: z.url().optional(),
   BEMMOLY_METRICS_TOKEN: z
     .string()

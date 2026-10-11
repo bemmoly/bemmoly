@@ -19,8 +19,15 @@ const DEFAULT_STALE_AFTER_DAYS = 90;
  * person can still open and drop pages in the trash.
  */
 export function createAttentionService(
-  deps: Pick<DocsServiceDeps, 'database' | 'settings' | 'entities'>,
+  deps: Pick<DocsServiceDeps, 'database' | 'settings' | 'entities' | 'ai'>,
 ) {
+  /** AI on for the person: their pages' consistency findings (owned, created or reviewing). */
+  async function aiOn(ctx: RequestContext): Promise<boolean> {
+    if (!deps.ai) return false;
+    const policy = await deps.ai.policy(ctx.actor);
+    return policy.enabled && !policy.actorOptedOut;
+  }
+
   return {
     async attention(ctx: RequestContext, query: AttentionQuery): Promise<AttentionResponse> {
       await ctx.authz.authorize(ctx.actor, 'docs.page.view', DOCS_MODULE);
@@ -45,7 +52,23 @@ export function createAttentionService(
           and p.content_updated_at < now() - make_interval(days => ${staleAfterDays}::int)
         order by p.content_updated_at asc, p.id
         limit ${Math.max(query.limit - reviews.length, 0)}`;
-      const pages = await toHomePages(deps, sql, ctx, [...reviews, ...stale]);
+      const checked =
+        query.limit > reviews.length + stale.length && (await aiOn(ctx))
+          ? await sql<(HomeRow & { checked_at: Date | string; findings: number })[]>`
+              select ${sql.unsafe(HOME_COLUMNS)}, i.generated_at as checked_at,
+                jsonb_array_length(i.content->'output'->'findings') as findings
+              from ai_insights i
+              join pages p on p.id = i.target_id
+              join spaces s on s.id = p.space_id
+              where i.kind = 'consistency' and i.target_kind = 'page' and i.status = 'ready'
+                and jsonb_array_length(coalesce(i.content->'output'->'findings', '[]')) > 0
+                and ${inSpaces()} and not s.ai_excluded
+                and (p.owner_id = ${userId}::uuid or p.created_by = ${userId}::uuid
+                  or ${userId}::uuid = any(p.reviewers))
+              order by i.generated_at desc, p.id
+              limit ${query.limit - reviews.length - stale.length}`
+          : [];
+      const pages = await toHomePages(deps, sql, ctx, [...reviews, ...stale, ...checked]);
       return {
         items: [
           ...reviews.map((row, n) => ({
@@ -57,6 +80,12 @@ export function createAttentionService(
             kind: 'stale' as const,
             page: pages[reviews.length + n]!,
             since: iso(row.content_updated_at),
+          })),
+          ...checked.map((row, n) => ({
+            kind: 'consistency' as const,
+            page: pages[reviews.length + stale.length + n]!,
+            since: iso(row.checked_at),
+            findings: row.findings,
           })),
         ],
         staleAfterDays,

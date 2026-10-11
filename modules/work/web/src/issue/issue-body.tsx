@@ -91,7 +91,7 @@ export function IssueBody({ issue, size, railInline = size === 'panel' }: IssueB
           <IssueRail issue={issue} />
         </div>
       )}
-      <IssueAiSummary size={size} />
+      <IssueAiSummary issueId={issue.id} size={size} />
       <RichTextSection
         title="Description"
         showTitle={false}

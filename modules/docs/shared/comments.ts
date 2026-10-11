@@ -23,7 +23,7 @@ export const commentAnchorSchema = z.object({
 /**
  * A proposed fix on an inline thread: replace the anchored text (which must
  * still read as the anchor's quote) with `replacement`. Applied through the
- * live document, never as a raw write. Written by the AI runtime from 0.4.
+ * live document, never as a raw write. Written by the AI runtime from 0.5.
  */
 export const aiSuggestionSchema = z.object({
   replacement: z.string().max(10_000),

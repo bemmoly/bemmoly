@@ -20,8 +20,11 @@ export interface SignedInApp {
 }
 
 export interface BootHarness {
-  /** Boots the whole host on the shared database, signed in as the first admin. */
-  boot(pinned?: string): Promise<SignedInApp>;
+  /**
+   * Boots the whole host on the shared database, signed in as the first admin. `env` adds
+   * keys such as BEMMOLY_AI_RECORDING.
+   */
+  boot(pinned?: string, env?: Readonly<Record<string, string>>): Promise<SignedInApp>;
   stop(): Promise<void>;
 }
 
@@ -38,8 +41,9 @@ export async function startBootHarness(): Promise<BootHarnessResult> {
   return {
     available: true,
     harness: {
-      async boot(pinned = '') {
+      async boot(pinned = '', extra = {}) {
         const env = parseEnv({
+          ...extra,
           DATABASE_URL: database.url,
           BEMMOLY_SECRET_KEY: Buffer.alloc(32, 8).toString('base64'),
           BEMMOLY_PUBLIC_URL: BOOT_ORIGIN,

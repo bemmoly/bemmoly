@@ -1,5 +1,9 @@
 import websocket from '@fastify/websocket';
 import type { FastifyPluginAsync } from 'fastify';
+import { createAiController, type AiControllerDependencies } from '../controllers/ai.controller.ts';
+import { createAiPlansController } from '../controllers/ai-plans.controller.ts';
+import { createAiInsightsController } from '../controllers/ai-insights.controller.ts';
+import { createAiAnswersController } from '../controllers/ai-answers.controller.ts';
 import { createAuditController } from '../controllers/audit.controller.ts';
 import { createAuthzController } from '../controllers/authz.controller.ts';
 import { createCollabController } from '../controllers/collab.controller.ts';
@@ -25,6 +29,9 @@ import type { ModuleAccessResolver } from '../contracts/module-access.ts';
 import type { SessionResolver } from '../contracts/session-resolver.ts';
 import { createActorResolver, type ActorResolver } from '../middlewares/actor.ts';
 import type { ModuleRegistry } from '../modules/registry.ts';
+import type { AiPlans } from '../services/ai/index.ts';
+import type { InsightsService } from '../services/ai/index.ts';
+import type { RetrievalService } from '../services/ai/index.ts';
 import type { CollabHost } from '../services/collab/index.ts';
 import type { IdentityDependencies } from '../services/identity/index.ts';
 import type { ModuleAdmin, ModuleState } from '../services/modules/index.ts';
@@ -33,6 +40,10 @@ import { createSearchService } from '../services/search/index.ts';
 import type { SettingsAdmin } from '../services/settings/index.ts';
 import type { DatabaseProbe } from '../services/system/index.ts';
 import type { ScrapeDependencies } from '../services/telemetry/index.ts';
+import { aiAdminRoutes, aiPersonRoutes } from './ai.routes.ts';
+import { aiPlansRoutes } from './ai-plans.routes.ts';
+import { aiInsightsRoutes } from './ai-insights.routes.ts';
+import { aiAnswersRoutes } from './ai-answers.routes.ts';
 import { auditRoutes } from './audit.routes.ts';
 import { authzRoutes } from './authz.routes.ts';
 import { collabRoutes } from './collab.routes.ts';
@@ -82,6 +93,14 @@ export interface KernelRouteDependencies {
   metrics?: ScrapeDependencies;
   /** Backups, updates and system health; mounted when the host wires the system service. */
   system?: SystemControllerDependencies;
+  /** Settings › AI (/admin/ai) and a person's AI status; mounted with the AI runtime. */
+  ai?: AiControllerDependencies;
+  /** The ⌘K palette's plans (/ai/plans); mounted when the host wires the AI runtime. */
+  aiPlans?: AiPlans;
+  /** The AI insight cache; /api/v1/ai/insights is mounted only when present. */
+  insights?: InsightsService;
+  /** "Ask your docs" answers; mounted when the host wires retrieval. */
+  retrieval?: RetrievalService;
 }
 
 function identityAndAccessRoutes(deps: IdentityDependencies): FastifyPluginAsync {
@@ -169,6 +188,20 @@ export function kernelRoutes(deps: KernelRouteDependencies): FastifyPluginAsync 
           await api.register(emailNotificationRoutes(deps.emailNotifications));
         }
         if (deps.system) await api.register(systemRoutes(createSystemController(deps.system)));
+        if (deps.ai) {
+          const ai = createAiController(deps.ai);
+          await api.register(aiAdminRoutes(ai));
+          await api.register(aiPersonRoutes(ai));
+        }
+        if (deps.aiPlans) {
+          await api.register(aiPlansRoutes(createAiPlansController(deps.aiPlans.service)));
+        }
+        if (deps.insights) {
+          await api.register(aiInsightsRoutes(createAiInsightsController(deps.insights)));
+        }
+        if (deps.retrieval) {
+          await api.register(aiAnswersRoutes(createAiAnswersController(deps.retrieval)));
+        }
         await api.register(moduleResourceRoutes(deps.modules, gate));
       },
       { prefix: API_PREFIX },

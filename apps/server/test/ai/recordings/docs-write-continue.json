@@ -1,0 +1,13 @@
+{
+  "prompt": {
+    "id": "docs.write.continue",
+    "version": 1
+  },
+  "replies": {
+    "docs.write.continue": [
+      {
+        "text": "Once the flag has been off for 24 hours with error rates below 0.5%, [owner] removes the dual-write path and closes PLT-204. Until then, keep the Session migration runbook open during every deploy."
+      }
+    ]
+  }
+}

@@ -14,7 +14,9 @@ async function openCreateForm(page: Page, projectName: string) {
 }
 
 test('an issue created through the form gets the next gap-free key', async ({ page, admin }) => {
-  const project = await admin.createProject({ key: uniqueKey('CRT'), name: 'Create flow' });
+  // A name of its own: a retried or repeated run leaves other "Create flow" projects behind.
+  const key = uniqueKey('CRT');
+  const project = await admin.createProject({ key, name: `Create flow ${key}` });
   await page.goto(`/work/board/${project.key}`);
 
   const form = await openCreateForm(page, project.name);

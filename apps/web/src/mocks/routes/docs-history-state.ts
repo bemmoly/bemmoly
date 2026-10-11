@@ -32,7 +32,12 @@ export interface MockComment {
   authorId: string | null;
   body: PmNode;
   anchor: { from: string; to: string; quote: string } | null;
-  aiSuggestion: { replacement: string; rationale?: string; appliedAt?: string | null } | null;
+  aiSuggestion: {
+    replacement: string;
+    rationale?: string;
+    runId?: string;
+    appliedAt?: string | null;
+  } | null;
   resolvedAt: string | null;
   resolvedBy: string | null;
   editedAt: string | null;
@@ -161,6 +166,7 @@ function rfcComments(): MockComment[] {
       aiSuggestion: {
         replacement: 'stay valid for 30 minutes',
         rationale: 'Code says 30 (auth/flags.go:41).',
+        runId: uid(9480),
       },
     }),
     comment(2, {

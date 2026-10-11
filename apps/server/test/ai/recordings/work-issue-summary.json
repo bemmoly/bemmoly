@@ -1,0 +1,38 @@
+{
+  "prompt": {
+    "id": "work.issue_summary",
+    "version": 1
+  },
+  "replies": {
+    "work.issue_summary": [
+      {
+        "object": {
+          "points": [
+            {
+              "text": "PLT-204 is in code review; PR #4821 has waited on Jonas M. since Thursday.",
+              "cites": ["c1", "c5"]
+            },
+            {
+              "text": "PLT-211 and PLT-219 are blocked until it merges.",
+              "cites": ["c2", "c3"]
+            },
+            {
+              "text": "The Auth service RFC's rollback says sessions stay valid for 15 minutes, while the flag keeps them for 30.",
+              "cites": ["c4", "c6", "c1"]
+            }
+          ],
+          "next": [
+            {
+              "label": "Open PLT-204",
+              "cite": "c1"
+            },
+            {
+              "label": "Read the RFC rollback",
+              "cite": "c6"
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

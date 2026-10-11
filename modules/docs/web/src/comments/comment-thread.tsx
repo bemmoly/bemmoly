@@ -1,6 +1,7 @@
 import type { PageComment, RichText } from '@bemmoly/module-docs/shared';
-import { ActivityAction, AiDot } from '@bemmoly/ui';
+import { ActivityAction, AiDot, AiSuggestion } from '@bemmoly/ui';
 import { useState, type KeyboardEvent, type ReactNode } from 'react';
+import { api } from '../shared/api.ts';
 import { useSession } from '../shared/people.ts';
 import { CommentBox } from './comment-box.tsx';
 import { cx } from './cx.ts';
@@ -15,6 +16,15 @@ export interface ThreadHandlers {
   onResolve: (root: PageComment) => void;
   onReopen: (root: PageComment) => void;
   onApplyFix: (root: PageComment) => void;
+  /** Asks AI for a fix to the thread's text; shown only with AI on. */
+  onSuggestFix: (root: PageComment) => void;
+  /** The thread a fix is being written for, if any. */
+  suggesting: string | null;
+  /**
+   * AI may work on this page for this person: on, not opted out, and the space not excluded
+   * by its own switch or by Settings › AI. "Suggest a fix" shows only then.
+   */
+  aiAllowed: boolean;
 }
 
 export interface CommentThreadProps extends ThreadHandlers {
@@ -25,6 +35,45 @@ export interface CommentThreadProps extends ThreadHandlers {
   /** Commenting needs edit rights on the page; readers see threads only. */
   canComment: boolean;
   busy?: boolean;
+}
+
+/**
+ * The thread's AI fix, as the system's AiSuggestion: what it would change and why, Apply fix for
+ * someone who may comment, and "Not useful", which marks the run that wrote it once, for
+ * Settings › AI's numbers. The fix itself stays, to apply or leave.
+ */
+function FixSuggestion({
+  fix,
+  onApply,
+  busy,
+}: {
+  fix: NonNullable<PageComment['aiSuggestion']>;
+  onApply: (() => void) | undefined;
+  busy: boolean;
+}) {
+  const [marked, setMarked] = useState(false);
+  const runId = fix.runId;
+  const markNotUseful = () => {
+    if (!runId) return;
+    setMarked(true);
+    // A failed mark changes nothing the person sees, as on every AI card.
+    void api.ai.runs.feedback(runId, 'not_useful').catch(() => null);
+  };
+  return (
+    <AiSuggestion
+      variant="card"
+      stacked
+      className="mt-0.5"
+      acceptLabel="Apply fix"
+      acceptDisabled={busy}
+      dismissLabel={marked ? 'Marked not useful' : 'Not useful'}
+      dismissDone={marked}
+      {...(onApply ? { onAccept: onApply } : {})}
+      {...(runId ? { onDismiss: markNotUseful } : {})}
+    >
+      {fix.rationale ? `${fix.rationale} ` : ''}Replace with “{fix.replacement}”?
+    </AiSuggestion>
+  );
 }
 
 /** The quoted text an inline thread is about, with the marker when that text has changed. */
@@ -59,7 +108,7 @@ function Quote({ comment }: { comment: PageComment }) {
  * One thread in the rail, the mock's card: br border, 7px radius, 10px 12px, the amber tint
  * when its text is in focus. The comments one under another (the first with its quote under
  * the name line), the AI fix in lilac when the thread carries one and the workspace has AI on,
- * and Apply fix · Reply · Resolve.
+ * with Apply fix on it, then Reply · Resolve.
  * Enter or a click focuses its text; R replies and E resolves (or reopens).
  */
 export function CommentThread({
@@ -79,6 +128,15 @@ export function CommentThread({
     aiEnabled && root.aiSuggestion && !root.aiSuggestion.appliedAt && root.anchor
       ? root.aiSuggestion
       : null;
+  const writing = aiEnabled && on.suggesting === root.id;
+  const canSuggest =
+    aiEnabled &&
+    on.aiAllowed &&
+    canComment &&
+    root.anchorStatus === 'anchored' &&
+    !fix &&
+    !writing &&
+    !resolved;
 
   const onKeyDown = (event: KeyboardEvent<HTMLElement>) => {
     if (event.target !== event.currentTarget) return;
@@ -137,11 +195,20 @@ export function CommentThread({
         </div>
       )}
       {fix && !resolved && (
-        <div className="mt-0.5 flex items-start gap-2 rounded-chip border border-ai-100 bg-ai-50 p-2">
-          <AiDot className="mt-1.5" />
-          <span className="min-w-0 text-tx">
-            {fix.rationale ? `${fix.rationale} ` : ''}Replace with “{fix.replacement}”?
-          </span>
+        <FixSuggestion
+          key={fix.runId ?? fix.replacement}
+          fix={fix}
+          busy={busy}
+          onApply={canComment ? () => on.onApplyFix(root) : undefined}
+        />
+      )}
+      {writing && (
+        <div
+          role="status"
+          className="mt-0.5 flex items-center gap-2 rounded-chip border border-ai-100 bg-ai-50 p-2 text-ai-600"
+        >
+          <AiDot />
+          Writing a fix…
         </div>
       )}
       {replying && (
@@ -158,13 +225,12 @@ export function CommentThread({
       )}
       {canComment && !replying && (
         <div className="flex items-center gap-2.5 pt-0.5 font-medium">
-          {fix && !resolved && (
+          {canSuggest && (
             <ActivityAction
-              disabled={busy}
               className="font-medium text-ai-600! hover:text-tx!"
-              onClick={() => on.onApplyFix(root)}
+              onClick={() => on.onSuggestFix(root)}
             >
-              Apply fix
+              Suggest a fix
             </ActivityAction>
           )}
           {!resolved && (

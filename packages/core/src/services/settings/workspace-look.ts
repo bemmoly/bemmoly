@@ -5,7 +5,11 @@ import type { SettingsService } from '../../contracts/settings.ts';
  * The workspace's name and look from its settings, for everyone signed in:
  * people without workspace.settings.manage still need them to theme the shell.
  */
-export async function readWorkspaceLook(settings: SettingsService): Promise<WorkspaceLook> {
+export async function readWorkspaceLook(
+  settings: SettingsService,
+  /** The AI runtime's answer for this person; without it, a chosen provider means on. */
+  aiEnabled?: () => Promise<boolean>,
+): Promise<WorkspaceLook> {
   const [
     name,
     url,
@@ -34,7 +38,7 @@ export async function readWorkspaceLook(settings: SettingsService): Promise<Work
   return {
     name,
     url,
-    aiEnabled: Boolean(providerId),
+    aiEnabled: aiEnabled ? await aiEnabled() : Boolean(providerId),
     appearance: {
       theme,
       brandColor,
