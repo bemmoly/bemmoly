@@ -58,9 +58,17 @@ describe('org defaults against Postgres', () => {
     if (start.available) await work.stop();
   });
 
-  it('makes the org default board on first read, named for the workspace', async (ctx) => {
+  it('has one org default board, seeded from the default workflow', async (ctx) => {
     if (!start.available) return ctx.skip(start.reason);
     expect(orgBoard).toMatchObject({ projectId: null, name: 'Workspace board' });
+    expect(orgBoard.config.columns.map((column) => column.name)).toEqual([
+      'Backlog',
+      'Selected',
+      'In progress',
+      'Code review',
+      'Testing',
+      'Done',
+    ]);
     const again = await work.services.boards.list(work.as(work.users.member), undefined);
     expect(again.map((board) => board.id)).toEqual([orgBoard.id]);
   });
