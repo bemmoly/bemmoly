@@ -99,6 +99,13 @@ setup() {
   [ "$(tls_mode_for does-not-resolve.invalid)" = internal ]
 }
 
+@test "DNS record name and zone come from the domain" {
+  [ "$(dns_zone bemmoly.acme.com)" = acme.com ]
+  [ "$(dns_record_name bemmoly.acme.com)" = bemmoly ]
+  [ "$(dns_record_name acme.com)" = '@' ]
+  [ "$(dns_record_name app.team.acme.com)" = app.team ]
+}
+
 @test "templates and .env edits" {
   export TPL_NAME=world
   [ "$(printf 'hello @NAME@, @NAME@!' | render_template)" = 'hello world, world!' ]
