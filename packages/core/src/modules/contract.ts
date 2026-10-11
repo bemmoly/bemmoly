@@ -7,6 +7,7 @@ import type { ContainerMemberships } from '../contracts/memberships.ts';
 import type { RealtimePublisher } from '../contracts/realtime.ts';
 import type { CollabRegistry } from './collab.ts';
 import type { McpRegistry } from './mcp.ts';
+import type { FilesRegistry } from './files.ts';
 import type {
   AiRegistry,
   CapabilityRegistry,
@@ -68,6 +69,8 @@ export interface ModuleContext {
   settings: SettingsRegistry;
   /** Collaborative documents served over /collab, and server-side edits to them. */
   collab: CollabRegistry;
+  /** Targets people upload files into (a page); the kernel stores and serves the bytes. */
+  files: FilesRegistry;
   /** Invalidation messages for WebSocket clients; a no-op without a database. */
   realtime: RealtimePublisher;
   /** The kernel's Postgres pool for the module's own tables; absent without DATABASE_URL. */

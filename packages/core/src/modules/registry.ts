@@ -2,6 +2,7 @@ import { sidebarSectionSchema, type ModuleManifest } from '@bemmoly/shared';
 import type { RetrievalSourceDefinition } from '../contracts/retrieval.ts';
 import type { CollabDocumentDefinition } from './collab.ts';
 import type { BemmolyModule } from './contract.ts';
+import type { FileTargetDefinition } from './files.ts';
 import type { ModuleContributions } from './contributions.ts';
 import { ModuleLoadError } from './errors.ts';
 import type { McpPromptDefinition, McpResourceDefinition } from './mcp.ts';
@@ -86,6 +87,10 @@ export class ModuleRegistry {
 
   collabDocuments(): FromModule<CollabDocumentDefinition>[] {
     return this.#collect((c) => c.collabDocuments);
+  }
+
+  fileTargets(): FromModule<FileTargetDefinition>[] {
+    return this.#collect((c) => c.fileTargets);
   }
 
   entities(): FromModule<EntityDefinition>[] {
