@@ -1,5 +1,137 @@
 # @bemmoly/server
 
+## 0.13.0
+
+### Minor Changes
+
+- b40f43b: Code links. Connect GitHub (github.com or Enterprise Server, as a GitHub App or with a token) or
+  GitLab (gitlab.com or self-managed, with a project or group access token) in the new Settings ›
+  Integrations › Code hosts, and pull requests, branches and commits that name an issue key
+  ("feat/plt-204-sessions", "Fixes PLT-204") show in a Development section on that issue, with
+  open, draft, merged or closed, checks and review, updated live. Deliveries are verified against
+  the webhook secret before they are read and applied once, so a redelivery changes nothing; the
+  card shows the last delivery, a test delivery checks the secret and the token, and a backfill
+  reads the last 30 days of pull or merge requests. Each project can move its issues when a linked
+  pull request opens or merges (project settings › Development), within its workflow. The AI issue
+  summary now reads linked pull requests. New API: `/api/v1/admin/code-hosts` and the anonymous
+  webhook `POST /api/v1/code-hosts/:id/webhooks`; `GET /api/v1/work/issues/:key/code-links`;
+  `GET` and `PUT /api/v1/work/projects/:key/code-transitions`. Schema: kernel changeset
+  `0700-integrations` (integrations, integration_deliveries) and Work changeset
+  `0027-work-code-links` (code_links, code_transitions); both add tables only. Credentials are
+  sealed with `BEMMOLY_SECRET_KEY`; self-managed hosts on private addresses work as they do for
+  identity providers, and `BEMMOLY_ALLOW_PRIVATE_URLS` widens that. No new configuration keys.
+- ba2672b: Kubernetes, Terraform and air-gapped installs are now complete paths, each tested on every
+  change to the deploy kits.
+
+  The Helm chart can run its own Postgres 18 with pgvector (`postgresql.enabled=true`) or use
+  yours (`externalDatabase.url`), generates and keeps the secret key, backup passphrase and
+  database password across upgrades and uninstalls, runs pending changesets in a pre-upgrade Job
+  before any pod is replaced, adds a startup probe for long first boots, keeps the data volume on
+  uninstall, and has `helm test`. Every value is documented in the chart's README, including why
+  live collaboration needs one app replica for now. **Upgrading a release of an earlier chart**:
+  it defaulted `existingSecret` to `bemmoly`; pass `--set existingSecret=bemmoly` with
+  `--reset-then-reuse-values`. The chart refuses to render until it knows which database to use.
+
+  New Terraform: a provider-free module that runs the installer on one VM through cloud-init, with
+  inputs for the domain, the size, S3-compatible backups and SMTP, and thin examples for three
+  clouds (`deploy/terraform`).
+
+  Air-gapped bundles now carry the `bemmoly` CLI, the models.dev catalog snapshot, `VERSION`,
+  `images.txt`, checksums of every file and a cosign signature, and each bundle file is signed
+  as a release asset. `install.sh` installs offline from the bundle it sits in (or `--bundle`),
+  checking checksums and the signature first; `bemmoly upgrade --bundle <file>` upgrades offline
+  with the usual backup, health check and automatic rollback. New `bemmoly settings import <file>`
+  sets email and backup settings from a JSON file. Installs from a bundle set
+  `BEMMOLY_UPDATER_LOCAL_IMAGES=true` in `.env`. No schema change.
+
+- daf0ccc: MCP clients can now connect by signing in. Point a client that supports MCP sign-in at
+  `https://<host>/mcp` and it opens your browser: you sign in as usual (password or single
+  sign-on), see which app is asking, the site that vouches for it and where it sends you back, and
+  choose read only or read and write and the modules before connecting. The app gets a one-hour
+  access token bound to that MCP address and a 30-day refresh token that is replaced on every use;
+  both are stored only as hashes. Connected apps are listed under Settings › Access tokens, where
+  you can disconnect them, and deactivating a person ends their connections. Personal access
+  tokens keep working as before. Apps identify themselves with a client ID metadata document;
+  dynamic client registration is not offered (see `docs/mcp.md` and ADR 0026).
+
+  Settings › Sign-in and SSO lists every org admin and lets you make or remove break-glass admins,
+  who keep password sign-in while single sign-on is required. The confirmation names the person,
+  each change is audited and every other org admin is told at once (a new "Break-glass admin
+  changes" notification). While single sign-on is required at least one break-glass admin always
+  remains: removing, demoting or deactivating the last one is refused.
+
+  Schema: changeset `0112-identity-oauth` adds four tables (`oauth_clients`,
+  `oauth_authorization_codes`, `oauth_grants`, `oauth_tokens`); new tables only, safe to roll back.
+  Configuration: new optional `BEMMOLY_RATE_LIMIT_OAUTH_PER_IP` (default 60 discovery, token and
+  revocation requests per address per minute). Client metadata documents are fetched from public
+  addresses only unless `BEMMOLY_ALLOW_PRIVATE_URLS` is set.
+
+- c7db7da: The Sample module is no longer in the image, so it no longer shows in Settings › Modules, the
+  sidebar or Users › Module access. It was a developer example that proved the module contract; a
+  test-only fixture module now does that and never ships.
+
+  Existing installs that enabled Sample update normally: the server boots without warnings and
+  Sample simply stops loading. Users › Module access no longer lists grants for a module the image
+  does not ship; the grants stay stored. Nothing is dropped: the `sample_items` table, Sample's
+  rows in `schema_changelog`, `modules` and `module_grants`, and its `sample.greeting` setting stay
+  in the database, unused. To remove the table through the app, disable Sample and use Remove data
+  in Settings › Modules before updating (it takes a backup first); after the update it can only be
+  dropped by hand (`DROP TABLE sample_items;`). If `BEMMOLY_MODULES` lists `sample`, take it out
+  before updating: the server refuses to start when the pin names a module the image does not
+  ship. No schema change.
+
+- 53e1640: Outgoing webhooks. Admins add endpoints in Settings › Webhooks and pick the events they want:
+  issues created, updated, transitioned or commented, sprints started or completed, and pages
+  published or updated. Each delivery is a versioned JSON envelope, or a chat message preset for
+  chat tools that take incoming webhooks, signed with HMAC-SHA256 in the `bemmoly-signature` header
+  (`t=<unix seconds>,v1=<hex>`). The signing secret is shown once, when the webhook is made or the
+  secret is rotated. Failed deliveries retry five times with exponential backoff; the delivery log
+  shows each attempt's status code and lets an admin send a test delivery or redeliver any event.
+  A webhook that fails five deliveries in a row turns itself off and tells the admins. Webhook
+  addresses on private, loopback or link-local networks are refused unless
+  `BEMMOLY_ALLOW_PRIVATE_URLS` is set, and redirects are never followed.
+
+  Automation rules in Work. Project admins add rules in Project settings › Automation, and org
+  admins add global rules that run in every project: a trigger (issue created, a field changed,
+  transitioned, comment added, or a schedule), LQL conditions, and actions (set a field,
+  transition, assign, comment, add a label, send a webhook, notify people). Rules act with the
+  permissions of the person who last saved them, every action is in the audit log, and the run
+  log shows each run's outcome. A rule never re-triggers itself, and a chain of rules stops after
+  five in a row.
+
+  Schema: kernel changesets `0113-audit-automation-actor` (audit rows may name the automation
+  actor) and `0701-webhooks` (new `webhooks` and `webhook_deliveries` tables); Work changeset
+  `0028-work-automation-engine` (rule owners, schedules and run details). No new configuration.
+
+### Patch Changes
+
+- 2a65f20: Background jobs no longer back up for hours after a burst. Every job queue used to take one job
+  every 2 seconds, about 30 a minute however quick the jobs were, so a burst of emails,
+  notifications, digests, imports or AI work could take hours to drain (5,800 jobs took over 3
+  hours). A queue now takes its next job as soon as the last one finishes and only waits between
+  checks when it is empty: 500 quick jobs now finish in about a second instead of about 17
+  minutes. Emails and digests now run four at a time; backups, imports and AI work still run one
+  at a time.
+
+  Jobs and requests share the database connections, so a single Bemmoly process now runs at most
+  4 jobs at once, keeping the rest of its 10 connections for requests (a `BEMMOLY_ROLE=worker`
+  process runs up to 8). No configuration or schema change.
+
+- Updated dependencies [004ebc2]
+- Updated dependencies [b40f43b]
+- Updated dependencies [50cfe36]
+- Updated dependencies [2a65f20]
+- Updated dependencies [daf0ccc]
+- Updated dependencies [c7db7da]
+- Updated dependencies [2191962]
+- Updated dependencies [fb6b0e3]
+- Updated dependencies [53e1640]
+- Updated dependencies [8d1901a]
+  - @bemmoly/module-work@0.13.0
+  - @bemmoly/core@0.13.0
+  - @bemmoly/shared@0.13.0
+  - @bemmoly/module-docs@0.13.0
+
 ## 0.12.0
 
 ### Patch Changes

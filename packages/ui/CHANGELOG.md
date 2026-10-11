@@ -1,5 +1,59 @@
 # @bemmoly/ui
 
+## 0.13.0
+
+### Minor Changes
+
+- b40f43b: Code links. Connect GitHub (github.com or Enterprise Server, as a GitHub App or with a token) or
+  GitLab (gitlab.com or self-managed, with a project or group access token) in the new Settings ›
+  Integrations › Code hosts, and pull requests, branches and commits that name an issue key
+  ("feat/plt-204-sessions", "Fixes PLT-204") show in a Development section on that issue, with
+  open, draft, merged or closed, checks and review, updated live. Deliveries are verified against
+  the webhook secret before they are read and applied once, so a redelivery changes nothing; the
+  card shows the last delivery, a test delivery checks the secret and the token, and a backfill
+  reads the last 30 days of pull or merge requests. Each project can move its issues when a linked
+  pull request opens or merges (project settings › Development), within its workflow. The AI issue
+  summary now reads linked pull requests. New API: `/api/v1/admin/code-hosts` and the anonymous
+  webhook `POST /api/v1/code-hosts/:id/webhooks`; `GET /api/v1/work/issues/:key/code-links`;
+  `GET` and `PUT /api/v1/work/projects/:key/code-transitions`. Schema: kernel changeset
+  `0700-integrations` (integrations, integration_deliveries) and Work changeset
+  `0027-work-code-links` (code_links, code_transitions); both add tables only. Credentials are
+  sealed with `BEMMOLY_SECRET_KEY`; self-managed hosts on private addresses work as they do for
+  identity providers, and `BEMMOLY_ALLOW_PRIVATE_URLS` widens that. No new configuration keys.
+- 2191962: Work has a roadmap. Open it beside a project's Board and Backlog (G R), or for every project from
+  the Work section. Epics and versions sit on a timeline you can zoom by weeks, months or quarters
+  and group by project or team, with their progress, what waits on what, and a forecast of when
+  each lands. Drag a bar, or use the arrow keys on it, to move its dates; Undo puts them back.
+
+  The forecast comes from your team's own pace (points per sprint when the project runs estimated
+  sprints, issues finished a week otherwise), shown as a likely date and a range with how sure it
+  is, and explained in plain words. With too little history it says so instead of guessing. It is
+  plain arithmetic: no AI is involved and nothing is sent anywhere.
+
+  Issues and versions gain an optional start date (set it on the issue page, or by moving a bar).
+  `GET /api/v1/work/roadmap` serves the roadmap; the issue and version PATCHes accept `startAt`.
+  Schema change: changeset `0025-work-start-dates` adds a nullable `start_at` date to `issues` and
+  `versions`; it is quick, additive and reversible.
+
+### Patch Changes
+
+- 004ebc2: Board cards now draw exactly the card layout set in Project settings › Board › Cards, on Scrum and
+  Kanban boards alike. Every field there has a place on the card: issue type, key, priority, labels,
+  estimate, assignee, linked docs, blocked, due date (red once overdue), subtask progress, reporter,
+  created date and the new "Time in column". Fields show in the order the settings list them, and a
+  field shows only on cards whose issue has a value for it (an unassigned card shows the empty
+  assignee ring). Before, Kanban cards ignored Estimate, always showed the time in column ("0d")
+  and the done tick, the type always showed, and due date, reporter and created date never did.
+
+  Card color "By epic" and colour rules on `epic` now paint on any board, not only when the lanes
+  are epics. The settings preview is the board's own card, with a second sample showing an issue
+  without values. Board settings compare the board with Work's default board when the org has no
+  default board scheme, so the "Based on…" note counts changes and "Reset to default" works.
+
+  Kanban boards that want the time in column back turn on "Time in column" in Cards. No
+  configuration or schema change. That field is new in stored board settings: before rolling back to
+  0.11.0, turn it off, or that version shows the board as two empty columns.
+
 ## 0.12.0
 
 ### Minor Changes

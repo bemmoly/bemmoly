@@ -1,5 +1,63 @@
 # @bemmoly/module-docs
 
+## 0.13.0
+
+### Minor Changes
+
+- 50cfe36: Org admins can now manage the templates every space offers in Settings › Docs. The page lists
+  the org-wide templates with how many pages each started and who added it, searches them, sets
+  the order the template picker shows, archives a template with Undo (it leaves every picker until
+  restored) and restores archived ones. A template opens a preview of its body and the fields its
+  page form asks for; custom templates edit in place, with a name, description, category, icon,
+  fields and body. The six built-in templates are now read only: they can be ordered, archived or
+  duplicated into an editable copy, and edits an install made to them before this release are
+  kept. Spaces keep their own templates.
+
+  A new Docs permission, "Manage org templates" (`docs.templates.manage`), on for org admins only
+  by default, gates these changes; anyone else gets a 403. Org templates were previously changed
+  under "Manage workspace settings". No configuration or schema change.
+
+- 53e1640: Outgoing webhooks. Admins add endpoints in Settings › Webhooks and pick the events they want:
+  issues created, updated, transitioned or commented, sprints started or completed, and pages
+  published or updated. Each delivery is a versioned JSON envelope, or a chat message preset for
+  chat tools that take incoming webhooks, signed with HMAC-SHA256 in the `bemmoly-signature` header
+  (`t=<unix seconds>,v1=<hex>`). The signing secret is shown once, when the webhook is made or the
+  secret is rotated. Failed deliveries retry five times with exponential backoff; the delivery log
+  shows each attempt's status code and lets an admin send a test delivery or redeliver any event.
+  A webhook that fails five deliveries in a row turns itself off and tells the admins. Webhook
+  addresses on private, loopback or link-local networks are refused unless
+  `BEMMOLY_ALLOW_PRIVATE_URLS` is set, and redirects are never followed.
+
+  Automation rules in Work. Project admins add rules in Project settings › Automation, and org
+  admins add global rules that run in every project: a trigger (issue created, a field changed,
+  transitioned, comment added, or a schedule), LQL conditions, and actions (set a field,
+  transition, assign, comment, add a label, send a webhook, notify people). Rules act with the
+  permissions of the person who last saved them, every action is in the audit log, and the run
+  log shows each run's outcome. A rule never re-triggers itself, and a chain of rules stops after
+  five in a row.
+
+  Schema: kernel changesets `0113-audit-automation-actor` (audit rows may name the automation
+  actor) and `0701-webhooks` (new `webhooks` and `webhook_deliveries` tables); Work changeset
+  `0028-work-automation-engine` (rule owners, schedules and run details). No new configuration.
+
+### Patch Changes
+
+- Updated dependencies [004ebc2]
+- Updated dependencies [b40f43b]
+- Updated dependencies [2a65f20]
+- Updated dependencies [daf0ccc]
+- Updated dependencies [c7db7da]
+- Updated dependencies [2191962]
+- Updated dependencies [fb6b0e3]
+- Updated dependencies [53e1640]
+- Updated dependencies [8d1901a]
+  - @bemmoly/ui@0.13.0
+  - @bemmoly/core@0.13.0
+  - @bemmoly/shared@0.13.0
+  - @bemmoly/api-client@0.13.0
+  - @bemmoly/core-web@0.13.0
+  - @bemmoly/editor@0.13.0
+
 ## 0.12.0
 
 ### Patch Changes
