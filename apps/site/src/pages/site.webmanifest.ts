@@ -2,7 +2,7 @@ import icon192 from '@bemmoly/ui/brand/generated/icon-192.png';
 import icon512 from '@bemmoly/ui/brand/generated/icon-512.png';
 import maskable192 from '@bemmoly/ui/brand/generated/icon-maskable-192.png';
 import maskable512 from '@bemmoly/ui/brand/generated/icon-maskable-512.png';
-import { themeById } from '@bemmoly/ui/tokens';
+import { resolveTheme } from '@bemmoly/ui/tokens';
 import type { APIRoute } from 'astro';
 
 const icon = (src: string, size: number, purpose: 'any' | 'maskable') => ({
@@ -13,7 +13,7 @@ const icon = (src: string, size: number, purpose: 'any' | 'maskable') => ({
 });
 
 export const GET: APIRoute = () => {
-  const classic = themeById('light').colors;
+  const classic = resolveTheme('bemmoly', 'light').colors;
   const manifest = {
     name: 'Bemmoly',
     short_name: 'Bemmoly',
