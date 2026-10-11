@@ -33,3 +33,15 @@ export {
   type RecordedJob,
   type TestInsights,
 } from './insights.ts';
+export {
+  startFakeOidcProvider,
+  type FakeOidcProvider,
+  type FakeOidcTampering,
+  type FakeOidcUser,
+} from './fake-oidc-provider.ts';
+export {
+  createFakeSamlIdp,
+  type FakeSamlIdp,
+  type FakeSamlTampering,
+  type FakeSamlUser,
+} from './fake-saml-idp.ts';
