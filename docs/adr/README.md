@@ -32,4 +32,4 @@ accepted record is never edited except to mark it superseded.
 | [0025](0025-i18n-lingui-catalogs-per-namespace.md) | Text is ICU messages in per-namespace catalogs, on Lingui's runtime | accepted |
 | [0026](0026-mcp-clients-sign-in-with-oauth.md) | MCP clients sign in with OAuth, identified by client metadata documents | accepted |
 | [0027](0027-consent-screen-uses-the-sign-in-shell.md) | The MCP consent screen uses the sign-in shell | accepted |
-| [0025](0025-deploy-kits.md) | The Helm chart brings its own Postgres; Terraform runs the installer on one VM | accepted |
+| [0028](0028-deploy-kits.md) | The Helm chart brings its own Postgres; Terraform runs the installer on one VM | accepted |

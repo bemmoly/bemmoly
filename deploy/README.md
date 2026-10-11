@@ -1,6 +1,6 @@
 # Deploying Bemmoly
 
-Every path runs the same application image (tech design §18, ADR 0025).
+Every path runs the same application image (tech design §18, ADR 0028).
 
 | Path                                       | For                                                    | Where                                          |
 | ------------------------------------------ | ------------------------------------------------------ | ---------------------------------------------- |

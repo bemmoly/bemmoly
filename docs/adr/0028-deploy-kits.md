@@ -1,4 +1,4 @@
-# ADR 0025: The Helm chart brings its own Postgres; Terraform runs the installer on one VM
+# ADR 0028: The Helm chart brings its own Postgres; Terraform runs the installer on one VM
 
 - Status: accepted
 - Date: 2026-10-11
