@@ -39,7 +39,11 @@ export function BoardSettingsPage({ projectKey }: BoardSettingsPageProps) {
   const settings = useBoardSettings(projectKey);
   const access = useSettingsAccess();
   const types = useIssueTypes(settings.project?.id);
-  const [tab, setTab] = useState<BoardSection>('columns');
+  // The Board's Display menu links straight to a tab, e.g. ?tab=cards.
+  const [tab, setTab] = useState<BoardSection>(() => {
+    const asked = new URLSearchParams(window.location.search).get('tab');
+    return BOARD_SECTIONS.find((section) => section === asked) ?? 'columns';
+  });
   const spec = (section: BoardSection) => ({
     title: SECTION_TITLES[section],
     dirty: settings.dirty[section],

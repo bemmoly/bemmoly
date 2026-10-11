@@ -52,7 +52,7 @@ export function CardsTab(props: CardsTabProps) {
     <div className="flex flex-col gap-4">
       <SectionHeading
         title="Card layout"
-        description="Choose which fields appear on cards. Up to 3 extra fields show in the footer; the rest are visible on hover and in the detail panel."
+        description="Choose which fields appear on cards, the same for everyone on this board. Up to 3 extra fields show in the footer; the rest are visible on hover and in the detail panel."
         mode={mode}
         locked={access.configureBoard ? undefined : NO_BOARD_PERMISSION}
         onEdit={props.onEdit}

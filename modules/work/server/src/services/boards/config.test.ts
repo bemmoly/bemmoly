@@ -1,6 +1,10 @@
 import { ValidationError } from '@bemmoly/shared';
 import { describe, expect, it } from 'vitest';
-import { boardConfigSchema, type BoardConfig } from '../../../../shared/boards.ts';
+import {
+  boardConfigSchema,
+  boardViewQuerySchema,
+  type BoardConfig,
+} from '../../../../shared/boards.ts';
 import { configProblems, configQueries, onlyWipChanged, rejectProblems } from './config.ts';
 
 const config = (overrides: Partial<BoardConfig> = {}): BoardConfig =>
@@ -88,5 +92,18 @@ describe('onlyWipChanged', () => {
     expect(onlyWipChanged(before, wip)).toBe(true);
     expect(onlyWipChanged(before, { ...wip, cadenceDays: 7 })).toBe(false);
     expect(onlyWipChanged(before, { ...before, columns: before.columns.slice(0, 1) })).toBe(false);
+  });
+});
+
+describe('board view query', () => {
+  it('takes no card layout from the person asking', () => {
+    expect(
+      boardViewQuerySchema.parse({ q: 'type = Bug', fields: 'key,labels', density: 'compact' }),
+    ).toEqual({ q: 'type = Bug' });
+  });
+
+  it('counts a card layout change as more than WIP limits', () => {
+    expect(onlyWipChanged(config(), config({ cardFields: ['type'] }))).toBe(false);
+    expect(onlyWipChanged(config(), config({ colorRule: 'priority' }))).toBe(false);
   });
 });

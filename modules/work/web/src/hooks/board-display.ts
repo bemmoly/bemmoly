@@ -7,14 +7,13 @@ import { safeJSONStorage } from '../shared/safe-storage.ts';
 import type { ColumnModel } from './board-model.ts';
 
 /*
- * How one person likes to see one board: which fields the cards show, how dense they sit, and
- * whether empty columns take room. A personal view, so it lives in this browser per person and
- * board, never in the board's settings (which the project shares). Untouched, everything is the
- * board as its settings draw it; a field set back to the board's own choice follows the board
- * again, so an admin's later change still reaches it.
+ * How cards look is the board's, set by project and org admins in Board settings › Cards, and
+ * the same for everyone on the project. The only personal display choice left is whether empty
+ * columns take room, kept in this browser per person and board. Views stored before cards
+ * became the board's alone carried card fields and a density; those keys are dropped on read.
  */
 
-/** The card fields a person can turn on or off, in the menu's order. */
+/** The card fields the board draws, in the card's order. */
 export const DISPLAY_FIELDS = [
   'key',
   'priority',
@@ -28,46 +27,24 @@ export const DISPLAY_FIELDS = [
 ] as const;
 
 export type DisplayField = (typeof DISPLAY_FIELDS)[number];
-export type Density = 'comfortable' | 'compact';
 
-const displaySchema = z.object({
-  fields: z.partialRecord(z.enum(DISPLAY_FIELDS), z.boolean()),
-  density: z.enum(['comfortable', 'compact']),
-  showEmptyColumns: z.boolean(),
-});
+const displaySchema = z.object({ showEmptyColumns: z.boolean() });
 
 export type BoardDisplay = z.infer<typeof displaySchema>;
 
-export const DEFAULT_DISPLAY: BoardDisplay = {
-  fields: {},
-  density: 'comfortable',
-  showEmptyColumns: true,
-};
+export const DEFAULT_DISPLAY: BoardDisplay = { showEmptyColumns: true };
 
-/** Drawn on every card whatever the board's settings say, until a person hides them. */
-const ALWAYS: ReadonlySet<DisplayField> = new Set(['key', 'priority', 'age']);
-
-/** What the board itself shows for a field, before any personal choice. */
-export function boardDefault(field: DisplayField, boardFields: readonly CardField[]): boolean {
-  return ALWAYS.has(field) || (boardFields as readonly string[]).includes(field);
-}
-
-/** The fields this person's cards show on this board. */
-export function shownFields(
-  display: BoardDisplay,
-  boardFields: readonly CardField[],
-): ReadonlySet<DisplayField> {
+/** The fields every card shows: the board's card fields, and the time in column on Kanban. */
+export function shownFields(boardFields: readonly CardField[]): ReadonlySet<DisplayField> {
   return new Set(
-    DISPLAY_FIELDS.filter((field) => display.fields[field] ?? boardDefault(field, boardFields)),
+    DISPLAY_FIELDS.filter(
+      (field) => field === 'age' || (boardFields as readonly string[]).includes(field),
+    ),
   );
 }
 
 export function isCustomized(display: BoardDisplay): boolean {
-  return (
-    Object.keys(display.fields).length > 0 ||
-    display.density !== DEFAULT_DISPLAY.density ||
-    display.showEmptyColumns !== DEFAULT_DISPLAY.showEmptyColumns
-  );
+  return display.showEmptyColumns !== DEFAULT_DISPLAY.showEmptyColumns;
 }
 
 /**
@@ -84,10 +61,6 @@ export function visibleColumns<C extends Pick<ColumnModel, 'count'>>(
   return filled.length > 0 ? filled : columns;
 }
 
-/** A copy of the record without one key. */
-const without = <R extends Readonly<Record<string, unknown>>>(record: R, key: string): R =>
-  Object.fromEntries(Object.entries(record).filter(([entry]) => entry !== key)) as R;
-
 interface DisplayState {
   views: Readonly<Record<string, BoardDisplay>>;
   update(view: string, change: (display: BoardDisplay) => BoardDisplay): void;
@@ -102,21 +75,27 @@ export const useBoardDisplayStore = create<DisplayState>()(
         set((state) => ({
           views: { ...state.views, [view]: change(state.views[view] ?? DEFAULT_DISPLAY) },
         })),
-      reset: (view) => set((state) => ({ views: without(state.views, view) })),
+      reset: (view) =>
+        set((state) => ({
+          views: Object.fromEntries(Object.entries(state.views).filter(([key]) => key !== view)),
+        })),
     }),
     {
       name: 'bemmoly.work.board-display',
-      version: 1,
+      version: 2,
       storage: safeJSONStorage(),
       partialize: (state) => ({ views: state.views }),
-      // Whatever storage hands back is checked; a view it cannot read falls back to the board.
+      // Version 1 views keep their empty-column choice; merge drops the rest.
+      migrate: (persisted) => persisted as { views: Record<string, BoardDisplay> },
+      // Whatever storage hands back is checked and narrowed to the personal choice; card
+      // fields and density from older versions are not carried over.
       merge: (persisted, current) => {
         const raw = (persisted as { views?: unknown } | undefined)?.views;
         const views: Record<string, BoardDisplay> = {};
         if (raw && typeof raw === 'object') {
           for (const [view, value] of Object.entries(raw)) {
             const parsed = displaySchema.safeParse(value);
-            if (parsed.success) views[view] = parsed.data;
+            if (parsed.success && isCustomized(parsed.data)) views[view] = parsed.data;
           }
         }
         return { ...current, views };
@@ -125,7 +104,7 @@ export const useBoardDisplayStore = create<DisplayState>()(
   ),
 );
 
-/** One person's view of one board, and the ways to change it. */
+/** One person's view of one board: the board's card fields and their empty-column choice. */
 export function useBoardDisplay(
   boardId: string,
   personId: string | undefined,
@@ -137,37 +116,14 @@ export function useBoardDisplay(
   const update = useBoardDisplayStore((state) => state.update);
   const resetView = useBoardDisplayStore((state) => state.reset);
 
-  const setField = useCallback(
-    (field: DisplayField, on: boolean) =>
-      update(view, (current) => {
-        const fields = without(current.fields, field);
-        return {
-          ...current,
-          fields: on === boardDefault(field, boardFields) ? fields : { ...fields, [field]: on },
-        };
-      }),
-    [update, view, boardFields],
-  );
-  const setDensity = useCallback(
-    (density: Density) => update(view, (current) => ({ ...current, density })),
-    [update, view],
-  );
   const setShowEmptyColumns = useCallback(
-    (showEmptyColumns: boolean) => update(view, (current) => ({ ...current, showEmptyColumns })),
+    (showEmptyColumns: boolean) => update(view, () => ({ showEmptyColumns })),
     [update, view],
   );
   const reset = useCallback(() => resetView(view), [resetView, view]);
-  const shown = useMemo(() => shownFields(display, boardFields), [display, boardFields]);
+  const shown = useMemo(() => shownFields(boardFields), [boardFields]);
 
-  return {
-    display,
-    shown,
-    customized: isCustomized(display),
-    setField,
-    setDensity,
-    setShowEmptyColumns,
-    reset,
-  };
+  return { display, shown, customized: isCustomized(display), setShowEmptyColumns, reset };
 }
 
 export type BoardDisplayApi = ReturnType<typeof useBoardDisplay>;

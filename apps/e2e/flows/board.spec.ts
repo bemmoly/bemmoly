@@ -70,3 +70,63 @@ test('an issue moves across the board by drag and by keyboard, and a refused mov
     column('In progress').getByRole('button', { name: new RegExp(`^${issue.key} `) }),
   ).toBeVisible();
 });
+
+test('cards follow the board for everyone, and quick filters toggle in the filter row', async ({
+  page,
+  admin,
+  run,
+  pageAs,
+  apiFor,
+}) => {
+  const project = await admin.createProject({
+    key: uniqueKey('CRD'),
+    name: 'Card layout flow',
+    method: 'kanban',
+  });
+  await admin.addMembers(project.key, [run.member.id]);
+  await admin.createIssues(project, ['Tidy the release notes']);
+
+  await page.goto(`/work/board/${project.key}`);
+  const mine = page
+    .getByRole('group', { name: 'Quick filters' })
+    .getByRole('button', { name: 'Only my issues' });
+  await expect(mine).toHaveAttribute('aria-pressed', 'false');
+  await mine.click();
+  await expect(mine).toHaveAttribute('aria-pressed', 'true');
+  await expect(page).toHaveURL(/quick=mine/);
+  await page.reload();
+  await expect(mine).toHaveAttribute('aria-pressed', 'true');
+  await mine.click();
+  await expect(page).not.toHaveURL(/quick=/);
+
+  // The admin is sent to Board settings › Cards from Display.
+  await page.getByRole('button', { name: /^Display/ }).click();
+  await expect(page.getByRole('menuitemcheckbox', { name: 'Key' })).toHaveCount(0);
+  await page.getByRole('menuitem', { name: 'Edit card layout in settings' }).click();
+  await expect(page).toHaveURL(new RegExp(`/work/settings/${project.key}/board\\?tab=cards`));
+  await expect(page.getByRole('heading', { name: 'Card layout' })).toBeVisible();
+
+  // A member reads where the layout is set, and the server refuses their change.
+  const memberPage = await pageAs(run.member);
+  await memberPage.goto(`/work/board/${project.key}`);
+  await memberPage.getByRole('button', { name: /^Display/ }).click();
+  await expect(memberPage.getByText(/Card layout is set by project admins/)).toBeVisible();
+  await expect(memberPage.getByRole('menuitem', { name: /Edit card layout/ })).toHaveCount(0);
+
+  const boardId = await admin.boardId(project.key);
+  const board = await admin.call<{ config: { cardFields: string[] } }>(
+    'GET',
+    `/work/boards/${boardId}`,
+  );
+  const member = await apiFor(run.member);
+  const refused = await member.http.fetch(`/api/v1/work/boards/${boardId}`, {
+    method: 'PATCH',
+    data: { config: { ...board.config, cardFields: ['type'] } },
+  });
+  expect(refused.status()).toBe(403);
+  const after = await admin.call<{ config: { cardFields: string[] } }>(
+    'GET',
+    `/work/boards/${boardId}`,
+  );
+  expect(after.config.cardFields).toEqual(board.config.cardFields);
+});
