@@ -8,12 +8,14 @@ import {
   logoutRequestSchema,
   parseOrThrow,
   passwordResetCompleteSchema,
+  passwordResetPreviewSchema,
   passwordResetRequestSchema,
   type ApiTokensResponse,
   type AuthUserResponse,
   type CreatedApiToken,
   type InvitationPreview,
   type MeResponse,
+  type PasswordResetPreviewResponse,
   type SessionsResponse,
   type SetupStatusResponse,
 } from '@bemmoly/shared';
@@ -30,6 +32,7 @@ import {
   login,
   logout,
   previewInvitation,
+  previewPasswordReset,
   requestPasswordReset,
   revokeApiToken,
   revokeMySession,
@@ -77,11 +80,19 @@ export function createIdentityController(deps: IdentityDependencies) {
       reply.code(202).send();
     },
 
-    async completePasswordReset(request: FastifyRequest, reply: FastifyReply): Promise<void> {
+    async previewPasswordReset(request: FastifyRequest): Promise<PasswordResetPreviewResponse> {
+      const { token } = parseOrThrow(passwordResetPreviewSchema, request.body);
+      return previewPasswordReset(deps, token);
+    },
+
+    async completePasswordReset(
+      request: FastifyRequest,
+      reply: FastifyReply,
+    ): Promise<AuthUserResponse> {
       const input = parseOrThrow(passwordResetCompleteSchema, request.body);
-      await completePasswordReset(deps, input, clientOf(request));
-      clearSession(reply, publicUrl);
-      reply.code(204).send();
+      const { user, session } = await completePasswordReset(deps, input, clientOf(request));
+      setSessionCookie(reply, publicUrl, session);
+      return { user };
     },
 
     async previewInvitation(request: FastifyRequest): Promise<InvitationPreview> {

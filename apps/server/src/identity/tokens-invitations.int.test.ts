@@ -184,11 +184,20 @@ describe('API tokens, invitations and password reset against a real database', (
     expect(events[0]?.transaction).toBeDefined();
     const token = linkToken(String(reset['resetUrl']));
 
+    const preview = await call(app, 'POST', '/auth/password-reset/preview', { body: { token } });
+    expect(preview.statusCode).toBe(200);
+    expect(preview.json()).toEqual({ email: ADMIN.email });
     const done = await call(app, 'POST', '/auth/password-reset/complete', {
       body: { token, password: 'a brand new passphrase' },
     });
-    expect(done.statusCode).toBe(204);
+    expect(done.statusCode).toBe(200);
+    expect(done.json().user.email).toBe(ADMIN.email);
     expect((await call(app, 'GET', '/me', { cookie })).statusCode).toBe(401);
+    const signedIn = sessionCookie(done);
+    expect(signedIn).toBeDefined();
+    expect((await call(app, 'GET', '/me', { cookie: signedIn })).statusCode).toBe(200);
+    const spent = await call(app, 'POST', '/auth/password-reset/preview', { body: { token } });
+    expect(spent.statusCode).toBe(400);
     const again = await call(app, 'POST', '/auth/password-reset/complete', {
       body: { token, password: 'another new passphrase' },
     });

@@ -23,6 +23,7 @@ const pathLink: AccountOf = (request) => stringField(request.params, 'token');
 const ACCOUNT_ROUTES: Readonly<Record<string, AccountOf>> = {
   'POST /auth/login': emailIn,
   'POST /auth/password-reset': emailIn,
+  'POST /auth/password-reset/preview': bodyLink,
   'POST /auth/password-reset/complete': bodyLink,
   'POST /auth/invitations/:token/accept': pathLink,
 };

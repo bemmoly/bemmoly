@@ -27,7 +27,11 @@ export {
 } from './invitations.ts';
 export { findPasswordAccount, login, logout } from './login.ts';
 export { listMySessions, revokeMySession } from './my-sessions.ts';
-export { completePasswordReset, requestPasswordReset } from './password-reset.ts';
+export {
+  completePasswordReset,
+  previewPasswordReset,
+  requestPasswordReset,
+} from './password-reset.ts';
 export { ARGON2_OPTIONS, hashPassword, verifyPassword } from './passwords.ts';
 export { PERSONAL_TOKEN_PREFIX, digestsEqual, digestToken, generateToken } from './tokens.ts';
 export { createSessionResolver } from './session-resolver.ts';
