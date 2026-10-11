@@ -8,6 +8,7 @@ import { accessEndpoints } from './endpoints/access.ts';
 import { aiEndpoints } from './endpoints/ai.ts';
 import { aiRunEndpoints } from './endpoints/ai-runs.ts';
 import { aiPlanEndpoints } from './endpoints/ai-plans.ts';
+import { filesEndpoints } from './endpoints/files.ts';
 import { messagingEndpoints } from './endpoints/messaging.ts';
 import { operationsEndpoints } from './endpoints/operations.ts';
 import { peopleEndpoints } from './endpoints/people.ts';
@@ -31,6 +32,7 @@ export function createApiClient(options: HttpOptions = {}) {
     ...accessEndpoints(http),
     ...messagingEndpoints(http),
     ...operationsEndpoints(http),
+    ...filesEndpoints(http),
   };
 }
 
@@ -49,4 +51,5 @@ export { enc, validated } from './endpoints/validate.ts';
 export type { AuditFilter, BackupsFilter } from './endpoints/operations.ts';
 export type { ListOptions, UsersFilter } from './endpoints/people.ts';
 export type { SettingRead } from './endpoints/settings.ts';
+export type { UploadProgressOptions } from './xhr-upload.ts';
 export { keysForEvent, queryKeys, type QueryKey } from './keys.ts';
