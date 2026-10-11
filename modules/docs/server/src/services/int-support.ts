@@ -64,6 +64,10 @@ export interface HarnessOptions {
   links?: DocsServiceDeps['links'];
   /** The AI facade the services read the policy from (a test fake). */
   ai?: DocsServiceDeps['ai'];
+  /** Uploaded images an export reads. */
+  files?: DocsServiceDeps['files'];
+  /** The PDF renderer (a real one in a container, for the PDF export test). */
+  pdf?: DocsServiceDeps['pdf'];
 }
 
 export async function startDocsHarness(options: HarnessOptions = {}): Promise<HarnessStart> {
@@ -88,6 +92,10 @@ export async function startDocsHarness(options: HarnessOptions = {}): Promise<Ha
   const catalog = loadModules({ available: [docs], enabled: ['docs'] });
   const db = createDatabase(sql);
   const realtime: RealtimeMessage[] = [];
+  const context = (actor: Actor): RequestContext => ({
+    actor,
+    authz: createRequestAuthorization({ db, modules: catalog }),
+  });
   const services = createDocsServices({
     database: sql,
     audit: createAuditRecorder(sql),
@@ -98,10 +106,9 @@ export async function startDocsHarness(options: HarnessOptions = {}): Promise<Ha
     ...(options.jobs ? { jobs: options.jobs } : {}),
     ...(options.links ? { links: options.links } : {}),
     ...(options.ai ? { ai: options.ai } : {}),
-  });
-  const context = (actor: Actor): RequestContext => ({
-    actor,
-    authz: createRequestAuthorization({ db, modules: catalog }),
+    ...(options.files ? { files: options.files } : {}),
+    ...(options.pdf ? { pdf: options.pdf } : {}),
+    contextFor: context,
   });
   const as = (userId: string): RequestContext => context({ kind: 'user', id: userId });
   return {

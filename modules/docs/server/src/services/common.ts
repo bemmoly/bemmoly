@@ -1,4 +1,5 @@
 import type {
+  ActorContextFactory,
   AiFacade,
   AuditMeta,
   AuditRecorder,
@@ -9,6 +10,7 @@ import type {
   FilesRegistry,
   JobRegistry,
   LinkRegistry,
+  PdfRenderer,
   RealtimePublisher,
   RequestContext,
   SettingsRegistry,
@@ -38,6 +40,10 @@ export interface DocsServiceDeps {
   ai?: Pick<AiFacade, 'policy'>;
   /** Uploaded images, read for exports that carry them. */
   files?: Pick<FilesRegistry, 'read'>;
+  /** The optional PDF renderer; without it PDF goes through the browser's print view. */
+  pdf?: PdfRenderer;
+  /** The context a queued export acts in: the person who asked, with their access. */
+  contextFor?: ActorContextFactory;
 }
 
 export const DOCS_MODULE = { kind: 'module', moduleId: 'docs' } as const;
