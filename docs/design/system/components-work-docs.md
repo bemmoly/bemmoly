@@ -40,7 +40,7 @@ Foundations/Glyphs, Components/Board vocabulary
 - Use: `IssueCard` on boards and anywhere an issue is a tile; `IssueRow` in lists (Backlog, Home,
   My issues, search). Same fields, same order: type, key, title, then labels, epic, priority,
   estimate, assignee. The row's grid is `ISSUE_ROW_GRID`.
-- On a board the card draws exactly the board's card fields (ADR 0024): every part but the title
+- On a board the card draws exactly the board's card fields (ADR 0029): every part but the title
   is optional (`showType`, `showKey`, `due`, `created`, `reporter`, `age` and the rest), and
   `order` sets each side of the footer in the board's order. A part with no value is left out;
   `assignee={null}` is the empty ring. The Cards settings preview draws the same card.

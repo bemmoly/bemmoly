@@ -1,4 +1,4 @@
-# ADR 0024: Cards draw exactly the board's card fields
+# ADR 0029: Cards draw exactly the board's card fields
 
 - Status: accepted
 - Date: 2026-10-11

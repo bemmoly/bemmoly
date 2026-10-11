@@ -1,6 +1,6 @@
 # ADR 0023: Card layout is the board's; quick filters sit in the filter row
 
-- Status: accepted; decision 1 changed by [ADR 0024](0024-cards-draw-exactly-the-boards-fields.md)
+- Status: accepted; decision 1 changed by [ADR 0029](0029-cards-draw-exactly-the-boards-fields.md)
 - Date: 2026-10-11
 - Changes: the "Display" decision in
   [`docs/design/premium/interaction/board-backlog.md`](../design/premium/interaction/board-backlog.md)
