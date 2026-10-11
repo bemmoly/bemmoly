@@ -40,8 +40,14 @@ test('the board of a 500-issue project stays within its budgets', async ({
   // The API: one person reading the board view, one request at a time, after a warm-up.
   const priya = await apiFor(run.observer);
   const view = () => priya.http.get(`/api/v1/work/boards/${boardId}/view`);
-  const first = await (await view()).json();
-  expect(first.cards).toHaveLength(TOTAL);
+  // The board reads a page of each column; the counts still cover every issue.
+  const first = (await (await view()).json()) as {
+    cards: unknown[];
+    columns: { count: number; nextCursor: string | null }[];
+  };
+  expect(first.columns.reduce((sum, column) => sum + column.count, 0)).toBe(TOTAL);
+  expect(first.cards.length).toBeLessThan(TOTAL);
+  expect(first.columns.some((column) => column.nextCursor !== null)).toBe(true);
   for (let i = 0; i < 20; i += 1) await view();
   const api: number[] = [];
   for (let i = 0; i < VIEW_SAMPLES; i += 1) {
@@ -79,7 +85,7 @@ test('the board of a 500-issue project stays within its budgets', async ({
     .poll(async () => {
       const board = await admin.call<{ cards: { issueId: string; columnId: string }[] }>(
         'GET',
-        `/work/boards/${boardId}/view`,
+        `/work/boards/${boardId}/view?limit=${TOTAL}`,
       );
       return board.cards.filter((card) => dropped.has(card.issueId) && card.columnId === 'selected')
         .length;
