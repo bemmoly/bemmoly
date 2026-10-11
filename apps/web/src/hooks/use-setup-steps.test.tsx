@@ -121,7 +121,7 @@ describe('summary', () => {
     expect(Object.fromEntries(rows.map((row) => [row.key, row.value]))).toEqual({
       workspace: 'Acme Labs · bemmoly.acme.test',
       admin: 'rohan@acme.test (break-glass password set)',
-      import: 'CSV or Linear / Trello / Asana export (importers arrive in a later release)',
+      import: 'CSV file (report in Settings › Import)',
       signIn: 'Password · 3 invites sent',
       ai: 'Skipped · connect a provider any time in Settings',
       theme: 'Skipped · the default theme stays',

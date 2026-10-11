@@ -96,7 +96,8 @@ describe('SetupPage', () => {
         .getByRole('radio', { name: /Start clean/ })
         .getAttribute('aria-checked'),
     ).toBe('true');
-    expect(within(sources).getAllByText('Coming soon')).toHaveLength(3);
+    // A fresh install has no module on yet, so the importers wait for Work or Docs.
+    expect(await within(sources).findAllByText(/^Needs (Work|Docs)$/)).toHaveLength(3);
     expect(screen.getByRole('button', { name: 'Skip for now' })).toBeTruthy();
   });
 

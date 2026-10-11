@@ -1,29 +1,29 @@
 import { useSetupImport } from '../../hooks/use-setup-import.ts';
-import { ChoiceCard } from './choice-card.tsx';
-import { IMPORT_MARKS } from './option-marks.tsx';
+import { Loading } from '../form.tsx';
+import { ImportFlowBody } from '../import/import-flow-body.tsx';
+import { SourcePicker } from '../import/source-picker.tsx';
 import { StepFooter, StepForm, type StepNav } from './step-footer.tsx';
 
-/** Import: the importers shown as coming soon, and Start clean picked. */
+/**
+ * Import: the same flow as Settings › Import beside Start clean. The connection form and the
+ * run sit below the cards, outside the step's form, so Connect never submits the step.
+ */
 export function StepImport({ nav }: { nav: StepNav }) {
-  const { sources, selected, select, notice, label, canStart, start } = useSetupImport(nav.next);
+  const { flow, cards, selected, select, loading, notice, label, canStart, start } = useSetupImport(
+    nav.next,
+  );
   return (
-    <StepForm label="Import" onSubmit={start}>
-      <div role="radiogroup" aria-label="Import source" className="grid gap-3 sm:grid-cols-2">
-        {sources.map((source) => (
-          <ChoiceCard
-            key={source.id}
-            initials={source.initials}
-            icon={IMPORT_MARKS[source.id]}
-            name={source.name}
-            description={source.description}
-            comingSoon={source.comingSoon}
-            selected={selected === source.id}
-            onSelect={() => select(source.id)}
-          />
-        ))}
-      </div>
-      <p className="m-0 text-13 text-tx-3">{notice}</p>
-      <StepFooter nav={nav} label={label} disabled={!canStart} />
-    </StepForm>
+    <div className="flex flex-col gap-6">
+      {loading ? (
+        <Loading label="Loading import sources" />
+      ) : (
+        <SourcePicker cards={cards} selected={selected} onSelect={select} />
+      )}
+      {selected === 'clean' ? null : <ImportFlowBody flow={flow} />}
+      <StepForm label="Import" onSubmit={start}>
+        <p className="m-0 text-13 text-tx-3">{notice}</p>
+        <StepFooter nav={nav} label={label} disabled={!canStart} />
+      </StepForm>
+    </div>
   );
 }

@@ -13,6 +13,7 @@ import { docsMemberRoutes } from './docs-members.ts';
 import { docsMoveRoutes } from './docs-moves.ts';
 import { docsEditorAiRoutes } from './docs-editor-ai.ts';
 import { docsRoutes } from './docs.ts';
+import { importRoutes } from './imports.ts';
 import { notificationRoutes } from './notifications.ts';
 import { operationsRoutes } from './operations.ts';
 import { peopleRoutes } from './people.ts';
@@ -43,6 +44,7 @@ export const ROUTES: readonly MockRoute[] = [
   ...aiAnswerRoutes,
   ...notificationRoutes,
   ...operationsRoutes,
+  ...importRoutes,
   ...workBacklogRoutes,
   ...workBoardRoutes,
   ...workFilterRoutes,
