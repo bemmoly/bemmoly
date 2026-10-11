@@ -9,7 +9,7 @@
  */
 import exec from 'k6/execution';
 import { BUDGETS_MS, SUMMARY_TREND_STATS } from './lib/budgets.js';
-import { typeTogether } from './lib/collab.js';
+import { collabErrorThresholds, typeTogether } from './lib/collab.js';
 import { pageIds, pairForVu } from './lib/config.js';
 
 export const options = {
@@ -26,7 +26,7 @@ export const options = {
     collab_delivered: ['rate>0.999'],
     collab_remote_echo: [`p(95)<${BUDGETS_MS.pageOpen}`],
     collab_page_open: [`p(95)<${BUDGETS_MS.pageOpen}`],
-    collab_errors: ['count<1'],
+    ...collabErrorThresholds(),
   },
 };
 
