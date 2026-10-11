@@ -36,6 +36,7 @@ import {
 } from '@bemmoly/core';
 import { storageS3ConfigOf, type Env, type Logger, type StorageS3Env } from '@bemmoly/core/config';
 import { DEFAULT_UPLOAD_MAX_BYTES } from '@bemmoly/shared';
+import { jobHandlerLimit } from './database.ts';
 import type { IdentityWiring } from './identity.ts';
 import { appVersionOf } from './version.ts';
 
@@ -141,6 +142,7 @@ export async function createDataKernel(input: DataKernelInput): Promise<DataKern
     sql,
     databaseUrl: env.DATABASE_URL,
     role: env.BEMMOLY_ROLE,
+    maxConcurrentJobs: jobHandlerLimit(env.BEMMOLY_ROLE),
     logger: logger.child({ component: 'jobs' }),
     modules,
     settings,

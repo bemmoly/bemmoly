@@ -6,9 +6,10 @@ import type { RealtimeMessage } from '../../contracts/realtime.ts';
 import type { ModuleRegistry } from '../../modules/registry.ts';
 import type { JobDefinition } from '../../modules/registries.ts';
 import { createEnqueue, type KernelEnqueueOptions } from './enqueue.ts';
-import { wrapHandler } from './handler.ts';
 import { noJobMetrics, type JobMetricsHook } from './metrics.ts';
 import { logQueueError } from './queue-errors.ts';
+import { createJobSlots } from './slots.ts';
+import { workQueue } from './worker.ts';
 
 export type ProcessRole = 'all' | 'api' | 'worker';
 
@@ -23,7 +24,13 @@ export interface JobsServiceOptions {
   settings?: { read(key: string): Promise<unknown> };
   /** Kernel jobs, e.g. system.housekeeping. More arrive through register(). */
   kernelJobs?: readonly JobDefinition[];
+  /** How long an idle queue waits before it looks again; a queue with work never waits. */
   pollingIntervalSeconds?: number;
+  /**
+   * Job handlers running at once in this process, across every queue. Handlers use the
+   * request pool, so the host keeps this below the pool's size. Defaults to 4.
+   */
+  maxConcurrentJobs?: number;
   /** The host passes the observability service's `getMetrics().jobs`. */
   metrics?: JobMetricsHook;
 }
@@ -43,6 +50,7 @@ export interface JobsService extends JobQueue {
 export function createJobsService(options: JobsServiceOptions): JobsService {
   const { logger, modules } = options;
   const metrics = options.metrics ?? noJobMetrics;
+  const slots = createJobSlots(options.maxConcurrentJobs);
   const worker = options.role !== 'api';
   const owned = new Map<string, string>();
   for (const loaded of modules.list()) {
@@ -74,16 +82,23 @@ export function createJobsService(options: JobsServiceOptions): JobsService {
 
   async function activate(instance: PgBoss, job: JobDefinition): Promise<void> {
     if (!working.has(job.name)) {
-      await instance.work(
-        job.name,
-        {
-          batchSize: 1,
-          localConcurrency: job.concurrency ?? 1,
-          pollingIntervalSeconds: options.pollingIntervalSeconds ?? 2,
-        },
-        wrapHandler(job, logger, metrics),
-      );
+      // Marked before the loops start, which takes several awaits, so a concurrent reconcile
+      // cannot start a second set; a failed start stops whatever loops it did start.
       working.add(job.name);
+      try {
+        await workQueue(instance, job, {
+          slots,
+          logger,
+          metrics,
+          ...(options.pollingIntervalSeconds !== undefined
+            ? { pollingIntervalSeconds: options.pollingIntervalSeconds }
+            : {}),
+        });
+      } catch (error) {
+        working.delete(job.name);
+        await instance.offWork(job.name);
+        throw error;
+      }
     }
     const cron = await cronOf(job);
     if (cron) await instance.schedule(job.name, cron, null, { tz: 'UTC' });
