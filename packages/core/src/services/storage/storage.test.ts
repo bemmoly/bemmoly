@@ -80,22 +80,20 @@ describe('putContent', () => {
 });
 
 describe('createObjectStore', () => {
-  it('selects disk and reports s3 as unavailable', () => {
+  it('selects disk or s3, and s3 needs its configuration', () => {
     expect(createObjectStore({ backend: 'disk', dataDir: tmpdir() }).id).toBe('disk');
-    expect(() =>
-      createObjectStore({
-        backend: 's3',
-        dataDir: tmpdir(),
-        s3: {
-          endpoint: 'http://minio',
-          region: 'x',
-          bucket: 'b',
-          forcePathStyle: true,
-          accessKeyId: 'k',
-          secretAccessKey: 's',
-          timeoutMs: 1000,
-        },
-      }),
-    ).toThrow(/not available/);
+    const s3 = {
+      endpoint: 'http://minio',
+      region: 'x',
+      bucket: 'b',
+      forcePathStyle: true,
+      accessKeyId: 'k',
+      secretAccessKey: 's',
+      timeoutMs: 1000,
+    };
+    expect(createObjectStore({ backend: 's3', dataDir: tmpdir(), s3 }).id).toBe('s3');
+    expect(() => createObjectStore({ backend: 's3', dataDir: tmpdir() })).toThrow(
+      /BEMMOLY_STORAGE_S3_BUCKET/,
+    );
   });
 });
