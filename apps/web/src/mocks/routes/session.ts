@@ -51,6 +51,7 @@ export const sessionRoutes: MockRoute[] = [
         initialized: db.initialized,
         completedAt: completedAtOf(db),
         workspaceName: db.initialized ? workspaceLookOf(db).name : null,
+        logoUrl: (db.initialized && workspaceLookOf(db).appearance.logoKey) || null,
       }),
   },
   {

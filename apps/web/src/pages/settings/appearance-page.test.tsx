@@ -1,6 +1,7 @@
 import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { aiOf } from '../../mocks/routes/ai-state.ts';
+import { seedAcmeLogo } from '../../mocks/seed/logo.ts';
 import { renderPage } from '../../test/render.tsx';
 import { mockApi } from '../../test/setup.ts';
 import { AppearancePage } from './appearance-page.tsx';
@@ -44,6 +45,29 @@ describe('AppearancePage', () => {
     await waitFor(() => expect(preview.textContent).toContain('Sprint risk'));
     act(() => fireEvent.click(screen.getByRole('radio', { name: 'Doc' })));
     expect(preview.textContent).toContain('TL;DR');
+  });
+
+  it('explains a wrong logo file before sending it, and says "on Bemmoly" stays', async () => {
+    await renderPage(() => <AppearancePage />, '/settings/appearance');
+    expect(await screen.findByText(/“on Bemmoly” always stays under it/)).toBeDefined();
+    expect(screen.getByRole('img', { name: 'Sidebar preview: the Bemmoly lockup' })).toBeDefined();
+    const input = screen.getByLabelText('Logo', { selector: 'input' });
+    const gif = new File([new Uint8Array(8)], 'cat.gif', { type: 'image/gif' });
+    act(() => fireEvent.change(input, { target: { files: [gif] } }));
+    expect((await screen.findByRole('alert')).textContent).toMatch(/cat\.gif is not a PNG/);
+    expect(mockApi.db.settings['appearance.logoKey']).toBe('');
+  });
+
+  it('previews the uploaded logo in the sidebar and rail, and removes it', async () => {
+    const logoKey = seedAcmeLogo(mockApi.db);
+    await renderPage(() => <AppearancePage />, '/settings/appearance');
+    const light = await screen.findByTestId('logo-preview-light');
+    expect(light.textContent).toMatch(/on\s+Bemmoly/);
+    expect(light.querySelectorAll(`img[src="${logoKey}"]`).length).toBe(2);
+    expect(screen.getByTestId('logo-preview-dark').dataset['mode']).toBe('dark');
+    act(() => fireEvent.click(screen.getByRole('button', { name: 'Remove' })));
+    await waitFor(() => expect(mockApi.db.settings['appearance.logoKey']).toBe(''));
+    await screen.findByRole('button', { name: 'Upload logo' });
   });
 
   it('draws no AI sample in the preview while AI is off', async () => {

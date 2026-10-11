@@ -30,6 +30,13 @@ describe('demoWorkspace', () => {
     expect(neon['appearance.defaultMode']).toBe('light');
   });
 
+  it('starts with the Acme logo for ?logo=acme and without one otherwise', () => {
+    expect(demoWorkspace({ search: '?logo=acme' }).settings['appearance.logoKey']).toMatch(
+      /^\/api\/v1\/workspace\/logo\/[0-9a-f]{64}\.svg$/,
+    );
+    expect(demoWorkspace({ search: '?logo=other' }).settings['appearance.logoKey']).toBe('');
+  });
+
   it('maps a retired preset in an old link to its theme, mode and typeface', () => {
     const ocean = demoWorkspace({ search: '?theme=ocean' }).settings;
     expect(ocean['appearance.theme']).toBe('bemmoly');

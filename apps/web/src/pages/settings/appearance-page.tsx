@@ -4,18 +4,21 @@ import { FONT_IDS, FONTS } from '@bemmoly/ui/tokens';
 import { useNavigate } from '@tanstack/react-router';
 import { AppearanceRow } from '../../components/appearance/appearance-row.tsx';
 import { LivePreview } from '../../components/appearance/live-preview.tsx';
+import { LogoRow } from '../../components/appearance/logo-row.tsx';
 import { ModeControl } from '../../components/appearance/mode-control.tsx';
 import { BrandTile, ThemeGrid } from '../../components/appearance/theme-grid.tsx';
 import { Notice } from '../../components/form.tsx';
 import { SettingsPage } from '../../components/settings/settings-page.tsx';
 import { NO_APPEARANCE_PERMISSION, useAppearance } from '../../hooks/use-appearance.ts';
+import { useWorkspaceLogo } from '../../hooks/use-workspace-logo.ts';
 import { CUSTOM_PREFIX } from '../../lib/theme.ts';
 
 const FONT_OPTIONS = FONT_IDS.map((id) => ({ value: id, label: FONTS[id].name }));
 
-/** Settings › Appearance: theme, default mode, typeface and the members policy (ADR 0021). */
+/** Settings › Appearance: theme, logo, default mode, typeface and the members policy (ADR 0021). */
 export function AppearancePage() {
   const state = useAppearance();
+  const logo = useWorkspaceLogo();
   const navigate = useNavigate();
   const { value, canManage, draft, source } = state;
   const locked = !canManage;
@@ -97,6 +100,7 @@ export function AppearancePage() {
                 </div>
               )}
             </AppearanceRow>
+            <LogoRow state={logo} source={source} />
             <AppearanceRow
               label="Default mode"
               help="What new people and signed-out pages see until someone chooses."

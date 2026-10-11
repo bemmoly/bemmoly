@@ -1,3 +1,4 @@
+import { logoRoutes } from '../logo.ts';
 import type { MockRoute } from '../types.ts';
 import { apiTokenRoutes } from './api-tokens.ts';
 import { appearanceRoutes } from './appearance.ts';
@@ -40,6 +41,7 @@ export const ROUTES: readonly MockRoute[] = [
   ...settingsRoutes,
   ...ssoRoutes,
   ...appearanceRoutes,
+  ...logoRoutes,
   ...aiAdminRoutes,
   ...aiProviderRoutes,
   ...aiRoleRoutes,
