@@ -1,5 +1,12 @@
 # @bemmoly/updater
 
+## 0.9.0
+
+### Patch Changes
+
+- Updated dependencies [250098f]
+  - @bemmoly/shared@0.9.0
+
 ## 0.8.0
 
 ### Patch Changes

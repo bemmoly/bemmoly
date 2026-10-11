@@ -1,5 +1,16 @@
 # @bemmoly/server
 
+## 0.9.0
+
+### Patch Changes
+
+- Updated dependencies [250098f]
+  - @bemmoly/core@0.9.0
+  - @bemmoly/shared@0.9.0
+  - @bemmoly/module-docs@0.9.0
+  - @bemmoly/module-sample@0.9.0
+  - @bemmoly/module-work@0.9.0
+
 ## 0.8.0
 
 ### Patch Changes
