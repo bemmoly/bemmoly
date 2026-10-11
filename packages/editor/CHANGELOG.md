@@ -1,5 +1,27 @@
 # @bemmoly/editor
 
+## 0.12.0
+
+### Minor Changes
+
+- 0194a84: Work descriptions and comments that arrive as Markdown typed into plain lines (from the API, an
+  AI client or a CSV import) now show as headings, lists, code and tables; the parsed version is
+  saved only once someone edits it. While editing a card's description, a grip beside the hovered
+  line drags that block to a new place.
+
+  When a domain is set, the installer checks whether it already points at the server and, if not,
+  prints the A record to add, with a Cloudflare link when the zone is on Cloudflare. The install
+  carries on either way.
+
+  An issue open in the Board's side panel no longer lets the page scroll into blank space.
+  No schema or configuration change.
+
+### Patch Changes
+
+- Updated dependencies [403ef1d]
+- Updated dependencies [0194a84]
+  - @bemmoly/ui@0.12.0
+
 ## 0.11.0
 
 ### Patch Changes
