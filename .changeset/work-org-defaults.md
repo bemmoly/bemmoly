@@ -19,6 +19,6 @@ Only workspace admins can change the org defaults; anyone else, including people
 admin workspace role, now gets a 403. Modules can declare their own settings page in their
 manifest (`settings: { path: '/settings/<id>' }`).
 
-Schema: one Work changeset, `0025-work-default-board`, seeds the org default board ("Workspace
+Schema: one Work changeset, `0026-work-default-board`, seeds the org default board ("Workspace
 board") from the org default workflow on new and existing installs; it is quick and reversible.
 No configuration change.

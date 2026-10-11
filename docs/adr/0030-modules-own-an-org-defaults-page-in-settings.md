@@ -62,7 +62,7 @@ admin holds both, and a change there reaches every other project.
    board", as every other board change does. The "Based on" note links workspace admins to the
    matching org page ("Edit org default").
 7. **The org default board always exists.** Nothing made one before, so project settings
-   compared a board with nothing. The changeset `0025-work-default-board` seeds "Workspace board"
+   compared a board with nothing. The changeset `0026-work-default-board` seeds "Workspace board"
    from the org default workflow (one column per open status, one Done column), on new installs
    and existing ones alike; for a project on the default workflow it is the board the project
    already has, so no project stops following. Should it be deleted, `GET /work/boards` makes it
@@ -78,7 +78,7 @@ admin holds both, and a change there reaches every other project.
   before making it; the review dialog says that projects with their own board keep it.
 - A Project admin workspace role can no longer edit the org defaults. Nobody held that on purpose:
   the defaults were not reachable from the UI.
-- One seed changeset (`0025-work-default-board`), reversible: its down removes the seeded board.
+- One seed changeset (`0026-work-default-board`), reversible: its down removes the seeded board.
 - Saving the org default board touches every following project's board in one transaction; with
   hundreds of projects the save takes longer. It is rare and admin-only.
 - Publishing the org default workflow does not yet rewrite following boards' columns for added or

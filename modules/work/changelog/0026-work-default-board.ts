@@ -50,7 +50,7 @@ function columnsFor(statuses: readonly StatusRow[]) {
 }
 
 export default changeset({
-  id: '0025-work-default-board',
+  id: '0026-work-default-board',
   author: 'bemmoly',
   description: 'Seed the org default board from the org default workflow',
   contexts: ['*'],
