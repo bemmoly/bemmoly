@@ -1,5 +1,6 @@
 import { isThemeId, RETIRED_PRESETS } from '@bemmoly/ui/tokens';
 import { createMockDb, type MockDb } from '../mocks/db.ts';
+import { seedAcmeLogo } from '../mocks/seed/logo.ts';
 import { atRelease } from './release.ts';
 
 const MODES = ['light', 'dark', 'system'] as const;
@@ -14,7 +15,9 @@ const MODES = ['light', 'dark', 'system'] as const;
  *
  * `?theme=pine&mode=dark` starts the workspace in that theme and mode, so the site's previews
  * can match the page around them. A retired preset id (`?theme=ocean`) still works: it maps to
- * its theme in its old mode. With a `version`, the install reports that release everywhere.
+ * its theme in its old mode. `?logo=acme` starts with Acme Labs' own logo, so a preview can show
+ * the customer brand block ("on Bemmoly" under it). With a `version`, the install reports that
+ * release everywhere.
  */
 export function demoWorkspace(options: { search?: string; version?: string } = {}): MockDb {
   const { search = '', version } = options;
@@ -32,5 +35,6 @@ export function demoWorkspace(options: { search?: string; version?: string } = {
   if (retired) db.settings['appearance.font'] = retired.font;
   const mode = MODES.find((entry) => entry === params.get('mode')) ?? retired?.mode;
   if (mode) db.settings['appearance.defaultMode'] = mode;
+  if (params.get('logo') === 'acme') seedAcmeLogo(db);
   return db;
 }

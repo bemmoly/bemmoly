@@ -1,6 +1,7 @@
 import type { CustomThemeRecord, WorkspaceLook } from '@bemmoly/shared';
 import { FONT_IDS, type FontId } from '@bemmoly/ui/tokens';
 import type { MockDb } from './db.ts';
+import { mockLogoSrc } from './logo.ts';
 import { aiEnabledFor } from './routes/ai-state.ts';
 
 const MODES = ['light', 'dark', 'system'] as const;
@@ -23,7 +24,7 @@ export function workspaceLookOf(db: MockDb): WorkspaceLook {
       customThemeId: typeof customThemeId === 'string' ? customThemeId : null,
       defaultMode: MODES.find((mode) => mode === settings['appearance.defaultMode']) ?? 'system',
       font: (FONT_IDS as string[]).includes(font) ? (font as FontId) : 'plex',
-      logoKey: text('appearance.logoKey', ''),
+      logoKey: mockLogoSrc(db, text('appearance.logoKey', '')),
       personalThemes: settings['appearance.personalThemes'] === true,
       customThemes: workspaceThemesOf(db),
       brandColor: text('appearance.brandColor', '#2356c9'),

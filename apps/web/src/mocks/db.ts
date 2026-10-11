@@ -91,6 +91,8 @@ export interface MockDb {
   customThemes: Array<CustomThemeRecord & { ownerId: string | null }>;
   /** Each person's own mode and theme, by user id. */
   appearancePreferences: Record<string, AppearancePreference>;
+  /** Uploaded workspace logos by served file name, base64; created on first upload. */
+  logos?: Record<string, { mime: string; data: string }>;
 }
 
 // Plain words, not random-looking: the schemas only need 16 characters, and a secret

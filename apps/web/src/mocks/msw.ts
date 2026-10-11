@@ -2,6 +2,7 @@ import { bypass, http, HttpResponse, passthrough, ws, type AnyHandler } from 'ms
 import type { MockApi } from './dispatch.ts';
 import { mockPresence } from './presence.ts';
 import type { MockResponse } from './types.ts';
+import { LOGO_FILE_PATH, LOGO_UPLOAD_PATH, servedLogo, uploadLogo } from './logo.ts';
 import { mockUploadHandler } from './uploads.ts';
 
 export interface MswOptions {
@@ -92,6 +93,25 @@ export function mswHandlers(api: MockApi, options: MswOptions): AnyHandler[] {
   }
   return [
     mockUploadHandler(api, options.fallback),
+    // The logo's body is bytes, which the JSON dispatcher below cannot read.
+    http.post(LOGO_UPLOAD_PATH, async ({ request }) => {
+      if (options.fallback) {
+        const real = await fetch(bypass(request.clone())).catch(() => null);
+        if (real && !(await isMissingRoute(real))) return real;
+      }
+      const result = uploadLogo(api.db, new Uint8Array(await request.arrayBuffer()));
+      options.onChange?.();
+      return toResponse(result);
+    }),
+    http.get(LOGO_FILE_PATH, async ({ request }) => {
+      if (options.fallback) {
+        const real = await fetch(bypass(request.clone())).catch(() => null);
+        if (real && !(await isMissingRoute(real))) return real;
+      }
+      const logo = servedLogo(api.db, request.url);
+      if (!logo) return new HttpResponse(null, { status: 404 });
+      return new HttpResponse(logo.bytes, { headers: { 'content-type': logo.mime } });
+    }),
     http.all(/\/(api\/v1\/|readyz$)/, async ({ request }) => {
       if (options.fallback) {
         const real = await fetch(bypass(request)).catch(() => null);

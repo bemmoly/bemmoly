@@ -3,10 +3,11 @@ import { EntityTile, Logo } from '@bemmoly/ui';
 import { useQuery } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 import { setupStatusQuery } from '../../hooks/use-session.ts';
+import { customerLogo } from '../../lib/customer-logo.ts';
 
 /**
  * Sign-in, password reset and invitations (docs/design/premium/brand.js, `signIn`): the
- * customer's workspace leads the card, its logo once uploads exist and its initial until then,
+ * customer's workspace leads the card, its uploaded logo or else its initial,
  * and "Powered by Bemmoly" sits under it. Before the workspace has a name the Bemmoly lockup
  * leads instead.
  */
@@ -24,6 +25,7 @@ export function AuthLayout({
 }) {
   const status = useQuery(setupStatusQuery);
   const name = workspaceName ?? status.data?.workspaceName ?? null;
+  const logo = name ? customerLogo(name, status.data?.logoUrl) : null;
   useDocumentTitle([title, name]);
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-sunken px-4 py-12 text-tx">
@@ -34,7 +36,7 @@ export function AuthLayout({
         <div className="flex min-h-7 items-center gap-2.5">
           {name ? (
             <>
-              <EntityTile name={name} tone="ink" size={28} />
+              <EntityTile name={name} tone="ink" size={28} src={logo?.src ?? null} />
               <b className="truncate text-16 font-semibold tracking-title">{name}</b>
             </>
           ) : (

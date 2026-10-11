@@ -1,6 +1,7 @@
 import {
   ConflictError,
   type CreateFirstAdminInput,
+  LOGO_PATH_PREFIX,
   type SetupStatusResponse,
   type User,
 } from '@bemmoly/shared';
@@ -27,12 +28,19 @@ async function anyUserExists(db: Database): Promise<boolean> {
 export async function getSetupStatus(
   deps: Pick<IdentityDependencies, 'db' | 'settings'>,
 ): Promise<SetupStatusResponse> {
-  const [initialized, completedAt, workspaceName] = await Promise.all([
+  const [initialized, completedAt, workspaceName, logoKey] = await Promise.all([
     anyUserExists(deps.db),
     deps.settings.get('setup.completedAt'),
     deps.settings.get('workspace.name'),
+    deps.settings.get('appearance.logoKey'),
   ]);
-  return { initialized, completedAt, workspaceName: initialized ? workspaceName || null : null };
+  return {
+    initialized,
+    completedAt,
+    workspaceName: initialized ? workspaceName || null : null,
+    // Only a logo this install serves: the sign-in page's CSP allows no other image.
+    logoUrl: initialized && logoKey.startsWith(LOGO_PATH_PREFIX) ? logoKey : null,
+  };
 }
 
 /** True until the first admin exists; the wizard's health checks are anonymous until then. */
