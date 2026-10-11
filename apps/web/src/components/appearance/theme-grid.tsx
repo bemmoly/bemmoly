@@ -11,11 +11,11 @@ interface ThemeGridProps {
   disabled?: boolean;
 }
 
-/** The five themes and any custom ones, three to a row, as the review draws the picker. */
+/** The five themes and any custom ones, two to a row in the settings reading column. */
 export function ThemeGrid({ options, selected, onSelect, extra, disabled }: ThemeGridProps) {
   return (
     <fieldset disabled={disabled} className="m-0 min-w-0 border-0 p-0">
-      <div role="radiogroup" aria-label="Theme" className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+      <div role="radiogroup" aria-label="Theme" className="grid grid-cols-2 gap-3">
         {options.map((option) => (
           <ThemeTile
             key={option.ref}

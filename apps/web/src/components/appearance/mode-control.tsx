@@ -34,7 +34,7 @@ export function ModeControl({
       options={MODES.map((mode) => ({
         value: mode.value,
         label: (
-          <span className="inline-flex items-center justify-center gap-1.5 px-2.5">
+          <span className="inline-flex items-center justify-center gap-1.5 px-2.5 whitespace-nowrap">
             <Icon name={mode.icon} size={14} />
             {compact ? mode.short : mode.label}
           </span>
