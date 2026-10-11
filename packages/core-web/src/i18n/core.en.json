@@ -1,0 +1,11 @@
+{
+  "core.frame.menu": "Menu",
+  "core.frame.quickNavigation": "Quick navigation",
+  "core.frame.sidebar": "Sidebar",
+  "core.frame.unread": "{label}, {count} unread",
+  "core.header.breadcrumb": "Breadcrumb",
+  "core.header.goTo": "Go to {view}",
+  "core.header.openMenu": "Open menu",
+  "core.header.switch": "{label}, switch",
+  "core.header.views": "Views"
+}

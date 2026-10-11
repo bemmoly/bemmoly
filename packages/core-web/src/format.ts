@@ -1,5 +1,9 @@
+import { formatDate, numberFormat } from '@bemmoly/ui/intl';
+
 /** Relative times live with RelativeTime in the UI kit, so a hover can show the date. */
 export { formatAbsolute, formatRelative } from '@bemmoly/ui/time';
+/** Every date and number goes through Intl in the person's locale (ADR 0024). */
+export { formatDate, formatNumber, useFormatLocale } from '@bemmoly/ui/intl';
 
 /** "Rohan S." → "RS"; "priya@acme.dev" → "P". */
 export function initials(name: string): string {
@@ -15,7 +19,10 @@ export function initials(name: string): string {
 
 const UNITS = ['B', 'KB', 'MB', 'GB', 'TB'] as const;
 
-/** Decimal units, one decimal under ten: "512 MB", "1.4 GB". */
+/**
+ * Decimal units, one decimal under ten: "512 MB", "1.4 GB". The number follows the locale
+ * ("1,4 GB" in French); the symbols are the same everywhere people read storage sizes.
+ */
 export function formatBytes(bytes: number | null): string {
   if (bytes === null) return '—';
   let value = bytes;
@@ -24,16 +31,12 @@ export function formatBytes(bytes: number | null): string {
     value /= 1000;
     unit += 1;
   }
-  const rounded = value < 10 && unit > 0 ? value.toFixed(1) : String(Math.round(value));
-  return `${rounded} ${UNITS[unit]}`;
+  const digits = value < 10 && unit > 0 ? 1 : 0;
+  const number = numberFormat({ minimumFractionDigits: digits, maximumFractionDigits: digits });
+  return `${number.format(digits ? value : Math.round(value))} ${UNITS[unit]}`;
 }
 
 export function formatDateTime(iso: string | null): string {
   if (!iso) return '—';
-  return new Date(iso).toLocaleString('en', {
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
+  return formatDate(iso, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 }

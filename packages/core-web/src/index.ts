@@ -2,8 +2,8 @@
  * Kernel UI shared by the shell and module web chunks: the module chunk loader,
  * in-app navigation and the leave guard for unsaved work,
  * the Home section extension point, the settings navigation model, realtime,
- * ⌘K ranking and inbox wording. Visual primitives come from @bemmoly/ui; data
- * comes from @bemmoly/api-client.
+ * ⌘K ranking and inbox wording, and the i18n runtime every module translates through.
+ * Visual primitives come from @bemmoly/ui; data comes from @bemmoly/api-client.
  */
 export {
   groupItems,
@@ -12,7 +12,35 @@ export {
   type CommandGroup,
   type CommandItem,
 } from './command/rank.ts';
-export { formatBytes, formatDateTime, formatRelative, initials } from './format.ts';
+export {
+  formatBytes,
+  formatDate,
+  formatDateTime,
+  formatNumber,
+  formatRelative,
+  initials,
+  useFormatLocale,
+} from './format.ts';
+export {
+  applyDocumentLocale,
+  languageName,
+  LOCALE_PARAM,
+  pickLocale,
+  readDeviceLocale,
+  rememberDeviceLocale,
+  type LocaleSources,
+} from './i18n/detect.ts';
+export type { RichTags } from './i18n/rich.tsx';
+export {
+  defineCatalog,
+  getLocale,
+  onLocaleChange,
+  setLocale,
+  translate,
+  type Catalog,
+  type CatalogLoader,
+} from './i18n/runtime.ts';
+export { useLocale, useT, type Translate } from './i18n/use-t.ts';
 export { actorLabel } from './inbox/group.ts';
 export {
   createChunkRegistry,
