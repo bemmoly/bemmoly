@@ -11,7 +11,7 @@ import { and, asc, eq, gt, ilike, isNull, or, type SQL } from 'drizzle-orm';
 import type { Database } from '../../clients/drizzle.ts';
 import { apiTokens, users } from '../../models/identity/index.ts';
 import { decodeCursor, toPage } from '../../utils/keyset.ts';
-import { listPersonalThemes, listWorkspaceThemes, readPreference } from '../appearance/index.ts';
+import { listWorkspaceThemes, readPreference } from '../appearance/index.ts';
 import { recordAudit } from '../audit/index.ts';
 import { readWorkspaceLook } from '../settings/index.ts';
 import type { IdentityDependencies } from './deps.ts';
@@ -168,12 +168,11 @@ export async function getMe(
   ctx: RequestContext,
 ): Promise<MeResponse> {
   const user = await getUser(deps.db, selfId(ctx));
-  const [capabilities, modules, workspaceThemes, appearance, customThemes] = await Promise.all([
+  const [capabilities, modules, workspaceThemes, appearance] = await Promise.all([
     ctx.authz.workspaceCapabilities(ctx.actor),
     ctx.authz.modulesFor(ctx.actor),
     listWorkspaceThemes(deps.db),
     readPreference(deps.db, user.id),
-    listPersonalThemes(deps.db, user.id),
   ]);
   const workspace = await readWorkspaceLook(
     deps.settings,
@@ -188,6 +187,7 @@ export async function getMe(
     modules: [...modules].sort(),
     workspace: { ...workspace, aiEnabled },
     preferences: { appearance },
-    customThemes,
+    // Personal themes are retired (ADR 0021); still sent, empty, for the previous minor's clients.
+    customThemes: [],
   };
 }

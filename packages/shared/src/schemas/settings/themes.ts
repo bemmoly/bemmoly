@@ -4,8 +4,8 @@ import { modePreferenceSchema, surfaceStyleSchema } from '../contracts/settings.
 
 /**
  * Custom themes (ADR 0021): a name, a brand colour and a surface style, from which the UI
- * package generates checked light and dark sets. A workspace theme can be the default; a
- * personal one is its owner's alone and only while personal themes are on.
+ * package generates checked light and dark sets. Only a workspace admin sets the theme, so the
+ * server refuses "personal"; the value stays in the enum for the previous minor's clients.
  */
 export const customThemeScopeSchema = z.enum(['workspace', 'personal']);
 

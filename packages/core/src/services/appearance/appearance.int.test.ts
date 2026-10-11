@@ -1,4 +1,4 @@
-import { ConflictError, ForbiddenError, NotFoundError } from '@bemmoly/shared';
+import { ConflictError, ForbiddenError } from '@bemmoly/shared';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createDatabase } from '../../clients/drizzle.ts';
 import { createSqlClient, type SqlClient } from '../../clients/postgres.ts';
@@ -94,7 +94,7 @@ describe('themes and modes against a real database', () => {
     expect(await setting('appearance.defaultMode')).toBe('dark');
   });
 
-  it('lets an admin make workspace themes and a person their own only when allowed', async () => {
+  it('lets only an admin make workspace themes, and nobody a theme of their own', async () => {
     if (!server.available) return;
     const input = { name: 'Acme', brandColor: '#0F766E', surface: 'neutral' } as const;
     await expect(
@@ -105,52 +105,51 @@ describe('themes and modes against a real database', () => {
       scope: 'workspace',
     });
     expect(shared).toMatchObject({ scope: 'workspace', brandColor: '#0f766e' });
-
+    // Even with the retired switch still stored on, a personal theme is refused.
+    stored.set('appearance.personalThemes', true);
     await expect(
       createCustomTheme(deps, ctx('bo'), { ...input, scope: 'personal' }),
     ).rejects.toBeInstanceOf(ForbiddenError);
-    stored.set('appearance.personalThemes', true);
-    const own = await createCustomTheme(deps, ctx('bo'), {
-      name: 'Mine',
-      brandColor: '#e11d48',
-      surface: 'warm',
-      scope: 'personal',
-    });
+    await expect(
+      updateCustomTheme(deps, ctx('bo'), shared.id, { name: 'X' }),
+    ).rejects.toBeInstanceOf(ForbiddenError);
+
+    // A personal theme left from before is neither listed nor editable.
+    await sql`insert into custom_themes (name, brand_color, surface, owner_id, created_by)
+      values ('Mine', '#e11d48', 'warm', ${people['bo']!}, ${people['bo']!})`;
     const visible = (name: string) =>
       listCustomThemes(deps, ctx(name)).then((items) => items.map((t) => t.name));
-    expect(await visible('bo')).toEqual(expect.arrayContaining(['Acme', 'Mine']));
-    expect(await visible('ada')).not.toContain('Mine');
-    await expect(
-      updateCustomTheme(deps, ctx('ada', true), own.id, { name: 'X' }),
-    ).rejects.toBeInstanceOf(NotFoundError);
-    expect((await updateCustomTheme(deps, ctx('bo'), own.id, { name: 'Rose' })).name).toBe('Rose');
+    expect(await visible('bo')).toContain('Acme');
+    expect(await visible('bo')).not.toContain('Mine');
 
     stored.set('appearance.theme', 'custom');
     stored.set('appearance.customThemeId', shared.id);
     await expect(deleteCustomTheme(deps, ctx('ada', true), shared.id)).rejects.toBeInstanceOf(
       ConflictError,
     );
-    await deleteCustomTheme(deps, ctx('bo'), own.id);
-    expect(await visible('bo')).not.toContain('Rose');
+    await expect(deleteCustomTheme(deps, ctx('bo'), shared.id)).rejects.toBeInstanceOf(
+      ForbiddenError,
+    );
   });
 
-  it('stores each person mode and, when allowed, their theme', async () => {
+  it('stores each person mode, refuses a personal theme and ignores a stored one', async () => {
     if (!server.available) return;
-    stored.set('appearance.personalThemes', false);
     expect(await setAppearancePreference(deps, ctx('ada'), { mode: 'system' })).toEqual({
       mode: 'system',
       theme: null,
     });
+    stored.set('appearance.personalThemes', true);
     await expect(
       setAppearancePreference(deps, ctx('ada'), { theme: 'pine' }),
     ).rejects.toBeInstanceOf(ForbiddenError);
-    stored.set('appearance.personalThemes', true);
-    expect(await setAppearancePreference(deps, ctx('ada'), { theme: 'pine' })).toEqual({
-      mode: 'system',
-      theme: 'pine',
+    await sql`update user_appearance_preferences set theme = 'pine'
+      where user_id = ${people['ada']!}`;
+    expect(await setAppearancePreference(deps, ctx('ada'), { mode: 'dark' })).toEqual({
+      mode: 'dark',
+      theme: null,
     });
     const [row] = await sql`select mode, theme from user_appearance_preferences
       where user_id = ${people['ada']!}`;
-    expect(row).toEqual({ mode: 'system', theme: 'pine' });
+    expect(row).toEqual({ mode: 'dark', theme: null });
   });
 });

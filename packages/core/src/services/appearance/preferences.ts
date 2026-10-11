@@ -1,16 +1,12 @@
 import {
   ForbiddenError,
-  ValidationError,
   type AppearancePreference,
   type UpdateAppearancePreferenceInput,
 } from '@bemmoly/shared';
-import { isThemeId } from '@bemmoly/ui/tokens';
 import { recordAudit } from '../audit/index.ts';
 import type { RequestContext } from '../authz/index.ts';
-import { findVisibleTheme, readPreference, writePreference } from './store.ts';
-import { personOf, type AppearanceDeps } from './themes.ts';
-
-const CUSTOM_PREFIX = 'custom:';
+import { readPreference, writePreference } from './store.ts';
+import { ADMIN_SETS_THEME, personOf, type AppearanceDeps } from './themes.ts';
 
 function personOrThrow(ctx: RequestContext): string {
   const person = personOf(ctx);
@@ -27,8 +23,8 @@ export async function getAppearancePreference(
 }
 
 /**
- * Mode is always the person's own. A theme of their own needs the workspace to allow it, and
- * a custom one must be a workspace theme or theirs.
+ * Only the mode is the person's own (ADR 0021): the theme is the workspace admin's, so a
+ * personal theme is refused and never stored.
  */
 export async function setAppearancePreference(
   deps: AppearanceDeps,
@@ -36,19 +32,10 @@ export async function setAppearancePreference(
   patch: UpdateAppearancePreferenceInput,
 ): Promise<AppearancePreference> {
   const person = personOrThrow(ctx);
+  if (patch.theme) throw new ForbiddenError(ADMIN_SETS_THEME);
   const before = await readPreference(deps.db, person);
-  const next: AppearancePreference = { ...before, ...patch };
-  if (patch.theme) {
-    if (!(await deps.settings.get('appearance.personalThemes')))
-      throw new ForbiddenError('Your workspace does not let people pick their own theme');
-    if (patch.theme.startsWith(CUSTOM_PREFIX)) {
-      const id = patch.theme.slice(CUSTOM_PREFIX.length);
-      if (!(await findVisibleTheme(deps.db, id, person)))
-        throw new ValidationError('That custom theme does not exist');
-    } else if (!isThemeId(patch.theme)) {
-      throw new ValidationError(`There is no theme called "${patch.theme}"`);
-    }
-  }
+  const mode = patch.mode === undefined ? before.mode : patch.mode;
+  const next: AppearancePreference = { mode, theme: null };
   await writePreference(deps.db, person, next);
   await recordAudit(deps.db, {
     actor: ctx.actor,
