@@ -89,6 +89,7 @@ export function McpConnectSection({ origin, modules }: ConnectProps) {
   const clipboard = useClipboard();
   const url = mcpEndpoint(origin);
   const snippet = mcpSnippet(url);
+  const tokenSnippet = mcpSnippet(url, true);
   return (
     <SettingsSection title="Connect a client" layout="block">
       <div className="flex flex-col gap-4">
@@ -101,9 +102,8 @@ export function McpConnectSection({ origin, modules }: ConnectProps) {
             onCopy={() => void clipboard.copy(url, 'Endpoint copied')}
           />
           <span className="text-12 leading-body text-tx-3">
-            Streamable HTTP. Clients that support sign-in only need this address: each person signs
-            in to this workspace and chooses what the client may do. Others send a personal access
-            token in the Authorization header.
+            Streamable HTTP. Clients only need this address: on first connect each person signs in
+            to this workspace in the browser and chooses what the client may do.
           </span>
         </div>
         {modules.length > 0 ? (
@@ -133,8 +133,22 @@ export function McpConnectSection({ origin, modules }: ConnectProps) {
             onCopy={() => void clipboard.copy(snippet, 'Configuration copied')}
           />
           <span className="text-12 leading-body text-tx-3">
-            For a client without sign-in: paste this into its MCP settings and replace the
-            placeholder with a token from your{' '}
+            Paste this into the client's MCP settings. It opens the browser to sign in the first
+            time it connects.
+          </span>
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <span className="text-13 font-medium text-tx">Without a browser</span>
+          <CopyField
+            multiline
+            label="Token configuration"
+            value={tokenSnippet}
+            copied={clipboard.copied === tokenSnippet}
+            onCopy={() => void clipboard.copy(tokenSnippet, 'Configuration copied')}
+          />
+          <span className="text-12 leading-body text-tx-3">
+            For CI, scripts and clients that can't sign in: replace the placeholder with a token
+            from your{' '}
             <Link to="/settings/access-tokens" className="text-acc underline underline-offset-2">
               access tokens
             </Link>
