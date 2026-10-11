@@ -8,7 +8,7 @@ describe('demoWorkspace', () => {
     expect(db.signedInAs).not.toBeNull();
     expect(db.manifests.map((manifest) => manifest.id)).toContain('work');
     expect(db.manifests.map((manifest) => manifest.id)).not.toContain('sample');
-    expect(db.adminModules.find((module) => module.id === 'sample')?.enabled).toBe(false);
+    expect(db.adminModules.map((module) => module.id)).not.toContain('sample');
     expect(db.grants.some((grant) => grant.moduleId === 'sample')).toBe(false);
   });
 
