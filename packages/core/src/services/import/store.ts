@@ -26,9 +26,9 @@ export interface ImportJobRow {
   error: string | null;
   runs: number;
   created_by: string | null;
-  started_at: Date | null;
-  finished_at: Date | null;
-  created_at: Date;
+  started_at: Date | string | null;
+  finished_at: Date | string | null;
+  created_at: Date | string;
 }
 
 export const JOB_COLUMNS = `id, source, site, connection, credentials, status, discovery, plan,
@@ -42,7 +42,7 @@ export const emptyReport = (): ImportReport => ({
   warnings: [],
 });
 
-const iso = (value: Date | null) => (value ? value.toISOString() : null);
+const iso = (value: Date | string | null) => (value ? new Date(value).toISOString() : null);
 
 /** The client's view of a job: the credentials column never leaves the server. */
 export function toImportJob(row: ImportJobRow, sourceLabel: string): ImportJob {
@@ -59,7 +59,7 @@ export function toImportJob(row: ImportJobRow, sourceLabel: string): ImportJob {
     report: { ...emptyReport(), ...row.report },
     error: row.error,
     runs: row.runs,
-    createdAt: row.created_at.toISOString(),
+    createdAt: new Date(row.created_at).toISOString(),
     startedAt: iso(row.started_at),
     finishedAt: iso(row.finished_at),
   };

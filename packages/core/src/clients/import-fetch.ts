@@ -1,4 +1,4 @@
-import { assertAddressAllowed, type AddressPolicy } from '../../clients/guarded-fetch.ts';
+import { assertAddressAllowed, type AddressPolicy } from './guarded-fetch.ts';
 
 const MAX_REDIRECTS = 3;
 

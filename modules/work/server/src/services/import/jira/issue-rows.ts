@@ -55,7 +55,12 @@ export async function matchPerson(
     email: user.emailAddress ?? null,
     name: user.displayName ?? user.name ?? '',
   });
-  if (id) rows.people.set(sourceId, { id, label: user.displayName ?? user.name ?? '' });
+  if (id) {
+    const person = { id, label: user.displayName ?? user.name ?? '' };
+    rows.people.set(sourceId, person);
+    // Data Center wiki markup mentions people by user name, not by key.
+    if (user.name) rows.people.set(user.name, person);
+  }
   return id;
 }
 

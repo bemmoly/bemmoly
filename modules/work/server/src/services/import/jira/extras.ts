@@ -42,12 +42,19 @@ export async function writeComments(
       const authorId = await matchPerson(rows, comment.author);
       const mapped = known.get(comment.id);
       if (mapped) {
-        await sql`
-          update comments set body = ${JSON.stringify(body)}::jsonb, body_text = ${plainText(body)},
-            updated_at = now()
-          where id = ${mapped.targetId} and edited_at is null`;
-        ctx.report.count('comments', 'updated');
-        continue;
+        const [still] = await sql<{ id: string; edited_at: Date | null }[]>`
+          select id, edited_at from comments
+          where id = ${mapped.targetId} and target_id = ${id} and deleted_at is null`;
+        if (still) {
+          if (!still.edited_at) {
+            await sql`
+              update comments set body = ${JSON.stringify(body)}::jsonb,
+                body_text = ${plainText(body)}, updated_at = now()
+              where id = ${still.id}`;
+          }
+          ctx.report.count('comments', still.edited_at ? 'skipped' : 'updated');
+          continue;
+        }
       }
       const [row] = await sql<{ id: string }[]>`
         insert into comments (target_kind, target_id, author_id, body, body_text, created_at)
@@ -125,7 +132,17 @@ export async function writeAttachments(
     'attachment',
     pending.map((item) => item.attachment.id),
   );
-  const todo = pending.filter((item) => !known.has(item.attachment.id));
+  const present = new Set(
+    (
+      await sql<{ id: string }[]>`
+        select id from attachments
+        where id = any(${[...known.values()].map((mapped) => mapped.targetId)}::uuid[])`
+    ).map((row) => row.id),
+  );
+  const todo = pending.filter((item) => {
+    const mapped = known.get(item.attachment.id);
+    return !mapped || !present.has(mapped.targetId);
+  });
   for (let start = 0; start < todo.length; start += DOWNLOADS_AT_ONCE) {
     await Promise.all(
       todo

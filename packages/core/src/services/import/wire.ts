@@ -11,7 +11,7 @@ import { createAuditRecorder } from '../audit/index.ts';
 import type { SecretBox } from '../settings/index.ts';
 import { openConnection } from './connection.ts';
 import { createImporterCatalog, type ImporterCatalog } from './define.ts';
-import { createImportFetch } from './fetch.ts';
+import { createImportFetch } from '../../clients/import-fetch.ts';
 import { createImportRunner, IMPORT_RUN_JOB } from './runner.ts';
 import { createImportService, type ImportService } from './service.ts';
 

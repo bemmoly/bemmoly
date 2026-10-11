@@ -94,9 +94,9 @@ export async function writeIssues(
     rows.map((row) => row.sourceId),
   );
   const ids = [...known.values()].map((mapped) => mapped.targetId);
-  const current = await sql<{ id: string; updated_at: Date }[]>`
+  const current = await sql<{ id: string; updated_at: Date | string }[]>`
     select id, updated_at from issues where id = any(${ids}::uuid[]) and deleted_at is null`;
-  const live = new Map(current.map((row) => [row.id, row.updated_at.getTime()]));
+  const live = new Map(current.map((row) => [row.id, new Date(row.updated_at).getTime()]));
   const toInsert: ImportedIssueRow[] = [];
   const toUpdate: { row: ImportedIssueRow; id: string }[] = [];
   const written: WrittenIssue[] = [];
@@ -111,7 +111,7 @@ export async function writeIssues(
   }
 
   const inserted = toInsert.length
-    ? await sql<{ id: string; number: number; updated_at: Date }[]>`
+    ? await sql<{ id: string; number: number; updated_at: Date | string }[]>`
         insert into issues (project_id, number, key, type_id, title, description,
           description_text, status_id, priority, assignee_id, reporter_id, sprint_id, estimate,
           due_at, fix_version_id, component_id, custom_fields, rank, created_at, resolved_at)
@@ -136,12 +136,12 @@ export async function writeIssues(
     fresh.push({
       sourceId: row.sourceId,
       targetId: made.id,
-      meta: { ...row.meta, syncedAt: made.updated_at.getTime() },
+      meta: { ...row.meta, syncedAt: new Date(made.updated_at).getTime() },
     });
   }
 
   const updated = toUpdate.length
-    ? await sql<{ id: string; updated_at: Date }[]>`
+    ? await sql<{ id: string; updated_at: Date | string }[]>`
         update issues i set type_id = r.type_id, title = r.title, description = r.description,
           description_text = r.description_text,
           status_changed_at = case when i.status_id = r.status_id then i.status_changed_at else now() end,
@@ -154,7 +154,7 @@ export async function writeIssues(
         where i.id = r.id
         returning i.id, i.updated_at`
     : [];
-  const stamps = new Map(updated.map((row) => [row.id, row.updated_at.getTime()]));
+  const stamps = new Map(updated.map((row) => [row.id, new Date(row.updated_at).getTime()]));
   for (const { row, id } of toUpdate) {
     written.push({ sourceId: row.sourceId, id, created: false });
     fresh.push({

@@ -63,7 +63,8 @@ export function createRunContext(input: RunContextInput): RunContextHandle {
       tally(kind)[outcome] += by;
     },
     skip(kind, source, reason) {
-      tally(kind).skipped += 1;
+      // A skipped "issue" counts against "issues", the kind its created and updated go under.
+      tally(kind.endsWith('s') ? kind : `${kind}s`).skipped += 1;
       report.skippedTotal += 1;
       if (report.skipped.length < REPORT_SKIP_LIMIT) report.skipped.push({ kind, source, reason });
     },
