@@ -59,7 +59,9 @@ describe('GitHub deliveries', () => {
   });
 
   it('reads an approving review onto the pull request', () => {
-    const [pull] = github('pull_request_review.submitted').activities;
+    const parsed = github('pull_request_review.submitted');
+    expect(parsed.summary).toBe('Pull request #4821 approved in acme/api');
+    const [pull] = parsed.activities;
     expect(pull).toMatchObject({ kind: 'pull_request', review: 'approved', state: 'open' });
   });
 

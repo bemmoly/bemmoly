@@ -77,6 +77,11 @@ const REVIEWS: Record<string, CodeReviewState> = {
   dismissed: 'review_required',
 };
 
+const REVIEW_WORDS: Record<string, string> = {
+  approved: 'approved',
+  changes_requested: 'changes requested',
+};
+
 export function pullActivity(
   repository: string,
   pull: GithubPull,
@@ -188,7 +193,12 @@ export function parseGithubEvent(event: string, body: Buffer, now: string): Pars
         : payload.action === 'review_requested'
           ? 'review_required'
           : null;
-    const verb = event === 'pull_request_review' ? `reviewed (${payload.action})` : payload.action;
+    const verb =
+      event === 'pull_request_review'
+        ? payload.action === 'dismissed'
+          ? 'review dismissed'
+          : (REVIEW_WORDS[payload.review?.state ?? ''] ?? 'reviewed')
+        : payload.action;
     return {
       event,
       action: payload.action,
