@@ -1,0 +1,28 @@
+{
+  "name": "@bemmoly/perf",
+  "version": "0.11.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "description": "Load and soak tests against a running install: dataset seeding, k6 budgets, the Jira import timing and the soak monitor",
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "lint": "eslint --max-warnings 0 .",
+    "test": "vitest run",
+    "provision": "node src/provision.ts",
+    "seed": "node src/seed.ts",
+    "teardown": "node src/teardown.ts",
+    "jira:serve": "node src/jira/serve.ts",
+    "jira:import": "node src/jira/import.ts",
+    "soak:monitor": "node src/soak/monitor.ts",
+    "k6": "bash run-k6.sh"
+  },
+  "dependencies": {
+    "zod": "4.6.5"
+  },
+  "devDependencies": {
+    "@types/node": "26.6.4",
+    "vitest": "5.0.3",
+    "yjs": "13.6.32"
+  }
+}

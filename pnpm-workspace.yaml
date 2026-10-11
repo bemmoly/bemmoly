@@ -5,6 +5,7 @@ packages:
   - tools/*
   - deploy
   - deploy/updater
+  - perf
 
 allowBuilds:
   cpu-features: false

@@ -1,0 +1,103 @@
+name: Load-test install
+description: >-
+  A stand-in for the 2 vCPU reference VM on a hosted runner: Postgres and the server from this
+  checkout pinned to CPUs 0-1, Work and Docs on, the setup wizard finished through the API, the
+  load-test people provisioned and the §20 sample dataset seeded (perf/README.md).
+
+inputs:
+  users:
+    description: Load-test people to provision
+    default: '200'
+  issues:
+    description: Issues in the sample dataset
+    default: '5000'
+  pages:
+    description: Pages in the sample dataset
+    default: '400'
+
+outputs:
+  base-url:
+    description: The install's address
+    value: http://127.0.0.1:8080
+  credentials:
+    description: Path of the load-test credentials file
+    value: ${{ steps.provision.outputs.credentials }}
+  dataset:
+    description: Path of the dataset manifest
+    value: ${{ steps.seed.outputs.dataset }}
+
+runs:
+  using: composite
+  steps:
+    - name: Postgres on the install's two CPUs
+      shell: bash
+      run: |
+        docker run -d --name bemmoly-load-db --cpuset-cpus 0,1 --memory 1536m -p 5432:5432 \
+          -e POSTGRES_USER=bemmoly -e POSTGRES_PASSWORD=bemmoly -e POSTGRES_DB=bemmoly_db \
+          --health-cmd 'pg_isready -U bemmoly -d bemmoly_db' --health-interval 2s \
+          pgvector/pgvector:pg18
+        until [ "$(docker inspect -f '{{.State.Health.Status}}' bemmoly-load-db)" = healthy ]; do sleep 2; done
+
+    - name: The server from this checkout on the same two CPUs
+      shell: bash
+      run: |
+        secret="$(openssl rand -base64 32)"
+        metrics="$(openssl rand -hex 24)"
+        echo "::add-mask::${secret}"
+        echo "::add-mask::${metrics}"
+        echo "METRICS_TOKEN=${metrics}" >> "$GITHUB_ENV"
+        cat > "$RUNNER_TEMP/load.env" <<EOF
+        DATABASE_URL=postgres://bemmoly:bemmoly@127.0.0.1:5432/bemmoly_db
+        BEMMOLY_SECRET_KEY=${secret}
+        BEMMOLY_PUBLIC_URL=http://127.0.0.1:8080
+        BEMMOLY_METRICS_TOKEN=${metrics}
+        LOG_LEVEL=warn
+        EOF
+        nohup taskset -c 0,1 node --env-file="$RUNNER_TEMP/load.env" apps/server/src/server.ts \
+          > "$RUNNER_TEMP/server.log" 2>&1 &
+        for _ in $(seq 1 90); do
+          if curl -fsS http://127.0.0.1:8080/readyz > /dev/null 2>&1; then break; fi
+          sleep 2
+        done
+        curl -fsS http://127.0.0.1:8080/readyz || { cat "$RUNNER_TEMP/server.log"; exit 1; }
+
+    - name: Work and Docs for everyone, and the wizard finished
+      shell: bash
+      run: |
+        for module in work docs; do
+          node --env-file="$RUNNER_TEMP/load.env" apps/server/src/cli.ts modules enable "$module" --access everyone
+        done
+        password="$(openssl rand -base64 24)"
+        echo "::add-mask::${password}"
+        jar="$RUNNER_TEMP/owner.cookies"
+        curl -fsS -c "$jar" -H 'content-type: application/json' -H 'origin: http://127.0.0.1:8080' \
+          -d "{\"workspaceName\":\"Load test\",\"workspaceUrl\":\"http://127.0.0.1:8080\",\"name\":\"CI Owner\",\"email\":\"owner@ci.bemmoly.test\",\"password\":\"${password}\"}" \
+          http://127.0.0.1:8080/api/v1/setup/admin > /dev/null
+        curl -fsS -b "$jar" -X PUT -H 'content-type: application/json' -H 'origin: http://127.0.0.1:8080' \
+          -d "{\"value\":\"$(date -u +%FT%TZ)\"}" \
+          http://127.0.0.1:8080/api/v1/admin/settings/setup.completedAt > /dev/null
+        rm -f "$jar"
+
+    - name: Provision the load-test people
+      id: provision
+      shell: bash
+      env:
+        USERS: ${{ inputs.users }}
+      run: |
+        credentials="$RUNNER_TEMP/load-credentials.json"
+        node perf/src/provision.ts --users "$USERS" --out "$credentials" \
+          | docker exec -i bemmoly-load-db psql -q -U bemmoly -d bemmoly_db
+        echo "credentials=${credentials}" >> "$GITHUB_OUTPUT"
+
+    - name: Seed the sample dataset
+      id: seed
+      shell: bash
+      env:
+        ISSUES: ${{ inputs.issues }}
+        PAGES: ${{ inputs.pages }}
+      run: |
+        dataset="$RUNNER_TEMP/load-dataset.json"
+        node perf/src/seed.ts --base-url http://127.0.0.1:8080 \
+          --credentials "$RUNNER_TEMP/load-credentials.json" --out "$dataset" \
+          --issues "$ISSUES" --pages "$PAGES"
+        echo "dataset=${dataset}" >> "$GITHUB_OUTPUT"

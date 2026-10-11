@@ -12,6 +12,7 @@ protection matches checks by job name, so renaming a job means updating the sett
 | `security.yml` (Security) | pull requests, merge queue, `main`, weekly | **Security scans**, **Image scan**                                                       |
 | `release.yml` (Release)   | `main`, `v*` tags                          | Version pull request or tag, Plan the release, Image (app, updater), Publish the release |
 | `nightly.yml` (Nightly)   | 02:30 UTC daily, manual                    | Fresh VM install, Load budgets (k6)                                                      |
+| `soak.yml` (Soak)         | 03:00 UTC Sundays, manual                  | Soak (k6 and the monitor); 24 h on the `SOAK_RUNNER` self-hosted runner, else 5 h        |
 | `ai-evals.yml` (AI evals) | 03:00 UTC daily, manual                    | Live AI evals (skips without a provider key)                                             |
 | `labels.yml` (Labels)     | changes to `.github/labels.json`           | Sync labels                                                                              |
 
@@ -31,6 +32,15 @@ What each check runs:
   so a failure there is not read as a Full checks failure.
 - **Lighthouse**: the real server serves the built shell; first contentful paint must stay
   under 1.2 s, cold, on the 4G profile in `tools/lighthouse/lighthouserc.cjs`.
+- **Load budgets (k6)**, nightly: the server from `main` and Postgres pinned to two CPUs (the
+  reference VM's share) with k6 on the other two, the §20 sample dataset seeded (3 projects,
+  5,000 issues, 400 pages, 200 people), then `perf/run-suite.sh`: board view, issue detail,
+  ⌘K and search, page open over `/collab`, two people typing, and the mixed workload, each
+  held to its §20 budget. The results table and the server's own per-route latency go to the
+  job summary; a regression opens an issue. Details in `perf/README.md`.
+- **Soak**, weekly: the mixed workload for 24 hours (5 on a hosted runner) while
+  `perf/src/soak/monitor.ts` samples memory, heap, connections, queues, p95 per window and
+  errors; any verdict that fails opens an issue.
 - **Security scans**: gitleaks over the tree and the new commits, `pnpm audit --audit-level=high`,
   `semgrep --test` on the custom rules, then a Semgrep scan with them (`tools/semgrep/rules`:
   SQL built from strings, raw `fetch` outside clients, `process.env` outside config, console).
@@ -132,9 +142,8 @@ docker run --rm -v "$PWD:/src" -w /src semgrep/semgrep:1.178.0 \
 docker run --rm -v "$PWD:/repo" ghcr.io/gitleaks/gitleaks:v8.30.1 dir /repo --redact
 docker run --rm -v "$PWD:/repo" -w /repo rhysd/actionlint:1.7.12
 
-# Load budgets against a running server
-docker run --rm -v "$PWD/tools/k6:/scripts:ro" grafana/k6:2.3.0 run \
-  -e BASE_URL=http://host.docker.internal:8080 /scripts/budgets.js
+# Load budgets against a running install: provision, seed, then the suite (perf/README.md)
+BASE_URL=… CREDENTIALS=… DATASET=… bash perf/run-suite.sh
 ```
 
 A Semgrep finding that is a deliberate exception is marked in the code with

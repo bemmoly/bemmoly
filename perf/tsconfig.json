@@ -1,0 +1,8 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "types": ["node"],
+    "allowJs": true
+  },
+  "include": ["src", "k6/lib/*.test.ts", "*.ts"]
+}
