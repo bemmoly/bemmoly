@@ -1,5 +1,17 @@
 # @bemmoly/module-docs
 
+## 0.8.0
+
+### Patch Changes
+
+- Updated dependencies [31f9a87]
+  - @bemmoly/ui@0.8.0
+  - @bemmoly/core@0.8.0
+  - @bemmoly/shared@0.8.0
+  - @bemmoly/api-client@0.8.0
+  - @bemmoly/editor@0.8.0
+  - @bemmoly/core-web@0.8.0
+
 ## 0.7.0
 
 ### Minor Changes
