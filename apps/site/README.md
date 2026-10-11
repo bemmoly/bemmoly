@@ -241,13 +241,13 @@ symptom, and sizing. `/docs/install` answers with a 301 to `/self-hosting#instal
 `/docs/compose` stays the Compose reference. Every badge comes from `STATUS` in
 `src/data/self-hosting.ts`: "Available in X.Y.Z" or "Coming soon", nothing in between.
 
-| Path                          | Badge       | Why                                                         |
-| ----------------------------- | ----------- | ----------------------------------------------------------- |
-| One command (recommended)     | available   | `deploy/install.sh` and the release's bundled installer     |
-| I already run Docker Compose  | available   | The installer's Compose file and env template, step by step |
-| I have my own Postgres        | available   | `--database-url`; Postgres 18 with pgvector                 |
-| I run Kubernetes              | coming soon | The Helm chart is a skeleton                                |
-| I want managed infrastructure | coming soon | No Terraform modules yet                                    |
+| Path                          | Badge     | Why                                                         |
+| ----------------------------- | --------- | ----------------------------------------------------------- |
+| One command (recommended)     | available | `deploy/install.sh` and the release's bundled installer     |
+| I already run Docker Compose  | available | The installer's Compose file and env template, step by step |
+| I have my own Postgres        | available | `--database-url`; Postgres 18 with pgvector                 |
+| I run Kubernetes              | available | `deploy/helm/bemmoly`, tested on every deploy-kit change    |
+| I want managed infrastructure | available | The Terraform module in `deploy/terraform`, with examples   |
 
 The offline bundle is not on the site until an offline install is tested. The Compose
 commands live once, in `src/data/compose.ts`, one block per step, so nothing starts before
@@ -313,8 +313,16 @@ build output out of the context without a root `.dockerignore`.
   notes carry no dates, so after tagging a release add its day to `RELEASE_DATES` in
   `src/data/changelog.ts`; until then it shows without one. The `Dockerfile` copies each
   changelog into the build, and a test fails when a package's changelog is missing there. In
-  Coolify, leave the watch paths empty (or include `**/CHANGELOG.md`), so a release redeploys
-  the site and its changelog.
+  Coolify, leave the watch paths empty (or include `**/CHANGELOG.md`), so a release's notes
+  redeploy the site and its changelog.
+- **After a release.** The version pull request merges, and Coolify deploys, before the
+  release workflow publishes the GitHub release that caps the site's version, so that build
+  still names the previous release. The release workflow's last job (`site-deploy.yml`) asks
+  Coolify to redeploy once a stable release is published, waits until `/llms.txt` names it,
+  then pings IndexNow. It needs two repository secrets: `COOLIFY_SITE_DEPLOY_URL` (the
+  application's deploy webhook, `https://<coolify>/api/v1/deploy?uuid=…`) and `COOLIFY_TOKEN`
+  (an API token with the deploy permission). Without them the job fails and says so; run
+  **Site deploy** by hand with the version once they are set.
 - **Live demo.** The image builds the demo in its own stage (the whole workspace context, the
   web shell and every module installed, `build:demo`), in parallel with the site, so a build
   takes a few minutes longer than before and the Docker build context is the repository. In

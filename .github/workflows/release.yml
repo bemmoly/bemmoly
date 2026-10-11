@@ -6,7 +6,8 @@ name: Release
 #
 # On main, the changesets action keeps a "version packages" pull request open; merging it
 # bumps the versions, and the next run tags the release and publishes it. Pushing a tag by
-# hand (for example v0.4.0-beta.1 on the beta channel) publishes that tag.
+# hand (for example v0.4.0-beta.1 on the beta channel) publishes that tag. A stable release
+# then redeploys the site (site-deploy.yml), which names the newest published release.
 
 on:
   push:
@@ -331,3 +332,18 @@ jobs:
           set -- "$TAG" --title "Bemmoly $VERSION" --notes-file release/notes.md --verify-tag
           if [ "$PRERELEASE" = true ]; then set -- "$@" --prerelease; else set -- "$@" --latest; fi
           gh release create "$@" assets/*
+
+  # The site shows the newest published release, so it redeploys once this one is out. A
+  # GitHub release created with GITHUB_TOKEN raises no `release` event, hence the direct call.
+  site:
+    name: Redeploy the site
+    needs: [plan, publish]
+    if: ${{ !cancelled() && needs.publish.result == 'success' && needs.plan.outputs.prerelease != 'true' }}
+    permissions:
+      contents: read
+    uses: ./.github/workflows/site-deploy.yml
+    with:
+      version: ${{ needs.plan.outputs.version }}
+    secrets:
+      COOLIFY_SITE_DEPLOY_URL: ${{ secrets.COOLIFY_SITE_DEPLOY_URL }}
+      COOLIFY_TOKEN: ${{ secrets.COOLIFY_TOKEN }}
