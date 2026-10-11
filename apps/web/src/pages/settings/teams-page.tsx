@@ -12,7 +12,8 @@ import { useDeleteTeam, useTeams, type TeamCardView } from '../../hooks/use-team
 export function TeamsPage() {
   const { canManage, query, cards } = useTeams();
   const navigate = useNavigate();
-  const [creating, setCreating] = useState(false);
+  // "?new=1" opens Create team straight away, for links like the one in Create project.
+  const [creating, setCreating] = useState(() => new URLSearchParams(location.search).has('new'));
   const [deleting, setDeleting] = useState<TeamCardView | null>(null);
   const remove = useDeleteTeam(() => setDeleting(null));
   const create = (

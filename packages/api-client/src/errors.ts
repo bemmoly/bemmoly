@@ -1,10 +1,11 @@
 import { apiErrorBodySchema, type ErrorCode } from '@bemmoly/shared';
 
 /**
- * Codes outside the shared enum: no server, an unexpected body, and the
- * operations stream's 503 while a restore, update or rollback runs.
+ * Codes outside the shared enum: no server, an unexpected body, a failure in the browser
+ * before the request left, and the operations stream's 503 while a restore, update or
+ * rollback runs.
  */
-export type ClientErrorCode = 'network_error' | 'invalid_response' | 'maintenance';
+export type ClientErrorCode = 'network_error' | 'invalid_response' | 'client_error' | 'maintenance';
 
 export type ApiErrorCode = ErrorCode | ClientErrorCode;
 
