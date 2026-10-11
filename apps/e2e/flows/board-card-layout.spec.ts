@@ -100,7 +100,7 @@ test('the card layout saved in Board settings is what every card draws, for ever
   expect((await stripe(card)).width).not.toBe('3px');
 
   await page.goto(`/work/settings/${project.key}/board?tab=cards`);
-  const note = page.getByText(/^Based on the default board/);
+  const note = page.getByText(/^Based on Workspace board/);
   await expect(note).toHaveText(/with no changes yet for this project/);
   await page.getByRole('button', { name: 'Edit Card layout' }).click();
   for (const name of ['Estimate', 'Due date', 'Labels']) {

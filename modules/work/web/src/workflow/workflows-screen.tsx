@@ -26,7 +26,6 @@ export default function WorkflowsScreen({ projectKey, rest }: WorkScreenProps) {
     content = (
       <WorkflowEditor
         key={workflowId}
-        project={project}
         workflowId={workflowId}
         listPath={workflowPaths.list(project.key)}
       />

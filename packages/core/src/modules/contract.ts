@@ -1,4 +1,4 @@
-import type { ModuleColor, SidebarSectionInput } from '@bemmoly/shared';
+import type { ModuleColor, ModuleSettingsInput, SidebarSectionInput } from '@bemmoly/shared';
 import type { SqlClient } from '../clients/postgres.ts';
 import type { AuditRecorder } from '../contracts/audit.ts';
 import type { Changelog } from '../contracts/changelog.ts';
@@ -45,6 +45,8 @@ export interface BemmolyModule {
   order?: number;
   /** Its one section in the app sidebar; every path lives under /<id>. */
   sidebar?: SidebarSectionInput;
+  /** Its own settings: one row under Settings › Modules, at a path under /settings/<id>. */
+  settings?: ModuleSettingsInput;
   /** This module's ordered changesets, tracked per module in schema_changelog. */
   changelog: Changelog;
   /** Everything the module provides is registered here, once, at boot. */

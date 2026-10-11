@@ -1,6 +1,8 @@
 # ADR 0023: Card layout is the board's; quick filters sit in the filter row
 
-- Status: accepted; decision 1 changed by [ADR 0029](0029-cards-draw-exactly-the-boards-fields.md)
+- Status: accepted; decision 1 changed by [ADR 0029](0029-cards-draw-exactly-the-boards-fields.md);
+  point 2 superseded in part by [ADR 0030](0030-modules-own-an-org-defaults-page-in-settings.md)
+  (the org default board needs a workspace admin)
 - Date: 2026-10-11
 - Changes: the "Display" decision in
   [`docs/design/premium/interaction/board-backlog.md`](../design/premium/interaction/board-backlog.md)

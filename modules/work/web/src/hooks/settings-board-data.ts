@@ -5,21 +5,23 @@ import { workSettingsKeys, workWorkflowKeys } from '../api/index.ts';
 import type { StatusInfo } from '../settings/model/columns.ts';
 import { adoptOrgConfig, boardConfigDiff } from '../settings/model/diff.ts';
 import { settingsCatalog } from '../settings/model/lql.ts';
+import { orgSettingsPath, type SettingsScope } from '../settings/pages.ts';
 import type { BoardDraft } from '../settings/model/sections.ts';
+import { workflowPaths } from '../workflow/navigate.ts';
 import { api, useProject } from '../shared/index.ts';
 
 /**
- * Everything Board settings read: the project and its board, the default it
- * is compared with and resets to, the workflow's statuses with their issue
- * counts, and the project's fields for LQL. The default is the org default
- * board scheme when the org has one, else Work's own default board for the
- * project's statuses, which is what the server made the board from. Counts
- * are optional; without them the page still edits, it only cannot say how
- * many cards a change hides.
+ * Everything Board settings read: the board (a project's, or the org default), the default a
+ * project's is compared with and resets to, the workflow's statuses with their issue counts, and
+ * the fields for LQL. A project's default is the org default board matched to its statuses, else
+ * Work's own default board for them, as the server works out what a project inherits. Counts are
+ * optional; without them the page still edits, it only cannot say how many cards a change hides.
+ * The org default board has no issues of its own, so none.
  */
-export function useBoardSettingsData(projectKey: string | undefined) {
-  const projectContext = useProject(projectKey);
-  const { project } = projectContext;
+export function useBoardSettingsData(scope: SettingsScope) {
+  const org = scope.kind === 'org';
+  const projectContext = useProject(org ? undefined : scope.projectKey);
+  const project = org ? undefined : projectContext.project;
   const projectId = project?.id ?? '';
   const enabled = Boolean(project);
 
@@ -42,8 +44,9 @@ export function useBoardSettingsData(projectKey: string | undefined) {
     queryFn: () => api.work.orgWorkflows.list(),
   });
   /** The list carries the org defaults too; the project's own copy is the one its board maps. */
-  const workflow =
-    workflows.data?.find((flow) => flow.projectId === projectId) ?? workflows.data?.[0];
+  const workflow = org
+    ? orgWorkflows.data?.find((flow) => flow.projectId === null)
+    : (workflows.data?.find((flow) => flow.projectId === projectId) ?? workflows.data?.[0]);
   /** This project's issues only: a workflow shared by several projects counts all of theirs. */
   const counts = useQuery({
     queryKey: workWorkflowKeys.counts(workflow?.id ?? '', projectId),
@@ -52,13 +55,13 @@ export function useBoardSettingsData(projectKey: string | undefined) {
     retry: false,
   });
   const fields = useQuery({
-    queryKey: workSettingsKeys.fields(projectId),
-    queryFn: () => api.work.fields.list(projectId),
-    enabled,
+    queryKey: workSettingsKeys.fields(org ? null : projectId),
+    queryFn: () => api.work.fields.list(org ? null : projectId),
+    enabled: org || enabled,
   });
 
-  const board = boards.data?.[0];
   const orgBoard = orgBoards.data?.[0];
+  const board = org ? orgBoard : boards.data?.[0];
 
   const statuses = useMemo<StatusInfo[]>(
     () =>
@@ -74,8 +77,9 @@ export function useBoardSettingsData(projectKey: string | undefined) {
       for (const status of flow.statuses) names.set(status.id, status.name);
     for (const status of statuses) names.set(status.id, status.name);
     const statusName = (id: string) => names.get(id) ?? 'Unknown status';
+    // The org default is compared with nothing: it is what projects are compared with.
     const baseConfig =
-      !orgBoards.isSuccess || statuses.length === 0
+      org || !orgBoards.isSuccess || statuses.length === 0
         ? null
         : orgBoard
           ? adoptOrgConfig(orgBoard.config, statusName, statuses)
@@ -83,15 +87,19 @@ export function useBoardSettingsData(projectKey: string | undefined) {
     const overrides =
       baseConfig && board ? boardConfigDiff(baseConfig, board.config, statusName) : [];
     return { statusName, baseConfig, overrides };
-  }, [orgWorkflows.data, statuses, orgBoards.isSuccess, orgBoard, board]);
+  }, [org, orgWorkflows.data, statuses, orgBoards.isSuccess, orgBoard, board]);
 
   const stored = useMemo<BoardDraft | null>(
-    () => (board && project ? { config: board.config, method: project.method } : null),
-    [board, project],
+    () =>
+      board && (org || project)
+        ? { config: board.config, method: project?.method ?? 'scrum' }
+        : null,
+    [board, org, project],
   );
   const catalog = useMemo(() => settingsCatalog(fields.data), [fields.data]);
 
   return {
+    scope,
     project,
     board,
     orgBoard,
@@ -103,10 +111,20 @@ export function useBoardSettingsData(projectKey: string | undefined) {
     counts: counts.data ?? {},
     hasCounts: counts.isSuccess,
     catalog,
+    /** Where the statuses come from, for the Columns tab's "Statuses come from the Workflow". */
+    workflowHref: org
+      ? orgSettingsPath('workflow')
+      : project
+        ? workflowPaths.list(project.key)
+        : '/work',
     ...derived,
-    isPending: projectContext.isPending || boards.isPending || workflows.isPending,
-    error: boards.error ?? workflows.error ?? null,
-    projectMissing: !projectContext.isPending && !project,
+    isPending: org
+      ? orgBoards.isPending || orgWorkflows.isPending
+      : projectContext.isPending || boards.isPending || workflows.isPending,
+    error: org
+      ? (orgBoards.error ?? orgWorkflows.error ?? null)
+      : (boards.error ?? workflows.error ?? null),
+    projectMissing: !org && !projectContext.isPending && !project,
   };
 }
 

@@ -13,6 +13,7 @@ import {
   reorderIssueTypesBodySchema,
   schemeDiffSchema,
   schemesResponseSchema,
+  schemeUsagesResponseSchema,
   updateBoardBodySchema,
   workflowsResponseSchema,
   updateFieldBodySchema,
@@ -32,6 +33,10 @@ import { enc, validated } from '@bemmoly/api-client';
 
 const base = '/api/v1/work';
 
+/** Where a scheme's rows live: one project's, or the org defaults' (null). */
+const scoped = (projectId: string | null) =>
+  projectId === null ? base : `${base}/projects/${enc(projectId)}`;
+
 /** Query keys for the project settings screens; `project` is the root for one project. */
 export const workSettingsKeys = {
   project: (projectId: string) => ['work', 'project', projectId] as const,
@@ -43,8 +48,17 @@ export const workSettingsKeys = {
   /** The org default board scheme and workflows a project's copies are compared with. */
   orgBoards: () => ['work', 'org', 'boards'] as const,
   orgWorkflows: () => ['work', 'org', 'workflows'] as const,
-  issueTypes: (projectId: string) => ['work', 'project', projectId, 'issue-types'] as const,
-  fields: (projectId: string) => ['work', 'project', projectId, 'fields'] as const,
+  /** Every org default with the projects following it and those with their own version. */
+  usage: () => ['work', 'org', 'schemes'] as const,
+  /** A project's issue types, or the org default ones (null). */
+  issueTypes: (projectId: string | null) =>
+    projectId === null
+      ? (['work', 'org', 'issue-types'] as const)
+      : (['work', 'project', projectId, 'issue-types'] as const),
+  fields: (projectId: string | null) =>
+    projectId === null
+      ? (['work', 'org', 'fields'] as const)
+      : (['work', 'project', projectId, 'fields'] as const),
   typeFields: (issueTypeId: string) => ['work', 'issue-type', issueTypeId, 'fields'] as const,
 };
 
@@ -68,6 +82,8 @@ export function workSettingsEndpoints(http: Http) {
         }),
     },
     schemes: {
+      /** Each org default and who follows it; workspace admins only. */
+      usage: async () => (await http.request(`${base}/schemes`, schemeUsagesResponseSchema)).items,
       list: async (projectId: string) =>
         http.request(`${base}/projects/${enc(projectId)}/schemes`, schemesResponseSchema),
       diff: async (projectId: string, kind: SchemeKind) =>
@@ -99,16 +115,12 @@ export function workSettingsEndpoints(http: Http) {
     orgWorkflows: {
       list: async () => (await http.request(`${base}/workflows`, workflowsResponseSchema)).items,
     },
+    /** A project's issue types, or the org defaults when the project is null. */
     issueTypes: {
-      list: async (projectId: string) =>
-        (
-          await http.request(
-            `${base}/projects/${enc(projectId)}/issue-types`,
-            issueTypesResponseSchema,
-          )
-        ).items,
-      create: async (projectId: string, body: CreateIssueTypeBody) =>
-        http.request(`${base}/projects/${enc(projectId)}/issue-types`, issueTypeSchema, {
+      list: async (projectId: string | null) =>
+        (await http.request(`${scoped(projectId)}/issue-types`, issueTypesResponseSchema)).items,
+      create: async (projectId: string | null, body: CreateIssueTypeBody) =>
+        http.request(`${scoped(projectId)}/issue-types`, issueTypeSchema, {
           method: 'POST',
           body: validated(createIssueTypeBodySchema, body),
           idempotent: true,
@@ -119,13 +131,12 @@ export function workSettingsEndpoints(http: Http) {
           body: validated(updateIssueTypeBodySchema, body),
         }),
       /** The project's whole type order, first to last. */
-      reorder: async (projectId: string, ids: string[]) =>
+      reorder: async (projectId: string | null, ids: string[]) =>
         (
-          await http.request(
-            `${base}/projects/${enc(projectId)}/issue-types/reorder`,
-            issueTypesResponseSchema,
-            { method: 'POST', body: validated(reorderIssueTypesBodySchema, { ids }) },
-          )
+          await http.request(`${scoped(projectId)}/issue-types/reorder`, issueTypesResponseSchema, {
+            method: 'POST',
+            body: validated(reorderIssueTypesBodySchema, { ids }),
+          })
         ).items,
       fields: async (issueTypeId: string) =>
         (
@@ -144,12 +155,12 @@ export function workSettingsEndpoints(http: Http) {
           )
         ).items,
     },
+    /** A project's custom fields, or the org defaults when the project is null. */
     fields: {
-      list: async (projectId: string) =>
-        (await http.request(`${base}/projects/${enc(projectId)}/fields`, fieldsResponseSchema))
-          .items,
-      create: async (projectId: string, body: CreateFieldBody) =>
-        http.request(`${base}/projects/${enc(projectId)}/fields`, fieldSchema, {
+      list: async (projectId: string | null) =>
+        (await http.request(`${scoped(projectId)}/fields`, fieldsResponseSchema)).items,
+      create: async (projectId: string | null, body: CreateFieldBody) =>
+        http.request(`${scoped(projectId)}/fields`, fieldSchema, {
           method: 'POST',
           body: validated(createFieldBodySchema, body),
           idempotent: true,

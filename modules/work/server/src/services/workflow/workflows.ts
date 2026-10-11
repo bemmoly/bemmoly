@@ -21,12 +21,22 @@ import {
   type WorkflowRow,
 } from './rows.ts';
 import { copyWorkflowToProject } from './project-copy.ts';
+import { authorizeOrgDefaults } from '../projects/scope.ts';
 
 const MODULE: ResourceRef = { kind: 'module', moduleId: 'work' };
 
 /** Org defaults are workspace-wide; a project's own workflow is that project's resource. */
 export const resourceOf = (row: Pick<WorkflowRow, 'project_id'>): ResourceRef =>
   row.project_id ? { kind: 'project', id: row.project_id, moduleId: 'work' } : MODULE;
+
+/** Changing a project's workflow needs "Configure project" there; an org default, an admin. */
+export async function authorizeConfigure(
+  ctx: RequestContext,
+  row: Pick<WorkflowRow, 'project_id'>,
+): Promise<void> {
+  if (!row.project_id) return authorizeOrgDefaults(ctx);
+  await ctx.authz.authorize(ctx.actor, 'work.project.configure', resourceOf(row));
+}
 
 export function requireDatabase(deps: WorkflowServiceDeps): SqlClient {
   if (!deps.database) throw new ProviderError('The work module needs the database');
@@ -47,8 +57,8 @@ export function createWorkflowReads(deps: WorkflowServiceDeps) {
 
   async function getRow(ctx: RequestContext, id: string, capability: 'view' | 'configure') {
     const row = await loadWorkflow(db(), id);
-    const name = capability === 'view' ? 'work.issue.view' : 'work.project.configure';
-    await ctx.authz.authorize(ctx.actor, name, resourceOf(row));
+    if (capability === 'configure') await authorizeConfigure(ctx, row);
+    else await ctx.authz.authorize(ctx.actor, 'work.issue.view', resourceOf(row));
     return row;
   }
 
@@ -84,10 +94,7 @@ export function createWorkflowReads(deps: WorkflowServiceDeps) {
      * project's issues and board columns move onto the copy's statuses.
      */
     async create(ctx: RequestContext, body: CreateWorkflowBody): Promise<Workflow> {
-      const resource: ResourceRef = body.projectId
-        ? { kind: 'project', id: body.projectId, moduleId: 'work' }
-        : MODULE;
-      await ctx.authz.authorize(ctx.actor, 'work.project.configure', resource);
+      await authorizeConfigure(ctx, { project_id: body.projectId ?? null });
       const sql = db();
       const created = await sql.begin(async (tx) => {
         if (body.projectId) {

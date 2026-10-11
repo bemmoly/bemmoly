@@ -135,6 +135,18 @@ describe('loadModules', () => {
     expect(() => loadModules({ available: [badColor] })).toThrow(/not a module colour/);
   });
 
+  it('lists a module settings area at /settings/<id>, for workspace admins by default', () => {
+    const work = fakeModule('work', { settings: { path: '/settings/work' } });
+    expect(loadModules({ available: [work] }).manifests()[0]?.settings).toEqual({
+      path: '/settings/work',
+      requires: 'admin',
+    });
+    const elsewhere = fakeModule('work', { settings: { path: '/settings/docs' } });
+    expect(() => loadModules({ available: [elsewhere] })).toThrow(
+      /settings path must be "\/settings\/work"/,
+    );
+  });
+
   it('gives every G chord one place, keeping G H and G I for the shell', () => {
     const chord = (id: string, keys: string) =>
       fakeModule(id, {

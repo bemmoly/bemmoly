@@ -26,6 +26,19 @@ describe('WorkflowsList', () => {
     expect(within(row as HTMLElement).getByText(/now|second|minute/i)).toBeTruthy();
   });
 
+  it('lists only the org default, with every project running it, on the org page', async () => {
+    backend.workflow = { ...backend.workflow, projectId: null };
+    render(
+      <Providers client={testClient()}>
+        <WorkflowsList project={null} editorPath={(id) => `/settings/work/workflow/${id}`} />
+      </Providers>,
+    );
+    const row = (await screen.findByText('Software workflow')).closest('[role="row"]');
+    expect(within(row as HTMLElement).getByText('Default')).toBeTruthy();
+    expect(within(row as HTMLElement).queryByLabelText('Runs here')).toBeNull();
+    expect(screen.getByText(/every project runs until it copies its own/)).toBeTruthy();
+  });
+
   it('says Never for a workflow that has not been published', async () => {
     backend.workflow = { ...backend.workflow, publishedVersion: 0, publishedAt: null };
     renderList();

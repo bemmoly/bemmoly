@@ -20,7 +20,7 @@ export function FiltersTab(props: FiltersTabProps) {
     <div className="flex flex-col gap-4">
       <SectionHeading
         title="Quick filters"
-        description="One-click filters shown above the board for everyone on the project. Each is a query; members turn them on and off for themselves."
+        description={`One-click filters shown above the board for everyone on ${props.scope.kind === 'org' ? 'every project that follows this default' : 'the project'}. Each is a query; members turn them on and off for themselves.`}
         mode={mode}
         locked={access.configureBoard ? undefined : NO_BOARD_PERMISSION}
         onEdit={props.onEdit}

@@ -6,6 +6,8 @@ import { api } from '../shared/index.ts';
 const ORG_ADMIN_SIGNAL = 'workspace.delete';
 
 export interface SettingsAccess {
+  /** A workspace admin: the only person who changes the org defaults. */
+  orgAdmin: boolean;
   /** Columns, lanes, filters, cards and the reset: "Configure board". */
   configureBoard: boolean;
   /** WIP limits alone: "Edit WIP limits", or "Configure board". */
@@ -26,14 +28,30 @@ export function useSettingsAccess(): SettingsAccess {
     staleTime: 60_000,
   });
   const held = new Set(me.data?.capabilities ?? []);
-  const can = (capability: string) => held.has(ORG_ADMIN_SIGNAL) || held.has(capability);
+  const orgAdmin = held.has(ORG_ADMIN_SIGNAL);
+  const can = (capability: string) => orgAdmin || held.has(capability);
   const configureBoard = can('work.board.configure');
   return {
+    orgAdmin,
     configureBoard,
     editWip: configureBoard || can('work.board.wip'),
     configureProject: can('work.project.configure'),
   };
 }
 
+/**
+ * What may change on an org default page: everything for a workspace admin, nothing for anyone
+ * else. The method is each project's own, so it never changes from here.
+ */
+export function orgDefaultsAccess(access: SettingsAccess): SettingsAccess {
+  return {
+    orgAdmin: access.orgAdmin,
+    configureBoard: access.orgAdmin,
+    editWip: access.orgAdmin,
+    configureProject: false,
+  };
+}
+
+export const NO_ORG_PERMISSION = 'Only workspace admins can change the org defaults.';
 export const NO_BOARD_PERMISSION = 'You need "Configure board" to change this.';
 export const NO_PROJECT_PERMISSION = 'You need "Configure project" to change this.';

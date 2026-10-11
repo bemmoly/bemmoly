@@ -30,7 +30,11 @@ export function BoardDialogs({
       <DiffDialog
         {...review.saveReview}
         title="Review changes"
-        description="These settings change for everyone on the project when you save."
+        description={
+          settings.scope.kind === 'org'
+            ? 'These settings change on every project that follows the default when you save. Projects with their own board keep it.'
+            : 'These settings change for everyone on the project when you save.'
+        }
         empty="Nothing changes."
         confirmLabel="Save changes"
         error={failure(settings.save.error)}

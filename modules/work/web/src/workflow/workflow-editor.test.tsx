@@ -1,9 +1,7 @@
-import type { Project } from '@bemmoly/module-work/shared';
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import {
   backend,
-  PROJECT_ID,
   Providers,
   STATUS,
   testClient,
@@ -14,16 +12,10 @@ import { WorkflowEditor } from './workflow-editor.tsx';
 
 useWorkflowBackend({ beforeAll, afterAll, beforeEach, afterEach });
 
-const project = {
-  id: PROJECT_ID,
-  key: 'PLT',
-  name: 'Platform Core',
-} as Project;
-
 async function openEditor() {
   render(
     <Providers client={testClient()}>
-      <WorkflowEditor project={project} workflowId={WORKFLOW_ID} listPath="/work/workflows/PLT" />
+      <WorkflowEditor workflowId={WORKFLOW_ID} listPath="/work/workflows/PLT" />
     </Providers>,
   );
   return screen.findByRole('group', { name: 'Software workflow' });

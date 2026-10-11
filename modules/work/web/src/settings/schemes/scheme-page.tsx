@@ -1,10 +1,12 @@
 import { isApiError } from '@bemmoly/api-client';
+import type { SchemeKind } from '@bemmoly/module-work/shared';
 import { Button, ConfirmChange, PageTitle } from '@bemmoly/ui';
 import type { ReactNode } from 'react';
 import { NO_PROJECT_PERMISSION } from '../../hooks/settings-access.ts';
 import type { SchemeFlow } from '../../hooks/settings-scheme-flow.ts';
 import { DiffDialog, invertDiff } from '../diff-dialog.tsx';
 import { InheritanceNote } from '../inheritance-note.tsx';
+import { OrgDefaultNote } from '../org-default-note.tsx';
 
 const failure = (error: unknown) =>
   error ? (
@@ -16,16 +18,38 @@ const failure = (error: unknown) =>
 export interface SchemePageProps {
   title: string;
   description: string;
-  flow: SchemeFlow;
+  kind: SchemeKind;
+  /** A project's override and reset; null on the org default page, which has neither. */
+  flow: SchemeFlow | null;
   canConfigure: boolean;
+  /** The org default's page, for the project note's link; set for workspace admins only. */
+  defaultHref?: string | undefined;
   children: ReactNode;
 }
 
 /**
- * The frame of a scheme page (Issue types, Fields): the header with Override
- * or Reset, the "Inherits from" banner with its diff, and the asks.
+ * The frame of a scheme page (Issue types, Fields). In a project: the header with Override or
+ * Reset, the "Based on" note with its diff, and the asks. On the org default: the header and
+ * which projects the default reaches.
  */
-export function SchemePage({ title, description, flow, canConfigure, children }: SchemePageProps) {
+export function SchemePage({
+  title,
+  description,
+  kind,
+  flow,
+  canConfigure,
+  defaultHref,
+  children,
+}: SchemePageProps) {
+  if (!flow) {
+    return (
+      <div className="flex flex-col gap-6">
+        <PageTitle variant="settings" title={title} description={description} />
+        <OrgDefaultNote kind={kind} enabled={canConfigure} />
+        {children}
+      </div>
+    );
+  }
   const overridden = flow.status?.overridden ?? false;
   const origin = flow.status?.originName ?? 'the org default';
   const locked = canConfigure ? undefined : NO_PROJECT_PERMISSION;
@@ -57,6 +81,7 @@ export function SchemePage({ title, description, flow, canConfigure, children }:
         overridden={overridden}
         changes={flow.status?.overrideCount ?? 0}
         onCompare={flow.viewDiff}
+        defaultHref={defaultHref}
       />
       {children}
       <DiffDialog

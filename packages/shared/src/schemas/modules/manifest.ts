@@ -69,6 +69,17 @@ export const sidebarSectionSchema = z.object({
   add: z.object({ create: z.string().min(1), label: z.string().min(1) }).optional(),
 });
 
+/**
+ * The module's own settings in workspace Settings: one row under the Modules group, headed by
+ * the module's tile and name, that opens `path`. The module's web entry `settings.tsx` draws
+ * the pages under it; Settings › Modules keeps turning the module on and off.
+ */
+export const moduleSettingsSchema = z.object({
+  path: z.string().regex(/^\/settings\/[a-z][a-z0-9-]*$/),
+  /** Who may open them: "admin" for workspace admins, or a capability name. */
+  requires: z.string().min(1).default('admin'),
+});
+
 /** What the web shell needs to know about one enabled module. */
 export const moduleManifestSchema = z.object({
   id: moduleIdSchema,
@@ -84,6 +95,7 @@ export const moduleManifestSchema = z.object({
   /** Where its section sits in the sidebar and its entries in menus, lowest first. */
   order: z.number().int().optional(),
   sidebar: sidebarSectionSchema.optional(),
+  settings: moduleSettingsSchema.optional(),
 });
 
 export const modulesResponseSchema = z.object({
@@ -97,5 +109,7 @@ export type ModuleColor = z.infer<typeof moduleColorSchema>;
 export type SidebarLink = z.infer<typeof sidebarLinkSchema>;
 export type SidebarSection = z.infer<typeof sidebarSectionSchema>;
 export type SidebarSectionInput = z.input<typeof sidebarSectionSchema>;
+export type ModuleSettings = z.infer<typeof moduleSettingsSchema>;
+export type ModuleSettingsInput = z.input<typeof moduleSettingsSchema>;
 export type ModuleManifest = z.infer<typeof moduleManifestSchema>;
 export type ModulesResponse = z.infer<typeof modulesResponseSchema>;

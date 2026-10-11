@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { moveStatus, removeColumn, setWip } from '../settings/model/columns.ts';
 import { S } from '../settings/model/fixtures.ts';
+import { ORG_SCOPE, projectScope } from '../settings/pages.ts';
 import { createFakeWork } from './settings-fakes.ts';
 
 const holder = vi.hoisted(() => ({ fake: null as unknown as ReturnType<typeof createFakeWork> }));
@@ -19,7 +20,7 @@ vi.mock('../shared/api.ts', () => ({
 }));
 
 const { useBoardSettings } = await import('./settings-board.ts');
-const { useSettingsAccess } = await import('./settings-access.ts');
+const { orgDefaultsAccess, useSettingsAccess } = await import('./settings-access.ts');
 
 function wrapper({ children }: { children: ReactNode }) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -27,7 +28,7 @@ function wrapper({ children }: { children: ReactNode }) {
 }
 
 async function loaded() {
-  const hook = renderHook(() => useBoardSettings('PLT'), { wrapper });
+  const hook = renderHook(() => useBoardSettings(projectScope('PLT')), { wrapper });
   await waitFor(() => expect(hook.result.current.value).not.toBeNull());
   await waitFor(() => expect(hook.result.current.baseConfig).not.toBeNull());
   return hook;
@@ -144,14 +145,40 @@ describe('useBoardSettings', () => {
     expect(holder.fake.writes.board).toEqual([]);
   });
 
-  it('resets to the org default re-pointed at the project statuses', async () => {
+  it('resets through the scheme, so the project follows the org default again', async () => {
     const { result } = await loaded();
     act(() => result.current.updateConfig((config) => setWip(config, 'qa', '2')));
     act(() => result.current.reset.mutate());
     await waitFor(() => expect(result.current.reset.isSuccess).toBe(true));
-    const sent = holder.fake.writes.board[0] as { config: { columns: { statusIds: string[] }[] } };
-    expect(sent.config.columns[3]?.statusIds).toEqual([S['Testing']]);
+    expect(holder.fake.writes.reset).toEqual([[holder.fake.project.id, 'board']]);
+    expect(holder.fake.writes.board).toEqual([]);
     expect(result.current.dirty.columns).toBe(false);
+    await waitFor(() => expect(result.current.overrides).toEqual([]));
+  });
+
+  it('edits the org default board itself, with nothing to compare it with', async () => {
+    const hook = renderHook(() => useBoardSettings(ORG_SCOPE), { wrapper });
+    await waitFor(() => expect(hook.result.current.value).not.toBeNull());
+    const { result } = hook;
+    expect(result.current.project).toBeUndefined();
+    expect(result.current.board?.projectId).toBeNull();
+    expect(result.current.baseConfig).toBeNull();
+    expect(result.current.workflowHref).toBe('/settings/work/workflow');
+    expect(result.current.value?.config.columns[0]?.statusIds[0]).toMatch(/0001\d\d$/);
+    act(() =>
+      result.current.updateConfig((config) => ({
+        ...config,
+        quickFilters: [{ name: 'Blocked', query: 'status = Blocked' }],
+      })),
+    );
+    const prepared = result.current.prepare('filters');
+    if (prepared) act(() => result.current.save.mutate(prepared));
+    await waitFor(() => expect(result.current.save.isSuccess).toBe(true));
+    expect(holder.fake.writes.orgBoard).toHaveLength(1);
+    expect(holder.fake.writes.board).toEqual([]);
+    expect(holder.fake.writes.project).toEqual([]);
+    expect(holder.fake.writes.counts).toEqual([]);
+    expect(holder.fake.writes.fields).toContain(null);
   });
 });
 
@@ -160,7 +187,24 @@ describe('useSettingsAccess', () => {
     const { result } = renderHook(() => useSettingsAccess(), { wrapper });
     await waitFor(() => expect(result.current.editWip).toBe(true));
     expect(result.current).toEqual({
+      orgAdmin: false,
       configureBoard: false,
+      editWip: true,
+      configureProject: false,
+    });
+    expect(orgDefaultsAccess(result.current)).toEqual({
+      orgAdmin: false,
+      configureBoard: false,
+      editWip: false,
+      configureProject: false,
+    });
+  });
+
+  it('gives a workspace admin the org defaults, never a project method', () => {
+    const admin = { orgAdmin: true, configureBoard: true, editWip: true, configureProject: true };
+    expect(orgDefaultsAccess(admin)).toEqual({
+      orgAdmin: true,
+      configureBoard: true,
       editWip: true,
       configureProject: false,
     });

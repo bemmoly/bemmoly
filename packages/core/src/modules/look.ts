@@ -1,4 +1,4 @@
-import { moduleColorSchema, sidebarSectionSchema } from '@bemmoly/shared';
+import { moduleColorSchema, moduleSettingsSchema, sidebarSectionSchema } from '@bemmoly/shared';
 import type { BemmolyModule } from './contract.ts';
 import type { ModuleContributions } from './contributions.ts';
 import { ModuleLoadError } from './errors.ts';
@@ -7,9 +7,9 @@ const under = (moduleId: string, path: string) =>
   path === `/${moduleId}` || path.startsWith(`/${moduleId}/`) || path.startsWith(`/${moduleId}?`);
 
 /**
- * How a module asks to be drawn in the shell: its tile and its sidebar section. Checked once
- * at boot, after register(), so a section's "+" can only name a create entry the module added
- * and every link stays inside the module's own area.
+ * How a module asks to be drawn in the shell: its tile, its sidebar section and its settings.
+ * Checked once at boot, after register(), so a section's "+" can only name a create entry the
+ * module added and every link stays inside the module's own area.
  */
 export function checkModuleLook(module: BemmolyModule, contributions: ModuleContributions): void {
   const fail = (message: string): never => {
@@ -21,6 +21,12 @@ export function checkModuleLook(module: BemmolyModule, contributions: ModuleCont
   }
   if (module.order !== undefined && !Number.isInteger(module.order))
     fail('order is not a whole number');
+  if (module.settings) {
+    const settings = moduleSettingsSchema.safeParse(module.settings);
+    if (!settings.success || settings.data.path !== `/settings/${module.id}`) {
+      fail(`settings path must be "/settings/${module.id}"`);
+    }
+  }
   if (!module.sidebar) return;
   const parsed = sidebarSectionSchema.safeParse(module.sidebar);
   if (!parsed.success) return fail('sidebar section is not valid');

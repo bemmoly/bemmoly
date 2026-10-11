@@ -99,6 +99,7 @@ const SHIPPED: Shipped[] = [
         ],
         add: { create: 'work.create-project', label: 'New project' },
       },
+      settings: { path: '/settings/work', requires: 'admin' },
     },
     enabledMinutesAgo: 60 * 24 * 3,
   },

@@ -123,3 +123,26 @@ export default defineModule({
   belong to the shell.
 - A module may take over the sidebar while it needs it (Docs' focus mode, `useSidebarTakeover`,
   with #77). The brand block, search, New and the foot stay. Never on the rail.
+
+## Module settings
+
+A module that has settings of its own declares them in its manifest and draws them itself
+([ADR 0030](../../adr/0030-modules-own-an-org-defaults-page-in-settings.md)):
+
+```ts
+export default defineModule({
+  id: 'work',
+  settings: { path: '/settings/work' }, // exactly /settings/<id>; requires: 'admin' by default
+  …
+});
+```
+
+- **One row under Modules** in the settings sidebar, the module's tile and name, shown to the
+  people `requires` admits (workspace admins unless it names a capability). Manage modules stays
+  where modules are turned on and off; a module without `settings` keeps its row into it.
+- **The module's `web/src/settings.tsx`** draws everything under the path. It receives the
+  trail ("Settings / Modules / Work") and the subpath, and renders its own `PageLayout`: its
+  sections as header `tabs`, `contained` for lists, `full` for editors (a board's settings, a
+  workflow). It loads on its own, never with the module's screens.
+- **No permission** is drawn by the shell inside the frame: "Only workspace admins can change
+  Work settings". The server refuses the writes again.

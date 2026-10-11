@@ -75,10 +75,20 @@ export function createFakeWork(method: Project['method'] = 'scrum', { withOrgBoa
     name: 'Software (Scrum)',
     config: orgConfig,
   };
-  const writes: { board: unknown[]; project: unknown[]; counts: unknown[][] } = {
+  const writes: {
+    board: unknown[];
+    orgBoard: unknown[];
+    project: unknown[];
+    counts: unknown[][];
+    reset: unknown[][];
+    fields: unknown[];
+  } = {
     board: [],
+    orgBoard: [],
     project: [],
     counts: [],
+    reset: [],
+    fields: [],
   };
 
   const work = {
@@ -93,10 +103,21 @@ export function createFakeWork(method: Project['method'] = 'scrum', { withOrgBoa
     boards: {
       list: async () => [structuredClone(board)],
       listOrg: async () => (withOrgBoard ? [structuredClone(orgBoard)] : []),
-      update: async (_id: string, body: { config?: BoardConfig }) => {
-        writes.board.push(body);
-        if (body.config) board.config = structuredClone(body.config);
-        return structuredClone(board);
+      update: async (id: string, body: { config?: BoardConfig }) => {
+        const target = id === ORG_BOARD_ID ? orgBoard : board;
+        (id === ORG_BOARD_ID ? writes.orgBoard : writes.board).push(body);
+        if (body.config) target.config = structuredClone(body.config);
+        return structuredClone(target);
+      },
+    },
+    schemes: {
+      /** The server's reset: the org default matched to the project's statuses, no override. */
+      reset: async (projectId: string, kind: string) => {
+        writes.reset.push([projectId, kind]);
+        board.config = {
+          ...projectConfig,
+          columns: projectConfig.columns.map((column) => ({ ...column, wipLimit: null })),
+        };
       },
     },
     workflows: {
@@ -111,7 +132,12 @@ export function createFakeWork(method: Project['method'] = 'scrum', { withOrgBoa
     orgWorkflows: {
       list: async () => [workflow('00000000-0000-7000-8000-0000000000c2', null, orgStatusId)],
     },
-    fields: { list: async () => [] },
+    fields: {
+      list: async (projectId: string | null) => {
+        writes.fields.push(projectId);
+        return [];
+      },
+    },
   };
-  return { work, writes, board, project };
+  return { work, writes, board, orgBoard, project };
 }

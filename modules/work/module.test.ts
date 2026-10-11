@@ -79,6 +79,7 @@ describe('work module', () => {
         ],
         add: { create: 'work.create-project', label: 'New project' },
       },
+      settings: { path: '/settings/work', requires: 'admin' },
     });
     expect(work.defaultAccess).toBe('teams');
   });

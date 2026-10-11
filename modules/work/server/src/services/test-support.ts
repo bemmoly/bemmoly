@@ -10,7 +10,9 @@ export function contextWhere(
   const authorize = vi.fn(async () => {
     if (!allowed) throw new ForbiddenError('No');
   });
-  return { actor, authorize, authz: { authorize } as never };
+  // A workspace admin when allowed: the org defaults need one, not just the capability.
+  const isOrgAdmin = vi.fn(async () => allowed);
+  return { actor, authorize, authz: { authorize, isOrgAdmin } as never };
 }
 
 export interface FakeSql {

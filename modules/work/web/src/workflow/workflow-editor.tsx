@@ -1,6 +1,5 @@
 import { ConfirmChange, EmptyState, useToast } from '@bemmoly/ui';
 import { useEffect, useMemo, useState } from 'react';
-import type { Project } from '../../../shared/index.ts';
 import { useWorkflowEditor } from '../hooks/workflow-editor.ts';
 import { useDraftLeaveGuard } from '../hooks/workflow-leave.ts';
 import { usePublishWorkflow } from '../hooks/workflow-publish.ts';
@@ -16,7 +15,6 @@ import { SummaryPanel } from './summary-panel.tsx';
 import { TransitionPanel } from './transition-panel.tsx';
 
 export interface WorkflowEditorProps {
-  project: Project;
   workflowId: string;
   listPath: string;
 }
@@ -59,7 +57,7 @@ export function WorkflowEditor({ workflowId, listPath }: WorkflowEditorProps) {
     return (
       <EmptyState
         title="This workflow did not open"
-        description="It may have been removed, or you may need Configure project to edit it."
+        description="It may have been removed, or you may need Configure project to edit it (a workspace admin, for the org default)."
       />
     );
   if (!workflow || !draft) return <WorkflowEditorSkeleton />;
