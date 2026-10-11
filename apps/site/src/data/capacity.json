@@ -1,0 +1,171 @@
+{
+  "$comment": "How big a server Bemmoly needs, rendered through src/data/capacity.ts on /sizing and /self-hosting#sizing. One entry in sizes[] per server size. status: 'measured' means every number comes from a load test; 'measuring' keeps requestsPerSecond, issues, docs and load null and the page says 'Being measured'. requestsPerSecond is the highest measured load that stayed within the latency budget. The people the page shows are not stored: capacity.ts computes them from requestsPerSecond and assumption (active people = requestsPerSecond / requestsPerActiveUserPerSecond; organisation = active / activeShare; both rounded down). prices[] are rounded list prices for the named instance type. The load test overwrites this file with full results; keep the shape.",
+  "setup": "One server from the one-command install, with Postgres tuned by the installer.",
+  "priceNote": "Prices checked October 2026, excluding storage, bandwidth and tax: rounded on-demand list prices for about 730 hours a month, in the cheapest common region. Hetzner bills in euros.",
+  "assumption": {
+    "requestsPerActiveUserPerSecond": 0.2,
+    "activeShare": 0.2,
+    "text": "An active person does about one thing every 5 seconds (0.2 requests a second), and about 20% of an organisation is active at the same moment. Both are assumptions, not measurements, and the people figures are rounded down."
+  },
+  "sizes": [
+    {
+      "cpu": 2,
+      "ramGb": 2,
+      "status": "measuring",
+      "recommended": false,
+      "requestsPerSecond": null,
+      "issues": null,
+      "docs": null,
+      "load": null,
+      "notes": "Being measured now.",
+      "prices": [
+        {
+          "provider": "Hetzner",
+          "instance": "CX23 (2 vCPU, 4 GB, the smallest it offers)",
+          "monthly": 6,
+          "currency": "EUR"
+        },
+        {
+          "provider": "DigitalOcean",
+          "instance": "Basic Droplet 2 GB (1 vCPU)",
+          "monthly": 12,
+          "currency": "USD"
+        },
+        {
+          "provider": "AWS",
+          "instance": "EC2 t4g.small",
+          "monthly": 12,
+          "currency": "USD"
+        },
+        {
+          "provider": "Google Cloud",
+          "instance": "e2-small",
+          "monthly": 12,
+          "currency": "USD"
+        },
+        {
+          "provider": "Azure",
+          "instance": "B1ms (1 vCPU)",
+          "monthly": 15,
+          "currency": "USD"
+        }
+      ]
+    },
+    {
+      "cpu": 2,
+      "ramGb": 4,
+      "status": "measured",
+      "recommended": true,
+      "requestsPerSecond": 80,
+      "issues": 31384,
+      "docs": 400,
+      "load": {
+        "p95Ms": {
+          "board": 25,
+          "issue": 10,
+          "search": 22,
+          "docPage": 10,
+          "issueEdit": 16
+        },
+        "soak": {
+          "minutes": 45,
+          "rps": 30,
+          "requests": 98590,
+          "errors": 0,
+          "p95Ms": [24, 27],
+          "appMemoryMb": 500
+        },
+        "liveEditing": {
+          "delivered": 66503,
+          "sent": 66504
+        },
+        "data": {
+          "issues": 31384,
+          "largestProject": 10635,
+          "comments": 45894,
+          "docPages": 400,
+          "users": 245,
+          "projects": 5,
+          "importIssues": 10000,
+          "importSeconds": 20
+        }
+      },
+      "notes": "80 requests a second is the confirmed limit. Steps above it ran while the test machine was overloaded, so the real limit may be a little higher; they will be re-run. Larger data sets (100,000+ issues, thousands of doc pages) are being measured.",
+      "prices": [
+        {
+          "provider": "Hetzner",
+          "instance": "CX23",
+          "monthly": 6,
+          "currency": "EUR"
+        },
+        {
+          "provider": "DigitalOcean",
+          "instance": "Basic Droplet 4 GB",
+          "monthly": 24,
+          "currency": "USD"
+        },
+        {
+          "provider": "AWS",
+          "instance": "Lightsail 4 GB or EC2 t4g.medium",
+          "monthly": 24,
+          "currency": "USD"
+        },
+        {
+          "provider": "Google Cloud",
+          "instance": "e2-medium",
+          "monthly": 25,
+          "currency": "USD"
+        },
+        {
+          "provider": "Azure",
+          "instance": "B2als v2",
+          "monthly": 27,
+          "currency": "USD"
+        }
+      ]
+    },
+    {
+      "cpu": 4,
+      "ramGb": 8,
+      "status": "measuring",
+      "recommended": false,
+      "requestsPerSecond": null,
+      "issues": null,
+      "docs": null,
+      "load": null,
+      "notes": "Being measured now.",
+      "prices": [
+        {
+          "provider": "Hetzner",
+          "instance": "CX33",
+          "monthly": 9,
+          "currency": "EUR"
+        },
+        {
+          "provider": "DigitalOcean",
+          "instance": "Basic Droplet 8 GB",
+          "monthly": 48,
+          "currency": "USD"
+        },
+        {
+          "provider": "AWS",
+          "instance": "EC2 c6g.xlarge",
+          "monthly": 100,
+          "currency": "USD"
+        },
+        {
+          "provider": "Google Cloud",
+          "instance": "e2 custom, 4 vCPU and 8 GB",
+          "monthly": 80,
+          "currency": "USD"
+        },
+        {
+          "provider": "Azure",
+          "instance": "B4als v2",
+          "monthly": 97,
+          "currency": "USD"
+        }
+      ]
+    }
+  ]
+}

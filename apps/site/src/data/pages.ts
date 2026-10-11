@@ -94,6 +94,15 @@ export const PAGES = [
     software: true,
   },
   {
+    path: '/sizing',
+    name: 'Sizing',
+    title: 'How big a server does Bemmoly need? Sizing and cost',
+    description:
+      'Load-tested server sizes for self-hosting Bemmoly: how many people a 2 vCPU, 4 GB server serves, how it was measured, and monthly prices by cloud.',
+    updated: '2026-10-12',
+    software: true,
+  },
+  {
     path: '/docs',
     name: 'Docs',
     title: 'Bemmoly docs: install, run and upgrade your own server',

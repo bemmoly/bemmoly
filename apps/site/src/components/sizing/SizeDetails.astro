@@ -1,0 +1,117 @@
+---
+/**
+ * The detail behind the cards, from capacity.json: how the measured size was tested, the
+ * people estimate's assumption, and per-cloud prices for every size. Folded by default so
+ * the cards stay the answer.
+ */
+import {
+  CAPACITY,
+  MEASURED,
+  byPrice,
+  peopleOf,
+  fmt,
+  money,
+  sizeName,
+} from '../../data/capacity.ts';
+
+const range = ([low, high]: [number, number]) => `${fmt(low)}–${fmt(high)}`;
+const cell = 'px-3.5 py-2.5';
+const people = MEASURED ? peopleOf(MEASURED) : null;
+const IMPORT_LABEL = 'An Import from Jira';
+---
+
+<div class="flex flex-col gap-3">
+  <details class="group rounded-card border border-line bg-card">
+    <summary class="cursor-pointer px-5 py-4 text-16 font-semibold text-tx">
+      How we measured
+    </summary>
+    <div class="flex flex-col gap-3 border-t border-line-2 px-5 py-4 text-15 leading-desc text-tx-2">
+      <p>{CAPACITY.setup}</p>
+      {MEASURED && (
+        <ul class="flex list-disc flex-col gap-1.5 pl-5">
+          <li>
+            Server: <span data-capacity>{MEASURED.cpu}</span> vCPU,{' '}
+            <span data-capacity>{MEASURED.ramGb}</span> GB.
+          </li>
+          <li>
+            Data: <span data-capacity>{fmt(MEASURED.load.data.issues)}</span> issues (largest
+            project <span data-capacity>{fmt(MEASURED.load.data.largestProject)}</span>),{' '}
+            <span data-capacity>{fmt(MEASURED.load.data.comments)}</span> comments,{' '}
+            <span data-capacity>{fmt(MEASURED.load.data.docPages)}</span> doc pages,{' '}
+            <span data-capacity>{fmt(MEASURED.load.data.users)}</span> users,{' '}
+            <span data-capacity>{fmt(MEASURED.load.data.projects)}</span> projects. {IMPORT_LABEL}{' '}
+            of <span data-capacity>{fmt(MEASURED.load.data.importIssues)}</span> issues took{' '}
+            <span data-capacity>{MEASURED.load.data.importSeconds}</span> seconds.
+          </li>
+          <li>
+            Held <span data-capacity>{MEASURED.requestsPerSecond}</span> requests a second with
+            every page fast: 95% of requests answered within{' '}
+            <span data-capacity>{MEASURED.load.p95Ms.board}</span> ms for a board,{' '}
+            <span data-capacity>{MEASURED.load.p95Ms.issue}</span> ms for an issue,{' '}
+            <span data-capacity>{MEASURED.load.p95Ms.search}</span> ms for search,{' '}
+            <span data-capacity>{MEASURED.load.p95Ms.docPage}</span> ms for a doc page and{' '}
+            <span data-capacity>{MEASURED.load.p95Ms.issueEdit}</span> ms for an issue edit.
+          </li>
+          <li>
+            A <span data-capacity>{MEASURED.load.soak.minutes}</span>-minute run at{' '}
+            <span data-capacity>{MEASURED.load.soak.rps}</span> requests a second:{' '}
+            <span data-capacity>{fmt(MEASURED.load.soak.requests)}</span> requests,{' '}
+            <span data-capacity>{MEASURED.load.soak.errors}</span> errors, 95% within{' '}
+            <span data-capacity>{range(MEASURED.load.soak.p95Ms)}</span> ms, app memory about{' '}
+            <span data-capacity>{MEASURED.load.soak.appMemoryMb}</span> MB.
+          </li>
+          <li>
+            Live doc editing delivered{' '}
+            <span data-capacity>{fmt(MEASURED.load.liveEditing.delivered)}</span> of{' '}
+            <span data-capacity>{fmt(MEASURED.load.liveEditing.sent)}</span> keystrokes.
+          </li>
+        </ul>
+      )}
+      <p>
+        <strong>The people estimate.</strong> {CAPACITY.assumption.text} So{' '}
+        <span data-capacity>{MEASURED?.requestsPerSecond}</span> requests a second is about{' '}
+        <span data-people>{fmt(people?.atOnce ?? 0)}</span> people active at once, or an
+        organisation of about <span data-people>{fmt(people?.organisation ?? 0)}</span>.
+      </p>
+      {MEASURED && <p>{MEASURED.notes}</p>}
+    </div>
+  </details>
+
+  <details class="group rounded-card border border-line bg-card">
+    <summary class="cursor-pointer px-5 py-4 text-16 font-semibold text-tx">
+      Prices by cloud
+    </summary>
+    <div class="flex flex-col gap-4 border-t border-line-2 px-5 py-4">
+      {CAPACITY.sizes.map((size) => (
+        <div tabindex="0" class="overflow-x-auto rounded-card border border-line-2">
+          <table class="w-full border-collapse text-left text-14">
+            <caption class="px-3.5 pt-3 pb-1 text-left text-14 font-semibold text-tx">
+              {sizeName(size)}
+            </caption>
+            <thead class="text-13 text-tx-3">
+              <tr>
+                <th class:list={[cell, 'font-semibold']}>Provider</th>
+                <th class:list={[cell, 'font-semibold']}>Instance</th>
+                <th class:list={[cell, 'text-right font-semibold']}>Month</th>
+              </tr>
+            </thead>
+            <tbody class="text-tx-2">
+              {byPrice(size).map((price) => (
+                <tr class="border-t border-line-2 align-top">
+                  <td class:list={[cell, 'whitespace-nowrap text-tx']}>{price.provider}</td>
+                  <td class={cell}>{price.instance}</td>
+                  <td class:list={[cell, 'text-right whitespace-nowrap']} data-price>
+                    {money(price)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ))}
+      <p class="text-14 text-tx-3">
+        {CAPACITY.priceNote} Bemmoly itself is free: no licence or per-seat fee.
+      </p>
+    </div>
+  </details>
+</div>
