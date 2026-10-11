@@ -1,4 +1,4 @@
-import { queryKeys } from '@bemmoly/api-client';
+import { isApiError, queryKeys } from '@bemmoly/api-client';
 import {
   createTeamSchema,
   type ModuleGrant,
@@ -155,10 +155,14 @@ export function useCreateTeam(onDone: () => void) {
       setForm(EMPTY);
       onDone();
     },
-    onError: (error) => {
-      const fields = serverFieldErrors(error);
-      setErrors({ name: fields['name'] ?? describeError(error).message });
-    },
+    // Field messages go under their fields; anything else is shown once for the whole form.
+    // A name clash stays under Name.
+    onError: (error) =>
+      setErrors(
+        isApiError(error) && error.code === 'conflict'
+          ? { name: describeError(error).message }
+          : serverFieldErrors(error),
+      ),
   });
 
   const submit = (event: FormEvent) => {
@@ -179,9 +183,12 @@ export function useCreateTeam(onDone: () => void) {
     errors,
     submit,
     mutation,
+    /** The failure that belongs to no field, for the form-level error. */
+    formError: Object.keys(errors).length === 0 ? mutation.error : null,
     reset: () => {
       setForm(EMPTY);
       setErrors({});
+      mutation.reset();
     },
     leadOptions: [
       { value: '', label: 'No lead yet' },
