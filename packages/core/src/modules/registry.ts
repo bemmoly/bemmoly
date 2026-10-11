@@ -11,6 +11,7 @@ import type {
   AiExclusionSourceDefinition,
   CapabilityDefinition,
   EntityDefinition,
+  ImporterDefinition,
   ReferenceSourceDefinition,
   RouteDefinition,
   SearchProviderDefinition,
@@ -135,6 +136,11 @@ export class ModuleRegistry {
 
   mcpTools(): FromModule<AiContribution>[] {
     return this.#collect((c) => c.mcpTools);
+  }
+
+  /** Every module's `ctx.importers.add` contributions; Settings › Import offers these. */
+  importers(): FromModule<ImporterDefinition>[] {
+    return this.#collect((c) => c.importers);
   }
 
   #collect<T extends object>(pick: (c: ModuleContributions) => readonly T[]): FromModule<T>[] {

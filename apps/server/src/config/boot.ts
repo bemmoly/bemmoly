@@ -14,6 +14,7 @@ import {
   SYSTEM_SETTINGS,
   type BemmolyModule,
   type CollabHost,
+  type Imports,
 } from '@bemmoly/core';
 import { createLogger, type Env } from '@bemmoly/core/config';
 import { getMetrics } from '@bemmoly/core/telemetry';
@@ -23,6 +24,7 @@ import { wireAi } from './ai.ts';
 import { wireCollab } from './collab.ts';
 import { connectDatabase, type DatabaseConnection } from './database.ts';
 import { identityWiring } from './identity.ts';
+import { wireImporters } from './imports.ts';
 import { createDataKernel, type DataKernel } from './kernel.ts';
 import { wireMcp } from './mcp.ts';
 import { wireRetrieval } from './retrieval.ts';
@@ -42,6 +44,8 @@ export interface Booted {
   kernel?: DataKernel;
   /** Live collaborative documents on /collab; present with a database. */
   collab?: CollabHost;
+  /** Settings › Import's service and runner; present with a database. */
+  imports?: Imports;
 }
 
 /**
@@ -141,6 +145,10 @@ export async function bootApplication(options: BootOptions): Promise<Booted> {
     database && kernel
       ? await wireAi({ env, database, kernel, identity, modules, handle: aiHandle, logger })
       : undefined;
+  const imports =
+    database && kernel
+      ? wireImporters({ env, database, kernel, identity, modules, logger })
+      : undefined;
   const retrieval =
     database && kernel && realtime
       ? wireRetrieval({
@@ -183,6 +191,7 @@ export async function bootApplication(options: BootOptions): Promise<Booted> {
             ...ai?.routes,
             ...(retrieval ? { retrieval } : {}),
             ...mcp,
+            ...(imports ? { imports: imports.service } : {}),
             ...(collab ? { collab } : {}),
           },
         }
@@ -197,5 +206,6 @@ export async function bootApplication(options: BootOptions): Promise<Booted> {
     ...(database ? { database } : {}),
     ...(kernel ? { kernel } : {}),
     ...(collab ? { collab } : {}),
+    ...(imports ? { imports } : {}),
   };
 }

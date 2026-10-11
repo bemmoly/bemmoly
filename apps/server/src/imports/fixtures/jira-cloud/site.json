@@ -1,0 +1,167 @@
+{
+  "myself": {
+    "accountId": "acc-admin",
+    "emailAddress": "rohan@acmelabs.dev",
+    "displayName": "Rohan S."
+  },
+  "projects": [
+    {
+      "id": "10000",
+      "key": "OPS",
+      "name": "Operations",
+      "projectTypeKey": "software",
+      "style": "classic",
+      "description": "Keeping the lights on."
+    },
+    {
+      "id": "10001",
+      "key": "MKT",
+      "name": "Marketing",
+      "projectTypeKey": "business",
+      "style": "next-gen"
+    }
+  ],
+  "project": {
+    "OPS": {
+      "id": "10000",
+      "key": "OPS",
+      "name": "Operations",
+      "projectTypeKey": "software",
+      "style": "classic",
+      "description": "Keeping the lights on.",
+      "issueTypes": [
+        { "id": "1", "name": "Epic", "subtask": false, "hierarchyLevel": 1 },
+        { "id": "2", "name": "Story", "subtask": false, "hierarchyLevel": 0 },
+        { "id": "3", "name": "Bug", "subtask": false, "hierarchyLevel": 0 },
+        { "id": "4", "name": "Sub-task", "subtask": true, "hierarchyLevel": -1 },
+        { "id": "5", "name": "Spike", "subtask": false, "hierarchyLevel": 0 }
+      ]
+    }
+  },
+  "statuses": {
+    "OPS": [
+      {
+        "id": "2",
+        "name": "Story",
+        "statuses": [
+          { "id": "10", "name": "To Do", "statusCategory": { "key": "new" } },
+          { "id": "11", "name": "In Progress", "statusCategory": { "key": "indeterminate" } },
+          { "id": "12", "name": "In Review", "statusCategory": { "key": "indeterminate" } },
+          { "id": "13", "name": "Done", "statusCategory": { "key": "done" } }
+        ]
+      },
+      {
+        "id": "3",
+        "name": "Bug",
+        "statuses": [
+          { "id": "10", "name": "To Do", "statusCategory": { "key": "new" } },
+          { "id": "13", "name": "Done", "statusCategory": { "key": "done" } }
+        ]
+      }
+    ]
+  },
+  "fields": [
+    {
+      "id": "summary",
+      "name": "Summary",
+      "custom": false,
+      "schema": { "type": "string", "system": "summary" }
+    },
+    {
+      "id": "customfield_10020",
+      "name": "Sprint",
+      "custom": true,
+      "schema": {
+        "type": "array",
+        "items": "json",
+        "custom": "com.pyxis.greenhopper.jira:gh-sprint"
+      }
+    },
+    {
+      "id": "customfield_10016",
+      "name": "Story point estimate",
+      "custom": true,
+      "schema": { "type": "number", "custom": "com.pyxis.greenhopper.jira:jsw-story-points" }
+    },
+    {
+      "id": "customfield_10050",
+      "name": "Customer tier",
+      "custom": true,
+      "schema": {
+        "type": "option",
+        "custom": "com.atlassian.jira.plugin.system.customfieldtypes:select"
+      }
+    },
+    {
+      "id": "customfield_10060",
+      "name": "Team",
+      "custom": true,
+      "schema": { "type": "team", "custom": "com.atlassian.teams:rm-teams-custom-field-team" }
+    },
+    {
+      "id": "customfield_10070",
+      "name": "Release notes",
+      "custom": true,
+      "schema": {
+        "type": "string",
+        "custom": "com.atlassian.jira.plugin.system.customfieldtypes:textfield"
+      }
+    },
+    {
+      "id": "customfield_10080",
+      "name": "Severity",
+      "custom": true,
+      "schema": {
+        "type": "option",
+        "custom": "com.atlassian.jira.plugin.system.customfieldtypes:select"
+      }
+    }
+  ],
+  "versions": {
+    "OPS": [
+      { "id": "300", "name": "2.0", "released": true, "releaseDate": "2026-06-01" },
+      { "id": "301", "name": "2.1", "released": false }
+    ]
+  },
+  "components": {
+    "OPS": [{ "id": "400", "name": "Billing", "description": "Charges and refunds" }]
+  },
+  "boards": {
+    "OPS": [{ "id": 1, "name": "OPS board", "type": "scrum" }]
+  },
+  "boardColumns": {
+    "1": [
+      { "name": "To Do", "statuses": [{ "id": "10" }] },
+      { "name": "Doing", "statuses": [{ "id": "11" }, { "id": "12" }] },
+      { "name": "Done", "statuses": [{ "id": "13" }] }
+    ]
+  },
+  "sprints": {
+    "1": [
+      {
+        "id": 5,
+        "name": "Sprint 1",
+        "state": "closed",
+        "startDate": "2026-08-01T09:00:00.000Z",
+        "endDate": "2026-08-15T09:00:00.000Z",
+        "completeDate": "2026-08-15T10:00:00.000Z"
+      },
+      {
+        "id": 6,
+        "name": "Sprint 2",
+        "state": "active",
+        "goal": "Tokenise cards",
+        "startDate": "2026-08-15T09:00:00.000Z",
+        "endDate": "2026-08-29T09:00:00.000Z"
+      }
+    ]
+  },
+  "users": {
+    "acc-ada": {
+      "accountId": "acc-ada",
+      "emailAddress": "ada@example.test",
+      "displayName": "Ada L."
+    },
+    "acc-grace": { "accountId": "acc-grace", "displayName": "Grace H." }
+  }
+}

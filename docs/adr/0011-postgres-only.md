@@ -13,8 +13,11 @@ its core, and the one-container promise depends on Postgres doing the work of se
 
 ## Decision
 
-1. PostgreSQL 18, with pgvector and pg_trgm, is the only supported database. Postgres 17 is
-   accepted with a warning.
+1. PostgreSQL 18 or later, with pgvector and pg_trgm, is the only supported database.
+   Postgres 17 was first accepted with a warning; since 0.5 the schema defaults ids to
+   `uuidv7()` and creates the pgvector extension, so the installer, the server, the setup
+   wizard and `bemmoly doctor` refuse anything older than 18 or without pgvector, before a
+   changeset runs.
 2. Postgres also provides full-text search, vector search, the job queue (pg-boss) and
    pub/sub (`LISTEN`/`NOTIFY`); there is no Redis, search engine or broker to install.
 3. The choice an admin gets is where Postgres runs: bundled by the installer, external

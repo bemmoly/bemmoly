@@ -11,6 +11,7 @@ import { createFilesController } from '../controllers/files.controller.ts';
 import { createHealthController } from '../controllers/health.controller.ts';
 import { createIdentityController } from '../controllers/identity.controller.ts';
 import { createMcpController } from '../controllers/mcp.controller.ts';
+import { createImportsController } from '../controllers/imports.controller.ts';
 import { createMetricsController } from '../controllers/metrics.controller.ts';
 import {
   createModuleAdminController,
@@ -38,6 +39,7 @@ import type { CollabHost } from '../services/collab/index.ts';
 import type { FilesService } from '../services/files/index.ts';
 import type { IdentityDependencies } from '../services/identity/index.ts';
 import type { McpService } from '../services/mcp/index.ts';
+import type { ImportService } from '../services/import/index.ts';
 import type { ModuleAdmin, ModuleState } from '../services/modules/index.ts';
 import type { RealtimeHub, RealtimeMetricsHook } from '../services/realtime/index.ts';
 import { createSearchService } from '../services/search/index.ts';
@@ -59,6 +61,7 @@ import { filesRoutes } from './files.routes.ts';
 import { healthRoutes } from './health.routes.ts';
 import { identityRoutes } from './identity.routes.ts';
 import { mcpRoutes, type McpRateLimit } from './mcp.routes.ts';
+import { importsRoutes } from './imports.routes.ts';
 import { metricsRoutes } from './metrics.routes.ts';
 import { adminModulesRoutes, moduleResourceRoutes, modulesRoutes } from './modules.routes.ts';
 import { realtimeRoutes } from './realtime.routes.ts';
@@ -111,6 +114,8 @@ export interface KernelRouteDependencies {
   mcp?: { service: McpService; rateLimit?: McpRateLimit };
   /** Uploaded files (images in pages); /api/v1/files is mounted only when present. */
   files?: FilesService;
+  /** Settings › Import (/admin/imports); mounted when the host wires the importers. */
+  imports?: ImportService;
 }
 
 function identityAndAccessRoutes(deps: IdentityDependencies): FastifyPluginAsync {
@@ -211,6 +216,9 @@ export function kernelRoutes(deps: KernelRouteDependencies): FastifyPluginAsync 
         }
         if (deps.insights) {
           await api.register(aiInsightsRoutes(createAiInsightsController(deps.insights)));
+        }
+        if (deps.imports) {
+          await api.register(importsRoutes(createImportsController(deps.imports, actorOf)));
         }
         if (deps.retrieval) {
           await api.register(aiAnswersRoutes(createAiAnswersController(deps.retrieval)));

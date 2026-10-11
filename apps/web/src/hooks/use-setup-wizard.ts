@@ -27,7 +27,7 @@ export const SETUP_STEPS: readonly SetupStep[] = [
     name: 'Workspace',
     sub: 'Its name and address',
     title: 'Welcome to Bemmoly',
-    subtitle: 'Name your workspace. It takes two minutes, and everything can be changed later.',
+    subtitle: 'Name your workspace. Everything here can be changed later.',
     nextLabel: 'Continue',
     canSkip: false,
   },

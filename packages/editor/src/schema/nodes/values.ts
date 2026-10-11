@@ -42,7 +42,11 @@ export function decisionHeading(state: string, decidedOn: string): string {
  */
 export const SAFE_IMAGE_SRC = /^(https?:\/\/|\/(?!\/)|blob:)/i;
 
-const SOURCES: Record<string, string> = { confluence: 'Confluence', markdown: 'Markdown' };
+const SOURCES: Record<string, string> = {
+  confluence: 'Confluence',
+  jira: 'Jira',
+  markdown: 'Markdown',
+};
 
 /** "Confluence macro: jira-chart", the label an unsupported block shows and exports print. */
 export function unsupportedLabel(source: string, name: string): string {

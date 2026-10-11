@@ -64,6 +64,7 @@ describe('settings navigation', () => {
     expect(groups[3]?.items.map((item) => [item.label, item.path])).toEqual([
       ['Work', '/settings/work/workflows'],
       ['Manage modules', '/settings/modules'],
+      ['Import', '/settings/import'],
     ]);
     expect(items.every((item) => item.icon.length > 0)).toBe(true);
   });

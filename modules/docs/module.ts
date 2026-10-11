@@ -1,4 +1,4 @@
-import { defineModule, loadChangelogFolder } from '@bemmoly/core';
+import { defineModule, importerContribution, loadChangelogFolder } from '@bemmoly/core';
 import { DOCS_CAPABILITIES } from './server/src/config/capabilities.ts';
 import { registerEditorAi } from './server/src/config/editor-ai.ts';
 import { defineDocsSettings } from './server/src/config/settings.ts';
@@ -9,6 +9,7 @@ import { registerDocsAiTools } from './server/src/services/ai-tools/index.ts';
 import { registerDocsMcp } from './server/src/services/mcp/index.ts';
 import { createPageFiles } from './server/src/services/files/index.ts';
 import { createDocsServices } from './server/src/services/index.ts';
+import { createConfluenceImporter } from './server/src/services/import/index.ts';
 import { registerDocsReferences } from './server/src/services/links/registry.ts';
 import { registerDocsSearch } from './server/src/services/palette/index.ts';
 import { registerDocsAi } from './server/src/services/ai/index.ts';
@@ -89,5 +90,16 @@ export default defineModule({
     });
     ctx.routes.add({ prefix: '/docs', plugin: docsRoutes(createDocsControllers(services)) });
     registerEditorAi(ctx, services);
+    ctx.importers.add(
+      importerContribution(
+        createConfluenceImporter({
+          entities: ctx.entities,
+          replaceContent: (pageId, snapshot, actor) =>
+            services.collab.replaceContent(pageId, snapshot, actor),
+          ...(ctx.database ? { database: ctx.database } : {}),
+          ...(ctx.memberships ? { memberships: ctx.memberships } : {}),
+        }),
+      ),
+    );
   },
 });

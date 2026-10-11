@@ -1,4 +1,5 @@
 import {
+  assertPostgresSupported,
   createChangelogRunner,
   createJobsService,
   createModuleAdmin,
@@ -86,6 +87,8 @@ export interface DataKernel {
  */
 export async function createDataKernel(input: DataKernelInput): Promise<DataKernel> {
   const { env, sql, modules, realtime, identity, logger } = input;
+  // Postgres 18 with pgvector, checked before any changeset can fail halfway.
+  await assertPostgresSupported(sql);
   const contexts = env.BEMMOLY_DB_CONTEXTS;
   const runner = createChangelogRunner({
     sql,

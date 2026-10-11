@@ -63,7 +63,7 @@ export const PROMISES: readonly DealPromise[] = [
       inFile(
         'apps/web/src/hooks/use-users.ts',
         'no seat limit, self-hosted',
-        'Settings › Users',
+        'Settings › Members',
         '“no seat limit, self-hosted”',
       ),
       {
