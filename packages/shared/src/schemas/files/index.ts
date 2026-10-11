@@ -24,8 +24,11 @@ export const fileIdParamsSchema = z.object({ id: z.uuid() });
 
 export const uploadedFileSchema = z.object({
   id: z.uuid(),
-  /** Same-origin path to read it from; content stores this, never the bytes. */
-  url: z.string().startsWith('/'),
+  /**
+   * Where to read it: a same-origin path, which content stores instead of the bytes. The dev
+   * mock answers with a blob: URL of the file it was given.
+   */
+  url: z.string().regex(/^(\/(?!\/)|blob:)/),
   name: z.string(),
   mime: z.enum(UPLOAD_IMAGE_TYPES),
   size: z.number().int().nonnegative(),
