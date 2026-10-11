@@ -18,4 +18,5 @@ deploy/compose
 deploy/installer
 !deploy/installer/lib/common.sh
 !deploy/installer/lib/preflight.sh
+!deploy/installer/lib/bundle.sh
 deploy/tests
