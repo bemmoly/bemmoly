@@ -62,7 +62,7 @@ const software: SoftwareApplication = {
   '@id': ids.software,
   name: 'Bemmoly',
   description:
-    'Open source (MIT), self-hosted issues, boards and docs for a whole company, with imports, single sign-on and an MCP server: one application image and one Postgres on your own server, with no pricing and nothing to buy.',
+    'Open source (MIT), self-hosted issues, boards and docs for a whole company, with imports, single sign-on and an MCP server: one application image and one Postgres on your own server, with no subscription and nothing to buy.',
   url: `${SITE_URL}/`,
   applicationCategory: 'BusinessApplication',
   applicationSubCategory: 'Project management',

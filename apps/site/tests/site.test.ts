@@ -35,7 +35,7 @@ describe('landing page', () => {
   it('states the three promises in the hero, in a section of their own and in the footer', () => {
     const page = parsePage(html('index.html'));
     const text = (selector: string) => page.querySelector(selector)?.textContent ?? '';
-    for (const promise of ['100% open source', 'No pricing', 'No in-app purchases']) {
+    for (const promise of ['100% open source', 'No subscription', 'No in-app purchases']) {
       expect(text('main section'), promise).toContain(promise);
       expect(text('#promise'), promise).toContain(promise);
     }

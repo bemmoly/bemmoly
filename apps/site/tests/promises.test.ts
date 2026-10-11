@@ -24,7 +24,7 @@ describe('proofs', () => {
   it('backs each of the three promises, in order, with at least one file', () => {
     expect(PROMISES.map((promise) => promise.title)).toEqual([
       '100% open source',
-      'No pricing',
+      'No subscription',
       'No in-app purchases',
     ]);
     for (const promise of PROMISES) {
