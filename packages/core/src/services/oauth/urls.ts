@@ -14,7 +14,11 @@ export const AS_METADATA_PATH = '/.well-known/oauth-authorization-server';
 export const RESOURCE_METADATA_PATH = '/.well-known/oauth-protected-resource';
 
 /** The issuer identifier: the public URL without a trailing slash. */
-export const issuerOf = (publicUrl: string) => publicUrl.replace(/\/+$/, '');
+export function issuerOf(publicUrl: string): string {
+  let end = publicUrl.length;
+  while (end > 0 && publicUrl[end - 1] === '/') end -= 1;
+  return publicUrl.slice(0, end);
+}
 
 /** The MCP server's canonical address: `/mcp`, or `/mcp/<module>` for one module. */
 export function resourceFor(publicUrl: string, moduleId?: string): string {
