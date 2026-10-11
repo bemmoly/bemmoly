@@ -20,6 +20,8 @@ const LATER_STREAM_TABLES = [
   'notifications',
   'notification_preferences',
   'backups',
+  'import_jobs',
+  'import_mappings',
 ];
 
 describe('changelog runner: every kernel stream together', () => {
