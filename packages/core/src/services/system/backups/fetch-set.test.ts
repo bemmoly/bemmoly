@@ -17,6 +17,9 @@ describe('backup set source from a folder path', () => {
     const ref = `/srv${'/'.repeat(100_000)}bemmoly-20261008`;
     const start = performance.now();
     expect((await resolveSetSource(deps, ref)).setName).toBe('bemmoly-20261008');
-    expect(performance.now() - start).toBeLessThan(50);
+    // A quadratic pass over 100,000 characters takes seconds (4 s for a backtracking regex on
+    // a fast laptop) and a linear one a few milliseconds. A 1 s bound still fails the first and
+    // holds on a loaded CI runner, where 50 ms did not.
+    expect(performance.now() - start).toBeLessThan(1_000);
   });
 });
