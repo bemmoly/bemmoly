@@ -5,7 +5,12 @@ export {
   type SqlClient,
   type SqlClientOptions,
 } from './postgres.ts';
-export { createDatabase, createTransactionDatabase, type Database } from './drizzle.ts';
+export {
+  createDatabase,
+  createTransactionDatabase,
+  databaseOnTransaction,
+  type Database,
+} from './drizzle.ts';
 export { HttpStatusError, requestJson, type JsonRequest } from './http-json.ts';
 export {
   createRestClient,

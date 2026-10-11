@@ -1,6 +1,7 @@
 import type { PgAsyncDatabase } from 'drizzle-orm/pg-core/async';
 import { drizzle, type PostgresJsQueryResultHKT } from 'drizzle-orm/postgres-js';
 import type postgres from 'postgres';
+import type { SqlExecutor } from '../contracts/sql.ts';
 import type { SqlClient } from './postgres.ts';
 
 /** A Drizzle database or an open transaction on it; services accept either. */
@@ -23,3 +24,13 @@ export function createTransactionDatabase(
   const client = Object.assign(transaction, { options: pool.options });
   return drizzle({ client: client as unknown as SqlClient });
 }
+
+/**
+ * Drizzle over an open transaction when all a service holds is a Drizzle database on the
+ * pool: the pool's options come from the database's own client.
+ */
+export function databaseOnTransaction(db: Database, transaction: SqlExecutor): Database {
+  const pool = (db as unknown as { $client: SqlClient }).$client;
+  return createTransactionDatabase(pool, transaction as postgres.TransactionSql);
+}
+

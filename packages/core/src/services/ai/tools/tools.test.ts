@@ -18,16 +18,20 @@ const updateBody = z
   .object({ sprintId: z.uuid().nullable(), title: z.string().trim().min(1).max(500) })
   .partial();
 
+const fakeAuthz = (access: boolean): RequestContext['authz'] => ({
+  canAccess: async () => access,
+  modulesFor: async () => new Set(access ? ['work'] : []),
+  authorize: async () => undefined,
+  can: async () => true,
+  workspaceCapabilities: async () => [],
+  isOrgAdmin: async () => false,
+  whoCan: async (userIds) => [...userIds],
+  within: () => fakeAuthz(access),
+});
+
 const ctx = (access = true): RequestContext => ({
   actor: { kind: 'user', id: '0199b1a2-7c3d-7e4f-8a5b-6c7d8e9f0a1b' },
-  authz: {
-    canAccess: async () => access,
-    modulesFor: async () => new Set(access ? ['work'] : []),
-    authorize: async () => undefined,
-    can: async () => true,
-    workspaceCapabilities: async () => [],
-    isOrgAdmin: async () => false,
-  },
+  authz: fakeAuthz(access),
 });
 
 const getIssue = defineReadTool({
