@@ -19,7 +19,7 @@ export const GET: APIRoute = ({ site }) => {
   const feedUrl = new URL('/changelog.xml', site).href;
   const items = RELEASES.map((release) => {
     const link = `${pageUrl}#${releaseId(release.version)}`;
-    const html = groupByKind(release.changes)
+    const html = groupByKind(release.changes, release.version)
       .map(({ title, changes }) => {
         const notes = changes.map((change) => change.paragraphs.map(paragraphHtml).join(''));
         return `<h3>${title}</h3><ul>${notes.map((note) => `<li>${note}</li>`).join('')}</ul>`;

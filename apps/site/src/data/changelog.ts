@@ -30,6 +30,11 @@ export const RELEASE_DATES: Readonly<Record<string, string>> = {
 export const RELEASE_TITLES: Readonly<
   Record<string, { title: string; summary: string; short?: string }>
 > = {
+  '1.0.0': {
+    title: 'Bemmoly 1.0',
+    short: 'Bemmoly 1.0',
+    summary: 'Work, Docs and optional AI, with imports, SSO, webhooks, code hosts and a Helm chart',
+  },
   '0.13.1': {
     title: 'A roadmap, webhooks and code links',
     short: 'Roadmap and webhooks',

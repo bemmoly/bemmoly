@@ -14,7 +14,7 @@ export const HOME_FAQ: readonly FaqItem[] = [
   {
     question: 'What’s the catch?',
     answer:
-      'You run it. HTTPS, backups and updates are built in, but the machine is yours to keep alive, and help comes from GitHub issues rather than a support contract. It is also young: Work, Docs, optional AI, imports, single sign-on, webhooks and automation, a roadmap view, and Kubernetes and Terraform ship today; an installable app is coming soon, and every page of this site says which is which.',
+      'You run it. HTTPS, backups and updates are built in, but the machine is yours to keep alive, and help comes from GitHub issues rather than a support contract. Work, Docs, optional AI, imports, single sign-on, webhooks and automation, a roadmap view, code host links, and Kubernetes and Terraform ship today; an installable app is coming soon, and every page of this site says which is which.',
   },
   {
     question: 'Who maintains it?',
