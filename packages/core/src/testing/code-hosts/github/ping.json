@@ -1,0 +1,23 @@
+{
+  "zen": "Keep it logically awesome.",
+  "hook_id": 498765432,
+  "hook": {
+    "type": "Repository",
+    "id": 498765432,
+    "name": "web",
+    "active": true,
+    "events": ["pull_request", "pull_request_review", "push", "create", "delete", "check_suite"],
+    "config": {
+      "content_type": "json",
+      "insecure_ssl": "0",
+      "url": "https://bemmoly.acme.dev/api/v1/code-hosts/0/webhooks"
+    }
+  },
+  "repository": {
+    "id": 702345678,
+    "name": "api",
+    "full_name": "acme/api",
+    "html_url": "https://github.com/acme/api"
+  },
+  "sender": { "login": "rohan-s", "id": 5811002, "type": "User" }
+}

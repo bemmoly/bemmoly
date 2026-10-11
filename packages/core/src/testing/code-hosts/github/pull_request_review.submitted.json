@@ -1,0 +1,32 @@
+{
+  "action": "submitted",
+  "review": {
+    "id": 2245678901,
+    "user": { "login": "jonas-m", "id": 5811003, "type": "User" },
+    "body": "Looks good. One nit on the TTL.",
+    "state": "approved",
+    "html_url": "https://github.com/acme/api/pull/4821#pullrequestreview-2245678901",
+    "submitted_at": "2026-10-02T11:05:00Z"
+  },
+  "pull_request": {
+    "html_url": "https://github.com/acme/api/pull/4821",
+    "number": 4821,
+    "state": "open",
+    "title": "Session store to Postgres",
+    "user": { "login": "aisha-k", "id": 5811001, "type": "User" },
+    "body": "Moves sessions off Redis.\n\nPart of ACME-1. Rollback plan in the runbook.",
+    "created_at": "2026-10-01T09:12:44Z",
+    "updated_at": "2026-10-02T11:05:00Z",
+    "merged_at": null,
+    "draft": false,
+    "head": { "ref": "feat/acme-1-pg-sessions", "sha": "9f2c1d7e8b6a5f4e3d2c1b0a9f8e7d6c5b4a3f2e" },
+    "base": { "ref": "main", "sha": "1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b" }
+  },
+  "repository": {
+    "id": 702345678,
+    "name": "api",
+    "full_name": "acme/api",
+    "html_url": "https://github.com/acme/api"
+  },
+  "sender": { "login": "jonas-m", "id": 5811003, "type": "User" }
+}

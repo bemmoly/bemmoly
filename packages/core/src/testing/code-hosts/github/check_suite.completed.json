@@ -1,0 +1,32 @@
+{
+  "action": "completed",
+  "check_suite": {
+    "id": 31234567890,
+    "head_branch": "feat/acme-1-pg-sessions",
+    "head_sha": "9f2c1d7e8b6a5f4e3d2c1b0a9f8e7d6c5b4a3f2e",
+    "status": "completed",
+    "conclusion": "success",
+    "pull_requests": [
+      {
+        "url": "https://api.github.com/repos/acme/api/pulls/4821",
+        "id": 2071234567,
+        "number": 4821,
+        "head": {
+          "ref": "feat/acme-1-pg-sessions",
+          "sha": "9f2c1d7e8b6a5f4e3d2c1b0a9f8e7d6c5b4a3f2e"
+        },
+        "base": { "ref": "main", "sha": "1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b" }
+      }
+    ],
+    "app": { "id": 15368, "slug": "github-actions", "name": "GitHub Actions" },
+    "created_at": "2026-10-01T09:13:02Z",
+    "updated_at": "2026-10-01T09:21:47Z"
+  },
+  "repository": {
+    "id": 702345678,
+    "name": "api",
+    "full_name": "acme/api",
+    "html_url": "https://github.com/acme/api"
+  },
+  "sender": { "login": "github-actions[bot]", "id": 41898282, "type": "Bot" }
+}

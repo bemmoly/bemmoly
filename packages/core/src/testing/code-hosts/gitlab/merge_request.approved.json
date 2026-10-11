@@ -1,0 +1,25 @@
+{
+  "object_kind": "merge_request",
+  "event_type": "merge_request",
+  "user": { "id": 13, "name": "Aisha K.", "username": "aisha.k", "avatar_url": null },
+  "project": {
+    "id": 2048,
+    "name": "Web",
+    "web_url": "https://gitlab.acme.dev/acme/platform/web",
+    "path_with_namespace": "acme/platform/web"
+  },
+  "object_attributes": {
+    "id": 99817,
+    "iid": 57,
+    "title": "ACME-2 throttle the export endpoint",
+    "description": "Adds a per-person budget to exports.",
+    "state": "opened",
+    "draft": false,
+    "work_in_progress": false,
+    "source_branch": "acme-2-export-throttle",
+    "target_branch": "main",
+    "url": "https://gitlab.acme.dev/acme/platform/web/-/merge_requests/57",
+    "updated_at": "2026-10-06T09:00:00Z",
+    "action": "approved"
+  }
+}

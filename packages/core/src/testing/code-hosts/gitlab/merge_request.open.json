@@ -1,0 +1,36 @@
+{
+  "object_kind": "merge_request",
+  "event_type": "merge_request",
+  "user": { "id": 11, "name": "Jonas M.", "username": "jonas.m", "avatar_url": null },
+  "project": {
+    "id": 2048,
+    "name": "Web",
+    "description": "",
+    "web_url": "https://gitlab.acme.dev/acme/platform/web",
+    "path_with_namespace": "acme/platform/web",
+    "default_branch": "main"
+  },
+  "object_attributes": {
+    "id": 99817,
+    "iid": 57,
+    "title": "Draft: ACME-2 throttle the export endpoint",
+    "description": "Adds a per-person budget to exports.",
+    "state": "opened",
+    "draft": true,
+    "work_in_progress": true,
+    "source_branch": "acme-2-export-throttle",
+    "target_branch": "main",
+    "merge_status": "unchecked",
+    "url": "https://gitlab.acme.dev/acme/platform/web/-/merge_requests/57",
+    "created_at": "2026-10-05 10:02:11 UTC",
+    "updated_at": "2026-10-05 10:02:11 UTC",
+    "action": "open"
+  },
+  "labels": [],
+  "changes": {},
+  "repository": {
+    "name": "Web",
+    "url": "git@gitlab.acme.dev:acme/platform/web.git",
+    "homepage": "https://gitlab.acme.dev/acme/platform/web"
+  }
+}

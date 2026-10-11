@@ -1,0 +1,53 @@
+{
+  "ref": "refs/heads/fix/login-throttle",
+  "before": "5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9f8e7d6c",
+  "after": "e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8",
+  "created": false,
+  "deleted": false,
+  "forced": false,
+  "compare": "https://github.com/acme/api/compare/5d4c3b2a1f0e...e7d6c5b4a3f2",
+  "commits": [
+    {
+      "id": "a1b2c3d4e5f60718293a4b5c6d7e8f9012345678",
+      "tree_id": "0f1e2d3c4b5a69788796a5b4c3d2e1f00f1e2d3c",
+      "distinct": true,
+      "message": "Rate limit sign-in per account\n\nFixes ACME-2 and keeps the per-IP budget.",
+      "timestamp": "2026-10-04T08:15:30+05:30",
+      "url": "https://github.com/acme/api/commit/a1b2c3d4e5f60718293a4b5c6d7e8f9012345678",
+      "author": { "name": "Priya N.", "email": "priya@acme.dev", "username": "priya-n" },
+      "committer": { "name": "Priya N.", "email": "priya@acme.dev", "username": "priya-n" },
+      "added": [],
+      "removed": [],
+      "modified": ["src/auth/limits.ts"]
+    },
+    {
+      "id": "e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8",
+      "tree_id": "1f2e3d4c5b6a79889706b5c4d3e2f1001f2e3d4c",
+      "distinct": true,
+      "message": "Tidy the limiter tests",
+      "timestamp": "2026-10-04T08:20:11+05:30",
+      "url": "https://github.com/acme/api/commit/e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8",
+      "author": { "name": "Priya N.", "email": "priya@acme.dev", "username": "priya-n" },
+      "committer": { "name": "Priya N.", "email": "priya@acme.dev", "username": "priya-n" },
+      "added": [],
+      "removed": [],
+      "modified": ["src/auth/limits.test.ts"]
+    }
+  ],
+  "head_commit": {
+    "id": "e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8",
+    "message": "Tidy the limiter tests",
+    "timestamp": "2026-10-04T08:20:11+05:30",
+    "url": "https://github.com/acme/api/commit/e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8",
+    "author": { "name": "Priya N.", "email": "priya@acme.dev", "username": "priya-n" }
+  },
+  "repository": {
+    "id": 702345678,
+    "name": "api",
+    "full_name": "acme/api",
+    "html_url": "https://github.com/acme/api",
+    "default_branch": "main"
+  },
+  "pusher": { "name": "priya-n", "email": "priya@acme.dev" },
+  "sender": { "login": "priya-n", "id": 5811004, "type": "User" }
+}
