@@ -34,17 +34,20 @@ describe('McpPage', () => {
     );
   });
 
-  it('shows the endpoint and a client configuration with a token placeholder', async () => {
+  it('shows a sign-in configuration with no token, and a token one for headless clients', async () => {
     await renderPage(() => <McpPage />);
     const url = `${window.location.origin}/mcp`;
     expect((await screen.findByLabelText('Endpoint')).textContent).toBe(url);
-    const snippet = screen.getByLabelText('Client configuration').textContent ?? '';
-    expect(snippet).toBe(mcpSnippet(url));
-    const parsed = JSON.parse(snippet) as {
-      mcpServers: { bemmoly: { url: string; headers: Record<string, string> } };
-    };
+    type Config = { mcpServers: { bemmoly: { url: string; headers?: Record<string, string> } } };
+    const signIn = screen.getByLabelText('Client configuration').textContent ?? '';
+    expect(signIn).toBe(mcpSnippet(url));
+    const parsed = JSON.parse(signIn) as Config;
     expect(parsed.mcpServers.bemmoly.url).toBe(url);
-    expect(parsed.mcpServers.bemmoly.headers['Authorization']).toBe('Bearer <your token>');
+    expect(parsed.mcpServers.bemmoly.headers).toBeUndefined();
+    const token = JSON.parse(
+      screen.getByLabelText('Token configuration').textContent ?? '',
+    ) as Config;
+    expect(token.mcpServers.bemmoly.headers?.['Authorization']).toBe('Bearer <your token>');
     expect(screen.getByRole('link', { name: 'access tokens' }).getAttribute('href')).toBe(
       '/settings/access-tokens',
     );

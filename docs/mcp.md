@@ -30,7 +30,22 @@ carrying `Authorization: Bearer <token>`. A client gets that token one of two wa
 
 ### Sign in (OAuth)
 
-Clients that support the MCP authorization spec need only the address. On first connect the
+Clients that support the MCP authorization spec need only the address, which Settings › MCP
+server shows filled in:
+
+```json
+{
+  "mcpServers": {
+    "bemmoly": {
+      "type": "http",
+      "url": "https://bemmoly.example.com/mcp"
+    }
+  }
+}
+```
+
+Leave out any `Authorization` header: a client that has one sends it and never offers to sign
+in. On first connect the
 client gets a `401` naming the protected resource metadata, finds Bemmoly's authorization server
 from it, and opens your browser at `/oauth/authorize`:
 
@@ -78,8 +93,9 @@ access scope may be given either; the person decides.
   over MCP or the REST API).
 - **Expiry:** 30 days, 90 days or never.
 
-The token is shown once. It is stored only as a hash; revoke it from the same page. Most clients
-take a configuration like this one, which Settings › MCP server shows with your address filled in:
+The token is shown once. It is stored only as a hash; revoke it from the same page. Use it for CI,
+scripts and clients that cannot open a browser; Settings › MCP server shows this configuration
+under _Without a browser_:
 
 ```json
 {

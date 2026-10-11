@@ -18,18 +18,15 @@ export interface McpPatch {
 export const mcpEndpoint = (origin: string, moduleId?: string) =>
   moduleId ? `${origin}/mcp/${moduleId}` : `${origin}/mcp`;
 
-/** A client configuration for the streamable HTTP transport, the shape most clients read. */
-export function mcpSnippet(url: string): string {
-  const config = {
-    mcpServers: {
-      bemmoly: {
-        type: 'http',
-        url,
-        headers: { Authorization: 'Bearer <your token>' },
-      },
-    },
-  };
-  return JSON.stringify(config, null, 2);
+/**
+ * A client configuration for the streamable HTTP transport, the shape most clients read. Without
+ * a token the client signs in through the browser; a configured header stops it from trying.
+ */
+export function mcpSnippet(url: string, withToken = false): string {
+  const server = withToken
+    ? { type: 'http', url, headers: { Authorization: 'Bearer <your token>' } }
+    : { type: 'http', url };
+  return JSON.stringify({ mcpServers: { bemmoly: server } }, null, 2);
 }
 
 /**

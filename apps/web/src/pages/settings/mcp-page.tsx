@@ -9,7 +9,7 @@ import { useMcpSettings } from '../../hooks/use-mcp-settings.ts';
 
 /**
  * Settings › MCP server: lets MCP clients and IDEs reach the workspace over the Model Context
- * Protocol with a person's access token. Off by default; every switch applies at once.
+ * Protocol as a person who signed in, or with their access token. Off by default; every switch applies at once.
  */
 export function McpPage() {
   const mcp = useMcpSettings();
@@ -17,7 +17,7 @@ export function McpPage() {
   return (
     <SettingsPage
       title="MCP server"
-      description="Let MCP clients and IDEs read and change work in this workspace, as the person whose token they use."
+      description="Let MCP clients and IDEs read and change work in this workspace, as the person who connected them."
       loading={mcp.loading}
       skeleton={<SettingsSkeleton sections={3} rows={2} />}
       error={mcp.error}
