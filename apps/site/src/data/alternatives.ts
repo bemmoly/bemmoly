@@ -79,7 +79,7 @@ function sharedRows(product: 'Jira' | 'Confluence'): ComparisonRow[] {
     },
     {
       topic: 'Pricing model',
-      bemmoly: 'None. No plans, tiers or seat limits; you pay only for your server.',
+      bemmoly: 'None. No subscription, plans, tiers or seat limits; you pay only for your server.',
       bemmolySource: SEATS,
       other:
         product === 'Jira'

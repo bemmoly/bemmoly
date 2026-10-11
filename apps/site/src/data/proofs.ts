@@ -57,8 +57,8 @@ export const PROMISES: readonly DealPromise[] = [
   {
     id: 'free',
     icon: 'infinity',
-    title: 'No pricing',
-    body: 'No plans, tiers, seat limits or trial clock. Free forever, with nothing to upgrade to. Your only bill is the server.',
+    title: 'No subscription',
+    body: 'No subscription, plans, tiers, seat limits or trial clock. Free forever, with nothing to upgrade to. Your only bill is the server.',
     proofs: [
       inFile(
         'apps/web/src/hooks/use-users.ts',

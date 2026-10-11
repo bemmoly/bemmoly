@@ -24,7 +24,7 @@ export const INSTALL = INSTALL_COMMAND;
 /** The three promises under the hero, word for word, each linking to its proof. */
 export const HERO_TICKS = [
   { label: '100% open source, MIT', href: '/#promise-open' },
-  { label: 'No pricing, no seat limits', href: '/#promise-free' },
+  { label: 'No subscription, no seat limits', href: '/#promise-free' },
   { label: 'No in-app purchases', href: '/#promise-nothing-to-buy' },
 ] as const;
 

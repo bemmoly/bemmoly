@@ -35,7 +35,7 @@ app.
 
 - **100% open source.** MIT licensed. Every feature is in this repository and in the image you
   install. There is no open core, no enterprise edition and no licence key.
-- **No pricing.** No plans, no per-seat fee, no user limit. Your only cost is the server you
+- **No subscription.** No plans, no per-seat fee, no user limit. Your only cost is the server you
   run it on.
 - **No in-app purchases.** Nothing in the app is locked or upsold. The Buy Me a Coffee button
   on this repository is an optional way to support the project, and it unlocks nothing.
