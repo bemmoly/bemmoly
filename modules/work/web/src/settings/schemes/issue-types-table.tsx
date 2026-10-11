@@ -66,7 +66,7 @@ export function IssueTypesTable({
               onRename={(name) => onRename(type, name)}
               className="font-semibold"
             />
-            <span className="truncate text-12 text-tx-3" title={type.description ?? undefined}>
+            <span className="max-w-full truncate text-12 text-tx-3" title={type.description ?? undefined}>
               {type.description ?? LEVELS[type.level]}
             </span>
           </span>
