@@ -1,4 +1,4 @@
-import type { ChangeList } from './changes.ts';
+import type { BumpKind, ChangeList } from './changes.ts';
 import type { ConfigChanges } from './config-changes.ts';
 import { rollbackMode, type SchemaChange } from './schema-changes.ts';
 import type { Release } from './version.ts';
@@ -22,11 +22,28 @@ const KIND_TITLES = [
   ['patch', 'Fixes'],
 ] as const;
 
-function changesSection(changes: ChangeList): string[] {
+/**
+ * 1.0.0 is the one major that breaks nothing: leaving 0.x is the stability declaration
+ * (AGENTS.md §6), so its major note is the release's headline, not a breaking change.
+ */
+export function kindTitle(kind: BumpKind, release: Release): string {
+  const [major, minor, patch] = release.version.split(/[.-]/).map(Number);
+  if (kind === 'major' && major === 1 && minor === 0 && patch === 0) return 'Highlights';
+  return KIND_TITLES.find(([each]) => each === kind)?.[1] ?? kind;
+}
+
+/** One note as a Markdown list item; later lines are indented so they stay inside it. */
+const listItem = (text: string) =>
+  text
+    .split('\n')
+    .map((line, index) => (index === 0 ? `- ${line}` : line === '' ? '' : `  ${line}`))
+    .join('\n');
+
+function changesSection(changes: ChangeList, release: Release): string[] {
   const lines: string[] = [];
-  for (const [kind, title] of KIND_TITLES) {
+  for (const [kind] of KIND_TITLES) {
     if (changes[kind].length === 0) continue;
-    lines.push(`### ${title}`, '', ...changes[kind].map((text) => `- ${text}`), '');
+    lines.push(`### ${kindTitle(kind, release)}`, '', ...changes[kind].map(listItem), '');
   }
   return lines.length > 0 ? lines : ['No user-visible changes.', ''];
 }
@@ -91,7 +108,7 @@ export function renderNotes(input: NotesInput): string {
   return [
     `## Bemmoly ${input.release.version}${channel}`,
     '',
-    ...changesSection(input.changes),
+    ...changesSection(input.changes, input.release),
     ...schemaSection(input.schema),
     ...configSection(input.config, input.firstRelease),
     ...upgradeSection(input),

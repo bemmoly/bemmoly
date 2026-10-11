@@ -46,8 +46,12 @@ function entriesOf(section: string[]): Array<[BumpKind, string]> {
       flush();
       current = [entry[1] ?? ''];
     } else if (current && /^\s{2,}\S/.test(line)) {
+      // An indented line continues the entry, also after a blank line: the changesets tool
+      // indents every paragraph of a note, so a blank line alone never ends one.
       current.push(line.trim());
-    } else if (line.trim() === '') {
+    } else if (current && line.trim() === '') {
+      if (current.at(-1) !== '') current.push('');
+    } else {
       flush();
     }
   }
