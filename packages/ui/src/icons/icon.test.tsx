@@ -2,6 +2,8 @@ import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { IconButton } from '../components/button/icon-button.tsx';
 import { Icon, ICON_NAMES, ICON_SIZE } from './icon.tsx';
+import { LATER_ICONS } from './later-icons.ts';
+import { LATER_ICON_NAMES } from './later-names.ts';
 import { formatPageIcon, isIconName, PageIcon, parsePageIcon } from './page-icon.tsx';
 
 describe('Icon', () => {
@@ -57,6 +59,11 @@ describe('Icon', () => {
     );
     expect(container.querySelector('svg')?.getAttribute('aria-hidden')).toBe('true');
     expect(screen.getByRole('img', { name: 'Help' })).toBeDefined();
+  });
+
+  it('lists the later icons by the same names their chunk draws', () => {
+    expect([...LATER_ICON_NAMES].sort()).toEqual(Object.keys(LATER_ICONS).sort());
+    expect(new Set(ICON_NAMES).size).toBe(ICON_NAMES.length);
   });
 
   it('gives an icon button its name from the label, not the drawing', () => {

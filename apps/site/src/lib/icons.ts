@@ -4,7 +4,8 @@
  * from the same Lucide release. They are rendered to SVG at build time (Icon.astro), so no
  * React reaches the browser. Icons are drawn, never typed: the glyph lint rule covers .astro.
  */
-import { ICON_NAMES, iconComponent, type IconName } from '@bemmoly/ui/icons';
+import { ICON_NAMES, type IconName } from '@bemmoly/ui/icons';
+import { ALL_ICONS } from '@bemmoly/ui/icons/all';
 import {
   BookOpen,
   CircleAlert,
@@ -68,7 +69,7 @@ export const SITE_ICON_NAMES: readonly SiteIconName[] = [
 const isSiteOnly = (name: SiteIconName): name is keyof typeof SITE_ONLY => name in SITE_ONLY;
 
 export function siteIcon(name: SiteIconName): LucideIcon {
-  return isSiteOnly(name) ? SITE_ONLY[name] : iconComponent(name);
+  return isSiteOnly(name) ? SITE_ONLY[name] : ALL_ICONS[name];
 }
 
 /** The product's stroke at every size (ADR 0015). */

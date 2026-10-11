@@ -1,5 +1,6 @@
 import { cleanup } from '@testing-library/react';
 import { afterEach } from 'vitest';
+import { loadLaterIcons } from '../icons/later.tsx';
 
 afterEach(() => cleanup());
 
@@ -15,3 +16,6 @@ if (proto && typeof proto.showModal !== 'function') {
     this.dispatchEvent(new Event('close'));
   };
 }
+
+// Draw every icon from the first render: the app loads the later ones once it is idle.
+await loadLaterIcons();

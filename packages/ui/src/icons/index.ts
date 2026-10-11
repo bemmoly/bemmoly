@@ -4,12 +4,13 @@ export {
   Icon,
   ICON_NAMES,
   ICON_SIZE,
-  iconComponent,
   type GlyphName,
   type IconName,
   type IconProps,
+  useIconDrawing,
 } from './icon.tsx';
 export { KIT_ICONS, type KitIconName } from './kit.tsx';
+export { loadLaterIcons } from './later.tsx';
 export { SHAPES, type ShapeName } from './shapes.tsx';
 export {
   formatPageIcon,

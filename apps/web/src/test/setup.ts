@@ -3,6 +3,7 @@ import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, beforeEach } from 'vitest';
 import { createMockApi } from '../mocks/dispatch.ts';
 import { mswHandlers } from '../mocks/msw.ts';
+import { loadLaterIcons } from '@bemmoly/ui/icons';
 
 /**
  * Every unit test talks to the same in-memory backend the dev server and
@@ -31,3 +32,6 @@ declare global {
     happyDOM?: { setURL(url: string): void };
   }
 }
+
+// Draw every icon from the first render: the app loads the later ones once it is idle.
+await loadLaterIcons();

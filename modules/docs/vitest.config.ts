@@ -20,6 +20,7 @@ export default defineConfig({
           // DOM tests render whole screens and run property checks; on a loaded CI runner some
           // take 5 to 6 s, so vitest's 5 s default failed different tests on different runs.
           testTimeout: 15_000,
+          setupFiles: ['web/src/test/setup.ts'],
         },
       },
     ],

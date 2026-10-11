@@ -3,6 +3,7 @@ import {
   type ModuleChunkLoader,
   type ModuleChunkProps,
 } from '@bemmoly/core-web';
+import { loadLaterIcons } from '@bemmoly/ui/icons';
 import type { ComponentType } from 'react';
 
 /**
@@ -18,7 +19,8 @@ const ENTRIES = import.meta.glob<{ default: ComponentType<ModuleChunkProps> }>(
 const loaders: Record<string, ModuleChunkLoader> = {};
 for (const [path, load] of Object.entries(ENTRIES)) {
   const moduleId = /\/modules\/([^/]+)\/web\//.exec(path)?.[1];
-  if (moduleId) loaders[moduleId] = load;
+  // A module screen draws the later icons from its first paint, so it waits for them too.
+  if (moduleId) loaders[moduleId] = async () => (await Promise.all([load(), loadLaterIcons()]))[0];
 }
 
 export const MODULE_CHUNKS = createChunkRegistry(
