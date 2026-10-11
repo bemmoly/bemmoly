@@ -64,10 +64,13 @@ async function status(runtime: Runtime) {
   // Postgres resolves every table at parse time, so the queue is counted only once it exists.
   const [jobs] = await runtime.sql<{ present: boolean }[]>`
     select to_regclass('pgboss.job') is not null as present`;
+  // Depth is what could run now; jobs scheduled for later (digests, retry backoff) are delayed.
   const [queue] = jobs?.present
-    ? await runtime.sql<{ depth: string }[]>`
-        select count(*)::text as depth from pgboss.job where state in ('created', 'retry')`
-    : [{ depth: null }];
+    ? await runtime.sql<{ depth: string; delayed: string }[]>`
+        select count(*) filter (where start_after <= now())::text as depth,
+               count(*) filter (where start_after > now())::text as delayed
+        from pgboss.job where state in ('created', 'retry')`
+    : [{ depth: null, delayed: null }];
   const repository = createBackupRepository(runtime.sql);
   const latest = await repository.latest({ status: 'succeeded' }).catch(() => null);
   return {
@@ -75,6 +78,8 @@ async function status(runtime: Runtime) {
     role: runtime.env.BEMMOLY_ROLE,
     databaseBytes: Number(size?.bytes ?? 0),
     queueDepth: queue?.depth === null || queue?.depth === undefined ? null : Number(queue.depth),
+    queueDelayed:
+      queue?.delayed === null || queue?.delayed === undefined ? null : Number(queue.delayed),
     lastBackup: latest
       ? {
           set: latest.setName,
