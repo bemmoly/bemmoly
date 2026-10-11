@@ -7,7 +7,7 @@ import { changeset, sql } from '@bemmoly/core/changelog';
  * the status an issue goes to when a linked pull request opens, or when it merges.
  */
 export default changeset({
-  id: '0026-work-code-links',
+  id: '0027-work-code-links',
   author: 'bemmoly',
   description: 'Create code_links and code_transitions',
   contexts: ['*'],
