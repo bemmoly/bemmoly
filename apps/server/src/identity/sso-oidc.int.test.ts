@@ -42,7 +42,7 @@ describe('OIDC sign-in against a fake provider and a real database', () => {
     const admin = await createFirstAdmin(app);
     const id = await createOidcProvider(app, admin.cookie, fake);
 
-    const landing = await signInWithOidc(app, id, { returnTo: '/work/issues?view=board' });
+    const landing = await signInWithOidc(app, fake, id, { returnTo: '/work/issues?view=board' });
     expect(landing.response.statusCode).toBe(303);
     expect(landing.location).toBe('http://localhost:8080/work/issues?view=board');
     expect(landing.session).toBeDefined();
@@ -79,13 +79,13 @@ describe('OIDC sign-in against a fake provider and a real database', () => {
       teamMappings: [{ group: 'platform', teamId }],
     });
     fake.user.groups = ['engineers', 'platform'];
-    const first = await signInWithOidc(app, id);
+    const first = await signInWithOidc(app, fake, id);
     const me = (await call(app, 'GET', '/me', { cookie: first.session })).json().user;
     expect(me.roleId).toBe(memberRole);
     expect(me.teamIds).toEqual([teamId]);
 
     fake.user.groups = ['engineers'];
-    const second = await signInWithOidc(app, id);
+    const second = await signInWithOidc(app, fake, id);
     expect((await call(app, 'GET', '/me', { cookie: second.session })).json().user.teamIds).toEqual(
       [],
     );
@@ -98,16 +98,16 @@ describe('OIDC sign-in against a fake provider and a real database', () => {
     const id = await createOidcProvider(app, admin.cookie, fake, { autoProvision: false });
 
     fake.user = { sub: 'sub-rohan', email: ADMIN.email, emailVerified: false };
-    expect(failureOf(await signInWithOidc(app, id))).toBe('email_unverified');
+    expect(failureOf(await signInWithOidc(app, fake, id))).toBe('email_unverified');
 
     fake.user = { sub: 'sub-rohan', email: ADMIN.email.toUpperCase(), emailVerified: true };
-    const linked = await signInWithOidc(app, id);
+    const linked = await signInWithOidc(app, fake, id);
     expect((await call(app, 'GET', '/me', { cookie: linked.session })).json().user.id).toBe(
       admin.userId,
     );
 
     fake.user = { sub: 'sub-stranger', email: 'stranger@acme.dev', emailVerified: true };
-    expect(failureOf(await signInWithOidc(app, id))).toBe('not_provisioned');
+    expect(failureOf(await signInWithOidc(app, fake, id))).toBe('not_provisioned');
   });
 
   it('enforces the domain allow-list and refuses deactivated people', async (ctx) => {
@@ -116,16 +116,16 @@ describe('OIDC sign-in against a fake provider and a real database', () => {
     const admin = await createFirstAdmin(app);
     const id = await createOidcProvider(app, admin.cookie, fake, { allowedDomains: ['acme.dev'] });
     fake.user = { sub: 'sub-eve', email: 'eve@evil.test', emailVerified: true };
-    expect(failureOf(await signInWithOidc(app, id))).toBe('domain_not_allowed');
+    expect(failureOf(await signInWithOidc(app, fake, id))).toBe('domain_not_allowed');
 
     fake.user = { sub: 'sub-ada', email: 'ada@acme.dev', emailVerified: true };
-    const ada = await signInWithOidc(app, id);
+    const ada = await signInWithOidc(app, fake, id);
     const adaId = (await call(app, 'GET', '/me', { cookie: ada.session })).json().user.id as string;
     await call(app, 'POST', `/users/${adaId}/deactivate`, { cookie: admin.cookie });
-    expect(failureOf(await signInWithOidc(app, id))).toBe('deactivated');
+    expect(failureOf(await signInWithOidc(app, fake, id))).toBe('deactivated');
 
     fake.user = { sub: 'sub-nomail' };
-    expect(failureOf(await signInWithOidc(app, id))).toBe('email_missing');
+    expect(failureOf(await signInWithOidc(app, fake, id))).toBe('email_missing');
   });
 
   it.for<[string, FakeOidcTampering, string]>([
@@ -141,7 +141,7 @@ describe('OIDC sign-in against a fake provider and a real database', () => {
     const admin = await createFirstAdmin(app);
     const id = await createOidcProvider(app, admin.cookie, fake);
     fake.tamper = { ...tamper };
-    const landing = await signInWithOidc(app, id);
+    const landing = await signInWithOidc(app, fake, id);
     expect(landing.response.statusCode).toBe(303);
     expect(failureOf(landing)).toBe(reason);
     expect(landing.session).toBeUndefined();
@@ -153,15 +153,16 @@ describe('OIDC sign-in against a fake provider and a real database', () => {
     const admin = await createFirstAdmin(app);
     const id = await createOidcProvider(app, admin.cookie, fake);
 
-    expect(failureOf(await signInWithOidc(app, id, { binding: null }))).toBe('state_mismatch');
+    expect(failureOf(await signInWithOidc(app, fake, id, { binding: null }))).toBe(
+      'state_mismatch',
+    );
     const other = await startSso(app, id);
-    expect(failureOf(await signInWithOidc(app, id, { binding: other.binding }))).toBe(
+    expect(failureOf(await signInWithOidc(app, fake, id, { binding: other.binding }))).toBe(
       'state_mismatch',
     );
 
     const started = await startSso(app, id);
-    const callback =
-      (await fetch(started.location, { redirect: 'manual' })).headers.get('location') ?? '';
+    const callback = fake.authorize(started.location);
     const path = new URL(callback).pathname + new URL(callback).search;
     const first = await app.inject({
       method: 'GET',
@@ -178,8 +179,7 @@ describe('OIDC sign-in against a fake provider and a real database', () => {
 
     const late = await startSso(app, id);
     await sql`UPDATE auth_sso_flows SET expires_at = now() - interval '1 second' WHERE consumed_at IS NULL`;
-    const lateCallback =
-      (await fetch(late.location, { redirect: 'manual' })).headers.get('location') ?? '';
+    const lateCallback = fake.authorize(late.location);
     const expired = await app.inject({
       method: 'GET',
       url: new URL(lateCallback).pathname + new URL(lateCallback).search,
@@ -199,9 +199,11 @@ describe('OIDC sign-in against a fake provider and a real database', () => {
       '/\\evil.test',
       'javascript:alert(1)',
     ]) {
-      expect((await signInWithOidc(app, id, { returnTo })).location).toBe('http://localhost:8080/');
+      expect((await signInWithOidc(app, fake, id, { returnTo })).location).toBe(
+        'http://localhost:8080/',
+      );
     }
-    const landing = await signInWithOidc(app, id, { cookie: admin.cookie });
+    const landing = await signInWithOidc(app, fake, id, { cookie: admin.cookie });
     expect(landing.session).not.toBe(admin.cookie);
     expect((await call(app, 'GET', '/me', { cookie: admin.cookie })).statusCode).toBe(401);
   });

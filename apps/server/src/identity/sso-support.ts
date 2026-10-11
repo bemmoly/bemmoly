@@ -94,13 +94,13 @@ export async function startSso(app: FastifyInstance, providerId: string, returnT
 /** The full OIDC round trip: start, the fake provider's authorize redirect, the callback. */
 export async function signInWithOidc(
   app: FastifyInstance,
+  fake: FakeOidcProvider,
   providerId: string,
   options: { returnTo?: string; cookie?: string | undefined; binding?: string | null } = {},
 ): Promise<Landing> {
   const started = await startSso(app, providerId, options.returnTo);
   expect(started.response.statusCode, started.response.body).toBe(303);
-  const authorized = await fetch(started.location, { redirect: 'manual' });
-  const callback = authorized.headers.get('location') ?? '';
+  const callback = fake.authorize(started.location);
   const binding = options.binding === null ? undefined : (options.binding ?? started.binding);
   const cookies = [binding, options.cookie].filter(Boolean).join('; ');
   const response = await app.inject({

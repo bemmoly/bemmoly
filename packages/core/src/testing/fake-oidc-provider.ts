@@ -34,6 +34,11 @@ export interface FakeOidcProvider {
   tamper: FakeOidcTampering;
   /** Authorization requests received, newest last, for asserting PKCE and scopes. */
   authorizations: URLSearchParams[];
+  /**
+   * What the authorization endpoint would redirect to for this URL, without a browser or a
+   * request: the code-bearing callback URL (or one carrying the tampered error).
+   */
+  authorize(url: string): string;
   stop(): Promise<void>;
 }
 
@@ -79,6 +84,7 @@ export async function startFakeOidcProvider(
     user: { sub: 'user-1', email: 'ada@acme.dev', emailVerified: true, name: 'Ada', groups: [] },
     tamper: {},
     authorizations: [],
+    authorize: () => '',
     stop: async () => undefined,
   };
 
@@ -102,7 +108,7 @@ export async function startFakeOidcProvider(
       .sign(key);
   }
 
-  function authorize(url: URL, response: ServerResponse) {
+  function redirectFor(url: URL): string {
     const params = url.searchParams;
     state.authorizations.push(params);
     const redirect = new URL(params.get('redirect_uri') ?? '');
@@ -123,7 +129,11 @@ export async function startFakeOidcProvider(
       redirect.searchParams.set('code', code);
     }
     redirect.searchParams.set('iss', state.issuer);
-    response.writeHead(302, { location: redirect.href });
+    return redirect.href;
+  }
+
+  function authorize(url: URL, response: ServerResponse) {
+    response.writeHead(302, { location: redirectFor(url) });
     response.end();
   }
 
@@ -186,6 +196,7 @@ export async function startFakeOidcProvider(
   });
   await new Promise<void>((resolve) => server.listen(options.port ?? 0, '127.0.0.1', resolve));
   state.issuer = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
+  state.authorize = (url) => redirectFor(new URL(url));
   state.stop = () =>
     new Promise<void>((resolve, reject) =>
       server.close((error) => (error ? reject(error) : resolve())),

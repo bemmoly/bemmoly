@@ -15,13 +15,15 @@ import {
 import { bindingCookie, createOidcProvider, pathOf, signInWithOidc } from './sso-support.ts';
 
 /** Settings › Sign-in's "Test sign-in": the round trip, finished in the admin's browser. */
-async function testSignIn(app: FastifyInstance, cookie: string, id: string) {
+async function testSignIn(
+  app: FastifyInstance,
+  fake: FakeOidcProvider,
+  cookie: string,
+  id: string,
+) {
   const started = await call(app, 'POST', `/admin/sso/providers/${id}/tests`, { cookie });
   expect(started.statusCode, started.body).toBe(201);
-  const callback =
-    (await fetch(started.json().authorizationUrl, { redirect: 'manual' })).headers.get(
-      'location',
-    ) ?? '';
+  const callback = fake.authorize(started.json().authorizationUrl);
   const landed = await app.inject({
     method: 'GET',
     url: pathOf(callback),
@@ -78,7 +80,7 @@ describe('Settings › Sign-in: providers, tests and require-SSO', () => {
       },
     });
     expect(renamed.statusCode, renamed.body).toBe(200);
-    expect((await signInWithOidc(app, id)).session).toBeDefined();
+    expect((await signInWithOidc(app, fake, id)).session).toBeDefined();
 
     const audit =
       await sql`SELECT action, before, after FROM audit_log WHERE target_id = ${id} ORDER BY id`;
@@ -137,7 +139,7 @@ describe('Settings › Sign-in: providers, tests and require-SSO', () => {
     const admin = await createFirstAdmin(app);
     const id = await createOidcProvider(app, admin.cookie, fake);
     fake.user.groups = ['engineers'];
-    const landed = await testSignIn(app, admin.cookie, id);
+    const landed = await testSignIn(app, fake, admin.cookie, id);
     expect(landed.headers.location).toBe('http://localhost:8080/settings/authentication');
     expect(landed.headers['set-cookie']).not.toContain('bemmoly_session=');
     const provider = (
@@ -151,7 +153,7 @@ describe('Settings › Sign-in: providers, tests and require-SSO', () => {
     expect((await sql`SELECT count(*)::int AS n FROM users`)[0]?.['n']).toBe(1);
 
     fake.tamper = { audience: 'someone-else' };
-    await testSignIn(app, admin.cookie, id);
+    await testSignIn(app, fake, admin.cookie, id);
     const failed = (
       await call(app, 'GET', `/admin/sso/providers/${id}`, { cookie: admin.cookie })
     ).json();
@@ -173,7 +175,7 @@ describe('Settings › Sign-in: providers, tests and require-SSO', () => {
       call(app, 'PUT', '/admin/sso/policy', { cookie: admin.cookie, body });
 
     expect((await policy({ requireSso: true })).statusCode).toBe(409);
-    await testSignIn(app, admin.cookie, id);
+    await testSignIn(app, fake, admin.cookie, id);
     const required = await policy({ requireSso: true });
     expect(required.statusCode, required.body).toBe(200);
     expect(required.json()).toMatchObject({
@@ -233,7 +235,7 @@ describe('Settings › Sign-in: providers, tests and require-SSO', () => {
     const { app } = harness;
     const admin = await createFirstAdmin(app);
     const id = await createOidcProvider(app, admin.cookie, fake);
-    const landing = await signInWithOidc(app, id);
+    const landing = await signInWithOidc(app, fake, id);
     expect((await call(app, 'POST', '/auth/logout', { cookie: landing.session })).statusCode).toBe(
       204,
     );
