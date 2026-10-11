@@ -45,7 +45,7 @@ function TeamPicker({ access }: { access: AccessChoice }) {
           </div>
         ) : (
           <span className="text-12 text-tx-3">
-            {empty ? 'Create a team under Users › Teams first.' : 'Pick at least one team.'}
+            {empty ? 'Create a team in Settings › Teams first.' : 'Pick at least one team.'}
           </span>
         )}
       </div>

@@ -5,7 +5,7 @@ import {
   insightSource,
   useAiInsight,
 } from '@bemmoly/core-web/ai-insights';
-import { AiBrief } from '@bemmoly/ui';
+import { AiBrief, Skeleton } from '@bemmoly/ui';
 import { AiInsightBody } from '@bemmoly/ui/ai-insight-body';
 import { api } from '../../lib/api.ts';
 
@@ -29,7 +29,14 @@ export default function MorningBrief({ userId }: { userId: string }) {
     <AiBrief
       title="Your morning brief"
       source={insightSource(handle).replace('from', 'built from')}
-      actions={handle.view === 'ready' ? <InsightActions handle={handle} size="md" /> : undefined}
+      actions={
+        handle.view === 'ready' ? (
+          <InsightActions handle={handle} size="md" />
+        ) : handle.view === 'loading' ? (
+          // Holds the action row's height so Home does not jump when the brief lands.
+          <Skeleton shape="block" width={320} height={30} />
+        ) : undefined
+      }
     >
       <AiInsightBody
         state={handle.view}

@@ -101,19 +101,23 @@ export function ModulesTable({
       header: 'Schema',
       width: 'minmax(0,1fr)',
       hideOnPhone: true,
-      render: (module) => (
-        <div className="flex flex-col items-start gap-0.5">
-          <StatePill tone={CHANGELOG[module.changelogState].tone}>
-            {CHANGELOG[module.changelogState].label}
-          </StatePill>
-          {module.pendingChangesets > 0 ? (
-            <span className="text-12 text-tx-3">
-              {module.pendingChangesets} changeset{module.pendingChangesets === 1 ? '' : 's'}{' '}
-              pending
-            </span>
-          ) : null}
-        </div>
-      ),
+      // A module that never ran has no schema to be up to date, and no data to remove.
+      render: (module) =>
+        module.versionInstalled === null ? (
+          <span className="text-12 text-tx-3">No data yet</span>
+        ) : (
+          <div className="flex flex-col items-start gap-0.5">
+            <StatePill tone={CHANGELOG[module.changelogState].tone}>
+              {CHANGELOG[module.changelogState].label}
+            </StatePill>
+            {module.pendingChangesets > 0 ? (
+              <span className="text-12 text-tx-3">
+                {module.pendingChangesets} changeset{module.pendingChangesets === 1 ? '' : 's'}{' '}
+                pending
+              </span>
+            ) : null}
+          </div>
+        ),
     },
     {
       key: 'actions',
@@ -125,7 +129,9 @@ export function ModulesTable({
           <span className="text-12 text-tx-3">Set by BEMMOLY_MODULES</span>
         ) : (
           <div className="flex items-center gap-1.5">
-            {!module.enabled && module.changelogState !== 'removed' ? (
+            {!module.enabled &&
+            module.versionInstalled !== null &&
+            module.changelogState !== 'removed' ? (
               <Button size="xs" variant="ghost" onClick={() => onRemoveData(module.id)}>
                 Remove data
               </Button>

@@ -22,7 +22,8 @@ const SUP_SPREAD: Array<[StatusName, number]> = [
   ['Testing', 60],
   ['Done', 120],
 ];
-const PEOPLE = [...Object.values(WHO), null];
+// Not the signed-in demo person: their My issues should be their own work, not 80 filler cards.
+const PEOPLE = [...Object.values(WHO).filter((id) => id !== WHO.RS), null];
 const TYPES = ['task', 'bug', 'story'];
 const PRIORITIES = ['highest', 'high', 'medium', 'medium', 'low', 'lowest'];
 

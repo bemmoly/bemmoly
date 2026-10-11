@@ -1,5 +1,5 @@
 import { TEAM_IDS, USER_IDS } from './people.ts';
-import { ago, uid } from './time.ts';
+import { ago, dayFromToday, uid } from './time.ts';
 import { STATUS_IDS, WORK_IDS, type StatusName } from './work-settings.ts';
 import { TYPE_IDS } from './work-types.ts';
 
@@ -133,7 +133,7 @@ export function seedIssues(): Row[] {
       parentId: parent ? issueId(Number(parent)) : null,
       sprintId: main || type === 'subtask' ? SPRINT_IDS.s14 : null,
       estimate: main ? 5 : type === 'story' ? 3 : null,
-      dueAt: main ? '2026-10-07' : null,
+      dueAt: main ? dayFromToday(6) : null,
       fixVersionId: main ? VERSION_IDS.v13 : null,
       componentId: null,
       customFields: main ? { environment: 'production', acceptance_criteria: CRITERIA } : {},

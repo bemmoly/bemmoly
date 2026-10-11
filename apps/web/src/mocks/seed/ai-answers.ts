@@ -98,6 +98,57 @@ export const CANNED_ANSWERS: readonly CannedAnswer[] = [
     sources: [pageSource('c1', 5108, 'Time off', 'Time off')],
     text: 'The Time off page explains how to ask for leave and who approves it [c1].',
   },
+  // The Docs home suggests "What does “<title>” say?" for the newest pages; each has an answer.
+  {
+    match: /sessions to postgres|\brfc\b/i,
+    sources: [
+      pageSource('c1', 5101, RFC, RFC),
+      pageSource('c2', 5101, RFC, 'Rollback', 'rollback'),
+      issueSource('c3', 204, 'Session store migration to Postgres'),
+    ],
+    text: [
+      'The RFC moves session storage from Redis to Postgres behind a dual-write, so sessions survive cache evictions [c1].',
+      'Reads cut over behind the auth_pg_sessions flag, and rolling back is a flag flip [c2].',
+      'PLT-204 tracks the migration and is in review [c3].',
+    ].join(' '),
+  },
+  {
+    match: /docs home|\bspec\b/i,
+    sources: [pageSource('c1', 5106, 'Spec: Docs home', 'Spec: Docs home')],
+    text: 'The spec is a draft by Maya: the Docs home shows spaces, recent pages and what needs attention [c1].',
+  },
+  {
+    match: /roadmap|this quarter|\bq4\b/i,
+    sources: [pageSource('c1', 5105, 'Q4 roadmap', 'Q4 roadmap')],
+    text: 'The Q4 roadmap lists what ships this quarter and why, kept by Lena in the Product space [c1].',
+  },
+  {
+    match: /runbook|auth service/i,
+    sources: [pageSource('c1', 5102, 'Auth service runbook', 'Auth service runbook')],
+    text: 'The runbook is what on-call does when login latency climbs on the auth service [c1].',
+  },
+  {
+    match: /first day|welcome|onboard|new (starter|joiner|hire)/i,
+    sources: [pageSource('c1', 5107, 'Welcome to Acme Labs', 'Welcome to Acme Labs')],
+    text: 'New people start with the Welcome to Acme Labs page in the Company handbook [c1].',
+  },
+  {
+    match: /design principles|principles/i,
+    sources: [pageSource('c1', 5109, 'Design principles', 'Design principles')],
+    text: 'The design principles are calm, fast and every state designed [c1].',
+  },
+  {
+    match: /block|sprint ?14|at risk|slipping/i,
+    sources: [
+      issueSource('c1', 204, 'Session store migration to Postgres'),
+      issueSource('c2', 219, 'Remove legacy cookie path from monolith'),
+      issueSource('c3', 211, 'Session cleanup background job'),
+    ],
+    text: [
+      'PLT-204, the session store migration, is waiting on review and blocks two issues in Sprint 14 [c1].',
+      'PLT-219 and PLT-211 cannot start until it lands [c2, c3].',
+    ].join(' '),
+  },
 ];
 
 export function cannedAnswer(question: string): CannedAnswer | null {

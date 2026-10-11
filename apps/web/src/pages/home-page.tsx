@@ -6,6 +6,7 @@ import { InboxPreview } from '../components/home/inbox-preview.tsx';
 import { JumpBackIn } from '../components/home/jump-back-in.tsx';
 import { useInbox } from '../hooks/use-notifications.ts';
 import { useShell } from '../hooks/use-shell.ts';
+import { useStarterModules } from '../hooks/use-starter-modules.ts';
 import { HOME_SECTIONS } from '../lib/home-sections.ts';
 
 /** The morning brief and its insight code load only for people with AI on. */
@@ -25,9 +26,22 @@ function needsLine(count: number | null): string {
   return `${count} ${count === 1 ? 'thing needs' : 'things need'} you today`;
 }
 
-/** No module contributes a main card: say where work comes from, with the one next step. */
+/**
+ * No module contributes a main card: say where work comes from, with the one next step. For an
+ * admin on a fresh install that step turns Work and Docs on in place; Settings stays a link
+ * for anyone who wants to choose.
+ */
 function NoModules({ canEnable }: { canEnable: boolean }) {
   const modules = useFrameLink('/settings/modules');
+  const starter = useStarterModules(canEnable);
+  const choose = (
+    <a
+      {...modules}
+      className={buttonClassName({ variant: starter.available ? 'ghost' : 'primary' })}
+    >
+      Choose in Settings › Modules
+    </a>
+  );
   return (
     <section className="rounded-card bg-card shadow-e1">
       <EmptyState
@@ -40,9 +54,14 @@ function NoModules({ canEnable }: { canEnable: boolean }) {
         }
         action={
           canEnable ? (
-            <a {...modules} className={buttonClassName({ variant: 'primary' })}>
-              Open Settings › Modules
-            </a>
+            <div className="flex flex-wrap items-center justify-center gap-2">
+              {starter.available && (
+                <Button variant="primary" loading={starter.pending} onClick={starter.turnOn}>
+                  Turn on Work and Docs
+                </Button>
+              )}
+              {choose}
+            </div>
           ) : undefined
         }
       />

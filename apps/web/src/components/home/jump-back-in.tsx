@@ -42,7 +42,12 @@ export function JumpBackIn() {
       </h2>
       {recents.length === 0 ? (
         <p className="m-0 flex flex-wrap items-center gap-1.5 rounded-card border border-dashed border-line px-4 py-3.5 text-13 text-tx-3">
-          Issues, boards and pages you open show up here. Find anything with <Kbd keys="Mod+K" />
+          Issues, boards and pages you open show up here.
+          {/* A phone has no keyboard to press; the search box is the way in there. */}
+          <span className="inline-flex items-center gap-1.5 max-sm:hidden">
+            Find anything with <Kbd keys="Mod+K" />
+          </span>
+          <span className="sm:hidden">Search finds anything else.</span>
         </p>
       ) : (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
