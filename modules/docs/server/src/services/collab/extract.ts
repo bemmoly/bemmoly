@@ -1,5 +1,6 @@
 import type { Actor, CollabChange } from '@bemmoly/core';
 import { plainText, wordCount } from '@bemmoly/editor/convert';
+import { DOMAIN_EVENT_KINDS } from '@bemmoly/shared';
 import {
   DOCS_REALTIME_KINDS,
   publishChange,
@@ -7,6 +8,7 @@ import {
   type DocsServiceDeps,
 } from '../common.ts';
 import { bodyEdges, rewriteBodyLinks } from '../links/rewrite.ts';
+import { publishPageEvent } from '../pages/events.ts';
 import { writePeriodicIfDue } from '../revisions/write.ts';
 import { docToSnapshot } from './convert.ts';
 
@@ -61,6 +63,10 @@ export async function extractPage(deps: DocsServiceDeps, change: CollabChange): 
       tx,
     );
     const periodic = await writePeriodicIfDue(tx, change.id);
+    if (periodic) {
+      const editor = change.editors.at(-1);
+      await publishPageEvent(deps, tx, DOMAIN_EVENT_KINDS.pageUpdated, change.id, editor);
+    }
     return { spaceId: updated.space_id, revised: periodic !== null, relinked };
   });
   if (!result) return;
