@@ -33,7 +33,9 @@ type ThemeLike = Pick<ResolvedTheme, 'colors' | 'elevation' | 'mode'>;
 export function themeDeclarations(theme: ThemeLike): string[] {
   return [
     ...COLOR_TOKENS.map((token) => `--${token}: ${theme.colors[token]};`),
-    ...Object.entries(MODE_TYPE_COLORS[theme.mode]).map(([token, value]) => `--${token}: ${value};`),
+    ...Object.entries(MODE_TYPE_COLORS[theme.mode]).map(
+      ([token, value]) => `--${token}: ${value};`,
+    ),
     ...ELEVATION_TOKENS.map((token) => `--${token}: ${theme.elevation[token]};`),
     `color-scheme: ${theme.mode};`,
   ];

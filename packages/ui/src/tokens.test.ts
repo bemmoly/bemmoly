@@ -201,7 +201,9 @@ describe('generated CSS', () => {
       const css = files[`styles/themes/${id}.css`] as string;
       expect(css).toContain(`[data-theme='${id}'][data-mode='dark']`);
       expect(css).toMatch(
-        new RegExp(`prefers-color-scheme: dark[\\s\\S]*\\[data-theme='${id}'\\]\\[data-mode='system'\\]`),
+        new RegExp(
+          `prefers-color-scheme: dark[\\s\\S]*\\[data-theme='${id}'\\]\\[data-mode='system'\\]`,
+        ),
       );
     }
     for (const reset of ['--color-*', '--text-*', '--radius-*', '--shadow-*']) {

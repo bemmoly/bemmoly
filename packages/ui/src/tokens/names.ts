@@ -10,7 +10,11 @@ export type ThemeMode = 'light' | 'dark';
 /** What a person or workspace chooses: a mode, or "system" to follow the device live. */
 export type ModePreference = ThemeMode | 'system';
 
-export const MODE_PREFERENCES = ['light', 'dark', 'system'] as const satisfies readonly ModePreference[];
+export const MODE_PREFERENCES = [
+  'light',
+  'dark',
+  'system',
+] as const satisfies readonly ModePreference[];
 
 /** Three surfaces, the sidebar's own, and the hover and press overlays drawn on any of them. */
 export const SURFACE_TOKENS = ['canvas', 'side', 'sunken', 'card', 'hover', 'press'] as const;

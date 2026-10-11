@@ -34,9 +34,7 @@ export const cronSchema = z
   .trim()
   .regex(/^(\S+\s+){4}\S+$/, 'Use a five-field cron expression, e.g. "0 * * * *"');
 
-const themeName = z
-  .string()
-  .regex(/^[a-z][a-z0-9-]{0,39}$/, 'A theme or font id, e.g. "bemmoly"');
+const themeName = z.string().regex(/^[a-z][a-z0-9-]{0,39}$/, 'A theme or font id, e.g. "bemmoly"');
 
 /**
  * Settings the kernel owns. Other kernel services pass their own lists (for
