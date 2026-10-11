@@ -16,6 +16,7 @@
     "./ai-answer": "./src/components/ai-surface/ai-answer.tsx",
     "./ai-insight-body": "./src/components/ai-surface/ai-insight-body.tsx",
     "./time": "./src/lib/time.ts",
+    "./intl": "./src/lib/intl.ts",
     "./theme.css": "./src/theme.css",
     "./tailwind.css": "./src/tailwind.css",
     "./fonts.css": "./src/fonts.css",

@@ -1,4 +1,5 @@
 import { cx } from '../../lib/cx.ts';
+import { useFormatLocale } from '../../lib/intl.ts';
 import { formatAbsolute, formatRelative } from '../../lib/time.ts';
 
 export interface RelativeTimeProps {
@@ -11,17 +12,19 @@ export interface RelativeTimeProps {
 
 /**
  * "3h ago" that shows the absolute date and time on hover and gives it to assistive tech, as
- * a <time> with a machine-readable dateTime (docs/design/premium/interaction.md).
+ * a <time> with a machine-readable dateTime (docs/design/premium/interaction.md). Both follow
+ * the person's language.
  */
 export function RelativeTime({ iso, now, className }: RelativeTimeProps) {
-  const absolute = formatAbsolute(iso);
+  const locale = useFormatLocale();
+  const absolute = formatAbsolute(iso, locale);
   return (
     <time
       dateTime={iso}
       title={absolute}
       className={cx('whitespace-nowrap tabular-nums', className)}
     >
-      <span aria-hidden>{formatRelative(iso, now)}</span>
+      <span aria-hidden>{formatRelative(iso, now, locale)}</span>
       <span className="sr-only">{absolute}</span>
     </time>
   );
