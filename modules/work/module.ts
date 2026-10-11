@@ -31,6 +31,7 @@ export default defineModule({
     path: '/work/projects',
     links: [
       { id: 'work.all-projects', label: 'All projects', path: '/work/projects', icon: 'layers' },
+      { id: 'work.roadmap', label: 'Roadmap', path: '/work/roadmap', icon: 'roadmap' },
     ],
     primary: [{ id: 'work.my-issues', label: 'My issues', path: '/work/my-issues', icon: 'me' }],
     add: { create: 'work.create-project', label: 'New project' },
@@ -60,6 +61,14 @@ export default defineModule({
       placement: 'command',
       icon: 'backlog',
       keys: 'G L',
+    });
+    ctx.navigation.add({
+      id: 'work.roadmap',
+      label: 'Roadmap',
+      path: '/work/roadmap',
+      placement: 'command',
+      icon: 'roadmap',
+      keys: 'G R',
     });
     ctx.navigation.add({
       id: 'work.projects',

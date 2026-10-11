@@ -5,6 +5,8 @@ export const workPaths = {
   issue: (key: string) => `/work/issue/${key}`,
   board: (projectKey: string) => `/work/board/${projectKey}`,
   backlog: (projectKey: string) => `/work/backlog/${projectKey}`,
+  /** One project's roadmap, or every project's without a key. */
+  roadmap: (projectKey?: string) => (projectKey ? `/work/roadmap/${projectKey}` : '/work/roadmap'),
   /** A project's settings open on their first section, Members. */
   settings: (projectKey: string) => `/work/members/${projectKey}`,
   projects: () => '/work/projects',

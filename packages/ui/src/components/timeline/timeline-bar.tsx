@@ -93,7 +93,7 @@ export interface TimelineBarProps {
   openStart?: boolean;
   /** There is no target: a dashed outline in place of the fill. */
   ghost?: boolean;
-  /** Shows the grips and the grab cursor. */
+  /** Shows the grips and the grab cursor; a pointer drags, touch reschedules in the peek. */
   movable?: boolean;
   pending?: boolean;
   dragging?: boolean;
@@ -108,6 +108,8 @@ export interface TimelineBarProps {
   onKeyDown?: KeyboardEventHandler<HTMLButtonElement>;
   onClick?: MouseEventHandler<HTMLButtonElement>;
   onFocus?: () => void;
+  /** Hooks for the screen's keyboard and tests: data-row, data-item-id. */
+  [data: `data-${string}`]: string | number | undefined;
 }
 
 const MIN_WIDTH = 8;
@@ -196,7 +198,7 @@ export function TimelineBar({
           look.edge,
           ghost ? 'border-dashed bg-transparent' : item ? look.body : look.fill,
           late && item && 'rounded-r-none',
-          movable ? 'cursor-grab touch-none active:cursor-grabbing' : 'cursor-pointer',
+          movable ? 'cursor-grab active:cursor-grabbing pointer-fine:touch-none' : 'cursor-pointer',
           dragging && 'z-2 shadow-e1h',
           pending && 'opacity-60 motion-safe:delay-(--duration-base)',
           'motion-safe:transition-[opacity,box-shadow]',
@@ -226,14 +228,14 @@ export function TimelineBar({
             <span
               aria-hidden
               data-grip="start"
-              className="absolute inset-y-0 left-0 w-2 cursor-ew-resize opacity-0 group-hover/bar:opacity-100 group-focus-visible/bar:opacity-100 pointer-coarse:opacity-100"
+              className="absolute inset-y-0 left-0 w-2 cursor-ew-resize opacity-0 group-hover/bar:opacity-100 group-focus-visible/bar:opacity-100 pointer-coarse:hidden"
             >
               <i className={cx('absolute inset-y-1 left-0.5 w-0.5 rounded-full', look.solid)} />
             </span>
             <span
               aria-hidden
               data-grip="end"
-              className="absolute inset-y-0 right-0 w-2 cursor-ew-resize opacity-0 group-hover/bar:opacity-100 group-focus-visible/bar:opacity-100 pointer-coarse:opacity-100"
+              className="absolute inset-y-0 right-0 w-2 cursor-ew-resize opacity-0 group-hover/bar:opacity-100 group-focus-visible/bar:opacity-100 pointer-coarse:hidden"
             >
               <i className={cx('absolute inset-y-1 right-0.5 w-0.5 rounded-full', look.solid)} />
             </span>

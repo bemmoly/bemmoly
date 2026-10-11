@@ -22,6 +22,8 @@ export interface CreateIssueDialogProps {
    * epic lane, "assigned to me". A description may be plain text.
    */
   initial?: CreateInitial;
+  /** The kind of type picked first; a standard issue unless the opener asks for an epic. */
+  level?: 'epic' | 'standard';
   /** After the issue exists, in place of closing; the dialog has said so in a toast. */
   onCreated?: (issue: Issue) => void;
 }
@@ -42,6 +44,7 @@ function CreateIssueForm(props: CreateIssueDialogProps) {
     projectKey: props.projectKey,
     ...(parent ? { parentId: parent.id } : {}),
     ...(props.initial ? { initial: props.initial } : {}),
+    ...(props.level ? { level: props.level } : {}),
   });
   const projects = useQuery(projectsQuery);
   const project = projects.data?.items.find((item) => item.key === form.projectKey);

@@ -17,7 +17,7 @@ function projectInPath(pathname: string): string | null {
   const [, area, screen, segment] = pathname.split('/');
   if (area !== 'work' || !segment) return null;
   if (screen === 'issue') return segment.split('-')[0]?.toUpperCase() ?? null;
-  return ['board', 'backlog', 'members', 'settings', 'workflows'].includes(screen ?? '')
+  return ['board', 'backlog', 'roadmap', 'members', 'settings', 'workflows'].includes(screen ?? '')
     ? segment.toUpperCase()
     : null;
 }
@@ -39,7 +39,7 @@ export function sidebarProjects(
     .slice(0, SHOWN);
 }
 
-/** The current project's views: Board, Backlog and its Settings. */
+/** The current project's views: Board, Backlog, Roadmap and its Settings. */
 function ProjectViews({ project, pathname }: { project: Project; pathname: string }) {
   const key = project.key;
   const inSettings = [
@@ -52,6 +52,7 @@ function ProjectViews({ project, pathname }: { project: Project; pathname: strin
     <>
       <SidebarRow child label="Board" icon="board" path={workPaths.board(key)} keys="G B" />
       <SidebarRow child label="Backlog" icon="backlog" path={workPaths.backlog(key)} keys="G L" />
+      <SidebarRow child label="Roadmap" icon="roadmap" path={workPaths.roadmap(key)} keys="G R" />
       <SidebarRow
         child
         label="Settings"

@@ -156,6 +156,16 @@ export function RailPlanning({ issue }: { issue: IssueDetail }) {
           }}
         />
       </PropertyRow>
+      <PropertyRow label="Start date">
+        <InlineValue
+          label="Start date"
+          type="date"
+          placeholder="Add date"
+          value={issue.startAt ?? ''}
+          display={issue.startAt ? <span>{formatDay(issue.startAt)}</span> : null}
+          onSave={(next) => edit({ body: { startAt: next || null }, what: 'The start date' })}
+        />
+      </PropertyRow>
       <PropertyRow label="Due date">
         <InlineValue
           label="Due date"

@@ -1,6 +1,7 @@
 import { TableSkeleton } from '@bemmoly/ui';
 import { BoardSkeleton } from './board-skeleton.tsx';
 import { IssuePageSkeleton } from './issue-skeleton.tsx';
+import { RoadmapSkeleton } from './roadmap-skeleton.tsx';
 import { HeaderSkeleton } from './parts.tsx';
 
 /** A centred list page (projects, members): its header and a table of rows. */
@@ -26,6 +27,7 @@ function ListPageSkeleton({ label }: { label: string }) {
  */
 export function ScreenSkeleton({ screen }: { screen: string }) {
   if (screen === 'board') return <BoardSkeleton />;
+  if (screen === 'roadmap') return <RoadmapSkeleton />;
   if (screen === 'issue')
     return (
       <div className="min-h-0 flex-1 overflow-hidden">
