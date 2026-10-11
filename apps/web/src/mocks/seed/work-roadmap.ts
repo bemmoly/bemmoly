@@ -13,11 +13,11 @@ import { TYPE_IDS } from './work-types.ts';
  * finished a week over the last eight.
  */
 
-/** [key, start, target, owner]: days from today, the Roadmap mock's Monday 5 October. */
+/** [key, start, target, owner]: days from today, so Billing v2 runs late as in the mock. */
 const PLAN: Array<[string, number, number, keyof typeof USER_IDS]> = [
-  ['PLT-190', -27, 2, 'priya'],
-  ['PLT-150', -13, 16, 'lena'],
-  ['PLT-160', -34, 5, 'jonas'],
+  ['PLT-190', -27, 21, 'priya'],
+  ['PLT-150', -13, 4, 'lena'],
+  ['PLT-160', -34, 28, 'jonas'],
   ['PLT-240', 16, 51, 'rohan'],
   ['MOB-1', -6, 30, 'aisha'],
   ['MOB-6', 36, 74, 'jonas'],
@@ -110,7 +110,7 @@ export function datedVersions(versions: Row[]): Row[] {
  * would say for each project. A project not listed has too little history to forecast.
  */
 export const THROUGHPUT: Record<string, readonly number[]> = {
-  [WORK_IDS.project]: [6, 4, 7, 5, 8, 3, 6, 5],
+  [WORK_IDS.project]: [11, 9, 13, 10, 12, 8, 12, 11],
   [BOARD_IDS.supProject]: [22, 25, 19, 28, 24, 21, 26, 23],
   [MOBILE_PROJECT]: [3, 2, 4, 3, 1, 3, 2, 4],
 };

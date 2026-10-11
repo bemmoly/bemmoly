@@ -22,7 +22,7 @@ start of the waiting one, amber when the waiting one is planned to start first.
 | Action                        | Mouse                                       | Keyboard                                   | Touch                          |
 | ----------------------------- | ------------------------------------------- | ------------------------------------------ | ------------------------------ |
 | Read a forecast in words      | Click the forecast chip, or "View forecast" | F on a focused row or bar                  | Tap the chip                   |
-| Reschedule an epic or version | Drag the bar; drag either end to resize     | ← → move a day, Shift with them a week     | Long-press the bar, then drag  |
+| Reschedule an epic or version | Drag the bar; drag either end to resize     | ← → move a day, Shift with them a week     | Tap it; set its dates in the peek  |
 | Open the epic                 | Click the name                              | Enter on the name                          | Tap the name                   |
 
 **Keyboard map.** Checked against the global map: no single key here is global, and none
@@ -34,19 +34,21 @@ fires while typing, in a menu or dialog, or with Alt held.
 | Enter             | Open the epic in the peek (`?issue=KEY`); on a version, its forecast  |
 | ← →               | On a bar: move it a day earlier or later. On a name: fold, unfold    |
 | Shift + ← →       | On a bar: move it a week                                             |
+| Alt + ← →         | On a bar: move only its end a day                                    |
 | F                 | Open the focused item's forecast (`?forecast=ID`)                    |
 | T                 | Scroll to today                                                      |
 | W, M, Q           | Zoom to weeks, months, quarters                                      |
 | G R               | Go to the project's roadmap (from Board and Backlog too)             |
 | Esc               | Close the forecast or peek; during a drag, put the bar back          |
 
-**Rescheduling.** A drag shows the new dates in a tooltip as it moves and snaps to days. The
+**Rescheduling.** A drag shows the new dates above the bar as it moves and snaps to days; the
+grips at either end move one date (Alt with the arrows does the same for the end). The
 bar keeps its place in the same frame on drop (optimistic), dims after a 160ms beat while the
 change is on its way, and a toast says "Billing v2 moved to Sep 29 – Oct 28" with Undo for six
 seconds. A refusal puts the bar back with "Couldn't move Billing v2" and Try again. Keyboard
 moves are sent once the keys rest for half a second, as one change. Only people who can edit
 issues move epics, and only project admins move versions; for everyone else the bar has no
-grip and the arrow keys do nothing, and its tooltip says why.
+grip and the arrow keys do nothing.
 
 **The forecast.** Computed on the server from the project's own history (the Board's flow and
 sprint metrics): completed points per sprint when the project runs sprints with estimates,
@@ -75,7 +77,7 @@ made-up date.
 - No permission: a project you cannot open is left out of the all-projects view; a link to it
   says there is no such project you can see. Bars you cannot move have no grip.
 - Phone: the name column narrows to 132px and drops the chip; the filter row scrolls sideways;
-  months is the default zoom; long-press starts a drag.
+  months is the default zoom; bars do not drag on touch (a drag there scrolls the timeline), so dates move in the epic's peek.
 
 **URL state.** `zoom` (weeks, months, quarters), `group` (project, team, none), `show`
 (versions, done), `team`, `q`, the open `issue` or `forecast`. A link reproduces the view.
