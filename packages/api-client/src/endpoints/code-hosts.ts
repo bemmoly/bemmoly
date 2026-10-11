@@ -4,9 +4,17 @@ import {
   codeHostSchema,
   codeHostsResponseSchema,
   codeHostTestResultSchema,
+  completeGithubAppSchema,
   createCodeHostSchema,
+  githubAppCreatedSchema,
+  githubAppStartSchema,
+  installGithubAppSchema,
+  startGithubAppSchema,
   updateCodeHostSchema,
+  type CompleteGithubApp,
   type CreateCodeHostInput,
+  type InstallGithubApp,
+  type StartGithubAppInput,
   type UpdateCodeHostInput,
 } from '@bemmoly/shared';
 import type { Http } from '../http.ts';
@@ -35,6 +43,24 @@ export function codeHostEndpoints(http: Http) {
     /** A signed ping through the webhook path, then one API call with the saved credentials. */
     test: async (id: string) =>
       http.request(host(id, '/tests'), codeHostTestResultSchema, { method: 'POST', body: {} }),
+    /** The manifest the browser posts to GitHub to create the app in one click. */
+    startGithubApp: async (body: StartGithubAppInput) =>
+      http.request(`${BASE}/github-app-manifests`, githubAppStartSchema, {
+        method: 'POST',
+        body: validated(startGithubAppSchema, body),
+      }),
+    /** GitHub's one-time code, back from creating the app, traded for the stored host. */
+    completeGithubApp: async (body: CompleteGithubApp) =>
+      http.request(`${BASE}/github-apps`, githubAppCreatedSchema, {
+        method: 'POST',
+        body: validated(completeGithubAppSchema, body),
+      }),
+    /** Where GitHub says the app was installed; the repositories are read from there. */
+    installGithubApp: async (id: string, body: InstallGithubApp) =>
+      http.request(host(id, '/installations'), codeHostSchema, {
+        method: 'POST',
+        body: validated(installGithubAppSchema, body),
+      }),
     backfill: async (id: string) =>
       http.request(host(id, '/backfills'), codeHostBackfillSchema, { method: 'POST', body: {} }),
   };

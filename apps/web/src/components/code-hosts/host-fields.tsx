@@ -6,24 +6,30 @@ interface HostFieldsProps {
   kind: CodeHostKind;
   form: CodeHostForm;
   disabled?: boolean;
+  /** An app Bemmoly created keeps its server and secret; only its name changes here. */
+  nameOnly?: boolean;
 }
 
 const kept = (editing: boolean) =>
   editing ? 'Stored encrypted. Leave empty to keep it.' : 'Stored encrypted.';
 
 /** Where the host runs and the webhook secret it signs deliveries with. */
-export function ServerFields({ kind, form, disabled }: HostFieldsProps) {
+export function ServerFields({ kind, form, disabled, nameOnly }: HostFieldsProps) {
   const { draft, set, errors, editing } = form;
   const product = kind === 'github' ? 'GitHub' : 'GitLab';
+  const name = (
+    <Field label="Name" error={errors['name']}>
+      <Input
+        value={draft.name}
+        disabled={disabled}
+        onChange={(event) => set('name')(event.target.value)}
+      />
+    </Field>
+  );
+  if (nameOnly) return name;
   return (
     <div className="flex flex-col gap-3.5">
-      <Field label="Name" error={errors['name']}>
-        <Input
-          value={draft.name}
-          disabled={disabled}
-          onChange={(event) => set('name')(event.target.value)}
-        />
-      </Field>
+      {name}
       <SegmentedControl
         aria-label="Where it runs"
         value={draft.server}

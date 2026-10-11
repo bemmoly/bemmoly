@@ -1,7 +1,12 @@
 import type { CodeHost, CodeHostTestResult } from '@bemmoly/shared';
 import { Button, IconButton, Menu, MenuItem, RelativeTime } from '@bemmoly/ui';
 import { Icon } from '@bemmoly/ui/icons';
-import { HOST_LABELS, hostState, type CodeHosts } from '../../hooks/use-code-hosts.ts';
+import {
+  awaitingInstall,
+  HOST_LABELS,
+  hostState,
+  type CodeHosts,
+} from '../../hooks/use-code-hosts.ts';
 import { describeError } from '../../lib/errors.ts';
 import { toast } from '../../lib/toast.ts';
 import { AuthMethodCard } from '../people/auth-method-card.tsx';
@@ -43,6 +48,10 @@ function describe(host: CodeHost, test: CodeHostTestResult | undefined) {
           <>
             Last delivery <RelativeTime iso={last.receivedAt} />: {last.summary}
           </>
+        ) : awaitingInstall(host) ? (
+          'Install the app on GitHub and choose the repositories it reads.'
+        ) : host.installUrl ? (
+          'Nothing received yet. Deliveries arrive as pull requests change.'
         ) : (
           'Nothing received yet. Add the webhook, then send a test delivery.'
         )}
@@ -76,14 +85,20 @@ export function HostCard({ host, hosts, onEdit, onDeliveries, onDelete }: HostCa
       description={describe(host, hosts.lastTest(host.id))}
       actions={
         <>
-          <Button
-            size="sm"
-            loading={hosts.testing === host.id}
-            disabled={!host.enabled}
-            onClick={() => hosts.test(host.id)}
-          >
-            Send test delivery
-          </Button>
+          {awaitingInstall(host) ? (
+            <Button size="sm" onClick={() => window.location.assign(host.installUrl ?? '')}>
+              Install on GitHub…
+            </Button>
+          ) : (
+            <Button
+              size="sm"
+              loading={hosts.testing === host.id}
+              disabled={!host.enabled}
+              onClick={() => hosts.test(host.id)}
+            >
+              Send test delivery
+            </Button>
+          )}
           <Button size="sm" variant="ghost" onClick={onEdit}>
             Edit…
           </Button>
@@ -96,6 +111,11 @@ export function HostCard({ host, hosts, onEdit, onDeliveries, onDelete }: HostCa
               )}
             >
               <MenuItem onSelect={onDeliveries}>Recent deliveries</MenuItem>
+              {host.installUrl && host.installationId && (
+                <MenuItem onSelect={() => window.location.assign(host.installUrl ?? '')}>
+                  Change repositories on GitHub…
+                </MenuItem>
+              )}
               <MenuItem
                 disabled={!host.enabled || host.repositories.length === 0 || !host.hasCredentials}
                 onSelect={() => hosts.backfill(host.id)}

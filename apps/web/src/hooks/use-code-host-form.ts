@@ -66,6 +66,8 @@ function credentialsOf(draft: CodeHostDraft) {
 
 /** The body: an empty secret, token or key keeps what is stored (only when editing). */
 function inputOf(kind: CodeHostKind, draft: CodeHostDraft, host?: CodeHost) {
+  // An app Bemmoly created is GitHub's to configure; only its name is edited here.
+  if (host?.installUrl) return { name: draft.name.trim() };
   const common = {
     name: draft.name.trim(),
     baseUrl: draft.server === 'self' ? draft.baseUrl.trim().replace(/\/+$/, '') : null,

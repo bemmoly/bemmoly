@@ -8,6 +8,7 @@ import {
 import type { SqlExecutor } from '../../contracts/sql.ts';
 import { appLink } from '../identity/index.ts';
 import type { SecretBox } from '../settings/index.ts';
+import { githubInstallUrl } from './hosts/github-app.ts';
 import type { HostConnection, HostSecrets } from './types.ts';
 
 export interface IntegrationRow {
@@ -18,6 +19,8 @@ export interface IntegrationRow {
   auth_mode: 'app' | 'token';
   app_id: string | null;
   installation_id: string | null;
+  /** Set for a GitHub App Bemmoly created from a manifest. */
+  app_slug: string | null;
   repositories: string[];
   secrets_encrypted: string;
   enabled: boolean;
@@ -163,6 +166,8 @@ export function toCodeHost(
     authMode: row.auth_mode,
     appId: row.app_id,
     installationId: row.installation_id,
+    installUrl:
+      row.auth_mode === 'app' && row.app_slug ? githubInstallUrl(row.base_url, row.app_slug) : null,
     hasCredentials: Boolean(row.auth_mode === 'app' ? secrets.privateKey : secrets.token),
     hasWebhookSecret: secrets.webhookSecret.length > 0,
     repositories: row.repositories,
