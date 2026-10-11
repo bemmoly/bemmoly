@@ -18,11 +18,15 @@ The foot shows only the lock and the host besides.
   password, show password, forgot, submit. Focus lands on the remembered provider, else the
   only provider when single sign-on is required, else the email field (the password when the
   email is known).
-- **Single sign-on first:** "Continue with {provider}" buttons with each provider's own mark,
-  "Last used" on the one this device used before, then "or with email". With single sign-on
-  required, the password form is gone: one ringed button, a line that the password lives with
-  the provider, and "Admin without single sign-on? Use a password" (`?method=password`, the
-  admin fallback, without "Forgot password?").
+- **Single sign-on first:** "Continue with {provider}" buttons with each provider's own mark and
+  its full name (wrapping on phones, never truncated), "Last used" on the one this device used
+  before, then "or with email". The first provider is the page's primary action: the accent
+  fill, with a full-colour mark on a white chip (a one-colour mark takes the accent on the
+  button's ink). Further providers are secondary, and so is the password submit below them;
+  without single sign-on the password submit is primary. With single sign-on required, the
+  password form is gone: the filled button and "Admin without single sign-on? Use a password"
+  (`?method=password`, the admin fallback, without "Forgot password?"). No helper line about
+  where the password lives.
 - **Remembered method:** `localStorage["bemmoly.last-sign-in"]` holds the method, provider,
   email and name, on this device only. No email-domain routing.
 - **States:**
@@ -68,3 +72,13 @@ The foot shows only the lock and the host besides.
 Designed in the review (code entry, recovery codes, "Trust this browser for 30 days"), not
 built. It needs identity tables and an ADR first; when single sign-on is required it should be
 mandatory for the admin fallback accounts.
+
+## The product panel
+
+From 1100px the right-hand panel shows a still life of Bemmoly in the workspace's theme, one
+card per part of the product: a board, the sprint's progress, the Inbox with an @mention, a
+Docs page being edited (a heading and real text), the backlog, an AI summary labelled
+"Example", and the ⌘K chip. Cards sit in two loose columns with gutters and do not cover each
+other. The drawing scales to fit but never past 92%, so its text stays at product sizes (11
+to 13px) on large screens; narrow panels (1100 to 1300px windows) drop the backlog. It is
+hidden from assistive tech, hidden below 1100px, and its drift stops under reduced motion.
