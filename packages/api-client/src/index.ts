@@ -19,6 +19,7 @@ import { peopleEndpoints } from './endpoints/people.ts';
 import { authEndpoints, setupEndpoints } from './endpoints/session.ts';
 import { settingsEndpoints } from './endpoints/settings.ts';
 import { ssoEndpoints } from './endpoints/sso.ts';
+import { webhookEndpoints } from './endpoints/webhooks.ts';
 import { createHttp, type HttpOptions } from './http.ts';
 
 export function createApiClient(options: HttpOptions = {}) {
@@ -33,6 +34,7 @@ export function createApiClient(options: HttpOptions = {}) {
     codeHosts: codeHostEndpoints(http),
     sso: ssoEndpoints(http),
     oauth: oauthEndpoints(http),
+    webhooks: webhookEndpoints(http),
     ai: {
       ...aiEndpoints(http),
       plans: aiPlanEndpoints(http),

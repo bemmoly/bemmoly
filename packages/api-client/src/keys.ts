@@ -60,6 +60,13 @@ export const queryKeys = {
     outbox: () => ['email', 'outbox'] as const,
     devMailbox: () => ['email', 'dev-mailbox'] as const,
   },
+  webhooks: {
+    all: () => ['webhooks'] as const,
+    list: () => ['webhooks', 'list'] as const,
+    catalog: () => ['webhooks', 'catalog'] as const,
+    targets: () => ['webhooks', 'targets'] as const,
+    deliveries: (id: string) => ['webhooks', id, 'deliveries'] as const,
+  },
   backups: {
     all: () => ['backups'] as const,
     list: (filter: BackupsFilter = {}) => ['backups', 'list', filter] as const,
