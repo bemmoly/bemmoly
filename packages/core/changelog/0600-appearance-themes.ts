@@ -8,19 +8,19 @@ import { sql } from 'drizzle-orm';
  * workspace custom theme. The retired keys (mode, surfaces, memberModeSwitch) are left in place
  * for the previous minor and removed in a later release.
  */
-const THEME_OF = `case value #>> '{}'
+const THEME_OF = sql`case value #>> '{}'
   when 'classic' then 'bemmoly' when 'light' then 'bemmoly' when 'dark' then 'bemmoly'
   when 'midnight' then 'bemmoly' when 'ocean' then 'bemmoly' when 'rose' then 'bemmoly'
   when 'slate' then 'graphite' when 'warm' then 'sand' when 'forest' then 'pine'
   else value #>> '{}' end`;
 
-const MODE_OF = `case value #>> '{}'
+const MODE_OF = sql`case value #>> '{}'
   when 'dark' then 'dark' when 'midnight' then 'dark' when 'ocean' then 'dark'
   when 'custom' then coalesce(
     (select s.value #>> '{}' from settings s where s.key = 'appearance.mode'), 'light')
   else 'light' end`;
 
-const FONT_OF = `case value #>> '{}'
+const FONT_OF = sql`case value #>> '{}'
   when 'slate' then 'inter' when 'ocean' then 'inter' when 'warm' then 'source'
   when 'rose' then 'source' when 'midnight' then 'geist' else 'plex' end`;
 
@@ -61,20 +61,16 @@ export default changeset({
       )`);
 
     // The default mode and typeface the stored preset implied, unless already set.
-    await ctx.exec(
-      sql.raw(`
+    await ctx.exec(sql`
       insert into settings (key, value, updated_by)
       select 'appearance.defaultMode', to_jsonb(${MODE_OF}), 'changelog'
       from settings where key = 'appearance.theme'
-      on conflict (key) do nothing`),
-    );
-    await ctx.exec(
-      sql.raw(`
+      on conflict (key) do nothing`);
+    await ctx.exec(sql`
       insert into settings (key, value, updated_by)
       select 'appearance.font', to_jsonb(${FONT_OF}), 'changelog'
       from settings where key = 'appearance.theme'
-      on conflict (key) do nothing`),
-    );
+      on conflict (key) do nothing`);
     // A workspace already in use with no stored theme was on Classic light; keep it light.
     // A fresh install has nobody yet and takes the new default, Match system.
     await ctx.exec(sql`
@@ -100,13 +96,11 @@ export default changeset({
       select 'appearance.customThemeId', to_jsonb(id::text), 'changelog' from created
       on conflict (key) do nothing`);
 
-    await ctx.exec(
-      sql.raw(`
+    await ctx.exec(sql`
       update settings set value = to_jsonb(${THEME_OF}), updated_at = now()
       where key = 'appearance.theme'
         and value #>> '{}' in
-          ('classic', 'light', 'dark', 'slate', 'warm', 'midnight', 'forest', 'ocean', 'rose')`),
-    );
+          ('classic', 'light', 'dark', 'slate', 'warm', 'midnight', 'forest', 'ocean', 'rose')`);
   },
   down: async (ctx) => {
     // Back to the nearest preset; a custom theme keeps "custom" and its mirrored brand colour.
