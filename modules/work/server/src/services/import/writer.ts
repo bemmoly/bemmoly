@@ -1,4 +1,4 @@
-import type { ImportMappingStore, ImportRunContext, SqlClient } from '@bemmoly/core';
+import type { ImportMappingStore, ImportRunContext, SqlClient, SqlExecutor } from '@bemmoly/core';
 
 /*
  * Writes imported issues in pages: one statement inserts the new ones and one updates the
@@ -81,12 +81,39 @@ const RECORDSET = `r(project_id uuid, number int, key text, type_id uuid, title 
   component_id uuid, custom_fields jsonb, rank text, created_at timestamptz,
   resolved_at timestamptz, id uuid)`;
 
+type MappingWrite = { sourceId: string; targetId: string; meta: Record<string, unknown> };
+
+/**
+ * Issues already in the project under a row's key that no import has claimed: ones a run
+ * made before it recorded their mapping. Taking them over keeps a retry from dropping their
+ * comments and attachments.
+ */
+async function adoptable(
+  tx: SqlExecutor,
+  projectId: string,
+  rows: readonly ImportedIssueRow[],
+): Promise<Map<number, { id: string; updated_at: Date | string }>> {
+  if (!rows.length) return new Map();
+  const found = await tx<{ id: string; number: number; key: string; updated_at: Date | string }[]>`
+    select i.id, i.number, i.key, i.updated_at from issues i
+    where i.project_id = ${projectId} and i.number = any(${rows.map((row) => row.number)}::int[])
+      and i.deleted_at is null
+      and not exists (
+        select 1 from import_mappings m where m.kind = 'issue' and m.target_id = i.id)`;
+  const keys = new Map(rows.map((row) => [row.number, row.key]));
+  return new Map(
+    found.filter((row) => keys.get(row.number) === row.key).map((row) => [row.number, row]),
+  );
+}
+
+/** `adopt` only for sources whose number comes from the source key (Jira). */
 export async function writeIssues(
   sql: SqlClient,
   projectId: string,
   rows: readonly ImportedIssueRow[],
   mappings: ImportMappingStore,
   report: ImportRunContext['report'],
+  options: { adopt?: boolean } = {},
 ): Promise<WrittenIssue[]> {
   if (!rows.length) return [];
   const known = await mappings.getMany(
@@ -110,62 +137,69 @@ export async function writeIssues(
     } else toUpdate.push({ row, id: mapped.targetId });
   }
 
-  const inserted = toInsert.length
-    ? await sql<{ id: string; number: number; updated_at: Date | string }[]>`
-        insert into issues (project_id, number, key, type_id, title, description,
-          description_text, status_id, priority, assignee_id, reporter_id, sprint_id, estimate,
-          due_at, fix_version_id, component_id, custom_fields, rank, created_at, resolved_at)
-        select r.project_id, r.number, r.key, r.type_id, r.title, r.description,
-          r.description_text, r.status_id, r.priority, r.assignee_id, r.reporter_id,
-          r.sprint_id, r.estimate, r.due_at, r.fix_version_id, r.component_id,
-          r.custom_fields, r.rank, coalesce(r.created_at, now()), r.resolved_at
-        from jsonb_to_recordset(${JSON.stringify(toInsert.map((row) => asRecord(row, projectId)))}::jsonb)
-          as ${sql.unsafe(RECORDSET)}
-        on conflict do nothing
-        returning id, number, updated_at`
-    : [];
-  const byNumber = new Map(inserted.map((row) => [row.number, row]));
-  const fresh: { sourceId: string; targetId: string; meta: Record<string, unknown> }[] = [];
-  for (const row of toInsert) {
-    const made = byNumber.get(row.number);
-    if (!made) {
-      report.skip('issue', row.label, `${row.key} already exists in the project`);
-      continue;
+  // Rows and their mappings commit together: a run that dies after this page finds every
+  // issue it made on the retry, instead of making it again under a fresh number.
+  const counts = await sql.begin(async (tx) => {
+    const inserted = toInsert.length
+      ? await tx<{ id: string; number: number; updated_at: Date | string }[]>`
+          insert into issues (project_id, number, key, type_id, title, description,
+            description_text, status_id, priority, assignee_id, reporter_id, sprint_id, estimate,
+            due_at, fix_version_id, component_id, custom_fields, rank, created_at, resolved_at)
+          select r.project_id, r.number, r.key, r.type_id, r.title, r.description,
+            r.description_text, r.status_id, r.priority, r.assignee_id, r.reporter_id,
+            r.sprint_id, r.estimate, r.due_at, r.fix_version_id, r.component_id,
+            r.custom_fields, r.rank, coalesce(r.created_at, now()), r.resolved_at
+          from jsonb_to_recordset(${JSON.stringify(toInsert.map((row) => asRecord(row, projectId)))}::jsonb)
+            as ${sql.unsafe(RECORDSET)}
+          on conflict do nothing
+          returning id, number, updated_at`
+      : [];
+    const byNumber = new Map(inserted.map((row) => [row.number, row]));
+    const missed = toInsert.filter((row) => !byNumber.has(row.number));
+    const adopted = options.adopt ? await adoptable(tx, projectId, missed) : new Map();
+    const fresh: MappingWrite[] = [];
+    for (const row of toInsert) {
+      const made = byNumber.get(row.number) ?? adopted.get(row.number);
+      if (!made) {
+        report.skip('issue', row.label, `${row.key} already exists in the project`);
+        continue;
+      }
+      written.push({ sourceId: row.sourceId, id: made.id, created: byNumber.has(row.number) });
+      fresh.push({
+        sourceId: row.sourceId,
+        targetId: made.id,
+        meta: { ...row.meta, syncedAt: new Date(made.updated_at).getTime() },
+      });
     }
-    written.push({ sourceId: row.sourceId, id: made.id, created: true });
-    fresh.push({
-      sourceId: row.sourceId,
-      targetId: made.id,
-      meta: { ...row.meta, syncedAt: new Date(made.updated_at).getTime() },
-    });
-  }
 
-  const updated = toUpdate.length
-    ? await sql<{ id: string; updated_at: Date | string }[]>`
-        update issues i set type_id = r.type_id, title = r.title, description = r.description,
-          description_text = r.description_text,
-          status_changed_at = case when i.status_id = r.status_id then i.status_changed_at else now() end,
-          status_id = r.status_id, priority = r.priority, assignee_id = r.assignee_id,
-          reporter_id = r.reporter_id, sprint_id = r.sprint_id, estimate = r.estimate,
-          due_at = r.due_at, fix_version_id = r.fix_version_id, component_id = r.component_id,
-          custom_fields = r.custom_fields, resolved_at = r.resolved_at, updated_at = now()
-        from jsonb_to_recordset(${JSON.stringify(toUpdate.map(({ row, id }) => ({ ...asRecord(row, projectId), id })))}::jsonb)
-          as ${sql.unsafe(RECORDSET)}
-        where i.id = r.id
-        returning i.id, i.updated_at`
-    : [];
-  const stamps = new Map(updated.map((row) => [row.id, new Date(row.updated_at).getTime()]));
-  for (const { row, id } of toUpdate) {
-    written.push({ sourceId: row.sourceId, id, created: false });
-    fresh.push({
-      sourceId: row.sourceId,
-      targetId: id,
-      meta: { ...row.meta, syncedAt: stamps.get(id) ?? Date.now() },
-    });
-  }
-  await mappings.setMany('issue', fresh);
-  report.count('issues', 'created', inserted.length);
-  report.count('issues', 'updated', updated.length);
+    const updated = toUpdate.length
+      ? await tx<{ id: string; updated_at: Date | string }[]>`
+          update issues i set type_id = r.type_id, title = r.title, description = r.description,
+            description_text = r.description_text,
+            status_changed_at = case when i.status_id = r.status_id then i.status_changed_at else now() end,
+            status_id = r.status_id, priority = r.priority, assignee_id = r.assignee_id,
+            reporter_id = r.reporter_id, sprint_id = r.sprint_id, estimate = r.estimate,
+            due_at = r.due_at, fix_version_id = r.fix_version_id, component_id = r.component_id,
+            custom_fields = r.custom_fields, resolved_at = r.resolved_at, updated_at = now()
+          from jsonb_to_recordset(${JSON.stringify(toUpdate.map(({ row, id }) => ({ ...asRecord(row, projectId), id })))}::jsonb)
+            as ${sql.unsafe(RECORDSET)}
+          where i.id = r.id
+          returning i.id, i.updated_at`
+      : [];
+    const stamps = new Map(updated.map((row) => [row.id, new Date(row.updated_at).getTime()]));
+    for (const { row, id } of toUpdate) {
+      written.push({ sourceId: row.sourceId, id, created: false });
+      fresh.push({
+        sourceId: row.sourceId,
+        targetId: id,
+        meta: { ...row.meta, syncedAt: stamps.get(id) ?? Date.now() },
+      });
+    }
+    await mappings.setMany('issue', fresh, tx);
+    return { created: inserted.length, updated: updated.length + adopted.size };
+  });
+  report.count('issues', 'created', counts.created);
+  report.count('issues', 'updated', counts.updated);
   await sql`
     update project_counters c set next_number = greatest(c.next_number,
       (select coalesce(max(number), 0) + 1 from issues where project_id = ${projectId})),

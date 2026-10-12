@@ -11,12 +11,15 @@ import {
   type BodyReferences,
 } from '../links/rewrite.ts';
 import { rankAmongSiblings } from '../pages/rank.ts';
+import { importedEarlier, recordImport, storedReferences } from './ledger.ts';
 import { planImport, type PlannedPage } from './plan.ts';
 
 /*
  * Writes an import: every planned page created under its parent in one transaction (so a
  * failed import leaves nothing behind), then each body converted with the page ids known,
- * so a Confluence link to another page in the same import becomes a live page link.
+ * so a Confluence link to another page in the same import becomes a live page link. An import
+ * with a key records it in that transaction, so a retry after the commit finds the pages it
+ * made and only finishes what follows the commit (the body links) instead of writing them twice.
  */
 
 export interface ImportRun {
@@ -25,6 +28,8 @@ export interface ImportRun {
   userId: string | null;
   format: ImportBody['format'];
   files: ImportBody['files'];
+  /** The import's idempotency key; a retry with the same key reuses what the first run wrote. */
+  key?: string;
 }
 
 function countPlaceholders(node: unknown): number {
@@ -75,10 +80,16 @@ export async function runImport(
   entities?: DocsServiceDeps['entities'],
 ): Promise<ImportedPage[]> {
   const plan = planImport(run.format, run.files);
-  const bodies: { id: string; references: BodyReferences }[] = [];
+  let bodies: { id: string; references: BodyReferences }[] = [];
+  let resumed = false;
   const imported = await sql.begin(async (tx) => {
     const [space] = await tx`select id from spaces where id = ${run.spaceId} for update`;
     if (!space) throw new NotFoundError('The space was not found');
+    const earlier = run.key ? await importedEarlier(tx, run.spaceId, run.key) : null;
+    if (earlier) {
+      resumed = true;
+      return earlier;
+    }
     let root: { id: string; path: string } | null = null;
     if (run.parentId) {
       const [parent] = await tx<{ id: string; path: string; space_id: string }[]>`
@@ -124,8 +135,10 @@ export async function runImport(
       pages: imported.length,
       placeholders: imported.reduce((sum, page) => sum + page.placeholders, 0),
     });
+    if (run.key) await recordImport(tx, run.spaceId, run.key, imported);
     return imported;
   });
+  if (resumed) bodies = await storedReferences(sql, imported);
   // Issue keys resolve through Work on the pool, so the body links follow the commit, in one
   // lookup for the whole import rather than one per page inside the transaction.
   const edges = await resolveBodyEdges(

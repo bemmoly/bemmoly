@@ -84,6 +84,7 @@ export async function bootApplication(options: BootOptions): Promise<Booted> {
     ? createRealtimeService({
         sql: database.sql,
         logger: logger.child({ component: 'realtime' }),
+        metrics: getMetrics().realtime,
         hub: {
           ...(identity.moduleAccess ? { moduleAccess: identity.moduleAccess } : {}),
           ...(identity.authorizeSubscription
