@@ -100,9 +100,9 @@ describe('Board selection', () => {
 
   it('draws a card’s tools once it is reached, and right-click opens its menu either way', async () => {
     await renderBoard();
-    expect(screen.queryByRole('button', { name: 'Open PLT-10' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Open PLT-10 full page' })).toBeNull();
     fireEvent.pointerEnter(cardEl('PLT-10'));
-    expect(screen.getByRole('button', { name: 'Open PLT-10' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Open PLT-10 full page' })).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Actions for PLT-11' })).toBeNull();
     fireEvent.contextMenu(cardEl('PLT-11'));
     expect(await screen.findByRole('menuitem', { name: 'Open full page' })).toBeTruthy();

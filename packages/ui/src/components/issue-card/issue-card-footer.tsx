@@ -43,6 +43,7 @@ export interface IssueCardFooterProps {
   showKey: boolean;
   priority?: Priority | undefined;
   assignee?: CardPerson | null | undefined;
+  coAssignees?: readonly CardPerson[] | undefined;
   estimate?: number | string | undefined;
   age?: { label: string; slow?: boolean; done?: boolean } | undefined;
   doc?: string | undefined;
@@ -126,7 +127,9 @@ export function IssueCardFooter(props: IssueCardFooterProps) {
         {...(reporter.initials ? { initials: reporter.initials } : {})}
       />
     ),
-    assignee: assignee !== undefined && <IssueAssignee person={assignee} />,
+    assignee: assignee !== undefined && (
+      <IssueAssignee person={assignee} others={props.coAssignees} />
+    ),
   };
   const all = ordered(props.order);
   const side = (right: boolean) =>

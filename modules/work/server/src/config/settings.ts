@@ -7,6 +7,7 @@ declare module '@bemmoly/core' {
     'work.defaultMethod': 'scrum' | 'kanban';
     'work.defaultEstimationUnit': 'points' | 'hours' | 'tshirt' | 'none';
     'work.jobs.rankRebalance.schedule': string;
+    'work.pairing.suggestions': boolean;
   }
 }
 
@@ -24,4 +25,6 @@ export function defineWorkSettings(settings: SettingsRegistry): void {
     /** Nightly, in the quiet period, as the housekeeping jobs run. */
     default: '15 3 * * *',
   });
+  /** The Pairing view's suggested next pairs; off until an admin turns them on. */
+  settings.define({ key: 'work.pairing.suggestions', schema: z.boolean(), default: false });
 }

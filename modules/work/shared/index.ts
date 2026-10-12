@@ -23,6 +23,7 @@ export * from './realtime.ts';
 export * from './rich-text.ts';
 export * from './roadmap.ts';
 export * from './schemes.ts';
+export * from './pairing.ts';
 export * from './search.ts';
 export * from './sprints.ts';
 export * from './versions-components.ts';

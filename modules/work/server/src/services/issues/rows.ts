@@ -32,6 +32,7 @@ export interface IssueRow {
   created_at: Date | string;
   updated_at: Date | string;
   label_ids: string[] | null;
+  assignee_ids?: string[] | null;
   color?: string | null;
 }
 
@@ -41,7 +42,10 @@ export const ISSUE_COLUMNS = `
   i.start_at, i.due_at, i.fix_version_id, i.component_id, i.custom_fields, i.rank, i.status_changed_at,
   i.resolved_at, i.deleted_at, i.created_at, i.updated_at, i.color,
   (select array_agg(il.label_id order by il.id) from issue_labels il where il.issue_id = i.id)
-    as label_ids`;
+    as label_ids,
+  (select array_agg(ia.user_id order by ia.user_id is distinct from i.assignee_id, ia.added_at,
+    ia.id) from issue_assignees ia where ia.issue_id = i.id and ia.removed_at is null)
+    as assignee_ids`;
 
 const dateOnly = (value: string | Date): string => iso(value).slice(0, 10);
 
@@ -57,6 +61,7 @@ export const toIssue = (row: IssueRow): Issue => ({
   statusId: row.status_id,
   priority: row.priority,
   assigneeId: row.assignee_id,
+  ...(row.assignee_ids !== undefined ? { assigneeIds: row.assignee_ids ?? [] } : {}),
   reporterId: row.reporter_id,
   parentId: row.parent_id,
   sprintId: row.sprint_id,

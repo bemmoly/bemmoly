@@ -109,6 +109,10 @@ export function cardProps(
   const done = vocab.doneColumns.has(card.columnId);
   const assignee = personOf(vocab, card.assigneeId);
   const reporter = personOf(vocab, card.reporterId);
+  const coAssignees = (card.assigneeIds ?? [])
+    .filter((id) => id !== card.assigneeId)
+    .map((id) => personOf(vocab, id))
+    .filter((person): person is CardPerson => Boolean(person));
   return {
     issueKey: card.key,
     showKey: show('key'),
@@ -119,6 +123,7 @@ export function cardProps(
     ...(show('priority') ? { priority } : {}),
     // On, an unassigned card draws the empty ring: the field is there, nobody holds it yet.
     ...(show('assignee') ? { assignee: assignee ?? null } : {}),
+    ...(show('assignee') && assignee && coAssignees.length > 0 ? { coAssignees } : {}),
     ...(show('labels') && labels.length > 0 ? { labels } : {}),
     ...(show('estimate') && card.estimate !== null ? { estimate: card.estimate } : {}),
     ...(show('age')

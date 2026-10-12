@@ -43,8 +43,13 @@ export const ASSIGN_LABELS: Record<string, string> = {
   unassigned: 'Nobody (unassign)',
 };
 
+export const ASSIGN_MODE_LABELS: Record<string, string> = {
+  replace: 'Replace them',
+  add: 'Keep them and add',
+};
+
 export const RECIPIENT_LABELS: Record<string, string> = {
-  assignee: 'The assignee',
+  assignee: 'The assignees',
   reporter: 'The reporter',
   watchers: 'Watchers',
 };

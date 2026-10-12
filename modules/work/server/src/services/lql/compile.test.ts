@@ -50,8 +50,9 @@ describe('LQL compiler: operators', () => {
   });
 
   it('compiles IS EMPTY and IS NOT EMPTY as null checks', () => {
-    expect(where('assignee IS EMPTY').text).toBe('(issues.assignee_id is null)');
-    expect(where('assignee IS NOT EMPTY').text).toBe('(issues.assignee_id is not null)');
+    expect(where('reporter IS EMPTY').text).toBe('(issues.reporter_id is null)');
+    expect(where('reporter IS NOT EMPTY').text).toBe('(issues.reporter_id is not null)');
+    expect(where('assignee IS EMPTY').text).toMatch(/^\(not exists \(select 1 from issue_assignees/);
   });
 
   it('compiles ~ and !~ as escaped ILIKE patterns', () => {
@@ -85,7 +86,8 @@ describe('LQL compiler: fields', () => {
 
   it('binds me to the actor and names to the users table', () => {
     const { text, params } = where('assignee IN (me, "ana@acme.test")');
-    expect(text).toContain('issues.assignee_id in (select id from users');
+    expect(text).toContain('ia.user_id in (select id from users');
+    expect(text).toContain('ia.removed_at is null');
     expect(params).toEqual([[ME], ['ana@acme.test'], ['ana@acme.test']]);
   });
 

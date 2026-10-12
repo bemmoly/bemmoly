@@ -130,6 +130,7 @@ export const issue = {
   type: { id: IDS.story, name: 'Story', key: 'story', level: 'standard', icon: null },
   status: { id: IDS.review, name: 'Code review', category: 'in_progress', color: null },
   assignee: { id: IDS.aisha, name: 'Aisha K.', email: 'aisha@acme.test' },
+  assignees: [{ id: IDS.aisha, name: 'Aisha K.', email: 'aisha@acme.test' }],
   reporter: { id: IDS.rohan, name: 'Rohan S.', email: 'rohan@acme.test' },
   parent: null,
   sprint: null,

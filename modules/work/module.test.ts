@@ -38,6 +38,14 @@ describe('work module', () => {
           keys: 'G R',
         },
         {
+          id: 'work.pairing',
+          label: 'Pairing',
+          path: '/work/pairing',
+          placement: 'command',
+          icon: 'grid',
+          keys: 'G P',
+        },
+        {
           id: 'work.projects',
           label: 'Projects',
           path: '/work/projects',
@@ -120,6 +128,7 @@ describe('work module', () => {
       'work.defaultMethod',
       'work.defaultEstimationUnit',
       'work.jobs.rankRebalance.schedule',
+      'work.pairing.suggestions',
     ]);
     expect(loaded?.contributions.jobs.map((job) => job.name)).toEqual([
       'work.rank.rebalance',

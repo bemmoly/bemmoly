@@ -154,7 +154,11 @@ export function useBoardScreen(projectKey: string | undefined) {
     const onBoard = <T>(ids: Iterable<T>) => new Set(ids);
     const typeIds = onBoard(view?.cards.map((card) => card.typeId) ?? []);
     const labelIds = onBoard(view?.cards.flatMap((card) => card.labelIds) ?? []);
-    const assignees = onBoard(view?.cards.map((card) => card.assigneeId) ?? []);
+    const assignees = onBoard(
+      view?.cards.flatMap((card) =>
+        card.assigneeIds.length ? card.assigneeIds : [card.assigneeId],
+      ) ?? [],
+    );
     return {
       people: data.people
         .filter((person) => assignees.has(person.id))

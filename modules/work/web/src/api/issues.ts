@@ -1,6 +1,7 @@
 import {
   createIssueBodySchema,
   createWorkLogBodySchema,
+  issueAssigneesResponseSchema,
   issueDetailSchema,
   issueHistoryPageSchema,
   issueSchema,
@@ -9,6 +10,7 @@ import {
   listIssueHistoryQuerySchema,
   listIssuesQuerySchema,
   suggestQuerySchema,
+  setAssigneesBodySchema,
   suggestResponseSchema,
   updateIssueBodySchema,
   watchersResponseSchema,
@@ -58,6 +60,14 @@ export function workIssueEndpoints(http: Http) {
       /** Transitions out of the current status, with what blocks each one. */
       transitions: async (key: string) =>
         (await http.request(issue(key, '/transitions'), issueTransitionsResponseSchema)).items,
+      /** Replaces everyone on the issue; the first id becomes the primary assignee. */
+      setAssignees: async (key: string, assigneeIds: string[]) =>
+        (
+          await http.request(issue(key, '/assignees'), issueAssigneesResponseSchema, {
+            method: 'PUT',
+            body: validated(setAssigneesBodySchema, { assigneeIds }),
+          })
+        ).items,
       watchers: async (key: string) =>
         (await http.request(issue(key, '/watchers'), watchersResponseSchema)).items,
       watch: async (key: string, watching: boolean) =>

@@ -29,6 +29,7 @@ const card = (key: string, statusId: string, extra: Partial<BoardCard> = {}): Bo
   statusId,
   priority: 'medium',
   assigneeId: null,
+  assigneeIds: [],
   estimate: null,
   labelIds: [],
   rank: 'n',

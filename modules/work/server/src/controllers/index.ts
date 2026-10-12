@@ -12,6 +12,7 @@ import { createLabelsController } from './labels.controller.ts';
 import { createLqlController } from './lql.controller.ts';
 import { createMembersController } from './members.controller.ts';
 import { createMetricsController } from './metrics.controller.ts';
+import { createPairingController } from './pairing.controller.ts';
 import { createMyWorkController } from './my-work.controller.ts';
 import { createProjectsController } from './projects.controller.ts';
 import { createRoadmapController } from './roadmap.controller.ts';
@@ -43,6 +44,7 @@ export function createWorkControllers(services: WorkServices) {
     metrics: createMetricsController(services.metrics),
     myWork: createMyWorkController(services.myWork),
     roadmap: createRoadmapController(services.roadmap),
+    pairing: createPairingController(services.pairing),
     codeLinks: createCodeLinksController(services.codeLinks),
     automation: createAutomationController(services.automation),
   };

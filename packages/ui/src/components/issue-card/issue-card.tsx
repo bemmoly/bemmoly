@@ -19,6 +19,8 @@ export interface IssueCardProps {
   priority?: Priority;
   /** The assignee; null draws the unassigned ring, undefined leaves the slot out. */
   assignee?: CardPerson | null;
+  /** Everyone else on the issue: drawn after the assignee as one overlapping stack. */
+  coAssignees?: readonly CardPerson[];
   /** Names, or stored labels with their colour. */
   labels?: readonly (string | LabelValue)[];
   /** Story points (Scrum) in the sunken pill; omit on Kanban boards. */
@@ -139,6 +141,7 @@ export function IssueCard({
   showType = true,
   priority,
   assignee,
+  coAssignees,
   labels,
   estimate,
   age,
@@ -240,6 +243,7 @@ export function IssueCard({
         showKey={showKey}
         priority={priority}
         assignee={assignee}
+        coAssignees={coAssignees}
         estimate={estimate}
         age={age}
         doc={doc}

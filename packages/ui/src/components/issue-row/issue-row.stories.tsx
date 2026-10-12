@@ -23,6 +23,13 @@ type Story = StoryObj<typeof meta>;
 
 export const Playground: Story = {};
 
+/** Paired work: the assignee first, then everyone else on the issue in one stack. */
+export const CoAssignees: Story = {
+  args: {
+    coAssignees: [{ name: 'Lena T.', hue: 'pink' }, { name: 'Jonas M.' }],
+  },
+};
+
 /** A sprint's rows: selection boxes on hover, a blocked row, the epic column and a skeleton. */
 export const List: Story = {
   render: function Render(args) {

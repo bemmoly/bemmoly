@@ -87,11 +87,23 @@ export const transitionArgsSchema = z.object({ status: statusNameSchema });
 
 export const ASSIGN_TARGETS = ['user', 'reporter', 'trigger_actor', 'unassigned'] as const;
 
+/** Replace the assignees with the person, or add them beside whoever is already on it. */
+export const ASSIGN_MODES = ['replace', 'add'] as const;
+
 export const assignArgsSchema = z
-  .object({ to: z.enum(ASSIGN_TARGETS), userId: z.uuid().optional() })
+  .object({
+    to: z.enum(ASSIGN_TARGETS),
+    userId: z.uuid().optional(),
+    /** Rules saved before several assignees existed have none: they replace. */
+    mode: z.enum(ASSIGN_MODES).default('replace'),
+  })
   .refine((args) => args.to !== 'user' || args.userId !== undefined, {
     message: 'Pick the person to assign',
     path: ['userId'],
+  })
+  .refine((args) => args.mode === 'replace' || args.to !== 'unassigned', {
+    message: 'Nobody cannot be added',
+    path: ['mode'],
   });
 
 export const addCommentArgsSchema = z.object({ body: z.string().trim().min(1).max(5000) });

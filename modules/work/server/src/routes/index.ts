@@ -14,6 +14,7 @@ import { lqlRoutes } from './lql.routes.ts';
 import { membersRoutes } from './members.routes.ts';
 import { metricsRoutes } from './metrics.routes.ts';
 import { myWorkRoutes } from './my-work.routes.ts';
+import { pairingRoutes } from './pairing.routes.ts';
 import { projectsRoutes } from './projects.routes.ts';
 import { roadmapRoutes } from './roadmap.routes.ts';
 import { schemesRoutes } from './schemes.routes.ts';
@@ -47,6 +48,7 @@ export function workRoutes(controllers: WorkControllers): FastifyPluginAsync {
     await app.register(metricsRoutes(controllers.metrics));
     await app.register(myWorkRoutes(controllers.myWork));
     await app.register(roadmapRoutes(controllers.roadmap));
+    await app.register(pairingRoutes(controllers.pairing));
     await app.register(codeLinksRoutes(controllers.codeLinks));
     await app.register(automationRoutes(controllers.automation));
   };

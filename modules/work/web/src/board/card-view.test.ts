@@ -150,4 +150,12 @@ describe('cardProps', () => {
     expect(cardProps(full, ruled, null).stripeClassName).toBe('border-l-(--card-rule)');
     expect(cardProps(full, vocab([]), null).stripeClassName).toBeUndefined();
   });
+
+  it('stacks the co-assignees after the primary, and only while assignees show', () => {
+    const paired = card(2, { typeId: TYPE, assigneeId: ME, assigneeIds: [ME, PRIYA] });
+    const props = cardProps(paired, vocab(['assignee']), null);
+    expect(props.assignee?.name).toBe('Rohan S.');
+    expect(props.coAssignees?.map((person) => person.name)).toEqual(['Priya N.']);
+    expect(cardProps(paired, vocab(['key']), null).coAssignees).toBeUndefined();
+  });
 });

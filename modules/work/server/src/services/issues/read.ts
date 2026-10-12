@@ -26,6 +26,10 @@ async function loadRelated(sql: SqlExecutor, row: IssueRow, userId: string | nul
          'color', s.color) from workflow_statuses s where s.id = ${row.status_id}) as "status",
       (select jsonb_build_object('id', u.id, 'name', u.name, 'email', u.email)
          from users u where u.id = ${row.assignee_id}) as "assignee",
+      coalesce((select jsonb_agg(jsonb_build_object('id', u.id, 'name', u.name, 'email', u.email)
+         order by u.id is distinct from ${row.assignee_id}, a.added_at, a.id)
+         from issue_assignees a join users u on u.id = a.user_id
+         where a.issue_id = ${row.id} and a.removed_at is null), '[]'::jsonb) as "assignees",
       (select jsonb_build_object('id', u.id, 'name', u.name, 'email', u.email)
          from users u where u.id = ${row.reporter_id}) as "reporter",
       (select jsonb_build_object('id', p.id, 'key', p.key, 'title', p.title,

@@ -120,6 +120,8 @@ export const boardCardSchema = z.object({
   statusId: z.uuid(),
   priority: z.string(),
   assigneeId: z.uuid().nullable(),
+  /** Everyone on the card, the primary assignee first. */
+  assigneeIds: z.array(z.uuid()).default([]),
   estimate: z.number().nullable(),
   labelIds: z.array(z.uuid()),
   rank: z.string(),

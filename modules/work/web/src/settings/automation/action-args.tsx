@@ -5,7 +5,12 @@ import {
 } from '@bemmoly/module-work/shared';
 import { Checkbox, Field, Input, PRIORITIES, Select, Tag, Textarea } from '@bemmoly/ui';
 import { personOption } from '../../hooks/issue-people.ts';
-import { ASSIGN_LABELS, RECIPIENT_LABELS, SETTABLE_FIELD_LABELS } from './describe.ts';
+import {
+  ASSIGN_LABELS,
+  ASSIGN_MODE_LABELS,
+  RECIPIENT_LABELS,
+  SETTABLE_FIELD_LABELS,
+} from './describe.ts';
 import type { Problems, Step } from './model.ts';
 import { withCurrent, type RuleOptions } from './use-rule-options.ts';
 
@@ -111,9 +116,24 @@ export function ActionArgs({ step, at, options, problems, onArgs }: ActionArgsPr
             <Select
               options={asOptions(ASSIGN_LABELS)}
               value={String(args['to'] ?? 'reporter')}
-              onChange={(event) => onArgs({ to: event.value, userId: undefined })}
+              onChange={(event) =>
+                onArgs({
+                  to: event.value,
+                  userId: undefined,
+                  ...(event.value === 'unassigned' ? { mode: 'replace' } : {}),
+                })
+              }
             />
           </Field>
+          {args['to'] !== 'unassigned' ? (
+            <Field label="Others on the issue">
+              <Select
+                options={asOptions(ASSIGN_MODE_LABELS)}
+                value={String(args['mode'] ?? 'replace')}
+                onChange={(event) => onArgs({ mode: event.value })}
+              />
+            </Field>
+          ) : null}
           {args['to'] === 'user' ? (
             <Field label="Person" error={problem('userId')}>
               <Select

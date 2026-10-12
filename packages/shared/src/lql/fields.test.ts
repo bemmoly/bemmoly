@@ -12,6 +12,7 @@ describe('issue field catalog', () => {
       'priority',
       'assignee',
       'reporter',
+      'pairedWith',
       'parent',
       'epic',
       'sprint',

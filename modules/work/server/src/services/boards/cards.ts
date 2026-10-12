@@ -29,6 +29,7 @@ interface CardRow {
   status_id: string;
   priority: string;
   assignee_id: string | null;
+  assignee_ids: string[];
   estimate: string | null;
   rank: string;
   due_at: Date | string | null;
@@ -66,6 +67,7 @@ function toCard(row: CardRow, now: number): GroupCard {
     statusId: row.status_id,
     priority: row.priority,
     assigneeId: row.assignee_id,
+    assigneeIds: row.assignee_ids,
     estimate: row.estimate === null ? null : Number(row.estimate),
     labelIds: row.label_ids,
     rank: row.rank,
@@ -126,6 +128,14 @@ export async function loadCards(
       from issue_labels il join board on board.id = il.issue_id
       group by il.issue_id
     ),
+    assignees as (
+      select ia.issue_id,
+        array_agg(ia.user_id order by ia.user_id is distinct from board.assignee_id, ia.added_at,
+          ia.id) as user_ids
+      from issue_assignees ia join board on board.id = ia.issue_id
+      where ia.removed_at is null
+      group by ia.issue_id
+    ),
     blockers as (
       select bl.target_id, array_agg(bi.key order by bi.key) as keys
       from issue_links bl
@@ -145,11 +155,13 @@ export async function loadCards(
       group by ci.parent_id
     )
     select board.*, coalesce(labels.label_ids, '{}') as label_ids,
+      coalesce(assignees.user_ids, '{}') as assignee_ids,
       coalesce(blockers.keys, '{}') as blocked_by,
       coalesce(children.done, 0) as subtasks_done, coalesce(children.total, 0) as subtasks_total,
       epic.id as epic_id, epic.key as epic_key, epic.color as epic_color
     from board
     left join labels on labels.issue_id = board.id
+    left join assignees on assignees.issue_id = board.id
     left join blockers on blockers.target_id = board.id
     left join children on children.parent_id = board.id
     left join issues epic on epic.id = board.parent_id

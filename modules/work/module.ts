@@ -78,6 +78,14 @@ export default defineModule({
       keys: 'G R',
     });
     ctx.navigation.add({
+      id: 'work.pairing',
+      label: 'Pairing',
+      path: '/work/pairing',
+      placement: 'command',
+      icon: 'grid',
+      keys: 'G P',
+    });
+    ctx.navigation.add({
       id: 'work.projects',
       label: 'Projects',
       path: '/work/projects',
@@ -108,6 +116,7 @@ export default defineModule({
       ...(ctx.audit ? { audit: ctx.audit } : {}),
       ...(ctx.memberships ? { memberships: ctx.memberships } : {}),
       links: ctx.links,
+      settings: ctx.settings,
       ...(ctx.contextFor ? { contextFor: ctx.contextFor } : {}),
     });
     ctx.jobs.add({
