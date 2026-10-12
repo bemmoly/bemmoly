@@ -68,6 +68,8 @@ export interface HarnessOptions {
   files?: DocsServiceDeps['files'];
   /** The PDF renderer (a real one in a container, for the PDF export test). */
   pdf?: DocsServiceDeps['pdf'];
+  /** A publisher every message is also handed to after capture: the real NOTIFY one, say. */
+  realtime?: (sql: SqlClient) => NonNullable<DocsServiceDeps['realtime']>;
 }
 
 export async function startDocsHarness(options: HarnessOptions = {}): Promise<HarnessStart> {
@@ -92,6 +94,7 @@ export async function startDocsHarness(options: HarnessOptions = {}): Promise<Ha
   const catalog = loadModules({ available: [docs], enabled: ['docs'] });
   const db = createDatabase(sql);
   const realtime: RealtimeMessage[] = [];
+  const forward = options.realtime?.(sql);
   const context = (actor: Actor): RequestContext => ({
     actor,
     authz: createRequestAuthorization({ db, modules: catalog }),
@@ -100,7 +103,12 @@ export async function startDocsHarness(options: HarnessOptions = {}): Promise<Ha
     database: sql,
     audit: createAuditRecorder(sql),
     memberships: createContainerMemberships(sql),
-    realtime: { publish: async (message) => void realtime.push(message) },
+    realtime: {
+      publish: async (message, publishOptions) => {
+        realtime.push(message);
+        await forward?.publish(message, publishOptions);
+      },
+    },
     ...(options.entities ? { entities: options.entities } : {}),
     ...(options.events ? { events: options.events } : {}),
     ...(options.jobs ? { jobs: options.jobs } : {}),

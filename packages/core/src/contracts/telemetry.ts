@@ -44,6 +44,8 @@ export interface JobMetrics {
 export interface RealtimeMetrics {
   connectionOpened(): void;
   connectionClosed(): void;
+  /** A publish that failed after its write committed; logged and counted, never thrown. */
+  publishFailed(kind: string): void;
 }
 
 export interface BackupMetrics {

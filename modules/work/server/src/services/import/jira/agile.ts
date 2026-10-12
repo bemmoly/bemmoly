@@ -1,4 +1,9 @@
-import { HttpStatusError, type ImportRunContext, type SqlClient } from '@bemmoly/core';
+import {
+  HttpStatusError,
+  type ImportRunContext,
+  type SqlClient,
+  type SqlExecutor,
+} from '@bemmoly/core';
 import { boardConfigSchema, type BoardColumn } from '../../../../../shared/boards.ts';
 import type { JiraBoard, JiraClient, JiraSprint } from '../../../clients/jira.ts';
 import { defaultConfig } from '../../boards/defaults.ts';
@@ -63,7 +68,7 @@ function columnsFor(
 }
 
 async function writeSprint(
-  sql: SqlClient,
+  sql: SqlExecutor,
   projectId: string,
   sprint: JiraSprint,
   existing: string | null,
@@ -123,25 +128,30 @@ export async function importAgile(
     const config =
       columns.length >= 2 ? boardConfigSchema.parse({ columns }) : defaultConfig(statuses);
     const existing = knownBoards.get(String(board.id))?.targetId ?? null;
-    const [row] = existing
-      ? await sql<{ id: string }[]>`
-          update boards set name = ${board.name.slice(0, 120)}, config = ${JSON.stringify(config)}::jsonb, updated_at = now()
-          where id = ${existing} returning id`
-      : await sql<{ id: string }[]>`
-          insert into boards (project_id, name, config)
-          values (${setup.projectId}, ${board.name.slice(0, 120) || `${setup.key} board`}, ${JSON.stringify(config)}::jsonb)
-          returning id`;
-    if (row) {
-      await ctx.mappings.set('board', String(board.id), row.id);
-      ctx.report.count('boards', existing ? 'updated' : 'created');
-    }
+    // Each board and sprint commits with its mapping, so a retry updates instead of copying it.
+    const row = await sql.begin(async (tx) => {
+      const [made] = existing
+        ? await tx<{ id: string }[]>`
+            update boards set name = ${board.name.slice(0, 120)}, config = ${JSON.stringify(config)}::jsonb, updated_at = now()
+            where id = ${existing} returning id`
+        : await tx<{ id: string }[]>`
+            insert into boards (project_id, name, config)
+            values (${setup.projectId}, ${board.name.slice(0, 120) || `${setup.key} board`}, ${JSON.stringify(config)}::jsonb)
+            returning id`;
+      if (made) await ctx.mappings.set('board', String(board.id), made.id, undefined, tx);
+      return made;
+    });
+    if (row) ctx.report.count('boards', existing ? 'updated' : 'created');
     for (const sprint of await sprintsOf(client, board)) {
       const sourceId = String(sprint.id);
       if (sprints.has(sourceId)) continue;
       const mapped = await ctx.mappings.get('sprint', sourceId);
-      const written = await writeSprint(sql, setup.projectId, sprint, mapped?.targetId ?? null);
+      const written = await sql.begin(async (tx) => {
+        const made = await writeSprint(tx, setup.projectId, sprint, mapped?.targetId ?? null);
+        await ctx.mappings.set('sprint', sourceId, made.id, undefined, tx);
+        return made;
+      });
       sprints.set(sourceId, written.id);
-      await ctx.mappings.set('sprint', sourceId, written.id);
       ctx.report.count('sprints', written.created ? 'created' : 'updated');
     }
   }

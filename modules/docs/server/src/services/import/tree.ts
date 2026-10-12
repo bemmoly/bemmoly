@@ -1,4 +1,4 @@
-import type { ContainerMemberships, ImportRunContext, SqlClient } from '@bemmoly/core';
+import type { ContainerMemberships, ImportRunContext, SqlClient, SqlExecutor } from '@bemmoly/core';
 import { SPACE_ADMIN_ROLE_KEY } from '../../../../shared/members.ts';
 import type { ConfluenceClient, ConfluenceSpace } from '../../clients/confluence.ts';
 import { rankAmongSiblings } from '../pages/rank.ts';
@@ -8,6 +8,8 @@ import { spaceKeyFrom } from './connection.ts';
  * The space and its page tree, before any body is written: every page row exists (parents
  * before children) so a body can link to any page of the import. A page an earlier run made
  * is found through its mapping and keeps its place; new pages go at the end of their parent.
+ * A page and its mapping commit together, so a run that stops between pages never leaves a
+ * page its retry cannot find.
  */
 
 export interface TreeDeps {
@@ -57,7 +59,7 @@ export async function ensureSpace(deps: TreeDeps, space: ConfluenceSpace, ctx: I
 }
 
 async function insertPage(
-  sql: SqlClient,
+  sql: SqlExecutor,
   spaceId: string,
   title: string,
   parent: { id: string; path: string } | null,
@@ -123,9 +125,12 @@ export async function writeTree(
     } else {
       const parentId = [...page.ancestors].reverse().find((id) => tree.has(id));
       const parent = parentId ? tree.get(parentId)! : null;
-      const row = await insertPage(deps.sql, space.id, page.title, parent, ctx.actorUserId);
+      const row = await deps.sql.begin(async (tx) => {
+        const inserted = await insertPage(tx, space.id, page.title, parent, ctx.actorUserId);
+        await ctx.mappings.set('page', page.id, inserted.id, { spaceKey: space.sourceKey }, tx);
+        return inserted;
+      });
       tree.set(page.id, { id: row.id, path: row.path, title: page.title, created: true });
-      await ctx.mappings.set('page', page.id, row.id, { spaceKey: space.sourceKey });
     }
     await ctx.progress.advance();
   }
