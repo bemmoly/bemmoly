@@ -1,4 +1,5 @@
 import type { AnyExtension } from '@tiptap/core';
+import { Code } from '@tiptap/extension-code';
 import { TaskItem, TaskList } from '@tiptap/extension-list';
 import { Mention } from '@tiptap/extension-mention';
 import { StarterKit } from '@tiptap/starter-kit';
@@ -26,12 +27,19 @@ export interface SchemaOptions {
 
 export const HEADING_LEVELS = [1, 2, 3] as const;
 
+/*
+ * Tiptap's code mark excludes every other mark, so **`foo`** or _see `bar`_ fails the whole
+ * document. Here it sits alongside bold, italic, strike, links and highlight.
+ */
+const InlineCode = Code.extend({ excludes: '' });
+
 export function baseExtensions(options: SchemaOptions = {}): AnyExtension[] {
   return [
     StarterKit.configure({
       heading: { levels: [...HEADING_LEVELS] },
       underline: false,
       trailingNode: false,
+      code: false,
       // The drop line of a dragged block: the accent, 2px, as the review draws it.
       dropcursor: { color: 'var(--acc)', width: 2, class: 'rounded-full' },
       ...(options.history === false ? { undoRedo: false as const } : {}),
@@ -43,6 +51,7 @@ export function baseExtensions(options: SchemaOptions = {}): AnyExtension[] {
         HTMLAttributes: { target: null },
       },
     }),
+    InlineCode,
     Highlight,
     TaskList,
     TaskItem.configure({
