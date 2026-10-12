@@ -18,7 +18,7 @@
   - **AI, optional**: off until an admin turns it on, with any provider from the models.dev
     catalog or a model on your own network: summaries with sources, answers from your docs,
     help in the editor, ⌘K plans you confirm, and an MCP server for AI clients.
-  - **Imports**: from Jira and Confluence (Cloud or Data Center) or a CSV file, previewed before
+  - **Imports**: Import from Jira and Import from Confluence (Cloud or Data Center) or a CSV file, previewed before
     anything is written.
   - **Sign-in and people**: single sign-on with OpenID Connect or SAML 2.0, and SCIM 2.0
     provisioning.
