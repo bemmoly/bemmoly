@@ -1,9 +1,9 @@
 ---
 /**
  * The one self-hosting and install page: every Install button on the site lands on #install.
- * In order: the one command, the other ways to run it, what happens, checking it is healthy,
- * first login, modules, AI (optional), upgrades, backups, the bemmoly command, troubleshooting
- * and sizing. /docs/install redirects here (Caddyfile); /docs/compose is the Compose reference.
+ * In order: how big a server (the measured tier, just before the install), the one command,
+ * the other ways to run it, what happens, checking it is healthy, first login, modules, AI
+ * (optional), upgrades, backups, the bemmoly command and troubleshooting. /docs/install redirects here (Caddyfile); /docs/compose is the Compose reference.
  */
 import Care from '../components/self-hosting/Care.astro';
 import Install from '../components/self-hosting/Install.astro';
@@ -28,9 +28,9 @@ import { pageAt } from '../data/pages.ts';
     AI. The badges say where each way to run it stands, and the <a href="/changelog">changelog</a>{' '}
     lists every release.
   </StatusNote>
+  <Sizing />
   <Install />
   <Paths />
   <Run />
   <Care />
-  <Sizing />
 </Page>

@@ -1,0 +1,28 @@
+---
+/**
+ * A real board, captured from the live demo, beside the sizing numbers on a dark island. It is
+ * the demo's board, not the 100,000-issue data set, and the caption says so: no picture of
+ * data that was not captured.
+ */
+import { POSTERS, POSTER_WIDTHS } from '../../data/posters.ts';
+import { PREVIEWS } from '../../data/previews.ts';
+import Poster from '../site/Poster.astro';
+
+const board = PREVIEWS.find((preview) => preview.id === 'board');
+---
+
+{board && (
+  <figure data-theme="dark" class="flex flex-col gap-3 rounded-band bg-canvas p-3 text-tx sm:p-5">
+    <Poster
+      {...POSTERS.board}
+      alt={board.alt}
+      widths={POSTER_WIDTHS}
+      sizes="(min-width: 1160px) 1064px, calc(100vw - 56px)"
+      class="rounded-window"
+    />
+    <figcaption class="px-1 text-13 text-tx-3">
+      The board in the <a href={board.path}>live demo</a>. The measured data set is not pictured:
+      this is the demo’s own data.
+    </figcaption>
+  </figure>
+)}

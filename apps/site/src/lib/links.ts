@@ -64,6 +64,7 @@ export const FOOTER_COLUMNS: readonly FooterColumn[] = [
     title: 'Self-host',
     links: [
       { label: 'Install', href: INSTALL_HREF },
+      { label: 'Server sizing', href: '/sizing' },
       { label: 'Docker Compose', href: '/docs/compose' },
       { label: 'Upgrade and back up', href: '/self-hosting#upgrade' },
       { label: 'Troubleshooting', href: '/self-hosting#troubleshooting' },

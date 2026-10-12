@@ -1,0 +1,136 @@
+{
+  "$comment": "Monthly list prices for the server sizes in capacity.json, rendered through src/data/prices.ts. One entry per provider: where the price was read (url), the day it was checked, the currency it is billed in and the caveats. plans is keyed by size (cpu-ramGb); null means the provider has no plan near that size. A plan whose vcpu or ramGb differs from the size is shown with its own specs. verified is false when the provider's own page could not confirm the figure; promo marks an introductory price that may need a commitment. Neither is used for the 'from' line. tests/capacity.test.ts fails when any checked date is more than 90 days old: re-check the prices and update the dates.",
+  "basis": "On-demand list prices for about 730 hours a month, before tax, in the region named. Storage beyond the included disk, backups and outbound traffic are extra. Prices are shown in the currency each provider bills in, never converted.",
+  "eurToUsdForOrdering": 1.08,
+  "providers": [
+    {
+      "provider": "Hetzner",
+      "region": "Germany and Finland",
+      "currency": "EUR",
+      "url": "https://docs.hetzner.com/general/infrastructure-and-availability/price-adjustment/",
+      "checked": "2026-10-12",
+      "caveats": "Before 19% German VAT. Prices for new orders rose on 2026-06-15. CX plans showed as currently unavailable when checked. No 2 GB plan: CX23 is the smallest.",
+      "plans": {
+        "2-2": null,
+        "2-4": { "plan": "CX23", "vcpu": 2, "ramGb": 4, "monthly": 5.49, "verified": true },
+        "4-8": { "plan": "CX33", "vcpu": 4, "ramGb": 8, "monthly": null, "verified": false }
+      }
+    },
+    {
+      "provider": "OVHcloud",
+      "region": "US site",
+      "currency": "USD",
+      "url": "https://us.ovhcloud.com/vps/",
+      "checked": "2026-10-12",
+      "caveats": "Starting-from prices that may need a 12-month commitment; tax treatment not stated. Bandwidth unmetered but speed-limited.",
+      "plans": {
+        "2-2": null,
+        "2-4": {
+          "plan": "VPS-1",
+          "vcpu": 2,
+          "ramGb": 4,
+          "monthly": 4.54,
+          "verified": true,
+          "promo": true
+        },
+        "4-8": { "plan": "VPS-2", "vcpu": 4, "ramGb": 8, "monthly": 8.5, "verified": true }
+      }
+    },
+    {
+      "provider": "Vultr",
+      "region": "Most regions",
+      "currency": "USD",
+      "url": "https://www.vultr.com/pricing/",
+      "checked": "2026-10-12",
+      "caveats": "From the public plans list. A few regions cost more.",
+      "plans": {
+        "2-2": {
+          "plan": "Cloud Compute Regular",
+          "vcpu": 2,
+          "ramGb": 2,
+          "monthly": 15,
+          "verified": true
+        },
+        "2-4": {
+          "plan": "Cloud Compute Regular",
+          "vcpu": 2,
+          "ramGb": 4,
+          "monthly": 20,
+          "verified": true
+        },
+        "4-8": {
+          "plan": "Cloud Compute Regular",
+          "vcpu": 4,
+          "ramGb": 8,
+          "monthly": 40,
+          "verified": true
+        }
+      }
+    },
+    {
+      "provider": "DigitalOcean",
+      "region": "All regions",
+      "currency": "USD",
+      "url": "https://www.digitalocean.com/pricing/droplets",
+      "checked": "2026-10-12",
+      "caveats": "Regular SSD. IPv4 and 3 to 5 TB of transfer included.",
+      "plans": {
+        "2-2": { "plan": "Basic Droplet", "vcpu": 2, "ramGb": 2, "monthly": 18, "verified": true },
+        "2-4": { "plan": "Basic Droplet", "vcpu": 2, "ramGb": 4, "monthly": 24, "verified": true },
+        "4-8": { "plan": "Basic Droplet", "vcpu": 4, "ramGb": 8, "monthly": 48, "verified": true }
+      }
+    },
+    {
+      "provider": "Akamai (Linode)",
+      "region": "Most regions",
+      "currency": "USD",
+      "url": "https://www.akamai.com/cloud/pricing/cpu",
+      "checked": "2026-10-12",
+      "caveats": "No 2 vCPU, 2 GB plan; the 2 GB plan has 1 vCPU.",
+      "plans": {
+        "2-2": { "plan": "Shared 2 GB", "vcpu": 1, "ramGb": 2, "monthly": 12, "verified": true },
+        "2-4": { "plan": "Shared 4 GB", "vcpu": 2, "ramGb": 4, "monthly": 24, "verified": true },
+        "4-8": { "plan": "Shared 8 GB", "vcpu": 4, "ramGb": 8, "monthly": 48, "verified": true }
+      }
+    },
+    {
+      "provider": "AWS Lightsail",
+      "region": "US East",
+      "currency": "USD",
+      "url": "https://aws.amazon.com/lightsail/pricing/",
+      "checked": "2026-10-12",
+      "caveats": "With public IPv4; IPv6-only bundles cost $2 to $4 less. Burstable CPU. No 4 vCPU, 8 GB Linux bundle.",
+      "plans": {
+        "2-2": { "plan": "2 GB bundle", "vcpu": 2, "ramGb": 2, "monthly": 12, "verified": true },
+        "2-4": { "plan": "4 GB bundle", "vcpu": 2, "ramGb": 4, "monthly": 24, "verified": true },
+        "4-8": { "plan": "8 GB bundle", "vcpu": 2, "ramGb": 8, "monthly": 44, "verified": true }
+      }
+    },
+    {
+      "provider": "Google Cloud",
+      "region": "us-central1",
+      "currency": "USD",
+      "url": "https://cloud.google.com/compute/vm-instance-pricing",
+      "checked": "2026-10-12",
+      "caveats": "The official page did not show its tables when checked, so these figures are not verified. Compute only: boot disk, external IPv4 and outbound traffic are extra.",
+      "plans": {
+        "2-2": { "plan": "e2-small", "vcpu": 2, "ramGb": 2, "monthly": 12.23, "verified": false },
+        "2-4": { "plan": "e2-medium", "vcpu": 2, "ramGb": 4, "monthly": 24.46, "verified": false },
+        "4-8": { "plan": "e2 custom", "vcpu": 4, "ramGb": 8, "monthly": null, "verified": false }
+      }
+    },
+    {
+      "provider": "Azure",
+      "region": "East US, Linux",
+      "currency": "USD",
+      "url": "https://prices.azure.com/api/retail/prices",
+      "checked": "2026-10-12",
+      "caveats": "From the official retail prices API. Compute only: OS disk, public IPv4 and outbound traffic are extra. Burstable B-series.",
+      "plans": {
+        "2-2": null,
+        "2-4": { "plan": "B2als v2", "vcpu": 2, "ramGb": 4, "monthly": 27.45, "verified": true },
+        "4-8": { "plan": "B4als v2", "vcpu": 4, "ramGb": 8, "monthly": 97.09, "verified": true }
+      }
+    }
+  ]
+}

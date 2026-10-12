@@ -6,7 +6,9 @@
  */
 import type { BadgeTone } from '../lib/badge.ts';
 import { INSTALL_COMMAND } from '../lib/links.ts';
+import { CAPACITY, fmt, isMeasured, peopleOf, sizeKey, sizeName } from './capacity.ts';
 import { RELEASE } from './landing.ts';
+import { fromOffer, offerMoney } from './prices.ts';
 
 export const STATUS = {
   available: { label: `Available in ${RELEASE.version}`, tone: 'ok' },
@@ -36,23 +38,28 @@ export const WHAT_YOU_GET = [
   { title: 'All modules', body: 'Every module ships in the one image. Turn on what you use.' },
 ];
 
-/** Tech design §18's planning figures: estimates until a load test measures them. */
-export const SIZING = [
-  { team: 'Up to 50 people', vm: '1 vCPU, 2 GB', note: 'The installer’s minimum memory.' },
-  {
-    team: 'Up to 200 people',
-    vm: '2 vCPU, 4 GB',
-    note: 'The size the design plans for on one VM, with headroom for imports.',
-  },
-  {
-    team: 'Up to 1,000 people',
-    vm: '4 vCPU, 8 GB',
-    note: 'Or split the api and worker roles, with Postgres on its own machine and attachments in an S3-compatible bucket.',
-  },
-  {
-    team: 'Beyond',
-    vm: 'Kubernetes',
-    note: 'The Helm chart, with its own Postgres or yours; live collaboration needs one app replica for now.',
-    status: 'available' as StatusKey,
-  },
-];
+/**
+ * Every listed server size in one line each, from capacity.json and prices.json with the
+ * sizing card's honesty rules: a size with no runs says "not yet measured" and carries no
+ * number; a measured size names the largest data set it handled, the people estimate only
+ * from a measured load (labelled as an estimate) and its cheapest confirmed price.
+ * tests/capacity.test.ts checks the agent prompt's numbers against the data.
+ */
+export const SIZING = CAPACITY.sizes.map((size) => {
+  const name = sizeName(size);
+  if (!isMeasured(size)) return { vm: name, line: `${name}: not yet measured` };
+  const top = [...size.runs]
+    .filter((run) => run.verdict !== 'slow')
+    .sort((a, b) => b.data.issues - a.data.issues)[0]!;
+  const load = size.runs.find((run) => run.requestsPerSecond !== null);
+  const people = load ? peopleOf(load.requestsPerSecond) : null;
+  const from = fromOffer(sizeKey(size));
+  const parts = [
+    `measured with ${top.data.approximate ? 'about ' : ''}${fmt(top.data.issues)} issues`,
+    people && load
+      ? `about ${fmt(people.atOnce)} people active at once (an estimate, from the ${fmt(load.data.issues)}-issue run)`
+      : '',
+    from ? `from ${offerMoney(from)} a month at ${from.provider.provider}` : '',
+  ].filter(Boolean);
+  return { vm: name, line: `${name}: ${parts.join(', ')}` };
+});

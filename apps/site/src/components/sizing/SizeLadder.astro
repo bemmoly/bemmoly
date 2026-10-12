@@ -1,0 +1,57 @@
+---
+/**
+ * Every listed size in a row, so the measured tier sits among its neighbours: a measured size
+ * says how far it was taken and where it slowed down, a size with no runs says "Not yet
+ * measured" and carries no number at all. Status is a word in a badge, never colour alone.
+ */
+import { CAPACITY, fmt, isMeasured, sizeKey, sizeName } from '../../data/capacity.ts';
+import Badge from '../site/Badge.astro';
+
+const reach = (runs: (typeof CAPACITY.sizes)[number]['runs']) => {
+  const good = runs.filter((run) => run.verdict !== 'slow');
+  const top = good.sort((a, b) => b.data.issues - a.data.issues)[0];
+  const slow = runs
+    .filter((run) => run.verdict === 'slow')
+    .sort((a, b) => a.data.issues - b.data.issues)[0];
+  return { top, slow };
+};
+const about = (approximate?: boolean) => (approximate ? 'about ' : '');
+---
+
+<ul class="grid overflow-hidden rounded-card border border-line md:grid-cols-3" data-ladder>
+  {CAPACITY.sizes.map((size) => {
+    const { top, slow } = reach(size.runs);
+    return (
+      <li
+        data-size={sizeKey(size)}
+        class:list={[
+          'flex flex-col gap-1.5 border-line px-4 py-3.5 not-last:border-b md:not-last:border-r md:not-last:border-b-0',
+          size.recommended && 'bg-acc-50',
+        ]}
+      >
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <span class="text-14 font-semibold text-tx">{sizeName(size)}</span>
+          {isMeasured(size) ? <Badge tone="ok">Measured</Badge> : <Badge>Not yet measured</Badge>}
+        </div>
+        <p class="text-14 text-tx-2">
+          {top ? (
+            <>
+              Up to {about(top.data.approximate)}
+              <span data-capacity>{fmt(top.data.issues)}</span> issues.
+              {slow && (
+                <>
+                  {' '}
+                  At {about(slow.data.approximate)}
+                  <span data-capacity>{fmt(slow.data.issues)}</span> it slowed to about{' '}
+                  <span data-capacity>{(slow.p95MsAbout ?? 0) / 1000}</span> seconds.
+                </>
+              )}
+            </>
+          ) : (
+            'No numbers here until this size has been measured.'
+          )}
+        </p>
+      </li>
+    );
+  })}
+</ul>

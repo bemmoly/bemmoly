@@ -1,10 +1,16 @@
 ---
 /**
- * How big a server Bemmoly needs, rendered from src/data/capacity.json: the answer as three
- * cards, then how it was measured and what each size costs by cloud.
+ * How big a server Bemmoly needs, for search: the same measured tier card the self-hosting
+ * guide shows, then what the guide leaves out: the estimator, how it was measured and every
+ * price with its source. Data from src/data/capacity.json and src/data/prices.json.
  */
-import SizeCards from '../components/sizing/SizeCards.astro';
-import SizeDetails from '../components/sizing/SizeDetails.astro';
+import BoardShot from '../components/sizing/BoardShot.astro';
+import Estimator from '../components/sizing/Estimator.astro';
+import Method from '../components/sizing/Method.astro';
+import PriceTable from '../components/sizing/PriceTable.astro';
+import TierCard from '../components/sizing/TierCard.astro';
+import Button from '../components/site/Button.astro';
+import Section from '../components/site/Section.astro';
 import { pageAt } from '../data/pages.ts';
 import Page from '../layouts/Page.astro';
 import { INSTALL_HREF } from '../lib/links.ts';
@@ -13,15 +19,26 @@ import { INSTALL_HREF } from '../lib/links.ts';
 <Page
   page={pageAt('/sizing')}
   heading="How big a server do I need?"
-  lede="For most teams, a 2 vCPU, 4 GB server. These are load-tested numbers, and anything not yet measured says so."
+  lede="One small server runs it. These are load-tested numbers, and anything not yet measured says so."
   wide
 >
-  <SizeCards />
-  <SizeDetails />
-  <p class="text-16 text-tx-2">
-    Ready?{' '}
-    <a href={INSTALL_HREF} class="text-acc underline underline-offset-2">
-      Install
-    </a>
-  </p>
+  <TierCard level="h2" />
+  <BoardShot />
+  <Section title="Estimate for your data" id="estimate">
+    <p>
+      Move the sliders to roughly how many issues and doc pages you have. Comments grow with issues
+      in our tests.
+    </p>
+    <Estimator />
+  </Section>
+  <Method />
+  <PriceTable />
+  <div class="flex flex-wrap gap-2.5">
+    <Button variant="primary" href={INSTALL_HREF}>
+      Install on your server
+    </Button>
+    <Button variant="secondary" href="/self-hosting">
+      Read the self-hosting guide
+    </Button>
+  </div>
 </Page>

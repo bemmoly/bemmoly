@@ -1,0 +1,62 @@
+{
+  "$comment": "Capacity runs on one 2 vCPU / 4 GB server from the one-command install (the reference VM in perf/README.md). The site's sizing data (apps/site/src/data/capacity.json) may print only numbers recorded here, and apps/site/tests/capacity.test.ts fails when the two disagree. Latencies are the server's own p95 per route, in milliseconds. A run marked preliminary was measured before the latest performance work and is pending a re-run; the site says so beside its numbers until a re-run replaces this file.",
+  "server": { "cpu": 2, "ramGb": 4 },
+  "runs": [
+    {
+      "id": "31k",
+      "measured": "2026-10-11",
+      "preliminary": false,
+      "source": "perf/README.md, Results on the reference VM",
+      "data": {
+        "issues": 31384,
+        "largestProject": 10635,
+        "comments": 45894,
+        "docPages": 400,
+        "users": 245,
+        "projects": 5
+      },
+      "verdict": "fast",
+      "requestsPerSecond": 80,
+      "typical": {
+        "rps": 30,
+        "p95Ms": { "board": 25, "issue": 10, "search": 22, "docPage": 10, "issueEdit": 16 }
+      },
+      "atLimitP95Ms": { "board": 68, "issue": 32 },
+      "soak": {
+        "minutes": 45,
+        "rps": 30,
+        "requests": 98590,
+        "errors": 0,
+        "p95Ms": [24, 27],
+        "appMemoryMb": 500
+      },
+      "liveEditing": { "delivered": 66503, "sent": 66504 },
+      "import": { "issues": 10000, "seconds": 20 }
+    },
+    {
+      "id": "100k",
+      "measured": "2026-10-11",
+      "preliminary": true,
+      "note": "measured 2026-10-11 on 2 CPU/4 GB before perf fixes, pending re-run",
+      "source": "The capacity run of the closed load-test pull request; its raw output was not committed",
+      "data": { "issues": 100000, "approximate": true },
+      "verdict": "usable",
+      "requestsPerSecond": null,
+      "p95Ms": { "search": 205, "pageTree": 237, "board": 383 },
+      "p95MsUnder": { "issue": 75, "docPage": 75, "comment": 75 }
+    },
+    {
+      "id": "274k",
+      "measured": "2026-10-11",
+      "preliminary": true,
+      "note": "measured 2026-10-11 on 2 CPU/4 GB before perf fixes, pending re-run",
+      "source": "The capacity run of the closed load-test pull request; its raw output was not committed",
+      "data": { "issues": 274000, "comments": 527000, "docPages": 29000, "approximate": true },
+      "verdict": "slow",
+      "requestsPerSecond": null,
+      "p95MsAbout": 2000,
+      "databaseGb": 2,
+      "finding": "About 2 seconds for almost everything: the 2 GB database no longer fits in memory."
+    }
+  ]
+}
