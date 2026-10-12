@@ -1,0 +1,130 @@
+---
+/**
+ * Every price in prices.json, for /sizing: a table from md up and one card per provider on a
+ * phone, so nothing scrolls sideways. Each provider names its region and currency and links
+ * the page the price was read from with the day it was checked; a plan that is not exactly the
+ * size shows its own specs, and an unverified or introductory price says so in words.
+ */
+import { CAPACITY, RECOMMENDED, sizeKey, sizeName } from '../../data/capacity.ts';
+import { PRICES, hostOf, money, offersFor, type Plan, type Provider } from '../../data/prices.ts';
+import Section from '../site/Section.astro';
+
+const sizes = CAPACITY.sizes.map((size) => ({ key: sizeKey(size), name: sizeName(size), size }));
+const rank = new Map(offersFor(sizeKey(RECOMMENDED)).map((o, i) => [o.provider, i]));
+const providers = [...PRICES.providers].sort((a, b) => (rank.get(a) ?? 99) - (rank.get(b) ?? 99));
+const flags = (plan: Plan, cpu: number, ram: number) =>
+  [
+    plan.vcpu !== cpu || plan.ramGb !== ram ? `${plan.vcpu} vCPU, ${plan.ramGb} GB` : '',
+    plan.verified ? '' : 'not verified',
+    plan.promo ? 'introductory' : '',
+  ].filter(Boolean);
+const priceOf = (provider: Provider, plan: Plan) =>
+  plan.monthly === null ? 'not published' : money(plan.monthly, provider.currency);
+---
+
+<Section title="Prices by provider" id="prices">
+  <p>{PRICES.basis} Bemmoly itself is free: no licence or per-seat fee. No affiliate links.</p>
+
+  <table class="hidden w-full border-collapse text-left text-14 md:table">
+    <thead class="text-13 text-tx-3">
+      <tr class="border-b border-line">
+        <th class="py-2.5 pr-3 font-semibold">Provider</th>
+        {sizes.map((s) => (
+          <th class="px-3 py-2.5 text-right font-semibold">{s.name}</th>
+        ))}
+        <th class="py-2.5 pl-3 font-semibold">Source, checked</th>
+      </tr>
+    </thead>
+    <tbody>
+      {providers.map((provider) => (
+        <tr class="border-b border-line-2 align-top">
+          <td class="py-3 pr-3">
+            <span class="font-semibold text-tx">{provider.provider}</span>
+            <span class="block text-13 text-tx-3">
+              {provider.region}, {provider.currency}
+            </span>
+          </td>
+          {sizes.map(({ key, size }) => {
+            const plan = provider.plans[key];
+            return (
+              <td class="px-3 py-3 text-right">
+                {plan ? (
+                  <>
+                    <span class="font-semibold text-tx tabular-nums" data-price>
+                      {priceOf(provider, plan)}
+                    </span>
+                    <span class="block text-13 text-tx-3">
+                      {[plan.plan, ...flags(plan, size.cpu, size.ramGb)].join(', ')}
+                    </span>
+                  </>
+                ) : (
+                  <span class="text-tx-3">no plan</span>
+                )}
+              </td>
+            );
+          })}
+          <td class="py-3 pl-3">
+            <a href={provider.url} rel="noopener noreferrer">
+              {hostOf(provider.url)}
+            </a>
+            <span class="block text-13 text-tx-3">{provider.checked}</span>
+          </td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+
+  <div class="md:hidden">
+    <ul class="flex flex-col gap-3 pl-0! list-none!">
+      {providers.map((provider) => (
+        <li class="flex flex-col gap-2 rounded-card border border-line bg-card p-4">
+          <div class="flex flex-wrap items-baseline justify-between gap-x-3">
+            <span class="font-semibold text-tx">{provider.provider}</span>
+            <span class="text-13 text-tx-3">
+              {provider.region}, {provider.currency}
+            </span>
+          </div>
+          <dl class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-14">
+            {sizes.map(({ key, name, size }) => {
+              const plan = provider.plans[key];
+              return (
+                <>
+                  <dt class="text-tx-3">{name}</dt>
+                  <dd class="text-right">
+                    {plan ? (
+                      <>
+                        <span class="font-semibold text-tx tabular-nums" data-price>
+                          {priceOf(provider, plan)}
+                        </span>{' '}
+                        <span class="text-13 text-tx-3">
+                          {[plan.plan, ...flags(plan, size.cpu, size.ramGb)].join(', ')}
+                        </span>
+                      </>
+                    ) : (
+                      <span class="text-tx-3">no plan</span>
+                    )}
+                  </dd>
+                </>
+              );
+            })}
+          </dl>
+          <p class="text-13 text-tx-3">
+            <a href={provider.url} rel="noopener noreferrer">
+              {hostOf(provider.url)}
+            </a>
+            , checked {provider.checked}
+          </p>
+        </li>
+      ))}
+    </ul>
+  </div>
+
+  <h3 class="pt-2 text-16 font-semibold text-tx">Caveats</h3>
+  <ul>
+    {providers.map((provider) => (
+      <li>
+        <strong>{provider.provider}:</strong> {provider.caveats}
+      </li>
+    ))}
+  </ul>
+</Section>

@@ -8,6 +8,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { CRAWLERS } from '../src/data/crawlers.ts';
 import { ATLASSIAN } from '../src/data/alternatives.ts';
 import { ALTERNATIVES, DEMO_PAGE, PAGES } from '../src/data/pages.ts';
+import { PRICES } from '../src/data/prices.ts';
 import { INDEXNOW_KEY } from '../src/lib/indexnow.ts';
 import { DEMO_URL, INSTALL_HREF, NAV, REPO_URL, SPONSOR_URL } from '../src/lib/links.ts';
 import { hrefsOf, idsOf, isSitePage, parsePage, scriptsOf } from './dom.ts';
@@ -102,6 +103,9 @@ describe('links', () => {
     // The comparison pages also cite their sources: exactly the pages in ATLASSIAN, there only.
     const comparisons = new Set(ALTERNATIVES.map((path) => `${path.slice(1)}.html`));
     const sources = new Set<string>(Object.values(ATLASSIAN).map((source) => source.href));
+    // The sizing answer cites each price's page: exactly the URLs in prices.json, there only.
+    const sizing = new Set(['sizing.html', 'self-hosting.html']);
+    const priceSources = new Set(PRICES.providers.map((provider) => provider.url));
     for (const page of pages) {
       for (const href of hrefs(html(page)).filter((link) => !link.startsWith('/'))) {
         // The footer's optional sponsor link is the one other address, exactly.
@@ -109,7 +113,8 @@ describe('links', () => {
           href.startsWith(REPO_URL) ||
           href.startsWith('mailto:') ||
           href === SPONSOR_URL ||
-          (comparisons.has(page) && sources.has(href));
+          (comparisons.has(page) && sources.has(href)) ||
+          (sizing.has(page) && priceSources.has(href));
         expect(allowed, `${page}: ${href}`).toBe(true);
       }
     }

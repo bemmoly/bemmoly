@@ -4,6 +4,7 @@
  * script: commands are selectable text, tabs are links, the footer's theme control stays
  * hidden and the page follows the system's colour scheme.
  */
+import { enhanceBars } from './bars.ts';
 import { enhanceCopy } from './copy.ts';
 import { enhanceMenu } from './menu.ts';
 import { enhancePreviews } from './preview.ts';
@@ -18,4 +19,5 @@ export function start(): void {
   enhanceShare();
   enhanceTabs();
   enhancePreviews();
+  enhanceBars();
 }

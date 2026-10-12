@@ -15,7 +15,7 @@ never drift from what a visitor installs.
   terminal blocks). No other preset's colours on the site.
 - **Display sizes live in one place.** The marketing-only steps (64 hero, 40 hero on a phone, 44
   section, 32 sub-section, 22 card title, and the text pages' older 14.5, 17 and 19) plus the
-  `window`, `shot` and `band` radii are declared once in the `@theme` block of `site.css`. They
+  `window`, `shot` and `band` radii and the `data` duration (800 ms, for motion that carries a measured value, such as the sizing bars) are declared once in the `@theme` block of `site.css`. They
   are for `apps/site` only; the product never uses them, and no literal colour lives there.
 - **The lockup and mark are the brand files**, inlined by `src/components/site/Logo.astro` from
   `@bemmoly/ui/brand/*`, with the rules in [brand.md](brand.md): no recolouring, no rebuilt

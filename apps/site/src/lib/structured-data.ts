@@ -21,6 +21,8 @@ export interface FaqItem {
   question: string;
   /** Plain text, the same words the page shows. */
   answer: string;
+  /** A page that answers in more depth, linked after the answer on the page. */
+  more?: { label: string; href: string };
 }
 
 export interface StructuredDataInput {

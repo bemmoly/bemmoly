@@ -1,0 +1,141 @@
+---
+/**
+ * The sizing estimator: two native range inputs (issues, doc pages) and the size to plan for,
+ * from src/lib/estimate.ts. It recommends a size only from measured runs and otherwise says
+ * "Not yet measured" with the next size up and that size's prices. The answer is rendered for
+ * the starting values at build time; the script below moves it with the sliders and speaks it
+ * through a polite live region once the input settles. Hidden until the script runs, because
+ * a slider that does nothing is worse than none: the card above carries the same answer.
+ */
+import { CAPACITY, fmt, sizeKey, sizeName } from '../../data/capacity.ts';
+import { cardOffers, offerMoney } from '../../data/prices.ts';
+import {
+  ISSUE_STOPS,
+  PAGE_STOPS,
+  estimate,
+  explain,
+  issuesText,
+  pagesText,
+} from '../../lib/estimate.ts';
+import Badge from '../site/Badge.astro';
+
+const START = { issues: ISSUE_STOPS.indexOf(100_000), pages: PAGE_STOPS.indexOf(400) };
+const issues = ISSUE_STOPS[START.issues]!;
+const pages = PAGE_STOPS[START.pages]!;
+const result = estimate(CAPACITY.sizes, issues, pages);
+const offers = result.size ? cardOffers(sizeKey(result.size)).slice(0, 5) : [];
+const slider = 'h-7 w-full cursor-pointer accent-acc-fill';
+---
+
+<div
+  data-estimator
+  hidden
+  class="grid overflow-hidden rounded-shot bg-card shadow-e2 lg:grid-cols-[1fr_1.15fr]"
+>
+  <div class="flex flex-col gap-6 p-5 sm:p-7 lg:border-r lg:border-line-2">
+    <div class="flex flex-col gap-2">
+      <div class="flex justify-between text-14 font-medium text-tx">
+        <label for="estimate-issues">Issues</label>
+        <output for="estimate-issues" data-out="issues" class="font-semibold tabular-nums">
+          {fmt(issues)}
+        </output>
+      </div>
+      <input
+        id="estimate-issues"
+        type="range"
+        min="0"
+        max={ISSUE_STOPS.length - 1}
+        step="1"
+        value={START.issues}
+        aria-valuetext={issuesText(issues)}
+        class={slider}
+      />
+      <div class="flex justify-between text-12 text-tx-3" aria-hidden="true">
+        <span>{fmt(ISSUE_STOPS[0])}</span>
+        <span>{fmt(ISSUE_STOPS.at(-1)!)}</span>
+      </div>
+    </div>
+    <div class="flex flex-col gap-2">
+      <div class="flex justify-between text-14 font-medium text-tx">
+        <label for="estimate-pages">Doc pages</label>
+        <output for="estimate-pages" data-out="pages" class="font-semibold tabular-nums">
+          {fmt(pages)}
+        </output>
+      </div>
+      <input
+        id="estimate-pages"
+        type="range"
+        min="0"
+        max={PAGE_STOPS.length - 1}
+        step="1"
+        value={START.pages}
+        aria-valuetext={pagesText(pages)}
+        class={slider}
+      />
+      <div class="flex justify-between text-12 text-tx-3" aria-hidden="true">
+        <span>{fmt(PAGE_STOPS[0])}</span>
+        <span>{fmt(PAGE_STOPS.at(-1)!)}</span>
+      </div>
+    </div>
+    <p class="text-13 leading-desc text-tx-3">
+      A size is recommended only where we measured it. Anything beyond the measured runs says so,
+      and shows the next size up with its prices.
+    </p>
+  </div>
+
+  <div class="flex flex-col gap-3 bg-sunken p-5 sm:p-7">
+    <div aria-live="polite" aria-atomic="true" data-estimate-live class="flex flex-col gap-2">
+      <p class="text-13 text-tx-3">Plan for</p>
+      <p class="text-32 font-semibold tracking-sub text-tx" data-estimate-size>
+        {result.size ? sizeName(result.size) : 'A larger setup'}
+      </p>
+      <span data-estimate-status={result.measured ? 'measured' : 'not-measured'}>
+        <span data-when="measured" hidden={!result.measured}>
+          <Badge tone="ok">Measured at this size</Badge>
+        </span>
+        <span data-when="not-measured" hidden={result.measured}>
+          <Badge>Not yet measured</Badge>
+        </span>
+      </span>
+      <p class="min-h-16 text-15 leading-desc text-tx-2" data-estimate-why>
+        {explain(result)}
+      </p>
+    </div>
+    <ul class="grid! grid-cols-3 gap-2 list-none! pl-0!" aria-hidden="true">
+      {CAPACITY.sizes.map((size) => (
+        <li
+          data-rung={sizeKey(size)}
+          data-on={result.size === size ? '' : undefined}
+          class="rounded-card border border-line bg-card px-3 py-2.5 text-13 text-tx-2 data-on:-translate-y-0.5 data-on:border-acc data-on:shadow-ring motion-safe:transition-transform motion-safe:duration-base motion-safe:ease-settle"
+        >
+          <b class="block text-14 font-semibold text-tx">{sizeName(size)}</b>
+          {size.runs.length > 0 ? 'Measured' : 'Not yet'}
+        </li>
+      ))}
+    </ul>
+    <div class="flex flex-wrap items-baseline justify-between gap-x-3">
+      <p class="text-14 font-semibold text-tx" data-estimate-prices-title>
+        {result.size ? `${sizeName(result.size)}, cheapest first` : 'Prices'}
+      </p>
+      <span class="text-13 text-tx-3">a month, before tax</span>
+    </div>
+    <ul
+      class="flex flex-col gap-0! overflow-hidden rounded-card border border-line bg-card list-none! pl-0!"
+      data-estimate-prices
+    >
+      {offers.map((offer) => (
+        <li class="flex justify-between gap-3 border-line-2 px-3 py-2 text-14 not-first:border-t">
+          <span class="text-tx">
+            {offer.provider.provider} <span class="text-13 text-tx-3">{offer.plan}</span>
+          </span>
+          <span class="font-semibold tabular-nums text-tx">{offerMoney(offer)}</span>
+        </li>
+      ))}
+    </ul>
+  </div>
+</div>
+
+<script>
+  import { mountEstimator } from '../../lib/client/estimator.ts';
+  mountEstimator();
+</script>

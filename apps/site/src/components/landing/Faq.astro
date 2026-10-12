@@ -27,6 +27,12 @@ import SectionHead from './SectionHead.astro';
           </summary>
           <p class="m-0 pr-4 pb-5.5 pl-1 text-16 leading-doc text-pretty text-tx-2 md:pr-15">
             {item.answer}
+            {item.more && (
+              <>
+                {' '}
+                <a href={item.more.href}>{item.more.label}</a>.
+              </>
+            )}
           </p>
         </details>
       ))}
