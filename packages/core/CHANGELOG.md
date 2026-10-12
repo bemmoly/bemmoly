@@ -18,7 +18,7 @@
   - **AI, optional**: off until an admin turns it on, with any provider from the models.dev
     catalog or a model on your own network: summaries with sources, answers from your docs,
     help in the editor, ⌘K plans you confirm, and an MCP server for AI clients.
-  - **Imports**: from Jira and Confluence (Cloud or Data Center) or a CSV file, previewed before
+  - **Imports**: Import from Jira and Import from Confluence (Cloud or Data Center) or a CSV file, previewed before
     anything is written.
   - **Sign-in and people**: single sign-on with OpenID Connect or SAML 2.0, and SCIM 2.0
     provisioning.
@@ -75,13 +75,13 @@
 ### Patch Changes
 
 - 17674ec: A page edited in a burst is always compacted: the collab host stores every pending update before a document's change hook runs, so a slow write can no longer hide updates from the compaction check.
-- 3ff8f77: **Large imports no longer create duplicate pages.** A Markdown or Confluence file import of more
+- 3ff8f77: **Large imports no longer create duplicate pages.** A Markdown file import, or an Import from Confluence, of more
   than 200 pages saved its pages, then failed while telling open screens about them, and each
   retry imported the pages again, up to three times. Realtime updates of any size now go out in
   batches. A failed update after the data is saved is logged and counted in
   `bemmoly_realtime_publish_errors_total` and no longer fails the job. A retried import job now
-  finds what an earlier run wrote and does not write it again. The Confluence, Jira, CSV and AI
-  client (MCP) importers now record each page, issue, comment, board and sprint in the same
+  finds what an earlier run wrote and does not write it again. The importers for Import from Confluence, Import from Jira, CSV and AI
+  clients (MCP) now record each page, issue, comment, board and sprint in the same
   transaction that creates it, so a resumed import does not create these twice.
 
   Schema: Docs adds the `page_imports` table (changeset `0018-docs-page-imports`), which is
