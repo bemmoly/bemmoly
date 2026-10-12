@@ -9,6 +9,7 @@ import { enhanceCopy } from './copy.ts';
 import { enhanceMenu } from './menu.ts';
 import { enhancePreviews } from './preview.ts';
 import { enhanceShare } from './share.ts';
+import { enhanceStars } from './stars.ts';
 import { enhanceTabs } from './tabs.ts';
 import { enhanceTheme } from './theme.ts';
 
@@ -20,4 +21,5 @@ export function start(): void {
   enhanceTabs();
   enhancePreviews();
   enhanceBars();
+  enhanceStars();
 }
