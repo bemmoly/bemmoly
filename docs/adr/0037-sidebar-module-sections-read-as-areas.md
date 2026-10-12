@@ -28,8 +28,8 @@ area the address was in: only the row was current.
    the top of the sidebar, such as My issues) sits on `bg-acc/6` with a `ring-acc/15` hairline,
    and its heading's "+" stays shown. The rail draws no wash.
 3. **Order within a section**: the header row, the module's links to the whole area, then a
-   `SidebarLabel` ("Projects", "Spaces", 11px muted) over the live rows. Docs home moves from
-   after the spaces to the top of Docs.
+   `SidebarLabel` ("Projects", "Spaces", 11px in `tx-2`, since `tx-3` falls under 4.5:1 on the
+   wash) over the live rows. Docs home moves from after the spaces to the top of Docs.
 4. **A rule** (`border-line`) separates the personal rows from the modules; sections sit 10px
    apart.
 

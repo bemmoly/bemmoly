@@ -193,12 +193,16 @@ export function SidebarHeading({ label, tile, current = false, add }: SidebarHea
   );
 }
 
-/** A quiet label inside a module's section, over the list it names ("Projects", "Spaces"). */
+/**
+ * A quiet label inside a module's section, over the list it names ("Projects", "Spaces"). Small
+ * rather than faint: in `tx-2`, since `tx-3` at 11px falls under 4.5:1 on the current section's
+ * wash in the light presets.
+ */
 export function SidebarLabel({ label }: { label: string }) {
   const { mode } = useFrame();
   if (mode === 'rail') return null;
   return (
-    <div className="mx-2 mt-2 mb-0.5 flex h-5 items-center text-11 font-medium text-tx-3">
+    <div className="mx-2 mt-2 mb-0.5 flex h-5 items-center text-11 font-medium text-tx-2">
       {label}
     </div>
   );

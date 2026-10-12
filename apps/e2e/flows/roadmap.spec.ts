@@ -84,10 +84,12 @@ test('the roadmap forecasts an epic in words and moves it by keyboard and by dra
   const bar = (title: string) => page.getByRole('button', { name: new RegExp(`^${title}, `) });
   await expect(bar('Billing v2')).toBeVisible();
   await expect(bar('Observability')).toBeVisible();
-  await expect(page.getByRole('link', { name: 'Roadmap', exact: true }).first()).toHaveAttribute(
-    'aria-current',
-    'page',
-  );
+  // The project's own Roadmap row is current, not Work's area-wide Roadmap above the projects.
+  await expect(
+    page
+      .getByRole('link', { name: 'Roadmap', exact: true })
+      .and(page.locator(`[href$="/work/roadmap/${project.key}"]`)),
+  ).toHaveAttribute('aria-current', 'page');
 
   // The forecast, in words, beside the timeline.
   await page.getByRole('button', { name: /^Billing v2 forecast: / }).click();
