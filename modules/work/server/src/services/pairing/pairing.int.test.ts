@@ -63,6 +63,13 @@ describe('pairing matrix against Postgres', () => {
       to: '2026-01-31',
     });
     expect(january.cells).toEqual([expect.objectContaining({ count: 1, hours: 24 })]);
+
+    await work.services.issues.remove(as, old.key);
+    const afterDelete = await work.services.pairing.matrix(as, 'MOB', {
+      from: '2026-01-01',
+      to: '2026-01-31',
+    });
+    expect(afterDelete.cells).toEqual([]);
   });
 
   it('suggests next pairs only while the setting is on', async (ctx) => {
