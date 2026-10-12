@@ -43,7 +43,9 @@ const starLabel = facts ? `Bemmoly on GitHub, ${facts.stars} stars` : 'Bemmoly o
         <Icon name="star" size={14} class="fill-current" />
         <span class="xl:hidden">Star</span>
         <span class="hidden xl:inline">Star on GitHub</span>
-        <span data-star-count hidden={!stars} class="font-mono text-12">{stars}</span>
+        <span data-star-count hidden={!stars} class="font-mono text-12">
+          {stars}
+        </span>
       </a>
       <a
         href={SPONSOR_URL}
@@ -127,7 +129,9 @@ const starLabel = facts ? `Bemmoly on GitHub, ${facts.stars} stars` : 'Bemmoly o
       >
         <Icon name="star" size={17} class="fill-current" />
         Star on GitHub
-        <span data-star-count hidden={!stars} class="font-mono text-13">{stars}</span>
+        <span data-star-count hidden={!stars} class="font-mono text-13">
+          {stars}
+        </span>
       </a>
     </nav>
     <div class="border-t border-line-2 p-4 sm:px-6">
