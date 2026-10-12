@@ -22,7 +22,8 @@ async function recipientsOf(args: NotifyArgs, { ctx, issue, services }: ActionCo
 export const notify: ActionDefinition<NotifyArgs> = {
   name: AUTOMATION_ACTIONS.notify,
   label: 'Notify people',
-  description: 'Sends a notification about the issue to its assignees, reporter, watchers or people',
+  description:
+    'Sends a notification about the issue to its assignees, reporter, watchers or people',
   params: notifyArgsSchema,
   async run(args, action) {
     const recipientIds = await recipientsOf(args, action);

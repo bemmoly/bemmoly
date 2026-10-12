@@ -196,9 +196,12 @@ export const assignIssueBodySchema = z.object({ assigneeId: z.uuid().nullable() 
 
 /** The whole set of assignees; the first becomes the primary, an empty list unassigns. */
 export const setAssigneesBodySchema = z.object({
-  assigneeIds: z.array(z.uuid()).max(20).refine((ids) => new Set(ids).size === ids.length, {
-    message: 'An assignee is listed twice',
-  }),
+  assigneeIds: z
+    .array(z.uuid())
+    .max(20)
+    .refine((ids) => new Set(ids).size === ids.length, {
+      message: 'An assignee is listed twice',
+    }),
 });
 
 export const issueAssigneesResponseSchema = listSchema(userRefSchema);

@@ -17,11 +17,7 @@ export function AssigneesField({ issue }: { issue: IssueDetail }) {
   const { person } = usePeople();
   const viewer = useViewer();
   const toast = useToast();
-  const current = issue.assignees.length
-    ? issue.assignees
-    : issue.assignee
-      ? [issue.assignee]
-      : [];
+  const current = issue.assignees.length ? issue.assignees : issue.assignee ? [issue.assignee] : [];
   const taken = new Set(current.map((user) => user.id));
 
   const add = (id: string, name?: string) => {
