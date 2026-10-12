@@ -38,7 +38,8 @@ export function pairingRange(query: PairingQuery, now: Date) {
 
 /*
  * Each stint is clipped to the window, with an open one running to now, and two stints on one
- * issue pair when the clipped spans overlap. Deleted issues still count: the pairing happened.
+ * issue pair when the clipped spans overlap. Deleted issues are left out: only people who may
+ * delete issues can see them, and the panel would print their titles.
  */
 export function createPairingService(
   deps: Pick<PlanningDeps, 'database' | 'now'> & { settings?: Pick<SettingsRegistry, 'get'> },
@@ -54,7 +55,7 @@ export function createPairingService(
           greatest(ia.added_at, ${range.start}::timestamptz) as starts,
           least(coalesce(ia.removed_at, now()), ${range.end}::timestamptz) as ends
         from issue_assignees ia join issues i on i.id = ia.issue_id
-        where i.project_id = ${project.id}
+        where i.project_id = ${project.id} and i.deleted_at is null
           and ia.added_at < ${range.end}::timestamptz
           and coalesce(ia.removed_at, now()) > ${range.start}::timestamptz`;
       const [people, cells] = await Promise.all([
