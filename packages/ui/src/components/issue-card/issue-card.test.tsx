@@ -18,9 +18,7 @@ describe('IssueCard', () => {
         coAssignees={[{ name: 'Lena T.' }, { name: 'Jonas M.' }, { name: 'Aisha K.' }]}
       />,
     );
-    expect(
-      screen.getByLabelText('Assigned to Priya N., Lena T., Jonas M., Aisha K.'),
-    ).toBeTruthy();
+    expect(screen.getByLabelText('Assigned to Priya N., Lena T., Jonas M., Aisha K.')).toBeTruthy();
     expect(screen.getByLabelText('1 more').textContent).toBe('+1');
   });
 

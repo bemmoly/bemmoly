@@ -17,7 +17,9 @@ function projectInPath(pathname: string): string | null {
   const [, area, screen, segment] = pathname.split('/');
   if (area !== 'work' || !segment) return null;
   if (screen === 'issue') return segment.split('-')[0]?.toUpperCase() ?? null;
-  return ['board', 'backlog', 'roadmap', 'pairing', 'members', 'settings', 'workflows'].includes(screen ?? '')
+  return ['board', 'backlog', 'roadmap', 'pairing', 'members', 'settings', 'workflows'].includes(
+    screen ?? '',
+  )
     ? segment.toUpperCase()
     : null;
 }

@@ -52,7 +52,9 @@ describe('LQL compiler: operators', () => {
   it('compiles IS EMPTY and IS NOT EMPTY as null checks', () => {
     expect(where('reporter IS EMPTY').text).toBe('(issues.reporter_id is null)');
     expect(where('reporter IS NOT EMPTY').text).toBe('(issues.reporter_id is not null)');
-    expect(where('assignee IS EMPTY').text).toMatch(/^\(not exists \(select 1 from issue_assignees/);
+    expect(where('assignee IS EMPTY').text).toMatch(
+      /^\(not exists \(select 1 from issue_assignees/,
+    );
   });
 
   it('compiles ~ and !~ as escaped ILIKE patterns', () => {
