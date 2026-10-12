@@ -35,19 +35,23 @@ const importPayloadSchema = z.object({
   userId: z.uuid().nullable(),
   format: z.enum(IMPORT_FORMATS),
   files: z.array(importFileSchema).min(1),
+  key: z.string().min(1).max(512).optional(),
 });
 
 /**
  * docs.import: writes a large import queued by POST /spaces/:spaceKey/imports. Enqueued with an
- * idempotency key per upload, so a retried request imports once; the import is one
- * transaction, so a failed run leaves nothing to clean up before its retry.
+ * idempotency key per upload, so a retried request imports once. The pages are written in one
+ * transaction with a record of the key, so a run that fails after that commit and is retried
+ * finds the record and writes nothing twice. A job queued without a key (by an older version)
+ * uses its job id, which its retries share.
  */
 export function importJob(transfer: Pick<TransferService, 'runQueuedImport'>): JobDefinition {
   return {
     name: DOCS_IMPORT_JOB,
     retryLimit: 2,
-    handle: async (payload) => {
-      await transfer.runQueuedImport(importPayloadSchema.parse(payload));
+    handle: async (payload, ctx) => {
+      const run = importPayloadSchema.parse(payload);
+      await transfer.runQueuedImport({ ...run, key: run.key ?? `job-id:${ctx.jobId}` });
     },
   };
 }

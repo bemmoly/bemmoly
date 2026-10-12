@@ -140,9 +140,16 @@ export function createRealtimeMetrics(registry: Registry): RealtimeMetrics {
     help: 'Open WebSocket connections on this process.',
     registers: [registry],
   });
+  const publishErrors = new Counter({
+    name: 'bemmoly_realtime_publish_errors_total',
+    help: 'Realtime publishes that failed after their write committed, by message kind.',
+    labelNames: ['kind'],
+    registers: [registry],
+  });
   return {
     connectionOpened: () => connections.inc(),
     connectionClosed: () => connections.dec(),
+    publishFailed: (kind) => publishErrors.inc({ kind }),
   };
 }
 

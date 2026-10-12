@@ -59,6 +59,7 @@ async function importIssues(
       converted.map((item) => item.row),
       ctx.mappings,
       ctx.report,
+      { adopt: true },
     );
     const bySource = new Map(written.map((item) => [item.sourceId, item.id]));
     const pageIssues = new Map<string, { issue: JiraIssue; id: string }>();

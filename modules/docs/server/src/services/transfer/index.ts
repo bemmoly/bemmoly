@@ -100,7 +100,8 @@ export function createTransferService(deps: DocsServiceDeps) {
       };
       const bytes = body.files.reduce((sum, file) => sum + file.content.length, 0);
       if (body.files.length <= IMPORT_INLINE_MAX_FILES && bytes <= IMPORT_INLINE_MAX_BYTES) {
-        return { status: 'completed', pages: await importNow(run, ctx) };
+        const inline = idempotencyKey ? { ...run, key: `inline:${idempotencyKey}` } : run;
+        return { status: 'completed', pages: await importNow(inline, ctx) };
       }
       if (!deps.jobs) throw new ProviderError('Large imports need the job queue');
       const key =
@@ -110,7 +111,7 @@ export function createTransferService(deps: DocsServiceDeps) {
           .digest('hex');
       const jobId = await deps.jobs.send(
         DOCS_IMPORT_JOB,
-        { ...run },
+        { ...run, key: `job:${key}` },
         {
           idempotencyKey: `${DOCS_IMPORT_JOB}:${space.id}:${key}`,
           ...(ctx.requestId ? { requestId: ctx.requestId } : {}),
@@ -119,7 +120,10 @@ export function createTransferService(deps: DocsServiceDeps) {
       return { status: 'queued', jobId, idempotencyKey: key };
     },
 
-    /** The docs.import job: the authorization was checked when the import was queued. */
+    /**
+     * The docs.import job: the authorization was checked when the import was queued. The run
+     * carries its key, so a retry of a run that committed returns the pages it already wrote.
+     */
     runQueuedImport: (run: ImportRun) => importNow(run),
   };
 }

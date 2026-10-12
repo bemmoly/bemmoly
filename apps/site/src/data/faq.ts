@@ -4,12 +4,17 @@
  * shows. Answers are plain text, true of the release the installer pulls today.
  */
 import type { FaqItem } from '../lib/structured-data.ts';
+import { RECOMMENDED, sizeKey, sizeName } from './capacity.ts';
+import { fromOffer, offerMoney } from './prices.ts';
+
+/** The cheapest confirmed list price for the measured size, from prices.json. */
+const from = fromOffer(sizeKey(RECOMMENDED))!;
 
 export const HOME_FAQ: readonly FaqItem[] = [
   {
     question: 'How is it free?',
-    answer:
-      'Bemmoly is software you run, not a service we run for you, so there is nothing for us to meter or charge for. It is MIT licensed: you may use, change and share it, at work, for any number of people. Your only cost is the server; a 2 vCPU, 4 GB VM lists at roughly $5–25 a month. Sponsoring the project on Buy Me a Coffee is optional: it supports development and unlocks nothing, because every feature is in the free product.',
+    answer: `Bemmoly is software you run, not a service we run for you, so there is nothing for us to meter or charge for. It is MIT licensed: you may use, change and share it, at work, for any number of people. Your only cost is the server; a ${sizeName(RECOMMENDED)} VM, the size we measured, lists from ${offerMoney(from)} a month at ${from.provider.provider}. Sponsoring the project on Buy Me a Coffee is optional: it supports development and unlocks nothing, because every feature is in the free product.`,
+    more: { label: 'Server sizing and prices', href: '/sizing' },
   },
   {
     question: 'What’s the catch?',

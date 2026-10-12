@@ -1,6 +1,7 @@
 import type { SqlClient } from '../../clients/postgres.ts';
 import type { Logger } from '../../config/logger.ts';
 import type { RealtimePublisher } from '../../contracts/realtime.ts';
+import type { RealtimeMetrics } from '../../contracts/telemetry.ts';
 import { createReplicatedEventBus, type ReplicatedEventBus } from './event-bus.ts';
 import { createRealtimeHub, type RealtimeHub, type RealtimeHubOptions } from './hub.ts';
 import { createRealtimeListener, type RealtimeListener } from './listener.ts';
@@ -10,6 +11,8 @@ export interface RealtimeServiceOptions {
   sql: SqlClient;
   logger: Logger;
   hub?: Omit<RealtimeHubOptions, 'logger'>;
+  /** Counts publishes that failed after commit; the host passes `getMetrics().realtime`. */
+  metrics?: Pick<RealtimeMetrics, 'publishFailed'>;
 }
 
 /** Everything realtime in one process: publish, listen, fan out, replicate events. */
@@ -32,7 +35,10 @@ export function createRealtimeService(options: RealtimeServiceOptions): Realtime
   });
   listener.onDomainEvent((payload) => events.receive(payload));
   return {
-    publisher: createNotifyPublisher(sql),
+    publisher: createNotifyPublisher(sql, {
+      logger,
+      ...(options.metrics ? { metrics: options.metrics } : {}),
+    }),
     listener,
     hub,
     events,

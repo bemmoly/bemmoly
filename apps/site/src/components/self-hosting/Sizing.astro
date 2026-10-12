@@ -1,16 +1,36 @@
 ---
 /**
- * How big a server: the three size cards from capacity.json, with the detail on /sizing.
+ * The guide's answer to "how big a server", just before Install: the measured tier card, then
+ * the hand-off to the install and to /sizing, which owns the estimator, the method and every
+ * price. The guide carries the answer; /sizing carries the evidence.
  */
-import SizeCards from '../sizing/SizeCards.astro';
-import Section from '../site/Section.astro';
+import TierCard from '../sizing/TierCard.astro';
+import Button from '../site/Button.astro';
+import Icon from '../site/Icon.astro';
+import { INSTALL_HREF } from '../../lib/links.ts';
 ---
 
-<Section title="How big a server do I need?" id="sizing">
-  <SizeCards />
-  <p>
-    <a href="/sizing" class="text-acc underline underline-offset-2">
-      How we measured, and prices by cloud
-    </a>
-  </p>
-</Section>
+<section id="sizing" aria-labelledby="sizing-title" class="flex scroll-mt-20 flex-col gap-6">
+  <div class="flex max-w-190 flex-col gap-2">
+    <p class="flex items-center gap-2 text-13 font-semibold text-acc">
+      <Icon name="server" size={15} />
+      Server sizing
+    </p>
+    <h2 id="sizing-title" class="text-24 leading-display font-semibold tracking-display text-tx">
+      One small server runs it
+    </h2>
+    <p class="text-16 leading-desc text-tx-2">
+      We load-test Bemmoly with real-sized data and publish what we measure. Bemmoly itself is free;
+      the server is the whole bill.
+    </p>
+  </div>
+  <TierCard />
+  <div class="flex flex-wrap gap-2.5">
+    <Button variant="primary" href={INSTALL_HREF}>
+      Install on your server
+    </Button>
+    <Button variant="secondary" href="/sizing">
+      Estimate, method and every price
+    </Button>
+  </div>
+</section>

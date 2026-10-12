@@ -107,31 +107,38 @@ export function registerWorkAi(
  * tells other modules (Docs' consistency checks) that the issue changed. Both join the
  * publisher's transaction, so a rolled back write asks for nothing.
  */
+/** About 40 bytes per uuid: a hundred stay well inside one NOTIFY with the envelope. */
+const IDS_PER_EVENT = 100;
+
 export function withAiTriggers(realtime: RealtimePublisher, events: EventBus): RealtimePublisher {
   return {
     async publish(message, options) {
       await realtime.publish(message, options);
       const transaction = options?.transaction ? { transaction: options.transaction } : {};
-      if (message.ids.length === 0) return;
-      if (message.kind === WORK_REALTIME_KINDS.sprint) {
-        await events.publish({
-          kind: AI_INSIGHT_EVENT_KINDS.requested,
-          occurredAt: new Date(),
-          payload: {
-            kind: 'sprint_pulse',
-            targetIds: message.ids,
-            quietSeconds: SPRINT_PULSE_QUIET_SECONDS,
-          },
-          ...transaction,
-        });
-      }
-      if (message.kind === WORK_REALTIME_KINDS.issue) {
-        await events.publish({
-          kind: AI_INSIGHT_EVENT_KINDS.sourceChanged,
-          occurredAt: new Date(),
-          payload: { kind: 'issue', ids: message.ids },
-          ...transaction,
-        });
+      // A domain event travels in one NOTIFY of under 8 KB, so a long id list goes as several:
+      // one too large would throw inside the caller's transaction and roll its write back.
+      for (let start = 0; start < message.ids.length; start += IDS_PER_EVENT) {
+        const ids = message.ids.slice(start, start + IDS_PER_EVENT);
+        if (message.kind === WORK_REALTIME_KINDS.sprint) {
+          await events.publish({
+            kind: AI_INSIGHT_EVENT_KINDS.requested,
+            occurredAt: new Date(),
+            payload: {
+              kind: 'sprint_pulse',
+              targetIds: ids,
+              quietSeconds: SPRINT_PULSE_QUIET_SECONDS,
+            },
+            ...transaction,
+          });
+        }
+        if (message.kind === WORK_REALTIME_KINDS.issue) {
+          await events.publish({
+            kind: AI_INSIGHT_EVENT_KINDS.sourceChanged,
+            occurredAt: new Date(),
+            payload: { kind: 'issue', ids },
+            ...transaction,
+          });
+        }
       }
     },
   };

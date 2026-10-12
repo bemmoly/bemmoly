@@ -1,0 +1,188 @@
+---
+/**
+ * The measured tier, from the sizing review: one big number (the largest data set the
+ * recommended size handled), what it ran on, the people estimate only where a load was
+ * measured, the speeds at that size as bars, and what that size costs by provider. A run
+ * measured before the latest performance work carries a visible note until a re-run replaces
+ * it. Numbers are marked (data-capacity, data-people, data-price) for tests/capacity.test.ts.
+ */
+import {
+  BAR_SCALE_MS,
+  CAPACITY,
+  HEADLINE,
+  LOAD_RUN,
+  RECOMMENDED,
+  fmt,
+  latencyRows,
+  peopleOf,
+  sizeKey,
+  sizeName,
+} from '../../data/capacity.ts';
+import { cardOffers, checkedDates, fromOffer, offerMoney } from '../../data/prices.ts';
+import Badge from '../site/Badge.astro';
+import Icon from '../site/Icon.astro';
+import SizeLadder from './SizeLadder.astro';
+
+interface Props {
+  /** The card's own headings: h3 inside a titled section, h2 straight under a page's h1. */
+  level?: 'h2' | 'h3';
+}
+
+const { level = 'h3' } = Astro.props;
+const Heading = level;
+const key = sizeKey(RECOMMENDED);
+const from = fromOffer(key);
+const offers = cardOffers(key);
+const people = LOAD_RUN ? peopleOf(LOAD_RUN.requestsPerSecond) : null;
+const rows = latencyRows(HEADLINE);
+const preliminary = RECOMMENDED.runs.some((run) => run.preliminary);
+const { requestsPerActiveUserPerSecond, activeShare } = CAPACITY.assumption;
+---
+
+<div class="flex flex-col gap-5" data-tier={key}>
+  {preliminary && (
+    <p
+      data-preliminary
+      class="flex items-start gap-2.5 rounded-card bg-amber-50 px-3.5 py-3 text-14 text-tx"
+    >
+      <Icon name="info" size={16} class="mt-0.5 shrink-0 text-amber-tx" />
+      <span>Measured before the latest performance work; re-run pending.</span>
+    </p>
+  )}
+  <div class="overflow-hidden rounded-shot bg-card shadow-e2">
+    <div class="grid lg:grid-cols-[1.05fr_1fr]">
+      <div class="flex flex-col p-5 sm:p-7 lg:border-r lg:border-line-2">
+        <div class="flex flex-wrap gap-2">
+          <Badge tone="accent" pill>
+            Recommended
+          </Badge>
+          <Badge tone="ok" pill>
+            Measured
+          </Badge>
+        </div>
+        <p class="mt-4 flex flex-wrap items-baseline gap-x-3">
+          <span
+            class="text-40 font-semibold tracking-hero tabular-nums text-tx md:text-64"
+            data-capacity
+          >
+            {fmt(HEADLINE.data.issues)}
+          </span>
+          <span class="text-22 font-medium text-tx-2">issues</span>
+        </p>
+        <p class="mt-1 text-14 text-tx-3">
+          tested on {sizeName(RECOMMENDED)} RAM, one server from the one-command install
+        </p>
+        <dl class="mt-6 grid gap-4 sm:grid-cols-3">
+          {LOAD_RUN && (
+            <div class="flex flex-col gap-1 border-t border-line pt-3">
+              <dt class="order-2 text-13 text-tx-2">
+                issues: fast at <span data-capacity>{LOAD_RUN.requestsPerSecond}</span> requests a
+                second
+              </dt>
+              <dd class="text-24 font-semibold tracking-title tabular-nums text-tx" data-capacity>
+                {fmt(LOAD_RUN.data.issues)}
+              </dd>
+            </div>
+          )}
+          {people && (
+            <div class="flex flex-col gap-1 border-t border-line pt-3" data-estimate>
+              <dt class="order-2 text-13 text-tx-2">
+                active at once, teams up to ~<span data-people>{fmt(people.organisation)}</span>
+                <Badge class="ml-1 align-middle">Estimate</Badge>
+              </dt>
+              <dd class="text-24 font-semibold tracking-title tabular-nums text-tx">
+                ≈<span data-people>{fmt(people.atOnce)}</span>
+              </dd>
+            </div>
+          )}
+          {from && (
+            <div class="flex flex-col gap-1 border-t border-line pt-3">
+              <dt class="order-2 text-13 text-tx-2">a month, from {from.provider.provider}</dt>
+              <dd class="text-24 font-semibold tracking-title tabular-nums text-tx" data-price>
+                {offerMoney(from)}
+              </dd>
+            </div>
+          )}
+        </dl>
+      </div>
+
+      <div class="flex flex-col gap-3 bg-sunken p-5 sm:p-7">
+        <div class="flex flex-wrap items-baseline justify-between gap-x-3">
+          <Heading class="text-16 font-semibold text-tx">
+            Speed at <span data-capacity>{fmt(HEADLINE.data.issues)}</span> issues
+          </Heading>
+          <span class="text-13 text-tx-3">95% of requests, server side</span>
+        </div>
+        <ul class="flex flex-col gap-2.5" data-bars>
+          {rows.map((row) => (
+            <li class="grid grid-cols-[7.5rem_1fr_4.5rem] items-center gap-3 text-14 text-tx-2">
+              <span>{row.label}</span>
+              <span class="h-2 overflow-hidden rounded-full bg-line-2" aria-hidden="true">
+                <svg
+                  data-bar
+                  viewBox="0 0 100 8"
+                  preserveAspectRatio="none"
+                  class="block size-full origin-left fill-acc motion-safe:transition-transform motion-safe:duration-data motion-safe:ease-out"
+                >
+                  <rect width={Math.min(100, (row.ms / BAR_SCALE_MS) * 100)} height="8" />
+                </svg>
+              </span>
+              <span class="text-right font-medium tabular-nums text-tx">
+                {row.under ? '< ' : ''}
+                <span data-capacity>{row.ms}</span> ms
+              </span>
+            </li>
+          ))}
+        </ul>
+        <p class="text-13 text-tx-3">
+          A full bar is half a second. Issues and doc pages open fastest; search and the biggest
+          board are the slowest parts at this size.
+        </p>
+      </div>
+    </div>
+
+    <div class="flex flex-col gap-3 border-t border-line-2 p-5 sm:px-7 sm:pb-7">
+      <div class="flex flex-wrap items-baseline justify-between gap-x-3">
+        <Heading class="text-16 font-semibold text-tx">What {sizeName(RECOMMENDED)} costs</Heading>
+        <span class="text-13 text-tx-3">
+          list price a month, before tax, checked {checkedDates()[0]}
+        </span>
+      </div>
+      <ul class="grid grid-cols-2 gap-2.5 md:grid-cols-3 lg:grid-cols-6">
+        {offers.map((offer, index) => (
+          <li
+            class:list={[
+              'flex flex-col gap-0.5 rounded-card border bg-card px-3.5 py-3',
+              index === 0 ? 'border-acc' : 'border-line',
+            ]}
+          >
+            <a
+              href={offer.provider.url}
+              rel="noopener noreferrer"
+              class="text-14 font-semibold text-tx hover:text-acc"
+            >
+              {offer.provider.provider}
+            </a>
+            <span class="text-13 text-tx-3">{offer.plan}</span>
+            <span class="mt-1.5 text-20 font-semibold tabular-nums text-tx">
+              <span data-price>{offerMoney(offer)}</span>
+              <span class="text-13 font-normal text-tx-3">/month</span>
+            </span>
+          </li>
+        ))}
+      </ul>
+      {LOAD_RUN && people && (
+        <p class="max-w-[90ch] text-13 leading-desc text-tx-3" data-estimate>
+          The people figure is an estimate: it assumes each active person makes{' '}
+          <span data-capacity>{requestsPerActiveUserPerSecond}</span> requests a second, against the{' '}
+          <span data-capacity>{LOAD_RUN.requestsPerSecond}</span> a second measured with{' '}
+          <span data-capacity>{fmt(LOAD_RUN.data.issues)}</span> issues, and that{' '}
+          <span data-capacity>{activeShare * 100}</span>% of a team is active at once, rounded down.
+          There is no people figure for <span data-capacity>{fmt(HEADLINE.data.issues)}</span>{' '}
+          issues, because no load ramp was run at that size.
+        </p>
+      )}
+    </div>
+  </div>
+  <SizeLadder />
+</div>

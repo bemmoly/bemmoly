@@ -1,42 +1,42 @@
 /**
- * How big a server Bemmoly needs, from capacity.json (the load test writes that file). Every
- * capacity number the site shows goes through here, so tests/capacity.test.ts can check that
- * each one on the page comes from the file. A size is either measured, with its numbers, or
- * being measured, with none: nothing here is invented or extrapolated beyond the stated
- * assumption.
+ * How big a server Bemmoly needs, from capacity.json, whose runs are copies of a committed
+ * results file under perf/results. Every capacity number the site shows goes through here,
+ * so tests/capacity.test.ts can check each one on the page against that file. A size with no
+ * runs is not yet measured and shows no numbers: nothing here is extrapolated beyond the
+ * written-out people assumption.
  */
 import data from './capacity.json';
 
-export type CapacityStatus = 'measured' | 'measuring';
+export type Verdict = 'fast' | 'usable' | 'slow';
 
-export interface Price {
-  provider: string;
-  instance: string;
-  monthly: number;
-  currency: 'USD' | 'EUR';
-}
-
-export interface ServerSize {
-  cpu: number;
-  ramGb: number;
-  status: CapacityStatus;
-  recommended: boolean;
-  /** The highest measured load within the latency budget; null while measuring. */
+interface RunBase {
+  id: string;
+  measured: string;
+  /** Measured before the latest performance work; the page says so until a re-run. */
+  preliminary: boolean;
+  note?: string;
+  source: string;
+  verdict: Verdict;
+  /** The highest load that stayed within the latency budget; null when no ramp was run. */
   requestsPerSecond: number | null;
-  issues: number | null;
-  docs: number | null;
-  load: Load | null;
-  notes: string;
-  prices: Price[];
+  data: {
+    issues: number;
+    approximate?: boolean;
+    comments?: number;
+    docPages?: number;
+    largestProject?: number;
+    users?: number;
+    projects?: number;
+  };
 }
 
-export interface Load {
-  /** 95th-percentile times at a typical load (the 30 requests a second mixed and soak runs). */
+/** The run with a load ramp: typical and at-limit speeds, a soak, live editing, an import. */
+export interface LoadRun extends RunBase {
+  requestsPerSecond: number;
   typical: {
     rps: number;
     p95Ms: { board: number; issue: number; search: number; docPage: number; issueEdit: number };
   };
-  /** 95th-percentile times at the limit, requestsPerSecond. */
   atLimitP95Ms: { board: number; issue: number };
   soak: {
     minutes: number;
@@ -47,57 +47,97 @@ export interface Load {
     appMemoryMb: number;
   };
   liveEditing: { delivered: number; sent: number };
-  data: {
-    issues: number;
-    largestProject: number;
-    comments: number;
-    docPages: number;
-    users: number;
-    projects: number;
-    importIssues: number;
-    importSeconds: number;
-  };
+  import: { issues: number; seconds: number };
+}
+
+export interface Run extends RunBase {
+  p95Ms?: Record<string, number>;
+  /** Routes measured only as "under" this many milliseconds. */
+  p95MsUnder?: Record<string, number>;
+  p95MsAbout?: number;
+  databaseGb?: number;
+  finding?: string;
+}
+
+export interface ServerSize {
+  cpu: number;
+  ramGb: number;
+  recommended: boolean;
+  runs: Run[];
 }
 
 export const CAPACITY = data as {
+  source: string;
   setup: string;
-  priceNote: string;
   assumption: { requestsPerActiveUserPerSecond: number; activeShare: number; text: string };
   sizes: ServerSize[];
 };
 
-export const sizeName = (size: ServerSize) => `${size.cpu} vCPU, ${size.ramGb} GB`;
+export const sizeKey = (size: Pick<ServerSize, 'cpu' | 'ramGb'>) => `${size.cpu}-${size.ramGb}`;
+export const sizeName = (size: Pick<ServerSize, 'cpu' | 'ramGb'>) =>
+  `${size.cpu} vCPU, ${size.ramGb} GB`;
+export const isMeasured = (size: ServerSize) => size.runs.length > 0;
 
 export const fmt = (value: number) => value.toLocaleString('en-US');
 
-export const money = (price: Pick<Price, 'monthly' | 'currency'>) =>
-  `${price.currency === 'EUR' ? '€' : '$'}${fmt(price.monthly)}`;
+const isLoadRun = (run: Run): run is Run & LoadRun =>
+  typeof run.requestsPerSecond === 'number' && 'soak' in run;
 
-/** Prices low to high. */
-export const byPrice = (size: ServerSize) => [...size.prices].sort((a, b) => a.monthly - b.monthly);
+export const RECOMMENDED = CAPACITY.sizes.find((size) => size.recommended)!;
 
-/**
- * The card's "from" line: the cheapest US-dollar price whose instance is exactly this size
- * (an instance noted with other specs in parentheses, like a bigger smallest plan, is skipped).
- */
-export function cheapest(size: ServerSize): Price | undefined {
-  return byPrice(size).find((price) => price.currency === 'USD' && !price.instance.includes('('));
-}
+/** The run with a measured load ramp, the only one a people figure may come from. */
+export const LOAD_RUN = RECOMMENDED.runs.find(isLoadRun);
 
-export const MEASURED = CAPACITY.sizes.find(
-  (size): size is ServerSize & { load: Load } => size.status === 'measured' && size.load !== null,
-);
+/** The largest data set the recommended size handled without slowing down: the headline. */
+export const HEADLINE = [...RECOMMENDED.runs]
+  .filter((run) => run.verdict !== 'slow')
+  .sort((a, b) => b.data.issues - a.data.issues)[0]!;
+
+/** The smallest data set that slowed the recommended size down, if one was run. */
+export const LIMIT = RECOMMENDED.runs
+  .filter((run) => run.verdict === 'slow')
+  .sort((a, b) => a.data.issues - b.data.issues)[0];
 
 /** Round down to two significant figures, so an estimate never rounds up. */
-const floorRound = (value: number) => {
+export const floorRound = (value: number) => {
+  if (value <= 0) return 0;
   const step = 10 ** Math.max(0, Math.floor(Math.log10(value)) - 1);
   return Math.floor(value / step) * step;
 };
 
-/** People a size serves, computed from its measured load and the written-out assumption. */
-export function peopleOf(size: ServerSize): { atOnce: number; organisation: number } | null {
-  if (size.requestsPerSecond === null) return null;
+/** People a measured load serves, from the written-out assumption, rounded down. */
+export function peopleOf(
+  requestsPerSecond: number | null,
+): { atOnce: number; organisation: number } | null {
+  if (requestsPerSecond === null) return null;
   const { requestsPerActiveUserPerSecond, activeShare } = CAPACITY.assumption;
-  const atOnce = floorRound(size.requestsPerSecond / requestsPerActiveUserPerSecond);
+  const atOnce = floorRound(requestsPerSecond / requestsPerActiveUserPerSecond);
   return { atOnce, organisation: floorRound(atOnce / activeShare) };
 }
+
+/** The latency rows the card draws, in this order, for the routes a run recorded. */
+const ROUTES = [
+  ['issue', 'Open an issue'],
+  ['docPage', 'Open a doc page'],
+  ['search', 'Search'],
+  ['pageTree', 'Page tree'],
+  ['board', 'Big board'],
+] as const;
+
+export interface LatencyRow {
+  label: string;
+  ms: number;
+  under: boolean;
+}
+
+export function latencyRows(run: Run): LatencyRow[] {
+  return ROUTES.flatMap(([route, label]): LatencyRow[] => {
+    const exact = run.p95Ms?.[route];
+    if (exact !== undefined) return [{ label, ms: exact, under: false }];
+    const under = run.p95MsUnder?.[route];
+    return under === undefined ? [] : [{ label, ms: under, under: true }];
+  });
+}
+
+/** The full length of a latency bar: half a second. */
+export const BAR_SCALE_MS = 500;

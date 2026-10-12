@@ -54,6 +54,12 @@
   --radius-window: 10px;
   --radius-shot: 14px;
   --radius-band: 18px;
+  /*
+   * Motion that carries data (the sizing card's latency bars growing to their measured
+   * length): longer than any interface transition, so the length reads as the point. Off
+   * under reduced motion, like every animation here.
+   */
+  --duration-data: 800ms;
 }
 
 @theme inline {

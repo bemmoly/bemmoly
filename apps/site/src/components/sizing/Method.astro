@@ -1,0 +1,98 @@
+---
+/**
+ * How the sizes were measured, for /sizing: the setup, each run with its data and speeds, the
+ * people assumption written out, and where the raw results live. Every number is marked for
+ * tests/capacity.test.ts.
+ */
+import { CAPACITY, LOAD_RUN, RECOMMENDED, fmt, peopleOf, sizeName } from '../../data/capacity.ts';
+import { REPO_URL } from '../../lib/links.ts';
+import Section from '../site/Section.astro';
+
+const range = ([low, high]: [number, number]) => `${fmt(low)}–${fmt(high)}`;
+const people = LOAD_RUN ? peopleOf(LOAD_RUN.requestsPerSecond) : null;
+const later = RECOMMENDED.runs.filter((run) => run !== LOAD_RUN);
+const IMPORT_LABEL = 'An Import from Jira';
+const resultsUrl = `${REPO_URL}/blob/main/${CAPACITY.source}`;
+---
+
+<Section title="How we measured" id="method">
+  <p>
+    {CAPACITY.setup} Every run below is on {sizeName(RECOMMENDED)}, and the raw figures are in
+    <a href={resultsUrl}>the committed results file</a>.
+  </p>
+  {LOAD_RUN && (
+    <>
+      <h3 class="pt-2 text-16 font-semibold text-tx">
+        <span data-capacity>{fmt(LOAD_RUN.data.issues)}</span> issues: the load ramp
+      </h3>
+      <ul>
+        <li>
+          Data: <span data-capacity>{fmt(LOAD_RUN.data.issues)}</span> issues (largest project{' '}
+          <span data-capacity>{fmt(LOAD_RUN.data.largestProject ?? 0)}</span>),{' '}
+          <span data-capacity>{fmt(LOAD_RUN.data.comments ?? 0)}</span> comments,{' '}
+          <span data-capacity>{fmt(LOAD_RUN.data.docPages ?? 0)}</span> doc pages,{' '}
+          <span data-capacity>{fmt(LOAD_RUN.data.users ?? 0)}</span> users,{' '}
+          <span data-capacity>{fmt(LOAD_RUN.data.projects ?? 0)}</span> projects.
+        </li>
+        <li>
+          Typical speed at <span data-capacity>{LOAD_RUN.typical.rps}</span> requests a second: 95%
+          of requests answered within <span data-capacity>{LOAD_RUN.typical.p95Ms.board}</span> ms
+          for a board, <span data-capacity>{LOAD_RUN.typical.p95Ms.issue}</span> ms for an issue,{' '}
+          <span data-capacity>{LOAD_RUN.typical.p95Ms.search}</span> ms for search,{' '}
+          <span data-capacity>{LOAD_RUN.typical.p95Ms.docPage}</span> ms for a doc page and{' '}
+          <span data-capacity>{LOAD_RUN.typical.p95Ms.issueEdit}</span> ms for an issue edit.
+        </li>
+        <li>
+          At the limit, <span data-capacity>{LOAD_RUN.requestsPerSecond}</span> requests a second:
+          95% within <span data-capacity>{LOAD_RUN.atLimitP95Ms.board}</span> ms for a board and{' '}
+          <span data-capacity>{LOAD_RUN.atLimitP95Ms.issue}</span> ms for an issue.
+        </li>
+        <li>
+          A <span data-capacity>{LOAD_RUN.soak.minutes}</span>-minute run at{' '}
+          <span data-capacity>{LOAD_RUN.soak.rps}</span> requests a second:{' '}
+          <span data-capacity>{fmt(LOAD_RUN.soak.requests)}</span> requests,{' '}
+          <span data-capacity>{LOAD_RUN.soak.errors}</span> errors, 95% within{' '}
+          <span data-capacity>{range(LOAD_RUN.soak.p95Ms)}</span> ms, app memory about{' '}
+          <span data-capacity>{LOAD_RUN.soak.appMemoryMb}</span> MB.
+        </li>
+        <li>
+          Live doc editing delivered{' '}
+          <span data-capacity>{fmt(LOAD_RUN.liveEditing.delivered)}</span> of{' '}
+          <span data-capacity>{fmt(LOAD_RUN.liveEditing.sent)}</span> keystrokes. {IMPORT_LABEL} of{' '}
+          <span data-capacity>{fmt(LOAD_RUN.import.issues)}</span> issues took{' '}
+          <span data-capacity>{LOAD_RUN.import.seconds}</span> seconds.
+        </li>
+      </ul>
+    </>
+  )}
+  {later.length > 0 && (
+    <>
+      <h3 class="pt-2 text-16 font-semibold text-tx">Larger data sets</h3>
+      <ul>
+        {later.map((run) => (
+          <li data-run={run.id}>
+            About <span data-capacity>{fmt(run.data.issues)}</span> issues
+            {run.data.comments !== undefined && (
+              <>
+                , <span data-capacity>{fmt(run.data.comments)}</span> comments and{' '}
+                <span data-capacity>{fmt(run.data.docPages ?? 0)}</span> doc pages
+              </>
+            )}
+            {run.verdict === 'slow' ? ': slow. ' : ': usable. '}
+            {run.finding ?? 'Server-side p95 per route is on the card above.'} No load ramp was run,
+            so there is no people figure.
+            {run.preliminary && ' Measured before the latest performance work; re-run pending.'}
+          </li>
+        ))}
+      </ul>
+    </>
+  )}
+  {LOAD_RUN && people && (
+    <p data-estimate>
+      <strong>The people estimate.</strong> {CAPACITY.assumption.text} So{' '}
+      <span data-capacity>{LOAD_RUN.requestsPerSecond}</span> requests a second is about{' '}
+      <span data-people>{fmt(people.atOnce)}</span> people active at once, or a team of up to about{' '}
+      <span data-people>{fmt(people.organisation)}</span> (estimate).
+    </p>
+  )}
+</Section>
