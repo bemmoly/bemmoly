@@ -133,6 +133,10 @@ export function createCollabHost(options: CollabHostOptions): CollabHost {
     const changed = [...(editors.get(name)?.values() ?? [])];
     editors.delete(name);
     if (!definition.onChange) return;
+    // onChange reads what is stored (a module counts its log to ask for compaction), so the
+    // updates it settles on must be written first; a slow store would otherwise be missed
+    // and, with no later edit, never looked at again.
+    await writer.flush(name);
     const run = definition.onChange({ id, doc, editors: changed }).catch((error: unknown) => {
       logger.error({ err: error, document: name }, 'a collaborative document change hook failed');
     });
