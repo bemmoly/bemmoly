@@ -7,7 +7,7 @@
  *                                load-test people join it, --kanban switches its board, and
  *                                its issues (KEY-1..N) join the manifest
  *   --space LOADP --pages N      a space filled with N pages through the Docs markdown
- *                                import, 2,000 files a request, waiting for the import jobs
+ *                                import, 200 files a request, waiting for the import jobs
  *
  *   node perf/src/grow.ts --base-url … --credentials … --dataset load-dataset.json \
  *     --project LOADK --kanban
@@ -21,7 +21,8 @@ import { addInBatches } from './seed/work.ts';
 
 const log = (line: string) => process.stderr.write(`${line}\n`);
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-const FILES_PER_IMPORT = 2000;
+// More than 200 pages in one import fails its realtime notice and the job retries (0.12.0).
+const FILES_PER_IMPORT = 200;
 const KEY = /^LOAD[A-Z0-9]{1,6}$/;
 
 interface Named {
@@ -100,7 +101,7 @@ async function spacePageIds(api: Api, key: string): Promise<string[]> {
   return ids;
 }
 
-async function growSpace(api: Api, dataset: Dataset, key: string, pages: number) {
+async function growSpace(api: Api, dataset: Dataset, key: string, pages: number, viaApi: boolean) {
   let space: Named & { pageCount: number };
   try {
     space = await api.get(`/docs/spaces/${key}`);
@@ -110,7 +111,21 @@ async function growSpace(api: Api, dataset: Dataset, key: string, pages: number)
     await addInBatches(api, `/docs/spaces/${key}/members`, dataset.userIds);
   }
   const start = space.pageCount ?? 0;
-  const batches = Array.from({ length: Math.ceil(pages / FILES_PER_IMPORT) }, (_, b) => b);
+  if (viaApi) {
+    // One page a request, in turn: the import job runs at about 3 pages a second on 2 vCPU,
+    // the pages endpoint many times faster, and both are supported paths.
+    const indexes = Array.from({ length: pages }, (_, i) => start + i);
+    await pool(indexes, 1, (n) =>
+      api.post('/docs/pages', {
+        spaceId: space.id,
+        title: pageTitle(key, n),
+        snapshot: pageBody(n),
+      }),
+    );
+  }
+  const batches = viaApi
+    ? []
+    : Array.from({ length: Math.ceil(pages / FILES_PER_IMPORT) }, (_, b) => b);
   await pool(batches, 1, async (b) => {
     const files = Array.from(
       { length: Math.min(FILES_PER_IMPORT, pages - b * FILES_PER_IMPORT) },
@@ -146,6 +161,7 @@ async function main() {
       kanban: { type: 'boolean', default: false },
       space: { type: 'string' },
       pages: { type: 'string', default: '0' },
+      'pages-via-api': { type: 'boolean', default: false },
     },
   });
   if (!values['base-url'] || !values.credentials || !values.dataset) {
@@ -158,7 +174,7 @@ async function main() {
   const dataset = readDataset(values.dataset);
   if (values.project) await growProject(api, dataset, values.project, values.kanban);
   if (values.space && Number(values.pages) > 0) {
-    await growSpace(api, dataset, values.space, Number(values.pages));
+    await growSpace(api, dataset, values.space, Number(values.pages), values['pages-via-api']);
   }
   writeDataset(values.dataset, dataset);
 }
