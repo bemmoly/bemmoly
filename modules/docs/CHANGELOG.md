@@ -1,5 +1,17 @@
 # @bemmoly/module-docs
 
+## 1.1.0
+
+### Patch Changes
+
+- Updated dependencies [6fa5514]
+  - @bemmoly/editor@1.1.0
+  - @bemmoly/api-client@1.1.0
+  - @bemmoly/core@1.1.0
+  - @bemmoly/core-web@1.1.0
+  - @bemmoly/shared@1.1.0
+  - @bemmoly/ui@1.1.0
+
 ## 1.0.0
 
 ### Major Changes

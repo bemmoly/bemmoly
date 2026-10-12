@@ -1,5 +1,12 @@
 # @bemmoly/core
 
+## 1.1.0
+
+### Patch Changes
+
+- @bemmoly/shared@1.1.0
+  - @bemmoly/ui@1.1.0
+
 ## 1.0.0
 
 ### Major Changes
