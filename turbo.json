@@ -65,7 +65,16 @@
       "outputs": ["coverage/**"]
     },
     "@bemmoly/site#test": {
-      "dependsOn": ["@bemmoly/site#build"]
+      "dependsOn": ["@bemmoly/site#build"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/SECURITY.md",
+        "$TURBO_ROOT$/apps/*/CHANGELOG.md",
+        "$TURBO_ROOT$/packages/*/CHANGELOG.md",
+        "$TURBO_ROOT$/modules/*/CHANGELOG.md",
+        "$TURBO_ROOT$/deploy/CHANGELOG.md",
+        "$TURBO_ROOT$/deploy/updater/CHANGELOG.md"
+      ]
     },
     "eval": {
       "cache": false,
