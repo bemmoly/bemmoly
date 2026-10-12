@@ -1,5 +1,15 @@
 # @bemmoly/server
 
+## 1.1.0
+
+### Patch Changes
+
+- Updated dependencies [ab404c3]
+  - @bemmoly/module-work@1.1.0
+  - @bemmoly/module-docs@1.1.0
+  - @bemmoly/core@1.1.0
+  - @bemmoly/shared@1.1.0
+
 ## 1.0.0
 
 ### Major Changes
