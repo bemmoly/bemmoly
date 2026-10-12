@@ -1,7 +1,8 @@
 ---
 /**
  * The site's header, from the site review: the lockup, four links, "Star on GitHub" (an amber
- * outline with the star count fetched at build time, no number when the fetch fails), then:
+ * outline with the star count fetched at build time and refreshed in the browser, no number when both
+ * fail), then:
  * Sponsor (a rose outline, set a little apart; optional support that unlocks nothing), Live
  * demo (secondary, outlined) and Install (the one primary). Below 1024px the links, Live demo
  * and Sponsor move into a menu sheet (a modal dialog, so focus stays inside and Esc closes it);
@@ -42,7 +43,7 @@ const starLabel = facts ? `Bemmoly on GitHub, ${facts.stars} stars` : 'Bemmoly o
         <Icon name="star" size={14} class="fill-current" />
         <span class="xl:hidden">Star</span>
         <span class="hidden xl:inline">Star on GitHub</span>
-        {stars && <span class="font-mono text-12">{stars}</span>}
+        <span data-star-count hidden={!stars} class="font-mono text-12">{stars}</span>
       </a>
       <a
         href={SPONSOR_URL}
@@ -126,7 +127,7 @@ const starLabel = facts ? `Bemmoly on GitHub, ${facts.stars} stars` : 'Bemmoly o
       >
         <Icon name="star" size={17} class="fill-current" />
         Star on GitHub
-        {stars && <span class="font-mono text-13">{stars}</span>}
+        <span data-star-count hidden={!stars} class="font-mono text-13">{stars}</span>
       </a>
     </nav>
     <div class="border-t border-line-2 p-4 sm:px-6">
