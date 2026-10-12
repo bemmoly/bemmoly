@@ -87,6 +87,7 @@ test('the roadmap forecasts an epic in words and moves it by keyboard and by dra
   // The project's own Roadmap row is current, not Work's area-wide Roadmap above the projects.
   await expect(
     page
+      .getByRole('complementary', { name: 'Sidebar' })
       .getByRole('link', { name: 'Roadmap', exact: true })
       .and(page.locator(`[href$="/work/roadmap/${project.key}"]`)),
   ).toHaveAttribute('aria-current', 'page');
