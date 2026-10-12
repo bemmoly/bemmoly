@@ -5,10 +5,8 @@ const UUID_PATTERN = '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{
 const TABLE_NAME = /^[a-z][a-z0-9_]*$/;
 
 /** A text column as a uuid, or null when it does not hold one, without a cast error. */
-export const textAsUuid = (column: string): SQL => {
-  if (!/^[a-z][a-z0-9_.]*$/.test(column)) throw new Error(`Not a column: ${column}`);
-  return sql.raw(`(CASE WHEN ${column} ~* '${UUID_PATTERN}' THEN ${column}::uuid END)`);
-};
+export const textAsUuid = (column: SQL): SQL =>
+  sql`(CASE WHEN ${column} ~* ${UUID_PATTERN} THEN ${column}::uuid END)`;
 
 interface Batch extends Record<string, unknown> {
   removed: number;
@@ -33,11 +31,11 @@ export async function deleteInBatches(
   for (;;) {
     const [row] = await ctx.query<Batch>(sql`
       WITH doomed AS (
-        SELECT t.id FROM ${sql.raw(table)} t
+        SELECT t.id FROM ${sql.identifier(table)} t
         WHERE t.id > ${after}::uuid AND ${where}
         ORDER BY t.id LIMIT ${batch}
       ), gone AS (
-        DELETE FROM ${sql.raw(table)} WHERE id IN (SELECT id FROM doomed) RETURNING id
+        DELETE FROM ${sql.identifier(table)} WHERE id IN (SELECT id FROM doomed) RETURNING id
       )
       SELECT count(*)::int AS removed, max(id::text) AS last FROM gone`);
     const removed = row?.removed ?? 0;

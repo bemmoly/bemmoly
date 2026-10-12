@@ -39,7 +39,7 @@ export default changeset({
       'ai_insights',
       sql`t.target_kind = 'page' AND ${noPage(sql`t.target_id`)}`,
     );
-    const textTarget = noPage(textAsUuid('t.target_id'));
+    const textTarget = noPage(textAsUuid(sql`t.target_id`));
     await deleteInBatches(ctx, 'notifications', sql`t.target_kind = 'page' AND ${textTarget}`);
     for (const table of ['embeddings', 'pending_embeddings']) {
       await deleteInBatches(ctx, table, sql`t.target_kind = 'docs.page' AND ${textTarget}`);

@@ -28,7 +28,7 @@ export default changeset({
     );
     await deleteInBatches(ctx, 'watchers', sql`t.target_kind = 'issue' AND ${noIssue(target)}`);
     await deleteInBatches(ctx, 'ai_insights', sql`t.target_kind = 'issue' AND ${noIssue(target)}`);
-    const textTarget = noIssue(textAsUuid('t.target_id'));
+    const textTarget = noIssue(textAsUuid(sql`t.target_id`));
     await deleteInBatches(ctx, 'notifications', sql`t.target_kind = 'issue' AND ${textTarget}`);
     for (const table of ['embeddings', 'pending_embeddings']) {
       await deleteInBatches(ctx, table, sql`t.target_kind = 'work.issue' AND ${textTarget}`);
