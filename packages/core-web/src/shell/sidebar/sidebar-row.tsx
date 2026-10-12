@@ -142,23 +142,35 @@ export function SidebarRow(props: SidebarRowProps) {
 
 export interface SidebarHeadingProps {
   label: string;
-  /** The module's tile, drawn before the label. */
+  /** The module's tile: the heading becomes the module's header row, not a caption. */
   tile?: ReactNode;
+  /** The module the address is in: full ink, and its "+" stays shown. */
+  current?: boolean;
   /** The heading's own "+": a short label for its tooltip and what it runs. */
   add?: { label: string; onSelect: () => void } | undefined;
 }
 
 /**
- * A section heading (kit.css `.sec`): 11px semibold in the muted ink, the module's tile
- * before it and its "+" after, shown on hover and focus. The rail draws a short rule instead.
+ * A section heading. With a tile it is a module's header row (32px, 13px semibold, the tile at
+ * 20px), so Work and Docs read as areas rather than captions; without one it is a caption
+ * (kit.css `.sec`, 11px semibold, muted), as Settings groups its pages. The "+" shows on hover
+ * and focus, and always in the current module. The rail draws a short rule instead.
  */
-export function SidebarHeading({ label, tile, add }: SidebarHeadingProps) {
+export function SidebarHeading({ label, tile, current = false, add }: SidebarHeadingProps) {
   const { mode } = useFrame();
   if (mode === 'rail') {
     return <span aria-hidden className="my-2 w-6 shrink-0 border-t border-line" />;
   }
+  const header = Boolean(tile);
   return (
-    <div className="group/heading mx-2 mt-3.5 mb-1 flex h-5 items-center gap-1.5 text-11 font-semibold tracking-[.01em] text-tx-3">
+    <div
+      className={cx(
+        'group/heading flex items-center',
+        header
+          ? cx('h-8 gap-2 px-2 text-13 font-semibold', current ? 'text-tx' : 'text-tx-2')
+          : 'mx-2 mt-3.5 mb-1 h-5 gap-1.5 text-11 font-semibold tracking-[.01em] text-tx-3',
+      )}
+    >
       {tile}
       <span className="min-w-0 flex-1 truncate">{label}</span>
       {add ? (
@@ -167,12 +179,58 @@ export function SidebarHeading({ label, tile, add }: SidebarHeadingProps) {
             type="button"
             aria-label={add.label}
             onClick={add.onSelect}
-            className="grid size-6 cursor-pointer place-items-center rounded-chip border-0 bg-transparent p-0 text-tx-3 opacity-0 group-hover/heading:opacity-100 hover:bg-hover hover:text-tx focus-ring focus-visible:opacity-100 pointer-coarse:opacity-100"
+            className={cx(
+              'grid size-6 cursor-pointer place-items-center rounded-chip border-0 bg-transparent p-0 text-tx-3 hover:bg-hover hover:text-tx focus-ring',
+              !current &&
+                'opacity-0 group-hover/heading:opacity-100 focus-visible:opacity-100 pointer-coarse:opacity-100',
+            )}
           >
             <Icon name="plus" size={14} />
           </button>
         </Tooltip>
       ) : null}
     </div>
+  );
+}
+
+/** A quiet label inside a module's section, over the list it names ("Projects", "Spaces"). */
+export function SidebarLabel({ label }: { label: string }) {
+  const { mode } = useFrame();
+  if (mode === 'rail') return null;
+  return (
+    <div className="mx-2 mt-2 mb-0.5 flex h-5 items-center text-11 font-medium text-tx-3">
+      {label}
+    </div>
+  );
+}
+
+/**
+ * A module's section: its header row and rows, inset 4px so they line up with the rows above.
+ * The section the address is in sits on a faint accent wash with a hairline, so the sidebar
+ * says which area you are in. The rail stacks the buttons and draws no wash.
+ */
+export function SidebarSection({
+  label,
+  current = false,
+  children,
+}: {
+  label: string;
+  current?: boolean;
+  children: ReactNode;
+}) {
+  const { mode } = useFrame();
+  const rail = mode === 'rail';
+  return (
+    <section
+      aria-label={label}
+      data-current={(current && !rail) || undefined}
+      className={cx(
+        'flex flex-col gap-0.5',
+        rail ? 'items-center' : '-mx-1 rounded-card p-1',
+        current && !rail && 'bg-acc/6 ring-1 ring-acc/15 ring-inset',
+      )}
+    >
+      {children}
+    </section>
   );
 }

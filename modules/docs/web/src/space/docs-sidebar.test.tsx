@@ -66,12 +66,13 @@ afterEach(() => {
 });
 
 describe('the Docs sidebar', () => {
-  it('lists the spaces, opens the current one to its pages and ends with Docs home', async () => {
+  it('starts with Docs home, then lists the spaces with the current one open', async () => {
     renderSidebar();
     await tree();
     const links = screen.getAllByRole('link').map((link) => link.textContent);
-    expect(links[0]).toMatch(/Engineering$/);
-    expect(links.at(-1)).toBe('Docs home');
+    expect(links[0]).toBe('Docs home');
+    expect(links[1]).toMatch(/Engineering$/);
+    expect(screen.getByText('Spaces')).toBeTruthy();
     expect(screen.getByRole('link', { name: 'Product' })).toBeTruthy();
     expect(rowTitles()).toEqual(['Onboarding', 'Architecture', 'Runbooks']);
     expect(screen.getAllByRole('tree')).toHaveLength(1);

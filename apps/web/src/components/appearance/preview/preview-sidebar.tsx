@@ -1,4 +1,11 @@
-import { FrameContext, SidebarHeading, SidebarRow, type FrameState } from '@bemmoly/core-web';
+import {
+  FrameContext,
+  SidebarHeading,
+  SidebarLabel,
+  SidebarRow,
+  SidebarSection,
+  type FrameState,
+} from '@bemmoly/core-web';
 import { BrandBlock, EntityTile, Kbd } from '@bemmoly/ui';
 import { Icon } from '@bemmoly/ui/icons';
 import { useWorkspace } from '../../../hooks/use-workspace.ts';
@@ -34,26 +41,37 @@ export function PreviewSidebar({ active }: { active: 'board' | 'docs' }) {
         <SidebarRow label="Home" icon="home" path="/" exact />
         <SidebarRow label="Inbox" icon="inbox" path="/inbox" pill={3} />
         <SidebarRow label="My issues" icon="me" path="/work/my-issues" />
-        <SidebarHeading
-          label="Work"
-          tile={<EntityTile name="Work" tone="work" icon="board" size={14} />}
-        />
-        <SidebarRow
-          label="Platform Core"
-          icon={<EntityTile name="Platform Core" size={18} />}
-          path="/work/projects/PLT"
-        />
-        <SidebarRow child label="Board" icon="board" path="/work/board/PLT" />
-        <SidebarRow child label="Backlog" icon="backlog" path="/work/backlog/PLT" />
-        <SidebarHeading
-          label="Docs"
-          tile={<EntityTile name="Docs" tone="docs" icon="doc" size={14} />}
-        />
-        <SidebarRow
-          label="Engineering"
-          icon={<EntityTile name="Engineering" size={18} />}
-          path="/docs/s/ENG"
-        />
+        <hr aria-hidden className="mx-2 my-2.5 border-0 border-t border-line" />
+        <SidebarSection label="Work" current={active === 'board'}>
+          <SidebarHeading
+            label="Work"
+            tile={<EntityTile name="Work" tone="work" icon="board" size={20} />}
+            current={active === 'board'}
+          />
+          <SidebarLabel label="Projects" />
+          <SidebarRow
+            label="Platform Core"
+            icon={<EntityTile name="Platform Core" size={18} />}
+            path="/work/projects/PLT"
+          />
+          <SidebarRow child label="Board" icon="board" path="/work/board/PLT" />
+          <SidebarRow child label="Backlog" icon="backlog" path="/work/backlog/PLT" />
+        </SidebarSection>
+        <div className="mt-2.5">
+          <SidebarSection label="Docs" current={active === 'docs'}>
+            <SidebarHeading
+              label="Docs"
+              tile={<EntityTile name="Docs" tone="docs" icon="doc" size={20} />}
+              current={active === 'docs'}
+            />
+            <SidebarLabel label="Spaces" />
+            <SidebarRow
+              label="Engineering"
+              icon={<EntityTile name="Engineering" size={18} />}
+              path="/docs/s/ENG"
+            />
+          </SidebarSection>
+        </div>
       </aside>
     </FrameContext.Provider>
   );
