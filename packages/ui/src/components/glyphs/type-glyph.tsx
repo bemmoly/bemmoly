@@ -1,5 +1,5 @@
 import { createElement } from 'react';
-import { iconComponent } from '../../icons/icon.tsx';
+import { useIconDrawing } from '../../icons/icon.tsx';
 import { cx } from '../../lib/cx.ts';
 import { typeLook, type IssueTypeRef, type TypeMark } from './type-look.ts';
 
@@ -46,11 +46,12 @@ function AlertMark({ s }: { s: number }) {
   );
 }
 
-function Mark({ mark, s }: { mark: TypeMark; s: number }) {
-  if ('drawn' in mark) return mark.drawn === 'bug' ? <BugMark s={s} /> : <AlertMark s={s} />;
+function IconMark({ mark, s }: { mark: Extract<TypeMark, { icon: unknown }>; s: number }) {
+  const drawn = useIconDrawing(mark.icon);
+  if (!drawn) return null;
   const offset = s * 0.19;
   // The icon is a nested <svg> placed inside the tile, in the tile's coordinates.
-  return createElement(iconComponent(mark.icon), {
+  return createElement(drawn, {
     x: offset,
     y: offset,
     size: s * 0.62,
@@ -60,6 +61,11 @@ function Mark({ mark, s }: { mark: TypeMark; s: number }) {
     overflow: 'visible',
     'aria-hidden': true,
   });
+}
+
+function Mark({ mark, s }: { mark: TypeMark; s: number }) {
+  if ('drawn' in mark) return mark.drawn === 'bug' ? <BugMark s={s} /> : <AlertMark s={s} />;
+  return <IconMark mark={mark} s={s} />;
 }
 
 /**

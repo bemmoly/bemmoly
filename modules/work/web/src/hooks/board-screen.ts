@@ -6,7 +6,8 @@ import type { MenuSprint } from '../shared/issue-actions-menu.tsx';
 import type { FilterOptions } from '../shared/issue-filter-bar.tsx';
 import { useIssueFilters } from '../shared/issue-filters.ts';
 import { setSearchParams, useSearchParam } from '../shared/url-state.ts';
-import { useBoardData, useBoardMatching } from './board-data.ts';
+import { useProject } from '../shared/index.ts';
+import { useBoardData, useProjectBoard } from './board-data.ts';
 import {
   cardMatches,
   hasClientFilters,
@@ -48,11 +49,15 @@ export function useBoardScreen(projectKey: string | undefined) {
   const grouping: BoardGrouping = useSearchParam('group') === 'none' ? 'none' : 'lanes';
   const setGrouping = (value: BoardGrouping) =>
     setSearchParams({ group: value === 'none' ? 'none' : null });
-  const data = useBoardData(projectKey);
-  const boardConfig = data.view?.board.config;
-  const quickFilters = useMemo(() => quickFiltersOf(boardConfig), [boardConfig]);
+  // The quick filters' queries come from the board's config, which the view would carry too
+  // late: the filter decides which view to read.
+  const { board: listed } = useProjectBoard(useProject(projectKey).project?.id);
+  const listedConfig = listed?.config;
+  const quickFilters = useMemo(() => quickFiltersOf(listedConfig), [listedConfig]);
   const q = serverQuery(filters, quickFilters);
-  const { matching, error: filterError } = useBoardMatching(data.board?.id, q);
+  const data = useBoardData(projectKey, q);
+  const boardConfig = data.view?.board.config;
+  const filterError = data.filterError;
   const kanban = data.project?.method === 'kanban';
   const resetLanes = useBoardLanes((state) => state.reset);
   const hidden = useHiddenIssues((state) => state.keys);
@@ -62,12 +67,9 @@ export function useBoardScreen(projectKey: string | undefined) {
   const { view, meId } = data;
   const display = useBoardDisplay(data.board?.id ?? '', meId, boardConfig?.cardFields ?? NO_FIELDS);
   const keep = useMemo(() => {
-    if (!matching && !hasClientFilters(filters) && hidden.size === 0) return undefined;
-    return (card: ViewCard) =>
-      !hidden.has(card.key) &&
-      (!matching || matching.has(card.issueId)) &&
-      cardMatches(card, filters, meId);
-  }, [filters, matching, meId, hidden]);
+    if (!hasClientFilters(filters) && hidden.size === 0) return undefined;
+    return (card: ViewCard) => !hidden.has(card.key) && cardMatches(card, filters, meId);
+  }, [filters, meId, hidden]);
 
   // Laid out against the last model the screen showed, so the parts a change left alone keep
   // their identity and the cells and lanes holding them skip rendering.

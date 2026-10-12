@@ -1,4 +1,5 @@
 import { StrictMode } from 'react';
+import { loadLaterIcons } from '@bemmoly/ui/icons';
 import { createRoot } from 'react-dom/client';
 import { App } from './app.tsx';
 import { startLocale } from './lib/locale.ts';
@@ -21,4 +22,8 @@ export async function mount(): Promise<void> {
       <App />
     </StrictMode>,
   );
+  // The icons the shell does not draw at first come in once the page is idle, off the first load.
+  const later = () => void loadLaterIcons().catch(() => undefined);
+  if ('requestIdleCallback' in window) window.requestIdleCallback(later);
+  else setTimeout(later, 1);
 }

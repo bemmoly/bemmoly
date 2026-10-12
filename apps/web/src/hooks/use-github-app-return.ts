@@ -2,7 +2,7 @@ import { queryKeys } from '@bemmoly/api-client';
 import { useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import { useEffect, useRef, useState } from 'react';
-import { api } from '../lib/api.ts';
+import { codeHostsApi } from '../lib/code-hosts-api.ts';
 import { toast } from '../lib/toast.ts';
 
 /** What GitHub adds to the address on its way back; cleared once read. */
@@ -82,7 +82,7 @@ export function useGithubAppReturn(enabled: boolean): GithubAppReturn {
     if (trip.step === 'requested') {
       void clear();
     } else if (trip.step === 'created') {
-      api.codeHosts
+      codeHostsApi
         .completeGithubApp({ code: trip.code, state: trip.state })
         .then(async ({ installUrl }) => {
           await clear();
@@ -90,7 +90,7 @@ export function useGithubAppReturn(enabled: boolean): GithubAppReturn {
         })
         .catch(fail);
     } else {
-      api.codeHosts
+      codeHostsApi
         .installGithubApp(trip.id, { installationId: trip.installationId })
         .then(async (host) => {
           const count = host.repositories.length;

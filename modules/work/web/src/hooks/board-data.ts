@@ -1,34 +1,75 @@
 import { queryKeys } from '@bemmoly/api-client';
-import type { BoardViewQuery, Sprint } from '@bemmoly/module-work/shared';
-import { keepPreviousData, useQuery } from '@tanstack/react-query';
-import { useMemo } from 'react';
+import type { BoardView, BoardViewQuery, Sprint } from '@bemmoly/module-work/shared';
+import {
+  keepPreviousData,
+  useQuery,
+  useQueryClient,
+  type QueryClient,
+} from '@tanstack/react-query';
 import { api, useProject, useWorkRealtime, workKeys } from '../shared/index.ts';
+import { loadedDepth } from './board-pages.ts';
 
 /*
  * Everything the Board screen reads, one query each and none fanned out per card: the project,
  * its board, the view (and the filtered view while a server filter is on), the metrics, and
- * the vocabularies the cards and the filter bar print names from.
+ * the vocabularies the cards and the filter bar print names from. A view is the first page of
+ * every column plus whatever "Load more" added; reading it again keeps that depth.
  */
 
 const PEOPLE = { limit: 100 } as const;
 const NO_SPRINTS: readonly Sprint[] = [];
 
-export function useBoardData(projectKey: string | undefined) {
-  const { project, isPending: projectPending } = useProject(projectKey);
-  const projectId = project?.id;
+/** The view under `scope`, read again as deep as its deepest column already is. */
+export function boardViewQuery(
+  client: QueryClient,
+  boardId: string,
+  scope: Pick<BoardViewQuery, 'q' | 'sprintId'>,
+) {
+  const queryKey = workKeys.boardView(boardId, scope);
+  return {
+    queryKey,
+    queryFn: ({ signal }: { signal: AbortSignal }) =>
+      api.work.boards.view(
+        boardId,
+        {
+          ...(scope.q ? { q: scope.q } : {}),
+          ...(scope.sprintId ? { sprintId: scope.sprintId } : {}),
+          limit: loadedDepth(client.getQueryData<BoardView>(queryKey)),
+        },
+        { signal },
+      ),
+  };
+}
+
+/** The project's board, its config before its view: the quick filters' queries live there. */
+export function useProjectBoard(projectId: string | undefined) {
   const boards = useQuery({
     queryKey: workKeys.boards(projectId ?? ''),
     queryFn: () => api.work.boards.list(projectId ?? ''),
     enabled: Boolean(projectId),
   });
-  const board = boards.data?.[0];
+  return { boards, board: boards.data?.[0] };
+}
+
+/**
+ * `q` is the server filter (the query bar and the LQL quick filters). While it is on, the board
+ * shows the filtered view, paged and counted by the server; until that answers, and when the
+ * filter is not valid LQL, it shows the board unfiltered.
+ */
+export function useBoardData(projectKey: string | undefined, q = '') {
+  const client = useQueryClient();
+  const { project, isPending: projectPending } = useProject(projectKey);
+  const projectId = project?.id;
+  const { boards, board } = useProjectBoard(projectId);
   const boardId = board?.id ?? '';
-  const scope: BoardViewQuery = {};
-  const view = useQuery({
-    queryKey: workKeys.boardView(boardId, scope),
-    queryFn: ({ signal }) => api.work.boards.view(boardId, scope, { signal }),
-    enabled: Boolean(board),
+  const view = useQuery({ ...boardViewQuery(client, boardId, {}), enabled: Boolean(board) });
+  const filtered = useQuery({
+    ...boardViewQuery(client, boardId, { q }),
+    enabled: Boolean(board) && q !== '',
+    placeholderData: keepPreviousData,
+    retry: false,
   });
+  const shown = (q !== '' ? filtered.data : undefined) ?? view.data;
   const metrics = useQuery({
     queryKey: workKeys.boardMetrics(boardId),
     queryFn: () => api.work.boards.metrics(boardId),
@@ -64,11 +105,16 @@ export function useBoardData(projectKey: string | undefined) {
   const me = useQuery({ queryKey: queryKeys.me(), queryFn: () => api.auth.me() });
   useWorkRealtime(projectId);
 
-  const sprintId = view.data?.sprintId ?? null;
+  const sprintId = shown?.sprintId ?? null;
   return {
     project,
     board,
-    view: view.data,
+    view: shown,
+    /** The cache entry the board shows, which "Load more" adds to. */
+    viewScope: (q !== '' && filtered.data && !filtered.isPlaceholderData
+      ? { q }
+      : {}) as BoardViewQuery,
+    filterError: q !== '' ? filtered.error : null,
     metrics: metrics.data,
     sprint: sprints.data?.find((sprint) => sprint.id === sprintId),
     sprints: sprints.data ?? NO_SPRINTS,
@@ -87,21 +133,3 @@ export function useBoardData(projectKey: string | undefined) {
 }
 
 export type BoardData = ReturnType<typeof useBoardData>;
-
-/** The ids a server filter keeps, from the filtered view; undefined while none is on. */
-export function useBoardMatching(boardId: string | undefined, q: string) {
-  const scope: BoardViewQuery = { q };
-  const filtered = useQuery({
-    queryKey: workKeys.boardView(boardId ?? '', scope),
-    queryFn: ({ signal }) => api.work.boards.view(boardId ?? '', scope, { signal }),
-    enabled: Boolean(boardId) && q !== '',
-    placeholderData: keepPreviousData,
-    retry: false,
-  });
-  const cards = q !== '' ? filtered.data?.cards : undefined;
-  const matching = useMemo(
-    () => (cards ? new Set(cards.map((card) => card.issueId)) : undefined),
-    [cards],
-  );
-  return { matching, error: q !== '' ? filtered.error : null };
-}

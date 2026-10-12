@@ -2,6 +2,7 @@ import type { MockDb } from '../db.ts';
 import { fail, notFound, ok, type MockRequest, type MockRoute } from '../types.ts';
 import { askIssueMock } from './work-board-delegate.ts';
 import { boardIssueRoutes } from './work-board-issues.ts';
+import { pageQuery } from './work-board-page.ts';
 import { boardMetrics, boardView } from './work-board-view.ts';
 import { boardsOf, boardState, projectRef, projectsOf, workflowOf } from './work-board-state.ts';
 import { workState } from './work-state.ts';
@@ -82,7 +83,9 @@ export const workBoardRoutes: MockRoute[] = [
     handle: (request, db) => {
       const board = boardById(db, request.params['id']);
       if (!board) return notFound('Board');
-      const result = boardView(db, board, request.query.get('q'));
+      const page = pageQuery(request);
+      if (typeof page === 'string') return fail(400, 'validation_failed', page);
+      const result = boardView(db, board, request.query.get('q'), page);
       if (!result.ok) return fail(400, 'validation_failed', result.error);
       return ok(result.view);
     },

@@ -1,11 +1,11 @@
 import { queryKeys } from '@bemmoly/api-client';
 import type { AiProvider, AiProviderListResponse, AiProviderTestResponse } from '@bemmoly/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { api } from '../lib/api.ts';
 import { describeError } from '../lib/errors.ts';
 import { toast } from '../lib/toast.ts';
 import { aiProvidersQuery } from './use-ai-admin.ts';
 import { testLine } from './use-ai-connection.ts';
+import { aiAdminApi } from '../lib/ai-admin-api.ts';
 
 /** A provider row's status in words: never tested, answering, or the provider's own error. */
 export function providerStatus(provider: AiProvider): {
@@ -40,7 +40,7 @@ export function useAiProviders(enabled = true) {
         : data,
     );
   const test = useMutation({
-    mutationFn: (id: string) => api.ai.providers.test(id),
+    mutationFn: (id: string) => aiAdminApi.providers.test(id),
     onSuccess: (result: AiProviderTestResponse, id) => {
       patchRow(id, {
         status: result.ok ? 'ok' : 'failed',
@@ -52,7 +52,7 @@ export function useAiProviders(enabled = true) {
     onError: (error) => toast(describeError(error).message, 'danger'),
   });
   const remove = useMutation({
-    mutationFn: (id: string) => api.ai.providers.remove(id),
+    mutationFn: (id: string) => aiAdminApi.providers.remove(id),
     onSuccess: async (_data, id) => {
       const name = query.data?.items.find((row) => row.id === id)?.name ?? 'Provider';
       toast(`${name} removed`);

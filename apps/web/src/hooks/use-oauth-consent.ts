@@ -8,6 +8,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useLocation, useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import { api, markSession } from '../lib/api.ts';
+import { oauthApi } from '../lib/oauth-api.ts';
 
 /** The decision leaves the page for the client's redirect; tests swap this out. */
 export const navigation = { assign: (url: string) => window.location.assign(url) };
@@ -83,14 +84,14 @@ export function useOAuthConsent(request: OAuthAuthorizeRequest) {
   const key = new URLSearchParams(request as unknown as Record<string, string>).toString();
   const preview = useQuery({
     queryKey: queryKeys.oauth.preview(key),
-    queryFn: () => api.oauth.preview(request),
+    queryFn: () => oauthApi.preview(request),
     retry: false,
     staleTime: Infinity,
     refetchOnWindowFocus: false,
   });
   const decide = useMutation({
     mutationFn: (choice: { approve: boolean; access?: OAuthAccess; modules?: string[] | null }) =>
-      api.oauth.decide({ request, ...choice }),
+      oauthApi.decide({ request, ...choice }),
     onSuccess: ({ redirectUrl }) => navigation.assign(redirectUrl),
   });
   return { preview, decide, block: blockOf(preview.error) };

@@ -4,11 +4,18 @@
   "private": true,
   "license": "MIT",
   "type": "module",
+  "sideEffects": false,
   "exports": {
     ".": "./src/index.ts",
     "./ai-insights": "./src/endpoints/ai-insights.ts",
     "./ai-answers": "./src/endpoints/ai-answers.ts",
-    "./webhooks": "./src/endpoints/webhooks.ts"
+    "./webhooks": "./src/endpoints/webhooks.ts",
+    "./ai-admin": "./src/endpoints/ai-admin.ts",
+    "./code-hosts": "./src/endpoints/code-hosts.ts",
+    "./imports": "./src/endpoints/imports.ts",
+    "./oauth": "./src/endpoints/oauth.ts",
+    "./operations-admin": "./src/endpoints/operations-admin.ts",
+    "./sso": "./src/endpoints/sso.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit -p tsconfig.json",

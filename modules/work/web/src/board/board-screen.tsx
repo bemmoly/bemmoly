@@ -5,6 +5,7 @@ import { useId, useMemo } from 'react';
 import { useBoardActions } from '../hooks/board-actions.ts';
 import { useBoardVerdicts } from '../hooks/board-dnd.ts';
 import { useBoardDragStore } from '../hooks/board-drag-store.ts';
+import { useLoadMore } from '../hooks/board-load-more.ts';
 import { boardIssueOrder, doingPoints, type BoardModel } from '../hooks/board-model.ts';
 import {
   boardCarrying,
@@ -17,7 +18,6 @@ import { useIssueQuickActions } from '../hooks/issue-quick-actions.ts';
 import { DOCKED_SLIDE_OVER_QUERY, useMediaQuery } from '../hooks/media-query.ts';
 import { useIssuePeek } from '../shared/issue-peek.ts';
 import { useIssueFilters } from '../shared/issue-filters.ts';
-import { useRecordRecent, useScreenActions } from '@bemmoly/core-web';
 import { navigateTo, workPaths } from '../hooks/issue-navigation.ts';
 import { useSavedFilters } from '../hooks/saved-filters.ts';
 import { useSettingsAccess } from '../hooks/settings-access.ts';
@@ -31,6 +31,7 @@ import { BoardDisplayMenu } from './board-display-menu.tsx';
 import { BoardEmpty } from './board-empty.tsx';
 import { BoardGrid } from './board-grid.tsx';
 import { BoardHeader } from './board-header.tsx';
+import { useBoardInShell } from './board-in-shell.ts';
 import { BoardToolbar } from './board-toolbar.tsx';
 import { SprintPulse } from '../shared/sprint-pulse.tsx';
 
@@ -84,6 +85,7 @@ function BoardBody({
     [order, selectedIds],
   );
   const instructionsId = useId();
+  const loadMore = useLoadMore(view.board.id, screen.viewScope);
   const project = screen.project;
   const sprintId = screen.sprint?.id;
   const firstStatus = (columnId: string) =>
@@ -119,9 +121,20 @@ function BoardBody({
       ...(screen.moveTargets ? { sprints: screen.moveTargets } : {}),
       touch,
       instructionsId,
+      loadMore,
       ...(createIn ? { createIn } : {}),
     }),
-    [actions, screen.vocab, quick, select, screen.moveTargets, touch, instructionsId, createIn],
+    [
+      actions,
+      screen.vocab,
+      quick,
+      select,
+      screen.moveTargets,
+      touch,
+      instructionsId,
+      createIn,
+      loadMore,
+    ],
   );
   const inFlight = model.lanes.reduce((sum, lane) => sum + lane.inFlight, 0);
   if (!project) return null;
@@ -200,35 +213,6 @@ function BoardBody({
         holdEscape={boardCarrying}
       />
     </div>
-  );
-}
-
-/** The board as a recent item and its palette actions, once its project is known. */
-function useBoardInShell(project: { key: string; name: string } | undefined) {
-  useRecordRecent(
-    project
-      ? {
-          id: `work.board:${project.key}`,
-          title: 'Board',
-          context: project.name,
-          path: workPaths.board(project.key),
-          look: { kind: 'icon', icon: 'board', moduleId: 'work' },
-          group: 'Boards',
-        }
-      : null,
-  );
-  useScreenActions(
-    project
-      ? [
-          {
-            id: 'work.go-backlog',
-            title: 'Go to backlog',
-            keys: 'G L',
-            look: { kind: 'icon', icon: 'backlog' },
-            run: () => navigateTo(workPaths.backlog(project.key)),
-          },
-        ]
-      : null,
   );
 }
 

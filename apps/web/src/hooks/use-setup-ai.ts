@@ -7,6 +7,7 @@ import { LOCAL_AI, NO_AI, useSetupStore, type AiChoice } from '../store/setup.ts
 import { useAiCatalog } from './use-ai-catalog.ts';
 import { useAiRoles } from './use-ai-roles.ts';
 import { aiSettingValues } from './use-ai-settings.ts';
+import { aiAdminApi } from '../lib/ai-admin-api.ts';
 
 /**
  * Step 5, AI: the same catalog, generated form, test and roles as Settings › AI, against the
@@ -38,7 +39,7 @@ export function useSetupAi(onSaved: () => void | Promise<void>) {
           aiSettingValues({ ai: on ? choice : NO_AI, shareContent, allowActions }),
         ).map(([key, value]) => api.settings.put(key as 'ai.providerId', value as string | null)),
       );
-      await api.ai.settings.update({ privacy: { enabled: on, shareContent, allowActions } });
+      await aiAdminApi.settings.update({ privacy: { enabled: on, shareContent, allowActions } });
     },
     onSuccess: async () => {
       await Promise.all([

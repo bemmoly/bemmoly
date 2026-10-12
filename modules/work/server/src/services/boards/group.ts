@@ -127,7 +127,13 @@ export function groupBoard(
     columns: config.columns.map((column) => {
       const count = counts.get(column.id) ?? 0;
       const wipLimit = column.wipLimit ?? null;
-      return { id: column.id, count, wipLimit, overWip: wipLimit !== null && count > wipLimit };
+      return {
+        id: column.id,
+        count,
+        wipLimit,
+        overWip: wipLimit !== null && count > wipLimit,
+        nextCursor: null,
+      };
     }),
     lanes,
     cards: placed,

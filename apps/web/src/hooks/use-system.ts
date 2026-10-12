@@ -3,8 +3,8 @@ import { formatBytes, formatRelative } from '@bemmoly/core-web';
 import type { Backup, SystemCheck, SystemHealthResponse } from '@bemmoly/shared';
 import { useQuery } from '@tanstack/react-query';
 import type { CircleTone } from '../components/system/status-circle.tsx';
-import { api } from '../lib/api.ts';
 import { MAINTENANCE_POLL_MS, maintenanceOf, systemHealthQuery } from './use-system-maintenance.ts';
+import { operationsAdminApi } from '../lib/operations-admin-api.ts';
 
 /** The page refreshes on its own while open; health is cheap to read. */
 const REFRESH_MS = 30_000;
@@ -66,7 +66,7 @@ export function useSystem() {
   });
   const latest = useQuery({
     queryKey: queryKeys.backups.list({ limit: 1 }),
-    queryFn: () => api.backups.list({ limit: 1 }),
+    queryFn: () => operationsAdminApi.backups.list({ limit: 1 }),
   });
   const status = health.data;
   return {

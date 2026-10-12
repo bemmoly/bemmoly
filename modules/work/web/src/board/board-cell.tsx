@@ -5,6 +5,7 @@ import type { ViewCard } from '../hooks/board-model.ts';
 import { cellId, useBoardWindowStore, useCellLimit } from '../hooks/board-window.ts';
 import { BoardCard } from './board-card.tsx';
 import { ColumnCreate } from './column-create.tsx';
+import { ColumnMore } from './column-more.tsx';
 import { landsAt } from './landing.ts';
 import { useBoardShared } from './board-context.ts';
 
@@ -15,6 +16,8 @@ export interface BoardCellProps {
   columnName: string;
   cards: readonly ViewCard[];
   laneColor: EpicColor | null;
+  /** The column's cards not loaded yet, at the foot of its last open lane only; else 0. */
+  more: number;
 }
 
 /** The 2px accent line where a carried card would land. */
@@ -52,6 +55,7 @@ export const BoardCell = memo(function BoardCell({
   columnName,
   cards,
   laneColor,
+  more,
 }: BoardCellProps) {
   const { actions, createIn } = useBoardShared();
   const cell = cellId(laneId, columnId);
@@ -112,6 +116,14 @@ export const BoardCell = memo(function BoardCell({
       {items}
       {!refused && line !== null && line >= others && shown.length === cards.length && <DropLine />}
       {cards.length > limit && <MoreSentinel cell={cell} />}
+      {more > 0 && (
+        <ColumnMore
+          columnId={columnId}
+          columnName={columnName}
+          more={more}
+          ready={cards.length <= limit}
+        />
+      )}
       {createIn && (
         <ColumnCreate
           cell={cell}

@@ -3,6 +3,9 @@ import { useNavigate } from '@tanstack/react-router';
 import { useEffect } from 'react';
 import { useSetupStore } from '../store/setup.ts';
 import { meQuery, setupStatusQuery } from './use-session.ts';
+import { ACCOUNT_STEP, FIRST_ADMIN_STEP, LAST_STEP, resumeStep } from '../lib/setup-steps.ts';
+
+export { ACCOUNT_STEP, FIRST_ADMIN_STEP, LAST_STEP, resumeStep };
 
 export interface SetupStep {
   n: number;
@@ -15,11 +18,6 @@ export interface SetupStep {
   nextLabel: string | null;
   canSkip: boolean;
 }
-
-/** Workspace and account come before the admin exists; the rest is theirs to skip. */
-export const ACCOUNT_STEP = 2;
-export const FIRST_ADMIN_STEP = 3;
-export const LAST_STEP = 7;
 
 export const SETUP_STEPS: readonly SetupStep[] = [
   {
@@ -98,20 +96,6 @@ export function stepDef(n: number): SetupStep {
 /** Import, People, AI and Look may be skipped; the workspace, account and summary may not. */
 export function canSkip(n: number): boolean {
   return stepDef(n).canSkip;
-}
-
-/**
- * Where an unfinished wizard picks up once the admin exists: the last of the skippable steps
- * the admin was on in this tab, else Import. The summary is never resumed; reaching it
- * finishes setup.
- */
-export function resumeStep(lastStep: number | null | undefined): number {
-  const resumable =
-    typeof lastStep === 'number' &&
-    Number.isInteger(lastStep) &&
-    lastStep >= FIRST_ADMIN_STEP &&
-    lastStep < LAST_STEP;
-  return resumable ? lastStep : FIRST_ADMIN_STEP;
 }
 
 /**

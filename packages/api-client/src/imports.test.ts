@@ -1,6 +1,7 @@
 import { http as route, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
+import { importEndpoints } from './endpoints/imports.ts';
 import { createApiClient, isApiError, queryKeys } from './index.ts';
 
 const BASE = 'http://bemmoly.test';
@@ -41,14 +42,19 @@ describe('import endpoints', () => {
       }),
     );
     const api = createApiClient({ fetch: absolute });
-    const created = await api.imports.create({ source: 'csv', values: { file: 'a,b' } });
+    const created = await importEndpoints(api.http).create({
+      source: 'csv',
+      values: { file: 'a,b' },
+    });
     expect(created.status).toBe('ready');
     expect(seen).toHaveBeenCalledWith({ source: 'csv', values: { file: 'a,b' } });
   });
 
   it('refuses an empty container list before it leaves the browser', async () => {
     const api = createApiClient({ fetch: absolute });
-    const failure: unknown = await api.imports.update(ID, { containers: [] }).catch((e) => e);
+    const failure: unknown = await importEndpoints(api.http)
+      .update(ID, { containers: [] })
+      .catch((e) => e);
     expect(isApiError(failure) && failure.code).toBe('validation_failed');
   });
 
@@ -62,8 +68,8 @@ describe('import endpoints', () => {
       ),
     );
     const api = createApiClient({ fetch: absolute });
-    expect((await api.imports.run(ID)).status).toBe('queued');
-    expect((await api.imports.cancel(ID)).status).toBe('cancelled');
+    expect((await importEndpoints(api.http).run(ID)).status).toBe('queued');
+    expect((await importEndpoints(api.http).cancel(ID)).status).toBe('cancelled');
     expect(queryKeys.imports.detail(ID)[0]).toBe('imports');
   });
 });

@@ -16,6 +16,8 @@ export interface ColumnModel {
   wipLimit: number | null;
   overWip: boolean;
   done: boolean;
+  /** Cards of the column the view has not loaded yet; "Load more" reads the next page. */
+  more: number;
 }
 
 export interface LaneModel {
@@ -55,6 +57,8 @@ export const laneOfCard = (card: ViewCard, grouping: BoardGrouping) =>
 
 export function buildColumns(view: BoardView): ColumnModel[] {
   const counts = new Map(view.columns.map((column) => [column.id, column]));
+  const loaded = new Map<string, number>();
+  for (const card of view.cards) loaded.set(card.columnId, (loaded.get(card.columnId) ?? 0) + 1);
   return view.board.config.columns.map((column) => {
     const live = counts.get(column.id);
     const wipLimit = live?.wipLimit ?? column.wipLimit ?? null;
@@ -67,6 +71,7 @@ export function buildColumns(view: BoardView): ColumnModel[] {
       wipLimit,
       overWip: live?.overWip ?? (wipLimit !== null && count > wipLimit),
       done: column.done ?? false,
+      more: live?.nextCursor ? Math.max(1, count - (loaded.get(column.id) ?? 0)) : 0,
     };
   });
 }
@@ -150,7 +155,8 @@ export function shareModel(previous: BoardModel | null, next: BoardModel): Board
       old.count === column.count &&
       old.wipLimit === column.wipLimit &&
       old.overWip === column.overWip &&
-      old.done === column.done
+      old.done === column.done &&
+      old.more === column.more
       ? old
       : column;
   });

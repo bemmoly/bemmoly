@@ -7,9 +7,9 @@ import type {
   UpdateSsoProviderInput,
 } from '@bemmoly/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { api } from '../lib/api.ts';
 import { describeError } from '../lib/errors.ts';
 import { toast } from '../lib/toast.ts';
+import { ssoApi } from '../lib/sso-api.ts';
 
 /** A test sign-in leaves the page for the identity provider; tests swap this out. */
 export const navigation = { assign: (url: string) => window.location.assign(url) };
@@ -31,12 +31,12 @@ export function useSsoProviders(enabled = true) {
   const client = useQueryClient();
   const query = useQuery({
     queryKey: queryKeys.sso.providers(),
-    queryFn: () => api.sso.providers(),
+    queryFn: () => ssoApi.providers(),
     enabled,
   });
   const refresh = () => client.invalidateQueries({ queryKey: queryKeys.sso.all() });
   const create = useMutation({
-    mutationFn: (input: CreateSsoProviderInput) => api.sso.createProvider(input),
+    mutationFn: (input: CreateSsoProviderInput) => ssoApi.createProvider(input),
     onSuccess: async (row) => {
       toast(`${row.displayName} added`);
       await refresh();
@@ -44,21 +44,21 @@ export function useSsoProviders(enabled = true) {
   });
   const update = useMutation({
     mutationFn: ({ id, input }: { id: string; input: UpdateSsoProviderInput }) =>
-      api.sso.updateProvider(id, input),
+      ssoApi.updateProvider(id, input),
     onSuccess: async (row) => {
       toast(`${row.displayName} saved`);
       await refresh();
     },
   });
   const remove = useMutation({
-    mutationFn: (id: string) => api.sso.deleteProvider(id),
+    mutationFn: (id: string) => ssoApi.deleteProvider(id),
     onSuccess: async () => {
       toast('Identity provider deleted');
       await refresh();
     },
   });
   const test = useMutation({
-    mutationFn: (id: string) => api.sso.startTest(id),
+    mutationFn: (id: string) => ssoApi.startTest(id),
     onSuccess: ({ authorizationUrl }) => navigation.assign(authorizationUrl),
     onError: (error) => toast(describeError(error).message, 'danger'),
   });
@@ -83,11 +83,11 @@ export function useSsoPolicy(enabled = true) {
   const client = useQueryClient();
   const query = useQuery({
     queryKey: queryKeys.sso.policy(),
-    queryFn: () => api.sso.policy(),
+    queryFn: () => ssoApi.policy(),
     enabled,
   });
   const update = useMutation({
-    mutationFn: (requireSso: boolean) => api.sso.updatePolicy({ requireSso }),
+    mutationFn: (requireSso: boolean) => ssoApi.updatePolicy({ requireSso }),
     onSuccess: async (policy: SsoPolicy) => {
       client.setQueryData(queryKeys.sso.policy(), policy);
       toast(policy.requireSso ? 'Single sign-on is now required' : 'Password sign-in is back on');
@@ -110,9 +110,9 @@ export function useBreakGlass() {
   const change = useMutation({
     mutationFn: async ({ admin, breakGlass }: { admin: SsoPolicyAdmin; breakGlass: boolean }) => {
       if (breakGlass) {
-        client.setQueryData(queryKeys.sso.policy(), await api.sso.addBreakGlass(admin.id));
+        client.setQueryData(queryKeys.sso.policy(), await ssoApi.addBreakGlass(admin.id));
       } else {
-        await api.sso.removeBreakGlass(admin.id);
+        await ssoApi.removeBreakGlass(admin.id);
       }
     },
     onSuccess: async (_, { admin, breakGlass }) => {
@@ -138,16 +138,16 @@ export function useScimTokens(enabled = true) {
   const client = useQueryClient();
   const query = useQuery({
     queryKey: queryKeys.sso.scimTokens(),
-    queryFn: () => api.sso.scimTokens(),
+    queryFn: () => ssoApi.scimTokens(),
     enabled,
   });
   const refresh = () => client.invalidateQueries({ queryKey: queryKeys.sso.scimTokens() });
   const create = useMutation({
-    mutationFn: (name: string) => api.sso.createScimToken({ name }),
+    mutationFn: (name: string) => ssoApi.createScimToken({ name }),
     onSuccess: refresh,
   });
   const revoke = useMutation({
-    mutationFn: (id: string) => api.sso.revokeScimToken(id),
+    mutationFn: (id: string) => ssoApi.revokeScimToken(id),
     onSuccess: async () => {
       toast('SCIM token revoked');
       await refresh();

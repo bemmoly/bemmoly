@@ -70,6 +70,17 @@ describe('rankIssue', () => {
     expect(end.written() > 'm').toBe(true);
   });
 
+  it('lands an end drop before the next issue of the project, not past every issue', async () => {
+    // The scripted lookup answers the next-rank query by its first value, the project id.
+    const end = scripted({ [aboveId]: 'm', [projectId]: 'n' });
+    await rankIssue(end.deps, contextWhere(true), 'PLT-1', {
+      beforeIssueId: aboveId,
+      afterIssueId: null,
+    });
+    expect(end.written() > 'm').toBe(true);
+    expect(end.written() < 'n').toBe(true);
+  });
+
   it('refuses neighbours given the wrong way round', async () => {
     const { deps } = scripted({ [aboveId]: 'c', [belowId]: 'm' });
     await expect(

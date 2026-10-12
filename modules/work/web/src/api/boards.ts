@@ -10,7 +10,7 @@ import {
   sprintsResponseSchema,
   updateBoardBodySchema,
   workflowsResponseSchema,
-  type BoardViewQuery,
+  type BoardViewQueryInput,
   type ListProjectsQuery as ListProjectsOutput,
   type ListSprintsQuery,
   type UpdateBoardBody,
@@ -44,7 +44,7 @@ export function workBoardsEndpoints(http: Http) {
           body: validated(updateBoardBodySchema, body),
         }),
       /** Columns, lanes, cards, counts and WIP state in one call; the board never fans out. */
-      view: async (id: string, query: BoardViewQuery = {}, options: ListOptions = {}) =>
+      view: async (id: string, query: BoardViewQueryInput = {}, options: ListOptions = {}) =>
         http.request(`${BASE}/boards/${enc(id)}/view`, boardViewSchema, {
           query: validated(boardViewQuerySchema, query),
           ...options,

@@ -1,7 +1,6 @@
 import { setPreferenceOwner } from '@bemmoly/core-web';
 import { createRoute, lazyRouteComponent } from '@tanstack/react-router';
 import { AppShell } from '../components/shell/app-shell.tsx';
-import { HomePage } from '../pages/home-page.tsx';
 import { requireSession } from './guards.ts';
 import { rootRoute } from './root.tsx';
 
@@ -21,7 +20,8 @@ export const appRoute = createRoute({
 export const homeRoute = createRoute({
   getParentRoute: () => appRoute,
   path: '/',
-  component: HomePage,
+  // Lazy like every other page: Home is where most visits land, but its cards are not the shell.
+  component: lazyRouteComponent(() => import('../pages/home-page.tsx'), 'HomePage'),
 });
 
 export interface InboxSearch {

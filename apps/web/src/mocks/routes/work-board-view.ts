@@ -3,6 +3,7 @@ import { ago } from '../seed/time.ts';
 import type { MockIssue } from '../seed/work-board.ts';
 import { compileLql, type LqlContext } from './work-board-lql.ts';
 import { mockEpicColor } from './work-backlog-state.ts';
+import { pageCards, type BoardPageQuery } from './work-board-page.ts';
 import { sprintsOf } from './work-board-delegate.ts';
 import { boardState, projectRef, projectsOf, workflowOf } from './work-board-state.ts';
 import { workState, type Row } from './work-state.ts';
@@ -116,8 +117,16 @@ export function boardMetrics(db: MockDb, board: Row, cards: MockIssue[], sprintI
   };
 }
 
-/** The board view, or an LQL problem in `q` the way the server reports a bad query. */
-export function boardView(db: MockDb, board: Row, q: string | null) {
+/**
+ * The board view, or an LQL problem in `q` the way the server reports a bad query. With `page`,
+ * the cards are a page of each column (or of one, or only the named ones); without it, all.
+ */
+export function boardView(
+  db: MockDb,
+  board: Row,
+  q: string | null,
+  page: BoardPageQuery | null = null,
+) {
   const project = projectRef(db, String(board['projectId']));
   if (!project) return { ok: false, error: 'The board has no project' } as const;
   const { issues } = boardState(db);
@@ -165,6 +174,7 @@ export function boardView(db: MockDb, board: Row, q: string | null) {
   }));
   const counts = new Map<string, number>();
   for (const card of cards) counts.set(card.columnId, (counts.get(card.columnId) ?? 0) + 1);
+  const shownPage = page ? pageCards(cards, page) : { cards, next: new Map<string, string>() };
   return {
     ok: true,
     view: {
@@ -173,10 +183,16 @@ export function boardView(db: MockDb, board: Row, q: string | null) {
       columns: config.columns.map((column) => {
         const count = counts.get(column.id) ?? 0;
         const wipLimit = column.wipLimit ?? null;
-        return { id: column.id, count, wipLimit, overWip: wipLimit !== null && count > wipLimit };
+        return {
+          id: column.id,
+          count,
+          wipLimit,
+          overWip: wipLimit !== null && count > wipLimit,
+          nextCursor: shownPage.next.get(column.id) ?? null,
+        };
       }),
       lanes: lanes(db, kind, new Set(cards.map((card) => card.laneId))),
-      cards,
+      cards: shownPage.cards,
       epics: [
         ...new Map(
           shown.flatMap((issue) => {

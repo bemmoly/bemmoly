@@ -3,8 +3,8 @@ import type { AiCatalogProviderSummary, AiCatalogResponse } from '@bemmoly/share
 import { queryOptions, useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
 import bundled from '../fixtures/ai-catalog.json' with { type: 'json' };
-import { api } from '../lib/api.ts';
 import { LOCAL_AI, NO_AI } from '../store/setup.ts';
+import { aiAdminApi } from '../lib/ai-admin-api.ts';
 
 /** What the picker needs of a provider; the API's catalog summary has all of it and more. */
 export interface CatalogProvider {
@@ -84,7 +84,7 @@ export function providerFor(catalog: AiCatalog, id: string | null): CatalogProvi
 
 export const aiCatalogQuery = queryOptions({
   queryKey: queryKeys.ai.catalog(),
-  queryFn: () => api.ai.catalog.get(),
+  queryFn: () => aiAdminApi.catalog.get(),
   staleTime: 60_000,
 });
 
@@ -92,7 +92,7 @@ export const aiCatalogQuery = queryOptions({
 export const catalogModelsQuery = (id: string) =>
   queryOptions({
     queryKey: queryKeys.ai.catalogProvider(id),
-    queryFn: () => api.ai.catalog.provider(id),
+    queryFn: () => aiAdminApi.catalog.provider(id),
     staleTime: 5 * 60_000,
   });
 

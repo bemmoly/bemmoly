@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { expectAccessible } from '../../testing/a11y.ts';
 import { MenuItem } from '../menu/menu-item.tsx';
 import { BrandBlock, BrandRailFoot, BrandRailTop } from './brand-block.tsx';
-import { BRAND_FILES, trimmed } from './brand-files.ts';
+import { loadBrandFile, trimmed } from './brand-files.ts';
 
 const ACME = { name: 'Acme Labs', src: 'data:image/png;base64,AAAA' };
 
@@ -79,8 +79,8 @@ describe('BrandBlock', () => {
     expect(screen.getByRole('button', { name: "Bemmoly 0.4.0 · What's new" })).toBeTruthy();
   });
 
-  it('crops the wordmark to its letters so it sits on a text line', () => {
-    const svg = trimmed(BRAND_FILES.wordmark.color);
+  it('crops the wordmark to its letters so it sits on a text line', async () => {
+    const svg = trimmed(await loadBrandFile('wordmark', 'color'));
     const [, , , , height] = /viewBox="([\d.]+) ([\d.]+) ([\d.]+) ([\d.]+)"/.exec(svg) ?? [];
     expect(Number(height)).toBeLessThan(15);
     expect(Number(height)).toBeGreaterThan(12);

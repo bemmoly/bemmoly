@@ -1,8 +1,8 @@
 import { queryKeys, ssoStartPath } from '@bemmoly/api-client';
 import { ssoFailureReasonSchema, type SsoFailureReason } from '@bemmoly/shared';
 import { useQuery } from '@tanstack/react-query';
-import { api } from '../lib/api.ts';
 import { readLastSignIn, rememberSignIn } from './use-last-sign-in.ts';
+import { ssoApi } from '../lib/sso-api.ts';
 
 /** What the sign-in page says for each closed reason a single sign-on can fail with. */
 export const SSO_FAILURE_COPY: Record<SsoFailureReason, string> = {
@@ -50,7 +50,7 @@ export function ssoFailureMessage(reason: unknown): string | null {
 export function useSsoSignIn() {
   const query = useQuery({
     queryKey: queryKeys.sso.signInOptions(),
-    queryFn: () => api.sso.signInOptions(),
+    queryFn: () => ssoApi.signInOptions(),
     staleTime: 60_000,
     retry: false,
   });

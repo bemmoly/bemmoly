@@ -3,7 +3,7 @@ import type { MeResponse } from '@bemmoly/shared';
 import type { QueryClient } from '@tanstack/react-query';
 import { redirect } from '@tanstack/react-router';
 import { meQuery, setupStatusQuery } from '../hooks/use-session.ts';
-import { resumeStep } from '../hooks/use-setup-wizard.ts';
+import { resumeStep } from '../lib/setup-steps.ts';
 import { rememberPerson } from '../hooks/use-last-sign-in.ts';
 import { markSession } from '../lib/api.ts';
 import { isOrgAdmin } from '../lib/session.ts';

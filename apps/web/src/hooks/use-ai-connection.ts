@@ -7,10 +7,10 @@ import type {
 } from '@bemmoly/shared';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
-import { api } from '../lib/api.ts';
 import { describeError } from '../lib/errors.ts';
 import { LOCAL_AI } from '../store/setup.ts';
 import type { CatalogProvider } from './use-ai-catalog.ts';
+import { aiAdminApi } from '../lib/ai-admin-api.ts';
 
 /** One input the catalog entry asks for. */
 export interface ConnectionField {
@@ -122,13 +122,13 @@ export function useConnection(provider: CatalogProvider, onConnected?: (row: AiP
   const errors = draftErrors(provider, draft);
   const valid = Object.keys(errors).length === 0;
   const test = useMutation({
-    mutationFn: (_id: string) => api.ai.providers.testDraft(createBody(provider, draft)),
+    mutationFn: (_id: string) => aiAdminApi.providers.testDraft(createBody(provider, draft)),
   });
   const connect = useMutation({
     mutationFn: async () => {
-      const row = await api.ai.providers.create(createBody(provider, draft));
+      const row = await aiAdminApi.providers.create(createBody(provider, draft));
       if (row.catalogId !== 'custom' || row.models.length > 0) return row;
-      const found = await api.ai.providers.discover(row.id).catch(() => null);
+      const found = await aiAdminApi.providers.discover(row.id).catch(() => null);
       return found ? { ...row, models: found.models } : row;
     },
     onSuccess: async (row) => {

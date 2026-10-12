@@ -78,9 +78,15 @@ export function testView(cards: Card[] = defaultCards()): BoardView {
     },
     sprintId: null,
     columns: [
-      { id: 'todo', count: count('todo'), wipLimit: null, overWip: false },
-      { id: 'doing', count: count('doing'), wipLimit: 2, overWip: count('doing') > 2 },
-      { id: 'done', count: count('done'), wipLimit: null, overWip: false },
+      { id: 'todo', count: count('todo'), wipLimit: null, overWip: false, nextCursor: null },
+      {
+        id: 'doing',
+        count: count('doing'),
+        wipLimit: 2,
+        overWip: count('doing') > 2,
+        nextCursor: null,
+      },
+      { id: 'done', count: count('done'), wipLimit: null, overWip: false, nextCursor: null },
     ],
     lanes: [
       { id: EPIC, label: 'Auth service', color: null, issueKey: 'PLT-1', dueAt: '2026-10-11' },
