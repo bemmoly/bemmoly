@@ -2,7 +2,7 @@ import { Button, Field, Input, Modal, Select } from '@bemmoly/ui';
 import { useCreateTeam } from '../../hooks/use-teams.ts';
 import { FormError } from '../form.tsx';
 
-/** "Create team": name, lead and the role people get when they join. */
+/** "Create team": a name and an optional lead, who becomes its first member. */
 export function CreateTeamModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const create = useCreateTeam(onClose);
   const close = () => {
@@ -14,7 +14,7 @@ export function CreateTeamModal({ open, onClose }: { open: boolean; onClose: () 
       open={open}
       onClose={close}
       title="Create team"
-      description="Teams group people for module access and, later, projects and doc spaces."
+      description="Teams group people for module access, projects and doc spaces."
       footer={
         <>
           <Button variant="secondary" onClick={close}>
@@ -46,29 +46,17 @@ export function CreateTeamModal({ open, onClose }: { open: boolean; onClose: () 
             onChange={(event) => create.update({ name: event.target.value })}
           />
         </Field>
-        <div className="grid grid-cols-2 gap-3">
-          <Field label="Lead" error={create.errors['leadUserId']}>
-            <Select
-              size="md"
-              searchable
-              searchPlaceholder="Search people"
-              loadOptions={create.searchLeads}
-              options={create.leadOptions}
-              value={create.form.leadUserId}
-              onChange={(event) => create.update({ leadUserId: event.target.value })}
-            />
-          </Field>
-          <Field label="Default role" error={create.errors['defaultRoleId']}>
-            <Select
-              size="md"
-              searchable
-              searchPlaceholder="Search roles"
-              options={create.roleOptions}
-              value={create.form.defaultRoleId}
-              onChange={(event) => create.update({ defaultRoleId: event.target.value })}
-            />
-          </Field>
-        </div>
+        <Field label="Lead" error={create.errors['leadUserId']}>
+          <Select
+            size="md"
+            searchable
+            searchPlaceholder="Search people"
+            loadOptions={create.searchLeads}
+            options={create.leadOptions}
+            value={create.form.leadUserId}
+            onChange={(event) => create.update({ leadUserId: event.target.value })}
+          />
+        </Field>
         <FormError error={create.formError} />
       </form>
     </Modal>

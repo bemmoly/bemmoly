@@ -1,8 +1,8 @@
 import { isApiError, queryKeys } from '@bemmoly/api-client';
 import {
   createTeamSchema,
+  updateTeamSchema,
   type ModuleGrant,
-  type Role,
   type Team,
   type TeamMember,
   type User,
@@ -16,14 +16,7 @@ import { toast } from '../lib/toast.ts';
 import { useDirectory } from './use-directory.ts';
 import { moduleLabel } from './use-module-access.ts';
 import { useModules } from './use-modules.ts';
-import {
-  grantsQuery,
-  rolesQuery,
-  roleOptions,
-  teamsQuery,
-  useCanManagePeople,
-} from './use-people.ts';
-import { defaultRoleId } from './use-setup-invites.ts';
+import { grantsQuery, teamsQuery, useCanManagePeople } from './use-people.ts';
 import { userOption, useUserSearch } from './use-user-search.ts';
 
 export interface TeamCardView {
@@ -32,11 +25,11 @@ export interface TeamCardView {
   /** The team's own colour, stored as data; null falls back to the accent. */
   color: string | null;
   initials: string;
+  leadUserId: string | null;
   lead: string;
   /** The lead as a person to draw, or null while the team has none. */
   leadPerson: StackPerson | null;
   memberCount: number;
-  defaultRole: string;
   /** The modules this team's grants open, by name. */
   modules: string[];
   people: StackPerson[];
@@ -47,7 +40,6 @@ export function teamCard(
   team: Team,
   members: readonly TeamMember[],
   people: ReadonlyMap<string, User>,
-  roles: readonly Role[],
   modules: string[] = [],
 ): TeamCardView {
   const lead = team.leadUserId ? people.get(team.leadUserId) : undefined;
@@ -56,10 +48,10 @@ export function teamCard(
     name: team.name,
     color: team.color,
     initials: initialsOf(team.name),
+    leadUserId: team.leadUserId,
     lead: lead?.name || 'nobody yet',
     leadPerson: lead ? { id: lead.id, name: lead.name, hue: avatarHue(lead.id) } : null,
     memberCount: team.memberCount,
-    defaultRole: roles.find((role) => role.id === team.defaultRoleId)?.name ?? 'None',
     modules,
     people: members.flatMap((member) => {
       const user = people.get(member.userId);
@@ -68,11 +60,10 @@ export function teamCard(
   };
 }
 
-/** The Teams page: one row per team with its lead, members, modules and default role. */
+/** The Teams page: one row per team with its lead, members and modules. */
 export function useTeams() {
   const canManage = useCanManagePeople();
   const teams = useQuery(teamsQuery);
-  const roles = useQuery(rolesQuery).data?.items ?? [];
   const grants = useQuery(grantsQuery).data?.items ?? [];
   const manifests = useModules().data;
   const { directory } = useDirectory();
@@ -88,7 +79,6 @@ export function useTeams() {
       team,
       members[index]?.data?.items ?? [],
       directory.byId,
-      roles,
       modulesForTeam(team.id, grants).map((id) => moduleLabel(id, manifests)),
     ),
   );
@@ -128,73 +118,128 @@ export function useDeleteTeam(onDone: () => void) {
 interface TeamForm {
   name: string;
   leadUserId: string;
-  defaultRoleId: string;
 }
 
-const EMPTY: TeamForm = { name: '', leadUserId: '', defaultRoleId: '' };
+const EMPTY: TeamForm = { name: '', leadUserId: '' };
 
-/** "Create team": a name, an optional lead from the directory and the role new members get. */
-export function useCreateTeam(onDone: () => void) {
-  const queryClient = useQueryClient();
-  const roles = useQuery(rolesQuery).data?.items ?? [];
+/** Field messages under their fields; a name clash stays under Name; the rest form-level. */
+function teamFormErrors(error: Error): FieldErrors {
+  return isApiError(error) && error.code === 'conflict'
+    ? { name: describeError(error).message }
+    : serverFieldErrors(error);
+}
+
+/** The shared state of Create team and Edit team: a name and an optional lead. */
+function useTeamForm(initial: TeamForm) {
   const { directory } = useDirectory();
   const searchLeads = useUserSearch({ status: 'active' });
-  const [form, setForm] = useState<TeamForm>(EMPTY);
+  const [form, setForm] = useState<TeamForm>(initial);
   const [errors, setErrors] = useState<FieldErrors>({});
-  const roleId = form.defaultRoleId || defaultRoleId(roles) || '';
-
-  const mutation = useMutation({
-    mutationFn: (body: {
-      name: string;
-      leadUserId?: string | null;
-      defaultRoleId?: string | null;
-    }) => api.teams.create(body),
-    onSuccess: async (team) => {
-      await queryClient.invalidateQueries({ queryKey: queryKeys.teams.all() });
-      toast(`${team.name} created`);
-      setForm(EMPTY);
-      onDone();
-    },
-    // Field messages go under their fields; anything else is shown once for the whole form.
-    // A name clash stays under Name.
-    onError: (error) =>
-      setErrors(
-        isApiError(error) && error.code === 'conflict'
-          ? { name: describeError(error).message }
-          : serverFieldErrors(error),
-      ),
-  });
-
-  const submit = (event: FormEvent) => {
-    event.preventDefault();
-    const result = validateForm(createTeamSchema, {
-      name: form.name,
-      leadUserId: form.leadUserId || null,
-      defaultRoleId: roleId || null,
-    });
-    if (result.errors) return setErrors(result.errors);
-    setErrors({});
-    mutation.mutate(result.data);
-  };
-
   return {
-    form: { ...form, defaultRoleId: roleId },
-    update: (patch: Partial<TeamForm>) => setForm((current) => ({ ...current, ...patch })),
+    form,
+    setForm,
     errors,
-    submit,
-    mutation,
-    /** The failure that belongs to no field, for the form-level error. */
-    formError: Object.keys(errors).length === 0 ? mutation.error : null,
-    reset: () => {
-      setForm(EMPTY);
-      setErrors({});
-      mutation.reset();
-    },
+    setErrors,
+    update: (patch: Partial<TeamForm>) => setForm((current) => ({ ...current, ...patch })),
     leadOptions: [
       { value: '', label: 'No lead yet' },
       ...directory.users.filter((user) => user.status === 'active').map(userOption),
     ],
     searchLeads,
-    roleOptions: roleOptions(roles),
+  };
+}
+
+/** "Create team": a name and an optional lead, who joins the team as its first member. */
+export function useCreateTeam(onDone: () => void) {
+  const queryClient = useQueryClient();
+  const state = useTeamForm(EMPTY);
+
+  const mutation = useMutation({
+    mutationFn: (body: { name: string; leadUserId?: string | null }) => api.teams.create(body),
+    onSuccess: async (team) => {
+      await queryClient.invalidateQueries({ queryKey: queryKeys.teams.all() });
+      toast(`${team.name} created`);
+      state.setForm(EMPTY);
+      onDone();
+    },
+    onError: (error) => state.setErrors(teamFormErrors(error)),
+  });
+
+  const submit = (event: FormEvent) => {
+    event.preventDefault();
+    const result = validateForm(createTeamSchema, {
+      name: state.form.name,
+      leadUserId: state.form.leadUserId || null,
+    });
+    if (result.errors) return state.setErrors(result.errors);
+    state.setErrors({});
+    mutation.mutate(result.data);
+  };
+
+  return {
+    form: state.form,
+    update: state.update,
+    errors: state.errors,
+    submit,
+    mutation,
+    /** The failure that belongs to no field, for the form-level error. */
+    formError: Object.keys(state.errors).length === 0 ? mutation.error : null,
+    reset: () => {
+      state.setForm(EMPTY);
+      state.setErrors({});
+      mutation.reset();
+    },
+    leadOptions: state.leadOptions,
+    searchLeads: state.searchLeads,
+  };
+}
+
+/** "Edit team": rename it or change its lead; only the fields that changed are sent. */
+export function useEditTeam(team: TeamCardView, onDone: () => void) {
+  const queryClient = useQueryClient();
+  const initial = { name: team.name, leadUserId: team.leadUserId ?? '' };
+  const state = useTeamForm(initial);
+
+  const mutation = useMutation({
+    mutationFn: (body: { name?: string; leadUserId?: string | null }) =>
+      api.teams.update(team.id, body),
+    onSuccess: async (saved) => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: queryKeys.teams.all() }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.users.all() }),
+      ]);
+      toast(`${saved.name} saved`);
+      onDone();
+    },
+    onError: (error) => state.setErrors(teamFormErrors(error)),
+  });
+
+  const changes = {
+    ...(state.form.name.trim() !== team.name ? { name: state.form.name } : {}),
+    ...(state.form.leadUserId !== initial.leadUserId
+      ? { leadUserId: state.form.leadUserId || null }
+      : {}),
+  };
+  const dirty = Object.keys(changes).length > 0;
+
+  const submit = (event: FormEvent) => {
+    event.preventDefault();
+    if (!dirty) return onDone();
+    const result = validateForm(updateTeamSchema, changes);
+    if (result.errors) return state.setErrors(result.errors);
+    state.setErrors({});
+    mutation.mutate(result.data);
+  };
+
+  return {
+    form: state.form,
+    update: state.update,
+    errors: state.errors,
+    submit,
+    mutation,
+    dirty,
+    formError: Object.keys(state.errors).length === 0 ? mutation.error : null,
+    leadOptions: state.leadOptions,
+    searchLeads: state.searchLeads,
   };
 }

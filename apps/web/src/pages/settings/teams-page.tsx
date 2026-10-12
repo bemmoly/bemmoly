@@ -1,9 +1,10 @@
 import { Button, ConfirmChange, EmptyState } from '@bemmoly/ui';
 import { Icon } from '@bemmoly/ui/icons';
-import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import { FormError } from '../../components/form.tsx';
 import { CreateTeamModal } from '../../components/people/create-team-modal.tsx';
+import { EditTeamModal } from '../../components/people/edit-team-modal.tsx';
+import { TeamMembersModal } from '../../components/people/team-members-modal.tsx';
 import { TeamsSkeleton, TeamsTable } from '../../components/people/teams-table.tsx';
 import { SettingsPage } from '../../components/settings/settings-page.tsx';
 import { NO_PEOPLE_ACCESS } from '../../hooks/use-people.ts';
@@ -11,9 +12,10 @@ import { useDeleteTeam, useTeams, type TeamCardView } from '../../hooks/use-team
 
 export function TeamsPage() {
   const { canManage, query, cards } = useTeams();
-  const navigate = useNavigate();
   // "?new=1" opens Create team straight away, for links like the one in Create project.
   const [creating, setCreating] = useState(() => new URLSearchParams(location.search).has('new'));
+  const [editing, setEditing] = useState<TeamCardView | null>(null);
+  const [managing, setManaging] = useState<TeamCardView | null>(null);
   const [deleting, setDeleting] = useState<TeamCardView | null>(null);
   const remove = useDeleteTeam(() => setDeleting(null));
   const create = (
@@ -40,7 +42,8 @@ export function TeamsPage() {
         teams={cards}
         actions={{
           canManage,
-          open: (team) => void navigate({ to: '/settings/users', search: { team: team.id } }),
+          open: setManaging,
+          edit: setEditing,
           remove: (team) => {
             remove.reset();
             setDeleting(team);
@@ -56,6 +59,14 @@ export function TeamsPage() {
         }
       />
       <CreateTeamModal open={creating} onClose={() => setCreating(false)} />
+      {editing && <EditTeamModal team={editing} onClose={() => setEditing(null)} />}
+      {managing && (
+        <TeamMembersModal
+          team={cards.find((card) => card.id === managing.id) ?? managing}
+          canManage={canManage}
+          onClose={() => setManaging(null)}
+        />
+      )}
       <ConfirmChange
         open={deleting !== null}
         title={`Delete ${deleting?.name ?? 'team'}?`}

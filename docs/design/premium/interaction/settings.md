@@ -42,7 +42,8 @@ the content beneath the header.
 - **AI and models.** Works without AI; popular providers as tiles, the full catalog searchable.
 - **Members.** Search, status segments, role and team filters, a quiet role menu per row, invite in
   the header.
-- **Teams.** Table with lead, facepile, module access and default role.
+- **Teams.** Table with lead, facepile and module access; the row menu edits the name and lead and
+  manages members. The lead is always a member.
 - **Roles.** Capability matrix per org role; locked rows show why.
 - **Sign-in and SSO.** Method cards with their state, then sign-in policies.
 - **Modules.** Table with tile, state, version, schema state; Enable is primary, Remove data is a
