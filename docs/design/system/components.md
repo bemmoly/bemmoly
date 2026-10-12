@@ -66,6 +66,9 @@ about appearance lives in the sidebar or the person's menu.
 - `Checkbox indeterminate` is the tri-state select-all over a list: some ticked reads as
   "mixed" (`aria-checked="mixed"`, the DOM `indeterminate` property) and draws a minus on the
   accent fill. Story: Components/Controls (Indeterminate).
+- `CheckboxMark` is the checkbox's look without an input, for a listbox option that carries
+  `aria-selected` itself (a list chooser's row); never stand it in for a real `Checkbox`. Story: Components/Controls
+  (Mark).
 - `SegmentedControl` for two to five exclusive views ("All · 8").
 - `Input size="touch"` on the sign-in pages: 40px, and 46px with 16px text under 640px so a
   phone never zooms into the field.

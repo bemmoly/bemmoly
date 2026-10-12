@@ -86,7 +86,7 @@ export function TargetRow({ row, options }: { row: ImportContainerRow; options: 
           </>
         )}
         {why ? (
-          <span id={whyId} className={`basis-full text-12 ${error ? 'text-red' : 'text-tx-3'}`}>
+          <span id={whyId} className={`basis-full text-12 ${error ? 'text-red-tx' : 'text-tx-3'}`}>
             {why}
           </span>
         ) : null}

@@ -1,5 +1,5 @@
 import type { ImportContainerRow } from '@bemmoly/shared';
-import { Avatar, Checkbox, Skeleton } from '@bemmoly/ui';
+import { Avatar, CheckboxMark, Skeleton } from '@bemmoly/ui';
 import type { CSSProperties, MouseEvent } from 'react';
 import { StatePill } from '../settings/state-pill.tsx';
 import { count, shortDate, type ImportNouns } from './import-words.ts';
@@ -86,14 +86,7 @@ export function ChooserRow({
       ].join(' ')}
     >
       <span className={narrow ? 'row-span-2 flex items-center' : 'flex items-center'}>
-        <Checkbox
-          aria-hidden
-          tabIndex={-1}
-          checked={row.selected}
-          disabled={locked}
-          readOnly
-          className="pointer-events-none"
-        />
+        <CheckboxMark checked={row.selected} disabled={locked} />
       </span>
       <span
         className={`truncate font-mono text-tx-2 ${narrow ? 'col-start-2 row-start-2 text-11' : 'text-12'}`}

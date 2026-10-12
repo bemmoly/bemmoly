@@ -4,7 +4,7 @@ import { SegmentedControl } from '../segmented-control/segmented-control.tsx';
 import { Select } from '../select/select.tsx';
 import { Switch } from '../switch/switch.tsx';
 import { Textarea } from '../textarea/textarea.tsx';
-import { Checkbox, Radio } from './checkbox.tsx';
+import { Checkbox, CheckboxMark, Radio } from './checkbox.tsx';
 
 const meta = { title: 'Components/Controls', component: Checkbox } satisfies Meta<typeof Checkbox>;
 
@@ -59,6 +59,30 @@ export const Indeterminate: Story = {
       </div>
     );
   },
+};
+
+/** The tick of a listbox option: the option carries aria-selected, so no input is inside it. */
+export const Mark: Story = {
+  render: () => (
+    <div role="listbox" aria-label="Projects" aria-multiselectable className="flex flex-col gap-2">
+      {[
+        { key: 'PLT', checked: true, disabled: false },
+        { key: 'MOB', checked: false, disabled: false },
+        { key: 'FIN', checked: false, disabled: true },
+      ].map((row) => (
+        <div
+          key={row.key}
+          role="option"
+          aria-selected={row.checked}
+          aria-disabled={row.disabled || undefined}
+          className="flex items-center gap-2.5 text-13 text-tx"
+        >
+          <CheckboxMark checked={row.checked} disabled={row.disabled} />
+          {row.key}
+        </div>
+      ))}
+    </div>
+  ),
 };
 
 export const Switches: Story = {

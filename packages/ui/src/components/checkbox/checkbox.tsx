@@ -130,3 +130,29 @@ export function Radio({ label, description, className, disabled, ref, ...rest }:
   );
   return <Labelled control={control} label={label} description={description} disabled={disabled} />;
 }
+
+export interface CheckboxMarkProps {
+  checked: boolean;
+  disabled?: boolean;
+  size?: CheckSize;
+}
+
+/**
+ * The checkbox's look with no input behind it, for a listbox option whose aria-selected
+ * already says it is ticked: a control inside an option would be nested-interactive.
+ */
+export function CheckboxMark({ checked, disabled = false, size = 'sm' }: CheckboxMarkProps) {
+  return (
+    <span
+      aria-hidden
+      className={cx(
+        'inline-flex shrink-0 items-center justify-center rounded-chip border-[1.5px] text-on-acc',
+        BOX[size],
+        checked ? 'border-acc-fill bg-acc-fill' : 'border-tx-3 bg-card',
+        disabled && 'opacity-55',
+      )}
+    >
+      {checked ? <Icon name="check" size={size === 'sm' ? 10 : 12} /> : null}
+    </span>
+  );
+}

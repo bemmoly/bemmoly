@@ -112,7 +112,7 @@ export function RunProgress({ job, source, cancelling, onCancel }: RunProgressPr
         <span className="text-12 text-tx-3">
           You can leave this page. Inbox tells you when it finishes.
         </span>
-        <Button variant="danger" className="ms-auto" loading={cancelling} onClick={onCancel}>
+        <Button variant="secondary" className="ms-auto" loading={cancelling} onClick={onCancel}>
           Cancel import
         </Button>
       </div>

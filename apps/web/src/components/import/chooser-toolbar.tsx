@@ -26,7 +26,7 @@ export function filterOptions(
     label: (
       <span className="inline-flex items-center gap-1.5">
         {label}
-        <span className="text-tx-3 tabular-nums">{count(counts?.[value] ?? 0)}</span>
+        <span className="text-tx-2 tabular-nums">{count(counts?.[value] ?? 0)}</span>
       </span>
     ),
   }));
