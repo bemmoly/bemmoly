@@ -110,6 +110,14 @@ describe('buildApp', () => {
               keys: 'G R',
             },
             {
+              id: 'work.pairing',
+              label: 'Pairing',
+              path: '/work/pairing',
+              placement: 'command',
+              icon: 'grid',
+              keys: 'G P',
+            },
+            {
               id: 'work.projects',
               label: 'Projects',
               path: '/work/projects',
