@@ -11,9 +11,10 @@ export interface RankPlacement {
   excludeId?: string;
 }
 
+// `= or is null` rather than `is not distinct from`, which no index can serve as a key.
 const siblingsOf = (sql: SqlExecutor, placement: RankPlacement) => sql`
   space_id = ${placement.spaceId}
-  and parent_id is not distinct from ${placement.parentId}::uuid
+  and ${placement.parentId === null ? sql`parent_id is null` : sql`parent_id = ${placement.parentId}::uuid`}
   and deleted_at is null
   and id <> ${placement.excludeId ?? '00000000-0000-0000-0000-000000000000'}::uuid`;
 

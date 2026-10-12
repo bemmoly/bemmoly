@@ -25,6 +25,7 @@ export {
   DOMAIN_EVENTS_CHANNEL,
   NOTIFY_LIMIT_BYTES,
   REALTIME_CHANNEL,
+  AUTHZ_CHANNEL,
 } from './notify.ts';
 export {
   createRealtimeService,

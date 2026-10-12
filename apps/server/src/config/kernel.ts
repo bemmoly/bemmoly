@@ -55,6 +55,8 @@ export interface DataKernelInput {
   > &
     StorageS3Env & { DATABASE_URL: string };
   sql: SqlClient;
+  /** The size of `sql`'s pool; job handlers may hold a share of it (jobHandlerLimit). */
+  poolConnections: number;
   /** Every module in the image, registered with the realtime event bus and job queue. */
   modules: ModuleRegistry;
   realtime: RealtimeService;
@@ -143,7 +145,7 @@ export async function createDataKernel(input: DataKernelInput): Promise<DataKern
     sql,
     databaseUrl: env.DATABASE_URL,
     role: env.BEMMOLY_ROLE,
-    maxConcurrentJobs: jobHandlerLimit(env.BEMMOLY_ROLE),
+    maxConcurrentJobs: jobHandlerLimit(env.BEMMOLY_ROLE, input.poolConnections),
     logger: logger.child({ component: 'jobs' }),
     modules,
     settings,

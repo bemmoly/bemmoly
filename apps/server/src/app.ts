@@ -1,4 +1,5 @@
 import type {
+  AuthorizationCache,
   DatabaseProbe,
   IdentityDependencies,
   KernelRouteDependencies,
@@ -42,6 +43,8 @@ export interface BuildAppOptions {
   kernel?: Omit<KernelRouteDependencies, 'modules' | 'database' | 'identity'>;
   /** Sign-in, people, roles and audit; present when a database is configured. */
   identity?: IdentityDependencies & { sql: SqlClient };
+  /** Shares authorization lookups across requests; only with the bemmoly_authz listener on. */
+  authzCache?: AuthorizationCache;
   /** Reads <data>/maintenance.json; while set, writes get 503 and pages the maintenance page. */
   maintenance?: () => Promise<MaintenanceState | null>;
   /** Absolute path of the web build; skipped when it has no index.html. */
@@ -75,7 +78,10 @@ export async function buildApp(options: BuildAppOptions): Promise<FastifyInstanc
       sql: options.identity.sql,
       ...rateLimitBudgets(options.env),
     });
-    await app.register(authentication, options.identity);
+    await app.register(authentication, {
+      ...options.identity,
+      ...(options.authzCache ? { authzCache: options.authzCache } : {}),
+    });
   }
   await app.register(
     kernelRoutes({

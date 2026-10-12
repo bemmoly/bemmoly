@@ -22,6 +22,11 @@ replicas:
 publicUrl: https://bemmoly.example.com
 # Pins the enabled modules, e.g. "work,docs"; empty lets the setup wizard and Settings choose.
 modules: ''
+# Connections each pod's database pool may open (BEMMOLY_DB_POOL_MAX). Keep every pod's
+# together, (replicas.api + replicas.worker) x this plus a few for tools, under the database's
+# max_connections (100 by default). Empty: four per CPU the pod sees, between 10 and 40; a pod
+# sees the node's CPUs, not its limit, so the chart sets a number.
+databasePoolMax: 10
 
 # A Secret you create, holding DATABASE_URL and BEMMOLY_SECRET_KEY (and, optionally,
 # BEMMOLY_BACKUP_PASSPHRASE, BEMMOLY_METRICS_TOKEN, and POSTGRES_PASSWORD when the bundled

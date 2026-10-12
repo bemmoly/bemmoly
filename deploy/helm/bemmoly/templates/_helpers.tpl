@@ -63,6 +63,10 @@ helm.sh/chart: {{ printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" }}
   value: {{ .Values.modules | quote }}
 - name: BEMMOLY_TRUST_PROXY
   value: "true"
+{{- with .Values.databasePoolMax }}
+- name: BEMMOLY_DB_POOL_MAX
+  value: {{ . | int | quote }}
+{{- end }}
 {{- if .Values.pdf.enabled }}
 - name: BEMMOLY_PDF_URL
   value: {{ printf "http://%s:3000" (include "bemmoly.pdfHost" .) | quote }}

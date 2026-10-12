@@ -17,22 +17,21 @@ import { assertOwnReferences } from './references.ts';
 import { loadIssueById, toIssue } from './rows.ts';
 
 /**
- * The next number of a project, allocated under the counter row's lock so
- * two creates in flight get consecutive numbers and a rolled back create
- * still leaves no gap worth noticing. The counter row is made on first use
- * so a project created before the counter existed still numbers from 1.
+ * The next number of a project, in one statement: the upsert bumps the counter row and
+ * returns the number it held, so a project created before the counter existed still numbers
+ * from 1. The row stays locked until the transaction ends, so two creates in flight get
+ * consecutive numbers and a rolled back create gives its number back: keys stay gap-free.
+ * Callers take it as late as they can, right before the insert that uses it, because every
+ * other create in the project waits on that lock until this transaction commits.
  */
 export async function allocateNumber(tx: SqlExecutor, projectId: string): Promise<number> {
-  await tx`
-    insert into project_counters (project_id) values (${projectId})
-    on conflict (project_id) do nothing`;
-  const [row] = await tx<{ next_number: number }[]>`
-    select next_number from project_counters where project_id = ${projectId} for update`;
+  const [row] = await tx<{ number: number }[]>`
+    insert into project_counters (project_id, next_number) values (${projectId}, 2)
+    on conflict (project_id) do update
+      set next_number = project_counters.next_number + 1, updated_at = now()
+    returning next_number - 1 as number`;
   if (!row) throw new NotFoundError('The project was not found');
-  await tx`
-    update project_counters set next_number = next_number + 1, updated_at = now()
-    where project_id = ${projectId}`;
-  return row.next_number;
+  return row.number;
 }
 
 /**
@@ -133,9 +132,12 @@ export async function createIssue(
     }
     // The counter lock serialises creates in a project, so the tail is read
     // under it: read before, two creates in flight would append the same rank.
+    // Live issues only, so the read is an index-only lookup on issues_board_rank_idx;
+    // a deleted issue that ranks later gets a fresh tail rank when it is restored.
     const number = await allocateNumber(tx, body.projectId);
     const [tail] = await tx<{ rank: string | null }[]>`
-      select max(rank) as rank from issues where project_id = ${body.projectId}`;
+      select max(rank) as rank from issues
+      where project_id = ${body.projectId} and deleted_at is null`;
     const description = body.description ?? null;
     const [row] = await tx<{ id: string }[]>`
       insert into issues (project_id, number, key, type_id, title, description, description_text,

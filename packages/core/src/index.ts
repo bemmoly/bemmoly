@@ -143,6 +143,8 @@ export {
   createModuleAccessWriter,
   createRequestAuthorization,
   createSubscriptionAuthorizer,
+  AuthorizationCache,
+  processAuthorizationCache,
   scopeToTransaction,
   type ModuleCatalog,
   type RequestAuthorization,

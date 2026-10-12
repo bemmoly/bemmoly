@@ -9,6 +9,11 @@ import type { SqlExecutor } from '../../contracts/sql.ts';
 
 /** Invalidation messages for WebSocket clients and in-process caches. */
 export const REALTIME_CHANNEL = 'bemmoly_events';
+/**
+ * Sent by the 0114 triggers when a role, membership, grant, user or API token changes;
+ * every process empties its authorization cache (services/authz/shared-cache.ts).
+ */
+export const AUTHZ_CHANNEL = 'bemmoly_authz';
 /** Domain events replicated to every process by the event bus. */
 export const DOMAIN_EVENTS_CHANNEL = 'bemmoly_domain_events';
 /** NOTIFY payloads must stay under 8000 bytes; leave room for the envelope. */

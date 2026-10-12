@@ -37,3 +37,9 @@ export {
   subscriptionAuthorizer,
   type SubscriptionLookups,
 } from './subscriptions.ts';
+export {
+  AUTHZ_CACHE_TTL_MS,
+  AuthorizationCache,
+  processAuthorizationCache,
+  type AuthorizationCacheOptions,
+} from './shared-cache.ts';

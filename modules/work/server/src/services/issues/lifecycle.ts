@@ -1,7 +1,7 @@
 import type { RequestContext, SqlExecutor } from '@bemmoly/core';
 import { NotFoundError, ValidationError } from '@bemmoly/shared';
 import type { Issue, RankIssueBody } from '../../../../shared/issues.ts';
-import { between, needsRebalance } from '../../../../shared/lexorank.ts';
+import { between, last, needsRebalance } from '../../../../shared/lexorank.ts';
 import { recordHistory } from '../history/index.ts';
 import { WORK_RANK_REBALANCE_JOB } from '../jobs.ts';
 import { actorUserId, projectResource, requireDatabase, type IssueServiceDeps } from './deps.ts';
@@ -46,12 +46,35 @@ export async function restoreIssue(
   }
   const restored = await sql.begin(async (tx) => {
     await tx`update issues set deleted_at = null, updated_at = now() where id = ${row.id}`;
+    await keepRankUnique(tx, row.id, row.project_id, row.rank);
     await recordHistory(tx, row.id, actorUserId(ctx), [{ field: 'deleted', from: true, to: null }]);
     const issue = toIssue(await loadIssueById(tx, row.id));
     await publishIssueChange(deps, tx, issue, { board: true });
     return issue;
   });
   return restored as Issue;
+}
+
+/**
+ * A create ranks after the live issues only, so while this one was deleted a new issue may
+ * have taken its rank. Two issues on one rank have no slot between them, so the restored one
+ * moves to the end of the backlog instead.
+ */
+async function keepRankUnique(
+  tx: SqlExecutor,
+  id: string,
+  projectId: string,
+  rank: string,
+): Promise<void> {
+  const [clash] = await tx<{ id: string }[]>`
+    select id from issues
+    where project_id = ${projectId} and rank = ${rank} and deleted_at is null and id <> ${id}
+    limit 1`;
+  if (!clash) return;
+  const [tail] = await tx<{ rank: string | null }[]>`
+    select max(rank) as rank from issues
+    where project_id = ${projectId} and deleted_at is null and id <> ${id}`;
+  await tx`update issues set rank = ${last(tail?.rank ?? undefined)} where id = ${id}`;
 }
 
 async function neighbourRank(
