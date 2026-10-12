@@ -31,11 +31,25 @@ export interface ImportJobRow {
   started_at: Date | string | null;
   finished_at: Date | string | null;
   created_at: Date | string;
+  /** Where the chosen containers are in the run; read with JOB_COLUMNS only. */
+  containers_summary?: {
+    total: number;
+    waiting: number;
+    running: number;
+    done: number;
+    failed: number;
+  } | null;
 }
 
 export const JOB_COLUMNS = `id, source, site, connection, credentials, status, discovery, plan,
   phase, progress_done, progress_total, checkpoint, report, error, runs, created_by,
-  started_at, finished_at, created_at`;
+  started_at, finished_at, created_at,
+  (select json_build_object('total', count(*), 'waiting', count(*) filter (where c.run_status = 'waiting'),
+    'running', count(*) filter (where c.run_status = 'running'),
+    'done', count(*) filter (where c.run_status = 'done'),
+    'failed', count(*) filter (where c.run_status = 'failed'))
+   from import_containers c where c.job_id = import_jobs.id and c.selected
+     and c.run_status is not null) as containers_summary`;
 
 export const emptyReport = (): ImportReport => ({
   counts: {},
@@ -68,6 +82,9 @@ export function toImportJob(row: ImportJobRow, sourceLabel: string): ImportJob {
     report: { ...emptyReport(), ...row.report },
     error: row.error,
     runs: row.runs,
+    ...(row.containers_summary && row.containers_summary.total > 0
+      ? { containers: row.containers_summary }
+      : {}),
     createdAt: new Date(row.created_at).toISOString(),
     startedAt: iso(row.started_at),
     finishedAt: iso(row.finished_at),

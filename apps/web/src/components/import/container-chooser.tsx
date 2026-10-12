@@ -15,6 +15,8 @@ interface ContainerChooserProps {
   /** Planning what is ticked: Continue shows progress until it answers. */
   continuing: boolean;
   error: unknown;
+  /** "Continue with" by default; the wizard's short path says "Start import of". */
+  continueLabel?: string;
   onContinue: () => void;
   /** Back to the connection form (Back, Change connection). */
   onBack: () => void;
@@ -93,7 +95,7 @@ export function ContainerChooser(props: ContainerChooserProps) {
             loading={props.continuing}
             onClick={proceed}
           >
-            Continue with {count(selected)}
+            {props.continueLabel ?? 'Continue with'} {count(selected)}
           </Button>
         </span>
         {props.error ? (

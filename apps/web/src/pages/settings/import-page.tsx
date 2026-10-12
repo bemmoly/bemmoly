@@ -8,7 +8,9 @@ import { nounsOf } from '../../components/import/import-words.ts';
 import { RecentImports } from '../../components/import/recent-imports.tsx';
 import { cardOf, SourcePicker } from '../../components/import/source-picker.tsx';
 import { SettingsPage } from '../../components/settings/settings-page.tsx';
+import { SettingsFailure } from '../../components/settings/settings-states.tsx';
 import { STEP_INDEX, useImportFlow, type ImportFlow } from '../../hooks/use-import-flow.ts';
+import { useImportJobParam } from '../../hooks/use-import-job-param.ts';
 import { useImportJobs } from '../../hooks/use-imports.ts';
 
 export const NO_SOURCES =
@@ -31,7 +33,7 @@ function headOf(flow: ImportFlow) {
 }
 
 export function ImportPage() {
-  const flow = useImportFlow();
+  const flow = useImportJobParam(useImportFlow());
   const jobs = useImportJobs(flow.job);
   const items = flow.items;
   const head = headOf(flow);
@@ -57,6 +59,7 @@ export function ImportPage() {
         />
       ) : flow.step === 'source' ? (
         <section aria-labelledby="import-source-title" className="flex flex-col gap-3">
+          {flow.jobError ? <SettingsFailure error={flow.jobError} /> : null}
           <h2 id="import-source-title" className="m-0 text-14 font-semibold text-tx">
             Choose a source
           </h2>

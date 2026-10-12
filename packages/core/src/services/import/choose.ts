@@ -10,14 +10,8 @@ import {
 import type { SqlClient } from '../../clients/postgres.ts';
 import type { Importer, ImportSourceContext } from '../../contracts/importer.ts';
 import { openConnection } from './connection.ts';
-import {
-  applySelectionOps,
-  containerRefs,
-  countsOf,
-  listContainers,
-  saveCounts,
-  selectionSummary,
-} from './containers.ts';
+import { containerRefs, countsOf, listContainers, saveCounts } from './containers.ts';
+import { applySelectionOps, selectionSummary } from './selection.ts';
 import { jobById } from './store.ts';
 import type { SecretBox } from '../settings/index.ts';
 

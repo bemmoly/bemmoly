@@ -50,6 +50,7 @@ export function createConfluenceImporter(deps: ConfluenceImporterDeps) {
     count: countConfluence,
     plan: async (_connection, containers) => planConfluence(containers),
     options: CONFLUENCE_OPTIONS,
+    targetPath: (key) => `/docs/s/${encodeURIComponent(key)}`,
     people: peopleOfConfluence,
     targets: {
       label: 'Docs space',

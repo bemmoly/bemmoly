@@ -1,5 +1,6 @@
 import {
   importPeopleQuerySchema,
+  runImportBodySchema,
   updateImportBodySchema,
   type CreateImportBody,
   type ImportJob,
@@ -11,6 +12,7 @@ import { newId } from '../seed/time.ts';
 import { byNeed } from '../seed/import-people.ts';
 import { bodyOf, fail, invalid, notFound, ok, type MockRoute } from '../types.ts';
 import { applyChoices, choicesOf, holdersOf } from './import-plan.ts';
+import { advanceRun, skipsCsv, startRun } from './import-run.ts';
 import {
   chooserOf,
   findJob as find,
@@ -116,7 +118,7 @@ export const importRoutes: MockRoute[] = [
         startedAt: null,
         finishedAt: null,
       };
-      startChooser(job.id, rows);
+      startChooser(job.id, rows, site.includes('flaky'));
       listOf(db).unshift(job);
       return ok(job, 201);
     }),
@@ -127,7 +129,12 @@ export const importRoutes: MockRoute[] = [
     handle: adminOnly((request, db) => {
       const job = find(db, request.params['id']);
       if (!job) return notFound('Import');
-      advance(job);
+      const state = chooserOf(job.id);
+      if (job.status === 'queued') {
+        job.status = 'running';
+        job.startedAt = new Date().toISOString();
+      } else if (job.status === 'running' && state?.progress.size) advanceRun(job, state);
+      else advance(job);
       return ok(job);
     }),
   },
@@ -195,12 +202,30 @@ export const importRoutes: MockRoute[] = [
       if (job.plan.targets?.errors) {
         return fail(400, 'validation_failed', 'Fix the keys marked in Options first.');
       }
-      const total = Object.values(job.plan.counts).reduce((sum, n) => sum + n, 0) + 4;
+      const parsed = runImportBodySchema.safeParse(request.body ?? {});
+      if (!parsed.success) return invalid('body', parsed.error.message);
+      const state = chooserOf(job.id);
+      if (state) startRun(job, state, parsed.data.containers);
       job.status = 'queued';
       job.error = null;
+      job.finishedAt = null;
       job.runs += 1;
-      if (job.progress.done >= job.progress.total) job.progress = { done: 0, total };
       return ok(job);
+    }),
+  },
+  {
+    method: 'GET',
+    pattern: '/api/v1/admin/imports/:id/skips.csv',
+    handle: adminOnly((request, db) => {
+      if (!find(db, request.params['id'])) return notFound('Import');
+      return {
+        status: 200,
+        body: skipsCsv(),
+        headers: {
+          'content-type': 'text/csv; charset=utf-8',
+          'content-disposition': 'attachment; filename="import-skipped.csv"',
+        },
+      };
     }),
   },
   {

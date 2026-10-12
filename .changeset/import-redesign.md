@@ -27,7 +27,18 @@ into the project or space that holds it. Imports used to merge silently in that 
 also matches people by email when you plan, and lets you pick a member or keep a placeholder
 for anyone. Review sums up what Start will do.
 
+While it runs, the import shows an overall percentage that never goes back and one row per
+project or space. A project or space that fails no longer fails the others. The import ends
+"finished with errors", gives the reason in plain words (for example, Jira kept answering "too
+many requests"), and Retry carries it on from where it stopped. The report groups results by
+project with Open board, and offers every skipped record as a CSV download. Whoever started the
+import gets an Inbox notice when it ends. The setup wizard keeps to Connect and Choose,
+starts the import in the background with the default options, and no longer promises change
+history.
+
 Admins: kernel changeset `0502-import-containers` adds the `import_containers` table and
 enables `pg_trgm`, which Bemmoly already requires. It copies the projects and spaces of
 existing import jobs into the new table. `0503-import-plan-options` adds target columns to it
-and the `import_people` table.
+and the `import_people` table. `0504-import-progress` adds per-container progress columns, the
+`import_skips` table and the `completed_with_errors` job status (a previous release's client
+shows such a job as unknown).

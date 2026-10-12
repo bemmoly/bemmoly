@@ -5,33 +5,7 @@ import { fileTooLarge } from '../../hooks/use-import-flow.ts';
 import { renderPage } from '../../test/render.tsx';
 import { mockApi } from '../../test/setup.ts';
 import { ImportPage, NO_SOURCES } from './import-page.tsx';
-
-const click = (element: HTMLElement) => act(() => fireEvent.click(element));
-const type = (label: string | RegExp, value: string) =>
-  act(() => fireEvent.change(screen.getByLabelText(label), { target: { value } }));
-
-async function connectToJira(token = 'a-token') {
-  await renderPage(() => <ImportPage />, '/settings/import');
-  click(await screen.findByRole('radio', { name: /Jira/ }));
-  type('Site address', 'https://acme.example.net');
-  type('Account email', 'rohan@acmelabs.dev');
-  type('API token', token);
-  click(screen.getByRole('button', { name: 'Connect' }));
-}
-
-const continueButton = (n: number) =>
-  screen.findByRole('button', { name: `Continue with ${n}` }, { timeout: 3000 });
-
-/** Options: SUP's key is taken by Support Desk, so give it another, then Review. */
-async function fixSupAndReview() {
-  const key = await screen.findByRole('textbox', { name: 'Key for Support desk' });
-  expect(key.getAttribute('aria-invalid')).toBe('true');
-  act(() => fireEvent.change(key, { target: { value: 'SUPD' } }));
-  const review = screen.getByRole('button', { name: 'Review import' });
-  await waitFor(() => expect(review.hasAttribute('disabled')).toBe(false), { timeout: 3000 });
-  click(review);
-  return screen.findByRole('region', { name: /Review/ });
-}
+import { click, connectToJira, continueButton, fixSupAndReview } from './import-test-steps.tsx';
 
 describe('Settings › Import', () => {
   it('walks a Jira import from connection through choosing to report', async () => {
@@ -58,15 +32,11 @@ describe('Settings › Import', () => {
     click(within(review).getByRole('button', { name: 'Start import' }));
 
     expect(await screen.findByRole('progressbar', { name: 'Import progress' })).toBeDefined();
-    const report = await screen.findByRole(
-      'region',
-      { name: /Import from Jira/ },
-      { timeout: 6000 },
-    );
-    expect(within(report).getByRole('rowheader', { name: 'Issues' })).toBeDefined();
-    expect(within(report).getByText('and 3 more')).toBeDefined();
-    expect(within(report).getByRole('button', { name: 'Run again' })).toBeDefined();
-    expect(within(report).getByText(/updates what this import made/)).toBeDefined();
+    const result = await screen.findByText('All 8 projects imported.', {}, { timeout: 6000 });
+    expect(result.closest('[role="status"]')?.textContent).toMatch(/issues.*are in Work\./);
+    const projects = await screen.findByRole('list', { name: 'Projects' });
+    expect(within(projects).getAllByRole('listitem')).toHaveLength(5);
+    expect(screen.getByRole('button', { name: 'Run again' })).toBeDefined();
   });
 
   it('says connecting only lists projects', async () => {

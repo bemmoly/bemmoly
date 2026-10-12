@@ -17,6 +17,9 @@ export const IMPORT_CONTAINER_FILTERS = [
   'noaccess',
   'selected',
   'attention',
+  /** Chosen rows whose run failed, and the rest of the chosen: the run lists, failed first. */
+  'failed',
+  'others',
 ] as const;
 export const importContainerFilterSchema = z.enum(IMPORT_CONTAINER_FILTERS);
 export type ImportContainerFilter = z.infer<typeof importContainerFilterSchema>;
@@ -49,6 +52,29 @@ export const importContainerRowSchema = z.object({
   /** A project or space here already uses the key it would get. */
   keyInUse: z.boolean(),
   selected: z.boolean(),
+  /** How its run went; null before it runs. */
+  progress: z
+    .object({
+      status: z.enum(['waiting', 'running', 'done', 'failed']),
+      phase: z.string().nullable(),
+      done: z.number().int().nonnegative(),
+      total: z.number().int().nonnegative(),
+      /** Why it stopped, in plain words; where it stopped is done of total. */
+      error: z.string().nullable(),
+      /** What it made, by kind, and where to open it. */
+      counts: z.record(
+        z.string(),
+        z.object({
+          created: z.number().int().nonnegative(),
+          updated: z.number().int().nonnegative(),
+          skipped: z.number().int().nonnegative(),
+        }),
+      ),
+      /** The app path of what it went into: "/work/board/PLT". */
+      path: z.string().nullable(),
+    })
+    .nullable()
+    .optional(),
   /** Where it goes, once a plan has been made with it chosen. */
   target: importTargetSchema.nullable().optional(),
 });
@@ -138,7 +164,7 @@ export type ImportSelectionSummary = z.infer<typeof importSelectionSummarySchema
 /** Whether a row falls in a search and filter, the same test the server's SQL makes. */
 export function matchesScope(
   row: Pick<ImportContainerRow, 'key' | 'name' | 'lead' | 'access' | 'imported' | 'selected'> &
-    Partial<Pick<ImportContainerRow, 'target'>>,
+    Partial<Pick<ImportContainerRow, 'target' | 'progress'>>,
   scope: ImportSelectionScope,
 ): boolean {
   const q = scope.q?.trim().toLowerCase();
@@ -155,6 +181,10 @@ export function matchesScope(
       return row.access === 'none';
     case 'selected':
       return row.selected;
+    case 'failed':
+      return row.selected && row.progress?.status === 'failed';
+    case 'others':
+      return row.selected && row.progress?.status !== 'failed';
     case 'attention':
       return (
         row.selected &&

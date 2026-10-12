@@ -185,7 +185,19 @@ export function useImportFlow(options: { sourcesEnabled?: boolean } = {}) {
     },
     canVisit: (index: number) =>
       (step === 'choose' || step === 'options' || step === 'review') && index < STEP_INDEX[step],
-    start: () => job && actions.run.mutate(job.id),
+    start: () => job && actions.run.mutate({ id: job.id }),
+    /** Runs only these again, each from where it stopped. */
+    retry: (containers: string[]) => job && actions.run.mutate({ id: job.id, containers }),
+    /**
+     * The wizard's short path: plan what is ticked with the defaults (a taken key takes the
+     * next free one, listed in the report), then run it in the background.
+     */
+    startWithDefaults: () =>
+      job &&
+      actions.plan.mutate(
+        { id: job.id, body: { onClash: 'suffix' } },
+        { onSuccess: () => actions.run.mutate({ id: job.id }) },
+      ),
     cancel: () => job && actions.cancel.mutate(job.id),
     open: (id: string) => {
       reset();

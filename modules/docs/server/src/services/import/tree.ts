@@ -112,7 +112,6 @@ export async function writeTree(
     }
     start = page.next;
   }
-  await ctx.progress.phase(`Page tree of ${space.sourceKey}`, listed.length);
   listed.sort((a, b) => a.ancestors.length - b.ancestors.length);
   const known = await ctx.mappings.getMany(
     'page',
@@ -147,7 +146,6 @@ export async function writeTree(
       });
       tree.set(page.id, { id: row.id, path: row.path, title: page.title, created: true });
     }
-    await ctx.progress.advance();
   }
   return tree;
 }

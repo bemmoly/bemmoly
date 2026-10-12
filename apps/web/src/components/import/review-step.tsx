@@ -38,8 +38,8 @@ export function ReviewStep({ job, source, starting, error, onBack, onStart }: Re
         </dl>
       )}
       <Notice>
-        Large sites take a while. The import keeps running if you leave this page, and its report
-        waits in Settings › Import.
+        Large sites take a while. The import keeps running if you leave this page, and Inbox tells
+        you when it is done.
       </Notice>
       <FormError error={error} />
       <div className="-mx-4 -mb-4 flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-line px-4 py-3">

@@ -1,5 +1,6 @@
 import type {
   ContainerMemberships,
+  ImportContainerScope,
   ImportConnection,
   ImportRunContext,
   SqlClient,
@@ -18,16 +19,15 @@ import { setupProject } from './project-setup.ts';
 import { projectKeyFrom } from './schema.ts';
 
 /*
- * A Jira run, project by project: configuration, boards and sprints, then issues a page at a
- * time (each page with its labels, comments and attachments), and finally parents and links
- * across everything imported. The checkpoint names the project and the page cursor reached,
- * so a resumed run starts at the first page not yet written; pages are idempotent anyway.
+ * A Jira run, project by project, each on its own (a project that fails is recorded and the
+ * run moves on): configuration, boards and sprints, then issues a page at a time (each page
+ * with its labels, comments and attachments), and finally links across everything imported.
+ * Each project's checkpoint is the page cursor it reached, so Retry or Resume starts at the
+ * first page not yet written; pages are idempotent anyway.
  */
 
 export interface JiraCheckpoint {
-  project: number;
   cursor: string | null;
-  stage: 'issues' | 'links';
 }
 
 export interface JiraRunDeps {
@@ -39,12 +39,12 @@ async function importIssues(
   deps: JiraRunDeps,
   client: JiraClient,
   rows: RowContext,
-  checkpoint: JiraCheckpoint,
+  scope: ImportContainerScope,
 ): Promise<void> {
   const { ctx, setup } = rows;
   const jql = projectJql(setup.jira.key);
-  await ctx.progress.phase(`Issues in ${setup.key}`, await client.countIssues(jql));
-  let cursor = checkpoint.cursor;
+  await scope.progress.phase('Issues', await client.countIssues(jql));
+  let cursor = scope.checkpoint.read<JiraCheckpoint>()?.cursor ?? null;
   for (;;) {
     ctx.signal.throwIfAborted();
     const page = await client.searchIssues(jql, cursor);
@@ -73,13 +73,9 @@ async function importIssues(
     await writeLabels(deps.sql, setup.projectId, labels);
     if (ctx.include.comments) await writeComments(deps.sql, client, rows, pageIssues);
     if (ctx.include.attachments) await writeAttachments(deps.sql, client, rows, pageIssues);
-    await ctx.progress.advance(page.issues.length);
+    await scope.progress.advance(page.issues.length);
     cursor = page.next;
-    await ctx.checkpoint.save({
-      ...checkpoint,
-      cursor,
-      stage: cursor ? 'issues' : 'links',
-    } satisfies JiraCheckpoint);
+    await scope.checkpoint.save({ cursor } satisfies JiraCheckpoint);
     if (!cursor) return;
   }
 }
@@ -127,46 +123,34 @@ export async function runJira(
   } catch (error) {
     return explainJiraError(error);
   }
-  for (const id of plan.containers) {
-    if (!projects.some((project) => project.id === id))
-      ctx.report.skip('project', id, 'No longer visible to the token');
-  }
   const projectKeys = await localKeys(deps.sql, projects, ctx);
   const people = new Map<string, { id: string; label: string }>();
-  const saved = ctx.checkpoint.read<JiraCheckpoint>();
-  const imported = new Set<string>();
-  await ctx.progress.phase('Projects', projects.length);
-  for (const [index, summary] of projects.entries()) {
-    const setup = await setupProject(deps, client, summary, ctx, projectKeys.get(summary.key)!);
-    imported.add(setup.projectId);
-    if (saved && index < saved.project) {
-      await ctx.progress.advance();
-      continue;
-    }
-    const sprints = ctx.include.agile
-      ? await importAgile(deps.sql, client, setup, ctx)
-      : new Map<string, string>();
-    const rows: RowContext = {
-      setup,
-      fields: createFieldMapper(deps.sql, setup.projectId, fields, ctx),
-      sprints,
-      ctx,
-      people,
-      siteUrl: parsed.baseUrl,
-      projectKeys,
-      cloud: parsed.deployment === 'cloud',
-    };
-    const resume = saved && saved.project === index && saved.stage === 'issues';
-    await importIssues(deps, client, rows, {
-      project: index,
-      cursor: resume ? saved.cursor : null,
-      stage: 'issues',
+  for (const container of await ctx.containers.list()) {
+    await ctx.containers.run(container, async (scope) => {
+      const summary = projects.find((project) => project.id === container.id);
+      if (!summary) throw new Error('The token no longer sees this project');
+      const setup = await setupProject(deps, client, summary, ctx, projectKeys.get(summary.key)!);
+      const sprints = ctx.include.agile
+        ? await importAgile(deps.sql, client, setup, ctx)
+        : new Map<string, string>();
+      const rows: RowContext = {
+        setup,
+        fields: createFieldMapper(deps.sql, setup.projectId, fields, ctx),
+        sprints,
+        ctx,
+        people,
+        siteUrl: parsed.baseUrl,
+        projectKeys,
+        cloud: parsed.deployment === 'cloud',
+      };
+      await importIssues(deps, client, rows, scope);
     });
-    await ctx.checkpoint.save({
-      project: index + 1,
-      cursor: null,
-      stage: 'issues',
-    } satisfies JiraCheckpoint);
   }
+  const done = await ctx.containers.done();
+  const made = await ctx.mappings.getMany(
+    'project',
+    done.map((container) => container.id),
+  );
+  const imported = new Set([...made.values()].map((row) => row.targetId));
   if (ctx.include.links) await writeLinks(deps.sql, imported, ctx);
 }

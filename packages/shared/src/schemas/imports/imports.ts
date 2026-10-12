@@ -65,6 +65,8 @@ export const IMPORT_JOB_STATUSES = [
   'queued',
   'running',
   'completed',
+  /** Finished, but one or more projects or spaces failed; Retry runs those again. */
+  'completed_with_errors',
   'failed',
   'cancelled',
 ] as const;
@@ -174,6 +176,16 @@ export const importJobSchema = z.object({
   plan: importPlanSchema.nullable(),
   report: importReportSchema,
   error: z.string().nullable(),
+  /** Where the chosen containers are in this run; zero before the first run. */
+  containers: z
+    .object({
+      total: z.number().int().nonnegative(),
+      waiting: z.number().int().nonnegative(),
+      running: z.number().int().nonnegative(),
+      done: z.number().int().nonnegative(),
+      failed: z.number().int().nonnegative(),
+    })
+    .optional(),
   /** How many times it has run; a re-run updates what an earlier one made. */
   runs: z.number().int().nonnegative(),
   createdAt: z.iso.datetime(),
@@ -192,6 +204,12 @@ export const importPlannedJobSchema = importJobSchema.extend({
 export const importJobListSchema = z.object({ items: z.array(importJobSchema) });
 
 export const importJobIdParamsSchema = z.object({ id: z.uuid() });
+
+/** POST /admin/imports/:id/run: everything, or only these containers again (Retry). */
+export const runImportBodySchema = z
+  .object({ containers: z.array(z.string().min(1).max(200)).min(1).max(5000).optional() })
+  .strict();
+export type RunImportBody = z.infer<typeof runImportBodySchema>;
 
 /** POST /admin/imports: connect to a source and look at what it holds. */
 export const createImportBodySchema = z

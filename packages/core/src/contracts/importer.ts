@@ -110,6 +110,24 @@ export interface ImportTargetLookup {
   search(q: string, limit: number): Promise<{ id: string; key: string; name: string }[]>;
 }
 
+/** A chosen container as a run works through it. */
+export interface ImportRunContainer extends ImportContainerRef {
+  target: ImportRunTarget | null;
+}
+
+/** One container's own checkpoint and progress, inside ctx.containers.run. */
+export interface ImportContainerScope {
+  checkpoint: {
+    read<T>(): T | null;
+    save(value: unknown): Promise<void>;
+  };
+  progress: {
+    /** Names the step it is on and how many records it holds; its bar never goes back. */
+    phase(name: string, total: number): Promise<void>;
+    advance(by?: number): Promise<void>;
+  };
+}
+
 export interface ImportRunContext extends ImportPlanContext {
   jobId: string;
   /** What to bring along with the records, as the plan settled it. */
@@ -131,6 +149,25 @@ export interface ImportRunContext extends ImportPlanContext {
     count(kind: string, outcome: ImportOutcome, by?: number): void;
     skip(kind: string, source: string, reason: string): void;
     warn(message: string): void;
+  };
+  /**
+   * The chosen containers, each run on its own: an error in one is recorded on it (in plain
+   * words) and the run moves on to the next, so one failed project never fails the others.
+   */
+  containers: {
+    /** Those still to do in this run, in the source's order. */
+    list(): Promise<ImportRunContainer[]>;
+    /** Those done, in this run or an earlier one of the same job. */
+    done(): Promise<ImportRunContainer[]>;
+    /**
+     * Runs work for one container. Returns false when it failed (or had failed). With
+     * `final: false` it is a first pass (a page tree before bodies) and stays to do.
+     */
+    run(
+      container: ImportRunContainer,
+      work: (scope: ImportContainerScope) => Promise<void>,
+      options?: { final?: boolean },
+    ): Promise<boolean>;
   };
   users: {
     /** The Bemmoly user id; null for a person with neither email nor name. */
@@ -166,6 +203,8 @@ export interface Importer {
    * mappings) and containers whose key is already taken here.
    */
   discover(connection: ImportConnection, ctx: ImportPlanContext): Promise<ImportDiscovery>;
+  /** Where the app opens what a container went into, by its key: "/work/board/PLT". */
+  targetPath?(key: string): string;
   /** The "what to bring" checkboxes this source offers. */
   options?: readonly ImportOption[];
   /** Where its containers can go; without it every container is new. */

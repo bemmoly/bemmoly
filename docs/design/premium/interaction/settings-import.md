@@ -102,16 +102,36 @@ readers.
    unticked options; left out when nothing is), People ("61 matched by email · 25
    placeholders", placeholders counting hidden), Keys ("SUP becomes SUPD", "SUP goes into
    Support Desk (SUP)"), Reported only ("1 field"). An information notice: "Large sites take a
-   while. The import keeps running if you leave this page, and its report waits in Settings ›
-   Import." (Inbox is not named until it carries import events.) The bar: "You can cancel at
+   while. The import keeps running if you leave this page, and Inbox tells you when it is
+   done." (The server posts an import_finished notification to whoever started the run.) The bar: "You can cancel at
    any time; what was brought in stays and Resume picks up from there.", Back (to Options, as
    it was) and Start import (primary, no confirm dialog). No time estimate yet: the plan has
    no rate figure to estimate from.
-6. **Import.** **Built** (unchanged): the overall bar and phase, Cancel import. **Planned**:
-   one row per project with its own bar.
-7. **Done.** **Built** (unchanged): totals per kind, the first skipped rows, Run again,
-   Resume. **Planned**: one row per project with Open board, Retry for a failed project, the
-   skipped list as CSV.
+6. **Import (Progress).** **Built.** Section "Progress" with "3 of 12 projects" (done of chosen).
+   A large overall percentage, then "8,153 of 23,410 issues · about 13 minutes left" as a
+   polite live region; the minutes come from the rate this page has watched the overall count
+   grow (the job's `progress` is the total across projects and only grows) and are left out
+   until there is a rate. The overall bar is a progressbar named "Import progress" with its
+   value. Then one row per chosen project (GET containers `filter=selected`, the first page,
+   read every second while it runs): a drawn state icon (done, running, waiting, stopped; its
+   word for screen readers), name and key, "Issues: 1,903 of 3,071", "Waiting" or "Done", its
+   own bar (done, in progress, or red where it stopped) and n / m. Five rows show; "Show N
+   more" (a disclosure with `aria-expanded`) shows the rest. The bar: "You can leave this page.
+   Inbox tells you when it finishes." and Cancel import (danger, no confirm; Resume picks up).
+7. **Done.** **Built.** A result alert: "All 12 projects imported. 23,373 issues, 41,902
+   comments and 6,118 attachments are in Work." (ok), or when the job is
+   `completed_with_errors` "11 of 12 projects imported. Mobile apps stopped partway. What it
+   brought in is kept; Retry carries on from where it stopped." (caution) with "Retry Mobile
+   apps" (primary; "Retry N" for several) beside it. Cancelled and failed jobs say so with
+   Resume. Four tiles: Issues, Comments, Attachments, Skipped (from the report's counts; two
+   across on a phone). Section "Projects": the failed ones first, "Stopped at 1,903 of 3,071:
+   Jira kept answering "too many requests" for 10 minutes" with Retry (sends only that id; it
+   carries on from its checkpoint), the others "1,840 issues updated · 2 skipped" with "Open
+   board" or "Open space" to the path the server gives; five rows, then "Show N more". Section
+   "Skipped" with "37 records": the first rows (key, reason) and "and 34 more in the list";
+   its bar has "Download the list (CSV)" (a plain link to the job's `skips.csv`), New import
+   and Run again (Resume when it was cancelled or failed). Run again updates what this import
+   made.
 
 **Recent imports.** The latest jobs: source, site, when, state. Opening one shows it at its
 own step.
@@ -168,17 +188,25 @@ are a radio group (arrows move and choose).
 
 ## URL state
 
-None in this release: the open job, the step, the search and the filter live in page state;
-Recent imports reopens a job at its step after a reload. Search and filter in the URL wait for
-the import route to move under its own path.
+`?job=<id>` opens that import at its own step: the Inbox notification sent when a job ends
+(`import_finished`, to the admin who started it) links to `/settings/import?job=<id>`, and
+opening one from Recent imports writes it, so reload and Back keep it. Picking a source, New
+import and Back to Connect take it out. A job that is gone shows the failure with its request
+id above the source cards. The step, search and filter stay in page state.
 
 ## Setup wizard: the short path
 
-**Interim.** The wizard uses the same `ImportFlowBody`, so it shows Connect, the chooser,
-Options and Review without the stepper; its copy is unchanged. **Planned:** Connect, choose, Start import
-with defaults for options and mapping, key clashes falling back to a suffixed key listed in the
-report, no claim the importer cannot keep, and the run continuing in the background. Before the
-modules are on, the importers stay visible but not pickable ("Needs Work", "Needs Docs").
+**Built.** Connect and Choose only, no stepper. The chooser's button reads "Start import of
+N"; it plans what is ticked with the defaults (`PATCH {onClash: 'suffix'}`: a taken key takes
+the next free one, listed in the report; options keep their defaults) and runs it. Then: "Importing 12 projects from Jira. It keeps
+running while you finish setup; the report waits in Settings › Import." (ok alert) over a
+progress bar; when it ends the line says how (finished, with a problem, stopped). The step's
+own Continue moves on at any time and Skip for now leaves it; the note above them reads "Start
+import runs it in the background with the default options; change them later in Settings ›
+Import." The step's subtitle promises only what the importer keeps: "Import keeps keys,
+comments, attachments and page trees, and running it again updates what it made instead of
+copying it." (no history; it comes back only as an option when the importer reads it). Before
+the modules are on, the importers stay visible but not pickable ("Needs Work", "Needs Docs").
 
 ## Choices recorded
 
@@ -192,8 +220,11 @@ modules are on, the importers stay visible but not pickable ("Needs Work", "Need
   readers instead of a hover title, since the system has no native titles.
 - **Rows that want a look stay put.** A row the attention filter listed keeps its place at
   the top after it is fixed, so typing a key never moves the field away from the caret.
-- **Existing picker source.** The import contract has no list of candidate targets, so the
-  picker reads the target module's list (`/work/projects`, `/docs/spaces`) for id, key and
-  name. A kernel endpoint under the import would remove that reach into a module.
+- **Existing picker source.** The kernel's `GET imports/:id/targets` lists the projects or
+  spaces an import can go into; the import UI never reads a module's routes.
+- **Per-project rows read the selected containers.** Progress and Done list the first 100
+  chosen rows with their `progress`; a site with more shows those and the totals.
+- **Time left** is this page's own reading: from the first poll it saw to the latest, so a job
+  opened halfway is not estimated from its start, and a Retry starts a fresh rate.
 - **Phone.** Mapping rows stack (source over target, arrow hidden), the option grid and the
   review list go to one column, the people numbers to two.

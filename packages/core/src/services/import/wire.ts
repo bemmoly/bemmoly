@@ -2,6 +2,7 @@ import type { Logger } from 'pino';
 import { z } from 'zod';
 import type { SqlClient } from '../../clients/postgres.ts';
 import type { Authorize } from '../../contracts/authz.ts';
+import type { EventBus } from '../../contracts/event-bus.ts';
 import type { ImportAddressPolicy } from '../../contracts/importer.ts';
 import type { JobQueue } from '../../contracts/jobs.ts';
 import type { ObjectStore } from '../../contracts/object-store.ts';
@@ -26,6 +27,8 @@ export interface ImportWiring {
   /** BEMMOLY_ALLOW_PRIVATE_URLS: sources may then reach any address. */
   allowPrivateUrls: boolean;
   logger?: Pick<Logger, 'info' | 'warn' | 'error'>;
+  /** Where a finished run's Inbox line goes. */
+  events?: EventBus;
 }
 
 export interface Imports {
@@ -60,6 +63,7 @@ export function wireImports(wiring: ImportWiring): Imports {
     fetchFor,
     connectionOf: (row) => openConnection(row, wiring.secrets),
     ...(wiring.logger ? { logger: wiring.logger } : {}),
+    ...(wiring.events ? { events: wiring.events } : {}),
   });
   wiring.jobs.register(
     IMPORT_RUN_JOB,

@@ -62,6 +62,7 @@ function runContext(mappings: ImportMappingStore): ImportRunContext {
     mappings,
     include: { comments: true, attachments: true, agile: true, links: true, history: false },
     targets: new Map(),
+    containers: { list: async () => [], done: async () => [], run: unused },
     checkpoint: { read: () => null, save: async () => undefined },
     progress: { phase: async () => undefined, advance: async () => undefined },
     report: { count: () => undefined, skip: () => undefined, warn: () => undefined },

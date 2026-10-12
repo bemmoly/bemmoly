@@ -20,6 +20,7 @@ export const STATUS_WORDS: Record<ImportJobStatus, { label: string; tone: PillTo
   queued: { label: 'Waiting to start', tone: 'acc' },
   running: { label: 'Importing', tone: 'acc' },
   completed: { label: 'Finished', tone: 'ok' },
+  completed_with_errors: { label: 'Finished with a problem', tone: 'warn' },
   failed: { label: 'Failed', tone: 'red' },
   cancelled: { label: 'Cancelled', tone: 'warn' },
 };

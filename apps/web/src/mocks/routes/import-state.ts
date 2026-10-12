@@ -28,6 +28,13 @@ export interface ChooserState {
   onClash: ImportClashRule;
   /** Everyone the chosen containers name, once planned. */
   people: ImportPersonRow[] | null;
+  /** How each chosen container's run went, once one started. */
+  progress: Map<string, NonNullable<ImportContainerRow['progress']>>;
+  /** A "flaky" site: Mobile apps stops partway until it is retried. */
+  partial: boolean;
+  /** This run updates what an earlier one made. */
+  updating: boolean;
+  retried: boolean;
 }
 
 const jobs = new WeakMap<MockDb, ImportJob[]>();
@@ -44,7 +51,7 @@ export const listOf = (db: MockDb) => {
 export const findJob = (db: MockDb, id: string | undefined) =>
   listOf(db).find((job) => job.id === id);
 
-export function startChooser(jobId: string, rows: MockContainer[]) {
+export function startChooser(jobId: string, rows: MockContainer[], partial = false) {
   choosers.set(jobId, {
     rows,
     selected: defaultSelection(rows),
@@ -54,6 +61,10 @@ export function startChooser(jobId: string, rows: MockContainer[]) {
     targets: null,
     onClash: 'error',
     people: null,
+    progress: new Map(),
+    partial,
+    updating: false,
+    retried: false,
   });
 }
 
@@ -66,6 +77,7 @@ export function rowOf(state: ChooserState, row: MockContainer): ImportContainerR
     count: row.access === 'none' ? 0 : !lazy || state.counted.has(row.id) ? records : null,
     selected: state.selected.has(row.id),
     target: state.targets?.get(row.id) ?? null,
+    progress: state.progress.get(row.id) ?? null,
   };
 }
 

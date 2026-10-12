@@ -8,6 +8,7 @@ import {
   type ImportPeopleQuery,
   type ImportPlannedJob,
   type ImportTargetQuery,
+  type RunImportBody,
   type ImportSelectionBody,
   type ImportJob,
   type ImportSource,
@@ -22,19 +23,13 @@ import type { SecretBox } from '../settings/index.ts';
 import { createChooser } from './choose.ts';
 import { buildPlan } from './plan.ts';
 import { listPeople } from './people-plan.ts';
+import { queueRun } from './run-queue.ts';
+import { skipsCsv } from './skips.ts';
 import { openConnection, splitConnection } from './connection.ts';
-import {
-  containerRefs,
-  insertContainers,
-  listContainers,
-  preselect,
-  saveCounts,
-  selectExactly,
-  SMALL_SITE,
-} from './containers.ts';
+import { containerRefs, insertContainers, listContainers, saveCounts } from './containers.ts';
+import { preselect, selectExactly, SMALL_SITE } from './selection.ts';
 import { describeSource, type ImporterCatalog } from './define.ts';
 import { createMappingStore } from './mappings.ts';
-import { IMPORT_RUN_JOB } from './runner.ts';
 import { insertJob, jobById, listJobs, toImportJob, type ImportJobRow } from './store.ts';
 
 export interface ImportServiceDeps {
@@ -186,37 +181,26 @@ export function createImportService(deps: ImportServiceDeps) {
      * Queues a run. After a failure or a cancel it resumes from the checkpoint; after a
      * completed run it starts over, and the mappings make that an update, not a copy.
      */
-    async run(actor: Actor, id: string): Promise<ImportJob> {
+    /**
+     * Queues a run: from the start after a completed one, resuming after a failure or cancel,
+     * or only the given containers again (Retry). See queueRun.
+     */
+    async run(actor: Actor, id: string, body: RunImportBody = {}): Promise<ImportJob> {
       await deps.authorize(actor, CAPABILITY, workspace);
       importerFor((await jobById(sql, id)).source);
-      const updated = await sql.begin(async (tx) => {
-        const row = await jobById(tx, id);
-        if (ACTIVE.has(row.status)) throw new ConflictError('The import is already running');
-        if (!row.plan) throw new ValidationError('Pick what to bring in before running');
-        if (row.plan.targets?.errors) {
-          throw new ValidationError(
-            `${row.plan.targets.errors} chosen ${row.plan.targets.errors === 1 ? 'one has' : 'have'} a key that is taken; fix ${row.plan.targets.errors === 1 ? 'it' : 'them'} in Options first`,
-          );
-        }
-        const fresh = row.status === 'ready' || row.status === 'completed';
-        const [queued] = await tx<ImportJobRow[]>`
-          update import_jobs set status = 'queued', error = null, finished_at = null,
-            runs = runs + ${fresh ? 1 : 0},
-            checkpoint = ${fresh ? null : tx`checkpoint`},
-            report = ${fresh ? tx`'{}'::jsonb` : tx`report`},
-            started_at = ${fresh ? null : tx`started_at`},
-            progress_done = ${fresh ? 0 : tx`progress_done`}, updated_at = now()
-          where id = ${id} returning *`;
-        if (!queued) throw new NotFoundError('The import was not found');
-        await deps.jobs.enqueue(
-          IMPORT_RUN_JOB,
-          { importJobId: id },
-          { key: `${IMPORT_RUN_JOB}:${id}:${queued.runs}:${Date.now()}`, transaction: tx },
-        );
-        return queued;
+      const updated = await queueRun(sql, deps.jobs, id, body);
+      await audit(actor, 'import.started', updated, {
+        runs: updated.runs,
+        ...(body.containers ? { retried: body.containers.length } : {}),
       });
-      await audit(actor, 'import.started', updated, { runs: updated.runs });
       return present(updated);
+    },
+
+    /** Every skipped record as CSV rows: container, kind, record, reason. */
+    async skips(actor: Actor, id: string): Promise<string> {
+      await deps.authorize(actor, CAPABILITY, workspace);
+      await jobById(sql, id);
+      return skipsCsv(sql, id);
     },
 
     async containers(actor: Actor, id: string, query: ImportContainerQuery) {

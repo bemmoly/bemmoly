@@ -84,8 +84,7 @@ describe('Import options', () => {
     const notBrought = within(review).getByText('Not brought');
     expect(notBrought.nextElementSibling?.textContent).toBe('Links between issues');
     expect(review.textContent).toContain('with comments, attachments and sprints and boards');
-    expect(review.textContent).toContain('its report waits in Settings › Import');
-    expect(review.textContent).not.toContain('Inbox');
+    expect(review.textContent).toContain('and Inbox tells you when it is done');
   });
 
   it('sends a choice for a person and updates the numbers', async () => {

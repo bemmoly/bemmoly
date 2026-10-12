@@ -67,6 +67,7 @@ export function createJiraImporter(deps: JiraImporterDeps) {
     discover: (connection, ctx) => discoverJira(requireSql(deps), connection, ctx),
     count: countJira,
     options: JIRA_OPTIONS,
+    targetPath: (key) => `/work/board/${encodeURIComponent(key)}`,
     people: peopleOfJira,
     targets: {
       label: 'Work project',

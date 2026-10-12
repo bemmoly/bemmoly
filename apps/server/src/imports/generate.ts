@@ -20,14 +20,15 @@ const LABELS = ['payments', 'web', 'mobile', 'infra', 'security', 'billing', 'se
 
 const paragraph = (text: string) => ({ type: 'paragraph', content: [{ type: 'text', text }] });
 
-export function generateIssues(count: number): unknown[] {
+/** `count` issues in project `key`; ids start past `idBase` so two projects never share one. */
+export function generateIssues(count: number, key = 'OPS', idBase = 100_000): unknown[] {
   return Array.from({ length: count }, (_, index) => {
     const number = index + 1;
     const epic = number % 50 === 1;
     const person = PEOPLE[number % PEOPLE.length]!;
     return {
-      id: String(100_000 + number),
-      key: `OPS-${number}`,
+      id: String(idBase + number),
+      key: `${key}-${number}`,
       fields: {
         summary: `${epic ? 'Epic' : 'Work item'} ${number}: make the thing ${number % 7 ? 'faster' : 'safer'}`,
         issuetype: epic
@@ -40,8 +41,8 @@ export function generateIssues(count: number): unknown[] {
         parent: epic
           ? null
           : {
-              id: String(100_000 + number - ((number - 1) % 50)),
-              key: `OPS-${number - ((number - 1) % 50)}`,
+              id: String(idBase + number - ((number - 1) % 50)),
+              key: `${key}-${number - ((number - 1) % 50)}`,
             },
         labels: [LABELS[number % LABELS.length], LABELS[(number * 3) % LABELS.length]],
         created: new Date(Date.UTC(2025, 0, 1) + number * 3_600_000).toISOString(),
@@ -66,7 +67,7 @@ export function generateIssues(count: number): unknown[] {
         comment: {
           total: 2,
           comments: [1, 2].map((n) => ({
-            id: `gen-c-${number}-${n}`,
+            id: `gen-c-${key}-${number}-${n}`,
             author: PEOPLE[(number + n) % PEOPLE.length],
             created: new Date(Date.UTC(2025, 1, 1) + number * 3_600_000 + n).toISOString(),
             body: { type: 'doc', version: 1, content: [paragraph(`Comment ${n} on ${number}`)] },
@@ -77,9 +78,9 @@ export function generateIssues(count: number): unknown[] {
           number > 1
             ? [
                 {
-                  id: `gen-l-${number}`,
+                  id: `gen-l-${key}-${number}`,
                   type: { name: 'Relates' },
-                  outwardIssue: { id: String(100_000 + number - 1), key: `OPS-${number - 1}` },
+                  outwardIssue: { id: String(idBase + number - 1), key: `${key}-${number - 1}` },
                 },
               ]
             : [],

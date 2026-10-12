@@ -4,6 +4,7 @@ import {
   importCountBodySchema,
   importPeopleQuerySchema,
   importTargetQuerySchema,
+  runImportBodySchema,
   type ImportPlannedJob,
   type ImportTargetList,
   type ImportPeoplePage,
@@ -45,7 +46,14 @@ export function createImportsController(service: ImportService, actorOf: ActorRe
       return service.update(await actorOf(request), idOf(request), body);
     },
     async run(request: FastifyRequest): Promise<ImportJob> {
-      return service.run(await actorOf(request), idOf(request));
+      const body = parseOrThrow(runImportBodySchema, request.body ?? {});
+      return service.run(await actorOf(request), idOf(request), body);
+    },
+    async skips(request: FastifyRequest, reply: FastifyReply): Promise<string> {
+      const csv = await service.skips(await actorOf(request), idOf(request));
+      reply.header('content-type', 'text/csv; charset=utf-8');
+      reply.header('content-disposition', 'attachment; filename="skipped-records.csv"');
+      return csv;
     },
     async containers(request: FastifyRequest): Promise<ImportContainerPage> {
       const query = parseOrThrow(importContainerQuerySchema, request.query);

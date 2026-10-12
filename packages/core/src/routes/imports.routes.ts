@@ -24,6 +24,9 @@ export function importsRoutes(controller: ImportsController): FastifyPluginAsync
     app.get('/admin/imports/:id/people', async (request) => controller.people(request));
     app.get('/admin/imports/:id/selection', async (request) => controller.selection(request));
     app.patch('/admin/imports/:id/selection', async (request) => controller.select(request));
+    app.get('/admin/imports/:id/skips.csv', async (request, reply) =>
+      controller.skips(request, reply),
+    );
     app.post('/admin/imports/:id/run', async (request) => controller.run(request));
     app.post('/admin/imports/:id/cancel', async (request) => controller.cancel(request));
   };

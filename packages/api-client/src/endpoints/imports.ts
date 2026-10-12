@@ -4,6 +4,8 @@ import {
   importPeoplePageSchema,
   importPlannedJobSchema,
   importTargetListSchema,
+  runImportBodySchema,
+  type RunImportBody,
   importCountBodySchema,
   importCountListSchema,
   importSelectionBodySchema,
@@ -43,8 +45,14 @@ export function importEndpoints(http: Http) {
         method: 'PATCH',
         body: validated(updateImportBodySchema, body),
       }),
-    run: async (id: string) =>
-      http.request(`${IMPORTS}/${enc(id)}/run`, importJobSchema, { method: 'POST' }),
+    /** Runs the plan; with `containers`, only those again (Retry), from their checkpoints. */
+    run: async (id: string, body: RunImportBody = {}) =>
+      http.request(`${IMPORTS}/${enc(id)}/run`, importJobSchema, {
+        method: 'POST',
+        body: validated(runImportBodySchema, body),
+      }),
+    /** Where the CSV of every skipped record is served, for a download link. */
+    skipsUrl: (id: string) => http.url(`${IMPORTS}/${enc(id)}/skips.csv`),
     /** One page of the containers the connection found, searched and filtered. */
     containers: async (id: string, query: Partial<ImportContainerQuery> = {}) =>
       http.request(`${IMPORTS}/${enc(id)}/containers`, importContainerPageSchema, {

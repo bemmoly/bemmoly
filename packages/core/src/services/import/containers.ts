@@ -1,12 +1,11 @@
 import type {
   ImportContainer,
+  ImportCount,
   ImportContainerCounts,
   ImportContainerPage,
   ImportContainerQuery,
   ImportContainerRow,
-  ImportSelectionOp,
   ImportSelectionScope,
-  ImportSelectionSummary,
 } from '@bemmoly/shared';
 import type { SqlClient } from '../../clients/postgres.ts';
 import type { ImportContainerRef } from '../../contracts/importer.ts';
@@ -40,6 +39,12 @@ interface ContainerRecord {
   target_name: string | null;
   target_note: string | null;
   target_error: string | null;
+  run_status: 'waiting' | 'running' | 'done' | 'failed' | null;
+  run_phase: string | null;
+  run_done: number;
+  run_total: number;
+  run_error: string | null;
+  run_result: { counts?: Record<string, ImportCount>; path?: string | null } | null;
 }
 
 const CHUNK = 1000;
@@ -64,6 +69,17 @@ const toRow = (record: ContainerRecord): ImportContainerRow => ({
       : null,
   keyInUse: record.key_in_use,
   selected: record.selected,
+  progress: record.run_status
+    ? {
+        status: record.run_status,
+        phase: record.run_phase,
+        done: record.run_done,
+        total: record.run_total,
+        error: record.run_error,
+        counts: record.run_result?.counts ?? {},
+        path: record.run_result?.path ?? null,
+      }
+    : null,
   target: record.target_mode
     ? {
         mode: record.target_mode,
@@ -115,7 +131,7 @@ export async function insertContainers(
 }
 
 /** The SQL twin of matchesScope: a search over key, name and lead, then a filter. */
-function scopeWhere(sql: SqlExecutor, scope: ImportSelectionScope) {
+export function scopeWhere(sql: SqlExecutor, scope: ImportSelectionScope) {
   const q = scope.q?.trim().toLowerCase();
   const like = q ? `%${q.replace(/[\\%_]/g, '\\$&')}%` : null;
   const search = like
@@ -131,10 +147,14 @@ function scopeWhere(sql: SqlExecutor, scope: ImportSelectionScope) {
           ? sql`and access = 'none'`
           : scope.filter === 'selected'
             ? sql`and selected`
-            : scope.filter === 'attention'
-              ? sql`and selected and target_mode is not null and (target_error is not null
+            : scope.filter === 'failed'
+              ? sql`and selected and run_status = 'failed'`
+              : scope.filter === 'others'
+                ? sql`and selected and run_status is distinct from 'failed'`
+                : scope.filter === 'attention'
+                  ? sql`and selected and target_mode is not null and (target_error is not null
                   or target_mode <> 'create' or target_key is distinct from key)`
-              : sql``;
+                  : sql``;
   return sql`${search} ${filter}`;
 }
 
@@ -166,7 +186,8 @@ export async function listContainers(
   const records = await sql<ContainerRecord[]>`
     select source_id, position, key, name, kind, type, lead_name, access, count,
       imported_target_id, imported_key, imported_name, imported_at, key_in_use, selected,
-      target_mode, target_key, target_id, target_name, target_note, target_error
+      target_mode, target_key, target_id, target_name, target_note, target_error,
+      run_status, run_phase, run_done, run_total, run_error, run_result
     from import_containers
     where job_id = ${jobId} and position > ${after} ${scopeWhere(sql, scope)}
     order by position limit ${query.limit + 1}`;
@@ -222,74 +243,3 @@ export async function countsOf(
     select source_id as id, count from import_containers
     where job_id = ${jobId} and source_id = any(${ids as string[]}::text[]) and count is not null`;
 }
-
-/** Applies selection operations in order, inside the caller's transaction. */
-export async function applySelectionOps(
-  tx: SqlExecutor,
-  jobId: string,
-  ops: readonly ImportSelectionOp[],
-): Promise<void> {
-  for (const op of ops) {
-    if ('clear' in op) {
-      await tx`
-        update import_containers set selected_before = selected, selected = false
-        where job_id = ${jobId}`;
-    } else if ('restore' in op) {
-      await tx`
-        update import_containers set selected = coalesce(selected_before, selected)
-        where job_id = ${jobId} and access = 'ok'`;
-    } else if ('ids' in op) {
-      await tx`
-        update import_containers set selected = ${op.select}
-        where job_id = ${jobId} and access = 'ok'
-          and source_id = any(${op.ids as string[]}::text[])`;
-    } else {
-      await tx`
-        update import_containers set selected = ${op.select}
-        where job_id = ${jobId} and access = 'ok' ${scopeWhere(tx, op.scope)}`;
-    }
-  }
-}
-
-export async function selectionSummary(
-  sql: SqlExecutor,
-  jobId: string,
-): Promise<ImportSelectionSummary> {
-  const [row] = await sql<ImportSelectionSummary[]>`
-    select count(*)::int as selected, coalesce(sum(count), 0)::int as records,
-      count(*) filter (where count is null)::int as uncounted
-    from import_containers where job_id = ${jobId} and selected`;
-  return row ?? { selected: 0, records: 0, uncounted: 0 };
-}
-
-/** Exactly these ids ticked (those the token can read), nothing else; returns ids not found. */
-export async function selectExactly(
-  tx: SqlExecutor,
-  jobId: string,
-  ids: readonly string[],
-): Promise<string[]> {
-  await tx`update import_containers set selected = false where job_id = ${jobId}`;
-  await tx`
-    update import_containers set selected = true
-    where job_id = ${jobId} and access = 'ok' and source_id = any(${ids as string[]}::text[])`;
-  const rows = await tx<{ source_id: string }[]>`
-    select source_id from import_containers
-    where job_id = ${jobId} and source_id = any(${ids as string[]}::text[])`;
-  const found = new Set(rows.map((row) => row.source_id));
-  return ids.filter((id) => !found.has(id));
-}
-
-/**
- * The first ticks on a fresh connection: on a small site (under 50) the new ones with
- * something in them; on a big site nothing, so nobody starts a multi-hour run by accident.
- */
-export async function preselect(sql: SqlExecutor, jobId: string, total: number): Promise<void> {
-  if (total >= SMALL_SITE) return;
-  await sql`
-    update import_containers set selected = true
-    where job_id = ${jobId} and access = 'ok' and imported_target_id is null
-      and (count is null or count > 0)`;
-}
-
-/** Below this many containers, counts load at connect time and new ones start ticked. */
-export const SMALL_SITE = 50;
