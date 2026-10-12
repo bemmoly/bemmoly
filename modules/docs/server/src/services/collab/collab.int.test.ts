@@ -132,12 +132,15 @@ describe('collaborative pages', () => {
     });
     const mo = open(users.member, page.id);
     await mo.synced;
-    for (let i = 0; i < 12; i += 1) {
-      body(mo.doc).push([paragraph(`line ${i}`)]);
-      await new Promise((resolve) => setTimeout(resolve, 40));
-    }
     const count = async () =>
       Number((await sql`select count(*) from page_updates where page_id = ${page.id}`)[0]!.count);
+    // One stored row per edit: the writer merges edits that queue behind a slow store, so a
+    // fixed pause between edits can leave fewer rows than the threshold on a busy runner.
+    for (let i = 0; i < 12; i += 1) {
+      const stored = await count();
+      body(mo.doc).push([paragraph(`line ${i}`)]);
+      await waitFor(async () => (await count()) > stored);
+    }
     await waitFor(async () => server!.enqueued.some((job) => job.key?.includes(page.id)));
     const job = server.enqueued.find((queued) => queued.key?.includes(page.id))!;
     expect(job).toMatchObject({ name: 'docs.compact', payload: { pageId: page.id } });
