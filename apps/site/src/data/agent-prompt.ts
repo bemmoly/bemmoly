@@ -6,13 +6,11 @@ import { SIZING } from './self-hosting.ts';
  * The prompt a visitor pastes into a coding agent so it installs Bemmoly for them. It asks only
  * where and at which address, because everything else is set in the app after install, and it
  * runs the installer with --domain and --yes since an agent's shell has no terminal to prompt
- * on. The sizes come from SIZING and the commands from links.ts, so the prompt cannot drift
+ * on. The sizes come from SIZING (the measured capacity and price data) and the commands from links.ts, so the prompt cannot drift
  * from the pages. It never lets the agent create the first admin, file an issue or star the
  * repository on the visitor's behalf.
  */
-const SIZES = SIZING.slice(0, 3)
-  .map(({ team, vm }) => `${team}: ${vm} RAM`)
-  .join('; ');
+const SIZES = SIZING.map(({ line }) => `- ${line}`).join('\n');
 
 const BUG_REPORT_URL = `${REPO_URL}/issues/new?template=bug.yml`;
 
@@ -38,8 +36,11 @@ Ask me these before you run anything, one at a time, skipping any I've already a
    - Or only localhost or the server's IP, for trying it out. The browser will show a
      certificate warning.
 
-Sizing: ${SIZES}. The first is the minimum. Every size needs 10 GB of free disk, plus
-root or sudo.
+Sizing, from ${SITE_URL}/sizing:
+${SIZES}
+Recommend only a measured size; don't guess how many people an unmeasured size
+serves. The installer's minimum is 1 vCPU and 2 GB of memory. Every size needs
+10 GB of free disk, plus root or sudo.
 
 Don't ask me anything else up front. Modules, email, sign-in and AI are set up in the app
 after install. Ask only if the check below finds a problem. For example, if ports 80/443

@@ -17,7 +17,9 @@ import {
   fmt,
   peopleOf,
 } from '../src/data/capacity.ts';
+import { AGENT_PROMPT } from '../src/data/agent-prompt.ts';
 import { PRICES, money } from '../src/data/prices.ts';
+import { SIZING } from '../src/data/self-hosting.ts';
 import { parsePage } from './dom.ts';
 
 const repo = new URL('../../../', import.meta.url);
@@ -169,5 +171,39 @@ describe.each(['sizing.html', 'self-hosting.html'])('%s', (file) => {
     expect(note[0]!.textContent).toContain(
       'Measured before the latest performance work; re-run pending',
     );
+  });
+});
+
+describe('the agent prompt and SIZING', () => {
+  const values = allowed();
+  const prices = new Set(
+    PRICES.providers.flatMap((p) =>
+      Object.values(p.plans).flatMap((plan) =>
+        plan?.monthly == null ? [] : [money(plan.monthly, p.currency)],
+      ),
+    ),
+  );
+
+  it('lists every size, and no number for a size not measured', () => {
+    expect(SIZING).toHaveLength(CAPACITY.sizes.length);
+    CAPACITY.sizes.forEach((size, i) => {
+      if (size.runs.length === 0)
+        expect(SIZING[i]!.line).toMatch(/^\d+ vCPU, \d+ GB: not yet measured$/);
+    });
+  });
+
+  it('prints only numbers from the data, and people only as an estimate', () => {
+    for (const { line } of SIZING) {
+      const text = line.replace(/^\d+ vCPU, \d+ GB/, '');
+      for (const price of text.match(/[€$][\d.]+/g) ?? []) expect(prices).toContain(price);
+      for (const n of text.replace(/[€$][\d.]+/g, '').match(/\d[\d,]*/g) ?? [])
+        expect(values, line).toContain(n);
+      if (/people/.test(line)) expect(line).toMatch(/people active at once \(an estimate/);
+    }
+  });
+
+  it('puts the data sizing in the prompt, with no planning-figure claims', () => {
+    for (const { line } of SIZING) expect(AGENT_PROMPT).toContain(line);
+    expect(AGENT_PROMPT).not.toMatch(/Up to [\d,]+ people/);
   });
 });
