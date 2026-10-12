@@ -115,6 +115,8 @@ export function revisionName(revision: RevisionSummary): string {
       return 'Restored an earlier version';
     case 'periodic':
       return 'Autosaved';
+    case 'imported':
+      return 'Imported';
   }
 }
 
@@ -123,4 +125,5 @@ export const KIND_LABELS: Record<RevisionSummary['kind'], string> = {
   periodic: 'Autosave',
   publish: 'Published',
   restore: 'Restore',
+  imported: 'Imported',
 };

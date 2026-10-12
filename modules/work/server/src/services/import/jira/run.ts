@@ -14,6 +14,7 @@ import { projectJql } from './discover.ts';
 import { writeAttachments, writeComments } from './extras.ts';
 import { createFieldMapper } from './fields.ts';
 import { toIssueRow, type LocalKey, type RowContext } from './issue-rows.ts';
+import { writeHistory } from './history.ts';
 import { writeLinks } from './links.ts';
 import { setupProject } from './project-setup.ts';
 import { projectKeyFrom } from './schema.ts';
@@ -47,7 +48,7 @@ async function importIssues(
   let cursor = scope.checkpoint.read<JiraCheckpoint>()?.cursor ?? null;
   for (;;) {
     ctx.signal.throwIfAborted();
-    const page = await client.searchIssues(jql, cursor);
+    const page = await client.searchIssues(jql, cursor, { changelog: ctx.include.history });
     const converted = [];
     for (const issue of page.issues) {
       const row = await toIssueRow(rows, issue);
@@ -73,6 +74,7 @@ async function importIssues(
     await writeLabels(deps.sql, setup.projectId, labels);
     if (ctx.include.comments) await writeComments(deps.sql, client, rows, pageIssues);
     if (ctx.include.attachments) await writeAttachments(deps.sql, client, rows, pageIssues);
+    if (ctx.include.history) await writeHistory(deps.sql, client, rows, pageIssues);
     await scope.progress.advance(page.issues.length);
     cursor = page.next;
     await scope.checkpoint.save({ cursor } satisfies JiraCheckpoint);

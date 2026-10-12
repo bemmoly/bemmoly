@@ -96,6 +96,8 @@ export interface JiraIssueLink {
 }
 
 export interface JiraIssue {
+  /** Data Center's expand=changelog on search, when change history is asked for. */
+  changelog?: { histories?: JiraHistory[] };
   id: string;
   key: string;
   fields: Record<string, unknown> & {
@@ -146,4 +148,22 @@ export interface JiraIssuePage {
   issues: JiraIssue[];
   /** The cursor of the next page, or null on the last. */
   next: string | null;
+}
+
+/** One change of a changelog: a field, and its value before and after. */
+export interface JiraHistoryItem {
+  field?: string;
+  fieldId?: string;
+  from?: string | null;
+  fromString?: string | null;
+  to?: string | null;
+  toString?: string | null;
+}
+
+/** One changelog entry: who changed what on an issue, and when. */
+export interface JiraHistory {
+  id: string;
+  author?: JiraUser;
+  created?: string;
+  items?: JiraHistoryItem[];
 }

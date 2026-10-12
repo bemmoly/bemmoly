@@ -30,6 +30,12 @@ export const MOCK_IMPORT_SOURCES: readonly ImportSource[] = [
         description: 'Blocks, relates to, duplicates',
         default: true,
       },
+      {
+        name: 'history',
+        label: 'Change history',
+        description: 'Who changed what, as issue activity',
+        default: false,
+      },
     ],
     nouns: {
       container: 'project',
@@ -107,6 +113,12 @@ export const MOCK_IMPORT_SOURCES: readonly ImportSource[] = [
         label: 'Attachments',
         description: 'Stored in Bemmoly file storage',
         default: true,
+      },
+      {
+        name: 'history',
+        label: 'Page history',
+        description: 'Earlier versions of each page',
+        default: false,
       },
     ],
     nouns: { container: 'space', containers: 'spaces', records: 'pages', target: 'Docs space' },

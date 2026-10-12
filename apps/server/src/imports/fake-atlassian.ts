@@ -89,6 +89,43 @@ function confluence(options: FakeSiteOptions) {
       const withBody = (url.searchParams.get('expand') ?? '').includes('body.storage');
       return [200, results(withBody ? pages : pages.map(({ body: _body, ...rest }) => rest))];
     }
+    // A page's versions: 1 to its current number, each body saying which version it was.
+    const allPages = Object.values(data.pages).flat() as {
+      id: string;
+      title: string;
+      version?: { number?: number; by?: unknown };
+    }[];
+    const versions = /^\/rest\/api\/content\/(\w+)\/version$/.exec(path);
+    if (versions) {
+      const page = allPages.find((entry) => entry.id === versions[1]);
+      const top = page?.version?.number ?? 1;
+      return [
+        200,
+        results(
+          Array.from({ length: top }, (_, index) => ({
+            number: index + 1,
+            when: new Date(Date.UTC(2025, 0, 1 + index)).toISOString(),
+            by: page?.version?.by,
+          })),
+        ),
+      ];
+    }
+    const single = /^\/rest\/api\/content\/(\w+)$/.exec(path);
+    if (single && url.searchParams.get('status') === 'historical') {
+      const page = allPages.find((entry) => entry.id === single[1]);
+      const number = Number(url.searchParams.get('version'));
+      return page
+        ? [
+            200,
+            {
+              id: page.id,
+              title: page.title,
+              version: { number },
+              body: { storage: { value: `<p>Version ${number} of ${page.title}</p>` } },
+            },
+          ]
+        : [404, { message: 'No page' }];
+    }
     const child = /^\/rest\/api\/content\/(\w+)\/child\/(attachment|comment)$/.exec(path);
     if (child)
       return [

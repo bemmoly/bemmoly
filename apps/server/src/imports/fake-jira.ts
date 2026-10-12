@@ -29,6 +29,67 @@ interface JiraFixture {
   issues?: { key: string }[];
 }
 
+interface FakeIssue {
+  id?: string;
+  key: string;
+  fields?: {
+    summary?: string;
+    created?: string;
+    status?: { id?: string; name?: string };
+    reporter?: unknown;
+  };
+}
+
+/**
+ * Each issue's change history, made up from what it is now: the summary was once a draft,
+ * and an issue past its project's first status was moved there from it an hour after it was
+ * created. Same issue, same history.
+ */
+function historiesOf(issue: FakeIssue, first: { id: string; name: string } | undefined) {
+  const created = Date.parse(issue.fields?.created ?? '2025-01-01T00:00:00Z');
+  const at = (hours: number) => new Date(created + hours * 3_600_000).toISOString();
+  const author = issue.fields?.reporter;
+  const histories: {
+    id: string;
+    author: unknown;
+    created: string;
+    items: Record<string, string>[];
+  }[] = [
+    {
+      id: `h-${issue.id}-1`,
+      author,
+      created: at(1),
+      items: [
+        {
+          field: 'summary',
+          fieldId: 'summary',
+          fromString: `Draft of ${issue.key}`,
+          toString: issue.fields?.summary ?? '',
+        },
+      ],
+    },
+  ];
+  const status = issue.fields?.status;
+  if (first && status?.id && status.id !== first.id) {
+    histories.push({
+      id: `h-${issue.id}-2`,
+      author,
+      created: at(2),
+      items: [
+        {
+          field: 'status',
+          fieldId: 'status',
+          from: first.id,
+          fromString: first.name,
+          to: status.id,
+          toString: status.name ?? '',
+        },
+      ],
+    });
+  }
+  return histories;
+}
+
 const projectOf = (jql: string) => /project = "([^"]+)"/.exec(jql)?.[1] ?? '';
 
 export function jira(kind: 'jira-cloud' | 'jira-dc', options: FakeSiteOptions) {
@@ -40,6 +101,18 @@ export function jira(kind: 'jira-cloud' | 'jira-dc', options: FakeSiteOptions) {
   const api = kind === 'jira-cloud' ? '/rest/api/3' : '/rest/api/2';
   const inProject = (key: string) => issues.filter((issue) => issue.key.startsWith(`${key}-`));
   const pageSize = options.pageSize ?? 2;
+  const firstStatus = (key: string) =>
+    (data.statuses[key]?.[0] as { statuses?: { id: string; name: string }[] } | undefined)
+      ?.statuses?.[0];
+  const withHistory = (list: { key: string }[], url: URL) =>
+    (url.searchParams.get('expand') ?? '').includes('changelog')
+      ? list.map((issue) => ({
+          ...issue,
+          changelog: {
+            histories: historiesOf(issue as FakeIssue, firstStatus(issue.key.split('-')[0]!)),
+          },
+        }))
+      : list;
   const projects = options.projects ?? data.projects;
   const total = (key: string) => options.issueCounts?.[key] ?? inProject(key).length;
   /** project/search: action=browse drops the unbrowsable, keys narrows, insight adds totals. */
@@ -106,6 +179,21 @@ export function jira(kind: 'jira-cloud' | 'jira-dc', options: FakeSiteOptions) {
       const body = await bodyOf(req);
       return [200, { count: total(projectOf(body?.jql ?? '')) }];
     }
+    if (path === `${api}/changelog/bulkfetch`) {
+      const asked = ((await bodyOf(req)) as { issueIdsOrKeys?: string[] } | null)?.issueIdsOrKeys;
+      const found = (issues as FakeIssue[]).filter((issue) =>
+        (asked ?? []).includes(issue.id ?? ''),
+      );
+      return [
+        200,
+        {
+          issueChangeLogs: found.map((issue) => ({
+            issueId: issue.id,
+            changeHistories: historiesOf(issue, firstStatus(issue.key.split('-')[0]!)),
+          })),
+        },
+      ];
+    }
     if (path === `${api}/search/jql`) {
       const list = inProject(projectOf(url.searchParams.get('jql') ?? ''));
       const start = Number(url.searchParams.get('nextPageToken') ?? 0);
@@ -127,7 +215,11 @@ export function jira(kind: 'jira-cloud' | 'jira-dc', options: FakeSiteOptions) {
       const start = Number(url.searchParams.get('startAt') ?? 0);
       return [
         200,
-        { startAt: start, total: list.length, issues: list.slice(start, start + pageSize) },
+        {
+          startAt: start,
+          total: list.length,
+          issues: withHistory(list.slice(start, start + pageSize), url),
+        },
       ];
     }
     const comment = new RegExp(`^${api}/issue/([^/]+)/comment$`).exec(path);

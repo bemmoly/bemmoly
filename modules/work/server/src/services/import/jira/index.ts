@@ -37,6 +37,12 @@ export const JIRA_OPTIONS = [
     description: 'Blocks, relates to, duplicates',
     default: true,
   },
+  {
+    name: 'history',
+    label: 'Change history',
+    description: 'Who changed what, as issue activity',
+    default: false,
+  },
 ] as const;
 
 /** Jira Cloud and Data Center into Work: projects, configuration, issues and everything on them. */

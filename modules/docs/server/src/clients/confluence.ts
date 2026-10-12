@@ -148,6 +148,18 @@ export function createConfluenceClient(options: ConfluenceClientOptions) {
       }
       return (await all<ConfluenceUser>('rest/api/group/confluence-users/member')).slice(0, limit);
     },
+    /** A page's versions: number, when and by whom (the current one included). */
+    versions: (pageId: string) =>
+      all<{ number: number; when?: string; by?: ConfluenceUser }>(
+        `rest/api/content/${encodeURIComponent(pageId)}/version`,
+      ),
+    /** One earlier version of a page, with its body. */
+    historical: (pageId: string, version: number) =>
+      rest.getJson<ConfluencePage>(`rest/api/content/${encodeURIComponent(pageId)}`, {
+        status: 'historical',
+        version,
+        expand: 'body.storage,version',
+      }),
     user: (id: string) =>
       rest.getJson<ConfluenceUser>('rest/api/user', cloud ? { accountId: id } : { key: id }),
     download: (attachment: ConfluenceAttachment) =>

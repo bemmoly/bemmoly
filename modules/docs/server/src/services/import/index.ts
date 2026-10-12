@@ -33,6 +33,12 @@ export const CONFLUENCE_OPTIONS = [
     description: 'Stored in Bemmoly file storage',
     default: true,
   },
+  {
+    name: 'history',
+    label: 'Page history',
+    description: 'Earlier versions of each page',
+    default: false,
+  },
 ] as const;
 
 /** Confluence Cloud and Data Center into Docs: spaces, page trees, bodies and their comments. */

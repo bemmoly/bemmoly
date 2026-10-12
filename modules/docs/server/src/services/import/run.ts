@@ -8,6 +8,7 @@ import {
 } from './connection.ts';
 import { copyAttachments, writeComments } from './extras.ts';
 import { ensureSpace, writeTree, type TreeDeps } from './tree.ts';
+import { writeVersions } from './versions.ts';
 
 /*
  * A Confluence run: every picked space and its page tree first, so links between spaces
@@ -83,6 +84,9 @@ export async function runConfluence(
             ? await copyAttachments(body, item.id, pageId)
             : new Map();
           await writeBody(deps, body, container.id, item, pageId);
+          if (ctx.include.history) {
+            await writeVersions(deps.sql, body, container.id, item, pageId);
+          }
           if (ctx.include.comments) {
             await writeComments(deps.sql, body, container.id, item.id, pageId);
           }

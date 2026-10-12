@@ -62,6 +62,7 @@ describe('Where each project goes', () => {
       ['attachments', true],
       ['agile', true],
       ['links', true],
+      ['history', false],
     ]);
     job = (await c.calls.connect('jira', c.site)).body;
     const planned = await plan(c, job.id, {});
