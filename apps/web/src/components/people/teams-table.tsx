@@ -17,6 +17,7 @@ import type { TeamCardView } from '../../hooks/use-teams.ts';
 export interface TeamRowActions {
   canManage: boolean;
   open: (team: TeamCardView) => void;
+  edit: (team: TeamCardView) => void;
   remove: (team: TeamCardView) => void;
 }
 
@@ -37,9 +38,12 @@ function TeamMenu({ team, actions }: { team: TeamCardView; actions: TeamRowActio
         <IconButton {...props} label={`Actions for ${team.name}`} icon="more" size="xs" />
       )}
     >
-      <MenuItem onSelect={() => actions.open(team)}>View members</MenuItem>
+      <MenuItem onSelect={() => actions.open(team)}>
+        {actions.canManage ? 'Manage members…' : 'View members'}
+      </MenuItem>
       {actions.canManage && (
         <>
+          <MenuItem onSelect={() => actions.edit(team)}>Edit team…</MenuItem>
           <MenuSeparator />
           <MenuItem tone="danger" onSelect={() => actions.remove(team)}>
             Delete team…
@@ -55,7 +59,6 @@ const WIDTHS = {
   lead: 'minmax(0,1fr)',
   members: '150px',
   modules: 'minmax(0,1fr)',
-  role: '110px',
   menu: '28px',
 };
 
@@ -117,13 +120,6 @@ function columns(actions: TeamRowActions): TableColumn<TeamCardView>[] {
         ),
     },
     {
-      key: 'role',
-      header: 'Default role',
-      width: WIDTHS.role,
-      hideOnPhone: true,
-      render: (team) => <span className="truncate">{team.defaultRole}</span>,
-    },
-    {
       key: 'menu',
       header: <span className="sr-only">Actions</span>,
       width: WIDTHS.menu,
@@ -138,7 +134,7 @@ function columns(actions: TeamRowActions): TableColumn<TeamCardView>[] {
   ];
 }
 
-/** Teams as the review's table: tile, lead, a members facepile with the count, modules, role. */
+/** Teams as the review's table: tile, lead, a members facepile with the count, modules. */
 export function TeamsTable({
   teams,
   actions,
@@ -179,7 +175,6 @@ export function TeamsSkeleton() {
         { width: WIDTHS.lead },
         { width: WIDTHS.members },
         { width: WIDTHS.modules },
-        { width: WIDTHS.role },
         { width: WIDTHS.menu, cell: <span /> },
       ]}
     />
