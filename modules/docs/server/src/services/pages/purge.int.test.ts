@@ -80,4 +80,34 @@ describe('trash purge', () => {
     expect(left.map((row) => row.id)).toEqual([fresh.id]);
     expect(await services.pages.purgeExpiredTrash()).toBe(0);
   });
+
+  it('removes the links, mentions and kernel rows of the pages it deletes', async (ctx) => {
+    if (!harness) return ctx.skip(skipReason);
+    const { services, as, users, sql } = harness;
+    const space = await harness.space('LNK');
+    const member = as(users.member);
+    const gone = await services.pages.create(member, { spaceId: space.id, title: 'Gone' });
+    const kept = await services.pages.create(member, { spaceId: space.id, title: 'Kept' });
+    await sql`
+      insert into links (source_kind, source_id, target_kind, target_id, kind) values
+        ('page', ${gone.id}, 'page', ${kept.id}, 'mention'),
+        ('page', ${kept.id}, 'page', ${gone.id}, 'linked'),
+        ('page', ${kept.id}, 'issue', uuidv7(), 'linked')`;
+    await sql`
+      insert into notifications (user_id, kind, target_kind, target_id, delivery)
+      values (${users.member}, 'mention', 'page', ${gone.id}, 'inapp')`;
+    await sql`
+      insert into pending_embeddings (target_kind, target_id) values ('docs.page', ${gone.id})`;
+    await services.pages.remove(member, gone.id);
+    await services.pages.deleteForever(as(users.admin), space.key, gone.id);
+    const [left] = await sql<{ links: number; kernel: number; orphans: number }[]>`
+      select
+        (select count(*)::int from links where source_id = ${kept.id} or target_id = ${kept.id})
+          as links,
+        ((select count(*) from notifications where target_id = ${gone.id}::text)
+          + (select count(*) from pending_embeddings where target_id = ${gone.id}::text))::int
+          as kernel,
+        (select sum(orphans)::int from integrity_orphans_docs) as orphans`;
+    expect(left).toEqual({ links: 1, kernel: 0, orphans: 0 });
+  });
 });
