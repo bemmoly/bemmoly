@@ -1,21 +1,14 @@
 import type { CreateImportBody, ImportJob, UpdateImportBody } from '@bemmoly/shared';
 import { can, type MockDb } from '../db.ts';
+import { mockContainers } from '../seed/import-containers.ts';
 import { MOCK_IMPORT_SOURCES, mockDiscovery, mockMappings } from '../seed/imports.ts';
 import { newId } from '../seed/time.ts';
 import { bodyOf, fail, notFound, ok, type MockRoute } from '../types.ts';
+import { chooserOf, findJob as find, listOf, startChooser } from './import-state.ts';
 
 const SETTINGS = 'workspace.settings.manage';
 /** Each read of a running job moves it on by this share of its total, as a worker would. */
 const STEP = 0.34;
-const jobs = new WeakMap<MockDb, ImportJob[]>();
-
-const listOf = (db: MockDb) => {
-  const found = jobs.get(db);
-  if (found) return found;
-  const fresh: ImportJob[] = [];
-  jobs.set(db, fresh);
-  return fresh;
-};
 
 const adminOnly =
   (handle: MockRoute['handle']): MockRoute['handle'] =>
@@ -58,10 +51,6 @@ function advance(job: ImportJob) {
   };
 }
 
-function find(db: MockDb, id: string | undefined) {
-  return listOf(db).find((job) => job.id === id);
-}
-
 export const importRoutes: MockRoute[] = [
   {
     method: 'GET',
@@ -95,6 +84,7 @@ export const importRoutes: MockRoute[] = [
         connection[field.name] = field.kind === 'secret' ? true : value;
       }
       const site = (values['siteUrl'] ?? '').replace(/^https?:\/\//, '') || source.label;
+      const rows = mockContainers(source.id, site);
       const job: ImportJob = {
         id: newId(),
         source: source.id,
@@ -103,7 +93,7 @@ export const importRoutes: MockRoute[] = [
         phase: null,
         progress: { done: 0, total: 0 },
         connection,
-        discovery: mockDiscovery(source.id, site),
+        discovery: mockDiscovery(source.id, site, rows),
         plan: null,
         report: { counts: {}, skipped: [], skippedTotal: 0, warnings: [] },
         error: null,
@@ -112,6 +102,7 @@ export const importRoutes: MockRoute[] = [
         startedAt: null,
         finishedAt: null,
       };
+      startChooser(job.id, rows);
       listOf(db).unshift(job);
       return ok(job, 201);
     }),
@@ -131,10 +122,15 @@ export const importRoutes: MockRoute[] = [
     pattern: '/api/v1/admin/imports/:id',
     handle: adminOnly((request, db) => {
       const job = find(db, request.params['id']);
-      if (!job?.discovery) return notFound('Import');
-      const picked = bodyOf<UpdateImportBody>(request).containers ?? [];
-      const chosen = job.discovery.containers.filter((c) => picked.includes(c.id));
-      const records = chosen.reduce((sum, c) => sum + (c.count ?? 0), 0);
+      const state = chooserOf(job?.id);
+      if (!job?.discovery || !state) return notFound('Import');
+      const picked = bodyOf<UpdateImportBody>(request).containers;
+      if (picked) state.selected = new Set(picked);
+      const chosen = state.rows.filter((c) => state.selected.has(c.id) && c.access === 'ok');
+      if (chosen.length === 0) {
+        return fail(400, 'validation_failed', 'Choose at least one to bring in.');
+      }
+      const records = chosen.reduce((sum, c) => sum + c.records, 0);
       job.plan = {
         containers: chosen.map((c) => c.id),
         counts: { [chosen[0]?.kind === 'space' ? 'pages' : 'issues']: records },

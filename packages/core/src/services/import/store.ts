@@ -1,6 +1,6 @@
 import {
   NotFoundError,
-  type ImportDiscovery,
+  type ImportJobDiscovery,
   type ImportJob,
   type ImportJobStatus,
   type ImportPlan,
@@ -16,7 +16,9 @@ export interface ImportJobRow {
   connection: Record<string, string | boolean>;
   credentials: string | null;
   status: ImportJobStatus;
-  discovery: ImportDiscovery | null;
+  /** Older jobs still carry their containers here; newer ones a total, the rows elsewhere. */
+  discovery:
+    (Omit<ImportJobDiscovery, 'total'> & { total?: number; containers?: unknown[] }) | null;
   plan: ImportPlan | null;
   phase: string | null;
   progress_done: number;
@@ -54,7 +56,14 @@ export function toImportJob(row: ImportJobRow, sourceLabel: string): ImportJob {
     phase: row.phase,
     progress: { done: row.progress_done, total: row.progress_total },
     connection: row.connection,
-    discovery: row.discovery,
+    discovery: row.discovery
+      ? {
+          site: row.discovery.site,
+          counts: row.discovery.counts,
+          warnings: row.discovery.warnings,
+          total: row.discovery.total ?? row.discovery.containers?.length ?? 0,
+        }
+      : null,
     plan: row.plan,
     report: { ...emptyReport(), ...row.report },
     error: row.error,
@@ -82,11 +91,11 @@ export interface NewImportJob {
   site: string;
   connection: Record<string, string | boolean>;
   credentials: string | null;
-  discovery: ImportDiscovery;
+  discovery: Omit<ImportJobDiscovery, 'total'> & { total: number };
   createdBy: string | null;
 }
 
-export async function insertJob(sql: SqlClient, job: NewImportJob): Promise<ImportJobRow> {
+export async function insertJob(sql: SqlExecutor, job: NewImportJob): Promise<ImportJobRow> {
   const [row] = await sql<ImportJobRow[]>`
     insert into import_jobs (source, site, connection, credentials, discovery, created_by)
     values (${job.source}, ${job.site}, ${JSON.stringify(job.connection)}::jsonb,

@@ -87,3 +87,27 @@ export function generateIssues(count: number): unknown[] {
     };
   });
 }
+
+const WORDS = ['Atlas', 'Beacon', 'Cobalt', 'Delta', 'Ember', 'Fjord', 'Granite', 'Harbor'];
+const AREAS = ['billing', 'checkout', 'onboarding', 'search', 'payments', 'mobile', 'identity'];
+const TYPES = ['software', 'business', 'service_desk'];
+
+/**
+ * A site with `count` projects for the chooser: keys G1..Gn, a type and lead each, an issue
+ * total per key, and every 97th project visible but not browsable by the token.
+ */
+export function generateProjects(count: number) {
+  const projects = Array.from({ length: count }, (_, index) => ({
+    id: String(50_000 + index),
+    key: `G${index + 1}`,
+    name: `${WORDS[index % WORDS.length]} ${AREAS[Math.floor(index / WORDS.length) % AREAS.length]} ${index + 1}`,
+    projectTypeKey: TYPES[index % TYPES.length],
+    style: 'classic',
+    lead: PEOPLE[index % PEOPLE.length],
+  }));
+  const issueCounts = Object.fromEntries(
+    projects.map((project, index) => [project.key, (index * 37) % 400]),
+  );
+  const unbrowsable = new Set(projects.filter((_, index) => index % 97 === 5).map((p) => p.id));
+  return { projects, issueCounts, unbrowsable };
+}

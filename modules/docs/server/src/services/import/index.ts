@@ -3,7 +3,7 @@ import type { Actor, ContainerMemberships, SqlClient } from '@bemmoly/core';
 import type { RichText } from '../../../../shared/common.ts';
 import type { DocsServiceDeps } from '../common.ts';
 import { CONFLUENCE_FIELDS, parseConfluenceConnection } from './connection.ts';
-import { discoverConfluence, planConfluence } from './discover.ts';
+import { countConfluence, discoverConfluence, planConfluence } from './discover.ts';
 import { runConfluence } from './run.ts';
 
 export interface ConfluenceImporterDeps {
@@ -28,9 +28,10 @@ export function createConfluenceImporter(deps: ConfluenceImporterDeps) {
     brings: ['Spaces', 'Page trees', 'Pages', 'Labels', 'Comments', 'Attachments'],
     fields: CONFLUENCE_FIELDS,
     siteOf: (connection) => parseConfluenceConnection(connection).baseUrl,
-    discover: discoverConfluence,
-    plan: (connection, containers, ctx) =>
-      planConfluence(requireSql(deps), connection, containers, ctx),
+    nouns: { container: 'space', containers: 'spaces', records: 'pages', target: 'Docs space' },
+    discover: (connection, ctx) => discoverConfluence(requireSql(deps), connection, ctx),
+    count: countConfluence,
+    plan: (_connection, containers, ctx) => planConfluence(requireSql(deps), containers, ctx),
     run: (connection, plan, ctx) =>
       runConfluence(
         {

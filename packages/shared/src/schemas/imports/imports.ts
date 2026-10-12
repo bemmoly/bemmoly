@@ -35,6 +35,15 @@ export const importSourceSchema = z.object({
   /** What it brings in, in the order the run does it: "Projects", "Issues". */
   brings: z.array(z.string()),
   fields: z.array(importFieldSchema),
+  /** The words for what it holds: "project", "projects", "issues", "Work project". */
+  nouns: z
+    .object({
+      container: z.string(),
+      containers: z.string(),
+      records: z.string(),
+      target: z.string(),
+    })
+    .optional(),
 });
 
 export const importSourceListSchema = z.object({ items: z.array(importSourceSchema) });
@@ -56,8 +65,20 @@ export const importContainerSchema = z.object({
   key: z.string().nullable(),
   name: z.string(),
   kind: z.string(),
-  /** Records inside it, when the source can count them cheaply. */
+  /** Records inside it, when the source can count them cheaply; else counted on demand. */
   count: z.number().int().nonnegative().nullable(),
+  /** "Software", "Business", "Service"; "Team" or "Personal" for spaces. */
+  type: z.string().nullable().optional(),
+  lead: z.string().nullable().optional(),
+  /** "none": the token lists it but cannot read what is inside. */
+  access: z.enum(['ok', 'none']).optional(),
+  /** What an earlier import of this site made from it. */
+  imported: z
+    .object({ id: z.uuid(), key: z.string(), name: z.string(), at: z.iso.datetime() })
+    .nullable()
+    .optional(),
+  /** A project or space here already uses the key it would get. */
+  keyInUse: z.boolean().optional(),
 });
 
 export const importDiscoverySchema = z.object({
@@ -67,6 +88,18 @@ export const importDiscoverySchema = z.object({
   /** Totals across the site: { issues: 10432, users: 88 }. */
   counts: z.record(z.string(), z.number().int().nonnegative()),
   warnings: z.array(z.string()),
+});
+
+/**
+ * A job's discovery as a client reads it: the site, totals and warnings. The containers
+ * themselves are listed a page at a time from GET /admin/imports/:id/containers.
+ */
+export const importJobDiscoverySchema = z.object({
+  site: z.string(),
+  counts: z.record(z.string(), z.number().int().nonnegative()),
+  warnings: z.array(z.string()),
+  /** How many containers the connection found. */
+  total: z.number().int().nonnegative(),
 });
 
 export const IMPORT_MAPPING_ACTIONS = ['match', 'create', 'report'] as const;
@@ -119,7 +152,7 @@ export const importJobSchema = z.object({
   }),
   /** The connection's plain fields; a secret field appears here as true once given. */
   connection: z.record(z.string(), z.union([z.string(), z.boolean()])),
-  discovery: importDiscoverySchema.nullable(),
+  discovery: importJobDiscoverySchema.nullable(),
   plan: importPlanSchema.nullable(),
   report: importReportSchema,
   error: z.string().nullable(),
@@ -142,15 +175,24 @@ export const createImportBodySchema = z
   })
   .strict();
 
-/** PATCH /admin/imports/:id: what to bring in; answers with the plan. */
+/** Most containers one plan may name directly; a larger choice goes through the selection. */
+export const IMPORT_CONTAINER_IDS_MAX = 5000;
+
+/**
+ * PATCH /admin/imports/:id: plans the containers ticked in the selection; `containers`, when
+ * given, replaces the selection with exactly those first. Answers with the plan.
+ */
 export const updateImportBodySchema = z
-  .object({ containers: z.array(z.string().min(1).max(200)).min(1).max(500) })
+  .object({
+    containers: z.array(z.string().min(1).max(200)).min(1).max(IMPORT_CONTAINER_IDS_MAX).optional(),
+  })
   .strict();
 
 export type ImportField = z.infer<typeof importFieldSchema>;
 export type ImportSource = z.infer<typeof importSourceSchema>;
 export type ImportContainer = z.infer<typeof importContainerSchema>;
 export type ImportDiscovery = z.infer<typeof importDiscoverySchema>;
+export type ImportJobDiscovery = z.infer<typeof importJobDiscoverySchema>;
 export type ImportMapping = z.infer<typeof importMappingSchema>;
 export type ImportPlan = z.infer<typeof importPlanSchema>;
 export type ImportCount = z.infer<typeof importCountSchema>;

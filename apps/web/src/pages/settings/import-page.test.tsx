@@ -1,6 +1,6 @@
 import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { SECRET_HINT } from '../../components/import/connect-form.tsx';
+import { REFUSED_TOKEN } from '../../components/import/connect-form.tsx';
 import { fileTooLarge } from '../../hooks/use-import-flow.ts';
 import { renderPage } from '../../test/render.tsx';
 import { mockApi } from '../../test/setup.ts';
@@ -13,20 +13,33 @@ const type = (label: string | RegExp, value: string) =>
 async function connectToJira(token = 'a-token') {
   await renderPage(() => <ImportPage />, '/settings/import');
   click(await screen.findByRole('radio', { name: /Jira/ }));
-  type('Site address', 'https://acme.atlassian.net');
+  type('Site address', 'https://acme.example.net');
   type('Account email', 'rohan@acmelabs.dev');
   type('API token', token);
   click(screen.getByRole('button', { name: 'Connect' }));
 }
 
+const continueButton = (n: number) =>
+  screen.findByRole('button', { name: `Continue with ${n}` }, { timeout: 3000 });
+
 describe('Settings › Import', () => {
-  it('walks a Jira import from connection to report', async () => {
+  it('walks a Jira import from connection through choosing to report', async () => {
     await connectToJira();
-    expect(screen.getByLabelText('API token').getAttribute('type')).toBe('password');
-    const found = await screen.findByRole('region', { name: /What to bring in/ });
-    expect(within(found).getByText('3 of 3 chosen')).toBeDefined();
-    click(within(found).getByRole('checkbox', { name: /Mobile/ }));
-    click(within(found).getByRole('button', { name: 'Preview plan' }));
+    expect(screen.getByRole('heading', { name: 'Import from Jira' })).toBeDefined();
+    const chooser = await screen.findByRole('region', { name: /Choose projects/ });
+    expect(chooser.textContent).toContain('acme.example.net · 14 projects this token can see');
+    const steps = screen.getByRole('navigation', { name: 'Import steps' });
+    expect(within(steps).getByText('Choose').closest('li')?.getAttribute('aria-current')).toBe(
+      'step',
+    );
+    // New projects with issues start ticked: nine of the fourteen.
+    await continueButton(9);
+    const mobile = within(chooser)
+      .getAllByRole('option')
+      .find((row) => row.textContent?.includes('Mobile apps'));
+    if (!mobile) throw new Error('Mobile apps is not listed');
+    click(mobile);
+    click(await continueButton(8));
 
     const plan = await screen.findByRole('region', { name: /Plan/ });
     expect(within(plan).getAllByText('Matched').length).toBeGreaterThan(0);
@@ -45,16 +58,42 @@ describe('Settings › Import', () => {
     expect(within(report).getByText(/updates what this import made/)).toBeDefined();
   });
 
-  it('says why the connection was refused, beside the form', async () => {
+  it('says connecting only lists projects', async () => {
+    await renderPage(() => <ImportPage />, '/settings/import');
+    click(await screen.findByRole('radio', { name: /Jira/ }));
+    expect(
+      screen.getByText(
+        'Connect with an API token. Nothing is read beyond the list of projects until you choose what to bring.',
+      ),
+    ).toBeDefined();
+    expect(screen.getByText('Connecting lists projects only. It changes nothing.')).toBeDefined();
+  });
+
+  it('marks the token refused, beside the form, keeping what was typed', async () => {
     await connectToJira('wrong');
     const alert = await screen.findByRole('alert');
     expect(alert.textContent).toContain('Jira refused the credentials');
-    expect(screen.getByText(SECRET_HINT, { exact: false })).toBeDefined();
+    const token = screen.getByLabelText('API token');
+    expect(token.getAttribute('aria-invalid')).toBe('true');
+    expect(screen.getByText(REFUSED_TOKEN)).toBeDefined();
+    expect((screen.getByLabelText('Account email') as HTMLInputElement).value).toBe(
+      'rohan@acmelabs.dev',
+    );
+  });
+
+  it('goes back to Connect from the stepper with the form as it was', async () => {
+    await connectToJira();
+    await continueButton(9);
+    const steps = screen.getByRole('navigation', { name: 'Import steps' });
+    expect(within(steps).getAllByRole('button')).toHaveLength(1);
+    click(within(steps).getByRole('button', { name: /^Connect/ }));
+    const site = (await screen.findByLabelText('Site address')) as HTMLInputElement;
+    expect(site.value).toBe('https://acme.example.net');
   });
 
   it('cancels a running import and offers Resume', async () => {
     await connectToJira();
-    click(await screen.findByRole('button', { name: 'Preview plan' }));
+    click(await continueButton(9));
     click(await screen.findByRole('button', { name: 'Start import' }));
     click(await screen.findByRole('button', { name: 'Cancel import' }));
     expect(await screen.findByRole('button', { name: 'Resume' })).toBeDefined();
@@ -86,7 +125,11 @@ describe('Settings › Import', () => {
     });
     await waitFor(() => expect(screen.getByText('issues.csv is ready to send.')).toBeDefined());
     click(screen.getByRole('button', { name: 'Connect' }));
-    const found = await screen.findByRole('region', { name: /What to bring in/ });
-    expect(within(found).getByRole('checkbox', { name: /issues\.csv/ })).toBeDefined();
+    const found = await screen.findByRole('region', { name: /Choose files/ });
+    const rows = await within(found).findAllByRole('option');
+    expect(rows).toHaveLength(1);
+    expect(rows[0]?.textContent).toContain('issues.csv');
+    expect(rows[0]?.getAttribute('aria-selected')).toBe('true');
+    await continueButton(1);
   });
 });

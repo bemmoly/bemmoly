@@ -25,6 +25,8 @@ export interface ImportSourceContext {
 export interface ImportMappingRow {
   targetId: string;
   meta: Record<string, unknown>;
+  /** When the mapping was last written: when an import last brought this in. */
+  updatedAt?: string;
 }
 
 /** External ids to Bemmoly ids, per job site, so a re-run finds what the last one made. */
@@ -49,6 +51,16 @@ export interface ImportMappingStore {
 
 export interface ImportPlanContext extends ImportSourceContext {
   mappings: ImportMappingStore;
+}
+
+/** A container as the kernel hands it back to its importer: enough to find it at the source. */
+export interface ImportContainerRef {
+  id: string;
+  key: string | null;
+  name: string;
+  kind: string;
+  /** Records inside it, when counted. */
+  count: number | null;
 }
 
 /** A person at the source, matched by email to a Bemmoly user or made a placeholder. */
@@ -110,11 +122,24 @@ export interface Importer {
   fields: readonly ImportField[];
   /** Stable for one source, so mappings of two sites never mix: "https://acme.example.net". */
   siteOf(connection: ImportConnection): string;
-  /** Tests the connection and counts what is there; throws a typed error it can explain. */
-  discover(connection: ImportConnection, ctx: ImportSourceContext): Promise<ImportDiscovery>;
+  /** The words for what it holds, for the chooser: "project", "projects", "issues". */
+  nouns?: { container: string; containers: string; records: string; target: string };
+  /**
+   * Tests the connection and lists what is there, quickly: counts may be left null for
+   * count() to fill in on demand. Marks what an earlier import of the site made (through the
+   * mappings) and containers whose key is already taken here.
+   */
+  discover(connection: ImportConnection, ctx: ImportPlanContext): Promise<ImportDiscovery>;
+  /** Counts the records in these containers; at most 100 at a time. */
+  count?(
+    connection: ImportConnection,
+    containers: readonly ImportContainerRef[],
+    ctx: ImportSourceContext,
+  ): Promise<Record<string, number>>;
+  /** What a run would do with these containers (counted, in the source's order). */
   plan(
     connection: ImportConnection,
-    containers: readonly string[],
+    containers: readonly ImportContainerRef[],
     ctx: ImportPlanContext,
   ): Promise<ImportPlan>;
   /** Idempotent and resumable: reads the checkpoint, writes mappings as it goes. */

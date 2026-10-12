@@ -58,5 +58,6 @@ export function describeSource(entry: RegisteredImporter): ImportSource {
     description: importer.description,
     brings: [...importer.brings],
     fields: [...importer.fields],
+    ...(importer.nouns ? { nouns: importer.nouns } : {}),
   });
 }

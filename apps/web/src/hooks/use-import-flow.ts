@@ -9,7 +9,18 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { isActive, useImportActions, useImportJob, useImportSources } from './use-imports.ts';
 
-export type ImportStep = 'source' | 'connect' | 'preview' | 'running' | 'report';
+/** Where the import is. "options" shows the plan until Options and Review are built. */
+export type ImportStep = 'source' | 'connect' | 'choose' | 'options' | 'running' | 'report';
+
+/** The stepper's place for each step: Connect, Choose, Options, Review, Import. */
+export const STEP_INDEX: Record<ImportStep, number> = {
+  source: 0,
+  connect: 0,
+  choose: 1,
+  options: 2,
+  running: 4,
+  report: 4,
+};
 
 /** A field shows unless it waits on another field's value. */
 export function visibleFields(source: ImportSource, values: Record<string, string>) {
@@ -36,9 +47,13 @@ export function fileTooLarge(size: number): string | null {
   return `This file is ${megabytes(size)}; the limit is ${megabytes(IMPORT_FILE_MAX_BYTES)}. Split it and import each part.`;
 }
 
-export function stepOf(source: ImportSource | null, job: ImportJob | undefined): ImportStep {
+export function stepOf(
+  source: ImportSource | null,
+  job: ImportJob | undefined,
+  choosing = false,
+): ImportStep {
   if (job) {
-    if (job.status === 'ready') return 'preview';
+    if (job.status === 'ready') return job.plan && !choosing ? 'options' : 'choose';
     return isActive(job.status) ? 'running' : 'report';
   }
   return source ? 'connect' : 'source';
@@ -46,8 +61,8 @@ export function stepOf(source: ImportSource | null, job: ImportJob | undefined):
 
 /**
  * The whole import, one job at a time: pick a source, fill its connection form, connect,
- * choose what to bring in, preview the plan, run, watch, read the report. The step follows
- * from the job, so reopening a recent import lands where that job is.
+ * choose what to bring in (the selection lives on the server), plan it, run, watch, read the
+ * report. The step follows from the job, so reopening a recent import lands where it is.
  */
 export function useImportFlow(options: { sourcesEnabled?: boolean } = {}) {
   const client = useQueryClient();
@@ -57,7 +72,8 @@ export function useImportFlow(options: { sourcesEnabled?: boolean } = {}) {
   const [files, setFiles] = useState<Record<string, string>>({});
   const [fileError, setFileError] = useState<string | null>(null);
   const [jobId, setJobId] = useState<string | null>(null);
-  const [picked, setPicked] = useState<string[] | null>(null);
+  /** Back on Choose after a plan was made (the stepper's Choose). */
+  const [choosing, setChoosing] = useState(false);
   const jobQuery = useImportJob(jobId);
   const job = jobId ? jobQuery.data : undefined;
   const actions = useImportActions((created) => setJobId(created.id));
@@ -65,13 +81,7 @@ export function useImportFlow(options: { sourcesEnabled?: boolean } = {}) {
   const items = sources.data?.items ?? [];
   const source = items.find((entry) => entry.id === (job?.source ?? sourceId)) ?? null;
   const fields = source ? visibleFields(source, values) : [];
-  const containers = job?.discovery?.containers ?? [];
-  const planned = job?.plan?.containers ?? null;
-  const chosen = picked ?? planned ?? containers.map((container) => container.id);
-  const planCurrent =
-    planned !== null &&
-    planned.length === chosen.length &&
-    chosen.every((id) => planned.includes(id));
+  const step = stepOf(source, job, choosing);
 
   const status = job?.status;
   useEffect(() => {
@@ -83,7 +93,20 @@ export function useImportFlow(options: { sourcesEnabled?: boolean } = {}) {
   const reset = () => {
     actions.create.reset();
     setFileError(null);
-    setPicked(null);
+    setChoosing(false);
+  };
+
+  /** Leaves the job for its connection form; a reopened job's source gets a fresh form. */
+  const leaveJob = () => {
+    const from = job?.source;
+    reset();
+    setJobId(null);
+    if (from && from !== sourceId) {
+      const next = items.find((entry) => entry.id === from);
+      setSourceId(from);
+      setValues(next ? initialValues(next) : {});
+      setFiles({});
+    }
   };
 
   return {
@@ -97,9 +120,7 @@ export function useImportFlow(options: { sourcesEnabled?: boolean } = {}) {
     job,
     jobLoading: jobId !== null && jobQuery.isPending,
     jobError: jobQuery.error,
-    step: stepOf(source, job),
-    chosen,
-    planCurrent,
+    step,
     actions,
     canConnect:
       source !== null && fields.every((field) => !field.required || Boolean(values[field.name])),
@@ -129,15 +150,24 @@ export function useImportFlow(options: { sourcesEnabled?: boolean } = {}) {
       );
       actions.create.mutate({ source: source.id, values: sent });
     },
-    toggle: (id: string) =>
-      setPicked(chosen.includes(id) ? chosen.filter((entry) => entry !== id) : [...chosen, id]),
-    previewPlan: () => job && actions.plan.mutate({ id: job.id, containers: chosen }),
+    /** Plans what is ticked in the server's selection, then shows the plan. */
+    planChosen: () =>
+      job && actions.plan.mutate({ id: job.id }, { onSuccess: () => setChoosing(false) }),
+    /** The stepper: back to Connect (the form keeps its values) or to Choose. */
+    visit: (index: number) => {
+      if (index === STEP_INDEX.connect && job) leaveJob();
+      else if (index === STEP_INDEX.choose && step === 'options') setChoosing(true);
+    },
+    canVisit: (index: number) =>
+      (step === 'choose' || step === 'options') && index < STEP_INDEX[step],
     start: () => job && actions.run.mutate(job.id),
     cancel: () => job && actions.cancel.mutate(job.id),
     open: (id: string) => {
       reset();
       setJobId(id);
     },
+    /** Back to the connection form with what was typed, to connect again. */
+    backToConnect: leaveJob,
     startOver: () => {
       reset();
       setJobId(null);

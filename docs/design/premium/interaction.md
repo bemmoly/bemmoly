@@ -79,4 +79,5 @@ that passes (ADR 0015).
 - [Docs page](interaction/docs-page.md): page column, icon and cover, properties row, the right margin, history mode, presence, Share.
 - [Docs: writing surface](interaction/docs-editor.md): selection bubble and ⌘K links, block handles, the / menu, code and table tools, the typing fade, issue embeds and Linked work.
 - [Settings › Docs](interaction/settings-docs.md): org templates, their order, archive and restore, the read view and the editor.
+- [Settings › Import](interaction/settings-import.md): the stepper, Connect, the project and space chooser (search, filters, select all, keys, Undo), the plan, the run and the wizard's short path.
 - [Docs: around the page](interaction/docs-around.md): create in place, Docs home, space overview, trash, search, import and export, phone.

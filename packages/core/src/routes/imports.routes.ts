@@ -18,6 +18,10 @@ export function importsRoutes(controller: ImportsController): FastifyPluginAsync
     );
     app.get('/admin/imports/:id', async (request) => controller.get(request));
     app.patch('/admin/imports/:id', async (request) => controller.update(request));
+    app.get('/admin/imports/:id/containers', async (request) => controller.containers(request));
+    app.post('/admin/imports/:id/containers/counts', async (request) => controller.count(request));
+    app.get('/admin/imports/:id/selection', async (request) => controller.selection(request));
+    app.patch('/admin/imports/:id/selection', async (request) => controller.select(request));
     app.post('/admin/imports/:id/run', async (request) => controller.run(request));
     app.post('/admin/imports/:id/cancel', async (request) => controller.cancel(request));
   };

@@ -32,6 +32,35 @@ export const CheckboxAndRadio: Story = {
   ),
 };
 
+/** A select-all over a list: unticked, some ticked (mixed, a minus) and all ticked. */
+export const Indeterminate: Story = {
+  render: function Render() {
+    const [ticked, setTicked] = useState<readonly string[]>(['MOB']);
+    const all = ['PLT', 'MOB', 'WEB'];
+    const some = ticked.length > 0 && ticked.length < all.length;
+    return (
+      <div className="flex flex-col gap-3">
+        <Checkbox
+          label="Select all shown"
+          checked={ticked.length === all.length}
+          indeterminate={some}
+          onChange={() => setTicked(ticked.length === all.length ? [] : all)}
+        />
+        {all.map((key) => (
+          <Checkbox
+            key={key}
+            label={key}
+            checked={ticked.includes(key)}
+            onChange={() =>
+              setTicked(ticked.includes(key) ? ticked.filter((k) => k !== key) : [...ticked, key])
+            }
+          />
+        ))}
+      </div>
+    );
+  },
+};
+
 export const Switches: Story = {
   parameters: {
     mock: [

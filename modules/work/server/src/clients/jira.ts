@@ -87,10 +87,35 @@ export function createJiraClient(options: JiraClientOptions) {
       rest.getJson<{ baseUrl?: string; version?: string; deploymentType?: string }>(
         `${api}/serverInfo`,
       ),
-    projects: () =>
+    /**
+     * Every project the token lists. On Cloud `browse` narrows the list to projects whose
+     * issues it can read; the default lists those it can merely see.
+     */
+    projects: (action?: 'browse') =>
       cloud
-        ? all<JiraProject>(`${api}/project/search`, { expand: 'description,lead' })
+        ? all<JiraProject>(`${api}/project/search`, {
+            expand: 'description,lead',
+            ...(action ? { action } : {}),
+          })
         : rest.getJson<JiraProject[]>(`${api}/project`, { expand: 'description,lead' }),
+    /**
+     * Issue totals for up to 50 projects in one call, from Cloud's expand=insight. Jira marks
+     * insight experimental, so a project without it is counted another way by the caller.
+     */
+    async insightCounts(keys: readonly string[]): Promise<Map<string, number>> {
+      const found = new Map<string, number>();
+      if (!cloud || !keys.length) return found;
+      const page = await rest.getJson<Paged<JiraProject>>(`${api}/project/search`, {
+        keys: [...keys],
+        expand: 'insight',
+        maxResults: 50,
+      });
+      for (const project of page.values ?? []) {
+        const total = project.insight?.totalIssueCount;
+        if (typeof total === 'number' && total >= 0) found.set(project.key, total);
+      }
+      return found;
+    },
     project: (key: string) =>
       rest.getJson<JiraProject>(`${api}/project/${encodeURIComponent(key)}`, {
         expand: 'description,lead,issueTypes',

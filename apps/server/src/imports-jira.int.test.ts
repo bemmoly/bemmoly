@@ -66,10 +66,12 @@ describe('Jira import', () => {
     const created = await calls.connect('jira', site);
     expect(created.status).toBe(201);
     job = created.body;
-    expect(job.discovery?.containers.map((c) => [c.key, c.count])).toEqual([
-      ['OPS', 5],
-      ['MKT', 0],
+    const listed = await calls.containers(job.id);
+    expect(listed.body.items.map((c) => [c.key, c.count, c.type, c.selected])).toEqual([
+      ['OPS', 5, 'Software', true],
+      ['MKT', 0, 'Business', false],
     ]);
+    expect(job.discovery?.total).toBe(2);
     expect(job.connection).toEqual({
       deployment: 'cloud',
       url: site.url,

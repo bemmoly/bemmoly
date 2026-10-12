@@ -58,8 +58,9 @@ export function useImportActions(onCreated: (job: ImportJob) => void) {
     },
   });
   const plan = useMutation({
-    mutationFn: ({ id, containers }: { id: string; containers: string[] }) =>
-      importsApi.update(id, { containers }),
+    /** Without containers it plans what is ticked in the server's selection. */
+    mutationFn: ({ id, containers }: { id: string; containers?: string[] }) =>
+      importsApi.update(id, containers ? { containers } : {}),
     onSuccess: store,
   });
   const run = useMutation({ mutationFn: (id: string) => importsApi.run(id), onSuccess: store });

@@ -24,6 +24,8 @@ export interface JiraProject {
   style?: string;
   lead?: JiraUser;
   issueTypes?: JiraIssueType[];
+  /** Cloud's expand=insight, marked experimental in Jira's API reference. */
+  insight?: { totalIssueCount?: number };
 }
 
 export interface JiraIssueType {

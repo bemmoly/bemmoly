@@ -104,8 +104,8 @@ export function createConfluenceClient(options: ConfluenceClientOptions) {
   return {
     root,
     currentUser: () => rest.getJson<ConfluenceUser>('rest/api/user/current'),
-    spaces: () =>
-      all<ConfluenceSpace>('rest/api/space', { type: 'global', expand: 'description.plain' }),
+    /** Team (global) and personal spaces; the chooser leaves personal ones unticked. */
+    spaces: () => all<ConfluenceSpace>('rest/api/space', { expand: 'description.plain' }),
     async countPages(spaceKey: string): Promise<number> {
       const page = await rest.getJson<Results<unknown>>('rest/api/search', {
         cql: `space = "${spaceKey.replace(/[\\"]/g, '\\$&')}" and type = page`,

@@ -1,6 +1,6 @@
 import { defineImporter, type ContainerMemberships, type SqlClient } from '@bemmoly/core';
 import { JIRA_FIELDS, parseJiraConnection } from './connection.ts';
-import { discoverJira } from './discover.ts';
+import { countJira, discoverJira } from './discover.ts';
 import { planJira } from './plan.ts';
 import { runJira } from './run.ts';
 
@@ -32,8 +32,15 @@ export function createJiraImporter(deps: JiraImporterDeps) {
       'Links',
     ],
     fields: JIRA_FIELDS,
+    nouns: {
+      container: 'project',
+      containers: 'projects',
+      records: 'issues',
+      target: 'Work project',
+    },
     siteOf: (connection) => parseJiraConnection(connection).baseUrl,
-    discover: discoverJira,
+    discover: (connection, ctx) => discoverJira(requireSql(deps), connection, ctx),
+    count: countJira,
     plan: (connection, containers, ctx) => planJira(requireSql(deps), connection, containers, ctx),
     run: (connection, plan, ctx) =>
       runJira(

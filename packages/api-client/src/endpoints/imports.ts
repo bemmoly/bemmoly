@@ -1,5 +1,13 @@
 import {
   createImportBodySchema,
+  importContainerPageSchema,
+  importCountBodySchema,
+  importCountListSchema,
+  importSelectionBodySchema,
+  importSelectionSummarySchema,
+  type ImportContainerQuery,
+  type ImportCountBody,
+  type ImportSelectionBody,
   importJobListSchema,
   importJobSchema,
   importSourceListSchema,
@@ -34,6 +42,28 @@ export function importEndpoints(http: Http) {
       }),
     run: async (id: string) =>
       http.request(`${IMPORTS}/${enc(id)}/run`, importJobSchema, { method: 'POST' }),
+    /** One page of the containers the connection found, searched and filtered. */
+    containers: async (id: string, query: Partial<ImportContainerQuery> = {}) =>
+      http.request(`${IMPORTS}/${enc(id)}/containers`, importContainerPageSchema, {
+        query: {
+          ...(query.q ? { q: query.q } : {}),
+          filter: query.filter ?? 'all',
+          ...(query.cursor ? { cursor: query.cursor } : {}),
+          limit: query.limit ?? 100,
+        },
+      }),
+    count: async (id: string, body: ImportCountBody) =>
+      http.request(`${IMPORTS}/${enc(id)}/containers/counts`, importCountListSchema, {
+        method: 'POST',
+        body: validated(importCountBodySchema, body),
+      }),
+    selection: async (id: string) =>
+      http.request(`${IMPORTS}/${enc(id)}/selection`, importSelectionSummarySchema),
+    select: async (id: string, body: ImportSelectionBody) =>
+      http.request(`${IMPORTS}/${enc(id)}/selection`, importSelectionSummarySchema, {
+        method: 'PATCH',
+        body: validated(importSelectionBodySchema, body),
+      }),
     cancel: async (id: string) =>
       http.request(`${IMPORTS}/${enc(id)}/cancel`, importJobSchema, { method: 'POST' }),
   };
