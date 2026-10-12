@@ -68,13 +68,13 @@ describe('landing page', () => {
     );
     const inline = scripts.filter((script) => script.src === undefined);
     expect(inline.reduce((total, script) => total + script.body.length, 0)).toBeLessThan(512);
-    // The site script (src/lib/client): menu, theme, copy, tabs and previews, a file the
-    // CSP's 'self' allows. The demo itself loads only when a visitor asks for it.
+    // The site script (src/lib/client): menu, theme, copy, tabs, previews and the live star
+    // count (which carries the GitHub client), a file the CSP's 'self' allows. The demo itself loads only when a visitor asks for it.
     const external = scripts.flatMap((script) => script.src ?? []);
     expect(external).toHaveLength(1);
     expect(external[0]).toMatch(/^\/_astro\/[\w.-]+\.js$/);
     const code = readFileSync(new URL(`.${external[0]}`, dist));
-    expect(gzipSync(code).length).toBeLessThan(3 * 1024);
+    expect(gzipSync(code).length).toBeLessThan(3.25 * 1024);
     expect(code.toString()).not.toContain('/demo/assets/');
   });
 });

@@ -24,7 +24,8 @@ async function getJson(url: string): Promise<unknown> {
   }
 }
 
-async function fetchFacts(): Promise<RepoFacts | null> {
+/** The repository's facts asked for afresh: the browser uses it to refresh the built count. */
+export async function fetchFacts(): Promise<RepoFacts | null> {
   const body = (await getJson(API)) as { stargazers_count?: unknown } | null;
   const stars = body?.stargazers_count;
   return typeof stars === 'number' && Number.isInteger(stars) && stars >= 0 ? { stars } : null;
