@@ -1,4 +1,14 @@
 import { z } from 'zod';
+import { importContainerRowSchema } from './containers.ts';
+import {
+  IMPORT_CLASH_RULES,
+  importIncludeSchema,
+  importOptionSchema,
+  importPersonOverrideSchema,
+  importPlanPeopleSchema,
+  importPlanTargetsSchema,
+  importTargetRequestSchema,
+} from './options.ts';
 
 /*
  * Settings › Import and the setup wizard's import step: the sources enabled modules offer,
@@ -35,6 +45,8 @@ export const importSourceSchema = z.object({
   /** What it brings in, in the order the run does it: "Projects", "Issues". */
   brings: z.array(z.string()),
   fields: z.array(importFieldSchema),
+  /** What it can bring along with its records, each a checkbox with a default. */
+  options: z.array(importOptionSchema).default([]),
   /** The words for what it holds: "project", "projects", "issues", "Work project". */
   nouns: z
     .object({
@@ -117,6 +129,12 @@ export const importPlanSchema = z.object({
   containers: z.array(z.string()),
   counts: z.record(z.string(), z.number().int().nonnegative()),
   mappings: z.array(importMappingSchema),
+  /** A digest of the containers planned; the source is asked again only when it changes. */
+  choice: z.string().optional(),
+  include: importIncludeSchema.optional(),
+  onClash: z.enum(IMPORT_CLASH_RULES).optional(),
+  targets: importPlanTargetsSchema.optional(),
+  people: importPlanPeopleSchema.optional(),
 });
 
 export const importCountSchema = z.object({
@@ -163,6 +181,14 @@ export const importJobSchema = z.object({
   finishedAt: z.iso.datetime().nullable(),
 });
 
+/**
+ * PATCH /admin/imports/:id answers with the job and the chosen rows whose target wants a look
+ * (errors, existing, updates, new keys), so a key edit needs no second read.
+ */
+export const importPlannedJobSchema = importJobSchema.extend({
+  attention: z.array(importContainerRowSchema).optional(),
+});
+
 export const importJobListSchema = z.object({ items: z.array(importJobSchema) });
 
 export const importJobIdParamsSchema = z.object({ id: z.uuid() });
@@ -185,6 +211,16 @@ export const IMPORT_CONTAINER_IDS_MAX = 5000;
 export const updateImportBodySchema = z
   .object({
     containers: z.array(z.string().min(1).max(200)).min(1).max(IMPORT_CONTAINER_IDS_MAX).optional(),
+    include: importIncludeSchema.partial().optional(),
+    targets: z
+      .record(z.string().min(1).max(200), importTargetRequestSchema)
+      .refine((value) => Object.keys(value).length <= IMPORT_CONTAINER_IDS_MAX)
+      .optional(),
+    people: z
+      .record(z.string().min(1).max(400), importPersonOverrideSchema)
+      .refine((value) => Object.keys(value).length <= IMPORT_CONTAINER_IDS_MAX)
+      .optional(),
+    onClash: z.enum(IMPORT_CLASH_RULES).optional(),
   })
   .strict();
 
@@ -199,5 +235,6 @@ export type ImportCount = z.infer<typeof importCountSchema>;
 export type ImportSkip = z.infer<typeof importSkipSchema>;
 export type ImportReport = z.infer<typeof importReportSchema>;
 export type ImportJob = z.infer<typeof importJobSchema>;
+export type ImportPlannedJob = z.infer<typeof importPlannedJobSchema>;
 export type CreateImportBody = z.infer<typeof createImportBodySchema>;
 export type UpdateImportBody = z.infer<typeof updateImportBodySchema>;

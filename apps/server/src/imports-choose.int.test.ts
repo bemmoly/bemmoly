@@ -75,6 +75,7 @@ describe('Choosing from a 1,500-project site', () => {
       imported: 0,
       noaccess: generated.unbrowsable.size,
       selected: 0,
+      attention: 0,
     });
     expect(first.body.items[0]).toMatchObject({
       key: 'G1',

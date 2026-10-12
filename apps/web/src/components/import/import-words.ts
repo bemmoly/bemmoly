@@ -1,4 +1,4 @@
-import type { ImportJobStatus, ImportSource } from '@bemmoly/shared';
+import type { ImportJobStatus, ImportMapping, ImportSource } from '@bemmoly/shared';
 import type { PillTone } from '../settings/state-pill.tsx';
 
 const NUMBER = new Intl.NumberFormat('en');
@@ -50,3 +50,7 @@ const DAY = new Intl.DateTimeFormat('en', { month: 'short', day: 'numeric' });
 
 /** "Oct 2". */
 export const shortDate = (iso: string) => DAY.format(new Date(iso));
+
+/** People have their own section; the fine print is statuses, types and fields. */
+export const finePrintOf = (mappings: readonly ImportMapping[]) =>
+  mappings.filter((mapping) => mapping.kind !== 'person');

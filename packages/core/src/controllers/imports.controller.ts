@@ -2,6 +2,11 @@ import {
   createImportBodySchema,
   importContainerQuerySchema,
   importCountBodySchema,
+  importPeopleQuerySchema,
+  importTargetQuerySchema,
+  type ImportPlannedJob,
+  type ImportTargetList,
+  type ImportPeoplePage,
   importSelectionBodySchema,
   type ImportContainerPage,
   type ImportCountList,
@@ -35,7 +40,7 @@ export function createImportsController(service: ImportService, actorOf: ActorRe
       reply.code(201);
       return job;
     },
-    async update(request: FastifyRequest): Promise<ImportJob> {
+    async update(request: FastifyRequest): Promise<ImportPlannedJob> {
       const body = parseOrThrow(updateImportBodySchema, request.body);
       return service.update(await actorOf(request), idOf(request), body);
     },
@@ -49,6 +54,14 @@ export function createImportsController(service: ImportService, actorOf: ActorRe
     async count(request: FastifyRequest): Promise<ImportCountList> {
       const body = parseOrThrow(importCountBodySchema, request.body);
       return service.count(await actorOf(request), idOf(request), body);
+    },
+    async targets(request: FastifyRequest): Promise<ImportTargetList> {
+      const query = parseOrThrow(importTargetQuerySchema, request.query);
+      return service.targets(await actorOf(request), idOf(request), query);
+    },
+    async people(request: FastifyRequest): Promise<ImportPeoplePage> {
+      const query = parseOrThrow(importPeopleQuerySchema, request.query);
+      return service.people(await actorOf(request), idOf(request), query);
     },
     async selection(request: FastifyRequest): Promise<ImportSelectionSummary> {
       return service.selection(await actorOf(request), idOf(request));

@@ -19,6 +19,15 @@ lists personal spaces, which start unticked. Jira Cloud counts come from project
 `expand=insight`, which Jira marks experimental, and fall back to one count per project when
 it is missing.
 
+Before you start, Options lets you choose what to bring: comments, attachments, sprints and
+boards, and links. For Confluence, comments and attachments. It also sets where each project
+or space goes: a new one with a key you can edit, or an existing one, with numbers continuing
+from its last key. A key that is already taken is now an error you fix; it is never merged
+into the project or space that holds it. Imports used to merge silently in that case. Options
+also matches people by email when you plan, and lets you pick a member or keep a placeholder
+for anyone. Review sums up what Start will do.
+
 Admins: kernel changeset `0502-import-containers` adds the `import_containers` table and
 enables `pg_trgm`, which Bemmoly already requires. It copies the projects and spaces of
-existing import jobs into the new table.
+existing import jobs into the new table. `0503-import-plan-options` adds target columns to it
+and the `import_people` table.

@@ -72,9 +72,11 @@ export async function runConfluence(
       for (const item of page.results) {
         const pageId = body.pages.get(item.id);
         if (!pageId) continue;
-        body.attachments = await copyAttachments(body, item.id, pageId);
+        body.attachments = ctx.include.attachments
+          ? await copyAttachments(body, item.id, pageId)
+          : new Map();
         await writeBody(deps, body, space.key, item, pageId);
-        await writeComments(deps.sql, body, space.key, item.id, pageId);
+        if (ctx.include.comments) await writeComments(deps.sql, body, space.key, item.id, pageId);
         await ctx.progress.advance();
       }
       start = page.next;

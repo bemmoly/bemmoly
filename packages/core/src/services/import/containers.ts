@@ -34,6 +34,12 @@ interface ContainerRecord {
   imported_at: Date | string | null;
   key_in_use: boolean;
   selected: boolean;
+  target_mode: 'create' | 'existing' | 'update' | null;
+  target_key: string | null;
+  target_id: string | null;
+  target_name: string | null;
+  target_note: string | null;
+  target_error: string | null;
 }
 
 const CHUNK = 1000;
@@ -58,6 +64,16 @@ const toRow = (record: ContainerRecord): ImportContainerRow => ({
       : null,
   keyInUse: record.key_in_use,
   selected: record.selected,
+  target: record.target_mode
+    ? {
+        mode: record.target_mode,
+        key: record.target_key ?? '',
+        id: record.target_id,
+        name: record.target_name,
+        note: record.target_note,
+        error: record.target_error,
+      }
+    : null,
 });
 
 /** Stores what discovery found, in its order; a reconnect replaces nothing (new job). */
@@ -115,7 +131,10 @@ function scopeWhere(sql: SqlExecutor, scope: ImportSelectionScope) {
           ? sql`and access = 'none'`
           : scope.filter === 'selected'
             ? sql`and selected`
-            : sql``;
+            : scope.filter === 'attention'
+              ? sql`and selected and target_mode is not null and (target_error is not null
+                  or target_mode <> 'create' or target_key is distinct from key)`
+              : sql``;
   return sql`${search} ${filter}`;
 }
 
@@ -130,9 +149,11 @@ export async function filterCounts(
       count(*) filter (where imported_target_id is null and access = 'ok')::int as new,
       count(*) filter (where imported_target_id is not null)::int as imported,
       count(*) filter (where access = 'none')::int as noaccess,
-      count(*) filter (where selected)::int as selected
+      count(*) filter (where selected)::int as selected,
+      count(*) filter (where selected and target_mode is not null and (target_error is not null
+        or target_mode <> 'create' or target_key is distinct from key))::int as attention
     from import_containers where job_id = ${jobId} ${scoped}`;
-  return row ?? { all: 0, new: 0, imported: 0, noaccess: 0, selected: 0 };
+  return row ?? { all: 0, new: 0, imported: 0, noaccess: 0, selected: 0, attention: 0 };
 }
 
 export async function listContainers(
@@ -144,7 +165,8 @@ export async function listContainers(
   const after = query.cursor ? Number(query.cursor) : -1;
   const records = await sql<ContainerRecord[]>`
     select source_id, position, key, name, kind, type, lead_name, access, count,
-      imported_target_id, imported_key, imported_name, imported_at, key_in_use, selected
+      imported_target_id, imported_key, imported_name, imported_at, key_in_use, selected,
+      target_mode, target_key, target_id, target_name, target_note, target_error
     from import_containers
     where job_id = ${jobId} and position > ${after} ${scopeWhere(sql, scope)}
     order by position limit ${query.limit + 1}`;

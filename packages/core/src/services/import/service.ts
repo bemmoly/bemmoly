@@ -5,6 +5,9 @@ import {
   type CreateImportBody,
   type ImportContainerQuery,
   type ImportCountBody,
+  type ImportPeopleQuery,
+  type ImportPlannedJob,
+  type ImportTargetQuery,
   type ImportSelectionBody,
   type ImportJob,
   type ImportSource,
@@ -17,10 +20,13 @@ import type { ImportSourceContext } from '../../contracts/importer.ts';
 import type { JobQueue } from '../../contracts/jobs.ts';
 import type { SecretBox } from '../settings/index.ts';
 import { createChooser } from './choose.ts';
+import { buildPlan } from './plan.ts';
+import { listPeople } from './people-plan.ts';
 import { openConnection, splitConnection } from './connection.ts';
 import {
   containerRefs,
   insertContainers,
+  listContainers,
   preselect,
   saveCounts,
   selectExactly,
@@ -147,7 +153,7 @@ export function createImportService(deps: ImportServiceDeps) {
       return present(row);
     },
 
-    async update(actor: Actor, id: string, body: UpdateImportBody): Promise<ImportJob> {
+    async update(actor: Actor, id: string, body: UpdateImportBody): Promise<ImportPlannedJob> {
       await deps.authorize(actor, CAPABILITY, workspace);
       const row = await jobById(sql, id);
       if (ACTIVE.has(row.status)) throw new ConflictError('The import is running');
@@ -158,21 +164,22 @@ export function createImportService(deps: ImportServiceDeps) {
         }
       }
       const importer = importerFor(row.source);
-      const connection = openConnection(row, deps.secrets);
-      const uncounted = await containerRefs(sql, id, 'selected', true);
-      if (uncounted.length && importer.count) {
-        await saveCounts(sql, id, await importer.count(connection, uncounted, sourceContext()));
-      }
-      const chosen = await containerRefs(sql, id, 'selected');
-      if (!chosen.length) throw new ValidationError('Choose at least one to bring in');
-      const plan = await importer.plan(connection, chosen, {
-        ...sourceContext(),
-        mappings: createMappingStore(sql, { source: row.source, site: row.site, jobId: null }),
+      const plan = await buildPlan({
+        sql,
+        importer,
+        connection: openConnection(row, deps.secrets),
+        ctx: () => ({
+          ...sourceContext(),
+          mappings: createMappingStore(sql, { source: row.source, site: row.site, jobId: null }),
+        }),
+        row,
+        body,
       });
       const [updated] = await sql<ImportJobRow[]>`
         update import_jobs set plan = ${JSON.stringify(plan)}::jsonb, updated_at = now()
         where id = ${id} returning *`;
-      return present(updated ?? row);
+      const attention = await listContainers(sql, id, { filter: 'attention', limit: 200 });
+      return { ...present(updated ?? row), attention: attention.items };
     },
 
     /**
@@ -186,6 +193,11 @@ export function createImportService(deps: ImportServiceDeps) {
         const row = await jobById(tx, id);
         if (ACTIVE.has(row.status)) throw new ConflictError('The import is already running');
         if (!row.plan) throw new ValidationError('Pick what to bring in before running');
+        if (row.plan.targets?.errors) {
+          throw new ValidationError(
+            `${row.plan.targets.errors} chosen ${row.plan.targets.errors === 1 ? 'one has' : 'have'} a key that is taken; fix ${row.plan.targets.errors === 1 ? 'it' : 'them'} in Options first`,
+          );
+        }
         const fresh = row.status === 'ready' || row.status === 'completed';
         const [queued] = await tx<ImportJobRow[]>`
           update import_jobs set status = 'queued', error = null, finished_at = null,
@@ -215,6 +227,18 @@ export function createImportService(deps: ImportServiceDeps) {
     async count(actor: Actor, id: string, body: ImportCountBody) {
       await deps.authorize(actor, CAPABILITY, workspace);
       return chooser.count(id, body);
+    },
+
+    async targets(actor: Actor, id: string, query: ImportTargetQuery) {
+      await deps.authorize(actor, CAPABILITY, workspace);
+      const lookup = importerFor((await jobById(sql, id)).source).targets;
+      return { items: lookup ? await lookup.search(query.q ?? '', query.limit) : [] };
+    },
+
+    async people(actor: Actor, id: string, query: ImportPeopleQuery) {
+      await deps.authorize(actor, CAPABILITY, workspace);
+      await jobById(sql, id);
+      return listPeople(sql, id, query);
     },
 
     async selection(actor: Actor, id: string) {

@@ -22,6 +22,17 @@ async function connectToJira(token = 'a-token') {
 const continueButton = (n: number) =>
   screen.findByRole('button', { name: `Continue with ${n}` }, { timeout: 3000 });
 
+/** Options: SUP's key is taken by Support Desk, so give it another, then Review. */
+async function fixSupAndReview() {
+  const key = await screen.findByRole('textbox', { name: 'Key for Support desk' });
+  expect(key.getAttribute('aria-invalid')).toBe('true');
+  act(() => fireEvent.change(key, { target: { value: 'SUPD' } }));
+  const review = screen.getByRole('button', { name: 'Review import' });
+  await waitFor(() => expect(review.hasAttribute('disabled')).toBe(false), { timeout: 3000 });
+  click(review);
+  return screen.findByRole('region', { name: /Review/ });
+}
+
 describe('Settings › Import', () => {
   it('walks a Jira import from connection through choosing to report', async () => {
     await connectToJira();
@@ -41,10 +52,10 @@ describe('Settings › Import', () => {
     click(mobile);
     click(await continueButton(8));
 
-    const plan = await screen.findByRole('region', { name: /Plan/ });
-    expect(within(plan).getAllByText('Matched').length).toBeGreaterThan(0);
-    expect(within(plan).getAllByText('Reported only').length).toBeGreaterThan(0);
-    click(within(plan).getByRole('button', { name: 'Start import' }));
+    expect(await screen.findByRole('region', { name: /What to bring/ })).toBeDefined();
+    const review = await fixSupAndReview();
+    expect(review.textContent).toContain('SUP becomes SUPD');
+    click(within(review).getByRole('button', { name: 'Start import' }));
 
     expect(await screen.findByRole('progressbar', { name: 'Import progress' })).toBeDefined();
     const report = await screen.findByRole(
@@ -94,6 +105,7 @@ describe('Settings › Import', () => {
   it('cancels a running import and offers Resume', async () => {
     await connectToJira();
     click(await continueButton(9));
+    await fixSupAndReview();
     click(await screen.findByRole('button', { name: 'Start import' }));
     click(await screen.findByRole('button', { name: 'Cancel import' }));
     expect(await screen.findByRole('button', { name: 'Resume' })).toBeDefined();

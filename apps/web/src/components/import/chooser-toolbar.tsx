@@ -4,7 +4,8 @@ import type { KeyboardEvent } from 'react';
 import type { ContainerChooser } from '../../hooks/use-container-chooser.ts';
 import { count } from './import-words.ts';
 
-const FILTERS: [ImportContainerFilter, string][] = [
+/** The chooser's filters; `attention` is Options' own, never offered here. */
+const FILTERS: [keyof ImportContainerCounts, string][] = [
   ['all', 'All'],
   ['new', 'Not imported'],
   ['imported', 'Imported before'],

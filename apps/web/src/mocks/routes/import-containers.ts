@@ -30,6 +30,7 @@ function countsOf(state: ChooserState, q: string | undefined): ImportContainerCo
     imported: matching(state, q, 'imported').length,
     noaccess: matching(state, q, 'noaccess').length,
     selected: matching(state, q, 'selected').length,
+    attention: matching(state, q, 'attention').length,
   };
 }
 

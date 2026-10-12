@@ -10,6 +10,27 @@ export const MOCK_IMPORT_SOURCES: readonly ImportSource[] = [
     description:
       'Projects, issues, comments, attachments and people from Jira Cloud or Data Center.',
     brings: ['Projects', 'People', 'Issues', 'Comments', 'Attachments'],
+    options: [
+      { name: 'comments', label: 'Comments', description: 'With authors and dates', default: true },
+      {
+        name: 'attachments',
+        label: 'Attachments',
+        description: 'Stored in Bemmoly file storage',
+        default: true,
+      },
+      {
+        name: 'agile',
+        label: 'Sprints and boards',
+        description: 'Board columns become workflow states',
+        default: true,
+      },
+      {
+        name: 'links',
+        label: 'Links between issues',
+        description: 'Blocks, relates to, duplicates',
+        default: true,
+      },
+    ],
     nouns: {
       container: 'project',
       containers: 'projects',
@@ -56,6 +77,7 @@ export const MOCK_IMPORT_SOURCES: readonly ImportSource[] = [
     label: 'CSV file',
     description: 'Issues from a spreadsheet export; columns are matched to fields by their names.',
     brings: ['Issues'],
+    options: [],
     nouns: { container: 'file', containers: 'files', records: 'issues', target: 'Work project' },
     fields: [
       {
@@ -73,6 +95,20 @@ export const MOCK_IMPORT_SOURCES: readonly ImportSource[] = [
     label: 'Confluence',
     description: 'Spaces, page trees, pages and their comments from Confluence.',
     brings: ['Spaces', 'Pages', 'Comments'],
+    options: [
+      {
+        name: 'comments',
+        label: 'Comments',
+        description: 'Page and inline comments, with authors',
+        default: true,
+      },
+      {
+        name: 'attachments',
+        label: 'Attachments',
+        description: 'Stored in Bemmoly file storage',
+        default: true,
+      },
+    ],
     nouns: { container: 'space', containers: 'spaces', records: 'pages', target: 'Docs space' },
     fields: [
       {
@@ -125,14 +161,20 @@ export function mockMappings(source: string): ImportMapping[] {
       { kind: 'field', source: 'Summary', action: 'match', target: 'Title', note: null },
       { kind: 'field', source: 'Status', action: 'match', target: 'Status', note: null },
       { kind: 'field', source: 'Sprint', action: 'report', target: null, note: 'No sprints' },
-      { kind: 'person', source: 'ana@acme.dev', action: 'match', target: 'Ana Costa', note: null },
     ];
   }
   return [
     { kind: 'status', source: 'To Do', action: 'match', target: 'Todo', note: null },
     { kind: 'status', source: 'In Review', action: 'create', target: 'In review', note: null },
-    { kind: 'person', source: 'rohan@acmelabs.dev', action: 'match', target: 'Rohan', note: null },
-    { kind: 'person', source: 'old.contractor', action: 'report', target: null, note: 'Left' },
-    { kind: 'field', source: 'Story points (old)', action: 'report', target: null, note: null },
+    { kind: 'status', source: 'Done', action: 'match', target: 'Done', note: null },
+    { kind: 'type', source: 'Bug', action: 'match', target: 'Bug', note: null },
+    { kind: 'type', source: 'Incident', action: 'create', target: 'Incident', note: null },
+    {
+      kind: 'field',
+      source: 'Story points (old)',
+      action: 'report',
+      target: null,
+      note: 'Listed in the report; its values are not brought in.',
+    },
   ];
 }

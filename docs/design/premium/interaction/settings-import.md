@@ -28,8 +28,9 @@ and read what happened afterwards.
 ## The steps
 
 A stepper above the flow: Connect, Choose, Options, Review, Import. A step behind is a button
-back to it while the import has not started (Choose back to Connect keeps the typed form; the
-plan back to Choose keeps the selection); a step ahead is plain text. On a phone only the
+back to it while the import has not started (Choose back to Connect keeps the typed form;
+Options back to Choose keeps the selection; Review back to Options keeps every choice, since the
+plan holds them); a step ahead is plain text. On a phone only the
 current step keeps its name; the others are numbered circles with their names for screen
 readers.
 
@@ -61,11 +62,51 @@ readers.
      (`aria-disabled`), never ticked.
    - The bar: "12 projects · ~23,410 issues (3 still counting)" (polite live region), Clear
      (ghost, acts at once, Undo), Back to Connect, "Continue with N" (primary, disabled at 0).
-4. **Options.** **Interim**: Continue plans what is ticked (PATCH with an empty body) and shows
-   today's plan panel (mapping rows and Start import) as the step after Choose. **Planned**
-   (phase 2): what to bring, where each project goes (new key or existing), people, fine print.
-5. **Review.** **Planned** (phase 2): one definition list of everything Start will do, the
-   time estimate, Start import. No confirm dialog; Cancel and Resume are the safety.
+4. **Options.** **Built.** Continue plans what is ticked (PATCH with an empty body); every
+   change after that is a PATCH that answers with the new plan. In order:
+   - **What to bring** ("For all 9 projects"): a locked ticked box for the records ("Issues —
+     Always; fields, keys, parents and subtasks", or "Pages and page trees"), then one checkbox
+     per option the source sends (`source.options`, with its default). A tick is sent at once
+     (`include`); the box shows it while the plan answers. Change history appears only when
+     the server offers it.
+   - **Where each project goes** ("Jira project to Work project"): the rows that want a look
+     (filter `attention`: an error, an existing target, an update, a new key) come first and
+     keep their place while they are fixed; "Show N more projects, all new with their own
+     key" opens the rest (filter `selected`, pages of 100). A row: key, name, "6,220 issues ·
+     service project" (or "· imported Oct 2"), an arrow, then the target. Imported before: a
+     neutral chip "Updates Platform (PLT)". Otherwise a segmented New project | Existing. New
+     shows the key field (mono, capitals and digits only, at most 10): a key that breaks the
+     rule shows "Use 2 to 10 capitals or digits" at once; a valid one is sent 300ms after the
+     last keystroke and the server's answer comes back on the row. Existing shows a searchable
+     picker of the Work projects (Docs spaces for Confluence). Under the row, the server's
+     `target.error` in red (field `aria-invalid`, described by it) or its `target.note` ("The
+     key becomes SUPD.", "Its issues are numbered on from the last SUP key."). The web never
+     writes its own reason.
+   - **People** ("86 found across the chosen projects"): three numbers (Match a member by
+     email, Become placeholders, Email hidden by Jira), the placeholder sentence, the first
+     three people who may need a hand (hidden, then placeholders), each with a picker
+     (Placeholder, or search members); "Review all 86 people" opens the paged list. A choice is
+     sent at once (`people`) and the numbers follow. No invite.
+   - **Statuses, types and fields** (Confluence: **Macros and formatting** with its note): the
+     summary "3 match · 2 created · 1 reported" and "Show all N", which opens the mapping rows
+     as the old plan panel drew them. People mappings are left to People.
+   - The bar: Back (to Choose, selection kept) and **Review import**, disabled while the plan
+     has target errors, a typed key is unchecked or invalid, an Existing row has nothing
+     picked, or a change is saving. The line under it says why: "Fix the key for SUP to
+     continue.", "Choose where SUP goes to continue.", "Saving your choices." (polite live
+     region, and the button's description).
+5. **Review.** **Built.** "Review · Nothing changes in Bemmoly until you start". A definition
+   list: From (site in mono, "as" the account email), Projects ("9: 8 new, 1 into existing
+   projects", and "N imported before (names) are updated, not copied"), Issues ("~15,344 with
+   comments, attachments, sprints and boards and links between issues"), Not brought (the
+   unticked options; left out when nothing is), People ("61 matched by email · 25
+   placeholders", placeholders counting hidden), Keys ("SUP becomes SUPD", "SUP goes into
+   Support Desk (SUP)"), Reported only ("1 field"). An information notice: "Large sites take a
+   while. The import keeps running if you leave this page, and its report waits in Settings ›
+   Import." (Inbox is not named until it carries import events.) The bar: "You can cancel at
+   any time; what was brought in stays and Resume picks up from there.", Back (to Options, as
+   it was) and Start import (primary, no confirm dialog). No time estimate yet: the plan has
+   no rate figure to estimate from.
 6. **Import.** **Built** (unchanged): the overall bar and phase, Cancel import. **Planned**:
    one row per project with its own bar.
 7. **Done.** **Built** (unchanged): totals per kind, the first skipped rows, Run again,
@@ -133,8 +174,8 @@ the import route to move under its own path.
 
 ## Setup wizard: the short path
 
-**Interim.** The wizard uses the same `ImportFlowBody`, so it shows Connect, the chooser and
-the plan without the stepper; its copy is unchanged. **Planned:** Connect, choose, Start import
+**Interim.** The wizard uses the same `ImportFlowBody`, so it shows Connect, the chooser,
+Options and Review without the stepper; its copy is unchanged. **Planned:** Connect, choose, Start import
 with defaults for options and mapping, key clashes falling back to a suffixed key listed in the
 report, no claim the importer cannot keep, and the run continuing in the background. Before the
 modules are on, the importers stay visible but not pickable ("Needs Work", "Needs Docs").
@@ -149,5 +190,10 @@ modules are on, the importers stay visible but not pickable ("Needs Work", "Need
   restore); over a search or filter it unticks that scope and Undo ticks it again.
 - **Status words.** "Imported Oct 2" and "Key in use" carry their explanation for screen
   readers instead of a hover title, since the system has no native titles.
-- **The plan is the interim Options step.** The stepper marks it Options; phase 2 replaces the
-  panel without moving the seam (`flow.step === 'options'`).
+- **Rows that want a look stay put.** A row the attention filter listed keeps its place at
+  the top after it is fixed, so typing a key never moves the field away from the caret.
+- **Existing picker source.** The import contract has no list of candidate targets, so the
+  picker reads the target module's list (`/work/projects`, `/docs/spaces`) for id, key and
+  name. A kernel endpoint under the import would remove that reach into a module.
+- **Phone.** Mapping rows stack (source over target, arrow hidden), the option grid and the
+  review list go to one column, the people numbers to two.

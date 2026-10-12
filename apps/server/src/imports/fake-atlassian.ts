@@ -75,6 +75,10 @@ function confluence(options: FakeSiteOptions) {
         200,
         data.users[url.searchParams.get('accountId') ?? url.searchParams.get('key') ?? ''] ?? {},
       ];
+    if (path === '/rest/api/search/user')
+      return [200, results(Object.values(data.users).map((user) => ({ user })))];
+    if (path === '/rest/api/group/confluence-users/member')
+      return [200, results(Object.values(data.users))];
     if (path === '/rest/api/space') return [200, results(data.spaces)];
     if (path === '/rest/api/search') {
       const key = /space = "([^"]+)"/.exec(url.searchParams.get('cql') ?? '')?.[1] ?? '';

@@ -2,7 +2,8 @@ import { defineImporter } from '@bemmoly/core';
 import type { Actor, ContainerMemberships, SqlClient } from '@bemmoly/core';
 import type { RichText } from '../../../../shared/common.ts';
 import type { DocsServiceDeps } from '../common.ts';
-import { CONFLUENCE_FIELDS, parseConfluenceConnection } from './connection.ts';
+import { CONFLUENCE_FIELDS, parseConfluenceConnection, spaceKeyFrom } from './connection.ts';
+import { peopleOfConfluence } from './people.ts';
 import { countConfluence, discoverConfluence, planConfluence } from './discover.ts';
 import { runConfluence } from './run.ts';
 
@@ -18,6 +19,22 @@ function requireSql(deps: ConfluenceImporterDeps): SqlClient {
   return deps.database;
 }
 
+/** What a Confluence import can bring along with the pages; pages and trees always come. */
+export const CONFLUENCE_OPTIONS = [
+  {
+    name: 'comments',
+    label: 'Comments',
+    description: 'Page and inline comments, with authors',
+    default: true,
+  },
+  {
+    name: 'attachments',
+    label: 'Attachments',
+    description: 'Stored in Bemmoly file storage',
+    default: true,
+  },
+] as const;
+
 /** Confluence Cloud and Data Center into Docs: spaces, page trees, bodies and their comments. */
 export function createConfluenceImporter(deps: ConfluenceImporterDeps) {
   return defineImporter({
@@ -31,7 +48,26 @@ export function createConfluenceImporter(deps: ConfluenceImporterDeps) {
     nouns: { container: 'space', containers: 'spaces', records: 'pages', target: 'Docs space' },
     discover: (connection, ctx) => discoverConfluence(requireSql(deps), connection, ctx),
     count: countConfluence,
-    plan: (_connection, containers, ctx) => planConfluence(requireSql(deps), containers, ctx),
+    plan: async (_connection, containers) => planConfluence(containers),
+    options: CONFLUENCE_OPTIONS,
+    people: peopleOfConfluence,
+    targets: {
+      label: 'Docs space',
+      container: 'space',
+      records: 'pages',
+      keyFrom: spaceKeyFrom,
+      byKeys: (keys) =>
+        requireSql(deps)<{ id: string; key: string; name: string }[]>`
+          select id, key, name from spaces where key = any(${keys as string[]}::text[])`,
+      byIds: (ids) =>
+        requireSql(deps)<{ id: string; key: string; name: string }[]>`
+          select id, key, name from spaces where id = any(${ids as string[]}::uuid[])`,
+      search: (q, limit) =>
+        requireSql(deps)<{ id: string; key: string; name: string }[]>`
+          select id, key, name from spaces
+          where ${q} = '' or key ilike ${`%${q}%`} or name ilike ${`%${q}%`}
+          order by lower(name), id limit ${limit}`,
+    },
     run: (connection, plan, ctx) =>
       runConfluence(
         {

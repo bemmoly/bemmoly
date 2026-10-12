@@ -93,7 +93,8 @@ describe('Jira import', () => {
     expect(plan.counts).toEqual({ projects: 1, issues: 5 });
     const find = (kind: string, source: string) =>
       plan.mappings.find((m) => m.kind === kind && m.source === source);
-    expect(find('project', 'OPS')?.action).toBe('create');
+    expect(find('project', 'OPS')).toBeUndefined();
+    expect(planned.body.plan?.targets).toMatchObject({ create: 1, errors: 0 });
     expect(find('status', 'In Progress')?.action).toBe('match');
     expect(find('status', 'To Do')?.action).toBe('create');
     expect(find('issue_type', 'Spike')).toMatchObject({

@@ -135,6 +135,19 @@ export function createConfluenceClient(options: ConfluenceClientOptions) {
         expand: 'body.storage,history,ancestors,extensions.location',
         depth: 'all',
       }),
+    /**
+     * The site's people, up to `limit`: Cloud searches users by CQL, Data Center lists the
+     * confluence-users group.
+     */
+    async people(limit: number): Promise<ConfluenceUser[]> {
+      if (cloud) {
+        const found = await all<{ user?: ConfluenceUser }>('rest/api/search/user', {
+          cql: 'type=user',
+        });
+        return found.flatMap((hit) => (hit.user ? [hit.user] : [])).slice(0, limit);
+      }
+      return (await all<ConfluenceUser>('rest/api/group/confluence-users/member')).slice(0, limit);
+    },
     user: (id: string) =>
       rest.getJson<ConfluenceUser>('rest/api/user', cloud ? { accountId: id } : { key: id }),
     download: (attachment: ConfluenceAttachment) =>

@@ -1,9 +1,14 @@
 import type { Logger } from 'pino';
 import type { SqlClient } from '../../clients/postgres.ts';
-import type { ImportConnection, ImportSourceContext } from '../../contracts/importer.ts';
+import type {
+  ImportConnection,
+  ImportRunTarget,
+  ImportSourceContext,
+} from '../../contracts/importer.ts';
 import type { ObjectStore } from '../../contracts/object-store.ts';
 import type { ImporterCatalog } from './define.ts';
 import { createRunContext, ImportCancelledError } from './run-context.ts';
+import { peopleOverrides } from './people-plan.ts';
 import { jobById } from './store.ts';
 
 /** The pg-boss job that runs one import; its payload is the import_jobs id. */
@@ -21,6 +26,26 @@ export interface ImportRunnerDeps {
     credentials: string | null;
   }): ImportConnection;
   logger?: Pick<Logger, 'info' | 'warn' | 'error'>;
+}
+
+/** Where the plan sent each chosen container. */
+async function runTargets(sql: SqlClient, jobId: string): Promise<Map<string, ImportRunTarget>> {
+  const rows = await sql<
+    {
+      source_id: string;
+      target_mode: ImportRunTarget['mode'];
+      target_key: string;
+      target_id: string | null;
+    }[]
+  >`
+    select source_id, target_mode, target_key, target_id from import_containers
+    where job_id = ${jobId} and selected and target_mode is not null`;
+  return new Map(
+    rows.map((row) => [
+      row.source_id,
+      { mode: row.target_mode, key: row.target_key, id: row.target_id },
+    ]),
+  );
 }
 
 /** Why a run stopped, in words an admin can act on; stack traces stay in the log. */
@@ -49,6 +74,8 @@ export function createImportRunner(deps: ImportRunnerDeps) {
     const handle = createRunContext({
       sql,
       job,
+      targets: await runTargets(sql, jobId),
+      people: await peopleOverrides(sql, jobId),
       objectStore: deps.objectStore,
       signal,
       fetchFor: deps.fetchFor,

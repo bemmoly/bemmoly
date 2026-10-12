@@ -1,10 +1,24 @@
-import type { CreateImportBody, ImportJob, UpdateImportBody } from '@bemmoly/shared';
+import {
+  importPeopleQuerySchema,
+  updateImportBodySchema,
+  type CreateImportBody,
+  type ImportJob,
+} from '@bemmoly/shared';
 import { can, type MockDb } from '../db.ts';
 import { mockContainers } from '../seed/import-containers.ts';
 import { MOCK_IMPORT_SOURCES, mockDiscovery, mockMappings } from '../seed/imports.ts';
 import { newId } from '../seed/time.ts';
-import { bodyOf, fail, notFound, ok, type MockRoute } from '../types.ts';
-import { chooserOf, findJob as find, listOf, startChooser } from './import-state.ts';
+import { byNeed } from '../seed/import-people.ts';
+import { bodyOf, fail, invalid, notFound, ok, type MockRoute } from '../types.ts';
+import { applyChoices, choicesOf, holdersOf } from './import-plan.ts';
+import {
+  chooserOf,
+  findJob as find,
+  listOf,
+  matching,
+  rowOf,
+  startChooser,
+} from './import-state.ts';
 
 const SETTINGS = 'workspace.settings.manage';
 /** Each read of a running job moves it on by this share of its total, as a worker would. */
@@ -124,19 +138,52 @@ export const importRoutes: MockRoute[] = [
       const job = find(db, request.params['id']);
       const state = chooserOf(job?.id);
       if (!job?.discovery || !state) return notFound('Import');
-      const picked = bodyOf<UpdateImportBody>(request).containers;
-      if (picked) state.selected = new Set(picked);
+      const parsed = updateImportBodySchema.safeParse(request.body ?? {});
+      if (!parsed.success) return invalid('body', parsed.error.message);
+      const body = parsed.data;
+      if (body.containers) state.selected = new Set(body.containers);
       const chosen = state.rows.filter((c) => state.selected.has(c.id) && c.access === 'ok');
       if (chosen.length === 0) {
         return fail(400, 'validation_failed', 'Choose at least one to bring in.');
       }
+      const refused = applyChoices(db, job, state, body);
+      if (refused) return fail(400, 'validation_failed', refused);
       const records = chosen.reduce((sum, c) => sum + c.records, 0);
       job.plan = {
         containers: chosen.map((c) => c.id),
         counts: { [chosen[0]?.kind === 'space' ? 'pages' : 'issues']: records },
         mappings: mockMappings(job.source),
+        ...choicesOf(db, job, state, body),
       };
-      return ok(job);
+      const attention = matching(state, undefined, 'attention').map((row) => rowOf(state, row));
+      return ok({ ...job, attention });
+    }),
+  },
+  {
+    method: 'GET',
+    pattern: '/api/v1/admin/imports/:id/targets',
+    handle: adminOnly((request, db) => {
+      const job = find(db, request.params['id']);
+      if (!job) return notFound('Import');
+      const q = (request.query.get('q') ?? '').toLowerCase();
+      const items = holdersOf(db, job.source)
+        .filter((row) => !q || `${row.key} ${row.name}`.toLowerCase().includes(q))
+        .map(({ id, key, name }) => ({ id, key, name }));
+      return ok({ items });
+    }),
+  },
+  {
+    method: 'GET',
+    pattern: '/api/v1/admin/imports/:id/people',
+    handle: adminOnly((request) => {
+      const state = chooserOf(request.params['id']);
+      if (!state) return notFound('Import');
+      const parsed = importPeopleQuerySchema.safeParse(Object.fromEntries(request.query));
+      if (!parsed.success) return invalid('query', parsed.error.message);
+      const rows = [...(state.people ?? [])].sort(byNeed);
+      const from = parsed.data.cursor ? Number(parsed.data.cursor) : 0;
+      const to = from + parsed.data.limit;
+      return ok({ items: rows.slice(from, to), next: to < rows.length ? String(to) : null });
     }),
   },
   {
@@ -145,6 +192,9 @@ export const importRoutes: MockRoute[] = [
     handle: adminOnly((request, db) => {
       const job = find(db, request.params['id']);
       if (!job?.plan) return notFound('Import');
+      if (job.plan.targets?.errors) {
+        return fail(400, 'validation_failed', 'Fix the keys marked in Options first.');
+      }
       const total = Object.values(job.plan.counts).reduce((sum, n) => sum + n, 0) + 4;
       job.status = 'queued';
       job.error = null;

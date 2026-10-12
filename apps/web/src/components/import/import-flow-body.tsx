@@ -4,12 +4,13 @@ import { SettingsFailure } from '../settings/settings-states.tsx';
 import { ConnectForm } from './connect-form.tsx';
 import { ContainerChooser } from './container-chooser.tsx';
 import { ImportReport } from './import-report.tsx';
-import { PlanPanel } from './plan-panel.tsx';
+import { OptionsStep } from './options-step.tsx';
+import { ReviewStep } from './review-step.tsx';
 import { RunProgress } from './run-progress.tsx';
 
 /**
  * Everything after a source is picked, by step: its connection form, choosing what to bring,
- * the plan, the live run, then the report. Settings › Import and the wizard's step share it.
+ * options and mapping, the review, the live run, then the report. Settings › Import and the wizard's step share it.
  */
 export function ImportFlowBody({ flow }: { flow: ImportFlow }) {
   const { job, source, actions } = flow;
@@ -61,16 +62,26 @@ export function ImportFlowBody({ flow }: { flow: ImportFlow }) {
       />
     );
   }
-  // Options and Review take this place next; until then the plan is the step after Choose.
-  return job.plan ? (
-    <PlanPanel
-      plan={job.plan}
-      current
-      starting={actions.run.isPending}
-      error={actions.run.error}
-      onStart={flow.start}
+  if (!job.plan) return <FormError error={actions.plan.error} />;
+  if (flow.step === 'review') {
+    return (
+      <ReviewStep
+        job={job}
+        source={source}
+        starting={actions.run.isPending}
+        error={actions.run.error}
+        onBack={flow.backToOptions}
+        onStart={flow.start}
+      />
+    );
+  }
+  return (
+    <OptionsStep
+      key={job.id}
+      job={job}
+      source={source}
+      onBack={flow.backToChoose}
+      onReview={flow.review}
     />
-  ) : (
-    <FormError error={actions.plan.error} />
   );
 }

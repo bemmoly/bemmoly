@@ -1,4 +1,10 @@
-import type { ImportDiscovery, ImportField, ImportPlan } from '@bemmoly/shared';
+import type {
+  ImportDiscovery,
+  ImportField,
+  ImportInclude,
+  ImportOption,
+  ImportPlan,
+} from '@bemmoly/shared';
 import type { SqlExecutor } from './sql.ts';
 
 /*
@@ -78,8 +84,38 @@ export interface StoredImportFile {
 
 export type ImportOutcome = 'created' | 'updated' | 'skipped';
 
+/** Where the plan sends one container, as the run reads it. */
+export interface ImportRunTarget {
+  mode: 'create' | 'existing' | 'update';
+  key: string;
+  id: string | null;
+}
+
+/**
+ * How the kernel finds the projects or spaces a module's import writes into, to check a new
+ * key is free and an existing target is still there.
+ */
+export interface ImportTargetLookup {
+  /** "Work project", "Docs space". */
+  label: string;
+  /** "project", "space". */
+  container: string;
+  /** "issues", "pages". */
+  records: string;
+  /** The key a source key becomes here when nobody picks one. */
+  keyFrom(sourceKey: string): string;
+  byKeys(keys: readonly string[]): Promise<{ id: string; key: string; name: string }[]>;
+  byIds(ids: readonly string[]): Promise<{ id: string; key: string; name: string }[]>;
+  /** Projects or spaces whose key or name holds `q`, for the Existing picker. */
+  search(q: string, limit: number): Promise<{ id: string; key: string; name: string }[]>;
+}
+
 export interface ImportRunContext extends ImportPlanContext {
   jobId: string;
+  /** What to bring along with the records, as the plan settled it. */
+  include: ImportInclude;
+  /** Where each chosen container goes, by source id; empty for plans made before targets. */
+  targets: ReadonlyMap<string, ImportRunTarget>;
   /** The admin who started the run, the author of what has no author at the source. */
   actorUserId: string | null;
   checkpoint: {
@@ -130,6 +166,16 @@ export interface Importer {
    * mappings) and containers whose key is already taken here.
    */
   discover(connection: ImportConnection, ctx: ImportPlanContext): Promise<ImportDiscovery>;
+  /** The "what to bring" checkboxes this source offers. */
+  options?: readonly ImportOption[];
+  /** Where its containers can go; without it every container is new. */
+  targets?: ImportTargetLookup;
+  /** Everyone the chosen containers name, for the plan's people pass. */
+  people?(
+    connection: ImportConnection,
+    containers: readonly ImportContainerRef[],
+    ctx: ImportSourceContext,
+  ): Promise<ImportPerson[]>;
   /** Counts the records in these containers; at most 100 at a time. */
   count?(
     connection: ImportConnection,

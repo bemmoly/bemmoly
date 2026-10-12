@@ -12,7 +12,6 @@ import {
   builtInOf,
   fieldKindOf,
   matchIssueType,
-  projectKeyFrom,
   workFields,
   workStatuses,
   workTypes,
@@ -85,26 +84,13 @@ export async function planJira(
       statuses: await client.statuses(ref.key!),
     }));
     const fields = await client.fields();
-    const mapped = await ctx.mappings.getMany(
-      'project',
-      picked.map((project) => project.id),
-    );
     const types = await workTypes(sql, null);
     const statuses = await workStatuses(sql, null);
     const mappings: ImportMapping[] = [];
     const seenTypes = new Map<string, JiraIssueType>();
     const seenStatuses = new Map<string, JiraStatus>();
+    // Where each project goes is the plan's targets, decided by the kernel.
     for (const { project, statuses: byType } of details) {
-      const key = projectKeyFrom(project.key);
-      const [existing] = await sql<{ id: string }[]>`select id from projects where key = ${key}`;
-      const note = key === project.key ? null : `The key becomes ${key}`;
-      if (mapped.has(project.id))
-        mappings.push(mapping('project', project.key, 'match', key, 'Imported before; updated'));
-      else if (existing)
-        mappings.push(
-          mapping('project', project.key, 'match', key, 'A project with this key exists'),
-        );
-      else mappings.push(mapping('project', project.key, 'create', key, note));
       for (const type of project.issueTypes ?? []) seenTypes.set(type.name.toLowerCase(), type);
       for (const group of byType) {
         for (const status of group.statuses) seenStatuses.set(status.name.toLowerCase(), status);

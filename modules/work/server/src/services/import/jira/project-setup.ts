@@ -2,6 +2,7 @@ import type { ContainerMemberships, ImportRunContext, SqlClient } from '@bemmoly
 import { PROJECT_ADMIN_ROLE_KEY } from '../../../../../shared/members.ts';
 import type { JiraClient, JiraProject, JiraStatus } from '../../../clients/jira.ts';
 import { copyWorkflowToProject } from '../../workflow/project-copy.ts';
+import type { LocalKey } from './issue-rows.ts';
 import { categoryOf, matchIssueType, projectKeyFrom, workStatuses, workTypes } from './schema.ts';
 
 /*
@@ -15,6 +16,8 @@ export interface ProjectSetup {
   jira: JiraProject;
   projectId: string;
   key: string;
+  /** Added to Jira's issue numbers; above zero only in an existing project. */
+  offset: number;
   statuses: Map<string, { id: string; category: 'todo' | 'in_progress' | 'done' }>;
   types: Map<string, string>;
   versions: Map<string, string>;
@@ -26,15 +29,30 @@ export interface SetupDeps {
   memberships?: ContainerMemberships;
 }
 
-async function ensureProject(deps: SetupDeps, jira: JiraProject, ctx: ImportRunContext) {
+async function ensureProject(
+  deps: SetupDeps,
+  jira: JiraProject,
+  ctx: ImportRunContext,
+  offset: number,
+) {
   const { sql } = deps;
+  const target = ctx.targets.get(jira.id);
+  if (target?.mode === 'existing' && target.id) {
+    const [row] = await sql<{ id: string; key: string }[]>`
+      select id, key from projects where id = ${target.id}`;
+    if (!row) throw new Error(`The Work project chosen for ${jira.key} no longer exists`);
+    await ctx.mappings.set('project', jira.id, row.id, { key: jira.key, offset });
+    ctx.report.count('projects', 'updated');
+    return row;
+  }
   const mapped = await ctx.mappings.get('project', jira.id);
   if (mapped) {
     const [row] = await sql<{ id: string; key: string }[]>`
       select id, key from projects where id = ${mapped.targetId}`;
-    if (row) return row;
+    // The project an earlier run of this import made is its own, under the key it asked for.
+    if (row && (target?.mode !== 'create' || row.key === target.key)) return row;
   }
-  const key = projectKeyFrom(jira.key);
+  const key = target?.mode === 'create' ? target.key : projectKeyFrom(jira.key);
   if (key !== jira.key)
     ctx.report.warn(`Project ${jira.key} is ${key} here; its issue keys follow.`);
   const method =
@@ -43,9 +61,14 @@ async function ensureProject(deps: SetupDeps, jira: JiraProject, ctx: ImportRunC
     const [created] = await tx<{ id: string; key: string }[]>`
       insert into projects (key, name, description, method)
       values (${key}, ${jira.name.slice(0, 120)}, ${jira.description?.slice(0, 5000) || null}, ${method})
-      on conflict (key) do update set updated_at = projects.updated_at
-      returning id, key, (xmax = 0) as inserted`;
-    if (!created) throw new Error(`Project ${key} was not stored`);
+      on conflict (key) do nothing
+      returning id, key, true as inserted`;
+    // Never a silent merge into a project that happens to hold the key.
+    if (!created) {
+      throw new Error(
+        `${key} is taken by another Work project; pick another key or that project in Options`,
+      );
+    }
     await tx`insert into project_counters (project_id) values (${created.id}) on conflict do nothing`;
     if (deps.memberships && ctx.actorUserId) {
       const roles = await deps.memberships.roles(tx);
@@ -158,9 +181,10 @@ export async function setupProject(
   client: JiraClient,
   summary: JiraProject,
   ctx: ImportRunContext,
+  local: LocalKey,
 ): Promise<ProjectSetup> {
   const jira = await client.project(summary.key);
-  const project = await ensureProject(deps, jira, ctx);
+  const project = await ensureProject(deps, jira, ctx, local.offset);
   const byType = await client.statuses(jira.key);
   const unique = new Map(
     byType.flatMap((group) => group.statuses).map((status) => [status.id, status]),
@@ -186,5 +210,14 @@ export async function setupProject(
     await client.components(jira.key),
     ctx,
   );
-  return { jira, projectId: project.id, key: project.key, statuses, types, versions, components };
+  return {
+    jira,
+    projectId: project.id,
+    key: project.key,
+    offset: local.offset,
+    statuses,
+    types,
+    versions,
+    components,
+  };
 }

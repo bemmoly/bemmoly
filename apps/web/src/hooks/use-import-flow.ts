@@ -9,8 +9,9 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { isActive, useImportActions, useImportJob, useImportSources } from './use-imports.ts';
 
-/** Where the import is. "options" shows the plan until Options and Review are built. */
-export type ImportStep = 'source' | 'connect' | 'choose' | 'options' | 'running' | 'report';
+/** Where the import is. */
+export type ImportStep =
+  'source' | 'connect' | 'choose' | 'options' | 'review' | 'running' | 'report';
 
 /** The stepper's place for each step: Connect, Choose, Options, Review, Import. */
 export const STEP_INDEX: Record<ImportStep, number> = {
@@ -18,6 +19,7 @@ export const STEP_INDEX: Record<ImportStep, number> = {
   connect: 0,
   choose: 1,
   options: 2,
+  review: 3,
   running: 4,
   report: 4,
 };
@@ -51,9 +53,13 @@ export function stepOf(
   source: ImportSource | null,
   job: ImportJob | undefined,
   choosing = false,
+  reviewing = false,
 ): ImportStep {
   if (job) {
-    if (job.status === 'ready') return job.plan && !choosing ? 'options' : 'choose';
+    if (job.status === 'ready') {
+      if (!job.plan || choosing) return 'choose';
+      return reviewing ? 'review' : 'options';
+    }
     return isActive(job.status) ? 'running' : 'report';
   }
   return source ? 'connect' : 'source';
@@ -74,6 +80,8 @@ export function useImportFlow(options: { sourcesEnabled?: boolean } = {}) {
   const [jobId, setJobId] = useState<string | null>(null);
   /** Back on Choose after a plan was made (the stepper's Choose). */
   const [choosing, setChoosing] = useState(false);
+  /** On Review, after Options; Back and the stepper return to Options with the plan as it is. */
+  const [reviewing, setReviewing] = useState(false);
   const jobQuery = useImportJob(jobId);
   const job = jobId ? jobQuery.data : undefined;
   const actions = useImportActions((created) => setJobId(created.id));
@@ -81,7 +89,7 @@ export function useImportFlow(options: { sourcesEnabled?: boolean } = {}) {
   const items = sources.data?.items ?? [];
   const source = items.find((entry) => entry.id === (job?.source ?? sourceId)) ?? null;
   const fields = source ? visibleFields(source, values) : [];
-  const step = stepOf(source, job, choosing);
+  const step = stepOf(source, job, choosing, reviewing);
 
   const status = job?.status;
   useEffect(() => {
@@ -94,6 +102,7 @@ export function useImportFlow(options: { sourcesEnabled?: boolean } = {}) {
     actions.create.reset();
     setFileError(null);
     setChoosing(false);
+    setReviewing(false);
   };
 
   /** Leaves the job for its connection form; a reopened job's source gets a fresh form. */
@@ -152,14 +161,30 @@ export function useImportFlow(options: { sourcesEnabled?: boolean } = {}) {
     },
     /** Plans what is ticked in the server's selection, then shows the plan. */
     planChosen: () =>
-      job && actions.plan.mutate({ id: job.id }, { onSuccess: () => setChoosing(false) }),
-    /** The stepper: back to Connect (the form keeps its values) or to Choose. */
+      job &&
+      actions.plan.mutate(
+        { id: job.id },
+        {
+          onSuccess: () => {
+            setChoosing(false);
+            setReviewing(false);
+          },
+        },
+      ),
+    /** Options to Review; the plan already holds every choice. */
+    review: () => setReviewing(true),
+    /** Review back to Options. */
+    backToOptions: () => setReviewing(false),
+    /** Options back to Choose, keeping the selection. */
+    backToChoose: () => setChoosing(true),
+    /** The stepper: back to Connect (the form keeps its values), Choose or Options. */
     visit: (index: number) => {
       if (index === STEP_INDEX.connect && job) leaveJob();
-      else if (index === STEP_INDEX.choose && step === 'options') setChoosing(true);
+      else if (index === STEP_INDEX.choose && STEP_INDEX[step] > index) setChoosing(true);
+      else if (index === STEP_INDEX.options && step === 'review') setReviewing(false);
     },
     canVisit: (index: number) =>
-      (step === 'choose' || step === 'options') && index < STEP_INDEX[step],
+      (step === 'choose' || step === 'options' || step === 'review') && index < STEP_INDEX[step],
     start: () => job && actions.run.mutate(job.id),
     cancel: () => job && actions.cancel.mutate(job.id),
     open: (id: string) => {

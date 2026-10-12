@@ -1,10 +1,14 @@
 import {
   matchesScope,
   type ImportContainerFilter,
+  type ImportClashRule,
   type ImportContainerRow,
   type ImportJob,
+  type ImportPersonRow,
   type ImportSelectionOp,
   type ImportSelectionSummary,
+  type ImportTarget,
+  type ImportTargetRequest,
 } from '@bemmoly/shared';
 import type { MockDb } from '../db.ts';
 import { defaultSelection, type MockContainer } from '../seed/import-containers.ts';
@@ -17,6 +21,13 @@ export interface ChooserState {
   counted: Set<string>;
   /** What the last clear unticked, for restore. */
   cleared: Set<string> | null;
+  /** Where the admin asked each container to go, kept across plans. */
+  requests: Map<string, ImportTargetRequest>;
+  /** Where the last plan sent each chosen container; null before a plan. */
+  targets: Map<string, ImportTarget> | null;
+  onClash: ImportClashRule;
+  /** Everyone the chosen containers name, once planned. */
+  people: ImportPersonRow[] | null;
 }
 
 const jobs = new WeakMap<MockDb, ImportJob[]>();
@@ -39,6 +50,10 @@ export function startChooser(jobId: string, rows: MockContainer[]) {
     selected: defaultSelection(rows),
     counted: new Set(),
     cleared: null,
+    requests: new Map(),
+    targets: null,
+    onClash: 'error',
+    people: null,
   });
 }
 
@@ -50,6 +65,7 @@ export function rowOf(state: ChooserState, row: MockContainer): ImportContainerR
     ...rest,
     count: row.access === 'none' ? 0 : !lazy || state.counted.has(row.id) ? records : null,
     selected: state.selected.has(row.id),
+    target: state.targets?.get(row.id) ?? null,
   };
 }
 

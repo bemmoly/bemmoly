@@ -5,7 +5,7 @@ import type {
   ImportSourceContext,
   SqlClient,
 } from '@bemmoly/core';
-import type { ImportContainer, ImportDiscovery, ImportMapping, ImportPlan } from '@bemmoly/shared';
+import type { ImportContainer, ImportDiscovery, ImportPlan } from '@bemmoly/shared';
 import {
   confluenceClientFor,
   explainConfluenceError,
@@ -93,57 +93,25 @@ export async function countConfluence(
   }
 }
 
-export async function planConfluence(
-  sql: SqlClient,
-  containers: readonly ImportContainerRef[],
-  ctx: ImportPlanContext,
-): Promise<ImportPlan> {
-  try {
-    const spaces = containers.map((container) => ({ key: container.id, count: container.count }));
-    const mapped = await ctx.mappings.getMany(
-      'space',
-      spaces.map((space) => space.key),
-    );
-    const mappings: ImportMapping[] = [];
-    let pages = 0;
-    for (const space of spaces) {
-      pages += space.count ?? 0;
-      const key = spaceKeyFrom(space.key);
-      const [existing] = await sql<{ id: string }[]>`select id from spaces where key = ${key}`;
-      const note = key === space.key ? null : `The key becomes ${key}`;
-      mappings.push(
-        mapped.has(space.key)
-          ? {
-              kind: 'space',
-              source: space.key,
-              action: 'match',
-              target: key,
-              note: 'Imported before; updated',
-            }
-          : existing
-            ? {
-                kind: 'space',
-                source: space.key,
-                action: 'match',
-                target: key,
-                note: 'A space with this key exists',
-              }
-            : { kind: 'space', source: space.key, action: 'create', target: key, note },
-      );
-    }
-    mappings.push({
-      kind: 'macro',
-      source: 'Macros without a Docs block',
-      action: 'report',
-      target: null,
-      note: 'Kept as labelled blocks with their original markup',
-    });
-    return {
-      containers: spaces.map((space) => space.key),
-      counts: { spaces: spaces.length, pages },
-      mappings,
-    };
-  } catch (error) {
-    return explainConfluenceError(error);
-  }
+/**
+ * The Confluence plan: pages to bring and the note about macros. Where each space goes is the
+ * plan's targets, decided by the kernel with the lookup this module gives it.
+ */
+export function planConfluence(containers: readonly ImportContainerRef[]): ImportPlan {
+  return {
+    containers: containers.map((container) => container.id),
+    counts: {
+      spaces: containers.length,
+      pages: containers.reduce((sum, container) => sum + (container.count ?? 0), 0),
+    },
+    mappings: [
+      {
+        kind: 'macro',
+        source: 'Macros without a Docs block',
+        action: 'report',
+        target: null,
+        note: 'Kept as labelled blocks with their original markup',
+      },
+    ],
+  };
 }

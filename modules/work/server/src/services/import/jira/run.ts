@@ -5,14 +5,14 @@ import type {
   SqlClient,
 } from '@bemmoly/core';
 import type { ImportPlan } from '@bemmoly/shared';
-import type { JiraClient, JiraIssue } from '../../../clients/jira.ts';
+import type { JiraClient, JiraIssue, JiraProject } from '../../../clients/jira.ts';
 import { writeIssues, writeLabels } from '../writer.ts';
 import { importAgile } from './agile.ts';
 import { explainJiraError, jiraClientFor, parseJiraConnection } from './connection.ts';
 import { projectJql } from './discover.ts';
 import { writeAttachments, writeComments } from './extras.ts';
 import { createFieldMapper } from './fields.ts';
-import { toIssueRow, type RowContext } from './issue-rows.ts';
+import { toIssueRow, type LocalKey, type RowContext } from './issue-rows.ts';
 import { writeLinks } from './links.ts';
 import { setupProject } from './project-setup.ts';
 import { projectKeyFrom } from './schema.ts';
@@ -71,8 +71,8 @@ async function importIssues(
       labels.set(id, issue.fields.labels ?? []);
     }
     await writeLabels(deps.sql, setup.projectId, labels);
-    await writeComments(deps.sql, client, rows, pageIssues);
-    await writeAttachments(deps.sql, client, rows, pageIssues);
+    if (ctx.include.comments) await writeComments(deps.sql, client, rows, pageIssues);
+    if (ctx.include.attachments) await writeAttachments(deps.sql, client, rows, pageIssues);
     await ctx.progress.advance(page.issues.length);
     cursor = page.next;
     await ctx.checkpoint.save({
@@ -82,6 +82,33 @@ async function importIssues(
     } satisfies JiraCheckpoint);
     if (!cursor) return;
   }
+}
+
+/**
+ * Each project's key here, decided before any is written so references across projects
+ * resolve: its target's key, else the key made from Jira's. Into an existing project, issue
+ * numbers move past the numbers it had, by an offset kept on the mapping for re-runs.
+ */
+async function localKeys(
+  sql: SqlClient,
+  projects: readonly JiraProject[],
+  ctx: ImportRunContext,
+): Promise<Map<string, LocalKey>> {
+  const keys = new Map<string, LocalKey>();
+  for (const project of projects) {
+    const target = ctx.targets.get(project.id);
+    if (target?.mode === 'existing' && target.id) {
+      const mapped = await ctx.mappings.get('project', project.id);
+      const [top] = await sql<{ top: number }[]>`
+        select coalesce(max(number), 0)::int as top from issues where project_id = ${target.id}`;
+      const offset =
+        mapped?.targetId === target.id ? Number(mapped.meta['offset'] ?? 0) : (top?.top ?? 0);
+      keys.set(project.key, { key: target.key, offset });
+    } else {
+      keys.set(project.key, { key: target?.key || projectKeyFrom(project.key), offset: 0 });
+    }
+  }
+  return keys;
 }
 
 export async function runJira(
@@ -104,21 +131,21 @@ export async function runJira(
     if (!projects.some((project) => project.id === id))
       ctx.report.skip('project', id, 'No longer visible to the token');
   }
-  const projectKeys = new Map(
-    projects.map((project) => [project.key, projectKeyFrom(project.key)]),
-  );
+  const projectKeys = await localKeys(deps.sql, projects, ctx);
   const people = new Map<string, { id: string; label: string }>();
   const saved = ctx.checkpoint.read<JiraCheckpoint>();
   const imported = new Set<string>();
   await ctx.progress.phase('Projects', projects.length);
   for (const [index, summary] of projects.entries()) {
-    const setup = await setupProject(deps, client, summary, ctx);
+    const setup = await setupProject(deps, client, summary, ctx, projectKeys.get(summary.key)!);
     imported.add(setup.projectId);
     if (saved && index < saved.project) {
       await ctx.progress.advance();
       continue;
     }
-    const sprints = await importAgile(deps.sql, client, setup, ctx);
+    const sprints = ctx.include.agile
+      ? await importAgile(deps.sql, client, setup, ctx)
+      : new Map<string, string>();
     const rows: RowContext = {
       setup,
       fields: createFieldMapper(deps.sql, setup.projectId, fields, ctx),
@@ -141,5 +168,5 @@ export async function runJira(
       stage: 'issues',
     } satisfies JiraCheckpoint);
   }
-  await writeLinks(deps.sql, imported, ctx);
+  if (ctx.include.links) await writeLinks(deps.sql, imported, ctx);
 }

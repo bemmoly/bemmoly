@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { importTargetSchema } from './options.ts';
 
 /*
  * Choosing what to bring in: the projects or spaces a connection found, listed a page at a
@@ -8,7 +9,15 @@ import { z } from 'zod';
  * operation, not 1,240 ids, and the client can apply the same operations to the rows it shows.
  */
 
-export const IMPORT_CONTAINER_FILTERS = ['all', 'new', 'imported', 'noaccess', 'selected'] as const;
+/** `attention`: chosen rows whose target wants a look (an error, an existing target, an update, a new key). */
+export const IMPORT_CONTAINER_FILTERS = [
+  'all',
+  'new',
+  'imported',
+  'noaccess',
+  'selected',
+  'attention',
+] as const;
 export const importContainerFilterSchema = z.enum(IMPORT_CONTAINER_FILTERS);
 export type ImportContainerFilter = z.infer<typeof importContainerFilterSchema>;
 
@@ -40,6 +49,8 @@ export const importContainerRowSchema = z.object({
   /** A project or space here already uses the key it would get. */
   keyInUse: z.boolean(),
   selected: z.boolean(),
+  /** Where it goes, once a plan has been made with it chosen. */
+  target: importTargetSchema.nullable().optional(),
 });
 
 export const importContainerQuerySchema = z.object({
@@ -58,6 +69,8 @@ export const importContainerCountsSchema = z.object({
   imported: z.number().int().nonnegative(),
   noaccess: z.number().int().nonnegative(),
   selected: z.number().int().nonnegative(),
+  /** Chosen rows whose target wants a look; zero before a plan. */
+  attention: z.number().int().nonnegative(),
 });
 
 export const importContainerPageSchema = z.object({
@@ -124,7 +137,8 @@ export type ImportSelectionSummary = z.infer<typeof importSelectionSummarySchema
 
 /** Whether a row falls in a search and filter, the same test the server's SQL makes. */
 export function matchesScope(
-  row: Pick<ImportContainerRow, 'key' | 'name' | 'lead' | 'access' | 'imported' | 'selected'>,
+  row: Pick<ImportContainerRow, 'key' | 'name' | 'lead' | 'access' | 'imported' | 'selected'> &
+    Partial<Pick<ImportContainerRow, 'target'>>,
   scope: ImportSelectionScope,
 ): boolean {
   const q = scope.q?.trim().toLowerCase();
@@ -141,6 +155,12 @@ export function matchesScope(
       return row.access === 'none';
     case 'selected':
       return row.selected;
+    case 'attention':
+      return (
+        row.selected &&
+        row.target != null &&
+        (row.target.error !== null || row.target.mode !== 'create' || row.target.key !== row.key)
+      );
     default:
       return true;
   }

@@ -1,6 +1,9 @@
 import {
   createImportBodySchema,
   importContainerPageSchema,
+  importPeoplePageSchema,
+  importPlannedJobSchema,
+  importTargetListSchema,
   importCountBodySchema,
   importCountListSchema,
   importSelectionBodySchema,
@@ -36,7 +39,7 @@ export function importEndpoints(http: Http) {
         body: validated(createImportBodySchema, body),
       }),
     update: async (id: string, body: UpdateImportBody) =>
-      http.request(`${IMPORTS}/${enc(id)}`, importJobSchema, {
+      http.request(`${IMPORTS}/${enc(id)}`, importPlannedJobSchema, {
         method: 'PATCH',
         body: validated(updateImportBodySchema, body),
       }),
@@ -56,6 +59,16 @@ export function importEndpoints(http: Http) {
       http.request(`${IMPORTS}/${enc(id)}/containers/counts`, importCountListSchema, {
         method: 'POST',
         body: validated(importCountBodySchema, body),
+      }),
+    /** The people the plan found, those who may need a hand first. */
+    people: async (id: string, query: { cursor?: string; limit?: number } = {}) =>
+      http.request(`${IMPORTS}/${enc(id)}/people`, importPeoplePageSchema, {
+        query: { ...(query.cursor ? { cursor: query.cursor } : {}), limit: query.limit ?? 50 },
+      }),
+    /** Projects or spaces here this import can go into, for the Existing picker. */
+    targets: async (id: string, query: { q?: string; limit?: number } = {}) =>
+      http.request(`${IMPORTS}/${enc(id)}/targets`, importTargetListSchema, {
+        query: { ...(query.q ? { q: query.q } : {}), limit: query.limit ?? 50 },
       }),
     selection: async (id: string) =>
       http.request(`${IMPORTS}/${enc(id)}/selection`, importSelectionSummarySchema),

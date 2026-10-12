@@ -21,6 +21,7 @@ export function createPeopleMatcher(
   sql: SqlClient,
   mappings: ImportMappingStore,
   report: ImportRunContext['report'],
+  overrides: ReadonlyMap<string, string> = new Map(),
 ): ImportRunContext['users'] {
   const cache = new Map<string, string | null>();
   let memberRoleId: string | null = null;
@@ -34,6 +35,13 @@ export function createPeopleMatcher(
   }
 
   async function resolve(person: ImportPerson): Promise<string | null> {
+    const chosen = overrides.get(person.sourceId);
+    if (chosen && chosen !== 'placeholder') {
+      await mappings.set('user', person.sourceId, chosen, { matched: true, chosen: true });
+      return chosen;
+    }
+    // Kept a placeholder by the admin: an email that matches a member is not used.
+    if (chosen === 'placeholder') return placeholder({ ...person, email: null }, person.email);
     const mapped = await mappings.get('user', person.sourceId);
     if (mapped) {
       const [still] = await sql`select 1 from users where id = ${mapped.targetId}`;
@@ -51,6 +59,18 @@ export function createPeopleMatcher(
         return existing.id;
       }
     }
+    return placeholder(person, email);
+  }
+
+  async function placeholder(person: ImportPerson, known: string | null): Promise<string | null> {
+    const mapped = await mappings.get('user', person.sourceId);
+    if (mapped && !mapped.meta['matched']) {
+      const [still] = await sql`select 1 from users where id = ${mapped.targetId}`;
+      if (still) return mapped.targetId;
+    }
+    const email = person.email?.trim().toLowerCase() || null;
+    const name = clip(person.name || known || '', 200);
+    if (!email && !name) return null;
     const digest = createHash('sha256').update(person.sourceId).digest('hex').slice(0, 16);
     const address = email ?? `import-${digest}@${PLACEHOLDER_DOMAIN}`;
     const [created] = await sql<{ id: string }[]>`

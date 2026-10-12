@@ -123,6 +123,9 @@ export function createJiraClient(options: JiraClientOptions) {
     statuses: (key: string) =>
       rest.getJson<JiraTypeStatuses[]>(`${api}/project/${encodeURIComponent(key)}/statuses`),
     fields: () => rest.getJson<JiraField[]>(`${api}/field`),
+    /** People who can be assigned issues in a project: who the plan's people pass lists. */
+    assignable: (key: string) =>
+      rest.getJson<JiraUser[]>(`${api}/user/assignable/search`, { project: key, maxResults: 1000 }),
     versions: (key: string) =>
       rest.getJson<JiraVersion[]>(`${api}/project/${encodeURIComponent(key)}/versions`),
     components: (key: string) =>

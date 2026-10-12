@@ -1,7 +1,11 @@
 import { createHash, randomUUID } from 'node:crypto';
 import type { ImportReport } from '@bemmoly/shared';
 import type { SqlClient } from '../../clients/postgres.ts';
-import type { ImportRunContext, ImportSourceContext } from '../../contracts/importer.ts';
+import type {
+  ImportRunContext,
+  ImportRunTarget,
+  ImportSourceContext,
+} from '../../contracts/importer.ts';
 import type { ObjectStore } from '../../contracts/object-store.ts';
 import { safeFileName, sniffImage } from '../files/index.ts';
 import { assertObjectKey } from '../storage/index.ts';
@@ -25,7 +29,13 @@ export interface RunContextInput {
   objectStore: ObjectStore;
   signal: AbortSignal;
   fetchFor: ImportSourceContext['fetchFor'];
+  targets?: ReadonlyMap<string, ImportRunTarget>;
+  /** The admin's choices for people: a member's id, or keep a placeholder. */
+  people?: ReadonlyMap<string, string>;
 }
+
+/** What to bring when the plan predates the options: everything, as runs always did. */
+const ALL = { comments: true, attachments: true, agile: true, links: true, history: false };
 
 export interface RunContextHandle {
   ctx: ImportRunContext;
@@ -79,6 +89,8 @@ export function createRunContext(input: RunContextInput): RunContextHandle {
   const ctx: ImportRunContext = {
     jobId: job.id,
     actorUserId: job.created_by,
+    include: job.plan?.include ?? ALL,
+    targets: input.targets ?? new Map(),
     signal: input.signal,
     fetchFor: input.fetchFor,
     mappings,
@@ -106,7 +118,7 @@ export function createRunContext(input: RunContextInput): RunContextHandle {
       },
     },
     report: reportApi,
-    users: createPeopleMatcher(sql, mappings, reportApi),
+    users: createPeopleMatcher(sql, mappings, reportApi, input.people),
     files: {
       async store({ bytes, contentType }) {
         const sha256 = createHash('sha256').update(bytes).digest('hex');

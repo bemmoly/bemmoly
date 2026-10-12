@@ -88,6 +88,20 @@ export function jira(kind: 'jira-cloud' | 'jira-dc', options: FakeSiteOptions) {
       return [200, lists[key] ?? (listed && part === '/statuses' ? lists[template] : []) ?? []];
     }
     if (path === `${api}/field`) return [200, data.fields];
+    if (path === `${api}/user/assignable/search`) {
+      // Who the project's issues name, as Jira would list its assignable people.
+      const people = new Map<string, unknown>();
+      for (const issue of inProject(url.searchParams.get('project') ?? '') as {
+        fields?: Record<string, { accountId?: string; key?: string } | null>;
+      }[]) {
+        for (const field of ['assignee', 'reporter']) {
+          const user = issue.fields?.[field];
+          const id = user?.accountId ?? user?.key;
+          if (user && id) people.set(id, user);
+        }
+      }
+      return [200, [...people.values()]];
+    }
     if (path === `${api}/search/approximate-count`) {
       const body = await bodyOf(req);
       return [200, { count: total(projectOf(body?.jql ?? '')) }];
