@@ -43,6 +43,20 @@ function capture(stream: Readable | null, into: { text: string }): void {
   });
 }
 
+const CLOSED_STDIN = new Set(['EPIPE', 'ERR_STREAM_PREMATURE_CLOSE', 'ERR_STREAM_DESTROYED']);
+
+/**
+ * A program may stop reading stdin before its end and still succeed: tar -x stops at the
+ * archive's end-of-archive blocks and exits, so the rest of a record never gets written.
+ * Whether that is a failure is the exit status's to say, not the broken pipe's; the source
+ * is destroyed by pipeline either way.
+ */
+function leftEarly(error: unknown): void {
+  const code = (error as NodeJS.ErrnoException | null)?.code;
+  if (code && CLOSED_STDIN.has(code)) return;
+  throw error;
+}
+
 /** Runs a binary without a shell, with a hard timeout; rejects with ProcessError on failure. */
 export async function runProcess(
   command: string,
@@ -63,7 +77,7 @@ export async function runProcess(
   const piping: Promise<void>[] = [];
   if (options.stdout) piping.push(pipeline(child.stdout, options.stdout));
   else capture(child.stdout, out);
-  if (options.stdin) piping.push(pipeline(options.stdin, child.stdin));
+  if (options.stdin) piping.push(pipeline(options.stdin, child.stdin).catch(leftEarly));
   else child.stdin.end();
 
   const exit = new Promise<number | null>((resolve, reject) => {

@@ -149,8 +149,14 @@ describe('job throughput against a real database', () => {
     // A pool of four shared by requests and jobs; two queues that alone would want eight.
     const pool = createSqlClient(database.url, { maxConnections: 4, acquireTimeoutMs: 5_000 });
     try {
+      // Each job holds its connection for a full second. A request that had to queue for a
+      // connection would wait for one to come back, a large share of that second; one that
+      // finds a free connection answers in milliseconds. Comparing against the hold, not a
+      // fixed wall-clock budget, keeps the check meaningful on a slow, shared runner.
+      const holdMs = 1_000;
       const held = gauge();
-      const holdConnection = () => held.around(() => pool.begin((tx) => tx`select pg_sleep(0.3)`));
+      const holdConnection = () =>
+        held.around(() => pool.begin((tx) => tx`select pg_sleep(${holdMs / 1_000})`));
       const api = service('api');
       const worker = service('all', { sql: pool, maxConcurrentJobs: 2 });
       for (const name of ['test.fanout-a', 'test.fanout-b']) {
@@ -158,7 +164,7 @@ describe('job throughput against a real database', () => {
         worker.register(name, holdConnection, { retryLimit: 0, concurrency: 4 });
       }
       await api.start([]);
-      for (let i = 0; i < 10; i += 1) {
+      for (let i = 0; i < 3; i += 1) {
         await api.enqueue('test.fanout-a', { i });
         await api.enqueue('test.fanout-b', { i });
       }
@@ -167,13 +173,13 @@ describe('job throughput against a real database', () => {
 
       // Requests made while the burst drains answer at once rather than queueing behind it.
       const latencies: number[] = [];
-      while (held.state.done < 20) {
+      while (held.state.done < 6) {
         const asked = performance.now();
         await pool`select 1`;
         latencies.push(performance.now() - asked);
         await pause(20);
       }
-      expect(Math.max(...latencies)).toBeLessThan(250);
+      expect(Math.max(...latencies)).toBeLessThan(holdMs / 2);
       expect(latencies.length).toBeGreaterThan(10);
       expect(held.state.peak).toBe(2);
     } finally {
