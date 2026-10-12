@@ -85,13 +85,25 @@ async function assertReferences(db: Database, input: UpdateTeamInput, teamId?: s
   }
 }
 
+/** A team's lead is always one of its members; joining them is a no-op when they already are. */
+async function joinLead(tx: Database, teamId: string, leadUserId: string | null | undefined) {
+  if (!leadUserId) return;
+  const [inserted] = await tx
+    .insert(teamMembers)
+    .values({ teamId, userId: leadUserId })
+    .onConflictDoNothing()
+    .returning({ id: teamMembers.id });
+  if (inserted) await bumpPrivilegeVersion(tx, { userIds: [leadUserId] });
+}
+
 export async function createTeam(db: Database, ctx: RequestContext, input: CreateTeamInput) {
   await ctx.authz.authorize(ctx.actor, MANAGE, { kind: 'workspace' });
   await assertReferences(db, input);
   return db.transaction(async (tx) => {
     const [row] = await tx.insert(teams).values(input).returning();
     if (!row) throw new Error('Team insert returned no row');
-    const team = presentTeam(row, 0);
+    await joinLead(tx, row.id, row.leadUserId);
+    const team = presentTeam(row, row.leadUserId ? 1 : 0);
     await recordAudit(tx, {
       actor: ctx.actor,
       action: 'team.created',
@@ -117,6 +129,7 @@ export async function updateTeam(
       .update(teams)
       .set({ ...input, updatedAt: new Date() })
       .where(eq(teams.id, teamId));
+    await joinLead(tx, teamId, input.leadUserId);
     await recordAudit(tx, {
       actor: ctx.actor,
       action: 'team.updated',

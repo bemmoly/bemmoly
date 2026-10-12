@@ -13,6 +13,31 @@ describe('teams against a real database', () => {
   afterAll(async () => harness?.stop());
   beforeEach(async () => harness?.reset());
 
+  it('makes the lead a member when a team is created or its lead changes', async (ctx) => {
+    if (!harness) return ctx.skip(skipReason);
+    const { app } = harness;
+    const { cookie: admin, userId: adminId } = await createFirstAdmin(app);
+    const team = (
+      await call(app, 'POST', '/teams', {
+        cookie: admin,
+        body: { name: 'Platform', leadUserId: adminId },
+      })
+    ).json() as { id: string; memberCount: number };
+    expect(team.memberCount).toBe(1);
+
+    const other = await addPerson(harness, admin, { email: 'lead@acmelabs.dev', role: 'member' });
+    await call(app, 'PATCH', `/teams/${team.id}`, {
+      cookie: admin,
+      body: { leadUserId: other.userId },
+    });
+    const members = (
+      await call(app, 'GET', `/teams/${team.id}/members`, { cookie: admin })
+    ).json() as { items: { userId: string }[] };
+    expect(members.items.map((member) => member.userId).sort()).toEqual(
+      [adminId, other.userId].sort(),
+    );
+  });
+
   it('counts a team’s members on the team itself and in the list', async (ctx) => {
     if (!harness) return ctx.skip(skipReason);
     const { app } = harness;
