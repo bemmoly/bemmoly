@@ -38,7 +38,8 @@ describe('IssueSlideOver', () => {
     expect(await screen.findByText('Session store migration to Postgres')).toBeTruthy();
     expect(screen.getByText('Move sessions.')).toBeTruthy();
     expect(screen.getByRole('complementary', { name: 'PLT-204 details' })).toBeTruthy();
-    expect(screen.getByRole('combobox', { name: 'Assignee' }).textContent).toContain('Aisha K.');
+    expect(screen.getByRole('button', { name: 'Unassign Aisha K.' })).toBeTruthy();
+    expect(screen.getByRole('combobox', { name: 'Add another assignee' })).toBeTruthy();
     expect(screen.getByRole('region', { name: 'Planning' })).toBeTruthy();
     expect(screen.getByRole('combobox', { name: 'Fix version' }).textContent).toContain(
       'Add version',
@@ -71,10 +72,10 @@ describe('IssueSlideOver', () => {
     expect(screen.getByRole('button', { name: 'Not useful' })).toBeTruthy();
   });
 
-  it('assigns the issue to the viewer at once and rolls back when the server refuses', async () => {
+  it('adds the viewer as an assignee at once and rolls back when the server refuses', async () => {
     server.use(
       http.get('*/api/v1/me', () => HttpResponse.json(me(false))),
-      http.patch('*/api/v1/work/issues/PLT-204', async () => {
+      http.put('*/api/v1/work/issues/PLT-204/assignees', async () => {
         await new Promise((resolve) => setTimeout(resolve, 300));
         return HttpResponse.json(
           { code: 'forbidden', message: 'You cannot assign here', requestId: 't' },
@@ -88,13 +89,12 @@ describe('IssueSlideOver', () => {
       </Providers>,
     );
     fireEvent.click(await screen.findByRole('button', { name: 'Assign to me' }));
-    await waitFor(() =>
-      expect(screen.getByRole('combobox', { name: 'Assignee' }).textContent).toContain('Rohan S.'),
-    );
-    expect(await screen.findByText('The assignee was not saved')).toBeTruthy();
+    expect(await screen.findByRole('button', { name: 'Unassign Rohan S.' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Unassign Aisha K.' })).toBeTruthy();
+    expect(await screen.findByText('The assignees were not saved')).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Retry' })).toBeTruthy();
     await waitFor(() =>
-      expect(screen.getByRole('combobox', { name: 'Assignee' }).textContent).toContain('Aisha K.'),
+      expect(screen.queryByRole('button', { name: 'Unassign Rohan S.' })).toBeNull(),
     );
   });
 

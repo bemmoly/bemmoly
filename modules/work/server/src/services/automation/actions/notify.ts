@@ -7,7 +7,10 @@ import type { ActionContext, ActionDefinition } from '../contract.ts';
 
 async function recipientsOf(args: NotifyArgs, { ctx, issue, services }: ActionContext) {
   const ids = new Set(args.userIds);
-  if (args.recipients.includes('assignee') && issue.assigneeId) ids.add(issue.assigneeId);
+  if (args.recipients.includes('assignee')) {
+    for (const user of await services.issues.assignees(ctx, issue.key)) ids.add(user.id);
+    if (issue.assigneeId) ids.add(issue.assigneeId);
+  }
   if (args.recipients.includes('reporter') && issue.reporterId) ids.add(issue.reporterId);
   if (args.recipients.includes('watchers')) {
     for (const watcher of await services.issues.watchers(ctx, issue.key)) ids.add(watcher.userId);
@@ -19,7 +22,7 @@ async function recipientsOf(args: NotifyArgs, { ctx, issue, services }: ActionCo
 export const notify: ActionDefinition<NotifyArgs> = {
   name: AUTOMATION_ACTIONS.notify,
   label: 'Notify people',
-  description: 'Sends a notification about the issue to its assignee, reporter, watchers or people',
+  description: 'Sends a notification about the issue to its assignees, reporter, watchers or people',
   params: notifyArgsSchema,
   async run(args, action) {
     const recipientIds = await recipientsOf(args, action);

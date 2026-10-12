@@ -8,6 +8,7 @@ export { workIssueActivityEndpoints } from './issue-activity.ts';
 export { workIssueEndpoints, type HistoryFilter, type IssuesFilter } from './issues.ts';
 export { workMembersEndpoints, workMembersKeys } from './members.ts';
 export { workProjectCatalogEndpoints } from './project-catalog.ts';
+export { workPairingEndpoints } from './pairing.ts';
 export { workRoadmapEndpoints } from './roadmap.ts';
 export { workMyWorkEndpoints } from './my-work.ts';
 export { workSettingsEndpoints, workSettingsKeys } from './settings.ts';

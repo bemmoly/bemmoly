@@ -87,6 +87,7 @@ export function cardMatches(card: ViewCard, filters: BoardFilters, meId: string 
       key: card.key,
       title: card.title,
       assigneeId: card.assigneeId,
+      assigneeIds: card.assigneeIds,
       parentId: card.parentId,
       typeId: card.typeId,
       labelIds: card.labelIds,

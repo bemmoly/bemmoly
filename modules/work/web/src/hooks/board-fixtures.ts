@@ -22,6 +22,7 @@ export function card(n: number, fields: Partial<Card> = {}): Card {
     statusId: STATUS.selected,
     priority: 'medium',
     assigneeId: null,
+    assigneeIds: [],
     estimate: 1,
     labelIds: [],
     rank: 'm',

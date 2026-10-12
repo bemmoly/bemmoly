@@ -153,6 +153,44 @@ function labelPredicate(sql: SqlClient, operator: LqlOperator, values: Value[]):
   return existsPredicate(sql, operator, matching, any);
 }
 
+/** Anyone on the issue now, not only the primary assignee on issues.assignee_id. */
+function assigneePredicate(
+  sql: SqlClient,
+  operator: LqlOperator,
+  values: Value[],
+  cx: ValueContext,
+): SqlFragment {
+  const matching = sql`select 1 from issue_assignees ia
+    where ia.issue_id = issues.id and ia.removed_at is null
+      and ia.user_id in (${users(sql, values, cx)})`;
+  const any = sql`select 1 from issue_assignees ia
+    where ia.issue_id = issues.id and ia.removed_at is null`;
+  return existsPredicate(sql, operator, matching, any);
+}
+
+/**
+ * The person held the issue while someone else did too: two of its stints overlap. Either
+ * stint may still be open, so an open end counts as now.
+ */
+function pairedPredicate(
+  sql: SqlClient,
+  operator: LqlOperator,
+  values: Value[],
+  cx: ValueContext,
+): SqlFragment {
+  const overlap = (who: SqlFragment) => sql`select 1 from issue_assignees a
+    join issue_assignees b on b.issue_id = a.issue_id and b.user_id <> a.user_id
+      and b.added_at < coalesce(a.removed_at, now())
+      and a.added_at < coalesce(b.removed_at, now())
+    where a.issue_id = issues.id ${who}`;
+  return existsPredicate(
+    sql,
+    operator,
+    overlap(sql`and a.user_id in (${users(sql, values, cx)})`),
+    overlap(sql``),
+  );
+}
+
 const id = (sql: SqlClient) => sql`issues.id`;
 const col =
   (column: SqlFragment): FieldCompiler['sort'] =>
@@ -193,12 +231,16 @@ export function builtInFields(sql: SqlClient): Record<string, FieldCompiler> {
       sort: () => priorityRank(sql, sql`issues.priority`),
     },
     assignee: {
-      predicate: reference(assigneeId, users),
+      predicate: (s, operator, values, cx) => assigneePredicate(s, operator, values, cx),
       sort: () => subqueryName(sql, 'users', assigneeId),
     },
     reporter: {
       predicate: reference(reporterId, users),
       sort: () => subqueryName(sql, 'users', reporterId),
+    },
+    pairedWith: {
+      predicate: (s, operator, values, cx) => pairedPredicate(s, operator, values, cx),
+      sort: id,
     },
     parent: { predicate: reference(sql`issues.parent_id`, issuesByKey), sort: id },
     epic: { predicate: reference(sql`issues.parent_id`, epicsByKey), sort: id },

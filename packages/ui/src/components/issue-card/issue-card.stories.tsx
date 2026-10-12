@@ -82,6 +82,15 @@ export const States: Story = {
         stripeClassName={cardStripe('priority', { priority: 'medium', type: 'task' })}
         assignee={{ name: 'Jonas M.' }}
       />
+      <IssueCard
+        issueKey="PLT-231"
+        title="Pair on the session store cut-over"
+        type="story"
+        priority="high"
+        estimate={5}
+        assignee={{ name: 'Priya N.', hue: 'orange' }}
+        coAssignees={[{ name: 'Lena T.', hue: 'pink' }, { name: 'Jonas M.' }, { name: 'Aisha K.' }]}
+      />
       <IssueCardSkeleton lines={2} />
     </div>
   ),

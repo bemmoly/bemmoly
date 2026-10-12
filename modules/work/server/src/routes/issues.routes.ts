@@ -12,6 +12,8 @@ export function issuesRoutes(controller: IssuesController): FastifyPluginAsync {
     app.post('/issues/:key/restore', async (request) => controller.restore(request));
     app.patch('/issues/:key/rank', async (request) => controller.rank(request));
     app.post('/issues/:key/assign', async (request) => controller.assign(request));
+    app.get('/issues/:key/assignees', async (request) => controller.assignees(request));
+    app.put('/issues/:key/assignees', async (request) => controller.setAssignees(request));
     app.get('/issues/:key/watchers', async (request) => controller.watchers(request));
     app.put('/issues/:key/watchers', async (request, reply) => controller.watch(request, reply));
     app.get('/issues/:key/work-logs', async (request) => controller.workLogs(request));

@@ -64,7 +64,7 @@ describe('0029 reopen transitions', () => {
       const orgId = (org as { id: string }).id;
       expect(reopens(await transitionsOf(sql, orgId))).toEqual(BOTH);
 
-      await runner.rollback('work', { count: 1 });
+      await runner.rollback('work', { toId: '0028-work-automation-engine' });
       expect(reopens(await transitionsOf(sql, orgId))).toEqual([]);
       const projects = await sql<{ id: string; key: string }[]>`
         insert into projects (key, name) values ('TRP', 'Trips'), ('OWN', 'Own')
@@ -101,7 +101,7 @@ describe('0029 reopen transitions', () => {
         "Reopen from Won't do",
       ]);
 
-      await runner.rollback('work', { count: 1 });
+      await runner.rollback('work', { toId: '0028-work-automation-engine' });
       expect(reopens(await transitionsOf(sql, copied.id))).toEqual([]);
       expect(reopens(await transitionsOf(sql, drawn.id))).toEqual([]);
       expect((await transitionsOf(sql, drawn.id)).map((row) => row.name)).toContain(

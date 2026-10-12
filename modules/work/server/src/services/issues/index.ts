@@ -4,8 +4,10 @@ import type {
   CreateIssueBody,
   ListIssuesQuery,
   RankIssueBody,
+  SetAssigneesBody,
   UpdateIssueBody,
 } from '../../../../shared/issues.ts';
+import { getAssignees, setAssignees } from './assignees.ts';
 import { createIssue } from './create.ts';
 import type { IssueServiceDeps } from './deps.ts';
 import { deleteIssue, rankIssue, restoreIssue } from './lifecycle.ts';
@@ -29,6 +31,9 @@ export function createIssuesService(deps: IssueServiceDeps) {
       rankIssue(deps, ctx, key, body),
     assign: (ctx: RequestContext, key: string, assigneeId: string | null) =>
       assignIssue(deps, ctx, key, assigneeId),
+    assignees: (ctx: RequestContext, key: string) => getAssignees(deps, ctx, key),
+    setAssignees: (ctx: RequestContext, key: string, body: SetAssigneesBody) =>
+      setAssignees(deps, ctx, key, body),
     watchers: (ctx: RequestContext, key: string) => listWatchers(deps, ctx, key),
     watch: (ctx: RequestContext, key: string, watching: boolean) =>
       watchIssue(deps, ctx, key, watching),

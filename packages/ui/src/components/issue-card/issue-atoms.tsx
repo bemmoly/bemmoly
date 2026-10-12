@@ -1,5 +1,6 @@
 import { Icon } from '../../icons/icon.tsx';
 import { cx } from '../../lib/cx.ts';
+import { AvatarStack } from '../avatar/avatar-stack.tsx';
 import { Avatar, UnassignedAvatar, type AvatarHue } from '../avatar/avatar.tsx';
 
 /*
@@ -43,15 +44,39 @@ export function BlockedChip({ by, className }: { by: string; className?: string 
   );
 }
 
-/** The assignee, or the dashed ring when nobody is on it yet. */
+/** At most this many faces on a card; the rest is the "+N" chip. */
+const MAX_FACES = 3;
+
+/**
+ * The assignee, or the dashed ring when nobody is on it yet. With co-assignees it is one
+ * overlapping stack, the assignee first, named as a whole for assistive tech.
+ */
 export function IssueAssignee({
   person,
+  others,
   size = 20,
 }: {
   person: CardPerson | null | undefined;
+  others?: readonly CardPerson[] | undefined;
   size?: number;
 }) {
   if (!person) return <UnassignedAvatar size={size} />;
+  if (others && others.length > 0) {
+    const everyone = [person, ...others];
+    return (
+      <AvatarStack
+        size={size}
+        max={MAX_FACES}
+        label={`Assigned to ${everyone.map((one) => one.name).join(', ')}`}
+        people={everyone.map((one, index) => ({
+          id: `${index}:${one.name}`,
+          name: one.name,
+          ...(one.hue ? { hue: one.hue } : {}),
+          ...(one.initials ? { initials: one.initials } : {}),
+        }))}
+      />
+    );
+  }
   return (
     <Avatar
       name={person.name}

@@ -7,6 +7,7 @@ export const workPaths = {
   backlog: (projectKey: string) => `/work/backlog/${projectKey}`,
   /** One project's roadmap, or every project's without a key. */
   roadmap: (projectKey?: string) => (projectKey ? `/work/roadmap/${projectKey}` : '/work/roadmap'),
+  pairing: (projectKey: string) => `/work/pairing/${projectKey}`,
   /** A project's settings open on their first section, Members. */
   settings: (projectKey: string) => `/work/members/${projectKey}`,
   projects: () => '/work/projects',

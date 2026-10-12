@@ -25,6 +25,8 @@ export const workKeys = {
   /** Every cached roadmap, whatever its projects or team. */
   roadmaps: () => [...queryKeys.work(), 'roadmap'] as const,
   roadmap: (query: RoadmapQueryInput) => [...workKeys.roadmaps(), query] as const,
+  pairing: (projectKey: string, range: string) =>
+    [...queryKeys.work(), 'pairing', projectKey, range] as const,
   issueTransitions: (key: string) => [...workKeys.issue(key), 'transitions'] as const,
   boardMetrics: (boardId: string) => [...queryKeys.work(), 'board-metrics', boardId] as const,
   /** Mutation keys of card moves in flight; a board's view is not read again while one is. */

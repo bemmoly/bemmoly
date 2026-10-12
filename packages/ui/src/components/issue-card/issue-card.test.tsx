@@ -10,6 +10,20 @@ const base = {
 } as const;
 
 describe('IssueCard', () => {
+  it('draws co-assignees as one named stack after the assignee', () => {
+    render(
+      <IssueCard
+        {...base}
+        assignee={{ name: 'Priya N.' }}
+        coAssignees={[{ name: 'Lena T.' }, { name: 'Jonas M.' }, { name: 'Aisha K.' }]}
+      />,
+    );
+    expect(
+      screen.getByLabelText('Assigned to Priya N., Lena T., Jonas M., Aisha K.'),
+    ).toBeTruthy();
+    expect(screen.getByLabelText('1 more').textContent).toBe('+1');
+  });
+
   it('offers a selection box that takes the click and reports the modifiers', () => {
     const onCheck = vi.fn();
     const onSelect = vi.fn();

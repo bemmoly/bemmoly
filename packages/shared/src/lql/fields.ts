@@ -101,6 +101,8 @@ export const ISSUE_FIELDS: readonly LqlField[] = [
   }),
   field({ key: 'assignee', label: 'Assignee', kind: 'user', values: 'users' }),
   field({ key: 'reporter', label: 'Reporter', kind: 'user', values: 'users' }),
+  /** Issues where the person was assigned at the same time as someone else. */
+  field({ key: 'pairedWith', label: 'Paired with', kind: 'user', values: 'users' }),
   field({ key: 'parent', label: 'Parent', kind: 'key', values: 'issues' }),
   field({ key: 'epic', label: 'Epic', kind: 'key', values: 'epics' }),
   field({

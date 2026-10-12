@@ -26,6 +26,8 @@ export interface IssueRowProps {
   labels?: readonly (string | LabelValue)[];
   /** The assignee; null or undefined draws the unassigned ring. */
   assignee?: CardPerson | null;
+  /** Everyone else on the issue: one overlapping stack after the assignee. */
+  coAssignees?: readonly CardPerson[];
   estimate?: number | string;
   /** The key of the issue blocking this one: a red lock after the title. */
   blockedBy?: string;
@@ -82,6 +84,7 @@ export function IssueRow({
   epic,
   labels,
   assignee,
+  coAssignees,
   estimate,
   blockedBy,
   selected = false,
@@ -175,7 +178,7 @@ export function IssueRow({
       <span className="flex justify-center">
         {estimate !== undefined && <Points value={estimate} />}
       </span>
-      <IssueAssignee person={assignee} />
+      <IssueAssignee person={assignee} others={coAssignees} />
     </div>
   );
 }

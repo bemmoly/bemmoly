@@ -83,6 +83,26 @@ describe('automation rules against Postgres', () => {
     await h.services.automation.update(h.as(h.users.admin), rule.id, { enabled: false });
   });
 
+  it('adds the trigger’s person beside the assignee when the rule keeps the others', async (ctx) => {
+    if (skip) return ctx.skip(skip);
+    const rule = await f.rule({
+      name: 'Pair the reporter in',
+      projectId: ops.id,
+      enabled: true,
+      trigger: { name: 'issue_created' },
+      actions: [{ name: 'assign', args: { to: 'reporter', mode: 'add' } }],
+    });
+    const issue = await h.issue(ops, 'Pair on it', { assigneeId: h.users.admin }, h.users.member);
+    expect(await f.drain()).toBe(1);
+    const people = await h.services.issues.assignees(h.as(h.users.admin), issue.key);
+    expect(people.map((user) => user.id)).toEqual([h.users.admin, h.users.member]);
+    const [run] = await f.runs(rule.id);
+    expect(run).toMatchObject({
+      result: { actions: [{ name: 'assign', ok: true, message: 'Added an assignee' }] },
+    });
+    await h.services.automation.update(h.as(h.users.admin), rule.id, { enabled: false });
+  });
+
   it('checks conditions after the change commits and logs a skipped run when unmet', async (ctx) => {
     if (skip) return ctx.skip(skip);
     const rule = await f.rule({

@@ -72,6 +72,8 @@ export interface Filterable {
   key: string;
   title: string;
   assigneeId: string | null;
+  /** Everyone on it, when the screen has them; the filters then match any of them. */
+  assigneeIds?: readonly string[];
   parentId: string | null;
   typeId: string;
   labelIds: readonly string[];
@@ -92,7 +94,12 @@ export function matchesFilters(
   const text = filters.q.trim().toLowerCase();
   if (text && !item.title.toLowerCase().includes(text) && !item.key.toLowerCase().includes(text))
     return false;
-  if (filters.quick.includes('mine') && item.assigneeId !== (meId ?? null)) return false;
+  const assignees = item.assigneeIds?.length
+    ? item.assigneeIds
+    : item.assigneeId
+      ? [item.assigneeId]
+      : [];
+  if (filters.quick.includes('mine') && !(meId && assignees.includes(meId))) return false;
   if (filters.quick.includes('blocked') && !item.blocked) return false;
   if (
     filters.quick.includes('recent') &&
@@ -102,7 +109,11 @@ export function matchesFilters(
     return false;
   const one = (list: readonly string[], value: string | null) =>
     list.length === 0 || list.includes(value ?? 'none');
-  if (!one(filters.assignee, item.assigneeId)) return false;
+  if (
+    filters.assignee.length > 0 &&
+    !(assignees.length ? assignees : ['none']).some((id) => filters.assignee.includes(id))
+  )
+    return false;
   if (!one(filters.epic, item.parentId)) return false;
   if (!one(filters.type, item.typeId)) return false;
   if (filters.label.length > 0 && !item.labelIds.some((id) => filters.label.includes(id)))

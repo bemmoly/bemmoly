@@ -56,6 +56,15 @@ describe('board filters', () => {
     expect(cardMatches(blocked, { ...none, assignee: ['none'] }, me)).toBe(true);
   });
 
+  it('counts a co-assignee as on the card for mine and the people filter', () => {
+    const me = '018f0000-0000-7000-8000-0000000000aa';
+    const lead = '018f0000-0000-7000-8000-0000000000ab';
+    const paired = card(3, { assigneeId: lead, assigneeIds: [lead, me] });
+    expect(cardMatches(paired, { ...none, quick: ['mine'] }, me)).toBe(true);
+    expect(cardMatches(paired, { ...none, assignee: [me] }, me)).toBe(true);
+    expect(cardMatches(paired, { ...none, assignee: ['none'] }, me)).toBe(false);
+  });
+
   it('folds and unfolds lanes and resets them', () => {
     useBoardLanes.getState().toggle('lane-1');
     expect(useBoardLanes.getState().collapsed).toEqual(['lane-1']);

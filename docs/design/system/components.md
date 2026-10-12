@@ -218,7 +218,9 @@ Cancel and Save, a confirmation (`ConfirmChange`, typed word for the irreversibl
 ([`people.stories.tsx`](../../../packages/ui/src/components/avatar/people.stories.tsx))
 
 - `Avatar`: initials on an avatar hue, the signed-in person on the accent; `UnassignedAvatar`
-  for none. `AvatarStack` for groups, ringed (`ring`) when overlapping.
+  for none. `AvatarStack` for groups, ringed (`ring`) when overlapping. An issue with several
+  assignees draws them as one stack in the card's assignee slot (`coAssignees`), the primary
+  first, three faces then "+N"; the issue page lists each by name with an Unassign button.
 - `Label`: an outlined pill with a colour dot (the label's stored colour); `onRemove` adds a
   named remove button. Labels are never filled pills.
 - `Tag` and `Badge`: neutral chips; sentence case, never capitals.

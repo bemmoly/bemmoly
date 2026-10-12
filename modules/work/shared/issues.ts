@@ -1,4 +1,4 @@
-import { keysetPageSchema, keysetQuerySchema, timestampSchema } from '@bemmoly/shared';
+import { keysetPageSchema, keysetQuerySchema, listSchema, timestampSchema } from '@bemmoly/shared';
 import { z } from 'zod';
 import { issueKeySchema, queryFlagSchema, richTextSchema, slugKeySchema } from './common.ts';
 import {
@@ -28,6 +28,8 @@ export const issueSchema = z.object({
   statusId: z.uuid(),
   priority: issuePrioritySchema,
   assigneeId: z.uuid().nullable(),
+  /** Everyone on the issue, the primary first; absent where a reader does not load them. */
+  assigneeIds: z.array(z.uuid()).optional(),
   reporterId: z.uuid().nullable(),
   /** The epic of a standard issue or the parent of a subtask. */
   parentId: z.uuid().nullable(),
@@ -89,7 +91,7 @@ export const updateIssueBodySchema = issueFieldsSchema
 
 const refSchema = z.object({ id: z.uuid(), name: z.string() });
 
-const userRefSchema = z.object({ id: z.uuid(), name: z.string(), email: z.string() });
+export const userRefSchema = z.object({ id: z.uuid(), name: z.string(), email: z.string() });
 
 const issueRefSchema = z.object({
   id: z.uuid(),
@@ -120,6 +122,8 @@ export const issueDetailSchema = issueSchema.extend({
   }),
   status: refSchema.extend({ category: statusCategorySchema, color: z.string().nullable() }),
   assignee: userRefSchema.nullable(),
+  /** Everyone on the issue, the primary assignee first. */
+  assignees: z.array(userRefSchema).default([]),
   reporter: userRefSchema.nullable(),
   /** The parent; an epic brings its stored palette colour. */
   parent: issueRefSchema.extend({ color: z.string().nullable().default(null) }).nullable(),
@@ -190,6 +194,15 @@ export const watchIssueBodySchema = z.object({ watching: z.boolean() });
 
 export const assignIssueBodySchema = z.object({ assigneeId: z.uuid().nullable() });
 
+/** The whole set of assignees; the first becomes the primary, an empty list unassigns. */
+export const setAssigneesBodySchema = z.object({
+  assigneeIds: z.array(z.uuid()).max(20).refine((ids) => new Set(ids).size === ids.length, {
+    message: 'An assignee is listed twice',
+  }),
+});
+
+export const issueAssigneesResponseSchema = listSchema(userRefSchema);
+
 export const issuesPageSchema = keysetPageSchema(issueSchema);
 
 export type Issue = z.infer<typeof issueSchema>;
@@ -197,6 +210,8 @@ export type CreateIssueBody = z.input<typeof createIssueBodySchema>;
 export type UpdateIssueBody = z.infer<typeof updateIssueBodySchema>;
 export type ListIssuesQuery = z.infer<typeof listIssuesQuerySchema>;
 export type IssueSort = z.infer<typeof issueSortSchema>;
+export type SetAssigneesBody = z.infer<typeof setAssigneesBodySchema>;
+export type IssueAssignee = z.infer<typeof userRefSchema>;
 export type RankIssueBody = z.input<typeof rankIssueBodySchema>;
 export type WatchIssueBody = z.infer<typeof watchIssueBodySchema>;
 export type AssignIssueBody = z.infer<typeof assignIssueBodySchema>;

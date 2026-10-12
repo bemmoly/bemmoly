@@ -7,6 +7,7 @@ import type {
   LinkRegistry,
   RealtimePublisher,
   SqlClient,
+  SettingsRegistry,
 } from '@bemmoly/core';
 import { createAutomationService } from './automation/index.ts';
 import { createBacklogService } from './backlog/index.ts';
@@ -25,6 +26,7 @@ import { createLabelsService } from './labels/index.ts';
 import { createLinksService } from './links/index.ts';
 import { createLqlService } from './lql/index.ts';
 import { createMetricsService } from './metrics/index.ts';
+import { createPairingService } from './pairing/index.ts';
 import { createMyWorkService } from './my-work/index.ts';
 import { createProjectsService } from './projects/index.ts';
 import { createProjectMembersService } from './projects/members.ts';
@@ -46,6 +48,8 @@ export interface WorkServiceDeps {
   links?: Pick<LinkRegistry, 'referencesToMany'>;
   /** Builds the automation actor's context for a run; present with a database. */
   contextFor?: ActorContextFactory;
+  /** Work's own settings, for the features they switch on. */
+  settings?: Pick<SettingsRegistry, 'get'>;
 }
 
 const noRealtime: RealtimePublisher = { publish: async () => undefined };
@@ -116,6 +120,7 @@ export function createWorkServices(deps: WorkServiceDeps) {
     filters: createFiltersService({ ...deps, ...issueDeps, lql }),
     metrics: createMetricsService({ ...deps, ...issueDeps, lql }),
     roadmap: createRoadmapService({ ...deps, ...issueDeps, lql }),
+    pairing: createPairingService({ ...deps, ...issueDeps }),
   };
 }
 

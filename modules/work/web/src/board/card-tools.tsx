@@ -1,6 +1,7 @@
 import { IconButton } from '@bemmoly/ui';
 import type { ViewCard } from '../hooks/board-model.ts';
 import { IssueActionsMenu } from '../shared/issue-actions-menu.tsx';
+import { navigateTo, workPaths } from '../hooks/issue-navigation.ts';
 import { cardPriority } from './card-view.ts';
 import { useBoardShared } from './board-context.ts';
 
@@ -10,7 +11,7 @@ export interface CardToolsProps {
   targets?: readonly string[];
 }
 
-/** A card's hover tools: assign to me, open in the peek, and the issue's ··· menu. */
+/** A card's hover tools: assign to me, open full page, and the issue's ··· menu. */
 export function CardTools({ card, targets }: CardToolsProps) {
   const { actions, vocab, quick, sprints } = useBoardShared();
   return (
@@ -29,14 +30,13 @@ export function CardTools({ card, targets }: CardToolsProps) {
         />
       )}
       <IconButton
-        tip="Open in peek"
-        keys="Enter"
+        tip="Open full page"
         size="tool"
         icon="expand"
-        label={`Open ${card.key}`}
+        label={`Open ${card.key} full page`}
         onClick={(event) => {
           event.stopPropagation();
-          actions.open(card.key);
+          navigateTo(workPaths.issue(card.key));
         }}
       />
       <IssueActionsMenu

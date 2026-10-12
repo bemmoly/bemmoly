@@ -79,6 +79,11 @@ export const BacklogItem = memo(function BacklogItem({
   const status = lookups.statuses.get(issue.statusId);
   const epic = issue.parentId ? lookups.epics.get(issue.parentId) : undefined;
   const person = issue.assigneeId ? lookups.people.get(issue.assigneeId) : undefined;
+  const coAssignees = (issue.assigneeIds ?? [])
+    .filter((userId) => userId !== issue.assigneeId)
+    .map((userId) => lookups.people.get(userId))
+    .filter((one) => one !== undefined)
+    .map((one) => ({ name: one.name, initials: one.initials, hue: one.hue }));
 
   return (
     <div
@@ -117,6 +122,7 @@ export const BacklogItem = memo(function BacklogItem({
           assignee={
             person ? { name: person.name, initials: person.initials, hue: person.hue } : null
           }
+          {...(person && coAssignees.length > 0 ? { coAssignees } : {})}
           {...(issue.estimate !== null ? { estimate: issue.estimate } : {})}
           {...(blocked[id]?.[0] ? { blockedBy: blocked[id][0] } : {})}
           selected={open}

@@ -8,27 +8,21 @@ import {
   type SelectOption,
 } from '@bemmoly/ui';
 import { useCustomFields } from '../hooks/issue-fields.ts';
-import { usePeople, useViewer } from '../hooks/issue-people.ts';
 import { projectKeyOf } from '../hooks/issue-vocabulary.ts';
 import { useIssueTypes, useLabels } from '../hooks/projects-catalog.ts';
 import { CustomFieldValue } from './custom-field-value.tsx';
-import { ChoiceField, InlineValue, PersonField, PriorityField } from './field-editors.tsx';
+import { AssigneesField } from './assignees-field.tsx';
+import { ChoiceField, InlineValue, PriorityField } from './field-editors.tsx';
 import { useIssueEdit } from './use-issue-edit.ts';
 import { typeGlyph } from './vocabulary.ts';
 
-/** 24px tall for WCAG 2.5.8, the extra given back to the row so it does not grow. */
-const ASSIGN_ME =
-  '-my-0.5 inline-flex min-h-6 cursor-pointer items-center rounded-chip border-0 bg-transparent px-1 font-sans text-12 text-tx-3 hover:text-acc focus-ring';
-
 /**
- * The Properties group: type, assignee (with Assign to me), priority, points, labels and the
+ * The Properties group: type, assignees (with Assign to me), priority, points, labels and the
  * type's own fields. Every value changes in place and shows the change at once.
  */
 export function RailProperties({ issue }: { issue: IssueDetail }) {
   const projectKey = projectKeyOf(issue.key);
   const { edit } = useIssueEdit(issue.key);
-  const viewer = useViewer();
-  const { person } = usePeople();
   const toast = useToast();
   const types = useIssueTypes(projectKey);
   const labels = useLabels(projectKey);
@@ -61,16 +55,6 @@ export function RailProperties({ issue }: { issue: IssueDetail }) {
     setLabels(before.filter((labelId) => labelId !== id));
     toast.undo({ title: `Label ${name} removed`, onUndo: () => setLabels(before) });
   };
-  const assign = (assigneeId: string | null, name?: string) =>
-    edit({
-      body: { assigneeId },
-      shown: {
-        assignee: assigneeId
-          ? { id: assigneeId, name: name ?? person(assigneeId).name, email: '' }
-          : null,
-      },
-      what: 'The assignee',
-    });
 
   return (
     <PropertyGroup title="Properties">
@@ -106,22 +90,7 @@ export function RailProperties({ issue }: { issue: IssueDetail }) {
         )}
       </PropertyRow>
       <PropertyRow label="Assignee">
-        <PersonField
-          label="Assignee"
-          value={issue.assigneeId}
-          placeholder="Add assignee"
-          {...(issue.assignee ? { currentName: issue.assignee.name } : {})}
-          onSave={(id) => assign(id)}
-        />
-        {viewer && issue.assigneeId !== viewer.id && (
-          <button
-            type="button"
-            className={ASSIGN_ME}
-            onClick={() => assign(viewer.id, viewer.name)}
-          >
-            Assign to me
-          </button>
-        )}
+        <AssigneesField issue={issue} />
       </PropertyRow>
       <PropertyRow label="Priority">
         <PriorityField

@@ -8,9 +8,11 @@ import {
   createIssueBodySchema,
   listIssuesQuerySchema,
   rankIssueBodySchema,
+  setAssigneesBodySchema,
   updateIssueBodySchema,
   watchIssueBodySchema,
   type Issue,
+  type IssueAssignee,
   type IssueDetail,
   type IssuesPage,
 } from '../../../shared/issues.ts';
@@ -50,6 +52,13 @@ export function createIssuesController(service: IssuesService) {
     async assign(request: FastifyRequest): Promise<Issue> {
       const { assigneeId } = parseOrThrow(assignIssueBodySchema, request.body);
       return service.assign(contextOf(request), keyOf(request), assigneeId);
+    },
+    async assignees(request: FastifyRequest): Promise<{ items: IssueAssignee[] }> {
+      return { items: await service.assignees(contextOf(request), keyOf(request)) };
+    },
+    async setAssignees(request: FastifyRequest): Promise<{ items: IssueAssignee[] }> {
+      const body = parseOrThrow(setAssigneesBodySchema, request.body);
+      return { items: await service.setAssignees(contextOf(request), keyOf(request), body) };
     },
     async watchers(request: FastifyRequest): Promise<{ items: Watcher[] }> {
       return { items: await service.watchers(contextOf(request), keyOf(request)) };

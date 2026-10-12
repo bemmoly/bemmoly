@@ -13,6 +13,7 @@ const PROJECT_SCREENS = [
   'board',
   'backlog',
   'roadmap',
+  'pairing',
   'issue',
   'members',
   'settings',
@@ -23,11 +24,12 @@ type ProjectScreen = (typeof PROJECT_SCREENS)[number];
 const isProjectScreen = (name: string): name is ProjectScreen =>
   (PROJECT_SCREENS as readonly string[]).includes(name);
 
-/** Board, Backlog and Roadmap: views of the same project, as header tabs with their chords. */
+/** Board, Backlog, Roadmap and Pairing: views of the same project, as header tabs with their chords. */
 export const viewTabs = (key: string): PageTab[] => [
   { id: 'board', label: 'Board', icon: 'board', path: workPaths.board(key), keys: 'G B' },
   { id: 'backlog', label: 'Backlog', icon: 'backlog', path: workPaths.backlog(key), keys: 'G L' },
   { id: 'roadmap', label: 'Roadmap', icon: 'roadmap', path: workPaths.roadmap(key), keys: 'G R' },
+  { id: 'pairing', label: 'Pairing', icon: 'grid', path: workPaths.pairing(key), keys: 'G P' },
 ];
 
 /** A project's settings sections, as header tabs; Members moved in from its own page. */
@@ -55,6 +57,7 @@ export const settingsTabs = (key: string): PageTab[] => [
 function samePlace(screen: ProjectScreen, rest: readonly string[], key: string): string {
   if (screen === 'backlog') return workPaths.backlog(key);
   if (screen === 'roadmap') return workPaths.roadmap(key);
+  if (screen === 'pairing') return workPaths.pairing(key);
   if (screen === 'members') return `/work/members/${key}`;
   if (screen === 'workflows') return workflowPaths.list(key);
   if (screen === 'settings') return settingsPath(key, isSettingsPage(rest[0]) ? rest[0] : 'board');
@@ -149,7 +152,7 @@ export function useWorkFrame(
   }
   const key = project?.key ?? pathKey?.toUpperCase() ?? '';
   const crumb = projectCrumb(project, key, projects, (next) => samePlace(name, rest, next));
-  if (name === 'board' || name === 'backlog' || name === 'roadmap') {
+  if (name === 'board' || name === 'backlog' || name === 'roadmap' || name === 'pairing') {
     return { layout: 'full', header: { crumbs: [crumb], tabs: viewTabs(key), activeTab: name } };
   }
   if (name === 'issue') {
