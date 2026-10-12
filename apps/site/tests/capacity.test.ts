@@ -165,12 +165,8 @@ describe.each(['sizing.html', 'self-hosting.html'])('%s', (file) => {
     }
   });
 
-  it('says the numbers predate the latest performance work', () => {
-    const note = all('[data-preliminary]');
-    expect(note).toHaveLength(1);
-    expect(note[0]!.textContent).toContain(
-      'Measured before the latest performance work; re-run pending',
-    );
+  it('keeps the card free of a re-run banner; the method notes carry it', () => {
+    expect(all('[data-preliminary]')).toHaveLength(0);
   });
 });
 
