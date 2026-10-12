@@ -1,5 +1,57 @@
 # @bemmoly/ui
 
+## 1.0.0
+
+### Minor Changes
+
+- 1e9cdf9: Docs pages export to PDF files when an install runs the new optional PDF renderer: Export as PDF
+  in a page's More menu and the export dialog make a PDF on A4 or Letter with the title and page
+  numbers on every page, a contents page for a page and the pages under it, coloured code,
+  tables, images and issue chips. One page downloads when it is ready; a bigger export arrives in
+  the inbox with a download link, and files are kept for a day. Without the renderer nothing
+  changes: PDF stays the browser's print view, now set in the new print type.
+
+  For admins: the renderer is a pinned headless Chromium image that runs locked down and with no
+  network beside the app. Turn it on with the `pdf` Compose profile and
+  `BEMMOLY_PDF_URL=http://pdf:3000`, with `pdf.enabled=true` in the Helm chart, or by building
+  the air-gap bundle with `BEMMOLY_AIRGAP_PDF=true` (deploy/README.md, "PDF export"). New
+  settings: `BEMMOLY_PDF_URL`, `BEMMOLY_PDF_TIMEOUT_MS`, `BEMMOLY_PDF_MAX_BYTES`. Schema: the
+  Docs changeset `0017-docs-page-exports` adds the `page_exports` table (fast, reversible).
+
+### Patch Changes
+
+- 05f614a: Long boards open faster and stay quiet under load. The board loads the first 50 cards of each
+  column; the rest of a column loads as you scroll to its foot, or with "Show N more" there.
+  Column counts and WIP limits still count every card, and drag and drop, the keyboard move,
+  filters and swimlanes work as before. When someone changes an issue, every open board now
+  fetches just that card and moves, updates, adds or removes it in place, instead of every
+  viewer reloading the whole board; a burst of changes is gathered into one read, and the
+  Backlog reloads once per burst rather than once per change. A card dropped at the end of a
+  partly loaded column now lands right below the card it was dropped under.
+
+  The web app's first load is about 30 kB (gzipped) lighter: Home, the settings-only API calls,
+  the logo files, the icons the frame does not draw at first, the settings sidebar and the
+  shortcuts and About dialogs now load when they are first needed.
+
+  For API users: `GET /api/v1/work/boards/:id/view` now returns the first 50 cards of each column
+  by default. Each column carries a `nextCursor`; pass `column` and `cursor` for that column's
+  next page, `limit` (up to 500) for a larger page, or `issueIds` for only the named cards. No
+  configuration or schema changes.
+
+- aa811e8: The sidebar's brand goes to Home: the Bemmoly wordmark, or under a customer logo their name and
+  "on Bemmoly"; the caret beside the name opens the workspace menu.
+- f5efb20: The docked issue panel on the Board, Backlog and Roadmap can be resized: hover its left edge and
+  drag, or focus the edge and use the arrow keys. The width (360 to 960px) is remembered in the
+  browser; double-click the edge to go back to 400px.
+- ad6dd60: An accessibility pass to WCAG 2.2 AA across the product. Every signed-in screen starts with a
+  **Skip to content** link, and every screen has a level-one heading. Backlog rows are grid rows,
+  and a keyboard move there now says where the row landed. Small targets (removing a label, the
+  actions under a comment, Assign to me) are at least 24px. Muted text stays readable on selected
+  rows in Inbox and ⌘K, and amber avatars are a shade darker so their initials meet 4.5:1. Links
+  inside a sentence are underlined. A WCAG audit of every screen, in all five themes, light and
+  dark, desktop and phone, now runs in CI; `docs/accessibility-conformance.md` says what is
+  covered and how to report a problem.
+
 ## 0.13.1
 
 ### Patch Changes

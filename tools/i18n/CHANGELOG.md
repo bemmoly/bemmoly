@@ -1,5 +1,13 @@
 # @bemmoly/i18n-tools
 
+## 1.0.0
+
+### Patch Changes
+
+- Updated dependencies [05f614a]
+- Updated dependencies [a00717d]
+  - @bemmoly/shared@1.0.0
+
 ## 0.13.1
 
 ### Patch Changes
