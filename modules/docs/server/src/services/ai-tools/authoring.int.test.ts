@@ -139,4 +139,19 @@ describe('Docs authoring tools', () => {
       write('docs_create_page', h.as(h.users.viewer), { spaceKey: 'TRP', title: 'Nope' }),
     ).rejects.toThrow();
   });
+
+  it('keeps inline code inside bold, italic and strike', async (ctx) => {
+    if (!h) return ctx.skip(skipped);
+    const member = h.as(h.users.member);
+    const page = await write('docs_create_page', member, {
+      spaceKey: 'TRP',
+      title: 'Marks',
+      body: '**`foo`**, _see `bar`_ and ~~`baz`~~',
+    });
+    const got = await read<{ markdown: string }>('docs_get_page', member, {
+      pageId: String(page.result['id']),
+      markdown: true,
+    });
+    for (const word of ['foo', 'bar', 'baz']) expect(got.markdown).toContain(`\`${word}\``);
+  });
 });
