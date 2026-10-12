@@ -1,5 +1,137 @@
 # @bemmoly/module-work
 
+## 1.0.0
+
+### Major Changes
+
+- 981bce2: **Bemmoly 1.0.** Self-hosted issues and docs for your whole team, in one Docker image and one
+  Postgres, 100% open source under MIT, with no subscription and no in-app purchases. 1.0 changes
+  nothing you have to act on: it is the release everything below has been building towards, and
+  from here versions follow Semantic Versioning's usual rules.
+
+  - **Work**: projects, issues with custom fields, workflows drawn in a visual editor, Kanban and
+    Scrum boards, the backlog and sprints, LQL and saved filters, a roadmap of epics on a
+    timeline, and automation rules.
+  - **Docs**: spaces and a page tree, a live collaborative editor, comments, revisions, issue
+    links with live status, Markdown import, and export to Markdown and HTML, or to PDF with the
+    optional PDF renderer.
+  - **AI, optional**: off until an admin turns it on, with any provider from the models.dev
+    catalog or a model on your own network: summaries with sources, answers from your docs,
+    help in the editor, ⌘K plans you confirm, and an MCP server for AI clients.
+  - **Imports**: from Jira and Confluence (Cloud or Data Center) or a CSV file, previewed before
+    anything is written.
+  - **Sign-in and people**: single sign-on with OpenID Connect or SAML 2.0, and SCIM 2.0
+    provisioning.
+  - **Connections**: outgoing webhooks signed with HMAC-SHA256, and code hosts (GitHub, connected
+    in one click, and GitLab) linking pull requests, branches and commits to issues.
+  - **Your look**: five themes in light and dark, your brand colour and your own logo.
+  - **Running it**: one command on a VM, Docker Compose, your own Postgres, a Helm chart or the
+    Terraform module; automatic HTTPS, nightly verified backups, and one-click updates with
+    automatic rollback.
+
+  What 1.0 promises is what the contributor contract already requires of every release
+  (AGENTS.md §6): every release runs against the previous minor's database and tolerates the
+  previous minor's clients, so updates and rollbacks are safe within one minor, and security
+  fixes ship as patches on the current minor. No schema or configuration change.
+
+### Minor Changes
+
+- 05f614a: Long boards open faster and stay quiet under load. The board loads the first 50 cards of each
+  column; the rest of a column loads as you scroll to its foot, or with "Show N more" there.
+  Column counts and WIP limits still count every card, and drag and drop, the keyboard move,
+  filters and swimlanes work as before. When someone changes an issue, every open board now
+  fetches just that card and moves, updates, adds or removes it in place, instead of every
+  viewer reloading the whole board; a burst of changes is gathered into one read, and the
+  Backlog reloads once per burst rather than once per change. A card dropped at the end of a
+  partly loaded column now lands right below the card it was dropped under.
+
+  The web app's first load is about 30 kB (gzipped) lighter: Home, the settings-only API calls,
+  the logo files, the icons the frame does not draw at first, the settings sidebar and the
+  shortcuts and About dialogs now load when they are first needed.
+
+  For API users: `GET /api/v1/work/boards/:id/view` now returns the first 50 cards of each column
+  by default. Each column carries a `nextCursor`; pass `column` and `cursor` for that column's
+  next page, `limit` (up to 500) for a larger page, or `issueIds` for only the named cards. No
+  configuration or schema changes.
+
+- 18f6038: Agents can import issues from another tracker with the `work_import_issues` tool (over MCP as
+  `work.import_issues`): up to 200 issues per call with title, Markdown description, type and
+  status by name, priority, assignee and reporter by email, labels, parent, original created,
+  updated and resolved times, and comments. The external key ("TRP-12") keeps its number when
+  it is free in the project and is remembered, so sending it again updates the issue instead of
+  duplicating it; an issue edited in Bemmoly since is left alone and reported. Comments by
+  someone without an account are posted by the caller, opening with "Originally by <name> on
+  <date>". The call needs edit and configure rights on the project and the import capability (workspace
+  settings). No schema change: it uses the importers' mapping table under the source "mcp".
+- 6669dbc: Work's MCP and planner tools cover a migration end to end. Creating an issue returns its key,
+  id and link, and takes custom fields, a starting status by name or id (any status of the
+  project's workflow, as an import places issues; a done status marks the issue resolved), an
+  assignee by email, a parent by key and a Markdown description of up to 100,000 characters.
+  `work_get_project` lists each issue type's fields and which are required, and a missing required
+  field is named in the error. New tools: `work_update_issue`, `work_delete_issue`,
+  `work_link_issues`, `work_list_statuses`, `work_list_projects` and `work_create_project`.
+  `work_search_issues` returns each issue's type, parent and description as Markdown. Comments
+  take Markdown of the same length. The create issue API accepts an optional `statusId` the same
+  way. No schema or configuration change.
+
+### Patch Changes
+
+- 3ff8f77: **Large imports no longer create duplicate pages.** A Markdown or Confluence file import of more
+  than 200 pages saved its pages, then failed while telling open screens about them, and each
+  retry imported the pages again, up to three times. Realtime updates of any size now go out in
+  batches. A failed update after the data is saved is logged and counted in
+  `bemmoly_realtime_publish_errors_total` and no longer fails the job. A retried import job now
+  finds what an earlier run wrote and does not write it again. The Confluence, Jira, CSV and AI
+  client (MCP) importers now record each page, issue, comment, board and sprint in the same
+  transaction that creates it, so a resumed import does not create these twice.
+
+  Schema: Docs adds the `page_imports` table (changeset `0018-docs-page-imports`), which is
+  additive and safe to roll back. No configuration change. Imports that already ran with
+  duplicates are not cleaned up automatically. Find the extra copies in the page tree and delete
+  them.
+
+- 2632307: Faster under load on small machines. Creating an issue reads the end of the backlog from the
+  board index alone (live issues only; a restored issue that would share a rank moves to the
+  end) and takes its number in one statement, still gap-free. The page tree and page placement
+  in Docs now use their index for top-level pages. Authorization answers are shared across
+  requests for up to five seconds and dropped as soon as a role, membership, grant, person or
+  API token changes: kernel changeset `0114-identity-authz-notify` adds triggers that notify
+  `bemmoly_authz` on commit (ADR 0036). The database pool is sized from the CPU count (four per
+  CPU, 10 to 40) unless `BEMMOLY_DB_POOL_MAX` sets it; the Helm chart sets `databasePoolMax: 10`
+  per pod.
+- ad6dd60: An accessibility pass to WCAG 2.2 AA across the product. Every signed-in screen starts with a
+  **Skip to content** link, and every screen has a level-one heading. Backlog rows are grid rows,
+  and a keyboard move there now says where the row landed. Small targets (removing a label, the
+  actions under a comment, Assign to me) are at least 24px. Muted text stays readable on selected
+  rows in Inbox and ⌘K, and amber avatars are a shade darker so their initials meet 4.5:1. Links
+  inside a sentence are underlined. A WCAG audit of every screen, in all five themes, light and
+  dark, desktop and phone, now runs in CI; `docs/accessibility-conformance.md` says what is
+  covered and how to report a problem.
+- 0e01359: Closed issues can be reopened. The default workflow had no transition out of Done or Won't do;
+  Work changeset `0029-work-reopen-transitions` adds a "Reopen" transition back to the first to-do
+  status (Backlog) from every done status that has no transition of its own ("Reopen", then "Reopen from Won't do"), in the org default
+  workflow and in the project workflows copied from it, including a saved draft. A done status
+  that already leads somewhere is left as it was drawn. New installs get it too. Rows only, and
+  reversible.
+- Updated dependencies [981bce2]
+- Updated dependencies [05f614a]
+- Updated dependencies [aa811e8]
+- Updated dependencies [17674ec]
+- Updated dependencies [a00717d]
+- Updated dependencies [3ff8f77]
+- Updated dependencies [c5849e4]
+- Updated dependencies [1e9cdf9]
+- Updated dependencies [2632307]
+- Updated dependencies [903e416]
+- Updated dependencies [f5efb20]
+- Updated dependencies [ad6dd60]
+  - @bemmoly/core@1.0.0
+  - @bemmoly/ui@1.0.0
+  - @bemmoly/api-client@1.0.0
+  - @bemmoly/shared@1.0.0
+  - @bemmoly/editor@1.0.0
+  - @bemmoly/core-web@1.0.0
+
 ## 0.13.1
 
 ### Patch Changes

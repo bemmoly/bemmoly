@@ -1,5 +1,26 @@
 # @bemmoly/site
 
+## 1.0.0
+
+### Minor Changes
+
+- 2d0dcaa: Server sizing leads with the measured tier: 2 vCPU, 4 GB tested with 100,000 issues, latency
+  bars, prices by provider with sources and checked dates, and an estimator on /sizing that
+  recommends a size only where it was measured. The card sits just before Install on
+  /self-hosting; /sizing adds the method and the full price table.
+- 09c9aae: A sizing page, /sizing, and a sizing section on /self-hosting: three server sizes from measured
+  load tests (src/data/capacity.json), the people estimate's assumption written out, and monthly
+  prices by cloud.
+
+### Patch Changes
+
+- c5849e4: Queue depth counts only jobs that can run now: `bemmoly_job_queue_depth` and `bemmoly status`
+  no longer include scheduled jobs such as digests, which show apart as
+  `bemmoly_job_queue_delayed` and `queueDelayed`. `bemmoly sync-updater` no longer prints an older
+  updater's usage line or restarts the app. `bemmoly doctor` warns when Postgres is tuned for a
+  different machine size, and the new `bemmoly tune` re-applies the tuning after a resize, asking
+  before it restarts the database.
+
 ## 0.13.1
 
 No changes in this release.

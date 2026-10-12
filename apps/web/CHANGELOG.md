@@ -1,5 +1,98 @@
 # @bemmoly/web
 
+## 1.0.0
+
+### Major Changes
+
+- 981bce2: **Bemmoly 1.0.** Self-hosted issues and docs for your whole team, in one Docker image and one
+  Postgres, 100% open source under MIT, with no subscription and no in-app purchases. 1.0 changes
+  nothing you have to act on: it is the release everything below has been building towards, and
+  from here versions follow Semantic Versioning's usual rules.
+
+  - **Work**: projects, issues with custom fields, workflows drawn in a visual editor, Kanban and
+    Scrum boards, the backlog and sprints, LQL and saved filters, a roadmap of epics on a
+    timeline, and automation rules.
+  - **Docs**: spaces and a page tree, a live collaborative editor, comments, revisions, issue
+    links with live status, Markdown import, and export to Markdown and HTML, or to PDF with the
+    optional PDF renderer.
+  - **AI, optional**: off until an admin turns it on, with any provider from the models.dev
+    catalog or a model on your own network: summaries with sources, answers from your docs,
+    help in the editor, ⌘K plans you confirm, and an MCP server for AI clients.
+  - **Imports**: from Jira and Confluence (Cloud or Data Center) or a CSV file, previewed before
+    anything is written.
+  - **Sign-in and people**: single sign-on with OpenID Connect or SAML 2.0, and SCIM 2.0
+    provisioning.
+  - **Connections**: outgoing webhooks signed with HMAC-SHA256, and code hosts (GitHub, connected
+    in one click, and GitLab) linking pull requests, branches and commits to issues.
+  - **Your look**: five themes in light and dark, your brand colour and your own logo.
+  - **Running it**: one command on a VM, Docker Compose, your own Postgres, a Helm chart or the
+    Terraform module; automatic HTTPS, nightly verified backups, and one-click updates with
+    automatic rollback.
+
+  What 1.0 promises is what the contributor contract already requires of every release
+  (AGENTS.md §6): every release runs against the previous minor's database and tolerates the
+  previous minor's clients, so updates and rollbacks are safe within one minor, and security
+  fixes ship as patches on the current minor. No schema or configuration change.
+
+### Minor Changes
+
+- a00717d: Connect GitHub in one click. In Settings › Code hosts, Connect GitHub now opens GitHub with a
+  Bemmoly app ready to create: its webhook, read-only access to pull requests, code and checks,
+  and the events Bemmoly uses. Create it, choose its repositories, and you are back in Bemmoly
+  connected, with the last 30 days backfilled. No App ID, installation ID, private key or
+  repository list to copy by hand; that form is still there under "Enter app details by hand".
+  Works on github.com (your account or an organization) and on Enterprise Server. If GitHub
+  cannot reach `BEMMOLY_PUBLIC_URL` (a localhost or private address), the app is created without a
+  webhook and the dialog says so; backfill still works.
+
+  Schema: kernel changeset `0702-integrations-app-slug` (a nullable `app_slug` column on
+  `integrations`). No new configuration.
+
+- ad6dd60: An accessibility pass to WCAG 2.2 AA across the product. Every signed-in screen starts with a
+  **Skip to content** link, and every screen has a level-one heading. Backlog rows are grid rows,
+  and a keyboard move there now says where the row landed. Small targets (removing a label, the
+  actions under a comment, Assign to me) are at least 24px. Muted text stays readable on selected
+  rows in Inbox and ⌘K, and amber avatars are a shade darker so their initials meet 4.5:1. Links
+  inside a sentence are underlined. A WCAG audit of every screen, in all five themes, light and
+  dark, desktop and phone, now runs in CI; `docs/accessibility-conformance.md` says what is
+  covered and how to report a problem.
+
+### Patch Changes
+
+- 05f614a: Long boards open faster and stay quiet under load. The board loads the first 50 cards of each
+  column; the rest of a column loads as you scroll to its foot, or with "Show N more" there.
+  Column counts and WIP limits still count every card, and drag and drop, the keyboard move,
+  filters and swimlanes work as before. When someone changes an issue, every open board now
+  fetches just that card and moves, updates, adds or removes it in place, instead of every
+  viewer reloading the whole board; a burst of changes is gathered into one read, and the
+  Backlog reloads once per burst rather than once per change. A card dropped at the end of a
+  partly loaded column now lands right below the card it was dropped under.
+
+  The web app's first load is about 30 kB (gzipped) lighter: Home, the settings-only API calls,
+  the logo files, the icons the frame does not draw at first, the settings sidebar and the
+  shortcuts and About dialogs now load when they are first needed.
+
+  For API users: `GET /api/v1/work/boards/:id/view` now returns the first 50 cards of each column
+  by default. Each column carries a `nextCursor`; pass `column` and `cursor` for that column's
+  next page, `limit` (up to 500) for a larger page, or `issueIds` for only the named cards. No
+  configuration or schema changes.
+
+- aa811e8: The sidebar's brand goes to Home: the Bemmoly wordmark, or under a customer logo their name and
+  "on Bemmoly"; the caret beside the name opens the workspace menu.
+- 1608e81: Settings › MCP server now gives a client configuration with only the address, so clients sign in
+  through the browser on first connect. The configuration with an access token stays below it, for
+  CI, scripts and clients that can't open a browser.
+- Updated dependencies [05f614a]
+- Updated dependencies [aa811e8]
+- Updated dependencies [a00717d]
+- Updated dependencies [1e9cdf9]
+- Updated dependencies [f5efb20]
+- Updated dependencies [ad6dd60]
+  - @bemmoly/ui@1.0.0
+  - @bemmoly/api-client@1.0.0
+  - @bemmoly/shared@1.0.0
+  - @bemmoly/core-web@1.0.0
+
 ## 0.13.1
 
 ### Patch Changes

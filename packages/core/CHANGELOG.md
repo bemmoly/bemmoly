@@ -1,5 +1,110 @@
 # @bemmoly/core
 
+## 1.0.0
+
+### Major Changes
+
+- 981bce2: **Bemmoly 1.0.** Self-hosted issues and docs for your whole team, in one Docker image and one
+  Postgres, 100% open source under MIT, with no subscription and no in-app purchases. 1.0 changes
+  nothing you have to act on: it is the release everything below has been building towards, and
+  from here versions follow Semantic Versioning's usual rules.
+
+  - **Work**: projects, issues with custom fields, workflows drawn in a visual editor, Kanban and
+    Scrum boards, the backlog and sprints, LQL and saved filters, a roadmap of epics on a
+    timeline, and automation rules.
+  - **Docs**: spaces and a page tree, a live collaborative editor, comments, revisions, issue
+    links with live status, Markdown import, and export to Markdown and HTML, or to PDF with the
+    optional PDF renderer.
+  - **AI, optional**: off until an admin turns it on, with any provider from the models.dev
+    catalog or a model on your own network: summaries with sources, answers from your docs,
+    help in the editor, ⌘K plans you confirm, and an MCP server for AI clients.
+  - **Imports**: from Jira and Confluence (Cloud or Data Center) or a CSV file, previewed before
+    anything is written.
+  - **Sign-in and people**: single sign-on with OpenID Connect or SAML 2.0, and SCIM 2.0
+    provisioning.
+  - **Connections**: outgoing webhooks signed with HMAC-SHA256, and code hosts (GitHub, connected
+    in one click, and GitLab) linking pull requests, branches and commits to issues.
+  - **Your look**: five themes in light and dark, your brand colour and your own logo.
+  - **Running it**: one command on a VM, Docker Compose, your own Postgres, a Helm chart or the
+    Terraform module; automatic HTTPS, nightly verified backups, and one-click updates with
+    automatic rollback.
+
+  What 1.0 promises is what the contributor contract already requires of every release
+  (AGENTS.md §6): every release runs against the previous minor's database and tolerates the
+  previous minor's clients, so updates and rollbacks are safe within one minor, and security
+  fixes ship as patches on the current minor. No schema or configuration change.
+
+### Minor Changes
+
+- a00717d: Connect GitHub in one click. In Settings › Code hosts, Connect GitHub now opens GitHub with a
+  Bemmoly app ready to create: its webhook, read-only access to pull requests, code and checks,
+  and the events Bemmoly uses. Create it, choose its repositories, and you are back in Bemmoly
+  connected, with the last 30 days backfilled. No App ID, installation ID, private key or
+  repository list to copy by hand; that form is still there under "Enter app details by hand".
+  Works on github.com (your account or an organization) and on Enterprise Server. If GitHub
+  cannot reach `BEMMOLY_PUBLIC_URL` (a localhost or private address), the app is created without a
+  webhook and the dialog says so; backfill still works.
+
+  Schema: kernel changeset `0702-integrations-app-slug` (a nullable `app_slug` column on
+  `integrations`). No new configuration.
+
+- 1e9cdf9: Docs pages export to PDF files when an install runs the new optional PDF renderer: Export as PDF
+  in a page's More menu and the export dialog make a PDF on A4 or Letter with the title and page
+  numbers on every page, a contents page for a page and the pages under it, coloured code,
+  tables, images and issue chips. One page downloads when it is ready; a bigger export arrives in
+  the inbox with a download link, and files are kept for a day. Without the renderer nothing
+  changes: PDF stays the browser's print view, now set in the new print type.
+
+  For admins: the renderer is a pinned headless Chromium image that runs locked down and with no
+  network beside the app. Turn it on with the `pdf` Compose profile and
+  `BEMMOLY_PDF_URL=http://pdf:3000`, with `pdf.enabled=true` in the Helm chart, or by building
+  the air-gap bundle with `BEMMOLY_AIRGAP_PDF=true` (deploy/README.md, "PDF export"). New
+  settings: `BEMMOLY_PDF_URL`, `BEMMOLY_PDF_TIMEOUT_MS`, `BEMMOLY_PDF_MAX_BYTES`. Schema: the
+  Docs changeset `0017-docs-page-exports` adds the `page_exports` table (fast, reversible).
+
+- 2632307: Faster under load on small machines. Creating an issue reads the end of the backlog from the
+  board index alone (live issues only; a restored issue that would share a rank moves to the
+  end) and takes its number in one statement, still gap-free. The page tree and page placement
+  in Docs now use their index for top-level pages. Authorization answers are shared across
+  requests for up to five seconds and dropped as soon as a role, membership, grant, person or
+  API token changes: kernel changeset `0114-identity-authz-notify` adds triggers that notify
+  `bemmoly_authz` on commit (ADR 0036). The database pool is sized from the CPU count (four per
+  CPU, 10 to 40) unless `BEMMOLY_DB_POOL_MAX` sets it; the Helm chart sets `databasePoolMax: 10`
+  per pod.
+
+### Patch Changes
+
+- 17674ec: A page edited in a burst is always compacted: the collab host stores every pending update before a document's change hook runs, so a slow write can no longer hide updates from the compaction check.
+- 3ff8f77: **Large imports no longer create duplicate pages.** A Markdown or Confluence file import of more
+  than 200 pages saved its pages, then failed while telling open screens about them, and each
+  retry imported the pages again, up to three times. Realtime updates of any size now go out in
+  batches. A failed update after the data is saved is logged and counted in
+  `bemmoly_realtime_publish_errors_total` and no longer fails the job. A retried import job now
+  finds what an earlier run wrote and does not write it again. The Confluence, Jira, CSV and AI
+  client (MCP) importers now record each page, issue, comment, board and sprint in the same
+  transaction that creates it, so a resumed import does not create these twice.
+
+  Schema: Docs adds the `page_imports` table (changeset `0018-docs-page-imports`), which is
+  additive and safe to roll back. No configuration change. Imports that already ran with
+  duplicates are not cleaned up automatically. Find the extra copies in the page tree and delete
+  them.
+
+- c5849e4: Queue depth counts only jobs that can run now: `bemmoly_job_queue_depth` and `bemmoly status`
+  no longer include scheduled jobs such as digests, which show apart as
+  `bemmoly_job_queue_delayed` and `queueDelayed`. `bemmoly sync-updater` no longer prints an older
+  updater's usage line or restarts the app. `bemmoly doctor` warns when Postgres is tuned for a
+  different machine size, and the new `bemmoly tune` re-applies the tuning after a resize, asking
+  before it restarts the database.
+- 903e416: Restoring uploads from a backup no longer fails now and then with "Premature close": when tar finishes reading an archive and exits cleanly before the rest of its input is written, the exit status decides, not the closed pipe.
+- Updated dependencies [05f614a]
+- Updated dependencies [aa811e8]
+- Updated dependencies [a00717d]
+- Updated dependencies [1e9cdf9]
+- Updated dependencies [f5efb20]
+- Updated dependencies [ad6dd60]
+  - @bemmoly/ui@1.0.0
+  - @bemmoly/shared@1.0.0
+
 ## 0.13.1
 
 ### Patch Changes

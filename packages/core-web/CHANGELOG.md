@@ -1,5 +1,30 @@
 # @bemmoly/core-web
 
+## 1.0.0
+
+### Minor Changes
+
+- ad6dd60: An accessibility pass to WCAG 2.2 AA across the product. Every signed-in screen starts with a
+  **Skip to content** link, and every screen has a level-one heading. Backlog rows are grid rows,
+  and a keyboard move there now says where the row landed. Small targets (removing a label, the
+  actions under a comment, Assign to me) are at least 24px. Muted text stays readable on selected
+  rows in Inbox and ⌘K, and amber avatars are a shade darker so their initials meet 4.5:1. Links
+  inside a sentence are underlined. A WCAG audit of every screen, in all five themes, light and
+  dark, desktop and phone, now runs in CI; `docs/accessibility-conformance.md` says what is
+  covered and how to report a problem.
+
+### Patch Changes
+
+- Updated dependencies [05f614a]
+- Updated dependencies [aa811e8]
+- Updated dependencies [a00717d]
+- Updated dependencies [1e9cdf9]
+- Updated dependencies [f5efb20]
+- Updated dependencies [ad6dd60]
+  - @bemmoly/ui@1.0.0
+  - @bemmoly/api-client@1.0.0
+  - @bemmoly/shared@1.0.0
+
 ## 0.13.1
 
 ### Patch Changes
