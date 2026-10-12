@@ -11,7 +11,7 @@ name: Site deploy
 # Pre-releases never count as the site's version, so they do not redeploy it.
 #
 # Repository secrets (Coolify › the site's application › Webhooks, and Keys & Tokens):
-#   COOLIFY_SITE_DEPLOY_URL  the application's deploy webhook, https://<coolify>/api/v1/deploy?uuid=…
+#   COOLIFY_SITE_DEPLOY_URL  the application's deploy webhook, https://<coolify>/api/v1/deploy?uuid=… (called with POST)
 #   COOLIFY_TOKEN            an API token with the deploy permission
 
 on:
@@ -74,7 +74,7 @@ jobs:
             echo "::error title=Site not redeployed::Set the COOLIFY_SITE_DEPLOY_URL and COOLIFY_TOKEN secrets, then run Site deploy with version $VERSION."
             exit 1
           fi
-          curl --fail-with-body --silent --show-error --max-time 60 --retry 3 --retry-all-errors \
+          curl --fail-with-body --silent --show-error --max-time 60 --retry 3 --retry-all-errors -X POST \
             -H "Authorization: Bearer $TOKEN" "$DEPLOY_URL"
 
       # llms.txt names the site's version in one sentence (apps/site/src/pages/llms.txt.ts).
