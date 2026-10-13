@@ -133,6 +133,7 @@ describe('work module', () => {
     expect(loaded?.contributions.jobs.map((job) => job.name)).toEqual([
       'work.rank.rebalance',
       'work.automation.run',
+      'work.project.purge',
       'work.automation.schedule',
     ]);
     expect(loaded?.contributions.jobs[0]?.scheduleSetting).toBe('work.jobs.rankRebalance.schedule');

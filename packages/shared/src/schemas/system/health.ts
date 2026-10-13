@@ -1,6 +1,14 @@
 import { z } from 'zod';
 
-export const SYSTEM_CHECK_IDS = ['postgres', 'disk', 'memory', 'smtp', 'https', 'backups'] as const;
+export const SYSTEM_CHECK_IDS = [
+  'postgres',
+  'disk',
+  'memory',
+  'smtp',
+  'https',
+  'backups',
+  'integrity',
+] as const;
 
 export const systemCheckSchema = z.object({
   id: z.enum(SYSTEM_CHECK_IDS),

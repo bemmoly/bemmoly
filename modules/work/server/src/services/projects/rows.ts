@@ -46,7 +46,8 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export async function projectByKey(sql: SqlExecutor, ref: string): Promise<ProjectRow> {
   const [row] = await sql<ProjectRow[]>`
     select ${sql.unsafe(PROJECT_COLUMNS)} from projects
-    where ${UUID.test(ref) ? sql`id = ${ref}::uuid` : sql`key = ${ref.trim().toUpperCase()}`}`;
+    where ${UUID.test(ref) ? sql`id = ${ref}::uuid` : sql`key = ${ref.trim().toUpperCase()}`}
+      and purging_at is null`;
   if (!row) throw new NotFoundError(`Project ${ref} was not found`);
   return row;
 }
