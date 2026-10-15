@@ -68,7 +68,7 @@ describe('capacity.json', () => {
   });
 
   it('headlines the largest data set that did not slow down', () => {
-    expect(HEADLINE.data.issues).toBe(100_000);
+    expect(HEADLINE.data.issues).toBe(123_449);
     expect(HEADLINE.verdict).toBe('usable');
     expect(LOAD_RUN?.requestsPerSecond).toBe(80);
   });

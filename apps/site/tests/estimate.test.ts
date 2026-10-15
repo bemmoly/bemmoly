@@ -32,7 +32,7 @@ describe('with the published data', () => {
     expect(result.size).toBe(medium);
     expect(result.measured).toBe(true);
     expect(explain(result)).toBe(
-      'Measured: with about 100,000 issues it stayed usable. 2 vCPU, 2 GB is not yet measured, so it is not recommended.',
+      'Measured: with 123,449 issues it stayed usable. 2 vCPU, 2 GB is not yet measured, so it is not recommended.',
     );
   });
 
@@ -49,7 +49,7 @@ describe('with the published data', () => {
     const result = estimate(CAPACITY.sizes, 300_000, 400);
     expect(result).toMatchObject({ size: large, measured: false });
     expect(explain(result)).toBe(
-      'At about 274,000 issues, 2 vCPU, 4 GB was measured slow. 4 vCPU, 8 GB is the next size up, and it is not yet measured.',
+      'At 273,939 issues, 2 vCPU, 4 GB was measured slow. 4 vCPU, 8 GB is the next size up, and it is not yet measured.',
     );
   });
 
@@ -57,14 +57,14 @@ describe('with the published data', () => {
     const result = estimate(CAPACITY.sizes, 150_000, 400);
     expect(result).toMatchObject({ size: large, measured: false });
     expect(explain(result)).toBe(
-      '2 vCPU, 4 GB was measured up to 100,000 issues. 4 vCPU, 8 GB is the next size up, and it is not yet measured.',
+      '2 vCPU, 4 GB was measured up to 123,449 issues. 4 vCPU, 8 GB is the next size up, and it is not yet measured.',
     );
   });
 
   it('treats more doc pages than were measured as not measured', () => {
-    const result = estimate(CAPACITY.sizes, 10_000, 1_000);
+    const result = estimate(CAPACITY.sizes, 10_000, 30_000);
     expect(result).toMatchObject({ size: large, measured: false });
-    expect(explain(result)).toContain('measured up to 400 doc pages');
+    expect(explain(result)).toContain('measured up to 28,400 doc pages');
   });
 
   it('starts its sliders on stops the page can show', () => {
