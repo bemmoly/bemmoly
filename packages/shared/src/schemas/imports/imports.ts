@@ -1,4 +1,14 @@
 import { z } from 'zod';
+import { importContainerRowSchema } from './containers.ts';
+import {
+  IMPORT_CLASH_RULES,
+  importIncludeSchema,
+  importOptionSchema,
+  importPersonOverrideSchema,
+  importPlanPeopleSchema,
+  importPlanTargetsSchema,
+  importTargetRequestSchema,
+} from './options.ts';
 
 /*
  * Settings › Import and the setup wizard's import step: the sources enabled modules offer,
@@ -35,6 +45,17 @@ export const importSourceSchema = z.object({
   /** What it brings in, in the order the run does it: "Projects", "Issues". */
   brings: z.array(z.string()),
   fields: z.array(importFieldSchema),
+  /** What it can bring along with its records, each a checkbox with a default. */
+  options: z.array(importOptionSchema).default([]),
+  /** The words for what it holds: "project", "projects", "issues", "Work project". */
+  nouns: z
+    .object({
+      container: z.string(),
+      containers: z.string(),
+      records: z.string(),
+      target: z.string(),
+    })
+    .optional(),
 });
 
 export const importSourceListSchema = z.object({ items: z.array(importSourceSchema) });
@@ -44,6 +65,8 @@ export const IMPORT_JOB_STATUSES = [
   'queued',
   'running',
   'completed',
+  /** Finished, but one or more projects or spaces failed; Retry runs those again. */
+  'completed_with_errors',
   'failed',
   'cancelled',
 ] as const;
@@ -56,8 +79,20 @@ export const importContainerSchema = z.object({
   key: z.string().nullable(),
   name: z.string(),
   kind: z.string(),
-  /** Records inside it, when the source can count them cheaply. */
+  /** Records inside it, when the source can count them cheaply; else counted on demand. */
   count: z.number().int().nonnegative().nullable(),
+  /** "Software", "Business", "Service"; "Team" or "Personal" for spaces. */
+  type: z.string().nullable().optional(),
+  lead: z.string().nullable().optional(),
+  /** "none": the token lists it but cannot read what is inside. */
+  access: z.enum(['ok', 'none']).optional(),
+  /** What an earlier import of this site made from it. */
+  imported: z
+    .object({ id: z.uuid(), key: z.string(), name: z.string(), at: z.iso.datetime() })
+    .nullable()
+    .optional(),
+  /** A project or space here already uses the key it would get. */
+  keyInUse: z.boolean().optional(),
 });
 
 export const importDiscoverySchema = z.object({
@@ -67,6 +102,18 @@ export const importDiscoverySchema = z.object({
   /** Totals across the site: { issues: 10432, users: 88 }. */
   counts: z.record(z.string(), z.number().int().nonnegative()),
   warnings: z.array(z.string()),
+});
+
+/**
+ * A job's discovery as a client reads it: the site, totals and warnings. The containers
+ * themselves are listed a page at a time from GET /admin/imports/:id/containers.
+ */
+export const importJobDiscoverySchema = z.object({
+  site: z.string(),
+  counts: z.record(z.string(), z.number().int().nonnegative()),
+  warnings: z.array(z.string()),
+  /** How many containers the connection found. */
+  total: z.number().int().nonnegative(),
 });
 
 export const IMPORT_MAPPING_ACTIONS = ['match', 'create', 'report'] as const;
@@ -84,6 +131,12 @@ export const importPlanSchema = z.object({
   containers: z.array(z.string()),
   counts: z.record(z.string(), z.number().int().nonnegative()),
   mappings: z.array(importMappingSchema),
+  /** A digest of the containers planned; the source is asked again only when it changes. */
+  choice: z.string().optional(),
+  include: importIncludeSchema.optional(),
+  onClash: z.enum(IMPORT_CLASH_RULES).optional(),
+  targets: importPlanTargetsSchema.optional(),
+  people: importPlanPeopleSchema.optional(),
 });
 
 export const importCountSchema = z.object({
@@ -119,10 +172,20 @@ export const importJobSchema = z.object({
   }),
   /** The connection's plain fields; a secret field appears here as true once given. */
   connection: z.record(z.string(), z.union([z.string(), z.boolean()])),
-  discovery: importDiscoverySchema.nullable(),
+  discovery: importJobDiscoverySchema.nullable(),
   plan: importPlanSchema.nullable(),
   report: importReportSchema,
   error: z.string().nullable(),
+  /** Where the chosen containers are in this run; zero before the first run. */
+  containers: z
+    .object({
+      total: z.number().int().nonnegative(),
+      waiting: z.number().int().nonnegative(),
+      running: z.number().int().nonnegative(),
+      done: z.number().int().nonnegative(),
+      failed: z.number().int().nonnegative(),
+    })
+    .optional(),
   /** How many times it has run; a re-run updates what an earlier one made. */
   runs: z.number().int().nonnegative(),
   createdAt: z.iso.datetime(),
@@ -130,9 +193,23 @@ export const importJobSchema = z.object({
   finishedAt: z.iso.datetime().nullable(),
 });
 
+/**
+ * PATCH /admin/imports/:id answers with the job and the chosen rows whose target wants a look
+ * (errors, existing, updates, new keys), so a key edit needs no second read.
+ */
+export const importPlannedJobSchema = importJobSchema.extend({
+  attention: z.array(importContainerRowSchema).optional(),
+});
+
 export const importJobListSchema = z.object({ items: z.array(importJobSchema) });
 
 export const importJobIdParamsSchema = z.object({ id: z.uuid() });
+
+/** POST /admin/imports/:id/run: everything, or only these containers again (Retry). */
+export const runImportBodySchema = z
+  .object({ containers: z.array(z.string().min(1).max(200)).min(1).max(5000).optional() })
+  .strict();
+export type RunImportBody = z.infer<typeof runImportBodySchema>;
 
 /** POST /admin/imports: connect to a source and look at what it holds. */
 export const createImportBodySchema = z
@@ -142,20 +219,40 @@ export const createImportBodySchema = z
   })
   .strict();
 
-/** PATCH /admin/imports/:id: what to bring in; answers with the plan. */
+/** Most containers one plan may name directly; a larger choice goes through the selection. */
+export const IMPORT_CONTAINER_IDS_MAX = 5000;
+
+/**
+ * PATCH /admin/imports/:id: plans the containers ticked in the selection; `containers`, when
+ * given, replaces the selection with exactly those first. Answers with the plan.
+ */
 export const updateImportBodySchema = z
-  .object({ containers: z.array(z.string().min(1).max(200)).min(1).max(500) })
+  .object({
+    containers: z.array(z.string().min(1).max(200)).min(1).max(IMPORT_CONTAINER_IDS_MAX).optional(),
+    include: importIncludeSchema.partial().optional(),
+    targets: z
+      .record(z.string().min(1).max(200), importTargetRequestSchema)
+      .refine((value) => Object.keys(value).length <= IMPORT_CONTAINER_IDS_MAX)
+      .optional(),
+    people: z
+      .record(z.string().min(1).max(400), importPersonOverrideSchema)
+      .refine((value) => Object.keys(value).length <= IMPORT_CONTAINER_IDS_MAX)
+      .optional(),
+    onClash: z.enum(IMPORT_CLASH_RULES).optional(),
+  })
   .strict();
 
 export type ImportField = z.infer<typeof importFieldSchema>;
 export type ImportSource = z.infer<typeof importSourceSchema>;
 export type ImportContainer = z.infer<typeof importContainerSchema>;
 export type ImportDiscovery = z.infer<typeof importDiscoverySchema>;
+export type ImportJobDiscovery = z.infer<typeof importJobDiscoverySchema>;
 export type ImportMapping = z.infer<typeof importMappingSchema>;
 export type ImportPlan = z.infer<typeof importPlanSchema>;
 export type ImportCount = z.infer<typeof importCountSchema>;
 export type ImportSkip = z.infer<typeof importSkipSchema>;
 export type ImportReport = z.infer<typeof importReportSchema>;
 export type ImportJob = z.infer<typeof importJobSchema>;
+export type ImportPlannedJob = z.infer<typeof importPlannedJobSchema>;
 export type CreateImportBody = z.infer<typeof createImportBodySchema>;
 export type UpdateImportBody = z.infer<typeof updateImportBodySchema>;

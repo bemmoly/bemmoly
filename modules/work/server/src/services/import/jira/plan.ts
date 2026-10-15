@@ -1,17 +1,27 @@
-import type { ImportConnection, ImportPlanContext, SqlClient } from '@bemmoly/core';
+import type {
+  ImportConnection,
+  ImportContainerRef,
+  ImportPlanContext,
+  SqlClient,
+} from '@bemmoly/core';
 import type { ImportMapping, ImportPlan } from '@bemmoly/shared';
 import type { JiraField, JiraIssueType, JiraStatus } from '../../../clients/jira.ts';
 import { explainJiraError, jiraClientFor } from './connection.ts';
-import { inBatches, projectJql } from './discover.ts';
+import { inBatches } from './discover.ts';
 import {
   builtInOf,
   fieldKindOf,
   matchIssueType,
-  projectKeyFrom,
   workFields,
   workStatuses,
   workTypes,
 } from './schema.ts';
+
+/**
+ * Projects whose types and statuses are read for the plan; on a larger choice the rest are
+ * mapped the same way when the run reaches them.
+ */
+export const PLAN_DETAIL_LIMIT = 50;
 
 const mapping = (
   kind: string,
@@ -63,39 +73,24 @@ function planFields(fields: readonly JiraField[], existing: { name: string }[]):
 export async function planJira(
   sql: SqlClient,
   connection: ImportConnection,
-  containers: readonly string[],
+  containers: readonly ImportContainerRef[],
   ctx: ImportPlanContext,
 ): Promise<ImportPlan> {
   const client = jiraClientFor(connection, ctx);
   try {
-    const all = await client.projects();
-    const picked = all.filter((project) => containers.includes(project.id));
-    const details = await inBatches(picked, 4, async (project) => ({
-      project: await client.project(project.key),
-      statuses: await client.statuses(project.key),
-      issues: await client.countIssues(projectJql(project.key)),
+    const picked = containers.filter((container) => container.key);
+    const details = await inBatches(picked.slice(0, PLAN_DETAIL_LIMIT), 4, async (ref) => ({
+      project: await client.project(ref.key!),
+      statuses: await client.statuses(ref.key!),
     }));
     const fields = await client.fields();
-    const mapped = await ctx.mappings.getMany(
-      'project',
-      picked.map((project) => project.id),
-    );
     const types = await workTypes(sql, null);
     const statuses = await workStatuses(sql, null);
     const mappings: ImportMapping[] = [];
     const seenTypes = new Map<string, JiraIssueType>();
     const seenStatuses = new Map<string, JiraStatus>();
+    // Where each project goes is the plan's targets, decided by the kernel.
     for (const { project, statuses: byType } of details) {
-      const key = projectKeyFrom(project.key);
-      const [existing] = await sql<{ id: string }[]>`select id from projects where key = ${key}`;
-      const note = key === project.key ? null : `The key becomes ${key}`;
-      if (mapped.has(project.id))
-        mappings.push(mapping('project', project.key, 'match', key, 'Imported before; updated'));
-      else if (existing)
-        mappings.push(
-          mapping('project', project.key, 'match', key, 'A project with this key exists'),
-        );
-      else mappings.push(mapping('project', project.key, 'create', key, note));
       for (const type of project.issueTypes ?? []) seenTypes.set(type.name.toLowerCase(), type);
       for (const group of byType) {
         for (const status of group.statuses) seenStatuses.set(status.name.toLowerCase(), status);
@@ -129,10 +124,10 @@ export async function planJira(
     }
     mappings.push(...planFields(fields, await workFields(sql, null)));
     return {
-      containers: [...containers],
+      containers: containers.map((container) => container.id),
       counts: {
         projects: picked.length,
-        issues: details.reduce((sum, detail) => sum + detail.issues, 0),
+        issues: picked.reduce((sum, ref) => sum + (ref.count ?? 0), 0),
       },
       mappings,
     };

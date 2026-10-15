@@ -27,5 +27,6 @@ export function wireImporters(input: ImportsWiringInput): Imports {
     authorize: input.identity.authorize,
     allowPrivateUrls: env.BEMMOLY_ALLOW_PRIVATE_URLS,
     logger: input.logger.child({ component: 'import' }),
+    events: kernel.events,
   });
 }

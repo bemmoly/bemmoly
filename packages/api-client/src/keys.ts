@@ -70,6 +70,11 @@ export const queryKeys = {
     sources: () => ['imports', 'sources'] as const,
     list: () => ['imports', 'list'] as const,
     detail: (id: string) => ['imports', 'job', id] as const,
+    containers: (id: string, q = '', filter = 'all') =>
+      ['imports', 'job', id, 'containers', q, filter] as const,
+    selection: (id: string) => ['imports', 'job', id, 'selection'] as const,
+    people: (id: string) => ['imports', 'job', id, 'people'] as const,
+    targets: (id: string, q = '') => ['imports', 'job', id, 'targets', q] as const,
   },
   codeHosts: {
     all: () => ['code-hosts'] as const,
