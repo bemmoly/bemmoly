@@ -2,9 +2,8 @@
 /**
  * The measured tier, from the sizing review: one big number (the largest data set the
  * recommended size handled), what it ran on, the people estimate only where a load was
- * measured, the speeds at that size as bars, and what that size costs by provider. A run
- * measured before the latest performance work carries a visible note until a re-run replaces
- * it. Numbers are marked (data-capacity, data-people, data-price) for tests/capacity.test.ts.
+ * measured, the speeds at that size as bars, and what that size costs by provider. Whether a run
+ * predates the latest performance work is said once, in the method notes on /sizing. Numbers are marked (data-capacity, data-people, data-price) for tests/capacity.test.ts.
  */
 import {
   BAR_SCALE_MS,
@@ -20,7 +19,6 @@ import {
 } from '../../data/capacity.ts';
 import { cardOffers, checkedDates, fromOffer, offerMoney } from '../../data/prices.ts';
 import Badge from '../site/Badge.astro';
-import Icon from '../site/Icon.astro';
 import SizeLadder from './SizeLadder.astro';
 
 interface Props {
@@ -35,20 +33,10 @@ const from = fromOffer(key);
 const offers = cardOffers(key);
 const people = LOAD_RUN ? peopleOf(LOAD_RUN.requestsPerSecond) : null;
 const rows = latencyRows(HEADLINE);
-const preliminary = RECOMMENDED.runs.some((run) => run.preliminary);
 const { requestsPerActiveUserPerSecond, activeShare } = CAPACITY.assumption;
 ---
 
 <div class="flex flex-col gap-5" data-tier={key}>
-  {preliminary && (
-    <p
-      data-preliminary
-      class="flex items-start gap-2.5 rounded-card bg-amber-50 px-3.5 py-3 text-14 text-tx"
-    >
-      <Icon name="info" size={16} class="mt-0.5 shrink-0 text-amber-tx" />
-      <span>Measured before the latest performance work; re-run pending.</span>
-    </p>
-  )}
   <div class="overflow-hidden rounded-shot bg-card shadow-e2">
     <div class="grid lg:grid-cols-[1.05fr_1fr]">
       <div class="flex flex-col p-5 sm:p-7 lg:border-r lg:border-line-2">
