@@ -178,8 +178,9 @@ k expose deployment db --port=5432 >/dev/null
 k rollout status deployment/db --timeout 180s >/dev/null || fail 'the external Postgres did not start'
 # Not --wait: that chart's liveness probe can restart a first boot that is still running
 # changesets on a slow machine, which the startup probe in this chart fixes.
+# Charts from 0.12 on need the database named; older ones defaulted existingSecret to "bemmoly".
 helm install "${RELEASE}" "${WORK}/published.tgz" --namespace "${NS}" --set publicUrl="${BASE}" \
-  --set persistence.size=1Gi >/dev/null || fail "the published ${FROM} chart did not install"
+  --set existingSecret=bemmoly --set persistence.size=1Gi >/dev/null || fail "the published ${FROM} chart did not install"
 helm upgrade "${RELEASE}" "${WORK}/bemmoly-${TO}.tgz" --namespace "${NS}" --reset-then-reuse-values \
   --set existingSecret=bemmoly --wait --timeout 10m >/dev/null || fail 'upgrading the published chart failed'
 [ "$(k exec "deploy/${RELEASE}-all" -- printenv BEMMOLY_VERSION)" = "${TO}" ] || fail "the published install is not on ${TO}"
