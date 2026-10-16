@@ -10,6 +10,7 @@ import {
   insightsSchema,
   landingZonePlanSchema,
   policiesResponseSchema,
+  policySchema,
   proposalsPageSchema,
   poolTokenSchema,
   runnerPoolSchema,
@@ -24,6 +25,7 @@ import {
   type InsightsQuery,
   type LandingZonePlanBody,
   type ListBindingsQuery,
+  type UpdatePolicyBody,
 } from '@bemmoly/module-pipelines/shared';
 import { z } from 'zod';
 import { toQuery } from './query.ts';
@@ -55,6 +57,10 @@ export function platformEndpoints(http: Http) {
     removeBinding: (id: string) => http.send(`${base}/bindings/${id}`, { method: 'DELETE' }),
     policies: (scope: string) =>
       http.request(`${base}/policies`, policiesResponseSchema, { query: toQuery({ scope }) }),
+    updatePolicy: (id: string, body: UpdatePolicyBody) =>
+      http.request(`${base}/policies/${id}`, policySchema, { method: 'PATCH', body }),
+    approvePolicyVersion: (id: string, version: number) =>
+      http.send(`${base}/policies/${id}/versions/${version}/approvals`, { method: 'POST' }),
     check: (body: CheckAccessBody) =>
       http.request(`${base}/access/checks`, accessDecisionSchema, { method: 'POST', body }),
     capacity: (query: CapacityQuery) =>

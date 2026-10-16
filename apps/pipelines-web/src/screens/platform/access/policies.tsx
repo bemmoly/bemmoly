@@ -1,12 +1,15 @@
 import { useT } from '@bemmoly/core-web';
 import type { Policy } from '@bemmoly/module-pipelines/shared';
-import { SegmentedControl, Skeleton } from '@bemmoly/ui';
-import { usePolicies } from '../../../hooks/use-access.ts';
+import { Button, SegmentedControl, Skeleton, useToast } from '@bemmoly/ui';
+import { useState } from 'react';
+import { usePolicies, usePolicyWrites } from '../../../hooks/use-access.ts';
+import { useMe } from '../../../hooks/use-me.ts';
 import { useSearchState } from '../../../hooks/use-search-state.ts';
 import { pipelinesText } from '../../../i18n/catalog.ts';
-import { LoadFailed } from '../../../parts/load-failed.tsx';
+import { LoadFailed, refusalOf } from '../../../parts/load-failed.tsx';
 import { Panel } from '../../../parts/screen.tsx';
 import { TierChip } from '../../../parts/tier-chip.tsx';
+import { PolicyEditor } from './policy-editor.tsx';
 
 const VIEWS = ['sentences', 'code'] as const;
 
@@ -24,6 +27,25 @@ export function Policies({ scope, scopeName }: { scope: string; scopeName: strin
   const t = useT(pipelinesText);
   const policies = usePolicies(scope);
   const [view, setView] = useSearchState('policy', VIEWS, 'sentences');
+  const [editing, setEditing] = useState<Policy | null>(null);
+  const me = useMe().data?.user.id;
+  const toast = useToast();
+  const { approve } = usePolicyWrites();
+  const approveChange = (policy: Policy) =>
+    policy.pending &&
+    approve.mutate(
+      { id: policy.id, version: policy.pending.version },
+      {
+        onSuccess: () =>
+          toast.show({ tone: 'ok', title: t('pipelines.policy.approved', { name: policy.name }) }),
+        onError: (error) =>
+          toast.show({
+            tone: 'danger',
+            title: t('pipelines.promote.decideFailed'),
+            body: refusalOf(error)?.sentence ?? t('pipelines.common.loadFailed'),
+          }),
+      },
+    );
   return (
     <Panel
       title={t('pipelines.access.policies')}
@@ -70,6 +92,14 @@ export function Policies({ scope, scopeName }: { scope: string; scopeName: strin
                     {t('pipelines.access.policyFrom', { scope: policy.scope.name })}
                   </span>
                 )}
+                <Button
+                  size="xs"
+                  variant="ghost"
+                  className="ms-auto"
+                  onClick={() => setEditing(policy)}
+                >
+                  {t('pipelines.policy.edit')}
+                </Button>
               </span>
               {view === 'sentences' ? (
                 <p className="text-12 leading-body text-tx-2">{policy.sentence}</p>
@@ -79,14 +109,27 @@ export function Policies({ scope, scopeName }: { scope: string; scopeName: strin
                 </pre>
               )}
               {policy.pending && (
-                <p className="rounded-control bg-amber-50 px-2.5 py-1.5 text-12 text-amber-tx">
-                  {t('pipelines.access.pending', { sentence: policy.pending.sentence })}
-                </p>
+                <div className="flex flex-wrap items-center gap-2 rounded-control bg-amber-50 px-2.5 py-1.5">
+                  <p className="min-w-0 flex-1 text-12 text-amber-tx">
+                    {t('pipelines.access.pending', { sentence: policy.pending.sentence })}
+                  </p>
+                  {policy.pending.createdBy?.id !== me && (
+                    <Button
+                      size="xs"
+                      variant="secondary"
+                      loading={approve.isPending}
+                      onClick={() => approveChange(policy)}
+                    >
+                      {t('pipelines.policy.approveChange')}
+                    </Button>
+                  )}
+                </div>
               )}
             </li>
           ))}
         </ul>
       )}
+      {editing && <PolicyEditor policy={editing} onClose={() => setEditing(null)} />}
     </Panel>
   );
 }

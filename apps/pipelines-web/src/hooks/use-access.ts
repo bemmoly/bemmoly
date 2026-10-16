@@ -1,4 +1,8 @@
-import type { CheckAccessBody, CreateBindingBody } from '@bemmoly/module-pipelines/shared';
+import type {
+  CheckAccessBody,
+  CreateBindingBody,
+  UpdatePolicyBody,
+} from '@bemmoly/module-pipelines/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { platformKeys } from '../api/platform.ts';
 import { api } from '../lib/api.ts';
@@ -29,6 +33,24 @@ export function useBindingWrites() {
     }),
     remove: useMutation({
       mutationFn: (id: string) => api.platform.removeBinding(id),
+      onSettled: settle,
+    }),
+  };
+}
+
+/** Editing a policy, and the second Platform admin's approval of a waiting Tier 0 change. */
+export function usePolicyWrites() {
+  const client = useQueryClient();
+  const settle = () => client.invalidateQueries({ queryKey: [...platformKeys.all, 'policies'] });
+  return {
+    update: useMutation({
+      mutationFn: ({ id, body }: { id: string; body: UpdatePolicyBody }) =>
+        api.platform.updatePolicy(id, body),
+      onSettled: settle,
+    }),
+    approve: useMutation({
+      mutationFn: ({ id, version }: { id: string; version: number }) =>
+        api.platform.approvePolicyVersion(id, version),
       onSettled: settle,
     }),
   };
