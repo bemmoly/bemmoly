@@ -4,7 +4,9 @@
  *
  * The traffic splitter sits in front of an application in one environment: it sends each
  * request to a revision by weight, counts requests, 5xx answers and latency per revision in
- * five-second buckets, and serves those counts to the control plane on an admin port. That
+ * five-second buckets, and serves those counts to the control plane on an admin port, which
+ * asks for a token: every revision on the network could reach it, and set another
+ * application's routes. That
  * is where canary metrics come from, so a canary is judged on real requests. A small load
  * generator calls it a few times a second so there is traffic to judge on an idle laptop.
  *
@@ -55,7 +57,15 @@ function p95(values) {
   return sorted[Math.min(sorted.length - 1, Math.floor(sorted.length * 0.95))];
 }
 function answer(res, status, body) { res.writeHead(status, { 'content-type': 'application/json' }); res.end(JSON.stringify(body)); }
+const crypto = require('crypto');
+const ADMIN = Buffer.from('Bearer ' + (process.env.ADMIN_TOKEN || ''));
+function allowed(req) {
+  if (!process.env.ADMIN_TOKEN) return true;
+  const sent = Buffer.from(String(req.headers['authorization'] || ''));
+  return sent.length === ADMIN.length && crypto.timingSafeEqual(sent, ADMIN);
+}
 http.createServer(function (req, res) {
+  if (!allowed(req)) return answer(res, 401, { error: 'Send the admin token' });
   const url = new URL(req.url, 'http://admin');
   if (url.pathname === '/routes' && req.method === 'GET') return answer(res, 200, { routes: routes });
   if (url.pathname === '/routes' && req.method === 'PUT') {

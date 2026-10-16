@@ -37,6 +37,7 @@ const inspectSchema = z.object({
   Id: z.string(),
   Name: z.string(),
   State: z.object({ Running: z.boolean(), Status: z.string() }),
+  Config: z.object({ Env: z.array(z.string()).nullable().default([]) }).default({ Env: [] }),
   NetworkSettings: z.object({
     Ports: z
       .record(

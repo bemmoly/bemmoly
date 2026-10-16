@@ -2,7 +2,12 @@ import { randomBytes } from 'node:crypto';
 import { ValidationError } from '@bemmoly/shared';
 import { isLocalDockerHost } from '../../../../../shared/clouds.ts';
 import { isImageReference, isImageRepository } from '../../../../../shared/image-reference.ts';
-import { createDockerClient, publishedPort, type DockerClient } from '../../../clients/docker.ts';
+import {
+  createDockerClient,
+  publishedPort,
+  type DockerClient,
+  type DockerInspect,
+} from '../../../clients/docker.ts';
 import { createSplitterClient, type SplitterClient } from '../../../clients/splitter.ts';
 import type { DeployTarget, ReleaseArtifact } from '../contract.ts';
 import { DEMO_APP_PROGRAM, SPLITTER_PROGRAM } from './programs.ts';
@@ -94,6 +99,12 @@ export function releaseRepository(release: ReleaseArtifact): string | null {
   return release.imageRepository;
 }
 
+/** The splitter's admin token, kept in its own environment so a restart needs nothing else. */
+function adminToken(container: DockerInspect | null): string | undefined {
+  const entry = container?.Config.Env?.find((line) => line.startsWith('ADMIN_TOKEN='));
+  return entry?.slice('ADMIN_TOKEN='.length) || undefined;
+}
+
 export function createLocalRuntime(config: LocalConfig) {
   const docker: DockerClient = createDockerClient({ host: config.dockerHost });
 
@@ -134,7 +145,10 @@ export function createLocalRuntime(config: LocalConfig) {
         name,
         image: config.nodeImage,
         cmd: ['node', '-e', SPLITTER_PROGRAM],
-        env: { LOAD_RPS: String(config.syntheticRps) },
+        env: {
+          LOAD_RPS: String(config.syntheticRps),
+          ADMIN_TOKEN: randomBytes(24).toString('hex'),
+        },
         labels: labelsFor(target, 'splitter'),
         network: NETWORK,
         publish: [SPLITTER_PUBLIC, SPLITTER_ADMIN],
@@ -145,7 +159,7 @@ export function createLocalRuntime(config: LocalConfig) {
     const admin = found ? publishedPort(found, SPLITTER_ADMIN) : null;
     const pub = found ? publishedPort(found, SPLITTER_PUBLIC) : null;
     if (!admin || !pub) throw new Error(`${name} has no published ports`);
-    const client = createSplitterClient(`http://127.0.0.1:${admin}`);
+    const client = createSplitterClient(`http://127.0.0.1:${admin}`, adminToken(found));
     for (let attempt = 0; attempt < 40; attempt += 1) {
       try {
         await client.routes();
