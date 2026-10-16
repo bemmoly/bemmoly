@@ -1,0 +1,356 @@
+{
+  "recorded": "Hand-recorded from the Google Cloud REST reference (shapes and field names as documented); not captured from a live project.",
+  "exchanges": [
+    {
+      "method": "POST",
+      "url": "https://oauth2.googleapis.com/tokeninfo",
+      "repeat": true,
+      "response": {
+        "azp": "108245519374462230118",
+        "aud": "108245519374462230118",
+        "scope": "https://www.googleapis.com/auth/cloud-platform",
+        "exp": "1792195200",
+        "expires_in": 3412,
+        "email": "bemmoly-control@acme-bemmoly.iam.gserviceaccount.com",
+        "email_verified": "true",
+        "access_type": "online"
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://serviceusage.googleapis.com/v1/projects/acme-commerce-dev/services?filter=state:ENABLED",
+      "response": {
+        "services": [
+          {
+            "name": "projects/771205334230/services/logging.googleapis.com",
+            "config": {
+              "name": "logging.googleapis.com",
+              "title": "logging.googleapis.com"
+            },
+            "parent": "projects/771205334230",
+            "state": "ENABLED"
+          },
+          {
+            "name": "projects/771205334230/services/monitoring.googleapis.com",
+            "config": {
+              "name": "monitoring.googleapis.com",
+              "title": "monitoring.googleapis.com"
+            },
+            "parent": "projects/771205334230",
+            "state": "ENABLED"
+          }
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "url": "https://serviceusage.googleapis.com/v1/projects/acme-commerce-dev/services:batchEnable",
+      "body": {
+        "serviceIds": ["run.googleapis.com", "iam.googleapis.com", "iamcredentials.googleapis.com"]
+      },
+      "response": {
+        "name": "operations/acf.p2-771205334230-6c1e2a8b",
+        "metadata": {
+          "@type": "type.googleapis.com/google.protobuf.Empty"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://serviceusage.googleapis.com/v1/operations/acf.p2-771205334230-6c1e2a8b",
+      "response": {
+        "name": "operations/acf.p2-771205334230-6c1e2a8b",
+        "done": true,
+        "response": {
+          "@type": "type.googleapis.com/google.api.serviceusage.v1.BatchEnableServicesResponse",
+          "services": []
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://serviceusage.googleapis.com/v1/projects/acme-commerce-dev/services?filter=state:ENABLED",
+      "response": {
+        "services": [
+          {
+            "name": "projects/771205334230/services/logging.googleapis.com",
+            "config": {
+              "name": "logging.googleapis.com",
+              "title": "logging.googleapis.com"
+            },
+            "parent": "projects/771205334230",
+            "state": "ENABLED"
+          },
+          {
+            "name": "projects/771205334230/services/monitoring.googleapis.com",
+            "config": {
+              "name": "monitoring.googleapis.com",
+              "title": "monitoring.googleapis.com"
+            },
+            "parent": "projects/771205334230",
+            "state": "ENABLED"
+          },
+          {
+            "name": "projects/771205334230/services/run.googleapis.com",
+            "config": {
+              "name": "run.googleapis.com",
+              "title": "run.googleapis.com"
+            },
+            "parent": "projects/771205334230",
+            "state": "ENABLED"
+          },
+          {
+            "name": "projects/771205334230/services/iam.googleapis.com",
+            "config": {
+              "name": "iam.googleapis.com",
+              "title": "iam.googleapis.com"
+            },
+            "parent": "projects/771205334230",
+            "state": "ENABLED"
+          },
+          {
+            "name": "projects/771205334230/services/iamcredentials.googleapis.com",
+            "config": {
+              "name": "iamcredentials.googleapis.com",
+              "title": "iamcredentials.googleapis.com"
+            },
+            "parent": "projects/771205334230",
+            "state": "ENABLED"
+          }
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://iam.googleapis.com/v1/projects/acme-commerce-dev/serviceAccounts/deployer@acme-commerce-dev.iam.gserviceaccount.com",
+      "status": 404,
+      "response": {
+        "error": {
+          "code": 404,
+          "message": "Unknown service account",
+          "status": "NOT_FOUND"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "url": "https://iam.googleapis.com/v1/projects/acme-commerce-dev/serviceAccounts",
+      "body": {
+        "accountId": "deployer"
+      },
+      "response": {
+        "name": "projects/acme-commerce-dev/serviceAccounts/deployer@acme-commerce-dev.iam.gserviceaccount.com",
+        "projectId": "acme-commerce-dev",
+        "uniqueId": "104882910027733451902",
+        "email": "deployer@acme-commerce-dev.iam.gserviceaccount.com",
+        "displayName": "Bemmoly deployer",
+        "etag": "MDEwMjE5MjA=",
+        "description": "Managed by Bemmoly Pipelines; changes are reverted by the landing zone",
+        "oauth2ClientId": "104882910027733451902"
+      }
+    },
+    {
+      "method": "POST",
+      "url": "https://cloudresourcemanager.googleapis.com/v3/projects/acme-commerce-dev:getIamPolicy",
+      "response": {
+        "version": 1,
+        "etag": "BwYmZ1nH9aQ=",
+        "bindings": [
+          {
+            "role": "roles/owner",
+            "members": ["serviceAccount:bemmoly-control@acme-bemmoly.iam.gserviceaccount.com"]
+          }
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "url": "https://cloudresourcemanager.googleapis.com/v3/projects/acme-commerce-dev:setIamPolicy",
+      "body": {
+        "policy": {
+          "etag": "BwYmZ1nH9aQ=",
+          "bindings": [
+            {
+              "role": "roles/owner",
+              "members": ["serviceAccount:bemmoly-control@acme-bemmoly.iam.gserviceaccount.com"]
+            },
+            {
+              "role": "roles/run.developer"
+            },
+            {
+              "role": "roles/iam.serviceAccountUser"
+            },
+            {
+              "role": "roles/monitoring.viewer"
+            }
+          ]
+        }
+      },
+      "response": {
+        "version": 3,
+        "etag": "BwYmZ2kL0bE=",
+        "bindings": [
+          {
+            "role": "roles/owner",
+            "members": ["serviceAccount:bemmoly-control@acme-bemmoly.iam.gserviceaccount.com"]
+          },
+          {
+            "role": "roles/iam.serviceAccountUser",
+            "members": ["serviceAccount:deployer@acme-commerce-dev.iam.gserviceaccount.com"]
+          },
+          {
+            "role": "roles/monitoring.viewer",
+            "members": ["serviceAccount:deployer@acme-commerce-dev.iam.gserviceaccount.com"]
+          },
+          {
+            "role": "roles/run.developer",
+            "members": ["serviceAccount:deployer@acme-commerce-dev.iam.gserviceaccount.com"]
+          }
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "url": "https://iam.googleapis.com/v1/projects/-/serviceAccounts/deployer@acme-commerce-dev.iam.gserviceaccount.com:getIamPolicy",
+      "response": {
+        "version": 1,
+        "etag": "ACAB"
+      }
+    },
+    {
+      "method": "POST",
+      "url": "https://iam.googleapis.com/v1/projects/-/serviceAccounts/deployer@acme-commerce-dev.iam.gserviceaccount.com:setIamPolicy",
+      "body": {
+        "policy": {
+          "etag": "ACAB",
+          "bindings": [
+            {
+              "role": "roles/iam.serviceAccountTokenCreator",
+              "members": ["serviceAccount:bemmoly-control@acme-bemmoly.iam.gserviceaccount.com"]
+            }
+          ]
+        }
+      },
+      "response": {
+        "version": 1,
+        "etag": "BwYmZ3aa1cc=",
+        "bindings": [
+          {
+            "role": "roles/iam.serviceAccountTokenCreator",
+            "members": ["serviceAccount:bemmoly-control@acme-bemmoly.iam.gserviceaccount.com"]
+          }
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://iam.googleapis.com/v1/projects/acme-commerce-dev/serviceAccounts/deployer@acme-commerce-dev.iam.gserviceaccount.com",
+      "response": {
+        "name": "projects/acme-commerce-dev/serviceAccounts/deployer@acme-commerce-dev.iam.gserviceaccount.com",
+        "projectId": "acme-commerce-dev",
+        "uniqueId": "104882910027733451902",
+        "email": "deployer@acme-commerce-dev.iam.gserviceaccount.com",
+        "displayName": "Bemmoly deployer",
+        "etag": "MDEwMjE5MjA=",
+        "description": "Managed by Bemmoly Pipelines; changes are reverted by the landing zone",
+        "oauth2ClientId": "104882910027733451902"
+      }
+    },
+    {
+      "method": "POST",
+      "url": "https://cloudresourcemanager.googleapis.com/v3/projects/acme-commerce-dev:getIamPolicy",
+      "response": {
+        "version": 3,
+        "etag": "BwYmZ2kL0bE=",
+        "bindings": [
+          {
+            "role": "roles/owner",
+            "members": ["serviceAccount:bemmoly-control@acme-bemmoly.iam.gserviceaccount.com"]
+          },
+          {
+            "role": "roles/iam.serviceAccountUser",
+            "members": ["serviceAccount:deployer@acme-commerce-dev.iam.gserviceaccount.com"]
+          },
+          {
+            "role": "roles/monitoring.viewer",
+            "members": ["serviceAccount:deployer@acme-commerce-dev.iam.gserviceaccount.com"]
+          },
+          {
+            "role": "roles/run.developer",
+            "members": ["serviceAccount:deployer@acme-commerce-dev.iam.gserviceaccount.com"]
+          }
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "url": "https://iam.googleapis.com/v1/projects/-/serviceAccounts/deployer@acme-commerce-dev.iam.gserviceaccount.com:getIamPolicy",
+      "response": {
+        "version": 1,
+        "etag": "BwYmZ3aa1cc=",
+        "bindings": [
+          {
+            "role": "roles/iam.serviceAccountTokenCreator",
+            "members": ["serviceAccount:bemmoly-control@acme-bemmoly.iam.gserviceaccount.com"]
+          }
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://artifactregistry.googleapis.com/v1/projects/acme-ci/locations/asia-south1/repositories/apps",
+      "response": {
+        "name": "projects/acme-ci/locations/asia-south1/repositories/apps",
+        "format": "DOCKER",
+        "description": "Release images built or registered by Bemmoly",
+        "createTime": "2026-10-12T08:20:41.002Z",
+        "updateTime": "2026-10-12T08:20:41.002Z",
+        "mode": "STANDARD_REPOSITORY",
+        "sizeBytes": "1873266112"
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://cloudresourcemanager.googleapis.com/v3/projects/acme-commerce-dev",
+      "response": {
+        "name": "projects/771205334230",
+        "parent": "folders/417302018845",
+        "projectId": "acme-commerce-dev",
+        "state": "ACTIVE",
+        "displayName": "Commerce · Dev",
+        "createTime": "2026-10-12T08:14:33.120Z",
+        "updateTime": "2026-10-12T08:14:35.004Z",
+        "etag": "W/\"5c1f3b2a9e7d4f10\"",
+        "labels": {
+          "managed-by": "bemmoly",
+          "domain": "commerce",
+          "environment": "dev"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://artifactregistry.googleapis.com/v1/projects/acme-ci/locations/asia-south1/repositories/apps:getIamPolicy",
+      "response": {
+        "version": 1,
+        "etag": "BwYmZ9xx",
+        "bindings": [
+          {
+            "role": "roles/artifactregistry.writer",
+            "members": ["serviceAccount:builder@acme-ci.iam.gserviceaccount.com"]
+          }
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://logging.googleapis.com/v2/projects/acme-commerce-dev/locations/global/buckets/_Default",
+      "response": {
+        "name": "projects/acme-commerce-dev/locations/global/buckets/_Default",
+        "retentionDays": 30,
+        "lifecycleState": "ACTIVE",
+        "analyticsEnabled": false
+      }
+    }
+  ]
+}

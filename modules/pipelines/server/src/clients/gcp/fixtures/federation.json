@@ -1,0 +1,41 @@
+{
+  "recorded": "Hand-recorded from the Google Cloud REST reference (shapes and field names as documented); not captured from a live project.",
+  "exchanges": [
+    {
+      "method": "POST",
+      "url": "https://sts.googleapis.com/v1/token",
+      "body": {
+        "audience": "//iam.googleapis.com/projects/771205334188/locations/global/workloadIdentityPools/bemmoly/providers/bemmoly",
+        "subjectToken": "eyJhbGciOiJFUzI1NiJ9.bemmoly-signed.sig",
+        "subjectTokenType": "urn:ietf:params:oauth:token-type:jwt"
+      },
+      "response": {
+        "access_token": "ya29.federated-pool-token",
+        "issued_token_type": "urn:ietf:params:oauth:token-type:access_token",
+        "token_type": "Bearer",
+        "expires_in": 3599
+      }
+    },
+    {
+      "method": "POST",
+      "url": "https://iamcredentials.googleapis.com/v1/projects/-/serviceAccounts/bemmoly-control@acme-bemmoly.iam.gserviceaccount.com:generateAccessToken",
+      "body": {
+        "scope": ["https://www.googleapis.com/auth/cloud-platform"],
+        "lifetime": "900s"
+      },
+      "response": {
+        "accessToken": "ya29.control-via-federation",
+        "expireTime": "2099-01-01T00:00:00Z"
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://cloudbilling.googleapis.com/v1/billingAccounts/01A2B3-C4D5E6-F7A8B9",
+      "response": {
+        "name": "billingAccounts/01A2B3-C4D5E6-F7A8B9",
+        "open": true,
+        "displayName": "Acme main billing"
+      }
+    }
+  ]
+}
