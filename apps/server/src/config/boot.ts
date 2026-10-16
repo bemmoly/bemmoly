@@ -107,6 +107,8 @@ export async function bootApplication(options: BootOptions): Promise<Booted> {
   let moduleState: Pick<DataKernel['moduleState'], 'isEnabled'> | undefined;
   let files: DataKernel['files'] | undefined;
   let objects: DataKernel['objectStore'] | undefined;
+  // Bound once code hosts are wired below; modules ask for it only at request time.
+  let codeHostDirectory: CodeHosts['directory'] | undefined = undefined;
   const modules = loadModules({
     available: options.available,
     enabled: database ? [] : env.BEMMOLY_MODULES,
@@ -117,6 +119,7 @@ export async function bootApplication(options: BootOptions): Promise<Booted> {
     ai: () => aiHandle.bound(),
     files: () => files,
     objects: () => objects,
+    codeHosts: () => codeHostDirectory,
     ...(env.BEMMOLY_PDF_URL
       ? {
           pdf: createPdfRendererClient({
@@ -197,6 +200,7 @@ export async function bootApplication(options: BootOptions): Promise<Booted> {
     database && kernel
       ? wireCodeHostIntegrations({ env, database, kernel, identity, modules, catalog, logger })
       : undefined;
+  codeHostDirectory = codeHosts?.directory;
   const retrieval =
     database && kernel && realtime
       ? wireRetrieval({
