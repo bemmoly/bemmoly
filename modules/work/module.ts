@@ -86,6 +86,14 @@ export default defineModule({
       keys: 'G P',
     });
     ctx.navigation.add({
+      id: 'work.reports',
+      label: 'Reports',
+      path: '/work/reports',
+      placement: 'command',
+      icon: 'reports',
+      keys: 'G E',
+    });
+    ctx.navigation.add({
       id: 'work.projects',
       label: 'Projects',
       path: '/work/projects',

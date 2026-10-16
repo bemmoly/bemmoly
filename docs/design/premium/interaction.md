@@ -71,6 +71,7 @@ that passes (ADR 0015).
 - [Board and Backlog](interaction/board-backlog.md)
 - [Roadmap](interaction/roadmap.md): epics and versions on a timeline, rescheduling, the forecast and its panel.
 - [Pairing](interaction/pairing.md): who worked beside whom on a project, the matrix and the pair panel.
+- [Reports](interaction/reports.md): sprint burndown, burnup, report and velocity; cumulative flow and created vs resolved.
 - [Projects and project settings](interaction/projects-settings.md)
 - [Settings › Work: the org defaults](interaction/settings-work.md): issue types, fields, workflow and board every project inherits until it overrides them.
 - [Settings › Webhooks and project settings › Automation](interaction/webhooks-automation.md): outgoing webhooks, the signing secret, the delivery log, rules, the rule builder and the run log.

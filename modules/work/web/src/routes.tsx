@@ -25,6 +25,7 @@ export const WORK_SCREENS: Readonly<Record<string, Screen>> = {
   backlog: lazy(() => import('./backlog/backlog-screen.tsx')),
   roadmap: lazy(() => import('./roadmap/roadmap-screen.tsx')),
   pairing: lazy(() => import('./pairing/pairing-screen.tsx')),
+  reports: lazy(() => import('./reports/reports-screen.tsx')),
   'my-issues': lazy(() => import('./home/my-issues-screen.tsx')),
 };
 
