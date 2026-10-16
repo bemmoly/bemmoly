@@ -19,7 +19,9 @@ export async function resetDemo(sql: SqlClient): Promise<void> {
   const tables = await sql<{ name: string }[]>`
     select table_name as name from information_schema.tables
     where table_schema = 'public' and table_type = 'BASE TABLE'
-      and (table_name like 'pipeline\\_%' or table_name like 'cloud\\_%')`;
+      and (table_name like 'pipeline\\_%' or table_name like 'cloud\\_%')
+      -- The access stamp is bookkeeping, not demo data; caches compare against it.
+      and table_name <> 'pipeline_access_stamps'`;
   if (tables.length > 0) {
     await sql`truncate ${sql(tables.map((t) => t.name))} cascade`;
   }

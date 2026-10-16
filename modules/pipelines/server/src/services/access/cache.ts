@@ -24,11 +24,12 @@ export function createFactsCache(sql: () => SqlClient): FactsCache {
     async stamp() {
       const [row] = await sql()<{ stamp: string }[]>`
         select stamp::text as stamp from pipeline_access_stamps where id = 1`;
-      return BigInt(row?.stamp ?? '0');
+      // No row (the table was emptied): nothing may be cached until a change writes one.
+      return row ? BigInt(row.stamp) : -1n;
     },
     get(key, stamp) {
       const entry = entries.get(key);
-      if (!entry) return undefined;
+      if (!entry || stamp < 0n) return undefined;
       if (entry.stamp !== stamp) {
         entries.delete(key);
         return undefined;
@@ -39,6 +40,7 @@ export function createFactsCache(sql: () => SqlClient): FactsCache {
       return entry.facts;
     },
     set(key, stamp, facts) {
+      if (stamp < 0n) return;
       entries.set(key, { stamp, facts });
       if (entries.size > MAX_ENTRIES) {
         const oldest = entries.keys().next().value;
