@@ -91,17 +91,18 @@ export function defaultPlan(input: {
   defaults: PlanDefaults;
 }): StoredPlan {
   const prod = input.environmentClass === 'prod';
-  const waves = [...input.stages]
+  const stages = [...input.stages]
     .sort((a, b) => a.stage - b.stage)
-    .filter((stage) => stage.environments.length > 0)
-    .map((stage, index): StoredWave => ({
-      wave: index + 1,
-      environments: stage.environments,
-      steps: index === 0 ? firstWaveSteps(input.tier, input.environmentClass) : [],
-      holdMinutes: prod ? input.defaults.holdMinutes : 0,
-      ...(index > 0 ? { startsAfterMinutes: stage.bakeMinutes || (prod ? 30 : 0) } : {}),
-      checks: ['error_rate', 'latency_p95'],
-    }));
+    .filter((stage) => stage.environments.length > 0);
+  // A stage's bake is how long it must stay healthy before the next stage starts.
+  const waves = stages.map((stage, index): StoredWave => ({
+    wave: index + 1,
+    environments: stage.environments,
+    steps: index === 0 ? firstWaveSteps(input.tier, input.environmentClass) : [],
+    holdMinutes: prod ? input.defaults.holdMinutes : 0,
+    ...(index > 0 ? { startsAfterMinutes: stages[index - 1]?.bakeMinutes || (prod ? 30 : 0) } : {}),
+    checks: ['error_rate', 'latency_p95'],
+  }));
   return {
     waves,
     autoRollback: true,

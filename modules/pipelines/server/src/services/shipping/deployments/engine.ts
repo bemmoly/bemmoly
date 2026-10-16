@@ -55,7 +55,16 @@ export function createRolloutEngine(deps: ShippingEngineDeps) {
       return;
     }
     const release = await loadRelease(sql, row.release_id);
-    const baseline = await measureBaseline(provider, target, row.previous_revision, now);
+    // The provider holds the weights (§19): a previous revision it does not route to (made
+    // elsewhere, or gone) cannot be a canary's stable or a roll back's destination.
+    const live = await parts.describe(target);
+    const stable = live.traffic.some((t) => t.revision === row.previous_revision && t.percent > 0)
+      ? row.previous_revision
+      : null;
+    if (stable !== row.previous_revision) {
+      await sql`update pipeline_deployments set previous_revision = null where id = ${row.id}`;
+    }
+    const baseline = await measureBaseline(provider, target, stable, now);
     const { revision } = await parts.deploy(target, artifactOf(release));
     const plan = { ...step.plan, ...(baseline ? { baseline } : {}) };
     await write(
@@ -72,8 +81,8 @@ export function createRolloutEngine(deps: ShippingEngineDeps) {
     );
     // With nothing running before it there is no stable to compare a canary against, so a
     // first deploy goes straight to 100% and is judged by the watch alone.
-    const first = row.previous_revision ? 0 : plan.steps.length;
-    await goTo({ ...step, row: { ...row, revision }, plan }, first);
+    const first = stable ? 0 : plan.steps.length;
+    await goTo({ ...step, row: { ...row, revision, previous_revision: stable }, plan }, first);
   }
 
   async function judge(step: Step, phase: 'step' | 'watch'): Promise<AnalysisResult> {

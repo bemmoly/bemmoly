@@ -55,6 +55,8 @@ export async function resolveTarget(
         order by ea.domain_id nulls last limit 1
       ) mapped on true
       join cloud_accounts c on c.id = coalesce(mapped.cloud_account_id, env.cloud_account_id)
+      -- An account from another cloud (left over when an environment moved) does not apply.
+      join cloud_connections cc on cc.id = c.connection_id and cc.provider = env.provider
     ),
     connection as (
       select * from cloud_connections
