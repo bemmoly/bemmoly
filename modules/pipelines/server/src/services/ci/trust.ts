@@ -1,4 +1,5 @@
 import type { CiIssuerKind, ClaimMapping } from '../../../../shared/ci.ts';
+import { globMatcher, simpleGlobTokens } from '../../utils/glob-match.ts';
 
 /*
  * From a verified CI token to what it may register (architecture §7.1): the issuer's claims
@@ -105,17 +106,12 @@ export function factsOf(
   };
 }
 
-function escape(text: string): string {
-  return text.replace(/[.+^${}()|[\]\\?]/g, '\\$&');
-}
-
-/** `*` matches within a path segment, `**` across segments; the whole value must match. */
+/**
+ * `*` matches within a path segment, `**` across segments; the whole value must match.
+ * Values are claims a workflow chooses (a branch name), so matching never backtracks.
+ */
 export function globMatch(pattern: string, value: string): boolean {
-  const source = pattern
-    .split('**')
-    .map((part) => part.split('*').map(escape).join('[^/]*'))
-    .join('.*');
-  return new RegExp(`^${source}$`).test(value);
+  return globMatcher(simpleGlobTokens(pattern, { question: false })).test(value);
 }
 
 /** Refs match as written or by branch name: "main" matches "refs/heads/main". */

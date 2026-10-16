@@ -2,7 +2,7 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { detectApplications } from './detect.ts';
 import { fixtureTree } from './fixture-tree.ts';
-import { globToRegExp, ownersOf, parseCodeowners } from './globs.ts';
+import { compileGlob, ownersOf, parseCodeowners } from './globs.ts';
 import { cargoMembers, goWorkUses, gradleIncludes } from './manifests.ts';
 
 const fixture = (name: string) => fileURLToPath(new URL(`./testdata/${name}`, import.meta.url));
@@ -69,9 +69,9 @@ describe('discovery across languages', () => {
 
 describe('the pattern readers', () => {
   it('matches workspace globs one level or any depth', () => {
-    expect(globToRegExp('apps/*').test('apps/web')).toBe(true);
-    expect(globToRegExp('apps/*').test('apps/web/src')).toBe(false);
-    expect(globToRegExp('services/**').test('services/a/b')).toBe(true);
+    expect(compileGlob('apps/*').test('apps/web')).toBe(true);
+    expect(compileGlob('apps/*').test('apps/web/src')).toBe(false);
+    expect(compileGlob('services/**').test('services/a/b')).toBe(true);
   });
 
   it('lets the last CODEOWNERS rule win', () => {

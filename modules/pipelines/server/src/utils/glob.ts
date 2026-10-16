@@ -1,60 +1,59 @@
+import { globMatcher, type GlobMatcher, type GlobToken } from './glob-match.ts';
+
 /*
  * Path globs as people write them in `paths:` filters and artifact lists: `*` within one
  * segment, `**` across segments, `?` one character, `{a,b}` alternatives. Small on purpose:
  * no character classes, no extglobs, so a filter means what it looks like.
  */
 
-const cache = new Map<string, RegExp>();
+/** Compiled filters, kept a while; cleared when full so a stream of new patterns cannot grow it. */
+const cache = new Map<string, GlobMatcher>();
+const CACHE_LIMIT = 1_000;
 
-function escape(text: string): string {
-  return text.replace(/[.+^$()|[\]\\]/g, '\\$&');
-}
-
-function translate(glob: string): string {
-  let out = '';
+function tokensOf(glob: string): GlobToken[] {
+  const tokens: GlobToken[] = [];
   for (let i = 0; i < glob.length; i += 1) {
     const char = glob[i] ?? '';
     if (char === '*') {
       if (glob[i + 1] === '*') {
         const slash = glob[i + 2] === '/';
-        out += slash ? '(?:.*/)?' : '.*';
+        tokens.push({ kind: slash ? 'dirs' : 'any' });
         i += slash ? 2 : 1;
       } else {
-        out += '[^/]*';
+        tokens.push({ kind: 'star' });
       }
     } else if (char === '?') {
-      out += '[^/]';
-    } else if (char === '{') {
+      tokens.push({ kind: 'one' });
+    } else if (char === '{' && glob.indexOf('}', i) !== -1) {
       const end = glob.indexOf('}', i);
-      if (end === -1) {
-        out += '\\{';
-        continue;
-      }
-      out += `(?:${glob
-        .slice(i + 1, end)
-        .split(',')
-        .map((part) => translate(part))
-        .join('|')})`;
+      tokens.push({
+        kind: 'either',
+        options: glob
+          .slice(i + 1, end)
+          .split(',')
+          .map((part) => tokensOf(part)),
+      });
       i = end;
     } else {
-      out += escape(char);
+      tokens.push({ kind: 'char', char });
     }
   }
-  return out;
+  return tokens;
 }
 
-export function globToRegExp(glob: string): RegExp {
+export function compileGlob(glob: string): GlobMatcher {
   const normalised = glob.replace(/^\.\//, '').replace(/\/$/, '/**');
-  let pattern = cache.get(normalised);
-  if (!pattern) {
-    pattern = new RegExp(`^${translate(normalised)}$`);
-    cache.set(normalised, pattern);
+  let matcher = cache.get(normalised);
+  if (!matcher) {
+    if (cache.size >= CACHE_LIMIT) cache.clear();
+    matcher = globMatcher(tokensOf(normalised));
+    cache.set(normalised, matcher);
   }
-  return pattern;
+  return matcher;
 }
 
 export function matchesGlob(path: string, glob: string): boolean {
-  return globToRegExp(glob).test(path.replace(/^\.\//, ''));
+  return compileGlob(glob).test(path.replace(/^\.\//, ''));
 }
 
 /** Filters with `!` exclude; a path matches when an include does and no exclude does. */
