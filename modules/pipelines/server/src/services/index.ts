@@ -7,7 +7,7 @@ import { createTeamsService } from './teams/index.ts';
 
 export interface PipelinesServicesDeps {
   database?: SqlClient;
-  /** Kernel and Pipelines settings, read for the organisation's name and the defaults. */
+  /** Pipelines' own settings (job timeouts, retention), read by the services that apply them. */
   settings?: Pick<SettingsRegistry, 'get'>;
 }
 

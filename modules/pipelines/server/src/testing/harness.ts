@@ -63,7 +63,6 @@ export async function startPipelinesHarness(): Promise<HarnessStart> {
   const db = createDatabase(sql);
   const services = createPipelinesServices({
     database: sql,
-    settings: { get: (async () => 'Acme') as never },
   });
   const as = (userId: string): RequestContext => ({
     actor: { kind: 'user', id: userId },

@@ -18,6 +18,7 @@ async function one(query: Promise<{ id: string }[]>): Promise<string> {
 }
 
 export async function seedCatalogFixture(sql: SqlClient, member: string): Promise<CatalogFixture> {
+  await sql`insert into settings (key, value) values ('workspace.name', '"Acme"'::jsonb)`;
   const payments = await one(sql`insert into teams (name) values ('Payments') returning id`);
   const search = await one(sql`insert into teams (name) values ('Search') returning id`);
   await sql`insert into team_members (team_id, user_id) values (${payments}, ${member})`;

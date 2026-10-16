@@ -35,6 +35,12 @@ export async function seedDemo(sql: SqlClient, options: SeedOptions = {}) {
   const scale = options.scale ?? 1;
   const log = options.log ?? (() => undefined);
   const ctx = { sql, rng: createRng(SEED), now, scale, log };
+  // Acme is the organisation the product design draws; a workspace that already has a name
+  // keeps it.
+  await sql`
+    insert into settings (key, value)
+    select 'workspace.name', '"Acme"'::jsonb
+    where not exists (select 1 from settings where key = 'workspace.name')`;
   const people = await seedPeople(ctx);
   const catalog = await seedCatalog(ctx, people.teams);
   const world: World = { ...ctx, ...people, ...catalog, envs: [], envByKey: new Map(), pools: [] };

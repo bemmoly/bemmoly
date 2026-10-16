@@ -1,4 +1,4 @@
-import type { RequestContext, SettingsRegistry, SqlExecutor } from '@bemmoly/core';
+import type { RequestContext, SqlExecutor } from '@bemmoly/core';
 import { NotFoundError } from '@bemmoly/shared';
 import type { LiveCounter, Overview, OverviewQuery } from '../../../../shared/overview.ts';
 import {
@@ -7,10 +7,6 @@ import {
   requirePerson,
   type PipelinesServiceDeps,
 } from '../deps.ts';
-
-export interface OverviewDeps extends PipelinesServiceDeps {
-  settings?: Pick<SettingsRegistry, 'get'>;
-}
 
 interface ScopeRow {
   domain_id: string;
@@ -83,8 +79,19 @@ interface TodayRow {
   me_name: string | null;
 }
 
+/**
+ * The organisation's name is the workspace's. A module may read only its own settings through
+ * the registry, so this reads the kernel's stored value, with the kernel's default.
+ */
+async function workspaceName(sql: SqlExecutor): Promise<string> {
+  const [row] = await sql<{ name: string | null }[]>`
+    select value #>> '{}' as name from settings
+    where key = 'workspace.name' and not is_secret limit 1`;
+  return row?.name || 'Bemmoly';
+}
+
 /** For you's header and the live counter for a scope, in one request. */
-export function createOverviewService(deps: OverviewDeps) {
+export function createOverviewService(deps: PipelinesServiceDeps) {
   return {
     async get(ctx: RequestContext, query: OverviewQuery): Promise<Overview> {
       await authorizePipelines(ctx);
@@ -122,7 +129,7 @@ export function createOverviewService(deps: OverviewDeps) {
               where archived_at is null and ${inScope(sql, scope, 'id')})::int as teams,
             (select name from users where id = ${me}::uuid) as me_name`,
         liveCounter(sql, scope),
-        deps.settings ? deps.settings.get('workspace.name') : Promise.resolve('Bemmoly'),
+        workspaceName(sql),
       ]);
       const name = today?.me_name ?? '';
       return {
