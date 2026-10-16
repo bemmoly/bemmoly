@@ -13,12 +13,38 @@ export function useScopeName(): string {
   return scope?.group?.name ?? scope?.domain?.name ?? scope?.organisation ?? '';
 }
 
-/** A screen's title row and body inside the shell's one scrolling area. */
-export function ScreenFrame({ title, children }: { title: string; children: ReactNode }) {
+/**
+ * A screen's title row and body inside the shell's one scrolling area. `meta` sits beside the
+ * title ("212 of 1,140 applications"), `actions` at the row's end; `heading` replaces the
+ * plain title when a screen's title carries more (a glyph, a tier).
+ */
+export function ScreenFrame({
+  title,
+  heading,
+  meta,
+  actions,
+  children,
+  className,
+}: {
+  title: string;
+  heading?: ReactNode;
+  meta?: ReactNode;
+  actions?: ReactNode;
+  children: ReactNode;
+  className?: string;
+}) {
   useDocumentTitle([title, 'Pipelines']);
   return (
-    <div className="mx-auto flex w-full max-w-360 flex-col gap-4 px-4 py-5 md:px-6">
-      <h1 className="text-20 leading-title font-semibold text-tx">{title}</h1>
+    <div
+      className={`mx-auto flex w-full max-w-360 flex-col gap-4 px-4 py-5 md:px-6 ${className ?? ''}`}
+    >
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+        {heading ?? <h1 className="text-20 leading-title font-semibold text-tx">{title}</h1>}
+        {meta ? <span className="text-13 text-tx-3 tabular-nums">{meta}</span> : null}
+        {actions ? (
+          <div className="ms-auto flex flex-wrap items-center gap-2">{actions}</div>
+        ) : null}
+      </div>
       {children}
     </div>
   );

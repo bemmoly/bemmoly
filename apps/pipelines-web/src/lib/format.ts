@@ -45,3 +45,36 @@ export function formatShare(value: number, locale = getLocale()): string {
     value,
   );
 }
+
+/** How long ago, in one narrow unit: "12m", "4h", "3d", "9w". For tight cells beside a value. */
+export function formatAge(iso: string, now = Date.now(), locale = getLocale()): string {
+  const seconds = Math.max(0, (now - Date.parse(iso)) / 1000);
+  const [value, unit] =
+    seconds < 3600
+      ? [Math.max(1, Math.round(seconds / 60)), 'minute' as const]
+      : seconds < 86_400
+        ? [Math.round(seconds / 3600), 'hour' as const]
+        : seconds < 86_400 * 60
+          ? [Math.round(seconds / 86_400), 'day' as const]
+          : [Math.round(seconds / (86_400 * 7)), 'week' as const];
+  return new Intl.NumberFormat(locale, { style: 'unit', unit, unitDisplay: 'narrow' }).format(
+    value,
+  );
+}
+
+/** "2h 40m" without seconds once past a minute: lead times and run durations in a row. */
+export function formatSpan(totalSeconds: number, locale = getLocale()): string {
+  if (totalSeconds >= 86_400) {
+    const days = Math.floor(totalSeconds / 86_400);
+    const hours = Math.round((totalSeconds % 86_400) / 3600);
+    const unit = (value: number, name: 'day' | 'hour') =>
+      new Intl.NumberFormat(locale, { style: 'unit', unit: name, unitDisplay: 'narrow' }).format(
+        value,
+      );
+    return hours ? `${unit(days, 'day')} ${unit(hours, 'hour')}` : unit(days, 'day');
+  }
+  return formatDuration(
+    totalSeconds >= 60 ? totalSeconds - (totalSeconds % 60) : totalSeconds,
+    locale,
+  );
+}
