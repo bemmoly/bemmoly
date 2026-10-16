@@ -29,6 +29,11 @@ export interface SeriesChartProps {
   range?: readonly [number, number];
   /** The top of the y axis; defaults to the highest value with some headroom. */
   max?: number;
+  /**
+   * zero: the y axis starts at 0, for amounts. fit: it spans the values, for a trend line
+   * where the shape matters more than the size.
+   */
+  baseline?: 'zero' | 'fit';
   height?: number;
   /** What the chart shows, read instead of the drawing. */
   ariaLabel: string;
@@ -52,6 +57,7 @@ export function SeriesChart({
   threshold,
   range,
   max,
+  baseline = 'zero',
   height = 120,
   ariaLabel,
   className,
@@ -59,11 +65,17 @@ export function SeriesChart({
   const all = [...points, ...(compare ?? [])];
   const first = range?.[0] ?? Math.min(...all.map((point) => point.at));
   const last = range?.[1] ?? Math.max(...all.map((point) => point.at));
-  const top = (max ?? Math.max(threshold ?? 0, ...all.map((point) => point.value)) * 1.15) || 1;
+  const values = all.map((point) => point.value);
+  const highest = Math.max(threshold ?? 0, ...values);
+  const fit = baseline === 'fit';
+  const room = fit ? (highest - Math.min(...values)) * 0.15 || highest * 0.1 || 1 : 0;
+  const bottom = fit ? Math.max(0, Math.min(...values) - room) : 0;
+  const top = max ?? ((fit ? highest + room : highest * 1.15) || 1);
   const span = last - first || 1;
   const pad = markers.length > 0 ? 22 : 4;
   const x = (at: number) => ((at - first) / span) * W;
-  const y = (value: number) => height - 2 - (Math.min(value, top) / top) * (height - pad - 2);
+  const y = (value: number) =>
+    height - 2 - ((Math.min(value, top) - bottom) / (top - bottom || 1)) * (height - pad - 2);
   const line = (series: readonly SeriesPoint[]) =>
     series.map((point) => `${x(point.at).toFixed(1)},${y(point.value).toFixed(1)}`).join(' ');
   const barWidth = (W / Math.max(points.length, 1)) * 0.7;

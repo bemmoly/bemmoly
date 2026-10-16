@@ -38,7 +38,7 @@ export function StatTile({
     >
       <span className="truncate text-12 text-tx-2">{label}</span>
       <span className="text-24 leading-title font-semibold text-tx tabular-nums">{value}</span>
-      {detail && <span className={cx('truncate text-12', DETAIL[detailTone])}>{detail}</span>}
+      {detail && <span className={cx('text-12 leading-body', DETAIL[detailTone])}>{detail}</span>}
       {children && <div className="mt-2">{children}</div>}
     </div>
   );
