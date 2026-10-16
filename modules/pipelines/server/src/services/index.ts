@@ -26,6 +26,7 @@ import { createInsightsService } from './insights/index.ts';
 import { createOverviewService } from './overview/index.ts';
 import { awsProvider } from './providers/aws.ts';
 import { createProviderRegistry, type ProviderRegistry } from './providers/registry.ts';
+import { createReleasesService } from './releases/index.ts';
 import { createShippingAccess, createShippingService, type Waker } from './shipping/index.ts';
 import { createWebhookCaller, type WebhookSecrets } from './shipping/gates/index.ts';
 import { createStreamsService } from './streams/index.ts';
@@ -99,6 +100,7 @@ export function createPipelinesServices(input: PipelinesServicesDeps) {
     environments: createEnvironmentsService(deps),
     teams: createTeamsService(deps),
     overview: createOverviewService(deps),
+    releases: createReleasesService(deps),
     streams: createStreamsService(deps),
     insights: createInsightsService(deps),
     ...(input.database
