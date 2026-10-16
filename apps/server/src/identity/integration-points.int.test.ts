@@ -114,7 +114,7 @@ describe('what email and notifications build on, against a real database', () =>
     }
   });
 
-  it('leaves a Bearer header on an anonymous route to the route', async (ctx) => {
+  it('leaves a foreign Bearer header on an anonymous route to the route', async (ctx) => {
     if (!harness) return ctx.skip(skipReason);
     const app = Fastify({ logger: false });
     app.setErrorHandler(errorHandler);
@@ -131,6 +131,10 @@ describe('what email and notifications build on, against a real database', () =>
       expect(open.json()).toEqual({ actor: null, header: headers.authorization });
       const closed = await app.inject({ method: 'POST', url: '/api/v1/closed', headers });
       expect(closed.statusCode).toBe(401);
+      // Bemmoly's own tokens are still read there, so a revoked one is refused.
+      const kernel = { authorization: 'Bearer bmy_not-a-real-token-0000000000' };
+      const refused = await app.inject({ method: 'POST', url: '/api/v1/ci', headers: kernel });
+      expect(refused.statusCode).toBe(401);
     } finally {
       await app.close();
     }

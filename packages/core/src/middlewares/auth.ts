@@ -10,7 +10,12 @@ import {
   type ModuleCatalog,
   type RequestAuthorization,
 } from '../services/authz/index.ts';
-import { authenticateApiToken, authenticateSession } from '../services/identity/index.ts';
+import {
+  authenticateApiToken,
+  authenticateSession,
+  PERSONAL_TOKEN_PREFIX,
+} from '../services/identity/index.ts';
+import { ACCESS_TOKEN_PREFIX } from '../services/oauth/index.ts';
 import {
   clearSessionCookie,
   cookiePolicyFor,
@@ -62,6 +67,13 @@ export interface AuthenticationOptions {
 
 const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
 const BEARER = /^Bearer\s+(\S+)$/i;
+const KERNEL_TOKEN_PREFIXES = [PERSONAL_TOKEN_PREFIX, ACCESS_TOKEN_PREFIX];
+
+/** A Bearer carrying one of Bemmoly's own tokens: a personal access token or an OAuth one. */
+function isKernelBearer(header: string): boolean {
+  const token = BEARER.exec(header)?.[1] ?? '';
+  return KERNEL_TOKEN_PREFIXES.some((prefix) => token.startsWith(prefix));
+}
 
 /** Signed links in emails carry their own token instead of a session. */
 export const DEFAULT_ANONYMOUS_PATHS: readonly string[] = ['/email-unsubscriptions'];
@@ -181,12 +193,14 @@ export const authentication = fp<AuthenticationOptions>(
         modules: options.modules,
         ...(options.authzCache ? { shared: options.authzCache } : {}),
       });
-      // Outside the API prefix, and on routes anonymous by design (a runner's pool token, a
-      // CI system's OIDC token), a Bearer header belongs to the route's own scheme, never to
-      // an API token; the route checks it itself.
-      const ownScheme =
-        !isUnderApi(request, apiPrefix) || request.routeOptions.config?.anonymous === true;
-      const header = ownScheme ? undefined : request.headers.authorization;
+      // Outside the API prefix a Bearer header belongs to that route's own scheme (the
+      // /metrics scrape token). On a route anonymous by design, only Bemmoly's own tokens are
+      // read here; anything else (a runner's pool token, a CI system's OIDC token) is left
+      // for the route to check itself.
+      const raw = isUnderApi(request, apiPrefix) ? request.headers.authorization : undefined;
+      const anonymousRoute = request.routeOptions.config?.anonymous === true;
+      const header =
+        raw !== undefined && (!anonymousRoute || isKernelBearer(raw)) ? raw : undefined;
       const cookie = readCookie(request.headers.cookie, SESSION_COOKIE);
       if (header !== undefined) await fromBearer(request, header, options, now);
       else if (cookie) await fromCookie(request, reply, cookie, options, policy, now);
