@@ -1,4 +1,4 @@
-import { formatNumber, useScreenActions, useT } from '@bemmoly/core-web';
+import { formatNumber, useScreenActions, useT, useShortcutHelp } from '@bemmoly/core-web';
 import type { Journey } from '@bemmoly/module-pipelines/shared';
 import { Button, EmptyState, SegmentedControl, Skeleton, useToast } from '@bemmoly/ui';
 import { Icon } from '@bemmoly/ui/icons';
@@ -65,6 +65,16 @@ export default function ForYouScreen() {
     (journey) => journey.note.action === 'rerun_failed' && journey.runId,
   );
   const firstApproval = forYou.data?.waitingForMe[0];
+  useShortcutHelp({
+    id: 'pipelines.forYou',
+    label: t('pipelines.keys.forYou'),
+    keys: [
+      { keys: 'J K', label: t('pipelines.keys.moveRows') },
+      { keys: 'Enter', label: t('pipelines.keys.openRow') },
+      { keys: 'A', label: t('pipelines.forYou.review') },
+      { keys: 'Shift+R', label: t('pipelines.run.rerunFailed') },
+    ],
+  });
   useScreenKeys({
     j: () => move(1),
     k: () => move(-1),

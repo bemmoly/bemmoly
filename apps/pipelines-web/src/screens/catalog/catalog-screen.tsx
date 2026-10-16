@@ -1,4 +1,4 @@
-import { formatNumber, useScreenActions, useT } from '@bemmoly/core-web';
+import { formatNumber, useScreenActions, useT, useShortcutHelp } from '@bemmoly/core-web';
 import { Button, EmptyState, Kbd, Modal, SearchInput, usePhoneWidth } from '@bemmoly/ui';
 import { Icon } from '@bemmoly/ui/icons';
 import { useNavigate } from '@tanstack/react-router';
@@ -49,6 +49,17 @@ export default function CatalogScreen() {
       .querySelector<HTMLElement>('[aria-label] [role="rowgroup"] [role="row"][tabindex]')
       ?.focus();
 
+  useShortcutHelp({
+    id: 'pipelines.catalog',
+    label: t('pipelines.keys.catalog'),
+    keys: [
+      { keys: '/', label: t('pipelines.catalog.actionSearch') },
+      { keys: 'F', label: t('pipelines.catalog.actionFilters') },
+      { keys: 'S', label: t('pipelines.catalog.saveView') },
+      { keys: 'J K', label: t('pipelines.keys.moveRows') },
+      { keys: 'Enter', label: t('pipelines.keys.openRow') },
+    ],
+  });
   useScreenKeys({
     '/': () => search.current?.focus(),
     f: focusFacets,

@@ -1,4 +1,10 @@
-import { formatDateTime, formatNumber, useScreenActions, useT } from '@bemmoly/core-web';
+import {
+  formatDateTime,
+  formatNumber,
+  useScreenActions,
+  useT,
+  useShortcutHelp,
+} from '@bemmoly/core-web';
 import type { MapColumn, MapRow } from '@bemmoly/module-pipelines/shared';
 import { Button, EmptyState, RunGlyph, Select } from '@bemmoly/ui';
 import { Icon } from '@bemmoly/ui/icons';
@@ -67,6 +73,18 @@ export default function MapScreen() {
           },
       }),
   };
+  useShortcutHelp({
+    id: 'pipelines.map',
+    label: t('pipelines.keys.map'),
+    keys: [
+      { keys: 'Up Down', label: t('pipelines.keys.moveRows') },
+      { keys: 'Enter', label: t('pipelines.keys.zoomIn') },
+      { keys: 'Right Left', label: t('pipelines.keys.openInPlace') },
+      { keys: 'Backspace', label: t('pipelines.map.zoomOut') },
+      { keys: '[ ]', label: t('pipelines.keys.stepTime') },
+      { keys: 'L', label: t('pipelines.map.backToLive') },
+    ],
+  });
   useScreenKeys({
     '[': () => step(-1),
     ']': () => step(1),

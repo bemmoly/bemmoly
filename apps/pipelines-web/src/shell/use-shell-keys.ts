@@ -11,9 +11,11 @@ import { PLACES, SETTINGS } from './places.ts';
 export function useShellKeys(toggleMode: () => void): void {
   const navigate = useNavigate();
   const openPalette = useUiStore((state) => state.openPalette);
+  const setKeysOpen = useUiStore((state) => state.setKeysOpen);
   const bindings: Record<string, () => void> = {
     'mod+k': openPalette,
     t: toggleMode,
+    '?': () => setKeysOpen(true),
   };
   for (const place of [...PLACES, SETTINGS]) {
     bindings[place.keys.toLowerCase()] = () =>

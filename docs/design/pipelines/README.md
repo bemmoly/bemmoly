@@ -33,6 +33,7 @@ separate from Bemmoly's own mode. Every screen is drawn and checked in both.
 | --- | --- |
 | Mod+K | Search and commands |
 | T | Light or dark |
+| ? | Every key that works on the screen on show (screens list theirs with `useShortcutHelp`) |
 | G then Y, M, C, R, E, I, P, S | For you, Map, Catalog, Runs, Releases, Insights, Platform, Settings |
 
 Screen keys (J K, [ ], L, Shift+R, P, Shift+B, A) are listed in the product design's interaction

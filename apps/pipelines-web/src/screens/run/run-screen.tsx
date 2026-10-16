@@ -1,4 +1,4 @@
-import { formatNumber, useScreenActions, useT } from '@bemmoly/core-web';
+import { formatNumber, useScreenActions, useT, useShortcutHelp } from '@bemmoly/core-web';
 import type { RunDetail, RunGraph } from '@bemmoly/module-pipelines/shared';
 import { Button, EmptyState, Skeleton, StageGraph, useToast } from '@bemmoly/ui';
 import { Icon } from '@bemmoly/ui/icons';
@@ -76,6 +76,17 @@ export default function RunScreen() {
     if (next) set({ node: next.key, line: undefined });
   };
 
+  useShortcutHelp({
+    id: 'pipelines.run',
+    label: t('pipelines.keys.run'),
+    keys: [
+      { keys: 'J K', label: t('pipelines.keys.moveNodes') },
+      { keys: '/', label: t('pipelines.keys.searchLog') },
+      { keys: 'Enter', label: t('pipelines.keys.nextHit') },
+      { keys: 'F', label: t('pipelines.log.follow') },
+      { keys: 'Shift+R', label: t('pipelines.run.rerunFailed') },
+    ],
+  });
   useScreenKeys({
     'shift+r': () => failed && !rerun.isPending && rerun.mutate('failed'),
     f: () => setFollow((value) => !value),

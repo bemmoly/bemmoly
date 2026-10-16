@@ -1,4 +1,4 @@
-import { useT } from '@bemmoly/core-web';
+import { useT, useShortcutHelp } from '@bemmoly/core-web';
 import type { ListRunsQuery } from '@bemmoly/module-pipelines/shared';
 import { Button, EmptyState, SearchInput, SegmentedControl, Switch } from '@bemmoly/ui';
 import { Icon } from '@bemmoly/ui/icons';
@@ -43,6 +43,15 @@ export function RunsList({ fixed }: { fixed?: Partial<ListRunsQuery> }) {
   };
   const runs = useRuns(query);
   const rows = runs.data?.pages.flatMap((page) => page.items) ?? [];
+  useShortcutHelp({
+    id: 'pipelines.runs',
+    label: t('pipelines.keys.runs'),
+    keys: [
+      { keys: '/', label: t('pipelines.runs.searchPlaceholder') },
+      { keys: 'J K', label: t('pipelines.keys.moveRows') },
+      { keys: 'Enter', label: t('pipelines.keys.openRow') },
+    ],
+  });
   useScreenKeys({
     '/': () => box.current?.focus(),
     j: () =>

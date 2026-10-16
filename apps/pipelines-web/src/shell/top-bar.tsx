@@ -18,6 +18,7 @@ const ICON_BUTTON =
 export function TopBar() {
   const t = useT(pipelinesText);
   const openPalette = useUiStore((state) => state.openPalette);
+  const setKeysOpen = useUiStore((state) => state.setKeysOpen);
   const organisation = useOverview('').data?.scope.organisation ?? '';
   return (
     <header className="flex h-12 shrink-0 items-center gap-3 border-b border-line bg-canvas px-3 md:px-4">
@@ -80,6 +81,9 @@ export function TopBar() {
         >
           <MenuItem onSelect={openPalette} hint={<Kbd keys="Mod+K" />}>
             {t('pipelines.shell.helpCommands')}
+          </MenuItem>
+          <MenuItem onSelect={() => setKeysOpen(true)} hint={<Kbd keys="?" />}>
+            {t('pipelines.shell.helpKeys')}
           </MenuItem>
           <MenuItem onSelect={() => undefined} disabled hint={<Kbd keys="T" />}>
             {t('pipelines.shell.helpMode')}

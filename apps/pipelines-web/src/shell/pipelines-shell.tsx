@@ -7,6 +7,7 @@ import { useMode } from '../hooks/use-mode.ts';
 import { pipelinesText } from '../i18n/catalog.ts';
 import { NoAccessScreen } from '../screens/no-access.tsx';
 import { CommandMenu } from './command-menu.tsx';
+import { KeysDialog } from './keys-dialog.tsx';
 import { PhoneBar } from './phone-bar.tsx';
 import { Rail } from './rail.tsx';
 import { TopBar } from './top-bar.tsx';
@@ -54,6 +55,7 @@ export function PipelinesShell() {
           <PhoneBar />
         </div>
         <CommandMenu onToggleMode={toggle} />
+        <KeysDialog />
       </div>
     </FrameContext.Provider>
   );

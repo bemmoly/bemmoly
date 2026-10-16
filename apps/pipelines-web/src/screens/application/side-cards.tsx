@@ -162,7 +162,7 @@ export function HealthCard({
                   metric.stable.value === null ? null : value(metric.stable.value, metric.unit),
                 series: points(metric.stable.series),
               }}
-              verdict={metric.verdict === 'marginal' ? 'pending' : metric.verdict}
+              verdict={metric.verdict}
               verdictLabel={t(`pipelines.verdict.${metric.verdict}`)}
               emptyValue={t('pipelines.application.noSample')}
             />

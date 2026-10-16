@@ -1,4 +1,4 @@
-import { useScreenActions, useT } from '@bemmoly/core-web';
+import { useScreenActions, useT, useShortcutHelp } from '@bemmoly/core-web';
 import type { EnvironmentStripItem } from '@bemmoly/module-pipelines/shared';
 import { useNavigate, useRouter } from '@tanstack/react-router';
 import { useCallback, useEffect } from 'react';
@@ -60,6 +60,16 @@ export function useApplicationActions({
     else setSearch({ dialog: undefined });
   }, [wantsPromote, promoteTo, stripReady, router, setSearch]);
 
+  useShortcutHelp({
+    id: 'pipelines.application',
+    label: t('pipelines.keys.application'),
+    keys: [
+      { keys: 'R', label: t('pipelines.application.run') },
+      { keys: 'P', label: t('pipelines.application.promote') },
+      { keys: 'Shift+B', label: t('pipelines.application.rollback') },
+      { keys: 'Mod+Enter', label: t('pipelines.keys.submit') },
+    ],
+  });
   useScreenKeys({
     p: promote,
     'shift+b': () => canRollBack && setDialog('rollback'),
