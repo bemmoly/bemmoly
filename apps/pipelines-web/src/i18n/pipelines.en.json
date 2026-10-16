@@ -697,6 +697,7 @@
   "pipelines.run.superseded": "Superseded by a newer run",
   "pipelines.run.testsFailed": "{count, plural, one {# test failed} other {# tests failed}}",
   "pipelines.run.title": "Run",
+  "pipelines.run.unstartableTitle": "This run could not start",
   "pipelines.runDialog.description": "Runs the pipeline on a branch or tag, with these inputs. Mod+Enter runs it.",
   "pipelines.runDialog.ref": "Branch or tag",
   "pipelines.runDialog.run": "Run pipeline",

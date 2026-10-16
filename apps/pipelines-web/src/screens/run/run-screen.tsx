@@ -16,6 +16,7 @@ import { ScreenFrame } from '../screen-frame.tsx';
 import { LogPanel } from './log-panel.tsx';
 import { RunHeading, RunSkeleton } from './run-heading.tsx';
 import { ChangeCard, FailuresCard } from './run-side.tsx';
+import { UnstartableRun } from './run-unstartable.tsx';
 import { useRun } from './use-run.ts';
 
 /** The node a run opens on: the address's, else the graph's focus, else the first. */
@@ -69,7 +70,9 @@ export default function RunScreen() {
     mutationFn: () => api.delivery.cancelRun(id, {}),
     onSuccess: () => void client.invalidateQueries({ queryKey: deliveryKeys.run(id) }),
   });
-  const failed = run.data?.state === 'failed';
+  // A run that never started has no job to re-run; its reason says what to fix instead.
+  const unstartable = run.data?.failureReason ?? null;
+  const failed = run.data?.state === 'failed' && !unstartable;
   const active = run.data && ['queued', 'running', 'waiting'].includes(run.data.state);
   const nodes = graph.data?.stages.flatMap((stage) => stage.nodes) ?? [];
   const move = (by: number) => {
@@ -109,11 +112,15 @@ export default function RunScreen() {
                 },
               ]
             : []),
-          {
-            id: 'run.rerunAll',
-            title: t('pipelines.run.rerunAll'),
-            run: () => rerun.mutate('all'),
-          },
+          ...(unstartable
+            ? []
+            : [
+                {
+                  id: 'run.rerunAll',
+                  title: t('pipelines.run.rerunAll'),
+                  run: () => rerun.mutate('all'),
+                },
+              ]),
           {
             id: 'run.follow',
             title: t('pipelines.log.follow'),
@@ -169,6 +176,13 @@ export default function RunScreen() {
   }
   const data: RunDetail | undefined = run.data;
   if (!data) return <RunSkeleton />;
+  if (unstartable) {
+    return (
+      <ScreenFrame title={data.title} heading={<RunHeading run={data} />}>
+        <UnstartableRun run={data} reason={unstartable} />
+      </ScreenFrame>
+    );
+  }
   return (
     <ScreenFrame
       title={data.title}

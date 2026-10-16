@@ -34,6 +34,10 @@ function useColumns(showApplication: boolean): TableColumn<RunSummary>[] {
             ]
               .filter(Boolean)
               .join(' · ')}
+            {run.failureReason ? (
+              // Its first line says what broke; the run page has the rest.
+              <span className="text-red-tx"> · {run.failureReason.split('\n', 1)[0]}</span>
+            ) : null}
           </span>
         </span>
       ),
