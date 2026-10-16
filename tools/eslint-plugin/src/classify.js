@@ -8,6 +8,12 @@ const PACKAGE_FOLDERS = {
   'eslint-plugin': 'tools/eslint-plugin',
 };
 
+/**
+ * Apps that belong to one product without being its web app: the Pipelines runner speaks the
+ * runner protocol, so it builds against the same contracts the control plane implements.
+ */
+const PRODUCT_APPS = { runner: 'pipelines' };
+
 const toPosix = (value) => value.split(path.sep).join('/');
 
 /**
@@ -20,14 +26,15 @@ export function classifyFile(root, filename) {
   const moduleMatch = /^modules\/([^/]+)\/(.*)$/.exec(rel);
   const serviceMatch = /^packages\/core\/src\/services\/([^/]+)\//.exec(rel);
   const productApp = /^apps\/([a-z0-9-]+)-(?:web|cli)\//.exec(rel);
+  const appName = /^apps\/([^/]+)\//.exec(rel)?.[1];
   return {
     rel,
     moduleId: moduleMatch?.[1],
     moduleWeb: moduleMatch?.[2]?.startsWith('web/') ?? false,
     kernelService: serviceMatch?.[1],
     inApp: rel.startsWith('apps/'),
-    /** A product's own web app or CLI (apps/pipelines-web, apps/pipelines-cli) names its product. */
-    productOf: productApp?.[1],
+    /** A product's own app (apps/pipelines-web, apps/pipelines-cli, apps/runner) names its product. */
+    productOf: productApp?.[1] ?? (appName === undefined ? undefined : PRODUCT_APPS[appName]),
     inServices: segments.slice(0, -1).includes('services'),
   };
 }
