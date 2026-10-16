@@ -106,6 +106,35 @@ describe('releases and secrets through the runner protocol', () => {
     expect(await services.runner.secrets(fork?.jobId ?? '', fork?.jobToken)).toEqual({
       values: {},
     });
+    await services.runner.finish(fork?.jobId ?? '', fork?.jobToken, { state: 'passed', at: at() });
+  });
+
+  it('hands secrets out once, before the first step starts', async (ctx) => {
+    if (!harness) return ctx.skip(reason);
+    const { services, users, sql } = harness;
+    await givePipeline(sql, 'checkout-api', {
+      checkout: false,
+      test: [{ name: 'Unit', run: 'echo $DEPLOY_TOKEN', secrets: ['DEPLOY_TOKEN'] }],
+    });
+    await services.runs.create(harness.as(users.member), {
+      application: 'checkout-api',
+      commitSha: 'feedc0de',
+    });
+    const { runnerToken } = await services.runner.register({
+      poolToken,
+      name: 'once',
+      version: '0.1.0',
+    });
+    const job = await services.runner.claim(runnerToken, { waitSeconds: 0 });
+    const id = job?.jobId ?? '';
+    expect((await services.runner.secrets(id, job?.jobToken)).values).toHaveProperty(
+      'DEPLOY_TOKEN',
+    );
+    await services.runner.stepState(id, 0, job?.jobToken, { state: 'running', at: at() });
+    // A step holds the job token too; it must not be able to collect the job's secrets.
+    await expect(services.runner.secrets(id, job?.jobToken)).rejects.toThrow(/once/);
+    await services.runner.finish(id, job?.jobToken, { state: 'passed', at: at() });
+    await expect(services.runner.secrets(id, job?.jobToken)).rejects.toThrow(/once/);
   });
 
   it('lets logs and artifacts go after the retention period, keeping the run', async (ctx) => {

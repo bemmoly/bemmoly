@@ -33,7 +33,7 @@ import { hashToken, newToken } from '../../utils/tokens.ts';
 import { jobFromToken, LIVE_JOB, runnerFromToken } from './auth.ts';
 import { finishJob, type FinishInput } from './finish.ts';
 import { claimedJobPayload } from './payload.ts';
-import type { SecretResolver } from './secrets.ts';
+import { secretNames, secretsForRunner, type SecretResolver } from './secrets.ts';
 import { uploadArtifact } from './artifacts.ts';
 
 export { variableSecrets, type SecretResolver } from './secrets.ts';
@@ -71,11 +71,8 @@ export function createRunnerService(deps: RunnerDeps) {
     const cached = masks.get(job.id);
     if (cached) return cached;
     const sql = requireDatabase(deps);
-    const [row] = await sql<{ names: string[] | null }[]>`
-      select array(select distinct jsonb_array_elements_text(s->'secrets')
-        from jsonb_array_elements(steps_spec) s) as names
-      from pipeline_jobs where id = ${job.id}`;
-    const values = Object.values(await deps.secrets.resolve(sql, job, row?.names ?? []));
+    const { names } = await secretNames(sql, job.id);
+    const values = Object.values(await deps.secrets.resolve(sql, job, names));
     if (masks.size > 500) masks.clear();
     masks.set(job.id, values);
     return values;
@@ -248,11 +245,7 @@ export function createRunnerService(deps: RunnerDeps) {
     async secrets(jobId: string, token: string | undefined) {
       const sql = requireDatabase(deps);
       const job = await jobFromToken(sql, jobId, token);
-      const [row] = await sql<{ names: string[] | null }[]>`
-        select array(select distinct jsonb_array_elements_text(s->'secrets')
-          from jsonb_array_elements(steps_spec) s) as names
-        from pipeline_jobs where id = ${jobId}`;
-      return { values: await deps.secrets.resolve(sql, job, row?.names ?? []) };
+      return { values: await secretsForRunner(sql, deps.secrets, job, LIVE_JOB) };
     },
 
     async artifact(
