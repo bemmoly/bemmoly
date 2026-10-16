@@ -28,8 +28,9 @@ RUN pnpm fetch --store-dir "$PNPM_STORE"
 FROM pnpm AS web
 COPY . .
 RUN pnpm install --offline --frozen-lockfile --store-dir "$PNPM_STORE" \
-      --filter "@bemmoly/web..." --filter "@bemmoly/module-*..." \
- && pnpm --filter @bemmoly/web build
+      --filter "@bemmoly/web..." --filter "@bemmoly/pipelines-web..." --filter "@bemmoly/module-*..." \
+ && pnpm --filter @bemmoly/web build \
+ && pnpm --filter @bemmoly/pipelines-web build
 
 # The server and the packages it loads, production dependencies only. Internal packages
 # run from their TypeScript sources; workspace links keep them outside node_modules,
@@ -85,6 +86,8 @@ COPY --from=server /src/apps/server ./apps/server
 COPY --from=server /src/packages ./packages
 COPY --from=server /src/modules ./modules
 COPY --from=web /src/apps/web/dist ./apps/web/dist
+# Pipelines' own web app, served under /pipelines on the same origin (ADR 0037).
+COPY --from=web /src/apps/pipelines-web/dist ./apps/pipelines-web/dist
 COPY deploy/docker/bin/ /usr/local/bin/
 
 # Build metadata comes last, so a new commit or version never invalidates the cached layers

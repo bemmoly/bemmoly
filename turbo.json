@@ -28,6 +28,15 @@
       ],
       "outputs": ["dist/**"]
     },
+    "@bemmoly/pipelines-web#build": {
+      "dependsOn": ["^build"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/modules/pipelines/package.json",
+        "$TURBO_ROOT$/modules/pipelines/shared/**"
+      ],
+      "outputs": ["dist/**"]
+    },
     "@bemmoly/web#build:demo": {
       "dependsOn": [],
       "inputs": [
