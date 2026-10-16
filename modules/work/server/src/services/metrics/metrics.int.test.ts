@@ -79,6 +79,31 @@ describe('sprint metrics against a real database', () => {
     expect(report.velocity.map((point) => [point.name, point.completedPoints])).toEqual([
       ['Sprint 0', 8],
     ]);
+    expect(report.burnup).toEqual([
+      { date: '2026-03-10', scopePoints: 12, completedPoints: 5 },
+      { date: '2026-03-11', scopePoints: 16, completedPoints: 5 },
+      { date: '2026-03-12', scopePoints: 14, completedPoints: 5 },
+    ]);
+    const keys = (list: { issueId: string }[]) => list.map((row) => row.issueId).sort();
+    expect(keys(report.scope.completed)).toEqual([a!.id, f!.id].sort());
+    expect(keys(report.scope.notCompleted)).toEqual([b!.id, d!.id].sort());
+    expect(keys(report.scope.added)).toEqual([d!.id]);
+    expect(keys(report.scope.removed)).toEqual([c!.id]);
+
+    const flow = await metrics.flowReport(as, 'MET', { days: 7 });
+    expect(flow.days.map((day) => day.date)).toEqual([
+      '2026-03-06',
+      '2026-03-07',
+      '2026-03-08',
+      '2026-03-09',
+      '2026-03-10',
+      '2026-03-11',
+      '2026-03-12',
+    ]);
+    expect(flow.days.map((day) => day.created)).toEqual([0, 0, 0, 5, 0, 1, 0]);
+    expect(flow.days[4]).toMatchObject({ resolved: 1 });
+    expect(flow.days[3]).toMatchObject({ todo: 4, inProgress: 0, done: 1 });
+    expect(flow.days[6]).toMatchObject({ todo: 3, inProgress: 0, done: 2 });
 
     const [board] = await services.boards.listForProject(as, projectId);
     const first = await metrics.board(as, board!.id, { sprints: 6 });

@@ -17,9 +17,16 @@ function projectInPath(pathname: string): string | null {
   const [, area, screen, segment] = pathname.split('/');
   if (area !== 'work' || !segment) return null;
   if (screen === 'issue') return segment.split('-')[0]?.toUpperCase() ?? null;
-  return ['board', 'backlog', 'roadmap', 'pairing', 'members', 'settings', 'workflows'].includes(
-    screen ?? '',
-  )
+  return [
+    'board',
+    'backlog',
+    'roadmap',
+    'pairing',
+    'reports',
+    'members',
+    'settings',
+    'workflows',
+  ].includes(screen ?? '')
     ? segment.toUpperCase()
     : null;
 }
@@ -56,6 +63,7 @@ function ProjectViews({ project, pathname }: { project: Project; pathname: strin
       <SidebarRow child label="Backlog" icon="backlog" path={workPaths.backlog(key)} keys="G L" />
       <SidebarRow child label="Roadmap" icon="roadmap" path={workPaths.roadmap(key)} keys="G R" />
       <SidebarRow child label="Pairing" icon="grid" path={workPaths.pairing(key)} keys="G P" />
+      <SidebarRow child label="Reports" icon="reports" path={workPaths.reports(key)} keys="G E" />
       <SidebarRow
         child
         label="Settings"

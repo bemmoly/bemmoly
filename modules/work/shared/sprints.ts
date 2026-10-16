@@ -2,6 +2,7 @@ import { listSchema, timestampSchema } from '@bemmoly/shared';
 import { z } from 'zod';
 import { nameSchema } from './common.ts';
 import { sprintStateSchema } from './enums.ts';
+import { burnupPointSchema, sprintScopeSchema } from './reports.ts';
 
 /** Written once when a sprint closes; the velocity report reads it, never the issues. */
 export const sprintSnapshotSchema = z.object({
@@ -96,8 +97,15 @@ export const sprintReportSchema = z.object({
   sprint: sprintSchema,
   burndown: z.array(z.object({ date: z.iso.date(), remainingPoints: z.number().nonnegative() })),
   velocity: z.array(
-    z.object({ sprintId: z.uuid(), name: z.string(), completedPoints: z.number().nonnegative() }),
+    z.object({
+      sprintId: z.uuid(),
+      name: z.string(),
+      committedPoints: z.number().nonnegative().default(0),
+      completedPoints: z.number().nonnegative(),
+    }),
   ),
+  burnup: z.array(burnupPointSchema).default([]),
+  scope: sprintScopeSchema.default({ completed: [], notCompleted: [], added: [], removed: [] }),
 });
 
 export const sprintsResponseSchema = listSchema(sprintSchema);

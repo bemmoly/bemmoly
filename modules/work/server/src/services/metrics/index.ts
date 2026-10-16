@@ -1,12 +1,15 @@
 import type { RequestContext, SqlExecutor } from '@bemmoly/core';
 import { ValidationError } from '@bemmoly/shared';
 import type { BoardMetrics, BoardMetricsQuery } from '../../../../shared/metrics.ts';
+import type { FlowReport } from '../../../../shared/reports.ts';
 import type { SprintReport } from '../../../../shared/sprints.ts';
 import { projectResource, requireDatabase } from '../issues/deps.ts';
 import { resolveProject, type PlanningDeps, type PlanningProject } from '../boards/context.ts';
 import { loadBoard, parseConfig, type BoardRow } from '../boards/rows.ts';
 import { activeSprint, loadSprint, toSprint } from '../sprints/rows.ts';
-import { utcDate } from './burndown.ts';
+import { burndown, utcDate } from './burndown.ts';
+import { burnup, sprintScope } from './burnup.ts';
+import { loadFlowReport, loadSprintInput } from './load-report.ts';
 import { loadBurndown, loadFlow, loadVelocity, loadWorkInProgress, statusSets } from './load.ts';
 
 /*
@@ -99,19 +102,33 @@ export function createMetricsService(deps: PlanningDeps) {
       const row = await loadSprint(sql, sprintId);
       await ctx.authz.authorize(ctx.actor, 'work.issue.view', projectResource(row.project_id));
       const sets = await statusSets(sql, row.project_id, null);
-      const [burndown, velocity] = await Promise.all([
-        loadBurndown(sql, row, sets.done, now()),
+      const [input, velocity] = await Promise.all([
+        loadSprintInput(sql, row, sets.done, now()),
         loadVelocity(sql, row.project_id, 6),
       ]);
       return {
         sprint: toSprint(row),
-        burndown,
-        velocity: velocity.map(({ sprintId: id, name, completedPoints }) => ({
-          sprintId: id,
-          name,
-          completedPoints,
-        })),
+        burndown: input ? burndown(input) : [],
+        burnup: input ? burnup(input) : [],
+        scope: input
+          ? sprintScope(input)
+          : { completed: [], notCompleted: [], added: [], removed: [] },
+        velocity,
       };
+    },
+
+    /** The project's cumulative flow and created-against-resolved series. */
+    async flowReport(
+      ctx: RequestContext,
+      projectRef: string,
+      query: { days: number },
+    ): Promise<FlowReport> {
+      const sql = requireDatabase(deps);
+      const project = await resolveProject(sql, projectRef);
+      await ctx.authz.authorize(ctx.actor, 'work.issue.view', projectResource(project.id));
+      const sets = await statusSets(sql, project.id, null);
+      const days = await loadFlowReport(sql, project.id, sets, query.days, now());
+      return { projectId: project.id, days };
     },
   };
 }

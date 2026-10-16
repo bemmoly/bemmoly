@@ -13,6 +13,9 @@ import { createLqlController } from './lql.controller.ts';
 import { createMembersController } from './members.controller.ts';
 import { createMetricsController } from './metrics.controller.ts';
 import { createPairingController } from './pairing.controller.ts';
+import { createReportsController } from './reports.controller.ts';
+import { createTimeTrackingController } from './time-tracking.controller.ts';
+import { createStatsController } from './stats.controller.ts';
 import { createMyWorkController } from './my-work.controller.ts';
 import { createProjectsController } from './projects.controller.ts';
 import { createRoadmapController } from './roadmap.controller.ts';
@@ -45,6 +48,9 @@ export function createWorkControllers(services: WorkServices) {
     myWork: createMyWorkController(services.myWork),
     roadmap: createRoadmapController(services.roadmap),
     pairing: createPairingController(services.pairing),
+    reports: createReportsController(services.reports),
+    timeTracking: createTimeTrackingController(services.timeTracking),
+    stats: createStatsController(services.stats),
     codeLinks: createCodeLinksController(services.codeLinks),
     automation: createAutomationController(services.automation),
   };
