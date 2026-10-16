@@ -2,13 +2,14 @@ import { loadEnv } from '@bemmoly/core/config';
 import { bootApplication } from './config/boot.ts';
 import { closeOnSignals } from './config/lifecycle.ts';
 import { importAvailableModules } from './config/modules.ts';
-import { DEFAULT_WEB_ROOT } from './config/web.ts';
+import { DEFAULT_PRODUCT_WEBS, DEFAULT_WEB_ROOT } from './config/web.ts';
 
 const env = loadEnv();
 const { app, database, kernel } = await bootApplication({
   env,
   available: await importAvailableModules(),
   webRoot: DEFAULT_WEB_ROOT,
+  productWebs: DEFAULT_PRODUCT_WEBS,
 });
 closeOnSignals(app, database, kernel);
 await kernel?.start();

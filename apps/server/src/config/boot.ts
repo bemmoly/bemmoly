@@ -43,6 +43,8 @@ export interface BootOptions {
   /** Every module package in the image. */
   available: readonly BemmolyModule[];
   webRoot?: string;
+  /** Products' own web apps on this origin; see config/web.ts. */
+  productWebs?: BuildAppOptions['productWebs'];
   /** `false` silences the process; a stream receives every line, the kernel's and requests'. */
   logger?: BuildAppOptions['logger'];
   /** Tests serve MCP clients' metadata documents without a network; production fetches them. */
@@ -242,6 +244,7 @@ export async function bootApplication(options: BootOptions): Promise<Booted> {
     modules,
     maintenance: createMaintenanceReader(env.BEMMOLY_DATA_DIR),
     ...(options.webRoot ? { webRoot: options.webRoot } : {}),
+    ...(options.productWebs ? { productWebs: options.productWebs } : {}),
     ...(options.logger !== undefined ? { logger: options.logger } : {}),
     ...(database ? { database: database.probe } : {}),
     ...(kernel
