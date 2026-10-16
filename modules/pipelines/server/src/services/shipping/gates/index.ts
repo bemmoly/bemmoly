@@ -30,11 +30,26 @@ const GATES: readonly GateDefinition[] = [
   webhookGate,
 ];
 
-const byName = new Map<string, GateDefinition>(GATES.map((gate) => [gate.name, gate]));
+const byName = new Map<string, GateDefinition>([
+  ...GATES.map((gate) => [gate.name, gate] as const),
+  // Policies name one required check as external_check("security.yml").
+  ['external_check', externalChecksGate],
+]);
 
 export interface EvaluatedGate extends GateResult {
   /** The gate as the policy wrote it, so two webhook gates stay apart. */
   key: string;
+}
+
+/** A stored result's key ("staging_healthy:30m") as the gate and label a person reads. */
+export function describeStoredGate(key: string): { gate: Gate; label: string } {
+  if (key === 'approvals') return { gate: 'approvals', label: 'Approvals' };
+  if (key === 'canary') return { gate: 'canary', label: 'Canary' };
+  const at = key.indexOf(':');
+  const name = at < 0 ? key : key.slice(0, at);
+  const args = at < 0 ? [] : key.slice(at + 1).split(',');
+  const gate = byName.get(name);
+  return gate ? { gate: gate.name, label: gate.label(args) } : { gate: 'custom', label: name };
 }
 
 /** The gates a promotion is held to, in the order a person reads them. */
@@ -74,9 +89,9 @@ export async function evaluateGates(
       }
     }
     results.push({
-      key: name === 'webhook' ? `webhook:${args[0] ?? ''}` : name,
+      key: args.length > 0 ? `${name}:${args.join(',')}` : name,
       gate: (gate?.name ?? 'custom') as Gate,
-      label: gate ? gate.label(args, facts) : name,
+      label: gate ? gate.label(args) : name,
       state: outcome.state,
       reason: outcome.reason,
       evidence: outcome.evidence ?? {},

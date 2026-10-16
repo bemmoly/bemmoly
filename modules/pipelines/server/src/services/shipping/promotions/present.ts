@@ -6,12 +6,13 @@ import type {
   Tier,
 } from '../../../../../shared/common.ts';
 import type { EnvironmentRef } from '../../../../../shared/environments.ts';
-import type { Gate, GateState, Promotion } from '../../../../../shared/promotions.ts';
+import type { GateState, Promotion } from '../../../../../shared/promotions.ts';
 import type { ApprovalRow, GateResultRow, PromotionRow } from '../../../models/shipping.ts';
 import { iso, isoOrNull } from '../../../utils/time.ts';
 import { presentPlan, readPlan } from '../../rollout/plan.ts';
 import type { ShippingAccess } from '../access.ts';
 import { approvalState } from '../approvals/state.ts';
+import { describeStoredGate } from '../gates/index.ts';
 import { authorsOf, loadRelease, releaseDigest } from '../load.ts';
 
 /*
@@ -19,18 +20,6 @@ import { authorsOf, loadRelease, releaseDigest } from '../load.ts';
  * approvals and plan for the person asking and the person approving, with whether this
  * viewer may approve each rule.
  */
-
-const GATE_LABELS: Readonly<Record<string, string>> = {
-  tests: 'Tests',
-  external_checks: 'External checks',
-  security_scan: 'Security scan',
-  staging_healthy: 'Healthy in Staging',
-  window: 'Deploy window',
-  freeze: 'No freeze',
-  approvals: 'Approvals',
-  error_budget: 'Error budget',
-  canary: 'Canary',
-};
 
 async function environmentRefs(sql: SqlExecutor): Promise<Map<string, EnvironmentRef>> {
   const rows = await sql<EnvironmentRef[]>`
@@ -117,12 +106,10 @@ export async function presentPromotion(
     state: row.state as PromotionState,
     plan: presentPlan(readPlan(row.plan), refs),
     gates: gates.map((gate) => {
-      const name = gate.gate.split(':')[0] ?? gate.gate;
+      const { gate: kind, label } = describeStoredGate(gate.gate);
       return {
-        gate: (GATE_LABELS[name] || name === 'webhook' ? name : 'custom') as Gate,
-        label:
-          GATE_LABELS[name] ??
-          (name === 'webhook' ? `Check by ${gate.gate.split(':')[1] ?? 'webhook'}` : name),
+        gate: kind,
+        label,
         state: gate.state as GateState,
         reason: gate.reason,
         evidence: gate.evidence,

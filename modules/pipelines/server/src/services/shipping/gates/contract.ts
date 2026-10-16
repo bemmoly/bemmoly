@@ -52,7 +52,7 @@ export interface WebhookCaller {
 
 export interface GateDefinition {
   name: Gate;
-  label(args: readonly string[], facts: GateFacts): string;
+  label(args: readonly string[]): string;
   evaluate(facts: GateFacts, args: readonly string[], deps: GateDeps): Promise<GateOutcome>;
 }
 

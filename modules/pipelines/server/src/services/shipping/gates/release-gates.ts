@@ -1,3 +1,4 @@
+import { externalChecksFor } from '../../ci/index.ts';
 import type { GateDefinition } from './contract.ts';
 
 /*
@@ -48,46 +49,68 @@ export const testsGate: GateDefinition = {
   },
 };
 
-interface ReportedCheck {
+interface Reported {
   name: string;
-  conclusion: string;
+  verdict: 'pass' | 'fail' | 'pending';
 }
 
-function reportedChecks(provenance: Record<string, unknown> | null): ReportedCheck[] | null {
+function provenanceChecks(provenance: Record<string, unknown> | null): Reported[] {
   const checks = provenance?.['checks'];
-  if (!Array.isArray(checks)) return null;
+  if (!Array.isArray(checks)) return [];
   return checks.flatMap((check: unknown) => {
     if (typeof check !== 'object' || check === null) return [];
     const { name, conclusion } = check as Record<string, unknown>;
-    return typeof name === 'string' && typeof conclusion === 'string' ? [{ name, conclusion }] : [];
+    if (typeof name !== 'string' || typeof conclusion !== 'string') return [];
+    const verdict = ['success', 'neutral', 'skipped'].includes(conclusion)
+      ? 'pass'
+      : ['pending', 'queued', 'in_progress'].includes(conclusion)
+        ? 'pending'
+        : 'fail';
+    return [{ name, verdict }];
   });
 }
 
-/** Required checks reported by the company's own CI with the release. */
+/**
+ * Checks the company's own CI reported for the release's commit: GitHub check runs and
+ * workflow runs, or the checks sent with the release. A policy may name the ones it needs,
+ * external_check("security.yml"); one that has not reported yet is waited for, never failed.
+ */
 export const externalChecksGate: GateDefinition = {
   name: 'external_checks',
-  label: () => 'External checks',
-  async evaluate({ release }) {
-    const checks = reportedChecks(release.provenance);
-    if (!checks || checks.length === 0) {
-      return { state: 'pass', reason: 'No external checks are required for this release' };
-    }
-    const failing = checks.filter((c) => !['success', 'neutral', 'skipped'].includes(c.conclusion));
-    const waiting = failing.filter((c) =>
-      ['pending', 'queued', 'in_progress'].includes(c.conclusion),
-    );
-    if (failing.length > waiting.length) {
-      const names = failing.filter((c) => !waiting.includes(c)).map((c) => c.name);
-      return { state: 'fail', reason: `${names.join(', ')} failed`, evidence: { checks } };
-    }
+  label: (args) => (args.length ? `Checks: ${args.join(', ')}` : 'External checks'),
+  async evaluate({ release, application, now }, args, { sql }) {
+    const [repository] = await sql<{ full_name: string }[]>`
+      select r.full_name from pipeline_applications a
+      join pipeline_repositories r on r.id = a.repository_id where a.id = ${application.id}`;
+    const fromHost = repository
+      ? await externalChecksFor(sql, repository.full_name, release.commit_sha)
+      : [];
+    const checks: Reported[] = [
+      ...fromHost.map((check) => ({ name: check.name, verdict: check.verdict })),
+      ...provenanceChecks(release.provenance),
+    ];
+    const required = args.length > 0 ? args : null;
+    const considered = required ? checks.filter((check) => required.includes(check.name)) : checks;
+    const evidence = { checks: considered };
+    const failed = considered.filter((check) => check.verdict === 'fail').map((c) => c.name);
+    if (failed.length > 0)
+      return { state: 'fail', reason: `${failed.join(', ')} failed`, evidence };
+    const missing = (required ?? []).filter((name) => !considered.some((c) => c.name === name));
+    const waiting = [
+      ...considered.filter((check) => check.verdict === 'pending').map((c) => c.name),
+      ...missing,
+    ];
     if (waiting.length > 0) {
       return {
         state: 'pending',
-        reason: `Waiting for ${waiting.map((c) => c.name).join(', ')}`,
-        evidence: { checks },
+        reason: `Waiting for ${waiting.join(', ')}`,
+        evidence,
+        recheckAt: new Date(now.getTime() + 60_000),
       };
     }
-    return { state: 'pass', reason: `${checks.length} checks passed`, evidence: { checks } };
+    if (considered.length === 0)
+      return { state: 'pass', reason: 'No external checks are required' };
+    return { state: 'pass', reason: `${considered.length} checks passed`, evidence };
   },
 };
 
