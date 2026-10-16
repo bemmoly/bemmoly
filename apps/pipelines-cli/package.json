@@ -1,0 +1,32 @@
+{
+  "name": "@bemmoly/pipelines-cli",
+  "version": "1.1.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "description": "bp: run pipelines, follow logs, register releases, promote and explain access from a terminal or CI",
+  "bin": {
+    "bp": "./src/bin.ts",
+    "bemmoly-pipelines": "./src/bin.ts"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "bp": "node src/bin.ts",
+    "build": "node scripts/build.ts",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "lint": "eslint --max-warnings 0 .",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@bemmoly/module-pipelines": "workspace:*",
+    "yaml": "2.8.3",
+    "zod": "4.6.5"
+  },
+  "devDependencies": {
+    "@types/node": "26.6.4",
+    "esbuild": "0.25.12",
+    "vitest": "5.0.3"
+  }
+}
