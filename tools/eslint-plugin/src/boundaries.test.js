@@ -15,6 +15,11 @@ const tester = new RuleTester({ languageOptions: { ecmaVersion: 2024, sourceType
 tester.run('bemmoly/boundaries', boundaries, {
   valid: [
     {
+      filename: at('apps/pipelines-web/src/api/catalog.ts'),
+      code: "import { applicationSchema } from '@bemmoly/module-pipelines/shared';",
+      options,
+    },
+    {
       filename: at('modules/work/server/src/services/issues.ts'),
       code: "import { x } from '@bemmoly/core';",
       options,
@@ -88,6 +93,18 @@ tester.run('bemmoly/boundaries', boundaries, {
     },
   ],
   invalid: [
+    {
+      filename: at('apps/pipelines-web/src/api/catalog.ts'),
+      code: "import pipelines from '@bemmoly/module-pipelines';",
+      options,
+      errors: [{ messageId: 'appImportsModule' }],
+    },
+    {
+      filename: at('apps/pipelines-web/src/api/catalog.ts'),
+      code: "import { projectSchema } from '@bemmoly/module-work/shared';",
+      options,
+      errors: [{ messageId: 'appImportsModule' }],
+    },
     {
       filename: at('modules/docs/server/src/services/collab/extract.ts'),
       code: "import { DocEditor } from '@bemmoly/editor';",
