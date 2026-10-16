@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { applicationFileSchema } from './application-yaml.ts';
 import { listApplicationsQuerySchema } from './catalog.ts';
+import { insightsQuerySchema } from './insights.ts';
 import { templateRefSchema } from './pipeline-spec.ts';
+import { promotionPreviewQuerySchema } from './promotions.ts';
 import { parseTopic, streamsQuerySchema, topicOf } from './streams.ts';
 
 const RUN = '0199f0a2-7c3e-7d4a-9b1e-2f3a4b5c6d7e';
@@ -108,5 +110,26 @@ describe('listApplicationsQuerySchema', () => {
 
   it('refuses a tier outside 0 to 2', () => {
     expect(listApplicationsQuerySchema.safeParse({ tier: '3' }).success).toBe(false);
+  });
+});
+
+describe('insights and promotion preview queries', () => {
+  it('reads the insights query with a 90 day range by the scope by default', () => {
+    expect(insightsQuerySchema.parse({ scope: 'commerce' })).toEqual({
+      scope: 'commerce',
+      range: '90d',
+      by: 'scope',
+    });
+    expect(insightsQuerySchema.safeParse({ range: '1y' }).success).toBe(false);
+  });
+
+  it('previews a promotion to an environment or to every environment of a class', () => {
+    expect(promotionPreviewQuerySchema.parse({ release: RUN, to: 'prod' }).to).toBe('prod');
+    expect(promotionPreviewQuerySchema.parse({ release: RUN, to: 'prod-us-east1' }).to).toBe(
+      'prod-us-east1',
+    );
+    expect(promotionPreviewQuerySchema.safeParse({ release: 'v1', to: 'prod' }).success).toBe(
+      false,
+    );
   });
 });

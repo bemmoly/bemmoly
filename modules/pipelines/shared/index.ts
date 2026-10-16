@@ -20,6 +20,7 @@ export * from './changes.ts';
 export * from './for-you.ts';
 export * from './access.ts';
 export * from './capacity.ts';
+export * from './insights.ts';
 export * from './clouds.ts';
 export * from './streams.ts';
 export * from './application-yaml.ts';
