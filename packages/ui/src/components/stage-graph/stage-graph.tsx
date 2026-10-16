@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, type KeyboardEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
 import { cx } from '../../lib/cx.ts';
 import { RunGlyph, type RunGlyphState } from '../run-glyph/run-glyph.tsx';
 import { nextNode } from './navigate.ts';
@@ -75,6 +75,19 @@ export function StageGraph({
   const selected = stages.flatMap((stage) => stage.nodes).find((node) => node.id === selectedId);
   const selectedFailed = selected?.state === 'failed';
 
+  // A wide graph on a narrow screen scrolls sideways to keep the selected node in sight,
+  // without moving the page.
+  const scroller = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const box = scroller.current;
+    const node = selectedId ? nodeRefs.current.get(selectedId) : undefined;
+    if (!box || !node || box.scrollWidth <= box.clientWidth) return;
+    const boxRect = box.getBoundingClientRect();
+    const nodeRect = node.getBoundingClientRect();
+    if (nodeRect.left >= boxRect.left && nodeRect.right <= boxRect.right) return;
+    box.scrollLeft += nodeRect.left - boxRect.left - (boxRect.width - nodeRect.width) / 2;
+  }, [selectedId, layoutKey]);
+
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     if (!active || event.altKey || event.metaKey || event.ctrlKey) return;
     const rtl = root.current ? getComputedStyle(root.current).direction === 'rtl' : false;
@@ -87,7 +100,7 @@ export function StageGraph({
   };
 
   return (
-    <div className={cx('overflow-x-auto', className)}>
+    <div ref={scroller} className={cx('overflow-x-auto', className)}>
       <div
         ref={root}
         role="group"
