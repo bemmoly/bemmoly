@@ -129,6 +129,14 @@ describe('what email and notifications build on, against a real database', () =>
       const open = await app.inject({ method: 'POST', url: '/api/v1/ci', headers });
       expect(open.statusCode).toBe(200);
       expect(open.json()).toEqual({ actor: null, header: headers.authorization });
+      // A session cookie riding along never turns the foreign token's request into a person's.
+      const { cookie } = await createFirstAdmin(harness.app);
+      const both = await app.inject({
+        method: 'POST',
+        url: '/api/v1/ci',
+        headers: { ...headers, cookie },
+      });
+      expect(both.json()).toEqual({ actor: null, header: headers.authorization });
       const closed = await app.inject({ method: 'POST', url: '/api/v1/closed', headers });
       expect(closed.statusCode).toBe(401);
       // Bemmoly's own tokens are still read there, so a revoked one is refused.

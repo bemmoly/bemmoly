@@ -196,14 +196,14 @@ export const authentication = fp<AuthenticationOptions>(
       // Outside the API prefix a Bearer header belongs to that route's own scheme (the
       // /metrics scrape token). On a route anonymous by design, only Bemmoly's own tokens are
       // read here; anything else (a runner's pool token, a CI system's OIDC token) is left
-      // for the route to check itself.
+      // for the route to check itself. That foreign Bearer still wins over a session cookie:
+      // the request is the token's, and the Origin check skips anything carrying a Bearer.
       const raw = isUnderApi(request, apiPrefix) ? request.headers.authorization : undefined;
       const anonymousRoute = request.routeOptions.config?.anonymous === true;
-      const header =
-        raw !== undefined && (!anonymousRoute || isKernelBearer(raw)) ? raw : undefined;
+      const foreign = raw !== undefined && anonymousRoute && !isKernelBearer(raw);
       const cookie = readCookie(request.headers.cookie, SESSION_COOKIE);
-      if (header !== undefined) await fromBearer(request, header, options, now);
-      else if (cookie) await fromCookie(request, reply, cookie, options, policy, now);
+      if (raw !== undefined && !foreign) await fromBearer(request, raw, options, now);
+      else if (cookie && !foreign) await fromCookie(request, reply, cookie, options, policy, now);
       if (!request.actor && requiresActor(request, apiPrefix, anonymousPaths)) {
         throw new UnauthenticatedError();
       }
