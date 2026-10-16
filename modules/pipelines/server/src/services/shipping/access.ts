@@ -1,5 +1,5 @@
 import type { RequestContext, SqlExecutor } from '@bemmoly/core';
-import type { AccessAction, PolicyRequirements } from '../../../../shared/access.ts';
+import type { AccessAction, AskWho, PolicyRequirements } from '../../../../shared/access.ts';
 import type { PersonRef } from '../../../../shared/common.ts';
 import type { AccessEngine, MatchedPolicy } from '../access/index.ts';
 import { authorizePipelines } from '../deps.ts';
@@ -40,6 +40,18 @@ export interface ShippingAccess {
     action: AccessAction,
     target: ShippingTarget,
   ): Promise<{ policies: MatchedPolicy[] }>;
+  /** The same answer without throwing, for a preview: may this person ask, and if not why. */
+  decide(
+    ctx: RequestContext,
+    userId: string,
+    action: AccessAction,
+    target: ShippingTarget,
+  ): Promise<{
+    allowed: boolean;
+    sentence: string | null;
+    askWho: AskWho | null;
+    policies: MatchedPolicy[];
+  }>;
   /** The policy version rows behind matched policies, to store on a promotion. */
   policyVersionIds(sql: SqlExecutor, policies: readonly MatchedPolicy[]): Promise<string[]>;
   requirements(
@@ -135,6 +147,17 @@ export function createShippingAccess(engine?: AccessEngine): ShippingAccess {
       }
       const decision = await engine.authorizeAction(ctx, action, toTarget(target));
       return { policies: decision.policies };
+    },
+
+    async decide(ctx, userId, action, target) {
+      if (!engine) return { allowed: true, sentence: null, askWho: null, policies: [] };
+      const decision = await engine.decideFor(ctx, userId, action, toTarget(target));
+      return {
+        allowed: decision.allowed,
+        sentence: decision.allowed ? null : decision.sentence,
+        askWho: decision.askWho,
+        policies: decision.policies,
+      };
     },
 
     async policyVersionIds(sql, policies) {

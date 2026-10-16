@@ -8,6 +8,7 @@ import type {
   FreezeOverrideBody,
   ListPromotionsQuery,
   Promotion,
+  PromotionPreviewQuery,
   PromotionsPage,
 } from '../../../../shared/promotions.ts';
 import type {
@@ -34,6 +35,7 @@ import {
   overrideFreeze,
 } from './promotions/decisions.ts';
 import { presentPromotion } from './promotions/present.ts';
+import { previewPromotion } from './promotions/preview.ts';
 import { requestPromotion } from './promotions/request.ts';
 import { deployActionFor } from './load.ts';
 import { resolveTarget } from './targets.ts';
@@ -64,6 +66,17 @@ export function createShippingService(deps: ShippingEngineDeps & { settings?: Se
   const present = (row: PromotionRow, ctx: RequestContext) =>
     presentPromotion(sql, deps.access, row, personOf(ctx.actor), deps.now());
 
+  async function rolloutSettings() {
+    const s = deps.settings;
+    const d = SHIPPING_DEFAULTS;
+    return {
+      holdMinutes: await setting(s, 'pipelines.rollout.holdMinutes', d.holdMinutes),
+      watchMinutes: await setting(s, 'pipelines.rollout.watchMinutes', d.watchMinutes),
+      sampleSeconds: await setting(s, 'pipelines.rollout.sampleSeconds', d.sampleSeconds),
+      expiryHours: await setting(s, 'pipelines.promotions.expiryHours', d.expiryHours),
+    };
+  }
+
   async function after(id: string, ctx: RequestContext): Promise<Promotion> {
     await engine.advance('promotion', id, true);
     return present(await loadPromotion(deps, id), ctx);
@@ -76,30 +89,12 @@ export function createShippingService(deps: ShippingEngineDeps & { settings?: Se
       ctx: RequestContext,
       body: CreatePromotionBody & { mode: NonNullable<CreatePromotionBody['mode']> },
     ) {
-      const s = deps.settings;
-      const { id, created } = await requestPromotion(deps, ctx, body, {
-        holdMinutes: await setting(
-          s,
-          'pipelines.rollout.holdMinutes',
-          SHIPPING_DEFAULTS.holdMinutes,
-        ),
-        watchMinutes: await setting(
-          s,
-          'pipelines.rollout.watchMinutes',
-          SHIPPING_DEFAULTS.watchMinutes,
-        ),
-        sampleSeconds: await setting(
-          s,
-          'pipelines.rollout.sampleSeconds',
-          SHIPPING_DEFAULTS.sampleSeconds,
-        ),
-        expiryHours: await setting(
-          s,
-          'pipelines.promotions.expiryHours',
-          SHIPPING_DEFAULTS.expiryHours,
-        ),
-      });
+      const { id, created } = await requestPromotion(deps, ctx, body, await rolloutSettings());
       return { promotion: await after(id, ctx), created };
+    },
+
+    async previewPromotion(ctx: RequestContext, query: PromotionPreviewQuery) {
+      return previewPromotion(deps, ctx, query, await rolloutSettings());
     },
 
     async getPromotion(ctx: RequestContext, id: string): Promise<Promotion> {
