@@ -4,6 +4,7 @@ export {
   type BemmolyModule,
   type ModuleContext,
   type ModuleDefaultAccess,
+  type ModuleSurface,
 } from './contract.ts';
 export { emptyContributions, type ModuleContributions } from './contributions.ts';
 export { ModuleLoadError } from './errors.ts';

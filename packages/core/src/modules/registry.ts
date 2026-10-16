@@ -72,6 +72,7 @@ export class ModuleRegistry {
       ...(module.order === undefined ? {} : { order: module.order }),
       ...(module.sidebar ? { sidebar: sidebarSectionSchema.parse(module.sidebar) } : {}),
       ...(module.settings ? { settings: moduleSettingsSchema.parse(module.settings) } : {}),
+      ...(module.surface ? { surface: module.surface } : {}),
       ...(contributions.searchProviders.length > 0
         ? {
             search: contributions.searchProviders.map(({ kind, label }) => ({ kind, label })),

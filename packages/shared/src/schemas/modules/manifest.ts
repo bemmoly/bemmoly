@@ -80,6 +80,12 @@ export const moduleSettingsSchema = z.object({
   requires: z.string().min(1).default('admin'),
 });
 
+/**
+ * Where people meet the module: "shell" in Bemmoly's frame, "product" behind a product with its
+ * own web app (Pipelines), which Bemmoly's shell never draws. Absent means "shell".
+ */
+export const moduleSurfaceSchema = z.enum(['shell', 'product']);
+
 /** What the web shell needs to know about one enabled module. */
 export const moduleManifestSchema = z.object({
   id: moduleIdSchema,
@@ -96,6 +102,7 @@ export const moduleManifestSchema = z.object({
   order: z.number().int().optional(),
   sidebar: sidebarSectionSchema.optional(),
   settings: moduleSettingsSchema.optional(),
+  surface: moduleSurfaceSchema.optional(),
 });
 
 export const modulesResponseSchema = z.object({
@@ -111,5 +118,6 @@ export type SidebarSection = z.infer<typeof sidebarSectionSchema>;
 export type SidebarSectionInput = z.input<typeof sidebarSectionSchema>;
 export type ModuleSettings = z.infer<typeof moduleSettingsSchema>;
 export type ModuleSettingsInput = z.input<typeof moduleSettingsSchema>;
+export type ModuleSurface = z.infer<typeof moduleSurfaceSchema>;
 export type ModuleManifest = z.infer<typeof moduleManifestSchema>;
 export type ModulesResponse = z.infer<typeof modulesResponseSchema>;

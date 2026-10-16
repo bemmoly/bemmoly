@@ -28,6 +28,14 @@ import type {
 
 export type ModuleDefaultAccess = 'everyone' | 'teams' | 'none';
 
+/**
+ * Where people meet a module. "shell" puts it in Bemmoly's frame: sidebar, menus, ⌘K and
+ * Home. "product" is a module behind a product with its own web app and front door
+ * (Pipelines): the kernel loads its routes, capabilities and grants, and Bemmoly's shell never
+ * draws it.
+ */
+export type ModuleSurface = 'shell' | 'product';
+
 export interface BemmolyModule {
   /** Stable, lowercase, used in config, URLs and the changelog table. */
   id: 'work' | 'docs' | (string & {});
@@ -41,6 +49,8 @@ export interface BemmolyModule {
   dependsOn?: readonly string[];
   /** Initial module_grants row when the module is enabled. */
   defaultAccess: ModuleDefaultAccess;
+  /** "shell" when absent. */
+  surface?: ModuleSurface;
   /** Its tile's icon in the sidebar, menus and Settings › Modules: an icon name. */
   icon?: string;
   /** Its tile's colour: a logo colour, the accent or an epic hue, never a hex. */
