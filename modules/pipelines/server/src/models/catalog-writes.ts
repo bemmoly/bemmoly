@@ -53,6 +53,8 @@ export interface ProposalRow {
   repository_id: string;
   repository_full_name: string;
   repository_url: string | null;
+  repository_provider: 'github' | 'gitlab' | 'bitbucket' | 'other';
+  repository_default_branch: string;
   path: string;
   key: string;
   name: string;

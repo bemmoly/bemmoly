@@ -92,9 +92,11 @@ export function createApplicationWrites(
   }
 
   return {
+    /** `pullRequest: false` when the caller opens one pull request for many (discovery). */
     async create(
       ctx: RequestContext,
       body: CreateApplicationBody,
+      options: { pullRequest?: boolean } = {},
     ): Promise<ApplicationWriteResult> {
       const db = sql();
       const group = await groupByPath(db, body.group);
@@ -119,7 +121,7 @@ export function createApplicationWrites(
       });
       let changeId: string | null = null;
       const repo = repository;
-      if (repo) {
+      if (repo && options.pullRequest !== false) {
         // The catalog entry exists now; the pull request makes the repository its source.
         changeId = await openRepositoryChange(db, ports, {
           kind: 'create',

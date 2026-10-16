@@ -1,0 +1,3 @@
+# Platform owns everything by default
+*                    @acme/platform
+/apps/checkout-api/  @acme/payments @acme/sre

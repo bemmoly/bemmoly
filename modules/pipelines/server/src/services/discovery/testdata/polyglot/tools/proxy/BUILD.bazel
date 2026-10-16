@@ -1,0 +1,5 @@
+load("@rules_oci//oci:defs.bzl", "oci_image")
+
+oci_image(
+    name = "image",
+)

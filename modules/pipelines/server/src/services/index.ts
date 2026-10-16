@@ -17,6 +17,7 @@ import { createCatalogWritesService } from './catalog-writes/index.ts';
 import { codeHostPullRequests, codeHostRepositories } from './code/adapters.ts';
 import { createPipelinesCodeHosts } from './code/hosts.ts';
 import type { PullRequestOpener } from './code/pull-requests.ts';
+import { createDiscoveryService } from './discovery/index.ts';
 import type { RepositoryReader } from './code/repository-reader.ts';
 import { createEnvironmentsService } from './environments/index.ts';
 import { registerCatalogSync } from './inbox/catalog-sync.ts';
@@ -83,6 +84,7 @@ export function createPipelinesServices(input: PipelinesServicesDeps) {
     runner: createRunnerService({ ...execution, wakeups, logs, tests, secrets: variableSecrets }),
     catalog: createCatalogService(deps),
     catalogWrites,
+    discovery: createDiscoveryService(deps, catalogWrites),
     environments: createEnvironmentsService(deps),
     teams: createTeamsService(deps),
     overview: createOverviewService(deps),

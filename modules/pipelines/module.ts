@@ -1,5 +1,6 @@
 import { defineModule, loadChangelogFolder } from '@bemmoly/core';
 import { PIPELINES_CAPABILITIES } from './server/src/config/capabilities.ts';
+import { discoveryJob } from './server/src/config/jobs.ts';
 import { definePipelinesSettings } from './server/src/config/settings.ts';
 import { createPipelinesControllers } from './server/src/controllers/index.ts';
 import { pipelinesRoutes, runnerRoutes } from './server/src/routes/index.ts';
@@ -34,6 +35,7 @@ export default defineModule({
       objects: ctx.objects,
     });
     registerCodeHostWork(ctx, services);
+    ctx.jobs.add(discoveryJob(services.discovery));
     const controllers = createPipelinesControllers(services);
     ctx.routes.add({ prefix: '/pipelines', plugin: pipelinesRoutes(controllers) });
     // Build runners call in with their own tokens, under a protocol versioned apart (§22).

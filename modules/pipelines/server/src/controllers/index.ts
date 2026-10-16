@@ -2,6 +2,7 @@ import type { PipelinesServices } from '../services/index.ts';
 import { createAccessController } from './access.controller.ts';
 import { createCatalogController } from './catalog.controller.ts';
 import { createCatalogWritesController } from './catalog-writes.controller.ts';
+import { createDiscoveryController } from './discovery.controller.ts';
 import { createOrganisationController } from './environments.controller.ts';
 import { createInsightsController } from './insights.controller.ts';
 import { createJobsController } from './jobs.controller.ts';
@@ -14,6 +15,7 @@ export function createPipelinesControllers(services: PipelinesServices) {
     access: createAccessController(services.access),
     catalog: createCatalogController(services.catalog),
     catalogWrites: createCatalogWritesController(services.catalogWrites),
+    discovery: createDiscoveryController(services.discovery),
     organisation: createOrganisationController(services),
     streams: createStreamsController(services.streams),
     insights: createInsightsController(services.insights),
