@@ -23,6 +23,8 @@ export interface SeriesChartProps {
   /** danger draws the line red: an error rate. accent: anything else. */
   tone?: 'accent' | 'danger';
   markers?: readonly SeriesMarker[];
+  /** Write each marker's label above it; off where the chart is too narrow to read them. */
+  markerLabels?: boolean;
   /** A dashed level across the chart: a limit or a target. */
   threshold?: number;
   /** The x range; defaults to the points' own. */
@@ -54,6 +56,7 @@ export function SeriesChart({
   kind = 'line',
   tone = 'accent',
   markers = [],
+  markerLabels = true,
   threshold,
   range,
   max,
@@ -72,7 +75,7 @@ export function SeriesChart({
   const bottom = fit ? Math.max(0, Math.min(...values) - room) : 0;
   const top = max ?? ((fit ? highest + room : highest * 1.15) || 1);
   const span = last - first || 1;
-  const pad = markers.length > 0 ? 22 : 4;
+  const pad = markers.length > 0 && markerLabels ? 34 : 4;
   const x = (at: number) => ((at - first) / span) * W;
   const y = (value: number) =>
     height - 2 - ((Math.min(value, top) - bottom) / (top - bottom || 1)) * (height - pad - 2);
@@ -150,24 +153,25 @@ export function SeriesChart({
           </>
         )}
       </svg>
-      {markers.map((marker, index) => {
-        const at = x(marker.at) / W;
-        return (
-          <span
-            key={marker.key}
-            aria-hidden
-            className="absolute max-w-48 truncate text-11 whitespace-nowrap text-tx-2"
-            style={{
-              top: index % 2 === 0 ? 0 : 13,
-              ...(at > 0.7
-                ? { right: `calc(${((1 - at) * 100).toFixed(2)}% + 4px)` }
-                : { left: `calc(${(at * 100).toFixed(2)}% + 4px)` }),
-            }}
-          >
-            {marker.label}
-          </span>
-        );
-      })}
+      {markerLabels &&
+        markers.map((marker, index) => {
+          const at = x(marker.at) / W;
+          return (
+            <span
+              key={marker.key}
+              aria-hidden
+              className="absolute max-w-48 truncate text-11 whitespace-nowrap text-tx-2"
+              style={{
+                top: (index % 3) * 12,
+                ...(at > 0.7
+                  ? { right: `calc(${((1 - at) * 100).toFixed(2)}% + 4px)` }
+                  : { left: `calc(${(at * 100).toFixed(2)}% + 4px)` }),
+              }}
+            >
+              {marker.label}
+            </span>
+          );
+        })}
     </div>
   );
 }
