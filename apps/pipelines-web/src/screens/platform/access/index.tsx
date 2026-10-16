@@ -1,4 +1,4 @@
-import { useGlobalKeys, useT } from '@bemmoly/core-web';
+import { useShortcutHelp, useT } from '@bemmoly/core-web';
 import type { ScopeRef } from '@bemmoly/module-pipelines/shared';
 import { Button, Kbd } from '@bemmoly/ui';
 import { Icon } from '@bemmoly/ui/icons';
@@ -6,6 +6,7 @@ import { useRef, useState } from 'react';
 import { useBindings } from '../../../hooks/use-access.ts';
 import { useDomains, useGroups } from '../../../hooks/use-catalog-tree.ts';
 import { useScope } from '../../../hooks/use-scope.ts';
+import { useScreenKeys } from '../../../hooks/use-screen-keys.ts';
 import { pipelinesText } from '../../../i18n/catalog.ts';
 import { Area } from '../../../parts/area.tsx';
 import { LoadFailed } from '../../../parts/load-failed.tsx';
@@ -43,7 +44,15 @@ export default function AccessArea() {
   const bindings = useBindings(path);
   const [adding, setAdding] = useState(false);
   const person = useRef<HTMLButtonElement>(null);
-  useGlobalKeys({ n: () => setAdding(true), c: () => person.current?.focus() });
+  useScreenKeys({ n: () => setAdding(true), c: () => person.current?.focus() });
+  useShortcutHelp({
+    id: 'pipelines.access',
+    label: t('pipelines.access.title'),
+    keys: [
+      { keys: 'N', label: t('pipelines.access.addBinding') },
+      { keys: 'C', label: t('pipelines.access.check') },
+    ],
+  });
   return (
     <div className="mx-auto grid w-full max-w-360 lg:grid-cols-[220px_minmax(0,1fr)]">
       <aside className="hidden border-e border-line px-3 py-4 lg:block">

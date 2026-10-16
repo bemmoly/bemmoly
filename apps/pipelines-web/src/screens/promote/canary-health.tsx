@@ -1,10 +1,11 @@
-import { formatNumber, useGlobalKeys, useT } from '@bemmoly/core-web';
+import { formatNumber, useT } from '@bemmoly/core-web';
 import type {
   CanaryVerdict,
   Deployment,
   MetricCompare as Metric,
 } from '@bemmoly/module-pipelines/shared';
 import { Button, Kbd, MetricCompare, useToast } from '@bemmoly/ui';
+import { useScreenKeys } from '../../hooks/use-screen-keys.ts';
 import { useCanary, useShippingWrites } from '../../hooks/use-shipping.ts';
 import { pipelinesText } from '../../i18n/catalog.ts';
 import { refusalOf } from '../../parts/load-failed.tsx';
@@ -43,7 +44,7 @@ export function CanaryHealth({ deployment }: { deployment: Deployment }) {
           }),
       },
     );
-  useGlobalKeys({ 'shift+b': rollBack });
+  useScreenKeys({ 'shift+b': rollBack });
   const value = (metric: Metric, raw: number | null) =>
     raw === null
       ? null

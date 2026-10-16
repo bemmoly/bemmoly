@@ -1,7 +1,8 @@
-import { formatDate, useGlobalKeys, useT } from '@bemmoly/core-web';
+import { formatDate, useGlobalKeys, useShortcutHelp, useT } from '@bemmoly/core-web';
 import { Button, Kbd, RelativeTime, useToast } from '@bemmoly/ui';
 import { useState } from 'react';
 import { useMe } from '../../hooks/use-me.ts';
+import { useScreenKeys } from '../../hooks/use-screen-keys.ts';
 import { useShippingWrites } from '../../hooks/use-shipping.ts';
 import { pipelinesText } from '../../i18n/catalog.ts';
 import { refusalOf } from '../../parts/load-failed.tsx';
@@ -89,9 +90,16 @@ export function DecisionBar({
       },
     );
   };
-  useGlobalKeys({
-    'mod+enter': () => (promotion ? undefined : request()),
-    a: () => (canApprove ? decide('approved') : undefined),
+  useGlobalKeys({ 'mod+enter': () => (promotion ? undefined : request()) });
+  useScreenKeys({ a: () => (canApprove ? decide('approved') : undefined) });
+  useShortcutHelp({
+    id: 'pipelines.promote',
+    label: t('pipelines.promote.title'),
+    keys: [
+      { keys: 'Mod+Enter', label: t('pipelines.promote.requestApproval') },
+      { keys: 'A', label: t('pipelines.promote.approve') },
+      { keys: 'Shift+B', label: t('pipelines.keys.rollBackCanary') },
+    ],
   });
   const open = promotion !== null && OPEN_STATES.has(promotion.state);
   const mine = promotion?.requestedBy?.id === me;

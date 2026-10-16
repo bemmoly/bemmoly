@@ -1,4 +1,4 @@
-import { useT } from '@bemmoly/core-web';
+import { useShortcutHelp, useT } from '@bemmoly/core-web';
 import { SegmentedControl } from '@bemmoly/ui';
 import { topicOf } from '@bemmoly/module-pipelines/shared';
 import { useScope } from '../../hooks/use-scope.ts';
@@ -27,6 +27,14 @@ export default function ReleasesScreen() {
   const [view, setView] = useSearchState('view', VIEWS, 'promotions');
   const waiting = useAwaitingMe();
   useShippingStream([topicOf.forYou()]);
+  useShortcutHelp({
+    id: 'pipelines.releases',
+    label: t('pipelines.releases.title'),
+    keys: [
+      { keys: 'J K', label: t('pipelines.keys.moveRows') },
+      { keys: 'Enter', label: t('pipelines.keys.openRow') },
+    ],
+  });
   const count = waiting.data?.items.length ?? 0;
   return (
     <Screen title={t('pipelines.releases.title')}>

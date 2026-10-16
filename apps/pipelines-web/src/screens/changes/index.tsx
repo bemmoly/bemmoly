@@ -1,4 +1,4 @@
-import { useGlobalKeys, useT } from '@bemmoly/core-web';
+import { useShortcutHelp, useT } from '@bemmoly/core-web';
 import {
   changeKindSchema,
   changeWindowSchema,
@@ -11,6 +11,7 @@ import { Button, Menu, MenuItem, SegmentedControl, Skeleton, Switch, useToast } 
 import { Icon } from '@bemmoly/ui/icons';
 import { useState } from 'react';
 import { useScope } from '../../hooks/use-scope.ts';
+import { useScreenKeys } from '../../hooks/use-screen-keys.ts';
 import { useSearchState, useSearchText } from '../../hooks/use-search-state.ts';
 import { useChanges, useShippingStream, useShippingWrites } from '../../hooks/use-shipping.ts';
 import { pipelinesText } from '../../i18n/catalog.ts';
@@ -56,7 +57,16 @@ export default function ChangesScreen() {
     const next = WINDOWS[WINDOWS.indexOf(window) + by];
     if (next) setWindow(next);
   };
-  useGlobalKeys({
+  useShortcutHelp({
+    id: 'pipelines.changes',
+    label: t('pipelines.changes.title'),
+    keys: [
+      { keys: '[ ]', label: t('pipelines.keys.window') },
+      { keys: 'J K', label: t('pipelines.keys.moveRows') },
+      { keys: 'Shift+B', label: t('pipelines.keys.rollBackRow') },
+    ],
+  });
+  useScreenKeys({
     '[': () => step(-1),
     ']': () => step(1),
     'shift+b': () => focused && canRollBack(focused) && setUndoing(focused),
