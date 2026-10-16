@@ -1,0 +1,25 @@
+{
+  "action": "completed",
+  "workflow_run": {
+    "id": 11223344556,
+    "name": "Security",
+    "path": ".github/workflows/security.yml",
+    "head_sha": "e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8",
+    "head_branch": "main",
+    "event": "push",
+    "status": "completed",
+    "conclusion": "failure",
+    "html_url": "https://github.com/acme/api/actions/runs/11223344556",
+    "run_number": 812,
+    "created_at": "2026-10-04T08:20:30Z",
+    "updated_at": "2026-10-04T08:26:02Z"
+  },
+  "repository": {
+    "id": 702345678,
+    "name": "api",
+    "full_name": "acme/api",
+    "html_url": "https://github.com/acme/api",
+    "default_branch": "main"
+  },
+  "sender": { "login": "priya-n", "id": 5811004, "type": "User" }
+}

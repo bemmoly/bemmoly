@@ -21,7 +21,14 @@ const APP_NAME_MAX = 34;
 /** The read access the webhook events and backfill need, and nothing more. */
 const PERMISSIONS = { pull_requests: 'read', contents: 'read', checks: 'read', metadata: 'read' };
 /** The events the GitHub driver parses; each is covered by a permission above. */
-const EVENTS = ['pull_request', 'pull_request_review', 'push', 'create', 'delete', 'check_suite'];
+const EVENTS: string[] = [
+  'pull_request',
+  'pull_request_review',
+  'push',
+  'create',
+  'delete',
+  'check_suite',
+];
 
 const webUrl = (baseUrl: string | null) =>
   baseUrl ? withoutTrailingSlashes(baseUrl) : 'https://github.com';
@@ -64,11 +71,33 @@ export interface ManifestInput {
   webhookUrl: string | null;
   redirectUrl: string;
   setupUrl: string;
+  /** What enabled modules add: write wins over read, events are added once each. */
+  extra?: ReadonlyArray<{
+    permissions: Readonly<Record<string, 'read' | 'write'>>;
+    events: readonly string[];
+  }>;
 }
 
-/** The app Bemmoly asks GitHub to create: private, read-only, its webhook when reachable. */
+function mergedAccess(extra: NonNullable<ManifestInput['extra']>) {
+  const permissions: Record<string, string> = { ...PERMISSIONS };
+  const events = new Set(EVENTS);
+  for (const request of extra) {
+    for (const [name, level] of Object.entries(request.permissions)) {
+      if (permissions[name] !== 'write') permissions[name] = level;
+    }
+    for (const event of request.events) events.add(event);
+  }
+  return { permissions, events: [...events] };
+}
+
+/**
+ * The app Bemmoly asks GitHub to create: private, read-only unless an enabled module asks
+ * for more (reporting checks and deployments, opening pull requests), its
+ * webhook when reachable.
+ */
 export function githubManifest(input: ManifestInput): string {
   const host = new URL(input.publicUrl).host;
+  const access = mergedAccess(input.extra ?? []);
   return JSON.stringify({
     name: `Bemmoly ${host}`.slice(0, APP_NAME_MAX).trim(),
     url: input.publicUrl,
@@ -78,8 +107,8 @@ export function githubManifest(input: ManifestInput): string {
     setup_url: input.setupUrl,
     setup_on_update: true,
     public: false,
-    default_permissions: PERMISSIONS,
-    default_events: input.webhookUrl ? EVENTS : [],
+    default_permissions: access.permissions,
+    default_events: input.webhookUrl ? access.events : [],
   });
 }
 

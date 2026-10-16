@@ -1,0 +1,12 @@
+{
+  "action": "renamed",
+  "changes": { "repository": { "name": { "from": "api-legacy" } } },
+  "repository": {
+    "id": 702345678,
+    "name": "api",
+    "full_name": "acme/api",
+    "html_url": "https://github.com/acme/api",
+    "default_branch": "main"
+  },
+  "sender": { "login": "ravi-k", "id": 5811009, "type": "User" }
+}

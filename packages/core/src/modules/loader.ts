@@ -6,6 +6,7 @@ import type { SqlClient } from '../clients/postgres.ts';
 import type { JobQueue } from '../contracts/jobs.ts';
 import type { RealtimePublisher } from '../contracts/realtime.ts';
 import type { AiFacade } from '../contracts/ai.ts';
+import type { CodeHostDirectory } from './code.ts';
 import type { CollabTransactor } from './collab.ts';
 import type { ActorContextFactory, BemmolyModule } from './contract.ts';
 import type { FileReader } from './files.ts';
@@ -52,6 +53,8 @@ export interface LoadModulesOptions {
   contextFor?: ActorContextFactory;
   /** The optional PDF renderer every module sees as ctx.pdf. */
   pdf?: PdfRenderer;
+  /** The connected code hosts every module reaches through ctx.code.hosts(), bound late. */
+  codeHosts?: () => CodeHostDirectory | undefined;
 }
 
 function indexAvailable(available: readonly BemmolyModule[]): Map<string, BemmolyModule> {
@@ -146,6 +149,7 @@ export function loadModules(options: LoadModulesOptions): ModuleRegistry {
         ...(options.isEnabled ? { isEnabled: options.isEnabled } : {}),
         ...(options.contextFor ? { contextFor: options.contextFor } : {}),
         ...(options.pdf ? { pdf: options.pdf } : {}),
+        ...(options.codeHosts ? { codeHosts: options.codeHosts } : {}),
         peers: () => registry,
       }),
     );

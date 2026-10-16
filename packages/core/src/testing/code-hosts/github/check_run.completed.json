@@ -1,0 +1,23 @@
+{
+  "action": "completed",
+  "check_run": {
+    "id": 28801234567,
+    "name": "security-scan",
+    "head_sha": "e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8",
+    "status": "completed",
+    "conclusion": "success",
+    "html_url": "https://github.com/acme/api/runs/28801234567",
+    "started_at": "2026-10-04T08:21:00Z",
+    "completed_at": "2026-10-04T08:24:42Z",
+    "app": { "id": 15368, "slug": "github-actions", "name": "GitHub Actions" },
+    "pull_requests": []
+  },
+  "repository": {
+    "id": 702345678,
+    "name": "api",
+    "full_name": "acme/api",
+    "html_url": "https://github.com/acme/api",
+    "default_branch": "main"
+  },
+  "sender": { "login": "priya-n", "id": 5811004, "type": "User" }
+}

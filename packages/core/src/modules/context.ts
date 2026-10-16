@@ -6,6 +6,8 @@ import type { EventBus } from '../contracts/event-bus.ts';
 import type { EnqueueOptions, JobQueue } from '../contracts/jobs.ts';
 import type { RealtimePublisher } from '../contracts/realtime.ts';
 import { collabDocumentName, type CollabTransactor } from './collab.ts';
+import type { CodeHostDirectory } from './code.ts';
+import { createCodeRegistry } from './code-registry.ts';
 import type { ActorContextFactory, BemmolyModule, ModuleContext } from './contract.ts';
 import type { ModuleContributions } from './contributions.ts';
 import { ModuleLoadError } from './errors.ts';
@@ -45,6 +47,8 @@ export interface ModuleContextOptions {
   isEnabled?: (moduleId: string) => boolean;
   /** Builds the context a job acts in for an actor; present with a database. */
   contextFor?: ActorContextFactory;
+  /** The connected code hosts, read on every call so they can be bound after modules register. */
+  codeHosts?: () => CodeHostDirectory | undefined;
   /** The optional PDF renderer; absent unless one is configured. */
   pdf?: PdfRenderer;
 }
@@ -262,14 +266,7 @@ export function createModuleContext(
       },
     },
     objects: createModuleObjects(module.id, options.objects),
-    code: {
-      addConsumer(consumer) {
-        if (!consumer.id.startsWith(`${module.id}.`)) {
-          fail(`code consumer "${consumer.id}" must be namespaced as "${module.id}.<name>"`);
-        }
-        into.codeConsumers.push(consumer);
-      },
-    },
+    code: createCodeRegistry(module.id, into, options.codeHosts),
     realtime: options.realtime ?? noRealtime,
     ...(options.contextFor ? { contextFor: options.contextFor } : {}),
     ...(options.pdf ? { pdf: options.pdf } : {}),

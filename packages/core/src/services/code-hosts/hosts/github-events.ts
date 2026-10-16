@@ -1,6 +1,7 @@
 import type { CodeCheckState, CodeLinkState, CodeReviewState } from '@bemmoly/shared';
 import { z } from 'zod';
 import { readPayload } from '../signature.ts';
+import { pushDetail } from './github-delivery-events.ts';
 import { firstLine, type ActivityDraft, type ParsedDelivery } from '../types.ts';
 
 /*
@@ -136,6 +137,11 @@ function checksOf(status: string | null | undefined, conclusion: string | null |
 
 const BRANCH_PREFIX = 'refs/heads/';
 
+function withPush(body: Buffer): Pick<ActivityDraft, 'push'> {
+  const push = pushDetail(body);
+  return push ? { push } : {};
+}
+
 function parsePush(body: Buffer, now: string): ParsedDelivery {
   const push = readPayload(body, pushEvent, 'GitHub push');
   const repo = push.repository;
@@ -177,7 +183,7 @@ function parsePush(body: Buffer, now: string): ParsedDelivery {
     event: 'push',
     action: null,
     summary: `${count} ${count === 1 ? 'commit' : 'commits'} pushed to ${branch} in ${repo.full_name}`,
-    activities: [branchActivity(repo, branch, at, 'link'), ...commits],
+    activities: [{ ...branchActivity(repo, branch, at, 'link'), ...withPush(body) }, ...commits],
   };
 }
 
