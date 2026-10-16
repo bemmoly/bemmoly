@@ -27,18 +27,21 @@ export function LoadFailed({
   error,
   onRetry,
   size = 'md',
+  bare = false,
   className,
 }: {
   error: unknown;
   onRetry: () => void;
   size?: 'md' | 'sm';
+  /** Inside a card already: no border of its own. */
+  bare?: boolean;
   className?: string;
 }) {
   const t = useT(pipelinesText);
   const refusal = refusalOf(error);
   const requestId = error instanceof ApiError ? error.requestId : undefined;
   return (
-    <div className={cx('rounded-card border border-line bg-card', className)}>
+    <div className={cx(!bare && 'rounded-card border border-line bg-card', className)}>
       {refusal ? (
         <EmptyState
           size={size}

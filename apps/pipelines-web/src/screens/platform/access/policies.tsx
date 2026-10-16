@@ -6,6 +6,7 @@ import { useSearchState } from '../../../hooks/use-search-state.ts';
 import { pipelinesText } from '../../../i18n/catalog.ts';
 import { LoadFailed } from '../../../parts/load-failed.tsx';
 import { Panel } from '../../../parts/screen.tsx';
+import { TierChip } from '../../../parts/tier-chip.tsx';
 
 const VIEWS = ['sentences', 'code'] as const;
 
@@ -13,16 +14,6 @@ const VIEWS = ['sentences', 'code'] as const;
 export function tierOf(policy: Pick<Policy, 'applies'>): number | null {
   const match = /tier\s*==\s*([0-2])/.exec(policy.applies);
   return match ? Number(match[1]) : null;
-}
-
-export function TierChip({ tier }: { tier: number | null }) {
-  const t = useT(pipelinesText);
-  if (tier === null) return null;
-  return (
-    <span className="rounded-chip border border-line px-1 font-mono text-11 text-tx-2">
-      {t('pipelines.common.tierShort', { tier })}
-    </span>
-  );
 }
 
 /**
@@ -49,7 +40,7 @@ export function Policies({ scope, scopeName }: { scope: string; scopeName: strin
       }
     >
       {policies.isError ? (
-        <LoadFailed size="sm" error={policies.error} onRetry={() => void policies.refetch()} />
+        <LoadFailed bare size="sm" error={policies.error} onRetry={() => void policies.refetch()} />
       ) : policies.isPending ? (
         <div aria-busy className="flex flex-col gap-3 py-2">
           <Skeleton width="40%" />

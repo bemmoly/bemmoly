@@ -71,6 +71,7 @@ export default function AccessArea() {
             <Panel flush title={t('pipelines.access.bindingsTitle')}>
               {bindings.isError ? (
                 <LoadFailed
+                  bare
                   size="sm"
                   className="m-3"
                   error={bindings.error}

@@ -86,7 +86,7 @@ export function Checker({ personRef }: { personRef: Ref<HTMLButtonElement> }) {
         {!ready ? (
           <p className="text-12 leading-body text-tx-3">{t('pipelines.access.checkHint')}</p>
         ) : check.isError ? (
-          <LoadFailed size="sm" error={check.error} onRetry={() => void check.refetch()} />
+          <LoadFailed bare size="sm" error={check.error} onRetry={() => void check.refetch()} />
         ) : !decision ? (
           <div aria-busy className="flex flex-col gap-2">
             <Skeleton height={56} />

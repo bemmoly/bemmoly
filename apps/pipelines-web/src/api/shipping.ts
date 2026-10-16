@@ -1,6 +1,8 @@
 import type { Http } from '@bemmoly/api-client';
 import {
+  canaryAnalysisSchema,
   changesResponseSchema,
+  deploymentsPageSchema,
   idSchema,
   promotionPreviewSchema,
   promotionSchema,
@@ -13,6 +15,9 @@ import {
   type ChangesQuery,
   type CompareQuery,
   type CreatePromotionBody,
+  type FreezeOverrideBody,
+  type ListDeploymentsQuery,
+  type ResumeDeploymentBody,
   type ListPromotionsQuery,
   type ListReleasesQuery,
   type PromotionPreviewQuery,
@@ -38,6 +43,9 @@ export const shippingKeys = {
   preview: (query: PromotionPreviewQuery) => ['pipelines', 'shipping', 'preview', query] as const,
   trains: () => ['pipelines', 'shipping', 'trains'] as const,
   changes: (query: ChangesQuery) => ['pipelines', 'shipping', 'changes', query] as const,
+  deployments: (query: Partial<ListDeploymentsQuery>) =>
+    ['pipelines', 'shipping', 'deployments', query] as const,
+  canary: (id: string) => ['pipelines', 'shipping', 'canary', id] as const,
 };
 
 export function shippingEndpoints(http: Http) {
@@ -71,6 +79,13 @@ export function shippingEndpoints(http: Http) {
         method: 'POST',
         body,
       }),
+    overrideFreeze: (id: string, body: FreezeOverrideBody) =>
+      http.send(`${base}/promotions/${id}/freeze-override`, { method: 'POST', body }),
+    deployments: (query: Partial<ListDeploymentsQuery>) =>
+      http.request(`${base}/deployments`, deploymentsPageSchema, { query: toQuery(query) }),
+    canary: (id: string) => http.request(`${base}/deployments/${id}/canary`, canaryAnalysisSchema),
+    resume: (id: string, body: ResumeDeploymentBody) =>
+      http.send(`${base}/deployments/${id}/resume`, { method: 'POST', body }),
     /** The change records export, opened as a download. */
     changeRecordsUrl: (query: Record<string, string>) =>
       http.url(`${base}/change-records`, { ...query, format: 'csv' }),
