@@ -120,6 +120,7 @@ export async function bootApplication(options: BootOptions): Promise<Booted> {
     files: () => files,
     objects: () => objects,
     codeHosts: () => codeHostDirectory,
+    publicUrl: env.BEMMOLY_PUBLIC_URL,
     ...(env.BEMMOLY_PDF_URL
       ? {
           pdf: createPdfRendererClient({

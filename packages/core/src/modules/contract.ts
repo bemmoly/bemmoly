@@ -107,6 +107,8 @@ export interface ModuleContext {
   contextFor?: ActorContextFactory;
   /** The optional PDF renderer; absent unless BEMMOLY_PDF_URL names one. */
   pdf?: PdfRenderer;
+  /** BEMMOLY_PUBLIC_URL: the server's own address, never the request's Host header. */
+  publicUrl?: string;
 }
 
 export type ActorContextFactory = (

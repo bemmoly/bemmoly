@@ -51,6 +51,7 @@ export interface ModuleContextOptions {
   codeHosts?: () => CodeHostDirectory | undefined;
   /** The optional PDF renderer; absent unless one is configured. */
   pdf?: PdfRenderer;
+  publicUrl?: string;
 }
 
 /** `ctx.events` for one module: it publishes freely, and hears events only while enabled. */
@@ -270,6 +271,7 @@ export function createModuleContext(
     realtime: options.realtime ?? noRealtime,
     ...(options.contextFor ? { contextFor: options.contextFor } : {}),
     ...(options.pdf ? { pdf: options.pdf } : {}),
+    ...(options.publicUrl ? { publicUrl: options.publicUrl } : {}),
     ...(options.database
       ? {
           database: options.database,

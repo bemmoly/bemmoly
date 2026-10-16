@@ -53,6 +53,8 @@ export interface LoadModulesOptions {
   contextFor?: ActorContextFactory;
   /** The optional PDF renderer every module sees as ctx.pdf. */
   pdf?: PdfRenderer;
+  /** The server's public address every module sees as ctx.publicUrl. */
+  publicUrl?: string;
   /** The connected code hosts every module reaches through ctx.code.hosts(), bound late. */
   codeHosts?: () => CodeHostDirectory | undefined;
 }
@@ -149,6 +151,7 @@ export function loadModules(options: LoadModulesOptions): ModuleRegistry {
         ...(options.isEnabled ? { isEnabled: options.isEnabled } : {}),
         ...(options.contextFor ? { contextFor: options.contextFor } : {}),
         ...(options.pdf ? { pdf: options.pdf } : {}),
+        ...(options.publicUrl ? { publicUrl: options.publicUrl } : {}),
         ...(options.codeHosts ? { codeHosts: options.codeHosts } : {}),
         peers: () => registry,
       }),
