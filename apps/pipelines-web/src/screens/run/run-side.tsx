@@ -31,6 +31,8 @@ function Failure({ test, onOpen }: { test: FailedTest; onOpen: () => void }) {
 /**
  * What failed, by test name and line, with Re-run failed at hand (Shift+R). A test that
  * often fails on main is flagged: that suggests flaky rather than broken by this change.
+ * Failures show while the run is still going; Re-run failed waits until it has finished,
+ * because the server refuses to re-run a run that is still going.
  */
 export function FailuresCard({
   run,
@@ -58,17 +60,19 @@ export function FailuresCard({
             ? t('pipelines.run.testsFailed', { count: run.tests?.failed ?? failures.length })
             : t('pipelines.run.jobsFailed', { count: failedJobs.length })}
         </h2>
-        <Button
-          size="sm"
-          variant="primary"
-          className="ms-auto"
-          onClick={onRerunFailed}
-          loading={rerunning}
-        >
-          <Icon name="undo" size={14} />
-          {t('pipelines.run.rerunFailed')}
-          <Kbd keys="Shift+R" variant="plain" className="ms-1 max-md:hidden" />
-        </Button>
+        {run.state === 'failed' ? (
+          <Button
+            size="sm"
+            variant="primary"
+            className="ms-auto"
+            onClick={onRerunFailed}
+            loading={rerunning}
+          >
+            <Icon name="undo" size={14} />
+            {t('pipelines.run.rerunFailed')}
+            <Kbd keys="Shift+R" variant="plain" className="ms-1 max-md:hidden" />
+          </Button>
+        ) : null}
       </div>
       {failures.length ? (
         <ul className="flex flex-col">
