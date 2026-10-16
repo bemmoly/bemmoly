@@ -4,6 +4,7 @@ import { accessRoutes } from './access.routes.ts';
 import { ciRoutes } from './ci.routes.ts';
 import { catalogRoutes } from './catalog.routes.ts';
 import { catalogWritesRoutes } from './catalog-writes.routes.ts';
+import { deliveryRoutes } from './delivery.routes.ts';
 import { discoveryRoutes } from './discovery.routes.ts';
 import { insightsRoutes } from './insights.routes.ts';
 import { cloudsRoutes } from './clouds.routes.ts';
@@ -28,6 +29,7 @@ export function pipelinesRoutes(controllers: PipelinesControllers): FastifyPlugi
     await app.register(ciRoutes(controllers.ci));
     await app.register(catalogRoutes(controllers.catalog));
     await app.register(catalogWritesRoutes(controllers.catalogWrites));
+    await app.register(deliveryRoutes(controllers.delivery));
     await app.register(discoveryRoutes(controllers.discovery));
     await app.register(cloudsRoutes(controllers.clouds));
     await app.register(organisationRoutes(controllers.organisation));

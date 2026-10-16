@@ -29,7 +29,10 @@ import { createEnvironmentsService } from './environments/index.ts';
 import { registerCatalogSync } from './inbox/catalog-sync.ts';
 import { createInboxService } from './inbox/index.ts';
 import { createInsightsService } from './insights/index.ts';
+import { createForYouService, type ApprovalsInbox } from './for-you/index.ts';
+import { createMapService } from './map/index.ts';
 import { createOverviewService } from './overview/index.ts';
+import { createStripService } from './strip/index.ts';
 import type { ProviderRegistry } from './providers/registry.ts';
 import { createHistoryService } from './history/index.ts';
 import { createReleasesService } from './releases/index.ts';
@@ -38,6 +41,9 @@ import { createWebhookCaller, type WebhookSecrets } from './shipping/gates/index
 import { providersFromSettings } from './providers/index.ts';
 import { createStreamsService } from './streams/index.ts';
 import { createTeamsService } from './teams/index.ts';
+
+/** Without a database there is nothing to approve. */
+const NO_INBOX: ApprovalsInbox = { listPromotions: async () => ({ items: [], nextCursor: null }) };
 
 export interface PipelinesServicesDeps {
   database?: SqlClient;
@@ -116,6 +122,17 @@ export function createPipelinesServices(input: PipelinesServicesDeps) {
   inbox.handlers.on('push', async (event) => void (await triggers.push(event)));
   inbox.handlers.on('pull_request', async (event) => void (await triggers.pullRequest(event)));
   inbox.handlers.on('merge_group', async (event) => void (await triggers.mergeGroup(event)));
+  const shipping = input.database
+    ? createShippingService({
+        sql: input.database,
+        ...(input.settings ? { settings: input.settings } : {}),
+        providers,
+        access: createShippingAccess(access),
+        webhook: createWebhookCaller(input.webhookSecrets ?? (async () => null)),
+        now: input.now ?? (() => new Date()),
+        wake: input.wake ?? (async () => undefined),
+      })
+    : undefined;
   return {
     access,
     inbox,
@@ -142,19 +159,10 @@ export function createPipelinesServices(input: PipelinesServicesDeps) {
     ci,
     streams: createStreamsService(deps),
     insights: createInsightsService(deps),
-    ...(input.database
-      ? {
-          shipping: createShippingService({
-            sql: input.database,
-            ...(input.settings ? { settings: input.settings } : {}),
-            providers,
-            access: createShippingAccess(access),
-            webhook: createWebhookCaller(input.webhookSecrets ?? (async () => null)),
-            now: input.now ?? (() => new Date()),
-            wake: input.wake ?? (async () => undefined),
-          }),
-        }
-      : {}),
+    ...(shipping ? { shipping } : {}),
+    map: createMapService(deps),
+    strip: createStripService(deps),
+    forYou: createForYouService(deps, shipping ?? NO_INBOX),
     clouds: createCloudsService({
       ...deps,
       providers,

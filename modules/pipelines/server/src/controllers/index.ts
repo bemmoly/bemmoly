@@ -3,6 +3,7 @@ import { createAccessController } from './access.controller.ts';
 import { createCiController } from './ci.controller.ts';
 import { createCatalogController } from './catalog.controller.ts';
 import { createCatalogWritesController } from './catalog-writes.controller.ts';
+import { createDeliveryController } from './delivery.controller.ts';
 import { createDiscoveryController } from './discovery.controller.ts';
 import { createCloudsController } from './clouds.controller.ts';
 import { createOrganisationController } from './environments.controller.ts';
@@ -22,6 +23,7 @@ export function createPipelinesControllers(services: PipelinesServices) {
     ci: createCiController(services.ci),
     catalog: createCatalogController(services.catalog),
     catalogWrites: createCatalogWritesController(services.catalogWrites),
+    delivery: createDeliveryController(services),
     discovery: createDiscoveryController(services.discovery),
     clouds: createCloudsController(services.clouds),
     organisation: createOrganisationController(services),

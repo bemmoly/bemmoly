@@ -83,7 +83,7 @@ interface TodayRow {
  * The organisation's name is the workspace's. A module may read only its own settings through
  * the registry, so this reads the kernel's stored value, with the kernel's default.
  */
-async function workspaceName(sql: SqlExecutor): Promise<string> {
+export async function workspaceName(sql: SqlExecutor): Promise<string> {
   const [row] = await sql<{ name: string | null }[]>`
     select value #>> '{}' as name from settings
     where key = 'workspace.name' and not is_secret limit 1`;
