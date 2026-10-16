@@ -154,14 +154,12 @@ export function githubWrites(client: () => Promise<RestClient>) {
       } catch (error) {
         if (!exists(error)) throw error;
         const owner = repo.split('/')[0] ?? '';
-        const open = z
-          .array(pullSchema)
-          .parse(
-            await rest.getJson(`repos/${repo}/pulls`, {
-              head: `${owner}:${input.branch}`,
-              state: 'open',
-            }),
-          );
+        const open = z.array(pullSchema).parse(
+          await rest.getJson(`repos/${repo}/pulls`, {
+            head: `${owner}:${input.branch}`,
+            state: 'open',
+          }),
+        );
         const pull = open[0];
         if (!pull) throw error;
         return { url: pull.html_url, number: pull.number };
