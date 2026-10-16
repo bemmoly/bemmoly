@@ -5,6 +5,9 @@
   "license": "MIT",
   "type": "module",
   "description": "bp: run pipelines, follow logs, register releases, promote and explain access from a terminal or CI",
+  "exports": {
+    "./ci": "./src/ci.ts"
+  },
   "bin": {
     "bp": "./src/bin.ts",
     "bemmoly-pipelines": "./src/bin.ts"
