@@ -35,6 +35,7 @@ export * from './components/kanban-column/index.ts';
 export * from './components/key-chip/index.ts';
 export * from './components/label/index.ts';
 export * from './components/lane/index.ts';
+export * from './components/log-view/index.ts';
 export * from './components/logo/index.ts';
 export * from './components/menu/index.ts';
 export * from './components/metric-tile/index.ts';

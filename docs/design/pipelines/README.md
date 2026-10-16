@@ -66,7 +66,7 @@ second and are invalidations: refetch, never patch from the event.
 | `TimeScrubber` (deploys per bucket, incidents in red, a handle that rewinds; a slider for the keys) | `packages/ui` | built |
 | `ReleaseMap` (the grid of `DeployCell`s) | `apps/pipelines-web` | to build with the Map |
 | `StageGraph` (fan-out, fan-in, selected and failed rings) | `packages/ui` | built |
-| `LogView` (virtualised, searchable, follow, ANSI on tokens, error lines on `red-50`) | `packages/ui` | to build with Runs |
+| `LogView` (virtualised, searchable, follow, ANSI on tokens, error lines on `red-50`) | `packages/ui` | built |
 | `GateList` (each gate's state and reason), `RolloutPlan` (waves of canary steps) | `packages/ui` | built |
 | `MetricCompare` (canary against stable), `SeriesChart` (a line or bars with markers and a threshold) | `packages/ui` | built |
 | `FacetPanel`, `DeliverySpark` | `packages/ui` | to build with the Catalog |

@@ -314,3 +314,14 @@ neighbouring columns. The selected node has a 2px ring, red when it failed; skip
 dimmed. One tab stop: arrows move between and within stages, J and K walk the nodes, Enter
 selects. Wide graphs scroll sideways inside themselves.
 
+### LogView
+
+`LogView` (`totalLines`, `getLine`, `onRangeNeeded`, `follow`, `onFollowChange`,
+`selectedLine`, `onSelectLine`, `scrollTo`, `matches`, `activeMatchLine`, `ariaLabel`,
+`lineLabel`) is the one job log: virtualised 20px mono rows on `sunken`, so 100,000 lines
+scroll like ten; lines load by range as they come into view and show a quiet bar until they
+do. ANSI colours arrive as span kinds and draw with tokens (`dim`, `bold`, `error`, `warning`,
+`success`, `info`, `accent`, `link`); error lines sit on `red-50`. Line numbers select and link
+a line (an accent bar at the start edge). While a job writes it follows the end; scrolling up
+stops following and scrolling back to the end resumes it. Search hits are marked on `amber-50`,
+the active one ringed. The search box and the follow switch belong to the screen.
