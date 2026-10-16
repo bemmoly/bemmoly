@@ -7,7 +7,7 @@ import {
   stagingHealthyGate,
   windowGate,
 } from './environment-gates.ts';
-import { externalChecksGate, securityScanGate, testsGate } from './release-gates.ts';
+import { canaryGate, externalChecksGate, securityScanGate, testsGate } from './release-gates.ts';
 import { webhookGate } from './webhook.ts';
 
 export type { GateDeps, GateFacts, GateOutcome } from './contract.ts';
@@ -28,6 +28,7 @@ const GATES: readonly GateDefinition[] = [
   freezeGate,
   errorBudgetGate,
   webhookGate,
+  canaryGate,
 ];
 
 const byName = new Map<string, GateDefinition>([
@@ -44,7 +45,6 @@ export interface EvaluatedGate extends GateResult {
 /** A stored result's key ("staging_healthy:30m") as the gate and label a person reads. */
 export function describeStoredGate(key: string): { gate: Gate; label: string } {
   if (key === 'approvals') return { gate: 'approvals', label: 'Approvals' };
-  if (key === 'canary') return { gate: 'canary', label: 'Canary' };
   const at = key.indexOf(':');
   const name = at < 0 ? key : key.slice(0, at);
   const args = at < 0 ? [] : key.slice(at + 1).split(',');

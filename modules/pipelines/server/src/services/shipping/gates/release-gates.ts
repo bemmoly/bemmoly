@@ -54,25 +54,9 @@ interface Reported {
   verdict: 'pass' | 'fail' | 'pending';
 }
 
-function provenanceChecks(provenance: Record<string, unknown> | null): Reported[] {
-  const checks = provenance?.['checks'];
-  if (!Array.isArray(checks)) return [];
-  return checks.flatMap((check: unknown) => {
-    if (typeof check !== 'object' || check === null) return [];
-    const { name, conclusion } = check as Record<string, unknown>;
-    if (typeof name !== 'string' || typeof conclusion !== 'string') return [];
-    const verdict = ['success', 'neutral', 'skipped'].includes(conclusion)
-      ? 'pass'
-      : ['pending', 'queued', 'in_progress'].includes(conclusion)
-        ? 'pending'
-        : 'fail';
-    return [{ name, verdict }];
-  });
-}
-
 /**
- * Checks the company's own CI reported for the release's commit: GitHub check runs and
- * workflow runs, or the checks sent with the release. A policy may name the ones it needs,
+ * Checks the company's own CI reported for the release's commit: GitHub check runs,
+ * workflow runs and checks reported through Bring your CI. A policy may name the ones it needs,
  * external_check("security.yml"); one that has not reported yet is waited for, never failed.
  */
 export const externalChecksGate: GateDefinition = {
@@ -85,10 +69,10 @@ export const externalChecksGate: GateDefinition = {
     const fromHost = repository
       ? await externalChecksFor(sql, repository.full_name, release.commit_sha)
       : [];
-    const checks: Reported[] = [
-      ...fromHost.map((check) => ({ name: check.name, verdict: check.verdict })),
-      ...provenanceChecks(release.provenance),
-    ];
+    const checks: Reported[] = fromHost.map((check) => ({
+      name: check.name,
+      verdict: check.verdict,
+    }));
     const required = args.length > 0 ? args : null;
     const considered = required ? checks.filter((check) => required.includes(check.name)) : checks;
     const evidence = { checks: considered };
@@ -133,5 +117,17 @@ export const securityScanGate: GateDefinition = {
       };
     }
     return { state: 'pass', reason: '0 high findings', evidence: { high, critical } };
+  },
+};
+
+/**
+ * The canary a policy asks for is judged during the rollout, step by step, on metrics; as a
+ * gate before it starts it only says so, and the plan carries the steps.
+ */
+export const canaryGate: GateDefinition = {
+  name: 'canary',
+  label: () => 'Canary',
+  async evaluate() {
+    return { state: 'pass', reason: 'Judged on metrics at each step of the rollout' };
   },
 };
