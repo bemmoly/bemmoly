@@ -133,6 +133,18 @@ export const policySchema = z.object({
   source: z.string(),
   sourceRepository: z.string().nullable(),
   updatedAt: isoDateTimeSchema,
+  /**
+   * A change waiting for a second Platform admin (Tier 0 policies), shown beside the
+   * version in force until it is approved; null when nothing waits.
+   */
+  pending: z
+    .object({
+      version: z.number().int().min(1),
+      sentence: z.string(),
+      createdBy: personRefSchema.nullable(),
+      createdAt: isoDateTimeSchema,
+    })
+    .nullable(),
 });
 
 export const policyVersionSchema = z.object({
@@ -147,6 +159,13 @@ export const policyVersionSchema = z.object({
   approvedBy: personRefSchema.nullable(),
   approvedAt: isoDateTimeSchema.nullable(),
   createdAt: isoDateTimeSchema,
+});
+
+export const bindingParamsSchema = z.object({ id: idSchema });
+export const policyParamsSchema = z.object({ id: idSchema });
+export const policyVersionParamsSchema = z.object({
+  id: idSchema,
+  version: z.coerce.number().int().min(1),
 });
 
 export const listPoliciesQuerySchema = z.object({ scope: scopePathSchema.optional() });
