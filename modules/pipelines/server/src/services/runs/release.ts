@@ -66,7 +66,7 @@ export async function releaseFromRun(
       const result = await writer.createRelease(tx, {
         applicationId: build.application_id,
         version: versionOf(run.ref, run.commit_sha),
-        source: 'pipeline',
+        source: 'runners',
         commitSha: run.commit_sha,
         ref: run.ref,
         imageRepository: `bemmoly-local/${build.application_key}`,

@@ -1,6 +1,6 @@
 import type { SqlExecutor } from '@bemmoly/core';
 import { ConflictError, NotFoundError } from '@bemmoly/shared';
-import type { ReleaseTestSummary } from '../../../../shared/releases.ts';
+import type { ReleaseSource, ReleaseTestSummary } from '../../../../shared/releases.ts';
 
 /*
  * The one way a release comes to exist (architecture §11): from a build on our own runners
@@ -13,7 +13,8 @@ import type { ReleaseTestSummary } from '../../../../shared/releases.ts';
 export interface CreateReleaseInput {
   applicationId: string;
   version: string;
-  source: 'pipeline' | 'external';
+  /** The contract's words: built by our runners, or registered from someone else's CI. */
+  source: ReleaseSource;
   commitSha: string;
   ref?: string | null;
   imageRepository?: string | null;
@@ -87,7 +88,7 @@ export function createReleaseWriter(): ReleaseWriter {
           (application_id, version, source, run_id, commit_sha, ref, image_repository,
            image_digests, resolved_config, test_summary, provenance, notes, created_by)
         values (${input.applicationId}, ${input.version},
-          ${input.source === 'pipeline' ? 'runners' : 'external'}, ${input.runId ?? null},
+          ${input.source}, ${input.runId ?? null},
           ${input.commitSha}, ${input.ref ?? null}, ${input.imageRepository ?? null},
           ${JSON.stringify(input.imageDigests)}::jsonb,
           ${JSON.stringify(input.resolvedConfig ?? {})}::jsonb,
