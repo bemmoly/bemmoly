@@ -40,6 +40,14 @@ export const AboveStable: Story = {
   },
 };
 
+export const Marginal: Story = {
+  args: {
+    canary: { label: 'Canary 25%', value: '0.34%', series: wave(0.2, 0.02) },
+    verdict: 'marginal',
+    verdictLabel: 'Marginal',
+  },
+};
+
 export const WaitingForSamples: Story = {
   args: {
     canary: { label: 'Canary 5%', value: null, series: [] },

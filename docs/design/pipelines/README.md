@@ -72,6 +72,7 @@ second and are invalidations: refetch, never patch from the event.
 | `MetricCompare` (canary against stable), `SeriesChart` (a line or bars with markers and a threshold) | `packages/ui` | built |
 | `FacetPanel`, `DeliverySpark` | `packages/ui` | built |
 | `AccessExplain` (a decision, its sentence and the steps behind it) | `packages/ui` | built |
+| `StatTile` (a headline number on a card, with its context and an optional trend) | `packages/ui` | built |
 | `ProvisionChecklist` (ordered steps toward something working: first run, a landing zone) | `packages/ui` | built |
 
 A new component lands in `packages/ui` with a story and an accessibility test
