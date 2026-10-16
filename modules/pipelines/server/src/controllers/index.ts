@@ -11,6 +11,7 @@ import { createCapacityController } from './capacity.controller.ts';
 import { createJobsController } from './jobs.controller.ts';
 import { createRunnerController } from './runner.controller.ts';
 import { createRunsController } from './runs.controller.ts';
+import { createHistoryController } from './history.controller.ts';
 import { createReleasesController } from './releases.controller.ts';
 import { createShippingController } from './shipping.controller.ts';
 import { createStreamsController } from './streams.controller.ts';
@@ -24,6 +25,7 @@ export function createPipelinesControllers(services: PipelinesServices) {
     discovery: createDiscoveryController(services.discovery),
     clouds: createCloudsController(services.clouds),
     organisation: createOrganisationController(services),
+    history: createHistoryController(services.history),
     releases: createReleasesController(services.releases),
     shipping: createShippingController(services.shipping),
     streams: createStreamsController(services.streams),

@@ -12,6 +12,7 @@ import type { Waker } from '../services/shipping/index.ts';
 
 export const SHIPPING_ADVANCE_JOB = 'pipelines.shipping-advance';
 export const SHIPPING_SWEEP_JOB = 'pipelines.shipping-sweep';
+export const HISTORY_SNAPSHOT_JOB = 'pipelines.history-snapshot';
 
 const advancePayloadSchema = z.object({
   kind: z.enum(['deployment', 'promotion']),
@@ -29,7 +30,11 @@ export function jobWaker(jobs: Pick<JobRegistry, 'send'>): Waker {
   };
 }
 
-export function shippingJobs(engine: () => ShippingEngine | undefined): JobDefinition[] {
+export function shippingJobs(
+  engine: () => ShippingEngine | undefined,
+  /** Takes the hourly snapshot rewind starts from. */
+  snapshot?: () => Promise<unknown>,
+): JobDefinition[] {
   return [
     {
       name: SHIPPING_ADVANCE_JOB,
@@ -49,6 +54,15 @@ export function shippingJobs(engine: () => ShippingEngine | undefined): JobDefin
       expireInSeconds: 300,
       handle: async () => {
         await engine()?.sweep();
+      },
+    },
+    {
+      name: HISTORY_SNAPSHOT_JOB,
+      schedule: '7 * * * *',
+      singleton: true,
+      retryLimit: 2,
+      handle: async () => {
+        await snapshot?.();
       },
     },
   ];

@@ -31,6 +31,7 @@ import { createInboxService } from './inbox/index.ts';
 import { createInsightsService } from './insights/index.ts';
 import { createOverviewService } from './overview/index.ts';
 import type { ProviderRegistry } from './providers/registry.ts';
+import { createHistoryService } from './history/index.ts';
 import { createReleasesService } from './releases/index.ts';
 import { createShippingAccess, createShippingService, type Waker } from './shipping/index.ts';
 import { createWebhookCaller, type WebhookSecrets } from './shipping/gates/index.ts';
@@ -131,6 +132,7 @@ export function createPipelinesServices(input: PipelinesServicesDeps) {
     teams: createTeamsService(deps),
     overview: createOverviewService(deps),
     releases,
+    history: createHistoryService({ ...deps, providers, ...(input.now ? { now: input.now } : {}) }),
     ci,
     streams: createStreamsService(deps),
     insights: createInsightsService(deps),

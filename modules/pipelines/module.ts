@@ -44,7 +44,11 @@ export default defineModule({
     ctx.jobs.add(landingZoneApplyJob(services.clouds));
     ctx.jobs.add(landingZoneDriftJob(services.clouds));
     ctx.jobs.add(discoveryJob(services.discovery));
-    for (const job of shippingJobs(() => services.shipping?.engine)) ctx.jobs.add(job);
+    const snapshot = async () => {
+      const days = await ctx.settings.get('pipelines.history.rewindDays');
+      return services.history.snapshot(typeof days === 'number' ? days : 90);
+    };
+    for (const job of shippingJobs(() => services.shipping?.engine, snapshot)) ctx.jobs.add(job);
     registerExecutionWork(ctx, services);
     const controllers = createPipelinesControllers(services);
     ctx.routes.add({ prefix: '/pipelines', plugin: pipelinesRoutes(controllers) });
