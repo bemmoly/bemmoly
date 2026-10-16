@@ -1,10 +1,10 @@
 import { isBemmolyError, UnauthenticatedError, ValidationError } from '@bemmoly/shared';
 import Fastify, { type FastifyInstance } from 'fastify';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { createPipelinesControllers } from '../../controllers/index.ts';
-import { runnerRoutes } from '../../routes/index.ts';
-import { createPool } from '../../testing/execution.ts';
-import { startPipelinesHarness, type PipelinesHarness } from '../../testing/harness.ts';
+import { createPipelinesControllers } from '../controllers/index.ts';
+import { runnerRoutes } from './index.ts';
+import { createPool } from '../testing/execution.ts';
+import { startPipelinesHarness, type PipelinesHarness } from '../testing/harness.ts';
 
 /* The runner protocol over HTTP: version header, status codes and token headers. */
 
