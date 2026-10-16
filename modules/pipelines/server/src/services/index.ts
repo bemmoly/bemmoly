@@ -24,6 +24,10 @@ import { registerCatalogSync } from './inbox/catalog-sync.ts';
 import { createInboxService } from './inbox/index.ts';
 import { createInsightsService } from './insights/index.ts';
 import { createOverviewService } from './overview/index.ts';
+import { awsProvider } from './providers/aws.ts';
+import { createProviderRegistry, type ProviderRegistry } from './providers/registry.ts';
+import { createShippingAccess, createShippingService, type Waker } from './shipping/index.ts';
+import { createWebhookCaller, type WebhookSecrets } from './shipping/gates/index.ts';
 import { createStreamsService } from './streams/index.ts';
 import { createTeamsService } from './teams/index.ts';
 
@@ -44,6 +48,13 @@ export interface PipelinesServicesDeps {
   ) => Promise<unknown>;
   /** The module's object store: build logs and artifacts. In memory when absent (tests). */
   objects?: ModuleObjects;
+  /** The clouds deploys go to; tests and the simulator pass the fake provider. */
+  providers?: ProviderRegistry;
+  /** Wakes the shipping engine at a time; without it the minute sweep does the waking. */
+  wake?: Waker;
+  /** Opens a webhook gate's sealed signing secret. */
+  webhookSecrets?: WebhookSecrets;
+  now?: () => Date;
 }
 
 /**
@@ -90,6 +101,19 @@ export function createPipelinesServices(input: PipelinesServicesDeps) {
     overview: createOverviewService(deps),
     streams: createStreamsService(deps),
     insights: createInsightsService(deps),
+    ...(input.database
+      ? {
+          shipping: createShippingService({
+            sql: input.database,
+            ...(input.settings ? { settings: input.settings } : {}),
+            providers: input.providers ?? createProviderRegistry([awsProvider]),
+            access: createShippingAccess(access),
+            webhook: createWebhookCaller(input.webhookSecrets ?? (async () => null)),
+            now: input.now ?? (() => new Date()),
+            wake: input.wake ?? (async () => undefined),
+          }),
+        }
+      : {}),
   };
 }
 

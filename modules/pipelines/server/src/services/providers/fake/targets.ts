@@ -11,7 +11,7 @@ import type {
 /*
  * Deterministic deploys and metrics for tests and the demo simulator. A release's
  * resolved config can script how its revision behaves: `fake.errorRate` (a fraction) and
- * `fake.latencyMs`, so a test makes a canary fail by building a release that says so.
+ * `fake.latencyMs`, optionally per environment, so a test makes a canary fail by building a release that says so.
  */
 
 interface FakeRevision {
@@ -65,10 +65,17 @@ export function createFakeTargets(world: FakeTargetsWorld): {
     async deploy(target, release) {
       const state = targetOf(target);
       const revision = `${target.application.key}-${release.version}-${state.revisions.size + 1}`;
+      // `fake.errorRate@prod-us` wins over `fake.errorRate`, so one release can pass Staging
+      // and fail its Prod canary, the way real regressions often do.
+      const config = (name: string, fallback: number) =>
+        numberOr(
+          release.resolvedConfig[`${name}@${target.environment.key}`],
+          numberOr(release.resolvedConfig[name], fallback),
+        );
       state.revisions.set(revision, {
         release,
-        errorRate: numberOr(release.resolvedConfig['fake.errorRate'], 0.002),
-        latencyMs: numberOr(release.resolvedConfig['fake.latencyMs'], 120),
+        errorRate: config('fake.errorRate', 0.002),
+        latencyMs: config('fake.latencyMs', 120),
       });
       record(target, `deploy ${release.version}`);
       return { revision };
