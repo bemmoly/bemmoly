@@ -88,9 +88,14 @@ export function createLocalProvider(): CloudProvider {
       const local = runtime(target);
       const container = await local.docker.inspect(revisionContainer(target, revision));
       if (!container?.State.Running) return 'failing';
-      const { client } = await local.splitter(target);
+      const found = await local.existing(target);
+      if (!found) return 'unknown';
       const to = new Date();
-      const counts = await client.metrics({ revision, from: new Date(to.getTime() - 60_000), to });
+      const counts = await found.client.metrics({
+        revision,
+        from: new Date(to.getTime() - 60_000),
+        to,
+      });
       if (counts.errorRate === null) return 'unknown';
       if (counts.errorRate >= 0.05) return 'failing';
       return counts.errorRate >= 0.01 ? 'degraded' : 'healthy';
@@ -118,8 +123,9 @@ export function createLocalProvider(): CloudProvider {
 
   const metrics: MetricsPart = {
     async revision(target, revision, metric, window) {
-      const { client } = await runtime(target).splitter(target);
-      const counts = await client.metrics({ revision, from: window.from, to: window.to });
+      const found = await runtime(target).existing(target);
+      if (!found) return null;
+      const counts = await found.client.metrics({ revision, from: window.from, to: window.to });
       const value = metric === 'error_rate' ? counts.errorRate : counts.p95;
       return {
         value: counts.requests > 0 ? value : null,
@@ -130,12 +136,16 @@ export function createLocalProvider(): CloudProvider {
         }),
       };
     },
-    /** A 99.9% objective over what the splitter remembers (its last 30 minutes). */
+    /**
+     * A 99.9% objective over what the splitter remembers (its last 30 minutes). Nothing
+     * served yet means nothing spent: the whole budget is left.
+     */
     async errorBudget(target) {
-      const { client } = await runtime(target).splitter(target);
+      const found = await runtime(target).existing(target);
+      if (!found) return 1;
       const to = new Date();
-      const counts = await client.metrics({ from: new Date(to.getTime() - 30 * 60_000), to });
-      if (counts.requests === 0) return null;
+      const counts = await found.client.metrics({ from: new Date(to.getTime() - 30 * 60_000), to });
+      if (counts.requests === 0) return 1;
       const allowed = counts.requests * 0.001;
       return Math.max(0, Math.min(1, 1 - counts.errors / Math.max(allowed, 1)));
     },

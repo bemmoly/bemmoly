@@ -89,8 +89,23 @@ export function createLocalRuntime(config: LocalConfig) {
 
   /** The application's splitter in this environment, created on first use. */
   async function splitter(target: DeployTarget): Promise<{ client: SplitterClient; url: string }> {
+    const found = await existingOrCreated(target, true);
+    if (!found) throw new Error(`${splitterName(target)} could not be created`);
+    return found;
+  }
+
+  /** The splitter when it exists; reads (metrics, health) never create one. */
+  async function existing(target: DeployTarget) {
+    return existingOrCreated(target, false);
+  }
+
+  async function existingOrCreated(
+    target: DeployTarget,
+    create: boolean,
+  ): Promise<{ client: SplitterClient; url: string } | null> {
     const name = splitterName(target);
     let found = await running(name);
+    if (!found && !create) return null;
     if (!found) {
       await ensureImage(config.nodeImage);
       await docker.ensureNetwork(NETWORK, { [LABEL]: 'true' });
@@ -121,13 +136,29 @@ export function createLocalRuntime(config: LocalConfig) {
     throw new Error(`${name} did not start answering`);
   }
 
+  /**
+   * The release's own image, when it has one. Builds on our runners leave a local image
+   * (bemmoly-local/<app>:<commit>) whose id is the release's digest; other releases name a
+   * registry image by digest, pulled when this machine does not have it yet.
+   */
+  async function releaseImage(release: ReleaseArtifact): Promise<string | null> {
+    const digest = Object.values(release.imageDigests)[0];
+    if (!release.imageRepository || !digest) return null;
+    const tagged = `${release.imageRepository}:${release.commitSha.replace(/[^A-Za-z0-9_.-]/g, '-')}`;
+    for (const candidate of [digest, `${release.imageRepository}@${digest}`, tagged]) {
+      if (await docker.hasImage(candidate)) return candidate;
+    }
+    const remote = `${release.imageRepository}@${digest}`;
+    await docker.pull(remote);
+    return remote;
+  }
+
   async function startRevision(target: DeployTarget, release: ReleaseArtifact): Promise<string> {
     const revision = `${target.application.key}-${slug(release.version)}-${randomBytes(2).toString('hex')}`;
     const name = revisionContainer(target, revision);
-    const digest = Object.values(release.imageDigests)[0];
-    const real = release.imageRepository && digest ? `${release.imageRepository}@${digest}` : null;
+    const real = await releaseImage(release);
     const image = real ?? config.nodeImage;
-    await ensureImage(image);
+    if (!real) await ensureImage(image);
     const env = target.environment.key;
     await docker.create({
       name,
@@ -164,7 +195,7 @@ export function createLocalRuntime(config: LocalConfig) {
       .sort((a, b) => b.created - a.created);
   }
 
-  return { docker, splitter, startRevision, revisions, running };
+  return { docker, splitter, existing, startRevision, revisions, running };
 }
 
 export type LocalRuntime = ReturnType<typeof createLocalRuntime>;

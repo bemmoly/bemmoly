@@ -151,17 +151,22 @@ export function createDockerClient(options: DockerClientOptions) {
 
     /** Pulls an image; the daemon streams progress, which ends when the pull does. */
     async pull(image: string): Promise<void> {
+      // "repo@sha256:…" is pulled by digest; "repo:tag" by tag; a bare name is :latest.
       const at = image.lastIndexOf(':');
-      const [name, tag] =
-        at > image.lastIndexOf('/') ? [image.slice(0, at), image.slice(at + 1)] : [image, 'latest'];
+      const query = image.includes('@')
+        ? `fromImage=${encodeURIComponent(image)}`
+        : at > image.lastIndexOf('/')
+          ? `fromImage=${encodeURIComponent(image.slice(0, at))}&tag=${encodeURIComponent(image.slice(at + 1))}`
+          : `fromImage=${encodeURIComponent(image)}&tag=latest`;
       const { status, text } = await call(
         'POST',
-        `/images/create?fromImage=${encodeURIComponent(name)}&tag=${encodeURIComponent(tag)}`,
+        `/images/create?${query}`,
         undefined,
         10 * 60_000,
       );
-      if (status >= 300 || text.includes('"error"'))
+      if (status >= 300 || text.includes('"error"')) {
         throw new DockerError(`Could not pull ${image}: ${text.slice(-300)}`, status);
+      }
     },
 
     async ensureNetwork(name: string, labels: Record<string, string>): Promise<void> {
