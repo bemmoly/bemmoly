@@ -127,6 +127,7 @@ export async function seedLiveJobs(world: World) {
     const main = rng.chance(0.4);
     runs.push({
       id,
+      application_id: app.id,
       repository_id: app.repoId,
       trigger: main ? 'push' : 'pull_request',
       ref: main ? 'main' : `pull/${rng.int(900, 9900)}`,

@@ -67,6 +67,7 @@ export async function makeRun(world: World, input: RunInput) {
   await insertMany(sql, 'pipeline_runs', [
     {
       id,
+      application_id: input.app.id,
       repository_id: input.app.repoId,
       trigger: input.main ? 'push' : 'pull_request',
       ref: input.main ? 'main' : `pull/${input.pullRequest ?? 0}`,

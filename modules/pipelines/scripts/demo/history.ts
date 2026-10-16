@@ -135,6 +135,7 @@ export async function seedHistory(world: World): Promise<ReleaseInfo[]> {
     const sha = rng.hex(40);
     runs.push({
       id: shape.id,
+      application_id: shape.app.id,
       repository_id: shape.app.repoId,
       trigger: shape.trigger,
       ref: shape.main ? 'main' : `pull/${shape.pr ?? 0}`,
