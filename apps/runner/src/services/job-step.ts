@@ -2,7 +2,7 @@ import type { ClaimedJob, ResolvedStep } from '@bemmoly/module-pipelines/shared'
 import type { Executors, StepExecutor } from '../executors/index.ts';
 import { stripAnsi } from '../utils/lines.ts';
 import type { SecretMasker } from '../utils/mask.ts';
-import { BUILD_ACTION, buildCommand, isBuildAction } from './build-step.ts';
+import { BUILD_ACTION, BuildExecutor, buildCommand, isBuildAction } from './build-step.ts';
 
 /** Words that mark a line as the error a person would want to read first. */
 const ERROR_LINE =
@@ -50,7 +50,10 @@ export function prepareStep(
 ): PreparedStep | { refusal: string } {
   if (step.uses) {
     if (isBuildAction(step.uses)) {
-      return { executor: executors.host(), step: { ...step, run: buildCommand(job, step) } };
+      return {
+        executor: new BuildExecutor(executors.host()),
+        step: { ...step, run: buildCommand(job, step) },
+      };
     }
     return {
       refusal: `This runner cannot run "uses: ${step.uses}"; it supports ${BUILD_ACTION} and run steps`,
