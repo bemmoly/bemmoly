@@ -92,11 +92,18 @@ export const logSearchSchema = z.object({
   truncated: z.boolean(),
 });
 
-/** What the `job:<id>:log` stream topic carries: lines appended since `fromLine`. */
+/**
+ * What the `job:<id>:log` stream topic carries: lines appended since `fromLine`. Live events
+ * are coalesced and NOTIFY payloads are small, so `lines` may stop short of `toLine` (or be
+ * empty): read the missing range with GET …/logs?from=. A gap before `fromLine` is read the
+ * same way.
+ */
 export const logAppendedSchema = z.object({
   jobId: idSchema,
   fromLine: z.number().int().min(1),
   lines: z.array(logLineSchema),
+  /** The last line written so far. */
+  toLine: z.number().int().min(0).optional(),
 });
 
 export const jobParamsSchema = z.object({ id: idSchema });

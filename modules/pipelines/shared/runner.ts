@@ -13,13 +13,24 @@ import { resolvedStepSchema } from './pipeline-spec.ts';
  *   POST /jobs/:id/steps/:position/state
  *   POST /jobs/:id/logs       ordered chunks (about 64 KB or 1 s)
  *   POST /jobs/:id/tests      a JUnit summary
+ *   POST /jobs/:id/splits     the test files this shard runs, split by past timings
+ *   GET  /jobs/:id/secrets    the values of the secrets the job's steps name
+ *   PUT  /jobs/:id/artifacts?name=   one file the job keeps (raw body)
  *   POST /jobs/:id/finish
  * Runners poll out; nothing in the execution plane needs an inbound connection.
+ *
+ * Runners authenticate with their own tokens, never a person's: the runner token in
+ * RUNNER_TOKEN_HEADER for register-time calls (heartbeat, claims), the job token in
+ * JOB_TOKEN_HEADER for everything under /jobs/:id. `Authorization` stays the API tokens'.
  */
 
 export const RUNNER_PROTOCOL_VERSION = '1';
 /** Every runner request names its protocol version in this header. */
 export const RUNNER_PROTOCOL_HEADER = 'x-bemmoly-runner-protocol';
+export const RUNNER_TOKEN_HEADER = 'x-bemmoly-runner-token';
+export const JOB_TOKEN_HEADER = 'x-bemmoly-job-token';
+/** How often a runner heartbeats; three missed beats and its job goes back to the queue. */
+export const HEARTBEAT_SECONDS = 10;
 
 export const registerRunnerBodySchema = z.object({
   /** The pool's registration token; hashed at rest and rotatable. */
@@ -72,6 +83,10 @@ export const claimedJobSchema = z.object({
     ref: z.string(),
   }),
   shard: z.object({ index: z.number().int(), total: z.number().int() }).nullable(),
+  /** The matrix cell, also in env as BEMMOLY_MATRIX_<AXIS>. */
+  matrix: z.record(z.string(), z.union([z.string(), z.number(), z.boolean()])).nullable(),
+  /** False when the pipeline needs no copy of the repository. */
+  checkout: z.boolean(),
   steps: z.array(resolvedStepSchema),
   env: z.record(z.string(), z.string()),
   /** Names only; the runner fetches values with the job token, masked in logs. */
@@ -140,6 +155,35 @@ export const finishJobBodySchema = z.object({
   at: isoDateTimeSchema,
 });
 
+/** The files a shard runs: every shard sends the same list and gets its own part back. */
+export const splitsBodySchema = z.object({
+  files: z.array(z.string().min(1).max(500)).max(20_000),
+});
+export const splitsResponseSchema = z.object({
+  files: z.array(z.string()),
+  /** Expected seconds for this shard, from past timings. */
+  expectedSeconds: z.number().int().min(0),
+});
+
+/** Values for the secrets the job's steps name; missing ones are absent, never empty. */
+export const jobSecretsResponseSchema = z.object({ values: z.record(z.string(), z.string()) });
+
+export const artifactUploadQuerySchema = z.object({
+  name: z
+    .string()
+    .min(1)
+    .max(200)
+    .regex(/^[A-Za-z0-9][A-Za-z0-9._-]*$/, 'Artifact names use letters, digits, dots and dashes'),
+});
+
+export const jobArtifactSchema = z.object({
+  id: idSchema,
+  name: z.string(),
+  size: z.number().int().min(0),
+  contentType: z.string(),
+  createdAt: isoDateTimeSchema,
+});
+
 export const runnerJobParamsSchema = z.object({ id: idSchema });
 export const runnerStepParamsSchema = z.object({
   id: idSchema,
@@ -159,3 +203,7 @@ export type LogChunkUpload = z.infer<typeof logChunkUploadSchema>;
 export type TestCaseResult = z.infer<typeof testCaseResultSchema>;
 export type TestReportUpload = z.input<typeof testReportUploadSchema>;
 export type FinishJobBody = z.infer<typeof finishJobBodySchema>;
+export type SplitsBody = z.infer<typeof splitsBodySchema>;
+export type SplitsResponse = z.infer<typeof splitsResponseSchema>;
+export type JobSecretsResponse = z.infer<typeof jobSecretsResponseSchema>;
+export type JobArtifact = z.infer<typeof jobArtifactSchema>;

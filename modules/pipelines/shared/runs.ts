@@ -96,6 +96,10 @@ export const jobSchema = z.object({
   maxAttempts: z.number().int().min(1),
   timeoutMinutes: z.number().int(),
   failureSummary: z.string().nullable(),
+  /** Groups identical failures across runs (tests.ts, GET /failures). */
+  failureFingerprint: z.string().nullable(),
+  /** The matrix cell this job runs, e.g. { node: 24 }. */
+  matrix: z.record(z.string(), z.union([z.string(), z.number(), z.boolean()])).nullable(),
   waitReason: waitReasonSchema.nullable(),
   readyAt: isoDateTimeSchema.nullable(),
   startedAt: isoDateTimeSchema.nullable(),
@@ -143,6 +147,9 @@ export const failedTestSchema = z.object({
   flakiness: z
     .object({ failedRecent: z.number().int().min(0), ofRecent: z.number().int().min(0) })
     .nullable(),
+  /** Quarantined by the owning team: listed, but it does not fail the run. */
+  quarantined: z.boolean(),
+  fingerprint: z.string().nullable(),
 });
 
 export const testSummarySchema = z.object({
@@ -150,6 +157,8 @@ export const testSummarySchema = z.object({
   passed: z.number().int().min(0),
   failed: z.number().int().min(0),
   skipped: z.number().int().min(0),
+  /** Failures of quarantined tests, inside `failed` and listed in `failures`. */
+  quarantined: z.number().int().min(0),
   failures: z.array(failedTestSchema),
 });
 
@@ -209,6 +218,8 @@ export const createRunBodySchema = z.object({
   variables: z
     .record(z.string().regex(/^[A-Z_][A-Z0-9_]{0,127}$/), z.string().max(4096))
     .default({}),
+  /** Values for the pipeline's inputs, checked against their types (GET …/pipeline). */
+  inputs: z.record(z.string(), z.union([z.string(), z.number(), z.boolean()])).default({}),
 });
 
 /** Shift+R re-runs only what failed, keeping the passing work. */

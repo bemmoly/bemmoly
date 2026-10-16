@@ -10,6 +10,7 @@ export * from './runs.ts';
 export * from './logs.ts';
 export * from './pipeline-spec.ts';
 export * from './runner.ts';
+export * from './tests.ts';
 export * from './releases.ts';
 export * from './promotions.ts';
 export * from './trains.ts';
