@@ -12,9 +12,14 @@ import { advanceRun, type RunOutcome } from '../orchestrator/advance.ts';
  */
 
 export async function resetForRerun(tx: SqlExecutor, runId: string): Promise<RunOutcome> {
-  const [run] = await tx<{ state: string }[]>`
-    select state from pipeline_runs where id = ${runId} for update`;
+  const [run] = await tx<{ state: string; failure_reason: string | null }[]>`
+    select state, failure_reason from pipeline_runs where id = ${runId} for update`;
   if (!run) throw new NotFoundError('That run does not exist');
+  if (run.failure_reason) {
+    throw new ValidationError(
+      'This run failed before any job started, so no job can re-run. Fix the pipeline, then run it again.',
+    );
+  }
   if (['queued', 'running', 'waiting'].includes(run.state)) {
     throw new ValidationError('The run is still going. Cancel it first, or wait for it to finish.');
   }

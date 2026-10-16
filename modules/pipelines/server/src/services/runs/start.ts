@@ -105,7 +105,8 @@ async function insertJobs(tx: SqlExecutor, runId: string, plans: JobPlan[], inpu
   }
 }
 
-async function supersede(tx: SqlExecutor, run: StartedRun, key: string) {
+/** Older live runs with the same key give way to this one, keeping deploys that already began. */
+export async function supersede(tx: SqlExecutor, run: StartedRun, key: string) {
   const older = await tx<{ id: string }[]>`
     select id from pipeline_runs
     where supersede_key = ${key} and id <> ${run.id} and state in ('queued', 'running', 'waiting')
@@ -145,6 +146,12 @@ export async function startRun(tx: SqlExecutor, input: StartRunInput): Promise<S
         application: application.key,
         defaultTimeoutMinutes: input.defaultTimeoutMinutes,
         inputs: input.inputs ?? {},
+      }).catch((error: unknown) => {
+        // In a monorepo run the reason must say which application's pipeline is wrong.
+        if (error instanceof ValidationError && input.applications.length > 1) {
+          throw new ValidationError(`${application.key}: ${error.message}`);
+        }
+        throw error;
       }));
     expandable.push({
       id: application.id,

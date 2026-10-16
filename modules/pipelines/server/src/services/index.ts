@@ -15,7 +15,7 @@ import { createTestsService } from './tests/index.ts';
 import { ciAudiences, createCiService } from './ci/index.ts';
 import { createTriggersService } from './triggers/index.ts';
 import { RELEASE_FROM_RUN_JOB, releaseFromRun } from './runs/release.ts';
-import { reportJobCheck } from './runs/checks.ts';
+import { reportJobCheck, reportRunCheck } from './runs/checks.ts';
 import { createCapacityService } from './capacity/index.ts';
 import { createCatalogService } from './catalog/index.ts';
 import { createCatalogWritesService } from './catalog-writes/index.ts';
@@ -145,6 +145,8 @@ export function createPipelinesServices(input: PipelinesServicesDeps) {
     releaseFrom,
     reportCheck: async (jobId: string) =>
       input.database ? reportJobCheck(input.database, code, jobId) : false,
+    reportRunCheck: async (runId: string) =>
+      input.database ? reportRunCheck(input.database, code, runId) : false,
     triggers,
     capacity: createCapacityService(deps),
     runner: createRunnerService({ ...execution, wakeups, logs, tests, secrets: variableSecrets }),

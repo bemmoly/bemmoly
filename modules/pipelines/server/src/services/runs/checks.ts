@@ -65,3 +65,45 @@ export async function reportJobCheck(
   await sql`update pipeline_jobs set check_external_id = ${externalId} where id = ${jobId}`;
   return true;
 }
+
+/**
+ * A run that failed before any job (its pipeline did not read or resolve) has no job to
+ * carry a check, so the run reports one failed check of its own, saying why.
+ */
+export async function reportRunCheck(
+  sql: SqlClient,
+  hosts: PipelinesCodeHosts | undefined,
+  runId: string,
+  publicUrl?: string,
+): Promise<boolean> {
+  if (!hosts) return false;
+  const [run] = await sql<
+    {
+      failure_reason: string | null;
+      commit_sha: string;
+      full_name: string | null;
+      applications: string | null;
+    }[]
+  >`
+    select r.failure_reason, r.commit_sha, p.full_name,
+      (select string_agg(a.key, ', ' order by ra.created_at)
+        from pipeline_run_applications ra join pipeline_applications a on a.id = ra.application_id
+        where ra.run_id = r.id) as applications
+    from pipeline_runs r left join pipeline_repositories p on p.id = r.repository_id
+    where r.id = ${runId}`;
+  if (!run?.full_name || !run.failure_reason) return false;
+  const client = await hosts.client(run.full_name, 'live');
+  if (!client) return false;
+  const name = run.applications ? `${run.applications} · Pipeline` : 'Pipeline';
+  await client.reportCheck({
+    repository: run.full_name,
+    headSha: run.commit_sha,
+    name: `Bemmoly · ${name}`,
+    status: 'completed',
+    conclusion: 'failure',
+    ...(publicUrl ? { detailsUrl: `${publicUrl}/pipelines/runs/${runId}` } : {}),
+    title: `${name}: could not start`,
+    summary: run.failure_reason,
+  });
+  return true;
+}

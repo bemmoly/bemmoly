@@ -18,6 +18,8 @@ export const LOG_RETENTION_JOB = 'pipelines.logs-retention';
 
 const runPayload = z.object({ runId: z.uuid() });
 const jobPayload = z.object({ jobId: z.uuid() });
+/** A job's check, or the one check of a run that could not start. */
+const checkPayload = z.union([jobPayload, runPayload]);
 
 export function registerExecutionWork(ctx: ModuleContext, services: PipelinesServices): void {
   ctx.jobs.add({
@@ -33,7 +35,9 @@ export function registerExecutionWork(ctx: ModuleContext, services: PipelinesSer
     retryDelaySeconds: 10,
     concurrency: 4,
     async handle(payload) {
-      await services.reportCheck(jobPayload.parse(payload).jobId);
+      const target = checkPayload.parse(payload);
+      if ('jobId' in target) await services.reportCheck(target.jobId);
+      else await services.reportRunCheck(target.runId);
     },
   });
   ctx.jobs.add({

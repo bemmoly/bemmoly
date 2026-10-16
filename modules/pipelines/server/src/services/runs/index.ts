@@ -176,13 +176,21 @@ export function createRunsService(deps: ExecutionDeps) {
             inputs: Record<string, string>;
             variables: Record<string, string>;
             from_fork: boolean;
+            failure_reason: string | null;
           }[]
         >`select * from pipeline_runs where id = ${runId}`;
         if (!run) throw new NotFoundError('That run does not exist');
-        const apps = await tx<{ id: string; key: string; owner_team_id: string | null }[]>`
-          select a.id, a.key, a.owner_team_id from pipeline_run_applications ra
+        const apps = await tx<
+          { id: string; key: string; owner_team_id: string | null; pipeline: unknown }[]
+        >`
+          select a.id, a.key, a.owner_team_id, a.pipeline from pipeline_run_applications ra
           join pipeline_applications a on a.id = ra.application_id
           where ra.run_id = ${runId} order by ra.created_at`;
+        if (apps.length === 0 && run.failure_reason) {
+          throw new ValidationError(
+            'No application came from this push yet. Fix the file and push again.',
+          );
+        }
         const spec = run.resolved_spec as
           | ResolvedPipeline
           | { applications: Array<{ key: string; pipeline: ResolvedPipeline }> }
@@ -195,7 +203,8 @@ export function createRunsService(deps: ExecutionDeps) {
           id: app.id,
           key: app.key,
           teamId: app.owner_team_id,
-          pipeline: null,
+          // A run that never resolved has nothing to repeat: it resolves today's pipeline.
+          pipeline: app.pipeline,
           ...(resolvedFor(app.key) ? { resolved: resolvedFor(app.key) } : {}),
         }));
         return startRun(tx, {

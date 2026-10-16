@@ -32,6 +32,7 @@ export interface RunRow {
   external_url: string | null;
   superseded_by_run_id: string | null;
   rerun_of_run_id: string | null;
+  failure_reason: string | null;
   resolved_spec?: unknown;
   created_at: Date | string;
   started_at: Date | string | null;
@@ -50,7 +51,7 @@ export function runSummarySelect(sql: SqlExecutor) {
         from pipeline_run_applications ra join pipeline_applications a on a.id = ra.application_id
         where ra.run_id = r.id) as applications,
       r.state, r.priority_class, r.executor, r.external_url, r.superseded_by_run_id,
-      r.rerun_of_run_id, r.created_at, r.started_at, r.finished_at
+      r.rerun_of_run_id, r.failure_reason, r.created_at, r.started_at, r.finished_at
     from pipeline_runs r
     left join users u on u.id = r.author_user_id
     left join teams t on t.id = r.team_id
@@ -94,6 +95,7 @@ export function toRunSummary(row: RunRow): RunSummary {
     externalUrl: row.external_url,
     supersededByRunId: row.superseded_by_run_id,
     rerunOfRunId: row.rerun_of_run_id,
+    failureReason: row.failure_reason,
     createdAt: iso(row.created_at),
     startedAt: isoOrNull(row.started_at),
     finishedAt: isoOrNull(row.finished_at),

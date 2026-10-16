@@ -130,6 +130,11 @@ export const runSummarySchema = z.object({
   externalUrl: z.string().nullable(),
   supersededByRunId: idSchema.nullable(),
   rerunOfRunId: idSchema.nullable(),
+  /**
+   * Why the run failed before any job started, said plainly: "Couldn't read
+   * .bemmoly/application.yaml: …". Null for a run whose jobs ran; their failures say why.
+   */
+  failureReason: z.string().nullable(),
   createdAt: isoDateTimeSchema,
   startedAt: isoDateTimeSchema.nullable(),
   finishedAt: isoDateTimeSchema.nullable(),

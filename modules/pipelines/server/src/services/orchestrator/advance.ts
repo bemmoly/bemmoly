@@ -62,7 +62,14 @@ export async function wakeDispatch(tx: SqlExecutor, poolIds: Iterable<string | n
 /** The run's state from its jobs' states, and moves it there. */
 async function settleRun(tx: SqlExecutor, runId: string): Promise<RunOutcome> {
   const [counts] = await tx<
-    { live: number; started: number; failed: number; cancelled: number; total: number }[]
+    {
+      live: number;
+      started: number;
+      failed: number;
+      cancelled: number;
+      total: number;
+      unstartable: boolean;
+    }[]
   >`
     select
       count(*) filter (where state in ('pending', 'ready', 'claimed', 'running'))::int as live,
@@ -70,9 +77,17 @@ async function settleRun(tx: SqlExecutor, runId: string): Promise<RunOutcome> {
         as started,
       count(*) filter (where state = 'failed')::int as failed,
       count(*) filter (where state = 'cancelled')::int as cancelled,
-      count(*)::int as total
+      count(*)::int as total,
+      (select failure_reason is not null from pipeline_runs where id = ${runId}) as unstartable
     from pipeline_jobs where run_id = ${runId}`;
-  const c = counts ?? { live: 0, started: 0, failed: 0, cancelled: 0, total: 0 };
+  const c = counts ?? {
+    live: 0,
+    started: 0,
+    failed: 0,
+    cancelled: 0,
+    total: 0,
+    unstartable: false,
+  };
   const state =
     c.live > 0
       ? c.started > 0
@@ -83,7 +98,10 @@ async function settleRun(tx: SqlExecutor, runId: string): Promise<RunOutcome> {
         : c.cancelled > 0
           ? 'cancelled'
           : c.total === 0
-            ? 'skipped'
+            ? // A run that failed before any job (runs/failed.ts) stays failed.
+              c.unstartable
+              ? 'failed'
+              : 'skipped'
             : 'passed';
   const finishing = FINISHED.includes(state);
   const [row] = await tx<{ previous: string; number: number }[]>`

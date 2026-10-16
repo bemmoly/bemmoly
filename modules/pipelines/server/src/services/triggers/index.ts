@@ -1,12 +1,13 @@
 import type { CodeEvent, SqlExecutor } from '@bemmoly/core';
-import { ValidationError } from '@bemmoly/shared';
 import { requireDatabase } from '../deps.ts';
 import { advanceRun } from '../orchestrator/advance.ts';
 import { affectedApplications } from '../orchestrator/affected.ts';
 import { cancelJobsOf } from '../runs/cancel.ts';
-import { announce, runDefaults, type ExecutionDeps } from '../runs/context.ts';
-import { startRun, type StartRunInput } from '../runs/start.ts';
+import { announce, queueRunCheck, runDefaults, type ExecutionDeps } from '../runs/context.ts';
+import { recordFailedRun, startOrRecordFailure } from '../runs/failed.ts';
+import type { StartApplication, StartRunInput } from '../runs/start.ts';
 import { nextRunAt } from './schedules.ts';
+import { unreadableFiles, unreadableReason } from './unreadable.ts';
 
 export { nextRunAt, refreshSchedules } from './schedules.ts';
 
@@ -16,6 +17,7 @@ export { nextRunAt, refreshSchedules } from './schedules.ts';
  * handlers in order per repository, at least once) wires them in one line, and each is
  * idempotent through the run's idempotency key: a redelivered event starts nothing new.
  * A newer commit on a pull request supersedes the older run; closing it cancels the run.
+ * A pipeline that cannot start still makes a run: a failed one that says why.
  */
 
 type Push = Extract<CodeEvent, { type: 'push' }>;
@@ -60,32 +62,35 @@ export function createTriggersService(deps: ExecutionDeps) {
         changedFiles,
       ),
     );
-    const applications = candidates.filter((c) => affected.has(c.key));
-    const first = applications[0];
-    if (!first) return null;
-    const defaults = await runDefaults(deps);
-    // A pipeline that does not resolve (a missing template, a bad input) must not hold the
-    // repository's inbox: the event is done, and the run form says what is wrong when a
-    // person tries.
-    const run = await sql
-      .begin((tx) =>
-        startRun(tx, {
-          ...input,
-          ...defaults,
-          repositoryId: first.repository_id,
-          applications: applications.map((c) => ({
-            id: c.id,
-            key: c.key,
-            teamId: c.owner_team_id,
-            pipeline: c.pipeline,
-          })),
-        }),
-      )
-      .catch((error: unknown) => {
-        if (error instanceof ValidationError) return null;
-        throw error;
-      });
-    return run?.id ?? null;
+    const applications: StartApplication[] = candidates
+      .filter((c) => affected.has(c.key))
+      .map((c) => ({ id: c.id, key: c.key, teamId: c.owner_team_id, pipeline: c.pipeline }));
+    const unreadable = await unreadableFiles(sql, repository, input.commitSha);
+    for (const file of unreadable) {
+      if (file.application && !applications.some((a) => a.id === file.application?.id)) {
+        applications.push({ ...file.application, pipeline: null });
+      }
+    }
+    const repositoryId = candidates[0]?.repository_id ?? unreadable[0]?.repositoryId;
+    if (!repositoryId || (applications.length === 0 && unreadable.length === 0)) return null;
+    const run: StartRunInput = {
+      ...input,
+      ...(await runDefaults(deps)),
+      repositoryId,
+      applications,
+    };
+    // A file that does not read or a pipeline that does not resolve fails the run, saying
+    // why; it never holds the repository's inbox, and it never passes silently.
+    const outcome = await sql.begin((tx) =>
+      unreadable.length > 0
+        ? recordFailedRun(tx, run, unreadableReason(unreadable))
+        : startOrRecordFailure(tx, run),
+    );
+    if (outcome.created && outcome.failed) {
+      await queueRunCheck(deps, outcome.id);
+      await announce(deps, [{ runId: outcome.id, state: 'failed', finished: true }]);
+    }
+    return outcome.id;
   }
 
   return {
@@ -189,7 +194,9 @@ export function createTriggersService(deps: ExecutionDeps) {
             order by id desc limit 1`;
           const slot = new Date(schedule.next_run_at).toISOString();
           if (latest) {
-            await startRun(tx, {
+            // A schedule whose pipeline no longer resolves fails its run, saying why, rather
+            // than rolling back every schedule due this minute, forever.
+            await startOrRecordFailure(tx, {
               applications: [
                 {
                   id: schedule.application_id,

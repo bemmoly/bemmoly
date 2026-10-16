@@ -34,6 +34,12 @@ export async function queueCheck(
   );
 }
 
+/** Queues the one failed check of a run that could not start; nothing without a code host. */
+export async function queueRunCheck(deps: ExecutionDeps, runId: string) {
+  if (!deps.code || !deps.sendJob) return;
+  await deps.sendJob('pipelines.report-check', { runId }, { idempotencyKey: `check:run:${runId}` });
+}
+
 export interface RunDefaults {
   defaultTimeoutMinutes: number;
   defaultPoolKey: string;
