@@ -4,6 +4,7 @@ import {
   createRoute,
   createRouter,
   lazyRouteComponent,
+  redirect,
 } from '@tanstack/react-router';
 import { meQuery } from './hooks/use-me.ts';
 import { BASE_PATH } from './lib/sign-in.ts';
@@ -30,15 +31,37 @@ const root = createRootRouteWithContext<RouterContext>()({
 const screen = (path: string, load: Parameters<typeof lazyRouteComponent>[0]) =>
   createRoute({ getParentRoute: () => root, path, component: lazyRouteComponent(load) });
 
+/** Platform's areas share one frame with their tabs; /platform opens the first. */
+const platform = createRoute({
+  getParentRoute: () => root,
+  path: '/platform',
+  beforeLoad: ({ location }) => {
+    if (/\/platform\/?$/.test(location.pathname))
+      throw redirect({ href: `${BASE_PATH}/platform/access`, replace: true });
+  },
+  component: lazyRouteComponent(() => import('./screens/platform/layout.tsx')),
+});
+const platformArea = (path: string, load: Parameters<typeof lazyRouteComponent>[0]) =>
+  createRoute({ getParentRoute: () => platform, path, component: lazyRouteComponent(load) });
+
 const routeTree = root.addChildren([
   screen('/', () => import('./screens/for-you.tsx')),
   screen('/map', () => import('./screens/map.tsx')),
   screen('/catalog', () => import('./screens/catalog.tsx')),
   screen('/runs', () => import('./screens/runs.tsx')),
-  screen('/releases', () => import('./screens/releases.tsx')),
-  screen('/insights', () => import('./screens/insights.tsx')),
-  screen('/platform', () => import('./screens/platform.tsx')),
-  screen('/settings', () => import('./screens/settings.tsx')),
+  screen('/releases', () => import('./screens/releases/index.tsx')),
+  screen('/releases/changes', () => import('./screens/changes/index.tsx')),
+  screen('/releases/$releaseId/promote', () => import('./screens/promote/index.tsx')),
+  screen('/insights', () => import('./screens/insights/index.tsx')),
+  platform.addChildren([
+    platformArea('/access', () => import('./screens/platform/access/index.tsx')),
+    platformArea('/capacity', () => import('./screens/platform/capacity/index.tsx')),
+    platformArea('/clouds', () => import('./screens/platform/clouds/index.tsx')),
+    platformArea('/clouds/connect', () => import('./screens/platform/clouds/connect.tsx')),
+    platformArea('/environments', () => import('./screens/platform/environments/index.tsx')),
+  ]),
+  screen('/start', () => import('./screens/start/index.tsx')),
+  screen('/settings', () => import('./screens/settings/index.tsx')),
 ]);
 
 export function createPipelinesRouter(queryClient: QueryClient) {
