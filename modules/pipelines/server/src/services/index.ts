@@ -14,6 +14,8 @@ import { createRunHooks, createRunsService } from './runs/index.ts';
 import { createTestsService } from './tests/index.ts';
 import { createCiService } from './ci/index.ts';
 import { createTriggersService } from './triggers/index.ts';
+import { RELEASE_FROM_RUN_JOB, releaseFromRun } from './runs/release.ts';
+import { reportJobCheck } from './runs/checks.ts';
 import { createCapacityService } from './capacity/index.ts';
 import { createCatalogService } from './catalog/index.ts';
 import { createCatalogWritesService } from './catalog-writes/index.ts';
@@ -91,6 +93,16 @@ export function createPipelinesServices(input: PipelinesServicesDeps) {
   const logs = createLogsService(deps);
   const tests = createTestsService(deps);
   const execution = { ...deps, hooks };
+  // A passing build on the default branch or a tag becomes a release once its run commits:
+  // as a job with a key per run, so a failure retries and a repeat does nothing.
+  const releaseFrom = async (runId: string) =>
+    input.database ? releaseFromRun(input.database, releases.writer, runId) : 0;
+  hooks.onFinished(async ({ runId, state }) => {
+    if (state !== 'passed') return;
+    if (input.sendJob) {
+      await input.sendJob(RELEASE_FROM_RUN_JOB, { runId }, { idempotencyKey: `release:${runId}` });
+    } else await releaseFrom(runId);
+  });
   const providers = input.providers ?? providersFromSettings(input.settings);
   const triggers = createTriggersService(execution);
   // Runs start from code host events in arrival order per repository (the inbox's promise).
@@ -106,6 +118,9 @@ export function createPipelinesServices(input: PipelinesServicesDeps) {
     tests,
     artifacts: createArtifactsService(deps),
     runs: createRunsService(execution),
+    releaseFrom,
+    reportCheck: async (jobId: string) =>
+      input.database ? reportJobCheck(input.database, code, jobId) : false,
     triggers,
     capacity: createCapacityService(deps),
     runner: createRunnerService({ ...execution, wakeups, logs, tests, secrets: variableSecrets }),

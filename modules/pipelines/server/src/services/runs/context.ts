@@ -1,4 +1,5 @@
-import type { SettingsRegistry } from '@bemmoly/core';
+import type { SendJobOptions, SettingsRegistry } from '@bemmoly/core';
+import type { PipelinesCodeHosts } from '../code/hosts.ts';
 import { z } from 'zod';
 import type { PipelinesServiceDeps } from '../deps.ts';
 import type { RunOutcome } from '../orchestrator/advance.ts';
@@ -8,6 +9,29 @@ import type { RunHooks } from './hooks.ts';
 export interface ExecutionDeps extends PipelinesServiceDeps {
   settings?: Pick<SettingsRegistry, 'get'>;
   hooks: RunHooks;
+  /** The connected code hosts, for check runs; absent without one. */
+  code?: PipelinesCodeHosts;
+  sendJob?: (
+    name: string,
+    payload: Record<string, unknown>,
+    options?: SendJobOptions,
+  ) => Promise<unknown>;
+}
+
+/** Queues a check run update for a job's new state; nothing without a code host. */
+export async function queueCheck(
+  deps: ExecutionDeps,
+  job: { id: string; attempt: number },
+  state: string,
+) {
+  if (!deps.code || !deps.sendJob) return;
+  await deps.sendJob(
+    'pipelines.report-check',
+    { jobId: job.id },
+    {
+      idempotencyKey: `check:${job.id}:${job.attempt}:${state}`,
+    },
+  );
 }
 
 export interface RunDefaults {

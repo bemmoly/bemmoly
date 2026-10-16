@@ -52,3 +52,12 @@ describe('expandJobs', () => {
     ]);
   });
 });
+
+describe('release versions', () => {
+  it('uses the tag a run built, else the short commit', async () => {
+    const { versionOf } = await import('../runs/release.ts');
+    expect(versionOf('refs/tags/v1.43.0', 'abcdef123456')).toBe('v1.43.0');
+    expect(versionOf('v2.0.0-rc.1', 'abcdef123456')).toBe('v2.0.0-rc.1');
+    expect(versionOf('main', 'abcdef123456')).toBe('abcdef1');
+  });
+});

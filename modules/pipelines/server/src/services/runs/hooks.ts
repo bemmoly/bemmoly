@@ -1,7 +1,7 @@
 /*
  * What other areas hear when a run finishes, after its transaction commits: shipping turns
- * a passed build into a release (architecture §11). In process and fire-and-forget: a
- * listener's failure is logged by it, never undoes the run.
+ * a passed build into a release (architecture §11). Listeners should only enqueue durable
+ * work; every listener runs, then the first failure is raised so the caller sees it.
  */
 
 export interface RunFinished {
@@ -19,7 +19,9 @@ export function createRunHooks() {
       return () => listeners.delete(listener);
     },
     async emitFinished(event: RunFinished): Promise<void> {
-      await Promise.allSettled([...listeners].map(async (listener) => listener(event)));
+      const results = await Promise.allSettled([...listeners].map(async (l) => l(event)));
+      const failed = results.find((result) => result.status === 'rejected');
+      if (failed) throw failed.reason;
     },
   };
 }

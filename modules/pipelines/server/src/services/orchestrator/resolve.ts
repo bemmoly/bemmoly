@@ -144,6 +144,8 @@ function buildJob(build: BuildSpec, application: string | null, timeout: number)
           BEMMOLY_BUILD_DOCKERFILE: build.dockerfile,
           BEMMOLY_BUILD_CONTEXT: build.context,
           BEMMOLY_BUILD_PLATFORMS: build.platforms.join(','),
+          // The image a passing build becomes a release of; registries come with providers.
+          ...(application ? { BEMMOLY_BUILD_IMAGE: `bemmoly-local/${application}` } : {}),
         },
         secrets: [],
         locked: true,

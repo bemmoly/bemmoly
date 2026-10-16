@@ -135,6 +135,7 @@ export function createTriggersService(deps: ExecutionDeps) {
         priorityClass: 'pull_request',
         idempotencyKey: `${key}:${event.headSha}`,
         supersedeKey: key,
+        fromFork: event.fromFork,
       });
     },
 

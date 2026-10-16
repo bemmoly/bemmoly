@@ -175,6 +175,7 @@ export function createRunsService(deps: ExecutionDeps) {
             resolved_spec: unknown;
             inputs: Record<string, string>;
             variables: Record<string, string>;
+            from_fork: boolean;
           }[]
         >`select * from pipeline_runs where id = ${runId}`;
         if (!run) throw new NotFoundError('That run does not exist');
@@ -211,6 +212,7 @@ export function createRunsService(deps: ExecutionDeps) {
           inputs: run.inputs,
           variables: run.variables,
           rerunOfRunId: runId,
+          fromFork: run.from_fork,
           ...defaults,
         });
       });

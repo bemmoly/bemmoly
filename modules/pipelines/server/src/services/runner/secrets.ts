@@ -10,7 +10,7 @@ import type { SqlExecutor } from '@bemmoly/core';
 export interface SecretResolver {
   resolve(
     sql: SqlExecutor,
-    job: { application_id: string | null },
+    job: { application_id: string | null; run_id: string },
     names: readonly string[],
   ): Promise<Record<string, string>>;
 }
@@ -18,6 +18,10 @@ export interface SecretResolver {
 export const variableSecrets: SecretResolver = {
   async resolve(sql, job, names) {
     if (!job.application_id || names.length === 0) return {};
+    // A pull request from a fork runs someone else's code: it gets no secrets (§20).
+    const [run] = await sql<{ from_fork: boolean }[]>`
+      select from_fork from pipeline_runs where id = ${job.run_id}`;
+    if (run?.from_fork !== false) return {};
     const rows = await sql<{ name: string; value: string }[]>`
       select name, value from pipeline_variables
       where application_id = ${job.application_id} and environment_id is null

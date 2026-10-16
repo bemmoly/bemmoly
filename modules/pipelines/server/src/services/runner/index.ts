@@ -26,7 +26,7 @@ import { claimNextJob } from '../dispatcher/claim.ts';
 import { sweepJobs } from '../dispatcher/sweep.ts';
 import type { DispatchWakeups } from '../dispatcher/wakeup.ts';
 import type { LogsService } from '../logs/index.ts';
-import { announce, type ExecutionDeps } from '../runs/context.ts';
+import { announce, queueCheck, type ExecutionDeps } from '../runs/context.ts';
 import { publishStreamEvent } from '../streams/publish.ts';
 import { ingestReport, type TestsService } from '../tests/index.ts';
 import { hashToken, newToken } from '../../utils/tokens.ts';
@@ -67,7 +67,7 @@ export function createRunnerService(deps: RunnerDeps) {
     await announce(deps, result.outcomes);
   }
 
-  async function secretValues(job: { id: string; application_id: string | null }) {
+  async function secretValues(job: { id: string; run_id: string; application_id: string | null }) {
     const cached = masks.get(job.id);
     if (cached) return cached;
     const sql = requireDatabase(deps);
@@ -179,6 +179,7 @@ export function createRunnerService(deps: RunnerDeps) {
           data: { id: job.run_id, state: 'running' },
         });
       });
+      await queueCheck(deps, job, 'running');
     },
 
     async stepState(
@@ -271,7 +272,9 @@ export function createRunnerService(deps: RunnerDeps) {
       const job = await jobFromToken(sql, jobId, token);
       masks.delete(jobId);
       const outcome = await finishJob(sql, deps.logs, job, body);
-      if (outcome) await announce(deps, [outcome]);
+      if (!outcome) return;
+      await queueCheck(deps, job, body.state);
+      await announce(deps, [outcome]);
     },
   };
 }
