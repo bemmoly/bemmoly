@@ -1,5 +1,6 @@
 import type { Http } from '@bemmoly/api-client';
 import {
+  acceptProposalsResultSchema,
   accessDecisionSchema,
   bindingsResponseSchema,
   capacitySchema,
@@ -9,9 +10,11 @@ import {
   insightsSchema,
   landingZonePlanSchema,
   policiesResponseSchema,
+  proposalsPageSchema,
   poolTokenSchema,
   runnerPoolSchema,
   providersResponseSchema,
+  type AcceptProposalsBody,
   type ApplyLandingZoneBody,
   type CapacityQuery,
   type CheckAccessBody,
@@ -40,6 +43,7 @@ export const platformKeys = {
   plan: (connection: string, body: LandingZonePlanBody) =>
     ['pipelines', 'platform', 'plan', connection, body] as const,
   insights: (query: InsightsQuery) => ['pipelines', 'insights', query] as const,
+  proposals: () => ['pipelines', 'platform', 'proposals'] as const,
 };
 
 export function platformEndpoints(http: Http) {
@@ -73,6 +77,15 @@ export function platformEndpoints(http: Http) {
       http.request(`${base}/clouds/${id}/plan`, landingZonePlanSchema, { method: 'POST', body }),
     apply: (id: string, body: ApplyLandingZoneBody) =>
       http.send(`${base}/clouds/${id}/apply`, { method: 'POST', body }),
+    proposals: () =>
+      http.request(`${base}/discovery/proposals`, proposalsPageSchema, {
+        query: { limit: 200 },
+      }),
+    acceptProposals: (body: AcceptProposalsBody) =>
+      http.request(`${base}/discovery/acceptances`, acceptProposalsResultSchema, {
+        method: 'POST',
+        body,
+      }),
     insights: (query: InsightsQuery) =>
       http.request(`${base}/insights`, insightsSchema, { query: toQuery(query) }),
   };
