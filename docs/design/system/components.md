@@ -268,3 +268,34 @@ it: accent running, amber waiting, red failed. Running dots drift on the shared 
 animation behind `motion-safe:`; under reduced motion every dot rests at its position. The dots
 are decorative; `label` ("3 moving, 1 failed") is what assistive tech reads, and the cell's
 counts stay the readable truth. Draw dots only for releases that are moving.
+
+### GateList and RolloutPlan
+
+`GateList` (`gates`, `ariaLabel`, `stateLabel`) lists what a promotion must meet: each gate's
+`RunGlyph` (pass, fail, pending as waiting), its label and the reason in plain words, with room
+for more under it (the approvers so far). A fact that is not known yet is pending with its
+reason, never a pass. `RolloutPlan` (`waves`, `ariaLabel`, `children`) draws numbered waves of
+canary steps ("5%, 25%, 100%") and what each waits for; steps take a glyph once the rollout is
+under way, so the plan reads as progress. The Promote screen uses both; the requester and the
+approver see the same drawing.
+
+### MetricCompare and SeriesChart
+
+`SeriesChart` is the one small time series: a line (accent, or red for an error rate) or bars
+(`acc-100`), dashed markers for changes with their labels as text, and an optional dashed
+threshold. `MetricCompare` puts canary beside stable for one metric with the verdict that
+decides the next step; the lines never turn red, the verdict's words do. What changed?,
+Capacity, Insights and the canary card use them; never a hand-drawn chart.
+
+### AccessExplain
+
+An access decision: the verdict on `green-50` or `red-50`, the sentence that explains it, then
+every binding, ownership and policy step in order, and the "Ask Payments for access" action.
+The Access checker and every refused action ("Why can't I?") draw it.
+
+### ProvisionChecklist
+
+Ordered steps toward something working: an empty install's first run (scan GitHub, connect a
+cloud, ship a first application) and a landing zone being created. Done steps go quiet, the
+current step is raised on `acc-50` with its action, a failed step keeps its action to try again.
+

@@ -2,6 +2,7 @@
  * `@bemmoly/ui`: components ported from the mocks. Tokens (`@bemmoly/ui/tokens`), the theme
  * builder (`@bemmoly/ui/theme`) and icons (`@bemmoly/ui/icons`) have their own entry points.
  */
+export * from './components/access-explain/index.ts';
 export * from './components/ai-surface/index.ts';
 export * from './components/avatar/index.ts';
 export * from './components/badge/index.ts';
@@ -18,6 +19,7 @@ export * from './components/entity-tile/index.ts';
 export * from './components/epic-panel/index.ts';
 export * from './components/filter-bar/index.ts';
 export * from './components/form-layout/index.ts';
+export * from './components/gate-list/index.ts';
 export * from './components/glyphs/index.ts';
 export * from './components/input/index.ts';
 export * from './components/password-input/index.ts';
@@ -33,13 +35,16 @@ export * from './components/lane/index.ts';
 export * from './components/logo/index.ts';
 export * from './components/menu/index.ts';
 export * from './components/metric-tile/index.ts';
+export * from './components/metric-compare/index.ts';
 export * from './components/modal/index.ts';
 export * from './components/page-title/index.ts';
 export * from './components/page-status/index.ts';
 export * from './components/page-tree/index.ts';
 export * from './components/progress-bar/index.ts';
+export * from './components/provision-checklist/index.ts';
 export * from './components/relative-time/index.ts';
 export * from './components/run-glyph/index.ts';
+export * from './components/rollout-plan/index.ts';
 export * from './components/segmented-control/index.ts';
 export * from './components/select/index.ts';
 export * from './components/settings-frame/index.ts';

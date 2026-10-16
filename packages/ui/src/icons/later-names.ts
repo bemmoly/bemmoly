@@ -51,6 +51,7 @@ export const LATER_ICON_NAMES = [
   'rocket',
   'map',
   'play',
+  'cloud',
   'idea',
   'wrench',
   'megaphone',

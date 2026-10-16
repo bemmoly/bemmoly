@@ -39,6 +39,7 @@ import {
   Palette,
   Paperclip,
   Play,
+  Cloud,
   Printer,
   Puzzle,
   Rocket,
@@ -110,6 +111,8 @@ export const KIT_MORE = {
   /** Pipelines' rail: the release map and runs. */
   map: MapIcon,
   play: Play,
+  /** Pipelines' clouds: a provider to connect. */
+  cloud: Cloud,
   idea: Lightbulb,
   wrench: Wrench,
   megaphone: Megaphone,

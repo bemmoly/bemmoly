@@ -65,9 +65,11 @@ second and are invalidations: refetch, never patch from the event.
 | `ReleaseMap`, `TimeScrubber` | `packages/ui` | to build with the Map |
 | `StageGraph` (fan-out, fan-in, selected and failed rings) | `packages/ui` | to build with Runs |
 | `LogView` (virtualised, searchable, follow, ANSI on tokens, error lines on `red-50`) | `packages/ui` | to build with Runs |
-| `GateList`, `RolloutPlan`, `MetricCompare` | `packages/ui` | to build with Promote |
+| `GateList` (each gate's state and reason), `RolloutPlan` (waves of canary steps) | `packages/ui` | built |
+| `MetricCompare` (canary against stable), `SeriesChart` (a line or bars with markers and a threshold) | `packages/ui` | built |
 | `FacetPanel`, `DeliverySpark` | `packages/ui` | to build with the Catalog |
-| `AccessExplain` | `packages/ui` | to build with Access |
+| `AccessExplain` (a decision, its sentence and the steps behind it) | `packages/ui` | built |
+| `ProvisionChecklist` (ordered steps toward something working: first run, a landing zone) | `packages/ui` | built |
 
 A new component lands in `packages/ui` with a story and an accessibility test
 ([changing-the-system.md](../system/changing-the-system.md)), and gets a row here.
