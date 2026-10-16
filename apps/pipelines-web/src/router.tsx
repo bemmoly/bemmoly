@@ -45,8 +45,8 @@ const platformArea = (path: string, load: Parameters<typeof lazyRouteComponent>[
   createRoute({ getParentRoute: () => platform, path, component: lazyRouteComponent(load) });
 
 const routeTree = root.addChildren([
-  screen('/', () => import('./screens/for-you.tsx')),
-  screen('/map', () => import('./screens/map.tsx')),
+  screen('/', () => import('./screens/for-you/for-you-screen.tsx')),
+  screen('/map', () => import('./screens/map/map-screen.tsx')),
   screen('/catalog', () => import('./screens/catalog/catalog-screen.tsx')),
   screen('/applications/$key', () => import('./screens/application/application-screen.tsx')),
   screen('/runs', () => import('./screens/runs/runs-screen.tsx')),
