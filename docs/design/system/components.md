@@ -239,3 +239,20 @@ Cancel and Save, a confirmation (`ConfirmChange`, typed word for the irreversibl
 
 `ProgressBar`, `MetricTile`, `CapacityBar`, `MetricSparkline` · Story: Components/MetricTile.
 Bars are `rounded-tick`; done is `done`, in progress `prog`; never a signal colour for progress.
+
+### Charts
+
+`LineChart`, `BarChart`, `ScatterChart` · Story: Components/Chart
+([`chart.stories.tsx`](../../../packages/ui/src/components/chart/chart.stories.tsx))
+
+- Use: the Work Reports screen. `LineChart` for points over days (burndown, burnup, created
+  against resolved), `stacked` for bands that add up (cumulative flow); `BarChart` for grouped
+  values per category (velocity, time in status); `ScatterChart` for one dot per item on a
+  continuous axis with dashed reference lines (the control chart and its mean and median).
+- Marks use the status colours and two greys only (`tone`: `todo`, `prog`, `done`, `muted`,
+  `ink`): open work `todo`, moving work `prog`, finished work `done`, a total or scope `ink`, a
+  reference line `muted` and `dashed`. Never the accent, a signal colour or AI lilac.
+- The legend sits above the plot and every number is in a visually hidden table, so colour
+  never carries the meaning alone. Text is 11px `tx-3`; the chart measures its width so the
+  type stays on the scale at any size.
+- Not: a pie, a 3D or animated chart, or a chart in the Board header (that is `MetricSparkline`).
