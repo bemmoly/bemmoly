@@ -3,6 +3,7 @@ import { PIPELINES_CAPABILITIES } from './server/src/config/capabilities.ts';
 import { definePipelinesSettings } from './server/src/config/settings.ts';
 import { createPipelinesControllers } from './server/src/controllers/index.ts';
 import { pipelinesRoutes } from './server/src/routes/index.ts';
+import { registerCodeHostWork } from './server/src/config/code-hosts.ts';
 import { createPipelinesServices } from './server/src/services/index.ts';
 
 /**
@@ -28,7 +29,10 @@ export default defineModule({
     const services = createPipelinesServices({
       ...(ctx.database ? { database: ctx.database } : {}),
       settings: ctx.settings,
+      codeHosts: ctx.code.hosts(),
+      sendJob: (name, payload, options) => ctx.jobs.send(name, payload, options),
     });
+    registerCodeHostWork(ctx, services);
     ctx.routes.add({
       prefix: '/pipelines',
       plugin: pipelinesRoutes(createPipelinesControllers(services)),
