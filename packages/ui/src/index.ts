@@ -30,6 +30,7 @@ export * from './components/key-chip/index.ts';
 export * from './components/label/index.ts';
 export * from './components/logo/index.ts';
 export * from './components/menu/index.ts';
+export * from './components/chart/index.ts';
 export * from './components/metric-tile/index.ts';
 export * from './components/modal/index.ts';
 export * from './components/page-title/index.ts';
