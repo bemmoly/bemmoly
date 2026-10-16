@@ -150,7 +150,7 @@ export function HealthCard({
               label={t(`pipelines.metric.${metric.metric}`)}
               canary={{
                 label: t('pipelines.application.canarySide', {
-                  percent: canary.data.trafficPercent,
+                  percent: prod?.trafficPercent || canary.data.trafficPercent,
                 }),
                 value:
                   metric.canary.value === null ? null : value(metric.canary.value, metric.unit),
