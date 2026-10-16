@@ -2,6 +2,7 @@ import type { SettingsRegistry, SqlClient } from '@bemmoly/core';
 import { createCatalogService } from './catalog/index.ts';
 import { createEnvironmentsService } from './environments/index.ts';
 import { createOverviewService } from './overview/index.ts';
+import { createStreamsService } from './streams/index.ts';
 import { createTeamsService } from './teams/index.ts';
 
 export interface PipelinesServicesDeps {
@@ -20,6 +21,7 @@ export function createPipelinesServices(deps: PipelinesServicesDeps) {
     environments: createEnvironmentsService(deps),
     teams: createTeamsService(deps),
     overview: createOverviewService(deps),
+    streams: createStreamsService(deps),
   };
 }
 
