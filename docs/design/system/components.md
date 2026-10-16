@@ -224,6 +224,8 @@ Cancel and Save, a confirmation (`ConfirmChange`, typed word for the irreversibl
 - `Label`: an outlined pill with a colour dot (the label's stored colour); `onRemove` adds a
   named remove button. Labels are never filled pills.
 - `Tag` and `Badge`: neutral chips; sentence case, never capitals.
+  `Badge tone="danger"` (red) is for failure only ("1 failed"); waiting and rolled back are
+  `warn`, notes are `accent`.
 
 ### EntityTile and ProjectTile
 
