@@ -93,6 +93,8 @@ export const buildSpecSchema = z.object({
   dockerfile: z.string().default('Dockerfile'),
   context: z.string().default('.'),
   platforms: z.array(z.string()).default(['linux/amd64']),
+  /** The runner pool that builds the image; the organisation's default when absent. */
+  pool: slugSchema.optional(),
 });
 
 /** A step runs as a container: an image and a command, or an action it `uses`. */

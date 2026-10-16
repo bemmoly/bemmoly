@@ -15,7 +15,8 @@
     "test:integration": "vitest run --config vitest.integration.config.ts",
     "seed:demo": "pnpm --filter @bemmoly/server db modules enable pipelines --access everyone && node --env-file-if-exists=../../apps/server/.env scripts/seed-demo.ts",
     "demo:runner": "node --env-file-if-exists=../../apps/server/.env scripts/runner-demo.ts",
-    "bench:dispatch": "node --env-file-if-exists=../../apps/server/.env scripts/dispatch-benchmark.ts"
+    "bench:dispatch": "node --env-file-if-exists=../../apps/server/.env scripts/dispatch-benchmark.ts",
+    "demo:local": "node --env-file-if-exists=../../apps/server/.env scripts/local-demo.ts"
   },
   "dependencies": {
     "@bemmoly/core": "workspace:*",

@@ -43,9 +43,17 @@ const UNIT = [
   'printf "\\033[32m4 passed\\033[0m\\n"',
 ].join('\n');
 
-export function runnerDemoPipeline(pool: string) {
+/**
+ * `appDirectory` holds the demo application (scripts/demo/app): its image is what the
+ * release is built from and what the local provider deploys, so a canary on the laptop has a
+ * real HTTP service to judge.
+ */
+export function runnerDemoPipeline(pool: string, appDirectory?: string) {
   return {
     checkout: false,
+    ...(appDirectory
+      ? { build: { dockerfile: `${appDirectory}/Dockerfile`, context: appDirectory, pool } }
+      : {}),
     inputs: {
       suite: {
         type: 'choice',

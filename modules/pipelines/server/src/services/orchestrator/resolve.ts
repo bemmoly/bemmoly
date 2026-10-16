@@ -154,7 +154,7 @@ function buildJob(build: BuildSpec, application: string | null, timeout: number)
         artifacts: [],
       },
     ],
-    pool: null,
+    pool: build.pool ?? null,
     shards: null,
     timeoutMinutes: timeout,
     application,
