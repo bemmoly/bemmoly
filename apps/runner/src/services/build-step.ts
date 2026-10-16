@@ -22,8 +22,13 @@ function tagPart(value: string): string {
   return value.replace(/[^A-Za-z0-9_.-]/g, '-').slice(0, 128) || 'latest';
 }
 
-export function buildTag(job: ClaimedJob): string {
-  return `bemmoly-local/${repositoryPart(job.key)}:${tagPart(job.repository.commitSha)}`;
+/** Where a build leaves its image id, for the finish report's image digests. */
+export const IMAGE_ID_FILE = '.bemmoly/image-id';
+
+/** The server names the image (bemmoly-local/<application>); the job key is the fallback. */
+export function buildTag(job: ClaimedJob, step?: ResolvedStep): string {
+  const image = step?.env['BEMMOLY_BUILD_IMAGE'] || `bemmoly-local/${repositoryPart(job.key)}`;
+  return `${image}:${tagPart(job.repository.commitSha)}`;
 }
 
 /**
@@ -33,5 +38,10 @@ export function buildTag(job: ClaimedJob): string {
 export function buildCommand(job: ClaimedJob, step: ResolvedStep): string {
   const dockerfile = step.env['BEMMOLY_BUILD_DOCKERFILE'] || 'Dockerfile';
   const context = step.env['BEMMOLY_BUILD_CONTEXT'] || '.';
-  return `docker build -f ${quote(dockerfile)} -t ${quote(buildTag(job))} ${quote(context)}`;
+  const tag = quote(buildTag(job, step));
+  return [
+    `docker build -f ${quote(dockerfile)} -t ${tag} ${quote(context)}`,
+    `mkdir -p .bemmoly`,
+    `docker image inspect --format '{{.Id}}' ${tag} > ${IMAGE_ID_FILE}`,
+  ].join(' && ');
 }

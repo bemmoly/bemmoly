@@ -1,4 +1,4 @@
-import { mkdir, rm } from 'node:fs/promises';
+import { mkdir, readFile, rm } from 'node:fs/promises';
 import path from 'node:path';
 import type { ClaimedJob, StepStateBody } from '@bemmoly/module-pipelines/shared';
 import type { ControlPlaneClient, JobRef } from '../clients/control-plane.ts';
@@ -9,6 +9,7 @@ import { dim } from '../utils/lines.ts';
 import { SecretMasker } from '../utils/mask.ts';
 import { nowIso } from '../utils/time.ts';
 import { uploadArtifacts } from './artifacts.ts';
+import { IMAGE_ID_FILE } from './build-step.ts';
 import { checkout, cloneCredentials } from './checkout.ts';
 import { ErrorLineCatcher, prepareStep } from './job-step.ts';
 import { collectJUnit } from './junit.ts';
@@ -91,6 +92,7 @@ export class JobRun {
     }
 
     const drained = await this.logs.close(deps.drainBoundMs ?? DEFAULT_DRAIN_MS);
+    const imageDigests = result.state === 'passed' ? await this.builtImage() : undefined;
     await this.cleanWorkspace();
     if (this.stopReason === 'lost') {
       deps.logger.warn({ jobId: job.jobId }, 'job was taken away from this runner');
@@ -104,6 +106,7 @@ export class JobRun {
         {
           state: result.state,
           ...(result.summary ? { failureSummary: result.summary.slice(0, 2000) } : {}),
+          ...(imageDigests ? { imageDigests } : {}),
           at: nowIso(),
         },
         deps.finishRetry ?? FINISH_RETRY,
@@ -113,6 +116,13 @@ export class JobRun {
     }
     if (drained) await outbox.closeIfEmpty();
     return result.state;
+  }
+
+  /** The image a `bemmoly/build` step made, by platform, when there was one. */
+  private async builtImage(): Promise<Record<string, string> | undefined> {
+    const id = await readFile(path.join(this.workspace, IMAGE_ID_FILE), 'utf8').catch(() => '');
+    const digest = id.trim();
+    return /^sha256:[0-9a-f]{64}$/.test(digest) ? { 'linux/amd64': digest } : undefined;
   }
 
   private get workspace(): string {
