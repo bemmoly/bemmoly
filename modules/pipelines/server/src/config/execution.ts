@@ -1,6 +1,7 @@
 import type { ModuleContext } from '@bemmoly/core';
 import { z } from 'zod';
 import { sweepJobs } from '../services/dispatcher/sweep.ts';
+import { expireLogs } from '../services/logs/retention.ts';
 import { RELEASE_FROM_RUN_JOB } from '../services/runs/release.ts';
 import { REPORT_CHECK_JOB } from '../services/runs/checks.ts';
 import type { PipelinesServices } from '../services/index.ts';
@@ -13,6 +14,7 @@ import type { PipelinesServices } from '../services/index.ts';
 
 export const SCHEDULES_JOB = 'pipelines.schedules';
 export const DISPATCH_SWEEP_JOB = 'pipelines.dispatch-sweep';
+export const LOG_RETENTION_JOB = 'pipelines.logs-retention';
 
 const runPayload = z.object({ runId: z.uuid() });
 const jobPayload = z.object({ jobId: z.uuid() });
@@ -41,6 +43,17 @@ export function registerExecutionWork(ctx: ModuleContext, services: PipelinesSer
     expireInSeconds: 120,
     async handle() {
       await services.triggers.runDueSchedules();
+    },
+  });
+  ctx.jobs.add({
+    name: LOG_RETENTION_JOB,
+    schedule: '15 3 * * *',
+    singleton: true,
+    expireInSeconds: 3600,
+    async handle() {
+      if (!ctx.database) return;
+      const days = await ctx.settings.get('pipelines.logs.retentionDays');
+      await expireLogs(ctx.database, ctx.objects, days);
     },
   });
   ctx.jobs.add({

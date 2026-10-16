@@ -3,6 +3,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { seedCatalogFixture } from '../../testing/fixture.ts';
 import { createPool, givePipeline } from '../../testing/execution.ts';
 import { startPipelinesHarness, type PipelinesHarness } from '../../testing/harness.ts';
+import { expireLogs } from '../logs/retention.ts';
 
 /* What a job carries beyond its steps: the release it becomes, and its secrets. */
 
@@ -105,5 +106,25 @@ describe('releases and secrets through the runner protocol', () => {
     expect(await services.runner.secrets(fork?.jobId ?? '', fork?.jobToken)).toEqual({
       values: {},
     });
+  });
+
+  it('lets logs and artifacts go after the retention period, keeping the run', async (ctx) => {
+    if (!harness) return ctx.skip(reason);
+    const { sql } = harness;
+    const deleted: string[] = [];
+    const [chunks] = await sql<
+      { count: number }[]
+    >`select count(*)::int as count from pipeline_log_chunks`;
+    expect(chunks?.count).toBeGreaterThan(0);
+    expect(await expireLogs(sql, { delete: async (key) => void deleted.push(key) }, 30)).toEqual({
+      chunks: 0,
+      artifacts: 0,
+    });
+    await sql`update pipeline_jobs set finished_at = now() - interval '40 days' where finished_at is not null`;
+    const expired = await expireLogs(sql, { delete: async (key) => void deleted.push(key) }, 30);
+    expect(expired.chunks).toBe(chunks?.count);
+    expect(deleted[0]).toMatch(/^logs\//);
+    const [runs] = await sql<{ count: number }[]>`select count(*)::int as count from pipeline_runs`;
+    expect(runs?.count).toBeGreaterThan(0);
   });
 });

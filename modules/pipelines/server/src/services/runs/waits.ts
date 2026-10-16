@@ -15,6 +15,11 @@ export function ordinal(n: number): string {
   return `${n}${['th', 'st', 'nd', 'rd'][n % 10] ?? 'th'}`;
 }
 
+/** "Payments' queue", "Search's queue". */
+export function possessive(name: string): string {
+  return name.endsWith('s') ? `${name}'` : `${name}'s`;
+}
+
 function waitsFor(row: JobRow, all: readonly JobRow[]): WaitReason {
   const open = all.filter((job) => row.needs.includes(job.key) && job.state !== 'passed');
   const names = open.slice(0, 3).map((job) => job.name);
@@ -77,7 +82,9 @@ async function inQueue(sql: SqlExecutor, row: JobRow): Promise<WaitReason> {
     facts.avg_seconds !== null
       ? Math.round(Math.ceil(facts.position / Math.max(1, facts.online)) * facts.avg_seconds)
       : undefined;
-  const queue = facts.team_name ? `${facts.team_name}'s queue in ${pool}` : `the ${pool} queue`;
+  const queue = facts.team_name
+    ? `${possessive(facts.team_name)} queue in ${pool}`
+    : `the ${pool} queue`;
   return {
     kind: facts.position > facts.online ? 'fair_share' : 'runner',
     text: `${ordinal(facts.position)} in ${queue}`,
