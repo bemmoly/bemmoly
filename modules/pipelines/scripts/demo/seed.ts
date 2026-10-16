@@ -3,6 +3,7 @@ import { insertMany } from './bulk.ts';
 import { seedCatalog } from './catalog.ts';
 import { seedDeployments } from './deploys.ts';
 import { seedForYou } from './foryou.ts';
+import { seedCi } from './ci.ts';
 import { seedGovernance } from './governance.ts';
 import { seedHistory } from './history.ts';
 import { seedIdentityRollback, seedOtherChanges } from './incidents.ts';
@@ -46,6 +47,7 @@ export async function seedDemo(sql: SqlClient, options: SeedOptions = {}) {
   const world: World = { ...ctx, ...people, ...catalog, envs: [], envByKey: new Map(), pools: [] };
   await seedPlatform(world);
   await seedGovernance(world);
+  await seedCi(world);
   const releases = await seedHistory(world);
   const deployed = await seedDeployments(world, releases);
   await insertMany(sql, 'pipeline_changes', deployed.prodChanges);
