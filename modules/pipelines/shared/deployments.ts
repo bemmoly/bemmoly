@@ -108,6 +108,10 @@ export const environmentStripItemSchema = z.object({
   environment: environmentRefSchema,
   protected: z.boolean(),
   version: z.string().nullable(),
+  /** The release running here, so Promote and Compare can name it. */
+  releaseId: idSchema.nullable(),
+  /** The latest deployment here, for its canary analysis and for Roll back. */
+  deploymentId: idSchema.nullable(),
   commitSha: z.string().nullable(),
   glyph: glyphStateSchema,
   state: currentStateSchema,
