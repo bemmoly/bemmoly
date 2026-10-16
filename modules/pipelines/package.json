@@ -13,7 +13,7 @@
     "lint": "eslint --max-warnings 0 .",
     "test": "vitest run",
     "test:integration": "vitest run --config vitest.integration.config.ts",
-    "seed:demo": "node --env-file-if-exists=../../apps/server/.env scripts/seed-demo.ts"
+    "seed:demo": "pnpm --filter @bemmoly/server db modules enable pipelines --access everyone && node --env-file-if-exists=../../apps/server/.env scripts/seed-demo.ts"
   },
   "dependencies": {
     "@bemmoly/core": "workspace:*",

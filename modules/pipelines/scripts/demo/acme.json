@@ -1,0 +1,310 @@
+[
+  {
+    "key": "commerce",
+    "name": "Commerce",
+    "color": "epic-1",
+    "groups": [
+      {
+        "key": "checkout",
+        "name": "Checkout",
+        "count": 38,
+        "teams": "Payments|Checkout web",
+        "words": "checkout basket order upi wallet receipt invoice coupon"
+      },
+      {
+        "key": "pricing",
+        "name": "Pricing",
+        "count": 24,
+        "teams": "Pricing",
+        "words": "price tax promo discount quote currency"
+      },
+      {
+        "key": "cart-and-catalog",
+        "name": "Cart and catalog",
+        "count": 61,
+        "teams": "Cart|Catalog",
+        "words": "cart search catalog product inventory review wishlist recommend stock"
+      },
+      {
+        "key": "storefront",
+        "name": "Storefront",
+        "count": 31,
+        "teams": "Checkout web|Catalog",
+        "words": "storefront landing pdp seo banner menu mobile-bff"
+      },
+      {
+        "key": "payments",
+        "name": "Payments",
+        "count": 33,
+        "teams": "Payments",
+        "words": "refunds ledger payouts settlement card fraud chargeback mandate"
+      },
+      {
+        "key": "orders",
+        "name": "Orders",
+        "count": 25,
+        "teams": "Orders",
+        "words": "order fulfil returns tracking cancel gift"
+      }
+    ]
+  },
+  {
+    "key": "logistics",
+    "name": "Logistics",
+    "color": "epic-6",
+    "groups": [
+      {
+        "key": "routing",
+        "name": "Routing",
+        "count": 46,
+        "teams": "Logistics core|Routing",
+        "words": "route eta geo dispatch zone map slot"
+      },
+      {
+        "key": "warehouse",
+        "name": "Warehouse",
+        "count": 52,
+        "teams": "Warehouse systems|Logistics core",
+        "words": "pick pack bin putaway cycle-count dock wave label"
+      },
+      {
+        "key": "shipping",
+        "name": "Shipping",
+        "count": 41,
+        "teams": "Shipping|Last mile",
+        "words": "carrier shipment manifest awb pod rate-card"
+      },
+      {
+        "key": "fleet",
+        "name": "Fleet",
+        "count": 48,
+        "teams": "Fleet|Last mile",
+        "words": "fleet driver vehicle telemetry fuel shift rider"
+      }
+    ]
+  },
+  {
+    "key": "platform",
+    "name": "Platform",
+    "color": "epic-2",
+    "groups": [
+      {
+        "key": "runtime",
+        "name": "Runtime",
+        "count": 44,
+        "teams": "Runtime|Platform",
+        "words": "ingress mesh config secrets scheduler autoscale gateway"
+      },
+      {
+        "key": "developer-tools",
+        "name": "Developer tools",
+        "count": 38,
+        "teams": "Developer experience|Build systems",
+        "words": "ci cache artifact lint scaffold preview docs"
+      },
+      {
+        "key": "observability",
+        "name": "Observability",
+        "count": 34,
+        "teams": "Observability|SRE",
+        "words": "metrics traces logs alert slo status pager"
+      },
+      {
+        "key": "networking",
+        "name": "Networking",
+        "count": 28,
+        "teams": "Networking",
+        "words": "dns cdn waf edge vpn lb"
+      },
+      {
+        "key": "data-stores",
+        "name": "Data stores",
+        "count": 24,
+        "teams": "Data stores|SRE",
+        "words": "postgres redis kafka backup migrate search-cluster"
+      }
+    ]
+  },
+  {
+    "key": "data",
+    "name": "Data",
+    "color": "epic-3",
+    "groups": [
+      {
+        "key": "ingestion",
+        "name": "Ingestion",
+        "count": 40,
+        "teams": "Ingestion|Data platform",
+        "words": "ingest cdc collector loader connector batch"
+      },
+      {
+        "key": "analytics",
+        "name": "Analytics",
+        "count": 37,
+        "teams": "Analytics|Data quality",
+        "words": "report dashboard metric cohort funnel export"
+      },
+      {
+        "key": "machine-learning",
+        "name": "Machine learning",
+        "count": 34,
+        "teams": "ML platform",
+        "words": "feature model ranker embedding forecast scoring"
+      },
+      {
+        "key": "streaming",
+        "name": "Streaming",
+        "count": 30,
+        "teams": "Streaming|Data platform",
+        "words": "stream event topic enricher window sink"
+      }
+    ]
+  },
+  {
+    "key": "finance",
+    "name": "Finance",
+    "color": "epic-5",
+    "groups": [
+      {
+        "key": "ledger",
+        "name": "Ledger",
+        "count": 30,
+        "teams": "Ledger",
+        "words": "journal balance reconcile accrual gl audit-trail"
+      },
+      {
+        "key": "billing",
+        "name": "Billing",
+        "count": 28,
+        "teams": "Billing",
+        "words": "billing subscription invoice-run dunning usage plan"
+      },
+      {
+        "key": "payouts",
+        "name": "Payouts",
+        "count": 22,
+        "teams": "Payouts",
+        "words": "vendor-payout remit bank-file kyc beneficiary"
+      },
+      {
+        "key": "tax",
+        "name": "Tax",
+        "count": 22,
+        "teams": "Tax",
+        "words": "gst tds filing tax-rules einvoice"
+      }
+    ]
+  },
+  {
+    "key": "internal-tools",
+    "name": "Internal tools",
+    "color": "epic-8",
+    "groups": [
+      {
+        "key": "admin",
+        "name": "Admin",
+        "count": 34,
+        "teams": "Admin tools|Internal tools",
+        "words": "admin backoffice ops console bulk-edit audit"
+      },
+      {
+        "key": "support-tools",
+        "name": "Support tools",
+        "count": 36,
+        "teams": "Support tooling",
+        "words": "ticket macro chat csat escalation kb"
+      },
+      {
+        "key": "hr-systems",
+        "name": "HR systems",
+        "count": 32,
+        "teams": "People systems",
+        "words": "payroll leave hiring onboard directory review-cycle"
+      }
+    ]
+  },
+  {
+    "key": "growth",
+    "name": "Growth",
+    "color": "epic-4",
+    "groups": [
+      {
+        "key": "marketing",
+        "name": "Marketing",
+        "count": 32,
+        "teams": "Growth web|Marketing tech",
+        "words": "campaign referral affiliate attribution utm landing"
+      },
+      {
+        "key": "experiments",
+        "name": "Experiments",
+        "count": 28,
+        "teams": "Experiments",
+        "words": "experiment flag assign bandit holdout"
+      },
+      {
+        "key": "notifications",
+        "name": "Notifications",
+        "count": 36,
+        "teams": "Notifications|Lifecycle",
+        "words": "push email sms inbox digest template whatsapp"
+      }
+    ]
+  },
+  {
+    "key": "identity",
+    "name": "Identity",
+    "color": "epic-7",
+    "groups": [
+      {
+        "key": "sign-in",
+        "name": "Sign-in",
+        "count": 22,
+        "teams": "Sign-in|Identity",
+        "words": "auth otp session sso passkey"
+      },
+      {
+        "key": "accounts",
+        "name": "Accounts",
+        "count": 20,
+        "teams": "Accounts",
+        "words": "account profile consent address preference"
+      },
+      {
+        "key": "permissions",
+        "name": "Permissions",
+        "count": 16,
+        "teams": "Permissions",
+        "words": "policy role entitlement token"
+      }
+    ]
+  },
+  {
+    "key": "media",
+    "name": "Media",
+    "color": "epic-2",
+    "groups": [
+      {
+        "key": "images",
+        "name": "Images",
+        "count": 26,
+        "teams": "Images|Media",
+        "words": "image resize thumbnail upload moderation"
+      },
+      {
+        "key": "video",
+        "name": "Video",
+        "count": 24,
+        "teams": "Video",
+        "words": "video transcode player caption live"
+      },
+      {
+        "key": "content",
+        "name": "Content",
+        "count": 24,
+        "teams": "Content|Media",
+        "words": "cms article asset localise publish"
+      }
+    ]
+  }
+]
