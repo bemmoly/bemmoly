@@ -1,7 +1,8 @@
 import { cx } from '../../lib/cx.ts';
 import { SeriesChart, type SeriesPoint } from './series-chart.tsx';
 
-export type MetricVerdict = 'pass' | 'fail' | 'pending';
+/** marginal: close enough to stable that a person decides whether to carry on. */
+export type MetricVerdict = 'pass' | 'marginal' | 'fail' | 'pending';
 
 export interface MetricSide {
   /** "Canary 25%", "Stable". */
@@ -26,6 +27,7 @@ export interface MetricCompareProps {
 
 const TONE: Record<MetricVerdict, string> = {
   pass: 'bg-green-50 text-green-tx',
+  marginal: 'bg-amber-50 text-amber-tx',
   fail: 'bg-red-50 text-red-tx',
   pending: 'bg-line-2 text-tx-2',
 };
@@ -71,12 +73,14 @@ export function MetricCompare({
         {value(canary, true)}
         {value(stable, false)}
       </div>
-      <SeriesChart
-        points={canary.series}
-        compare={stable.series}
-        height={56}
-        ariaLabel={`${label}: ${canary.label} ${canary.value ?? emptyValue}, ${stable.label} ${stable.value ?? emptyValue}`}
-      />
+      {(canary.series.length > 1 || stable.series.length > 1) && (
+        <SeriesChart
+          points={canary.series}
+          compare={stable.series}
+          height={56}
+          ariaLabel={`${label}: ${canary.label} ${canary.value ?? emptyValue}, ${stable.label} ${stable.value ?? emptyValue}`}
+        />
+      )}
     </div>
   );
 }
