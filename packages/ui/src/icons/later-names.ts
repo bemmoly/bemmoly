@@ -49,6 +49,8 @@ export const LATER_ICON_NAMES = [
   'dot',
   'hexagon',
   'rocket',
+  'map',
+  'play',
   'idea',
   'wrench',
   'megaphone',
