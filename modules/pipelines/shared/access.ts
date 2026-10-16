@@ -3,6 +3,8 @@ import {
   environmentClassSchema,
   idSchema,
   isoDateTimeSchema,
+  keysetPageSchema,
+  keysetQuerySchema,
   personRefSchema,
   scopeKindSchema,
   scopePathSchema,
@@ -229,6 +231,28 @@ export const accessDecisionSchema = z.object({
   decisionId: idSchema.nullable(),
 });
 
+/** A stored decision, for the access history (Auditors) and "why was I refused?". */
+export const decisionSchema = z.object({
+  id: idSchema,
+  /** "user", "api_token", "ci_oidc" (issuer:subject), "ci_token", "system". */
+  actor: z.object({ kind: z.string(), id: z.string(), person: personRefSchema.nullable() }),
+  action: z.string(),
+  application: z.object({ id: idSchema, key: slugSchema, name: z.string() }).nullable(),
+  environment: z.object({ id: idSchema, key: slugSchema, name: z.string() }).nullable(),
+  allowed: z.boolean(),
+  sentence: z.string(),
+  trace: z.array(traceStepSchema),
+  createdAt: isoDateTimeSchema,
+});
+
+export const listDecisionsQuerySchema = keysetQuerySchema.extend({
+  application: slugSchema.optional(),
+  user: idSchema.optional(),
+  allowed: z.stringbool().optional(),
+});
+
+export const decisionsPageSchema = keysetPageSchema(decisionSchema);
+
 /** What a ForbiddenError carries in `details` from Pipelines, so any refusal can say why. */
 export const forbiddenDetailsSchema = z.object({
   action: accessActionSchema,
@@ -259,3 +283,6 @@ export type TraceStep = z.infer<typeof traceStepSchema>;
 export type AskWho = z.infer<typeof askWhoSchema>;
 export type AccessDecision = z.infer<typeof accessDecisionSchema>;
 export type ForbiddenDetails = z.infer<typeof forbiddenDetailsSchema>;
+export type StoredDecision = z.infer<typeof decisionSchema>;
+export type ListDecisionsQuery = z.infer<typeof listDecisionsQuerySchema>;
+export type DecisionsPage = z.infer<typeof decisionsPageSchema>;
