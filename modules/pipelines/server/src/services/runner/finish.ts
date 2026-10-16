@@ -20,6 +20,11 @@ export type FinishInput = Omit<FinishJobBody, 'imageDigests'> & {
 };
 
 const LIVE = ['claimed', 'running'];
+/*
+ * A job token outlives its job only long enough for late log chunks from the runner's outbox;
+ * otherwise it would keep working until the job's timeout, which can be hours away.
+ */
+const LATE_LOGS = '15 minutes';
 
 function quarantinedOnly(job: JobIdentity): boolean {
   const failed = job.test_summary?.failed ?? 0;
@@ -33,6 +38,10 @@ export async function finishJob(
   body: FinishInput,
 ): Promise<RunOutcome | null> {
   if (!LIVE.includes(job.state)) {
+    await sql`
+      update pipeline_jobs
+      set token_expires_at = least(token_expires_at, now() + ${LATE_LOGS}::interval)
+      where id = ${job.id}`;
     await sql`
       update pipeline_runners set state = 'idle', current_job_id = null, updated_at = now()
       where id = ${job.runner_id}::uuid and current_job_id = ${job.id}`;
@@ -55,6 +64,7 @@ export async function finishJob(
         failure_summary = ${summary}, failure_line = ${line},
         failure_fingerprint = ${fingerprintOf(line)},
         image_digests = ${body.imageDigests ? JSON.stringify(body.imageDigests) : null}::jsonb,
+        token_expires_at = least(token_expires_at, now() + ${LATE_LOGS}::interval),
         updated_at = now()
       where id = ${job.id} and state in ('claimed', 'running')
       returning id`;

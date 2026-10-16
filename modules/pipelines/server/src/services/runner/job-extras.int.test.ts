@@ -109,7 +109,7 @@ describe('releases and secrets through the runner protocol', () => {
     await services.runner.finish(fork?.jobId ?? '', fork?.jobToken, { state: 'passed', at: at() });
   });
 
-  it('hands secrets out once, before the first step starts', async (ctx) => {
+  it('hands secrets out once, before the first step, and ends the job token with the job', async (ctx) => {
     if (!harness) return ctx.skip(reason);
     const { services, users, sql } = harness;
     await givePipeline(sql, 'checkout-api', {
@@ -135,6 +135,10 @@ describe('releases and secrets through the runner protocol', () => {
     await expect(services.runner.secrets(id, job?.jobToken)).rejects.toThrow(/once/);
     await services.runner.finish(id, job?.jobToken, { state: 'passed', at: at() });
     await expect(services.runner.secrets(id, job?.jobToken)).rejects.toThrow(/once/);
+    const [left] = await sql<{ ok: boolean }[]>`
+      select token_expires_at <= now() + interval '15 minutes' as ok
+      from pipeline_jobs where id = ${id}`;
+    expect(left?.ok).toBe(true);
   });
 
   it('lets logs and artifacts go after the retention period, keeping the run', async (ctx) => {
