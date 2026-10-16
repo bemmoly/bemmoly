@@ -95,7 +95,7 @@ export function RolloutCard({
         </label>
       </RolloutPlan>
       {canary && <CanaryHealth deployment={canary} />}
-      {!promotion && (
+      {!promotion && (view.requirements.length > 0 || view.departures.length > 0) && (
         <fieldset className="mt-4 flex flex-col gap-2">
           <legend className="mb-1.5 text-11 font-semibold text-tx-2">
             {t('pipelines.promote.when')}
@@ -112,12 +112,10 @@ export function RolloutCard({
               name="when"
               checked={choice.departure === departure.id}
               onChange={() => onChoice({ ...choice, departure: departure.id })}
-              label={t('pipelines.promote.withTrain', {
-                train: departure.trainName,
-                time: departsAt(departure.departsAt),
-              })}
+              label={t('pipelines.promote.withTrain', { train: departure.trainName })}
               description={t('pipelines.promote.trainAboard', {
                 count: departure.applicationCount,
+                time: departsAt(departure.departsAt),
               })}
             />
           ))}

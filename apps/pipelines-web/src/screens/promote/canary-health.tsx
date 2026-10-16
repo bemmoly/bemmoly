@@ -5,10 +5,13 @@ import type {
   MetricCompare as Metric,
 } from '@bemmoly/module-pipelines/shared';
 import { Button, Kbd, MetricCompare, useToast } from '@bemmoly/ui';
+import { Icon } from '@bemmoly/ui/icons';
+import { useState } from 'react';
 import { useScreenKeys } from '../../hooks/use-screen-keys.ts';
 import { useCanary, useShippingWrites } from '../../hooks/use-shipping.ts';
 import { pipelinesText } from '../../i18n/catalog.ts';
 import { refusalOf } from '../../parts/load-failed.tsx';
+import { ReasonDialog } from './reason-dialog.tsx';
 
 const VERDICT = {
   pass: 'pipelines.canary.pass',
@@ -31,11 +34,15 @@ export function CanaryHealth({ deployment }: { deployment: Deployment }) {
   const toast = useToast();
   const canary = useCanary(deployment.id);
   const { resume, rollback } = useShippingWrites();
-  const rollBack = () =>
+  const [confirming, setConfirming] = useState(false);
+  const rollBack = (reason: string) =>
     rollback.mutate(
-      { deployment: deployment.id, body: {} },
+      { deployment: deployment.id, body: reason ? { reason } : {} },
       {
-        onSuccess: () => toast.show({ tone: 'ok', title: t('pipelines.canary.rolledBack') }),
+        onSuccess: () => {
+          setConfirming(false);
+          toast.show({ tone: 'ok', title: t('pipelines.canary.rolledBack') });
+        },
         onError: (error) =>
           toast.show({
             tone: 'danger',
@@ -44,7 +51,7 @@ export function CanaryHealth({ deployment }: { deployment: Deployment }) {
           }),
       },
     );
-  useScreenKeys({ 'shift+b': rollBack });
+  useScreenKeys({ 'shift+b': () => setConfirming(true) });
   const value = (metric: Metric, raw: number | null) =>
     raw === null
       ? null
@@ -73,8 +80,9 @@ export function CanaryHealth({ deployment }: { deployment: Deployment }) {
             traffic: deployment.trafficPercent,
           })}
         </h3>
-        <Button size="xs" variant="danger" loading={rollback.isPending} onClick={rollBack}>
-          {t('pipelines.canary.rollBack')}
+        <Button size="xs" variant="secondary" onClick={() => setConfirming(true)}>
+          <Icon name="undo" size={14} />
+          {t('pipelines.changes.rollBack')}
           <span className="hidden md:inline-flex">
             <Kbd keys="Shift+B" />
           </span>
@@ -115,6 +123,17 @@ export function CanaryHealth({ deployment }: { deployment: Deployment }) {
             emptyValue={t('pipelines.canary.noData')}
           />
         ))}
+      <ReasonDialog
+        open={confirming}
+        title={t('pipelines.canary.rollBackTitle', { environment: deployment.environment.name })}
+        description={t('pipelines.changes.rollBackDescription')}
+        label={t('pipelines.changes.rollBackReason')}
+        confirm={t('pipelines.changes.rollBack')}
+        danger
+        busy={rollback.isPending}
+        onClose={() => setConfirming(false)}
+        onConfirm={rollBack}
+      />
     </section>
   );
 }

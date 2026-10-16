@@ -61,9 +61,13 @@ export function DecisionBar({
       },
     );
   };
+  // A train or a window can hold a promotion as scheduled while approvals are still owed.
   const canApprove =
-    promotion?.state === 'awaiting_approval' &&
-    view.requirements.some((requirement) => requirement.canApprove);
+    promotion !== null &&
+    OPEN_STATES.has(promotion.state) &&
+    view.requirements.some(
+      (requirement) => requirement.canApprove && requirement.have < requirement.needed,
+    );
   const decide = (decision: 'approved' | 'rejected', comment?: string) => {
     if (!promotion) return;
     writes.decide.mutate(
@@ -90,7 +94,7 @@ export function DecisionBar({
       },
     );
   };
-  useGlobalKeys({ 'mod+enter': () => (promotion ? undefined : request()) });
+  useGlobalKeys({ 'mod+Enter': () => (promotion ? undefined : request()) });
   useScreenKeys({ a: () => (canApprove ? decide('approved') : undefined) });
   useShortcutHelp({
     id: 'pipelines.promote',

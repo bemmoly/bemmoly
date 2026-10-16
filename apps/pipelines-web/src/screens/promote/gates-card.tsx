@@ -1,9 +1,26 @@
 import { useFormatLocale, useT } from '@bemmoly/core-web';
-import type { GateResult } from '@bemmoly/module-pipelines/shared';
+import type { Gate, GateResult } from '@bemmoly/module-pipelines/shared';
 import { Avatar, AvatarStack, GateList, type GateItem } from '@bemmoly/ui';
 import { pipelinesText } from '../../i18n/catalog.ts';
 import { Panel } from '../../parts/screen.tsx';
 import type { PromoteView } from './use-promote.ts';
+
+/** The order a person reads the evidence in: the build, then the world, then people. */
+const ORDER: readonly Gate[] = [
+  'tests',
+  'security_scan',
+  'external_checks',
+  'migration_reviewed',
+  'dependencies',
+  'staging_healthy',
+  'canary',
+  'error_budget',
+  'freeze',
+  'window',
+  'webhook',
+  'custom',
+  'approvals',
+];
 
 const STATE_WORDS = {
   pass: 'pipelines.gate.pass',
@@ -65,7 +82,8 @@ export function GatesCard({ view }: { view: PromoteView }) {
   const approvalsGate: GateResult | undefined = view.gates.find(
     (gate) => gate.gate === 'approvals',
   );
-  const items: GateItem[] = view.gates
+  const items: GateItem[] = [...view.gates]
+    .sort((a, b) => ORDER.indexOf(a.gate) - ORDER.indexOf(b.gate))
     .filter((gate) => gate.gate !== 'approvals')
     .map((gate) => ({
       key: gate.gate === 'custom' ? `${gate.gate}:${gate.label}` : gate.gate,
@@ -73,7 +91,7 @@ export function GatesCard({ view }: { view: PromoteView }) {
       label: gate.label,
       reason: gate.reason,
     }));
-  if (needed > 0 || approvalsGate) {
+  if (needed > 0) {
     items.push({
       key: 'approvals',
       state: approvalsGate?.state ?? (have >= needed ? 'pass' : 'pending'),
