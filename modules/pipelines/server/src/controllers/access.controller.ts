@@ -7,6 +7,7 @@ import {
   createBindingBodySchema,
   createPolicyBodySchema,
   listBindingsQuerySchema,
+  listDecisionsQuerySchema,
   listPoliciesQuerySchema,
   policyParamsSchema,
   policyVersionParamsSchema,
@@ -56,6 +57,10 @@ export function createAccessController(service: AccessService) {
       const policy = await service.policies.approve(contextOf(request), id, version);
       reply.code(201);
       return policy;
+    },
+    decisions(request: FastifyRequest) {
+      const query = parseOrThrow(listDecisionsQuerySchema, request.query);
+      return service.decisions.list(contextOf(request), query);
     },
     check(request: FastifyRequest) {
       const body = parseOrThrow(checkAccessBodySchema, request.body);

@@ -3,6 +3,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import {
   accessDecisionSchema,
   bindingsResponseSchema,
+  decisionsPageSchema,
   forbiddenDetailsSchema,
   policySchema,
 } from '../../../../shared/access.ts';
@@ -178,6 +179,22 @@ describe('access endpoints and the engine', () => {
       select allowed, action from pipeline_decisions where user_id = ${users().member}
       order by created_at desc limit 1`;
     expect(stored).toEqual({ allowed: false, action: 'deploy' });
+  });
+
+  it('keeps the access history: your own, or anyone for an Auditor', async (ctx) => {
+    if (!harness) return ctx.skip(reason);
+    const own = await http.get('/access/decisions', users().member, { user: users().member });
+    expect(own.statusCode).toBe(200);
+    expect(decisionsPageSchema.parse(own.json()).items[0]).toMatchObject({
+      action: 'deploy',
+      allowed: false,
+      application: { key: 'checkout-api' },
+      sentence: expect.stringContaining('needs a Release manager'),
+    });
+    const others = await http.get('/access/decisions', users().member);
+    expect(others.statusCode).toBe(403);
+    const audit = await http.get('/access/decisions', users().admin, { allowed: 'false' });
+    expect(audit.json().items.length).toBeGreaterThan(0);
   });
 
   it('sees a new team membership at once, through the version stamp', async (ctx) => {

@@ -7,6 +7,7 @@ import {
   type PipelinesServiceDeps,
 } from '../deps.ts';
 import { createBindingsService } from './bindings.ts';
+import { createDecisionsService } from './decisions.ts';
 import { createAccessEngine, type AccessEngine } from './engine.ts';
 import { createPoliciesService } from './policies.ts';
 import type { AccessTarget, Decision } from './types.ts';
@@ -35,6 +36,7 @@ export function createAccessService(deps: PipelinesServiceDeps, engine?: AccessE
     ...access,
     bindings: createBindingsService(sql, access),
     policies: createPoliciesService(sql, access),
+    decisions: createDecisionsService(sql, access),
 
     /**
      * The checker and "Why can't I?": the decision for a person, an action and a target,

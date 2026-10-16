@@ -15,6 +15,7 @@ export function accessRoutes(controller: AccessController): FastifyPluginAsync {
     app.post('/policies/:id/versions/:version/approvals', async (request, reply) =>
       controller.approvePolicyVersion(request, reply),
     );
+    app.get('/access/decisions', async (request) => controller.decisions(request));
     app.post('/access/checks', async (request) => controller.check(request));
   };
 }
