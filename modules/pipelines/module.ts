@@ -39,6 +39,7 @@ export default defineModule({
       sendJob: (name, payload, options) => ctx.jobs.send(name, payload, options),
       objects: ctx.objects,
       wake: jobWaker(ctx.jobs),
+      ...(ctx.publicUrl ? { publicUrl: ctx.publicUrl } : {}),
     });
     registerCodeHostWork(ctx, services);
     ctx.jobs.add(landingZoneApplyJob(services.clouds));

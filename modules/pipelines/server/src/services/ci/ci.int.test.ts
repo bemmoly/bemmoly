@@ -1,6 +1,6 @@
 import { generateKeyPairSync, sign } from 'node:crypto';
 import type { CodeEventOf } from '@bemmoly/core';
-import { ConflictError, ForbiddenError } from '@bemmoly/shared';
+import { ConflictError, ForbiddenError, UnauthenticatedError } from '@bemmoly/shared';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { releaseSchema } from '../../../../shared/releases.ts';
 import type { Jwk } from '../../clients/oidc/discovery.ts';
@@ -17,12 +17,12 @@ const keyPair = generateKeyPairSync('rsa', { modulusLength: 2048 });
 const b64 = (value: unknown) => Buffer.from(JSON.stringify(value)).toString('base64url');
 
 /** A GitHub Actions OIDC token, signed with the test's key in place of GitHub's. */
-function actionsToken(ref: string): string {
+function actionsToken(ref: string, aud = AUDIENCE): string {
   const now = Math.floor(Date.now() / 1000);
   const head = b64({ alg: 'RS256', kid: 'gh-1', typ: 'JWT' });
   const body = b64({
     iss: ISSUER,
-    aud: AUDIENCE,
+    aud,
     exp: now + 300,
     iat: now,
     sub: `repo:acme/checkout:ref:${ref}`,
@@ -71,6 +71,7 @@ describe('Bring your CI', () => {
       database: harness.sql,
       access: harness.services.access,
       keys: { keys: async () => [jwk] },
+      audiences: [AUDIENCE],
     });
   });
 
@@ -89,7 +90,7 @@ describe('Bring your CI', () => {
       refs: ['main'],
     });
     expect(rule.statusCode).toBe(201);
-    const principal = await ci.principal(actionsToken('refs/heads/main'), [AUDIENCE]);
+    const principal = await ci.principal(actionsToken('refs/heads/main'));
     const body = release('v2.0.0') as never;
     const first = await ci.register({ ctx: null, principal, body });
     expect(first.created).toBe(true);
@@ -109,9 +110,15 @@ describe('Bring your CI', () => {
     ).rejects.toBeInstanceOf(ConflictError);
   });
 
+  it('refuses a token minted for another service', async (ctx) => {
+    if (!harness) return ctx.skip(reason);
+    const elsewhere = actionsToken('refs/heads/main', 'http://other.example');
+    await expect(ci.principal(elsewhere)).rejects.toBeInstanceOf(UnauthenticatedError);
+  });
+
   it('refuses a branch the rule does not allow, and stores the decision', async (ctx) => {
     if (!harness) return ctx.skip(reason);
-    const principal = await ci.principal(actionsToken('refs/heads/feature/x'), [AUDIENCE]);
+    const principal = await ci.principal(actionsToken('refs/heads/feature/x'));
     const error = await ci
       .register({ ctx: null, principal, body: release('v2.0.1') as never })
       .catch((caught: unknown) => caught);

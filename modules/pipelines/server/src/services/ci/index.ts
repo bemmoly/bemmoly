@@ -22,6 +22,18 @@ export interface CiDeps extends PipelinesServiceDeps {
   releaseWriter?: ReleaseWriter;
   /** Tests hand fixed keys; production fetches each issuer's JWKS. */
   keys?: KeySource;
+  /**
+   * The audiences a token must name when its issuer sets none: this server's configured
+   * address. Never the request's Host, which the caller chooses and which would let a token
+   * minted for any other service pass by naming that service as the host.
+   */
+  audiences?: readonly string[];
+}
+
+/** "https://bemmoly.acme.dev" and with a trailing slash, as CI systems write it either way. */
+export function ciAudiences(publicUrl: string): string[] {
+  const origin = new URL(publicUrl).origin;
+  return [origin, `${origin}/`];
 }
 
 export { externalChecksFor, verdictOf } from './checks.ts';
@@ -34,12 +46,9 @@ export function createCiService(deps: CiDeps) {
     admin: createCiAdmin(sql, requireAccess(deps)),
 
     /** Reads a Bearer that belongs to CI (an OIDC token or a CI token); null otherwise. */
-    async principal(
-      bearer: string | null,
-      audiences: readonly string[],
-    ): Promise<CiPrincipal | null> {
+    async principal(bearer: string | null): Promise<CiPrincipal | null> {
       if (!bearer || !isCiCredential(bearer)) return null;
-      return authenticateCi(sql(), keys, bearer, audiences);
+      return authenticateCi(sql(), keys, bearer, deps.audiences ?? []);
     },
 
     register(input: RegisterInput): Promise<{ release: Release; created: boolean }> {

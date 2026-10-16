@@ -14,19 +14,13 @@ import type { CiService } from '../services/ci/index.ts';
 
 const BEARER = /^Bearer\s+(\S+)$/i;
 
-/** The server's own address as the request reached it: the audience CI tokens are for. */
-function audiences(request: FastifyRequest): string[] {
-  const origin = `${request.protocol}://${request.host}`;
-  return [origin, `${origin}/`];
-}
-
 /** Bring your CI under /api/v1/pipelines: release registration and Platform › CI. */
 export function createCiController(service: CiService) {
   return {
     async registerRelease(request: FastifyRequest, reply: FastifyReply) {
       const body = parseOrThrow(registerReleaseBodySchema, request.body);
       const bearer = BEARER.exec(request.headers.authorization ?? '')?.[1] ?? null;
-      const principal = await service.principal(bearer, audiences(request));
+      const principal = await service.principal(bearer);
       const result = await service.register({
         ctx: request.actor ? contextOf(request) : null,
         principal,

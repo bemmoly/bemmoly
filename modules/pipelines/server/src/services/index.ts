@@ -12,7 +12,7 @@ import { createLogsService } from './logs/index.ts';
 import { createRunnerService, variableSecrets } from './runner/index.ts';
 import { createRunHooks, createRunsService } from './runs/index.ts';
 import { createTestsService } from './tests/index.ts';
-import { createCiService } from './ci/index.ts';
+import { ciAudiences, createCiService } from './ci/index.ts';
 import { createTriggersService } from './triggers/index.ts';
 import { RELEASE_FROM_RUN_JOB, releaseFromRun } from './runs/release.ts';
 import { reportJobCheck } from './runs/checks.ts';
@@ -62,6 +62,8 @@ export interface PipelinesServicesDeps {
   wake?: Waker;
   /** Opens a webhook gate's sealed signing secret. */
   webhookSecrets?: WebhookSecrets;
+  /** The server's configured address: the audience CI's OIDC tokens must name. */
+  publicUrl?: string;
   now?: () => Date;
 }
 
@@ -87,7 +89,11 @@ export function createPipelinesServices(input: PipelinesServicesDeps) {
   const inbox = createInboxService(deps);
   if (code) registerCatalogSync(inbox.handlers, code, catalogWrites);
   const releases = createReleasesService(deps);
-  const ci = createCiService({ ...deps, releaseWriter: releases.writer });
+  const ci = createCiService({
+    ...deps,
+    releaseWriter: releases.writer,
+    audiences: input.publicUrl ? ciAudiences(input.publicUrl) : [],
+  });
   ci.listen(inbox.handlers);
   const hooks = createRunHooks();
   const wakeups = createDispatchWakeups(input.database);
