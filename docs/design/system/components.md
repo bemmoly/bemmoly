@@ -239,3 +239,32 @@ Cancel and Save, a confirmation (`ConfirmChange`, typed word for the irreversibl
 
 `ProgressBar`, `MetricTile`, `CapacityBar`, `MetricSparkline` · Story: Components/MetricTile.
 Bars are `rounded-tick`; done is `done`, in progress `prog`; never a signal colour for progress.
+
+## Pipelines
+
+Bemmoly Pipelines has its own shell ([`../pipelines/`](../pipelines/README.md)) but draws with
+these shared parts, so a run reads the same everywhere. Stories: Pipelines/\*.
+
+### RunGlyph
+
+`RunGlyph` (`state`, `size` 12/14/16/18, `label`) is the one mark for a run, job, step or
+journey station: `queued` (dashed grey ring), `running` (accent arc that turns under
+`motion-safe:` only), `passed` (green), `failed` (red), `waiting` (amber, paused), `skipped`
+(slashed grey ring), `rolled_back` (amber with a back arrow: the roll back worked, so it is not
+failure red). Decorative unless `label` names the state; never a coloured pill or a character.
+
+### Journey
+
+`Journey` (`stations`, `progress`, `compact`, `ariaLabel`, `stateLabel`) draws one change from
+commit to the last Prod region: an ordered list of stations, each a `RunGlyph`, a short label
+and a detail ("25% canary"), on a track filled to `progress`. The live station carries
+`aria-current="step"` and a heavier label. It scrolls inside itself when the stations do not
+fit; the page never scrolls sideways. Use it on For you and anywhere a change's path is asked.
+
+### Lane
+
+`Lane` (`dots`, `label`) is a Release map cell's track with a dot per release moving through
+it: accent running, amber waiting, red failed. Running dots drift on the shared `drift`
+animation behind `motion-safe:`; under reduced motion every dot rests at its position. The dots
+are decorative; `label` ("3 moving, 1 failed") is what assistive tech reads, and the cell's
+counts stay the readable truth. Draw dots only for releases that are moving.
