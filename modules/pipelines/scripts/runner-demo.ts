@@ -10,6 +10,7 @@
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import { createSqlClient } from '@bemmoly/core';
+import { storable } from '../server/src/services/runs/templates.ts';
 import { refreshSchedules } from '../server/src/services/triggers/schedules.ts';
 import { hashToken, newToken } from '../server/src/utils/tokens.ts';
 import { loadSeedConfig } from './demo/config.ts';
@@ -44,7 +45,7 @@ try {
     .map((key) => key.trim())
     .filter(Boolean);
   const appDirectory = fileURLToPath(new URL('./demo/app', import.meta.url));
-  const pipeline = JSON.stringify(runnerDemoPipeline(POOL, appDirectory));
+  const pipeline = JSON.stringify(storable(runnerDemoPipeline(POOL, appDirectory)));
   const apps = await sql<{ id: string; key: string }[]>`
     update pipeline_applications set pipeline = ${pipeline}::jsonb, pipeline_source = 'catalog',
       updated_at = now()

@@ -1,4 +1,5 @@
 import type { SqlClient } from '@bemmoly/core';
+import { storable } from '../services/runs/templates.ts';
 import { hashToken, newToken } from '../utils/tokens.ts';
 
 /*
@@ -46,7 +47,7 @@ export async function givePipeline(
   pipeline: unknown = TEST_PIPELINE,
 ) {
   await sql`
-    update pipeline_applications set pipeline = ${JSON.stringify(pipeline)}::jsonb,
+    update pipeline_applications set pipeline = ${JSON.stringify(storable(pipeline))}::jsonb,
       pipeline_source = 'repository'
     where key = ${application}`;
 }

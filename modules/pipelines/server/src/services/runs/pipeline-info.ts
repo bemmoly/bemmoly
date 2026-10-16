@@ -3,7 +3,7 @@ import { NotFoundError } from '@bemmoly/shared';
 import type { TemplateInput } from '../../../../shared/pipeline-spec.ts';
 import type { ApplicationPipeline, RunInputField } from '../../../../shared/tests.ts';
 import { isoOrNull } from '../../utils/time.ts';
-import { definitionOf, templateLookup } from './templates.ts';
+import { asWritten, definitionOf, templateLookup } from './templates.ts';
 
 /*
  * GET /applications/:key/pipeline: what "Run pipeline…" draws (one field per input, the
@@ -81,6 +81,6 @@ export async function applicationPipeline(
       inputs: row.inputs,
       nextRunAt: isoOrNull(row.next_run_at),
     })),
-    definition: app.pipeline ?? null,
+    definition: app.pipeline ? asWritten(app.pipeline) : null,
   };
 }

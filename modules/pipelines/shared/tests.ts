@@ -45,6 +45,7 @@ export const applicationPipelineSchema = z.object({
   source: z.enum(['repository', 'catalog', 'none']),
   template: z.object({ ref: z.string(), version: z.number().int() }).nullable(),
   defaultRef: z.string(),
+  /** In declared order: the template's first, then the application's own. */
   inputs: z.array(runInputFieldSchema),
   schedules: z.array(scheduleSchema),
   /** The definition as written, for "view the pipeline". */
