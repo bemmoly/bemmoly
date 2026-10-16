@@ -17,7 +17,9 @@ export const idSchema = z.uuid();
 export const isoDateTimeSchema = z.iso.datetime({ offset: true });
 
 /** Tier 0 (money, sign-in), Tier 1 (customer-facing), Tier 2 (internal). */
-export const tierSchema = z.union([z.literal(0), z.literal(1), z.literal(2)]);
+export const tierSchema = z.union([z.literal(0), z.literal(1), z.literal(2)], {
+  error: 'A tier is 0, 1 or 2',
+});
 /** A tier in a query string: "0", "1" or "2". */
 export const tierQuerySchema = z.coerce.number().int().min(0).max(2).pipe(tierSchema);
 
