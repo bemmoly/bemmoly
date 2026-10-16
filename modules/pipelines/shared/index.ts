@@ -4,6 +4,7 @@
  */
 export * from './common.ts';
 export * from './catalog.ts';
+export * from './catalog-writes.ts';
 export * from './environments.ts';
 export * from './overview.ts';
 export * from './runs.ts';

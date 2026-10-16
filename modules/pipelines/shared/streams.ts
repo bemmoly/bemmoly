@@ -102,6 +102,10 @@ export const streamEventDataSchema = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('for-you.changed'), data: z.object({}).passthrough() }),
   z.object({ kind: z.literal('capacity.updated'), data: z.object({}).passthrough() }),
   z.object({ kind: z.literal('heartbeat'), data: z.object({}) }),
+  z.object({
+    kind: z.literal('catalog.updated'),
+    data: z.object({ applications: z.array(slugSchema).max(100) }),
+  }),
 ]);
 
 /** What each SSE `data:` line carries. */
@@ -122,6 +126,7 @@ export const streamEventKindSchema = z.enum([
   'for-you.changed',
   'capacity.updated',
   'heartbeat',
+  'catalog.updated',
 ]);
 
 /**
