@@ -38,7 +38,11 @@ export function ScopeSwitcher({ organisation }: { organisation: string }) {
   const separator = <Icon name="chevron" size={12} className="shrink-0 text-tx-3" />;
   return (
     <nav aria-label={t('pipelines.shell.scope')} className="flex min-w-0 items-center gap-0.5">
-      <a {...organisationLink} className={`${CRUMB} ${domain ? '' : 'text-tx'}`}>
+      <a
+        {...organisationLink}
+        aria-label={organisation || t('pipelines.shell.scope')}
+        className={`${CRUMB} ${domain ? '' : 'text-tx'}`}
+      >
         <EntityTile name={organisation} tone="ink" size={18} />
         <span className="truncate max-sm:hidden">{organisation}</span>
       </a>

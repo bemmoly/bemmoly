@@ -36,7 +36,12 @@ export function CatalogFacets({
   const tree = useDomains().data?.items ?? [];
   if (!facets) {
     return (
-      <div aria-busy className="flex flex-col gap-5" aria-label={t('pipelines.catalog.filters')}>
+      <div
+        role="status"
+        aria-busy
+        className="flex flex-col gap-5"
+        aria-label={t('pipelines.catalog.filters')}
+      >
         {[5, 5, 3, 4].map((rows, group) => (
           <div key={group} className="flex flex-col gap-2.5">
             <Skeleton width={70} height={9} />
