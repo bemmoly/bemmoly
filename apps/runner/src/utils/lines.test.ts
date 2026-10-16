@@ -39,6 +39,25 @@ describe('line splitting', () => {
     expect(lines.map((l) => l.length)).toEqual([MAX_LINE_LENGTH, 10]);
   });
 
+  it('masks a secret that a cut for length would split', () => {
+    const secret = 'tok_0123456789abcdef';
+    const mask = (text: string) => text.split(secret).join('***');
+    const masked = (feed: (splitter: LineSplitter) => void) => {
+      const lines: string[] = [];
+      const splitter = new LineSplitter((line) => lines.push(line), mask);
+      feed(splitter);
+      splitter.end();
+      return lines.map(mask).join('');
+    };
+    const head = 'x'.repeat(MAX_LINE_LENGTH - 5);
+    expect(masked((s) => s.push(`${head}${secret}tail\n`))).toBe(`${head}***tail`);
+    const straddling = masked((s) => {
+      s.push(`${'z'.repeat(MAX_LINE_LENGTH)}${secret.slice(0, 8)}`);
+      s.push(`${secret.slice(8)}end\n`);
+    });
+    expect(straddling).toBe(`${'z'.repeat(MAX_LINE_LENGTH)}***end`);
+  });
+
   it('strips colour codes', () => {
     expect(stripAnsi('\u001b[31mred\u001b[0m')).toBe('red');
   });

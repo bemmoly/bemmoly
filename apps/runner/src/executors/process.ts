@@ -48,8 +48,8 @@ export class ProcessExecutor implements StepExecutor {
         stdio: ['ignore', 'pipe', 'pipe'],
       });
       this.child = child;
-      const stdout = new LineSplitter(options.onLine);
-      const stderr = new LineSplitter(options.onLine);
+      const stdout = new LineSplitter(options.onLine, options.mask);
+      const stderr = new LineSplitter(options.onLine, options.mask);
       child.stdout?.on('data', (chunk: Buffer) => stdout.push(chunk));
       child.stderr?.on('data', (chunk: Buffer) => stderr.push(chunk));
       child.on('error', (error) => {

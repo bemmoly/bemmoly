@@ -2,17 +2,26 @@
 export const MAX_LINE_LENGTH = 64_000;
 
 /**
+ * How much of an unterminated line is held back when it is cut for length: a secret that
+ * starts in the held text and ends in the next chunk is then masked whole.
+ */
+const HOLD = 8 * 1024;
+
+/**
  * Turns a byte stream into whole lines. Partial lines wait for the next chunk, carriage-return
  * progress bars keep their last frame, and multi-byte characters split across chunks survive.
+ * A line too long to send is masked before it is cut, so a cut never splits a secret in two.
  */
 export class LineSplitter {
   private pending = '';
   private readonly decoder = new TextDecoder('utf-8');
 
   private readonly onLine: (line: string) => void;
+  private readonly mask: (text: string) => string;
 
-  constructor(onLine: (line: string) => void) {
+  constructor(onLine: (line: string) => void, mask: (text: string) => string = (text) => text) {
     this.onLine = onLine;
+    this.mask = mask;
   }
 
   push(chunk: Uint8Array | string): void {
@@ -25,8 +34,16 @@ export class LineSplitter {
       index = this.pending.indexOf('\n');
     }
     if (this.pending.length > MAX_LINE_LENGTH) {
-      this.emit(this.pending);
-      this.pending = '';
+      const masked = this.mask(this.pending);
+      let cut = masked.length - HOLD;
+      // Never cut between the two halves of a surrogate pair.
+      if (/[\uD800-\uDBFF]/.test(masked.charAt(cut - 1))) cut -= 1;
+      if (cut > 0) {
+        this.emit(masked.slice(0, cut));
+        this.pending = masked.slice(cut);
+      } else {
+        this.pending = masked;
+      }
     }
   }
 
@@ -41,7 +58,8 @@ export class LineSplitter {
     const lastFrame = withoutCr.includes('\r')
       ? withoutCr.slice(withoutCr.lastIndexOf('\r') + 1)
       : withoutCr;
-    for (const piece of cutLongLine(lastFrame)) this.onLine(piece);
+    const text = lastFrame.length > MAX_LINE_LENGTH ? this.mask(lastFrame) : lastFrame;
+    for (const piece of cutLongLine(text)) this.onLine(piece);
   }
 }
 

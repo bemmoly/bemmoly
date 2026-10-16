@@ -184,6 +184,7 @@ export class JobRun {
           workspace: this.workspace,
           env: stepEnv(job, step, secrets, deps.apiUrl),
           onLine,
+          mask: (text) => this.masker.mask(text),
           label: `${job.jobId.slice(0, 8)}-${position}`,
         }));
         this.current = undefined;

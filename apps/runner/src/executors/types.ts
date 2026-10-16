@@ -6,6 +6,8 @@ export interface StepRunOptions {
   env: Record<string, string>;
   /** Called once per output line, in order, stdout and stderr together. */
   onLine: (line: string) => void;
+  /** Masks the job's secrets; output is masked with it before a long line is cut. */
+  mask?: (text: string) => string;
   /** A name the step's container or process can be found by, unique to the job and step. */
   label: string;
 }

@@ -57,7 +57,7 @@ export class DockerExecutor implements StepExecutor {
     try {
       if (this.cancelled) return { exitCode: CANCELLED_EXIT_CODE };
       await this.engine.json({ method: 'POST', path: `/containers/${created.Id}/start` });
-      const logs = this.followLogs(created.Id, options.onLine);
+      const logs = this.followLogs(created.Id, options.onLine, options.mask);
       const result = await this.engine.json<{ StatusCode: number }>({
         method: 'POST',
         path: `/containers/${created.Id}/wait`,
@@ -113,14 +113,21 @@ export class DockerExecutor implements StepExecutor {
       throw new ProviderError(`Could not pull ${image}: ${failure}`, { provider: 'docker' });
   }
 
-  private async followLogs(id: string, onLine: (line: string) => void): Promise<void> {
+  private async followLogs(
+    id: string,
+    onLine: (line: string) => void,
+    mask?: (text: string) => string,
+  ): Promise<void> {
     const stream = await this.engine.stream({
       method: 'GET',
       path: `/containers/${id}/logs?follow=true&stdout=true&stderr=true`,
       timeoutMs: WAIT_TIMEOUT_MS,
     });
     // Each stream keeps its own partial line, so stdout and stderr never splice mid-line.
-    const splitters = { stdout: new LineSplitter(onLine), stderr: new LineSplitter(onLine) };
+    const splitters = {
+      stdout: new LineSplitter(onLine, mask),
+      stderr: new LineSplitter(onLine, mask),
+    };
     const demuxer = new FrameDemuxer((which, payload) => splitters[which].push(payload));
     try {
       for await (const chunk of stream) demuxer.push(chunk as Buffer);
