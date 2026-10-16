@@ -35,7 +35,8 @@ first row, then J K or arrows move and Enter opens.
 `runtime`, `lifecycle`, `health`, `mine`, `staleDays`, `sort=name|recent|tier`.
 
 **Choices recorded.** Choosing exactly one domain sets the scope, so the crumbs and the facet
-agree; several domains are a filter at the organisation. Saved views are kept per person on the
-device (`usePreference`) until the catalog has a server-side view store. Opening a row carries
+agree; several domains are a filter at the organisation. Saved views are the person's own, kept on
+the server (`GET/POST/DELETE /views`, at most 30 per screen) so they follow them to any device;
+deleting one offers Undo. Opening a row carries
 the application's domain and group into the scope, so its crumbs read Acme › Commerce ›
 Checkout.

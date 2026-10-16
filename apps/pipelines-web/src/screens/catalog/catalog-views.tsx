@@ -1,7 +1,6 @@
-import { formatNumber, usePreference, useT } from '@bemmoly/core-web';
+import { formatNumber, useT } from '@bemmoly/core-web';
 import { Button, Menu, MenuItem, SegmentedControl } from '@bemmoly/ui';
 import { Icon } from '@bemmoly/ui/icons';
-import { useState } from 'react';
 import { pipelinesText } from '../../i18n/catalog.ts';
 import {
   applyView,
@@ -13,12 +12,7 @@ import {
 } from './catalog-search.ts';
 import { SaveViewDialog } from './save-view-dialog.tsx';
 import { useCount } from './use-catalog.ts';
-
-export interface SavedView {
-  id: string;
-  name: string;
-  filters: ViewFilters;
-}
+import { filtersOf, useSavedViews } from './use-saved-views.ts';
 
 type BuiltIn = 'all' | 'mine' | 'tier0' | 'stale' | 'noOwner';
 
@@ -63,7 +57,7 @@ export function CatalogViews({
   onSaveOpenChange: (open: boolean) => void;
 }) {
   const t = useT(pipelinesText);
-  const [saved, setSaved] = usePreference<SavedView[]>('pipelines.catalog.views', []);
+  const { views: saved, save, remove } = useSavedViews();
   const counts: Record<BuiltIn, number | undefined> = {
     all: useViewCount(BUILT_IN.all, scope),
     mine: useViewCount(BUILT_IN.mine, scope),
@@ -71,7 +65,6 @@ export function CatalogViews({
     stale: useViewCount(BUILT_IN.stale, scope),
     noOwner: useViewCount(BUILT_IN.noOwner, scope),
   };
-  const [pending, setPending] = useState(false);
   const label = (name: string, count: number | undefined) =>
     count === undefined
       ? name
@@ -83,7 +76,7 @@ export function CatalogViews({
   const own = saved.map((view) => ({ value: view.id, label: view.name }));
   const current =
     (Object.keys(BUILT_IN) as BuiltIn[]).find((id) => sameFilters(state, BUILT_IN[id])) ??
-    saved.find((view) => sameFilters(state, view.filters))?.id ??
+    saved.find((view) => sameFilters(state, filtersOf(view)))?.id ??
     'filtered';
   const options = [
     ...builtIn,
@@ -93,7 +86,8 @@ export function CatalogViews({
       : []),
   ];
   const choose = (id: string) => {
-    const view = BUILT_IN[id as BuiltIn] ?? saved.find((item) => item.id === id)?.filters;
+    const own = saved.find((item) => item.id === id);
+    const view = BUILT_IN[id as BuiltIn] ?? (own ? filtersOf(own) : undefined);
     if (view) onApply(view);
   };
   const ownCurrent = saved.find((view) => view.id === current);
@@ -127,7 +121,7 @@ export function CatalogViews({
             <MenuItem
               tone="danger"
               onSelect={() => {
-                setSaved(saved.filter((view) => view.id !== ownCurrent.id));
+                remove.mutate(ownCurrent);
                 onApply({});
               }}
             >
@@ -140,7 +134,7 @@ export function CatalogViews({
             size="sm"
             variant="ghost"
             onClick={() => onSaveOpenChange(true)}
-            loading={pending}
+            loading={save.isPending}
           >
             <Icon name="plus" size={14} />
             {t('pipelines.catalog.saveView')}
@@ -150,22 +144,10 @@ export function CatalogViews({
       <SaveViewDialog
         open={saveOpen && current === 'filtered'}
         onClose={() => onSaveOpenChange(false)}
-        onSave={(name) => {
-          setPending(true);
-          const view: SavedView = {
-            id: `view-${Date.now().toString(36)}`,
-            name,
-            filters: {
-              ...(state.q ? { q: state.q } : {}),
-              facets: state.facets,
-              ...(state.mine ? { mine: true } : {}),
-              ...(state.staleDays ? { staleDays: state.staleDays } : {}),
-            },
-          };
-          setSaved([...saved, view]);
-          setPending(false);
-          onSaveOpenChange(false);
-        }}
+        onSave={(name) =>
+          save.mutate({ name, state }, { onSuccess: () => onSaveOpenChange(false) })
+        }
+        error={save.error}
       />
     </div>
   );

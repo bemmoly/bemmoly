@@ -11,6 +11,10 @@ import {
   runGraphSchema,
   runSummarySchema,
   runsPageSchema,
+  savedViewSchema,
+  savedViewsResponseSchema,
+  type CreateSavedViewBody,
+  type SavedViewScreen,
   type CancelRunBody,
   type CreateRunBody,
   type ListRunsQuery,
@@ -34,6 +38,7 @@ export const deliveryKeys = {
   run: (id: string) => ['pipelines', 'run', id] as const,
   runGraph: (id: string) => ['pipelines', 'run', id, 'graph'] as const,
   logSearch: (jobId: string, q: string) => ['pipelines', 'log', jobId, 'search', q] as const,
+  views: (screen: string) => ['pipelines', 'views', screen] as const,
 };
 
 /**
@@ -69,6 +74,11 @@ export function deliveryEndpoints(http: Http) {
       http.request(`${base}/jobs/${segment(jobId)}/logs`, logRangeSchema, {
         query: toQuery(query),
       }),
+    views: (screen: SavedViewScreen) =>
+      http.request(`${base}/views`, savedViewsResponseSchema, { query: { screen } }),
+    createView: (body: CreateSavedViewBody) =>
+      http.request(`${base}/views`, savedViewSchema, { method: 'POST', body, idempotent: true }),
+    deleteView: (id: string) => http.send(`${base}/views/${segment(id)}`, { method: 'DELETE' }),
     searchLog: (jobId: string, q: string) =>
       http.request(`${base}/jobs/${segment(jobId)}/logs/search`, logSearchSchema, {
         query: { q, limit: 500 },
