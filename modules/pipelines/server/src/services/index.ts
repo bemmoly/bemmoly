@@ -19,6 +19,7 @@ import { createPipelinesCodeHosts } from './code/hosts.ts';
 import type { PullRequestOpener } from './code/pull-requests.ts';
 import { createDiscoveryService } from './discovery/index.ts';
 import type { RepositoryReader } from './code/repository-reader.ts';
+import { createCloudsService } from './clouds/index.ts';
 import { createEnvironmentsService } from './environments/index.ts';
 import { registerCatalogSync } from './inbox/catalog-sync.ts';
 import { createInboxService } from './inbox/index.ts';
@@ -29,6 +30,7 @@ import { createProviderRegistry, type ProviderRegistry } from './providers/regis
 import { createReleasesService } from './releases/index.ts';
 import { createShippingAccess, createShippingService, type Waker } from './shipping/index.ts';
 import { createWebhookCaller, type WebhookSecrets } from './shipping/gates/index.ts';
+import { providersFromSettings } from './providers/index.ts';
 import { createStreamsService } from './streams/index.ts';
 import { createTeamsService } from './teams/index.ts';
 
@@ -84,6 +86,7 @@ export function createPipelinesServices(input: PipelinesServicesDeps) {
   const logs = createLogsService(deps);
   const tests = createTestsService(deps);
   const execution = { ...deps, hooks };
+  const providers = input.providers ?? providersFromSettings(input.settings);
   return {
     access,
     inbox,
@@ -116,6 +119,11 @@ export function createPipelinesServices(input: PipelinesServicesDeps) {
           }),
         }
       : {}),
+    clouds: createCloudsService({
+      ...deps,
+      providers,
+      ...(input.sendJob ? { sendJob: input.sendJob } : {}),
+    }),
   };
 }
 

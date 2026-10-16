@@ -7,6 +7,7 @@ declare module '@bemmoly/core' {
     'pipelines.logs.retentionDays': number;
     'pipelines.history.rewindDays': number;
     'pipelines.runners.defaultPool': string;
+    'pipelines.providers.simulate': boolean;
   }
 }
 
@@ -39,5 +40,14 @@ export function definePipelinesSettings(settings: SettingsRegistry): void {
     key: 'pipelines.history.rewindDays',
     schema: z.number().int().min(1).max(365),
     default: 90,
+  });
+  /**
+   * Swaps Google Cloud for the in-memory provider, so a demo or an evaluation runs every
+   * flow (connect, landing zone, deploys) without creating anything in a real cloud.
+   */
+  settings.define({
+    key: 'pipelines.providers.simulate',
+    schema: z.boolean(),
+    default: false,
   });
 }

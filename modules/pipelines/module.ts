@@ -1,6 +1,7 @@
 import { defineModule, loadChangelogFolder } from '@bemmoly/core';
 import { PIPELINES_CAPABILITIES } from './server/src/config/capabilities.ts';
 import { discoveryJob } from './server/src/config/jobs.ts';
+import { landingZoneApplyJob, landingZoneDriftJob } from './server/src/config/landing-zone-jobs.ts';
 import { definePipelinesSettings } from './server/src/config/settings.ts';
 import { jobWaker, shippingJobs } from './server/src/config/shipping-jobs.ts';
 import { defineShippingSettings } from './server/src/config/shipping-settings.ts';
@@ -39,6 +40,8 @@ export default defineModule({
       wake: jobWaker(ctx.jobs),
     });
     registerCodeHostWork(ctx, services);
+    ctx.jobs.add(landingZoneApplyJob(services.clouds));
+    ctx.jobs.add(landingZoneDriftJob(services.clouds));
     ctx.jobs.add(discoveryJob(services.discovery));
     for (const job of shippingJobs(() => services.shipping?.engine)) ctx.jobs.add(job);
     const controllers = createPipelinesControllers(services);

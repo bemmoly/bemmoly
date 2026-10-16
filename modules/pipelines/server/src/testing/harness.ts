@@ -10,6 +10,9 @@ import {
 } from '@bemmoly/core';
 import { createIsolatedDatabase, startTestDatabase } from '@bemmoly/core/testing';
 import pipelines from '../../../module.ts';
+import { createFakeWorld, type FakeWorld } from '../services/providers/fake/index.ts';
+import { createDefaultProviders } from '../services/providers/index.ts';
+import { createProviderRegistry } from '../services/providers/registry.ts';
 import { createPipelinesServices, type PipelinesServices } from '../services/index.ts';
 
 /*
@@ -22,8 +25,18 @@ export interface PipelinesHarness {
   sql: SqlClient;
   services: PipelinesServices;
   users: { admin: string; member: string; outsider: string };
+  /** The simulated cloud behind every provider call, so tests can inspect and steer it. */
+  world: FakeWorld;
+  /** Jobs the services queued, in order, instead of running them. */
+  jobs: SentJob[];
   as(userId: string): RequestContext;
   stop(): Promise<void>;
+}
+
+export interface SentJob {
+  name: string;
+  payload: Record<string, unknown>;
+  idempotencyKey: string | undefined;
 }
 
 export type HarnessStart =
@@ -61,8 +74,16 @@ export async function startPipelinesHarness(): Promise<HarnessStart> {
     values ('pipelines', 'user', ${users.admin}), ('pipelines', 'user', ${users.member})`;
   const modules = loadModules({ available: [pipelines], enabled: ['pipelines'] });
   const db = createDatabase(sql);
+  const world = createFakeWorld();
+  const registry = createProviderRegistry(createDefaultProviders({ simulate: true, world }));
+  const jobs: SentJob[] = [];
   const services = createPipelinesServices({
     database: sql,
+    providers: registry,
+    async sendJob(name, payload, options = {}) {
+      jobs.push({ name, payload, idempotencyKey: options.idempotencyKey });
+      return `job-${jobs.length}`;
+    },
   });
   const as = (userId: string): RequestContext => ({
     actor: { kind: 'user', id: userId },
@@ -74,6 +95,8 @@ export async function startPipelinesHarness(): Promise<HarnessStart> {
       sql,
       services,
       users,
+      world,
+      jobs,
       as,
       async stop() {
         await sql.end({ timeout: 5 });
