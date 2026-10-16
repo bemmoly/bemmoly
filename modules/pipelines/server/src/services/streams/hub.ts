@@ -32,6 +32,34 @@ interface TopicState {
 
 const PER_PERSON = new Set(['for-you']);
 
+interface LogAppend {
+  jobId: string;
+  fromLine: number;
+  lines: Array<{ number: number }>;
+  toLine?: number;
+}
+
+/**
+ * Log lines are not invalidations: keeping only the latest append would drop lines. Two
+ * appends in one window join when the second continues the first; otherwise the merged
+ * event keeps the earliest start and the latest end with no lines, and the client reads the
+ * range (logs.ts says so).
+ */
+export function mergeLogAppends(first: NotifyPayload, second: NotifyPayload): NotifyPayload {
+  const a = first.data as LogAppend | undefined;
+  const b = second.data as LogAppend | undefined;
+  if (!a || !b) return { ...second, data: undefined };
+  const aEnd = a.fromLine + a.lines.length;
+  const toLine = Math.max(a.toLine ?? aEnd - 1, b.toLine ?? b.fromLine + b.lines.length - 1);
+  const contiguous = (a.toLine ?? aEnd - 1) === aEnd - 1 && b.fromLine === aEnd;
+  const lines =
+    contiguous && a.lines.length + b.lines.length <= 2000 ? [...a.lines, ...b.lines] : [];
+  return {
+    ...second,
+    data: { jobId: b.jobId, fromLine: Math.min(a.fromLine, b.fromLine), lines, toLine },
+  };
+}
+
 export function createStreamHub(options: StreamHubOptions = {}) {
   const coalesceMs = options.coalesceMs ?? 1000;
   const now = options.now ?? Date.now;
@@ -57,7 +85,11 @@ export function createStreamHub(options: StreamHubOptions = {}) {
   function dispatch(payload: NotifyPayload) {
     const state = topics.get(payload.topic);
     if (!state || state.subscribers.size === 0) return;
-    state.pending.set(payload.kind, payload);
+    const previous = state.pending.get(payload.kind);
+    state.pending.set(
+      payload.kind,
+      payload.kind === 'log.appended' && previous ? mergeLogAppends(previous, payload) : payload,
+    );
     if (state.timer) return;
     const wait = Math.max(0, state.lastFlush + coalesceMs - now());
     state.timer = setTimeout(() => flush(payload.topic, state), wait);

@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { StreamEvent } from '../../../../shared/streams.ts';
-import { createStreamHub } from './hub.ts';
+import { createStreamHub, mergeLogAppends } from './hub.ts';
 
 const RUN = 'run:01a145e5-f78f-7a23-bdff-ed9b5efa8df3';
 
@@ -67,5 +67,36 @@ describe('stream hub', () => {
     hub.dispatch({ topic: 'live', kind: 'counter', data: { running: 2, queued: 0 } });
     vi.advanceTimersByTime(1000);
     expect(viewer.events).toEqual([]);
+  });
+});
+
+describe('log appends in one window', () => {
+  const line = (number: number) => ({
+    number,
+    text: `l${number}`,
+    spans: [],
+    error: false,
+    stepId: null,
+  });
+  const append = (fromLine: number, count: number, toLine = fromLine + count - 1) => ({
+    topic: 'job:0199f0a2-7c3e-7d4a-9b1e-2f3a4b5c6d7e:log',
+    kind: 'log.appended' as const,
+    data: {
+      jobId: '0199f0a2-7c3e-7d4a-9b1e-2f3a4b5c6d7e',
+      fromLine,
+      lines: Array.from({ length: count }, (_, i) => line(fromLine + i)),
+      toLine,
+    },
+  });
+
+  it('joins contiguous appends instead of keeping only the latest', () => {
+    const merged = mergeLogAppends(append(1, 2), append(3, 2));
+    expect(merged.data).toMatchObject({ fromLine: 1, toLine: 4 });
+    expect((merged.data as { lines: unknown[] }).lines).toHaveLength(4);
+  });
+
+  it('keeps the span but no lines when the first append was cut short', () => {
+    const merged = mergeLogAppends(append(1, 2, 10), append(11, 2));
+    expect(merged.data).toMatchObject({ fromLine: 1, toLine: 12, lines: [] });
   });
 });
