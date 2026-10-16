@@ -43,5 +43,6 @@ accepted record is never edited except to mark it superseded.
 | [0036](0036-authorization-lookups-cached-per-process.md) | Authorization lookups cached per process, emptied by a database notification | accepted |
 | [0037](0037-pipelines-is-a-separate-product-with-its-own-shell.md) | Pipelines is a separate product with its own shell | accepted; amends 0016 for the frame |
 | [0038](0038-pipelines-policies-are-cel-evaluated-in-process.md) | Pipelines policies are CEL, evaluated in process with cel-js | accepted |
+| [0039](0039-pipelines-dispatches-jobs-with-its-own-postgres-queue.md) | Pipelines dispatches jobs with its own Postgres queue | accepted |
 | [0045](0045-code-hosts-carry-events-and-module-writes.md) | Code hosts carry events and the writes modules need | accepted; changes the code-host contract |
 | [0046](0046-command-line-tools-sign-in-with-a-device-code.md) | Command line tools sign in with a device code | accepted; adds the device grant to the OAuth server |
