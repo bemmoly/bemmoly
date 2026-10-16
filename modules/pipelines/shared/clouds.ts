@@ -51,6 +51,27 @@ export const cloudConnectionSchema = z.object({
 
 export const connectionsResponseSchema = z.object({ items: z.array(cloudConnectionSchema) });
 
+/**
+ * The local provider's Docker daemon: a docker or podman socket on this machine, or a daemon on
+ * loopback. Anything else would let a connection send Engine API calls to any host or socket.
+ */
+export function isLocalDockerHost(value: string): boolean {
+  const unix = /^unix:\/\/(\/[^\0?#]*\/(?:docker|podman)\.sock)$/.exec(value);
+  if (unix) return !(unix[1] ?? '').split('/').includes('..');
+  const tcp = /^tcp:\/\/(?:127\.0\.0\.1|localhost|\[::1\]):([0-9]{1,5})$/.exec(value);
+  const port = Number(tcp?.[1]);
+  return port > 0 && port < 65536;
+}
+
+export const dockerHostSchema = z
+  .string()
+  .trim()
+  .max(300)
+  .refine(
+    isLocalDockerHost,
+    'Use a socket such as unix:///var/run/docker.sock or tcp://127.0.0.1:2375',
+  );
+
 const connectionBase = {
   name: z.string().trim().min(1).max(80),
   layout: layoutSchema.default('per-domain-environment'),
@@ -81,7 +102,7 @@ export const connectCloudBodySchema = z.discriminatedUnion('provider', [
   z.object({
     provider: z.literal('local'),
     ...connectionBase,
-    dockerHost: z.string().min(1).max(300).default('unix:///var/run/docker.sock'),
+    dockerHost: dockerHostSchema.default('unix:///var/run/docker.sock'),
   }),
 ]);
 

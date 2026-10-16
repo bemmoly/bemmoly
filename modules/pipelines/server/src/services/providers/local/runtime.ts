@@ -1,4 +1,7 @@
 import { randomBytes } from 'node:crypto';
+import { ValidationError } from '@bemmoly/shared';
+import { isLocalDockerHost } from '../../../../../shared/clouds.ts';
+import { isImageReference, isImageRepository } from '../../../../../shared/image-reference.ts';
 import { createDockerClient, publishedPort, type DockerClient } from '../../../clients/docker.ts';
 import { createSplitterClient, type SplitterClient } from '../../../clients/splitter.ts';
 import type { DeployTarget, ReleaseArtifact } from '../contract.ts';
@@ -28,8 +31,15 @@ export function localConfig(config: Readonly<Record<string, unknown>>): LocalCon
   const text = (key: string, fallback: string) =>
     typeof config[key] === 'string' && config[key] ? (config[key] as string) : fallback;
   const rps = Number(config['syntheticRps']);
+  // Checked again here for connections stored before the API checked it.
+  const dockerHost = text('dockerHost', 'unix:///var/run/docker.sock');
+  if (!isLocalDockerHost(dockerHost)) {
+    throw new ValidationError(
+      'The local connection must use a Docker socket on this machine; connect it again',
+    );
+  }
   return {
-    dockerHost: text('dockerHost', 'unix:///var/run/docker.sock'),
+    dockerHost,
     nodeImage: text('nodeImage', 'node:22.17.1-alpine'),
     syntheticRps: Number.isFinite(rps) && rps >= 0 ? rps : 5,
   };
@@ -74,10 +84,21 @@ const configNumber = (
   return typeof value === 'number' && Number.isFinite(value) ? value : fallback;
 };
 
+/** The repository a release's image lives in, or null for the demo program. */
+export function releaseRepository(release: ReleaseArtifact): string | null {
+  const digest = Object.values(release.imageDigests)[0];
+  if (!release.imageRepository || !digest) return null;
+  if (!isImageRepository(release.imageRepository)) {
+    throw new ValidationError(`${release.imageRepository} is not an image repository`);
+  }
+  return release.imageRepository;
+}
+
 export function createLocalRuntime(config: LocalConfig) {
   const docker: DockerClient = createDockerClient({ host: config.dockerHost });
 
   async function ensureImage(image: string): Promise<void> {
+    if (!isImageReference(image)) throw new ValidationError(`${image} is not an image name`);
     if (!(await docker.hasImage(image))) await docker.pull(image);
   }
 
@@ -142,13 +163,14 @@ export function createLocalRuntime(config: LocalConfig) {
    * registry image by digest, pulled when this machine does not have it yet.
    */
   async function releaseImage(release: ReleaseArtifact): Promise<string | null> {
+    const repository = releaseRepository(release);
     const digest = Object.values(release.imageDigests)[0];
-    if (!release.imageRepository || !digest) return null;
-    const tagged = `${release.imageRepository}:${release.commitSha.replace(/[^A-Za-z0-9_.-]/g, '-')}`;
-    for (const candidate of [digest, `${release.imageRepository}@${digest}`, tagged]) {
+    if (!repository || !digest) return null;
+    const tagged = `${repository}:${release.commitSha.replace(/[^A-Za-z0-9_.-]/g, '-')}`;
+    for (const candidate of [digest, `${repository}@${digest}`, tagged]) {
       if (await docker.hasImage(candidate)) return candidate;
     }
-    const remote = `${release.imageRepository}@${digest}`;
+    const remote = `${repository}@${digest}`;
     await docker.pull(remote);
     return remote;
   }

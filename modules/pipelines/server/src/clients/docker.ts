@@ -151,16 +151,9 @@ export function createDockerClient(options: DockerClientOptions) {
 
     /** Pulls an image; the daemon streams progress, which ends when the pull does. */
     async pull(image: string): Promise<void> {
-      // "repo@sha256:…" is pulled by digest; "repo:tag" by tag; a bare name is :latest.
-      const at = image.lastIndexOf(':');
-      const query = image.includes('@')
-        ? `fromImage=${encodeURIComponent(image)}`
-        : at > image.lastIndexOf('/')
-          ? `fromImage=${encodeURIComponent(image.slice(0, at))}&tag=${encodeURIComponent(image.slice(at + 1))}`
-          : `fromImage=${encodeURIComponent(image)}&tag=latest`;
       const { status, text } = await call(
         'POST',
-        `/images/create?${query}`,
+        `/images/create?${pullQuery(image)}`,
         undefined,
         10 * 60_000,
       );
@@ -228,6 +221,21 @@ export function createDockerClient(options: DockerClientOptions) {
 }
 
 export type DockerClient = ReturnType<typeof createDockerClient>;
+
+/** The pull's query: a digest reference goes whole, a tag is split off, no tag means latest. */
+export function pullQuery(image: string): string {
+  const query = new URLSearchParams();
+  const at = image.lastIndexOf(':');
+  if (image.includes('@')) query.set('fromImage', image);
+  else if (at > image.lastIndexOf('/')) {
+    query.set('fromImage', image.slice(0, at));
+    query.set('tag', image.slice(at + 1));
+  } else {
+    query.set('fromImage', image);
+    query.set('tag', 'latest');
+  }
+  return query.toString();
+}
 
 /** The host port Docker published for a container port, once it is running. */
 export function publishedPort(inspect: DockerInspect, port: number): number | null {
