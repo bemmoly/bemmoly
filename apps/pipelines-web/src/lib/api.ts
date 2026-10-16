@@ -1,5 +1,6 @@
 import { createApiClient, type ApiError } from '@bemmoly/api-client';
 import { QueryClient } from '@tanstack/react-query';
+import { deliveryEndpoints } from '../api/delivery.ts';
 import { pipelinesEndpoints } from '../api/pipelines.ts';
 import { platformEndpoints } from '../api/platform.ts';
 import { shippingEndpoints } from '../api/shipping.ts';
@@ -16,6 +17,7 @@ export const api = {
   pipelines: pipelinesEndpoints(client.http),
   shipping: shippingEndpoints(client.http),
   platform: platformEndpoints(client.http),
+  delivery: deliveryEndpoints(client.http),
 };
 
 export type Api = typeof api;
