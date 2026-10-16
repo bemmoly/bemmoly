@@ -4,5 +4,5 @@
     "lib": ["es2024", "dom", "dom.iterable"],
     "types": ["node"]
   },
-  "include": ["flows", "support", "*.ts"]
+  "include": ["flows", "pipelines", "support", "*.ts"]
 }
