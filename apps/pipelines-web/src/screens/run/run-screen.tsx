@@ -204,7 +204,7 @@ export default function RunScreen() {
           />
         )}
       </div>
-      <div className="grid min-w-0 gap-3 lg:grid-cols-[minmax(0,1fr)_330px]">
+      <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-3 lg:grid-cols-[minmax(0,1fr)_330px]">
         {data.executor === 'external' && data.externalUrl ? (
           <div className="rounded-card border border-line bg-card py-10 shadow-e1">
             <EmptyState

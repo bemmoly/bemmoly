@@ -51,7 +51,7 @@ export function RunSkeleton() {
     <div aria-busy className="mx-auto flex w-full max-w-360 flex-col gap-4 px-4 py-5 md:px-6">
       <Skeleton width={360} height={20} />
       <Skeleton width="100%" height={180} />
-      <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_330px]">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-3 lg:grid-cols-[minmax(0,1fr)_330px]">
         <Skeleton width="100%" height={420} />
         <Skeleton width="100%" height={200} />
       </div>

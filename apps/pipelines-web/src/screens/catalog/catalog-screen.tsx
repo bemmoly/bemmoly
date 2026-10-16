@@ -136,7 +136,7 @@ export default function CatalogScreen() {
         </>
       }
     >
-      <div className="grid gap-5 md:grid-cols-[210px_minmax(0,1fr)]">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-5 md:grid-cols-[210px_minmax(0,1fr)]">
         <aside ref={facetPanel} className="hidden md:block">
           <div className="sticky top-5">{facetsPanel}</div>
         </aside>

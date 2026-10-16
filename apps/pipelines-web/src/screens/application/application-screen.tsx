@@ -234,7 +234,7 @@ export default function ApplicationScreen() {
               onSelect={(env) => setSearch({ env })}
             />
           )}
-          <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
+          <div className="grid grid-cols-[minmax(0,1fr)] gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
             <section className={SIDE_CARD}>
               {strip.isError ? null : strip.data ? (
                 <WhatDiffers application={key} target={selected} newer={newer} />

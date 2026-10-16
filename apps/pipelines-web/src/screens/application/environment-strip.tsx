@@ -55,7 +55,7 @@ export function EnvironmentStrip({
   const t = useT(pipelinesText);
   const subline = useSubline();
   return (
-    <div className="-mx-1 overflow-x-auto px-1 pb-1">
+    <div className="-m-1 overflow-x-auto p-1">
       <ol aria-label={t('pipelines.strip.label')} className="flex items-stretch gap-2">
         {items.map((item, index) => {
           const before = items[index - 1];
