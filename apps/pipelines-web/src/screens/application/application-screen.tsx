@@ -1,20 +1,18 @@
-import { useScreenActions, useT } from '@bemmoly/core-web';
+import { useT } from '@bemmoly/core-web';
 import type { EnvironmentStripItem } from '@bemmoly/module-pipelines/shared';
 import { Badge, Button, EmptyState, Kbd, Skeleton, Tabs, Tooltip } from '@bemmoly/ui';
 import { Icon } from '@bemmoly/ui/icons';
-import { useNavigate, useParams, useRouter, useSearch } from '@tanstack/react-router';
-import { useState } from 'react';
-import { useScreenKeys } from '../../hooks/use-screen-keys.ts';
+import { useNavigate, useParams, useSearch } from '@tanstack/react-router';
 import { pipelinesText } from '../../i18n/catalog.ts';
-import { BASE_PATH } from '../../lib/sign-in.ts';
 import { TierBadge } from '../../parts/bits.tsx';
 import { ScreenFrame } from '../screen-frame.tsx';
 import { ApplicationRuns } from './application-runs.tsx';
 import { EnvironmentStrip, EnvironmentStripSkeleton } from './environment-strip.tsx';
-import { RollbackDialog, rollbackable } from './rollback-dialog.tsx';
+import { RollbackDialog } from './rollback-dialog.tsx';
 import { RunDialog } from './run-dialog.tsx';
 import { AboutCard, HealthCard, SIDE_CARD } from './side-cards.tsx';
 import { useApplication, useRecentRuns } from './use-application.ts';
+import { useApplicationActions } from './use-application-actions.ts';
 import { WhatDiffers } from './what-differs.tsx';
 import { RecentRuns } from './recent-runs.tsx';
 
@@ -38,14 +36,12 @@ function defaultEnvironment(items: readonly EnvironmentStripItem[]): string | nu
  */
 export default function ApplicationScreen() {
   const t = useT(pipelinesText);
-  const router = useRouter();
   const navigate = useNavigate();
   const { key = '' } = useParams({ strict: false }) as { key?: string };
-  const search = useSearch({ strict: false }) as { env?: string; tab?: string };
+  const search = useSearch({ strict: false }) as { env?: string; tab?: string; dialog?: string };
   const tab: Tab = search.tab === 'runs' ? 'runs' : 'overview';
   const { application, strip } = useApplication(key);
   const runs = useRecentRuns(key);
-  const [dialog, setDialog] = useState<'run' | 'rollback' | null>(null);
   const items = strip.data?.items ?? [];
   const selectedKey = search.env ?? defaultEnvironment(items);
   const selectedIndex = items.findIndex((item) => item.environment.key === selectedKey);
@@ -61,59 +57,14 @@ export default function ApplicationScreen() {
   const prodItem =
     items.find((item) => item.environment.class === 'prod' && item.state === 'canary') ??
     items.find((item) => item.environment.class === 'prod');
-  // Promote the release that is one stop before Prod (Staging, as a rule).
-  const firstProd = items.findIndex((item) => item.environment.class === 'prod');
-  const candidate = firstProd > 0 ? items[firstProd - 1] : undefined;
-  const canRollBack = rollbackable(items).length > 0;
-  const setSearch = (next: Record<string, string | undefined>) =>
-    void navigate({
-      to: '.',
-      search: (previous: Record<string, unknown>) => ({ ...previous, ...next }),
-      replace: true,
-    });
-  const promote = () => {
-    if (candidate?.releaseId)
-      router.history.push(`${BASE_PATH}/releases/${candidate.releaseId}/promote?to=prod`);
-  };
-
-  useScreenKeys({
-    p: promote,
-    'shift+b': () => canRollBack && setDialog('rollback'),
-    r: () => setDialog('run'),
-  });
   const name = application.data?.name ?? key;
-  useScreenActions(
-    application.data
-      ? [
-          {
-            id: 'app.run',
-            title: t('pipelines.application.runAction', { name }),
-            keys: 'R',
-            run: () => setDialog('run'),
-          },
-          ...(candidate?.releaseId
-            ? [
-                {
-                  id: 'app.promote',
-                  title: t('pipelines.application.promoteAction', { name }),
-                  keys: 'P',
-                  run: promote,
-                },
-              ]
-            : []),
-          ...(canRollBack
-            ? [
-                {
-                  id: 'app.rollback',
-                  title: t('pipelines.application.rollbackAction', { name }),
-                  keys: 'Shift+B',
-                  run: () => setDialog('rollback'),
-                },
-              ]
-            : []),
-        ]
-      : null,
-  );
+  const { dialog, setDialog, setSearch, promote, candidate, canRollBack } = useApplicationActions({
+    name,
+    ready: application.isSuccess,
+    items,
+    stripReady: strip.isSuccess,
+    dialogParam: search.dialog,
+  });
 
   if (application.isError) {
     const missing = (application.error as { code?: string }).code === 'not_found';

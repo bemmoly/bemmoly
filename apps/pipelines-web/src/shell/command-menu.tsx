@@ -9,6 +9,7 @@ import {
   type EntityHue,
 } from '@bemmoly/ui';
 import { Icon } from '@bemmoly/ui/icons';
+import type { Application } from '@bemmoly/module-pipelines/shared';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import { useDeferredValue, useState } from 'react';
@@ -17,13 +18,19 @@ import { useDomains } from '../hooks/use-catalog-tree.ts';
 import { pipelinesText } from '../i18n/catalog.ts';
 import { api } from '../lib/api.ts';
 import { useUiStore } from '../store/ui.ts';
+import {
+  ApplicationActionsGroup,
+  parseIntent,
+  ScreenActionsGroup,
+  type Verb,
+} from './command-actions.tsx';
 import { PLACES, SETTINGS } from './places.ts';
 
 const matches = (text: string, query: string) => text.toLowerCase().includes(query.toLowerCase());
 
 /**
- * Mod+K: places, domains to zoom the scope to, and applications by name, key or label. The
- * actions (deploy, roll back, who owns) join as the screens that do them land.
+ * Mod+K: what this screen can do, applications by name, key or label with their actions
+ * ("roll back pricing-svc", "who owns search-api"), places, and domains to zoom to.
  */
 export function CommandMenu({ onToggleMode }: { onToggleMode: () => void }) {
   const t = useT(pipelinesText);
@@ -31,13 +38,26 @@ export function CommandMenu({ onToggleMode }: { onToggleMode: () => void }) {
   const close = useUiStore((state) => state.closePalette);
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
-  const search = useDeferredValue(query.trim());
+  const intent = parseIntent(query.trim());
+  const search = useDeferredValue(intent.rest);
   const domains = useDomains().data?.items ?? [];
   const applications = useQuery({
     queryKey: pipelinesKeys.applications({ q: search, limit: 8 }),
     queryFn: () => api.pipelines.applications({ q: search, limit: 8 }),
     enabled: open && search.length >= 2,
   });
+  const openApplication = (application: Application, dialog?: Verb) => {
+    close();
+    setQuery('');
+    void navigate({
+      to: '/applications/$key',
+      params: { key: application.key },
+      search: {
+        scope: `${application.domain.key}/${application.group.key}`,
+        ...(dialog && dialog !== 'owner' ? { dialog } : {}),
+      } as { scope?: string },
+    });
+  };
   const go = (to: string, search?: Record<string, string>) => {
     close();
     setQuery('');
@@ -57,15 +77,27 @@ export function CommandMenu({ onToggleMode }: { onToggleMode: () => void }) {
         placeholder={t('pipelines.shell.commandsPlaceholder')}
       />
       <CommandList>
-        {found.length > 0 && (
+        {intent.verb ? null : (
+          <ScreenActionsGroup
+            query={query.trim()}
+            onRun={() => {
+              close();
+              setQuery('');
+            }}
+          />
+        )}
+        <ApplicationActionsGroup applications={found} verb={intent.verb} onOpen={openApplication} />
+        {found.length > 0 && !intent.verb && (
           <CommandGroup label={t('pipelines.shell.commandsApplications')}>
             {found.map((application) => (
               <CommandItem
                 key={application.id}
                 icon={<Icon name="box" size={16} />}
                 title={application.name}
-                meta={`${application.domain.name} · ${application.group.name}`}
-                onSelect={() => go('/catalog', { q: application.key })}
+                meta={[application.domain.name, application.group.name, application.ownerTeam?.name]
+                  .filter(Boolean)
+                  .join(' · ')}
+                onSelect={() => openApplication(application)}
               />
             ))}
           </CommandGroup>
