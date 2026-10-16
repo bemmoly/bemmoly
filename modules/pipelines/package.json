@@ -18,7 +18,9 @@
   "dependencies": {
     "@bemmoly/core": "workspace:*",
     "@bemmoly/shared": "workspace:*",
+    "@marcbachmann/cel-js": "8.0.0",
     "fastify": "5.12.5",
+    "yaml": "2.8.3",
     "zod": "4.6.5"
   },
   "devDependencies": {

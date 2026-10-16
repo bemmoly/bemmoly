@@ -1,4 +1,5 @@
 import type { SettingsRegistry, SqlClient } from '@bemmoly/core';
+import { createAccessService } from './access/index.ts';
 import { createCatalogService } from './catalog/index.ts';
 import { createEnvironmentsService } from './environments/index.ts';
 import { createOverviewService } from './overview/index.ts';
@@ -15,8 +16,11 @@ export interface PipelinesServicesDeps {
  * Every Pipelines service, built once at boot. Each area adds its factory here and nowhere
  * else, so module.ts never grows with the product.
  */
-export function createPipelinesServices(deps: PipelinesServicesDeps) {
+export function createPipelinesServices(input: PipelinesServicesDeps) {
+  const access = createAccessService(input);
+  const deps = { ...input, access };
   return {
+    access,
     catalog: createCatalogService(deps),
     environments: createEnvironmentsService(deps),
     teams: createTeamsService(deps),

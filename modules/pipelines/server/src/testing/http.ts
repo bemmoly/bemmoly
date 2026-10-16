@@ -1,4 +1,11 @@
-import { ForbiddenError, isBemmolyError, NotFoundError, ValidationError } from '@bemmoly/shared';
+import {
+  ConflictError,
+  ForbiddenError,
+  isBemmolyError,
+  NotFoundError,
+  UnauthenticatedError,
+  ValidationError,
+} from '@bemmoly/shared';
 import Fastify, { type FastifyInstance, type LightMyRequestResponse } from 'fastify';
 import { createPipelinesControllers } from '../controllers/index.ts';
 import { pipelinesRoutes } from '../routes/index.ts';
@@ -14,11 +21,19 @@ const STATUS: ReadonlyArray<[new (...args: never[]) => Error, number]> = [
   [NotFoundError, 404],
   [ForbiddenError, 403],
   [ValidationError, 400],
+  [ConflictError, 409],
+  [UnauthenticatedError, 401],
 ];
 
 export interface PipelinesHttp {
   app: FastifyInstance;
   get(path: string, as: string, query?: Record<string, string>): Promise<LightMyRequestResponse>;
+  send(
+    method: 'POST' | 'PATCH' | 'PUT' | 'DELETE',
+    path: string,
+    as: string,
+    body?: unknown,
+  ): Promise<LightMyRequestResponse>;
 }
 
 export async function startPipelinesHttp(harness: PipelinesHarness): Promise<PipelinesHttp> {
@@ -27,7 +42,8 @@ export async function startPipelinesHttp(harness: PipelinesHarness): Promise<Pip
     const status = isBemmolyError(error)
       ? (STATUS.find(([type]) => error instanceof type)?.[1] ?? 500)
       : 500;
-    return reply.code(status).send({ message: (error as Error).message });
+    const details = isBemmolyError(error) ? error.details : undefined;
+    return reply.code(status).send({ message: (error as Error).message, details });
   });
   app.addHook('onRequest', async (request) => {
     const userId = request.headers['x-test-user'];
@@ -48,6 +64,13 @@ export async function startPipelinesHttp(harness: PipelinesHarness): Promise<Pip
         url: `/api/v1/pipelines${path}`,
         query,
         headers: { 'x-test-user': as },
+      }),
+    send: (method, path, as, body) =>
+      app.inject({
+        method,
+        url: `/api/v1/pipelines${path}`,
+        headers: { 'x-test-user': as },
+        ...(body === undefined ? {} : { payload: body as object }),
       }),
   };
 }

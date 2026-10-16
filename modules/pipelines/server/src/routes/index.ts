@@ -1,5 +1,6 @@
 import type { FastifyPluginAsync } from 'fastify';
 import type { PipelinesControllers } from '../controllers/index.ts';
+import { accessRoutes } from './access.routes.ts';
 import { catalogRoutes } from './catalog.routes.ts';
 import { organisationRoutes } from './organisation.routes.ts';
 import { streamsRoutes } from './streams.routes.ts';
@@ -10,6 +11,7 @@ import { streamsRoutes } from './streams.routes.ts';
  */
 export function pipelinesRoutes(controllers: PipelinesControllers): FastifyPluginAsync {
   return async (app) => {
+    await app.register(accessRoutes(controllers.access));
     await app.register(catalogRoutes(controllers.catalog));
     await app.register(organisationRoutes(controllers.organisation));
     await app.register(streamsRoutes(controllers.streams));
