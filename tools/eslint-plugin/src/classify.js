@@ -19,14 +19,14 @@ export function classifyFile(root, filename) {
   const segments = rel.split('/');
   const moduleMatch = /^modules\/([^/]+)\/(.*)$/.exec(rel);
   const serviceMatch = /^packages\/core\/src\/services\/([^/]+)\//.exec(rel);
-  const productApp = /^apps\/([a-z0-9-]+)-web\//.exec(rel);
+  const productApp = /^apps\/([a-z0-9-]+)-(?:web|cli)\//.exec(rel);
   return {
     rel,
     moduleId: moduleMatch?.[1],
     moduleWeb: moduleMatch?.[2]?.startsWith('web/') ?? false,
     kernelService: serviceMatch?.[1],
     inApp: rel.startsWith('apps/'),
-    /** A product's own web app (apps/pipelines-web) names the product it fronts. */
+    /** A product's own web app or CLI (apps/pipelines-web, apps/pipelines-cli) names its product. */
     productOf: productApp?.[1],
     inServices: segments.slice(0, -1).includes('services'),
   };
