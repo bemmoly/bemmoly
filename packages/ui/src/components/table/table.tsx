@@ -1,4 +1,5 @@
 import {
+  type CSSProperties,
   useRef,
   useSyncExternalStore,
   type KeyboardEvent,
@@ -10,6 +11,7 @@ import { cx } from '../../lib/cx.ts';
 import { focusRingInset } from '../../lib/focus.ts';
 import { Button } from '../button/button.tsx';
 import { ALIGN, HEAD_ROW, TableHeading, type TableSort } from './table-head.tsx';
+import { VirtualRows, type TableVirtual } from './table-virtual.tsx';
 
 export interface TableColumn<T> {
   key: string;
@@ -60,6 +62,15 @@ export interface TableProps<T> {
   empty?: ReactNode;
   /** Extra attributes per row, such as the drop handlers of a reorderable list. */
   rowProps?: (row: T, index: number) => HTMLAttributes<HTMLDivElement> & { 'data-over'?: boolean };
+  /**
+   * Long lists (hundreds of rows): only the rows in view are drawn, on the page's own scroll
+   * area, so a catalog of a thousand applications scrolls like ten. Rows are one fixed height.
+   */
+  virtual?: TableVirtual;
+  /** Called when the last rows come into view: load the next keyset page. */
+  onEndReached?: () => void;
+  /** How many rows exist in all, when more pages are still to load (for aria-rowcount). */
+  total?: number;
   className?: string;
 }
 
@@ -113,6 +124,9 @@ export function Table<T>({
   footer,
   empty,
   rowProps,
+  virtual,
+  onEndReached,
+  total,
   className,
 }: TableProps<T>) {
   const body = useRef<HTMLDivElement>(null);
@@ -135,9 +149,45 @@ export function Table<T>({
     event.preventDefault();
     next.focus();
   };
+  const renderRow = (row: T, index: number, style?: CSSProperties) => {
+    const key = rowKey(row);
+    const selected = key === selectedKey;
+    return (
+      <div
+        {...rowProps?.(row, index)}
+        key={key}
+        role="row"
+        aria-rowindex={index + 2}
+        aria-selected={onRowClick ? selected : undefined}
+        tabIndex={onRowClick ? 0 : undefined}
+        onClick={onRowClick ? () => onRowClick(row) : undefined}
+        onContextMenu={onRowContextMenu ? (event) => onRowContextMenu(row, event) : undefined}
+        onKeyDown={onRowClick ? (event) => onKey(event, row) : undefined}
+        style={{ ...template, ...style }}
+        className={cx(
+          'group/row grid items-center gap-3 border-b border-line-2 px-3 hover:bg-hover',
+          rowHeight,
+          onRowClick && cx('cursor-pointer', focusRingInset),
+          selected && 'bg-acc-50 hover:bg-acc-50',
+          isMuted?.(row) && 'text-tx-3 [&_*]:text-tx-3',
+          'data-[over=true]:shadow-[inset_0_2px_0_var(--acc)]',
+        )}
+      >
+        {shown.map((column) => (
+          <div
+            key={column.key}
+            role="cell"
+            className={cx('min-w-0', ALIGN[column.align ?? 'start'], column.reveal && rowReveal)}
+          >
+            {column.render(row)}
+          </div>
+        ))}
+      </div>
+    );
+  };
   return (
     <div className={cx('min-w-0', className)}>
-      <div role="table" aria-label={label} aria-rowcount={rows.length + 1}>
+      <div role="table" aria-label={label} aria-rowcount={(total ?? rows.length) + 1}>
         <div role="rowgroup">
           <div role="row" style={template} className={HEAD_ROW}>
             {shown.map((column) => (
@@ -146,47 +196,17 @@ export function Table<T>({
           </div>
         </div>
         <div role="rowgroup" ref={body}>
-          {rows.map((row, index) => {
-            const key = rowKey(row);
-            const selected = key === selectedKey;
-            return (
-              <div
-                {...rowProps?.(row, index)}
-                key={key}
-                role="row"
-                aria-selected={onRowClick ? selected : undefined}
-                tabIndex={onRowClick ? 0 : undefined}
-                onClick={onRowClick ? () => onRowClick(row) : undefined}
-                onContextMenu={
-                  onRowContextMenu ? (event) => onRowContextMenu(row, event) : undefined
-                }
-                onKeyDown={onRowClick ? (event) => onKey(event, row) : undefined}
-                style={template}
-                className={cx(
-                  'group/row grid items-center gap-3 border-b border-line-2 px-3 hover:bg-hover',
-                  rowHeight,
-                  onRowClick && cx('cursor-pointer', focusRingInset),
-                  selected && 'bg-acc-50 hover:bg-acc-50',
-                  isMuted?.(row) && 'text-tx-3 [&_*]:text-tx-3',
-                  'data-[over=true]:shadow-[inset_0_2px_0_var(--acc)]',
-                )}
-              >
-                {shown.map((column) => (
-                  <div
-                    key={column.key}
-                    role="cell"
-                    className={cx(
-                      'min-w-0',
-                      ALIGN[column.align ?? 'start'],
-                      column.reveal && rowReveal,
-                    )}
-                  >
-                    {column.render(row)}
-                  </div>
-                ))}
-              </div>
-            );
-          })}
+          {virtual ? (
+            <VirtualRows
+              rows={rows}
+              rowKey={rowKey}
+              virtual={virtual}
+              onEndReached={onEndReached}
+              renderRow={renderRow}
+            />
+          ) : (
+            rows.map((row, index) => renderRow(row, index))
+          )}
         </div>
       </div>
       {rows.length === 0 && empty}
@@ -210,3 +230,4 @@ export function Table<T>({
 }
 
 export type { SortDirection, TableSort } from './table-head.tsx';
+export type { TableVirtual } from './table-virtual.tsx';

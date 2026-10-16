@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Icon } from '../../icons/icon.tsx';
 import { Avatar, type AvatarHue } from '../avatar/avatar.tsx';
 import { EmptyState } from '../empty-state/empty-state.tsx';
@@ -195,4 +195,39 @@ export const Empty: Story = {
       />
     </div>
   ),
+};
+
+const MANY: User[] = Array.from({ length: 2000 }, (_, index) => {
+  const base = USERS[index % USERS.length] ?? USERS[0];
+  return {
+    ...(base as User),
+    id: `${base?.id ?? 'u'}-${index}`,
+    name: `${base?.name ?? ''} ${index + 1}`,
+  };
+});
+
+/** Two thousand rows on a scrolling pane: only the rows in view are drawn. */
+function VirtualDemo() {
+  const pane = useRef<HTMLDivElement>(null);
+  const [rows, setRows] = useState(() => MANY.slice(0, 200));
+  return (
+    <div ref={pane} className="h-120 w-260 overflow-auto rounded-card border border-line">
+      <p className="px-3 py-2 text-12 text-tx-3">Showing {rows.length} of 2,000</p>
+      <Table
+        label="Users"
+        columns={COLUMNS}
+        rows={rows}
+        rowKey={(u) => u.id}
+        onRowClick={() => undefined}
+        total={MANY.length}
+        virtual={{ getScrollElement: () => pane.current, rowHeight: 44 }}
+        onEndReached={() => setRows((current) => MANY.slice(0, current.length + 200))}
+      />
+    </div>
+  );
+}
+
+export const ManyRowsVirtual: Story = {
+  args: { label: 'Users', columns: COLUMNS, rows: [], rowKey: (u: User) => u.id },
+  render: () => <VirtualDemo />,
 };

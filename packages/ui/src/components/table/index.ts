@@ -7,6 +7,7 @@ export {
   type TableFooter,
   type TableProps,
   type TableSort,
+  type TableVirtual,
 } from './table.tsx';
 export {
   TableSkeleton,
