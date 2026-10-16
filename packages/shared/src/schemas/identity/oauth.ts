@@ -102,7 +102,7 @@ export const oauthGrantsResponseSchema = z.object({ items: z.array(oauthGrantSch
 const verifierSchema = z.string().regex(unreservedChallenge);
 const clientIdField = z.string().min(1).max(2048);
 
-/** The token endpoint's form (RFC 6749 4.1.3 and 6), for public clients: no secret, PKCE. */
+/** The token endpoint's form (RFC 6749 4.1.3 and 6, RFC 8628 3.4), for public clients: no secret. */
 export const oauthTokenRequestSchema = z.discriminatedUnion('grant_type', [
   z.object({
     grant_type: z.literal('authorization_code'),
@@ -118,6 +118,12 @@ export const oauthTokenRequestSchema = z.discriminatedUnion('grant_type', [
     client_id: clientIdField,
     resource: z.string().max(2048).optional(),
     scope: z.string().max(2048).optional(),
+  }),
+  z.object({
+    // RFC 8628 3.4: a first-party command line tool collecting what the person approved.
+    grant_type: z.literal('urn:ietf:params:oauth:grant-type:device_code'),
+    device_code: z.string().min(1).max(512),
+    client_id: clientIdField,
   }),
 ]);
 

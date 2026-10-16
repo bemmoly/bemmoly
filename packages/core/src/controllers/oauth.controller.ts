@@ -1,5 +1,9 @@
 import {
   createOAuthConsentSchema,
+  decideOAuthDeviceSchema,
+  OAUTH_DEVICE_GRANT,
+  oauthDeviceAuthorizationRequestSchema,
+  oauthDeviceRequestQuerySchema,
   idParamsSchema,
   moduleIdSchema,
   oauthAuthorizeRequestSchema,
@@ -8,6 +12,8 @@ import {
   parseOrThrow,
   type OAuthAuthorizationPreview,
   type OAuthConsentResult,
+  type OAuthDeviceDecision,
+  type OAuthDeviceRequest,
   type OAuthGrantsResponse,
 } from '@bemmoly/shared';
 import type { FastifyReply, FastifyRequest } from 'fastify';
@@ -16,7 +22,7 @@ import { OAuthProtocolError, type OAuthService } from '../services/oauth/index.t
 import { contextOf } from './request-context.ts';
 
 const resourceParamsSchema = z.object({ moduleId: moduleIdSchema.optional() });
-const GRANT_TYPES = ['authorization_code', 'refresh_token'];
+const GRANT_TYPES = ['authorization_code', 'refresh_token', OAUTH_DEVICE_GRANT];
 
 /** OAuth answers are never cached: they carry tokens, or say why there are none. */
 function noStore(reply: FastifyReply) {
@@ -76,7 +82,7 @@ export function createOAuthController(service: OAuthService) {
         if (typeof form['grant_type'] !== 'string' || !GRANT_TYPES.includes(form['grant_type'])) {
           throw new OAuthProtocolError(
             'unsupported_grant_type',
-            'Use authorization_code or refresh_token',
+            'Use authorization_code, refresh_token or device_code',
           );
         }
         const parsed = oauthTokenRequestSchema.safeParse(form);
@@ -85,6 +91,30 @@ export function createOAuthController(service: OAuthService) {
         }
         return service.token(parsed.data);
       }),
+
+    /** RFC 8628 3.1: a first-party command line tool asks for a code to show the person. */
+    deviceAuthorization: (request: FastifyRequest, reply: FastifyReply) =>
+      protocol(request, reply, async () => {
+        const form = formOf(request);
+        assertPublicClient(request, form);
+        const parsed = oauthDeviceAuthorizationRequestSchema.safeParse(form);
+        if (!parsed.success) {
+          throw new OAuthProtocolError('invalid_request', 'Send client_id');
+        }
+        return service.startDevice(parsed.data);
+      }),
+
+    async previewDevice(request: FastifyRequest): Promise<OAuthDeviceRequest> {
+      const { userCode } = parseOrThrow(oauthDeviceRequestQuerySchema, request.query);
+      return service.previewDevice(contextOf(request), userCode);
+    },
+
+    async decideDevice(request: FastifyRequest, reply: FastifyReply): Promise<OAuthDeviceDecision> {
+      const input = parseOrThrow(decideOAuthDeviceSchema, request.body);
+      const result = await service.decideDevice(contextOf(request), input);
+      reply.code(201).header('cache-control', 'no-store');
+      return result;
+    },
 
     revoke: (request: FastifyRequest, reply: FastifyReply) =>
       protocol(request, reply, async () => {
