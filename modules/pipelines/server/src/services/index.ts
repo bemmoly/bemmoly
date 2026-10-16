@@ -9,6 +9,7 @@ import type { RepositoryReader } from './code/repository-reader.ts';
 import { createEnvironmentsService } from './environments/index.ts';
 import { registerCatalogSync } from './inbox/catalog-sync.ts';
 import { createInboxService } from './inbox/index.ts';
+import { createInsightsService } from './insights/index.ts';
 import { createOverviewService } from './overview/index.ts';
 import { createStreamsService } from './streams/index.ts';
 import { createTeamsService } from './teams/index.ts';
@@ -60,6 +61,7 @@ export function createPipelinesServices(input: PipelinesServicesDeps) {
     teams: createTeamsService(deps),
     overview: createOverviewService(deps),
     streams: createStreamsService(deps),
+    insights: createInsightsService(deps),
   };
 }
 

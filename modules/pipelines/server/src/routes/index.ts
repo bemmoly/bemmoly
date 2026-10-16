@@ -3,6 +3,7 @@ import type { PipelinesControllers } from '../controllers/index.ts';
 import { accessRoutes } from './access.routes.ts';
 import { catalogRoutes } from './catalog.routes.ts';
 import { catalogWritesRoutes } from './catalog-writes.routes.ts';
+import { insightsRoutes } from './insights.routes.ts';
 import { organisationRoutes } from './organisation.routes.ts';
 import { streamsRoutes } from './streams.routes.ts';
 
@@ -17,5 +18,6 @@ export function pipelinesRoutes(controllers: PipelinesControllers): FastifyPlugi
     await app.register(catalogWritesRoutes(controllers.catalogWrites));
     await app.register(organisationRoutes(controllers.organisation));
     await app.register(streamsRoutes(controllers.streams));
+    await app.register(insightsRoutes(controllers.insights));
   };
 }
