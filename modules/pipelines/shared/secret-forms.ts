@@ -1,3 +1,5 @@
+import type { TestReportUpload } from './runner.ts';
+
 /*
  * The forms a secret takes in a log besides itself. The runner masks with these before a line
  * leaves the machine and the server masks with them again before a line is stored, so both
@@ -62,4 +64,19 @@ export function maskWith(forms: readonly string[], line: string): string {
     if (out.includes(form)) out = out.split(form).join(SECRET_MASK);
   }
   return out;
+}
+
+/** Test names and failure messages print values as freely as a log does; mask them alike. */
+export function maskedReport(
+  report: TestReportUpload,
+  mask: (text: string) => string,
+): TestReportUpload {
+  return {
+    ...report,
+    cases: report.cases.map((testCase) => ({
+      ...testCase,
+      name: mask(testCase.name),
+      ...(typeof testCase.message === 'string' ? { message: mask(testCase.message) } : {}),
+    })),
+  };
 }

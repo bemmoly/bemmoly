@@ -1,7 +1,7 @@
 import { mkdtemp, readdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import type { LogChunkUpload } from '@bemmoly/module-pipelines/shared';
+import type { LogChunkUpload, TestReportUpload } from '@bemmoly/module-pipelines/shared';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { FakeControlPlane, makeJob, makeStep } from '../../test/fake-control-plane.ts';
 import { ControlPlaneClient } from '../clients/control-plane.ts';
@@ -66,7 +66,7 @@ function receivedLines(): { seq: number; lines: string[]; chunk: LogChunkUpload 
     .map((chunk) => ({ seq: chunk.seq, lines: chunk.lines ?? [], chunk }));
 }
 
-const JUNIT = `<testsuite name="s"><testcase classname="a.B" name="ok" time="0.5"/><testcase classname="a.B" name="bad"><failure message="nope"/></testcase></testsuite>`;
+const JUNIT = `<testsuite name="s"><testcase classname="a.B" name="ok" time="0.5"/><testcase classname="a.B" name="bad"><failure message="nope super-secret-value"/></testcase></testsuite>`;
 
 describe('a job in local process mode', () => {
   it('runs steps in order, skips after a failure, and finishes failed with the error line', async () => {
@@ -127,7 +127,9 @@ describe('a job in local process mode', () => {
     const secondStart = states.find((s) => s.position === 1 && s.state === 'running')!.firstLine!;
     expect(all[secondStart - 1]).toBe('working');
 
-    expect(server.of('/tests')[0]!.body).toMatchObject({ total: 2, passed: 1, failed: 1 });
+    const tests = server.of('/tests')[0]!.body as TestReportUpload;
+    expect(tests).toMatchObject({ total: 2, passed: 1, failed: 1 });
+    expect(tests.cases.find((c) => c.name === 'bad')?.message).toBe('nope ***');
     const artifact = server.of('/artifacts', 'PUT')[0]!;
     expect(artifact.path).toContain('name=out.txt');
     expect(artifact.raw.toString()).toBe('kept\n');

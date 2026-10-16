@@ -160,4 +160,64 @@ describe('releases and secrets through the runner protocol', () => {
     const [runs] = await sql<{ count: number }[]>`select count(*)::int as count from pipeline_runs`;
     expect(runs?.count).toBeGreaterThan(0);
   });
+
+  it('masks secrets in their encoded forms, in test failures and in the failure summary', async (ctx) => {
+    if (!harness) return ctx.skip(reason);
+    const { services, users, sql } = harness;
+    const member = harness.as(users.member);
+    const secret = 'ghp_masked-in-every-form';
+    await sql`
+      insert into pipeline_variables (application_id, name, value)
+      select id, 'GH_TOKEN', ${secret} from pipeline_applications where key = 'checkout-api'`;
+    await givePipeline(sql, 'checkout-api', {
+      checkout: false,
+      test: [{ name: 'Unit', run: 'npm test', secrets: ['GH_TOKEN'] }],
+    });
+    const run = await services.runs.create(member, {
+      application: 'checkout-api',
+      commitSha: 'c0ffee13',
+    });
+    const { runnerToken } = await services.runner.register({
+      poolToken,
+      name: 'masks',
+      version: '0.1.0',
+    });
+    const job = await services.runner.claim(runnerToken, { waitSeconds: 0 });
+    const jobId = job?.jobId ?? '';
+    const encoded = Buffer.from(`${secret}\n`).toString('base64');
+    await services.runner.logs(jobId, job?.jobToken, {
+      seq: 0,
+      firstLine: 1,
+      lineCount: 1,
+      lines: [`auth: ${encoded}`],
+    });
+    await services.runner.tests(jobId, job?.jobToken, {
+      total: 1,
+      passed: 0,
+      failed: 1,
+      skipped: 0,
+      durationMs: 10,
+      cases: [
+        {
+          file: 'a.test.ts',
+          name: 'calls the API',
+          outcome: 'failed',
+          durationMs: 10,
+          message: `expected header Bearer ${secret}`,
+        },
+      ],
+    });
+    await services.runner.finish(jobId, job?.jobToken, {
+      state: 'failed',
+      failureSummary: `Error: ${secret} was refused`,
+      at: at(),
+    });
+    const log = await services.logs.range(member, jobId, {});
+    expect(log.lines[0]?.text).toMatch(/^auth: \*\*\*.{0,4}$/);
+    const [failure] = await sql<{ message: string }[]>`
+      select message from pipeline_test_failures where job_id = ${jobId}`;
+    expect(failure?.message).toBe('expected header Bearer ***');
+    const detail = await services.runs.get(member, run.id);
+    expect(detail.jobs[0]?.failureSummary).toBe('Error: *** was refused');
+  });
 });

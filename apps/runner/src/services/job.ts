@@ -1,6 +1,10 @@
 import { mkdir, readFile, rm } from 'node:fs/promises';
 import path from 'node:path';
-import type { ClaimedJob, StepStateBody } from '@bemmoly/module-pipelines/shared';
+import {
+  maskedReport,
+  type ClaimedJob,
+  type StepStateBody,
+} from '@bemmoly/module-pipelines/shared';
 import type { ControlPlaneClient, JobRef } from '../clients/control-plane.ts';
 import { isUnauthenticated, type RetryPolicy } from '../clients/http.ts';
 import type { Logger } from '../config/logger.ts';
@@ -105,7 +109,9 @@ export class JobRun {
         this.ref,
         {
           state: result.state,
-          ...(result.summary ? { failureSummary: result.summary.slice(0, 2000) } : {}),
+          ...(result.summary
+            ? { failureSummary: this.masker.mask(result.summary).slice(0, 2000) }
+            : {}),
           ...(imageDigests ? { imageDigests } : {}),
           at: nowIso(),
         },
@@ -232,7 +238,10 @@ export class JobRun {
         if (files.length === 0) line(`No test reports matched ${pattern}`);
         return;
       }
-      await this.deps.client.tests(this.ref, report);
+      await this.deps.client.tests(
+        this.ref,
+        maskedReport(report, (text) => this.masker.mask(text)),
+      );
       line(
         `Reported ${report.total} tests from ${files.length} file(s): ${report.passed} passed, ${report.failed} failed, ${report.skipped} skipped`,
       );

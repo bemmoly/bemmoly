@@ -25,7 +25,8 @@ import { requireDatabase } from '../deps.ts';
 import { claimNextJob } from '../dispatcher/claim.ts';
 import { sweepJobs } from '../dispatcher/sweep.ts';
 import type { DispatchWakeups } from '../dispatcher/wakeup.ts';
-import type { LogsService } from '../logs/index.ts';
+import { maskedReport } from '../../../../shared/secret-forms.ts';
+import { createMasker, type LogsService } from '../logs/index.ts';
 import { announce, queueCheck, type ExecutionDeps } from '../runs/context.ts';
 import { publishStreamEvent } from '../streams/publish.ts';
 import { ingestReport, type TestsService } from '../tests/index.ts';
@@ -218,6 +219,7 @@ export function createRunnerService(deps: RunnerDeps) {
     async tests(jobId: string, token: string | undefined, report: TestReportUpload) {
       const sql = requireDatabase(deps);
       const job = await jobFromToken(sql, jobId, token);
+      const masked = maskedReport(report, createMasker(await secretValues(job)));
       await sql.begin(async (tx) => {
         const [facts] = await tx<{ commit_sha: string; mainline: boolean }[]>`
           select r.commit_sha, (r.ref = coalesce(p.default_branch, 'main')
@@ -227,7 +229,7 @@ export function createRunnerService(deps: RunnerDeps) {
         await ingestReport(
           tx,
           { ...job, commit_sha: facts?.commit_sha ?? '', mainline: facts?.mainline ?? false },
-          report,
+          masked,
         );
       });
     },
@@ -263,8 +265,11 @@ export function createRunnerService(deps: RunnerDeps) {
     async finish(jobId: string, token: string | undefined, body: FinishInput): Promise<void> {
       const sql = requireDatabase(deps);
       const job = await jobFromToken(sql, jobId, token);
+      const mask = createMasker(await secretValues(job));
       masks.delete(jobId);
-      const outcome = await finishJob(sql, deps.logs, job, body);
+      const summary =
+        body.failureSummary === undefined ? {} : { failureSummary: mask(body.failureSummary) };
+      const outcome = await finishJob(sql, deps.logs, job, { ...body, ...summary });
       if (!outcome) return;
       await queueCheck(deps, job, body.state);
       await announce(deps, [outcome]);
