@@ -22,6 +22,9 @@ export const Moving: Story = {};
 
 export const MovingDark: Story = { globals: { mode: 'dark' } };
 
+/** Rewound to a moment in the past: the same dots, holding still. */
+export const Still: Story = { args: { still: true } };
+
 export const Calm: Story = { args: { dots: [], label: undefined } };
 
 export const WaitingAndFailed: Story = {

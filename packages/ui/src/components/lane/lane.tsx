@@ -15,6 +15,8 @@ export interface LaneProps {
   dots: readonly LaneDot[];
   /** Read instead of the dots: "3 moving, 1 failed". The dots themselves are decorative. */
   label?: string;
+  /** Rewinding: the lane shows a moment in the past, so nothing drifts. */
+  still?: boolean;
   className?: string;
 }
 
@@ -33,15 +35,16 @@ const clamp = (value: number) => Math.max(0, Math.min(1, value));
  * One Release map cell's lane: a dot per release moving through it, coloured by state.
  * Running dots drift forward on the shared `drift` animation, pure CSS so a map of hundreds
  * of cells costs no script; waiting and failed dots hold still because nothing is moving
- * them. Under reduced motion every dot rests at its position.
+ * them. Under reduced motion, and while the map is rewound (`still`), every dot rests at its
+ * position.
  */
-export function Lane({ dots, label, className }: LaneProps) {
+export function Lane({ dots, label, still = false, className }: LaneProps) {
   return (
     <div className={cx('relative h-2.5 overflow-hidden rounded-full bg-line-2', className)}>
       {label && <span className="sr-only">{label}</span>}
       {dots.map((dot, index) => {
         const at = clamp(dot.position);
-        const travel = dot.state === 'running' ? Math.min(TRAVEL, 1 - at) : 0;
+        const travel = dot.state === 'running' && !still ? Math.min(TRAVEL, 1 - at) : 0;
         return (
           // The layer spans the lane, so the drift's percentage is a share of the lane's width.
           <span

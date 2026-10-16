@@ -46,4 +46,12 @@ describe('Lane', () => {
     expect(layer.className).not.toContain('animate');
     expect((layer.firstElementChild as HTMLElement).style.left).toBe('calc(100% - 8px)');
   });
+
+  it('holds running dots still while the map is rewound', () => {
+    const { container } = render(
+      <Lane still dots={[{ id: 'r', state: 'running', position: 0.3 }]} />,
+    );
+    const layer = container.querySelector('[data-state="running"]') as HTMLElement;
+    expect(layer.className).not.toContain('animate');
+  });
 });
