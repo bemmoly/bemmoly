@@ -7,7 +7,7 @@ import type { Jwk } from '../../clients/oidc/discovery.ts';
 import { seedCatalogFixture } from '../../testing/fixture.ts';
 import { startPipelinesHarness, type PipelinesHarness } from '../../testing/harness.ts';
 import { startPipelinesHttp, type PipelinesHttp } from '../../testing/http.ts';
-import { createCiService, type CiService } from './index.ts';
+import { createCiService, externalChecksFor, type CiService } from './index.ts';
 
 const ISSUER = 'https://token.actions.githubusercontent.com';
 const AUDIENCE = 'https://bemmoly.acme.dev';
@@ -99,6 +99,9 @@ describe('Bring your CI', () => {
       source: 'external',
       testSummary: { failed: 1 },
     });
+    const short = { ...release('v2.0.5'), commitSha: SHA.slice(0, 7) } as never;
+    const stored = await ci.register({ ctx: null, principal, body: short });
+    expect(stored.release.commitSha).toBe(SHA);
     const again = await ci.register({ ctx: null, principal, body });
     expect(again).toMatchObject({ created: false, release: { id: first.release.id } });
     await expect(
@@ -214,5 +217,8 @@ describe('Bring your CI', () => {
       expect.objectContaining({ kind: 'check_run', name: 'lint', verdict: 'pass' }),
       expect.objectContaining({ kind: 'workflow_run', name: 'security.yml', verdict: 'fail' }),
     ]);
+    // Gates match the exact commit, never a short sha another commit could share.
+    expect(await externalChecksFor(harness.sql, 'acme/checkout', SHA)).toHaveLength(2);
+    expect(await externalChecksFor(harness.sql, 'acme/checkout', SHA.slice(0, 12))).toEqual([]);
   });
 });

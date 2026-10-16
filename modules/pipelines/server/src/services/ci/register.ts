@@ -74,6 +74,7 @@ export async function registerRelease(
     where a.key = ${body.application} and a.archived_at is null`;
   if (!app) throw new NotFoundError(`No application called "${body.application}"`);
   const principal = input.principal;
+  let commitSha = body.commitSha;
   let actor: { kind: string; id: string } | null = null;
   const trace: TraceStep[] = [];
   if (principal?.kind === 'token') {
@@ -131,6 +132,10 @@ export async function registerRelease(
         trace,
       );
     }
+    // The token names the full commit; keep it, so gates match checks by the exact commit.
+    if (facts.sha && /^[0-9a-f]{40,64}$/.test(facts.sha) && facts.sha.startsWith(commitSha)) {
+      commitSha = facts.sha;
+    }
   } else if (input.ctx && personOf(input.ctx.actor)) {
     await deps.access.authorizeAction(input.ctx, 'run', { application: app.id }, { record: true });
   } else {
@@ -145,7 +150,7 @@ export async function registerRelease(
       applicationId: app.id,
       version: body.version,
       source: 'external',
-      commitSha: body.commitSha,
+      commitSha,
       ref: body.ref ?? null,
       imageRepository: body.imageRepository ?? null,
       imageDigests: images,

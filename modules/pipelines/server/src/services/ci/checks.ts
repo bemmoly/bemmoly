@@ -80,16 +80,23 @@ export function registerExternalChecks(
   });
 }
 
-/** Every external result for one commit of one repository, for gates and the Promote screen. */
+/**
+ * Every external result for one commit of one repository, for gates and the Promote screen.
+ * Gates match the commit exactly: a short sha also matches a commit someone made to share its
+ * first characters, and that commit's passing checks would open the gate. Only a person
+ * looking a commit up by its short sha gets the prefix match.
+ */
 export async function externalChecksFor(
   sql: SqlExecutor,
   repository: string,
   commitSha: string,
+  match: 'exact' | 'prefix' = 'exact',
 ): Promise<ExternalCheck[]> {
+  const prefix = match === 'prefix' ? `${commitSha}%` : commitSha;
   const rows = await sql<ExternalCheckRow[]>`
     select kind, name, path, status, conclusion, url, occurred_at from pipeline_external_checks
     where lower(repository_full_name) = lower(${repository})
-      and (commit_sha = ${commitSha} or commit_sha like ${`${commitSha}%`})
+      and (commit_sha = ${commitSha} or commit_sha like ${prefix})
     order by kind, name`;
   return rows.map((row) => ({
     kind: row.kind,

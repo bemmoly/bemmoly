@@ -62,7 +62,7 @@ export function createCiService(deps: CiDeps) {
           left join pipeline_repositories r on r.id = a.repository_id
         where a.key = ${query.application}`;
       if (!app) throw new NotFoundError(`No application called "${query.application}"`);
-      return app.repository ? externalChecksFor(sql(), app.repository, query.commit) : [];
+      return app.repository ? externalChecksFor(sql(), app.repository, query.commit, 'prefix') : [];
     },
 
     /** Keeps GitHub check runs and workflow runs as they arrive. */
