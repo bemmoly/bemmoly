@@ -13,12 +13,14 @@
     "lint": "eslint --max-warnings 0 .",
     "test": "vitest run",
     "test:integration": "vitest run --config vitest.integration.config.ts",
-    "seed:demo": "pnpm --filter @bemmoly/server db modules enable pipelines --access everyone && node --env-file-if-exists=../../apps/server/.env scripts/seed-demo.ts"
+    "seed:demo": "pnpm --filter @bemmoly/server db modules enable pipelines --access everyone && node --env-file-if-exists=../../apps/server/.env scripts/seed-demo.ts",
+    "demo:runner": "node --env-file-if-exists=../../apps/server/.env scripts/runner-demo.ts"
   },
   "dependencies": {
     "@bemmoly/core": "workspace:*",
     "@bemmoly/shared": "workspace:*",
     "@marcbachmann/cel-js": "8.0.0",
+    "cron-parser": "5.10.1",
     "fastify": "5.12.5",
     "google-auth-library": "10.9.1",
     "yaml": "2.8.3",

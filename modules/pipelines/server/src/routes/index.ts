@@ -8,6 +8,7 @@ import { discoveryRoutes } from './discovery.routes.ts';
 import { insightsRoutes } from './insights.routes.ts';
 import { cloudsRoutes } from './clouds.routes.ts';
 import { organisationRoutes } from './organisation.routes.ts';
+import { capacityRoutes } from './capacity.routes.ts';
 import { jobsRoutes } from './jobs.routes.ts';
 import { runsRoutes } from './runs.routes.ts';
 import { releasesRoutes } from './releases.routes.ts';
@@ -35,5 +36,6 @@ export function pipelinesRoutes(controllers: PipelinesControllers): FastifyPlugi
     await app.register(insightsRoutes(controllers.insights));
     await app.register(runsRoutes(controllers.runs));
     await app.register(jobsRoutes(controllers.jobs));
+    await app.register(capacityRoutes(controllers.capacity));
   };
 }

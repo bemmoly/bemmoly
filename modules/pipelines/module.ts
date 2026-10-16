@@ -8,6 +8,7 @@ import { defineShippingSettings } from './server/src/config/shipping-settings.ts
 import { createPipelinesControllers } from './server/src/controllers/index.ts';
 import { pipelinesRoutes, runnerRoutes } from './server/src/routes/index.ts';
 import { registerCodeHostWork } from './server/src/config/code-hosts.ts';
+import { registerExecutionWork } from './server/src/config/execution.ts';
 import { createPipelinesServices } from './server/src/services/index.ts';
 
 /**
@@ -44,6 +45,7 @@ export default defineModule({
     ctx.jobs.add(landingZoneDriftJob(services.clouds));
     ctx.jobs.add(discoveryJob(services.discovery));
     for (const job of shippingJobs(() => services.shipping?.engine)) ctx.jobs.add(job);
+    registerExecutionWork(ctx, services);
     const controllers = createPipelinesControllers(services);
     ctx.routes.add({ prefix: '/pipelines', plugin: pipelinesRoutes(controllers) });
     // Build runners call in with their own tokens, under a protocol versioned apart (§22).

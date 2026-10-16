@@ -550,6 +550,9 @@ importers:
       '@marcbachmann/cel-js':
         specifier: 8.0.0
         version: 8.0.0
+      cron-parser:
+        specifier: 5.10.1
+        version: 5.10.1
       fastify:
         specifier: 5.12.5
         version: 5.12.5

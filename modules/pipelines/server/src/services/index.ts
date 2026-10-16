@@ -13,6 +13,8 @@ import { createRunnerService, variableSecrets } from './runner/index.ts';
 import { createRunHooks, createRunsService } from './runs/index.ts';
 import { createTestsService } from './tests/index.ts';
 import { createCiService } from './ci/index.ts';
+import { createTriggersService } from './triggers/index.ts';
+import { createCapacityService } from './capacity/index.ts';
 import { createCatalogService } from './catalog/index.ts';
 import { createCatalogWritesService } from './catalog-writes/index.ts';
 import { codeHostPullRequests, codeHostRepositories } from './code/adapters.ts';
@@ -91,6 +93,11 @@ export function createPipelinesServices(input: PipelinesServicesDeps) {
   const tests = createTestsService(deps);
   const execution = { ...deps, hooks };
   const providers = input.providers ?? providersFromSettings(input.settings);
+  const triggers = createTriggersService(execution);
+  // Runs start from code host events in arrival order per repository (the inbox's promise).
+  inbox.handlers.on('push', async (event) => void (await triggers.push(event)));
+  inbox.handlers.on('pull_request', async (event) => void (await triggers.pullRequest(event)));
+  inbox.handlers.on('merge_group', async (event) => void (await triggers.mergeGroup(event)));
   return {
     access,
     inbox,
@@ -100,6 +107,8 @@ export function createPipelinesServices(input: PipelinesServicesDeps) {
     tests,
     artifacts: createArtifactsService(deps),
     runs: createRunsService(execution),
+    triggers,
+    capacity: createCapacityService(deps),
     runner: createRunnerService({ ...execution, wakeups, logs, tests, secrets: variableSecrets }),
     catalog: createCatalogService(deps),
     catalogWrites,

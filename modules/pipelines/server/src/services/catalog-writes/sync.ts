@@ -4,6 +4,8 @@ import type { RepositoryInput } from '../../../../shared/catalog-writes.ts';
 import { applicationPathOf, isApplicationFile, readApplicationFile } from './file.ts';
 import { findOwner } from './owners.ts';
 import { upsertRepository, type RepositoryRecord } from './repositories.ts';
+import { storable } from '../runs/templates.ts';
+import { refreshSchedules } from '../triggers/schedules.ts';
 
 /*
  * application.yaml on the default branch is an application's source of truth (architecture
@@ -98,12 +100,14 @@ async function applyFile(
   const [row] = await sql<{ id: string }[]>`
     insert into pipeline_applications
       (key, name, description, domain_id, group_id, owner_team_id, tier, labels, lifecycle,
-       runtime, repository_id, path, paths, template_ref, source, file_path, source_commit_sha)
+       runtime, repository_id, path, paths, template_ref, source, file_path, source_commit_sha,
+       pipeline, pipeline_source, pipeline_commit_sha)
     values (${file.name}, ${file.name}, ${values.description}, ${group.domain_id}::uuid,
       ${group.id}::uuid, ${values.owner}::uuid, ${file.tier}, ${values.labels}::text[],
       ${file.lifecycle}, ${file.runtime ?? 'container-service'}, ${repository.id}::uuid,
       ${values.path}, ${file.paths}::text[], ${values.template}, 'repository', ${path},
-      ${input.commitSha})
+      ${input.commitSha}, ${file.pipeline ? JSON.stringify(storable(file.pipeline)) : null}::jsonb,
+      ${file.pipeline ? 'repository' : null}, ${file.pipeline ? input.commitSha : null})
     on conflict (key) do update set
       description = excluded.description, domain_id = excluded.domain_id,
       group_id = excluded.group_id, owner_team_id = excluded.owner_team_id, tier = excluded.tier,
@@ -111,8 +115,12 @@ async function applyFile(
       runtime = ${file.runtime ? sql`excluded.runtime` : sql`pipeline_applications.runtime`},
       repository_id = excluded.repository_id, path = excluded.path, paths = excluded.paths,
       template_ref = excluded.template_ref, source = 'repository', file_path = excluded.file_path,
-      source_commit_sha = excluded.source_commit_sha, archived_at = null, updated_at = now()
+      source_commit_sha = excluded.source_commit_sha, pipeline = excluded.pipeline,
+      pipeline_source = excluded.pipeline_source,
+      pipeline_commit_sha = excluded.pipeline_commit_sha, archived_at = null, updated_at = now()
     returning id`;
+  // The pipeline's schedules follow its definition.
+  if (row) await refreshSchedules(sql, row.id);
   await sql`delete from pipeline_catalog_file_errors
     where repository_id = ${repository.id}::uuid and path = ${path}`;
   return row?.id ?? null;

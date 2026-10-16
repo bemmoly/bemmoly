@@ -7,6 +7,7 @@ import { createDiscoveryController } from './discovery.controller.ts';
 import { createCloudsController } from './clouds.controller.ts';
 import { createOrganisationController } from './environments.controller.ts';
 import { createInsightsController } from './insights.controller.ts';
+import { createCapacityController } from './capacity.controller.ts';
 import { createJobsController } from './jobs.controller.ts';
 import { createRunnerController } from './runner.controller.ts';
 import { createRunsController } from './runs.controller.ts';
@@ -30,6 +31,7 @@ export function createPipelinesControllers(services: PipelinesServices) {
     runs: createRunsController(services.runs),
     jobs: createJobsController(services.logs, services.tests, services.artifacts),
     runner: createRunnerController(services.runner),
+    capacity: createCapacityController(services.capacity),
   };
 }
 
