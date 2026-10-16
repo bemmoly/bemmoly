@@ -198,6 +198,10 @@ the frame (`ErrorBoundary` from `@bemmoly/core-web`), with the request id.
   `density` `md` 44px or `sm` 40px; `sort`, `footer`, `empty`, `isMuted` for rows awaiting Undo.
 - Not: a grid of divs with borders, or a second table style. Narrow screens scroll it sideways
   inside its card, never the page.
+- Long lists (hundreds of rows): pass `virtual` (`getScrollElement`, the frame's one scrolling
+  area, and a fixed `rowHeight`) so only the rows in view are drawn, `onEndReached` to load the
+  next keyset page as the end comes into view, and `total` for the row count. Rows keep their
+  keys and J K moves through the drawn ones.
 
 ### BulkBar and selection
 
@@ -325,3 +329,25 @@ do. ANSI colours arrive as span kinds and draw with tokens (`dim`, `bold`, `erro
 a line (an accent bar at the start edge). While a job writes it follows the end; scrolling up
 stops following and scrolling back to the end resumes it. Search hits are marked on `amber-50`,
 the active one ringed. The search box and the follow switch belong to the screen.
+
+### DeployCell and TimeScrubber
+
+`DeployCell` (`count`, `secondary`, `dots`, `flags`, `label`, `still`) is one Release map cell:
+a `Lane` over the count ("212", "41 running"), a quiet second number ("3 moving") and at most
+two flags as `Badge`s (`danger` failed, `warn` waiting or rolled back, `accent` a note such as
+"train 11:00"). The drawn row is hidden from assistive tech; `label` says it all. `still` holds
+the dots while the map is rewound. `TimeScrubber` (`buckets`, `value`, `onChange`, `onCommit`,
+`stepMs`, `formatTime`, `liveLabel`, `ticks`, `formatNow`) is the map's timeline: deploys per
+bucket as `acc-100` bars, incidents in red, a handle that is a slider (arrows step a bucket,
+Shift an hour, Home the oldest, End live). `value` null is live; the screen shows the Live
+chip.
+
+### FacetPanel and DeliverySpark
+
+`FacetPanel` (`groups`, `onToggle`, `ariaLabel`, `showAllLabel`, `showFewerLabel`,
+`formatCount`) is the catalog's filter column: one checkbox list per facet with the count each
+value would leave. Values at zero stay listed, quiet, so the shape of the data still reads;
+chosen values always show; long facets (teams) fold after `limit` behind "Show all N".
+`DeliverySpark` (`values`, `label`) is a row's deploy frequency: one 4px bar per week in
+`acc-500`, a hairline in `line` where nothing shipped, scaled to the row's own peak; `label`
+carries the number.

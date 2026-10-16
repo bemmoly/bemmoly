@@ -69,7 +69,7 @@ second and are invalidations: refetch, never patch from the event.
 | `LogView` (virtualised, searchable, follow, ANSI on tokens, error lines on `red-50`) | `packages/ui` | built |
 | `GateList` (each gate's state and reason), `RolloutPlan` (waves of canary steps) | `packages/ui` | built |
 | `MetricCompare` (canary against stable), `SeriesChart` (a line or bars with markers and a threshold) | `packages/ui` | built |
-| `FacetPanel`, `DeliverySpark` | `packages/ui` | to build with the Catalog |
+| `FacetPanel`, `DeliverySpark` | `packages/ui` | built |
 | `AccessExplain` (a decision, its sentence and the steps behind it) | `packages/ui` | built |
 | `ProvisionChecklist` (ordered steps toward something working: first run, a landing zone) | `packages/ui` | built |
 
