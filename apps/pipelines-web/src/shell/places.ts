@@ -13,6 +13,8 @@ export interface Place {
   keys: string;
   /** Whether the screen shows "this scope" and so keeps ?scope= when you move to it. */
   scoped: boolean;
+  /** Other paths that belong to this place: an application's page is in the Catalog. */
+  also?: readonly string[];
 }
 
 /**
@@ -22,7 +24,14 @@ export interface Place {
 export const PLACES: readonly Place[] = [
   { id: 'forYou', path: '/', icon: 'home', keys: 'G Y', scoped: false },
   { id: 'map', path: '/map', icon: 'map', keys: 'G M', scoped: true },
-  { id: 'catalog', path: '/catalog', icon: 'grid', keys: 'G C', scoped: true },
+  {
+    id: 'catalog',
+    path: '/catalog',
+    icon: 'grid',
+    keys: 'G C',
+    scoped: true,
+    also: ['/applications'],
+  },
   { id: 'runs', path: '/runs', icon: 'play', keys: 'G R', scoped: true },
   { id: 'releases', path: '/releases', icon: 'rocket', keys: 'G E', scoped: true },
   { id: 'insights', path: '/insights', icon: 'reports', keys: 'G I', scoped: true },
@@ -43,7 +52,8 @@ export const MORE_PLACES = [...PLACES.slice(4), SETTINGS];
 /** The place the address is in: For you only at the root, the others at and under their path. */
 export function placeAt(pathname: string): Place | undefined {
   const inner = pathname.replace(/^\/pipelines/, '') || '/';
+  const under = (path: string) => inner === path || inner.startsWith(`${path}/`);
   return [...PLACES, SETTINGS].find((place) =>
-    place.path === '/' ? inner === '/' : inner === place.path || inner.startsWith(`${place.path}/`),
+    place.path === '/' ? inner === '/' : [place.path, ...(place.also ?? [])].some(under),
   );
 }

@@ -28,7 +28,7 @@ const root = createRootRouteWithContext<RouterContext>()({
 });
 
 /** One lazy chunk per screen, so the shell paints before any screen's code arrives. */
-const screen = (path: string, load: Parameters<typeof lazyRouteComponent>[0]) =>
+const screen = <Path extends string>(path: Path, load: Parameters<typeof lazyRouteComponent>[0]) =>
   createRoute({ getParentRoute: () => root, path, component: lazyRouteComponent(load) });
 
 /** Platform's areas share one frame with their tabs; /platform opens the first. */
@@ -47,8 +47,10 @@ const platformArea = (path: string, load: Parameters<typeof lazyRouteComponent>[
 const routeTree = root.addChildren([
   screen('/', () => import('./screens/for-you.tsx')),
   screen('/map', () => import('./screens/map.tsx')),
-  screen('/catalog', () => import('./screens/catalog.tsx')),
-  screen('/runs', () => import('./screens/runs.tsx')),
+  screen('/catalog', () => import('./screens/catalog/catalog-screen.tsx')),
+  screen('/applications/$key', () => import('./screens/application/application-screen.tsx')),
+  screen('/runs', () => import('./screens/runs/runs-screen.tsx')),
+  screen('/runs/$id', () => import('./screens/run/run-screen.tsx')),
   screen('/releases', () => import('./screens/releases/index.tsx')),
   screen('/releases/changes', () => import('./screens/changes/index.tsx')),
   screen('/releases/$releaseId/promote', () => import('./screens/promote/index.tsx')),
