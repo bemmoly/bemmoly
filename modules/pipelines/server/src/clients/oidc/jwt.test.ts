@@ -123,3 +123,36 @@ describe('the issuer key source', () => {
     await expect(source.keys('https://other.example', DISCOVERY)).rejects.toThrow('names issuer');
   });
 });
+
+describe('the issuer key source under load', () => {
+  const jwk = { ...(rsa.publicKey.export({ format: 'jwk' }) as Jwk), kid: 'rsa-1' };
+
+  it('reads an issuer once for many callers, and backs off a minute after a failure', async () => {
+    let requests = 0;
+    let up = false;
+    const fetch: typeof globalThis.fetch = async (input) => {
+      requests += 1;
+      if (!up) return new Response('down', { status: 503 });
+      const url = input instanceof Request ? input.url : String(input);
+      const body =
+        url === DISCOVERY ? { issuer: ISSUER, jwks_uri: `${ISSUER}/jwks` } : { keys: [jwk] };
+      return new Response(JSON.stringify(body), { status: 200 });
+    };
+    let now = 0;
+    const source = createKeySource({ fetch, now: () => now });
+    const burst = await Promise.allSettled(
+      Array.from({ length: 20 }, () => source.keys(ISSUER, DISCOVERY)),
+    );
+    expect(burst.every((result) => result.status === 'rejected')).toBe(true);
+    const afterBurst = requests;
+    await expect(source.keys(ISSUER, DISCOVERY)).rejects.toThrow();
+    expect(requests).toBe(afterBurst);
+    up = true;
+    now = 61_000;
+    const keys = await Promise.all(
+      Array.from({ length: 20 }, () => source.keys(ISSUER, DISCOVERY)),
+    );
+    expect(keys.every((found) => found[0]?.kid === 'rsa-1')).toBe(true);
+    expect(requests).toBe(afterBurst + 2);
+  });
+});

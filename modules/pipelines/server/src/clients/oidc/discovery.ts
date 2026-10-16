@@ -49,19 +49,44 @@ async function getJson(url: string, fetchImpl: typeof fetch | undefined): Promis
 export function createKeySource(options: KeySourceOptions = {}): KeySource {
   const now = options.now ?? Date.now;
   const cache = new Map<string, { keys: Jwk[]; at: number }>();
+  // One read per issuer at a time, and a failed read is not retried for a minute: a burst
+  // of forged tokens, or an issuer that is down, costs the issuer one request a minute.
+  const inFlight = new Map<string, Promise<Jwk[]>>();
+  const failures = new Map<string, { error: unknown; at: number }>();
+
+  async function read(issuer: string, discoveryUrl: string): Promise<Jwk[]> {
+    const discovery = discoverySchema.parse(await getJson(discoveryUrl, options.fetch));
+    if (discovery.issuer !== issuer) {
+      throw new ProviderError(`${discoveryUrl} names issuer ${discovery.issuer}, not ${issuer}`);
+    }
+    const jwks = jwksSchema.parse(await getJson(discovery.jwks_uri, options.fetch));
+    cache.set(issuer, { keys: jwks.keys, at: now() });
+    failures.delete(issuer);
+    return jwks.keys;
+  }
+
   return {
     async keys(issuer, discoveryUrl, refresh = false) {
       const cached = cache.get(issuer);
       const fresh = cached && now() - cached.at < KEYS_TTL_MS;
       const mayRefresh = !cached || now() - cached.at >= REFRESH_FLOOR_MS;
       if (cached && fresh && !(refresh && mayRefresh)) return cached.keys;
-      const discovery = discoverySchema.parse(await getJson(discoveryUrl, options.fetch));
-      if (discovery.issuer !== issuer) {
-        throw new ProviderError(`${discoveryUrl} names issuer ${discovery.issuer}, not ${issuer}`);
+      const failed = failures.get(issuer);
+      if (failed && now() - failed.at < REFRESH_FLOOR_MS) {
+        if (cached && fresh) return cached.keys;
+        throw failed.error;
       }
-      const jwks = jwksSchema.parse(await getJson(discovery.jwks_uri, options.fetch));
-      cache.set(issuer, { keys: jwks.keys, at: now() });
-      return jwks.keys;
+      let pending = inFlight.get(issuer);
+      if (!pending) {
+        pending = read(issuer, discoveryUrl)
+          .catch((error: unknown) => {
+            failures.set(issuer, { error, at: now() });
+            throw error;
+          })
+          .finally(() => inFlight.delete(issuer));
+        inFlight.set(issuer, pending);
+      }
+      return pending;
     },
   };
 }
