@@ -3,6 +3,7 @@ import { awsProvider } from './aws.ts';
 import type { CloudProvider } from './contract.ts';
 import { createFakeProvider, createFakeWorld, type FakeWorld } from './fake/index.ts';
 import { createGcpProvider, type GcpProviderOptions } from './gcp/index.ts';
+import { createLocalProvider } from './local/index.ts';
 import { comingSoonProvider, createProviderRegistry, type ProviderRegistry } from './registry.ts';
 
 /*
@@ -33,7 +34,7 @@ export function createDefaultProviders(options: DefaultProvidersOptions): CloudP
     awsProvider,
     comingSoonProvider('kubernetes', 'Kubernetes', 'Any cluster: namespaces per environment'),
     comingSoonProvider('azure', 'Microsoft Azure', 'Subscriptions in a management group'),
-    // The local Docker provider joins here.
+    createLocalProvider(),
   ];
 }
 

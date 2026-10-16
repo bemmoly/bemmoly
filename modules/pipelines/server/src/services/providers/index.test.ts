@@ -11,7 +11,7 @@ describe('the default providers', () => {
     expect(gcp?.id).toBe('gcp');
     expect(gcp?.comingSoon).toEqual(['runners', 'access', 'cost']);
     expect(gcp?.targets?.kinds).toEqual(['container-service']);
-    expect(rest.map((provider) => provider.id)).toEqual(['aws', 'kubernetes', 'azure']);
+    expect(rest.map((provider) => provider.id)).toEqual(['aws', 'kubernetes', 'azure', 'local']);
   });
 
   it('use the in-memory cloud while the simulate setting is on, keeping its state', async () => {

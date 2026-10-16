@@ -1,5 +1,8 @@
 import type { SqlClient } from '@bemmoly/core';
 import type { ProviderRegistry } from '../providers/registry.ts';
+
+/** A fixed registry, or one read per call so the simulate setting takes effect live. */
+export type ProviderSourceOrRegistry = ProviderRegistry | (() => Promise<ProviderRegistry>);
 import type { ShippingAccess } from './access.ts';
 import type { WebhookCaller } from './gates/contract.ts';
 
@@ -22,7 +25,7 @@ export interface RolledBackEvent {
 
 export interface ShippingEngineDeps {
   sql: SqlClient;
-  providers: ProviderRegistry;
+  providers: ProviderSourceOrRegistry;
   access: ShippingAccess;
   webhook: WebhookCaller;
   now: () => Date;

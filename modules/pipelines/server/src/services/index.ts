@@ -28,8 +28,7 @@ import { registerCatalogSync } from './inbox/catalog-sync.ts';
 import { createInboxService } from './inbox/index.ts';
 import { createInsightsService } from './insights/index.ts';
 import { createOverviewService } from './overview/index.ts';
-import { awsProvider } from './providers/aws.ts';
-import { createProviderRegistry, type ProviderRegistry } from './providers/registry.ts';
+import type { ProviderRegistry } from './providers/registry.ts';
 import { createReleasesService } from './releases/index.ts';
 import { createShippingAccess, createShippingService, type Waker } from './shipping/index.ts';
 import { createWebhookCaller, type WebhookSecrets } from './shipping/gates/index.ts';
@@ -125,7 +124,7 @@ export function createPipelinesServices(input: PipelinesServicesDeps) {
           shipping: createShippingService({
             sql: input.database,
             ...(input.settings ? { settings: input.settings } : {}),
-            providers: input.providers ?? createProviderRegistry([awsProvider]),
+            providers,
             access: createShippingAccess(access),
             webhook: createWebhookCaller(input.webhookSecrets ?? (async () => null)),
             now: input.now ?? (() => new Date()),

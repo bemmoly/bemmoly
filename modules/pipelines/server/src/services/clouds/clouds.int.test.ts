@@ -46,7 +46,7 @@ const gcpBody = {
 };
 
 describe('Platform › Clouds endpoints', () => {
-  it('lists the providers, Google Cloud available and the rest coming soon', async (ctx) => {
+  it('lists the providers: Google Cloud and this machine available, the rest coming soon', async (ctx) => {
     if (!harness) return ctx.skip(skip);
     const { h, api } = ready();
     const response = await api.get('/clouds/providers', h.users.member);
@@ -57,6 +57,7 @@ describe('Platform › Clouds endpoints', () => {
       ['aws', 'coming_soon'],
       ['kubernetes', 'coming_soon'],
       ['azure', 'coming_soon'],
+      ['local', 'available'],
     ]);
     expect((await api.get('/clouds/providers', h.users.outsider)).statusCode).toBe(403);
   });

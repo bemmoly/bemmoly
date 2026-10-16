@@ -4,7 +4,7 @@ import type { Layout } from '../../../../shared/clouds.ts';
 import type { EnvironmentClass, Provider, Runtime } from '../../../../shared/common.ts';
 import type { ReleaseRow } from '../../models/shipping.ts';
 import type { CloudProvider, DeployTarget, ReleaseArtifact } from '../providers/contract.ts';
-import type { ProviderRegistry } from '../providers/registry.ts';
+import type { ProviderSourceOrRegistry } from './engine-deps.ts';
 
 /*
  * Where one application deploys in one environment: the environment names its provider;
@@ -39,7 +39,7 @@ export interface ResolvedTarget {
 
 export async function resolveTarget(
   sql: SqlExecutor,
-  providers: ProviderRegistry,
+  providers: ProviderSourceOrRegistry,
   applicationId: string,
   environmentId: string,
 ): Promise<ResolvedTarget> {
@@ -72,7 +72,8 @@ export async function resolveTarget(
     left join account on true
     left join connection on true`;
   if (!row) throw new ProviderError('The application or environment no longer exists');
-  const provider = providers.get(row.provider as Provider);
+  const registry = typeof providers === 'function' ? await providers() : providers;
+  const provider = registry.get(row.provider as Provider);
   if (!row.connection_id) {
     throw new ProviderError(
       `${row.environment_key} deploys to ${provider.name}, and no ${provider.name} connection exists. Connect one in Platform › Clouds.`,
