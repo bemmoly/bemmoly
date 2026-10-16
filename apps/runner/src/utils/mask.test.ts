@@ -20,4 +20,11 @@ describe('secret masking', () => {
     masker.add(['a.b*c(d']);
     expect(masker.mask('x a.b*c(d y axbbc(d')).toBe('x *** y axbbc(d');
   });
+
+  it('masks a secret printed base64-encoded', () => {
+    const masker = new SecretMasker();
+    masker.add(['ghp_0123456789abcdef']);
+    const encoded = Buffer.from('ghp_0123456789abcdef\n').toString('base64');
+    expect(masker.mask(`token: ${encoded}`)).toMatch(/^token: \*\*\*.{0,4}$/);
+  });
 });
