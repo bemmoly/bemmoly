@@ -19,7 +19,7 @@ describe('pipelines module', () => {
     });
   });
 
-  it('declares its capabilities under its own id and mounts its routes under /pipelines', () => {
+  it('declares its capabilities under its own id and mounts the product and runner routes', () => {
     const registry = loadModules({ available: [pipelines] });
     expect(registry.capabilities().map((capability) => capability.name)).toEqual([
       'pipelines.view',
@@ -30,7 +30,7 @@ describe('pipelines module', () => {
       'pipelines.platform.admin',
       'pipelines.audit',
     ]);
-    expect(registry.routes().map((route) => route.prefix)).toEqual(['/pipelines']);
+    expect(registry.routes().map((route) => route.prefix)).toEqual(['/pipelines', '/runner']);
   });
 
   it('keeps every table it owns behind its prefix', () => {

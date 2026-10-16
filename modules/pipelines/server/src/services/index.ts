@@ -1,5 +1,17 @@
-import type { CodeHostDirectory, SendJobOptions, SettingsRegistry, SqlClient } from '@bemmoly/core';
+import type {
+  CodeHostDirectory,
+  ModuleObjects,
+  SendJobOptions,
+  SettingsRegistry,
+  SqlClient,
+} from '@bemmoly/core';
 import { createAccessService } from './access/index.ts';
+import { createArtifactsService } from './artifacts/index.ts';
+import { createDispatchWakeups } from './dispatcher/wakeup.ts';
+import { createLogsService } from './logs/index.ts';
+import { createRunnerService, variableSecrets } from './runner/index.ts';
+import { createRunHooks, createRunsService } from './runs/index.ts';
+import { createTestsService } from './tests/index.ts';
 import { createCatalogService } from './catalog/index.ts';
 import { createCatalogWritesService } from './catalog-writes/index.ts';
 import { codeHostPullRequests, codeHostRepositories } from './code/adapters.ts';
@@ -29,6 +41,8 @@ export interface PipelinesServicesDeps {
     payload: Record<string, unknown>,
     options?: SendJobOptions,
   ) => Promise<unknown>;
+  /** The module's object store: build logs and artifacts. In memory when absent (tests). */
+  objects?: ModuleObjects;
 }
 
 /**
@@ -52,9 +66,21 @@ export function createPipelinesServices(input: PipelinesServicesDeps) {
   const catalogWrites = createCatalogWritesService(deps);
   const inbox = createInboxService(deps);
   if (code) registerCatalogSync(inbox.handlers, code, catalogWrites);
+  const hooks = createRunHooks();
+  const wakeups = createDispatchWakeups(input.database);
+  const logs = createLogsService(deps);
+  const tests = createTestsService(deps);
+  const execution = { ...deps, hooks };
   return {
     access,
     inbox,
+    hooks,
+    wakeups,
+    logs,
+    tests,
+    artifacts: createArtifactsService(deps),
+    runs: createRunsService(execution),
+    runner: createRunnerService({ ...execution, wakeups, logs, tests, secrets: variableSecrets }),
     catalog: createCatalogService(deps),
     catalogWrites,
     environments: createEnvironmentsService(deps),

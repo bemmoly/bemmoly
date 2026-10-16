@@ -2,7 +2,7 @@ import { defineModule, loadChangelogFolder } from '@bemmoly/core';
 import { PIPELINES_CAPABILITIES } from './server/src/config/capabilities.ts';
 import { definePipelinesSettings } from './server/src/config/settings.ts';
 import { createPipelinesControllers } from './server/src/controllers/index.ts';
-import { pipelinesRoutes } from './server/src/routes/index.ts';
+import { pipelinesRoutes, runnerRoutes } from './server/src/routes/index.ts';
 import { registerCodeHostWork } from './server/src/config/code-hosts.ts';
 import { createPipelinesServices } from './server/src/services/index.ts';
 
@@ -31,11 +31,12 @@ export default defineModule({
       settings: ctx.settings,
       codeHosts: ctx.code.hosts(),
       sendJob: (name, payload, options) => ctx.jobs.send(name, payload, options),
+      objects: ctx.objects,
     });
     registerCodeHostWork(ctx, services);
-    ctx.routes.add({
-      prefix: '/pipelines',
-      plugin: pipelinesRoutes(createPipelinesControllers(services)),
-    });
+    const controllers = createPipelinesControllers(services);
+    ctx.routes.add({ prefix: '/pipelines', plugin: pipelinesRoutes(controllers) });
+    // Build runners call in with their own tokens, under a protocol versioned apart (§22).
+    ctx.routes.add({ prefix: '/runner', plugin: runnerRoutes(controllers.runner) });
   },
 });

@@ -6,6 +6,7 @@ declare module '@bemmoly/core' {
     'pipelines.jobs.defaultTimeoutMinutes': number;
     'pipelines.logs.retentionDays': number;
     'pipelines.history.rewindDays': number;
+    'pipelines.runners.defaultPool': string;
   }
 }
 
@@ -26,6 +27,12 @@ export function definePipelinesSettings(settings: SettingsRegistry): void {
     key: 'pipelines.logs.retentionDays',
     schema: z.number().int().min(1).max(3650),
     default: 30,
+  });
+  /** Jobs whose pipeline names no pool run here; the oldest pool when no pool has this key. */
+  settings.define({
+    key: 'pipelines.runners.defaultPool',
+    schema: z.string().regex(/^[a-z0-9][a-z0-9-]{0,62}$/),
+    default: 'linux-x64',
   });
   /** How far back the Release map can rewind (§18). */
   settings.define({

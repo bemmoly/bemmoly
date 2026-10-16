@@ -5,7 +5,11 @@ import { catalogRoutes } from './catalog.routes.ts';
 import { catalogWritesRoutes } from './catalog-writes.routes.ts';
 import { insightsRoutes } from './insights.routes.ts';
 import { organisationRoutes } from './organisation.routes.ts';
+import { jobsRoutes } from './jobs.routes.ts';
+import { runsRoutes } from './runs.routes.ts';
 import { streamsRoutes } from './streams.routes.ts';
+
+export { runnerRoutes } from './runner.routes.ts';
 
 /**
  * Everything under /api/v1/pipelines, one plugin per area so each area's routes file stays
@@ -19,5 +23,7 @@ export function pipelinesRoutes(controllers: PipelinesControllers): FastifyPlugi
     await app.register(organisationRoutes(controllers.organisation));
     await app.register(streamsRoutes(controllers.streams));
     await app.register(insightsRoutes(controllers.insights));
+    await app.register(runsRoutes(controllers.runs));
+    await app.register(jobsRoutes(controllers.jobs));
   };
 }
