@@ -29,7 +29,7 @@ export function pipelinesRoutes(controllers: PipelinesControllers): FastifyPlugi
     await app.register(ciRoutes(controllers.ci));
     await app.register(catalogRoutes(controllers.catalog));
     await app.register(catalogWritesRoutes(controllers.catalogWrites));
-    await app.register(deliveryRoutes(controllers.delivery));
+    await app.register(deliveryRoutes(controllers.delivery, controllers.views));
     await app.register(discoveryRoutes(controllers.discovery));
     await app.register(cloudsRoutes(controllers.clouds));
     await app.register(organisationRoutes(controllers.organisation));

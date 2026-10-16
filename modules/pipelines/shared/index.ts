@@ -25,6 +25,7 @@ export * from './insights.ts';
 export * from './clouds.ts';
 export * from './streams.ts';
 export * from './application-yaml.ts';
+export * from './saved-views.ts';
 export * from './ci.ts';
 export * from './secret-forms.ts';
 export * from './image-reference.ts';
