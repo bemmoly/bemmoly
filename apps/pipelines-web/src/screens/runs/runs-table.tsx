@@ -44,7 +44,7 @@ function useColumns(showApplication: boolean): TableColumn<RunSummary>[] {
       width: 'minmax(0,1.2fr)',
       hideOnPhone: true,
       render: (run) => (
-        <span className="block truncate font-mono text-12 text-tx-2">{where(run)}</span>
+        <span className="block truncate font-mono text-12 text-tx-2">{where(run, false)}</span>
       ),
     },
     {

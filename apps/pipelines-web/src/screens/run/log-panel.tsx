@@ -1,13 +1,21 @@
 import { formatNumber, useT } from '@bemmoly/core-web';
 import type { Job } from '@bemmoly/module-pipelines/shared';
-import { Button, EmptyState, LogView, SearchInput, Switch } from '@bemmoly/ui';
+import { Button, EmptyState, LogView, SearchInput, Select, Switch } from '@bemmoly/ui';
 import { Icon } from '@bemmoly/ui/icons';
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useMemo, useState, type RefObject } from 'react';
 import { deliveryKeys } from '../../api/delivery.ts';
 import { pipelinesText } from '../../i18n/catalog.ts';
 import { api } from '../../lib/api.ts';
+import { StateGlyph } from '../../parts/bits.tsx';
 import { useJobLog } from './use-job-log.ts';
+
+/** A step's state as the glyphs draw it. */
+function stepGlyph(state: Job['steps'][number]['state']) {
+  if (state === 'pending') return 'queued' as const;
+  if (state === 'cancelled') return 'skipped' as const;
+  return state;
+}
 
 const WRITING = new Set(['claimed', 'running']);
 
@@ -73,6 +81,8 @@ export function LogPanel({
       go(hit.line);
     }
   };
+  // Steps with lines in the log, to jump to where each starts.
+  const steps = job.steps.filter((item) => item.firstLine !== null);
   const meta = [
     job.pool?.name,
     log.totalLines
@@ -90,6 +100,24 @@ export function LogPanel({
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2 border-b border-line px-3 py-2">
         <span className="font-medium text-tx">{job.name}</span>
         <span className="truncate text-12 text-tx-3">{meta}</span>
+        {steps.length > 1 ? (
+          <Select
+            size="sm"
+            variant="ghost"
+            value=""
+            placeholder={t('pipelines.log.jumpToStep')}
+            aria-label={t('pipelines.log.jumpToStep')}
+            options={steps.map((item) => ({
+              value: String(item.firstLine),
+              label: item.name,
+              icon: <StateGlyph state={stepGlyph(item.state)} size={12} />,
+            }))}
+            onChange={(event) => {
+              onFollow(false);
+              go(Number(event.value));
+            }}
+          />
+        ) : null}
         <div className="ms-auto flex items-center gap-3">
           <SearchInput
             ref={searchRef}

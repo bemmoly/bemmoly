@@ -79,15 +79,17 @@ export function RunsList({ fixed }: { fixed?: Partial<ListRunsQuery> }) {
           />
           {t('pipelines.runs.mine')}
         </label>
-        <SearchInput
-          ref={box}
-          value={text}
-          onChange={(event) => setText(event.target.value)}
-          placeholder={t('pipelines.runs.searchPlaceholder')}
-          aria-label={t('pipelines.runs.searchPlaceholder')}
-          hint="/"
-          className="w-full sm:ms-auto sm:w-64"
-        />
+        <div className="w-full sm:ms-auto sm:w-64">
+          <SearchInput
+            ref={box}
+            value={text}
+            onChange={(event) => setText(event.target.value)}
+            placeholder={t('pipelines.runs.searchPlaceholder')}
+            aria-label={t('pipelines.runs.searchPlaceholder')}
+            hint="/"
+            className="w-full"
+          />
+        </div>
       </div>
       {runs.isError ? (
         <div className="rounded-card border border-line bg-card py-12 shadow-e1">

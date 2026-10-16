@@ -300,6 +300,7 @@
   "pipelines.log.failed": "The log did not load.",
   "pipelines.log.follow": "Follow",
   "pipelines.log.hit": "{at, number} of {count, number}",
+  "pipelines.log.jumpToStep": "Jump to a step",
   "pipelines.log.label": "Log of {job}",
   "pipelines.log.line": "Line {number}",
   "pipelines.log.lines": "{count, plural, one {# line} other {{shown} lines}}",

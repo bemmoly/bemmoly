@@ -14,11 +14,11 @@ export function runGlyph(state: RunSummary['state']) {
 /** "main · a1c9e3f · 9m 12s", or "PR #1188 · 77aa01b · lint" for a failure with a summary. */
 export function useRunWhere() {
   const t = useT(pipelinesText);
-  return (run: RunSummary) =>
+  return (run: RunSummary, withDuration = true) =>
     [
       run.pullRequest ? t('pipelines.run.pullRequest', { number: run.pullRequest }) : run.ref,
       run.commitSha.slice(0, 7),
-      run.durationSeconds !== null ? formatSpan(run.durationSeconds) : null,
+      withDuration && run.durationSeconds !== null ? formatSpan(run.durationSeconds) : null,
     ]
       .filter(Boolean)
       .join(' · ');
