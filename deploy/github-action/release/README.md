@@ -68,5 +68,14 @@ releases only for applications in its own repository, from the refs the rule all
 ## Building and publishing
 
 GitHub runs an action's main file without installing anything, so the action ships as one
-bundled file. `pnpm --filter @bemmoly/release-action build` writes `dist/index.mjs`; publishing
-copies `action.yml`, `README.md` and `dist/` to the `bemmoly/release` repository and tags `v1`.
+bundled file, `dist/index.mjs`, committed beside `action.yml`. That makes it usable straight
+from this repository before it is published on its own:
+
+```yaml
+- uses: bemmoly/bemmoly/deploy/github-action/release@main
+```
+
+After changing the action or `@bemmoly/pipelines-cli`, run
+`pnpm --filter @bemmoly/release-action build` and commit `dist/`; the package's tests fail
+while the committed bundle differs from a fresh build. Publishing copies `action.yml`,
+`README.md` and `dist/` to the `bemmoly/release` repository and tags `v1`.
