@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { askWhoSchema } from './access.ts';
 import { applicationRefSchema } from './catalog.ts';
 import {
   environmentClassSchema,
@@ -17,7 +18,8 @@ import { environmentRefSchema } from './environments.ts';
 /*
  * Promotion (architecture §11): GET /api/v1/pipelines/promotions, /promotions/:id,
  * POST /promotions (request), POST /promotions/:id/approvals (approve or reject),
- * POST /promotions/:id/cancel. A promotion moves one release to one environment: gates, then
+ * POST /promotions/:id/cancel, GET /promotions/preview (the same, before it is requested).
+ * A promotion moves one release to one environment: gates, then
  * approvals, then a window or a train, then waves of canary steps. The person requesting it
  * sees exactly what the approver will see.
  */
@@ -102,9 +104,22 @@ export const approvalRequirementSchema = z.object({
   canApprove: z.boolean(),
 });
 
+/** The release a promotion moves; approvals bind to its digest. */
+export const promotionReleaseSchema = z.object({
+  id: idSchema,
+  version: z.string(),
+  commitSha: z.string(),
+  /** What an approver sends back in `releaseDigest`. */
+  digest: z.string(),
+});
+
+/** What runs in the target now, for "v1.42.3 to v1.43.0"; null on a first deploy there. */
+export const promotionPreviousSchema = z.object({ id: idSchema, version: z.string() }).nullable();
+
 export const promotionSchema = z.object({
   id: idSchema,
-  release: z.object({ id: idSchema, version: z.string(), commitSha: z.string() }),
+  release: promotionReleaseSchema,
+  previous: promotionPreviousSchema,
   application: applicationRefSchema,
   environment: environmentRefSchema,
   mode: promotionModeSchema,
@@ -123,6 +138,48 @@ export const promotionSchema = z.object({
   expiresAt: isoDateTimeSchema.nullable(),
   createdAt: isoDateTimeSchema,
   finishedAt: isoDateTimeSchema.nullable(),
+});
+
+/**
+ * GET /promotions/preview?release=…&to=prod: the promotion as it would be if requested now,
+ * with the same gates, approvals and plan the approver will see. Nothing is written, so the
+ * Promote screen shows the decision before the request exists.
+ */
+export const promotionPreviewQuerySchema = z.object({
+  release: idSchema,
+  to: z.union([slugSchema, environmentClassSchema]),
+});
+
+/** A train departure this promotion may join instead of going as soon as it is approved. */
+export const joinableDepartureSchema = z.object({
+  id: idSchema,
+  trainName: z.string(),
+  departsAt: isoDateTimeSchema,
+  /** "14 applications, one approval for all". */
+  applicationCount: z.number().int().min(0),
+});
+
+export const promotionPreviewSchema = z.object({
+  release: promotionReleaseSchema,
+  previous: promotionPreviousSchema,
+  application: applicationRefSchema,
+  /** Every environment `to` named, in rollout order. */
+  environments: z.array(environmentRefSchema).min(1),
+  gates: z.array(gateResultSchema),
+  requirements: z.array(approvalRequirementSchema),
+  plan: rolloutPlanSchema,
+  policies: z.array(z.object({ id: idSchema, name: z.string(), version: z.number().int() })),
+  departures: z.array(joinableDepartureSchema),
+  /** Whether the person asking may request it; when not, why and whom to ask. */
+  request: z.object({
+    allowed: z.boolean(),
+    sentence: z.string().nullable(),
+    askWho: askWhoSchema.nullable(),
+  }),
+  /** A promotion of this release to this target that is still open; the screen opens it. */
+  existingId: idSchema.nullable(),
+  /** When a request made now would expire unapproved. */
+  expiresAt: isoDateTimeSchema.nullable(),
 });
 
 export const listPromotionsQuerySchema = keysetQuerySchema.extend({
@@ -167,7 +224,11 @@ export type RolloutPlan = z.infer<typeof rolloutPlanSchema>;
 export type ApprovalDecision = z.infer<typeof approvalDecisionSchema>;
 export type Approval = z.infer<typeof approvalSchema>;
 export type ApprovalRequirement = z.infer<typeof approvalRequirementSchema>;
+export type PromotionRelease = z.infer<typeof promotionReleaseSchema>;
 export type Promotion = z.infer<typeof promotionSchema>;
+export type PromotionPreviewQuery = z.infer<typeof promotionPreviewQuerySchema>;
+export type JoinableDeparture = z.infer<typeof joinableDepartureSchema>;
+export type PromotionPreview = z.infer<typeof promotionPreviewSchema>;
 export type ListPromotionsQuery = z.infer<typeof listPromotionsQuerySchema>;
 export type PromotionsPage = z.infer<typeof promotionsPageSchema>;
 export type CreatePromotionBody = z.input<typeof createPromotionBodySchema>;
