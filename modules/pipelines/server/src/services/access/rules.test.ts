@@ -55,6 +55,24 @@ describe('CEL', () => {
     expect(evaluateCel('requester.teams[3] == "x"', input())).toMatchObject({ ok: false });
   });
 
+  it('refuses loops nested deep enough to stall the server', () => {
+    const list = `[${Array.from({ length: 20 }, (_, i) => i).join(', ')}]`;
+    const nest = (depth: number) => {
+      let expression = 'true';
+      for (let i = 0; i < depth; i += 1) expression = `${list}.all(x${i}, ${expression})`;
+      return expression;
+    };
+    expect(checkCel('application.labels.exists(l, l == "pci")')).toEqual({ ok: true });
+    expect(checkCel(nest(2))).toEqual({ ok: true });
+    expect(checkCel(nest(3))).toEqual({ ok: false, error: expect.stringContaining('at most 2') });
+    expect(
+      checkCel(`${list}.map(a, ${list}.map(b, ${list}.filter(c, c > 0))).size() > 0`),
+    ).toMatchObject({ ok: false });
+    const started = Date.now();
+    expect(evaluateCel(nest(8), input())).toMatchObject({ ok: false });
+    expect(Date.now() - started).toBeLessThan(1_000);
+  });
+
   it('reads a lone has_role rule as a role', () => {
     expect(singleRoleRequirement(' has_role("maintainer") ')).toBe('maintainer');
     expect(singleRoleRequirement('has_role("maintainer") || in_team("sre")')).toBeNull();
