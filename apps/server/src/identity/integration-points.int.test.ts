@@ -114,6 +114,28 @@ describe('what email and notifications build on, against a real database', () =>
     }
   });
 
+  it('leaves a Bearer header on an anonymous route to the route', async (ctx) => {
+    if (!harness) return ctx.skip(skipReason);
+    const app = Fastify({ logger: false });
+    app.setErrorHandler(errorHandler);
+    await app.register(authentication, harness.identity);
+    app.post('/api/v1/ci', { config: { anonymous: true } }, async (request) => ({
+      actor: request.actor,
+      header: request.headers.authorization,
+    }));
+    app.post('/api/v1/closed', async () => ({ ok: true }));
+    try {
+      const headers = { authorization: 'Bearer eyJhbGciOiJSUzI1NiJ9.e30.c2ln' };
+      const open = await app.inject({ method: 'POST', url: '/api/v1/ci', headers });
+      expect(open.statusCode).toBe(200);
+      expect(open.json()).toEqual({ actor: null, header: headers.authorization });
+      const closed = await app.inject({ method: 'POST', url: '/api/v1/closed', headers });
+      expect(closed.statusCode).toBe(401);
+    } finally {
+      await app.close();
+    }
+  });
+
   it('keeps the boot read of setup status out of the strict per-IP budget', async (ctx) => {
     if (!harness) return ctx.skip(skipReason);
     const app = Fastify({ logger: false });

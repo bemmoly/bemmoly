@@ -181,9 +181,12 @@ export const authentication = fp<AuthenticationOptions>(
         modules: options.modules,
         ...(options.authzCache ? { shared: options.authzCache } : {}),
       });
-      // Outside the API prefix a Bearer header belongs to that route's own
-      // scheme (the /metrics scrape token), never to an API token.
-      const header = isUnderApi(request, apiPrefix) ? request.headers.authorization : undefined;
+      // Outside the API prefix, and on routes anonymous by design (a runner's pool token, a
+      // CI system's OIDC token), a Bearer header belongs to the route's own scheme, never to
+      // an API token; the route checks it itself.
+      const ownScheme =
+        !isUnderApi(request, apiPrefix) || request.routeOptions.config?.anonymous === true;
+      const header = ownScheme ? undefined : request.headers.authorization;
       const cookie = readCookie(request.headers.cookie, SESSION_COOKIE);
       if (header !== undefined) await fromBearer(request, header, options, now);
       else if (cookie) await fromCookie(request, reply, cookie, options, policy, now);
