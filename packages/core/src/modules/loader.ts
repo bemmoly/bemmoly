@@ -9,6 +9,7 @@ import type { AiFacade } from '../contracts/ai.ts';
 import type { CollabTransactor } from './collab.ts';
 import type { ActorContextFactory, BemmolyModule } from './contract.ts';
 import type { FileReader } from './files.ts';
+import type { ObjectStore } from '../contracts/object-store.ts';
 import { createModuleContext } from './context.ts';
 import { emptyContributions } from './contributions.ts';
 import { ModuleLoadError } from './errors.ts';
@@ -40,6 +41,8 @@ export interface LoadModulesOptions {
   ai?: () => AiFacade | undefined;
   /** What ctx.files.read goes through once the server creates the files service. */
   files?: () => FileReader | undefined;
+  /** What ctx.objects goes through once the server creates the object store. */
+  objects?: () => ObjectStore | undefined;
   /**
    * The live module state, read on every event. A module's event handlers run only while it
    * is enabled; omitted, every registered module hears every event.
@@ -139,6 +142,7 @@ export function loadModules(options: LoadModulesOptions): ModuleRegistry {
         ...(options.collab ? { collab: options.collab } : {}),
         ...(options.ai ? { ai: options.ai } : {}),
         ...(options.files ? { files: options.files } : {}),
+        ...(options.objects ? { objects: options.objects } : {}),
         ...(options.isEnabled ? { isEnabled: options.isEnabled } : {}),
         ...(options.contextFor ? { contextFor: options.contextFor } : {}),
         ...(options.pdf ? { pdf: options.pdf } : {}),

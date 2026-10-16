@@ -10,6 +10,8 @@ import type { ActorContextFactory, BemmolyModule, ModuleContext } from './contra
 import type { ModuleContributions } from './contributions.ts';
 import { ModuleLoadError } from './errors.ts';
 import type { FileReader } from './files.ts';
+import type { ObjectStore } from '../contracts/object-store.ts';
+import { createModuleObjects } from './objects.ts';
 import { createReferenceRegistries } from './references.ts';
 import type { SettingsReader, SettingsRegistry } from './registries.ts';
 import type { ModuleRegistry } from './registry.ts';
@@ -32,6 +34,8 @@ export interface ModuleContextOptions {
   ai?: () => AiFacade | undefined;
   /** The files service, read on every call so it can be bound after modules register. */
   files?: () => FileReader | undefined;
+  /** The object store, read on every call so it can be bound after modules register. */
+  objects?: () => ObjectStore | undefined;
   /** Every enabled module, for cross-module lookups; answers once loading finishes. */
   peers?: () => ModuleRegistry | undefined;
   /**
@@ -257,6 +261,7 @@ export function createModuleContext(
         return reader.read(ctx, fileId);
       },
     },
+    objects: createModuleObjects(module.id, options.objects),
     code: {
       addConsumer(consumer) {
         if (!consumer.id.startsWith(`${module.id}.`)) {

@@ -36,3 +36,4 @@ export {
   type FilesRegistry,
   type FileTargetDefinition,
 } from './files.ts';
+export { createModuleObjects, type ModuleObjects } from './objects.ts';

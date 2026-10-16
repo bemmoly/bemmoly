@@ -104,6 +104,7 @@ export async function bootApplication(options: BootOptions): Promise<Booted> {
   // Bound once the kernel reads the modules table; until then no module hears events.
   let moduleState: Pick<DataKernel['moduleState'], 'isEnabled'> | undefined;
   let files: DataKernel['files'] | undefined;
+  let objects: DataKernel['objectStore'] | undefined;
   const modules = loadModules({
     available: options.available,
     enabled: database ? [] : env.BEMMOLY_MODULES,
@@ -113,6 +114,7 @@ export async function bootApplication(options: BootOptions): Promise<Booted> {
     collab: collabHandle,
     ai: () => aiHandle.bound(),
     files: () => files,
+    objects: () => objects,
     ...(env.BEMMOLY_PDF_URL
       ? {
           pdf: createPdfRendererClient({
@@ -167,6 +169,7 @@ export async function bootApplication(options: BootOptions): Promise<Booted> {
     catalog.bindState(kernel.moduleState);
     moduleState = kernel.moduleState;
     files = kernel.files;
+    objects = kernel.objectStore;
   }
   const collab =
     database && kernel

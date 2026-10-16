@@ -12,6 +12,7 @@ import type { RequestContext } from '../services/authz/index.ts';
 import type { CollabRegistry } from './collab.ts';
 import type { McpRegistry } from './mcp.ts';
 import type { FilesRegistry } from './files.ts';
+import type { ModuleObjects } from './objects.ts';
 import type {
   AiRegistry,
   CapabilityRegistry,
@@ -87,6 +88,8 @@ export interface ModuleContext {
   collab: CollabRegistry;
   /** Targets people upload files into (a page); the kernel stores and serves the bytes. */
   files: FilesRegistry;
+  /** Bytes the module owns (build logs, reports), under its own prefix in the object store. */
+  objects: ModuleObjects;
   /** Consumers of verified code host activity (pull requests, branches, commits). */
   code: CodeRegistry;
   /** Invalidation messages for WebSocket clients; a no-op without a database. */
