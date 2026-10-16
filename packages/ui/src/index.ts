@@ -54,6 +54,7 @@ export * from './components/settings-frame/index.ts';
 export * from './components/skeleton/index.ts';
 export * from './components/space-card/index.ts';
 export * from './components/spinner/index.ts';
+export * from './components/stage-graph/index.ts';
 export * from './components/sprint-header/index.ts';
 export * from './components/status-badge/index.ts';
 export * from './components/swimlane/index.ts';

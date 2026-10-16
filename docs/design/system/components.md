@@ -304,3 +304,13 @@ Ordered steps toward something working: an empty install's first run (scan GitHu
 cloud, ship a first application) and a landing zone being created. Done steps go quiet, the
 current step is raised on `acc-50` with its action, a failed step keeps its action to try again.
 
+### StageGraph
+
+`StageGraph` (`stages`, `edges`, `selectedId`, `onSelect`, `ariaLabel`, `stateLabel`) draws a
+run's stages left to right with each stage's jobs stacked: card nodes with a `RunGlyph`, the
+name and a detail ("2 failed · 2m 55s"). `edges` are drawn as curves between nodes (accent into
+and out of the selected node, red when it failed); without them one connector joins
+neighbouring columns. The selected node has a 2px ring, red when it failed; skipped work is
+dimmed. One tab stop: arrows move between and within stages, J and K walk the nodes, Enter
+selects. Wide graphs scroll sideways inside themselves.
+
