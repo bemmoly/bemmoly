@@ -82,6 +82,14 @@ export const coordinatedReleaseSchema = z.object({
   ),
 });
 
+/** One approval for the whole departure: every application aboard it, bound to its digests. */
+export const departureApprovalBodySchema = z.object({
+  decision: z.enum(['approved', 'rejected']),
+  comment: z.string().max(2000).optional(),
+});
+
+export const departureParamsSchema = z.object({ id: idSchema });
+
 export const changeOutcomeSchema = z.enum(['succeeded', 'rolled_back', 'cancelled', 'failed']);
 
 /** The immutable evidence a finished promotion leaves, for SOC 2 and ISO 27001. */
@@ -119,6 +127,7 @@ export const listChangeRecordsQuerySchema = keysetQuerySchema.extend({
 export const changeRecordsPageSchema = keysetPageSchema(changeRecordSchema);
 
 export type Train = z.infer<typeof trainSchema>;
+export type DepartureApprovalBody = z.infer<typeof departureApprovalBodySchema>;
 export type DepartureState = z.infer<typeof departureStateSchema>;
 export type Departure = z.infer<typeof departureSchema>;
 export type CreateTrainBody = z.input<typeof createTrainBodySchema>;

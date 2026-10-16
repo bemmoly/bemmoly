@@ -26,6 +26,7 @@ import { environmentRefSchema } from './environments.ts';
 
 export const gateSchema = z.enum([
   'tests',
+  'external_checks',
   'security_scan',
   'staging_healthy',
   'window',
@@ -35,6 +36,8 @@ export const gateSchema = z.enum([
   'canary',
   'dependencies',
   'migration_reviewed',
+  /** A security team's own service: POST the release facts, get allow or deny with a reason. */
+  'webhook',
   'custom',
 ]);
 
@@ -135,6 +138,12 @@ export const promotionSchema = z.object({
   /** "Tier 0 · Prod, from Commerce": the policies that applied, as sentences. */
   policies: z.array(z.object({ id: idSchema, name: z.string(), version: z.number().int() })),
   requestedBy: personRefSchema.nullable(),
+  /** Set when a Release manager let it through a freeze, with the reason they typed. */
+  freezeOverride: z
+    .object({ by: personRefSchema, reason: z.string(), at: isoDateTimeSchema })
+    .nullable(),
+  /** "Rolled back: error rate 4.1% against 0.2% on stable", once it has finished. */
+  outcomeReason: z.string().nullable(),
   expiresAt: isoDateTimeSchema.nullable(),
   createdAt: isoDateTimeSchema,
   finishedAt: isoDateTimeSchema.nullable(),
@@ -215,6 +224,11 @@ export const approvalBodySchema = z.object({
 
 export const cancelPromotionBodySchema = z.object({ reason: z.string().max(500).optional() });
 
+/** Freezes hold unless a Release manager overrides one, with a reason anyone can read later. */
+export const freezeOverrideBodySchema = z.object({
+  reason: z.string().trim().min(10, 'Say why in a sentence').max(500),
+});
+
 export type Gate = z.infer<typeof gateSchema>;
 export type GateState = z.infer<typeof gateStateSchema>;
 export type GateResult = z.infer<typeof gateResultSchema>;
@@ -234,3 +248,4 @@ export type PromotionsPage = z.infer<typeof promotionsPageSchema>;
 export type CreatePromotionBody = z.input<typeof createPromotionBodySchema>;
 export type ApprovalBody = z.infer<typeof approvalBodySchema>;
 export type CancelPromotionBody = z.infer<typeof cancelPromotionBodySchema>;
+export type FreezeOverrideBody = z.infer<typeof freezeOverrideBodySchema>;

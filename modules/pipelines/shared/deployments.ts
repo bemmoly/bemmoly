@@ -9,6 +9,7 @@ import {
   keysetPageSchema,
   keysetQuerySchema,
   personRefSchema,
+  scopePathSchema,
   slugSchema,
 } from './common.ts';
 import { environmentRefSchema } from './environments.ts';
@@ -22,6 +23,12 @@ import { environmentRefSchema } from './environments.ts';
  */
 
 export const deploymentKindSchema = z.enum(['deploy', 'rollback']);
+
+/** Where a deployment is in its plan: deploying, a canary step, the watch, paused for a person. */
+export const deploymentPhaseSchema = z.enum(['deploy', 'step', 'watch', 'paused', 'done']);
+
+/** Kayenta-style: marginal pauses and asks a person; two fails in a row roll back. */
+export const canaryVerdictSchema = z.enum(['pass', 'marginal', 'fail', 'pending']);
 
 export const deploymentSchema = z.object({
   id: idSchema,
@@ -38,6 +45,11 @@ export const deploymentSchema = z.object({
     .object({ releaseId: idSchema, version: z.string(), revision: z.string().nullable() })
     .nullable(),
   rollbackOfId: idSchema.nullable(),
+  phase: deploymentPhaseSchema,
+  /** "Canary step 2 of 3 is marginal: decide to continue or roll back". */
+  pauseReason: z.string().nullable(),
+  /** Why it ended where it did: the roll back's cause, or the reason a person gave. */
+  reason: z.string().nullable(),
   startedBy: personRefSchema.nullable(),
   startedAt: isoDateTimeSchema.nullable(),
   finishedAt: isoDateTimeSchema.nullable(),
@@ -122,7 +134,19 @@ export const metricCompareSchema = z.object({
   unit: z.string(),
   stable: z.object({ value: z.number().nullable(), series: z.array(metricPointSchema) }),
   canary: z.object({ value: z.number().nullable(), series: z.array(metricPointSchema) }),
-  verdict: z.enum(['pass', 'fail', 'pending']),
+  verdict: canaryVerdictSchema,
+});
+
+export const canarySampleSchema = z.object({
+  stepIndex: z.number().int(),
+  phase: z.enum(['step', 'watch']),
+  trafficPercent: z.number().int(),
+  metric: z.enum(['error_rate', 'latency_p95']),
+  canary: z.number().nullable(),
+  stable: z.number().nullable(),
+  requests: z.number().int(),
+  verdict: canaryVerdictSchema,
+  sampledAt: isoDateTimeSchema,
 });
 
 /** Canary against stable over the same window, as the Prod health card draws it. */
@@ -134,9 +158,41 @@ export const canaryAnalysisSchema = z.object({
   /** "unavailable" when no metrics source is connected; the checks then say "waiting". */
   source: z.enum(['metrics', 'unavailable']),
   failingSamples: z.number().int().min(0),
+  verdict: canaryVerdictSchema,
+  phase: deploymentPhaseSchema,
+  /** Every sample judged so far, oldest first: the evidence a roll back records. */
+  samples: z.array(canarySampleSchema),
+});
+
+/** A paused canary's decision, by a person: carry on with the plan, or roll back now. */
+export const resumeDeploymentBodySchema = z.object({
+  decision: z.enum(['continue', 'rollback']),
+  reason: z.string().trim().max(500).optional(),
+});
+
+/**
+ * GET /current?scope=commerce&at=…: pipeline_current for a scope, now or rewound to a
+ * moment from the deployment events.
+ */
+export const currentQuerySchema = z.object({
+  scope: scopePathSchema.optional(),
+  application: slugSchema.optional(),
+  environment: slugSchema.optional(),
+  at: isoDateTimeSchema.optional(),
+});
+
+export const currentResponseSchema = z.object({
+  at: isoDateTimeSchema.nullable(),
+  items: z.array(currentSchema),
 });
 
 export type DeploymentKind = z.infer<typeof deploymentKindSchema>;
+export type DeploymentPhase = z.infer<typeof deploymentPhaseSchema>;
+export type CanaryVerdict = z.infer<typeof canaryVerdictSchema>;
+export type CanarySample = z.infer<typeof canarySampleSchema>;
+export type ResumeDeploymentBody = z.infer<typeof resumeDeploymentBodySchema>;
+export type CurrentQuery = z.infer<typeof currentQuerySchema>;
+export type CurrentResponse = z.infer<typeof currentResponseSchema>;
 export type Deployment = z.infer<typeof deploymentSchema>;
 export type DeploymentEvent = z.infer<typeof deploymentEventSchema>;
 export type DeploymentDetail = z.infer<typeof deploymentDetailSchema>;
