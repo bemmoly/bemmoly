@@ -9,11 +9,14 @@ import {
   insightsSchema,
   landingZonePlanSchema,
   policiesResponseSchema,
+  poolTokenSchema,
+  runnerPoolSchema,
   providersResponseSchema,
   type ApplyLandingZoneBody,
   type CapacityQuery,
   type CheckAccessBody,
   type ConnectCloudBody,
+  type CreatePoolBody,
   type CreateBindingBody,
   type InsightsQuery,
   type LandingZonePlanBody,
@@ -52,6 +55,13 @@ export function platformEndpoints(http: Http) {
       http.request(`${base}/access/checks`, accessDecisionSchema, { method: 'POST', body }),
     capacity: (query: CapacityQuery) =>
       http.request(`${base}/capacity`, capacitySchema, { query: toQuery(query) }),
+    createPool: (body: CreatePoolBody) =>
+      http.request(`${base}/pools`, z.object({ pool: runnerPoolSchema, token: poolTokenSchema }), {
+        method: 'POST',
+        body,
+      }),
+    rotatePoolToken: (key: string) =>
+      http.request(`${base}/pools/${key}/tokens`, poolTokenSchema, { method: 'POST' }),
     providers: () => http.request(`${base}/clouds/providers`, providersResponseSchema),
     connections: () => http.request(`${base}/clouds`, connectionsResponseSchema),
     connect: (body: ConnectCloudBody) =>
