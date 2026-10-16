@@ -122,6 +122,9 @@ export const poolShareParamsSchema = z.object({ key: slugSchema, teamId: idSchem
 /** Returned once on create and on rotate; only its hash is kept. */
 export const poolTokenSchema = z.object({ token: z.string(), rotatedAt: isoDateTimeSchema });
 
+/** POST /pools answers with the pool and, this once, its registration token. */
+export const createdPoolSchema = z.object({ pool: runnerPoolSchema, token: poolTokenSchema });
+
 export type PoolHosting = z.infer<typeof poolHostingSchema>;
 export type RunnerPool = z.infer<typeof runnerPoolSchema>;
 export type CapacityStats = z.infer<typeof capacityStatsSchema>;
@@ -134,3 +137,4 @@ export type CreatePoolBody = z.input<typeof createPoolBodySchema>;
 export type UpdatePoolBody = z.infer<typeof updatePoolBodySchema>;
 export type TeamShareBody = z.infer<typeof teamShareBodySchema>;
 export type PoolToken = z.infer<typeof poolTokenSchema>;
+export type CreatedPool = z.infer<typeof createdPoolSchema>;
