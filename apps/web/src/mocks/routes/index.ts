@@ -32,6 +32,7 @@ import { webhookRoutes } from './webhooks.ts';
 import { workAutomationRoutes } from './work-automation.ts';
 import { workBacklogRoutes } from './work-backlog.ts';
 import { workBoardRoutes } from './work-board.ts';
+import { workReportRoutes } from './work-reports.ts';
 import { workCodeLinkRoutes } from './work-code-links.ts';
 import { workFilterRoutes } from './work-filters.ts';
 import { workIssuesRoutes } from './work-issues.ts';
@@ -68,6 +69,7 @@ export const ROUTES: readonly MockRoute[] = [
   ...webhookRoutes,
   ...workBacklogRoutes,
   ...workBoardRoutes,
+  ...workReportRoutes,
   ...workFilterRoutes,
   ...workIssuesRoutes,
   ...workMembersRoutes,

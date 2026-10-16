@@ -70,7 +70,7 @@ export function niceTicks(max: number): number[] {
   );
 }
 
-/** Which x labels to print: about one per 64px, always the first and last. */
+/** Which x labels to print: about one per 64px, always the first and last, never crowding it. */
 export function labelEvery(count: number, plotWidth: number): number {
   return Math.max(1, Math.ceil(count / Math.max(1, Math.floor(plotWidth / 64))));
 }
@@ -104,7 +104,8 @@ export function Axes({ ticks, y, xLabels, x, width, height }: AxesProps) {
         </g>
       ))}
       {xLabels.map((label, index) =>
-        index % every === 0 || index === xLabels.length - 1 ? (
+        index === xLabels.length - 1 ||
+        (index % every === 0 && xLabels.length - 1 - index >= every / 2) ? (
           <text
             key={index}
             x={x(index)}
