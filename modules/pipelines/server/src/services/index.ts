@@ -12,6 +12,7 @@ import { createLogsService } from './logs/index.ts';
 import { createRunnerService, variableSecrets } from './runner/index.ts';
 import { createRunHooks, createRunsService } from './runs/index.ts';
 import { createTestsService } from './tests/index.ts';
+import { createCiService } from './ci/index.ts';
 import { createCatalogService } from './catalog/index.ts';
 import { createCatalogWritesService } from './catalog-writes/index.ts';
 import { codeHostPullRequests, codeHostRepositories } from './code/adapters.ts';
@@ -81,6 +82,9 @@ export function createPipelinesServices(input: PipelinesServicesDeps) {
   const catalogWrites = createCatalogWritesService(deps);
   const inbox = createInboxService(deps);
   if (code) registerCatalogSync(inbox.handlers, code, catalogWrites);
+  const releases = createReleasesService(deps);
+  const ci = createCiService({ ...deps, releaseWriter: releases.writer });
+  ci.listen(inbox.handlers);
   const hooks = createRunHooks();
   const wakeups = createDispatchWakeups(input.database);
   const logs = createLogsService(deps);
@@ -103,7 +107,8 @@ export function createPipelinesServices(input: PipelinesServicesDeps) {
     environments: createEnvironmentsService(deps),
     teams: createTeamsService(deps),
     overview: createOverviewService(deps),
-    releases: createReleasesService(deps),
+    releases,
+    ci,
     streams: createStreamsService(deps),
     insights: createInsightsService(deps),
     ...(input.database

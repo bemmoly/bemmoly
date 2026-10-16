@@ -1,6 +1,7 @@
 import type { FastifyPluginAsync } from 'fastify';
 import type { PipelinesControllers } from '../controllers/index.ts';
 import { accessRoutes } from './access.routes.ts';
+import { ciRoutes } from './ci.routes.ts';
 import { catalogRoutes } from './catalog.routes.ts';
 import { catalogWritesRoutes } from './catalog-writes.routes.ts';
 import { discoveryRoutes } from './discovery.routes.ts';
@@ -22,6 +23,7 @@ export { runnerRoutes } from './runner.routes.ts';
 export function pipelinesRoutes(controllers: PipelinesControllers): FastifyPluginAsync {
   return async (app) => {
     await app.register(accessRoutes(controllers.access));
+    await app.register(ciRoutes(controllers.ci));
     await app.register(catalogRoutes(controllers.catalog));
     await app.register(catalogWritesRoutes(controllers.catalogWrites));
     await app.register(discoveryRoutes(controllers.discovery));
