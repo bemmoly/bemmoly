@@ -120,7 +120,7 @@ export const logChunkUploadSchema = z
     firstLine: z.number().int().min(1),
     stepPosition: z.number().int().min(0).optional(),
     lines: z.array(z.string().max(64_000)).max(10_000).optional(),
-    /** The same lines, gzip compressed and base64 encoded, for large chunks. */
+    /** The same lines as a JSON array, gzip compressed and base64 encoded, for large chunks. */
     gzipBase64: z.string().max(2_000_000).optional(),
     lineCount: z.number().int().min(0),
   })

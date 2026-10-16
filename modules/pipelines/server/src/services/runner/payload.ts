@@ -72,7 +72,8 @@ export async function claimedJobPayload(
   if (!row) throw new Error(`Claimed job ${jobId} vanished`);
   const parsed = stepsSchema.safeParse(row.steps_spec);
   const steps: ResolvedStep[] = parsed.success ? parsed.data : [];
-  const env: Record<string, string> = { ...row.variables };
+  // BEMMOLY_ATTEMPT lets a step tell a retry from a first try (a migration that must not repeat).
+  const env: Record<string, string> = { ...row.variables, BEMMOLY_ATTEMPT: String(row.attempt) };
   for (const [name, value] of Object.entries(row.inputs ?? {})) {
     env[`BEMMOLY_INPUT_${envName(name)}`] = String(value);
   }

@@ -154,6 +154,9 @@ export async function startRun(tx: SqlExecutor, input: StartRunInput): Promise<S
   }
   const plans = expandJobs(expandable);
   const primary = input.applications[0];
+  // The values the run used (defaults included), so steps and "Run again" see the same.
+  const inputs =
+    expandable.length === 1 ? (expandable[0]?.pipeline.inputs ?? {}) : (input.inputs ?? {});
   // One application stores its pipeline as is; a monorepo run stores one per application.
   const resolved =
     expandable.length === 1
@@ -168,7 +171,7 @@ export async function startRun(tx: SqlExecutor, input: StartRunInput): Promise<S
       ${input.ref}, ${input.commitSha}, ${input.title}, ${input.pullRequest ?? null},
       ${input.authorUserId ?? null}::uuid, ${input.authorLogin ?? null}, ${primary?.teamId ?? null}::uuid,
       ${input.priorityClass}, ${input.supersedeKey ?? null}, ${input.idempotencyKey ?? null},
-      ${JSON.stringify(resolved ?? null)}::jsonb, ${JSON.stringify(input.inputs ?? {})}::jsonb,
+      ${JSON.stringify(resolved ?? null)}::jsonb, ${JSON.stringify(inputs)}::jsonb,
       ${JSON.stringify(input.variables ?? {})}::jsonb, ${input.createdBy ?? null}::uuid,
       ${input.rerunOfRunId ?? null}::uuid)
     on conflict (idempotency_key) where idempotency_key is not null do nothing

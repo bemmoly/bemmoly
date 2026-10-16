@@ -51,7 +51,11 @@ interface ChunkRow {
 function decode(chunk: LogChunkUpload): string[] {
   if (chunk.lines) return chunk.lines;
   const text = gunzipSync(Buffer.from(chunk.gzipBase64 ?? '', 'base64')).toString('utf8');
-  return text === '' ? [] : text.split('\n');
+  const lines: unknown = JSON.parse(text);
+  if (!Array.isArray(lines) || lines.some((line) => typeof line !== 'string')) {
+    throw new ValidationError('gzipBase64 must hold a JSON array of lines');
+  }
+  return lines as string[];
 }
 
 function toLine(number: number, raw: string, stepId: string | null): LogLine {
