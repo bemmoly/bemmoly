@@ -22,13 +22,17 @@ export function Waiting({ items }: { items: readonly Promotion[] }) {
       render: (promotion) => (
         <span className="flex min-w-0 items-center gap-2">
           <RunGlyph state="waiting" size={14} />
-          <span className="truncate font-medium text-tx">{promotion.application.name}</span>
-          <TierChip tier={promotion.application.tier} />
-          <span className="truncate text-12 text-tx-2">
-            {t('pipelines.releases.toEnvironment', {
-              version: promotion.release.version,
-              environment: promotion.environment.name,
-            })}
+          <span className="flex min-w-0 flex-col leading-card">
+            <span className="flex min-w-0 items-center gap-2">
+              <span className="truncate font-medium text-tx">{promotion.application.name}</span>
+              <TierChip tier={promotion.application.tier} />
+            </span>
+            <span className="truncate text-12 text-tx-2">
+              {t('pipelines.releases.toEnvironment', {
+                version: promotion.release.version,
+                environment: promotion.environment.name,
+              })}
+            </span>
           </span>
         </span>
       ),
