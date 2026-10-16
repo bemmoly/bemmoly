@@ -59,6 +59,8 @@ export const journeySchema = z.object({
 export const waitingApprovalSchema = z.object({
   kind: z.enum(['promotion', 'train']),
   promotionId: idSchema.nullable(),
+  /** The release being promoted, so Review opens its Promote screen. */
+  releaseId: idSchema.nullable().default(null),
   departureId: idSchema.nullable(),
   /** The application, or the train's name ("11:00 Commerce train"). */
   title: z.string(),
