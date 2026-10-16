@@ -1,8 +1,9 @@
 import type { SqlExecutor } from '@bemmoly/core';
+import { advanceRun } from '../../server/src/services/orchestrator/advance.ts';
 import type { Rng } from '../demo/rng.ts';
 import type { JobState, SimCatalog, SimEnv, SimJob, SimState } from './model.ts';
 import { emptyState } from './model.ts';
-import { SECOND } from './plan-runs.ts';
+import { SECOND, settle } from './plan-runs.ts';
 
 /*
  * What the simulator starts from: the seeded catalog, read once, and the things already in
@@ -136,6 +137,17 @@ export async function loadState(
       fails: row.kind === 'test' && rng.chance(0.06),
       dueAt: jobState === 'running' ? later(rng, now, 5, 60) : later(rng, now, 2, 20),
     });
+  }
+  // The seed leaves some jobs waiting on needs that already passed; the orchestrator readies
+  // them now, or those runs would wait for a job that never finishes.
+  for (const run of state.runs) {
+    const passed = new Set(run.jobs.filter((j) => j.state === 'passed').map((j) => j.key));
+    const blocked = run.jobs.some(
+      (j) => j.state === 'pending' && j.needs.every((k) => passed.has(k)),
+    );
+    if (!blocked) continue;
+    await advanceRun(sql, run.id);
+    settle(run, rng, now);
   }
   const deployments = await sql<
     {
