@@ -7,6 +7,7 @@ import { pipelinesKeys } from '../../../api/pipelines.ts';
 import { pipelinesText } from '../../../i18n/catalog.ts';
 import { api } from '../../../lib/api.ts';
 import { Panel } from '../../../parts/screen.tsx';
+import { LAYOUT_HINT, LAYOUT_LABEL } from './layout-words.ts';
 
 /** How environments map to cloud accounts, and the environments that will get one. */
 export function LayoutChooser({
@@ -34,8 +35,8 @@ export function LayoutChooser({
             name="layout"
             checked={value === layout}
             onChange={() => onChange(layout)}
-            label={t(`pipelines.clouds.layout.${layout}`, { unit })}
-            description={t(`pipelines.clouds.layoutHint.${layout}`)}
+            label={t(LAYOUT_LABEL[layout], { unit })}
+            description={t(LAYOUT_HINT[layout])}
           />
         ))}
       </fieldset>

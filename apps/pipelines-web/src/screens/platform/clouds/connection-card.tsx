@@ -5,6 +5,7 @@ import { Icon } from '@bemmoly/ui/icons';
 import { useCloudWrites } from '../../../hooks/use-clouds.ts';
 import { useGo } from '../../../hooks/use-go.ts';
 import { pipelinesText } from '../../../i18n/catalog.ts';
+import { LAYOUT_LABEL } from './layout-words.ts';
 
 const GLYPH: Record<CloudConnection['status'], RunGlyphState> = {
   pending: 'running',
@@ -92,7 +93,7 @@ export function ConnectionCard({ connection }: { connection: CloudConnection }) 
         )}
         <dd className="truncate text-tx-2">
           {t('pipelines.clouds.layoutNow', {
-            layout: t(`pipelines.clouds.layout.${connection.layout}`, { unit }),
+            layout: t(LAYOUT_LABEL[connection.layout], { unit }),
           })}
         </dd>
       </dl>

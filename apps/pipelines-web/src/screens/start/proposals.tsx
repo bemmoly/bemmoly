@@ -1,5 +1,5 @@
 import { useT } from '@bemmoly/core-web';
-import type { DiscoveryProposal } from '@bemmoly/module-pipelines/shared';
+import type { DiscoveryProposal, DiscoverySignal } from '@bemmoly/module-pipelines/shared';
 import {
   Button,
   Checkbox,
@@ -17,6 +17,23 @@ import { pipelinesText } from '../../i18n/catalog.ts';
 import { api } from '../../lib/api.ts';
 import { refusalOf } from '../../parts/load-failed.tsx';
 import { Panel } from '../../parts/screen.tsx';
+
+const SIGNAL = {
+  dockerfile: 'pipelines.signal.dockerfile',
+  helm: 'pipelines.signal.helm',
+  serverless: 'pipelines.signal.serverless',
+  sam: 'pipelines.signal.sam',
+  'pnpm-workspace': 'pipelines.signal.pnpmWorkspace',
+  'npm-workspace': 'pipelines.signal.npmWorkspace',
+  nx: 'pipelines.signal.nx',
+  turborepo: 'pipelines.signal.turborepo',
+  'go-module': 'pipelines.signal.goModule',
+  cargo: 'pipelines.signal.cargo',
+  gradle: 'pipelines.signal.gradle',
+  bazel: 'pipelines.signal.bazel',
+  backstage: 'pipelines.signal.backstage',
+  'application-yaml': 'pipelines.signal.applicationYaml',
+} as const satisfies Record<DiscoverySignal, string>;
 
 /** Every group as "domain/group", for proposals that found no group of their own. */
 function useGroupOptions() {
@@ -119,7 +136,7 @@ export function Proposals({ items }: { items: readonly DiscoveryProposal[] }) {
         <span className="flex flex-wrap gap-1">
           {item.signals.slice(0, 3).map((signal) => (
             <Tag key={signal} size="sm">
-              {t(`pipelines.signal.${signal}`)}
+              {t(SIGNAL[signal])}
             </Tag>
           ))}
         </span>

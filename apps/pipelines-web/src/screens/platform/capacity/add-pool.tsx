@@ -8,6 +8,14 @@ import { pipelinesText } from '../../../i18n/catalog.ts';
 import { refusalOf } from '../../../parts/load-failed.tsx';
 import { TokenReveal } from './token-reveal.tsx';
 
+const HOSTING = {
+  kubernetes: 'pipelines.hosting.kubernetes',
+  vm: 'pipelines.hosting.vm',
+  local: 'pipelines.hosting.local',
+  'cloud-build': 'pipelines.hosting.cloudBuild',
+  codebuild: 'pipelines.hosting.codebuild',
+} as const satisfies Record<PoolHosting, string>;
+
 const slug = (name: string) =>
   name
     .toLowerCase()
@@ -89,7 +97,7 @@ export function AddPool({ open, onClose }: { open: boolean; onClose: () => void 
                 value={hosting}
                 options={poolHostingSchema.options.map((value) => ({
                   value,
-                  label: t(`pipelines.hosting.${value}`),
+                  label: t(HOSTING[value]),
                 }))}
                 onChange={(event) => setHosting(event.value as PoolHosting)}
               />
