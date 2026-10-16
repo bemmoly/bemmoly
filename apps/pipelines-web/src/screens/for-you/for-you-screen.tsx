@@ -1,6 +1,6 @@
 import { formatNumber, useScreenActions, useT, useShortcutHelp } from '@bemmoly/core-web';
 import type { Journey } from '@bemmoly/module-pipelines/shared';
-import { Button, EmptyState, SegmentedControl, Skeleton, useToast } from '@bemmoly/ui';
+import { EmptyState, SegmentedControl, Skeleton, useToast } from '@bemmoly/ui';
 import { Icon } from '@bemmoly/ui/icons';
 import { useMutation } from '@tanstack/react-query';
 import { useNavigate, useRouter } from '@tanstack/react-router';
@@ -12,6 +12,7 @@ import { pipelinesText } from '../../i18n/catalog.ts';
 import { api } from '../../lib/api.ts';
 import { BASE_PATH } from '../../lib/sign-in.ts';
 import { ActionError } from '../../parts/action-error.tsx';
+import { LoadError } from '../../parts/load-error.tsx';
 import { ScreenFrame } from '../screen-frame.tsx';
 import { JourneyCard, JourneySkeleton } from './journey-card.tsx';
 import { Pulse, greetingId } from './pulse.tsx';
@@ -155,18 +156,11 @@ export default function ForYouScreen() {
             />
           </div>
           {forYou.isError ? (
-            <div className="rounded-card border border-line bg-card py-10 shadow-e1">
-              <EmptyState
-                icon={<Icon name="warning" size={18} />}
-                title={t('pipelines.forYou.loadFailed')}
-                description={t('pipelines.common.loadFailed')}
-                action={
-                  <Button onClick={() => void forYou.refetch()}>
-                    {t('pipelines.common.tryAgain')}
-                  </Button>
-                }
-              />
-            </div>
+            <LoadError
+              title={t('pipelines.forYou.loadFailed')}
+              error={forYou.error}
+              onRetry={() => void forYou.refetch()}
+            />
           ) : !forYou.data ? (
             [0, 1, 2].map((index) => <JourneySkeleton key={index} />)
           ) : journeys.length === 0 ? (

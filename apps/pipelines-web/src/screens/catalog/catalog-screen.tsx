@@ -6,6 +6,7 @@ import { useRef, useState } from 'react';
 import { useDraft } from '../../hooks/use-draft.ts';
 import { useScreenKeys } from '../../hooks/use-screen-keys.ts';
 import { pipelinesText } from '../../i18n/catalog.ts';
+import { LoadError } from '../../parts/load-error.tsx';
 import { ScreenFrame } from '../screen-frame.tsx';
 import { CatalogFacets } from './catalog-facets.tsx';
 import { applyView, catalogQuery, EMPTY_FACETS } from './catalog-search.ts';
@@ -161,19 +162,11 @@ export default function CatalogScreen() {
             onSaveOpenChange={setSaveOpen}
           />
           {list.isError ? (
-            <div className="rounded-card border border-line bg-card py-12 shadow-e1">
-              <EmptyState
-                icon={<Icon name="warning" size={18} />}
-                title={t('pipelines.catalog.errorTitle')}
-                description={t('pipelines.common.loadFailed')}
-                headingLevel={2}
-                action={
-                  <Button onClick={() => void list.refetch()}>
-                    {t('pipelines.common.tryAgain')}
-                  </Button>
-                }
-              />
-            </div>
+            <LoadError
+              title={t('pipelines.catalog.errorTitle')}
+              error={list.error}
+              onRetry={() => void list.refetch()}
+            />
           ) : list.isPending ? (
             <CatalogTableSkeleton />
           ) : (

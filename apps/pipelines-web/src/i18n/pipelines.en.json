@@ -180,6 +180,7 @@
   "pipelines.common.loadFailedTitle": "This did not load",
   "pipelines.common.loadFailedWithId": "Nothing was lost. Check your connection, then try again. If it keeps failing, give your admin request {requestId}.",
   "pipelines.common.loading": "Loading",
+  "pipelines.common.noAccessTitle": "You can't see this yet",
   "pipelines.common.none": "None",
   "pipelines.common.protected": "Protected",
   "pipelines.common.tierShort": "T{tier}",

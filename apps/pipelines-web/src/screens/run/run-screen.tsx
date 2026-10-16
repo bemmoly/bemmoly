@@ -10,6 +10,8 @@ import { useScreenKeys } from '../../hooks/use-screen-keys.ts';
 import { pipelinesText } from '../../i18n/catalog.ts';
 import { api } from '../../lib/api.ts';
 import { ActionError } from '../../parts/action-error.tsx';
+import { refusalOf } from '../../lib/refusal.ts';
+import { LoadError } from '../../parts/load-error.tsx';
 import { ScreenFrame } from '../screen-frame.tsx';
 import { LogPanel } from './log-panel.tsx';
 import { RunHeading, RunSkeleton } from './run-heading.tsx';
@@ -128,6 +130,17 @@ export default function RunScreen() {
       : null,
   );
 
+  if (run.isError && refusalOf(run.error)) {
+    return (
+      <ScreenFrame title={t('pipelines.run.title')}>
+        <LoadError
+          title={t('pipelines.run.loadFailed')}
+          error={run.error}
+          onRetry={() => void run.refetch()}
+        />
+      </ScreenFrame>
+    );
+  }
   if (run.isError) {
     const missing = (run.error as { code?: string }).code === 'not_found';
     return (

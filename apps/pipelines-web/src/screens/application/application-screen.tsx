@@ -3,8 +3,11 @@ import type { EnvironmentStripItem } from '@bemmoly/module-pipelines/shared';
 import { Badge, Button, EmptyState, Kbd, Skeleton, Tabs, Tooltip } from '@bemmoly/ui';
 import { Icon } from '@bemmoly/ui/icons';
 import { useNavigate, useParams, useSearch } from '@tanstack/react-router';
+import { useEffect } from 'react';
 import { pipelinesText } from '../../i18n/catalog.ts';
 import { TierBadge } from '../../parts/bits.tsx';
+import { refusalOf } from '../../lib/refusal.ts';
+import { LoadError } from '../../parts/load-error.tsx';
 import { ScreenFrame } from '../screen-frame.tsx';
 import { ApplicationRuns } from './application-runs.tsx';
 import { EnvironmentStrip, EnvironmentStripSkeleton } from './environment-strip.tsx';
@@ -38,7 +41,12 @@ export default function ApplicationScreen() {
   const t = useT(pipelinesText);
   const navigate = useNavigate();
   const { key = '' } = useParams({ strict: false }) as { key?: string };
-  const search = useSearch({ strict: false }) as { env?: string; tab?: string; dialog?: string };
+  const search = useSearch({ strict: false }) as {
+    env?: string;
+    tab?: string;
+    dialog?: string;
+    scope?: string;
+  };
   const tab: Tab = search.tab === 'runs' ? 'runs' : 'overview';
   const { application, strip } = useApplication(key);
   const runs = useRecentRuns(key);
@@ -66,6 +74,26 @@ export default function ApplicationScreen() {
     dialogParam: search.dialog,
   });
 
+  // Opened from a link without a scope, the crumbs still read Acme › Commerce › Checkout.
+  const home = application.data
+    ? `${application.data.domain.key}/${application.data.group.key}`
+    : null;
+  const scoped = Boolean(search.scope);
+  useEffect(() => {
+    if (home && !scoped) setSearch({ scope: home });
+  }, [home, scoped, setSearch]);
+
+  if (application.isError && refusalOf(application.error)) {
+    return (
+      <ScreenFrame title={key}>
+        <LoadError
+          title={t('pipelines.application.loadFailed')}
+          error={application.error}
+          onRetry={() => void application.refetch()}
+        />
+      </ScreenFrame>
+    );
+  }
   if (application.isError) {
     const missing = (application.error as { code?: string }).code === 'not_found';
     return (

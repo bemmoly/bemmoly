@@ -14,6 +14,7 @@ import { pipelinesKeys } from '../../api/pipelines.ts';
 import { useScreenKeys } from '../../hooks/use-screen-keys.ts';
 import { pipelinesText } from '../../i18n/catalog.ts';
 import { api } from '../../lib/api.ts';
+import { LoadError } from '../../parts/load-error.tsx';
 import { ScreenFrame } from '../screen-frame.tsx';
 import { MapGrid, MapGridSkeleton } from './map-grid.tsx';
 import { MapTimeline } from './map-timeline.tsx';
@@ -166,17 +167,11 @@ export default function MapScreen() {
         ) : null}
       </div>
       {map.isError ? (
-        <div className="rounded-card border border-line bg-card py-12 shadow-e1">
-          <EmptyState
-            icon={<Icon name="warning" size={18} />}
-            title={t('pipelines.map.errorTitle')}
-            description={t('pipelines.common.loadFailed')}
-            headingLevel={2}
-            action={
-              <Button onClick={() => void map.refetch()}>{t('pipelines.common.tryAgain')}</Button>
-            }
-          />
-        </div>
+        <LoadError
+          title={t('pipelines.map.errorTitle')}
+          error={map.error}
+          onRetry={() => void map.refetch()}
+        />
       ) : !data ? (
         <MapGridSkeleton />
       ) : data.rows.length === 0 ? (

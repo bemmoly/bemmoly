@@ -8,6 +8,7 @@ import { useDraft } from '../../hooks/use-draft.ts';
 import { useScope } from '../../hooks/use-scope.ts';
 import { useScreenKeys } from '../../hooks/use-screen-keys.ts';
 import { pipelinesText } from '../../i18n/catalog.ts';
+import { LoadError } from '../../parts/load-error.tsx';
 import { RunsTable, RunsTableSkeleton } from './runs-table.tsx';
 import { RUN_FILTERS, useRuns, type RunFilter } from './use-runs.ts';
 
@@ -92,17 +93,11 @@ export function RunsList({ fixed }: { fixed?: Partial<ListRunsQuery> }) {
         </div>
       </div>
       {runs.isError ? (
-        <div className="rounded-card border border-line bg-card py-12 shadow-e1">
-          <EmptyState
-            icon={<Icon name="warning" size={18} />}
-            title={t('pipelines.runs.errorTitle')}
-            description={t('pipelines.common.loadFailed')}
-            headingLevel={2}
-            action={
-              <Button onClick={() => void runs.refetch()}>{t('pipelines.common.tryAgain')}</Button>
-            }
-          />
-        </div>
+        <LoadError
+          title={t('pipelines.runs.errorTitle')}
+          error={runs.error}
+          onRetry={() => void runs.refetch()}
+        />
       ) : runs.isPending ? (
         <RunsTableSkeleton showApplication={!fixed?.application} />
       ) : (
