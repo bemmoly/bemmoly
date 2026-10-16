@@ -89,6 +89,23 @@ export const oauthAuthorizeRoute = createRoute({
   ),
 });
 
+/**
+ * Where a command line tool (bp) sends the person to approve its sign-in (RFC 8628). Needs a
+ * signed-in person like the consent screen; `code` fills the field from the tool's link.
+ */
+export const deviceSignInRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: 'device',
+  validateSearch: (search: Record<string, unknown>): { code?: string } => ({
+    code: text(search['code']),
+  }),
+  beforeLoad: ({ context, location }) => requireConsentSession(context.queryClient, location.href),
+  component: lazyRouteComponent(
+    () => import('../pages/auth/device-sign-in-page.tsx'),
+    'DeviceSignInPage',
+  ),
+});
+
 const STEPS = [1, 2, 3, 4, 5, 6, 7] as const;
 
 export interface SetupSearch {
@@ -119,4 +136,5 @@ export const publicRoutes = [
   invitationRoute,
   setupRoute,
   oauthAuthorizeRoute,
+  deviceSignInRoute,
 ];

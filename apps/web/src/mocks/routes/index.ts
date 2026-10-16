@@ -24,6 +24,7 @@ import { peopleRoutes } from './people.ts';
 import { sessionRoutes } from './session.ts';
 import { signInRoutes } from './sign-in.ts';
 import { settingsRoutes } from './settings.ts';
+import { oauthDeviceRoutes } from './oauth-device.ts';
 import { oauthRoutes } from './oauth.ts';
 import { ssoBreakGlassRoutes } from './sso-break-glass.ts';
 import { ssoRoutes } from './sso.ts';
@@ -52,6 +53,7 @@ export const ROUTES: readonly MockRoute[] = [
   ...ssoRoutes,
   ...ssoBreakGlassRoutes,
   ...oauthRoutes,
+  ...oauthDeviceRoutes,
   ...appearanceRoutes,
   ...logoRoutes,
   ...aiAdminRoutes,

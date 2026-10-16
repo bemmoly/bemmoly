@@ -1,16 +1,23 @@
 import {
   createOAuthConsentSchema,
+  decideOAuthDeviceSchema,
+  oauthDeviceDecisionSchema,
+  oauthDeviceRequestSchema,
   oauthAuthorizationPreviewSchema,
   oauthAuthorizeRequestSchema,
   oauthConsentResultSchema,
   oauthGrantsResponseSchema,
   type CreateOAuthConsentInput,
+  type DecideOAuthDeviceInput,
   type OAuthAuthorizeRequest,
 } from '@bemmoly/shared';
 import type { Http } from '../http.ts';
 import { enc, validated } from './validate.ts';
 
-/** MCP client sign-in: the consent screen and Profile › Access tokens › Connected apps. */
+/**
+ * MCP client sign-in (the consent screen, Profile › Access tokens › Connected apps) and the
+ * /device page where a command line tool's sign-in is approved.
+ */
 export function oauthEndpoints(http: Http) {
   return {
     /** What the consent screen shows for the request in its address. */
@@ -23,6 +30,16 @@ export function oauthEndpoints(http: Http) {
       http.request('/api/v1/oauth/consents', oauthConsentResultSchema, {
         method: 'POST',
         body: validated(createOAuthConsentSchema, body),
+      }),
+    /** What a command line tool asked for, by the code the person typed. */
+    deviceRequest: async (userCode: string) =>
+      http.request('/api/v1/oauth/device-requests', oauthDeviceRequestSchema, {
+        query: { userCode },
+      }),
+    decideDevice: async (body: DecideOAuthDeviceInput) =>
+      http.request('/api/v1/oauth/device-decisions', oauthDeviceDecisionSchema, {
+        method: 'POST',
+        body: validated(decideOAuthDeviceSchema, body),
       }),
     grants: async () => http.request('/api/v1/oauth/grants', oauthGrantsResponseSchema),
     revokeGrant: async (id: string) =>
