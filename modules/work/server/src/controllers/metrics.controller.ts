@@ -3,6 +3,8 @@ import { parseOrThrow } from '@bemmoly/shared';
 import type { FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import { boardMetricsQuerySchema, type BoardMetrics } from '../../../shared/metrics.ts';
+import { projectRefParamsSchema } from '../../../shared/boards.ts';
+import { flowReportQuerySchema, type FlowReport } from '../../../shared/reports.ts';
 import type { SprintReport } from '../../../shared/sprints.ts';
 import type { MetricsService } from '../services/metrics/index.ts';
 
@@ -18,6 +20,11 @@ export function createMetricsController(service: MetricsService) {
     },
     async sprintReport(request: FastifyRequest): Promise<SprintReport> {
       return service.sprintReport(contextOf(request), id(request));
+    },
+    async flowReport(request: FastifyRequest): Promise<FlowReport> {
+      const { key } = parseOrThrow(projectRefParamsSchema, request.params);
+      const query = parseOrThrow(flowReportQuerySchema, request.query);
+      return service.flowReport(contextOf(request), key, query);
     },
   };
 }
