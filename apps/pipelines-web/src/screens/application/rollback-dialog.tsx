@@ -46,7 +46,7 @@ export function RollbackDialog({
   };
   const rollback = useMutation({
     mutationFn: () =>
-      api.pipelines.rollback(
+      api.shipping.rollback(
         target?.deploymentId ?? '',
         reason.trim() ? { reason: reason.trim() } : {},
       ),

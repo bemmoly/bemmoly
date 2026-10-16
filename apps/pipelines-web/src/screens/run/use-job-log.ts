@@ -45,7 +45,7 @@ export function useJobLog(jobId: string | null, live: boolean): JobLog {
       if (!jobId || asked.current.has(block)) return;
       asked.current.add(block);
       const from = block * BLOCK + 1;
-      api.pipelines
+      api.delivery
         .log(jobId, { from, to: from + BLOCK - 1 })
         .then((range) => {
           store(range.lines);
@@ -64,7 +64,7 @@ export function useJobLog(jobId: string | null, live: boolean): JobLog {
     // The panel is keyed by job, so a new job starts with fresh state; this runs per attempt.
     if (!jobId) return undefined;
     let cancelled = false;
-    api.pipelines
+    api.delivery
       .log(jobId, { tail: BLOCK })
       .then((range) => {
         if (cancelled) return;

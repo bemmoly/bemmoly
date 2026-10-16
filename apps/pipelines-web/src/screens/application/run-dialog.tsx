@@ -4,7 +4,7 @@ import { Button, Field, Input, Modal, Select, Skeleton, Switch, useToast } from 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import { useState, type KeyboardEvent } from 'react';
-import { pipelinesKeys } from '../../api/pipelines.ts';
+import { deliveryKeys } from '../../api/delivery.ts';
 import { pipelinesText } from '../../i18n/catalog.ts';
 import { api } from '../../lib/api.ts';
 import { ActionError } from '../../parts/action-error.tsx';
@@ -59,8 +59,8 @@ export function RunDialog({
   const navigate = useNavigate();
   const client = useQueryClient();
   const pipeline = useQuery({
-    queryKey: pipelinesKeys.pipeline(application),
-    queryFn: () => api.pipelines.applicationPipeline(application),
+    queryKey: deliveryKeys.pipeline(application),
+    queryFn: () => api.delivery.applicationPipeline(application),
     enabled: open,
   });
   // What the person typed, over the pipeline's defaults; nothing is copied out of the query.
@@ -76,9 +76,9 @@ export function RunDialog({
     ...edits,
   };
   const run = useMutation({
-    mutationFn: () => api.pipelines.createRun({ application, ref: ref.trim() || 'main', inputs }),
+    mutationFn: () => api.delivery.createRun({ application, ref: ref.trim() || 'main', inputs }),
     onSuccess: (created) => {
-      void client.invalidateQueries({ queryKey: pipelinesKeys.runs({}).slice(0, 2) });
+      void client.invalidateQueries({ queryKey: deliveryKeys.runs({}).slice(0, 2) });
       toast.show({
         tone: 'ok',
         title: t('pipelines.runDialog.started', { number: formatNumber(created.number) }),

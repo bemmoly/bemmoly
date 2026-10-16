@@ -1,6 +1,6 @@
 import { topicOf, type ListRunsQuery, type RunState } from '@bemmoly/module-pipelines/shared';
 import { keepPreviousData, useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
-import { pipelinesKeys } from '../../api/pipelines.ts';
+import { deliveryKeys } from '../../api/delivery.ts';
 import { useStream } from '../../hooks/use-stream.ts';
 import { api } from '../../lib/api.ts';
 
@@ -21,11 +21,11 @@ export const RUN_FILTERS: Record<RunFilter, RunState[] | undefined> = {
  */
 export function useRuns(query: Partial<ListRunsQuery>) {
   const client = useQueryClient();
-  const key = pipelinesKeys.runs({ ...query, limit: PAGE });
+  const key = deliveryKeys.runs({ ...query, limit: PAGE });
   const runs = useInfiniteQuery({
     queryKey: key,
     queryFn: ({ pageParam }) =>
-      api.pipelines.runs({ ...query, limit: PAGE, ...(pageParam ? { cursor: pageParam } : {}) }),
+      api.delivery.runs({ ...query, limit: PAGE, ...(pageParam ? { cursor: pageParam } : {}) }),
     initialPageParam: '',
     getNextPageParam: (last) => last.nextCursor ?? undefined,
     placeholderData: keepPreviousData,

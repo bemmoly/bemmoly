@@ -5,7 +5,7 @@ import { Icon } from '@bemmoly/ui/icons';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams, useSearch } from '@tanstack/react-router';
 import { useRef, useState } from 'react';
-import { pipelinesKeys } from '../../api/pipelines.ts';
+import { deliveryKeys } from '../../api/delivery.ts';
 import { useScreenKeys } from '../../hooks/use-screen-keys.ts';
 import { pipelinesText } from '../../i18n/catalog.ts';
 import { api } from '../../lib/api.ts';
@@ -51,7 +51,7 @@ export default function RunScreen() {
     });
 
   const rerun = useMutation({
-    mutationFn: (only: 'failed' | 'all') => api.pipelines.rerun(id, { only }),
+    mutationFn: (only: 'failed' | 'all') => api.delivery.rerun(id, { only }),
     onSuccess: (created, only) => {
       toast.show({
         tone: 'ok',
@@ -64,8 +64,8 @@ export default function RunScreen() {
     },
   });
   const cancel = useMutation({
-    mutationFn: () => api.pipelines.cancelRun(id, {}),
-    onSuccess: () => void client.invalidateQueries({ queryKey: pipelinesKeys.run(id) }),
+    mutationFn: () => api.delivery.cancelRun(id, {}),
+    onSuccess: () => void client.invalidateQueries({ queryKey: deliveryKeys.run(id) }),
   });
   const failed = run.data?.state === 'failed';
   const active = run.data && ['queued', 'running', 'waiting'].includes(run.data.state);

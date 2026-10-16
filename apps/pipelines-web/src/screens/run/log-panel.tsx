@@ -4,7 +4,7 @@ import { Button, EmptyState, LogView, SearchInput, Switch } from '@bemmoly/ui';
 import { Icon } from '@bemmoly/ui/icons';
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useMemo, useState, type RefObject } from 'react';
-import { pipelinesKeys } from '../../api/pipelines.ts';
+import { deliveryKeys } from '../../api/delivery.ts';
 import { pipelinesText } from '../../i18n/catalog.ts';
 import { api } from '../../lib/api.ts';
 import { useJobLog } from './use-job-log.ts';
@@ -43,8 +43,8 @@ export function LogPanel({
     return () => clearTimeout(timer);
   }, [text]);
   const search = useQuery({
-    queryKey: pipelinesKeys.logSearch(job.id, query),
-    queryFn: () => api.pipelines.searchLog(job.id, query),
+    queryKey: deliveryKeys.logSearch(job.id, query),
+    queryFn: () => api.delivery.searchLog(job.id, query),
     enabled: query.length >= 2,
   });
   const hits = useMemo(
