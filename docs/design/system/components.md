@@ -238,6 +238,9 @@ Cancel and Save, a confirmation (`ConfirmChange`, typed word for the irreversibl
 ### Progress and metrics
 
 `ProgressBar`, `MetricTile`, `CapacityBar`, `MetricSparkline` · Story: Components/MetricTile.
+`StatTile` (Story: Pipelines/StatTile) is a headline number on a card: label, the figure at
+24px, one line of context toned better (green) or worse (amber), never red, and an optional
+small `SeriesChart`.
 Bars are `rounded-tick`; done is `done`, in progress `prog`; never a signal colour for progress.
 
 ## Pipelines
