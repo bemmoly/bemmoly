@@ -2,6 +2,7 @@ import type { Actor, RequestContext, SqlClient } from '@bemmoly/core';
 import type { CapabilityName } from '@bemmoly/shared';
 import { ProviderError, ValidationError } from '@bemmoly/shared';
 import type { AccessEngine } from './access/engine.ts';
+import type { PipelinesCodeHosts } from './code/hosts.ts';
 
 /** What every Pipelines service is built from; the database is absent only without one. */
 export interface PipelinesServiceDeps {
@@ -12,6 +13,11 @@ export interface PipelinesServiceDeps {
    * explains itself. Built first in createPipelinesServices and handed to every service.
    */
   access?: AccessEngine;
+  /**
+   * The connected code hosts behind Pipelines' rate budget: `code.client(repo, 'live')` for
+   * checks, deployments and file reads. Absent without a database or in unit tests.
+   */
+  code?: PipelinesCodeHosts;
 }
 
 export function requireAccess(deps: PipelinesServiceDeps): AccessEngine {
