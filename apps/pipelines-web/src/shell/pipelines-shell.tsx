@@ -4,6 +4,7 @@ import { useEffect, useMemo } from 'react';
 import { useBrowserPath } from '../hooks/use-browser-path.ts';
 import { useMe } from '../hooks/use-me.ts';
 import { useMode } from '../hooks/use-mode.ts';
+import { useWorkspaceTheme } from '../hooks/use-workspace-theme.ts';
 import { pipelinesText } from '../i18n/catalog.ts';
 import { NoAccessScreen } from '../screens/no-access.tsx';
 import { CommandMenu } from './command-menu.tsx';
@@ -24,6 +25,7 @@ export function PipelinesShell() {
   const pathname = useBrowserPath();
   const { data: me } = useMe();
   const { mode, toggle } = useMode();
+  useWorkspaceTheme(mode);
   useShellKeys(toggle);
   useEffect(() => setPreferenceOwner(me?.user.id ?? null), [me?.user.id]);
   const frame = useMemo(
