@@ -1,11 +1,18 @@
 import { formatNumber, useT } from '@bemmoly/core-web';
-import type { Application, EnvironmentStripItem } from '@bemmoly/module-pipelines/shared';
-import { Badge, Skeleton } from '@bemmoly/ui';
+import type {
+  Application,
+  EnvironmentStripItem,
+  MetricPoint,
+} from '@bemmoly/module-pipelines/shared';
+import { Badge, MetricCompare, Skeleton } from '@bemmoly/ui';
 import type { ReactNode } from 'react';
 import { pipelinesText } from '../../i18n/catalog.ts';
 import { formatShare, formatSpan } from '../../lib/format.ts';
 import { RUNTIME_WORD, StateGlyph, TeamMark } from '../../parts/bits.tsx';
 import { useCanary } from './use-application.ts';
+
+const points = (series: readonly MetricPoint[]) =>
+  series.map(([at, value]) => ({ at: Date.parse(at), value }));
 
 export const SIDE_CARD =
   'flex flex-col gap-2 rounded-card border border-line bg-card px-4 py-3.5 shadow-e1';
@@ -98,7 +105,6 @@ export function HealthCard({
   const t = useT(pipelinesText);
   const canaryId = prod?.state === 'canary' ? prod.deploymentId : null;
   const canary = useCanary(canaryId);
-  const verdictGlyph = { pass: 'passed', fail: 'failed', pending: 'running' } as const;
   const value = (amount: number | null, unit: string) =>
     amount === null
       ? t('pipelines.common.none')
@@ -137,16 +143,31 @@ export function HealthCard({
       ) : canary.data.source === 'unavailable' ? (
         <p className="text-13 text-tx-2">{t('pipelines.application.noMetrics')}</p>
       ) : (
-        <ul className="flex flex-col">
+        <div className="flex flex-col gap-3">
           {canary.data.metrics.map((metric) => (
-            <li key={metric.metric} className="flex items-center gap-3 py-1.5 text-12">
-              <span className="flex-1 text-tx">{t(`pipelines.metric.${metric.metric}`)}</span>
-              <span className="font-mono text-tx-3">{value(metric.stable.value, metric.unit)}</span>
-              <span className="font-mono text-acc">{value(metric.canary.value, metric.unit)}</span>
-              <StateGlyph state={verdictGlyph[metric.verdict]} />
-            </li>
+            <MetricCompare
+              key={metric.metric}
+              label={t(`pipelines.metric.${metric.metric}`)}
+              canary={{
+                label: t('pipelines.application.canarySide', {
+                  percent: canary.data.trafficPercent,
+                }),
+                value:
+                  metric.canary.value === null ? null : value(metric.canary.value, metric.unit),
+                series: points(metric.canary.series),
+              }}
+              stable={{
+                label: t('pipelines.application.stableSide'),
+                value:
+                  metric.stable.value === null ? null : value(metric.stable.value, metric.unit),
+                series: points(metric.stable.series),
+              }}
+              verdict={metric.verdict === 'marginal' ? 'pending' : metric.verdict}
+              verdictLabel={t(`pipelines.verdict.${metric.verdict}`)}
+              emptyValue={t('pipelines.application.noSample')}
+            />
           ))}
-        </ul>
+        </div>
       )}
     </section>
   );

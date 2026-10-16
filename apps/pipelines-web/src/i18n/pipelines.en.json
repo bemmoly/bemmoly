@@ -2,6 +2,7 @@
   "pipelines.application.about": "About",
   "pipelines.application.allRuns": "All runs",
   "pipelines.application.backToCatalog": "Go to the catalog",
+  "pipelines.application.canarySide": "Canary {percent, number}%",
   "pipelines.application.canaryVsStable": "canary against stable · {env}",
   "pipelines.application.changeFailure": "{rate} change failure",
   "pipelines.application.deploys": "{count, plural, one {# deploy} other {{shown} deploys}}",
@@ -10,6 +11,7 @@
   "pipelines.application.loadFailed": "This application did not load",
   "pipelines.application.noMetrics": "No metrics source is connected, so the canary checks are waiting. Connect one in Platform › Clouds.",
   "pipelines.application.noRuns": "No runs yet. Push to the repository or run the pipeline by hand.",
+  "pipelines.application.noSample": "No data yet",
   "pipelines.application.notFound": "There is no application called {key}",
   "pipelines.application.notFoundHint": "It may have been renamed or removed from the catalog. Search for it by name instead.",
   "pipelines.application.owner": "Owner",
@@ -28,6 +30,7 @@
   "pipelines.application.runAction": "Run {name}'s pipeline",
   "pipelines.application.runtime": "Runtime",
   "pipelines.application.sections": "Application sections",
+  "pipelines.application.stableSide": "Stable",
   "pipelines.application.tabOverview": "Overview",
   "pipelines.application.tabRuns": "Runs",
   "pipelines.application.template": "Template",
@@ -341,5 +344,9 @@
   "pipelines.trigger.pull_request": "Pull request",
   "pipelines.trigger.push": "Push",
   "pipelines.trigger.rerun": "Re-run",
-  "pipelines.trigger.schedule": "Schedule"
+  "pipelines.trigger.schedule": "Schedule",
+  "pipelines.verdict.fail": "Outside limits",
+  "pipelines.verdict.marginal": "Marginal: a person decides",
+  "pipelines.verdict.pass": "Within limits",
+  "pipelines.verdict.pending": "Waiting for samples"
 }
