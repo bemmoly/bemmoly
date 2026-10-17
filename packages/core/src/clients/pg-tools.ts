@@ -1,5 +1,5 @@
 import path from 'node:path';
-import type { Writable } from 'node:stream';
+import type { RunOptions } from './process.ts';
 import { runProcess } from './process.ts';
 
 const HOUR_MS = 60 * 60 * 1_000;
@@ -26,7 +26,11 @@ export interface RestoreOptions {
 /** The Postgres client tools, run without a shell and without a password in argv. */
 export interface PgTools {
   version(): Promise<string>;
-  dump(databaseUrl: string, into: Writable, options?: DumpOptions): Promise<void>;
+  dump(
+    databaseUrl: string,
+    into: NonNullable<RunOptions['stdout']>,
+    options?: DumpOptions,
+  ): Promise<void>;
   /** pg_restore --list; throws when the archive is unreadable. */
   list(file: string): Promise<string>;
   restore(databaseUrl: string, file: string, options?: RestoreOptions): Promise<void>;

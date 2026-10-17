@@ -140,59 +140,54 @@ describe('backups of uploads kept in S3', () => {
       if (database?.available) await database.stop();
     });
 
-    // pg_dump on GitHub-hosted runners is skipped as in backups.int.test.ts; the archive
-    // test above runs there.
-    it.skipIf(process.env.CI === 'true')(
-      'restores the bucket’s uploads from the encrypted off-box copy',
-      async (ctx) => {
-        if (!s3?.available) return ctx.skip(skip);
-        if (!database?.available || pgSkip) return ctx.skip(pgSkip);
-        const found = await findPgTools(process.env['BEMMOLY_TEST_PG_BIN_DIR']);
-        if ('reason' in found) return ctx.skip(found.reason);
-        const uploads = storeIn('uploads', 'install');
-        const remote = createS3Destination(
-          createS3Bucket({
-            endpoint: s3.endpoint,
-            region: s3.region,
-            bucket: 'backups',
-            accessKeyId: s3.accessKeyId,
-            secretAccessKey: s3.secretAccessKey,
-            forcePathStyle: true,
-          }),
-          'bemmoly',
+    it('restores the bucket’s uploads from the encrypted off-box copy', async (ctx) => {
+      if (!s3?.available) return ctx.skip(skip);
+      if (!database?.available || pgSkip) return ctx.skip(pgSkip);
+      const found = await findPgTools(process.env['BEMMOLY_TEST_PG_BIN_DIR']);
+      if ('reason' in found) return ctx.skip(found.reason);
+      const uploads = storeIn('uploads', 'install');
+      const remote = createS3Destination(
+        createS3Bucket({
+          endpoint: s3.endpoint,
+          region: s3.region,
+          bucket: 'backups',
+          accessKeyId: s3.accessKeyId,
+          secretAccessKey: s3.secretAccessKey,
+          forcePathStyle: true,
+        }),
+        'bemmoly',
+      );
+      const harness = await createHarness({
+        serverUrl: database.url,
+        pgTools: found.tools,
+        destinations: () => [remote],
+        passphrase: PASSPHRASE,
+        objectStore: uploads,
+      });
+      try {
+        await applyKernelChangelog(harness.sql);
+        const spool = path.join(harness.dataDir, 'tmp');
+        const stored = await Promise.all(
+          UPLOADS.map((item) => upload(uploads, spool, item.body, item.prefix)),
         );
-        const harness = await createHarness({
-          serverUrl: database.url,
-          pgTools: found.tools,
-          destinations: () => [remote],
-          passphrase: PASSPHRASE,
-          objectStore: uploads,
-        });
-        try {
-          await applyKernelChangelog(harness.sql);
-          const spool = path.join(harness.dataDir, 'tmp');
-          const stored = await Promise.all(
-            UPLOADS.map((item) => upload(uploads, spool, item.body, item.prefix)),
-          );
 
-          const backup = await runBackup(harness.deps, { kind: 'manual' });
-          expect(backup.status).toBe('succeeded');
-          expect(backup.manifest?.attachments).toMatchObject({ fileCount: 3, totalFileCount: 3 });
-          expect(backup.manifest?.attachments.archive?.sizeBytes).toBeGreaterThan(0);
+        const backup = await runBackup(harness.deps, { kind: 'manual' });
+        expect(backup.status).toBe('succeeded');
+        expect(backup.manifest?.attachments).toMatchObject({ fileCount: 3, totalFileCount: 3 });
+        expect(backup.manifest?.attachments.archive?.sizeBytes).toBeGreaterThan(0);
 
-          // Lose every upload, then restore from the S3 destination alone.
-          for (const item of stored) await uploads.delete(item.key);
-          expect((await scanAttachments(uploads)).size).toBe(0);
-          const remoteOnly = { ...harness.deps, destinations: async () => [remote] };
-          const result = await restoreBackup(remoteOnly, backup.setName);
-          expect(result.attachmentsRestored).toBe(3);
-          for (const [i, item] of stored.entries()) {
-            expect(sha(await bytesOf(uploads, item.key))).toBe(sha(UPLOADS[i]!.body));
-          }
-        } finally {
-          await harness.sql.end({ timeout: 5 });
+        // Lose every upload, then restore from the S3 destination alone.
+        for (const item of stored) await uploads.delete(item.key);
+        expect((await scanAttachments(uploads)).size).toBe(0);
+        const remoteOnly = { ...harness.deps, destinations: async () => [remote] };
+        const result = await restoreBackup(remoteOnly, backup.setName);
+        expect(result.attachmentsRestored).toBe(3);
+        for (const [i, item] of stored.entries()) {
+          expect(sha(await bytesOf(uploads, item.key))).toBe(sha(UPLOADS[i]!.body));
         }
-      },
-    );
+      } finally {
+        await harness.sql.end({ timeout: 5 });
+      }
+    });
   });
 });
