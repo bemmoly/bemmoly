@@ -22,7 +22,10 @@ test('the Map shows Acme live, rewinds and comes back to live', async ({ browser
   await expect(page.getByRole('heading', { name: 'Release map' })).toBeVisible();
   await expect(page.getByRole('table', { name: /^Release map of / })).toBeVisible();
   await expectLoaded(page);
-  await page.getByRole('button', { name: 'Rewind the map 15 minutes' }).click();
+  // The timeline's slider rewinds by dragging; the [ key steps back 15 minutes.
+  await expect(page.getByRole('slider', { name: 'Rewind the map' })).toBeVisible();
+  await page.getByRole('heading', { name: 'Release map' }).click();
+  await page.keyboard.press('[');
   await expect(page.getByText(/as it was at /)).toBeVisible();
   await expect(page).toHaveURL(/[?&]at=/);
   await page.getByRole('button', { name: 'Back to live' }).click();

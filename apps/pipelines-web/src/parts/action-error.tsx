@@ -19,11 +19,7 @@ export function ActionError({ error }: { error: unknown }) {
       <Icon name={refusal ? 'lock' : 'warning'} size={14} className="mt-0.5 shrink-0" />
       <span className="flex flex-col gap-0.5">
         <span>{refusal ? refusal.sentence : t('pipelines.common.actionFailed')}</span>
-        {refusal?.askWho ? (
-          <span className="font-medium">
-            {t('pipelines.common.askWho', { who: refusal.askWho })}
-          </span>
-        ) : null}
+        {refusal?.askWho ? <span className="font-medium">{refusal.askWho}</span> : null}
       </span>
     </div>
   );

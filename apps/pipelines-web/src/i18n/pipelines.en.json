@@ -329,7 +329,6 @@
   "pipelines.clouds.treeLabel": "What will be created",
   "pipelines.common.actionFailed": "That did not go through. Check your connection, then try again.",
   "pipelines.common.askAdmin": "Ask a Platform admin for access.",
-  "pipelines.common.askWho": "Ask {who}",
   "pipelines.common.cancel": "Cancel",
   "pipelines.common.loadFailed": "This did not load. Check your connection, then try again.",
   "pipelines.common.loadFailedTitle": "This did not load",

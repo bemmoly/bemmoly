@@ -25,11 +25,7 @@ export function LoadError({
         <EmptyState
           icon={<Icon name="lock" size={18} />}
           title={t('pipelines.common.noAccessTitle')}
-          description={
-            refusal.askWho
-              ? `${refusal.sentence} ${t('pipelines.common.askWho', { who: refusal.askWho })}`
-              : refusal.sentence
-          }
+          description={refusal.askWho ? `${refusal.sentence} ${refusal.askWho}` : refusal.sentence}
           headingLevel={2}
         />
       ) : (

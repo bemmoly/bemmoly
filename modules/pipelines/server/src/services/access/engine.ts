@@ -35,6 +35,44 @@ const PRODUCT_GATE: Record<AccessAction, CapabilityName> = {
   platform: 'pipelines.view',
 } as Record<AccessAction, CapabilityName>;
 
+/**
+ * The workspace role decides who may use Pipelines at all. A refusal there still says why and
+ * whom to ask, like every other refusal, instead of a bare "forbidden".
+ */
+async function gateProduct(ctx: RequestContext, action: AccessAction): Promise<void> {
+  try {
+    await authorizePipelines(ctx, PRODUCT_GATE[action]);
+  } catch (error) {
+    if (!(error instanceof ForbiddenError)) throw error;
+    const details: ForbiddenDetails = {
+      action,
+      sentence: `Your workspace role does not include ${PRODUCT_WORDS[action]} in Pipelines.`,
+      trace: [
+        {
+          kind: 'fact',
+          text: `Workspace role lacks ${PRODUCT_GATE[action]}`,
+          effect: 'deny',
+          ref: null,
+        },
+      ],
+      askWho: { teams: [], label: 'Ask a workspace admin' },
+    };
+    throw new ForbiddenError(details.sentence, { details });
+  }
+}
+
+const PRODUCT_WORDS: Record<AccessAction, string> = {
+  view: 'seeing Pipelines',
+  run: 'running pipelines',
+  deploy: 'deploying',
+  request_prod: 'deploying',
+  approve: 'approving',
+  rollback: 'rolling back',
+  change_variables: 'changing variables',
+  manage: 'managing applications',
+  platform: 'seeing Pipelines',
+};
+
 export interface AuthorizeOptions {
   /** Write the decision on this transaction instead of the pool. */
   sql?: SqlClient;
@@ -130,7 +168,7 @@ export function createAccessEngine(deps: PipelinesServiceDeps): AccessEngine {
     organisation,
     decideFor,
     async authorizeAction(ctx, action, target = {}, options = {}) {
-      await authorizePipelines(ctx, PRODUCT_GATE[action]);
+      await gateProduct(ctx, action);
       const person = personOf(ctx.actor);
       if (!person) {
         // System jobs (webhook consumers, schedulers) act for Pipelines itself; the product
