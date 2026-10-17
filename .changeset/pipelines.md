@@ -22,7 +22,7 @@ Work and Docs never see it.
   that cannot start fails its run and says why.
 - **Releases and promotions.** A passing build becomes a release; Promote takes it through
   Dev, Staging and Prod regions with gates, approvals by another person, canaries judged on
-  metrics, release trains, freezes, and one-click roll back. The `local` provider deploys to
+  metrics that roll a bad release back by themselves, freezes, and one-click roll back. The `local` provider deploys to
   this machine's Docker, with a real canary splitting traffic between two containers.
 - **Bring your CI.** Keep another CI for builds: `bp release create` or the `bemmoly/release`
   GitHub Action registers its image as a release, signed with the workflow's OIDC token or a
