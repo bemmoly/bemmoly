@@ -82,7 +82,17 @@ jobs:
           turbo-cache: unit
 
       - name: Unit tests
-        run: pnpm test
+        run: pnpm turbo run test -- --coverage --coverage.reporter=cobertura
+
+      - name: Merge the coverage reports
+        run: node scripts/merge-coverage.ts
+
+      - name: Upload the coverage report
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: coverage-report
+          path: coverage/cobertura-coverage.xml
+          retention-days: 14
 
   eval:
     name: AI evals
