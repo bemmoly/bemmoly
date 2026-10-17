@@ -3,6 +3,7 @@ import {
   toPage,
   type AuditRecorder,
   type ContainerMemberships,
+  type JobRegistry,
   type RealtimePublisher,
   type RequestContext,
   type SqlClient,
@@ -15,7 +16,15 @@ import type {
   ProjectsPage,
   UpdateProjectBody,
 } from '../../../../shared/projects.ts';
+import { WORK_PROJECT_PURGE_JOB } from '../jobs.ts';
 import { joinAsCreator, visibleProjectIds } from './membership-defaults.ts';
+import {
+  countIssues,
+  INLINE_ISSUE_LIMIT,
+  projectPurgePayloadSchema,
+  purgeIdempotencyKey,
+  purgeProject,
+} from './purge.ts';
 import {
   auditMeta,
   PROJECT_COLUMNS,
@@ -31,6 +40,7 @@ export interface ProjectsServiceDeps {
   audit?: AuditRecorder;
   realtime?: RealtimePublisher;
   memberships?: ContainerMemberships;
+  jobs?: JobRegistry;
 }
 
 const UNIQUE_VIOLATION = '23505';
@@ -106,7 +116,8 @@ export function createProjectsService(deps: ProjectsServiceDeps) {
       const rows = await sql<ProjectRow[]>`
         select ${sql.unsafe(PROJECT_COLUMNS)}
         from projects
-        where (${query.archived} or archived_at is null)
+        where purging_at is null
+          and (${query.archived} or archived_at is null)
           and (${query.teamId ?? null}::uuid is null or team_id = ${query.teamId ?? null})
           and (${visible === null} or id = any(${visible ?? []}::uuid[]))
           ${cursor ? sql`and id > ${cursor}` : sql``}
@@ -173,7 +184,25 @@ export function createProjectsService(deps: ProjectsServiceDeps) {
       const project = await projectByKey(sql, key);
       await ctx.authz.authorize(ctx.actor, 'work.project.configure', projectResource(project.id));
       if (!project.archived_at) throw new ConflictError('Archive the project before deleting it');
-      await sql`delete from projects where id = ${project.id}`;
+      const issues = await countIssues(sql, project.id);
+      if (issues <= INLINE_ISSUE_LIMIT || !deps.jobs) {
+        await sql`delete from projects where id = ${project.id}`;
+      } else {
+        const jobs = deps.jobs;
+        await sql.begin(async (tx) => {
+          await tx`update projects set purging_at = now(), updated_at = now()
+            where id = ${project.id}`;
+          await jobs.send(
+            WORK_PROJECT_PURGE_JOB,
+            { projectId: project.id },
+            {
+              idempotencyKey: purgeIdempotencyKey(project.id),
+              transaction: tx,
+              ...(ctx.requestId ? { requestId: ctx.requestId } : {}),
+            },
+          );
+        });
+      }
       await deps.audit?.record({
         actor: ctx.actor,
         action: 'project.deleted',
@@ -182,6 +211,12 @@ export function createProjectsService(deps: ProjectsServiceDeps) {
         meta: auditMeta(ctx),
       });
       await changed(project.id);
+    },
+
+    /** The purge job's handler: finishes a delete that was too large for one transaction. */
+    async handlePurgeJob(payload: unknown): Promise<void> {
+      const { projectId } = projectPurgePayloadSchema.parse(payload);
+      await purgeProject(db(), projectId);
     },
   };
 }

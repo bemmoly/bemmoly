@@ -10,6 +10,7 @@ import { subscribeAutomation } from './server/src/services/automation/index.ts';
 import {
   WORK_AUTOMATION_RUN_JOB,
   WORK_AUTOMATION_SCHEDULE_JOB,
+  WORK_PROJECT_PURGE_JOB,
   WORK_RANK_REBALANCE_JOB,
 } from './server/src/services/jobs.ts';
 import { createCsvImporter } from './server/src/services/import/csv/index.ts';
@@ -139,6 +140,12 @@ export default defineModule({
       // A run records its own failure; retrying would repeat actions that already happened.
       retryLimit: 0,
       handle: (payload, job) => services.automation.handleJob(payload, job.requestId),
+    });
+    ctx.jobs.add({
+      name: WORK_PROJECT_PURGE_JOB,
+      // Each batch commits on its own, so a retry resumes where the last attempt stopped.
+      expireInSeconds: 60 * 60,
+      handle: (payload) => services.projects.handlePurgeJob(payload),
     });
     ctx.code.addConsumer(services.codeLinks.consumer);
     ctx.jobs.add({

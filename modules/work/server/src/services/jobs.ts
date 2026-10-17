@@ -11,3 +11,6 @@ export const WORK_AUTOMATION_RUN_JOB = 'work.automation.run';
 
 /** Every minute: queues a run for each scheduled rule whose time came. */
 export const WORK_AUTOMATION_SCHEDULE_JOB = 'work.automation.schedule';
+
+/** Deletes the issues of a project too large to delete in one transaction, then the project. */
+export const WORK_PROJECT_PURGE_JOB = 'work.project.purge';
