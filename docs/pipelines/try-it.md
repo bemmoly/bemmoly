@@ -8,7 +8,7 @@ the exact command and what you should see. The same journeys run as Playwright s
 
 You need Node 24, pnpm, and Docker (Colima is fine) running.
 
-<!-- STATUS: steps 0, 2 and 4 were verified by the Playwright walkthrough on 2026-10-17; the sections marked TODO were not verified yet. -->
+<!-- STATUS (2026-10-17): steps 0, 2 and 4 were verified by the Playwright walkthrough. Steps 1, 3, 5 and 6 were verified by the streams that built them, by hand on their own installs, but not yet by the final walkthrough on the branch tip. -->
 
 ## 0. Start Bemmoly with Pipelines
 
@@ -34,11 +34,32 @@ Open **http://localhost:5173/pipelines/**.
 
 ## 1. Look around: For you, Map, Catalog, an application, Runs
 
-TODO: what each screen shows with the seed, keys to try (`⌘K`, `/`, `j`/`k`), rewind on the Map.
+- **For you** (`/pipelines/`): your changes as journeys from commit to every Prod region, what
+  waits for your approval, your teams' main branches, who is on call. `J`/`K` move, `Enter`
+  opens, `A` approves, `Shift+R` re-runs a failure.
+- **Map**: every domain against every stage, live. `Enter` opens a domain in place, `Backspace`
+  zooms out, `[` and `]` step back and forward in time, `L` returns to live, or drag the
+  timeline at the foot to rewind to any moment in the last 30 days.
+- **Catalog**: all 1,140 applications with facets and saved views. `/` filters, `F` focuses the
+  facets, `S` saves the view.
+- **An application**: the environment strip, what differs from the stage before it, Prod health,
+  runs. `R` runs, `P` promotes, `Shift+B` rolls back.
+- **Runs** and a run: the stage graph, the log that opens on the first error.
+- Everywhere: `Mod+K` for the palette ("run checkout-api", "who owns search-api", "roll back …"),
+  `?` for every key, `T` or the person menu for Light, Dark or Match system.
 
 ### Keep it moving (optional)
 
-TODO: the demo simulator command, how fast things move, how to stop it.
+```sh
+pnpm --filter @bemmoly/module-pipelines demo:live            # beside pnpm dev, after seed:demo
+pnpm --filter @bemmoly/module-pipelines demo:live -- --rate 4 --quiet
+```
+
+Runs start, pass and sometimes fail (about 8%); passing main runs become releases that deploy
+to Dev and Staging and ask for Prod; canaries step 5%, 25%, 100% and about one in ten rolls
+back. Two actions a second by default (`--rate`, at most 10); the same `--seed` repeats the same
+story. `Ctrl+C` stops it. Its deploys are simulated: keep `pipelines.providers.simulate` on
+(the seed's default) while it runs.
 
 ## 2. Run a pipeline on your laptop
 
@@ -64,8 +85,28 @@ UPI collect" (the demo's `flaky` input). When the run has finished, **Re-run fai
 
 ## 3. Promote Dev → Staging → Prod with canaries on your Docker
 
-TODO: the local provider, gates, approval by a second person, the canary splitting real
-traffic between two containers (`curl` the splitter), Roll back.
+```sh
+pnpm --filter @bemmoly/module-pipelines demo:local setup
+```
+
+`setup` points every environment at your Docker, shortens rollout timings and lifts deploy
+windows (`undo` restores them), ships a good **pricing-svc** release through Dev and Staging as a
+member of its team, and asks for Prod. Restart the server (`Ctrl+C`, `pnpm dev`) so it reads the
+shorter timings. Then:
+
+1. Open **For you**: the Prod promotion waits for you under Waiting for you. Open it: what's
+   changing, every gate with its reason, the approvers, the rollout plan. Approve (`A`), or run
+   `demo:local approve` to approve as another engineer of the team.
+2. Watch the application page: the canary moves 5%, 25%, 100% between two real containers.
+   `demo:local status` prints a `curl` address per environment; curl it a few times and you get
+   answers from both versions.
+3. `demo:local bad`, then approve that one: the new version fails a third of its requests in
+   Prod asia-south1. At 5% the canary measures it against stable (about 22% errors against 0%) and
+   **rolls back by itself**; the deployment says why.
+4. **Roll back** (`Shift+B` on the application) works any time, skipping gates and windows.
+
+`demo:local continue` resumes a paused (marginal) canary; `demo:local undo` points the
+environments back at the simulated cloud and removes the containers.
 
 ## 4. Bring your CI: register a release built elsewhere
 
@@ -85,13 +126,25 @@ application.
 
 ## 5. Access: refused with a reason, and the checker
 
-TODO
+Open **Platform › Access**. Pick **Commerce** in the scope tree: the bindings there, with the
+inherited ones marked, and the policies as sentences (switch to Code to see the CEL). In
+**Check access**, choose a member of Checkout web, the action Request Prod deploy and
+checkout-api: "Not allowed", the sentence ("… Tier 0 to Prod needs a Maintainer to request it.
+Ask Payments for access.") and how it was decided, step by step. The same answer comes from the
+terminal with `node apps/pipelines-cli/src/bin.ts why …`. Anything refused in the product shows
+the same sentence and who to ask.
 
 ## 6. Platform › Clouds with the fake provider
 
-TODO
+Open **Platform › Clouds** and choose **Connect a cloud**. Google Cloud is available (against
+recorded responses and the fake provider tonight: nothing reaches a real cloud), AWS and Azure
+say Coming soon. Pick a layout (one project per environment, per domain and environment, or per
+group and environment), read the preview tree of everything that would be created, and create
+it: the checklist fills in as the landing zone is reconciled. The real Google Cloud bootstrap is
+`deploy/gcp/bootstrap.sh` (`--dry-run` prints every command without running it).
 
 ## Stopping
 
 `Ctrl+C` in the `pnpm dev` terminal and the runner's. Containers the local provider started are
-named `bp-<environment>-<application>-…`; TODO: the command that removes them.
+named `bp-<environment>-<application>-…`; `pnpm --filter @bemmoly/module-pipelines demo:local undo`
+removes them.
