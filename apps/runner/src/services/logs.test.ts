@@ -5,7 +5,7 @@ import path from 'node:path';
 import { gunzipSync } from 'node:zlib';
 import type { LogChunkUpload } from '@bemmoly/module-pipelines/shared';
 import { ProviderError, UnauthenticatedError } from '@bemmoly/shared';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createLogger } from '../config/logger.ts';
 import { SecretMasker } from '../utils/mask.ts';
 import { GZIP_ABOVE_BYTES, LogStream, encodeChunk, resendOutbox } from './logs.ts';
@@ -59,11 +59,13 @@ describe('log chunking', () => {
     logs.line('0123456789');
     logs.line('0123456789');
     expect(sent).toHaveLength(0);
-    await new Promise((resolve) => setTimeout(resolve, 10));
-    expect(sent.map((c) => c.lineCount)).toEqual([2]);
+    // Sealed chunks go out through the disk outbox; wait for them rather than a fixed beat.
+    await vi.waitFor(() => expect(sent.map((c) => c.lineCount)).toEqual([2]), { timeout: 2_000 });
     logs.line('slow');
-    await new Promise((resolve) => setTimeout(resolve, 80));
-    expect(sent.map((c) => c.lines)).toEqual([['0123456789', '0123456789'], ['slow']]);
+    await vi.waitFor(
+      () => expect(sent.map((c) => c.lines)).toEqual([['0123456789', '0123456789'], ['slow']]),
+      { timeout: 2_000 },
+    );
     await logs.close(1_000);
   });
 
