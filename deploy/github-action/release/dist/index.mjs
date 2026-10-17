@@ -20408,6 +20408,11 @@ var runSummarySchema = external_exports.object({
   externalUrl: external_exports.string().nullable(),
   supersededByRunId: idSchema.nullable(),
   rerunOfRunId: idSchema.nullable(),
+  /**
+   * Why the run failed before any job started, said plainly: "Couldn't read
+   * .bemmoly/application.yaml: …". Null for a run whose jobs ran; their failures say why.
+   */
+  failureReason: external_exports.string().nullable(),
   createdAt: isoDateTimeSchema,
   startedAt: isoDateTimeSchema.nullable(),
   finishedAt: isoDateTimeSchema.nullable(),
@@ -20608,7 +20613,9 @@ function isTimeZone(zone) {
 var buildSpecSchema = external_exports.object({
   dockerfile: external_exports.string().default("Dockerfile"),
   context: external_exports.string().default("."),
-  platforms: external_exports.array(external_exports.string()).default(["linux/amd64"])
+  platforms: external_exports.array(external_exports.string()).default(["linux/amd64"]),
+  /** The runner pool that builds the image; the organisation's default when absent. */
+  pool: slugSchema.optional()
 });
 var pipelineStepSpecSchema = external_exports.object({
   name: external_exports.string().min(1).max(120),
@@ -20856,6 +20863,7 @@ var applicationPipelineSchema = external_exports.object({
   source: external_exports.enum(["repository", "catalog", "none"]),
   template: external_exports.object({ ref: external_exports.string(), version: external_exports.number().int() }).nullable(),
   defaultRef: external_exports.string(),
+  /** In declared order: the template's first, then the application's own. */
   inputs: external_exports.array(runInputFieldSchema),
   schedules: external_exports.array(scheduleSchema),
   /** The definition as written, for "view the pipeline". */
@@ -22002,6 +22010,17 @@ var cloudConnectionSchema = external_exports.object({
   createdAt: isoDateTimeSchema
 });
 var connectionsResponseSchema = external_exports.object({ items: external_exports.array(cloudConnectionSchema) });
+function isLocalDockerHost(value) {
+  const unix = /^unix:\/\/(\/[^\0?#]*\/(?:docker|podman)\.sock)$/.exec(value);
+  if (unix) return !(unix[1] ?? "").split("/").includes("..");
+  const tcp = /^tcp:\/\/(?:127\.0\.0\.1|localhost|\[::1\]):([0-9]{1,5})$/.exec(value);
+  const port = Number(tcp?.[1]);
+  return port > 0 && port < 65536;
+}
+var dockerHostSchema = external_exports.string().trim().max(300).refine(
+  isLocalDockerHost,
+  "Use a socket such as unix:///var/run/docker.sock or tcp://127.0.0.1:2375"
+);
 var connectionBase = {
   name: external_exports.string().trim().min(1).max(80),
   layout: layoutSchema.default("per-domain-environment")
@@ -22031,7 +22050,7 @@ var connectCloudBodySchema = external_exports.discriminatedUnion("provider", [
   external_exports.object({
     provider: external_exports.literal("local"),
     ...connectionBase,
-    dockerHost: external_exports.string().min(1).max(300).default("unix:///var/run/docker.sock")
+    dockerHost: dockerHostSchema.default("unix:///var/run/docker.sock")
   })
 ]);
 var landingZoneNodeKindSchema = external_exports.enum(["folder", "account", "resource"]);
@@ -22204,6 +22223,25 @@ var applicationFileSchema = external_exports.object({
   pipeline: pipelineDefinitionSchema.optional()
 });
 
+// ../../../modules/pipelines/shared/saved-views.ts
+var savedViewScreenSchema = external_exports.enum(["catalog", "runs", "releases"]);
+var savedViewQuerySchema = external_exports.record(external_exports.string().regex(/^[a-zA-Z][a-zA-Z0-9]{0,31}$/), external_exports.string().max(500)).refine((query) => Object.keys(query).length <= 20, "A view holds at most 20 filters");
+var savedViewSchema = external_exports.object({
+  id: idSchema,
+  name: external_exports.string(),
+  screen: savedViewScreenSchema,
+  query: external_exports.record(external_exports.string(), external_exports.string()),
+  createdAt: isoDateTimeSchema
+});
+var listSavedViewsQuerySchema = external_exports.object({ screen: savedViewScreenSchema });
+var savedViewsResponseSchema = external_exports.object({ items: external_exports.array(savedViewSchema) });
+var createSavedViewBodySchema = external_exports.object({
+  name: external_exports.string().trim().min(1).max(80),
+  screen: savedViewScreenSchema,
+  query: savedViewQuerySchema
+});
+var savedViewParamsSchema = external_exports.object({ id: idSchema });
+
 // ../../../modules/pipelines/shared/ci.ts
 var ciIssuerKindSchema = external_exports.enum(["github", "gitlab", "circleci", "buildkite", "oidc"]);
 var claimMappingSchema = external_exports.object({
@@ -22298,6 +22336,16 @@ var ciTokensResponseSchema = external_exports.object({ items: external_exports.a
 var externalChecksResponseSchema = external_exports.object({ items: external_exports.array(externalCheckSchema) });
 var ciIdParamsSchema = external_exports.object({ id: idSchema });
 var listTrustRulesQuerySchema = external_exports.object({ application: slugSchema.optional() });
+
+// ../../../modules/pipelines/shared/image-reference.ts
+var COMPONENT = "[a-z0-9]+(?:(?:[._]|__|-+)[a-z0-9]+)*";
+var DOMAIN_PART = "(?:[a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])";
+var DOMAIN = `${DOMAIN_PART}(?:\\.${DOMAIN_PART})*(?::[0-9]+)?`;
+var NAME = `(?:${DOMAIN}/)?${COMPONENT}(?:/${COMPONENT})*`;
+var TAG = "\\w[\\w.-]{0,127}";
+var DIGEST = "[A-Za-z][A-Za-z0-9]*(?:[-_+.][A-Za-z][A-Za-z0-9]*)*:[0-9a-fA-F]{32,}";
+var REFERENCE = new RegExp(`^${NAME}(?::${TAG})?(?:@${DIGEST})?$`);
+var REPOSITORY = new RegExp(`^${NAME}$`);
 
 // ../../../apps/pipelines-cli/src/clients/pipelines.ts
 var API = "/api/v1/pipelines";
