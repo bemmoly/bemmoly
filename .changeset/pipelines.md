@@ -1,15 +1,42 @@
 ---
 '@bemmoly/module-pipelines': minor
 '@bemmoly/pipelines-web': minor
+'@bemmoly/runner': minor
 '@bemmoly/server': minor
 '@bemmoly/core': minor
 '@bemmoly/ui': minor
 ---
 
-Bemmoly Pipelines arrives as a separate product on the same install: the `pipelines` module
-(off until an admin enables it in Settings › Modules and chooses who may use it) and its own
-web app at `/pipelines/`, with its own shell, dark by default. This release lays the ground:
-the catalog (domains, groups, applications), environments, teams and overview reads, live
-updates over server-sent events, and `pnpm --filter @bemmoly/module-pipelines seed:demo` for a
-demo organisation. Schema: Pipelines changesets `0001` to `0008` create its `pipeline_*` and
-`cloud_*` tables when the module is enabled. No new configuration keys.
+Bemmoly Pipelines: build, test, release and deploy, as a separate product on the same
+install. An admin enables the `pipelines` module in Settings › Modules and chooses who may use
+it; its own web app is served at `/pipelines/`, with its own shell, and people who only use
+Work and Docs never see it.
+
+- **Catalog.** Every application in Domain › Group › Application, with its owning team, tier
+  and labels, read from `.bemmoly/application.yaml` in its repository or created by hand, and
+  found by scanning connected repositories.
+- **Pipelines on your own runners.** `bemmoly-runner` claims jobs from a pool and runs each
+  step as a container (or as a process with `--local`), streams logs live with secrets
+  masked, reports JUnit results and keeps artifacts. Runs start from pushes, pull requests,
+  merge queues, schedules or Run pipeline…; Re-run failed runs only what failed. A pipeline
+  that cannot start fails its run and says why.
+- **Releases and promotions.** A passing build becomes a release; Promote takes it through
+  Dev, Staging and Prod regions with gates, approvals by another person, canaries judged on
+  metrics, release trains, freezes, and one-click roll back. The `local` provider deploys to
+  this machine's Docker, with a real canary splitting traffic between two containers.
+- **Bring your CI.** Keep another CI for builds: `bp release create` or the `bemmoly/release`
+  GitHub Action registers its image as a release, signed with the workflow's OIDC token or a
+  scoped CI token.
+- **For you, the Map, Runs, Insights.** What is yours and in flight, the whole organisation's
+  delivery live on one screen (rewind it to any moment in the last day), and DORA measures by
+  domain, group and team.
+- **Access.** Roles bound to teams at a scope, owning teams as Maintainers, policies in CEL
+  shown as sentences; every refusal says why and whom to ask, and Platform › Access explains
+  any decision.
+- **Platform.** Runner pools and capacity, environments, and clouds with landing zones,
+  Google Cloud first (tested against recorded responses).
+
+`pnpm --filter @bemmoly/module-pipelines seed:demo` seeds the Acme demo organisation;
+docs/pipelines/try-it.md walks through all of it. Schema: Pipelines changesets `0001` to
+`0018` create its `pipeline_*` and `cloud_*` tables when the module is enabled; the kernel adds
+`0115` for command line sign-in with a device code. No new configuration keys are required.
