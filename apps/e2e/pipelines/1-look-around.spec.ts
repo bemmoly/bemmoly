@@ -13,14 +13,14 @@ test('For you greets the person and shows their changes and Acme today', async (
   ).toBeVisible();
   await expect(page.getByText(/today$/).first()).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Your changes' })).toBeVisible();
-  await expect(page.getByRole('tab', { name: /In flight/ })).toBeVisible();
+  await expect(page.getByRole('radio', { name: 'In flight' })).toBeVisible();
   await expectLoaded(page);
 });
 
 test('the Map shows Acme live, rewinds and comes back to live', async ({ browser }) => {
   const page = await openPipelines(browser, '/map');
   await expect(page.getByRole('heading', { name: 'Release map' })).toBeVisible();
-  await expect(page.getByRole('grid', { name: /^Release map of / })).toBeVisible();
+  await expect(page.getByRole('table', { name: /^Release map of / })).toBeVisible();
   await expectLoaded(page);
   await page.getByRole('button', { name: 'Rewind the map 15 minutes' }).click();
   await expect(page.getByText(/as it was at /)).toBeVisible();
