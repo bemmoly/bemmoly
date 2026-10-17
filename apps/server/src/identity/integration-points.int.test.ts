@@ -148,6 +148,36 @@ describe('what email and notifications build on, against a real database', () =>
     }
   });
 
+  it('never turns a runner away for refused cookies from the same address', async (ctx) => {
+    if (!harness) return ctx.skip(skipReason);
+    const app = Fastify({ logger: false });
+    app.setErrorHandler(errorHandler);
+    await app.register(rateLimiting, {
+      sql: harness.identity.sql,
+      failedCredentialsPerIp: { max: 2, windowMs: 60_000 },
+    });
+    await app.register(authentication, harness.identity);
+    app.post('/api/v1/runner/claims', { config: { anonymous: true } }, async () => ({ ok: true }));
+    app.get('/api/v1/me', async () => ({ ok: true }));
+    try {
+      const stale = { cookie: 'bemmoly_session=expired-in-another-database' };
+      const read = () => app.inject({ url: '/api/v1/me', headers: stale });
+      expect((await read()).statusCode).toBe(401);
+      expect((await read()).statusCode).toBe(401);
+      expect((await read()).statusCode).toBe(429);
+      // The runner's pool token is checked by its route, under that route's own budget.
+      const runner = { authorization: 'Bearer bpr_pool-token-from-the-same-address' };
+      const claim = await app.inject({
+        method: 'POST',
+        url: '/api/v1/runner/claims',
+        headers: runner,
+      });
+      expect(claim.statusCode).toBe(200);
+    } finally {
+      await app.close();
+    }
+  });
+
   it('keeps the boot read of setup status out of the strict per-IP budget', async (ctx) => {
     if (!harness) return ctx.skip(skipReason);
     const app = Fastify({ logger: false });

@@ -85,6 +85,17 @@ function isUnderApi(request: FastifyRequest, apiPrefix: string): boolean {
   return path === apiPrefix || path.startsWith(`${apiPrefix}/`);
 }
 
+/**
+ * A Bearer the route checks itself: on an API route anonymous by design, and not one of
+ * Bemmoly's own tokens (a runner's pool token, a CI system's OIDC token).
+ */
+export function carriesForeignBearer(request: FastifyRequest, apiPrefix: string): boolean {
+  const raw = isUnderApi(request, apiPrefix) ? request.headers.authorization : undefined;
+  return (
+    raw !== undefined && request.routeOptions.config?.anonymous === true && !isKernelBearer(raw)
+  );
+}
+
 function requiresActor(
   request: FastifyRequest,
   apiPrefix: string,
@@ -199,8 +210,7 @@ export const authentication = fp<AuthenticationOptions>(
       // for the route to check itself. That foreign Bearer still wins over a session cookie:
       // the request is the token's, and the Origin check skips anything carrying a Bearer.
       const raw = isUnderApi(request, apiPrefix) ? request.headers.authorization : undefined;
-      const anonymousRoute = request.routeOptions.config?.anonymous === true;
-      const foreign = raw !== undefined && anonymousRoute && !isKernelBearer(raw);
+      const foreign = carriesForeignBearer(request, apiPrefix);
       const cookie = readCookie(request.headers.cookie, SESSION_COOKIE);
       if (raw !== undefined && !foreign) await fromBearer(request, raw, options, now);
       else if (cookie && !foreign) await fromCookie(request, reply, cookie, options, policy, now);
