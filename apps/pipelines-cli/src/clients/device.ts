@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { CliError } from '../cli/errors.ts';
-import type { Http } from '../clients/http.ts';
+import type { Http } from './http.ts';
 
 /*
  * Device sign-in (RFC 8628) through the kernel's OAuth server: bp asks for a code, the

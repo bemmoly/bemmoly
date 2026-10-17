@@ -3,7 +3,7 @@ import { usageError } from '../cli/errors.ts';
 import { createHttp } from '../clients/http.ts';
 import { createPipelinesClient } from '../clients/pipelines.ts';
 import { loadCredentials, removeCredentials, saveCredentials } from '../services/credentials.ts';
-import { deviceSignIn } from '../services/device.ts';
+import { deviceSignIn } from '../clients/device.ts';
 
 /*
  * bp login, logout and whoami. Login signs in with a device code by default; --token stores
