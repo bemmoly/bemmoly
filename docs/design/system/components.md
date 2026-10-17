@@ -23,14 +23,18 @@ it adds a prop or variant here, with a story, in the same pull request.
 - Note: `@bemmoly/ui` also exports `PageTitle` (alias `PageHeader`), the older in-content title
   block. New screens do not use it; the shell header replaces it.
 
-### SidebarRow, SidebarHeading, BottomBar, PresenceFacepile, SwitcherMenu
+### SidebarRow, SidebarHeading, SidebarSection, SidebarLabel, BottomBar, PresenceFacepile, SwitcherMenu
 
 `@bemmoly/core-web`. For module `sidebar.tsx` entries, the phone bar and the header's presence.
 Rows are 28 to 32px, current row raised (`bg-card shadow-e1`), counts in `tx-3` tabular, unread
-as an accent pill. `SwitcherMenu` is the searchable crumb switcher (projects), never a workspace
-switcher. The sidebar footer's person row ends in the Appearance button: a `Menu` whose trigger is
-the current mode's icon and whose items are Light, Dark and Match system as radios; nothing else
-about appearance lives in the sidebar or the person's menu.
+as an accent pill. `SidebarHeading` with a `tile` is a module's 32px header row (20px tile, 13px
+semibold, `current` for full ink and a shown "+"); without one it is an 11px caption (Settings).
+`SidebarSection` wraps a module's section and puts the current one on a faint accent wash;
+`SidebarLabel` names a list inside it ("Projects", "Spaces") (ADR 0037). `SwitcherMenu` is the
+searchable crumb switcher (projects), never a workspace switcher. The sidebar footer's person
+row ends in the Appearance button: a `Menu` whose trigger is the current mode's icon and whose
+items are Light, Dark and Match system as radios; nothing else about appearance lives in the
+sidebar or the person's menu.
 
 ## Actions and controls
 

@@ -1,4 +1,10 @@
-import { SidebarRow, isActivePath, useFrame, type ModuleSidebarProps } from '@bemmoly/core-web';
+import {
+  SidebarLabel,
+  SidebarRow,
+  isActivePath,
+  useFrame,
+  type ModuleSidebarProps,
+} from '@bemmoly/core-web';
 import type { Project } from '@bemmoly/module-work/shared';
 import { Icon } from '@bemmoly/ui/icons';
 import { useQuery } from '@tanstack/react-query';
@@ -76,9 +82,9 @@ function ProjectViews({ project, pathname }: { project: Project; pathname: strin
 }
 
 /**
- * Work's live sidebar rows (docs/design/premium/kit.js, `sidebar`): the projects, the one in
- * use opened to its views. On the rail each project is its tile. The heading, its "+" and "All
- * projects" come from the manifest.
+ * Work's live sidebar rows (docs/design/premium/kit.js, `sidebar`): under a "Projects" label,
+ * the projects, the one in use opened to its views. On the rail each project is its tile. The
+ * header row, its "+", "All projects" and Roadmap come from the manifest, above these.
  */
 export default function WorkSidebar(_props: ModuleSidebarProps) {
   const { mode, pathname } = useFrame();
@@ -107,6 +113,7 @@ export default function WorkSidebar(_props: ModuleSidebarProps) {
   }
   return (
     <>
+      <SidebarLabel label="Projects" />
       {projects.map((project) => {
         const open = project.key === current;
         const here = inWork && inPath === project.key;
