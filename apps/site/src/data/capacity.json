@@ -70,10 +70,13 @@
           "measured": "2026-10-11",
           "preliminary": true,
           "note": "measured 2026-10-11 on 2 CPU/4 GB before perf fixes, pending re-run",
-          "source": "The capacity run of the closed load-test pull request; its raw output was not committed",
+          "source": "docs/sizing.md (2 vCPU, 4 GB data ramp, point 3)",
           "data": {
-            "issues": 100000,
-            "approximate": true
+            "issues": 123449,
+            "comments": 226378,
+            "docPages": 28400,
+            "largestProject": 30071,
+            "users": 245
           },
           "verdict": "usable",
           "requestsPerSecond": null,
@@ -93,12 +96,13 @@
           "measured": "2026-10-11",
           "preliminary": true,
           "note": "measured 2026-10-11 on 2 CPU/4 GB before perf fixes, pending re-run",
-          "source": "The capacity run of the closed load-test pull request; its raw output was not committed",
+          "source": "docs/sizing.md (2 vCPU, 4 GB data ramp, point 4)",
           "data": {
-            "issues": 274000,
-            "comments": 527000,
-            "docPages": 29000,
-            "approximate": true
+            "issues": 273939,
+            "comments": 527129,
+            "docPages": 29200,
+            "largestProject": 100064,
+            "users": 245
           },
           "verdict": "slow",
           "requestsPerSecond": null,

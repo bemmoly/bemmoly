@@ -43,6 +43,7 @@ async function main() {
       out: { type: 'string' },
       'budget-minutes': { type: 'string', default: '30' },
       'poll-ms': { type: 'string', default: '2000' },
+      key: { type: 'string', default: IMPORT_KEY },
     },
   });
   if (!values['base-url'] || !values.credentials || !values.site || !values.out) {
@@ -56,9 +57,9 @@ async function main() {
     values: { deployment: 'cloud', url: values.site, email: FIXTURE_EMAIL, token: FIXTURE_TOKEN },
   });
   const container = connected.discovery?.containers.find((c) => c.id === SOURCE_PROJECT_ID);
-  if (!container || container.key !== IMPORT_KEY) {
+  if (!container || container.key !== values.key) {
     throw new Error(
-      `The site does not offer ${IMPORT_KEY}; is the proxy from serve.ts in front of it?`,
+      `The site does not offer ${values.key}; is the proxy from serve.ts in front of it?`,
     );
   }
   log(`Connected: ${container.key} "${container.name}" with ${container.count} issues`);

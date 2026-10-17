@@ -25,6 +25,8 @@ export const BASE_THRESHOLDS = {
 /** The endpoint tag each request carries, and the budget its p95 is held to. */
 export const ENDPOINT_BUDGETS = {
   board_view: BUDGETS_MS.boardView,
+  board_scrum: BUDGETS_MS.boardView,
+  board_kanban: BUDGETS_MS.boardView,
   issue_detail: BUDGETS_MS.issueDetail,
   search_suggest: BUDGETS_MS.searchAutocomplete,
   palette_search: BUDGETS_MS.searchAutocomplete,
