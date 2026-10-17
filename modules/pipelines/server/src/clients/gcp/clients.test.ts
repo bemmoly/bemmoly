@@ -101,7 +101,7 @@ describe('keyless credentials', () => {
       },
       {
         transport: replay.transport,
-        subjectToken: async () => 'eyJhbGciOiJFUzI1NiJ9.bemmoly-signed.sig',
+        subjectToken: async () => 'test-subject-token',
       },
     );
     const clients = createGcpClients({ tokens, transport: replay.transport });

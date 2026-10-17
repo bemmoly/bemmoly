@@ -40,7 +40,7 @@ describe('line splitting', () => {
   });
 
   it('masks a secret that a cut for length would split', () => {
-    const secret = 'tok_0123456789abcdef';
+    const secret = 'tok_0123456789abcdef'; // gitleaks:allow
     const mask = (text: string) => text.split(secret).join('***');
     const masked = (feed: (splitter: LineSplitter) => void) => {
       const lines: string[] = [];

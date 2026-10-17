@@ -6,7 +6,7 @@
       "url": "https://sts.googleapis.com/v1/token",
       "body": {
         "audience": "//iam.googleapis.com/projects/771205334188/locations/global/workloadIdentityPools/bemmoly/providers/bemmoly",
-        "subjectToken": "eyJhbGciOiJFUzI1NiJ9.bemmoly-signed.sig",
+        "subjectToken": "test-subject-token",
         "subjectTokenType": "urn:ietf:params:oauth:token-type:jwt"
       },
       "response": {
