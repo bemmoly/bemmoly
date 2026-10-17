@@ -27,6 +27,9 @@ import { createLinksService } from './links/index.ts';
 import { createLqlService } from './lql/index.ts';
 import { createMetricsService } from './metrics/index.ts';
 import { createPairingService } from './pairing/index.ts';
+import { createReportsService } from './reports/index.ts';
+import { createTimeTrackingService } from './reports/time-tracking-service.ts';
+import { createStatsService } from './reports/stats-service.ts';
 import { createMyWorkService } from './my-work/index.ts';
 import { createProjectsService } from './projects/index.ts';
 import { createProjectMembersService } from './projects/members.ts';
@@ -121,6 +124,9 @@ export function createWorkServices(deps: WorkServiceDeps) {
     metrics: createMetricsService({ ...deps, ...issueDeps, lql }),
     roadmap: createRoadmapService({ ...deps, ...issueDeps, lql }),
     pairing: createPairingService({ ...deps, ...issueDeps }),
+    reports: createReportsService({ ...deps, ...issueDeps }),
+    timeTracking: createTimeTrackingService({ ...deps, ...issueDeps }),
+    stats: createStatsService(deps),
   };
 }
 

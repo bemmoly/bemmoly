@@ -104,8 +104,8 @@ export function createConfluenceClient(options: ConfluenceClientOptions) {
   return {
     root,
     currentUser: () => rest.getJson<ConfluenceUser>('rest/api/user/current'),
-    spaces: () =>
-      all<ConfluenceSpace>('rest/api/space', { type: 'global', expand: 'description.plain' }),
+    /** Team (global) and personal spaces; the chooser leaves personal ones unticked. */
+    spaces: () => all<ConfluenceSpace>('rest/api/space', { expand: 'description.plain' }),
     async countPages(spaceKey: string): Promise<number> {
       const page = await rest.getJson<Results<unknown>>('rest/api/search', {
         cql: `space = "${spaceKey.replace(/[\\"]/g, '\\$&')}" and type = page`,
@@ -134,6 +134,31 @@ export function createConfluenceClient(options: ConfluenceClientOptions) {
       all<ConfluenceComment>(`rest/api/content/${encodeURIComponent(pageId)}/child/comment`, {
         expand: 'body.storage,history,ancestors,extensions.location',
         depth: 'all',
+      }),
+    /**
+     * The site's people, up to `limit`: Cloud searches users by CQL, Data Center lists the
+     * confluence-users group.
+     */
+    async people(limit: number): Promise<ConfluenceUser[]> {
+      if (cloud) {
+        const found = await all<{ user?: ConfluenceUser }>('rest/api/search/user', {
+          cql: 'type=user',
+        });
+        return found.flatMap((hit) => (hit.user ? [hit.user] : [])).slice(0, limit);
+      }
+      return (await all<ConfluenceUser>('rest/api/group/confluence-users/member')).slice(0, limit);
+    },
+    /** A page's versions: number, when and by whom (the current one included). */
+    versions: (pageId: string) =>
+      all<{ number: number; when?: string; by?: ConfluenceUser }>(
+        `rest/api/content/${encodeURIComponent(pageId)}/version`,
+      ),
+    /** One earlier version of a page, with its body. */
+    historical: (pageId: string, version: number) =>
+      rest.getJson<ConfluencePage>(`rest/api/content/${encodeURIComponent(pageId)}`, {
+        status: 'historical',
+        version,
+        expand: 'body.storage,version',
       }),
     user: (id: string) =>
       rest.getJson<ConfluenceUser>('rest/api/user', cloud ? { accountId: id } : { key: id }),

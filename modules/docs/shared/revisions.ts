@@ -13,7 +13,7 @@ import { docDiffSchema } from './diff/types.ts';
  * revisions, or of one revision and the page as it is now (to=current).
  */
 
-export const REVISION_KINDS = ['named', 'periodic', 'publish', 'restore'] as const;
+export const REVISION_KINDS = ['named', 'periodic', 'publish', 'restore', 'imported'] as const;
 export const revisionKindSchema = z.enum(REVISION_KINDS);
 
 export const revisionSummarySchema = z.object({

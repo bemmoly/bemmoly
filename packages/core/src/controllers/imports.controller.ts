@@ -1,5 +1,17 @@
 import {
   createImportBodySchema,
+  importContainerQuerySchema,
+  importCountBodySchema,
+  importPeopleQuerySchema,
+  importTargetQuerySchema,
+  runImportBodySchema,
+  type ImportPlannedJob,
+  type ImportTargetList,
+  type ImportPeoplePage,
+  importSelectionBodySchema,
+  type ImportContainerPage,
+  type ImportCountList,
+  type ImportSelectionSummary,
   importJobIdParamsSchema,
   parseOrThrow,
   updateImportBodySchema,
@@ -29,12 +41,42 @@ export function createImportsController(service: ImportService, actorOf: ActorRe
       reply.code(201);
       return job;
     },
-    async update(request: FastifyRequest): Promise<ImportJob> {
+    async update(request: FastifyRequest): Promise<ImportPlannedJob> {
       const body = parseOrThrow(updateImportBodySchema, request.body);
       return service.update(await actorOf(request), idOf(request), body);
     },
     async run(request: FastifyRequest): Promise<ImportJob> {
-      return service.run(await actorOf(request), idOf(request));
+      const body = parseOrThrow(runImportBodySchema, request.body ?? {});
+      return service.run(await actorOf(request), idOf(request), body);
+    },
+    async skips(request: FastifyRequest, reply: FastifyReply): Promise<string> {
+      const csv = await service.skips(await actorOf(request), idOf(request));
+      reply.header('content-type', 'text/csv; charset=utf-8');
+      reply.header('content-disposition', 'attachment; filename="skipped-records.csv"');
+      return csv;
+    },
+    async containers(request: FastifyRequest): Promise<ImportContainerPage> {
+      const query = parseOrThrow(importContainerQuerySchema, request.query);
+      return service.containers(await actorOf(request), idOf(request), query);
+    },
+    async count(request: FastifyRequest): Promise<ImportCountList> {
+      const body = parseOrThrow(importCountBodySchema, request.body);
+      return service.count(await actorOf(request), idOf(request), body);
+    },
+    async targets(request: FastifyRequest): Promise<ImportTargetList> {
+      const query = parseOrThrow(importTargetQuerySchema, request.query);
+      return service.targets(await actorOf(request), idOf(request), query);
+    },
+    async people(request: FastifyRequest): Promise<ImportPeoplePage> {
+      const query = parseOrThrow(importPeopleQuerySchema, request.query);
+      return service.people(await actorOf(request), idOf(request), query);
+    },
+    async selection(request: FastifyRequest): Promise<ImportSelectionSummary> {
+      return service.selection(await actorOf(request), idOf(request));
+    },
+    async select(request: FastifyRequest): Promise<ImportSelectionSummary> {
+      const body = parseOrThrow(importSelectionBodySchema, request.body);
+      return service.select(await actorOf(request), idOf(request), body);
     },
     async cancel(request: FastifyRequest): Promise<ImportJob> {
       return service.cancel(await actorOf(request), idOf(request));

@@ -2,8 +2,9 @@ import type { SqlExecutor } from '@bemmoly/core';
 import type { BoardConfig } from '../../../../shared/boards.ts';
 import type { BurndownPoint, VelocityPoint } from '../../../../shared/metrics.ts';
 import { sprintSnapshotSchema } from '../../../../shared/sprints.ts';
-import { burndown, type BurndownIssue, type FieldChange, type TrackedField } from './burndown.ts';
+import { burndown } from './burndown.ts';
 import { flowMetrics, flowWindowStart, type Flow } from './flow.ts';
+import { loadSprintInput, type ReportSprint } from './load-report.ts';
 
 /*
  * The reads behind every metric. Each is one or two statements over a
@@ -64,64 +65,14 @@ export async function loadVelocity(
   });
 }
 
-export interface BurndownSprint {
-  id: string;
-  started_at: Date | string | null;
-  closed_at: Date | string | null;
-}
-
 export async function loadBurndown(
   sql: SqlExecutor,
-  sprint: BurndownSprint,
+  sprint: ReportSprint,
   done: ReadonlySet<string>,
   now: Date,
 ): Promise<BurndownPoint[]> {
-  if (!sprint.started_at) return [];
-  const start = time(sprint.started_at);
-  const marker = JSON.stringify(sprint.id);
-  const issues = await sql<
-    {
-      id: string;
-      created_at: Date;
-      deleted_at: Date | null;
-      sprint_id: string | null;
-      status_id: string;
-      estimate: string | null;
-    }[]
-  >`
-    select i.id, i.created_at, i.deleted_at, i.sprint_id, i.status_id, i.estimate from issues i
-    where i.sprint_id = ${sprint.id} or i.id in (
-      select h.issue_id from issue_history h
-      where h.field = 'sprintId' and h.created_at >= ${new Date(start).toISOString()}::timestamptz
-        and (h.from_value = ${marker}::jsonb or h.to_value = ${marker}::jsonb))`;
-  const ids = issues.map((issue) => issue.id);
-  const history = await sql<
-    { issue_id: string; field: TrackedField; from_value: unknown; created_at: Date }[]
-  >`
-    select issue_id, field, from_value, created_at from issue_history
-    where issue_id = any(${ids}::uuid[]) and field in ('sprintId', 'statusId', 'estimate')
-      and created_at >= ${new Date(start).toISOString()}::timestamptz`;
-  const end = sprint.closed_at ? time(sprint.closed_at) - 1 : now.getTime();
-  return burndown({
-    sprintId: sprint.id,
-    issues: issues.map((row): BurndownIssue => ({
-      id: row.id,
-      createdAt: time(row.created_at),
-      deletedAt: row.deleted_at ? time(row.deleted_at) : null,
-      sprintId: row.sprint_id,
-      statusId: row.status_id,
-      estimate: row.estimate === null ? null : Number(row.estimate),
-    })),
-    changes: history.map((row): FieldChange => ({
-      issueId: row.issue_id,
-      field: row.field,
-      from: row.from_value,
-      at: time(row.created_at),
-    })),
-    done,
-    start,
-    end,
-  });
+  const input = await loadSprintInput(sql, sprint, done, now);
+  return input ? burndown(input) : [];
 }
 
 export async function loadFlow(

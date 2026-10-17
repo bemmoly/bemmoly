@@ -62,8 +62,11 @@ export function AppSidebar({ shell }: { shell: Shell }) {
           />
         ))}
       </nav>
+      {rail || focused ? null : (
+        <hr aria-hidden className="mx-2 my-2.5 border-0 border-t border-line" />
+      )}
       <div
-        className={`-mx-2 flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto px-2 pb-2 ${rail ? 'mx-0 items-center px-0' : ''}`}
+        className={`-mx-2 flex min-h-0 flex-1 flex-col overflow-y-auto px-2 pb-2 ${rail ? 'mx-0 items-center gap-0.5 px-0' : 'gap-2.5'}`}
       >
         {modules.map((manifest) =>
           focused && manifest !== focused ? null : (

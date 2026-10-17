@@ -6,6 +6,7 @@ interface MappingRecord {
   source_id: string;
   target_id: string;
   meta: Record<string, unknown>;
+  updated_at?: Date | string;
 }
 
 const CHUNK = 1000;
@@ -13,6 +14,7 @@ const CHUNK = 1000;
 const toRow = (record: MappingRecord): ImportMappingRow => ({
   targetId: record.target_id,
   meta: record.meta ?? {},
+  ...(record.updated_at ? { updatedAt: new Date(record.updated_at).toISOString() } : {}),
 });
 
 /** One source site's mappings; every read and write is scoped to (source, site). */
@@ -57,7 +59,7 @@ export function createMappingStore(
       const found = new Map<string, ImportMappingRow>();
       for (let start = 0; start < sourceIds.length; start += CHUNK) {
         const records = await sql<MappingRecord[]>`
-          select source_id, target_id, meta from import_mappings
+          select source_id, target_id, meta, updated_at from import_mappings
           where source = ${source} and site = ${site} and kind = ${kind}
             and source_id = any(${sourceIds.slice(start, start + CHUNK) as string[]}::text[])`;
         for (const record of records) found.set(record.source_id, toRow(record));

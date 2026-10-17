@@ -1,4 +1,5 @@
 import {
+  SidebarLabel,
   SidebarRow,
   useFrame,
   useSidebarTakeover,
@@ -17,9 +18,10 @@ import { useTreeFocus, useTreeOpen } from './space/tree-store.ts';
 const SHOWN = 6;
 
 /**
- * Docs' live sidebar rows (docs/design/premium/docs/docs-tree.js, option A): the spaces as rows
- * like projects, the current one opened to its page tree, then Docs home. A focused space takes
- * the whole sidebar, with a filter. On the rail each space is its tile.
+ * Docs' live sidebar rows (docs/design/premium/docs/docs-tree.js, option A): Docs home, then
+ * under a "Spaces" label the spaces as rows like projects, the current one opened to its page
+ * tree. A focused space takes the whole sidebar, with a filter. On the rail each space is its
+ * tile.
  */
 export default function DocsSidebar({ manifest }: ModuleSidebarProps) {
   const { mode, pathname } = useFrame();
@@ -61,6 +63,8 @@ export default function DocsSidebar({ manifest }: ModuleSidebarProps) {
   if (current && !shown.includes(current)) shown.splice(SHOWN - 1, 1, current);
   return (
     <>
+      <SidebarRow label="Docs home" icon="grid" path={docsPaths.home()} exact />
+      {shown.length > 0 ? <SidebarLabel label="Spaces" /> : null}
       {shown.map((space) => (
         <SidebarSpace
           key={space.id}
@@ -71,7 +75,6 @@ export default function DocsSidebar({ manifest }: ModuleSidebarProps) {
           onFocus={() => setFocus(space.key)}
         />
       ))}
-      <SidebarRow label="Docs home" icon="grid" path={docsPaths.home()} exact />
     </>
   );
 }

@@ -1,21 +1,30 @@
-import type { CreateImportBody, ImportJob, UpdateImportBody } from '@bemmoly/shared';
+import {
+  importPeopleQuerySchema,
+  runImportBodySchema,
+  updateImportBodySchema,
+  type CreateImportBody,
+  type ImportJob,
+} from '@bemmoly/shared';
 import { can, type MockDb } from '../db.ts';
+import { mockContainers } from '../seed/import-containers.ts';
 import { MOCK_IMPORT_SOURCES, mockDiscovery, mockMappings } from '../seed/imports.ts';
 import { newId } from '../seed/time.ts';
-import { bodyOf, fail, notFound, ok, type MockRoute } from '../types.ts';
+import { byNeed } from '../seed/import-people.ts';
+import { bodyOf, fail, invalid, notFound, ok, type MockRoute } from '../types.ts';
+import { applyChoices, choicesOf, holdersOf } from './import-plan.ts';
+import { advanceRun, skipsCsv, startRun } from './import-run.ts';
+import {
+  chooserOf,
+  findJob as find,
+  listOf,
+  matching,
+  rowOf,
+  startChooser,
+} from './import-state.ts';
 
 const SETTINGS = 'workspace.settings.manage';
 /** Each read of a running job moves it on by this share of its total, as a worker would. */
 const STEP = 0.34;
-const jobs = new WeakMap<MockDb, ImportJob[]>();
-
-const listOf = (db: MockDb) => {
-  const found = jobs.get(db);
-  if (found) return found;
-  const fresh: ImportJob[] = [];
-  jobs.set(db, fresh);
-  return fresh;
-};
 
 const adminOnly =
   (handle: MockRoute['handle']): MockRoute['handle'] =>
@@ -58,10 +67,6 @@ function advance(job: ImportJob) {
   };
 }
 
-function find(db: MockDb, id: string | undefined) {
-  return listOf(db).find((job) => job.id === id);
-}
-
 export const importRoutes: MockRoute[] = [
   {
     method: 'GET',
@@ -95,6 +100,7 @@ export const importRoutes: MockRoute[] = [
         connection[field.name] = field.kind === 'secret' ? true : value;
       }
       const site = (values['siteUrl'] ?? '').replace(/^https?:\/\//, '') || source.label;
+      const rows = mockContainers(source.id, site);
       const job: ImportJob = {
         id: newId(),
         source: source.id,
@@ -103,7 +109,7 @@ export const importRoutes: MockRoute[] = [
         phase: null,
         progress: { done: 0, total: 0 },
         connection,
-        discovery: mockDiscovery(source.id, site),
+        discovery: mockDiscovery(source.id, site, rows),
         plan: null,
         report: { counts: {}, skipped: [], skippedTotal: 0, warnings: [] },
         error: null,
@@ -112,6 +118,7 @@ export const importRoutes: MockRoute[] = [
         startedAt: null,
         finishedAt: null,
       };
+      startChooser(job.id, rows, site.includes('flaky'));
       listOf(db).unshift(job);
       return ok(job, 201);
     }),
@@ -122,7 +129,12 @@ export const importRoutes: MockRoute[] = [
     handle: adminOnly((request, db) => {
       const job = find(db, request.params['id']);
       if (!job) return notFound('Import');
-      advance(job);
+      const state = chooserOf(job.id);
+      if (job.status === 'queued') {
+        job.status = 'running';
+        job.startedAt = new Date().toISOString();
+      } else if (job.status === 'running' && state?.progress.size) advanceRun(job, state);
+      else advance(job);
       return ok(job);
     }),
   },
@@ -131,16 +143,54 @@ export const importRoutes: MockRoute[] = [
     pattern: '/api/v1/admin/imports/:id',
     handle: adminOnly((request, db) => {
       const job = find(db, request.params['id']);
-      if (!job?.discovery) return notFound('Import');
-      const picked = bodyOf<UpdateImportBody>(request).containers ?? [];
-      const chosen = job.discovery.containers.filter((c) => picked.includes(c.id));
-      const records = chosen.reduce((sum, c) => sum + (c.count ?? 0), 0);
+      const state = chooserOf(job?.id);
+      if (!job?.discovery || !state) return notFound('Import');
+      const parsed = updateImportBodySchema.safeParse(request.body ?? {});
+      if (!parsed.success) return invalid('body', parsed.error.message);
+      const body = parsed.data;
+      if (body.containers) state.selected = new Set(body.containers);
+      const chosen = state.rows.filter((c) => state.selected.has(c.id) && c.access === 'ok');
+      if (chosen.length === 0) {
+        return fail(400, 'validation_failed', 'Choose at least one to bring in.');
+      }
+      const refused = applyChoices(db, job, state, body);
+      if (refused) return fail(400, 'validation_failed', refused);
+      const records = chosen.reduce((sum, c) => sum + c.records, 0);
       job.plan = {
         containers: chosen.map((c) => c.id),
         counts: { [chosen[0]?.kind === 'space' ? 'pages' : 'issues']: records },
         mappings: mockMappings(job.source),
+        ...choicesOf(db, job, state, body),
       };
-      return ok(job);
+      const attention = matching(state, undefined, 'attention').map((row) => rowOf(state, row));
+      return ok({ ...job, attention });
+    }),
+  },
+  {
+    method: 'GET',
+    pattern: '/api/v1/admin/imports/:id/targets',
+    handle: adminOnly((request, db) => {
+      const job = find(db, request.params['id']);
+      if (!job) return notFound('Import');
+      const q = (request.query.get('q') ?? '').toLowerCase();
+      const items = holdersOf(db, job.source)
+        .filter((row) => !q || `${row.key} ${row.name}`.toLowerCase().includes(q))
+        .map(({ id, key, name }) => ({ id, key, name }));
+      return ok({ items });
+    }),
+  },
+  {
+    method: 'GET',
+    pattern: '/api/v1/admin/imports/:id/people',
+    handle: adminOnly((request) => {
+      const state = chooserOf(request.params['id']);
+      if (!state) return notFound('Import');
+      const parsed = importPeopleQuerySchema.safeParse(Object.fromEntries(request.query));
+      if (!parsed.success) return invalid('query', parsed.error.message);
+      const rows = [...(state.people ?? [])].sort(byNeed);
+      const from = parsed.data.cursor ? Number(parsed.data.cursor) : 0;
+      const to = from + parsed.data.limit;
+      return ok({ items: rows.slice(from, to), next: to < rows.length ? String(to) : null });
     }),
   },
   {
@@ -149,12 +199,33 @@ export const importRoutes: MockRoute[] = [
     handle: adminOnly((request, db) => {
       const job = find(db, request.params['id']);
       if (!job?.plan) return notFound('Import');
-      const total = Object.values(job.plan.counts).reduce((sum, n) => sum + n, 0) + 4;
+      if (job.plan.targets?.errors) {
+        return fail(400, 'validation_failed', 'Fix the keys marked in Options first.');
+      }
+      const parsed = runImportBodySchema.safeParse(request.body ?? {});
+      if (!parsed.success) return invalid('body', parsed.error.message);
+      const state = chooserOf(job.id);
+      if (state) startRun(job, state, parsed.data.containers);
       job.status = 'queued';
       job.error = null;
+      job.finishedAt = null;
       job.runs += 1;
-      if (job.progress.done >= job.progress.total) job.progress = { done: 0, total };
       return ok(job);
+    }),
+  },
+  {
+    method: 'GET',
+    pattern: '/api/v1/admin/imports/:id/skips.csv',
+    handle: adminOnly((request, db) => {
+      if (!find(db, request.params['id'])) return notFound('Import');
+      return {
+        status: 200,
+        body: skipsCsv(),
+        headers: {
+          'content-type': 'text/csv; charset=utf-8',
+          'content-disposition': 'attachment; filename="import-skipped.csv"',
+        },
+      };
     }),
   },
   {

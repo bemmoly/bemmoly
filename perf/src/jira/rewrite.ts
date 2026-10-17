@@ -16,17 +16,25 @@ export const SOURCE_PROJECT_ID = '10000';
 const EMAIL = /"([A-Za-z0-9._+-]+)@[A-Za-z0-9.-]+\.[A-Za-z]{2,}"/g;
 const DISPLAY_NAME = /"displayName":"(?!LOAD )([^"\\]*)"/g;
 
+/** The project an import lands in; capacity runs import several, each under its own key. */
+export interface ImportTarget {
+  key: string;
+  name: string;
+}
+
+export const DEFAULT_TARGET: ImportTarget = { key: IMPORT_KEY, name: IMPORT_NAME };
+
 /** A JSON response body from the fake site, as the install should see it. */
-export function rewriteResponse(body: string): string {
+export function rewriteResponse(body: string, target: ImportTarget = DEFAULT_TARGET): string {
   return body
-    .replaceAll(`"${SOURCE_KEY}"`, `"${IMPORT_KEY}"`)
-    .replace(new RegExp(`\\b${SOURCE_KEY}-(\\d+)\\b`, 'g'), `${IMPORT_KEY}-$1`)
-    .replaceAll('"name":"Operations"', `"name":"${IMPORT_NAME}"`)
+    .replaceAll(`"${SOURCE_KEY}"`, `"${target.key}"`)
+    .replace(new RegExp(`\\b${SOURCE_KEY}-(\\d+)\\b`, 'g'), `${target.key}-$1`)
+    .replaceAll('"name":"Operations"', `"name":"${target.name}"`)
     .replace(EMAIL, (_, local: string) => `"load-jira-${local.toLowerCase()}@${LOAD_EMAIL_DOMAIN}"`)
     .replace(DISPLAY_NAME, (_, name: string) => `"displayName":"${LOAD_PREFIX} ${name}"`);
 }
 
 /** A request path, query or body from the install, as the fake site expects it. */
-export function rewriteRequest(text: string): string {
-  return text.replace(new RegExp(`(?<![A-Za-z])${IMPORT_KEY}(?![A-Za-z])`, 'g'), SOURCE_KEY);
+export function rewriteRequest(text: string, target: ImportTarget = DEFAULT_TARGET): string {
+  return text.replace(new RegExp(`(?<![A-Za-z])${target.key}(?![A-Za-z])`, 'g'), SOURCE_KEY);
 }

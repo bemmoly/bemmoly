@@ -184,7 +184,9 @@ export {
   RAIL_BUTTON,
   ROW,
   SidebarHeading,
+  SidebarLabel,
   SidebarRow,
+  SidebarSection,
   type SidebarHeadingProps,
   type SidebarRowProps,
 } from './shell/sidebar/sidebar-row.tsx';

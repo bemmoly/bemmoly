@@ -9,6 +9,9 @@ export { workIssueEndpoints, type HistoryFilter, type IssuesFilter } from './iss
 export { workMembersEndpoints, workMembersKeys } from './members.ts';
 export { workProjectCatalogEndpoints } from './project-catalog.ts';
 export { workPairingEndpoints } from './pairing.ts';
+export { workReportEndpoints } from './reports.ts';
+export { workReportTimeTrackingEndpoints } from './report-time-tracking.ts';
+export { workReportStatsEndpoints } from './report-stats.ts';
 export { workRoadmapEndpoints } from './roadmap.ts';
 export { workMyWorkEndpoints } from './my-work.ts';
 export { workSettingsEndpoints, workSettingsKeys } from './settings.ts';

@@ -23,14 +23,18 @@ it adds a prop or variant here, with a story, in the same pull request.
 - Note: `@bemmoly/ui` also exports `PageTitle` (alias `PageHeader`), the older in-content title
   block. New screens do not use it; the shell header replaces it.
 
-### SidebarRow, SidebarHeading, BottomBar, PresenceFacepile, SwitcherMenu
+### SidebarRow, SidebarHeading, SidebarSection, SidebarLabel, BottomBar, PresenceFacepile, SwitcherMenu
 
 `@bemmoly/core-web`. For module `sidebar.tsx` entries, the phone bar and the header's presence.
 Rows are 28 to 32px, current row raised (`bg-card shadow-e1`), counts in `tx-3` tabular, unread
-as an accent pill. `SwitcherMenu` is the searchable crumb switcher (projects), never a workspace
-switcher. The sidebar footer's person row ends in the Appearance button: a `Menu` whose trigger is
-the current mode's icon and whose items are Light, Dark and Match system as radios; nothing else
-about appearance lives in the sidebar or the person's menu.
+as an accent pill. `SidebarHeading` with a `tile` is a module's 32px header row (20px tile, 13px
+semibold, `current` for full ink and a shown "+"); without one it is an 11px caption (Settings).
+`SidebarSection` wraps a module's section and puts the current one on a faint accent wash;
+`SidebarLabel` names a list inside it ("Projects", "Spaces") (ADR 0037). `SwitcherMenu` is the
+searchable crumb switcher (projects), never a workspace switcher. The sidebar footer's person
+row ends in the Appearance button: a `Menu` whose trigger is the current mode's icon and whose
+items are Light, Dark and Match system as radios; nothing else about appearance lives in the
+sidebar or the person's menu.
 
 ## Actions and controls
 
@@ -63,6 +67,12 @@ about appearance lives in the sidebar or the person's menu.
   "Showing 50 of N" for long lists, async options (`LoadOptions`), groups. Never a native
   `<select>`.
 - `Switch` applies at once (settings toggles); `Checkbox` is chosen then saved (forms, selection).
+- `Checkbox indeterminate` is the tri-state select-all over a list: some ticked reads as
+  "mixed" (`aria-checked="mixed"`, the DOM `indeterminate` property) and draws a minus on the
+  accent fill. Story: Components/Controls (Indeterminate).
+- `CheckboxMark` is the checkbox's look without an input, for a listbox option that carries
+  `aria-selected` itself (a list chooser's row); never stand it in for a real `Checkbox`. Story: Components/Controls
+  (Mark).
 - `SegmentedControl` for two to five exclusive views ("All · 8").
 - `Input size="touch"` on the sign-in pages: 40px, and 46px with 16px text under 640px so a
   phone never zooms into the field.
@@ -199,6 +209,19 @@ the frame (`ErrorBoundary` from `@bemmoly/core-web`), with the request id.
 - Not: a grid of divs with borders, or a second table style. Narrow screens scroll it sideways
   inside its card, never the page.
 
+### VirtualList
+
+`import { VirtualList } from '@bemmoly/ui'` · Story: Components/VirtualList
+([`virtual-list.stories.tsx`](../../../packages/ui/src/components/virtual-list/virtual-list.stories.tsx))
+
+- Use: a list that can hold hundreds or thousands of fixed-height rows (the import chooser's
+  projects): it draws the rows in view plus `overscan`, places each with the `style` it hands
+  `renderRow`, reports the rows in view (`onRangeChange`) for lazy counts and paging, and
+  scrolls a row into view (`ref.scrollToIndex`).
+- The caller gives the semantics (`role="listbox"`, `aria-multiselectable`,
+  `aria-activedescendant`) and the keys; the list is one scroll region inside its card.
+- Not: short lists (render them), rows of varying height, or a page's own scroll.
+
 ### BulkBar and selection
 
 `import { BulkBar } from '@bemmoly/ui'`. The one floating bar for a selection: count, the
@@ -239,3 +262,20 @@ Cancel and Save, a confirmation (`ConfirmChange`, typed word for the irreversibl
 
 `ProgressBar`, `MetricTile`, `CapacityBar`, `MetricSparkline` · Story: Components/MetricTile.
 Bars are `rounded-tick`; done is `done`, in progress `prog`; never a signal colour for progress.
+
+### Charts
+
+`LineChart`, `BarChart`, `ScatterChart` · Story: Components/Chart
+([`chart.stories.tsx`](../../../packages/ui/src/components/chart/chart.stories.tsx))
+
+- Use: the Work Reports screen. `LineChart` for points over days (burndown, burnup, created
+  against resolved), `stacked` for bands that add up (cumulative flow); `BarChart` for grouped
+  values per category (velocity, time in status); `ScatterChart` for one dot per item on a
+  continuous axis with dashed reference lines (the control chart and its mean and median).
+- Marks use the status colours and two greys only (`tone`: `todo`, `prog`, `done`, `muted`,
+  `ink`): open work `todo`, moving work `prog`, finished work `done`, a total or scope `ink`, a
+  reference line `muted` and `dashed`. Never the accent, a signal colour or AI lilac.
+- The legend sits above the plot and every number is in a visually hidden table, so colour
+  never carries the meaning alone. Text is 11px `tx-3`; the chart measures its width so the
+  type stays on the scale at any size.
+- Not: a pie, a 3D or animated chart, or a chart in the Board header (that is `MetricSparkline`).

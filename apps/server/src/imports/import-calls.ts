@@ -1,4 +1,4 @@
-import type { ImportJob } from '@bemmoly/shared';
+import type { ImportContainerPage, ImportJob } from '@bemmoly/shared';
 import type { SignedInApp } from '../boot-harness.ts';
 import { FIXTURE_EMAIL, FIXTURE_TOKEN, type FakeSite } from './fake-atlassian.ts';
 
@@ -51,6 +51,12 @@ export function importCalls(app: SignedInApp) {
           token: FIXTURE_TOKEN,
         },
       }),
+    /** One page of what the connection found, as the chooser lists it. */
+    containers: (id: string, query = '') =>
+      call<ImportContainerPage>(
+        'GET',
+        `/admin/imports/${id}/containers${query ? `?${query}` : ''}`,
+      ),
     pick: (id: string, containers: string[]) =>
       call<ImportJob>('PATCH', `/admin/imports/${id}`, { containers }),
     run: async (id: string) => {

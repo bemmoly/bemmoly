@@ -1,99 +1,97 @@
-import type { ImportJob } from '@bemmoly/shared';
-import { Button, SettingsSection } from '@bemmoly/ui';
+import type { ImportJob, ImportSource } from '@bemmoly/shared';
+import { Button, buttonClassName, SettingsSection } from '@bemmoly/ui';
 import { Icon } from '@bemmoly/ui/icons';
+import { useImportReport } from '../../hooks/use-import-report.ts';
+import { importsApi } from '../../lib/imports-api.ts';
 import { FormError, Notice } from '../form.tsx';
-import { StatePill } from '../settings/state-pill.tsx';
-import { count, kindLabel, STATUS_WORDS } from './import-words.ts';
-
-const CELL = 'border-b border-line-2 py-2 text-13 tabular-nums';
+import { count } from './import-words.ts';
+import { ReportProjects } from './report-projects.tsx';
+import { ReportStats } from './report-stats.tsx';
+import { ResultAlert } from './result-alert.tsx';
 
 interface ImportReportProps {
   job: ImportJob;
+  source: ImportSource | null;
   rerunning: boolean;
   error: unknown;
   onRerun: () => void;
+  onRetry: (containers: string[]) => void;
   onStartOver: () => void;
 }
 
-/** What an import did: counts per kind, what it skipped and why, warnings, and what next. */
-export function ImportReport({ job, rerunning, error, onRerun, onStartOver }: ImportReportProps) {
-  const { report } = job;
-  const words = STATUS_WORDS[job.status];
-  const finished = job.status === 'completed';
-  const rows = Object.entries(report.counts);
-  const more = report.skippedTotal - report.skipped.length;
+/**
+ * Done: how it ended (with Retry for what stopped), the totals, one row per project or space,
+ * the first skipped records with the whole list as CSV, then New import and Run again.
+ */
+export function ImportReport(props: ImportReportProps) {
+  const { job, rerunning } = props;
+  const report = useImportReport(job, props.source);
+  const { result, failed } = report;
+  const retryAll =
+    failed.length > 0 ? (
+      <Button
+        variant="primary"
+        size="sm"
+        icon={<Icon name="refresh" />}
+        loading={rerunning}
+        onClick={() => props.onRetry(report.failedIds)}
+      >
+        {failed.length === 1 ? `Retry ${failed[0]?.name ?? ''}` : `Retry ${count(failed.length)}`}
+      </Button>
+    ) : null;
+  const more = job.report.skippedTotal - job.report.skipped.length;
   return (
-    <SettingsSection
-      title={`Import from ${job.sourceLabel}`}
-      actions={<StatePill tone={words.tone}>{words.label}</StatePill>}
-    >
-      {job.error ? <Notice tone="caution">{job.error}</Notice> : null}
-      {rows.length > 0 ? (
-        <table className="w-full border-collapse text-left">
-          <caption className="sr-only">Records per kind</caption>
-          <thead>
-            <tr className="text-12 font-semibold text-tx-3">
-              <th className={`${CELL} font-semibold`}>Kind</th>
-              <th className={`${CELL} text-right font-semibold`}>Created</th>
-              <th className={`${CELL} text-right font-semibold`}>Updated</th>
-              <th className={`${CELL} text-right font-semibold`}>Skipped</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map(([kind, n]) => (
-              <tr key={kind} className="text-tx">
-                <th scope="row" className={`${CELL} font-medium`}>
-                  {kindLabel(kind)}
-                </th>
-                <td className={`${CELL} text-right`}>{count(n.created)}</td>
-                <td className={`${CELL} text-right`}>{count(n.updated)}</td>
-                <td className={`${CELL} text-right`}>{count(n.skipped)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      ) : (
-        <p className="m-0 text-13 text-tx-2">Nothing was brought in before it stopped.</p>
-      )}
-      {report.skipped.length > 0 ? (
-        <div className="flex flex-col gap-1.5">
-          <h3 className="m-0 text-12 font-semibold text-tx-3">Skipped</h3>
-          <ul className="m-0 flex list-none flex-col gap-1 p-0 text-13">
-            {report.skipped.map((skip) => (
-              <li key={`${skip.kind}:${skip.source}`} className="text-tx-2">
-                <span className="font-medium text-tx">{skip.source}</span> · {skip.reason}
-              </li>
-            ))}
-          </ul>
-          {more > 0 ? <p className="m-0 text-12 text-tx-3">and {count(more)} more</p> : null}
-        </div>
-      ) : null}
-      {report.warnings.map((warning) => (
+    <div className="flex flex-col gap-4">
+      <ResultAlert tone={result.tone} headline={result.headline} action={retryAll}>
+        {result.body}
+      </ResultAlert>
+      <ReportStats stats={report.stats} />
+      <ReportProjects report={report} retrying={rerunning} onRetry={props.onRetry} />
+      {job.report.warnings.map((warning) => (
         <Notice key={warning} tone="caution">
           {warning}
         </Notice>
       ))}
-      <FormError error={error} />
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <p className="m-0 flex-1 text-12 text-tx-3">
-          {finished
-            ? 'Running it again updates what this import made instead of adding copies.'
-            : 'Resume carries on from where it stopped; nothing already brought in is repeated.'}
-        </p>
-        <div className="flex flex-wrap justify-end gap-2">
-          <Button variant="ghost" icon={<Icon name="plus" />} onClick={onStartOver}>
-            New import
-          </Button>
-          <Button
-            variant="primary"
-            icon={<Icon name="refresh" />}
-            loading={rerunning}
-            onClick={onRerun}
-          >
-            {finished ? 'Run again' : 'Resume'}
-          </Button>
+      <SettingsSection
+        title="Skipped"
+        hint={`${count(job.report.skippedTotal)} ${job.report.skippedTotal === 1 ? 'record' : 'records'}`}
+      >
+        {job.report.skipped.length > 0 ? (
+          <ul className="m-0 flex list-none flex-col p-0 text-13">
+            {job.report.skipped.map((skip) => (
+              <li
+                key={`${skip.kind}:${skip.source}`}
+                className="flex flex-wrap gap-x-3 border-t border-line-2 py-2 first:border-t-0"
+              >
+                <span className="w-28 shrink-0 font-mono text-12 text-tx-2">{skip.source}</span>
+                <span className="min-w-0 flex-1 text-tx">{skip.reason}</span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="m-0 text-13 text-tx-2">Nothing was skipped.</p>
+        )}
+        {more > 0 ? (
+          <p className="m-0 text-12 text-tx-3">and {count(more)} more in the list</p>
+        ) : null}
+        <FormError error={props.error} />
+        <div className="-mx-4 -mb-4 flex flex-wrap items-center gap-2 border-t border-line px-4 py-3">
+          {job.report.skippedTotal > 0 ? (
+            <a href={importsApi.skipsUrl(job.id)} download className={buttonClassName({})}>
+              <Icon name="download" />
+              Download the list (CSV)
+            </a>
+          ) : null}
+          <span className="ms-auto flex flex-wrap gap-2">
+            <Button variant="ghost" icon={<Icon name="plus" />} onClick={props.onStartOver}>
+              New import
+            </Button>
+            <Button icon={<Icon name="refresh" />} loading={rerunning} onClick={props.onRerun}>
+              {report.canResume ? 'Resume' : 'Run again'}
+            </Button>
+          </span>
         </div>
-      </div>
-    </SettingsSection>
+      </SettingsSection>
+    </div>
   );
 }

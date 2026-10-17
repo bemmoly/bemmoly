@@ -16,6 +16,7 @@ export const KERNEL_NOTIFICATION_KINDS = [
   'ai_budget',
   'break_glass_changed',
   'webhook_disabled',
+  'import_finished',
 ] as const;
 
 export type KernelNotificationKind = (typeof KERNEL_NOTIFICATION_KINDS)[number];
@@ -50,6 +51,7 @@ export const IMMEDIATE_KINDS: readonly string[] = [
   'ai_budget',
   'break_glass_changed',
   'webhook_disabled',
+  'import_finished',
 ];
 
 export function defaultChannelFor(kind: string): NotificationChannel {

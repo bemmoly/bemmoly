@@ -1,5 +1,10 @@
 import { queryKeys } from '@bemmoly/api-client';
-import type { CreateImportBody, ImportJob, ImportJobStatus } from '@bemmoly/shared';
+import type {
+  CreateImportBody,
+  ImportJob,
+  ImportJobStatus,
+  UpdateImportBody,
+} from '@bemmoly/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { importsApi } from '../lib/imports-api.ts';
 
@@ -58,11 +63,17 @@ export function useImportActions(onCreated: (job: ImportJob) => void) {
     },
   });
   const plan = useMutation({
-    mutationFn: ({ id, containers }: { id: string; containers: string[] }) =>
-      importsApi.update(id, { containers }),
+    /** Without containers it plans what is ticked in the server's selection. */
+    mutationFn: ({ id, body = {} }: { id: string; body?: UpdateImportBody }) =>
+      importsApi.update(id, body),
     onSuccess: store,
   });
-  const run = useMutation({ mutationFn: (id: string) => importsApi.run(id), onSuccess: store });
+  /** Everything planned, or with `containers` only those again (Retry), from their checkpoints. */
+  const run = useMutation({
+    mutationFn: ({ id, containers }: { id: string; containers?: string[] }) =>
+      importsApi.run(id, containers ? { containers } : {}),
+    onSuccess: store,
+  });
   const cancel = useMutation({
     mutationFn: (id: string) => importsApi.cancel(id),
     onSuccess: store,

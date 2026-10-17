@@ -71,6 +71,7 @@ that passes (ADR 0015).
 - [Board and Backlog](interaction/board-backlog.md)
 - [Roadmap](interaction/roadmap.md): epics and versions on a timeline, rescheduling, the forecast and its panel.
 - [Pairing](interaction/pairing.md): who worked beside whom on a project, the matrix and the pair panel.
+- [Reports](interaction/reports.md): sprint burndown, burnup, report and velocity; cumulative flow and created vs resolved.
 - [Projects and project settings](interaction/projects-settings.md)
 - [Settings › Work: the org defaults](interaction/settings-work.md): issue types, fields, workflow and board every project inherits until it overrides them.
 - [Settings › Webhooks and project settings › Automation](interaction/webhooks-automation.md): outgoing webhooks, the signing secret, the delivery log, rules, the rule builder and the run log.
@@ -80,4 +81,5 @@ that passes (ADR 0015).
 - [Docs page](interaction/docs-page.md): page column, icon and cover, properties row, the right margin, history mode, presence, Share.
 - [Docs: writing surface](interaction/docs-editor.md): selection bubble and ⌘K links, block handles, the / menu, code and table tools, the typing fade, issue embeds and Linked work.
 - [Settings › Docs](interaction/settings-docs.md): org templates, their order, archive and restore, the read view and the editor.
+- [Settings › Import](interaction/settings-import.md): the stepper, Connect, the project and space chooser (search, filters, select all, keys, Undo), the plan, the run and the wizard's short path.
 - [Docs: around the page](interaction/docs-around.md): create in place, Docs home, space overview, trash, search, import and export, phone.

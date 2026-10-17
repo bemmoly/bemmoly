@@ -28,10 +28,10 @@ export function RecentImports({ jobs, openId, onOpen }: RecentImportsProps) {
                 <span className="min-w-0 flex-1 truncate font-medium">
                   {job.sourceLabel}
                   {job.discovery ? (
-                    <span className="font-normal text-tx-3"> · {job.discovery.site}</span>
+                    <span className="font-normal text-tx-2"> · {job.discovery.site}</span>
                   ) : null}
                 </span>
-                <RelativeTime iso={job.createdAt} className="shrink-0 text-12 text-tx-3" />
+                <RelativeTime iso={job.createdAt} className="shrink-0 text-12 text-tx-2" />
                 <StatePill tone={words.tone}>{words.label}</StatePill>
               </button>
             </li>

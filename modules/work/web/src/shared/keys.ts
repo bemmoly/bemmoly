@@ -27,6 +27,17 @@ export const workKeys = {
   roadmap: (query: RoadmapQueryInput) => [...workKeys.roadmaps(), query] as const,
   pairing: (projectKey: string, range: string) =>
     [...queryKeys.work(), 'pairing', projectKey, range] as const,
+  sprintReport: (sprintId: string) => [...queryKeys.work(), 'sprint-report', sprintId] as const,
+  flowReport: (projectKey: string, days: number) =>
+    [...queryKeys.work(), 'flow-report', projectKey, days] as const,
+  cycleReport: (projectKey: string, report: 'control' | 'time-in-status', days: number) =>
+    [...queryKeys.work(), 'cycle-report', projectKey, report, days] as const,
+  scopeReport: (projectKey: string, kind: string, id: string | null) =>
+    [...queryKeys.work(), 'scope-report', projectKey, kind, id] as const,
+  timeTrackingReport: (projectKey: string, days: number, sprintId: string | null) =>
+    [...queryKeys.work(), 'time-tracking-report', projectKey, days, sprintId] as const,
+  reportStats: (projectKey: string, by: string, by2: string | null) =>
+    [...queryKeys.work(), 'report-stats', projectKey, by, by2] as const,
   issueTransitions: (key: string) => [...workKeys.issue(key), 'transitions'] as const,
   boardMetrics: (boardId: string) => [...queryKeys.work(), 'board-metrics', boardId] as const,
   /** Mutation keys of card moves in flight; a board's view is not read again while one is. */

@@ -1,4 +1,10 @@
-import { SidebarRow, isActivePath, useFrame, type ModuleSidebarProps } from '@bemmoly/core-web';
+import {
+  SidebarLabel,
+  SidebarRow,
+  isActivePath,
+  useFrame,
+  type ModuleSidebarProps,
+} from '@bemmoly/core-web';
 import type { Project } from '@bemmoly/module-work/shared';
 import { Icon } from '@bemmoly/ui/icons';
 import { useQuery } from '@tanstack/react-query';
@@ -17,9 +23,16 @@ function projectInPath(pathname: string): string | null {
   const [, area, screen, segment] = pathname.split('/');
   if (area !== 'work' || !segment) return null;
   if (screen === 'issue') return segment.split('-')[0]?.toUpperCase() ?? null;
-  return ['board', 'backlog', 'roadmap', 'pairing', 'members', 'settings', 'workflows'].includes(
-    screen ?? '',
-  )
+  return [
+    'board',
+    'backlog',
+    'roadmap',
+    'pairing',
+    'reports',
+    'members',
+    'settings',
+    'workflows',
+  ].includes(screen ?? '')
     ? segment.toUpperCase()
     : null;
 }
@@ -56,6 +69,7 @@ function ProjectViews({ project, pathname }: { project: Project; pathname: strin
       <SidebarRow child label="Backlog" icon="backlog" path={workPaths.backlog(key)} keys="G L" />
       <SidebarRow child label="Roadmap" icon="roadmap" path={workPaths.roadmap(key)} keys="G R" />
       <SidebarRow child label="Pairing" icon="grid" path={workPaths.pairing(key)} keys="G P" />
+      <SidebarRow child label="Reports" icon="reports" path={workPaths.reports(key)} keys="G E" />
       <SidebarRow
         child
         label="Settings"
@@ -68,9 +82,9 @@ function ProjectViews({ project, pathname }: { project: Project; pathname: strin
 }
 
 /**
- * Work's live sidebar rows (docs/design/premium/kit.js, `sidebar`): the projects, the one in
- * use opened to its views. On the rail each project is its tile. The heading, its "+" and "All
- * projects" come from the manifest.
+ * Work's live sidebar rows (docs/design/premium/kit.js, `sidebar`): under a "Projects" label,
+ * the projects, the one in use opened to its views. On the rail each project is its tile. The
+ * header row, its "+", "All projects" and Roadmap come from the manifest, above these.
  */
 export default function WorkSidebar(_props: ModuleSidebarProps) {
   const { mode, pathname } = useFrame();
@@ -99,6 +113,7 @@ export default function WorkSidebar(_props: ModuleSidebarProps) {
   }
   return (
     <>
+      <SidebarLabel label="Projects" />
       {projects.map((project) => {
         const open = project.key === current;
         const here = inWork && inPath === project.key;
