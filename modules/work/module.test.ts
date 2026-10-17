@@ -46,6 +46,14 @@ describe('work module', () => {
           keys: 'G P',
         },
         {
+          id: 'work.reports',
+          label: 'Reports',
+          path: '/work/reports',
+          placement: 'command',
+          icon: 'reports',
+          keys: 'G E',
+        },
+        {
           id: 'work.projects',
           label: 'Projects',
           path: '/work/projects',
@@ -133,6 +141,7 @@ describe('work module', () => {
     expect(loaded?.contributions.jobs.map((job) => job.name)).toEqual([
       'work.rank.rebalance',
       'work.automation.run',
+      'work.project.purge',
       'work.automation.schedule',
     ]);
     expect(loaded?.contributions.jobs[0]?.scheduleSetting).toBe('work.jobs.rankRebalance.schedule');

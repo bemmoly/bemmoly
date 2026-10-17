@@ -13,6 +13,7 @@ const VERBS: Readonly<Record<string, string>> = {
   ai_budget: 'says AI has used',
   break_glass_changed: 'changed the break-glass admins in',
   webhook_disabled: 'turned off a failing webhook:',
+  import_finished: 'finished',
 };
 
 const LABELS: Readonly<Record<string, string>> = {
@@ -27,6 +28,7 @@ const LABELS: Readonly<Record<string, string>> = {
   ai_budget: 'AI budget alerts',
   break_glass_changed: 'Break-glass admin changes',
   webhook_disabled: 'Webhooks turned off after failures',
+  import_finished: 'Finished imports',
   [DIGEST_SCOPE]: 'The notification digest',
 };
 

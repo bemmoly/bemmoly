@@ -17,6 +17,7 @@ import { docsMemberRoutes } from './docs-members.ts';
 import { docsMoveRoutes } from './docs-moves.ts';
 import { docsEditorAiRoutes } from './docs-editor-ai.ts';
 import { docsRoutes } from './docs.ts';
+import { importContainerRoutes } from './import-containers.ts';
 import { importRoutes } from './imports.ts';
 import { notificationRoutes } from './notifications.ts';
 import { operationsRoutes } from './operations.ts';
@@ -33,6 +34,7 @@ import { webhookRoutes } from './webhooks.ts';
 import { workAutomationRoutes } from './work-automation.ts';
 import { workBacklogRoutes } from './work-backlog.ts';
 import { workBoardRoutes } from './work-board.ts';
+import { workReportRoutes } from './work-reports.ts';
 import { workCodeLinkRoutes } from './work-code-links.ts';
 import { workFilterRoutes } from './work-filters.ts';
 import { workIssuesRoutes } from './work-issues.ts';
@@ -65,11 +67,13 @@ export const ROUTES: readonly MockRoute[] = [
   ...notificationRoutes,
   ...operationsRoutes,
   ...importRoutes,
+  ...importContainerRoutes,
   ...codeHostRoutes,
   ...workCodeLinkRoutes,
   ...webhookRoutes,
   ...workBacklogRoutes,
   ...workBoardRoutes,
+  ...workReportRoutes,
   ...workFilterRoutes,
   ...workIssuesRoutes,
   ...workMembersRoutes,

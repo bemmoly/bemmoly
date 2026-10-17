@@ -38,6 +38,7 @@ export * from './components/lane/index.ts';
 export * from './components/log-view/index.ts';
 export * from './components/logo/index.ts';
 export * from './components/menu/index.ts';
+export * from './components/chart/index.ts';
 export * from './components/metric-tile/index.ts';
 export * from './components/metric-compare/index.ts';
 export * from './components/modal/index.ts';
@@ -69,6 +70,7 @@ export * from './components/time-scrubber/index.ts';
 export * from './components/timeline/index.ts';
 export * from './components/toast/index.ts';
 export * from './components/tooltip/index.ts';
+export * from './components/virtual-list/index.ts';
 export * from './components/workflow-canvas/index.ts';
 export { formatAbsolute, formatRelative } from './lib/time.ts';
 /** For kernel surfaces built on the same popover, sheet and dialog behaviour as the components. */

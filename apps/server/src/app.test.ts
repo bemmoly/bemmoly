@@ -128,6 +128,14 @@ describe('buildApp', () => {
               keys: 'G P',
             },
             {
+              id: 'work.reports',
+              label: 'Reports',
+              path: '/work/reports',
+              placement: 'command',
+              icon: 'reports',
+              keys: 'G E',
+            },
+            {
               id: 'work.projects',
               label: 'Projects',
               path: '/work/projects',

@@ -1,11 +1,13 @@
 import {
   ErrorBoundary,
+  isActivePath,
   knownIcon,
   moduleName,
   ModuleTile,
   openCreate,
   SidebarHeading,
   SidebarRow,
+  SidebarSection,
   useFrame,
   useLoaded,
 } from '@bemmoly/core-web';
@@ -43,9 +45,21 @@ function LiveRows({ manifest }: { manifest: ModuleManifest }) {
 }
 
 /**
- * One module's sidebar section: its tile and name with the "+" its manifest names, the rows
- * its sidebar entry draws, then its fixed links. A module from an older server, with no
- * section declared, and one with nothing to list, get a single row to its area.
+ * The address is in this module's area, and not on one of the rows it lends the top of the
+ * sidebar (My issues is current there, so Work's section stays plain).
+ */
+function inArea(manifest: ModuleManifest, pathname: string): boolean {
+  const primary = manifest.sidebar?.primary ?? [];
+  return (
+    isActivePath(pathname, `/${manifest.id}`) &&
+    !primary.some((link) => isActivePath(pathname, link.path))
+  );
+}
+
+/**
+ * One module's sidebar section: its header row (tile, name and the "+" its manifest names),
+ * its fixed links to the whole area, then the rows its sidebar entry draws. A module from an older server, with no section declared, and one with nothing to list, get a
+ * single row to its area.
  */
 export function ModuleSection({
   manifest,
@@ -56,7 +70,7 @@ export function ModuleSection({
   alone?: boolean;
 }) {
   const name = moduleName(manifest);
-  const rail = useFrame().mode === 'rail';
+  const { pathname } = useFrame();
   const section = manifest.sidebar;
   const bare = !MODULE_SIDEBARS.resolve(manifest.id) && (section?.links.length ?? 0) === 0;
   if (!section || bare) {
@@ -77,18 +91,19 @@ export function ModuleSection({
       </section>
     );
   }
+  const current = inArea(manifest, pathname);
   return (
-    <section aria-label={name} className={`flex flex-col gap-0.5 ${rail ? 'items-center' : ''}`}>
+    <SidebarSection label={name} current={current}>
       <SidebarHeading
         label={name}
-        tile={<ModuleTile manifest={manifest} size={14} />}
+        tile={<ModuleTile manifest={manifest} size={20} />}
+        current={current}
         add={
           add && MODULE_CREATES.has(add.create)
             ? { label: add.label, onSelect: () => openCreate(add.create) }
             : undefined
         }
       />
-      <LiveRows manifest={manifest} />
       {section.links.map((link) => (
         <SidebarRow
           key={link.id}
@@ -98,6 +113,7 @@ export function ModuleSection({
           exact
         />
       ))}
-    </section>
+      <LiveRows manifest={manifest} />
+    </SidebarSection>
   );
 }

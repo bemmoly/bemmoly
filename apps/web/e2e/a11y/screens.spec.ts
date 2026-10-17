@@ -5,7 +5,16 @@ import { THEME_IDS } from '@bemmoly/ui/tokens';
 import { useMockBackend as mockBackend } from '../support/mock-backend.ts';
 import { A11Y_REPORT, A11Y_THEME } from './a11y.config.ts';
 import { audit, describe, type Finding } from './axe.ts';
-import { closeCollab, DOCS, PRODUCT, SETTINGS, SIGNED_OUT, WORK, type Screen } from './screens.ts';
+import {
+  closeCollab,
+  DOCS,
+  IMPORT,
+  PRODUCT,
+  SETTINGS,
+  SIGNED_OUT,
+  WORK,
+  type Screen,
+} from './screens.ts';
 
 /*
  * The WCAG 2.2 AA audit (docs/accessibility-conformance.md): every screen through axe with
@@ -19,6 +28,7 @@ const GROUPS = {
   work: WORK,
   docs: DOCS,
   settings: SETTINGS,
+  import: IMPORT,
 };
 const WIDTHS = { desktop: { width: 1440, height: 900 }, phone: { width: 390, height: 844 } };
 const REPORT = A11Y_REPORT;

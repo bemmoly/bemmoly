@@ -45,7 +45,7 @@ export const SETUP_STEPS: readonly SetupStep[] = [
     sub: 'Bring data, or start clean',
     title: 'Bring your data, or start clean',
     subtitle:
-      'Import will keep keys, history, comments, attachments and page trees, and you can run it again for a second project.',
+      'Import keeps keys, comments, attachments and page trees, and running it again updates what it made instead of copying it.',
     nextLabel: 'Continue',
     canSkip: true,
   },

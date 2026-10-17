@@ -101,9 +101,11 @@ describe('system routes', () => {
       'smtp',
       'https',
       'backups',
+      'integrity',
     ]);
     const byId = Object.fromEntries(body.checks.map((check) => [check.id, check]));
     expect(byId['postgres']).toMatchObject({ status: 'fail', value: 'db:5432 · not reachable' });
+    expect(byId['integrity']).toMatchObject({ status: 'warn', value: 'not checked' });
     expect(byId['smtp']).toMatchObject({
       status: 'warn',
       value: 'not configured',

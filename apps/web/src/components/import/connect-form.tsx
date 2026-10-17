@@ -3,8 +3,13 @@ import { Button, Field, Input, Select, SettingsSection } from '@bemmoly/ui';
 import { Icon } from '@bemmoly/ui/icons';
 import type { FormEvent } from 'react';
 import { FormError } from '../form.tsx';
+import { nounsOf } from './import-words.ts';
 
 export const SECRET_HINT = 'Stored encrypted; never shown again.';
+
+/** Under a refused token: the two usual causes. */
+export const REFUSED_TOKEN =
+  'Check that the email is the account that created this token and that it has not expired.';
 
 interface ConnectFormProps {
   source: ImportSource;
@@ -105,7 +110,13 @@ export function ConnectForm(props: ConnectFormProps) {
             key={field.name}
             label={field.required ? field.label : `${field.label} (optional)`}
             hint={hintOf(field, files[field.name])}
-            error={field.kind === 'file' ? fileError : undefined}
+            error={
+              field.kind === 'file'
+                ? fileError
+                : field.kind === 'secret' && error
+                  ? REFUSED_TOKEN
+                  : undefined
+            }
           >
             <Control
               field={field}
@@ -117,6 +128,11 @@ export function ConnectForm(props: ConnectFormProps) {
         ))}
         <FormError error={error} />
         <div className="flex flex-wrap items-center justify-end gap-2">
+          <span className="me-auto text-12 text-tx-3">
+            {source.id === 'csv'
+              ? 'Connecting reads the file only. It changes nothing.'
+              : `Connecting lists ${nounsOf(source).containers} only. It changes nothing.`}
+          </span>
           <Button type="button" variant="ghost" icon={<Icon name="back" />} onClick={props.onBack}>
             Other sources
           </Button>

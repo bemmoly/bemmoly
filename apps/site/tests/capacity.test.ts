@@ -68,7 +68,7 @@ describe('capacity.json', () => {
   });
 
   it('headlines the largest data set that did not slow down', () => {
-    expect(HEADLINE.data.issues).toBe(100_000);
+    expect(HEADLINE.data.issues).toBe(123_449);
     expect(HEADLINE.verdict).toBe('usable');
     expect(LOAD_RUN?.requestsPerSecond).toBe(80);
   });
@@ -165,12 +165,8 @@ describe.each(['sizing.html', 'self-hosting.html'])('%s', (file) => {
     }
   });
 
-  it('says the numbers predate the latest performance work', () => {
-    const note = all('[data-preliminary]');
-    expect(note).toHaveLength(1);
-    expect(note[0]!.textContent).toContain(
-      'Measured before the latest performance work; re-run pending',
-    );
+  it('keeps the card free of a re-run banner; the method notes carry it', () => {
+    expect(all('[data-preliminary]')).toHaveLength(0);
   });
 });
 

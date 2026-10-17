@@ -37,8 +37,15 @@ export interface RowContext {
   /** "https://acme.example.net", to recognise links to issues on the same site. */
   siteUrl: string;
   /** The source project key to the key it has here, for issue links in text. */
-  projectKeys: ReadonlyMap<string, string>;
+  /** Jira project key → its key here and how far its numbers move (into an existing project). */
+  projectKeys: ReadonlyMap<string, LocalKey>;
   cloud: boolean;
+}
+
+export interface LocalKey {
+  key: string;
+  /** Added to every Jira number: the last number the existing project had. */
+  offset: number;
 }
 
 export async function matchPerson(
@@ -68,8 +75,8 @@ export async function matchPerson(
 export function localKey(rows: RowContext, key: string): string | null {
   const match = /^([A-Z][A-Z0-9_]+)-(\d+)$/.exec(key);
   if (!match) return null;
-  const project = rows.projectKeys.get(match[1]!) ?? match[1]!;
-  return `${project}-${match[2]}`;
+  const local = rows.projectKeys.get(match[1]!);
+  return local ? `${local.key}-${Number(match[2]) + local.offset}` : `${match[1]!}-${match[2]}`;
 }
 
 export function convertText(rows: RowContext, body: unknown): ReturnType<typeof fromAdf> {
@@ -136,10 +143,10 @@ export async function toIssueRow(
 ): Promise<ImportedIssueRow | null> {
   const { setup, ctx } = rows;
   const f = issue.fields;
-  const number = Number(/-(\d+)$/.exec(issue.key)?.[1]);
+  const number = Number(/-(\d+)$/.exec(issue.key)?.[1]) + setup.offset;
   const typeId = f.issuetype ? setup.types.get(f.issuetype.id) : undefined;
   const status = f.status ? setup.statuses.get(f.status.id) : undefined;
-  if (!Number.isInteger(number) || number < 1) {
+  if (!Number.isInteger(number) || number <= setup.offset) {
     ctx.report.skip('issue', issue.key, 'The key has no number');
     return null;
   }

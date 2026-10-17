@@ -115,7 +115,12 @@ export default defineModule({
 });
 ```
 
-- **One top-level area per module.** One section, headed by the module's tile and name.
+- **One top-level area per module.** One section, headed by the module's header row (its tile
+  and name, `SidebarHeading` with a `tile`), in a `SidebarSection`. A rule separates Home, Inbox
+  and the `primary` rows from the modules. The section the address is in sits on a faint accent
+  wash, so the sidebar says which area you are in ([ADR 0037](../../adr/0037-sidebar-module-sections-read-as-areas.md)).
+- **Order inside a section**: the header row, the fixed `links` to the whole area, then the live
+  rows under a `SidebarLabel` naming them ("Projects", "Spaces").
 - **Live rows** (Work's projects, Docs' spaces) come from the module's `web/src/sidebar.tsx`,
   registered with `createSidebarRegistry` and drawn with `SidebarRow` and `SidebarHeading` from
   `@bemmoly/core-web`. It loads with the shell, never with a screen; until it lands, the section

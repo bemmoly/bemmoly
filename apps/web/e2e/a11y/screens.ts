@@ -4,6 +4,17 @@ import { INVITE_TOKEN, RESET_TOKEN } from '../../src/mocks/db.ts';
 import { NO_COLLAB_SERVER } from '../../src/mocks/msw.ts';
 import { RFC_PAGE_ID } from '../../src/mocks/seed/ai-insights.ts';
 import { uid } from '../../src/mocks/seed/time.ts';
+import {
+  chooserReady,
+  connect,
+  fillConnect,
+  FINISH,
+  fixSup,
+  freezeRun,
+  start,
+  toOptions,
+  toReview,
+} from '../support/import-flow.ts';
 
 /**
  * One screen of the product for the accessibility audit: where it lives, who opens it, and
@@ -195,4 +206,95 @@ export const SETTINGS: readonly Screen[] = SETTINGS_PATHS.map((path) => ({
   ready: (page: Page) => expect(page.getByRole('heading', { level: 1 }).first()).toBeVisible(),
 }));
 
-export const ALL_SCREENS = [...SIGNED_OUT, ...PRODUCT, ...WORK, ...DOCS, ...SETTINGS];
+const importStep = (
+  name: string,
+  open: (page: Page) => Promise<unknown>,
+  path = '/settings/import',
+): Screen => ({
+  name: `import ${name}`,
+  path,
+  ...(path.startsWith('/setup') ? { scenario: 'wizard' as const } : {}),
+  ready: heading(/./),
+  open,
+});
+
+/** Each step and state of the Jira and Confluence importer, in Settings and in setup. */
+export const IMPORT: readonly Screen[] = [
+  importStep('Connect', (page) => fillConnect(page)),
+  importStep('Connect, wrong token', async (page) => {
+    await connect(page, { token: 'wrong' });
+    await expect(page.getByRole('alert')).toContainText('refused the credentials');
+  }),
+  importStep('Choose', async (page) => {
+    await connect(page);
+    await chooserReady(page, 9);
+  }),
+  importStep('Choose 1,240 projects', async (page) => {
+    await connect(page, { site: 'https://big.example.net' });
+    await chooserReady(page, 0);
+    await expect(page.getByRole('img', { name: 'Counting' })).toHaveCount(0);
+  }),
+  importStep('Choose, empty', async (page) => {
+    await connect(page, { site: 'https://empty.example.net' });
+    await expect(page.getByRole('button', { name: 'Check again' })).toBeVisible();
+  }),
+  importStep('Choose, no match', async (page) => {
+    await connect(page);
+    await chooserReady(page, 9);
+    await page.getByRole('searchbox', { name: 'Search projects' }).fill('zzz');
+    await expect(page.getByText('No projects match “zzz”')).toBeVisible();
+  }),
+  importStep('Choose, Undo toast', async (page) => {
+    await connect(page);
+    await chooserReady(page, 9);
+    await page.getByRole('button', { name: 'Clear', exact: true }).click();
+    await expect(page.getByRole('button', { name: 'Undo' })).toBeVisible();
+  }),
+  importStep('Confluence choose', async (page) => {
+    await connect(page, { source: 'Confluence', site: 'https://acme.example.net/wiki' });
+    await expect(page.getByRole('region', { name: /Choose spaces/ })).toBeVisible();
+    await expect(page.getByRole('option').first()).toBeVisible();
+  }),
+  importStep('Confluence options', async (page) => {
+    await connect(page, { source: 'Confluence', site: 'https://acme.example.net/wiki' });
+    await page.getByRole('button', { name: /^Continue with \d+/ }).click();
+    await expect(page.getByRole('region', { name: /What to bring/ })).toBeVisible();
+  }),
+  importStep('Options, key clash', (page) => toOptions(page)),
+  importStep('Options, fixed', async (page) => {
+    await toOptions(page);
+    await fixSup(page);
+  }),
+  importStep('Review', (page) => toReview(page)),
+  importStep('Progress', async (page) => {
+    await start(page);
+    await freezeRun(page);
+  }),
+  importStep('Done', async (page) => {
+    await start(page);
+    await expect(page.getByText('All 9 projects imported.')).toBeVisible(FINISH);
+  }),
+  importStep('Done, partial failure', async (page) => {
+    await start(page, { site: 'https://flaky.example.net' });
+    await expect(page.getByText('8 of 9 projects imported.')).toBeVisible(FINISH);
+  }),
+  importStep(
+    'wizard Choose',
+    async (page) => {
+      await connect(page);
+      await expect(page.getByRole('button', { name: 'Start import of 9' })).toBeVisible();
+    },
+    '/setup?step=3',
+  ),
+  importStep(
+    'wizard running',
+    async (page) => {
+      await connect(page);
+      await page.getByRole('button', { name: 'Start import of 9' }).click();
+      await expect(page.getByText('Importing 9 projects from Jira.')).toBeVisible();
+    },
+    '/setup?step=3',
+  ),
+];
+
+export const ALL_SCREENS = [...SIGNED_OUT, ...PRODUCT, ...WORK, ...DOCS, ...SETTINGS, ...IMPORT];

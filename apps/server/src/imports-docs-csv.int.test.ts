@@ -58,7 +58,8 @@ describe('Confluence and CSV import', () => {
     if (!harness) return ctx.skip(skipReason);
     const created = await calls.connect('confluence', site);
     expect(created.status, JSON.stringify(created.body)).toBe(201);
-    expect(created.body.discovery?.containers.map((c) => [c.key, c.count])).toEqual([
+    const listed = await calls.containers(created.body.id);
+    expect(listed.body.items.map((c) => [c.key, c.count])).toEqual([
       ['ENG', 3],
       ['HR', 1],
     ]);

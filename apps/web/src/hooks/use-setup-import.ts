@@ -41,7 +41,7 @@ export const IMPORT_WAITING_NOTICE =
   'Importers run once Work or Docs is turned on. Continue for now, then import from Settings › Import.';
 
 export const IMPORT_READY_NOTICE =
-  'An import keeps running while you finish setup; its report waits in Settings › Import.';
+  'Start import runs it in the background with the default options; change them later in Settings › Import.';
 
 const NAMES: Record<string, string> = { jira: 'Jira', confluence: 'Confluence', csv: 'CSV file' };
 

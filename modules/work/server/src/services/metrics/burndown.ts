@@ -83,15 +83,21 @@ export function dayCutoffs(start: number, end: number): number[] {
   return cutoffs;
 }
 
-export function burndown(input: BurndownInput): BurndownPoint[] {
-  if (input.end < input.start) return [];
+/** Each issue's changes, newest first, as stateAt reads them. */
+export function newestFirstByIssue(changes: readonly FieldChange[]): Map<string, FieldChange[]> {
   const byIssue = new Map<string, FieldChange[]>();
-  for (const change of input.changes) {
+  for (const change of changes) {
     const list = byIssue.get(change.issueId) ?? [];
     list.push(change);
     byIssue.set(change.issueId, list);
   }
   for (const list of byIssue.values()) list.sort((a, b) => b.at - a.at);
+  return byIssue;
+}
+
+export function burndown(input: BurndownInput): BurndownPoint[] {
+  if (input.end < input.start) return [];
+  const byIssue = newestFirstByIssue(input.changes);
   return dayCutoffs(input.start, input.end).map((cutoff) => {
     let remaining = 0;
     for (const issue of input.issues) {

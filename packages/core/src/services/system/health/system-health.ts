@@ -14,6 +14,7 @@ import {
   checkSmtp,
   type HttpsSignal,
 } from './checks.ts';
+import { checkIntegrity } from './integrity.ts';
 
 const SAFETY_NET_HOURS = 36;
 const startedAt = Date.now();
@@ -79,12 +80,13 @@ export async function getSystemHealth(
   https: HttpsSignal,
 ): Promise<SystemHealthResponse> {
   if (actor) await deps.authorize(actor, SYSTEM_CAPABILITY, { kind: 'workspace' });
-  const [postgres, disk, memory, smtp, backups, maintenance] = await Promise.all([
+  const [postgres, disk, memory, smtp, backups, integrity, maintenance] = await Promise.all([
     checkPostgres(deps.sql, deps.config.databaseUrl),
     checkDisk(deps.config.dataDir),
     checkMemory(),
     deps.email ? deps.email.describe().catch(() => null) : Promise.resolve(null),
     checkBackups(deps),
+    checkIntegrity(deps.sql),
     readMaintenance(deps.config.dataDir),
   ]);
   return {
@@ -92,6 +94,6 @@ export async function getSystemHealth(
     role: deps.config.role,
     uptimeSeconds: Math.round((Date.now() - startedAt) / 1_000),
     maintenance: { active: maintenance !== null, reason: maintenance?.reason ?? null },
-    checks: [postgres, disk, memory, checkSmtp(smtp), checkHttps(https), backups],
+    checks: [postgres, disk, memory, checkSmtp(smtp), checkHttps(https), backups, integrity],
   };
 }
