@@ -63,6 +63,9 @@ export default function RunScreen() {
         }),
       });
       void client.invalidateQueries({ queryKey: ['pipelines', 'runs'] });
+      // Re-run failed keeps the same run: refetching it (and its graph) shows it running again,
+      // which also resumes the live updates a finished run had stopped listening for.
+      void client.invalidateQueries({ queryKey: ['pipelines', 'run', created.id] });
       void navigate({ to: '/runs/$id', params: { id: created.id }, search: {} });
     },
   });
