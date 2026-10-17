@@ -17,6 +17,11 @@ import { createMoves, type Step } from './moves.ts';
  */
 
 const MINUTE = 60_000;
+/**
+ * How many samples past its hold a step waits for enough requests to judge. Counted in
+ * samples, not minutes, so a machine that slept does not run out of patience on waking.
+ */
+const PATIENCE_SAMPLES = 30;
 
 export function createRolloutEngine(deps: ShippingEngineDeps) {
   const { sql } = deps;
@@ -107,6 +112,16 @@ export function createRolloutEngine(deps: ShippingEngineDeps) {
     }
   }
 
+  async function pendingSince(row: DeploymentRow, holdMs: number): Promise<number> {
+    const since = new Date(new Date(row.step_started_at ?? deps.now()).getTime() + holdMs);
+    const [counted] = await sql<{ n: number }[]>`
+      select count(*)::int as n from pipeline_canary_samples
+      where deployment_id = ${row.id} and step_index = ${row.step_index}
+        and metric = 'error_rate' and verdict = 'pending'
+        and sampled_at >= ${since.toISOString()}::timestamptz`;
+    return counted?.n ?? 0;
+  }
+
   async function sample(step: Step, phase: 'step' | 'watch') {
     const { row, plan, now } = step;
     const result = await judge(step, phase);
@@ -131,10 +146,12 @@ export function createRolloutEngine(deps: ShippingEngineDeps) {
             : 'Watch ended without metrics to judge',
         );
       }
-      if (result.unavailable || result.verdict === 'pending') {
+      if (result.verdict === 'pass') return goTo(step, row.step_index + 1);
+      // A small step on light traffic may need longer than its hold to see enough
+      // requests; it keeps sampling for a while before asking a person.
+      if (result.unavailable || (await pendingSince(row, hold)) >= PATIENCE_SAMPLES) {
         return pause(step, `No metrics to judge ${where}. Continue or roll back.`);
       }
-      return goTo(step, row.step_index + 1);
     }
     const next = sampleAt(step);
     await sql`update pipeline_deployments set failing_samples = ${streak},
