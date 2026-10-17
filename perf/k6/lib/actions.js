@@ -37,13 +37,30 @@ const send = (person, method, path, body, endpoint) => {
   return response;
 };
 
-/** The board of the 500-issue project, as the board screen loads it. */
+/*
+ * Whether a board answer accounts for every card: the columns' counts add up to `cards`, and each
+ * column carries its whole count unless it says where its next page starts.
+ */
+function boardHolds(response, cards) {
+  const body = response.json();
+  const columns = body?.columns ?? [];
+  const shown = new Map();
+  for (const card of body?.cards ?? []) shown.set(card.columnId, (shown.get(card.columnId) ?? 0) + 1);
+  const total = columns.reduce((sum, column) => sum + column.count, 0);
+  return (
+    total === cards &&
+    columns.every((column) => {
+      const page = shown.get(column.id) ?? 0;
+      return column.nextCursor === null ? page === column.count : page > 0 && page < column.count;
+    })
+  );
+}
+
+/** The board of the 500-issue project, as the board screen loads it: a first page per column. */
 export function boardView(person, { verifyCards } = {}) {
   const response = get(person, `/work/boards/${boardProject.boardId}/view`, 'board_view');
   if (verifyCards !== undefined) {
-    check(response, {
-      [`board shows ${verifyCards} cards`]: (r) => (r.json('cards') || []).length === verifyCards,
-    });
+    check(response, { [`board holds ${verifyCards} cards`]: (r) => boardHolds(r, verifyCards) });
   }
   return response;
 }
