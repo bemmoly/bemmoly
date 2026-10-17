@@ -1,6 +1,6 @@
 import { formatNumber, useScreenActions, useT, useShortcutHelp } from '@bemmoly/core-web';
 import type { Journey } from '@bemmoly/module-pipelines/shared';
-import { EmptyState, SegmentedControl, Skeleton, useToast } from '@bemmoly/ui';
+import { Button, EmptyState, SegmentedControl, Skeleton, useToast } from '@bemmoly/ui';
 import { Icon } from '@bemmoly/ui/icons';
 import { useMutation } from '@tanstack/react-query';
 import { useNavigate, useRouter } from '@tanstack/react-router';
@@ -107,6 +107,8 @@ export default function ForYouScreen() {
   ]);
 
   const name = overview.data?.me.firstName ?? '';
+  // An install with no applications yet: For you points at setting Pipelines up.
+  const emptyInstall = overview.data?.catalog.applications === 0;
   return (
     <ScreenFrame
       title={t('pipelines.forYou.title')}
@@ -168,10 +170,22 @@ export default function ForYouScreen() {
               <EmptyState
                 icon={<Icon name="branch" size={18} />}
                 title={
-                  tab === 'shipped'
-                    ? t('pipelines.forYou.shippedEmpty')
-                    : t('pipelines.forYou.changesEmpty')
+                  emptyInstall
+                    ? t('pipelines.forYou.emptyInstall')
+                    : tab === 'shipped'
+                      ? t('pipelines.forYou.shippedEmpty')
+                      : t('pipelines.forYou.changesEmpty')
                 }
+                {...(emptyInstall
+                  ? {
+                      description: t('pipelines.forYou.emptyInstallHint'),
+                      action: (
+                        <Button variant="primary" onClick={() => void navigate({ to: '/start' })}>
+                          {t('pipelines.shell.setUp')}
+                        </Button>
+                      ),
+                    }
+                  : {})}
               />
             </div>
           ) : (

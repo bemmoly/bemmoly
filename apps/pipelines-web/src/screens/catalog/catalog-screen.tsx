@@ -102,6 +102,11 @@ export default function CatalogScreen() {
           title={t('pipelines.catalog.emptyTitle')}
           description={t('pipelines.catalog.emptyDescription')}
           headingLevel={2}
+          action={
+            <Button variant="primary" onClick={() => void navigate({ to: '/start' })}>
+              {t('pipelines.shell.setUp')}
+            </Button>
+          }
         />
       ) : (
         <EmptyState

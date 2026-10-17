@@ -131,6 +131,13 @@ export function CommandMenu({ onToggleMode }: { onToggleMode: () => void }) {
           </CommandGroup>
         )}
         <CommandGroup label={t('pipelines.shell.commandsActions')}>
+          {matches(t('pipelines.shell.setUp'), query) ? (
+            <CommandItem
+              icon={<Icon name="checklist" size={16} />}
+              title={t('pipelines.shell.setUp')}
+              onSelect={() => go('/start')}
+            />
+          ) : null}
           <CommandItem
             icon={<Icon name="theme" size={16} />}
             title={t('pipelines.shell.commandsToggleMode')}

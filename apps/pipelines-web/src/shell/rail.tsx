@@ -1,7 +1,7 @@
 import { useT } from '@bemmoly/core-web';
 import { Logo } from '@bemmoly/ui';
 import { Link } from '@tanstack/react-router';
-import type { PipelinesMode } from '../hooks/use-mode.ts';
+import type { Appearance } from '../hooks/use-mode.ts';
 import { useBrowserPath } from '../hooks/use-browser-path.ts';
 import { pipelinesText } from '../i18n/catalog.ts';
 import { PersonMenu } from './person-menu.tsx';
@@ -12,7 +12,7 @@ import { PLACES, placeAt, SETTINGS } from './places.ts';
  * The 72px rail: the Bemmoly mark, the seven places, then Settings and the person at its
  * foot. Hidden below 768px, where the phone bar takes over.
  */
-export function Rail({ mode, onToggleMode }: { mode: PipelinesMode; onToggleMode: () => void }) {
+export function Rail({ appearance }: { appearance: Appearance }) {
   const t = useT(pipelinesText);
   const pathname = useBrowserPath();
   const current = placeAt(pathname);
@@ -33,7 +33,7 @@ export function Rail({ mode, onToggleMode }: { mode: PipelinesMode; onToggleMode
       ))}
       <div className="mt-auto flex flex-col items-center gap-1.5">
         <PlaceLink place={SETTINGS} active={current?.id === 'settings'} layout="rail" />
-        <PersonMenu mode={mode} onToggleMode={onToggleMode} />
+        <PersonMenu appearance={appearance} />
       </div>
     </nav>
   );

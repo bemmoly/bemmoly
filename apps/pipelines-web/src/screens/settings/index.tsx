@@ -4,7 +4,8 @@ import { Icon } from '@bemmoly/ui/icons';
 import type { ReactNode } from 'react';
 import { useGo } from '../../hooks/use-go.ts';
 import { useMe } from '../../hooks/use-me.ts';
-import { useMode, type PipelinesMode } from '../../hooks/use-mode.ts';
+import { useMode, type ModePreference } from '../../hooks/use-mode.ts';
+import { MODE_CHOICES } from '../../shell/mode-choices.ts';
 import { pipelinesText } from '../../i18n/catalog.ts';
 import { Panel, Screen } from '../../parts/screen.tsx';
 import { useUiStore } from '../../store/ui.ts';
@@ -31,7 +32,7 @@ export default function SettingsScreen() {
   const t = useT(pipelinesText);
   const go = useGo();
   const me = useMe().data;
-  const { mode, toggle } = useMode();
+  const { preference, setPreference } = useMode();
   const openKeys = useUiStore((state) => state.setKeysOpen);
   const setup = useSetup();
   const left = Object.values(setup.done).filter((done) => !done).length;
@@ -43,12 +44,18 @@ export default function SettingsScreen() {
           <Row title={t('pipelines.settings.mode')} hint={t('pipelines.settings.modeHint')}>
             <SegmentedControl
               size="sm"
-              options={[
-                { value: 'dark', label: t('pipelines.settings.dark') },
-                { value: 'light', label: t('pipelines.settings.light') },
-              ]}
-              value={mode}
-              onChange={(next: PipelinesMode) => next !== mode && toggle()}
+              aria-label={t('pipelines.settings.mode')}
+              options={MODE_CHOICES.map((choice) => ({
+                value: choice.value,
+                label: (
+                  <span className="inline-flex items-center gap-1.5">
+                    <Icon name={choice.icon} size={14} />
+                    {t(choice.word)}
+                  </span>
+                ),
+              }))}
+              value={preference}
+              onChange={(next: ModePreference) => setPreference(next)}
             />
           </Row>
           <Row title={t('pipelines.settings.theme')} hint={t('pipelines.settings.themeHint')}>

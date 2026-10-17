@@ -24,7 +24,8 @@ export function PipelinesShell() {
   const router = useRouter();
   const pathname = useBrowserPath();
   const { data: me } = useMe();
-  const { mode, toggle } = useMode();
+  const appearance = useMode();
+  const { mode, toggle } = appearance;
   useWorkspaceTheme(mode);
   useShellKeys(toggle);
   useEffect(() => setPreferenceOwner(me?.user.id ?? null), [me?.user.id]);
@@ -48,7 +49,7 @@ export function PipelinesShell() {
         >
           {t('pipelines.shell.skip')}
         </a>
-        <Rail mode={mode} onToggleMode={toggle} />
+        <Rail appearance={appearance} />
         <div className="flex min-w-0 flex-1 flex-col">
           <TopBar />
           <main id="content" tabIndex={-1} className="min-h-0 flex-1 overflow-auto outline-0">

@@ -1,20 +1,19 @@
 import { useT } from '@bemmoly/core-web';
-import { Avatar, Kbd, Menu, MenuItem, MenuSeparator } from '@bemmoly/ui';
+import { Avatar, Menu, MenuGroup, MenuItem, MenuSeparator } from '@bemmoly/ui';
 import { Icon } from '@bemmoly/ui/icons';
 import { useMe } from '../hooks/use-me.ts';
-import type { PipelinesMode } from '../hooks/use-mode.ts';
+import type { Appearance } from '../hooks/use-mode.ts';
 import { pipelinesText } from '../i18n/catalog.ts';
 import { api } from '../lib/api.ts';
 import { goToSignIn } from '../lib/sign-in.ts';
+import { MODE_CHOICES } from './mode-choices.ts';
 
 /** The person at the rail's foot: the look, a way back to Bemmoly and signing out. */
 export function PersonMenu({
-  mode,
-  onToggleMode,
+  appearance,
   align = 'start',
 }: {
-  mode: PipelinesMode;
-  onToggleMode: () => void;
+  appearance: Appearance;
   align?: 'start' | 'end';
 }) {
   const t = useT(pipelinesText);
@@ -38,13 +37,20 @@ export function PersonMenu({
         </button>
       )}
     >
-      <MenuItem
-        onSelect={onToggleMode}
-        icon={<Icon name={mode === 'dark' ? 'sun' : 'moon'} />}
-        hint={<Kbd keys="T" />}
-      >
-        {mode === 'dark' ? t('pipelines.shell.lightMode') : t('pipelines.shell.darkMode')}
-      </MenuItem>
+      <MenuGroup label={t('pipelines.settings.mode')}>
+        {MODE_CHOICES.map((choice) => (
+          <MenuItem
+            key={choice.value}
+            keepOpen
+            checked={appearance.preference === choice.value}
+            icon={<Icon name={choice.icon} />}
+            onSelect={() => appearance.setPreference(choice.value)}
+          >
+            {t(choice.word)}
+          </MenuItem>
+        ))}
+      </MenuGroup>
+      <MenuSeparator />
       <MenuItem onSelect={() => window.location.assign('/')} icon={<Icon name="external" />}>
         {t('pipelines.shell.openBemmoly')}
       </MenuItem>
