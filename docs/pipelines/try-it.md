@@ -8,7 +8,7 @@ the exact command and what you should see. The same journeys run as Playwright s
 
 You need Node 24, pnpm, and Docker (Colima is fine) running.
 
-<!-- STATUS: skeleton; the sections marked TODO are filled as the build lands. -->
+<!-- STATUS: steps 0, 2 and 4 were verified by the Playwright walkthrough on 2026-10-17; the sections marked TODO were not verified yet. -->
 
 ## 0. Start Bemmoly with Pipelines
 
@@ -56,7 +56,11 @@ node apps/runner/src/main.ts --url http://localhost:8080 --pool-token <printed> 
 
 Leave out `--local` to run each step as a container in Docker instead.
 
-TODO: Run pipeline… on checkout-api, the log streaming, the failing shard, Re-run failed.
+Open **checkout-api** (Catalog, press `/`, type `checkout-api`, Enter) and choose **Run**,
+then **Run pipeline** (`Mod+Enter`). You land on the run: Build prints "Compiling 214
+modules" live, then the first Unit shard fails on its first attempt with "retries a timed-out
+UPI collect" (the demo's `flaky` input). When the run has finished, **Re-run failed**
+(`Shift+R`) runs only that shard and the scan after it; the same run then passes.
 
 ## 3. Promote Dev → Staging → Prod with canaries on your Docker
 
@@ -65,13 +69,19 @@ traffic between two containers (`curl` the splitter), Roll back.
 
 ## 4. Bring your CI: register a release built elsewhere
 
-TODO: create a CI token in Platform › Bring your CI, then:
+Create a CI token scoped to `checkout-api` (`POST /api/v1/pipelines/ci/tokens` with
+`{"name":"Laptop CI","applications":["checkout-api"]}`, or Platform › Bring your CI where it
+is drawn), then:
 
 ```sh
 BEMMOLY_PIPELINES_URL=http://localhost:8080 BEMMOLY_PIPELINES_TOKEN=<token> \
   node apps/pipelines-cli/src/bin.ts release create --application checkout-api \
   --commit $(git rev-parse HEAD) --image sha256:<64 hex> --version 9.9.9
 ```
+
+It prints `Registered checkout-api 9.9.9 …` and the release id; open
+`/pipelines/releases/<id>/promote` to promote it. The same token is refused for any other
+application.
 
 ## 5. Access: refused with a reason, and the checker
 
