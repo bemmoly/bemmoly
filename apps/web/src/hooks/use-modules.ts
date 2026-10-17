@@ -1,4 +1,5 @@
 import { queryKeys } from '@bemmoly/api-client';
+import { inBemmolyShell } from '@bemmoly/core-web';
 import type { NavEntry } from '@bemmoly/shared';
 import { queryOptions, useQuery } from '@tanstack/react-query';
 import { api } from '../lib/api.ts';
@@ -20,7 +21,7 @@ export function useModule(moduleId: string) {
 
 export function useNavEntries(placement: NavEntry['placement']): NavEntry[] {
   const { data = [] } = useModules();
-  return data.flatMap((module) =>
-    module.navigation.filter((entry) => entry.placement === placement),
-  );
+  return data
+    .filter(inBemmolyShell)
+    .flatMap((module) => module.navigation.filter((entry) => entry.placement === placement));
 }

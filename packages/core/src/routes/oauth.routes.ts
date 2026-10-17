@@ -2,6 +2,7 @@ import type { FastifyPluginAsync, FastifyRequest } from 'fastify';
 import type { OAuthController } from '../controllers/oauth.controller.ts';
 import {
   AS_METADATA_PATH,
+  DEVICE_AUTHORIZATION_PATH,
   RESOURCE_METADATA_PATH,
   REVOKE_PATH,
   TOKEN_PATH,
@@ -53,6 +54,9 @@ export function oauthServerRoutes(
     );
     app.post(TOKEN_PATH, form, async (r, reply) => controller.token(r, reply));
     app.post(REVOKE_PATH, form, async (r, reply) => controller.revoke(r, reply));
+    app.post(DEVICE_AUTHORIZATION_PATH, form, async (r, reply) =>
+      controller.deviceAuthorization(r, reply),
+    );
   };
 }
 
@@ -75,6 +79,12 @@ export function oauthApiRoutes(controller: OAuthController): FastifyPluginAsync 
     };
     app.get('/oauth/authorization-requests', consent, async (r) => controller.preview(r));
     app.post('/oauth/consents', consent, async (r, reply) => controller.decide(r, reply));
+    // The /device page: what a command line tool asked for, and the person's answer. Same
+    // per-person budget as consent, which also keeps short codes from being guessed.
+    app.get('/oauth/device-requests', consent, async (r) => controller.previewDevice(r));
+    app.post('/oauth/device-decisions', consent, async (r, reply) =>
+      controller.decideDevice(r, reply),
+    );
     app.get('/oauth/grants', async (r) => controller.listGrants(r));
     app.delete('/oauth/grants/:id', async (r, reply) => controller.revokeGrant(r, reply));
   };

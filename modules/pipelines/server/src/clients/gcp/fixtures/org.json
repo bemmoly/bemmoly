@@ -1,0 +1,195 @@
+{
+  "recorded": "Hand-recorded from the Google Cloud REST reference (shapes and field names as documented); not captured from a live project.",
+  "exchanges": [
+    {
+      "method": "GET",
+      "url": "https://cloudresourcemanager.googleapis.com/v3/folders:search",
+      "response": {}
+    },
+    {
+      "method": "POST",
+      "url": "https://cloudresourcemanager.googleapis.com/v3/folders",
+      "body": {
+        "parent": "organizations/583920174411",
+        "displayName": "Bemmoly"
+      },
+      "response": {
+        "name": "operations/cf.4417302018845",
+        "metadata": {
+          "@type": "type.googleapis.com/google.cloud.resourcemanager.v3.CreateFolderMetadata",
+          "displayName": "Bemmoly",
+          "parent": "organizations/583920174411"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://cloudresourcemanager.googleapis.com/v3/operations/cf.4417302018845",
+      "response": {
+        "name": "operations/cf.4417302018845",
+        "done": true,
+        "response": {
+          "@type": "type.googleapis.com/google.cloud.resourcemanager.v3.Folder",
+          "name": "folders/417302018845",
+          "parent": "organizations/583920174411",
+          "displayName": "Bemmoly",
+          "state": "ACTIVE",
+          "createTime": "2026-10-12T08:10:02.551Z",
+          "etag": "W/\"9a8b7c6d\""
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://cloudresourcemanager.googleapis.com/v3/projects:search?query=labels.managed-by:bemmoly",
+      "response": {
+        "projects": [
+          {
+            "name": "projects/771205334188",
+            "parent": "folders/417302018845",
+            "projectId": "acme-bemmoly",
+            "state": "ACTIVE",
+            "displayName": "Bemmoly control",
+            "createTime": "2026-10-12T08:14:33.120Z",
+            "updateTime": "2026-10-12T08:14:35.004Z",
+            "etag": "W/\"5c1f3b2a9e7d4f10\"",
+            "labels": {
+              "managed-by": "bemmoly"
+            }
+          },
+          {
+            "name": "projects/771205334190",
+            "parent": "folders/417302018845",
+            "projectId": "acme-ci",
+            "state": "ACTIVE",
+            "displayName": "Bemmoly CI",
+            "createTime": "2026-10-12T08:14:33.120Z",
+            "updateTime": "2026-10-12T08:14:35.004Z",
+            "etag": "W/\"5c1f3b2a9e7d4f10\"",
+            "labels": {
+              "managed-by": "bemmoly"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://cloudresourcemanager.googleapis.com/v3/projects/acme-dev",
+      "status": 404,
+      "response": {
+        "error": {
+          "code": 404,
+          "message": "Project acme-dev not found",
+          "status": "NOT_FOUND"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "url": "https://cloudresourcemanager.googleapis.com/v3/projects",
+      "body": {
+        "projectId": "acme-dev",
+        "parent": "folders/417302018845",
+        "labels": {
+          "environment": "dev",
+          "managed-by": "bemmoly"
+        }
+      },
+      "response": {
+        "name": "operations/cp.6618209931",
+        "metadata": {
+          "@type": "type.googleapis.com/google.cloud.resourcemanager.v3.CreateProjectMetadata",
+          "createTime": "2026-10-17T00:01:00Z"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://cloudresourcemanager.googleapis.com/v3/operations/cp.6618209931",
+      "response": {
+        "name": "operations/cp.6618209931",
+        "done": false
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://cloudresourcemanager.googleapis.com/v3/operations/cp.6618209931",
+      "response": {
+        "name": "operations/cp.6618209931",
+        "done": true,
+        "response": {
+          "@type": "type.googleapis.com/google.cloud.resourcemanager.v3.Project",
+          "name": "projects/771205334201",
+          "parent": "folders/417302018845",
+          "projectId": "acme-dev",
+          "state": "ACTIVE",
+          "displayName": "Dev",
+          "createTime": "2026-10-12T08:14:33.120Z",
+          "updateTime": "2026-10-12T08:14:35.004Z",
+          "etag": "W/\"5c1f3b2a9e7d4f10\"",
+          "labels": {
+            "environment": "dev",
+            "managed-by": "bemmoly"
+          }
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://cloudbilling.googleapis.com/v1/projects/acme-dev/billingInfo",
+      "response": {
+        "name": "projects/acme-dev/billingInfo",
+        "projectId": "acme-dev",
+        "billingAccountName": "",
+        "billingEnabled": false
+      }
+    },
+    {
+      "method": "PUT",
+      "url": "https://cloudbilling.googleapis.com/v1/projects/acme-dev/billingInfo",
+      "body": {
+        "billingAccountName": "billingAccounts/01A2B3-C4D5E6-F7A8B9"
+      },
+      "response": {
+        "name": "projects/acme-dev/billingInfo",
+        "projectId": "acme-dev",
+        "billingAccountName": "billingAccounts/01A2B3-C4D5E6-F7A8B9",
+        "billingEnabled": true
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://cloudbilling.googleapis.com/v1/billingAccounts/01A2B3-C4D5E6-F7A8B9/projects",
+      "repeat": true,
+      "response": {
+        "projectBillingInfo": [
+          {
+            "name": "projects/acme-bemmoly/billingInfo",
+            "projectId": "acme-bemmoly",
+            "billingAccountName": "billingAccounts/01A2B3-C4D5E6-F7A8B9",
+            "billingEnabled": true
+          },
+          {
+            "name": "projects/acme-ci/billingInfo",
+            "projectId": "acme-ci",
+            "billingAccountName": "billingAccounts/01A2B3-C4D5E6-F7A8B9",
+            "billingEnabled": true
+          },
+          {
+            "name": "projects/acme-dev/billingInfo",
+            "projectId": "acme-dev",
+            "billingAccountName": "billingAccounts/01A2B3-C4D5E6-F7A8B9",
+            "billingEnabled": true
+          },
+          {
+            "name": "projects/acme-old-sandbox/billingInfo",
+            "projectId": "acme-old-sandbox",
+            "billingAccountName": "",
+            "billingEnabled": false
+          }
+        ]
+      }
+    }
+  ]
+}

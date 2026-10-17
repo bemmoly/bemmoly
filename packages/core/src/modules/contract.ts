@@ -12,6 +12,7 @@ import type { RequestContext } from '../services/authz/index.ts';
 import type { CollabRegistry } from './collab.ts';
 import type { McpRegistry } from './mcp.ts';
 import type { FilesRegistry } from './files.ts';
+import type { ModuleObjects } from './objects.ts';
 import type {
   AiRegistry,
   CapabilityRegistry,
@@ -28,6 +29,14 @@ import type {
 
 export type ModuleDefaultAccess = 'everyone' | 'teams' | 'none';
 
+/**
+ * Where people meet a module. "shell" puts it in Bemmoly's frame: sidebar, menus, ⌘K and
+ * Home. "product" is a module behind a product with its own web app and front door
+ * (Pipelines): the kernel loads its routes, capabilities and grants, and Bemmoly's shell never
+ * draws it.
+ */
+export type ModuleSurface = 'shell' | 'product';
+
 export interface BemmolyModule {
   /** Stable, lowercase, used in config, URLs and the changelog table. */
   id: 'work' | 'docs' | (string & {});
@@ -41,6 +50,8 @@ export interface BemmolyModule {
   dependsOn?: readonly string[];
   /** Initial module_grants row when the module is enabled. */
   defaultAccess: ModuleDefaultAccess;
+  /** "shell" when absent. */
+  surface?: ModuleSurface;
   /** Its tile's icon in the sidebar, menus and Settings › Modules: an icon name. */
   icon?: string;
   /** Its tile's colour: a logo colour, the accent or an epic hue, never a hex. */
@@ -77,6 +88,8 @@ export interface ModuleContext {
   collab: CollabRegistry;
   /** Targets people upload files into (a page); the kernel stores and serves the bytes. */
   files: FilesRegistry;
+  /** Bytes the module owns (build logs, reports), under its own prefix in the object store. */
+  objects: ModuleObjects;
   /** Consumers of verified code host activity (pull requests, branches, commits). */
   code: CodeRegistry;
   /** Invalidation messages for WebSocket clients; a no-op without a database. */
@@ -94,6 +107,8 @@ export interface ModuleContext {
   contextFor?: ActorContextFactory;
   /** The optional PDF renderer; absent unless BEMMOLY_PDF_URL names one. */
   pdf?: PdfRenderer;
+  /** BEMMOLY_PUBLIC_URL: the server's own address, never the request's Host header. */
+  publicUrl?: string;
 }
 
 export type ActorContextFactory = (

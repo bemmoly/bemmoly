@@ -46,6 +46,14 @@ describe('loadModules', () => {
     ]);
   });
 
+  it("hands modules the configured public address, never a request's", () => {
+    const seen: Array<string | undefined> = [];
+    const probe = fakeModule('probe', { register: (ctx) => void seen.push(ctx.publicUrl) });
+    loadModules({ available: [probe], publicUrl: 'https://bemmoly.acme.dev' });
+    loadModules({ available: [probe] });
+    expect(seen).toEqual(['https://bemmoly.acme.dev', undefined]);
+  });
+
   it('loads only the enabled set, dependencies first', () => {
     const desk = fakeModule('desk', { dependsOn: ['work'] });
     const registry = loadModules({

@@ -198,6 +198,10 @@ the frame (`ErrorBoundary` from `@bemmoly/core-web`), with the request id.
   `density` `md` 44px or `sm` 40px; `sort`, `footer`, `empty`, `isMuted` for rows awaiting Undo.
 - Not: a grid of divs with borders, or a second table style. Narrow screens scroll it sideways
   inside its card, never the page.
+- Long lists (hundreds of rows): pass `virtual` (`getScrollElement`, the frame's one scrolling
+  area, and a fixed `rowHeight`) so only the rows in view are drawn, `onEndReached` to load the
+  next keyset page as the end comes into view, and `total` for the row count. Rows keep their
+  keys and J K moves through the drawn ones.
 
 ### BulkBar and selection
 
@@ -224,6 +228,8 @@ Cancel and Save, a confirmation (`ConfirmChange`, typed word for the irreversibl
 - `Label`: an outlined pill with a colour dot (the label's stored colour); `onRemove` adds a
   named remove button. Labels are never filled pills.
 - `Tag` and `Badge`: neutral chips; sentence case, never capitals.
+  `Badge tone="danger"` (red) is for failure only ("1 failed"); waiting and rolled back are
+  `warn`, notes are `accent`.
 
 ### EntityTile and ProjectTile
 
@@ -238,4 +244,110 @@ Cancel and Save, a confirmation (`ConfirmChange`, typed word for the irreversibl
 ### Progress and metrics
 
 `ProgressBar`, `MetricTile`, `CapacityBar`, `MetricSparkline` · Story: Components/MetricTile.
+`StatTile` (Story: Pipelines/StatTile) is a headline number on a card: label, the figure at
+24px, one line of context toned better (green) or worse (amber), never red, and an optional
+small `SeriesChart`.
 Bars are `rounded-tick`; done is `done`, in progress `prog`; never a signal colour for progress.
+
+## Pipelines
+
+Bemmoly Pipelines has its own shell ([`../pipelines/`](../pipelines/README.md)) but draws with
+these shared parts, so a run reads the same everywhere. Stories: Pipelines/\*.
+
+### RunGlyph
+
+`RunGlyph` (`state`, `size` 12/14/16/18, `label`) is the one mark for a run, job, step or
+journey station: `queued` (dashed grey ring), `running` (accent arc that turns under
+`motion-safe:` only), `passed` (green), `failed` (red), `waiting` (amber, paused), `skipped`
+(slashed grey ring), `rolled_back` (amber with a back arrow: the roll back worked, so it is not
+failure red). Decorative unless `label` names the state; never a coloured pill or a character.
+
+### Journey
+
+`Journey` (`stations`, `progress`, `compact`, `ariaLabel`, `stateLabel`) draws one change from
+commit to the last Prod region: an ordered list of stations, each a `RunGlyph`, a short label
+and a detail ("25% canary"), on a track filled to `progress`. The live station carries
+`aria-current="step"` and a heavier label. It scrolls inside itself when the stations do not
+fit; the page never scrolls sideways. Use it on For you and anywhere a change's path is asked.
+
+### Lane
+
+`Lane` (`dots`, `label`) is a Release map cell's track with a dot per release moving through
+it: accent running, amber waiting, red failed. Running dots drift on the shared `drift`
+animation behind `motion-safe:`; under reduced motion every dot rests at its position. The dots
+are decorative; `label` ("3 moving, 1 failed") is what assistive tech reads, and the cell's
+counts stay the readable truth. Draw dots only for releases that are moving.
+
+### GateList and RolloutPlan
+
+`GateList` (`gates`, `ariaLabel`, `stateLabel`) lists what a promotion must meet: each gate's
+`RunGlyph` (pass, fail, pending as waiting), its label and the reason in plain words, with room
+for more under it (the approvers so far). A fact that is not known yet is pending with its
+reason, never a pass. `RolloutPlan` (`waves`, `ariaLabel`, `children`) draws numbered waves of
+canary steps ("5%, 25%, 100%") and what each waits for; steps take a glyph once the rollout is
+under way, so the plan reads as progress. The Promote screen uses both; the requester and the
+approver see the same drawing.
+
+### MetricCompare and SeriesChart
+
+`SeriesChart` is the one small time series: a line (accent, or red for an error rate) or bars
+(`acc-100`), dashed markers for changes with their labels as text, and an optional dashed
+threshold. `MetricCompare` puts canary beside stable for one metric with the verdict that
+decides the next step; the lines never turn red, the verdict's words do. What changed?,
+Capacity, Insights and the canary card use them; never a hand-drawn chart.
+
+### AccessExplain
+
+An access decision: the verdict on `green-50` or `red-50`, the sentence that explains it, then
+every binding, ownership and policy step in order, and the "Ask Payments for access" action.
+The Access checker and every refused action ("Why can't I?") draw it.
+
+### ProvisionChecklist
+
+Ordered steps toward something working: an empty install's first run (scan GitHub, connect a
+cloud, ship a first application) and a landing zone being created. Done steps go quiet, the
+current step is raised on `acc-50` with its action, a failed step keeps its action to try again.
+
+### StageGraph
+
+`StageGraph` (`stages`, `edges`, `selectedId`, `onSelect`, `ariaLabel`, `stateLabel`) draws a
+run's stages left to right with each stage's jobs stacked: card nodes with a `RunGlyph`, the
+name and a detail ("2 failed · 2m 55s"). `edges` are drawn as curves between nodes (accent into
+and out of the selected node, red when it failed); without them one connector joins
+neighbouring columns. The selected node has a 2px ring, red when it failed; skipped work is
+dimmed. One tab stop: arrows move between and within stages, J and K walk the nodes, Enter
+selects. Wide graphs scroll sideways inside themselves.
+
+### LogView
+
+`LogView` (`totalLines`, `getLine`, `onRangeNeeded`, `follow`, `onFollowChange`,
+`selectedLine`, `onSelectLine`, `scrollTo`, `matches`, `activeMatchLine`, `ariaLabel`,
+`lineLabel`) is the one job log: virtualised 20px mono rows on `sunken`, so 100,000 lines
+scroll like ten; lines load by range as they come into view and show a quiet bar until they
+do. ANSI colours arrive as span kinds and draw with tokens (`dim`, `bold`, `error`, `warning`,
+`success`, `info`, `accent`, `link`); error lines sit on `red-50`. Line numbers select and link
+a line (an accent bar at the start edge). While a job writes it follows the end; scrolling up
+stops following and scrolling back to the end resumes it. Search hits are marked on `amber-50`,
+the active one ringed. The search box and the follow switch belong to the screen.
+
+### DeployCell and TimeScrubber
+
+`DeployCell` (`count`, `secondary`, `dots`, `flags`, `label`, `still`) is one Release map cell:
+a `Lane` over the count ("212", "41 running"), a quiet second number ("3 moving") and at most
+two flags as `Badge`s (`danger` failed, `warn` waiting or rolled back, `accent` a note such as
+"train 11:00"). The drawn row is hidden from assistive tech; `label` says it all. `still` holds
+the dots while the map is rewound. `TimeScrubber` (`buckets`, `value`, `onChange`, `onCommit`,
+`stepMs`, `formatTime`, `liveLabel`, `ticks`, `formatNow`) is the map's timeline: deploys per
+bucket as `acc-100` bars, incidents in red, a handle that is a slider (arrows step a bucket,
+Shift an hour, Home the oldest, End live). `value` null is live; the screen shows the Live
+chip.
+
+### FacetPanel and DeliverySpark
+
+`FacetPanel` (`groups`, `onToggle`, `ariaLabel`, `showAllLabel`, `showFewerLabel`,
+`formatCount`) is the catalog's filter column: one checkbox list per facet with the count each
+value would leave. Values at zero stay listed, quiet, so the shape of the data still reads;
+chosen values always show; long facets (teams) fold after `limit` behind "Show all N".
+`DeliverySpark` (`values`, `label`) is a row's deploy frequency: one 4px bar per week in
+`acc-500`, a hairline in `line` where nothing shipped, scaled to the row's own peak; `label`
+carries the number.

@@ -6,7 +6,7 @@ import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { api } from '../lib/api.ts';
 import { signInFailure, type SignInFailure } from '../lib/auth-errors.ts';
 import { serverFieldErrors, validateForm, type FieldErrors } from '../lib/errors.ts';
-import { safeRedirect } from '../router/guards.ts';
+import { leaveFor } from '../router/guards.ts';
 import { loginForm } from './auth-form-schemas.ts';
 import { useCountdown } from './use-countdown.ts';
 import { rememberSignIn } from './use-last-sign-in.ts';
@@ -97,7 +97,10 @@ export function useLoginForm(redirectTo: string | undefined, initialEmail = '') 
       setUser(signedIn);
       setPhase('signed-in');
       await startSession(queryClient);
-      window.setTimeout(() => void navigate({ to: safeRedirect(redirectTo) }), SIGNED_IN_BEAT_MS);
+      window.setTimeout(
+        () => leaveFor(redirectTo ?? '/', (to) => void navigate({ to })),
+        SIGNED_IN_BEAT_MS,
+      );
     } catch (error) {
       setPhase('idle');
       fail(signInFailure(error), error);

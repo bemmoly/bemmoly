@@ -1,0 +1,6 @@
+{
+  "name": "@acme/web",
+  "scripts": {
+    "start": "next start"
+  }
+}

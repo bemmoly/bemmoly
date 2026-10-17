@@ -30,6 +30,7 @@ import {
   Italic,
   Layers,
   LayoutGrid,
+  MapIcon,
   Lightbulb,
   ListChecks,
   Megaphone,
@@ -37,6 +38,8 @@ import {
   MousePointer2,
   Palette,
   Paperclip,
+  Play,
+  Cloud,
   Printer,
   Puzzle,
   Rocket,
@@ -105,6 +108,11 @@ export const KIT_MORE = {
   dot: CircleDot,
   hexagon: Hexagon,
   rocket: Rocket,
+  /** Pipelines' rail: the release map and runs. */
+  map: MapIcon,
+  play: Play,
+  /** Pipelines' clouds: a provider to connect. */
+  cloud: Cloud,
   idea: Lightbulb,
   wrench: Wrench,
   megaphone: Megaphone,

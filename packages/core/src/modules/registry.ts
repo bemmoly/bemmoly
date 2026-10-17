@@ -1,6 +1,6 @@
 import { moduleSettingsSchema, sidebarSectionSchema, type ModuleManifest } from '@bemmoly/shared';
 import type { RetrievalSourceDefinition } from '../contracts/retrieval.ts';
-import type { CodeActivityConsumer } from './code.ts';
+import type { CodeActivityConsumer, CodeAppPermissions, CodeEventConsumer } from './code.ts';
 import type { CollabDocumentDefinition } from './collab.ts';
 import type { BemmolyModule } from './contract.ts';
 import type { FileTargetDefinition } from './files.ts';
@@ -72,6 +72,7 @@ export class ModuleRegistry {
       ...(module.order === undefined ? {} : { order: module.order }),
       ...(module.sidebar ? { sidebar: sidebarSectionSchema.parse(module.sidebar) } : {}),
       ...(module.settings ? { settings: moduleSettingsSchema.parse(module.settings) } : {}),
+      ...(module.surface ? { surface: module.surface } : {}),
       ...(contributions.searchProviders.length > 0
         ? {
             search: contributions.searchProviders.map(({ kind, label }) => ({ kind, label })),
@@ -148,6 +149,16 @@ export class ModuleRegistry {
   /** Every module's `ctx.code.addConsumer` contributions; verified deliveries go to these. */
   codeConsumers(): FromModule<CodeActivityConsumer>[] {
     return this.#collect((c) => c.codeConsumers);
+  }
+
+  /** Every module's `ctx.code.addEventConsumer` contributions. */
+  codeEventConsumers(): FromModule<CodeEventConsumer>[] {
+    return this.#collect((c) => c.codeEventConsumers);
+  }
+
+  /** Every module's `ctx.code.requestAppPermissions` contributions, for the app manifest. */
+  codeAppPermissions(): FromModule<CodeAppPermissions>[] {
+    return this.#collect((c) => c.codeAppPermissions);
   }
 
   #collect<T extends object>(pick: (c: ModuleContributions) => readonly T[]): FromModule<T>[] {

@@ -41,9 +41,15 @@ export function createSidebarRegistry(loaders: Readonly<Record<string, ModuleSid
 
 export type SidebarRegistry = ReturnType<typeof createSidebarRegistry>;
 
-/** Modules in sidebar order: their declared order, then the server's. */
+/** Whether Bemmoly's frame draws the module; a product with its own web app is never drawn. */
+export function inBemmolyShell(manifest: ModuleManifest): boolean {
+  return manifest.surface !== 'product';
+}
+
+/** Shell modules in sidebar order: their declared order, then the server's. */
 export function inSidebarOrder(manifests: readonly ModuleManifest[]): ModuleManifest[] {
   return manifests
+    .filter(inBemmolyShell)
     .map((manifest, index) => ({ manifest, index }))
     .sort((a, b) => (a.manifest.order ?? 50) - (b.manifest.order ?? 50) || a.index - b.index)
     .map(({ manifest }) => manifest);

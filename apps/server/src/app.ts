@@ -23,7 +23,7 @@ import { getMetrics, httpTelemetry, type Metrics } from '@bemmoly/core/telemetry
 import Fastify, { type FastifyInstance } from 'fastify';
 import { apiNotFoundHandler, errorHandler } from './middlewares/error-handler.ts';
 import { exposeRequestId, requestIdOptions } from './middlewares/request-id.ts';
-import { hasWebBuild, registerWebApp } from './middlewares/static-web.ts';
+import { hasWebBuild, registerWebApp, type ProductWeb } from './middlewares/static-web.ts';
 
 export interface BuildAppOptions {
   /** The secret key, when present, keys the hash the logger writes for user ids. */
@@ -49,6 +49,8 @@ export interface BuildAppOptions {
   maintenance?: () => Promise<MaintenanceState | null>;
   /** Absolute path of the web build; skipped when it has no index.html. */
   webRoot?: string;
+  /** Products' own web apps under their base path; each is skipped without a build. */
+  productWebs?: readonly ProductWeb[];
   /** Defaults to the process-wide metrics; tests pass their own. */
   metrics?: Metrics;
   /** false silences logs; a stream captures them, for tests. */
@@ -93,7 +95,7 @@ export async function buildApp(options: BuildAppOptions): Promise<FastifyInstanc
     }),
   );
   if (options.webRoot && hasWebBuild(options.webRoot)) {
-    await registerWebApp(app, options.webRoot);
+    await registerWebApp(app, options.webRoot, options.productWebs);
   } else {
     app.setNotFoundHandler(apiNotFoundHandler);
   }

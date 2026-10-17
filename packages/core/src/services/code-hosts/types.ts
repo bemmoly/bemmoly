@@ -1,7 +1,13 @@
 import type { CodeHostKind } from '@bemmoly/shared';
 import type { AddressPolicy } from '../../clients/guarded-fetch.ts';
 import type { RestClientOptions } from '../../clients/rest.ts';
-import type { CodeActivity } from '../../contracts/code-hosts.ts';
+import type {
+  CodeActivity,
+  CodeCheckReport,
+  CodeDeploymentReport,
+  CodeEvent,
+  CodePullRequestInput,
+} from '../../contracts/code-hosts.ts';
 
 /** An inbound request as the webhook route hands it over: headers and the untouched bytes. */
 export interface WebhookRequest {
@@ -19,6 +25,8 @@ export interface ParsedDelivery {
   summary: string;
   /** Nothing to link: an event Bemmoly does not use, or a ping. */
   activities: ActivityDraft[];
+  /** What happened, for modules that act on events (a push, a pull request, a check). */
+  events?: CodeEvent[];
   ping?: boolean;
 }
 
@@ -52,6 +60,12 @@ export interface CodeHostApi {
   check(): Promise<string>;
   /** Pull or merge requests of one repository changed since `since`, newest first. */
   recentRequests(repository: string, since: Date, limit: number): Promise<ActivityDraft[]>;
+  /** The writes and reads modules make; a host without them is told so by the kernel. */
+  reportCheck?(report: CodeCheckReport): Promise<{ externalId: string }>;
+  reportDeployment?(report: CodeDeploymentReport): Promise<{ externalId: string }>;
+  readFile?(repository: string, path: string, ref: string): Promise<string | null>;
+  listFiles?(repository: string, ref: string): Promise<{ paths: string[]; truncated: boolean }>;
+  openPullRequest?(input: CodePullRequestInput): Promise<{ url: string; number: number }>;
 }
 
 /**

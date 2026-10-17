@@ -17,6 +17,9 @@ rules:
         - /packages/core/src/testing/**
         - /scripts/**
         - /tools/**
+        # The Pipelines demo's container app: a separate program that reads its own
+        # environment, never part of a Bemmoly process.
+        - /modules/pipelines/scripts/demo/app/**
     pattern-either:
       - pattern: process.env
       - pattern: process.env.$KEY

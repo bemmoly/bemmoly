@@ -81,3 +81,10 @@ that passes (ADR 0015).
 - [Docs: writing surface](interaction/docs-editor.md): selection bubble and ⌘K links, block handles, the / menu, code and table tools, the typing fade, issue embeds and Linked work.
 - [Settings › Docs](interaction/settings-docs.md): org templates, their order, archive and restore, the read view and the editor.
 - [Docs: around the page](interaction/docs-around.md): create in place, Docs home, space overview, trash, search, import and export, phone.
+
+## Bemmoly Pipelines
+
+Pipelines' own screens, each with its notes:
+[For you](interaction/pipelines-for-you.md), [Release map](interaction/pipelines-map.md),
+[Catalog](interaction/pipelines-catalog.md), [Application](interaction/pipelines-application.md),
+[Runs and a run](interaction/pipelines-runs.md).
