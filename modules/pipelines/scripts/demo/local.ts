@@ -92,12 +92,14 @@ export async function demoPeople(
 
 /** Docker connection, environments on it, short timings, the admin in the owning team. */
 export async function pointAtDocker(sql: SqlClient, docker: string): Promise<void> {
-  const config = JSON.stringify({ dockerHost: docker, syntheticRps: 5 });
+  // Twenty requests a second gives a 5% canary enough traffic to judge within its hold.
+  const config = JSON.stringify({ dockerHost: docker, syntheticRps: 20 });
   await sql`
     insert into cloud_connections (provider, name, status, layout, config, principal, last_checked_at)
     values ('local', 'This machine', 'connected', 'per-environment', ${config}::jsonb,
       ${`docker at ${docker}`}, now())
-    on conflict (lower(name)) do update set config = excluded.config, status = 'connected'`;
+    on conflict (lower(name)) do update
+      set config = cloud_connections.config || excluded.config, status = 'connected'`;
   await sql`update pipeline_environments set provider = 'local' where archived_at is null`;
   // A laptop demo happens whenever its owner has time, so deploy windows are lifted and kept
   // aside; undo puts them back.
@@ -198,6 +200,15 @@ export async function driveUntilSettled(
     if (state !== last) log(`${state}${row?.outcome_reason ? `: ${row.outcome_reason}` : ''}`);
     last = state;
     if (!['requested', 'gating', 'scheduled', 'rolling_out'].includes(state)) return state;
+    const [paused] = await sql<{ pause_reason: string | null }[]>`
+      select pause_reason from pipeline_deployments
+      where promotion_id = ${promotionId} and state = 'waiting' limit 1`;
+    if (paused) {
+      log(
+        `paused: ${paused.pause_reason ?? 'waiting for a person'} (decide on the deployment page)`,
+      );
+      return 'paused';
+    }
     await sleep(2000);
   }
 }

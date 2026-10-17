@@ -8,6 +8,7 @@
  *   bad       ship a release that fails a third of requests in Prod asia-south1 the same way;
  *             approve it and watch its canary roll back by itself
  *   approve   approve the open Prod promotion as another engineer of the owning team
+ *   continue  carry on with a paused canary (what Continue on the deployment page does)
  *   drive     keep the shipping engine moving every two seconds (when the server is not running)
  *   status    what runs where, and the local address of each environment
  *   undo      point the environments back at the simulated cloud and stop the containers
@@ -98,6 +99,21 @@ try {
       await driveUntilSettled(sql, shipping, id, (line) => out(`  ${line}`));
     }
     if (open.length === 0) out('Nothing is waiting for approval.');
+  } else if (command === 'continue') {
+    const { approver } = await demoPeople(sql);
+    const paused = await sql<{ id: string; promotion_id: string | null }[]>`
+      select d.id, d.promotion_id from pipeline_deployments d
+      join pipeline_applications a on a.id = d.application_id
+      where a.key = ${DEMO_APP} and d.state = 'waiting' order by d.created_at desc limit 1`;
+    const [row] = paused;
+    if (!row) out('No canary is paused.');
+    else {
+      await shipping.resume(as(approver.id), row.id, { decision: 'continue', reason: 'Carry on' });
+      out(`${approver.name} carries on with the paused canary`);
+      if (row.promotion_id) {
+        await driveUntilSettled(sql, shipping, row.promotion_id, (line) => out(`  ${line}`));
+      }
+    }
   } else if (command === 'drive') {
     out('Driving the shipping engine; Ctrl+C stops.');
     for (;;) {
@@ -112,7 +128,7 @@ try {
     out('Environments point at the simulated cloud again.');
   } else {
     process.stderr.write(
-      `Unknown command ${command}. Use setup, bad, approve, drive, status or undo.\n`,
+      `Unknown command ${command}. Use setup, bad, approve, continue, drive, status or undo.\n`,
     );
     process.exitCode = 2;
   }
