@@ -81,8 +81,12 @@ jobs:
         with:
           turbo-cache: unit
 
+      # Every workspace but deploy runs vitest, which takes the coverage flags; deploy runs bats.
       - name: Unit tests
-        run: pnpm turbo run test -- --coverage --coverage.reporter=cobertura
+        run: pnpm turbo run test --filter='!@bemmoly/deploy' -- --coverage --coverage.reporter=cobertura
+
+      - name: Deploy unit tests
+        run: pnpm turbo run test --filter=@bemmoly/deploy
 
       - name: Merge the coverage reports
         run: node scripts/merge-coverage.ts

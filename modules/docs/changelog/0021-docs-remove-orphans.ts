@@ -9,7 +9,7 @@ const noPage = (column: ReturnType<typeof sql>) =>
   sql`NOT EXISTS (SELECT 1 FROM pages p WHERE p.id = ${column})`;
 
 export default changeset({
-  id: '0020-docs-remove-orphans',
+  id: '0021-docs-remove-orphans',
   author: 'bemmoly',
   description: 'Remove links, notifications and AI rows of deleted pages and issues',
   contexts: ['*'],
