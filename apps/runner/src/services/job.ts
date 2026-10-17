@@ -29,6 +29,8 @@ export interface JobDeps {
   /** Per-job workspaces live under here, unless `workspace` names one to reuse. */
   workRoot: string;
   workspace?: string;
+  /** Folders outside the workspace an image build may read (--allow-build-path). */
+  allowBuildPaths?: readonly string[];
   /** The address steps call back on (bemmoly-runner split). */
   apiUrl: string;
   /** How long a finished job waits for its logs to land before finishing anyway. */
@@ -172,7 +174,7 @@ export class JobRun {
         catcher.see(line);
         logs.line(line, position);
       };
-      const prepared = prepareStep(job, step, deps.executors);
+      const prepared = prepareStep(job, step, deps.executors, deps.allowBuildPaths);
       let exitCode: number;
       if ('refusal' in prepared) {
         onLine(prepared.refusal);

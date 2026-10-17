@@ -63,19 +63,29 @@ export function buildCommand(job: ClaimedJob, step: ResolvedStep): string {
 export async function buildPathProblem(
   workspace: string,
   step: ResolvedStep,
+  allowed: readonly string[] = [],
 ): Promise<string | null> {
   const root = await realpath(workspace);
+  const roots = [
+    root,
+    ...(await Promise.all(allowed.map((dir) => realpath(dir).catch(() => dir)))),
+  ];
   const { dockerfile, context } = buildPaths(step);
   for (const [what, value] of [
     ['Dockerfile', dockerfile],
     ['build context', context],
   ] as const) {
-    // A path that does not exist yet is judged as written; docker build then reports it missing.
-    const real = await realpath(path.resolve(workspace, value)).catch(() =>
-      path.resolve(root, value),
+    const written = path.resolve(root, value);
+    // A path that does not exist yet is judged by its resolved folder (macOS /var is
+    // /private/var); docker build then reports it missing.
+    const real = await realpath(path.resolve(workspace, value)).catch(async () =>
+      path.join(
+        await realpath(path.dirname(written)).catch(() => path.dirname(written)),
+        path.basename(written),
+      ),
     );
-    if (!isInside(root, real)) {
-      return `The ${what} ${value} is outside the repository; name a path inside it`;
+    if (!roots.some((inside) => isInside(inside, real))) {
+      return `The ${what} ${value} is outside the repository; name a path inside it, or start the runner with --allow-build-path`;
     }
   }
   return null;
@@ -88,12 +98,15 @@ export async function buildPathProblem(
 export class BuildExecutor implements StepExecutor {
   private readonly host: StepExecutor;
 
-  constructor(host: StepExecutor) {
+  private readonly allowed: readonly string[];
+
+  constructor(host: StepExecutor, allowed: readonly string[] = []) {
     this.host = host;
+    this.allowed = allowed;
   }
 
   async run(step: ResolvedStep, options: StepRunOptions): Promise<StepResult> {
-    const problem = await buildPathProblem(options.workspace, step);
+    const problem = await buildPathProblem(options.workspace, step, this.allowed);
     if (problem) {
       options.onLine(problem);
       return { exitCode: 1 };

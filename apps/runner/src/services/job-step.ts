@@ -47,11 +47,12 @@ export function prepareStep(
   job: ClaimedJob,
   step: ResolvedStep,
   executors: Executors,
+  allowBuildPaths: readonly string[] = [],
 ): PreparedStep | { refusal: string } {
   if (step.uses) {
     if (isBuildAction(step.uses)) {
       return {
-        executor: new BuildExecutor(executors.host()),
+        executor: new BuildExecutor(executors.host(), allowBuildPaths),
         step: { ...step, run: buildCommand(job, step) },
       };
     }

@@ -21,12 +21,18 @@ export async function seedAcme(envFile: string, scale: number): Promise<string> 
   return stdout;
 }
 
-/** `demo:runner`: the laptop pool and a runnable pipeline; returns the pool's token. */
+export interface LaptopPool {
+  token: string;
+  /** The demo application's folder, which its image build reads from outside the workspace. */
+  allowBuildPath?: string;
+}
+
+/** `demo:runner`: the laptop pool and a runnable pipeline; returns how to start its runner. */
 export async function readyLaptopPool(
   envFile: string,
   baseURL: string,
   apps: readonly string[],
-): Promise<string> {
+): Promise<LaptopPool> {
   const { stdout } = await run(
     process.execPath,
     [
@@ -41,7 +47,8 @@ export async function readyLaptopPool(
   );
   const token = /--pool-token (\S+)/.exec(stdout)?.[1];
   if (!token) throw new Error(`demo:runner printed no pool token:\n${stdout}`);
-  return token;
+  const allowBuildPath = /--allow-build-path (\S+)/.exec(stdout)?.[1];
+  return { token, ...(allowBuildPath ? { allowBuildPath } : {}) };
 }
 
 export interface RunningRunner {
@@ -50,7 +57,7 @@ export interface RunningRunner {
 }
 
 /** A runner that runs steps as processes on this machine, as `--local` promises. */
-export function startLocalRunner(baseURL: string, poolToken: string): RunningRunner {
+export function startLocalRunner(baseURL: string, pool: LaptopPool): RunningRunner {
   const dataDir = statePath('runner');
   mkdirSync(dataDir, { recursive: true });
   const log = statePath('runner.log');
@@ -62,7 +69,8 @@ export function startLocalRunner(baseURL: string, poolToken: string): RunningRun
       '--url',
       baseURL,
       '--pool-token',
-      poolToken,
+      pool.token,
+      ...(pool.allowBuildPath ? ['--allow-build-path', pool.allowBuildPath] : []),
       '--local',
       '--name',
       'e2e-laptop',

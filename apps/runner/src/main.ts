@@ -57,6 +57,7 @@ async function runAgent(args: string[]): Promise<void> {
       outbox: new Outbox(path.join(config.dataDir, 'outbox')),
       workRoot: path.join(config.dataDir, 'work'),
       workspace: config.workspace,
+      allowBuildPaths: config.allowBuildPaths,
       apiUrl: config.url,
     },
   });

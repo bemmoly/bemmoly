@@ -25,6 +25,8 @@ export const runnerConfigSchema = z.object({
   local: z.boolean(),
   workspace: z.string().min(1).optional(),
   dataDir: z.string().min(1),
+  /** Folders outside a job's workspace that an image build may read, named by whoever runs the runner. */
+  allowBuildPaths: z.array(z.string().min(1)),
   once: z.boolean(),
   dockerSocket: z.string().min(1),
   logLevel: logLevelSchema,
@@ -51,6 +53,7 @@ const RUN_OPTIONS = {
   local: { type: 'boolean' },
   workspace: { type: 'string' },
   'data-dir': { type: 'string' },
+  'allow-build-path': { type: 'string', multiple: true },
   once: { type: 'boolean' },
   'docker-socket': { type: 'string' },
   'log-level': { type: 'string' },
@@ -119,6 +122,10 @@ export function loadRunnerConfig(
     dataDir: path.resolve(
       expandHome(values['data-dir'] ?? env['BEMMOLY_RUNNER_DATA_DIR'] ?? '~/.bemmoly-runner'),
     ),
+    allowBuildPaths: (
+      values['allow-build-path'] ??
+      (env['BEMMOLY_RUNNER_ALLOW_BUILD_PATHS'] ?? '').split(path.delimiter).filter(Boolean)
+    ).map((dir) => path.resolve(expandHome(dir))),
     once: values.once ?? env['BEMMOLY_RUNNER_ONCE'] === 'true',
     dockerSocket: expandHome(values['docker-socket'] ?? defaultDockerSocket(env, exists)),
     logLevel: values['log-level'] ?? env['LOG_LEVEL'],

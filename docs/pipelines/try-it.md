@@ -72,7 +72,8 @@ It creates a `laptop` runner pool with a fresh token and gives `checkout-api` an
 matrix, a security scan). It prints the command that starts a runner; run it:
 
 ```sh
-node apps/runner/src/main.ts --url http://localhost:8080 --pool-token <printed> --local --data-dir /tmp/bemmoly-runner-laptop
+node apps/runner/src/main.ts --url http://localhost:8080 --pool-token <printed> --local \
+  --data-dir /tmp/bemmoly-runner-laptop --allow-build-path <printed>
 ```
 
 Leave out `--local` to run each step as a container in Docker instead.

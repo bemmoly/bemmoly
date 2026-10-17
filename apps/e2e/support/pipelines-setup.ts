@@ -31,8 +31,8 @@ export default async function globalSetup(config: FullConfig): Promise<() => Pro
     await modulesCli(envFile, ['enable', 'pipelines', '--access', 'everyone']);
     const people = await seedPeople(server.baseURL);
     await seedAcme(envFile, Number(config.metadata['seedScale']) || 0.1);
-    const token = await readyLaptopPool(envFile, server.baseURL, RUNNABLE_APPS);
-    const runner = startLocalRunner(server.baseURL, token);
+    const pool = await readyLaptopPool(envFile, server.baseURL, RUNNABLE_APPS);
+    const runner = startLocalRunner(server.baseURL, pool);
     cleanups.push(() => runner.stop());
     writeState({ baseURL: server.baseURL, serverLog: server.log, ...people });
   } catch (error) {

@@ -59,7 +59,7 @@ try {
   out('');
   out('Start a runner that runs steps as processes on this machine:');
   out(
-    `  node apps/runner/src/main.ts --url ${values.url} --pool-token ${token} --local --data-dir /tmp/bemmoly-runner-laptop`,
+    `  node apps/runner/src/main.ts --url ${values.url} --pool-token ${token} --local --data-dir /tmp/bemmoly-runner-laptop --allow-build-path ${appDirectory}`,
   );
   out('Or, with Docker or Colima running, as containers: leave out --local.');
   out('');

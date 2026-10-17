@@ -64,6 +64,19 @@ describe('bemmoly/build on the host', () => {
     expect(await buildPathProblem(workspace, buildStep(env))).toMatch(/outside the repository/);
   });
 
+  it('accepts a folder the runner was started with --allow-build-path, and only that one', async () => {
+    const app = path.join(base, 'demo-app');
+    await mkdir(app, { recursive: true });
+    const step = buildStep({
+      BEMMOLY_BUILD_DOCKERFILE: `${app}/Dockerfile`,
+      BEMMOLY_BUILD_CONTEXT: app,
+    });
+    expect(await buildPathProblem(workspace, step, [app])).toBeNull();
+    expect(await buildPathProblem(workspace, step)).toMatch(/--allow-build-path/);
+    const secrets = buildStep({ BEMMOLY_BUILD_CONTEXT: path.join(base, 'host-secrets') });
+    expect(await buildPathProblem(workspace, secrets, [app])).toMatch(/outside the repository/);
+  });
+
   it('refuses a context the repository symlinks outside itself', async () => {
     await symlink(path.join(base, 'host-secrets'), path.join(workspace, 'context'));
     const step = buildStep({ BEMMOLY_BUILD_CONTEXT: 'context' });

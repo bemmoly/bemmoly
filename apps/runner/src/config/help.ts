@@ -13,6 +13,7 @@ Options (each also reads the environment variable in brackets)
   --labels <a,b>         Comma-separated labels pipelines can ask for [BEMMOLY_RUNNER_LABELS]
   --local                Run steps as processes on this machine instead of containers [BEMMOLY_RUNNER_LOCAL]
   --workspace <dir>      With --local: run every job in this folder and skip the check out [BEMMOLY_RUNNER_WORKSPACE]
+  --allow-build-path <dir>  A folder outside the job's workspace an image build may read; repeat for more [BEMMOLY_RUNNER_ALLOW_BUILD_PATHS]
   --data-dir <dir>       Where the registration, job folders and unsent logs live (default: ~/.bemmoly-runner) [BEMMOLY_RUNNER_DATA_DIR]
   --once                 Run one job, then exit, for one machine or pod per job [BEMMOLY_RUNNER_ONCE]
   --docker-socket <path> The Docker socket (default: DOCKER_HOST, then Colima's, then /var/run/docker.sock)
