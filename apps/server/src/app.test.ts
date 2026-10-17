@@ -34,7 +34,7 @@ describe('buildApp', () => {
     expect(ready.json()).toMatchObject({ status: 'unavailable' });
   });
 
-  it('lists the shipped module manifests, docs and work', async () => {
+  it('lists the shipped module manifests: docs, pipelines and work', async () => {
     const app = await buildApp({ env: TEST_ENV, modules: await shippedModules(), logger: false });
     const response = await app.inject({ method: 'GET', url: '/api/v1/modules' });
     expect(response.statusCode).toBe(200);
@@ -72,6 +72,16 @@ describe('buildApp', () => {
             primary: [],
             add: { create: 'docs.create-space', label: 'New space' },
           },
+        },
+        {
+          id: 'pipelines',
+          name: 'Pipelines',
+          version: '0.1.0',
+          navigation: [],
+          icon: 'rocket',
+          color: 'accent',
+          order: 90,
+          surface: 'product',
         },
         {
           id: 'work',

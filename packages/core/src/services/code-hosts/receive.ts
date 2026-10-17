@@ -1,6 +1,11 @@
 import { NotFoundError, UnauthenticatedError, type CodeWebhookReceipt } from '@bemmoly/shared';
 import { codeHostDriver } from './registry.ts';
-import { dispatchActivities, linkedSummary, type CodeHostRuntime } from './runtime.ts';
+import {
+  dispatchActivities,
+  dispatchEvents,
+  linkedSummary,
+  type CodeHostRuntime,
+} from './runtime.ts';
 import {
   claimDelivery,
   finishDelivery,
@@ -53,7 +58,8 @@ export async function applyDelivery(
     action: parsed.action,
   });
   if (!claimed) return { outcome: 'duplicate' };
-  if (parsed.ping || parsed.activities.length === 0) {
+  const events = parsed.events ?? [];
+  if (parsed.ping || (parsed.activities.length === 0 && events.length === 0)) {
     const outcome = parsed.ping ? 'test' : 'ignored';
     await finishDelivery(rt.sql, claimed, { outcome, summary: parsed.summary });
     await noteHostError(rt.sql, row.id, null);
@@ -61,9 +67,13 @@ export async function applyDelivery(
   }
   try {
     const result = await dispatchActivities(rt, row, parsed.activities);
+    const eventNotes = await dispatchEvents(rt, row, deliveryId, events);
     await finishDelivery(rt.sql, claimed, {
       outcome: 'processed',
-      summary: linkedSummary(parsed.summary, result),
+      summary:
+        parsed.activities.length === 0
+          ? [parsed.summary, ...eventNotes].join('. ')
+          : linkedSummary(parsed.summary, { ...result, notes: [...result.notes, ...eventNotes] }),
     });
     await noteHostError(rt.sql, row.id, null);
     return { outcome: 'processed' };

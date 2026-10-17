@@ -1,0 +1,22 @@
+{
+  "action": "checks_requested",
+  "merge_group": {
+    "head_sha": "c3d4e5f60718293a4b5c6d7e8f9012345678a1b2",
+    "head_ref": "refs/heads/gh-readonly-queue/main/pr-4821-5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9f8e7d6c",
+    "base_sha": "5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9f8e7d6c",
+    "base_ref": "refs/heads/main",
+    "head_commit": {
+      "id": "c3d4e5f60718293a4b5c6d7e8f9012345678a1b2",
+      "message": "Merge pull request #4821 from acme/feat/acme-1-pg-sessions",
+      "timestamp": "2026-10-04T09:02:11Z"
+    }
+  },
+  "repository": {
+    "id": 702345678,
+    "name": "api",
+    "full_name": "acme/api",
+    "html_url": "https://github.com/acme/api",
+    "default_branch": "main"
+  },
+  "sender": { "login": "github-merge-queue[bot]", "id": 118344674, "type": "Bot" }
+}

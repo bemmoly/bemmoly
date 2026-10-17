@@ -1,8 +1,13 @@
 import type { Logger } from 'pino';
 import type { SqlClient } from '../../clients/postgres.ts';
 import type { AddressPolicy } from '../../clients/guarded-fetch.ts';
-import type { CodeActivity } from '../../contracts/code-hosts.ts';
-import type { CodeActivityConsumer, CodeActivityResult } from '../../modules/code.ts';
+import type { CodeActivity, CodeEvent, CodeEventOf } from '../../contracts/code-hosts.ts';
+import type {
+  CodeActivityConsumer,
+  CodeActivityResult,
+  CodeAppPermissions,
+  CodeEventConsumer,
+} from '../../modules/code.ts';
 import type { RequestContext } from '../authz/index.ts';
 import type { SecretBox } from '../settings/index.ts';
 import type { IntegrationRow } from './store.ts';
@@ -15,6 +20,10 @@ export interface CodeHostRuntime {
   secrets: SecretBox;
   /** The enabled modules' consumers, read on every delivery so enabling Work takes effect. */
   consumers: () => readonly CodeActivityConsumer[];
+  /** The enabled modules' event consumers (a push, a pull request, a check). */
+  eventConsumers?: () => readonly CodeEventConsumer[];
+  /** The enabled modules' extra GitHub App permissions, merged into the manifest. */
+  appPermissions?: () => readonly CodeAppPermissions[];
   /** A system context the consumers act under: `code-host:<id>`, allowed by authorize. */
   systemContext: (actorId: string) => RequestContext;
   /** BEMMOLY_ALLOW_PRIVATE_URLS: self-managed hosts may then sit on any address. */
@@ -56,6 +65,30 @@ export async function dispatchActivities(
     notes.push(...(result.notes ?? []));
   }
   return { linked, notes };
+}
+
+/** Hands one delivery's events to every enabled event consumer; returns their notes. */
+export async function dispatchEvents(
+  rt: CodeHostRuntime,
+  row: IntegrationRow,
+  deliveryId: string,
+  events: readonly CodeEvent[],
+): Promise<string[]> {
+  const consumers = rt.eventConsumers?.() ?? [];
+  if (events.length === 0 || consumers.length === 0) return [];
+  const stamped: CodeEventOf[] = events.map((event) => ({
+    ...event,
+    integrationId: row.id,
+    hostKind: row.kind,
+    deliveryId,
+  }));
+  const ctx = rt.systemContext(`code-host:${row.id}`);
+  const notes: string[] = [];
+  for (const consumer of consumers) {
+    const result = await consumer.apply(stamped, ctx);
+    notes.push(...(result.notes ?? []));
+  }
+  return notes;
 }
 
 /** "· 2 links updated": what the consumers did, after the delivery's own summary. */

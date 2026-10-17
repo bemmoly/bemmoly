@@ -137,6 +137,7 @@ export {
 export { typingInField, useGlobalKeys, type KeyBindings } from './shell/keys.ts';
 export {
   createSidebarRegistry,
+  inBemmolyShell,
   inSidebarOrder,
   type ModuleSidebarLoader,
   type ModuleSidebarProps,

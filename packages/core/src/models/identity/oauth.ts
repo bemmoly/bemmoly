@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm';
-import { check, index, pgTable, text, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
+import { check, index, integer, pgTable, text, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
 import { createdAt, primaryId, timestampTz, updatedAt } from './columns.ts';
 import { users } from './users.ts';
 
@@ -111,3 +111,35 @@ export type OAuthClientRow = typeof oauthClients.$inferSelect;
 export type OAuthAuthorizationCodeRow = typeof oauthAuthorizationCodes.$inferSelect;
 export type OAuthGrantRow = typeof oauthGrants.$inferSelect;
 export type OAuthTokenRow = typeof oauthTokens.$inferSelect;
+
+/**
+ * Device sign-in requests (RFC 8628) from first-party command line tools. The device code is
+ * stored as its sha256; the short user code is unique while pending.
+ */
+export const oauthDeviceCodes = pgTable(
+  'oauth_device_codes',
+  {
+    id: primaryId(),
+    clientId: text('client_id').notNull(),
+    deviceName: text('device_name').notNull(),
+    deviceCodeHash: text('device_code_hash').notNull(),
+    userCode: text('user_code').notNull(),
+    status: text('status', { enum: ['pending', 'approved', 'denied', 'consumed'] })
+      .notNull()
+      .default('pending'),
+    userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }),
+    apiTokenId: uuid('api_token_id'),
+    intervalSeconds: integer('interval_seconds').notNull().default(5),
+    lastPolledAt: timestampTz('last_polled_at'),
+    expiresAt: timestampTz('expires_at').notNull(),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    uniqueIndex('oauth_device_codes_device_code_hash_key').on(t.deviceCodeHash),
+    uniqueIndex('oauth_device_codes_user_code_key')
+      .on(t.userCode)
+      .where(sql`status = 'pending'`),
+    index('oauth_device_codes_expires_at_idx').on(t.expiresAt),
+  ],
+);

@@ -1,0 +1,42 @@
+{
+  "name": "@bemmoly/pipelines-web",
+  "version": "1.1.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "lint": "eslint --max-warnings 0 .",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@bemmoly/api-client": "workspace:*",
+    "@bemmoly/core-web": "workspace:*",
+    "@bemmoly/module-pipelines": "workspace:*",
+    "@bemmoly/shared": "workspace:*",
+    "@bemmoly/ui": "workspace:*",
+    "@tanstack/react-query": "5.104.1",
+    "@tanstack/react-router": "1.170.41",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "zod": "4.6.5",
+    "zustand": "5.0.15"
+  },
+  "devDependencies": {
+    "@bemmoly/i18n-tools": "workspace:*",
+    "@tailwindcss/vite": "4.3.3",
+    "@testing-library/react": "16.3.3",
+    "@testing-library/user-event": "14.6.7",
+    "@types/node": "26.6.4",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "6.1.2",
+    "happy-dom": "20.14.5",
+    "tailwindcss": "4.3.3",
+    "vite": "8.3.3",
+    "vitest": "5.0.3"
+  }
+}

@@ -1,0 +1,3 @@
+service: thumbnails
+provider:
+  name: aws

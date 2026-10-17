@@ -5,6 +5,7 @@ export * from './common.ts';
 export * from './invitations.ts';
 export * from './links.ts';
 export * from './oauth.ts';
+export * from './oauth-device.ts';
 export * from './module-grants.ts';
 export * from './roles.ts';
 export * from './setup.ts';

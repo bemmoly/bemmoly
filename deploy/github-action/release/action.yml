@@ -1,0 +1,42 @@
+name: Bemmoly release
+description: Register the image this workflow built as a Bemmoly Pipelines release, signed with the workflow's own OIDC token.
+author: Bemmoly
+branding:
+  icon: upload-cloud
+  color: blue
+inputs:
+  server:
+    description: The Bemmoly address, for example https://bemmoly.acme.dev
+    required: true
+  application:
+    description: The application's key in the Pipelines catalog, for example checkout-api
+    required: true
+  image:
+    description: The image digest the workflow pushed (sha256:…). Use this or images.
+    required: false
+  images:
+    description: One platform=digest per line, for multi-platform images. Use this or image.
+    required: false
+  image-repository:
+    description: Where the image lives, for example ghcr.io/acme/checkout-api
+    required: false
+  version:
+    description: The release's version. Defaults to the commit's short sha.
+    required: false
+  tests:
+    description: JUnit XML reports, a path or glob per line (reports/**/*.xml)
+    required: false
+  notes:
+    description: Release notes shown on the release page
+    required: false
+  token:
+    description: A scoped CI token. Leave empty to sign with the workflow's OIDC token (needs id-token write).
+    required: false
+outputs:
+  release-id:
+    description: The registered release's id
+  version:
+    description: The registered release's version
+runs:
+  using: node24
+  main: dist/index.mjs

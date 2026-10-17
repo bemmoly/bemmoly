@@ -5,6 +5,7 @@ import fp from 'fastify-plugin';
 import type { SqlClient } from '../clients/postgres.ts';
 import type { Env } from '../config/env.ts';
 import { readCookie, SESSION_COOKIE } from '../utils/session-cookie.ts';
+import { carriesForeignBearer } from './auth.ts';
 import { accountBucketKey, accountOfRoute } from './rate-limit-accounts.ts';
 import { isAiRoute } from './rate-limit-ai.ts';
 import { RateLimitBuckets, storeClass } from './rate-limit-store.ts';
@@ -113,9 +114,16 @@ function actorKey(request: FastifyRequest): string {
   return `ip:${request.ip}`;
 }
 
-const presentsCredential = (request: FastifyRequest) =>
-  request.headers.authorization !== undefined ||
-  readCookie(request.headers.cookie, SESSION_COOKIE) !== undefined;
+/**
+ * Whether the request presents something authentication will look up. A foreign Bearer on a
+ * route anonymous by design (a runner's or a CI system's token) is checked by that route under
+ * its own per-token budget, so other people's refused cookies behind the same address (an
+ * office NAT, a CI host) never stop a runner from claiming work.
+ */
+const presentsCredential = (request: FastifyRequest, apiPrefix: string) =>
+  !carriesForeignBearer(request, apiPrefix) &&
+  (request.headers.authorization !== undefined ||
+    readCookie(request.headers.cookie, SESSION_COOKIE) !== undefined);
 
 function appendPreHandler(route: RouteOptions, hook: (request: FastifyRequest) => Promise<void>) {
   const existing = route.preHandler;
@@ -143,7 +151,7 @@ export const rateLimiting = fp<RateLimitingOptions>(
 
     // Only refusals count, so requests with valid credentials never use up this budget.
     app.addHook('onRequest', async (request) => {
-      if (!presentsCredential(request)) return;
+      if (!presentsCredential(request, apiPrefix)) return;
       const { count, ttlMs } = await buckets.peek(failedKey(request));
       if (count >= failed.max) throw rateLimited(ttlMs);
     });

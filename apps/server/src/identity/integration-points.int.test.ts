@@ -114,6 +114,70 @@ describe('what email and notifications build on, against a real database', () =>
     }
   });
 
+  it('leaves a foreign Bearer header on an anonymous route to the route', async (ctx) => {
+    if (!harness) return ctx.skip(skipReason);
+    const app = Fastify({ logger: false });
+    app.setErrorHandler(errorHandler);
+    await app.register(authentication, harness.identity);
+    app.post('/api/v1/ci', { config: { anonymous: true } }, async (request) => ({
+      actor: request.actor,
+      header: request.headers.authorization,
+    }));
+    app.post('/api/v1/closed', async () => ({ ok: true }));
+    try {
+      const headers = { authorization: 'Bearer eyJhbGciOiJSUzI1NiJ9.e30.c2ln' };
+      const open = await app.inject({ method: 'POST', url: '/api/v1/ci', headers });
+      expect(open.statusCode).toBe(200);
+      expect(open.json()).toEqual({ actor: null, header: headers.authorization });
+      // A session cookie riding along never turns the foreign token's request into a person's.
+      const { cookie } = await createFirstAdmin(harness.app);
+      const both = await app.inject({
+        method: 'POST',
+        url: '/api/v1/ci',
+        headers: { ...headers, cookie },
+      });
+      expect(both.json()).toEqual({ actor: null, header: headers.authorization });
+      const closed = await app.inject({ method: 'POST', url: '/api/v1/closed', headers });
+      expect(closed.statusCode).toBe(401);
+      // Bemmoly's own tokens are still read there, so a revoked one is refused.
+      const kernel = { authorization: 'Bearer bmy_not-a-real-token-0000000000' };
+      const refused = await app.inject({ method: 'POST', url: '/api/v1/ci', headers: kernel });
+      expect(refused.statusCode).toBe(401);
+    } finally {
+      await app.close();
+    }
+  });
+
+  it('never turns a runner away for refused cookies from the same address', async (ctx) => {
+    if (!harness) return ctx.skip(skipReason);
+    const app = Fastify({ logger: false });
+    app.setErrorHandler(errorHandler);
+    await app.register(rateLimiting, {
+      sql: harness.identity.sql,
+      failedCredentialsPerIp: { max: 2, windowMs: 60_000 },
+    });
+    await app.register(authentication, harness.identity);
+    app.post('/api/v1/runner/claims', { config: { anonymous: true } }, async () => ({ ok: true }));
+    app.get('/api/v1/me', async () => ({ ok: true }));
+    try {
+      const stale = { cookie: 'bemmoly_session=expired-in-another-database' };
+      const read = () => app.inject({ url: '/api/v1/me', headers: stale });
+      expect((await read()).statusCode).toBe(401);
+      expect((await read()).statusCode).toBe(401);
+      expect((await read()).statusCode).toBe(429);
+      // The runner's pool token is checked by its route, under that route's own budget.
+      const runner = { authorization: 'Bearer bpr_pool-token-from-the-same-address' };
+      const claim = await app.inject({
+        method: 'POST',
+        url: '/api/v1/runner/claims',
+        headers: runner,
+      });
+      expect(claim.statusCode).toBe(200);
+    } finally {
+      await app.close();
+    }
+  });
+
   it('keeps the boot read of setup status out of the strict per-IP budget', async (ctx) => {
     if (!harness) return ctx.skip(skipReason);
     const app = Fastify({ logger: false });

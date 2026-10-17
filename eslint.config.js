@@ -61,7 +61,11 @@ export default defineConfig(
     },
   },
   {
-    files: ['apps/web/**/*.{ts,tsx}', 'packages/ui/**/*.{ts,tsx}'],
+    files: [
+      'apps/web/**/*.{ts,tsx}',
+      'apps/pipelines-web/**/*.{ts,tsx}',
+      'packages/ui/**/*.{ts,tsx}',
+    ],
     languageOptions: { globals: { ...globals.browser } },
     plugins: { 'react-hooks': reactHooks },
     rules: reactHooks.configs.recommended.rules,
@@ -70,6 +74,7 @@ export default defineConfig(
     // Icons are drawn, never typed (ADR 0015): no glyph characters in rendered UI.
     files: [
       'apps/web/src/**/*.{ts,tsx}',
+      'apps/pipelines-web/src/**/*.{ts,tsx}',
       'packages/ui/src/**/*.{ts,tsx}',
       'modules/*/web/**/*.{ts,tsx}',
     ],
@@ -80,7 +85,12 @@ export default defineConfig(
     // Tokens are the only source of colour and type size (docs/design/system/tokens.md).
     // Stories and tests may pass sample data, such as a label's stored colour. core-web and
     // the editor repeat this in their own configs, with paths relative to the package.
-    files: ['apps/web/src/**/*.tsx', 'packages/ui/src/**/*.tsx', 'modules/*/web/**/*.tsx'],
+    files: [
+      'apps/web/src/**/*.tsx',
+      'apps/pipelines-web/src/**/*.tsx',
+      'packages/ui/src/**/*.tsx',
+      'modules/*/web/**/*.tsx',
+    ],
     ignores: [
       '**/*.test.tsx',
       '**/*.stories.tsx',
@@ -106,7 +116,10 @@ export default defineConfig(
       'apps/web/src/components/auth/{auth-layout,auth-parts,password-sign-in,signed-in-pane}.tsx',
       'apps/web/src/pages/auth/login-page.tsx',
       'apps/web/src/pages/settings/profile-page.tsx',
+      // Pipelines' web app was written against its catalog from the first line.
+      'apps/pipelines-web/src/**/*.tsx',
     ],
+    ignores: ['**/*.test.tsx'],
     rules: { 'bemmoly/no-literal-ui-strings': 'error', 'bemmoly/logical-properties': 'error' },
   },
   {

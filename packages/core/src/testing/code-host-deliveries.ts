@@ -17,7 +17,13 @@ export type GithubFixture =
   | 'create.branch'
   | 'delete.branch'
   | 'check_suite.completed'
-  | 'ping';
+  | 'ping'
+  | 'push.main'
+  | 'merge_group.checks_requested'
+  | 'check_run.completed'
+  | 'workflow_run.completed'
+  | 'repository.renamed'
+  | 'installation_repositories.added';
 
 export type GitlabFixture =
   | 'merge_request.open'

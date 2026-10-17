@@ -13,7 +13,10 @@ export interface ModuleGateDeps {
 /**
  * Runs before every route of a module: 404 module_not_enabled while it is
  * disabled (routes stay mounted so enabling needs no restart), then 403
- * module_access_denied when the actor has no grant.
+ * module_access_denied when the actor has no grant. A route marked
+ * `config: { anonymous: true }` has no person behind it (a build runner with
+ * its own token), so only the enabled check applies and the route
+ * authenticates its caller itself.
  */
 export function moduleGate(moduleId: string, deps: ModuleGateDeps) {
   return async (request: FastifyRequest): Promise<void> => {
@@ -22,6 +25,7 @@ export function moduleGate(moduleId: string, deps: ModuleGateDeps) {
         code: 'module_not_enabled',
       });
     }
+    if (request.routeOptions.config?.anonymous === true) return;
     if (request.tokenModules && !request.tokenModules.includes(moduleId)) {
       throw new ForbiddenError(`This API token cannot reach the ${moduleId} module`, {
         code: 'module_access_denied',

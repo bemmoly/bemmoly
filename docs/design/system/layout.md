@@ -1,6 +1,9 @@
 # Layout
 
-One frame, two page layouts, one scroll region. Every signed-in screen sits inside it.
+One frame, two page layouts, one scroll region. Every signed-in screen of Bemmoly sits inside
+it. Bemmoly Pipelines, a separate product, has its own frame with the same foundations
+([ADR 0037](../../adr/0037-pipelines-is-a-separate-product-with-its-own-shell.md),
+[../pipelines/](../pipelines/README.md)).
 
 ## The frame
 

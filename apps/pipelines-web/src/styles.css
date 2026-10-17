@@ -1,0 +1,24 @@
+@import 'tailwindcss';
+@import '@bemmoly/ui/tailwind.css';
+@import '@bemmoly/ui/fonts.css';
+@import '@bemmoly/ui/theme.css';
+
+@source '../../../packages/core-web/src';
+
+@layer base {
+  a {
+    color: var(--acc);
+    text-decoration: none;
+  }
+
+  a:hover {
+    color: var(--acc-600);
+  }
+
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+  }
+}

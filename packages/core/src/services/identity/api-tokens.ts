@@ -30,37 +30,67 @@ function sessionUserId(ctx: RequestContext): string {
   return ctx.actor.id;
 }
 
+export interface IssueApiTokenInput {
+  userId: string;
+  name: string;
+  scopes: readonly ApiTokenScope[];
+  modules: readonly string[] | null;
+  expiresAt: Date | null;
+}
+
+/**
+ * Writes a token for a person and audits it, inside the caller's transaction. Only two
+ * callers: a signed-in session (below) and a device sign-in the person approved from one.
+ */
+export async function issueApiToken(
+  tx: Database,
+  input: IssueApiTokenInput,
+  audit: { actor: RequestContext['actor']; meta?: RequestContext },
+): Promise<CreatedApiToken> {
+  const token = generateToken(PERSONAL_TOKEN_PREFIX);
+  const [row] = await tx
+    .insert(apiTokens)
+    .values({
+      userId: input.userId,
+      name: input.name,
+      tokenHash: digestToken(token),
+      tokenPrefix: token.slice(0, PERSONAL_TOKEN_VISIBLE_CHARS),
+      scopes: [...new Set(input.scopes)],
+      modules: input.modules ? [...new Set(input.modules)] : null,
+      expiresAt: input.expiresAt,
+    })
+    .returning();
+  if (!row) throw new Error('API token insert returned no row');
+  const apiToken = presentApiToken(row);
+  await recordAudit(tx, {
+    actor: audit.actor,
+    action: 'api_token.created',
+    target: { kind: 'api_token', id: row.id },
+    after: apiToken,
+    ...(audit.meta ? { meta: audit.meta } : {}),
+  });
+  return { token, apiToken };
+}
+
 export async function createApiToken(
   db: Database,
   ctx: RequestContext,
   input: CreateApiTokenInput,
 ): Promise<CreatedApiToken> {
   const userId = sessionUserId(ctx);
-  const token = generateToken(PERSONAL_TOKEN_PREFIX);
-  return db.transaction(async (tx) => {
-    const [row] = await tx
-      .insert(apiTokens)
-      .values({
+  return db.transaction((tx) =>
+    issueApiToken(
+      tx,
+      {
         userId,
         name: input.name,
-        tokenHash: digestToken(token),
-        tokenPrefix: token.slice(0, PERSONAL_TOKEN_VISIBLE_CHARS),
-        scopes: [...new Set(input.scopes)],
-        modules: input.modules ? [...new Set(input.modules)] : null,
+        scopes: input.scopes,
+        modules: input.modules ?? null,
         expiresAt: input.expiresAt ? new Date(input.expiresAt) : null,
-      })
-      .returning();
-    if (!row) throw new Error('API token insert returned no row');
-    const apiToken = presentApiToken(row);
-    await recordAudit(tx, {
-      actor: ctx.actor,
-      action: 'api_token.created',
-      target: { kind: 'api_token', id: row.id },
-      after: apiToken,
-      meta: ctx,
-    });
-    return { token, apiToken };
-  });
+      },
+      { actor: ctx.actor, meta: ctx },
+    ),
+  );
 }
 
 export async function listApiTokens(db: Database, ctx: RequestContext): Promise<ApiToken[]> {

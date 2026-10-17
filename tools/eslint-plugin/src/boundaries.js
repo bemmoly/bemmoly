@@ -57,7 +57,12 @@ export const boundaries = {
       if (target.kind === 'workspace') {
         if (target.subpath.startsWith('/src'))
           return report('deepImport', { name: `@bemmoly/${target.name}` });
-        if (file.inApp && target.moduleId) return report('appImportsModule');
+        // A product's own web app builds against that product module's contracts, and only those.
+        const ownContracts =
+          file.productOf !== undefined &&
+          target.moduleId === file.productOf &&
+          target.subpath === '/shared';
+        if (file.inApp && target.moduleId && !ownContracts) return report('appImportsModule');
         if (file.moduleId) {
           const allowed = file.moduleWeb ? WEB_ALLOWED : SERVER_ALLOWED;
           if (!file.moduleWeb && SERVER_SUBPATHS.has(specifier)) return;

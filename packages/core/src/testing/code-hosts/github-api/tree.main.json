@@ -1,0 +1,10 @@
+{
+  "sha": "9fb037999f264ba9a7fc6274d15fa3ae2ab98312",
+  "truncated": false,
+  "tree": [
+    { "path": "services", "type": "tree" },
+    { "path": "services/checkout-api/Dockerfile", "type": "blob" },
+    { "path": "services/checkout-api/.bemmoly/application.yaml", "type": "blob" },
+    { "path": "pnpm-workspace.yaml", "type": "blob" }
+  ]
+}

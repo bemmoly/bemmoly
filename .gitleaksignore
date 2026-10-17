@@ -1,0 +1,4 @@
+# Made-up test tokens in commits on the Pipelines branch, replaced or marked gitleaks:allow
+# since: a masking test's sample secret and a recorded federation fixture. Neither is real.
+adf2ca2b1f4117fbe1e5d20577345b4ce1b9e813:apps/runner/src/utils/lines.test.ts:generic-api-key:43
+6bd8663688017e88b438262df66f26927c3e9591:modules/pipelines/server/src/clients/gcp/fixtures/federation.json:generic-api-key:9

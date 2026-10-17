@@ -54,6 +54,11 @@ export default defineConfig(({ command, mode }) => {
         '/readyz': server,
         '/ws': { target: server.replace('http', 'ws'), ws: true },
         '/collab': { target: server.replace('http', 'ws'), ws: true },
+        /**
+         * Pipelines' own app (apps/pipelines-web) on its dev server, so in development it shares
+         * this origin and its sign-in exactly as the server serves both in production.
+         */
+        '/pipelines': { target: 'http://localhost:5601', ws: true },
       },
     },
     build: {

@@ -4,6 +4,7 @@ import type { Database } from '../../clients/drizzle.ts';
 import {
   oauthAuthorizationCodes,
   oauthClients,
+  oauthDeviceCodes,
   oauthGrants,
   oauthTokens,
   type OAuthClientRow,
@@ -65,13 +66,17 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 /** Revoked connections and unused clients are kept a while for support, then dropped. */
 const KEEP_MS = 30 * DAY_MS;
 
-/** Housekeeping: expired codes and tokens, old revoked connections, clients nobody uses. */
+/** Housekeeping: expired codes (device ones too) and tokens, old revoked connections, clients nobody uses. */
 export async function deleteExpiredOAuthState(db: Database, now: Date): Promise<number> {
   const old = new Date(now.getTime() - KEEP_MS);
   const codes = await db
     .delete(oauthAuthorizationCodes)
     .where(lt(oauthAuthorizationCodes.expiresAt, new Date(now.getTime() - DAY_MS)))
     .returning({ id: oauthAuthorizationCodes.id });
+  const devices = await db
+    .delete(oauthDeviceCodes)
+    .where(lt(oauthDeviceCodes.expiresAt, new Date(now.getTime() - DAY_MS)))
+    .returning({ id: oauthDeviceCodes.id });
   const tokens = await db
     .delete(oauthTokens)
     .where(lt(oauthTokens.expiresAt, now))
@@ -100,5 +105,5 @@ export async function deleteExpiredOAuthState(db: Database, now: Date): Promise<
       ),
     )
     .returning({ id: oauthClients.id });
-  return codes.length + tokens.length + grants.length + clients.length;
+  return codes.length + devices.length + tokens.length + grants.length + clients.length;
 }

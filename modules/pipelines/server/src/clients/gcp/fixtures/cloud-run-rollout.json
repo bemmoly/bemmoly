@@ -1,0 +1,1783 @@
+{
+  "recorded": "Hand-recorded from the Google Cloud REST reference (shapes and field names as documented); not captured from a live project.",
+  "exchanges": [
+    {
+      "method": "POST",
+      "url": "https://iamcredentials.googleapis.com/v1/projects/-/serviceAccounts/deployer@acme-commerce-prod.iam.gserviceaccount.com:generateAccessToken",
+      "body": {
+        "lifetime": "900s"
+      },
+      "repeat": true,
+      "response": {
+        "accessToken": "ya29.deployer-acme-commerce-prod",
+        "expireTime": "2099-01-01T00:00:00Z"
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://run.googleapis.com/v2/projects/acme-commerce-prod/locations/asia-south1/services/checkout-api",
+      "response": {
+        "name": "projects/acme-commerce-prod/locations/asia-south1/services/checkout-api",
+        "uid": "4b1f8a2e-93c1-4f0e-9d0a-5d7c1e2a6b11",
+        "generation": "8",
+        "etag": "\"CPj8k8gGEJjN\"",
+        "uri": "https://checkout-api-7xq2kd3nfa-el.a.run.app",
+        "ingress": "INGRESS_TRAFFIC_ALL",
+        "launchStage": "GA",
+        "template": {
+          "revision": "checkout-api-00007-zuk",
+          "serviceAccount": "runtime@acme-commerce-prod.iam.gserviceaccount.com",
+          "scaling": {
+            "maxInstanceCount": 20
+          },
+          "containers": [
+            {
+              "image": "asia-south1-docker.pkg.dev/acme-ci/apps/checkout-api@sha256:6f1a0c9de3b44c2a8e0b1f7d9a2c3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d",
+              "ports": [
+                {
+                  "name": "http1",
+                  "containerPort": 8080
+                }
+              ],
+              "resources": {
+                "limits": {
+                  "cpu": "1",
+                  "memory": "512Mi"
+                }
+              }
+            }
+          ],
+          "maxInstanceRequestConcurrency": 80,
+          "timeout": "300s"
+        },
+        "traffic": [
+          {
+            "type": "TRAFFIC_TARGET_ALLOCATION_TYPE_REVISION",
+            "revision": "checkout-api-00007-zuk",
+            "percent": 100
+          }
+        ],
+        "trafficStatuses": [
+          {
+            "type": "TRAFFIC_TARGET_ALLOCATION_TYPE_REVISION",
+            "revision": "checkout-api-00007-zuk",
+            "percent": 100
+          }
+        ],
+        "latestCreatedRevision": "projects/acme-commerce-prod/locations/asia-south1/services/checkout-api/revisions/checkout-api-00007-zuk",
+        "latestReadyRevision": "projects/acme-commerce-prod/locations/asia-south1/services/checkout-api/revisions/checkout-api-00007-zuk",
+        "observedGeneration": "8",
+        "terminalCondition": {
+          "type": "Ready",
+          "state": "CONDITION_SUCCEEDED",
+          "lastTransitionTime": "2026-10-16T21:04:11.482Z"
+        },
+        "conditions": [
+          {
+            "type": "RoutesReady",
+            "state": "CONDITION_SUCCEEDED"
+          },
+          {
+            "type": "ConfigurationsReady",
+            "state": "CONDITION_SUCCEEDED"
+          }
+        ],
+        "reconciling": false
+      }
+    },
+    {
+      "method": "PATCH",
+      "url": "https://run.googleapis.com/v2/projects/acme-commerce-prod/locations/asia-south1/services/checkout-api",
+      "body": {
+        "etag": "\"CPj8k8gGEJjN\"",
+        "template": {
+          "revision": "checkout-api-v1-42-0-b7d2e91",
+          "containers": [
+            {
+              "image": "asia-south1-docker.pkg.dev/acme-ci/apps/checkout-api@sha256:1111111111111111111111111111111111111111111111111111111111111111"
+            }
+          ]
+        },
+        "traffic": [
+          {
+            "revision": "checkout-api-00007-zuk",
+            "percent": 100
+          },
+          {
+            "revision": "checkout-api-v1-42-0-b7d2e91",
+            "percent": 0,
+            "tag": "r-v1-42-0-b7d2e91"
+          }
+        ]
+      },
+      "response": {
+        "name": "projects/acme-commerce-prod/locations/asia-south1/operations/a1e1f6c0-5a7d-4c58-9b0e-3f2d1c0b9a8e",
+        "metadata": {
+          "@type": "type.googleapis.com/google.cloud.run.v2.Service",
+          "name": "projects/acme-commerce-prod/locations/asia-south1/services/checkout-api"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://run.googleapis.com/v2/projects/acme-commerce-prod/locations/asia-south1/operations/a1e1f6c0-5a7d-4c58-9b0e-3f2d1c0b9a8e",
+      "response": {
+        "name": "projects/acme-commerce-prod/locations/asia-south1/operations/a1e1f6c0-5a7d-4c58-9b0e-3f2d1c0b9a8e",
+        "done": true,
+        "response": {
+          "@type": "type.googleapis.com/google.cloud.run.v2.Service",
+          "name": "projects/acme-commerce-prod/locations/asia-south1/services/checkout-api",
+          "uid": "4b1f8a2e-93c1-4f0e-9d0a-5d7c1e2a6b11",
+          "generation": "9",
+          "etag": "\"CPj9k8gGEJjN\"",
+          "uri": "https://checkout-api-7xq2kd3nfa-el.a.run.app",
+          "ingress": "INGRESS_TRAFFIC_ALL",
+          "launchStage": "GA",
+          "template": {
+            "revision": "checkout-api-v1-42-0-b7d2e91",
+            "serviceAccount": "runtime@acme-commerce-prod.iam.gserviceaccount.com",
+            "scaling": {
+              "maxInstanceCount": 20
+            },
+            "containers": [
+              {
+                "image": "asia-south1-docker.pkg.dev/acme-ci/apps/checkout-api@sha256:1111111111111111111111111111111111111111111111111111111111111111",
+                "ports": [
+                  {
+                    "name": "http1",
+                    "containerPort": 8080
+                  }
+                ],
+                "resources": {
+                  "limits": {
+                    "cpu": "1",
+                    "memory": "512Mi"
+                  }
+                }
+              }
+            ],
+            "maxInstanceRequestConcurrency": 80,
+            "timeout": "300s"
+          },
+          "traffic": [
+            {
+              "type": "TRAFFIC_TARGET_ALLOCATION_TYPE_REVISION",
+              "revision": "checkout-api-00007-zuk",
+              "percent": 100
+            },
+            {
+              "type": "TRAFFIC_TARGET_ALLOCATION_TYPE_REVISION",
+              "revision": "checkout-api-v1-42-0-b7d2e91",
+              "percent": 0,
+              "tag": "r-v1-42-0-b7d2e91"
+            }
+          ],
+          "trafficStatuses": [
+            {
+              "type": "TRAFFIC_TARGET_ALLOCATION_TYPE_REVISION",
+              "revision": "checkout-api-00007-zuk",
+              "percent": 100
+            },
+            {
+              "type": "TRAFFIC_TARGET_ALLOCATION_TYPE_REVISION",
+              "revision": "checkout-api-v1-42-0-b7d2e91",
+              "percent": 0,
+              "tag": "r-v1-42-0-b7d2e91",
+              "uri": "https://r-v1-42-0-b7d2e91---checkout-api-7xq2kd3nfa-el.a.run.app"
+            }
+          ],
+          "latestCreatedRevision": "projects/acme-commerce-prod/locations/asia-south1/services/checkout-api/revisions/checkout-api-v1-42-0-b7d2e91",
+          "latestReadyRevision": "projects/acme-commerce-prod/locations/asia-south1/services/checkout-api/revisions/checkout-api-v1-42-0-b7d2e91",
+          "observedGeneration": "9",
+          "terminalCondition": {
+            "type": "Ready",
+            "state": "CONDITION_SUCCEEDED",
+            "lastTransitionTime": "2026-10-16T21:04:11.482Z"
+          },
+          "conditions": [
+            {
+              "type": "RoutesReady",
+              "state": "CONDITION_SUCCEEDED"
+            },
+            {
+              "type": "ConfigurationsReady",
+              "state": "CONDITION_SUCCEEDED"
+            }
+          ],
+          "reconciling": false
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://run.googleapis.com/v2/projects/acme-commerce-prod/locations/asia-south1/services/checkout-api",
+      "response": {
+        "name": "projects/acme-commerce-prod/locations/asia-south1/services/checkout-api",
+        "uid": "4b1f8a2e-93c1-4f0e-9d0a-5d7c1e2a6b11",
+        "generation": "9",
+        "etag": "\"CPj9k8gGEJjN\"",
+        "uri": "https://checkout-api-7xq2kd3nfa-el.a.run.app",
+        "ingress": "INGRESS_TRAFFIC_ALL",
+        "launchStage": "GA",
+        "template": {
+          "revision": "checkout-api-v1-42-0-b7d2e91",
+          "serviceAccount": "runtime@acme-commerce-prod.iam.gserviceaccount.com",
+          "scaling": {
+            "maxInstanceCount": 20
+          },
+          "containers": [
+            {
+              "image": "asia-south1-docker.pkg.dev/acme-ci/apps/checkout-api@sha256:1111111111111111111111111111111111111111111111111111111111111111",
+              "ports": [
+                {
+                  "name": "http1",
+                  "containerPort": 8080
+                }
+              ],
+              "resources": {
+                "limits": {
+                  "cpu": "1",
+                  "memory": "512Mi"
+                }
+              }
+            }
+          ],
+          "maxInstanceRequestConcurrency": 80,
+          "timeout": "300s"
+        },
+        "traffic": [
+          {
+            "type": "TRAFFIC_TARGET_ALLOCATION_TYPE_REVISION",
+            "revision": "checkout-api-00007-zuk",
+            "percent": 100
+          },
+          {
+            "type": "TRAFFIC_TARGET_ALLOCATION_TYPE_REVISION",
+            "revision": "checkout-api-v1-42-0-b7d2e91",
+            "percent": 0,
+            "tag": "r-v1-42-0-b7d2e91"
+          }
+        ],
+        "trafficStatuses": [
+          {
+            "type": "TRAFFIC_TARGET_ALLOCATION_TYPE_REVISION",
+            "revision": "checkout-api-00007-zuk",
+            "percent": 100
+          },
+          {
+            "type": "TRAFFIC_TARGET_ALLOCATION_TYPE_REVISION",
+            "revision": "checkout-api-v1-42-0-b7d2e91",
+            "percent": 0,
+            "tag": "r-v1-42-0-b7d2e91",
+            "uri": "https://r-v1-42-0-b7d2e91---checkout-api-7xq2kd3nfa-el.a.run.app"
+          }
+        ],
+        "latestCreatedRevision": "projects/acme-commerce-prod/locations/asia-south1/services/checkout-api/revisions/checkout-api-v1-42-0-b7d2e91",
+        "latestReadyRevision": "projects/acme-commerce-prod/locations/asia-south1/services/checkout-api/revisions/checkout-api-v1-42-0-b7d2e91",
+        "observedGeneration": "9",
+        "terminalCondition": {
+          "type": "Ready",
+          "state": "CONDITION_SUCCEEDED",
+          "lastTransitionTime": "2026-10-16T21:04:11.482Z"
+        },
+        "conditions": [
+          {
+            "type": "RoutesReady",
+            "state": "CONDITION_SUCCEEDED"
+          },
+          {
+            "type": "ConfigurationsReady",
+            "state": "CONDITION_SUCCEEDED"
+          }
+        ],
+        "reconciling": false
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://run.googleapis.com/v2/projects/acme-commerce-prod/locations/asia-south1/services/checkout-api",
+      "response": {
+        "name": "projects/acme-commerce-prod/locations/asia-south1/services/checkout-api",
+        "uid": "4b1f8a2e-93c1-4f0e-9d0a-5d7c1e2a6b11",
+        "generation": "9",
+        "etag": "\"CPj9k8gGEJjN\"",
+        "uri": "https://checkout-api-7xq2kd3nfa-el.a.run.app",
+        "ingress": "INGRESS_TRAFFIC_ALL",
+        "launchStage": "GA",
+        "template": {
+          "revision": "checkout-api-v1-42-0-b7d2e91",
+          "serviceAccount": "runtime@acme-commerce-prod.iam.gserviceaccount.com",
+          "scaling": {
+            "maxInstanceCount": 20
+          },
+          "containers": [
+            {
+              "image": "asia-south1-docker.pkg.dev/acme-ci/apps/checkout-api@sha256:1111111111111111111111111111111111111111111111111111111111111111",
+              "ports": [
+                {
+                  "name": "http1",
+                  "containerPort": 8080
+                }
+              ],
+              "resources": {
+                "limits": {
+                  "cpu": "1",
+                  "memory": "512Mi"
+                }
+              }
+            }
+          ],
+          "maxInstanceRequestConcurrency": 80,
+          "timeout": "300s"
+        },
+        "traffic": [
+          {
+            "type": "TRAFFIC_TARGET_ALLOCATION_TYPE_REVISION",
+            "revision": "checkout-api-00007-zuk",
+            "percent": 100
+          },
+          {
+            "type": "TRAFFIC_TARGET_ALLOCATION_TYPE_REVISION",
+            "revision": "checkout-api-v1-42-0-b7d2e91",
+            "percent": 0,
+            "tag": "r-v1-42-0-b7d2e91"
+          }
+        ],
+        "trafficStatuses": [
+          {
+            "type": "TRAFFIC_TARGET_ALLOCATION_TYPE_REVISION",
+            "revision": "checkout-api-00007-zuk",
+            "percent": 100
+          },
+          {
+            "type": "TRAFFIC_TARGET_ALLOCATION_TYPE_REVISION",
+            "revision": "checkout-api-v1-42-0-b7d2e91",
+            "percent": 0,
+            "tag": "r-v1-42-0-b7d2e91",
+            "uri": "https://r-v1-42-0-b7d2e91---checkout-api-7xq2kd3nfa-el.a.run.app"
+          }
+        ],
+        "latestCreatedRevision": "projects/acme-commerce-prod/locations/asia-south1/services/checkout-api/revisions/checkout-api-v1-42-0-b7d2e91",
+        "latestReadyRevision": "projects/acme-commerce-prod/locations/asia-south1/services/checkout-api/revisions/checkout-api-v1-42-0-b7d2e91",
+        "observedGeneration": "9",
+        "terminalCondition": {
+          "type": "Ready",
+          "state": "CONDITION_SUCCEEDED",
+          "lastTransitionTime": "2026-10-16T21:04:11.482Z"
+        },
+        "conditions": [
+          {
+            "type": "RoutesReady",
+            "state": "CONDITION_SUCCEEDED"
+          },
+          {
+            "type": "ConfigurationsReady",
+            "state": "CONDITION_SUCCEEDED"
+          }
+        ],
+        "reconciling": false
+      }
+    },
+    {
+      "method": "PATCH",
+      "url": "https://run.googleapis.com/v2/projects/acme-commerce-prod/locations/asia-south1/services/checkout-api",
+      "body": {
+        "traffic": [
+          {
+            "revision": "checkout-api-v1-42-0-b7d2e91",
+            "percent": 100,
+            "tag": "r-v1-42-0-b7d2e91"
+          }
+        ]
+      },
+      "response": {
+        "name": "projects/acme-commerce-prod/locations/asia-south1/operations/b2e1f6c0-5a7d-4c58-9b0e-3f2d1c0b9a8e",
+        "metadata": {
+          "@type": "type.googleapis.com/google.cloud.run.v2.Service",
+          "name": "projects/acme-commerce-prod/locations/asia-south1/services/checkout-api"
+        },
+        "done": true,
+        "response": {
+          "@type": "type.googleapis.com/google.cloud.run.v2.Service",
+          "name": "projects/acme-commerce-prod/locations/asia-south1/services/checkout-api",
+          "uid": "4b1f8a2e-93c1-4f0e-9d0a-5d7c1e2a6b11",
+          "generation": "10",
+          "etag": "\"CPj10k8gGEJjN\"",
+          "uri": "https://checkout-api-7xq2kd3nfa-el.a.run.app",
+          "ingress": "INGRESS_TRAFFIC_ALL",
+          "launchStage": "GA",
+          "template": {
+            "revision": "checkout-api-v1-42-0-b7d2e91",
+            "serviceAccount": "runtime@acme-commerce-prod.iam.gserviceaccount.com",
+            "scaling": {
+              "maxInstanceCount": 20
+            },
+            "containers": [
+              {
+                "image": "asia-south1-docker.pkg.dev/acme-ci/apps/checkout-api@sha256:1111111111111111111111111111111111111111111111111111111111111111",
+                "ports": [
+                  {
+                    "name": "http1",
+                    "containerPort": 8080
+                  }
+                ],
+                "resources": {
+                  "limits": {
+                    "cpu": "1",
+                    "memory": "512Mi"
+                  }
+                }
+              }
+            ],
+            "maxInstanceRequestConcurrency": 80,
+            "timeout": "300s"
+          },
+          "traffic": [
+            {
+              "type": "TRAFFIC_TARGET_ALLOCATION_TYPE_REVISION",
+              "revision": "checkout-api-v1-42-0-b7d2e91",
+              "percent": 100,
+              "tag": "r-v1-42-0-b7d2e91"
+            }
+          ],
+          "trafficStatuses": [
+            {
+              "type": "TRAFFIC_TARGET_ALLOCATION_TYPE_REVISION",
+              "revision": "checkout-api-v1-42-0-b7d2e91",
+              "percent": 100,
+              "tag": "r-v1-42-0-b7d2e91",
+              "uri": "https://r-v1-42-0-b7d2e91---checkout-api-7xq2kd3nfa-el.a.run.app"
+            }
+          ],
+          "latestCreatedRevision": "projects/acme-commerce-prod/locations/asia-south1/services/checkout-api/revisions/checkout-api-v1-42-0-b7d2e91",
+          "latestReadyRevision": "projects/acme-commerce-prod/locations/asia-south1/services/checkout-api/revisions/checkout-api-v1-42-0-b7d2e91",
+          "observedGeneration": "10",
+          "terminalCondition": {
+            "type": "Ready",
+            "state": "CONDITION_SUCCEEDED",
+            "lastTransitionTime": "2026-10-16T21:04:11.482Z"
+          },
+          "conditions": [
+            {
+              "type": "RoutesReady",
+              "state": "CONDITION_SUCCEEDED"
+            },
+            {
+              "type": "ConfigurationsReady",
+              "state": "CONDITION_SUCCEEDED"
+            }
+          ],
+          "reconciling": false
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://run.googleapis.com/v2/projects/acme-commerce-prod/locations/asia-south1/services/checkout-api",
+      "response": {
+        "name": "projects/acme-commerce-prod/locations/asia-south1/services/checkout-api",
+        "uid": "4b1f8a2e-93c1-4f0e-9d0a-5d7c1e2a6b11",
+        "generation": "10",
+        "etag": "\"CPj10k8gGEJjN\"",
+        "uri": "https://checkout-api-7xq2kd3nfa-el.a.run.app",
+        "ingress": "INGRESS_TRAFFIC_ALL",
+        "launchStage": "GA",
+        "template": {
+          "revision": "checkout-api-v1-42-0-b7d2e91",
+          "serviceAccount": "runtime@acme-commerce-prod.iam.gserviceaccount.com",
+          "scaling": {
+            "maxInstanceCount": 20
+          },
+          "containers": [
+            {
+              "image": "asia-south1-docker.pkg.dev/acme-ci/apps/checkout-api@sha256:1111111111111111111111111111111111111111111111111111111111111111",
+              "ports": [
+                {
+                  "name": "http1",
+                  "containerPort": 8080
+                }
+              ],
+              "resources": {
+                "limits": {
+                  "cpu": "1",
+                  "memory": "512Mi"
+                }
+              }
+            }
+          ],
+          "maxInstanceRequestConcurrency": 80,
+          "timeout": "300s"
+        },
+        "traffic": [
+          {
+            "type": "TRAFFIC_TARGET_ALLOCATION_TYPE_REVISION",
+            "revision": "checkout-api-v1-42-0-b7d2e91",
+            "percent": 100,
+            "tag": "r-v1-42-0-b7d2e91"
+          }
+        ],
+        "trafficStatuses": [
+          {
+            "type": "TRAFFIC_TARGET_ALLOCATION_TYPE_REVISION",
+            "revision": "checkout-api-v1-42-0-b7d2e91",
+            "percent": 100,
+            "tag": "r-v1-42-0-b7d2e91",
+            "uri": "https://r-v1-42-0-b7d2e91---checkout-api-7xq2kd3nfa-el.a.run.app"
+          }
+        ],
+        "latestCreatedRevision": "projects/acme-commerce-prod/locations/asia-south1/services/checkout-api/revisions/checkout-api-v1-42-0-b7d2e91",
+        "latestReadyRevision": "projects/acme-commerce-prod/locations/asia-south1/services/checkout-api/revisions/checkout-api-v1-42-0-b7d2e91",
+        "observedGeneration": "10",
+        "terminalCondition": {
+          "type": "Ready",
+          "state": "CONDITION_SUCCEEDED",
+          "lastTransitionTime": "2026-10-16T21:04:11.482Z"
+        },
+        "conditions": [
+          {
+            "type": "RoutesReady",
+            "state": "CONDITION_SUCCEEDED"
+          },
+          {
+            "type": "ConfigurationsReady",
+            "state": "CONDITION_SUCCEEDED"
+          }
+        ],
+        "reconciling": false
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://run.googleapis.com/v2/projects/acme-commerce-prod/locations/asia-south1/services/checkout-api",
+      "response": {
+        "name": "projects/acme-commerce-prod/locations/asia-south1/services/checkout-api",
+        "uid": "4b1f8a2e-93c1-4f0e-9d0a-5d7c1e2a6b11",
+        "generation": "10",
+        "etag": "\"CPj10k8gGEJjN\"",
+        "uri": "https://checkout-api-7xq2kd3nfa-el.a.run.app",
+        "ingress": "INGRESS_TRAFFIC_ALL",
+        "launchStage": "GA",
+        "template": {
+          "revision": "checkout-api-v1-42-0-b7d2e91",
+          "serviceAccount": "runtime@acme-commerce-prod.iam.gserviceaccount.com",
+          "scaling": {
+            "maxInstanceCount": 20
+          },
+          "containers": [
+            {
+              "image": "asia-south1-docker.pkg.dev/acme-ci/apps/checkout-api@sha256:1111111111111111111111111111111111111111111111111111111111111111",
+              "ports": [
+                {
+                  "name": "http1",
+                  "containerPort": 8080
+                }
+              ],
+              "resources": {
+                "limits": {
+                  "cpu": "1",
+                  "memory": "512Mi"
+                }
+              }
+            }
+          ],
+          "maxInstanceRequestConcurrency": 80,
+          "timeout": "300s"
+        },
+        "traffic": [
+          {
+            "type": "TRAFFIC_TARGET_ALLOCATION_TYPE_REVISION",
+            "revision": "checkout-api-v1-42-0-b7d2e91",
+            "percent": 100,
+            "tag": "r-v1-42-0-b7d2e91"
+          }
+        ],
+        "trafficStatuses": [
+          {
+            "type": "TRAFFIC_TARGET_ALLOCATION_TYPE_REVISION",
+            "revision": "checkout-api-v1-42-0-b7d2e91",
+            "percent": 100,
+            "tag": "r-v1-42-0-b7d2e91",
+            "uri": "https://r-v1-42-0-b7d2e91---checkout-api-7xq2kd3nfa-el.a.run.app"
+          }
+        ],
+        "latestCreatedRevision": "projects/acme-commerce-prod/locations/asia-south1/services/checkout-api/revisions/checkout-api-v1-42-0-b7d2e91",
+        "latestReadyRevision": "projects/acme-commerce-prod/locations/asia-south1/services/checkout-api/revisions/checkout-api-v1-42-0-b7d2e91",
+        "observedGeneration": "10",
+        "terminalCondition": {
+          "type": "Ready",
+          "state": "CONDITION_SUCCEEDED",
+          "lastTransitionTime": "2026-10-16T21:04:11.482Z"
+        },
+        "conditions": [
+          {
+            "type": "RoutesReady",
+            "state": "CONDITION_SUCCEEDED"
+          },
+          {
+            "type": "ConfigurationsReady",
+            "state": "CONDITION_SUCCEEDED"
+          }
+        ],
+        "reconciling": false
+      }
+    },
+    {
+      "method": "PATCH",
+      "url": "https://run.googleapis.com/v2/projects/acme-commerce-prod/locations/asia-south1/services/checkout-api",
+      "body": {
+        "traffic": [
+          {
+            "revision": "checkout-api-v1-42-0-b7d2e91",
+            "percent": 100,
+            "tag": "r-v1-42-0-b7d2e91"
+          },
+          {
+            "revision": "checkout-api-v2-0-0-c4e8a10",
+            "percent": 0,
+            "tag": "r-v2-0-0-c4e8a10"
+          }
+        ],
+        "template": {
+          "revision": "checkout-api-v2-0-0-c4e8a10"
+        }
+      },
+      "response": {
+        "name": "projects/acme-commerce-prod/locations/asia-south1/operations/c3e1f6c0-5a7d-4c58-9b0e-3f2d1c0b9a8e",
+        "metadata": {
+          "@type": "type.googleapis.com/google.cloud.run.v2.Service",
+          "name": "projects/acme-commerce-prod/locations/asia-south1/services/checkout-api"
+        },
+        "done": true,
+        "response": {
+          "@type": "type.googleapis.com/google.cloud.run.v2.Service",
+          "name": "projects/acme-commerce-prod/locations/asia-south1/services/checkout-api",
+          "uid": "4b1f8a2e-93c1-4f0e-9d0a-5d7c1e2a6b11",
+          "generation": "11",
+          "etag": "\"CPj11k8gGEJjN\"",
+          "uri": "https://checkout-api-7xq2kd3nfa-el.a.run.app",
+          "ingress": "INGRESS_TRAFFIC_ALL",
+          "launchStage": "GA",
+          "template": {
+            "revision": "checkout-api-v2-0-0-c4e8a10",
+            "serviceAccount": "runtime@acme-commerce-prod.iam.gserviceaccount.com",
+            "scaling": {
+              "maxInstanceCount": 20
+            },
+            "containers": [
+              {
+                "image": "asia-south1-docker.pkg.dev/acme-ci/apps/checkout-api@sha256:2222222222222222222222222222222222222222222222222222222222222222",
+                "ports": [
+                  {
+                    "name": "http1",
+                    "containerPort": 8080
+                  }
+                ],
+                "resources": {
+                  "limits": {
+                    "cpu": "1",
+                    "memory": "512Mi"
+                  }
+                }
+              }
+            ],
+            "maxInstanceRequestConcurrency": 80,
+            "timeout": "300s"
+          },
+          "traffic": [
+            {
+              "type": "TRAFFIC_TARGET_ALLOCATION_TYPE_REVISION",
+              "revision": "checkout-api-v1-42-0-b7d2e91",
+              "percent": 100,
+              "tag": "r-v1-42-0-b7d2e91"
+            },
+            {
+              "type": "TRAFFIC_TARGET_ALLOCATION_TYPE_REVISION",
+              "revision": "checkout-api-v2-0-0-c4e8a10",
+              "percent": 0,
+              "tag": "r-v2-0-0-c4e8a10"
+            }
+          ],
+          "trafficStatuses": [
+            {
+              "type": "TRAFFIC_TARGET_ALLOCATION_TYPE_REVISION",
+              "revision": "checkout-api-v1-42-0-b7d2e91",
+              "percent": 100,
+              "tag": "r-v1-42-0-b7d2e91",
+              "uri": "https://r-v1-42-0-b7d2e91---checkout-api-7xq2kd3nfa-el.a.run.app"
+            },
+            {
+              "type": "TRAFFIC_TARGET_ALLOCATION_TYPE_REVISION",
+              "revision": "checkout-api-v2-0-0-c4e8a10",
+              "percent": 0,
+              "tag": "r-v2-0-0-c4e8a10",
+              "uri": "https://r-v2-0-0-c4e8a10---checkout-api-7xq2kd3nfa-el.a.run.app"
+            }
+          ],
+          "latestCreatedRevision": "projects/acme-commerce-prod/locations/asia-south1/services/checkout-api/revisions/checkout-api-v2-0-0-c4e8a10",
+          "latestReadyRevision": "projects/acme-commerce-prod/locations/asia-south1/services/checkout-api/revisions/checkout-api-v2-0-0-c4e8a10",
+          "observedGeneration": "11",
+          "terminalCondition": {
+            "type": "Ready",
+            "state": "CONDITION_SUCCEEDED",
+            "lastTransitionTime": "2026-10-16T21:04:11.482Z"
+          },
+          "conditions": [
+            {
+              "type": "RoutesReady",
+              "state": "CONDITION_SUCCEEDED"
+            },
+            {
+              "type": "ConfigurationsReady",
+              "state": "CONDITION_SUCCEEDED"
+            }
+          ],
+          "reconciling": false
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://run.googleapis.com/v2/projects/acme-commerce-prod/locations/asia-south1/services/checkout-api",
+      "response": {
+        "name": "projects/acme-commerce-prod/locations/asia-south1/services/checkout-api",
+        "uid": "4b1f8a2e-93c1-4f0e-9d0a-5d7c1e2a6b11",
+        "generation": "11",
+        "etag": "\"CPj11k8gGEJjN\"",
+        "uri": "https://checkout-api-7xq2kd3nfa-el.a.run.app",
+        "ingress": "INGRESS_TRAFFIC_ALL",
+        "launchStage": "GA",
+        "template": {
+          "revision": "checkout-api-v2-0-0-c4e8a10",
+          "serviceAccount": "runtime@acme-commerce-prod.iam.gserviceaccount.com",
+          "scaling": {
+            "maxInstanceCount": 20
+          },
+          "containers": [
+            {
+              "image": "asia-south1-docker.pkg.dev/acme-ci/apps/checkout-api@sha256:2222222222222222222222222222222222222222222222222222222222222222",
+              "ports": [
+                {
+                  "name": "http1",
+                  "containerPort": 8080
+                }
+              ],
+              "resources": {
+                "limits": {
+                  "cpu": "1",
+                  "memory": "512Mi"
+                }
+              }
+            }
+          ],
+          "maxInstanceRequestConcurrency": 80,
+          "timeout": "300s"
+        },
+        "traffic": [
+          {
+            "type": "TRAFFIC_TARGET_ALLOCATION_TYPE_REVISION",
+            "revision": "checkout-api-v1-42-0-b7d2e91",
+            "percent": 100,
+            "tag": "r-v1-42-0-b7d2e91"
+          },
+          {
+            "type": "TRAFFIC_TARGET_ALLOCATION_TYPE_REVISION",
+            "revision": "checkout-api-v2-0-0-c4e8a10",
+            "percent": 0,
+            "tag": "r-v2-0-0-c4e8a10"
+          }
+        ],
+        "trafficStatuses": [
+          {
+            "type": "TRAFFIC_TARGET_ALLOCATION_TYPE_REVISION",
+            "revision": "checkout-api-v1-42-0-b7d2e91",
+            "percent": 100,
+            "tag": "r-v1-42-0-b7d2e91",
+            "uri": "https://r-v1-42-0-b7d2e91---checkout-api-7xq2kd3nfa-el.a.run.app"
+          },
+          {
+            "type": "TRAFFIC_TARGET_ALLOCATION_TYPE_REVISION",
+            "revision": "checkout-api-v2-0-0-c4e8a10",
+            "percent": 0,
+            "tag": "r-v2-0-0-c4e8a10",
+            "uri": "https://r-v2-0-0-c4e8a10---checkout-api-7xq2kd3nfa-el.a.run.app"
+          }
+        ],
+        "latestCreatedRevision": "projects/acme-commerce-prod/locations/asia-south1/services/checkout-api/revisions/checkout-api-v2-0-0-c4e8a10",
+        "latestReadyRevision": "projects/acme-commerce-prod/locations/asia-south1/services/checkout-api/revisions/checkout-api-v2-0-0-c4e8a10",
+        "observedGeneration": "11",
+        "terminalCondition": {
+          "type": "Ready",
+          "state": "CONDITION_SUCCEEDED",
+          "lastTransitionTime": "2026-10-16T21:04:11.482Z"
+        },
+        "conditions": [
+          {
+            "type": "RoutesReady",
+            "state": "CONDITION_SUCCEEDED"
+          },
+          {
+            "type": "ConfigurationsReady",
+            "state": "CONDITION_SUCCEEDED"
+          }
+        ],
+        "reconciling": false
+      }
+    },
+    {
+      "method": "PATCH",
+      "url": "https://run.googleapis.com/v2/projects/acme-commerce-prod/locations/asia-south1/services/checkout-api",
+      "body": {
+        "traffic": [
+          {
+            "revision": "checkout-api-v2-0-0-c4e8a10",
+            "percent": 25,
+            "tag": "r-v2-0-0-c4e8a10"
+          },
+          {
+            "revision": "checkout-api-v1-42-0-b7d2e91",
+            "percent": 75,
+            "tag": "r-v1-42-0-b7d2e91"
+          }
+        ]
+      },
+      "response": {
+        "name": "projects/acme-commerce-prod/locations/asia-south1/operations/d4e1f6c0-5a7d-4c58-9b0e-3f2d1c0b9a8e",
+        "metadata": {
+          "@type": "type.googleapis.com/google.cloud.run.v2.Service",
+          "name": "projects/acme-commerce-prod/locations/asia-south1/services/checkout-api"
+        },
+        "done": true,
+        "response": {
+          "@type": "type.googleapis.com/google.cloud.run.v2.Service",
+          "name": "projects/acme-commerce-prod/locations/asia-south1/services/checkout-api",
+          "uid": "4b1f8a2e-93c1-4f0e-9d0a-5d7c1e2a6b11",
+          "generation": "12",
+          "etag": "\"CPj12k8gGEJjN\"",
+          "uri": "https://checkout-api-7xq2kd3nfa-el.a.run.app",
+          "ingress": "INGRESS_TRAFFIC_ALL",
+          "launchStage": "GA",
+          "template": {
+            "revision": "checkout-api-v2-0-0-c4e8a10",
+            "serviceAccount": "runtime@acme-commerce-prod.iam.gserviceaccount.com",
+            "scaling": {
+              "maxInstanceCount": 20
+            },
+            "containers": [
+              {
+                "image": "asia-south1-docker.pkg.dev/acme-ci/apps/checkout-api@sha256:2222222222222222222222222222222222222222222222222222222222222222",
+                "ports": [
+                  {
+                    "name": "http1",
+                    "containerPort": 8080
+                  }
+                ],
+                "resources": {
+                  "limits": {
+                    "cpu": "1",
+                    "memory": "512Mi"
+                  }
+                }
+              }
+            ],
+            "maxInstanceRequestConcurrency": 80,
+            "timeout": "300s"
+          },
+          "traffic": [
+            {
+              "type": "TRAFFIC_TARGET_ALLOCATION_TYPE_REVISION",
+              "revision": "checkout-api-v2-0-0-c4e8a10",
+              "percent": 25,
+              "tag": "r-v2-0-0-c4e8a10"
+            },
+            {
+              "type": "TRAFFIC_TARGET_ALLOCATION_TYPE_REVISION",
+              "revision": "checkout-api-v1-42-0-b7d2e91",
+              "percent": 75,
+              "tag": "r-v1-42-0-b7d2e91"
+            }
+          ],
+          "trafficStatuses": [
+            {
+              "type": "TRAFFIC_TARGET_ALLOCATION_TYPE_REVISION",
+              "revision": "checkout-api-v2-0-0-c4e8a10",
+              "percent": 25,
+              "tag": "r-v2-0-0-c4e8a10",
+              "uri": "https://r-v2-0-0-c4e8a10---checkout-api-7xq2kd3nfa-el.a.run.app"
+            },
+            {
+              "type": "TRAFFIC_TARGET_ALLOCATION_TYPE_REVISION",
+              "revision": "checkout-api-v1-42-0-b7d2e91",
+              "percent": 75,
+              "tag": "r-v1-42-0-b7d2e91",
+              "uri": "https://r-v1-42-0-b7d2e91---checkout-api-7xq2kd3nfa-el.a.run.app"
+            }
+          ],
+          "latestCreatedRevision": "projects/acme-commerce-prod/locations/asia-south1/services/checkout-api/revisions/checkout-api-v2-0-0-c4e8a10",
+          "latestReadyRevision": "projects/acme-commerce-prod/locations/asia-south1/services/checkout-api/revisions/checkout-api-v2-0-0-c4e8a10",
+          "observedGeneration": "12",
+          "terminalCondition": {
+            "type": "Ready",
+            "state": "CONDITION_SUCCEEDED",
+            "lastTransitionTime": "2026-10-16T21:04:11.482Z"
+          },
+          "conditions": [
+            {
+              "type": "RoutesReady",
+              "state": "CONDITION_SUCCEEDED"
+            },
+            {
+              "type": "ConfigurationsReady",
+              "state": "CONDITION_SUCCEEDED"
+            }
+          ],
+          "reconciling": false
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://run.googleapis.com/v2/projects/acme-commerce-prod/locations/asia-south1/services/checkout-api",
+      "response": {
+        "name": "projects/acme-commerce-prod/locations/asia-south1/services/checkout-api",
+        "uid": "4b1f8a2e-93c1-4f0e-9d0a-5d7c1e2a6b11",
+        "generation": "12",
+        "etag": "\"CPj12k8gGEJjN\"",
+        "uri": "https://checkout-api-7xq2kd3nfa-el.a.run.app",
+        "ingress": "INGRESS_TRAFFIC_ALL",
+        "launchStage": "GA",
+        "template": {
+          "revision": "checkout-api-v2-0-0-c4e8a10",
+          "serviceAccount": "runtime@acme-commerce-prod.iam.gserviceaccount.com",
+          "scaling": {
+            "maxInstanceCount": 20
+          },
+          "containers": [
+            {
+              "image": "asia-south1-docker.pkg.dev/acme-ci/apps/checkout-api@sha256:2222222222222222222222222222222222222222222222222222222222222222",
+              "ports": [
+                {
+                  "name": "http1",
+                  "containerPort": 8080
+                }
+              ],
+              "resources": {
+                "limits": {
+                  "cpu": "1",
+                  "memory": "512Mi"
+                }
+              }
+            }
+          ],
+          "maxInstanceRequestConcurrency": 80,
+          "timeout": "300s"
+        },
+        "traffic": [
+          {
+            "type": "TRAFFIC_TARGET_ALLOCATION_TYPE_REVISION",
+            "revision": "checkout-api-v2-0-0-c4e8a10",
+            "percent": 25,
+            "tag": "r-v2-0-0-c4e8a10"
+          },
+          {
+            "type": "TRAFFIC_TARGET_ALLOCATION_TYPE_REVISION",
+            "revision": "checkout-api-v1-42-0-b7d2e91",
+            "percent": 75,
+            "tag": "r-v1-42-0-b7d2e91"
+          }
+        ],
+        "trafficStatuses": [
+          {
+            "type": "TRAFFIC_TARGET_ALLOCATION_TYPE_REVISION",
+            "revision": "checkout-api-v2-0-0-c4e8a10",
+            "percent": 25,
+            "tag": "r-v2-0-0-c4e8a10",
+            "uri": "https://r-v2-0-0-c4e8a10---checkout-api-7xq2kd3nfa-el.a.run.app"
+          },
+          {
+            "type": "TRAFFIC_TARGET_ALLOCATION_TYPE_REVISION",
+            "revision": "checkout-api-v1-42-0-b7d2e91",
+            "percent": 75,
+            "tag": "r-v1-42-0-b7d2e91",
+            "uri": "https://r-v1-42-0-b7d2e91---checkout-api-7xq2kd3nfa-el.a.run.app"
+          }
+        ],
+        "latestCreatedRevision": "projects/acme-commerce-prod/locations/asia-south1/services/checkout-api/revisions/checkout-api-v2-0-0-c4e8a10",
+        "latestReadyRevision": "projects/acme-commerce-prod/locations/asia-south1/services/checkout-api/revisions/checkout-api-v2-0-0-c4e8a10",
+        "observedGeneration": "12",
+        "terminalCondition": {
+          "type": "Ready",
+          "state": "CONDITION_SUCCEEDED",
+          "lastTransitionTime": "2026-10-16T21:04:11.482Z"
+        },
+        "conditions": [
+          {
+            "type": "RoutesReady",
+            "state": "CONDITION_SUCCEEDED"
+          },
+          {
+            "type": "ConfigurationsReady",
+            "state": "CONDITION_SUCCEEDED"
+          }
+        ],
+        "reconciling": false
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://run.googleapis.com/v2/projects/acme-commerce-prod/locations/asia-south1/services/checkout-api/revisions/checkout-api-v2-0-0-c4e8a10",
+      "response": {
+        "name": "projects/acme-commerce-prod/locations/asia-south1/services/checkout-api/revisions/checkout-api-v2-0-0-c4e8a10",
+        "uid": "0b9c3d4e-1f2a-4b5c-8d7e-6f5a4b3c2d1e",
+        "generation": "1",
+        "createTime": "2026-10-16T21:10:42.113Z",
+        "service": "projects/acme-commerce-prod/locations/asia-south1/services/checkout-api",
+        "scaling": {
+          "maxInstanceCount": 20
+        },
+        "containers": [
+          {
+            "image": "asia-south1-docker.pkg.dev/acme-ci/apps/checkout-api@sha256:2222222222222222222222222222222222222222222222222222222222222222"
+          }
+        ],
+        "conditions": [
+          {
+            "type": "Ready",
+            "state": "CONDITION_SUCCEEDED",
+            "lastTransitionTime": "2026-10-16T21:11:03.540Z"
+          },
+          {
+            "type": "ContainerHealthy",
+            "state": "CONDITION_SUCCEEDED"
+          },
+          {
+            "type": "ResourcesAvailable",
+            "state": "CONDITION_SUCCEEDED"
+          }
+        ],
+        "observedGeneration": "1",
+        "reconciling": false
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://monitoring.googleapis.com/v3/projects/acme-commerce-prod/timeSeries?aggregation.groupByFields=metric.label.response_code_class",
+      "response": {
+        "timeSeries": [
+          {
+            "metric": {
+              "type": "run.googleapis.com/request_count",
+              "labels": {
+                "response_code_class": "2xx"
+              }
+            },
+            "resource": {
+              "type": "cloud_run_revision",
+              "labels": {
+                "project_id": "acme-commerce-prod",
+                "service_name": "checkout-api",
+                "revision_name": "checkout-api-v2-0-0-c4e8a10",
+                "location": "asia-south1"
+              }
+            },
+            "metricKind": "DELTA",
+            "valueType": "INT64",
+            "points": [
+              {
+                "interval": {
+                  "startTime": "2026-10-16T21:13:00Z",
+                  "endTime": "2026-10-16T21:14:00Z"
+                },
+                "value": {
+                  "int64Value": "118"
+                }
+              },
+              {
+                "interval": {
+                  "startTime": "2026-10-16T21:12:00Z",
+                  "endTime": "2026-10-16T21:13:00Z"
+                },
+                "value": {
+                  "int64Value": "121"
+                }
+              }
+            ]
+          },
+          {
+            "metric": {
+              "type": "run.googleapis.com/request_count",
+              "labels": {
+                "response_code_class": "5xx"
+              }
+            },
+            "resource": {
+              "type": "cloud_run_revision",
+              "labels": {
+                "project_id": "acme-commerce-prod",
+                "service_name": "checkout-api",
+                "revision_name": "checkout-api-v2-0-0-c4e8a10",
+                "location": "asia-south1"
+              }
+            },
+            "metricKind": "DELTA",
+            "valueType": "INT64",
+            "points": [
+              {
+                "interval": {
+                  "startTime": "2026-10-16T21:13:00Z",
+                  "endTime": "2026-10-16T21:14:00Z"
+                },
+                "value": {
+                  "int64Value": "2"
+                }
+              }
+            ]
+          }
+        ],
+        "unit": "1"
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://run.googleapis.com/v2/projects/acme-commerce-prod/locations/asia-south1/services/checkout-api",
+      "response": {
+        "name": "projects/acme-commerce-prod/locations/asia-south1/services/checkout-api",
+        "uid": "4b1f8a2e-93c1-4f0e-9d0a-5d7c1e2a6b11",
+        "generation": "12",
+        "etag": "\"CPj12k8gGEJjN\"",
+        "uri": "https://checkout-api-7xq2kd3nfa-el.a.run.app",
+        "ingress": "INGRESS_TRAFFIC_ALL",
+        "launchStage": "GA",
+        "template": {
+          "revision": "checkout-api-v2-0-0-c4e8a10",
+          "serviceAccount": "runtime@acme-commerce-prod.iam.gserviceaccount.com",
+          "scaling": {
+            "maxInstanceCount": 20
+          },
+          "containers": [
+            {
+              "image": "asia-south1-docker.pkg.dev/acme-ci/apps/checkout-api@sha256:2222222222222222222222222222222222222222222222222222222222222222",
+              "ports": [
+                {
+                  "name": "http1",
+                  "containerPort": 8080
+                }
+              ],
+              "resources": {
+                "limits": {
+                  "cpu": "1",
+                  "memory": "512Mi"
+                }
+              }
+            }
+          ],
+          "maxInstanceRequestConcurrency": 80,
+          "timeout": "300s"
+        },
+        "traffic": [
+          {
+            "type": "TRAFFIC_TARGET_ALLOCATION_TYPE_REVISION",
+            "revision": "checkout-api-v2-0-0-c4e8a10",
+            "percent": 25,
+            "tag": "r-v2-0-0-c4e8a10"
+          },
+          {
+            "type": "TRAFFIC_TARGET_ALLOCATION_TYPE_REVISION",
+            "revision": "checkout-api-v1-42-0-b7d2e91",
+            "percent": 75,
+            "tag": "r-v1-42-0-b7d2e91"
+          }
+        ],
+        "trafficStatuses": [
+          {
+            "type": "TRAFFIC_TARGET_ALLOCATION_TYPE_REVISION",
+            "revision": "checkout-api-v2-0-0-c4e8a10",
+            "percent": 25,
+            "tag": "r-v2-0-0-c4e8a10",
+            "uri": "https://r-v2-0-0-c4e8a10---checkout-api-7xq2kd3nfa-el.a.run.app"
+          },
+          {
+            "type": "TRAFFIC_TARGET_ALLOCATION_TYPE_REVISION",
+            "revision": "checkout-api-v1-42-0-b7d2e91",
+            "percent": 75,
+            "tag": "r-v1-42-0-b7d2e91",
+            "uri": "https://r-v1-42-0-b7d2e91---checkout-api-7xq2kd3nfa-el.a.run.app"
+          }
+        ],
+        "latestCreatedRevision": "projects/acme-commerce-prod/locations/asia-south1/services/checkout-api/revisions/checkout-api-v2-0-0-c4e8a10",
+        "latestReadyRevision": "projects/acme-commerce-prod/locations/asia-south1/services/checkout-api/revisions/checkout-api-v2-0-0-c4e8a10",
+        "observedGeneration": "12",
+        "terminalCondition": {
+          "type": "Ready",
+          "state": "CONDITION_SUCCEEDED",
+          "lastTransitionTime": "2026-10-16T21:04:11.482Z"
+        },
+        "conditions": [
+          {
+            "type": "RoutesReady",
+            "state": "CONDITION_SUCCEEDED"
+          },
+          {
+            "type": "ConfigurationsReady",
+            "state": "CONDITION_SUCCEEDED"
+          }
+        ],
+        "reconciling": false
+      }
+    },
+    {
+      "method": "PATCH",
+      "url": "https://run.googleapis.com/v2/projects/acme-commerce-prod/locations/asia-south1/services/checkout-api",
+      "body": {
+        "traffic": [
+          {
+            "revision": "checkout-api-v1-42-0-b7d2e91",
+            "percent": 100,
+            "tag": "r-v1-42-0-b7d2e91"
+          },
+          {
+            "revision": "checkout-api-v2-0-0-c4e8a10",
+            "percent": 0,
+            "tag": "r-v2-0-0-c4e8a10"
+          }
+        ]
+      },
+      "response": {
+        "name": "projects/acme-commerce-prod/locations/asia-south1/operations/e5e1f6c0-5a7d-4c58-9b0e-3f2d1c0b9a8e",
+        "metadata": {
+          "@type": "type.googleapis.com/google.cloud.run.v2.Service",
+          "name": "projects/acme-commerce-prod/locations/asia-south1/services/checkout-api"
+        },
+        "done": true,
+        "response": {
+          "@type": "type.googleapis.com/google.cloud.run.v2.Service",
+          "name": "projects/acme-commerce-prod/locations/asia-south1/services/checkout-api",
+          "uid": "4b1f8a2e-93c1-4f0e-9d0a-5d7c1e2a6b11",
+          "generation": "13",
+          "etag": "\"CPj13k8gGEJjN\"",
+          "uri": "https://checkout-api-7xq2kd3nfa-el.a.run.app",
+          "ingress": "INGRESS_TRAFFIC_ALL",
+          "launchStage": "GA",
+          "template": {
+            "revision": "checkout-api-v2-0-0-c4e8a10",
+            "serviceAccount": "runtime@acme-commerce-prod.iam.gserviceaccount.com",
+            "scaling": {
+              "maxInstanceCount": 20
+            },
+            "containers": [
+              {
+                "image": "asia-south1-docker.pkg.dev/acme-ci/apps/checkout-api@sha256:2222222222222222222222222222222222222222222222222222222222222222",
+                "ports": [
+                  {
+                    "name": "http1",
+                    "containerPort": 8080
+                  }
+                ],
+                "resources": {
+                  "limits": {
+                    "cpu": "1",
+                    "memory": "512Mi"
+                  }
+                }
+              }
+            ],
+            "maxInstanceRequestConcurrency": 80,
+            "timeout": "300s"
+          },
+          "traffic": [
+            {
+              "type": "TRAFFIC_TARGET_ALLOCATION_TYPE_REVISION",
+              "revision": "checkout-api-v1-42-0-b7d2e91",
+              "percent": 100,
+              "tag": "r-v1-42-0-b7d2e91"
+            },
+            {
+              "type": "TRAFFIC_TARGET_ALLOCATION_TYPE_REVISION",
+              "revision": "checkout-api-v2-0-0-c4e8a10",
+              "percent": 0,
+              "tag": "r-v2-0-0-c4e8a10"
+            }
+          ],
+          "trafficStatuses": [
+            {
+              "type": "TRAFFIC_TARGET_ALLOCATION_TYPE_REVISION",
+              "revision": "checkout-api-v1-42-0-b7d2e91",
+              "percent": 100,
+              "tag": "r-v1-42-0-b7d2e91",
+              "uri": "https://r-v1-42-0-b7d2e91---checkout-api-7xq2kd3nfa-el.a.run.app"
+            },
+            {
+              "type": "TRAFFIC_TARGET_ALLOCATION_TYPE_REVISION",
+              "revision": "checkout-api-v2-0-0-c4e8a10",
+              "percent": 0,
+              "tag": "r-v2-0-0-c4e8a10",
+              "uri": "https://r-v2-0-0-c4e8a10---checkout-api-7xq2kd3nfa-el.a.run.app"
+            }
+          ],
+          "latestCreatedRevision": "projects/acme-commerce-prod/locations/asia-south1/services/checkout-api/revisions/checkout-api-v2-0-0-c4e8a10",
+          "latestReadyRevision": "projects/acme-commerce-prod/locations/asia-south1/services/checkout-api/revisions/checkout-api-v2-0-0-c4e8a10",
+          "observedGeneration": "13",
+          "terminalCondition": {
+            "type": "Ready",
+            "state": "CONDITION_SUCCEEDED",
+            "lastTransitionTime": "2026-10-16T21:04:11.482Z"
+          },
+          "conditions": [
+            {
+              "type": "RoutesReady",
+              "state": "CONDITION_SUCCEEDED"
+            },
+            {
+              "type": "ConfigurationsReady",
+              "state": "CONDITION_SUCCEEDED"
+            }
+          ],
+          "reconciling": false
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://run.googleapis.com/v2/projects/acme-commerce-prod/locations/asia-south1/services/checkout-api",
+      "response": {
+        "name": "projects/acme-commerce-prod/locations/asia-south1/services/checkout-api",
+        "uid": "4b1f8a2e-93c1-4f0e-9d0a-5d7c1e2a6b11",
+        "generation": "13",
+        "etag": "\"CPj13k8gGEJjN\"",
+        "uri": "https://checkout-api-7xq2kd3nfa-el.a.run.app",
+        "ingress": "INGRESS_TRAFFIC_ALL",
+        "launchStage": "GA",
+        "template": {
+          "revision": "checkout-api-v2-0-0-c4e8a10",
+          "serviceAccount": "runtime@acme-commerce-prod.iam.gserviceaccount.com",
+          "scaling": {
+            "maxInstanceCount": 20
+          },
+          "containers": [
+            {
+              "image": "asia-south1-docker.pkg.dev/acme-ci/apps/checkout-api@sha256:2222222222222222222222222222222222222222222222222222222222222222",
+              "ports": [
+                {
+                  "name": "http1",
+                  "containerPort": 8080
+                }
+              ],
+              "resources": {
+                "limits": {
+                  "cpu": "1",
+                  "memory": "512Mi"
+                }
+              }
+            }
+          ],
+          "maxInstanceRequestConcurrency": 80,
+          "timeout": "300s"
+        },
+        "traffic": [
+          {
+            "type": "TRAFFIC_TARGET_ALLOCATION_TYPE_REVISION",
+            "revision": "checkout-api-v1-42-0-b7d2e91",
+            "percent": 100,
+            "tag": "r-v1-42-0-b7d2e91"
+          },
+          {
+            "type": "TRAFFIC_TARGET_ALLOCATION_TYPE_REVISION",
+            "revision": "checkout-api-v2-0-0-c4e8a10",
+            "percent": 0,
+            "tag": "r-v2-0-0-c4e8a10"
+          }
+        ],
+        "trafficStatuses": [
+          {
+            "type": "TRAFFIC_TARGET_ALLOCATION_TYPE_REVISION",
+            "revision": "checkout-api-v1-42-0-b7d2e91",
+            "percent": 100,
+            "tag": "r-v1-42-0-b7d2e91",
+            "uri": "https://r-v1-42-0-b7d2e91---checkout-api-7xq2kd3nfa-el.a.run.app"
+          },
+          {
+            "type": "TRAFFIC_TARGET_ALLOCATION_TYPE_REVISION",
+            "revision": "checkout-api-v2-0-0-c4e8a10",
+            "percent": 0,
+            "tag": "r-v2-0-0-c4e8a10",
+            "uri": "https://r-v2-0-0-c4e8a10---checkout-api-7xq2kd3nfa-el.a.run.app"
+          }
+        ],
+        "latestCreatedRevision": "projects/acme-commerce-prod/locations/asia-south1/services/checkout-api/revisions/checkout-api-v2-0-0-c4e8a10",
+        "latestReadyRevision": "projects/acme-commerce-prod/locations/asia-south1/services/checkout-api/revisions/checkout-api-v2-0-0-c4e8a10",
+        "observedGeneration": "13",
+        "terminalCondition": {
+          "type": "Ready",
+          "state": "CONDITION_SUCCEEDED",
+          "lastTransitionTime": "2026-10-16T21:04:11.482Z"
+        },
+        "conditions": [
+          {
+            "type": "RoutesReady",
+            "state": "CONDITION_SUCCEEDED"
+          },
+          {
+            "type": "ConfigurationsReady",
+            "state": "CONDITION_SUCCEEDED"
+          }
+        ],
+        "reconciling": false
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://run.googleapis.com/v2/projects/acme-commerce-prod/locations/asia-south1/services/checkout-api",
+      "response": {
+        "name": "projects/acme-commerce-prod/locations/asia-south1/services/checkout-api",
+        "uid": "4b1f8a2e-93c1-4f0e-9d0a-5d7c1e2a6b11",
+        "generation": "13",
+        "etag": "\"CPj13k8gGEJjN\"",
+        "uri": "https://checkout-api-7xq2kd3nfa-el.a.run.app",
+        "ingress": "INGRESS_TRAFFIC_ALL",
+        "launchStage": "GA",
+        "template": {
+          "revision": "checkout-api-v2-0-0-c4e8a10",
+          "serviceAccount": "runtime@acme-commerce-prod.iam.gserviceaccount.com",
+          "scaling": {
+            "maxInstanceCount": 20
+          },
+          "containers": [
+            {
+              "image": "asia-south1-docker.pkg.dev/acme-ci/apps/checkout-api@sha256:2222222222222222222222222222222222222222222222222222222222222222",
+              "ports": [
+                {
+                  "name": "http1",
+                  "containerPort": 8080
+                }
+              ],
+              "resources": {
+                "limits": {
+                  "cpu": "1",
+                  "memory": "512Mi"
+                }
+              }
+            }
+          ],
+          "maxInstanceRequestConcurrency": 80,
+          "timeout": "300s"
+        },
+        "traffic": [
+          {
+            "type": "TRAFFIC_TARGET_ALLOCATION_TYPE_REVISION",
+            "revision": "checkout-api-v1-42-0-b7d2e91",
+            "percent": 100,
+            "tag": "r-v1-42-0-b7d2e91"
+          },
+          {
+            "type": "TRAFFIC_TARGET_ALLOCATION_TYPE_REVISION",
+            "revision": "checkout-api-v2-0-0-c4e8a10",
+            "percent": 0,
+            "tag": "r-v2-0-0-c4e8a10"
+          }
+        ],
+        "trafficStatuses": [
+          {
+            "type": "TRAFFIC_TARGET_ALLOCATION_TYPE_REVISION",
+            "revision": "checkout-api-v1-42-0-b7d2e91",
+            "percent": 100,
+            "tag": "r-v1-42-0-b7d2e91",
+            "uri": "https://r-v1-42-0-b7d2e91---checkout-api-7xq2kd3nfa-el.a.run.app"
+          },
+          {
+            "type": "TRAFFIC_TARGET_ALLOCATION_TYPE_REVISION",
+            "revision": "checkout-api-v2-0-0-c4e8a10",
+            "percent": 0,
+            "tag": "r-v2-0-0-c4e8a10",
+            "uri": "https://r-v2-0-0-c4e8a10---checkout-api-7xq2kd3nfa-el.a.run.app"
+          }
+        ],
+        "latestCreatedRevision": "projects/acme-commerce-prod/locations/asia-south1/services/checkout-api/revisions/checkout-api-v2-0-0-c4e8a10",
+        "latestReadyRevision": "projects/acme-commerce-prod/locations/asia-south1/services/checkout-api/revisions/checkout-api-v2-0-0-c4e8a10",
+        "observedGeneration": "13",
+        "terminalCondition": {
+          "type": "Ready",
+          "state": "CONDITION_SUCCEEDED",
+          "lastTransitionTime": "2026-10-16T21:04:11.482Z"
+        },
+        "conditions": [
+          {
+            "type": "RoutesReady",
+            "state": "CONDITION_SUCCEEDED"
+          },
+          {
+            "type": "ConfigurationsReady",
+            "state": "CONDITION_SUCCEEDED"
+          }
+        ],
+        "reconciling": false
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://run.googleapis.com/v2/projects/acme-commerce-prod/locations/asia-south1/services/checkout-api",
+      "response": {
+        "name": "projects/acme-commerce-prod/locations/asia-south1/services/checkout-api",
+        "uid": "4b1f8a2e-93c1-4f0e-9d0a-5d7c1e2a6b11",
+        "generation": "13",
+        "etag": "\"CPj13k8gGEJjN\"",
+        "uri": "https://checkout-api-7xq2kd3nfa-el.a.run.app",
+        "ingress": "INGRESS_TRAFFIC_ALL",
+        "launchStage": "GA",
+        "template": {
+          "revision": "checkout-api-v2-0-0-c4e8a10",
+          "serviceAccount": "runtime@acme-commerce-prod.iam.gserviceaccount.com",
+          "scaling": {
+            "maxInstanceCount": 20
+          },
+          "containers": [
+            {
+              "image": "asia-south1-docker.pkg.dev/acme-ci/apps/checkout-api@sha256:2222222222222222222222222222222222222222222222222222222222222222",
+              "ports": [
+                {
+                  "name": "http1",
+                  "containerPort": 8080
+                }
+              ],
+              "resources": {
+                "limits": {
+                  "cpu": "1",
+                  "memory": "512Mi"
+                }
+              }
+            }
+          ],
+          "maxInstanceRequestConcurrency": 80,
+          "timeout": "300s"
+        },
+        "traffic": [
+          {
+            "type": "TRAFFIC_TARGET_ALLOCATION_TYPE_REVISION",
+            "revision": "checkout-api-v1-42-0-b7d2e91",
+            "percent": 100,
+            "tag": "r-v1-42-0-b7d2e91"
+          },
+          {
+            "type": "TRAFFIC_TARGET_ALLOCATION_TYPE_REVISION",
+            "revision": "checkout-api-v2-0-0-c4e8a10",
+            "percent": 0,
+            "tag": "r-v2-0-0-c4e8a10"
+          }
+        ],
+        "trafficStatuses": [
+          {
+            "type": "TRAFFIC_TARGET_ALLOCATION_TYPE_REVISION",
+            "revision": "checkout-api-v1-42-0-b7d2e91",
+            "percent": 100,
+            "tag": "r-v1-42-0-b7d2e91",
+            "uri": "https://r-v1-42-0-b7d2e91---checkout-api-7xq2kd3nfa-el.a.run.app"
+          },
+          {
+            "type": "TRAFFIC_TARGET_ALLOCATION_TYPE_REVISION",
+            "revision": "checkout-api-v2-0-0-c4e8a10",
+            "percent": 0,
+            "tag": "r-v2-0-0-c4e8a10",
+            "uri": "https://r-v2-0-0-c4e8a10---checkout-api-7xq2kd3nfa-el.a.run.app"
+          }
+        ],
+        "latestCreatedRevision": "projects/acme-commerce-prod/locations/asia-south1/services/checkout-api/revisions/checkout-api-v2-0-0-c4e8a10",
+        "latestReadyRevision": "projects/acme-commerce-prod/locations/asia-south1/services/checkout-api/revisions/checkout-api-v2-0-0-c4e8a10",
+        "observedGeneration": "13",
+        "terminalCondition": {
+          "type": "Ready",
+          "state": "CONDITION_SUCCEEDED",
+          "lastTransitionTime": "2026-10-16T21:04:11.482Z"
+        },
+        "conditions": [
+          {
+            "type": "RoutesReady",
+            "state": "CONDITION_SUCCEEDED"
+          },
+          {
+            "type": "ConfigurationsReady",
+            "state": "CONDITION_SUCCEEDED"
+          }
+        ],
+        "reconciling": false
+      }
+    },
+    {
+      "method": "PATCH",
+      "url": "https://run.googleapis.com/v2/projects/acme-commerce-prod/locations/asia-south1/services/checkout-api",
+      "body": {
+        "traffic": [
+          {
+            "revision": "checkout-api-v1-42-0-b7d2e91",
+            "percent": 100,
+            "tag": "r-v1-42-0-b7d2e91"
+          }
+        ]
+      },
+      "response": {
+        "name": "projects/acme-commerce-prod/locations/asia-south1/operations/f6e1f6c0-5a7d-4c58-9b0e-3f2d1c0b9a8e",
+        "metadata": {
+          "@type": "type.googleapis.com/google.cloud.run.v2.Service",
+          "name": "projects/acme-commerce-prod/locations/asia-south1/services/checkout-api"
+        },
+        "done": true,
+        "response": {
+          "@type": "type.googleapis.com/google.cloud.run.v2.Service",
+          "name": "projects/acme-commerce-prod/locations/asia-south1/services/checkout-api",
+          "uid": "4b1f8a2e-93c1-4f0e-9d0a-5d7c1e2a6b11",
+          "generation": "14",
+          "etag": "\"CPj14k8gGEJjN\"",
+          "uri": "https://checkout-api-7xq2kd3nfa-el.a.run.app",
+          "ingress": "INGRESS_TRAFFIC_ALL",
+          "launchStage": "GA",
+          "template": {
+            "revision": "checkout-api-v2-0-0-c4e8a10",
+            "serviceAccount": "runtime@acme-commerce-prod.iam.gserviceaccount.com",
+            "scaling": {
+              "maxInstanceCount": 20
+            },
+            "containers": [
+              {
+                "image": "asia-south1-docker.pkg.dev/acme-ci/apps/checkout-api@sha256:2222222222222222222222222222222222222222222222222222222222222222",
+                "ports": [
+                  {
+                    "name": "http1",
+                    "containerPort": 8080
+                  }
+                ],
+                "resources": {
+                  "limits": {
+                    "cpu": "1",
+                    "memory": "512Mi"
+                  }
+                }
+              }
+            ],
+            "maxInstanceRequestConcurrency": 80,
+            "timeout": "300s"
+          },
+          "traffic": [
+            {
+              "type": "TRAFFIC_TARGET_ALLOCATION_TYPE_REVISION",
+              "revision": "checkout-api-v1-42-0-b7d2e91",
+              "percent": 100,
+              "tag": "r-v1-42-0-b7d2e91"
+            }
+          ],
+          "trafficStatuses": [
+            {
+              "type": "TRAFFIC_TARGET_ALLOCATION_TYPE_REVISION",
+              "revision": "checkout-api-v1-42-0-b7d2e91",
+              "percent": 100,
+              "tag": "r-v1-42-0-b7d2e91",
+              "uri": "https://r-v1-42-0-b7d2e91---checkout-api-7xq2kd3nfa-el.a.run.app"
+            }
+          ],
+          "latestCreatedRevision": "projects/acme-commerce-prod/locations/asia-south1/services/checkout-api/revisions/checkout-api-v2-0-0-c4e8a10",
+          "latestReadyRevision": "projects/acme-commerce-prod/locations/asia-south1/services/checkout-api/revisions/checkout-api-v2-0-0-c4e8a10",
+          "observedGeneration": "14",
+          "terminalCondition": {
+            "type": "Ready",
+            "state": "CONDITION_SUCCEEDED",
+            "lastTransitionTime": "2026-10-16T21:04:11.482Z"
+          },
+          "conditions": [
+            {
+              "type": "RoutesReady",
+              "state": "CONDITION_SUCCEEDED"
+            },
+            {
+              "type": "ConfigurationsReady",
+              "state": "CONDITION_SUCCEEDED"
+            }
+          ],
+          "reconciling": false
+        }
+      }
+    },
+    {
+      "method": "DELETE",
+      "url": "https://run.googleapis.com/v2/projects/acme-commerce-prod/locations/asia-south1/services/checkout-api/revisions/checkout-api-v2-0-0-c4e8a10",
+      "response": {
+        "name": "projects/acme-commerce-prod/locations/asia-south1/operations/g7e1f6c0-5a7d-4c58-9b0e-3f2d1c0b9a8e",
+        "done": true,
+        "response": {
+          "@type": "type.googleapis.com/google.cloud.run.v2.Revision",
+          "name": "projects/acme-commerce-prod/locations/asia-south1/services/checkout-api/revisions/checkout-api-v2-0-0-c4e8a10"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://run.googleapis.com/v2/projects/acme-commerce-prod/locations/asia-south1/services/checkout-api",
+      "response": {
+        "name": "projects/acme-commerce-prod/locations/asia-south1/services/checkout-api",
+        "uid": "4b1f8a2e-93c1-4f0e-9d0a-5d7c1e2a6b11",
+        "generation": "14",
+        "etag": "\"CPj14k8gGEJjN\"",
+        "uri": "https://checkout-api-7xq2kd3nfa-el.a.run.app",
+        "ingress": "INGRESS_TRAFFIC_ALL",
+        "launchStage": "GA",
+        "template": {
+          "revision": "checkout-api-v2-0-0-c4e8a10",
+          "serviceAccount": "runtime@acme-commerce-prod.iam.gserviceaccount.com",
+          "scaling": {
+            "maxInstanceCount": 20
+          },
+          "containers": [
+            {
+              "image": "asia-south1-docker.pkg.dev/acme-ci/apps/checkout-api@sha256:2222222222222222222222222222222222222222222222222222222222222222",
+              "ports": [
+                {
+                  "name": "http1",
+                  "containerPort": 8080
+                }
+              ],
+              "resources": {
+                "limits": {
+                  "cpu": "1",
+                  "memory": "512Mi"
+                }
+              }
+            }
+          ],
+          "maxInstanceRequestConcurrency": 80,
+          "timeout": "300s"
+        },
+        "traffic": [
+          {
+            "type": "TRAFFIC_TARGET_ALLOCATION_TYPE_REVISION",
+            "revision": "checkout-api-v1-42-0-b7d2e91",
+            "percent": 100,
+            "tag": "r-v1-42-0-b7d2e91"
+          }
+        ],
+        "trafficStatuses": [
+          {
+            "type": "TRAFFIC_TARGET_ALLOCATION_TYPE_REVISION",
+            "revision": "checkout-api-v1-42-0-b7d2e91",
+            "percent": 100,
+            "tag": "r-v1-42-0-b7d2e91",
+            "uri": "https://r-v1-42-0-b7d2e91---checkout-api-7xq2kd3nfa-el.a.run.app"
+          }
+        ],
+        "latestCreatedRevision": "projects/acme-commerce-prod/locations/asia-south1/services/checkout-api/revisions/checkout-api-v2-0-0-c4e8a10",
+        "latestReadyRevision": "projects/acme-commerce-prod/locations/asia-south1/services/checkout-api/revisions/checkout-api-v2-0-0-c4e8a10",
+        "observedGeneration": "14",
+        "terminalCondition": {
+          "type": "Ready",
+          "state": "CONDITION_SUCCEEDED",
+          "lastTransitionTime": "2026-10-16T21:04:11.482Z"
+        },
+        "conditions": [
+          {
+            "type": "RoutesReady",
+            "state": "CONDITION_SUCCEEDED"
+          },
+          {
+            "type": "ConfigurationsReady",
+            "state": "CONDITION_SUCCEEDED"
+          }
+        ],
+        "reconciling": false
+      }
+    }
+  ]
+}

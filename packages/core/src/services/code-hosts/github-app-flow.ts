@@ -124,6 +124,7 @@ export function createGithubAppFlow(deps: CodeHostServiceDeps, helpers: FlowHelp
         webhookUrl: webhooks ? appLink(deps.publicUrl, WEBHOOK_PATH(id)) : null,
         redirectUrl: appLink(deps.publicUrl, SETTINGS_PATH),
         setupUrl: appLink(deps.publicUrl, `${SETTINGS_PATH}?installed=${id}`),
+        extra: deps.appPermissions?.() ?? [],
       });
       return renderGithubAppPage(githubManifestUrl(baseUrl, state.organization, sealed), manifest);
     },
