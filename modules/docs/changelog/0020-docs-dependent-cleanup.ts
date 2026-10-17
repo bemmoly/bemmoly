@@ -10,7 +10,7 @@ import { changeset, sql } from '@bemmoly/core/changelog';
  * integrity_orphans_docs is what the system health check reads; it should always say zero.
  */
 export default changeset({
-  id: '0019-docs-dependent-cleanup',
+  id: '0020-docs-dependent-cleanup',
   author: 'bemmoly',
   description: 'Remove links and kernel rows that point at deleted pages and spaces',
   contexts: ['*'],
