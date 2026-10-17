@@ -105,7 +105,8 @@ export async function previewPromotion(
     where c.application_id = ${application.id} and c.environment_id = ${first.id}`;
   const [existing] = await sql<{ id: string }[]>`
     select id from pipeline_promotions
-    where supersede_key = ${`${application.id}:${first.id}`} and release_id = ${release.id}
+    where application_id = ${application.id} and environment_id = ${first.id}
+      and release_id = ${release.id}
       and state in ('requested', 'gating', 'awaiting_approval', 'scheduled', 'rolling_out')
     order by created_at desc limit 1`;
   const departures = await sql<{ id: string; name: string; departs_at: string; n: number }[]>`
