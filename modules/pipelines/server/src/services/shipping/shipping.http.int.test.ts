@@ -9,6 +9,7 @@ import {
   promotionSchema,
   promotionsPageSchema,
 } from '../../../../shared/promotions.ts';
+import { changeRecordsPageSchema } from '../../../../shared/trains.ts';
 import { startPipelinesHarness, type PipelinesHarness } from '../../testing/harness.ts';
 import { startPipelinesHttp, type PipelinesHttp } from '../../testing/http.ts';
 import { seedShippingFixture, type ShippingFixture } from '../../testing/shipping-fixture.ts';
@@ -94,6 +95,20 @@ describe('promotion and deployment endpoints', () => {
       (await http.get(`/deployments/${detail.id}/canary`, priya())).json(),
     );
     expect(canary.source).toBe('metrics');
+  });
+
+  it('exports change records to auditors, as JSON and CSV', async (ctx) => {
+    if (!harness) return ctx.skip(reason);
+    const page = changeRecordsPageSchema.parse(
+      (await http.get('/change-records', harness.users.admin)).json(),
+    );
+    expect(page.items[0]).toMatchObject({ outcome: 'succeeded', environment: { key: 'dev' } });
+    expect(page.items[0]?.gates.map((gate) => gate.label)).toContain('No freeze');
+    const csv = await http.get('/change-records', harness.users.admin, { format: 'csv' });
+    expect(csv.headers['content-type']).toMatch(/text\/csv/);
+    expect(csv.body.split('\n')[0]).toMatch(/^record,created_at,application/);
+    expect(csv.body).toContain('checkout-api,dev,v1.0.0,succeeded');
+    expect((await http.get('/change-records', priya())).statusCode).toBe(403);
   });
 
   it('keeps people without Pipelines out', async (ctx) => {

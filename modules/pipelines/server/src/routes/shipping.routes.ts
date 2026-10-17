@@ -15,6 +15,7 @@ export function shippingRoutes(controller: ShippingController): FastifyPluginAsy
     app.post('/promotions/:id/freeze-override', async (request) =>
       controller.overrideFreeze(request),
     );
+    app.get('/change-records', async (request, reply) => controller.changeRecords(request, reply));
     app.get('/deployments', async (request) => controller.listDeployments(request));
     app.get('/deployments/:id', async (request) => controller.getDeployment(request));
     app.get('/deployments/:id/canary', async (request) => controller.canary(request));

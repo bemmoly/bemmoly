@@ -38,6 +38,7 @@ import { presentPromotion } from './promotions/present.ts';
 import { previewPromotion } from './promotions/preview.ts';
 import { requestPromotion } from './promotions/request.ts';
 import { deployActionFor } from './load.ts';
+import { changeRecordsCsv, listChangeRecords, type ChangeRecordsQuery } from './records.ts';
 import { resolveTarget } from './targets.ts';
 
 export type { ShippingEngineDeps, Waker } from './engine-deps.ts';
@@ -149,6 +150,14 @@ export function createShippingService(deps: ShippingEngineDeps & { settings?: Se
     async cancel(ctx: RequestContext, id: string, body: CancelPromotionBody) {
       await cancelPromotion(deps, ctx, await loadPromotion(deps, id), body);
       return present(await loadPromotion(deps, id), ctx);
+    },
+
+    /** Change records for audits: pages of JSON, or one CSV of the whole range. */
+    async changeRecords(ctx: RequestContext, query: ChangeRecordsQuery) {
+      await authorizePipelines(ctx, 'pipelines.audit');
+      return query.format === 'csv'
+        ? { csv: await changeRecordsCsv(sql, query) }
+        : { page: await listChangeRecords(sql, query) };
     },
 
     async listDeployments(ctx: RequestContext, query: ListDeploymentsQuery) {

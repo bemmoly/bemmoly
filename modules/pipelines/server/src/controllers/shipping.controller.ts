@@ -16,6 +16,7 @@ import {
   promotionParamsSchema,
   promotionPreviewQuerySchema,
 } from '../../../shared/promotions.ts';
+import { listChangeRecordsQuerySchema } from '../../../shared/trains.ts';
 import type { ShippingService } from '../services/shipping/index.ts';
 
 /** Promotions, approvals and deployments: validate, call one service function, shape. */
@@ -65,6 +66,16 @@ export function createShippingController(service: ShippingService | undefined) {
         id(request),
         parseOrThrow(cancelPromotionBodySchema, request.body ?? {}),
       ),
+    async changeRecords(request: FastifyRequest, reply: FastifyReply) {
+      const query = parseOrThrow(listChangeRecordsQuerySchema, request.query);
+      const result = await shipping().changeRecords(contextOf(request), query);
+      if ('csv' in result) {
+        reply.header('content-type', 'text/csv; charset=utf-8');
+        reply.header('content-disposition', 'attachment; filename="change-records.csv"');
+        return result.csv;
+      }
+      return result.page;
+    },
     listDeployments: (request: FastifyRequest) =>
       shipping().listDeployments(
         contextOf(request),
