@@ -82,8 +82,12 @@ jobs:
           turbo-cache: unit
 
       # Every workspace but deploy runs vitest, which takes the coverage flags; deploy runs bats.
+      # Two at a time: coverage slows every suite, and a full fan-out tips the server's and
+      # pipelines' timed tests over their limits on the runner.
       - name: Unit tests
-        run: pnpm turbo run test --filter='!@bemmoly/deploy' -- --coverage --coverage.reporter=cobertura
+        run: >-
+          pnpm turbo run test --concurrency=2 --filter='!@bemmoly/deploy'
+          -- --coverage --coverage.reporter=cobertura
 
       - name: Deploy unit tests
         run: pnpm turbo run test --filter=@bemmoly/deploy

@@ -50,8 +50,17 @@ tester.run('bemmoly/no-atlassian-marks', noAtlassianMarks, {
 });
 
 const root = join(import.meta.dirname, '../../..');
-const SKIP = new Set(['node_modules', '.git', 'dist', 'dist-demo', '.turbo', 'storybook-static']);
-const SKIP_PATHS = ['.claude/worktrees', 'test-results', 'playwright-report', 'coverage'];
+// coverage/ in any workspace: other workspaces' test runs write and delete files there meanwhile.
+const SKIP = new Set([
+  'node_modules',
+  '.git',
+  'dist',
+  'dist-demo',
+  '.turbo',
+  'storybook-static',
+  'coverage',
+]);
+const SKIP_PATHS = ['.claude/worktrees', 'test-results', 'playwright-report'];
 
 function* files(dir) {
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
