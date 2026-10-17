@@ -10,7 +10,7 @@ import type { HtmlElement } from 'html-validate';
 import { describe, expect, it } from 'vitest';
 import { ROADMAP, SHIPPED, SHIPPED_ALIASES } from '../src/data/changelog.ts';
 import { NOTED_RELEASES, UPCOMING } from '../src/lib/changelog.ts';
-import { isSitePage, parsePage } from './dom.ts';
+import { isSitePage, parsePage, withoutScripts } from './dom.ts';
 
 const dist = new URL('../dist/', import.meta.url);
 const pages = readdirSync(dist, { recursive: true, encoding: 'utf8' }).filter(isSitePage);
@@ -87,9 +87,7 @@ describe('coming soon', () => {
   });
 
   it.each(pages)('%s lists nothing shipped as coming soon', (file) => {
-    const page = parsePage(
-      readFileSync(new URL(file, dist), 'utf8').replace(/<(script|style)\b[\s\S]*?<\/\1\s*>/gi, ''),
-    );
+    const page = parsePage(withoutScripts(readFileSync(new URL(file, dist), 'utf8')));
     for (const context of soonContexts(page, file)) {
       for (const term of shippedTerms) {
         expect(context, `${file}: "${term}" beside Coming soon`).not.toMatch(termPattern(term));

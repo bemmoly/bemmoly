@@ -69,6 +69,7 @@ export async function runProcess(
     env: options.env ?? {},
     cwd: options.cwd,
     signal: AbortSignal.any(signals),
+    shell: false,
     stdio: ['pipe', 'pipe', 'pipe'],
   });
   const out = { text: '' };

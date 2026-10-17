@@ -7,7 +7,7 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { INSTALL_HREF } from '../src/lib/links.ts';
-import { isSitePage, parsePage } from './dom.ts';
+import { isSitePage, parsePage, withoutScripts } from './dom.ts';
 
 const dist = new URL('../dist/', import.meta.url);
 const files = readdirSync(dist, { recursive: true, encoding: 'utf8' }).filter(
@@ -17,7 +17,7 @@ const files = readdirSync(dist, { recursive: true, encoding: 'utf8' }).filter(
 function wordsOf(file: string): string {
   const source = readFileSync(new URL(file, dist), 'utf8');
   if (!file.endsWith('.html')) return source;
-  const page = parsePage(source.replace(/<(script|style)\b[\s\S]*?<\/\1\s*>/gi, ''));
+  const page = parsePage(withoutScripts(source));
   const attributes = page
     .querySelectorAll('[alt], [content], [aria-label], [title]')
     .flatMap((element) =>

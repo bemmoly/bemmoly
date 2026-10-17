@@ -42,3 +42,18 @@ export function idsOf(page: HtmlElement): Set<string> {
  * tests/demo.test.ts checks on its own terms: it is an app, not a page with the site's layout.
  */
 export const isSitePage = (file: string) => file.endsWith('.html') && !file.startsWith('demo/');
+
+/** Applies a removal until nothing changes, so a removal cannot leave a new match behind. */
+export function removeAll(source: string, pattern: RegExp, replacement = ''): string {
+  let previous: string;
+  let current = source;
+  do {
+    previous = current;
+    current = current.replace(pattern, replacement);
+  } while (current !== previous);
+  return current;
+}
+
+/** The page without its script and style elements. */
+export const withoutScripts = (source: string) =>
+  removeAll(source, /<(script|style)\b[\s\S]*?<\/\1\s*>/gi);

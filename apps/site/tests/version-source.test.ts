@@ -8,6 +8,7 @@
  */
 import { readdirSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { removeAll } from './dom.ts';
 
 const site = new URL('../', import.meta.url);
 const ROOTS = ['src', 'scripts', 'public'];
@@ -25,9 +26,7 @@ const sources = [
 
 /** Block, HTML and line comments out; a line comment needs a space or line start before it. */
 const withoutComments = (code: string) =>
-  code
-    .replace(/\/\*[\s\S]*?\*\//g, '')
-    .replace(/<!--[\s\S]*?-->/g, '')
+  removeAll(removeAll(code, /\/\*[\s\S]*?\*\//g), /<!--[\s\S]*?-->/g)
     .replace(/(^|\s)\/\/.*$/gm, '$1')
     .replace(/^\s*#(?!!).*$/gm, '');
 

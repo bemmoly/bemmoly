@@ -48,6 +48,9 @@ export function connectionFor(databaseUrl: string): Connection {
   };
 }
 
+/** pg_export_snapshot() ids are hex groups joined by dashes, such as 00000003-0000001B-1. */
+const SNAPSHOT_ID = /^[0-9A-F]+(?:-[0-9A-F]+)*$/i;
+
 export function createPgTools(options: PgToolsOptions): PgTools {
   const bin = (name: string) => path.join(options.binDir, name);
   const long = options.longTimeoutMs ?? 6 * HOUR_MS;
@@ -66,7 +69,10 @@ export function createPgTools(options: PgToolsOptions): PgTools {
         '--dbname',
         connection.dbname,
       ];
-      if (dumpOptions.snapshot) args.push(`--snapshot=${dumpOptions.snapshot}`);
+      if (dumpOptions.snapshot) {
+        if (!SNAPSHOT_ID.test(dumpOptions.snapshot)) throw new Error('Invalid snapshot id');
+        args.push('--snapshot', dumpOptions.snapshot);
+      }
       await runProcess(bin('pg_dump'), args, {
         env: connection.env,
         timeoutMs: long,
@@ -81,13 +87,16 @@ export function createPgTools(options: PgToolsOptions): PgTools {
       return stdout;
     },
     async restore(databaseUrl, file, restoreOptions = {}) {
+      const jobs = restoreOptions.jobs ?? 2;
+      if (!Number.isInteger(jobs) || jobs < 1) throw new Error('jobs must be a positive integer');
       const connection = connectionFor(databaseUrl);
       const args = [
         '--no-owner',
         '--no-privileges',
         '--exit-on-error',
         '--no-password',
-        `--jobs=${restoreOptions.jobs ?? 2}`,
+        '--jobs',
+        String(jobs),
         '--dbname',
         connection.dbname,
         file,
