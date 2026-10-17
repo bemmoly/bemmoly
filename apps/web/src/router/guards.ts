@@ -16,6 +16,23 @@ export function safeRedirect(target: unknown): string {
     : '/';
 }
 
+/**
+ * Products with their own web app on this origin (Pipelines under /pipelines): signing in for
+ * them ends with a full page load there, since this app's router does not draw their pages.
+ */
+const PRODUCT_PATHS = ['/pipelines'];
+
+export function isProductPath(path: string): boolean {
+  return PRODUCT_PATHS.some((base) => path === base || path.startsWith(`${base}/`));
+}
+
+/** Goes to a signed-in destination: through the router, or by loading another product's app. */
+export function leaveFor(target: string, navigate: (to: string) => void): void {
+  const path = safeRedirect(target);
+  if (isProductPath(path)) window.location.assign(path);
+  else navigate(path);
+}
+
 async function sessionOrNull(queryClient: QueryClient): Promise<MeResponse | null> {
   try {
     return await queryClient.ensureQueryData(meQuery);
@@ -78,7 +95,13 @@ export async function requireSignedOut(queryClient: QueryClient, target: string)
   const status = await queryClient.ensureQueryData(setupStatusQuery);
   if (!status.initialized) throw redirect({ to: '/setup' });
   const me = await sessionOrNull(queryClient);
-  if (me) throw redirect({ to: safeRedirect(target) });
+  if (!me) return;
+  if (isProductPath(safeRedirect(target))) {
+    // Already signed in for another product: hand over without drawing the sign-in page.
+    window.location.assign(safeRedirect(target));
+    return new Promise(() => undefined);
+  }
+  throw redirect({ to: safeRedirect(target) });
 }
 
 /** The wizard: workspace and account before an admin exists, the rest for that admin until finished. */

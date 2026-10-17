@@ -55,7 +55,9 @@ Decided in [ADR 0016](../../adr/0016-design-system-is-canonical.md), which build
 
 - A screen outside the frame: its own top bar, its own sidebar, a second scrollbar, no
   `PageLayout` (the setup wizard, the pre-sign-in pages and the MCP consent screen are the
-  only standalone screens).
+  only standalone screens). Bemmoly Pipelines is a separate product with its own frame,
+  `PipelinesShell` ([ADR 0037](../../adr/0037-pipelines-is-a-separate-product-with-its-own-shell.md),
+  [../pipelines/](../pipelines/README.md)); its screens sit inside that frame instead.
 - A glyph character standing in for an icon (`✓ ✕ ▾ → ⌘ • ›`), outside `Kbd`. Lint fails it.
 - A literal colour (`#2356c9`, `rgb(…)`, `bg-[#…]`) or a literal font size (`text-[13px]`) in UI
   code. Lint fails it.

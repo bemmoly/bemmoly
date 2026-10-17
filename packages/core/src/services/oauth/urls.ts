@@ -10,6 +10,9 @@ import { appLink } from '../identity/index.ts';
 export const AUTHORIZE_PATH = '/oauth/authorize';
 export const TOKEN_PATH = '/oauth/token';
 export const REVOKE_PATH = '/oauth/revoke';
+/** RFC 8628: where a command line tool asks for a code, and the page where it is approved. */
+export const DEVICE_AUTHORIZATION_PATH = '/oauth/device_authorization';
+export const DEVICE_VERIFICATION_PATH = 'device';
 export const AS_METADATA_PATH = '/.well-known/oauth-authorization-server';
 export const RESOURCE_METADATA_PATH = '/.well-known/oauth-protected-resource';
 
@@ -52,9 +55,14 @@ export function authorizationServerMetadata(publicUrl: string, modules: readonly
     authorization_endpoint: appLink(publicUrl, AUTHORIZE_PATH),
     token_endpoint: appLink(publicUrl, TOKEN_PATH),
     revocation_endpoint: appLink(publicUrl, REVOKE_PATH),
+    device_authorization_endpoint: appLink(publicUrl, DEVICE_AUTHORIZATION_PATH),
     response_types_supported: ['code'],
     response_modes_supported: ['query'],
-    grant_types_supported: ['authorization_code', 'refresh_token'],
+    grant_types_supported: [
+      'authorization_code',
+      'refresh_token',
+      'urn:ietf:params:oauth:grant-type:device_code',
+    ],
     code_challenge_methods_supported: ['S256'],
     // Every client is public: it proves itself with PKCE and its registered redirect.
     token_endpoint_auth_methods_supported: ['none'],

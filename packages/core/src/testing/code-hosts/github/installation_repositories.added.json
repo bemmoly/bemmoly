@@ -1,0 +1,11 @@
+{
+  "action": "added",
+  "installation": { "id": 51234567, "account": { "login": "acme", "type": "Organization" } },
+  "repository_selection": "selected",
+  "repositories_added": [
+    { "id": 702345680, "name": "checkout", "full_name": "acme/checkout", "private": true },
+    { "id": 702345681, "name": "payments", "full_name": "acme/payments", "private": true }
+  ],
+  "repositories_removed": [],
+  "sender": { "login": "ravi-k", "id": 5811009, "type": "User" }
+}

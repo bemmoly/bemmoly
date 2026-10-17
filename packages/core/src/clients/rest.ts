@@ -38,6 +38,12 @@ export type RestQuery = Readonly<
 export interface RestClient {
   getJson<T = unknown>(path: string, query?: RestQuery): Promise<T>;
   postJson<T = unknown>(path: string, body: unknown): Promise<T>;
+  /** Any other method with a JSON body: PATCH, PUT, DELETE. */
+  sendJson<T = unknown>(
+    method: 'PATCH' | 'PUT' | 'DELETE',
+    path: string,
+    body?: unknown,
+  ): Promise<T>;
   /** Bytes from a path or an absolute URL on the same origin. */
   getBytes(pathOrUrl: string): Promise<{ bytes: Uint8Array; contentType: string }>;
 }
@@ -130,6 +136,17 @@ export function createRestClient(options: RestClientOptions): RestClient {
     return text;
   }
 
+  async function sendJson<T>(method: string, path: string, body?: unknown): Promise<T> {
+    const url = urlFor(path);
+    const response = await request(url, {
+      method,
+      headers: { accept: 'application/json', 'content-type': 'application/json' },
+      ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+    });
+    const text = await readText(url, response);
+    return (text ? JSON.parse(text) : null) as T;
+  }
+
   return {
     async getJson<T>(path: string, query?: RestQuery) {
       const url = urlFor(path, query);
@@ -137,16 +154,8 @@ export function createRestClient(options: RestClientOptions): RestClient {
       const text = await readText(url, response);
       return (text ? JSON.parse(text) : null) as T;
     },
-    async postJson<T>(path: string, body: unknown) {
-      const url = urlFor(path);
-      const response = await request(url, {
-        method: 'POST',
-        headers: { accept: 'application/json', 'content-type': 'application/json' },
-        body: JSON.stringify(body),
-      });
-      const text = await readText(url, response);
-      return (text ? JSON.parse(text) : null) as T;
-    },
+    postJson: <T>(path: string, body: unknown) => sendJson<T>('POST', path, body),
+    sendJson,
     async getBytes(pathOrUrl: string) {
       const url = urlFor(pathOrUrl);
       const response = await request(url, { headers: { accept: '*/*' } });

@@ -10,7 +10,9 @@ import {
   type HostApiOptions,
   type HostConnection,
 } from '../types.ts';
+import { parseGithubEvents } from './github-delivery-events.ts';
 import { githubPullSchema, parseGithubEvent, pullActivity } from './github-events.ts';
+import { githubWrites } from './github-writes.ts';
 
 /*
  * GitHub, on github.com and on Enterprise Server. Deliveries are signed with HMAC-SHA256 of
@@ -76,6 +78,7 @@ function githubApi(connection: HostConnection, options: HostApiOptions) {
   }
 
   return {
+    ...githubWrites(async () => rest(await bearer())),
     async check() {
       if (connection.authMode === 'app') {
         const app = appSchema.parse(await rest(`Bearer ${appJwt()}`).getJson('app'));
@@ -117,7 +120,11 @@ export const githubHost: CodeHostDriver = {
     if (event === 'ping') {
       return { event, action: null, summary: 'Ping from GitHub', activities: [], ping: true };
     }
-    return parseGithubEvent(event, request.body, new Date().toISOString());
+    const now = new Date().toISOString();
+    return {
+      ...parseGithubEvent(event, request.body, now),
+      events: parseGithubEvents(event, request.body, now),
+    };
   },
   ping(webhookSecret) {
     const body = Buffer.from(JSON.stringify({ zen: 'Bemmoly test delivery', hook_id: 0 }));

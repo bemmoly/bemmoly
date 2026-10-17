@@ -1,9 +1,9 @@
 import { isRedirect } from '@tanstack/react-router';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { useSetupStore } from '../store/setup.ts';
 import { testQueryClient } from '../test/render.tsx';
 import { mockApi } from '../test/setup.ts';
-import { requireSession } from './guards.ts';
+import { isProductPath, leaveFor, requireSession } from './guards.ts';
 
 async function redirectOf(promise: Promise<unknown>) {
   const thrown = await promise.then(
@@ -41,5 +41,21 @@ describe('requireSession while setup is unfinished', () => {
     useSetupStore.getState().update({ lastStep: 5 });
     const me = await requireSession(testQueryClient(), '/settings/appearance');
     expect(me.user).toBeTruthy();
+  });
+});
+
+describe('product paths', () => {
+  it('loads another product’s app for its paths and routes everything else in place', () => {
+    const assign = vi.spyOn(window.location, 'assign').mockImplementation(() => undefined);
+    const navigate = vi.fn();
+    leaveFor('/pipelines/catalog?tier=0', navigate);
+    expect(assign).toHaveBeenCalledWith('/pipelines/catalog?tier=0');
+    expect(navigate).not.toHaveBeenCalled();
+    leaveFor('/work/board', navigate);
+    expect(navigate).toHaveBeenCalledWith('/work/board');
+    leaveFor('//evil.example/pipelines', navigate);
+    expect(navigate).toHaveBeenLastCalledWith('/');
+    expect(isProductPath('/pipelinesx')).toBe(false);
+    assign.mockRestore();
   });
 });

@@ -43,6 +43,8 @@ export interface BootOptions {
   /** Every module package in the image. */
   available: readonly BemmolyModule[];
   webRoot?: string;
+  /** Products' own web apps on this origin; see config/web.ts. */
+  productWebs?: BuildAppOptions['productWebs'];
   /** `false` silences the process; a stream receives every line, the kernel's and requests'. */
   logger?: BuildAppOptions['logger'];
   /** Tests serve MCP clients' metadata documents without a network; production fetches them. */
@@ -104,6 +106,9 @@ export async function bootApplication(options: BootOptions): Promise<Booted> {
   // Bound once the kernel reads the modules table; until then no module hears events.
   let moduleState: Pick<DataKernel['moduleState'], 'isEnabled'> | undefined;
   let files: DataKernel['files'] | undefined;
+  let objects: DataKernel['objectStore'] | undefined;
+  // Bound once code hosts are wired below; modules ask for it only at request time.
+  let codeHostDirectory: CodeHosts['directory'] | undefined = undefined;
   const modules = loadModules({
     available: options.available,
     enabled: database ? [] : env.BEMMOLY_MODULES,
@@ -113,6 +118,9 @@ export async function bootApplication(options: BootOptions): Promise<Booted> {
     collab: collabHandle,
     ai: () => aiHandle.bound(),
     files: () => files,
+    objects: () => objects,
+    codeHosts: () => codeHostDirectory,
+    publicUrl: env.BEMMOLY_PUBLIC_URL,
     ...(env.BEMMOLY_PDF_URL
       ? {
           pdf: createPdfRendererClient({
@@ -167,6 +175,7 @@ export async function bootApplication(options: BootOptions): Promise<Booted> {
     catalog.bindState(kernel.moduleState);
     moduleState = kernel.moduleState;
     files = kernel.files;
+    objects = kernel.objectStore;
   }
   const collab =
     database && kernel
@@ -192,6 +201,7 @@ export async function bootApplication(options: BootOptions): Promise<Booted> {
     database && kernel
       ? wireCodeHostIntegrations({ env, database, kernel, identity, modules, catalog, logger })
       : undefined;
+  codeHostDirectory = codeHosts?.directory;
   const retrieval =
     database && kernel && realtime
       ? wireRetrieval({
@@ -239,6 +249,7 @@ export async function bootApplication(options: BootOptions): Promise<Booted> {
     modules,
     maintenance: createMaintenanceReader(env.BEMMOLY_DATA_DIR),
     ...(options.webRoot ? { webRoot: options.webRoot } : {}),
+    ...(options.productWebs ? { productWebs: options.productWebs } : {}),
     ...(options.logger !== undefined ? { logger: options.logger } : {}),
     ...(database ? { database: database.probe } : {}),
     ...(kernel

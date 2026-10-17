@@ -1,0 +1,7 @@
+{
+  "name": "@acme/checkout-api",
+  "description": "Takes payments",
+  "scripts": {
+    "start": "node dist/main.js"
+  }
+}

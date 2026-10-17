@@ -1,0 +1,28 @@
+{
+  "name": "@bemmoly/runner",
+  "version": "1.1.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "description": "Runs Bemmoly Pipelines jobs: claims them from the control plane and runs each step as a container or a local process",
+  "bin": {
+    "bemmoly-runner": "./src/main.ts"
+  },
+  "scripts": {
+    "start": "node src/main.ts",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "lint": "eslint --max-warnings 0 .",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@bemmoly/module-pipelines": "workspace:*",
+    "@bemmoly/shared": "workspace:*",
+    "@xmldom/xmldom": "0.8.15",
+    "pino": "10.4.0",
+    "zod": "4.6.5"
+  },
+  "devDependencies": {
+    "@types/node": "26.6.4",
+    "vitest": "5.0.3"
+  }
+}

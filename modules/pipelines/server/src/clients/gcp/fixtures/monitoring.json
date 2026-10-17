@@ -1,0 +1,218 @@
+{
+  "recorded": "Hand-recorded from the Google Cloud REST reference (shapes and field names as documented); not captured from a live project.",
+  "exchanges": [
+    {
+      "method": "POST",
+      "url": "https://iamcredentials.googleapis.com/v1/projects/-/serviceAccounts/deployer@acme-commerce-prod.iam.gserviceaccount.com:generateAccessToken",
+      "repeat": true,
+      "response": {
+        "accessToken": "ya29.deployer-acme-commerce-prod",
+        "expireTime": "2099-01-01T00:00:00Z"
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://monitoring.googleapis.com/v3/projects/acme-commerce-prod/timeSeries?aggregation.groupByFields=metric.label.response_code_class",
+      "repeat": true,
+      "response": {
+        "timeSeries": [
+          {
+            "metric": {
+              "type": "run.googleapis.com/request_count",
+              "labels": {
+                "response_code_class": "2xx"
+              }
+            },
+            "resource": {
+              "type": "cloud_run_revision",
+              "labels": {
+                "project_id": "acme-commerce-prod",
+                "service_name": "checkout-api",
+                "revision_name": "checkout-api-v2-0-0-c4e8a10",
+                "location": "asia-south1"
+              }
+            },
+            "metricKind": "DELTA",
+            "valueType": "INT64",
+            "points": [
+              {
+                "interval": {
+                  "startTime": "2026-10-16T21:12:00Z",
+                  "endTime": "2026-10-16T21:13:00Z"
+                },
+                "value": {
+                  "int64Value": "190"
+                }
+              },
+              {
+                "interval": {
+                  "startTime": "2026-10-16T21:11:00Z",
+                  "endTime": "2026-10-16T21:12:00Z"
+                },
+                "value": {
+                  "int64Value": "97"
+                }
+              }
+            ]
+          },
+          {
+            "metric": {
+              "type": "run.googleapis.com/request_count",
+              "labels": {
+                "response_code_class": "4xx"
+              }
+            },
+            "resource": {
+              "type": "cloud_run_revision",
+              "labels": {
+                "project_id": "acme-commerce-prod",
+                "service_name": "checkout-api",
+                "revision_name": "checkout-api-v2-0-0-c4e8a10",
+                "location": "asia-south1"
+              }
+            },
+            "metricKind": "DELTA",
+            "valueType": "INT64",
+            "points": [
+              {
+                "interval": {
+                  "startTime": "2026-10-16T21:12:00Z",
+                  "endTime": "2026-10-16T21:13:00Z"
+                },
+                "value": {
+                  "int64Value": "5"
+                }
+              }
+            ]
+          },
+          {
+            "metric": {
+              "type": "run.googleapis.com/request_count",
+              "labels": {
+                "response_code_class": "5xx"
+              }
+            },
+            "resource": {
+              "type": "cloud_run_revision",
+              "labels": {
+                "project_id": "acme-commerce-prod",
+                "service_name": "checkout-api",
+                "revision_name": "checkout-api-v2-0-0-c4e8a10",
+                "location": "asia-south1"
+              }
+            },
+            "metricKind": "DELTA",
+            "valueType": "INT64",
+            "points": [
+              {
+                "interval": {
+                  "startTime": "2026-10-16T21:12:00Z",
+                  "endTime": "2026-10-16T21:13:00Z"
+                },
+                "value": {
+                  "int64Value": "5"
+                }
+              },
+              {
+                "interval": {
+                  "startTime": "2026-10-16T21:11:00Z",
+                  "endTime": "2026-10-16T21:12:00Z"
+                },
+                "value": {
+                  "int64Value": "3"
+                }
+              }
+            ]
+          }
+        ],
+        "unit": "1"
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://monitoring.googleapis.com/v3/projects/acme-commerce-prod/timeSeries?aggregation.perSeriesAligner=ALIGN_PERCENTILE_95",
+      "response": {
+        "timeSeries": [
+          {
+            "metric": {
+              "type": "run.googleapis.com/request_latencies",
+              "labels": {}
+            },
+            "resource": {
+              "type": "cloud_run_revision",
+              "labels": {
+                "project_id": "acme-commerce-prod",
+                "service_name": "checkout-api",
+                "revision_name": "checkout-api-v2-0-0-c4e8a10",
+                "location": "asia-south1"
+              }
+            },
+            "metricKind": "GAUGE",
+            "valueType": "DOUBLE",
+            "points": [
+              {
+                "interval": {
+                  "startTime": "2026-10-16T21:12:00Z",
+                  "endTime": "2026-10-16T21:13:00Z"
+                },
+                "value": {
+                  "doubleValue": 212.5
+                }
+              },
+              {
+                "interval": {
+                  "startTime": "2026-10-16T21:11:00Z",
+                  "endTime": "2026-10-16T21:12:00Z"
+                },
+                "value": {
+                  "doubleValue": 340.25
+                }
+              }
+            ]
+          }
+        ],
+        "unit": "ms"
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://monitoring.googleapis.com/v3/projects/acme-commerce-prod/timeSeries?filter=select_slo_budget_fraction(%22projects%2F771205334231%2Fservices%2Fcheckout-api%2FserviceLevelObjectives%2Favailability%22)",
+      "response": {
+        "timeSeries": [
+          {
+            "metric": {
+              "type": "select_slo_budget_fraction",
+              "labels": {}
+            },
+            "resource": {
+              "type": "global",
+              "labels": {
+                "project_id": "acme-commerce-prod"
+              }
+            },
+            "points": [
+              {
+                "interval": {
+                  "startTime": "2026-10-16T21:14:00Z",
+                  "endTime": "2026-10-16T21:15:00Z"
+                },
+                "value": {
+                  "doubleValue": 0.71
+                }
+              },
+              {
+                "interval": {
+                  "startTime": "2026-10-16T21:13:00Z",
+                  "endTime": "2026-10-16T21:14:00Z"
+                },
+                "value": {
+                  "doubleValue": 0.72
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

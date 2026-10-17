@@ -5,6 +5,7 @@ packages:
   - tools/*
   - deploy
   - deploy/updater
+  - deploy/github-action/*
   - perf
 
 allowBuilds:

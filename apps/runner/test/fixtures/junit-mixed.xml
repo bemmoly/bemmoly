@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="vitest" tests="5" failures="1" errors="1">
+  <testsuite name="cart" file="src/cart.test.ts" tests="3">
+    <testcase classname="cart" name="adds an item" time="0.012" line="12"/>
+    <testcase classname="cart" name="removes an item" time="0.5">
+      <failure message="expected 1 to be 0" type="AssertionError">at src/cart.test.ts:20</failure>
+    </testcase>
+    <testcase classname="cart" name="later">
+      <skipped message="not yet"/>
+    </testcase>
+  </testsuite>
+  <testsuite name="outer">
+    <testsuite name="inner">
+      <testcase classname="com.acme.shop.CheckoutTest" name="pays" time="1.25">
+        <error type="NullPointerException">java.lang.NullPointerException
+	at Checkout.pay(Checkout.java:31)</error>
+      </testcase>
+      <testcase classname="com.acme.shop.CheckoutTest" name="refunds" time="abc"/>
+    </testsuite>
+  </testsuite>
+</testsuites>

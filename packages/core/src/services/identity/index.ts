@@ -2,6 +2,7 @@ export { emailTaken, isPasswordSignInOff, SSO_REQUIRED_MESSAGE } from './account
 export {
   authenticateApiToken,
   createApiToken,
+  issueApiToken,
   listApiTokens,
   revokeApiToken,
   type AuthenticatedToken,

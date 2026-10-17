@@ -4,12 +4,18 @@ import type { Database } from '../../clients/drizzle.ts';
 import type { SqlClient } from '../../clients/postgres.ts';
 import type { Authorize } from '../../contracts/authz.ts';
 import type { JobQueue } from '../../contracts/jobs.ts';
-import type { CodeActivityConsumer } from '../../modules/code.ts';
+import type {
+  CodeActivityConsumer,
+  CodeAppPermissions,
+  CodeEventConsumer,
+  CodeHostDirectory,
+} from '../../modules/code.ts';
 import type { FromModule } from '../../modules/registry.ts';
 import { createAuditRecorder } from '../audit/index.ts';
 import { createRequestAuthorization, type ModuleCatalog } from '../authz/index.ts';
 import type { SecretBox } from '../settings/index.ts';
 import { CODE_HOST_BACKFILL_JOB, runBackfill } from './backfill.ts';
+import { createCodeHostDirectory } from './directory.ts';
 import { receiveWebhook } from './receive.ts';
 import type { CodeHostRuntime } from './runtime.ts';
 import { createCodeHostService, type CodeHostService } from './service.ts';
@@ -20,7 +26,11 @@ export interface CodeHostWiring {
   db: Database;
   /** Enabled modules, for the system context's authorization. */
   catalog: ModuleCatalog;
-  modules: { codeConsumers(): FromModule<CodeActivityConsumer>[] };
+  modules: {
+    codeConsumers(): FromModule<CodeActivityConsumer>[];
+    codeEventConsumers?(): FromModule<CodeEventConsumer>[];
+    codeAppPermissions?(): FromModule<CodeAppPermissions>[];
+  };
   isEnabled: (moduleId: string) => boolean;
   jobs: JobQueue;
   secrets: SecretBox;
@@ -35,6 +45,8 @@ export interface CodeHosts {
   service: CodeHostService;
   /** The anonymous webhook route's handler: verify, then apply once. */
   receive(integrationId: string, request: WebhookRequest): ReturnType<typeof receiveWebhook>;
+  /** Finds the host covering a repository, for modules' checks, deployments and files. */
+  directory: CodeHostDirectory;
   /** Runs one backfill now, as the queue would; for tests. */
   backfill(integrationId: string, runId: string, signal?: AbortSignal): Promise<void>;
 }
@@ -48,6 +60,14 @@ export function wireCodeHosts(wiring: CodeHostWiring): CodeHosts {
     secrets: wiring.secrets,
     consumers: () =>
       wiring.modules.codeConsumers().filter((consumer) => wiring.isEnabled(consumer.moduleId)),
+    eventConsumers: () =>
+      (wiring.modules.codeEventConsumers?.() ?? []).filter((consumer) =>
+        wiring.isEnabled(consumer.moduleId),
+      ),
+    appPermissions: () =>
+      (wiring.modules.codeAppPermissions?.() ?? []).filter((request) =>
+        wiring.isEnabled(request.moduleId),
+      ),
     systemContext: (actorId) => ({
       actor: { kind: 'system', id: actorId },
       authz: createRequestAuthorization({ db: wiring.db, modules: wiring.catalog }),
@@ -72,6 +92,7 @@ export function wireCodeHosts(wiring: CodeHostWiring): CodeHosts {
   );
   return {
     service,
+    directory: createCodeHostDirectory(runtime),
     receive: (integrationId, request) => receiveWebhook(runtime, integrationId, request),
     backfill: (integrationId, runId, signal) =>
       runBackfill(runtime, integrationId, runId, signal ?? new AbortController().signal),

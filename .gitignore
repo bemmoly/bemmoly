@@ -37,3 +37,6 @@ apps/e2e/.state/
 
 # agent screenshots taken while checking UI (never committed)
 .agent-shots/
+
+# The bemmoly/release GitHub Action runs its bundled file straight from the repository.
+!deploy/github-action/release/dist/

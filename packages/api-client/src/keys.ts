@@ -40,6 +40,8 @@ export const queryKeys = {
     grants: () => ['oauth', 'grants'] as const,
     /** One authorization request's consent screen, keyed by its query string. */
     preview: (query: string) => ['oauth', 'preview', query] as const,
+    /** A command line tool's sign-in, by the code the person typed on /device. */
+    device: (userCode: string) => ['oauth', 'device', userCode] as const,
   },
   sso: {
     all: () => ['sso'] as const,

@@ -23,6 +23,7 @@
   "dependencies": {
     "@bemmoly/core": "workspace:*",
     "@bemmoly/module-docs": "workspace:*",
+    "@bemmoly/module-pipelines": "workspace:*",
     "@bemmoly/module-work": "workspace:*",
     "@bemmoly/shared": "workspace:*",
     "@fastify/static": "10.1.5",

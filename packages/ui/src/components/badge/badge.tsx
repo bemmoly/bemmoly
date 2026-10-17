@@ -2,13 +2,15 @@ import type { HTMLAttributes } from 'react';
 import { cx } from '../../lib/cx.ts';
 
 export type BadgeTone =
-  'neutral' | 'accent' | 'ok' | 'warn' | 'violet' | 'amber' | 'solid' | 'outline';
+  'neutral' | 'accent' | 'ok' | 'warn' | 'danger' | 'violet' | 'amber' | 'solid' | 'outline';
 
 const TONES: Record<BadgeTone, string> = {
   neutral: 'bg-line-2 text-tx-2',
   accent: 'bg-acc-50 text-acc',
   ok: 'bg-green-50 text-green-tx',
   warn: 'bg-amber-50 text-amber-tx',
+  /** Failure only ("1 failed"): red is never spent on anything that is not broken now. */
+  danger: 'bg-red-50 text-red-tx',
   violet: 'bg-acc-50 text-acc',
   amber: 'bg-acc-50 text-acc',
   solid: 'bg-acc-fill text-on-acc',

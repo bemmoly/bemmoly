@@ -106,6 +106,7 @@ export type { EmailNotificationRouteDependencies } from './routes/email-notifica
 export type { SystemControllerDependencies } from './controllers/system.controller.ts';
 export { maintenanceHook } from './middlewares/maintenance.ts';
 export { contextOf } from './controllers/request-context.ts';
+export { abortOnClose } from './utils/abort-on-close.ts';
 export { decodeCursor, encodeCursor, toPage } from './utils/keyset.ts';
 export { backups, type BackupRow } from './models/backups.ts';
 export {

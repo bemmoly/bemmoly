@@ -1,5 +1,7 @@
 import type {
   CreateOAuthConsentInput,
+  DecideOAuthDeviceInput,
+  OAuthDeviceAuthorizationRequest,
   OAuthAuthorizeRequest,
   OAuthRevokeRequest,
   OAuthTokenRequest,
@@ -7,6 +9,12 @@ import type {
 import type { RequestContext } from '../authz/index.ts';
 import { decideAuthorization, previewAuthorization } from './consent.ts';
 import { exposedModules, type OAuthDependencies } from './deps.ts';
+import {
+  decideDevice,
+  exchangeDeviceCode,
+  previewDevice,
+  startDeviceAuthorization,
+} from './device.ts';
 import { listMyGrants, revokeMyGrant } from './grants.ts';
 import { authenticateAccessToken, exchangeCode, refreshTokens, revokeToken } from './tokens.ts';
 import {
@@ -29,6 +37,7 @@ export { grantActor, type AuthenticatedGrant, type TokenResponse } from './token
 export {
   AS_METADATA_PATH,
   bearerChallenge,
+  DEVICE_AUTHORIZATION_PATH,
   RESOURCE_METADATA_PATH,
   resourceFor,
   REVOKE_PATH,
@@ -53,10 +62,15 @@ export function createOAuthService(deps: OAuthDependencies) {
       previewAuthorization(deps, ctx, request),
     decide: (ctx: RequestContext, input: CreateOAuthConsentInput) =>
       decideAuthorization(deps, ctx, input),
-    token: (input: OAuthTokenRequest) =>
-      input.grant_type === 'authorization_code'
-        ? exchangeCode(deps, input)
-        : refreshTokens(deps, input),
+    token(input: OAuthTokenRequest) {
+      if (input.grant_type === 'authorization_code') return exchangeCode(deps, input);
+      if (input.grant_type === 'refresh_token') return refreshTokens(deps, input);
+      return exchangeDeviceCode(deps, input);
+    },
+    startDevice: (input: OAuthDeviceAuthorizationRequest) => startDeviceAuthorization(deps, input),
+    previewDevice: (ctx: RequestContext, userCode: string) => previewDevice(deps, ctx, userCode),
+    decideDevice: (ctx: RequestContext, input: DecideOAuthDeviceInput) =>
+      decideDevice(deps, ctx, input),
     revoke: (input: OAuthRevokeRequest) => revokeToken(deps, input),
     listGrants: (ctx: RequestContext) => listMyGrants(deps.db, ctx),
     revokeGrant: (ctx: RequestContext, id: string) => revokeMyGrant(deps.db, ctx, id),

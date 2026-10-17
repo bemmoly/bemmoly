@@ -1,4 +1,4 @@
-import type { CodeActivity } from '../contracts/code-hosts.ts';
+import type { CodeActivity, CodeEventOf, CodeHostClient } from '../contracts/code-hosts.ts';
 import type { RequestContext } from '../services/authz/index.ts';
 
 /** What a consumer did with one delivery's activities, for the delivery log. */
@@ -20,7 +20,37 @@ export interface CodeActivityConsumer {
   apply(activities: readonly CodeActivity[], ctx: RequestContext): Promise<CodeActivityResult>;
 }
 
+/**
+ * A module that acts on host events (a push, a pull request, a check) instead of linking
+ * them. Called in process, in the webhook request, after the delivery is verified and
+ * claimed once: a consumer should store what it needs and return quickly.
+ */
+export interface CodeEventConsumer {
+  /** Namespaced by module: "pipelines.inbox". */
+  id: string;
+  apply(events: readonly CodeEventOf[], ctx: RequestContext): Promise<CodeActivityResult>;
+}
+
+/**
+ * Extra GitHub App permissions and events a module needs, merged into the app manifest the
+ * kernel offers (write wins over read). Only the enabled modules' requests are offered.
+ */
+export interface CodeAppPermissions {
+  permissions: Readonly<Record<string, 'read' | 'write'>>;
+  events: readonly string[];
+}
+
+/** Finds the connected host that covers a repository; bound once code hosts are wired. */
+export interface CodeHostDirectory {
+  /** The client for the integration covering `repository`, or null when none does. */
+  clientFor(repository: string): Promise<CodeHostClient | null>;
+}
+
 /** What a module sees as `ctx.code`. */
 export interface CodeRegistry {
   addConsumer(consumer: CodeActivityConsumer): void;
+  addEventConsumer(consumer: CodeEventConsumer): void;
+  requestAppPermissions(request: CodeAppPermissions): void;
+  /** The connected hosts, for reporting checks and deployments and reading files. */
+  hosts(): CodeHostDirectory;
 }

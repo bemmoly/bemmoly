@@ -6,10 +6,14 @@ import type { EventBus } from '../contracts/event-bus.ts';
 import type { EnqueueOptions, JobQueue } from '../contracts/jobs.ts';
 import type { RealtimePublisher } from '../contracts/realtime.ts';
 import { collabDocumentName, type CollabTransactor } from './collab.ts';
+import type { CodeHostDirectory } from './code.ts';
+import { createCodeRegistry } from './code-registry.ts';
 import type { ActorContextFactory, BemmolyModule, ModuleContext } from './contract.ts';
 import type { ModuleContributions } from './contributions.ts';
 import { ModuleLoadError } from './errors.ts';
 import type { FileReader } from './files.ts';
+import type { ObjectStore } from '../contracts/object-store.ts';
+import { createModuleObjects } from './objects.ts';
 import { createReferenceRegistries } from './references.ts';
 import type { SettingsReader, SettingsRegistry } from './registries.ts';
 import type { ModuleRegistry } from './registry.ts';
@@ -32,6 +36,8 @@ export interface ModuleContextOptions {
   ai?: () => AiFacade | undefined;
   /** The files service, read on every call so it can be bound after modules register. */
   files?: () => FileReader | undefined;
+  /** The object store, read on every call so it can be bound after modules register. */
+  objects?: () => ObjectStore | undefined;
   /** Every enabled module, for cross-module lookups; answers once loading finishes. */
   peers?: () => ModuleRegistry | undefined;
   /**
@@ -41,8 +47,11 @@ export interface ModuleContextOptions {
   isEnabled?: (moduleId: string) => boolean;
   /** Builds the context a job acts in for an actor; present with a database. */
   contextFor?: ActorContextFactory;
+  /** The connected code hosts, read on every call so they can be bound after modules register. */
+  codeHosts?: () => CodeHostDirectory | undefined;
   /** The optional PDF renderer; absent unless one is configured. */
   pdf?: PdfRenderer;
+  publicUrl?: string;
 }
 
 /** `ctx.events` for one module: it publishes freely, and hears events only while enabled. */
@@ -257,17 +266,12 @@ export function createModuleContext(
         return reader.read(ctx, fileId);
       },
     },
-    code: {
-      addConsumer(consumer) {
-        if (!consumer.id.startsWith(`${module.id}.`)) {
-          fail(`code consumer "${consumer.id}" must be namespaced as "${module.id}.<name>"`);
-        }
-        into.codeConsumers.push(consumer);
-      },
-    },
+    objects: createModuleObjects(module.id, options.objects),
+    code: createCodeRegistry(module.id, into, options.codeHosts),
     realtime: options.realtime ?? noRealtime,
     ...(options.contextFor ? { contextFor: options.contextFor } : {}),
     ...(options.pdf ? { pdf: options.pdf } : {}),
+    ...(options.publicUrl ? { publicUrl: options.publicUrl } : {}),
     ...(options.database
       ? {
           database: options.database,

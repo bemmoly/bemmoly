@@ -1,0 +1,542 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pipelines Architecture</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Architecture for Bemmoly Pipelines: a separate product on the Bemmoly kernel, with a control plane and runner fleet sized for 500 engineers, a cloud-neutral provider model, policy-based access and a promotion engine.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: the tech design's reading column and contents rail, on the product's tokens. */
+:root{
+  --canvas:#ffffff;--sunken:#f5f6f8;--card:#ffffff;--hover:rgba(22,27,38,.045);
+  --line:#e3e6ec;--line-2:#eef0f3;
+  --tx:#161b26;--tx-2:#4b5264;--tx-3:#697181;
+  --acc:#2356c9;--acc-50:#eef2fd;--acc-100:#dfe7fb;
+  --amber-tx:#ac5d04;--amber-50:#fff6e6;--red-tx:#c43c41;--red-50:#fdeeee;--green-tx:#177e43;--green-50:#e8f5ee;
+  --mod:#0e9bb0;
+  --code-bg:#0e1115;--code-tx:#e8ebf1;--code-3:#858c9a;--code-ok:#4cc487;--code-key:#7b95ec;
+  --sans:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --canvas:#111418;--sunken:#0e1115;--card:#181c22;--hover:rgba(255,255,255,.05);
+    --line:#2a2f38;--line-2:#20242b;--tx:#e8ebf1;--tx-2:#a8b0be;--tx-3:#858c9a;
+    --acc:#7b95ec;--acc-50:rgba(123,149,236,.14);--acc-100:rgba(123,149,236,.24);
+    --amber-tx:#e8901f;--amber-50:rgba(217,119,6,.14);--red-tx:#ec6266;--red-50:rgba(229,72,77,.14);--green-tx:#4cc487;--green-50:rgba(63,182,122,.14);
+    --code-bg:#0a0c10;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --canvas:#111418;--sunken:#0e1115;--card:#181c22;--hover:rgba(255,255,255,.05);
+  --line:#2a2f38;--line-2:#20242b;--tx:#e8ebf1;--tx-2:#a8b0be;--tx-3:#858c9a;
+  --acc:#7b95ec;--acc-50:rgba(123,149,236,.14);--acc-100:rgba(123,149,236,.24);
+  --amber-tx:#e8901f;--amber-50:rgba(217,119,6,.14);--red-tx:#ec6266;--red-50:rgba(229,72,77,.14);--green-tx:#4cc487;--green-50:rgba(63,182,122,.14);
+  --code-bg:#0a0c10;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}
+body{margin:0;background:var(--canvas);color:var(--tx);font:14px/1.6 var(--sans);-webkit-font-smoothing:antialiased}
+a{color:var(--acc);text-decoration:none}a:hover{text-decoration:underline}
+a:focus-visible{outline:2px solid var(--acc);outline-offset:2px;border-radius:4px}
+code{font-family:var(--mono);font-size:.88em;background:var(--sunken);border:1px solid var(--line-2);padding:0 4px;border-radius:4px}
+pre{background:var(--code-bg);color:var(--code-tx);font:12.5px/1.65 var(--mono);border-radius:8px;padding:14px 16px;overflow-x:auto;margin:14px 0}
+pre code{background:none;border:0;padding:0;font-size:inherit;color:inherit}
+pre .c{color:var(--code-3)}pre .k{color:var(--code-key)}
+.doc{display:grid;grid-template-columns:220px minmax(0,1fr);gap:48px;max-width:1240px;margin:0 auto;padding-block:40px 120px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.toc{position:sticky;top:calc(24px + env(safe-area-inset-top,0px));align-self:start;font-size:13px;max-height:calc(100vh - 48px);overflow:auto}
+.toc .brand{display:flex;gap:10px;align-items:center;margin-bottom:20px}
+.toc .brand b{display:block;font-weight:600;font-size:13px}.toc .brand span{display:block;color:var(--tx-3);font-size:12px}
+.toc a{display:block;color:var(--tx-2);padding:4px 8px;border-radius:6px;line-height:1.4}
+.toc a:hover{background:var(--hover);color:var(--tx);text-decoration:none}
+.toc h4{margin:14px 8px 4px;font-size:11px;font-weight:600;color:var(--tx-3)}
+.tile{width:26px;height:26px;border-radius:7px;background:var(--mod);display:grid;place-items:center;color:#fff;flex:none}
+main{min-width:0}
+h1{font-size:36px;line-height:1.15;letter-spacing:-.02em;font-weight:600;margin:0 0 10px;text-wrap:balance}
+.lede{font-size:17px;line-height:1.55;color:var(--tx-2);max-width:70ch;margin:0 0 18px}
+h2{font-size:24px;line-height:1.25;letter-spacing:-.015em;font-weight:600;margin:64px 0 12px;padding-top:24px;border-top:1px solid var(--line);text-wrap:balance;scroll-margin-top:16px}
+h3{font-size:16px;font-weight:600;margin:28px 0 8px;text-wrap:balance;scroll-margin-top:16px}
+p,li{max-width:76ch}p{margin:10px 0}
+ul,ol{padding-left:22px;margin:8px 0}li{margin:4px 0}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 28px}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--tx-2);border:1px solid var(--line);border-radius:4px;padding:1px 8px;background:var(--card)}
+.chip.warn{color:var(--amber-tx);background:var(--amber-50);border-color:transparent}
+.chip.acc{color:var(--acc);background:var(--acc-50);border-color:transparent}
+.tablewrap{overflow-x:auto;margin:14px 0;border:1px solid var(--line);border-radius:8px}
+table{border-collapse:collapse;width:100%;font-size:13px;background:var(--card)}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line-2);vertical-align:top}
+th{font-weight:600;color:var(--tx-2);background:var(--sunken);font-size:12px;white-space:nowrap}
+tr:last-child td{border-bottom:0}
+td code{white-space:nowrap}
+.note{border:1px solid var(--line);background:var(--sunken);border-radius:8px;padding:12px 16px;margin:16px 0;max-width:84ch}
+.note.warn{background:var(--amber-50);border-color:transparent}
+.note b{font-weight:600}
+.decisions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:16px 0}
+.decisions div{border:1px solid var(--line);border-radius:8px;padding:12px 14px;background:var(--card);min-width:0}
+.decisions b{display:block;font-weight:600;margin-bottom:2px}
+.decisions span{color:var(--tx-2);font-size:13px}
+.diagram{overflow-x:auto;border:1px solid var(--line);border-radius:8px;background:var(--sunken);padding:12px;margin:16px 0}
+.diagram svg{display:block;width:100%;min-width:760px;height:auto}
+.diagram text{font-family:var(--sans);fill:var(--tx);font-size:13px}
+.diagram .t2{fill:var(--tx-2);font-size:12px}
+.diagram .t3{fill:var(--tx-3);font-size:11px}
+.diagram .h{font-weight:600}
+.diagram .box{fill:var(--card);stroke:var(--line);stroke-width:1}
+.diagram .zone{fill:none;stroke:var(--tx-3);stroke-width:1;stroke-dasharray:4 4}
+.diagram .ln{stroke:var(--acc);stroke-width:1.5;fill:none}
+.diagram .ah{fill:var(--acc)}
+.diagram .num{fill:var(--acc)}
+.diagram .numt{fill:#fff;font-size:11px;font-weight:600}
+.legend{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 20px;font-size:13px;color:var(--tx-2);margin:-4px 0 16px;padding:0;list-style:none}
+.legend b{display:inline-grid;place-items:center;width:18px;height:18px;border-radius:50%;background:var(--acc);color:#fff;font-size:11px;font-weight:600;margin-right:6px}
+.dark-fill{fill:#fff}
+@media (max-width: 900px){
+  .doc{grid-template-columns:minmax(0,1fr);gap:0}
+  .toc{display:none}
+  h1{font-size:28px}
+  .decisions,.legend{grid-template-columns:minmax(0,1fr)}
+}
+</style>
+</head>
+<body>
+<div class="doc">
+<nav class="toc" aria-label="Contents">
+  <div class="brand"><span class="tile"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="5" cy="6" r="2.5"/><circle cx="19" cy="18" r="2.5"/><path d="M7.5 6H14a3 3 0 0 1 3 3v6.5"/><path d="M5 8.5V14a4 4 0 0 0 4 4h7.5"/></svg></span><div><b>Pipelines</b><span>Architecture · draft 2</span></div></div>
+  <a href="#summary">1. Summary</a>
+  <a href="#sizing">2. Goals and sizing</a>
+  <a href="#boundary">3. A separate product</a>
+  <a href="#planes">4. Control and execution</a>
+  <h4>Running work</h4>
+  <a href="#scheduler">5. Scheduler and queues</a>
+  <a href="#runners">6. Runners</a>
+  <a href="#definition">7. Pipelines and templates</a>
+  <a href="#byoci">7.1 Bring your CI</a>
+  <a href="#source">8. GitHub at scale</a>
+  <h4>Organisation</h4>
+  <a href="#catalog">9. Catalog and ownership</a>
+  <a href="#access">10. Access and policy</a>
+  <h4>Shipping</h4>
+  <a href="#promotion">11. Releases and promotion</a>
+  <a href="#deploy">12. Deploy targets</a>
+  <a href="#autopilot">13. Canary and roll back</a>
+  <h4>Clouds</h4>
+  <a href="#providers">14. Provider model</a>
+  <a href="#gcp">15. Google Cloud</a>
+  <a href="#aws">16. AWS</a>
+  <h4>Platform</h4>
+  <a href="#secrets">17. Identity and secrets</a>
+  <a href="#live">18. Live views and history</a>
+  <a href="#ops">19. Availability and upgrades</a>
+  <a href="#security">20. Threat model</a>
+  <a href="#data">21. Data model</a>
+  <a href="#api">22. API, CLI, MCP</a>
+  <a href="#code">23. Code layout</a>
+  <a href="#plan">24. Plan</a>
+  <a href="#decisions">25. Open decisions</a>
+  <a href="product-design.html">Product design</a>
+</nav>
+
+<main>
+<h1>Bemmoly Pipelines: architecture</h1>
+<p class="lede">How a separate Pipelines product sits on the Bemmoly kernel. It covers how the control plane schedules about 300 concurrent jobs for 500 engineers on a runner fleet in the customer's own cloud, and how releases move through environments under team-based policy. Every cloud-specific part sits behind a provider, so Google Cloud comes first without locking anything to it.</p>
+<div class="meta">
+  <span class="chip warn">Proposal · draft 2</span>
+  <span class="chip">16 October 2026</span>
+  <span class="chip">Based on <code>origin/main</code> at <code>e8e7d402</code> (v1.1.0)</span>
+  <span class="chip acc"><a href="product-design.html">Product design</a></span>
+</div>
+
+<h2 id="summary">1. Summary</h2>
+<div class="decisions">
+  <div><b>Separate product, shared kernel</b><span>Own web app, own host, own shell. Reuses the kernel's identity, SSO, SCIM, teams, audit, settings and storage. It can run alone, or beside Work and Docs, without either knowing the other exists.</span></div>
+  <div><b>Control plane and execution plane</b><span>The control plane decides and records, scaling from one VM to N replicas on Postgres. Jobs run on ephemeral runners in the customer's cloud, which reach the control plane outbound only.</span></div>
+  <div><b>Bring your CI, first class</b><span>Companies keep their own CI. One step at the end of their workflow hands the image to Pipelines, signed with an OIDC token from the workflow itself. Release, promotion and deploy work the same as for builds that run on Pipelines.</span></div>
+  <div><b>A purpose-built scheduler</b><span>A Postgres queue with <code>SKIP LOCKED</code>, weighted fair share per team, priority classes, concurrency groups and superseding. pg-boss stays for background work, not for job dispatch.</span></div>
+  <div><b>Three axes for 1,000 repositories</b><span>Catalog (domain, system, service), ownership (teams from the identity provider) and tiers. Discovered from GitHub and kept in <code>service.yaml</code> next to the code.</span></div>
+  <div><b>Roles plus policy, always explained</b><span>Roles bound to teams at a scope, with ownership implicit. Policies in CEL decide protected actions, and every decision stores the trace that explains it.</span></div>
+  <div><b>Releases are immutable, promotion is a plan</b><span>Build once. Promotion means gates, then approvals, then a window or train, then waves of canary steps across regions. Every step is an auditable record.</span></div>
+  <div><b>Cloud-neutral by contract</b><span>Providers implement a fixed set of interfaces with a conformance kit. Pipelines speak in <code>container-service</code>, <code>kubernetes</code> and <code>function</code>, never in a vendor's product name.</span></div>
+  <div><b>No long-lived cloud keys anywhere</b><span>Workload identity federation for the control plane, impersonation per environment, and short-lived OIDC tokens issued to each job.</span></div>
+</div>
+
+<h2 id="sizing">2. Goals and sizing</h2>
+<p>The design is sized for Acme: 512 engineers, 54 teams, 812 repositories, 1,140 services, three Prod regions. These are the assumptions behind every budget in this document. They are estimates, to be replaced by load-test results.</p>
+<div class="tablewrap"><table>
+<tr><th>Quantity</th><th>Acme (estimate)</th><th>Basis</th></tr>
+<tr><td>Runs a day</td><td>9,400</td><td>About 18 a day per engineer, counting pushes and pull request updates</td></tr>
+<tr><td>Jobs a day</td><td>75,000</td><td>About 8 jobs per run after affected-service detection and sharding</td></tr>
+<tr><td>Peak concurrent jobs</td><td>300 to 400</td><td>Peak hour is about 3 times the average</td></tr>
+<tr><td>Dispatch rate at peak</td><td>about 5 a second, design for 50</td><td>Headroom for merge storms and fleet campaigns</td></tr>
+<tr><td>Deploys to Prod a day</td><td>200 to 300</td><td>Per region, per wave</td></tr>
+<tr><td>Webhook deliveries a day</td><td>about 60,000</td><td>Pushes, pull requests, checks, merge groups</td></tr>
+<tr><td>Log volume</td><td>about 40 GB a day raw, about 6 GB compressed</td><td>About 0.5 MB per job</td></tr>
+<tr><td>Active viewers at once</td><td>about 400</td><td>Each holding one live stream</td></tr>
+</table></div>
+<p>It must still fit a five-person startup on one VM. The same image runs both, and the difference is configuration and replica count (§19).</p>
+
+<h2 id="boundary">3. A separate product</h2>
+<p>Pipelines lives in the same repository and uses the same kernel. It does not share Bemmoly's web shell, sidebar or navigation, so a person who only has Work and Docs never sees it.</p>
+<div class="tablewrap"><table>
+<tr><th>Concern</th><th>Shared with Bemmoly</th><th>Pipelines' own</th></tr>
+<tr><td>Identity</td><td>People, sessions, SSO (OIDC, SAML), SCIM, API tokens, the MCP OAuth server</td><td>Its sign-in page is branded Bemmoly Pipelines</td></tr>
+<tr><td>Teams</td><td>Teams and memberships, synced from the identity provider</td><td>Ownership of services, role bindings at scopes</td></tr>
+<tr><td>Authorization</td><td>"May this person use Pipelines at all" (product grant)</td><td>Everything inside: roles, scopes, policies (§10)</td></tr>
+<tr><td>Audit, settings, storage, email, notifications</td><td>The kernel services</td><td>Its own notification types and audit actions</td></tr>
+<tr><td>Web</td><td>Tokens, components, icons from <code>@bemmoly/ui</code></td><td><code>apps/pipelines-web</code> with <code>PipelinesShell</code></td></tr>
+<tr><td>Host</td><td>Same process, or a separate deployment</td><td><code>pipelines.acme.dev</code></td></tr>
+</table></div>
+<p><b>Install modes.</b> <code>BEMMOLY_PRODUCTS=pipelines</code> runs Pipelines alone, with the kernel and none of Work and Docs. <code>BEMMOLY_PRODUCTS=work,docs,pipelines</code> serves both front doors from one install. Hosts are routed by the proxy. Sign-in is shared through the kernel session on a parent-domain cookie, or through OIDC between the two hosts when their domains differ.</p>
+<p><b>What changes in the kernel:</b> a <code>product</code> concept above modules (manifest, host, shell, product grants). Module-level "surface" so a module can be kernel-registered without appearing in Bemmoly's sidebar. Pipelines also needs push detail and the write side (checks, deployments) on code hosts. Each change gets an ADR. The first one is "Pipelines is a separate product with its own shell", which amends ADR 0016's single-frame rule for Bemmoly's product only.</p>
+
+<h2 id="planes">4. Control and execution</h2>
+<div class="diagram" role="img" aria-label="People, GitHub and the identity provider talk to the control plane. Runners in the customer's cloud claim jobs from it outbound and send logs back. The control plane deploys to each cloud as that environment's deployer.">
+<svg viewBox="0 0 1000 600" xmlns="http://www.w3.org/2000/svg">
+  <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ah" d="M0 0L10 5L0 10z"/></marker></defs>
+  <rect class="box" x="20" y="70" width="170" height="70" rx="8"/><text class="h" x="36" y="98">GitHub</text><text class="t3" x="36" y="120">pushes, pull requests</text>
+  <rect class="box" x="20" y="190" width="170" height="70" rx="8"/><text class="h" x="36" y="218">Identity provider</text><text class="t3" x="36" y="240">SSO, SCIM: people, teams</text>
+  <rect class="box" x="20" y="310" width="170" height="70" rx="8"/><text class="h" x="36" y="338">People</text><text class="t3" x="36" y="360">web, CLI, MCP, chat</text>
+
+  <rect class="zone" x="230" y="20" width="350" height="560" rx="10"/>
+  <text class="t3" x="246" y="42">Control plane · 1 VM or N replicas</text>
+  <rect class="box" x="250" y="56" width="310" height="40" rx="6"/><text x="264" y="81">API and web</text><text class="t3" x="370" y="81">stateless</text>
+  <rect class="box" x="250" y="104" width="310" height="40" rx="6"/><text x="264" y="129">Ingest</text><text class="t3" x="370" y="129">webhooks to a durable inbox</text>
+  <rect class="box" x="250" y="152" width="310" height="40" rx="6"/><text x="264" y="177">Scheduler</text><text class="t3" x="370" y="177">fair share, dispatch</text>
+  <rect class="box" x="250" y="200" width="310" height="40" rx="6"/><text x="264" y="225">Orchestrator</text><text class="t3" x="370" y="225">runs, releases, promotions</text>
+  <rect class="box" x="250" y="248" width="310" height="40" rx="6"/><text x="264" y="273">Policy engine</text><text class="t3" x="370" y="273">roles, CEL, explanations</text>
+  <rect class="box" x="250" y="296" width="310" height="40" rx="6"/><text x="264" y="321">Landing zones</text><text class="t3" x="370" y="321">reconciler per provider</text>
+  <rect class="box" x="250" y="344" width="310" height="40" rx="6"/><text x="264" y="369">Deployers</text><text class="t3" x="370" y="369">deploys, canaries, roll backs</text>
+  <rect class="box" x="250" y="392" width="310" height="40" rx="6"/><text x="264" y="417">Log service</text><text class="t3" x="370" y="417">live streams, archive</text>
+  <rect class="box" x="250" y="450" width="150" height="60" rx="6"/><text x="264" y="476">Postgres</text><text class="t3" x="264" y="496">state and queue</text>
+  <rect class="box" x="410" y="450" width="150" height="60" rx="6"/><text x="424" y="476">Object storage</text><text class="t3" x="424" y="496">logs, artifacts</text>
+  <text class="t3" x="250" y="548">Kernel inside: identity, teams, audit, settings, email</text>
+
+  <rect class="zone" x="660" y="20" width="320" height="250" rx="10"/>
+  <text class="t3" x="676" y="42">Execution plane · in your cloud</text>
+  <rect class="box" x="680" y="56" width="280" height="76" rx="6"/><text class="h" x="694" y="82">Runner pools</text><text class="t2" x="694" y="104">Kubernetes pods or VMs, autoscaled</text><text class="t3" x="694" y="122">one job per runner, then destroyed</text>
+  <rect class="box" x="680" y="142" width="280" height="56" rx="6"/><text x="694" y="166">Caches</text><text class="t3" x="694" y="186">build layers, dependencies, test timings</text>
+  <rect class="box" x="680" y="208" width="280" height="48" rx="6"/><text x="694" y="237">Registry</text><text class="t3" x="760" y="237">one image per release</text>
+
+  <rect class="zone" x="660" y="290" width="320" height="290" rx="10"/>
+  <text class="t3" x="676" y="312">Deploy targets</text>
+  <rect class="box" x="680" y="326" width="280" height="72" rx="6"/><text class="h" x="694" y="352">Google Cloud</text><text class="t3" x="694" y="374">projects per domain and environment</text><text class="t3" x="694" y="390">Cloud Run, GKE</text>
+  <rect class="box" x="680" y="408" width="280" height="72" rx="6"/><text class="h" x="694" y="434">AWS, later</text><text class="t3" x="694" y="456">accounts per domain and environment</text><text class="t3" x="694" y="472">ECS, EKS</text>
+  <rect class="box" x="680" y="490" width="280" height="72" rx="6"/><text class="h" x="694" y="516">Any Kubernetes</text><text class="t3" x="694" y="538">namespaces as environments</text><text class="t3" x="694" y="554">reached directly or by an agent</text>
+
+  <path class="ln" d="M190 105 C 220 105, 220 124, 248 124" marker-end="url(#ah)"/>
+  <circle class="num" cx="219" cy="114" r="9"/><text class="numt" x="215.5" y="118">1</text>
+  <path class="ln" d="M190 225 C 220 225, 220 76, 248 76" marker-end="url(#ah)"/>
+  <circle class="num" cx="219" cy="190" r="9"/><text class="numt" x="215.5" y="194">2</text>
+  <path class="ln" d="M190 345 C 225 345, 225 86, 248 86" marker-end="url(#ah)"/>
+  <circle class="num" cx="224" cy="300" r="9"/><text class="numt" x="220.5" y="304">3</text>
+  <path class="ln" d="M680 94 C 620 94, 620 172, 562 172" marker-end="url(#ah)"/>
+  <circle class="num" cx="621" cy="133" r="9"/><text class="numt" x="617.5" y="137">4</text>
+  <path class="ln" d="M680 116 C 640 140, 630 412, 562 412" marker-end="url(#ah)"/>
+  <circle class="num" cx="640" cy="300" r="9"/><text class="numt" x="636.5" y="304">5</text>
+  <path class="ln" d="M560 364 C 620 364, 620 362, 678 362" marker-end="url(#ah)"/>
+  <circle class="num" cx="619" cy="363" r="9"/><text class="numt" x="615.5" y="367">6</text>
+  <path class="ln" d="M560 316 C 630 316, 620 444, 678 444" marker-end="url(#ah)"/>
+  <circle class="num" cx="633" cy="420" r="9"/><text class="numt" x="629.5" y="424">7</text>
+</svg>
+</div>
+<ul class="legend">
+  <li><b>1</b>Webhooks, signature checked, written to the inbox</li>
+  <li><b>2</b>People and team membership</li>
+  <li><b>3</b>Web, CLI and MCP requests</li>
+  <li><b>4</b>Runners claim jobs: outbound, long-poll</li>
+  <li><b>5</b>Logs, results and test reports stream back</li>
+  <li><b>6</b>Deploys, as each environment's deployer</li>
+  <li><b>7</b>Landing zones: accounts, networks, identities</li>
+</ul>
+<p>Two rules shape everything else. First, <b>runners never deploy to a protected environment</b>. They build, test and publish images. Deploys are done by the control plane, through the provider, as the target environment's own deployer identity. Second, <b>nothing in the execution plane needs an inbound connection</b>. Runners poll out, so they can sit in private networks with no public address.</p>
+
+<h2 id="scheduler">5. Scheduler and queues</h2>
+<p>Job dispatch is the hot path, and it gets its own small engine instead of pg-boss. pg-boss is a fine general job queue, but it doesn't do weighted fairness, concurrency groups or superseding. Earlier load tests on Bemmoly also found its default polling too slow for this kind of rate (the 30-jobs-a-minute ceiling in 0.12). It stays for the control plane's own background work.</p>
+<h3>5.1 The queue</h3>
+<p>A table <code>pipeline_jobs</code> holds every job, with <code>state</code> (pending, ready, claimed, running, done), <code>pool</code>, <code>team_id</code>, <code>priority_class</code>, <code>concurrency_key</code> and <code>ready_at</code>. A job becomes ready when its dependencies finish. Runners claim jobs through the dispatcher. Each dispatcher replica runs a loop: it picks the next team by deficit round robin, then claims that team's best ready job for the pool with <code>SELECT … FOR UPDATE SKIP LOCKED LIMIT 1</code>, all in one transaction. <code>LISTEN/NOTIFY</code> wakes the loop when a job becomes ready, so there is no polling delay.</p>
+<h3>5.2 The rules</h3>
+<div class="tablewrap"><table>
+<tr><th>Rule</th><th>Mechanism</th></tr>
+<tr><td>Fair share by team</td><td>Weighted deficit round robin per pool. Weights come from Platform › Capacity. Idle share can be borrowed and is returned at the next dispatch, never by killing running jobs</td></tr>
+<tr><td>Priority classes</td><td><code>rollback</code> &gt; <code>deploy</code> &gt; <code>main</code> &gt; <code>pull_request</code> &gt; <code>scheduled</code>. A higher class skips fair share entirely, and a roll back never waits</td></tr>
+<tr><td>Concurrency groups</td><td><code>concurrency_key</code> such as <code>deploy:checkout-api:prod-asia</code>. At most N running per key (1 for deploys). Others wait in order</td></tr>
+<tr><td>Superseding</td><td>A new run with the same <code>supersede_key</code> (a pull request number, or a release waiting for an environment) cancels pending and running jobs of the older run. Deploys already shifting traffic are never cancelled mid-step</td></tr>
+<tr><td>Deduplication</td><td>An idempotency key per webhook delivery and per commit and service, so a redelivered webhook starts nothing new</td></tr>
+<tr><td>Timeouts and lost runners</td><td>Runners heartbeat every 10 s. Missing three beats returns the job to ready with <code>attempt + 1</code>, at most twice. Job timeouts come from the pipeline (default 60 min)</td></tr>
+<tr><td>Autoscaling signal</td><td>Ready jobs and their wait per pool are exported to the runner autoscaler (§6), which scales on queue depth instead of CPU</td></tr>
+</table></div>
+<h3>5.3 Throughput</h3>
+<p>A claim is one indexed read and one update. On a 4 vCPU Postgres, the target is 50 claims a second with p99 under 50 ms. The 75,000 jobs a day are small for Postgres. <code>pipeline_jobs</code> and <code>pipeline_steps</code> are range-partitioned by month, so old partitions detach to cold storage without vacuum pain. The exact numbers come from a load test before phase 2, the same way Bemmoly's capacity page was measured.</p>
+
+<h2 id="runners">6. Runners</h2>
+<ul>
+  <li><b>One binary, <code>bemmoly-runner</code></b> (image <code>ghcr.io/bemmoly/runner</code>). It registers to a pool with a pool token. Then it long-polls <code>POST /api/v1/runner/claims</code> over HTTPS and receives one job with a short-lived job token, scoped to that job and expiring when the job's timeout does.</li>
+  <li><b>Steps run as containers.</b> On Kubernetes, the runner pod runs each step as a container in the same pod, with a shared workspace volume. On a VM, it uses the local container runtime. Docker-in-Docker is never needed: image builds use BuildKit in rootless mode.</li>
+  <li><b>Ephemeral.</b> One job per runner, then the pod or VM is destroyed, so nothing leaks between jobs or teams. Warm pools keep start-up under 10 seconds.</li>
+  <li><b>Autoscaling</b> on Kubernetes is a small controller, <code>bemmoly-runner-controller</code>. It reads each pool's queue depth from the control plane and creates runner pods; Autopilot or the cluster autoscaler adds nodes. On VMs, the provider's instance groups or auto scaling groups scale on the same signal.</li>
+  <li><b>Logs</b> are sent in ordered chunks (about 64 KB or 1 s) to the log service, which appends them to object storage and fans them out to viewers. If the control plane is unreachable, the runner buffers to disk and resends. A job never fails because the UI was down.</li>
+  <li><b>Caches:</b> image layers in the registry. Dependency caches go to an object store bucket per pool, keyed by lockfile hash. Test timings are kept per test file, so shards finish together.</li>
+  <li><b>Managed build services</b> (Cloud Build, CodeBuild) are an optional executor for teams that want no cluster on day one. They implement the same <code>Executor</code> interface, with fewer features: no shared warm caches and coarser logs.</li>
+</ul>
+
+<h2 id="definition">7. Pipelines and templates</h2>
+<p>At 1,000 services, most pipelines should be one line long. The platform team publishes <b>templates</b> (golden paths) as versioned files in a platform repository. Services extend a template and override only what the template allows.</p>
+<pre><code><span class="c"># acme/pipeline-templates/node-service.yaml, tag v3</span>
+<span class="k">inputs</span>: { <span class="k">node</span>: { <span class="k">default</span>: "24" }, <span class="k">port</span>: { <span class="k">default</span>: 8080 } }
+<span class="k">build</span>:  { <span class="k">dockerfile</span>: Dockerfile }
+<span class="k">test</span>:
+  - { <span class="k">name</span>: Unit, <span class="k">image</span>: "node:${{ inputs.node }}", <span class="k">run</span>: pnpm test, <span class="k">shards</span>: auto }
+  - { <span class="k">name</span>: Security scan, <span class="k">uses</span>: acme/scan@2, <span class="k">locked</span>: true }   <span class="c"># services can't remove it</span>
+<span class="k">deploy</span>: { <span class="k">kind</span>: container-service, <span class="k">port</span>: "${{ inputs.port }}" }
+
+<span class="c"># services/checkout-api/.bemmoly/service.yaml</span>
+<span class="k">name</span>: checkout-api
+<span class="k">system</span>: checkout
+<span class="k">owner</span>: team/payments
+<span class="k">tier</span>: 0
+<span class="k">pipeline</span>:
+  <span class="k">extends</span>: acme/node-service@3
+  <span class="k">with</span>: { <span class="k">port</span>: 8081 }
+  <span class="k">deploy</span>: { <span class="k">resources</span>: { <span class="k">cpu</span>: 1, <span class="k">memory</span>: 512Mi }, <span class="k">secrets</span>: { <span class="k">DATABASE_URL</span>: checkout-db-url } }</code></pre>
+<ul>
+  <li><b>The schema</b> is zod in <code>packages/shared</code>. JSON Schema is generated from it for editor completion, and <code>bemmoly-pipelines lint</code> runs locally and in pull requests.</li>
+  <li><b>Resolution</b> happens per commit. The resolved pipeline (template plus overrides) is stored with the run, so a run always shows exactly what it ran.</li>
+  <li><b>Fleet upgrades</b> are campaigns. Pick a template change and a set of services, and the campaign opens pull requests in waves (for example 50 a day) and tracks merged, failing and ignored. Its view is the "612 on v3" list in the product design.</li>
+  <li><b>Rules that protect environments are not in these files.</b> Approvals, windows and canary requirements come from policy (§10). A file can ask for more caution, never less.</li>
+</ul>
+
+<h3 id="byoci">7.1 Bring your CI</h3>
+<p>Companies keep GitHub Actions, Jenkins, Buildkite or anything else for build and test. Pipelines takes over from the built image. It is the third <code>Executor</code>, and the one most large companies start with:</p>
+<ul>
+  <li><b>Registering a release.</b> <code>POST /api/v1/pipelines/releases</code> takes a service, an image digest, the commit, and optional test reports and attestations. The <code>bemmoly/release</code> GitHub Action and <code>bp release create</code> both call it.</li>
+  <li><b>No stored secret for GitHub Actions.</b> The action sends the workflow's own OIDC token. Pipelines verifies it against GitHub's issuer, then maps its claims (<code>repository</code>, <code>ref</code>, <code>workflow_ref</code>, <code>environment</code>) to services through a trust rule per repository. A workflow can only register releases for services in its own repository, from refs the rule allows. Other CI systems use a scoped token per pipeline, or their own OIDC where they have one.</li>
+  <li><b>Their results become gates.</b> Pipelines reads <code>check_run</code> and <code>workflow_run</code> events for the commit. A policy can require "workflow <code>security.yml</code> passed" as a gate. Test reports in JUnit format are stored with the release and shown on the Promote screen.</li>
+  <li><b>Provenance.</b> If the workflow produces a build attestation (GitHub artifact attestations or SLSA provenance), Pipelines verifies it and stores it with the release. Prod policies can require it.</li>
+  <li><b>The run view stays complete.</b> An external run is drawn from the forge's API: its jobs, status and timings, with links to the full logs. The journey from commit to Prod is one line, even though the build happened elsewhere.</li>
+  <li><b>Moving builds later</b> means adding <code>pipeline:</code> to <code>service.yaml</code>. Steps can call the same scripts (<code>run: make build</code>). A converter for GitHub Actions workflows handles the common cases (checkout, setup actions, run steps, caching) and lists what it could not convert. It never claims a full conversion.</li>
+</ul>
+
+<h2 id="source">8. GitHub at scale</h2>
+<ul>
+  <li><b>One GitHub App per install, on the whole organisation.</b> The kernel's one-click app manifest flow creates it. Pipelines adds write permissions: checks, statuses, deployments, contents (for bot pull requests) and merge groups.</li>
+  <li><b>Durable ingest.</b> Each delivery's signature is verified, then the delivery is written as-is to <code>webhook_inbox</code>, and the request returns 202 within 50 ms. Workers process the inbox in order per repository. A burst of 2,000 deliveries after an outage queues up instead of timing out GitHub's 10-second limit. Redeliveries are deduplicated by delivery id.</li>
+  <li><b>Rate limits.</b> An installation token's limit scales with the organisation's size, up to about 12,500 requests an hour. Pipelines caches with conditional requests (ETags), batches reads through GraphQL, reports checks once per job state change (never per log line), and keeps a per-installation token bucket so a fleet campaign can't starve live runs.</li>
+  <li><b>Merge queues.</b> <code>merge_group</code> events run the required pipeline on the queue's temporary branch, and the result is reported as the required check.</li>
+  <li><b>Unreachable installs</b> get the relay from draft 1. A small function in the customer's cloud accepts GitHub's POST and puts it on a queue the control plane pulls from. The relay holds no secret, so it cannot forge deliveries.</li>
+  <li><b>Other forges</b> (GitLab, Bitbucket) come through the kernel's code-host interface. Pipelines never imports a forge client directly.</li>
+</ul>
+
+<h2 id="catalog">9. Catalog and ownership</h2>
+<ul>
+  <li><b>Discovery</b> is a job per repository. It runs when the app is installed, on <code>repository</code> events (created, renamed, archived, transferred), and nightly. It finds deployables: Dockerfiles, Helm charts, serverless manifests, and workspace members from pnpm, npm, Nx, Turborepo, Go modules, Cargo, Gradle and Bazel. It reads <code>CODEOWNERS</code> and existing catalog files (including Backstage's <code>catalog-info.yaml</code>), and proposes services.</li>
+  <li><b>Source of truth</b> is <code>service.yaml</code> in the repository, read on every push to the default branch. Changing ownership is a pull request, reviewed like code. Domains and systems are defined in the platform repository's <code>catalog.yaml</code>, or in the UI, which writes back as a pull request.</li>
+  <li><b>Teams</b> come from the kernel, synced by SCIM or SSO groups. A service's <code>owner</code> must name an existing team. If it doesn't, the service lands in <b>No owner</b>, which blocks protected deploys.</li>
+  <li><b>Affected-service detection</b> builds a dependency graph per monorepo: workspace dependencies plus <code>paths</code> filters from <code>service.yaml</code>. The graph is cached per commit. A push maps changed files to the services that need a run.</li>
+  <li><b>Service dependencies</b> are declared (<code>dependsOn</code>), and optionally learned from traces later. They feed coordinated releases and the "include callers" filter on What changed?</li>
+</ul>
+
+<h2 id="access">10. Access and policy</h2>
+<h3>10.1 Model</h3>
+<ul>
+  <li><b>Scopes</b> form a tree: organisation, then domain, then system, then service. <b>Environment classes</b> (dev, staging, prod) are a second axis.</li>
+  <li><b>Role bindings</b> <code>(team or person, role, scope, environment class?)</code> live in <code>pipeline_role_bindings</code>. Bindings to people exist for break-glass only, and they expire.</li>
+  <li><b>Ownership is implicit.</b> The owning team holds Maintainer on its services without a stored binding.</li>
+  <li><b>The effective permission set</b> is the union of bindings on the path from the root to the service, for the person's teams. It is computed per (person, service) and cached in process with a version stamp, following ADR 0036 for authorization lookups. Any binding, team or ownership change bumps the stamp.</li>
+</ul>
+<h3>10.2 Policies</h3>
+<p>Policies are evaluated for protected actions (deploy, approve, change variables, roll back) on top of roles. They are written in <b>CEL</b> (Common Expression Language, evaluated with a sandboxed TypeScript implementation). CEL is side-effect free, fast, readable, and used by Kubernetes for the same job. Each policy has a selector (which services and environments), a condition, and requirements:</p>
+<pre><code><span class="k">name</span>: Tier 0 to Prod
+<span class="k">applies</span>: service.tier == 0 &amp;&amp; env.class == "prod"
+<span class="k">require</span>:
+  <span class="k">requester</span>: has_role("maintainer")
+  <span class="k">approvals</span>:
+    - { <span class="k">from</span>: owning_team, <span class="k">count</span>: 2, <span class="k">exclude</span>: authors }
+    - { <span class="k">from</span>: oncall("sre"), <span class="k">count</span>: 1 }
+  <span class="k">gates</span>: [tests, security_scan, staging_healthy("30m"), error_budget("> 0"), canary]
+  <span class="k">window</span>: "Mon-Thu 10:00-16:00 Asia/Kolkata"
+  <span class="k">deny_if</span>: freeze.active</code></pre>
+<ul>
+  <li><b>Explanations.</b> Every decision returns a trace: the bindings that applied, each policy matched and the requirement that failed. The trace is stored with the action, and it is what "Why can't I?" and the checker show.</li>
+  <li><b>Changing policy is itself protected.</b> Policies are versioned. A change to a policy that applies to Tier 0 needs a second Platform admin's approval. Policies can be exported to, and optionally owned by, a Git repository.</li>
+  <li><b>Inputs are facts, not guesses.</b> Facts such as on-call (from an on-call integration or a schedule in Pipelines), freezes (a calendar) and error budget (from the metrics provider) are resolved before evaluation. If a fact is unavailable, the gate shows "waiting" with the reason. It never shows "pass".</li>
+</ul>
+
+<h2 id="promotion">11. Releases and promotion</h2>
+<ul>
+  <li><b>A release</b> is <code>(service, version, image digests per platform, resolved config, provenance, SBOM)</code>. It is created when a build on a release branch or tag passes, and never changes afterwards.</li>
+  <li><b>The environment path</b> per service comes from its tier's path template, for example dev, then staging, then prod-asia, then prod-us and prod-eu.</li>
+  <li><b>A promotion</b> is a record with a state machine: <code>requested</code>, <code>gating</code>, <code>awaiting_approval</code>, <code>scheduled</code>, <code>rolling_out</code>, then <code>succeeded</code>, <code>rolled_back</code> or <code>cancelled</code>.</li>
+  <li><b>Gates</b> implement <code>evaluate(release, environment) → pass | fail | pending(reason, recheckAt)</code>. The engine re-evaluates pending gates on their recheck time and on relevant events. Gates in phase 1: tests, security scan, staging healthy, window, freeze, approvals. Later: error budget, dependencies released, migration reviewed, custom webhook gate.</li>
+  <li><b>Release trains</b> are schedules per scope. At the cut time, eligible releases (gates passed) join, the train asks for one approval, and it rolls out in waves with per-service canaries. A failing service is removed from the train and the rest continue.</li>
+  <li><b>Coordinated releases</b> are a DAG of service promotions with ordering and a failure policy (stop all, or continue the independent ones).</li>
+  <li><b>Rollout waves</b> span regions. Each wave is a set of deployments with canary steps (§13). A wave starts after the previous one is healthy for its bake time.</li>
+  <li><b>Change records.</b> Each finished promotion writes an immutable record: what, who requested, who approved, every gate result with evidence, timings, and the outcome. It can be exported as CSV or JSON for SOC 2 and ISO 27001 evidence.</li>
+</ul>
+
+<h2 id="deploy">12. Deploy targets</h2>
+<div class="tablewrap"><table>
+<tr><th>Kind</th><th>Google Cloud</th><th>AWS</th><th>Kubernetes (any)</th></tr>
+<tr><td><code>container-service</code></td><td>Cloud Run: revision per release, tagged URL for smoke tests, traffic split for canaries</td><td>ECS on Fargate: task definition per release, CodeDeploy-style blue and green via weighted target groups</td><td>Mapped to <code>kubernetes</code></td></tr>
+<tr><td><code>kubernetes</code></td><td>GKE</td><td>EKS</td><td>Generated manifests, or the repo's Helm or Kustomize. Server-side apply, rollout status, canaries via Gateway API weights</td></tr>
+<tr><td><code>function</code></td><td>Cloud Run functions</td><td>Lambda with weighted aliases</td><td>Not supported</td></tr>
+<tr><td><code>static-site</code></td><td>Bucket plus CDN</td><td>S3 plus CloudFront</td><td>Not supported</td></tr>
+</table></div>
+<p>Every target implements <code>deploy(release, env) → revision</code> (no traffic yet), <code>shift(revision, weight)</code>, <code>rollback(previousRevision)</code>, <code>health(revision)</code> and <code>describe(env)</code>, with the drift view in mind. Private clusters that the control plane cannot reach get a <b>deploy agent</b>: the runner image in deploy mode, in that cluster, claiming only deploy jobs for its environment with that environment's identity.</p>
+
+<h2 id="autopilot">13. Canary and roll back</h2>
+<p>Each canary step shifts weight, waits, and analyses. Analysis queries <code>MetricsSource</code> for the canary revision and the stable revision over the same window. The built-in checks are error rate and p95 latency, which work without any instrumentation on Cloud Run, ECS behind a load balancer, and Kubernetes with Gateway API metrics. Custom checks are PromQL or the provider's query language. Two failing samples in a row roll the deployment back, mark it <code>rolled_back</code>, record the failing samples, and emit <code>pipelines.deployment.rolled_back</code>. When Bemmoly Work is installed, that event can open an incident. After 100%, a watch period compares against the previous release's baseline, and a failure during the watch also rolls back. This is phase 3. Phase 2 ships manual canaries, with steps and charts, and people decide.</p>
+
+<h2 id="providers">14. Provider model</h2>
+<p>Everything cloud-specific is behind a <b>provider</b>: one folder of implementations of these interfaces, plus a conformance test kit that every provider must pass against a real test account.</p>
+<div class="tablewrap"><table>
+<tr><th>Interface</th><th>Responsibility</th></tr>
+<tr><td><code>Connection</code></td><td>Establish and verify keyless identity; report the principal; health check</td></tr>
+<tr><td><code>OrgStructure</code></td><td>Create and read boundaries (folder, organizational unit) and accounts (project, account) inside them</td></tr>
+<tr><td><code>LandingZone</code></td><td>Plan and apply an environment's resources: APIs or services, network, registry access, deployer and runtime identities, budget, logging</td></tr>
+<tr><td><code>Registry</code></td><td>Repository per system, pull access per environment, image lookup by digest</td></tr>
+<tr><td><code>Secrets</code></td><td>Write versions, grant access to runtime identities, never read values back</td></tr>
+<tr><td><code>Targets</code></td><td>The deploy kinds in §12 the provider supports</td></tr>
+<tr><td><code>Metrics</code></td><td>Query per-revision series for canary analysis and health</td></tr>
+<tr><td><code>RunnerHosting</code></td><td>Create and scale runner pools (cluster node pools or instance groups)</td></tr>
+<tr><td><code>Access</code></td><td>Grant and revoke time-boxed console roles to people's cloud identities</td></tr>
+<tr><td><code>Cost</code></td><td>Spend per account and per label, for the cost views</td></tr>
+</table></div>
+<p><b>The landing zone reconciler</b> from draft 1 becomes provider-neutral. Resources are declared as neutral kinds (<code>account</code>, <code>network</code>, <code>registry_access</code>, <code>deployer_identity</code>, <code>budget</code>) and the provider maps each to its own calls. It keeps the same <code>read</code>, <code>diff</code>, <code>apply</code>, <code>verify</code> loop, the same idempotent jobs keyed by spec hash, and the same nightly drift scan. <b>Layouts</b> decide granularity: one account per environment; per domain and environment (the default above 100 engineers); or per system and environment.</p>
+<p><b>Mixed clouds.</b> Each environment names its provider and account, so a release path can be <code>dev (gcp)</code>, then <code>staging (gcp)</code>, then <code>prod-asia (gcp)</code> and <code>prod-us (aws)</code>. One image is built per platform and pushed to each provider's registry by digest. A promotion copies the image to the target's registry first when they differ.</p>
+
+<h2 id="gcp">15. Google Cloud provider</h2>
+<p>This carries over from draft 1, generalised.</p>
+<ul>
+  <li><b>Bootstrap.</b> One command in Cloud Shell (<code>get.bemmoly.com/gcp</code>) creates the <code>Bemmoly</code> folder and the control project. It installs the control plane on a VM, or prints a Helm command for an existing GKE cluster, and grants the control identity folder-scoped roles plus <code>billing.user</code> and <code>billing.costsManager</code>. An organisation is required, because service accounts can't create projects without a parent.</li>
+  <li><b>Identity.</b> On Google Cloud: the attached service account. Elsewhere: workload identity federation with a pool whose OIDC provider has Bemmoly's public JWKS uploaded directly, so Google never needs to reach Bemmoly. No key files by default.</li>
+  <li><b>Per environment</b>, a <code>deployer@</code> service account with only deploy roles in that project. The control plane impersonates it for every deploy, so the project's audit logs name the environment's deployer. <code>--lock</code> removes the folder's provisioning roles once the landing zone is in place.</li>
+  <li><b>Runners</b> on GKE Autopilot in a <code>&lt;org&gt;-ci</code> project, by default. They use Workload Identity, and the builder identity can only push to Artifact Registry.</li>
+  <li><b>Quotas.</b> New billing accounts can link only a few projects. The per-domain layout needs a quota increase, and the connect screen checks that before planning.</li>
+</ul>
+
+<h2 id="aws">16. AWS provider (phase 3)</h2>
+<p>The AWS provider is designed now so that the interfaces don't bend toward Google:</p>
+<ul>
+  <li><b>Boundary and accounts:</b> an organizational unit <code>Bemmoly</code>, with accounts created through AWS Organizations (<code>CreateAccount</code>, which needs a unique email per account; Pipelines uses plus-addressing on an admin mailbox). If Control Tower is present, accounts go through its Account Factory instead.</li>
+  <li><b>Identity:</b> an IAM role per account (<code>BemmolyDeployer</code>) trusting Bemmoly's OIDC issuer. AWS STS fetches the issuer's keys from its public discovery URL. For installs that are not public, Pipelines publishes the discovery document and JWKS to a public S3 bucket, which is the pattern self-managed Kubernetes clusters use for IAM roles. A one-command CloudFormation stack in CloudShell sets this up.</li>
+  <li><b>Targets:</b> ECS on Fargate (container-service), EKS (kubernetes), Lambda (function). Registry: ECR with cross-account pull. Secrets: Secrets Manager. Metrics: CloudWatch.</li>
+  <li><b>Runners:</b> EKS with Karpenter, or auto scaling groups. A CodeBuild executor is the no-cluster option.</li>
+</ul>
+
+<h2 id="secrets">17. Identity and secrets</h2>
+<ul>
+  <li><b>Jobs get OIDC tokens.</b> Pipelines is an OIDC issuer for its own jobs. A job can ask for a token with claims such as <code>service</code>, <code>env</code>, <code>ref</code> and <code>tier</code>. Clouds trust those claims through federation, so a test job can read a staging bucket without any stored secret. The issuer's discovery document is served publicly, or uploaded where the cloud allows it.</li>
+  <li><b>Application secrets</b> live in each provider's secret store, in the environment's account. Pipelines stores references and versions, never values. Values are written straight through to the provider and masked in logs.</li>
+  <li><b>Build-time secrets</b> are mounted only into the steps that name them. Pull requests from forks get none and wait for a maintainer.</li>
+  <li><b>Pipelines' own secrets</b> (signing keys, the GitHub App key) are sealed with the kernel's secret box. Signing keys rotate from the UI, with overlap.</li>
+</ul>
+
+<h2 id="live">18. Live views and history</h2>
+<ul>
+  <li><b>Streams.</b> The web app opens one server-sent events stream per tab and subscribes to topics: a scope's map, a run, a service, the person's For you. The server coalesces updates to at most one per topic per second. For 400 viewers that is a few hundred small messages a second, fed by Postgres <code>NOTIFY</code> from the writers.</li>
+  <li><b>Logs</b> come from the log service. While a job runs, its chunks are kept in memory on the replica that receives them, fanned out to subscribers on any replica through <code>NOTIFY</code> with a pointer, and appended to object storage. Search inside a log reads ranges from object storage on demand. Logs are not indexed.</li>
+  <li><b>The Release map</b> reads a materialised table, <code>pipeline_current</code>: the current release, deployment state and moving releases per (service, environment), updated in the same transaction as each deployment event. Counts per (scope, environment) are computed from it, which takes milliseconds for 1,140 services.</li>
+  <li><b>Rewind.</b> Every deployment state change is an append-only row in <code>pipeline_deployment_events</code>, so the state at time T is the latest event per (service, environment) at or before T. An hourly snapshot plus the events since keeps rewind under 200 ms for any point in the last 90 days.</li>
+  <li><b>Insights</b> (lead time, deploy frequency, change failure rate, time to restore) are computed nightly into daily rollups per service, then aggregated up the catalog tree.</li>
+</ul>
+
+<h2 id="ops">19. Availability and upgrades</h2>
+<div class="tablewrap"><table>
+<tr><th>Size</th><th>Control plane</th><th>Data</th></tr>
+<tr><td>Startup, up to about 30 engineers</td><td>One VM, 2 vCPU and 4 GB, as Bemmoly runs today</td><td>Postgres in the same compose stack; local or bucket storage</td></tr>
+<tr><td>Up to about 200 engineers</td><td>2 replicas on a small Kubernetes cluster (Helm)</td><td>Managed Postgres, 2 vCPU; object storage</td></tr>
+<tr><td>Acme, 500 or more engineers</td><td>3 or more replicas, 2 vCPU and 4 GB each; separate dispatcher and log-service pools if needed</td><td>Managed Postgres, 4 vCPU and 16 GB, high availability, a read replica for Insights; object storage</td></tr>
+</table></div>
+<ul>
+  <li><b>Leader-only work</b> (cron triggers, train cuts, the drift scan) takes a Postgres advisory lock. Everything else runs on every replica.</li>
+  <li><b>If the control plane is down</b>, runners finish their jobs and buffer logs. Deploys already in progress at the provider complete or stay where they are, because traffic weights live in the provider and not in Pipelines. On return, watchers reconcile actual state from the providers before acting.</li>
+  <li><b>Upgrades</b> follow Bemmoly's rules: expand and contract changesets, compatible with the previous minor version, and rolling restarts. The runner protocol is versioned, and the control plane supports the current and previous runner minor versions.</li>
+  <li><b>Backups</b> use the kernel's Postgres backups. Logs and artifacts follow object-storage lifecycle rules: 30 days hot, then deleted or archived by setting.</li>
+</ul>
+
+<h2 id="security">20. Threat model</h2>
+<div class="tablewrap"><table>
+<tr><th>Threat</th><th>Mitigation</th></tr>
+<tr><td>A pull request job exfiltrates secrets or deploys</td><td>Fork pull requests get no secrets and wait for a maintainer; job OIDC claims carry <code>ref</code> and <code>event</code>, so cloud trust can exclude pull requests; runners never hold deploy rights to protected environments</td></tr>
+<tr><td>One job contaminates another</td><td>One job per ephemeral runner; no shared Docker socket; pools per trust level (for example a separate pool for Tier 0 builds)</td></tr>
+<tr><td>Control plane compromise</td><td>Folder or OU-scoped identity, provisioning roles removable with <code>--lock</code>, deploys only through per-environment deployers, provider audit logs name every call, optional image attestation enforcement in Prod</td></tr>
+<tr><td>Policy tampering</td><td>Versioned policies, two-person rule for Tier 0 policy changes, every decision's trace stored</td></tr>
+<tr><td>Approval abuse</td><td>Authors can't approve; approvals bind to a release digest and expire; approvals by people only, never tokens or AI</td></tr>
+<tr><td>Forged webhooks or runner impersonation</td><td>HMAC verified before parsing; pool tokens hashed at rest and rotatable; job tokens scoped and short-lived</td></tr>
+<tr><td>Supply chain</td><td>Digest-pinned deploys, SLSA provenance and SBOM per release, locked scan steps in templates</td></tr>
+</table></div>
+
+<h2 id="data">21. Data model</h2>
+<p>All tables follow the repository's rules: snake_case plurals, UUIDv7 keys, changesets in the product's changelog folder, and indexes shipped alongside. High-volume tables are partitioned by month.</p>
+<div class="tablewrap"><table>
+<tr><th>Area</th><th>Tables</th></tr>
+<tr><td>Catalog</td><td><code>pipeline_domains</code>, <code>pipeline_systems</code>, <code>pipeline_services</code> (owner_team_id, tier, labels, repository, path, template_ref), <code>pipeline_service_dependencies</code>, <code>pipeline_repositories</code></td></tr>
+<tr><td>Access</td><td><code>pipeline_role_bindings</code>, <code>pipeline_policies</code> and <code>pipeline_policy_versions</code>, <code>pipeline_decisions</code> (trace, partitioned)</td></tr>
+<tr><td>Clouds</td><td><code>cloud_connections</code>, <code>cloud_accounts</code>, <code>cloud_resources</code> (desired, observed, status), <code>pipeline_environments</code> (class, provider, account, region, path position)</td></tr>
+<tr><td>Running</td><td><code>webhook_inbox</code>, <code>pipeline_runs</code>, <code>pipeline_jobs</code> (partitioned), <code>pipeline_steps</code> (partitioned), <code>pipeline_runner_pools</code>, <code>pipeline_runners</code>, <code>pipeline_test_timings</code></td></tr>
+<tr><td>Shipping</td><td><code>pipeline_releases</code>, <code>pipeline_promotions</code>, <code>pipeline_gate_results</code>, <code>pipeline_approvals</code>, <code>pipeline_trains</code>, <code>pipeline_deployments</code>, <code>pipeline_deployment_events</code> (append-only), <code>pipeline_current</code>, <code>pipeline_change_records</code></td></tr>
+<tr><td>Platform</td><td><code>pipeline_templates</code> (cache of template versions), <code>pipeline_campaigns</code>, <code>pipeline_freezes</code>, <code>pipeline_oncall</code></td></tr>
+</table></div>
+
+<h2 id="api">22. API, CLI, MCP</h2>
+<ul>
+  <li><b>REST</b> under <code>/api/v1/pipelines/…</code>, following the repository's API rules: plural nouns, keyset pagination, one level of nesting, the standard error body. Live streams use <code>/api/v1/pipelines/streams</code> (server-sent events). The runner protocol lives under <code>/api/v1/runner/…</code>, versioned separately.</li>
+  <li><b>CLI</b> <code>bemmoly-pipelines</code> (alias <code>bp</code>): <code>bp run</code>, <code>bp logs -f</code>, <code>bp promote checkout-api --to prod</code>, <code>bp rollback</code>, <code>bp lint</code>, <code>bp why</code> (explain an access decision). It signs in with device code through the kernel's OAuth server.</li>
+  <li><b>MCP:</b> read tools for services, runs, logs, releases and what changed, plus write tools (run, promote request, roll back) that go through confirmed plans (ADR 0019) and the person's own access. Approval is never a tool.</li>
+  <li><b>Chat:</b> approval and failure notifications with Approve and Open buttons. Approving from chat re-checks policy and identity on the server.</li>
+</ul>
+
+<h2 id="code">23. Code layout</h2>
+<pre><code>products/pipelines/
+  product.ts                  <span class="c"># product manifest: id, host, shell, kernel modules it needs</span>
+  changelog/
+  shared/                     <span class="c"># zod: service.yaml, templates, policies, API payloads</span>
+  server/src/
+    routes/ controllers/ middlewares/ config/ utils/ models/
+    services/
+      catalog/ discovery/ access/ policy/ scheduler/ dispatcher/ orchestrator/
+      releases/ promotion/ gates/ trains/ deployments/ canary/ landing-zones/
+      logs/ streams/ insights/ campaigns/
+    clients/
+      providers/  index.ts  gcp/  aws/  kubernetes/      <span class="c"># one folder per provider, same interfaces</span>
+      executors/  runner.ts  cloud-build.ts  codebuild.ts
+      metrics/    cloud-monitoring.ts  cloudwatch.ts  prometheus.ts
+  conformance/                <span class="c"># provider conformance kit, run nightly against test accounts</span>
+apps/pipelines-web/           <span class="c"># the separate front end: PipelinesShell, screens, its own router</span>
+apps/runner/                  <span class="c"># bemmoly-runner and bemmoly-runner-controller</span>
+apps/pipelines-cli/           <span class="c"># bp</span>
+deploy/gcp/  deploy/aws/      <span class="c"># bootstrap scripts, relay function, CloudFormation</span>
+packages/ui/                  <span class="c"># new shared components (product design, Design foundations)</span></code></pre>
+
+<h2 id="plan">24. Plan</h2>
+<div class="tablewrap"><table>
+<tr><th>Step</th><th>Content</th><th>Exit</th></tr>
+<tr><td><b>0 · Foundations</b> (2 weeks)</td><td>ADRs: separate product, scheduler, providers, CEL. Kernel: products and surfaces. Spikes: dispatcher load test (50 claims a second), runner on GKE Autopilot, Google Cloud keyless bootstrap</td><td>Load test numbers written down; runner runs a job from a private cluster outbound only</td></tr>
+<tr><td><b>1 · Ship</b> (8 to 10 weeks)</td><td>Shell, GitHub App and ingest, Bring your CI (release API, the GitHub Action, OIDC trust rules, checks as gates), catalog and discovery, templates, runner and controller, Cloud Build executor, Google Cloud provider and landing zones, Cloud Run target, environments, releases, approvals, roles and ownership, For you, Run, Service, Catalog, CLI</td><td>A 20-service team moves over in a day; a 45-minute journey from an empty Google Cloud account to Prod, recorded</td></tr>
+<tr><td><b>2 · Scale</b> (8 weeks)</td><td>Fair share and Capacity, policies and the checker, tiers, trains, coordinated releases, waves, Release map and rewind, What changed?, GKE and Kubernetes target, campaigns, deploy agents</td><td>A 300-engineer design partner runs all Prod deploys through it for a month; 400 concurrent jobs in a load test</td></tr>
+<tr><td><b>3 · Autopilot and AWS</b> (8 weeks)</td><td>Canary analysis and automatic roll back, AWS provider (ECS, EKS, Lambda, CodeBuild), Insights, AI explanations, preview environments</td><td>A release path crossing Google Cloud and AWS; an unattended roll back in a recorded test; both providers pass the conformance kit</td></tr>
+</table></div>
+
+<h2 id="decisions">25. Open decisions</h2>
+<div class="tablewrap"><table>
+<tr><th>Decision</th><th>Recommendation</th><th>Alternative and its cost</th></tr>
+<tr><td>Same repository and kernel, or a new repository</td><td>Same repository, <code>products/pipelines</code>, sharing the kernel</td><td>A new repository duplicates identity, SSO, SCIM, audit and the design foundations, and drifts</td></tr>
+<tr><td>Entry point for large companies</td><td>Bring your CI: Pipelines owns release to Prod; builds stay where they are</td><td>Asking companies to move CI first: a bigger switch, slower adoption, and it competes where Pipelines differs least</td></tr>
+<tr><td>Default executor</td><td>Bemmoly runners on Kubernetes, with Cloud Build or CodeBuild as a no-cluster option</td><td>Managed build services first: no cluster on day one, but weaker caching and fairness, and a different system per cloud</td></tr>
+<tr><td>Job dispatch</td><td>Own Postgres dispatcher with <code>SKIP LOCKED</code></td><td>pg-boss: less code, but no fair share or concurrency groups, and a known throughput ceiling. NATS or Redis: breaks Postgres-only</td></tr>
+<tr><td>Policy language</td><td>CEL, shown as sentences</td><td>Rego (OPA): more powerful and familiar to security teams, harder to read and to explain decision by decision</td></tr>
+<tr><td>Catalog source of truth</td><td><code>service.yaml</code> in each repository, the UI writes pull requests</td><td>UI-first database: faster to change, but ownership drifts from the code and isn't reviewed</td></tr>
+<tr><td>Landing zone engine</td><td>Own provider-neutral reconciler, Terraform export later</td><td>Embedded OpenTofu: any resource, but a state backend, a binary and plans people can't read on screen</td></tr>
+<tr><td>Default account layout</td><td>Per domain and environment above 100 engineers, per environment below</td><td>Per system and environment: hardest walls, but hundreds of accounts and quota work from week one</td></tr>
+<tr><td>Words</td><td>Domain, System, Service; Tier 0 to 2</td><td>Group, Application; Critical, High, Standard</td></tr>
+</table></div>
+<p style="margin-top:32px;color:var(--tx-3)">Acme is a fictional company. Sizing figures are estimates to be replaced by load tests. Cloud quotas and limits named here must be checked again during the spikes.</p>
+</main>
+</div>
+</body>
+</html>

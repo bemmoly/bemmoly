@@ -1,7 +1,10 @@
 /**
  * `pnpm dev`: start Postgres in Docker when a daemon is available, wait until it
- * is healthy, write apps/server/.env on first run, then run server and web with
- * hot reload through Turborepo.
+ * is healthy, write apps/server/.env on first run, then run the server, the web
+ * app and Pipelines' web app with hot reload through Turborepo. Bemmoly is on
+ * http://localhost:5173 and Pipelines on http://localhost:5173/pipelines/ (its
+ * own dev server is on 5601, proxied there so both share one origin and one
+ * sign-in).
  */
 import { spawn, spawnSync } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
@@ -93,6 +96,7 @@ const turbo = spawn(
     'dev',
     '--filter=@bemmoly/server',
     '--filter=@bemmoly/web',
+    '--filter=@bemmoly/pipelines-web',
     '--ui=stream',
   ],
   { cwd: root, stdio: 'inherit' },
