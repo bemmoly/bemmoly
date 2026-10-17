@@ -1,5 +1,20 @@
 # @bemmoly/core-web
 
+## 1.2.0
+
+### Patch Changes
+
+- bee8b7b: The sidebar now shows Work and Docs as separate areas. Each has its own header row, and the one
+  you are in is highlighted. Links that cover the whole area (All projects, Roadmap, Docs home) now
+  sit at the top of their section, above the list of projects or spaces.
+- Updated dependencies [c41a835]
+- Updated dependencies [33f0341]
+- Updated dependencies [c41a835]
+- Updated dependencies [f471fce]
+  - @bemmoly/shared@1.2.0
+  - @bemmoly/api-client@1.2.0
+  - @bemmoly/ui@1.2.0
+
 ## 1.1.0
 
 ### Patch Changes
