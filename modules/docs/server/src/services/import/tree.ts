@@ -25,22 +25,37 @@ export interface TreePage {
 
 export async function ensureSpace(deps: TreeDeps, space: ConfluenceSpace, ctx: ImportRunContext) {
   const { sql } = deps;
+  const target = ctx.targets.get(space.key);
+  if (target?.mode === 'existing' && target.id) {
+    const [row] = await sql<{ id: string; key: string }[]>`
+      select id, key from spaces where id = ${target.id}`;
+    if (!row) throw new Error(`The Docs space chosen for ${space.key} no longer exists`);
+    await ctx.mappings.set('space', space.key, row.id);
+    ctx.report.count('spaces', 'updated');
+    return row;
+  }
   const mapped = await ctx.mappings.get('space', space.key);
   if (mapped) {
     const [row] = await sql<{ id: string; key: string }[]>`
       select id, key from spaces where id = ${mapped.targetId}`;
-    if (row) return row;
+    // The space an earlier run of this import made is its own, under the key it asked for.
+    if (row && (target?.mode !== 'create' || row.key === target.key)) return row;
   }
-  const key = spaceKeyFrom(space.key);
+  const key = target?.mode === 'create' ? target.key : spaceKeyFrom(space.key);
   if (key !== space.key) ctx.report.warn(`Space ${space.key} is ${key} here.`);
   const row = await sql.begin(async (tx) => {
     const [created] = await tx<{ id: string; key: string; inserted: boolean }[]>`
       insert into spaces (key, name, description, created_by)
       values (${key}, ${space.name.slice(0, 120) || key},
         ${space.description?.plain?.value?.slice(0, 2000) || null}, ${ctx.actorUserId}::uuid)
-      on conflict (key) do update set updated_at = spaces.updated_at
-      returning id, key, (xmax = 0) as inserted`;
-    if (!created) throw new Error(`Space ${key} was not stored`);
+      on conflict (key) do nothing
+      returning id, key, true as inserted`;
+    // Never a silent merge into a space that happens to hold the key.
+    if (!created) {
+      throw new Error(
+        `${key} is taken by another Docs space; pick another key or that space in Options`,
+      );
+    }
     if (created.inserted && deps.memberships && ctx.actorUserId) {
       const roles = await deps.memberships.roles(tx);
       const admin = roles.find((role) => role.key === SPACE_ADMIN_ROLE_KEY);
@@ -97,7 +112,6 @@ export async function writeTree(
     }
     start = page.next;
   }
-  await ctx.progress.phase(`Page tree of ${space.sourceKey}`, listed.length);
   listed.sort((a, b) => a.ancestors.length - b.ancestors.length);
   const known = await ctx.mappings.getMany(
     'page',
@@ -132,7 +146,6 @@ export async function writeTree(
       });
       tree.set(page.id, { id: row.id, path: row.path, title: page.title, created: true });
     }
-    await ctx.progress.advance();
   }
   return tree;
 }

@@ -63,6 +63,12 @@ about appearance lives in the sidebar or the person's menu.
   "Showing 50 of N" for long lists, async options (`LoadOptions`), groups. Never a native
   `<select>`.
 - `Switch` applies at once (settings toggles); `Checkbox` is chosen then saved (forms, selection).
+- `Checkbox indeterminate` is the tri-state select-all over a list: some ticked reads as
+  "mixed" (`aria-checked="mixed"`, the DOM `indeterminate` property) and draws a minus on the
+  accent fill. Story: Components/Controls (Indeterminate).
+- `CheckboxMark` is the checkbox's look without an input, for a listbox option that carries
+  `aria-selected` itself (a list chooser's row); never stand it in for a real `Checkbox`. Story: Components/Controls
+  (Mark).
 - `SegmentedControl` for two to five exclusive views ("All · 8").
 - `Input size="touch"` on the sign-in pages: 40px, and 46px with 16px text under 640px so a
   phone never zooms into the field.
@@ -198,6 +204,19 @@ the frame (`ErrorBoundary` from `@bemmoly/core-web`), with the request id.
   `density` `md` 44px or `sm` 40px; `sort`, `footer`, `empty`, `isMuted` for rows awaiting Undo.
 - Not: a grid of divs with borders, or a second table style. Narrow screens scroll it sideways
   inside its card, never the page.
+
+### VirtualList
+
+`import { VirtualList } from '@bemmoly/ui'` · Story: Components/VirtualList
+([`virtual-list.stories.tsx`](../../../packages/ui/src/components/virtual-list/virtual-list.stories.tsx))
+
+- Use: a list that can hold hundreds or thousands of fixed-height rows (the import chooser's
+  projects): it draws the rows in view plus `overscan`, places each with the `style` it hands
+  `renderRow`, reports the rows in view (`onRangeChange`) for lazy counts and paging, and
+  scrolls a row into view (`ref.scrollToIndex`).
+- The caller gives the semantics (`role="listbox"`, `aria-multiselectable`,
+  `aria-activedescendant`) and the keys; the list is one scroll region inside its card.
+- Not: short lists (render them), rows of varying height, or a page's own scroll.
 
 ### BulkBar and selection
 

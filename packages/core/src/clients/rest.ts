@@ -30,7 +30,10 @@ export interface RestClientOptions {
   sleep?: (ms: number, signal?: AbortSignal) => Promise<void>;
 }
 
-export type RestQuery = Readonly<Record<string, string | number | boolean | undefined>>;
+/** A list value repeats the parameter (keys=A&keys=B), as some APIs take several values. */
+export type RestQuery = Readonly<
+  Record<string, string | number | boolean | readonly string[] | undefined>
+>;
 
 export interface RestClient {
   getJson<T = unknown>(path: string, query?: RestQuery): Promise<T>;
@@ -78,7 +81,11 @@ export function createRestClient(options: RestClientOptions): RestClient {
       : new URL(pathOrUrl.replace(/^\//, ''), base);
     if (url.origin !== base.origin) throw new Error(`${url.origin} is not the source's address`);
     for (const [key, value] of Object.entries(query ?? {})) {
-      if (value !== undefined) url.searchParams.set(key, String(value));
+      if (value === undefined) continue;
+      if (Array.isArray(value)) {
+        url.searchParams.delete(key);
+        for (const item of value as readonly string[]) url.searchParams.append(key, item);
+      } else url.searchParams.set(key, String(value));
     }
     return url;
   }

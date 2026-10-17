@@ -21,9 +21,7 @@ export function FormError({ error }: { error: unknown }) {
   return (
     <FormAlert>
       <span>{message}</span>
-      {requestId ? (
-        <span className="font-mono text-11 opacity-80">Request id {requestId}</span>
-      ) : null}
+      {requestId ? <span className="font-mono text-11">Request id {requestId}</span> : null}
     </FormAlert>
   );
 }

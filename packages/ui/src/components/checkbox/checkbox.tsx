@@ -1,4 +1,4 @@
-import type { InputHTMLAttributes, ReactNode, Ref } from 'react';
+import { useCallback, type InputHTMLAttributes, type ReactNode, type Ref } from 'react';
 import { Icon } from '../../icons/icon.tsx';
 import { cx } from '../../lib/cx.ts';
 import { focusRing } from '../../lib/focus.ts';
@@ -45,26 +45,51 @@ function Labelled({
   );
 }
 
-export type CheckboxProps = ToggleInputProps;
+export interface CheckboxProps extends ToggleInputProps {
+  /**
+   * Some but not all of what it stands for is ticked (a select-all over a list): sets the
+   * input's indeterminate property, reads as "mixed" and draws a minus on the accent fill.
+   */
+  indeterminate?: boolean;
+}
 
-/** Unchecked: 1.5px br-ctl border on the surface. Checked: accent fill with a white tick. */
+function assignRef<T>(ref: Ref<T> | undefined, value: T) {
+  if (typeof ref === 'function') ref(value);
+  else if (ref) ref.current = value;
+}
+
+/**
+ * Unchecked: 1.5px br-ctl border on the surface. Checked: accent fill with a white tick.
+ * Indeterminate: the same fill with a white minus.
+ */
 export function Checkbox({
   size = 'sm',
   label,
   description,
   className,
   disabled,
+  indeterminate = false,
   ref,
   ...rest
 }: CheckboxProps) {
+  const setRef = useCallback(
+    (element: HTMLInputElement | null) => {
+      if (element) element.indeterminate = indeterminate;
+      assignRef(ref, element);
+    },
+    [indeterminate, ref],
+  );
+  const mark = size === 'sm' ? 10 : 12;
   const control = (
     <span className={cx('relative inline-flex shrink-0', BOX[size])}>
       <input
-        ref={ref}
+        ref={setRef}
         type="checkbox"
         disabled={disabled}
+        aria-checked={indeterminate ? 'mixed' : undefined}
         className={cx(
-          'peer m-0 size-full cursor-pointer appearance-none rounded-chip border-[1.5px] border-tx-3 bg-card',
+          'peer m-0 size-full cursor-pointer appearance-none rounded-chip border-[1.5px]',
+          indeterminate ? 'border-acc-fill bg-acc-fill' : 'border-tx-3 bg-card',
           'checked:border-acc-fill checked:bg-acc-fill disabled:cursor-not-allowed disabled:opacity-55',
           focusRing,
           className,
@@ -73,9 +98,12 @@ export function Checkbox({
       />
       <span
         aria-hidden
-        className="pointer-events-none absolute inset-0 hidden items-center justify-center text-on-acc peer-checked:flex"
+        className={cx(
+          'pointer-events-none absolute inset-0 items-center justify-center text-on-acc',
+          indeterminate ? 'flex' : 'hidden peer-checked:flex',
+        )}
       >
-        <Icon name="check" size={size === 'sm' ? 10 : 12} />
+        <Icon name={indeterminate ? 'minus' : 'check'} size={mark} />
       </span>
     </span>
   );
@@ -101,4 +129,30 @@ export function Radio({ label, description, className, disabled, ref, ...rest }:
     />
   );
   return <Labelled control={control} label={label} description={description} disabled={disabled} />;
+}
+
+export interface CheckboxMarkProps {
+  checked: boolean;
+  disabled?: boolean;
+  size?: CheckSize;
+}
+
+/**
+ * The checkbox's look with no input behind it, for a listbox option whose aria-selected
+ * already says it is ticked: a control inside an option would be nested-interactive.
+ */
+export function CheckboxMark({ checked, disabled = false, size = 'sm' }: CheckboxMarkProps) {
+  return (
+    <span
+      aria-hidden
+      className={cx(
+        'inline-flex shrink-0 items-center justify-center rounded-chip border-[1.5px] text-on-acc',
+        BOX[size],
+        checked ? 'border-acc-fill bg-acc-fill' : 'border-tx-3 bg-card',
+        disabled && 'opacity-55',
+      )}
+    >
+      {checked ? <Icon name="check" size={size === 'sm' ? 10 : 12} /> : null}
+    </span>
+  );
 }

@@ -7,6 +7,8 @@ import type {
   JiraComponent,
   JiraDeployment,
   JiraField,
+  JiraHistory,
+  JiraIssue,
   JiraIssuePage,
   JiraProject,
   JiraSprint,
@@ -87,10 +89,35 @@ export function createJiraClient(options: JiraClientOptions) {
       rest.getJson<{ baseUrl?: string; version?: string; deploymentType?: string }>(
         `${api}/serverInfo`,
       ),
-    projects: () =>
+    /**
+     * Every project the token lists. On Cloud `browse` narrows the list to projects whose
+     * issues it can read; the default lists those it can merely see.
+     */
+    projects: (action?: 'browse') =>
       cloud
-        ? all<JiraProject>(`${api}/project/search`, { expand: 'description,lead' })
+        ? all<JiraProject>(`${api}/project/search`, {
+            expand: 'description,lead',
+            ...(action ? { action } : {}),
+          })
         : rest.getJson<JiraProject[]>(`${api}/project`, { expand: 'description,lead' }),
+    /**
+     * Issue totals for up to 50 projects in one call, from Cloud's expand=insight. Jira marks
+     * insight experimental, so a project without it is counted another way by the caller.
+     */
+    async insightCounts(keys: readonly string[]): Promise<Map<string, number>> {
+      const found = new Map<string, number>();
+      if (!cloud || !keys.length) return found;
+      const page = await rest.getJson<Paged<JiraProject>>(`${api}/project/search`, {
+        keys: [...keys],
+        expand: 'insight',
+        maxResults: 50,
+      });
+      for (const project of page.values ?? []) {
+        const total = project.insight?.totalIssueCount;
+        if (typeof total === 'number' && total >= 0) found.set(project.key, total);
+      }
+      return found;
+    },
     project: (key: string) =>
       rest.getJson<JiraProject>(`${api}/project/${encodeURIComponent(key)}`, {
         expand: 'description,lead,issueTypes',
@@ -98,6 +125,9 @@ export function createJiraClient(options: JiraClientOptions) {
     statuses: (key: string) =>
       rest.getJson<JiraTypeStatuses[]>(`${api}/project/${encodeURIComponent(key)}/statuses`),
     fields: () => rest.getJson<JiraField[]>(`${api}/field`),
+    /** People who can be assigned issues in a project: who the plan's people pass lists. */
+    assignable: (key: string) =>
+      rest.getJson<JiraUser[]>(`${api}/user/assignable/search`, { project: key, maxResults: 1000 }),
     versions: (key: string) =>
       rest.getJson<JiraVersion[]>(`${api}/project/${encodeURIComponent(key)}/versions`),
     components: (key: string) =>
@@ -116,7 +146,11 @@ export function createJiraClient(options: JiraClientOptions) {
       return page.total ?? 0;
     },
 
-    async searchIssues(jql: string, cursor: string | null): Promise<JiraIssuePage> {
+    async searchIssues(
+      jql: string,
+      cursor: string | null,
+      options: { changelog?: boolean } = {},
+    ): Promise<JiraIssuePage> {
       if (cloud) {
         const page = await rest.getJson<{
           issues?: JiraIssuePage['issues'];
@@ -135,7 +169,13 @@ export function createJiraClient(options: JiraClientOptions) {
       const startAt = cursor ? Number(cursor) : 0;
       const page = await rest.getJson<{ issues?: JiraIssuePage['issues']; total?: number }>(
         `${api}/search`,
-        { jql, startAt, maxResults: ISSUE_PAGE_SIZE, fields: '*all' },
+        {
+          jql,
+          startAt,
+          maxResults: ISSUE_PAGE_SIZE,
+          fields: '*all',
+          ...(options.changelog ? { expand: 'changelog' } : {}),
+        },
       );
       const issues = page.issues ?? [];
       const reached = startAt + issues.length;
@@ -143,6 +183,39 @@ export function createJiraClient(options: JiraClientOptions) {
         issues,
         next: issues.length && reached < (page.total ?? 0) ? String(reached) : null,
       };
+    },
+
+    /**
+     * The change history of these issues, by issue id. Cloud reads it in bulk (changelog
+     * bulkfetch, up to 1,000 issues a call); Data Center has it on the issues already, from
+     * search's expand=changelog.
+     */
+    async changelogs(issues: readonly JiraIssue[]): Promise<Map<string, JiraHistory[]>> {
+      if (!cloud) {
+        return new Map(issues.map((issue) => [issue.id, issue.changelog?.histories ?? []]));
+      }
+      const found = new Map<string, JiraHistory[]>();
+      if (!issues.length) return found;
+      let token: string | undefined;
+      do {
+        const page = await rest.postJson<{
+          issueChangeLogs?: { issueId?: string; changeHistories?: JiraHistory[] }[];
+          nextPageToken?: string | null;
+        }>(`${api}/changelog/bulkfetch`, {
+          issueIdsOrKeys: issues.map((issue) => issue.id),
+          maxResults: 1000,
+          ...(token ? { nextPageToken: token } : {}),
+        });
+        for (const entry of page.issueChangeLogs ?? []) {
+          if (!entry.issueId) continue;
+          found.set(entry.issueId, [
+            ...(found.get(entry.issueId) ?? []),
+            ...(entry.changeHistories ?? []),
+          ]);
+        }
+        token = page.nextPageToken ?? undefined;
+      } while (token);
+      return found;
     },
 
     /** Every comment of an issue, for issues whose embedded list was cut short. */
