@@ -1,3 +1,4 @@
+import { abortOnClose } from '@bemmoly/core';
 import { parseOrThrow, ValidationError } from '@bemmoly/shared';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import {
@@ -60,9 +61,9 @@ export function createRunnerController(service: RunnerService) {
     },
     async claim(request: FastifyRequest, reply: FastifyReply) {
       const body = parseOrThrow(claimBodySchema, request.body ?? {});
-      const aborted = new AbortController();
-      request.raw.once('close', () => aborted.abort());
-      const job = await service.claim(runnerToken(request), body, aborted.signal);
+      // The response, not the request: Node closes a request once its body is read, which would
+      // end every long poll at once and send the runner straight back for another claim.
+      const job = await service.claim(runnerToken(request), body, abortOnClose(reply));
       if (!job) return reply.code(204).send();
       return { job };
     },

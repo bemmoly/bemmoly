@@ -25,6 +25,7 @@ export interface AgentDeps {
 }
 
 const CLAIM_WAIT_SECONDS = 30;
+const EARLY_EMPTY_MS = 1_000;
 
 /**
  * The runner's life: register, then claim one job at a time while heartbeating. A heartbeat can
@@ -99,9 +100,16 @@ export class Agent {
     const wait = this.deps.claimWaitSeconds ?? CLAIM_WAIT_SECONDS;
     for (let failures = 0; !this.stopping && !this.draining; failures++) {
       try {
-        return await this.withRunnerToken((token) =>
+        const asked = Date.now();
+        const job = await this.withRunnerToken((token) =>
           this.deps.client.claim(token, wait, this.claimAbort.signal),
         );
+        // An empty answer well before the wait it asked for means the server did not hold the
+        // poll: pause instead of asking again at once, so a fault there never becomes a flood.
+        if (!job && wait > 0 && Date.now() - asked < EARLY_EMPTY_MS) {
+          await sleep(EARLY_EMPTY_MS, this.claimAbort.signal);
+        }
+        return job;
       } catch (error) {
         if (this.claimAbort.signal.aborted) return null;
         if (!(error instanceof ProviderError)) throw error;

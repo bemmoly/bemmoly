@@ -73,4 +73,24 @@ describe('runner protocol over HTTP', () => {
     );
     expect(stranger.statusCode).toBe(401);
   });
+
+  it('holds an empty claim open for its wait over a real connection', async (ctx) => {
+    if (!harness) return ctx.skip(reason);
+    const registered = await post('/register', { poolToken, name: 'poll', version: '0.1.0' });
+    const token = registered.json().runnerToken as string;
+    const address = await app.listen({ port: 0, host: '127.0.0.1' });
+    const started = Date.now();
+    const response = await fetch(`${address}/api/v1/runner/claims`, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'x-bemmoly-runner-protocol': '1',
+        'x-bemmoly-runner-token': token,
+      },
+      body: JSON.stringify({ waitSeconds: 1 }),
+    });
+    expect(response.status).toBe(204);
+    // A request's own "close" fires once its body is read; the poll must not end there.
+    expect(Date.now() - started).toBeGreaterThanOrEqual(900);
+  });
 });
