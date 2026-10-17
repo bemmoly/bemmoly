@@ -1,5 +1,5 @@
 import { spawn } from 'node:child_process';
-import type { Readable, Writable } from 'node:stream';
+import { Writable, type Duplex, type Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 
 export interface RunOptions {
@@ -9,8 +9,11 @@ export interface RunOptions {
   signal?: AbortSignal;
   /** Piped to the child's stdin. */
   stdin?: Readable;
-  /** Receives stdout; otherwise it is collected and returned. */
-  stdout?: Writable;
+  /**
+   * Receives stdout; otherwise it is collected and returned. A chain such as [digest, file]
+   * runs as one pipeline, so every stage ends, fails and closes together.
+   */
+  stdout?: Writable | readonly [Duplex, ...Duplex[], Writable];
 }
 
 export interface RunResult {
@@ -69,14 +72,19 @@ export async function runProcess(
     env: options.env ?? {},
     cwd: options.cwd,
     signal: AbortSignal.any(signals),
+    shell: false,
     stdio: ['pipe', 'pipe', 'pipe'],
   });
   const out = { text: '' };
   const err = { text: '' };
   capture(child.stderr, err);
   const piping: Promise<void>[] = [];
-  if (options.stdout) piping.push(pipeline(child.stdout, options.stdout));
-  else capture(child.stdout, out);
+  if (options.stdout) {
+    const sink: readonly Writable[] =
+      options.stdout instanceof Writable ? [options.stdout] : options.stdout;
+    // The stream types take a fixed shape; the chain is checked by RunOptions instead.
+    piping.push(pipeline([child.stdout, ...sink] as unknown as [Readable, Writable]));
+  } else capture(child.stdout, out);
   if (options.stdin) piping.push(pipeline(options.stdin, child.stdin).catch(leftEarly));
   else child.stdin.end();
 

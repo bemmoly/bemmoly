@@ -21,7 +21,8 @@ const arbitraryColor = new RegExp(
   `^(?:\\S*:)?!?-?[a-z][\\w-]*-\\[(?:#[0-9a-f]{3,8}|${COLOR_FUNCTION}|color:)`,
   'i',
 );
-const arbitrarySize = /^(?:\S*:)?!?text-\[(?:length:)?\d*\.?\d+(?:px|rem|em|pt|vw|vh)\]$/i;
+const arbitrarySize =
+  /^(?:\S*:)?!?text-\[(?:length:)?(?:\d+(?:\.\d+)?|\.\d+)(?:px|rem|em|pt|vw|vh)\]$/i;
 
 /** @type {import('eslint').Rule.RuleModule} */
 export const noLiteralStyles = {

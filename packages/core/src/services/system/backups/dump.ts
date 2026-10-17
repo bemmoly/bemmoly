@@ -46,13 +46,9 @@ export async function dumpDatabase(
     const rowCounts = await countKeyTables(tx);
     const digest = createDigestStream();
     const out = createWriteStream(file, { mode: 0o640 });
-    const writing = new Promise<void>((resolve, reject) => {
-      out.once('finish', resolve);
-      out.once('error', reject);
-    });
-    digest.pipe(out);
-    await pgTools.dump(databaseUrl, digest, snapshot?.id ? { snapshot: snapshot.id } : {});
-    await writing;
+    // One pipeline for every stage: a separate digest.pipe(out) left the digest's end and the
+    // file's finish racing pipeline's own close checks, which failed on Linux runners (#15).
+    await pgTools.dump(databaseUrl, [digest, out], snapshot?.id ? { snapshot: snapshot.id } : {});
     return {
       ...digest.digest(),
       serverVersion: version?.server_version ?? 'unknown',

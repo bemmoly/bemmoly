@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { hrefsOf, idsOf, parsePage, scriptsOf } from './dom.ts';
+import { hrefsOf, idsOf, parsePage, removeAll, scriptsOf, withoutScripts } from './dom.ts';
 
 describe('page parsing for the site checks', () => {
   it('finds scripts whatever the tag case or end-tag spacing', () => {
@@ -29,5 +29,12 @@ describe('page parsing for the site checks', () => {
     for (const { body } of inline) {
       expect(index).toContain(`>${body}</script>`);
     }
+  });
+});
+
+describe('removeAll', () => {
+  it('removes a match that an earlier removal put together', () => {
+    expect(removeAll('<!<!-- a -->-- b -->c', /<!--[\s\S]*?-->/g)).toBe('c');
+    expect(withoutScripts('<scr<script></script>ipt>x</script>y')).toBe('y');
   });
 });

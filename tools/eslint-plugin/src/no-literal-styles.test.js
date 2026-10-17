@@ -31,6 +31,7 @@ tester.run('bemmoly/no-literal-styles', noLiteralStyles, {
     "const cls = 'rounded-[2px] tracking-[-0.01em]';",
     "const cls = 'shadow-[inset_0_0_0_1px_var(--line)]';",
     "const cls = 'text-[length:var(--text-base)]';",
+    `const cls = 'text-[${'0'.repeat(50_000)}x]';`,
     "import x from './colors-#fff.ts';",
     'const style = { color: `var(--${tone})` };',
     "const id = '#main';",
@@ -63,6 +64,7 @@ tester.run('bemmoly/no-literal-styles', noLiteralStyles, {
       errors: [size('text-[28px]')],
     },
     { code: 'const cls = `md:text-[0.8rem] ${extra}`;', errors: [size('md:text-[0.8rem]')] },
+    { code: "const cls = 'text-[.75em]';", errors: [size('text-[.75em]')] },
     {
       code: 'const a = <h1 className="text-[36px] bg-[#fff]" />;',
       options: [{ sizes: false }],
