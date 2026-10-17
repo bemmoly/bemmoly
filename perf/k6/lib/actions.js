@@ -45,7 +45,8 @@ function boardHolds(response, cards) {
   const body = response.json();
   const columns = body?.columns ?? [];
   const shown = new Map();
-  for (const card of body?.cards ?? []) shown.set(card.columnId, (shown.get(card.columnId) ?? 0) + 1);
+  for (const card of body?.cards ?? [])
+    shown.set(card.columnId, (shown.get(card.columnId) ?? 0) + 1);
   const total = columns.reduce((sum, column) => sum + column.count, 0);
   return (
     total === cards &&
