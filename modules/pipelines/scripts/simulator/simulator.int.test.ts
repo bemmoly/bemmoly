@@ -83,6 +83,7 @@ describe('the demo simulator', () => {
       'application/promotion.updated',
       'for-you/for-you.changed',
       'capacity/capacity.updated',
+      'job/log.appended',
     ]) {
       expect(topics, expected).toContain(expected);
     }

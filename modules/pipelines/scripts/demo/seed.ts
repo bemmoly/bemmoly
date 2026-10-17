@@ -1,4 +1,5 @@
 import type { SqlClient } from '@bemmoly/core';
+import type { LogObjects } from '../../server/src/services/logs/store.ts';
 import { insertMany } from './bulk.ts';
 import { seedCatalog } from './catalog.ts';
 import { seedDeployments } from './deploys.ts';
@@ -6,6 +7,7 @@ import { seedForYou } from './foryou.ts';
 import { seedCi } from './ci.ts';
 import { seedGovernance } from './governance.ts';
 import { seedHistory } from './history.ts';
+import { seedJobLogs } from './job-logs.ts';
 import { seedIdentityRollback, seedOtherChanges } from './incidents.ts';
 import { seedLiveJobs, seedMoving, writeCurrent } from './live.ts';
 import type { LiveState } from './make.ts';
@@ -21,6 +23,8 @@ export interface SeedOptions {
   /** 1 seeds the full Acme (1,140 applications, 30 days); tests pass a small fraction. */
   scale?: number;
   log?: (line: string) => void;
+  /** Where job logs go; the server's object store. Without one they stay in this process. */
+  objects?: LogObjects;
 }
 
 /** The same seed every time, so two runs draw the same company. */
@@ -60,5 +64,7 @@ export async function seedDemo(sql: SqlClient, options: SeedOptions = {}) {
   await seedOtherChanges(world);
   await computeRollups(world);
   await creditShippedWork(world);
+  const logged = await seedJobLogs(sql, options.objects, Math.max(20, Math.round(300 * scale)));
+  log(`logs and test results for ${logged.jobs} jobs (${logged.chunks} chunks)`);
   return { demo: people.demo };
 }

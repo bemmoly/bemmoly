@@ -13,7 +13,7 @@
  */
 import { parseArgs } from 'node:util';
 import { createSqlClient } from '@bemmoly/core';
-import { loadSeedConfig } from './demo/config.ts';
+import { loadPipelinesObjects, loadSeedConfig } from './demo/config.ts';
 import { createSimulator, describe } from './simulator/index.ts';
 
 const { values } = parseArgs({
@@ -55,6 +55,7 @@ process.on('SIGTERM', stop);
 try {
   const simulator = await createSimulator(sql, {
     seed,
+    objects: await loadPipelinesObjects(sql),
     ...(runs !== undefined ? { limits: { runs } } : {}),
   });
   const { state, limits } = simulator;

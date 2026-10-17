@@ -1,6 +1,8 @@
 import type { SqlClient, SqlExecutor } from '@bemmoly/core';
+import type { LogObjects } from '../../server/src/services/logs/store.ts';
 import { createRng } from '../demo/rng.ts';
 import { finishJobRows, releaseRows, startJobRows, startRunRows } from './execute-runs.ts';
+import { createJobLogWriter } from './execute-logs.ts';
 import { executeShipping } from './execute-ship.ts';
 import { loadCatalog, loadState } from './load.ts';
 import type { Action, SimCatalog, SimLimits, SimState } from './model.ts';
@@ -18,6 +20,8 @@ export interface SimulatorOptions {
   seed: number;
   /** Overrides for how much moves at once; the default follows what the seed left running. */
   limits?: Partial<SimLimits>;
+  /** Where job logs go: the server's object store. Without one they stay in this process. */
+  objects?: LogObjects;
   /** The clock; tests pass a fake one. */
   now?: () => Date;
 }
@@ -25,7 +29,15 @@ export interface SimulatorOptions {
 /** Marks an action the database refused because someone else moved its rows. */
 class Stale extends Error {}
 
-async function apply(tx: SqlExecutor, catalog: SimCatalog, action: Action, now: Date) {
+type LogWriter = ReturnType<typeof createJobLogWriter>;
+
+async function apply(
+  tx: SqlExecutor,
+  catalog: SimCatalog,
+  writeLog: LogWriter,
+  action: Action,
+  now: Date,
+) {
   switch (action.kind) {
     case 'idle':
       return true;
@@ -35,6 +47,7 @@ async function apply(tx: SqlExecutor, catalog: SimCatalog, action: Action, now: 
       return startJobRows(tx, action);
     case 'job.finish':
       if (!(await finishJobRows(tx, catalog, action))) return false;
+      await writeLog(tx, action.jobId);
       if (await releaseRows(tx, catalog, action)) await executeShipping(tx, action, now);
       return true;
     default:
@@ -61,6 +74,7 @@ export async function createSimulator(sql: SqlClient, options: SimulatorOptions)
     ...options.limits,
   };
   const planner = createPlanner(catalog, options.seed, limits);
+  const writeLog = createJobLogWriter(options.objects);
 
   return {
     catalog,
@@ -73,7 +87,7 @@ export async function createSimulator(sql: SqlClient, options: SimulatorOptions)
       if (action.kind === 'idle') return { action, applied: true };
       try {
         await sql.begin(async (tx) => {
-          if (!(await apply(tx, catalog, action, now))) throw new Stale();
+          if (!(await apply(tx, catalog, writeLog, action, now))) throw new Stale();
         });
         return { action, applied: true };
       } catch (error) {

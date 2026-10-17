@@ -8,7 +8,7 @@
  */
 import { parseArgs } from 'node:util';
 import { createSqlClient } from '@bemmoly/core';
-import { loadSeedConfig } from './demo/config.ts';
+import { loadPipelinesObjects, loadSeedConfig } from './demo/config.ts';
 import { hasCatalog, resetDemo } from './demo/reset.ts';
 import { seedDemo } from './demo/seed.ts';
 
@@ -53,7 +53,8 @@ try {
       await resetDemo(sql);
       log('cleared the previous demo');
     }
-    const { demo } = await seedDemo(sql, { scale, log });
+    const objects = await loadPipelinesObjects(sql);
+    const { demo } = await seedDemo(sql, { scale, log, objects });
     log(`done. For you belongs to ${demo.name}.`);
   }
 } finally {

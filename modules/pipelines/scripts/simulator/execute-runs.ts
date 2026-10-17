@@ -19,7 +19,6 @@ type JobStart = Extract<Action, { kind: 'job.start' }>;
 type JobFinish = Extract<Action, { kind: 'job.finish' }>;
 
 const PASSED = { total: 120, passed: 118, failed: 0, skipped: 2 };
-const FAILED = { total: 120, passed: 116, failed: 2, skipped: 2 };
 
 const STEPS = ['Check out', 'Restore cache', 'Run', 'Save cache'] as const;
 
@@ -119,8 +118,7 @@ export async function finishJobRows(tx: SqlExecutor, catalog: SimCatalog, action
   const [job] = await tx<{ runner_id: string | null; kind: string }[]>`
     update pipeline_jobs set state = ${state}, finished_at = now(),
       started_at = coalesce(started_at, now()), updated_at = now(),
-      failure_summary = ${action.passed ? null : '2 tests failed'},
-      test_summary = ${JSON.stringify(action.passed ? PASSED : FAILED)}::jsonb
+      failure_summary = ${action.passed ? null : 'The job failed'}
     where id = ${action.jobId} and state in ('claimed', 'running') and token_hash is null
     returning runner_id, kind`;
   if (!job) return false;
