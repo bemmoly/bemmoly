@@ -46,7 +46,12 @@ function parseJson(text: string): unknown {
   }
 }
 
-const trimSlashes = (url: string) => url.replace(/\/+$/, '');
+/** Without trailing slashes; a loop, since a pattern over the whole address can backtrack. */
+function trimSlashes(url: string): string {
+  let end = url.length;
+  while (end > 0 && url[end - 1] === '/') end -= 1;
+  return url.slice(0, end);
+}
 
 export function createHttp(options: HttpOptions): Http {
   const baseUrl = trimSlashes(options.baseUrl);

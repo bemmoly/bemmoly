@@ -24,6 +24,7 @@
   },
   "dependencies": {
     "@bemmoly/module-pipelines": "workspace:*",
+    "@xmldom/xmldom": "0.8.15",
     "yaml": "2.8.3",
     "zod": "4.6.5"
   },

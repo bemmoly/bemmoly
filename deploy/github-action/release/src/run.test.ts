@@ -50,7 +50,7 @@ function harness() {
     const url = String(input);
     const headers = Object.fromEntries(new Headers(init?.headers).entries());
     calls.push({ url, headers, body: init?.body ? JSON.parse(String(init.body)) : undefined });
-    if (url.startsWith('https://token.actions.test')) {
+    if (new URL(url).host === 'token.actions.test') {
       return Response.json({ value: 'eyJhbGciOiJSUzI1NiJ9.workflow-oidc-token' });
     }
     return Response.json(release, { status: 201 });
