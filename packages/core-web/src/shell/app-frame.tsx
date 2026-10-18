@@ -8,6 +8,15 @@ import { FrameContext, type FrameState, type SidebarMode } from './frame-context
 export const NARROW = 1100;
 export const PHONE = 768;
 
+/** The docked sidebar's width: 240px unless the person drags its edge, within these bounds. */
+export const SIDEBAR_WIDTH = 240;
+export const SIDEBAR_MIN = 200;
+export const SIDEBAR_MAX = 420;
+const KEY_STEP = 16;
+
+const clampWidth = (width: number) =>
+  Math.round(Math.min(SIDEBAR_MAX, Math.max(SIDEBAR_MIN, width)));
+
 function useMatches(query: string): boolean {
   return useSyncExternalStore(
     (listener) => {
@@ -27,6 +36,9 @@ export interface AppFrameProps {
   /** The person's own choice to keep the sidebar folded to the rail ([). */
   collapsed: boolean;
   onCollapsedChange: (collapsed: boolean) => void;
+  /** The person's own width for the docked sidebar, set by dragging its edge. */
+  width?: number;
+  onWidthChange?: (width: number) => void;
   /** The sidebar's contents; they read the mode they are drawn in from useFrame(). */
   sidebar: ReactNode;
   /** The phone's bottom bar. */
@@ -37,6 +49,79 @@ export interface AppFrameProps {
 }
 
 const ASIDE = 'flex min-h-0 shrink-0 flex-col border-e border-line bg-side';
+
+/**
+ * The docked sidebar's edge: hover shows a line, dragging sets the width (kept when the drag
+ * ends), arrow keys step it, and a double click goes back to 240px.
+ */
+function ResizeHandle({
+  width,
+  onLive,
+  onCommit,
+}: {
+  width: number;
+  onLive: (width: number | null) => void;
+  onCommit: (width: number) => void;
+}) {
+  const t = useT(core);
+  const [dragging, setDragging] = useState(false);
+  return (
+    <div
+      role="separator"
+      aria-orientation="vertical"
+      aria-label={t('core.frame.resize')}
+      aria-valuemin={SIDEBAR_MIN}
+      aria-valuemax={SIDEBAR_MAX}
+      aria-valuenow={width}
+      tabIndex={0}
+      data-dragging={dragging || undefined}
+      className="group absolute inset-y-0 -end-1 z-10 w-2 cursor-col-resize touch-none outline-none select-none"
+      onPointerDown={(event) => {
+        if (event.button !== 0) return;
+        event.preventDefault();
+        const handle = event.currentTarget;
+        handle.setPointerCapture(event.pointerId);
+        const startX = event.clientX;
+        const rtl = getComputedStyle(handle).direction === 'rtl';
+        let next = width;
+        setDragging(true);
+        const onMove = (move: PointerEvent) => {
+          const delta = (move.clientX - startX) * (rtl ? -1 : 1);
+          next = clampWidth(width + delta);
+          onLive(next);
+        };
+        const onUp = () => {
+          handle.removeEventListener('pointermove', onMove);
+          handle.removeEventListener('pointerup', onUp);
+          handle.removeEventListener('pointercancel', onUp);
+          setDragging(false);
+          onLive(null);
+          if (next !== width) onCommit(next);
+        };
+        handle.addEventListener('pointermove', onMove);
+        handle.addEventListener('pointerup', onUp);
+        handle.addEventListener('pointercancel', onUp);
+      }}
+      onDoubleClick={() => onCommit(SIDEBAR_WIDTH)}
+      onKeyDown={(event) => {
+        const step =
+          event.key === 'ArrowRight' ? KEY_STEP : event.key === 'ArrowLeft' ? -KEY_STEP : 0;
+        if (step) {
+          event.preventDefault();
+          onCommit(clampWidth(width + step));
+        } else if (event.key === 'Home' || event.key === 'End') {
+          event.preventDefault();
+          onCommit(event.key === 'Home' ? SIDEBAR_MIN : SIDEBAR_MAX);
+        }
+      }}
+    >
+      <span
+        aria-hidden
+        className="pointer-events-none absolute inset-y-0 start-1/2 w-0.5 -translate-x-1/2 bg-acc-500 opacity-0 transition-opacity duration-fast group-hover:opacity-100 group-focus-visible:opacity-100 group-data-[dragging]:opacity-100"
+      />
+    </div>
+  );
+}
 
 /** The id the skip link lands on: the page, past the sidebar. */
 export const MAIN_ID = 'main';
@@ -90,7 +175,7 @@ function SidebarSheet({
 
 /**
  * The one frame every signed-in screen sits in (docs/design/premium/kit.js, `frame`): the
- * 240px sidebar, then the page. The sidebar folds to the 56px rail on [ (remembered per
+ * 240px sidebar (or the width the person dragged it to), then the page. The sidebar folds to the 56px rail on [ (remembered per
  * person) and by itself below 1100px, where [ unfolds it over the page instead of pushing the
  * page aside. Below 768px it becomes a sheet behind the header's menu button and a bottom bar
  * takes its place.
@@ -100,6 +185,8 @@ export function AppFrame({
   navigate,
   collapsed,
   onCollapsedChange,
+  width: savedWidth = SIDEBAR_WIDTH,
+  onWidthChange,
   sidebar,
   bottomBar,
   workspaceName,
@@ -110,6 +197,8 @@ export function AppFrame({
   const narrow = useMatches(`(max-width: ${NARROW - 1}px)`);
   const [sheet, setSheet] = useState(false);
   const [peek, setPeek] = useState(false);
+  const [liveWidth, setLiveWidth] = useState<number | null>(null);
+  const width = liveWidth ?? clampWidth(savedWidth);
   const peekRef = useRef<HTMLDivElement>(null);
 
   // Going somewhere closes the sheet and the unfolded sidebar.
@@ -165,9 +254,13 @@ export function AppFrame({
           {phone ? null : (
             <aside
               aria-label={t('core.frame.sidebar')}
-              className={`${ASIDE} ${docked === 'rail' ? 'w-14 items-center px-0 pt-3 pb-2.5' : 'w-60 px-2 pt-2.5 pb-2'}`}
+              className={`${ASIDE} relative ${docked === 'rail' ? 'w-14 items-center px-0 pt-3 pb-2.5' : 'px-2 pt-2.5 pb-2'}`}
+              style={docked === 'rail' ? undefined : { width }}
             >
               {sidebar}
+              {docked === 'full' && onWidthChange ? (
+                <ResizeHandle width={width} onLive={setLiveWidth} onCommit={onWidthChange} />
+              ) : null}
             </aside>
           )}
           {!phone && narrow && peek ? (

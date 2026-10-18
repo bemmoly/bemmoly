@@ -1,6 +1,7 @@
 {
   "core.frame.menu": "Menu",
   "core.frame.quickNavigation": "Quick navigation",
+  "core.frame.resize": "Resize sidebar",
   "core.frame.sidebar": "Sidebar",
   "core.frame.skip": "Skip to content",
   "core.frame.unread": "{label}, {count} unread",
