@@ -18,33 +18,40 @@ const BOARD_FOLLOWS = new Set<string>([WORK_REALTIME_KINDS.issue, WORK_REALTIME_
  * The event kinds seen in the last moment, invalidated together: a bulk change of thirty issues
  * sends sixty events, and each list it touches is read once, not sixty times.
  */
-function createGatherer(client: QueryClient) {
+export function createGatherer(client: QueryClient) {
   const kinds = new Set<string>();
+  // Kinds seen only in events about another project leave this project's board alone.
+  const boardKinds = new Set<string>();
   let timer: ReturnType<typeof setTimeout> | null = null;
   const run = () => {
     timer = null;
     const moving = client.isMutating({ mutationKey: workKeys.boardMoves() }) > 0;
     const seen = [...kinds];
+    const board = new Set(boardKinds);
     kinds.clear();
+    boardKinds.clear();
     void client.invalidateQueries({
       queryKey: workKeys.all(),
       predicate: (query) =>
         seen.some((kind) => {
           // The board follows issue and board events card by card (hooks/board-live.ts).
-          if (BOARD_FOLLOWS.has(kind) && query.queryKey[1] === 'board-view') return false;
+          if (query.queryKey[1] === 'board-view' && (BOARD_FOLLOWS.has(kind) || !board.has(kind)))
+            return false;
           return changedBy(kind, query.queryKey, moving);
         }),
     });
   };
   return {
-    add(kind: string) {
+    add(kind: string, touchesBoard = true) {
       kinds.add(kind);
+      if (touchesBoard) boardKinds.add(kind);
       timer ??= setTimeout(run, REALTIME_GATHER_MS);
     },
     dispose() {
       if (timer !== null) clearTimeout(timer);
       timer = null;
       kinds.clear();
+      boardKinds.clear();
     },
   };
 }
@@ -73,10 +80,16 @@ export function useWorkRealtime(projectId: string | undefined) {
         return;
       }
       if (!event.kind.startsWith('work.')) return;
-      gatherer.add(event.kind);
+      // Someone is added to or removed from every project they join on their own scope, so a
+      // shared member's socket hears about projects this screen does not show.
+      const elsewhere =
+        event.kind === WORK_REALTIME_KINDS.members &&
+        event.projectId !== projectId &&
+        !(projectId && event.ids.includes(projectId));
+      gatherer.add(event.kind, !elsewhere);
       live?.take(event.kind, event.ids);
     },
-    [queryClient, gatherer, live],
+    [queryClient, gatherer, live, projectId],
   );
   const scopes: RealtimeScope[] = projectId ? [{ kind: 'project', id: projectId }] : [];
   return useRealtime({ url: realtimeUrl(), scopes, enabled: Boolean(projectId), onEvent });
