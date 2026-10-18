@@ -100,8 +100,8 @@ jobs:
           for attempt in 1 2 3; do
             answer="$(curl --fail-with-body --silent --show-error --max-time 60 --retry 3 --retry-all-errors \
               -X POST -H "Authorization: Bearer $TOKEN" "$url")"
-            echo "$answer"
             id="$(printf '%s' "$answer" | jq -r '.deployments[0].deployment_uuid // empty')"
+            echo "Coolify queued deployment ${id:-?} (attempt $attempt)."
             if [ -z "$id" ]; then
               echo "::error title=No deployment::Coolify did not name a deployment."
               exit 1
@@ -116,16 +116,16 @@ jobs:
                 failed | cancelled*) break ;;
               esac
             done
-            echo "::warning title=Deployment $status::Coolify deployment $id ended $status (attempt $attempt)."
-            printf '%s' "$detail" | jq -r '.logs // empty' 2>/dev/null \
-              | jq -r '.[]? | select(.hidden != true) | .output' 2>/dev/null | tail -40 || true
+            # Only the id and status: this repository's logs are public, and Coolify's build log
+            # can carry build-time values. The log itself is in Coolify, under that deployment.
+            echo "::warning title=Deployment $status::Coolify deployment $id ended $status (attempt $attempt); its log is in Coolify."
             case "$DEPLOY_URL" in
               *force=*) url="$(printf '%s' "$DEPLOY_URL" | sed -E 's/force=[a-z]+/force=true/')" ;;
               *\?*) url="$DEPLOY_URL&force=true" ;;
               *) url="$DEPLOY_URL?force=true" ;;
             esac
           done
-          echo "::error title=Site not redeployed::Coolify failed to deploy the site three times; its log is above."
+          echo "::error title=Site not redeployed::Coolify failed to deploy the site three times; the deployments named above have their logs in Coolify."
           exit 1
 
       # llms.txt names the site's version in one sentence (apps/site/src/pages/llms.txt.ts).
