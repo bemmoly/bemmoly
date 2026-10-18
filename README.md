@@ -40,53 +40,6 @@ app.
 - **No in-app purchases.** Nothing in the app is locked or upsold. The Buy Me a Coffee button
   on this repository is an optional way to support the project, and it unlocks nothing.
 
-## What ships in 1.0
-
-- **Work**: projects with members, issues with types, custom fields and history, workflows with
-  a visual editor, Kanban and Scrum boards, the backlog and sprints, LQL and saved filters,
-  "My work" on Home, a roadmap of epics and versions on a timeline with a forecast from your
-  team's own pace, and automation rules (a trigger, LQL conditions and actions, with a run log).
-- **Docs**: spaces and a page tree, a live collaborative editor with named cursors, revisions,
-  comments, images uploaded by paste, drop or the / menu, issue links that show live status,
-  Markdown folder import, and export to Markdown and HTML, or to PDF with the optional PDF
-  renderer (otherwise through the browser's print view).
-- **Imports**: an admin opens Settings › Import (or the setup wizard's import step), picks Import
-  from Jira, Import from Confluence or a CSV file, and sees what the site holds and how issue
-  types, statuses and custom fields will land before anything is written. Jira Cloud and Data
-  Center bring projects, issues, comments, attachments, boards and sprints into Work; Confluence
-  Cloud, Data Center or a space export bring spaces, page trees, comments and attachments into
-  Docs. The import runs in the background with live progress, can be cancelled, is safe to run
-  again, and ends with a report of what was created, updated and skipped.
-- **AI, optional**: off until an admin turns it on, and nothing changes for a workspace that
-  leaves it off. Bring any provider in the [models.dev](https://models.dev) catalog, a gateway,
-  or a model running on your own network. Then Bemmoly summarises issues, sprints and pages with
-  the source of every claim, answers questions from your docs with citations, suggests and edits
-  text in the doc editor, and turns a request in ⌘K into a plan of changes that runs only when
-  you confirm it. Admins choose what content is sent, which spaces and projects are excluded,
-  and a monthly budget.
-- **Single sign-on and SCIM**: any OpenID Connect provider through its discovery URL, or SAML
-  2.0 with signed assertions. People are created on first sign-in, linked by verified email and
-  placed in roles and teams from their groups; an admin can require single sign-on for everyone,
-  with break-glass admins kept. SCIM 2.0 at `/scim/v2` creates, updates and deactivates people
-  and keeps teams in step, with an audit row for every change.
-- **An MCP server**: point an AI desktop app, coding agent or IDE at `/mcp` (or `/mcp/work`,
-  `/mcp/docs`) and it works in your workspace as you, with your permissions, rate limited and in
-  the audit log.
-- **Webhooks and code hosts**: outgoing webhooks for issue, sprint and page events, signed with
-  HMAC-SHA256, retried, and logged per delivery; GitHub (connected in one click, on github.com
-  or Enterprise Server) and GitLab show the pull requests, branches and commits that name an
-  issue in its Development section.
-- **Your look**: five themes, each in light and dark, your brand colour, and your own logo in
-  the sidebar, on the sign-in page and in emails. Every screen is checked against WCAG 2.2 AA.
-- **Ways to run it**: the one-command installer on a VM, Docker Compose, your own Postgres, a
-  Helm chart for Kubernetes, or the Terraform module that runs the installer on one VM.
-- **The platform under them**: a setup wizard, people, roles and a capability matrix, email
-  and notifications, an Inbox, ⌘K search, an audit log, Prometheus metrics, automatic HTTPS,
-  nightly verified backups, and one-click updates with automatic rollback.
-
-Work and Docs ship in every install; an admin turns modules on in Settings › Modules. See the
-[changelog](https://bemmoly.com/changelog) for every release.
-
 ## Try it
 
 **In your browser, no install:** [bemmoly.com/demo](https://bemmoly.com/demo) runs the real app
