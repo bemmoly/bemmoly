@@ -47,6 +47,24 @@ async function runPendingChangesets(deps: SystemDependencies): Promise<number | 
 }
 
 /**
+ * The swap terminated every connection to the live database, so the pool may still hold
+ * connections the server already closed; the first query on one fails (57P01 or
+ * CONNECTION_CLOSED) and the pool replaces it. The re-index is idempotent, so retry.
+ */
+async function reindexAfterSwap(deps: SystemDependencies, interruptedBefore: Date): Promise<void> {
+  for (let attempt = 1; ; attempt += 1) {
+    try {
+      await syncBackupIndex(deps, { interruptedBefore });
+      return;
+    } catch (error) {
+      if (attempt >= 5) throw error;
+      deps.logger.warn({ err: error, attempt }, 'retrying the backup re-index after the swap');
+      await new Promise((resolve) => setTimeout(resolve, 100 * attempt));
+    }
+  }
+}
+
+/**
  * Replaces the live database with a backup (§18 Restore): maintenance mode, restore
  * into a fresh database, verify row counts, restore attachments, swap by rename, run
  * pending changesets when the backup is older, leave maintenance. The replaced database
@@ -89,7 +107,7 @@ export async function restoreBackup(
     );
     deps.logger.warn({ set: manifest.setName, rolledBack }, 'database replaced by a backup');
     const pendingChangesets = await runPendingChangesets(deps);
-    await syncBackupIndex(deps, { interruptedBefore: now }).catch((error: unknown) =>
+    await reindexAfterSwap(deps, now).catch((error: unknown) =>
       deps.logger.error({ err: error }, 'could not re-index backups after the restore'),
     );
     return {
