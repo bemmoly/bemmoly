@@ -80,32 +80,6 @@ From the [live demo](https://bemmoly.com/demo), in the light and dark themes.
   <img alt="An RFC page in Docs, in its space's page tree, with linked issues showing their live status" src="./apps/site/src/assets/previews/docs.png">
 </picture>
 
-## Status
-
-Bemmoly 1.0 is out. 0.1.0 shipped in October 2026, and from 1.0 versions follow Semantic
-Versioning's usual rules. Every release runs against the previous minor's database and
-tolerates the previous minor's clients, so updates and rollbacks are safe within one minor,
-and security fixes ship as patches on the current minor ([AGENTS.md §6](AGENTS.md#6-versioning-and-releases)).
-Every update backs up first and rolls back on its own if the app is not healthy.
-
-| Released | Scope                                                                                 |
-| -------- | ------------------------------------------------------------------------------------- |
-| 0.2      | **Work**: projects, issues, workflows, boards, backlog and sprints, filters           |
-| 0.3      | **Docs**: spaces, the page tree, a collaborative editor, revisions, comments          |
-| 0.4      | **The redesign**: one shell for Work and Docs, the logo's colours, drawn icons        |
-| 0.5      | **AI, optional**: summaries with sources, answers from your docs, editor and ⌘K plans |
-| 0.6      | **Image uploads** in Docs, an **MCP server**, and an updater that updates itself      |
-| 0.7      | **Imports** from Jira, Confluence and CSV, and **single sign-on** with SCIM           |
-| 0.8–0.12 | **Themes** in light and dark, a **workspace logo**, a new sign-in, a Language setting |
-| 0.13     | A **roadmap**, **automation rules**, **webhooks**, **code hosts**, Helm and Terraform |
-| 1.0      | GitHub in one click, PDF export, WCAG 2.2 AA, and the 1.0 compatibility promise       |
-
-**Coming soon**, not in the app yet:
-
-- An installable app (PWA) with web push notifications
-
-The plan for each release is in section 24 of the [technical design](docs/tech-design.html).
-
 ## Privacy
 
 - **The product sends nothing to us.** There is no telemetry. The daily check for new
