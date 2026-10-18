@@ -106,14 +106,28 @@ jobs:
               echo "::error title=No deployment::Coolify did not name a deployment."
               exit 1
             fi
+            # When Coolify will not say how the deployment went (the token cannot read it, or an
+            # older Coolify), stop following after a minute: the live-site check below decides,
+            # and asking again would only queue more deployments behind this one.
             status=queued
+            unknown=0
             for _ in $(seq 1 60); do
               sleep 15
-              detail="$(curl --silent --max-time 30 -H "Authorization: Bearer $TOKEN" "$API/deployments/$id" || true)"
-              status="$(printf '%s' "$detail" | jq -r '.status // "unknown"' 2>/dev/null || echo unknown)"
+              code="$(curl --silent --max-time 30 -o deployment.json -w '%{http_code}' \
+                -H "Authorization: Bearer $TOKEN" "$API/deployments/$id" || echo 000)"
+              status="$(jq -r '.status // "unknown"' deployment.json 2>/dev/null || echo unknown)"
+              rm -f deployment.json
               case "$status" in
                 finished) echo "Deployment $id finished."; exit 0 ;;
                 failed | cancelled*) break ;;
+                queued | in_progress) unknown=0 ;;
+                *)
+                  unknown=$((unknown + 1))
+                  if [ "$unknown" -ge 4 ]; then
+                    echo "::warning title=Deployment not followed::Coolify answered HTTP $code for deployment $id, so the live site decides."
+                    exit 0
+                  fi
+                  ;;
               esac
             done
             # Only the id and status: this repository's logs are public, and Coolify's build log
