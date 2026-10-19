@@ -42,7 +42,7 @@
     "@bemmoly/shared": "workspace:*",
     "@bemmoly/ui": "workspace:*",
     "@fastify/helmet": "13.1.1",
-    "@fastify/otel": "0.21.1",
+    "@fastify/otel": "0.21.2",
     "@fastify/rate-limit": "11.2.0",
     "@fastify/websocket": "11.3.3",
     "@hocuspocus/server": "4.7.0",
