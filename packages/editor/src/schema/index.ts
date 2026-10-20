@@ -35,6 +35,7 @@ export {
   type DecisionState,
 } from './nodes/decision.ts';
 export { SAFE_IMAGE_SRC } from './nodes/image.ts';
+export { FILE_TYPES, fileName } from './nodes/file.ts';
 export { DOC_NODES, docNode, docNodeExtensions } from './nodes/registry.ts';
 export type { DocNode, DocReference, ExportContext } from './nodes/types.ts';
 export { unsupportedLabel } from './nodes/unsupported-block.ts';

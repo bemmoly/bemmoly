@@ -20,6 +20,14 @@ export interface UploadedImage {
   alt?: string;
 }
 
+/** A stored PDF or HTML file, as the host's upload returns it. */
+export interface UploadedDocument {
+  src: string;
+  name: string;
+  /** The type the host read from the bytes: 'application/pdf' or 'text/html'. */
+  mime: string;
+}
+
 export interface UploadOptions {
   /** How much has gone, 0..1, or null while that is unknown. */
   onProgress?: (fraction: number | null) => void;
@@ -59,6 +67,11 @@ export interface DocServices {
    * added by link only. A failure rejects with an Error whose message the editor shows.
    */
   uploadImage?: (file: File, options?: UploadOptions) => Promise<UploadedImage>;
+  /**
+   * Stores a PDF or HTML file for the File block; without it the block and its / item are
+   * hidden and such files dropped on the page are left to the browser.
+   */
+  uploadFile?: (file: File, options?: UploadOptions) => Promise<UploadedDocument>;
   /** AI: the / menu's AI group, Ask AI and ghost text; each is hidden without it. */
   ai?: AiHandler;
   /** A link click inside the page, so in-app paths move without a reload. */

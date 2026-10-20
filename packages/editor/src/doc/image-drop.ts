@@ -7,11 +7,12 @@ import { isRemoteReplace, mapByDiff } from './uploads/remote-map.ts';
 import type { UploadStore } from './uploads/upload-store.ts';
 
 /*
- * Images pasted or dropped into a page go through the host's upload. Until the upload
+ * Images, PDFs and HTML files pasted or dropped into a page go through the host's upload. Until the upload
  * finishes, a local placeholder (a widget, mapped through every edit, so it moves with the
  * text around it) shows its progress or what went wrong; the image node, holding only the
- * URL the host returns, is inserted where the placeholder stands once it is done. Without
- * an upload service the editor leaves the event to the browser and ProseMirror.
+ * URL the host returns, is inserted where the placeholder stands once it is done: an image,
+ * or a File block for a document. Without the matching upload service the editor leaves the
+ * event to the browser and ProseMirror.
  */
 
 type Meta =
@@ -30,8 +31,35 @@ const betweenBlocks = ({ doc }: { doc: PmNode }, at: number) => {
   return $at.depth > 0 ? $at.after(1) : $at.pos;
 };
 
-const imagesIn = (files: FileList | null | undefined) =>
-  [...(files ?? [])].filter((file) => file.type.startsWith('image/'));
+/** A PDF or HTML file, by its type or, when the browser gives none, its name. */
+export const isDocumentFile = (file: File) =>
+  file.type === 'application/pdf' ||
+  file.type === 'text/html' ||
+  (!file.type && /\.(html?|pdf)$/i.test(file.name));
+
+const canStore = (file: File, services: DocServices) =>
+  isDocumentFile(file)
+    ? Boolean(services.uploadFile)
+    : file.type.startsWith('image/') && Boolean(services.uploadImage);
+
+/** The files of a paste or drop the host can store. */
+const uploadable = (files: FileList | null | undefined, services: DocServices) =>
+  [...(files ?? [])].filter((file) => canStore(file, services));
+
+async function store(
+  file: File,
+  services: DocServices,
+  view: EditorView,
+  onProgress: (n: number | null) => void,
+) {
+  const { nodes } = view.state.schema;
+  if (isDocumentFile(file)) {
+    const done = await services.uploadFile!(file, { onProgress });
+    return nodes['file']!.create({ src: done.src, name: done.name, mime: done.mime });
+  }
+  const done = await services.uploadImage!(file, { onProgress });
+  return nodes['image']!.create({ src: done.src, alt: done.alt ?? altFromName(file.name) });
+}
 
 /** Where a pending upload's placeholder stands now, or null once it is gone. */
 export function placeholderPos(state: EditorState, id: string): number | null {
@@ -53,21 +81,16 @@ export async function runUpload(
   services: DocServices,
 ) {
   const entry = uploads.find(id);
-  const upload = services.uploadImage;
-  if (!entry || !upload) return;
+  if (!entry || !canStore(entry.file, services)) return;
   uploads.update(id, { progress: 0, error: undefined });
   try {
-    const done = await upload(entry.file, {
-      onProgress: (fraction) => uploads.update(id, { progress: fraction }),
-    });
+    const image = await store(entry.file, services, view, (fraction) =>
+      uploads.update(id, { progress: fraction }),
+    );
     if (view.isDestroyed) return;
     const pos = placeholderPos(view.state, id);
     uploads.remove(id);
     if (pos === null) return;
-    const image = view.state.schema.nodes['image']!.create({
-      src: done.src,
-      alt: done.alt ?? altFromName(entry.file.name),
-    });
     const at = betweenBlocks(view.state, pos);
     const tr: Transaction = view.state.tr
       .insert(at, image)
@@ -160,14 +183,14 @@ export function imageDrop(services: () => DocServices, uploads: UploadStore) {
           props: {
             decorations: (state) => imageUploadKey.getState(state),
             handlePaste: (view, event) => {
-              const files = imagesIn(event.clipboardData?.files);
-              if (!files.length || !services().uploadImage) return false;
+              const files = uploadable(event.clipboardData?.files, services());
+              if (!files.length) return false;
               startUploads(view, files, view.state.selection.to, uploads, services());
               return true;
             },
             handleDrop: (view, event) => {
-              const files = imagesIn(event.dataTransfer?.files);
-              if (!files.length || !services().uploadImage) return false;
+              const files = uploadable(event.dataTransfer?.files, services());
+              if (!files.length) return false;
               event.preventDefault();
               const at = view.posAtCoords({ left: event.clientX, top: event.clientY });
               startUploads(view, files, at?.pos ?? view.state.selection.to, uploads, services());

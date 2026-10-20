@@ -26,6 +26,7 @@ export {
   type AiWriteRequest,
   type DocServices,
   type IssueTableAttrs,
+  type UploadedDocument,
   type UploadedImage,
   type UploadOptions,
 } from './doc/services.ts';

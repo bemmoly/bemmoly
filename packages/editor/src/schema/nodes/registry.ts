@@ -2,6 +2,7 @@ import type { AnyExtension } from '@tiptap/core';
 import { callout } from './callout.ts';
 import { codeBlock } from './code-block.ts';
 import { decision } from './decision.ts';
+import { file } from './file.ts';
 import { image } from './image.ts';
 import { issueCard } from './issue-card.ts';
 import { issueEmbed } from './issue-embed.ts';
@@ -22,6 +23,7 @@ export const DOC_NODES: readonly DocNode[] = [
   toc,
   table,
   image,
+  file,
   codeBlock,
   issueEmbed,
   issueCard,

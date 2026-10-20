@@ -1,4 +1,4 @@
-import { Button, Input, ProgressBar } from '@bemmoly/ui';
+import { Button, FileViewer, IconButton, Input, ProgressBar } from '@bemmoly/ui';
 import { useRef, useState, type FormEvent, type KeyboardEvent } from 'react';
 import { cx } from '../../cx.ts';
 import { SAFE_IMAGE_SRC } from '../../schema/nodes/values.ts';
@@ -13,6 +13,27 @@ import {
   PLACEHOLDER_TITLE,
 } from '../styles.ts';
 
+/** The image with Expand over its corner, which opens it full screen. */
+function ExpandableImage({ src, alt }: { src: string; alt: string }) {
+  const [full, setFull] = useState(false);
+  const name = alt || 'Image';
+  return (
+    <div className="group relative max-w-full">
+      <img src={src} alt={alt} loading="lazy" className={IMAGE} />
+      <IconButton
+        label={`Expand ${name}`}
+        tip="Full screen"
+        icon="expand"
+        size="xs"
+        variant="secondary"
+        onClick={() => setFull(true)}
+        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 max-sm:opacity-100"
+      />
+      <FileViewer open={full} onClose={() => setFull(false)} src={src} name={name} kind="image" />
+    </div>
+  );
+}
+
 /** A stored image as the reader sees it; an unsafe or empty source prints its alt text. */
 export function ImageFigure({ src, alt }: { src: string; alt: string }) {
   if (!SAFE_IMAGE_SRC.test(src)) {
@@ -20,7 +41,7 @@ export function ImageFigure({ src, alt }: { src: string; alt: string }) {
   }
   return (
     <figure className={cx(IMAGE_FRAME, 'm-0')}>
-      <img src={src} alt={alt} loading="lazy" className={IMAGE} />
+      <ExpandableImage src={src} alt={alt} />
       {alt && <figcaption className={IMAGE_CAPTION}>{alt}</figcaption>}
     </figure>
   );
@@ -157,7 +178,7 @@ function ImageChrome({ node, editor, selected, updateAttributes }: NodeViewProps
         if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setEditing(false);
       }}
     >
-      <img src={src} alt={alt} loading="lazy" className={IMAGE} />
+      <ExpandableImage src={src} alt={alt} />
       {selected || editing ? (
         <AltText alt={alt} onSave={(next) => updateAttributes({ alt: next })} />
       ) : (

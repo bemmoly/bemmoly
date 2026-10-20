@@ -14,6 +14,7 @@ import {
 } from './styles.ts';
 import { CalloutHeader, calloutVariant } from './views/callout-view.tsx';
 import { decisionClass, DecisionHeader, decisionState } from './views/decision-view.tsx';
+import { FileBlock } from './views/file-view.tsx';
 import { ImageFigure } from './views/image-view.tsx';
 import { IssueCardBlock } from './views/issue-card-view.tsx';
 import { IssueChip, IssueTableBlock } from './views/issue-views.tsx';
@@ -122,6 +123,15 @@ export function docBlock(
     }
     case 'image':
       return <ImageFigure key={key} src={str(node, 'src')} alt={str(node, 'alt')} />;
+    case 'file':
+      return (
+        <FileBlock
+          key={key}
+          src={str(node, 'src')}
+          name={str(node, 'name')}
+          mime={str(node, 'mime')}
+        />
+      );
     case 'issueCard':
       return <IssueCardBlock key={key} issueKey={str(node, 'key')} />;
     case 'issueTable':
