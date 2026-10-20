@@ -116,7 +116,10 @@ export async function startFakeCodeHost(options: FakeCodeHostOptions = {}): Prom
     if (appAnswer) return send(response, appAnswer.status, appAnswer.body);
     if (!authorised(request)) return send(response, 401, { message: 'Bad credentials' });
     if (path === '/api/v3/installation/repositories') {
-      return send(response, 200, { total_count: 1, repositories: [{ full_name: 'acme/api' }] });
+      return send(response, 200, {
+        total_count: 1,
+        repositories: [{ full_name: 'acme/api', default_branch: 'trunk' }],
+      });
     }
     if (path === '/api/v3/user') return send(response, 200, { login: 'bemmoly-bot' });
     if (path === '/api/v4/user') return send(response, 200, { username: 'project_2048_bot' });

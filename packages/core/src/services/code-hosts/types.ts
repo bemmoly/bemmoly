@@ -6,6 +6,7 @@ import type {
   CodeCheckReport,
   CodeDeploymentReport,
   CodeEvent,
+  CodeHostRepository,
   CodePullRequestInput,
 } from '../../contracts/code-hosts.ts';
 
@@ -66,7 +67,11 @@ export interface CodeHostApi {
   readFile?(repository: string, path: string, ref: string): Promise<string | null>;
   listFiles?(repository: string, ref: string): Promise<{ paths: string[]; truncated: boolean }>;
   openPullRequest?(input: CodePullRequestInput): Promise<{ url: string; number: number }>;
+  /** The repositories the connection can read, asked of the host; archived ones left out. */
+  listRepositories?(): Promise<HostRepository[]>;
 }
+
+export type HostRepository = Omit<CodeHostRepository, 'hostKind'>;
 
 /**
  * One code host. Adding a host is one driver plus one registry line; its payload shapes and

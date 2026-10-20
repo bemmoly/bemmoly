@@ -9,6 +9,7 @@ import {
   type CodeHostDriver,
   type HostApiOptions,
   type HostConnection,
+  type HostRepository,
 } from '../types.ts';
 import { parseGithubEvents } from './github-delivery-events.ts';
 import { githubPullSchema, parseGithubEvent, pullActivity } from './github-events.ts';
@@ -43,6 +44,20 @@ export function githubAppJwt(appId: string, privateKey: string, nowSeconds: numb
 }
 
 const tokenSchema = z.object({ token: z.string() });
+const installationRepositoriesSchema = z.object({
+  total_count: z.number().int(),
+  repositories: z.array(
+    z.object({
+      full_name: z.string(),
+      default_branch: z.string().nullish(),
+      html_url: z.string().nullish(),
+      archived: z.boolean().optional(),
+    }),
+  ),
+});
+/** GitHub's largest page; 50 of them reads an installation of 5,000 repositories. */
+const REPOSITORY_PAGE = 100;
+const REPOSITORY_PAGES = 50;
 const userSchema = z.object({ login: z.string() });
 const appSchema = z.object({ name: z.string() });
 
@@ -77,8 +92,32 @@ function githubApi(connection: HostConnection, options: HostApiOptions) {
     return `Bearer ${await installationToken}`;
   }
 
+  /** What the app's installation covers, whether it was given all repositories or a list. */
+  async function listRepositories(): Promise<HostRepository[]> {
+    const client = rest(await bearer());
+    const found: HostRepository[] = [];
+    for (let page = 1; page <= REPOSITORY_PAGES; page += 1) {
+      const answer = installationRepositoriesSchema.parse(
+        await client.getJson('installation/repositories', { per_page: REPOSITORY_PAGE, page }),
+      );
+      for (const repository of answer.repositories) {
+        if (repository.archived) continue;
+        found.push({
+          fullName: repository.full_name,
+          defaultBranch: repository.default_branch ?? null,
+          url: repository.html_url ?? null,
+        });
+      }
+      const read = (page - 1) * REPOSITORY_PAGE + answer.repositories.length;
+      if (answer.repositories.length < REPOSITORY_PAGE || read >= answer.total_count) break;
+    }
+    return found;
+  }
+
   return {
     ...githubWrites(async () => rest(await bearer())),
+    // A token sees every repository its owner can; only the ones named on it are Bemmoly's.
+    ...(connection.authMode === 'app' ? { listRepositories } : {}),
     async check() {
       if (connection.authMode === 'app') {
         const app = appSchema.parse(await rest(`Bearer ${appJwt()}`).getJson('app'));

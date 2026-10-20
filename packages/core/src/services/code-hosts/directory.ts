@@ -1,5 +1,5 @@
 import { ProviderError } from '@bemmoly/shared';
-import type { CodeHostClient } from '../../contracts/code-hosts.ts';
+import type { CodeHostClient, CodeHostRepository } from '../../contracts/code-hosts.ts';
 import type { CodeHostDirectory } from '../../modules/code.ts';
 import { codeHostDriver } from './registry.ts';
 import { addressPolicyFor, type CodeHostRuntime } from './runtime.ts';
@@ -16,7 +16,12 @@ function unsupported(label: string, what: string): never {
   throw new ProviderError(`${label} cannot ${what} through Bemmoly yet`);
 }
 
-export function clientOf(rt: CodeHostRuntime, row: IntegrationRow): CodeHostClient {
+/** A client plus what only the directory asks of it: the repositories it covers. */
+interface DirectoryClient extends CodeHostClient {
+  repositories(): Promise<CodeHostRepository[]>;
+}
+
+export function clientOf(rt: CodeHostRuntime, row: IntegrationRow): DirectoryClient {
   const driver = codeHostDriver(row.kind);
   // One API per client: a GitHub App's installation token is fetched once and reused.
   let instance: CodeHostApi | null = null;
@@ -38,6 +43,13 @@ export function clientOf(rt: CodeHostRuntime, row: IntegrationRow): CodeHostClie
       (api().listFiles ?? unsupported(driver.label, 'list files'))(repository, ref),
     openPullRequest: (input) =>
       (api().openPullRequest ?? unsupported(driver.label, 'open pull requests'))(input),
+    async repositories() {
+      const host = api();
+      const found = host.listRepositories
+        ? await host.listRepositories()
+        : row.repositories.map((fullName) => ({ fullName, defaultBranch: null, url: null }));
+      return found.map((repository) => ({ ...repository, hostKind: row.kind }));
+    },
   };
 }
 
@@ -45,8 +57,8 @@ export function clientOf(rt: CodeHostRuntime, row: IntegrationRow): CodeHostClie
 const CLIENT_TTL_MS = 30 * 60_000;
 
 export function createCodeHostDirectory(rt: CodeHostRuntime): CodeHostDirectory {
-  const clients = new Map<string, { client: CodeHostClient; until: number }>();
-  const cached = (row: IntegrationRow): CodeHostClient => {
+  const clients = new Map<string, { client: DirectoryClient; until: number }>();
+  const cached = (row: IntegrationRow): DirectoryClient => {
     const key = `${row.id}:${new Date(row.updated_at).getTime()}`;
     const hit = clients.get(key);
     if (hit && hit.until > Date.now()) return hit.client;
@@ -65,6 +77,20 @@ export function createCodeHostDirectory(rt: CodeHostRuntime): CodeHostDirectory 
       const app = rows.find((row) => row.kind === 'github' && row.auth_mode === 'app');
       const row = named ?? app;
       return row ? cached(row) : null;
+    },
+    async repositories() {
+      const rows = await rt.sql<IntegrationRow[]>`
+        select * from integrations where enabled order by created_at`;
+      const found = new Map<string, CodeHostRepository>();
+      for (const row of rows) {
+        // An app not installed yet covers nothing.
+        if (row.auth_mode === 'app' && !row.installation_id) continue;
+        for (const repository of await cached(row).repositories()) {
+          const key = repository.fullName.toLowerCase();
+          if (!found.has(key)) found.set(key, repository);
+        }
+      }
+      return [...found.values()];
     },
   };
 }

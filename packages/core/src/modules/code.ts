@@ -1,4 +1,9 @@
-import type { CodeActivity, CodeEventOf, CodeHostClient } from '../contracts/code-hosts.ts';
+import type {
+  CodeActivity,
+  CodeEventOf,
+  CodeHostClient,
+  CodeHostRepository,
+} from '../contracts/code-hosts.ts';
 import type { RequestContext } from '../services/authz/index.ts';
 
 /** What a consumer did with one delivery's activities, for the delivery log. */
@@ -44,6 +49,11 @@ export interface CodeAppPermissions {
 export interface CodeHostDirectory {
   /** The client for the integration covering `repository`, or null when none does. */
   clientFor(repository: string): Promise<CodeHostClient | null>;
+  /**
+   * Every repository the enabled hosts let Bemmoly read, once each: a GitHub App's
+   * installation asked live, other connections from the repositories named on them.
+   */
+  repositories(): Promise<CodeHostRepository[]>;
 }
 
 /** What a module sees as `ctx.code`. */
