@@ -1,3 +1,4 @@
+import { createAttachmentsService } from './attachments/index.ts';
 import { createPageCollab } from './collab/index.ts';
 import type { DocsServiceDeps } from './common.ts';
 import { createCommentsService } from './comments/index.ts';
@@ -40,6 +41,7 @@ export function createDocsServices(deps: DocsServiceDeps) {
     comments: createCommentsService(deps),
     transfer: createTransferService(deps),
     pdfExport: createPdfExportService(deps),
+    attachments: createAttachmentsService(deps),
   };
 }
 

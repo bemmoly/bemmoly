@@ -12,12 +12,14 @@ import { setStatusBodySchema } from '../../../../shared/status.ts';
 import type { DocsServices } from '../index.ts';
 import { authoringTools } from './authoring.ts';
 import { browseTools } from './browse.ts';
+import { fileTools } from './files.ts';
 import { pageHref } from './common.ts';
 
 /*
  * What Docs offers the ⌘K planner and MCP clients: browse and read spaces and pages
- * (browse.ts), write pages from Markdown (authoring.ts), move a page through the review flow,
- * and leave a comment. Each goes through the service the page screen calls, as the person.
+ * (browse.ts), write pages from Markdown (authoring.ts), add files to them (files.ts), move a
+ * page through the review flow, and leave a comment. Each goes through the service the page
+ * screen calls, as the person.
  */
 
 const STATUS_NAMES: Readonly<Record<string, string>> = {
@@ -118,7 +120,12 @@ export function docsAiTools(services: DocsServices): AiToolDefinition[] {
       },
     }),
   ];
-  return [...browseTools(services), ...authoringTools(services), ...(review as AiToolDefinition[])];
+  return [
+    ...browseTools(services),
+    ...authoringTools(services),
+    ...fileTools(services),
+    ...(review as AiToolDefinition[]),
+  ];
 }
 
 /** Registers Docs' planner tools with the kernel; the kernel never imports Docs. */

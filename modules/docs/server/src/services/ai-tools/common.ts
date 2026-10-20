@@ -35,9 +35,12 @@ export function resolveSpace(
   return services.spaces.get(ctx, input.spaceId ?? input.spaceKey ?? '');
 }
 
-/** An AI's or an agent's Markdown as the editor's document. */
+/**
+ * An AI's or an agent's Markdown as the editor's document. Images stay images, so a stored
+ * file written as one can become a File block (attachments.withFileBlocks).
+ */
 export function markdownDocument(markdown: string): RichText {
-  return fromMarkdownBase(markdown) as RichText;
+  return fromMarkdownBase(markdown, { keep: ['image'] }) as RichText;
 }
 
 /** The page body alone as Markdown, so an agent can compare it with what it means to write. */

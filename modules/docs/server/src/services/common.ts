@@ -38,8 +38,8 @@ export interface DocsServiceDeps {
   links?: Pick<LinkRegistry, 'referencesTo'>;
   /** Whether AI is on for a person, so AI-made attention items show only then. */
   ai?: Pick<AiFacade, 'policy'>;
-  /** Uploaded images, read for exports that carry them. */
-  files?: Pick<FilesRegistry, 'read'>;
+  /** Uploaded files: read for exports that carry them, added and looked up for agents. */
+  files?: Pick<FilesRegistry, 'read'> & Partial<Pick<FilesRegistry, 'stat' | 'upload'>>;
   /** The optional PDF renderer; without it PDF goes through the browser's print view. */
   pdf?: PdfRenderer;
   /** The context a queued export acts in: the person who asked, with their access. */
