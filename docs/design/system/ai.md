@@ -65,6 +65,10 @@ AI is optional, honest and visibly AI. Lilac marks it, and nothing appears while
 - Home: the morning brief (`AiBrief`) under the greeting.
 - Work: the issue summary (`AiSummary`, page and panel) on the issue page and slide-over, and the
   sprint risk bar (`AiInsightBar`) on the Board and Backlog.
+- Work Reports: "Ask for a report", the question box in an `AiBrief` with the suggested questions
+  as `AiActionButton`s, and the asked report under it with its "by AI" line and `AiNotUseful`.
+  A report the person pins leaves the AI surface: it is their report, rebuilt from live data and
+  drawn without lilac, with AI on or off.
 - Docs: the TL;DR card, the About panel's consistency findings, and "Needs attention" rows for
   pages whose consistency check found a contradiction (with the AI dot).
 - Docs (with #77): the TL;DR card, a comment's suggested fix with Apply fix, the / menu's AI

@@ -90,7 +90,7 @@ function scopeReport(context: ReportContext, request: MockRequest, db: MockDb) {
   };
 }
 
-function bucketsOf(field: string, issue: Row, db: MockDb, context: ReportContext): Bucket[] {
+export function bucketsOf(field: string, issue: Row, db: MockDb, context: ReportContext): Bucket[] {
   const store = issueStore(db);
   switch (field) {
     case 'assignee':

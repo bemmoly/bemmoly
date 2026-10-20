@@ -1,3 +1,4 @@
+export { workAskReportEndpoints } from './ask-reports.ts';
 export { automationKeys, workAutomationEndpoints } from './automation.ts';
 export { backlogKeys, workBacklogEndpoints } from './backlog.ts';
 export { workBoardIssuesEndpoints } from './board-issues.ts';
