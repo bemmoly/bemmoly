@@ -122,12 +122,14 @@ export function PageFrame({ page }: { page: PageDetail }) {
   useLocalSync(page, collab.doc, collab.status === 'local');
   const [editor, setEditor] = useState<PageEditor | null>(null);
   const scroller = useRef<HTMLDivElement>(null);
+  const frame = useRef<HTMLDivElement>(null);
   const readOnly = readOnlyOf(page, collab.status);
   const editable = !readOnly && collab.editable;
   const outline = useOutline(editor);
   const { active: activeHeading, pin: pinHeading } = useActiveHeading(scroller, editor, outline);
-  const docked = useWiderThan(scroller, DOCK_FROM);
-  const roomy = useWiderThan(scroller, CENTRE_FROM);
+  // Measured around the scroller and a docked panel both, so docking one never undocks it.
+  const docked = useWiderThan(frame, DOCK_FROM);
+  const roomy = useWiderThan(frame, CENTRE_FROM);
   const mode = usePageChrome((state) => state.mode);
   const history = mode === 'history' && !page.deletedAt;
   const stats = useDocStats(editor, page.wordCount);
@@ -188,7 +190,7 @@ export function PageFrame({ page }: { page: PageDetail }) {
     <PageScreenContext.Provider value={screen}>
       <DocsLayout layout="full" trailing={<StatusMenu />} headerClassName={FADE_WHILE_TYPING}>
         <PageHeaderActions />
-        <div className="relative flex min-h-0 flex-1" data-page-id={page.id}>
+        <div ref={frame} className="relative flex min-h-0 flex-1" data-page-id={page.id}>
           <div
             ref={scroller}
             hidden={history}
@@ -196,16 +198,10 @@ export function PageFrame({ page }: { page: PageDetail }) {
           >
             <PageBanner />
             <PageCoverBand />
-            {/* A panel margin sits at the right edge with the column centred in what is left. The
-                bare outline floats beside a centred column where there is room (the review's
+            {/* The bare outline floats beside a centred column where there is room (the review's
                 page), and sits in the flow right beside it where there is not. */}
-            <div className={cx('flex min-h-full', panelDocked ? '' : 'justify-center')}>
-              <div
-                className={cx(
-                  'relative flex min-w-0 justify-center',
-                  panelDocked ? 'flex-1' : 'max-w-[780px] flex-1',
-                )}
-              >
+            <div className="flex min-h-full justify-center">
+              <div className="relative flex max-w-[780px] min-w-0 flex-1 justify-center">
                 <article
                   className={cx(
                     'relative flex max-w-[780px] min-w-0 flex-1 flex-col gap-4.5 px-4 pb-30 text-16 leading-prose text-tx sm:px-10',
@@ -220,9 +216,11 @@ export function PageFrame({ page }: { page: PageDetail }) {
                 </article>
                 {docked && roomy && !panelDocked && <DockedMargin float />}
               </div>
-              {docked && (panelDocked || !roomy) && <DockedMargin />}
+              {docked && !roomy && !panelDocked && <DockedMargin />}
             </div>
           </div>
+          {/* A panel margin stays put at the right edge while the page scrolls beside it. */}
+          {panelDocked && !history && <DockedMargin />}
           {history && <HistoryBody />}
           {!history && <OverlayMargin />}
         </div>

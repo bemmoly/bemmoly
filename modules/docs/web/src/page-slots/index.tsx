@@ -19,13 +19,8 @@ export const COMMENTS_MARGIN: MarginSlot = {
   icon: 'message',
   keys: 'Mod+Alt+C',
   useCount: (page) => useOpenThreadCount(page.id),
-  Component: ({ page, editable, editor, docked, onClose }) => (
-    <CommentsRail
-      pageId={page.id}
-      canComment={editable}
-      onClose={onClose}
-      {...(docked ? { alignTo: editor } : {})}
-    />
+  Component: ({ page, editable, onClose }) => (
+    <CommentsRail pageId={page.id} canComment={editable} onClose={onClose} />
   ),
 };
 
@@ -35,11 +30,9 @@ export const LINKED_MARGIN: MarginSlot = {
   label: 'Linked work',
   icon: 'link',
   keys: 'Mod+Alt+L',
-  Component: ({ page, docked, onClose }) => (
-    <div className="flex flex-col">
-      <div
-        className={`flex h-11.5 shrink-0 items-center gap-2 border-b border-line bg-canvas pr-2.5 pl-4 ${docked ? 'sticky top-0 z-10' : ''}`}
-      >
+  Component: ({ page, onClose }) => (
+    <div className="flex min-h-0 flex-1 flex-col">
+      <div className="flex h-11.5 shrink-0 items-center gap-2 border-b border-line bg-canvas pr-2.5 pl-4">
         <h2 className="m-0 flex-1 text-13 font-semibold text-tx">Linked work</h2>
         <IconButton
           label="Close linked work"
@@ -50,7 +43,7 @@ export const LINKED_MARGIN: MarginSlot = {
           onClick={onClose}
         />
       </div>
-      <div className="flex flex-col gap-3 p-3.5 text-13 leading-body">
+      <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-auto p-3.5 text-13 leading-body">
         <ConsistencyFindings pageId={page.id} />
         <BacklinksSection pageId={page.id} />
       </div>

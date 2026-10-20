@@ -214,6 +214,34 @@ describe('the comments rail', () => {
     );
   });
 
+  it('comments on the whole page from the box pinned to its foot', async () => {
+    server.use(
+      http.post('*/api/v1/docs/pages/:pageId/comments', async ({ request }) =>
+        HttpResponse.json(
+          { ...GENERAL, id: id(), ...((await request.json()) as object) },
+          { status: 201 },
+        ),
+      ),
+    );
+    renderRail();
+    await screen.findByText(/Which is it\?/);
+    const box = await screen.findByRole('textbox', { name: 'Comment on this page' });
+    const editor = (
+      box as HTMLElement & { editor: { commands: { setContent(doc: unknown): void } } }
+    ).editor;
+    act(() => editor.commands.setContent(doc('Ship it.')));
+    expect(screen.queryByRole('button', { name: 'Cancel' })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Comment' }));
+    await waitFor(() =>
+      expect(calls.at(-1)).toMatchObject({
+        method: 'POST',
+        path: `/api/v1/docs/pages/${PAGE}/comments`,
+        body: { body: doc('Ship it.') },
+      }),
+    );
+    expect((calls.at(-1)?.body as { anchor?: unknown }).anchor).toBeUndefined();
+  });
+
   it('switches to resolved threads and offers Reopen', async () => {
     renderRail();
     await screen.findByText(/Which is it\?/);
@@ -227,6 +255,7 @@ describe('the comments rail', () => {
     await screen.findByText(/Which is it\?/);
     expect(screen.queryByRole('button', { name: 'Reply' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Comment' })).toBeNull();
+    expect(screen.queryByRole('textbox', { name: 'Comment on this page' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Apply fix' })).toBeNull();
   });
 
@@ -236,6 +265,10 @@ describe('the comments rail', () => {
     act(() => useCommentUi.getState().startDraft(PAGE, anchor('flag flip')));
     const draft = await screen.findByRole('region', { name: 'New comment' });
     expect(within(draft).getByText('flag flip')).toBeTruthy();
+    // The selection's draft takes over the pinned box until it is sent or cancelled.
+    expect(screen.queryByRole('textbox', { name: 'Comment on this page' })).toBeNull();
+    fireEvent.click(within(draft).getByRole('button', { name: 'Cancel' }));
+    expect(await screen.findByRole('textbox', { name: 'Comment on this page' })).toBeTruthy();
   });
 
   it('shows an empty state and a failure with a retry', async () => {
