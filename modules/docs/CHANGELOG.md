@@ -1,5 +1,32 @@
 # @bemmoly/module-docs
 
+## 1.3.0
+
+### Minor Changes
+
+- debc7b4: The comments panel beside a page now stays put while you scroll the page, with its own scroll
+  for the threads and a comment box pinned to its foot. Comments on the whole page are written
+  there; a comment started from selected text uses the same box, with the quote shown above it.
+- 5dae368: Pages can hold PDF and HTML files. Add one with the new File block (/file), or drop or paste
+  it into a page; it shows as a preview with Expand to full screen, and images gain Expand too.
+  Agents add files over MCP with `docs_upload_file`, at the end of a page or anywhere in its
+  Markdown. HTML runs in a sandbox with an origin of its own: it may load scripts, styles, fonts
+  and images over https but cannot send data anywhere, and opened outside a page it downloads
+  instead of showing (ADR 0047). No schema or configuration change; uploads keep the
+  `BEMMOLY_UPLOAD_MAX_BYTES` limit.
+
+### Patch Changes
+
+- Updated dependencies [5dae368]
+- Updated dependencies [4fae3da]
+- Updated dependencies [d6208c1]
+  - @bemmoly/core@1.3.0
+  - @bemmoly/shared@1.3.0
+  - @bemmoly/editor@1.3.0
+  - @bemmoly/ui@1.3.0
+  - @bemmoly/api-client@1.3.0
+  - @bemmoly/core-web@1.3.0
+
 ## 1.2.0
 
 ### Minor Changes

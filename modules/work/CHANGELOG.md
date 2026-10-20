@@ -1,5 +1,32 @@
 # @bemmoly/module-work
 
+## 1.3.0
+
+### Minor Changes
+
+- 4fae3da: Issues can be archived. Archive an issue from its ··· menu, from a card's or row's menu, or from
+  the bulk bar, and Undo puts it back. An archived issue leaves the board, the backlog, lists,
+  search, My work and the roadmap, but still opens by its key and still counts in reports. Its page
+  says it is archived and offers Unarchive. In a query, `archived IS NOT EMPTY` lists archived
+  issues. Automation rules have a new Archive action.
+
+  Schema: one changeset (0034) adds `issues.archived_at` and an index on archived issues. It is
+  fast and reversible.
+
+### Patch Changes
+
+- da321bb: An open board no longer reads its whole view again when the person viewing it is added to or
+  removed from another project.
+- Updated dependencies [5dae368]
+- Updated dependencies [4fae3da]
+- Updated dependencies [d6208c1]
+  - @bemmoly/core@1.3.0
+  - @bemmoly/shared@1.3.0
+  - @bemmoly/editor@1.3.0
+  - @bemmoly/ui@1.3.0
+  - @bemmoly/api-client@1.3.0
+  - @bemmoly/core-web@1.3.0
+
 ## 1.2.0
 
 ### Minor Changes
